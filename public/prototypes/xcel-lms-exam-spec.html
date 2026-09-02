@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XCEL LMS — Licensing Exam Task Type (spec)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@700;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --page:#f4f4f6; --card:#fff; --line:#e4e4e8; --line-2:#d4d4da;
+  --ink:#1f1f23; --ink-2:#4d4d55; --ink-3:#6d6d76;
+  --primary:#a81c24; --primary-100:#f8dee0; --primary-700:#6f1218;
+  --code-bg:#f5f5f6;
+  --warn:#8a5f00; --warn-bg:#fdf6e7; --warn-line:#e8d5a8;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --page:#141417; --card:#1d1d21; --line:#2e2e35; --line-2:#3d3d45;
+  --ink:#f2f2f4; --ink-2:#b6b6be; --ink-3:#8d8d96;
+  --primary:#e8737a; --primary-100:#3a1416; --primary-700:#f6c2c6;
+  --code-bg:#232329; --warn:#e0b155; --warn-bg:#2a2318; --warn-line:#4a3d22;
+}}
+:root[data-theme="dark"]{
+  --page:#141417; --card:#1d1d21; --line:#2e2e35; --line-2:#3d3d45;
+  --ink:#f2f2f4; --ink-2:#b6b6be; --ink-3:#8d8d96;
+  --primary:#e8737a; --primary-100:#3a1416; --primary-700:#f6c2c6;
+  --code-bg:#232329; --warn:#e0b155; --warn-bg:#2a2318; --warn-line:#4a3d22;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);
+  font:15px/1.62 'Open Sans',system-ui,-apple-system,sans-serif;-webkit-font-smoothing:antialiased}
+.pbar{background:#1a1a1d;color:rgba(255,255,255,.9);display:flex;align-items:center;gap:13px;
+  padding:0 18px;height:40px;font-size:12px;position:sticky;top:0;z-index:9;flex-wrap:wrap}
+.pbar .tag{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:rgba(255,255,255,.5)}
+.plink{color:rgba(255,255,255,.72);font-size:12px;font-weight:600;text-decoration:none;
+  border-bottom:1px solid rgba(255,255,255,.25);padding-bottom:1px}
+.plink:hover{color:#fff;border-bottom-color:#fff}
+.plink:focus-visible{outline:2px solid #c75159;outline-offset:3px}
+.pbtn{appearance:none;border:1px solid rgba(255,255,255,.2);background:transparent;margin-left:auto;
+  color:rgba(255,255,255,.85);font:600 11.5px 'Open Sans',sans-serif;padding:6px 10px;border-radius:6px;cursor:pointer}
+.pbtn:hover{background:rgba(255,255,255,.09)}
+.wrap{max-width:980px;margin:0 auto;padding:30px 26px 90px}
+.doc{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:38px 44px 44px;
+  box-shadow:0 1px 2px rgba(0,0,0,.05),0 4px 14px rgba(0,0,0,.04)}
+.doc>*{max-width:76ch}
+.doc table,.doc .tw,.doc pre{max-width:100%}
+h1,h2,h3,h4{font-family:'Lato',system-ui,sans-serif;font-weight:900;letter-spacing:-.015em;
+  line-height:1.22;margin:0}
+h1{font-size:31px;margin-bottom:6px}
+h2{font-size:22px;margin:36px 0 12px;padding-top:20px;border-top:1px solid var(--line)}
+h2:first-of-type{border-top:0;padding-top:0}
+h3{font-size:16.5px;font-weight:700;margin:24px 0 9px}
+p{margin:0 0 13px;color:var(--ink-2)}
+strong{color:var(--ink);font-weight:700}
+em{font-style:italic}
+a{color:var(--primary)}
+ul,ol{margin:0 0 14px;padding-left:22px;color:var(--ink-2)}
+li{margin-bottom:6px}
+code{font:13px ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--code-bg);
+  border:1px solid var(--line);border-radius:4px;padding:1px 5px;color:var(--ink)}
+pre{background:var(--code-bg);border:1px solid var(--line);border-radius:9px;padding:15px 17px;
+  overflow-x:auto;margin:0 0 16px}
+pre code{background:none;border:0;padding:0;font-size:12.5px;line-height:1.6}
+blockquote{margin:0 0 16px;padding:13px 16px;border-left:3px solid var(--warn-line);
+  background:var(--warn-bg);border-radius:0 8px 8px 0;color:var(--ink-2)}
+blockquote p:last-child{margin-bottom:0}
+blockquote strong{color:var(--warn)}
+hr{border:0;border-top:1px solid var(--line);margin:30px 0}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:9px;margin:0 0 18px;background:var(--card)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink-2)}
+th{font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);
+  background:var(--code-bg);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td strong{color:var(--ink)}
+.meta{color:var(--ink-3);font-size:13px;margin-bottom:22px}
+.err{border:1px solid var(--warn-line);background:var(--warn-bg);color:var(--warn);
+  border-radius:9px;padding:16px;font-size:13.5px}
+.err a{color:var(--warn)}
+</style>
+</head>
+<body>
+<div class="pbar">
+  <span class="tag">XCEL LMS</span>
+  <span>Exam task-type spec</span>
+  <span style="opacity:.4">·</span>
+  <a class="plink" href="/prototypes/xcel-lms-desktop.html">Desktop platform</a>
+  <a class="plink" href="/prototypes/xcel-lms-walkthrough.html">Learner walk-through</a>
+  <a class="plink" href="/prototypes/xcel-lms-wireframes.html">Wireframes &amp; overlap</a>
+  <button class="pbtn" id="themeBtn" aria-pressed="false">Dark</button>
+</div>
+<div class="wrap"><article class="doc" id="doc">Loading the spec…</article></div>
+
+<script>
+(function(){
+'use strict';
+function setTheme(d){
+  document.documentElement.setAttribute('data-theme',d?'dark':'light');
+  var b=document.getElementById('themeBtn');
+  b.setAttribute('aria-pressed',String(d)); b.textContent=d?'Light':'Dark';
+  try{localStorage.setItem('xcel.spec.theme',d?'dark':'light');}catch(e){}
+}
+document.getElementById('themeBtn').onclick=function(){
+  setTheme(document.documentElement.getAttribute('data-theme')!=='dark');
+};
+var t='light'; try{t=localStorage.getItem('xcel.spec.theme')||'light';}catch(e){}
+setTheme(t==='dark');
+
+/* ---- minimal markdown renderer -------------------------------------
+   Deliberately reads the SAME .md the repo holds rather than carrying a
+   second HTML copy of the spec — an HTML twin would drift from the source
+   the moment either changed. Handles only what this document uses:
+   headings, paragraphs, lists, fenced code, blockquotes, tables, rules. */
+function esc(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+function inline(s){
+  return esc(s)
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    .replace(/\*\*([^*]+)\*\*/g,'<strong>$1</strong>')
+    .replace(/(^|[^*])\*([^*\n]+)\*/g,'$1<em>$2</em>')
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2">$1</a>');
+}
+function render(md){
+  var lines=md.replace(/\r/g,'').split('\n'), out=[], i=0;
+  function flushList(tag,items){ out.push('<'+tag+'>'+items.map(function(x){return '<li>'+inline(x)+'</li>';}).join('')+'</'+tag+'>'); }
+  while(i<lines.length){
+    var l=lines[i];
+    if(/^```/.test(l)){
+      var buf=[]; i++;
+      while(i<lines.length&&!/^```/.test(lines[i])){buf.push(lines[i]);i++;}
+      i++; out.push('<pre><code>'+esc(buf.join('\n'))+'</code></pre>'); continue;
+    }
+    if(/^\s*\|.*\|\s*$/.test(l)&&i+1<lines.length&&/^\s*\|[\s:|-]+\|\s*$/.test(lines[i+1])){
+      var head=l.split('|').slice(1,-1).map(function(c){return c.trim();});
+      i+=2; var rows=[];
+      while(i<lines.length&&/^\s*\|.*\|\s*$/.test(lines[i])){
+        rows.push(lines[i].split('|').slice(1,-1).map(function(c){return c.trim();})); i++;
+      }
+      out.push('<div class="tw"><table><thead><tr>'+head.map(function(h){return '<th>'+inline(h)+'</th>';}).join('')+
+        '</tr></thead><tbody>'+rows.map(function(r){
+          return '<tr>'+r.map(function(c){return '<td>'+inline(c)+'</td>';}).join('')+'</tr>';
+        }).join('')+'</tbody></table></div>');
+      continue;
+    }
+    var h=l.match(/^(#{1,4})\s+(.*)$/);
+    if(h){ var n=h[1].length; out.push('<h'+n+'>'+inline(h[2])+'</h'+n+'>'); i++; continue; }
+    if(/^\s*(---|\*\*\*)\s*$/.test(l)){ out.push('<hr>'); i++; continue; }
+    if(/^>\s?/.test(l)){
+      var q=[]; while(i<lines.length&&/^>\s?/.test(lines[i])){q.push(lines[i].replace(/^>\s?/,''));i++;}
+      out.push('<blockquote><p>'+inline(q.join(' '))+'</p></blockquote>'); continue;
+    }
+    if(/^\s*[-*]\s+/.test(l)){
+      var ul=[]; while(i<lines.length&&/^\s*[-*]\s+/.test(lines[i])){ul.push(lines[i].replace(/^\s*[-*]\s+/,''));i++;}
+      flushList('ul',ul); continue;
+    }
+    if(/^\s*\d+\.\s+/.test(l)){
+      var ol=[]; while(i<lines.length&&/^\s*\d+\.\s+/.test(lines[i])){ol.push(lines[i].replace(/^\s*\d+\.\s+/,''));i++;}
+      flushList('ol',ol); continue;
+    }
+    if(!l.trim()){ i++; continue; }
+    var p=[]; while(i<lines.length&&lines[i].trim()&&!/^(#{1,4}\s|```|>|\s*[-*]\s|\s*\d+\.\s|\s*\|)/.test(lines[i])){
+      p.push(lines[i]); i++;
+    }
+    if(p.length) out.push('<p>'+inline(p.join(' '))+'</p>');
+    else i++;
+  }
+  return out.join('\n');
+}
+
+var SRC='/prototypes/xcel-lms-exam-task-type-spec.md';
+fetch(SRC).then(function(r){
+  if(!r.ok) throw new Error('HTTP '+r.status);
+  return r.text();
+}).then(function(md){
+  document.getElementById('doc').innerHTML=render(md);
+}).catch(function(e){
+  document.getElementById('doc').innerHTML='<div class="err"><strong>Could not load the spec.</strong><br>'+
+   'This page reads <code>'+SRC+'</code> at runtime so there is only ever one copy of it. '+
+   'That file is served from <code>public/prototypes/</code> — run <code>./deploy-xcel-prototypes.sh</code> if it is missing. '+
+   'You can also read the source directly at <code>licensing-exam-task-type-spec.md</code> in the repo root.<br><br>'+
+   '<em>'+e.message+'</em></div>';
+});
+})();
+</script>
+</body>
+</html>
