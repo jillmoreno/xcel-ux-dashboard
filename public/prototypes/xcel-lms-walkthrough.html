@@ -1,0 +1,856 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XCEL LMS — Learner Walk-through</title>
+<style>
+:root{
+  --bg:#f4f4f5; --surface:#ffffff; --surface-2:#fafafa;
+  --line:#e4e4e7; --line-strong:#d4d4d8;
+  --fill:#ececef; --fill-2:#f4f4f5; --fill-3:#e0e0e4;
+  --ink:#18181b; --ink-2:#52525b; --ink-3:#6b6b74;
+  --annot:#5b4bbd; --annot-bg:#f1eefc; --annot-line:#cec6f2;
+  --flag:#8a5f00; --flag-bg:#fdf6e7; --flag-line:#e8d5a8;
+  --have:#1f6b4a; --have-bg:#e9f4ee; --have-line:#b8dcc8;
+  --shadow:0 1px 2px rgba(0,0,0,.05), 0 4px 12px rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131316; --surface:#1c1c20; --surface-2:#232328;
+    --line:#2e2e34; --line-strong:#3f3f46;
+    --fill:#2a2a30; --fill-2:#232328; --fill-3:#33333a;
+    --ink:#f4f4f5; --ink-2:#b4b4bd; --ink-3:#8b8b95;
+    --annot:#b0a3ff; --annot-bg:#231f38; --annot-line:#3b3363;
+    --flag:#e0b155; --flag-bg:#2a2318; --flag-line:#4a3d22;
+    --have:#6cc39a; --have-bg:#16261f; --have-line:#264c3a;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 12px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131316; --surface:#1c1c20; --surface-2:#232328;
+  --line:#2e2e34; --line-strong:#3f3f46;
+  --fill:#2a2a30; --fill-2:#232328; --fill-3:#33333a;
+  --ink:#f4f4f5; --ink-2:#b4b4bd; --ink-3:#8b8b95;
+  --annot:#b0a3ff; --annot-bg:#231f38; --annot-line:#3b3363;
+  --flag:#e0b155; --flag-bg:#2a2318; --flag-line:#4a3d22;
+  --have:#6cc39a; --have-bg:#16261f; --have-line:#264c3a;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 12px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:14px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em}
+h1{font-size:25px;line-height:1.2}
+h4{font-size:13px}
+p{margin:0 0 11px}
+a{color:var(--annot)}
+code{font:12px ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--fill-2);
+  border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+.lbl{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+
+.mast{border-bottom:1px solid var(--line);background:var(--surface)}
+.mast-in{max-width:1240px;margin:0 auto;padding:22px 26px 18px}
+.mast h1{margin:7px 0 8px}
+.mast p{max-width:74ch;color:var(--ink-2);font-size:14px;margin:0}
+.mast .meta{display:flex;flex-wrap:wrap;gap:7px 18px;font-size:12.5px;color:var(--ink-2);margin-top:12px}
+.mast .meta b{color:var(--ink);font-weight:600}
+.seg{display:inline-flex;background:var(--fill-2);border:1px solid var(--line);border-radius:15px;padding:3px}
+.seg button{appearance:none;border:0;background:transparent;color:var(--ink-2);
+  font:600 12px/1 inherit;padding:7px 13px;border-radius:12px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.seg button:focus-visible{outline:2px solid var(--annot);outline-offset:2px}
+
+.wrap{max-width:1240px;margin:0 auto;padding:22px 26px 80px;
+  display:grid;grid-template-columns:210px minmax(0,1fr) 288px;gap:22px;align-items:start}
+@media (max-width:1080px){.wrap{grid-template-columns:1fr;}.rail-col{order:2}.stage-col{order:1}.side-col{order:3}}
+
+/* ---- journey rail ---- */
+.rail-col{position:sticky;top:16px}
+.chap{display:flex;gap:9px;align-items:flex-start;width:100%;text-align:left;appearance:none;
+  background:transparent;border:0;padding:7px 8px;border-radius:7px;cursor:pointer;color:var(--ink-2);
+  font:inherit;font-size:12.5px;line-height:1.35}
+.chap:hover{background:var(--surface)}
+.chap:focus-visible{outline:2px solid var(--annot);outline-offset:1px}
+.chap[aria-current="step"]{background:var(--surface);color:var(--ink);font-weight:650;box-shadow:var(--shadow)}
+.chap .pip{width:16px;height:16px;border-radius:50%;flex:none;margin-top:1px;
+  border:2px solid var(--line-strong);background:var(--surface);display:grid;place-items:center;
+  font:700 9px/1 ui-monospace,monospace;color:var(--ink-3)}
+.chap[data-done="1"] .pip{background:var(--have);border-color:var(--have);color:#fff}
+.chap[aria-current="step"] .pip{border-color:var(--annot);color:var(--annot)}
+:root[data-theme="dark"] .chap[data-done="1"] .pip{color:#0e1a14}
+
+/* ---- phone ---- */
+.stage-col{display:flex;flex-direction:column;align-items:center;gap:14px}
+.phone{width:300px;border:9px solid var(--ink);border-radius:30px;overflow:hidden;
+  background:var(--surface);box-shadow:0 8px 30px rgba(0,0,0,.13)}
+:root[data-theme="dark"] .phone{border-color:#3a3a42;box-shadow:0 8px 30px rgba(0,0,0,.5)}
+.status{height:22px;display:flex;align-items:center;padding:0 13px;font:600 10px/1 inherit;
+  color:var(--ink-3);background:var(--surface);border-bottom:1px solid var(--line)}
+.appbar{display:flex;align-items:center;gap:7px;padding:9px 12px;border-bottom:1px solid var(--line);
+  background:var(--surface-2);min-height:38px}
+.appbar .t{font-size:11.5px;font-weight:700}
+.screen{padding:13px;display:flex;flex-direction:column;gap:9px;min-height:392px;background:var(--surface)}
+.narr{max-width:300px;font-size:12px;line-height:1.5;color:var(--ink-2);text-align:center}
+.narr b{color:var(--annot)}
+
+/* ---- ui atoms ---- */
+.txt{font-size:11.5px;color:var(--ink-2);line-height:1.45}
+.txt b{color:var(--ink);font-weight:650}
+.box{background:var(--surface-2);border:1px solid var(--line);border-radius:7px;padding:10px;
+  display:flex;flex-direction:column;gap:7px}
+.box.solid{background:var(--fill-2)}
+.bar{height:9px;background:var(--fill);border-radius:3px}
+.sq{background:var(--fill);border-radius:6px}
+.act{appearance:none;width:100%;font:700 11.5px/1 inherit;padding:11px 10px;border-radius:7px;
+  cursor:pointer;background:var(--ink);color:var(--surface);border:1px solid var(--ink)}
+.act.sec{background:var(--surface);color:var(--ink-2);border-color:var(--line-strong)}
+.act.link{background:transparent;border:0;color:var(--annot);padding:4px;width:auto;font-weight:600}
+.act:focus-visible{outline:2px solid var(--annot);outline-offset:2px}
+.act:disabled{opacity:.42;cursor:not-allowed}
+.inp{width:100%;border:1px solid var(--line-strong);border-radius:7px;padding:10px;
+  font:11.5px inherit;background:var(--surface);color:var(--ink)}
+.inp:focus-visible{outline:2px solid var(--annot);outline-offset:1px}
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;letter-spacing:.04em;
+  text-transform:uppercase;padding:4px 8px;border-radius:5px;border:1px solid var(--line-strong);
+  color:var(--ink-2);background:var(--surface-2);align-self:flex-start}
+.chip.warn{color:var(--flag);background:var(--flag-bg);border-color:var(--flag-line)}
+.chip.pos{color:var(--have);background:var(--have-bg);border-color:var(--have-line)}
+.chip.info{color:var(--annot);background:var(--annot-bg);border-color:var(--annot-line)}
+.prog{height:6px;border-radius:3px;background:var(--fill);overflow:hidden}
+.prog i{display:block;height:100%;background:var(--ink-3);transition:width .6s ease}
+.opt{border:1px solid var(--line-strong);border-radius:7px;padding:10px;font-size:11.5px;
+  color:var(--ink-2);cursor:pointer;background:var(--surface)}
+.opt:hover{background:var(--fill-2)}
+.opt[aria-pressed="true"]{border-color:var(--ink);background:var(--fill);color:var(--ink);font-weight:600}
+.opt:focus-visible{outline:2px solid var(--annot);outline-offset:2px}
+.softwarn{border:1px solid var(--flag-line);background:var(--flag-bg);color:var(--flag);
+  border-radius:7px;padding:9px;font-size:11px;line-height:1.45;display:flex;gap:7px;align-items:center}
+.softwarn.ok{color:var(--have);background:var(--have-bg);border-color:var(--have-line)}
+.spin{width:14px;height:14px;border-radius:50%;border:2px solid var(--flag-line);
+  border-top-color:var(--flag);animation:spin .8s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation-duration:2.4s}}
+.frame{flex:1;border:1px dashed var(--annot-line);background:var(--fill-2);border-radius:7px;
+  padding:10px;display:flex;flex-direction:column;gap:8px}
+.nd{border:1.5px dashed var(--flag-line);border-radius:7px;padding:11px;display:flex;
+  flex-direction:column;gap:7px;background:repeating-linear-gradient(135deg,transparent,transparent 9px,var(--flag-bg) 9px,var(--flag-bg) 18px)}
+.nd .why{font-size:11px;line-height:1.45;color:var(--ink-2);background:var(--surface);
+  border:1px solid var(--flag-line);border-radius:6px;padding:9px}
+.nd .why b{color:var(--flag)}
+
+/* ---- side ---- */
+.side-col{position:sticky;top:16px;display:flex;flex-direction:column;gap:12px}
+.deck{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:13px}
+.deck .lbl{margin-bottom:9px}
+.deck.proto{border-color:var(--annot-line);background:var(--annot-bg)}
+.deck.proto .lbl{color:var(--annot)}
+.deck-row{display:flex;flex-wrap:wrap;gap:6px}
+.dbtn{appearance:none;font:600 11.5px/1 inherit;padding:8px 10px;border-radius:6px;cursor:pointer;
+  border:1px solid var(--line-strong);background:var(--surface);color:var(--ink-2)}
+.dbtn:hover{background:var(--fill-2);color:var(--ink)}
+.dbtn:focus-visible{outline:2px solid var(--annot);outline-offset:2px}
+.dbtn[aria-pressed="true"]{background:var(--annot);border-color:var(--annot);color:#fff}
+:root[data-theme="dark"] .dbtn[aria-pressed="true"]{color:#16121f}
+.dbtn.warn{border-color:var(--flag-line);color:var(--flag);background:var(--flag-bg)}
+.dbtn:disabled{opacity:.4;cursor:not-allowed}
+.dbtn.wide{flex:1 1 100%;text-align:left}
+.kv{display:flex;justify-content:space-between;gap:10px;font-size:11.5px;padding:5px 0;
+  border-bottom:1px dashed var(--line)}
+.kv:last-child{border-bottom:0}
+.kv span{color:var(--ink-3)}
+.kv b{color:var(--ink);font-weight:650;text-align:right}
+.kv.hot b{color:var(--annot)}
+.why-note{font-size:11.5px;line-height:1.5;color:var(--ink-2);border-left:2px solid var(--annot-line);
+  padding:2px 0 2px 10px}
+.why-note b{color:var(--annot)}
+.foot{max-width:1240px;margin:0 auto;padding:0 26px 60px;font-size:12px;color:var(--ink-3);max-width:76ch}
+</style>
+</head>
+<body>
+
+<header class="mast">
+  <div class="mast-in">
+    <span class="eyebrow">Colibri FinServ · XCEL LMS</span>
+    <h1>Learner walk-through — invite to licence</h1>
+    <p>One learner, one unbroken arc. What you do early is visible later: the date you pick builds the plan, the chapters you finish move the progress, a failed attempt re-anchors the schedule. Lo-fi throughout — structure, not visual design.</p>
+    <div class="meta">
+      <span><b>Learner:</b> Jordan Rivera · newly recruited, not yet contracted</span>
+      <span><b>Product:</b> Life &amp; Health Pre-Licensing · Texas</span>
+      <span><b>Also:</b> <a href="/prototypes/xcel-lms-desktop.html">desktop platform</a> · <a href="/prototypes/xcel-lms-wireframes.html">wireframes &amp; overlap</a> · <a href="/prototypes/xcel-lms-exam-spec.html">exam task-type spec</a></span>
+      <span class="seg" role="group" aria-label="Theme" style="margin-left:auto">
+        <button type="button" id="t-light" aria-pressed="true">Light</button>
+        <button type="button" id="t-dark" aria-pressed="false">Dark</button>
+      </span>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+
+  <div class="rail-col">
+    <div class="lbl" style="padding:0 8px 8px">The journey</div>
+    <nav id="rail" aria-label="Journey chapters"></nav>
+  </div>
+
+  <div class="stage-col">
+    <div class="phone">
+      <div class="status"><span id="ph-time">9:41</span>
+        <span id="ph-net" style="margin-left:auto"></span></div>
+      <div class="appbar" id="ph-bar"></div>
+      <div class="screen" id="ph"></div>
+    </div>
+    <p class="narr" id="narr"></p>
+  </div>
+
+  <div class="side-col">
+    <div class="deck">
+      <div class="lbl">What the product knows</div>
+      <div id="inspect"></div>
+    </div>
+    <div class="deck">
+      <div class="lbl">Why this screen is like this</div>
+      <div class="why-note" id="why"></div>
+    </div>
+    <div class="deck proto">
+      <div class="lbl">Prototype controls</div>
+      <div class="deck-row" id="proto"></div>
+      <p class="txt" style="margin:9px 0 0;color:var(--ink-3)">Nothing in this violet panel is product UI. These exist because a walk-through cannot wait three weeks for a date to arrive.</p>
+    </div>
+    <div class="deck proto">
+      <div class="deck-row">
+        <button type="button" class="dbtn wide" id="restart">Start the journey over</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<p class="foot">Companion to the FinServ <em>Learner and Admin Wireframe Brief</em>. Four moments are deliberately drawn as hatched holes rather than filled in — each names what it is blocked on. Admin flows are not covered here.</p>
+
+<script>
+(function(){
+'use strict';
+/* ---------------- theme ---------------- */
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  document.getElementById('t-light').setAttribute('aria-pressed',String(t==='light'));
+  document.getElementById('t-dark').setAttribute('aria-pressed',String(t==='dark'));
+  try{localStorage.setItem('xcel.wt.theme',t);}catch(e){}
+}
+document.getElementById('t-light').onclick=function(){setTheme('light');};
+document.getElementById('t-dark').onclick=function(){setTheme('dark');};
+var th='light'; try{var s=localStorage.getItem('xcel.wt.theme'); if(s==='dark'||s==='light') th=s;}catch(e){}
+setTheme(th);
+
+/* ---------------- dates ---------------- */
+var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var LONG=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function i2d(s){var p=s.split('-');return new Date(Date.UTC(+p[0],+p[1]-1,+p[2]));}
+function d2i(d){return d.toISOString().slice(0,10);}
+function add(s,n){var d=i2d(s);d.setUTCDate(d.getUTCDate()+n);return d2i(d);}
+function days(a,b){return Math.round((i2d(b)-i2d(a))/864e5);}
+function fmt(s,l){var d=i2d(s);return d.getUTCDate()+' '+(l?LONG:MON)[d.getUTCMonth()]+' '+d.getUTCFullYear();}
+function mmss(x){var m=Math.floor(x/60),r=x%60;return m+':'+(r<10?'0':'')+r;}
+
+/* ---------------- state ---------------- */
+var START='2026-08-31', TOTAL=12;
+var L, timer=null, fadeT=null, saveT=null, enterT=null;
+
+function reset(){
+  clearInterval(timer); clearTimeout(fadeT); clearTimeout(saveT); clearTimeout(enterT);
+  timer=null;
+  L={
+    scene:'invite', today:START, email:'', name:'Jordan',
+    account:false, windowEnds:add(START,30),
+    target:null, planDays:0,
+    done:0, practice:0,
+    sim:{n:1,sec:0,run:false,net:'ok',pending:0,sel:-1,msg:null,score:null,dead:false,taken:false},
+    readiness:null,
+    attempts:[], cert:false,
+    exitPending:false, pct:0
+  };
+}
+function pct(){ return Math.round(L.done/TOTAL*100); }
+function attempt(){ if(!L.attempts.length) return null;
+  for(var i=L.attempts.length-1;i>=0;i--){ if(!L.attempts[i].outcome) return L.attempts[i]; }
+  return L.attempts[L.attempts.length-1]; }
+
+/* ---------------- chapters (the rail) ---------------- */
+var CHAPTERS=[
+  ['Arrive',      ['invite','landing','email','wait']],
+  ['First run',   ['welcome','settarget','planbuilt']],
+  ['Study',       ['home','handover','course','exiting']],
+  ['Practice',    ['practice','practiceresult']],
+  ['Exam sim',    ['simintro','sim','simresult']],
+  ['Readiness',   ['readiness']],
+  ['Book it',     ['book','booked']],
+  ['Sit it',      ['awaiting','record','failed','retake']],
+  ['Licensed',    ['passed','records']]
+];
+function chapterOf(sc){
+  for(var i=0;i<CHAPTERS.length;i++) if(CHAPTERS[i][1].indexOf(sc)>=0) return i;
+  return 0;
+}
+
+/* ---------------- narration + rationale ---------------- */
+var NARR={
+  invite:'An email from the agency. Nothing of ours has been seen yet.',
+  landing:'Pre-attributed and anonymous. This is the highest-abandonment moment in the product.',
+  email:'The only field in the whole arrival flow.',
+  wait:'A designed wait, with a repair for each way it fails.',
+  welcome:'The account was created silently, at the last viable step.',
+  settarget:'The one input that shapes everything after it.',
+  planbuilt:'The plan is derived from the target date, backwards.',
+  home:'The everyday screen. One product, one deadline, one next thing.',
+  handover:'The boundary. A real wait, tracked as a metric.',
+  course:'Compass renders this, inside our container.',
+  exiting:'Coming back. Progress arrives a beat late and says so.',
+  practice:'A course-linked task — the LMS completes it, the learner does not.',
+  practiceresult:'Practice feeds readiness. It is not a gate.',
+  simintro:'Unlocked by coursework, not by a date.',
+  sim:'The set piece. Break it with the controls on the right.',
+  simresult:'A simulation result, not a verdict.',
+  readiness:'Probabilistic, and it has to say so without discouraging.',
+  book:'The exam is external. We capture what the provider told them.',
+  booked:'The plan re-anchors to the real date.',
+  awaiting:'Derived: the sit date passed, no outcome recorded.',
+  record:'Pass or fail. Not "mark as complete".',
+  failed:'The case handled badly everywhere in this market.',
+  retake:'Re-anchor, rebuild, carry the history.',
+  passed:'The only terminal state in the whole arc.',
+  records:'Regulator-facing, and they may need it years from now.'
+};
+var WHY={
+  invite:'<b>No code, here or anywhere after.</b> Agency, course and price all ride in the link — a "enter your partner code" field is the pattern this product is explicitly designed without.',
+  landing:'<b>Proof before ask.</b> Everything the link knows is shown back first, and the single ask is a button that is not "create an account". Price is the strongest asset on the screen when the agency is paying.',
+  email:'<b>"A personal one is fine"</b> removes the hesitation of a recruit who has no work address yet — they are not contracted, and an email field reads as a request for one they do not have.',
+  wait:'<b>A known drop-off, so it carries three repairs</b> — wrong address, expired link, closed tab. The reassurance that the invite outlives the link is what stops a closed tab reading as a lost place.',
+  welcome:'<b>Account creation deferred to the last viable step,</b> and it happened without a form. The learner has been asked for exactly one thing: an email address.',
+  settarget:'<b>Target, not booking.</b> They cannot book yet — most will not have a seat for weeks — so the plan is built to an intention and re-anchors later when a real date arrives.',
+  planbuilt:'<b>Derived backwards from the date.</b> Changing the target rebuilds the plan, which is why the date is the only thing asked for here and everything else is inferred.',
+  home:'<b>Deadline pressure changes emphasis, not layout.</b> The same home serves a learner with one product and a learner with four; what moves is what is stressed, never where things are.',
+  handover:'<b>"You left off at question 6" is what separates a wait from a spinner.</b> It tells the learner the wait is doing something for them. Cancel is present so a slow hand-over is not a trap.',
+  course:'<b>Persistent shell.</b> Our chrome and the way back stay visible; Compass owns the canvas inside. Under a by-activity contract this same frame would go full-screen for an exam.',
+  exiting:'<b>Never a stale number, never a blank.</b> A stale percentage is a lie the learner can catch; a blank looks broken. "Updating…" is honest and calm.',
+  practice:'<b>Course-linked, so it auto-completes.</b> The learner never marks it done — which is exactly the distinction the licensing exam later breaks.',
+  practiceresult:'<b>Practice informs, it does not gate.</b> Blocking the exam sim on a practice score would turn a learning tool into an obstacle.',
+  simintro:'<b>Unlocked by coursework.</b> Gating on chapters rather than on a date means the learner earns it, and a learner behind schedule is not also locked out.',
+  sim:'<b>A slow save must never look like a lost session.</b> No spinner, no modal, no dimming, nothing that hides the question or stops the timer. The strip is the only thing that changes.',
+  simresult:'<b>A score with no verdict attached.</b> The number is theirs; the interpretation is the readiness signal, and conflating the two is how a practice result starts to feel like a prediction.',
+  readiness:'<b>"High" is not a promise and "low" is not a verdict.</b> So the band states its basis, gives a frequency rather than a probability, and names what moves it — the credibility comes from being falsifiable, not from being encouraging.',
+  book:'<b>We capture, we do not integrate.</b> No seat lookup, no availability, no booking API — the learner types what the provider told them, and that is the honest scope.',
+  booked:'<b>One date, mirrored not duplicated.</b> The booking is the anchor, and the plan is rebuilt from it — two copies of one date is how a schedule and a countdown start to disagree.',
+  awaiting:'<b>Derived, not stored,</b> and phrased as a favour to them rather than a task we are owed. One prompt, not a nag.',
+  record:'<b>The verb is "Record result".</b> Every other task here is binary; an exam resolves to an outcome, and fail is not incomplete.',
+  failed:'<b>Warning family, never error.</b> Error is for something the product got wrong. No confirm dialog, no red, no scolding — and the way forward is already on screen.',
+  retake:'<b>The previous attempt stays.</b> A learner who fails then passes owns both, and the record is theirs before it is ours.',
+  passed:'<b>No primary action, deliberately.</b> A CTA here would be the product asking for something at the moment the learner is finally done with it.',
+  records:'<b>Regulator-facing.</b> They may need to produce this years later, which is why it is a record rather than a congratulation.'
+};
+
+/* ---------------- element refs ---------------- */
+var ph=document.getElementById('ph'), bar=document.getElementById('ph-bar'),
+    net=document.getElementById('ph-net'), rail=document.getElementById('rail'),
+    insp=document.getElementById('inspect'), why=document.getElementById('why'),
+    narr=document.getElementById('narr'), proto=document.getElementById('proto');
+
+/* ---------------- scenes ---------------- */
+function appbar(title,sub){
+  return '<div style="flex:1;min-width:0"><div class="t">'+title+'</div>'+
+    (sub?'<div class="txt" style="font-size:10px;color:var(--ink-3)">'+sub+'</div>':'')+'</div>';
+}
+function planLine(){
+  return '<div class="box"><div class="lbl">Your plan</div>'+
+    '<div class="prog"><i style="width:'+pct()+'%"></i></div>'+
+    '<div class="txt">'+L.done+' of '+TOTAL+' chapters · <b>'+pct()+'%</b></div></div>';
+}
+function deadlineChip(){
+  var a=attempt();
+  if(a&&!a.outcome){ var d=days(L.today,a.date);
+    return '<div class="chip '+(d<=7?'warn':'')+'">Exam '+(d<0?'was '+fmt(a.date):'in '+d+' day'+(d===1?'':'s'))+'</div>'; }
+  if(L.target){ var t=days(L.today,L.target);
+    return '<div class="chip '+(t<=7?'warn':'')+'">Target exam in '+t+' days</div>'; }
+  return '<div class="chip warn">Course window ends in '+days(L.today,L.windowEnds)+' days</div>';
+}
+
+var SCENES={
+invite:function(){
+  bar.innerHTML=appbar('Mail','Inbox');
+  return '<div class="lbl">From your agency</div>'+
+   '<div class="bar" style="width:84%"></div><div class="bar" style="width:60%"></div>'+
+   '<div class="box"><div class="txt"><b>Meridian Insurance Group</b> has enrolled you in Life &amp; Health Pre-Licensing.</div>'+
+   '<button class="act" data-go="landing">Start your course</button></div>'+
+   '<div class="txt" style="color:var(--ink-3)">The link carries your agency, your course and your price.</div>';
+},
+landing:function(){
+  bar.innerHTML=appbar('XCEL','Not signed in');
+  return '<div class="chip">Enrolled by Meridian Insurance Group</div>'+
+   '<div class="txt" style="font-size:14px"><b>Life &amp; Health Pre-Licensing</b></div>'+
+   '<div class="txt">Texas · 40 hours · online</div>'+
+   '<div style="display:flex;gap:8px"><div class="box" style="flex:1"><div class="lbl">Your price</div>'+
+   '<div class="txt"><b>Paid by your agency</b></div></div>'+
+   '<div class="box" style="flex:1"><div class="lbl">Window</div><div class="txt"><b>30 days</b></div></div></div>'+
+   '<button class="act" data-go="email">Begin — we’ll email you a link</button>'+
+   '<div class="txt" style="color:var(--ink-3)">No password to create.</div>';
+},
+email:function(){
+  bar.innerHTML=appbar('XCEL','Not signed in');
+  return '<div class="txt" style="font-size:14px"><b>Where should we send your link?</b></div>'+
+   '<div class="txt">Use any email you check — a personal one is fine.</div>'+
+   '<input class="inp" id="f-email" type="email" placeholder="you@example.com" value="'+(L.email||'')+'">'+
+   '<button class="act" data-act="sendlink">Send my link</button>'+
+   '<div class="txt" style="color:var(--ink-3)">No password. No “continue with Google”.</div>';
+},
+wait:function(){
+  bar.innerHTML=appbar('XCEL','Not signed in');
+  return '<div class="sq" style="width:34px;height:34px"></div>'+
+   '<div class="txt" style="font-size:14px"><b>Check your email</b></div>'+
+   '<div class="txt">We sent a link to <b>'+L.email+'</b>. It works for 30 minutes.</div>'+
+   (L.expired?'<div class="softwarn"><b>That link expired.</b> Your invite is still valid — we can send a fresh one.</div>':'')+
+   '<button class="act sec" data-act="resend">'+(L.expired?'Send a new link':'Resend')+'</button>'+
+   '<button class="act sec" data-go="email">Use a different email</button>'+
+   '<div class="softwarn">Nothing is lost if you close this — your invite stays valid.</div>'+
+   '<button class="act sec" data-act="clicklink" style="border-style:dashed;color:var(--annot);border-color:var(--annot-line)">↳ Simulate: I clicked the link</button>';
+},
+welcome:function(){
+  bar.innerHTML=appbar('Welcome','Account created');
+  return '<div class="chip pos">Signed in</div>'+
+   '<div class="txt" style="font-size:14px"><b>Welcome, '+L.name+'</b></div>'+
+   '<div class="txt">Your account is set up. We only ever asked for your email.</div>'+
+   deadlineChip()+
+   '<div class="box solid"><div class="lbl">Start here</div>'+
+   '<div class="txt"><b>Life &amp; Health Pre-Licensing</b> · not started</div></div>'+
+   '<div class="box"><div class="lbl">First</div><div class="txt">Set a target exam date and we’ll build your study plan.</div>'+
+   '<button class="act" data-go="settarget">Set my target date</button></div>';
+},
+settarget:function(){
+  bar.innerHTML=appbar('Target date','Step 1 of 1');
+  var def=L.target||add(L.today,35);
+  return '<div class="txt" style="font-size:14px"><b>When do you want to sit the exam?</b></div>'+
+   '<div class="txt">A best guess is fine — you can change it when you book, and your plan will rebuild.</div>'+
+   '<input class="inp" type="date" id="f-target" value="'+def+'">'+
+   '<div class="softwarn">Your course window closes '+fmt(L.windowEnds)+'.</div>'+
+   '<button class="act" data-act="buildplan">Build my plan</button>';
+},
+planbuilt:function(){
+  bar.innerHTML=appbar('Your plan','Life &amp; Health');
+  return '<div class="chip pos">Plan ready</div>'+
+   '<div class="txt" style="font-size:14px"><b>'+L.planDays+' study days</b></div>'+
+   '<div class="txt">Working back from <b>'+fmt(L.target,1)+'</b>, five days a week.</div>'+
+   '<div class="box"><div class="lbl">Chapter 1 · today</div>'+
+   '<div class="txt">Watch · Read · Chapter quiz</div>'+
+   '<div class="txt" style="color:var(--ink-3)">About 1 hr 45</div></div>'+
+   '<button class="act" data-go="home">Go to my course</button>';
+},
+home:function(){
+  bar.innerHTML=appbar('Home','Life &amp; Health · Texas');
+  var ready=L.done>=8, h='';
+  h+=deadlineChip()+planLine();
+  if(L.done>=TOTAL && !L.attempts.length){
+    h+='<div class="box solid"><div class="lbl">Coursework complete</div>'+
+       '<div class="txt">Time to book your licensing exam.</div>'+
+       '<button class="act" data-go="book">Book my exam</button></div>';
+  } else if(ready && !L.sim.taken){
+    h+='<div class="box solid"><div class="chip info">Unlocked</div>'+
+       '<div class="txt"><b>Exam simulation</b> · 60 questions, 90 minutes</div>'+
+       '<button class="act" data-go="simintro">Take the simulation</button></div>'+
+       '<div class="box"><div class="lbl">Or keep going</div>'+
+       '<div class="txt">Chapter '+(L.done+1)+' of '+TOTAL+'</div>'+
+       '<button class="act sec" data-go="handover">Continue course</button></div>';
+  } else {
+    h+='<div class="box solid"><div class="lbl">Today</div>'+
+       '<div class="txt"><b>Chapter '+(L.done+1)+'</b> · Watch · Read · Quiz</div>'+
+       '<button class="act" data-go="handover">Continue course</button></div>';
+    if(L.done>=4&&!L.practice) h+='<div class="box"><div class="lbl">Also due</div>'+
+       '<div class="txt">Progress Exam 1</div>'+
+       '<button class="act sec" data-go="practice">Start</button></div>';
+  }
+  if(L.readiness) h+='<div class="box"><div class="lbl">Readiness</div>'+
+     '<div class="txt"><b>'+L.readiness+'</b></div>'+
+     '<button class="act link" data-go="readiness">What this means</button></div>';
+  if(L.cert) h+='<div class="box"><div class="lbl">Records</div>'+
+     '<button class="act sec" data-go="records">View my certificate</button></div>';
+  return h;
+},
+handover:function(){
+  bar.innerHTML=appbar('Opening chapter '+(L.done+1),'Handing over');
+  return '<div style="flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:11px;text-align:center">'+
+   '<div class="spin"></div>'+
+   '<div class="txt" style="font-size:13px"><b>Opening Chapter '+(L.done+1)+'</b></div>'+
+   '<div class="prog" style="width:78%"><i id="hv-p" style="width:8%"></i></div>'+
+   '<div class="txt">Loading your place — you left off at question 6.</div>'+
+   '<button class="act sec" data-go="home" style="width:auto">Cancel</button></div>';
+},
+course:function(){
+  bar.innerHTML='<button class="act link" data-go="exiting" style="padding:0">← Back</button>'+
+    appbar('Chapter '+(L.done+1),'Compass');
+  return '<div class="frame"><div class="lbl" style="color:var(--annot)">Compass renders this</div>'+
+   '<div class="txt" style="font-size:12px"><b>Policy provisions and riders</b></div>'+
+   '<div class="bar" style="width:100%"></div><div class="bar" style="width:93%"></div>'+
+   '<div class="bar" style="width:86%"></div><div class="bar" style="width:64%"></div>'+
+   '<div class="bar" style="width:90%"></div><div class="bar" style="width:72%"></div>'+
+   '<div style="margin-top:auto;display:flex;gap:7px">'+
+   '<button class="act sec" style="flex:1">Previous</button>'+
+   '<button class="act" style="flex:1" data-act="finishch">Complete chapter</button></div></div>'+
+   '<div class="txt" style="color:var(--ink-3);text-align:center">Our chrome is still above. The way back never left.</div>';
+},
+exiting:function(){
+  bar.innerHTML=appbar('Home','Life &amp; Health · Texas');
+  return '<div class="chip pos">Chapter '+L.done+' complete</div>'+
+   '<div class="txt" style="font-size:13px"><b>Nice work</b></div>'+
+   '<div class="box"><div class="lbl">Course progress</div>'+
+   '<div class="prog"><i id="ex-bar" style="width:'+L.pct+'%"></i></div>'+
+   '<div class="txt" id="ex-txt" style="color:var(--ink-3)">Updating…</div></div>'+
+   '<div class="box"><div class="lbl">Up next</div>'+
+   '<div class="txt"><b>Chapter '+Math.min(TOTAL,L.done+1)+'</b></div></div>'+
+   '<button class="act sec" data-go="home">Back to home</button>';
+},
+practice:function(){
+  bar.innerHTML=appbar('Progress Exam 1','Compass');
+  return '<div class="frame"><div class="lbl" style="color:var(--annot)">Compass renders this</div>'+
+   '<div class="txt" style="font-size:12px"><b>20 questions · no time limit</b></div>'+
+   '<div class="bar" style="width:96%"></div><div class="bar" style="width:88%"></div>'+
+   '<div class="bar" style="width:70%"></div>'+
+   '<div style="margin-top:auto"><button class="act" data-act="finishpractice">Submit</button></div></div>';
+},
+practiceresult:function(){
+  bar.innerHTML=appbar('Progress Exam 1','Complete');
+  return '<div class="chip pos">Completed automatically</div>'+
+   '<div class="txt" style="font-size:14px"><b>17 of 20</b></div>'+
+   '<div class="txt">You did not mark this done — the course did, because it knows you finished it.</div>'+
+   '<div class="box"><div class="lbl">Weakest area</div><div class="txt">Annuity suitability</div></div>'+
+   '<button class="act" data-go="home">Back to home</button>';
+},
+simintro:function(){
+  bar.innerHTML=appbar('Exam simulation','Before you start');
+  return '<div class="txt" style="font-size:14px"><b>60 questions · 90 minutes</b></div>'+
+   '<div class="txt">Timed, like the real thing. You can stop and come back — your answers are kept.</div>'+
+   '<div class="softwarn">Find a quiet 90 minutes if you can. If you get interrupted, nothing is lost.</div>'+
+   '<button class="act" data-act="startsim">Start the simulation</button>'+
+   '<button class="act sec" data-go="home">Not now</button>';
+},
+sim:function(){
+  bar.innerHTML='<div style="flex:1"><div class="t">Q '+L.sim.n+' / 60</div></div>'+
+    '<span class="chip '+(L.sim.sec<300?'warn':'')+'" style="padding:3px 7px">'+mmss(L.sim.sec)+' left</span>';
+  var m=L.sim.msg, h='';
+  if(m){
+    if(m.k==='nd') h='<div class="nd"><span class="lbl" style="color:var(--flag)">Not designed</span><div class="why">'+m.t+'</div></div>';
+    else if(m.k==='ok') h='<div class="softwarn ok">'+m.t+'</div>';
+    else if(m.k==='spin') h='<div class="softwarn"><span class="spin"></span><span>'+m.t+'</span></div>';
+    else h='<div class="softwarn">'+m.t+'</div>';
+  }
+  var opts=['Guaranteed renewable','Non-cancellable','Conditionally renewable','Optionally renewable'];
+  h+='<div class="txt">Which provision prevents the insurer from changing the premium?</div>'+
+    opts.map(function(o,i){return '<div class="opt" role="button" tabindex="0" data-opt="'+i+'" aria-pressed="'+(L.sim.sel===i)+'">'+o+'</div>';}).join('')+
+    '<div style="margin-top:auto;display:flex;flex-direction:column;gap:7px">'+
+    '<button class="act" data-act="simnext"'+(L.sim.dead?' disabled':'')+'>'+(L.sim.dead?'Unavailable':'Next question')+'</button>'+
+    '<button class="act sec" data-act="simsubmit"'+(L.sim.dead?' disabled':'')+'>Submit simulation</button></div>';
+  return h;
+},
+simresult:function(){
+  bar.innerHTML=appbar('Simulation complete','');
+  return '<div class="txt" style="font-size:16px"><b>'+L.sim.score+' of 60</b></div>'+
+   '<div class="txt">'+Math.round(L.sim.score/60*100)+'% · the real exam passes at 70%.</div>'+
+   (L.sim.pendingSaved?'<div class="softwarn ok"><b>Every answer you gave was saved</b>, including the ones you answered offline.</div>':'')+
+   '<div class="box"><div class="lbl">Weakest areas</div>'+
+   '<div class="txt">Annuity suitability · Policy provisions</div></div>'+
+   '<button class="act" data-go="readiness">See what this means</button>';
+},
+readiness:function(){
+  bar.innerHTML=appbar('Readiness','Estimated');
+  var r=L.readiness||'Medium';
+  return '<div class="chip info">'+r+'</div>'+
+   '<div class="txt" style="font-size:14px"><b>You’re on the edge of ready.</b></div>'+
+   '<div class="txt">Based on <b>340 practice questions</b>, weighted the way the exam is weighted.</div>'+
+   '<div class="box"><div class="lbl">What this is</div>'+
+   '<div class="txt">An estimate, not a prediction. Of learners who sat at <b>'+r+'</b>, about <b>7 in 10</b> passed first time.</div></div>'+
+   '<div class="box"><div class="lbl">What would move it</div>'+
+   '<div class="txt">Annuity suitability is your weakest area by some way. Two sessions there moves most learners up a band.</div></div>'+
+   '<button class="act" data-go="home">Back to home</button>';
+},
+book:function(){
+  bar.innerHTML=appbar('Schedule your exam','');
+  var d=L.draftDate||add(L.today,21);
+  return '<div class="txt">Book with the provider first, then tell us what they gave you.</div>'+
+   '<div><div class="lbl" style="margin-bottom:4px">Exam date</div>'+
+   '<input class="inp" type="date" id="f-exam" value="'+d+'"></div>'+
+   '<div><div class="lbl" style="margin-bottom:4px">Provider</div>'+
+   '<input class="inp" id="f-prov" value="PSI"></div>'+
+   '<div><div class="lbl" style="margin-bottom:4px">Confirmation no. · optional</div>'+
+   '<input class="inp" value="PSI-4471-88203"></div>'+
+   (L.target&&days(L.target,d)<0?'<div class="softwarn">That’s earlier than the target your plan was built to. You can still save it — we’ll rebuild.</div>':'')+
+   '<button class="act" data-act="savebooking">Save</button>'+
+   (L.attempts.length?'<button class="act sec" data-go="home">Cancel</button>':'');
+},
+booked:function(){
+  var a=attempt();
+  bar.innerHTML=appbar('Booked','Attempt '+L.attempts.length);
+  return '<div class="chip pos">Exam booked</div>'+
+   '<div class="txt" style="font-size:14px"><b>'+fmt(a.date,1)+'</b></div>'+
+   '<div class="txt">'+a.prov+' · in '+days(L.today,a.date)+' days</div>'+
+   '<div class="box"><div class="lbl">Your plan rebuilt</div>'+
+   '<div class="txt"><b>'+L.planDays+' study days</b> to the new date</div>'+
+   (L.filtered?'<div class="txt" style="color:var(--ink-3)">Two longer plans don’t fit before then and have been left out.</div>':'')+'</div>'+
+   '<button class="act" data-go="home">Back to home</button>';
+},
+awaiting:function(){
+  var a=attempt();
+  bar.innerHTML=appbar('Your exam','');
+  return '<div class="chip">Awaiting result</div>'+
+   '<div class="txt" style="font-size:14px"><b>How did it go?</b></div>'+
+   '<div class="txt">You sat on <b>'+fmt(a.date,1)+'</b>. Tell us and we’ll update your records.</div>'+
+   '<button class="act" data-go="record">Record result</button>'+
+   '<button class="act sec" data-go="home">Later</button>';
+},
+record:function(){
+  bar.innerHTML=appbar('Record result','');
+  return '<div><div class="lbl" style="margin-bottom:5px">Outcome</div>'+
+   '<div style="display:flex;gap:7px">'+
+   '<button class="act sec" data-res="passed" style="flex:1'+(L.res==='passed'?';border-color:var(--ink);color:var(--ink)':'')+'">Passed</button>'+
+   '<button class="act sec" data-res="failed" style="flex:1'+(L.res==='failed'?';border-color:var(--ink);color:var(--ink)':'')+'">Not passed</button></div></div>'+
+   '<div><div class="lbl" style="margin-bottom:4px">Score · optional</div>'+
+   '<input class="inp" id="f-score" value="'+(L.scoreDraft||'')+'"></div>'+
+   '<div><div class="lbl" style="margin-bottom:4px">Notes · optional</div>'+
+   '<input class="inp" id="f-note" placeholder="Struggled on annuities"></div>'+
+   '<div class="txt" style="color:var(--ink-3)">We’ll record the date automatically.</div>'+
+   '<button class="act" data-act="saveresult"'+(L.res?'':' disabled')+'>Save result</button>';
+},
+failed:function(){
+  var a=L.attempts[L.attempts.length-1];
+  bar.innerHTML=appbar('Your exam','Attempt '+L.attempts.length);
+  return '<div class="chip warn">Not passed</div>'+
+   '<div class="txt" style="font-size:14px"><b>That’s a setback, not a stop.</b></div>'+
+   '<div class="box"><div class="txt">Attempt '+L.attempts.length+' · '+fmt(a.date)+(a.score?' · score '+a.score:'')+'</div>'+
+   '<div class="txt" style="color:var(--ink-3)">Your coursework, your progress and your hours are all unaffected.</div></div>'+
+   '<div class="box"><div class="lbl">Most learners</div>'+
+   '<div class="txt">pass on their second attempt. Annuity suitability is where you lost most marks.</div></div>'+
+   '<button class="act" data-go="retake">Schedule a retake</button>'+
+   '<button class="act sec" data-go="home">Not right now</button>';
+},
+retake:function(){
+  bar.innerHTML=appbar('Schedule a retake','Attempt '+(L.attempts.length+1));
+  var d=add(L.today,28);
+  return '<div class="txt">Book with PSI first, then tell us the new date.</div>'+
+   '<div><div class="lbl" style="margin-bottom:4px">New exam date</div>'+
+   '<input class="inp" type="date" id="f-exam" value="'+d+'"></div>'+
+   '<div class="nd"><span class="lbl" style="color:var(--flag)">Not designed</span>'+
+   '<div class="why"><b>Retake cooling-off is unresolved.</b> Most licences impose a waiting period before a re-sit. Until we know Texas’s, we cannot stop a learner booking inside it — and anchoring a plan to a date they cannot sit is worse than not offering the field.</div></div>'+
+   '<button class="act" data-act="savebooking">Save</button>';
+},
+passed:function(){
+  var a=L.attempts[L.attempts.length-1];
+  bar.innerHTML=appbar('Your exam','');
+  return '<div class="chip pos">Passed</div>'+
+   '<div class="txt" style="font-size:15px"><b>You passed.</b></div>'+
+   '<div class="box"><div class="txt"><b>'+fmt(a.date,1)+'</b>'+(a.score?' · score '+a.score:'')+'</div>'+
+   '<div class="txt" style="color:var(--ink-3)">Attempt '+L.attempts.length+' of '+L.attempts.length+' · added to your records</div></div>'+
+   '<button class="act sec" data-go="records">View my records</button>';
+},
+records:function(){
+  bar.innerHTML=appbar('Records','Jordan Rivera');
+  var h='<div class="box"><div class="chip pos">Licensed</div>'+
+   '<div class="txt" style="margin-top:4px"><b>Life &amp; Health · Texas</b></div>'+
+   '<div class="txt" style="color:var(--ink-3)">Passed '+fmt(L.attempts[L.attempts.length-1].date)+' · 40 hrs pre-licensing</div>'+
+   '<button class="act sec" style="margin-top:6px">Download certificate</button></div>'+
+   '<div class="box"><div class="lbl">Attempt history</div>'+
+   L.attempts.map(function(x,i){return '<div class="txt">'+(i+1)+' · '+fmt(x.date)+' · '+(x.outcome==='passed'?'passed':'not passed')+'</div>';}).join('')+
+   '</div>'+
+   '<div class="nd"><span class="lbl" style="color:var(--flag)">Not designed</span>'+
+   '<div class="why"><b>A second state.</b> This learner will licence in more states, each with its own hours, requirements and renewal dates. Whether that is one record with several licences or several records is a data-model question, not a layout one — and the brief lists how pre-migration CE is evidenced as still open.</div></div>';
+  return h;
+}
+};
+
+/* ---------------- prototype controls per scene ---------------- */
+function protoFor(sc){
+  var b=[];
+  if(sc==='wait') b.push(['expire','Expire the link','warn']);
+  if(sc==='home'&&L.done<TOTAL) b.push(['skip','Skip ahead 4 chapters','']);
+  if(sc==='home'&&L.done<TOTAL&&L.done>=8) b.push(['finishall','Finish the coursework','']);
+  if(sc==='handover') b.push(['slowhand','Slow hand-over (6s)','warn']);
+  if(sc==='sim'){
+    b.push(['slow','Slow save · 4s','warn']);
+    b.push(['veryslow','Very slow · 11s','warn']);
+    b.push(['offline','Go offline','warn']);
+    b.push(['online','Reconnect','']);
+    b.push(['bg','Take a call','warn']);
+    b.push(['dead','Compass unreachable','warn']);
+  }
+  if(sc==='booked'||sc==='home'){
+    var a=attempt();
+    if(a&&!a.outcome){ b.push(['toexam','Jump to exam day','']); }
+  }
+  if(!b.length) b.push([null,'Nothing to break on this screen','']);
+  return b.map(function(x){
+    return x[0]
+      ? '<button class="dbtn '+x[2]+'" data-p="'+x[0]+'">'+x[1]+'</button>'
+      : '<span class="txt" style="color:var(--ink-3)">'+x[1]+'</span>';
+  }).join('');
+}
+
+/* ---------------- render ---------------- */
+function go(sc){ L.scene=sc; render(); }
+function render(){
+  var sc=L.scene;
+  ph.innerHTML=SCENES[sc]();
+  narr.textContent=NARR[sc]||'';
+  why.innerHTML=WHY[sc]||'';
+  proto.innerHTML=protoFor(sc);
+  net.textContent = L.sim.net==='offline' ? 'No signal' : (L.sim.dead?'':'');
+  net.style.color = L.sim.net==='offline' ? 'var(--flag)' : 'var(--ink-3)';
+
+  // rail
+  var ci=chapterOf(sc);
+  rail.innerHTML=CHAPTERS.map(function(c,i){
+    return '<button class="chap" data-ch="'+i+'" '+(i===ci?'aria-current="step"':'')+
+      ' data-done="'+(i<ci?1:0)+'"><span class="pip">'+(i<ci?'✓':(i+1))+'</span>'+
+      '<span>'+c[0]+'</span></button>';
+  }).join('');
+
+  // inspector
+  var a=attempt();
+  var rows=[
+    ['Account', L.account?L.email:'none yet', L.account],
+    ['Target date', L.target?fmt(L.target):'not set', !!L.target],
+    ['Study plan', L.planDays?L.planDays+' days':'not built', !!L.planDays],
+    ['Chapters', L.done+' of '+TOTAL+' · '+pct()+'%', L.done>0],
+    ['Practice', L.practice?'1 complete':'none', !!L.practice],
+    ['Simulation', L.sim.score!=null?L.sim.score+'/60':'not taken', L.sim.score!=null],
+    ['Readiness', L.readiness||'—', !!L.readiness],
+    ['Exam booked', a?fmt(a.date):'no', !!a],
+    ['Attempts', L.attempts.length?L.attempts.length+'':'0', L.attempts.length>0],
+    ['Licence', L.cert?'Texas L&H':'not yet', L.cert],
+    ['Today is', fmt(L.today), false]
+  ];
+  insp.innerHTML=rows.map(function(r){
+    return '<div class="kv'+(r[2]?' hot':'')+'"><span>'+r[0]+'</span><b>'+r[1]+'</b></div>';
+  }).join('');
+
+  if(sc==='handover'){
+    var ms=L.slowHand?6000:1700, t0=Date.now(); L.slowHand=false;
+    clearTimeout(enterT);
+    (function step(){
+      var f=Math.min(1,(Date.now()-t0)/ms), p=document.getElementById('hv-p');
+      if(p) p.style.width=(8+f*92)+'%';
+      if(f<1){ enterT=setTimeout(step,60); }
+      else if(L.scene==='handover'){ go('course'); }
+    })();
+  }
+  if(sc==='exiting'){
+    clearTimeout(enterT);
+    enterT=setTimeout(function(){
+      L.pct=pct();
+      var b=document.getElementById('ex-bar'), t=document.getElementById('ex-txt');
+      if(b) b.style.width=L.pct+'%';
+      if(t) t.textContent=L.pct+'% complete';
+      why.innerHTML='<b>The number changed from what home said before you entered.</b> That is the whole continuity requirement — arriving a beat late and saying so, rather than lying in the meantime.';
+    },1800);
+  }
+}
+
+/* ---------------- interactions ---------------- */
+function setMsg(k,t,ttl){
+  clearTimeout(fadeT); L.sim.msg={k:k,t:t}; render();
+  if(ttl) fadeT=setTimeout(function(){ L.sim.msg=null; if(L.scene==='sim') render(); },ttl);
+}
+function saveRun(ms){
+  L.sim.net='saving'; L.sim.pending=Math.max(1,L.sim.pending);
+  setMsg('spin','Saving your answer… <b>keep going.</b>');
+  clearTimeout(saveT);
+  saveT=setTimeout(function(){
+    var n=L.sim.pending; L.sim.pending=0; L.sim.net='ok'; L.sim.pendingSaved=true;
+    setMsg('ok','<b>All '+n+' answer'+(n>1?'s':'')+' saved.</b>',3800);
+  },ms);
+}
+
+ph.addEventListener('click',function(e){
+  var o=e.target.closest('[data-opt]');
+  if(o&&!L.sim.dead){ L.sim.sel=+o.getAttribute('data-opt'); render(); return; }
+  var b=e.target.closest('button'); if(!b) return;
+  var go_=b.getAttribute('data-go'), act=b.getAttribute('data-act'), res=b.getAttribute('data-res');
+  if(res){ var sc=document.getElementById('f-score'); if(sc) L.scoreDraft=sc.value; L.res=res; render(); return; }
+  if(act==='sendlink'){ var f=document.getElementById('f-email');
+    L.email=(f&&f.value.trim())||'jordan.rivera@gmail.com'; L.expired=false; go('wait'); return; }
+  if(act==='resend'){ L.expired=false; go('wait'); return; }
+  if(act==='clicklink'){ L.account=true; go('welcome'); return; }
+  if(act==='buildplan'){ var t=document.getElementById('f-target');
+    L.target=(t&&t.value)||add(L.today,35);
+    L.planDays=Math.max(5,Math.round(days(L.today,L.target)*5/7));
+    go('planbuilt'); return; }
+  if(act==='finishch'){ L.done=Math.min(TOTAL,L.done+1); go('exiting'); return; }
+  if(act==='finishpractice'){ L.practice=1; go('practiceresult'); return; }
+  if(act==='startsim'){
+    L.sim.run=true; L.sim.sec=90*60; L.sim.n=1; L.sim.pending=0; L.sim.msg=null; L.sim.sel=-1;
+    clearInterval(timer);
+    timer=setInterval(function(){
+      if(L.sim.run&&L.sim.sec>0&&L.scene==='sim'){ L.sim.sec--; if(L.scene==='sim') render(); }
+    },1000);
+    go('sim'); return; }
+  if(act==='simnext'){
+    L.sim.n=Math.min(60,L.sim.n+1); L.sim.sel=-1;
+    if(L.sim.net==='offline'){ L.sim.pending++;
+      setMsg('warn','<b>You’re offline.</b> Your answers are saved on this phone and will sync when you reconnect. <b>'+L.sim.pending+' answer'+(L.sim.pending>1?'s':'')+' waiting.</b>');
+    } else if(L.sim.net==='saving'){ L.sim.pending++; render(); }
+    else render();
+    return; }
+  if(act==='simsubmit'){
+    clearInterval(timer); L.sim.run=false; L.sim.taken=true;
+    L.sim.score=41; L.readiness='Medium';
+    go('simresult'); return; }
+  if(act==='savebooking'){
+    var d=document.getElementById('f-exam'), p=document.getElementById('f-prov');
+    var date=(d&&d.value)||add(L.today,21);
+    L.attempts.push({date:date,prov:(p&&p.value)||'PSI'});
+    L.planDays=Math.max(3,Math.round(days(L.today,date)*5/7));
+    L.filtered=days(L.today,date)<30;
+    L.res=null; L.scoreDraft='';
+    go('booked'); return; }
+  if(act==='saveresult'){
+    var s2=document.getElementById('f-score'); var a2=attempt();
+    if(a2){ a2.outcome=L.res; a2.score=(s2&&s2.value)||''; }
+    if(L.res==='passed'){ L.cert=true; go('passed'); }
+    else go('failed');
+    return; }
+  if(go_){ go(go_); return; }
+});
+ph.addEventListener('keydown',function(e){
+  if(e.key!=='Enter'&&e.key!==' ') return;
+  var o=e.target.closest('[data-opt]'); if(!o||L.sim.dead) return;
+  e.preventDefault(); L.sim.sel=+o.getAttribute('data-opt'); render();
+});
+
+proto.addEventListener('click',function(e){
+  var b=e.target.closest('[data-p]'); if(!b) return;
+  var k=b.getAttribute('data-p');
+  if(k==='expire'){ L.expired=true; render(); }
+  else if(k==='skip'){ L.done=Math.min(TOTAL,L.done+4); render(); }
+  else if(k==='finishall'){ L.done=TOTAL; render(); }
+  else if(k==='slowhand'){ L.slowHand=true; go('handover'); }
+  else if(k==='slow'){ saveRun(4000); }
+  else if(k==='veryslow'){ saveRun(11000); }
+  else if(k==='offline'){ clearTimeout(saveT); L.sim.net='offline'; L.sim.pending=Math.max(1,L.sim.pending);
+    setMsg('warn','<b>You’re offline.</b> Your answers are saved on this phone and will sync when you reconnect. <b>'+L.sim.pending+' answer'+(L.sim.pending>1?'s':'')+' waiting.</b>'); }
+  else if(k==='online'){ if(L.sim.net!=='offline'){ setMsg('ok','<b>Connected.</b>',2200); } else saveRun(1400); }
+  else if(k==='bg'){ L.sim.sec=Math.max(0,L.sim.sec-120);
+    setMsg('warn','<b>Welcome back.</b> You were away 2 minutes. Your exam and your answers are exactly as you left them.',7000); }
+  else if(k==='dead'){ clearTimeout(saveT); L.sim.dead=true; L.sim.run=false;
+    setMsg('nd','<b>The recovery depends on what Compass can promise.</b> If the frame holds answers locally this is a wait. If it does not, this is data loss mid-exam — a different screen, a different apology, and a route to a re-sit. Drawing the optimistic version would repeat the August failure.'); }
+  else if(k==='toexam'){ var a=attempt(); if(a){ L.today=add(a.date,1); go('awaiting'); } }
+});
+
+rail.addEventListener('click',function(e){
+  var b=e.target.closest('[data-ch]'); if(!b) return;
+  var i=+b.getAttribute('data-ch'), ci=chapterOf(L.scene);
+  if(i<ci){ go(CHAPTERS[i][1][0]); }
+});
+
+document.getElementById('restart').onclick=function(){ reset(); render(); };
+
+reset(); render();
+})();
+</script>
+</body>
+</html>

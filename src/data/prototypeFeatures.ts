@@ -485,33 +485,41 @@ export type PrototypeFeature = {
  *  row's title, blurb or status has to be made in BOTH files until then.
  *
  *  ── WHERE THE PROTOTYPES COME FROM ───────────────────────────────────────
- *  `PROTOTYPE_BASE` points at the Common LMS project's LIVE Netlify deploy, not
- *  at a copy in `public/`. That is a deliberate choice over the snapshot
- *  approach the PartnerHub dashboard uses: the source files live in
- *  `jill-dashboard-ux-designs/explorations/finserv-learner-brief/` and are
- *  published by `./deploy-xcel-prototypes.sh` in that repo, so pointing at the
- *  deploy means the previews here always show the current build and
- *  `deploy-xcel-prototypes.sh` keeps working untouched.
+ *  Served from THIS repo's `public/prototypes/`. It used to point at the Common
+ *  LMS project's live Netlify deploy, on the reasoning that a pointer always
+ *  shows the current build while a snapshot can go stale. That was the better
+ *  argument right up until it met the deployment: BOTH sites are behind Netlify
+ *  password protection, and both return HTTP 401 to an unauthenticated request.
  *
- *  The cost, and it is real: this dashboard's previews now depend on that site
- *  staying up and staying frame-embeddable. Two ways it breaks silently —
- *    1. the origin changes (the site is renamed or moved between Netlify teams)
- *    2. that site starts sending `X-Frame-Options` / a `frame-ancestors` CSP,
- *       which would blank every iframe here with no error in this app
- *  Both are one-line fixes HERE (change the constant, or copy the files into
- *  `public/prototypes/` and point at that), which is why it is one constant.
+ *  An iframe here loading the other origin therefore needs a valid Netlify
+ *  session cookie ON THAT ORIGIN — which, inside an iframe, is a third-party
+ *  cookie. Safari blocks those outright and Chrome restricts them. So a
+ *  reviewer who has not separately signed in to the Common LMS site in the same
+ *  browser gets a password prompt inside every thumbnail, or a blank frame.
+ *  The old comment anticipated a silent break from `X-Frame-Options` / CSP; the
+ *  cause turned out to be auth, which no header check would have caught.
  *
- *  TODO(2026-09-04): revisit relocating the five prototype files, their four
- *  smoke tests and `deploy-xcel-prototypes.sh` INTO this repo, making it their
- *  real home and removing the cross-repo dependency entirely. Scheduled for
- *  review end of week.
+ *  Worth stating plainly, because it is easy to assume otherwise: a password on
+ *  THIS site never protected the prototypes. They were being served from a
+ *  different origin under its own separate password.
+ *
+ *  ── THE COST OF THE SNAPSHOT, WHICH IS REAL ──────────────────────────────
+ *  The files now exist in two repos and CAN DRIFT. Their real home is still
+ *  `jill-dashboard-ux-designs/explorations/finserv-learner-brief/`, published by
+ *  `./deploy-xcel-prototypes.sh` there — that script now copies into this repo
+ *  too, so the two stay in step as long as it is the thing that does the
+ *  copying. Copy a file by hand and you have started the drift it exists to
+ *  prevent.
+ *
+ *  TODO(2026-09-04): still the right endgame — relocate the prototype files,
+ *  their smoke tests and `deploy-xcel-prototypes.sh` INTO this repo, making it
+ *  their real home and removing the two-repo problem rather than managing it.
+ *  This change buys working previews in the meantime; it does not settle that.
  * ───────────────────────────────────────────────────────────────────────── */
 
-/** The Common LMS project's deployed origin, which publishes the XCEL
- *  prototypes under `/prototypes/`. One constant: swap it for
- *  `'/prototypes'` after copying the files into `public/`, and every row
- *  follows. */
-const PROTOTYPE_BASE = 'https://ux-lms-dashboard.netlify.app/prototypes'
+/** Served from this repo's own `public/prototypes/`. Same-origin, so it is
+ *  covered by this site's password rather than depending on another site's. */
+const PROTOTYPE_BASE = '/prototypes'
 
 export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
   {

@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XCEL LMS — Admin Wireframes &amp; Overlap</title>
+<style>
+:root{
+  --bg:#f4f4f5; --surface:#ffffff; --surface-2:#fafafa;
+  --line:#e4e4e7; --line-strong:#d4d4d8;
+  --fill:#ececef; --fill-2:#f4f4f5; --fill-3:#e0e0e4;
+  --ink:#18181b; --ink-2:#52525b; --ink-3:#6b6b74;
+  --annot:#5b4bbd; --annot-bg:#f1eefc; --annot-line:#cec6f2;
+  --flag:#8a5f00; --flag-bg:#fdf6e7; --flag-line:#e8d5a8;
+  --have:#1f6b4a; --have-bg:#e9f4ee; --have-line:#b8dcc8;
+  --err:#8f1d1d; --err-bg:#fbeaea; --err-line:#e8bcbc;
+  --shadow:0 1px 2px rgba(0,0,0,.05), 0 4px 12px rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131316; --surface:#1c1c20; --surface-2:#232328;
+    --line:#2e2e34; --line-strong:#3f3f46;
+    --fill:#2a2a30; --fill-2:#232328; --fill-3:#33333a;
+    --ink:#f4f4f5; --ink-2:#b4b4bd; --ink-3:#8b8b95;
+    --annot:#b0a3ff; --annot-bg:#231f38; --annot-line:#3b3363;
+    --flag:#e0b155; --flag-bg:#2a2318; --flag-line:#4a3d22;
+    --have:#6cc39a; --have-bg:#16261f; --have-line:#264c3a;
+    --err:#f0a0a0; --err-bg:#2b1414; --err-line:#4d2626;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 12px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131316; --surface:#1c1c20; --surface-2:#232328;
+  --line:#2e2e34; --line-strong:#3f3f46;
+  --fill:#2a2a30; --fill-2:#232328; --fill-3:#33333a;
+  --ink:#f4f4f5; --ink-2:#b4b4bd; --ink-3:#8b8b95;
+  --annot:#b0a3ff; --annot-bg:#231f38; --annot-line:#3b3363;
+  --flag:#e0b155; --flag-bg:#2a2318; --flag-line:#4a3d22;
+  --have:#6cc39a; --have-bg:#16261f; --have-line:#264c3a;
+  --err:#f0a0a0; --err-bg:#2b1414; --err-line:#4d2626;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 12px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:14px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1240px;margin:0 auto;padding:0 26px 96px}
+.prose{max-width:76ch}
+h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em}
+h1{font-size:29px;line-height:1.2}
+h2{font-size:21px;line-height:1.3}
+h3{font-size:16px;line-height:1.4}
+h4{font-size:13px;line-height:1.4}
+p{margin:0 0 12px}
+a{color:var(--annot)}
+code{font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--fill-2);
+  border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+.lbl{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+
+.mast{border-bottom:1px solid var(--line);background:var(--surface);margin-bottom:30px}
+.mast-in{max-width:1240px;margin:0 auto;padding:24px 26px 20px}
+.mast h1{margin:8px 0 10px}
+.meta{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:12.5px;color:var(--ink-2);margin-top:13px}
+.meta b{color:var(--ink);font-weight:600}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  padding:14px 0 0;border-top:1px solid var(--line);margin-top:16px}
+.seg{display:inline-flex;background:var(--fill-2);border:1px solid var(--line);border-radius:16px;padding:3px}
+.seg button{appearance:none;border:0;background:transparent;color:var(--ink-2);
+  font:600 12.5px/1 inherit;padding:8px 14px;border-radius:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.seg button:focus-visible{outline:2px solid var(--annot);outline-offset:2px}
+.ctl-label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+.mode-note{font-size:12.5px;color:var(--ink-2);margin-left:auto;max-width:44ch}
+
+.doc{display:flex;flex-direction:column;gap:44px}
+.sec-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
+  border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:18px}
+.sec-num{font:700 12px/1 ui-monospace,monospace;color:var(--ink-3);
+  border:1px solid var(--line-strong);border-radius:5px;padding:5px 7px}
+.lede{color:var(--ink-2);font-size:14.5px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px}
+.tscroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);
+  background:var(--surface-2);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;
+  letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:5px;border:1px solid;white-space:nowrap}
+.p-have{color:var(--have);background:var(--have-bg);border-color:var(--have-line)}
+.p-part{color:var(--flag);background:var(--flag-bg);border-color:var(--flag-line)}
+.p-none{color:var(--annot);background:var(--annot-bg);border-color:var(--annot-line)}
+.p-err{color:var(--err);background:var(--err-bg);border-color:var(--err-line)}
+.p-neu{color:var(--ink-2);background:var(--fill-2);border-color:var(--line-strong)}
+
+.callout{border:1px solid var(--annot-line);background:var(--annot-bg);border-radius:10px;
+  padding:15px 17px;font-size:13.5px;line-height:1.55;color:var(--ink-2)}
+.callout b{color:var(--ink)}
+.callout .eyebrow{color:var(--annot);margin-bottom:6px;display:block}
+
+/* ---------- stage ---------- */
+.stage{border:1px solid var(--annot-line);background:var(--annot-bg);border-radius:12px;
+  padding:16px;margin:18px 0 24px}
+.stage-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:13px}
+.stage-head .live{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--annot);
+  border:1px solid var(--annot-line);background:var(--surface);border-radius:5px;padding:4px 8px}
+.stage-head .live i{width:6px;height:6px;border-radius:50%;background:var(--annot);
+  display:inline-block;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.stage-head .live i{animation:none}}
+.stage-head .hint{font-size:12px;color:var(--ink-2);margin-left:auto;max-width:48ch;text-align:right}
+.app{background:var(--surface);border:1px solid var(--line-strong);border-radius:9px;overflow:hidden;
+  box-shadow:var(--shadow)}
+.app-bar{height:34px;background:var(--fill-2);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:9px;padding:0 12px;font-size:11.5px;color:var(--ink-3)}
+.app-body{padding:14px}
+.readout{font-size:12px;line-height:1.5;color:var(--ink-2);border-left:2px solid var(--annot-line);
+  padding:2px 0 2px 11px;margin-top:11px}
+.readout b{color:var(--annot)}
+
+.views{display:flex;gap:6px;flex-wrap:wrap}
+.vbtn{appearance:none;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink-2);
+  font:600 12px/1.3 inherit;padding:9px 12px;border-radius:7px;cursor:pointer;text-align:left}
+.vbtn:hover{background:var(--fill-2);color:var(--ink)}
+.vbtn[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.vbtn:focus-visible{outline:2px solid var(--annot);outline-offset:2px}
+.vbtn small{display:block;font-weight:400;font-size:10.5px;opacity:.75;margin-top:3px}
+
+.chips{display:flex;gap:5px;flex-wrap:wrap}
+.chip{appearance:none;border:1px solid var(--line-strong);background:var(--surface);color:var(--ink-2);
+  font:600 11px/1 inherit;padding:6px 10px;border-radius:13px;cursor:pointer;white-space:nowrap}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--surface)}
+.chip:focus-visible{outline:2px solid var(--annot);outline-offset:2px}
+
+.rt{width:100%;border-collapse:collapse;font-size:12px}
+.rt th{padding:9px 10px;font-size:10px;background:var(--surface-2);cursor:pointer;user-select:none;
+  white-space:nowrap;border-bottom:1px solid var(--line-strong)}
+.rt th[aria-sort]{color:var(--ink)}
+.rt th .ar{opacity:.5;font-size:9px}
+.rt td{padding:9px 10px;border-bottom:1px solid var(--line);font-size:12px;color:var(--ink-2)}
+.rt tbody tr{cursor:pointer}
+.rt tbody tr:hover{background:var(--fill-2)}
+.rt tbody tr[aria-selected="true"]{background:var(--annot-bg)}
+.rt .nm{color:var(--ink);font-weight:600}
+.rt .sub{font-size:10.5px;color:var(--ink-3)}
+.track{height:6px;border-radius:3px;background:var(--fill);overflow:hidden;min-width:56px}
+.track i{display:block;height:100%;background:var(--ink-3)}
+.badge{display:inline-block;font-size:9.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;
+  padding:3px 7px;border-radius:4px;border:1px solid;white-space:nowrap}
+.b-ok{color:var(--have);background:var(--have-bg);border-color:var(--have-line)}
+.b-track{color:var(--ink-2);background:var(--fill-2);border-color:var(--line-strong)}
+.b-risk{color:var(--flag);background:var(--flag-bg);border-color:var(--flag-line)}
+.b-over{color:var(--err);background:var(--err-bg);border-color:var(--err-line)}
+.b-none{color:var(--ink-3);background:var(--surface);border-color:var(--line-strong);border-style:dashed}
+.paid{font-size:10.5px;font-weight:700;color:var(--ink-3)}
+.seat{font-size:10.5px}
+.bulk{display:flex;align-items:center;gap:10px;background:var(--ink);color:var(--surface);
+  border-radius:7px;padding:9px 12px;font-size:12px;margin-bottom:10px;flex-wrap:wrap}
+.bulk button{appearance:none;border:1px solid rgba(255,255,255,.35);background:transparent;
+  color:var(--surface);font:600 11.5px inherit;padding:6px 11px;border-radius:6px;cursor:pointer}
+.bulk button:hover{background:rgba(255,255,255,.14)}
+.bulk .x{margin-left:auto;border:0;opacity:.8}
+.rollup{display:flex;gap:14px;flex-wrap:wrap;margin-bottom:12px}
+.rstat{border:1px solid var(--line);background:var(--surface-2);border-radius:7px;padding:9px 12px;min-width:118px}
+.rstat .k{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.rstat .v{font-size:17px;font-weight:700;margin-top:2px}
+.rstat.hot .v{color:var(--flag)}
+
+.sheet{border:1px solid var(--line-strong);border-radius:9px;background:var(--surface);
+  box-shadow:var(--shadow);overflow:hidden}
+.sheet-h{display:flex;align-items:flex-start;gap:10px;padding:13px 14px;border-bottom:1px solid var(--line)}
+.sheet-b{padding:13px 14px;display:flex;flex-direction:column;gap:11px}
+.kv{display:flex;justify-content:space-between;gap:12px;font-size:12px;padding:5px 0;
+  border-bottom:1px dashed var(--line)}
+.kv:last-child{border-bottom:0}
+.kv span{color:var(--ink-3)}
+.kv b{color:var(--ink);font-weight:650;text-align:right}
+.act{appearance:none;width:100%;font:700 11.5px/1 inherit;padding:10px;border-radius:7px;cursor:pointer;
+  background:var(--ink);color:var(--surface);border:1px solid var(--ink)}
+.act.sec{background:var(--surface);color:var(--ink-2);border-color:var(--line-strong)}
+.act:focus-visible{outline:2px solid var(--annot);outline-offset:2px}
+
+/* hierarchy */
+.crumb{display:flex;align-items:center;gap:6px;flex-wrap:wrap;font-size:12px;margin-bottom:11px}
+.crumb button{appearance:none;border:0;background:transparent;color:var(--annot);font:600 12px inherit;
+  cursor:pointer;padding:3px 5px;border-radius:5px}
+.crumb button:hover{background:var(--annot-bg)}
+.crumb button:disabled{color:var(--ink);cursor:default}
+.crumb .sep{color:var(--ink-3)}
+.crumb .root{font-size:10px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;
+  color:var(--ink-3);border:1px solid var(--line-strong);border-radius:4px;padding:3px 6px}
+.node{display:flex;align-items:center;gap:12px;width:100%;text-align:left;appearance:none;
+  border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:11px 13px;
+  cursor:pointer;font:inherit;margin-bottom:7px}
+.node:hover{background:var(--fill-2)}
+.node:focus-visible{outline:2px solid var(--annot);outline-offset:1px}
+.node.leaf{cursor:default}
+.node .ic{width:28px;height:28px;border-radius:6px;background:var(--fill);flex:none;display:grid;
+  place-items:center;font-size:12px;color:var(--ink-3)}
+.node .t{flex:1;min-width:0}
+.node .t .n{font-size:13px;font-weight:650;color:var(--ink)}
+.node .t .m{font-size:11px;color:var(--ink-3);margin-top:2px}
+.node .num{text-align:right;flex:none;min-width:58px}
+.node .num .v{font-size:15px;font-weight:700}
+.node .num .k{font-size:9.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.node .ch{color:var(--ink-3);flex:none}
+.basis{border:1px solid var(--line);background:var(--surface-2);border-radius:7px;padding:9px 11px;
+  font-size:11.5px;color:var(--ink-2);margin-top:11px}
+.basis b{color:var(--ink)}
+
+/* wireframe frames */
+.wfset{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+.wfcol{flex:1 1 290px;min-width:0}
+.wfcap{display:flex;gap:8px;align-items:baseline;margin-bottom:7px}
+.wfcap .n{font:700 11px/1 ui-monospace,monospace;color:var(--ink-3);
+  border:1px solid var(--line-strong);border-radius:4px;padding:4px 6px;flex:none}
+.wf{background:var(--surface);border:1px solid var(--line-strong);border-radius:8px;overflow:hidden;
+  box-shadow:var(--shadow)}
+.wf-bar{height:26px;background:var(--fill-2);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:6px;padding:0 9px}
+.wf-body{padding:12px;display:flex;flex-direction:column;gap:9px;min-height:150px}
+.bar{height:9px;background:var(--fill);border-radius:3px;flex:none}
+.box{background:var(--fill-2);border:1px solid var(--line);border-radius:6px;padding:9px;
+  display:flex;flex-direction:column;gap:7px}
+.txt{font-size:11.5px;color:var(--ink-2);line-height:1.45}
+.txt b{color:var(--ink);font-weight:650}
+.btnw{display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;
+  padding:8px 11px;border-radius:5px;border:1px solid var(--line-strong);color:var(--ink-2);background:var(--surface)}
+.btnw.pri{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.field{border:1px solid var(--line-strong);border-radius:5px;padding:8px 9px;font-size:11px;
+  color:var(--ink-3);background:var(--surface)}
+.note{margin-top:9px;border-left:2px solid var(--annot-line);padding:2px 0 2px 11px;
+  font-size:12px;line-height:1.5;color:var(--ink-2)}
+.note b{color:var(--annot)}
+.have{margin-top:9px;border-left:2px solid var(--have-line);padding:2px 0 2px 11px;
+  font-size:12px;line-height:1.5;color:var(--ink-2)}
+.have b{color:var(--have)}
+.nd{border:1.5px dashed var(--flag-line);border-radius:8px;background:
+  repeating-linear-gradient(135deg,transparent,transparent 9px,var(--flag-bg) 9px,var(--flag-bg) 18px);
+  padding:14px;min-height:150px;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.nd .lbl{color:var(--flag)}
+.nd .why{font-size:12px;line-height:1.5;color:var(--ink-2);background:var(--surface);
+  border:1px solid var(--flag-line);border-radius:6px;padding:9px 10px}
+.nd .why b{color:var(--flag)}
+.nd .dep{font-size:11px;color:var(--ink-3);font-style:italic}
+.foot{margin-top:54px;padding-top:18px;border-top:1px solid var(--line);font-size:12px;
+  color:var(--ink-3);max-width:76ch}
+@media print{.controls,.mode-note{display:none}.doc>section{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<header class="mast">
+  <div class="mast-in">
+    <span class="eyebrow">Colibri FinServ · XCEL LMS · Admin surface</span>
+    <h1>Admin wireframes, and the case for one table</h1>
+    <p class="prose lede" style="margin:0">The six admin flows the brief names, drawn against PartnerHub's existing table architecture — and the argument that three of them are the same list asked three different questions.</p>
+    <div class="meta">
+      <span><b>Responds to:</b> Learner and Admin Wireframe Brief — Amrita Thakur, VP Product</span>
+      <span><b>Covers:</b> Admin flows 01–06</span>
+      <span><b>Companion:</b> <a href="/prototypes/xcel-lms-wireframes.html">learner wireframes</a> · <a href="/prototypes/xcel-lms-desktop.html">desktop platform</a></span>
+    </div>
+    <div class="controls">
+      <span class="ctl-label">Read as</span>
+      <div class="seg" role="group" aria-label="Reading mode">
+        <button type="button" id="m-review" aria-pressed="true">FinServ review</button>
+        <button type="button" id="m-build" aria-pressed="false">Build planning</button>
+      </div>
+      <span class="ctl-label" style="margin-left:14px">Theme</span>
+      <div class="seg" role="group" aria-label="Theme">
+        <button type="button" id="t-light" aria-pressed="true">Light</button>
+        <button type="button" id="t-dark" aria-pressed="false">Dark</button>
+      </div>
+      <p class="mode-note" id="modeNote">Wireframes lead; the inventory of existing components follows as evidence.</p>
+    </div>
+  </div>
+</header>
+
+<div class="wrap"><div class="doc" id="doc">
+
+<!-- ============ 01 THE ASK ============ -->
+<section data-review="1" data-build="1">
+  <div class="sec-head"><span class="sec-num">01</span><h2>What the brief asks for</h2></div>
+  <div class="prose">
+    <p>Six admin flows, and the brief is blunt about them: <b>this is where we are furthest behind competitors</b>, and if only one screen is designed well it should be <em>who is stuck</em> — a screen it says does not exist anywhere today.</p>
+    <p>The admin is an agency manager in a distribution hierarchy — agent, general agent, managing general agent, regional and above — with recruits flowing in continuously and moving between agencies. They manage <b>by cohort and by roll-up, not learner by learner</b>, they often pay for the seats their recruits use, and they will only ever see their own part of the tree.</p>
+  </div>
+  <div class="tscroll" style="margin-top:14px">
+    <table><thead><tr><th style="width:22%">Flow</th><th>The design problem the brief names</th></tr></thead><tbody>
+      <tr><td><b>01 · The organisation</b></td><td>Trees are deep, wide and constantly changing, and an admin sees only their subtree. A conventional tree control will not survive contact with a real hierarchy. Every roll-up is answerable "as of today" or "as it was".</td></tr>
+      <tr><td><b>02 · Setting up an agency</b></td><td>Make inheritance visible. Pricing set high in the tree flows down unless overridden — an admin must see at a glance whether a price is this agency's own or inherited, and what changing it affects beneath.</td></tr>
+      <tr><td><b>03 · Inviting learners</b></td><td>Bulk is the real case. Design the whole arc — composing, previewing, sending, then seeing what happened. <b>The follow-up view matters more than the send.</b></td></tr>
+      <tr><td><b>04 · Seats and entitlements</b></td><td>Sponsored access is invisible to the learner and central to the admin. Show spend and utilisation without making the learner's experience feel metered.</td></tr>
+      <tr><td><b>05 · Cohort reporting</b></td><td>A line in the data where a customer moved platforms, and figures either side coming from different systems. Show provenance honestly without making every screen look hedged.</td></tr>
+      <tr><td><b>06 · Who is stuck</b></td><td>Bought and never started, stalled mid-course, or approaching a deadline they will miss — answering "who, how bad, and what do I do about it" in one view, at cohort scale.</td></tr>
+    </tbody></table>
+  </div>
+</section>
+
+<!-- ============ 02 THE THESIS ============ -->
+<section data-review="2" data-build="3">
+  <div class="sec-head"><span class="sec-num">02</span><h2>One table, not three</h2></div>
+  <div class="callout prose">
+    <span class="eyebrow">The claim this document is built on</span>
+    Flows <b>03</b>, <b>04</b> and <b>06</b> are not three screens. They are <b>one roster asked three different questions</b> — and PartnerHub's All Learners table already answers all three, because who paid for a seat is a <b>column, not a mode</b>. A learner whose agency bought their seat and a learner who bought their own are the same row with a different value in one cell. The admin's question is identical either way: <em>how is this person doing.</em>
+  </div>
+  <div class="prose" style="margin-top:16px">
+    <p>What that buys is unusually concrete. PartnerHub's five status badges — <b>Compliant · On Track · At Risk · Overdue · Not Started</b> — are already, word for word, the vocabulary flow 06 needs. They were not designed for insurance and they fit anyway, which is the tell that the underlying job is the same: someone managing other people's compliance, scoped to a subtree whose boundaries they do not control.</p>
+    <p>The additions are narrow: a <b>Paid by</b> column, a <b>Seat</b> column that only means anything when the agency paid, and a deadline-derived risk the badges do not yet compute. Everything else — the badges, the progress cell, the pill tabs, the side panel, the kebab, bulk selection — exists.</p>
+    <p><b>Spend is the one thing that is not a column</b>, because it is a total rather than a property of a learner. It belongs on the agency roll-up above the table — which keeps it out of the list, and off the learner's screen, by construction.</p>
+  </div>
+</section>
+
+<!-- ============ 03 THE ROSTER ============ -->
+<section data-review="3" data-build="4">
+  <div class="sec-head"><span class="sec-num">03</span><h2>The roster</h2>
+    <span class="lede" style="font-size:13px">Flows 03 · 04 · 06</span></div>
+  <p class="prose lede">Three preset views over one table. Switch between them and watch the <b>rows stay the same</b> — only the filter, the sort and the default action change. That is the argument, made checkable.</p>
+
+  <div class="stage" id="stg-roster">
+    <div class="stage-head"><span class="live"><i></i>Walk it</span><h4>Austin Agency · 14 learners</h4>
+      <span class="hint">Sort any column. Select rows to act in bulk. Click a row for the detail panel.</span></div>
+
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+      <div style="flex:1 1 640px;min-width:0">
+        <div class="app">
+          <div class="app-bar"><b style="color:var(--ink)">All Learners</b><span>· Austin Agency</span>
+            <span style="margin-left:auto" id="rs-count"></span></div>
+          <div class="app-body">
+            <div class="rollup" id="rs-rollup"></div>
+            <div class="chips" id="rs-chips" style="margin-bottom:11px"></div>
+            <div id="rs-bulk"></div>
+            <div class="tscroll" style="border-radius:7px"><table class="rt" id="rs-table"></table></div>
+          </div>
+        </div>
+        <div class="readout" id="rs-read"></div>
+      </div>
+      <div style="flex:1 1 268px;min-width:250px;display:flex;flex-direction:column;gap:12px">
+        <div>
+          <div class="lbl" style="margin-bottom:7px">The three questions</div>
+          <div class="views" style="flex-direction:column" id="rs-views"></div>
+        </div>
+        <div id="rs-sheet"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wfset">
+    <div class="wfcol" style="flex:1 1 100%">
+      <div class="have"><b>Already built.</b> The five badges, the progress cell, the pill-tab status filter, the side panel on row click, the kebab and bulk selection are all PartnerHub's All&nbsp;Learners components. <b>Send reminder</b>, <b>Last activity</b> sorted oldest-first, and the claimed / unclaimed distinction come from Gift&nbsp;Recipients in the LMS — a firm buying seats for its reps and needing to know who claimed them.</div>
+      <div class="note"><b>Three views, one table.</b> Nothing is filtered out of existence between them: switching view re-sorts and re-scopes the same 14 rows. A reviewer can verify that by watching a specific learner move up and down rather than disappear.</div>
+      <div class="note"><b>The seat column is blank for self-paid learners,</b> not "n/a" or a dash-with-a-tooltip. A blank cell in a column that does not apply reads correctly; a placeholder implies a value we failed to fetch.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 04 THE HIERARCHY ============ -->
+<section data-review="4" data-build="5">
+  <div class="sec-head"><span class="sec-num">04</span><h2>The organisation</h2>
+    <span class="lede" style="font-size:13px">Flow 01 · drill, don't unfold</span></div>
+  <p class="prose lede">The brief says a conventional tree control will not survive a real hierarchy. It is right — and a table-first product already knows the alternative. <b>Each level is a filtered list with a breadcrumb, not an expanding node.</b> You drill; you do not unfold.</p>
+
+  <div class="stage" id="stg-org">
+    <div class="stage-head"><span class="live"><i></i>Walk it</span><h4>Meridian Insurance Group</h4>
+      <span class="hint">Drill down to a leaf agency. You cannot navigate above your own root — try.</span></div>
+    <div style="display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start">
+      <div style="flex:1 1 560px;min-width:0">
+        <div class="app">
+          <div class="app-bar"><b style="color:var(--ink)">Organisation</b>
+            <span style="margin-left:auto" id="org-scope"></span></div>
+          <div class="app-body">
+            <div class="crumb" id="org-crumb"></div>
+            <div id="org-list"></div>
+            <div class="basis" id="org-basis"></div>
+          </div>
+        </div>
+        <div class="readout" id="org-read"></div>
+      </div>
+      <div style="flex:1 1 250px;min-width:230px;display:flex;flex-direction:column;gap:12px">
+        <div>
+          <div class="lbl" style="margin-bottom:7px">Figures as of</div>
+          <div class="views" style="flex-direction:column" id="org-asof"></div>
+        </div>
+        <div class="card" style="padding:13px">
+          <div class="lbl" style="margin-bottom:7px">Why not a tree</div>
+          <p class="txt" style="margin:0">A tree control asks the admin to hold the shape in their head and keeps every branch one click from open. At six levels and a few hundred agencies that is unusable, and it makes subtree scoping a rendering rule rather than a fact. A breadcrumb makes scoping structural: <b>you can only ever be somewhere below your own root</b>, and the path you took is on screen.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="wfset">
+    <div class="wfcol" style="flex:1 1 100%">
+      <div class="note"><b>"As of" is the same problem as provenance</b> (flow 05), and it should have one mechanism, not two. Both are asking <em>what does this number actually mean</em>. Two separate hedging devices would make every screen look uncertain, which is exactly what the brief warns against — so the basis is stated once, where the number is read.</div>
+      <div class="have"><b>There is a working precedent for that</b> in the certificate <b>reporting status</b> variants — reported / pending roster / non-reporting. A per-row disclosure of what we know about a record, rather than a caveat draped over the page.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 05 BULK INVITE ============ -->
+<section data-review="5" data-build="6">
+  <div class="sec-head"><span class="sec-num">05</span><h2>Bulk invite</h2>
+    <span class="lede" style="font-size:13px">Flow 03 · the arc, not the send</span></div>
+  <p class="prose lede">The brief is explicit that the follow-up matters more than the send — which is convenient, because the follow-up is the roster above, filtered to a cohort. Only the first three frames are new work.</p>
+
+  <div class="wfset" style="margin-top:14px">
+    <div class="wfcol">
+      <div class="wfcap"><span class="n">1</span><h4>Compose</h4></div>
+      <div class="wf"><div class="wf-bar"><div class="bar" style="width:44px"></div></div>
+        <div class="wf-body">
+          <div class="txt" style="font-size:13px"><b>Invite recruits</b></div>
+          <div><div class="lbl" style="margin-bottom:4px">Agency</div><div class="field">Austin Agency</div></div>
+          <div><div class="lbl" style="margin-bottom:4px">Course</div><div class="field">Life &amp; Health Pre-Licensing</div></div>
+          <div><div class="lbl" style="margin-bottom:4px">Price applied</div>
+            <div class="field">$0 — paid by agency <span style="color:var(--annot)">· inherited from Southwest Region</span></div></div>
+          <div><div class="lbl" style="margin-bottom:4px">Recipients</div>
+            <div class="field" style="min-height:44px">Paste emails, or upload a list · 23 added</div></div>
+          <div class="btnw pri">Preview what they'll receive</div>
+        </div></div>
+      <div class="note"><b>The price is shown, with where it came from.</b> This is the one screen in the admin surface where inheritance is unavoidable — the admin is about to send something that carries a price they may not have set.</div>
+    </div>
+
+    <div class="wfcol">
+      <div class="wfcap"><span class="n">2</span><h4>Preview</h4></div>
+      <div class="wf"><div class="wf-bar"><div class="bar" style="width:44px"></div></div>
+        <div class="wf-body">
+          <div class="txt"><b>This is what Maria will get</b></div>
+          <div class="box">
+            <div class="lbl">From your agency</div>
+            <div class="txt"><b>Meridian Insurance Group</b> has enrolled you in Life &amp; Health Pre-Licensing.</div>
+            <div class="btnw pri" style="align-self:flex-start">Start your course</div>
+          </div>
+          <div class="txt" style="color:var(--ink-3)">Sent from noreply@xcel.com · link valid 30 days</div>
+          <div style="display:flex;gap:7px"><div class="btnw" style="flex:1">Back</div>
+            <div class="btnw pri" style="flex:1">Send 23 invites</div></div>
+        </div></div>
+      <div class="note"><b>A real recipient, not a template.</b> Previewing "{{first_name}}" is how an admin loses confidence in a bulk send — the preview should show one actual person's version, with a way to step through others.</div>
+    </div>
+
+    <div class="wfcol">
+      <div class="wfcap"><span class="n">3</span><h4>Sending</h4></div>
+      <div class="wf"><div class="wf-bar"><div class="bar" style="width:44px"></div></div>
+        <div class="wf-body">
+          <div class="txt" style="font-size:13px"><b>Sending 23 invites</b></div>
+          <div class="box"><div class="bar" style="width:64%;height:6px;background:var(--ink-3)"></div>
+            <div class="txt">15 sent · 8 to go</div></div>
+          <div class="txt">You can leave this page — we'll finish and show you the results in <b>All Learners</b>.</div>
+          <div class="btnw" style="align-self:flex-start">Go to the roster</div>
+        </div></div>
+      <div class="note"><b>A designed wait with an exit.</b> The brief lists bulk-invite processing as one of three waits with a real duration. Trapping the admin here is what makes a 40-second job feel like a risk.</div>
+    </div>
+
+    <div class="wfcol">
+      <div class="wfcap"><span class="n">4</span><h4>Follow-up</h4></div>
+      <div class="wf"><div class="wf-bar"><div class="bar" style="width:44px"></div></div>
+        <div class="wf-body">
+          <div class="txt" style="font-size:13px"><b>All Learners</b></div>
+          <div class="txt" style="color:var(--ink-3)">Filtered to · Sep intake</div>
+          <div class="box"><div class="txt"><b>23 invited</b> · 18 enrolled · 5 not yet</div>
+            <div class="bar" style="width:78%;height:6px;background:var(--ink-3)"></div></div>
+          <div class="txt">Sorted by <b>longest since activity</b>.</div>
+          <div class="btnw" style="align-self:flex-start">Remind the 5</div>
+        </div></div>
+      <div class="have"><b>This frame is the roster in §03,</b> filtered to a cohort. It is drawn here only to show where the arc lands — building it as its own screen is the mistake the whole document argues against.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 06 NOT DESIGNED ============ -->
+<section data-review="6" data-build="7">
+  <div class="sec-head"><span class="sec-num">06</span><h2>Drawn as holes</h2>
+    <span class="lede" style="font-size:13px">Flows 02 · 05</span></div>
+  <p class="prose lede">Two of the six have no analog in either project, and both are about the <b>agency</b> rather than the learner — so they sit above the roster rather than changing it. Neither is drawn, for the reasons each names.</p>
+
+  <div class="wfset" style="margin-top:14px">
+    <div class="wfcol">
+      <div class="wfcap"><span class="n">A</span><h4>Inherited vs overridden pricing</h4></div>
+      <div class="nd">
+        <span class="lbl">Not designed</span>
+        <div class="why"><b>The blast radius is the hard part, not the badge.</b> Showing that a price is inherited is a label. Showing <em>what changing it will affect beneath</em> is a preview of an edit across an unknown number of agencies and in-flight invites — and whether an override applies to seats already sold is a commercial question, not a design one.</div>
+        <div class="dep">Needs: does an override apply to existing enrolments, or only to new ones?</div>
+      </div>
+      <div class="note"><b>The one place it cannot be deferred</b> is the invite composer (§05 frame 1), which already shows the price and its origin — because the admin is about to send something carrying a price they may not have set.</div>
+    </div>
+
+    <div class="wfcol">
+      <div class="wfcap"><span class="n">B</span><h4>Provenance across the migration line</h4></div>
+      <div class="nd">
+        <span class="lbl">Not designed</span>
+        <div class="why"><b>The mechanism is settled; the threshold is not.</b> Provenance and "as of" should share one basis line (§04). What is undecided is <em>when</em> a figure is uncertain enough to say so — mark everything and every screen looks hedged, which the brief explicitly rejects; mark nothing and the first wrong number costs the trust.</div>
+        <div class="dep">Needs: the confidence rule. Which figures carry lower confidence, and by what test?</div>
+      </div>
+    </div>
+
+    <div class="wfcol">
+      <div class="wfcap"><span class="n">C</span><h4>Utilisation, beyond claimed</h4></div>
+      <div class="nd">
+        <span class="lbl">Not designed</span>
+        <div class="why"><b>Claimed is not used.</b> Gift Recipients models two seat states — claimed and unclaimed — and its own open question is what "claimed" can actually report from the LMS. A rep can log in once and never return: that seat is claimed, paid for, and idle. The roster above shows a third state, <b>Idle</b>, but the rule behind it is invented.</div>
+        <div class="dep">Needs: what counts as activity, and after how long does a claimed seat read as idle?</div>
+      </div>
+      <div class="note"><b>This is where flows 04 and 06 meet.</b> "Am I wasting money" and "who is stuck" are the same row read by two questions — which is the strongest argument in the document for not building them as separate screens.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 07 INVENTORY ============ -->
+<section data-review="7" data-build="2">
+  <div class="sec-head"><span class="sec-num">07</span><h2>What already exists</h2></div>
+  <p class="prose lede">PartnerHub (Angular partner admin) and the learner dashboard (React). The value here is the patterns and the decisions, not the code — the two apps are different frameworks and the FinServ platform is greenfield.</p>
+  <div class="tscroll" style="margin-top:14px">
+    <table><thead><tr><th style="width:20%">Flow</th><th style="width:11%">Coverage</th><th>What exists</th></tr></thead><tbody>
+      <tr><td><b>06 · Who is stuck</b></td><td><span class="pill p-have">Most of it</span></td>
+        <td>PartnerHub <b>All Learners</b> — the five badges are already Compliant · On Track · At Risk · Overdue · Not Started, with `PageHeaderBar`, `FilterBar`, `StatusBadge`, `ProgressBarCell`, `Pagination`, the kebab and a side panel on row click.</td></tr>
+      <tr><td><b>03 · Invite follow-up</b></td><td><span class="pill p-have">Most of it</span></td>
+        <td>Gift Recipients — roster, claimed / unclaimed, <b>Last Reminded</b> sorted oldest-first, per-row Send Reminder, and a bulk-reminder flow that is archived but intact.</td></tr>
+      <tr><td><b>04 · Seats</b></td><td><span class="pill p-part">The roster half</span></td>
+        <td>Gift Recipients again — the seat as a record with a claim status, and the server-owns-redemption / client-only-presents split. Spend and utilisation are new. <b>Not</b> PartnerHub's entitlement matrix, which models consumer membership tiers.</td></tr>
+      <tr><td><b>05 · Cohort reporting</b></td><td><span class="pill p-part">Partial</span></td>
+        <td>The table kit, the badges, progress, drill-to-learner. Provenance has no analog — but the certificate reporting-status variants are the right shape for it.</td></tr>
+      <tr><td><b>03 · Compose &amp; preview</b></td><td><span class="pill p-none">None</span></td>
+        <td>Nothing models "here is what your 23 recruits will receive".</td></tr>
+      <tr><td><b>01 · The organisation</b></td><td><span class="pill p-none">None</span></td>
+        <td>No hierarchy, and no history. The table architecture is what generalises — an agency row is a different entity with a different avatar glyph, which the table pattern already handles.</td></tr>
+      <tr><td><b>02 · Inheritance</b></td><td><span class="pill p-none">None</span></td>
+        <td>Neither project shows own-vs-inherited anywhere.</td></tr>
+      <tr><td><b>Dense data at scale</b></td><td><span class="pill p-have">Built</span></td>
+        <td>Bulk selection and multi-step actions are already treated as system components rather than one screen's features.</td></tr>
+    </tbody></table>
+  </div>
+</section>
+
+<!-- ============ 08 OPEN ============ -->
+<section data-review="8" data-build="8">
+  <div class="sec-head"><span class="sec-num">08</span><h2>Open — flagged, not resolved</h2></div>
+  <div class="tscroll" style="margin-top:14px">
+    <table><thead><tr><th style="width:28%">Question</th><th style="width:13%">Blocks</th><th style="width:13%">Owner</th><th>Why it can't be designed around</th></tr></thead><tbody>
+      <tr><td><b>What counts as activity, and when is a claimed seat idle?</b></td><td>§03 · §06C</td><td>FinServ product</td>
+        <td>It is the difference between "we sold 23 seats" and "9 of them are doing nothing". The roster shows an Idle state; the rule behind it is invented.</td></tr>
+      <tr><td><b>Does a price override apply to existing enrolments?</b></td><td>§06A</td><td>Commercial</td>
+        <td>Decides whether changing a price is an edit or a migration, which changes the whole confirmation step.</td></tr>
+      <tr><td><b>Which figures carry lower confidence, and by what test?</b></td><td>§06B</td><td>Data</td>
+        <td>Mark everything and the surface reads hedged; mark nothing and the first wrong number costs the trust.</td></tr>
+      <tr><td><b>Do admin insights come from us or from Compass?</b></td><td>All reporting</td><td>Joint · in negotiation</td>
+        <td>The brief lists it as being reconciled. Everything in §03 assumes we hold progress; if Compass does, the roster becomes a view over their data and the freshness question changes.</td></tr>
+      <tr><td><b>Can an admin act on a learner, or only nudge them?</b></td><td>§03 bulk actions</td><td>FinServ product</td>
+        <td>Reminding is safe. Extending a window, reassigning a seat or revoking access are not, and the roster's bulk bar is where that line has to be drawn.</td></tr>
+      <tr><td><b>How is the hierarchy's history stored?</b></td><td>§04</td><td>Platform</td>
+        <td>"As it was" is only answerable if structure changes are versioned. If they are not, the as-of control cannot be built at all.</td></tr>
+    </tbody></table>
+  </div>
+</section>
+
+<!-- ============ 09 NOTES ============ -->
+<section data-review="9" data-build="9">
+  <div class="sec-head"><span class="sec-num">09</span><h2>How to read this</h2></div>
+  <div class="prose">
+    <p><b>Greyscale on purpose.</b> The brief asked for structure, and the fastest way to lose a structural review is to give it a colour to argue about.</p>
+    <p><b>The two reading modes reorder this page; they do not hide anything.</b> Every section stays in the document in both, so find-in-page, select-all and print still reach the whole thing.</p>
+    <p><b>Hatched frames name what blocks them.</b> Drawing an optimistic version of any of them would resolve an open question by implication.</p>
+    <p><b>Green notes mark something that already exists.</b> Violet notes are design reasoning. Amber is unresolved.</p>
+  </div>
+  <div class="foot">Companion to the FinServ <em>Learner and Admin Wireframe Brief</em>. The learner flows are covered separately in the learner wireframes, the walk-through and the desktop platform. Website and checkout are out of scope for both.</div>
+</section>
+
+</div></div>
+
+<script>
+(function(){
+'use strict';
+/* ---------- chrome ---------- */
+var doc=document.getElementById('doc'), secs=[].slice.call(doc.querySelectorAll('section'));
+var NOTES={review:'Wireframes lead; the inventory of existing components follows as evidence.',
+           build:'Inventory and thesis lead; wireframes are the working end of it.'};
+function setMode(m){
+  secs.forEach(function(s){ s.style.order=s.getAttribute(m==='review'?'data-review':'data-build')||99; });
+  document.getElementById('m-review').setAttribute('aria-pressed',String(m==='review'));
+  document.getElementById('m-build').setAttribute('aria-pressed',String(m==='build'));
+  document.getElementById('modeNote').textContent=NOTES[m];
+  try{localStorage.setItem('xcel.admin.mode',m);}catch(e){}
+}
+function setTheme(t){
+  document.documentElement.setAttribute('data-theme',t);
+  document.getElementById('t-light').setAttribute('aria-pressed',String(t==='light'));
+  document.getElementById('t-dark').setAttribute('aria-pressed',String(t==='dark'));
+  try{localStorage.setItem('xcel.admin.theme',t);}catch(e){}
+}
+document.getElementById('m-review').onclick=function(){setMode('review');};
+document.getElementById('m-build').onclick=function(){setMode('build');};
+document.getElementById('t-light').onclick=function(){setTheme('light');};
+document.getElementById('t-dark').onclick=function(){setTheme('dark');};
+var m='review',t='light';
+try{var a=localStorage.getItem('xcel.admin.mode'); if(a==='review'||a==='build') m=a;
+    var b=localStorage.getItem('xcel.admin.theme'); if(b==='light'||b==='dark') t=b;}catch(e){}
+setMode(m); setTheme(t);
+
+/* =====================================================================
+   STAGE — the roster
+   ===================================================================== */
+(function(){
+  var LEARNERS=[
+    // name, cohort, pct, deadlineDays, paidBy, seat, idleDays
+    ['Maria Delgado','Sep intake', 0,  26,'agency','claimed', 21],
+    ['Trevor Nkosi','Sep intake', 62, 41,'agency','claimed',  2],
+    ['Priya Raghunathan','Sep intake', 8, 12,'agency','claimed', 15],
+    ['Danny O’Sullivan','Sep intake', 0, 30,'agency','unclaimed', 30],
+    ['Alicia Ferrer','Sep intake', 100, 55,'agency','claimed', 6],
+    ['Marcus Bell','Sep intake', 0, 19,'agency','unclaimed', 19],
+    ['Chen Wei','Aug intake', 34, -4,'agency','claimed', 9],
+    ['Rosa Iglesias','Aug intake', 88, 23,'self',null, 1],
+    ['Jamal Whitfield','Aug intake', 17, 9,'agency','claimed', 12],
+    ['Kirsten Vogel','Aug intake', 100, 61,'self',null, 4],
+    ['Andre Boateng','Aug intake', 45, -11,'agency','claimed', 27],
+    ['Sofia Marchetti','Aug intake', 71, 33,'self',null, 3],
+    ['Ben Oyelaran','Jul intake', 5, 47,'agency','claimed', 34],
+    ['Hana Kobayashi','Jul intake', 100, 72,'self',null, 8]
+  ].map(function(r,i){
+    return {id:'l'+i,name:r[0],cohort:r[1],pct:r[2],dl:r[3],paid:r[4],seat:r[5],idle:r[6]};
+  });
+
+  /* The five badges, derived the way the real flag derives them:
+     At Risk = under 30 days left AND under 25% done. */
+  function statusOf(l){
+    if(l.pct>=100) return ['Compliant','b-ok'];
+    if(l.dl<0) return ['Overdue','b-over'];
+    if(l.dl<30&&l.pct<25) return ['At Risk','b-risk'];
+    if(l.pct===0) return ['Not Started','b-none'];
+    return ['On Track','b-track'];
+  }
+  /* Idle: claimed, paid for, and nothing for 14+ days. The threshold is
+     INVENTED — see the open register. */
+  function isIdle(l){ return l.paid==='agency'&&l.seat==='claimed'&&l.idle>=14&&l.pct<100; }
+  function seatLabel(l){
+    if(l.paid!=='agency') return '';
+    if(l.seat==='unclaimed') return '<span class="badge b-risk">Unclaimed</span>';
+    if(isIdle(l)) return '<span class="badge b-risk">Idle '+l.idle+'d</span>';
+    return '<span class="badge b-ok">Claimed</span>';
+  }
+
+  var VIEWS=[
+    ['stuck','Who is stuck','Flow 06 · at risk, overdue or never started, soonest deadline first',
+     function(l){var s=statusOf(l)[0];return s==='At Risk'||s==='Overdue'||s==='Not Started';},'dl','asc',
+     'Remind','<b>Flow 06.</b> The list the brief calls the highest-value screen in the admin surface. It is All Learners with a status filter and a deadline sort — no new screen, and the badge vocabulary was already right.'],
+    ['follow','Invite follow-up','Flow 03 · one cohort, longest since activity first',
+     function(l){return l.cohort==='Sep intake';},'idle','desc',
+     'Remind','<b>Flow 03.</b> The brief says the follow-up matters more than the send. This is that view — the same rows, scoped to a cohort and sorted by who has gone quiet longest.'],
+    ['seats','Seats &amp; spend','Flow 04 · agency-paid only, idle seats first',
+     function(l){return l.paid==='agency';},'idle','desc',
+     'Reassign','<b>Flow 04.</b> Same rows again, scoped to the seats the agency is paying for. Spend sits in the roll-up above, not in a column — it is a total, not a property of a learner, and keeping it out of the row is what keeps it off the learner\'s screen.']
+  ];
+  var COLS=[
+    ['name','Learner',1],['cohort','Cohort',1],['pct','Progress',1],['status','Status',1],
+    ['dl','Deadline',1],['paid','Paid by',1],['seat','Seat',1],['idle','Last activity',1]
+  ];
+
+  var S={view:'stuck',sort:'dl',dir:'asc',sel:{},open:null,statusFilter:'all'};
+  var els={table:document.getElementById('rs-table'),views:document.getElementById('rs-views'),
+    chips:document.getElementById('rs-chips'),bulk:document.getElementById('rs-bulk'),
+    sheet:document.getElementById('rs-sheet'),read:document.getElementById('rs-read'),
+    count:document.getElementById('rs-count'),roll:document.getElementById('rs-rollup')};
+
+  function view(){ for(var i=0;i<VIEWS.length;i++) if(VIEWS[i][0]===S.view) return VIEWS[i]; return VIEWS[0]; }
+  function rows(){
+    var v=view(), out=LEARNERS.filter(v[3]);
+    if(S.statusFilter!=='all') out=out.filter(function(l){return statusOf(l)[0]===S.statusFilter;});
+    var k=S.sort, d=S.dir==='asc'?1:-1;
+    return out.slice().sort(function(a,b){
+      var x,y;
+      if(k==='status'){ x=['Overdue','At Risk','Not Started','On Track','Compliant'].indexOf(statusOf(a)[0]);
+                        y=['Overdue','At Risk','Not Started','On Track','Compliant'].indexOf(statusOf(b)[0]); }
+      else if(k==='seat'){ x=a.paid==='agency'?(a.seat==='unclaimed'?0:isIdle(a)?1:2):3;
+                           y=b.paid==='agency'?(b.seat==='unclaimed'?0:isIdle(b)?1:2):3; }
+      else { x=a[k]; y=b[k]; }
+      if(typeof x==='string') return x.localeCompare(y)*d;
+      return (x-y)*d;
+    });
+  }
+  function render(){
+    var v=view(), rs=rows();
+    els.views.innerHTML=VIEWS.map(function(x){
+      return '<button class="vbtn" data-v="'+x[0]+'" aria-pressed="'+(S.view===x[0])+'">'+x[1]+
+             '<small>'+x[2]+'</small></button>';
+    }).join('');
+    var counts={}; LEARNERS.filter(v[3]).forEach(function(l){var s=statusOf(l)[0];counts[s]=(counts[s]||0)+1;});
+    var order=['Overdue','At Risk','Not Started','On Track','Compliant'];
+    els.chips.innerHTML='<button class="chip" data-f="all" aria-pressed="'+(S.statusFilter==='all')+'">All</button>'+
+      order.filter(function(s){return counts[s];}).map(function(s){
+        return '<button class="chip" data-f="'+s+'" aria-pressed="'+(S.statusFilter===s)+'">'+s+'</button>';
+      }).join('');
+    els.count.textContent=rs.length+' of '+LEARNERS.length+' learners';
+
+    var agency=LEARNERS.filter(function(l){return l.paid==='agency';});
+    var idle=agency.filter(isIdle).length, unclaimed=agency.filter(function(l){return l.seat==='unclaimed';}).length;
+    els.roll.innerHTML = S.view==='seats'
+      ? '<div class="rstat"><div class="k">Seats bought</div><div class="v">'+agency.length+'</div></div>'+
+        '<div class="rstat"><div class="k">Spend</div><div class="v">$1,890</div></div>'+
+        '<div class="rstat'+(unclaimed?' hot':'')+'"><div class="k">Unclaimed</div><div class="v">'+unclaimed+'</div></div>'+
+        '<div class="rstat'+(idle?' hot':'')+'"><div class="k">Idle</div><div class="v">'+idle+'</div></div>'
+      : '';
+
+    var sel=Object.keys(S.sel).filter(function(k){return S.sel[k];});
+    els.bulk.innerHTML = sel.length
+      ? '<div class="bulk"><b>'+sel.length+' selected</b>'+
+        '<button data-b="act">'+v[6]+' '+sel.length+'</button>'+
+        '<button data-b="export">Export</button>'+
+        '<button class="x" data-b="clear">Clear</button></div>'
+      : '';
+
+    els.table.innerHTML='<thead><tr><th style="width:26px"></th>'+COLS.map(function(c){
+      var on=S.sort===c[0];
+      return '<th data-s="'+c[0]+'"'+(on?' aria-sort="'+(S.dir==='asc'?'ascending':'descending')+'"':'')+
+        '>'+c[1]+(on?' <span class="ar">'+(S.dir==='asc'?'▲':'▼')+'</span>':'')+'</th>';
+    }).join('')+'</tr></thead><tbody>'+rs.map(function(l){
+      var st=statusOf(l);
+      return '<tr data-id="'+l.id+'"'+(S.open===l.id?' aria-selected="true"':'')+'>'+
+        '<td><input type="checkbox" data-c="'+l.id+'"'+(S.sel[l.id]?' checked':'')+
+        ' aria-label="Select '+l.name+'"></td>'+
+        '<td><div class="nm">'+l.name+'</div><div class="sub">Austin Agency</div></td>'+
+        '<td>'+l.cohort+'</td>'+
+        '<td><div class="track"><i style="width:'+l.pct+'%"></i></div><div class="sub">'+l.pct+'%</div></td>'+
+        '<td><span class="badge '+st[1]+'">'+st[0]+'</span></td>'+
+        '<td>'+(l.dl<0?'<span style="color:var(--err)">'+Math.abs(l.dl)+'d past</span>':l.dl+' days')+'</td>'+
+        '<td><span class="paid">'+(l.paid==='agency'?'AGENCY':'SELF')+'</span></td>'+
+        '<td class="seat">'+seatLabel(l)+'</td>'+
+        '<td>'+(l.idle===0?'today':l.idle+'d ago')+'</td></tr>';
+    }).join('')+'</tbody>';
+
+    var o=S.open?LEARNERS.filter(function(l){return l.id===S.open;})[0]:null;
+    els.sheet.innerHTML = o ? (function(){
+      var st=statusOf(o);
+      return '<div class="sheet"><div class="sheet-h">'+
+        '<div style="flex:1"><div style="font-weight:700;font-size:13.5px">'+o.name+'</div>'+
+        '<div class="sub" style="font-size:11px;color:var(--ink-3)">Austin Agency · '+o.cohort+'</div></div>'+
+        '<span class="badge '+st[1]+'">'+st[0]+'</span></div>'+
+        '<div class="sheet-b">'+
+        '<div><div class="kv"><span>Course</span><b>Life &amp; Health</b></div>'+
+        '<div class="kv"><span>Progress</span><b>'+o.pct+'%</b></div>'+
+        '<div class="kv"><span>Deadline</span><b>'+(o.dl<0?Math.abs(o.dl)+' days past':'in '+o.dl+' days')+'</b></div>'+
+        '<div class="kv"><span>Paid by</span><b>'+(o.paid==='agency'?'Agency':'Learner')+'</b></div>'+
+        (o.paid==='agency'?'<div class="kv"><span>Seat</span><b>'+
+          (o.seat==='unclaimed'?'Not claimed':isIdle(o)?'Claimed, idle '+o.idle+'d':'Claimed')+'</b></div>':'')+
+        '<div class="kv"><span>Last activity</span><b>'+(o.idle===0?'Today':o.idle+' days ago')+'</b></div></div>'+
+        '<button class="act">Send reminder</button>'+
+        '<button class="act sec" data-b="close">Close</button>'+
+        '</div></div>';
+    })() : '<div class="card" style="padding:13px"><div class="lbl" style="margin-bottom:6px">Detail panel</div>'+
+      '<p class="txt" style="margin:0">Click any row. The panel is the same side-panel shell All Learners already uses — the row never expands, because on a cohort-scale list an expanding row pushes everything you were comparing against off screen.</p></div>';
+
+    els.read.innerHTML=v[7];
+  }
+  document.getElementById('stg-roster').addEventListener('click',function(e){
+    var b=e.target.closest('[data-v]'); if(b){ S.view=b.getAttribute('data-v'); S.sort=view()[4];
+      // set sort from the view AFTER switching
+      var nv=VIEWS.filter(function(x){return x[0]===b.getAttribute('data-v');})[0];
+      S.sort=nv[4]; S.dir=nv[5]; S.statusFilter='all'; S.sel={}; S.open=null; render(); return; }
+    var f=e.target.closest('[data-f]'); if(f){ S.statusFilter=f.getAttribute('data-f'); render(); return; }
+    var th=e.target.closest('[data-s]'); if(th){ var k=th.getAttribute('data-s');
+      if(S.sort===k) S.dir=S.dir==='asc'?'desc':'asc'; else {S.sort=k;S.dir='asc';} render(); return; }
+    var cb=e.target.closest('[data-c]'); if(cb){ S.sel[cb.getAttribute('data-c')]=cb.checked;
+      e.stopPropagation(); render(); return; }
+    var bk=e.target.closest('[data-b]'); if(bk){ var k2=bk.getAttribute('data-b');
+      if(k2==='clear'){S.sel={};} else if(k2==='close'){S.open=null;}
+      else { els.read.innerHTML='<b>Stub.</b> The action fires against the selected rows. Which actions belong in this bar — reminding is safe, extending a window or revoking a seat are not — is logged in the open register.'; render(); return; }
+      render(); return; }
+    var tr=e.target.closest('tr[data-id]'); if(tr){ S.open=tr.getAttribute('data-id'); render(); }
+  });
+  render();
+})();
+
+/* =====================================================================
+   STAGE — the organisation
+   ===================================================================== */
+(function(){
+  var TREE={id:'meridian',name:'Meridian Insurance Group',kind:'Managing general agent',children:[
+    {id:'sw',name:'Southwest Region',kind:'Regional',children:[
+      {id:'austin',name:'Austin Agency',kind:'Agency',learners:14,compliant:36,risk:5},
+      {id:'sanant',name:'San Antonio Agency',kind:'Agency',learners:8,compliant:62,risk:1}
+    ]},
+    {id:'gulf',name:'Gulf Region',kind:'Regional',children:[
+      {id:'houston',name:'Houston Agency',kind:'Agency',learners:21,compliant:48,risk:6},
+      {id:'corpus',name:'Corpus Christi Agency',kind:'Agency',learners:5,compliant:80,risk:0}
+    ]},
+    {id:'ntx',name:'North Texas Region',kind:'Regional',children:[
+      {id:'dallas',name:'Dallas Agency',kind:'Agency',learners:17,compliant:41,risk:4},
+      {id:'ftw',name:'Fort Worth Agency',kind:'Agency',learners:9,compliant:55,risk:2}
+    ]}
+  ]};
+  var ASOF=[
+    ['today','Today','1 September 2026','the live structure'],
+    ['jul','1 July 2026','1 July 2026','the structure as it was — Fort Worth had not been created, and Dallas still reported to Gulf']
+  ];
+  var S={path:['meridian'],asof:'today'};
+
+  function nodeAt(path){
+    var n=TREE;
+    for(var i=1;i<path.length;i++){
+      var kids=n.children||[];
+      for(var j=0;j<kids.length;j++) if(kids[j].id===path[i]){ n=kids[j]; break; }
+    }
+    return n;
+  }
+  function roll(n){
+    if(!n.children) return {learners:n.learners,compliant:n.compliant,risk:n.risk,agencies:0};
+    var l=0,c=0,r=0,a=0;
+    n.children.forEach(function(k){ var x=roll(k); l+=x.learners; c+=x.compliant*x.learners; r+=x.risk; a+=1+x.agencies; });
+    return {learners:l,compliant:l?Math.round(c/l):0,risk:r,agencies:a};
+  }
+  function adjust(v,kind){
+    if(S.asof==='today') return v;
+    // "As it was" figures come from a smaller, differently-shaped org.
+    if(kind==='learners') return Math.round(v*0.72);
+    if(kind==='compliant') return Math.min(99,v+7);
+    if(kind==='risk') return Math.max(0,Math.round(v*0.6));
+    return v;
+  }
+  function render(){
+    var n=nodeAt(S.path), isLeaf=!n.children;
+    document.getElementById('org-scope').textContent='Your root · '+TREE.name;
+    document.getElementById('org-crumb').innerHTML=
+      '<span class="root">Your root</span>'+S.path.map(function(id,i){
+        var nn=nodeAt(S.path.slice(0,i+1));
+        return (i?'<span class="sep">›</span>':'')+
+          '<button data-d="'+i+'"'+(i===S.path.length-1?' disabled':'')+'>'+nn.name+'</button>';
+      }).join('');
+
+    var list=document.getElementById('org-list');
+    if(isLeaf){
+      list.innerHTML='<div class="node leaf"><span class="ic">▤</span>'+
+        '<span class="t"><span class="n">'+n.name+'</span>'+
+        '<span class="m">'+n.kind+' · no agencies beneath</span></span>'+
+        '<span class="num"><span class="v">'+adjust(n.learners,'learners')+'</span>'+
+        '<span class="k">learners</span></span></div>'+
+        '<button class="act" style="margin-top:9px" data-open="1">Open this agency\'s roster</button>';
+    } else {
+      list.innerHTML=n.children.map(function(k){
+        var r=roll(k), leaf=!k.children;
+        return '<button class="node" data-go="'+k.id+'"><span class="ic">'+(leaf?'▤':'◈')+'</span>'+
+          '<span class="t"><span class="n">'+k.name+'</span>'+
+          '<span class="m">'+k.kind+(leaf?'':' · '+r.agencies+' agencies')+' · '+
+          adjust(r.risk,'risk')+' at risk</span></span>'+
+          '<span class="num"><span class="v">'+adjust(r.learners,'learners')+'</span>'+
+          '<span class="k">learners</span></span>'+
+          '<span class="num"><span class="v">'+adjust(r.compliant,'compliant')+'%</span>'+
+          '<span class="k">compliant</span></span>'+
+          '<span class="ch">›</span></button>';
+      }).join('');
+    }
+    var a=ASOF.filter(function(x){return x[0]===S.asof;})[0];
+    document.getElementById('org-basis').innerHTML=
+      '<b>Figures as of '+a[2]+'</b> — '+a[3]+'. Scoped to '+n.name+' and everything beneath it.';
+    document.getElementById('org-asof').innerHTML=ASOF.map(function(x){
+      return '<button class="vbtn" data-a="'+x[0]+'" aria-pressed="'+(S.asof===x[0])+'">'+x[1]+
+        '<small>'+(x[0]==='today'?'the live structure':'structure and figures as they stood')+'</small></button>';
+    }).join('');
+
+    document.getElementById('org-read').innerHTML = S.path.length===1
+      ? '<b>Your root is a boundary, not a starting point.</b> The breadcrumb cannot go above Meridian because nothing above it exists for this admin — scoping is structural rather than a filter that could be cleared.'
+      : (isLeaf
+        ? '<b>A leaf is a roster.</b> The hierarchy\'s only job is to get you to a list of people; at the bottom it hands off to the table in §03 rather than becoming a different kind of screen.'
+        : '<b>Drill, don\'t unfold.</b> One level at a time, each a plain list. This is the same component as the roster with a different entity — which is why it survives a few hundred agencies where a tree control does not.');
+  }
+  document.getElementById('stg-org').addEventListener('click',function(e){
+    var g=e.target.closest('[data-go]'); if(g){ S.path=S.path.concat([g.getAttribute('data-go')]); render(); return; }
+    var d=e.target.closest('[data-d]'); if(d){ S.path=S.path.slice(0,+d.getAttribute('data-d')+1); render(); return; }
+    var a=e.target.closest('[data-a]'); if(a){ S.asof=a.getAttribute('data-a'); render(); return; }
+    if(e.target.closest('[data-open]')){
+      document.getElementById('org-read').innerHTML='<b>This is the hand-off.</b> Opening an agency lands on the roster in §03 scoped to it — same table, same columns, narrower scope.';
+    }
+  });
+  render();
+})();
+})();
+</script>
+</body>
+</html>

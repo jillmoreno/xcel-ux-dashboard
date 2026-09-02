@@ -1,0 +1,1107 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-palette="navy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XCEL LMS — Desktop Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   XCEL tokens — STC structure, XCEL brand colour.
+
+   THE RED IS NOT THE PRIMARY. It was, and it was carrying four unrelated
+   jobs at once: brand identity, every interactive control, all progress
+   data, and the licensing-exam accent. Making the product's own data red
+   left nothing for the brand to be. So the ramps are split:
+
+     --brand-*    the XCEL wordmark red. Identity (logo, avatar) and ONE
+                  semantic — the external licensing exam. Constant across
+                  every palette; it is the brand, not a theme choice.
+     --primary-*  interactive + data. Swappable — see the palette blocks.
+     --slate-*    the SECOND data hue (the Elective gauge segment). It is
+                  palette-scoped too, because a second hue can only be
+                  chosen against the primary it sits beside.
+
+   Semantic ramps are the project's own — status is not a brand decision.
+   ============================================================ */
+:root{
+  --font-heading:'Lato',system-ui,-apple-system,sans-serif;
+  --font-body:'Open Sans',system-ui,-apple-system,sans-serif;
+
+  /* Brand red — constant in every palette. #a81c24 is 7.35:1 on white, so
+     it carries the exam accent as real text, not decoration. */
+  --brand-100:#f8dee0; --brand-300:#dc858b; --brand-500:#a81c24;
+  --brand-600:#8c171e; --brand-700:#6f1218; --brand-900:#2f080a;
+  --on-primary:#ffffff;
+
+  --ink:#1f1f23; --ink-2:#4d4d55; --ink-3:#6d6d76;
+  --rail:#26262b; --rail-2:#33333a; --rail-line:rgba(255,255,255,.13);
+  --rail-txt:rgba(255,255,255,.82); --rail-muted:rgba(255,255,255,.56);
+  /* --rail-accent / --rail-chip / --rail-chip-ink are PALETTE-SCOPED (below).
+     The rule that produced them survives the re-palette: a deep colour on this
+     near-black rail is close to invisible (the old XCEL red measured 2.05:1,
+     under the 3:1 a state indicator needs), and a mid stop is an awkward fill
+     where neither white nor near-black clears 4.5:1 at chip size. So every
+     palette puts a LIGHT stop on the rail and fills chips with a light tint
+     over dark ink. Re-measure before darkening any of them. */
+
+  --n-50:#ffffff; --n-75:#f5f5f6; --n-100:#ececee; --n-200:#d9d9dd;
+  --n-300:#c7c7cc; --n-600:#818188; --n-700:#616168;
+
+  --success-100:#cce7d7; --success-500:#018937; --success-700:#005221;
+  --warning-100:#fdf0d4; --warning-300:#fbd27e; --warning-500:#f9b428; --warning-800:#63470f;
+  --error-100:#f4cccc; --error-500:#cb0000; --error-700:#790000;
+  --info-100:#d2f1f6; --info-700:#12717e;
+
+  --page:#f4f4f6; --card:#ffffff; --line:#e4e4e8; --line-2:#d4d4da;
+  --radius:10px; --radius-sm:7px;
+  --shadow:0 1px 2px rgba(0,0,0,.05), 0 4px 14px rgba(0,0,0,.05);
+  --prov:#5b4bbd; --prov-bg:#f1eefc; --prov-line:#cec6f2;
+}
+
+/* ============================================================
+   PALETTES — the primary (interactive + data) and the second data hue.
+   Swapped live from the prototype bar; default is set on <html>.
+   Every stop below is measured, not picked by eye. The four that matter:
+     rail active  ≥3:1 on #26262b   link 500  ≥4.5:1 on white
+     white on 500 ≥4.5:1            gauge 500 vs slate 500 ≥1.6:1
+   ============================================================ */
+
+/* A · NAVY — the insurance-conventional read. Highest headroom of the
+   three (8.39:1 link) and the widest gap to the brand red in hue. */
+:root[data-palette="navy"]{
+  --primary-100:#dde5f2; --primary-200:#b4c6e0; --primary-300:#7d9cc6;
+  --primary-400:#4a72a3; --primary-500:#1f4e88; --primary-600:#163d6e;
+  --primary-700:#102d53; --primary-800:#0a1f3b; --primary-900:#061225;
+  --slate-100:#f5ece0; --slate-300:#d7b98c; --slate-500:#a9682a;
+  --slate-600:#8a5420; --slate-700:#6b4218;
+  --rail-accent:#7d9cc6; --rail-chip:#b4c6e0; --rail-chip-ink:#102d53;
+}
+/* B · GRAPHITE — near-neutral. Red becomes the only saturated colour in
+   the product, so the exam accent is unmissable. The trade is that
+   progress data in grey can read as inactive; judge that on the gauge. */
+:root[data-palette="graphite"]{
+  --primary-100:#e7e8ec; --primary-200:#ccd0d8; --primary-300:#98a0ae;
+  --primary-400:#6a7385; --primary-500:#3f4753; --primary-600:#333944;
+  --primary-700:#252a33; --primary-800:#1a1e25; --primary-900:#101318;
+  --slate-100:#f5ece0; --slate-300:#d7b98c; --slate-500:#a9682a;
+  --slate-600:#8a5420; --slate-700:#6b4218;
+  --rail-accent:#98a0ae; --rail-chip:#c8cdd6; --rail-chip-ink:#252a33;
+}
+/* C · TEAL — the least "bank" of the three. Its elective hue is a stop
+   LIGHTER than the other two (#b8873f, not #a9682a): teal 500 is dark
+   enough that the deeper bronze collapses to 1.35:1 against it. */
+:root[data-palette="teal"]{
+  --primary-100:#d3e7e7; --primary-200:#9fd0d0; --primary-300:#63b0b2;
+  --primary-400:#2b8a8d; --primary-500:#0f6e72; --primary-600:#0b585b;
+  --primary-700:#084346; --primary-800:#052e30; --primary-900:#031b1c;
+  --slate-100:#f7eee1; --slate-300:#dcbc8c; --slate-500:#b8873f;
+  --slate-600:#94692e; --slate-700:#6e4e22;
+  --rail-accent:#63b0b2; --rail-chip:#9fd0d0; --rail-chip-ink:#084346;
+}
+
+:root[data-theme="dark"]{
+  --ink:#f2f2f4; --ink-2:#b6b6be; --ink-3:#8d8d96;
+  --page:#141417; --card:#1d1d21; --line:#2e2e35; --line-2:#3d3d45;
+  --n-50:#1d1d21; --n-75:#232329; --n-100:#2a2a31; --n-200:#3a3a42; --n-300:#4a4a53;
+  --brand-100:#3a1416; --brand-300:#8c272e; --brand-500:#e8737a;
+  --brand-600:#f09aa0; --brand-700:#f6c2c6;
+  --success-100:#16261f; --success-500:#57b585; --success-700:#8fd4b0;
+  --warning-100:#2a2318; --warning-300:#4a3d22; --warning-500:#e0b155; --warning-800:#f0d49a;
+  --error-100:#2b1414; --error-500:#f08a8a; --error-700:#f6b8b8;
+  --info-100:#122428; --info-700:#7fd0dd;
+  --prov:#b0a3ff; --prov-bg:#231f38; --prov-line:#3b3363;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+}
+
+/* Palettes — dark. 500 inverts to a LIGHT stop (it is text and fill on a
+   dark card), and --on-primary carries the dark ink that sits on it. */
+:root[data-theme="dark"][data-palette="navy"]{
+  --primary-100:#15223a; --primary-200:#1d3050; --primary-300:#35598f;
+  --primary-400:#5b86bd; --primary-500:#8fb4e0; --primary-600:#b3cded;
+  --primary-700:#d3e2f5; --on-primary:#0a1f3b;
+  /* Dark Elective. NOT a light bronze: all three palettes put their dark
+     primary-500 at ~0.44 luminance, and a light bronze lands there too —
+     the two gauge segments measured 1.01:1 against each other, i.e. the
+     same bar in two hues. #a86e28 keeps 3.94:1 on the dark card while
+     holding ~2:1 against every primary. Lighten it and the gauge stops
+     reading as two things. */
+  --slate-100:#2a2118; --slate-300:#6b4f24; --slate-500:#a86e28;
+  --slate-600:#c98f45; --slate-700:#dcae70;
+}
+:root[data-theme="dark"][data-palette="graphite"]{
+  --primary-100:#22252b; --primary-200:#2f343d; --primary-300:#4d5563;
+  --primary-400:#7b8494; --primary-500:#aab2c0; --primary-600:#c6ccd6;
+  --primary-700:#dfe3ea; --on-primary:#101318;
+  /* Dark Elective. NOT a light bronze: all three palettes put their dark
+     primary-500 at ~0.44 luminance, and a light bronze lands there too —
+     the two gauge segments measured 1.01:1 against each other, i.e. the
+     same bar in two hues. #a86e28 keeps 3.94:1 on the dark card while
+     holding ~2:1 against every primary. Lighten it and the gauge stops
+     reading as two things. */
+  --slate-100:#2a2118; --slate-300:#6b4f24; --slate-500:#a86e28;
+  --slate-600:#c98f45; --slate-700:#dcae70;
+}
+:root[data-theme="dark"][data-palette="teal"]{
+  --primary-100:#0f2426; --primary-200:#143537; --primary-300:#1f6165;
+  --primary-500:#5fc0c4; --primary-600:#8ed6d9; --primary-700:#bae8ea;
+  --primary-400:#2f9498; --on-primary:#052e30;
+  /* Dark Elective. NOT a light bronze: all three palettes put their dark
+     primary-500 at ~0.44 luminance, and a light bronze lands there too —
+     the two gauge segments measured 1.01:1 against each other, i.e. the
+     same bar in two hues. #a86e28 keeps 3.94:1 on the dark card while
+     holding ~2:1 against every primary. Lighten it and the gauge stops
+     reading as two things. */
+  --slate-100:#2a2118; --slate-300:#6b4f24; --slate-500:#a86e28;
+  --slate-600:#c98f45; --slate-700:#dcae70;
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font:14px/1.55 var(--font-body);
+  -webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-family:var(--font-heading);font-weight:900;letter-spacing:-.015em}
+h1{font-size:26px;line-height:1.18}
+h2{font-size:19px;line-height:1.25}
+h3{font-size:15px;font-weight:700;letter-spacing:-.005em}
+p{margin:0 0 10px}
+button{font:inherit}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);
+  font-family:var(--font-body)}
+.muted{color:var(--ink-2)}
+.tiny{font-size:11.5px;line-height:1.45;color:var(--ink-2)}
+.tiny b{color:var(--ink);font-weight:600}
+
+/* ---------- prototype bar ---------- */
+.pbar{background:#1a1a1d;color:rgba(255,255,255,.9);display:flex;align-items:center;gap:14px;
+  padding:0 18px;height:40px;font-size:12px;position:sticky;top:0;z-index:60}
+.pbar .tag{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:rgba(255,255,255,.5)}
+.pbar .sp{margin-left:auto;display:flex;gap:8px;align-items:center}
+.pbtn{appearance:none;border:1px solid rgba(255,255,255,.2);background:transparent;
+  color:rgba(255,255,255,.85);font-size:11.5px;font-weight:600;padding:6px 10px;border-radius:6px;cursor:pointer}
+.pbtn:hover{background:rgba(255,255,255,.09)}
+.pbtn[aria-pressed="true"]{background:#fff;color:#1a1a1d;border-color:#fff}
+.pbtn:focus-visible{outline:2px solid var(--rail-accent);outline-offset:2px}
+.plink{color:rgba(255,255,255,.72);font-size:12px;font-weight:600;text-decoration:none;
+  border-bottom:1px solid rgba(255,255,255,.25);padding-bottom:1px}
+.plink:hover{color:#fff;border-bottom-color:#fff}
+/* Palette switcher — PROTOTYPE CONTROL, not product UI. It lives on the dark
+   bar with the other prototype controls and is deliberately not styled like
+   anything the learner would see. Swatches are literal hex, not tokens: the
+   control has to show the palette you are NOT currently in. */
+.palsw{display:flex;align-items:center;gap:4px;padding:3px;border-radius:8px;
+  background:rgba(255,255,255,.07);margin-right:4px}
+.pallb{font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:rgba(255,255,255,.5);padding:0 5px 0 4px}
+.palbtn{appearance:none;border:0;background:transparent;color:rgba(255,255,255,.72);
+  font:600 11.5px var(--font-body);padding:4px 8px;border-radius:6px;cursor:pointer;
+  display:flex;align-items:center;gap:5px}
+.palbtn i{width:9px;height:9px;border-radius:50%;display:block;
+  box-shadow:0 0 0 1px rgba(255,255,255,.35)}
+.palbtn:hover{background:rgba(255,255,255,.1);color:#fff}
+.palbtn[aria-checked="true"]{background:#fff;color:#1a1a1d}
+.palbtn[aria-checked="true"] i{box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+.palbtn:focus-visible{outline:2px solid var(--rail-accent);outline-offset:2px}
+.plink:focus-visible{outline:2px solid var(--rail-accent);outline-offset:3px}
+
+/* ---------- demo controls ---------- */
+.demo{background:var(--rail);border-bottom:2px solid var(--rail-accent);
+  display:flex;align-items:center;gap:16px;padding:9px 18px;flex-wrap:wrap}
+.demo .lb{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--rail-muted)}
+.grp{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.dchip{appearance:none;border:1px solid var(--rail-line);background:transparent;color:var(--rail-txt);
+  font-size:11.5px;font-weight:600;padding:6px 10px;border-radius:14px;cursor:pointer;white-space:nowrap}
+.dchip:hover{background:rgba(255,255,255,.08)}
+.dchip[aria-pressed="true"]{background:var(--rail-chip);border-color:var(--rail-chip);color:var(--rail-chip-ink)}
+.dchip:focus-visible{outline:2px solid var(--rail-accent);outline-offset:2px}
+
+/* ---------- app header ---------- */
+.appbar{background:var(--card);border-bottom:1px solid var(--line);height:68px;
+  display:flex;align-items:center;gap:18px;padding:0 22px}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.logo img{height:38px;display:block}
+.lock{display:flex;flex-direction:column;line-height:1}
+.lock .w{font-family:var(--font-heading);font-weight:900;font-size:27px;letter-spacing:-.02em;color:var(--ink)}
+.lock .w i{color:var(--brand-500);font-style:normal}
+.lock .s{font-family:var(--font-heading);font-weight:400;font-size:11px;letter-spacing:.02em;
+  color:var(--ink-2);margin-top:3px}
+.lock .s b{font-weight:700;font-size:9px;color:var(--ink-3)}
+.search{margin-left:auto;width:300px;border:1px solid var(--line-2);border-radius:8px;padding:9px 12px;
+  font:12.5px var(--font-body);background:var(--card);color:var(--ink)}
+.search::placeholder{color:var(--ink-3)}
+.util{display:flex;gap:8px;align-items:center}
+.ubtn{width:34px;height:34px;border-radius:50%;border:1px solid var(--line-2);background:var(--card);
+  color:var(--ink-2);cursor:pointer;font-size:12px}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--brand-500);color:#fff;
+  display:grid;place-items:center;font:700 12px var(--font-body)}
+
+/* ---------- shell ---------- */
+.shell{display:grid;grid-template-columns:252px minmax(0,1fr);min-height:calc(100vh - 108px)}
+.rail{background:var(--rail);padding:18px 0 30px;display:flex;flex-direction:column;gap:4px}
+.rprof{padding:0 16px 15px;border-bottom:1px solid var(--rail-line);margin-bottom:12px}
+.rprof .row{display:flex;gap:10px;align-items:center}
+.rprof .av{width:40px;height:40px;border-radius:50%;background:var(--brand-500);color:#fff;
+  display:grid;place-items:center;font:700 14px var(--font-body);flex:none;
+  box-shadow:0 0 0 2px var(--rail),0 0 0 4px var(--brand-700)}
+.rprof .nm{color:#fff;font-weight:700;font-size:13.5px;white-space:nowrap}
+.rprof .sub{color:var(--rail-muted);font-size:11px}
+.rlic{margin-top:12px;display:flex;flex-direction:column;gap:4px}
+.rlic .k{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--rail-muted)}
+.rcap{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--rail-muted);
+  padding:14px 16px 5px}
+.ritem{display:flex;align-items:center;gap:10px;width:100%;text-align:left;appearance:none;border:0;
+  background:transparent;color:var(--rail-txt);font:600 13px var(--font-body);padding:9px 16px;cursor:pointer;
+  border-left:3px solid transparent}
+.ritem:hover{background:rgba(255,255,255,.07);color:#fff}
+.ritem[aria-current="page"]{background:rgba(255,255,255,.1);color:#fff;border-left-color:var(--rail-accent)}
+.ritem:focus-visible{outline:2px solid var(--rail-accent);outline-offset:-2px}
+.ritem .g{width:17px;text-align:center;opacity:.85;flex:none}
+.ritem .badge{margin-left:auto;font-size:10px;font-weight:700;background:#ebb2b6;color:#6f1218;
+  border-radius:9px;padding:2px 6px}
+
+/* ---------- content ---------- */
+.main{padding:0 0 60px;min-width:0}
+/* Flat, not a tint wash. The gradient here was a brand-red fade, which put
+   the loudest colour in the product behind its quietest content — and it
+   read as a coloured band the eye had to get past before the page began.
+   The hero is the page's own surface now; the rule below it does the
+   separating. */
+.hero{background:var(--card);border-bottom:1px solid var(--line);padding:24px 40px 22px}
+.hero .row{display:flex;align-items:flex-start;gap:20px;flex-wrap:wrap}
+.hero p{max-width:66ch;margin:6px 0 0;color:var(--ink-2);font-size:13.5px}
+.body{padding:22px 40px 0;display:flex;flex-direction:column;gap:20px}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);position:relative}
+.card .pad{padding:18px 20px}
+.chead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+.chead .link{margin-left:auto;color:var(--primary-500);font-weight:700;font-size:12px;
+  background:none;border:0;cursor:pointer;padding:0}
+.chead .link:hover{text-decoration:underline}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:20px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(214px,1fr));gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(auto-fit,minmax(186px,1fr));gap:14px}
+
+.stat{background:var(--n-75);border:1px solid var(--line);border-radius:var(--radius-sm);padding:12px 13px}
+.stat .k{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.stat .v{font-family:var(--font-heading);font-weight:900;font-size:21px;margin-top:3px;color:var(--ink)}
+.stat .v.sm{font-size:16px}
+.stat.warn{background:var(--warning-100);border-color:var(--warning-300)}
+.stat.warn .v{color:var(--warning-800)}
+
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;letter-spacing:.04em;
+  text-transform:uppercase;padding:4px 9px;border-radius:5px;border:1px solid;white-space:nowrap}
+.p-ok{color:var(--success-700);background:var(--success-100);border-color:var(--success-500)}
+.p-warn{color:var(--warning-800);background:var(--warning-100);border-color:var(--warning-300)}
+.p-err{color:var(--error-700);background:var(--error-100);border-color:var(--error-500)}
+.p-info{color:var(--info-700);background:var(--info-100);border-color:var(--info-700)}
+.p-neu{color:var(--ink-2);background:var(--n-75);border-color:var(--line-2)}
+.p-brand{color:#fff;background:var(--brand-500);border-color:var(--brand-500)}
+:root[data-theme="dark"] .p-brand{color:var(--brand-900);background:var(--brand-500);border-color:var(--brand-500)}
+
+.btn{appearance:none;border:1px solid var(--primary-500);background:var(--primary-500);color:var(--on-primary);
+  font:700 12.5px var(--font-body);padding:10px 16px;border-radius:7px;cursor:pointer}
+.btn:hover{background:var(--primary-600);border-color:var(--primary-600)}
+.btn.sec{background:transparent;color:var(--primary-500);border-color:var(--line-2)}
+.btn.sec:hover{background:var(--primary-100);border-color:var(--primary-300)}
+.btn.ghost{background:transparent;color:var(--ink-2);border-color:var(--line-2)}
+.btn:focus-visible{outline:2px solid var(--primary-400);outline-offset:2px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+.track{height:8px;border-radius:4px;background:var(--n-100);overflow:hidden;display:flex}
+.track i{display:block;height:100%}
+.legend{display:flex;gap:16px;flex-wrap:wrap;font-size:11.5px;color:var(--ink-2);margin-top:9px}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend em{width:9px;height:9px;border-radius:2px;font-style:normal;display:inline-block}
+
+.tabs{display:inline-flex;background:var(--n-75);border:1px solid var(--line);border-radius:16px;padding:3px;gap:2px}
+.tabs button{appearance:none;border:0;background:transparent;color:var(--ink-2);font:700 12px var(--font-body);
+  padding:8px 14px;border-radius:13px;cursor:pointer}
+.tabs button[aria-pressed="true"]{background:var(--primary-500);color:var(--on-primary)}
+.tabs button:focus-visible{outline:2px solid var(--primary-400);outline-offset:2px}
+
+table{width:100%;border-collapse:collapse;font-size:12.5px}
+th,td{text-align:left;padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:middle}
+th{font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);
+  background:var(--n-75);white-space:nowrap}
+tbody tr:hover{background:var(--n-75)}
+tbody tr:last-child td{border-bottom:0}
+.tw{overflow-x:auto;border:1px solid var(--line);border-radius:var(--radius);background:var(--card)}
+
+.taskrow{display:flex;align-items:center;gap:12px;padding:12px 14px;border:1px solid var(--line);
+  border-radius:var(--radius-sm);background:var(--card)}
+.taskrow+.taskrow{margin-top:8px}
+.mark{width:19px;height:19px;border-radius:50%;flex:none;border:2px solid var(--n-300);display:grid;
+  place-items:center;font-size:10px;color:#fff}
+.mark.done{background:var(--success-500);border-color:var(--success-500)}
+.mark.prog{border-color:var(--primary-500);border-width:3px}
+.mark.todo{border-style:dashed}
+.taskrow .t{flex:1;min-width:0}
+.taskrow .t .n{font-size:13px;font-weight:600}
+.taskrow .t .m{font-size:11px;color:var(--ink-3);margin-top:2px}
+.taskrow.exam{border-color:var(--brand-300);border-left:4px solid var(--brand-500);background:var(--brand-100)}
+:root[data-theme="dark"] .taskrow.exam{background:rgba(168,28,36,.16)}
+
+.shelf{display:flex;gap:14px;overflow-x:auto;padding-bottom:6px}
+.tile{flex:0 0 194px;border:1px solid var(--line);border-radius:var(--radius-sm);overflow:hidden;background:var(--card)}
+.tile .cv{height:88px;background:linear-gradient(135deg,var(--primary-500),var(--primary-700));
+  display:grid;place-items:center;color:rgba(255,255,255,.35);font:900 26px var(--font-heading)}
+.tile .cv.b{background:linear-gradient(135deg,var(--slate-500),var(--slate-700))}
+.tile .bd{padding:11px 12px}
+.tile .bd .n{font-size:12.5px;font-weight:700;line-height:1.35}
+.tile .bd .m{font-size:11px;color:var(--ink-3);margin-top:4px}
+
+.warnband{border:1px solid var(--warning-300);background:var(--warning-100);color:var(--warning-800);
+  border-radius:var(--radius-sm);padding:11px 13px;font-size:12.5px;line-height:1.45}
+.nd{border:1.5px dashed var(--warning-300);border-radius:var(--radius-sm);padding:13px;
+  background:repeating-linear-gradient(135deg,transparent,transparent 9px,var(--warning-100) 9px,var(--warning-100) 18px)}
+.nd .k{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--warning-800)}
+.nd .w{background:var(--card);border:1px solid var(--warning-300);border-radius:6px;padding:10px;
+  margin-top:7px;font-size:12px;line-height:1.5;color:var(--ink-2)}
+.nd .w b{color:var(--warning-800)}
+
+/* ---------- provenance ---------- */
+.prov{position:absolute;top:-9px;left:14px;background:var(--prov-bg);border:1px solid var(--prov-line);
+  color:var(--prov);font:700 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;padding:4px 7px;
+  border-radius:5px;z-index:2;display:none;white-space:nowrap}
+body[data-prov="on"] .prov{display:block}
+body[data-prov="on"] .card{border-color:var(--prov-line)}
+.provnote{display:none;border:1px solid var(--prov-line);background:var(--prov-bg);border-radius:var(--radius);
+  padding:14px 16px;font-size:13px;line-height:1.55;color:var(--ink-2)}
+body[data-prov="on"] .provnote{display:block}
+.provnote b{color:var(--prov)}
+
+.foot{padding:34px 40px 0;font-size:12px;color:var(--ink-3);max-width:80ch}
+@media (max-width:900px){.shell{grid-template-columns:1fr}.rail{flex-direction:row;overflow-x:auto}
+  .hero,.body,.foot{padding-left:20px;padding-right:20px}}
+</style>
+</head>
+<body data-prov="off">
+
+<div class="pbar">
+  <span class="tag">XCEL LMS</span>
+  <span>Desktop platform</span>
+  <span style="opacity:.4">·</span>
+  <a class="plink" href="/prototypes/xcel-lms-walkthrough.html">Learner walk-through</a>
+  <a class="plink" href="/prototypes/xcel-lms-wireframes.html">Wireframes &amp; overlap</a>
+  <a class="plink" href="/prototypes/xcel-lms-admin.html">Admin wireframes</a>
+  <a class="plink" href="/prototypes/xcel-lms-exam-task-type-spec.md">Exam task-type spec</a>
+  <span class="sp">
+    <span class="palsw" role="radiogroup" aria-label="Colour palette (prototype only)">
+      <span class="pallb">Palette</span>
+      <button class="palbtn" role="radio" data-pal="navy"     aria-checked="true"><i style="background:#1f4e88"></i>Navy</button>
+      <button class="palbtn" role="radio" data-pal="graphite" aria-checked="false"><i style="background:#3f4753"></i>Graphite</button>
+      <button class="palbtn" role="radio" data-pal="teal"     aria-checked="false"><i style="background:#0f6e72"></i>Teal</button>
+    </span>
+    <button class="pbtn" id="provBtn" aria-pressed="false">Show provenance</button>
+    <button class="pbtn" id="themeBtn" aria-pressed="false">Dark</button>
+  </span>
+</div>
+
+<div class="demo">
+  <span class="lb">Demo</span>
+  <span class="grp" id="dEdu" role="group" aria-label="Education type"></span>
+  <span class="lb" style="margin-left:6px">Progress</span>
+  <span class="grp" id="dProg" role="group" aria-label="Progress state"></span>
+  <span class="lb" style="margin-left:6px">Exam</span>
+  <span class="grp" id="dExam" role="group" aria-label="Licensing exam state"></span>
+</div>
+
+<header class="appbar">
+  <a class="logo" href="#" aria-label="XCEL Insurance Training by Colibri">
+    <img src="/brand/xcel.svg" alt="" onerror="this.style.display='none'">
+    <span class="lock">
+      <span class="w"><i>X</i>CEL</span>
+      <span class="s">Insurance Training <b>by Colibri</b></span>
+    </span>
+  </a>
+  <input class="search" placeholder="Search courses, topics, records">
+  <span class="util">
+    <button class="ubtn" aria-label="Help">?</button>
+    <button class="ubtn" aria-label="Cart">▤</button>
+    <span class="avatar" aria-hidden="true">JR</span>
+  </span>
+</header>
+
+<div class="shell">
+  <nav class="rail" id="rail" aria-label="Sections"></nav>
+  <main class="main">
+    <div class="hero">
+      <div class="row">
+        <div style="flex:1;min-width:0">
+          <span class="eyebrow" id="secEyebrow"></span>
+          <h1 id="secTitle" style="margin-top:5px"></h1>
+          <p id="secDesc"></p>
+        </div>
+        <div id="heroSide"></div>
+      </div>
+    </div>
+    <div class="body" id="body"></div>
+    <p class="foot">Structure and component anatomy from the Colibri dashboard project (STC / FinServ); colour, type lockup and voice re-skinned to XCEL. Lo-fi throughout — no photography, no final copy. Unresolved items are drawn as hatched holes rather than filled in.</p>
+  </main>
+</div>
+
+<script>
+(function(){
+'use strict';
+
+/* ---------------- chrome ---------------- */
+var bodyEl=document.body;
+function setTheme(d){
+  document.documentElement.setAttribute('data-theme',d?'dark':'light');
+  var b=document.getElementById('themeBtn');
+  b.setAttribute('aria-pressed',String(d)); b.textContent=d?'Light':'Dark';
+  try{localStorage.setItem('xcel.dt.theme',d?'dark':'light');}catch(e){}
+}
+document.getElementById('themeBtn').onclick=function(){
+  setTheme(document.documentElement.getAttribute('data-theme')!=='dark');
+};
+var st='light'; try{st=localStorage.getItem('xcel.dt.theme')||'light';}catch(e){}
+setTheme(st==='dark');
+/* Palette. Prototype-only, persisted like the theme so a reviewer comparing
+   two candidates does not lose their place on reload. */
+function setPalette(name){
+  document.documentElement.setAttribute('data-palette',name);
+  var bs=document.querySelectorAll('.palbtn');
+  for(var i=0;i<bs.length;i++){
+    bs[i].setAttribute('aria-checked',String(bs[i].getAttribute('data-pal')===name));
+  }
+  try{localStorage.setItem('xcel.dt.palette',name);}catch(e){}
+}
+(function(){
+  var bs=document.querySelectorAll('.palbtn');
+  for(var i=0;i<bs.length;i++){
+    bs[i].addEventListener('click',function(){setPalette(this.getAttribute('data-pal'));});
+  }
+  var sp='navy'; try{sp=localStorage.getItem('xcel.dt.palette')||'navy';}catch(e){}
+  if(sp!=='navy'&&sp!=='graphite'&&sp!=='teal') sp='navy';
+  setPalette(sp);
+})();
+
+document.getElementById('provBtn').onclick=function(){
+  var on=bodyEl.getAttribute('data-prov')==='on';
+  bodyEl.setAttribute('data-prov',on?'off':'on');
+  this.setAttribute('aria-pressed',String(!on));
+  this.textContent=on?'Show provenance':'Hide provenance';
+};
+
+/* ---------------- dates ---------------- */
+var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+var LONG=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function i2d(s){var p=s.split('-');return new Date(Date.UTC(+p[0],+p[1]-1,+p[2]));}
+function d2i(d){return d.toISOString().slice(0,10);}
+function add(s,n){var d=i2d(s);d.setUTCDate(d.getUTCDate()+n);return d2i(d);}
+function days(a,b){return Math.round((i2d(b)-i2d(a))/864e5);}
+function fmt(s,l){var d=i2d(s);return d.getUTCDate()+' '+(l?LONG:MON)[d.getUTCMonth()]+' '+d.getUTCFullYear();}
+
+/* ---------------- data ---------------- */
+var TODAY='2026-09-01';
+
+/* Per-brand category + deadline labels, exactly the axis
+   `dashboard-education-type` drives in the real dashboard. */
+var EDU={
+  qe:{ id:'qe', label:'Pre-Licensing', path:'Life & Health Pre-Licensing',
+       cat:'Qualifying Education · Texas', reqL:'Required Education', elecL:'Elective Hours',
+       deadlineL:'Target Date', req:30, elec:10, cycle:0 },
+  ce:{ id:'ce', label:'Continuing Ed', path:'Texas L&H Continuing Education',
+       cat:'Continuing Education · Texas', reqL:'Ethics & Consumer Protection', elecL:'General Hours',
+       deadlineL:'License Expires', req:6, elec:18, cycle:2 }
+};
+/* The five compliance states, same rule as the real flag:
+   At Risk = under 30 days left AND under 25% of the requirement done. */
+var PROG=[
+  ['not-started','Not Started · 0%',   0.00, 78, 'Not Started','neu'],
+  ['on-track',   'On Track · 63%',     0.63, 46, 'On Track','ok'],
+  ['at-risk',    'At Risk · 15%',      0.15, 19, 'At Risk','warn'],
+  ['expired',    'Expired',            0.42, -6, 'Expired','err'],
+  ['complete',   'Completed · 100%',   1.00, 31, 'Requirements met','ok']
+];
+
+/* The six licensing-exam states. Four of them are DERIVED from the sit date
+   against today, so a reviewer has no way to reach them by clicking — hence a
+   demo control rather than a clock, matching the walk-through's own reasoning. */
+var EXAM_SCENARIOS=[
+  ['none','Not booked', []],
+  ['scheduled','Scheduled', [{date:add(TODAY,42),prov:'PSI',outcome:null}]],
+  ['imminent','In 5 days', [{date:add(TODAY,5),prov:'PSI',outcome:null}]],
+  ['awaiting','Sat it', [{date:add(TODAY,-2),prov:'PSI',outcome:null}]],
+  ['failed','Not passed', [{date:add(TODAY,-2),prov:'PSI',outcome:'failed'}]],
+  ['passed','Passed', [{date:add(TODAY,-44),prov:'PSI',outcome:'failed'},
+                       {date:add(TODAY,-2),prov:'PSI',outcome:'passed'}]]
+];
+function applyExam(id){
+  for(var i=0;i<EXAM_SCENARIOS.length;i++){
+    if(EXAM_SCENARIOS[i][0]===id){
+      S.exam=id;
+      S.examAttempts=EXAM_SCENARIOS[i][2].map(function(a){return {date:a.date,prov:a.prov,outcome:a.outcome};});
+      return;
+    }
+  }
+}
+
+var S={sec:'dashboard', edu:'qe', prog:'on-track', calView:'daily', courseView:'card',
+       exam:'scheduled', examAttempts:[{date:add(TODAY,42),prov:'PSI',outcome:null}]};
+
+function edu(){ return EDU[S.edu]; }
+function prog(){ for(var i=0;i<PROG.length;i++) if(PROG[i][0]===S.prog) return PROG[i]; return PROG[1]; }
+function totals(){
+  var e=edu(), p=prog(), tot=e.req+e.elec, done=Math.round(tot*p[2]);
+  var reqDone=Math.min(e.req,Math.round(done*0.72)), elecDone=done-reqDone;
+  if(elecDone>e.elec){ elecDone=e.elec; reqDone=done-elecDone; }
+  return {tot:tot,done:done,req:e.req,elec:e.elec,reqDone:reqDone,elecDone:elecDone,pct:Math.round(p[2]*100)};
+}
+function deadline(){ return add(TODAY, prog()[3]); }
+
+/* ---------------- rail ---------------- */
+var NAV=[
+  ['MY LEARNING',[
+    ['dashboard','Dashboard','▤'],
+    ['path','Learning Path','◈'],
+    ['calendar','Study Calendar','▦'],
+    ['courses','My Courses','▥'],
+    ['records','Records & Certificates','✓']
+  ]],
+  ['EXPLORE',[
+    ['recommended','Recommended','★'],
+    ['catalog','Course Catalog','⊞']
+  ]]
+];
+var META={
+  dashboard:['Home','Dashboard','Where you are, what is next, and how long you have.'],
+  path:['My Learning','Learning Path','Every requirement for this licence, what counts toward it, and what is left.'],
+  calendar:['My Learning','Study Calendar','Your plan, built backwards from your exam date — including the exam itself.'],
+  courses:['My Learning','My Courses','Everything you own, current and completed.'],
+  records:['My Learning','Records & Certificates','Completions and credit hours, by state. You may need these years from now.'],
+  recommended:['Explore','Recommended for you','Based on your licence, your state and where you are in the course.'],
+  catalog:['Explore','Course Catalog','Everything XCEL offers for your line of authority.']
+};
+
+function renderRail(){
+  document.getElementById('rail').innerHTML=
+   '<div class="rprof"><div class="row"><span class="av">JR</span>'+
+   '<span style="min-width:0"><span class="nm">Jordan Rivera</span><br>'+
+   '<span class="sub">Meridian Insurance Group</span></span></div>'+
+   '<div class="rlic"><span class="k">Working toward</span>'+
+   '<span style="color:#fff;font-size:12px;font-weight:600">'+edu().path+'</span>'+
+   '<span class="sub">'+edu().cat+'</span></div></div>'+
+   NAV.map(function(g){
+     return '<div class="rcap">'+g[0]+'</div>'+g[1].map(function(it){
+       var badge = (it[0]==='calendar'&&S.prog==='at-risk') ? '<span class="badge">Behind</span>' : '';
+       return '<button class="ritem" data-sec="'+it[0]+'"'+(S.sec===it[0]?' aria-current="page"':'')+
+         '><span class="g" aria-hidden="true">'+it[2]+'</span>'+it[1]+badge+'</button>';
+     }).join('');
+   }).join('');
+}
+
+/* ---------------- widgets ---------------- */
+function gauge(size){
+  var t=totals(), r=(size/2)-9, c=2*Math.PI*r, cx=size/2;
+  var reqFrac=t.reqDone/t.tot, elecFrac=t.elecDone/t.tot;
+  return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'" role="img" '+
+    'aria-label="'+t.pct+' percent complete">'+
+    '<circle cx="'+cx+'" cy="'+cx+'" r="'+r+'" fill="none" stroke="var(--n-100)" stroke-width="11"/>'+
+    '<circle cx="'+cx+'" cy="'+cx+'" r="'+r+'" fill="none" stroke="var(--primary-500)" stroke-width="11" '+
+      'stroke-dasharray="'+(c*reqFrac)+' '+c+'" stroke-linecap="butt" transform="rotate(-90 '+cx+' '+cx+')"/>'+
+    '<circle cx="'+cx+'" cy="'+cx+'" r="'+r+'" fill="none" stroke="var(--slate-500)" stroke-width="11" '+
+      'stroke-dasharray="'+(c*elecFrac)+' '+c+'" stroke-dashoffset="'+(-c*reqFrac)+'" '+
+      'stroke-linecap="butt" transform="rotate(-90 '+cx+' '+cx+')"/>'+
+    '<text x="'+cx+'" y="'+(cx+2)+'" text-anchor="middle" dominant-baseline="middle" '+
+      'font-family="Lato,sans-serif" font-weight="900" font-size="'+(size*0.26)+'" fill="var(--ink)">'+t.pct+'%</text>'+
+    '<text x="'+cx+'" y="'+(cx+size*0.19)+'" text-anchor="middle" font-family="Open Sans,sans-serif" '+
+      'font-size="'+(size*0.085)+'" fill="var(--ink-3)">complete</text></svg>';
+}
+function bars(){
+  var t=totals(), e=edu();
+  function one(label,done,req,color){
+    return '<div style="margin-bottom:9px"><div style="display:flex;justify-content:space-between;font-size:11.5px;margin-bottom:4px">'+
+      '<span class="muted">'+label+'</span><span><b>'+done+'</b> / '+req+' hrs</span></div>'+
+      '<div class="track"><i style="width:'+(req?done/req*100:0)+'%;background:'+color+'"></i></div></div>';
+  }
+  return one(e.reqL,t.reqDone,t.req,'var(--primary-500)')+one(e.elecL,t.elecDone,t.elec,'var(--slate-500)');
+}
+function statusPill(){
+  var p=prog();
+  return '<span class="pill p-'+p[5]+'">'+p[4]+'</span>';
+}
+function deadlineStat(){
+  var p=prog(), d=p[3], e=edu();
+  var warn = d<0 || (d<30 && totals().pct<25);
+  return '<div class="stat'+(warn?' warn':'')+'"><div class="k">'+e.deadlineL+'</div>'+
+    '<div class="v sm">'+fmt(deadline())+'</div></div>'+
+    '<div class="stat'+(warn?' warn':'')+'"><div class="k">Time remaining</div>'+
+    '<div class="v sm">'+(d<0?Math.abs(d)+' days past':d+' days')+'</div></div>';
+}
+function clpCard(){
+  var t=totals(), e=edu();
+  return '<div class="card"><span class="prov">ClpJumpBackInBand · V1 flat white</span>'+
+   '<div class="pad" style="display:flex;gap:26px;flex-wrap:wrap">'+
+     '<div style="flex:1 1 340px;min-width:0">'+
+       '<div class="chead"><span class="eyebrow">Current learning path</span>'+
+       '<button class="link" data-sec="path">View details ›</button></div>'+
+       '<div style="display:flex;gap:20px;align-items:center;flex-wrap:wrap">'+
+         gauge(112)+
+         '<div style="flex:1;min-width:180px">'+
+           '<h3 style="margin-bottom:5px">'+e.path+'</h3>'+
+           '<div class="tiny" style="margin-bottom:9px">'+e.cat+' · '+t.done+' of '+t.tot+' hrs</div>'+
+           bars()+
+           '<div class="legend"><span><em style="background:var(--primary-500)"></em>'+e.reqL+'</span>'+
+           '<span><em style="background:var(--slate-500)"></em>'+e.elecL+'</span></div>'+
+         '</div>'+
+       '</div>'+
+       '<div class="grid3" style="margin-top:16px">'+deadlineStat()+
+       '<div class="stat"><div class="k">Status</div><div class="v sm" style="margin-top:5px">'+statusPill()+'</div></div></div>'+
+     '</div>'+
+     '<div style="flex:0 1 268px;min-width:230px;border-left:1px solid var(--line);padding-left:24px">'+
+       jumpBackIn()+
+     '</div>'+
+   '</div></div>';
+}
+function jumpBackIn(){
+  var p=prog();
+  if(p[0]==='complete'){
+    return '<span class="eyebrow">Requirements met</span>'+
+     '<h3 style="margin:6px 0 8px">You are ready to sit</h3>'+
+     '<p class="tiny">Every required hour is complete and reported. The next step is your licensing exam.</p>'+
+     '<button class="btn" data-sec="calendar" style="width:100%;margin-top:6px">Go to my exam</button>'+
+     '<button class="btn ghost" style="width:100%;margin-top:8px">Download transcript</button>';
+  }
+  if(p[0]==='not-started'){
+    return '<span class="eyebrow">Start here</span>'+
+     '<h3 style="margin:6px 0 8px">Chapter 1 · Insurance Basics</h3>'+
+     '<p class="tiny">About 1 hr 45 · video, reading and a chapter quiz.</p>'+
+     '<div class="track" style="margin:10px 0 6px"><i style="width:0;background:var(--primary-500)"></i></div>'+
+     '<div class="tiny">Not started</div>'+
+     '<button class="btn" style="width:100%;margin-top:12px">Begin Chapter 1</button>';
+  }
+  return '<span class="eyebrow">Jump back in</span>'+
+   '<h3 style="margin:6px 0 8px">Chapter 7 · Policy Provisions</h3>'+
+   '<p class="tiny">Video · 34 min remaining</p>'+
+   '<div class="track" style="margin:10px 0 6px"><i style="width:58%;background:var(--primary-500)"></i></div>'+
+   '<div class="tiny">58% through this chapter</div>'+
+   '<button class="btn" style="width:100%;margin-top:12px">Resume course</button>'+
+   '<div class="tiny" style="margin-top:11px;padding-top:11px;border-top:1px solid var(--line)">'+
+   '<b>Up next</b><br>Chapter 8 · Annuity Suitability</div>';
+}
+
+/* --- exam anchor card (the new task type) --- */
+function currentAttempt(){
+  var a=S.examAttempts; if(!a.length) return null;
+  for(var i=a.length-1;i>=0;i--) if(!a[i].outcome) return a[i];
+  return a[a.length-1];
+}
+function examState(){
+  var a=currentAttempt(); if(!a) return 'unscheduled';
+  if(a.outcome==='passed') return 'passed';
+  if(a.outcome==='failed') return 'failed';
+  var d=days(TODAY,a.date);
+  if(d<0) return 'awaiting';
+  return d<=7?'imminent':'scheduled';
+}
+function examCard(){
+  var st=examState(), a=currentAttempt(), inner='';
+  var head='<div class="chead"><span class="eyebrow">Licensing exam</span>'+
+    (st!=='unscheduled'?'<button class="link" data-x="edit">Edit ›</button>':'')+'</div>'+
+    '<h3 style="margin-bottom:3px">Texas Life &amp; Health</h3>'+
+    '<div class="tiny" style="margin-bottom:12px">Taken with an external provider</div>';
+  if(st==='unscheduled'){
+    inner='<div class="stat"><div class="k">Target</div><div class="v sm">'+fmt(add(TODAY,42))+'</div></div>'+
+      '<p class="tiny" style="margin:10px 0">Not booked yet. Book with a provider first, then tell us the date.</p>'+
+      '<button class="btn" data-x="sched" style="width:100%">Schedule exam</button>';
+  } else if(st==='scheduled'||st==='imminent'){
+    var d=days(TODAY,a.date);
+    inner=(st==='imminent'?'<span class="pill p-warn" style="margin-bottom:9px">In '+d+' day'+(d===1?'':'s')+'</span>':'')+
+      '<div class="grid3">'+
+      '<div class="stat"><div class="k">Exam date</div><div class="v sm">'+fmt(a.date)+'</div></div>'+
+      '<div class="stat"><div class="k">In</div><div class="v sm">'+d+' days</div></div></div>'+
+      '<p class="tiny" style="margin:10px 0 0">'+a.prov+' · Austin North · 09:00</p>';
+  } else if(st==='awaiting'){
+    inner='<span class="pill p-neu" style="margin-bottom:9px">Awaiting result</span>'+
+      '<p class="tiny">You sat on <b>'+fmt(a.date,1)+'</b>. Let us know how it went and we’ll update your records.</p>'+
+      '<button class="btn" data-x="result" style="width:100%;margin-top:10px">Record result</button>';
+  } else if(st==='passed'){
+    inner='<span class="pill p-ok" style="margin-bottom:9px">Passed</span>'+
+      '<p class="tiny"><b>Passed '+fmt(a.date,1)+'</b><br>Added to your records.</p>'+
+      '<button class="btn sec" data-sec="records" style="width:100%;margin-top:10px">View my records</button>';
+  } else {
+    inner='<span class="pill p-warn" style="margin-bottom:9px">Not passed</span>'+
+      '<p class="tiny">Attempt '+S.examAttempts.length+' · '+fmt(a.date)+'<br>'+
+      'Your coursework and hours are unaffected.</p>'+
+      '<button class="btn" data-x="retake" style="width:100%;margin-top:10px">Schedule retake</button>'+
+      '<div class="warnband" style="margin-top:10px">Booking close in narrows your study plan options.</div>';
+  }
+  return '<div class="card"><span class="prov">ExamDateCard + ‘licensing-exam’ kind</span>'+
+    '<div class="pad">'+head+inner+'</div></div>';
+}
+
+/* ---------------- sections ---------------- */
+var SECTIONS={
+dashboard:function(){
+  var p=prog(), h='';
+  if(p[0]==='at-risk') h+='<div class="warnband"><b>You are behind your plan.</b> '+
+    'At this pace you will not finish before '+fmt(deadline())+'. Adding two study days a week closes the gap — '+
+    '<button class="link" data-sec="calendar" style="margin-left:0">rebuild my plan ›</button></div>';
+  if(p[0]==='expired') h+='<div class="warnband" style="border-color:var(--error-500);background:var(--error-100);color:var(--error-700)">'+
+    '<b>Your course window closed on '+fmt(deadline())+'.</b> Your completed hours are kept. Contact your agency to be re-enrolled.</div>';
+  h+=clpCard();
+  h+='<div class="grid2">'+examCard()+
+     '<div class="card"><span class="prov">MembershipKpis · vertical</span><div class="pad">'+
+     '<div class="chead"><span class="eyebrow">Your record so far</span></div>'+
+     '<div class="grid4">'+
+     '<div class="stat"><div class="k">Hours earned</div><div class="v">'+totals().done+'</div></div>'+
+     '<div class="stat"><div class="k">Chapters</div><div class="v">'+Math.round(totals().pct/100*12)+' / 12</div></div>'+
+     '<div class="stat"><div class="k">Practice score</div><div class="v">'+(totals().pct>50?'82%':'—')+'</div></div>'+
+     '<div class="stat"><div class="k">Seat paid by</div><div class="v sm" style="font-size:13px;margin-top:6px">Meridian</div></div>'+
+     '</div></div></div></div>';
+  h+='<div class="card"><span class="prov">DashboardRecommendedBand · shelf</span><div class="pad">'+
+     '<div class="chead"><span class="eyebrow">Recommended for you</span>'+
+     '<button class="link" data-sec="recommended">See all ›</button></div>'+
+     '<p class="tiny" style="margin-top:-6px;margin-bottom:13px">Based on your licence, your state, and where you are in the course.</p>'+
+     shelf()+'</div></div>';
+  h+=provNote('The dashboard is the <b>ClpJumpBackInBand</b> top band over a two-up row, then the full-bleed '+
+     '<b>DashboardRecommendedBand</b> — the same arrangement the real rebrand renders, with the segmented '+
+     'gauge and the deadline / time-remaining stat pair driven by <b>dashboard-progress-state</b>. What is new '+
+     'here is the exam card: nothing in the dashboard project models an external exam yet.');
+  return h;
+},
+path:function(){
+  var t=totals(), e=edu();
+  var h='<div class="card"><span class="prov">ProgressTrackerCard · layout=default</span><div class="pad">'+
+   '<div style="display:flex;gap:28px;align-items:center;flex-wrap:wrap">'+gauge(132)+
+   '<div style="flex:1;min-width:240px">'+bars()+
+   '<div class="legend"><span><em style="background:var(--primary-500)"></em>'+e.reqL+'</span>'+
+   '<span><em style="background:var(--slate-500)"></em>'+e.elecL+'</span></div></div>'+
+   '<div class="grid3" style="flex:1 1 260px">'+deadlineStat()+
+   '<div class="stat"><div class="k">Status</div><div class="v sm" style="margin-top:5px">'+statusPill()+'</div></div></div>'+
+   '</div></div></div>';
+  h+='<div class="card"><span class="prov">LearningPathDetailPanel · Progress tab</span><div class="pad">'+
+   '<div class="chead"><h2>'+e.reqL+'</h2><span class="tiny" style="margin-left:auto">'+
+   '<b>'+t.reqDone+'</b> / '+t.req+' hrs</span></div>'+courseList('req')+
+   '<div class="chead" style="margin-top:22px"><h2>'+e.elecL+'</h2><span class="tiny" style="margin-left:auto">'+
+   '<b>'+t.elecDone+'</b> / '+t.elec+' hrs</span></div>'+courseList('elec')+'</div></div>';
+  h+='<div class="card"><span class="prov">pathRequirementsFor()</span><div class="pad">'+
+   '<div class="chead"><h2>What this licence requires</h2></div>'+
+   '<div class="grid4" style="margin-bottom:14px">'+
+   '<div class="stat"><div class="k">Total hours</div><div class="v">'+t.tot+'</div></div>'+
+   '<div class="stat"><div class="k">'+e.reqL+'</div><div class="v">'+t.req+'</div></div>'+
+   '<div class="stat"><div class="k">'+e.elecL+'</div><div class="v">'+t.elec+'</div></div>'+
+   '<div class="stat"><div class="k">Renewal cycle</div><div class="v sm" style="margin-top:6px">'+
+   (e.cycle?e.cycle+' years':'— pre-licensure')+'</div></div></div>'+
+   '<ul style="margin:0;padding-left:19px;font-size:13px;color:var(--ink-2);line-height:1.7">'+
+   (S.edu==='qe'
+     ? '<li>40 hours of qualifying education must be completed before the licensing exam.</li>'+
+       '<li>Your course window is 30 days from enrolment and cannot be extended.</li>'+
+       '<li>Hours are reported to the state by XCEL once the course is complete.</li>'
+     : '<li>24 hours every two years, of which 6 must be ethics and consumer protection.</li>'+
+       '<li>Carry-over of excess hours is not permitted in Texas.</li>'+
+       '<li>Hours are reported within 10 business days of completion.</li>')+
+   '</ul></div></div>';
+  h+=provNote('This is <b>ProgressTrackerCard</b> plus the <b>LearningPathDetailPanel</b> tabs, flattened onto one '+
+   'page because a pre-licensing learner has exactly one path — the multi-path sheet, the count variants and '+
+   'the grid/table landing are all in the dashboard project and all unnecessary here until a learner holds a '+
+   'second line of authority. The category labels come from the education-type axis, which is why '+
+   'switching to Continuing Ed above renames every one of them.');
+  return h;
+},
+calendar:function(){
+  var h='<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">'+
+   '<div class="tabs" role="group" aria-label="Calendar view">'+
+   [['daily','Daily'],['all','All tasks'],['grid','Calendar']].map(function(v){
+     return '<button data-cal="'+v[0]+'"'+(S.calView===v[0]?' aria-pressed="true"':' aria-pressed="false"')+'>'+v[1]+'</button>';
+   }).join('')+'</div>'+
+   '<span class="tiny" style="margin-left:auto">Plan built backwards from '+fmt(currentAttempt()?currentAttempt().date:add(TODAY,42))+'</span></div>';
+  /* The exam + projected-completion pair is a SUMMARY of the plan, so it reads
+     as a footer, not a header: the learner opens this section for the plan
+     itself (today's tasks, the month, the list), and leading with two summary
+     cards pushed that below the fold. Built here, appended after the plan
+     body — before provNote, which is prototype chrome and stays last. */
+  var summary='<div class="grid2">'+examCard()+
+   '<div class="card"><span class="prov">ProjectedCompletionCard</span><div class="pad">'+
+   '<div class="chead"><span class="eyebrow">Projected completion</span></div>'+
+   '<h3 style="margin-bottom:8px">'+fmt(add(TODAY, S.prog==='at-risk'?34:16),1)+'</h3>'+
+   (S.prog==='at-risk'
+     ? '<div class="warnband">That is <b>after</b> your exam date. Add study days, or move the exam — you can do either without losing progress.</div>'
+     : '<p class="tiny">Comfortably ahead of your exam date at your current pace.</p>')+
+   '<div class="grid3" style="margin-top:12px">'+
+   '<div class="stat"><div class="k">Study days</div><div class="v">'+(S.prog==='at-risk'?9:24)+'</div></div>'+
+   '<div class="stat"><div class="k">Per week</div><div class="v">5</div></div></div>'+
+   '</div></div></div>';
+
+  if(S.calView==='grid'){
+    h+='<div class="card"><span class="prov">GridView</span><div class="pad">'+
+      '<div class="chead"><h2>September 2026</h2></div>'+calGrid()+'</div></div>';
+  } else if(S.calView==='all'){
+    h+='<div class="card"><span class="prov">TaskListTable</span>'+
+      '<div class="tw" style="border:0;box-shadow:none"><table><thead><tr>'+
+      '<th>Task</th><th>Type</th><th>Due</th><th>Length</th><th>Status</th></tr></thead><tbody>'+
+      allTasks().map(function(t){
+        return '<tr><td><b>'+t[0]+'</b></td><td>'+t[1]+'</td><td>'+t[2]+'</td><td>'+t[3]+'</td>'+
+          '<td><span class="pill p-'+t[5]+'">'+t[4]+'</span></td></tr>';
+      }).join('')+'</tbody></table></div></div>';
+  } else {
+    h+='<div class="card"><span class="prov">DailyView + TaskRow</span><div class="pad">'+
+      '<div class="chead"><h2>Today · '+fmt(TODAY,1)+'</h2>'+
+      '<span class="tiny" style="margin-left:auto">3 tasks · about 1 hr 45</span></div>'+
+      taskRow('done','Watch Chapter 7: Policy Provisions','Video · 34 min · Completed')+
+      taskRow('prog','Read Chapter 7 — Policy Provisions','Reading · 50 min · In progress')+
+      taskRow('todo','Complete Chapter 7 Quiz','Quiz · 20 min · Not started')+
+      '<div class="chead" style="margin-top:22px"><h2>Coming up</h2></div>'+
+      taskRow('todo','Progress Exam 2','Practice exam · 30 min · 4 Sep')+
+      examTaskRow()+
+      '</div></div>';
+  }
+  h+='<div class="card"><span class="prov">CalendarSettingsSheet</span><div class="pad">'+
+   '<div class="chead"><h2>Plan settings</h2><button class="link">Edit study plan ›</button></div>'+
+   '<div class="grid4">'+
+   '<div class="stat"><div class="k">Study days</div><div class="v sm">Mon–Fri</div></div>'+
+   '<div class="stat"><div class="k">Start date</div><div class="v sm">'+fmt(add(TODAY,-14))+'</div></div>'+
+   '<div class="stat"><div class="k">Buffer</div><div class="v sm">1 day</div></div>'+
+   '<div class="stat"><div class="k">Holidays</div><div class="v sm">Excluded</div></div></div></div></div>';
+  h+=summary;
+  h+=provNote('The Study Calendar is <b>the one surface the dashboard project already built only for FinServ</b> — '+
+   'it is STC-gated today, which is why it needs no invention here, only a wider path gate. '+
+   'The exam row in the task list is the new <b>licensing-exam</b> kind: it is the only task on this calendar that '+
+   'is not binary, and the only one whose verb is “Record result” rather than “Mark as complete”.');
+  return h;
+},
+courses:function(){
+  var h='<div style="display:flex;gap:12px;align-items:center;flex-wrap:wrap">'+
+   '<div class="tabs" role="group" aria-label="Status">'+
+   ['All','Current','Completed','Recently added'].map(function(t,i){
+     return '<button aria-pressed="'+(i===1)+'">'+t+'</button>';}).join('')+'</div>'+
+   '<div class="tabs" style="margin-left:auto" role="group" aria-label="View">'+
+   [['card','Cards'],['table','Table']].map(function(v){
+     return '<button data-cv="'+v[0]+'" aria-pressed="'+(S.courseView===v[0])+'">'+v[1]+'</button>';}).join('')+
+   '</div></div>';
+  var rows=[
+   ['Life & Health Pre-Licensing','Qualifying Education','40 hrs','In progress',totals().pct,'warn'],
+   ['Texas Insurance Law Update','Continuing Education','3 hrs','Completed',100,'ok'],
+   ['Annuity Suitability','Continuing Education','4 hrs','Not started',0,'neu'],
+   ['Ethics for Producers','Continuing Education','6 hrs','Completed',100,'ok']
+  ];
+  if(S.courseView==='table'){
+    h+='<div class="card"><span class="prov">MyCoursesTable</span>'+
+     '<div class="tw" style="border:0;box-shadow:none"><table><thead><tr>'+
+     '<th>Course</th><th>Type</th><th>Hours</th><th>Progress</th><th>Status</th></tr></thead><tbody>'+
+     rows.map(function(r){
+       return '<tr><td><b>'+r[0]+'</b></td><td>'+r[1]+'</td><td>'+r[2]+'</td>'+
+       '<td style="min-width:130px"><div class="track"><i style="width:'+r[4]+'%;background:var(--primary-500)"></i></div>'+
+       '<div class="tiny" style="margin-top:4px">'+r[4]+'%</div></td>'+
+       '<td><span class="pill p-'+r[5]+'">'+r[3]+'</span></td></tr>';
+     }).join('')+'</tbody></table></div></div>';
+  } else {
+    h+='<div class="grid3">'+rows.map(function(r){
+      return '<div class="card"><span class="prov">CourseCard</span><div class="pad">'+
+       '<span class="pill p-'+r[5]+'">'+r[3]+'</span>'+
+       '<h3 style="margin:9px 0 4px">'+r[0]+'</h3>'+
+       '<div class="tiny">'+r[1]+' · '+r[2]+'</div>'+
+       '<div class="track" style="margin-top:11px"><i style="width:'+r[4]+'%;background:var(--primary-500)"></i></div>'+
+       '<div class="tiny" style="margin-top:5px">'+r[4]+'% complete</div></div></div>';
+    }).join('')+'</div>';
+  }
+  h+=provNote('<b>MyCoursesPage</b> with its status tabs and the card/table toggle, both already built. '+
+   'The filter rail is dropped: it earns its place at forty courses, not at four.');
+  return h;
+},
+records:function(){
+  var passed=examState()==='passed';
+  var h='<div class="card"><span class="prov">CertificateCard · reporting variants</span><div class="pad">'+
+   '<div class="chead"><h2>Certificates</h2><span class="tiny" style="margin-left:auto">3 records</span></div>'+
+   cert('Texas Insurance Law Update','3 hrs · Continuing Education','12 Aug 2026','Reported 14 Aug 2026','ok')+
+   cert('Ethics for Producers','6 hrs · Continuing Education','2 Aug 2026','Pending roster submission','warn')+
+   cert('Adjuster Pre-Licensing (Oklahoma)','40 hrs · External provider','19 Mar 2026','Oklahoma is a non-reporting state','neu')+
+   '</div></div>';
+  h+='<div class="card"><span class="prov">New — attempt history</span><div class="pad">'+
+   '<div class="chead"><h2>Licensing exam</h2></div>'+
+   (S.examAttempts.length
+     ? '<div class="tw" style="border:0;box-shadow:none"><table><thead><tr><th>Attempt</th><th>Date</th>'+
+       '<th>Provider</th><th>Outcome</th></tr></thead><tbody>'+
+       S.examAttempts.map(function(a,i){
+         return '<tr><td>'+(i+1)+'</td><td>'+fmt(a.date)+'</td><td>'+a.prov+'</td><td>'+
+         (a.outcome?'<span class="pill p-'+(a.outcome==='passed'?'ok':'warn')+'">'+
+         (a.outcome==='passed'?'Passed':'Not passed')+'</span>':'<span class="pill p-neu">Scheduled</span>')+'</td></tr>';
+       }).join('')+'</tbody></table></div>'
+     : '<p class="tiny">No exam booked yet.</p>')+
+   (passed?'<div class="warnband" style="border-color:var(--success-500);background:var(--success-100);color:var(--success-700);margin-top:12px">'+
+     '<b>Licensed — Texas Life &amp; Health.</b> Your certificate and hours have been reported.</div>':'')+
+   '</div></div>';
+  h+='<div class="card"><div class="pad"><div class="nd"><span class="k">Not designed</span>'+
+   '<div class="w"><b>Hours across several states, with different requirements and renewal dates.</b> '+
+   'The Oklahoma record above is already a second state and this page cannot yet say what it satisfies. '+
+   'Whether that is one record with several licences or several records is a data-model question, not a layout '+
+   'one — and the brief lists how pre-migration credit is evidenced as still open.</div></div></div></div>';
+  h+=provNote('<b>CertificatesPage</b> is the highest-fidelity reuse in the whole exercise: the three reporting '+
+   'variants — reported, pending roster, non-reporting — already exist and are exactly what an insurance '+
+   'record needs. The attempt-history table is new, and it is the reason the exam has to be a first-class record '+
+   'rather than a completed task.');
+  return h;
+},
+recommended:function(){
+  var h='';
+  ['For your Texas licence','Because you are on Chapter 7','Popular with new producers'].map(function(t,i){
+    h+='<div class="card"><span class="prov">RecommendedForYouPanel · shelf '+(i+1)+'</span><div class="pad">'+
+      '<div class="chead"><h2>'+t+'</h2><button class="link">See all ›</button></div>'+shelf(i)+'</div></div>';
+  });
+  h+=provNote('<b>RecommendedForYouPanel</b>, unchanged in structure. The profession / state filter rows are '+
+   'suppressed: they are driven by <b>licensedStatesFor()</b>, and a pre-licensing learner holds no licence yet — '+
+   'which is precisely the case the existing filter has no answer for.');
+  return h;
+},
+catalog:function(){
+  var h='<div class="card"><span class="prov">CatalogPage</span><div class="pad">'+
+   '<div class="chead"><h2>Texas · Life &amp; Health</h2>'+
+   '<span class="tiny" style="margin-left:auto">14 results</span></div>'+
+   '<div class="grid3">'+[
+     ['Life & Health Pre-Licensing','40 hrs · Qualifying Education','Owned'],
+     ['Property & Casualty Pre-Licensing','40 hrs · Qualifying Education','$189'],
+     ['Annuity Suitability','4 hrs · Continuing Education','$29'],
+     ['Ethics for Producers','6 hrs · Continuing Education','Owned'],
+     ['Exam Cram — Life & Health','Practice · 900 questions','$49'],
+     ['Adjuster Pre-Licensing','40 hrs · Qualifying Education','$189']
+   ].map(function(c){
+     return '<div class="card" style="box-shadow:none"><div class="pad">'+
+      '<h3 style="margin-bottom:5px">'+c[0]+'</h3><div class="tiny">'+c[1]+'</div>'+
+      '<div style="display:flex;align-items:center;gap:9px;margin-top:12px">'+
+      (c[2]==='Owned'?'<span class="pill p-ok">Owned</span>':
+       '<span style="font-family:var(--font-heading);font-weight:900;font-size:17px">'+c[2]+'</span>'+
+       '<button class="btn sec" style="margin-left:auto;padding:7px 12px">Add</button>')+
+      '</div></div></div>';
+   }).join('')+'</div></div></div>';
+  h+='<div class="card"><div class="pad"><div class="nd"><span class="k">Not designed</span>'+
+   '<div class="w"><b>Who pays.</b> This learner’s seat was bought by their agency, so some of this catalogue '+
+   'is purchasable by them and some is not — and sponsored access is meant to be invisible to the learner while '+
+   'being central to the admin. Showing a price to someone whose agency would be billed is the wrong answer; so is '+
+   'hiding the catalogue. Needs the entitlement rule before it can be drawn.</div></div></div></div>';
+  return h;
+}
+};
+
+/* ---------------- small builders ---------------- */
+function taskRow(state,title,meta){
+  var m={done:['done','✓'],prog:['prog',''],todo:['todo','']}[state];
+  return '<div class="taskrow"><span class="mark '+m[0]+'">'+m[1]+'</span>'+
+   '<span class="t"><span class="n">'+title+'</span><span class="m">'+meta+'</span></span>'+
+   (state==='done'?'<span class="pill p-ok">Done</span>':
+    '<button class="btn '+(state==='prog'?'':'sec')+'" style="padding:8px 13px">'+
+    (state==='prog'?'Resume':'Start')+'</button>')+'</div>';
+}
+function examTaskRow(){
+  var a=currentAttempt(); if(!a) return '';
+  var d=days(TODAY,a.date);
+  return '<div class="taskrow exam"><span class="mark todo" style="border-color:var(--brand-500)"></span>'+
+   '<span class="t"><span class="n">Texas Life &amp; Health licensing exam</span>'+
+   '<span class="m">Licensing exam · '+a.prov+' · '+fmt(a.date)+' · in '+d+' days</span></span>'+
+   '<span class="pill p-brand">Not a course task</span></div>';
+}
+function courseList(kind){
+  var t=totals();
+  var req=[['Insurance Basics',4],['Life Insurance Policies',6],['Health Insurance Policies',6],
+           ['Policy Provisions',5],['Texas Law &amp; Regulation',5],['Ethics &amp; Consumer Protection',4]];
+  var ele=[['Annuity Suitability',4],['Group Benefits',3],['Long-Term Care',3]];
+  var list=kind==='req'?req:ele, budget=kind==='req'?t.reqDone:t.elecDone, used=0;
+  return list.map(function(c){
+    var st; if(used+c[1]<=budget){st='done';used+=c[1];}
+    else if(used<budget){st='prog';used=budget;}
+    else st='todo';
+    return taskRow(st,c[0],(kind==='req'?edu().reqL:edu().elecL)+' · '+c[1]+' hrs · '+
+      (st==='done'?'Completed':st==='prog'?'In progress':'Not started'));
+  }).join('');
+}
+function allTasks(){
+  return [
+   ['Watch Chapter 7: Policy Provisions','Video','1 Sep','34 min','Completed','ok'],
+   ['Read Chapter 7 — Policy Provisions','Reading','1 Sep','50 min','In progress','warn'],
+   ['Complete Chapter 7 Quiz','Quiz','1 Sep','20 min','Not started','neu'],
+   ['Progress Exam 2','Practice exam','4 Sep','30 min','Not started','neu'],
+   ['Watch Chapter 8: Annuity Suitability','Video','5 Sep','40 min','Not started','neu'],
+   ['Texas Life &amp; Health licensing exam','Licensing exam',fmt(currentAttempt()?currentAttempt().date:add(TODAY,42)),'2 hrs','Scheduled','info']
+  ];
+}
+function calGrid(){
+  var cells='';
+  for(var i=1;i<=30;i++){
+    var on=(i%7!==0&&i%7!==6), busy=on&&i>=1&&i<=24;
+    var isExam=(i===12&&S.edu==='qe');
+    cells+='<div style="border:1px solid var(--line);border-radius:6px;min-height:62px;padding:6px;'+
+      'background:'+(isExam?'var(--brand-100)':(on?'var(--card)':'var(--n-75)'))+'">'+
+      '<div style="font-size:11px;font-weight:700;color:'+(isExam?'var(--brand-600)':'var(--ink-3)')+'">'+i+'</div>'+
+      (isExam?'<div style="font-size:9.5px;font-weight:700;color:var(--brand-600);margin-top:3px;line-height:1.25">Exam · PSI</div>'
+        :(busy?'<div style="height:5px;border-radius:3px;background:var(--primary-300);margin-top:5px"></div>'+
+                '<div style="height:5px;border-radius:3px;background:var(--slate-300);margin-top:3px;width:70%"></div>':''))+
+      '</div>';
+  }
+  return '<div style="display:grid;grid-template-columns:repeat(7,1fr);gap:6px">'+
+    ['M','T','W','T','F','S','S'].map(function(d){
+      return '<div style="font-size:10px;font-weight:700;text-transform:uppercase;color:var(--ink-3);padding-bottom:3px">'+d+'</div>';
+    }).join('')+cells+'</div>';
+}
+function shelf(seed){
+  var items=[['Annuity Suitability','4 hrs · CE'],['Exam Cram — L&H','900 questions'],
+             ['Texas Law Update','3 hrs · CE'],['Long-Term Care','3 hrs · CE'],
+             ['Group Benefits','3 hrs · CE'],['Ethics for Producers','6 hrs · CE']];
+  return '<div class="shelf">'+items.map(function(it,i){
+    return '<div class="tile"><div class="cv'+(((i+(seed||0))%2)?' b':'')+'" aria-hidden="true">XCEL</div>'+
+     '<div class="bd"><div class="n">'+it[0]+'</div><div class="m">'+it[1]+'</div></div></div>';
+  }).join('')+'</div>';
+}
+function cert(title,meta,issued,report,tone){
+  return '<div class="taskrow" style="align-items:flex-start">'+
+   '<span class="mark done" style="margin-top:2px">✓</span>'+
+   '<span class="t"><span class="n">'+title+'</span><span class="m">'+meta+'</span>'+
+   '<div style="display:flex;gap:26px;margin-top:9px;flex-wrap:wrap">'+
+   '<span><span class="k" style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)">Issued</span>'+
+   '<div class="tiny"><b>'+issued+'</b></div></span>'+
+   '<span><span class="k" style="font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)">Reporting</span>'+
+   '<div class="tiny"><b>'+report+'</b></div></span></div></span>'+
+   '<span class="pill p-'+tone+'">'+(tone==='ok'?'Reported':tone==='warn'?'Pending':'Non-reporting')+'</span></div>';
+}
+function provNote(html){ return '<div class="provnote"><b>Provenance —</b> '+html+'</div>'; }
+
+/* ---------------- render ---------------- */
+function render(){
+  var m=META[S.sec];
+  document.getElementById('secEyebrow').textContent=m[0];
+  document.getElementById('secTitle').textContent=m[1];
+  document.getElementById('secDesc').textContent=m[2];
+  document.getElementById('heroSide').innerHTML =
+    S.sec==='dashboard'
+      ? '<div style="text-align:right"><div class="eyebrow">'+edu().deadlineL+'</div>'+
+        '<div style="font-family:var(--font-heading);font-weight:900;font-size:19px;margin:3px 0 6px">'+fmt(deadline())+'</div>'+
+        statusPill()+'</div>'
+      : '';
+  document.getElementById('body').innerHTML=SECTIONS[S.sec]();
+  renderRail();
+  document.getElementById('dEdu').innerHTML=['qe','ce'].map(function(k){
+    return '<button class="dchip" data-edu="'+k+'" aria-pressed="'+(S.edu===k)+'">'+EDU[k].label+'</button>';
+  }).join('');
+  document.getElementById('dProg').innerHTML=PROG.map(function(p){
+    return '<button class="dchip" data-prog="'+p[0]+'" aria-pressed="'+(S.prog===p[0])+'">'+p[1]+'</button>';
+  }).join('');
+  document.getElementById('dExam').innerHTML=EXAM_SCENARIOS.map(function(x){
+    return '<button class="dchip" data-exam="'+x[0]+'" aria-pressed="'+(S.exam===x[0])+'">'+x[1]+'</button>';
+  }).join('');
+}
+
+document.addEventListener('click',function(e){
+  var b=e.target.closest('button'); if(!b) return;
+  var sec=b.getAttribute('data-sec'), ed=b.getAttribute('data-edu'), pr=b.getAttribute('data-prog'),
+      cal=b.getAttribute('data-cal'), cv=b.getAttribute('data-cv'), x=b.getAttribute('data-x'),
+      ex=b.getAttribute('data-exam');
+  if(sec){ S.sec=sec; render(); window.scrollTo(0,0); return; }
+  if(ed){ S.edu=ed; render(); return; }
+  if(pr){ S.prog=pr; render(); return; }
+  if(ex){ applyExam(ex); render(); return; }
+  if(cal){ S.calView=cal; render(); return; }
+  if(cv){ S.courseView=cv; render(); return; }
+  if(x==='sched'){ S.exam='scheduled'; S.examAttempts.push({date:add(TODAY,42),prov:'PSI',outcome:null}); render(); return; }
+  if(x==='retake'){ S.exam='scheduled'; S.examAttempts.push({date:add(TODAY,28),prov:'PSI',outcome:null}); render(); return; }
+  if(x==='result'){ S.exam='failed'; var a=currentAttempt(); if(a) a.outcome='failed'; render(); return; }
+  if(x==='edit'){ S.exam='imminent'; var a2=currentAttempt(); if(a2){ a2.date=add(TODAY,5); } render(); return; }
+});
+
+render();
+})();
+</script>
+</body>
+</html>

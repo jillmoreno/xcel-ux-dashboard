@@ -1,0 +1,1668 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FinServ Learner — Wireframes &amp; Overlap</title>
+<style>
+:root{
+  --bg:#f4f4f5; --surface:#ffffff; --surface-2:#fafafa;
+  --line:#e4e4e7; --line-strong:#d4d4d8;
+  --fill:#ececef; --fill-2:#f4f4f5; --fill-3:#e0e0e4;
+  --ink:#18181b; --ink-2:#52525b; --ink-3:#6b6b74;
+  --annot:#5b4bbd; --annot-bg:#f1eefc; --annot-line:#cec6f2;
+  --flag:#8a5f00; --flag-bg:#fdf6e7; --flag-line:#e8d5a8;
+  --have:#1f6b4a; --have-bg:#e9f4ee; --have-line:#b8dcc8;
+  --shadow:0 1px 2px rgba(0,0,0,.05), 0 4px 12px rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131316; --surface:#1c1c20; --surface-2:#232328;
+    --line:#2e2e34; --line-strong:#3f3f46;
+    --fill:#2a2a30; --fill-2:#232328; --fill-3:#33333a;
+    --ink:#f4f4f5; --ink-2:#b4b4bd; --ink-3:#8b8b95;
+    --annot:#b0a3ff; --annot-bg:#231f38; --annot-line:#3b3363;
+    --flag:#e0b155; --flag-bg:#2a2318; --flag-line:#4a3d22;
+    --have:#6cc39a; --have-bg:#16261f; --have-line:#264c3a;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 12px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131316; --surface:#1c1c20; --surface-2:#232328;
+  --line:#2e2e34; --line-strong:#3f3f46;
+  --fill:#2a2a30; --fill-2:#232328; --fill-3:#33333a;
+  --ink:#f4f4f5; --ink-2:#b4b4bd; --ink-3:#8b8b95;
+  --annot:#b0a3ff; --annot-bg:#231f38; --annot-line:#3b3363;
+  --flag:#e0b155; --flag-bg:#2a2318; --flag-line:#4a3d22;
+  --have:#6cc39a; --have-bg:#16261f; --have-line:#264c3a;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 12px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--ink);
+  font:14px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:1180px;margin:0 auto;padding:0 28px 96px}
+.prose{max-width:76ch}
+h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em}
+h1{font-size:30px;line-height:1.2}
+h2{font-size:21px;line-height:1.3}
+h3{font-size:16px;line-height:1.4}
+h4{font-size:13px;line-height:1.4}
+p{margin:0 0 12px}
+a{color:var(--annot)}
+code{font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--fill-2);
+  border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+
+/* ---------- masthead ---------- */
+.mast{border-bottom:1px solid var(--line);background:var(--surface);margin-bottom:32px}
+.mast-in{max-width:1180px;margin:0 auto;padding:26px 28px 22px}
+.mast h1{margin:8px 0 10px}
+.meta{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:12.5px;color:var(--ink-2);margin-top:14px}
+.meta b{color:var(--ink);font-weight:600}
+
+/* ---------- controls ---------- */
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  padding:14px 0 0;border-top:1px solid var(--line);margin-top:18px}
+.seg{display:inline-flex;background:var(--fill-2);border:1px solid var(--line);border-radius:16px;padding:3px}
+.seg button{appearance:none;border:0;background:transparent;color:var(--ink-2);
+  font:600 12.5px/1 inherit;padding:8px 14px;border-radius:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.seg button:focus-visible{outline:2px solid var(--annot);outline-offset:2px}
+.ctl-label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+.mode-note{font-size:12.5px;color:var(--ink-2);margin-left:auto;max-width:44ch}
+
+/* ---------- sections ---------- */
+.doc{display:flex;flex-direction:column;gap:44px}
+section{scroll-margin-top:20px}
+.sec-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
+  border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:18px}
+.sec-num{font:700 12px/1 ui-monospace,monospace;color:var(--ink-3);
+  border:1px solid var(--line-strong);border-radius:5px;padding:5px 7px}
+.lede{color:var(--ink-2);font-size:14.5px}
+
+/* ---------- cards / tables ---------- */
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(320px,1fr));gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+.tscroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);
+  background:var(--surface-2);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+td b{font-weight:600}
+
+/* ---------- pills ---------- */
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;
+  letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:5px;border:1px solid}
+.p-have{color:var(--have);background:var(--have-bg);border-color:var(--have-line)}
+.p-part{color:var(--flag);background:var(--flag-bg);border-color:var(--flag-line)}
+.p-none{color:var(--annot);background:var(--annot-bg);border-color:var(--annot-line)}
+.p-open{color:var(--flag);background:var(--flag-bg);border-color:var(--flag-line)}
+
+/* ---------- wireframe primitives ---------- */
+.wfset{display:flex;flex-wrap:wrap;gap:18px;align-items:flex-start}
+.wfcol{flex:1 1 300px;min-width:0}
+.wfcap{display:flex;gap:8px;align-items:baseline;margin-bottom:7px}
+.wfcap .n{font:700 11px/1 ui-monospace,monospace;color:var(--ink-3);
+  border:1px solid var(--line-strong);border-radius:4px;padding:4px 6px;flex:none}
+.wfcap h4{color:var(--ink)}
+.wfsub{font-size:12px;color:var(--ink-3);margin:-3px 0 8px 30px}
+.wf{background:var(--surface);border:1px solid var(--line-strong);border-radius:8px;
+  overflow:hidden;box-shadow:var(--shadow)}
+.wf-bar{height:26px;background:var(--fill-2);border-bottom:1px solid var(--line);
+  display:flex;align-items:center;gap:6px;padding:0 9px}
+.wf-body{padding:12px;display:flex;flex-direction:column;gap:9px;min-height:120px}
+.wf-row{display:flex;gap:9px;align-items:flex-start}
+.bar{height:9px;background:var(--fill);border-radius:3px;flex:none}
+.bar.d{background:var(--fill-3)}
+.bar.tall{height:13px}
+.box{background:var(--fill-2);border:1px solid var(--line);border-radius:6px;
+  padding:9px;display:flex;flex-direction:column;gap:7px}
+.box.solid{background:var(--fill)}
+.sq{background:var(--fill);border-radius:5px;flex:none}
+.lbl{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.txt{font-size:11.5px;color:var(--ink-2);line-height:1.45}
+.txt b{color:var(--ink);font-weight:650}
+.btn{display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;
+  padding:7px 11px;border-radius:5px;border:1px solid var(--line-strong);color:var(--ink-2);
+  background:var(--surface);text-align:center}
+.btn.pri{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.btn.gho{border-style:dashed;color:var(--ink-3)}
+.field{border:1px solid var(--line-strong);border-radius:5px;padding:8px 9px;
+  font-size:11px;color:var(--ink-3);background:var(--surface)}
+.rail{width:52px;background:var(--fill);border-right:1px solid var(--line);
+  display:flex;flex-direction:column;gap:7px;padding:10px 8px;flex:none}
+.rail .bar{width:100%}
+.split{display:flex;min-height:170px}
+.split>.wf-body{flex:1}
+
+/* status chip inside frames */
+.chip{display:inline-flex;align-items:center;gap:4px;font-size:10px;font-weight:700;
+  letter-spacing:.04em;text-transform:uppercase;padding:3px 7px;border-radius:4px;
+  border:1px solid var(--line-strong);color:var(--ink-2);background:var(--surface-2);align-self:flex-start}
+.chip.warn{color:var(--flag);background:var(--flag-bg);border-color:var(--flag-line)}
+.chip.pos{color:var(--have);background:var(--have-bg);border-color:var(--have-line)}
+
+/* soft warning band — mirrors EditExamDatePanel */
+.softwarn{border:1px solid var(--flag-line);background:var(--flag-bg);color:var(--flag);
+  border-radius:6px;padding:8px 9px;font-size:11px;line-height:1.45}
+
+/* ---------- annotations ---------- */
+.note{margin-top:9px;border-left:2px solid var(--annot-line);padding:2px 0 2px 11px;
+  font-size:12px;line-height:1.5;color:var(--ink-2)}
+.note b{color:var(--annot);font-weight:700}
+.note+.note{margin-top:6px}
+.have{margin-top:9px;border-left:2px solid var(--have-line);padding:2px 0 2px 11px;
+  font-size:12px;line-height:1.5;color:var(--ink-2)}
+.have b{color:var(--have);font-weight:700}
+
+/* ---------- NOT DESIGNED frame ---------- */
+.nd{border:1.5px dashed var(--flag-line);border-radius:8px;background:
+  repeating-linear-gradient(135deg,transparent,transparent 9px,var(--flag-bg) 9px,var(--flag-bg) 18px);
+  padding:14px;min-height:150px;display:flex;flex-direction:column;gap:8px;justify-content:center}
+.nd .lbl{color:var(--flag)}
+.nd .why{font-size:12px;line-height:1.5;color:var(--ink-2);background:var(--surface);
+  border:1px solid var(--flag-line);border-radius:6px;padding:9px 10px}
+.nd .why b{color:var(--flag)}
+.nd .dep{font-size:11px;color:var(--ink-3);font-style:italic}
+
+.callout{border:1px solid var(--annot-line);background:var(--annot-bg);border-radius:10px;
+  padding:14px 16px;font-size:13.5px;line-height:1.55;color:var(--ink-2)}
+.callout b{color:var(--ink)}
+.callout .eyebrow{color:var(--annot);margin-bottom:6px;display:block}
+
+/* ---------- interactive stage ---------- */
+.stage{border:1px solid var(--annot-line);background:var(--annot-bg);border-radius:12px;
+  padding:16px;margin:18px 0 26px}
+.stage-head{display:flex;align-items:center;gap:9px;flex-wrap:wrap;margin-bottom:13px}
+.stage-head .live{display:inline-flex;align-items:center;gap:5px;font-size:10.5px;font-weight:700;
+  letter-spacing:.06em;text-transform:uppercase;color:var(--annot);
+  border:1px solid var(--annot-line);background:var(--surface);border-radius:5px;padding:4px 8px}
+.stage-head .live i{width:6px;height:6px;border-radius:50%;background:var(--annot);
+  display:inline-block;animation:pulse 2s ease-in-out infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
+@media (prefers-reduced-motion:reduce){.stage-head .live i{animation:none}}
+.stage-head h4{color:var(--ink)}
+.stage-head .hint{font-size:12px;color:var(--ink-2);margin-left:auto;max-width:46ch;text-align:right}
+.stage-main{display:flex;gap:16px;flex-wrap:wrap;align-items:flex-start}
+.stage-view{flex:1 1 300px;min-width:0;display:flex;justify-content:center}
+.stage-side{flex:1 1 250px;min-width:0;display:flex;flex-direction:column;gap:11px}
+
+.deck{background:var(--surface);border:1px solid var(--line);border-radius:9px;padding:12px}
+.deck+.deck{margin-top:0}
+.deck .lbl{margin-bottom:8px;color:var(--annot)}
+.deck-row{display:flex;flex-wrap:wrap;gap:6px}
+.dbtn{appearance:none;font:600 11.5px/1 inherit;padding:8px 11px;border-radius:6px;cursor:pointer;
+  border:1px solid var(--line-strong);background:var(--surface-2);color:var(--ink-2);text-align:left}
+.dbtn:hover{background:var(--fill-2);color:var(--ink)}
+.dbtn:focus-visible{outline:2px solid var(--annot);outline-offset:2px}
+.dbtn[aria-pressed="true"]{background:var(--annot);border-color:var(--annot);color:#fff}
+:root[data-theme="dark"] .dbtn[aria-pressed="true"]{color:#16121f}
+.dbtn.warn{border-color:var(--flag-line);color:var(--flag);background:var(--flag-bg)}
+.dbtn.warn:hover{filter:brightness(1.04)}
+.dbtn:disabled{opacity:.42;cursor:not-allowed}
+.dbtn.wide{flex:1 1 100%}
+
+.readout{font-size:12px;line-height:1.5;color:var(--ink-2);
+  border-left:2px solid var(--annot-line);padding:1px 0 1px 10px}
+.readout b{color:var(--annot)}
+.readout.stale{opacity:.5}
+
+/* step dots */
+.steps{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.step-dot{width:9px;height:9px;border-radius:50%;background:var(--line-strong);flex:none}
+.step-dot[data-on="1"]{background:var(--annot)}
+.step-dot[data-done="1"]{background:var(--annot);opacity:.42}
+.step-name{font-size:11px;color:var(--ink-3);margin-left:5px}
+
+/* phone + browser shells */
+.phone{width:264px;flex:none;border:8px solid var(--ink);border-radius:26px;overflow:hidden;
+  background:var(--surface);box-shadow:var(--shadow)}
+:root[data-theme="dark"] .phone{border-color:#3a3a42}
+.phone .wf-bar{height:22px}
+.phone-body{padding:11px;display:flex;flex-direction:column;gap:8px;min-height:322px}
+.browser{width:100%;max-width:430px;border:1px solid var(--line-strong);border-radius:9px;
+  overflow:hidden;background:var(--surface);box-shadow:var(--shadow)}
+.browser .wf-bar{gap:5px}
+.dot3{display:flex;gap:3px}
+.dot3 i{width:6px;height:6px;border-radius:50%;background:var(--line-strong);display:block}
+.urlbar{flex:1;height:13px;border-radius:7px;background:var(--fill-2);border:1px solid var(--line);
+  font:10px/13px ui-monospace,monospace;color:var(--ink-3);padding:0 7px;overflow:hidden;white-space:nowrap}
+.browser-body{padding:13px;display:flex;flex-direction:column;gap:9px;min-height:300px}
+
+/* live bits */
+.slot{min-height:0}
+.timer{font:700 11px/1 ui-monospace,monospace}
+.opt{border:1px solid var(--line-strong);border-radius:6px;padding:9px 10px;font-size:11.5px;
+  color:var(--ink-2);cursor:pointer;background:var(--surface)}
+.opt:hover{background:var(--fill-2)}
+.opt[aria-pressed="true"]{border-color:var(--ink);background:var(--fill);color:var(--ink);font-weight:600}
+.opt:focus-visible{outline:2px solid var(--annot);outline-offset:2px}
+.act{appearance:none;width:100%;font:700 11.5px/1 inherit;padding:10px;border-radius:6px;cursor:pointer;
+  background:var(--ink);color:var(--surface);border:1px solid var(--ink)}
+.act.sec{background:var(--surface);color:var(--ink-2);border-color:var(--line-strong)}
+.act:focus-visible{outline:2px solid var(--annot);outline-offset:2px}
+.act:disabled{opacity:.45;cursor:not-allowed}
+.inp{width:100%;border:1px solid var(--line-strong);border-radius:6px;padding:9px;
+  font:11.5px inherit;background:var(--surface);color:var(--ink)}
+.inp:focus-visible{outline:2px solid var(--annot);outline-offset:1px}
+.progline{height:5px;border-radius:3px;background:var(--fill);overflow:hidden}
+.progline i{display:block;height:100%;background:var(--ink-3);transition:width .5s ease}
+.spin{width:14px;height:14px;border-radius:50%;border:2px solid var(--flag-line);
+  border-top-color:var(--flag);animation:spin .8s linear infinite;flex:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+@media (prefers-reduced-motion:reduce){.spin{animation-duration:2.4s}}
+.stage .softwarn{display:flex;gap:7px;align-items:center}
+.stage .nd{min-height:0;padding:11px}
+
+hr.rule{border:0;border-top:1px solid var(--line);margin:26px 0}
+ul.tight{margin:0 0 12px;padding-left:19px}
+ul.tight li{margin-bottom:5px}
+.foot{margin-top:56px;padding-top:18px;border-top:1px solid var(--line);
+  font-size:12px;color:var(--ink-3);max-width:76ch}
+@media print{.controls,.mode-note{display:none}.doc>section{page-break-inside:avoid}}
+</style>
+</head>
+<body>
+
+<header class="mast">
+  <div class="mast-in">
+    <span class="eyebrow">Colibri FinServ · Companion to the Learner and Admin Wireframe Brief</span>
+    <h1>Learner wireframes, and what already exists</h1>
+    <p class="prose lede" style="margin:0">First-pass structure for four flows the brief names, drawn against components that are already built where they exist — and drawn as explicit holes where they aren't.</p>
+    <div class="meta">
+      <span><b>Responds to:</b> Learner and Admin Wireframe Brief — Amrita Thakur, VP Product</span>
+      <span><b>Covers:</b> Learner flows 01, 03, 06 + the Compass hand-off</span>
+      <span><b>Status:</b> wireframes, not visual design</span>
+      <span><b>Date:</b> 1 Sep 2026</span>
+      <span><b>Admin surface:</b> <a href="/prototypes/xcel-lms-admin.html">Admin wireframes &amp; overlap</a> — the six admin flows, and the case for one roster</span>
+      <span><b>Desktop platform:</b> <a href="/prototypes/xcel-lms-desktop.html">XCEL LMS on desktop</a> — the dashboard project's overlapping surfaces, re-skinned to XCEL</span>
+      <span><b>Full walk-through:</b> <a href="/prototypes/xcel-lms-walkthrough.html">Invite to licence</a> — one learner, one unbroken arc, state carried throughout</span>
+      <span><b>Companion spec:</b> <a href="/prototypes/xcel-lms-exam-spec.html">Licensing exam task type</a> — the data shape, state machine and extension points behind §06</span>
+    </div>
+    <div class="controls">
+      <span class="ctl-label">Read as</span>
+      <div class="seg" role="group" aria-label="Reading mode">
+        <button type="button" id="m-review" aria-pressed="true">FinServ review</button>
+        <button type="button" id="m-build" aria-pressed="false">Build planning</button>
+      </div>
+      <span class="ctl-label" style="margin-left:14px">Theme</span>
+      <div class="seg" role="group" aria-label="Theme">
+        <button type="button" id="t-light" aria-pressed="true">Light</button>
+        <button type="button" id="t-dark" aria-pressed="false">Dark</button>
+      </div>
+      <p class="mode-note" id="modeNote">Wireframes lead; the inventory of existing components follows as evidence.</p>
+    </div>
+  </div>
+</header>
+
+<div class="wrap">
+<div class="doc" id="doc">
+
+<!-- ================= THE ASK ================= -->
+<section id="s-ask" data-review="1" data-build="1">
+  <div class="sec-head"><span class="sec-num">01</span><h2>What the brief asks for</h2></div>
+  <div class="prose">
+    <p>A new platform for Insurance, Mortgage and Banking across three surfaces. This pass covers the <b>Learner experience</b> and the <b>Compass hand-off</b> — the seam where the learner leaves a surface we build, enters one Compass builds, and comes back, while believing it is one product.</p>
+    <p>Two users drive the design. The <b>learner</b> is a newly recruited agent doing pre-licensing <em>before</em> they are contracted: personal email only, no employee ID, no producer number, on a licensing deadline, on a phone, at night. The <b>admin</b> is an agency manager who sees only their own subtree and wants one answer — who is stuck.</p>
+    <p>The instruction that shapes this document: <b>where a decision is open, show two options rather than picking one</b>, and flag open product questions rather than inventing answers. And if only one thing gets done, it is the Compass hand-off and inside it the interruption state.</p>
+  </div>
+  <div class="callout prose" style="margin-top:6px">
+    <span class="eyebrow">The state the brief would start with</span>
+    A learner is 40 minutes into a 90-minute exam simulation, three days from a licensing deadline, on a phone, and the save is slow. <b>Section 05 draws that state.</b> A version of exactly this ejected learners mid-exam in August, which is why the platform is being rebuilt.
+  </div>
+</section>
+
+<!-- ================= WHAT EXISTS ================= -->
+<section id="s-exists" data-review="6" data-build="2">
+  <div class="sec-head"><span class="sec-num">02</span><h2>What already exists</h2>
+    <span class="lede" style="font-size:13px">Across the learner dashboard (React/TSX) and PartnerHub (Angular admin)</span></div>
+  <p class="prose lede">Most of the Learner brief has a working analog. That is the reason this pass could go straight to wireframes on four flows rather than starting from the platform. The honest scope of the brief is the row marked <span class="pill p-none">None</span>.</p>
+
+  <div class="tscroll" style="margin-top:14px">
+  <table>
+    <thead><tr><th style="width:26%">Brief asks for</th><th style="width:11%">Coverage</th><th>What exists today</th></tr></thead>
+    <tbody>
+      <tr><td><b>Compass hand-off — Option A</b><br><span class="txt">Persistent shell</span></td>
+        <td><span class="pill p-have">Built</span></td>
+        <td><code>PlatformShell</code> + <code>CourseLauncherContext</code> — the launcher renders the course view <em>inside</em> the rail; selecting any rail item closes it. Option A, working.</td></tr>
+      <tr><td><b>Compass hand-off — Option B</b><br><span class="txt">Focused hand-off</span></td>
+        <td><span class="pill p-have">Built</span></td>
+        <td><code>?focus=1</code> + <code>?chrome=off</code> strip the rail and the Cart/Account utilities to a single content column. Option B, working, same codebase.</td></tr>
+      <tr><td><b>Show both options, don't pick</b></td>
+        <td><span class="pill p-have">Built</span></td>
+        <td>Feature flag + variant + read-only <code>?ff=</code> URL override, with per-arm deploys. Run end-to-end on the Recommended-card A/B.</td></tr>
+      <tr><td><b>Records across multiple states</b></td>
+        <td><span class="pill p-have">Built</span></td>
+        <td>Certificates — per-state filters, three reporting variants (reported / pending roster / non-reporting), external certificates, action-required.</td></tr>
+      <tr><td><b>Deadline pressure changes emphasis</b></td>
+        <td><span class="pill p-have">Built</span></td>
+        <td><code>dashboard-progress-state</code> — five compliance states including At&nbsp;Risk (&lt;30 days <em>and</em> &lt;25% done) and Expired, driving one layout.</td></tr>
+      <tr><td><b>Pre-licensing vs continuing ed</b></td>
+        <td><span class="pill p-have">Built</span></td>
+        <td><code>dashboard-education-type</code> — QE/CE axis with brand-true labels and <em>Target&nbsp;Date</em> in place of License&nbsp;Expires.</td></tr>
+      <tr><td><b>One course vs many products</b></td>
+        <td><span class="pill p-have">Built</span></td>
+        <td><code>learning-paths-count</code> (one → 40+), grid/table landing, "View All (N)".</td></tr>
+      <tr><td><b>Sponsored seats · who is stuck</b></td>
+        <td><span class="pill p-have">Built</span></td>
+        <td>Gift Recipients — firm buys seats for reps, roster table, claimed/unclaimed, <em>Last Reminded</em> sorted oldest-first, per-row reminder. Bulk send archived but intact.</td></tr>
+      <tr><td><b>Admin cohort tables</b></td>
+        <td><span class="pill p-have">Built</span></td>
+        <td>PartnerHub All Learners. The five standard badges are already <em>Compliant · On Track · At Risk · Overdue · Not Started</em>, with shared header/filter/badge/progress/pagination components.</td></tr>
+      <tr><td><b>Both themes · WCAG in Phase 1</b></td>
+        <td><span class="pill p-have">Built</span></td>
+        <td>Appearance model across five modes; weekly a11y reviews; contrast enforced as unit tests sweeping brand × width.</td></tr>
+      <tr><td><b>Progress &amp; readiness</b></td>
+        <td><span class="pill p-part">Partial</span></td>
+        <td>Segmented gauge and category bars exist, but ours is <em>deterministic</em> (hours done / hours required). Compass's is probabilistic low/med/high — same furniture, different credibility problem.</td></tr>
+      <tr><td><b>Waiting &amp; degraded states</b></td>
+        <td><span class="pill p-part">Partial</span></td>
+        <td>Toasts, empty states, and the "show we have it, not a stale number" instinct. No designed wait with a real duration.</td></tr>
+      <tr><td><b>Late account creation</b></td>
+        <td><span class="pill p-part">Partial</span></td>
+        <td>Setup wizard and full-page onboarding gate exist — but run <em>after</em> auth. The brief's runs before an account exists.</td></tr>
+      <tr><td><b>Anonymous but attributed arrival</b></td>
+        <td><span class="pill p-none">None</span></td>
+        <td>No analog. <b>Drawn in §03.</b></td></tr>
+      <tr><td><b>The interruption state</b></td>
+        <td><span class="pill p-none">None</span></td>
+        <td>No analog, and the brief's top priority. <b>Drawn in §05.</b></td></tr>
+      <tr><td><b>External exam hand-off</b></td>
+        <td><span class="pill p-none">None</span></td>
+        <td>The exam <em>date</em> is already the Study Calendar's anchor; everything after it is missing. <b>Drawn in §06.</b></td></tr>
+      <tr><td><b>Hierarchy tree · inherited pricing</b></td>
+        <td><span class="pill p-none">None</span></td>
+        <td>Nothing in either project models inheritance or as-of-then structure. Not in this pass.</td></tr>
+      <tr><td><b>Spanish string expansion</b></td>
+        <td><span class="pill p-none">None</span></td>
+        <td>Not tested anywhere. See the open register.</td></tr>
+      <tr><td><b>Data provenance across the migration line</b></td>
+        <td><span class="pill p-none">None</span></td>
+        <td>Admin-side. Not in this pass.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ================= 03 INVITED ARRIVAL ================= -->
+<section id="s-arrival" data-review="2" data-build="3">
+  <div class="sec-head"><span class="sec-num">03</span><h2>Invited arrival</h2>
+    <span class="lede" style="font-size:13px">Learner flow 01 · link → website → learner</span></div>
+  <p class="prose lede">The learner arrives knowing nothing about us and us knowing everything about them. The window between <em>we know a lot about you</em> and <em>you have signed up</em> is the brief's highest-abandonment moment. The design goal is to spend nothing in that window — no fields, no codes, no account — until there is something to gain by it.</p>
+
+  <!-- ===== STAGE: invited arrival ===== -->
+  <div class="stage" id="stg-arr">
+    <div class="stage-head"><span class="live"><i></i>Walk it</span><h4>Invite to first run</h4>
+      <span class="hint">Every control is real. The only fake step is opening your own inbox.</span></div>
+    <div class="stage-main">
+      <div class="stage-view">
+        <div class="phone">
+          <div class="wf-bar" style="background:var(--surface)"><div class="bar" style="width:30px"></div>
+            <span class="timer" id="arr-net" style="margin-left:auto;color:var(--ink-3)">9:41</span></div>
+          <div class="phone-body" id="arr-body"></div>
+        </div>
+      </div>
+      <div class="stage-side">
+        <div class="deck">
+          <div class="lbl">Where you are</div>
+          <div class="steps" id="arr-steps"></div>
+          <div class="readout" id="arr-read" style="margin-top:10px"></div>
+        </div>
+        <div class="deck">
+          <div class="lbl">Prototype controls</div>
+          <div class="deck-row">
+            <button type="button" class="dbtn" id="arr-restart">Restart</button>
+            <button type="button" class="dbtn warn" id="arr-expire">Expire the link</button>
+            <button type="button" class="dbtn" id="arr-es" aria-pressed="false">Español</button>
+          </div>
+          <p class="txt" style="margin:9px 0 0;color:var(--ink-3)">Español swaps the copy for its Spanish equivalent at real length — the strings run 15–30% longer, which is where a fixed-height button or a two-line strip breaks.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="eyebrow" style="margin:24px 0 10px">Every state, side by side</p>
+
+  <div class="wfset" style="margin-top:16px">
+
+    <div class="wfcol">
+      <div class="wfcap"><span class="n">1</span><h4>The invite</h4></div>
+      <div class="wfsub">Sent by the agency. Outside our product.</div>
+      <div class="wf"><div class="wf-bar"><div class="bar" style="width:38px"></div></div>
+        <div class="wf-body">
+          <div class="lbl">From your agency</div>
+          <div class="bar" style="width:88%"></div><div class="bar" style="width:64%"></div>
+          <div class="box" style="margin-top:2px">
+            <div class="txt"><b>Meridian Insurance Group</b> has enrolled you in Life &amp; Health Pre-Licensing.</div>
+            <div class="btn pri" style="align-self:flex-start">Start your course</div>
+          </div>
+          <div class="txt" style="color:var(--ink-3)">Link carries agency, course and price.</div>
+        </div></div>
+      <div class="note"><b>No code, ever.</b> Attribution rides in the link. There is no field anywhere in this flow for a partner code.</div>
+    </div>
+
+    <div class="wfcol">
+      <div class="wfcap"><span class="n">2</span><h4>Attributed, anonymous</h4></div>
+      <div class="wfsub">The high-abandonment screen. No account yet.</div>
+      <div class="wf"><div class="wf-bar"><div class="bar" style="width:38px"></div>
+        <div class="bar" style="width:26px;margin-left:auto"></div></div>
+        <div class="wf-body">
+          <div class="chip">Enrolled by Meridian Insurance Group</div>
+          <div class="txt" style="font-size:13px"><b>Life &amp; Health Pre-Licensing</b></div>
+          <div class="bar" style="width:72%"></div>
+          <div class="wf-row">
+            <div class="box" style="flex:1"><div class="lbl">Your price</div><div class="txt"><b>Paid by your agency</b></div></div>
+            <div class="box" style="flex:1"><div class="lbl">Window</div><div class="txt"><b>30 days</b></div></div>
+          </div>
+          <div class="btn pri">Begin — we'll email you a link</div>
+          <div class="txt" style="color:var(--ink-3)">No password to create.</div>
+        </div></div>
+      <div class="note"><b>Proof before ask.</b> Everything the link knows is shown back first — agency, course, who pays, the window. The ask is one button, and it is not "create an account".</div>
+      <div class="note"><b>Price is the strongest asset here</b> when the agency pays. It converts the screen from a purchase into a confirmation.</div>
+    </div>
+
+    <div class="wfcol">
+      <div class="wfcap"><span class="n">3</span><h4>Magic link</h4></div>
+      <div class="wfsub">One field. Personal email is all they have.</div>
+      <div class="wf"><div class="wf-bar"><div class="bar" style="width:38px"></div></div>
+        <div class="wf-body">
+          <div class="txt" style="font-size:13px"><b>Where should we send your link?</b></div>
+          <div class="txt">Use any email you check — a personal one is fine.</div>
+          <div class="field">you@example.com</div>
+          <div class="btn pri">Send my link</div>
+          <div class="txt" style="color:var(--ink-3)">No password. No "continue with Google".</div>
+        </div></div>
+      <div class="note"><b>Say "personal is fine" out loud.</b> A recruit not yet contracted will hesitate over an email field, assuming a work address is expected. One sentence removes the hesitation.</div>
+    </div>
+
+    <div class="wfcol">
+      <div class="wfcap"><span class="n">4</span><h4>The wait</h4></div>
+      <div class="wfsub">A designed wait, not a dead end.</div>
+      <div class="wf"><div class="wf-bar"><div class="bar" style="width:38px"></div></div>
+        <div class="wf-body">
+          <div class="sq" style="width:34px;height:34px;border-radius:8px"></div>
+          <div class="txt" style="font-size:13px"><b>Check your email</b></div>
+          <div class="txt">We sent a link to <b>j.rivera@gmail.com</b>. It works for 30 minutes.</div>
+          <div class="btn">Resend</div>
+          <div class="btn gho">Use a different email</div>
+          <div class="softwarn">Nothing is lost if you close this — your invite stays valid.</div>
+        </div></div>
+      <div class="note"><b>This screen is a known drop-off,</b> so it carries a repair for each way it fails: wrong address, link expired, closed the tab.</div>
+    </div>
+
+    <div class="wfcol">
+      <div class="wfcap"><span class="n">5</span><h4>Landed</h4></div>
+      <div class="wfsub">Account created silently. First run.</div>
+      <div class="wf"><div class="wf-bar"><div class="bar" style="width:38px"></div>
+        <div class="sq" style="width:14px;height:14px;border-radius:50%;margin-left:auto"></div></div>
+        <div class="split">
+          <div class="rail"><div class="bar d" style="height:11px"></div><div class="bar" style="height:11px"></div>
+            <div class="bar" style="height:11px"></div><div class="bar" style="height:11px"></div></div>
+          <div class="wf-body">
+            <div class="txt" style="font-size:13px"><b>Welcome, Jordan</b></div>
+            <div class="chip warn">Exam window ends in 30 days</div>
+            <div class="box solid">
+              <div class="lbl">Start here</div>
+              <div class="txt"><b>Life &amp; Health Pre-Licensing</b> · not started</div>
+              <div class="btn pri" style="align-self:flex-start">Begin Chapter 1</div>
+            </div>
+            <div class="box"><div class="lbl">Next</div><div class="txt">Set a target exam date to build your study plan</div></div>
+          </div>
+        </div></div>
+      <div class="have"><b>This is the built one.</b> The single-product home and the deadline emphasis are the existing dashboard's <code>learning-paths-count: one</code> and <code>dashboard-progress-state: not-started</code> — same layout, different emphasis.</div>
+    </div>
+
+    <div class="wfcol">
+      <div class="wfcap"><span class="n">6</span><h4>Moved mid-course</h4></div>
+      <div class="wfsub">A learner migrated from the old platform.</div>
+      <div class="nd">
+        <span class="lbl">Not designed</span>
+        <div class="why"><b>Blocked on an open product question.</b> Whether a learner's course progress carries over when they are moved to the new platform mid-course is undecided — and it changes this arrival entirely. Carried-over progress means a resume screen; no carry-over means a restart, which needs an explanation and probably an apology.</div>
+        <div class="dep">Depends on: <em>"Whether a learner's course progress carries over if they are moved mid-course"</em> — brief, open questions.</div>
+      </div>
+      <div class="note"><b>Drawing this either way would resolve the question by implication,</b> which the brief asked us not to do.</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ================= 04 COMPASS HAND-OFF ================= -->
+<section id="s-compass" data-review="3" data-build="4">
+  <div class="sec-head"><span class="sec-num">04</span><h2>The Compass hand-off — two options</h2>
+    <span class="lede" style="font-size:13px">Learner flow 03 · the containment contract is genuinely open</span></div>
+  <p class="prose lede">Both options below are already implemented in the existing learner platform and switchable by URL parameter, so this comparison can be walked live rather than argued from static frames. What follows is the trade-off each makes, not a recommendation.</p>
+
+  <!-- ===== STAGE: compass hand-off ===== -->
+  <div class="stage" id="stg-cmp">
+    <div class="stage-head"><span class="live"><i></i>Walk it</span><h4>Cross the boundary, both ways</h4>
+      <span class="hint">Enter and exit the course under each containment model. The wait and the progress lag are real, not simulated with a fixed delay.</span></div>
+    <div class="stage-main">
+      <div class="stage-view">
+        <div class="browser">
+          <div class="wf-bar"><span class="dot3"><i></i><i></i><i></i></span>
+            <span class="urlbar" id="cmp-url">app.xcel.com/dashboard</span></div>
+          <div class="browser-body" id="cmp-body" style="padding:0"></div>
+        </div>
+      </div>
+      <div class="stage-side">
+        <div class="deck">
+          <div class="lbl">Containment model</div>
+          <div class="deck-row">
+            <button type="button" class="dbtn" data-cmp-mode="a" aria-pressed="true">A · Persistent shell</button>
+            <button type="button" class="dbtn" data-cmp-mode="b" aria-pressed="false">B · Focused</button>
+            <button type="button" class="dbtn wide" data-cmp-mode="c" aria-pressed="false">C · By activity — shell to learn, focus to assess</button>
+          </div>
+        </div>
+        <div class="deck">
+          <div class="lbl">Activity</div>
+          <div class="deck-row">
+            <button type="button" class="dbtn" data-cmp-act="learn" aria-pressed="true">Learn</button>
+            <button type="button" class="dbtn" data-cmp-act="practice" aria-pressed="false">Practise</button>
+            <button type="button" class="dbtn" data-cmp-act="exam" aria-pressed="false">Exam</button>
+          </div>
+          <p class="txt" style="margin:9px 0 0;color:var(--ink-3)">Under A and B the activity changes nothing — that is the point. Under C it changes the containment, and the exit disappears for the exam.</p>
+        </div>
+        <div class="deck">
+          <div class="lbl">Prototype controls</div>
+          <div class="deck-row">
+            <button type="button" class="dbtn warn" id="cmp-slow">Slow hand-over (6s)</button>
+            <button type="button" class="dbtn" id="cmp-reset">Back to dashboard</button>
+          </div>
+        </div>
+        <div class="readout" id="cmp-read"></div>
+      </div>
+    </div>
+  </div>
+
+  <p class="eyebrow" style="margin:24px 0 10px">The trade-off each makes</p>
+
+  <div class="wfset" style="margin-top:16px">
+    <div class="wfcol" style="flex:1 1 380px">
+      <div class="wfcap"><span class="n">A</span><h4>Persistent shell</h4></div>
+      <div class="wfsub">Our nav stays; the Compass frame sits inside it.</div>
+      <div class="wf"><div class="wf-bar"><div class="bar" style="width:38px"></div>
+        <div class="bar" style="width:20px;margin-left:auto"></div><div class="bar" style="width:20px"></div></div>
+        <div class="split">
+          <div class="rail"><div class="bar d" style="height:11px"></div><div class="bar" style="height:11px"></div>
+            <div class="bar" style="height:11px"></div><div class="bar" style="height:11px"></div>
+            <div class="bar" style="height:11px"></div></div>
+          <div class="wf-body" style="padding:10px">
+            <div class="txt" style="color:var(--ink-3);font-size:10.5px">← Back to Dashboard</div>
+            <div class="box solid" style="flex:1;border-style:dashed;border-color:var(--annot-line);gap:9px">
+              <div class="lbl" style="color:var(--annot)">Compass renders this</div>
+              <div class="bar" style="width:70%;height:13px"></div>
+              <div class="bar" style="width:100%"></div><div class="bar" style="width:94%"></div>
+              <div class="bar" style="width:88%"></div>
+              <div class="wf-row" style="margin-top:auto"><div class="btn" style="flex:1">Previous</div><div class="btn pri" style="flex:1">Next</div></div>
+            </div>
+          </div>
+        </div></div>
+      <div class="note"><b>Strongest continuity.</b> Identity, chrome and the way back never change. Orientation is free — the learner can always see where they are.</div>
+      <div class="note"><b>Costs:</b> Compass's canvas is constrained by our 264px rail, and an exit is within reach at every moment — including mid-exam.</div>
+      <div class="have"><b>Already built:</b> <code>PlatformShell</code> + <code>CourseLauncherContext</code>. The launcher swaps the content column in place and any rail selection closes it.</div>
+    </div>
+
+    <div class="wfcol" style="flex:1 1 380px">
+      <div class="wfcap"><span class="n">B</span><h4>Focused hand-off</h4></div>
+      <div class="wfsub">Full viewport, minimal return affordance.</div>
+      <div class="wf"><div class="wf-bar" style="background:var(--surface)">
+        <div class="txt" style="font-size:10.5px;color:var(--ink-3)">✕&nbsp; Exit course</div>
+        <div class="chip" style="margin-left:auto;padding:2px 6px">Ch 4 of 12</div></div>
+        <div class="wf-body" style="padding:10px;min-height:170px">
+          <div class="box solid" style="flex:1;border-style:dashed;border-color:var(--annot-line);gap:9px">
+            <div class="lbl" style="color:var(--annot)">Compass renders this</div>
+            <div class="bar" style="width:60%;height:13px"></div>
+            <div class="bar" style="width:100%"></div><div class="bar" style="width:97%"></div>
+            <div class="bar" style="width:92%"></div><div class="bar" style="width:80%"></div>
+            <div class="bar" style="width:88%"></div>
+            <div class="wf-row" style="margin-top:auto"><div class="btn" style="flex:1">Previous</div><div class="btn pri" style="flex:1">Next</div></div>
+          </div>
+        </div></div>
+      <div class="note"><b>Compass gets the canvas its experience is designed for,</b> and the learner is in a genuine focus mode.</div>
+      <div class="note"><b>Costs:</b> the boundary is visible, and coming back has to be designed deliberately rather than being ever-present. The exit chip is the entire return contract.</div>
+      <div class="have"><b>Already built:</b> <code>?focus=1&amp;chrome=off</code> hides the rail and the account utilities, leaving a single content column.</div>
+    </div>
+  </div>
+
+  <div class="callout prose" style="margin-top:20px">
+    <span class="eyebrow">The third position — worth putting to Compass</span>
+    <b>Shell for learning and practice; focus for assessment.</b> The two options optimise for opposite things and the learner needs both at different moments. Exam integrity argues for removing the exit during an assessment; orientation argues for keeping it the rest of the time. Switching containment <em>by activity</em> gets both — and it is a smaller ask of Compass than picking one, because it only requires the frame to declare which mode it is in.
+  </div>
+
+  <div class="wfset" style="margin-top:18px">
+    <div class="wfcol">
+      <div class="wfcap"><span class="n">C</span><h4>Entry — the hand-over wait</h4></div>
+      <div class="wfsub">A real, tracked, measurable wait.</div>
+      <div class="wf"><div class="wf-bar"><div class="bar" style="width:38px"></div></div>
+        <div class="wf-body">
+          <div class="txt" style="font-size:13px"><b>Opening Chapter 4</b></div>
+          <div class="box"><div class="bar" style="width:40%;height:5px;background:var(--ink-3)"></div></div>
+          <div class="txt">Loading your place in the course — you left off at question 6.</div>
+          <div class="btn gho" style="align-self:flex-start">Cancel</div>
+        </div></div>
+      <div class="note"><b>Say what is happening and prove we know them.</b> "You left off at question 6" is the difference between a wait and a spinner — it tells the learner the wait is doing something for them.</div>
+      <div class="note"><b>Cancel is present.</b> A wait with no exit is where a slow hand-over becomes an abandoned session.</div>
+    </div>
+
+    <div class="wfcol">
+      <div class="wfcap"><span class="n">D</span><h4>Exit — progress in flight</h4></div>
+      <div class="wfsub">Never a stale number, never a blank.</div>
+      <div class="wf"><div class="wf-bar"><div class="bar" style="width:38px"></div></div>
+        <div class="wf-body">
+          <div class="txt" style="font-size:13px"><b>Nice work — Chapter 4 complete</b></div>
+          <div class="box">
+            <div class="lbl">Course progress</div>
+            <div class="bar" style="width:100%;height:6px"></div>
+            <div class="txt" style="color:var(--ink-3)">Updating…</div>
+          </div>
+          <div class="box"><div class="lbl">Up next</div><div class="txt"><b>Chapter 5 · Policy Provisions</b></div></div>
+        </div></div>
+      <div class="note"><b>"Updating…" beats both alternatives.</b> A stale percentage is a lie the learner can catch; a blank looks broken. Saying we have it and are counting is honest and calm.</div>
+    </div>
+
+    <div class="wfcol">
+      <div class="wfcap"><span class="n">E</span><h4>In-frame persistence</h4></div>
+      <div class="nd">
+        <span class="lbl">Not designed</span>
+        <div class="why"><b>Requires the containment contract first.</b> What of ours persists inside the frame — orientation, exit, deadline context, help — is exactly what Option A vs B decides. Drawing it now would presume the answer.</div>
+        <div class="dep">One rule holds either way, and should be written into the contract: <em>nothing that can pull a learner out mid-assessment by accident</em>. That includes our own deadline banners.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= 05 INTERRUPTION ================= -->
+<section id="s-interrupt" data-review="4" data-build="5">
+  <div class="sec-head"><span class="sec-num">05</span><h2>The interruption state</h2>
+    <span class="lede" style="font-size:13px">The brief's "if you only get to one thing"</span></div>
+  <p class="prose lede">40 minutes into a 90-minute exam simulation, three days from a licensing deadline, on a phone, and the save is slow. Frames at 390px. The single governing rule is below, and every frame is an application of it.</p>
+
+  <div class="callout prose" style="margin:14px 0 20px">
+    <span class="eyebrow">The rule</span>
+    <b>A slow save must never look like a lost session.</b> Which means, concretely: no full-screen spinner, no modal, no dimming, nothing that hides the question or stops the timer. The learner keeps answering while we sort ourselves out, and we say so in a strip that does not move.
+  </div>
+
+  <!-- ===== STAGE: interruption ===== -->
+  <div class="stage" id="stg-int">
+    <div class="stage-head"><span class="live"><i></i>Walk it</span><h4>The exam, interrupted</h4>
+      <span class="hint">The timer is real and the save delays are real. Answer a few questions, then break it.</span></div>
+    <div class="stage-main">
+      <div class="stage-view">
+        <div class="phone">
+          <div class="wf-bar" style="background:var(--surface)">
+            <span class="txt" style="font-size:10px"><b id="int-qn">Q 24 / 60</b></span>
+            <span class="chip" id="int-timer" style="margin-left:auto;padding:2px 6px"><span class="timer">49:12</span> left</span>
+          </div>
+          <div class="phone-body">
+            <div class="slot" id="int-slot"></div>
+            <div id="int-q"></div>
+            <div style="margin-top:auto"><button type="button" class="act" id="int-next">Next question</button></div>
+          </div>
+        </div>
+      </div>
+      <div class="stage-side">
+        <div class="deck">
+          <div class="lbl">Break it</div>
+          <div class="deck-row">
+            <button type="button" class="dbtn warn" data-int="slow">Slow save · 4s</button>
+            <button type="button" class="dbtn warn" data-int="veryslow">Very slow save · 11s</button>
+            <button type="button" class="dbtn warn" data-int="offline">Go offline</button>
+            <button type="button" class="dbtn" data-int="online">Reconnect</button>
+            <button type="button" class="dbtn warn" data-int="background">Take a call · 2 min</button>
+            <button type="button" class="dbtn warn" data-int="dead">Compass unreachable</button>
+          </div>
+        </div>
+        <div class="deck">
+          <div class="lbl">What the learner can still do</div>
+          <div class="readout" id="int-read"></div>
+        </div>
+        <div class="deck">
+          <div class="lbl">Prototype controls</div>
+          <div class="deck-row">
+            <button type="button" class="dbtn" id="int-restart">Restart the exam</button>
+            <button type="button" class="dbtn" id="int-pausetimer" aria-pressed="false">Pause my timer</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="eyebrow" style="margin:24px 0 10px">Every state, side by side</p>
+
+  <div class="wfset">
+
+    <div class="wfcol" style="flex:0 1 250px">
+      <div class="wfcap"><span class="n">1</span><h4>Baseline</h4></div>
+      <div class="wfsub">Normal, for comparison.</div>
+      <div class="wf" style="max-width:250px">
+        <div class="wf-bar" style="background:var(--surface)">
+          <div class="txt" style="font-size:10px"><b>Q 24 / 60</b></div>
+          <div class="chip" style="margin-left:auto;padding:2px 6px">49:12 left</div></div>
+        <div class="wf-body" style="min-height:210px">
+          <div class="bar" style="width:100%"></div><div class="bar" style="width:86%"></div>
+          <div class="box" style="margin-top:4px"><div class="bar" style="width:74%"></div></div>
+          <div class="box solid"><div class="bar" style="width:66%"></div></div>
+          <div class="box"><div class="bar" style="width:80%"></div></div>
+          <div class="box"><div class="bar" style="width:58%"></div></div>
+          <div class="btn pri" style="margin-top:auto">Next question</div>
+        </div></div>
+      <div class="note">Timer top-right, question count top-left. Both are fixed anchors — nothing in the following states may move or replace them.</div>
+    </div>
+
+    <div class="wfcol" style="flex:0 1 250px">
+      <div class="wfcap"><span class="n">2</span><h4>Slow save</h4></div>
+      <div class="wfsub">The state the brief names.</div>
+      <div class="wf" style="max-width:250px">
+        <div class="wf-bar" style="background:var(--surface)">
+          <div class="txt" style="font-size:10px"><b>Q 24 / 60</b></div>
+          <div class="chip" style="margin-left:auto;padding:2px 6px">49:08 left</div></div>
+        <div class="wf-body" style="min-height:210px">
+          <div class="softwarn" style="display:flex;gap:7px;align-items:center">
+            <span style="width:9px;height:9px;border-radius:50%;background:var(--flag);flex:none"></span>
+            <span>Saving your answer… <b>keep going.</b></span>
+          </div>
+          <div class="bar" style="width:100%"></div><div class="bar" style="width:86%"></div>
+          <div class="box"><div class="bar" style="width:74%"></div></div>
+          <div class="box solid"><div class="bar" style="width:66%"></div></div>
+          <div class="box"><div class="bar" style="width:80%"></div></div>
+          <div class="btn pri" style="margin-top:auto">Next question</div>
+        </div></div>
+      <div class="note"><b>Everything still works.</b> The question is readable, the options are selectable, Next is enabled, the timer runs. The strip is the only change.</div>
+      <div class="note"><b>"Keep going" is the whole message.</b> Without it the learner stops and waits, which is how a 4-second save becomes a lost exam.</div>
+    </div>
+
+    <div class="wfcol" style="flex:0 1 250px">
+      <div class="wfcap"><span class="n">3</span><h4>Offline, still answering</h4></div>
+      <div class="wfsub">Degraded, not blocked.</div>
+      <div class="wf" style="max-width:250px">
+        <div class="wf-bar" style="background:var(--surface)">
+          <div class="txt" style="font-size:10px"><b>Q 26 / 60</b></div>
+          <div class="chip" style="margin-left:auto;padding:2px 6px">44:51 left</div></div>
+        <div class="wf-body" style="min-height:210px">
+          <div class="softwarn"><b>You're offline.</b> Your answers are saved on this phone and will sync when you reconnect. <b>3 answers waiting.</b></div>
+          <div class="bar" style="width:100%"></div><div class="bar" style="width:82%"></div>
+          <div class="box"><div class="bar" style="width:70%"></div></div>
+          <div class="box solid"><div class="bar" style="width:74%"></div></div>
+          <div class="box"><div class="bar" style="width:62%"></div></div>
+          <div class="btn pri" style="margin-top:auto">Next question</div>
+        </div></div>
+      <div class="note"><b>Count the unsaved answers.</b> "3 answers waiting" is verifiable and it climbs — the learner can see the product is still holding their work. A generic "offline" cannot be checked and reads as loss.</div>
+      <div class="note"><b>This requires local answer persistence in the Compass frame.</b> It is the single largest technical ask in this document and belongs in the containment contract.</div>
+    </div>
+
+    <div class="wfcol" style="flex:0 1 250px">
+      <div class="wfcap"><span class="n">4</span><h4>Recovered</h4></div>
+      <div class="wfsub">Quiet, and it leaves.</div>
+      <div class="wf" style="max-width:250px">
+        <div class="wf-bar" style="background:var(--surface)">
+          <div class="txt" style="font-size:10px"><b>Q 27 / 60</b></div>
+          <div class="chip" style="margin-left:auto;padding:2px 6px">42:30 left</div></div>
+        <div class="wf-body" style="min-height:210px">
+          <div class="softwarn" style="color:var(--have);background:var(--have-bg);border-color:var(--have-line)">
+            <b>All 3 answers saved.</b></div>
+          <div class="bar" style="width:100%"></div><div class="bar" style="width:88%"></div>
+          <div class="box"><div class="bar" style="width:72%"></div></div>
+          <div class="box solid"><div class="bar" style="width:68%"></div></div>
+          <div class="box"><div class="bar" style="width:76%"></div></div>
+          <div class="btn pri" style="margin-top:auto">Next question</div>
+        </div></div>
+      <div class="note"><b>Confirm, then get out of the way</b> — this strip dismisses itself after a few seconds. Recovery that lingers reads as a warning that hasn't cleared.</div>
+      <div class="note"><b>It occupies the same slot</b> as the two warnings above, so nothing reflows and no answer moves under the learner's thumb.</div>
+    </div>
+
+    <div class="wfcol" style="flex:0 1 250px">
+      <div class="wfcap"><span class="n">5</span><h4>Call comes in</h4></div>
+      <div class="wfsub">Returning to a backgrounded exam.</div>
+      <div class="wf" style="max-width:250px">
+        <div class="wf-bar" style="background:var(--surface)">
+          <div class="txt" style="font-size:10px"><b>Q 27 / 60</b></div>
+          <div class="chip warn" style="margin-left:auto;padding:2px 6px">40:02 left</div></div>
+        <div class="wf-body" style="min-height:210px">
+          <div class="softwarn"><b>Welcome back.</b> You were away 2 minutes. Your exam and your answers are exactly as you left them.</div>
+          <div class="bar" style="width:100%"></div><div class="bar" style="width:84%"></div>
+          <div class="box"><div class="bar" style="width:70%"></div></div>
+          <div class="box solid"><div class="bar" style="width:66%"></div></div>
+          <div class="box"><div class="bar" style="width:78%"></div></div>
+          <div class="btn pri" style="margin-top:auto">Continue</div>
+        </div></div>
+      <div class="note"><b>State the elapsed time explicitly.</b> The learner's own fear on returning is "how much did I lose" — answer it before they ask.</div>
+      <div class="note"><b>Open:</b> whether the timer pauses when the app is backgrounded is an exam-integrity decision, not a design one. Logged in the register.</div>
+    </div>
+
+    <div class="wfcol" style="flex:0 1 250px">
+      <div class="wfcap"><span class="n">6</span><h4>Compass unavailable</h4></div>
+      <div class="nd" style="min-height:210px">
+        <span class="lbl">Not designed</span>
+        <div class="why"><b>The recovery depends on what Compass can promise.</b> If the frame holds answers locally, this is a wait. If it does not, this is data loss — and the honest screen for data loss mid-exam is a different screen, with a different apology and a route to a re-sit.</div>
+        <div class="dep">Depends on: the containment contract, and specifically whether answers survive the frame becoming unreachable.</div>
+      </div>
+      <div class="note"><b>This is the August failure.</b> Drawing an optimistic version of it would be the same mistake the rebuild exists to correct.</div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ================= 06 EXAM LIFECYCLE ================= -->
+<section id="s-exam" data-review="5" data-build="6">
+  <div class="sec-head"><span class="sec-num">06</span><h2>Licensure hand-off — the exam as a task type</h2>
+    <span class="lede" style="font-size:13px">Learner flow 06 · specced in full separately</span></div>
+  <p class="prose lede">The most important moment in the journey happens outside the product. It is also the moment the study plan exists to serve — so it belongs in the calendar the plan already lives in, as a task the learner fills in before and after. The existing Study Calendar already treats the exam date as the anchor everything derives from; what follows adds the booking, the sit, the result and the retake.</p>
+
+  <div class="callout prose" style="margin:14px 0 20px">
+    <span class="eyebrow">The one structural change</span>
+    Every task on this calendar today is binary — done or not done. <b>An exam is not: fail is not incomplete.</b> It is resolved, with an outcome, and it spawns a retake. So the verb is <b>"Record result"</b>, never "Mark as complete". Everything else in this section flows through branches that already exist.
+  </div>
+
+  <!-- ===== STAGE: exam lifecycle ===== -->
+  <div class="stage" id="stg-exm">
+    <div class="stage-head"><span class="live"><i></i>Walk it</span><h4>Book it, sit it, record it, retake it</h4>
+      <span class="hint">A working state machine over the real data shape. Move the clock to reach the date-derived states.</span></div>
+    <div class="stage-main">
+      <div class="stage-view">
+        <div style="width:100%;max-width:320px">
+          <div class="wf"><div class="wf-body" id="exm-card" style="min-height:190px"></div></div>
+        </div>
+      </div>
+      <div class="stage-side">
+        <div class="deck">
+          <div class="lbl">Today is</div>
+          <div class="deck-row">
+            <button type="button" class="dbtn" data-exm-day="-42">6 weeks out</button>
+            <button type="button" class="dbtn" data-exm-day="-3">3 days out</button>
+            <button type="button" class="dbtn" data-exm-day="1">Day after</button>
+          </div>
+          <p class="txt" style="margin:9px 0 0;color:var(--ink-3)">A prototype control, not product UI — four of the six states are derived from the date, so there is no other way to reach them.</p>
+        </div>
+        <div class="deck">
+          <div class="lbl">Resolved state</div>
+          <div class="readout" id="exm-read"></div>
+        </div>
+        <div class="deck">
+          <div class="lbl">Attempts</div>
+          <div id="exm-attempts" class="txt" style="color:var(--ink-3)"></div>
+          <div class="deck-row" style="margin-top:9px">
+            <button type="button" class="dbtn" id="exm-reset">Start over — unbooked</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <p class="eyebrow" style="margin-bottom:10px">Six states of the anchor card</p>
+  <div class="wfset">
+
+    <div class="wfcol" style="flex:0 1 258px">
+      <div class="wfcap"><span class="n">1</span><h4>Unscheduled</h4></div>
+      <div class="wfsub">A target, not a booking.</div>
+      <div class="wf"><div class="wf-body">
+        <div class="wf-row"><div style="flex:1"><div class="txt" style="font-size:13px"><b>Target Date</b></div>
+          <div class="txt" style="color:var(--ink-3)">Life &amp; Health · State of Texas</div></div>
+          <div class="txt" style="color:var(--annot);font-size:11px">Edit</div></div>
+        <div class="box"><div class="lbl">Target</div><div class="txt" style="font-size:15px"><b>12 Oct 2026</b></div>
+          <div class="txt" style="color:var(--ink-3)">Not booked yet</div></div>
+        <div class="btn pri" style="align-self:flex-start">Schedule exam</div>
+      </div></div>
+      <div class="note"><b>New capability.</b> Today the plan is always built to a booked date. Separating target from booking is what lets a learner plan before they have a seat — which is their actual sequence.</div>
+    </div>
+
+    <div class="wfcol" style="flex:0 1 258px">
+      <div class="wfcap"><span class="n">2</span><h4>Scheduled</h4></div>
+      <div class="wfsub">Booked, comfortably out.</div>
+      <div class="wf"><div class="wf-body">
+        <div class="wf-row"><div style="flex:1"><div class="txt" style="font-size:13px"><b>Target Date</b></div>
+          <div class="txt" style="color:var(--ink-3)">Life &amp; Health · State of Texas</div></div>
+          <div class="txt" style="color:var(--annot);font-size:11px">Edit</div></div>
+        <div class="wf-row">
+          <div class="box" style="flex:1"><div class="lbl">In</div><div class="txt" style="font-size:15px"><b>6 weeks</b></div></div>
+          <div class="box" style="flex:1"><div class="lbl">Exam date</div><div class="txt" style="font-size:15px"><b>12 Oct</b></div></div>
+        </div>
+        <div class="txt" style="color:var(--ink-3)">PSI · Austin North · 09:00</div>
+        <div class="btn" style="align-self:flex-start">View details</div>
+      </div></div>
+      <div class="have"><b>The two-panel layout is the existing card</b> — weeks-out beside the date. Provider and time are the new line.</div>
+    </div>
+
+    <div class="wfcol" style="flex:0 1 258px">
+      <div class="wfcap"><span class="n">3</span><h4>Imminent</h4></div>
+      <div class="wfsub">Inside the pressure window.</div>
+      <div class="wf"><div class="wf-body">
+        <div class="wf-row"><div style="flex:1"><div class="txt" style="font-size:13px"><b>Target Date</b></div>
+          <div class="txt" style="color:var(--ink-3)">Life &amp; Health · State of Texas</div></div>
+          <div class="txt" style="color:var(--annot);font-size:11px">Edit</div></div>
+        <div class="chip warn">In 3 days</div>
+        <div class="wf-row">
+          <div class="box" style="flex:1"><div class="lbl">Exam date</div><div class="txt" style="font-size:15px"><b>12 Oct</b></div></div>
+          <div class="box" style="flex:1"><div class="lbl">Plan</div><div class="txt" style="font-size:15px"><b>82%</b></div></div>
+        </div>
+        <div class="txt" style="color:var(--ink-3)">PSI · Austin North · 09:00</div>
+        <div class="btn" style="align-self:flex-start">View details</div>
+      </div></div>
+      <div class="have"><b>Emphasis changes, layout does not</b> — the same discipline as the existing five compliance states. A chip and a colour, not a different card.</div>
+    </div>
+
+    <div class="wfcol" style="flex:0 1 258px">
+      <div class="wfcap"><span class="n">4</span><h4>Awaiting result</h4></div>
+      <div class="wfsub">Sat, no outcome recorded.</div>
+      <div class="wf"><div class="wf-body">
+        <div class="wf-row"><div style="flex:1"><div class="txt" style="font-size:13px"><b>Target Date</b></div>
+          <div class="txt" style="color:var(--ink-3)">Life &amp; Health · State of Texas</div></div></div>
+        <div class="chip">Awaiting result</div>
+        <div class="box"><div class="txt">You sat on <b>12 October</b>. Let us know how it went and we'll update your records.</div></div>
+        <div class="btn pri" style="align-self:flex-start">Record result</div>
+      </div></div>
+      <div class="note"><b>Derived, not stored</b> — the sit date has passed and no outcome exists. Same discipline as the rest of the calendar's status logic.</div>
+      <div class="note"><b>Not a nag.</b> One prompt, phrased as a favour to them (records), not a task we are owed.</div>
+    </div>
+
+    <div class="wfcol" style="flex:0 1 258px">
+      <div class="wfcap"><span class="n">5</span><h4>Passed</h4></div>
+      <div class="wfsub">The only terminal state.</div>
+      <div class="wf"><div class="wf-body">
+        <div class="wf-row"><div style="flex:1"><div class="txt" style="font-size:13px"><b>Target Date</b></div>
+          <div class="txt" style="color:var(--ink-3)">Life &amp; Health · State of Texas</div></div></div>
+        <div class="chip pos">Passed</div>
+        <div class="box"><div class="txt"><b>Passed 12 October 2026</b></div>
+          <div class="txt" style="color:var(--ink-3)">Score 84 · added to your records</div></div>
+        <div class="txt" style="color:var(--annot);font-size:11px">View in Records →</div>
+      </div></div>
+      <div class="note"><b>No primary action, deliberately.</b> Congratulate briefly and hand off to Records. A CTA here would be the product asking for something at the moment the learner is done with it.</div>
+    </div>
+
+    <div class="wfcol" style="flex:0 1 258px">
+      <div class="wfcap"><span class="n">6</span><h4>Not passed</h4></div>
+      <div class="wfsub">The case handled badly market-wide.</div>
+      <div class="wf"><div class="wf-body">
+        <div class="wf-row"><div style="flex:1"><div class="txt" style="font-size:13px"><b>Target Date</b></div>
+          <div class="txt" style="color:var(--ink-3)">Life &amp; Health · State of Texas</div></div></div>
+        <div class="chip warn">Not passed</div>
+        <div class="box"><div class="txt">Attempt 1 · <b>12 October</b> · score 68</div>
+          <div class="txt" style="color:var(--ink-3)">Your coursework and progress are unaffected.</div></div>
+        <div class="btn pri" style="align-self:flex-start">Schedule retake</div>
+        <div class="softwarn">Booking close in narrows your study plan options.</div>
+      </div></div>
+      <div class="note"><b>Warning family, never error.</b> Error is for something the product got wrong. A fail is a state.</div>
+      <div class="note"><b>No confirmation dialog, no red, no "are you sure".</b> The next thing on screen is the way forward, and the previous attempt stays visible — a learner who fails then passes owns both.</div>
+    </div>
+
+  </div>
+
+  <p class="eyebrow" style="margin:26px 0 10px">The three panels — one existing shell</p>
+  <div class="wfset">
+    <div class="wfcol" style="flex:1 1 260px">
+      <div class="wfcap"><span class="n">7</span><h4>Schedule exam</h4></div>
+      <div class="wf"><div class="wf-bar"><div class="txt" style="font-size:10px">✕</div>
+        <div class="txt" style="font-size:11px;margin-left:6px"><b>Schedule your exam</b></div></div>
+        <div class="wf-body">
+          <div><div class="lbl" style="margin-bottom:4px">Date</div><div class="field">12 / 10 / 2026</div></div>
+          <div class="wf-row"><div style="flex:1"><div class="lbl" style="margin-bottom:4px">Time · optional</div><div class="field">09:00</div></div>
+            <div style="flex:1"><div class="lbl" style="margin-bottom:4px">Provider</div><div class="field">PSI</div></div></div>
+          <div><div class="lbl" style="margin-bottom:4px">Delivery</div>
+            <div class="wf-row"><div class="btn" style="flex:1">In person</div><div class="btn" style="flex:1">Online proctored</div></div></div>
+          <div><div class="lbl" style="margin-bottom:4px">Location</div><div class="field">Austin North Test Center</div></div>
+          <div><div class="lbl" style="margin-bottom:4px">Confirmation no. · optional</div><div class="field">PSI-4471-88203</div></div>
+          <div class="softwarn">That's before your plan is projected to finish on 19 Oct. You can still save it.</div>
+          <div class="btn pri">Save</div>
+        </div></div>
+      <div class="have"><b>The soft warning is verbatim existing behaviour</b> — non-blocking, Save stays enabled. Reused rather than re-invented.</div>
+      <div class="note"><b>Location hides</b> when delivery is online-proctored, and the change is announced rather than silently unmounted.</div>
+    </div>
+
+    <div class="wfcol" style="flex:1 1 260px">
+      <div class="wfcap"><span class="n">8</span><h4>Record result</h4></div>
+      <div class="wf"><div class="wf-bar"><div class="txt" style="font-size:10px">✕</div>
+        <div class="txt" style="font-size:11px;margin-left:6px"><b>How did it go?</b></div></div>
+        <div class="wf-body">
+          <div><div class="lbl" style="margin-bottom:4px">Outcome</div>
+            <div class="wf-row"><div class="btn" style="flex:1">Passed</div><div class="btn" style="flex:1">Not passed</div></div></div>
+          <div><div class="lbl" style="margin-bottom:4px">Score · optional</div><div class="field">68</div></div>
+          <div><div class="lbl" style="margin-bottom:4px">Notes · optional</div>
+            <div class="field" style="min-height:46px">Struggled on annuities</div></div>
+          <div class="txt" style="color:var(--ink-3)">We'll record the date automatically.</div>
+          <div class="btn pri">Save result</div>
+        </div></div>
+      <div class="note"><b>"Not passed", not "Failed".</b> The state belongs to the attempt, not to the person.</div>
+      <div class="note"><b>The note field earns its place on a fail</b> — it is the learner telling their future self where to focus on the retake.</div>
+    </div>
+
+    <div class="wfcol" style="flex:1 1 260px">
+      <div class="wfcap"><span class="n">9</span><h4>Retake — plan re-anchors</h4></div>
+      <div class="wf"><div class="wf-body">
+        <div class="txt" style="font-size:13px"><b>Your plan has been rebuilt</b></div>
+        <div class="box"><div class="lbl">New exam date</div><div class="txt"><b>9 Nov 2026</b> · attempt 2</div></div>
+        <div class="box"><div class="lbl">What changed</div>
+          <div class="txt">18 study days · annuities and policy provisions moved earlier</div></div>
+        <div class="softwarn">Two longer plans don't fit before 9 Nov and have been left out.</div>
+        <div class="btn pri" style="align-self:flex-start">View my plan</div>
+      </div></div>
+      <div class="have"><b>Both the rebuild and the filtered-plans note already exist</b> in the calendar's settings flow. The retake reuses them rather than inventing a recovery experience.</div>
+      <div class="note"><b>Open:</b> whether the rebuilt plan should reorder around the failed topics, or simply re-pace. Reordering needs score-by-topic data we may not get.</div>
+    </div>
+
+    <div class="wfcol" style="flex:1 1 260px">
+      <div class="wfcap"><span class="n">10</span><h4>Multi-state licensure</h4></div>
+      <div class="nd">
+        <span class="lbl">Not designed</span>
+        <div class="why"><b>One learner, several states, several exams.</b> This section models one attempt series against one calendar. The brief's Records flow implies more — hours held across states with different requirements and renewal dates.</div>
+        <div class="dep">Needs a decision on whether a learner has one calendar per licence or one calendar with several anchors — which is a data-model question, not a layout one.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout prose" style="margin-top:20px">
+    <span class="eyebrow">One naming trap, found in the existing code</span>
+    <code>kind: 'exam'</code> <b>is already taken</b> — it means the <em>practice</em> exam, and every instance is course-linked with a link into the LMS. The external licensing exam is its opposite in every respect, so it needs its own key (<code>'licensing-exam'</code>). Overloading the existing one would still typecheck, and the calendar would silently treat a real licensing exam as a practice one.
+  </div>
+</section>
+
+<!-- ================= OPEN REGISTER ================= -->
+<section id="s-open" data-review="7" data-build="7">
+  <div class="sec-head"><span class="sec-num">07</span><h2>Open — flagged, not resolved</h2></div>
+  <p class="prose lede">Each of these is drawn as a hole above rather than filled in. Four come from the brief's own list; the rest surfaced while drawing.</p>
+  <div class="tscroll" style="margin-top:14px">
+  <table>
+    <thead><tr><th style="width:26%">Question</th><th style="width:14%">Blocks</th><th style="width:12%">Owner</th><th>Why it can't be designed around</th></tr></thead>
+    <tbody>
+      <tr><td><b>Does course progress carry over for learners moved mid-course?</b></td><td>§03 frame 6</td><td>FinServ product</td>
+        <td>Carry-over means a resume screen; no carry-over means a restart that needs an explanation. Opposite arrival experiences from one screen.</td></tr>
+      <tr><td><b>Do answers survive the Compass frame becoming unreachable?</b></td><td>§04 frame E · §05 frame 6</td><td>Compass</td>
+        <td>Determines whether an outage mid-exam is a wait or data loss. These are different screens with different apologies. <b>The single most consequential open item here.</b></td></tr>
+      <tr><td><b>Which containment model — A, B, or by activity?</b></td><td>§04 frame E</td><td>Joint · in negotiation</td>
+        <td>Decides what of ours persists in-frame. Both options are already built and switchable, so this can be walked before it is decided.</td></tr>
+      <tr><td><b>Does the exam timer pause when the app is backgrounded?</b></td><td>§05 frame 5</td><td>Compass · exam integrity</td>
+        <td>An integrity rule, not a design choice — but the learner must be told which it is <em>before</em> they take a call, not after.</td></tr>
+      <tr><td><b>Retake cooling-off period</b></td><td>§06 frames 6, 9</td><td>FinServ product</td>
+        <td>Most licences impose a waiting period. Letting a learner book inside it anchors a plan to a date they cannot sit.</td></tr>
+      <tr><td><b>Course window vs exam date</b></td><td>§06</td><td>FinServ product</td>
+        <td>The 30-day window and the exam date can conflict. An exam booked past window expiry is reachable and undefined. Compounds the brief's own open question about surfacing expiring windows.</td></tr>
+      <tr><td><b>Do exam dates and outcomes reach the agency admin?</b></td><td>Admin surface</td><td>Joint · with Compass</td>
+        <td>It is the data "who is stuck" needs most — and it sits inside the unresolved question of whether admin insight comes from us or from Compass.</td></tr>
+      <tr><td><b>Does a failed attempt feed readiness?</b></td><td>§06</td><td>Compass</td>
+        <td>A real fail is the strongest readiness signal there is, and we do not own that model.</td></tr>
+      <tr><td><b>Spanish string expansion</b></td><td>All frames</td><td>FinServ design</td>
+        <td>Not tested in either existing project. The strips in §05 are the risk — a two-line status strip that becomes three lines reflows an exam under the learner's thumb.</td></tr>
+      <tr><td><b>One calendar per licence, or one with several anchors?</b></td><td>§06 frame 10</td><td>FinServ product</td>
+        <td>Data model, not layout. Multi-state learners cannot be drawn until it is settled.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ================= NOTES ================= -->
+<section id="s-notes" data-review="8" data-build="8">
+  <div class="sec-head"><span class="sec-num">08</span><h2>How to read this</h2></div>
+  <div class="prose">
+    <p><b>Fidelity is deliberate.</b> Greyscale, no brand colour, real proportions. The rails, bars and cards sit at the measurements the existing platform uses, so a frame here maps onto something buildable — but nothing is styled, because the brief asked for structure and the fastest way to lose a structural review is to give it a colour to argue about.</p>
+    <p><b>The two reading modes reorder this page; they do not hide anything.</b> Every section stays in the document in both modes, so find-in-page, select-all, and print all still reach the whole thing.</p>
+    <p><b>Hatched frames are the point, not gaps in the work.</b> Each one names what it is blocked on and who owns the answer. Drawing an optimistic version of any of them would resolve an open question by implication — which is what the brief asked us not to do.</p>
+    <p><b>Green notes mark something that already exists.</b> Violet notes are design reasoning. Amber is unresolved.</p>
+  </div>
+  <div class="foot">
+    Companion to the FinServ <em>Learner and Admin Wireframe Brief</em>. The exam task type is specced in full in <code>licensing-exam-task-type-spec.md</code>, including the state machine, the data shape, and the extension points in the existing calendar code. Admin flows 01–06 are not covered in this pass.
+  </div>
+</section>
+
+</div>
+</div>
+
+<script>
+(function(){
+  var doc = document.getElementById('doc');
+  var secs = Array.prototype.slice.call(doc.querySelectorAll('section'));
+  var note = document.getElementById('modeNote');
+  var NOTES = {
+    review: 'Wireframes lead; the inventory of existing components follows as evidence.',
+    build:  'Inventory and spec lead; wireframes are the working end of it.'
+  };
+  function setMode(mode){
+    secs.forEach(function(s){
+      s.style.order = s.getAttribute(mode === 'review' ? 'data-review' : 'data-build') || 99;
+    });
+    document.getElementById('m-review').setAttribute('aria-pressed', String(mode==='review'));
+    document.getElementById('m-build').setAttribute('aria-pressed', String(mode==='build'));
+    note.textContent = NOTES[mode];
+    try{ localStorage.setItem('finserv.wf.mode', mode); }catch(e){}
+  }
+  function setTheme(t){
+    document.documentElement.setAttribute('data-theme', t);
+    document.getElementById('t-light').setAttribute('aria-pressed', String(t==='light'));
+    document.getElementById('t-dark').setAttribute('aria-pressed', String(t==='dark'));
+    try{ localStorage.setItem('finserv.wf.theme', t); }catch(e){}
+  }
+  document.getElementById('m-review').onclick = function(){ setMode('review'); };
+  document.getElementById('m-build').onclick  = function(){ setMode('build'); };
+  document.getElementById('t-light').onclick  = function(){ setTheme('light'); };
+  document.getElementById('t-dark').onclick   = function(){ setTheme('dark'); };
+
+  var m='review', t='light';
+  try{
+    var sm = localStorage.getItem('finserv.wf.mode'); if(sm==='review'||sm==='build') m=sm;
+    var st = localStorage.getItem('finserv.wf.theme'); if(st==='light'||st==='dark') t=st;
+  }catch(e){}
+  setMode(m); setTheme(t);
+})();
+
+/* =================================================================
+   STAGE 1 — Invited arrival
+   ================================================================= */
+(function(){
+  var body=document.getElementById('arr-body'), steps=document.getElementById('arr-steps'),
+      read=document.getElementById('arr-read');
+  if(!body) return;
+  var S={step:'invite', es:false, expired:false, email:'j.rivera@gmail.com', resent:0};
+  var ORDER=[['invite','Invite'],['landing','Landing'],['magiclink','Email'],['wait','Wait'],['landed','First run']];
+
+  var T={
+    en:{
+      from:'From your agency',
+      enrolled:'<b>Meridian Insurance Group</b> has enrolled you in Life &amp; Health Pre-Licensing.',
+      start:'Start your course',
+      by:'Enrolled by Meridian Insurance Group', course:'Life &amp; Health Pre-Licensing',
+      priceL:'Your price', priceV:'Paid by your agency', winL:'Window', winV:'30 days',
+      begin:'Begin — we’ll email you a link', nopw:'No password to create.',
+      askH:'Where should we send your link?', askS:'Use any email you check — a personal one is fine.',
+      send:'Send my link', nosso:'No password. No “continue with Google”.',
+      waitH:'Check your email', waitS:'We sent a link to <b>{e}</b>. It works for 30 minutes.',
+      resend:'Resend', diff:'Use a different email',
+      keep:'Nothing is lost if you close this — your invite stays valid.',
+      sim:'↳ Simulate: I clicked the link',
+      expH:'That link has expired', expS:'Links last 30 minutes. We can send you a fresh one — your invite is still valid.',
+      expB:'Send a new link',
+      sent:'Sent again to <b>{e}</b>.',
+      welc:'Welcome, Jordan', dead:'Exam window ends in 30 days',
+      startH:'Start here', startS:'<b>Life &amp; Health Pre-Licensing</b> · not started',
+      begin1:'Begin Chapter 1', nextL:'Next', nextS:'Set a target exam date to build your study plan'
+    },
+    es:{
+      from:'De su agencia',
+      enrolled:'<b>Meridian Insurance Group</b> le ha inscrito en Preparación para la Licencia de Vida y Salud.',
+      start:'Comience su curso',
+      by:'Inscrito por Meridian Insurance Group', course:'Preparación para la Licencia de Vida y Salud',
+      priceL:'Su precio', priceV:'Pagado por su agencia', winL:'Plazo', winV:'30 días',
+      begin:'Comenzar — le enviaremos un enlace por correo', nopw:'No hay contraseña que crear.',
+      askH:'¿A dónde le enviamos su enlace?', askS:'Use cualquier correo que revise — uno personal está bien.',
+      send:'Enviar mi enlace', nosso:'Sin contraseña. Sin “continuar con Google”.',
+      waitH:'Revise su correo electrónico', waitS:'Enviamos un enlace a <b>{e}</b>. Es válido por 30 minutos.',
+      resend:'Reenviar', diff:'Usar otro correo electrónico',
+      keep:'No se pierde nada si cierra esta ventana — su invitación sigue siendo válida.',
+      sim:'↳ Simular: hice clic en el enlace',
+      expH:'Ese enlace ha caducado', expS:'Los enlaces duran 30 minutos. Podemos enviarle uno nuevo — su invitación sigue siendo válida.',
+      expB:'Enviar un enlace nuevo',
+      sent:'Enviado nuevamente a <b>{e}</b>.',
+      welc:'Bienvenido, Jordan', dead:'Su plazo de examen termina en 30 días',
+      startH:'Comience aquí', startS:'<b>Preparación para la Licencia de Vida y Salud</b> · sin comenzar',
+      begin1:'Comenzar el Capítulo 1', nextL:'Siguiente', nextS:'Fije una fecha objetivo de examen para crear su plan de estudio'
+    }
+  };
+  var NOTES={
+    invite:'Outside our product. The link carries agency, course and price — <b>there is no code to type, here or anywhere after</b>.',
+    landing:'<b>The abandonment moment.</b> Everything the link knows is shown back before anything is asked. The ask is one button, and it is not “create an account”.',
+    magiclink:'<b>One field.</b> Saying “a personal one is fine” removes the hesitation of a recruit who has no work address yet.',
+    wait:'<b>A designed wait with a repair for each failure</b> — wrong address, expired link, closed tab. Try expiring it.',
+    expired:'<b>Recoverable, not a dead end.</b> The invite outlives the link, and the copy says so before the learner assumes they have lost their place.',
+    landed:'<b>Account created silently</b> at the last viable step. One product, a deadline, and one thing to do.'
+  };
+  function t(k){ var s=T[S.es?'es':'en'][k]||''; return s.replace('{e}',S.email); }
+
+  function render(){
+    var v=S.expired&&S.step==='wait'?'expired':S.step, h='';
+    if(v==='invite'){
+      h='<div class="lbl">'+t('from')+'</div>'+
+        '<div class="bar" style="width:88%"></div><div class="bar" style="width:64%"></div>'+
+        '<div class="box" style="margin-top:2px"><div class="txt">'+t('enrolled')+'</div>'+
+        '<button type="button" class="act" data-go="landing">'+t('start')+'</button></div>';
+    } else if(v==='landing'){
+      h='<div class="chip">'+t('by')+'</div>'+
+        '<div class="txt" style="font-size:13px"><b>'+t('course')+'</b></div>'+
+        '<div class="wf-row"><div class="box" style="flex:1"><div class="lbl">'+t('priceL')+'</div><div class="txt"><b>'+t('priceV')+'</b></div></div>'+
+        '<div class="box" style="flex:1"><div class="lbl">'+t('winL')+'</div><div class="txt"><b>'+t('winV')+'</b></div></div></div>'+
+        '<button type="button" class="act" data-go="magiclink">'+t('begin')+'</button>'+
+        '<div class="txt" style="color:var(--ink-3)">'+t('nopw')+'</div>';
+    } else if(v==='magiclink'){
+      h='<div class="txt" style="font-size:13px"><b>'+t('askH')+'</b></div>'+
+        '<div class="txt">'+t('askS')+'</div>'+
+        '<input class="inp" id="arr-email" type="email" value="'+S.email+'">'+
+        '<button type="button" class="act" data-go="wait">'+t('send')+'</button>'+
+        '<div class="txt" style="color:var(--ink-3)">'+t('nosso')+'</div>';
+    } else if(v==='wait'){
+      h='<div class="sq" style="width:32px;height:32px;border-radius:8px"></div>'+
+        '<div class="txt" style="font-size:13px"><b>'+t('waitH')+'</b></div>'+
+        '<div class="txt">'+t('waitS')+'</div>'+
+        (S.resent?'<div class="softwarn">'+t('sent')+'</div>':'')+
+        '<button type="button" class="act sec" data-act="resend">'+t('resend')+'</button>'+
+        '<button type="button" class="act sec" data-go="magiclink">'+t('diff')+'</button>'+
+        '<div class="softwarn">'+t('keep')+'</div>'+
+        '<button type="button" class="act sec" data-go="landed" style="border-style:dashed;color:var(--annot);border-color:var(--annot-line)">'+t('sim')+'</button>';
+    } else if(v==='expired'){
+      h='<div class="chip warn">Link expired</div>'+
+        '<div class="txt" style="font-size:13px"><b>'+t('expH')+'</b></div>'+
+        '<div class="txt">'+t('expS')+'</div>'+
+        '<button type="button" class="act" data-act="fresh">'+t('expB')+'</button>';
+    } else {
+      h='<div class="txt" style="font-size:13px"><b>'+t('welc')+'</b></div>'+
+        '<div class="chip warn">'+t('dead')+'</div>'+
+        '<div class="box solid"><div class="lbl">'+t('startH')+'</div>'+
+        '<div class="txt">'+t('startS')+'</div>'+
+        '<button type="button" class="act">'+t('begin1')+'</button></div>'+
+        '<div class="box"><div class="lbl">'+t('nextL')+'</div><div class="txt">'+t('nextS')+'</div></div>';
+    }
+    body.innerHTML=h;
+    var i=ORDER.map(function(o){return o[0];}).indexOf(S.step);
+    steps.innerHTML=ORDER.map(function(o,n){
+      return '<span class="step-dot" data-on="'+(n===i?1:0)+'" data-done="'+(n<i?1:0)+'"></span>';
+    }).join('')+'<span class="step-name">'+(ORDER[i]?ORDER[i][1]:'')+(v==='expired'?' · expired':'')+'</span>';
+    read.innerHTML=NOTES[v];
+  }
+  body.addEventListener('click', function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    var go=b.getAttribute('data-go'), act=b.getAttribute('data-act');
+    if(go==='wait'){ var f=document.getElementById('arr-email'); if(f&&f.value.trim()) S.email=f.value.trim(); S.resent=0; }
+    if(go){ if(go!=='wait') S.resent=0; if(go==='magiclink') S.expired=false; S.step=go; render(); return; }
+    if(act==='resend'){ S.resent=1; S.expired=false; render(); }
+    if(act==='fresh'){ S.expired=false; S.resent=1; render(); }
+  });
+  document.getElementById('arr-restart').onclick=function(){ S.step='invite'; S.expired=false; S.resent=0; render(); };
+  document.getElementById('arr-expire').onclick=function(){ S.step='wait'; S.expired=true; S.resent=0; render(); };
+  document.getElementById('arr-es').onclick=function(){
+    S.es=!S.es; this.setAttribute('aria-pressed',String(S.es)); this.textContent=S.es?'English':'Español'; render();
+  };
+  render();
+})();
+
+/* =================================================================
+   STAGE 2 — Compass hand-off
+   ================================================================= */
+(function(){
+  var body=document.getElementById('cmp-body'), url=document.getElementById('cmp-url'),
+      read=document.getElementById('cmp-read');
+  if(!body) return;
+  var S={mode:'a', act:'learn', view:'dashboard', slow:false, pct:62, timer:null};
+  function contain(){ return S.mode==='a'?'shell':S.mode==='b'?'focus':(S.act==='exam'?'focus':'shell'); }
+  var ACTLBL={learn:'Chapter 4 · Policy Basics',practice:'Practice set 4',exam:'Exam simulation'};
+
+  function rail(){
+    return '<div class="rail"><div class="bar d" style="height:11px"></div><div class="bar" style="height:11px"></div>'+
+      '<div class="bar" style="height:11px"></div><div class="bar" style="height:11px"></div>'+
+      '<div class="bar" style="height:11px"></div></div>';
+  }
+  function frame(){
+    return '<div class="box solid" style="flex:1;border-style:dashed;border-color:var(--annot-line);gap:9px">'+
+      '<div class="lbl" style="color:var(--annot)">Compass renders this</div>'+
+      '<div class="txt" style="font-size:12px"><b>'+ACTLBL[S.act]+'</b></div>'+
+      '<div class="bar" style="width:100%"></div><div class="bar" style="width:94%"></div>'+
+      '<div class="bar" style="width:88%"></div><div class="bar" style="width:70%"></div>'+
+      '<div class="wf-row" style="margin-top:auto"><div class="btn" style="flex:1">Previous</div>'+
+      '<button type="button" class="act" data-go="exiting" style="flex:1;width:auto">'+
+      (S.act==='exam'?'Submit exam':'Next')+'</button></div></div>';
+  }
+  function render(){
+    var h='';
+    if(S.view==='dashboard'){
+      url.textContent='app.xcel.com/dashboard';
+      h='<div class="split">'+rail()+'<div class="wf-body" style="flex:1">'+
+        '<div class="txt" style="font-size:13px"><b>Welcome back, Jordan</b></div>'+
+        '<div class="chip warn">Exam in 12 days</div>'+
+        '<div class="box solid"><div class="lbl">Continue</div>'+
+        '<div class="txt"><b>'+ACTLBL[S.act]+'</b></div>'+
+        '<div class="progline"><i style="width:'+S.pct+'%"></i></div>'+
+        '<div class="txt" style="color:var(--ink-3)">'+S.pct+'% complete</div>'+
+        '<button type="button" class="act" data-go="entering">Continue course</button></div></div></div>';
+      read.innerHTML='<b>We render this.</b> Progress reads '+S.pct+'% — remember it, then cross the boundary and come back.';
+    } else if(S.view==='entering'){
+      url.textContent='app.xcel.com/course/ch4';
+      h='<div class="wf-body" style="min-height:300px;justify-content:center;align-items:center;text-align:center">'+
+        '<div class="spin"></div>'+
+        '<div class="txt" style="font-size:13px"><b>Opening '+ACTLBL[S.act]+'</b></div>'+
+        '<div class="progline" style="width:70%"><i id="cmp-prog" style="width:8%"></i></div>'+
+        '<div class="txt">Loading your place — you left off at question 6.</div>'+
+        '<button type="button" class="act sec" data-go="dashboard" style="width:auto">Cancel</button></div>';
+      read.innerHTML='<b>A designed wait.</b> “You left off at question 6” is what separates this from a spinner — it tells the learner the wait is doing something for them, and Cancel means a slow hand-over is not a trap.';
+    } else if(S.view==='course'){
+      url.textContent='app.xcel.com/course/ch4';
+      var c=contain();
+      if(c==='shell'){
+        h='<div class="split">'+rail()+'<div class="wf-body" style="flex:1;padding:10px">'+
+          '<button type="button" class="act sec" data-go="dashboard" style="width:auto;align-self:flex-start;padding:5px 9px;font-size:10.5px">← Back to Dashboard</button>'+
+          frame()+'</div></div>';
+      } else {
+        var exam=(S.act==='exam');
+        h='<div class="wf-bar" style="background:var(--surface);border-bottom:1px solid var(--line)">'+
+          (exam
+            ? '<span class="txt" style="font-size:10.5px;color:var(--flag)"><b>Exam in progress</b></span>'
+            : '<button type="button" class="act sec" data-go="dashboard" style="width:auto;padding:4px 8px;font-size:10.5px;border:0;background:transparent">✕ Exit course</button>')+
+          '<span class="chip" style="margin-left:auto;padding:2px 6px">'+(exam?'40:12 left':'Ch 4 of 12')+'</span></div>'+
+          '<div class="wf-body" style="padding:10px;min-height:262px">'+frame()+
+          (exam?'<button type="button" class="act sec" data-act="endexam" style="width:auto;align-self:flex-start;font-size:10.5px;padding:5px 9px">End exam early</button>':'')+
+          '</div>';
+      }
+      read.innerHTML= c==='shell'
+        ? '<b>Persistent shell.</b> Our rail and the way back are always present. Compass has '+(S.mode==='c'?'the narrower':'a constrained')+' canvas, and the learner can leave at any moment — including mid-exam.'
+        : (S.act==='exam' && S.mode==='c'
+            ? '<b>Focus, because this is an assessment.</b> The exit is gone from the chrome — leaving is now a deliberate act with its own affordance, not a click away from Next. This is the case Option A cannot make.'
+            : '<b>Focused hand-off.</b> Compass has the full canvas. Coming back is one chip, and that chip is the entire return contract.');
+    } else {
+      url.textContent='app.xcel.com/dashboard';
+      h='<div class="split">'+rail()+'<div class="wf-body" style="flex:1">'+
+        '<div class="txt" style="font-size:13px"><b>Nice work — '+ACTLBL[S.act]+' complete</b></div>'+
+        '<div class="box"><div class="lbl">Course progress</div>'+
+        '<div class="progline"><i style="width:'+S.pct+'%"></i></div>'+
+        '<div class="txt" id="cmp-upd" style="color:var(--ink-3)">Updating…</div></div>'+
+        '<div class="box"><div class="lbl">Up next</div><div class="txt"><b>Chapter 5 · Policy Provisions</b></div></div>'+
+        '<button type="button" class="act sec" data-go="dashboard">Back to dashboard</button></div></div>';
+      read.innerHTML='<b>Progress is in flight.</b> “Updating…” beats both alternatives — a stale percentage is a lie the learner can catch, and a blank looks broken.';
+    }
+    body.innerHTML=h;
+    if(S.view==='entering'){
+      var ms=S.slow?6000:1600, p=document.getElementById('cmp-prog'), t0=Date.now();
+      clearInterval(S.timer);
+      S.timer=setInterval(function(){
+        var f=Math.min(1,(Date.now()-t0)/ms);
+        if(p) p.style.width=(8+f*92)+'%';
+        if(f>=1){ clearInterval(S.timer); if(S.view==='entering'){ S.view='course'; S.slow=false; render(); } }
+      },60);
+    }
+    if(S.view==='exiting'){
+      clearInterval(S.timer);
+      S.timer=setTimeout(function(){
+        S.pct=Math.min(100,S.pct+9);
+        var u=document.getElementById('cmp-upd'), bar=body.querySelector('.progline i');
+        if(u){ u.textContent=S.pct+'% complete'; }
+        if(bar){ bar.style.width=S.pct+'%'; }
+        read.innerHTML='<b>Landed.</b> The number changed from what home said before you entered — which is the whole continuity requirement, arriving a beat late and saying so rather than lying in the meantime.';
+      },2200);
+    }
+  }
+  body.addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    var go=b.getAttribute('data-go');
+    if(b.getAttribute('data-act')==='endexam'){
+      read.innerHTML='<b>Deliberate exit.</b> In production this confirms before it ends the attempt — the point is that ending an exam should cost more than one tap on chrome the learner never meant to touch.';
+      return;
+    }
+    if(go){ clearInterval(S.timer); clearTimeout(S.timer); S.view=go; render(); }
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-cmp-mode]'),function(b){
+    b.onclick=function(){
+      S.mode=b.getAttribute('data-cmp-mode');
+      Array.prototype.forEach.call(document.querySelectorAll('[data-cmp-mode]'),function(x){
+        x.setAttribute('aria-pressed',String(x===b)); });
+      render();
+    };
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-cmp-act]'),function(b){
+    b.onclick=function(){
+      S.act=b.getAttribute('data-cmp-act');
+      Array.prototype.forEach.call(document.querySelectorAll('[data-cmp-act]'),function(x){
+        x.setAttribute('aria-pressed',String(x===b)); });
+      render();
+    };
+  });
+  document.getElementById('cmp-slow').onclick=function(){ clearInterval(S.timer); S.slow=true; S.view='entering'; render(); };
+  document.getElementById('cmp-reset').onclick=function(){ clearInterval(S.timer); clearTimeout(S.timer); S.view='dashboard'; render(); };
+  render();
+})();
+
+/* =================================================================
+   STAGE 3 — The interruption state
+   ================================================================= */
+(function(){
+  var slot=document.getElementById('int-slot'), q=document.getElementById('int-q'),
+      qn=document.getElementById('int-qn'), tm=document.getElementById('int-timer'),
+      read=document.getElementById('int-read'), next=document.getElementById('int-next');
+  if(!slot) return;
+  var S={n:24,sec:49*60+12,run:true,net:'ok',pending:0,sel:-1,tick:null,fade:null,msg:null,paused:false};
+
+  function mmss(s){ var m=Math.floor(s/60), r=s%60; return m+':'+(r<10?'0':'')+r; }
+  function setMsg(kind,html,ttl){
+    clearTimeout(S.fade); S.msg={kind:kind,html:html};
+    paint();
+    if(ttl) S.fade=setTimeout(function(){ S.msg=null; paint(); },ttl);
+  }
+  function paint(){
+    qn.textContent='Q '+S.n+' / 60';
+    tm.innerHTML='<span class="timer">'+mmss(S.sec)+'</span> left';
+    tm.className='chip'+(S.sec<300?' warn':'');
+    var h='';
+    if(S.msg){
+      if(S.msg.kind==='nd'){
+        h='<div class="nd"><span class="lbl">Not designed</span><div class="why">'+S.msg.html+'</div></div>';
+      } else if(S.msg.kind==='ok'){
+        h='<div class="softwarn" style="color:var(--have);background:var(--have-bg);border-color:var(--have-line)">'+S.msg.html+'</div>';
+      } else if(S.msg.kind==='spin'){
+        h='<div class="softwarn"><span class="spin"></span><span>'+S.msg.html+'</span></div>';
+      } else {
+        h='<div class="softwarn">'+S.msg.html+'</div>';
+      }
+    }
+    slot.innerHTML=h;
+    var opts=['Guaranteed renewable','Non-cancellable','Conditionally renewable','Optionally renewable'];
+    q.innerHTML='<div class="txt" style="margin-bottom:7px">Which provision prevents the insurer from changing the premium?</div>'+
+      opts.map(function(o,i){ return '<div class="opt" role="button" tabindex="0" data-opt="'+i+'" aria-pressed="'+(S.sel===i)+'" style="margin-bottom:5px">'+o+'</div>'; }).join('');
+    var dead=(S.net==='dead');
+    next.disabled=dead;
+    next.textContent=dead?'Unavailable':'Next question';
+    var rows=[
+      ['Question readable',!dead],
+      ['Options selectable',!dead],
+      ['Next enabled',!dead],
+      ['Timer running',S.run&&!S.paused]
+    ];
+    read.innerHTML=rows.map(function(r){
+      return '<div style="color:'+(r[1]?'var(--have)':'var(--flag)')+'">'+(r[1]?'✓':'✕')+' <span style="color:var(--ink-2)">'+r[0]+'</span></div>';
+    }).join('')+(S.pending?'<div style="margin-top:6px"><b>'+S.pending+' answer'+(S.pending>1?'s':'')+' held on the device</b></div>':'');
+  }
+  q.addEventListener('click',function(e){
+    var o=e.target.closest('[data-opt]'); if(!o||S.net==='dead') return;
+    S.sel=parseInt(o.getAttribute('data-opt'),10); paint();
+  });
+  q.addEventListener('keydown',function(e){
+    if(e.key!=='Enter'&&e.key!==' ') return;
+    var o=e.target.closest('[data-opt]'); if(!o||S.net==='dead') return;
+    e.preventDefault(); S.sel=parseInt(o.getAttribute('data-opt'),10); paint();
+  });
+  next.onclick=function(){
+    if(S.net==='dead') return;
+    S.n=Math.min(60,S.n+1); S.sel=-1;
+    if(S.net==='offline'){
+      S.pending++;
+      setMsg('warn','<b>You’re offline.</b> Your answers are saved on this phone and will sync when you reconnect. <b>'+S.pending+' answer'+(S.pending>1?'s':'')+' waiting.</b>');
+    } else if(S.net==='saving'){
+      S.pending++;
+      paint();
+    } else { paint(); }
+  };
+  function saveRun(ms){
+    S.net='saving'; S.pending=Math.max(1,S.pending);
+    setMsg('spin','Saving your answer… <b>keep going.</b>');
+    clearTimeout(S.saveT);
+    S.saveT=setTimeout(function(){
+      var n=S.pending; S.pending=0; S.net='ok';
+      setMsg('ok','<b>All '+n+' answer'+(n>1?'s':'')+' saved.</b>',3500);
+    },ms);
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-int]'),function(b){
+    b.onclick=function(){
+      var k=b.getAttribute('data-int');
+      if(k==='slow') saveRun(4000);
+      else if(k==='veryslow') saveRun(11000);
+      else if(k==='offline'){ clearTimeout(S.saveT); S.net='offline'; S.pending=Math.max(1,S.pending);
+        setMsg('warn','<b>You’re offline.</b> Your answers are saved on this phone and will sync when you reconnect. <b>'+S.pending+' answer'+(S.pending>1?'s':'')+' waiting.</b>'); }
+      else if(k==='online'){ if(S.net!=='offline'&&S.net!=='dead'){ setMsg('ok','<b>Connected.</b>',2500); return; } saveRun(1400); }
+      else if(k==='background'){ S.sec=Math.max(0,S.sec-(S.paused?0:120));
+        setMsg('warn','<b>Welcome back.</b> You were away 2 minutes. Your exam and your answers are exactly as you left them.',7000); }
+      else if(k==='dead'){ clearTimeout(S.saveT); S.net='dead'; S.run=false;
+        setMsg('nd','<b>The recovery depends on what Compass can promise.</b> If the frame holds answers locally this is a wait. If it does not, this is data loss mid-exam — a different screen, with a different apology and a route to a re-sit. Drawing the optimistic version would repeat the August failure.'); }
+      paint();
+    };
+  });
+  document.getElementById('int-restart').onclick=function(){
+    clearTimeout(S.saveT); clearTimeout(S.fade);
+    S={n:24,sec:49*60+12,run:true,net:'ok',pending:0,sel:-1,tick:S.tick,fade:null,msg:null,paused:S.paused};
+    paint();
+  };
+  document.getElementById('int-pausetimer').onclick=function(){
+    S.paused=!S.paused; this.setAttribute('aria-pressed',String(S.paused));
+    this.textContent=S.paused?'Resume my timer':'Pause my timer';
+    paint();
+  };
+  S.tick=setInterval(function(){
+    if(S.run&&!S.paused&&S.sec>0){ S.sec--; paint(); }
+  },1000);
+  paint();
+})();
+
+/* =================================================================
+   STAGE 4 — Licensing exam lifecycle
+   ================================================================= */
+(function(){
+  var card=document.getElementById('exm-card'), read=document.getElementById('exm-read'),
+      list=document.getElementById('exm-attempts');
+  if(!card) return;
+  var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var LONG=['January','February','March','April','May','June','July','August','September','October','November','December'];
+  function d2i(d){ return d.toISOString().slice(0,10); }
+  function i2d(s){ var p=s.split('-'); return new Date(Date.UTC(+p[0],+p[1]-1,+p[2])); }
+  function add(s,n){ var d=i2d(s); d.setUTCDate(d.getUTCDate()+n); return d2i(d); }
+  function days(a,b){ return Math.round((i2d(b)-i2d(a))/864e5); }
+  function fmt(s,long){ var d=i2d(s); return d.getUTCDate()+' '+(long?LONG:MON)[d.getUTCMonth()]+' '+d.getUTCFullYear(); }
+
+  var BASE='2026-08-31';
+  var S={today:BASE, attempts:[], panel:null, draft:{date:add(BASE,42),prov:'PSI',mode:'in-person'}, res:null, score:''};
+
+  function cur(){ if(!S.attempts.length) return null;
+    for(var i=S.attempts.length-1;i>=0;i--){ if(!S.attempts[i].outcome) return S.attempts[i]; }
+    return S.attempts[S.attempts.length-1]; }
+  function state(){
+    var a=cur(); if(!a) return 'unscheduled';
+    if(a.outcome==='passed') return 'passed';
+    if(a.outcome==='failed') return 'failed';
+    var d=days(S.today,a.date);
+    if(d<0) return 'awaiting';
+    return d<=7?'imminent':'scheduled';
+  }
+  var EXPL={
+    unscheduled:'<b>Unscheduled.</b> A target, not a booking — new capability. Today the plan is always built to a booked date; separating the two is what lets a learner plan before they have a seat.',
+    scheduled:'<b>Scheduled.</b> Derived: an attempt exists, its date is more than 7 days out, no outcome recorded.',
+    imminent:'<b>Imminent.</b> Same layout, different emphasis — a chip and a colour, exactly the discipline the existing five compliance states use.',
+    awaiting:'<b>Awaiting result.</b> Derived, not stored: the sit date has passed and no outcome exists. One prompt, phrased as a favour to them rather than a task we are owed.',
+    passed:'<b>Passed.</b> The only terminal state, and the only one with no primary action — a CTA here would be the product asking for something at the moment the learner is done with it.',
+    failed:'<b>Not passed.</b> Warning family, never error — error is for something the product got wrong. No confirm dialog, no red, and the previous attempt stays visible.'
+  };
+  function head(){
+    return '<div class="wf-row"><div style="flex:1"><div class="txt" style="font-size:13px"><b>Target Date</b></div>'+
+      '<div class="txt" style="color:var(--ink-3)">Life &amp; Health · State of Texas</div></div></div>';
+  }
+  function render(){
+    var st=state(), a=cur(), h='';
+    if(S.panel==='schedule'){
+      h=head()+
+        '<div><div class="lbl" style="margin-bottom:4px">Exam date</div>'+
+        '<input class="inp" type="date" id="exm-date" value="'+S.draft.date+'"></div>'+
+        '<div class="wf-row"><div style="flex:1"><div class="lbl" style="margin-bottom:4px">Provider</div>'+
+        '<input class="inp" id="exm-prov" value="'+S.draft.prov+'"></div></div>'+
+        '<div><div class="lbl" style="margin-bottom:4px">Delivery</div><div class="wf-row">'+
+        '<button type="button" class="act sec" data-mode="in-person" style="flex:1;'+(S.draft.mode==='in-person'?'border-color:var(--ink);color:var(--ink)':'')+'">In person</button>'+
+        '<button type="button" class="act sec" data-mode="online" style="flex:1;'+(S.draft.mode==='online'?'border-color:var(--ink);color:var(--ink)':'')+'">Online proctored</button></div></div>'+
+        (S.draft.mode==='in-person'?'<div><div class="lbl" style="margin-bottom:4px">Location</div><input class="inp" value="Austin North Test Center"></div>':'')+
+        (days(S.today,S.draft.date)<21?'<div class="softwarn">That’s before your plan is projected to finish on '+fmt(add(S.today,21))+'. You can still save it.</div>':'')+
+        '<button type="button" class="act" data-act="save-sched">Save</button>'+
+        '<button type="button" class="act sec" data-act="cancel">Cancel</button>';
+      read.innerHTML='<b>The soft warning is existing behaviour, reused verbatim</b> — non-blocking, Save stays enabled. Pull the date inside 21 days to fire it.';
+    } else if(S.panel==='result'){
+      h=head()+
+        '<div><div class="lbl" style="margin-bottom:4px">Outcome</div><div class="wf-row">'+
+        '<button type="button" class="act sec" data-res="passed" style="flex:1;'+(S.res==='passed'?'border-color:var(--ink);color:var(--ink)':'')+'">Passed</button>'+
+        '<button type="button" class="act sec" data-res="failed" style="flex:1;'+(S.res==='failed'?'border-color:var(--ink);color:var(--ink)':'')+'">Not passed</button></div></div>'+
+        '<div><div class="lbl" style="margin-bottom:4px">Score · optional</div><input class="inp" id="exm-score" value="'+S.score+'"></div>'+
+        '<div class="txt" style="color:var(--ink-3)">We’ll record the date automatically.</div>'+
+        '<button type="button" class="act" data-act="save-res"'+(S.res?'':' disabled')+'>Save result</button>'+
+        '<button type="button" class="act sec" data-act="cancel">Cancel</button>';
+      read.innerHTML='<b>“Not passed”, not “Failed”.</b> The state belongs to the attempt, not to the person. Save stays disabled until an outcome is chosen — this is the one field that cannot be guessed.';
+    } else if(st==='unscheduled'){
+      h=head()+'<div class="box"><div class="lbl">Target</div><div class="txt" style="font-size:15px"><b>'+fmt(add(S.today,42))+'</b></div>'+
+        '<div class="txt" style="color:var(--ink-3)">Not booked yet</div></div>'+
+        '<button type="button" class="act" data-act="open-sched">Schedule exam</button>';
+    } else if(st==='scheduled'||st==='imminent'){
+      var d=days(S.today,a.date);
+      h=head()+
+        (st==='imminent'?'<div class="chip warn">In '+d+' day'+(d===1?'':'s')+'</div>':'')+
+        '<div class="wf-row"><div class="box" style="flex:1"><div class="lbl">'+(st==='imminent'?'Exam date':'In')+'</div>'+
+        '<div class="txt" style="font-size:15px"><b>'+(st==='imminent'?fmt(a.date):Math.round(d/7)+' weeks')+'</b></div></div>'+
+        '<div class="box" style="flex:1"><div class="lbl">'+(st==='imminent'?'Plan':'Exam date')+'</div>'+
+        '<div class="txt" style="font-size:15px"><b>'+(st==='imminent'?'82%':fmt(a.date))+'</b></div></div></div>'+
+        '<div class="txt" style="color:var(--ink-3)">'+a.prov+' · '+(a.mode==='online'?'Online proctored':'Austin North')+'</div>'+
+        '<button type="button" class="act sec" data-act="open-sched">View details</button>';
+    } else if(st==='awaiting'){
+      h=head()+'<div class="chip">Awaiting result</div>'+
+        '<div class="box"><div class="txt">You sat on <b>'+fmt(a.date,1)+'</b>. Let us know how it went and we’ll update your records.</div></div>'+
+        '<button type="button" class="act" data-act="open-res">Record result</button>';
+    } else if(st==='passed'){
+      h=head()+'<div class="chip pos">Passed</div>'+
+        '<div class="box"><div class="txt"><b>Passed '+fmt(a.date,1)+'</b></div>'+
+        '<div class="txt" style="color:var(--ink-3)">'+(a.score?'Score '+a.score+' · ':'')+'added to your records</div></div>'+
+        '<div class="txt" style="color:var(--annot);font-size:11px">View in Records →</div>';
+    } else {
+      h=head()+'<div class="chip warn">Not passed</div>'+
+        '<div class="box"><div class="txt">Attempt '+S.attempts.length+' · <b>'+fmt(a.date)+'</b>'+(a.score?' · score '+a.score:'')+'</div>'+
+        '<div class="txt" style="color:var(--ink-3)">Your coursework and progress are unaffected.</div></div>'+
+        '<button type="button" class="act" data-act="retake">Schedule retake</button>'+
+        '<div class="softwarn">Booking close in narrows your study plan options.</div>';
+    }
+    card.innerHTML=h;
+    if(!S.panel) read.innerHTML=EXPL[st];
+    list.innerHTML = S.attempts.length
+      ? S.attempts.map(function(x,i){ return (i+1)+' · '+fmt(x.date)+' · '+(x.outcome?(x.outcome==='passed'?'passed':'not passed'):'no result yet'); }).join('<br>')
+      : 'None yet.';
+    Array.prototype.forEach.call(document.querySelectorAll('[data-exm-day]'),function(b){
+      b.disabled=!a; });
+  }
+  card.addEventListener('click',function(e){
+    var b=e.target.closest('button'); if(!b) return;
+    var act=b.getAttribute('data-act'), md=b.getAttribute('data-mode'), rs=b.getAttribute('data-res');
+    if(md){ S.draft.mode=md; render(); return; }
+    if(rs){ S.res=rs; var sc=document.getElementById('exm-score'); if(sc) S.score=sc.value; render(); return; }
+    if(act==='open-sched'||act==='retake'){
+      S.panel='schedule';
+      S.draft.date=add(S.today,act==='retake'?28:42);
+      render(); return;
+    }
+    if(act==='open-res'){ S.panel='result'; S.res=null; S.score=''; render(); return; }
+    if(act==='cancel'){ S.panel=null; render(); return; }
+    if(act==='save-sched'){
+      var dt=document.getElementById('exm-date'), pv=document.getElementById('exm-prov');
+      var date=(dt&&dt.value)||S.draft.date;
+      if(pv) S.draft.prov=pv.value||'PSI';
+      S.attempts.push({date:date,prov:S.draft.prov,mode:S.draft.mode});
+      S.today=add(date,-42); S.panel=null; render();
+      read.innerHTML='<b>Attempt '+S.attempts.length+' booked, and the plan re-anchors to it.</b>'+
+        (S.attempts.length>1?' The previous attempt stays in the record — a learner who fails then passes owns both.':'')+
+        ' Move the clock to reach the derived states.';
+      return;
+    }
+    if(act==='save-res'){
+      var sc2=document.getElementById('exm-score'); if(sc2) S.score=sc2.value;
+      var a2=cur(); if(a2){ a2.outcome=S.res; a2.score=S.score; }
+      S.panel=null; render();
+      if(S.res==='failed') read.innerHTML='<b>Recorded, and the way forward is already on screen.</b> No confirmation dialog, no red, no scolding — a fail is a state, not an error.';
+      return;
+    }
+  });
+  Array.prototype.forEach.call(document.querySelectorAll('[data-exm-day]'),function(b){
+    b.onclick=function(){
+      var a=cur(); if(!a) return;
+      S.today=add(a.date, parseInt(b.getAttribute('data-exm-day'),10));
+      S.panel=null; render();
+    };
+  });
+  document.getElementById('exm-reset').onclick=function(){
+    S.attempts=[]; S.today=BASE; S.panel=null; S.res=null; S.score=''; render();
+  };
+  render();
+})();
+</script>
+</body>
+</html>
