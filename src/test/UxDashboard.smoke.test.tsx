@@ -90,15 +90,31 @@ describe('section routing (sectionOf)', () => {
    * Sandbox, which is that category's documented behaviour rather than a bug.
    */
   const EXPECTED_PLACEMENT: Record<string, string> = {
-    'xcel-lms': 'design',
-    'xcel-walkthrough': 'design',
-    'xcel-wireframes': 'design',
-    'xcel-exam-spec': 'design',
+    'xcel-lms': 'exploration',
+    'xcel-walkthrough': 'exploration',
+    'xcel-wireframes': 'exploration',
+    'xcel-admin': 'exploration',
+    'xcel-exam-spec': 'exploration',
   }
 
   it('accounts for every authored feature', () => {
     const ids = PROTOTYPE_FEATURES.map((f) => f.id).sort()
     expect(ids).toEqual(Object.keys(EXPECTED_PLACEMENT).sort())
+  })
+
+  it('no Exploration or Sandbox row carries a devStatus', () => {
+    // The inverse of the rule below, and the one that actually bites in this
+    // repo. `sectionOf` checks devStatus BEFORE category, so a status added to
+    // one of these rows silently pulls it out of Exploration and into Design —
+    // no error, and it reads as the row simply vanishing from the section.
+    for (const f of PROTOTYPE_FEATURES) {
+      const placed = EXPECTED_PLACEMENT[f.id]
+      if (placed !== 'exploration' && placed !== 'sandbox') continue
+      expect(
+        f.devStatus,
+        `${f.id} is in ${placed}, so it must NOT carry a devStatus`,
+      ).toBeUndefined()
+    }
   })
 
   it('every Design/Development row carries an authored devStatus', () => {
@@ -110,7 +126,7 @@ describe('section routing (sectionOf)', () => {
   })
 
   it('Demo is empty, so the ungated front door shows no rows', () => {
-    // Asserted rather than assumed. Every XCEL artifact is still in design, so
+    // Asserted rather than assumed. Every XCEL artifact sits in Exploration, so
     // nothing is presentation-ready — and the consequence is that a viewer
     // WITHOUT the password sees an empty Demo section and nothing else. If a row
     // is ever promoted to Demo, this test is the one that should fail and be

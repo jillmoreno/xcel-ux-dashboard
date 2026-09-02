@@ -521,6 +521,21 @@ export type PrototypeFeature = {
  *  covered by this site's password rather than depending on another site's. */
 const PROTOTYPE_BASE = '/prototypes'
 
+/* ── WHY EXPLORATION, NOT DESIGN ─────────────────────────────────────────
+ *  These same rows sit in DESIGN in the Common LMS dashboard and in
+ *  EXPLORATION here, and that is deliberate rather than drift. There they are
+ *  five artifacts among many competing for one designer's attention, so their
+ *  dev-cycle status is the useful axis. Here they ARE the project — an outside
+ *  product's brief rebuilt on our tokens and conventions, which is exactly
+ *  what this section's blurb describes.
+ *
+ *  Mechanically that means NO `devStatus` on any of them. `sectionOf` checks it
+ *  BEFORE `category`, so a status added to one of these rows silently pulls it
+ *  out of Exploration and into Design — no error, and it reads as the row
+ *  simply vanishing from the section. `UxDashboard.smoke.test.tsx` asserts the
+ *  inverse so that fails a test instead.
+ * ───────────────────────────────────────────────────────────────────────── */
+
 export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
   {
     id: 'xcel-lms',
@@ -536,8 +551,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     // document each, so the label is corrected rather than left overclaiming.
     kindLabel: 'Standalone HTML',
     status: 'ready',
-    devStatus: 'in-design',
-    category: 'sandbox',
+    category: 'exploration',
     pinned: true,
     externalUrl: `${PROTOTYPE_BASE}/xcel-lms-desktop.html`,
     livePreviewUrl: `${PROTOTYPE_BASE}/xcel-lms-desktop.html`,
@@ -555,8 +569,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     kind: 'explore',
     kindLabel: 'Standalone HTML',
     status: 'ready',
-    devStatus: 'in-design',
-    category: 'sandbox',
+    category: 'exploration',
     externalUrl: `${PROTOTYPE_BASE}/xcel-lms-walkthrough.html`,
     livePreviewUrl: `${PROTOTYPE_BASE}/xcel-lms-walkthrough.html`,
     brands: ['xcel'],
@@ -573,10 +586,26 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     kind: 'explore',
     kindLabel: 'Standalone HTML',
     status: 'ready',
-    devStatus: 'in-design',
-    category: 'sandbox',
+    category: 'exploration',
     externalUrl: `${PROTOTYPE_BASE}/xcel-lms-wireframes.html`,
     livePreviewUrl: `${PROTOTYPE_BASE}/xcel-lms-wireframes.html`,
+    brands: ['xcel'],
+  },
+  {
+    id: 'xcel-admin',
+    title: 'XCEL LMS — Admin Wireframes & Overlap',
+    accent: 'blue',
+    icon: 'grid',
+    blurb:
+      'The six admin flows the brief names, drawn against PartnerHub\u2019s All Learners architecture. Built on one claim: flows 03, 04 and 06 are not three screens but one roster asked three different questions, because who paid for a seat is a column rather than a mode. A working roster stage proves it \u2014 three view presets re-filter and re-sort the same rows \u2014 over a breadcrumb-drill answer to the hierarchy.',
+    tileBlurb:
+      'One roster, three filtered views, plus a breadcrumb-drill answer to the hierarchy. The case that PartnerHub already is most of the admin surface.',
+    kind: 'explore',
+    kindLabel: 'Standalone HTML',
+    status: 'ready',
+    category: 'exploration',
+    externalUrl: `${PROTOTYPE_BASE}/xcel-lms-admin.html`,
+    livePreviewUrl: `${PROTOTYPE_BASE}/xcel-lms-admin.html`,
     brands: ['xcel'],
   },
   {
@@ -595,8 +624,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     // hosts, so the row's live thumbnail would have triggered a file download.
     kindLabel: 'Spec',
     status: 'ready',
-    devStatus: 'in-design',
-    category: 'sandbox',
+    category: 'exploration',
     externalUrl: `${PROTOTYPE_BASE}/xcel-lms-exam-spec.html`,
     livePreviewUrl: `${PROTOTYPE_BASE}/xcel-lms-exam-spec.html`,
     brands: ['xcel'],

@@ -52,6 +52,16 @@ h3{font-size:16px;line-height:1.4}
 h4{font-size:13px;line-height:1.4}
 p{margin:0 0 12px}
 a{color:var(--annot)}
+  /* "Live —" links in the §02 overlap table. Absolute to the Common LMS deploy
+     on purpose: this page is served from BOTH this site and the XCEL dashboard
+     (see the mirror block in deploy-xcel-prototypes.sh), and a root-relative
+     /dashboard-rebrand would 404 on the XCEL one. Real <a> elements rather than
+     script-built ones, so they survive print, find-in-page and JS-off — the
+     same reason the two reading modes reorder with CSS instead of rendering
+     conditionally. To move the origin, find-and-replace this host. */
+  .livelink{display:block;width:fit-content;margin-top:8px;font-size:11.5px;font-weight:600;
+    text-decoration:none;border-bottom:1px solid var(--annot-line)}
+  .livelink:hover,.livelink:focus-visible{border-bottom-color:var(--annot)}
 code{font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--fill-2);
   border:1px solid var(--line);border-radius:4px;padding:1px 5px}
 .eyebrow{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
@@ -322,6 +332,13 @@ ul.tight li{margin-bottom:5px}
   <div class="sec-head"><span class="sec-num">02</span><h2>What already exists</h2>
     <span class="lede" style="font-size:13px">Across the learner dashboard (React/TSX) and PartnerHub (Angular admin)</span></div>
   <p class="prose lede">Most of the Learner brief has a working analog. That is the reason this pass could go straight to wireframes on four flows rather than starting from the platform. The honest scope of the brief is the row marked <span class="pill p-none">None</span>.</p>
+  <p class="prose txt" style="margin-top:8px">Every <b>Built</b> and <b>Partial</b> row that has a
+  place to stand links to it — <span class="livelink" style="display:inline;border:0;margin:0">Live &#8599;</span>
+  opens the real thing on the Common&nbsp;LMS deploy in a new tab, pinned to the state named. That
+  is a separate password-protected site, so expect its own prompt. Two rows have no link on purpose:
+  the admin table lives in PartnerHub (a different Angular app), and both-themes/WCAG is a practice
+  rather than a screen. The <span class="pill p-none">None</span> rows link to the section that
+  draws them instead.</p>
 
   <div class="tscroll" style="margin-top:14px">
   <table>
@@ -329,28 +346,28 @@ ul.tight li{margin-bottom:5px}
     <tbody>
       <tr><td><b>Compass hand-off — Option A</b><br><span class="txt">Persistent shell</span></td>
         <td><span class="pill p-have">Built</span></td>
-        <td><code>PlatformShell</code> + <code>CourseLauncherContext</code> — the launcher renders the course view <em>inside</em> the rail; selecting any rail item closes it. Option A, working.</td></tr>
+        <td><code>PlatformShell</code> + <code>CourseLauncherContext</code> — the launcher renders the course view <em>inside</em> the rail; selecting any rail item closes it. Option A, working.<a class="livelink" href="https://ux-lms-dashboard.netlify.app/dashboard-rebrand" target="_blank" rel="noopener">Live — the shell; click Jump Back In <span aria-hidden="true">&#8599;</span></a></td></tr>
       <tr><td><b>Compass hand-off — Option B</b><br><span class="txt">Focused hand-off</span></td>
         <td><span class="pill p-have">Built</span></td>
-        <td><code>?focus=1</code> + <code>?chrome=off</code> strip the rail and the Cart/Account utilities to a single content column. Option B, working, same codebase.</td></tr>
+        <td>The same Learning Launcher, one step further out: starting a course hands the learner out of the LMS chrome into the <b>VC5</b> course experience and back again. That is the Compass hand-off, already in production. <b>It is the prototype that stops short of it</b> — the launcher here renders its table of contents and enrollment panel with no CTA that performs the hand-off, so clicking through never leaves the shell. Option&nbsp;B is proven in the product, not on this page.<a class="livelink" href="https://ux-lms-dashboard.netlify.app/courses/c-pain-management" target="_blank" rel="noopener">Live — the Learning Launcher <span aria-hidden="true">&#8599;</span></a></td></tr>
       <tr><td><b>Show both options, don't pick</b></td>
         <td><span class="pill p-have">Built</span></td>
-        <td>Feature flag + variant + read-only <code>?ff=</code> URL override, with per-arm deploys. Run end-to-end on the Recommended-card A/B.</td></tr>
+        <td>Feature flag + variant + read-only <code>?ff=</code> URL override, with per-arm deploys. Run end-to-end on the Recommended-card A/B.<a class="livelink" href="https://ux-lms-dashboard.netlify.app/recommended-card-ab" target="_blank" rel="noopener">Live — the A/B compare page <span aria-hidden="true">&#8599;</span></a></td></tr>
       <tr><td><b>Records across multiple states</b></td>
         <td><span class="pill p-have">Built</span></td>
-        <td>Certificates — per-state filters, three reporting variants (reported / pending roster / non-reporting), external certificates, action-required.</td></tr>
+        <td>Certificates — per-state filters, three reporting variants (reported / pending roster / non-reporting), external certificates, action-required.<a class="livelink" href="https://ux-lms-dashboard.netlify.app/my-learning/certificates" target="_blank" rel="noopener">Live — Certificates, all states <span aria-hidden="true">&#8599;</span></a></td></tr>
       <tr><td><b>Deadline pressure changes emphasis</b></td>
         <td><span class="pill p-have">Built</span></td>
-        <td><code>dashboard-progress-state</code> — five compliance states including At&nbsp;Risk (&lt;30 days <em>and</em> &lt;25% done) and Expired, driving one layout.</td></tr>
+        <td><code>dashboard-progress-state</code> — five compliance states including At&nbsp;Risk (&lt;30 days <em>and</em> &lt;25% done) and Expired, driving one layout.<a class="livelink" href="https://ux-lms-dashboard.netlify.app/dashboard-rebrand?ff=dashboard-progress-state:progress-at-risk" target="_blank" rel="noopener">Live — At Risk <span aria-hidden="true">&#8599;</span></a></td></tr>
       <tr><td><b>Pre-licensing vs continuing ed</b></td>
         <td><span class="pill p-have">Built</span></td>
-        <td><code>dashboard-education-type</code> — QE/CE axis with brand-true labels and <em>Target&nbsp;Date</em> in place of License&nbsp;Expires.</td></tr>
+        <td><code>dashboard-education-type</code> — QE/CE axis with brand-true labels and <em>Target&nbsp;Date</em> in place of License&nbsp;Expires.<a class="livelink" href="https://ux-lms-dashboard.netlify.app/dashboard-rebrand?brand=cre&amp;ff=dashboard-education-type:qe" target="_blank" rel="noopener">Live — CRE, Pre-Licensing <span aria-hidden="true">&#8599;</span></a></td></tr>
       <tr><td><b>One course vs many products</b></td>
         <td><span class="pill p-have">Built</span></td>
-        <td><code>learning-paths-count</code> (one → 40+), grid/table landing, "View All (N)".</td></tr>
+        <td><code>learning-paths-count</code> (one → 40+). The searchable grid/table landing sits behind <code>learning-path-version:v2</code>; on the dashboard the jump-off reads <em>Switch Learning Path (N)</em>.<a class="livelink" href="https://ux-lms-dashboard.netlify.app/dashboard-rebrand?section=learning-path&amp;ff=learning-paths-count:lots,learning-path-version:v2" target="_blank" rel="noopener">Live — the 42-path landing <span aria-hidden="true">&#8599;</span></a></td></tr>
       <tr><td><b>Sponsored seats · who is stuck</b></td>
         <td><span class="pill p-have">Built</span></td>
-        <td>Gift Recipients — firm buys seats for reps, roster table, claimed/unclaimed, <em>Last Reminded</em> sorted oldest-first, per-row reminder. Bulk send archived but intact.</td></tr>
+        <td>Gift Recipients — firm buys seats for reps, roster table, claimed/unclaimed, <em>Last Reminded</em> sorted oldest-first, per-row reminder. Bulk send archived but intact.<a class="livelink" href="https://ux-lms-dashboard.netlify.app/dashboard-rebrand?section=gift-recipients" target="_blank" rel="noopener">Live — the roster <span aria-hidden="true">&#8599;</span></a></td></tr>
       <tr><td><b>Admin cohort tables</b></td>
         <td><span class="pill p-have">Built</span></td>
         <td>PartnerHub All Learners. The five standard badges are already <em>Compliant · On Track · At Risk · Overdue · Not Started</em>, with shared header/filter/badge/progress/pagination components.</td></tr>
@@ -359,22 +376,22 @@ ul.tight li{margin-bottom:5px}
         <td>Appearance model across five modes; weekly a11y reviews; contrast enforced as unit tests sweeping brand × width.</td></tr>
       <tr><td><b>Progress &amp; readiness</b></td>
         <td><span class="pill p-part">Partial</span></td>
-        <td>Segmented gauge and category bars exist, but ours is <em>deterministic</em> (hours done / hours required). Compass's is probabilistic low/med/high — same furniture, different credibility problem.</td></tr>
+        <td>Segmented gauge and category bars exist, but ours is <em>deterministic</em> (hours done / hours required). Compass's is probabilistic low/med/high — same furniture, different credibility problem.<a class="livelink" href="https://ux-lms-dashboard.netlify.app/dashboard-rebrand" target="_blank" rel="noopener">Live — the segmented gauge <span aria-hidden="true">&#8599;</span></a></td></tr>
       <tr><td><b>Waiting &amp; degraded states</b></td>
         <td><span class="pill p-part">Partial</span></td>
         <td>Toasts, empty states, and the "show we have it, not a stale number" instinct. No designed wait with a real duration.</td></tr>
       <tr><td><b>Late account creation</b></td>
         <td><span class="pill p-part">Partial</span></td>
-        <td>Setup wizard and full-page onboarding gate exist — but run <em>after</em> auth. The brief's runs before an account exists.</td></tr>
+        <td>Setup wizard and full-page onboarding gate exist — but run <em>after</em> auth. The brief's runs before an account exists.<a class="livelink" href="https://ux-lms-dashboard.netlify.app/onboarding-flow" target="_blank" rel="noopener">Live — the setup wizard <span aria-hidden="true">&#8599;</span></a></td></tr>
       <tr><td><b>Anonymous but attributed arrival</b></td>
         <td><span class="pill p-none">None</span></td>
-        <td>No analog. <b>Drawn in §03.</b></td></tr>
+        <td>No analog. <b><a href="#s-arrival">Drawn in §03.</a></b></td></tr>
       <tr><td><b>The interruption state</b></td>
         <td><span class="pill p-none">None</span></td>
-        <td>No analog, and the brief's top priority. <b>Drawn in §05.</b></td></tr>
+        <td>No analog, and the brief's top priority. <b><a href="#s-interrupt">Drawn in §05.</a></b></td></tr>
       <tr><td><b>External exam hand-off</b></td>
         <td><span class="pill p-none">None</span></td>
-        <td>The exam <em>date</em> is already the Study Calendar's anchor; everything after it is missing. <b>Drawn in §06.</b></td></tr>
+        <td>The exam <em>date</em> is already the Study Calendar's anchor; everything after it is missing. <b><a href="#s-exam">Drawn in §06.</a></b></td></tr>
       <tr><td><b>Hierarchy tree · inherited pricing</b></td>
         <td><span class="pill p-none">None</span></td>
         <td>Nothing in either project models inheritance or as-of-then structure. Not in this pass.</td></tr>
@@ -535,7 +552,7 @@ ul.tight li{margin-bottom:5px}
 <section id="s-compass" data-review="3" data-build="4">
   <div class="sec-head"><span class="sec-num">04</span><h2>The Compass hand-off — two options</h2>
     <span class="lede" style="font-size:13px">Learner flow 03 · the containment contract is genuinely open</span></div>
-  <p class="prose lede">Both options below are already implemented in the existing learner platform and switchable by URL parameter, so this comparison can be walked live rather than argued from static frames. What follows is the trade-off each makes, not a recommendation.</p>
+  <p class="prose lede">Both options below already ship in the existing learner platform — Option&nbsp;A as the Learning Launcher rendering inside the shell, Option&nbsp;B as the hand-off out to the VC5 course experience — so this is a choice between two patterns the product already runs, not a build question. What follows is the trade-off each makes, not a recommendation.</p>
 
   <!-- ===== STAGE: compass hand-off ===== -->
   <div class="stage" id="stg-cmp">
@@ -625,7 +642,7 @@ ul.tight li{margin-bottom:5px}
         </div></div>
       <div class="note"><b>Compass gets the canvas its experience is designed for,</b> and the learner is in a genuine focus mode.</div>
       <div class="note"><b>Costs:</b> the boundary is visible, and coming back has to be designed deliberately rather than being ever-present. The exit chip is the entire return contract.</div>
-      <div class="have"><b>Already built:</b> <code>?focus=1&amp;chrome=off</code> hides the rail and the account utilities, leaving a single content column.</div>
+      <div class="have"><b>Already built:</b> starting a course from the Learning Launcher hands the learner out to the <b>VC5</b> course experience and back — this exact shape, in production. The prototype stops at the launcher, so it is the one part of §04 you cannot walk here.</div>
     </div>
   </div>
 

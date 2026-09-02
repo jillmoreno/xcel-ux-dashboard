@@ -56,6 +56,20 @@ only two sections split *by* `devStatus`, so they're the only two its absence ca
 split wrongly — both render a banner counting the rows placed by that guess.
 Author `devStatus` and it stays at zero.
 
+**All five XCEL rows sit in Exploration** (moved there 2026-09-02 from Design).
+The same rows are in **Design** over in the LMS dashboard, and that difference is
+deliberate rather than drift: there they are five artifacts among many competing
+for one designer's attention, so dev-cycle status is the useful axis; here they
+*are* the project — an outside product's brief rebuilt on our tokens and
+conventions, which is what this section's blurb describes.
+
+Mechanically that means **no `devStatus` on any of them**. `sectionOf` checks it
+*before* `category`, so a status added to one of these rows silently pulls it out
+of Exploration and into Design — no error, and it reads as the row simply
+vanishing from the section. `UxDashboard.smoke.test.tsx` asserts the inverse
+("no Exploration or Sandbox row carries a devStatus") so the next person to add
+one gets a failing test instead of a disappearing row.
+
 **Appearance** is pinned to the foot of the nav: four themes (Light · Hybrid ·
 Dim · Dark) × four palettes (Moss · Ember · Tide · Fern), on independent axes,
 persisted to `localStorage` and **local to this page** — it deliberately does not
@@ -112,7 +126,7 @@ pairing is one edit away if a narrow preview ever lands.
 
 | File | Holds |
 |---|---|
-| [`src/data/prototypeFeatures.ts`](src/data/prototypeFeatures.ts) | The four XCEL rows + `PROTOTYPE_BASE`. The type block is verbatim from the LMS (so the ported components compile unchanged) plus one added field, `previewUrl`. Rows are ported verbatim from the LMS dashboard, which still has its own copies. |
+| [`src/data/prototypeFeatures.ts`](src/data/prototypeFeatures.ts) | The five XCEL rows + `PROTOTYPE_BASE`. The type block is verbatim from the LMS (so the ported components compile unchanged) plus one added field, `previewUrl`. Rows are ported verbatim from the LMS dashboard, which still has its own copies. |
 | [`src/data/archivedItems.ts`](src/data/archivedItems.ts) | The Archive table — empty; XCEL has removed nothing yet. |
 | [`src/data/qaNotes.ts`](src/data/qaNotes.ts) | The committed QA seed — empty; findings are authored on the page. |
 
@@ -131,7 +145,7 @@ The sibling PartnerHub dashboard authors a `thumbnail` on every row for a
 performance reason: nine of its ten rows preview the same 857KB single-file app,
 so a section booted several copies of it just to draw its list.
 
-XCEL does not have that problem. Four rows, four different documents, 9–111KB
+XCEL does not have that problem. Five rows, five different documents, 9–111KB
 each, so the live scaled iframe is cheap here and cannot go stale. Leave them
 unset unless a row's preview gets slow or crops badly.
 
