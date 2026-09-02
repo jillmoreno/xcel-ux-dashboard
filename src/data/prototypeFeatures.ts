@@ -609,6 +609,23 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     brands: ['xcel'],
   },
   {
+    id: 'xcel-admin-tool',
+    title: 'XCEL Admin Tool — Forked Roster',
+    accent: 'blue',
+    icon: 'grid',
+    blurb:
+      'The admin platform itself, forked from PartnerHub’s single-file app rather than rebuilt: the PartnerHub wordmark replaced by plain-text “Admin Tool”, a scope chip naming the admin’s own subtree root, and three columns added — Paid by, Seat, and a deadline-derived Risk that collapses PartnerHub’s five status COUNT columns into the one per-learner answer flow 06 asks for. Three view presets (Who is stuck · Invite follow-up · Seats) re-scope and re-sort the same rows, each on its own URL hash, and the learner panel gains an admin brief: compliance, seat and payer, activity, exam attempts. The self-paid variant is held behind a visible gate rather than guessed.',
+    tileBlurb:
+      'PartnerHub forked to an agency admin tool. Three columns, three presets over one roster, and the learner panel rewritten as an admin brief.',
+    kind: 'explore',
+    kindLabel: 'Standalone HTML',
+    status: 'ready',
+    category: 'exploration',
+    externalUrl: `${PROTOTYPE_BASE}/xcel-admin-tool.html`,
+    livePreviewUrl: `${PROTOTYPE_BASE}/xcel-admin-tool.html`,
+    brands: ['xcel'],
+  },
+  {
     id: 'xcel-exam-spec',
     title: 'XCEL LMS — Exam Task-Type Spec',
     accent: 'neutral',

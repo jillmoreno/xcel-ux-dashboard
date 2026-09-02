@@ -94,6 +94,7 @@ describe('section routing (sectionOf)', () => {
     'xcel-walkthrough': 'exploration',
     'xcel-wireframes': 'exploration',
     'xcel-admin': 'exploration',
+    'xcel-admin-tool': 'exploration',
     'xcel-exam-spec': 'exploration',
   }
 
