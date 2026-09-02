@@ -397,6 +397,19 @@ const SAGE = '#B0C6BE'
 /* The dark rail, shared by Hybrid, Dim and Dark. Ink is lighter than the Dark
    page background and darker than the Dim card, so the rail reads as its own
    plane in both rather than merging with the list beside it. */
+/* The content plane in Light and Hybrid — the two appearances that share each
+   palette's `*_LIGHT` content set, which is why one spread covers both.
+
+   Deliberately its OWN token rather than a white `--ux-bg`: that one is the
+   "one step off the card" recessed surface — the row hover, the selected
+   appearance row, and, through UX_TOKEN_BRIDGE's `--color-neutral-50` mapping,
+   the archive table's row hover and the QA panel's inset fields. Whiten it and
+   every one of those loses its only separation from the white card it sits on.
+
+   The dark appearances never define it, so `shellStyle`'s fallback keeps their
+   paper on `--ux-bg` exactly as before. */
+const LIGHT_PAGE: UxVars = { '--ux-page': '#FFFFFF' }
+
 /* The brand mark is the same in every appearance — it is a logo, and a logo
    that changes colour per mode stops being one. */
 const MOSS_MARK: UxVars = { '--ux-mark': INK, '--ux-mark-fg': CITRON }
@@ -437,6 +450,7 @@ const MOSS_LIGHT_NAV: UxVars = {
    anything interactive (raw teal is 5.29:1 on white but only 4.49:1 on the row
    hover, which is where links actually get read). */
 const MOSS_LIGHT: UxVars = {
+  ...LIGHT_PAGE,
   '--ux-bg': '#E7EEEC',
   '--ux-card': '#FFFFFF',
   '--ux-card-hover': '#EFF4F2',
@@ -566,6 +580,7 @@ const EMBER_LIGHT_NAV: UxVars = {
 }
 
 const EMBER_LIGHT: UxVars = {
+  ...LIGHT_PAGE,
   '--ux-bg': '#E8EDED',
   '--ux-card': '#FFFFFF',
   '--ux-card-hover': '#F1F4F4',
@@ -680,6 +695,7 @@ const TIDE_LIGHT_NAV: UxVars = {
 }
 
 const TIDE_LIGHT: UxVars = {
+  ...LIGHT_PAGE,
   /* Linen, not white-blue: the palette's one warm colour keeps the page from
      reading as a wash of the same blue the cards sit on. */
   '--ux-bg': '#F0EEEC',
@@ -792,6 +808,7 @@ const FERN_LIGHT_NAV: UxVars = {
 }
 
 const FERN_LIGHT: UxVars = {
+  ...LIGHT_PAGE,
   '--ux-bg': '#EEF8F3',
   '--ux-card': '#FFFFFF',
   '--ux-card-hover': '#F6FCF9',
@@ -1858,7 +1875,9 @@ const shellStyle: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: '232px minmax(0, 1fr)',
   minHeight: '100vh',
-  background: 'var(--ux-bg)',
+  /* The page's paper. Falls back to `--ux-bg` so the two dark appearances are
+     unchanged; only the light sets define `--ux-page` (see LIGHT_PAGE). */
+  background: 'var(--ux-page, var(--ux-bg))',
 }
 
 const navStyle: CSSProperties = {
