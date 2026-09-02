@@ -5,6 +5,9 @@ import { MemoryRouter } from 'react-router-dom'
 import { UxDashboardPage } from '@/pages/UxDashboardPage'
 import { AccountProvider } from '@/context/AccountContext'
 import { ThemeProvider } from '@/context/ThemeContext'
+import { existsSync } from 'node:fs'
+import { dirname, resolve } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { PROTOTYPE_FEATURES, componentPreviewUrl } from '@/data/prototypeFeatures'
 import { ARCHIVED_ITEMS } from '@/data/archivedItems'
 
@@ -139,23 +142,50 @@ describe('the restricted group is gated', () => {
   })
 })
 
-describe('prototype URLs — the cross-repo dependency', () => {
-  it('every row points at an absolute URL on the Common LMS deploy', () => {
-    // The whole reason these are absolute: the prototypes are published by
-    // `deploy-xcel-prototypes.sh` in jill-dashboard-ux-designs, not copied into
-    // this repo's public/. A relative path here would 404 into the SPA fallback
-    // and render this dashboard inside its own preview frame.
+describe('prototype URLs — served from this repo', () => {
+  /*
+   * These asserted the OPPOSITE until 2026-09-02: that every row pointed at an
+   * absolute URL on the Common LMS deploy, because the prototypes lived there
+   * and a relative path would 404 into the SPA fallback — rendering this
+   * dashboard inside its own preview frame.
+   *
+   * The prototypes are now copied into this repo's public/prototypes/ and
+   * PROTOTYPE_BASE is '/prototypes', because both Netlify sites are password-
+   * protected: a cross-origin iframe needed a third-party session cookie on the
+   * other origin, which Safari blocks and Chrome restricts, so reviewers got a
+   * password prompt inside every thumbnail instead of a page.
+   *
+   * The old failure mode these guarded against is REAL and has not gone away —
+   * it has only changed shape. A relative path still falls through to the SPA
+   * fallback if the file is missing, and Netlify's catch-all returns 200 with
+   * index.html, so the tile silently renders the dashboard inside itself with
+   * no error anywhere. That is why the existence check below matters more than
+   * the shape check: shape alone would pass for a file nobody ever copied.
+   */
+  it('every row points at a same-origin /prototypes/ path', () => {
     for (const f of PROTOTYPE_FEATURES) {
       expect(f.externalUrl, `${f.id} needs an externalUrl`).toBeTruthy()
-      expect(f.externalUrl).toMatch(/^https:\/\/[a-z0-9.-]+\/prototypes\/[\w.-]+$/)
+      expect(f.externalUrl).toMatch(/^\/prototypes\/[\w.-]+$/)
       // The row's picture and its CTA must be the same artifact.
       expect(f.livePreviewUrl).toBe(f.externalUrl)
     }
   })
 
-  it('all rows share one origin, so a move is one constant', () => {
-    const origins = new Set(PROTOTYPE_FEATURES.map((f) => new URL(f.externalUrl!).origin))
-    expect(origins.size).toBe(1)
+  it('every row resolves to a file that actually exists in public/', () => {
+    // The one that earns its keep. A tile pointing at a file nobody copied is
+    // invisible in CI and in the build — it only shows up as a preview frame
+    // quietly containing the dashboard itself.
+    for (const f of PROTOTYPE_FEATURES) {
+      const rel = f.externalUrl!.replace(/^\//, '')
+      const onDisk = resolve(dirname(fileURLToPath(import.meta.url)), '../../public', rel)
+      expect(existsSync(onDisk), `${f.id} → ${f.externalUrl} is not in public/`).toBe(true)
+    }
+  })
+
+  it('all rows share one base, so a move stays one constant', () => {
+    const bases = new Set(PROTOTYPE_FEATURES.map((f) => f.externalUrl!.replace(/\/[^/]+$/, '')))
+    expect(bases.size).toBe(1)
+    expect([...bases][0]).toBe('/prototypes')
   })
 })
 

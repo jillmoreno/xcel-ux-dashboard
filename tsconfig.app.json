@@ -4,7 +4,11 @@
     "target": "es2023",
     "lib": ["ES2023", "DOM"],
     "module": "esnext",
-    "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom"],
+    // "node" is here for the TESTS only — UxDashboard.smoke.test.tsx reads
+    // public/prototypes/ off disk to prove every tile points at a file that
+    // exists. Nothing in src/ outside src/test/ may use a node builtin; the
+    // build targets the browser and Vite will not bundle one.
+    "types": ["vite/client", "vitest/globals", "@testing-library/jest-dom", "node"],
     "skipLibCheck": true,
 
     /* Bundler mode */
