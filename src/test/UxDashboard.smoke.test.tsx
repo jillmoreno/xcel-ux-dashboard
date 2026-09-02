@@ -1,0 +1,192 @@
+import { describe, expect, it, beforeEach } from 'vitest'
+import { render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
+import { MemoryRouter } from 'react-router-dom'
+import { UxDashboardPage } from '@/pages/UxDashboardPage'
+import { AccountProvider } from '@/context/AccountContext'
+import { ThemeProvider } from '@/context/ThemeContext'
+import { PROTOTYPE_FEATURES, componentPreviewUrl } from '@/data/prototypeFeatures'
+import { ARCHIVED_ITEMS } from '@/data/archivedItems'
+
+/**
+ * Smoke test for the XCEL dashboard.
+ *
+ * Same job as its siblings: the port could not be verified visually (no browser
+ * in the build environment), and the failure that matters — a missing provider
+ * throwing on mount — renders a blank page that reads as a styling bug rather
+ * than an error.
+ *
+ * XCEL adds one concern the others do not have: its previews point at ANOTHER
+ * project's live Netlify deploy rather than at files in `public/`. A unit test
+ * cannot prove that origin is reachable or frame-embeddable, but it can pin the
+ * shape of the URL so a careless edit to `PROTOTYPE_BASE` fails here instead of
+ * silently blanking every preview in the browser.
+ */
+
+function renderDashboard(initialPath = '/') {
+  return render(
+    <MemoryRouter initialEntries={[initialPath]}>
+      <AccountProvider>
+        <ThemeProvider>
+          <UxDashboardPage />
+        </ThemeProvider>
+      </AccountProvider>
+    </MemoryRouter>,
+  )
+}
+
+/** The nav order is load-bearing: open sections first, then the gated group,
+ *  with the divider drawn where the first gated one starts. */
+const EXPECTED_SECTIONS = [
+  'Demo',
+  'Research',
+  'Design',
+  'Exploration',
+  'Sandbox',
+  'Development',
+  'Done',
+  'Archive',
+  'QA Notes',
+  'To Do',
+]
+
+beforeEach(() => {
+  // Section unlocks live in sessionStorage; a leaked unlock would make the gate
+  // assertions pass for the wrong reason.
+  sessionStorage.clear()
+  localStorage.clear()
+})
+
+describe('XCEL dashboard — mount and nav', () => {
+  it('mounts and renders the brand lockup', () => {
+    renderDashboard()
+    expect(screen.getByText('UX Dashboard')).toBeInTheDocument()
+    expect(screen.getByText('XCEL LMS')).toBeInTheDocument()
+  })
+
+  it('renders the full section set, in order', () => {
+    renderDashboard()
+    const nav = screen.getByRole('navigation')
+    const labels = within(nav)
+      .getAllByRole('button')
+      .map((b) => b.textContent ?? '')
+    for (const section of EXPECTED_SECTIONS) {
+      expect(labels.some((l) => l.includes(section))).toBe(true)
+    }
+    const positions = EXPECTED_SECTIONS.map((s) => labels.findIndex((l) => l.includes(s)))
+    expect(positions).toEqual([...positions].sort((a, b) => a - b))
+  })
+})
+
+describe('section routing (sectionOf)', () => {
+  /**
+   * All four XCEL rows carry `devStatus: 'in-design'`, which OUTRANKS their
+   * `category: 'sandbox'` — so they land in Design, not Sandbox. That is
+   * inherited deliberately from the Common LMS dashboard, where the same four
+   * rows resolve the same way; drop the devStatus and all four fall back into
+   * Sandbox, which is that category's documented behaviour rather than a bug.
+   */
+  const EXPECTED_PLACEMENT: Record<string, string> = {
+    'xcel-lms': 'design',
+    'xcel-walkthrough': 'design',
+    'xcel-wireframes': 'design',
+    'xcel-exam-spec': 'design',
+  }
+
+  it('accounts for every authored feature', () => {
+    const ids = PROTOTYPE_FEATURES.map((f) => f.id).sort()
+    expect(ids).toEqual(Object.keys(EXPECTED_PLACEMENT).sort())
+  })
+
+  it('every Design/Development row carries an authored devStatus', () => {
+    for (const f of PROTOTYPE_FEATURES) {
+      const placed = EXPECTED_PLACEMENT[f.id]
+      if (placed !== 'design' && placed !== 'development') continue
+      expect(f.devStatus, `${f.id} needs an authored devStatus`).toBeTruthy()
+    }
+  })
+
+  it('Demo is empty, so the ungated front door shows no rows', () => {
+    // Asserted rather than assumed. Every XCEL artifact is still in design, so
+    // nothing is presentation-ready — and the consequence is that a viewer
+    // WITHOUT the password sees an empty Demo section and nothing else. If a row
+    // is ever promoted to Demo, this test is the one that should fail and be
+    // updated, so the change is deliberate.
+    renderDashboard()
+    expect(screen.getByRole('heading', { level: 1, name: 'Demo' })).toBeInTheDocument()
+    expect(screen.queryByText('XCEL LMS — Desktop Platform')).not.toBeInTheDocument()
+  })
+})
+
+describe('the restricted group is gated', () => {
+  it('prompts for a password instead of revealing Design', async () => {
+    const user = userEvent.setup()
+    renderDashboard()
+    await user.click(screen.getByRole('button', { name: /Design/ }))
+    expect(screen.queryByText('XCEL LMS — Desktop Platform')).not.toBeInTheDocument()
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+  })
+
+  it('a deep link into a gated section does not reveal it', () => {
+    renderDashboard('/?section=design')
+    expect(screen.queryByText('XCEL LMS — Desktop Platform')).not.toBeInTheDocument()
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+  })
+
+  it('leaves the open sections open', () => {
+    renderDashboard('/?section=demo')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+  })
+})
+
+describe('prototype URLs — the cross-repo dependency', () => {
+  it('every row points at an absolute URL on the Common LMS deploy', () => {
+    // The whole reason these are absolute: the prototypes are published by
+    // `deploy-xcel-prototypes.sh` in jill-dashboard-ux-designs, not copied into
+    // this repo's public/. A relative path here would 404 into the SPA fallback
+    // and render this dashboard inside its own preview frame.
+    for (const f of PROTOTYPE_FEATURES) {
+      expect(f.externalUrl, `${f.id} needs an externalUrl`).toBeTruthy()
+      expect(f.externalUrl).toMatch(/^https:\/\/[a-z0-9.-]+\/prototypes\/[\w.-]+$/)
+      // The row's picture and its CTA must be the same artifact.
+      expect(f.livePreviewUrl).toBe(f.externalUrl)
+    }
+  })
+
+  it('all rows share one origin, so a move is one constant', () => {
+    const origins = new Set(PROTOTYPE_FEATURES.map((f) => new URL(f.externalUrl!).origin))
+    expect(origins.size).toBe(1)
+  })
+})
+
+describe('handoff previews', () => {
+  it('resolves a URL for every documented component', () => {
+    // No XCEL row authors devHandoff notes yet, so this iterates nothing today.
+    // It is here so that the first one added is checked rather than silently
+    // rendering the "add previewUrl" fallback.
+    for (const f of PROTOTYPE_FEATURES) {
+      for (const c of [
+        ...(f.devHandoff?.components ?? []),
+        ...(f.devHandoff?.uiComponents ?? []),
+      ]) {
+        expect(componentPreviewUrl(c.id), `${f.id}/${c.id} has no preview`).toBeTruthy()
+      }
+    }
+  })
+
+  it('returns null for an unknown id rather than throwing', () => {
+    expect(componentPreviewUrl('no-such-component')).toBeNull()
+  })
+})
+
+describe('archive', () => {
+  it('is empty, and any future row explains how to restore itself', () => {
+    // Empty is the correct state — XCEL has removed nothing. The loop guards the
+    // convention for whenever that changes.
+    for (const item of ARCHIVED_ITEMS) {
+      expect(item.restoreNote.length, `${item.id} needs a real restoreNote`).toBeGreaterThan(40)
+      expect(item.location).toBeTruthy()
+      expect(item.dateRemoved).toMatch(/^\d{4}-\d{2}-\d{2}$/)
+    }
+  })
+})

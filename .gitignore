@@ -1,0 +1,25 @@
+# Logs
+logs
+*.log
+npm-debug.log*
+
+# Deps + build output
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.sw?
+
+# Netlify
+.netlify/
+# Written by `netlify dev` (it runs edge functions on Deno). Generated, not ours.
+deno.lock
+
+# Claude Code agent worktrees (harness state)
+.claude/worktrees/

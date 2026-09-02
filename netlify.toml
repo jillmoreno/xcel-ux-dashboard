@@ -1,0 +1,52 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+  # Declared explicitly rather than relying on the default. The QA capture
+  # upload endpoint lives here; it is the only server-side code in the project.
+  functions = "netlify/functions"
+
+[build.environment]
+  NODE_VERSION = "20"
+
+# The QA capture endpoint, ahead of the SPA fallback. Netlify matches a v2
+# function's own `config.path` before redirects, so this is belt-and-braces —
+# but the catch-all below returns 200 for EVERYTHING, so if that precedence ever
+# changed the failure would be the API silently serving index.html to fetch(),
+# which reads as a parse error rather than a routing bug. Cheap to pin.
+[[redirects]]
+  from = "/api/qa-captures/*"
+  to = "/.netlify/functions/qa-captures/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api/qa-captures"
+  to = "/.netlify/functions/qa-captures"
+  status = 200
+
+[[redirects]]
+  from = "/api/qa-notes/*"
+  to = "/.netlify/functions/qa-notes/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api/qa-notes"
+  to = "/.netlify/functions/qa-notes"
+  status = 200
+
+# SPA fallback — every unknown path returns index.html so react-router handles it.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
+
+# Aggressive cache for fingerprinted assets
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# Long cache for self-hosted fonts (filenames are stable)
+[[headers]]
+  for = "/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"

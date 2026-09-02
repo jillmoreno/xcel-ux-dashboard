@@ -1,0 +1,3196 @@
+@import 'tailwindcss';
+
+/* ============================================================================
+   Brandon Grotesque — self-hosted from /public/fonts/brandon-grotesque/.
+   Licensed via HVD Fonts (confirm webfont license with brand team).
+   ============================================================================ */
+
+@font-face {
+  font-family: 'Brandon Grotesque';
+  font-style: normal;
+  font-weight: 100;
+  font-display: swap;
+  src: url('/fonts/brandon-grotesque/BrandonGrotesque-Thin.otf') format('opentype');
+}
+@font-face {
+  font-family: 'Brandon Grotesque';
+  font-style: italic;
+  font-weight: 100;
+  font-display: swap;
+  src: url('/fonts/brandon-grotesque/BrandonGrotesque-ThinItalic.otf') format('opentype');
+}
+@font-face {
+  font-family: 'Brandon Grotesque';
+  font-style: normal;
+  font-weight: 300;
+  font-display: swap;
+  src: url('/fonts/brandon-grotesque/BrandonGrotesque-Light.otf') format('opentype');
+}
+@font-face {
+  font-family: 'Brandon Grotesque';
+  font-style: italic;
+  font-weight: 300;
+  font-display: swap;
+  src: url('/fonts/brandon-grotesque/BrandonGrotesque-LightItalic.otf') format('opentype');
+}
+@font-face {
+  font-family: 'Brandon Grotesque';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/brandon-grotesque/BrandonGrotesque-Regular.otf') format('opentype');
+}
+@font-face {
+  font-family: 'Brandon Grotesque';
+  font-style: italic;
+  font-weight: 400;
+  font-display: swap;
+  src: url('/fonts/brandon-grotesque/BrandonGrotesque-RegularItalic.otf') format('opentype');
+}
+@font-face {
+  font-family: 'Brandon Grotesque';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/brandon-grotesque/BrandonGrotesque-Medium.otf') format('opentype');
+}
+@font-face {
+  font-family: 'Brandon Grotesque';
+  font-style: italic;
+  font-weight: 500;
+  font-display: swap;
+  src: url('/fonts/brandon-grotesque/BrandonGrotesque-MediumItalic.otf') format('opentype');
+}
+@font-face {
+  font-family: 'Brandon Grotesque';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/brandon-grotesque/BrandonGrotesque-Bold.otf') format('opentype');
+}
+@font-face {
+  font-family: 'Brandon Grotesque';
+  font-style: italic;
+  font-weight: 700;
+  font-display: swap;
+  src: url('/fonts/brandon-grotesque/BrandonGrotesque-BoldItalic.otf') format('opentype');
+}
+@font-face {
+  font-family: 'Brandon Grotesque';
+  font-style: normal;
+  font-weight: 900;
+  font-display: swap;
+  src: url('/fonts/brandon-grotesque/BrandonGrotesque-Black.otf') format('opentype');
+}
+@font-face {
+  font-family: 'Brandon Grotesque';
+  font-style: italic;
+  font-weight: 900;
+  font-display: swap;
+  src: url('/fonts/brandon-grotesque/BrandonGrotesque-BlackItalic.otf') format('opentype');
+}
+
+@theme inline {
+  /* ========================================================================
+     CRE Brand Tokens
+     Source: .claude/skills/brands/cre.md (extracted from CRE Style Guide
+     node 57:106 via figma-to-implementation skill on 2026-05-06).
+     ======================================================================== */
+
+  /* Primary — teal (brand identity) */
+  --color-primary-100: #cce8e5;
+  --color-primary-200: #99d2cc;
+  --color-primary-300: #67bbb3;
+  --color-primary-400: #34a59a;
+  --color-primary-500: #028f81;
+  --color-primary-600: #017267;
+  --color-primary-700: #01554d;
+  --color-primary-800: #003933;
+  --color-primary-900: #001c19;
+
+  /* Secondary — orange */
+  --color-secondary-100: #fce9d6;
+  --color-secondary-200: #fad3ad;
+  --color-secondary-300: #f8bd84;
+  --color-secondary-400: #f6a75b;
+  --color-secondary-500: #f49233;
+  --color-secondary-600: #c37428;
+  --color-secondary-700: #92571e;
+  --color-secondary-800: #613a14;
+  --color-secondary-900: #301d0a;
+
+  /* Tertiary — sky blue */
+  --color-tertiary-100: #d7f1f9;
+  --color-tertiary-200: #afe3f3;
+  --color-tertiary-300: #88d5ee;
+  --color-tertiary-400: #60c7e8;
+  --color-tertiary-500: #39bae3;
+  --color-tertiary-600: #2d94b5;
+  --color-tertiary-700: #226f88;
+  --color-tertiary-800: #164a5a;
+  --color-tertiary-900: #0b252d;
+
+  /* CTA — navy (primary action color) */
+  --color-cta-100: #ccdde8;
+  --color-cta-200: #99bbd2;
+  --color-cta-300: #6799bb;
+  --color-cta-400: #3477a5;
+  --color-cta-500: #02568f;
+  --color-cta-600: #014472;
+  --color-cta-700: #013355;
+  --color-cta-800: #002239;
+  --color-cta-900: #00111c;
+
+  /* Neutral — full ramp inherited from Nectar DS (file W5H7HTlFm5NhllRF27xbMp,
+     node 167:142). 050/075/100/200/500/900/darkest/Dark match the prior CRE
+     values exactly; 300/400/600/700/800/950 are net-new. */
+  --color-neutral-50: #ffffff;
+  --color-neutral-75: #f5f5f5;
+  --color-neutral-100: #ececec;
+  --color-neutral-200: #d9d9d9;
+  --color-neutral-300: #c7c7c7;
+  --color-neutral-400: #b4b4b4;
+  --color-neutral-500: #a2a2a2;
+  --color-neutral-600: #818181;
+  --color-neutral-700: #616161;
+  --color-neutral-800: #404040;
+  --color-neutral-900: #202020;
+  --color-neutral-950: #000000;
+  --color-neutral-extra-light: #f5f5f5; /* alias for 075 */
+  --color-neutral-light: #d4d4d4; /* Nectar `Neutral/light` — sits between 200 and 300 */
+  --color-neutral-disabled: #a2a2a2; /* alias for 500 */
+  --color-neutral-dark: #4f4f4f; /* Nectar `Neutral/Dark` — sits between 700 and 800 */
+  --color-neutral-darkest: #0a0a0a; /* Nectar `Neutral/darkest` — beyond 950's #000 in saturation, used as the canonical "blackest" surface */
+
+  /* Functional colors — inherited from Nectar DS (file W5H7HTlFm5NhllRF27xbMp,
+     node 167:142). Use these for status indicators (form errors, success
+     toasts, info banners). For brand-themed status badges use primary /
+     secondary / tertiary / cta instead. */
+  --color-success-100: #cce7d7;
+  --color-success-200: #99cfaf;
+  --color-success-300: #66b887;
+  --color-success-400: #33a05f;
+  --color-success-500: #018937;
+  --color-success-600: #006d2c;
+  --color-success-700: #005221;
+  --color-success-800: #003615;
+  --color-success-900: #001b0a;
+
+  --color-error-100: #f4cccc;
+  --color-error-200: #ea9999;
+  --color-error-300: #df6666;
+  --color-error-400: #d53333;
+  --color-error-500: #cb0000;
+  --color-error-600: #a20000;
+  --color-error-700: #790000;
+  --color-error-800: #510000;
+  --color-error-900: #280000;
+
+  --color-warning-100: #fdf0d4;
+  --color-warning-200: #fce1a9;
+  --color-warning-300: #fbd27e;
+  --color-warning-400: #fac353;
+  --color-warning-500: #f9b428;
+  --color-warning-600: #c79020;
+  --color-warning-700: #956c18;
+  --color-warning-800: #63470f;
+  --color-warning-900: #312307;
+
+  --color-info-100: #d2f1f6;
+  --color-info-200: #a5e4ed;
+  --color-info-300: #78d7e4;
+  --color-info-400: #4bcadb;
+  --color-info-500: #1fbdd2;
+  --color-info-600: #1897a8;
+  --color-info-700: #12717e;
+  --color-info-800: #0c4b53;
+  --color-info-900: #062529;
+
+  /* Semantic aliases (project-level) */
+  --color-brand: var(--color-primary-500);
+  --color-surface-page: var(--color-neutral-extra-light);
+  --color-surface-card: var(--color-neutral-50);
+
+  /* ─── Passport surface ───────────────────────────────────────────
+     A warm cream parchment shared by ALL four brands (these tokens
+     deliberately ignore the per-brand overrides below). The
+     Achievements widget and the full Passport page both render onto
+     this surface. The passport metaphor is brand-agnostic by design;
+     brand identity comes through the category ink colors layered on
+     top. */
+  --color-surface-parchment:      #faf4e1; /* base cream */
+  --color-surface-parchment-deep: #f0e6c8; /* gradient endpoint */
+  --color-surface-parchment-edge: #e8dab5; /* border + subtle vignette */
+
+  /* ─── Passport "ink" colors ──────────────────────────────────────
+     Declared once at file scope so the widget and page never repeat
+     them inline. The category inks below map onto existing brand
+     ramps — one ink per category, used as both stroke color and text
+     tint on the parchment surface. */
+  --ink-stamp:  #7a2018; /* customs-red — streaks */
+  --ink-deep:   #1a2f3b; /* near-black blue — cover bands + hidden */
+  --ink-faded:  #b59970; /* warm gray-brown — secondary text on paper */
+  --ink-gilt:   #c9a554; /* gold trim — cover-band accent line */
+
+  --ink-streaks:      var(--ink-stamp);
+  --ink-achievements: var(--color-primary-700);
+  --ink-mastery:      var(--color-warning-700);
+  --ink-lifecycle:    var(--color-cta-700);
+  --ink-community:    var(--color-secondary-700);
+  --ink-hidden:       var(--ink-deep);
+
+  /* ─── Email link colors ──────────────────────────────────────────
+     Brand-agnostic by design — the AccountMenu profile header email
+     uses the same blue across all four brands so the affordance reads
+     as a "link" universally, not as a brand-tinted email pill. Values
+     match Figma B2B Final Designs file QuWow9nO9nSTUE4ggE5a8A node
+     12523:64148. Intentionally not overridden in the per-brand blocks
+     below. */
+  --color-email-link:       #386dbd;
+  --color-email-link-hover: #02568f;
+
+  /* Cutive Mono — stamp text, ticket header, page numbers, anything
+     that needs the "passport-stamped" feel. Loaded in index.html. */
+  --font-stamp: "Cutive Mono", "Courier New", monospace;
+  --color-text-primary: var(--color-neutral-900); /* #202020 — Nectar's body text. Was previously aliased to neutral-darkest (#292929 in CRE Style Guide), which was a CRE-specific value not in Nectar; now aligned with the canonical Nectar 900 stop. */
+  --color-text-secondary: var(--color-neutral-dark);
+  --color-text-tertiary: var(--color-neutral-700); /* #616161 — captions, axis ticks, weak metadata. Darkened from neutral-600 (#818181) which read only 3.9:1 on white at 11px (WCAG AA fail, audit finding #6); neutral-700 clears 4.5:1. Dark theme re-pins this to a light blue-gray below. */
+  --color-text-inverse: var(--color-neutral-50);
+  --color-border-subtle: var(--color-neutral-200);
+  --color-action: var(--color-cta-500);
+  --color-action-hover: var(--color-cta-600);
+
+  /* ─── Left-nav rail surface ───────────────────────────────────────
+     The Dashboard Rebrand left-nav rail surface. Defaults to the
+     active brand's `--color-primary-800` (resolved lazily, so it stays
+     per-brand automatically and the rail is byte-for-byte unchanged
+     until overridden). The `platform-nav-color` feature flag overrides
+     this token to the shared brand-neutral navy `#17233f` on the shell
+     root, so the rail reads as UI chrome across every brand instead of
+     inheriting each brand's primary. Companion active/hover treatments
+     stay the white-overlay tints in `PlatformSideNav`, which read
+     correctly on any dark navy. */
+  --color-nav-surface: var(--color-primary-800);
+
+  /* ─── Left-nav foreground set (rail text/dividers) ────────────────
+     Defaults to the dark-rail treatment (light text on a dark surface),
+     so every existing rail is unchanged. The V3 "light neutral" rail
+     option (platform-nav-color) overrides these on the shell root to a
+     dark-on-light treatment so the light rail is legible. Kept as tokens
+     so the whole rail flips with one override instead of prop-threading. */
+  --color-nav-fg: var(--color-text-inverse);      /* active / strong label + greeting */
+  --color-nav-fg-muted: rgb(255 255 255 / 0.8);   /* idle row label */
+  --color-nav-caption: rgb(255 255 255 / 0.55);   /* group caption + meta lines */
+  --color-nav-divider: rgb(255 255 255 / 0.14);   /* header + group dividers */
+  --color-nav-hover: rgb(255 255 255 / 0.06);     /* row hover wash */
+  --color-nav-border: transparent;                /* rail right border (light rail sets it) */
+  --color-nav-icon-active: var(--color-nav-active);/* selected-row icon — brand secondary on dark rails; the light (V3) rail overrides to near-black for contrast */
+  /* Selected-row primary accent. On the dark
+     rails (navy / graphite / brand-800) we use a LIGHT primary stop (primary-200)
+     — primary-500/700 are too dark on the deep rail to clear WCAG 1.4.11 (≥3:1);
+     e.g. STC primary-300 is only ~3.0:1 on graphite. primary-200 clears ≥5:1 for
+     every brand. The light rails override both tokens to a DARK primary-700 (see
+     `lightRailStyle` in PlatformShell) so the accent stays legible on light. Used
+     for the selected row's icon, its left indicator bar, AND (mixed at 24%) its
+     tint fill. */
+  --color-nav-icon-active-primary: var(--color-primary-200);
+  --color-nav-active-bar-primary: var(--color-primary-200);
+  --color-nav-active-bar: transparent;            /* selected-row left bar — only the light (V3) rail uses it (secondary-700), where the pale tint fill alone is < 3:1 */
+
+  /* ─── Active / selected state (single source of truth) ────────────
+     Two distinct "active" roles, each with one token so the value lives
+     in exactly one place (see the brand-color audit):
+       • Content tabs (tab strips, pill tabs, product-sheet sub-tabs,
+         Learning-Path detail tabs) → the brand PRIMARY. Rendered as a
+         solid pill fill with white text AND as an underline bar, so it
+         must stay dark enough for white text in both themes → primary-600
+         (a brand ramp stop that stays dark in the rebrand dark theme).
+         The classic underline `Tabs` label keeps `--color-accent-text`
+         (the contrast-aware sibling of this value) for its dark-surface
+         lift; every other tab points here.
+       • Navigation selection (left-nav rails, top-nav, admin segmented
+         control) → the brand SECONDARY accent (the established rail
+         convention). Formalized here so all rails share one value. */
+  --color-tab-active: var(--color-primary-600);
+  --color-nav-active: var(--color-secondary-500);
+
+  /* ─── Progress fill (single source of truth) ──────────────────────
+     The single-color "how far along" fill for course/path progress —
+     linear bars (course cards, My Courses table, Jump Back In, the
+     Learning Path track) and the single-category progress ring/donut.
+     Standardized on the brand PRIMARY (the established convention; the
+     My Courses table was the lone cta-500 outlier). A fill against a
+     neutral track, so primary-500 is fine (no text-contrast need).
+     Intentionally NOT used by: the status-tinted path gauge in the My
+     Learning Paths sheet (warning/error/primary by status), the
+     segmented Mandatory/Elective gauge (category colors — see
+     progressGauge), or the achievements meters (tertiary theme). */
+  --color-progress-fill: var(--color-primary-500);
+
+  /* ─── Learning category colors (single source of truth) ───────────
+     The two coursework categories, color-coded consistently everywhere
+     they appear (the segmented progress gauge, breakdown bars, and
+     legends): Mandatory = brand PRIMARY, Elective = brand SECONDARY.
+     Consumed via the `CAT_MANDATORY_COLOR` / `CAT_ELECTIVE_COLOR`
+     constants in `progressGauge.tsx`, which now resolve to these
+     tokens. (The old `ui/Badge` component mapped these to cta/tertiary;
+     it was unused and has been removed.) */
+  --color-category-mandatory: var(--color-primary-500);
+  --color-category-elective: var(--color-secondary-600);
+
+  /* ─── Course/task status swatches (single source of truth) ────────
+     The color-coded status triad used by progress legends, status dots,
+     and count rows: Completed → functional success green, In Progress →
+     brand PRIMARY (a deliberate choice — "celebrate active learning in
+     the brand's voice"), Not Started → neutral. Decoupled into their own
+     tokens so "In Progress" no longer shares the raw brand token with
+     brand identity / category / progress-fill — each meaning can now be
+     retinted independently. (Compliance-status TEXT — On Track / At Risk
+     / Off Track — is a separate concern; see `--color-status-*-text`.
+     Status PILLS with bg/fg tint pairs — StatusBadge — are handled in
+     the status-color pass.) */
+  --color-status-completed: var(--color-success-500);
+  --color-status-in-progress: var(--color-primary-500);
+  --color-status-not-started: var(--color-neutral-300);
+
+  /* ─── Accent text (contrast-aware) ────────────────────────────────
+     Colored text that sits on the page / card surface and must clear
+     WCAG AA there — section eyebrows, tags, stat values, inline links,
+     and status text. Re-pinned per brand (brand blocks below) and in
+     the dark theme (`[data-theme='dark']`) so these invert with the
+     surface instead of collapsing to low contrast when the rebrand's
+     dark theme turns surfaces navy. Measured on 2026-07-13:
+       accent-text  → primary-600 clears 4.5:1 on white for CRE;
+       accent-link  → cta-700 clears 4.5:1 on white for every brand
+                      (esp. McKissock's orange CTA, which failed at 500);
+       success-text → success-500 clears 4.5:1 on white.
+     Do NOT use these on already-dark brand BANDS (primary-800/etc.) —
+     those components pass their own light-on-dark colors via `onDark`. */
+  --color-accent-text: var(--color-primary-600);
+  --color-accent-link: var(--color-cta-700);
+  /* Section-lead headers (Dashboard Discoverability Home: "Current Learning
+     Path" / "Featured" / "Recommended for you"). Deep brand navy on light;
+     lifts to a light brand tint in dark mode so it never reads dark-on-dark
+     when the rebrand surface flips navy. Resolves per active brand via the
+     referenced ramp stop. */
+  --color-section-lead: var(--color-primary-800);
+  /* ─── Status color system (convention) ───────────────────────────
+     Two status families, both functional EXCEPT one deliberate accent:
+       • Compliance status (On Track / At Risk / Off Track / Expiring /
+         Expired) → functional ramps only: success / warning / error.
+         Fills, dots, and tones use the -500 stop; TEXT uses the
+         contrast-aware `--color-status-*-text` tokens below.
+       • Progress status (Completed / In Progress / Not Started) → the
+         swatch triad above (`--color-status-completed / -in-progress /
+         -not-started`). Completed = success, Not Started = neutral, and
+         **In Progress = brand PRIMARY on purpose** — the one sanctioned
+         place brand color carries a status meaning ("active learning in
+         the brand's voice"). Ratified 2026-07; do NOT re-flag as drift.
+         Because it's a token, it can still be repointed to a functional
+         ramp later without touching call sites. */
+  /* Status text (On Track / At Risk / Off Track etc.). Functional ramps are
+     brand-independent, so these only need a base + a dark-theme swap. Light
+     values match the current design; dark values lift to lighter stops that
+     clear AA on the navy surfaces (success/warning → -300, error → -200 since
+     -300 red stays too dark on CRE/McKissock navy). */
+  --color-status-success-text: var(--color-success-600); /* -600 (not -500) so "On Track" clears AA on its own 16%-tint pill, ~5.3:1 */
+  --color-status-warning-text: var(--color-warning-700);
+  --color-status-error-text: var(--color-error-600);
+  /* Section eyebrow (the uppercase Brandon Grotesque kicker). `secondary-700`
+     reads on white in light mode but collapses on the navy dark surfaces, so
+     it lifts to `secondary-300` in dark (measured ≥ 7.7:1 on navy, all brands). */
+  --color-eyebrow-text: var(--color-secondary-700);
+
+  /* Typography — heading scale */
+  --text-heading-8xl: 64px;
+  --text-heading-8xl--line-height: 80px;
+  --text-heading-6xl: 48px;
+  --text-heading-6xl--line-height: 60px;
+  --text-heading-3xl: 32px;
+  --text-heading-3xl--line-height: 40px;
+  --text-heading-2xl: 28px;
+  --text-heading-2xl--line-height: 36px;
+
+  /* Typography — body scale */
+  --text-h3-semibold: 24px;
+  --text-h3-semibold--line-height: 32px;
+  --text-h4-semibold: 20px;
+  --text-h4-semibold--line-height: 28px;
+  --text-body-semibold: 16px;
+  --text-body-semibold--line-height: 28px;
+  --text-body-sm: 14px;
+  --text-body-sm--line-height: 22px;
+  --text-body-sm-semibold: 14px;
+  --text-body-sm-semibold--line-height: 22px;
+
+  /* Font families */
+  --font-heading: 'Brandon Grotesque', 'Helvetica Neue', system-ui, sans-serif;
+  --font-body: 'Open Sans', system-ui, -apple-system, sans-serif;
+
+  /* Radius — project defaults; replace once Nectar DS exposes them */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-pill: 9999px;
+
+  /* Shadow — project defaults; replace once Nectar DS exposes them */
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.04), 0 2px 8px rgb(0 0 0 / 0.06);
+  --shadow-popover: 0 4px 16px rgb(0 0 0 / 0.10);
+  --shadow-modal: 0 16px 48px rgb(0 0 0 / 0.18);
+}
+
+/* ----------------------------------------------------------------------------
+   Podcast theming tokens (defaults).
+   Map to the active brand's CTA ramp (topic tiles + play buttons) and tertiary
+   ramp (card surface, accent text, progress fills) so every brand EXCEPT Elite
+   renders exactly as before. Declared here — ahead of the brand override blocks
+   below — so a brand block (e.g. Elite) can win at equal specificity via source
+   order. Elite overrides these with an indigo→violet palette: a deliberate,
+   sanctioned exception to the no-hardcoded-hex rule because the brand's
+   magenta/orange reads poorly on podcasts.
+   ---------------------------------------------------------------------------- */
+:root {
+  --podcast-tile-from: var(--color-cta-500);
+  --podcast-tile-to: var(--color-cta-500);
+  --podcast-tile-hover: var(--color-cta-700);
+  /* The podcast play button IS a CTA, so follow --color-action rather than
+     re-aliasing cta-500. That keeps it in step with each brand's action token
+     (McKissock's cta-500 orange was 2.32:1 as the icon + border, under the
+     1.4.11 3:1 floor for non-text) instead of drifting from it. The hover now
+     uses --color-action-hover so it actually darkens; it previously repeated
+     the resting value. */
+  --podcast-button: var(--color-action);
+  --podcast-button-hover: var(--color-action-hover);
+  --podcast-accent: var(--color-tertiary-700);
+  --podcast-surface: var(--color-tertiary-700);
+  --podcast-surface-hover: var(--color-tertiary-800);
+  --podcast-surface-deep: var(--color-tertiary-800);
+  --podcast-surface-ring: var(--color-tertiary-200);
+  --podcast-fill: var(--color-tertiary-500);
+  --podcast-on-surface-strong: var(--color-tertiary-100);
+  --podcast-on-surface-muted: var(--color-tertiary-200);
+  --podcast-pill-bg: var(--color-tertiary-100);
+  --podcast-pill-text: var(--color-tertiary-800);
+}
+
+/* ----------------------------------------------------------------------------
+   Rubi brand tokens.
+   Rubi (the AI career toolkit) carries its own brand identity independent of
+   the active platform brand, so these are declared once at the base — not in
+   any brand override block. Sourced from the Rubi Style Guide (Figma node
+   167:142): the primary red ramp + the logo's brand red (#C4203B). Used by the
+   Rubi-branded AI Career Tool cards so the catalog-style tile-header band reads
+   as Rubi, while everything else still references the active brand's tokens.
+   ---------------------------------------------------------------------------- */
+:root {
+  --rubi-red: #c4203b; /* the logo mark red */
+  --rubi-surface: #c01717; /* rubi/primary/500 */
+  --rubi-surface-hover: #991212; /* rubi/primary/600 */
+  --rubi-surface-deep: #730d0d; /* rubi/primary/700 */
+  --rubi-surface-ring: #e5a2a2; /* rubi/primary/200 */
+  --rubi-pill-bg: #f2d0d0; /* rubi/primary/100 */
+  --rubi-pill-text: #730d0d; /* rubi/primary/700 */
+}
+
+/* ============================================================================
+   Brand override blocks
+   Activate by setting `data-brand="elite"` or `data-brand="stc"` on <html> (or
+   any ancestor — useful for previewing a brand inside the Switch Account
+   panel). The same variable names redefined here win at runtime over the
+   @theme inline defaults above. Components must always reference the
+   CSS variable (e.g. var(--color-brand)), never a literal hex.
+   Sources: .claude/skills/brands/elite.md, .claude/skills/brands/stc.md.
+   ============================================================================ */
+
+[data-brand='mckissock'] {
+  /* Primary — olive / yellow-green */
+  --color-primary-100: #e7eccd;
+  --color-primary-200: #d0d99b;
+  --color-primary-300: #b8c66a;
+  --color-primary-400: #a1b338;
+  --color-primary-500: #8aa007;
+  --color-primary-600: #6e8005;
+  --color-primary-700: #526004;
+  --color-primary-800: #373f02;
+  --color-primary-900: #1b1f01;
+
+  /* Secondary — gold / amber */
+  --color-secondary-100: #fef3d2;
+  --color-secondary-200: #fde7a5;
+  --color-secondary-300: #fcdb78;
+  --color-secondary-400: #fbcf4b;
+  --color-secondary-500: #fac41e;
+  --color-secondary-600: #c98c18;
+  --color-secondary-700: #967512;
+  --color-secondary-800: #634e0b;
+  --color-secondary-900: #312705;
+
+  /* Tertiary — citron / yellow-green */
+  --color-tertiary-100: #f7f8d2;
+  --color-tertiary-200: #eff1a6;
+  --color-tertiary-300: #e7eb79;
+  --color-tertiary-400: #dfe44d;
+  --color-tertiary-500: #d7de21;
+  --color-tertiary-600: #acb11a;
+  --color-tertiary-700: #818513;
+  --color-tertiary-800: #55580d;
+  --color-tertiary-900: #2a2c06;
+
+  /* CTA — the orange Quaternary 500 ramp (McKissock CTAs pop against the
+     olive primary rather than blending into it). */
+  --color-cta-100: var(--color-quaternary-100);
+  --color-cta-200: var(--color-quaternary-200);
+  --color-cta-300: var(--color-quaternary-300);
+  --color-cta-400: var(--color-quaternary-400);
+  --color-cta-500: var(--color-quaternary-500);
+  --color-cta-600: var(--color-quaternary-600);
+  --color-cta-700: var(--color-quaternary-700);
+  --color-cta-800: var(--color-quaternary-800);
+  --color-cta-900: var(--color-quaternary-900);
+
+  /* Quaternary — orange accent (McKissock-specific extra ramp). */
+  --color-quaternary-100: #fde9d6;
+  --color-quaternary-200: #fbd3ad;
+  --color-quaternary-300: #f9bd84;
+  --color-quaternary-400: #f7a75b;
+  --color-quaternary-500: #f59233;
+  --color-quaternary-600: #c47428;
+  --color-quaternary-700: #93571e;
+  --color-quaternary-800: #613a14;
+  --color-quaternary-900: #301d0a;
+
+  /* Brand alias + action recolor. The CTA ramp above is the orange Quaternary,
+     which is a LIGHT hue: cta-500 carries only 2.32:1 against a white label and
+     cta-600 only 3.57:1 (WCAG AA fail). `--color-action` is used both as a
+     filled-button background behind white text AND as link text on white
+     (~36 fill uses / ~83 text uses), and contrast is symmetric, so both roles
+     want the same thing — >= 4.5:1 against white. cta-700 (#93571e) clears it
+     at 5.80:1 while staying inside the brand's own CTA ramp; cta-800 (9.89:1)
+     takes the hover.
+     TRADE-OFF: McKissock CTAs now read as a deep amber rather than the brighter
+     orange the ramp comment above intends. Keeping the bright fill would mean
+     splitting this token by role (a fill colour plus its own label colour) and
+     updating every fill site — see D8 in explorations/compass/COMPASS-PORT-PLAN.md. */
+  --color-brand: var(--color-primary-500);
+  --color-action: var(--color-cta-700);
+  --color-action-hover: var(--color-cta-800);
+
+  /* Active content tab — primary-600 is 4.42:1 on white, just under AA. It is a
+     filled pill behind a white label (PillTabs + the four product sheets) and
+     also tab text in LearningPathDetailPanel, so both roles fail together.
+     primary-700 clears 6.92:1. */
+  --color-tab-active: var(--color-primary-700);
+
+  /* Eyebrow — secondary-700 is the mid-gold stop at 4.33:1 on white; the
+     matching accent-text fix below already dropped two stops for the same
+     reason. secondary-800 clears 8.00:1. Light mode only: the dark theme
+     re-pins --color-eyebrow-text to secondary-300 further down. */
+  --color-eyebrow-text: var(--color-secondary-800);
+
+  /* Podcast domain — the shared default is tertiary-700, which on McKissock's
+     yellow-green tertiary ramp is #818513: only 3.96:1, and it is used BOTH as
+     a tile fill behind a white title (.cre-tile-header--podcast) and as label
+     text on white (MyPodcastsPage, ContinueListeningCard). tertiary-800 clears
+     7.53:1 in both roles; hover/deep drop one further so the tile still
+     darkens on hover and NowPlayingBar's gradient keeps its depth. Same
+     per-brand escape hatch Elite uses below for its indigo exception. */
+  --podcast-accent: var(--color-tertiary-800);
+  --podcast-surface: var(--color-tertiary-800);
+  --podcast-surface-hover: var(--color-tertiary-900);
+  --podcast-surface-deep: var(--color-tertiary-900);
+
+  /* Accent text — the olive primary + orange CTA are too weak on white,
+     so drop two stops (primary-700 = 6.92:1; accent-link keeps cta-700 =
+     5.80:1). Fixes the light-mode McKissock findings (#4). */
+  --color-accent-text: var(--color-primary-700);
+
+  /* McKissock caps h1 at 60/68 Bold (vs CRE's 64/80 8xl). Re-declare so
+     existing call sites that read --text-heading-8xl re-skin automatically. */
+  --text-heading-8xl: 60px;
+  --text-heading-8xl--line-height: 68px;
+}
+
+[data-brand='elite'] {
+  /* Primary — blue */
+  --color-primary-100: #d0ddf0;
+  --color-primary-200: #a2bce1;
+  --color-primary-300: #739ad3;
+  --color-primary-400: #4579c4;
+  --color-primary-500: #1758b6;
+  --color-primary-600: #124691;
+  --color-primary-700: #0d346d;
+  --color-primary-800: #092348;
+  --color-primary-900: #041124;
+
+  /* Secondary — aqua / teal */
+  --color-secondary-100: #def3f5;
+  --color-secondary-200: #bee7ec;
+  --color-secondary-300: #9edce2;
+  --color-secondary-400: #7ed0d9;
+  --color-secondary-500: #5ec5d0;
+  --color-secondary-600: #4b9da6;
+  --color-secondary-700: #38767c;
+  --color-secondary-800: #254e53;
+  --color-secondary-900: #122729;
+
+  /* Tertiary — orange */
+  --color-tertiary-100: #fde5d4;
+  --color-tertiary-200: #fbcba9;
+  --color-tertiary-300: #fab17e;
+  --color-tertiary-400: #f89753;
+  --color-tertiary-500: #f77d29;
+  --color-tertiary-600: #c56420;
+  --color-tertiary-700: #944b18;
+  --color-tertiary-800: #623110;
+  --color-tertiary-900: #311808;
+
+  /* CTA — magenta / purple */
+  --color-cta-100: #ecdaea;
+  --color-cta-200: #d9b5d5;
+  --color-cta-300: #c790c0;
+  --color-cta-400: #b46bab;
+  --color-cta-500: #a24796;
+  --color-cta-600: #813878;
+  --color-cta-700: #612a5a;
+  --color-cta-800: #401c3b;
+  --color-cta-900: #200e1d;
+
+  /* Brand alias + action recolor (CTA-driven so buttons pick up magenta) */
+  --color-brand: var(--color-primary-500);
+  --color-action: var(--color-cta-500);
+  --color-action-hover: var(--color-cta-600);
+
+  /* Accent text — Elite's blue primary-500 clears 4.5:1 on white (6.76),
+     so no light-mode drop needed. Dark handled by [data-theme='dark']. */
+  --color-accent-text: var(--color-primary-500);
+
+  /* Elite caps h1 at 7xl (56/70); CRE/STC use 8xl (64/80). Redeclare so
+     existing call sites that read --text-heading-8xl re-skin automatically. */
+  --text-heading-8xl: 56px;
+  --text-heading-8xl--line-height: 70px;
+
+  /* Heading family stays Brandon Grotesque (shared with CRE) — no override. */
+
+  /* Podcast palette exception — the Real Estate (CRE) teal replaces the
+     brand's magenta/orange for podcast surfaces only (per Jillienne: "colors
+     used for this brand for podcasts is terrible … an exception to the rule";
+     follow-up: "use the teal we used for real estate, the indigo is not
+     great"). Values are lifted from the CRE primary-teal + sky-blue tertiary
+     ramps. Hardcoded hex is intentional here. */
+  --podcast-tile-from: #028f81;
+  --podcast-tile-to: #2d94b5;
+  --podcast-tile-hover: #01554d;
+  --podcast-button: #028f81;
+  --podcast-button-hover: #01554d;
+  --podcast-accent: #017267;
+  /* AA: a white 14px/600 tile title on #028f81 is only 4.00:1. #017267 (one
+     stop darker in the same brand-directed teal, and already this brand's
+     --podcast-accent) clears 5.83:1. Hover/deep stay darker still. */
+  --podcast-surface: #017267;
+  --podcast-surface-hover: #01554d;
+  --podcast-surface-deep: #003933;
+  --podcast-surface-ring: #99d2cc;
+  --podcast-fill: #39bae3;
+  --podcast-on-surface-strong: #cce8e5;
+  --podcast-on-surface-muted: #99d2cc;
+  --podcast-pill-bg: #cce8e5;
+  --podcast-pill-text: #003933;
+}
+
+/* Fitzgerald Health Education Associates (FHEA) — NP exam-prep brand.
+   Tokens sourced from the Fitzgerald Style Guide (Figma file
+   WntVKZ5wWEFtiONKicqYw9, node 57:106). The ramp is identical to Elite's
+   healthcare palette (blue primary / teal secondary / orange tertiary /
+   magenta CTA), so this block mirrors Elite, including its podcast-palette
+   exception. Heading = Brandon Grotesque, body = Open Sans (shared, no
+   font-family override needed). */
+[data-brand='fitzgerald'] {
+  /* Primary — blue */
+  --color-primary-100: #d0ddf0;
+  --color-primary-200: #a2bce1;
+  --color-primary-300: #739ad3;
+  --color-primary-400: #4579c4;
+  --color-primary-500: #1758b6;
+  --color-primary-600: #124691;
+  --color-primary-700: #0d346d;
+  --color-primary-800: #092348;
+  --color-primary-900: #041124;
+
+  /* Secondary — aqua / teal */
+  --color-secondary-100: #def3f5;
+  --color-secondary-200: #bee7ec;
+  --color-secondary-300: #9edce2;
+  --color-secondary-400: #7ed0d9;
+  --color-secondary-500: #5ec5d0;
+  --color-secondary-600: #4b9da6;
+  --color-secondary-700: #38767c;
+  --color-secondary-800: #254e53;
+  --color-secondary-900: #122729;
+
+  /* Tertiary — orange */
+  --color-tertiary-100: #fde5d4;
+  --color-tertiary-200: #fbcba9;
+  --color-tertiary-300: #fab17e;
+  --color-tertiary-400: #f89753;
+  --color-tertiary-500: #f77d29;
+  --color-tertiary-600: #c56420;
+  --color-tertiary-700: #944b18;
+  --color-tertiary-800: #623110;
+  --color-tertiary-900: #311808;
+
+  /* CTA — magenta / purple */
+  --color-cta-100: #ecdaea;
+  --color-cta-200: #d9b5d5;
+  --color-cta-300: #c790c0;
+  --color-cta-400: #b46bab;
+  --color-cta-500: #a24796;
+  --color-cta-600: #813878;
+  --color-cta-700: #612a5a;
+  --color-cta-800: #401c3b;
+  --color-cta-900: #200e1d;
+
+  /* Brand alias + action recolor (CTA-driven so buttons pick up magenta) */
+  --color-brand: var(--color-primary-500);
+  --color-action: var(--color-cta-500);
+  --color-action-hover: var(--color-cta-600);
+
+  /* Accent text — mirrors Elite (identical healthcare ramp). */
+  --color-accent-text: var(--color-primary-500);
+
+  /* Caps h1 at 7xl (56/70) like Elite. */
+  --text-heading-8xl: 56px;
+  --text-heading-8xl--line-height: 70px;
+
+  /* Podcast palette exception — same teal treatment as Elite (the brand's
+     magenta/orange reads poorly on podcast surfaces). */
+  --podcast-tile-from: #028f81;
+  --podcast-tile-to: #2d94b5;
+  --podcast-tile-hover: #01554d;
+  --podcast-button: #028f81;
+  --podcast-button-hover: #01554d;
+  --podcast-accent: #017267;
+  /* AA: a white 14px/600 tile title on #028f81 is only 4.00:1. #017267 (one
+     stop darker in the same brand-directed teal, and already this brand's
+     --podcast-accent) clears 5.83:1. Hover/deep stay darker still. */
+  --podcast-surface: #017267;
+  --podcast-surface-hover: #01554d;
+  --podcast-surface-deep: #003933;
+  --podcast-surface-ring: #99d2cc;
+  --podcast-fill: #39bae3;
+  --podcast-on-surface-strong: #cce8e5;
+  --podcast-on-surface-muted: #99d2cc;
+  --podcast-pill-bg: #cce8e5;
+  --podcast-pill-text: #003933;
+}
+
+[data-brand='stc'] {
+  /* Primary — deep navy (lighter ramp) */
+  --color-primary-100: #cdd0de;
+  --color-primary-200: #9ca1be;
+  --color-primary-300: #6b739e;
+  --color-primary-400: #39447e;
+  --color-primary-500: #08155e;
+  --color-primary-600: #071355;
+  --color-primary-700: #06114b;
+  --color-primary-800: #050e42;
+  --color-primary-900: #040c38;
+
+  /* Secondary — mid teal */
+  --color-secondary-100: #d6e5e7;
+  --color-secondary-200: #aeccCF;
+  --color-secondary-300: #85b2b7;
+  --color-secondary-400: #5d999f;
+  --color-secondary-500: #358087;
+  --color-secondary-600: #2a666c;
+  --color-secondary-700: #1f4c51;
+  --color-secondary-800: #153335;
+  --color-secondary-900: #0a191a;
+
+  /* Tertiary — light teal. Drives all CTAs on STC (see alias block below). */
+  --color-tertiary-100: #daeef0;
+  --color-tertiary-200: #b5dde1;
+  --color-tertiary-300: #90ccd2;
+  --color-tertiary-400: #6bbbc3;
+  --color-tertiary-500: #46aab4;
+  --color-tertiary-600: #388890;
+  --color-tertiary-700: #2a666c;
+  --color-tertiary-800: #1b4347;
+  --color-tertiary-900: #0d2123;
+
+  /* CTA — currently aliased to SECONDARY, so every cta-* stop resolves to the
+     same mid teal as secondary-* against the deep-navy primary surfaces.
+     ⚠ KNOWN COLLISION (brand-color audit #7): because CTA === Secondary,
+     "action" (CTA) and "accent" (secondary) are the EXACT same color on STC —
+     e.g. a CTA button and the nav-active accent (--color-nav-active =
+     secondary-500) are indistinguishable. This also CONTRADICTS the STC brand
+     file + Figma, where the two exposed CTA stops (cta/400, cta/700) match the
+     PRIMARY navy, not teal. TODO(brand): confirm the real STC CTA ramp — navy
+     per Figma, or a distinct action hue — and de-alias it from secondary.
+     Left unchanged here pending brand guidance (audit decision: document only). */
+  --color-cta-100: var(--color-secondary-100);
+  --color-cta-200: var(--color-secondary-200);
+  --color-cta-300: var(--color-secondary-300);
+  --color-cta-400: var(--color-secondary-400);
+  --color-cta-500: var(--color-secondary-500);
+  --color-cta-600: var(--color-secondary-600);
+  --color-cta-700: var(--color-secondary-700);
+  --color-cta-800: var(--color-secondary-800);
+  --color-cta-900: var(--color-secondary-900);
+
+  /* Quaternary — gold accent (STC-specific extra ramp; not consumed by
+     shared components today but available for STC-specific surfaces). */
+  --color-quaternary-100: #fff0d8;
+  --color-quaternary-200: #ffe1b2;
+  --color-quaternary-300: #ffd38b;
+  --color-quaternary-400: #ffc465;
+  --color-quaternary-500: #ffb63f;
+  --color-quaternary-600: #cc9132;
+  --color-quaternary-700: #996d25;
+  --color-quaternary-800: #654819;
+  --color-quaternary-900: #32240c;
+
+  /* Brand alias + action recolor */
+  --color-brand: var(--color-primary-500);
+  --color-action: var(--color-cta-500);
+  --color-action-hover: var(--color-cta-600);
+
+  /* Accent text — STC's deep-navy primary-500 is very strong on white
+     (16.42:1). Its dark-mode value is special-cased below because the
+     dark surfaces derive from this same navy ramp (see finding #2). */
+  --color-accent-text: var(--color-primary-500);
+
+  /* STC swaps heading family to Lato (loaded via Google Fonts in index.html). */
+  --font-heading: 'Lato', 'Helvetica Neue', system-ui, sans-serif;
+}
+
+/* ============================================================================
+   DARK THEME OVERRIDE  ·  scoped to the Dashboard Discoverability feature
+   ----------------------------------------------------------------------------
+   Activated by `data-theme="dark"` on <html>, which DashboardRebrandPage sets
+   ONLY while the `/dashboard-rebrand` shell is mounted (and clears on unmount),
+   so dark mode never leaks into the rest of the app. The reviewer flips it from
+   the profile-menu "Switch to Dark Mode" item; the choice persists in
+   localStorage (`cgp.theme`) so dark stays the default until switched back.
+
+   Strategy mirrors the brand blocks above: redefine the same token NAMES so
+   every component re-skins automatically (components reference var(--token),
+   never raw hex). Dark SURFACES follow the active brand's PRIMARY ramp (the
+   deep 800–900 values) rather than a neutral charcoal, so the dark theme reads
+   as a branded deep navy (Elite) that harmonizes with the left rail — which is
+   already primary-800. TEXT stays light, high-contrast (blue-tinted) grays for
+   readability. Other BRAND ramps (CTA magenta, status colors) are left
+   untouched so brand identity carries through in dark mode.
+
+   We re-skin the lowest NEUTRAL stops (the "light surface" end of the ramp) to
+   primary 800–900 so components that reference raw neutral-50/75/100 as
+   backgrounds also pick up the navy; the high stops become light grays so
+   raw-neutral text/icons read correctly. Mid stops become muted blue-grays.
+
+   Placed AFTER the brand blocks so, at equal selector specificity, these win
+   by source order regardless of which `data-brand` is also on <html>. Surfaces
+   reference var(--color-primary-*) so they follow whatever brand is active.
+   ============================================================================ */
+[data-theme='dark'] {
+  /* Surface split (dark mode): the PAGE canvas is a neutral CHARCOAL, while
+     CARDS keep the brand primary so widgets stay on-brand and float above the
+     charcoal. 50 (cards) → primary-800 (elevated, brand); 75 (page bg) →
+     charcoal #1B1D21. The neutral gap between the charcoal page and a brand
+     card also separates the card from the (navy) rail for the navy-family
+     brands. Cards read by HUE (brand) rather than only by lightness. */
+  --color-neutral-50: var(--color-primary-800);   /* elevated card surface (brand) */
+  --color-neutral-75: #1b1d21;                     /* page background — neutral charcoal */
+  --color-neutral-100: #0c2a55;  /* subtle fills / hover — a touch above card */
+  --color-neutral-200: var(--color-primary-700);  /* hairline borders */
+  --color-neutral-300: #234779;
+  --color-neutral-400: #3a5c8a;
+  --color-neutral-500: #6b7d99;  /* disabled mid-tone */
+  --color-neutral-600: #9aa6bb;  /* tertiary text (blue-tinted gray) */
+  --color-neutral-700: #b9c2d2;
+  --color-neutral-800: #d6dce6;
+  --color-neutral-900: #f1f3f7;  /* primary body text (was #202020) */
+  --color-neutral-950: #ffffff;
+  --color-neutral-extra-light: #1b1d21; /* alias for 075 → page bg (charcoal) */
+  --color-neutral-light: var(--color-primary-700);
+  --color-neutral-disabled: #6b7d99;
+  --color-neutral-dark: #b9c2d2;        /* drives --color-text-secondary */
+  --color-neutral-darkest: #f5f7fb;     /* canonical "ink" → now near-white */
+
+  /* Semantic surface/text/border aliases. The page is a neutral charcoal; the
+     card follows the brand primary ramp (brand widgets on a charcoal canvas).
+     Text stays light grays. Re-pinned explicitly so the intent is legible and
+     tunable independently of the ramp. */
+  --color-surface-page: #1b1d21;                  /* neutral charcoal canvas */
+  --color-surface-card: var(--color-primary-800); /* brand-primary widgets */
+  --color-text-primary: #f1f3f7;
+  --color-text-secondary: #c3ccdb;
+  --color-text-tertiary: #9aa6bb;
+  --color-border-subtle: var(--color-primary-700);
+
+  /* `--color-text-inverse` must STAY light: it labels the teal/dark brand
+     bands (rail header, hero bands) that remain colored in dark mode, so it
+     can't follow the brand-tinted neutral-50. Re-pin it to white. */
+  --color-text-inverse: #ffffff;
+
+  /* Accent text — the light-mode stops collapse on the navy surfaces, so
+     swap to the lighter ramp stops. Measured on the dark card surface
+     (primary-800): primary-300 ≥ 5.4:1 for CRE/McKissock/Elite; cta-200 ≥
+     6.3:1; success-300 ≥ 4.6:1. STC's primary-300 is too dark on its own
+     navy ramp and is bumped to primary-200 below. Fixes findings #1/#7. */
+  --color-accent-text: var(--color-primary-300);
+  --color-accent-link: var(--color-cta-200);
+  /* Section leads sit on the charcoal PAGE (not a card), so lift to a light
+     brand tint (one stop above accent-text) — legible for every brand incl.
+     STC without a separate override. */
+  --color-section-lead: var(--color-primary-200);
+  --color-status-success-text: var(--color-success-300);
+  --color-status-warning-text: var(--color-warning-300);
+  --color-status-error-text: var(--color-error-200);
+  --color-eyebrow-text: var(--color-secondary-300);
+
+  /* Deepen shadows so elevation still reads on dark surfaces. */
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 0.45), 0 2px 10px rgb(0 0 0 / 0.55);
+  --shadow-popover: 0 6px 20px rgb(0 0 0 / 0.6);
+  --shadow-modal: 0 18px 52px rgb(0 0 0 / 0.7);
+
+  /* Native form controls / scrollbars follow dark (the JS effect also sets
+     this inline on <html> to beat index.html's inline color-scheme:light). */
+  color-scheme: dark;
+}
+
+/* STC dark mode — special handling (audit finding #2).
+   STC's PRIMARY ramp is itself navy (#08155e → #040c38), and the dark theme
+   derives its surfaces from that same ramp, so brand-primary accent text and
+   its background land nearly the same color (measured 1.07–1.15:1). The
+   generic `primary-300` accent above is still too dark here (3.98:1 on the
+   navy card), so force STC's accent text one stop lighter to `primary-200`
+   (7.19:1). Higher specificity (0,2,0) than the plain dark block so it wins.
+   `accent-link`/`success-text` reference the CTA/success ramps, which are NOT
+   navy on STC, so they already clear AA and need no override. */
+[data-theme='dark'][data-brand='stc'] {
+  --color-accent-text: var(--color-primary-200);
+}
+
+/* The prototype bar is constant "prototype chrome" — it stays the dark charcoal
+   strip with white text/icons in BOTH themes. The dark theme inverts the
+   neutral ramp (neutral-800 → light gray, neutral-50 → navy), which would flip
+   the bar to a light strip with navy text + an invisible white quote. Re-pin
+   the two tokens it uses to their light values within the bar so the dark theme
+   never touches it (cascades to the home/back/label/toggle children). */
+[data-theme='dark'] .cre-prototype-bar {
+  --color-neutral-800: #404040;
+  --color-neutral-50: #ffffff;
+}
+
+/* Common Dashboard prototype landing (PrototypeLandingPage): a BRAND-STABLE
+   teal-accent gateway. The gateway has no brand of its own — it inherits
+   whatever `data-brand` the last-used account left on <html> — so without this
+   its accents drift by brand (the eyebrow + teal tiles turn olive under
+   McKissock, navy/blue under CRE/Elite, etc). To keep it identical regardless
+   of active brand, pin every brand-driven ramp the page reads to fixed values:
+     • primary + cta ramps  → STC's teal (secondary) values — drives the eyebrow
+       (`--color-accent-text`), teal-accent + blue-accent tile icons, links,
+       active tab, and hover.
+     • secondary ramp       → a fixed gold (STC's quaternary) — so gold-accent
+       tiles read a stable warm gold instead of the active brand's secondary.
+     • neutral              → already brand-invariant (shared :root ramp); the
+       neutral-accent tiles need no pin.
+   Hex lives here in tokens.css by convention (never in component code). */
+.cre-prototype-stc-accent {
+  /* Teal (STC secondary) — primary + cta both point here so the whole accent
+     identity is one stable teal. */
+  --color-primary-100: #d6e5e7;
+  --color-primary-200: #aecccf;
+  --color-primary-300: #85b2b7;
+  --color-primary-400: #5d999f;
+  --color-primary-500: #358087;
+  --color-primary-600: #2a666c;
+  --color-primary-700: #1f4c51;
+  --color-primary-800: #153335;
+  --color-primary-900: #0a191a;
+  --color-cta-100: #d6e5e7;
+  --color-cta-200: #aecccf;
+  --color-cta-300: #85b2b7;
+  --color-cta-400: #5d999f;
+  --color-cta-500: #358087;
+  --color-cta-600: #2a666c;
+  --color-cta-700: #1f4c51;
+  --color-cta-800: #153335;
+  --color-cta-900: #0a191a;
+  /* Gold (STC quaternary) — a fixed warm gold for gold-accent tiles so they
+     don't drift with the active brand's secondary. */
+  --color-secondary-100: #fff0d8;
+  --color-secondary-200: #ffe1b2;
+  --color-secondary-300: #ffd38b;
+  --color-secondary-400: #ffc465;
+  --color-secondary-500: #ffb63f;
+  --color-secondary-600: #cc9132;
+  --color-secondary-700: #996d25;
+  --color-secondary-800: #654819;
+  --color-secondary-900: #32240c;
+  /* Eyebrow / accent text — a dark teal that clears AA on the light gateway. */
+  --color-accent-text: #1f4c51;
+  /* `--color-action` / `--color-action-hover` are registered Tailwind
+     `@property` colors — they resolve their `var(--color-cta-*)` reference
+     eagerly at the brand block on <html> (to the active brand's magenta), so
+     re-pointing the CTA ramp alone doesn't move them. Re-declare them here on
+     the wrapper so they pick up this block's teal. */
+  --color-action: #358087;
+  --color-action-hover: #2a666c;
+}
+
+/* Stakeholder Demo Controls bar (DemoControlsBar) — a single scoped focus-visible
+   ring for its buttons so keyboard focus is always visible on the dark navy bar.
+   Scoped to `.cre-demo-controls` so it never leaks into product UI. */
+.cre-demo-controls .cre-demo-controls-btn:focus-visible {
+  outline: 1.5px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* Brand logo dark-mode swap. Brands that ship a white lockup (Elite) render
+   BOTH <img>s via the Logo component; show the white one only when the dark
+   theme is actually applied (`[data-theme='dark']` on <html>, set solely by
+   the Dashboard Rebrand shell). The `!important` beats the light mark's inline
+   `display:block`. */
+.cre-logo--dark {
+  display: none;
+}
+[data-theme='dark'] .cre-logo--light {
+  display: none !important;
+}
+[data-theme='dark'] .cre-logo--dark {
+  display: block;
+}
+
+/* Open Sans — Google Fonts (open source, OK to load via <link> in index.html).
+   Brandon Grotesque is a paid font and is NOT loaded here — confirm a licensed
+   source with the brand team before production. The stack falls back to
+   Helvetica Neue / system-ui until the licensed copy is wired up. */
+
+/* Unlayered — needs higher specificity than @layer base so the native
+   date-picker popup honors the light scheme even when the host OS is in
+   dark mode. Belt-and-suspenders with the inline `style="color-scheme:
+   light"` on the html element in index.html. */
+html,
+:root {
+  color-scheme: light;
+}
+
+@layer base {
+  html,
+  body {
+    background: var(--color-surface-page);
+    color: var(--color-text-primary);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-heading);
+    color: var(--color-text-primary);
+  }
+
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  *,
+  *::before,
+  *::after {
+    box-sizing: border-box;
+  }
+}
+
+/* Header pill controls — shared by NavLink, NavDropdown trigger, IconLink,
+   CartButton. Hover = light gray, selected/open = mint. */
+.cre-nav-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 40px;
+  padding: 0 14px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-primary);
+  border: none;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 120ms ease;
+}
+.cre-nav-pill:hover {
+  background: var(--color-neutral-100);
+}
+.cre-nav-pill.is-active,
+.cre-nav-pill.is-active:hover {
+  background: var(--color-primary-100);
+  color: var(--color-text-primary);
+}
+
+/* Resource Library filter chip — the Profession + Category pill rows. Color +
+   border + hover live here so `:hover` works (the component sets layout-only
+   inline styles). Inactive: outlined, primary-800 text; hover fills a light
+   primary tint; active: solid primary-700 (unchanged on hover). */
+/* ── Dim — a softer dark for the UX dashboard exploration ──────────────────
+   The stock dark theme pairs a near-black page (#1b1d21) with brand-navy cards
+   (#092348): two different colour families in one theme, which is what put
+   navy text on navy surfaces three separate times. Dim lifts the page off
+   near-black and brings the card into the SAME graphite family, so the
+   page/card step is a step in one ramp rather than a change of hue.
+
+   Scoped to an attribute only that page sets, so no other surface inherits it.
+   Text tokens are untouched — the dark theme's #f1f3f7 reads 11:1+ on both. */
+[data-theme='dark'][data-ux-dim='on'] {
+  --color-surface-page: #26282d;
+  --color-surface-card: #2f3238;
+  --color-border-subtle: #3f434b;
+}
+
+.cre-library-chip {
+  background: var(--color-surface-card);
+  color: var(--color-primary-800);
+  border: 1px solid var(--color-primary-300);
+  transition: background-color 120ms ease, color 120ms ease, border-color 120ms ease;
+}
+.cre-library-chip:hover {
+  background: var(--color-primary-100);
+  border-color: var(--color-primary-400);
+}
+.cre-library-chip.is-active,
+.cre-library-chip.is-active:hover {
+  background: var(--color-primary-700);
+  color: var(--color-text-inverse);
+  border-color: var(--color-primary-700);
+}
+
+.cre-icon-pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  transition: background-color 120ms ease;
+}
+.cre-icon-pill:hover {
+  background: var(--color-neutral-extra-light);
+}
+.cre-icon-pill.is-active,
+.cre-icon-pill.is-active:hover {
+  background: var(--color-primary-200);
+  color: var(--color-primary-700);
+}
+
+/* Menu item — used inside header dropdowns (My Learning, Membership,
+   account menu). Mirrors cre-nav-pill states but full-width with leading
+   icon + label + optional trailing icon. */
+.cre-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 120ms ease, color 120ms ease;
+}
+.cre-menu-item:hover {
+  background: var(--color-tertiary-100);
+  color: var(--color-tertiary-700);
+}
+.cre-menu-item.is-active,
+.cre-menu-item.is-active:hover {
+  background: var(--color-tertiary-200);
+  color: var(--color-tertiary-800);
+  font-weight: 600;
+}
+.cre-menu-item-icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: var(--color-text-secondary);
+  transition: color 120ms ease;
+}
+.cre-menu-item:hover .cre-menu-item-icon {
+  color: var(--color-tertiary-700);
+}
+.cre-menu-item.is-active .cre-menu-item-icon {
+  color: var(--color-tertiary-800);
+}
+/* Disabled state — used by the UI/UX Demo Tools section for tools that
+   aren't built yet (e.g. Mobile Experience). Reduced opacity + reset
+   hover so the row reads as not-yet-available. */
+.cre-menu-item:disabled,
+.cre-menu-item[aria-disabled='true'] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.cre-menu-item:disabled:hover,
+.cre-menu-item[aria-disabled='true']:hover {
+  background: transparent;
+  color: var(--color-text-primary);
+}
+.cre-menu-item:disabled:hover .cre-menu-item-icon,
+.cre-menu-item[aria-disabled='true']:hover .cre-menu-item-icon {
+  color: var(--color-text-secondary);
+}
+
+/* Admin tools — hidden hover-reveal trigger that lives to the left of the
+   brand logo in the header. The robot icon is invisible at rest so the
+   menu doesn't add visual noise to the production-facing header; it
+   fades up to 30% opacity when the wrapping `.cre-admin-tools` container
+   is hovered, or when the trigger itself receives keyboard focus —
+   subtle enough to read as a quiet affordance without ever competing
+   with the brand mark next to it. The trigger's `style.opacity` is set
+   to `1` inline by the component while the dropdown is open — that
+   takes precedence over the CSS so the icon snaps to full visibility
+   while in use. */
+.cre-admin-tools-trigger {
+  opacity: 0;
+}
+.cre-admin-tools:hover .cre-admin-tools-trigger,
+.cre-admin-tools-trigger:focus-visible {
+  opacity: 0.3;
+}
+.cre-admin-tools-trigger:hover,
+.cre-admin-tools-trigger:focus-visible {
+  color: var(--color-text-secondary);
+}
+/* On the dark prototype bar the robot reveals in white (overriding the
+   trigger's inline tertiary color, hence !important) and lifts a little
+   higher on hover/focus so it reads against neutral-800. */
+.cre-prototype-bar .cre-admin-tools-trigger {
+  color: var(--color-neutral-50) !important;
+}
+.cre-prototype-bar .cre-admin-tools:hover .cre-admin-tools-trigger,
+.cre-prototype-bar .cre-admin-tools-trigger:focus-visible {
+  opacity: 0.6;
+}
+
+/* Demo frame ("desktop-framed" device mode) — the whole app shell centered
+   inside a rounded browser-style window on a dark backdrop, for stakeholder
+   demos. The dark stage fills the viewport; the window is a capped, centered
+   card. No `overflow` on either so the app's sticky bars stay pinned to the
+   viewport (same rule as the narrow device frames). */
+.cre-demo-stage {
+  min-height: 100vh;
+  /* In light theme neutral-900 is near-black (a dark canvas). The rebrand's
+     dark theme inverts neutral-900 to a light value, so pin the stage dark in
+     dark mode too (same exemption pattern as .cre-prototype-bar) — the demo
+     backdrop should always read as a dark canvas behind the window. */
+  background: var(--color-neutral-900);
+  /* No side padding: the prototype bar + Demo Controls banner run edge-to-edge
+     (full screen width) at the top of the stage; the browser window below gets
+     its side gutters from its own max-width + auto margins. Bottom breathing
+     room only. */
+  padding: 0 0 44px;
+  display: flex;
+  flex-direction: column;
+  /* Centered — the framed window sits in the middle of the dark backdrop, which
+     fills evenly on both sides on wide screens. The full-width bars ignore this
+     (they fill the cross axis). */
+  align-items: center;
+}
+[data-theme='dark'] .cre-demo-stage {
+  background: #1b1d21;
+}
+/* The prototype/demo bars are direct children of the stage now (rendered by
+   <PrototypeChrome />, outside the window) — full screen width. `fullBleed`
+   drops their 1440 cap; this stretch guards against the flex cross-axis
+   centering. */
+.cre-demo-stage > .cre-prototype-bar,
+.cre-demo-stage > .cre-demo-controls {
+  align-self: stretch;
+  width: 100%;
+}
+.cre-demo-stage-window {
+  /* Always leaves a strip of dark stage on both sides, so the window keeps
+     reading as a browser window on a backdrop rather than going flush. A plain
+     `width: 100%` hit an 8px gutter on a 1366 laptop (once the scrollbar is
+     taken) and the frame effect all but vanished. 24px each side still nets
+     MORE content than the old 1280 cap did at that size. */
+  width: min(1440px, 100% - 48px);
+  /* 1440 = the app's OWN design width, not an arbitrary cap: PlatformShell's
+     grid is `264px minmax(0, 1176px) 1fr` (264 + 1176 = 1440), so at the old
+     1280 the demo squeezed the content column to 1016px — 160px under its
+     design max — and every reviewer saw a compressed layout. At 1440 the shell
+     hits its intended width.
+
+     Going WIDER than 1440 buys nothing: the shell caps content at 1176, so the
+     surplus falls to the grid's third `1fr` filler (page background) and only
+     the full-bleed bands stretch into it. 1440 is the ceiling worth having.
+
+     On narrower viewports the `100% - 48px` term wins, so laptops still use the
+     width they have — this raises the ceiling without squeezing them. */
+  max-width: 1440px;
+  /* Gap below the full-width bars so the rounded window reads as a separate
+     browser window centered on the dark stage. */
+  margin: 20px auto 0;
+  background: var(--color-surface-page);
+  border-radius: 14px;
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.35),
+    0 24px 64px rgb(0 0 0 / 0.5);
+  /* Clip the app's full-bleed bands (which bleed to the real viewport edges via
+     100vw math) AND the square content corners to the window's rounded edges.
+     `clip` on both axes — not `hidden`/`auto` — so it does NOT become a scroll
+     container and the app's sticky bars/rail keep working, while all four
+     corners clip to the 14px radius (top rounds via the browser chrome, bottom
+     via this clip). */
+  overflow: clip;
+}
+/* The browser chrome (traffic lights) is the window's top strip now — round its
+   top corners to meet the window's rounded top. */
+.cre-demo-stage-window .cre-browser-chrome {
+  border-top-left-radius: 14px;
+  border-top-right-radius: 14px;
+}
+/* Neutralize the app shell's `min-h-screen` inside the window so the window
+   hugs the viewport height (minus the full-width bars + gap) instead of
+   stacking a full extra 100vh below them. */
+.cre-demo-stage-window > div {
+  min-height: calc(100vh - 200px);
+}
+
+/* Account sub-nav (the vertical section list beside every account page). Quiet
+   by design — it's the SECOND level of nav, next to the shell's dark rail — so
+   idle rows have no surface and hover is a light neutral wash. The active row's
+   primary tint is set inline by the component. */
+.cre-account-subnav-item {
+  transition:
+    background 120ms,
+    color 120ms;
+}
+.cre-account-subnav-item:hover:not([aria-current='page']) {
+  background: var(--color-neutral-75);
+  color: var(--color-text-primary);
+}
+.cre-account-subnav-item:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* Card primitive — default surface used everywhere (course / membership /
+   package / individual / cert containers). */
+.cre-card {
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Course card hover micro-interactions — adds elevation, a slightly darker
+   border, and bumps all card text from neutral-800 to neutral-900 so the
+   card reads as interactive. Card content text inherits color from the
+   .cre-course-card root, so per-element inline `color` rules need to be
+   removed for the inheritance to take effect. */
+.cre-course-card {
+  color: var(--color-neutral-800);
+  transition: color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+.cre-course-card:hover {
+  color: var(--color-neutral-950);
+  border-color: var(--color-neutral-300);
+  box-shadow: 0 4px 4px rgb(0 0 0 / 0.25);
+  transform: scale(1.005);
+}
+
+/* Recommended "What's Trending" image card (VibrantCard). Clickable, image-
+   forward, so it lifts + deepens its shadow and gives the cover photo a subtle
+   zoom on hover (the whole card scales, and it clips to the rounded corners via
+   the element's own `overflow: hidden`). Scoped to `cre-vibrant-card` so the
+   compact shelf cards (which share `cre-recommended-simple-card`) are untouched. */
+.cre-vibrant-card {
+  box-shadow: var(--shadow-card);
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+.cre-vibrant-card:hover {
+  transform: translateY(-3px) scale(1.02);
+  box-shadow: 0 12px 26px rgb(0 0 0 / 0.32);
+}
+@media (prefers-reduced-motion: reduce) {
+  .cre-vibrant-card {
+    transition: box-shadow 180ms ease;
+  }
+  .cre-vibrant-card:hover {
+    transform: none;
+  }
+}
+
+/* Current Learning Path summary card (Marketing Focused band) — clickable, so
+   it lifts on hover. Base shadow matches the band's `CARD_SHADOW`; hover deepens
+   it. Kept here (not inline) so the `:hover` can override the resting shadow. */
+.cre-clp-card {
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--color-primary-900) 35%, transparent);
+  transition: box-shadow 160ms ease, transform 160ms ease;
+}
+.cre-clp-card:hover {
+  box-shadow: 0 12px 28px color-mix(in srgb, var(--color-primary-900) 45%, transparent);
+  transform: translateY(-1px);
+}
+/* Clickable Current Learning Path title (V1 band) — resting brand blue that
+   deepens + underlines on hover/focus to signal it opens the path details. */
+.cre-clp-title-link {
+  color: var(--color-primary-600);
+  transition: color 120ms ease;
+}
+.cre-clp-title-link:hover,
+.cre-clp-title-link:focus-visible {
+  color: var(--color-primary-700);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+/* On-dark variant (Learner Focused band's navy panel) — the title stays white
+   (color set inline) and only underlines on hover/focus to signal it opens the
+   Learning Path page. */
+.cre-clp-title-link--on-dark:hover,
+.cre-clp-title-link--on-dark:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+/* Jump Back In selection card — CTA-toned stroke resting at the 300
+   level, deepening to 500 at 1.5px on hover. The doubled-class selector
+   out-specifies the generic .cre-course-card:hover border rule so the CTA
+   stroke wins; the shared hover scale + shadow still apply. */
+.cre-course-card--jbi {
+  border: 2px solid var(--color-cta-300);
+}
+.cre-course-card.cre-course-card--jbi:hover {
+  border: 3px solid var(--color-cta-500);
+}
+
+/* Membership / Package cards override the hover border with their own
+   ramp so the stroke matches the tile-header palette. */
+.cre-course-card:has(.cre-tile-header--primary):hover {
+  border-color: var(--color-primary-200);
+}
+.cre-course-card:has(.cre-tile-header--neutral):hover {
+  border-color: var(--color-neutral-400);
+}
+.cre-course-card:has(.cre-tile-header--tertiary):hover {
+  border-color: var(--color-tertiary-200);
+}
+.cre-course-card:has(.cre-tile-header--podcast):hover {
+  border-color: var(--podcast-surface-ring);
+}
+.cre-course-card:has(.cre-tile-header--rubi):hover {
+  border-color: var(--rubi-surface-ring);
+}
+/* The Link element doesn't inherit color by default — explicit inherit
+   keeps the title in lockstep with the rest of the card text. */
+.cre-course-card-title {
+  color: inherit;
+}
+
+/* Library resource card — same hover micro-interaction family as the
+   course card (color → border → shadow → scale on hover). Kept as a
+   sibling rule rather than aliased to .cre-course-card so the two
+   surfaces can diverge later (e.g., library cards get an "added to
+   collection" affordance) without leaking changes back into the
+   catalog cards.
+
+   The card uses the "stretched link" pattern: `position: relative`
+   here + a transparent `::after` pseudo on the title link below
+   makes the entire card surface clickable through the title link.
+   Semantic HTML stays (the link wraps the title text), and
+   middle-click / cmd-click continue to open the resource in a new
+   tab. */
+.cre-library-card {
+  color: var(--color-neutral-800);
+  position: relative;
+  transition: color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+/* Pointer cursor only when the card actually has a stretched-link
+   title (library cards). Partner offering cards reuse this class for
+   hover styling but their click target is the "Learn More" link, not
+   the whole card — they keep the default cursor. */
+.cre-library-card:has(a.cre-library-card-title) {
+  cursor: pointer;
+}
+.cre-library-card:hover {
+  color: var(--color-neutral-950);
+  border-color: var(--color-neutral-300);
+  box-shadow: 0 4px 4px rgb(0 0 0 / 0.25);
+  transform: scale(1.005);
+}
+.cre-library-card-title {
+  color: inherit;
+}
+/* Resource card icon plate (Blog / Podcast / Facebook Community). At rest the
+   plate sits on a lighter tint of the brand primary with a primary-700 glyph;
+   on card hover it deepens to the full primary-100 plate + a primary-900 glyph
+   so the icon "pops" alongside the card's text-darkening hover. */
+.cre-resource-plate {
+  background: color-mix(in srgb, var(--color-primary-100) 55%, var(--color-surface-card));
+  color: var(--color-primary-700);
+  transition: background-color 160ms ease, color 160ms ease;
+}
+.cre-library-card:hover .cre-resource-plate {
+  background: var(--color-primary-100);
+  color: var(--color-primary-900);
+}
+/* Resource card CTA ("Read the blog" / "Listen now" / "Join the group") —
+   darkens to the action-hover tint on card hover, in step with the plate +
+   title. */
+.cre-resource-cta {
+  color: var(--color-action);
+  transition: color 160ms ease;
+}
+.cre-library-card:hover .cre-resource-cta {
+  color: var(--color-action-hover);
+}
+/* Membership community band CTA — an <a> (the destination is an external group
+   URL, so it must keep its href, middle-click and "opens in a new tab"
+   announcement) styled as the shared Button's `secondary` variant, matching the
+   "Learn More" buttons in the marketing benefit spots beside it. The base
+   chrome is set inline in MembershipCommunityBand; this class only carries the
+   states, which inline styles can't express. Hover thickens the stroke with an
+   inset shadow rather than filling — exactly what Button.secondary does — so no
+   layout shifts. */
+.cre-community-cta {
+  transition: box-shadow 160ms ease, color 160ms ease;
+}
+.cre-community-cta:hover {
+  box-shadow: inset 0 0 0 1px var(--color-action);
+}
+.cre-community-cta:focus-visible {
+  outline: 2px solid var(--color-action);
+  outline-offset: 2px;
+}
+/* Stretched-link overlay — the title link's pseudo-element grows to
+   cover the entire card's bounding box. Scoped to anchor elements
+   (`a.cre-library-card-title`) so it only kicks in when the title is
+   a real link — partner offering cards reuse the same class on an
+   `<h3>` for color inheritance and shouldn't get the overlay (their
+   click target is the "Learn More" link, not the heading). Any
+   non-interactive content inside the card (rating, tag pill, hero
+   image) sits behind this overlay; if a future element needs its own
+   click target, it must add `position: relative; z-index: 2` to
+   render above the overlay. */
+a.cre-library-card-title::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+/* Study Calendar task rows — mirror the course-card hover treatment so
+   tasks feel like the rest of the platform's clickable surfaces. */
+.cre-task-card {
+  color: var(--color-text-primary);
+  transition: color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+.cre-task-card:hover {
+  /* `position: relative; z-index: 1` lifts the hovered row above its
+     sibling positioned descendants in the same stacking context — in
+     particular, the bottom-of-column "View Task List" link, which uses
+     `.cre-link-action` (position: relative). Without this, the hover
+     transform creates a bounded stacking context on the row that traps
+     the kebab-menu dropdown's `z-index: 10`, and the View Task List
+     link paints on top of the dropdown. */
+  position: relative;
+  z-index: 1;
+  color: var(--color-neutral-950);
+  border-color: var(--color-neutral-300);
+  box-shadow: 0 4px 4px rgb(0 0 0 / 0.25);
+  transform: scale(1.005);
+}
+
+/* Sheet close button — CTA blue text-link matching Figma `2:29578`
+   (default) → `2:29573` (hover). Border-bottom (not text-decoration)
+   so the underline extends under the leading X icon as well. */
+.cre-sheet-close {
+  color: var(--color-cta-500);
+  border-bottom: 1.5px solid transparent;
+}
+.cre-sheet-close:hover {
+  color: var(--color-cta-600);
+  border-bottom-color: var(--color-cta-600);
+}
+
+/* Manage Membership action tiles — brand accent border + tint on hover/focus. */
+.cre-manage-action {
+  transition: border-color 120ms, background 120ms, box-shadow 120ms;
+}
+.cre-manage-action:hover,
+.cre-manage-action:focus-visible {
+  border-color: var(--color-primary-500);
+  background: color-mix(in srgb, var(--color-primary-500) 6%, var(--color-surface-card));
+  outline: none;
+}
+
+/* Delete-confirmation button pair shared by the single-task
+   ("Delete Custom Task") and Delete-All ("Delete All Custom Tasks")
+   confirmation panels. Default + hover specs from Figma node
+   `2006:15814`: lighter error red `#db4c4c` at rest, deeper error
+   red `#cb0000` on hover. The outlined "No, cancel." button picks
+   up a thicker 3px-equivalent border on hover via `box-shadow` inset
+   so the visual emphasis bumps without nudging the button's
+   bounding box and causing a layout shift. */
+.cre-delete-confirm-yes {
+  background: #db4c4c;
+  border: 1px solid #db4c4c;
+  color: #ffffff;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease;
+}
+.cre-delete-confirm-yes:hover {
+  background: #cb0000;
+  border-color: #cb0000;
+}
+
+.cre-delete-confirm-no {
+  background: transparent;
+  border: 1px solid #db4c4c;
+  color: #db4c4c;
+  transition:
+    color 120ms ease,
+    border-color 120ms ease,
+    box-shadow 120ms ease;
+}
+.cre-delete-confirm-no:hover {
+  color: #cb0000;
+  border-color: #cb0000;
+  /* 1px inline border + 2px inset shadow = 3px visual weight on
+     hover. Matches the Figma `border-3` treatment without changing
+     the box model. */
+  box-shadow: inset 0 0 0 2px #cb0000;
+}
+
+/* Study Calendar month-grid day cells — very subtle hover affordance
+   so the cells read as clickable without competing with the status
+   tints or today / selected-day borders set inline by the component.
+   Box-shadow + outline are unset inline, so the hover lift doesn't
+   collide with the existing per-cell `background` / `border` rules.
+   Out-of-month cells render as `:disabled` and the hover is gated
+   to active cells via `:not(:disabled)`. */
+.cre-day-cell {
+  transition: box-shadow 120ms ease, outline-color 120ms ease;
+  outline: 1px solid transparent;
+  outline-offset: -1px;
+}
+.cre-day-cell:hover:not(:disabled) {
+  outline-color: var(--color-neutral-300);
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.08);
+}
+
+/* Panel tile button — square action tile used inside right-anchored
+   slide-over panels (e.g. Calendar Actions). Five states mapped from the
+   Colibri Design System CTA Buttons (Sheet) component, Figma node
+   `8236:3314`. Brand-agnostic: tiles pull `--color-action` /
+   `--color-action-hover` so every brand (CRE, McKissock, Elite, STC)
+   gets its own ramp without per-brand overrides.
+
+   Icon and label inherit `currentColor` so a single color swap on the
+   button flips the entire tile in one place. The 1px → 1.5px border
+   on focus-visible relies on `box-sizing: border-box` (set globally in
+   the base layer) to avoid any external layout shift. */
+.cre-panel-tile {
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-border-subtle);
+  color: var(--color-action);
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
+}
+.cre-panel-tile:hover {
+  background: var(--color-action);
+  border-color: var(--color-action);
+  color: #ffffff;
+}
+.cre-panel-tile:active {
+  background: var(--color-action-hover);
+  border-color: var(--color-action-hover);
+  color: #ffffff;
+}
+.cre-panel-tile:focus-visible {
+  background: var(--color-surface-card);
+  border-width: 1.5px;
+  border-color: var(--color-action);
+  color: var(--color-action);
+  outline: none;
+}
+.cre-panel-tile:disabled,
+.cre-panel-tile[aria-disabled='true'] {
+  background: var(--color-border-subtle);
+  border-color: var(--color-border-subtle);
+  color: #ffffff;
+  cursor: not-allowed;
+}
+.cre-panel-tile:disabled:hover,
+.cre-panel-tile[aria-disabled='true']:hover {
+  background: var(--color-border-subtle);
+  border-color: var(--color-border-subtle);
+  color: #ffffff;
+}
+
+/* Membership-sheet tab buttons — active stays primary-600, inactive uses
+   text-secondary and darkens to text-primary on hover. */
+.cre-membership-tab {
+  color: var(--color-text-secondary);
+  transition: color 120ms ease;
+}
+.cre-membership-tab[data-active='true'] {
+  color: var(--color-primary-600);
+}
+.cre-membership-tab[data-active='false']:hover {
+  color: var(--color-text-primary);
+}
+
+/* Included-course rows in the Membership sheet — subtle elevation lift on
+   hover plus the same neutral-800 → neutral-950 text shift used by catalog
+   course cards. Matches Figma `2:27879` (default) → `2:27934` (hover). */
+.cre-included-course-row {
+  color: var(--color-neutral-800);
+  transition: color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+.cre-included-course-row:hover {
+  color: var(--color-neutral-950);
+  border-color: var(--color-neutral-300);
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.08), 0 1px 2px rgb(0 0 0 / 0.06);
+}
+
+/* Membership / Package cards use an asymmetric corner radius —
+   top-left and bottom-right rounded; top-right and bottom-left squared. */
+.cre-card-asym {
+  border-radius: var(--radius-lg) 0 var(--radius-lg) 0;
+}
+
+/* Package cards get a "stack of cards" effect — two faint outlined layers
+   peek out below the active card, suggesting bundled items. Sourced from
+   CRE Catalog Figma node 1224:59869. */
+.cre-card-stacked {
+  box-shadow:
+    /* Layer 1 fill (closer behind, peeks ~3px) */
+    0 5px 0 -2px var(--color-surface-card),
+    /* Layer 1 border ring */
+    0 5px 0 -1px var(--color-border-subtle),
+    /* Layer 2 fill (further behind, peeks ~3px more, narrower) */
+    0 10px 0 -5px var(--color-surface-card),
+    /* Layer 2 border ring */
+    0 10px 0 -4px var(--color-border-subtle),
+    /* Default card shadow at the back */
+    var(--shadow-card);
+}
+.cre-course-card.cre-card-stacked:hover {
+  box-shadow:
+    0 5px 0 -2px var(--color-surface-card),
+    0 5px 0 -1px var(--color-border-subtle),
+    0 10px 0 -5px var(--color-surface-card),
+    0 10px 0 -4px var(--color-border-subtle),
+    0 4px 4px rgb(0 0 0 / 0.25);
+}
+
+/* "Included with Pro" tag — tertiary-100 wash, deepens on whole-card hover. */
+.cre-tag-pro {
+  background: color-mix(in srgb, var(--color-tertiary-100) 25%, transparent);
+  transition: background-color 160ms ease;
+}
+.cre-course-card:hover .cre-tag-pro {
+  background: color-mix(in srgb, var(--color-tertiary-100) 50%, transparent);
+}
+
+/* "Jump Back In" selection tag — primary-100 wash, deepens on card hover.
+   Mirrors .cre-tag-pro but in the brand-primary ramp. */
+.cre-tag-jbi {
+  background: color-mix(in srgb, var(--color-primary-100) 40%, transparent);
+  transition: background-color 160ms ease;
+}
+.cre-course-card:hover .cre-tag-jbi {
+  background: color-mix(in srgb, var(--color-primary-100) 65%, transparent);
+}
+
+/* CTA-toned marker tag (e.g. "Jump Back In") — cta-100 wash, deepens on
+   card hover. Same shape as .cre-tag-jbi, swapped to the CTA ramp. */
+.cre-tag-cta {
+  background: color-mix(in srgb, var(--color-cta-100) 40%, transparent);
+  transition: background-color 160ms ease;
+}
+.cre-course-card:hover .cre-tag-cta {
+  background: color-mix(in srgb, var(--color-cta-100) 65%, transparent);
+}
+
+/* Learning Recap badge — "See your recap" is a white text link; it
+   underlines on hover. */
+.cre-recap-go:hover {
+  text-decoration: underline;
+}
+
+/* Learning Recap ticket — "See your recap" CTA in the compact ticket
+   variant. Base CTA color here (not inline) so the hover can darken it;
+   darkens + underlines on hover. */
+.cre-recap-ticket-go {
+  color: var(--color-cta-500);
+  transition: color 120ms ease;
+}
+.cre-recap-ticket-go:hover {
+  color: var(--color-cta-700);
+  text-decoration: underline;
+}
+/* Dark variant of the recap ticket — lighten the CTA on the neutral-800
+   surface and lighten (not darken) it on hover. Defined after the base rules
+   so it wins at equal specificity. */
+.cre-recap-ticket-go--dark {
+  color: color-mix(in srgb, var(--color-cta-500) 60%, white);
+}
+.cre-recap-ticket-go--dark:hover {
+  color: #fff;
+  text-decoration: underline;
+}
+
+/* Membership breadcrumb links underline on hover. */
+.cre-membership-crumb:hover {
+  text-decoration: underline;
+}
+
+/* Membership v2 (Passport) product cards — lift + elevate on hover, and
+   deepen their tier-tag washes (the catalog `.cre-tag-pro` chip + the
+   primary-toned "Passport Lite" sibling) in lockstep, matching the
+   catalog course-card hover behavior. */
+.cre-passport-prod {
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease;
+}
+.cre-passport-prod:hover {
+  transform: translateY(-3px);
+  box-shadow: var(--shadow-popover);
+  border-color: var(--color-primary-200);
+}
+.cre-passport-tag-lite {
+  background: color-mix(in srgb, var(--color-primary-100) 45%, transparent);
+  transition: background-color 160ms ease;
+}
+.cre-passport-prod:hover .cre-tag-pro {
+  background: color-mix(in srgb, var(--color-tertiary-100) 50%, transparent);
+}
+.cre-passport-prod:hover .cre-passport-tag-lite {
+  background: color-mix(in srgb, var(--color-primary-100) 70%, transparent);
+}
+
+/* Tile-header backgrounds for Membership / Package cards — 700 default,
+   800 on whole-card hover. */
+.cre-tile-header {
+  transition: background-color 160ms ease;
+}
+.cre-tile-header--primary {
+  background: var(--color-primary-700);
+}
+.cre-course-card:hover .cre-tile-header--primary {
+  background: var(--color-primary-800);
+}
+.cre-tile-header--neutral {
+  background: var(--color-neutral-700);
+}
+.cre-course-card:hover .cre-tile-header--neutral {
+  background: var(--color-neutral-800);
+}
+.cre-tile-header--tertiary {
+  background: var(--color-tertiary-700);
+}
+.cre-course-card:hover .cre-tile-header--tertiary {
+  background: var(--color-tertiary-800);
+}
+/* Podcast-domain surface — defaults to the tertiary ramp (so non-Elite
+   brands match `--tertiary`) but resolves through the `--podcast-*`
+   tokens so Elite can swap in its indigo exception. */
+.cre-tile-header--podcast {
+  background: var(--podcast-surface);
+}
+.cre-course-card:hover .cre-tile-header--podcast {
+  background: var(--podcast-surface-hover);
+}
+/* Rubi-branded surface — the AI Career Tool cards. A deep Rubi-red band
+   (diagonal gradient toward the 700 deep tone) carrying the white Rubi logo +
+   title; deepens on whole-card hover. */
+.cre-tile-header--rubi {
+  background: linear-gradient(140deg, var(--rubi-surface), var(--rubi-surface-deep));
+}
+.cre-course-card:hover .cre-tile-header--rubi {
+  background: linear-gradient(140deg, var(--rubi-surface-hover), var(--rubi-surface-deep));
+}
+
+/* Browse-by-Topic tile — uniform CTA-500 fill that deepens on hover.
+   Inline gradients on each tile are overridden here so all tiles share
+   the same default + hover state. */
+.cre-topic-tile {
+  background: linear-gradient(
+    135deg,
+    var(--podcast-tile-from),
+    var(--podcast-tile-to)
+  ) !important;
+  transition: background-color 160ms ease, filter 160ms ease;
+}
+.cre-topic-tile:hover {
+  background: linear-gradient(
+    135deg,
+    var(--podcast-tile-hover),
+    var(--podcast-tile-hover)
+  ) !important;
+}
+
+/* Outlined CTA action button — shared by Top Podcast "Add to Playlist" pill
+   and the playlist row Play button. Outlined by default, filled CTA on hover. */
+.cre-top-play-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  border: 1.5px solid var(--podcast-button);
+  color: var(--podcast-button);
+  cursor: pointer;
+  transition: background-color 160ms ease, color 160ms ease, border-color 160ms ease;
+}
+.cre-top-play-btn:hover {
+  background: var(--podcast-button-hover);
+  border-color: var(--podcast-button-hover);
+  color: var(--color-text-inverse);
+}
+
+
+/* Spotify-style podcast playlist rows. Index number swaps to a play button
+   on hover/focus, the row highlights, and the row menu fades in. */
+.cre-playlist-row {
+  transition: background-color 120ms ease;
+}
+.cre-playlist-row:hover,
+.cre-playlist-row:focus-visible,
+.cre-playlist-row:focus-within {
+  background: var(--color-neutral-75);
+}
+.cre-playlist-row:focus-visible {
+  outline: 2px solid var(--podcast-accent);
+  outline-offset: -2px;
+}
+.cre-playlist-row .cre-playlist-play {
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+.cre-playlist-row .cre-playlist-index {
+  opacity: 1;
+  transition: opacity 120ms ease;
+}
+.cre-playlist-row:hover .cre-playlist-index,
+.cre-playlist-row:focus-within .cre-playlist-index {
+  opacity: 0;
+}
+.cre-playlist-row:hover .cre-playlist-play,
+.cre-playlist-row:focus-within .cre-playlist-play {
+  opacity: 1;
+}
+.cre-playlist-row .cre-playlist-kebab {
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+.cre-playlist-row:hover .cre-playlist-kebab,
+.cre-playlist-row:focus-within .cre-playlist-kebab {
+  opacity: 1;
+}
+
+/* Certificate grid card (Figma "Cert Cards" matrix 122:2018 — Default vs Hover
+   states). Resting = subtle shadow, dark title, NO left stroke. On hover/focus
+   a 6px accent stroke appears on the left edge (an inset box-shadow, so there's
+   no layout shift) and the title turns the accent color + underlines — exactly
+   the design's Hover column. Both colors are driven by per-card custom props
+   (`--cert-accent` = stroke, `--cert-link` = title link) set inline so the
+   green `completed`/`external` and amber `action-required` variants reuse one
+   rule. The shadow lives here (not inline) so the :hover rule can override the
+   resting value. */
+/* Non-member rail pill (Figma 63:16644) — clickable, opens Explore Membership.
+   Subtle hover feedback on the otherwise-static gray status pill. */
+.cre-nonmember-pill {
+  background: var(--color-neutral-75);
+  color: var(--color-neutral-700);
+  transition: background 0.12s ease;
+}
+.cre-nonmember-pill:hover {
+  background: var(--color-neutral-100);
+}
+/* Dark-mode a11y (WCAG AA): keep the guest status pill a LIGHT chip with dark
+   text in dark mode too (design direction). The dark theme remaps the neutral
+   ramp for the navy shell, which flipped this pill to light-text-on-light
+   (2.25:1) — the label token inverted while the fill stayed light. Re-pin the
+   three tokens the pill uses to their light values here (same exemption pattern
+   as .cre-prototype-bar) so it reads #616161 on #f5f5f5 ≈ 5.4:1 in both themes. */
+[data-theme='dark'] .cre-nonmember-pill {
+  --color-neutral-75: #f5f5f5;
+  --color-neutral-100: #ececec;
+  --color-neutral-700: #616161;
+}
+
+/* Left-nav rail scroll region (PlatformSideNav middle group). Thin, unobtrusive
+   scrollbar shown only when the nav groups overflow (short viewport / long
+   list). The rail is always dark (primary-800), so the thumb is a translucent
+   white rather than the light-rail #c7c7c7 in the spec — it reads correctly on
+   navy in both themes. `scrollbar-gutter: stable` keeps item alignment from
+   shifting when the thumb appears. */
+/* The rail scrolls when it overflows, but the scrollbar itself is hidden — the
+   top/bottom edge fades (the `scrollMask` in PlatformSideNav) are the overflow
+   affordance instead, so nothing is ever clipped out of reach and there's no
+   chrome scrollbar interrupting the dark rail. Scroll still works via
+   wheel/trackpad and keyboard (tabbing scrolls the focused row into view). */
+.cre-rail-scroll {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* legacy Edge/IE */
+}
+.cre-rail-scroll::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+  display: none; /* Chrome/Safari */
+}
+/* No smooth-scroll when the user prefers reduced motion (the edge fade is a
+   static mask, so there's no fade animation to disable). */
+@media (prefers-reduced-motion: reduce) {
+  .cre-rail-scroll {
+    scroll-behavior: auto;
+  }
+}
+
+.cre-cert-card {
+  --cert-accent: var(--color-success-500);
+  --cert-link: var(--color-success-700);
+  box-shadow: var(--shadow-card);
+  transition: transform 140ms ease, box-shadow 140ms ease;
+}
+.cre-cert-card:hover,
+.cre-cert-card:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: inset 6px 0 0 0 var(--cert-accent), 0 10px 26px rgb(0 0 0 / 0.12);
+}
+.cre-cert-card-title {
+  color: var(--color-text-primary);
+  transition: color 140ms ease;
+}
+.cre-cert-card:hover .cre-cert-card-title,
+.cre-cert-card:focus-visible .cre-cert-card-title {
+  color: var(--cert-link);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-thickness: 1.5px;
+}
+
+/* Learning Path homepage cards (grid tile + list row) — subtle border-color
+   lift on hover, brand focus ring for keyboard users. */
+.cre-lp-home-card {
+  transition: border-color 140ms ease, box-shadow 140ms ease;
+}
+.cre-lp-home-card:hover {
+  border-color: var(--color-primary-300);
+  box-shadow: var(--shadow-card);
+}
+.cre-lp-home-card:focus-visible {
+  outline: 1.5px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* Kebab button on course cards / cert rows — neutral by default,
+   cta-100 navy circle on hover. */
+.cre-card-kebab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-pill);
+  background: transparent;
+  color: var(--color-text-secondary);
+  border: none;
+  cursor: pointer;
+  transition: background-color 120ms ease;
+  flex-shrink: 0;
+}
+.cre-card-kebab:hover {
+  background: var(--color-cta-100);
+  color: var(--color-cta-800);
+}
+
+/* Link-style CTA — text + optional inline icon, no background or border.
+   Hover darkens the color (via filter so it adapts to any base color) and
+   reveals an underline that spans the icon + text via an absolutely-
+   positioned ::after, so layout stays stable. */
+.cre-link-action {
+  position: relative;
+  text-decoration: none;
+  transition: filter 120ms ease;
+}
+.cre-link-action::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: -2px;
+  height: 1px;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity 120ms ease;
+  pointer-events: none;
+}
+.cre-link-action:hover {
+  filter: brightness(0.82);
+}
+.cre-link-action:hover::after {
+  opacity: 1;
+}
+.cre-link-action:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+
+/* Membership benefit hero sections (V5/V7 "Explore your benefits") —
+   four alternating-side marketing rows. Each section sets `--accent-*`
+   custom properties inline so all four share this one stylesheet. The
+   `data-side` attribute swaps copy/media order without duplicating
+   markup. Collapses to a single column under 880px (copy below image
+   so the visual leads the read). */
+.cre-benefit-hero {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 40px;
+  align-items: center;
+  padding: 36px 40px;
+  border-radius: 0;
+  background: var(--accent-section-bg, var(--color-surface-card));
+}
+.cre-benefit-hero[data-side='image-left'] .cre-benefit-hero__copy {
+  order: 2;
+}
+.cre-benefit-hero[data-side='image-left'] .cre-benefit-hero__media {
+  order: 1;
+}
+.cre-benefit-hero__copy {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.cre-benefit-hero__kickers {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+.cre-benefit-hero__kicker {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  height: 26px;
+  padding: 0 12px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-bg);
+  color: var(--accent-text);
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+.cre-benefit-hero__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-weight: 800;
+  font-size: 32px;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  color: var(--color-primary-800);
+}
+.cre-benefit-hero__lede {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: 16px;
+  line-height: 1.55;
+  color: var(--color-text-secondary);
+  max-width: 56ch;
+}
+.cre-benefit-hero__list {
+  list-style: none;
+  margin: 6px 0 4px;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cre-benefit-hero__item {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  line-height: 1.5;
+  color: var(--color-text-primary);
+}
+.cre-benefit-hero__check {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  margin-top: 1px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--accent-bg);
+  color: var(--accent-text);
+}
+.cre-benefit-hero__actions {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 18px;
+  margin-top: 8px;
+}
+.cre-benefit-hero__primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 11px 22px;
+  border-radius: var(--radius-pill);
+  background: var(--accent-solid);
+  color: var(--color-text-inverse);
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 14.5px;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: filter 160ms ease, transform 160ms ease;
+}
+.cre-benefit-hero__primary:hover {
+  filter: brightness(0.92);
+}
+.cre-benefit-hero__primary:focus-visible {
+  outline: 2px solid var(--accent-solid);
+  outline-offset: 3px;
+}
+.cre-benefit-hero__secondary {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--accent-text);
+}
+.cre-benefit-hero__media {
+  position: relative;
+  min-width: 0;
+}
+.cre-benefit-hero__photo-wrap {
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  aspect-ratio: 4 / 3;
+  background: var(--accent-surface);
+  box-shadow: var(--shadow-card);
+}
+.cre-benefit-hero__photo {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+.cre-benefit-hero__badge {
+  position: absolute;
+  top: 16px;
+  left: 16px;
+  width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border-radius: 14px;
+  background: var(--color-surface-card);
+  color: var(--accent-text);
+  box-shadow: var(--shadow-card);
+}
+.cre-benefit-hero__stat {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface-card);
+  color: var(--color-text-primary);
+  box-shadow: var(--shadow-card);
+  font-family: var(--font-body);
+  max-width: calc(100% - 32px);
+}
+.cre-benefit-hero__stat-icon {
+  display: grid;
+  place-items: center;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--accent-bg);
+  color: var(--accent-text);
+  flex-shrink: 0;
+}
+.cre-benefit-hero__stat strong {
+  display: block;
+  font-family: var(--font-heading);
+  font-weight: 700;
+  font-size: 14px;
+  line-height: 1.1;
+  color: var(--color-text-primary);
+}
+.cre-benefit-hero__stat span {
+  display: block;
+  font-size: 12px;
+  color: var(--color-text-secondary);
+  line-height: 1.2;
+}
+@media (max-width: 880px) {
+  .cre-benefit-hero {
+    grid-template-columns: 1fr;
+    gap: 24px;
+    padding: 22px;
+  }
+  /* Mobile: media leads, copy follows — image-first regardless of
+     desktop side so the read order stays consistent on small screens. */
+  .cre-benefit-hero[data-side='image-left'] .cre-benefit-hero__copy,
+  .cre-benefit-hero[data-side='image-right'] .cre-benefit-hero__copy {
+    order: 2;
+  }
+  .cre-benefit-hero[data-side='image-left'] .cre-benefit-hero__media,
+  .cre-benefit-hero[data-side='image-right'] .cre-benefit-hero__media {
+    order: 1;
+  }
+  .cre-benefit-hero__title {
+    font-size: 26px;
+  }
+  .cre-benefit-hero__photo-wrap {
+    aspect-ratio: 16 / 10;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cre-benefit-hero__primary {
+    transition: none;
+  }
+}
+
+/* ProgressTrackerCard (Option E) body — gauge + categories on the left,
+   license stat strip on the right. Reflows to a single column on narrow
+   viewports so the stat tiles drop below the gauge instead of crushing. */
+.cre-progress-tracker-body {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 36px;
+  align-items: center;
+}
+@media (max-width: 720px) {
+  .cre-progress-tracker-body {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Horizontal Learning Path / License row card — mirrors the course-card
+   hover treatment (text-color shift, border darken, drop shadow, gentle
+   scale) so the row reads as part of the same clickable surface family. */
+.cre-learning-path-card {
+  cursor: pointer;
+  color: var(--color-text-primary);
+  transition: color 160ms ease, border-color 160ms ease, box-shadow 160ms ease, transform 160ms ease;
+}
+.cre-learning-path-card:hover {
+  color: var(--color-neutral-950);
+  border-color: var(--color-neutral-300);
+  box-shadow: 0 4px 4px rgb(0 0 0 / 0.25);
+  transform: scale(1.005);
+}
+.cre-learning-path-card:focus-visible {
+  outline: 2px solid var(--color-action);
+  outline-offset: 2px;
+}
+
+/* Stat-column divider — used by the LearningPathCard stats grid and the
+   Learner Overview streak hero stats row. Each column sizes to its content
+   (label / value, whichever is wider) and carries a 1px left border in a
+   light neutral with symmetric 30px padding on both sides of the rule
+   (data ↔ 30 ↔ line ↔ 30 ↔ data). The first column drops the border +
+   left-padding so the leading edge stays clean. */
+.cre-stat-col {
+  min-width: 0;
+  padding: 0 30px;
+  border-left: 1px solid var(--color-neutral-100);
+}
+.cre-stat-col:first-of-type {
+  padding-left: 0;
+  border-left: none;
+}
+.cre-stat-col:last-of-type {
+  padding-right: 0;
+}
+
+/* My Courses table — base layout.
+   Default: table fills the wrapper width, cells wrap as needed. No
+   horizontal scroll on the wrapper at any viewport. The auto table-layout
+   keeps each row aligned and lets long content (e.g. course names, "1 Year,
+   122 Days") wrap onto a second line rather than overflow. */
+.cre-my-courses-row:hover {
+  background: var(--color-neutral-75);
+}
+
+/* Gift Recipients (Purchases) — the collapsed purchase-record row.
+   A GRID, not a flex row, so the Purchased for / Order Date / Summary columns
+   line up vertically down the whole list. Each card is its own grid container,
+   so cross-card alignment only works when every column is explicitly sized —
+   content-sized (`auto`) columns drift per card (a "Claimed" badge is narrower
+   than "Unclaimed"; "Marcus Bell" is shorter than "Priya Raghunathan"). Hence
+   fixed badge / date / summary / actions columns with `minmax(132px, 1fr)` for
+   the name, which absorbs the slack but can't be squeezed to nothing.
+
+   The breakpoints are CONTAINER queries, not viewport ones: the card is the
+   constraint, and this list renders at several widths (classic route, a
+   narrower embed, the tablet device frame), so a viewport guess would be wrong
+   in at least one of them. Below the threshold the row stays the base
+   content-sized wrapping flex row — columns can't align in that space anyway,
+   and wrapping beats overflowing. */
+.cre-gift-record-card {
+  container-type: inline-size;
+}
+
+.cre-gift-record-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 20px;
+}
+
+/* Column floors are the MEASURED content widths, so the grid engages at as
+   narrow a card as possible (a 1085px window gives this list a 652px card —
+   a very ordinary size, so a roomier template would strand it in the fallback):
+   badge 92 ("Unclaimed" is 87) · name 136 (longest fixture name is 134) · date
+   80 (label + "08/14/2026" are 74) · summary 64 (label is 58) · actions 116
+   ("View Details" is 110). The three text columns carry `fr` weights on top of
+   those floors so extra card width spreads across them instead of pooling in
+   one gutter — `fr` still aligns across cards because every card in the list is
+   the same width, so the same template resolves identically.
+   572px = the sum of the floors (92 + 136 + 80 + 64 + 116 + 4 × 20 = 568). */
+@container (min-width: 572px) {
+  .cre-gift-record-row:not(.cre-gift-record-row--reminder) {
+    display: grid;
+    grid-template-columns:
+      92px minmax(136px, 1.4fr) minmax(80px, 0.9fr) minmax(64px, 0.7fr) 116px;
+    gap: 20px;
+  }
+}
+
+/* The `gift-recipients-reminder: row` variant adds a Send Reminder button to
+   the row, so the actions column has to reserve ~2x the width and the grid
+   needs a wider card before it fits. The modifier is set on EVERY row in the
+   list (including claimed ones, which have no button) — that's what keeps a
+   mixed claimed/unclaimed list on one shared template. Its actions column fits
+   the WIDEST pair — "Resend reminder" (wider than "Send Reminder") + View
+   Details — so neither button wraps once one has been sent.
+   744px = the sum of the floors (92 + 136 + 80 + 64 + 288 + 4 × 20 = 740). */
+@container (min-width: 744px) {
+  .cre-gift-record-row--reminder {
+    display: grid;
+    grid-template-columns:
+      92px minmax(136px, 1.4fr) minmax(80px, 0.9fr) minmax(64px, 0.7fr) 288px;
+    gap: 20px;
+  }
+}
+
+/* Membership renewal card (the "Your Memberships" sheet + anywhere the
+   two-plane card lands). The footer CTA is a text link, so it needs the
+   underline-on-hover affordance a bare colored word doesn't carry. */
+.cre-mrc-cta:hover,
+.cre-mrc-cta:focus-visible {
+  color: var(--color-cta-700);
+  text-decoration: underline;
+}
+
+/* Gift Recipients roster — the in-row "Send Reminder" link CTA. Same
+   hover/focus treatment as the other link-style CTAs in the app (underline +
+   the darker action shade), so a text link never relies on color alone to read
+   as interactive. */
+.cre-gift-row-cta:hover,
+.cre-gift-row-cta:focus-visible {
+  color: var(--color-action-hover);
+  text-decoration: underline;
+}
+
+/* Gift Recipients — the page-level link CTAs (Download). Same hover/focus
+   treatment as the feature's other link CTAs: underline + the darker CTA shade,
+   so none of them relies on color alone to read as interactive. */
+.cre-gift-cta:hover,
+.cre-gift-cta:focus-visible {
+  color: var(--color-cta-700);
+  text-decoration: underline;
+}
+
+/* Gift Recipients roster — the recipient email is a real mailto link. Colored
+   from the cyan ramp, with hover/focus underline so it doesn't rely on color
+   alone to read as a link. */
+.cre-gift-email:hover,
+.cre-gift-email:focus-visible {
+  text-decoration: underline;
+}
+
+/* Gift Recipients roster rows (Option B) — the whole row opens that purchase's
+   detail sheet, so it needs to read as clickable: hover/focus wash plus a
+   left-edge accent in `--color-primary-300`.
+   The accent is ONE color for every row, not the claim-status color it started
+   as: it's a pointer/focus affordance, and claim status is already stated by the
+   Claim Status column's pill. Tinting it per status made a hover look like a
+   status change. The accent is an INSET shadow on the first cell, so sliding it
+   in costs no layout shift — and it lands on whichever cell leads (the checkbox
+   column in selection mode, Recipient at rest).
+   Mirrors `.cre-lp-table-row` so the app's two clickable tables behave alike. */
+/* Cancellation flow buttons (CancelMembershipFlow). Colour lives HERE, not in
+   the component's style objects: an inline background beats a stylesheet
+   `:hover` on specificity, so a button styled inline looks interactive and then
+   does nothing. The component keeps only layout (font, padding, radius).
+
+   Four weights, matching the flow's meaning: primary = take this offer,
+   secondary = the quieter alternative or "keep", danger = leave (outlined, so
+   it never outweighs the offers beside it), danger-solid = leave, at the point
+   of commitment. */
+.cre-flow-btn {
+  transition: background 120ms ease, border-color 120ms ease, color 120ms ease;
+}
+.cre-flow-btn:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+/* The offer CTAs sit on the brand CTA ramp, not primary — they are the
+   conversion actions on this screen.
+
+   The stop is -700, NOT -500. `cta-500` is the ramp's brand colour and is fine
+   as TEXT on white, but this is the inverse pairing — white text ON it — and
+   McKissock's CTA ramp is a bright orange (#f59233) that gives white just
+   2.32:1. -600 is no better there (3.57:1). -700 clears AA in all four brands,
+   McKissock worst at 5.80:1, and -800 carries the hover (9.89:1 worst).
+   Measured across cre / mckissock / elite / stc — re-measure if the ramp or a
+   brand changes. */
+.cre-flow-btn--primary {
+  background: var(--color-cta-700);
+  color: var(--color-text-inverse);
+  border-color: transparent;
+}
+.cre-flow-btn--primary:hover {
+  background: var(--color-cta-800);
+}
+
+.cre-flow-btn--secondary {
+  background: var(--color-surface-card);
+  color: var(--color-cta-700);
+  border-color: var(--color-neutral-300);
+}
+.cre-flow-btn--secondary:hover {
+  background: var(--color-neutral-75);
+  /* -600, not -500: a border is non-text UI (3:1), and McKissock's -500 orange
+     is 2.2:1 on white — the hover boundary would be weaker than the resting
+     neutral one it replaces. */
+  border-color: var(--color-cta-600);
+}
+
+/* The destructive pair keep the error ramp on hover rather than darkening to
+   neutral — the hue is what marks them, and losing it on hover would make the
+   button read as safer exactly when the pointer is on it. */
+.cre-flow-btn--danger {
+  background: var(--color-surface-card);
+  color: var(--color-error-600);
+  border-color: var(--color-error-300);
+}
+.cre-flow-btn--danger:hover {
+  background: var(--color-error-100);
+  border-color: var(--color-error-600);
+}
+.cre-flow-btn--danger:focus-visible,
+.cre-flow-btn--danger-solid:focus-visible {
+  outline-color: var(--color-error-500);
+}
+
+.cre-flow-btn--danger-solid {
+  background: var(--color-error-600);
+  color: var(--color-text-inverse);
+  border-color: var(--color-error-600);
+}
+.cre-flow-btn--danger-solid:hover {
+  background: var(--color-error-700);
+  border-color: var(--color-error-700);
+}
+
+/* Manage Membership sheet — the "Manage your plan" action rows (Edit payment
+   method · View all purchases · Cancel membership). These are real buttons that
+   open something, so they get the same wash + left-edge accent the Gift
+   Recipients roster rows use; one hover language for "this row goes somewhere".
+
+   The base background lives HERE rather than inline on the button, because an
+   inline background would win over `:hover` on specificity and the rows would
+   look interactive without responding. */
+.cre-manage-row {
+  background: var(--color-surface-card);
+  transition: background 120ms ease, box-shadow 120ms ease;
+}
+.cre-manage-row:hover {
+  background: var(--color-neutral-75);
+  box-shadow: inset 3px 0 0 var(--color-primary-300);
+}
+/* The destructive row keeps the same shape and motion — only the accent hue
+   changes, so hovering it never reads as a bigger commitment than the chores
+   above it. The row's glyph, label and chevron are already error-600. */
+.cre-manage-row--danger:hover {
+  box-shadow: inset 3px 0 0 var(--color-error-300);
+}
+/* Keyboard focus needs its own signal: the wash alone is identical to hover and
+   would not tell a keyboard user where they are. */
+.cre-manage-row:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -2px;
+}
+.cre-manage-row--danger:focus-visible {
+  outline-color: var(--color-error-500);
+}
+
+.cre-gift-table-row {
+  cursor: pointer;
+  transition: background 120ms ease;
+}
+.cre-gift-table-row:hover,
+.cre-gift-table-row:focus-within {
+  background: var(--color-neutral-75);
+}
+.cre-gift-table-row:hover td:first-child,
+.cre-gift-table-row:focus-within td:first-child {
+  box-shadow: inset 3px 0 0 var(--color-primary-300);
+}
+/* The row is focusable (tabIndex=0) since clicking it opens the detail sheet, so
+   keyboard focus needs a ring of its own — the wash alone reads the same as
+   hover and wouldn't tell a keyboard user where they are. */
+.cre-gift-table-row:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -2px;
+}
+
+/* Learning Paths table rows — hover wash + a status-colored left-edge accent
+   (the row sets `--row-accent` from its status). Focus ring for keyboard rows. */
+.cre-lp-table-row:hover {
+  background: var(--color-neutral-75);
+}
+.cre-lp-table-row:hover td:first-child {
+  box-shadow: inset 3px 0 0 var(--row-accent, transparent);
+}
+.cre-lp-table-row:focus-visible {
+  outline: 1.5px solid var(--color-primary-500);
+  outline-offset: -2px;
+}
+
+/* Learning Path detail sheet — clickable course rows. Hover/focus washes the
+   row, slides in a left accent (inset shadow → no layout shift), turns the
+   title into the action link color, and reveals the trailing chevron. */
+.cre-lp-detail-course-row {
+  border-radius: var(--radius-sm);
+  transition: background 120ms ease, box-shadow 120ms ease;
+}
+.cre-lp-detail-course-row:not([aria-disabled='true']):hover,
+.cre-lp-detail-course-row:not([aria-disabled='true']):focus-visible {
+  background: var(--color-neutral-75);
+  box-shadow: inset 3px 0 0 var(--color-primary-500);
+  cursor: pointer;
+}
+.cre-lp-detail-course-row:focus-visible {
+  outline: 1.5px solid var(--color-primary-500);
+  outline-offset: -2px;
+}
+.cre-lp-detail-course-row:not([aria-disabled='true']):hover .cre-lp-detail-course-name,
+.cre-lp-detail-course-row:not([aria-disabled='true']):focus-visible .cre-lp-detail-course-name {
+  color: var(--color-action);
+}
+/* Expired-path courses that were never started are disabled — dimmed, inert,
+   and marked with the calendar-exclamation glyph (the deadline lapsed). */
+.cre-lp-detail-course-row[aria-disabled='true'] {
+  opacity: 0.55;
+  cursor: default;
+}
+.cre-lp-detail-course-chevron {
+  opacity: 0;
+  transform: translateX(-4px);
+  transition: opacity 120ms ease, transform 120ms ease;
+  color: var(--color-action);
+  flex-shrink: 0;
+}
+.cre-lp-detail-course-row:hover .cre-lp-detail-course-chevron,
+.cre-lp-detail-course-row:focus-visible .cre-lp-detail-course-chevron {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* My Courses table — responsive overrides.
+   On wide screens (≥1720px viewport) the right column is roomy enough to
+   render every cell on one line — switch to nowrap so the table looks
+   crisp instead of artificially wrapping.
+   Below 900px the progress bar gets squeezed to a sliver — hide the bar
+   itself but keep the % label. The full card view kicks in below 700px
+   (handled in MyCoursesPage via useMediaQuery). */
+@media (min-width: 1720px) {
+  .cre-my-courses-table tbody td {
+    white-space: nowrap;
+  }
+}
+@media (max-width: 900px) {
+  .cre-my-courses-table .cre-progress-cell {
+    min-width: 0;
+  }
+  .cre-my-courses-table .cre-progress-bar {
+    display: none;
+  }
+}
+
+/* Accessible label utility — visually hidden but read by screen readers. */
+.cre-sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+@media print {
+  body > *:not(.cre-modal-backdrop) {
+    display: none !important;
+  }
+  .cre-modal-backdrop {
+    position: static !important;
+    background: transparent !important;
+    padding: 0 !important;
+  }
+  .cre-modal {
+    box-shadow: none !important;
+    max-width: 100% !important;
+  }
+}
+
+/* ============================================================================
+   Slide-over panel enter animations.
+   Used by Sheet.tsx and SwitchAccountPanel.tsx. Duration is intentionally
+   on the slower side (~360ms) for a calmer feel. Honors reduced-motion.
+   ============================================================================ */
+@keyframes cre-overlay-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes cre-sheet-slide-in-right {
+  from { transform: translateX(100%); }
+  to   { transform: translateX(0); }
+}
+@keyframes cre-sheet-slide-in-left {
+  from { transform: translateX(-100%); }
+  to   { transform: translateX(0); }
+}
+
+.cre-sheet-overlay {
+  animation: cre-overlay-fade-in 240ms ease-out both;
+}
+.cre-sheet-panel--right {
+  animation: cre-sheet-slide-in-right 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+.cre-sheet-panel--left {
+  animation: cre-sheet-slide-in-left 360ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cre-sheet-overlay,
+  .cre-sheet-panel--right,
+  .cre-sheet-panel--left {
+    animation: none;
+  }
+}
+
+/* Hide the native scrollbar on the recommended-for-you shelf scrollers —
+   the hover-arrows and trailing-card peek already telegraph overflow on
+   desktop; mobile users swipe. Webkit chromium-style only; Firefox is
+   handled inline via `scrollbar-width: none` on the rail element itself. */
+.cre-shelf-scroller::-webkit-scrollbar {
+  display: none;
+}
+
+/* Print stylesheet for the Study Calendar grid view. Interactive
+   chrome (view toggle pills, Download / Print text-links) is hidden
+   so the printed sheet reads as a calendar handout. Status colors
+   remain inked because each status pill in the grid also carries a
+   text label — color is never the sole carrier of meaning, so a
+   black-and-white printer still produces a readable handout. */
+@media print {
+  .cre-study-calendar-print-hide {
+    display: none !important;
+  }
+}
+
+/* Visually-hidden utility — keeps content available to assistive
+   technologies while removing it from visual flow. Used by the Streak
+   Hero's screen-reader-only sparkline series list. */
+.cre-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ── SearchInput — "on-color" translucent treatment ────────────────────
+   The <SearchInput tone="on-color"> variant, used for any search field that
+   sits on a saturated / dark brand band (the gradient section heroes). The
+   field fill, border, icon, and text are recolored inline in the component;
+   the placeholder color can only be set via CSS, so it lives here. */
+.cre-search-input--on-color::placeholder {
+  color: rgb(255 255 255 / 0.7);
+}
+
+/* ── Prototype bar — device-size toggle (Desktop / iPad / Mobile) ───────
+   A small segmented control on the dark prototype bar. White-on-dark; the
+   active segment fills with a translucent-white pill. */
+.cre-device-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  padding: 2px;
+  border-radius: var(--radius-pill);
+  background: rgb(255 255 255 / 0.08);
+}
+.cre-device-toggle-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 30px;
+  height: 24px;
+  border: none;
+  background: transparent;
+  color: rgb(255 255 255 / 0.55);
+  border-radius: var(--radius-pill);
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+.cre-device-toggle-btn:hover {
+  color: rgb(255 255 255 / 0.9);
+  background: rgb(255 255 255 / 0.08);
+}
+.cre-device-toggle-btn:focus-visible {
+  outline: 2px solid rgb(255 255 255 / 0.7);
+  outline-offset: 1px;
+}
+.cre-device-toggle-btn[aria-pressed='true'] {
+  color: var(--color-neutral-50);
+  background: rgb(255 255 255 / 0.2);
+}
+
+
+/* ─── Learning-experience setup (Dashboard Rebrand new-user hero) ────────── */
+/* Focus ring for the setup hero's tiles / inputs / buttons — a magenta CTA
+   outline with a 2px offset, per the feature spec. Applied via the
+   `cre-setup-focusable` class so inline-styled buttons still get a visible ring
+   (inline styles can't express :focus-visible). */
+.cre-setup-focusable:focus-visible {
+  outline: 1.5px solid var(--color-cta-500);
+  outline-offset: 2px;
+}
+/* Building-step spinner. The stage timers still advance under reduced motion
+   (so the wizard always completes + announces via aria-live) — only the visual
+   rotation is suppressed. */
+.cre-setup-spin {
+  animation: cre-setup-spin 0.9s linear infinite;
+}
+@keyframes cre-setup-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .cre-setup-spin {
+    animation: none;
+  }
+}
+
+/* ============================================================================
+   Learning Resources Updates (/resource-updates) — interaction + responsive.
+   Inline styles can't express :hover / :focus-visible / media queries, so the
+   resource rail's interactive states live here (matches the app's `.cre-*`
+   convention). Base layout/colors stay inline in ResourceRail.tsx; these rules
+   add the branded focus ring, hover feedback, and the responsive stack.
+   ============================================================================ */
+
+/* Viewer + 380px rail; stacks below ~900px (rail drops under the viewer). */
+.cre-ru-split {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  gap: 24px;
+  align-items: start;
+}
+@media (max-width: 900px) {
+  .cre-ru-split {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Attachment card — hover lift. */
+.cre-ru-att {
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-card);
+  border-radius: var(--radius-md);
+  transition: border-color 0.12s ease, box-shadow 0.12s ease;
+}
+.cre-ru-att:hover {
+  border-color: var(--color-primary-300);
+  box-shadow: 0 2px 8px rgb(9 35 72 / 0.07);
+}
+
+/* Suggestion card — a real <button> reset to a link-row + hover wash. */
+.cre-ru-suggestion {
+  width: 100%;
+  text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+  font: inherit;
+  color: inherit;
+  transition: background-color 0.12s ease, border-color 0.12s ease;
+}
+.cre-ru-suggestion:hover {
+  background: var(--color-neutral-75);
+  border-color: var(--color-border-subtle);
+}
+
+/* Branded focus ring for every rail control (replaces the UA default). */
+.cre-ru-collapse:focus-visible,
+.cre-ru-att-action:focus-visible,
+.cre-ru-suggestion:focus-visible,
+.cre-ru-chip:focus-visible,
+.cre-ru-seeall:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cre-ru-att,
+  .cre-ru-suggestion {
+    transition: none;
+  }
+}
+
+/* ── "Manage Enrollment" switch panel (already-enrolled flows) ───────────
+   Hub action rows (.cre-enrolled-action) + session/modality option rows
+   (.cre-enrolled-option). Base border/background live here — NOT inline in
+   ManageEnrollmentPanel — so the hover / selected (data-selected) / disabled
+   (data-kind current|soldout) states below can cascade instead of being
+   out-specified by an inline style. */
+.cre-enrolled-action,
+.cre-enrolled-option {
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-card);
+  transition: border-color 140ms ease, background-color 140ms ease, box-shadow 140ms ease;
+}
+
+/* Hub action rows lift toward primary on hover. */
+.cre-enrolled-action:hover {
+  border-color: var(--color-primary-300);
+  background: color-mix(in srgb, var(--color-primary-100) 30%, var(--color-surface-card));
+  box-shadow: 0 2px 8px rgb(0 0 0 / 0.06), 0 1px 2px rgb(0 0 0 / 0.05);
+}
+
+/* Selectable option rows get hover feedback — the disabled current / sold-out
+   rows are excluded. */
+.cre-enrolled-option:hover:not(:disabled) {
+  border-color: var(--color-primary-300);
+  background: color-mix(in srgb, var(--color-primary-100) 28%, var(--color-surface-card));
+}
+
+/* Selected option — accent border + tinted wash + inset ring, so the picked
+   session/format is unmistakable rather than relying on the radio dot alone. */
+.cre-enrolled-option[data-selected='true'] {
+  border-color: var(--color-action);
+  background: color-mix(in srgb, var(--color-action) 8%, var(--color-surface-card));
+  box-shadow: inset 0 0 0 1px var(--color-action);
+}
+/* Hovering the already-selected row keeps the orange (action) accent — it just
+   deepens the wash. Must come AFTER the general primary hover above (equal
+   specificity) so it isn't repainted primary/green. */
+.cre-enrolled-option[data-selected='true']:hover {
+  border-color: var(--color-action);
+  background: color-mix(in srgb, var(--color-action) 14%, var(--color-surface-card));
+}
+
+/* Disabled rows (current enrollment / sold-out) recede to a muted plane. */
+.cre-enrolled-option:disabled {
+  background: var(--color-neutral-50);
+  border-color: var(--color-border-subtle);
+  box-shadow: none;
+}
+/* …except the current enrollment, which keeps a quiet primary left-edge
+   accent so it reads as "you're in this one", not merely unavailable. */
+.cre-enrolled-option[data-kind='current'] {
+  background: color-mix(in srgb, var(--color-primary-100) 22%, var(--color-surface-card));
+  box-shadow: inset 3px 0 0 0 var(--color-primary-400);
+}
+
+/* Sold-out sessions are unpickable — a dashed muted outline over a flatter
+   fill reads as disabled, while the row's text is muted inline and the ✕
+   marker + SOLD OUT pill (kept full-strength) carry the reason. */
+.cre-enrolled-option[data-kind='soldout'] {
+  background: var(--color-neutral-75);
+  border-style: dashed;
+  border-color: var(--color-neutral-300);
+}
+
+/* Branded keyboard focus ring (replaces the UA default). */
+.cre-enrolled-action:focus-visible,
+.cre-enrolled-option:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cre-enrolled-action,
+  .cre-enrolled-option {
+    transition: none;
+  }
+}
+
+/* ── Explore Membership: Current Membership + Membership Scorecard ──────────
+   Concept C's two sections. Deliberately UNEQUAL columns — a fixed ~352px
+   passport-card column beside a fluid scorecard column — collapsing to one
+   column below 940px. Not expressible inline (unequal tracks + breakpoint),
+   so it lives here alongside the other layout classes. */
+.cre-membership-sections {
+  display: grid;
+  grid-template-columns: 352px minmax(0, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 940px) {
+  .cre-membership-sections {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* ── Membership hub — "Lifetime Member Details" ──────────────────────────────
+   Shared by MembershipStandalonePage's hero and the dev-handoff preview for
+   the scorecard. These rules used to live scoped to `.mx-root` inside
+   MembershipStandalonePage's own <style> block, which meant the preview could
+   not render the real block and quietly drifted onto an older component.
+   On-block text is always-white rgb/#fff rather than --color-text-inverse:
+   the panel is dark in BOTH themes, so a theme-relative token would flip it. */
+.cre-hub-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: color-mix(in srgb, var(--color-primary-800) 50%, transparent);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+.cre-hub-savebar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 11px 22px;
+  background: var(--color-primary-800);
+}
+.cre-hub-savebar .amt {
+  margin: 0;
+  display: flex;
+  align-items: flex-start;
+  gap: 3px;
+  font-family: var(--font-heading);
+  font-weight: 400;
+  line-height: 1;
+  font-size: 34px;
+  color: #fff;
+}
+.cre-hub-savebar .amt .cur { font-size: 31px; opacity: 0.5; }
+.cre-hub-savebar .lbl { display: flex; flex-direction: column; gap: 2px; }
+.cre-hub-savebar .lbl .k {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fff;
+}
+.cre-hub-savebar .lbl .s {
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  line-height: 1.5;
+  color: rgb(255 255 255 / 0.72);
+}
+.cre-hub-dstats { display: flex; flex: 1; flex-wrap: wrap; }
+.cre-hub-dstat {
+  position: relative;
+  flex: 1;
+  min-width: 120px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 14px 24px;
+}
+/* Vertical divider centered between adjacent stats. */
+.cre-hub-dstat + .cre-hub-dstat::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 1px;
+  height: 40px;
+  background: rgb(255 255 255 / 0.18);
+}
+.cre-hub-dstat .n {
+  font-family: var(--font-heading);
+  font-weight: 500;
+  font-size: 24px;
+  line-height: 30px;
+  color: rgb(255 255 255 / 0.8);
+}
+.cre-hub-dstat > .k {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: #fff;
+}
+.cre-hub-dstat > .s {
+  margin-top: 2px;
+  font-family: var(--font-body);
+  font-size: 12px;
+  color: rgb(255 255 255 / 0.7);
+}
