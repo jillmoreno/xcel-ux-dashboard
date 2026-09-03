@@ -142,8 +142,14 @@
       font-family: 'Open Sans', sans-serif; font-size: 14px; white-space: nowrap;
     }
     .top-nav__scope i { font-size: 14px; color: var(--b2b-500); }
-    .top-nav__scope-name { font-weight: 600; color: var(--neutral-800); }
-    .top-nav__scope-note { color: var(--neutral-500); }
+    .top-nav__scope-lbl { color: var(--neutral-500); font-size: 12px; }
+    .top-nav__scope-select {
+      font-family: 'Open Sans', sans-serif; font-size: 14px; font-weight: 600;
+      color: var(--neutral-800); background: transparent;
+      border: 0; padding: 0 2px; cursor: pointer; max-width: 220px;
+    }
+    .top-nav__scope-select:focus-visible { outline: 2px solid var(--cta); outline-offset: 3px; }
+    .top-nav__scope-note { color: var(--neutral-500); font-variant-numeric: tabular-nums; }
     .top-nav__links {
       margin-left: auto;
       display: flex; align-items: center; gap: 16px;
@@ -5556,10 +5562,15 @@
       <div class="top-nav__divider-line"></div>
       <!-- Scope chip: the admin's own subtree root. NET-NEW — PartnerHub has no
            equivalent because a partner admin owns one flat organisation. -->
-      <div class="top-nav__scope" id="navScope" title="You can only see agencies below your own root">
+      <div class="top-nav__scope" id="navScope">
         <i class="fa-light fa-sitemap" aria-hidden="true"></i>
-        <span class="top-nav__scope-name">Austin Agency</span>
-        <span class="top-nav__scope-note">· your root</span>
+        <label class="top-nav__scope-lbl" for="navScopeSelect">Acting in</label>
+        <!-- Only the roots this admin holds, plus the union of them. There is no
+             option for a node above a root, and `isInAdminScope` enforces the
+             same rule in the data — a hidden option is not a rule. -->
+        <select class="top-nav__scope-select" id="navScopeSelect"
+                aria-label="Which of your agencies you are acting in"></select>
+        <span class="top-nav__scope-note" id="navScopeCount"></span>
       </div>
     </div>
 
@@ -10162,8 +10173,15 @@ document.querySelectorAll('.time-pill-tab').forEach(tab => {
     /* 2 · Seat & payer — decides what the admin may do next. Collapses to a
        single line for a self-paid learner: there is no seat, no price, no
        inviter, and inventing rows for them would imply data we do not have. */
+    /* Agency and payer are two facts, and the panel used to imply they were one.
+       A region can buy seats for an agency's recruits, and a self-paid learner
+       still belongs to somebody's downline — so the learner's own agency is
+       shown whether or not anyone bought them a seat. */
     const seatPayer = l.agencyPaid
-      ? blk('Seat &amp; payer', kv([
+      ? blk('Agency &amp; payer', kv([
+          ['Agency',  (l.agencyName || '—')
+                      + (l.payerId && l.payerId !== l.agencyId
+                         ? ' <span class="ld-sub">· seat bought above them</span>' : '')],
           ['Paid by', l.paidBy],
           /* FIXTURE, NOT A LOOKUP. Every agency-paid learner shows the same
              origin because nothing models inheritance yet (flow 02). This is
@@ -10174,7 +10192,8 @@ document.querySelectorAll('.time-pill-tab').forEach(tab => {
           ['Seat',    `<span class="al-seat al-seat--${l.seat}">${BRIEF_SEAT_LABEL[l.seat]}</span>`],
           ['Invited', '28 Jun 2026 <span class="ld-sub">by D. Whitfield</span>'],
         ]))
-      : blk('Seat &amp; payer', kv([
+      : blk('Agency &amp; payer', kv([
+          ['Agency',  l.agencyName || '—'],
           ['Paid by', 'Self <span class="ld-sub">— no agency seat</span>'],
         ]));
 
@@ -14848,7 +14867,64 @@ function syncShowingResults() {
      reviews rather than drifting with the reviewer's clock. */
   const AL_TODAY = new Date('2026-09-02T00:00:00');
 
-  const AGENCIES = ['Austin Agency', 'Austin Agency', 'Hill Country Agency', 'Self'];
+  /* ═══ THE ORGANISATION ══════════════════════════════════════════════════════
+     The brief: an agency manager in a distribution hierarchy — agent, general
+     agent, managing general agent, regional and above — who "will only ever see
+     their own part of the tree".
+
+     Flat parent links, not nested objects, because every question asked of this
+     shape is "is X at or below Y" and a flat list answers that without walking a
+     structure. It is also what the breadcrumb drill (flow 01) will need.
+  ═══════════════════════════════════════════════════════════════════════════ */
+  const AL_ORG = [
+    { id: 'meridian',  name: 'Meridian Insurance Group', parent: null,        level: 'Enterprise' },
+    { id: 'sw-region', name: 'Southwest Region',         parent: 'meridian',  level: 'Region'     },
+    { id: 'ne-region', name: 'Northeast Region',         parent: 'meridian',  level: 'Region'     },
+    { id: 'austin',    name: 'Austin Agency',            parent: 'sw-region', level: 'Agency'     },
+    { id: 'hill',      name: 'Hill Country Agency',      parent: 'sw-region', level: 'Agency'     },
+    { id: 'hartford',  name: 'Hartford Agency',          parent: 'ne-region', level: 'Agency'     },
+  ];
+  const ORG_BY_ID = Object.fromEntries(AL_ORG.map(n => [n.id, n]));
+  window._alOrg = AL_ORG;
+
+  /* The roots THIS admin holds. Two of them, deliberately: one region with two
+     agencies beneath it and one unrelated agency in another region. The
+     multi-root case was called out as unanswered, and a single root would have
+     hidden it — an admin can hold disjoint subtrees, and "your root" in the
+     singular was already the wrong word for that. */
+  const ADMIN_ROOTS = ['sw-region', 'hartford'];
+
+  /* Every node at or below `rootId`. Scoping is a fact about the data, not a
+     rendering rule — which is the whole argument for a breadcrumb over a tree
+     control (flow 01). */
+  function orgSubtree(rootId) {
+    const out = new Set([rootId]);
+    let grew = true;
+    while (grew) {
+      grew = false;
+      AL_ORG.forEach(n => {
+        if (n.parent && out.has(n.parent) && !out.has(n.id)) { out.add(n.id); grew = true; }
+      });
+    }
+    return out;
+  }
+  /* An admin can never be above a root they hold. Enforced here rather than by
+     leaving those options out of the UI, because a hidden option is not a rule. */
+  function isInAdminScope(agencyId) {
+    return ADMIN_ROOTS.some(r => orgSubtree(r).has(agencyId));
+  }
+  function orgName(id) { return ORG_BY_ID[id]?.name || '\u2014'; }
+
+  /* Which agency each learner SITS IN. Assigned independently of who paid,
+     because those are two different facts and the fixture data was quietly
+     conflating them: `paidBy: 'Self'` had been leaving a learner with no agency
+     at all, when a self-paid recruit still belongs to somebody's downline. */
+  const LEARNER_AGENCIES = ['austin', 'austin', 'hill', 'hartford'];
+
+  /* Who paid. A region can buy seats for an agency's recruits, so the payer is
+     not always the learner's own agency — which is exactly why Paid by is a
+     column rather than a mode. */
+  const PAYERS = ['austin', 'sw-region', 'hill', null];   /* null = the learner */
 
   /* ═══ COHORTS ══════════════════════════════════════════════════════════════
      An intake: one send, one agency, one course, N recipients. PartnerHub has
@@ -14869,14 +14945,19 @@ function syncShowingResults() {
   }
 
   AL_DATA.forEach((r, i) => {
-    /* Payer — who bought this seat. A column, not a mode: the agency-paid and
-       self-paid learner are the same row with a different value in one cell. */
-    r.paidBy = AGENCIES[i % AGENCIES.length];
-    r.agencyPaid = r.paidBy !== 'Self';
+    /* Where the learner sits in the tree. */
+    r.agencyId   = LEARNER_AGENCIES[i % LEARNER_AGENCIES.length];
+    r.agencyName = orgName(r.agencyId);
+
+    /* Who bought the seat. A column, not a mode: the agency-paid and self-paid
+       learner are the same row with a different value in one cell. */
+    r.payerId    = PAYERS[i % PAYERS.length];
+    r.agencyPaid = r.payerId !== null;
+    r.paidBy     = r.agencyPaid ? orgName(r.payerId) : 'Self';
 
     /* Every third agency-paid learner came in on the seeded intake, so the
        follow-up preset has something to scope to before anyone sends anything. */
-    r.cohortId = (r.paidBy === 'Austin Agency' && i % 3 === 0) ? 'coh-sep' : null;
+    r.cohortId = (r.agencyId === 'austin' && i % 3 === 0) ? 'coh-sep' : null;
 
     /* Licensing deadline, spread around AL_TODAY so every risk state is
        reachable in the fixtures. Replaces the 2027 licence-expiry dates, which
@@ -14961,6 +15042,10 @@ function syncShowingResults() {
   let alView      = 'stuck';
   /* FORK: when set, the roster is scoped to one intake. */
   let alCohortId  = null;
+  /* FORK: which of the admin's roots they are acting in. 'all' = the union of
+     every root they hold, which is the honest default for a multi-root admin —
+     picking one of them arbitrarily would hide the other half of their book. */
+  let alScopeRoot = 'all';
   let alCurrPage  = 1;
   let alPerPage   = 10;
 
@@ -15055,6 +15140,10 @@ function syncShowingResults() {
   function getFiltered() {
     const view = AL_VIEWS[alView];
     return AL_DATA.filter(r => {
+      /* Subtree scope FIRST, before anything else can widen it. An admin sees
+         their own part of the tree and no more; every other filter narrows
+         within that, never past it. */
+      if (!inScope(r)) return false;
       if (view?.scope && !view.scope(r)) return false;
       if (alCohortId && r.cohortId !== alCohortId) return false;
       if (alSearchQ) {
@@ -15217,6 +15306,76 @@ function syncShowingResults() {
     render();
   });
 
+  /* ═══ XCEL ADMIN FORK — acting scope ════════════════════════════════════════
+     The chip used to be a label reading "Austin Agency · your root" while the
+     roster showed every row in the fixtures. Every figure on the page claimed
+     to be scoped and none of them were.
+  ═══════════════════════════════════════════════════════════════════════════ */
+  function scopeIds() {
+    if (alScopeRoot === 'all') {
+      const all = new Set();
+      ADMIN_ROOTS.forEach(r => orgSubtree(r).forEach(id => all.add(id)));
+      return all;
+    }
+    return orgSubtree(alScopeRoot);
+  }
+  function inScope(r) {
+    /* Belt and braces: a row outside every root the admin holds is invisible
+       whatever the chip says, so a bad scope value cannot leak rows. */
+    if (!isInAdminScope(r.agencyId)) return false;
+    return scopeIds().has(r.agencyId);
+  }
+  function countInScope(rootId) {
+    const ids = rootId === 'all' ? scopeIdsFor(ADMIN_ROOTS) : orgSubtree(rootId);
+    return AL_DATA.filter(r => ids.has(r.agencyId)).length;
+  }
+  function scopeIdsFor(roots) {
+    const all = new Set();
+    roots.forEach(r => orgSubtree(r).forEach(id => all.add(id)));
+    return all;
+  }
+  function buildScopeControl() {
+    const sel = document.getElementById('navScopeSelect');
+    if (!sel) return;
+    const opts = [];
+    if (ADMIN_ROOTS.length > 1) {
+      opts.push({ v: 'all', label: 'All my agencies' });
+    }
+    ADMIN_ROOTS.forEach(id => {
+      const n = ORG_BY_ID[id];
+      if (n) opts.push({ v: id, label: n.name, level: n.level });
+    });
+    sel.innerHTML = opts.map(o =>
+      `<option value="${o.v}">${o.label}${o.level ? ' (' + o.level + ')' : ''}</option>`).join('');
+    sel.value = alScopeRoot;
+    syncScopeNote();
+  }
+  function syncScopeNote() {
+    const note = document.getElementById('navScopeCount');
+    if (!note) return;
+    const n = countInScope(alScopeRoot);
+    /* Says how many agencies are under you, because "12 learners" alone does not
+       tell an admin whether they are looking at one agency or a region. */
+    const agencies = [...scopeIds()].filter(id => ORG_BY_ID[id]?.level === 'Agency').length;
+    note.textContent = `· ${n} learner${n === 1 ? '' : 's'} across ${agencies} `
+      + (agencies === 1 ? 'agency' : 'agencies');
+  }
+  function setScopeRoot(v) {
+    alScopeRoot = v;
+    alCurrPage  = 1;
+    /* A cohort belongs to one agency, so narrowing scope can strand it. Clear it
+       rather than showing an intake chip over rows it no longer covers. */
+    if (alCohortId) {
+      const covered = AL_DATA.some(r => r.cohortId === alCohortId && inScope(r));
+      if (!covered) { alCohortId = null; renderCohortChip(); }
+    }
+    syncScopeNote();
+    render();
+  }
+  document.getElementById('navScopeSelect')?.addEventListener('change', (e) => {
+    setScopeRoot(e.target.value);
+  });
+
   /* ═══ XCEL ADMIN FORK — view preset wiring ══════════════════════════════ */
   function setAlView(v, opts) {
     if (!AL_VIEWS[v]) return;
@@ -15248,7 +15407,7 @@ function syncShowingResults() {
     const c = AL_COHORTS.find(x => x.id === alCohortId);
     if (!c) { chip.hidden = true; return; }
     chip.hidden = false;
-    const n = AL_DATA.filter(r => r.cohortId === c.id).length;
+    const n = AL_DATA.filter(r => r.cohortId === c.id && inScope(r)).length;
     label.textContent = `${c.label} · ${n} invited`;
   }
   function setAlCohort(id) {
@@ -15264,6 +15423,7 @@ function syncShowingResults() {
   window._alSetCohort = (id) => setAlCohort(id);
   window._alRefresh   = () => { renderCohortChip(); render(); };
   /* Deep link: #stuck / #follow-up / #seats. */
+  buildScopeControl();
   (function initAlView() {
     const h = (location.hash || '').replace('#', '');
     if (AL_VIEWS[h]) setAlView(h, { silent: true });
