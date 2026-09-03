@@ -2,10 +2,17 @@
   "version": "0.0.1",
   "configurations": [
     {
-      "name": "ux-dashboard",
+      "// xcel-dashboard": [
+        "Port 5200, matching vite.config.ts, which pins it with strictPort: true.",
+        "One fixed port per dashboard — 5180 Common LMS / 5190 PartnerHub / 5200",
+        "XCEL — because all three look alike, so a collision reads as 'the new",
+        "dashboard is showing the old project's rows' rather than as an error.",
+        "Do NOT add autoPort: a moving port is the thing that convention stops."
+      ],
+      "name": "xcel-dashboard",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
-      "port": 5190
+      "port": 5200
     }
   ]
 }

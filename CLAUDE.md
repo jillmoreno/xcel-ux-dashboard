@@ -161,7 +161,7 @@ claim this behaviour but nothing there implements it). That fallback is what
 lets paths be authored before the screenshots exist, and makes deleting a PNG a
 safe way to retire it.
 
-### The cross-repo dependency, and the one way this rots
+### The cross-repo dependency — resolved, and how it used to rot
 
 **Corrected 2026-09-02:** this section used to say `PROTOTYPE_BASE` points at
 `https://ux-lms-dashboard.netlify.app/prototypes`. It does not, and had not for a
@@ -173,23 +173,79 @@ reviewers got a password prompt inside every thumbnail. The smoke test asserts
 the same-origin shape (`/^\/prototypes\/[\w.-]+$/`) and that every file exists in
 `public/`, so a careless edit fails there.
 
-The cost that remains is the one PartnerHub has: `public/prototypes/*.html` are
-copies, and their real home is
-`jill-dashboard-ux-designs/explorations/finserv-learner-brief/`, published by
-`./deploy-xcel-prototypes.sh` there. Copy a file by hand and you have started the
-drift that script exists to prevent.
-
-**`xcel-admin-tool.html` is the exception, and it has no upstream.** It was
-forked from `partnerhub-designs/index.html` and diverged immediately. This repo
-is its home; do not expect the deploy script to know about it.
-
-**TODO(2026-09-04):** revisit moving the five prototype files, their four smoke
-tests and `deploy-xcel-prototypes.sh` into this repo, making it their real home.
-Scheduled for review end of week.
+**RESOLVED 2026-09-03 — these files are no longer copies.** This section used
+to say `public/prototypes/*.html` were published from
+`jill-dashboard-ux-designs/explorations/finserv-learner-brief/` by
+`./deploy-xcel-prototypes.sh`, and carried a `TODO(2026-09-04)` to move them.
+That move is done: the sources and the five smoke suites are in THIS repo, the
+XCEL rows and the deploy script were removed from that one, and there is no
+mirror to keep in step. See "The six prototype pages" below. `xcel-admin-tool.html`
+was always the exception with no upstream — now nothing has one.
 
 Same class of problem, unchanged from the siblings: any authored count with no
 array behind it. `RESEARCH_DECISIONS` is 0 here because XCEL has no decisions
 log; nothing derives it and nothing warns when that stops being true.
+
+## The six prototype pages (`public/prototypes/`)
+
+The FinServ (Insurance / Mortgage / Banking) next-generation platform, answering
+the FinServ *Learner and Admin Wireframe Brief*. Six `PROTOTYPE_FEATURES` rows,
+all `category: 'exploration'`: **`xcel-lms`** (Desktop Platform, `pinned`) ·
+**`xcel-walkthrough`** (Learner Walk-through) · **`xcel-wireframes`**
+(Wireframes & Overlap) · **`xcel-admin`** (Admin Wireframes & Overlap) ·
+**`xcel-admin-tool`** (the forked roster — documented in its own section below) ·
+**`xcel-exam-spec`** (Exam Task-Type Spec).
+
+### There is no source/served split — moved here 2026-09-03
+
+These five pages and their smoke suites used to live in
+`jill-dashboard-ux-designs/explorations/finserv-learner-brief/`, published to
+that repo's `public/prototypes/` by `deploy-xcel-prototypes.sh`, which then
+MIRRORED the six files into this one. That arrangement existed because that site
+served them too, and it is gone: **the XCEL rows, the sources and the deploy
+script were all removed from that repo**, so this is now their only home. That
+also resolved the `TODO(2026-09-04)` this file used to carry.
+
+What it means in practice: **`public/prototypes/*.html` ARE the sources — edit
+them directly.** No copy step, no deploy script, nothing to keep in step. The
+same model `xcel-admin-tool.html` was already on, which is why the split had
+become inconsistent as well as duplicative.
+
+The five smoke suites moved with them, to **[`smoke/`](smoke/)**, reading
+`../public/prototypes/` rather than a source next door. Run them with
+**`npm run smoke`** — 41 + 48 + 100 + 42 + 21 = **252 assertions**. Two things
+changed on the way over, both because these assertions were written against the
+other repo: `smoke-tiles.mjs` now expects each row in **Exploration** (there the
+rows carried `devStatus: 'in-design'` to force them into Design; here XCEL *is*
+the project, so `category` alone places them), and it matches `externalUrl` in
+**both** quote styles — that repo wrote a plain single-quoted path, this one
+builds a backtick template against `PROTOTYPE_BASE`, and matching one style
+yields `undefined`, which `existsSync` reports as a missing FILE rather than as a
+broken regex. It also covers `xcel-admin-tool`, which has no upstream counterpart.
+
+**Order still matters if you run them individually:** `smoke-tiles.mjs` asserts
+every tile's `externalUrl` resolves to a real file in `public/prototypes/`, so
+add the page before the row, or that suite fails on a row pointing at nothing.
+
+### The admin page
+
+**The admin page** ([xcel-lms-admin.html](public/prototypes/xcel-lms-admin.html), served as `/prototypes/xcel-lms-admin.html`) covers admin flows 01–06 and is built on ONE claim, arrived at by Jillienne overruling an earlier and more elaborate reading: **flows 03, 04 and 06 are not three screens but one roster asked three different questions, because who paid for a seat is a COLUMN, not a mode.** A learner whose agency bought their seat and one who bought their own are the same row with a different value in one cell; the admin's question — *how is this person doing* — is identical either way. The rejected framing treated sponsored-vs-self-paid as a product-model fork and concluded PartnerHub could not reach flow 04; that conflated a rule for the LEARNER app (don't show a price or upgrade CTA to someone whose agency paid) with the ADMIN surface, where it does not apply. What survives of it: **spend is the one thing that is not a column**, because it is a total rather than a property of a learner — it sits in the agency roll-up above the table, which keeps it out of the row and off the learner's screen by construction. The page's centrepiece is a **working roster stage**: 14 learners, three view presets (Who is stuck · Invite follow-up · Seats & spend) that re-filter and re-sort the SAME rows, sortable headers, status chips, bulk selection with a view-specific action, and a side panel on row click — deliberately not an expanding row, since on a cohort-scale list expansion pushes whatever you were comparing against off screen. Its five badges are PartnerHub's own (Compliant · On Track · At Risk · Overdue · Not Started), derived by the real rule (At Risk = under 30 days AND under 25% done). A second stage answers flow 01 with **drill, don't unfold** — a breadcrumb whose root is a boundary rather than a starting point, so subtree scoping is structural instead of a clearable filter — plus an **as-of** control, on the reasoning that "as of" and flow 05's provenance are one problem (*what does this number actually mean*) and must share one basis line, or every screen reads hedged. Three hatched holes: inherited-vs-overridden pricing (the blast radius is the hard part, not the badge), the provenance confidence threshold, and **utilisation beyond "claimed"** — Gift Recipients models claimed/unclaimed, but a seat can be claimed, paid for and idle, which is exactly flow 06's "bought and never started", so flows 04 and 06 meet on the same row. The roster shows an **Idle** state whose 14-day threshold is invented and flagged as such. Guarded by [smoke-admin.mjs](smoke/smoke-admin.mjs) (42 assertions), which checks the load-bearing claims specifically: that a named learner appears in more than one view rather than being filtered out of existence, that spend is in the roll-up and NOT in the table header, that a self-paid seat cell is genuinely blank rather than "n/a", and that a parent node shows its children summed.
+
+### The desktop platform — brand colour
+
+**THE RED IS NOT THE PRIMARY (2026-09-02).** It was — a ramp derived from the wordmark red at `#a81c24` — and the problem was not the colour, it was that ONE ramp was carrying four unrelated jobs: brand identity, every interactive control, all progress data, and the licensing-exam accent. When the product's own data is red, there is nothing left for the brand to be. The ramps are now split three ways in [xcel-lms-desktop.html](public/prototypes/xcel-lms-desktop.html): **`--brand-*`** is the wordmark red, carrying identity (logo `X`, avatars) and exactly ONE semantic — the external licensing exam (`.taskrow.exam`, the `p-brand` pill, the calendar's exam day) — and it is **constant across every palette**, because it is the brand, not a theme choice; **`--primary-*`** carries interactive + data; **`--slate-*`** is the second data hue (the Elective gauge segment) and is **palette-scoped too**, because a second hue can only be chosen against the primary it sits beside. A new **`--on-primary`** token replaced two hardcoded `#2f080a` dark-red inks on `.btn` and `.tabs`, so those rules need no dark-theme override at all.
+
+**Three candidate palettes ship behind a live switcher** in the prototype bar (`data-palette` on `<html>`, persisted to `localStorage['xcel.dt.palette']`, default **navy**), so the choice is made against the real product rather than a swatch board: **A · Navy** `#1f4e88` (insurance-conventional, the highest headroom at 8.39:1) · **B · Graphite** `#3f4753` (near-neutral, which makes red the only saturated colour in the product — but watch the gauge, where grey progress can read as *inactive*) · **C · Teal** `#0f6e72` (least "bank"). The switcher is prototype chrome, styled apart from product UI, and its swatches are literal hex rather than tokens because the control has to show the palette you are NOT currently in.
+
+**Findings from the re-palette, in rough order of how easily they regress.** (1) **The XCEL red does not "pop" against any deep primary** — it measures 1.14–1.28:1 against all three 500s, because `#a81c24` is a genuinely dark red (luminance 0.093) and so is every candidate. This is NOT a defect and there is no threshold for it: red and the primary are never text-on-each-other, red is 7.35:1 on its actual background (white), and the exam day is labelled "Exam · PSI" in words, so nothing is carried by colour alone. But it does mean red reads as a *peer* of the primary rather than an accent above it — if a future brief wants red to genuinely pop, the primary has to move to a 700-depth stop (Navy 700 gets to 1.88:1), not a different hue. (2) **The dark-mode gauge collapsed and a test caught it**: all three palettes put their dark `primary-500` at ~0.44 luminance, and the light bronze Elective landed there too, so the two segments measured **1.01:1** — the same bar in two hues. The dark Elective is `#a86e28`, which holds 3.94:1 on the dark card AND ~2:1 against every primary; **lighten it and the gauge stops reading as two things**. (3) The teal palette's Elective is a stop lighter than the other two (`#b8873f`, not `#a9682a`) because teal 500 is dark enough that the deeper bronze collapses to 1.35:1 against it — the second hue genuinely cannot be shared across palettes.
+
+**The palette is now guarded by tests, which it was not before.** `smoke-desktop.mjs` went from 51 to **100 assertions**: it parses the real declared hex out of the stylesheet (so the assertions track the CSS rather than a copy that can drift) and sweeps all three palettes × light/dark for rail-active ≥3:1, rail-chip ink ≥4.5:1, link/500 ≥4.5:1 on white, white-on-fill ≥4.5:1, the two gauge segments ≥1.6:1 apart, and `--on-primary` ≥4.5:1 on the dark fill. Following [`ProfilePersonalizeContrast.test.ts`](src/test/ProfilePersonalizeContrast.test.ts), it also asserts the **old failing values still fail** (`#a81c24` at 2.05:1 on the rail; `#c75159` still the marginal 3.41:1 stop) so a future palette reaching for either fails a test instead of quietly shipping an invisible rail indicator — and it asserts the hero gradient stays gone. **Two demo axes are live and both re-render everything**: `dashboard-education-type` (Pre-Licensing ⇄ Continuing Ed — renames every category label, swaps Target Date for License Expires, and hides the renewal cycle for pre-licensure, since there is nothing to renew yet) and `dashboard-progress-state` (the five compliance states). A third, **Exam**, has no counterpart in the dashboard project: four of the licensing exam's six states are DERIVED from the sit date, so there is no way to click to them — the control exists for the same reason the walk-through has a clock. **A provenance toggle in the prototype bar** overlays each card with the real component it came from plus a per-section note on what was reused, what was dropped and why — it is the answer to "what actually overlaps", made checkable rather than asserted. **The logo is a text lockup with an `<img src="/brand/xcel.svg">` in front of it that hides itself if the file is absent** — drop the real asset at that path and it appears with no code change. **The two original contrast findings survive the re-palette as a RULE, not as two hex values.** They were: the XCEL red measures **2.05:1 against the near-black rail**, under the 3:1 a state indicator needs; and `#c75159`, the stop that cleared it, is an awkward mid tone where **neither white (4.42:1) nor near-black (4.09:1)** reaches 4.5:1 at chip size. Generalised: every palette puts a **light** stop on the rail (`--rail-accent`, now 5.34–6.01:1) and fills chips with a **light tint over dark ink** (`--rail-chip` / `--rail-chip-ink`) rather than a saturated fill. Re-measure before darkening any of them. Same trap as the McKissock secondary/tertiary ramps documented under Free Content promo bands.
+
+**The hero's red gradient was removed in the same pass** (the direct ask). `.hero` was a `linear-gradient(180deg, var(--primary-100), transparent)` — a brand-red fade that put the loudest colour in the product behind its quietest content, and read as a coloured band the eye had to clear before the page began. It sits on `var(--card)` now, with the existing bottom rule doing the separating; the `[data-theme="dark"] .hero` red-tint override went with it. Two hatched holes are local to this page: **who pays** on the catalogue (sponsored access is meant to be invisible to the learner and central to the admin, so neither showing nor hiding the price is right until the entitlement rule exists) and **multi-state hours** on Records.
+
+### The learner walk-through
+
+**The full walk-through is a SECOND page under the same tile** — [xcel-lms-walkthrough.html](public/prototypes/xcel-lms-walkthrough.html), served as `/prototypes/xcel-lms-walkthrough.html`, linked from the wireframes masthead. Where the four stages above are separate mini-prototypes that each start cold, this is **one learner, one unbroken arc with state carried throughout**: invite → magic link → silent account creation → set a target date → plan built backwards from it → study loop (home → hand-over wait → Compass frame → exit with the progress lag) → practice exam → exam simulation + its interruption → readiness → book the licensing exam → sit → fail → retake → pass → records. **The carried state is the point, and it is made visible** by a "What the product knows" inspector beside the phone (account · target date · plan days · chapters · practice · simulation score · readiness · booking · attempts · licence · today's date), so a reviewer can see that the date they typed built the plan and the chapters they finished moved the percentage. Nothing is hardcoded downstream: `planDays` derives from the chosen target, progress from `done/TOTAL`, the practice task appears at 4 chapters, the simulation unlocks at 8, booking unlocks at 12, and a failed attempt re-anchors the plan while keeping attempt 1 in the record. A **journey rail** shows the nine chapters and allows jumping BACK only (jumping forward would skip the state that makes the later screens true). Three surfaces carry the brief's own answers: the **readiness** screen states its basis, gives a frequency rather than a probability, and names what would move it ("an estimate, not a prediction · about 7 in 10 passed first time") — the answer to flow 04's credibility problem; the **fail** screen is warning-family with no confirm dialog and states that coursework and hours are unaffected; and **Compass-unreachable** during the simulation renders the hatched hole rather than an optimistic recovery. Two more hatched holes live inline where they bite — retake cooling-off (on the retake screen) and multi-state licensure (on records). **Guarded by [smoke-walkthrough.mjs](smoke/smoke-walkthrough.mjs)** — a jsdom walk of the ENTIRE arc, 48 assertions, which asserts the state actually carries (the typed email reaches the wait screen, the typed target date reaches the plan, the offline-held answers reach the result screen, both attempts reach the records screen) rather than only that screens render. Run both smoke tests and re-copy BOTH files to `public/` after any edit. **ONE row, not two:** the walk-through and the companion spec are reachable from the wireframes masthead, not as their own tiles — a second row into the same body of work is what got `recommended-card-ab-demo` and the four testing tiles archived. That spec is served as **raw `.md`** (`/prototypes/xcel-lms-exam-task-type-spec.md`, browsers render it as plain text) so there is ONE copy; an HTML twin would drift from [public/prototypes/xcel-lms-exam-task-type-spec.md](public/prototypes/xcel-lms-exam-task-type-spec.md) the moment either changed. **The spec's load-bearing finding:** `StudyTaskKind`'s existing `'exam'` means the *practice* exam (course-linked, with an `href` into the LMS), so the external licensing exam needs its own `'licensing-exam'` key — overloading the existing one still typechecks and would have the calendar silently treat a real licensing exam as a practice one. Admin flows 01–06 are **not** covered in this pass. Since the tile is `explore` + `externalUrl`, the add-a-feature checklist's brands / member+non-member / feature-flag requirements don't apply — there is no gateway and no in-app route.
 
 ## The Admin Tool (`public/prototypes/xcel-admin-tool.html`)
 
@@ -321,9 +377,10 @@ that every row routes where the data says, that the gate holds (including the
 deep-link case), and that the preview resolver resolves for every documented
 component.
 
-Plus two XCEL-specific ones: that every row's `externalUrl` is an absolute URL
-on a single shared origin (a relative path would 404 into the SPA fallback and
-render this dashboard inside its own preview frame), and that **Demo is empty** —
+Plus two XCEL-specific ones: that every row's `externalUrl` is a **same-origin**
+`/prototypes/…` path which exists in `public/` (corrected 2026-09-03 — this said
+"an absolute URL on a single shared origin", which predates the 2026-09-02 move
+off the cross-origin pointer and contradicted it), and that **Demo is empty** —
 asserted rather than assumed, so promoting a row to the ungated front page is a
 deliberate change that breaks a test first.
 
@@ -332,3 +389,7 @@ mode that mattered — a missing provider throwing on mount — renders a blank 
 that looks like a styling bug. Extend it when you add a section or change
 `sectionOf`; `EXPECTED_PLACEMENT` in that file is the list to update when a row
 moves.
+
+The six prototype pages are covered separately by the five jsdom suites in
+[`smoke/`](smoke/) — **`npm run smoke`**, 252 assertions. They are plain node
+scripts, not vitest, so `npm test` does NOT run them; run both.
