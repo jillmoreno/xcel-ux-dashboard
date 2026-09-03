@@ -3952,6 +3952,70 @@
     }
     .al-views-note strong { color: var(--neutral-800); font-weight: 600; }
 
+    /* ═══ XCEL ADMIN FORK — selection + bulk bar ════════════════════════════
+       NET-NEW, not forked. The wireframes list bulk selection as an existing
+       PartnerHub component; the source app has no row selection at all — every
+       checkbox in it belongs to the filter panel. */
+    .al-col-sel { flex: 0 0 34px; padding: 0 0 0 2px; justify-content: center; }
+    .al-th.al-col-sel { justify-content: center; }
+    .al-cb {
+      width: 16px; height: 16px; margin: 0; cursor: pointer;
+      accent-color: var(--b2b-500); flex-shrink: 0;
+    }
+    .al-cb:focus-visible { outline: 2px solid var(--cta); outline-offset: 2px; }
+    .al-row--selected { background: var(--b2b-50); }
+    .al-row--selected .al-cell.al-col-sel { box-shadow: inset 4px 0 0 var(--b2b-500); }
+
+    /* Overflow prompt. The header checkbox takes the PAGE; claiming it took all
+       4,000 matching rows would be a lie, and claiming the page is all there is
+       would be worse. So the page is selected and the rest is offered. */
+    .al-selall {
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+      background: var(--b2b-50); border: 1px solid var(--b2b-200);
+      border-radius: 6px; padding: 9px 13px; margin-bottom: 10px;
+      font-family: 'Open Sans', sans-serif; font-size: 12.5px; color: var(--neutral-800);
+    }
+    .al-selall__btn {
+      font-family: 'Open Sans', sans-serif; font-size: 12px; font-weight: 600;
+      color: var(--b2b-700); background: transparent;
+      border: 1px solid var(--b2b-200); border-radius: 100px;
+      padding: 4px 12px; cursor: pointer;
+    }
+    .al-selall__btn:hover { background: var(--b2b-100); }
+
+    .al-bulk {
+      position: sticky; bottom: 0; z-index: 40;
+      display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+      background: var(--neutral-950); color: #fff;
+      border-radius: 8px; padding: 12px 16px; margin: 12px 0 0;
+      box-shadow: 0 8px 24px rgba(10,10,10,0.18);
+    }
+    .al-bulk__count { font-family: 'Open Sans', sans-serif; font-size: 13px; font-weight: 700; }
+    .al-bulk__note { font-family: 'Open Sans', sans-serif; font-size: 12px; color: #c7c7c7; }
+    .al-bulk__spacer { margin-left: auto; }
+    .al-bulk__btn {
+      font-family: 'Open Sans', sans-serif; font-size: 12.5px; font-weight: 600;
+      padding: 8px 15px; border-radius: 6px; cursor: pointer;
+      background: var(--b2b-500); color: #fff; border: 1px solid var(--b2b-500);
+    }
+    .al-bulk__btn:hover { background: var(--b2b-400); border-color: var(--b2b-400); }
+    .al-bulk__btn--clear {
+      background: transparent; border-color: #616161; color: #ececec;
+    }
+    .al-bulk__btn--clear:hover { background: #202020; border-color: #a2a2a2; }
+    /* Blocked actions are SHOWN, disabled, with the reason and the owner. The
+       wireframes say the bulk bar is where the act-vs-nudge line gets drawn —
+       so the line is drawn on the screen, not left off it. */
+    .al-bulk__btn--blocked {
+      background: transparent; border-color: #4f4f4f; color: #a2a2a2; cursor: not-allowed;
+    }
+    .al-bulk__btn--blocked:hover { background: transparent; border-color: #4f4f4f; }
+    .al-bulk__gate {
+      font-family: 'Open Sans', sans-serif; font-size: 11.5px; line-height: 1.5;
+      color: #e0b155; width: 100%; border-top: 1px solid #404040; padding-top: 9px;
+    }
+    .al-bulk__gate b { color: #f9b428; font-weight: 700; }
+
     .al-cohort {
       display: inline-flex; align-items: center; gap: 8px;
       font-family: 'Open Sans', sans-serif; font-size: 12px; font-weight: 600;
@@ -6227,12 +6291,23 @@
       </div>
     </div>
 
+    <!-- Selection overflow prompt — only when the page is fully selected and
+         there are more matching rows behind it. -->
+    <div class="al-selall" id="alSelAll" hidden>
+      <span id="alSelAllText"></span>
+      <button class="al-selall__btn" id="alSelAllBtn"></button>
+    </div>
+
     <!-- Learner table -->
     <div class="al-table-outer">
       <div class="al-tbl-wrap">
         <div class="al-scroll-wrap">
           <!-- Column headers -->
           <div class="al-tbl-header">
+            <div class="al-th al-col-sel">
+              <input type="checkbox" class="al-cb" id="alSelectPage"
+                     aria-label="Select every learner on this page">
+            </div>
             <div class="al-th al-col-name">Learner Name / Email</div>
             <div class="al-th al-col-days">Last<br>Activity</div>
             <!-- FORK: "Education Type(s)" (QE/CE) is real-estate framing — replaced
@@ -6260,6 +6335,26 @@
           <!-- Rows rendered by JS -->
           <div id="alTableBody" class="al-tbody"></div>
         </div>
+      </div>
+    </div>
+
+    <!-- Bulk action bar — appears with a selection. -->
+    <div class="al-bulk" id="alBulk" hidden>
+      <span class="al-bulk__count" id="alBulkCount"></span>
+      <span class="al-bulk__note" id="alBulkNote"></span>
+      <span class="al-bulk__spacer"></span>
+      <button class="al-bulk__btn" id="alBulkPrimary">Send reminder</button>
+      <button class="al-bulk__btn al-bulk__btn--blocked" disabled
+              title="Not decided: can an admin extend a learner's window?">Extend window</button>
+      <button class="al-bulk__btn al-bulk__btn--blocked" disabled
+              title="Not decided: can an admin move a paid seat to another recruit?">Reassign seat</button>
+      <button class="al-bulk__btn al-bulk__btn--blocked" disabled
+              title="Not decided: can an admin revoke access to a seat they paid for?">Revoke access</button>
+      <button class="al-bulk__btn al-bulk__btn--clear" id="alBulkClear">Clear</button>
+      <div class="al-bulk__gate">
+        <b>Reminding is the only action that ships.</b> Extending a window, reassigning a seat and
+        revoking access are shown disabled because the line between nudging a learner and acting on
+        one is still open with FinServ product — and this bar is where it has to be drawn.
       </div>
     </div>
 
@@ -10150,6 +10245,16 @@ document.querySelectorAll('.time-pill-tab').forEach(tab => {
     return `<div class="ld-blk"><span class="ld-blk__lbl">${label}</span>${body}</div>`;
   }
 
+  /* Relative where relative is what an admin actually reads a reminder date
+     for — "today" answers "can I send another one" and a date does not. */
+  function briefWhen(d) {
+    if (!d) return '\u2014';
+    const hrs = (new Date('2026-09-02T00:00:00') - d) / 3600000;
+    if (hrs < 24) return 'today';
+    if (hrs < 48) return 'yesterday';
+    return Math.round(hrs / 24) + ' days ago';
+  }
+
   function populateBrief(l) {
     const el = $id('ldBrief');
     if (!el || !l) return;
@@ -10204,9 +10309,10 @@ document.querySelectorAll('.time-pill-tab').forEach(tab => {
       ['Last activity', l.daysSince === 'N/A'
         ? 'Never signed in'
         : `${l.daysSince} ago`],
-      ['Reminders', l.agencyPaid
-        ? '2 sent <span class="ld-sub">· last 12 Aug by you</span>'
-        : 'None <span class="ld-sub">· self-paid</span>'],
+      /* Real state now, not a fixture string. */
+      ['Reminders', (l.remindersSent || 0) === 0
+        ? 'None sent'
+        : `${l.remindersSent} sent <span class="ld-sub">· last ${briefWhen(l.lastRemindedAt)}</span>`],
     ]));
 
     /* 4 · Exam attempts — last, and usually empty. */
@@ -14959,6 +15065,16 @@ function syncShowingResults() {
        follow-up preset has something to scope to before anyone sends anything. */
     r.cohortId = (r.agencyId === 'austin' && i % 3 === 0) ? 'coh-sep' : null;
 
+    /* Reminder history as STATE, not as the fixture string the panel used to
+       print. Without a real count and timestamp there is nowhere for a throttle
+       to live, and the second reminder in an hour is the one that costs a
+       recruit. Seeded unevenly so "some of these were reminded today" is
+       reachable without sending anything first. */
+    r.remindersSent   = (i % 5 === 0) ? 2 : (i % 3 === 0 ? 1 : 0);
+    r.lastRemindedAt  = r.remindersSent
+      ? new Date(AL_TODAY.getTime() - (i % 4 === 0 ? 3 : 26) * 3600 * 1000)
+      : null;
+
     /* Licensing deadline, spread around AL_TODAY so every risk state is
        reachable in the fixtures. Replaces the 2027 licence-expiry dates, which
        are so far out that a deadline-derived risk would read all-clear. */
@@ -15046,6 +15162,9 @@ function syncShowingResults() {
      every root they hold, which is the honest default for a multi-root admin —
      picking one of them arbitrarily would hide the other half of their book. */
   let alScopeRoot = 'all';
+  /* Keyed by email, not by name or row index: names can collide, and indexes
+     change under every sort — and this table re-sorts on every preset switch. */
+  const alSelection = new Set();
   let alCurrPage  = 1;
   let alPerPage   = 10;
 
@@ -15170,7 +15289,12 @@ function syncShowingResults() {
     }
     tableBody.innerHTML = rows.map(r => {
       const pct = Math.min(100, Math.max(0, r.progress));
-      return `<div class="al-row">
+      const selected = alSelection.has(r.email);
+      return `<div class="al-row${selected ? ' al-row--selected' : ''}" data-al-email="${esc(r.email)}">
+  <div class="al-cell al-col-sel">
+    <input type="checkbox" class="al-cb al-cb--row" data-al-row-cb="${esc(r.email)}"
+           ${selected ? 'checked' : ''} aria-label="Select ${esc(r.name)}">
+  </div>
   <div class="al-cell al-col-name"><div class="al-identity">
     <div class="al-avatar">
       <span class="al-avatar__initials">${esc(r.initials)}</span>
@@ -15249,6 +15373,15 @@ function syncShowingResults() {
     const start    = (alCurrPage - 1) * alPerPage;
     const pageData = filtered.slice(start, start + alPerPage);
 
+    /* Prune selection to what is still reachable. A row that fell out of scope,
+       out of the cohort or out of the view is not silently still selected —
+       otherwise a bulk action hits rows the admin can no longer see. */
+    if (alSelection.size) {
+      const visible = new Set(filtered.map(r => r.email));
+      [...alSelection].forEach(e => { if (!visible.has(e)) alSelection.delete(e); });
+    }
+    window._alPageRows = pageData;
+
     if (showingEl) showingEl.textContent = `Showing ${total} Result${total !== 1 ? 's' : ''}`;
     const noteEl = document.getElementById('alViewNote');
     if (noteEl) noteEl.innerHTML = view.note(filtered);
@@ -15269,6 +15402,9 @@ function syncShowingResults() {
        pill-tab → compliance-status sync flushes through renderActivePills). */
     renderRows(pageData);
     renderPagination(total);
+    syncPageCheckbox(pageData);
+    renderSelectAll(pageData, filtered);
+    renderBulkBar();
     window._updateStatusColumnVisibility?.(document.getElementById('pageAllLearners'));
   }
 
@@ -15304,6 +15440,132 @@ function syncShowingResults() {
     alPerPage  = parseInt(perPageSel.value, 10);
     alCurrPage = 1;
     render();
+  });
+
+  /* ═══ XCEL ADMIN FORK — selection + bulk ════════════════════════════════════
+     The reminder throttle lives here rather than in the send: an admin should
+     know 3 of their 8 will be skipped BEFORE pressing the button, not after.
+  ═══════════════════════════════════════════════════════════════════════════ */
+  const REMIND_COOLDOWN_HOURS = 24;   /* invented; owner: FinServ product */
+
+  function remindedRecently(r) {
+    if (!r.lastRemindedAt) return false;
+    return (AL_TODAY - r.lastRemindedAt) < REMIND_COOLDOWN_HOURS * 3600 * 1000;
+  }
+  function selectedRows() {
+    return AL_DATA.filter(r => alSelection.has(r.email));
+  }
+  function renderBulkBar() {
+    const bar   = document.getElementById('alBulk');
+    const count = document.getElementById('alBulkCount');
+    const note  = document.getElementById('alBulkNote');
+    if (!bar) return;
+    const rows = selectedRows();
+    if (!rows.length) { bar.hidden = true; return; }
+    bar.hidden = false;
+    count.textContent = rows.length + ' selected';
+
+    /* Said before the send, not after it. */
+    const skip = rows.filter(remindedRecently).length;
+    note.textContent = skip
+      ? `${skip} reminded in the last ${REMIND_COOLDOWN_HOURS}h — they will be skipped`
+      : '';
+    const primary = document.getElementById('alBulkPrimary');
+    if (primary) {
+      const sendable = rows.length - skip;
+      primary.disabled = sendable === 0;
+      primary.textContent = sendable === rows.length
+        ? `Send ${rows.length} reminder${rows.length === 1 ? '' : 's'}`
+        : `Send ${sendable} reminder${sendable === 1 ? '' : 's'}`;
+    }
+  }
+  /* The page checkbox takes THE PAGE. When the page is fully selected and more
+     rows match behind it, the rest is offered rather than assumed. */
+  function renderSelectAll(pageRows, allFiltered) {
+    const box  = document.getElementById('alSelAll');
+    const text = document.getElementById('alSelAllText');
+    const btn  = document.getElementById('alSelAllBtn');
+    if (!box) return;
+    const pageSelected = pageRows.length > 0 && pageRows.every(r => alSelection.has(r.email));
+    const beyond = allFiltered.length - pageRows.length;
+    const allSelected = allFiltered.length > 0 && allFiltered.every(r => alSelection.has(r.email));
+
+    if (allSelected && beyond > 0) {
+      box.hidden = false;
+      text.textContent = `All ${allFiltered.length} matching learners are selected.`;
+      btn.textContent  = 'Select this page only';
+      btn.onclick = () => {
+        alSelection.clear();
+        pageRows.forEach(r => alSelection.add(r.email));
+        render();
+      };
+      return;
+    }
+    if (pageSelected && beyond > 0) {
+      box.hidden = false;
+      text.textContent = `All ${pageRows.length} on this page are selected. `
+        + `${beyond} more match the current filters.`;
+      btn.textContent  = `Select all ${allFiltered.length}`;
+      btn.onclick = () => {
+        allFiltered.forEach(r => alSelection.add(r.email));
+        render();
+      };
+      return;
+    }
+    box.hidden = true;
+  }
+  function syncPageCheckbox(pageRows) {
+    const cb = document.getElementById('alSelectPage');
+    if (!cb) return;
+    const on   = pageRows.length > 0 && pageRows.every(r => alSelection.has(r.email));
+    const some = pageRows.some(r => alSelection.has(r.email));
+    cb.checked = on;
+    cb.indeterminate = !on && some;
+  }
+
+  document.getElementById('alSelectPage')?.addEventListener('change', (e) => {
+    const page = window._alPageRows || [];
+    if (e.target.checked) page.forEach(r => alSelection.add(r.email));
+    else                  page.forEach(r => alSelection.delete(r.email));
+    render();
+  });
+  /* Delegated, because the rows are rebuilt on every render. stopPropagation is
+     what keeps ticking a box from also opening the learner panel. */
+  document.getElementById('alTableBody')?.addEventListener('click', (e) => {
+    const cb = e.target.closest('[data-al-row-cb]');
+    if (!cb) return;
+    e.stopPropagation();
+    const email = cb.dataset.alRowCb;
+    if (cb.checked) alSelection.add(email); else alSelection.delete(email);
+    render();
+  });
+  document.getElementById('alRemindToastClose')?.addEventListener('click', () => {
+    document.getElementById('alRemindToast')?.classList.remove('dl-toast--visible');
+  });
+  document.getElementById('alBulkClear')?.addEventListener('click', () => {
+    alSelection.clear();
+    render();
+  });
+
+  document.getElementById('alBulkPrimary')?.addEventListener('click', () => {
+    const rows = selectedRows().filter(r => !remindedRecently(r));
+    if (!rows.length) return;
+    rows.forEach(r => {
+      r.remindersSent  = (r.remindersSent || 0) + 1;
+      r.lastRemindedAt = new Date(AL_TODAY);
+    });
+    const n = rows.length;
+    alSelection.clear();
+    render();
+    const t   = document.getElementById('alRemindToast');
+    const msg = document.getElementById('alRemindToastMsg');
+    if (t) {
+      if (msg) msg.textContent = `${n} learner${n === 1 ? '' : 's'} reminded. `
+        + `Reminder count and last-reminded date updated on each row.`;
+      t.classList.add('dl-toast--visible');
+      clearTimeout(window._alToastTimer);
+      window._alToastTimer = setTimeout(() => t.classList.remove('dl-toast--visible'), 4600);
+    }
   });
 
   /* ═══ XCEL ADMIN FORK — acting scope ════════════════════════════════════════
@@ -15363,6 +15625,10 @@ function syncShowingResults() {
   function setScopeRoot(v) {
     alScopeRoot = v;
     alCurrPage  = 1;
+    /* Switching root is switching book, not narrowing one — carrying a
+       selection across that boundary would be a bulk action waiting to
+       surprise someone. */
+    alSelection.clear();
     /* A cohort belongs to one agency, so narrowing scope can strand it. Clear it
        rather than showing an intake chip over rows it no longer covers. */
     if (alCohortId) {
@@ -17201,6 +17467,20 @@ function syncShowingResults() {
 })();
 </script>
 <!-- ═══ DOWNLOAD TOAST ══════════════════════════════════════════════════════ -->
+<!-- ═══ REMINDER TOAST — XCEL ADMIN FORK ══════════════════════════════════════
+     Its own element rather than reusing #dlToast: that toast's title and message
+     carry no ids, so driving it would have meant rewriting the download copy in
+     place and leaving it rewritten for every later download. -->
+<div class="dl-toast" id="alRemindToast" role="status" aria-live="polite">
+  <div class="dl-toast__top-bar"></div>
+  <i class="fa-regular fa-circle-check dl-toast__icon"></i>
+  <div class="dl-toast__body">
+    <p class="dl-toast__title" id="alRemindToastTitle">Reminders sent</p>
+    <p class="dl-toast__msg" id="alRemindToastMsg"></p>
+  </div>
+  <button class="dl-toast__close" id="alRemindToastClose"><i class="fa-regular fa-times"></i></button>
+</div>
+
 <div class="dl-toast" id="dlToast">
   <div class="dl-toast__top-bar"></div>
   <i class="fa-regular fa-circle-info dl-toast__icon"></i>
