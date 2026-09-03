@@ -5,7 +5,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { UxDashboardPage } from '@/pages/UxDashboardPage'
 import { AccountProvider } from '@/context/AccountContext'
 import { ThemeProvider } from '@/context/ThemeContext'
-import { existsSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PROTOTYPE_FEATURES, componentPreviewUrl } from '@/data/prototypeFeatures'
@@ -203,6 +203,37 @@ describe('prototype URLs — served from this repo', () => {
     const bases = new Set(PROTOTYPE_FEATURES.map((f) => f.externalUrl!.replace(/\/[^/]+$/, '')))
     expect(bases.size).toBe(1)
     expect([...bases][0]).toBe('/prototypes')
+  })
+
+  /*
+   * The share origin — a DIFFERENT constant from PROTOTYPE_BASE above, and the
+   * one that was wrong until 2026-09-03.
+   *
+   * shareLink.ts arrived as a byte-identical copy of the Common LMS file and
+   * kept ITS origin, so every "Copy link" here produced a URL on
+   * ux-lms-dashboard.netlify.app — a site that does not serve this dashboard's
+   * routes. Nothing caught it because the constant was never read in a test and
+   * a wrong-but-well-formed URL looks fine in a toast.
+   *
+   * Asserted against the SOURCE rather than the imported value, because the
+   * export is now derived from window.location and resolves to the jsdom
+   * localhost fallback under vitest — so importing it would only ever test the
+   * fallback branch. Reading the declared literal is what pins the thing a
+   * careless re-copy would get wrong. Same technique as smoke-desktop.mjs
+   * parsing declared hex out of the stylesheet.
+   */
+  it('the share-origin fallback is THIS site, not a sibling dashboard', () => {
+    const src = readFileSync(
+      resolve(dirname(fileURLToPath(import.meta.url)), '../components/prototype/shareLink.ts'),
+      'utf8',
+    )
+    const declared = src.match(/const DEPLOYED_ORIGIN = '([^']+)'/)?.[1]
+    expect(declared, 'DEPLOYED_ORIGIN is no longer a plain string literal').toBeTruthy()
+    expect(declared).toBe('https://xceldashboard.netlify.app')
+    // Guard the specific regression, in the house style of asserting that the
+    // old wrong value stays wrong.
+    expect(declared).not.toContain('ux-lms-dashboard')
+    expect(declared).not.toContain('partnerhub')
   })
 })
 

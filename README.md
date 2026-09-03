@@ -38,17 +38,32 @@ not as a port error. Don't align them.
 | `npm test` | Vitest — the dashboard smoke test |
 | `npm run lint` | ESLint |
 
-## The prototypes live in another repo — on purpose
+## The prototypes live here
 
-`PROTOTYPE_BASE` at the top of [`src/data/prototypeFeatures.ts`](src/data/prototypeFeatures.ts)
-points at **`https://ux-lms-dashboard.netlify.app/prototypes`** — the Common LMS
-project's live deploy.
+**Every claim in this section was false until 2026-09-03**, so if you remember it
+saying something else, that is why. It said `PROTOTYPE_BASE` pointed at
+`https://ux-lms-dashboard.netlify.app/prototypes`, that the pages were authored in
+`jill-dashboard-ux-designs/explorations/finserv-learner-brief/`, and that
+`./deploy-xcel-prototypes.sh` published them. None of that holds now.
 
-The five XCEL prototype files are authored in
-`jill-dashboard-ux-designs/explorations/finserv-learner-brief/` and published by
-`./deploy-xcel-prototypes.sh` in that repo. Pointing at the deploy rather than
-copying them here means the previews always show the current build, and that
-deploy script keeps working untouched.
+`PROTOTYPE_BASE` is **`'/prototypes'`** — same-origin, served from this repo's own
+[`public/prototypes/`](public/prototypes/). The cross-origin pointer was abandoned
+because both Netlify sites are password-protected: an iframe of the other origin
+needed a third-party session cookie, which Safari blocks and Chrome restricts, so
+reviewers got a password prompt inside every preview thumbnail. A password on one
+site never protected pages served from the other, so nothing was lost.
+
+**The six pages in `public/prototypes/` are the sources — edit them directly.**
+There is no source/served split, no copy step and no deploy script. They and
+their smoke suites moved here from the Common LMS repo, which no longer carries
+any XCEL rows, files or tooling.
+
+Run the page suites with **`npm run smoke`** — five jsdom scripts in
+[`smoke/`](smoke/), 252 assertions. They are plain node, not vitest, so
+`npm test` does not run them; run both.
+
+See CLAUDE.md → "The six prototype pages" for what each page argues and the
+findings behind them.
 
 **What this costs.** Two ways it breaks with no error in this app:
 
