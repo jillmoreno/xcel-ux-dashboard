@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XCEL LMS — The Brief, and What Exists</title>
+<style>
+:root{
+  --bg:#f4f4f5; --surface:#ffffff; --surface-2:#fafafa;
+  --line:#e4e4e7; --line-strong:#d4d4d8;
+  --fill:#ececef; --fill-2:#f4f4f5; --fill-3:#e0e0e4;
+  --ink:#18181b; --ink-2:#52525b; --ink-3:#6b6b74;
+  --annot:#5b4bbd; --annot-bg:#f1eefc; --annot-line:#cec6f2;
+  --flag:#8a5f00; --flag-bg:#fdf6e7; --flag-line:#e8d5a8;
+  --have:#1f6b4a; --have-bg:#e9f4ee; --have-line:#b8dcc8;
+  --err:#8f1d1d; --err-bg:#fbeaea; --err-line:#e8bcbc;
+  --shadow:0 1px 2px rgba(0,0,0,.05), 0 4px 12px rgba(0,0,0,.04);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131316; --surface:#1c1c20; --surface-2:#232328;
+    --line:#2e2e34; --line-strong:#3f3f46;
+    --fill:#2a2a30; --fill-2:#232328; --fill-3:#33333a;
+    --ink:#f4f4f5; --ink-2:#b4b4bd; --ink-3:#8b8b95;
+    --annot:#b0a3ff; --annot-bg:#231f38; --annot-line:#3b3363;
+    --flag:#e0b155; --flag-bg:#2a2318; --flag-line:#4a3d22;
+    --have:#6cc39a; --have-bg:#16261f; --have-line:#264c3a;
+    --err:#f0a0a0; --err-bg:#2b1414; --err-line:#4d2626;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 12px rgba(0,0,0,.3);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131316; --surface:#1c1c20; --surface-2:#232328;
+  --line:#2e2e34; --line-strong:#3f3f46;
+  --fill:#2a2a30; --fill-2:#232328; --fill-3:#33333a;
+  --ink:#f4f4f5; --ink-2:#b4b4bd; --ink-3:#8b8b95;
+  --annot:#b0a3ff; --annot-bg:#231f38; --annot-line:#3b3363;
+  --flag:#e0b155; --flag-bg:#2a2318; --flag-line:#4a3d22;
+  --have:#6cc39a; --have-bg:#16261f; --have-line:#264c3a;
+  --err:#f0a0a0; --err-bg:#2b1414; --err-line:#4d2626;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 12px rgba(0,0,0,.3);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:14px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1240px;margin:0 auto;padding:0 26px 96px}
+.prose{max-width:76ch}
+h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em}
+h1{font-size:29px;line-height:1.2}
+h2{font-size:21px;line-height:1.3}
+h3{font-size:16px;line-height:1.4}
+h4{font-size:13px;line-height:1.4}
+p{margin:0 0 12px}
+a{color:var(--annot)}
+code{font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--fill-2);
+  border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+.lbl{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+
+.mast{border-bottom:1px solid var(--line);background:var(--surface);margin-bottom:30px}
+.mast-in{max-width:1240px;margin:0 auto;padding:24px 26px 20px}
+.mast h1{margin:8px 0 10px}
+.meta{display:flex;flex-wrap:wrap;gap:8px 20px;font-size:12.5px;color:var(--ink-2);margin-top:13px}
+.meta b{color:var(--ink);font-weight:600}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center;
+  padding:14px 0 0;border-top:1px solid var(--line);margin-top:16px}
+.seg{display:inline-flex;background:var(--fill-2);border:1px solid var(--line);border-radius:16px;padding:3px}
+.seg button{appearance:none;border:0;background:transparent;color:var(--ink-2);
+  font:600 12.5px/1 inherit;padding:8px 14px;border-radius:13px;cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:var(--shadow)}
+.seg button:focus-visible{outline:2px solid var(--annot);outline-offset:2px}
+.ctl-label{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+.mode-note{font-size:12.5px;color:var(--ink-2);margin-left:auto;max-width:44ch}
+
+.doc{display:flex;flex-direction:column;gap:44px}
+.sec-head{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap;
+  border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:18px}
+.sec-num{font:700 12px/1 ui-monospace,monospace;color:var(--ink-3);
+  border:1px solid var(--line-strong);border-radius:5px;padding:5px 7px}
+.lede{color:var(--ink-2);font-size:14.5px}
+
+.card{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px 20px}
+.tscroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;background:var(--surface)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+th,td{text-align:left;padding:10px 14px;border-bottom:1px solid var(--line);vertical-align:top}
+th{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);
+  background:var(--surface-2);white-space:nowrap}
+tr:last-child td{border-bottom:0}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;
+  letter-spacing:.04em;text-transform:uppercase;padding:3px 8px;border-radius:5px;border:1px solid;white-space:nowrap}
+.p-have{color:var(--have);background:var(--have-bg);border-color:var(--have-line)}
+.p-part{color:var(--flag);background:var(--flag-bg);border-color:var(--flag-line)}
+.p-none{color:var(--annot);background:var(--annot-bg);border-color:var(--annot-line)}
+.p-err{color:var(--err);background:var(--err-bg);border-color:var(--err-line)}
+.p-neu{color:var(--ink-2);background:var(--fill-2);border-color:var(--line-strong)}
+
+.callout{border:1px solid var(--annot-line);background:var(--annot-bg);border-radius:10px;
+  padding:15px 17px;font-size:13.5px;line-height:1.55;color:var(--ink-2)}
+.callout b{color:var(--ink)}
+.callout .eyebrow{color:var(--annot);margin-bottom:6px;display:block}
+
+/* ---------- extract-specific ---------- */
+.livelink{display:block;width:fit-content;margin-top:8px;font-size:11.5px;font-weight:600;
+  text-decoration:none;border-bottom:1px solid var(--annot-line)}
+.livelink:hover,.livelink:focus-visible{border-bottom-color:var(--annot)}
+.tally{display:flex;flex-wrap:wrap;gap:10px;margin:18px 0 0}
+.tally-item{display:flex;align-items:baseline;gap:8px;background:var(--surface);
+  border:1px solid var(--line);border-radius:9px;padding:11px 14px;min-width:132px}
+.tally-n{font:700 21px/1 ui-monospace,SFMono-Regular,Menlo,monospace;letter-spacing:-.02em}
+.tally-l{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+.tally-item.is-have .tally-n{color:var(--have)}
+.tally-item.is-part .tally-n{color:var(--flag)}
+.tally-item.is-none .tally-n{color:var(--annot)}
+.surface-tag{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink-3);border:1px solid var(--line-strong);border-radius:5px;padding:4px 8px}
+.empty-note{padding:14px;font-size:13px;color:var(--ink-3);display:none}
+table.is-empty + .empty-note{display:block}
+tr[hidden]{display:none}
+section[hidden]{display:none}
+</style>
+</head>
+<body>
+
+<header class="mast">
+  <div class="mast-in">
+    <span class="eyebrow">Colibri FinServ · XCEL LMS · Extract from the wireframe companions</span>
+    <h1>What the brief asks for, and what already exists</h1>
+    <p class="prose lede" style="margin:0">Both surfaces in one document: the ask on the learner
+    side and the admin side, each set against the inventory of what is already built. No
+    wireframes — those stay in the two companion documents this is drawn from.</p>
+    <div class="meta">
+      <span><b>Responds to:</b> Learner and Admin Wireframe Brief — Amrita Thakur, VP Product</span>
+      <span><b>Covers:</b> Learner flows 01 · 03 · 06 + the Compass hand-off · Admin flows 01–06</span>
+      <span><b>Status:</b> inventory, not visual design</span>
+      <span><b>Source — learner:</b> <a href="/prototypes/xcel-lms-wireframes.html">Learner wireframes &amp; overlap</a></span>
+      <span><b>Source — admin:</b> <a href="/prototypes/xcel-lms-admin.html">Admin wireframes &amp; overlap</a></span>
+      <span><b>Build plan:</b> <a href="/prototypes/xcel-finserv-build-plan.html">Admin &amp; Learner build plan</a> — this inventory expanded to both domains, with the two strategy documents folded in</span>
+    </div>
+    <div class="controls">
+      <span class="ctl-label">Surface</span>
+      <div class="seg" role="group" aria-label="Surface">
+        <button type="button" data-surface="all" aria-pressed="true">Both</button>
+        <button type="button" data-surface="learner" aria-pressed="false">Learner</button>
+        <button type="button" data-surface="admin" aria-pressed="false">Admin</button>
+      </div>
+      <span class="ctl-label" style="margin-left:14px">Coverage</span>
+      <div class="seg" role="group" aria-label="Coverage">
+        <button type="button" data-cov="all" aria-pressed="true">All</button>
+        <button type="button" data-cov="have" aria-pressed="false">Built</button>
+        <button type="button" data-cov="part" aria-pressed="false">Partial</button>
+        <button type="button" data-cov="none" aria-pressed="false">None</button>
+      </div>
+      <span class="ctl-label" style="margin-left:14px">Theme</span>
+      <div class="seg" role="group" aria-label="Theme">
+        <button type="button" id="t-light" aria-pressed="true">Light</button>
+        <button type="button" id="t-dark" aria-pressed="false">Dark</button>
+      </div>
+      <p class="mode-note" id="modeNote">The coverage filter narrows the two inventory tables only;
+      the ask sections always show in full.</p>
+    </div>
+    <div class="tally" id="tally" aria-live="polite"></div>
+  </div>
+</header>
+
+<div class="wrap"><div class="doc" id="doc">
+
+<!-- ============ 01 LEARNER — THE ASK ============ -->
+<section data-surface="learner">
+  <div class="sec-head"><span class="sec-num">01</span><h2>Learner — what the brief asks for</h2>
+    <span class="surface-tag">Learner</span></div>
+  <div class="prose">
+    <p>A new platform for Insurance, Mortgage and Banking across three surfaces. This pass covers the <b>Learner experience</b> and the <b>Compass hand-off</b> — the seam where the learner leaves a surface we build, enters one Compass builds, and comes back, while believing it is one product.</p>
+    <p>Two users drive the design. The <b>learner</b> is a newly recruited agent doing pre-licensing <em>before</em> they are contracted: personal email only, no employee ID, no producer number, on a licensing deadline, on a phone, at night. The <b>admin</b> is an agency manager who sees only their own subtree and wants one answer — who is stuck.</p>
+    <p>The instruction that shapes this document: <b>where a decision is open, show two options rather than picking one</b>, and flag open product questions rather than inventing answers. And if only one thing gets done, it is the Compass hand-off and inside it the interruption state.</p>
+  </div>
+  <div class="callout prose" style="margin-top:6px">
+    <span class="eyebrow">The state the brief would start with</span>
+    A learner is 40 minutes into a 90-minute exam simulation, three days from a licensing deadline, on a phone, and the save is slow. <b><a href="/prototypes/xcel-lms-wireframes.html#s-interrupt">Section 05 draws that state.</a></b> A version of exactly this ejected learners mid-exam in August, which is why the platform is being rebuilt.
+  </div>
+</section>
+
+<!-- ============ 02 LEARNER — WHAT EXISTS ============ -->
+<section data-surface="learner">
+  <div class="sec-head"><span class="sec-num">02</span><h2>Learner — what already exists</h2>
+    <span class="surface-tag">Learner</span>
+    <span class="lede" style="font-size:13px">Across the learner dashboard (React/TSX) and PartnerHub (Angular admin)</span></div>
+  <p class="prose lede">Most of the Learner brief has a working analog. That is the reason that pass
+  could go straight to wireframes on four flows rather than starting from the platform. The honest
+  scope of the brief is the row marked <span class="pill p-none">None</span>.</p>
+  <p class="prose txt" style="margin-top:8px">Every <b>Built</b> and <b>Partial</b> row that has a
+  place to stand links to it — <span class="livelink" style="display:inline;border:0;margin:0">Live &#8599;</span>
+  opens the real thing on the Common&nbsp;LMS deploy in a new tab, pinned to the state named. That
+  is a separate password-protected site, so expect its own prompt. Two rows have no link on purpose:
+  the admin table lives in PartnerHub (a different Angular app), and both-themes/WCAG is a practice
+  rather than a screen. The <span class="pill p-none">None</span> rows link to the section of the
+  <a href="/prototypes/xcel-lms-wireframes.html">learner wireframes</a> that draws them instead.</p>
+  <div class="tscroll" style="margin-top:14px" data-inventory>
+  <table>
+    <thead><tr><th style="width:26%">Brief asks for</th><th style="width:11%">Coverage</th><th>What exists today</th></tr></thead>
+    <tbody>
+      <tr><td><b>Compass hand-off — Option A</b><br><span class="txt">Persistent shell</span></td>
+        <td><span class="pill p-have">Built</span></td>
+        <td><code>PlatformShell</code> + <code>CourseLauncherContext</code> — the launcher renders the course view <em>inside</em> the rail; selecting any rail item closes it. Option A, working.<a class="livelink" href="https://ux-lms-dashboard.netlify.app/dashboard-rebrand" target="_blank" rel="noopener">Live — the shell; click Jump Back In <span aria-hidden="true">&#8599;</span></a></td></tr>
+      <tr><td><b>Compass hand-off — Option B</b><br><span class="txt">Focused hand-off</span></td>
+        <td><span class="pill p-have">Built</span></td>
+        <td>The same Learning Launcher, one step further out: starting a course hands the learner out of the LMS chrome into the <b>VC5</b> course experience and back again. That is the Compass hand-off, already in production. <b>It is the prototype that stops short of it</b> — the launcher here renders its table of contents and enrollment panel with no CTA that performs the hand-off, so clicking through never leaves the shell. Option&nbsp;B is proven in the product, not on this page.<a class="livelink" href="https://ux-lms-dashboard.netlify.app/courses/c-pain-management" target="_blank" rel="noopener">Live — the Learning Launcher <span aria-hidden="true">&#8599;</span></a></td></tr>
+      <tr><td><b>Show both options, don't pick</b></td>
+        <td><span class="pill p-have">Built</span></td>
+        <td>Feature flag + variant + read-only <code>?ff=</code> URL override, with per-arm deploys. Run end-to-end on the Recommended-card A/B.<a class="livelink" href="https://ux-lms-dashboard.netlify.app/recommended-card-ab" target="_blank" rel="noopener">Live — the A/B compare page <span aria-hidden="true">&#8599;</span></a></td></tr>
+      <tr><td><b>Records across multiple states</b></td>
+        <td><span class="pill p-have">Built</span></td>
+        <td>Certificates — per-state filters, three reporting variants (reported / pending roster / non-reporting), external certificates, action-required.<a class="livelink" href="https://ux-lms-dashboard.netlify.app/my-learning/certificates" target="_blank" rel="noopener">Live — Certificates, all states <span aria-hidden="true">&#8599;</span></a></td></tr>
+      <tr><td><b>Deadline pressure changes emphasis</b></td>
+        <td><span class="pill p-have">Built</span></td>
+        <td><code>dashboard-progress-state</code> — five compliance states including At&nbsp;Risk (&lt;30 days <em>and</em> &lt;25% done) and Expired, driving one layout.<a class="livelink" href="https://ux-lms-dashboard.netlify.app/dashboard-rebrand?ff=dashboard-progress-state:progress-at-risk" target="_blank" rel="noopener">Live — At Risk <span aria-hidden="true">&#8599;</span></a></td></tr>
+      <tr><td><b>Pre-licensing vs continuing ed</b></td>
+        <td><span class="pill p-have">Built</span></td>
+        <td><code>dashboard-education-type</code> — QE/CE axis with brand-true labels and <em>Target&nbsp;Date</em> in place of License&nbsp;Expires.<a class="livelink" href="https://ux-lms-dashboard.netlify.app/dashboard-rebrand?brand=cre&amp;ff=dashboard-education-type:qe" target="_blank" rel="noopener">Live — CRE, Pre-Licensing <span aria-hidden="true">&#8599;</span></a></td></tr>
+      <tr><td><b>One course vs many products</b></td>
+        <td><span class="pill p-have">Built</span></td>
+        <td><code>learning-paths-count</code> (one → 40+). The searchable grid/table landing sits behind <code>learning-path-version:v2</code>; on the dashboard the jump-off reads <em>Switch Learning Path (N)</em>.<a class="livelink" href="https://ux-lms-dashboard.netlify.app/dashboard-rebrand?section=learning-path&amp;ff=learning-paths-count:lots,learning-path-version:v2" target="_blank" rel="noopener">Live — the 42-path landing <span aria-hidden="true">&#8599;</span></a></td></tr>
+      <tr><td><b>Sponsored seats · who is stuck</b></td>
+        <td><span class="pill p-have">Built</span></td>
+        <td>Gift Recipients — firm buys seats for reps, roster table, claimed/unclaimed, <em>Last Reminded</em> sorted oldest-first, per-row reminder. Bulk send archived but intact.<a class="livelink" href="https://ux-lms-dashboard.netlify.app/dashboard-rebrand?section=gift-recipients" target="_blank" rel="noopener">Live — the roster <span aria-hidden="true">&#8599;</span></a></td></tr>
+      <tr><td><b>Admin cohort tables</b></td>
+        <td><span class="pill p-have">Built</span></td>
+        <td>PartnerHub All Learners. The five standard badges are already <em>Compliant · On Track · At Risk · Overdue · Not Started</em>, with shared header/filter/badge/progress/pagination components.</td></tr>
+      <tr><td><b>Both themes · WCAG in Phase 1</b></td>
+        <td><span class="pill p-have">Built</span></td>
+        <td>Appearance model across five modes; weekly a11y reviews; contrast enforced as unit tests sweeping brand × width.</td></tr>
+      <tr><td><b>Progress &amp; readiness</b></td>
+        <td><span class="pill p-part">Partial</span></td>
+        <td>Segmented gauge and category bars exist, but ours is <em>deterministic</em> (hours done / hours required). Compass's is probabilistic low/med/high — same furniture, different credibility problem.<a class="livelink" href="https://ux-lms-dashboard.netlify.app/dashboard-rebrand" target="_blank" rel="noopener">Live — the segmented gauge <span aria-hidden="true">&#8599;</span></a></td></tr>
+      <tr><td><b>Waiting &amp; degraded states</b></td>
+        <td><span class="pill p-part">Partial</span></td>
+        <td>Toasts, empty states, and the "show we have it, not a stale number" instinct. No designed wait with a real duration.</td></tr>
+      <tr><td><b>Late account creation</b></td>
+        <td><span class="pill p-part">Partial</span></td>
+        <td>Setup wizard and full-page onboarding gate exist — but run <em>after</em> auth. The brief's runs before an account exists.<a class="livelink" href="https://ux-lms-dashboard.netlify.app/onboarding-flow" target="_blank" rel="noopener">Live — the setup wizard <span aria-hidden="true">&#8599;</span></a></td></tr>
+      <tr><td><b>Anonymous but attributed arrival</b></td>
+        <td><span class="pill p-none">None</span></td>
+        <td>No analog. <b><a href="/prototypes/xcel-lms-wireframes.html#s-arrival">Drawn in §03.</a></b></td></tr>
+      <tr><td><b>The interruption state</b></td>
+        <td><span class="pill p-none">None</span></td>
+        <td>No analog, and the brief's top priority. <b><a href="/prototypes/xcel-lms-wireframes.html#s-interrupt">Drawn in §05.</a></b></td></tr>
+      <tr><td><b>External exam hand-off</b></td>
+        <td><span class="pill p-none">None</span></td>
+        <td>The exam <em>date</em> is already the Study Calendar's anchor; everything after it is missing. <b><a href="/prototypes/xcel-lms-wireframes.html#s-exam">Drawn in §06.</a></b></td></tr>
+      <tr><td><b>Hierarchy tree · inherited pricing</b></td>
+        <td><span class="pill p-none">None</span></td>
+        <td>Nothing in either project models inheritance or as-of-then structure. Not in this pass.</td></tr>
+      <tr><td><b>Spanish string expansion</b></td>
+        <td><span class="pill p-none">None</span></td>
+        <td>Not tested anywhere. See the open register.</td></tr>
+      <tr><td><b>Data provenance across the migration line</b></td>
+        <td><span class="pill p-none">None</span></td>
+        <td>Admin-side. Not in this pass.</td></tr>
+    </tbody>
+  </table>
+  <p class="empty-note">No learner rows at this coverage level.</p>
+  </div>
+</section>
+
+<!-- ============ 03 ADMIN — THE ASK ============ -->
+<section data-surface="admin">
+  <div class="sec-head"><span class="sec-num">03</span><h2>Admin — what the brief asks for</h2>
+    <span class="surface-tag">Admin</span></div>
+  <div class="prose">
+    <p>Six admin flows, and the brief is blunt about them: <b>this is where we are furthest behind competitors</b>, and if only one screen is designed well it should be <em>who is stuck</em> — a screen it says does not exist anywhere today.</p>
+    <p>The admin is an agency manager in a distribution hierarchy — agent, general agent, managing general agent, regional and above — with recruits flowing in continuously and moving between agencies. They manage <b>by cohort and by roll-up, not learner by learner</b>, they often pay for the seats their recruits use, and they will only ever see their own part of the tree.</p>
+  </div>
+  <div class="tscroll" style="margin-top:14px">
+    <table><thead><tr><th style="width:22%">Flow</th><th>The design problem the brief names</th></tr></thead><tbody>
+      <tr><td><b>01 · The organisation</b></td><td>Trees are deep, wide and constantly changing, and an admin sees only their subtree. A conventional tree control will not survive contact with a real hierarchy. Every roll-up is answerable "as of today" or "as it was".</td></tr>
+      <tr><td><b>02 · Setting up an agency</b></td><td>Make inheritance visible. Pricing set high in the tree flows down unless overridden — an admin must see at a glance whether a price is this agency's own or inherited, and what changing it affects beneath.</td></tr>
+      <tr><td><b>03 · Inviting learners</b></td><td>Bulk is the real case. Design the whole arc — composing, previewing, sending, then seeing what happened. <b>The follow-up view matters more than the send.</b></td></tr>
+      <tr><td><b>04 · Seats and entitlements</b></td><td>Sponsored access is invisible to the learner and central to the admin. Show spend and utilisation without making the learner's experience feel metered.</td></tr>
+      <tr><td><b>05 · Cohort reporting</b></td><td>A line in the data where a customer moved platforms, and figures either side coming from different systems. Show provenance honestly without making every screen look hedged.</td></tr>
+      <tr><td><b>06 · Who is stuck</b></td><td>Bought and never started, stalled mid-course, or approaching a deadline they will miss — answering "who, how bad, and what do I do about it" in one view, at cohort scale.</td></tr>
+    </tbody></table>
+  </div>
+</section>
+
+<!-- ============ 04 ADMIN — WHAT EXISTS ============ -->
+<section data-surface="admin">
+  <div class="sec-head"><span class="sec-num">04</span><h2>Admin — what already exists</h2>
+    <span class="surface-tag">Admin</span></div>
+  <p class="prose lede">PartnerHub (Angular partner admin) and the learner dashboard (React). The
+  value here is the patterns and the decisions, not the code — the two apps are different
+  frameworks and the FinServ platform is greenfield.</p>
+  <div class="tscroll" style="margin-top:14px" data-inventory>
+  <table><thead><tr><th style="width:20%">Flow</th><th style="width:11%">Coverage</th><th>What exists</th></tr></thead><tbody>
+      <tr><td><b>06 · Who is stuck</b></td><td><span class="pill p-have">Most of it</span></td>
+        <td>PartnerHub <b>All Learners</b> — the five badges are already Compliant · On Track · At Risk · Overdue · Not Started, with `PageHeaderBar`, `FilterBar`, `StatusBadge`, `ProgressBarCell`, `Pagination`, the kebab and a side panel on row click.</td></tr>
+      <tr><td><b>03 · Invite follow-up</b></td><td><span class="pill p-have">Most of it</span></td>
+        <td>Gift Recipients — roster, claimed / unclaimed, <b>Last Reminded</b> sorted oldest-first, per-row Send Reminder, and a bulk-reminder flow that is archived but intact.</td></tr>
+      <tr><td><b>04 · Seats</b></td><td><span class="pill p-part">The roster half</span></td>
+        <td>Gift Recipients again — the seat as a record with a claim status, and the server-owns-redemption / client-only-presents split. Spend and utilisation are new. <b>Not</b> PartnerHub's entitlement matrix, which models consumer membership tiers.</td></tr>
+      <tr><td><b>05 · Cohort reporting</b></td><td><span class="pill p-part">Partial</span></td>
+        <td>The table kit, the badges, progress, drill-to-learner. Provenance has no analog — but the certificate reporting-status variants are the right shape for it.</td></tr>
+      <tr><td><b>03 · Compose &amp; preview</b></td><td><span class="pill p-none">None</span></td>
+        <td>Nothing models "here is what your 23 recruits will receive".</td></tr>
+      <tr><td><b>01 · The organisation</b></td><td><span class="pill p-none">None</span></td>
+        <td>No hierarchy, and no history. The table architecture is what generalises — an agency row is a different entity with a different avatar glyph, which the table pattern already handles.</td></tr>
+      <tr><td><b>02 · Inheritance</b></td><td><span class="pill p-none">None</span></td>
+        <td>Neither project shows own-vs-inherited anywhere.</td></tr>
+      <tr><td><b>Dense data at scale</b></td><td><span class="pill p-have">Built</span></td>
+        <td>Bulk selection and multi-step actions are already treated as system components rather than one screen's features.</td></tr>
+    </tbody></table>
+  <p class="empty-note">No admin rows at this coverage level.</p>
+  </div>
+</section>
+
+<!-- ============ 05 NOTES ============ -->
+<section data-surface="all">
+  <div class="sec-head"><span class="sec-num">05</span><h2>How to read this</h2></div>
+  <div class="prose">
+    <p>This document is an <b>extract, not a third opinion</b>. Sections 01–04 are lifted verbatim
+    from the two wireframe companions so that the ask and the inventory can be read in one pass,
+    without the drawn screens in between. Where the two disagree, the companions win — they are
+    where the reasoning lives.</p>
+    <p><b>Coverage means one thing throughout:</b>
+    <span class="pill p-have">Built</span> is a surface you can open today and point at;
+    <span class="pill p-part">Partial</span> is the right furniture answering a different question,
+    so the work is the difference rather than the screen;
+    <span class="pill p-none">None</span> has no analog anywhere in either project. The admin
+    inventory uses two additional labels of its own — <em>Most of it</em> and <em>The roster half</em> —
+    which sit at the Built and Partial levels respectively, and the filter treats them that way.</p>
+    <p>The counts in the masthead are <b>derived from the tables below on load</b>, not authored, so
+    editing a row moves them.</p>
+    <p>What this extract deliberately drops: every wireframe, the hatched holes, and both open
+    registers. For the learner arc see the <a href="/prototypes/xcel-lms-wireframes.html">learner wireframes</a>; for the
+    one-roster argument and the six flows drawn, the <a href="/prototypes/xcel-lms-admin.html">admin wireframes</a>.</p>
+  </div>
+</section>
+
+</div></div>
+
+<script>
+(function(){
+  var root = document.documentElement;
+
+  /* Coverage is derived from the pill class already in each row, never authored twice. */
+  function covOf(tr){
+    var p = tr.querySelector('.pill');
+    if(!p) return null;
+    if(p.classList.contains('p-have')) return 'have';
+    if(p.classList.contains('p-part')) return 'part';
+    if(p.classList.contains('p-none')) return 'none';
+    return null;
+  }
+
+  var rows = [];
+  document.querySelectorAll('[data-inventory] tbody tr').forEach(function(tr){
+    var c = covOf(tr);
+    if(!c) return;
+    tr.setAttribute('data-cov', c);
+    var sec = tr.closest('section');
+    rows.push({ tr: tr, cov: c, surface: sec.getAttribute('data-surface') });
+  });
+
+  /* Masthead tally, derived on load. */
+  var LABELS = [
+    ['all',  'Rows in scope', ''],
+    ['have', 'Built',         'is-have'],
+    ['part', 'Partial',       'is-part'],
+    ['none', 'None',          'is-none']
+  ];
+  function renderTally(surface){
+    var pool = rows.filter(function(r){ return surface === 'all' || r.surface === surface; });
+    document.getElementById('tally').innerHTML = LABELS.map(function(l){
+      var n = l[0] === 'all' ? pool.length
+            : pool.filter(function(r){ return r.cov === l[0]; }).length;
+      return '<div class="tally-item ' + l[2] + '">' +
+             '<span class="tally-n">' + n + '</span>' +
+             '<span class="tally-l">' + l[1] + '</span></div>';
+    }).join('');
+  }
+
+  var state = { surface: 'all', cov: 'all' };
+
+  function apply(){
+    document.querySelectorAll('#doc > section').forEach(function(sec){
+      var s = sec.getAttribute('data-surface');
+      sec.hidden = !(state.surface === 'all' || s === 'all' || s === state.surface);
+    });
+    rows.forEach(function(r){
+      r.tr.hidden = !(state.cov === 'all' || r.cov === state.cov);
+    });
+    /* Flag a table with nothing left so a filter never reads as a missing table. */
+    document.querySelectorAll('[data-inventory] table').forEach(function(t){
+      var any = Array.prototype.some.call(t.querySelectorAll('tbody tr'), function(tr){
+        return !tr.hidden;
+      });
+      t.classList.toggle('is-empty', !any);
+    });
+    renderTally(state.surface);
+  }
+
+  /* data-surface sits on both the sections and these buttons, so the selector has to
+     narrow to buttons while getAttribute still gets the bare attribute name. */
+  function wire(attr, key){
+    var btns = document.querySelectorAll('button[' + attr + ']');
+    btns.forEach(function(b){
+      b.addEventListener('click', function(){
+        btns.forEach(function(o){ o.setAttribute('aria-pressed', String(o === b)); });
+        state[key] = b.getAttribute(attr);
+        apply();
+      });
+    });
+  }
+  wire('data-surface', 'surface');
+  wire('data-cov', 'cov');
+
+  var tl = document.getElementById('t-light'), td = document.getElementById('t-dark');
+  function theme(dark){
+    root.setAttribute('data-theme', dark ? 'dark' : 'light');
+    tl.setAttribute('aria-pressed', String(!dark));
+    td.setAttribute('aria-pressed', String(dark));
+  }
+  tl.addEventListener('click', function(){ theme(false); });
+  td.addEventListener('click', function(){ theme(true); });
+
+  apply();
+})();
+</script>
+
+</body>
+</html>
