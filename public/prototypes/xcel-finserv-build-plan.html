@@ -1,0 +1,1286 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XCEL FinServ — Admin &amp; Learner Build Plan</title>
+<style>
+:root{
+  --bg:#f4f4f5; --surface:#ffffff; --surface-2:#fafafa;
+  --line:#e4e4e7; --line-strong:#d4d4d8;
+  --fill:#ececef; --fill-2:#f4f4f5; --fill-3:#e0e0e4;
+  --ink:#18181b; --ink-2:#52525b; --ink-3:#6b6b74;
+  --annot:#5b4bbd; --annot-bg:#f1eefc; --annot-line:#cec6f2;
+  --flag:#8a5f00; --flag-bg:#fdf6e7; --flag-line:#e8d5a8;
+  --have:#1f6b4a; --have-bg:#e9f4ee; --have-line:#b8dcc8;
+  --info:#1c5a91; --info-bg:#e8f1f8; --info-line:#b6d2e6;
+  --err:#8f1d1d; --err-bg:#fbeaea; --err-line:#e8bcbc;
+  --shadow:0 1px 2px rgba(0,0,0,.05), 0 4px 12px rgba(0,0,0,.04);
+  --shadow-lg:0 0 0 1px rgba(0,0,0,.05), -12px 0 48px rgba(0,0,0,.16);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#131316; --surface:#1c1c20; --surface-2:#232328;
+    --line:#2e2e34; --line-strong:#3f3f46;
+    --fill:#2a2a30; --fill-2:#232328; --fill-3:#33333a;
+    --ink:#f4f4f5; --ink-2:#b4b4bd; --ink-3:#8b8b95;
+    --annot:#b0a3ff; --annot-bg:#231f38; --annot-line:#3b3363;
+    --flag:#e0b155; --flag-bg:#2a2318; --flag-line:#4a3d22;
+    --have:#6cc39a; --have-bg:#16261f; --have-line:#264c3a;
+    --info:#7cb8e8; --info-bg:#14202b; --info-line:#28425c;
+    --err:#f0a0a0; --err-bg:#2b1414; --err-line:#4d2626;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 12px rgba(0,0,0,.3);
+    --shadow-lg:0 0 0 1px rgba(255,255,255,.06), -12px 0 48px rgba(0,0,0,.6);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#131316; --surface:#1c1c20; --surface-2:#232328;
+  --line:#2e2e34; --line-strong:#3f3f46;
+  --fill:#2a2a30; --fill-2:#232328; --fill-3:#33333a;
+  --ink:#f4f4f5; --ink-2:#b4b4bd; --ink-3:#8b8b95;
+  --annot:#b0a3ff; --annot-bg:#231f38; --annot-line:#3b3363;
+  --flag:#e0b155; --flag-bg:#2a2318; --flag-line:#4a3d22;
+  --have:#6cc39a; --have-bg:#16261f; --have-line:#264c3a;
+  --info:#7cb8e8; --info-bg:#14202b; --info-line:#28425c;
+  --err:#f0a0a0; --err-bg:#2b1414; --err-line:#4d2626;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 12px rgba(0,0,0,.3);
+  --shadow-lg:0 0 0 1px rgba(255,255,255,.06), -12px 0 48px rgba(0,0,0,.6);
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);
+  font:14px/1.55 ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+  -webkit-font-smoothing:antialiased}
+.wrap{max-width:1400px;margin:0 auto;padding:0 26px 120px}
+.prose{max-width:76ch}
+h1,h2,h3,h4{margin:0;font-weight:700;letter-spacing:-.01em}
+h1{font-size:29px;line-height:1.2}
+h2{font-size:21px;line-height:1.3}
+h3{font-size:16px;line-height:1.4}
+h4{font-size:13px;line-height:1.4}
+p{margin:0 0 12px}
+a{color:var(--annot)}
+code{font:12px/1.4 ui-monospace,SFMono-Regular,Menlo,monospace;background:var(--fill-2);
+  border:1px solid var(--line);border-radius:4px;padding:1px 5px}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+.lbl{font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3)}
+
+/* masthead */
+.masthead{border-bottom:1px solid var(--line);background:var(--surface);margin-bottom:34px}
+.masthead-in{max-width:1400px;margin:0 auto;padding:26px 26px 22px;position:relative}
+/* Pinned top-right. Falls back into normal flow below 860px, where the prose
+   (max-width 76ch) would otherwise run underneath it. */
+.mh-ctl{position:absolute;top:22px;right:26px;display:flex;flex-wrap:wrap;gap:8px}
+@media (max-width:860px){ .mh-ctl{position:static;margin:0 0 16px} }
+.themebtn{font:inherit;font-size:12px;font-weight:600;cursor:pointer;color:var(--ink-2);
+  background:var(--fill-2);border:1px solid var(--line);border-radius:6px;padding:5px 10px}
+
+/* sections */
+section{margin:0 0 52px}
+.sec-head{display:flex;gap:12px;align-items:baseline;margin:0 0 14px}
+.sec-n{flex:none;font:11px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;font-weight:700;
+  color:var(--ink-3);background:var(--fill-2);border:1px solid var(--line);
+  border-radius:4px;padding:1px 6px}
+
+/* pills */
+.pill{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.04em;
+  text-transform:uppercase;border:1px solid var(--line);border-radius:999px;
+  padding:2px 8px;white-space:nowrap}
+.p-have{color:var(--have);background:var(--have-bg);border-color:var(--have-line)}
+.p-part{color:var(--flag);background:var(--flag-bg);border-color:var(--flag-line)}
+.p-none{color:var(--annot);background:var(--annot-bg);border-color:var(--annot-line)}
+.p-info{color:var(--info);background:var(--info-bg);border-color:var(--info-line)}
+.p-cmps{color:var(--ink-3);background:var(--fill-2);border-color:var(--line)}
+
+/* legend */
+
+/* toolbar */
+.toolbar{position:sticky;top:0;z-index:20;background:var(--bg);
+  border-bottom:1px solid var(--line);padding:12px 0;margin:0 0 2px}
+.chips{display:flex;flex-wrap:wrap;gap:7px;align-items:center}
+.chip{font:inherit;font-size:12px;font-weight:600;cursor:pointer;color:var(--ink-2);
+  background:var(--surface);border:1px solid var(--line-strong);border-radius:999px;
+  padding:5px 12px;display:inline-flex;gap:7px;align-items:center}
+.chip:hover{color:var(--ink);background:var(--fill-2)}
+.chip[aria-pressed="true"]{color:var(--ink);background:var(--fill-3);border-color:var(--ink-3)}
+.chip .n{font:11px/1 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-3)}
+.chip[aria-pressed="true"] .n{color:var(--ink-2)}
+.tb-sep{width:1px;align-self:stretch;background:var(--line-strong);margin:0 5px}
+.tb-note{font-size:12px;color:var(--ink-3);margin-left:auto;padding-left:12px}
+
+/* table */
+.tbl-wrap{overflow-x:auto;background:var(--surface);border:1px solid var(--line);
+  border-radius:8px;box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead th{position:sticky;top:57px;z-index:10;background:var(--surface-2);
+  text-align:left;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--ink-3);padding:10px 14px;border-bottom:1px solid var(--line-strong);white-space:nowrap}
+tbody td{padding:11px 14px;border-bottom:1px solid var(--line);vertical-align:top;line-height:1.5}
+tbody tr:last-child td{border-bottom:none}
+tbody tr.item:hover{background:var(--surface-2)}
+tr.grp td{background:var(--fill-2);border-bottom:1px solid var(--line-strong);
+  padding:8px 14px;position:sticky;top:88px;z-index:5}
+.grp-t{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-2)}
+.grp-d{font-size:11.5px;color:var(--ink-3);font-weight:400;letter-spacing:0;text-transform:none}
+.c-ref{font:11px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-3);
+  white-space:nowrap;width:1%}
+.c-name{font-weight:600;min-width:230px}
+.c-name .sub{display:block;font-weight:400;font-size:12px;color:var(--ink-3);margin-top:2px}
+.c-status{width:1%;white-space:nowrap}
+.c-where{color:var(--ink-2);font-size:12.5px;min-width:250px}
+.c-where code{font-size:11px}
+.c-links{width:1%;white-space:nowrap}
+.lk{display:inline-block;font-size:11.5px;font-weight:600;text-decoration:none;
+  color:var(--annot);background:var(--annot-bg);border:1px solid var(--annot-line);
+  border-radius:5px;padding:3px 8px;margin:0 4px 0 0}
+.lk:hover{filter:brightness(.96)}
+.lk-none{display:inline-block;font-size:11.5px;color:var(--ink-3);padding:3px 2px}
+.btn-d{font:inherit;font-size:11.5px;font-weight:600;cursor:pointer;color:var(--ink-2);
+  background:var(--fill-2);border:1px solid var(--line-strong);border-radius:5px;padding:3px 9px}
+.btn-d:hover{background:var(--fill);color:var(--ink)}
+.btn-d .dot{display:inline-block;width:5px;height:5px;border-radius:999px;
+  background:var(--flag);margin-left:5px;vertical-align:middle}
+.empty{padding:34px 16px;text-align:center;color:var(--ink-3);font-size:13px}
+
+/* sheet */
+.backdrop{position:fixed;inset:0;background:rgba(0,0,0,.34);z-index:60;
+  opacity:0;pointer-events:none;transition:opacity .18s ease}
+.backdrop.open{opacity:1;pointer-events:auto}
+.sheet{position:fixed;top:0;right:0;bottom:0;width:min(620px,94vw);z-index:61;
+  background:var(--surface);border-left:1px solid var(--line-strong);
+  box-shadow:var(--shadow-lg);display:flex;flex-direction:column;
+  transform:translateX(100%);transition:transform .2s ease}
+.sheet.open{transform:translateX(0)}
+.sh-head{flex:none;padding:20px 24px 16px;border-bottom:1px solid var(--line);
+  background:var(--surface-2)}
+.sh-top{display:flex;gap:12px;align-items:flex-start}
+.sh-top h3{flex:1;font-size:17px;line-height:1.32}
+.sh-x{flex:none;font:inherit;font-size:17px;line-height:1;cursor:pointer;color:var(--ink-2);
+  background:transparent;border:1px solid var(--line-strong);border-radius:6px;
+  width:28px;height:28px;display:grid;place-items:center}
+.sh-x:hover{background:var(--fill);color:var(--ink)}
+.sh-meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px}
+.sh-body{flex:1;overflow-y:auto;padding:22px 24px 40px}
+.sh-blk{margin:0 0 24px}
+.sh-blk:last-child{margin-bottom:0}
+.sh-blk h4{margin:0 0 7px;color:var(--ink-3);font-size:10.5px;letter-spacing:.07em;
+  text-transform:uppercase}
+.sh-blk p{margin:0 0 9px;font-size:13.5px;line-height:1.6;color:var(--ink-2)}
+.sh-blk p:last-child{margin-bottom:0}
+.sh-blk p.strong{color:var(--ink)}
+.qbox{background:var(--info-bg);border:1px solid var(--info-line);border-left:4px solid var(--info);
+  border-radius:6px;padding:12px 14px}
+.qbox ul{margin:0;padding-left:18px}
+.qbox li{font-size:13.5px;line-height:1.6;color:var(--ink);margin:0 0 7px}
+.qbox li:last-child{margin-bottom:0}
+.blkbox{background:var(--flag-bg);border:1px solid var(--flag-line);border-left:4px solid var(--flag);
+  border-radius:6px;padding:12px 14px;font-size:13px;line-height:1.6;color:var(--ink)}
+.notes{list-style:none;margin:0;padding:0}
+.notes li{border-left:2px solid var(--line-strong);padding:0 0 0 12px;margin:0 0 14px}
+.notes li:last-child{margin-bottom:0}
+.notes .nd{font:10.5px/1.5 ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-3);
+  display:block;margin-bottom:2px}
+.notes .nt{font-size:13.5px;line-height:1.6;color:var(--ink-2)}
+.nonote{font-size:12.5px;line-height:1.6;color:var(--ink-3);background:var(--fill-2);
+  border:1px dashed var(--line-strong);border-radius:6px;padding:11px 13px}
+.sh-links{display:flex;flex-wrap:wrap;gap:7px}
+
+/* callouts */
+.call{background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--annot);
+  border-radius:8px;padding:16px 18px;margin:20px 0;box-shadow:var(--shadow)}
+.call.flag{border-left-color:var(--flag)}
+.call.info{border-left-color:var(--info)}
+.call p:last-child{margin-bottom:0}
+.call p{font-size:13.5px;line-height:1.6;color:var(--ink-2)}
+.call p.strong{color:var(--ink);font-weight:600}
+
+/* simple lists */
+.dl{background:var(--surface);border:1px solid var(--line);border-radius:8px;
+  box-shadow:var(--shadow);overflow:hidden}
+.dl-row{display:grid;grid-template-columns:230px 1fr;gap:18px;padding:13px 16px;
+  border-bottom:1px solid var(--line)}
+.dl-row:last-child{border-bottom:none}
+.dl-k{font-weight:600;font-size:13px}
+.dl-k .pill{display:block;margin-top:5px;width:fit-content}
+.dl-v{font-size:13px;line-height:1.6;color:var(--ink-2)}
+@media(max-width:720px){.dl-row{grid-template-columns:1fr;gap:5px}}
+footer{border-top:1px solid var(--line-strong);padding-top:22px;margin-top:56px;
+  font-size:12px;line-height:1.7;color:var(--ink-3)}
+</style>
+</head>
+<body>
+
+<div class="masthead">
+  <div class="masthead-in">
+    <div class="mh-ctl">
+      <button class="themebtn" id="themeBtn" type="button">Dark</button>
+    </div>
+    <p class="eyebrow" style="margin:0 0 8px">Colibri Financial Services · Insurance · Mortgage · Banking</p>
+    <h1>Admin &amp; Learner Build Plan</h1>
+    <p class="prose" style="margin:10px 0 0;color:var(--ink-2)">
+      Every capability the two surface domains — <b>Learner Experience</b> and
+      <b>Admin&nbsp;&amp;&nbsp;Analytics</b> — have to deliver, against whether it is already
+      built somewhere, only half-built, missing, or blocked on a decision nobody has taken.
+      Compass is deliberately parked; the rows it owns are listed and marked so the
+      inventory stays honest.
+    </p>
+  </div>
+</div>
+
+<div class="wrap">
+
+  <section>
+    <div class="sec-head"><span class="sec-n">01</span><h2>The inventory</h2></div>
+
+    <div class="toolbar">
+      <div class="chips" id="chips-status"></div>
+      <div class="chips" id="chips-domain" style="margin-top:8px"></div>
+    </div>
+
+    <div class="tbl-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Ref</th>
+            <th>Capability</th>
+            <th>Built?</th>
+            <th>Where it lives</th>
+            <th>Example · Details</th>
+          </tr>
+        </thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-n">02</span><h2>Open decisions that block rows above</h2></div>
+    <p class="prose" style="color:var(--ink-2)">Lifted from the sources rather than invented here.
+    The brief's own instruction is <em>flag rather than invent</em>, so these are listed as holes
+    and cross-referenced from the sheets of the rows they block.</p>
+    <div class="dl" id="decisions"></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-n">03</span><h2>Deliberately not in Phase 1</h2></div>
+    <p class="prose" style="color:var(--ink-2)">Stating these keeps the Phase 1 demonstration
+    honest and stops each one being read as a defect.</p>
+    <div class="dl" id="notphase1"></div>
+  </section>
+
+  <section>
+    <div class="sec-head"><span class="sec-n">04</span><h2>Two conflicts between the sources</h2></div>
+    <div class="call flag">
+      <p class="strong">The wireframe brief and the build plan disagree about the website.</p>
+      <p>The wireframe brief says plainly: <em>"Website and checkout are out of scope for now — a
+      separate brief."</em> The build plan then lists <b>self-serve purchase</b> and <b>signed-in
+      browsing</b> among the ten Phase 1 acceptance journeys, and both run through the website. So
+      two of the ten things that define "Phase 1 is finished" sit in a surface we have been told
+      not to design. Those rows are marked <span class="pill p-info">Needs info</span> rather than
+      guessed at.</p>
+    </div>
+    <div class="call flag">
+      <p class="strong">Nobody has settled whether the admin dashboard is ours.</p>
+      <p>The build plan records four contested surfaces: <em>"Compass PRDs still assign B2B admin,
+      Insights dashboards and Signals/Analytics to Compass. Our architecture assigns Admin, the
+      analytics surface, Support and Notifications to FinServ with Compass supplying signals only.
+      Left unreconciled, both teams build admin."</em> The wireframe brief says the same thing from
+      the design side — <em>"do not design an admin dashboard that assumes either answer."</em></p>
+      <p>This is not a Compass row we can park. It decides whether a large share of the Admin
+      &amp; Analytics inventory below is work we do at all, and it is the single most consequential
+      unresolved item across all three documents.</p>
+    </div>
+  </section>
+
+  <footer>
+    Built from three sources: the Learner and Admin Wireframe Brief, the FinServ Domain Build Plan,
+    and the FinServ Platform Strategy Packet (domain view) — all three drafts owned by Amrita
+    Thakur, VP Product.<br>
+    Status pills describe product code on other projects, never our own design coverage; the
+    Example column carries that. Notes and statuses are authored in the <code>ITEMS</code> array in
+    this file — one place to edit, so the table, the counts and the sheets cannot disagree.
+    Where a source says a decision is open, it is recorded as open rather than resolved by
+    assumption.
+  </footer>
+</div>
+
+<div class="backdrop" id="backdrop"></div>
+<aside class="sheet" id="sheet" role="dialog" aria-modal="true" aria-labelledby="sh-title" aria-hidden="true">
+  <div class="sh-head">
+    <div class="sh-top">
+      <h3 id="sh-title">—</h3>
+      <button class="sh-x" id="sh-x" type="button" aria-label="Close details">&times;</button>
+    </div>
+    <div class="sh-meta" id="sh-meta"></div>
+  </div>
+  <div class="sh-body" id="sh-body"></div>
+</aside>
+
+<script>
+/* ────────────────────────────────────────────────────────────────────────────
+   ONE source of truth.
+
+   The table, the filter counts and the detail sheets all render from ITEMS
+   below, so a status can never disagree with the tally that reports it — the
+   authored-count rot this project has been bitten by before.
+
+   To add a note as we go: append to that item's `notes` array. Newest last.
+   Fields:
+     ref      short label shown in the Ref column
+     dom      'learner' | 'admin' | 'cross'
+     grp      group heading the row sits under
+     name     the capability
+     sub      optional second line under the name
+     st       'have' | 'part' | 'none' | 'info' | 'cmps'   ('cmps' is unscored)
+     where    which project / file it lives in, or what is blocking
+     ex       [href, label] pairs — our own design artifacts, or [] if undrawn
+     prob     the design problem, in the brief's terms where it names one
+     ex_now   what exists today, in detail
+     miss     what is not covered
+     qs       open questions for Jillienne — these raise the amber dot
+     blk      ids from DECISIONS that block this row
+     notes    [{d, t}] authored notes
+   ──────────────────────────────────────────────────────────────────────────── */
+
+const P_DESK = '/prototypes/xcel-lms-desktop.html';
+const P_WALK = '/prototypes/xcel-lms-walkthrough.html';
+const P_WIRE = '/prototypes/xcel-lms-wireframes.html';
+const P_ADMN = '/prototypes/xcel-lms-admin.html';
+const P_TOOL = '/prototypes/xcel-admin-tool.html';
+const P_SIGN = '/prototypes/xcel-signin.html';
+
+const ITEMS = [
+
+/* ═══════════════ LEARNER EXPERIENCE ═══════════════ */
+
+{ ref:'Track B', dom:'learner', grp:'Learner · Foundations', st:'part',
+  name:'Design tokens and core primitives',
+  sub:'Colour, type, spacing, and the ~20 components all three surfaces need',
+  where:'<b>Common LMS dashboard</b> (<code>jill-dashboard-ux-designs</code>) ships <b>26 shared primitives</b> · gateway <code>src/styles/tokens.css</code> · a separate <code>:root</code> map per XCEL prototype · PartnerHub Angular carries its own',
+  ex:[[P_DESK,'Desktop platform']],
+  prob:'One design system, three surfaces. Admin needs dense tables and bulk actions; the website needs marketing layout freedom; learner needs focus. The brief is explicit: design the system, not three sets of screens.',
+  ex_now:'Real token work exists and it is good work — the desktop platform splits its ramps three ways (--brand for identity, --primary for interactive and data, --slate for the second data hue) and ships three candidate palettes behind a live switcher so the choice is made against the real product. But it is a token map per document, not one system three surfaces consume.',
+  miss:'Not the components — <b>that question is answered</b>. The Common LMS dashboard already has the "twenty or so components all three surfaces need", and has 26 of them: Button, Card, Modal, Sheet, Tabs, PillTabs, StatusBadge, Toast, Toggle, Tooltip, Select, SearchInput, Checkbox, Radio, RangeSlider, ProgressRing, EmptyState, Breadcrumb, ActionMenu, Avatar, IconButton, ViewToggle and more. Track B is therefore <b>not from zero</b>, which is the single biggest correction this pass makes to the build plan\'s "assume no code exists" premise.<br><br>What is genuinely missing is the packaging and the reach. One project consumes that library, not three. There is no versioning, no deprecation policy and no contribution path — all four are named provider obligations. And xcel-admin-tool.html has 761 hex literals (107 unique) bypassing its own token map entirely.',
+  qs:['The Common LMS primitives are React and PartnerHub\'s product is Angular. Does Track B mean extracting that library into something framework-neutral, or is the new platform React throughout — in which case it is a lift rather than a rebuild?'],
+  blk:[], notes:[
+    {d:'2026-09-03', t:'The 761-literal hex sweep in the admin tool is already queued as its own commit and is a prerequisite for giving that fork a dark theme. That sweep and this row are the same piece of work — worth doing once, against a real shared token set, rather than twice.'}
+  ]},
+
+{ ref:'Track B', dom:'learner', grp:'Learner · Foundations', st:'part',
+  name:'The application shell',
+  sub:'Layout, navigation, routing, and the theme handling all three surfaces inherit',
+  where:'<b>Common LMS dashboard</b> (<code>jill-dashboard-ux-designs</code>) — <code>PlatformShell</code>, <code>PlatformSideNav</code>, <code>AppLayout</code>, <code>Header</code>, plus a Navigation MVP feature · <code>xcel-lms-desktop.html</code> has the rail and nav',
+  ex:[[P_DESK+'#rail','Rail and nav']],
+  prob:'Three surfaces with conflicting layout needs inherit one shell. Whichever surface asked last must not set its priorities.',
+  ex_now:'More than I credited. The Common LMS dashboard ships the shell as real, separable components — <code>PlatformShell</code>, <code>PlatformSideNav</code>, <code>AppLayout</code> and <code>Header</code> — with a persistent dark left-nav, section routing through a single <code>?section=</code> address, and a Navigation MVP feature row of its own. The desktop platform prototype demonstrates the XCEL rail, nav and theme handling on top, including a rail-active indicator whose contrast is now guarded by tests.',
+  miss:'No admin variant and no website variant. The build plan wants a shell that Admin and eCommerce build in without forking; today the admin surface we have is a fork.',
+  qs:[], blk:[], notes:[]},
+
+{ ref:'Track B', dom:'learner', grp:'Learner · Foundations', st:'part',
+  name:'The authenticated shell layer',
+  sub:'Session state, auth transitions, account menu, entitlement-aware ownership state',
+  where:'PartnerHub models entitlement states · <code>xcel-signin.html</code> covers the sign-in screen only',
+  ex:[[P_SIGN,'Sign in']],
+  prob:'This layer appears on Website and Admin as well as Learner, so it is a provided capability with provider obligations, not a learner feature.',
+  ex_now:'PartnerHub has real entitlement and ownership-state work. A standalone XCEL sign-in screen exists.',
+  miss:'Auth transitions, session state and the account menu are undrawn and unbuilt as a shared layer. Ownership state has never been rendered on an admin or website surface.',
+  qs:['Where does the account menu live today — PartnerHub, the dashboard, both? I could not find a prototype for it and I do not want to redraw something that exists.'],
+  blk:[], notes:[]},
+
+{ ref:'', dom:'learner', grp:'Learner · Foundations', st:'part',
+  name:'Accessibility conformance, now rather than later',
+  sub:'WCAG is a Phase 1 commitment, in both themes, across the component library',
+  where:'The learner dashboard: both themes and WCAG · <code>smoke-desktop.mjs</code>, 100 assertions · <b>xcel-admin-tool.html is light-only</b>',
+  ex:[[P_DESK,'Desktop platform']],
+  prob:'The brief calls this a known gap and says it is not being repeated. It is also the one standard the Compass frame has to meet on our behalf, on the highest-traffic screen we have.',
+  ex_now:'The strongest row on the page. smoke-desktop.mjs parses the real declared hex out of the stylesheet and sweeps all three palettes across light and dark for rail-active contrast, chip ink, link and fill ratios, and the two gauge segments holding apart. It also asserts the old failing values still fail, so a future palette reaching for them breaks a test instead of shipping an invisible indicator.',
+  miss:'The admin surface is entirely outside that sweep and is light-only, so forking un-met a Phase 1 requirement. Nothing checks the component library as a library, because there is no library yet.',
+  qs:[], blk:[], notes:[
+    {d:'2026-09-03', t:'The generalised rule from the re-palette is worth carrying into any new surface: put a LIGHT stop on a dark rail, and fill chips with a light tint over dark ink rather than a saturated fill. The two original findings were hex values; the rule is what survives a re-palette.'}
+  ]},
+
+{ ref:'', dom:'learner', grp:'Learner · Foundations', st:'part',
+  name:'Dense-table and bulk-action components, as system components',
+  sub:'Learner Experience provides them; Admin is the demanding consumer',
+  where:'PartnerHub All Learners: <code>PageHeaderBar</code>, <code>FilterBar</code>, <code>StatusBadge</code>, <code>ProgressBarCell</code>, <code>Pagination</code>, kebab, side panel',
+  ex:[[P_TOOL,'Admin tool'],[P_ADMN+'#stg-roster','Roster stage']],
+  prob:'The brief says design these as system components rather than as one screen, because admin lists run to thousands of learners with bulk selection and multi-step actions.',
+  ex_now:'A genuinely good table kit exists in PartnerHub and arrived working in the fork. Bulk selection, the bulk bar and the reminder throttle are net-new on top of it — the source had checkboxes only in its filter panel.',
+  miss:'They are not packaged as shared components, and the build plan explicitly wants them contributed upstream into the Learner design system rather than forked into the admin surface. Right now they are forked.',
+  qs:[], blk:[], notes:[]},
+
+{ ref:'', dom:'learner', grp:'Learner · Foundations', st:'part',
+  name:'Magic-link sign-in, password-optional',
+  sub:'The learner has a personal email and nothing else',
+  where:'<code>xcel-lms-walkthrough.html</code> models invite → magic link → silent account creation · <b><code>xcel-signin.html</code> is password-first</b>',
+  ex:[[P_SIGN,'Sign in'],[P_WALK,'Walk-through']],
+  prob:'Four decided constraints converge here: no social sign-on, no enterprise SSO at purchase (they have not contracted yet), sign-in by email and magic link with password-optional preferred over password-first, and account creation deferred to the last viable step.',
+  ex_now:'The walk-through gets this right — the arc runs invite → magic link → silent account creation with no forced signup step, and the state carries through to prove it.',
+  miss:'The standalone sign-in screen contradicts it. xcel-signin.html leads with an email + <b>password</b> pair, a "Forgot?" link and a "New here? Create an account" call to action — password-first, with account creation promoted rather than deferred. No social sign-on, so that constraint is clean.',
+  qs:['Is xcel-signin.html meant to be the returning-learner screen (where a password is defensible) rather than the arrival screen? If so it needs a magic-link path beside the password, and the "Create an account" link probably should not be there at all given the deferred-creation constraint.'],
+  blk:[], notes:[
+    {d:'2026-09-03', t:'Flagging this as the clearest brief-versus-prototype contradiction I found. It is cheap to fix now and expensive once the sign-in screen is treated as settled.'}
+  ]},
+
+{ ref:'Skeleton', dom:'learner', grp:'Learner · Skeleton slice', st:'none',
+  name:'Invite link → authenticate → one owned course → launch → complete → record',
+  sub:'Thin at every step; proves the two hardest seams in the system',
+  where:'No product code. Fully explored as one carried-state arc in <code>xcel-lms-walkthrough.html</code>',
+  ex:[[P_WALK,'Walk-through']],
+  prob:'It proves the arrival hand-off from eCommerce and the course frame across an organisational boundary — the two seams most likely to be wrong.',
+  ex_now:'The walk-through is exactly this slice and then some: nine chapters with state carried throughout, and a "what the product knows" inspector beside the phone so a reviewer can see the typed target date build the plan and finished chapters move the percentage. Nothing downstream is hardcoded.',
+  miss:'All of the product code. This is a wireframe of a skeleton, not a skeleton.',
+  qs:[], blk:[], notes:[
+    {d:'2026-09-03', t:'This row is the clearest example of why status and design coverage are separate columns. It is None and it is also the most thoroughly designed thing we own.'}
+  ]},
+
+{ ref:'L·01', dom:'learner', grp:'Learner · The brief’s seven flows', st:'none',
+  name:'Invited arrival',
+  sub:'Link → Website → Learner. Pre-attributed, personalised, and anonymous',
+  where:'No analog in either project — the existing inventory scores "anonymous but attributed arrival" as None',
+  ex:[[P_WIRE+'#s-arrival','Arrival stage'],[P_WALK,'Walk-through']],
+  prob:'The brief: "What does a learner see before they have an account? They arrive pre-attributed and personalised, but anonymous. The window between we know a lot about you and you have signed up is the highest-abandonment moment in the whole product."',
+  ex_now:'Wireframed as its own stage, and the walk-through carries the typed email through to the wait screen so the attribution is demonstrably real rather than asserted.',
+  miss:'Everything in code. Also note the invite link carries org unit, course and discount with no personal information in the URL, and it expires — none of that is modelled.',
+  qs:[], blk:[], notes:[]},
+
+{ ref:'L·02', dom:'learner', grp:'Learner · The brief’s seven flows', st:'have',
+  name:'Learner home',
+  sub:'What they own, what to do next, what is due',
+  where:'The learner dashboard project (React) · re-skinned on XCEL tokens in <code>xcel-lms-desktop.html</code>',
+  ex:[[P_DESK,'Desktop platform']],
+  prob:'The brief: a learner with one course and a deadline in nine days, and a learner with four products across two professions, need very different homes. Design for the first without making the second unusable — deadline pressure should change emphasis, not layout.',
+  ex_now:'Built and shipped in the dashboard project, and the XCEL prototype demonstrates it on our tokens with two live demo axes: education type (pre-licensing versus continuing ed, which renames every category label and swaps Target Date for License Expires) and the five compliance progress states.',
+  miss:'Nothing structural. The catalogue half carries a hatched hole — see "who pays" under signed-in browsing.',
+  qs:[], blk:[], notes:[]},
+
+{ ref:'L·03', dom:'learner', grp:'Learner · The brief’s seven flows', st:'cmps',
+  name:'Into the course and back',
+  sub:'Learner ↔ Compass. The hand-off, its two containment options, and the four moments',
+  where:'Parked this pass. Option A (persistent shell) and Option B (focused hand-off) both score as Built in the existing inventory',
+  ex:[[P_WIRE+'#s-compass','Compass stage'],[P_WIRE+'#s-interrupt','Interruption']],
+  prob:'The brief calls this the highest-traffic screen boundary we have, the only one crossing an organisational line, and the one thing to do if you only do one thing. Its recommended starting state: a learner 40 minutes into a 90-minute exam simulation, three days from a licensing deadline, on a phone, and the save is slow.',
+  ex_now:'Both containment options are wireframed and shown side by side rather than picked, per the brief. The interruption state renders the hatched hole rather than an optimistic recovery. The walk-through carries offline-held answers through to the result screen, and its smoke suite asserts that specifically.',
+  miss:'Scored as parked at your instruction. Listing it anyway, unscored, because deleting it would make the inventory read as complete.',
+  qs:['Confirm you want this and the four moments left unscored rather than removed. My read is that leaving them visible is safer — the brief is emphatic that this boundary is where trust is won or lost.'],
+  blk:['contested'], notes:[]},
+
+{ ref:'L·04', dom:'learner', grp:'Learner · The brief’s seven flows', st:'part',
+  name:'Progress and readiness',
+  sub:'Compass computes readiness as roughly low / medium / high. We render it',
+  where:'Progress is built in the dashboard · a probabilistic readiness signal has no analog anywhere',
+  ex:[[P_WALK,'Walk-through'],[P_DESK,'Desktop platform']],
+  prob:'The brief: "How do you show a probabilistic readiness signal so it motivates rather than either falsely reassuring or discouraging? High is not a promise and low is not a verdict. This is a credibility problem as much as a visual one."',
+  ex_now:'Progress rendering is solid and built. The readiness half is answered in the walk-through by stating its basis, giving a frequency rather than a probability, and naming what would move it — "an estimate, not a prediction · about 7 in 10 passed first time".',
+  miss:'The rendering contract with Compass, and what we show when readiness has not been computed yet or is stale.',
+  qs:[], blk:[], notes:[
+    {d:'2026-09-03', t:'This row collides with the admin Risk column. If Compass owns readiness probabilistically and the admin roster derives Risk deterministically from deadline and percent done, the same learner gets two different verdicts. See Admin 06a — that is the same problem seen from the other surface.'}
+  ]},
+
+{ ref:'L·05', dom:'learner', grp:'Learner · The brief’s seven flows', st:'have',
+  name:'Records',
+  sub:'Completions, certificates, and CE hours credited by state',
+  where:'The learner dashboard Records surface · <code>xcel-lms-desktop.html</code> Records',
+  ex:[[P_DESK,'Desktop platform'],[P_WALK,'Walk-through']],
+  prob:'The brief: the same learner may hold hours across multiple states with different requirements and renewal dates. Show what they have and what it satisfies, without turning it into a compliance spreadsheet.',
+  ex_now:'Built, and the existing inventory scores "records across multiple states" as Built. The walk-through reaches records with both exam attempts intact, so a failed first attempt stays in the record rather than being overwritten by the pass.',
+  miss:'Multi-state hours is drawn as a hatched hole on the desktop platform — the multi-jurisdiction case is acknowledged rather than solved. Regulator-facing retrieval years later is not designed.',
+  qs:[], blk:['retention'], notes:[
+    {d:'2026-09-03', t:'Jillienne: already solved in the current LMS — the learner adds their own history and external certifications, accepted without a review gate and counting toward eligibility, because they must upload their accredited certificate as proof. A shipped surface none of the three source documents mention, so the multi-state hours hole is smaller than the brief implies.'},
+    {d:'2026-09-03', t:'Consequence for this screen: Records holds uploaded certificates, so it is a document store as well as a table — and that is already built in the Common LMS, so it is a port rather than a design problem. See the document-store row.'}
+  ]},
+
+{ ref:'L·06', dom:'learner', grp:'Learner · The brief’s seven flows', st:'none',
+  name:'Licensure hand-off',
+  sub:'Learner → external. Scheduling, the exam date, and pass or fail coming back',
+  where:'No analog anywhere — the existing inventory scores "external exam hand-off" as None',
+  ex:[[P_WALK,'Walk-through'],[P_WIRE+'#s-exam','Exam stage']],
+  prob:'The brief: "The most important moment in the learner’s whole journey happens outside our product. Design the leaving, the waiting, and the coming back — including the failure case, which today is handled badly everywhere in this market."',
+  ex_now:'The walk-through runs the whole arc: readiness → book → sit → fail → retake → pass → records. The fail screen is warning-family with no confirm dialog and states that coursework and hours are unaffected. That is the direct answer to "handled badly everywhere".',
+  miss:'All of it in code. The exam task-type spec found the load-bearing detail: StudyTaskKind’s existing ‘exam’ means the <i>practice</i> exam, so the external licensing exam needs its own ‘licensing-exam’ key — overloading the existing one still typechecks and would have the calendar silently treat a real licensing exam as a practice one.',
+  qs:[], blk:[], notes:[]},
+
+{ ref:'L·07', dom:'learner', grp:'Learner · The brief’s seven flows', st:'part',
+  name:'Account, profile and inbox',
+  sub:'Identity that arrives over time, and affiliation that can change',
+  where:'<b>Common LMS dashboard</b> (<code>jill-dashboard-ux-designs</code>) — Profile and Onboarding built; <b>Notifications is an explicit placeholder</b>',
+  ex:[],
+  prob:'The brief: "the learner’s identity may change under them. They start with a personal email and no producer number, and later gain both. How does a profile accommodate identity that arrives over time, and an affiliation that can change when they move agency?"',
+  ex_now:'Answered by reading the Common LMS dashboard. <b>Profile is built</b> — <code>ProfilePage.tsx</code>, a Personalize-Your-Profile nudge band and panel, and its own fixtures; this repo already ported its contrast test. <b>Onboarding is built</b> — a Learning Setup wizard with hero, tiles and a flow module. The account area itself is real: one canonical section list feeding both the account dropdown and a sub-nav, so the two cannot drift.',
+  miss:'<b>The inbox does not exist</b>, and that is now a fact rather than a guess. <code>AccountSectionLayout.tsx</code> renders an <code>AccountSectionPlaceholder</code> for Notifications, Licenses, Transcripts, Payment Methods and Purchases, whose own copy reads "not built yet" and "Profile is the built one". They are reachable nav rows on purpose — the sub-nav would be a lie if half its rows went nowhere — but there is no design behind them.<br><br>Also still missing everywhere: the two wrinkles that make this flow interesting. Nothing models identity <i>gaining</i> fields over time (personal email, later an NPN), or affiliation changing when a learner moves agency.',
+  qs:['The identity-over-time and affiliation-change wrinkles are unmodelled in both projects. Is that worth drawing, or does Platform own it as a data concern with no learner-visible consequence?'],
+  blk:[], notes:[
+    {d:'2026-09-03', t:'Went from Needs info to Partial by reading the source rather than asking you. Worth knowing the trap I nearly fell into: /account/notifications, /account/licenses and /account/transcripts all exist as ROUTES, and all three redirect into the shell and render a not-built-yet placeholder. Route names in that project are not evidence of a design.'}
+  ]},
+
+{ ref:'', dom:'learner', grp:'Learner · Thickening', st:'have',
+  name:'My learning at real breadth',
+  sub:'Multiple products, multiple states, multiple deadlines',
+  where:'The learner dashboard · demonstrated on XCEL tokens in the desktop platform',
+  ex:[[P_DESK,'Desktop platform']],
+  prob:'The second half of flow 02’s problem — the learner with four products across two professions.',
+  ex_now:'Built. The existing inventory scores "one course vs many products" as Built, and the desktop platform swaps education type live to show the multi-product case.',
+  miss:'Nothing significant.',
+  qs:[], blk:[], notes:[]},
+
+{ ref:'', dom:'learner', grp:'Learner · Thickening', st:'have',
+  name:'Learner-added history and external certifications',
+  sub:'The learner enters credit they earned elsewhere, or before we existed',
+  where:'<b>The current LMS</b> — shipped today. Absent from all three source documents',
+  ex:[],
+  prob:'The brief treats pre-implementation CE credit as an open question affecting the records screen, and the strategy packet lists it as an open decision blocking the CE renewal funnel. Neither mentions that a surface for it already exists.',
+  ex_now:'Built and shipped in the current LMS: a learner can add their own history and their external certifications. That covers the input side of every pre-implementation-credit question the sources raise, and it is a pattern to port rather than invent.',
+  miss:'Very little, and less than I first wrote. The evidentiary standard is answered — the learner uploads their accredited certificate, and the entry counts toward eligibility with no admin review gate. That resolves the strategy packet\'s objection by relocating it: the authoritative record is the <b>uploaded third-party certificate</b>, not our row, so the row is metadata pointing at a document rather than an assertion standing on its own. And the document store this implies is <b>also already built</b>, in the Common LMS — see the row below. What is left is a port and the per-jurisdiction retention values, not a design problem.',
+  qs:[],
+  blk:['retention'], notes:[
+    {d:'2026-09-03', t:'Added from Jillienne rather than from the briefs, then corrected by her: accepted on trust AND counts toward eligibility today, because the learner has to upload their accredited certificate to prove what they took.'},
+    {d:'2026-09-03', t:'The reframing that matters: this is not a self-attestation problem, it is a document-custody problem. That makes it a stronger answer than the strategy packet expects — and it moves the real work from "decide an evidentiary standard" to "design a document store with retention", which is not on anyone\'s plan.'}
+  ]},
+
+{ ref:'', dom:'learner', grp:'Learner · Thickening', st:'part',
+  name:'Document store for uploaded certificates',
+  sub:'Upload, hold and retrieve the accredited certificate a record stands on',
+  where:'<b>Common LMS dashboard</b> (<code>jill-dashboard-ux-designs</code>) — both halves exist, never joined. See the questions',
+  ex:[],
+  prob:'Once a learner-entered CE record is evidenced by an uploaded certificate, Records stops being a table and becomes a document store: uploads, file types, a viewer, replacement, and retention for as long as the record the document evidences. The strategy packet already requires that records outlive individual documents and that a person cannot be removed while a retained record references them.',
+  ex_now:'<b>Both halves, in the same project, not wired to each other.</b> The learner-facing side is real: <code>CertificatesPage.tsx</code> ships three tabs — Action Required, Completed and <b>External Certificates</b> — with per-state hours, an issuing provider on external entries, and a <code>CertificateActionPanel</code> slide-over covering five action variants, one of which is literally <b>Document</b>. And a working upload → server-store → retrieve pattern also exists in that repo: the QA Notes capture store, a drop zone plus <code>&lt;input type="file"&gt;</code> writing to Netlify Blobs, the same pattern this repo inherited.',
+  miss:'The join. I read every <code>input type="file"</code>, <code>FileReader</code> and <code>upload</code> occurrence in that project: the only real uploads are the QA-Notes screenshot store and a profile avatar. The <b>Document</b> action-required variant is a <i>banner telling the learner a document is needed</i> — there is no upload control behind it, no viewer, and no retention behaviour. So the surfaces exist, the mechanism exists, and nothing connects them.',
+  qs:['Which document store did you mean? I can find the External Certificates surface and the QA-Notes upload mechanism, but no learner-facing certificate upload in the dashboard repo. If the completed work is in the Common LMS <i>product</i> rather than its UX dashboard, I cannot see that and should mark this Built on your word.','Does its retention behaviour read a per-jurisdiction value already, or is retention currently indefinite? That decides whether the port carries the rules-engine coupling or acquires it.'],
+  blk:['retention'], notes:[
+    {d:'2026-09-03', t:'Added from Jillienne, then DOWNGRADED from Built to Partial after actually reading the Common LMS dashboard. Recording the correction rather than the first answer: the display surfaces and the upload mechanism both exist in that repo, but the Document action variant has no upload control behind it. If the finished work is in the product rather than the dashboard, this goes back to Built — the question is on the row.'}
+  ]},
+
+{ ref:'', dom:'learner', grp:'Learner · Thickening', st:'info',
+  name:'Records reading authoritative records, not projections',
+  sub:'Anything answering a regulator reads the record, never the projection',
+  where:'A data-sourcing rule from the strategy packet. No design consequence identified yet',
+  ex:[],
+  prob:'Projections carry a known lag and are marked as derived. Anything computing an entitlement or answering a regulator must read the authoritative record.',
+  ex_now:'Nothing. This is an interface pattern, not a surface.',
+  miss:'Whether it has a design consequence at all. It might mean a records screen must visibly distinguish an authoritative completion from a derived progress figure — which would be a real design problem — or it might be invisible to the learner.',
+  qs:['Does this need a visible treatment on the learner Records screen, or is it purely a back-end sourcing rule? It matters because the admin side definitely does need one (see the line in the data), and if both do, they should share one basis line rather than inventing two.'],
+  blk:[], notes:[]},
+
+{ ref:'', dom:'learner', grp:'Learner · Thickening', st:'have',
+  name:'Help and support',
+  sub:'A learner-facing Get Help hub inside the shell',
+  where:'<b>Common LMS dashboard</b> (<code>jill-dashboard-ux-designs</code>) — a Help &amp; Support feature row, built',
+  ex:[],
+  prob:'Not in the brief\'s seven flows, but named in the strategy packet: Support is one of the four surfaces Compass PRDs and our architecture both claim, so it needs to be visibly ours or visibly theirs.',
+  ex_now:'Built. Four entry cards — Customer Support, Live Chat, FAQs, Contact Us — opening a support-request form, a simulated live-chat widget, the brand FAQ page and per-brand phone numbers, all inside the platform shell rather than as a separate destination.',
+  miss:'Nothing structural for the learner. What is missing is the boundary decision: this is one of the four contested surfaces, so a built hub on our side is an argument in that negotiation rather than a settled answer.',
+  qs:[], blk:['contested'], notes:[
+    {d:'2026-09-03', t:'Added during the Common LMS pass — it was not in the inventory because the wireframe brief does not mention support. Worth having as a row precisely because the strategy packet lists it among the four contested surfaces: we can point at a built one.'}
+  ]},
+
+{ ref:'', dom:'learner', grp:'Learner · Thickening', st:'have',
+  name:'Study plan and calendar',
+  sub:'A plan the learner can see, follow and print',
+  where:'<b>Common LMS dashboard</b> (<code>jill-dashboard-ux-designs</code>) — an STC Study Plan feature, calendar fixtures, a CalendarTearOff primitive and a print route',
+  ex:[[P_WALK,'Walk-through']],
+  prob:'The walk-through builds a plan backwards from a target date the learner types, and the whole carried-state argument rests on that plan being real rather than decorative. Which means the plan is a surface, not a calculation.',
+  ex_now:'Built in the Common LMS: a study-plan feature with its own fixtures, a tear-off calendar primitive, and a dedicated print view at <code>/print/study-calendar</code> — the last of which matters more than it looks, since a licensing candidate working to a 30-day window is exactly the person who prints a schedule.',
+  miss:'The backwards-from-a-target-date derivation the walk-through demonstrates, and re-anchoring after a failed attempt. The Common LMS plan is a plan; it is not shown deriving itself from a deadline the learner chose.',
+  qs:['Does the Common LMS study plan derive from a target date, or is it authored? The walk-through leans on the derivation, so if that already exists it is a port, and if not it is the genuinely new part.'],
+  blk:[], notes:[
+    {d:'2026-09-03', t:'Added during the Common LMS pass. Its print view is the detail worth keeping — none of our XCEL prototypes have a print path, and the brief describes a mobile-first learner on a deadline, which is a printing population.'}
+  ]},
+
+{ ref:'', dom:'learner', grp:'Learner · Thickening', st:'none',
+  name:'Mobile learner experience',
+  sub:'A first pass, not an adaptation of the desktop wireframes',
+  where:'No native container anywhere. The walk-through is drawn in a phone frame',
+  ex:[[P_WALK,'Walk-through']],
+  prob:'The brief: "Please treat mobile as a first pass rather than an adaptation of the desktop wireframes — a meaningful share of these learners are mobile-first." Plus the frame inside a native container: viewport, gestures, the system back button, and what happens when a call comes in mid-course.',
+  ex_now:'The walk-through is phone-shaped throughout, which is the right instinct. The desktop platform is desktop-only.',
+  miss:'Everything about the native container. Gestures, system back and the interrupted-by-a-call case are undrawn, and the last of those is a variant of the interruption state the brief cares most about.',
+  qs:['Is there a native container in flight for FinServ, or is mobile web the Phase 1 answer? The brief mentions a native container as a requirement on the Compass frame, which implies one exists or is planned.'],
+  blk:[], notes:[]},
+
+{ ref:'J·3', dom:'learner', grp:'Learner · Phase 1 acceptance journeys', st:'info',
+  name:'Self-serve purchase',
+  sub:'Website → Learner. Anonymous visitor to first course view',
+  where:'Blocked on a conflict between the two source documents',
+  ex:[],
+  prob:'Proves the commerce path stands alone, and that attribution is absent by design when there was no invite rather than absent by accident.',
+  ex_now:'Nothing on our side, correctly — the wireframe brief told us website and checkout were out of scope.',
+  miss:'The scope decision. The build plan counts this among the ten journeys that define Phase 1 being finished.',
+  qs:['The wireframe brief says website and checkout are out of scope for this pass; the build plan makes self-serve purchase a Phase 1 acceptance journey. Which governs? If the answer is "the brief", then Phase 1 as defined cannot be demonstrated, and somebody should know that.'],
+  blk:['website'], notes:[]},
+
+{ ref:'J·9', dom:'learner', grp:'Learner · Phase 1 acceptance journeys', st:'part',
+  name:'Signed-in browsing',
+  sub:'Browsing the catalogue while signed in — what you own, your agency price, your account',
+  where:'Catalogue is built in the dashboard · the sponsored-price question is a hatched hole',
+  ex:[[P_DESK,'Desktop platform']],
+  prob:'One shell, with no visible seam between the commerce surface and the learner surface. And underneath it: sponsored access is meant to be invisible to the learner, which makes showing a price wrong and hiding it also wrong.',
+  ex_now:'A catalogue exists and is demonstrated on XCEL tokens.',
+  miss:'"Who pays" is drawn as a hatched hole on the desktop platform, deliberately: neither showing nor hiding the price is right until the entitlement rule exists. That is the honest position, not a gap in the drawing.',
+  qs:[], blk:['website'], notes:[]},
+
+{ ref:'J·6', dom:'learner', grp:'Learner · Phase 1 acceptance journeys', st:'part',
+  name:'Sponsored enrollment',
+  sub:'Admin assigns a seat; the learner never sees a price',
+  where:'Admin half is real in <code>xcel-admin-tool.html</code> · learner half is the "who pays" hole',
+  ex:[[P_TOOL+'#seats','Seats view'],[P_DESK,'Desktop platform']],
+  prob:'The one rule that must not leak: do not show a price or an upgrade call to action to someone whose agency paid. That rule governs the LEARNER app and does not apply to the admin surface — conflating the two is what previously led to the wrong conclusion that PartnerHub could not reach this flow at all.',
+  ex_now:'The admin side works: the seat exists as a record, and a self-paid learner’s Seat cell is genuinely blank rather than "n/a" — a placeholder in an inapplicable column reads as a value we failed to fetch.',
+  miss:'The learner side, and the $0 order path with a sponsor invoice line against the right node in the tree.',
+  qs:[], blk:[], notes:[]},
+
+{ ref:'J·8', dom:'learner', grp:'Learner · Phase 1 acceptance journeys', st:'none',
+  name:'Renewal and CE repurchase',
+  sub:'Eligibility → prompt → repurchase → new entitlement',
+  where:'No repurchase surface anywhere. The desktop platform has a renewal-cycle axis only',
+  ex:[[P_DESK,'Desktop platform']],
+  prob:'The CE renewal funnel crosses three domains and has to be measurable as one number, or each domain optimises its own segment. Eligibility is computed in Platform, the prompt renders on Learner or Website, the purchase completes in eCommerce.',
+  ex_now:'The desktop platform models continuing ed as an education type and hides the renewal cycle for pre-licensure, since there is nothing to renew yet. That is the groundwork, not the funnel.',
+  miss:'The prompt, the repurchase and the eligibility display. No longer blocked on how pre-implementation CE credit is evidenced — the current LMS answers that with learner-added history against an uploaded accredited certificate.',
+  qs:[], blk:[], notes:[
+    {d:'2026-09-03', t:'Jillienne: no longer blocked on pre-existing CE credit. The current LMS accepts learner-added history and external certifications against an uploaded accredited certificate, and it counts toward eligibility today — so the eligibility input has both a home and an evidentiary basis. What remains on this row is the funnel itself: the prompt, the repurchase, and one metric spanning three domains.'}
+  ]},
+
+/* ═══════════════ ADMIN & ANALYTICS ═══════════════ */
+
+{ ref:'', dom:'admin', grp:'Admin · Foundations', st:'none',
+  name:'The metric catalogue',
+  sub:'Definitions as data, versioned, before any dashboard exists',
+  where:'Nothing anywhere on either project',
+  ex:[],
+  prob:'This domain holds the reporting model that every surface displaying a number consumes. The build plan is emphatic about order: the catalogue comes before any dashboard, and every number on an admin screen must trace to a versioned definition in it.',
+  ex_now:'Nothing. This is the domain’s stated Phase 1 foundation and its provider obligation to everyone else.',
+  miss:'All of it. Note the build plan’s measure of done: "every number on an admin screen traces to a versioned definition in the catalogue" — which is a design requirement as much as a data one, because it implies every figure can show you its definition.',
+  qs:['Is there a metric definitions document or spreadsheet anywhere today, even an informal one? If reporting disputes are already a named problem, somebody has probably started writing definitions down.','Does "traces to a versioned definition" need a visible affordance on the admin screens — click a number, see its definition? That would be a genuinely novel pattern and it is the kind of thing worth prototyping early.'],
+  blk:[], notes:[]},
+
+{ ref:'', dom:'admin', grp:'Admin · Foundations', st:'part',
+  name:'The admin shell, on the Learner design system',
+  sub:'Dense-table and bulk-action components contributed upstream rather than forked',
+  where:'<code>xcel-admin-tool.html</code> is a <b>fork</b> of PartnerHub — precisely what the build plan forbids',
+  ex:[[P_TOOL,'Admin tool']],
+  prob:'The build plan names the failure mode directly: a contribution path exists so that Admin and eCommerce commit components upstream instead of forking, with forks held at zero as a provider-side measure.',
+  ex_now:'A working admin surface, forked from PartnerHub, which is why All Learners, the side-panel shell, the kebab, filters and pagination arrived working rather than needing to be rebuilt. As a way to get to a real prototype fast it was the right call.',
+  miss:'It is a fork, so it starts the Phase 1 scoreboard at forks = 1. It is also light-only and carries 761 hex literals bypassing its token map, which is what blocks giving it a theme.',
+  qs:[], blk:[], notes:[
+    {d:'2026-09-03', t:'Worth being clear-eyed rather than self-critical about this: forking was correct for a prototype and is wrong for the build. The useful output is that the fork has already told us exactly which components Admin needs from the shared system — that is a contribution list, not a debt.'}
+  ]},
+
+{ ref:'', dom:'admin', grp:'Admin · Foundations', st:'none',
+  name:'Org management against mocked Platform contracts',
+  sub:'So this track does not wait on Platform’s org model',
+  where:'<code>AL_ORG</code> in the fork is flat parent links; <code>ADMIN_ROOTS</code> holds two roots. No contract, no mock',
+  ex:[[P_TOOL,'Admin tool']],
+  prob:'This is the mechanism that stops three domains idling for a quarter. It only works if the contract lands in the catalogue first.',
+  ex_now:'Enough of an org model to prove the scoping rules: inScope() runs first in getFiltered and isInAdminScope() re-checks independently, so a bad scope value cannot leak rows. Two roots rather than one, so the multi-root case cannot be forgotten.',
+  miss:'A contract to mock against. Fixtures are not mocks — they cannot verify a swap.',
+  qs:[], blk:[], notes:[]},
+
+{ ref:'Skeleton', dom:'admin', grp:'Admin · Skeleton slice', st:'part',
+  name:'Sign in → create one agency → attach one price list → invite one learner → see them in one report row',
+  sub:'Also the skeleton’s opening move: without it there is no agency for the learner to belong to',
+  where:'The invite half is real in <code>xcel-admin-tool.html</code>; agency creation and price-list attachment are not',
+  ex:[[P_TOOL,'Admin tool']],
+  prob:'The whole system’s skeleton starts here, which makes this the highest-priority admin row despite looking modest.',
+  ex_now:'The invite arc genuinely works end to end: compose → preview → send, and the send creates the cohort <i>and</i> real learner rows, then navigates to the roster filtered to that intake. Frame 4 is a navigation, not a screen.',
+  miss:'Creating an agency, placing it in a tree, and attaching a price list. All three are the org-model half and none of them exist.',
+  qs:[], blk:[], notes:[]},
+
+{ ref:'A·01', dom:'admin', grp:'Admin · The brief’s six flows', st:'none',
+  name:'The organisation',
+  sub:'The admin’s home is their part of the hierarchy',
+  where:'No hierarchy and no history in either project — the existing inventory scores it None',
+  ex:[[P_ADMN+'#stg-org','Organisation stage']],
+  prob:'The brief: "These trees are deep and wide, they change constantly, and an admin only ever sees their own subtree. A conventional tree control will not survive contact with a real hierarchy."',
+  ex_now:'Answered on the admin wireframes page with <b>drill, don’t unfold</b> — a breadcrumb whose root is a boundary rather than a starting point, so subtree scoping is structural instead of a clearable filter. The fork has AL_ORG but no drill.',
+  miss:'The drill itself in the tool. It is closer than it looks: the fork already ships a Groups table and a Group Summary side panel, so it needs a naming decision and the drill, not a new table.',
+  qs:['Groups or Agencies? The fork inherited "Groups" from PartnerHub; the brief and the strategy packet both say agencies. I would rather rename once than carry both vocabularies.'],
+  blk:[], notes:[
+    {d:'2026-09-03', t:'This also answers a known gap: under "All my agencies" the roster does not say which agency a row sits in. Do not fix that with a 16th column — you drill, you do not add a column.'},
+    {d:'2026-09-03', t:'From the Common LMS pass: a Breadcrumb primitive already exists in its shared UI library. The drill this row needs is therefore a composition of things that exist — breadcrumb, table, side panel — not a new component. That moves it from "design a tree control" to "wire three primitives", which is a materially smaller job than the None pill suggests.'}
+  ]},
+
+{ ref:'A·01a', dom:'admin', grp:'Admin · The brief’s six flows', st:'none',
+  name:'As of today, or as it was',
+  sub:'The structure has history, and a number is meaningless without saying which one it used',
+  where:'No temporal model anywhere. An as-of control exists only on <code>xcel-lms-admin.html</code>',
+  ex:[[P_ADMN+'#org-asof','As-of control'],[P_ADMN+'#org-basis','Basis line']],
+  prob:'Every roll-up is answerable "as of today" or "as it was". Learners move between agencies continuously, so last quarter’s regional total depends on last quarter’s tree.',
+  ex_now:'An as-of control and a shared basis line, on the reasoning that "as of" and reporting provenance are one problem — <i>what does this number actually mean</i> — and must share one basis line or every screen reads hedged.',
+  miss:'Temporal parentage in the data. The strategy packet says it is recorded from the point of implementation forward, which means the "as it was" answer does not exist for anything before that.',
+  qs:[], blk:[], notes:[]},
+
+{ ref:'A·02', dom:'admin', grp:'Admin · The brief’s six flows', st:'none',
+  name:'Setting up an agency',
+  sub:'Create it, place it, attach pricing, provision its administrators',
+  where:'No analog in either project',
+  ex:[[P_ADMN,'Admin wireframes']],
+  prob:'Pricing set high in the tree flows down unless overridden. This replaces partner codes entirely — pricing derives from tree position rather than from a string typed at checkout, and the brief says never design a "enter your partner code" field.',
+  ex_now:'Discussed on the admin wireframes page but not built as a flow.',
+  miss:'The whole flow, and it is load-bearing: because there is no migration, the tree is created at implementation, so this screen’s quality sets the ceiling on every admin capability, cohort report, sponsor invoice and account-health signal built on top of it.',
+  qs:[], blk:[], notes:[]},
+
+{ ref:'A·02a', dom:'admin', grp:'Admin · The brief’s six flows', st:'none',
+  name:'Inherited versus overridden — and the blast radius',
+  sub:'The pattern to get right; it recurs everywhere on this surface',
+  where:'Neither project shows own-vs-inherited anywhere. Price origin in the fork is a <b>fixture, not a lookup</b>',
+  ex:[[P_TOOL,'Admin tool'],[P_ADMN,'Admin wireframes']],
+  prob:'The brief: "An admin needs to see at a glance whether a price is this agency’s own or inherited from above, and what changing it will affect beneath."',
+  ex_now:'An origin line exists in both the fork’s side panel and its composer, labelled as a fixture rather than a lookup in both places so it cannot be mistaken for working inheritance.',
+  miss:'Real inheritance resolution, and the blast radius. Drawn as a hatched hole on the admin wireframes page with the reason stated: the blast radius is the hard part, not the badge. Showing "inherited" is easy; showing what a change will do to 40 agencies beneath you is the design problem.',
+  qs:[], blk:[], notes:[]},
+
+{ ref:'A·03', dom:'admin', grp:'Admin · The brief’s six flows', st:'have',
+  name:'Inviting learners — compose and preview',
+  sub:'Single and bulk. Bulk is the real case; recruiting happens in cohorts',
+  where:'PartnerHub Gift Recipients · now built in <code>xcel-admin-tool.html</code>',
+  ex:[[P_TOOL,'Admin tool']],
+  prob:'The brief: "Bulk invite is where admins currently lose confidence in us. Design the whole arc: composing, previewing what recruits will receive, sending, and then seeing what happened."',
+  ex_now:'Upgraded since the last inventory, which scored compose-and-preview as None. The fork now does compose → preview → send, and the send creates the cohort and real learner rows before navigating to the filtered roster.',
+  miss:'Recipient paste and upload — parsing, per-row errors, and de-duplication against learners already in the subtree. Undesigned, and the composer says so on screen.',
+  qs:[], blk:[], notes:[
+    {d:'2026-09-03', t:'This row moved from None to Built between the last inventory and this one. Worth noting because it is the only one that did — the other movements on this page are refinements of what a status means, not real progress.'}
+  ]},
+
+{ ref:'A·03a', dom:'admin', grp:'Admin · The brief’s six flows', st:'part',
+  name:'The follow-up view',
+  sub:'Who received, who opened, who enrolled, who has not moved',
+  where:'PartnerHub: claimed / unclaimed, <code>Last Reminded</code> sorted oldest-first, per-row Send Reminder · the <code>#follow-up</code> preset in the fork',
+  ex:[[P_TOOL+'#follow-up','Follow-up view']],
+  prob:'The brief is unusually direct: "The follow-up view matters more than the send."',
+  ex_now:'Most of it. Gift Recipients already models the roster with a claim status and Last Reminded sorted oldest-first, plus a bulk reminder flow that is archived but intact. The fork adds a 24-hour reminder throttle as a real state rather than a label.',
+  miss:'"Received" and "opened" are email-delivery facts and nothing in either project models them. Everything currently derives from claim status, which conflates "never got it" with "got it and ignored it" — and those need different admin actions.',
+  qs:['Do we have email delivery and open telemetry available, or is claim status the only signal we will ever have? It changes this screen substantially: if we cannot distinguish undelivered from ignored, the design has to stop promising that it can.'],
+  blk:[], notes:[]},
+
+{ ref:'A·04', dom:'admin', grp:'Admin · The brief’s six flows', st:'part',
+  name:'Seats and entitlements',
+  sub:'Who has access to what, assigning and revoking, and where the agency pays',
+  where:'PartnerHub Gift Recipients — seat as a record with a claim status · <b>not</b> the entitlement matrix, which models consumer membership tiers',
+  ex:[[P_TOOL+'#seats','Seats view']],
+  prob:'The brief: "Sponsored access is invisible to the learner and central to the admin. Show spend and utilisation without making the learner’s experience feel metered."',
+  ex_now:'The roster half, and one correction worth keeping: agencyId and payerId are different facts — where a learner sits versus who bought their seat. The fixtures were conflating them, which left a self-paid learner in no agency at all. A region buying seats for an agency’s recruits is now representable, and the panel says "seat bought above them".',
+  miss:'Spend and utilisation, both of which are genuinely new.',
+  qs:[], blk:[], notes:[]},
+
+{ ref:'A·04a', dom:'admin', grp:'Admin · The brief’s six flows', st:'none',
+  name:'Spend roll-up',
+  sub:'A total, not a column',
+  where:'No analog. Named as the next thing in the admin tool’s own plan',
+  ex:[[P_ADMN+'#rs-rollup','Roll-up']],
+  prob:'Spend is the one thing that is not a column, because it is a total rather than a property of a learner. Putting it in the agency roll-up above the table keeps it out of the row and off the learner’s screen by construction — the structure enforces the privacy rule rather than a rule doing it.',
+  ex_now:'The reasoning and the placement are settled on the admin wireframes page, and its smoke suite asserts specifically that spend is in the roll-up and NOT in the table header.',
+  miss:'Building it in the tool.',
+  qs:[], blk:['sponsorHist'], notes:[]},
+
+{ ref:'A·04b', dom:'admin', grp:'Admin · The brief’s six flows', st:'none',
+  name:'Utilisation beyond "claimed"',
+  sub:'A seat can be claimed, paid for, and idle',
+  where:'PartnerHub models claimed / unclaimed only. <code>IDLE_RULE_INVENTED</code> in the fork is ours',
+  ex:[[P_TOOL,'Admin tool']],
+  prob:'This is where flows 04 and 06 meet on the same row: "bought and never started" is both a utilisation fact and a stuck learner. Claimed-versus-unclaimed cannot express it.',
+  ex_now:'An Idle state in the roster, with its threshold named loudly as invented — claimed, 14 days idle, under 10% done — and an owner recorded in the comment.',
+  miss:'A real rule. The 14 days is a placeholder and is flagged as such on the page, which is the honest position but not a shippable one.',
+  qs:['Who owns the idle threshold on the FinServ product side? The constant is deliberately one line with an owner in the comment so it can be replaced rather than re-derived.'],
+  blk:[], notes:[]},
+
+{ ref:'A·05', dom:'admin', grp:'Admin · The brief’s six flows', st:'part',
+  name:'Cohort reporting',
+  sub:'Completion, pass rates, who is at risk, drillable to an individual',
+  where:'PartnerHub: the table kit, the badges, progress, drill-to-learner · <b>Common LMS dashboard</b> (<code>jill-dashboard-ux-designs</code>) has the reporting-status variants, now confirmed concretely',
+  ex:[[P_TOOL,'Admin tool']],
+  prob:'Two things must be visible without dominating: the line in the data, and that some historical figures carry lower confidence than others.',
+  ex_now:'The furniture is all there and it is good furniture. Drill-to-learner works. And the provenance shape I guessed at is real: the Common LMS certificate model carries a three-way <code>CertReporting</code> union — <b>reported</b> with a date, <b>pending-roster</b> with an explanatory tooltip, and <b>non-reporting</b> naming the state. That is a working precedent for saying what a number means without hedging every screen.',
+  miss:'Provenance has no analog anywhere, and pass rates specifically depend on the licensure hand-off, which is None on the learner side. A pass rate we cannot capture is a column we cannot fill.',
+  qs:[], blk:['contested'], notes:[]},
+
+{ ref:'A·05a', dom:'admin', grp:'Admin · The brief’s six flows', st:'none',
+  name:'The line in the data',
+  sub:'Periods spanning it show both, labelled, with definitions reconciled',
+  where:'No analog — the existing inventory scores "data provenance across the migration line" as None',
+  ex:[[P_ADMN+'#org-basis','Basis line']],
+  prob:'The brief: "there is a line in the data where a customer moved onto the new platform, and figures either side of it come from different systems. Show provenance honestly without making every screen look hedged." The strategy packet is firmer still: show both, labelled, rather than a single number quietly blending two meanings.',
+  ex_now:'The design position is settled — provenance and as-of share one basis line, because they are the same question. Nothing is built for the migration line itself, but the <i>pattern</i> has a precedent worth copying: the Common LMS states a certificate\'s reporting provenance in three named conditions rather than a confidence percentage, which is exactly the "honest without looking hedged" register the brief asks for.',
+  miss:'Everything. And a second-order consequence the strategy packet names: adaptive intelligence begins at implementation, because historical activity does not carry the objective and knowledge-component keys mastery is computed from. So the line is not only a reporting seam, it is a capability seam.',
+  qs:[], blk:[], notes:[]},
+
+{ ref:'A·05b', dom:'admin', grp:'Admin · The brief’s six flows', st:'info',
+  name:'Confidence on historical figures',
+  sub:'Some historical figures carry lower confidence than others',
+  where:'Blocked twice over — on a confidence threshold, and on whether finance needs historical reconciliation',
+  ex:[[P_ADMN,'Admin wireframes']],
+  prob:'Showing confidence honestly without making every screen look hedged. Drawn as a hatched hole because the threshold is the hard part.',
+  ex_now:'Acknowledged as a hole rather than papered over.',
+  miss:'The threshold, and the answer to whether sponsor invoicing must reconcile against historical attribution. If finance requires it, the build plan says the confidence bar on historical reporting is materially higher — which changes this from a label to a real constraint.',
+  qs:['Has finance answered whether sponsor invoicing must reconcile against historical attribution? The build plan lists it as open and pending finance, and it sets the whole confidence bar.'],
+  blk:['sponsorHist'], notes:[]},
+
+{ ref:'A·06', dom:'admin', grp:'Admin · The brief’s six flows', st:'have',
+  name:'Who is stuck',
+  sub:'The highest-value screen in the admin surface',
+  where:'PartnerHub All Learners is most of it — with one important caveat about the badges',
+  ex:[[P_TOOL+'#stuck','Who is stuck'],[P_ADMN+'#stg-roster','Roster stage']],
+  prob:'The brief: "This is the highest-value screen in the admin surface and it does not exist anywhere today. It is a list that has to answer who, how bad, and what do I do about it in one view, at cohort scale. If you design one admin screen well, make it this one."',
+  ex_now:'A working roster: one set of rows, three view presets that re-filter and re-sort rather than exclude, sortable headers, status chips, bulk selection with a view-specific action, and a side panel on row click — deliberately not an expanding row, since on a cohort-scale list expansion pushes whatever you were comparing against off screen.',
+  miss:'The caveat that matters: PartnerHub’s five status "badges" are <b>counts, not badges</b> — five numeric columns of programs per state, so a learner at 2 compliant + 1 overdue reads as neither. There is no per-learner answer to "how bad" in the source, which is exactly the middle third of the brief’s question.',
+  qs:[], blk:[], notes:[
+    {d:'2026-09-03', t:'This is scored Built because you can open All Learners today and point at it, and reuse is a port. But read the missing note before treating it as done — the brief asks three questions and the source answers two.'}
+  ]},
+
+{ ref:'A·06a', dom:'admin', grp:'Admin · The brief’s six flows', st:'info',
+  name:'Risk — and its collision with Compass readiness',
+  sub:'Deterministic on our side, probabilistic on theirs, about the same learner',
+  where:'<code>RISK_RULE_INVENTED</code> in the fork · Compass owns readiness · nobody has settled which wins',
+  ex:[[P_TOOL+'#stuck','Who is stuck']],
+  prob:'The Risk column is what makes "how bad" answerable at all, given the badges are counts. But it is derived deterministically from deadline and percent complete, while Compass computes readiness probabilistically as low / medium / high. If Compass owns readiness, this column is either a second disagreeing opinion about the same learner, or their number wearing our badge.',
+  ex_now:'A working Risk column with its rule named loudly and one line long — under 30 days and below 60%, or under 60 days and below 25% — so it can be replaced rather than reverse-engineered.',
+  miss:'The ownership decision. This is the one item on the page I would most want settled before any more work goes into the roster, because tuning the thresholds without settling it makes the disagreement more precise rather than less.',
+  qs:['Does Compass own readiness for the admin surface as well as the learner surface? If yes, Risk should probably render their signal rather than compute its own. If no, we need to be able to say why two numbers about the same learner disagree.','This is entangled with the four contested surfaces. Is the Compass boundary session on the calendar yet?'],
+  blk:['contested'], notes:[
+    {d:'2026-09-03', t:'Do not improve the thresholds without settling the ownership question first. Better thresholds on a column that should not exist is wasted work, and worse, it makes the column look more authoritative.'}
+  ]},
+
+{ ref:'A·06b', dom:'admin', grp:'Admin · The brief’s six flows', st:'have',
+  name:'Act on them from the same place',
+  sub:'Bulk selection and multi-step actions at cohort scale',
+  where:'Net-new in <code>xcel-admin-tool.html</code> — bulk selection did <b>not</b> exist in the PartnerHub source',
+  ex:[[P_TOOL,'Admin tool']],
+  prob:'The third part of the brief’s question — "and what do I do about it" — in the same view, without navigating away.',
+  ex_now:'Selection keyed by <b>email</b> rather than name or index (names collide, indexes move under every sort), pruned to the filtered set on each render, and cleared when the acting root changes — because that is switching book, not narrowing one. Plus a bulk bar with a view-specific action and a real reminder throttle.',
+  miss:'The preset strip is a <code>role="tablist"</code> whose table is not wired as a tabpanel. Finish the pattern or drop to buttons with a live region.',
+  qs:[], blk:[], notes:[]},
+
+{ ref:'', dom:'admin', grp:'Admin · Thickening', st:'none',
+  name:'Org tree management at real depth',
+  sub:'Move and re-parent, with temporal placement visible',
+  where:'No analog. The fork has flat parent links and no editing',
+  ex:[[P_ADMN+'#stg-org','Organisation stage']],
+  prob:'Trees change constantly, and a move has to be recorded in time rather than overwritten, or every historical roll-up silently changes with it.',
+  ex_now:'Nothing beyond the read-only drill reasoning.',
+  miss:'All of it. Re-parenting is the operation most likely to corrupt reporting, and it has no design yet.',
+  qs:[], blk:[], notes:[]},
+
+{ ref:'', dom:'admin', grp:'Admin · Thickening', st:'none',
+  name:'Customer implementation as an operated capability',
+  sub:'Because there is no migration, onboarding an existing and a new customer are the same capability',
+  where:'No analog anywhere on either project',
+  ex:[],
+  prob:'The strategy packet makes this first-class: org tree construction, price-list attachment, attribution by derivation, admin provisioning, learner arrival. And it is explicitly designed to be operable "by someone who did not build them".',
+  ex_now:'Nothing. It is not in the wireframe brief’s six flows at all, which is why it is absent from our work — the brief predates it or scoped it out.',
+  miss:'Everything, and it is the single biggest omission I found relative to the brief we were working from. The build plan makes implementation accuracy the thing that sets the ceiling on every other admin capability.',
+  qs:['Is customer implementation a design surface we own this pass? It is absent from the wireframe brief’s six flows but the build plan treats it as central to this domain, and it is measured ("time to implement a customer, from kickoff to first learner enrolled").'],
+  blk:[], notes:[
+    {d:'2026-09-03', t:'This is the clearest thing the two new documents added that the wireframe brief did not ask for. Worth raising with Amrita rather than absorbing quietly — if it is ours, it is a substantial body of work with no wireframes at all.'}
+  ]},
+
+{ ref:'', dom:'admin', grp:'Admin · Thickening', st:'none',
+  name:'Historical reporting alongside live',
+  sub:'History is read, not re-derived',
+  where:'No analog. Served through the reporting layer, surfaced in Admin',
+  ex:[],
+  prob:'The whole no-migration decision rests on this surface existing. If history is not readable here, the argument for not migrating loses its safety net.',
+  ex_now:'Nothing.',
+  miss:'All of it, including how it sits beside live figures without either dominating. Related to the line in the data, but distinct: that row is about labelling a boundary, this one is about a whole surface.',
+  qs:[], blk:[], notes:[]},
+
+{ ref:'', dom:'admin', grp:'Admin · Thickening', st:'info',
+  name:'In-flight and expiring-learner visibility',
+  sub:'Ahead of T0 + 30, when incomplete courses expire',
+  where:'Blocked on two open decisions, and this domain holds the surface for both',
+  ex:[],
+  prob:'At T0 + 30 remaining incomplete courses expire and those learners are re-enrolled on the new platform at no cost. Somebody has to see that coming and act on it.',
+  ex_now:'Nothing, correctly — the build plan lists expiring-learner handling as TBD and names this domain as holding the surface.',
+  miss:'The decisions. T0 is not set and has no owner, and how the window is surfaced and to whom is undecided. The brief’s instruction is flag rather than invent, so this stays a hole.',
+  qs:['Has T0 been given an owner or a target date yet? Every stage after diversion keys off it, and so does every learner and sponsor communication.'],
+  blk:['T0','expiring','carryover'], notes:[]},
+
+{ ref:'', dom:'admin', grp:'Admin · Thickening', st:'info',
+  name:'Account health and customer-success tooling',
+  sub:'Coverage across the named at-risk accounts',
+  where:'Unknown whether this is a product surface or a CS-internal tool',
+  ex:[],
+  prob:'Account health is one of this domain’s five measures, and the strategy packet names specific at-risk accounts, so it is real and urgent. What is unclear is who looks at it.',
+  ex_now:'Nothing on either project that I could find.',
+  miss:'Scope clarity before design.',
+  qs:['Is account health a customer-facing admin surface, or an internal CS tool? It changes the audience completely — an agency manager and a Colibri CS rep want very different screens, and the strategy packet lists named at-risk accounts, which is not something you show a customer.'],
+  blk:[], notes:[]},
+
+{ ref:'', dom:'admin', grp:'Admin · Thickening', st:'info',
+  name:'Conversational Admin',
+  sub:'Listed in this domain’s owned surface area',
+  where:'Named in the build plan with no further definition',
+  ex:[],
+  prob:'The build plan notes it is itself an AI surface, "which makes this domain’s product and its method the same technology". That is the only description given.',
+  ex_now:'Nothing.',
+  miss:'A definition. I am not going to design against a name.',
+  qs:['What is Conversational Admin, concretely? Is there a spec, a demo, or a competitor it is modelled on? It appears in the owned surface area with no elaboration anywhere in the three documents.'],
+  blk:[], notes:[]},
+
+{ ref:'', dom:'admin', grp:'Admin · Thickening', st:'info',
+  name:'Pipeline Pulse',
+  sub:'Listed in this domain’s owned surface area',
+  where:'Named in the build plan with no further definition',
+  ex:[],
+  prob:'Unknown. The strategy packet mentions a recruiter pipeline in the Admin Experience description, which may or may not be the same thing.',
+  ex_now:'Nothing.',
+  miss:'A definition, and whether it is the recruiter pipeline under another name.',
+  qs:['What is Pipeline Pulse, and is it the same thing as the "recruiter pipeline" the strategy packet lists under the Admin Experience? If they are two names for one surface, worth settling before either gets designed.'],
+  blk:[], notes:[]},
+
+{ ref:'J·1', dom:'admin', grp:'Admin · Phase 1 acceptance journeys', st:'none',
+  name:'Admin builds their own organisation',
+  sub:'Proves the org model is operable by a customer rather than by us',
+  where:'No analog. Depends on flows 01 and 02, both None',
+  ex:[[P_ADMN+'#stg-org','Organisation stage']],
+  prob:'An admin places agencies, attaches a price list at the right level, provisions sub-admins with scope, and sees inheritance resolve — without our help.',
+  ex_now:'The drill and scoping reasoning only.',
+  miss:'Everything it depends on.',
+  qs:[], blk:[], notes:[]},
+
+{ ref:'J·2', dom:'admin', grp:'Admin · Phase 1 acceptance journeys', st:'part',
+  name:'Admin invites a learner, single and bulk',
+  sub:'The one to demo first — all three surfaces, all four domains, one pass',
+  where:'The admin end works in <code>xcel-admin-tool.html</code>; the website and learner ends do not',
+  ex:[[P_TOOL,'Admin tool'],[P_WALK,'Walk-through']],
+  prob:'The build plan singles this out: it touches the org model, pricing, identity, entitlement and the Compass hand-off in a single pass, and if it walks, almost everything else is a variation on a proven path. With no partner code anywhere.',
+  ex_now:'The two ends are each designed — the fork does compose → preview → send → filtered roster, and the walk-through does invite link → magic link → account → course. They have never been joined.',
+  miss:'The middle: the signed link landing pre-attributed on a website surface we have been told not to design, and checkout at the agency’s price.',
+  qs:['Given this is the journey to demo first and its middle third sits in eCommerce, is the website really out of scope for us? This is the strongest practical argument that the two documents need reconciling.'],
+  blk:['website'], notes:[]},
+
+{ ref:'J·7', dom:'admin', grp:'Admin · Phase 1 acceptance journeys', st:'part',
+  name:'Admin sees their cohort truthfully',
+  sub:'Every number traceable to a versioned definition, with the line marked rather than blended',
+  where:'Table kit and drill are built; the metric catalogue, provenance and the line are not',
+  ex:[[P_TOOL,'Admin tool']],
+  prob:'"Truthfully" is doing a lot of work in that title. It means traceable definitions, a marked boundary, and honest confidence — three separate unbuilt things.',
+  ex_now:'Cohort completion, at-risk learners and drill-to-individual all work.',
+  miss:'Pass rates (blocked on the licensure hand-off), traceable definitions (blocked on the metric catalogue), and the line in the data.',
+  qs:[], blk:['contested','sponsorHist'], notes:[]},
+
+/* ═══════════════ CROSS-CUTTING STATES ═══════════════ */
+
+{ ref:'S·1', dom:'cross', grp:'States that recur on both surfaces', st:'have',
+  name:'Deadline pressure',
+  sub:'The single strongest motivator in the product',
+  where:'The learner dashboard progress states · demonstrated live on the desktop platform',
+  ex:[[P_DESK,'Desktop platform']],
+  prob:'A learner days from a licensing or CE deadline should see a different emphasis on both surfaces — emphasis, not layout.',
+  ex_now:'Built, and the desktop platform makes all five compliance states clickable so the emphasis change is checkable rather than asserted.',
+  miss:'The admin side of it. Deadline pressure drives the Risk column, which is Needs info.',
+  qs:[], blk:[], notes:[]},
+
+{ ref:'S·2', dom:'cross', grp:'States that recur on both surfaces', st:'part',
+  name:'Empty and first-run',
+  sub:'A brand-new agency with no learners; a learner with one course and nothing else',
+  where:'Two empty states authored in the fork; "empty states beyond the two authored" is listed as undesigned',
+  ex:[[P_TOOL,'Admin tool']],
+  prob:'The brief: both are the most common first impression. A brand-new agency is what every implementation starts as.',
+  ex_now:'Two authored states in the admin tool, and a shared <code>EmptyState</code> primitive in the Common LMS library that its own not-built-yet account sections render through — so the component exists even where the content does not.',
+  miss:'Everything else, on both surfaces. Given implementation creates every agency from nothing, the empty agency is arguably the most-seen admin screen there is.',
+  qs:[], blk:[], notes:[]},
+
+{ ref:'S·3', dom:'cross', grp:'States that recur on both surfaces', st:'part',
+  name:'Waiting',
+  sub:'Course launch, bulk invite processing, reporting refresh — each with a real duration',
+  where:'The course-launch wait is designed in the walk-through; the other two are not',
+  ex:[[P_WALK,'Walk-through'],[P_WIRE+'#s-compass','Compass stage']],
+  prob:'The brief on the launch wait: "That wait is a designed experience, not a spinner — we track it as a metric and it is one of our known drop-off points."',
+  ex_now:'The hand-over wait is a real designed screen in the walk-through, and the typed email reaches it, so it is personalised rather than generic.',
+  miss:'Bulk invite processing and reporting refresh have no designed wait at all. Bulk invite is the one where an admin loses confidence, so a bad wait there is expensive.',
+  qs:[], blk:[], notes:[]},
+
+{ ref:'S·4', dom:'cross', grp:'States that recur on both surfaces', st:'part',
+  name:'Degraded',
+  sub:'Something is slow or unavailable but the learner is not blocked',
+  where:'Compass-unreachable renders the hatched hole in the wireframes; no admin equivalent',
+  ex:[[P_WIRE+'#s-interrupt','Interruption']],
+  prob:'"A slow save must never look like a lost session." This is not an edge case — a version of exactly this ejected learners mid-exam in August and is why the platform is being rebuilt.',
+  ex_now:'The wireframes render the hole rather than an optimistic recovery, which is the honest treatment. The strategy packet turns it into a contract line on Compass: a slow save must never eject a learner.',
+  miss:'The admin side entirely — a reporting refresh that fails, a warehouse behind its freshness service level. And the learner side is Compass-scoped, so it is parked.',
+  qs:[], blk:[], notes:[]},
+
+{ ref:'S·5', dom:'cross', grp:'States that recur on both surfaces', st:'none',
+  name:'Spanish string expansion',
+  sub:'Not a translation pass at the end. Test layouts with longer strings from the start',
+  where:'No analog — the existing inventory scores it None',
+  ex:[[P_TOOL,'Admin tool']],
+  prob:'A meaningful share of these learners are Spanish-dominant, and the brief calls it a committed line rather than an edge case. Compass is asked for locale variants under one content identifier so entitlement and reporting do not fork per language.',
+  ex_now:'Nothing. But the worst case is identified: the admin table is the product’s hardest surface for this — fixed flex widths, stacked two-line headers, and badge labels that grow 30 to 40 percent.',
+  miss:'All of it. This is cheap to test now and structurally expensive to retrofit, because it changes column widths and header treatments across a 16-column table.',
+  qs:[], blk:[], notes:[
+    {d:'2026-09-03', t:'Worth doing as a pass over the admin tool specifically, before the dark-theme work rather than after. Both touch nearly every styled line, and doing them in one commit avoids reviewing the same lines twice.'}
+  ]},
+
+{ ref:'S·6', dom:'cross', grp:'States that recur on both surfaces', st:'have',
+  name:'Dense data at scale',
+  sub:'Thousands of learners, bulk selection, multi-step actions — as system components',
+  where:'PartnerHub treats bulk selection and multi-step actions as system components already',
+  ex:[[P_TOOL,'Admin tool']],
+  prob:'The brief: design them as system components rather than as one screen’s features.',
+  ex_now:'Built, and the existing inventory scores it Built. The fork demonstrates it at 16 columns with presets, sorting and bulk actions.',
+  miss:'The packaging into a shared system — see the design-system foundation row. Also a real virtualisation story: the fork paginates, and "thousands" has not been tested.',
+  qs:[], blk:[], notes:[]},
+
+{ ref:'S·7', dom:'cross', grp:'States that recur on both surfaces', st:'part',
+  name:'Both themes, light and dark first-class',
+  sub:'A Phase 1 commitment, not a later pass',
+  where:'The learner dashboard has both · <b><code>xcel-admin-tool.html</code> is light-only</b>',
+  ex:[[P_DESK,'Desktop platform']],
+  prob:'The brief lists both themes among the decided constraints, with no qualification.',
+  ex_now:'The learner side is genuinely done and tested across three palettes. The existing inventory scores this Built — but built in the learner dashboard.',
+  miss:'The admin surface. Forking un-met this Phase 1 requirement, and it is blocked behind the 761-literal hex sweep, which changes nothing visually and touches nearly every styled line.',
+  qs:[], blk:[], notes:[
+    {d:'2026-09-03', t:'The dark-mode gauge collapse is the cautionary tale to carry into the admin theme: all three palettes put their dark primary-500 at about 0.44 luminance and the light bronze landed there too, so two gauge segments measured 1.01:1 — the same bar in two hues. A test caught it. Anything with two adjacent data hues needs that assertion.'}
+  ]},
+
+{ ref:'S·8', dom:'cross', grp:'States that recur on both surfaces', st:'part',
+  name:'One design system, three surfaces',
+  sub:'The website surface has no representation in our work at all',
+  where:'Two of three surfaces are represented; Website is absent',
+  ex:[[P_DESK,'Desktop platform'],[P_TOOL,'Admin tool']],
+  prob:'Components must serve all three. Design the system, not three sets of screens.',
+  ex_now:'Learner and Admin both have real prototypes.',
+  miss:'The website surface, in both authentication states — and it is the one with the most different constraints (layout freedom, clean markup, fast anonymous loads). Designing a system against two of three surfaces is how the third ends up forking.',
+  qs:[], blk:['website'], notes:[]},
+
+/* ─── Compass, parked but listed ─── */
+
+{ ref:'M·1', dom:'learner', grp:'Compass hand-off — parked, listed for completeness', st:'cmps',
+  name:'Entry — the designed wait',
+  where:'Parked. The wait itself is designed in the walk-through',
+  ex:[[P_WALK,'Walk-through']],
+  prob:'A real wait while the session is handed over. Tracked as a metric and a known drop-off point.',
+  ex_now:'Designed on our side of the boundary.', miss:'The contract with Compass.', qs:[], blk:['contested'], notes:[]},
+
+{ ref:'M·2', dom:'learner', grp:'Compass hand-off — parked, listed for completeness', st:'cmps',
+  name:'In-frame — what of ours persists',
+  where:'Parked. Both containment options are drawn',
+  ex:[[P_WIRE+'#s-compass','Compass stage']],
+  prob:'Orientation, exit, deadline context, help — and never anything that could pull a learner out mid-assessment by accident.',
+  ex_now:'Options A and B shown side by side rather than picked, per the brief.', miss:'The containment contract.', qs:[], blk:['contested'], notes:[]},
+
+{ ref:'M·3', dom:'learner', grp:'Compass hand-off — parked, listed for completeness', st:'cmps',
+  name:'Exit — and the progress lag',
+  where:'Parked. The lag is handled in the walk-through',
+  ex:[[P_WALK,'Walk-through']],
+  prob:'Progress may take a moment to arrive; design for "we have it" rather than a stale number or a blank state.',
+  ex_now:'The walk-through exits the study loop with the progress lag visible rather than hidden.', miss:'The emission contract.', qs:[], blk:['contested'], notes:[]},
+
+{ ref:'M·4', dom:'learner', grp:'Compass hand-off — parked, listed for completeness', st:'cmps',
+  name:'Interruption — the state to start with',
+  where:'Parked. Rendered as a hatched hole rather than an optimistic recovery',
+  ex:[[P_WIRE+'#s-interrupt','Interruption']],
+  prob:'The brief’s recommended starting point for the entire exercise: 40 minutes into a 90-minute simulation, three days from a deadline, on a phone, and the save is slow.',
+  ex_now:'The hole is drawn honestly, and the walk-through carries offline-held answers through to the result screen so no answer is silently lost.',
+  miss:'Everything that depends on Compass’s degradation contract.', qs:[], blk:['contested'], notes:[]},
+];
+
+const DECISIONS = [
+  { id:'contested', t:'The four contested surfaces', st:'info',
+    v:'Compass PRDs still assign B2B admin, Insights dashboards and Signals/Analytics to Compass; our architecture assigns Admin, analytics, Support and Notifications to FinServ with Compass supplying signals only. Left unreconciled, both teams build admin. The wireframe brief says the same from the design side: do not design an admin dashboard that assumes either answer. <b>The most consequential open item across all three documents</b>, and the recommended next step is one working session producing two signed artefacts.' },
+  { id:'T0', t:'T0 — the date, and its owner', st:'none',
+    v:'Not set. Every stage after diversion keys off it, as does every learner and sponsor communication. T0 is the last new enrollment on the existing platform; T0 + 30 is when incomplete courses expire and those learners are re-enrolled at no cost.' },
+  { id:'carryover', t:'Course progress carry-over', st:'none',
+    v:'TBD. Whether a learner’s progress carries over if they are moved mid-course. It changes the arrival experience for that group, and the Learner Experience domain is waiting on it.' },
+  { id:'expiring', t:'Expiring-learner handling', st:'none',
+    v:'TBD — how the window is surfaced and to whom. Admin &amp; Analytics holds the surface for it, so this blocks a row rather than merely informing one.' },
+  { id:'retention', t:'Insurance and banking retention periods', st:'none',
+    v:'To be sourced from compliance. Mortgage is five years. Retention is a per-jurisdiction attribute in the rules engine, with a regulatory floor, a data-minimisation ceiling, and legal hold overriding both.' },
+  { id:'preCE', t:'Pre-existing CE credit', st:'have',
+    v:'<b>Answered — by the current LMS, which none of the three source documents mention.</b> A learner adds their own history and external certifications, the entry is accepted without an admin verification gate, and it counts toward eligibility today. What makes that defensible is the mechanism underneath it: <b>the learner must upload their accredited certificate</b> to evidence what they took. So the authoritative record the strategy packet demands is not our database row — it is the third-party accredited document, and the learner\'s entry is metadata pointing at it. "Accepted on trust" describes the absence of a manual review step, not the absence of evidence. And the document store this depends on is <b>also already complete, in the Common LMS</b> — so the answer holds end to end, not just at the point of entry. This should go back to Amrita: it is listed as an open decision blocking the CE renewal funnel, and it has a shipped precedent across two existing projects.' },
+  { id:'sponsorHist', t:'Sponsor invoicing against historical attribution', st:'none',
+    v:'Open, pending finance. If finance requires reconciliation, the confidence bar on historical reporting is materially higher — which turns the provenance work from a label into a hard constraint.' },
+  { id:'website', t:'Website and checkout — in scope or not?', st:'info',
+    v:'<b>Not from the sources — this one is ours.</b> The wireframe brief scopes website and checkout out; the build plan makes self-serve purchase and signed-in browsing Phase 1 acceptance journeys, and puts the middle third of the demo-first journey there. Two documents, two answers.' },
+];
+
+const NOT_PHASE_1 = [
+  ['Adaptive next-step driven by mastery','Readiness is displayed; the adaptive loop that changes what a learner sees next is Compass’s own bet, measured against the pass-rate gate rather than against Phase 1.'],
+  ['Anything for learners who never started on the new platform','There is no migration, so historical learners appear in reporting but not in any live journey.'],
+  ['CE eligibility from credit earned before implementation','<b>Answered, not open</b> — and arguably not a Phase 1 exclusion at all. The current LMS lets a learner add history and external certifications against an uploaded accredited certificate, and it counts toward eligibility today. See section 02.'],
+  ['Video and livestream learning','Named as a competitive gap and absent from the capability portfolio. Not in this phase.'],
+  ['Progress carry-over for learners who expire at T0 + 30','TBD.'],
+  ['Enterprise SSO at the point of purchase','Structurally unavailable — the learner is a 1099 contractor who has not yet contracted. Federated SSO applies at sign-in afterwards.'],
+  ['Website and checkout','Out of scope per the wireframe brief — but see the conflict in section 04.'],
+];
+
+/* ── render ─────────────────────────────────────────────────────────────── */
+
+const ST = {
+  have:{ label:'Built',      cls:'p-have' },
+  part:{ label:'Partial',    cls:'p-part' },
+  none:{ label:'None',       cls:'p-none' },
+  info:{ label:'Needs info', cls:'p-info' },
+  cmps:{ label:'Compass',    cls:'p-cmps' },
+};
+const DOM = { learner:'Learner', admin:'Admin', cross:'Cross-cutting' };
+
+let fStatus = 'all', fDomain = 'all';
+
+const esc = s => String(s).replace(/&(?![a-z]+;|#\d+;)/g,'&amp;').replace(/</g,'&lt;');
+
+function visible(){
+  return ITEMS.filter(i =>
+    (fStatus === 'all' || i.st === fStatus) &&
+    (fDomain === 'all' || i.dom === fDomain));
+}
+
+function buildChips(){
+  const scoped = ITEMS.filter(i => i.st !== 'cmps');
+  const sWrap = document.getElementById('chips-status');
+  const order = ['all','have','part','none','info','cmps'];
+  sWrap.innerHTML = '<span class="lbl" style="margin-right:4px">Built?</span>' +
+    order.map(k => {
+      const n = k === 'all' ? ITEMS.length : ITEMS.filter(i => i.st === k).length;
+      const lab = k === 'all' ? 'All' : ST[k].label;
+      return '<button class="chip" type="button" data-s="' + k + '" aria-pressed="' +
+        (fStatus === k) + '">' + lab + ' <span class="n">' + n + '</span></button>';
+    }).join('') +
+    '<span class="tb-note">' + scoped.length + ' scored rows · ' +
+      ITEMS.filter(i => i.st === 'cmps').length + ' parked · ' +
+      ITEMS.filter(i => i.qs.length).length + ' carry open questions</span>';
+
+  const dWrap = document.getElementById('chips-domain');
+  dWrap.innerHTML = '<span class="lbl" style="margin-right:4px">Domain</span>' +
+    ['all','learner','admin','cross'].map(k => {
+      const n = k === 'all' ? ITEMS.length : ITEMS.filter(i => i.dom === k).length;
+      const lab = k === 'all' ? 'All' : DOM[k];
+      return '<button class="chip" type="button" data-d="' + k + '" aria-pressed="' +
+        (fDomain === k) + '">' + lab + ' <span class="n">' + n + '</span></button>';
+    }).join('');
+
+  sWrap.querySelectorAll('[data-s]').forEach(b =>
+    b.onclick = () => { fStatus = b.dataset.s; buildChips(); renderRows(); });
+  dWrap.querySelectorAll('[data-d]').forEach(b =>
+    b.onclick = () => { fDomain = b.dataset.d; buildChips(); renderRows(); });
+}
+
+function renderRows(){
+  const tb = document.getElementById('rows');
+  const vis = visible();
+  if(!vis.length){
+    tb.innerHTML = '<tr><td colspan="5" class="empty">No rows match that combination.</td></tr>';
+    return;
+  }
+  let html = '', grp = null;
+  vis.forEach(i => {
+    if(i.grp !== grp){
+      grp = i.grp;
+      const inGrp = vis.filter(x => x.grp === grp).length;
+      html += '<tr class="grp"><td colspan="5"><span class="grp-t">' + esc(grp) +
+        '</span> <span class="grp-d">· ' + inGrp + (inGrp === 1 ? ' row' : ' rows') +
+        '</span></td></tr>';
+    }
+    const s = ST[i.st];
+    const links = i.ex.length
+      ? i.ex.map(([h,l]) => '<a class="lk" href="' + h + '">' + esc(l) + '</a>').join('')
+      : '<span class="lk-none">— not drawn</span>';
+    html += '<tr class="item">' +
+      '<td class="c-ref">' + esc(i.ref || '') + '</td>' +
+      '<td class="c-name">' + esc(i.name) +
+        (i.sub ? '<span class="sub">' + esc(i.sub) + '</span>' : '') + '</td>' +
+      '<td class="c-status"><span class="pill ' + s.cls + '">' + s.label + '</span></td>' +
+      '<td class="c-where">' + i.where + '</td>' +
+      '<td class="c-links">' + links +
+        ' <button class="btn-d" type="button" data-id="' + ITEMS.indexOf(i) + '">Details' +
+        (i.qs.length ? '<span class="dot"></span>' : '') + '</button></td>' +
+      '</tr>';
+  });
+  tb.innerHTML = html;
+  tb.querySelectorAll('[data-id]').forEach(b =>
+    b.onclick = () => openSheet(Number(b.dataset.id), b));
+}
+
+/* ── sheet ──────────────────────────────────────────────────────────────── */
+
+const sheet = document.getElementById('sheet');
+const backdrop = document.getElementById('backdrop');
+let lastFocus = null;
+
+function openSheet(idx, trigger){
+  const i = ITEMS[idx];
+  lastFocus = trigger || null;
+  const s = ST[i.st];
+
+  document.getElementById('sh-title').textContent = i.name;
+  document.getElementById('sh-meta').innerHTML =
+    '<span class="pill ' + s.cls + '">' + s.label + '</span>' +
+    '<span class="pill p-cmps">' + DOM[i.dom] + '</span>' +
+    (i.ref ? '<span class="pill p-cmps">' + esc(i.ref) + '</span>' : '') +
+    '<span style="font-size:12px;color:var(--ink-3)">' + esc(i.grp) + '</span>';
+
+  let b = '';
+  if(i.sub) b += blk('In one line', '<p class="strong">' + esc(i.sub) + '</p>');
+  if(i.prob) b += blk('The design problem', '<p>' + i.prob + '</p>');
+  b += blk('What exists today', '<p>' + i.ex_now + '</p>');
+  b += blk('Where it lives', '<p>' + i.where + '</p>');
+  b += blk('What is missing', '<p>' + i.miss + '</p>');
+
+  if(i.ex.length)
+    b += blk('Our design work', '<div class="sh-links">' +
+      i.ex.map(([h,l]) => '<a class="lk" href="' + h + '">' + esc(l) + '</a>').join('') + '</div>');
+  else
+    b += blk('Our design work', '<p class="nonote">Nothing drawn yet — there is no XCEL prototype for this row.</p>');
+
+  if(i.qs.length)
+    b += blk('Open questions for you', '<div class="qbox"><ul>' +
+      i.qs.map(q => '<li>' + q + '</li>').join('') + '</ul></div>');
+
+  if(i.blk.length){
+    const ds = i.blk.map(id => DECISIONS.find(d => d.id === id)).filter(Boolean);
+    if(ds.length) b += blk('Blocked by', '<div class="blkbox">' +
+      ds.map(d => '<b>' + d.t + '</b> — ' + d.v).join('<br><br>') + '</div>');
+  }
+
+  b += blk('Notes', i.notes.length
+    ? '<ul class="notes">' + i.notes.map(n =>
+        '<li><span class="nd">' + esc(n.d) + '</span><span class="nt">' + n.t + '</span></li>').join('') + '</ul>'
+    : '<p class="nonote">No notes on this row yet. Notes are authored in the <code>ITEMS</code> array in this file — append to this row’s <code>notes</code> array and it appears here.</p>');
+
+  document.getElementById('sh-body').innerHTML = b;
+  document.getElementById('sh-body').scrollTop = 0;
+  sheet.classList.add('open');
+  backdrop.classList.add('open');
+  sheet.setAttribute('aria-hidden','false');
+  document.getElementById('sh-x').focus();
+}
+function blk(h, body){ return '<div class="sh-blk"><h4>' + h + '</h4>' + body + '</div>'; }
+function closeSheet(){
+  sheet.classList.remove('open');
+  backdrop.classList.remove('open');
+  sheet.setAttribute('aria-hidden','true');
+  if(lastFocus) lastFocus.focus();
+}
+document.getElementById('sh-x').onclick = closeSheet;
+backdrop.onclick = closeSheet;
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape' && sheet.classList.contains('open')) closeSheet();
+});
+
+/* ── static sections ───────────────────────────────────────────────────── */
+
+document.getElementById('decisions').innerHTML = DECISIONS.map(d =>
+  '<div class="dl-row"><div class="dl-k">' + d.t +
+  '<span class="pill ' + ST[d.st].cls + '">' + ST[d.st].label + '</span></div>' +
+  '<div class="dl-v">' + d.v + '</div></div>').join('');
+
+document.getElementById('notphase1').innerHTML = NOT_PHASE_1.map(([k,v]) =>
+  '<div class="dl-row"><div class="dl-k">' + k + '</div><div class="dl-v">' + v + '</div></div>').join('');
+
+/* ── theme ─────────────────────────────────────────────────────────────── */
+const root = document.documentElement, tb = document.getElementById('themeBtn');
+function setTheme(t){
+  root.setAttribute('data-theme', t);
+  tb.textContent = t === 'dark' ? 'Light' : 'Dark';
+  try{ localStorage.setItem('xcel.bp.theme', t); }catch(e){}
+}
+tb.onclick = () => setTheme(root.getAttribute('data-theme') === 'dark' ? 'light' : 'dark');
+try{
+  const saved = localStorage.getItem('xcel.bp.theme');
+  setTheme(saved || 'light');
+}catch(e){ setTheme('light'); }
+
+buildChips();
+renderRows();
+</script>
+</body>
+</html>
