@@ -196,6 +196,103 @@ all `category: 'exploration'`: **`xcel-lms`** (Desktop Platform, `pinned`) ·
 **`xcel-admin-tool`** (the forked roster — documented in its own section below) ·
 **`xcel-exam-spec`** (Exam Task-Type Spec).
 
+### The brief-vs-existing extract — a page with no row
+
+[xcel-lms-brief-vs-existing.html](public/prototypes/xcel-lms-brief-vs-existing.html)
+(added 2026-09-03) puts **all four** brief/inventory blocks in one document — the
+learner ask, the learner inventory, the admin ask, the admin inventory — for
+reading the scope in one pass without the wireframes in between. It is
+**deliberately not a seventh `PROTOTYPE_FEATURES` row**: it is reachable from the
+masthead of both wireframes pages, the same way the walk-through and the exam
+spec are, because a second row into the same body of work is what got
+`recommended-card-ab-demo` and the four testing tiles archived. So the row count
+is still six and `smoke-tiles.mjs` is unchanged.
+
+**Sections 01–04 are lifted verbatim** from `xcel-lms-wireframes.html` §01–02 and
+`xcel-lms-admin.html` §01 + §07. That is a copy, and therefore the one thing here
+that can rot: **edit the companions first, then re-sync this page.** It was
+extracted mechanically rather than retyped, and no generator was kept — keeping
+one would rebuild exactly the source/served split the section below records
+killing. Three anchors were rewritten on the way in (`#s-arrival` /
+`#s-interrupt` / `#s-exam` → absolute `/prototypes/xcel-lms-wireframes.html#…`),
+since in-page hashes pointing at sections this document does not contain would
+silently go nowhere.
+
+**Its counts are derived from the tables on load, not authored** — `covOf()` reads
+the `p-have` / `p-part` / `p-none` class already on each row's pill, so coverage
+is never written twice and editing a row moves the tally. That is the direct
+answer to the authored-count rot this file warns about under `RESEARCH_DECISIONS`.
+Currently **27 rows — 13 Built · 5 Partial · 9 None** (learner 19, admin 8). Note
+the admin inventory's own two labels, *Most of it* and *The roster half*, sit at
+the Built and Partial levels respectively and the filter classes them that way;
+add a sixth pill class and it will be counted as none of them.
+
+### The Admin & Learner build plan — the second page with no row
+
+[xcel-finserv-build-plan.html](public/prototypes/xcel-finserv-build-plan.html)
+(added 2026-09-03) is the build tracker for the two **surface domains** the FinServ
+strategy documents name — Learner Experience and Admin & Analytics. It answers a
+different question from `xcel-lms-brief-vs-existing.html`: that page asks *what did
+the brief ask for and does it exist*, this one asks *what has to be built, is it
+built somewhere already, and what blocks it*. **66 rows** in 12 groups.
+
+Built from **three** sources, not one — the Learner and Admin Wireframe Brief plus
+two documents that page predates: the **FinServ Domain Build Plan** and the
+**FinServ Platform Strategy Packet (domain view)**. All three live behind Cloudflare
+Access and cannot be fetched by any tool; they were read from locally saved HTML.
+
+**Like brief-vs-existing, it is deliberately not a `PROTOTYPE_FEATURES` row** — it
+is reachable from the masthead of all five companion prototypes, for the same
+reason (a second row into the same body of work is what got
+`recommended-card-ab-demo` and the four testing tiles archived). Row count is still
+six and `smoke-tiles.mjs` is unchanged.
+
+**The one modelling decision that governs the whole page:** the status pill answers
+*is this built in product code somewhere already* — **not** whether we have designed
+it. Design coverage is the **Example** column: a link means there is an XCEL
+prototype to open, an em dash means it is undrawn. Keeping those apart is the point.
+The most dangerous rows are the ones thoroughly designed and built nowhere — the
+learner skeleton slice is `None` with the most complete prototype we own — and a
+single blended score would hide them. The footer states this; there is no legend
+(the "How to read this" section was removed on request).
+
+**Everything renders from one `ITEMS` array** — table, filter counts and detail
+sheets all read it, so a status cannot disagree with the tally reporting it. That is
+the same authored-count rot this file warns about under `RESEARCH_DECISIONS`, closed
+by construction rather than by discipline. **Notes are authored in that array**
+(`notes: [{d, t}]`) — there is no editing UI and no persistence layer, which was a
+deliberate choice over the Netlify-Blobs pattern `qa-notes.ts` uses. Appending a
+note is a file edit.
+
+**Two hazards specific to this file.** Rows are object literals, so a **duplicate
+key is legal JavaScript and silently drops data** — the last one wins. That has
+already happened once (a second `notes:` added to a row that had one). Audit by
+splitting the array on `{ ref:` and counting keys per row; `node --check` will not
+catch it. And a fifth pill class would need `ST` and the chip order updated together
+or it renders unstyled and uncounted.
+
+**Currently 11 Built · 23 Partial · 19 None · 8 Needs info**, plus **5 Compass rows
+parked** at Jillienne's instruction — listed but unscored and excluded from the
+counts, so the tally is not flattered by work we are not doing. 22 rows carry open
+questions, flagged by an amber dot on the Details button.
+
+**Where the Common LMS comes in.** A pass over
+`jill-dashboard-ux-designs` (2026-09-03) moved several rows, and the headline is that
+**Track B is not from zero**: that project already ships **26 shared UI primitives**
+and the shell as separable components (`PlatformShell`, `PlatformSideNav`,
+`AppLayout`, `Header`). The build plan's "assume no code exists" premise is wrong
+about the design system. Two traps found there worth not repeating:
+`/account/notifications`, `/account/licenses` and `/account/transcripts` all exist as
+**routes that render a "not built yet" placeholder** — route names in that project
+are not evidence of a design; and its certificate model carries a real three-way
+`CertReporting` union (reported / pending-roster / non-reporting) which is the
+concrete precedent for the admin provenance work.
+
+**It has no test coverage.** `smoke-tiles.mjs` only checks `PROTOTYPE_FEATURES`
+rows, and this page has none, so nothing verifies its 66 rows, that its links
+resolve, or that a pill matches its count. That is a real gap given the
+duplicate-key hazard above.
+
 ### There is no source/served split — moved here 2026-09-03
 
 These five pages and their smoke suites used to live in
@@ -345,6 +442,28 @@ headers, and badge labels that grow 30–40%. And the preset strip is a
 `role="tablist"` whose table is not wired as a tabpanel: finish the pattern or
 drop to buttons with a live region.
 
+### The prototype bar — and the one layout contract it introduced
+
+Added 2026-09-03 so the fork can reach its siblings; it had no cross-prototype
+links at all, because the only chrome it inherited was PartnerHub's `top-nav`
+**product** header, and a link dropped in there reads as a product nav item.
+
+The bar reuses the sibling prototypes' own `pbar` / `plink` / `tag` / `sp` class
+names (zero collisions in this file, so no prefix was invented) and lives in one
+`<style id="pbar-css">` block plus one markup block after `<body>`.
+
+**`--pbar-h` is the only thing coupling it to the product layout.** `.top-nav` is
+`position: fixed` at `height: 80px`, and that 80px was hardcoded in **nine** offset
+rules — `.left-nav`, `.main` (margin and min-height), `.fav-views-page`,
+`.gsp-sheet`, `.ap-panel` (top and height each) and `.cs-body`. All nine now read
+`var(--pbar-h, 0px)`, **with the fallback deliberate**: delete the two bar blocks
+and every offset reverts to 80px on its own. Change the height in the one
+declaration, never in nine places.
+
+**There is deliberately no theme toggle on it.** This fork is light-only — the 761
+hex literals bypassing its `:root` map are a prerequisite for a dark theme — so a
+toggle here would be a control that lies. The bar says "light only" instead.
+
 ### Verifying it
 
 There is no build step for the prototype, so the guardrails are: `npx vitest run`
@@ -390,6 +509,12 @@ that looks like a styling bug. Extend it when you add a section or change
 `sectionOf`; `EXPECTED_PLACEMENT` in that file is the list to update when a row
 moves.
 
-The six prototype pages are covered separately by the five jsdom suites in
-[`smoke/`](smoke/) — **`npm run smoke`**, 252 assertions. They are plain node
+The six row-backed prototype pages are covered separately by the five jsdom suites
+in [`smoke/`](smoke/) — **`npm run smoke`**, 252 assertions. They are plain node
 scripts, not vitest, so `npm test` does NOT run them; run both.
+
+**Two pages have no suite at all**, both of them the row-less ones:
+`xcel-lms-brief-vs-existing.html` and `xcel-finserv-build-plan.html`. The second is
+the one that matters — 66 rows of authored data, a JS render path, and a
+duplicate-key failure mode that is legal JavaScript. Adding a suite for it is the
+most valuable test work outstanding in this repo.

@@ -53,7 +53,7 @@ needed a third-party session cookie, which Safari blocks and Chrome restricts, s
 reviewers got a password prompt inside every preview thumbnail. A password on one
 site never protected pages served from the other, so nothing was lost.
 
-**The six pages in `public/prototypes/` are the sources — edit them directly.**
+**The pages in `public/prototypes/` are the sources — edit them directly.**
 There is no source/served split, no copy step and no deploy script. They and
 their smoke suites moved here from the Common LMS repo, which no longer carries
 any XCEL rows, files or tooling.
