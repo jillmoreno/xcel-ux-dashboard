@@ -27,12 +27,6 @@ export type StatHighlight = {
   iconKey?: string
 }
 
-const ELITE_MEMBER_SUCCESS: StatHighlight[] = [
-  { value: '2.4M', label: 'credit hours completed by members last year', iconKey: 'credits' },
-  { value: '$1,180', label: 'average member saves annually', iconKey: 'savings' },
-  { value: '92%', label: 'of members renew their membership', iconKey: 'renewal' },
-]
-
 const MEMBER_SUCCESS_BY_BRAND: Record<Brand, StatHighlight[]> = {
   // XCEL sells transactional course packages (Standard / Premier) + a B2B
   // Partner programme — no consumer membership, so nothing here is reachable.
@@ -42,13 +36,6 @@ const MEMBER_SUCCESS_BY_BRAND: Record<Brand, StatHighlight[]> = {
 export function memberSuccessStatsFor(brand: Brand): StatHighlight[] {
   return MEMBER_SUCCESS_BY_BRAND[brand]
 }
-
-const ELITE_STAT_BAR: StatHighlight[] = [
-  { value: '500+', label: 'CE hours & courses', iconKey: 'library' },
-  { value: '9', label: 'member products & tools', iconKey: 'tools' },
-  { value: 'ANCC', label: 'accredited provider', iconKey: 'accredited' },
-  { value: 'All 50', label: 'states supported', iconKey: 'states' },
-]
 
 const STAT_BAR_BY_BRAND: Record<Brand, StatHighlight[]> = {
   // XCEL sells transactional course packages (Standard / Premier) + a B2B

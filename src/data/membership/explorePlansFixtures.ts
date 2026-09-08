@@ -46,41 +46,6 @@ export type ExplorePlanComparisonRow = {
   passport: boolean | string
 }
 
-const ELITE_EXPLORE_PLANS: ExplorePlan[] = [
-  {
-    id: 'passport-lite',
-    name: 'Elite Nursing Passport Lite CE Membership',
-    shortName: 'Passport Lite',
-    tagline: 'Essential CE to keep your license current.',
-    period: '1 Year',
-    price: '$48',
-    ctaLabel: 'Get Access Now',
-  },
-  {
-    id: 'passport',
-    name: 'Elite Nursing Passport CE Membership',
-    shortName: 'Passport',
-    tagline: 'Everything unlocked — the complete nursing membership.',
-    period: '1 Year',
-    price: '$84.99',
-    originalPrice: '$99.99',
-    featured: true,
-    badge: 'Most Popular',
-    ctaLabel: 'Add to Cart',
-  },
-]
-
-const ELITE_EXPLORE_COMPARISON: ExplorePlanComparisonRow[] = [
-  { label: 'State-required CE (and multi-state CE)', lite: true, passport: true },
-  { label: 'ANCC-accredited courses', lite: '100+', passport: '200+' },
-  { label: 'Exclusive CE podcasts', lite: true, passport: true },
-  { label: 'Enhanced CE deadline tracking', lite: true, passport: true },
-  { label: 'Automatic reporting, including CE Broker', lite: true, passport: true },
-  { label: 'Premium specialty collections', lite: false, passport: true },
-  { label: 'Expanded pharmacology library', lite: false, passport: true },
-  { label: 'Certification prep', lite: false, passport: true },
-]
-
 const EXPLORE_PLANS_BY_BRAND: Record<Brand, ExplorePlan[]> = {
   // XCEL sells transactional course packages (Standard / Premier) + a B2B
   // Partner programme — no consumer membership, so nothing here is reachable.

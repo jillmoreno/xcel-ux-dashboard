@@ -176,61 +176,6 @@ export const STREAK_THIS_WEEK: ReadonlyArray<StreakActivity> = [
  * + `streakThisWeekFor(brand)` route to the right one.
  * ─────────────────────────────────────────────────────────────────── */
 
-
-const _MCK_THIS_WEEK: ReadonlyArray<StreakActivity> = [
-  { date: '2026-05-14', active: true },
-  { date: '2026-05-15', active: true },
-  { date: '2026-05-16', active: true },
-  { date: '2026-05-17', active: true },
-  { date: '2026-05-18', active: true },
-  { date: '2026-05-19', active: true },
-  { date: '2026-05-20', active: true },
-]
-
-// Elite — 22-day streak, longest 18. "New personal best · 4 days ahead."
-// April 28 is the last inactive day; from April 29 onward the strip is
-// solid active days with healthy intensity, including a couple of 60+
-// power sessions.
-const _ELITE_STREAK: LearningStreak = {
-  current: 22,
-  longest: 18,
-  lastActivityDate: '2026-05-20',
-  daysThisWeek: 7,
-  bestStreakThisMonth: 22,
-  recent30: [
-    { date: '2026-04-21', active: false, minutes: 0 },
-    { date: '2026-04-22', active: true, minutes: 22 },
-    { date: '2026-04-23', active: true, minutes: 30 },
-    { date: '2026-04-24', active: false, minutes: 0 },
-    { date: '2026-04-25', active: true, minutes: 18 },
-    { date: '2026-04-26', active: false, minutes: 0 },
-    { date: '2026-04-27', active: true, minutes: 25 },
-    { date: '2026-04-28', active: false, minutes: 0 }, // streak break
-    { date: '2026-04-29', active: true, minutes: 20 }, // 22-day streak begins
-    { date: '2026-04-30', active: true, minutes: 35 },
-    { date: '2026-05-01', active: true, minutes: 40 },
-    { date: '2026-05-02', active: true, minutes: 28 },
-    { date: '2026-05-03', active: true, minutes: 55 },
-    { date: '2026-05-04', active: true, minutes: 32 },
-    { date: '2026-05-05', active: true, minutes: 45 },
-    { date: '2026-05-06', active: true, minutes: 22 },
-    { date: '2026-05-07', active: true, minutes: 65 },
-    { date: '2026-05-08', active: true, minutes: 38 },
-    { date: '2026-05-09', active: true, minutes: 50 },
-    { date: '2026-05-10', active: true, minutes: 28 },
-    { date: '2026-05-11', active: true, minutes: 42 },
-    { date: '2026-05-12', active: true, minutes: 30 },
-    { date: '2026-05-13', active: true, minutes: 58 },
-    { date: '2026-05-14', active: true, minutes: 35 },
-    { date: '2026-05-15', active: true, minutes: 48 },
-    { date: '2026-05-16', active: true, minutes: 25 },
-    { date: '2026-05-17', active: true, minutes: 52 },
-    { date: '2026-05-18', active: true, minutes: 40 },
-    { date: '2026-05-19', active: true, minutes: 62 },
-    { date: '2026-05-20', active: true, minutes: 75 }, // today, new PB
-  ],
-}
-
 const _ELITE_THIS_WEEK: ReadonlyArray<StreakActivity> = [
   { date: '2026-05-14', active: true },
   { date: '2026-05-15', active: true },

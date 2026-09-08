@@ -52,59 +52,6 @@ export type WhatsNewLaunchCard = {
   coverAccent: WhatsNewKind
 }
 
-const ELITE_FEATURED: WhatsNewFeaturedSlide[] = [
-  {
-    id: 'critical-care-playbook',
-    eyebrow: 'Featured pathway · Transitions in Practice',
-    tier: 'passport',
-    title: 'The Critical Care Playbook',
-    desc: 'Move confidently into the ICU with a step-by-step pathway of assessment, recognition, and rapid-response skills.',
-    byline: "A 12-hour CE pathway led by Elite's critical-care faculty.",
-    memberCta: { primary: 'Start the pathway', secondary: "See what's included" },
-    nonMemberCta: { primary: 'Unlock with Passport', secondary: 'Preview Med-Surg free' },
-  },
-  {
-    id: 'ccrn-review',
-    eyebrow: 'New exam prep · Now in your library',
-    tier: 'lite',
-    title: 'CCRN Review, Reimagined',
-    desc: 'A fully refreshed CCRN review with adaptive practice questions and a readiness score that updates as you go.',
-    byline: '200+ practice items · included with Passport Lite.',
-    memberCta: { primary: 'Start exam prep', secondary: "See what's covered" },
-    nonMemberCta: { primary: 'Unlock with Passport', secondary: 'Preview a set free' },
-  },
-  {
-    id: 'rubi-career-coach',
-    eyebrow: 'New AI tool · Powered by Rubi',
-    tier: 'passport',
-    title: 'Meet Your Career Coach',
-    desc: 'Rubi now drafts your specialty resume, preps interview answers, and maps the certifications that move you forward.',
-    byline: 'Career Tools · powered by Rubi AI.',
-    memberCta: { primary: 'Start a session', secondary: 'How it works' },
-    nonMemberCta: { primary: 'Unlock with Passport', secondary: 'Preview Rubi free' },
-  },
-  {
-    id: 'night-shift-rounds',
-    eyebrow: 'New podcast series · CE on the go',
-    tier: 'open',
-    title: 'Rounds: The Night Shift',
-    desc: 'Bite-size CE episodes you can earn credit for between patients. New episodes drop every week — free for everyone.',
-    byline: '6 new episodes · earn the series certificate.',
-    memberCta: { primary: 'Listen now', secondary: 'Browse episodes' },
-    nonMemberCta: { primary: 'Listen now', secondary: 'Browse episodes' },
-  },
-]
-
-const ELITE_LAUNCHES: WhatsNewLaunchCard[] = [
-  { id: 'l-critical-care', contentType: 'Pathway', iconKey: 'pathway', title: 'The Critical Care Playbook', meta: '12 hrs · Pathway', coverAccent: 'pathway' },
-  { id: 'l-ccrn', contentType: 'Exam prep', iconKey: 'exam', title: 'CCRN Review, Reimagined', meta: '200+ items · Self-paced', coverAccent: 'exam' },
-  { id: 'l-rubi', contentType: 'AI tool', iconKey: 'tool', title: 'Rubi Career Coach', meta: 'AI Career Tools', coverAccent: 'tool' },
-  { id: 'l-rounds', contentType: 'Podcast', iconKey: 'podcast', title: 'Rounds: The Night Shift', meta: '6 episodes · 1 hr ea', coverAccent: 'podcast' },
-  { id: 'l-sbar', contentType: 'Template', iconKey: 'template', title: 'SBAR Handoff Toolkit', meta: 'Download · 4 templates', coverAccent: 'template' },
-  { id: 'l-pccn', contentType: 'Exam prep', iconKey: 'exam', title: 'PCCN Practice Set', meta: '150+ items · Self-paced', coverAccent: 'exam' },
-  { id: 'l-pharm', contentType: 'Podcast', iconKey: 'podcast', title: 'Pharm in Plain English', meta: '8 episodes · 30 min ea', coverAccent: 'podcast' },
-]
-
 /* ─── CRE · Colibri Real Estate ───────────────────────────────────────────
    Themed from colibrirealestate.com: Professional Development (AI MasterTracks,
    CNE), Exam Prep / Free Practice Exam, CE Membership, Luxury Home Marketing. */

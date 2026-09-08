@@ -41,15 +41,6 @@ const CRE_CARDS: VibrantCardData[] = [
   { title: 'Fair Housing Deep Dive', hours: 2, delivery: 'podcast' },
 ]
 
-const MCKISSOCK_CARDS: VibrantCardData[] = [
-  { title: '2026–2027 USPAP Update', hours: 7, delivery: 'online' },
-  { title: 'Business Practices & Ethics', hours: 2, delivery: 'podcast' },
-  { title: 'Appraising Green Homes', hours: 4, delivery: 'video' },
-  { title: 'Residential Market Analysis', hours: 7, delivery: 'online' },
-  { title: 'Land & Site Valuation', hours: 7, delivery: 'in-person' },
-  { title: 'Adjustment Support Toolkit', hours: 1, delivery: 'online' },
-]
-
 const STC_CARDS: VibrantCardData[] = [
   { title: 'SIE Exam Crash Course', hours: 3, delivery: 'online' },
   { title: 'Pass the Exam: Study Sessions', hours: 1, delivery: 'podcast' },

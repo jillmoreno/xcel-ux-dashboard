@@ -48,23 +48,6 @@ export type ContinueLearningItem = {
   ceHours: string
 }
 
-
-const ELITE_CONTINUE_LEARNING: ContinueLearningItem[] = [
-  { id: 'iv-therapy', title: 'IV Therapy & Vascular Access', percent: 72, ceHours: '1.5 CE hours' },
-  {
-    id: 'cardiac-assessment',
-    title: 'Advanced Cardiac Assessment',
-    percent: 40,
-    ceHours: '2.0 CE hours',
-  },
-  {
-    id: 'high-alert-meds',
-    title: 'Pharmacology: High-Alert Meds',
-    percent: 18,
-    ceHours: '3.0 CE hours',
-  },
-]
-
 /** Membership summary surfaced in the member hero — status, join date
  *  (drives the "member for X days" count), and renewal date. */
 export type MembershipUpgrade = {

@@ -107,16 +107,6 @@ export function deriveArchetype(
 
 /* ─── Elite (Jordan) fixture ─────────────────────────────────────────── */
 
-const ELITE_MIX: Record<ContentFormat, number> = { video: 54, podcast: 26, reading: 20 }
-
-const ELITE_CONSISTENCY: ConsistencyStats = {
-  ceHours: 42,
-  streakWeeks: 7,
-  peakTime: '8–10 PM',
-  mostActiveDay: 'Sundays',
-}
-
-
 const GLANCE_BY_BRAND: Record<Brand, LearningAtAGlance | null> = {
   // XCEL sells transactional course packages (Standard / Premier) + a B2B
   // Partner programme — no consumer membership, so nothing here is reachable.

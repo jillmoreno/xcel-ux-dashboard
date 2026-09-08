@@ -112,67 +112,11 @@ const _CRE: Partial<Record<string, AchievementUserState>> = {
 /* ─── Elite — the 22-day streak / new-PB narrative ───────────────────
    Already past their PB. Quantitative milestone is 30-day streak (22/30,
    almost there). Single-action is first-try-pass — they just sat a board
-   exam. */
-const _ELITE: Partial<Record<string, AchievementUserState>> = {
-  welcome: { status: 'earned', earnedOn: '2025-04-22', rarityPct: 95 },
-  'first-login': { status: 'earned', earnedOn: '2025-04-22', rarityPct: 99 },
-  'first-course': { status: 'earned', earnedOn: '2025-05-30', rarityPct: 92 },
-  'streak-3': { status: 'earned', earnedOn: '2026-05-01', rarityPct: 78 },
-  'streak-7': { status: 'earned', earnedOn: '2026-05-05', rarityPct: 62 },
-  'streak-14': { status: 'earned', earnedOn: '2026-05-12', rarityPct: 38 },
-  'first-cert': { status: 'earned', earnedOn: '2025-12-08', rarityPct: 71 },
-  'five-courses': { status: 'earned', earnedOn: '2026-02-14', rarityPct: 54 },
-  'ten-courses': { status: 'earned', earnedOn: '2026-04-30', rarityPct: 28 },
-  'path-done': { status: 'earned', earnedOn: '2026-05-17', rarityPct: 18 },
-  // READY
-  'first-try-pass': {
-    status: 'ready',
-    rarityPct: 8,
-    railPriority: 1,
-  },
-  // IN PROGRESS
-  'streak-30': {
-    status: 'progress',
-    progress: { current: 22, target: 30, unit: 'days' },
-    personalBest: { value: 22, unit: 'days' },
-    rarityPct: 22,
-    railPriority: 2,
-  },
-  'twenty-five-courses': {
-    status: 'progress',
-    progress: { current: 11, target: 25, unit: 'courses' },
-    rarityPct: 12,
-    railPriority: 3,
-  },
-}
 
 /* ─── STC — the 0/35 lapsed narrative ─────────────────────────────────
    Lapsed long-time member. The rail is a comeback nudge:
    - READY: streak-3 — the smallest possible re-engagement step
    - IN PROGRESS: only the slow-burn renewal counts apply (3 renewals at
-     1/3). No active streaks. */
-const _STC: Partial<Record<string, AchievementUserState>> = {
-  welcome: { status: 'earned', earnedOn: '2022-07-12', rarityPct: 95 },
-  'first-login': { status: 'earned', earnedOn: '2022-07-12', rarityPct: 99 },
-  'verified-pro': { status: 'earned', earnedOn: '2022-08-04', rarityPct: 82 },
-  'first-course': { status: 'earned', earnedOn: '2022-08-20', rarityPct: 92 },
-  'first-cert': { status: 'earned', earnedOn: '2022-11-03', rarityPct: 71 },
-  renewed: { status: 'earned', earnedOn: '2025-06-15', rarityPct: 36 },
-  // READY — comeback nudge as a single-action prompt
-  'streak-3': {
-    status: 'ready',
-    personalBest: { value: 35, unit: 'days' },
-    rarityPct: 78,
-    railPriority: 1,
-  },
-  // IN PROGRESS — only slow-burn counts
-  'three-renewals': {
-    status: 'progress',
-    progress: { current: 1, target: 3, unit: 'renewals' },
-    rarityPct: 14,
-    railPriority: 2,
-  },
-}
 
 /** Resolve the user-state map. XCEL had no case of its own and fell to the
  *  `default` arm, so it keeps the same map it always read. */

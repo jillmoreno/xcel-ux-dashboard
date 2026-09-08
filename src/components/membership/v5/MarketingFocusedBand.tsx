@@ -734,7 +734,6 @@ const ELITE_SLIDE_IMAGES = [
   '/brand/whats-new-bg-3.jpg', // clinician portrait
   '/brand/whats-new-bg-4.jpg', // ICU patient monitor
 ]
-const MCKISSOCK_SLIDE_IMAGES = ['/courses/1.webp', '/courses/4.webp', '/courses/7.webp', '/courses/2.webp']
 const STC_SLIDE_IMAGES = ['/courses/5.webp', '/courses/8.webp', '/courses/2.webp', '/courses/0.webp']
 const XCEL_SLIDE_IMAGES = ['/courses/7.webp', '/courses/2.webp', '/courses/5.webp', '/courses/1.webp']
 

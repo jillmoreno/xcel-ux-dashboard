@@ -29,37 +29,6 @@ export type PlanTier = {
   featured?: boolean
 }
 
-
-const PREMIUM_BASE: Omit<PlanTier, 'price' | 'cadence'> = {
-  id: 'premium',
-  name: 'Premium',
-  features: [
-    'Unlimited CE for all states',
-    'Full Resource Library + Paths',
-    'Post in Course Forums (instructor-moderated)',
-    'Post + comment in the Community',
-    'Quarterly live broker workshops',
-  ],
-  ctaLabel: 'Choose Premium',
-  ctaTo: '/membership/plans',
-  featured: true,
-}
-
-const BROKERAGE_BASE: Omit<PlanTier, 'price' | 'cadence'> = {
-  id: 'brokerage',
-  name: 'Brokerage',
-  features: [
-    'Everything in Premium',
-    'Team analytics + compliance reporting',
-    'Private forum for your office',
-    'Dedicated CSM',
-  ],
-  ctaLabel: 'Talk to sales',
-  // TODO(routes): swap for a `/contact-sales` destination once that
-  // page exists. /membership/plans is the safe placeholder for now.
-  ctaTo: '/membership/plans',
-}
-
 const PLANS_BY_BRAND: Record<Brand, PlanTier[]> = {
   // XCEL sells transactional course packages, not membership tiers — the plan
   // strip has nothing to show and self-hides on an empty list.

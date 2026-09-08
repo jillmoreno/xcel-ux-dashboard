@@ -25,7 +25,6 @@ export type MembershipUpgrade = {
   image: string
 }
 
-
 const UPGRADE_BY_BRAND: Record<Brand, MembershipUpgrade> = {
   // XCEL has no consumer membership, so nothing below is reachable — every
   // surface reading this map is suppressed for it. The entry exists only
@@ -69,22 +68,6 @@ export type MembershipBecome = {
   benefitsLead: string
   bullets: UpgradeBullet[]
   image: string
-}
-
-const REAL_ESTATE_BECOME: MembershipBecome = {
-  tierName: 'Plus',
-  planName: 'Plus Membership',
-  price: '$99',
-  listPrice: '$120',
-  intro:
-    'Purchase a Plus Membership for just $99 and unlock benefits that help you work smarter, stay competitive, and close more deals.',
-  benefitsLead: 'Plus Membership includes:',
-  bullets: [
-    { lead: 'AI training', rest: ' to operate more efficiently and grow your business' },
-    { lead: '1 FREE professional certification', rest: ' (up to a $300 value) to help you stand out' },
-    { lead: 'Discounts', rest: ' on additional certification programs, plus more!' },
-  ],
-  image: '/brand/member-spotlight.png',
 }
 
 const BECOME_BY_BRAND: Record<Brand, MembershipBecome> = {
@@ -142,45 +125,6 @@ export type MembershipComparePlan = {
 /** Plans for the Compare Plans step — typically 2 (current + upgrade), but a
  *  brand may list 3 (the modal sizes its width + columns to the count). */
 export type MembershipComparison = { title: string; plans: MembershipComparePlan[] }
-
-const REAL_ESTATE_COMPARE: MembershipComparison = {
-  title: 'Compare your Membership Options',
-  plans: [
-    {
-      name: 'Plus Membership',
-      profession: 'Real Estate',
-      price: '$99',
-      period: 'year',
-      tier: 'low',
-      current: true,
-      ctaLabel: 'Current Membership',
-      bullets: [
-        'Meet all your license renewal requirements — every required CE package included',
-        'Choose from 70+ CE courses',
-        'Automatic CE credit reporting',
-        'Renewal deadline tracking with all your certificates in one place',
-      ],
-    },
-    {
-      name: 'Premier Membership',
-      profession: 'Real Estate',
-      price: '$199.99',
-      period: 'year',
-      tier: 'high',
-      recommended: true,
-      ctaLabel: 'Add To Cart',
-      bullets: [
-        'Meet all your license renewal requirements — every required CE package included',
-        'Choose from 200+ CE courses across every line',
-        'Automatic CE credit reporting',
-        'Designation & certification prep',
-        'Business-building masterclasses + marketing toolkits',
-        'Renewal deadline tracking with all your certificates in one place',
-        'Coaching & community access',
-      ],
-    },
-  ],
-}
 
 /** Non-member real-estate comparison — all three tiers (Plus / Pro /
  *  Premier), no "current" plan, every card a selectable Add To Cart. The

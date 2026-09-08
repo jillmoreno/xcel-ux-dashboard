@@ -73,7 +73,6 @@ export type MembershipSpotlight = {
 
 /* ─── A1 spotlight (Explore Membership hero) ─────────────────────────── */
 
-
 const SPOTLIGHT_BY_BRAND: Record<Brand, MembershipSpotlight | null> = {
   // XCEL sells transactional course packages (Standard / Premier) + a B2B
   // Partner programme — no consumer membership, so nothing here is reachable.
@@ -85,69 +84,6 @@ export function membershipSpotlightFor(brand: Brand): MembershipSpotlight | null
 }
 
 /* ─── Per-benefit locked-page copy ───────────────────────────────────── */
-
-const ELITE_BENEFIT_MARKETING: Record<LockedBenefitSection, BenefitMarketing> = {
-  'm-learning-library': {
-    stripTitle: 'The Resource Library is an Elite member benefit',
-    stripSubtitle:
-      'Unlock 500+ CE courses, video skills, and podcasts — all counting toward renewal.',
-    eyebrow: 'Member benefit',
-    title: 'A CE library that grows with you',
-    blurb:
-      'Hundreds of courses, video skills, and CE podcasts across your specialties — added throughout the year and always counting toward your license renewal.',
-    bullets: [
-      '500+ CE hours across every specialty',
-      'New courses and podcasts added between renewals',
-      'Track progress toward every license you hold',
-    ],
-    iconKey: 'library',
-  },
-  'm-exam-prep': {
-    stripTitle: 'Exam & cert prep is an Elite member benefit',
-    stripSubtitle:
-      'Unlock guided prep, practice exams, and readiness scoring with membership.',
-    eyebrow: 'Member benefit',
-    title: 'Pass your boards the first time',
-    blurb:
-      'Guided prep tracks, full-length practice exams, and readiness scoring built around your certification — everything you need to walk in ready, included with Elite membership.',
-    bullets: [
-      'Full-length practice exams with rationales',
-      'Readiness score that tracks your progress',
-      'Personalized study plan by exam date',
-    ],
-    iconKey: 'award',
-  },
-  'm-career-tools': {
-    stripTitle: 'Rubi AI career tools are an Elite member benefit',
-    stripSubtitle:
-      'Unlock interview practice, a resume builder, and AI career guidance with membership.',
-    eyebrow: 'Member benefit',
-    title: 'Your AI-powered career coach',
-    blurb:
-      'Practice interviews, build a standout resume, and map your next move with Rubi AI — personalized guidance to grow your nursing career, included with membership.',
-    bullets: [
-      'Realistic interview simulations with feedback',
-      'Resume builder tailored to nursing roles',
-      'Personalized career-path recommendations',
-    ],
-    iconKey: 'rubi',
-  },
-  'm-more': {
-    stripTitle: 'Partner offers & perks are an Elite member benefit',
-    stripSubtitle:
-      'Unlock exclusive partner savings that stretch your membership further.',
-    eyebrow: 'Member benefit',
-    title: 'Perks that pay for your membership',
-    blurb:
-      'Exclusive savings from trusted partners — discounts on the products and services nurses actually use, curated to make your membership go further.',
-    bullets: [
-      'Member-only discounts from trusted partners',
-      'New offers added throughout the year',
-      'Savings that can offset your membership cost',
-    ],
-    iconKey: 'gem',
-  },
-}
 
 const BENEFIT_MARKETING_BY_BRAND: Record<
   Brand,
