@@ -1,11 +1,22 @@
 # XCEL UX Dashboard
 
-The gateway for XCEL LMS design work. Ported on 2026-09-02 from the PartnerHub
-UX Dashboard — NOT from the Common LMS original — because PartnerHub was already
-the trimmed version: slim `AccountContext`, iframe previews instead of the
-component registry, the thumbnail fallback fixed, the port moved. That skipped
-two whole steps of the port procedure. Port from the most recently ported
-dashboard, not the oldest one.
+XCEL LMS design work: **the product app and the gateway that documents it.**
+
+Two things live here, and it is worth being precise about which is which,
+because they arrived eighteen months apart in project time and six days apart in
+real time.
+
+**The gateway** (`/`) was ported on 2026-09-02 from the PartnerHub UX Dashboard
+— NOT from the Common LMS original — because PartnerHub was already the trimmed
+version: slim `AccountContext`, iframe previews instead of the component
+registry, the thumbnail fallback fixed, the port moved. That skipped two whole
+steps of the port procedure. Port from the most recently ported dashboard, not
+the oldest one.
+
+**The product app** arrived on 2026-09-08 from the Common LMS
+(`jill-dashboard-ux-designs`), stripped to XCEL alone. See "The 2026-09-08
+migration" below — including why the decision recorded four days earlier said
+the opposite.
 
 ## Stack
 
@@ -20,18 +31,27 @@ dashboard, not the oldest one.
 
 ## Scope — read before adding a route
 
-This app is the **gateway only**: the dashboard, the feature walkthrough
-gateways, and the dev-handoff detail screens. Four routes, and that is the whole
-of `App.tsx`.
+**CHANGED 2026-09-08. This section used to say "gateway only, four routes".**
+It is now three things, and where a new screen belongs depends on which:
 
-The XCEL prototypes are standalone HTML, and they are not even in this repo —
-they live in `jill-dashboard-ux-designs/explorations/finserv-learner-brief/` and
-are served from that project's deploy. **A new XCEL screen belongs there** (or
-in `public/prototypes/` here, if the TODO below is actioned), not as a route.
-The LMS equivalent routes ~28 product pages because the LMS product IS React;
-XCEL's prototypes are hand-authored HTML documents, and the moment this repo
-starts carrying product surfaces it has two sources of truth for the same
-screens.
+| Surface | Lives in | Reached at |
+|---|---|---|
+| The UX Dashboard gateway | `src/pages/UxDashboardPage.tsx` + friends | `/`, `/prototype/:id`, `/research-rationale`, `/qa-notes` |
+| The XCEL product app | `src/pages/*`, `src/components/*` | `/dashboard-rebrand` + ~28 product routes |
+| The standalone prototypes | `public/prototypes/*.html` | `/prototypes/…`, opened in a tab or iframed |
+
+**A new XCEL screen has two homes now, and picking wrong is the mistake this
+section exists to prevent.** If it is a REACT surface of the product — a page in
+the shell, a panel, a card — it belongs in `src/` as a route. If it is a
+hand-authored HTML exploration answering a brief, it belongs in
+`public/prototypes/` as a document, and it gets a `PROTOTYPE_FEATURES` row, not
+a route.
+
+The old warning still holds in its narrow form: **do not rebuild one of the six
+standalone prototypes as a React route.** That is the "two sources of truth"
+failure the previous wording was guarding against, and it is still real. What
+changed is that a React product surface is no longer automatically out of
+scope — the product IS React here now, exactly as it is in the LMS.
 
 ## The home page (`/`)
 
@@ -93,12 +113,21 @@ rendering a real in-repo React component. That is why the original file is 3,539
 lines and why tracing its imports reaches 81,000 lines across 204 files — the
 previews *are* the product.
 
-PartnerHub has no such components, so here the preview is **data**: a
-`previewUrl` on the handoff component, falling back to its parent feature's first
-`pages` entry, rendered as an iframe of the served file. Add a preview by
-authoring a field, not by editing this page. The LMS already used exactly this
-pattern for its own two HTML prototypes (`QuestionListPreview`,
-`NgatAdminPreview`), so this is that generalised — not a downgrade.
+Here the preview is **data**: a `previewUrl` on the handoff component, falling
+back to its parent feature's first `pages` entry, rendered as an iframe of the
+served file. Add a preview by authoring a field, not by editing this page. The
+LMS already used exactly this pattern for its own two HTML prototypes
+(`QuestionListPreview`, `NgatAdminPreview`), so this is that generalised — not a
+downgrade.
+
+**The original reason for this was "PartnerHub has no such components". That
+stopped being true on 2026-09-08** — the product app is in this repo now, so a
+component registry is buildable again. It is still not built, and that is a
+choice rather than an oversight: the six rows this gateway documents point at
+standalone HTML documents, which an iframe renders exactly and a registry cannot
+render at all. A registry would earn its place only once a row documents a REACT
+surface of the product. If one does, build it for that row — do not convert the
+six.
 
 Consequence worth knowing: `stackLogicBelow` / `fullscreenPreview` in that file
 are now constants. In the LMS they were long OR-chains of component ids, because
@@ -107,20 +136,26 @@ to full-page compositions. Every preview here is the same 860px iframe, so there
 is nothing left to switch on. They're kept as named constants so the two-column
 pairing is one edit away if a narrow preview ever lands.
 
-## Trimmed on the way over
+## Trimmed on the way over — SUPERSEDED 2026-09-08
 
-- **`AccountContext`** — 645 lines → ~150. The LMS models five brands and a
-  four-level membership-tier system because its *product* renders per brand and
-  tier. A trace showed three ported files use four names between them: `Brand`,
-  `Membership`, `professionFor`, `useAccount`. `Brand` is kept as a one-member
-  union rather than deleted so a second PartnerHub skin is an edit here instead
-  of a refactor across those files; `Membership` is kept because the gateway uses
-  it to express "the same page, two states" — for PartnerHub, partner-admin vs.
-  read-only viewer. Rename the labels, not the shape.
-- **`FeatureFlagContext`** (2,571 lines) — not ported. The dashboard never reads
-  flags; the LMS product does. If PartnerHub grows variants, port it then.
-- **`PageShell` / `PlaceholderPage`** — not ported. There are no product routes
-  to stub.
+**This section described the 2026-09-02 gateway port and every line of it is now
+out of date.** Kept, struck through, because the reasoning explains why the
+files look the way they do rather than what they currently contain.
+
+- ~~**`AccountContext`** — 645 lines → ~150.~~ It is the **full** context again
+  (~600 lines), stripped to one brand rather than to one gateway's needs. What
+  survived the reversal is the shape of the decision: `Brand` is still a
+  one-member union for exactly the reason given here, and `Membership` is still
+  the axis the gateway's `FeaturePageLink.membership` uses. Note the two now
+  mean different things on the two surfaces — for the gateway it is "the same
+  page, two states"; for the product it is real membership, which XCEL does not
+  sell (`supportsMembership` is false for it).
+- ~~**`FeatureFlagContext`** (2,571 lines) — not ported.~~ Ported. The product
+  reads flags heavily; the prediction that it would be needed "if PartnerHub
+  grows variants" was right, just for a different reason.
+- ~~**`PageShell` / `PlaceholderPage`** — not ported. There are no product
+  routes to stub.~~ Ported — there are ~28 product routes now, and several of
+  them are `PlaceholderPage` stubs.
 
 ## Data files
 
@@ -356,6 +391,74 @@ any large edit: this file has **five** `getFiltered` functions and two
 `perPageSel` refs in different IIFEs, and a patch anchored on the wrong one lands
 in the bookmarks closure and throws on load. That has already happened once.
 
+## The 2026-09-08 migration — the product app, XCEL only
+
+The Common LMS product app was copied in and stripped to one brand. It is the
+largest change this repo has had: `src/` went from 174 files to ~650, and from
+17k lines to ~150k.
+
+### It reverses a decision made four days earlier, deliberately
+
+`jill-dashboard-ux-designs/xcel-brand/XCEL-build-prompt.md` (2026-09-04) says,
+under "Decisions already made — do not re-litigate these":
+
+> **Repo** — This one. `xcel` becomes brand #6. The sibling
+> `../xcel-ux-dashboard` keeps only the standalone HTML prototypes; it does not
+> get the brand system.
+
+That is no longer the arrangement. XCEL is a project in its own right, not one
+brand among six competing for attention in a multi-brand demo — the same
+argument that put the five XCEL rows in **Exploration** here and left them in
+**Design** over there. The build prompt and the gap audit are still accurate
+about everything else; treat that one row of the table as superseded, not the
+documents as stale.
+
+### What "XCEL only" actually means
+
+`Brand` is a **one-member union**, not a deleted type. `Record<Brand, …>` maps,
+`professionFor`, `featurePreviewSrc` and `prototypeFeatures` all take it as a
+type, so the seam is what makes re-adding a brand an edit in `AccountContext`
+instead of a refactor across those files — and every `Record<Brand, …>` in
+`src/data` fails to compile until the new brand has an entry, which is the
+point. `tokens.css` keeps the `[data-brand]` SELECTOR for the same reason.
+
+Two things NOT to misread:
+
+- **The `@theme inline` defaults in `tokens.css` are still the LMS's CRE-derived
+  ramp.** They are what shows if `data-brand` is ever absent. They are not
+  XCEL's palette; the `[data-brand='xcel']` block is.
+- **Membership was NOT removed.** `supportsMembership('xcel')` is false and
+  suppresses every membership surface, which is the architecture the brand-add
+  built. `src/components/membership/` is also not all membership —
+  `LearnerFocusedBand`, `ClpJumpBackInBand`, `FeaturedHero` and `WhatsNewWidget`
+  are dashboard surfaces XCEL renders that merely live in that folder. Deleting
+  the folder breaks the dashboard.
+
+### Where the LMS still has more than we do
+
+The strip removed the other five brands' fixtures, and those brands were
+carrying demo states XCEL does not author. This is **fixture data, not broken
+code** — every component, flag arm and filter is intact — but it is why the test
+suite is smaller than the LMS's:
+
+| Gap | Effect |
+|---|---|
+| **Gift Recipients has no XCEL records** | The section self-hides. **The one worth fixing** — see the note on `supportsGiftRecipients`. |
+| My Courses: 7 rows, 3 statuses | No archived, failed-with-score, or expiring rows to assert on |
+| Library records set no `tags` / `status` / `lengthMinutes` | Those three filters have no data to exercise |
+| No What's New slides | The carousel renders its reserved empty state |
+
+Authoring XCEL fixtures for any of these restores its tests from git history
+unchanged. Do NOT restore the tests without the data — they passed by asserting
+another brand's content.
+
+### Verifying a change here
+
+`npx tsc -b --noEmit` is the real guardrail for a brand-shaped edit: the union
+being one member means a stray brand literal is a compile error rather than a
+runtime surprise. Then `npx vitest run`, then `npm run smoke` — and remember
+`npm test` does NOT run the smoke suites.
+
 ## Conventions
 
 - Reference tokens via CSS variables — never raw hex / px / font-family.
@@ -393,3 +496,30 @@ moves.
 The six prototype pages are covered separately by the five jsdom suites in
 [`smoke/`](smoke/) — **`npm run smoke`**, 252 assertions. They are plain node
 scripts, not vitest, so `npm test` does NOT run them; run both.
+
+### The product app's tests — added 2026-09-08
+
+The migration brought ~70 more vitest files covering the product surfaces. Two
+things to know before reading a failure in them:
+
+**They were written against six brands, and are now XCEL-only.** Where a brand
+appeared as SCAFFOLDING — a seed helper, a `Brand[]` list, a default param — it
+was repointed at XCEL. Where a brand was the SUBJECT — `expect(tierLabelFor(
+'elite', …)).toBe('Passport Lite')` — the case was removed rather than
+rewritten, because repointing it invents an assertion about a tier ladder XCEL
+does not have.
+
+**A test that pins itself to a named fixture row is the fragile pattern here,
+and `ProgressFillTones` is the worked example.** It picked a McKissock course
+for "completed" and a CRE one for "expiring soon" — coupling a test about colour
+mapping to whichever brand happened to author a row in each state. It now builds
+each state explicitly on an XCEL base and depends on no fixture at all. Prefer
+that shape. Two traps it had to learn, both worth knowing before you write an
+expiry test: `CourseCard` resolves expiry against the anchored `FIXTURE_TODAY`
+(2026-05-11), not the wall clock; and `warnWindowFor` clamps the countdown to
+half the enrolment window, so "inside 60 days" is not sufficient.
+
+**~40 assertions are still red**, all of the fixture-gap class in the migration
+section's table — they need XCEL demo data authored, not code fixed. Do not
+"fix" one by repointing it at a fixture row that happens to exist; check the
+table first.
