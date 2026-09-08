@@ -535,375 +535,22 @@
 }
 
 /* ============================================================================
-   Brand override blocks
-   Activate by setting `data-brand="elite"` or `data-brand="stc"` on <html> (or
-   any ancestor — useful for previewing a brand inside the Switch Account
-   panel). The same variable names redefined here win at runtime over the
-   @theme inline defaults above. Components must always reference the
-   CSS variable (e.g. var(--color-brand)), never a literal hex.
-   Sources: .claude/skills/brands/elite.md, .claude/skills/brands/stc.md.
+   Brand override block
+   `AccountProvider` sets `data-brand="xcel"` on <html>, and the variables
+   redefined below win at runtime over the @theme inline defaults above.
+   Components must always reference the CSS variable (e.g. var(--color-brand)),
+   never a literal hex.
+
+   ONE brand block, where the Common LMS has six. The mckissock / elite /
+   fitzgerald / stc blocks were removed on 2026-09-08 along with the brands
+   themselves; only XCEL's remains, plus its dark-theme companion further down.
+   The `[data-brand]` SELECTOR is kept rather than folded into `:root` on
+   purpose — it is the seam a second brand re-enters through, and folding it
+   away would make re-adding one a rewrite of every stop rather than a new
+   block. Note the defaults above are still the LMS's CRE-derived ramp: they
+   are what shows if `data-brand` is ever absent, so do not treat them as
+   XCEL's.
    ============================================================================ */
-
-[data-brand='mckissock'] {
-  /* Primary — olive / yellow-green */
-  --color-primary-100: #e7eccd;
-  --color-primary-200: #d0d99b;
-  --color-primary-300: #b8c66a;
-  --color-primary-400: #a1b338;
-  --color-primary-500: #8aa007;
-  --color-primary-600: #6e8005;
-  --color-primary-700: #526004;
-  --color-primary-800: #373f02;
-  --color-primary-900: #1b1f01;
-
-  /* Secondary — gold / amber */
-  --color-secondary-100: #fef3d2;
-  --color-secondary-200: #fde7a5;
-  --color-secondary-300: #fcdb78;
-  --color-secondary-400: #fbcf4b;
-  --color-secondary-500: #fac41e;
-  --color-secondary-600: #c98c18;
-  --color-secondary-700: #967512;
-  --color-secondary-800: #634e0b;
-  --color-secondary-900: #312705;
-
-  /* Tertiary — citron / yellow-green */
-  --color-tertiary-100: #f7f8d2;
-  --color-tertiary-200: #eff1a6;
-  --color-tertiary-300: #e7eb79;
-  --color-tertiary-400: #dfe44d;
-  --color-tertiary-500: #d7de21;
-  --color-tertiary-600: #acb11a;
-  --color-tertiary-700: #818513;
-  --color-tertiary-800: #55580d;
-  --color-tertiary-900: #2a2c06;
-
-  /* CTA — the orange Quaternary 500 ramp (McKissock CTAs pop against the
-     olive primary rather than blending into it). */
-  --color-cta-100: var(--color-quaternary-100);
-  --color-cta-200: var(--color-quaternary-200);
-  --color-cta-300: var(--color-quaternary-300);
-  --color-cta-400: var(--color-quaternary-400);
-  --color-cta-500: var(--color-quaternary-500);
-  --color-cta-600: var(--color-quaternary-600);
-  --color-cta-700: var(--color-quaternary-700);
-  --color-cta-800: var(--color-quaternary-800);
-  --color-cta-900: var(--color-quaternary-900);
-
-  /* Quaternary — orange accent (McKissock-specific extra ramp). */
-  --color-quaternary-100: #fde9d6;
-  --color-quaternary-200: #fbd3ad;
-  --color-quaternary-300: #f9bd84;
-  --color-quaternary-400: #f7a75b;
-  --color-quaternary-500: #f59233;
-  --color-quaternary-600: #c47428;
-  --color-quaternary-700: #93571e;
-  --color-quaternary-800: #613a14;
-  --color-quaternary-900: #301d0a;
-
-  /* Brand alias + action recolor. The CTA ramp above is the orange Quaternary,
-     which is a LIGHT hue: cta-500 carries only 2.32:1 against a white label and
-     cta-600 only 3.57:1 (WCAG AA fail). `--color-action` is used both as a
-     filled-button background behind white text AND as link text on white
-     (~36 fill uses / ~83 text uses), and contrast is symmetric, so both roles
-     want the same thing — >= 4.5:1 against white. cta-700 (#93571e) clears it
-     at 5.80:1 while staying inside the brand's own CTA ramp; cta-800 (9.89:1)
-     takes the hover.
-     TRADE-OFF: McKissock CTAs now read as a deep amber rather than the brighter
-     orange the ramp comment above intends. Keeping the bright fill would mean
-     splitting this token by role (a fill colour plus its own label colour) and
-     updating every fill site — see D8 in explorations/compass/COMPASS-PORT-PLAN.md. */
-  --color-brand: var(--color-primary-500);
-  --color-action: var(--color-cta-700);
-  --color-action-hover: var(--color-cta-800);
-
-  /* Active content tab — primary-600 is 4.42:1 on white, just under AA. It is a
-     filled pill behind a white label (PillTabs + the four product sheets) and
-     also tab text in LearningPathDetailPanel, so both roles fail together.
-     primary-700 clears 6.92:1. */
-  --color-tab-active: var(--color-primary-700);
-
-  /* Eyebrow — secondary-700 is the mid-gold stop at 4.33:1 on white; the
-     matching accent-text fix below already dropped two stops for the same
-     reason. secondary-800 clears 8.00:1. Light mode only: the dark theme
-     re-pins --color-eyebrow-text to secondary-300 further down. */
-  --color-eyebrow-text: var(--color-secondary-800);
-
-  /* Podcast domain — the shared default is tertiary-700, which on McKissock's
-     yellow-green tertiary ramp is #818513: only 3.96:1, and it is used BOTH as
-     a tile fill behind a white title (.cre-tile-header--podcast) and as label
-     text on white (MyPodcastsPage, ContinueListeningCard). tertiary-800 clears
-     7.53:1 in both roles; hover/deep drop one further so the tile still
-     darkens on hover and NowPlayingBar's gradient keeps its depth. Same
-     per-brand escape hatch Elite uses below for its indigo exception. */
-  --podcast-accent: var(--color-tertiary-800);
-  --podcast-surface: var(--color-tertiary-800);
-  --podcast-surface-hover: var(--color-tertiary-900);
-  --podcast-surface-deep: var(--color-tertiary-900);
-
-  /* Accent text — the olive primary + orange CTA are too weak on white,
-     so drop two stops (primary-700 = 6.92:1; accent-link keeps cta-700 =
-     5.80:1). Fixes the light-mode McKissock findings (#4). */
-  --color-accent-text: var(--color-primary-700);
-
-  /* McKissock caps h1 at 60/68 Bold (vs CRE's 64/80 8xl). Re-declare so
-     existing call sites that read --text-heading-8xl re-skin automatically. */
-  --text-heading-8xl: 60px;
-  --text-heading-8xl--line-height: 68px;
-}
-
-[data-brand='elite'] {
-  /* Primary — blue */
-  --color-primary-100: #d0ddf0;
-  --color-primary-200: #a2bce1;
-  --color-primary-300: #739ad3;
-  --color-primary-400: #4579c4;
-  --color-primary-500: #1758b6;
-  --color-primary-600: #124691;
-  --color-primary-700: #0d346d;
-  --color-primary-800: #092348;
-  --color-primary-900: #041124;
-
-  /* Secondary — aqua / teal */
-  --color-secondary-100: #def3f5;
-  --color-secondary-200: #bee7ec;
-  --color-secondary-300: #9edce2;
-  --color-secondary-400: #7ed0d9;
-  --color-secondary-500: #5ec5d0;
-  --color-secondary-600: #4b9da6;
-  --color-secondary-700: #38767c;
-  --color-secondary-800: #254e53;
-  --color-secondary-900: #122729;
-
-  /* Tertiary — orange */
-  --color-tertiary-100: #fde5d4;
-  --color-tertiary-200: #fbcba9;
-  --color-tertiary-300: #fab17e;
-  --color-tertiary-400: #f89753;
-  --color-tertiary-500: #f77d29;
-  --color-tertiary-600: #c56420;
-  --color-tertiary-700: #944b18;
-  --color-tertiary-800: #623110;
-  --color-tertiary-900: #311808;
-
-  /* CTA — magenta / purple */
-  --color-cta-100: #ecdaea;
-  --color-cta-200: #d9b5d5;
-  --color-cta-300: #c790c0;
-  --color-cta-400: #b46bab;
-  --color-cta-500: #a24796;
-  --color-cta-600: #813878;
-  --color-cta-700: #612a5a;
-  --color-cta-800: #401c3b;
-  --color-cta-900: #200e1d;
-
-  /* Brand alias + action recolor (CTA-driven so buttons pick up magenta) */
-  --color-brand: var(--color-primary-500);
-  --color-action: var(--color-cta-500);
-  --color-action-hover: var(--color-cta-600);
-
-  /* Accent text — Elite's blue primary-500 clears 4.5:1 on white (6.76),
-     so no light-mode drop needed. Dark handled by [data-theme='dark']. */
-  --color-accent-text: var(--color-primary-500);
-
-  /* Elite caps h1 at 7xl (56/70); CRE/STC use 8xl (64/80). Redeclare so
-     existing call sites that read --text-heading-8xl re-skin automatically. */
-  --text-heading-8xl: 56px;
-  --text-heading-8xl--line-height: 70px;
-
-  /* Heading family stays Brandon Grotesque (shared with CRE) — no override. */
-
-  /* Podcast palette exception — the Real Estate (CRE) teal replaces the
-     brand's magenta/orange for podcast surfaces only (per Jillienne: "colors
-     used for this brand for podcasts is terrible … an exception to the rule";
-     follow-up: "use the teal we used for real estate, the indigo is not
-     great"). Values are lifted from the CRE primary-teal + sky-blue tertiary
-     ramps. Hardcoded hex is intentional here. */
-  --podcast-tile-from: #028f81;
-  --podcast-tile-to: #2d94b5;
-  --podcast-tile-hover: #01554d;
-  --podcast-button: #028f81;
-  --podcast-button-hover: #01554d;
-  --podcast-accent: #017267;
-  /* AA: a white 14px/600 tile title on #028f81 is only 4.00:1. #017267 (one
-     stop darker in the same brand-directed teal, and already this brand's
-     --podcast-accent) clears 5.83:1. Hover/deep stay darker still. */
-  --podcast-surface: #017267;
-  --podcast-surface-hover: #01554d;
-  --podcast-surface-deep: #003933;
-  --podcast-surface-ring: #99d2cc;
-  --podcast-fill: #39bae3;
-  --podcast-on-surface-strong: #cce8e5;
-  --podcast-on-surface-muted: #99d2cc;
-  --podcast-pill-bg: #cce8e5;
-  --podcast-pill-text: #003933;
-}
-
-/* Fitzgerald Health Education Associates (FHEA) — NP exam-prep brand.
-   Tokens sourced from the Fitzgerald Style Guide (Figma file
-   WntVKZ5wWEFtiONKicqYw9, node 57:106). The ramp is identical to Elite's
-   healthcare palette (blue primary / teal secondary / orange tertiary /
-   magenta CTA), so this block mirrors Elite, including its podcast-palette
-   exception. Heading = Brandon Grotesque, body = Open Sans (shared, no
-   font-family override needed). */
-[data-brand='fitzgerald'] {
-  /* Primary — blue */
-  --color-primary-100: #d0ddf0;
-  --color-primary-200: #a2bce1;
-  --color-primary-300: #739ad3;
-  --color-primary-400: #4579c4;
-  --color-primary-500: #1758b6;
-  --color-primary-600: #124691;
-  --color-primary-700: #0d346d;
-  --color-primary-800: #092348;
-  --color-primary-900: #041124;
-
-  /* Secondary — aqua / teal */
-  --color-secondary-100: #def3f5;
-  --color-secondary-200: #bee7ec;
-  --color-secondary-300: #9edce2;
-  --color-secondary-400: #7ed0d9;
-  --color-secondary-500: #5ec5d0;
-  --color-secondary-600: #4b9da6;
-  --color-secondary-700: #38767c;
-  --color-secondary-800: #254e53;
-  --color-secondary-900: #122729;
-
-  /* Tertiary — orange */
-  --color-tertiary-100: #fde5d4;
-  --color-tertiary-200: #fbcba9;
-  --color-tertiary-300: #fab17e;
-  --color-tertiary-400: #f89753;
-  --color-tertiary-500: #f77d29;
-  --color-tertiary-600: #c56420;
-  --color-tertiary-700: #944b18;
-  --color-tertiary-800: #623110;
-  --color-tertiary-900: #311808;
-
-  /* CTA — magenta / purple */
-  --color-cta-100: #ecdaea;
-  --color-cta-200: #d9b5d5;
-  --color-cta-300: #c790c0;
-  --color-cta-400: #b46bab;
-  --color-cta-500: #a24796;
-  --color-cta-600: #813878;
-  --color-cta-700: #612a5a;
-  --color-cta-800: #401c3b;
-  --color-cta-900: #200e1d;
-
-  /* Brand alias + action recolor (CTA-driven so buttons pick up magenta) */
-  --color-brand: var(--color-primary-500);
-  --color-action: var(--color-cta-500);
-  --color-action-hover: var(--color-cta-600);
-
-  /* Accent text — mirrors Elite (identical healthcare ramp). */
-  --color-accent-text: var(--color-primary-500);
-
-  /* Caps h1 at 7xl (56/70) like Elite. */
-  --text-heading-8xl: 56px;
-  --text-heading-8xl--line-height: 70px;
-
-  /* Podcast palette exception — same teal treatment as Elite (the brand's
-     magenta/orange reads poorly on podcast surfaces). */
-  --podcast-tile-from: #028f81;
-  --podcast-tile-to: #2d94b5;
-  --podcast-tile-hover: #01554d;
-  --podcast-button: #028f81;
-  --podcast-button-hover: #01554d;
-  --podcast-accent: #017267;
-  /* AA: a white 14px/600 tile title on #028f81 is only 4.00:1. #017267 (one
-     stop darker in the same brand-directed teal, and already this brand's
-     --podcast-accent) clears 5.83:1. Hover/deep stay darker still. */
-  --podcast-surface: #017267;
-  --podcast-surface-hover: #01554d;
-  --podcast-surface-deep: #003933;
-  --podcast-surface-ring: #99d2cc;
-  --podcast-fill: #39bae3;
-  --podcast-on-surface-strong: #cce8e5;
-  --podcast-on-surface-muted: #99d2cc;
-  --podcast-pill-bg: #cce8e5;
-  --podcast-pill-text: #003933;
-}
-
-[data-brand='stc'] {
-  /* Primary — deep navy (lighter ramp) */
-  --color-primary-100: #cdd0de;
-  --color-primary-200: #9ca1be;
-  --color-primary-300: #6b739e;
-  --color-primary-400: #39447e;
-  --color-primary-500: #08155e;
-  --color-primary-600: #071355;
-  --color-primary-700: #06114b;
-  --color-primary-800: #050e42;
-  --color-primary-900: #040c38;
-
-  /* Secondary — mid teal */
-  --color-secondary-100: #d6e5e7;
-  --color-secondary-200: #aeccCF;
-  --color-secondary-300: #85b2b7;
-  --color-secondary-400: #5d999f;
-  --color-secondary-500: #358087;
-  --color-secondary-600: #2a666c;
-  --color-secondary-700: #1f4c51;
-  --color-secondary-800: #153335;
-  --color-secondary-900: #0a191a;
-
-  /* Tertiary — light teal. Drives all CTAs on STC (see alias block below). */
-  --color-tertiary-100: #daeef0;
-  --color-tertiary-200: #b5dde1;
-  --color-tertiary-300: #90ccd2;
-  --color-tertiary-400: #6bbbc3;
-  --color-tertiary-500: #46aab4;
-  --color-tertiary-600: #388890;
-  --color-tertiary-700: #2a666c;
-  --color-tertiary-800: #1b4347;
-  --color-tertiary-900: #0d2123;
-
-  /* CTA — currently aliased to SECONDARY, so every cta-* stop resolves to the
-     same mid teal as secondary-* against the deep-navy primary surfaces.
-     ⚠ KNOWN COLLISION (brand-color audit #7): because CTA === Secondary,
-     "action" (CTA) and "accent" (secondary) are the EXACT same color on STC —
-     e.g. a CTA button and the nav-active accent (--color-nav-active =
-     secondary-500) are indistinguishable. This also CONTRADICTS the STC brand
-     file + Figma, where the two exposed CTA stops (cta/400, cta/700) match the
-     PRIMARY navy, not teal. TODO(brand): confirm the real STC CTA ramp — navy
-     per Figma, or a distinct action hue — and de-alias it from secondary.
-     Left unchanged here pending brand guidance (audit decision: document only). */
-  --color-cta-100: var(--color-secondary-100);
-  --color-cta-200: var(--color-secondary-200);
-  --color-cta-300: var(--color-secondary-300);
-  --color-cta-400: var(--color-secondary-400);
-  --color-cta-500: var(--color-secondary-500);
-  --color-cta-600: var(--color-secondary-600);
-  --color-cta-700: var(--color-secondary-700);
-  --color-cta-800: var(--color-secondary-800);
-  --color-cta-900: var(--color-secondary-900);
-
-  /* Quaternary — gold accent (STC-specific extra ramp; not consumed by
-     shared components today but available for STC-specific surfaces). */
-  --color-quaternary-100: #fff0d8;
-  --color-quaternary-200: #ffe1b2;
-  --color-quaternary-300: #ffd38b;
-  --color-quaternary-400: #ffc465;
-  --color-quaternary-500: #ffb63f;
-  --color-quaternary-600: #cc9132;
-  --color-quaternary-700: #996d25;
-  --color-quaternary-800: #654819;
-  --color-quaternary-900: #32240c;
-
-  /* Brand alias + action recolor */
-  --color-brand: var(--color-primary-500);
-  --color-action: var(--color-cta-500);
-  --color-action-hover: var(--color-cta-600);
-
-  /* Accent text — STC's deep-navy primary-500 is very strong on white
-     (16.42:1). Its dark-mode value is special-cased below because the
-     dark surfaces derive from this same navy ramp (see finding #2). */
-  --color-accent-text: var(--color-primary-500);
-
-  /* STC swaps heading family to Lato (loaded via Google Fonts in index.html). */
-  --font-heading: 'Lato', 'Helvetica Neue', system-ui, sans-serif;
-}
 
 /* ============================================================================
    XCEL SOLUTIONS  ·  Insurance licensing & CE
@@ -1114,25 +761,14 @@
   color-scheme: dark;
 }
 
-/* STC dark mode — special handling (audit finding #2).
-   STC's PRIMARY ramp is itself navy (#08155e → #040c38), and the dark theme
-   derives its surfaces from that same ramp, so brand-primary accent text and
-   its background land nearly the same color (measured 1.07–1.15:1). The
-   generic `primary-300` accent above is still too dark here (3.98:1 on the
-   navy card), so force STC's accent text one stop lighter to `primary-200`
-   (7.19:1). Higher specificity (0,2,0) than the plain dark block so it wins.
-   `accent-link`/`success-text` reference the CTA/success ramps, which are NOT
-   navy on STC, so they already clear AA and need no override. */
-[data-theme='dark'][data-brand='stc'] {
-  --color-accent-text: var(--color-primary-200);
-}
-
-/* XCEL dark mode — the SAME special case STC has, for the same reason.
+/* XCEL dark mode — a deliberate special case (originally shared with STC,
+   whose block was removed with that brand on 2026-09-08; the reasoning is
+   reproduced here so it no longer depends on a block that is gone).
    XCEL's primary ramp is San Juan (#2d5872 → #0d181f) and the dark theme
    derives its surfaces from that ramp, so brand-primary accent text lands
    almost on top of its own background. `primary-300` would technically pass
-   (6.98:1 on primary-800), but `-200` (10.04:1) matches the headroom STC
-   chose. Specificity (0,2,0) is what makes this beat the plain dark block —
+   (6.98:1 on primary-800), but `-200` (10.04:1) is the stop chosen, matching
+   the headroom the LMS settled on for the same problem. Specificity (0,2,0) is what makes this beat the plain dark block —
    keep BOTH attributes on the selector. */
 [data-theme='dark'][data-brand='xcel'] {
   --color-accent-text: var(--color-primary-200);
@@ -1252,7 +888,6 @@
   --color-action: var(--color-cta-500);
   --color-action-hover: var(--color-cta-600);
 }
-
 
 /* Stakeholder Demo Controls bar (DemoControlsBar) — a single scoped focus-visible
    ring for its buttons so keyboard focus is always visible on the dark navy bar.
@@ -2271,7 +1906,6 @@ a.cre-library-card-title::after {
   color: var(--color-text-inverse);
 }
 
-
 /* Spotify-style podcast playlist rows. Index number swaps to a play button
    on hover/focus, the row highlights, and the row menu fades in. */
 .cre-playlist-row {
@@ -3239,7 +2873,6 @@ a.cre-library-card-title::after {
   color: var(--color-neutral-50);
   background: rgb(255 255 255 / 0.2);
 }
-
 
 /* ─── Learning-experience setup (Dashboard Rebrand new-user hero) ────────── */
 /* Focus ring for the setup hero's tiles / inputs / buttons — a magenta CTA

@@ -1,14 +1,9 @@
 import type { Brand } from '@/context/AccountContext'
-import { creBundle } from './cre'
-import { mckissockBundle } from './mckissock'
-import { eliteBundle } from './elite'
-import { fitzgeraldBundle } from './fitzgerald'
-import { stcBundle } from './stc'
 import { xcelBundle } from './xcel'
 import type { CatalogBundle } from './types'
 
 export * from './types'
-export { creBundle, mckissockBundle, eliteBundle, fitzgeraldBundle, stcBundle, xcelBundle }
+export { xcelBundle }
 
 const BUNDLES: Record<Brand, CatalogBundle> = {
   xcel: xcelBundle,
