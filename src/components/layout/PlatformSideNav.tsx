@@ -38,7 +38,7 @@ import {
   type MembershipRecord,
 } from '@/context/AccountContext'
 import { resolveMembershipCount } from '@/data/membership/membershipScorecardFixtures'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { useFeatureFlag, useNavSectionVisible } from '@/context/FeatureFlagContext'
 import { useMotivation } from '@/context/MotivationContext'
 import { useProfileAvatar } from '@/context/ProfileAvatarContext'
 import { MotivationalStatementPanel } from '@/components/membership/MotivationalStatementPanel'
@@ -256,11 +256,33 @@ export function PlatformSideNav({
   // Support group — a trailing "Get Help" entry point to the Help & Support
   // section (renders in both the full and MVP rails).
   const supportItems: RailItem[] = [{ id: 'support', label: 'Get Help', icon: LifeRing, iconActive: LifeRingSolid }]
-  const groups: { id: string; caption: string; items: RailItem[] }[] = [
-    { id: 'my-learning', caption: 'My Learning', items: myLearningItems },
-    { id: 'explore', caption: 'Explore', items: exploreItems },
-    { id: 'support', caption: 'Support', items: supportItems },
-  ]
+  /*
+   * Per-item visibility from the Navigation flag group.
+   *
+   * Applied HERE, last, so it is an ADDITIONAL gate rather than a replacement
+   * for the rules above: `showMembershipPage`, `hasRecommendations` and
+   * `hiddenBenefitSections` still decide whether an item is available to this
+   * brand at all, and the flag only decides whether an available item is shown.
+   * A flag can hide a row it cannot bring back — which is why `membership` and
+   * `m-more` have no flag (see NAV_SECTION_FLAGS).
+   *
+   * Home has no flag and so is never filtered: `visible` returns true for any
+   * section without one. It is the only way back to the dashboard from a
+   * section, so hiding it would strand the reviewer.
+   *
+   * A group whose items are ALL hidden drops out entirely, caption included —
+   * an empty "My Learning" subhead over nothing reads as a broken rail.
+   */
+  const visible = useNavSectionVisible()
+  const groups = (
+    [
+      { id: 'my-learning', caption: 'My Learning', items: myLearningItems },
+      { id: 'explore', caption: 'Explore', items: exploreItems },
+      { id: 'support', caption: 'Support', items: supportItems },
+    ] as { id: string; caption: string; items: RailItem[] }[]
+  )
+    .map((g) => ({ ...g, items: g.items.filter((i) => visible(i.id)) }))
+    .filter((g) => g.items.length > 0)
 
   // ── Rail scroll / overflow ──────────────────────────────────────────────
   // The rail is pinned (sticky + viewport-tall — see `PlatformShell`). The

@@ -2,7 +2,31 @@ import { render, screen, act, fireEvent } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
-import { FeatureFlagProvider, FEATURE_FLAGS } from '@/context/FeatureFlagContext'
+import {
+  FeatureFlagProvider,
+  FEATURE_FLAGS,
+  NAV_SECTION_FLAGS,
+} from '@/context/FeatureFlagContext'
+import { flagScopeForPath } from '@/components/account/FeatureFlagPanel'
+
+/**
+ * How many flags the Dashboard Rebrand page shows while SCOPED to
+ * /dashboard-rebrand — i.e. in-scope keys that are also tagged to this page.
+ *
+ * Derived, not literal. It was hardcoded as 16 in four assertions, so every
+ * flag added to the scope broke all four at once — and the number was never
+ * what any of them was about. What they test is that the panel honours the
+ * route scope; the count is just how that becomes observable.
+ */
+const REBRAND_SCOPED_COUNT = (() => {
+  const scope = new Set(flagScopeForPath('/dashboard-rebrand') ?? [])
+  return FEATURE_FLAGS.filter(
+    (f) =>
+      scope.has(f.key) &&
+      (f.page === 'dashboard-rebrand' || f.extraPages?.includes('dashboard-rebrand')),
+  ).length
+})()
+const rebrandScoped = new RegExp(`dashboard rebrand.*${REBRAND_SCOPED_COUNT} flags`, 'i')
 import { FeatureFlagPanelProvider, useFeatureFlagPanel } from '@/components/account/FeatureFlagPanelContext'
 import { FeatureFlagPanel } from '@/components/account/FeatureFlagPanel'
 import { LearningPathsPanelProvider } from '@/components/learning/LearningPathsPanelContext'
@@ -95,11 +119,23 @@ describe('FeatureFlagPanel — page selector', () => {
     expect(
       screen.getByRole('button', { name: /dashboard.*hero band.*26 flags/i }),
     ).toBeInTheDocument()
-    // 21 since `membership-cancel-steps` (stepped vs. single-screen — a
-    // separate axis from the container flag) joined this page.
+    // Counted from the catalog rather than hardcoded. This page's total has
+    // been edited by hand five times in the comment above, and it moved again
+    // when the ten Navigation flags landed — the number was never the subject,
+    // the SELECTOR REPORTING THE CATALOG ACCURATELY is. Every other count here
+    // is still literal on purpose: they are small and stable, and a wrong one
+    // should be visible in the diff.
+    const rebrandCount = FEATURE_FLAGS.filter(
+      (f) => f.page === 'dashboard-rebrand' || f.extraPages?.includes('dashboard-rebrand'),
+    ).length
     expect(
-      screen.getByRole('button', { name: /dashboard rebrand.*21 flags/i }),
+      screen.getByRole('button', {
+        name: new RegExp(`dashboard rebrand.*${rebrandCount} flags`, 'i'),
+      }),
     ).toBeInTheDocument()
+    // The Navigation group is the reason it moved; assert it is really in there
+    // so this cannot pass by counting a page that lost its flags.
+    expect(rebrandCount).toBeGreaterThanOrEqual(NAV_SECTION_FLAGS.length)
     // Page-specific flags now live under their own pages.
     expect(
       screen.getByRole('button', { name: /recommended for you.*2 flags/i }),
@@ -154,7 +190,7 @@ describe('FeatureFlagPanel — per-feature scope', () => {
     // Count + Table View + Status Labels + States → 5; Resource Library Professions +
     // Library Hero + Card Style → 3; Course Catalog: the entitled-savings pricing
     // toggle + the included-course tier accent → 2).
-    expect(screen.getByRole('button', { name: /dashboard rebrand.*16 flags/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: rebrandScoped })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /recommended for you.*2 flags/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /my courses.*2 flags/i })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /learning path.*6 flags/i })).toBeInTheDocument()
@@ -171,7 +207,7 @@ describe('FeatureFlagPanel — per-feature scope', () => {
     act(() => {
       fireEvent.click(screen.getByRole('button', { name: 'open-panel' }))
     })
-    expect(screen.getByRole('button', { name: /dashboard rebrand.*16 flags/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: rebrandScoped })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: /learning path.*6 flags/i })).toBeInTheDocument()
   })
 
@@ -181,7 +217,7 @@ describe('FeatureFlagPanel — per-feature scope', () => {
       fireEvent.click(screen.getByRole('button', { name: 'open-panel' }))
     })
     act(() => {
-      fireEvent.click(screen.getByRole('button', { name: /dashboard rebrand.*16 flags/i }))
+      fireEvent.click(screen.getByRole('button', { name: rebrandScoped }))
     })
     // Standalone-V7 KPI-band flags never surface here.
     expect(screen.queryByRole('switch', { name: /Toggle Membership Summary Style/i })).toBeNull()
@@ -210,7 +246,7 @@ describe('FeatureFlagPanel — per-feature scope', () => {
     })
     // Drill into the Dashboard Rebrand page flag list.
     act(() => {
-      fireEvent.click(screen.getByRole('button', { name: /dashboard rebrand.*16 flags/i }))
+      fireEvent.click(screen.getByRole('button', { name: rebrandScoped }))
     })
     // The flag is now a plain switch — no layout dropdown / background pills.
     expect(screen.getByRole('switch', { name: /toggle what's trending section/i })).toBeInTheDocument()

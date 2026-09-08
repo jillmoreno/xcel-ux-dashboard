@@ -238,7 +238,74 @@ const DEFAULT_PLUS_LOFI: FeatureFlagVariant[] = [
   LO_FI_VARIANT,
 ]
 
+
+/* ─── left-nav section visibility ──────────────────────────────────────
+ *
+ * One toggle per rail item, so a reviewer can trim the left nav down to the
+ * pages a given conversation is about without touching code.
+ *
+ * ⚠ HOME HAS NO FLAG, deliberately. The rail is the only way back to the
+ * dashboard from a section — the wordmark links to `/dashboard-rebrand` but
+ * reads as branding, not navigation — so a reviewer who hid Home would be
+ * stranded on whatever section they were on with no way back except editing
+ * the URL. "Always on" is a real constraint here, not a simplification, which
+ * is why it is expressed as ABSENCE FROM THIS LIST rather than as a flag that
+ * happens to default on: there is no toggle to find, and no way to flip it.
+ *
+ * This list is the single source of truth. `FEATURE_FLAGS` generates one
+ * definition per entry below, and `PlatformSideNav` filters its rail items
+ * through `navSectionFlagKey`, so the panel and the nav cannot drift — adding a
+ * rail item that needs a toggle is one entry here.
+ *
+ * NOT LISTED, and not an oversight: `membership` and `m-more` (Partner Offers).
+ * Both are gated by BRAND CAPABILITY — `supportsMembership` and
+ * `hiddenBenefitSections` — and XCEL has neither, so the rail never renders
+ * them. A flag for them would be a toggle a reviewer can flip with nothing
+ * happening, which is worse than no toggle. Add them here if a brand that has a
+ * membership ever returns; the flag is an ADDITIONAL gate on top of those
+ * rules, never a replacement for them.
+ */
+export const NAV_SECTION_FLAGS: { section: string; label: string }[] = [
+  // My Learning
+  { section: 'learning-path', label: 'Learning Path' },
+  { section: 'courses', label: 'My Courses' },
+  { section: 'certificates', label: 'Certificates' },
+  // Explore
+  { section: 'catalog', label: 'Browse Catalog' },
+  { section: 'recommended', label: 'Recommended for You' },
+  { section: 'm-learning-library', label: 'Resource Library' },
+  { section: 'm-exam-prep', label: 'Exam & Cert Prep' },
+  { section: 'm-career-tools', label: 'AI Study Partner' },
+  { section: 'podcasts', label: 'Podcasts' },
+  // Support
+  { section: 'support', label: 'Get Help' },
+]
+
+/**
+ * Flag key for a rail section. Stable — persisted to localStorage.
+ *
+ * `nav-show-` rather than `nav-`, because `nav-gray-scale` already exists and
+ * is a nav STYLING flag. Sharing a prefix between "what the rail looks like"
+ * and "what the rail contains" would make the catalog ambiguous to scan.
+ */
+export function navSectionFlagKey(section: string): string {
+  return `nav-show-${section}`
+}
+
+/** The generated Navigation flags, spread into the catalog below. */
+const NAV_SECTION_FLAG_DEFINITIONS: FeatureFlagDefinition[] = NAV_SECTION_FLAGS.map(
+  ({ section, label }) => ({
+    key: navSectionFlagKey(section),
+    group: 'Navigation',
+    label,
+    description: `Show "${label}" in the left nav. Off removes the rail item; the section itself still resolves, so a deep link to ?section=${section} continues to open it.`,
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  }),
+)
+
 export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
+  ...NAV_SECTION_FLAG_DEFINITIONS,
   {
     key: 'dashboard-kpi-card',
     group: 'KPI Card',
@@ -2554,6 +2621,31 @@ export function useFeatureFlags(): FeatureFlagContextValue {
  */
 export function useDemoMode(): boolean {
   return useContext(FeatureFlagContext)?.demoMode ?? false
+}
+
+/**
+ * Whether a left-nav section is currently shown, per its `nav-*` flag.
+ *
+ * Returns a PREDICATE rather than taking a key, because the rail resolves this
+ * for a list: calling `useFeatureFlag` once per item would be a hook inside a
+ * loop, and the loop's length changes with the brand and the rail variant.
+ *
+ * Unknown sections return `true` — a section with no flag (Home, and the
+ * account-scoped sections that are not rail items at all) is not hidden by
+ * omission. Outside a provider every section is visible, matching the
+ * safe-default behaviour of `useFeatureFlag`.
+ */
+export function useNavSectionVisible(): (section: string) => boolean {
+  const ctx = useContext(FeatureFlagContext)
+  return useCallback(
+    (section: string) => {
+      const key = navSectionFlagKey(section)
+      const def = FEATURE_FLAGS.find((f) => f.key === key)
+      if (!def) return true
+      return ctx?.flags[key]?.enabled ?? def.defaultEnabled
+    },
+    [ctx],
+  )
 }
 
 export function useFeatureFlag(key: string): FeatureFlagState {

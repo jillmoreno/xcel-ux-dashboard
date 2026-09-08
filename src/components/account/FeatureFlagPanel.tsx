@@ -10,6 +10,8 @@ import { useMembershipPageVersionPanel } from '@/components/membership/Membershi
 import {
   FEATURE_FLAG_PAGES,
   useFeatureFlags,
+  NAV_SECTION_FLAGS,
+  navSectionFlagKey,
   type FeatureFlagDefinition,
   type FeatureFlagPage,
   type FeatureFlagPageId,
@@ -126,6 +128,12 @@ const REBRAND_FLAGS = [
   'dashboard-career-tools',
   // Partner Offers — split into Featured Offers + Additional Offerings.
   'partner-offers-featured',
+  // Left-nav SECTION VISIBILITY — one toggle per rail item (Home excepted; see
+  // NAV_SECTION_FLAGS). Spread from the same list the catalog and the rail read,
+  // so a new rail item is in scope automatically rather than being authored
+  // into the catalog and then silently missing from the panel on the one route
+  // where the left nav actually lives.
+  ...NAV_SECTION_FLAGS.map((n) => navSectionFlagKey(n.section)),
   // Left Nav Color Options — the single rail-color flag: the six shipped rails
   // (Navy / Graphite / Brand 800 / Light 1–3) plus any Nectar Neutral ramp step
   // (050–950), in one dropdown. Wins over the Appearance preference while on.
@@ -207,8 +215,15 @@ const RESOURCE_UPDATES_FLAGS = [
   'resource-suggestion-filters',
 ]
 
-/** The in-scope flag keys for a route, or `null` when unscoped (show all). */
-function flagScopeForPath(pathname: string): string[] | null {
+/**
+ * The in-scope flag keys for a route, or `null` when unscoped (show all).
+ *
+ * Exported so tests can COUNT the scope rather than hardcoding its size. That
+ * number was literal in four assertions and every flag added to the scope
+ * broke all four — the size was never the subject, the panel honouring the
+ * scope is.
+ */
+export function flagScopeForPath(pathname: string): string[] | null {
   if (pathname.startsWith('/dashboard-rebrand')) {
     return REBRAND_FLAGS
   }
@@ -696,6 +711,10 @@ function PageSelectorView({
 // top-to-bottom layout. Groups not listed here render after these, in
 // the order they first appear in the catalog.
 const FLAG_GROUP_ORDER = [
+  // Navigation leads: it controls what the rail shows, so it frames every
+  // other group below it — a reviewer hiding a page here changes which of
+  // those pages is even reachable.
+  'Navigation',
   'KPI Card',
   'Jump Back In Card',
   'Learning Path Card',
