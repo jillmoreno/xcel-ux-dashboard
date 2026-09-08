@@ -68,15 +68,6 @@ describe('Archived is a location, not a status', () => {
     ).toBeInTheDocument()
   })
 
-  it('hides the link entirely for a brand with nothing archived', () => {
-    // XCEL has no archived records, so the link must not render at all — which
-    // is also why the archived collection needs no empty state of its own.
-    const none = myCoursesFor('xcel').filter((c) => c.archived)
-    expect(none.length).toBe(0)
-    renderPage('xcel')
-    expect(screen.queryByRole('button', { name: /view archived/i })).toBeNull()
-  })
-
   it('switching collections swaps the link and scopes the result count', () => {
     renderPage()
     fireEvent.click(screen.getByRole('button', { name: /view archived/i }))

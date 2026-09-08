@@ -159,7 +159,9 @@ describe('the status badge', () => {
 })
 
 describe('archived keeps its status (decisions 33-34)', () => {
-  const failedArchived = myCoursesFor('xcel').find((c) => c.id === 'mc-ga-license-law-2')
+  const failedArchived = myCoursesFor('xcel').find(
+    (c) => c.id === 'mc-xcel-adjuster-law-archived',
+  )
 
   it('has a real status alongside the archived flag, not instead of it', () => {
     // The old model stored `archived` INSIDE `myStatus`, so setting it
@@ -187,23 +189,25 @@ describe('archived keeps its status (decisions 33-34)', () => {
 })
 
 describe('the fixture set covers every state the card can now express', () => {
-  const cre = myCoursesFor('xcel')
+  const courses = myCoursesFor('xcel')
   const stateOf = (id: string) => {
-    const r = cre.find((c) => c.id === id)!
+    const r = courses.find((c) => c.id === id)!
     return courseExpiryState(r, FIXTURE_TODAY)
   }
 
   it('has one record in each expiry state, anchored to FIXTURE_TODAY', () => {
-    expect(stateOf('mc-cre-1031-exchange')).toBe('expiring-soon')
-    expect(stateOf('mc-cre-broker-prelicense')).toBe('expiring-soon')
-    expect(stateOf('mc-cre-commercial-leasing')).toBe('expired')
+    // Two routes into `expiring-soon`: the default 60-day countdown, and the
+    // `warnWindowFor` clamp to half the enrolment window.
+    expect(stateOf('mc-xcel-flood-nfip')).toBe('expiring-soon')
+    expect(stateOf('mc-xcel-annuity-suitability')).toBe('expiring-soon')
+    expect(stateOf('mc-xcel-pc-prelicense-lapsed')).toBe('expired')
     // Shorter-than-default countdown ⇒ no badge, though 45 days out.
-    expect(stateOf('mc-cre-property-management')).toBe('none')
+    expect(stateOf('mc-xcel-health-marketplace')).toBe('none')
   })
 
   it('has a failed record with a score AND one without', () => {
-    const withScore = cre.find((c) => c.id === 'mc-cre-appraisal-basics-exam')!
-    const without = cre.find((c) => c.id === 'mc-cre-contracts-assessment')!
+    const withScore = courses.find((c) => c.id === 'mc-xcel-pc-practice-exam')!
+    const without = courses.find((c) => c.id === 'mc-xcel-ethics-assessment')!
     expect(withScore.myStatus).toBe('failed')
     expect(withScore.score).toBe(62)
     expect(without.myStatus).toBe('failed')

@@ -201,6 +201,145 @@ const _XCEL_COURSES: MyCourseRecord[] = [
     status: 'not-started',
     enrolledAt: '2026-05-06',
   },
+
+  /* ── State coverage for the card's time + outcome axes ──────────────────
+     The seven rows above are the LEARNER STORY: one candidate part-way through
+     the 3-Part Program. The six below exist so the fixture set covers every
+     state `CourseCard` can express — expiring-soon, expired, failed with and
+     without a score, and the two negative cases that are easy to get wrong.
+     `CourseExpiry.test.ts` asserts this coverage directly, so a state losing
+     its record fails a test rather than quietly disappearing from the demo.
+
+     Every date is relative to FIXTURE_TODAY (2026-05-11). Read `warnWindowFor`
+     before editing one: the countdown is clamped to HALF the enrolment window,
+     so shortening `enrolledAt` can silently move a row out of `expiring-soon`.
+     ─────────────────────────────────────────────────────────────────────── */
+  {
+    // EXPIRING SOON — 21 days left of a 137-day window (clamp 68), so the
+    // default 60-day countdown applies and the badge shows.
+    id: 'mc-xcel-flood-nfip',
+    title: 'Flood Insurance (NFIP) Training',
+    hours: 3,
+    state: 'FL',
+    delivery: 'online',
+    badge: 'mandatory',
+    rating: 4.3,
+    price: 0,
+    myStatus: 'in-progress',
+    progress: 60,
+    status: 'in-progress',
+    enrolledAt: '2026-01-15',
+    expiresAt: '2026-06-01',
+  },
+  {
+    // EXPIRING SOON via the CLAMP rather than the default: 14 days left of a
+    // 54-day window, so the effective countdown is 27, not 60. The pair matters
+    // — the two paths into this state are why `warnWindowFor` exists.
+    id: 'mc-xcel-annuity-suitability',
+    title: 'Annuity Suitability Update',
+    hours: 4,
+    state: 'FL',
+    delivery: 'online',
+    badge: 'elective',
+    rating: 4.2,
+    price: 0,
+    myStatus: 'in-progress',
+    progress: 30,
+    status: 'in-progress',
+    enrolledAt: '2026-04-01',
+    expiresAt: '2026-05-25',
+  },
+  {
+    // EXPIRED, and carrying real progress — a bar with nothing in it demos
+    // nothing, which is what `ExpiredProgress.test.ts` guards. Still
+    // `in-progress`: expiry is the clock axis, not the outcome axis.
+    id: 'mc-xcel-pc-prelicense-lapsed',
+    title: 'Property & Casualty Pre-License Course',
+    hours: 20,
+    state: 'FL',
+    delivery: 'online',
+    badge: 'mandatory',
+    rating: 4.5,
+    price: 0,
+    myStatus: 'in-progress',
+    progress: 45,
+    status: 'in-progress',
+    enrolledAt: '2025-10-20',
+    expiresAt: '2026-04-20',
+  },
+  {
+    // NO BADGE despite being 45 days out — `warnDays: 14` is this course's own
+    // countdown. The negative case: without it, 45 days would warn under the
+    // 60-day default, and a per-course countdown that silently did nothing
+    // would look like it worked.
+    id: 'mc-xcel-health-marketplace',
+    title: 'Health Insurance Marketplace and ACA Update',
+    hours: 3,
+    state: 'FL',
+    delivery: 'online',
+    badge: 'elective',
+    rating: 4.1,
+    price: 0,
+    myStatus: 'in-progress',
+    progress: 15,
+    status: 'in-progress',
+    enrolledAt: '2026-01-01',
+    expiresAt: '2026-06-25',
+    warnDays: 14,
+  },
+  {
+    // FAILED, with a score — the status row reads "Failed: 62%".
+    id: 'mc-xcel-pc-practice-exam',
+    title: 'Property & Casualty Practice Exam',
+    hours: 2,
+    state: 'FL',
+    delivery: 'online',
+    badge: 'elective',
+    rating: 4.0,
+    price: 0,
+    myStatus: 'failed',
+    progress: 100,
+    status: 'failed',
+    enrolledAt: '2026-03-02',
+    score: 62,
+  },
+  {
+    // FAILED, with NO score — the platform does not always know one. The badge
+    // renders either way; only the status row differs.
+    id: 'mc-xcel-ethics-assessment',
+    title: 'Insurance Ethics Assessment',
+    hours: 1,
+    state: 'FL',
+    delivery: 'online',
+    badge: 'elective',
+    rating: 4.0,
+    price: 0,
+    myStatus: 'failed',
+    progress: 100,
+    status: 'failed',
+    enrolledAt: '2026-03-09',
+  },
+  {
+    // ARCHIVED **and** failed — the regression case for decisions 33-34. The
+    // old model stored `archived` inside `myStatus`, so setting it overwrote
+    // the outcome. Archiving is a LOCATION; it changes nothing about how the
+    // card resolves, which is what the test asserts by stripping the flag and
+    // comparing.
+    id: 'mc-xcel-adjuster-law-archived',
+    title: 'Florida Adjuster Law and Ethics Update',
+    hours: 5,
+    state: 'FL',
+    delivery: 'online',
+    badge: 'elective',
+    rating: 3.9,
+    price: 0,
+    myStatus: 'failed',
+    progress: 100,
+    status: 'failed',
+    enrolledAt: '2025-11-14',
+    score: 58,
+    archived: true,
+  },
 ]
 
 const _MY_COURSES_BY_BRAND: Record<Brand, MyCourseRecord[]> = {
