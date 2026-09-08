@@ -549,25 +549,6 @@ const _MANDATORY_BY_BRAND: Record<Brand, CourseCardData[]> = {
 }
 
 /**
- * Per-status progression for the seven Series 79 mandatory cards.
- * Mirrors `applyStatusOverride`'s calendar-task transformation so the
- * cards and the Study Calendar tell the same story when reviewers
- * flip the `study-calendar-status` feature flag.
- *
- * Each row is keyed by `CourseCardData.id` and carries one entry per
- * override variant. `match` is the default fixture state (Series 79's
- * natural pacing is "On Track", so `match` mirrors `on-track`).
- *
- * Cards earlier in the sequence (Study Manual → Class Recording)
- * progress first, matching the natural order a learner would tackle
- * the material.
- */
-type CardStatusEntry = {
-  status?: CourseCardData['status']
-  progress?: CourseCardData['progress']
-}
-
-/**
  * Returns the per-brand Mandatory course list with image URLs applied.
  *
  * Pass `pathId` to scope to a specific Learning Path. Two STC-specific
@@ -670,7 +651,11 @@ export function coursesWithDerivedStatus(
 export function mandatoryCoursesFor(
   brand: Brand,
   pathId?: string,
-  statusOverride: StatusOverride = 'match',
+  // `statusOverride` drove STC's Series 79 per-status card progression, which
+  // went with the brand. Kept in the signature — callers still pass it and the
+  // `study-calendar-status` flag still produces it — so restoring a path that
+  // needs it is a body change, not a signature change.
+  _statusOverride: StatusOverride = 'match',
 ): CourseCardData[] {
   // QE demo paths have their own curricula (keyed by path id), independent of
   // the brand's CE list.

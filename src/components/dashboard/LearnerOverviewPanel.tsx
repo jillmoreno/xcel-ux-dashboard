@@ -26,9 +26,7 @@ import {
   Gem,
   GraduationCap,
   Layout,
-  PizzaSlice,
   Podcast,
-  ShoePrints,
   StarSolid,
   Video,
 } from '@/icons'
@@ -1230,91 +1228,6 @@ function MembershipFeatureLoFiPlaceholder({
   )
 }
 
-/** CRE-only Membership feature column — surfaces the "Snacks"
- *  bite-sized-learning concept (quarterly drops of practical tools
- *  + topic guides). Tagline + branded examples list sit on a soft
- *  primary-tinted card so the column reads as concrete teaser
- *  content next to the lo-fi placeholder siblings.
- *
- *  Sources from the CRE Snacks marketing page — tagline + example
- *  topics (Pipeline Boost, Brand Identity, Client Care, Real Estate
- *  Investing). Only renders when `brand === 'cre'`. */
-function MembershipSnacksFeature({
-  fill = false,
-  horizontal = false,
-  compact = false,
-  floating = false,
-}: {
-  fill?: boolean
-  horizontal?: boolean
-  compact?: boolean
-  /** Drop the tinted background + border, add course-card hover
-   *  styles, and wrap the card in a Link to the Membership page's
-   *  Learning Snacks section. Wired from the parent based on the
-   *  membership card width. */
-  floating?: boolean
-}) {
-  return (
-    <HorizontalOrVerticalFeatureShell
-      imageUrl="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&h=600&fit=crop&q=80"
-      Icon={PizzaSlice}
-      horizontal={horizontal}
-      compact={compact}
-      fill={fill}
-      floating={floating}
-      href={floating ? '/membership#learning-snacks' : undefined}
-      // Lighter wash — the standard tint at 15% opacity.
-      surface="color-mix(in srgb, color-mix(in srgb, var(--color-primary-500) 5%, white) 15%, transparent)"
-    >
-      <span
-        style={{
-          fontFamily: 'var(--font-body)',
-          fontSize: 11,
-          fontWeight: 700,
-          letterSpacing: '0.04em',
-          textTransform: 'uppercase',
-          color: 'var(--color-primary-700)',
-        }}
-      >
-        Learning Snacks
-      </span>
-      <p
-        style={{
-          margin: 0,
-          fontFamily: 'var(--font-body)',
-          fontSize: 11,
-          lineHeight: '15px',
-          color: 'var(--color-text-secondary)',
-          // Up to two lines before truncating.
-          display: '-webkit-box',
-          WebkitBoxOrient: 'vertical',
-          WebkitLineClamp: 2,
-          overflow: 'hidden',
-        }}
-      >
-        Sharpen your skills or gain new insights with access to new snacks
-        every quarter.
-      </p>
-      <ul
-        style={{
-          margin: 0,
-          paddingLeft: 16,
-          listStyle: 'disc',
-          fontFamily: 'var(--font-body)',
-          fontSize: 11,
-          lineHeight: '16px',
-          color: 'var(--color-text-secondary)',
-        }}
-      >
-        <li>Pipeline Boost</li>
-        <li>Brand Identity</li>
-        <li>Client Care</li>
-      </ul>
-      <IncludedWithProBadge />
-    </HorizontalOrVerticalFeatureShell>
-  )
-}
-
 /** Catalog "Included with Pro" badge, lifted from
  *  `IndividualCourseCard` so the Membership feature cards carry the
  *  same affordance. Gem icon + label, tertiary-700 ink, no fill —
@@ -1347,85 +1260,6 @@ function IncludedWithProBadge() {
       <Gem size={12} aria-hidden />
       Included with Membership
     </span>
-  )
-}
-
-/** CRE-only — AI MasterTracks Membership column. Mirrors the
- *  `MembershipSnacksFeature` structure (header image + eyebrow +
- *  tagline + body + examples) so the three feature columns read as
- *  visual siblings. Copy sourced from the CRE AI MasterTracks
- *  marketing page (Live · Guided · On-Demand · Workflow tracks). */
-function MembershipAiMasterTracksFeature({
-  fill = false,
-  horizontal = false,
-  compact = false,
-  floating = false,
-}: {
-  fill?: boolean
-  horizontal?: boolean
-  compact?: boolean
-  /** See `MembershipSnacksFeature.floating` — same behavior, links
-   *  to the Membership page's AI MasterTracks section. */
-  floating?: boolean
-}) {
-  return (
-    <HorizontalOrVerticalFeatureShell
-      imageUrl="https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=600&h=600&fit=crop&q=80"
-      Icon={ShoePrints}
-      horizontal={horizontal}
-      compact={compact}
-      fill={fill}
-      floating={floating}
-      href={floating ? '/membership#ai-mastertracks' : undefined}
-      // Lighter wash — the standard tint at 15% opacity.
-      surface="color-mix(in srgb, color-mix(in srgb, var(--color-primary-500) 5%, white) 15%, transparent)"
-    >
-      <span
-        style={{
-          fontFamily: 'var(--font-body)',
-          fontSize: 11,
-          fontWeight: 700,
-          letterSpacing: '0.04em',
-          textTransform: 'uppercase',
-          color: 'var(--color-primary-700)',
-        }}
-      >
-        AI MasterTracks
-      </span>
-      <p
-        style={{
-          margin: 0,
-          fontFamily: 'var(--font-body)',
-          fontSize: 11,
-          lineHeight: '15px',
-          color: 'var(--color-text-secondary)',
-          // Up to two lines before truncating.
-          display: '-webkit-box',
-          WebkitBoxOrient: 'vertical',
-          WebkitLineClamp: 2,
-          overflow: 'hidden',
-        }}
-      >
-        Multi-track AI training built for real estate pros — apply AI to
-        generate more leads, convert clients, and drive repeat business.
-      </p>
-      <ul
-        style={{
-          margin: 0,
-          paddingLeft: 16,
-          listStyle: 'disc',
-          fontFamily: 'var(--font-body)',
-          fontSize: 11,
-          lineHeight: '16px',
-          color: 'var(--color-text-secondary)',
-        }}
-      >
-        <li>Lead Generation</li>
-        <li>Client Conversion</li>
-        <li>Repeat Business</li>
-      </ul>
-      <IncludedWithProBadge />
-    </HorizontalOrVerticalFeatureShell>
   )
 }
 

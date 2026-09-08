@@ -645,7 +645,6 @@ export function MembershipOverview({
   )
 }
 
-
 /* ─── Career Tools — Rubi AI launch cards ────────────────────────────── */
 
 /**
@@ -1245,59 +1244,6 @@ function KpiStat({
       <span style={{ fontFamily: 'var(--font-body)', fontSize: 12, color: palette.sub }}>{sub}</span>
     </div>
   )
-}
-
-/**
- * "Explore Membership" CTA at the right edge of the non-member KPI band
- * (`membership-savings-cta` = `cta` | `bold`, replacing the Current Plan stat).
- * Vertically centered and `flexShrink: 0`, so it never adds to the stat cells'
- * height — the band stays one row tall. `bold` is a filled magenta button
- * (attention-grabbing); the subtle variant is an outlined button matching the
- * band.
- */
-function ExploreCta({ bold }: { bold: boolean }) {
-  // What's New is archived; this CTA opens the Membership section instead.
-  const go = () => window.location.assign('/dashboard-rebrand?section=membership')
-  return (
-    <div style={{ display: 'flex', alignItems: 'center', flexShrink: 0, padding: '0 4px 0 16px' }}>
-      <button type="button" onClick={go} style={bold ? boldCtaStyle : subtleCtaStyle}>
-        Explore Membership
-        <ArrowRight size={13} aria-hidden />
-      </button>
-    </div>
-  )
-}
-
-const subtleCtaStyle: CSSProperties = {
-  flexShrink: 0,
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 5,
-  padding: '6px 12px',
-  background: 'transparent',
-  border: '1px solid color-mix(in srgb, var(--color-cta-500) 35%, transparent)',
-  borderRadius: 'var(--radius-pill)',
-  color: 'var(--color-cta-700)',
-  fontFamily: 'var(--font-body)',
-  fontSize: 13,
-  fontWeight: 700,
-  cursor: 'pointer',
-}
-
-const boldCtaStyle: CSSProperties = {
-  flexShrink: 0,
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 6,
-  padding: '9px 16px',
-  background: 'var(--color-cta-500)',
-  border: 'none',
-  borderRadius: 'var(--radius-md)',
-  color: 'var(--color-text-inverse)',
-  fontFamily: 'var(--font-heading)',
-  fontSize: 13,
-  fontWeight: 700,
-  cursor: 'pointer',
 }
 
 /**
