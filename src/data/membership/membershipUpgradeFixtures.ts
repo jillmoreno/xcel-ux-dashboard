@@ -126,62 +126,6 @@ export type MembershipComparePlan = {
  *  brand may list 3 (the modal sizes its width + columns to the count). */
 export type MembershipComparison = { title: string; plans: MembershipComparePlan[] }
 
-/** Non-member real-estate comparison — all three tiers (Plus / Pro /
- *  Premier), no "current" plan, every card a selectable Add To Cart. The
- *  member flow above is an upgrade-from-current (Plus → Premier, 2 cards); a
- *  non-member is choosing a plan from scratch, so they see the full ladder. */
-const REAL_ESTATE_COMPARE_NON_MEMBER: MembershipComparison = {
-  title: 'Compare your Membership Options',
-  plans: [
-    {
-      name: 'Plus Membership',
-      profession: 'Real Estate',
-      price: '$99',
-      period: 'year',
-      tier: 'low',
-      ctaLabel: 'Add To Cart',
-      bullets: [
-        'Meet all your license renewal requirements — every required CE package included',
-        'Choose from 70+ CE courses',
-        'Access to all our Learning Snacks',
-        'Automatic CE credit reporting',
-        'Renewal deadline tracking with all your certificates in one place',
-      ],
-    },
-    {
-      name: 'Pro Membership',
-      profession: 'Real Estate',
-      price: '$149.99',
-      period: 'year',
-      tier: 'mid',
-      recommended: true,
-      ctaLabel: 'Add To Cart',
-      bullets: [
-        'Everything in Plus',
-        'Professional Certification Program of your choice ($300 value)',
-        'Choose from 200+ CE courses across every line',
-        'Real Estate AI MasterTrack',
-        'Business-building masterclasses + marketing toolkits',
-      ],
-    },
-    {
-      name: 'Premier Membership',
-      profession: 'Real Estate',
-      price: '$199.99',
-      period: 'year',
-      tier: 'high',
-      ctaLabel: 'Add To Cart',
-      bullets: [
-        'Everything in Pro',
-        '2 Professional Certification Programs of your choice ($600 value)',
-        'Designation & certification prep',
-        'Coaching & community access',
-        '$100 off the Institute for Luxury Home Marketing training',
-      ],
-    },
-  ],
-}
-
 /** Strip the current-plan treatment for the non-member flow — a non-member has no
  *  current plan, so every card becomes a selectable "Add To Cart". */
 function toNonMemberPlans(plans: MembershipComparePlan[]): MembershipComparePlan[] {

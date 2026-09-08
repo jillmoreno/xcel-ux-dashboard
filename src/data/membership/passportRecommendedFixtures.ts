@@ -26,9 +26,6 @@ export type PassportRecommendation = {
   memberOnly?: boolean
 }
 
-const U = (photo: string) =>
-  `https://images.unsplash.com/${photo}?w=600&h=600&fit=crop&q=80`
-
 const RECS_BY_BRAND: Record<Brand, PassportRecommendation[]> = {
   // XCEL sells transactional course packages (Standard / Premier) + a B2B
   // Partner programme — no consumer membership, so nothing here is reachable.

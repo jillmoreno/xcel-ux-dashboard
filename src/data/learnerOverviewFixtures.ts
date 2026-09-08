@@ -176,16 +176,6 @@ export const STREAK_THIS_WEEK: ReadonlyArray<StreakActivity> = [
  * + `streakThisWeekFor(brand)` route to the right one.
  * ─────────────────────────────────────────────────────────────────── */
 
-const _ELITE_THIS_WEEK: ReadonlyArray<StreakActivity> = [
-  { date: '2026-05-14', active: true },
-  { date: '2026-05-15', active: true },
-  { date: '2026-05-16', active: true },
-  { date: '2026-05-17', active: true },
-  { date: '2026-05-18', active: true },
-  { date: '2026-05-19', active: true },
-  { date: '2026-05-20', active: true },
-]
-
 // STC — 0-day current streak, longest 35. "Start a new streak today."
 // Several small streaks earlier in the month including a 4-day run
 // ending May 15. From May 16 → 20 the user lapsed — 5 consecutive days

@@ -39,33 +39,6 @@ export type FeaturedOffer = {
 
 /* ─── Elite (Healthcare / Nursing) ─────────────────────────────────── */
 
-const ELITE_FEATURED: FeaturedOffer[] = [
-  {
-    id: 'elite-featured-nso',
-    brandLabel: 'NSO',
-    partnerName: 'Nurses Service Organization',
-    description:
-      'Exclusive malpractice and professional liability coverage designed for nurses — protection Elite members can add in minutes.',
-    learnMoreUrl: '/membership/partners/nso',
-  },
-  {
-    id: 'elite-featured-nurse-com',
-    brandLabel: 'NURSE.COM',
-    partnerName: 'Nurse.com Career Center',
-    description:
-      'Discounted access to job listings, résumé tools, and career coaching built for nurses at every stage.',
-    learnMoreUrl: '/membership/partners/nurse-com',
-  },
-  {
-    id: 'elite-featured-uniform-advantage',
-    brandLabel: 'UNIFORM ADVANTAGE',
-    partnerName: 'Uniform Advantage',
-    description:
-      'Members save 15% on scrubs, footwear, and accessories — refresh your work wardrobe for less.',
-    learnMoreUrl: '/membership/partners/uniform-advantage',
-  },
-]
-
 /* ─── STC (Financial Services) ─────────────────────────────────────── */
 
 const STC_FEATURED: FeaturedOffer[] = [

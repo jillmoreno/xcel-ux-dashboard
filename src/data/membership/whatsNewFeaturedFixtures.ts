@@ -54,49 +54,6 @@ export type WhatsNewLaunchCard = {
 
 /* ─── CRE · Colibri Real Estate ───────────────────────────────────────────
    Themed from colibrirealestate.com: Professional Development (AI MasterTracks,
-   CNE), Exam Prep / Free Practice Exam, CE Membership, Luxury Home Marketing. */
-const CRE_FEATURED: WhatsNewFeaturedSlide[] = [
-  {
-    id: 'cre-ai-mastertracks',
-    eyebrow: 'New · Professional Development',
-    tier: 'passport',
-    title: 'AI MasterTracks for Agents',
-    desc: 'Put AI to work in your business — draft listings, prep clients, and win back hours with a guided, agent-first track.',
-    byline: 'Self-paced Professional Development · led by top-producing agents.',
-    memberCta: { primary: 'Start the track', secondary: "See what's included" },
-    nonMemberCta: { primary: 'Explore the track', secondary: 'Preview a lesson free' },
-  },
-  {
-    id: 'cre-negotiation-expert',
-    eyebrow: 'Featured certification · Negotiation',
-    tier: 'passport',
-    title: 'Become a Certified Negotiation Expert',
-    desc: 'Master the skills to secure the best deals, close faster, and deliver unmatched value with the industry-recognized CNE designation.',
-    byline: 'Earn the CNE® designation · Real Estate Negotiation Institute.',
-    memberCta: { primary: 'Start CNE', secondary: 'How it works' },
-    nonMemberCta: { primary: 'Get certified', secondary: 'See the curriculum' },
-  },
-  {
-    id: 'cre-free-practice-exam',
-    eyebrow: 'Exam ready · Free for everyone',
-    tier: 'open',
-    title: 'Free Real Estate Practice Exam',
-    desc: 'Do you have what it takes? Tackle sample questions on contracts, commissions, and more — then walk into exam day with confidence.',
-    byline: '10 sample questions · instant scoring.',
-    memberCta: { primary: 'Take the exam', secondary: 'Browse exam prep' },
-    nonMemberCta: { primary: 'Take the exam', secondary: 'Browse exam prep' },
-  },
-  {
-    id: 'cre-ce-membership',
-    eyebrow: 'Renew with confidence · Continuing Education',
-    tier: 'passport',
-    title: 'Unlimited CE Membership',
-    desc: 'Complete required state CE with flexible courses, expert instructors, and engaging topics — all in one membership that renews with you.',
-    byline: 'State-approved CE · single- and multi-state plans.',
-    memberCta: { primary: 'Browse CE courses', secondary: 'Manage membership' },
-    nonMemberCta: { primary: 'Explore membership', secondary: 'See plans' },
-  },
-]
 
 const CRE_LAUNCHES: WhatsNewLaunchCard[] = [
   { id: 'cre-l-ai', contentType: 'Pathway', iconKey: 'pathway', title: 'AI MasterTracks for Agents', meta: 'Self-paced · Pathway', coverAccent: 'pathway' },

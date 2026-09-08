@@ -65,17 +65,6 @@ function slug(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 }
 
-const SIE_PREMIER = {
-  title: 'SIE Premier',
-  items: items(
-    'SIE Final and Custom Exams-12th Edition',
-    'SIE Chapter Quizzes',
-    'SIE On-Demand Lecture-12th Edition',
-    'SIE Printed Study Manual',
-    'SIE Vocabulary Flashcards',
-  ),
-}
-
 const SERIES_63_ESSENTIALS = {
   title: 'Series 63 Essentials',
   items: items(

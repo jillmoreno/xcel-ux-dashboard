@@ -148,11 +148,6 @@ export type ResourcesCopy = {
   heroDescription: string
 }
 
-const DEFAULT_RESOURCES_COPY: ResourcesCopy = {
-  heroDescription:
-    'Free for everyone — no membership required. Our blog and podcast, updated with the latest industry news, market trends, and practical career guidance.',
-}
-
 const RESOURCES_COPY_BY_BRAND: Record<Brand, ResourcesCopy> = {
   // XCEL has no membership, so "no membership required" would be answering a
   // question nobody asked. The claim that does work here is that these are free

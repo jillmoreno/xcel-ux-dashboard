@@ -53,39 +53,6 @@ export type PartnerOffering = {
 // reference — NatMed and Prescriber Insights are the headline
 // partners (and the two that ship with custom SVG logo marks).
 
-const ELITE_OFFERINGS: PartnerOffering[] = [
-  {
-    id: 'elite-natmed',
-    partnerName: 'NatMed',
-    eyebrow: 'Clinical reference',
-    savingsLabel: '25% off NatMed Pro',
-    description:
-      "FHEA members can now get 25% off NatMed Pro, the largest database of evidence-based, unbiased information on natural medicines, dietary supplements, and integrated therapies.",
-    learnMoreUrl: '/membership/partners/natmed',
-    logoKey: 'natmed',
-  },
-  {
-    id: 'elite-prescriber-insights',
-    partnerName: 'Prescriber Insights',
-    eyebrow: 'Prescribing reference',
-    savingsLabel: '25% off subscription',
-    description:
-      'With your FHEA membership you save 25% on your subscription. Join thousands of NPs who rely on Prescriber Insights for concise, trusted information on medication.',
-    learnMoreUrl: '/membership/partners/prescriber-insights',
-    logoKey: 'prescriber-insights',
-  },
-  {
-    id: 'elite-boojee',
-    partnerName: 'Boojee',
-    eyebrow: 'ID accessories',
-    savingsLabel: 'Member-only discount',
-    description:
-      'Boojee is the market leader in the niche category of Identification Jewelry. Their product collections have expanded to include retractable badge reel jewelry, ID lanyards, and accessories that pair function with personal style.',
-    learnMoreUrl: '/membership/partners/boojee',
-    logoKey: 'boojee',
-  },
-]
-
 /* ─── STC (Financial Services) ─────────────────────────────────────── */
 
 const STC_OFFERINGS: PartnerOffering[] = [
