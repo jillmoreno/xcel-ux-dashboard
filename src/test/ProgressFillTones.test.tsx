@@ -3,7 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it, beforeEach } from 'vitest'
 import { CourseCard, type CourseCardData } from '@/components/courses/CourseCard'
 import { AccountProvider, defaultMemberTier } from '@/context/AccountContext'
-import { myCoursesFor } from '@/data/myCoursesFixtures'
+import { FIXTURE_TODAY, myCoursesFor } from '@/data/myCoursesFixtures'
 
 /**
  * The progress bar's fill is a status language.
@@ -23,10 +23,36 @@ function seed() {
   )
 }
 
-function course(id: string): CourseCardData {
-  const found = myCoursesFor('xcel').find((c) => c.id === id)
-  if (!found) throw new Error(`no fixture course ${id}`)
-  return found
+/**
+ * A base XCEL course, with the state under test applied on top.
+ *
+ * This used to pick a named fixture row per state — a McKissock course for
+ * completed, a CRE one for expiring-soon, and so on. That coupled a test about
+ * COLOUR MAPPING to whichever brand happened to author a row in each state, and
+ * it broke the moment those brands left. XCEL's seven My Courses rows only
+ * cover in-progress / not-started / completed, so three of the five states have
+ * no row to point at and would have had to be authored purely to be tested.
+ *
+ * Building the state explicitly is also just a better test: the mapping is what
+ * is being pinned, and now nothing about it depends on fixture churn.
+ */
+function course(state: Partial<CourseCardData>): CourseCardData {
+  const base = myCoursesFor('xcel').find((c) => c.id === 'mc-xcel-lh-prelicense')!
+  return { ...base, expiresAt: undefined, ...state }
+}
+
+/**
+ * An ISO date `days` from FIXTURE_TODAY — not from the real clock.
+ *
+ * `CourseCard` resolves expiry against the anchored `FIXTURE_TODAY`
+ * (2026-05-11) so the demo renders the same states whenever it is opened. A
+ * date built from `new Date()` lands on the wrong side of that anchor and the
+ * state silently comes back `none`.
+ */
+function inDays(days: number): string {
+  const d = new Date(FIXTURE_TODAY)
+  d.setDate(d.getDate() + days)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
 /** The inline `background` on the bar's fill span. jsdom does not resolve
@@ -54,30 +80,35 @@ beforeEach(() => {
 
 describe('every state maps to a deliberate fill', () => {
   it('in progress — the brand fill, the bar as a pure quantity', () => {
-    // A course with no `expiresAt` — `mc-cre-1031-exchange` looks like the
-    // obvious pick and is not: it is the expiring-soon clamp demo, so it
-    // correctly renders warning.
-    renderCard(course('mc-millennials'))
+    renderCard(course({ status: 'in-progress', progress: 50 }))
     expect(fillToken()).toBe('var(--color-progress-fill)')
   })
 
   it('completed — success green', () => {
-    renderCard(course('mc-agency-law'))
+    renderCard(course({ status: 'completed', progress: 100 }))
     expect(fillToken()).toBe('var(--color-progress-fill-complete)')
   })
 
   it('failed — error red', () => {
-    renderCard(course('mc-ga-license-law-2'))
+    renderCard(course({ status: 'failed', progress: 40 }))
     expect(fillToken()).toBe('var(--color-progress-fill-failed)')
   })
 
   it('expiring soon — warning, the one state where the colour urges something', () => {
-    renderCard(course('mc-cre-broker-prelicense'))
+    // Inside the warn window, so `courseExpiryState` resolves `expiring-soon`
+    // against the clock rather than against a stored flag.
+    //
+    // Note it is NOT simply "inside DEFAULT_WARN_DAYS (60)": `warnWindowFor`
+    // clamps the countdown to HALF the enrolment window, and the base course
+    // carries `enrolledAt: 2026-05-04`. Against an expiry 5 days after
+    // FIXTURE_TODAY that window is 12 days, so the clamp is 6 — ten days out
+    // would resolve `none` and read as the mapping being broken.
+    renderCard(course({ status: 'in-progress', progress: 40, expiresAt: inDays(5) }))
     expect(fillToken()).toBe('var(--color-warning-500)')
   })
 
   it('expired — charcoal, the only fill that is not a colour', () => {
-    renderCard(course('mc-cre-commercial-leasing'))
+    renderCard(course({ status: 'in-progress', progress: 40, expiresAt: inDays(-1) }))
     expect(fillToken()).toBe('var(--color-progress-fill-expired)')
   })
 })
@@ -88,7 +119,7 @@ describe('failed outranks the clock', () => {
     // `resolveStatusBadge` so the bar and the cover badge cannot disagree about
     // which state a card is in. Failed wins: the clock stopped mattering the
     // moment you did not pass.
-    renderCard({ ...course('mc-ga-license-law-2'), expiresAt: '2020-01-01' })
+    renderCard(course({ status: 'failed', progress: 40, expiresAt: '2020-01-01' }))
     expect(fillToken()).toBe('var(--color-progress-fill-failed)')
   })
 })
@@ -135,29 +166,29 @@ describe('the resume link', () => {
   const marker = () => screen.queryByRole('link', { name: /Jump Back In/i })
 
   it('offers Jump Back In on any in-progress course', () => {
-    renderCard(course('mc-millennials'))
-    expect(marker()).toHaveAttribute('href', '/courses/mc-millennials')
+    renderCard(course({ status: 'in-progress', progress: 50 }))
+    expect(marker()).toHaveAttribute('href', '/courses/mc-xcel-lh-prelicense')
   })
 
   it('is a router link, not a new tab — resuming stays inside the app', () => {
     // Contrast the certificate marker, which leaves for a document and IS a
     // real `target="_blank"` anchor.
-    renderCard(course('mc-millennials'))
+    renderCard(course({ status: 'in-progress', progress: 50 }))
     expect(marker()).not.toHaveAttribute('target')
   })
 
   it('does not offer it on a not-started course', () => {
-    renderCard(course('mc-il-6hr-core'))
+    renderCard(course({ status: 'not-started', progress: 0 }))
     expect(marker()).toBeNull()
   })
 
   it('does NOT offer it on an expired course, which is still in-progress data', () => {
-    // ⚠ The one that matters. `mc-cre-commercial-leasing` is
-    // `myStatus: 'in-progress'` with a passed expiry, so a naive status check
-    // would offer to resume a course whose access has ended — the exact promise
-    // the expired treatment refuses to make. The footer renders `Enrol again`
-    // INSTEAD of the marker, which is what excludes it.
-    const expired = course('mc-cre-commercial-leasing')
+    // ⚠ The one that matters. This is `status: 'in-progress'` with a PASSED
+    // expiry, so a naive status check would offer to resume a course whose
+    // access has ended — the exact promise the expired treatment refuses to
+    // make. The footer renders `Enrol again` INSTEAD of the marker, which is
+    // what excludes it.
+    const expired = course({ status: 'in-progress', progress: 40, expiresAt: inDays(-1) })
     expect(expired.status).toBe('in-progress')
     renderCard(expired)
     expect(marker()).toBeNull()
