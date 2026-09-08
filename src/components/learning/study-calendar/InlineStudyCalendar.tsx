@@ -37,10 +37,8 @@ import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { TaskRow } from './TaskRow'
 import { WeekendToggle } from './WeekendToggle'
 import { StudyCalendarEmptyState } from './StudyCalendarEmptyState'
-import { StudyCalendarLockedState } from './StudyCalendarLockedState'
 import { CreateCalendarDemoHarness } from './CreateCalendarDemoHarness'
 import { CreateCalendarPanelHarness } from './CreateCalendarPanelHarness'
-import { GridView } from './GridView'
 import { CalendarSettingsSheet } from './CalendarSettingsSheet'
 import { StudyCalendarStatBand } from './StudyCalendarStatBand'
 import { CalendarActionsPanel } from './CalendarActionsPanel'
@@ -327,7 +325,7 @@ function applyStatusFilter(
  * stays consistent with the tab placement on other STC paths.
  */
 export function InlineStudyCalendar({ pathId }: { pathId?: string } = {}) {
-  const { brand, membership } = useAccount()
+  const { brand } = useAccount()
   const [searchParams] = useSearchParams()
   // `study-calendar-state` feature flag — 3 variants (`add` /
   // `edit` / `locked`) consolidate the previous one-path-per-demo

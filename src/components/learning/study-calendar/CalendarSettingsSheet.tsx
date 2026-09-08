@@ -1,9 +1,7 @@
 import { useEffect, useId, useMemo, useState, type CSSProperties } from 'react'
-import { useAccount } from '@/context/AccountContext'
 import { Sheet } from '@/components/ui/Sheet'
 import { Button } from '@/components/ui/Button'
 import { Select } from '@/components/ui/Select'
-import { Toggle } from '@/components/ui/Toggle'
 import { Lock, X } from '@/icons'
 import type { StudyCalendar } from '@/data/studyCalendarFixtures'
 import {
@@ -86,7 +84,6 @@ export function CalendarSettingsSheet({
   const [studyDays, setStudyDays] = useState<WeekDay[]>(() =>
     defaultStudyDays(calendar.daysPerWeek),
   )
-  const { brand } = useAccount()
   // Plan lengths are per-PATH, not global — see `calendarLengthsForPath`. A
   // caller that doesn't know its path falls back to the Series 79 lengths.
   const planLengths = calendarLengthsForPath(pathId)

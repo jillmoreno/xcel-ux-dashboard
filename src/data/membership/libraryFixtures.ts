@@ -1,5 +1,4 @@
 import type { Brand } from '@/context/AccountContext'
-import { createImagePicker } from '@/utils/topicImage'
 
 /**
  * Member Learning Library content — surfaced inside the

@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { useAccount } from '@/context/AccountContext'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { useAccount } from '@/context/AccountContext'
 import { Tabs, type TabItem } from '@/components/ui/Tabs'
 import { RecommendedForYouPanel } from '@/components/dashboard/recommended/RecommendedForYouPanel'
 import { MembershipHeroBand } from '@/components/membership/MembershipHeroBand'
@@ -16,16 +16,6 @@ import { MembershipBenefitsPanel } from '@/components/membership/MembershipBenef
 import { benefitHeroesFor } from '@/data/membership/benefitHeroesFixtures'
 import { ForumsComingSoon } from '@/components/membership/ForumsComingSoon'
 import { CommunityComingSoon } from '@/components/membership/CommunityComingSoon'
-import { MembershipV2 } from '@/components/membership/v2/MembershipV2'
-import { MembershipV4 } from '@/components/membership/v4/MembershipV4'
-import { MembershipV5 } from '@/components/membership/v5/MembershipV5'
-import { MembershipV6 } from '@/components/membership/v6/MembershipV6'
-import { MembershipV7 } from '@/components/membership/v7/MembershipV7'
-import {
-  isValidMembershipVersion,
-  readDefaultMembershipVersion,
-} from '@/data/membershipVersions'
-
 /**
  * Top-level `/membership` landing page. Two branches driven by
  * `useAccount().membership`:
@@ -110,13 +100,6 @@ function parseTab(raw: string | null): MembershipTab {
  * read `useAccount().membership` independently.
  */
 export function MembershipLandingPage() {
-  const { brand } = useAccount()
-  const [params] = useSearchParams()
-  const requested = params.get('version')
-  const version = isValidMembershipVersion(requested)
-    ? requested
-    : readDefaultMembershipVersion()
-
   // Versions v2–v7 were Elite-only explorations — Elite carried the Passport
   // fixtures they render. With that brand gone every version resolves to V1.
   //

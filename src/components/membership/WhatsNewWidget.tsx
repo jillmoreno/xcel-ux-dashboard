@@ -41,15 +41,6 @@ const CRE_CARDS: VibrantCardData[] = [
   { title: 'Fair Housing Deep Dive', hours: 2, delivery: 'podcast' },
 ]
 
-const STC_CARDS: VibrantCardData[] = [
-  { title: 'SIE Exam Crash Course', hours: 3, delivery: 'online' },
-  { title: 'Pass the Exam: Study Sessions', hours: 1, delivery: 'podcast' },
-  { title: 'Series 7 Video Review', hours: 2, delivery: 'video' },
-  { title: 'Series 63 Crash Course', hours: 2, delivery: 'online' },
-  { title: 'Live Final Review Session', hours: 3, delivery: 'in-person' },
-  { title: 'Greenlight Readiness Check', hours: 1, delivery: 'online' },
-]
-
 // XCEL — the 3-Part Training Program's own artefacts (lessons, the Prep
 // Review course, the three Exam Simulators) plus its named study tools.
 const XCEL_CARDS: VibrantCardData[] = [
@@ -59,15 +50,6 @@ const XCEL_CARDS: VibrantCardData[] = [
   { title: 'Prep Review Course', hours: 3, delivery: 'online' },
   { title: 'Exam Simulator 1', hours: 2, delivery: 'online' },
   { title: 'Exam Cram', hours: 1, delivery: 'video' },
-]
-
-const ELITE_CARDS: VibrantCardData[] = [
-  { title: 'The Critical Care Playbook', hours: 2, delivery: 'online' },
-  { title: 'Rounds: The Night Shift', hours: 1, delivery: 'podcast' },
-  { title: 'Med-Surg Skills Refresher', hours: 2, delivery: 'video' },
-  { title: 'CCRN Review, Reimagined', hours: 3, delivery: 'online' },
-  { title: 'Hands-On Skills Lab', hours: 4, delivery: 'in-person' },
-  { title: 'Pharm in Plain English', hours: 1, delivery: 'podcast' },
 ]
 
 const VIBRANT_CARDS_BY_BRAND: Record<Brand, VibrantCardData[]> = {

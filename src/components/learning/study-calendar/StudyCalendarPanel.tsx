@@ -8,7 +8,6 @@ import { GridView } from './GridView'
 import { TaskListView } from './TaskListView'
 import { WeekGridView } from './WeekGridView'
 import { StudyCalendarEmptyState } from './StudyCalendarEmptyState'
-import { StudyCalendarLockedState } from './StudyCalendarLockedState'
 import { CreateCalendarDemoHarness } from './CreateCalendarDemoHarness'
 import { CreateCalendarPanelHarness } from './CreateCalendarPanelHarness'
 import { hasStudyCalendarFor, studyCalendarFor } from '@/data/studyCalendarFixtures'
@@ -49,7 +48,7 @@ function parseView(raw: string | null): CalendarView {
  * the learner picks the next task; the snapshot lives next door.
  */
 export function StudyCalendarPanel({ pathId }: { pathId?: string } = {}) {
-  const { brand, membership } = useAccount()
+  const { brand } = useAccount()
   const [searchParams, setSearchParams] = useSearchParams()
   const view = parseView(searchParams.get('calView'))
   const [calendarModalOpen, setCalendarModalOpen] = useState(false)
