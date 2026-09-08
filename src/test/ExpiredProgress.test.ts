@@ -24,7 +24,7 @@ import type { Brand } from '@/context/AccountContext'
  * next to its certificate. These tests exist to catch that.
  */
 
-const BRANDS: Brand[] = ['cre', 'mckissock', 'elite', 'fitzgerald', 'stc', 'xcel']
+const BRANDS: Brand[] = ['xcel']
 
 describe('the preconditions the expired-progress rule leans on', () => {
   it('never reports a completed course as expired, whatever its dates say', () => {

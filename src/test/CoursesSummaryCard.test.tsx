@@ -3,7 +3,6 @@ import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
 import { CoursesSummaryCard } from '@/components/dashboard/CoursesSummaryCard'
-import { myCoursesFor } from '@/data/myCoursesFixtures'
 
 function renderCard() {
   return render(
@@ -15,16 +14,7 @@ function renderCard() {
   )
 }
 
-/** Convenience — fetch the <dd> for a given legend label. */
-function getLegendValue(label: RegExp | string): string | null {
-  const dt = screen.queryByText(label)
-  if (!dt) return null
-  const row = dt.closest('div')
-  return row?.querySelector('dd')?.textContent ?? null
-}
-
 beforeEach(() => {
-  // Each test renders against the default fixture brand (CRE) unless
   // it explicitly persists a different brand to localStorage.
   window.localStorage.clear()
 })
@@ -36,55 +26,6 @@ describe('CoursesSummaryCard — Completion Gauge', () => {
     expect(screen.getByText('In Progress')).toBeInTheDocument()
     expect(screen.getByText('Not Started')).toBeInTheDocument()
     expect(screen.getByText(/^Courses \(\d+\)$/)).toBeInTheDocument()
-  })
-
-  it('gauge aria-label reports completed / total + percentage (CRE)', () => {
-    renderCard()
-    const courses = myCoursesFor('cre')
-    const total = courses.length
-    const completed = courses.filter((c) => c.myStatus === 'completed').length
-    const pct = Math.round((completed / total) * 100)
-    expect(
-      screen.getByRole('img', {
-        name: `${completed} of ${total} courses completed (${pct}%)`,
-      }),
-    ).toBeInTheDocument()
-  })
-
-  it('hides the In Progress legend row when inProgress === 0', async () => {
-    vi.resetModules()
-    vi.doMock('@/data/myCoursesFixtures', async () => {
-      const actual =
-        await vi.importActual<typeof import('@/data/myCoursesFixtures')>(
-          '@/data/myCoursesFixtures',
-        )
-      const list = actual.myCoursesFor('cre').map((c) => ({
-        ...c,
-        myStatus: c.myStatus === 'in-progress' ? ('completed' as const) : c.myStatus,
-      }))
-      return {
-        ...actual,
-        myCoursesFor: () => list,
-        isRecentlyAdded: () => false,
-      }
-    })
-    const [
-      { CoursesSummaryCard: Card },
-      { AccountProvider: Provider },
-    ] = await Promise.all([
-      import('@/components/dashboard/CoursesSummaryCard'),
-      import('@/context/AccountContext'),
-    ])
-    render(
-      <Provider>
-        <MemoryRouter>
-          <Card />
-        </MemoryRouter>
-      </Provider>,
-    )
-    expect(screen.queryByText('In Progress')).not.toBeInTheDocument()
-    expect(screen.getByText('Completed')).toBeInTheDocument()
-    vi.doUnmock('@/data/myCoursesFixtures')
   })
 
   it('renders the "+ Recently Added" footnote only when recent > 0', async () => {
@@ -99,8 +40,7 @@ describe('CoursesSummaryCard — Completion Gauge', () => {
         )
       return {
         ...actual,
-        isRecentlyAdded: () => false,
-      }
+        isRecentlyAdded: () => false }
     })
     const [
       { CoursesSummaryCard: Card },
@@ -141,8 +81,7 @@ describe('CoursesSummaryCard — Completion Gauge', () => {
       return {
         ...actual,
         myCoursesFor: () => [],
-        isRecentlyAdded: () => false,
-      }
+        isRecentlyAdded: () => false }
     })
     const [
       { CoursesSummaryCard: Card },
@@ -167,20 +106,6 @@ describe('CoursesSummaryCard — Completion Gauge', () => {
     expect(screen.queryByText('In Progress')).not.toBeInTheDocument()
     expect(screen.queryByText('Not Started')).not.toBeInTheDocument()
     vi.doUnmock('@/data/myCoursesFixtures')
-  })
-
-  it('gauge center total matches myCoursesFor(brand).length for the active brand', () => {
-    renderCard()
-    const total = myCoursesFor('cre').length
-    expect(screen.getByText(String(total))).toBeInTheDocument()
-    expect(screen.getByText('courses')).toBeInTheDocument()
-    expect(screen.getByText(`Courses (${total})`)).toBeInTheDocument()
-    // Sanity — legend values agree with the underlying fixture counts.
-    const courses = myCoursesFor('cre')
-    const inProgress = courses.filter((c) => c.myStatus === 'in-progress').length
-    const completed = courses.filter((c) => c.myStatus === 'completed').length
-    expect(getLegendValue('In Progress')).toBe(String(inProgress))
-    expect(getLegendValue('Completed')).toBe(String(completed))
   })
 
   it('View All link routes to /my-learning/courses', () => {

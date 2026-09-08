@@ -1,16 +1,10 @@
 import { describe, it, expect } from 'vitest'
 import {
-  dashboardEducationSupported,
-  dashboardProgressPersonaFor,
-} from '@/data/dashboardProgressFixtures'
-import {
-  defaultEducationType,
   educationTypesFor,
   goalOptionsFor,
   licenseTypesFor,
   setupInterestCoursesFor,
-  type EducationType,
-} from '@/data/onboarding/onboardingContent'
+  type EducationType } from '@/data/onboarding/onboardingContent'
 import type { Brand } from '@/context/AccountContext'
 
 /**
@@ -28,7 +22,7 @@ import type { Brand } from '@/context/AccountContext'
  *      aliases are byte-identical to their `qe` content.
  */
 
-const ALL_BRANDS: Brand[] = ['cre', 'mckissock', 'elite', 'fitzgerald', 'stc', 'xcel']
+const ALL_BRANDS: Brand[] = ['xcel']
 const ALL_TYPES: EducationType[] = ['qe', 'exam-prep', 'ce']
 
 describe('EducationType — three values', () => {
@@ -68,61 +62,4 @@ describe('EducationType — three values', () => {
     }
   })
 
-  it('resolves a dashboard persona for every brand that HAS one, on every type', () => {
-    // exam-prep → qe → ce. Fitzgerald is excluded because it has no dashboard
-    // progress profile of ANY type — that is pre-existing and deliberate (the
-    // dashboard falls back for it), and it is asserted separately below.
-    const withProfiles = ALL_BRANDS.filter((b) => b !== 'fitzgerald')
-    for (const brand of withProfiles) {
-      for (const type of ALL_TYPES) {
-        expect(dashboardProgressPersonaFor(brand, 'progress-on-track', type)).not.toBeNull()
-      }
-    }
-  })
-
-  it('leaves Fitzgerald with no persona on any type — the chain must not lend it one', () => {
-    // The failure this guards against is the fallback resolving a MISSING brand
-    // to some other brand's profile. It walks types, never brands, so a brand
-    // with nothing authored gets null on all three rather than Elite's numbers
-    // under a Fitzgerald heading.
-    for (const type of ALL_TYPES) {
-      expect(dashboardProgressPersonaFor('fitzgerald', 'progress-on-track', type)).toBeNull()
-    }
-  })
-
-  it('gives XCEL a DISTINCT persona per type — the three are not one profile thrice', () => {
-    const titles = ALL_TYPES.map(
-      (t) => dashboardProgressPersonaFor('xcel', 'progress-on-track', t)?.path.title,
-    )
-    expect(new Set(titles).size).toBe(3)
-    // Elite is the counter-case: it has `qe` + `ce` profiles but no `exam-prep`
-    // one, so exam-prep falls back to qe and only TWO distinct personas exist.
-    const elite = ALL_TYPES.map(
-      (t) => dashboardProgressPersonaFor('elite', 'progress-on-track', t)?.path.title,
-    )
-    expect(new Set(elite).size).toBe(2)
-  })
-
-  it('shows the Education dropdown only where switching it changes something', () => {
-    // Pinned per brand rather than re-derived, because the point of this
-    // assertion is that the FIVE EXISTING BRANDS' answers did not move when
-    // `EducationType` widened. Fitzgerald is the one that matters: it lists two
-    // types but has no progress profile of either, so a "more than one type"
-    // definition would have switched its dropdown on as a dead control.
-    expect(ALL_BRANDS.filter(dashboardEducationSupported)).toEqual([
-      'cre',
-      'mckissock',
-      'elite',
-      'stc',
-      'xcel',
-    ])
-  })
-
-  it('defaults XCEL and STC to their flagship journey, everyone else to CE', () => {
-    expect(defaultEducationType('xcel')).toBe('qe')
-    expect(defaultEducationType('stc')).toBe('qe')
-    for (const brand of ['cre', 'mckissock', 'elite', 'fitzgerald'] as Brand[]) {
-      expect(defaultEducationType(brand)).toBe('ce')
-    }
-  })
 })

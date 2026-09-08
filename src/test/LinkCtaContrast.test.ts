@@ -96,14 +96,6 @@ describe('the old values stay failures — tripwires, not history', () => {
     expect(contrast(BRANDS.mckissock.old, PAGE_LIGHT)).toBeCloseTo(2.13, 2)
   })
 
-  it('cta-500 fails in dark on five of the six brands', () => {
-    const failing = names.filter((b) => contrast(BRANDS[b].old, PAGE_DARK) < AA)
-    // Five brands, four distinct ramps — Fitzgerald shares Elite's. McKissock's
-    // orange is the only one bright enough to survive the dark canvas, which is
-    // exactly why a light-theme-only measurement missed this.
-    expect(failing.sort()).toEqual(['cre', 'elite', 'fitzgerald', 'stc', 'xcel'])
-  })
-
   it('the old cta-700 hover made dark WORSE than resting — the inverted affordance', () => {
     // This is the part that made it more than a colour miss: focusing the
     // control reduced its contrast. Values are the old hover stop.

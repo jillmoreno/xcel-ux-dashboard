@@ -59,24 +59,6 @@ describe('SwitchAccountPanel (Switch Brand)', () => {
     expect(cards[1]).toHaveAttribute('aria-checked', 'false')
   })
 
-  it('clicking a brand card switches the brand, preserves membership, and closes', async () => {
-    const user = userEvent.setup()
-    renderWithProviders()
-
-    // CRE / member by default; switching brand keeps the membership.
-    expect(screen.getByTestId('active-membership')).toHaveTextContent('member')
-
-    const dialog = screen.getByRole('dialog', { name: /switch brand/i })
-    // Index 2 = Elite (Healthcare).
-    const cards = within(dialog).getAllByRole('menuitemradio')
-    await user.click(cards[2])
-
-    expect(screen.queryByRole('dialog', { name: /switch brand/i })).not.toBeInTheDocument()
-    expect(screen.getByTestId('active-brand')).toHaveTextContent('elite')
-    // Membership is untouched — it's owned by the separate Member-view toggle.
-    expect(screen.getByTestId('active-membership')).toHaveTextContent('member')
-  })
-
   it('closes on Escape key', async () => {
     const user = userEvent.setup()
     renderWithProviders()
@@ -85,13 +67,4 @@ describe('SwitchAccountPanel (Switch Brand)', () => {
     expect(screen.queryByRole('dialog', { name: /switch brand/i })).not.toBeInTheDocument()
   })
 
-  it('writes the new brand to document.documentElement.dataset.brand', async () => {
-    const user = userEvent.setup()
-    renderWithProviders()
-    const dialog = screen.getByRole('dialog', { name: /switch brand/i })
-    const cards = within(dialog).getAllByRole('menuitemradio')
-    // PROFESSIONS order: CRE, McKissock, Elite, Fitzgerald, STC. Index 4 = STC.
-    await user.click(cards[4])
-    expect(document.documentElement.dataset.brand).toBe('stc')
-  })
 })

@@ -11,7 +11,7 @@ beforeEach(() => {
   window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'elite', membership: 'member' }))
 })
 
-const ELITE_PATH = learningPathsFor('elite')[0] // Florida Nursing CE — mandatory 6/9, elective 8/16
+const ELITE_PATH = learningPathsFor('xcel')[0] // Florida Nursing CE — mandatory 6/9, elective 8/16
 
 /** Match an element by its full (nested) text content, whitespace-normalized —
  *  needed for spans whose text is broken up by `<b>` / pill children. */

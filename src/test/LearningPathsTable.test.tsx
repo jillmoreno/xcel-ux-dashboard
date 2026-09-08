@@ -6,7 +6,7 @@ import { readViewMode, VIEW_MODE_STORAGE_KEY } from '@/components/learning/learn
 import { learningPathsFor } from '@/data/learningFixtures'
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
 
-const ELITE_PATHS = learningPathsFor('elite')
+const ELITE_PATHS = learningPathsFor('xcel')
 
 beforeEach(() => {
   window.localStorage.clear()

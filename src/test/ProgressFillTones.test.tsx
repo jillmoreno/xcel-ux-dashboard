@@ -19,12 +19,12 @@ import { myCoursesFor } from '@/data/myCoursesFixtures'
 function seed() {
   window.localStorage.setItem(
     'cgp.account',
-    JSON.stringify({ brand: 'cre', tier: defaultMemberTier('cre') }),
+    JSON.stringify({ brand: 'xcel', tier: defaultMemberTier('xcel') }),
   )
 }
 
 function course(id: string): CourseCardData {
-  const found = myCoursesFor('cre').find((c) => c.id === id)
+  const found = myCoursesFor('xcel').find((c) => c.id === id)
   if (!found) throw new Error(`no fixture course ${id}`)
   return found
 }

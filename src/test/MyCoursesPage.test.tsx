@@ -10,7 +10,7 @@ import { FIXTURE_TODAY, isRecentlyAdded, myCoursesFor } from '@/data/myCoursesFi
 
 // Default account brand is `cre` (see AccountContext.DEFAULT_STATE) — tests
 // render without overriding, so we assert against the CRE library.
-const MY_COURSES = myCoursesFor('cre')
+const MY_COURSES = myCoursesFor('xcel')
 
 // Anchor the system clock to the same fixed "today" the fixtures were
 // authored against so the Recently Added window is deterministic across

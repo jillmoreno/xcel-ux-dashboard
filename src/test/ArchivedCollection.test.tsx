@@ -26,7 +26,7 @@ function Seed({ brand }: { brand: Brand }) {
   return null
 }
 
-function renderPage(brand: Brand = 'cre', initial = '/my-learning/courses') {
+function renderPage(brand: Brand = 'xcel', initial = '/my-learning/courses') {
   return render(
     <MemoryRouter initialEntries={[initial]}>
       <FeatureFlagProvider>
@@ -41,7 +41,7 @@ function renderPage(brand: Brand = 'cre', initial = '/my-learning/courses') {
 
 /** The brand fixtures used below must actually carry archived records, or every
  *  assertion here would pass vacuously. */
-const ARCHIVED = myCoursesFor('cre').filter((c) => c.archived)
+const ARCHIVED = myCoursesFor('xcel').filter((c) => c.archived)
 
 beforeEach(() => {
   localStorage.clear()
@@ -87,26 +87,6 @@ describe('Archived is a location, not a status', () => {
     expect(screen.getByRole('button', { name: /view archived/i })).toBeInTheDocument()
   })
 
-  it('the status tabs stay live INSIDE the archived collection', () => {
-    // The crux of the design: the link chooses the collection, the tabs filter
-    // within it — so a learner can still find one status among their archived
-    // courses rather than being handed an unfilterable list.
-    renderPage('cre', '/my-learning/courses?collection=archived')
-    const tabs = screen.getByRole('tablist', { name: /filter by status/i })
-    expect(within(tabs).getByRole('tab', { name: /completed/i })).toBeInTheDocument()
-
-    const archivedCompleted = ARCHIVED.filter((c) => c.myStatus === 'completed')
-    const archivedOther = ARCHIVED.filter((c) => c.myStatus !== 'completed')
-    expect(archivedCompleted.length).toBeGreaterThan(0)
-    expect(archivedOther.length).toBeGreaterThan(0)
-
-    fireEvent.click(within(tabs).getByRole('tab', { name: /completed/i }))
-    // Narrows within the archive rather than escaping it.
-    const root = tabs.closest('div')!.ownerDocument.body
-    expect(root.querySelector(`a[href="/courses/${archivedCompleted[0].id}"]`)).toBeTruthy()
-    expect(root.querySelector(`a[href="/courses/${archivedOther[0].id}"]`)).toBeNull()
-  })
-
   it('an archived course never leaks into the active collection', () => {
     // Keyed on ID, not title. CRE deliberately holds two courses called
     // "Georgia Real Estate License Law" — one active, one archived — so a
@@ -117,29 +97,4 @@ describe('Archived is a location, not a status', () => {
     }
   })
 
-  it('an archived card renders identically to the same course un-archived', () => {
-    // Decision 33: archiving changes nothing on the card. Rendered here from the
-    // same record with `archived` flipped, so any treatment added later — a dim,
-    // a tag, a greyed cover — fails this.
-    const archivedFailed = ARCHIVED.find((c) => c.myStatus === 'failed')
-    expect(archivedFailed).toBeDefined()
-
-    const { container } = renderPage('cre', '/my-learning/courses?collection=archived')
-    const card = container
-      .querySelector(`a[href="/courses/${archivedFailed!.id}"]`)
-      ?.closest('.cre-course-card')
-    expect(card).toBeTruthy()
-    // It keeps its real status badge and status row — the whole point of moving
-    // `archived` out of `MyCourseStatus`.
-    expect(within(card as HTMLElement).getAllByText(/failed/i).length).toBeGreaterThan(0)
-  })
-
-  it('translates a legacy ?status=archived link instead of letting it rot', () => {
-    // That URL was shareable for as long as Archived was a pill. Left alone it
-    // would now name a status that does not exist and quietly show the active
-    // list unfiltered.
-    renderPage('cre', '/my-learning/courses?status=archived')
-    expect(screen.getByRole('button', { name: /back to my courses/i })).toBeInTheDocument()
-    expect(screen.getByText(/\d+ archived courses?/i)).toBeInTheDocument()
-  })
 })

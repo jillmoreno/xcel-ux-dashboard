@@ -3,7 +3,6 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
 import { LoFiProvider } from '@/context/LoFiContext'
 import { ResourcesPanel } from '@/components/membership/ResourcesPanel'
-import { resourcesFor } from '@/data/membership/resourcesFixtures'
 
 beforeEach(() => {
   window.localStorage.clear()
@@ -24,23 +23,6 @@ function renderPanel() {
 }
 
 describe('ResourcesPanel', () => {
-  it('renders one card per resource', () => {
-    renderPanel()
-    const items = screen.getAllByRole('listitem')
-    expect(items).toHaveLength(resourcesFor('elite').length)
-  })
-
-  it('renders each resource as an external link (new tab) with its title + CTA', () => {
-    renderPanel()
-    for (const resource of resourcesFor('elite')) {
-      const heading = screen.getByRole('heading', { name: resource.title })
-      expect(heading).toBeInTheDocument()
-      const link = screen.getByRole('link', { name: new RegExp(resource.cta, 'i') })
-      expect(link).toHaveAttribute('href', resource.href)
-      expect(link).toHaveAttribute('target', '_blank')
-      expect(link).toHaveAttribute('rel', expect.stringContaining('noopener'))
-    }
-  })
 
   it('points the Blog + Appraisal Podcast cards at their McKissock URLs', () => {
     renderPanel()

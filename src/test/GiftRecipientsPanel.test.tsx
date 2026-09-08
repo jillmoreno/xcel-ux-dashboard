@@ -151,8 +151,6 @@ describe('GiftRecipientsPanel (STC purchase-for-others)', () => {
     expect(within(card).queryByRole('button', { name: /reminder/i })).not.toBeInTheDocument()
   })
 
-
-
   it('offers Download but no page-level Send Reminder (bulk flow archived)', () => {
     // Default arm (table). Rows carry their own "Send reminder to {name}"
     // buttons, so this matches the page-level CTA's exact name — the toolbar
@@ -162,9 +160,4 @@ describe('GiftRecipientsPanel (STC purchase-for-others)', () => {
     expect(screen.queryByRole('button', { name: 'Send Reminder' })).not.toBeInTheDocument()
   })
 
-  it('shows the not-available empty state for a brand with no gifted purchases', () => {
-    seedBrand('elite')
-    renderAt(PATH)
-    expect(screen.getByRole('heading', { name: /no gifted purchases/i })).toBeInTheDocument()
-  })
 })

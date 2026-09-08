@@ -8,7 +8,7 @@ import {
   DISCOVERABILITY_DASHBOARD_VERSIONS,
 } from '@/data/dashboardVersions'
 
-const PATH = learningPathsFor('elite')[0] // Florida Nursing — mandatory + elective
+const PATH = learningPathsFor('xcel')[0] // Florida Nursing — mandatory + elective
 
 beforeEach(() => {
   window.localStorage.clear()

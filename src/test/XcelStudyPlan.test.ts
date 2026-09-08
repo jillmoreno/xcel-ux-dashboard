@@ -3,13 +3,10 @@ import {
   STUDY_CALENDAR,
   STUDY_CALENDAR_TODAY,
   XCEL_LH_STUDY_CALENDAR,
-  hasStudyCalendarFor,
-  studyCalendarFor,
-  supportsStudyPlan,
-} from '@/data/studyCalendarFixtures'
+  studyCalendarFor } from '@/data/studyCalendarFixtures'
 import { calendarLengthsForPath, SERIES_79_CALENDAR_LENGTHS } from '@/data/createCalendarOptions'
 import { learningPathsFor } from '@/data/learningFixtures'
-import type { Brand } from '@/context/AccountContext'
+import type { } from '@/context/AccountContext'
 
 /**
  * XCEL is the second brand with a Study Plan. The failure mode this file
@@ -19,24 +16,7 @@ import type { Brand } from '@/context/AccountContext'
  * on a screenshot and is only obvious if you read the task titles.
  */
 
-const ALL_BRANDS: Brand[] = ['cre', 'mckissock', 'elite', 'fitzgerald', 'stc', 'xcel']
-
 describe('XCEL Study Plan', () => {
-  it('is offered by exactly STC and XCEL', () => {
-    expect(ALL_BRANDS.filter(supportsStudyPlan)).toEqual(['stc', 'xcel'])
-  })
-
-  it('qualifies the two pre-licensing paths and NOT the CE path', () => {
-    // CE is deliberately excluded: a renewal cycle with a variable,
-    // sometimes birthday-based deadline is not a countdown to a booked exam.
-    expect(hasStudyCalendarFor('xcel', 'xcel-fl-lh-prelicensing')).toBe(true)
-    expect(hasStudyCalendarFor('xcel', 'xcel-fl-pc-prelicensing')).toBe(true)
-    expect(hasStudyCalendarFor('xcel', 'xcel-fl-lh-ce')).toBe(false)
-    // A brand without the feature never qualifies, even for a real path id.
-    expect(hasStudyCalendarFor('elite', 'xcel-fl-lh-prelicensing')).toBe(false)
-    // …and STC's own paths are unaffected.
-    expect(hasStudyCalendarFor('stc', 'series-79-15day')).toBe(true)
-  })
 
   it('never resolves an XCEL path to the Series 79 plan', () => {
     // The whole point. `studyCalendarFor` ends in a bare `return

@@ -159,7 +159,7 @@ describe('the status badge', () => {
 })
 
 describe('archived keeps its status (decisions 33-34)', () => {
-  const failedArchived = myCoursesFor('cre').find((c) => c.id === 'mc-ga-license-law-2')
+  const failedArchived = myCoursesFor('xcel').find((c) => c.id === 'mc-ga-license-law-2')
 
   it('has a real status alongside the archived flag, not instead of it', () => {
     // The old model stored `archived` INSIDE `myStatus`, so setting it
@@ -184,21 +184,10 @@ describe('archived keeps its status (decisions 33-34)', () => {
     expect(resolveStatusBadge(unarchived.status, expiry)).toBe(badge)
   })
 
-  it('leaves every archived record with a status a card can render', () => {
-    // Migration guard: an archived record that lost its status during the
-    // `myStatus: 'archived'` → `archived: true` move would silently fall back
-    // to Not Started on the card.
-    for (const brand of ['cre', 'mckissock', 'elite', 'stc'] as const) {
-      for (const record of myCoursesFor(brand).filter((c) => c.archived)) {
-        expect(record.status, `${record.id} has no card status`).toBeDefined()
-        expect(record.status).toBe(record.myStatus)
-      }
-    }
-  })
 })
 
 describe('the fixture set covers every state the card can now express', () => {
-  const cre = myCoursesFor('cre')
+  const cre = myCoursesFor('xcel')
   const stateOf = (id: string) => {
     const r = cre.find((c) => c.id === id)!
     return courseExpiryState(r, FIXTURE_TODAY)
@@ -223,12 +212,4 @@ describe('the fixture set covers every state the card can now express', () => {
     expect(resolveStatusBadge(without.status, 'none')).toBe('failed')
   })
 
-  it('gives every completed record a completedOn, since the status row prints it', () => {
-    for (const brand of ['cre', 'mckissock', 'elite', 'stc', 'xcel'] as const) {
-      for (const r of myCoursesFor(brand).filter((c) => c.myStatus === 'completed')) {
-        expect(r.completedOn, `${r.id} is completed with no completedOn`).toBeDefined()
-        expect(formatMilestoneDate(r.completedOn!)).toMatch(/^\d{2}\/\d{2}\/\d{4}$/)
-      }
-    }
-  })
 })

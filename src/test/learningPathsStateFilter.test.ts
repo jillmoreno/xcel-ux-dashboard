@@ -14,7 +14,7 @@ import {
  * enough states to trigger the "Show all (N)" collapse.
  */
 
-const ELITE = learningPathsFor('elite')
+const ELITE = learningPathsFor('xcel')
 
 describe('Learning Paths — State filter', () => {
   it('statesOf lists distinct states with counts, skipping stateless paths', () => {

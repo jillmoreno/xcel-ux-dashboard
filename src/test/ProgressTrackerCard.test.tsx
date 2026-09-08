@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 import { ProgressTrackerCard } from '@/components/learning/ProgressTrackerCard'
 import { learningPathsFor, type LearningPathSummary } from '@/data/learningFixtures'
 
-const WITH_BREAKDOWN = learningPathsFor('elite')[0] // Florida Nursing — mandatory + elective
+const WITH_BREAKDOWN = learningPathsFor('xcel')[0] // Florida Nursing — mandatory + elective
 // A path with neither category breakdown — exercises the single-color fallback.
 const NO_BREAKDOWN: LearningPathSummary = {
   id: 'test-no-breakdown',

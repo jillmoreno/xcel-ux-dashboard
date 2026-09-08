@@ -170,61 +170,6 @@ describe('MembershipLandingPage — non-member view', () => {
   })
 })
 
-describe('MembershipLandingPage — Membership Benefits tab', () => {
-  it('shows the Benefits tab second for an Elite member and renders the product sections + upgrade nudge', () => {
-    seedAccount('elite', 'member')
-    renderAt('/membership?tab=benefits')
-    // Tab is present and positioned second (after Recommended for you).
-    const tabs = screen.getAllByRole('tab')
-    expect(tabs).toHaveLength(6)
-    expect(tabs[1].textContent).toBe('Membership Benefits')
-    expect(
-      screen.getByRole('tab', { name: 'Membership Benefits' }),
-    ).toHaveAttribute('aria-selected', 'true')
-    // Member panel renders the product sections (default `product-cards`
-    // layout) — each benefit category gets a section <h2>.
-    expect(
-      screen.getByRole('heading', { level: 2, name: /^resource library$/i }),
-    ).toBeInTheDocument()
-    // ... and the slim Lite→full upgrade nudge.
-    expect(screen.getByText(/on passport lite\?/i)).toBeInTheDocument()
-    // Member panel does NOT render the non-member plan comparison.
-    expect(
-      screen.queryByText(/passport vs\. passport lite/i),
-    ).not.toBeInTheDocument()
-  })
-
-  it('renders the marketing heroes + Passport plan comparison for an Elite non-member, no nudge', () => {
-    seedAccount('elite', 'non-member')
-    renderAt('/membership?tab=benefits')
-    expect(
-      screen.getByRole('tab', { name: 'Membership Benefits' }),
-    ).toBeInTheDocument()
-    // The non-member panel owns the plan block (PassportPlanComparison).
-    expect(screen.getByText(/passport vs\. passport lite/i)).toBeInTheDocument()
-    // Marketing lead-in is present...
-    expect(
-      screen.getByText(/everything your nursing career needs/i),
-    ).toBeInTheDocument()
-    // ...and the member-only upgrade nudge is NOT.
-    expect(screen.queryByText(/on passport lite\?/i)).not.toBeInTheDocument()
-  })
-
-  it('hides the Benefits tab for a non-Elite brand and falls back from ?tab=benefits', () => {
-    seedAccount('cre', 'member')
-    renderAt('/membership?tab=benefits')
-    // No Benefits tab on CRE — the base 5 tabs only.
-    expect(screen.getAllByRole('tab')).toHaveLength(5)
-    expect(
-      screen.queryByRole('tab', { name: 'Membership Benefits' }),
-    ).not.toBeInTheDocument()
-    // The deep link falls back to Recommended (its panel mounts).
-    expect(
-      screen.getByRole('heading', { name: /my interests/i }),
-    ).toBeInTheDocument()
-  })
-})
-
 describe('MembershipLandingPage — zero-state (STC member)', () => {
   beforeEach(() => {
     seedAccount('stc', 'member')

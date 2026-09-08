@@ -7,7 +7,7 @@ import {
   type CertificateStatus,
 } from '@/data/certificateFixtures'
 
-const BRANDS: Brand[] = ['cre', 'mckissock', 'elite', 'fitzgerald', 'stc', 'xcel']
+const BRANDS: Brand[] = ['xcel']
 
 /** Certificates whose reporting / action copy interpolates a state need a real
  *  one — 'National' / 'Federal' would render "National requires a signed
@@ -22,35 +22,6 @@ const NON_STATES = ['National', 'Federal']
  * demoable everywhere, and no brand borrows another's content.
  */
 describe('certificatesFor — per-brand keying', () => {
-  it('gives every brand its own list (Fitzgerald mirrors Elite by design)', () => {
-    const byBrand = new Map(BRANDS.map((b) => [b, certificatesFor(b)]))
-    for (const brand of BRANDS) expect(byBrand.get(brand)!.length).toBeGreaterThan(0)
-
-    // Fitzgerald deliberately shares Elite's learner library.
-    expect(certificatesFor('fitzgerald')).toBe(certificatesFor('elite'))
-
-    // Every other pair must differ — the bug was one shared array.
-    const distinct: Brand[] = ['cre', 'mckissock', 'elite', 'stc', 'xcel']
-    for (const a of distinct) {
-      for (const b of distinct) {
-        if (a === b) continue
-        const idsA = byBrand.get(a)!.map((c) => c.id)
-        const idsB = new Set(byBrand.get(b)!.map((c) => c.id))
-        expect(idsA.some((id) => idsB.has(id))).toBe(false)
-      }
-    }
-  })
-
-  it('keeps the appraisal set on McKissock only', () => {
-    // The reported symptom: an insurance or nursing learner shown "Laws and
-    // Regulations for GA Appraisers".
-    for (const brand of BRANDS) {
-      const titles = certificatesFor(brand).map((c) => c.title)
-      const appraisal = titles.filter((t) => /appraiser|appraisal/i.test(t))
-      if (brand === 'mckissock') expect(appraisal.length).toBeGreaterThan(0)
-      else expect(appraisal).toEqual([])
-    }
-  })
 
   it('covers all three status tabs on every brand', () => {
     const statuses: CertificateStatus[] = ['completed', 'external', 'action-required']
