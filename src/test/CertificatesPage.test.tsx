@@ -31,7 +31,7 @@ describe('CertificatesPage', () => {
     expect(screen.getByRole('tab', { name: 'Certificates Issued' })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: 'External Certificates' })).toBeInTheDocument()
     // Default = Certificates Issued → a completed certificate card renders.
-    expect(screen.getByText('Laws and Regulations for GA Appraisers')).toBeInTheDocument()
+    expect(screen.getByText('Life & Health Pre-Licensing — Completion')).toBeInTheDocument()
     expect(screen.getByRole('combobox', { name: /sort by/i })).toBeInTheDocument()
   })
 
@@ -52,7 +52,7 @@ describe('CertificatesPage', () => {
     renderAt('/my-learning/certificates?status=action-required')
     await user.click(
       screen.getByRole('button', {
-        name: /view details for Appraisal of Industrial and Flex Building/i,
+        name: /view details for Property & Casualty Pre-Licensing/i,
       }),
     )
     const dialog = screen.getByRole('dialog')
@@ -70,7 +70,7 @@ describe('CertificatesPage', () => {
     expect(screen.getByRole('button', { name: /add external certificate/i })).toBeInTheDocument()
     expect(screen.getByText(/not responsible for reporting external certificates/i)).toBeInTheDocument()
     expect(
-      screen.getAllByText(/Certificate Issued By Calypso Continuing Education/i).length,
+      screen.getAllByText(/Certificate Issued By LIMRA/i).length,
     ).toBeGreaterThan(0)
   })
 

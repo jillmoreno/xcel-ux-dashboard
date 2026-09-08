@@ -3,7 +3,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, it, expect } from 'vitest'
 import { useState } from 'react'
-import { AccountProvider, useAccount } from '@/context/AccountContext'
+import { AccountProvider, PROFESSIONS, useAccount } from '@/context/AccountContext'
 import { SwitchAccountPanel } from '@/components/account/SwitchAccountPanel'
 
 function Harness() {
@@ -30,33 +30,38 @@ function renderWithProviders() {
 }
 
 describe('SwitchAccountPanel (Switch Brand)', () => {
-  it('renders one selectable card per brand (6 total)', () => {
+  it('renders one selectable card per brand', () => {
     renderWithProviders()
     const dialog = screen.getByRole('dialog', { name: /switch brand/i })
     const cards = within(dialog).getAllByRole('menuitemradio')
-    expect(cards).toHaveLength(6)
+    // One, where the LMS had six. Asserted against PROFESSIONS rather than a
+    // literal so widening `Brand` does not need this number edited by hand.
+    expect(cards).toHaveLength(PROFESSIONS.length)
   })
 
-  // `groupBySection` merges only CONSECUTIVE entries that share a `label`, so a
-  // brand placed away from its label-mates renders a second, duplicate heading.
-  // This guards the two shared labels: CRE + McKissock under "Real Estate /
-  // Appraisal", and STC + XCEL under "Financial Services".
   it('renders one section heading per label — no duplicates from a misplaced brand', () => {
+    // `groupBySection` merges only CONSECUTIVE entries that share a `label`, so
+    // a brand placed away from its label-mates renders a second, duplicate
+    // heading. That guard mattered when two pairs shared a label (CRE +
+    // McKissock under "Real Estate / Appraisal", STC + XCEL under "Financial
+    // Services"). With one brand there is one heading — the assertion is kept
+    // because it is the grouping that is being pinned, and it starts guarding
+    // again the moment a second brand lands on XCEL's label.
     renderWithProviders()
     const dialog = screen.getByRole('dialog', { name: /switch brand/i })
     const headings = within(dialog)
       .getAllByRole('heading', { level: 3 })
       .map((h) => h.textContent)
-    expect(headings).toEqual(['Real Estate / Appraisal', 'Healthcare', 'Financial Services'])
+    expect(headings).toEqual(['Financial Services'])
+    expect(new Set(headings).size).toBe(headings.length)
   })
 
-  it('marks the active brand (CRE by default) as selected', () => {
+  it('marks the active brand as selected', () => {
     renderWithProviders()
     const dialog = screen.getByRole('dialog', { name: /switch brand/i })
     const cards = within(dialog).getAllByRole('menuitemradio')
-    // PROFESSIONS order: CRE, McKissock, Elite, STC → CRE is the active brand.
+    // XCEL is the only brand and therefore always the active one.
     expect(cards[0]).toHaveAttribute('aria-checked', 'true')
-    expect(cards[1]).toHaveAttribute('aria-checked', 'false')
   })
 
   it('closes on Escape key', async () => {
