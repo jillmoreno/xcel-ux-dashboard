@@ -41,33 +41,6 @@ export type FeaturedOffer = {
 
 /* ─── STC (Financial Services) ─────────────────────────────────────── */
 
-const STC_FEATURED: FeaturedOffer[] = [
-  {
-    id: 'stc-featured-comply',
-    brandLabel: 'COMPLY',
-    partnerName: 'RIA in a Box',
-    description:
-      'Exclusive member pricing on compliance software and RIA registration support — stay audit-ready with less overhead.',
-    learnMoreUrl: '/membership/partners/comply',
-  },
-  {
-    id: 'stc-featured-nitrogen',
-    brandLabel: 'NITROGEN',
-    partnerName: 'Nitrogen (Riskalyze)',
-    description:
-      'Discounted risk-analytics and proposal tools to align portfolios with each client’s risk tolerance.',
-    learnMoreUrl: '/membership/partners/nitrogen',
-  },
-  {
-    id: 'stc-featured-cfp-board',
-    brandLabel: 'CFP BOARD',
-    partnerName: 'CFP Board Resources',
-    description:
-      'Member resources for pursuing and maintaining CFP® certification — study support, exam prep, and CE guidance.',
-    learnMoreUrl: '/membership/partners/cfp-board',
-  },
-]
-
 const FEATURED_BY_BRAND: Record<Brand, FeaturedOffer[]> = {
   // See OFFERINGS_BY_BRAND — Partner Offers is hidden for XCEL.
   xcel: [],

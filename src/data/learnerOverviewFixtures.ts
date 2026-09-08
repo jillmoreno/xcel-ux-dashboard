@@ -176,60 +176,6 @@ export const STREAK_THIS_WEEK: ReadonlyArray<StreakActivity> = [
  * + `streakThisWeekFor(brand)` route to the right one.
  * ─────────────────────────────────────────────────────────────────── */
 
-// STC — 0-day current streak, longest 35. "Start a new streak today."
-// Several small streaks earlier in the month including a 4-day run
-// ending May 15. From May 16 → 20 the user lapsed — 5 consecutive days
-// inactive, today included. The PB lives outside this 30-day window.
-const _STC_STREAK: LearningStreak = {
-  current: 0,
-  longest: 35,
-  lastActivityDate: '2026-05-20',
-  daysThisWeek: 2,
-  bestStreakThisMonth: 4,
-  recent30: [
-    { date: '2026-04-21', active: true, minutes: 15 },
-    { date: '2026-04-22', active: true, minutes: 25 },
-    { date: '2026-04-23', active: true, minutes: 30 },
-    { date: '2026-04-24', active: true, minutes: 40 },
-    { date: '2026-04-25', active: true, minutes: 35 },
-    { date: '2026-04-26', active: true, minutes: 28 },
-    { date: '2026-04-27', active: true, minutes: 45 }, // 7-day run ends here
-    { date: '2026-04-28', active: false, minutes: 0 },
-    { date: '2026-04-29', active: true, minutes: 12 },
-    { date: '2026-04-30', active: true, minutes: 20 },
-    { date: '2026-05-01', active: true, minutes: 15 },
-    { date: '2026-05-02', active: true, minutes: 30 },
-    { date: '2026-05-03', active: false, minutes: 0 },
-    { date: '2026-05-04', active: false, minutes: 0 },
-    { date: '2026-05-05', active: true, minutes: 10 },
-    { date: '2026-05-06', active: true, minutes: 25 },
-    { date: '2026-05-07', active: true, minutes: 35 },
-    { date: '2026-05-08', active: true, minutes: 40 },
-    { date: '2026-05-09', active: false, minutes: 0 },
-    { date: '2026-05-10', active: false, minutes: 0 },
-    { date: '2026-05-11', active: false, minutes: 0 },
-    { date: '2026-05-12', active: true, minutes: 18 },
-    { date: '2026-05-13', active: true, minutes: 22 },
-    { date: '2026-05-14', active: true, minutes: 30 },
-    { date: '2026-05-15', active: true, minutes: 15 }, // last activity
-    { date: '2026-05-16', active: false, minutes: 0 }, // lapse begins
-    { date: '2026-05-17', active: false, minutes: 0 },
-    { date: '2026-05-18', active: false, minutes: 0 },
-    { date: '2026-05-19', active: false, minutes: 0 },
-    { date: '2026-05-20', active: false, minutes: 0 }, // today, still no activity
-  ],
-}
-
-const _STC_THIS_WEEK: ReadonlyArray<StreakActivity> = [
-  { date: '2026-05-14', active: true },
-  { date: '2026-05-15', active: true },
-  { date: '2026-05-16', active: false },
-  { date: '2026-05-17', active: false },
-  { date: '2026-05-18', active: false },
-  { date: '2026-05-19', active: false },
-  { date: '2026-05-20', active: false }, // today — "not yet"
-]
-
 /** Streak fixture. XCEL already resolved to the exported `LEARNING_STREAK` —
  *  it had no case of its own and fell to `default` — so this is the same data
  *  it always rendered, not a substitution. Kept exported so tests that mock

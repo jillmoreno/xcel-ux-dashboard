@@ -55,36 +55,6 @@ export type PartnerOffering = {
 
 /* ─── STC (Financial Services) ─────────────────────────────────────── */
 
-const STC_OFFERINGS: PartnerOffering[] = [
-  {
-    id: 'stc-finra-news',
-    partnerName: 'FINRA Regulatory Notices',
-    eyebrow: 'Regulatory news',
-    savingsLabel: 'Member-only digest',
-    description:
-      'A curated weekly digest of FINRA regulatory notices for STC members — written for advisors, not lawyers.',
-    learnMoreUrl: '/membership/partners/finra-digest',
-  },
-  {
-    id: 'stc-morningstar',
-    partnerName: 'Morningstar Office',
-    eyebrow: 'Portfolio research',
-    savingsLabel: '20% off annual access',
-    description:
-      'STC members get 20% off Morningstar Office — institutional-grade fund research and portfolio analytics for advisors.',
-    learnMoreUrl: '/membership/partners/morningstar',
-  },
-  {
-    id: 'stc-broadridge',
-    partnerName: 'Broadridge ProspectIQ',
-    eyebrow: 'Prospecting',
-    savingsLabel: 'Pilot pricing (first 6 months)',
-    description:
-      'A 6-month pilot of Broadridge ProspectIQ at member-only pricing — investor data and household intelligence in one workflow.',
-    learnMoreUrl: '/membership/partners/broadridge',
-  },
-]
-
 const OFFERINGS_BY_BRAND: Record<Brand, PartnerOffering[]> = {
   // Partner Offers is hidden from XCEL's rail (it is a membership benefit and
   // XCEL has no membership). XCEL's own "Partner Code" programme is a B2B

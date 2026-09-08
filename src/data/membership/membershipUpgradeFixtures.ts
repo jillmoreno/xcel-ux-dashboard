@@ -126,16 +126,6 @@ export type MembershipComparePlan = {
  *  brand may list 3 (the modal sizes its width + columns to the count). */
 export type MembershipComparison = { title: string; plans: MembershipComparePlan[] }
 
-/** Strip the current-plan treatment for the non-member flow — a non-member has no
- *  current plan, so every card becomes a selectable "Add To Cart". */
-function toNonMemberPlans(plans: MembershipComparePlan[]): MembershipComparePlan[] {
-  return plans.map((p) => ({
-    ...p,
-    current: false,
-    ctaLabel: p.current ? 'Add To Cart' : p.ctaLabel,
-  }))
-}
-
 const COMPARE_BY_BRAND: Record<Brand, MembershipComparison> = {
   // XCEL has no membership ladder to compare — see the stub note on
   // UPGRADE_BY_BRAND above.

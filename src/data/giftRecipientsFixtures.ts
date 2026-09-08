@@ -65,25 +65,6 @@ function slug(value: string): string {
   return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 }
 
-const SERIES_63_ESSENTIALS = {
-  title: 'Series 63 Essentials',
-  items: items(
-    'Series 63 Final and Custom Exams-30th Edition',
-    'Series 63 Chapter Quizzes',
-    'Series 63 Printed Study Manual',
-  ),
-}
-
-const SERIES_65_PREMIER = {
-  title: 'Series 65 Premier',
-  items: items(
-    'Series 65 Final and Custom Exams-22nd Edition',
-    'Series 65 Chapter Quizzes',
-    'Series 65 On-Demand Lecture-22nd Edition',
-    'Series 65 Printed Study Manual',
-  ),
-}
-
 const SERIES_24_PREMIER = {
   title: 'Series 24 Premier',
   items: items(
