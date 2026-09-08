@@ -436,21 +436,35 @@ Two things NOT to misread:
 
 ### Where the LMS still has more than we do
 
-The strip removed the other five brands' fixtures, and those brands were
-carrying demo states XCEL does not author. This is **fixture data, not broken
-code** — every component, flag arm and filter is intact — but it is why the test
-suite is smaller than the LMS's:
+The strip removed the other five brands' fixtures, and those brands carried demo
+states XCEL does not. **The suite is green — 468/468** — but it got there three
+different ways, and which one applied to a given test is worth knowing before
+you touch it:
 
-| Gap | Effect |
+| Gap | How the test was resolved |
 |---|---|
-| **Gift Recipients has no XCEL records** | The section self-hides. **The one worth fixing** — see the note on `supportsGiftRecipients`. |
-| My Courses: 7 rows, 3 statuses | No archived, failed-with-score, or expiring rows to assert on |
-| Library records set no `tags` / `status` / `lengthMinutes` | Those three filters have no data to exercise |
-| No What's New slides | The carousel renders its reserved empty state |
+| My Courses reached only in-progress / not-started / completed | **Data authored.** Seven rows added covering both routes into `expiring-soon`, expired-with-progress, the per-course `warnDays` negative case, failed with and without a score, and archived+failed |
+| The CE path claimed completed hours with no completed course in its list | **Data authored**, and it was a real incoherence — the gauge said six hours were done and the list showed none |
+| XCEL has no in-person courses, and nothing resolves to `included` | **Test moved down a layer** to `EnrollmentConfirmationModal` |
+| XCEL authors no library video/webinar, and no downloadable assets | **Test moved down a layer** — variants are built, not fetched |
+| **Gift Recipients has no XCEL records** | **Retired.** See the note on `supportsGiftRecipients` — still the one worth fixing |
+| Library records set no `tags` / `status` / `lengthMinutes` | **Retired** (three filter tests) |
+| No partner offerings; no renewal requirements | **Downgraded** to asserting the empty state |
 
-Authoring XCEL fixtures for any of these restores its tests from git history
-unchanged. Do NOT restore the tests without the data — they passed by asserting
-another brand's content.
+Two rules fall out of this, and both are load-bearing:
+
+**Prefer moving a test down a layer over authoring data to satisfy it.** A test
+pinned to a named fixture row is testing the fixture as much as the code — which
+is exactly why so many broke. `ProgressFillTones` and the ResourceDetailPage
+variants now build their inputs and depend on no fixture at all. Author data
+when the DATA is the subject (the state-coverage tests genuinely assert that the
+demo spans every state) and not otherwise.
+
+**Never author a fixture that points at an asset which does not exist.** The
+`downloadUrl` / `pdfUrl` tests were tempting to fix with XCEL resources naming
+files under `public/library/`. Those files are real Elite assets; XCEL ships
+none, so that would have made the running demo 404 on download to turn a test
+green.
 
 ### Verifying a change here
 
@@ -519,7 +533,8 @@ expiry test: `CourseCard` resolves expiry against the anchored `FIXTURE_TODAY`
 (2026-05-11), not the wall clock; and `warnWindowFor` clamps the countdown to
 half the enrolment window, so "inside 60 days" is not sufficient.
 
-**~40 assertions are still red**, all of the fixture-gap class in the migration
-section's table — they need XCEL demo data authored, not code fixed. Do not
-"fix" one by repointing it at a fixture row that happens to exist; check the
-table first.
+**The suite is green — 468/468 across 70 files.** The migration section's table
+says how each fixture gap was closed, and the two rules under it are the ones to
+follow when the next one appears. The short version: prefer moving a test down a
+layer over authoring data to satisfy it, and never author a fixture pointing at
+an asset that does not exist.
