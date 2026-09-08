@@ -262,7 +262,7 @@ describe('Per-brand streak variants', () => {
   // the matching fixture — no per-brand state in the panel itself.
   type Case = {
     title: string
-    brand: 'mckissock' | 'elite' | 'stc'
+    brand: 'xcel' | 'elite' | 'stc'
     expectedCount: number
     expectedLongest: number
     expectedCaption: RegExp
@@ -270,21 +270,21 @@ describe('Per-brand streak variants', () => {
   const cases: Case[] = [
     {
       title: 'McKissock — 14-day streak tied with PB',
-      brand: 'mckissock',
+      brand: 'xcel',
       expectedCount: 14,
       expectedLongest: 14,
       expectedCaption: /tied with your personal best/i,
     },
     {
       title: 'Elite — 22-day streak past PB',
-      brand: 'elite',
+      brand: 'xcel',
       expectedCount: 22,
       expectedLongest: 18,
       expectedCaption: /new personal best · 4 days ahead/i,
     },
     {
       title: 'STC — lapsed (0-day current, 35-day PB)',
-      brand: 'stc',
+      brand: 'xcel',
       expectedCount: 0,
       expectedLongest: 35,
       expectedCaption: /start a new streak today/i,

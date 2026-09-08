@@ -8,7 +8,7 @@ import { learningPathsFor } from '@/data/learningFixtures'
 
 beforeEach(() => {
   window.localStorage.clear()
-  window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'elite', membership: 'member' }))
+  window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', membership: 'member' }))
 })
 
 const ELITE_PATH = learningPathsFor('xcel')[0] // Florida Nursing CE — mandatory 6/9, elective 8/16

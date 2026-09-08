@@ -49,7 +49,7 @@ beforeEach(() => {
 
 describe('the tabs', () => {
   function openTabs() {
-    openSheet(course('xcel', 'c-xcel-lh-prelicense'))
+    openSheet(course('xcel', 'mc-xcel-lh-prelicense'))
     fireEvent.click(row(/About the Course/i)!)
   }
 

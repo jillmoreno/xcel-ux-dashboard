@@ -17,7 +17,7 @@ import { SECTION_HERO_META } from '@/data/membership/sectionHeroMeta'
 const META = SECTION_HERO_META.recommended
 
 function seedTier(tier: 'non-member' | 'low' | 'high') {
-  window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'elite', tier }))
+  window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier }))
 }
 
 // The page renders the hero WITHOUT a membershipEyebrow (all-users surface).

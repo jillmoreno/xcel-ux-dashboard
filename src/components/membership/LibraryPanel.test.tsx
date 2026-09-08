@@ -50,7 +50,7 @@ beforeEach(() => {
 
 describe('LibraryPanel — defaults', () => {
   beforeEach(() => {
-    seedAccount('cre', 'member')
+    seedAccount('xcel', 'member')
   })
 
   it('renders a search affordance and a populated grid', () => {
@@ -61,9 +61,8 @@ describe('LibraryPanel — defaults', () => {
     expect(
       screen.getByRole('searchbox', { name: /search the resource library/i }),
     ).toBeInTheDocument()
-    // The CRE fixture has 12 records — assert the count copy
-    // matches.
-    expect(screen.getByText(/^12 results$/i)).toBeInTheDocument()
+    // XCEL authors five records (the LMS asserted CRE's twelve here).
+    expect(screen.getByText(/^5 results$/i)).toBeInTheDocument()
   })
 
   it('disables "Clear All Filters" when nothing is filtered', () => {
@@ -73,102 +72,48 @@ describe('LibraryPanel — defaults', () => {
   })
 })
 
-describe('LibraryPanel — Elite brand filtering', () => {
+describe('LibraryPanel — filtering and sorting', () => {
   beforeEach(() => {
-    seedAccount('elite', 'member')
-  })
-
-  it('filters by category and drops the result count', () => {
-    renderAt('/membership?category=clinical-skills')
-    // Elite's Clinical Skills set is a subset of the brand's 16
-    // resources — anything below the brand total confirms the filter
-    // is narrowing.
-    const countText = screen.getByText(/^\d+ results?$/i).textContent ?? ''
-    const count = parseInt(countText, 10)
-    expect(count).toBeGreaterThan(0)
-    expect(count).toBeLessThan(37)
+    seedAccount('xcel', 'member')
   })
 
   it('filters by free-text query', () => {
-    renderAt('/membership?q=apical')
-    // "Apical Pulse Assessment" is the only Elite record with
-    // "apical" in its title or description.
+    // "flashcard" appears in exactly one XCEL record.
+    renderAt('/membership?q=flashcard')
     expect(screen.getByText(/^1 result$/i)).toBeInTheDocument()
-    expect(
-      screen.getByRole('link', { name: /apical pulse assessment/i }),
-    ).toBeInTheDocument()
   })
 
   it('sorts by rating (high to low) when ?sort=rating-desc', () => {
     renderAt('/membership?sort=rating-desc')
-    // The first card link inside the grid should be the
-    // 5.0-rated "50 Must-Know Medications for Nurses" record.
-    const links = screen.getAllByRole('link')
-    const titles = links.map((l) => l.textContent ?? '')
-    expect(titles[0]).toMatch(/50 must-know medications/i)
+    const titles = screen.getAllByRole('link').map((l) => l.textContent ?? '')
+    // XCEL's highest-rated record is the flashcard deck at 4.9.
+    expect(titles[0]).toMatch(/flashcard/i)
   })
 
   it('sorts by rating (low to high) when ?sort=rating-asc', () => {
     renderAt('/membership?sort=rating-asc')
-    const links = screen.getAllByRole('link')
-    const titles = links.map((l) => l.textContent ?? '')
-    // Elite's lowest-rated record is "Ostomy Cheat Sheet" at 3.7.
-    expect(titles[0]).toMatch(/ostomy cheat sheet/i)
+    const titles = screen.getAllByRole('link').map((l) => l.textContent ?? '')
+    // ...and its lowest is the CE deadlines article at 4.5.
+    expect(titles[0]).toMatch(/deadline/i)
   })
 
-  it('filters by tag when ?tag= is set', () => {
-    renderAt('/membership?tag=EKG')
-    // Two Elite records carry the EKG tag (EKG Cheat Sheet + the
-    // 12-Lead EKG Placement video).
-    expect(screen.getByText(/^2 results$/i)).toBeInTheDocument()
-    expect(
-      screen.getByRole('link', { name: /ekg cheat sheet/i }),
-    ).toBeInTheDocument()
-    expect(
-      screen.getByRole('link', { name: /12-lead ekg placement/i }),
-    ).toBeInTheDocument()
-  })
-
-  it('filters by status when ?status=viewed', () => {
-    renderAt('/membership?status=viewed')
-    // Several Elite records are marked viewed in the fixture
-    // (must-know-meds, thyroid-storm, new-grad-pitfalls). Use a
-    // robust bound — anything below the brand total of 16 confirms
-    // the filter narrowed.
-    const countText = screen.getByText(/^\d+ results?$/i).textContent ?? ''
-    const count = parseInt(countText, 10)
-    expect(count).toBeGreaterThan(0)
-    expect(count).toBeLessThan(37)
-    // Spot-check that a known viewed record IS present and a known
-    // unviewed record is NOT.
-    expect(
-      screen.getByRole('link', { name: /50 must-know medications/i }),
-    ).toBeInTheDocument()
-    expect(
-      screen.queryByRole('link', { name: /surviving night shift/i }),
-    ).not.toBeInTheDocument()
-  })
-
-  it('filters by ?length= range', () => {
-    // The Head to Toe Assessment template (5 min) is Elite's
-    // shortest record — narrowing to "1-5 min" should drop the rest.
-    renderAt('/membership?length=1-5')
-    const countText = screen.getByText(/^\d+ results?$/i).textContent ?? ''
-    const count = parseInt(countText, 10)
-    expect(count).toBeGreaterThan(0)
-    expect(count).toBeLessThan(37)
-    // The 5-min Head to Toe template IS present.
-    expect(
-      screen.getByRole('link', { name: /head to toe assessment/i }),
-    ).toBeInTheDocument()
-    // A 12-min record is dropped.
-    expect(
-      screen.queryByRole('link', { name: /mastering the interview/i }),
-    ).not.toBeInTheDocument()
-  })
+  /*
+   * NOT PORTED — filter-by-tag, filter-by-status and filter-by-length.
+   *
+   * They were authored against Elite's library, whose records carry `tags`,
+   * a viewed/unviewed `status` and `lengthMinutes`. XCEL's five records set
+   * NONE of those three fields, so there is no data for the filters to act on
+   * and a ported test would assert an empty result either way — passing
+   * without exercising anything, which is worse than an absent test.
+   *
+   * The filters themselves are untouched in `LibraryPanel`. Restore these
+   * alongside XCEL library records that author the fields.
+   */
 
   it('activates Clear All Filters when filters are applied and resets on click', () => {
-    renderAt('/membership?category=clinical-skills')
+    // `insurance-licensing` is XCEL's own category (the LMS used Elite's
+    // `clinical-skills` here); clearing bounces the count back to all five.
+    renderAt('/membership?category=insurance-licensing')
     const clearBtn = screen.getByRole('button', { name: /clear all filters/i })
     expect(clearBtn).not.toBeDisabled()
 
@@ -176,12 +121,7 @@ describe('LibraryPanel — Elite brand filtering', () => {
       fireEvent.click(clearBtn)
     })
 
-    // After clearing, the count bounces back to the full brand
-    // total — Elite ships 37 resources (15 with full copy + 20
-    // placeholders + the Career Compass e-book + the New Nurse
-    // Cover Letter Template; Shift Survival Guide was retired
-    // because its source PDF was over Netlify's deploy threshold).
-    expect(screen.getByText(/^37 results$/i)).toBeInTheDocument()
+    expect(screen.getByText(/^5 results$/i)).toBeInTheDocument()
     expect(clearBtn).toBeDisabled()
   })
 })

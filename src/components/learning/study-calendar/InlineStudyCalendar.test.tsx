@@ -36,7 +36,7 @@ beforeEach(() => {
   window.localStorage.clear()
   window.localStorage.setItem(
     'cgp.account',
-    JSON.stringify({ brand: 'stc', membership: 'member' }),
+    JSON.stringify({ brand: 'xcel', membership: 'member' }),
   )
 })
 

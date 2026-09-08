@@ -19,7 +19,7 @@ import { RecommendedForYouPanel } from '@/components/dashboard/recommended/Recom
  */
 
 function seedAccount() {
-  window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'elite', membership: 'member' }))
+  window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', membership: 'member' }))
 }
 function renderPanel(catalogCards: boolean) {
   return render(

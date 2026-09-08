@@ -9,7 +9,7 @@ import {
 } from '@/components/membership/DashboardRecommendedBand'
 
 function seedAccount() {
-  window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'elite', membership: 'member' }))
+  window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', membership: 'member' }))
 }
 function renderBand(preview?: RecommendedBandPreview) {
   return render(

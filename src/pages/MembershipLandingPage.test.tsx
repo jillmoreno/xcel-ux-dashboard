@@ -69,7 +69,7 @@ describe('MembershipLandingPage — member view', () => {
     // Default fixture (CRE / member) — explicit so the seed is
     // visible in each test, even though it matches the provider's
     // own default.
-    seedAccount('cre', 'member')
+    seedAccount('xcel', 'member')
   })
 
   it('renders MembershipHeroBand and the 5-item Tabs component', () => {
@@ -142,7 +142,7 @@ describe('MembershipLandingPage — member view', () => {
 
 describe('MembershipLandingPage — non-member view', () => {
   beforeEach(() => {
-    seedAccount('cre', 'non-member')
+    seedAccount('xcel', 'non-member')
   })
 
   it('renders the upsell hero + plan tier strip and not the member hero band', () => {
@@ -172,7 +172,7 @@ describe('MembershipLandingPage — non-member view', () => {
 
 describe('MembershipLandingPage — zero-state (STC member)', () => {
   beforeEach(() => {
-    seedAccount('stc', 'member')
+    seedAccount('xcel', 'member')
   })
 
   it('renders membership hero stats with the faded zero-state meta line', () => {

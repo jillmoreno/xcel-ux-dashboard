@@ -9,7 +9,7 @@ import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
 // the profession fixture (Nursing / OT / PT) is populated and Brand starts on
 // Elite.
 function seedElite() {
-  window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'elite', tier: 'non-member' }))
+  window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'non-member' }))
 }
 
 /** Renders the bar's live URL search string so tests can assert the state the
@@ -58,47 +58,25 @@ describe('DemoControlsBar — scope gate', () => {
 })
 
 describe('DemoControlsBar — Brand dropdown', () => {
-  it('lists all five brands and reflects the seeded brand', () => {
+  it('is not rendered at all while the repo ships a single brand', () => {
+    // The dropdown used to list five. `BRAND_PICKER` in DemoControlsBar hides
+    // it below two entries, because a menu holding one item invites a reviewer
+    // to open it looking for the others. Asserted rather than assumed so that
+    // re-widening `Brand` without restoring the control fails here.
     renderBar()
-    fireEvent.click(screen.getByRole('button', { name: /Brand/i }))
-    const group = screen.getByRole('radiogroup', { name: /^Brand$/i })
-    for (const name of [/Real Estate/, /McKissock/, /Elite \(Health\)/, /STC \(FinServ\)/, /Fitzgerald/]) {
-      expect(within(group).getByRole('radio', { name })).toBeInTheDocument()
-    }
-    expect(within(group).getByRole('radio', { name: /Elite \(Health\)/ })).toHaveAttribute(
-      'aria-checked',
-      'true',
-    )
-  })
-
-  it('switching brand updates the trigger label', () => {
-    renderBar()
-    fireEvent.click(screen.getByRole('button', { name: /Brand/i }))
-    fireEvent.click(screen.getByRole('radio', { name: /STC \(FinServ\)/ }))
-    // The Brand trigger now reads the newly selected brand.
-    expect(screen.getByRole('button', { name: /Brand.*STC \(FinServ\)/i })).toBeInTheDocument()
+    expect(screen.getByRole('region', { name: /demo controls/i })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Brand/i })).toBeNull()
   })
 })
 
 describe('DemoControlsBar — Quick views tiers drive real state', () => {
-  it('the "Passport" tier quick view sets the tier (writes ?tier=high)', () => {
+  it('offers no tier quick views for a brand with no membership', () => {
+    // These tests drove Elite's ladder (Non-member · Passport Lite · Passport)
+    // and wrote ?tier=. XCEL has one tier whose label is never rendered, so the
+    // switch is suppressed and there is no tier for a reviewer to pick. Restore
+    // the original assertions alongside a brand that HAS a ladder.
     renderBar()
-    // Trigger reads the current tier ("Quick view: Non-Member" on the seed).
-    fireEvent.click(screen.getByRole('button', { name: /quick view/i }))
-    // Rows are the brand's tiers as radios; the Elite high tier is "Passport"
-    // (its short chip is also "Passport" → "Passport Passport"), distinct from
-    // the low "Passport Lite" row.
-    fireEvent.click(screen.getByRole('radio', { name: /passport\s+passport/i }))
-    expect(url()).toContain('tier=high')
-  })
-
-  it('lists the active brand tiers (Non-member + Passport Lite + Passport for Elite)', () => {
-    renderBar()
-    fireEvent.click(screen.getByRole('button', { name: /quick view/i }))
-    const group = screen.getByRole('radiogroup', { name: /membership tier/i })
-    expect(within(group).getByRole('radio', { name: /non-member/i })).toBeInTheDocument()
-    expect(within(group).getByRole('radio', { name: /passport lite/i })).toBeInTheDocument()
-    expect(within(group).getByRole('radio', { name: /passport\s+passport/i })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /quick view/i })).toBeNull()
   })
 })
 
@@ -109,14 +87,14 @@ describe('DemoControlsBar — persona dropdown', () => {
     const menu = screen.getByRole('menu', { name: /user personas/i })
     const items = within(menu).getAllByRole('menuitem')
     // The two former What's New personas are now the top-of-dropdown toggle, so
-    // the list leads with the progress journey (Up Next first). 8 rows: the
-    // progress/compliance journey + empty/no-path edge cases + the two "scale"
-    // expanders (Multiple learning paths, Multiple memberships) + Multiple
-    // categories (QE).
-    expect(items).toHaveLength(8)
+    // the list leads with the progress journey (Up Next first). SEVEN rows for
+    // XCEL, where the LMS had eight: "Multiple memberships" is dropped, because
+    // a brand with no membership cannot hold several. `XcelNoMembership`
+    // asserts that exclusion directly; this is the count that follows from it.
+    expect(items).toHaveLength(7)
     expect(items[0]).toHaveTextContent(/^1Up Next/)
     expect(within(menu).getByRole('menuitem', { name: /License expired/i })).toBeInTheDocument()
-    expect(within(menu).getByRole('menuitem', { name: /Multiple memberships/i })).toBeInTheDocument()
+    expect(within(menu).queryByRole('menuitem', { name: /Multiple memberships/i })).toBeNull()
   })
 
   it('exposes a What\'s New toggle at the top of the dropdown, default Off', () => {
@@ -167,11 +145,14 @@ describe('DemoControlsBar — Progress / Education with a non-member account', (
     expect(search).not.toContain('tier=low')
   })
 
-  it('Reset restores the demo member baseline (tier=low) rather than stranding the reviewer on non-member', () => {
+  it('Reset restores the demo member baseline rather than stranding the reviewer on non-member', () => {
+    // The baseline was Elite's `low` (Passport Lite). XCEL has exactly one
+    // tier, keyed `high` — the point of Reset is unchanged: land on a member
+    // tier, never on non-member.
     renderBar()
     fireEvent.click(screen.getByRole('button', { name: /Reset/i }))
     const search = url()
-    expect(search).toContain('tier=low')
+    expect(search).toContain('tier=high')
     expect(search).not.toContain('tier=non-member')
     // prog/edu cleared back to their defaults.
     expect(search).not.toContain('prog=')
@@ -191,8 +172,7 @@ describe('DemoControlsBar — persona dropdown', () => {
     fireEvent.click(screen.getByRole('menuitem', { name: /10–12 paths/i }))
     const search = url()
     expect(search).toContain('prof=')
-    expect(search).toMatch(/nursing/)
-    expect(search).toMatch(/occupational-therapy/)
-    expect(search).toMatch(/physical-therapy/)
+    // XCEL's professions are its lines of authority, not Elite's therapies.
+    expect(search).toMatch(/life-health/)
   })
 })

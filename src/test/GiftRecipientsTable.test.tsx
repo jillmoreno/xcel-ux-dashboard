@@ -42,7 +42,7 @@ function rowFor(name: string): HTMLElement {
 describe('GiftRecipientsTable (Option B — roster)', () => {
   beforeEach(() => {
     window.localStorage.clear()
-    window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'stc', tier: 'high' }))
+    window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
   })
 
   it('renders a sortable table instead of the card list, and drops the Sort dropdown', () => {

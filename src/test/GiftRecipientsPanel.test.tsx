@@ -56,7 +56,7 @@ const PATH = '/dashboard-rebrand?section=gift-recipients'
 describe('GiftRecipientsPanel (STC purchase-for-others)', () => {
   beforeEach(() => {
     window.localStorage.clear()
-    seedBrand('stc')
+    seedBrand('xcel')
   })
 
   it('renders the toolbar and month-grouped records', () => {

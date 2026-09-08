@@ -16,7 +16,7 @@ function seedAccount(brand: string, membership = 'member') {
 const ELITE_ACTIVE = 'elite-fl-nursing-ce'
 
 function renderPanel(membership = 'member') {
-  seedAccount('elite', membership)
+  seedAccount('xcel', membership)
   return render(
     <MemoryRouter>
       <AccountProvider>

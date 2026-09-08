@@ -10,7 +10,7 @@ import { AccountProvider } from '@/context/AccountContext'
 // account. Pin McKissock — the appraisal set these assertions name.
 beforeEach(() => {
   window.localStorage.clear()
-  window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'mckissock', tier: 'high' }))
+  window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
 })
 
 function renderAt(path: string) {

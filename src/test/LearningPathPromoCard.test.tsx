@@ -56,7 +56,7 @@ describe('LearningPathPage — Create Calendar promo (STC)', () => {
   function renderStc(calendarState: 'add' | 'edit' | 'locked' = 'add') {
     window.localStorage.setItem(
       STORAGE_KEY,
-      JSON.stringify({ brand: 'stc', membership: 'member' }),
+      JSON.stringify({ brand: 'xcel', membership: 'member' }),
     )
     // The promo only shows on the "Add Calendar" variant of the
     // study-calendar-state flag (prompts creating a calendar).
