@@ -31,7 +31,7 @@ import {
   writeDefaultMembershipVersion,
   type MembershipVersionId,
 } from '@/data/membershipVersions'
-import { useAccount, professionFor } from '@/context/AccountContext'
+import { useAccount, professionFor, supportsMembership } from '@/context/AccountContext'
 import { useFeatureFlag, useFeatureFlags } from '@/context/FeatureFlagContext'
 import { activePathIdFor, learningPathsFor } from '@/data/learningFixtures'
 import { useDeviceFrame } from './DeviceFrameContext'
@@ -263,8 +263,17 @@ export function Header() {
               <NavLink to="/catalog">Course Catalog</NavLink>
               {/* Membership collapsed from a dropdown to a single NavLink —
                   the `/membership` landing page owns Plans/Benefits
-                  internally; those routes remain for direct-URL deep links. */}
-              <NavLink to="/membership">Membership</NavLink>
+                  internally; those routes remain for direct-URL deep links.
+
+                  Hidden for a brand that sells no membership. This was the one
+                  membership surface the XCEL brand-add's suppression list
+                  missed: the rail item, the `?section=membership` fallback and
+                  the `/membership` route were all closed, but this classic
+                  header link was not, so it kept advertising a product XCEL
+                  does not have. The route redirect meant clicking it bounced
+                  to the dashboard rather than opening anything — a dead link
+                  rather than a wrong page, which is why it survived. */}
+              {supportsMembership(brand) && <NavLink to="/membership">Membership</NavLink>}
             </nav>
           )}
 
