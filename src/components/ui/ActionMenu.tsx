@@ -12,9 +12,22 @@ export type ActionMenuItem = {
 type Props = {
   label: string
   items: ActionMenuItem[]
+  /**
+   * Visible text beside the kebab, turning the icon-only trigger into a labelled
+   * button (e.g. "Actions").
+   *
+   * Opt-in because the icon-only form is right where the menu sits ON the thing
+   * it acts on — a row, a card — and the context supplies the meaning. It is
+   * wrong where the menu stands alone next to an unrelated primary button, which
+   * is where a bare kebab becomes a guess.
+   *
+   * Does NOT replace `label`: that stays the accessible name, so the button is
+   * announced the same either way and the visible word is additive.
+   */
+  triggerLabel?: string
 }
 
-export function ActionMenu({ label, items }: Props) {
+export function ActionMenu({ label, items, triggerLabel }: Props) {
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState<number>(-1)
   const triggerRef = useRef<HTMLButtonElement | null>(null)
@@ -85,16 +98,42 @@ export function ActionMenu({ label, items }: Props) {
           display: 'inline-flex',
           alignItems: 'center',
           justifyContent: 'center',
-          width: 32,
-          height: 32,
-          borderRadius: 'var(--radius-pill)',
+          gap: triggerLabel ? 6 : 0,
+          // Labelled, this is the shared Button's `secondary` variant in every
+          // dimension that matters — 40px tall, `--radius-md`, 16px side
+          // padding, transparent on an `--color-action` stroke — so it sits
+          // beside a primary CTA as its outlined peer rather than as a
+          // differently-shaped control. Icon-only, it stays the 32px pill every
+          // row and card kebab already uses.
+          width: triggerLabel ? 'auto' : 32,
+          height: triggerLabel ? 40 : 32,
+          padding: triggerLabel ? '0 16px' : 0,
+          borderRadius: triggerLabel ? 'var(--radius-md)' : 'var(--radius-pill)',
           background: 'transparent',
-          border: 'none',
-          color: 'var(--color-secondary-500)',
+          border: triggerLabel ? '1px solid var(--color-action)' : 'none',
+          // The icon-only trigger keeps the accent it has always used — at 16px,
+          // sitting on the row it acts on, it reads as an affordance rather than
+          // as text. The LABELLED variant cannot: `--color-secondary-500`
+          // resolves to amber on Elite and measures 1.6:1 against the page as
+          // 14px text.
+          //
+          // The stroke is `--color-action` (a border is a UI component: 3:1, and
+          // it measures 4.2). The LABEL is one stop darker at
+          // `--color-action-hover` — `--color-action` itself is only 4.2:1 on
+          // `--color-surface-page`, under the 4.5 AA needs at 14px. Same teal
+          // family, 5.99:1. NOTE the shared Button's `secondary` variant sets
+          // its foreground to `--color-action` and has the same shortfall on
+          // this surface; worth a separate pass.
+          color: triggerLabel ? 'var(--color-action-hover)' : 'var(--color-secondary-500)',
+          fontFamily: 'var(--font-body)',
+          fontSize: 14,
+          fontWeight: 600,
+          lineHeight: 1,
           cursor: 'pointer',
         }}
       >
         <MoreVertical size={16} aria-hidden />
+        {triggerLabel}
       </button>
       {open && (
         <div

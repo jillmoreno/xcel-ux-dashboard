@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Recommended Cards A/B — Variant B · What's Trending (Non-member)</title>
+  <!-- Opens the real prototype as a FOCUSED, contained test (Colibri Real Estate,
+       NON-MEMBER, no demo controls, no rail): just the Home + the details
+       link + the Recommended cards -> course details/purchase sheet.
+       location.replace keeps the Back button from returning to this launcher. -->
+  <script>
+    window.location.replace(
+      "https://ux-lms-dashboard.netlify.app/dashboard-rebrand?brand=cre&membership=non-member&ff=home-recommended-card-ab:trending&chrome=off&focus=1"
+    );
+  </script>
+  <noscript>
+    <meta http-equiv="refresh" content="0; url=https://ux-lms-dashboard.netlify.app/dashboard-rebrand?brand=cre&amp;membership=non-member&amp;ff=home-recommended-card-ab:trending&amp;chrome=off&amp;focus=1" />
+  </noscript>
+  <style>
+    :root { color-scheme: light; }
+    html, body { margin: 0; height: 100%; }
+    body {
+      display: grid; place-items: center; padding: 24px;
+      background: #f4f6f8; color: #55606e;
+      font-family: system-ui, -apple-system, sans-serif; text-align: center; line-height: 1.5;
+    }
+    a { color: #0b5cad; font-weight: 600; }
+  </style>
+</head>
+<body>
+  <main>
+    <p>Opening the prototype&hellip;</p>
+    <p><a href="https://ux-lms-dashboard.netlify.app/dashboard-rebrand?brand=cre&amp;membership=non-member&amp;ff=home-recommended-card-ab:trending&amp;chrome=off&amp;focus=1">Tap here if it doesn&rsquo;t open automatically.</a></p>
+  </main>
+</body>
+</html>

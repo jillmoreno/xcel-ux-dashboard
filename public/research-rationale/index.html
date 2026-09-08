@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>UX Research &amp; Rationale — Learner Platform</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --bg-subtle: #f7f8fa;
+    --bg-rail: #fbfcfd;
+    --ink: #1c2530;
+    --ink-soft: #45505e;
+    --ink-mute: #6b7684;
+    --ink-faint: #98a2b0;
+    --line: #e4e8ee;
+    --line-soft: #eef1f5;
+    --accent: #2f5c8f;
+    --accent-soft: #eaf1f8;
+    --accent-ink: #234a74;
+    --good: #2f7d5b;
+    --good-soft: #e8f4ee;
+    --warn: #9a6b1e;
+    --warn-soft: #f7f0e2;
+    --radius: 10px;
+    --shadow: 0 1px 2px rgba(21,37,58,.04), 0 8px 24px rgba(21,37,58,.05);
+    --serif: "Iowan Old Style", "Palatino Linotype", Palatino, Georgia, "Times New Roman", serif;
+    --sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mono: "SF Mono", ui-monospace, "Cascadia Mono", Menlo, Consolas, monospace;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: var(--sans);
+    color: var(--ink);
+    background: var(--bg-subtle);
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  a { color: var(--accent); }
+
+  /* ---------- Layout ---------- */
+  .wrap { display: grid; grid-template-columns: 268px minmax(0, 1fr); min-height: 100vh; }
+
+  /* ---------- Sidebar ---------- */
+  .rail {
+    position: sticky; top: 0; align-self: start;
+    height: 100vh; overflow-y: auto;
+    background: var(--bg-rail);
+    border-right: 1px solid var(--line);
+    padding: 28px 20px 40px;
+  }
+  .brandmark { font-size: 12px; letter-spacing: .08em; text-transform: uppercase; color: var(--ink-faint); font-weight: 700; }
+  .rail h1 { font-family: var(--serif); font-size: 20px; line-height: 1.25; margin: 8px 0 4px; color: var(--ink); font-weight: 600; }
+  .rail .sub { font-size: 12.5px; color: var(--ink-mute); margin: 0 0 22px; }
+  .rail hr { border: 0; border-top: 1px solid var(--line-soft); margin: 20px 0; }
+
+  .nav-label { font-size: 11px; letter-spacing: .09em; text-transform: uppercase; color: var(--ink-faint); font-weight: 700; margin: 0 0 10px; }
+  .page-group { margin-bottom: 4px; }
+  .page-link {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 14px; font-weight: 600; color: var(--ink-soft);
+    text-decoration: none; padding: 7px 10px; border-radius: 7px; cursor: pointer;
+  }
+  .page-link:hover { background: var(--accent-soft); color: var(--accent-ink); }
+  .page-link.active { background: var(--accent-soft); color: var(--accent-ink); }
+  .page-link .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--accent); flex: none; opacity: 0; }
+  .page-link.active .dot { opacity: 1; }
+  .q-list { list-style: none; margin: 2px 0 10px; padding: 0 0 0 16px; border-left: 1px solid var(--line); display: none; }
+  .page-group.active .q-list { display: block; }
+  .q-list a { display: block; font-size: 13px; color: var(--ink-mute); text-decoration: none; padding: 5px 10px; border-radius: 6px; }
+  .q-list a:hover { color: var(--accent-ink); background: var(--accent-soft); }
+  .q-list a.active { color: var(--accent-ink); background: var(--accent-soft); font-weight: 600; }
+
+  .page-link.disabled { color: var(--ink-faint); cursor: default; }
+  .page-link.disabled:hover { background: transparent; color: var(--ink-faint); }
+  .soon { font-size: 10px; letter-spacing: .04em; text-transform: uppercase; color: var(--ink-faint); border: 1px solid var(--line); border-radius: 20px; padding: 1px 7px; margin-left: auto; font-weight: 700; }
+
+  /* ---------- Main ---------- */
+  main { padding: 0; }
+  .topbar {
+    position: sticky; top: 0; z-index: 5;
+    background: rgba(255,255,255,.86); backdrop-filter: saturate(180%) blur(8px);
+    border-bottom: 1px solid var(--line);
+    padding: 12px 40px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+  }
+  .topbar .crumb { font-size: 13px; color: var(--ink); font-weight: 600; }
+  .topbar .meta { margin-left: auto; font-size: 12px; color: var(--ink-faint); }
+
+  .container { max-width: 820px; margin: 0 auto; padding: 44px 40px 96px; }
+
+  .page { display: none; }
+  .page.active { display: block; }
+
+  .page-head { margin-bottom: 8px; }
+  .page-head .eyebrow { font-size: 12px; letter-spacing: .1em; text-transform: uppercase; color: var(--accent); font-weight: 700; }
+  .page-head h2 { font-family: var(--serif); font-size: 34px; line-height: 1.15; margin: 8px 0 10px; font-weight: 600; letter-spacing: -.01em; }
+  .page-head p.lede { font-size: 16px; color: var(--ink-soft); margin: 0 0 8px; max-width: 62ch; }
+
+  .divider { border: 0; border-top: 1px solid var(--line); margin: 34px 0; }
+
+  /* ---------- Question card ---------- */
+  .q {
+    background: var(--bg); border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow); padding: 30px 32px; margin: 26px 0; scroll-margin-top: 84px;
+  }
+  .q > .q-eyebrow { font-size: 12px; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-faint); font-weight: 700; display: flex; align-items: center; gap: 10px; }
+  .q-eyebrow .permalink { margin-left: auto; display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; text-decoration: none; color: var(--ink-faint); border: 1px solid var(--line); border-radius: 20px; padding: 3px 10px; opacity: 0; transition: opacity .15s, color .15s, border-color .15s, background .15s; cursor: pointer; }
+  .q:hover .q-eyebrow .permalink { opacity: 1; }
+  .q-eyebrow .permalink:hover { color: var(--accent-ink); border-color: #cfe0f0; background: var(--accent-soft); }
+  .q-eyebrow .permalink.copied { color: var(--good); border-color: #cfe6da; background: var(--good-soft); opacity: 1; }
+  .permalink .pl-ico { font-size: 12px; line-height: 1; }
+  @media (max-width: 860px) { .q-eyebrow .permalink { opacity: 1; } }
+  .q h3 { font-family: var(--serif); font-size: 24px; line-height: 1.25; margin: 10px 0 16px; font-weight: 600; }
+
+  .verdict {
+    display: flex; gap: 12px; align-items: flex-start;
+    background: var(--good-soft); border: 1px solid #cfe6da; border-left: 4px solid var(--good);
+    border-radius: 8px; padding: 14px 16px; margin: 0 0 22px;
+  }
+  .verdict .tag { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; font-weight: 800; color: var(--good); background: #fff; border: 1px solid #cfe6da; border-radius: 6px; padding: 3px 8px; flex: none; }
+  .verdict p { margin: 0; font-size: 15px; color: #204a38; }
+  .verdict p b { color: #163527; }
+
+  .q h4 { font-size: 12px; letter-spacing: .07em; text-transform: uppercase; color: var(--ink-mute); font-weight: 700; margin: 26px 0 10px; }
+  .q p { font-size: 15.5px; color: var(--ink-soft); margin: 0 0 14px; }
+  .q p b, .q li b { color: var(--ink); }
+
+  .reason { counter-reset: r; list-style: none; padding: 0; margin: 0 0 6px; }
+  .reason > li { position: relative; padding: 4px 0 16px 44px; margin: 0; }
+  .reason > li::before {
+    counter-increment: r; content: counter(r);
+    position: absolute; left: 0; top: 2px;
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--accent-soft); color: var(--accent-ink);
+    font-weight: 700; font-size: 14px; display: flex; align-items: center; justify-content: center;
+  }
+  .reason > li h5 { margin: 2px 0 4px; font-size: 15.5px; color: var(--ink); font-weight: 700; }
+  .reason > li p { margin: 0; font-size: 15px; }
+
+  .callout {
+    background: var(--warn-soft); border: 1px solid #ecdcbb; border-left: 4px solid var(--warn);
+    border-radius: 8px; padding: 16px 18px; margin: 8px 0 18px;
+  }
+  .callout .k { font-size: 11px; letter-spacing: .06em; text-transform: uppercase; font-weight: 800; color: var(--warn); }
+  .callout p { margin: 6px 0 0; font-size: 15px; color: #5f451a; }
+  .callout p b { color: #4a360f; }
+  .example { font-style: italic; color: #6a4f22; }
+
+  .rec-list { margin: 0; padding-left: 20px; }
+  .rec-list li { font-size: 15px; color: var(--ink-soft); margin: 0 0 8px; }
+
+  /* ---------- Compare block ---------- */
+  .compare { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 8px 0 20px; }
+  .compare .col { border: 1px solid var(--line); border-radius: 8px; padding: 16px 18px; background: var(--bg-subtle); }
+  .compare .col.pick { border-color: #cfe6da; background: var(--good-soft); }
+  .compare .col .pick-flag { font-size: 11px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--good); display: block; margin-bottom: 6px; }
+  .compare .col h5 { margin: 0 0 3px; font-size: 15.5px; color: var(--ink); font-weight: 700; }
+  .compare .col .role { font-size: 12.5px; color: var(--ink-mute); margin: 0 0 12px; }
+  .compare .col ul { margin: 0; padding-left: 18px; }
+  .compare .col li { font-size: 13.5px; color: var(--ink-soft); margin: 0 0 7px; line-height: 1.45; }
+  @media (max-width: 620px){ .compare { grid-template-columns: 1fr; } }
+
+  /* ---------- Rule list ---------- */
+  .ruleset { list-style: none; margin: 2px 0 14px; padding: 0; }
+  .ruleset li { position: relative; padding: 0 0 12px 30px; font-size: 15px; color: var(--ink-soft); line-height: 1.5; }
+  .ruleset li::before { content: "✓"; position: absolute; left: 0; top: 0; color: var(--good); font-weight: 800; font-size: 14px; }
+  .ruleset li.no::before { content: "✕"; color: #b23b3b; }
+  .ruleset li b { color: var(--ink); }
+
+  /* ---------- Archived ---------- */
+  .rail .archive-label { margin-top: 18px; }
+  .q.archived { opacity: .72; }
+  .q.archived:hover { opacity: 1; }
+  .q.archived .verdict { filter: saturate(.55); }
+  .archived-badge { display: inline-flex; align-items: center; gap: 5px; font-size: 10.5px; font-weight: 800; letter-spacing: .05em; text-transform: uppercase; color: var(--ink-mute); background: var(--bg-subtle); border: 1px solid var(--line); border-radius: 6px; padding: 2px 8px; }
+  .archived-note { font-size: 12.5px; color: var(--ink-mute); font-style: italic; margin: 0 0 14px; }
+  .archived-empty { border: 1px dashed var(--line); border-radius: var(--radius); padding: 40px 32px; text-align: center; color: var(--ink-faint); background: var(--bg-rail); font-size: 14px; line-height: 1.6; }
+  .archived-empty b { color: var(--ink-mute); }
+
+  /* ---------- Sources ---------- */
+  .sources { margin-top: 26px; border-top: 1px solid var(--line-soft); padding-top: 18px; }
+  .sources h4 { margin-top: 0; }
+  .src { display: flex; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--line-soft); }
+  .src:last-child { border-bottom: 0; }
+  .src .fav { width: 30px; height: 30px; border-radius: 6px; background: var(--accent-soft); color: var(--accent-ink); font-weight: 700; font-size: 11px; display: flex; align-items: center; justify-content: center; flex: none; }
+  .src .fav.int { background: #f0ece2; color: #7a6a3f; }
+  .src .body { min-width: 0; }
+  .src .title { font-size: 14.5px; font-weight: 600; color: var(--accent); text-decoration: none; }
+  .src .title:hover { text-decoration: underline; }
+  .src .desc { font-size: 13px; color: var(--ink-mute); margin: 2px 0 0; }
+  .src .host { font-size: 11.5px; color: var(--ink-faint); font-family: var(--mono); }
+
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; margin: 14px 0 0; }
+  .chip { font-size: 11.5px; color: var(--ink-mute); background: var(--bg-subtle); border: 1px solid var(--line); border-radius: 20px; padding: 3px 10px; }
+
+  .footer-note { max-width: 820px; margin: 0 auto; padding: 0 40px 60px; color: var(--ink-faint); font-size: 12.5px; }
+
+  @media (max-width: 860px) {
+    .wrap { grid-template-columns: 1fr; }
+    .rail { position: static; height: auto; border-right: 0; border-bottom: 1px solid var(--line); }
+    .topbar, .container, .footer-note { padding-left: 20px; padding-right: 20px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="rail">
+    <div class="brandmark">Internal · UX</div>
+    <h1>Research &amp; Rationale</h1>
+    <p class="sub">Decision log for the learner platform. Organized by page. Link any entry into a design ticket.</p>
+
+    <p class="nav-label">Pages</p>
+
+    <div class="page-group active" data-page="home">
+      <a class="page-link active" data-target="home" href="#home"><span class="dot"></span>Home / Dashboard</a>
+      <ul class="q-list">
+        <li><a href="#q-home-welcome">Second welcome message on Home?</a></li>
+        <li><a href="#q-home-card-style">Product card style — shelf vs. large?</a></li>
+        <li><a href="#q-home-rec-page-cards">Card style on the Recommended page?</a></li>
+        <li><a href="#q-home-carousel">Carousel component — the rules</a></li>
+        <li><a href="#q-home-eyebrow">Amplify the section eyebrows?</a></li>
+        <li><a href="#q-home-new-tag">Using the NEW tag</a></li>
+        <li><a href="#q-home-hero-photo">Photo background behind the hero?</a></li>
+        <li><a href="#q-home-completion-gauge">Completion indicator — gauge vs. bar</a></li>
+      </ul>
+    </div>
+
+    <div class="page-group" data-page="navigation">
+      <a class="page-link" data-target="navigation" href="#navigation"><span class="dot"></span>Navigation</a>
+      <ul class="q-list">
+        <li><a href="#q-nav-external">External links in the left nav?</a></li>
+        <li><a href="#q-nav-selected">Active / selected nav state</a></li>
+      </ul>
+    </div>
+
+    <div class="page-group" data-page="accessibility">
+      <a class="page-link" data-target="accessibility" href="#accessibility"><span class="dot"></span>Foundations · Accessibility</a>
+      <ul class="q-list">
+        <li><a href="#q-a11y-focus">Visible focus indicators</a></li>
+        <li><a href="#q-a11y-contrast-tokens">Accent text on dark surfaces</a></li>
+        <li><a href="#q-a11y-color">Meaning never by color alone</a></li>
+        <li><a href="#q-a11y-motion">Reduced motion &amp; auto-advance</a></li>
+        <li><a href="#q-a11y-structure">Real headings &amp; target sizes</a></li>
+      </ul>
+    </div>
+
+    <div class="page-group" data-page="learning-path">
+      <a class="page-link" data-target="learning-path" href="#learning-path"><span class="dot"></span>Learning Path</a>
+      <ul class="q-list">
+        <li><a href="#q-lp-sheet-vs-page">All paths — sheet vs. full page?</a></li>
+        <li><a href="#q-lp-table-view">Sortable table view at scale</a></li>
+      </ul>
+    </div>
+
+    <div class="page-group" data-page="membership">
+      <a class="page-link" data-target="membership" href="#membership"><span class="dot"></span>Membership</a>
+      <ul class="q-list">
+        <li><a href="#q-mem-upsell-cta">Upsell CTA patterns</a></li>
+        <li><a href="#q-mem-tier-pricing">Tier-aware pricing</a></li>
+      </ul>
+    </div>
+
+    <hr />
+    <p class="nav-label archive-label">Archive</p>
+    <div class="page-group" data-page="archived">
+      <a class="page-link" data-target="archived" href="#archived"><span class="dot"></span>Archived</a>
+      <ul class="q-list">
+        <li><a href="#q-home-separate-hero">Separate Progress vs. What&#39;s New?</a></li>
+        <li><a href="#q-home-redundant-tag">Redundant &quot;What&#39;s New&quot; tag?</a></li>
+        <li><a href="#q-home-resource-type">Show resource type on cards?</a></li>
+        <li><a href="#q-nav-color">Left-nav rail color</a></li>
+      </ul>
+    </div>
+
+    <hr />
+    <p class="nav-label">About this doc</p>
+    <p class="sub" style="margin:0">A living reference. Each entry states the question, our recommendation, the reasoning, and the sources — including the internal decision record it was ported from.</p>
+    <p class="sub" style="margin:12px 0 0">To share a single decision, hover it and click <b>Copy link</b> — the link opens the hub straight to that entry.</p>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main>
+    <div class="topbar">
+      <span class="crumb" id="crumb">Home / Dashboard</span>
+      <span class="meta">Last updated Aug 17, 2026</span>
+    </div>
+
+    <div class="container">
+
+      <!-- =================== PAGE: HOME =================== -->
+      <section class="page active" id="home">
+        <div class="page-head">
+          <p class="eyebrow">Page</p>
+          <h2>Home / Dashboard</h2>
+          <p class="lede">The learner's landing surface — the first thing shown after sign-in. Decisions here are about what earns the most valuable screen space, how the page greets a returning learner, and how the hero and recommendation surfaces are composed.</p>
+        </div>
+        <hr class="divider" />
+
+        <!-- Q: welcome -->
+        <article class="q" id="q-home-welcome">
+          <p class="q-eyebrow">Open question · Decision <a class="permalink" href="#q-home-welcome" title="Copy shareable link to this decision"><span class="pl-ico" aria-hidden="true">🔗</span><span class="pl-txt">Copy link</span></a></p>
+          <h3>Should we include another welcome message on the actual Home page?</h3>
+          <div class="verdict"><span class="tag">Recommendation</span><p><b>No — keep a single greeting, and place it in the left nav.</b> A second verbatim "Welcome back, Sarah" at the top of Home is redundant and spends prime space on low-value content. Lead the Home page with the learner's Current Learning Path instead.</p></div>
+          <h4>Context</h4>
+          <p>The persistent left nav already shows <b>"Welcome back, Sarah Cook"</b> with the learner's avatar, membership (Passport), and profession/state. The open proposal is to add a <b>second</b> welcome banner across the top of the Home page. The concern raised: that reads as unneeded duplication. The research supports that concern on two fronts.</p>
+          <h4>Why — the reasoning</h4>
+          <ol class="reason">
+            <li><h5>Duplication has a real cognitive cost, not just an aesthetic one.</h5><p>NN/g's work on redundancy found that when the same element appears twice on a page, users spend effort deciding whether the duplicate is <b>the same thing or something new</b>. The recommended fix is almost never "keep both" — it's to make the single instance more prominent or remove the distractor. The one sanctioned exception is redundancy that opens a genuinely different navigation path; repeating the same greeting doesn't clear that bar.</p></li>
+            <li><h5>A greeting is low-value content sitting in your highest-value space.</h5><p>The top of Home is prime real estate. NN/g's prioritization principle is blunt: <b>"If everything is prominent, then nothing is."</b> For this screen the high-value content is the <b>Current Learning Path</b> card (63% complete, Mandatory 6/9, license expires 12/15/2026) — what a returning learner came to check. A greeting banner pushes that down.</p></li>
+            <li><h5>The nav greeting already does the identity job.</h5><p>Confirming "you're signed in as Sarah, Passport member, Nursing · Florida" is the useful work a greeting does — and the left nav does it persistently, alongside the account context it belongs with. A page-level repeat adds no new information.</p></li>
+          </ol>
+          <div class="callout"><span class="k">Nuance — when a Home greeting would earn its space</span><p>A <b>page-level</b> greeting is justified only if it does something the nav one doesn't: a time-aware, motivational line tied to a next action.</p><p class="example">e.g. "Good morning, Sarah — you're 3 courses from renewal. Pick up where you left off →"</p><p>A plain repeat of "Welcome back, Sarah" is not that. If the goal is warmth, make it contextual and action-oriented — otherwise cut it.</p></div>
+          <h4>What we recommend</h4>
+          <ul class="rec-list"><li>Keep the single identity greeting in the <b>left nav</b>, where it doubles as account/membership context.</li><li>Lead the Home page with the <b>Current Learning Path</b> — the content a returning learner actually wants.</li><li>If warmth is desired, replace the static welcome with a <b>contextual, action-oriented</b> line, not a second "Welcome back."</li></ul>
+          <div class="sources"><h4>Research &amp; sources</h4>
+            <div class="src"><span class="fav">NN</span><div class="body"><a class="title" href="https://www.nngroup.com/articles/reduce-redundancydecrease-duplicated-design-decisions/" target="_blank" rel="noopener">Reduce Redundancy: Decrease Duplicated Design Decisions</a><p class="desc">Duplicated elements add cognitive load; fix by making one instance prominent, not keeping both.</p><span class="host">nngroup.com</span></div></div>
+            <div class="src"><span class="fav">NN</span><div class="body"><a class="title" href="https://www.nngroup.com/articles/prioritize-good-content-bubbles-to-the-top/" target="_blank" rel="noopener">Prioritize: Good Content Bubbles to the Top</a><p class="desc">Prominent placement should reward user value, not decoration.</p><span class="host">nngroup.com</span></div></div>
+            <div class="src"><span class="fav">NN</span><div class="body"><a class="title" href="https://www.nngroup.com/articles/duplicate-links/" target="_blank" rel="noopener">The Same Link Twice on the Same Page</a><p class="desc">The narrow conditions under which duplication helps vs. wastes effort.</p><span class="host">nngroup.com</span></div></div>
+            <div class="src"><span class="fav">NN</span><div class="body"><a class="title" href="https://www.nngroup.com/articles/page-fold-manifesto/" target="_blank" rel="noopener">The Fold Manifesto</a><p class="desc">The top of the page carries disproportionate attention weight.</p><span class="host">nngroup.com</span></div></div>
+          </div>
+          <div class="tags"><span class="chip">Redundancy</span><span class="chip">Visual hierarchy</span><span class="chip">Above the fold</span><span class="chip">Personalization</span><span class="chip">All brands</span></div>
+        </article>
+
+        <!-- Q: card style -->
+        <article class="q" id="q-home-card-style">
+          <p class="q-eyebrow">Open question · Decision <a class="permalink" href="#q-home-card-style" title="Copy shareable link to this decision"><span class="pl-ico" aria-hidden="true">🔗</span><span class="pl-txt">Copy link</span></a></p>
+          <h3>What product-card style works best on a Home page — large data-rich cards, or smaller shelf-style cards for skimming?</h3>
+          <div class="verdict"><span class="tag">Recommendation</span><p><b>Default to smaller shelf-style cards on Home.</b> The Home page's job is quick discovery and re-engagement — skimming, not evaluating. Compact cards fit more options per row and read as "browse me." Reserve the large, data-rich cards for the surface where people actually <b>decide</b>: the Course Catalog and search.</p></div>
+          <h4>Context</h4>
+          <p>Home surfaces like Recommended, Jump Back In, and What's New are <b>discovery</b> zones — the learner is scanning to find something worth clicking, not comparing a shortlist in detail. The platform already supports both treatments (the Recommended band's <b>shelf</b> ≈172px vs. <b>large</b> ≈262px cards), so this is choosing the right default per surface, not new work.</p>
+          <h4>The trade-off at a glance</h4>
+          <div class="compare">
+            <div class="col pick"><span class="pick-flag">✓ Best for Home</span><h5>Shelf / compact cards</h5><p class="role">Discovery &amp; skimming</p><ul><li>More options visible per row</li><li>Lower per-card cognitive load</li><li>Cover + title + a meta cue is enough to click</li><li>Themed rows chunk the choice</li></ul></div>
+            <div class="col"><h5>Large / data-rich cards</h5><p class="role">Comparison &amp; decision</p><ul><li>Room for price, credits, rating, format</li><li>Best with a <b>few</b> high-consideration items</li><li>Right home: Catalog, search, a focused promo</li><li>On Home they crowd out breadth</li></ul></div>
+          </div>
+          <h4>Why — the reasoning</h4>
+          <ol class="reason">
+            <li><h5>Match the card to the task: browse vs. decide.</h5><p>A Home learner is deciding <b>what to look at</b>, not purchasing on the spot. A full spec sheet on every tile answers a question they haven't asked yet.</p></li>
+            <li><h5>Fewer, denser choices scan faster (Hick's Law).</h5><p>Decision time rises with the number and complexity of options. Large cards limit how many fit above the fold <b>and</b> pack each with more to process. Compact cards in labeled shelves cut perceived choice into digestible chunks.</p></li>
+            <li><h5>Give each card enough "information scent" — no more.</h5><p>Title-only is too little; a data dump is too much. The Home sweet spot is a cover, title, format icon, and one or two key signals (credit hours, ★ rating, progress).</p></li>
+          </ol>
+          <div class="callout"><span class="k">Caveat — shelves need discoverability cues on desktop</span><p>Shelf cards usually live in horizontal rows, and desktop users <b>don't expect to scroll sideways</b>. <b>Peek the next card off the right edge</b>, keep <b>arrows always visible</b>, and pair every row with a <b>"See all →"</b> link. See the Carousel rules below.</p></div>
+          <h4>What we recommend</h4>
+          <ul class="rec-list"><li><b>Home:</b> shelf-style compact cards for Recommended, Jump Back In, What's New.</li><li><b>Catalog &amp; search:</b> large data-rich cards, where price/credits/rating drive a decision.</li><li>Standardize the compact card's meta (format icon · one key stat · rating).</li></ul>
+          <div class="sources"><h4>Research &amp; sources</h4>
+            <div class="src"><span class="fav">NN</span><div class="body"><a class="title" href="https://www.nngroup.com/articles/illusion-of-completeness/" target="_blank" rel="noopener">The Illusion of Completeness</a><p class="desc">Peeking cards and visible arrows signal there's more to browse.</p><span class="host">nngroup.com</span></div></div>
+            <div class="src"><span class="fav">HL</span><div class="body"><a class="title" href="https://mailchimp.com/resources/hicks-law/" target="_blank" rel="noopener">Hick's Law in UX</a><p class="desc">Decision time grows with the number and complexity of choices.</p><span class="host">mailchimp.com</span></div></div>
+            <div class="src"><span class="fav">JM</span><div class="body"><a class="title" href="https://www.justinmind.com/ui-design/cards" target="_blank" rel="noopener">Card UI Design: Fundamentals &amp; Best Practices</a><p class="desc">Cards as scannable, self-contained entry points; keep them lightweight.</p><span class="host">justinmind.com</span></div></div>
+            <div class="src"><span class="fav int">◆</span><div class="body"><a class="title" href="computer:///Users/jill.moreno/jill-dashboard-ux-designs/recommended-for-you-redesign.md" target="_blank" rel="noopener">Internal — "Recommended for You" shelf redesign</a><p class="desc">Our own shelf-pattern rationale: keep cards quiet/dense, every row has a job, members see the full shelf.</p><span class="host">repo · decision record</span></div></div>
+          </div>
+          <div class="tags"><span class="chip">Card density</span><span class="chip">Scannability</span><span class="chip">Hick's Law</span><span class="chip">Discovery vs. decision</span><span class="chip">All brands</span></div>
+        </article>
+
+        <!-- Q: recommended page cards -->
+        <article class="q" id="q-home-rec-page-cards">
+          <p class="q-eyebrow">Open question · Decision <a class="permalink" href="#q-home-rec-page-cards" title="Copy shareable link to this decision"><span class="pl-ico" aria-hidden="true">🔗</span><span class="pl-txt">Copy link</span></a></p>
+          <h3>And on the Recommended for You <i>page</i> — Home’s shelf cards, or the Catalog’s detailed cards?</h3>
+          <div class="verdict"><span class="tag">Recommendation</span><p><b>Use the Course Catalog cards on the Recommended for You page.</b> It’s a destination with browse-to-decide intent — functionally a personalized catalog — so it belongs with the Catalog, not with the Home band that sent the learner there. Detail then <b>escalates</b> across the three surfaces, and we maintain two card styles instead of three.</p></div>
+          <h4>Context</h4>
+          <p>The entry above settles Home vs. Catalog. It leaves out the third surface: the <b>Recommended for You page</b> — the Explore-rail section reached from the rail or from the band’s “See All →”. Both treatments are already built and flag-switchable (<b>recommended-page-cards</b>: <b>Shelf cards</b>, the compact squares that match Home, vs. <b>Course Catalog cards</b>). Worth noting that the flag’s own description already states MVP ships the Catalog cards — this entry records <i>why</i>, and flags that the committed default is still <b>shelf</b> and needs to be flipped to match the intent.</p>
+          <h4>The three-tier model</h4>
+          <ul class="ruleset">
+            <li><b>Home “Recommended for you” band → shelf cards.</b> Re-entry, zero commitment. The learner came to check progress and resume something; the band is a peripheral offer competing with the Current Learning Path. Its only job is to earn a click — a cover, a title, and one meta cue (format · rating, or price for a non-member) does that.</li>
+            <li><b>Recommended for You page → Course Catalog cards.</b> A destination, browse-to-decide. This is where the click gets qualified, so the decision inputs belong on the card face.</li>
+            <li><b>Course Catalog → Course Catalog cards.</b> Search and compare. Price, credit hours, format, rating, and state applicability <i>are</i> the task.</li>
+          </ul>
+          <h4>Why — the reasoning</h4>
+          <ol class="reason">
+            <li><h5>Card detail should track the decision the surface actually asks for.</h5><p>Price and credit hours are decision inputs, so they earn their space where a decision is being made and waste it where one isn’t. On Home that detail also costs real vertical space above the fold, pushing the learner’s own progress down for an offer they didn’t come for.</p></li>
+            <li><h5>A destination has to look like it earned the click.</h5><p>If “See All →” lands the learner on cards identical to the ones they just left, the click reads as unrewarded — the page feels like more of the same rather than a step forward. Escalating the detail is the cheapest signal that the navigation went somewhere.</p></li>
+            <li><h5>Comparison across a click is expensive.</h5><p>On a destination page the learner is building a shortlist. Strip the meta and every candidate costs a click to evaluate, forcing them to hold the comparison in memory — or to abandon the page for the Catalog, which does show it.</p></li>
+            <li><h5>Two card styles are cheaper to keep honest than three.</h5><p>Sharing one component between the Recommended page and the Catalog means one place to change when the meta row, tier badging, or price treatment moves. A bespoke middle tier would drift.</p></li>
+          </ol>
+          <div class="callout"><span class="k">Tradeoff — tall cards and horizontal shelves fight each other</span><p>The Catalog cards are much taller, so each shelf row grows and <b>fewer shelves fit above the fold</b> — losing the “many rows, many angles” benefit that makes the shelf pattern worth having. Either accept <b>2–3 shelves</b> above the fold, or move that page to a <b>filtered grid</b> with the category as a filter control rather than a row.</p></div>
+          <h4>What we recommend</h4>
+          <ul class="rec-list"><li><b>Home band:</b> shelf cards — unchanged.</li><li><b>Recommended for You page:</b> the Course Catalog cards; flip the <b>recommended-page-cards</b> committed default from <b>shelf</b> to <b>large</b> so the default matches the documented MVP intent.</li><li><b>Catalog:</b> unchanged.</li><li>Decide the shelf-vs-grid question on the Recommended page before the taller cards ship, not after.</li></ul>
+          <h4>How we’d validate this</h4>
+          <p>This entry is <b>reasoned, not yet tested</b> — it’s a defensible hypothesis about intent, not a finding. What would settle it: a <b>moderated usability test, 5–8 learners</b> (run both member and non-member), starting on Home with a real renewal task — <i>“you have 6 ethics hours left before your license expires — find a course that counts.”</i> Watch where the shortlist actually gets built.</p>
+          <ul class="ruleset">
+            <li><b>Confirms the model:</b> learners shortlist <b>on the Recommended page</b> and can state a course’s price and credit hours before opening anything; non-members register the price without a click.</li>
+            <li class="no"><b>Disconfirms it:</b> learners treat the page as a waypoint and leave for the Catalog to compare — meaning the page needs Catalog affordances (filters, sort), not just Catalog cards.</li>
+            <li class="no"><b>Also disconfirms it:</b> the taller cards leave so little visible that a learner reads one-and-a-half shelves as “that’s all there is” — the illusion-of-completeness failure, which argues for the grid.</li>
+            <li class="no"><b>Instrumentation gap — read before quoting any A/B:</b> the live card A/B (<b>home-recommended-card-ab</b>) is <b>presentation-only</b> — it does not bucket learners or log exposure, so it cannot declare a winner. Its two arms (Compact square vs. What’s Trending) are also both <b>low-detail Home</b> treatments, so it doesn’t test this question at all. Settling it quantitatively needs a shelf-vs-Catalog-card arm <i>on the page</i>, plus impression / card-click / sheet-open / enroll events.</li>
+          </ul>
+          <div class="sources"><h4>Research &amp; sources</h4>
+            <div class="src"><span class="fav int">◆</span><div class="body"><a class="title" href="#q-home-card-style">Internal — sibling decision: Home vs. Catalog card density</a><p class="desc">The entry this one extends; settles the first two tiers of the same model.</p><span class="host">this doc · Home / Dashboard</span></div></div>
+            <div class="src"><span class="fav int">◆</span><div class="body"><a class="title" href="computer:///Users/jill.moreno/jill-dashboard-ux-designs/recommended-for-you-redesign.md" target="_blank" rel="noopener">Internal — “Recommended for You” shelf redesign</a><p class="desc">The shelf-pattern rationale: every row has a job, cards stay quiet and dense.</p><span class="host">repo · decision record</span></div></div>
+            <div class="src"><span class="fav int">◆</span><div class="body"><a class="title" href="computer:///Users/jill.moreno/jill-dashboard-ux-designs/src/context/FeatureFlagContext.tsx" target="_blank" rel="noopener">Internal — <code>recommended-page-cards</code> flag definition</a><p class="desc">Documents both variants and states MVP ships the Catalog cards — while the committed default is still shelf.</p><span class="host">repo · feature flag catalog</span></div></div>
+            <div class="src"><span class="fav int">◆</span><div class="body"><a class="title" href="computer:///Users/jill.moreno/jill-dashboard-ux-designs/TESTING-LINKS.md" target="_blank" rel="noopener">Internal — testing links &amp; the rec-card A/B arms</a><p class="desc">The per-arm pinned builds, and the note that assignment + analytics aren’t wired yet.</p><span class="host">repo · testing</span></div></div>
+            <div class="src"><span class="fav">NN</span><div class="body"><a class="title" href="https://www.nngroup.com/articles/illusion-of-completeness/" target="_blank" rel="noopener">The Illusion of Completeness</a><p class="desc">Why too few visible items reads as “that’s everything” — the risk the taller cards introduce.</p><span class="host">nngroup.com</span></div></div>
+          </div>
+          <div class="tags"><span class="chip">Card density</span><span class="chip">Discovery vs. decision</span><span class="chip">Recommended for You</span><span class="chip">Information scent</span><span class="chip">Needs validation</span><span class="chip">All brands</span></div>
+        </article>
+
+        <!-- Q: carousel -->
+        <article class="q" id="q-home-carousel">
+          <p class="q-eyebrow">Component standard · Rules <a class="permalink" href="#q-home-carousel" title="Copy shareable link to this decision"><span class="pl-ico" aria-hidden="true">🔗</span><span class="pl-txt">Copy link</span></a></p>
+          <h3>What are the rules of the Carousel component?</h3>
+          <div class="verdict"><span class="tag">Rule of thumb</span><p><b>Use a carousel only for a short, related set the learner browses at their own pace — and put them in control.</b> No auto-advance without a pause control, never bury important content in later slides, always signal there's more off-screen. If a set is large or every item matters, use a grid or list.</p></div>
+          <h4>Context</h4>
+          <p>We use carousels in the Recommended / Jump Back In shelves and the What's New featured row. Worth noting: our existing What's New featured carousel already follows the core rule — <b>manual prev/next, no auto-advance or timers</b> — so this mostly codifies what we already do right.</p>
+          <h4>When to use a carousel — and when not to</h4>
+          <ul class="ruleset"><li>Use it for a <b>short, thematically-related set</b> of roughly equal priority.</li><li class="no"><b>Don't</b> make it the <b>only</b> path to important content — that needs a non-carousel home too.</li><li class="no"><b>Don't</b> use one for a large set — past ~a dozen items, switch to a list or grid.</li></ul>
+          <h4>Motion &amp; controls</h4>
+          <ul class="ruleset"><li><b>Default to no auto-advance.</b> Manual control beats auto-rotation; most users never engage past the first slide.</li><li>If it <b>must</b> auto-rotate, it <b>must</b> have a visible <b>Pause/Stop</b> and pause on hover/focus (WCAG 2.2.2, motion &gt; 5s).</li><li><b>Always-visible arrows</b> (not hover-only) plus <b>swipe</b> on touch; large targets, never tiny dots as the only control.</li><li>Respect <b>prefers-reduced-motion</b>.</li></ul>
+          <h4>Discoverability</h4>
+          <ul class="ruleset"><li><b>Peek the next item off the right edge</b> — the strongest "there's more" cue.</li><li>Treat <b>dots as decoration, not the signifier</b>.</li><li>Keep the set <b>reachable in ~3–4 steps</b> and pair with a <b>"See all →"</b> link.</li></ul>
+          <h4>Accessibility</h4>
+          <ul class="ruleset"><li><b>Fully keyboard operable</b>; use the <b>ARIA carousel pattern</b> and announce slide changes politely.</li></ul>
+          <div class="callout"><span class="k">The bigger question — do we even need a carousel?</span><p>Carousels consistently underperform static content. Before reaching for one, ask whether a <b>controllable shelf</b> or a plain <b>grid</b> does the job better. Reserve the auto-rotating banner for low-stakes marketing.</p></div>
+          <div class="sources"><h4>Research &amp; sources</h4>
+            <div class="src"><span class="fav">NN</span><div class="body"><a class="title" href="https://www.nngroup.com/articles/designing-effective-carousels/" target="_blank" rel="noopener">Carousel Usability: Designing an Effective UI</a><p class="desc">Manual control over auto-rotation, strong signifiers, priority ordering.</p><span class="host">nngroup.com</span></div></div>
+            <div class="src"><span class="fav">NN</span><div class="body"><a class="title" href="https://www.nngroup.com/articles/mobile-carousels/" target="_blank" rel="noopener">Carousels on Mobile Devices</a><p class="desc">Swipe, half-visible items as signifiers, reachable in 3–4 steps.</p><span class="host">nngroup.com</span></div></div>
+            <div class="src"><span class="fav">W3</span><div class="body"><a class="title" href="https://www.w3.org/WAI/WCAG21/Understanding/pause-stop-hide.html" target="_blank" rel="noopener">WCAG 2.2.2: Pause, Stop, Hide</a><p class="desc">Auto-motion &gt; 5s must offer pause/stop/hide.</p><span class="host">w3.org</span></div></div>
+            <div class="src"><span class="fav">W3</span><div class="body"><a class="title" href="https://www.w3.org/WAI/ARIA/apg/patterns/carousel/" target="_blank" rel="noopener">ARIA Authoring Practices — Carousel Pattern</a><p class="desc">Reference keyboard interaction, roles, and labeling.</p><span class="host">w3.org</span></div></div>
+          </div>
+          <div class="tags"><span class="chip">Carousel</span><span class="chip">Auto-rotation</span><span class="chip">Accessibility</span><span class="chip">WCAG 2.2.2</span><span class="chip">All brands</span></div>
+        </article>
+
+
+        <!-- Q: eyebrow -->
+        <article class="q" id="q-home-eyebrow">
+          <p class="q-eyebrow">Decided · Ported from review <a class="permalink" href="#q-home-eyebrow" title="Copy shareable link to this decision"><span class="pl-ico" aria-hidden="true">🔗</span><span class="pl-txt">Copy link</span></a></p>
+          <h3>Should the section eyebrow labels ("LEARNING PATH", "WHAT'S NEW") be made more prominent?</h3>
+          <div class="verdict"><span class="tag">Decision</span><p><b>No — keep the eyebrows subordinate.</b> Their job is to orient the eye into the important content (the pathway title, the CTA), not to be the focal point. Amplifying them flattens the hierarchy that points learners at what matters.</p></div>
+          <h4>Why — the reasoning</h4>
+          <p>Eyebrow text sits <b>physically</b> at the top but occupies a <b>secondary place in the information hierarchy</b> — <i>position and emphasis are different axes.</i> Design guidance is explicit that an eyebrow's visual weight "must be subordinated to the headline," is typically <b>12–14px</b>, and exists for "context and categorization, never to convey critical information." Keeping it small is what lets it work: the eye catches the little label first for a one-word orientation ("What's New"), then hands off to the larger, higher-contrast title and CTA. Enlarging it to match its top position breaks that hand-off and makes the label compete with the content it introduces.</p>
+          <div class="sources"><h4>Research &amp; sources</h4>
+            <div class="src"><span class="fav">HR</span><div class="body"><a class="title" href="https://hightechrenew.com/eyebrow-web-design/" target="_blank" rel="noopener">Mastering the Eyebrow Heading — High-Tech Renew</a><p class="desc">Eyebrow must be subordinated to the headline; small size is what lets it prime rather than compete.</p><span class="host">hightechrenew.com</span></div></div>
+            <div class="src"><span class="fav">UM</span><div class="body"><a class="title" href="https://uxmovement.com/content/increasing-headline-clicks-with-eyebrow-text/" target="_blank" rel="noopener">Increasing Headline Clicks with Eyebrow Text — UX Movement</a><p class="desc">The eyebrow orients the reader into the headline; it's context, not the focal point.</p><span class="host">uxmovement.com</span></div></div>
+            <div class="src"><span class="fav int">◆</span><div class="body"><a class="title" href="computer:///Users/jill.moreno/jill-dashboard-ux-designs/explorations/attention-hierarchy/dashboard-hero-research.md" target="_blank" rel="noopener">Internal — Dashboard hero research (Comment 2)</a><p class="desc">Team response: disagree with amplifying headlines; keep eyebrows subordinate.</p><span class="host">repo · decision record</span></div></div>
+          </div>
+          <div class="tags"><span class="chip">Eyebrow text</span><span class="chip">Visual hierarchy</span><span class="chip">Typography</span></div>
+        </article>
+
+
+        <!-- Q: NEW tag -->
+        <article class="q" id="q-home-new-tag">
+          <p class="q-eyebrow">Component standard · Rules <a class="permalink" href="#q-home-new-tag" title="Copy shareable link to this decision"><span class="pl-ico" aria-hidden="true">🔗</span><span class="pl-txt">Copy link</span></a></p>
+          <h3>How should the NEW tag be used on cards?</h3>
+          <div class="verdict"><span class="tag">Standard</span><p><b>Use it selectively.</b> A NEW tag is useful only if it stays rare. Its single biggest risk is overuse — the moment it's on most cards, it stops being a signal.</p></div>
+          <h4>The rules (apply to every card badge)</h4>
+          <ul class="ruleset">
+            <li><b>Cap how much of a set is tagged NEW at once</b> — roughly the top 10–15%.</li>
+            <li><b>Time-limit it</b> (e.g. 30–60 days) so it ages off on its own instead of becoming permanent wallpaper.</li>
+            <li class="no"><b>Never stack or duplicate</b> — at most one meaningful badge beyond the resource-type label.</li>
+            <li><b>Keep it secondary</b> to the cover image and title.</li>
+            <li>Only badge a <b>clear, uncommon status</b> — if a badge applies to most items, it isn't a signal. If it doesn't change whether a learner clicks, drop it.</li>
+          </ul>
+          <div class="sources"><h4>Research &amp; sources</h4>
+            <div class="src"><span class="fav">SI</span><div class="body"><a class="title" href="https://smart-interface-design-patterns.com/articles/badges-chips-tags-pills/" target="_blank" rel="noopener">Badges vs. Chips vs. Tags vs. Pills — Smart Interface Design Patterns</a><p class="desc">Tags denote a state/status; they earn their place only when information-bearing.</p><span class="host">smart-interface-design-patterns.com</span></div></div>
+            <div class="src"><span class="fav">PL</span><div class="body"><a class="title" href="https://journals.plos.org/plosone/article?id=10.1371%2Fjournal.pone.0270888" target="_blank" rel="noopener">Effects of badge notifications on UX — PLOS One</a><p class="desc">Badges draw attention via salience — rationing preserves that effect.</p><span class="host">plos.org</span></div></div>
+            <div class="src"><span class="fav int">◆</span><div class="body"><a class="title" href="computer:///Users/jill.moreno/jill-dashboard-ux-designs/explorations/attention-hierarchy/dashboard-hero-research.md" target="_blank" rel="noopener">Internal — Dashboard hero research (Comment 6 + badging guidelines)</a><p class="desc">Team response: somewhat agree; the cap / time-limit / no-stacking rules for all card badges.</p><span class="host">repo · decision record</span></div></div>
+          </div>
+          <div class="tags"><span class="chip">Badging &amp; tags</span><span class="chip">NEW tag</span><span class="chip">Salience</span><span class="chip">All brands</span></div>
+        </article>
+
+        <!-- Q: hero photo -->
+        <article class="q" id="q-home-hero-photo">
+          <p class="q-eyebrow">Decided · Ported from review <a class="permalink" href="#q-home-hero-photo" title="Copy shareable link to this decision"><span class="pl-ico" aria-hidden="true">🔗</span><span class="pl-txt">Copy link</span></a></p>
+          <h3>Can the hero support a photo background with a color / opacity overlay?</h3>
+          <div class="verdict"><span class="tag">Decision</span><p><b>Yes — but constrain it.</b> Support a photo background <b>with a fixed scrim</b> (and/or a small palette of contrast-validated overlay colors). Fully open photo + open color customization can't guarantee legible text, so ship the constrained MVP first and expand later.</p></div>
+          <h4>Why — the reasoning</h4>
+          <p>The overlay is the <b>mechanism</b> that keeps text legible on a photo. WCAG 1.4.3 requires <b>4.5:1</b> for normal text (3:1 for large), and that applies over images just as over a solid fill. The complication: contrast <b>varies across a photo</b> — a headline readable over a dark region can vanish over a bright one. The recommended fix is exactly the requested scrim: a semi-transparent layer at roughly <b>20–40% opacity</b> that quiets the background into a consistent, high-contrast surface. Because an uploaded photo can be anything, a <b>fixed scrim</b> guarantees legibility with far less engineering and QA than open customization.</p>
+          <div class="sources"><h4>Research &amp; sources</h4>
+            <div class="src"><span class="fav">W3</span><div class="body"><a class="title" href="https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html" target="_blank" rel="noopener">WCAG 1.4.3: Contrast (Minimum)</a><p class="desc">4.5:1 normal / 3:1 large text — including text over images.</p><span class="host">w3.org</span></div></div>
+            <div class="src"><span class="fav">NN</span><div class="body"><a class="title" href="https://www.nngroup.com/articles/text-over-images/" target="_blank" rel="noopener">Ensure High Contrast for Text Over Images — NN/g</a><p class="desc">Test where contrast is lowest; be ready for any image.</p><span class="host">nngroup.com</span></div></div>
+            <div class="src"><span class="fav">SM</span><div class="body"><a class="title" href="https://www.smashingmagazine.com/2023/08/designing-accessible-text-over-images-part1/" target="_blank" rel="noopener">Designing Accessible Text Over Images — Smashing</a><p class="desc">A ~20–40% scrim creates a consistent high-contrast surface.</p><span class="host">smashingmagazine.com</span></div></div>
+            <div class="src"><span class="fav int">◆</span><div class="body"><a class="title" href="computer:///Users/jill.moreno/jill-dashboard-ux-designs/explorations/attention-hierarchy/dashboard-hero-research.md" target="_blank" rel="noopener">Internal — Dashboard hero research (Comment 4)</a><p class="desc">Team response: agree; argues for a constrained overlay MVP over open customization.</p><span class="host">repo · decision record</span></div></div>
+          </div>
+          <div class="tags"><span class="chip">Hero background</span><span class="chip">Contrast</span><span class="chip">WCAG 1.4.3</span><span class="chip">MVP scope</span></div>
+        </article>
+
+
+        <!-- Q: completion gauge -->
+        <article class="q" id="q-home-completion-gauge">
+          <p class="q-eyebrow">Open question · Data-viz <a class="permalink" href="#q-home-completion-gauge" title="Copy shareable link to this decision"><span class="pl-ico" aria-hidden="true">🔗</span><span class="pl-txt">Copy link</span></a></p>
+          <h3>How should the dashboard show course completion — a donut / gauge, or a bar?</h3>
+          <div class="verdict"><span class="tag">Recommendation</span><p><b>Default to a linear / stacked bar for progress; use a half-donut gauge only as an at-a-glance hero flourish, always paired with the exact number.</b> Never let the arc alone carry the value — a ring looks richer but reads less precisely than a bar.</p></div>
+          <h4>Context</h4>
+          <p>The Courses widget explored three chart shapes: a <b>tri-segment donut</b> (Variant B), a <b>half-donut gauge</b> (Option 4), and a <b>horizontal stacked bar</b> (Option 2). All show the same thing — how many courses are completed / in-progress / not started — in a widget that has to sit in the tight 3-up dashboard row.</p>
+          <h4>Why — the reasoning</h4>
+          <ol class="reason">
+            <li><h5>People read length more accurately than angle or area.</h5><p>A bar's filled length maps straight to a percentage, so learners judge "how far along" precisely and can compare segments at a glance. Rings and gauges ask the eye to judge angle/arc, which is measurably less accurate — the classic perceptual finding behind "prefer bars for values you need to read."</p></li>
+            <li><h5>Gauges are for "red-light / green-light," not comparison or precision.</h5><p>Gauge charts shine for a single metric against a target at a glance, but they "consume significant real estate for a single value," and lining several up "makes comparisons hard to read." For a status <i>mix</i> in a compact widget, a stacked bar is more efficient.</p></li>
+            <li><h5>Always show the number.</h5><p>Whatever the shape, put the exact count / percent in or beside it — the chart is the glance, the number is the truth. A stacked bar has the bonus of showing the whole mix (completed · in-progress · not started) in one 12px strip.</p></li>
+          </ol>
+          <h4>What we recommend</h4>
+          <ul class="rec-list"><li><b>Default</b> the Courses / progress widgets to a <b>horizontal stacked bar</b> (mix) or linear progress (single value) — compact enough for the 3-up row and precise.</li><li>A <b>half-donut gauge</b> is fine as a single hero KPI when space allows and it's paired with the number in the well — not for comparing segments.</li><li>Build it through our <b>data-viz system</b> — consistent palette, legible in light and dark, and segments labeled so meaning isn't carried by color alone (see Foundations · Accessibility).</li></ul>
+          <div class="sources"><h4>Research &amp; sources</h4>
+            <div class="src"><span class="fav">DM</span><div class="body"><a class="title" href="https://www.domo.com/learn/charts/gauge-chart" target="_blank" rel="noopener">Gauge Charts: When to Use and When to Avoid — Domo</a><p class="desc">Gauges suit a single metric vs. target; bars are superior for comparison and gauges waste space for one value.</p><span class="host">domo.com</span></div></div>
+            <div class="src"><span class="fav">DM</span><div class="body"><a class="title" href="https://www.domo.com/learn/charts/radial-bar-chart" target="_blank" rel="noopener">Radial Bar Charts: When to Use Them — Domo</a><p class="desc">Radial layouts look striking but distort length, making precise reading and comparison harder than a linear bar.</p><span class="host">domo.com</span></div></div>
+            <div class="src"><span class="fav int">◆</span><div class="body"><a class="title" href="computer:///Users/jill.moreno/jill-dashboard-ux-designs/explorations/courses-widget-redesign/chart-explorations.html" target="_blank" rel="noopener">Internal — Courses widget chart explorations</a><p class="desc">The three explored shapes (donut / half-donut gauge / stacked bar) and their implementation prompts.</p><span class="host">repo · exploration</span></div></div>
+          </div>
+          <div class="tags"><span class="chip">Data-viz</span><span class="chip">Progress</span><span class="chip">Gauge vs. bar</span><span class="chip">Dashboard widget</span></div>
+        </article>
+      </section>
+
+      <!-- =================== PAGE: NAVIGATION =================== -->
+      <section class="page" id="navigation">
+        <div class="page-head">
+          <p class="eyebrow">Page</p>
+          <h2>Navigation</h2>
+          <p class="lede">The left-nav rail is the learner's mental model of the platform — where they are and where they can go. Decisions here govern what belongs in the primary rail, how it's colored, and how the active destination is shown.</p>
+        </div>
+        <hr class="divider" />
+
+        <!-- Q: external links -->
+        <article class="q" id="q-nav-external">
+          <p class="q-eyebrow">Decided · Ported from decision doc <a class="permalink" href="#q-nav-external" title="Copy shareable link to this decision"><span class="pl-ico" aria-hidden="true">🔗</span><span class="pl-txt">Copy link</span></a></p>
+          <h3>Should external website links (Blog, Podcast, Community) live in the primary left nav?</h3>
+          <div class="verdict"><span class="tag">Recommendation</span><p><b>No — keep the primary rail internal.</b> Move external destinations (Blog, Appraisal Podcast, Community) to a footer/utility zone or a clearly separated "Community &amp; More" cluster. Reserve the left nav for destinations that keep the learner inside the platform.</p></div>
+          <h4>Why — the reasoning</h4>
+          <ol class="reason">
+            <li><h5>Primary navigation should stay within one consistent context.</h5><p>Established guidance is that primary nav should only link to destinations that share the same navigational context. The moment a link lands on a page where the nav is different — or gone — the learner loses orientation and their way back. External sites don't carry our nav.</p></li>
+            <li><h5>Don't mix content destinations with utility links.</h5><p>Interleaving high-level destinations (Learning Paths, Courses, Certificates) with ancillary links (a blog, a podcast, a social community) makes the rail harder to scan. Today's "Explore" group does exactly this.</p></li>
+            <li><h5>Silent hand-offs violate expectations and accessibility guidance.</h5><p>Leaving the site with no warning is disorienting for everyone and a barrier for AT users. WCAG-aligned practice is to explicitly signal external / new-tab destinations — a burden easier to avoid by relocating them.</p></li>
+            <li><h5>External rows dilute our highest-value in-app paths.</h5><p>Every row competes for attention. Offsite links sitting shoulder-to-shoulder with conversion paths like "Become a Member" dilute the paths we most want learners to take.</p></li>
+          </ol>
+          <h4>What we recommend</h4>
+          <ul class="rec-list"><li><b>Keep the rail internal</b> — in-app destinations only.</li><li><b>Relocate external destinations</b> to a footer/utility zone or a separated "Community &amp; More" cluster.</li><li><b>If any external link must stay, signal it</b> — visible external/new-tab indicator with an accessible name; never a silent hand-off.</li><li><b>Protect conversion paths</b> — "Become a Member" reads as a first-class in-app destination.</li></ul>
+          <div class="sources"><h4>Research &amp; sources</h4>
+            <div class="src"><span class="fav">NN</span><div class="body"><a class="title" href="https://www.nngroup.com/articles/navigation-cues-accessibility/" target="_blank" rel="noopener">Navigation &amp; consistency — NN/g</a><p class="desc">Primary navigation should stay within a consistent context; unexpected offsite jumps disorient.</p><span class="host">nngroup.com</span></div></div>
+            <div class="src"><span class="fav">W3</span><div class="body"><a class="title" href="https://www.w3.org/WAI/WCAG21/Techniques/general/G201" target="_blank" rel="noopener">WCAG G201: Giving users advance warning of a new window</a><p class="desc">Signal links that open a new window / leave the site.</p><span class="host">w3.org</span></div></div>
+            <div class="src"><span class="fav int">◆</span><div class="body"><a class="title" href="computer:///Users/jill.moreno/jill-dashboard-ux-designs/external-links-in-left-nav.md" target="_blank" rel="noopener">Internal — Why we should not put external links in the left nav</a><p class="desc">The full five-point argument and recommended relocation.</p><span class="host">repo · decision record</span></div></div>
+          </div>
+          <div class="tags"><span class="chip">Information architecture</span><span class="chip">Left nav</span><span class="chip">New-tab / external</span><span class="chip">Conversion</span></div>
+        </article>
+
+
+        <!-- Q: nav selected state -->
+        <article class="q" id="q-nav-selected">
+          <p class="q-eyebrow">Component standard · Explored <a class="permalink" href="#q-nav-selected" title="Copy shareable link to this decision"><span class="pl-ico" aria-hidden="true">🔗</span><span class="pl-txt">Copy link</span></a></p>
+          <h3>How should the active / selected nav item be indicated?</h3>
+          <div class="verdict"><span class="tag">Standard</span><p><b>Use a multi-channel selected state — an accent bar + weight + background fill — and expose it programmatically with <code>aria-current</code>.</b> Never rely on color alone to say "you are here."</p></div>
+          <h4>Why — the reasoning</h4>
+          <p>Six selected-state options were explored (accent left-bar, wash, tint, solid fill, pill, icon-accent). The principle across all of them: the active row needs <b>redundant cues</b> — a shape/position change (the left accent bar), a weight change (bold label), and a background fill — so the state survives for color-blind users and low-contrast conditions. Color-only selection fails WCAG 1.4.1 (Use of Color). And the state must be <b>machine-readable</b>: <code>aria-current="page"</code> so assistive tech announces the current location, not just a visual tint.</p>
+          <div class="sources"><h4>Research &amp; sources</h4>
+            <div class="src"><span class="fav">W3</span><div class="body"><a class="title" href="https://www.w3.org/WAI/WCAG21/Understanding/use-of-color.html" target="_blank" rel="noopener">WCAG 1.4.1: Use of Color</a><p class="desc">Color can't be the only means of conveying a state.</p><span class="host">w3.org</span></div></div>
+            <div class="src"><span class="fav">MD</span><div class="body"><a class="title" href="https://developer.mozilla.org/en-US/docs/Web/Accessibility/ARIA/Attributes/aria-current" target="_blank" rel="noopener">aria-current — MDN</a><p class="desc">Programmatically marks the current item in a set for assistive tech.</p><span class="host">developer.mozilla.org</span></div></div>
+            <div class="src"><span class="fav int">◆</span><div class="body"><a class="title" href="computer:///Users/jill.moreno/jill-dashboard-ux-designs/nav-selected-state-options.html" target="_blank" rel="noopener">Internal — Nav selected-state options (A–F)</a><p class="desc">Six treatments explored; the shared standard is redundant cues + accent fill.</p><span class="host">repo · exploration</span></div></div>
+          </div>
+          <div class="tags"><span class="chip">Left nav</span><span class="chip">Selected state</span><span class="chip">Use of color</span><span class="chip">aria-current</span></div>
+        </article>
+      </section>
+
+      <!-- =================== PAGE: ACCESSIBILITY =================== -->
+      <section class="page" id="accessibility">
+        <div class="page-head">
+          <p class="eyebrow">Foundations</p>
+          <h2>Accessibility</h2>
+          <p class="lede">Cross-cutting WCAG 2.1 / 2.2 AA standards that apply to every page, distilled from our dashboard-rebrand accessibility audits. Fix these at the token / shared-component level and they propagate everywhere.</p>
+        </div>
+        <hr class="divider" />
+
+        <!-- Q: focus -->
+        <article class="q" id="q-a11y-focus">
+          <p class="q-eyebrow">Standard · From audit <a class="permalink" href="#q-a11y-focus" title="Copy shareable link to this decision"><span class="pl-ico" aria-hidden="true">🔗</span><span class="pl-txt">Copy link</span></a></p>
+          <h3>Every interactive control needs a visible focus indicator.</h3>
+          <div class="verdict"><span class="tag">Standard</span><p><b>Ship an explicit <code>:focus-visible</code> ring on all custom controls</b> — including the rail nav rows, profile button, and expanders. Custom-painted buttons on the dark nav surface can't rely on the browser default ring; its visibility is inconsistent across OS/browser.</p></div>
+          <h4>Why / where</h4>
+          <p>WCAG 2.4.7 (Focus Visible) requires a visible keyboard-focus indicator. Our codebase already has the convention (<code>.cre-learning-path-card:focus-visible</code>, table rows, links) — the rail is the one high-traffic control that opts out, so keyboard users can lose their place in the primary navigation. Mirror the existing ring pattern via a scoped token rule.</p>
+          <div class="sources"><h4>Research &amp; sources</h4>
+            <div class="src"><span class="fav">W3</span><div class="body"><a class="title" href="https://www.w3.org/WAI/WCAG21/Understanding/focus-visible.html" target="_blank" rel="noopener">WCAG 2.4.7: Focus Visible</a><p class="desc">A visible focus indicator is required for keyboard operation.</p><span class="host">w3.org</span></div></div>
+            <div class="src"><span class="fav int">◆</span><div class="body"><a class="title" href="computer:///Users/jill.moreno/jill-dashboard-ux-designs/a11y-review-2026-08-03.md" target="_blank" rel="noopener">Internal — A11y review (finding S-1)</a><p class="desc">Rail nav rows fall back to the UA default ring; add an explicit scoped ring.</p><span class="host">repo · audit</span></div></div>
+          </div>
+          <div class="tags"><span class="chip">Focus visible</span><span class="chip">Keyboard</span><span class="chip">WCAG 2.4.7</span><span class="chip">Systemic</span></div>
+        </article>
+
+        <!-- Q: contrast tokens -->
+        <article class="q" id="q-a11y-contrast-tokens">
+          <p class="q-eyebrow">Standard · From audit <a class="permalink" href="#q-a11y-contrast-tokens" title="Copy shareable link to this decision"><span class="pl-ico" aria-hidden="true">🔗</span><span class="pl-txt">Copy link</span></a></p>
+          <h3>Accent text on dark surfaces must swap to lighter ramp stops.</h3>
+          <div class="verdict"><span class="tag">Standard</span><p><b>Drive contrast-aware color through tokens.</b> Dark mode re-skins surfaces to each brand's deep-navy ramp but often leaves accent text (primary / secondary / cta / success) on its original mid-ramp stops, which then collapse in contrast. On dark surfaces, accent text should use the <b>lighter stops (*-200 / *-300)</b>.</p></div>
+          <h4>Why / where</h4>
+          <p>WCAG 1.4.3 (4.5:1 text) and 1.4.11 (3:1 non-text) apply in every theme. A precedent already exists — <code>ExploreLink</code> is contrast-aware (light vs. dark stop-swap) — and should be generalized to eyebrows, inline links, status pills, stat values, tags, and tile type-labels rather than patched per component, so all brands benefit at once.</p>
+          <div class="sources"><h4>Research &amp; sources</h4>
+            <div class="src"><span class="fav">W3</span><div class="body"><a class="title" href="https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html" target="_blank" rel="noopener">WCAG 1.4.3: Contrast (Minimum)</a><p class="desc">4.5:1 normal / 3:1 large text, in light and dark.</p><span class="host">w3.org</span></div></div>
+            <div class="src"><span class="fav">W3</span><div class="body"><a class="title" href="https://www.w3.org/WAI/WCAG21/Understanding/non-text-contrast.html" target="_blank" rel="noopener">WCAG 1.4.11: Non-text Contrast</a><p class="desc">3:1 for UI components and graphical objects.</p><span class="host">w3.org</span></div></div>
+            <div class="src"><span class="fav int">◆</span><div class="body"><a class="title" href="computer:///Users/jill.moreno/jill-dashboard-ux-designs/Dashboard-Rebrand-A11y-Audit-2026-07-13.md" target="_blank" rel="noopener">Internal — Dashboard Rebrand A11y Audit (root cause)</a><p class="desc">Dark-mode accent text collapse; generalize the ExploreLink stop-swap through tokens.</p><span class="host">repo · audit</span></div></div>
+          </div>
+          <div class="tags"><span class="chip">Contrast</span><span class="chip">Dark mode</span><span class="chip">Design tokens</span><span class="chip">WCAG 1.4.3 / 1.4.11</span></div>
+        </article>
+
+        <!-- Q: color independence -->
+        <article class="q" id="q-a11y-color">
+          <p class="q-eyebrow">Standard · From audit <a class="permalink" href="#q-a11y-color" title="Copy shareable link to this decision"><span class="pl-ico" aria-hidden="true">🔗</span><span class="pl-txt">Copy link</span></a></p>
+          <h3>Never encode meaning in color alone.</h3>
+          <div class="verdict"><span class="tag">Standard</span><p><b>Every state carries a second cue.</b> Status, selection, validity, and chart series must be distinguishable without relying on color — pair color with an icon, text label, shape, or weight.</p></div>
+          <h4>Why / where</h4>
+          <p>WCAG 1.4.1 (Use of Color) requires that color isn't the only means of conveying information. This governs status pills (Completed / Expired / In Progress), the selected nav state (see Navigation), certificate validity, and any data-viz that colors by series. The team has already done deliberate color-independence work; this entry makes it the explicit bar for new surfaces.</p>
+          <div class="sources"><h4>Research &amp; sources</h4>
+            <div class="src"><span class="fav">W3</span><div class="body"><a class="title" href="https://www.w3.org/WAI/WCAG21/Understanding/use-of-color.html" target="_blank" rel="noopener">WCAG 1.4.1: Use of Color</a><p class="desc">Color can't be the only visual means of conveying information.</p><span class="host">w3.org</span></div></div>
+            <div class="src"><span class="fav int">◆</span><div class="body"><a class="title" href="computer:///Users/jill.moreno/jill-dashboard-ux-designs/Dashboard-Rebrand-A11y-Audit-2026-07-13.md" target="_blank" rel="noopener">Internal — Dashboard Rebrand A11y Audit</a><p class="desc">Documents the color-independence work already applied across the shell.</p><span class="host">repo · audit</span></div></div>
+          </div>
+          <div class="tags"><span class="chip">Use of color</span><span class="chip">Status</span><span class="chip">Data-viz</span><span class="chip">WCAG 1.4.1</span></div>
+        </article>
+
+        <!-- Q: motion -->
+        <article class="q" id="q-a11y-motion">
+          <p class="q-eyebrow">Standard · From audit <a class="permalink" href="#q-a11y-motion" title="Copy shareable link to this decision"><span class="pl-ico" aria-hidden="true">🔗</span><span class="pl-txt">Copy link</span></a></p>
+          <h3>Respect reduced motion; no auto-advancing motion without control.</h3>
+          <div class="verdict"><span class="tag">Standard</span><p><b>Honor <code>prefers-reduced-motion</code>, and never auto-move content without a control.</b> Non-essential animation is dropped for users who ask for less motion; any auto-advancing content needs a pause/stop/hide affordance. Our carousels are manual by standard.</p></div>
+          <h4>Why / where</h4>
+          <p>WCAG 2.2.2 (Pause, Stop, Hide) covers any motion that starts automatically and runs more than 5 seconds; WCAG 2.3.3 (Animation from Interactions) says non-essential motion should be disable-able. The shell already handles <code>prefers-reduced-motion</code> and ships no auto-advancing carousels — this entry locks that in as the standard so new components inherit it (see the Carousel rules on Home).</p>
+          <div class="sources"><h4>Research &amp; sources</h4>
+            <div class="src"><span class="fav">W3</span><div class="body"><a class="title" href="https://www.w3.org/WAI/WCAG21/Understanding/pause-stop-hide.html" target="_blank" rel="noopener">WCAG 2.2.2: Pause, Stop, Hide</a><p class="desc">Auto-motion &gt; 5s must be pausable/stoppable/hideable.</p><span class="host">w3.org</span></div></div>
+            <div class="src"><span class="fav">W3</span><div class="body"><a class="title" href="https://www.w3.org/WAI/WCAG21/Understanding/animation-from-interactions.html" target="_blank" rel="noopener">WCAG 2.3.3: Animation from Interactions</a><p class="desc">Let users turn off non-essential motion.</p><span class="host">w3.org</span></div></div>
+            <div class="src"><span class="fav int">◆</span><div class="body"><a class="title" href="computer:///Users/jill.moreno/jill-dashboard-ux-designs/a11y-review-2026-08-03.md" target="_blank" rel="noopener">Internal — A11y review</a><p class="desc">Notes prefers-reduced-motion handling and no auto-advancing carousels as existing strengths.</p><span class="host">repo · audit</span></div></div>
+          </div>
+          <div class="tags"><span class="chip">Motion</span><span class="chip">Reduced motion</span><span class="chip">Auto-advance</span><span class="chip">WCAG 2.2.2 / 2.3.3</span></div>
+        </article>
+
+        <!-- Q: structure & targets -->
+        <article class="q" id="q-a11y-structure">
+          <p class="q-eyebrow">Standard · From audit <a class="permalink" href="#q-a11y-structure" title="Copy shareable link to this decision"><span class="pl-ico" aria-hidden="true">🔗</span><span class="pl-txt">Copy link</span></a></p>
+          <h3>Use real headings and adequate target sizes.</h3>
+          <div class="verdict"><span class="tag">Standard</span><p><b>Convey structure programmatically, and size touch targets adequately.</b> Section structure that's only visual (styled <code>&lt;span&gt;</code>s) leaves AT users without the section map sighted users get — use real headings in a sensible order. Interactive targets meet the size floor (24px AA minimum; 44px best practice), including inline links.</p></div>
+          <h4>Why / where</h4>
+          <p>WCAG 1.3.1 (Info &amp; Relationships) requires that visual structure is also available programmatically — the dashboard overview currently conveys its section structure with styled spans instead of headings, and heading order has gaps. WCAG 2.5.8 sets a 24px minimum target size (44px is the AAA / mobile best practice we hold to); the audits flagged inline-link target height specifically.</p>
+          <div class="sources"><h4>Research &amp; sources</h4>
+            <div class="src"><span class="fav">W3</span><div class="body"><a class="title" href="https://www.w3.org/WAI/WCAG21/Understanding/info-and-relationships.html" target="_blank" rel="noopener">WCAG 1.3.1: Info and Relationships</a><p class="desc">Structure conveyed visually must be available programmatically (real headings).</p><span class="host">w3.org</span></div></div>
+            <div class="src"><span class="fav">W3</span><div class="body"><a class="title" href="https://www.w3.org/WAI/WCAG22/Understanding/target-size-minimum.html" target="_blank" rel="noopener">WCAG 2.5.8: Target Size (Minimum)</a><p class="desc">24px minimum interactive target; 44px is the best-practice bar.</p><span class="host">w3.org</span></div></div>
+            <div class="src"><span class="fav int">◆</span><div class="body"><a class="title" href="computer:///Users/jill.moreno/jill-dashboard-ux-designs/Dashboard-Rebrand-A11y-Audit-2026-07-13.md" target="_blank" rel="noopener">Internal — Rebrand A11y Audit (#8 heading order, #9 inline-link target)</a><p class="desc">Heading order gaps and inline-link target height flagged.</p><span class="host">repo · audit</span></div></div>
+          </div>
+          <div class="tags"><span class="chip">Headings</span><span class="chip">Target size</span><span class="chip">Screen readers</span><span class="chip">WCAG 1.3.1 / 2.5.8</span></div>
+        </article>
+      </section>
+
+      <!-- =================== PAGE: LEARNING PATH =================== -->
+      <section class="page" id="learning-path">
+        <div class="page-head">
+          <p class="eyebrow">Page</p>
+          <h2>Learning Path</h2>
+          <p class="lede">Where a learner sees the pathway they're on and switches between the paths they hold. Decisions here are about how "all my paths" is surfaced — a quick in-context sheet vs. a full destination — and how the list holds up as the number of paths grows.</p>
+        </div>
+        <hr class="divider" />
+
+        <!-- Q: sheet vs page -->
+        <article class="q" id="q-lp-sheet-vs-page">
+          <p class="q-eyebrow">Open question · Decision <a class="permalink" href="#q-lp-sheet-vs-page" title="Copy shareable link to this decision"><span class="pl-ico" aria-hidden="true">🔗</span><span class="pl-txt">Copy link</span></a></p>
+          <h3>Should "all my learning paths" open in a slide-over sheet, or navigate to a full page?</h3>
+          <div class="verdict"><span class="tag">Recommendation</span><p><b>Both — matched to the job.</b> A slide-over sheet for quick, in-context switching from the dashboard; a full Learning Paths page for browsing and managing. Keep the sheet lightweight but scalable (search + status chips + sort) so it holds up even at 40+ paths.</p></div>
+          <h4>Context</h4>
+          <p>The dashboard's Current Learning Path widget shows a <b>"View All (N)"</b> link; clicking it opens the My Learning Paths slide-over — a pinned Selected Path, a search field, status chips (<b>Expiring soon</b> in yellow, <b>Expired</b> in red), and a Sort control. A learner may hold one path, a few, or 40+ (the <code>learning-paths-count</code> flag models one / realistic / many / lots), so both surfaces have to survive scale.</p>
+          <h4>Why — the reasoning</h4>
+          <ol class="reason">
+            <li><h5>A slide-over keeps context.</h5><p>An overlay lets a learner act — switch path, peek at status — without losing the dashboard behind it. That's the right tool for a quick, high-frequency task; a full page navigation is heavier than the job needs.</p></li>
+            <li><h5>But a sheet must scale or degrade gracefully.</h5><p>At 40+ paths, a bare list in a sheet becomes a scroll-hunt. That's exactly why the sheet bakes in search, status chips, and sort. When the task shifts from "switch" to "compare / manage many," that's the full page's job.</p></li>
+            <li><h5>Don't make the sheet the only home.</h5><p>The full Learning Paths page (grid / list / table) is the durable, linkable, sortable destination; the sheet is the express lane off the dashboard. Both exist; neither replaces the other.</p></li>
+          </ol>
+          <h4>What we recommend</h4>
+          <ul class="rec-list"><li>Dashboard <b>"View All"</b> → slide-over for quick switching, with search / filter / sort built in.</li><li>Full <b>Learning Paths page</b> for management, with the sortable table view (below) for scale.</li></ul>
+          <div class="sources"><h4>Research &amp; sources</h4>
+            <div class="src"><span class="fav">NN</span><div class="body"><a class="title" href="https://www.nngroup.com/articles/modal-nonmodal-dialog/" target="_blank" rel="noopener">Modal &amp; Nonmodal Dialogs: When &amp; How to Use — NN/g</a><p class="desc">Overlays suit short, focused tasks that benefit from keeping the underlying context visible.</p><span class="host">nngroup.com</span></div></div>
+            <div class="src"><span class="fav int">◆</span><div class="body"><a class="title" href="computer:///Users/jill.moreno/jill-dashboard-ux-designs/explorations/learning-paths-sheet/PROMPT-learning-paths-sheet.md" target="_blank" rel="noopener">Internal — My Learning Paths sheet redesign ("Option 1 refined")</a><p class="desc">Pinned Selected Path, search, status chips, and sort — designed to hold at 40+ paths.</p><span class="host">repo · exploration</span></div></div>
+          </div>
+          <div class="tags"><span class="chip">Slide-over / overlay</span><span class="chip">Context preservation</span><span class="chip">Scale</span><span class="chip">Learning Path</span></div>
+        </article>
+
+        <!-- Q: table view -->
+        <article class="q" id="q-lp-table-view">
+          <p class="q-eyebrow">Component standard · Decision <a class="permalink" href="#q-lp-table-view" title="Copy shareable link to this decision"><span class="pl-ico" aria-hidden="true">🔗</span><span class="pl-txt">Copy link</span></a></p>
+          <h3>When paths get numerous, what makes the list scannable?</h3>
+          <div class="verdict"><span class="tag">Recommendation</span><p><b>Add a true, sortable table view alongside grid and list.</b> Click-to-sort columns, status pills that aren't color-only, whole-row click targets, and dates formatted for scanning — mirroring the canonical My Courses table so behavior doesn't fork.</p></div>
+          <h4>Why — the reasoning</h4>
+          <ol class="reason">
+            <li><h5>Tables win when the task is compare / find across many rows.</h5><p>Once a learner has many paths, the job is triage on shared attributes — title, status, hours, license expiry, progress. Sortable columns let them pull "expiring soonest" or "least progress" to the top, which cards and lists can't do as directly.</p></li>
+            <li><h5>Mirror the existing My Courses table.</h5><p>Reusing the same chrome, tokens, and patterns means learners transfer knowledge across surfaces and we maintain one table behavior, not two. The table view is a third mode on the existing grid / list toggle, and the choice persists.</p></li>
+            <li><h5>Accessibility carries over.</h5><p>Semantic <code>&lt;table&gt;</code>, status meaning not by color alone (pills with text labels), adequate row target height, and a horizontal-scroll wrapper on small screens — the Foundations standards apply here directly.</p></li>
+          </ol>
+          <div class="sources"><h4>Research &amp; sources</h4>
+            <div class="src"><span class="fav">NN</span><div class="body"><a class="title" href="https://www.nngroup.com/articles/data-tables/" target="_blank" rel="noopener">Data Tables: Design Guidelines — NN/g</a><p class="desc">Sortable columns and scannable rows support the compare-and-find task across many records.</p><span class="host">nngroup.com</span></div></div>
+            <div class="src"><span class="fav int">◆</span><div class="body"><a class="title" href="computer:///Users/jill.moreno/jill-dashboard-ux-designs/explorations/learning-paths-table/LEARNING_PATHS_TABLE_PROMPT.md" target="_blank" rel="noopener">Internal — Learning Paths "Table" view spec</a><p class="desc">A third sortable table mode mirroring MyCoursesTable — semantic table, status pills, row-click nav.</p><span class="host">repo · exploration</span></div></div>
+          </div>
+          <div class="tags"><span class="chip">Data tables</span><span class="chip">Sortability</span><span class="chip">Scannability</span><span class="chip">Consistency</span></div>
+        </article>
+      </section>
+
+      <!-- =================== PAGE: MEMBERSHIP =================== -->
+      <section class="page" id="membership">
+        <div class="page-head">
+          <p class="eyebrow">Page</p>
+          <h2>Membership</h2>
+          <p class="lede">Every surface whose appearance depends on what the learner has purchased — gated content, purchase sheets, pricing, and upgrade prompts. Decisions here govern how we ask for the upgrade and how price adapts to the learner's tier.</p>
+        </div>
+        <hr class="divider" />
+
+        <!-- Q: upsell CTA -->
+        <article class="q" id="q-mem-upsell-cta">
+          <p class="q-eyebrow">Open question · Decision <a class="permalink" href="#q-mem-upsell-cta" title="Copy shareable link to this decision"><span class="pl-ico" aria-hidden="true">🔗</span><span class="pl-txt">Copy link</span></a></p>
+          <h3>What upsell CTA pattern should gated / purchase sheets use?</h3>
+          <div class="verdict"><span class="tag">Recommendation</span><p><b>Lead with value, then one clear primary action.</b> Show the learner what they get — the course and what membership unlocks — <i>before</i> the ask. One primary CTA per state (Enroll / Add to Cart / Upgrade), honest pricing with a "$0 with membership" savings framing, and no stack of competing buttons.</p></div>
+          <h4>Context</h4>
+          <p>We explored purchase-sheet upsell layouts (options A / B) for the product sheet — the moment a non-member or lower-tier learner hits a paid or gated item.</p>
+          <h4>Why — the reasoning</h4>
+          <ol class="reason">
+            <li><h5>Show value before the ask.</h5><p>Paywall research is consistent: conversion improves when the screen first demonstrates the benefit (the content itself, what a membership unlocks). A cold "pay now" with no value framing underperforms.</p></li>
+            <li><h5>One primary CTA.</h5><p>Competing, equally-weighted buttons raise decision time and dilute the path. Make the desired action primary and let secondary options (e.g. "See plans") recede.</p></li>
+            <li><h5>Be transparent about price — and frame it.</h5><p>Show the real price alongside the savings framing ("$0 with membership" / "Save $X with Passport") rather than hiding it. Transparency builds trust <b>and</b> makes membership the obvious value.</p></li>
+            <li><h5>Trigger at the moment of intent.</h5><p>Surface the upsell on the locked / premium item the learner just reached — contextual, not a random interstitial — so the ask lands when motivation is highest.</p></li>
+          </ol>
+          <div class="sources"><h4>Research &amp; sources</h4>
+            <div class="src"><span class="fav">RC</span><div class="body"><a class="title" href="https://www.revenuecat.com/blog/growth/paywall-placement" target="_blank" rel="noopener">Optimizing Paywall Placement — RevenueCat</a><p class="desc">Contextual, moment-of-intent placement converts better than generic interstitials.</p><span class="host">revenuecat.com</span></div></div>
+            <div class="src"><span class="fav">AP</span><div class="body"><a class="title" href="https://apphud.com/blog/design-high-converting-subscription-app-paywalls" target="_blank" rel="noopener">Designing High-Converting Paywalls — Apphud</a><p class="desc">Lead with value, keep one clear primary action, be transparent about price.</p><span class="host">apphud.com</span></div></div>
+            <div class="src"><span class="fav int">◆</span><div class="body"><a class="title" href="computer:///Users/jill.moreno/jill-dashboard-ux-designs/explorations/upsell-cta-patterns/upsell-cta-comparison.html" target="_blank" rel="noopener">Internal — Upsell CTA patterns (sheet comparison A / B)</a><p class="desc">Side-by-side purchase-sheet upsell layouts with rated patterns.</p><span class="host">repo · exploration</span></div></div>
+          </div>
+          <div class="tags"><span class="chip">Upsell</span><span class="chip">Paywall</span><span class="chip">CTA</span><span class="chip">Conversion</span></div>
+        </article>
+
+        <!-- Q: tier pricing -->
+        <article class="q" id="q-mem-tier-pricing">
+          <p class="q-eyebrow">Decided · From plan <a class="permalink" href="#q-mem-tier-pricing" title="Copy shareable link to this decision"><span class="pl-ico" aria-hidden="true">🔗</span><span class="pl-txt">Copy link</span></a></p>
+          <h3>How should pricing display adapt to the learner's membership tier?</h3>
+          <div class="verdict"><span class="tag">Decision</span><p><b>Model entitlement as (product × tier), not member × non-member.</b> Resolve every product to exactly one of four commerce states — <b>included</b>, <b>priced-teaser</b>, <b>priced-upsell</b>, <b>locked</b> — each with a defined price slot and a single CTA. One resolver, one source of truth, so cards and sheets never disagree.</p></div>
+          <h4>Context</h4>
+          <p>Today the product sheet branches on a single boolean, <code>isMemberAccess</code> — members see "Included," everyone else sees a price. That binary can't express "a Lite member still pays for a Passport-only course." The tier model already exists in <code>AccountContext</code>; what's missing is per-product entitlement data (<code>includedFromTier</code>, <code>memberExclusive</code>) plus one resolver that turns <code>(product, tier)</code> into a display state.</p>
+          <h4>The four states</h4>
+          <div class="compare">
+            <div class="col"><h5>included</h5><p class="role">Product is $0 at the viewer's tier</p><ul><li>Price slot: "Included with your membership"</li><li>CTA: <b>Enroll</b></li></ul></div>
+            <div class="col"><h5>priced-teaser</h5><p class="role">Non-member, buyable à la carte</p><ul><li>Price + "$0 with membership" badge</li><li>CTA: <b>Add to Cart</b></li></ul></div>
+            <div class="col"><h5>priced-upsell</h5><p class="role">Member, but item is a higher tier</p><ul><li>Price + "$0 with Passport" / "Unlock with Passport"</li><li>CTA: <b>Add to Cart</b> / <b>Upgrade</b></li></ul></div>
+            <div class="col"><h5>locked</h5><p class="role">Member-exclusive, not buyable</p><ul><li>"Member exclusive" (no price)</li><li>CTA: <b>See membership plans</b></li></ul></div>
+          </div>
+          <h4>Why — the reasoning</h4>
+          <ol class="reason">
+            <li><h5>A binary can't express tiered reality.</h5><p>Real entitlement depends on the product's lowest-including tier and whether it's buyable at all. A member / non-member flag collapses that and produces wrong CTAs for mid-tier learners.</p></li>
+            <li><h5>Consistency across surfaces is the whole point.</h5><p>A single resolver feeding cards <i>and</i> sheets guarantees the same state, price slot, and CTA everywhere — the shared entitlement-states taxonomy, not per-surface guesses.</p></li>
+            <li><h5>Framing turns price into an upsell.</h5><p>"$0 with Passport" and "Unlock with Passport" make the tier delta legible and motivate the upgrade without hiding cost.</p></li>
+          </ol>
+          <div class="sources"><h4>Research &amp; sources</h4>
+            <div class="src"><span class="fav int">◆</span><div class="body"><a class="title" href="computer:///Users/jill.moreno/jill-dashboard-ux-designs/explorations/tier-aware-pricing-PLAN.md" target="_blank" rel="noopener">Internal — Tier-aware product pricing plan</a><p class="desc">The (product × tier) model, the four commerce states, and the single resolver.</p><span class="host">repo · plan</span></div></div>
+            <div class="src"><span class="fav int">◆</span><div class="body"><a class="title" href="computer:///Users/jill.moreno/jill-dashboard-ux-designs/CRE-Card-UI-Spec.md" target="_blank" rel="noopener">Internal — Entitlement / commerce states standard</a><p class="desc">The single source of truth for member/tier states, badges, and CTA copy across surfaces.</p><span class="host">repo · spec</span></div></div>
+            <div class="src"><span class="fav">RC</span><div class="body"><a class="title" href="https://www.revenuecat.com/blog/growth/paywall-placement" target="_blank" rel="noopener">Pricing transparency &amp; upsell framing — RevenueCat</a><p class="desc">Clear, honest price framing supports trust and conversion.</p><span class="host">revenuecat.com</span></div></div>
+          </div>
+          <div class="tags"><span class="chip">Entitlement</span><span class="chip">Pricing</span><span class="chip">Commerce states</span><span class="chip">Consistency</span><span class="chip">All brands</span></div>
+        </article>
+      </section>
+
+      <!-- =================== PAGE: ARCHIVED =================== -->
+      <section class="page" id="archived">
+        <div class="page-head">
+          <p class="eyebrow">Archive</p>
+          <h2>Archived</h2>
+          <p class="lede">Decisions that are no longer part of the active project — superseded, dropped, or out of scope. They're kept here for history rather than deleted, so the reasoning behind a retired choice is never lost. Archived entries are muted and stamped with when and why they were retired.</p>
+        </div>
+        <hr class="divider" />
+                <!-- Q: separate hero -->
+        <article class="q archived" id="q-home-separate-hero">
+          <p class="q-eyebrow"><span class="archived-badge">Archived</span> Decided · Ported from review <a class="permalink" href="#q-home-separate-hero" title="Copy shareable link to this decision"><span class="pl-ico" aria-hidden="true">🔗</span><span class="pl-txt">Copy link</span></a></p>
+          <h3>Should the Progress Tracker and What's New share one connected hero, or be visually separated?</h3>
+          <p class="archived-note">Archived · Aug 6, 2026 — removed from the active project.</p>
+          <div class="verdict"><span class="tag">Decision</span><p><b>Separate them.</b> Two distinct jobs — "where am I in my learning" vs. "what's new to explore" — deserve two distinct cards. The connected hero treatment blended them so What's New couldn't stand out; the layout reverts to the original separated design.</p></div>
+          <h4>Why — the reasoning</h4>
+          <p>Grouping is a signal: elements placed together read as <b>one thing</b>. When the Progress Tracker and What's New share a single hero surface, proximity tells the eye they're a unit, which flattens the boundary between a personal status widget and a content-discovery module. Separating them lets each own its own visual hierarchy and headline, and lets What's New carry the emphasis (pathway title + "Start the pathway" CTA) it's supposed to.</p>
+          <p>This was a fast agreement with the stakeholder (Diana), so it needed little external research — but it rests on the Gestalt principle of proximity: <b>things that are separate in meaning should be separate in space.</b></p>
+          <div class="sources"><h4>Research &amp; sources</h4>
+            <div class="src"><span class="fav">LX</span><div class="body"><a class="title" href="https://lawsofux.com/law-of-proximity/" target="_blank" rel="noopener">Law of Proximity — Laws of UX</a><p class="desc">Objects near each other are perceived as a group; spacing communicates grouping and separation.</p><span class="host">lawsofux.com</span></div></div>
+            <div class="src"><span class="fav int">◆</span><div class="body"><a class="title" href="computer:///Users/jill.moreno/jill-dashboard-ux-designs/explorations/attention-hierarchy/dashboard-hero-research.md" target="_blank" rel="noopener">Internal — Dashboard hero research (Comment 1)</a><p class="desc">Team response to Diana: agree; revert to the original separated layout.</p><span class="host">repo · decision record</span></div></div>
+          </div>
+          <div class="tags"><span class="chip">Hero</span><span class="chip">Grouping / proximity</span><span class="chip">Visual hierarchy</span></div>
+        </article>
+        <!-- Q: redundant tag -->
+        <article class="q archived" id="q-home-redundant-tag">
+          <p class="q-eyebrow"><span class="archived-badge">Archived</span> Decided · Ported from review <a class="permalink" href="#q-home-redundant-tag" title="Copy shareable link to this decision"><span class="pl-ico" aria-hidden="true">🔗</span><span class="pl-txt">Copy link</span></a></p>
+          <h3>Should we add a "WHAT'S NEW" tag on top of the "WHAT'S NEW" eyebrow?</h3>
+          <p class="archived-note">Archived · Aug 6, 2026 — removed from the active project.</p>
+          <div class="verdict"><span class="tag">Decision</span><p><b>No.</b> The eyebrow already labels the section; a tag restating it is redundant and spends the section's limited "salience budget" on nothing. A tag is only worth adding when it carries <b>distinct, meaningful</b> information — a status like "Coming Soon" or "Member Exclusive."</p></div>
+          <h4>Why — the reasoning</h4>
+          <p>Design-system guidance says indicators that don't add significant information should be dropped, not styled — using them anyway causes "cognitive overload." Badges win attention through pre-attentive features (color, shape, position); that only works when they're <b>rationed</b>. When everything carries a badge, none of them pops. And stacking multiple emphasized chips in one header (e.g. "NEW THIS MONTH" + "Passport") is the classic competing-focal-points failure — three levels of emphasis is about all people can discern. <b>Rule: at most one meaningful badge per section header, beyond the resource-type label.</b></p>
+          <div class="sources"><h4>Research &amp; sources</h4>
+            <div class="src"><span class="fav">CB</span><div class="body"><a class="title" href="https://carbondesignsystem.com/patterns/status-indicator-pattern/" target="_blank" rel="noopener">Status Indicator Pattern — Carbon Design System</a><p class="desc">Drop indicators that aren't significant; avoid overloading the interface.</p><span class="host">carbondesignsystem.com</span></div></div>
+            <div class="src"><span class="fav">SP</span><div class="body"><a class="title" href="https://www.setproduct.com/blog/badge-ui-design" target="_blank" rel="noopener">Badge UI Design — Setproduct</a><p class="desc">Don't badge every element; overuse reduces badge impact.</p><span class="host">setproduct.com</span></div></div>
+            <div class="src"><span class="fav">SM</span><div class="body"><a class="title" href="https://www.smashingmagazine.com/2015/02/design-principles-dominance-focal-points-hierarchy/" target="_blank" rel="noopener">Dominance, Focal Points &amp; Hierarchy — Smashing</a><p class="desc">Emphasize everything and nothing stands out; keep one or two focal points.</p><span class="host">smashingmagazine.com</span></div></div>
+            <div class="src"><span class="fav int">◆</span><div class="body"><a class="title" href="computer:///Users/jill.moreno/jill-dashboard-ux-designs/explorations/attention-hierarchy/dashboard-hero-research.md" target="_blank" rel="noopener">Internal — Dashboard hero research (Comment 3)</a><p class="desc">Team response: disagree; a tag repeating the eyebrow is a non-significant indicator.</p><span class="host">repo · decision record</span></div></div>
+          </div>
+          <div class="tags"><span class="chip">Badging &amp; tags</span><span class="chip">Salience</span><span class="chip">Cognitive load</span></div>
+        </article>
+        <!-- Q: resource type -->
+        <article class="q archived" id="q-home-resource-type">
+          <p class="q-eyebrow"><span class="archived-badge">Archived</span> Decided · Existing standard <a class="permalink" href="#q-home-resource-type" title="Copy shareable link to this decision"><span class="pl-ico" aria-hidden="true">🔗</span><span class="pl-txt">Copy link</span></a></p>
+          <h3>Should cards show the resource type (Course / Podcast / AI Tool)?</h3>
+          <p class="archived-note">Archived · Aug 6, 2026 — removed from the active project.</p>
+          <div class="verdict"><span class="tag">Decision</span><p><b>Yes — and it already follows an existing UX standard.</b> The resource type appears on both the small and large card variants. Showing type sets the learner's expectation <b>before</b> they click.</p></div>
+          <h4>Why — the reasoning</h4>
+          <p>A type label is <b>information scent</b>: it lets a learner recognize what a tile is (a 45-minute course vs. a podcast episode vs. an AI tool) without opening it — recognition over recall. It's a small, meaningful signal, which is exactly the kind of label that earns its place on a card (unlike the redundant "new" tag above). The type label is distinct from promotional badges and doesn't count against the one-badge rule.</p>
+          <div class="sources"><h4>Research &amp; sources</h4>
+            <div class="src"><span class="fav">NN</span><div class="body"><a class="title" href="https://www.nngroup.com/articles/recognition-and-recall/" target="_blank" rel="noopener">Recognition vs. Recall in UX — NN/g</a><p class="desc">Recognizable cues reduce memory load; surface type so users don't have to open to find out.</p><span class="host">nngroup.com</span></div></div>
+            <div class="src"><span class="fav int">◆</span><div class="body"><a class="title" href="computer:///Users/jill.moreno/jill-dashboard-ux-designs/explorations/attention-hierarchy/dashboard-hero-research.md" target="_blank" rel="noopener">Internal — Dashboard hero research (Comment 5)</a><p class="desc">Team response: agree; type already shows on both card sizes, follows an existing standard.</p><span class="host">repo · decision record</span></div></div>
+          </div>
+          <div class="tags"><span class="chip">Cards</span><span class="chip">Information scent</span><span class="chip">Recognition</span><span class="chip">All brands</span></div>
+        </article>
+        <!-- Q: nav color -->
+        <article class="q archived" id="q-nav-color">
+          <p class="q-eyebrow"><span class="archived-badge">Archived</span> Decided · Explored (V1–V3) <a class="permalink" href="#q-nav-color" title="Copy shareable link to this decision"><span class="pl-ico" aria-hidden="true">🔗</span><span class="pl-txt">Copy link</span></a></p>
+          <h3>What color should the left-nav rail be?</h3>
+          <p class="archived-note">Archived · Aug 6, 2026 — removed from the active project.</p>
+          <div class="verdict"><span class="tag">Direction</span><p><b>A brand-neutral rail, validated for contrast across every brand and theme.</b> Three treatments were explored — V1 navy (<code>#17233F</code>), V2 graphite (<code>#2B2D31</code>), V3 light neutral (<code>#E3E6EB</code>). All keep the rail hue-neutral so each brand's color lives in the <i>content</i>, and all must pass AA in every brand × light/dark × member/non-member combination.</p></div>
+          <h4>Why — the reasoning</h4>
+          <p>A neutral rail is a deliberate hierarchy choice: the chrome recedes so brand color and content can lead. It also keeps <b>one</b> nav implementation working across all brands instead of a per-brand colored rail. The constraint that governs the pick is contrast — the rail's text, icons, and selected state must hold up in <b>light and dark</b> and for <b>member and non-member</b> variants. A light-neutral rail (V3) must invert to a dark neutral in dark mode so it doesn't glare. The dashboard-rebrand a11y audit confirms the shipped rail passes AA across all five brands × light/dark × member/non-member.</p>
+          <div class="sources"><h4>Research &amp; sources</h4>
+            <div class="src"><span class="fav">W3</span><div class="body"><a class="title" href="https://www.w3.org/WAI/WCAG21/Understanding/contrast-minimum.html" target="_blank" rel="noopener">WCAG 1.4.3: Contrast (Minimum)</a><p class="desc">Text/icon contrast the rail must meet in every theme.</p><span class="host">w3.org</span></div></div>
+            <div class="src"><span class="fav int">◆</span><div class="body"><a class="title" href="computer:///Users/jill.moreno/jill-dashboard-ux-designs/left-nav-color-decision-v3.html" target="_blank" rel="noopener">Internal — Left Nav Color V1 / V2 / V3 explorations</a><p class="desc">Navy / graphite / light-neutral rails with full-page examples, dark mode, and the selected-state standard.</p><span class="host">repo · exploration</span></div></div>
+            <div class="src"><span class="fav int">◆</span><div class="body"><a class="title" href="computer:///Users/jill.moreno/jill-dashboard-ux-designs/Dashboard-Rebrand-A11y-Audit-2026-07-13.md" target="_blank" rel="noopener">Internal — Dashboard Rebrand A11y Audit</a><p class="desc">Rail passes AA in all 5 brands × light/dark × member/non-member.</p><span class="host">repo · audit</span></div></div>
+          </div>
+          <div class="tags"><span class="chip">Left nav</span><span class="chip">Color / theming</span><span class="chip">Contrast</span><span class="chip">Multi-brand</span></div>
+        </article>
+      </section>
+
+    </div>
+
+    <p class="footer-note">UX Research &amp; Rationale · Internal decision log for the learner platform. A living document — new page sections and entries are added as questions come up. Entries marked "Ported from…" were reformatted from existing repo decision records (linked in each entry's sources). Prototype context: no designs are final.</p>
+  </main>
+</div>
+
+<script>
+  (function () {
+    var pages  = [].slice.call(document.querySelectorAll('.page'));
+    var links  = [].slice.call(document.querySelectorAll('.page-link[data-target]'));
+    var groups = [].slice.call(document.querySelectorAll('.page-group[data-page]'));
+    var crumb  = document.getElementById('crumb');
+    var titleMap = { home: 'Home / Dashboard', navigation: 'Navigation', 'learning-path': 'Learning Path', membership: 'Membership', accessibility: 'Foundations · Accessibility', archived: 'Archived' };
+    var spy;
+
+    function initSpy(pageId) {
+      if (spy) spy.disconnect();
+      var page = document.getElementById(pageId);
+      if (!page || !('IntersectionObserver' in window)) return;
+      var qs = [].slice.call(page.querySelectorAll('.q'));
+      var subs = [].slice.call(document.querySelectorAll('.page-group.active .q-list a'));
+      if (!qs.length) return;
+      spy = new IntersectionObserver(function (entries) {
+        entries.forEach(function (e) {
+          if (e.isIntersecting) {
+            subs.forEach(function (l) { l.classList.remove('active'); });
+            var m = subs.filter(function (l) { return l.getAttribute('href') === '#' + e.target.id; })[0];
+            if (m) m.classList.add('active');
+          }
+        });
+      }, { rootMargin: '-90px 0px -60% 0px', threshold: 0 });
+      qs.forEach(function (q) { spy.observe(q); });
+    }
+
+    function activate(pageId, scrollToId) {
+      if (!titleMap[pageId]) pageId = 'home';
+      pages.forEach(function (p) { p.classList.toggle('active', p.id === pageId); });
+      links.forEach(function (l) { l.classList.toggle('active', l.dataset.target === pageId); });
+      groups.forEach(function (g) { g.classList.toggle('active', g.dataset.page === pageId); });
+      if (crumb) crumb.textContent = titleMap[pageId];
+      initSpy(pageId);
+      if (scrollToId) {
+        var el = document.getElementById(scrollToId);
+        if (el) { el.scrollIntoView({ behavior: 'auto', block: 'start' }); }
+      } else {
+        window.scrollTo(0, 0);
+      }
+    }
+
+    links.forEach(function (l) {
+      l.addEventListener('click', function (e) {
+        var t = l.dataset.target;
+        if (!t) return;
+        e.preventDefault();
+        if (history.replaceState) history.replaceState(null, '', '#' + t);
+        activate(t);
+      });
+    });
+
+    function fromHash() {
+      var h = (location.hash || '').replace('#', '');
+      if (!h) { activate('home'); return; }
+      if (titleMap[h]) { activate(h); return; }
+      var el = document.getElementById(h);
+      if (el && el.closest) {
+        var pg = el.closest('.page');
+        activate(pg ? pg.id : 'home', h);
+      } else {
+        activate('home');
+      }
+    }
+
+    window.addEventListener('hashchange', fromHash);
+    fromHash();
+
+    // ---- Per-decision "Copy link" buttons ----
+    function fallbackCopy(t) {
+      try {
+        var ta = document.createElement('textarea');
+        ta.value = t; ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed'; ta.style.top = '-1000px'; ta.style.opacity = '0';
+        document.body.appendChild(ta); ta.select();
+        document.execCommand('copy'); document.body.removeChild(ta);
+      } catch (e) {}
+    }
+    function copyText(t) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(t)['catch'](function () { fallbackCopy(t); });
+      } else { fallbackCopy(t); }
+    }
+    [].slice.call(document.querySelectorAll('.permalink')).forEach(function (a) {
+      a.addEventListener('click', function (e) {
+        e.preventDefault();
+        var id = a.getAttribute('href').slice(1);
+        var url = location.href.split('#')[0] + '#' + id;
+        copyText(url);
+        if (location.hash !== '#' + id) { location.hash = id; } else { fromHash(); }
+        var txt = a.querySelector('.pl-txt');
+        a.classList.add('copied');
+        if (txt) txt.textContent = 'Copied!';
+        setTimeout(function () {
+          a.classList.remove('copied');
+          if (txt) txt.textContent = 'Copy link';
+        }, 1600);
+      });
+    });
+  })();
+</script>
+</body>
+</html>

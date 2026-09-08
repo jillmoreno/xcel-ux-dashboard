@@ -211,6 +211,26 @@
   --color-surface-page: var(--color-neutral-extra-light);
   --color-surface-card: var(--color-neutral-50);
 
+  /* ── Non-inverting surfaces ──────────────────────────────────────────────
+     For DEPICTING fixed content rather than styling the app: an iframe holding
+     a fixed-light HTML prototype, or a mock of a dark PDF-viewer chrome.
+
+     Every --color-surface-* and --color-neutral-* token inverts under
+     [data-theme='dark'] — correct for the app, wrong for a depiction, which
+     should look the same whatever appearance the reader has chosen. These are
+     deliberately declared ONCE and never redefined in the dark block.
+
+     Do not reach for these to dodge dark mode on real app surfaces. */
+  --color-fixed-light: #ffffff;
+  --color-fixed-dark: #20242b;
+  --color-fixed-dark-raised: #2b2f36;
+  --color-fixed-dark-text: #cdd2da;
+
+  /* The Dashboard-rebrand rail surface, deliberately the SAME for every brand —
+     only the selected-row accent is brand-specific. A designed constant rather
+     than any brand's token, which is why it is named for the role, not a ramp. */
+  --color-nav-shared-navy: #17233f;
+
   /* ─── Passport surface ───────────────────────────────────────────
      A warm cream parchment shared by ALL four brands (these tokens
      deliberately ignore the per-brand overrides below). The
@@ -326,6 +346,27 @@
      segmented Mandatory/Elective gauge (category colors — see
      progressGauge), or the achievements meters (tertiary theme). */
   --color-progress-fill: var(--color-primary-500);
+  /* Expired courses keep the progress they earned, drawn in a dead charcoal
+     rather than the brand fill — the work is a RECORD, not something you can
+     pick up (2026-09-08, reversing the original "hide it entirely" rule).
+     Aliased to `neutral-800`, which inverts with the ramp, so on the rebrand's
+     dark canvas it becomes a light grey and stays visible while still reading
+     as inactive. Measured against the `neutral-100` track: 8.78:1 light,
+     10.31:1 dark — both clear 1.4.11's 3:1 for a non-text indicator. */
+  --color-progress-fill-expired: var(--color-neutral-800);
+  /* Completed and Failed colour the bar too, as of 2026-09-08 — see the note on
+     `StatusRow` about the bar becoming a status language rather than a bare
+     quantity.
+
+     ⚠ BOTH ALIAS THE `status-*-text` SEMANTICS, NOT THE RAW `-500` STOPS, and
+     that is a contrast decision rather than a naming convenience. The track is
+     `neutral-100`, which inverts to a deep navy in dark, so a single fixed stop
+     cannot serve both themes: `error-500` measures 5.02:1 on the light track and
+     only 2.39:1 on the dark one, under 1.4.11's 3:1 for a meaningful non-text
+     indicator. The theme-aware pair clears both with room —
+     success 5.51 / 5.93, error 7.01 / 6.44. */
+  --color-progress-fill-complete: var(--color-status-success-text);
+  --color-progress-fill-failed: var(--color-status-error-text);
 
   /* ─── Learning category colors (single source of truth) ───────────
      The two coursework categories, color-coded consistently everywhere
@@ -865,6 +906,121 @@
 }
 
 /* ============================================================================
+   XCEL SOLUTIONS  ·  Insurance licensing & CE
+   ----------------------------------------------------------------------------
+   Source of record: the official XCEL Style Guide
+   (brand.colibrigroup.com/d/gViDk8vkfnm2/style-guide), read 2026-09-04. Only
+   the `-500` stops are PUBLISHED; every other stop below is constructed and
+   contrast-audited — see `.claude/skills/brands/xcel.md` for the full tables.
+
+   ⚠ THE ONE DANGEROUS ADJACENCY: San Juan (primary) and Brick (cta) are
+   1.08:1 against EACH OTHER. They differ by hue, not luminance, so a Brick CTA
+   on a San Juan surface vanishes in greyscale, on a mono printer, and for a
+   red-weak reader. On any primary surface at -500 or darker a CTA must step to
+   `cta-300` (5.49:1 on primary-800) or `cta-200` (9.10:1). `ExploreLink`
+   already does exactly this — follow it rather than inventing a second
+   mechanism. Check the dark bands: MarketingFocusedBand, WhatsNewFeaturedHero,
+   ClpJumpBackInBand's navy half, and anything on the rail.
+   ============================================================================ */
+[data-brand='xcel'] {
+  /* Primary — San Juan #2D5872 (published). Structure, nav, the dark rail.
+     ⚠ `-400` (3.56:1 on white) is FILL/BORDER ONLY — stricter than CRE, whose
+     primary -400 passes as text. Lightest text stop is `-500` (7.64:1). */
+  --color-primary-100: #e9eef2;
+  --color-primary-200: #c7d4dd;
+  --color-primary-300: #9db3c2;
+  --color-primary-400: #6b8ca3;
+  --color-primary-500: #2d5872;
+  --color-primary-600: #26495f;
+  --color-primary-700: #1d3849;
+  --color-primary-800: #152833;
+  --color-primary-900: #0d181f;
+
+  /* Secondary — Saffron #FAC41E (published). The accent "pop".
+     ⚠ FILL-ONLY THROUGH `-700`. `-500` is 1.62:1 on white — it can never be
+     text, an icon glyph, a state border or a focus ring on a light surface.
+     Text ON Saffron must be near-black (#1C1D1F, 10.43:1), never white — which
+     is what XCEL's own site does on its secondary button. Where it earns its
+     keep is the dark rail: 9.38:1 on primary-800. */
+  --color-secondary-100: #fff8e3;
+  --color-secondary-200: #feecb8;
+  --color-secondary-300: #fddd85;
+  --color-secondary-400: #fcd052;
+  --color-secondary-500: #fac41e;
+  --color-secondary-600: #d9a413;
+  --color-secondary-700: #a87d0e;
+  --color-secondary-800: #6b4f08;
+  --color-secondary-900: #3a2b04;
+
+  /* Tertiary — Beech #9D815A (published). Warm neutral surfaces + tints; its
+     10% tint (#F5F2EE) is already the live site's section background.
+     ⚠ `-500` FAILS as text (3.67:1) where CRE/McKissock/Elite's tertiary ramps
+     pass mid-ramp. Lightest safe text stop is `-600` (5.15:1). The two known
+     text call sites are fine: the Gift Recipients mailto uses `-700` (7.62:1)
+     and the Certificates kebab plate uses `-100` as a fill. */
+  --color-tertiary-100: #f5f0e9;
+  --color-tertiary-200: #e6dccd;
+  --color-tertiary-300: #d2c2a8;
+  --color-tertiary-400: #b8a180;
+  --color-tertiary-500: #9d815a;
+  --color-tertiary-600: #806a4a;
+  --color-tertiary-700: #625139;
+  --color-tertiary-800: #443728;
+  --color-tertiary-900: #251e16;
+
+  /* CTA — Brick #9A1B1E (published). Actions: buttons, Resume, link CTAs.
+     ⚠ THIS MAPPING IS FORCED, NOT A STYLISTIC CHOICE. The project renders
+     `--color-cta-500` as BARE TEXT in at least four places (the Gift
+     Recipients Download link, that sheet's footer CTA, the recipient mailto,
+     and ExploreLink's `cta` variant), so cta-500 must clear 4.5:1 on white. Of
+     XCEL's six published colours only Brick (8.24), Charcoal (11.37), San Juan
+     (7.64) and Gray (5.74) do — Saffron is 1.62 and Beech is 3.67. Charcoal and
+     Gray are the text colours and San Juan is primary, which leaves Brick. Do
+     not repoint this at Saffron. */
+  --color-cta-100: #f7e3e3;
+  --color-cta-200: #ecbdbe; /* the on-dark CTA stop — 9.10:1 on primary-800 */
+  --color-cta-300: #d98486; /* on-dark alternative — 5.49:1 */
+  --color-cta-400: #bd4a4c;
+  --color-cta-500: #9a1b1e;
+  --color-cta-600: #7f1619;
+  --color-cta-700: #5f1113;
+  --color-cta-800: #420c0d;
+  --color-cta-900: #2a0708;
+
+  /* Body ink — the guide's own two type colours. Charcoal is the body ink;
+     Gray is literally labelled "Type/Outline" in the guide. Both clear AA on
+     white (11.37:1 / 5.74:1). Scoped to the text tokens rather than the
+     neutral ramp so only type moves. */
+  --color-text-primary: #3a3a3a; /* Charcoal */
+  --color-text-secondary: #666666; /* Gray */
+
+  /* Brand alias + action recolor */
+  --color-brand: var(--color-primary-500);
+  --color-action: var(--color-cta-500);
+  --color-action-hover: var(--color-cta-600);
+
+  /* Accent text — San Juan on white is 7.64:1. Its dark-mode value is
+     special-cased below for the same reason STC's is: the rebrand's dark
+     surfaces derive from this same ramp. */
+  --color-accent-text: var(--color-primary-500);
+
+  /* Typography — the brand's own face is AVENIR (Linotype-proprietary, not on
+     Google Fonts, not licensed to us). XCEL therefore ships STC's Lato as a
+     DELIBERATE PLACEHOLDER: one declaration, no new Google Fonts request (Lato
+     is already in index.html), and `--font-body` deliberately NOT overridden.
+     Lato is humanist and Avenir is geometric, so XCEL currently reads as "a
+     Colibri brand" rather than as XCEL. Nunito Sans is the intended substitute
+     when the licence question is answered — see the brand file.
+     Separately: the LIVE SITE's Amasis MT serif headings are OFF-BRAND (Amasis
+     appears nowhere in the guide). Do not reproduce them. */
+  --font-heading: 'Lato', 'Helvetica Neue', system-ui, sans-serif;
+
+  /* No `--podcast-*` overrides: XCEL has no podcast product, so inheriting
+     CRE's palette is correct (same as STC). Budget the full 15-token set if a
+     podcast surface ever appears. */
+}
+
+/* ============================================================================
    DARK THEME OVERRIDE  ·  scoped to the Dashboard Discoverability feature
    ----------------------------------------------------------------------------
    Activated by `data-theme="dark"` on <html>, which DashboardRebrandPage sets
@@ -971,6 +1127,17 @@
   --color-accent-text: var(--color-primary-200);
 }
 
+/* XCEL dark mode — the SAME special case STC has, for the same reason.
+   XCEL's primary ramp is San Juan (#2d5872 → #0d181f) and the dark theme
+   derives its surfaces from that ramp, so brand-primary accent text lands
+   almost on top of its own background. `primary-300` would technically pass
+   (6.98:1 on primary-800), but `-200` (10.04:1) matches the headroom STC
+   chose. Specificity (0,2,0) is what makes this beat the plain dark block —
+   keep BOTH attributes on the selector. */
+[data-theme='dark'][data-brand='xcel'] {
+  --color-accent-text: var(--color-primary-200);
+}
+
 /* The prototype bar is constant "prototype chrome" — it stays the dark charcoal
    strip with white text/icons in BOTH themes. The dark theme inverts the
    neutral ramp (neutral-800 → light gray, neutral-50 → navy), which would flip
@@ -1038,6 +1205,54 @@
   --color-action: #358087;
   --color-action-hover: #2a666c;
 }
+/* A `[data-brand]` slice nested INSIDE the pinned prototype page must show its
+   OWN brand, not the pin.
+ 
+   Every brand re-asserts these via its own `[data-brand='…']` block, and custom
+   properties inherit from the nearest ancestor that sets them, so a nested slice
+   wins — EXCEPT CRE, which lives in `:root` and therefore has no block to
+   re-assert with. A `data-brand="cre"` slice inside the pin inherited STC teal:
+   the dev-handoff previews rendered CRE in the wrong colours entirely, which is
+   how a four-brand contrast comparison came out with three brands correct and
+   one silently repainted.
+ 
+   These are CRE's `:root` values, restated for exactly the 30 tokens the pin
+   overrides — the same list, no more. If CRE's ramp is re-authored in `:root`,
+   update here too; that duplication is the cost of CRE being the default brand
+   rather than a selectable one. */
+.cre-prototype-stc-accent [data-brand='cre'] {
+  --color-primary-100: #cce8e5;
+  --color-primary-200: #99d2cc;
+  --color-primary-300: #67bbb3;
+  --color-primary-400: #34a59a;
+  --color-primary-500: #028f81;
+  --color-primary-600: #017267;
+  --color-primary-700: #01554d;
+  --color-primary-800: #003933;
+  --color-primary-900: #001c19;
+  --color-secondary-100: #fce9d6;
+  --color-secondary-200: #fad3ad;
+  --color-secondary-300: #f8bd84;
+  --color-secondary-400: #f6a75b;
+  --color-secondary-500: #f49233;
+  --color-secondary-600: #c37428;
+  --color-secondary-700: #92571e;
+  --color-secondary-800: #613a14;
+  --color-secondary-900: #301d0a;
+  --color-cta-100: #ccdde8;
+  --color-cta-200: #99bbd2;
+  --color-cta-300: #6799bb;
+  --color-cta-400: #3477a5;
+  --color-cta-500: #02568f;
+  --color-cta-600: #014472;
+  --color-cta-700: #013355;
+  --color-cta-800: #002239;
+  --color-cta-900: #00111c;
+  --color-accent-text: var(--color-primary-600);
+  --color-action: var(--color-cta-500);
+  --color-action-hover: var(--color-cta-600);
+}
+
 
 /* Stakeholder Demo Controls bar (DemoControlsBar) — a single scoped focus-visible
    ring for its buttons so keyboard focus is always visible on the dark navy bar.
@@ -1418,6 +1633,29 @@ html,
   box-shadow: 0 4px 4px rgb(0 0 0 / 0.25);
   transform: scale(1.005);
 }
+/* Keyboard focus ring — a live WCAG 2.4.7 failure until 2026-09-05.
+   `.cre-course-card` had 22 rules and every one was the base or `:hover`, so a
+   card carrying `role="button" tabIndex={0}` showed NOTHING when tabbed to.
+   That is 37 focusable cards on the Course Catalog alone: `PackageCard`,
+   `MembershipCard`, `PodcastCard`, `TopPodcastCard` and the activatable Jump
+   Back In tile all use this class. Shape matches the sibling families
+   (`.cre-cert-card`, `.cre-lp-home-card`). */
+.cre-course-card:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+/* …and it needs a lighter stop in dark mode, which the sibling families do NOT
+   currently do. The `outline-offset` puts the ring on the PAGE, not the card,
+   and the dark page is a near-black charcoal (#1b1d21), so `primary-500`
+   measures 2.50:1 on Elite and Fitzgerald, 2.21:1 on XCEL and 1.03:1 on STC —
+   effectively invisible, against the 3:1 a focus indicator needs (WCAG 1.4.11).
+   Only CRE (4.22) and McKissock (5.72) pass.
+   `primary-300` clears it on every brand; worst is STC at 3.67:1. Measured, not
+   assumed — re-measure before changing the stop, and note the two brands whose
+   primary ramp IS the dark surface family (STC, XCEL) are the tight ones. */
+[data-theme='dark'] .cre-course-card:focus-visible {
+  outline-color: var(--color-primary-300);
+}
 
 /* Recommended "What's Trending" image card (VibrantCard). Clickable, image-
    forward, so it lifts + deepens its shadow and gives the cover photo a subtle
@@ -1762,6 +2000,20 @@ a.cre-library-card-title::after {
 .cre-membership-tab[data-active='false']:hover {
   color: var(--color-text-primary);
 }
+/* These tabs had a `:hover` rule and no focus indicator at all, so a keyboard
+   user moving through them saw nothing move. The ring is inset because the tabs
+   sit flush against the strip's bottom border — an outset outline is clipped by
+   the sheet's `overflow: hidden`. Per-theme like `.cre-course-card`: on the
+   rebrand's dark navy, `primary-500` measures 1.03:1 (STC) to 4.22:1 (CRE), so
+   the dark block steps to `primary-300`. */
+.cre-membership-tab:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -2px;
+  border-radius: var(--radius-sm);
+}
+[data-theme='dark'] .cre-membership-tab:focus-visible {
+  outline-color: var(--color-primary-300);
+}
 
 /* Included-course rows in the Membership sheet — subtle elevation lift on
    hover plus the same neutral-800 → neutral-950 text shift used by catalog
@@ -1834,6 +2086,51 @@ a.cre-library-card-title::after {
 }
 .cre-course-card:hover .cre-tag-cta {
   background: color-mix(in srgb, var(--color-cta-100) 65%, transparent);
+}
+
+/* "Certificate Pending" had a warning-tinted chip here (a `warning-100` wash at
+   55/85, heavier than its two siblings because the warning ramp runs light).
+   REMOVED 2026-09-08: it is a link now, sharing `.cre-tag-cert-link` with
+   "Certificate Issued", and a link does not carry a fill. Two things went with
+   it that are worth not re-deriving — the amber moved from `warning-800` to the
+   theme-aware `--color-status-warning-text`, because a fixed dark stop that was
+   fine on the tint measures 1.30-2.12:1 on the dark card (a11y S27); and the
+   glyph moved from a warning triangle to an hourglass, since nothing has gone
+   wrong. See `LINK_COLOR` in CourseCard.tsx. */
+
+/* "Certificate Issued" — the one footer marker that is a LINK, not a chip.
+   It opens the certificate document in a new tab, so it gets the app's standard
+   link-CTA treatment rather than the tinted wash its two siblings use: no fill,
+   the brand CTA ramp via `--color-accent-link`, and an underline on hover AND
+   focus so it never reads as interactive by colour alone.
+
+   ⚠ Colour is set on the element (`--color-accent-link`) and NOT overridden
+   here, deliberately. Hover changes the DECORATION only — there is no darker
+   CTA stop that stays legible in dark theme, which is the same conclusion
+   `.cre-gift-cta` reached; see the note there and a11y finding C6. */
+/* Resting state lives here, NOT inline on the element — an anchor underlines by
+   default, and an inline `text-decoration: none` outranks the `:hover` rule
+   below, so the underline never appears. Reported exactly that way. */
+.cre-tag-cert-link {
+  text-decoration: none;
+}
+.cre-tag-cert-link:hover,
+.cre-tag-cert-link:focus-visible {
+  text-decoration: underline;
+}
+/* The card is a hover surface of its own, so the marker also underlines when
+   the pointer is anywhere on the card — the affordance shows up while you are
+   still reading, not only once you have found the 130px of text. */
+.cre-course-card:hover .cre-tag-cert-link {
+  text-decoration: underline;
+}
+.cre-tag-cert-link:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+[data-theme='dark'] .cre-tag-cert-link:focus-visible {
+  outline-color: var(--color-primary-300);
 }
 
 /* Learning Recap badge — "See your recap" is a white text link; it
@@ -2033,7 +2330,7 @@ a.cre-library-card-title::after {
 .cre-nonmember-pill:hover {
   background: var(--color-neutral-100);
 }
-/* Dark-mode a11y (WCAG AA): keep the guest status pill a LIGHT chip with dark
+/* Dark-mode a11y (WCAG AA): keep the non-member status pill a LIGHT chip with dark
    text in dark mode too (design direction). The dark theme remaps the neutral
    ramp for the navy shell, which flipped this pill to light-text-on-light
    (2.25:1) — the label token inverted while the fill stayed light. Re-pin the
@@ -2242,7 +2539,7 @@ a.cre-library-card-title::after {
   align-items: flex-start;
   gap: 12px;
   font-family: var(--font-body);
-  font-size: 14.5px;
+  font-size: 15px;
   line-height: 1.5;
   color: var(--color-text-primary);
 }
@@ -2274,7 +2571,7 @@ a.cre-library-card-title::after {
   color: var(--color-text-inverse);
   font-family: var(--font-heading);
   font-weight: 700;
-  font-size: 14.5px;
+  font-size: 15px;
   text-decoration: none;
   border: none;
   cursor: pointer;
@@ -2538,12 +2835,43 @@ a.cre-library-card-title::after {
   text-decoration: underline;
 }
 
-/* Gift Recipients — the page-level link CTAs (Download). Same hover/focus
-   treatment as the feature's other link CTAs: underline + the darker CTA shade,
-   so none of them relies on color alone to read as interactive. */
+/* Gift Recipients — the page-level link CTAs (Download), and the course card's
+   "Enrol again". Underline on hover AND focus, so a text link never reads as
+   interactive by colour alone.
+
+   ⚠ THE COLOUR LIVES HERE, NOT INLINE ON THE CALLER, AND THAT IS THE FIX.
+   Both of these were `cta-500` set inline, which (a) beat any stylesheet rule
+   on specificity, so no `[data-theme]` block could ever correct them, and
+   (b) failed AA outright: `cta-500` on the page background measures McKissock
+   2.13:1 light and CRE 2.19 / XCEL 2.05 dark — and the old `cta-700` hover made
+   dark WORSE (CRE 1.29), so the control lost contrast at the moment it was
+   focused. (a11y 2026-09-07, finding C6.)
+
+   `--color-accent-link` is the fix in one token: it already resolves to
+   `cta-700` in light and `cta-200` in dark, so both themes are covered without
+   a second block. Worst case is now McKissock light at 5.32:1; every brand ×
+   theme clears AA. Hover/focus deliberately keeps the SAME colour — the
+   underline is the state change, because there is no darker stop that stays
+   legible in dark mode. Guarded by `LinkCtaContrast.test.ts`. */
+.cre-gift-cta,
+.cre-collection-link {
+  color: var(--color-accent-link);
+}
 .cre-gift-cta:hover,
 .cre-gift-cta:focus-visible {
-  color: var(--color-cta-700);
+  color: var(--color-accent-link);
+  text-decoration: underline;
+}
+
+/* My Courses — the `View Archived` / `Back to My Courses` collection switch.
+   Same link-CTA treatment as the Gift Recipients Download link above: a utility
+   beside the content, where a filled button would outrank the real per-card
+   actions. Underlines on hover AND focus so it never reads as a link by colour
+   alone. Kept as its own rule rather than added to that selector list — the two
+   features are unrelated and should be able to diverge. */
+.cre-collection-link:hover,
+.cre-collection-link:focus-visible {
+  color: var(--color-accent-link);
   text-decoration: underline;
 }
 
@@ -3124,8 +3452,19 @@ a.cre-library-card-title::after {
   padding: 11px 22px;
   background: var(--color-primary-800);
 }
-.cre-hub-savebar .amt {
+/* The savings amount is the component's only <p>, and its host page wraps it in
+   `.mx-root .hero`, whose MX_CSS body rule
+   `.mx-root .hero p{margin:10px 0 0;max-width:88ch;font-size:15px;color:rgba(255,255,255,.82)}`
+   scores (0,2,1) — one element selector MORE specific than a plain two-class
+   `.cre-hub-savebar .amt`. So the host silently won all four properties and the
+   figure rendered at 15px beside its own 31px `$` (which survived only because
+   `.amt .cur` is three classes). Prefixing with `.cre-hub-details` takes this to
+   (0,3,0) so the component owns its type scale in any host. Do NOT flatten it
+   back, and do NOT switch to `.cre-hub-savebar p.amt` — that ties at (0,2,1) and
+   loses to MX_CSS on source order, since MX_CSS is injected after this sheet. */
+.cre-hub-details .cre-hub-savebar .amt {
   margin: 0;
+  max-width: none;
   display: flex;
   align-items: flex-start;
   gap: 3px;
@@ -3135,7 +3474,7 @@ a.cre-library-card-title::after {
   font-size: 34px;
   color: #fff;
 }
-.cre-hub-savebar .amt .cur { font-size: 31px; opacity: 0.5; }
+.cre-hub-details .cre-hub-savebar .amt .cur { font-size: 31px; opacity: 0.5; }
 .cre-hub-savebar .lbl { display: flex; flex-direction: column; gap: 2px; }
 .cre-hub-savebar .lbl .k {
   font-family: var(--font-body);
@@ -3147,7 +3486,7 @@ a.cre-library-card-title::after {
 }
 .cre-hub-savebar .lbl .s {
   font-family: var(--font-body);
-  font-size: 11.5px;
+  font-size: 12px;
   line-height: 1.5;
   color: rgb(255 255 255 / 0.72);
 }

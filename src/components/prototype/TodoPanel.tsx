@@ -86,7 +86,7 @@ const primaryBtnStyle: CSSProperties = {
 }
 
 const hintStyle: CSSProperties = {
-  fontSize: 12.5,
+  fontSize: 13,
   color: 'var(--ux-text-3)',
   margin: '8px 0 0',
 }
@@ -121,7 +121,7 @@ const gripStyle: CSSProperties = {
 
 const textStyle: CSSProperties = {
   font: 'inherit',
-  fontSize: 14.5,
+  fontSize: 15,
   border: '1px solid transparent',
   borderRadius: 6,
   background: 'transparent',
@@ -160,11 +160,11 @@ const emptyStyle: CSSProperties = {
   padding: '30px 22px',
   textAlign: 'center',
   color: 'var(--ux-text-3)',
-  fontSize: 13.5,
+  fontSize: 14,
 }
 
 const groupCapStyle: CSSProperties = {
-  fontSize: 10.5,
+  fontSize: 11,
   fontWeight: 700,
   letterSpacing: '.08em',
   textTransform: 'uppercase',
@@ -175,7 +175,7 @@ const groupCapStyle: CSSProperties = {
 function stagePill(stage: TodoStage): CSSProperties {
   const hue = TODO_STAGES.find((s) => s.id === stage)?.hue ?? 'neutral'
   return {
-    fontSize: 10.5,
+    fontSize: 11,
     fontWeight: 700,
     padding: '2px 7px',
     borderRadius: 5,

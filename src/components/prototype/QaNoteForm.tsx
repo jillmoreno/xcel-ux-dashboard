@@ -146,7 +146,7 @@ const controlStyle: CSSProperties = {
   width: '100%',
   boxSizing: 'border-box',
   fontFamily: 'var(--font-body)',
-  fontSize: 13.5,
+  fontSize: 14,
   lineHeight: 1.5,
   padding: '8px 10px',
   borderRadius: 'var(--radius-md)',
@@ -158,7 +158,7 @@ const controlStyle: CSSProperties = {
 const hintStyle: CSSProperties = {
   margin: '5px 0 0',
   fontFamily: 'var(--font-body)',
-  fontSize: 11.5,
+  fontSize: 12,
   lineHeight: 1.5,
   color: 'var(--color-text-tertiary)',
 }
@@ -187,7 +187,7 @@ const footerStyle: CSSProperties = {
 
 const btnStyle: CSSProperties = {
   fontFamily: 'var(--font-body)',
-  fontSize: 13.5,
+  fontSize: 14,
   fontWeight: 600,
   padding: '9px 16px',
   borderRadius: 'var(--radius-md)',
@@ -210,7 +210,7 @@ const errorBoxStyle: CSSProperties = {
   background: 'color-mix(in srgb, var(--color-error-500) 10%, transparent)',
   border: '1px solid var(--color-error-500)',
   fontFamily: 'var(--font-body)',
-  fontSize: 12.5,
+  fontSize: 13,
   lineHeight: 1.55,
   color: 'var(--color-text-primary)',
 }
@@ -264,7 +264,7 @@ const contextAddStyle: CSSProperties = {
   borderStyle: 'dashed',
   borderColor: 'var(--color-neutral-light)',
   fontFamily: 'var(--font-body)',
-  fontSize: 11.5,
+  fontSize: 12,
   fontWeight: 600,
   color: 'var(--ux-accent)',
   cursor: 'pointer',
@@ -311,7 +311,7 @@ const slotActionStyle: CSSProperties = {
   border: 'none',
   background: 'transparent',
   fontFamily: 'var(--font-body)',
-  fontSize: 11.5,
+  fontSize: 12,
   fontWeight: 600,
   letterSpacing: 0,
   textTransform: 'none',

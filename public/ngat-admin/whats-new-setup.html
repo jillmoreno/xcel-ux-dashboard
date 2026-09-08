@@ -1,0 +1,1028 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>What's New Widget Configuration — Colibri Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* ==========================================================================
+     COLIBRI ADMIN CONSOLE — design language sourced from the screen recording
+     (Course Module Management / Recommended Content Configuration console).
+     Teal primary, white cards on light-gray, left icon sidebar, slide-over panels.
+     ========================================================================== */
+  :root{
+    --page:#f4f5f5;
+    --card:#ffffff;
+    --border:#e4e7e7;
+    --border-strong:#cfd4d4;
+    --field-border:#c9cfce;
+
+    --teal:#0e7f72;          /* primary filled buttons / active nav */
+    --teal-hover:#0b6b60;
+    --teal-dark:#0c5148;     /* headings, dark pill buttons */
+    --teal-50:#e6f2f0;       /* active-nav tint on hover, selected rows */
+    --teal-100:#d4e9e6;
+    --link:#0e7f72;
+
+    --text:#2b3230;
+    --text-secondary:#6a7370;
+    --text-muted:#98a09d;
+    --ok:#16a34a;
+    --warn:#c2410c;
+    --danger:#dc2626;
+
+    --radius:10px;
+    --radius-sm:7px;
+    --shadow-card:0 1px 2px rgba(20,40,37,.04), 0 1px 3px rgba(20,40,37,.06);
+    --shadow-pop:0 10px 30px rgba(20,40,37,.16), 0 2px 8px rgba(20,40,37,.10);
+    --font:'Open Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+
+    /* Elite widget-preview tokens (Passport Lite=teal, Passport=magenta) */
+    --w-navy-700:#0d346d; --w-navy-800:#092348; --w-navy-900:#061936;
+    --w-teal:#5ec5d0; --w-teal-100:#def3f5; --w-teal-800:#254e53;
+    --w-cta:#a24796; --w-cta-100:#ecdaea; --w-cta-700:#612a5a;
+  }
+
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{
+    font-family:var(--font);color:var(--text);background:var(--page);
+    font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased;
+  }
+  button{font-family:inherit;cursor:pointer}
+  a{color:var(--link);text-decoration:none}
+  h1,h2,h3,h4{margin:0}
+
+  /* ===== App shell =================================================== */
+  .app{display:grid;grid-template-columns:120px 1fr;min-height:100vh}
+
+  /* ---- Sidebar ---- */
+  .sidebar{
+    background:var(--card);border-right:1px solid var(--border);
+    display:flex;flex-direction:column;position:sticky;top:0;height:100vh;
+  }
+  .brand{display:flex;align-items:center;gap:6px;padding:16px 12px 14px}
+  .brand-mark{width:22px;height:22px;flex:none}
+  .brand-name{font-weight:700;font-size:15px;color:var(--teal-dark);letter-spacing:.2px}
+  .nav{flex:1;overflow-y:auto;padding:4px 8px}
+  .nav::-webkit-scrollbar{width:0}
+  .nav-item{
+    display:flex;flex-direction:row;align-items:center;gap:10px;text-align:left;
+    padding:9px 10px;border-radius:8px;margin-bottom:2px;color:var(--text-secondary);
+    font-size:12.5px;line-height:1.25;border:none;background:none;width:100%;
+  }
+  .nav-item svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.6}
+  .nav-item:hover{background:var(--teal-50);color:var(--teal-dark)}
+  .nav-item.active{background:var(--teal);color:#fff}
+  .nav-user{
+    display:flex;align-items:center;gap:8px;padding:12px;border-top:1px solid var(--border);
+    font-size:12px;color:var(--text-secondary)
+  }
+  .nav-user .avatar{width:22px;height:22px;border-radius:50%;background:var(--teal-100);
+    display:grid;place-items:center;color:var(--teal-dark);font-weight:700;font-size:10px;flex:none}
+
+  /* ---- Main ---- */
+  .main{min-width:0;display:flex;flex-direction:column}
+  .page-head{
+    display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
+    padding:22px 28px 16px;background:var(--card);border-bottom:1px solid var(--border)
+  }
+  .page-title{font-size:23px;font-weight:700;color:var(--teal-dark)}
+  .page-sub{color:var(--text-secondary);font-size:13px;margin-top:3px}
+  .head-actions{display:flex;gap:10px;flex:none}
+
+  .content{padding:22px 28px;display:flex;flex-direction:column;gap:18px}
+
+  /* ---- Breadcrumbs ---- */
+  .crumbs{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text-secondary);margin-bottom:8px}
+  .crumbs a{color:var(--link);font-weight:600}
+  .crumbs .sep{color:var(--text-muted)}
+  .crumbs .cur{color:var(--text);font-weight:600}
+
+  /* ---- Home widget tiles ---- */
+  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media(max-width:1080px){.tiles{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:720px){.tiles{grid-template-columns:1fr}}
+  .tile{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+    box-shadow:var(--shadow-card);padding:20px;display:flex;flex-direction:column;gap:12px;
+    text-align:left;transition:.14s;position:relative}
+  .tile.enabled{cursor:pointer}
+  .tile.enabled:hover{border-color:var(--teal);box-shadow:0 6px 20px rgba(14,127,114,.14);transform:translateY(-2px)}
+  .tile.soon{opacity:.72}
+  .tile-icon{width:44px;height:44px;border-radius:11px;background:var(--teal-50);display:grid;place-items:center;flex:none}
+  .tile-icon svg{width:22px;height:22px;stroke:var(--teal);fill:none;stroke-width:1.6}
+  .tile h3{font-size:16px;font-weight:700;color:var(--text)}
+  .tile p{font-size:12.5px;color:var(--text-secondary);line-height:1.5;flex:1}
+  .tile-foot{display:flex;align-items:center;justify-content:space-between}
+  .pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;letter-spacing:.02em}
+  .pill-ready{background:#e7f6ee;color:#177245}
+  .pill-soon{background:#eef1f0;color:var(--text-secondary)}
+  .tile .go{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;color:var(--teal)}
+  .tile .go svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+
+  /* ---- Buttons ---- */
+  .btn{
+    display:inline-flex;align-items:center;gap:7px;border-radius:8px;font-weight:600;
+    font-size:13px;padding:9px 15px;border:1px solid transparent;white-space:nowrap;transition:.12s
+  }
+  .btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8}
+  .btn-primary{background:var(--teal);color:#fff}
+  .btn-primary:hover{background:var(--teal-hover)}
+  .btn-outline{background:#fff;color:var(--teal);border-color:var(--teal)}
+  .btn-outline:hover{background:var(--teal-50)}
+  .btn-ghost{background:#fff;color:var(--text-secondary);border-color:var(--field-border)}
+  .btn-ghost:hover{border-color:var(--border-strong);color:var(--text)}
+  .btn-dark{background:var(--teal-dark);color:#fff}
+  .btn-dark:hover{filter:brightness(1.08)}
+  .btn-danger-ghost{background:#fff;color:var(--danger);border-color:#f0c9c9}
+  .btn-danger-ghost:hover{background:#fdf1f1}
+  .btn[disabled]{opacity:.5;cursor:not-allowed}
+
+  /* ---- Card ---- */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);
+    box-shadow:var(--shadow-card)}
+  .card-pad{padding:20px 22px}
+  .card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:16px 22px;border-bottom:1px solid var(--border)}
+  .card-head h2{font-size:15px;font-weight:700;color:var(--text)}
+  .card-head .card-desc{font-size:12px;color:var(--text-secondary);margin-top:2px}
+
+  /* ---- Scope bar ---- */
+  .scopebar{display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field label{font-size:12px;font-weight:600;color:var(--text-secondary)}
+  .field .req{color:var(--danger)}
+  .select,.input,.textarea{
+    font-family:inherit;font-size:13px;color:var(--text);background:#fff;
+    border:1px solid var(--field-border);border-radius:8px;padding:9px 11px;min-width:0
+  }
+  .select{min-width:230px;appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236a7370' stroke-width='2'><path d='M6 9l6 6 6-6'/></svg>");
+    background-repeat:no-repeat;background-position:right 10px center;padding-right:32px}
+  .input:focus,.select:focus,.textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(14,127,114,.14)}
+  .input[readonly]{background:#f6f7f7;color:var(--text-secondary)}
+  .scope-count{font-size:12px;color:var(--text-secondary);font-weight:600}
+
+  /* ---- Default appearance ---- */
+  .two-col{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+  @media(max-width:1080px){.two-col{grid-template-columns:1fr}}
+  .subhead{font-size:12px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;
+    color:var(--text-secondary);margin-bottom:10px}
+  .graphic-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+  .graphic{position:relative;border:2px solid var(--border);border-radius:var(--radius-sm);
+    height:64px;overflow:hidden;cursor:pointer}
+  .graphic.sel{border-color:var(--teal);box-shadow:0 0 0 3px rgba(14,127,114,.16)}
+  .graphic .tick{position:absolute;top:4px;right:4px;width:16px;height:16px;border-radius:50%;
+    background:var(--teal);color:#fff;display:none;place-items:center}
+  .graphic.sel .tick{display:grid}
+  .graphic .tick svg{width:10px;height:10px;stroke:#fff;stroke-width:3;fill:none}
+
+  /* icon picker */
+  .icon-grid{display:flex;flex-wrap:wrap;gap:8px}
+  .icon-opt{width:42px;height:42px;border:1px solid var(--field-border);border-radius:9px;
+    display:grid;place-items:center;background:#fff;cursor:pointer}
+  .icon-opt svg{width:20px;height:20px;stroke:var(--text-secondary);fill:none;stroke-width:1.5}
+  .icon-opt:hover{border-color:var(--border-strong)}
+  .icon-opt.sel{border-color:var(--teal);box-shadow:0 0 0 3px rgba(14,127,114,.16)}
+  .icon-opt.sel svg{stroke:var(--teal-dark)}
+
+  .swatch-row{display:flex;gap:10px;flex-wrap:wrap}
+  .swatch{display:flex;flex-direction:column;gap:6px;align-items:center}
+  .swatch input[type=color]{width:44px;height:44px;border:1px solid var(--field-border);
+    border-radius:10px;padding:0;background:none;cursor:pointer}
+  .swatch input[type=color]::-webkit-color-swatch-wrapper{padding:3px}
+  .swatch input[type=color]::-webkit-color-swatch{border:none;border-radius:7px}
+  .swatch span{font-size:11px;color:var(--text-secondary)}
+
+  /* ---- Slides table ---- */
+  table.data{width:100%;border-collapse:collapse}
+  .data th{font-size:12px;font-weight:700;color:var(--text-secondary);text-align:left;
+    padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap}
+  .data td{padding:12px;border-bottom:1px solid var(--border);vertical-align:middle}
+  .data tr:last-child td{border-bottom:none}
+  .data tbody tr:hover{background:var(--teal-50)}
+  .drag{color:var(--text-muted);cursor:grab}
+  .slide-title-cell{font-weight:600}
+  .slide-title-cell small{display:block;font-weight:400;color:var(--text-secondary);font-size:11.5px;margin-bottom:2px}
+  .bg-chip{display:inline-flex;align-items:center;gap:8px}
+  .bg-thumb{width:52px;height:30px;border-radius:5px;border:1px solid var(--border);flex:none;overflow:hidden}
+  .bg-chip small{font-size:11px;color:var(--text-secondary)}
+  .cell-center{text-align:center}
+  .data th.cell-center{text-align:center}
+  .link-btn{background:none;border:none;color:var(--teal);font-size:13px;font-weight:600;cursor:pointer;padding:6px}
+  .link-btn:hover{text-decoration:underline}
+  .del-slide-link{display:inline-flex;align-items:center;gap:8px;padding:6px 4px}
+  .del-slide-link svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8}
+  .icon-btn{background:none;border:none;color:var(--text-secondary);padding:6px;border-radius:6px}
+  .icon-btn:hover{background:var(--teal-50);color:var(--teal-dark)}
+  .icon-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.7}
+
+  /* toggle */
+  .toggle{position:relative;display:inline-block;vertical-align:middle;width:38px;height:22px;flex:none}
+  .toggle input{opacity:0;width:0;height:0}
+  .toggle .track{position:absolute;inset:0;background:#cdd4d2;border-radius:999px;transition:.15s}
+  .toggle .knob{position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;
+    transition:.15s;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+  .toggle input:checked + .track{background:var(--teal)}
+  .toggle input:checked + .track + .knob{transform:translateX(16px)}
+  /* label + toggle switch row (slide flags in the editor sheet) */
+  .toggle-row{display:flex;align-items:center;gap:10px;cursor:pointer;font-size:13px;font-weight:600;color:var(--text)}
+  .aud-pills{display:flex;gap:8px;flex-wrap:wrap}
+  .aud-pill{border:1.5px solid var(--border-strong);background:#fff;color:var(--text-secondary);
+    font-size:12.5px;font-weight:600;padding:7px 15px;border-radius:999px;cursor:pointer;transition:.12s}
+  .aud-pill:hover{border-color:var(--teal)}
+  .aud-pill.on{border-color:var(--teal);background:var(--teal-50);color:var(--teal-dark)}
+  .aud-tag{display:inline-block;font-size:11.5px;font-weight:600;padding:3px 11px;border-radius:999px;
+    background:#eef1f0;color:var(--text-secondary)}
+  .aud-tag.members{background:var(--teal-50);color:var(--teal-dark)}
+  .aud-tag.nonmembers{background:#fdeede;color:#8a5212}
+
+  .empty{padding:46px 20px;text-align:center;color:var(--text-secondary)}
+  .empty svg{width:34px;height:34px;stroke:var(--teal);fill:none;stroke-width:1.4;margin-bottom:10px}
+  .empty h3{font-size:15px;color:var(--text);margin-bottom:4px}
+
+  .rotate-row{display:flex;align-items:center;gap:12px;padding:14px 22px;border-top:1px solid var(--border);
+    background:#fbfcfc;border-radius:0 0 var(--radius) var(--radius)}
+  .rotate-row .lbl{font-weight:600;font-size:13px}
+  .rotate-row .hint{font-size:12px;color:var(--text-secondary)}
+
+  /* ---- Slide-over ---- */
+  .scrim{position:fixed;inset:0;background:rgba(20,32,30,.36);opacity:0;pointer-events:none;transition:.2s;z-index:40}
+  .scrim.open{opacity:1;pointer-events:auto}
+  .sheet{position:fixed;top:0;right:0;height:100vh;width:560px;max-width:94vw;background:var(--card);
+    box-shadow:var(--shadow-pop);transform:translateX(100%);transition:transform .24s ease;z-index:50;
+    display:flex;flex-direction:column}
+  .sheet.open{transform:none}
+  .sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px;
+    padding:16px 22px;border-bottom:1px solid var(--border)}
+  .sheet-head h2{font-size:16px;font-weight:700;color:var(--teal-dark)}
+  .sheet-head .close{background:none;border:none;color:var(--text-secondary);display:inline-flex;
+    align-items:center;gap:6px;font-size:13px;font-weight:600;padding:6px}
+  .sheet-head .close svg{width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none}
+  .sheet-body{overflow-y:auto;padding:20px 22px;flex:1;display:flex;flex-direction:column;gap:18px}
+  .sheet-foot{display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:14px 22px;border-top:1px solid var(--border)}
+
+  .fieldset{display:flex;flex-direction:column;gap:6px}
+  .fieldset > label{font-size:12px;font-weight:700;color:var(--text-secondary)}
+  .fieldset .help{font-size:11.5px;color:var(--text-muted)}
+  .full{width:100%}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .counter{font-size:11px;color:var(--text-muted);text-align:right}
+  .counter.warn{color:var(--warn);font-weight:700}
+  .section-label{font-size:12px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;
+    color:var(--teal-dark);padding-bottom:6px;border-bottom:1px solid var(--border)}
+  /* Content / Background tabs inside the slide editor sheet */
+  .sheet-tabs{display:flex;gap:2px;border-bottom:1px solid var(--border)}
+  .sheet-tab{appearance:none;border:none;background:none;cursor:pointer;font-family:inherit;font-size:14px;
+    font-weight:600;color:var(--text-secondary);padding:9px 14px 11px;position:relative}
+  .sheet-tab:hover{color:var(--text)}
+  .sheet-tab.on{color:var(--teal-dark)}
+  .sheet-tab.on::after{content:'';position:absolute;left:12px;right:12px;bottom:-1px;height:2px;
+    background:var(--teal);border-radius:2px}
+  .tab-pane{display:flex;flex-direction:column;gap:18px}
+  .tab-pane[hidden]{display:none}
+
+  /* segmented */
+  .seg{display:inline-flex;background:#eef1f0;border-radius:9px;padding:3px;gap:2px}
+  .seg button{border:none;background:none;font-size:12.5px;font-weight:600;color:var(--text-secondary);
+    padding:7px 12px;border-radius:7px}
+  .seg button.on{background:#fff;color:var(--teal-dark);box-shadow:0 1px 2px rgba(0,0,0,.12)}
+
+  /* upload zone */
+  .dropzone{border:1.5px dashed var(--border-strong);border-radius:var(--radius);padding:22px;
+    text-align:center;color:var(--text-secondary);background:#fafbfb;cursor:pointer}
+  .dropzone:hover{border-color:var(--teal);background:var(--teal-50)}
+  .dropzone svg{width:26px;height:26px;stroke:var(--teal);fill:none;stroke-width:1.5;margin-bottom:8px}
+  .dropzone b{color:var(--teal)}
+  .dropzone .fine{font-size:11px;color:var(--text-muted);margin-top:6px}
+  .uploaded{display:flex;align-items:center;gap:12px;margin-top:10px;padding:8px;border:1px solid var(--border);border-radius:9px}
+  .uploaded img{width:70px;height:42px;object-fit:cover;border-radius:6px;flex:none}
+  .uploaded .meta{font-size:12px;min-width:0}
+  .uploaded .meta b{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+
+  /* live preview slide */
+  .preview-wrap{border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;background:var(--w-navy-800)}
+  .preview-slide{position:relative;min-height:190px;padding:22px 24px;display:flex;flex-direction:column;
+    justify-content:center;gap:8px;color:#fff;overflow:hidden}
+  .preview-slide .pv-eyebrow{font-size:11px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+    color:rgba(255,255,255,.86)}
+  .preview-slide .pv-title{font-size:24px;font-weight:700;line-height:1.12;max-width:88%}
+  .preview-slide .pv-copy{font-size:13px;color:rgba(255,255,255,.82);max-width:92%;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .preview-slide .pv-copy.over{white-space:normal}
+  .preview-slide .pv-cta{align-self:flex-start;margin-top:6px;background:var(--w-cta);color:#fff;
+    font-weight:700;font-size:12.5px;padding:8px 15px;border-radius:8px}
+  .preview-slide .pv-watermark{position:absolute;right:-10px;bottom:-24px;width:150px;height:150px;
+    opacity:.14;stroke:#fff;fill:none;stroke-width:1.2;pointer-events:none}
+  .preview-dots{display:flex;gap:6px;justify-content:center;padding:10px}
+  .preview-dots i{width:7px;height:7px;border-radius:50%;background:rgba(255,255,255,.35);display:block}
+  .preview-dots i.on{background:#fff;width:18px;border-radius:4px}
+  .preview-cap{font-size:11px;color:var(--text-muted);text-align:center;padding:0 0 10px}
+
+  /* Preview Widget modal */
+  .pv-overlay{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;
+    padding:24px;background:rgba(20,32,30,.5);opacity:0;pointer-events:none;transition:.2s}
+  .pv-overlay.open{opacity:1;pointer-events:auto}
+  .pv-dialog{width:100%;max-width:560px;background:#fff;border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.28);
+    transform:translateY(10px);transition:transform .2s;overflow:hidden}
+  .pv-overlay.open .pv-dialog{transform:none}
+  .pv-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;
+    padding:18px 20px;border-bottom:1px solid var(--border)}
+  .pv-dialog-title{font-size:16px;font-weight:700;color:var(--text)}
+  .pv-dialog-sub{font-size:12px;color:var(--text-secondary);margin-top:2px}
+  .pv-audience{display:flex;align-items:center;gap:12px;padding:12px 20px;
+    border-bottom:1px solid var(--border);background:#fafbfb}
+  .pv-audience[hidden]{display:none}
+  .pv-audience-label{font-size:12px;font-weight:600;color:var(--text-secondary)}
+  .pv-dialog-body{padding:22px 20px 24px;display:flex;justify-content:center}
+  /* the widget frame — sized to the ACTUAL dashboard What's New carousel
+     (505×490 on desktop, measured on /dashboard-rebrand). The slide background
+     fills the WHOLE frame edge-to-edge; the frame label, content, arrows and
+     dots all overlay on it (matches the dashboard). Shrinks below 505 only on
+     narrow screens so the modal never overflows. */
+  .pv-frame{width:505px;max-width:100%;height:490px;background:var(--w-navy-800);border-radius:14px;
+    position:relative;overflow:hidden}
+  /* full-bleed slide surface — its background (glow + gradient/image) is set
+     per slide in JS; content sits bottom-left, icon/glow top-right. */
+  .pv-frame .preview-slide{position:absolute;inset:0;height:auto;min-height:0;border-radius:0;
+    justify-content:flex-end;padding:24px 26px 30px;gap:7px}
+  .pv-frame-label{position:absolute;top:0;left:0;z-index:3;font-size:12px;font-weight:800;letter-spacing:.12em;
+    text-transform:uppercase;color:rgba(255,255,255,.9);padding:18px 20px}
+  .pv-frame .pv-watermark{top:20px;right:-2px;bottom:auto;width:170px;height:170px;opacity:.2}
+  .pv-frame .pv-cta{background:rgba(255,255,255,.16);color:#fff;border:1px solid rgba(255,255,255,.24)}
+  .pv-frame .preview-dots{position:absolute;right:16px;bottom:14px;padding:0;z-index:3}
+  .pv-nav{position:absolute;top:50%;transform:translateY(-50%);z-index:3;width:34px;height:34px;border-radius:50%;
+    border:none;background:rgba(255,255,255,.16);color:#fff;cursor:pointer;display:flex;align-items:center;
+    justify-content:center;transition:background .15s}
+  .pv-nav:hover{background:rgba(255,255,255,.3)}
+  .pv-nav svg{width:18px;height:18px;fill:none;stroke:currentColor;stroke-width:2.2}
+  .pv-nav.prev{left:14px}.pv-nav.next{right:14px}
+  .pv-empty{text-align:center;color:var(--text-secondary);font-size:14px;padding:40px 10px}
+
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);
+    background:var(--teal-dark);color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;font-weight:600;
+    box-shadow:var(--shadow-pop);opacity:0;pointer-events:none;transition:.22s;z-index:60}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+  .note{font-size:12px;color:var(--text-secondary);background:#f6f9f8;border:1px solid var(--teal-100);
+    border-radius:8px;padding:10px 12px;display:flex;gap:8px}
+  .note svg{width:15px;height:15px;stroke:var(--teal);fill:none;stroke-width:1.8;flex:none;margin-top:1px}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ================= SIDEBAR ================= -->
+  <aside class="sidebar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 24 24" fill="none"><path d="M12 3c3 2 6 3 6 3s0 7-6 12C6 13 6 6 6 6s3-1 6-3z" stroke="#c0392b" stroke-width="1.6" fill="#f7d9d4"/></svg>
+      <span class="brand-name">Colibri</span>
+    </div>
+    <nav class="nav" id="nav">
+      <button class="nav-item"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18"/></svg>Course Modules</button>
+      <button class="nav-item"><svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h10"/></svg>Rustici Courses</button>
+      <button class="nav-item"><svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 9h6v6H9z"/></svg>Qualtrics Surveys</button>
+      <button class="nav-item"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M21 17l-5-4-9 6"/></svg>Course Images</button>
+      <button class="nav-item"><svg viewBox="0 0 24 24"><path d="M12 3l2.5 5 5.5.8-4 3.9 1 5.5L12 15.8 7 18.2l1-5.5-4-3.9L9.5 8z"/></svg>Trust Pilot</button>
+      <button class="nav-item"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h6"/></svg>Recommended Content</button>
+      <button class="nav-item"><svg viewBox="0 0 24 24"><path d="M4 18l6-6 3 3 7-8"/><circle cx="8" cy="8" r="2"/></svg>Partner List</button>
+      <button class="nav-item"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg>Course Supplemental Material</button>
+      <button class="nav-item"><svg viewBox="0 0 24 24"><path d="M6 4h9l3 3v13H6z"/><path d="M9 12h6M9 16h6"/></svg>Supplemental Materials</button>
+      <button class="nav-item"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3"/><path d="M6 20c0-3 3-5 6-5s6 2 6 5"/></svg>Supplemental Material Redemption Codes</button>
+      <button class="nav-item"><svg viewBox="0 0 24 24"><path d="M9 11l2 2 4-4"/><rect x="4" y="4" width="16" height="16" rx="2"/></svg>License Validations</button>
+      <button class="nav-item active" id="navHome"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/></svg>Home</button>
+    </nav>
+    <div class="nav-user"><span class="avatar">JM</span><span>Jillienne Moreno</span></div>
+  </aside>
+
+  <!-- ================= MAIN ================= -->
+  <main class="main">
+    <!-- ============ HOME VIEW ============ -->
+    <section id="homeView">
+      <div class="page-head">
+        <div>
+          <h1 class="page-title">Dashboard Experience</h1>
+          <p class="page-sub">Customize the widgets that make up the new dashboard. Select a widget to configure it.</p>
+        </div>
+      </div>
+      <div class="content">
+        <div class="tiles" id="tiles">
+          <button class="tile enabled" data-widget="carousel">
+            <span class="tile-icon"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="14" height="12" rx="2"/><path d="M19 8v8M22 10v4"/></svg></span>
+            <h3>Carousel Widget</h3>
+            <p>The rotating “What’s New” carousel — slides with eyebrows, title, copy, CTA, and background image or colors.</p>
+            <div class="tile-foot"><span class="pill pill-ready">Configured</span><span class="go">Configure <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></div>
+          </button>
+          <button class="tile enabled" data-widget="membership">
+            <span class="tile-icon"><svg viewBox="0 0 24 24"><path d="M12 3l2.5 5 5.5.8-4 3.9 1 5.5L12 15.8 7 18.2l1-5.5-4-3.9L9.5 8z"/></svg></span>
+            <h3>Membership Widget</h3>
+            <p>The membership summary — tier, benefits, renewal, and upgrade messaging shown on the dashboard.</p>
+            <div class="tile-foot"><span class="pill pill-soon">Set up</span><span class="go">Configure <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></div>
+          </button>
+          <button class="tile enabled" data-widget="recommended">
+            <span class="tile-icon"><svg viewBox="0 0 24 24"><path d="M12 3l2.5 5 5.5.8-4 3.9 1 5.5L12 15.8 7 18.2l1-5.5-4-3.9L9.5 8z" fill="none"/></svg></span>
+            <h3>Recommended for You</h3>
+            <p>The personalized recommendation shelves — which shelves show, ordering, and card style.</p>
+            <div class="tile-foot"><span class="pill pill-ready">Configured</span><span class="go">Configure <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></div>
+          </button>
+          <button class="tile enabled" data-widget="trending">
+            <span class="tile-icon"><svg viewBox="0 0 24 24"><path d="M4 17l5-5 3 3 8-8"/><path d="M15 7h5v5"/></svg></span>
+            <h3>What’s Trending</h3>
+            <p>Trending courses and content across the learner community — sources, filters, and refresh cadence.</p>
+            <div class="tile-foot"><span class="pill pill-soon">Set up</span><span class="go">Configure <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></div>
+          </button>
+          <button class="tile enabled" data-widget="career">
+            <span class="tile-icon"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span>
+            <h3>Career Tools</h3>
+            <p>The Rubi AI career tools block — which tools appear, tier gating, and promotional copy.</p>
+            <div class="tile-foot"><span class="pill pill-soon">Set up</span><span class="go">Configure <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></div>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CAROUSEL WIDGET CONFIG VIEW ============ -->
+    <section id="configView" style="display:none">
+    <div class="page-head">
+      <div>
+        <div class="crumbs"><a id="crumbHome">Home</a><span class="sep">›</span><span class="cur">Carousel Widget</span></div>
+        <h1 class="page-title">Carousel Widget</h1>
+        <p class="page-sub">Set up the carousel slides and appearance, per subsidiary and license type.</p>
+      </div>
+      <div class="head-actions">
+        <button class="btn btn-ghost" id="previewBtn"><svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Preview Widget</button>
+        <button class="btn btn-primary" id="saveAllBtn"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>Save Configuration</button>
+      </div>
+    </div>
+
+    <div class="content">
+      <!-- Combined scope + slides -->
+      <div class="card">
+        <!-- Top: scope bar + single Add Slide CTA (top right) -->
+        <div class="card-pad scope-section">
+          <div class="scopebar">
+            <div class="field">
+              <label>Subsidiary <span class="req">*</span></label>
+              <select class="select" id="subsidiary">
+                <option value="">Select a subsidiary…</option>
+                <option>Colibri Real Estate LLC</option>
+                <option selected>McKissock LP</option>
+                <option>Elite Healthcare</option>
+                <option>Securities Training Corporation</option>
+              </select>
+            </div>
+            <div class="field">
+              <label>License Type <span class="req">*</span></label>
+              <select class="select" id="licenseType">
+                <option>Real Estate Continuing Education</option>
+                <option>Real Estate License Education</option>
+                <option>Appraisal Continuing Education</option>
+              </select>
+            </div>
+            <div class="field">
+              <label style="display:flex;justify-content:space-between;align-items:baseline;gap:12px">Widget Frame Name <span class="counter" id="cFrameName">10 / 40</span></label>
+              <input class="input" id="frameName" maxlength="40" value="What's New" placeholder="e.g. What's New" style="min-width:230px">
+            </div>
+            <div class="field" style="margin-left:auto">
+              <button class="btn btn-outline" id="addSlideBtn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add Slide</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Bottom: slides table -->
+        <div class="card-head">
+          <div>
+            <h2>Slides</h2>
+            <div class="card-desc">Drag to reorder. Maximum of 5 slides. Only enabled slides appear in the widget.</div>
+          </div>
+          <div class="scope-count" id="slideCount">3 / 5 slides</div>
+        </div>
+        <table class="data">
+          <thead>
+            <tr>
+              <th style="width:28px"></th>
+              <th class="cell-center" style="width:36px">Order</th>
+              <th>Slide Title</th>
+              <th>Background</th>
+              <th class="cell-center">Shown For</th>
+              <th class="cell-center">Enabled</th>
+              <th class="cell-center" style="width:80px">Edit</th>
+            </tr>
+          </thead>
+          <tbody id="slidesBody"></tbody>
+        </table>
+        <div class="rotate-row">
+          <label class="toggle"><input type="checkbox" id="autoRotate" checked><span class="track"></span><span class="knob"></span></label>
+          <span class="lbl">Rotate slides automatically</span>
+          <span class="hint">When on, the widget advances slides on a timer. When off, learners use the arrows/dots.</span>
+        </div>
+      </div>
+    </div>
+    </section>
+  </main>
+</div>
+
+<!-- ================= SLIDE EDITOR SLIDE-OVER ================= -->
+<div class="scrim" id="scrim"></div>
+<aside class="sheet" id="sheet" aria-hidden="true">
+  <div class="sheet-head">
+    <button class="close" id="sheetClose"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Close</button>
+    <h2 id="sheetTitle">Edit Slide</h2>
+  </div>
+  <div class="sheet-body" id="sheetBody">
+
+    <div class="sheet-tabs" role="tablist" aria-label="Slide sections">
+      <button type="button" class="sheet-tab on" data-tab="content" role="tab" aria-selected="true">Content</button>
+      <button type="button" class="sheet-tab" data-tab="background" role="tab" aria-selected="false">Background</button>
+    </div>
+
+    <div class="tab-pane" data-pane="content">
+    <div class="fieldset">
+      <label>Eyebrow Text Header</label>
+      <input class="input full" id="fEyebrow" maxlength="40" placeholder="e.g. Just launched for members">
+      <div class="counter" id="cEyebrow"></div>
+    </div>
+
+    <div class="fieldset">
+      <label>Title <span class="help">(large text)</span></label>
+      <input class="input full" id="fTitle" maxlength="60" placeholder="e.g. New Pharmacology CE Series">
+      <div class="counter" id="cTitle"></div>
+    </div>
+
+    <div class="fieldset">
+      <label>Copy</label>
+      <textarea class="textarea full" id="fCopy" rows="2" maxlength="120" placeholder="One line of supporting copy…"></textarea>
+      <div class="counter" id="cCopy"></div>
+    </div>
+
+    <div class="row2">
+      <div class="fieldset">
+        <label>CTA — Name</label>
+        <input class="input full" id="fCtaName" maxlength="24" placeholder="e.g. Explore now">
+        <div class="counter" id="cCtaName"></div>
+      </div>
+      <div class="fieldset">
+        <label>CTA — Link <span class="help">(where it goes)</span></label>
+        <input class="input full" id="fCtaLink" placeholder="/membership/plans or https://…">
+      </div>
+    </div>
+
+
+    </div><!-- /content pane -->
+
+    <div class="tab-pane" data-pane="background" hidden>
+    <!-- image background (upload or preset library) -->
+    <div class="fieldset" id="bgImagePane">
+      <div class="dropzone" id="dropzone">
+        <svg viewBox="0 0 24 24"><path d="M12 16V4M8 8l4-4 4 4"/><path d="M4 16v3a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-3"/></svg>
+        <div><b>Click to upload</b> or drag and drop</div>
+        <div class="fine">PNG or JPG · recommended 1600×600 · max 2 MB</div>
+        <input type="file" id="fileInput" accept="image/png,image/jpeg" hidden>
+      </div>
+      <div id="uploadedBox"></div>
+      <label style="font-size:12px;font-weight:700;color:var(--text-secondary);margin-top:6px">Or choose from the background library</label>
+      <div class="help" style="margin-top:-2px">Give each slide its own background so the carousel stays varied.</div>
+      <div class="graphic-grid" id="bgLibraryGrid" style="grid-template-columns:repeat(3,1fr)"></div>
+    </div>
+
+
+    <div class="fieldset">
+      <label>Icon <span class="help">(shown on the slide graphic)</span></label>
+      <div class="icon-grid" id="iconGrid"></div>
+    </div>
+    </div><!-- /background pane -->
+
+    <div class="fieldset" style="gap:16px">
+      <div class="field">
+        <label>Show For</label>
+        <div class="aud-pills" id="audPills">
+          <button type="button" class="aud-pill on" data-aud="all">All Users</button>
+          <button type="button" class="aud-pill on" data-aud="member">Members</button>
+          <button type="button" class="aud-pill on" data-aud="non-member">Non-Members</button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="sheet-foot">
+    <button type="button" class="link-btn del-slide-link" id="deleteSlideLink"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13"/></svg>Delete Slide</button>
+    <div style="display:flex;gap:10px;margin-left:auto">
+      <button class="btn btn-ghost" id="cancelSlideBtn">Cancel</button>
+      <button class="btn btn-primary" id="saveSlideBtn">Save Slide</button>
+    </div>
+  </div>
+</aside>
+
+<!-- ================= PREVIEW WIDGET MODAL ================= -->
+<div class="pv-overlay" id="previewOverlay" aria-hidden="true">
+  <div class="pv-dialog" role="dialog" aria-modal="true" aria-label="Widget preview">
+    <div class="pv-dialog-head">
+      <div>
+        <div class="pv-dialog-title">Widget Preview</div>
+        <div class="pv-dialog-sub" id="pvSub"></div>
+      </div>
+      <button class="icon-btn" id="pvClose" aria-label="Close preview"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="pv-audience" id="pvAudienceBar" hidden>
+      <span class="pv-audience-label">Preview as</span>
+      <div class="seg" id="pvAudienceSeg" role="radiogroup" aria-label="Preview audience">
+        <button type="button" class="on" role="radio" aria-checked="true" data-aud="member">Member</button>
+        <button type="button" role="radio" aria-checked="false" data-aud="non-member">Non-Member</button>
+      </div>
+    </div>
+    <div class="pv-dialog-body">
+      <div class="pv-frame" id="pvFrame">
+        <div class="preview-slide" id="pvSlide"></div>
+        <div class="pv-frame-label" id="pvFrameLabel">What's New</div>
+        <button class="pv-nav prev" id="pvPrev" aria-label="Previous slide"><svg viewBox="0 0 24 24"><path d="M15 6l-6 6 6 6"/></svg></button>
+        <button class="pv-nav next" id="pvNext" aria-label="Next slide"><svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></button>
+        <div class="preview-dots" id="pvDots"></div>
+      </div>
+      <div class="pv-empty" id="pvEmpty" hidden>No enabled slides to preview. Enable at least one slide to see the widget.</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================ DATA ============================ */
+/* Per-slide background library — brand color as gradient start, always ending
+   at #092348 (rgb 9 35 72). 5 options: primary / secondary / cta / tertiary / neutral-800. */
+// Each preset runs the SAME ramp from its 800 (darker) at the BOTTOM-LEFT to
+// its 500 (lighter) at the TOP-RIGHT via `45deg` — Elite palette. Neutral uses
+// 800 → 700. `accent` is that ramp's 200 stop — the light tint used for the
+// slide's corner icon + glow.
+const BG_LIBRARY = [
+  {id:'b1', label:'Primary',      accent:'#a2bce1', css:`linear-gradient(45deg,#041124,#1758b6)`}, // 900 → 500, icon = 200
+  {id:'b2', label:'Secondary',    accent:'#bee7ec', css:`linear-gradient(45deg,#122729,#5ec5d0)`},
+  {id:'b3', label:'CTA',          accent:'#d9b5d5', css:`linear-gradient(45deg,#200e1d,#a24796)`},
+  {id:'b4', label:'Tertiary',     accent:'#fbcba9', css:`linear-gradient(45deg,#311808,#f77d29)`},
+  {id:'b5', label:'Neutral',      accent:'#d9d9d9', css:`linear-gradient(45deg,#202020,#616161)`},
+];
+// The light (200) accent for a slide's icon + corner glow, derived from the
+// selected library background. Uploaded photos have no selected color → white.
+function iconAccent(s){
+  if(s.image) return '#ffffff';
+  return (BG_LIBRARY.find(b=>b.id===s.bgLibrary)||BG_LIBRARY[0]).accent;
+}
+
+/* Selectable slide icons (inner SVG markup, viewBox 0 0 24 24) */
+/* Healthcare-themed icon library (stroke SVGs, viewBox 0 0 24 24).
+   `pulse` stays as the default/fallback key referenced elsewhere. */
+const ICONS = {
+  pulse:'<path d="M3 12h4l2-7 4 14 2-7h6"/>',
+  heart:'<path d="M12 20C7 16 4 13 4 9.5A3.5 3.5 0 0 1 12 7 3.5 3.5 0 0 1 20 9.5C20 13 17 16 12 20Z"/>',
+  stethoscope:'<path d="M6 3v5a4 4 0 0 0 8 0V3"/><path d="M10 16a5 5 0 0 0 10 0v-3"/><circle cx="20" cy="11" r="2"/>',
+  pill:'<rect x="3" y="8.5" width="18" height="7" rx="3.5" transform="rotate(-45 12 12)"/><path d="M8.5 8.5l7 7"/>',
+  cross:'<path d="M9 3h6v6h6v6h-6v6H9v-6H3V9h6z"/>',
+  aidkit:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><path d="M12 11v5M9.5 13.5h5"/>',
+  shield:'<path d="M12 3l8 3v6c0 5-3.5 7.5-8 9-4.5-1.5-8-4-8-9V6z"/><path d="M12 9.5v5M9.5 12h5"/>',
+  flask:'<path d="M9 3h6M10 3v5L5 18a2 2 0 0 0 2 3h10a2 2 0 0 0 2-3L14 8V3"/><path d="M7.5 14h9"/>',
+  clipboard:'<rect x="5" y="4" width="14" height="17" rx="2"/><path d="M9 4a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1H9z"/><path d="M12 9v6M9 12h6"/>',
+  hospital:'<rect x="4" y="8" width="16" height="12" rx="1"/><path d="M9 8V4h6v4"/><path d="M12 11v4M10 13h4"/>',
+};
+const ICON_KEYS = Object.keys(ICONS);
+
+const seed = [
+  {id:1, eyebrow:'Just launched for members',
+   title:'New Pharmacology CE Series', copy:'Six new accredited courses on high-alert medications.',
+   ctaName:'Start learning', ctaLink:'/my-learning/courses',
+   bgLibrary:'b1', image:null, icon:'pill', showMembers:true, showNonMembers:true, enabled:true},
+  {id:2, eyebrow:'Member exclusive',
+   title:'Rubi AI Career Tools', copy:'Resume review and interview prep, now in your dashboard.',
+   ctaName:'Try Rubi', ctaLink:'/membership?section=m-career-tools',
+   bgLibrary:'b3', image:null, icon:'clipboard', showMembers:true, showNonMembers:false, enabled:true},
+  {id:3, eyebrow:'Free for everyone',
+   title:'CE Podcasts Season 3', copy:'Earn credit on your commute with 12 fresh episodes.',
+   ctaName:'Listen now', ctaLink:'/my-learning/podcasts',
+   bgLibrary:'b2', image:null, icon:'heart', showMembers:true, showNonMembers:true, enabled:false},
+];
+
+let slides = seed.map(s=>({...s}));
+let editingId = null;   // null = adding
+const MAX_SLIDES = 5;
+const COPY_WRAP = 74;   // chars beyond which copy risks wrapping on desktop
+
+/* ============================ HELPERS ============================ */
+const $ = s=>document.querySelector(s);
+const $$ = s=>[...document.querySelectorAll(s)];
+function toast(msg){const t=$('#toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2200);}
+function libraryCss(id){return (BG_LIBRARY.find(b=>b.id===id)||BG_LIBRARY[0]).css;}
+function iconSvg(key,cls){return `<svg class="${cls||''}" viewBox="0 0 24 24">${ICONS[key]||ICONS.pulse}</svg>`;}
+// Dark navy scrim laid OVER an uploaded photo so the white eyebrow / title /
+// copy / CTA stay readable — darker at the bottom (where the content sits) and
+// with enough top wash for the "What's New" label. Library + solid gradients
+// are already dark, so they don't need it.
+const IMG_SCRIM = 'linear-gradient(to top, rgba(6,25,54,.9), rgba(6,25,54,.32) 52%, rgba(6,25,54,.6))';
+function slideBg(s){
+  // Backgrounds are image-only: an uploaded photo (with a dark scrim for text
+  // readability) or a preset library gradient.
+  if(s.image) return `${IMG_SCRIM}, center/cover no-repeat url(${s.image})`;
+  return libraryCss(s.bgLibrary);
+}
+function bgThumb(s){
+  const el=document.createElement('div');el.className='bg-thumb';
+  el.style.background=slideBg(s);return el;
+}
+function bgLabel(s){
+  return s.image?'Uploaded image':'Library background';
+}
+
+/* ============================ SLIDES TABLE ============================ */
+function renderSlides(){
+  const body=$('#slidesBody');body.innerHTML='';
+  if(!slides.length){
+    body.innerHTML=`<tr><td colspan="7"><div class="empty">
+      <svg viewBox="0 0 24 24"><path d="M4 9v6h4l6 4V5L8 9H4z"/><path d="M17 8a5 5 0 0 1 0 8"/></svg>
+      <h3>No slides yet</h3><div>Add up to 5 slides to build the What's New carousel.</div></div></td></tr>`;
+    updateCounts();return;
+  }
+  slides.forEach((s,i)=>{
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td><span class="drag" title="Drag to reorder">⠿</span></td>
+      <td class="cell-center">${i+1}</td>
+      <td class="slide-title-cell">${s.eyebrow?`<small>${escapeHtml(s.eyebrow)}</small>`:''}${escapeHtml(s.title||'Untitled slide')}</td>
+      <td><span class="bg-chip"><span class="thumbslot"></span></span></td>
+      <td class="cell-center">${audienceTag(s)}</td>
+      <td class="cell-center"><label class="toggle"><input type="checkbox" ${s.enabled?'checked':''} data-toggle="${s.id}"><span class="track"></span><span class="knob"></span></label></td>
+      <td class="cell-center"><button class="link-btn" data-edit="${s.id}">Edit</button></td>`;
+    tr.querySelector('.thumbslot').replaceWith(bgThumb(s));
+    body.appendChild(tr);
+  });
+  body.querySelectorAll('[data-edit]').forEach(b=>b.onclick=()=>openEditor(+b.dataset.edit));
+  body.querySelectorAll('[data-toggle]').forEach(t=>t.onchange=()=>{
+    const s=slides.find(x=>x.id===+t.dataset.toggle);s.enabled=t.checked;
+  });
+  updateCounts();
+}
+/* Who a slide is shown to — derived from showMembers/showNonMembers
+   (both ⇒ All Users). Rendered as a read-only tag in the Shown For column;
+   edited via the slide editor's "Show For" pills. */
+function audienceTag(s){
+  const m=s.showMembers!==false, n=s.showNonMembers!==false;
+  if(m&&n) return `<span class="aud-tag">All Users</span>`;
+  if(m) return `<span class="aud-tag members">Members</span>`;
+  if(n) return `<span class="aud-tag nonmembers">Non-Members</span>`;
+  return `<span style="color:var(--text-muted)">—</span>`;
+}
+function updateCounts(){
+  const txt=`${slides.length} / ${MAX_SLIDES} slides`;
+  $('#slideCount').textContent=txt;
+  const full=slides.length>=MAX_SLIDES;
+  ['#addSlideBtn'].forEach(sel=>{$(sel).disabled=full;$(sel).title=full?'Maximum of 5 slides reached':'';});
+}
+function escapeHtml(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+
+/* ============================ EDITOR ============================ */
+/* "Show For" audience pills — multi-select Members / Non-Members, with an
+   All Users convenience that selects both. At least one must stay selected. */
+function setAudPills(showMembers, showNonMembers){
+  const p=$('#audPills');
+  p.querySelector('[data-aud="member"]').classList.toggle('on',showMembers);
+  p.querySelector('[data-aud="non-member"]').classList.toggle('on',showNonMembers);
+  p.querySelector('[data-aud="all"]').classList.toggle('on',showMembers&&showNonMembers);
+}
+function getAud(){
+  const p=$('#audPills');
+  return {
+    showMembers:p.querySelector('[data-aud="member"]').classList.contains('on'),
+    showNonMembers:p.querySelector('[data-aud="non-member"]').classList.contains('on'),
+  };
+}
+$('#audPills').querySelectorAll('[data-aud]').forEach(b=>b.onclick=()=>{
+  let {showMembers,showNonMembers}=getAud();
+  const a=b.dataset.aud;
+  if(a==='all'){ showMembers=true; showNonMembers=true; }
+  else if(a==='member'){ if(showMembers && !showNonMembers) return; showMembers=!showMembers; } // don't allow zero
+  else { if(showNonMembers && !showMembers) return; showNonMembers=!showNonMembers; }
+  setAudPills(showMembers,showNonMembers);
+});
+function openEditor(id){
+  editingId = id ?? null;
+  const s = id!=null ? slides.find(x=>x.id===id) : blankSlide();
+  $('#sheetTitle').textContent = id!=null ? 'Edit Slide' : 'Add Slide';
+  // Delete Slide link only shows when editing an existing slide (mirrors the
+  // Delete Motivational Statement link, which is hidden while adding fresh).
+  $('#deleteSlideLink').style.display = id!=null ? '' : 'none';
+  $('#fEyebrow').value=s.eyebrow||'';
+  $('#fTitle').value=s.title||''; $('#fCopy').value=s.copy||'';
+  $('#fCtaName').value=s.ctaName||''; $('#fCtaLink').value=s.ctaLink||'';
+  setAudPills(s.showMembers!==false, s.showNonMembers!==false);
+  draft.image = s.image||null;
+  draft.bgLibrary = s.bgLibrary||null;
+  draft.icon = s.icon||'pulse';
+  renderUploaded(s.image);
+  renderBgLibrary(); renderIconGrid();
+  syncPreview(); updateCounters();
+  setSheetTab('content'); // always open on the Content tab
+  openSheet();
+}
+/* Content / Background tabs within the sheet */
+function setSheetTab(tab){
+  $$('.sheet-tab').forEach(x=>{const on=x.dataset.tab===tab;x.classList.toggle('on',on);x.setAttribute('aria-selected',on);});
+  $$('.tab-pane').forEach(p=>{p.hidden=p.dataset.pane!==tab;});
+  $('#sheetBody').scrollTop=0;
+}
+$$('.sheet-tab').forEach(t=>t.onclick=()=>setSheetTab(t.dataset.tab));
+function blankSlide(){return {eyebrow:'',title:'',copy:'',ctaName:'',ctaLink:'',
+  bgLibrary:'b1',icon:'pulse',image:null,showMembers:true,showNonMembers:true,enabled:true};}
+const draft={image:null,bgLibrary:null,icon:'pulse'};
+
+function renderBgLibrary(){
+  const grid=$('#bgLibraryGrid');grid.innerHTML='';
+  BG_LIBRARY.forEach(b=>{
+    const d=document.createElement('div');
+    d.className='graphic'+(!draft.image && draft.bgLibrary===b.id?' sel':'');
+    d.style.background=b.css;d.title=b.label;
+    d.innerHTML='<span class="tick"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg></span>';
+    d.onclick=()=>{draft.bgLibrary=b.id;draft.image=null;renderUploaded(null);renderBgLibrary();syncPreview();};
+    grid.appendChild(d);
+  });
+}
+function renderIconGrid(){
+  const grid=$('#iconGrid');grid.innerHTML='';
+  ICON_KEYS.forEach(k=>{
+    const b=document.createElement('button');b.type='button';
+    b.className='icon-opt'+(k===draft.icon?' sel':'');b.innerHTML=iconSvg(k);
+    b.onclick=()=>{draft.icon=k;renderIconGrid();syncPreview();};
+    grid.appendChild(b);
+  });
+}
+
+function renderUploaded(img){
+  const box=$('#uploadedBox');box.innerHTML='';
+  if(!img)return;
+  const d=document.createElement('div');d.className='uploaded';
+  d.innerHTML=`<img src="${img}"><div class="meta"><b>background.png</b><span style="color:var(--text-secondary)">Uploaded · click preview to view</span></div>
+    <button class="btn btn-ghost" style="margin-left:auto;padding:6px 10px" id="removeImg">Remove</button>`;
+  box.appendChild(d);
+  $('#removeImg').onclick=()=>{draft.image=null;renderUploaded(null);renderBgLibrary();syncPreview();};
+}
+function acceptUpload(dataUrl){draft.image=dataUrl;draft.bgLibrary=null;renderUploaded(dataUrl);renderBgLibrary();syncPreview();}
+$('#dropzone').onclick=()=>$('#fileInput').click();
+$('#fileInput').onchange=e=>{
+  const f=e.target.files[0];if(!f)return;
+  const r=new FileReader();r.onload=()=>acceptUpload(r.result);r.readAsDataURL(f);
+};
+['dragover','dragleave','drop'].forEach(ev=>$('#dropzone').addEventListener(ev,e=>{
+  e.preventDefault();
+  if(ev==='drop'){const f=e.dataTransfer.files[0];if(f){const r=new FileReader();r.onload=()=>acceptUpload(r.result);r.readAsDataURL(f);}}
+}));
+
+/* live preview + counters */
+// No-op: the in-sheet live preview was removed (preview lives in the Preview
+// Widget modal now). Kept as a stub so existing callers stay harmless.
+function syncPreview(){}
+function counter(inputId,cId,max,warnAt){
+  const v=$('#'+inputId).value.length;const el=$('#'+cId);
+  el.textContent=`${v} / ${max}`;
+  el.classList.toggle('warn', warnAt?v>warnAt:v>=max);
+}
+function updateCounters(){
+  counter('fEyebrow','cEyebrow',40);
+  counter('fTitle','cTitle',60);
+  const cv=$('#fCopy').value.length;const cc=$('#cCopy');
+  cc.textContent=`${cv} / 120`;
+  const wrap=cv>COPY_WRAP;
+  cc.classList.toggle('warn',wrap);
+  if(wrap)cc.textContent=`${cv} / 120 · may wrap to 2 lines on desktop`;
+  counter('fCtaName','cCtaName',24);
+}
+['fEyebrow','fTitle','fCopy','fCtaName','fCtaLink'].forEach(id=>
+  $('#'+id).addEventListener('input',()=>{syncPreview();updateCounters();}));
+
+/* save / delete */
+$('#saveSlideBtn').onclick=()=>{
+  const data={
+    eyebrow:$('#fEyebrow').value,
+    title:$('#fTitle').value,copy:$('#fCopy').value,
+    ctaName:$('#fCtaName').value,ctaLink:$('#fCtaLink').value,
+    image:draft.image,bgLibrary:draft.bgLibrary,icon:draft.icon,
+    ...getAud(),
+    // `enabled` is not edited in the sheet — it's toggled from the table.
+    // Editing preserves the slide's current value; a new slide starts enabled.
+  };
+  if(editingId!=null){Object.assign(slides.find(s=>s.id===editingId),data);toast('Slide saved');}
+  else{data.id=Date.now();data.enabled=true;slides.push(data);toast('Slide added');}
+  renderSlides();closeSheet();
+};
+$('#deleteSlideLink').onclick=()=>{
+  if(editingId!=null){slides=slides.filter(s=>s.id!==editingId);renderSlides();closeSheet();toast('Slide deleted');}
+};
+
+/* sheet open/close */
+function openSheet(){$('#scrim').classList.add('open');$('#sheet').classList.add('open');$('#sheet').setAttribute('aria-hidden','false');}
+function closeSheet(){$('#scrim').classList.remove('open');$('#sheet').classList.remove('open');$('#sheet').setAttribute('aria-hidden','true');}
+$('#sheetClose').onclick=closeSheet;$('#cancelSlideBtn').onclick=closeSheet;$('#scrim').onclick=closeSheet;
+$('#addSlideBtn').onclick=()=>{if(slides.length<MAX_SLIDES)openEditor(null);};
+
+/* Widget Frame Name — the fixed frame label that stays put while slides
+   rotate (a widget-level setting, not per-slide). Keeps a 40-char limit. */
+$('#frameName').addEventListener('input',()=>counter('frameName','cFrameName',40));
+
+/* head actions */
+$('#saveAllBtn').onclick=()=>toast('Configuration saved for '+$('#subsidiary').value);
+/* ---- Preview Widget modal: renders the current frame name + enabled slides ---- */
+let pvList=[], pvIndex=0, pvAudience='member';
+function renderPvSlide(){
+  if(!pvList.length) return;
+  pvIndex=Math.max(0,Math.min(pvIndex,pvList.length-1)); // clamp — no wrap-around
+  const s=pvList[pvIndex];
+  const slide=$('#pvSlide');
+  const accent=iconAccent(s); // the background's 200 tint — drives the icon + glow
+  // The background fills the WHOLE frame (edge-to-edge) with a soft glow circle
+  // top-right in the background's 200 tint — the label/content/arrows/dots overlay.
+  $('#pvFrame').style.background=`radial-gradient(circle at 90% 12%, ${accent}59, transparent 46%), ${slideBg(s)}`;
+  const over=(s.copy||'').length>COPY_WRAP;
+  slide.innerHTML=`
+    <div class="pv-eyebrow">${escapeHtml(s.eyebrow||'')}</div>
+    <div class="pv-title">${escapeHtml(s.title||'Slide title')}</div>
+    <div class="pv-copy${over?' over':''}">${escapeHtml(s.copy||'')}</div>
+    ${s.ctaName?`<span class="pv-cta">${escapeHtml(s.ctaName)}</span>`:''}
+    <svg class="pv-watermark" viewBox="0 0 24 24" style="stroke:${accent}">${ICONS[s.icon]||ICONS.pulse}</svg>`;
+  const dots=$('#pvDots');
+  dots.innerHTML=pvList.map((_,i)=>`<i class="${i===pvIndex?'on':''}" data-pv-dot="${i}"></i>`).join('');
+  dots.querySelectorAll('[data-pv-dot]').forEach(d=>d.onclick=()=>{pvIndex=+d.dataset.pvDot;renderPvSlide();});
+  // Arrows only where there's somewhere to go — no left arrow on the first
+  // slide, no right arrow on the last.
+  $('#pvPrev').style.display=pvIndex>0?'':'none';
+  $('#pvNext').style.display=pvIndex<pvList.length-1?'':'none';
+  dots.style.display=pvList.length>1?'':'none';
+}
+/* enabled slides the chosen audience actually sees — each slide's Show For
+   setting decides whether members and/or non-members get it. */
+function pvVisible(){
+  return slides.filter(s=>s.enabled &&
+    (pvAudience==='member' ? s.showMembers!==false : s.showNonMembers!==false));
+}
+function setPvAudienceSeg(aud){
+  $('#pvAudienceSeg').querySelectorAll('[data-aud]').forEach(b=>{
+    const on=b.dataset.aud===aud;
+    b.classList.toggle('on',on);
+    b.setAttribute('aria-checked',on?'true':'false');
+  });
+}
+function applyAudience(){
+  pvList=pvVisible();
+  pvIndex=0;
+  const has=pvList.length>0;
+  $('#pvFrame').style.display=has?'':'none';
+  const empty=$('#pvEmpty');
+  empty.hidden=has;
+  empty.textContent = !slides.some(s=>s.enabled)
+    ? 'No enabled slides to preview. Enable at least one slide to see the widget.'
+    : (pvAudience==='non-member'
+        ? 'No slides are shown to non-members with the current settings.'
+        : 'No slides are shown to members with the current settings.');
+  if(has) renderPvSlide();
+}
+function openPreview(){
+  pvAudience='member';
+  // The audience switch only matters when the member/non-member versions
+  // differ — i.e. some enabled slide is shown to one audience but not the other.
+  const differ=slides.some(s=>s.enabled && (s.showMembers!==false)!==(s.showNonMembers!==false));
+  $('#pvAudienceBar').hidden=!differ;
+  setPvAudienceSeg('member');
+  $('#pvFrameLabel').textContent=$('#frameName').value.trim()||"What's New";
+  $('#pvSub').textContent=`${$('#subsidiary').value||'—'} · ${$('#licenseType').value}`;
+  applyAudience();
+  const o=$('#previewOverlay');o.classList.add('open');o.setAttribute('aria-hidden','false');
+}
+function closePreview(){const o=$('#previewOverlay');o.classList.remove('open');o.setAttribute('aria-hidden','true');}
+$('#previewBtn').onclick=openPreview;
+$('#pvClose').onclick=closePreview;
+$('#pvAudienceSeg').querySelectorAll('[data-aud]').forEach(b=>b.onclick=()=>{
+  pvAudience=b.dataset.aud; setPvAudienceSeg(pvAudience); applyAudience();
+});
+$('#previewOverlay').addEventListener('click',e=>{if(e.target===$('#previewOverlay'))closePreview();});
+$('#pvPrev').onclick=()=>{pvIndex--;renderPvSlide();};
+$('#pvNext').onclick=()=>{pvIndex++;renderPvSlide();};
+document.addEventListener('keydown',e=>{
+  if(!$('#previewOverlay').classList.contains('open'))return;
+  if(e.key==='Escape')closePreview();
+  else if(e.key==='ArrowLeft'){pvIndex--;renderPvSlide();}
+  else if(e.key==='ArrowRight'){pvIndex++;renderPvSlide();}
+});
+$('#subsidiary').onchange=()=>toast('Loaded config for '+($('#subsidiary').value||'—'));
+$('#licenseType').onchange=()=>toast('Loaded '+$('#licenseType').value);
+
+/* ============================ VIEW SWITCHING ============================ */
+function showHome(){$('#homeView').style.display='';$('#configView').style.display='none';window.scrollTo(0,0);}
+function showConfig(){$('#homeView').style.display='none';$('#configView').style.display='';window.scrollTo(0,0);}
+$$('#tiles .tile').forEach(t=>t.onclick=()=>{
+  const w=t.dataset.widget;
+  if(w==='carousel'){showConfig();}
+  else if(w==='recommended'){location.href='recommended-setup.html';}
+  else{toast(t.querySelector('h3').textContent+' — configuration coming soon');}
+});
+$('#crumbHome').onclick=showHome;
+$('#navHome').onclick=showHome;
+
+/* init */
+counter('frameName','cFrameName',40);
+renderSlides();showHome();
+</script>
+</body>
+</html>

@@ -4,6 +4,7 @@ import type {
   DevHandoffDesignSpec,
   DevHandoffState,
   DevHandoffUiUxLogic,
+  DevHandoffUserStory,
 } from '@/data/prototypeFeatures'
 import {
   detailItemStyle,
@@ -210,6 +211,80 @@ export function DevHandoffDesignSpecBody({ spec }: { spec: DevHandoffDesignSpec 
 }
 
 /** Testable Definition-of-Done checklist for one component. */
+/** The PO's user story: the "as a / I want / so that" clauses set out as a
+ *  labelled list, then the business case and any scope notes.
+ *
+ *  The three clauses get small-caps labels rather than being run together as a
+ *  sentence — a dev scanning for "who is this for" should find it without
+ *  reading the whole paragraph, and the labels also make an unfinished story
+ *  obvious (a `soThat` that merely restates `iWant` is visible immediately when
+ *  the two sit under their own headings). */
+export function DevHandoffUserStoryBody({ story }: { story: DevHandoffUserStory }) {
+  const clause = (label: string, text: string) => (
+    <div style={{ display: 'flex', gap: 12 }}>
+      <span
+        style={{
+          flex: 'none',
+          width: 56,
+          paddingTop: 1,
+          fontSize: 10,
+          fontWeight: 700,
+          letterSpacing: '0.06em',
+          textTransform: 'uppercase',
+          color: 'var(--color-text-tertiary)',
+        }}
+      >
+        {label}
+      </span>
+      <span style={{ fontSize: 13, lineHeight: '20px', color: 'var(--color-text-primary)' }}>
+        {text}
+      </span>
+    </div>
+  )
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+      {clause('As a', story.asA)}
+      {clause('I want', story.iWant)}
+      {clause('So that', story.soThat)}
+
+      {story.value && (
+        <p
+          style={{
+            margin: '6px 0 0',
+            paddingTop: 12,
+            borderTop: '1px solid var(--color-border-subtle)',
+            fontSize: 13,
+            lineHeight: '20px',
+            color: 'var(--color-text-secondary)',
+          }}
+        >
+          <b style={{ color: 'var(--color-text-primary)' }}>Why it matters. </b>
+          {story.value}
+        </p>
+      )}
+
+      {story.notes && story.notes.length > 0 && (
+        <ul
+          style={{
+            margin: '2px 0 0',
+            paddingLeft: 18,
+            display: 'flex',
+            flexDirection: 'column',
+            gap: 4,
+          }}
+        >
+          {story.notes.map((n, i) => (
+            <li key={i} style={{ fontSize: 13, lineHeight: '20px', color: 'var(--color-text-secondary)' }}>
+              {n}
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  )
+}
+
 export function DevHandoffAcceptanceBody({ items }: { items: string[] }) {
   return (
     <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>

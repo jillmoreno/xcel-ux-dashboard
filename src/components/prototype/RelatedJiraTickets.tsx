@@ -30,11 +30,21 @@ export function RelatedJiraTickets({
   scopeKey,
   configTickets = [],
   inherited = [],
+  compact = false,
 }: {
   /** localStorage scope — the `featureId` (gateway) or `${featureId}::${componentId}` (handoff page). */
   scopeKey: string
   configTickets?: string[]
   inherited?: InheritedTicket[]
+  /** Sit inline in a shared metadata row rather than owning one.
+   *
+   *  Drops the row's own top margin, and — when there are no tickets — drops the
+   *  "Related Jira Tickets:" label and the "None linked yet" text too, leaving
+   *  just the quiet "+ Add ticket" affordance. The empty state was spending a
+   *  full row of the gateway header to say nothing; the label only earns its
+   *  place once there is something to label. Opt-in, so the handoff detail
+   *  page's standalone row is unchanged. */
+  compact?: boolean
 }) {
   const [userTickets, setUserTickets] = useState<string[]>(() => getUserJiraTickets(scopeKey))
   const [adding, setAdding] = useState(false)
@@ -62,12 +72,25 @@ export function RelatedJiraTickets({
 
   const hasNone = own.length === 0 && inheritedRows.length === 0
 
+  // Compact + empty ⇒ the affordance alone. Anything else keeps the label.
+  const bare = compact && hasNone && !adding
+
   return (
-    <div style={{ display: 'flex', alignItems: 'center', flexWrap: 'wrap', gap: 8, marginTop: 16 }}>
-      <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-tertiary)' }}>
-        Related Jira Tickets:
-      </span>
-      {hasNone && !adding && (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        flexWrap: 'wrap',
+        gap: 8,
+        marginTop: compact ? 0 : 16,
+      }}
+    >
+      {!bare && (
+        <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-tertiary)' }}>
+          Related Jira Tickets:
+        </span>
+      )}
+      {hasNone && !adding && !compact && (
         <span style={{ fontSize: 12, color: 'var(--color-text-tertiary)' }}>None linked yet</span>
       )}
       {own.map(({ url, removable }) => (

@@ -1,0 +1,602 @@
+import type { Brand, MembershipTier } from '@/context/AccountContext'
+
+/**
+ * Copy for the "Upgrade Membership" modal opened from the What's New / dashboard
+ * `WhatsNewUpsellBand` (Figma reference — the Lite→full upgrade offer). Brand-
+ * aware so the plan name, price, current-plan reference, benefit bullets, and
+ * marketing image all read on-brand. `TODO(data):` prices + bullets are demo
+ * placeholders — refresh per real plan config.
+ */
+export type UpgradeBullet = { lead: string; rest: string }
+
+export type MembershipUpgrade = {
+  /** Full plan being upgraded to — used in the title + cart ("Passport Membership"). */
+  planName: string
+  /** Brand-qualified plan name for the "…{plan} includes:" line ("Elite Nursing Passport"). */
+  planFullName: string
+  /** The learner's current (lower) plan, referenced in the intro + "current {x} benefits". */
+  currentPlanShort: string
+  /** Pre-formatted price ("$99.99"). */
+  price: string
+  intro: string
+  benefitsLead: string
+  bullets: UpgradeBullet[]
+  /** Right-column marketing image (public path). */
+  image: string
+}
+
+const REAL_ESTATE: MembershipUpgrade = {
+  planName: 'Premier Membership',
+  planFullName: 'Colibri Premier',
+  currentPlanShort: 'Plus',
+  price: '$199.99',
+  intro:
+    "Go beyond license renewal with education that grows your business. Upgrade today and we'll apply the unused value of your Plus Membership to your upgrade!",
+  benefitsLead: 'In addition to your current Plus benefits, Colibri Premier includes:',
+  bullets: [
+    { lead: '200+ more courses across every line', rest: ' — 3x more than Plus' },
+    { lead: 'Designation & certification prep', rest: ' for the credentials that set you apart' },
+    { lead: 'Business-building masterclasses', rest: ' on marketing, lead gen, and referrals' },
+    { lead: 'Coaching & community access', rest: ', plus more!' },
+  ],
+  image: '/brand/member-spotlight.png',
+}
+
+const UPGRADE_BY_BRAND: Record<Brand, MembershipUpgrade> = {
+  elite: {
+    planName: 'Passport Membership',
+    planFullName: 'Elite Nursing Passport',
+    currentPlanShort: 'Lite',
+    price: '$99.99',
+    intro:
+      "Go beyond license renewal with education that supports your career goals. Upgrade today and we'll apply the unused value of your Passport Lite Membership to your upgrade!",
+    benefitsLead: 'In addition to your current Lite benefits, Elite Nursing Passport includes:',
+    bullets: [
+      { lead: '200+ more courses across 30+ specialties', rest: ' — 3x more than Passport Lite' },
+      { lead: 'Premium Specialty Course Collections', rest: ' for clinical deep dives' },
+      { lead: 'Pharmacology hours', rest: ' and DEA MATE Act training for advanced practice needs' },
+      { lead: 'Career support', rest: ' with video skills and knowledge refreshers, plus more!' },
+    ],
+    image: '/brand/whats-new-bg.jpg',
+  },
+  fitzgerald: {
+    planName: 'Passport Membership',
+    planFullName: 'Elite Nursing Passport',
+    currentPlanShort: 'Lite',
+    price: '$99.99',
+    intro:
+      "Go beyond license renewal with education that supports your career goals. Upgrade today and we'll apply the unused value of your Passport Lite Membership to your upgrade!",
+    benefitsLead: 'In addition to your current Lite benefits, Elite Nursing Passport includes:',
+    bullets: [
+      { lead: '200+ more courses across 30+ specialties', rest: ' — 3x more than Passport Lite' },
+      { lead: 'Premium Specialty Course Collections', rest: ' for clinical deep dives' },
+      { lead: 'Pharmacology hours', rest: ' and DEA MATE Act training for advanced practice needs' },
+      { lead: 'Career support', rest: ' with video skills and knowledge refreshers, plus more!' },
+    ],
+    image: '/brand/whats-new-bg.jpg',
+  },
+  cre: REAL_ESTATE,
+  mckissock: REAL_ESTATE,
+  stc: {
+    planName: 'Premier Membership',
+    planFullName: 'the STC Premier plan',
+    currentPlanShort: 'Standard',
+    price: '$149.99',
+    intro:
+      "Go beyond exam prep with education that advances your finance career. Upgrade today and we'll apply the unused value of your Standard Membership to your upgrade!",
+    benefitsLead: 'In addition to your current Standard benefits, the STC Premier plan includes:',
+    bullets: [
+      { lead: 'Every exam-prep track', rest: ' — SIE through the full Series lineup' },
+      { lead: 'Advanced practice exams', rest: ' with detailed performance analytics' },
+      { lead: 'Continuing education credits', rest: ' to keep your registrations current' },
+      { lead: 'Career coaching', rest: ' and interview prep, plus more!' },
+    ],
+    image: '/brand/member-spotlight.png',
+  },
+  // XCEL has no consumer membership, so nothing below is reachable — every
+  // surface reading this map is suppressed for it. The entry exists only
+  // because the map is an exhaustive `Record<Brand, …>`. Deliberately blank
+  // rather than plausible: XCEL sells Standard / Premier COURSE PACKAGES, and
+  // a filled-in stub here would read as product truth in a screenshot.
+  xcel: {
+    planName: '',
+    planFullName: '',
+    currentPlanShort: '',
+    price: '',
+    intro: '',
+    benefitsLead: '',
+    bullets: [],
+    image: '',
+  },
+}
+
+export function membershipUpgradeFor(brand: Brand): MembershipUpgrade {
+  return UPGRADE_BY_BRAND[brand]
+}
+
+/* ─── "Become a Member" (non-member join offer) ──────────────────────────── */
+
+/**
+ * Copy for the non-member "Become a Member" modal — same layout as the upgrade
+ * modal, but framed as a first purchase of the brand's ENTRY tier (Plus /
+ * Passport Lite / Standard) rather than a Lite→full upgrade. `listPrice` is the
+ * struck-through pre-discount price for the "You Pay Today" cart row.
+ */
+export type MembershipBecome = {
+  /** Short tier name for the title ("Plus", "Passport Lite", "Standard"). */
+  tierName: string
+  /** Full plan name for the cart row ("Plus Membership"). */
+  planName: string
+  /** Pre-formatted pay-today price ("$99"). */
+  price: string
+  /** Struck-through list price shown above the pay-today price ("$120"). */
+  listPrice: string
+  intro: string
+  benefitsLead: string
+  bullets: UpgradeBullet[]
+  image: string
+}
+
+const REAL_ESTATE_BECOME: MembershipBecome = {
+  tierName: 'Plus',
+  planName: 'Plus Membership',
+  price: '$99',
+  listPrice: '$120',
+  intro:
+    'Purchase a Plus Membership for just $99 and unlock benefits that help you work smarter, stay competitive, and close more deals.',
+  benefitsLead: 'Plus Membership includes:',
+  bullets: [
+    { lead: 'AI training', rest: ' to operate more efficiently and grow your business' },
+    { lead: '1 FREE professional certification', rest: ' (up to a $300 value) to help you stand out' },
+    { lead: 'Discounts', rest: ' on additional certification programs, plus more!' },
+  ],
+  image: '/brand/member-spotlight.png',
+}
+
+const BECOME_BY_BRAND: Record<Brand, MembershipBecome> = {
+  elite: {
+    tierName: 'Passport Lite',
+    planName: 'Passport Lite Membership',
+    price: '$48',
+    listPrice: '$69',
+    intro:
+      'Purchase a Passport Lite Membership for just $48 and unlock the CE you need to renew — courses, podcasts, and deadline tracking in one place.',
+    benefitsLead: 'Passport Lite Membership includes:',
+    bullets: [
+      { lead: 'All your state CE requirements', rest: ' — every required package included' },
+      { lead: '70+ CE courses', rest: ' from an ANCC-accredited provider' },
+      { lead: 'Biweekly CE podcasts', rest: ' so you can earn credit on the go, plus more!' },
+    ],
+    image: '/brand/whats-new-bg.jpg',
+  },
+  fitzgerald: {
+    tierName: 'Passport Lite',
+    planName: 'Passport Lite Membership',
+    price: '$48',
+    listPrice: '$69',
+    intro:
+      'Purchase a Passport Lite Membership for just $48 and unlock the CE you need to renew — courses, podcasts, and deadline tracking in one place.',
+    benefitsLead: 'Passport Lite Membership includes:',
+    bullets: [
+      { lead: 'All your state CE requirements', rest: ' — every required package included' },
+      { lead: '70+ CE courses', rest: ' from an ANCC-accredited provider' },
+      { lead: 'Biweekly CE podcasts', rest: ' so you can earn credit on the go, plus more!' },
+    ],
+    image: '/brand/whats-new-bg.jpg',
+  },
+  cre: REAL_ESTATE_BECOME,
+  mckissock: REAL_ESTATE_BECOME,
+  stc: {
+    tierName: 'Standard',
+    planName: 'Standard Membership',
+    price: '$79',
+    listPrice: '$99',
+    intro:
+      'Purchase a Standard Membership for just $79 and get the exam prep you need to pass — practice questions, study guides, and progress tracking.',
+    benefitsLead: 'Standard Membership includes:',
+    bullets: [
+      { lead: 'Core exam-prep', rest: ' for your Series track' },
+      { lead: 'Practice questions & study guides', rest: ' built by industry experts' },
+      { lead: 'Progress tracking', rest: ' to keep your study plan on pace, plus more!' },
+    ],
+    image: '/brand/member-spotlight.png',
+  },
+  // XCEL has no consumer membership, so nothing below is reachable — every
+  // surface reading this map is suppressed for it. The entry exists only
+  // because the map is an exhaustive `Record<Brand, …>`. Deliberately blank
+  // rather than plausible: XCEL sells Standard / Premier COURSE PACKAGES, and
+  // a filled-in stub here would read as product truth in a screenshot.
+  xcel: {
+    tierName: '',
+    planName: '',
+    price: '',
+    listPrice: '',
+    intro: '',
+    benefitsLead: '',
+    bullets: [],
+    image: '',
+  },
+}
+
+export function membershipBecomeFor(brand: Brand): MembershipBecome {
+  return BECOME_BY_BRAND[brand]
+}
+
+/* ─── Compare Plans (the modal's second step) ────────────────────────────── */
+
+export type MembershipComparePlan = {
+  /** Plan name, e.g. "Passport Lite Membership". */
+  name: string
+  /** Profession/segment sub-line ("US Nursing"). */
+  profession: string
+  /** Pre-formatted price ("$48"). */
+  price: string
+  /** Term suffix after the price ("year"). */
+  period: string
+  /** The learner's current plan — renders the "Current Membership" chip (no CTA). */
+  current?: boolean
+  /** The upsell plan — carries the "Recommended" badge + the Add To Cart CTA. */
+  recommended?: boolean
+  /** Which membership tier this plan IS. Lets `membershipChangePlanFor` rank the
+   *  ladder against what the learner holds instead of matching on plan name. */
+  tier?: MembershipTier
+  /** Ranked BELOW the learner's current tier. Renders a quieter outline CTA —
+   *  a downgrade should be reachable without being sold. */
+  downgrade?: boolean
+  /** Small print under the CTA. Today only downgrades carry one. Split into two
+   *  lines rather than one sentence so the DATE leads — it is the fact the
+   *  learner is deciding on, and buried mid-sentence it was the easiest part to
+   *  skim past. */
+  note?: { lead: string; detail: string }
+  ctaLabel: string
+  bullets: string[]
+}
+
+/** Plans for the Compare Plans step — typically 2 (current + upgrade), but a
+ *  brand may list 3 (the modal sizes its width + columns to the count). */
+export type MembershipComparison = { title: string; plans: MembershipComparePlan[] }
+
+const REAL_ESTATE_COMPARE: MembershipComparison = {
+  title: 'Compare your Membership Options',
+  plans: [
+    {
+      name: 'Plus Membership',
+      profession: 'Real Estate',
+      price: '$99',
+      period: 'year',
+      tier: 'low',
+      current: true,
+      ctaLabel: 'Current Membership',
+      bullets: [
+        'Meet all your license renewal requirements — every required CE package included',
+        'Choose from 70+ CE courses',
+        'Automatic CE credit reporting',
+        'Renewal deadline tracking with all your certificates in one place',
+      ],
+    },
+    {
+      name: 'Premier Membership',
+      profession: 'Real Estate',
+      price: '$199.99',
+      period: 'year',
+      tier: 'high',
+      recommended: true,
+      ctaLabel: 'Add To Cart',
+      bullets: [
+        'Meet all your license renewal requirements — every required CE package included',
+        'Choose from 200+ CE courses across every line',
+        'Automatic CE credit reporting',
+        'Designation & certification prep',
+        'Business-building masterclasses + marketing toolkits',
+        'Renewal deadline tracking with all your certificates in one place',
+        'Coaching & community access',
+      ],
+    },
+  ],
+}
+
+/** Non-member real-estate comparison — all three tiers (Plus / Pro /
+ *  Premier), no "current" plan, every card a selectable Add To Cart. The
+ *  member flow above is an upgrade-from-current (Plus → Premier, 2 cards); a
+ *  non-member is choosing a plan from scratch, so they see the full ladder. */
+const REAL_ESTATE_COMPARE_NON_MEMBER: MembershipComparison = {
+  title: 'Compare your Membership Options',
+  plans: [
+    {
+      name: 'Plus Membership',
+      profession: 'Real Estate',
+      price: '$99',
+      period: 'year',
+      tier: 'low',
+      ctaLabel: 'Add To Cart',
+      bullets: [
+        'Meet all your license renewal requirements — every required CE package included',
+        'Choose from 70+ CE courses',
+        'Access to all our Learning Snacks',
+        'Automatic CE credit reporting',
+        'Renewal deadline tracking with all your certificates in one place',
+      ],
+    },
+    {
+      name: 'Pro Membership',
+      profession: 'Real Estate',
+      price: '$149.99',
+      period: 'year',
+      tier: 'mid',
+      recommended: true,
+      ctaLabel: 'Add To Cart',
+      bullets: [
+        'Everything in Plus',
+        'Professional Certification Program of your choice ($300 value)',
+        'Choose from 200+ CE courses across every line',
+        'Real Estate AI MasterTrack',
+        'Business-building masterclasses + marketing toolkits',
+      ],
+    },
+    {
+      name: 'Premier Membership',
+      profession: 'Real Estate',
+      price: '$199.99',
+      period: 'year',
+      tier: 'high',
+      ctaLabel: 'Add To Cart',
+      bullets: [
+        'Everything in Pro',
+        '2 Professional Certification Programs of your choice ($600 value)',
+        'Designation & certification prep',
+        'Coaching & community access',
+        '$100 off the Institute for Luxury Home Marketing training',
+      ],
+    },
+  ],
+}
+
+/** Strip the current-plan treatment for the non-member flow — a non-member has no
+ *  current plan, so every card becomes a selectable "Add To Cart". */
+function toNonMemberPlans(plans: MembershipComparePlan[]): MembershipComparePlan[] {
+  return plans.map((p) => ({
+    ...p,
+    current: false,
+    ctaLabel: p.current ? 'Add To Cart' : p.ctaLabel,
+  }))
+}
+
+const COMPARE_BY_BRAND: Record<Brand, MembershipComparison> = {
+  elite: {
+    title: 'Compare your Membership Options',
+    plans: [
+      {
+        name: 'Passport Lite Membership',
+        profession: 'US Nursing',
+        price: '$48',
+        period: 'year',
+        tier: 'low',
+        current: true,
+        ctaLabel: 'Current Membership',
+        bullets: [
+          'Meet all your state requirements — all state CE requirements packages are included!',
+          'Choose from 70+ CE courses by an ANCC-accredited provider',
+          'Listen and earn CE credit with biweekly podcast episodes',
+          'Enhanced CE deadline tracking with certificates from all CE providers in one place',
+        ],
+      },
+      {
+        name: 'Passport Membership',
+        profession: 'US Nursing',
+        price: '$99.99',
+        period: 'year',
+        tier: 'high',
+        recommended: true,
+        ctaLabel: 'Add To Cart',
+        bullets: [
+          'Meet all your state requirements — all state CE requirements packages are included!',
+          'Choose from 300+ CE courses by an ANCC-accredited provider',
+          'Listen and earn CE credit with biweekly podcast episodes',
+          'In-depth Premium Specialty Course Collections across 10+ specialties',
+          'Includes pharmacology course library & DEA MATE Act training',
+          'Enhanced CE deadline tracking with certificates from all CE providers in one place',
+          'Clinical skills video library',
+        ],
+      },
+    ],
+  },
+  fitzgerald: {
+    title: 'Compare your Membership Options',
+    plans: [
+      {
+        name: 'Passport Lite Membership',
+        profession: 'US Nursing',
+        price: '$48',
+        period: 'year',
+        tier: 'low',
+        current: true,
+        ctaLabel: 'Current Membership',
+        bullets: [
+          'Meet all your state requirements — all state CE requirements packages are included!',
+          'Choose from 70+ CE courses by an ANCC-accredited provider',
+          'Listen and earn CE credit with biweekly podcast episodes',
+          'Enhanced CE deadline tracking with certificates from all CE providers in one place',
+        ],
+      },
+      {
+        name: 'Passport Membership',
+        profession: 'US Nursing',
+        price: '$99.99',
+        period: 'year',
+        tier: 'high',
+        recommended: true,
+        ctaLabel: 'Add To Cart',
+        bullets: [
+          'Meet all your state requirements — all state CE requirements packages are included!',
+          'Choose from 300+ CE courses by an ANCC-accredited provider',
+          'Listen and earn CE credit with biweekly podcast episodes',
+          'In-depth Premium Specialty Course Collections across 10+ specialties',
+          'Includes pharmacology course library & DEA MATE Act training',
+          'Enhanced CE deadline tracking with certificates from all CE providers in one place',
+          'Clinical skills video library',
+        ],
+      },
+    ],
+  },
+  cre: REAL_ESTATE_COMPARE,
+  mckissock: REAL_ESTATE_COMPARE,
+  // XCEL has no membership ladder to compare — see the stub note on
+  // UPGRADE_BY_BRAND above.
+  xcel: { title: '', plans: [] },
+  stc: {
+    title: 'Compare your Membership Options',
+    plans: [
+      {
+        name: 'Standard Membership',
+        profession: 'Financial Services',
+        price: '$79',
+        period: 'year',
+        tier: 'low',
+        current: true,
+        ctaLabel: 'Current Membership',
+        bullets: [
+          'Core exam-prep for a single Series track',
+          'Practice questions & study guides',
+          'Progress tracking',
+        ],
+      },
+      {
+        name: 'Premier Membership',
+        profession: 'Financial Services',
+        price: '$149.99',
+        period: 'year',
+        tier: 'high',
+        recommended: true,
+        ctaLabel: 'Add To Cart',
+        bullets: [
+          'Every exam-prep track — SIE through the full Series lineup',
+          'Advanced practice exams with performance analytics',
+          'Continuing education credits to keep registrations current',
+          'Career coaching & interview prep',
+        ],
+      },
+    ],
+  },
+}
+
+/** Non-member comparison per brand — real estate lists all three tiers;
+ *  Elite/STC reuse their member ladders with the current-plan treatment stripped. */
+const COMPARE_NON_MEMBER_BY_BRAND: Record<Brand, MembershipComparison> = {
+  elite: {
+    title: 'Compare your Membership Options',
+    plans: toNonMemberPlans(COMPARE_BY_BRAND.elite.plans),
+  },
+  fitzgerald: {
+    title: 'Compare your Membership Options',
+    plans: toNonMemberPlans(COMPARE_BY_BRAND.fitzgerald.plans),
+  },
+  cre: REAL_ESTATE_COMPARE_NON_MEMBER,
+  mckissock: REAL_ESTATE_COMPARE_NON_MEMBER,
+  stc: {
+    title: 'Compare your Membership Options',
+    plans: toNonMemberPlans(COMPARE_BY_BRAND.stc.plans),
+  },
+  // XCEL has no consumer membership, so nothing below is reachable — every
+  // surface reading this map is suppressed for it. The entry exists only
+  // because the map is an exhaustive `Record<Brand, …>`. Deliberately blank
+  // rather than plausible: XCEL sells Standard / Premier COURSE PACKAGES, and
+  // a filled-in stub here would read as product truth in a screenshot.
+  xcel: { title: '', plans: [] },
+}
+
+export function membershipCompareFor(brand: Brand, isMember = true): MembershipComparison {
+  return isMember ? COMPARE_BY_BRAND[brand] : COMPARE_NON_MEMBER_BY_BRAND[brand]
+}
+
+const TIER_RANK: Record<MembershipTier, number> = {
+  'non-member': -1,
+  low: 0,
+  mid: 1,
+  high: 2,
+}
+
+/**
+ * The "Change plan" ladder for a member — every tier the brand sells, ranked
+ * against the one they hold. Opened from the Manage Membership sheet.
+ *
+ * Reads the NON-MEMBER ladder, not the member one, and that is the load-bearing
+ * choice: the member ladder is the two-card Lite→full UPGRADE offer, so for
+ * real estate it lists Plus and Premier and omits Pro entirely. A Pro member
+ * opening it would not find their own membership in it. The non-member ladder is the
+ * only one that carries the full set.
+ *
+ * What the tier ranking decides:
+ *   • CURRENT — the plan matching their tier. Muted card + "Current Membership"
+ *     chip, no CTA. This is the "their current membership selected" case.
+ *   • RECOMMENDED — the IMMEDIATE next tier up, if there is one, and only ever
+ *     one. A learner already on the top tier gets nothing badged: recommending
+ *     a downgrade would be the store arguing against itself.
+ *   • DOWNGRADE — anything ranked below them. Still listed (a top-tier member
+ *     should be able to see the cheaper options) but with a quiet outline CTA,
+ *     because it should be reachable without being sold.
+ *
+ * Downgrade rules, settled with Jillienne 2026-08-27 (logged on the
+ * `membership-sections` handoff):
+ *   • Takes effect AT RENEWAL, never mid-term.
+ *   • Therefore no proration, refund or credit — no money moves at the moment
+ *     of switching, which is the whole reason "at renewal" was chosen.
+ *   • The learner keeps their CURRENT tier's content until that date. That is
+ *     what `downgradeNoteFor` puts on the card, and it is the one promise this
+ *     screen makes, so it must not be softened to "soon" or dropped for space.
+ *   • The recommendation is the immediate next tier up, not the top one.
+ *
+ * `TODO(product)`: whether an UPGRADE is prorated mid-term is still open, and
+ * it is not symmetric with the above — the upgrade copy already promises "we'll
+ * apply the unused value of your {current} Membership", so an answer that
+ * contradicts it means changing that copy too.
+ */
+/** The downgrade small print, as a lead line + its supporting clause. Names the
+ *  date when we know it, because "at your next renewal" is the vaguer half of
+ *  the same promise and this is the only place the learner is told when their
+ *  current content goes away. */
+function downgradeNoteFor(
+  currentTierLabel?: string,
+  renewalDate?: string,
+): { lead: string; detail: string } {
+  const tier = currentTierLabel ?? 'current'
+  return {
+    lead: renewalDate ? `Starts on ${renewalDate}` : 'Starts at your next renewal',
+    detail: `Your ${tier} content stays available until then.`,
+  }
+}
+
+export function membershipChangePlanFor(
+  brand: Brand,
+  currentTier: MembershipTier,
+  /** Used only to compose the downgrade note. Both optional: with neither, the
+   *  note degrades to the undated form rather than disappearing. */
+  opts: { currentTierLabel?: string; renewalDate?: string } = {},
+): MembershipComparison {
+  const full = COMPARE_NON_MEMBER_BY_BRAND[brand]
+  const rank = TIER_RANK[currentTier]
+  const upgrade = full.plans
+    .filter((p) => p.tier != null && TIER_RANK[p.tier] > rank)
+    .sort((a, b) => TIER_RANK[a.tier!] - TIER_RANK[b.tier!])[0]
+  return {
+    title: full.title,
+    plans: full.plans.map((p) => {
+      const isCurrent = p.tier != null && p.tier === currentTier
+      const isDowngrade = p.tier != null && TIER_RANK[p.tier] < rank
+      const isUpgrade = upgrade != null && p === upgrade
+      return {
+        ...p,
+        current: isCurrent,
+        recommended: isUpgrade,
+        downgrade: isDowngrade,
+        note: isDowngrade
+          ? downgradeNoteFor(opts.currentTierLabel, opts.renewalDate)
+          : undefined,
+        ctaLabel: isCurrent
+          ? 'Current Membership'
+          : isDowngrade
+            ? 'Switch to this plan'
+            : 'Add To Cart',
+      }
+    }),
+  }
+}

@@ -384,7 +384,7 @@ const slotActionsStyle: CSSProperties = {
   alignItems: 'center',
   gap: 10,
   fontFamily: 'var(--font-body)',
-  fontSize: 11.5,
+  fontSize: 12,
   fontWeight: 600,
 }
 
@@ -399,13 +399,13 @@ const slotActionBtnStyle: CSSProperties = {
   border: 'none',
   background: 'transparent',
   fontFamily: 'var(--font-body)',
-  fontSize: 11.5,
+  fontSize: 12,
   fontWeight: 600,
 }
 
 const slotErrorStyle: CSSProperties = {
   fontFamily: 'var(--font-body)',
-  fontSize: 11.5,
+  fontSize: 12,
   lineHeight: 1.45,
   color: 'var(--color-error-600)',
 }
@@ -447,7 +447,7 @@ const cardButtonStyle: CSSProperties = {
 const cardTitleStyle: CSSProperties = {
   display: 'block',
   fontFamily: 'var(--font-body)',
-  fontSize: 14.5,
+  fontSize: 15,
   fontWeight: 600,
   lineHeight: 1.4,
   color: 'var(--color-text-primary)',
@@ -520,7 +520,7 @@ const contextHintStyle: CSSProperties = {
   display: 'block',
   marginTop: 4,
   fontFamily: 'var(--font-body)',
-  fontSize: 10.5,
+  fontSize: 11,
   fontWeight: 600,
   letterSpacing: '0.04em',
   color: 'var(--color-text-tertiary)',
@@ -531,7 +531,7 @@ const thumbLabelStyle: CSSProperties = {
   display: 'block',
   marginTop: 3,
   fontFamily: 'var(--font-body)',
-  fontSize: 9.5,
+  fontSize: 10,
   fontWeight: 700,
   letterSpacing: '0.06em',
   textTransform: 'uppercase',
@@ -790,7 +790,7 @@ const dlRowStyle: CSSProperties = {
   gridTemplateColumns: '104px minmax(0,1fr)',
   gap: '4px 12px',
   fontFamily: 'var(--font-body)',
-  fontSize: 12.5,
+  fontSize: 13,
   padding: '4px 0',
 }
 
@@ -1064,7 +1064,7 @@ function QaDetailPanel({
 
 const pillStyle: CSSProperties = {
   fontFamily: 'var(--font-body)',
-  fontSize: 12.5,
+  fontSize: 13,
   fontWeight: 600,
   padding: '6px 12px',
   borderRadius: 'var(--radius-pill)',
@@ -1123,7 +1123,7 @@ const countBadgeStyle: CSSProperties = {
   borderRadius: 'var(--radius-pill)',
   background: 'var(--color-primary-500)',
   color: 'var(--color-text-inverse)',
-  fontSize: 10.5,
+  fontSize: 11,
   fontWeight: 700,
 }
 
@@ -1260,7 +1260,7 @@ function ExportDialog({ text, onClose }: { text: string; onClose: () => void }) 
             width: '100%',
             boxSizing: 'border-box',
             fontFamily: 'var(--font-stamp), ui-monospace, monospace',
-            fontSize: 11.5,
+            fontSize: 12,
             lineHeight: 1.55,
             padding: 10,
             borderRadius: 'var(--radius-md)',
@@ -1293,7 +1293,7 @@ const primaryActionStyle: CSSProperties = {
   gap: 6,
   flex: 'none',
   fontFamily: 'var(--font-body)',
-  fontSize: 12.5,
+  fontSize: 13,
   fontWeight: 600,
   padding: '7px 13px',
   borderRadius: 'var(--radius-md)',
@@ -1341,7 +1341,7 @@ const noticeStyle: CSSProperties = {
   borderRadius: 'var(--radius-md)',
   background: 'color-mix(in srgb, var(--ux-accent) 12%, transparent)',
   fontFamily: 'var(--font-body)',
-  fontSize: 12.5,
+  fontSize: 13,
   lineHeight: 1.5,
   color: 'var(--color-text-primary)',
 }
@@ -1351,7 +1351,7 @@ const dismissStyle: CSSProperties = {
   border: 'none',
   background: 'transparent',
   fontFamily: 'var(--font-body)',
-  fontSize: 12.5,
+  fontSize: 13,
   fontWeight: 600,
   color: 'var(--ux-accent)',
   cursor: 'pointer',
@@ -1362,7 +1362,7 @@ const originTagStyle: CSSProperties = {
   padding: '1px 6px',
   borderRadius: 4,
   background: 'color-mix(in srgb, var(--ux-accent) 16%, transparent)',
-  fontSize: 10.5,
+  fontSize: 11,
   fontWeight: 700,
   letterSpacing: '0.04em',
   textTransform: 'uppercase',
@@ -1383,7 +1383,7 @@ const panelActionStyle: CSSProperties = {
   border: 'none',
   background: 'transparent',
   fontFamily: 'var(--font-body)',
-  fontSize: 12.5,
+  fontSize: 13,
   fontWeight: 600,
   color: 'var(--ux-accent)',
   cursor: 'pointer',
@@ -1436,7 +1436,7 @@ const addCapturesStyle: CSSProperties = {
   border: 'none',
   background: 'transparent',
   fontFamily: 'var(--font-body)',
-  fontSize: 12.5,
+  fontSize: 13,
   fontWeight: 600,
   color: 'var(--ux-accent)',
   cursor: 'pointer',
@@ -1466,7 +1466,7 @@ const searchWrapStyle: CSSProperties = {
 
 const searchInputStyle: CSSProperties = {
   fontFamily: 'var(--font-body)',
-  fontSize: 13.5,
+  fontSize: 14,
   border: 'none',
   outline: 'none',
   background: 'transparent',

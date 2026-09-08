@@ -190,6 +190,21 @@ export type DevHandoffState = {
 }
 
 /** A component documented in depth for the implementing developer. */
+export type DevHandoffUserStory = {
+  /** The role, as the PO would name them — "member holding several licences",
+   *  not "user". */
+  asA: string
+  /** The capability, from the learner's side. Not a UI description. */
+  iWant: string
+  /** The benefit. If this reads as a restatement of `iWant`, the story hasn't
+   *  found its reason yet. */
+  soThat: string
+  /** Why it earns a place on the roadmap — the business case in a sentence. */
+  value?: string
+  /** Scope, non-goals, and anything a dev would otherwise have to infer. */
+  notes?: string[]
+}
+
 export type DevHandoffComponent = {
   /** Stable id — routes to the detail screen
    *  (`/prototype/:featureId/handoff/:id`) and selects the live preview. */
@@ -229,10 +244,27 @@ export type DevHandoffComponent = {
    *  (e.g. "UPDATED", "NEW"). Used to flag a revised spec without dropping the
    *  historical tile it supersedes. */
   badge?: string
+  /**
+   * When that badge's change landed — ISO `YYYY-MM-DD`.
+   *
+   * Rendered beside the label ("UPDATED · 8/31/26") so "updated" answers *when*,
+   * which is the only thing that makes it useful a month later. Optional: a
+   * badge with no date renders as the bare label rather than a guess, so leave
+   * it unset rather than approximating.
+   *
+   * ISO here and formatted at the render site — one source date, the same rule
+   * the renewal fixtures follow. It is parsed by hand there, never through
+   * `new Date(iso)`, which is UTC and shifts the day in western timezones.
+   */
+  badgeDate?: string
   /** Where it lives in the codebase (file path, optionally a node). */
   location: string
   /** One- or two-sentence summary of what it is and where it appears. */
   summary: string
+  /** The PO's framing — who it's for, what they want, and why it matters.
+   *  Renders SECOND in the handoff, directly after the preview: you see the
+   *  component first, then read the intent against it. */
+  userStory?: DevHandoffUserStory
   /** Every variant/state the component can render. */
   variants: DevHandoffVariant[]
   /** The rules that decide which variant renders + key behaviors. */

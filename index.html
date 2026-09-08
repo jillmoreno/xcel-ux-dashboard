@@ -1,14 +1,33 @@
 <!doctype html>
-<html lang="en">
+<!--
+  `color-scheme: light` is set inline on the html element so the
+  native date-picker popup (rendered by the browser/OS, not by the
+  page) lands in light mode even when the OS is set to dark. Inline
+  style beats anything in a cascade layer, which is what was previously
+  losing to the OS default.
+-->
+<html lang="en" style="color-scheme: light">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- Declare a light color-scheme up front so native form controls
+         (date pickers, select dropdowns) render in light mode even when
+         the OS is set to dark — the product surfaces ship light-only today.
+         The UX Dashboard gateway at `/` has its own four-appearance theming
+         and is unaffected: it paints its own surfaces from `--ux-*`. -->
+    <meta name="color-scheme" content="light" />
     <title>XCEL — UX Dashboard</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- Open Sans is the gateway's face. Lato arrived with the product app:
+         XCEL's brand typeface is Avenir, but the brand-add deliberately ships
+         STC's Lato for `--font-heading` and leaves `--font-body` inherited —
+         see the brand config. Cutive Mono is the print/monospace face used by
+         the study-calendar print view. Dropping any of the three leaves a
+         surface silently falling back to a system stack. -->
     <link
-      href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&family=Lato:wght@400;500;700;900&family=Cutive+Mono&display=swap"
       rel="stylesheet"
     />
   </head>

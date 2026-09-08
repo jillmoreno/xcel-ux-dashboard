@@ -136,6 +136,12 @@ function prototypeSectionLabel(
  * here; the gateway landing page passes nothing (the menu depends on
  * AppLayout contexts that don't exist on the gateway).
  */
+/** The prototype bar's height. Exported because it is `position: sticky` at
+ *  z-index 60, so anything else that pins to the top of a page carrying this bar
+ *  has to offset by it or be hidden underneath — which is exactly what happened
+ *  to the feature gateway's sticky tab bar on 2026-08-31. */
+export const PROTOTYPE_BAR_HEIGHT = 40
+
 export function PrototypeBar({
   showHomeLink = true,
   adminTools,
@@ -202,7 +208,7 @@ export function PrototypeBar({
         // Above the platform header (z 50), which sticks just below this
         // bar at top: 40 — so both stay pinned and always visible.
         zIndex: 60,
-        height: 40,
+        height: PROTOTYPE_BAR_HEIGHT,
         background: 'var(--color-neutral-800)',
         color: 'var(--color-neutral-50)',
         // On the rebrand shell the bar is capped at the 1440 rail+content width

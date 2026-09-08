@@ -327,7 +327,7 @@ function Field({
             ? {
                 fontFamily:
                   'ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace',
-                fontSize: 12.5,
+                fontSize: 13,
                 lineHeight: '20px',
                 wordBreak: 'break-word',
               }

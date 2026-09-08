@@ -1,0 +1,1908 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`StudyCalendarPanel > renders the empty state on an STC path without a calendar 1`] = `
+<DocumentFragment>
+  <section
+    aria-label="Study plan unavailable"
+    role="region"
+    style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; padding: 48px 24px; background: var(--color-surface-card); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg);"
+  >
+    <span
+      aria-hidden="true"
+      style="display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: var(--radius-pill); background: var(--color-neutral-100); color: var(--color-text-secondary);"
+    >
+      <svg
+        aria-hidden="true"
+        focusable="false"
+        height="22"
+        style="display: inline-block; vertical-align: middle; fill: currentcolor; overflow: visible;"
+        viewBox="0 0 448 512"
+        width="22"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M112 0c8.8 0 16 7.2 16 16l0 48 192 0 0-48c0-8.8 7.2-16 16-16s16 7.2 16 16l0 48 32 0c35.3 0 64 28.7 64 64l0 288c0 35.3-28.7 64-64 64L64 480c-35.3 0-64-28.7-64-64L0 128C0 92.7 28.7 64 64 64l32 0 0-48c0-8.8 7.2-16 16-16zM384 96L64 96c-17.7 0-32 14.3-32 32l0 288c0 17.7 14.3 32 32 32l320 0c17.7 0 32-14.3 32-32l0-288c0-17.7-14.3-32-32-32zM144 256c-8.8 0-16 7.2-16 16l0 64c0 8.8 7.2 16 16 16l64 0c8.8 0 16-7.2 16-16l0-64c0-8.8-7.2-16-16-16l-64 0zM96 272c0-26.5 21.5-48 48-48l64 0c26.5 0 48 21.5 48 48l0 64c0 26.5-21.5 48-48 48l-64 0c-26.5 0-48-21.5-48-48l0-64z"
+          fill="currentColor"
+        />
+      </svg>
+    </span>
+    <h3
+      style="margin: 0px; font-family: var(--font-heading); font-size: 18px; font-weight: 700; color: var(--color-text-primary);"
+    >
+      No study plan assigned to this path.
+    </h3>
+    <p
+      style="margin: 0px; max-width: 420px; font-family: var(--font-body); font-size: 14px; line-height: 20px; color: var(--color-text-secondary);"
+    >
+      Your team will pace this learning path with a Study Calendar when one is assigned. For now, use the Mandatory carousel above to pick the next task.
+    </p>
+  </section>
+</DocumentFragment>
+`;
+
+exports[`StudyCalendarPanel > renders the locked-state overlay for an STC Non-Member 1`] = `
+<DocumentFragment>
+  <section
+    aria-label="Study calendar — STC membership required"
+    role="region"
+    style="position: relative; overflow: hidden; border-radius: var(--radius-lg);"
+  >
+    <div
+      aria-hidden="true"
+      style="opacity: 0.45; filter: saturate(0.55) blur(2px); pointer-events: none;"
+    >
+      <section
+        style="display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 24px; align-items: start;"
+      >
+        <div
+          style="display: flex; flex-direction: column; gap: 16px; min-width: 0px;"
+        >
+          <div
+            style="background: var(--color-surface-card); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-md); padding: 12px; display: flex; flex-direction: column; gap: 12px;"
+          >
+            <header
+              style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 4px 0px;"
+            >
+              <h4
+                style="margin: 0px; font-family: var(--font-body); font-weight: 600; font-size: 18px; line-height: 24px; color: var(--color-text-primary);"
+              >
+                May 2026
+              </h4>
+              <div
+                style="display: flex; align-items: center; gap: 8px;"
+              >
+                <button
+                  aria-label="Previous month"
+                  style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0px 12px; border-radius: var(--radius-md); background: transparent; color: var(--color-text-primary); border-width: 1px; border-style: solid; border-color: transparent; font-family: var(--font-body); font-size: 13px; font-weight: 600; line-height: 1; cursor: pointer; outline: none;"
+                >
+                  <svg
+                    aria-hidden="true"
+                    focusable="false"
+                    height="14"
+                    style="display: inline-block; vertical-align: middle; fill: currentcolor; overflow: visible;"
+                    viewBox="0 0 512 512"
+                    width="14"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M4.7 244.7c-6.2 6.2-6.2 16.4 0 22.6l176 176c6.2 6.2 16.4 6.2 22.6 0s6.2-16.4 0-22.6L54.6 272 496 272c8.8 0 16-7.2 16-16s-7.2-16-16-16L54.6 240 203.3 91.3c6.2-6.2 6.2-16.4 0-22.6s-16.4-6.2-22.6 0l-176 176z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </button>
+                <button
+                  style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0px 12px; border-radius: var(--radius-md); background: transparent; color: var(--color-action); border-width: 1px; border-style: solid; border-color: var(--color-action); font-family: var(--font-body); font-size: 13px; font-weight: 600; line-height: 1; cursor: pointer; outline: none;"
+                >
+                  Today
+                </button>
+                <button
+                  aria-label="Next month"
+                  style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0px 12px; border-radius: var(--radius-md); background: transparent; color: var(--color-text-primary); border-width: 1px; border-style: solid; border-color: transparent; font-family: var(--font-body); font-size: 13px; font-weight: 600; line-height: 1; cursor: pointer; outline: none;"
+                >
+                  <svg
+                    aria-hidden="true"
+                    focusable="false"
+                    height="14"
+                    style="display: inline-block; vertical-align: middle; fill: currentcolor; overflow: visible;"
+                    viewBox="0 0 512 512"
+                    width="14"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M507.3 267.3c6.2-6.2 6.2-16.4 0-22.6l-176-176c-6.2-6.2-16.4-6.2-22.6 0s-6.2 16.4 0 22.6L457.4 240 16 240c-8.8 0-16 7.2-16 16s7.2 16 16 16l441.4 0-148.7 148.7c-6.2 6.2-6.2 16.4 0 22.6s16.4 6.2 22.6 0l176-176z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </header>
+            <div
+              style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px;"
+            >
+              <div
+                style="font-family: var(--font-body); font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-text-secondary); padding: 4px 8px;"
+              >
+                Sun
+              </div>
+              <div
+                style="font-family: var(--font-body); font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-text-secondary); padding: 4px 8px;"
+              >
+                Mon
+              </div>
+              <div
+                style="font-family: var(--font-body); font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-text-secondary); padding: 4px 8px;"
+              >
+                Tue
+              </div>
+              <div
+                style="font-family: var(--font-body); font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-text-secondary); padding: 4px 8px;"
+              >
+                Wed
+              </div>
+              <div
+                style="font-family: var(--font-body); font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-text-secondary); padding: 4px 8px;"
+              >
+                Thu
+              </div>
+              <div
+                style="font-family: var(--font-body); font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-text-secondary); padding: 4px 8px;"
+              >
+                Fri
+              </div>
+              <div
+                style="font-family: var(--font-body); font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-text-secondary); padding: 4px 8px;"
+              >
+                Sat
+              </div>
+              <button
+                disabled=""
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: default; opacity: 0.4; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  26
+                </span>
+              </button>
+              <button
+                disabled=""
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: default; opacity: 0.4; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  27
+                </span>
+              </button>
+              <button
+                disabled=""
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: default; opacity: 0.4; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  28
+                </span>
+              </button>
+              <button
+                disabled=""
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: default; opacity: 0.4; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  29
+                </span>
+              </button>
+              <button
+                disabled=""
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: default; opacity: 0.4; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  30
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  1
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  2
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  3
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  4
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  5
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  6
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-success-500); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    3 tasks
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  7
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-success-500); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    6 tasks
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  8
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-success-500); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    5 tasks
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  9
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  10
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  11
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-success-500); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    6 tasks
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  12
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-success-500); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    5 tasks
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  13
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-success-500); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    6 tasks
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  14
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-success-500); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    5 tasks
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  15
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-success-500); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    2 tasks
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  16
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  17
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  18
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-warning-500); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    3 tasks
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 2px solid var(--color-action); border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 700; color: var(--color-action);"
+                >
+                  19
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-primary-500); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    1 task
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  20
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-neutral-400); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    1 task
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  21
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-neutral-400); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    1 task
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  22
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-neutral-400); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    1 task
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  23
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  24
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  25
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-neutral-400); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    1 task
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  26
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-neutral-400); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    2 tasks
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  27
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  28
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  29
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  30
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  31
+                </span>
+              </button>
+              <button
+                disabled=""
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: default; opacity: 0.4; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  1
+                </span>
+              </button>
+              <button
+                disabled=""
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: default; opacity: 0.4; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  2
+                </span>
+              </button>
+              <button
+                disabled=""
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: default; opacity: 0.4; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  3
+                </span>
+              </button>
+              <button
+                disabled=""
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: default; opacity: 0.4; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  4
+                </span>
+              </button>
+              <button
+                disabled=""
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: default; opacity: 0.4; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  5
+                </span>
+              </button>
+              <button
+                disabled=""
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: default; opacity: 0.4; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  6
+                </span>
+              </button>
+            </div>
+          </div>
+          <div
+            style="display: flex; justify-content: flex-start;"
+          >
+            <button
+              aria-checked="false"
+              role="switch"
+              style="display: inline-flex; align-items: center; gap: 10px; padding: 0px; background: transparent; border: medium; cursor: pointer; font-family: var(--font-body); font-size: 13px; font-weight: 600; color: var(--color-text-primary);"
+              type="button"
+            >
+              <span>
+                Hide weekends
+              </span>
+              <span
+                aria-hidden="true"
+                style="position: relative; width: 32px; height: 18px; background: var(--color-neutral-300); border-radius: var(--radius-pill); transition: background 160ms ease; flex-shrink: 0;"
+              >
+                <span
+                  style="position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; background: var(--color-surface-card); border-radius: var(--radius-pill); transition: left 160ms ease; box-shadow: 0 1px 2px rgb(0 0 0 / 0.15);"
+                />
+              </span>
+            </button>
+          </div>
+        </div>
+        <aside
+          style="display: flex; flex-direction: column; gap: 12px; position: sticky; top: 24px;"
+        >
+          <header
+            style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px;"
+          >
+            <h3
+              style="margin: 0px; font-family: var(--font-body); font-weight: 600; font-size: 18px; line-height: 24px; color: var(--color-text-primary);"
+            >
+              Tuesday, May 19
+            </h3>
+            <span
+              style="font-family: var(--font-body); font-size: 13px; color: var(--color-text-secondary); text-align: right; white-space: nowrap;"
+            >
+              0 of 1 task complete
+            </span>
+          </header>
+          <ul
+            style="list-style: none; margin: 0px; padding: 0px; display: flex; flex-direction: column; gap: 8px;"
+          >
+            <li
+              class="cre-task-card"
+              style="display: flex; align-items: center; gap: 14px; padding: 10px 16px; background: var(--color-surface-card); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-md); box-shadow: var(--shadow-card); list-style: none;"
+            >
+              <span
+                aria-hidden="true"
+                style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; flex-shrink: 0; border-radius: var(--radius-md); background: var(--color-primary-100); color: var(--color-primary-800);"
+              >
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  height="18"
+                  style="display: inline-block; vertical-align: middle; fill: currentcolor; overflow: visible;"
+                  viewBox="0 0 576 512"
+                  width="18"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M400.9 28.4L339.1 45c-8.5 2.3-13.6 11.1-11.3 19.6l12.4 46.4 92.7-24.8-12.4-46.4c-2.3-8.5-11.1-13.6-19.6-11.3zm13.8 360.7l92.7-24.8-66.3-247.3-92.7 24.8 66.3 247.3zM423 420l12.4 46.4c2.3 8.5 11.1 13.6 19.6 11.3l61.8-16.6c8.5-2.3 13.6-11.1 11.3-19.6L515.7 395.2 423 420zm123.6-33.1l12.4 46.4c6.9 25.6-8.3 51.9-33.9 58.8l-61.8 16.6c-25.6 6.9-51.9-8.3-58.8-33.9l-84.4-315.1 0 304.4c0 26.5-21.5 48-48 48l-64 0c-12.3 0-23.5-4.6-32-12.2-8.5 7.6-19.7 12.2-32 12.2l-64 0c-26.5 0-48-21.5-48-48l0-416c0-26.5 21.5-48 48-48l64 0c26.5 0 48 21.5 48 48l0 50.7c5-1.8 10.4-2.7 16-2.7l64 0c13.8 0 26.3 5.8 35 15.2L296.9 72.9c-6.9-25.6 8.3-51.9 33.9-58.8L392.6-2.5c25.6-6.9 51.9 8.3 58.8 33.9 10.3 38.6 33.1 123.7 87 324.6l8.3 30.9zM192.1 144l0 320c0 8.8 7.2 16 16 16l64 0c8.8 0 16-7.2 16-16l0-320c0-8.8-7.2-16-16-16l-64 0c-8.8 0-16 7.2-16 16zm-32 320l0-48-96 0 0 48c0 8.8 7.2 16 16 16l64 0c8.8 0 16-7.2 16-16zm0-80l0-256-96 0 0 256 96 0zM80.1 32c-8.8 0-16 7.2-16 16l0 48 96 0 0-48c0-8.8-7.2-16-16-16l-64 0z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </span>
+              <div
+                style="flex: 1 1 0%; min-width: 0px; display: flex; flex-direction: column; gap: 2px;"
+              >
+                <span
+                  style="font-family: var(--font-body); font-weight: 600; font-size: 14px; line-height: 20px; color: var(--color-text-primary); opacity: 1; overflow-wrap: anywhere;"
+                >
+                  Complete Greenlight 1
+                </span>
+                <span
+                  style="display: block; font-family: var(--font-body); font-size: 12px; color: var(--color-text-secondary); line-height: 16px;"
+                >
+                  Exam · 120 min
+                </span>
+                <div
+                  style="display: flex; align-items: center; gap: 8px; margin-top: 4px;"
+                >
+                  <div
+                    aria-valuemax="100"
+                    aria-valuemin="0"
+                    aria-valuenow="47"
+                    role="progressbar"
+                    style="position: relative; flex: 1 1 0%; height: 4px; background: var(--color-neutral-100); border-radius: var(--radius-pill); overflow: hidden;"
+                  >
+                    <span
+                      aria-hidden="true"
+                      style="position: absolute; inset: 0 auto 0 0; width: 47%; background: var(--color-primary-500); border-radius: var(--radius-pill);"
+                    />
+                  </div>
+                  <span
+                    style="font-family: var(--font-body); font-size: 12px; font-weight: 600; color: var(--color-text-secondary); white-space: nowrap;"
+                  >
+                    47%
+                  </span>
+                </div>
+              </div>
+              <div
+                style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; line-height: 18px; color: var(--color-primary-700); white-space: nowrap;"
+                >
+                  In Progress
+                </span>
+                <span
+                  aria-hidden="true"
+                  style="display: inline-block; width: 32px; height: 32px; flex-shrink: 0;"
+                />
+              </div>
+            </li>
+          </ul>
+        </aside>
+      </section>
+    </div>
+    <div
+      style="position: absolute; inset: 0px; display: flex; align-items: center; justify-content: center; background: linear-gradient(180deg, rgba(245, 245, 245, 0.4) 0%, rgba(245, 245, 245, 0.85) 100%); padding: 24px;"
+    >
+      <div
+        style="max-width: 420px; width: 100%; display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; padding: 28px 24px; background: var(--color-surface-card); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg); box-shadow: var(--shadow-popover);"
+      >
+        <span
+          aria-hidden="true"
+          style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: var(--radius-pill); background: var(--color-tertiary-600); color: var(--color-neutral-50);"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="20"
+            style="display: inline-block; vertical-align: middle; fill: currentcolor; overflow: visible;"
+            viewBox="0 0 384 512"
+            width="20"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M96 96l0 64 192 0 0-64c0-53-43-96-96-96S96 43 96 96zM64 160l0-64C64 25.3 121.3-32 192-32S320 25.3 320 96l0 64c35.3 0 64 28.7 64 64l0 224c0 35.3-28.7 64-64 64L64 512c-35.3 0-64-28.7-64-64L0 224c0-35.3 28.7-64 64-64zM32 224l0 224c0 17.7 14.3 32 32 32l256 0c17.7 0 32-14.3 32-32l0-224c0-17.7-14.3-32-32-32L64 192c-17.7 0-32 14.3-32 32z"
+              fill="currentColor"
+            />
+          </svg>
+        </span>
+        <h3
+          style="margin: 0px; font-family: var(--font-heading); font-size: 20px; font-weight: 700; line-height: 28px; color: var(--color-text-primary);"
+        >
+          Stay on track for your Series exam
+        </h3>
+        <p
+          style="margin: 0px; font-family: var(--font-body); font-size: 14px; line-height: 20px; color: var(--color-text-secondary);"
+        >
+          STC membership unlocks your personalized pacing calendar — daily tasks, exam-date countdown, and an on-track / off- track signal that updates as you complete work.
+        </p>
+        <button
+          style="display: inline-flex; align-items: center; justify-content: center; margin-top: 8px; padding: 10px 20px; min-height: 44px; border-radius: var(--radius-md); background: var(--color-primary-500); color: var(--color-text-inverse); font-family: var(--font-body); font-size: 14px; font-weight: 700; border: medium; cursor: pointer;"
+          type="button"
+        >
+          Get STC membership
+        </button>
+      </div>
+    </div>
+  </section>
+</DocumentFragment>
+`;
+
+exports[`StudyCalendarPanel > renders the real panel for an STC Member on a path that has a calendar 1`] = `
+<DocumentFragment>
+  <section
+    style="display: flex; flex-direction: column; gap: 20px;"
+  >
+    <div
+      class="cre-study-calendar-print-hide"
+      style="display: flex; align-items: center; justify-content: space-between; gap: 16px;"
+    >
+      <div
+        aria-label="Calendar view"
+        role="tablist"
+        style="display: inline-flex; align-items: stretch; background: var(--color-neutral-50); border-radius: var(--radius-xl);"
+      >
+        <button
+          aria-selected="true"
+          role="tab"
+          style="display: inline-flex; align-items: center; justify-content: center; padding: 10px 24px; border-radius: var(--radius-xl); background: var(--color-tab-active); color: var(--color-text-inverse); border: medium; font-family: var(--font-body); font-size: 16px; font-weight: 400; line-height: 28px; white-space: nowrap; cursor: pointer;"
+          type="button"
+        >
+          Daily
+        </button>
+        <button
+          aria-selected="false"
+          role="tab"
+          style="display: inline-flex; align-items: center; justify-content: center; padding: 10px 24px; border-radius: var(--radius-xl); background: transparent; color: var(--color-neutral-dark); border: medium; font-family: var(--font-body); font-size: 16px; font-weight: 400; line-height: 28px; white-space: nowrap; cursor: pointer;"
+          type="button"
+        >
+          All Tasks
+        </button>
+      </div>
+      <div
+        style="display: inline-flex; align-items: center; gap: 20px;"
+      >
+        <button
+          aria-label="View Calendar"
+          class="cre-link-action cre-study-calendar-print-hide"
+          style="display: inline-flex; align-items: center; gap: 6px; padding: 0px; background: transparent; border: medium; color: var(--color-action); font-family: var(--font-body); font-size: 14px; font-weight: 600; cursor: pointer;"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="14"
+            style="display: inline-block; vertical-align: middle; fill: currentcolor; overflow: visible;"
+            viewBox="0 0 448 512"
+            width="14"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M112 0c8.8 0 16 7.2 16 16l0 48 192 0 0-48c0-8.8 7.2-16 16-16s16 7.2 16 16l0 48 32 0c35.3 0 64 28.7 64 64l0 288c0 35.3-28.7 64-64 64L64 480c-35.3 0-64-28.7-64-64L0 128C0 92.7 28.7 64 64 64l32 0 0-48c0-8.8 7.2-16 16-16zM384 96L64 96c-17.7 0-32 14.3-32 32l0 288c0 17.7 14.3 32 32 32l320 0c17.7 0 32-14.3 32-32l0-288c0-17.7-14.3-32-32-32zM144 256c-8.8 0-16 7.2-16 16l0 64c0 8.8 7.2 16 16 16l64 0c8.8 0 16-7.2 16-16l0-64c0-8.8-7.2-16-16-16l-64 0zM96 272c0-26.5 21.5-48 48-48l64 0c26.5 0 48 21.5 48 48l0 64c0 26.5-21.5 48-48 48l-64 0c-26.5 0-48-21.5-48-48l0-64z"
+              fill="currentColor"
+            />
+          </svg>
+          View Calendar
+        </button>
+        <button
+          aria-label="Download"
+          class="cre-link-action cre-study-calendar-print-hide"
+          style="display: inline-flex; align-items: center; gap: 6px; padding: 0px; background: transparent; border: medium; color: var(--color-action); font-family: var(--font-body); font-size: 14px; font-weight: 600; cursor: pointer;"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="14"
+            style="display: inline-block; vertical-align: middle; fill: currentcolor; overflow: visible;"
+            viewBox="0 0 448 512"
+            width="14"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M240 16c0-8.8-7.2-16-16-16s-16 7.2-16 16l0 281.4-84.7-84.7c-6.2-6.2-16.4-6.2-22.6 0s-6.2 16.4 0 22.6l112 112c6.2 6.2 16.4 6.2 22.6 0l112-112c6.2-6.2 6.2-16.4 0-22.6s-16.4-6.2-22.6 0L240 297.4 240 16zM85.5 288L64 288c-35.3 0-64 28.7-64 64l0 64c0 35.3 28.7 64 64 64l320 0c35.3 0 64-28.7 64-64l0-64c0-35.3-28.7-64-64-64l-21.5 0-32 32 53.5 0c17.7 0 32 14.3 32 32l0 64c0 17.7-14.3 32-32 32L64 448c-17.7 0-32-14.3-32-32l0-64c0-17.7 14.3-32 32-32l53.5 0-32-32zM368 384a24 24 0 1 0 -48 0 24 24 0 1 0 48 0z"
+              fill="currentColor"
+            />
+          </svg>
+          Download
+        </button>
+        <button
+          aria-label="Print"
+          class="cre-link-action cre-study-calendar-print-hide"
+          style="display: inline-flex; align-items: center; gap: 6px; padding: 0px; background: transparent; border: medium; color: var(--color-action); font-family: var(--font-body); font-size: 14px; font-weight: 600; cursor: pointer;"
+          type="button"
+        >
+          <svg
+            aria-hidden="true"
+            focusable="false"
+            height="14"
+            style="display: inline-block; vertical-align: middle; fill: currentcolor; overflow: visible;"
+            viewBox="0 0 512 512"
+            width="14"
+            xmlns="http://www.w3.org/2000/svg"
+          >
+            <path
+              d="M384 106.5c0-8.5-3.4-16.6-9.4-22.6L332.1 41.4c-6-6-14.1-9.4-22.6-9.4L160 32c-17.7 0-32 14.3-32 32l0 80-32 0 0-80c0-35.3 28.7-64 64-64L309.5 0c17 0 33.3 6.7 45.3 18.7l42.5 42.5c12 12 18.7 28.3 18.7 45.3l0 37.5-32 0 0-37.5zM448 224L64 224c-17.7 0-32 14.3-32 32l0 128 64 0 0-32c0-17.7 14.3-32 32-32l256 0c17.7 0 32 14.3 32 32l0 32 64 0 0-128c0-17.7-14.3-32-32-32zM416 416l0 64c0 17.7-14.3 32-32 32l-256 0c-17.7 0-32-14.3-32-32l0-64-64 0c-17.7 0-32-14.3-32-32L0 256c0-35.3 28.7-64 64-64l384 0c35.3 0 64 28.7 64 64l0 128c0 17.7-14.3 32-32 32l-64 0zM128 352l0 128 256 0 0-128-256 0zm288-80a16 16 0 1 1 32 0 16 16 0 1 1 -32 0z"
+              fill="currentColor"
+            />
+          </svg>
+          Print
+        </button>
+      </div>
+    </div>
+    <div
+      class="cre-study-calendar-views"
+    >
+      <section
+        style="display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 24px; align-items: start;"
+      >
+        <div
+          style="display: flex; flex-direction: column; gap: 16px; min-width: 0px;"
+        >
+          <div
+            style="background: var(--color-surface-card); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-md); padding: 12px; display: flex; flex-direction: column; gap: 12px;"
+          >
+            <header
+              style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 4px 4px 0px;"
+            >
+              <h4
+                style="margin: 0px; font-family: var(--font-body); font-weight: 600; font-size: 18px; line-height: 24px; color: var(--color-text-primary);"
+              >
+                May 2026
+              </h4>
+              <div
+                style="display: flex; align-items: center; gap: 8px;"
+              >
+                <button
+                  aria-label="Previous month"
+                  style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0px 12px; border-radius: var(--radius-md); background: transparent; color: var(--color-text-primary); border-width: 1px; border-style: solid; border-color: transparent; font-family: var(--font-body); font-size: 13px; font-weight: 600; line-height: 1; cursor: pointer; outline: none;"
+                >
+                  <svg
+                    aria-hidden="true"
+                    focusable="false"
+                    height="14"
+                    style="display: inline-block; vertical-align: middle; fill: currentcolor; overflow: visible;"
+                    viewBox="0 0 512 512"
+                    width="14"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M4.7 244.7c-6.2 6.2-6.2 16.4 0 22.6l176 176c6.2 6.2 16.4 6.2 22.6 0s6.2-16.4 0-22.6L54.6 272 496 272c8.8 0 16-7.2 16-16s-7.2-16-16-16L54.6 240 203.3 91.3c6.2-6.2 6.2-16.4 0-22.6s-16.4-6.2-22.6 0l-176 176z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </button>
+                <button
+                  style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0px 12px; border-radius: var(--radius-md); background: transparent; color: var(--color-action); border-width: 1px; border-style: solid; border-color: var(--color-action); font-family: var(--font-body); font-size: 13px; font-weight: 600; line-height: 1; cursor: pointer; outline: none;"
+                >
+                  Today
+                </button>
+                <button
+                  aria-label="Next month"
+                  style="display: inline-flex; align-items: center; justify-content: center; gap: 6px; height: 32px; padding: 0px 12px; border-radius: var(--radius-md); background: transparent; color: var(--color-text-primary); border-width: 1px; border-style: solid; border-color: transparent; font-family: var(--font-body); font-size: 13px; font-weight: 600; line-height: 1; cursor: pointer; outline: none;"
+                >
+                  <svg
+                    aria-hidden="true"
+                    focusable="false"
+                    height="14"
+                    style="display: inline-block; vertical-align: middle; fill: currentcolor; overflow: visible;"
+                    viewBox="0 0 512 512"
+                    width="14"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      d="M507.3 267.3c6.2-6.2 6.2-16.4 0-22.6l-176-176c-6.2-6.2-16.4-6.2-22.6 0s-6.2 16.4 0 22.6L457.4 240 16 240c-8.8 0-16 7.2-16 16s7.2 16 16 16l441.4 0-148.7 148.7c-6.2 6.2-6.2 16.4 0 22.6s16.4 6.2 22.6 0l176-176z"
+                      fill="currentColor"
+                    />
+                  </svg>
+                </button>
+              </div>
+            </header>
+            <div
+              style="display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 4px;"
+            >
+              <div
+                style="font-family: var(--font-body); font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-text-secondary); padding: 4px 8px;"
+              >
+                Sun
+              </div>
+              <div
+                style="font-family: var(--font-body); font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-text-secondary); padding: 4px 8px;"
+              >
+                Mon
+              </div>
+              <div
+                style="font-family: var(--font-body); font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-text-secondary); padding: 4px 8px;"
+              >
+                Tue
+              </div>
+              <div
+                style="font-family: var(--font-body); font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-text-secondary); padding: 4px 8px;"
+              >
+                Wed
+              </div>
+              <div
+                style="font-family: var(--font-body); font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-text-secondary); padding: 4px 8px;"
+              >
+                Thu
+              </div>
+              <div
+                style="font-family: var(--font-body); font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-text-secondary); padding: 4px 8px;"
+              >
+                Fri
+              </div>
+              <div
+                style="font-family: var(--font-body); font-size: 11px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--color-text-secondary); padding: 4px 8px;"
+              >
+                Sat
+              </div>
+              <button
+                disabled=""
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: default; opacity: 0.4; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  26
+                </span>
+              </button>
+              <button
+                disabled=""
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: default; opacity: 0.4; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  27
+                </span>
+              </button>
+              <button
+                disabled=""
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: default; opacity: 0.4; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  28
+                </span>
+              </button>
+              <button
+                disabled=""
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: default; opacity: 0.4; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  29
+                </span>
+              </button>
+              <button
+                disabled=""
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: default; opacity: 0.4; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  30
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  1
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  2
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  3
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  4
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  5
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  6
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-success-500); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    3 tasks
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  7
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-success-500); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    6 tasks
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  8
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-success-500); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    5 tasks
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  9
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  10
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  11
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-success-500); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    6 tasks
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  12
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-success-500); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    5 tasks
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  13
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-success-500); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    6 tasks
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  14
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-success-500); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    5 tasks
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  15
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-success-500); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    2 tasks
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  16
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  17
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  18
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-warning-500); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    3 tasks
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 2px solid var(--color-action); border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 700; color: var(--color-action);"
+                >
+                  19
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-primary-500); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    1 task
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  20
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-neutral-400); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    1 task
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  21
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-neutral-400); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    1 task
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  22
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-neutral-400); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    1 task
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  23
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  24
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  25
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-neutral-400); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    1 task
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  26
+                </span>
+                <span
+                  style="display: inline-flex; align-items: center; gap: 4px;"
+                >
+                  <span
+                    aria-hidden="true"
+                    style="width: 6px; height: 6px; border-radius: var(--radius-pill); background: var(--color-neutral-400); display: inline-block;"
+                  />
+                  <span
+                    style="font-family: var(--font-body); font-size: 11px; color: var(--color-text-secondary);"
+                  >
+                    2 tasks
+                  </span>
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  27
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  28
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  29
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  30
+                </span>
+              </button>
+              <button
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: var(--color-neutral-75); border: 1px solid transparent; border-radius: var(--radius-sm); cursor: pointer; opacity: 1; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  31
+                </span>
+              </button>
+              <button
+                disabled=""
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: default; opacity: 0.4; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  1
+                </span>
+              </button>
+              <button
+                disabled=""
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: default; opacity: 0.4; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  2
+                </span>
+              </button>
+              <button
+                disabled=""
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: default; opacity: 0.4; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  3
+                </span>
+              </button>
+              <button
+                disabled=""
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: default; opacity: 0.4; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  4
+                </span>
+              </button>
+              <button
+                disabled=""
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: default; opacity: 0.4; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  5
+                </span>
+              </button>
+              <button
+                disabled=""
+                style="min-height: 72px; padding: 8px 10px; text-align: left; background: transparent; border: 1px solid transparent; border-radius: var(--radius-sm); cursor: default; opacity: 0.4; display: flex; flex-direction: column; gap: 6px;"
+                type="button"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; color: var(--color-text-primary);"
+                >
+                  6
+                </span>
+              </button>
+            </div>
+          </div>
+          <div
+            style="display: flex; justify-content: flex-start;"
+          >
+            <button
+              aria-checked="false"
+              role="switch"
+              style="display: inline-flex; align-items: center; gap: 10px; padding: 0px; background: transparent; border: medium; cursor: pointer; font-family: var(--font-body); font-size: 13px; font-weight: 600; color: var(--color-text-primary);"
+              type="button"
+            >
+              <span>
+                Hide weekends
+              </span>
+              <span
+                aria-hidden="true"
+                style="position: relative; width: 32px; height: 18px; background: var(--color-neutral-300); border-radius: var(--radius-pill); transition: background 160ms ease; flex-shrink: 0;"
+              >
+                <span
+                  style="position: absolute; top: 2px; left: 2px; width: 14px; height: 14px; background: var(--color-surface-card); border-radius: var(--radius-pill); transition: left 160ms ease; box-shadow: 0 1px 2px rgb(0 0 0 / 0.15);"
+                />
+              </span>
+            </button>
+          </div>
+        </div>
+        <aside
+          style="display: flex; flex-direction: column; gap: 12px; position: sticky; top: 24px;"
+        >
+          <header
+            style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px;"
+          >
+            <h3
+              style="margin: 0px; font-family: var(--font-body); font-weight: 600; font-size: 18px; line-height: 24px; color: var(--color-text-primary);"
+            >
+              Tuesday, May 19
+            </h3>
+            <span
+              style="font-family: var(--font-body); font-size: 13px; color: var(--color-text-secondary); text-align: right; white-space: nowrap;"
+            >
+              0 of 1 task complete
+            </span>
+          </header>
+          <ul
+            style="list-style: none; margin: 0px; padding: 0px; display: flex; flex-direction: column; gap: 8px;"
+          >
+            <li
+              class="cre-task-card"
+              style="display: flex; align-items: center; gap: 14px; padding: 10px 16px; background: var(--color-surface-card); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-md); box-shadow: var(--shadow-card); list-style: none;"
+            >
+              <span
+                aria-hidden="true"
+                style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; flex-shrink: 0; border-radius: var(--radius-md); background: var(--color-primary-100); color: var(--color-primary-800);"
+              >
+                <svg
+                  aria-hidden="true"
+                  focusable="false"
+                  height="18"
+                  style="display: inline-block; vertical-align: middle; fill: currentcolor; overflow: visible;"
+                  viewBox="0 0 576 512"
+                  width="18"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    d="M400.9 28.4L339.1 45c-8.5 2.3-13.6 11.1-11.3 19.6l12.4 46.4 92.7-24.8-12.4-46.4c-2.3-8.5-11.1-13.6-19.6-11.3zm13.8 360.7l92.7-24.8-66.3-247.3-92.7 24.8 66.3 247.3zM423 420l12.4 46.4c2.3 8.5 11.1 13.6 19.6 11.3l61.8-16.6c8.5-2.3 13.6-11.1 11.3-19.6L515.7 395.2 423 420zm123.6-33.1l12.4 46.4c6.9 25.6-8.3 51.9-33.9 58.8l-61.8 16.6c-25.6 6.9-51.9-8.3-58.8-33.9l-84.4-315.1 0 304.4c0 26.5-21.5 48-48 48l-64 0c-12.3 0-23.5-4.6-32-12.2-8.5 7.6-19.7 12.2-32 12.2l-64 0c-26.5 0-48-21.5-48-48l0-416c0-26.5 21.5-48 48-48l64 0c26.5 0 48 21.5 48 48l0 50.7c5-1.8 10.4-2.7 16-2.7l64 0c13.8 0 26.3 5.8 35 15.2L296.9 72.9c-6.9-25.6 8.3-51.9 33.9-58.8L392.6-2.5c25.6-6.9 51.9 8.3 58.8 33.9 10.3 38.6 33.1 123.7 87 324.6l8.3 30.9zM192.1 144l0 320c0 8.8 7.2 16 16 16l64 0c8.8 0 16-7.2 16-16l0-320c0-8.8-7.2-16-16-16l-64 0c-8.8 0-16 7.2-16 16zm-32 320l0-48-96 0 0 48c0 8.8 7.2 16 16 16l64 0c8.8 0 16-7.2 16-16zm0-80l0-256-96 0 0 256 96 0zM80.1 32c-8.8 0-16 7.2-16 16l0 48 96 0 0-48c0-8.8-7.2-16-16-16l-64 0z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </span>
+              <div
+                style="flex: 1 1 0%; min-width: 0px; display: flex; flex-direction: column; gap: 2px;"
+              >
+                <span
+                  style="font-family: var(--font-body); font-weight: 600; font-size: 14px; line-height: 20px; color: var(--color-text-primary); opacity: 1; overflow-wrap: anywhere;"
+                >
+                  Complete Greenlight 1
+                </span>
+                <span
+                  style="display: block; font-family: var(--font-body); font-size: 12px; color: var(--color-text-secondary); line-height: 16px;"
+                >
+                  Exam · 120 min
+                </span>
+                <div
+                  style="display: flex; align-items: center; gap: 8px; margin-top: 4px;"
+                >
+                  <div
+                    aria-valuemax="100"
+                    aria-valuemin="0"
+                    aria-valuenow="47"
+                    role="progressbar"
+                    style="position: relative; flex: 1 1 0%; height: 4px; background: var(--color-neutral-100); border-radius: var(--radius-pill); overflow: hidden;"
+                  >
+                    <span
+                      aria-hidden="true"
+                      style="position: absolute; inset: 0 auto 0 0; width: 47%; background: var(--color-primary-500); border-radius: var(--radius-pill);"
+                    />
+                  </div>
+                  <span
+                    style="font-family: var(--font-body); font-size: 12px; font-weight: 600; color: var(--color-text-secondary); white-space: nowrap;"
+                  >
+                    47%
+                  </span>
+                </div>
+              </div>
+              <div
+                style="display: flex; align-items: center; gap: 8px; flex-shrink: 0;"
+              >
+                <span
+                  style="font-family: var(--font-body); font-size: 13px; font-weight: 500; line-height: 18px; color: var(--color-primary-700); white-space: nowrap;"
+                >
+                  In Progress
+                </span>
+                <span
+                  aria-hidden="true"
+                  style="display: inline-block; width: 32px; height: 32px; flex-shrink: 0;"
+                />
+              </div>
+            </li>
+          </ul>
+        </aside>
+      </section>
+    </div>
+  </section>
+</DocumentFragment>
+`;

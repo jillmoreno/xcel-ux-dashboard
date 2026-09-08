@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>What's New Page — Configuration — Colibri Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet" />
+<style>
+  /* ==========================================================================
+     COLIBRI ADMIN CONSOLE — What's New Page configuration.
+     A category-sectioned membership landing: CE Podcasts · Exam & Cert Prep ·
+     Resource Library · AI Career Tools. First built category: Featured Podcasts.
+     Design language mirrors whats-new-setup.html (teal admin chrome).
+     ========================================================================== */
+  :root{
+    --page:#f4f5f5; --card:#ffffff; --border:#e4e7e7; --border-strong:#cfd4d4; --field-border:#c9cfce;
+    --teal:#0e7f72; --teal-hover:#0b6b60; --teal-dark:#0c5148; --teal-50:#e6f2f0; --teal-100:#d4e9e6; --link:#0e7f72;
+    --text:#2b3230; --text-secondary:#6a7370; --text-muted:#98a09d;
+    --ok:#16a34a; --warn:#c2410c; --danger:#dc2626;
+    --radius:10px; --radius-sm:7px;
+    --shadow-card:0 1px 2px rgba(20,40,37,.04), 0 1px 3px rgba(20,40,37,.06);
+    --shadow-pop:0 10px 30px rgba(20,40,37,.16), 0 2px 8px rgba(20,40,37,.10);
+    --font:'Open Sans',system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    /* widget-preview palette */
+    --pod-teal:#0e8074; --pod-teal-dark:#0b6357; --navy:#122a4f; --heading-blue:#1c4c86; --cta:#a24796; --gold:#e8a72c;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;height:100%}
+  body{font-family:var(--font);color:var(--text);background:var(--page);font-size:14px;line-height:1.45;-webkit-font-smoothing:antialiased}
+  button{font-family:inherit;cursor:pointer}
+  a{color:var(--link);text-decoration:none}
+  h1,h2,h3,h4{margin:0}
+
+  /* ===== App shell ===== */
+  .app{display:grid;grid-template-columns:120px 1fr;min-height:100vh}
+  .sidebar{background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+  .brand{display:flex;align-items:center;gap:6px;padding:16px 12px 14px}
+  .brand-mark{width:22px;height:22px;flex:none}
+  .brand-name{font-weight:700;font-size:15px;color:var(--teal-dark);letter-spacing:.2px}
+  .nav{flex:1;overflow-y:auto;padding:4px 8px}
+  .nav::-webkit-scrollbar{width:0}
+  .nav-item{display:flex;align-items:center;gap:10px;text-align:left;padding:9px 10px;border-radius:8px;margin-bottom:2px;color:var(--text-secondary);font-size:12.5px;line-height:1.25;border:none;background:none;width:100%}
+  .nav-item svg{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.6}
+  .nav-item:hover{background:var(--teal-50);color:var(--teal-dark)}
+  .nav-item.active{background:var(--teal);color:#fff}
+  .nav-user{display:flex;align-items:center;gap:8px;padding:12px;border-top:1px solid var(--border);font-size:12px;color:var(--text-secondary)}
+  .nav-user .avatar{width:22px;height:22px;border-radius:50%;background:var(--teal-100);display:grid;place-items:center;color:var(--teal-dark);font-weight:700;font-size:10px;flex:none}
+
+  .main{min-width:0;display:flex;flex-direction:column}
+  .page-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:22px 28px 16px;background:var(--card);border-bottom:1px solid var(--border)}
+  .page-title{font-size:23px;font-weight:700;color:var(--teal-dark)}
+  .page-sub{color:var(--text-secondary);font-size:13px;margin-top:3px}
+  .head-actions{display:flex;gap:10px;flex:none}
+  .content{padding:22px 28px;display:flex;flex-direction:column;gap:18px;max-width:1060px}
+  .crumbs{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text-secondary);margin-bottom:8px}
+  .crumbs a{color:var(--link);font-weight:600}
+  .crumbs .sep{color:var(--text-muted)}
+  .crumbs .cur{color:var(--text);font-weight:600}
+
+  /* ===== Buttons ===== */
+  .btn{display:inline-flex;align-items:center;gap:7px;border-radius:8px;font-weight:600;font-size:13px;padding:9px 15px;border:1px solid transparent;white-space:nowrap;transition:.12s}
+  .btn svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8}
+  .btn-primary{background:var(--teal);color:#fff}
+  .btn-primary:hover{background:var(--teal-hover)}
+  .btn-outline{background:#fff;color:var(--teal);border-color:var(--teal)}
+  .btn-outline:hover{background:var(--teal-50)}
+  .btn-ghost{background:#fff;color:var(--text-secondary);border-color:var(--field-border)}
+  .btn-ghost:hover{border-color:var(--border-strong);color:var(--text)}
+  .btn[disabled]{opacity:.5;cursor:not-allowed}
+
+  /* ===== Cards ===== */
+  .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-card)}
+  .card-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 22px;border-bottom:1px solid var(--border)}
+  .card-head h2{font-size:15px;font-weight:700;color:var(--text)}
+  .card-head .card-desc{font-size:12px;color:var(--text-secondary);margin-top:2px}
+  .card-pad{padding:20px 22px}
+
+  /* ===== Fields ===== */
+  .scopebar{display:flex;align-items:flex-end;gap:20px;flex-wrap:wrap}
+  .field{display:flex;flex-direction:column;gap:6px}
+  .field label{font-size:12px;font-weight:600;color:var(--text-secondary)}
+  .field .req{color:var(--danger)}
+  .select,.input,.textarea{font-family:inherit;font-size:13px;color:var(--text);background:#fff;border:1px solid var(--field-border);border-radius:8px;padding:9px 11px;min-width:0}
+  .select{min-width:230px;appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236a7370' stroke-width='2'><path d='M6 9l6 6 6-6'/></svg>");background-repeat:no-repeat;background-position:right 10px center;padding-right:32px}
+  .input:focus,.select:focus,.textarea:focus{outline:none;border-color:var(--teal);box-shadow:0 0 0 3px rgba(14,127,114,.14)}
+  .input.err,.select.err{border-color:var(--danger);box-shadow:0 0 0 3px rgba(220,38,38,.12)}
+  .field-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px 24px}
+  @media(max-width:820px){.field-grid{grid-template-columns:1fr}}
+  .full{width:100%}
+  .counter{font-size:11px;color:var(--text-muted);text-align:right}
+  .counter.warn{color:var(--warn);font-weight:700}
+  .help{font-size:11.5px;color:var(--text-muted)}
+  .err-msg{font-size:11.5px;color:var(--danger);font-weight:600;display:none}
+  .err-msg.show{display:block}
+  .num{display:inline-flex;align-items:center;border:1px solid var(--field-border);border-radius:8px;overflow:hidden;width:120px}
+  .num input{border:none;text-align:center;width:100%;font-size:13px;padding:9px 6px;font-family:inherit}
+  .num input:focus{outline:none}
+  .num button{border:none;background:#f4f6f6;color:var(--text-secondary);width:32px;height:38px;font-size:16px;font-weight:700;flex:none}
+  .num button:hover{background:var(--teal-50);color:var(--teal-dark)}
+
+  /* ===== Category landing tiles ===== */
+  .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:18px}
+  @media(max-width:1080px){.tiles{grid-template-columns:repeat(2,1fr)}}
+  @media(max-width:720px){.tiles{grid-template-columns:1fr}}
+  .tile{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow-card);padding:20px;display:flex;flex-direction:column;gap:12px;text-align:left;transition:.14s;position:relative}
+  .tile.enabled{cursor:pointer}
+  .tile.enabled:hover{border-color:var(--teal);box-shadow:0 6px 20px rgba(14,127,114,.14);transform:translateY(-2px)}
+  .tile.soon{opacity:.72}
+  .tile-icon{width:44px;height:44px;border-radius:11px;background:var(--teal-50);display:grid;place-items:center;flex:none}
+  .tile-icon svg{width:22px;height:22px;stroke:var(--teal);fill:none;stroke-width:1.6}
+  .tile h3{font-size:16px;font-weight:700;color:var(--text)}
+  .tile p{font-size:12.5px;color:var(--text-secondary);line-height:1.5;flex:1}
+  .tile-foot{display:flex;align-items:center;justify-content:space-between}
+  .pill{font-size:11px;font-weight:700;padding:3px 9px;border-radius:999px;letter-spacing:.02em}
+  .pill-ready{background:#e7f6ee;color:#177245}
+  .pill-soon{background:#eef1f0;color:var(--text-secondary)}
+  .tile .go{display:inline-flex;align-items:center;gap:5px;font-size:12.5px;font-weight:700;color:var(--teal)}
+  .tile .go svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:2}
+
+  /* ===== Table ===== */
+  table.data{width:100%;border-collapse:collapse}
+  .data th{font-size:12px;font-weight:700;color:var(--text-secondary);text-align:left;padding:10px 12px;border-bottom:1px solid var(--border);white-space:nowrap}
+  .data td{padding:12px;border-bottom:1px solid var(--border);vertical-align:middle}
+  .data tr:last-child td{border-bottom:none}
+  .data tbody tr:hover{background:var(--teal-50)}
+  .drag{color:var(--text-muted);cursor:grab}
+  .cell-center{text-align:center}
+  .data th.cell-center{text-align:center}
+  .ep-cell{font-weight:600}
+  .ep-cell small{display:block;font-weight:400;color:var(--text-secondary);font-size:11.5px;margin-top:1px}
+  .credit-tag{display:inline-block;font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:999px}
+  .credit-mand{background:var(--teal-50);color:var(--teal-dark)}
+  .credit-elec{background:#eef1f0;color:var(--text-secondary)}
+  .state-pill{display:inline-block;font-size:11.5px;font-weight:700;color:var(--text-secondary);border:1px solid var(--border-strong);border-radius:6px;padding:2px 8px}
+  .link-btn{background:none;border:none;color:var(--teal);font-size:13px;font-weight:600;cursor:pointer;padding:6px}
+  .link-btn:hover{text-decoration:underline}
+  .empty{padding:44px 20px;text-align:center;color:var(--text-secondary)}
+  .empty svg{width:32px;height:32px;stroke:var(--teal);fill:none;stroke-width:1.4;margin-bottom:10px}
+  .empty h3{font-size:15px;color:var(--text);margin-bottom:4px}
+  .scope-count{font-size:12px;color:var(--text-secondary);font-weight:600}
+
+  /* toggle */
+  .toggle{position:relative;display:inline-block;width:38px;height:22px;flex:none}
+  .toggle input{opacity:0;width:0;height:0}
+  .toggle .track{position:absolute;inset:0;background:#cdd4d2;border-radius:999px;transition:.15s}
+  .toggle .knob{position:absolute;top:3px;left:3px;width:16px;height:16px;background:#fff;border-radius:50%;transition:.15s;box-shadow:0 1px 2px rgba(0,0,0,.25)}
+  .toggle input:checked + .track{background:var(--teal)}
+  .toggle input:checked + .track + .knob{transform:translateX(16px)}
+
+  /* audience pills */
+  .aud-pills{display:flex;gap:8px;flex-wrap:wrap}
+  .aud-pill{border:1.5px solid var(--border-strong);background:#fff;color:var(--text-secondary);font-size:12.5px;font-weight:600;padding:7px 15px;border-radius:999px;transition:.12s}
+  .aud-pill:hover{border-color:var(--teal)}
+  .aud-pill.on{border-color:var(--teal);background:var(--teal-50);color:var(--teal-dark)}
+
+  .note{font-size:12px;color:var(--text-secondary);background:#f6f9f8;border:1px solid var(--teal-100);border-radius:8px;padding:10px 12px;display:flex;gap:8px}
+  .note svg{width:15px;height:15px;stroke:var(--teal);fill:none;stroke-width:1.8;flex:none;margin-top:1px}
+  .coming{padding:40px 20px;text-align:center;color:var(--text-secondary)}
+  .coming h3{font-size:16px;color:var(--text);margin-bottom:4px}
+
+  /* ===== Slide-over sheet ===== */
+  .scrim{position:fixed;inset:0;background:rgba(20,32,30,.36);opacity:0;pointer-events:none;transition:.2s;z-index:40}
+  .scrim.open{opacity:1;pointer-events:auto}
+  .sheet{position:fixed;top:0;right:0;height:100vh;width:520px;max-width:94vw;background:var(--card);box-shadow:var(--shadow-pop);transform:translateX(100%);transition:transform .24s ease;z-index:50;display:flex;flex-direction:column}
+  .sheet.open{transform:none}
+  .sheet-head{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 22px;border-bottom:1px solid var(--border)}
+  .sheet-head h2{font-size:16px;font-weight:700;color:var(--teal-dark)}
+  .sheet-head .close{background:none;border:none;color:var(--text-secondary);display:inline-flex;align-items:center;gap:6px;font-size:13px;font-weight:600;padding:6px}
+  .sheet-head .close svg{width:16px;height:16px;stroke:currentColor;stroke-width:2;fill:none}
+  .sheet-body{overflow-y:auto;padding:20px 22px;flex:1;display:flex;flex-direction:column;gap:18px}
+  .sheet-foot{display:flex;align-items:center;gap:10px;padding:14px 22px;border-top:1px solid var(--border)}
+  .fieldset{display:flex;flex-direction:column;gap:6px}
+  .fieldset > label{font-size:12px;font-weight:700;color:var(--text-secondary)}
+  .row2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+  .del-link{display:inline-flex;align-items:center;gap:8px;background:none;border:none;color:var(--danger);font-size:13px;font-weight:600;padding:6px 4px}
+  .del-link svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.8}
+
+  /* ===== Preview modal ===== */
+  .pv-overlay{position:fixed;inset:0;z-index:60;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(20,32,30,.5);opacity:0;pointer-events:none;transition:.2s}
+  .pv-overlay.open{opacity:1;pointer-events:auto}
+  .pv-dialog{width:100%;max-width:1000px;background:#fff;border-radius:16px;box-shadow:0 24px 60px rgba(0,0,0,.28);transform:translateY(10px);transition:transform .2s;overflow:hidden;max-height:92vh;display:flex;flex-direction:column}
+  .pv-overlay.open .pv-dialog{transform:none}
+  .pv-dialog-head{display:flex;align-items:flex-start;justify-content:space-between;gap:16px;padding:18px 20px;border-bottom:1px solid var(--border)}
+  .pv-dialog-title{font-size:16px;font-weight:700;color:var(--text)}
+  .pv-dialog-sub{font-size:12px;color:var(--text-secondary);margin-top:2px}
+  .icon-btn{background:none;border:none;color:var(--text-secondary);padding:6px;border-radius:6px}
+  .icon-btn:hover{background:var(--teal-50);color:var(--teal-dark)}
+  .icon-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2}
+  .pv-body{padding:22px 20px 26px;overflow:auto;background:var(--page)}
+
+  .wn-chips{display:flex;gap:9px;flex-wrap:wrap;margin-bottom:18px}
+  .wn-chip{border:1px solid var(--border-strong);background:#fff;color:var(--text-secondary);font-size:12.5px;font-weight:600;padding:6px 14px;border-radius:999px}
+  .wn-chip.on{border-color:#c9d8ee;background:#eaf1fb;color:var(--heading-blue)}
+  .wn-eyebrow{font-size:11px;font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--teal);display:flex;align-items:center;gap:7px}
+  .wn-eyebrow svg{width:15px;height:15px;stroke:currentColor;fill:none;stroke-width:1.7}
+  .wn-head{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin:6px 0 14px}
+  .wn-title{font-size:22px;font-weight:800;color:#1a1a1a;display:flex;align-items:center;gap:9px}
+  .wn-title svg{width:22px;height:22px;stroke:var(--pod-teal);fill:none;stroke-width:1.7}
+  .wn-browse{font-size:13px;font-weight:700;color:var(--heading-blue);white-space:nowrap}
+  .pod-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  @media(max-width:840px){.pod-grid{grid-template-columns:1fr}}
+  .pod-card{background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow-card);overflow:hidden}
+  .pod-band{position:relative;height:96px;background:linear-gradient(150deg,var(--pod-teal),var(--pod-teal-dark));display:flex;align-items:flex-end;padding:12px 14px}
+  .pod-band .pname{color:#fff;font-size:15px;font-weight:700;line-height:1.2;z-index:2}
+  .pod-band .wm{position:absolute;right:-6px;top:-8px;width:96px;height:96px;opacity:.18;stroke:#fff;fill:none;stroke-width:1.2}
+  .pod-body{padding:12px 14px 14px;display:flex;flex-direction:column;gap:7px}
+  .pod-type{display:flex;align-items:center;gap:7px;font-size:12.5px;color:var(--text)}
+  .pod-type svg{width:15px;height:15px;stroke:var(--text-secondary);fill:none;stroke-width:1.7}
+  .pod-ep{font-size:12px;color:var(--text-secondary)}
+  .pod-meta{font-size:12px;color:var(--text-secondary)}
+  .pod-empty{padding:36px 12px;text-align:center;color:var(--text-secondary)}
+
+  .toast{position:fixed;bottom:22px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--teal-dark);color:#fff;padding:11px 20px;border-radius:10px;font-size:13px;font-weight:600;box-shadow:var(--shadow-pop);opacity:0;pointer-events:none;transition:.22s;z-index:70}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+  .toast.err{background:var(--danger)}
+</style>
+</head>
+<body>
+<div class="app">
+  <!-- ============ SIDEBAR ============ -->
+  <aside class="sidebar">
+    <div class="brand">
+      <svg class="brand-mark" viewBox="0 0 24 24" fill="none"><path d="M12 3c3 2 6 3 6 3s0 7-6 12C6 13 6 6 6 6s3-1 6-3z" stroke="#c0392b" stroke-width="1.6" fill="#f7d9d4"/></svg>
+      <span class="brand-name">Colibri</span>
+    </div>
+    <nav class="nav">
+      <button class="nav-item" onclick="location.href='whats-new-setup.html'"><svg viewBox="0 0 24 24"><rect x="3" y="6" width="14" height="12" rx="2"/><path d="M19 8v8M22 10v4"/></svg>Carousel Widget</button>
+      <button class="nav-item" onclick="location.href='recommended-setup.html'"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M7 8h10M7 12h6"/></svg>Recommended for You</button>
+      <button class="nav-item active"><svg viewBox="0 0 24 24"><path d="M4 5h13l3 3v11H4z"/><path d="M8 10h8M8 14h6"/></svg>What's New Page</button>
+      <button class="nav-item"><svg viewBox="0 0 24 24"><path d="M4 17l5-5 3 3 8-8"/><path d="M15 7h5v5"/></svg>What's Trending</button>
+      <button class="nav-item"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>Career Tools</button>
+      <button class="nav-item" onclick="location.href='whats-new-setup.html'"><svg viewBox="0 0 24 24"><path d="M4 11l8-7 8 7"/><path d="M6 10v9h12v-9"/></svg>Home</button>
+    </nav>
+    <div class="nav-user"><span class="avatar">JM</span><span>Jillienne Moreno</span></div>
+  </aside>
+
+  <!-- ============ MAIN ============ -->
+  <main class="main">
+    <!-- ============ LANDING VIEW ============ -->
+    <section id="landingView">
+      <div class="page-head">
+        <div>
+          <div class="crumbs"><a href="whats-new-setup.html">Home</a><span class="sep">›</span><span class="cur">What's New Page</span></div>
+          <h1 class="page-title">What's New Page</h1>
+          <p class="page-sub">Select a category to configure the section that appears on the What's New page.</p>
+        </div>
+      </div>
+      <div class="content">
+        <div class="tiles" id="catTiles">
+          <button class="tile enabled" data-cat="podcasts">
+            <span class="tile-icon"><svg viewBox="0 0 24 24"><path d="M4 11a9 9 0 0 1 16 0"/><path d="M7 13a5 5 0 0 1 10 0"/><circle cx="12" cy="15" r="1.6"/></svg></span>
+            <h3>CE Podcasts</h3>
+            <p>Earn-CE-on-the-go podcast cards — the section header plus the featured podcast list.</p>
+            <div class="tile-foot"><span class="pill pill-ready">Configured</span><span class="go">Configure <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></div>
+          </button>
+          <button class="tile enabled" data-cat="exam">
+            <span class="tile-icon"><svg viewBox="0 0 24 24"><path d="M12 3l2.5 5 5.5.8-4 3.9 1 5.5L12 15.8 7 18.2l1-5.5-4-3.9L9.5 8z"/></svg></span>
+            <h3>Exam &amp; Cert Prep</h3>
+            <p>Specialty exam-prep tiles — study plans and practice tests by credential.</p>
+            <div class="tile-foot"><span class="pill pill-soon">Set up</span><span class="go">Configure <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></div>
+          </button>
+          <button class="tile enabled" data-cat="library">
+            <span class="tile-icon"><svg viewBox="0 0 24 24"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
+            <h3>Resource Library</h3>
+            <p>Keep-skills-sharp resources — infographics, videos, and cheat sheets.</p>
+            <div class="tile-foot"><span class="pill pill-soon">Set up</span><span class="go">Configure <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></div>
+          </button>
+          <button class="tile enabled" data-cat="career">
+            <span class="tile-icon"><svg viewBox="0 0 24 24"><rect x="3" y="7" width="18" height="13" rx="2"/><path d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg></span>
+            <h3>AI Career Tools</h3>
+            <p>Get-ahead Rubi AI tools — which tools appear, tier gating, and copy.</p>
+            <div class="tile-foot"><span class="pill pill-soon">Set up</span><span class="go">Configure <svg viewBox="0 0 24 24"><path d="M9 6l6 6-6 6"/></svg></span></div>
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ CONFIG VIEW (CE Podcasts) ============ -->
+    <section id="configView" style="display:none">
+      <div class="page-head">
+        <div>
+          <div class="crumbs"><a href="whats-new-setup.html">Home</a><span class="sep">›</span><a id="crumbLanding" style="cursor:pointer">What's New Page</a><span class="sep">›</span><span class="cur">CE Podcasts</span></div>
+          <h1 class="page-title">CE Podcasts</h1>
+          <p class="page-sub">Configure the CE Podcasts section, scoped by Subsidiary + License Type.</p>
+        </div>
+        <div class="head-actions">
+          <button class="btn btn-ghost" id="previewBtn"><svg viewBox="0 0 24 24"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>Preview Section</button>
+          <button class="btn btn-primary" id="saveBtn"><svg viewBox="0 0 24 24"><path d="M5 12l5 5L20 7"/></svg>Save Configuration</button>
+        </div>
+      </div>
+      <div class="content">
+        <!-- Scope -->
+        <div class="card">
+          <div class="card-head"><div><h2>Scope</h2><div class="card-desc">Configuration applies to the selected subsidiary and license type.</div></div></div>
+          <div class="card-pad">
+            <div class="scopebar">
+              <div class="field">
+                <label>Subsidiary <span class="req">*</span></label>
+                <select class="select" id="subsidiary">
+                  <option value="">Select a subsidiary…</option>
+                  <option>Colibri Real Estate LLC</option>
+                  <option>McKissock LP</option>
+                  <option selected>Elite Healthcare</option>
+                  <option>Securities Training Corporation</option>
+                </select>
+                <div class="err-msg" id="e_subsidiary">Select a subsidiary.</div>
+              </div>
+              <div class="field">
+                <label>License Type <span class="req">*</span></label>
+                <select class="select" id="licenseType">
+                  <option>Nursing Continuing Education</option>
+                  <option>Occupational Therapy CE</option>
+                  <option>Physical Therapy CE</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ===== CE PODCASTS section config ===== -->
+        <div id="podcastsPane">
+        <!-- Section header -->
+        <div class="card" style="margin-bottom:18px">
+          <div class="card-head"><div><h2>CE Podcasts — Section Header</h2><div class="card-desc">The eyebrow, title, and link shown above the podcast cards.</div></div></div>
+          <div class="card-pad">
+            <div class="field-grid">
+              <div class="field">
+                <label style="display:flex;justify-content:space-between;gap:12px">Eyebrow <span class="counter" id="cEyebrow">15 / 40</span></label>
+                <input class="input full" id="secEyebrow" maxlength="40" value="Earn CE on the go">
+              </div>
+              <div class="field">
+                <label style="display:flex;justify-content:space-between;gap:12px">Section Title <span class="req">*</span><span class="counter" id="cTitle">11 / 40</span></label>
+                <input class="input full" id="secTitle" maxlength="40" value="CE Podcasts">
+                <div class="err-msg" id="e_secTitle">Enter a section title.</div>
+              </div>
+              <div class="field">
+                <label>Link Label</label>
+                <input class="input full" id="secCtaLabel" maxlength="30" value="Browse podcasts">
+              </div>
+              <div class="field">
+                <label>Link Destination</label>
+                <input class="input full" id="secCtaLink" value="/my-learning/podcasts" placeholder="/my-learning/podcasts or https://…">
+              </div>
+              <div class="field">
+                <label>Max Cards Shown <span class="req">*</span></label>
+                <div class="num"><button type="button" id="maxMinus" aria-label="Decrease">−</button><input id="maxCards" type="number" min="1" max="12" value="6" inputmode="numeric"><button type="button" id="maxPlus" aria-label="Increase">+</button></div>
+                <div class="err-msg" id="e_maxCards">Enter a value from 1 to 12.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Featured podcasts table -->
+        <div class="card">
+          <div class="card-head">
+            <div><h2>Featured Podcasts</h2><div class="card-desc">Drag to reorder. Only enabled podcasts appear in the section.</div></div>
+            <div style="display:flex;align-items:center;gap:14px">
+              <span class="scope-count" id="podCount">3 podcasts</span>
+              <button class="btn btn-outline" id="addPodBtn"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add Podcast</button>
+            </div>
+          </div>
+          <table class="data">
+            <thead>
+              <tr>
+                <th style="width:28px"></th>
+                <th class="cell-center" style="width:36px">Order</th>
+                <th>Podcast</th>
+                <th>Credit</th>
+                <th class="cell-center">State</th>
+                <th class="cell-center">Enabled</th>
+                <th class="cell-center" style="width:70px">Edit</th>
+              </tr>
+            </thead>
+            <tbody id="podBody"></tbody>
+          </table>
+        </div>
+      </div>
+
+      </div>
+    </section>
+  </main>
+</div>
+
+<!-- ============ EDITOR SHEET ============ -->
+<div class="scrim" id="scrim"></div>
+<aside class="sheet" id="sheet" aria-hidden="true">
+  <div class="sheet-head">
+    <button class="close" id="sheetClose"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg>Close</button>
+    <h2 id="sheetTitle">Edit Podcast</h2>
+  </div>
+  <div class="sheet-body">
+    <div class="fieldset">
+      <label>Podcast Title <span class="req" style="color:var(--danger)">*</span></label>
+      <input class="input full" id="fTitle" maxlength="60" placeholder="e.g. Medical Mysteries">
+      <div class="err-msg" id="e_fTitle">Enter a title.</div>
+    </div>
+    <div class="row2">
+      <div class="fieldset"><label>Episode</label><input class="input full" id="fEpisode" maxlength="12" placeholder="e.g. Ep. 42"></div>
+      <div class="fieldset"><label>Duration</label><input class="input full" id="fDuration" maxlength="12" placeholder="e.g. 1 hr"></div>
+    </div>
+    <div class="row2">
+      <div class="fieldset">
+        <label>Credit Category</label>
+        <select class="select full" id="fCategory" style="min-width:0"><option>Mandatory</option><option>Elective</option></select>
+      </div>
+      <div class="fieldset">
+        <label>Credit Hours</label>
+        <input class="input full" id="fHours" type="number" min="0" max="20" step="0.25" placeholder="e.g. 1">
+      </div>
+    </div>
+    <div class="row2">
+      <div class="fieldset">
+        <label>State</label>
+        <select class="select full" id="fState" style="min-width:0"><option>NC</option><option>AL</option><option>TX</option><option>CA</option><option>FL</option><option>NY</option><option>IL</option></select>
+      </div>
+      <div class="fieldset"><label>Link Destination</label><input class="input full" id="fLink" placeholder="/my-learning/podcasts"></div>
+    </div>
+    <div class="fieldset">
+      <label>Show For</label>
+      <div class="aud-pills" id="audPills">
+        <button type="button" class="aud-pill on" data-aud="all">All Users</button>
+        <button type="button" class="aud-pill on" data-aud="member">Members</button>
+        <button type="button" class="aud-pill on" data-aud="non-member">Non-Members</button>
+      </div>
+      <div class="help">CE Podcasts are free for everyone by default (All Users).</div>
+    </div>
+  </div>
+  <div class="sheet-foot">
+    <button type="button" class="del-link" id="deletePodLink"><svg viewBox="0 0 24 24"><path d="M4 7h16M9 7V5h6v2M6 7l1 13h10l1-13"/></svg>Delete Podcast</button>
+    <div style="display:flex;gap:10px;margin-left:auto">
+      <button class="btn btn-ghost" id="cancelPodBtn">Cancel</button>
+      <button class="btn btn-primary" id="savePodBtn">Save Podcast</button>
+    </div>
+  </div>
+</aside>
+
+<!-- ============ PREVIEW MODAL ============ -->
+<div class="pv-overlay" id="previewOverlay" aria-hidden="true">
+  <div class="pv-dialog" role="dialog" aria-modal="true" aria-label="What's New section preview">
+    <div class="pv-dialog-head">
+      <div>
+        <div class="pv-dialog-title">Section Preview</div>
+        <div class="pv-dialog-sub" id="pvSub"></div>
+      </div>
+      <button class="icon-btn" id="pvClose" aria-label="Close preview"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="pv-body">
+      <div class="wn-chips">
+        <span class="wn-chip on">CE Podcasts</span>
+        <span class="wn-chip">Exam &amp; Cert Prep</span>
+        <span class="wn-chip">Resource Library</span>
+        <span class="wn-chip">AI Career Tools</span>
+      </div>
+      <div class="wn-eyebrow" id="pvEyebrow"><svg viewBox="0 0 24 24"><path d="M4 11a9 9 0 0 1 16 0"/><path d="M7 13a5 5 0 0 1 10 0"/><circle cx="12" cy="15" r="1.6"/></svg><span id="pvEyebrowTxt">EARN CE ON THE GO</span></div>
+      <div class="wn-head">
+        <div class="wn-title"><svg viewBox="0 0 24 24"><path d="M4 11a9 9 0 0 1 16 0"/><path d="M7 13a5 5 0 0 1 10 0"/><circle cx="12" cy="15" r="1.6"/></svg><span id="pvTitle">CE Podcasts</span></div>
+        <span class="wn-browse" id="pvBrowse">Browse podcasts →</span>
+      </div>
+      <div class="pod-grid" id="pvGrid"></div>
+      <div class="pod-empty" id="pvEmpty" hidden>No enabled podcasts to show. Enable at least one podcast.</div>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ============================ HELPERS ============================ */
+const $ = s=>document.querySelector(s);
+const $$ = s=>[...document.querySelectorAll(s)];
+function toast(msg,err){const t=$('#toast');t.textContent=msg;t.classList.toggle('err',!!err);t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2300);}
+function esc(s){return (s||'').replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));}
+const MIC = '<path d="M4 11a9 9 0 0 1 16 0"/><path d="M7 13a5 5 0 0 1 10 0"/><circle cx="12" cy="15" r="1.6"/>';
+
+/* ============================ DATA ============================ */
+let podcasts = [
+  {id:1, title:'Medical Mysteries',   episode:'Ep. 42', duration:'1 hr',   category:'Mandatory', hours:1,    state:'NC', link:'/my-learning/podcasts', member:true, nonMember:true, enabled:true},
+  {id:2, title:'The Phantom Fever',   episode:'Ep. 38', duration:'1 hr',   category:'Mandatory', hours:1,    state:'NC', link:'/my-learning/podcasts', member:true, nonMember:true, enabled:true},
+  {id:3, title:'Scrubs & Subpoenas',  episode:'Ep. 27', duration:'45 min', category:'Elective',  hours:0.75, state:'AL', link:'/my-learning/podcasts', member:true, nonMember:true, enabled:true},
+];
+let editingId=null;
+const aud={member:true,nonMember:true};
+
+/* ============================ TABLE ============================ */
+function hoursLabel(h){return (h===1?'1 Hour':h+' Hours');}
+function renderTable(){
+  const b=$('#podBody');b.innerHTML='';
+  if(!podcasts.length){
+    b.innerHTML=`<tr><td colspan="7"><div class="empty">
+      <svg viewBox="0 0 24 24">${MIC}</svg><h3>No podcasts yet</h3><div>Add featured podcasts to build the CE Podcasts section.</div></div></td></tr>`;
+    $('#podCount').textContent='0 podcasts';return;
+  }
+  podcasts.forEach((p,i)=>{
+    const tr=document.createElement('tr');
+    const cat = p.category==='Mandatory'?'credit-mand':'credit-elec';
+    tr.innerHTML=`
+      <td><span class="drag" title="Drag to reorder">⠿</span></td>
+      <td class="cell-center">${i+1}</td>
+      <td class="ep-cell">${esc(p.title)}<small>${esc(p.episode)} · ${esc(p.duration)}</small></td>
+      <td><span class="credit-tag ${cat}">${esc(p.category)}</span> &nbsp;<span style="color:var(--text-secondary);font-size:12px">${hoursLabel(p.hours)}</span></td>
+      <td class="cell-center"><span class="state-pill">${esc(p.state)}</span></td>
+      <td class="cell-center"><label class="toggle"><input type="checkbox" ${p.enabled?'checked':''} data-toggle="${p.id}"><span class="track"></span><span class="knob"></span></label></td>
+      <td class="cell-center"><button class="link-btn" data-edit="${p.id}">Edit</button></td>`;
+    b.appendChild(tr);
+  });
+  b.querySelectorAll('[data-edit]').forEach(x=>x.onclick=()=>openEditor(+x.dataset.edit));
+  b.querySelectorAll('[data-toggle]').forEach(t=>t.onchange=()=>{podcasts.find(p=>p.id===+t.dataset.toggle).enabled=t.checked;});
+  $('#podCount').textContent=`${podcasts.length} podcast${podcasts.length===1?'':'s'}`;
+}
+
+/* ============================ VIEW SWITCHING ============================ */
+const CAT_LABEL={exam:'Exam & Cert Prep',library:'Resource Library',career:'AI Career Tools'};
+function showLanding(){$('#landingView').style.display='';$('#configView').style.display='none';window.scrollTo(0,0);}
+function showConfig(){$('#landingView').style.display='none';$('#configView').style.display='';window.scrollTo(0,0);}
+$('#catTiles').querySelectorAll('[data-cat]').forEach(t=>t.onclick=()=>{
+  const cat=t.dataset.cat;
+  if(cat==='podcasts'){showConfig();}
+  else{toast(CAT_LABEL[cat]+' — configuration coming soon');}
+});
+$('#crumbLanding').onclick=showLanding;
+
+/* ============================ NUMBER + COUNTERS ============================ */
+function clampMax(){let v=parseInt($('#maxCards').value,10);if(isNaN(v))v=6;v=Math.max(1,Math.min(12,v));$('#maxCards').value=v;return v;}
+$('#maxMinus').onclick=()=>{$('#maxCards').value=Math.max(1,clampMax()-1);clearErr('maxCards');};
+$('#maxPlus').onclick=()=>{$('#maxCards').value=Math.min(12,clampMax()+1);clearErr('maxCards');};
+$('#maxCards').addEventListener('input',()=>clearErr('maxCards'));
+function counter(id,cId,max){$('#'+cId).textContent=`${$('#'+id).value.length} / ${max}`;$('#'+cId).classList.toggle('warn',$('#'+id).value.length>=max);}
+$('#secEyebrow').addEventListener('input',()=>counter('secEyebrow','cEyebrow',40));
+$('#secTitle').addEventListener('input',()=>{counter('secTitle','cTitle',40);clearErr('secTitle');});
+
+/* ============================ AUDIENCE PILLS ============================ */
+function setAud(){const p=$('#audPills');
+  p.querySelector('[data-aud="member"]').classList.toggle('on',aud.member);
+  p.querySelector('[data-aud="non-member"]').classList.toggle('on',aud.nonMember);
+  p.querySelector('[data-aud="all"]').classList.toggle('on',aud.member&&aud.nonMember);}
+$('#audPills').querySelectorAll('[data-aud]').forEach(b=>b.onclick=()=>{
+  const a=b.dataset.aud;
+  if(a==='all'){aud.member=true;aud.nonMember=true;}
+  else if(a==='member'){if(aud.member&&!aud.nonMember)return;aud.member=!aud.member;}
+  else{if(aud.nonMember&&!aud.member)return;aud.nonMember=!aud.nonMember;}
+  setAud();});
+
+/* ============================ EDITOR ============================ */
+function openEditor(id){
+  editingId=id??null;
+  const p = id!=null ? podcasts.find(x=>x.id===id) : {title:'',episode:'',duration:'',category:'Mandatory',hours:'',state:'NC',link:'/my-learning/podcasts',member:true,nonMember:true};
+  $('#sheetTitle').textContent = id!=null?'Edit Podcast':'Add Podcast';
+  $('#deletePodLink').style.display = id!=null?'':'none';
+  $('#fTitle').value=p.title; $('#fEpisode').value=p.episode; $('#fDuration').value=p.duration;
+  $('#fCategory').value=p.category; $('#fHours').value=p.hours; $('#fState').value=p.state; $('#fLink').value=p.link;
+  aud.member=p.member!==false; aud.nonMember=p.nonMember!==false; setAud();
+  clearErr('fTitle');
+  openSheet();
+}
+$('#savePodBtn').onclick=()=>{
+  if(!$('#fTitle').value.trim()){$('#e_fTitle').classList.add('show');$('#fTitle').classList.add('err');return;}
+  const data={title:$('#fTitle').value.trim(),episode:$('#fEpisode').value.trim(),duration:$('#fDuration').value.trim(),
+    category:$('#fCategory').value,hours:parseFloat($('#fHours').value)||0,state:$('#fState').value,link:$('#fLink').value.trim(),
+    member:aud.member,nonMember:aud.nonMember};
+  if(editingId!=null){Object.assign(podcasts.find(p=>p.id===editingId),data);toast('Podcast saved');}
+  else{data.id=Date.now();data.enabled=true;podcasts.push(data);toast('Podcast added');}
+  renderTable();closeSheet();
+};
+$('#deletePodLink').onclick=()=>{if(editingId!=null){podcasts=podcasts.filter(p=>p.id!==editingId);renderTable();closeSheet();toast('Podcast deleted');}};
+$('#addPodBtn').onclick=()=>openEditor(null);
+
+/* sheet open/close */
+function openSheet(){$('#scrim').classList.add('open');$('#sheet').classList.add('open');$('#sheet').setAttribute('aria-hidden','false');}
+function closeSheet(){$('#scrim').classList.remove('open');$('#sheet').classList.remove('open');$('#sheet').setAttribute('aria-hidden','true');}
+$('#sheetClose').onclick=closeSheet;$('#cancelPodBtn').onclick=closeSheet;$('#scrim').onclick=closeSheet;
+
+/* ============================ VALIDATION ============================ */
+function clearErr(key){const f=$('#e_'+key);if(f)f.classList.remove('show');
+  const sel={subsidiary:'#subsidiary',secTitle:'#secTitle',maxCards:'#maxCards',fTitle:'#fTitle'}[key];
+  if(sel)$(sel).classList.remove('err');}
+function validate(){
+  let ok=true;
+  const need=(bad,key,sel)=>{const f=$('#e_'+key);if(bad){ok=false;f&&f.classList.add('show');sel&&$(sel).classList.add('err');}else{f&&f.classList.remove('show');sel&&$(sel).classList.remove('err');}};
+  need(!$('#subsidiary').value,'subsidiary','#subsidiary');
+  need(!$('#secTitle').value.trim(),'secTitle','#secTitle');
+  const v=parseInt($('#maxCards').value,10);need(isNaN(v)||v<1||v>12,'maxCards','#maxCards');
+  return ok;
+}
+$('#saveBtn').onclick=()=>{
+  if(!validate()){toast('Please complete the required fields',true);const f=$$('.err-msg.show')[0];if(f)f.scrollIntoView({behavior:'smooth',block:'center'});return;}
+  clampMax();
+  toast('CE Podcasts saved for '+$('#subsidiary').value);
+  // TODO(data): POST scoped What's New — CE Podcasts section config
+};
+$('#subsidiary').onchange=()=>{clearErr('subsidiary');toast('Loaded config for '+($('#subsidiary').value||'—'));};
+
+/* ============================ PREVIEW ============================ */
+function podCard(p){
+  return `<div class="pod-card">
+    <div class="pod-band"><svg class="wm" viewBox="0 0 24 24">${MIC}</svg><span class="pname">${esc(p.title)}</span></div>
+    <div class="pod-body">
+      <div class="pod-type"><svg viewBox="0 0 24 24">${MIC}</svg>Podcast</div>
+      <div class="pod-ep">${esc(p.episode)}${p.duration?' · '+esc(p.duration):''}</div>
+      <div class="pod-meta">${esc(p.category)} &nbsp;|&nbsp; ${hoursLabel(p.hours)} &nbsp;|&nbsp; ${esc(p.state)}</div>
+    </div></div>`;
+}
+function openPreview(){
+  $('#pvEyebrowTxt').textContent=($('#secEyebrow').value.trim()||'Earn CE on the go').toUpperCase();
+  $('#pvTitle').textContent=$('#secTitle').value.trim()||'CE Podcasts';
+  const label=$('#secCtaLabel').value.trim();
+  $('#pvBrowse').style.display=label?'':'none';$('#pvBrowse').textContent=label?label+' →':'';
+  $('#pvSub').textContent=`${$('#subsidiary').value||'—'} · ${$('#licenseType').value} · CE Podcasts`;
+  const items=podcasts.filter(p=>p.enabled).slice(0,clampMax());
+  const grid=$('#pvGrid'),empty=$('#pvEmpty');
+  if(!items.length){grid.innerHTML='';grid.hidden=true;empty.hidden=false;}
+  else{grid.hidden=false;empty.hidden=true;grid.innerHTML=items.map(podCard).join('');}
+  const o=$('#previewOverlay');o.classList.add('open');o.setAttribute('aria-hidden','false');
+}
+function closePreview(){const o=$('#previewOverlay');o.classList.remove('open');o.setAttribute('aria-hidden','true');}
+$('#previewBtn').onclick=openPreview;$('#pvClose').onclick=closePreview;
+$('#previewOverlay').addEventListener('click',e=>{if(e.target===$('#previewOverlay'))closePreview();});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&$('#previewOverlay').classList.contains('open'))closePreview();});
+
+/* ============================ INIT ============================ */
+renderTable(); setAud();
+counter('secEyebrow','cEyebrow',40); counter('secTitle','cTitle',40);
+showLanding();
+</script>
+</body>
+</html>

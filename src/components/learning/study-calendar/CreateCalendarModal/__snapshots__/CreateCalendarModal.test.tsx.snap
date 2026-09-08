@@ -1,0 +1,45 @@
+// Vitest Snapshot v1, https://vitest.dev/guide/snapshot.html
+
+exports[`CreateCalendarDemoHarness > auto-opens the modal in its empty state on mount 1`] = `
+<DocumentFragment>
+  <section
+    aria-label="Study plan unavailable"
+    role="region"
+    style="display: flex; flex-direction: column; align-items: center; text-align: center; gap: 12px; padding: 48px 24px; background: var(--color-surface-card); border: 1px solid var(--color-border-subtle); border-radius: var(--radius-lg);"
+  >
+    <span
+      aria-hidden="true"
+      style="display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: var(--radius-pill); background: var(--color-neutral-100); color: var(--color-text-secondary);"
+    >
+      <svg
+        aria-hidden="true"
+        focusable="false"
+        height="22"
+        style="display: inline-block; vertical-align: middle; fill: currentcolor; overflow: visible;"
+        viewBox="0 0 448 512"
+        width="22"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M112 0c8.8 0 16 7.2 16 16l0 48 192 0 0-48c0-8.8 7.2-16 16-16s16 7.2 16 16l0 48 32 0c35.3 0 64 28.7 64 64l0 288c0 35.3-28.7 64-64 64L64 480c-35.3 0-64-28.7-64-64L0 128C0 92.7 28.7 64 64 64l32 0 0-48c0-8.8 7.2-16 16-16zM384 96L64 96c-17.7 0-32 14.3-32 32l0 288c0 17.7 14.3 32 32 32l320 0c17.7 0 32-14.3 32-32l0-288c0-17.7-14.3-32-32-32zM144 256c-8.8 0-16 7.2-16 16l0 64c0 8.8 7.2 16 16 16l64 0c8.8 0 16-7.2 16-16l0-64c0-8.8-7.2-16-16-16l-64 0zM96 272c0-26.5 21.5-48 48-48l64 0c26.5 0 48 21.5 48 48l0 64c0 26.5-21.5 48-48 48l-64 0c-26.5 0-48-21.5-48-48l0-64z"
+          fill="currentColor"
+        />
+      </svg>
+    </span>
+    <h3
+      style="margin: 0px; font-family: var(--font-heading); font-size: 18px; font-weight: 700; color: var(--color-text-primary);"
+    >
+      No study plan assigned to this path.
+    </h3>
+    <p
+      style="margin: 0px; max-width: 420px; font-family: var(--font-body); font-size: 14px; line-height: 20px; color: var(--color-text-secondary);"
+    >
+      Your team will pace this learning path with a Study Calendar when one is assigned. For now, use the Mandatory carousel above to pick the next task.
+    </p>
+  </section>
+</DocumentFragment>
+`;
+
+exports[`CreateCalendarModal > renders the configured state with Save enabled and preview populated 1`] = `<DocumentFragment />`;
+
+exports[`CreateCalendarModal > renders the empty state with Save disabled 1`] = `<DocumentFragment />`;
