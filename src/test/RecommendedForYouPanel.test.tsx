@@ -93,23 +93,26 @@ describe('RecommendedForYouPanel — Profession + State Licensed In filters', ()
     renderPanelWithFilters()
     expect(screen.getByRole('tablist', { name: /filter by profession/i })).toBeInTheDocument()
     expect(screen.getByRole('tablist', { name: /filter by state licensed in/i })).toBeInTheDocument()
-    // No "All" pill; states are FULL names (California), not abbreviations (CA).
+    // No "All" pill; states are FULL names (Florida), not abbreviations (FL).
     expect(screen.queryByRole('tab', { name: 'All' })).toBeNull()
-    expect(screen.getByRole('tab', { name: 'California' })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Florida' })).toBeInTheDocument()
     expect(screen.queryByRole('tab', { name: 'CA' })).toBeNull()
-    // Default selection: first profession (Nursing) + first licensed state (California).
-    expect(screen.getByRole('tab', { name: 'Nursing' })).toHaveAttribute('aria-selected', 'true')
-    expect(screen.getByRole('tab', { name: 'California' })).toHaveAttribute('aria-selected', 'true')
+    // Default selection: first profession + first licensed state. For XCEL
+    // that is Life & Health / Florida (it was Elite's Nursing / California).
+    expect(screen.getByRole('tab', { name: 'Life & Health' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.getByRole('tab', { name: 'Florida' })).toHaveAttribute('aria-selected', 'true')
   })
 
-  it('offers Nursing / Occupational Therapy / Physical Therapy profession pills (no counts)', () => {
+  it('offers a profession pill per licensed line of authority (no counts)', () => {
     seedAccount()
     seedFlags({ 'profession-count': { enabled: true, variant: 'multiple' } })
     renderPanelWithFilters()
-    // Options come from the learner's licenses (Elite = Nursing / OT / PT).
-    expect(screen.getByRole('tab', { name: 'Nursing' })).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: 'Occupational Therapy' })).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: 'Physical Therapy' })).toBeInTheDocument()
+    // Options come from the learner's licenses. XCEL's are lines of authority
+    // (Life & Health / P&C / Personal Lines) where Elite's were Nursing/OT/PT —
+    // the pills are the licence set, whatever that set happens to be.
+    expect(screen.getByRole('tab', { name: 'Life & Health' })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Property & Casualty' })).toBeInTheDocument()
+    expect(screen.getByRole('tab', { name: 'Personal Lines' })).toBeInTheDocument()
   })
 
   it('still renders the State Licensed In row when state-count is single (one selected pill)', () => {
@@ -123,8 +126,10 @@ describe('RecommendedForYouPanel — Profession + State Licensed In filters', ()
     })
     renderPanelWithFilters()
     expect(screen.getByRole('tablist', { name: /filter by state licensed in/i })).toBeInTheDocument()
-    // single → only the first licensed state (California) shows, as the selected pill.
-    expect(screen.getByRole('tab', { name: 'California' })).toHaveAttribute('aria-selected', 'true')
-    expect(screen.queryByRole('tab', { name: 'Florida' })).toBeNull()
+    // single → only the FIRST licensed state shows, as the selected pill, and
+    // the learner's other states do not. Florida is XCEL's first (it was
+    // California for Elite), so Georgia is the one that must be absent.
+    expect(screen.getByRole('tab', { name: 'Florida' })).toHaveAttribute('aria-selected', 'true')
+    expect(screen.queryByRole('tab', { name: 'Georgia' })).toBeNull()
   })
 })

@@ -26,8 +26,13 @@ type AccountMenuProps = {
 
 export function AccountMenu({
   initials,
-  name = 'Sarah Cook',
-  email = 'sarah.cook@gmail.com',
+  // Defaults are CRE-era leftovers — `Header` always passes the live values
+  // from `useAccount().user`, so these only surface in an isolated mount (a
+  // unit test rendering the menu on its own). Repointed at XCEL's demo learner
+  // so such a mount does not display a person from a brand this repo no longer
+  // has. `/brand/sarah.jpg` is still the only demo portrait in public/brand.
+  name = 'Alicia Navarro',
+  email = 'alicia.navarro@gmail.com',
   avatarUrl = '/brand/sarah.jpg',
   isPro = true,
 }: AccountMenuProps) {

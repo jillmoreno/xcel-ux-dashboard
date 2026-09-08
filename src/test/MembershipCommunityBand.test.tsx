@@ -39,7 +39,12 @@ describe('Community row in the account dropdown', () => {
     // where they're sold it.
     const { unmount } = await renderMenu('non-member')
     expect(screen.queryByRole('menuitem', { name: /Facebook Community/i })).toBeNull()
-    expect(screen.getByRole('menuitem', { name: /Blog.*opens in a new tab/i })).toBeInTheDocument()
+    // A free outbound row still shows. It asserted "Blog" when every brand
+    // shared McKissock's resource set; XCEL's own set leads with the Resource
+    // Center. The point is unchanged: the gated row goes, the free ones stay.
+    expect(
+      screen.getByRole('menuitem', { name: /Resource Center.*opens in a new tab/i }),
+    ).toBeInTheDocument()
     unmount()
   })
 })

@@ -17,8 +17,16 @@ describe('CatalogPage', () => {
         </AccountProvider>
       </MemoryRouter>,
     )
-    expect(screen.getByRole('heading', { level: 1, name: /course catalog/i })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { level: 2, name: /memberships/i })).toBeInTheDocument()
+    // The h1 is the brand's `heroTitle` — XCEL's is "Insurance Training
+    // Catalog", where the LMS default read "Course Catalog".
+    expect(
+      screen.getByRole('heading', { level: 1, name: /insurance training catalog/i }),
+    ).toBeInTheDocument()
+    // No Memberships section: XCEL's bundle sets `memberships: []` on purpose
+    // — it is a transactional brand (course packages plus a B2B Partner Code
+    // programme). Asserted as absence so re-adding memberships to the bundle
+    // without deciding to fails here.
+    expect(screen.queryByRole('heading', { level: 2, name: /^memberships$/i })).toBeNull()
     expect(screen.getByRole('heading', { level: 2, name: /packages/i })).toBeInTheDocument()
     expect(screen.getByRole('heading', { level: 2, name: /individual courses/i })).toBeInTheDocument()
     expect(screen.getByRole('combobox', { name: /sort by/i })).toBeInTheDocument()

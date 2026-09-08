@@ -40,6 +40,6 @@ describe('MultiBrandCatalog', () => {
   it("breadcrumb root reflects the active brand's full name", () => {
     renderWith(<SetAccount brand="xcel" membership="member" />)
     const breadcrumb = screen.getByRole('navigation', { name: /breadcrumb/i })
-    expect(within(breadcrumb).getByText(/elite learning/i)).toBeInTheDocument()
+    expect(within(breadcrumb).getByText(/xcel solutions/i)).toBeInTheDocument()
   })
 })
