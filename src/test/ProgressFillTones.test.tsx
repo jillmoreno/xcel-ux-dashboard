@@ -203,7 +203,7 @@ describe('the resume link', () => {
     render(
       <MemoryRouter>
         <AccountProvider>
-          <CourseCard data={course('mc-il-6hr-core')} compact jumpBackIn />
+          <CourseCard data={course({ status: 'not-started', progress: 0 })} compact jumpBackIn />
         </AccountProvider>
       </MemoryRouter>,
     )

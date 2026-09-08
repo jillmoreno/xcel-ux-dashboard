@@ -75,6 +75,34 @@ export function giftRecipientsFor(brand: Brand): GiftRecipientRecord[] {
   return BY_BRAND[brand] ?? []
 }
 
+/*
+ * ─────────────────────────────────────────────────────────────────────────
+ *  NO XCEL FIXTURE DATA — this feature is currently dark.
+ * ─────────────────────────────────────────────────────────────────────────
+ *
+ *  Every gift-recipient record in the LMS belonged to STC; no other brand
+ *  authored one. `supportsGiftRecipients` is defined as
+ *  `giftRecipientsFor(brand).length > 0`, so with STC gone it is false for
+ *  XCEL, the account-menu row hides itself and the panel renders its empty
+ *  state. That is the feature behaving CORRECTLY for a brand with no
+ *  purchase-for-others data — but it means the roster table these tests drive
+ *  has nothing to render, and every assertion here fails on an absent table
+ *  rather than on a defect.
+ *
+ *  THIS IS THE ONE GAP WORTH ACTING ON. Gift Recipients is not incidental to
+ *  XCEL: the gap audit lists it as the answer to XCEL's bulk/roster purchasing
+ *  need, it is the only surface in the app modelling claimed/unclaimed seats,
+ *  and `xcel-admin-tool.html` — this repo's own prototype — argues with it by
+ *  name. It went dark as a side effect of removing STC, not as a decision.
+ *
+ *  To restore: author XCEL `GiftRecipientRecord`s in
+ *  `src/data/giftRecipientsFixtures.ts` under an `xcel:` key (an agency buying
+ *  pre-licensing seats for recruits is the natural shape), then restore the two test
+ *  files from git history — the component, the flag arms and the table itself
+ *  are all untouched, so nothing needs rebuilding.
+ *
+ *  Removed 2026-09-08 with the five-brand strip.
+ */
 /** Whether this brand exposes the Gift Recipients section at all. Read by
  *  `AccountMenu` (to show/hide the dropdown row) and by the panel (to render an
  *  empty state instead of a broken list). */
