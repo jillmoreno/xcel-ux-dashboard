@@ -351,30 +351,6 @@ export type AdditionalBenefit = {
   href: string
 }
 
-const ELITE_ADDITIONAL_BENEFITS: AdditionalBenefit[] = [
-  {
-    id: 'partner-offers',
-    title: 'VIP partner offers & discounts',
-    blurb: 'Member-only pricing on gear, scrubs, and services you already use.',
-    iconKey: 'gem',
-    href: '/membership?tab=partner-offerings',
-  },
-  {
-    id: 'community',
-    title: 'Community & course forums',
-    blurb: 'Compare notes with nurses across the country in member discussions.',
-    iconKey: 'users',
-    href: '/membership?tab=community',
-  },
-  {
-    id: 'wellbeing',
-    title: 'Nurse well-being resources',
-    blurb: 'Burnout, resilience, and career-longevity content built for the bedside.',
-    iconKey: 'heart',
-    href: '/membership?tab=library',
-  },
-]
-
 const ADDITIONAL_BENEFITS_BY_BRAND: Record<Brand, AdditionalBenefit[]> = {
   // XCEL sells transactional course packages (Standard / Premier) + a B2B
   // Partner programme — no consumer membership, so nothing here is reachable.

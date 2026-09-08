@@ -57,35 +57,6 @@ export type GiftRecipientRecord = {
 // whose line items are the exam bank, chapter quizzes, on-demand lecture, and
 // the printed manual. Edition numbers are part of the real product names.
 
-function items(...titles: string[]): GiftPackageItem[] {
-  return titles.map((title, i) => ({ id: `${slug(title)}-${i}`, title }))
-}
-
-function slug(value: string): string {
-  return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
-}
-
-const SERIES_24_PREMIER = {
-  title: 'Series 24 Premier',
-  items: items(
-    'Series 24 Final and Custom Exams-18th Edition',
-    'Series 24 Chapter Quizzes',
-    'Series 24 On-Demand Lecture-18th Edition',
-    'Series 24 Printed Study Manual',
-  ),
-}
-
-const CFP_COMPLETE = {
-  title: 'CFP Exam Prep — Complete',
-  items: items(
-    'CFP Final and Custom Exams',
-    'CFP Chapter Quizzes',
-    'CFP On-Demand Lecture Series',
-    'CFP Printed Study Manual',
-    'CFP Case Study Workbook',
-  ),
-}
-
 /* ─── STC records ───────────────────────────────────────────────────────── */
 // A firm (Cavell Capital) onboarding a new class of registered reps. Deliberately
 // spread across four months + both claim states so the month grouping, the
