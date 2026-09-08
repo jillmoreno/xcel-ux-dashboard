@@ -1341,41 +1341,6 @@ const XCEL_RESOURCES: LibraryResource[] = [
 /* ─── per-brand selector ───────────────────────────────────────────── */
 
 const CONFIG_BY_BRAND: Record<Brand, LibraryConfig> = {
-  cre: {
-    eyebrow: 'Real Estate',
-    title: 'Real Estate Skills Library',
-    description:
-      'Quick reference guides, walkthrough videos, and printable cheat sheets — built with senior brokers and real-estate attorneys.',
-    resources: CRE_RESOURCES,
-  },
-  mckissock: {
-    eyebrow: 'Appraisal',
-    title: 'Appraiser Skills Library',
-    description:
-      "Methodology refreshers, USPAP updates, and the workfile templates Certified Generals actually keep on their desks.",
-    resources: MCKISSOCK_RESOURCES,
-  },
-  elite: {
-    eyebrow: 'Nursing',
-    title: 'Skills Refresher Learning Library',
-    description:
-      'Concise reference guides, 90 second skills refresher videos, and handy charts built in collaboration with our sister company SimpleNursing.',
-    resources: ELITE_RESOURCES,
-  },
-  fitzgerald: {
-    eyebrow: 'Nursing',
-    title: 'Skills Refresher Learning Library',
-    description:
-      'Concise reference guides, 90 second skills refresher videos, and handy charts built in collaboration with our sister company SimpleNursing.',
-    resources: ELITE_RESOURCES,
-  },
-  stc: {
-    eyebrow: 'Financial Services',
-    title: 'Securities & Insurance Library',
-    description:
-      'Exam-prep refreshers, compliance primers, and the desk-side cheat sheets advisors keep coming back to.',
-    resources: STC_RESOURCES,
-  },
   xcel: {
     eyebrow: 'Insurance',
     title: 'Insurance Licensing Library',

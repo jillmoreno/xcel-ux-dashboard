@@ -70,11 +70,6 @@ const ELITE_PASSPORT_TIERS: PassportTierPlan[] = [
 ]
 
 const PASSPORT_TIERS_BY_BRAND: Record<Brand, PassportTierPlan[]> = {
-  cre: [],
-  mckissock: [],
-  elite: ELITE_PASSPORT_TIERS,
-  fitzgerald: ELITE_PASSPORT_TIERS,
-  stc: [],
   // XCEL sells transactional course packages (Standard / Premier) + a B2B
   // Partner programme — no consumer membership, so nothing here is reachable.
   xcel: [],

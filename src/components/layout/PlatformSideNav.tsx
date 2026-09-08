@@ -192,14 +192,7 @@ export function PlatformSideNav({
   // headline feature with its own landing page on xcelsolutions.com — XCEL is
   // the first non-healthcare brand that keeps that section, which is why
   // `benefitRowsFor('xcel')` had to be authored rather than left empty.
-  const hiddenBenefitSections: PlatformSection[] =
-    brand === 'cre' || brand === 'mckissock'
-      ? ['m-exam-prep', 'm-career-tools']
-      : brand === 'stc'
-        ? ['m-career-tools']
-        : brand === 'xcel'
-          ? ['m-more']
-          : []
+  const hiddenBenefitSections: PlatformSection[] = brand === 'xcel' ? ['m-more'] : []
   // Pluralize the Learning Path rail label only in V2 (the multi-path landing)
   // with 2+ paths. V1 opens a single path directly, so it always reads the
   // singular "Learning Path" regardless of how many paths the learner has.

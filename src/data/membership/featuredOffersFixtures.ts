@@ -169,11 +169,6 @@ const STC_FEATURED: FeaturedOffer[] = [
 ]
 
 const FEATURED_BY_BRAND: Record<Brand, FeaturedOffer[]> = {
-  cre: CRE_FEATURED,
-  mckissock: MCKISSOCK_FEATURED,
-  elite: ELITE_FEATURED,
-  fitzgerald: ELITE_FEATURED,
-  stc: STC_FEATURED,
   // See OFFERINGS_BY_BRAND — Partner Offers is hidden for XCEL.
   xcel: [],
 }

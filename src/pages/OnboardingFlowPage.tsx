@@ -63,10 +63,10 @@ export function OnboardingFlowPage() {
     // onboarded in. `?membership=member` + `?brand=` are honored by
     // DashboardRebrandPage's one-shot seed, so every brand shows its populated
     // Current Learning Path (persona) rather than a non-member / mismatched view.
-    const to =
-      brand === 'elite'
-        ? '/dashboard-rebrand?membership=member'
-        : `/dashboard-rebrand?brand=${brand}&membership=member`
+    // Elite was the shell's default seed, so it alone could omit `?brand=`.
+    // XCEL is the default now, and passing it explicitly is still correct and
+    // survives the seed changing.
+    const to = `/dashboard-rebrand?brand=${brand}&membership=member`
     navigate(to)
   }, [completed, brand, navigate])
 

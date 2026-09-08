@@ -549,35 +549,21 @@ function MembershipPlaceholderCard() {
                 minWidth: 0,
               }}
             >
-              {brand === 'cre' ? (
-                <>
-                  <MembershipSnacksFeature
-                    horizontal
-                    fill={stretchToQuickLinks}
-                    floating={!isTwoThirds}
-                  />
-                  <MembershipAiMasterTracksFeature
-                    horizontal
-                    fill={stretchToQuickLinks}
-                    floating={!isTwoThirds}
-                  />
-                </>
-              ) : (
-                <>
-                  <MembershipFeatureLoFiPlaceholder
-                    slot={0}
-                    horizontal
-                    fill={stretchToQuickLinks}
-                    floating={!isTwoThirds}
-                  />
-                  <MembershipFeatureLoFiPlaceholder
-                    slot={1}
-                    horizontal
-                    fill={stretchToQuickLinks}
-                    floating={!isTwoThirds}
-                  />
-                </>
-              )}
+              {/* CRE was the only brand with authored Snacks / AI Master Tracks
+                  features; every other brand — XCEL included — rendered the
+                  lo-fi placeholders, so that is what remains. */}
+              <MembershipFeatureLoFiPlaceholder
+                slot={0}
+                horizontal
+                fill={stretchToQuickLinks}
+                floating={!isTwoThirds}
+              />
+              <MembershipFeatureLoFiPlaceholder
+                slot={1}
+                horizontal
+                fill={stretchToQuickLinks}
+                floating={!isTwoThirds}
+              />
             </div>
             <MembershipTopFiveFeature
               fill={stretchToQuickLinks}
@@ -634,10 +620,12 @@ const TOP_FIVE_KIND_IMAGE: Record<string, string> = {
  *  feature cards; Top 5 spans the bottom as five SimpleCard-style
  *  tiles, each with title + kind + star rating in the bar. */
 function MembershipFeaturedTilesBottom({
-  brand,
   dark,
   narrow = false,
 }: {
+  /** No longer read — the layout's two feature slots were CRE's authored
+   *  Snacks / AI MasterTracks cards and are lo-fi placeholders now. Kept in the
+   *  prop type so callers are unchanged and a brand-aware slot can return. */
   brand: Brand
   dark: boolean
   /** True when the parent Membership card is in `two-thirds` width
@@ -699,35 +687,20 @@ function MembershipFeaturedTilesBottom({
           alignItems: 'stretch',
         }}
       >
-        {brand === 'cre' ? (
-          <>
-            <MembershipSnacksFeature
-              horizontal
-              compact={narrow}
-              floating={!narrow}
-            />
-            <MembershipAiMasterTracksFeature
-              horizontal
-              compact={narrow}
-              floating={!narrow}
-            />
-          </>
-        ) : (
-          <>
-            <MembershipFeatureLoFiPlaceholder
-              slot={0}
-              horizontal
-              compact={narrow}
-              floating={!narrow}
-            />
-            <MembershipFeatureLoFiPlaceholder
-              slot={1}
-              horizontal
-              compact={narrow}
-              floating={!narrow}
-            />
-          </>
-        )}
+        {/* Same as above: the authored CRE features are gone, so both slots are
+            the lo-fi placeholder every other brand already showed. */}
+        <MembershipFeatureLoFiPlaceholder
+          slot={0}
+          horizontal
+          compact={narrow}
+          floating={!narrow}
+        />
+        <MembershipFeatureLoFiPlaceholder
+          slot={1}
+          horizontal
+          compact={narrow}
+          floating={!narrow}
+        />
       </div>
       {/* Bottom row — Top 5 tiles across the full width. Section
           header has the eyebrow on the left and a mini Popular /
@@ -797,11 +770,9 @@ function MembershipFeaturedTilesBottom({
               // secondary ramp instead of the default tertiary.
               // Other brands fall through to the accent-driven
               // default.
-              colorOverride={
-                view.id === 'top-podcasts' && brand === 'elite'
-                  ? 'var(--color-secondary-700)'
-                  : undefined
-              }
+              // Elite recoloured the Top Podcasts tile to its secondary ramp;
+              // XCEL takes the accent-driven default, as every other brand did.
+              colorOverride={undefined}
               onClick={() => setOpenCourse(topFiveItemToCourse(item))}
             />
           ))}

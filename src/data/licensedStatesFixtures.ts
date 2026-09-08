@@ -28,22 +28,6 @@ export type ProfessionLicense = {
 }
 
 const LICENSED_STATES_BY_BRAND: Partial<Record<Brand, ProfessionLicense[]>> = {
-  // Elite (Healthcare). California is held across all three professions (the
-  // "state stays selected when switching profession" case); Pennsylvania is
-  // Nursing-only and Illinois is PT-only (the "state resets to the first
-  // available" case). Profession order = the default-selection order (Nursing
-  // first).
-  elite: [
-    { profession: 'Nursing', states: ['California', 'Florida', 'New York', 'Pennsylvania', 'Texas'] },
-    { profession: 'Occupational Therapy', states: ['California', 'Florida', 'New York'] },
-    { profession: 'Physical Therapy', states: ['California', 'Florida', 'Illinois', 'Texas'] },
-  ],
-  // Fitzgerald (FHEA) — NP certification specialties.
-  fitzgerald: [
-    { profession: 'Family NP', states: ['California', 'Florida', 'Texas'] },
-    { profession: 'Psychiatric-Mental Health NP', states: ['Florida', 'New York'] },
-    { profession: 'Adult-Gerontology NP', states: ['California', 'Texas'] },
-  ],
   // XCEL (insurance) — the lines of authority ARE the profession axis, and an
   // insurance producer genuinely holds a separate licence per state per line.
   //

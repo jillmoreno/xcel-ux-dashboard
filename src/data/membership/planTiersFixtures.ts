@@ -29,18 +29,6 @@ export type PlanTier = {
   featured?: boolean
 }
 
-const STANDARD_BASE: Omit<PlanTier, 'price' | 'cadence'> = {
-  id: 'standard',
-  name: 'Standard',
-  features: [
-    'Unlimited CE for one state',
-    'Access to Resource Library',
-    'Read-only Course Forums',
-    'Community read access',
-  ],
-  ctaLabel: 'Choose Standard',
-  ctaTo: '/membership/plans',
-}
 
 const PREMIUM_BASE: Omit<PlanTier, 'price' | 'cadence'> = {
   id: 'premium',
@@ -73,31 +61,6 @@ const BROKERAGE_BASE: Omit<PlanTier, 'price' | 'cadence'> = {
 }
 
 const PLANS_BY_BRAND: Record<Brand, PlanTier[]> = {
-  cre: [
-    { ...STANDARD_BASE, price: '$29', cadence: '/month' },
-    { ...PREMIUM_BASE, price: '$49', cadence: '/month' },
-    { ...BROKERAGE_BASE, price: 'Custom' },
-  ],
-  mckissock: [
-    { ...STANDARD_BASE, price: '$25', cadence: '/month' },
-    { ...PREMIUM_BASE, price: '$45', cadence: '/month' },
-    { ...BROKERAGE_BASE, price: 'Custom' },
-  ],
-  elite: [
-    { ...STANDARD_BASE, price: '$34', cadence: '/month' },
-    { ...PREMIUM_BASE, price: '$59', cadence: '/month' },
-    { ...BROKERAGE_BASE, price: 'Custom' },
-  ],
-  fitzgerald: [
-    { ...STANDARD_BASE, price: '$34', cadence: '/month' },
-    { ...PREMIUM_BASE, price: '$59', cadence: '/month' },
-    { ...BROKERAGE_BASE, price: 'Custom' },
-  ],
-  stc: [
-    { ...STANDARD_BASE, price: '$39', cadence: '/month' },
-    { ...PREMIUM_BASE, price: '$69', cadence: '/month' },
-    { ...BROKERAGE_BASE, price: 'Custom' },
-  ],
   // XCEL sells transactional course packages, not membership tiers — the plan
   // strip has nothing to show and self-hides on an empty list.
   xcel: [],

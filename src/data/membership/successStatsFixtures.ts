@@ -34,11 +34,6 @@ const ELITE_MEMBER_SUCCESS: StatHighlight[] = [
 ]
 
 const MEMBER_SUCCESS_BY_BRAND: Record<Brand, StatHighlight[]> = {
-  cre: [],
-  mckissock: [],
-  elite: ELITE_MEMBER_SUCCESS,
-  fitzgerald: ELITE_MEMBER_SUCCESS,
-  stc: [],
   // XCEL sells transactional course packages (Standard / Premier) + a B2B
   // Partner programme — no consumer membership, so nothing here is reachable.
   xcel: [],
@@ -56,11 +51,6 @@ const ELITE_STAT_BAR: StatHighlight[] = [
 ]
 
 const STAT_BAR_BY_BRAND: Record<Brand, StatHighlight[]> = {
-  cre: [],
-  mckissock: [],
-  elite: ELITE_STAT_BAR,
-  fitzgerald: ELITE_STAT_BAR,
-  stc: [],
   // XCEL sells transactional course packages (Standard / Premier) + a B2B
   // Partner programme — no consumer membership, so nothing here is reachable.
   xcel: [],

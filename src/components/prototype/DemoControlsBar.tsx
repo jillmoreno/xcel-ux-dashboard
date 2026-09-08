@@ -429,7 +429,9 @@ export function DemoControlsBar({
   return (
     <>
       <DemoBar barRef={barRef} ariaLabel="Demo controls" align="left" fullBleed={fullBleed}>
-        {/* Brand — switch the whole prototype brand live (all five brands). */}
+        {/* Brand — switch the whole prototype brand live. Hidden while this repo
+            ships a single brand; see BRAND_PICKER. */}
+        {BRAND_PICKER && (
         <DemoDropdown
           id="brand"
           label={brandLabel}
@@ -458,6 +460,7 @@ export function DemoControlsBar({
             )
           })}
         </DemoDropdown>
+        )}
 
         {/* Quick views — the active brand's membership tiers (Non-Member + each
             member tier). The trigger shows the current tier so the closed pill
@@ -818,18 +821,17 @@ function putFfToken(p: URLSearchParams, key: string, token: string) {
   p.set('ff', tokens.join(','))
 }
 
-/** All six prototype brands for the Brand dropdown. Labels mirror the
- *  Onboarding demo bar. Fitzgerald is CE-only with no QE progress persona, so
- *  the dashboard falls back for it. NOT type-checked against `Brand` being
- *  exhaustive — a new brand must be added here by hand. */
+/** The prototype brands for the Brand dropdown. One, now that this repo ships
+ *  XCEL alone. Labels mirror the Onboarding demo bar. NOT type-checked against
+ *  `Brand` being exhaustive — a new brand must be added here by hand. */
 const DEMO_BRANDS: { brand: Brand; label: string }[] = [
-  { brand: 'cre', label: 'Real Estate' },
-  { brand: 'mckissock', label: 'McKissock' },
-  { brand: 'elite', label: 'Elite (Health)' },
-  { brand: 'stc', label: 'STC (FinServ)' },
-  { brand: 'fitzgerald', label: 'Fitzgerald' },
   { brand: 'xcel', label: 'XCEL (Insurance)' },
 ]
+
+/** Whether to render the Brand dropdown. Suppressed at one brand: a dropdown
+ *  whose menu holds a single item invites the reviewer to open it looking for
+ *  the others. Returns automatically if `Brand` ever widens. */
+const BRAND_PICKER = DEMO_BRANDS.length > 1
 
 /** Tier chip shown on a quick-view row — pairs the tier tone COLOR with a GLYPH
  *  + the BRAND-CORRECT tier LABEL (Plus / Pro / Premier · Passport Lite /

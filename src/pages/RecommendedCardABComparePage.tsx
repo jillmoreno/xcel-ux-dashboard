@@ -44,11 +44,14 @@ export function RecommendedCardABComparePage() {
   useEffect(() => {
     if (seeded.current) return
     seeded.current = true
+    // This compare page was authored against CRE, the only brand with the
+    // Recommended-band fixtures it renders. Those went with the brand, so it
+    // now seeds XCEL like every other route — see the note on the page.
     if (wantMembership === 'member' || wantMembership === 'non-member') {
-      setAccount('cre', wantMembership)
+      setAccount('xcel', wantMembership)
       return
     }
-    if (brand !== 'cre') setAccount('cre', 'member')
+    setAccount('xcel', 'member')
   }, [brand, wantMembership, setAccount])
 
   return (

@@ -388,14 +388,10 @@ export function CalendarSettingsSheet({
                 `StudyCalendar`, replacing the boolean `excludeNYSEHolidays`.
                 Scoped out of the XCEL brand-add deliberately — it changes a
                 shared type and the calendar-generation logic behind it. */}
-            {brand === 'stc' && (
-              <Toggle
-                label="Exclude all New York Stock Exchange (NYSE) holidays"
-                checked={omitNyseHolidays}
-                onChange={setOmitNyseHolidays}
-                switchPosition="left"
-              />
-            )}
+            {/* The NYSE-holiday toggle was STC's — its exam calendars keyed off
+                exchange holidays. XCEL's insurance licensing exams do not, so
+                the control went with the brand. See the TODO above: the
+                `holidayCalendar` refactor it describes is still unbuilt. */}
 
             {/* Exam date + optional time share one row — the time
                 input sits to the right of the date, mirroring the

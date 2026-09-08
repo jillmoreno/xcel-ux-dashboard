@@ -272,22 +272,12 @@ const STC_LAUNCHES: WhatsNewLaunchCard[] = [
 ]
 
 const FEATURED_BY_BRAND: Record<Brand, WhatsNewFeaturedSlide[]> = {
-  cre: CRE_FEATURED,
-  mckissock: MCKISSOCK_FEATURED,
-  elite: ELITE_FEATURED,
-  fitzgerald: ELITE_FEATURED,
-  stc: STC_FEATURED,
   // TODO(data): no XCEL marketing slides authored yet — the carousel falls back
   // to its reserved dashed empty state rather than showing another brand's copy.
   xcel: [],
 }
 
 const LAUNCHES_BY_BRAND: Record<Brand, WhatsNewLaunchCard[]> = {
-  cre: CRE_LAUNCHES,
-  mckissock: MCKISSOCK_LAUNCHES,
-  elite: ELITE_LAUNCHES,
-  fitzgerald: ELITE_LAUNCHES,
-  stc: STC_LAUNCHES,
   // TODO(data): see FEATURED_BY_BRAND above.
   xcel: [],
 }

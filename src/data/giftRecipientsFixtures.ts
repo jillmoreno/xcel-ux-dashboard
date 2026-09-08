@@ -263,7 +263,6 @@ const STC_RECORDS: GiftRecipientRecord[] = [
 /* ─── selectors ─────────────────────────────────────────────────────────── */
 
 const BY_BRAND: Partial<Record<Brand, GiftRecipientRecord[]>> = {
-  stc: STC_RECORDS,
 }
 
 /** Gift-recipient purchase records for the active brand. `[]` ⇒ the brand
@@ -287,4 +286,4 @@ export function supportsGiftRecipients(brand: Brand): boolean {
  * empty state. STC today; if another brand gets records, prefer the ACTIVE
  * brand when it supports the feature (see `GiftRecipientsRoute` in App.tsx).
  */
-export const GIFT_RECIPIENTS_DEMO_BRAND: Brand = 'stc'
+export const GIFT_RECIPIENTS_DEMO_BRAND: Brand = 'xcel'

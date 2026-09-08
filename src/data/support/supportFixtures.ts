@@ -50,56 +50,6 @@ const DEFAULT_CHAT_TOPICS = [
 ]
 
 const SUPPORT_BY_BRAND: Record<Brand, SupportConfig> = {
-  elite: {
-    chatName: 'Elite Chat',
-    faqUrl: 'https://www.elitelearning.com/frequently-asked-questions/',
-    issueTypes: DEFAULT_ISSUE_TYPES,
-    chatTopics: DEFAULT_CHAT_TOPICS,
-    phoneLines: [
-      { label: 'Continuing Education Questions', number: '1-888-857-6920' },
-      { label: 'Physicians', number: '1-800-237-6999' },
-    ],
-  },
-  cre: {
-    chatName: 'Colibri Chat',
-    // TODO(data): confirm CRE FAQ URL.
-    faqUrl: 'https://www.colibrirealestate.com/faqs/',
-    issueTypes: DEFAULT_ISSUE_TYPES,
-    chatTopics: DEFAULT_CHAT_TOPICS,
-    phoneLines: [
-      { label: 'Continuing Education & Licensing', number: '1-888-827-0777' },
-    ],
-  },
-  mckissock: {
-    chatName: 'McKissock Chat',
-    // TODO(data): confirm McKissock FAQ URL.
-    faqUrl: 'https://www.mckissock.com/faqs/',
-    issueTypes: DEFAULT_ISSUE_TYPES,
-    chatTopics: DEFAULT_CHAT_TOPICS,
-    phoneLines: [
-      { label: 'Real Estate & Appraisal Support', number: '1-800-328-2008' },
-    ],
-  },
-  stc: {
-    chatName: 'STC Chat',
-    // TODO(data): confirm STC FAQ URL.
-    faqUrl: 'https://www.stcusa.com/faqs/',
-    issueTypes: DEFAULT_ISSUE_TYPES,
-    chatTopics: DEFAULT_CHAT_TOPICS,
-    phoneLines: [
-      { label: 'Exam Prep & Licensing Support', number: '1-800-782-1215' },
-    ],
-  },
-  fitzgerald: {
-    chatName: 'Fitzgerald Chat',
-    // TODO(data): confirm Fitzgerald FAQ URL.
-    faqUrl: 'https://www.fhea.com/frequently-asked-questions/',
-    issueTypes: DEFAULT_ISSUE_TYPES,
-    chatTopics: DEFAULT_CHAT_TOPICS,
-    phoneLines: [
-      { label: 'Certification & CE Questions', number: '1-800-927-5380' },
-    ],
-  },
   xcel: {
     chatName: 'XCEL Chat',
     // TODO(data): confirm XCEL FAQ URL and support phone number — neither is
@@ -113,5 +63,5 @@ const SUPPORT_BY_BRAND: Record<Brand, SupportConfig> = {
 }
 
 export function supportConfigFor(brand: Brand): SupportConfig {
-  return SUPPORT_BY_BRAND[brand] ?? SUPPORT_BY_BRAND.elite
+  return SUPPORT_BY_BRAND[brand]
 }

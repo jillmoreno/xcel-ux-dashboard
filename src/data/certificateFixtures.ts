@@ -1149,13 +1149,6 @@ const _XCEL_CERTS: Certificate[] = [
 ]
 
 const _CERTS_BY_BRAND: Record<Brand, Certificate[]> = {
-  cre: _CRE_CERTS,
-  mckissock: _MCKISSOCK_CERTS,
-  elite: _ELITE_CERTS,
-  // Fitzgerald mirrors Elite's whole learner library (same pattern as
-  // `_MY_COURSES_BY_BRAND` and `_CERTS_BY_BRAND` in learningFixtures.ts).
-  fitzgerald: _ELITE_CERTS,
-  stc: _STC_CERTS,
   xcel: _XCEL_CERTS,
 }
 

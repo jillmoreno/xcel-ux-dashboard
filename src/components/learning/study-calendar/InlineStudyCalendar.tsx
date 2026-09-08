@@ -388,10 +388,9 @@ export function InlineStudyCalendar({ pathId }: { pathId?: string } = {}) {
     return <CreateCalendarPanelHarness pathId={pathId} />
   }
 
-  if (brand === 'stc' && membership === 'non-member') {
-    const previewCalendar = calendar ?? studyCalendarFor(pathId)
-    return <StudyCalendarLockedState preview={<GridView calendar={previewCalendar} />} />
-  }
+  // The STC non-member locked state is gone — see the note in
+  // StudyCalendarPanel. XCEL has no membership, so there is no locked state to
+  // reach and the calendar is always open.
 
   if (!calendar) return <StudyCalendarEmptyState />
 

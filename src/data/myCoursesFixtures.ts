@@ -1088,11 +1088,6 @@ const _XCEL_COURSES: MyCourseRecord[] = [
 ]
 
 const _MY_COURSES_BY_BRAND: Record<Brand, MyCourseRecord[]> = {
-  cre: _CRE_COURSES,
-  mckissock: _MCKISSOCK_COURSES,
-  elite: _ELITE_COURSES,
-  fitzgerald: _ELITE_COURSES,
-  stc: _STC_COURSES,
   xcel: _XCEL_COURSES,
 }
 
@@ -1122,8 +1117,8 @@ export function myCoursesFor(brand: Brand): MyCourseRecord[] {
   return list
 }
 
-/** Back-compat export — defaults to CRE since that is the project's default
- *  brand per AccountContext. Prefer `myCoursesFor(brand)` in new code. */
-export const MY_COURSES: MyCourseRecord[] = myCoursesFor('cre')
+/** Back-compat export — resolved CRE, the LMS's default brand; now XCEL, which
+ *  is both default and only. Prefer `myCoursesFor(brand)` in new code. */
+export const MY_COURSES: MyCourseRecord[] = myCoursesFor('xcel')
 
 export const TOTAL_MY_COURSES = MY_COURSES.length

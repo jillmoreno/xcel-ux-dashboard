@@ -46,35 +46,10 @@ export type MembershipCommunity = {
   highlights: string[]
 }
 
-const MCKISSOCK_COMMUNITY: MembershipCommunity = {
-  id: 'mckissock-appraisal-community',
-  name: 'McKissock Appraisal Community',
-  shortName: 'Facebook Community',
-  description:
-    'A private group for appraisers to connect, share knowledge, discuss market trends, build relationships, and advance their careers.',
-  href: 'https://www.facebook.com/groups/mckissockappraisalcommunity',
-  cta: 'Join the group',
-  icon: 'facebook',
-  // A peer professional engaging online — which is what a Facebook group is.
-  // Deliberately NOT `handshake.png`: that one is an agent closing with buyers,
-  // a transaction rather than a community of peers. Already-licensed asset,
-  // reused from the membership bands.
-  image: '/brand/laptop-woman.png',
-  highlights: [
-    'Ask questions and get answers from working appraisers',
-    'Discuss standards changes and market shifts as they happen',
-    'Build referral relationships outside your own market',
-  ],
-}
 
 /** Brand-keyed communities. Only McKissock runs one today — every other brand
  *  returns `null` and the band self-hides. */
 const COMMUNITY_BY_BRAND: Record<Brand, MembershipCommunity | null> = {
-  cre: null,
-  mckissock: MCKISSOCK_COMMUNITY,
-  elite: null,
-  fitzgerald: null,
-  stc: null,
   // XCEL sells transactional course packages (Standard / Premier) + a B2B
   // Partner programme — no consumer membership, so nothing here is reachable.
   xcel: null,

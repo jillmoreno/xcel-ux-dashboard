@@ -174,11 +174,6 @@ const ELITE_BENEFIT_HEROES: BenefitHero[] = [
 ]
 
 const BENEFIT_HEROES_BY_BRAND: Record<Brand, BenefitHero[]> = {
-  cre: [],
-  mckissock: [],
-  elite: ELITE_BENEFIT_HEROES,
-  fitzgerald: ELITE_BENEFIT_HEROES,
-  stc: [],
   // XCEL sells transactional course packages (Standard / Premier) + a B2B
   // Partner programme — no consumer membership, so nothing here is reachable.
   xcel: [],

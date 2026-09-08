@@ -4,7 +4,26 @@
    consumer to import from 3 places. */
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 
-export type Brand = 'cre' | 'mckissock' | 'elite' | 'stc' | 'fitzgerald' | 'xcel'
+/**
+ * XCEL is the only brand this repo ships.
+ *
+ * The Common LMS original (`jill-dashboard-ux-designs`) carries six —
+ * `cre | mckissock | elite | stc | fitzgerald | xcel` — because its product
+ * renders per brand. This repo is XCEL's, so the other five and every fixture,
+ * token block and tier table behind them were removed on 2026-09-08.
+ *
+ * Kept as a one-member UNION rather than deleted outright, exactly as the
+ * gateway's own trimmed AccountContext did before this port: `Record<Brand, …>`
+ * maps, `professionFor`, `featurePreviewSrc` and `prototypeFeatures` all take
+ * it as a type, so the seam means a second XCEL skin — or a re-add of a sibling
+ * brand — is an edit here rather than a refactor across those files.
+ *
+ * Adding a brand back is NOT just widening this union: `tokens.css` needs its
+ * `[data-brand]` block, and every `Record<Brand, …>` in `src/data` will fail to
+ * compile until it has an entry. That compile failure is the intended
+ * behaviour — it is the list of what a brand actually owes.
+ */
+export type Brand = 'xcel'
 export type Membership = 'member' | 'non-member'
 
 /** Membership tier — the demo account's plan level. `non-member` plus up to
@@ -43,21 +62,6 @@ export type MemberTier = {
  *  tag/avatar color treatment (`tierToneFor` / `avatarTierFor`): low → primary
  *  (Plus), mid → tertiary (Pro), high → warning/gold (Premier / Passport). */
 const MEMBER_TIERS_BY_BRAND: Record<Brand, MemberTier[]> = {
-  cre: [
-    { key: 'low', label: 'Plus Member', shortLabel: 'Plus' },
-    { key: 'mid', label: 'Pro Member', shortLabel: 'Pro' },
-    { key: 'high', label: 'Premier Member', shortLabel: 'Premier' },
-  ],
-  mckissock: [
-    { key: 'low', label: 'Plus Member', shortLabel: 'Plus' },
-    { key: 'mid', label: 'Pro Member', shortLabel: 'Pro' },
-    { key: 'high', label: 'Premier Member', shortLabel: 'Premier' },
-  ],
-  elite: [
-    { key: 'low', label: 'Passport Lite', shortLabel: 'Lite' },
-    { key: 'high', label: 'Passport', shortLabel: 'Passport' },
-  ],
-  stc: [{ key: 'high', label: 'Member', shortLabel: 'Member' }],
   // XCEL has NO consumer membership — it sells transactional Standard /
   // Premier course packages plus a B2B Partner programme. This entry exists
   // only because the map is exhaustive and `defaultMemberTier` indexes [0]
@@ -67,12 +71,6 @@ const MEMBER_TIERS_BY_BRAND: Record<Brand, MemberTier[]> = {
   // A single `high` tier is also what keeps `accessForTier` at 'full', so
   // nothing is Passport-gated for a brand with no Passport.
   xcel: [{ key: 'high', label: 'Member', shortLabel: 'Member' }],
-  // Fitzgerald (FHEA) — healthcare/NP sibling of Elite; mirrors Elite's
-  // two-tier Passport Lite / Passport model.
-  fitzgerald: [
-    { key: 'low', label: 'Passport Lite', shortLabel: 'Lite' },
-    { key: 'high', label: 'Passport', shortLabel: 'Passport' },
-  ],
 }
 
 /** Tier visual tone — the semantic color ramp a tier's tag pill + avatar use.
@@ -290,65 +288,6 @@ export type AccountState = {
  *  `src/data/learningFixtures.ts`) so AccountContext doesn't acquire a
  *  circular dependency on a module that imports `Brand` from this file. */
 const USERS_BY_BRAND: Record<Brand, DemoUser> = {
-  cre: {
-    firstName: 'Sarah',
-    lastName: 'Cook',
-    initials: 'SC',
-    avatarUrl: '/brand/sarah.jpg',
-    motto:
-      "Just learn a little more than I knew yesterday. I'm doing this for my family.",
-    planName: 'Premium',
-    memberSinceMonthYear: 'March 2024',
-    renewalDate: 'June 14',
-  },
-  mckissock: {
-    firstName: 'Patricia',
-    lastName: 'Reyes',
-    initials: 'PR',
-    avatarUrl: '/brand/sarah.jpg',
-    motto: 'Every appraisal is a chance to do the work right.',
-    planName: 'Premium',
-    memberSinceMonthYear: 'August 2023',
-    renewalDate: 'August 12',
-  },
-  elite: {
-    firstName: 'Sarah',
-    lastName: 'Cook',
-    initials: 'SC',
-    avatarUrl: '/brand/sarah.jpg',
-    motto: 'Care begins with knowing one more thing today than yesterday.',
-    planName: 'Premium',
-    memberSinceMonthYear: 'November 2024',
-    renewalDate: 'November 3',
-    planExpiresOn: '11/03/2026',
-  },
-  stc: {
-    // STC = the new-user demo brand. No motto on purpose — the hero
-    // band detects this and renders the onboarding string instead.
-    // Membership fixture matches the zero-state pattern: Standard
-    // plan, joined today, empty renewal date (membership hero band
-    // substitutes a "renews monthly" sub-line when renewalDate === '').
-    firstName: 'Marcus',
-    lastName: 'Avery',
-    initials: 'MA',
-    avatarUrl: '/brand/sarah.jpg',
-    planName: 'Standard',
-    memberSinceMonthYear: 'today',
-    renewalDate: '',
-  },
-  // Fitzgerald (FHEA) — NP exam-prep brand. Mirrors Elite's populated member
-  // shape (Passport plan + expiry) with its own NP-flavored identity.
-  fitzgerald: {
-    firstName: 'Jordan',
-    lastName: 'Ellis',
-    initials: 'JE',
-    avatarUrl: '/brand/sarah.jpg',
-    motto: 'Every question I master is a patient I serve better.',
-    planName: 'Premium',
-    memberSinceMonthYear: 'January 2025',
-    renewalDate: 'January 15',
-    planExpiresOn: '01/15/2027',
-  },
   // XCEL Solutions — an insurance pre-licensing candidate part-way through the
   // 3-Part Training Program (Life & Health, Florida). `planName` is a PACKAGE,
   // not a membership tier: Premier is XCEL's real top package ("everything you
@@ -441,141 +380,6 @@ export type MembershipRenewal = {
  *  `membership-count` demo flag so reviewers can preview single ⇄ multiple.
  *  TODO(data): from the subscription service. */
 const MULTI_MEMBERSHIPS_BY_BRAND: Partial<Record<Brand, MembershipRecord[]>> = {
-  elite: [
-    {
-      id: 'elite-rn-fl',
-      tierLabel: 'Passport',
-      tone: 'warning',
-      profession: 'Nursing',
-      state: 'Florida',
-      memberSinceYear: '2024',
-      expiresOn: '11/03/2026',
-      // State 1 — auto-renews. The everyday case.
-      renewal: { autoRenew: 'on', endsOn: '2026-11-03', price: 99 },
-    },
-    {
-      id: 'elite-pt-tx',
-      tierLabel: 'Passport Lite',
-      tone: 'secondary',
-      profession: 'Physical Therapy',
-      state: 'Texas',
-      memberSinceYear: '2025',
-      expiresOn: '02/28/2027',
-      // State 5 — auto-renewal available but switched off.
-      renewal: { autoRenew: 'off', endsOn: '2027-02-28', price: 48 },
-    },
-    // #4–5 exist so the "5 memberships" demo (membership-count = five) has enough
-    // records for the Your Memberships carousel to actually scroll. A nurse
-    // licensed across several states is the realistic multi-license case.
-    {
-      id: 'elite-rn-ny',
-      tierLabel: 'Passport',
-      tone: 'warning',
-      profession: 'Nursing',
-      state: 'New York',
-      memberSinceYear: '2023',
-      expiresOn: '10/15/2026',
-      // State 2 — can't auto-renew and inside the renewal window, so the card
-      // carries the consequence and asks for a manual renewal.
-      renewal: { autoRenew: 'off', endsOn: '2026-10-15', price: 99 },
-    },
-    {
-      id: 'elite-rn-ca',
-      tierLabel: 'Passport Lite',
-      tone: 'secondary',
-      profession: 'Nursing',
-      state: 'California',
-      memberSinceYear: '2024',
-      expiresOn: '09/30/2026',
-      // State 4 — the renewal charge failed; benefits stay live until the retry
-      // deadline.
-      renewal: {
-        autoRenew: 'on',
-        endsOn: '2026-09-30',
-        price: 48,
-        retryUntil: '2026-09-04',
-      },
-    },
-    // These complete the set: with them, every renewal state has a record, so
-    // the "7 memberships" persona shows all of them at once. SIX records to six
-    // states — one apiece. Occupational Therapy / Georgia was removed on
-    // 2026-08-31: it and Texas both resolved to `expires-outside-window` and,
-    // once that state's countdown was dropped, rendered identical copy. Georgia
-    // was the one to go because Arizona also carries Occupational Therapy,
-    // whereas Texas is the only Physical Therapy membership and that profession
-    // drives the Learning Library / Recommended chips. Grace and
-    // expired both live down here because they are the two states that read as
-    // "something is wrong" — the low-count demos stay healthy, and the full set
-    // is where every state is meant to be seen.
-    //
-    // They reuse existing PROFESSIONS on new licence states on purpose — the
-    // Elite profession list drives the Learning Library / Recommended profession
-    // chips, and an eighth profession would add a chip with no content behind it.
-    {
-      id: 'elite-rn-il',
-      tierLabel: 'Passport Lite',
-      tone: 'secondary',
-      profession: 'Nursing',
-      state: 'Illinois',
-      memberSinceYear: '2023',
-      expiresOn: '08/05/2026',
-      // State 6 — GRACE. Expired, but the membership YEAR is still recoverable
-      // until `graceEndsOn`, so benefits are paused rather than gone. Requires
-      // BOTH an `endsOn` in the past and a `graceEndsOn` in the future; drop
-      // either and this record silently becomes a plain `expired` one.
-      renewal: {
-        autoRenew: 'off',
-        endsOn: '2026-08-05',
-        graceEndsOn: '2026-09-19',
-        price: 48,
-      },
-    },
-    {
-      id: 'elite-ot-az',
-      tierLabel: 'Passport',
-      tone: 'warning',
-      profession: 'Occupational Therapy',
-      state: 'Arizona',
-      memberSinceYear: '2025',
-      expiresOn: '06/30/2026',
-      // State 3 — EXPIRED. Past its date with no `graceEndsOn`, so benefits are
-      // gone rather than paused. Sits last on purpose: it is the one state that
-      // makes the hub look broken at a glance, so it appears only in the
-      // seven-membership set where the point IS to see every state at once.
-      renewal: { autoRenew: 'off', endsOn: '2026-06-30', price: 99 },
-    },
-  ],
-  // Fitzgerald (FHEA) — NP certification specialties instead of allied-health
-  // professions.
-  fitzgerald: [
-    {
-      id: 'fhea-fnp-fl',
-      tierLabel: 'Passport',
-      tone: 'warning',
-      profession: 'Family NP',
-      state: 'Florida',
-      memberSinceYear: '2025',
-      expiresOn: '01/15/2027',
-    },
-    {
-      id: 'fhea-pmhnp-ga',
-      tierLabel: 'Passport Lite',
-      tone: 'secondary',
-      profession: 'Psychiatric-Mental Health NP',
-      state: 'Georgia',
-      memberSinceYear: '2025',
-      expiresOn: '09/01/2026',
-    },
-    {
-      id: 'fhea-agnp-tx',
-      tierLabel: 'Passport Lite',
-      tone: 'secondary',
-      profession: 'Adult-Gerontology NP',
-      state: 'Texas',
-      memberSinceYear: '2026',
-      expiresOn: '03/10/2027',
-    },
-  ],
 }
 
 /** The learner's active memberships for a brand (empty when none authored). */
@@ -584,47 +388,6 @@ export function multiMembershipsFor(brand: Brand): MembershipRecord[] {
 }
 
 export const PROFESSIONS: Profession[] = [
-  {
-    brand: 'cre',
-    label: 'Real Estate / Appraisal',
-    description: 'CE, licensing & post-licensing for agents and appraisers',
-    brandFullName: 'Colibri Real Estate',
-    ecommerceUrl: 'https://www.colibrirealestate.com',
-  },
-  {
-    brand: 'mckissock',
-    label: 'Real Estate / Appraisal',
-    description: 'Appraisal, real-estate CE & professional development',
-    brandFullName: 'McKissock Learning',
-    ecommerceUrl: 'https://www.mckissock.com',
-  },
-  {
-    brand: 'elite',
-    label: 'Healthcare',
-    description: 'Nursing & allied-health continuing education',
-    brandFullName: 'Elite Learning',
-    ecommerceUrl: 'https://www.elitelearning.com/nursing/',
-  },
-  {
-    brand: 'fitzgerald',
-    label: 'Healthcare',
-    description: 'NP certification exam prep & continuing education',
-    brandFullName: 'Fitzgerald Health Education Associates',
-    ecommerceUrl: 'https://www.fhea.com/',
-  },
-  {
-    brand: 'stc',
-    label: 'Financial Services',
-    description: 'Securities & insurance licensing exam prep',
-    brandFullName: 'STC',
-    ecommerceUrl: 'https://www.stcusa.com/',
-  },
-  // POSITION IS LOAD-BEARING: `SwitchAccountPanel` groups only CONSECUTIVE
-  // entries that share a `label`, so this must stay directly after `stc` or
-  // the panel renders a second, duplicate "Financial Services" heading. Same
-  // rule that keeps CRE + McKissock together under "Real Estate / Appraisal".
-  // The `description` is what separates the two: STC is securities-first,
-  // XCEL is insurance-first. Don't let them converge.
   {
     brand: 'xcel',
     label: 'Financial Services',
@@ -641,7 +404,7 @@ export function professionFor(brand: Brand): Profession {
 
 const STORAGE_KEY = 'cgp.account'
 type StoredState = { brand: Brand; tier: MembershipTier }
-const DEFAULT_STATE: StoredState = { brand: 'cre', tier: defaultMemberTier('cre') }
+const DEFAULT_STATE: StoredState = { brand: 'xcel', tier: defaultMemberTier('xcel') }
 
 function loadInitial(): StoredState {
   if (typeof window === 'undefined') return DEFAULT_STATE
@@ -653,9 +416,13 @@ function loadInitial(): StoredState {
       tier: MembershipTier
       membership: Membership
     }>
-    const VALID_BRANDS: Brand[] = ['cre', 'mckissock', 'elite', 'stc', 'fitzgerald', 'xcel']
+    // Still validated rather than trusted: a localStorage value written by an
+    // older build (or by the sibling LMS dashboard on a shared origin) can
+    // name a brand this repo no longer has, and indexing a Record<'xcel', …>
+    // with it would hand back undefined at runtime despite the types.
+    const VALID_BRANDS: Brand[] = ['xcel']
     const brand: Brand =
-      parsed.brand && (VALID_BRANDS as string[]).includes(parsed.brand) ? (parsed.brand as Brand) : 'cre'
+      parsed.brand && (VALID_BRANDS as string[]).includes(parsed.brand) ? (parsed.brand as Brand) : 'xcel'
     // Prefer a stored `tier`; otherwise migrate a legacy `membership` value
     // ('member' ⇒ the brand's default member tier, 'non-member' ⇒ non-member).
     const VALID_TIERS: MembershipTier[] = ['non-member', 'low', 'mid', 'high']

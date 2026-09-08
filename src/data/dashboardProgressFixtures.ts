@@ -124,63 +124,6 @@ type BrandProgressProfile = {
  */
 const PROFILES: Record<EducationType, Partial<Record<Brand, BrandProgressProfile>>> = {
   ce: {
-    // Real Estate salesperson CE renewal (California-flavored demo).
-    cre: {
-      pathId: 'cre-ca-re-ce',
-      title: 'California Real Estate CE',
-      category: 'Real Estate Continuing Education',
-      state: 'CA',
-      mandatoryReq: 18,
-      electiveReq: 27,
-      licenseExpiresOn: '12/31/2026',
-      upNext: { id: 'jbi-cre-ethics', title: 'Ethics & the NAR Code of Conduct', hours: 3, state: 'CA', delivery: 'online', badge: 'mandatory', status: 'not-started', progress: 0 },
-      resumeMid: { id: 'jbi-cre-fairhousing', title: 'Fair Housing & Anti-Discrimination', hours: 3, state: 'CA', delivery: 'video', badge: 'mandatory', status: 'in-progress', progress: 45 },
-      resumeEarly: { id: 'jbi-cre-agency', title: 'Agency Relationships', hours: 3, state: 'CA', delivery: 'online', badge: 'mandatory', status: 'in-progress', progress: 20 },
-    },
-    // Appraiser CE renewal (Texas-flavored demo; USPAP-anchored).
-    mckissock: {
-      pathId: 'mck-tx-appraiser-ce',
-      title: 'Texas Appraiser CE',
-      category: 'Appraisal Continuing Education',
-      state: 'TX',
-      mandatoryReq: 7,
-      electiveReq: 21,
-      licenseExpiresOn: '10/31/2026',
-      upNext: { id: 'jbi-mck-uspap', title: '7-Hour National USPAP Update', hours: 7, state: 'TX', delivery: 'online', badge: 'mandatory', status: 'not-started', progress: 0 },
-      resumeMid: { id: 'jbi-mck-income', title: 'Income Approach Case Studies', hours: 4, state: 'TX', delivery: 'video', badge: 'elective', status: 'in-progress', progress: 45 },
-      resumeEarly: { id: 'jbi-mck-fha', title: 'FHA Appraisal Essentials', hours: 3, state: 'TX', delivery: 'online', badge: 'elective', status: 'in-progress', progress: 20 },
-    },
-    // Nursing CE biennial renewal (Florida-flavored — the original Elite persona).
-    elite: {
-      pathId: 'elite-fl-nursing-ce',
-      title: 'Florida Nursing CE Biennial Renewal',
-      category: 'Nursing Continuing Education',
-      state: 'FL',
-      mandatoryReq: 9,
-      electiveReq: 15,
-      licenseExpiresOn: '07/31/2026',
-      upNext: { id: 'jbi-elite-ce-ethics', title: 'Ethics & Boundaries for Nurses', hours: 2, state: 'FL', delivery: 'online', badge: 'elective', status: 'not-started', progress: 0 },
-      resumeMid: { id: 'jbi-elite-ce-sepsis', title: 'Sepsis Recognition & Response', hours: 2, state: 'FL', delivery: 'video', badge: 'mandatory', status: 'in-progress', progress: 45 },
-      resumeEarly: { id: 'jbi-elite-ce-pharm', title: 'Pharmacology Refresher', hours: 4, state: 'FL', delivery: 'online', badge: 'mandatory', status: 'in-progress', progress: 20 },
-    },
-    // Securities continuing education. Real STC CE taxonomy (per the product
-    // screenshot): two categories — Products and Practices (6 required) + Ethics
-    // and Professional Responsibility (6 required) = 12 credit hours.
-    stc: {
-      pathId: 'stc-ce',
-      title: 'Securities CE — Regulatory & Firm Element',
-      category: 'Securities Continuing Education',
-      state: 'NY',
-      mandatoryReq: 6,
-      electiveReq: 6,
-      licenseExpiresOn: '12/31/2026',
-      // STC CE category names (not the generic Mandatory / Elective).
-      mandatoryLabel: 'Products and Practices',
-      electiveLabel: 'Ethics and Professional Responsibility',
-      upNext: { id: 'jbi-stc-regulatory', title: 'Regulatory Element CE', hours: 2, state: 'NY', delivery: 'online', badge: 'mandatory', status: 'not-started', progress: 0 },
-      resumeMid: { id: 'jbi-stc-aml', title: 'Anti-Money Laundering Update', hours: 1, state: 'NY', delivery: 'online', badge: 'mandatory', status: 'in-progress', progress: 45 },
-      resumeEarly: { id: 'jbi-stc-firm', title: 'Firm Element: Suitability', hours: 1, state: 'NY', delivery: 'video', badge: 'elective', status: 'in-progress', progress: 20 },
-    },
     // Insurance producer CE renewal (Florida Life & Health). The two category
     // names are XCEL's OWN two CE flavours — Initial Training (which adds annuity
     // and long-term care for L&H, flood for P&C) and Refresher Training — rather
@@ -212,102 +155,6 @@ const PROFILES: Record<EducationType, Partial<Record<Brand, BrandProgressProfile
    * Deadline / Time Remaining band reuse works unchanged. Fitzgerald has no
    * entry, so it falls back to CE. */
   qe: {
-    // California real estate salesperson pre-licensing (3 courses / 135 hrs).
-    cre: {
-      pathId: 'cre-ca-re-qe',
-      title: 'California Real Estate Pre-Licensing',
-      category: 'Real Estate Qualifying Education',
-      state: 'CA',
-      mandatoryReq: 90,
-      electiveReq: 45,
-      licenseExpiresOn: '11/30/2026',
-      mandatoryLabel: 'Required Courses',
-      electiveLabel: 'Elective Course',
-      deadlineLabel: 'Target Date',
-      // CA salesperson pre-licensing — 3 statutory courses, 45 hrs each.
-      categories: [
-        { key: 'principles', label: 'Real Estate Principles', required: 45 },
-        { key: 'practice', label: 'Real Estate Practice', required: 45 },
-        { key: 'elective', label: 'Elective (e.g. Finance)', required: 45 },
-      ],
-      upNext: { id: 'jbi-cre-qe-principles', title: 'Real Estate Principles', hours: 45, state: 'CA', delivery: 'online', badge: 'mandatory', status: 'not-started', progress: 0 },
-      resumeMid: { id: 'jbi-cre-qe-practice', title: 'Real Estate Practice', hours: 45, state: 'CA', delivery: 'video', badge: 'mandatory', status: 'in-progress', progress: 45 },
-      resumeEarly: { id: 'jbi-cre-qe-principles', title: 'Real Estate Principles', hours: 45, state: 'CA', delivery: 'online', badge: 'mandatory', status: 'in-progress', progress: 20 },
-    },
-    // Texas Licensed Residential appraiser qualifying education (150 hrs).
-    mckissock: {
-      pathId: 'mck-tx-appraiser-qe',
-      title: 'Texas Appraiser Qualifying Education',
-      category: 'Appraisal Qualifying Education',
-      state: 'TX',
-      mandatoryReq: 90,
-      electiveReq: 60,
-      licenseExpiresOn: '09/30/2026',
-      mandatoryLabel: 'Required Education',
-      electiveLabel: 'Elective Hours',
-      deadlineLabel: 'Target Date',
-      // Appraiser QE — the multi-category example from the screenshot (Alabama
-      // trainee track). Five categories.
-      categories: [
-        { key: 'principles', label: 'Basic Appraisal Principles', required: 30 },
-        { key: 'procedures', label: 'Basic Appraisal Procedures', required: 30 },
-        { key: 'uspap', label: 'USPAP', required: 15 },
-        { key: 'bias', label: 'Bias and Fair Housing', required: 8 },
-        { key: 'supervisor', label: 'Supervisor-Trainee Course', required: 4 },
-      ],
-      upNext: { id: 'jbi-mck-qe-principles', title: 'Basic Appraisal Principles', hours: 30, state: 'TX', delivery: 'online', badge: 'mandatory', status: 'not-started', progress: 0 },
-      resumeMid: { id: 'jbi-mck-qe-procedures', title: 'Basic Appraisal Procedures', hours: 30, state: 'TX', delivery: 'video', badge: 'mandatory', status: 'in-progress', progress: 45 },
-      resumeEarly: { id: 'jbi-mck-qe-uspap', title: '15-Hour National USPAP Course', hours: 15, state: 'TX', delivery: 'online', badge: 'mandatory', status: 'in-progress', progress: 20 },
-    },
-    // Securities Industry Essentials (SIE) exam preparation.
-    stc: {
-      pathId: 'stc-sie-qe',
-      title: 'SIE Exam Prep',
-      category: 'Securities Exam Preparation',
-      state: 'NY',
-      mandatoryReq: 20,
-      electiveReq: 10,
-      licenseExpiresOn: '10/31/2026',
-      mandatoryLabel: 'Core Content',
-      electiveLabel: 'Practice Exams',
-      deadlineLabel: 'Target Date',
-      // SIE exam — the four content outline areas.
-      categories: [
-        { key: 'capital-markets', label: 'Knowledge of Capital Markets', required: 8 },
-        { key: 'products-risks', label: 'Understanding Products & Their Risks', required: 10 },
-        { key: 'trading-accounts', label: 'Trading, Accounts & Prohibited Activities', required: 8 },
-        { key: 'regulatory', label: 'Overview of the Regulatory Framework', required: 4 },
-      ],
-      upNext: { id: 'jbi-stc-qe-capmarkets', title: 'Knowledge of Capital Markets', hours: 4, state: 'NY', delivery: 'online', badge: 'mandatory', status: 'not-started', progress: 0 },
-      resumeMid: { id: 'jbi-stc-qe-products', title: 'Understanding Products & Their Risks', hours: 6, state: 'NY', delivery: 'video', badge: 'mandatory', status: 'in-progress', progress: 45 },
-      resumeEarly: { id: 'jbi-stc-qe-practice', title: 'SIE Practice Exams', hours: 3, state: 'NY', delivery: 'online', badge: 'elective', status: 'in-progress', progress: 20 },
-    },
-    // Elite has no CE QE journey in reality (nursing renews via CE), but the
-    // "Multiple Categories" persona demos on the Elite-seeded rebrand — so a
-    // representative NCLEX-RN exam-prep QE profile with the 5 test-plan client-need
-    // categories. TODO(data): replace with real exam-prep content.
-    elite: {
-      pathId: 'elite-nclex-qe',
-      title: 'NCLEX-RN Exam Prep',
-      category: 'Nursing Licensure Exam Preparation',
-      state: 'FL',
-      mandatoryReq: 30,
-      electiveReq: 10,
-      licenseExpiresOn: '12/15/2026',
-      mandatoryLabel: 'Core Content',
-      electiveLabel: 'Practice Exams',
-      deadlineLabel: 'Target Date',
-      categories: [
-        { key: 'care-mgmt', label: 'Management of Care', required: 10 },
-        { key: 'safety', label: 'Safety & Infection Control', required: 8 },
-        { key: 'health-promo', label: 'Health Promotion & Maintenance', required: 6 },
-        { key: 'psychosocial', label: 'Psychosocial Integrity', required: 6 },
-        { key: 'physiological', label: 'Physiological Integrity', required: 10 },
-      ],
-      upNext: { id: 'jbi-elite-qe-care', title: 'Management of Care Review', hours: 4, state: 'FL', delivery: 'online', badge: 'mandatory', status: 'not-started', progress: 0 },
-      resumeMid: { id: 'jbi-elite-qe-physio', title: 'Physiological Integrity Deep Dive', hours: 5, state: 'FL', delivery: 'video', badge: 'mandatory', status: 'in-progress', progress: 45 },
-      resumeEarly: { id: 'jbi-elite-qe-safety', title: 'Safety & Infection Control', hours: 3, state: 'FL', delivery: 'online', badge: 'mandatory', status: 'in-progress', progress: 20 },
-    },
     // Insurance pre-licensing (Florida Life & Health) — Part 1 of the 3-Part
     // Training Program. `Target Date` rather than `License Expires`: a
     // candidate has no licence to expire yet. The `exam-prep` entry below
@@ -439,8 +286,10 @@ function setupReqHoursFor(brand: Brand): number {
 }
 export { setupReqHoursFor }
 
-/** Legacy alias — Elite's total required hours (kept for back-compat). */
-export const ELITE_SETUP_REQ_HOURS = setupReqHoursFor('elite')
+/** Legacy alias, kept for back-compat with call sites that still import the
+ *  Elite-era name. Now resolves XCEL's required hours — the constant is the
+ *  ACTIVE brand's total, and there is only one brand. */
+export const ELITE_SETUP_REQ_HOURS = setupReqHoursFor('xcel')
 
 /* ─── Shared per-variant templates (brand-agnostic demo values) ──────────── */
 

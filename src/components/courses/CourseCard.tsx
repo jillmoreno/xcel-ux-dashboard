@@ -566,7 +566,7 @@ function CompactCourseCard({
   // outside a provider. A card is a leaf rendered in many contexts — including
   // isolated test mounts — so it falls back to CRE the same way `Logo` does.
   // App code always has the provider.
-  const brand = useContext(AccountContext)?.brand ?? 'cre'
+  const brand = useContext(AccountContext)?.brand ?? 'xcel'
   const DeliveryIcon = DELIVERY_ICON[data.delivery]
   const status = data.status ?? 'not-started'
   const expiry = courseExpiryState(data, FIXTURE_TODAY)

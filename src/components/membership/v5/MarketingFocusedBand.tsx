@@ -734,20 +734,11 @@ const ELITE_SLIDE_IMAGES = [
   '/brand/whats-new-bg-3.jpg', // clinician portrait
   '/brand/whats-new-bg-4.jpg', // ICU patient monitor
 ]
-// Real-estate / professional stock photos (shipped in /public/courses). Distinct
-// indices per brand so CRE and McKissock don't show identical backgrounds if
-// ever viewed side by side.
-const CRE_SLIDE_IMAGES = ['/courses/0.webp', '/courses/3.webp', '/courses/6.webp', '/courses/9.webp']
 const MCKISSOCK_SLIDE_IMAGES = ['/courses/1.webp', '/courses/4.webp', '/courses/7.webp', '/courses/2.webp']
 const STC_SLIDE_IMAGES = ['/courses/5.webp', '/courses/8.webp', '/courses/2.webp', '/courses/0.webp']
 const XCEL_SLIDE_IMAGES = ['/courses/7.webp', '/courses/2.webp', '/courses/5.webp', '/courses/1.webp']
 
 const SLIDE_IMAGES_BY_BRAND: Record<ReturnType<typeof useAccount>['brand'], string[]> = {
-  cre: CRE_SLIDE_IMAGES,
-  mckissock: MCKISSOCK_SLIDE_IMAGES,
-  stc: STC_SLIDE_IMAGES,
-  elite: ELITE_SLIDE_IMAGES,
-  fitzgerald: ELITE_SLIDE_IMAGES,
   xcel: XCEL_SLIDE_IMAGES,
 }
 const SLIDE_IMAGE_SCRIM =

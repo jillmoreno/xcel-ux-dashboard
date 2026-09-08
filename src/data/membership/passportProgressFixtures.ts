@@ -48,32 +48,6 @@ export type ContinueLearningItem = {
   ceHours: string
 }
 
-const ELITE_CE_PROGRESS: CeProgress = {
-  earnedHours: 18,
-  goalHours: 30,
-  note: '12 hours to your annual goal · keep going!',
-  kpis: [
-    { label: 'CE hours this year', value: 18, meta: '12 to your annual goal' },
-    { label: 'Courses completed', value: 24, meta: 'this year' },
-    { label: 'Certificates earned', value: 12, meta: 'lifetime' },
-  ],
-  milestones: [
-    { label: '5 hours', reward: 'First CE badge', done: true, marker: 'check' },
-    {
-      label: '15 hours',
-      reward: 'Specialty digest unlocked',
-      done: true,
-      marker: 'check',
-    },
-    { label: '25 hours', reward: 'Free exam-prep bundle', done: false, marker: 'star' },
-    {
-      label: '30 hours',
-      reward: 'Annual requirement met',
-      done: false,
-      marker: 'trophy',
-    },
-  ],
-}
 
 const ELITE_CONTINUE_LEARNING: ContinueLearningItem[] = [
   { id: 'iv-therapy', title: 'IV Therapy & Vascular Access', percent: 72, ceHours: '1.5 CE hours' },
@@ -112,21 +86,6 @@ export type MembershipSummary = {
 }
 
 const MEMBERSHIP_BY_BRAND: Record<Brand, MembershipSummary | null> = {
-  cre: null,
-  mckissock: null,
-  elite: {
-    status: 'Active',
-    memberSince: '2025-04-23',
-    renews: '2027-03-14',
-    upgrade: { tier: 'Premium Membership', meta: 'Upgrade now to save $350 more a year' },
-  },
-  fitzgerald: {
-    status: 'Active',
-    memberSince: '2025-04-23',
-    renews: '2027-03-14',
-    upgrade: { tier: 'Premium Membership', meta: 'Upgrade now to save $350 more a year' },
-  },
-  stc: null,
   // XCEL sells transactional course packages (Standard / Premier) + a B2B
   // Partner programme — no consumer membership, so nothing here is reachable.
   xcel: null,
@@ -144,11 +103,6 @@ export type MemberSavings = {
 }
 
 const SAVINGS_BY_BRAND: Record<Brand, MemberSavings | null> = {
-  cre: null,
-  mckissock: null,
-  elite: { amount: '$1,180', meta: 'saved this year with your Passport' },
-  fitzgerald: { amount: '$1,180', meta: 'saved this year with your Passport' },
-  stc: null,
   // XCEL sells transactional course packages (Standard / Premier) + a B2B
   // Partner programme — no consumer membership, so nothing here is reachable.
   xcel: null,
@@ -159,22 +113,12 @@ export function passportSavingsFor(brand: Brand): MemberSavings | null {
 }
 
 const CE_PROGRESS_BY_BRAND: Record<Brand, CeProgress | null> = {
-  cre: null,
-  mckissock: null,
-  elite: ELITE_CE_PROGRESS,
-  fitzgerald: ELITE_CE_PROGRESS,
-  stc: null,
   // XCEL sells transactional course packages (Standard / Premier) + a B2B
   // Partner programme — no consumer membership, so nothing here is reachable.
   xcel: null,
 }
 
 const CONTINUE_BY_BRAND: Record<Brand, ContinueLearningItem[]> = {
-  cre: [],
-  mckissock: [],
-  elite: ELITE_CONTINUE_LEARNING,
-  fitzgerald: ELITE_CONTINUE_LEARNING,
-  stc: [],
   // XCEL sells transactional course packages (Standard / Premier) + a B2B
   // Partner programme — no consumer membership, so nothing here is reachable.
   xcel: [],

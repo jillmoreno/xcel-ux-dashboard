@@ -73,39 +73,8 @@ export type MembershipSpotlight = {
 
 /* ─── A1 spotlight (Explore Membership hero) ─────────────────────────── */
 
-const ELITE_SPOTLIGHT: MembershipSpotlight = {
-  eyebrow: 'Elite membership',
-  title: 'Unlock everything your nursing career needs',
-  // Marketing photo — mature learner listening to CE on the go.
-  // TODO(asset): confirm licensing before production.
-  photo: '/brand/member-spotlight.png',
-  benefits: [
-    {
-      iconKey: 'library',
-      title: 'Unlimited CE courses',
-      blurb: 'Every required credit, always included.',
-    },
-    {
-      iconKey: 'award',
-      title: 'Exam & certification prep',
-      blurb: 'Pass faster with guided prep tracks.',
-    },
-    {
-      iconKey: 'rubi',
-      title: 'Rubi AI career tools',
-      blurb: 'Resume, interview practice, and more.',
-    },
-  ],
-  ctaLabel: 'See membership plans',
-  ctaTo: '/membership/plans',
-}
 
 const SPOTLIGHT_BY_BRAND: Record<Brand, MembershipSpotlight | null> = {
-  cre: null,
-  mckissock: null,
-  elite: ELITE_SPOTLIGHT,
-  fitzgerald: ELITE_SPOTLIGHT,
-  stc: null,
   // XCEL sells transactional course packages (Standard / Premier) + a B2B
   // Partner programme — no consumer membership, so nothing here is reachable.
   xcel: null,
@@ -184,11 +153,6 @@ const BENEFIT_MARKETING_BY_BRAND: Record<
   Brand,
   Partial<Record<LockedBenefitSection, BenefitMarketing>>
 > = {
-  cre: {},
-  mckissock: {},
-  elite: ELITE_BENEFIT_MARKETING,
-  fitzgerald: ELITE_BENEFIT_MARKETING,
-  stc: {},
   // XCEL sells transactional course packages (Standard / Premier) + a B2B
   // Partner programme — no consumer membership, so nothing here is reachable.
   xcel: {},

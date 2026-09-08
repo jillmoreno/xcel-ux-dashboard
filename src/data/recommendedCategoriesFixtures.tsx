@@ -88,11 +88,6 @@ const MIN_SHELF_ITEMS = 4
  * LICENSE_TRACKER is multi-brand / multi-license.
  */
 const LICENSE_STATE_BY_BRAND: Record<Brand, string> = {
-  cre: 'North Carolina',
-  mckissock: 'Texas',
-  elite: 'Texas',
-  fitzgerald: 'Texas',
-  stc: 'Federal',
   xcel: 'Florida',
 }
 
@@ -107,26 +102,6 @@ const LICENSE_STATE_BY_BRAND: Record<Brand, string> = {
  * exists. Demo fixtures only.
  */
 const MEMBER_EXCLUSIVE_IDS: Record<Brand, string[]> = {
-  cre: ['c-real-property', 'c-podcast-fair-housing-deep-dive', 'c-implicit-bias', 'c-agency-law'],
-  mckissock: [
-    'c-mck-residential-report',
-    'c-mck-fair-housing',
-    'c-mck-supervisor-trainee',
-    'c-mck-rural-property',
-  ],
-  elite: [
-    'c-pharmacology-update',
-    'c-end-of-life',
-    'c-mental-health-podcast',
-    'c-pediatric-update',
-  ],
-  fitzgerald: [
-    'c-pharmacology-update',
-    'c-end-of-life',
-    'c-mental-health-podcast',
-    'c-pediatric-update',
-  ],
-  stc: ['c-series-7-topoff', 'c-series-24', 'c-series-79', 'c-sie-podcast'],
   // XCEL has no membership, so the "Unlock with Premium" shelf never renders
   // for it — an empty list drops the shelf rather than curating one nobody
   // can be locked out of.
@@ -502,11 +477,6 @@ export function buildShelves(
  * TODO(data): replace with the learner's real selected interests.
  */
 export const RECOMMENDED_INTERESTS: Record<Brand, string[]> = {
-  cre: ['Ethics', 'Fair Housing', 'Listing'],
-  mckissock: ['USPAP', 'Fair Housing', 'Residential'],
-  elite: ['Pharmacology', 'Pediatrics', 'Mental Health'],
-  fitzgerald: ['FNP Certification', 'AGNP', 'Cardiology'],
-  stc: ['SIE', 'Series 7', 'Ethics'],
   xcel: ['Life & Health', 'Exam Prep', 'Ethics'],
 }
 
@@ -529,38 +499,6 @@ type RecCategoryKey =
   | 'onsite-review'
 
 const CATEGORIES_BY_BRAND: Record<Brand, RecCategoryKey[]> = {
-  elite: [
-    'whats-new',
-    'my-interests',
-    'mandatory',
-    'podcasts',
-    'topic-bundles',
-    'pharmacology',
-    'webinars',
-    'onsite',
-  ],
-  fitzgerald: [
-    'my-interests',
-    'free-webinars',
-    'review-packages',
-    'livestream-review',
-    'onsite-review',
-  ],
-  // McKissock (appraisal) — the appraisal-CE breadth its catalog can fill.
-  mckissock: [
-    'whats-new',
-    'my-interests',
-    'mandatory',
-    'webinars',
-    'renewal-packages',
-    'podcasts',
-  ],
-  // CRE mirrors Elite's breadth with the real-estate-appropriate shelves the
-  // catalog can fill (webinars/topic-bundles/pharmacology don't apply or lack
-  // enough items, so they're omitted — any that fell short would auto-drop).
-  cre: ['whats-new', 'my-interests', 'mandatory', 'renewal-packages', 'podcasts', 'onsite'],
-  // STC (financial services) — exam-prep-oriented breadth.
-  stc: ['whats-new', 'my-interests', 'mandatory', 'exam-prep-packages', 'podcasts'],
   // XCEL (insurance licensing) — exam-prep breadth like STC, but NO podcasts
   // shelf: XCEL has no podcast product (see the brand file's "No --podcast-*
   // tokens" note), so that shelf would always be empty.
@@ -608,10 +546,10 @@ export function buildRecommendedShelves(brand: Brand): CategoryRow[] {
     }
   }
 
+  // Fitzgerald said "Programs"; every other brand, XCEL included, says
+  // "Courses".
   const interestSubtext =
-    brand === 'fitzgerald'
-      ? 'Programs matched to the topics you told us you care about.'
-      : 'Courses matched to the topics you told us you care about.'
+    'Courses matched to the topics you told us you care about.'
 
   for (const key of CATEGORIES_BY_BRAND[brand]) {
     switch (key) {

@@ -31,17 +31,19 @@ import {
  * `useDemoControlsVisibility` store (the `open` prop); returns null when hidden.
  */
 
-/** NOT type-checked against `Brand` being exhaustive — a new brand must be
- *  added here by hand. Fitzgerald was missing until 2026-09-04, so the
- *  onboarding demo bar could not reach it at all. */
+/** One brand, so the picker has nothing to pick — see `BRAND_PICKER` below for
+ *  why the control is hidden rather than deleted. NOT type-checked against
+ *  `Brand` being exhaustive: a brand added to the union must be added here by
+ *  hand too. */
 const BRANDS: { brand: Brand; label: string }[] = [
-  { brand: 'cre', label: 'Real Estate' },
-  { brand: 'mckissock', label: 'McKissock' },
-  { brand: 'elite', label: 'Elite (Health)' },
-  { brand: 'stc', label: 'STC (FinServ)' },
-  { brand: 'fitzgerald', label: 'Fitzgerald' },
   { brand: 'xcel', label: 'XCEL (Insurance)' },
 ]
+
+/** Whether to render the brand picker at all. A one-option dropdown reads as a
+ *  broken control rather than as a deliberate constraint, so it is suppressed
+ *  while this repo ships a single brand; widen `Brand` and it returns on its
+ *  own rather than needing to be rebuilt. */
+const BRAND_PICKER = BRANDS.length > 1
 
 const GOAL_OPTIONS = [
   { value: 'default', label: 'Ask · tiles' },
@@ -97,19 +99,21 @@ export function OnboardingDemoBar({ open = true }: { open?: boolean }) {
 
   return (
     <DemoBar barRef={barRef} className="cre-onboarding-demo" ariaLabel="Onboarding demo controls">
-      <DemoDropdown
-        id="brand"
-        eyebrow="Brand"
-        label={brandLabel}
-        openId={openId}
-        onToggle={toggle}
-        panelRole="radiogroup"
-        panelLabel="Brand"
-      >
-        {BRANDS.map((b) => (
-          <DemoMenuRow key={b.brand} label={b.label} active={b.brand === brand} onSelect={() => pickBrand(b.brand)} />
-        ))}
-      </DemoDropdown>
+      {BRAND_PICKER && (
+        <DemoDropdown
+          id="brand"
+          eyebrow="Brand"
+          label={brandLabel}
+          openId={openId}
+          onToggle={toggle}
+          panelRole="radiogroup"
+          panelLabel="Brand"
+        >
+          {BRANDS.map((b) => (
+            <DemoMenuRow key={b.brand} label={b.label} active={b.brand === brand} onSelect={() => pickBrand(b.brand)} />
+          ))}
+        </DemoDropdown>
+      )}
 
       <DemoDropdown
         id="education"

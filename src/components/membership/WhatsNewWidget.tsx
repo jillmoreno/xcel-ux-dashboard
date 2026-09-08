@@ -80,11 +80,6 @@ const ELITE_CARDS: VibrantCardData[] = [
 ]
 
 const VIBRANT_CARDS_BY_BRAND: Record<Brand, VibrantCardData[]> = {
-  cre: CRE_CARDS,
-  mckissock: MCKISSOCK_CARDS,
-  stc: STC_CARDS,
-  elite: ELITE_CARDS,
-  fitzgerald: ELITE_CARDS,
   xcel: XCEL_CARDS,
 }
 

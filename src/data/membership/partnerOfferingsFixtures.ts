@@ -239,11 +239,6 @@ const STC_OFFERINGS: PartnerOffering[] = [
 ]
 
 const OFFERINGS_BY_BRAND: Record<Brand, PartnerOffering[]> = {
-  cre: CRE_OFFERINGS,
-  mckissock: MCKISSOCK_OFFERINGS,
-  elite: ELITE_OFFERINGS,
-  fitzgerald: ELITE_OFFERINGS,
-  stc: STC_OFFERINGS,
   // Partner Offers is hidden from XCEL's rail (it is a membership benefit and
   // XCEL has no membership). XCEL's own "Partner Code" programme is a B2B
   // discount channel, not a partner-perks catalogue — do not fill this with it.

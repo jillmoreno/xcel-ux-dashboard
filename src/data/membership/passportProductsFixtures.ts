@@ -140,13 +140,6 @@ const ELITE_PASSPORT_PRODUCTS: PassportProduct[] = [
 ]
 
 const PASSPORT_PRODUCTS_BY_BRAND: Record<Brand, PassportProduct[]> = {
-  // Passport is an Elite-only redesign for this pass. Other brands return
-  // an empty list — the v2 brand gate already falls back to v1 for them.
-  cre: [],
-  mckissock: [],
-  elite: ELITE_PASSPORT_PRODUCTS,
-  fitzgerald: ELITE_PASSPORT_PRODUCTS,
-  stc: [],
   // XCEL sells transactional course packages (Standard / Premier) + a B2B
   // Partner programme — no consumer membership, so nothing here is reachable.
   xcel: [],

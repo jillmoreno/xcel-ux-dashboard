@@ -25,74 +25,8 @@ export type MembershipUpgrade = {
   image: string
 }
 
-const REAL_ESTATE: MembershipUpgrade = {
-  planName: 'Premier Membership',
-  planFullName: 'Colibri Premier',
-  currentPlanShort: 'Plus',
-  price: '$199.99',
-  intro:
-    "Go beyond license renewal with education that grows your business. Upgrade today and we'll apply the unused value of your Plus Membership to your upgrade!",
-  benefitsLead: 'In addition to your current Plus benefits, Colibri Premier includes:',
-  bullets: [
-    { lead: '200+ more courses across every line', rest: ' — 3x more than Plus' },
-    { lead: 'Designation & certification prep', rest: ' for the credentials that set you apart' },
-    { lead: 'Business-building masterclasses', rest: ' on marketing, lead gen, and referrals' },
-    { lead: 'Coaching & community access', rest: ', plus more!' },
-  ],
-  image: '/brand/member-spotlight.png',
-}
 
 const UPGRADE_BY_BRAND: Record<Brand, MembershipUpgrade> = {
-  elite: {
-    planName: 'Passport Membership',
-    planFullName: 'Elite Nursing Passport',
-    currentPlanShort: 'Lite',
-    price: '$99.99',
-    intro:
-      "Go beyond license renewal with education that supports your career goals. Upgrade today and we'll apply the unused value of your Passport Lite Membership to your upgrade!",
-    benefitsLead: 'In addition to your current Lite benefits, Elite Nursing Passport includes:',
-    bullets: [
-      { lead: '200+ more courses across 30+ specialties', rest: ' — 3x more than Passport Lite' },
-      { lead: 'Premium Specialty Course Collections', rest: ' for clinical deep dives' },
-      { lead: 'Pharmacology hours', rest: ' and DEA MATE Act training for advanced practice needs' },
-      { lead: 'Career support', rest: ' with video skills and knowledge refreshers, plus more!' },
-    ],
-    image: '/brand/whats-new-bg.jpg',
-  },
-  fitzgerald: {
-    planName: 'Passport Membership',
-    planFullName: 'Elite Nursing Passport',
-    currentPlanShort: 'Lite',
-    price: '$99.99',
-    intro:
-      "Go beyond license renewal with education that supports your career goals. Upgrade today and we'll apply the unused value of your Passport Lite Membership to your upgrade!",
-    benefitsLead: 'In addition to your current Lite benefits, Elite Nursing Passport includes:',
-    bullets: [
-      { lead: '200+ more courses across 30+ specialties', rest: ' — 3x more than Passport Lite' },
-      { lead: 'Premium Specialty Course Collections', rest: ' for clinical deep dives' },
-      { lead: 'Pharmacology hours', rest: ' and DEA MATE Act training for advanced practice needs' },
-      { lead: 'Career support', rest: ' with video skills and knowledge refreshers, plus more!' },
-    ],
-    image: '/brand/whats-new-bg.jpg',
-  },
-  cre: REAL_ESTATE,
-  mckissock: REAL_ESTATE,
-  stc: {
-    planName: 'Premier Membership',
-    planFullName: 'the STC Premier plan',
-    currentPlanShort: 'Standard',
-    price: '$149.99',
-    intro:
-      "Go beyond exam prep with education that advances your finance career. Upgrade today and we'll apply the unused value of your Standard Membership to your upgrade!",
-    benefitsLead: 'In addition to your current Standard benefits, the STC Premier plan includes:',
-    bullets: [
-      { lead: 'Every exam-prep track', rest: ' — SIE through the full Series lineup' },
-      { lead: 'Advanced practice exams', rest: ' with detailed performance analytics' },
-      { lead: 'Continuing education credits', rest: ' to keep your registrations current' },
-      { lead: 'Career coaching', rest: ' and interview prep, plus more!' },
-    ],
-    image: '/brand/member-spotlight.png',
-  },
   // XCEL has no consumer membership, so nothing below is reachable — every
   // surface reading this map is suppressed for it. The entry exists only
   // because the map is an exhaustive `Record<Brand, …>`. Deliberately blank
@@ -154,53 +88,6 @@ const REAL_ESTATE_BECOME: MembershipBecome = {
 }
 
 const BECOME_BY_BRAND: Record<Brand, MembershipBecome> = {
-  elite: {
-    tierName: 'Passport Lite',
-    planName: 'Passport Lite Membership',
-    price: '$48',
-    listPrice: '$69',
-    intro:
-      'Purchase a Passport Lite Membership for just $48 and unlock the CE you need to renew — courses, podcasts, and deadline tracking in one place.',
-    benefitsLead: 'Passport Lite Membership includes:',
-    bullets: [
-      { lead: 'All your state CE requirements', rest: ' — every required package included' },
-      { lead: '70+ CE courses', rest: ' from an ANCC-accredited provider' },
-      { lead: 'Biweekly CE podcasts', rest: ' so you can earn credit on the go, plus more!' },
-    ],
-    image: '/brand/whats-new-bg.jpg',
-  },
-  fitzgerald: {
-    tierName: 'Passport Lite',
-    planName: 'Passport Lite Membership',
-    price: '$48',
-    listPrice: '$69',
-    intro:
-      'Purchase a Passport Lite Membership for just $48 and unlock the CE you need to renew — courses, podcasts, and deadline tracking in one place.',
-    benefitsLead: 'Passport Lite Membership includes:',
-    bullets: [
-      { lead: 'All your state CE requirements', rest: ' — every required package included' },
-      { lead: '70+ CE courses', rest: ' from an ANCC-accredited provider' },
-      { lead: 'Biweekly CE podcasts', rest: ' so you can earn credit on the go, plus more!' },
-    ],
-    image: '/brand/whats-new-bg.jpg',
-  },
-  cre: REAL_ESTATE_BECOME,
-  mckissock: REAL_ESTATE_BECOME,
-  stc: {
-    tierName: 'Standard',
-    planName: 'Standard Membership',
-    price: '$79',
-    listPrice: '$99',
-    intro:
-      'Purchase a Standard Membership for just $79 and get the exam prep you need to pass — practice questions, study guides, and progress tracking.',
-    benefitsLead: 'Standard Membership includes:',
-    bullets: [
-      { lead: 'Core exam-prep', rest: ' for your Series track' },
-      { lead: 'Practice questions & study guides', rest: ' built by industry experts' },
-      { lead: 'Progress tracking', rest: ' to keep your study plan on pace, plus more!' },
-    ],
-    image: '/brand/member-spotlight.png',
-  },
   // XCEL has no consumer membership, so nothing below is reachable — every
   // surface reading this map is suppressed for it. The entry exists only
   // because the map is an exhaustive `Record<Brand, …>`. Deliberately blank
@@ -362,140 +249,14 @@ function toNonMemberPlans(plans: MembershipComparePlan[]): MembershipComparePlan
 }
 
 const COMPARE_BY_BRAND: Record<Brand, MembershipComparison> = {
-  elite: {
-    title: 'Compare your Membership Options',
-    plans: [
-      {
-        name: 'Passport Lite Membership',
-        profession: 'US Nursing',
-        price: '$48',
-        period: 'year',
-        tier: 'low',
-        current: true,
-        ctaLabel: 'Current Membership',
-        bullets: [
-          'Meet all your state requirements — all state CE requirements packages are included!',
-          'Choose from 70+ CE courses by an ANCC-accredited provider',
-          'Listen and earn CE credit with biweekly podcast episodes',
-          'Enhanced CE deadline tracking with certificates from all CE providers in one place',
-        ],
-      },
-      {
-        name: 'Passport Membership',
-        profession: 'US Nursing',
-        price: '$99.99',
-        period: 'year',
-        tier: 'high',
-        recommended: true,
-        ctaLabel: 'Add To Cart',
-        bullets: [
-          'Meet all your state requirements — all state CE requirements packages are included!',
-          'Choose from 300+ CE courses by an ANCC-accredited provider',
-          'Listen and earn CE credit with biweekly podcast episodes',
-          'In-depth Premium Specialty Course Collections across 10+ specialties',
-          'Includes pharmacology course library & DEA MATE Act training',
-          'Enhanced CE deadline tracking with certificates from all CE providers in one place',
-          'Clinical skills video library',
-        ],
-      },
-    ],
-  },
-  fitzgerald: {
-    title: 'Compare your Membership Options',
-    plans: [
-      {
-        name: 'Passport Lite Membership',
-        profession: 'US Nursing',
-        price: '$48',
-        period: 'year',
-        tier: 'low',
-        current: true,
-        ctaLabel: 'Current Membership',
-        bullets: [
-          'Meet all your state requirements — all state CE requirements packages are included!',
-          'Choose from 70+ CE courses by an ANCC-accredited provider',
-          'Listen and earn CE credit with biweekly podcast episodes',
-          'Enhanced CE deadline tracking with certificates from all CE providers in one place',
-        ],
-      },
-      {
-        name: 'Passport Membership',
-        profession: 'US Nursing',
-        price: '$99.99',
-        period: 'year',
-        tier: 'high',
-        recommended: true,
-        ctaLabel: 'Add To Cart',
-        bullets: [
-          'Meet all your state requirements — all state CE requirements packages are included!',
-          'Choose from 300+ CE courses by an ANCC-accredited provider',
-          'Listen and earn CE credit with biweekly podcast episodes',
-          'In-depth Premium Specialty Course Collections across 10+ specialties',
-          'Includes pharmacology course library & DEA MATE Act training',
-          'Enhanced CE deadline tracking with certificates from all CE providers in one place',
-          'Clinical skills video library',
-        ],
-      },
-    ],
-  },
-  cre: REAL_ESTATE_COMPARE,
-  mckissock: REAL_ESTATE_COMPARE,
   // XCEL has no membership ladder to compare — see the stub note on
   // UPGRADE_BY_BRAND above.
   xcel: { title: '', plans: [] },
-  stc: {
-    title: 'Compare your Membership Options',
-    plans: [
-      {
-        name: 'Standard Membership',
-        profession: 'Financial Services',
-        price: '$79',
-        period: 'year',
-        tier: 'low',
-        current: true,
-        ctaLabel: 'Current Membership',
-        bullets: [
-          'Core exam-prep for a single Series track',
-          'Practice questions & study guides',
-          'Progress tracking',
-        ],
-      },
-      {
-        name: 'Premier Membership',
-        profession: 'Financial Services',
-        price: '$149.99',
-        period: 'year',
-        tier: 'high',
-        recommended: true,
-        ctaLabel: 'Add To Cart',
-        bullets: [
-          'Every exam-prep track — SIE through the full Series lineup',
-          'Advanced practice exams with performance analytics',
-          'Continuing education credits to keep registrations current',
-          'Career coaching & interview prep',
-        ],
-      },
-    ],
-  },
 }
 
 /** Non-member comparison per brand — real estate lists all three tiers;
  *  Elite/STC reuse their member ladders with the current-plan treatment stripped. */
 const COMPARE_NON_MEMBER_BY_BRAND: Record<Brand, MembershipComparison> = {
-  elite: {
-    title: 'Compare your Membership Options',
-    plans: toNonMemberPlans(COMPARE_BY_BRAND.elite.plans),
-  },
-  fitzgerald: {
-    title: 'Compare your Membership Options',
-    plans: toNonMemberPlans(COMPARE_BY_BRAND.fitzgerald.plans),
-  },
-  cre: REAL_ESTATE_COMPARE_NON_MEMBER,
-  mckissock: REAL_ESTATE_COMPARE_NON_MEMBER,
-  stc: {
-    title: 'Compare your Membership Options',
-    plans: toNonMemberPlans(COMPARE_BY_BRAND.stc.plans),
-  },
   // XCEL has no consumer membership, so nothing below is reachable — every
   // surface reading this map is suppressed for it. The entry exists only
   // because the map is an exhaustive `Record<Brand, …>`. Deliberately blank

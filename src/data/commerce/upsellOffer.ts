@@ -66,62 +66,6 @@ const ELITE_OFFER: UpsellOffer = {
 }
 
 const OFFERS: Record<Brand, UpsellOffer> = {
-  // Healthcare (Elite) — the brand this flow was designed against; two tiers.
-  elite: ELITE_OFFER,
-  // Fitzgerald shares Elite's Passport tier model + palette.
-  fitzgerald: ELITE_OFFER,
-  // Real Estate — Plus (entry) vs. Premier (recommended), matching the
-  // "Compare your Membership Options" plans.
-  cre: {
-    catalogSize: '200+',
-    tiers: [
-      {
-        id: 'plus',
-        name: 'Plus Membership',
-        subtitle: FREE_CE,
-        price: 99,
-        period: 'year',
-        billingNote: 'billed yearly',
-      },
-      {
-        id: 'premier',
-        name: 'Premier Membership',
-        subtitle: `${FREE_CE} Designation prep, masterclasses, coaching + more`,
-        price: 199.99,
-        period: 'year',
-        billingNote: 'billed yearly',
-        bestValue: true,
-      },
-    ],
-  },
-  mckissock: {
-    catalogSize: '120+',
-    tiers: [
-      {
-        id: 'membership',
-        name: 'Appraisal Membership',
-        subtitle: `${FREE_CE} 120+ courses for your license.`,
-        price: 99.99,
-        period: 'year',
-        billingNote: 'billed yearly',
-        bestValue: true,
-      },
-    ],
-  },
-  stc: {
-    catalogSize: '80+',
-    tiers: [
-      {
-        id: 'membership',
-        name: 'STC Membership',
-        subtitle: 'This course FREE + exam prep for every series you hold.',
-        price: 99.99,
-        period: 'year',
-        billingNote: 'billed yearly',
-        bestValue: true,
-      },
-    ],
-  },
   // XCEL has no membership to upsell — an empty tier list means the
   // catalog's membership upsell has nothing to offer and degrades to the
   // plain add-to-cart path. `catalogSize` still has a real job: it is the

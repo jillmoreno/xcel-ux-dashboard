@@ -137,7 +137,7 @@ export function CourseDetailsBody({
   // `useContext` rather than `useAccount()` — the latter throws outside a
   // provider, and cards render in unit tests without one. Same fallback as
   // `CourseCard` and `Logo`.
-  const brand = useContext(AccountContext)?.brand ?? 'cre'
+  const brand = useContext(AccountContext)?.brand ?? 'xcel'
   const membership = useContext(AccountContext)?.membership ?? 'member'
 
   const inDetails = view === 'details'
@@ -244,7 +244,7 @@ function StatusZone({
   course: CourseCardData
   onOpenCertificate: (cert: Certificate) => void
 }) {
-  const brand = useContext(AccountContext)?.brand ?? 'cre'
+  const brand = useContext(AccountContext)?.brand ?? 'xcel'
   const status = (course.status ?? 'not-started') as CourseStatus
   const expiry = courseExpiryState(course, FIXTURE_TODAY)
   const cert = status === 'completed' ? certificateForCourse(brand, course.id) : null
@@ -331,7 +331,7 @@ function ActionList({
   onGoToCourse: () => void
   onViewCertificate: () => void
 }) {
-  const brand = useContext(AccountContext)?.brand ?? 'cre'
+  const brand = useContext(AccountContext)?.brand ?? 'xcel'
   const status = (course.status ?? 'not-started') as CourseStatus
   const expiry = courseExpiryState(course, FIXTURE_TODAY)
   const expired = expiry === 'expired'

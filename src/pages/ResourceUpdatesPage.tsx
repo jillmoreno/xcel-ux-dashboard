@@ -51,7 +51,12 @@ export function ResourceUpdatesPage() {
   useEffect(() => {
     if (seeded.current) return
     seeded.current = true
-    const nextBrand = (params.get('brand') as Brand | null) ?? 'elite'
+    // `?brand=` is no longer read. It selected among six brands; with one in
+    // the union it can only resolve to XCEL, and casting the raw param into
+    // `Brand` would let a stale link (Elite was the LMS's seed here) assert a
+    // value that indexes every fixture as undefined. Restore the param — with
+    // a validating lookup, not a cast — if a second brand returns.
+    const nextBrand: Brand = 'xcel'
     const nextMembership = (params.get('membership') as Membership | null) ?? 'member'
     if (brand !== nextBrand || membership !== nextMembership) {
       setAccount(nextBrand, nextMembership)

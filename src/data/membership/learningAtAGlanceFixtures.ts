@@ -116,35 +116,8 @@ const ELITE_CONSISTENCY: ConsistencyStats = {
   mostActiveDay: 'Sundays',
 }
 
-const ELITE_GLANCE: LearningAtAGlance = {
-  periodLabel: 'Your year so far with Elite',
-  archetype: {
-    mix: ELITE_MIX,
-    ...deriveArchetype(ELITE_MIX, ELITE_CONSISTENCY),
-  },
-  topSpecialties: [
-    { rank: 1, name: 'Pharmacology', hours: 12.5 },
-    { rank: 2, name: 'Critical Care', hours: 9 },
-    { rank: 3, name: 'Cardiac Nursing', hours: 7 },
-    { rank: 4, name: 'Wound Care', hours: 5 },
-    { rank: 5, name: 'Pediatrics', hours: 3.5 },
-  ],
-  consistency: ELITE_CONSISTENCY,
-  milestones: {
-    coursesCompleted: 18,
-    certificatesEarned: 3,
-    specialtiesExplored: 5,
-    ceGoalCurrent: 18,
-    ceGoalTarget: 30,
-  },
-}
 
 const GLANCE_BY_BRAND: Record<Brand, LearningAtAGlance | null> = {
-  cre: null,
-  mckissock: null,
-  elite: ELITE_GLANCE,
-  fitzgerald: ELITE_GLANCE,
-  stc: null,
   // XCEL sells transactional course packages (Standard / Premier) + a B2B
   // Partner programme — no consumer membership, so nothing here is reachable.
   xcel: null,

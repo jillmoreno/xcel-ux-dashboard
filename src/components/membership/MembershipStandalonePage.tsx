@@ -233,9 +233,12 @@ const simpleBandCtaStyle: CSSProperties = {
   cursor: 'pointer',
 }
 
-// Real-estate brands render the CRE non-member experience (3-tier Plus/Pro/Premier
-// card comparison); Elite/Fitzgerald/STC keep the original nursing page.
-const REAL_ESTATE_BRANDS: Brand[] = ['cre', 'mckissock']
+// The real-estate brands (CRE, McKissock) rendered a 3-tier Plus/Pro/Premier
+// card comparison here; the healthcare and finserv brands kept the original
+// page. Both those brands are gone, so the list is empty and every render takes
+// the non-real-estate path — which is what XCEL would have taken anyway. Kept
+// as a list rather than inlined so re-adding a brand is one entry.
+const REAL_ESTATE_BRANDS: Brand[] = []
 
 export function MembershipStandalonePage({
   isMember,
@@ -1064,12 +1067,14 @@ const UPGRADE_SPOTLIGHT_TAB: Record<string, string> = {
  *  the "Explore Additional…" divider). Elite/Fitzgerald split at Passport Lite
  *  vs Passport; STC is a single tier, so everything is included. */
 function memberBenefitSplit(
-  brand: Brand,
+  _brand: Brand,
   tier: MembershipTier,
 ): { included: string[]; upgrade: string[] } {
-  if (brand === 'stc') {
-    return { included: ['stc-exam-prep', 'stc-practice', 'stc-regulatory'], upgrade: [] }
-  }
+  // STC's single-tier split (everything included, nothing to upgrade to) went
+  // with the brand. What remains is the Elite / Fitzgerald Passport split.
+  //
+  // Neither is reachable for XCEL, which has no membership at all — this runs
+  // only on surfaces `supportsMembership` already suppresses for it.
   // Elite / Fitzgerald — the five What's New sections, split by Passport tier.
   const liteIncluded = ['podcasts', 'learning-library', 'transitions']
   const passportOnly = ['exam-specialties', 'career-tools']

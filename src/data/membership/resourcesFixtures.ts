@@ -192,11 +192,6 @@ const XCEL_RESOURCES: Resource[] = [
 // append here; it is membership-only, so it moved to the Membership page —
 // see `communityFixtures.ts`.)
 const RESOURCES_BY_BRAND: Record<Brand, Resource[]> = {
-  cre: RESOURCES,
-  mckissock: RESOURCES,
-  elite: RESOURCES,
-  fitzgerald: FITZGERALD_RESOURCES,
-  stc: RESOURCES,
   xcel: XCEL_RESOURCES,
 }
 
@@ -223,14 +218,6 @@ const DEFAULT_RESOURCES_COPY: ResourcesCopy = {
 }
 
 const RESOURCES_COPY_BY_BRAND: Record<Brand, ResourcesCopy> = {
-  cre: DEFAULT_RESOURCES_COPY,
-  mckissock: DEFAULT_RESOURCES_COPY,
-  elite: DEFAULT_RESOURCES_COPY,
-  stc: DEFAULT_RESOURCES_COPY,
-  fitzgerald: {
-    heroDescription:
-      'Free for everyone — no membership required. Our Resource Center and certification Q&A podcasts, written and hosted by NP faculty to support your practice and your exam prep.',
-  },
   // XCEL has no membership, so "no membership required" would be answering a
   // question nobody asked. The claim that does work here is that these are free
   // and separate from anything you buy.

@@ -991,49 +991,18 @@ function MembershipKpis({ vertical = false }: { vertical?: boolean }) {
   const stats = dashboardStatsFor(brand)
   const variant = useFeatureFlag('membership-summary-style').variant ?? 'dark'
   const p = KPI_PALETTES[variant] ?? KPI_PALETTES.dark
-  const savingsCtaVariant = useFeatureFlag('membership-savings-cta').variant ?? 'split'
 
-  // Non-member band — same band chrome, but the stats lead with real learner
-  // progress (Credits / Certificates / Time Spent) and close on the upgrade
-  // hook (Potential Savings in CTA color · Free Account). Elite-only: it's
-  // the brand carrying the savings/plan fixtures, so we don't gate on the
-  // member-only `summary` here. Respects the same `membership-summary-style`
-  // palette as the member band.
+  // The non-member band is gone. It rendered learner progress closing on an
+  // upgrade hook (Potential Savings in CTA colour · Free Account), and it was
+  // ELITE-ONLY — the brand carrying the savings/plan fixtures; every other
+  // brand returned null right here. XCEL sells no membership, so it has no
+  // non-member state to be in. Restoring it means restoring a brand that HAS
+  // one, plus its savings fixtures. The member band below is untouched.
   if (!isMember) {
-    if (brand !== 'elite') return null
-    const savingsValue = `Save ${savings?.amount ?? '$1,180'}`
-    // `membership-savings-cta`: `split` (default) keeps the separate Potential
-    // Savings + Current Plan stats; `cta` / `bold` merge them into one savings
-    // cell with an "Explore Membership" CTA (subtle vs. attention-grabbing).
-    const savingsVariant = savingsCtaVariant
-    const combined = savingsVariant === 'cta' || savingsVariant === 'bold'
-    return (
-      <KpiBand palette={p} vertical={vertical}>
-        <KpiStat first palette={p} label="Credits" value={`${stats.creditsEarned}`} sub="total completed" />
-        <KpiStatDivider color={p.divider} />
-        <KpiStat palette={p} label="Certificates" value={`${stats.certificatesCount}`} sub="lifetime earned" />
-        <KpiStatDivider color={p.divider} />
-        <KpiStat palette={p} label="Time Spent" value="459" sub="hours of learning" />
-        <KpiStatDivider color={p.divider} />
-        <KpiStat
-          palette={p}
-          label="Potential Savings"
-          value={savingsValue}
-          sub="/year with membership"
-          valueColor="var(--color-cta-500)"
-        />
-        {combined ? (
-          // CTA sits at the band's right edge, vertically centered — it never
-          // adds to the stat cells' height (the band stays one row tall).
-          <ExploreCta bold={savingsVariant === 'bold'} />
-        ) : (
-          <>
-            <KpiStatDivider color={p.divider} />
-            <KpiStat palette={p} label="Current Plan" value="Free Account" sub="Upgrade for full access" />
-          </>
-        )}
-      </KpiBand>
-    )
+    // The non-member summary band was authored for Elite alone, and every other
+    // brand returned null here. XCEL sells no membership, so it is never in a
+    // non-member state to reach this in the first place.
+    return null
   }
 
   if (!summary) return null

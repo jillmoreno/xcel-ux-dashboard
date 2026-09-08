@@ -117,12 +117,14 @@ export function MembershipLandingPage() {
     ? requested
     : readDefaultMembershipVersion()
 
-  if ((version === 'v2' || version === 'v3') && brand === 'elite')
-    return <MembershipV2 version={version} />
-  if (version === 'v4' && brand === 'elite') return <MembershipV4 />
-  if (version === 'v5' && brand === 'elite') return <MembershipV5 />
-  if (version === 'v6' && brand === 'elite') return <MembershipV6 />
-  if (version === 'v7' && brand === 'elite') return <MembershipV7 />
+  // Versions v2–v7 were Elite-only explorations — Elite carried the Passport
+  // fixtures they render. With that brand gone every version resolves to V1.
+  //
+  // This whole page is unreachable for XCEL in any case: `supportsMembership`
+  // is false for it, so `MembershipRoute` in App.tsx redirects `/membership`
+  // to the dashboard before this renders. The file is kept, not deleted, for
+  // the same reason `supportsMembership` exists — the brand seam is meant to
+  // survive a brand that has no membership.
   return <MembershipV1 />
 }
 

@@ -82,22 +82,12 @@ const ELITE_EXPLORE_COMPARISON: ExplorePlanComparisonRow[] = [
 ]
 
 const EXPLORE_PLANS_BY_BRAND: Record<Brand, ExplorePlan[]> = {
-  cre: [],
-  mckissock: [],
-  elite: ELITE_EXPLORE_PLANS,
-  fitzgerald: ELITE_EXPLORE_PLANS,
-  stc: [],
   // XCEL sells transactional course packages (Standard / Premier) + a B2B
   // Partner programme — no consumer membership, so nothing here is reachable.
   xcel: [],
 }
 
 const EXPLORE_COMPARISON_BY_BRAND: Record<Brand, ExplorePlanComparisonRow[]> = {
-  cre: [],
-  mckissock: [],
-  elite: ELITE_EXPLORE_COMPARISON,
-  fitzgerald: ELITE_EXPLORE_COMPARISON,
-  stc: [],
   // XCEL sells transactional course packages (Standard / Premier) + a B2B
   // Partner programme — no consumer membership, so nothing here is reachable.
   xcel: [],

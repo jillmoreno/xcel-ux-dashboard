@@ -176,49 +176,6 @@ export const STREAK_THIS_WEEK: ReadonlyArray<StreakActivity> = [
  * + `streakThisWeekFor(brand)` route to the right one.
  * ─────────────────────────────────────────────────────────────────── */
 
-// McKissock — 14-day streak, longest 14. "Tied with your personal best."
-// Earlier in the window: mixed activity with a streak-breaking gap on
-// May 6. From May 7 → 20: every day active, building intensity toward
-// the high end.
-const _MCK_STREAK: LearningStreak = {
-  current: 14,
-  longest: 14,
-  lastActivityDate: '2026-05-20',
-  daysThisWeek: 7,
-  bestStreakThisMonth: 14,
-  recent30: [
-    { date: '2026-04-21', active: false, minutes: 0 },
-    { date: '2026-04-22', active: true, minutes: 18 },
-    { date: '2026-04-23', active: false, minutes: 0 },
-    { date: '2026-04-24', active: true, minutes: 25 },
-    { date: '2026-04-25', active: true, minutes: 40 },
-    { date: '2026-04-26', active: false, minutes: 0 },
-    { date: '2026-04-27', active: true, minutes: 20 },
-    { date: '2026-04-28', active: true, minutes: 35 },
-    { date: '2026-04-29', active: true, minutes: 12 },
-    { date: '2026-04-30', active: false, minutes: 0 },
-    { date: '2026-05-01', active: true, minutes: 8 },
-    { date: '2026-05-02', active: false, minutes: 0 },
-    { date: '2026-05-03', active: false, minutes: 0 },
-    { date: '2026-05-04', active: true, minutes: 25 },
-    { date: '2026-05-05', active: true, minutes: 30 },
-    { date: '2026-05-06', active: false, minutes: 0 }, // streak break
-    { date: '2026-05-07', active: true, minutes: 20 }, // 14-day streak begins
-    { date: '2026-05-08', active: true, minutes: 35 },
-    { date: '2026-05-09', active: true, minutes: 50 },
-    { date: '2026-05-10', active: true, minutes: 25 },
-    { date: '2026-05-11', active: true, minutes: 60 },
-    { date: '2026-05-12', active: true, minutes: 30 },
-    { date: '2026-05-13', active: true, minutes: 45 },
-    { date: '2026-05-14', active: true, minutes: 28 },
-    { date: '2026-05-15', active: true, minutes: 40 },
-    { date: '2026-05-16', active: true, minutes: 32 },
-    { date: '2026-05-17', active: true, minutes: 55 },
-    { date: '2026-05-18', active: true, minutes: 38 },
-    { date: '2026-05-19', active: true, minutes: 48 },
-    { date: '2026-05-20', active: true, minutes: 70 }, // today, PB-tying day
-  ],
-}
 
 const _MCK_THIS_WEEK: ReadonlyArray<StreakActivity> = [
   { date: '2026-05-14', active: true },
@@ -338,40 +295,18 @@ const _STC_THIS_WEEK: ReadonlyArray<StreakActivity> = [
   { date: '2026-05-20', active: false }, // today — "not yet"
 ]
 
-/** Per-brand streak fixtures. CRE pulls from the exported
- *  `LEARNING_STREAK` so tests that mock that export still affect the
- *  default brand's render. */
-export function learningStreakFor(brand: Brand): LearningStreak {
-  switch (brand) {
-    case 'mckissock':
-      return _MCK_STREAK
-    case 'elite':
-    case 'fitzgerald':
-      return _ELITE_STREAK
-    case 'stc':
-      return _STC_STREAK
-    case 'cre':
-    default:
-      return LEARNING_STREAK
-  }
+/** Streak fixture. XCEL already resolved to the exported `LEARNING_STREAK` —
+ *  it had no case of its own and fell to `default` — so this is the same data
+ *  it always rendered, not a substitution. Kept exported so tests that mock
+ *  that export still affect the render. */
+export function learningStreakFor(_brand: Brand): LearningStreak {
+  return LEARNING_STREAK
 }
 
-/** Per-brand "this week" fixtures. Same routing convention as
- *  `learningStreakFor` — CRE resolves to the exported `STREAK_THIS_WEEK`,
- *  the others to their internal arrays above. */
-export function streakThisWeekFor(brand: Brand): ReadonlyArray<StreakActivity> {
-  switch (brand) {
-    case 'mckissock':
-      return _MCK_THIS_WEEK
-    case 'elite':
-    case 'fitzgerald':
-      return _ELITE_THIS_WEEK
-    case 'stc':
-      return _STC_THIS_WEEK
-    case 'cre':
-    default:
-      return STREAK_THIS_WEEK
-  }
+/** "This week" fixture. Same note as `learningStreakFor`: XCEL fell to the
+ *  `default` arm, so `STREAK_THIS_WEEK` is unchanged behaviour. */
+export function streakThisWeekFor(_brand: Brand): ReadonlyArray<StreakActivity> {
+  return STREAK_THIS_WEEK
 }
 
 /**
@@ -420,34 +355,6 @@ export type DashboardStats = {
 }
 
 const _DASHBOARD_STATS: Record<Brand, DashboardStats> = {
-  cre: {
-    creditsEarned: 15,
-    creditsTotal: 200,
-    overallProgressPct: 7.5,
-    certificatesCount: 12,
-    savedAmount: 842,
-  },
-  mckissock: {
-    creditsEarned: 22,
-    creditsTotal: 200,
-    overallProgressPct: 11,
-    certificatesCount: 8,
-    savedAmount: 510,
-  },
-  elite: {
-    creditsEarned: 38,
-    creditsTotal: 150,
-    overallProgressPct: 25,
-    certificatesCount: 15,
-    savedAmount: 1180,
-  },
-  fitzgerald: {
-    creditsEarned: 38,
-    creditsTotal: 150,
-    overallProgressPct: 25,
-    certificatesCount: 15,
-    savedAmount: 1180,
-  },
   // New-user demo brand: zero values across the board — fires the
   // faded-stats state in DashboardHeroBand.
   // XCEL — a pre-licensing candidate part-way through Part 1 of the 3-Part
@@ -459,13 +366,6 @@ const _DASHBOARD_STATS: Record<Brand, DashboardStats> = {
     creditsTotal: 40,
     overallProgressPct: 30,
     certificatesCount: 1,
-    savedAmount: 0,
-  },
-  stc: {
-    creditsEarned: 0,
-    creditsTotal: 100,
-    overallProgressPct: 0,
-    certificatesCount: 0,
     savedAmount: 0,
   },
 }

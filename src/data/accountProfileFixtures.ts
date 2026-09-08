@@ -75,42 +75,11 @@ function daysUntil(mmddyyyy: string): number {
 
 /** Per-brand membership plan title (the learning path the plan renews). */
 const PLAN_TITLE_BY_BRAND: Record<Brand, string> = {
-  elite: 'Florida RN License Renewal Path',
-  fitzgerald: 'Florida RN License Renewal Path',
-  cre: 'Texas Real Estate Sales Agent Path',
-  mckissock: 'North Carolina Certified General Learning Path',
-  stc: 'Series 7 Exam Prep Path',
   xcel: 'Life & Health Pre-Licensing Path',
 }
 
 /** Per-brand interest tags. */
 const INTERESTS_BY_BRAND: Record<Brand, string[]> = {
-  elite: [
-    'Critical Care',
-    'Pharmacology',
-    'Pediatrics',
-    'Patient Safety',
-    'Wound Care',
-    'Mental Health',
-  ],
-  fitzgerald: [
-    'Critical Care',
-    'Pharmacology',
-    'Pediatrics',
-    'Patient Safety',
-    'Wound Care',
-    'Mental Health',
-  ],
-  cre: ['Residential', 'Commercial', 'Property Law', 'Home Ownership'],
-  mckissock: [
-    'Appraisals',
-    'Real Estate',
-    'Taxes',
-    'Home Ownership',
-    'Property Development',
-    'Real Estate Law',
-  ],
-  stc: ['Securities', 'Insurance', 'Retirement Planning', 'Compliance'],
   xcel: ['Life & Health', 'Property & Casualty', 'Annuities', 'Ethics'],
 }
 

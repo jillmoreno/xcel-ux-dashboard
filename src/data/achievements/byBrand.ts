@@ -108,38 +108,6 @@ const _CRE: Partial<Record<string, AchievementUserState>> = {
 /* ─── McKissock — the 14/14 streak narrative ─────────────────────────
    Mid-engagement member: just tied their 14-day PB. Next quantitative
    unlock is 30-day streak (14/30). Plus Perfect Quiz as a ready
-   single-action prompt. */
-const _MCK: Partial<Record<string, AchievementUserState>> = {
-  welcome: { status: 'earned', earnedOn: '2025-09-04', rarityPct: 95 },
-  'first-login': { status: 'earned', earnedOn: '2025-09-04', rarityPct: 99 },
-  'first-course': { status: 'earned', earnedOn: '2025-10-12', rarityPct: 92 },
-  'streak-3': { status: 'earned', earnedOn: '2026-05-07', rarityPct: 78 },
-  'streak-7': { status: 'earned', earnedOn: '2026-05-13', rarityPct: 62 },
-  'streak-14': { status: 'earned', earnedOn: '2026-05-20', rarityPct: 38 },
-  'five-courses': { status: 'earned', earnedOn: '2026-04-22', rarityPct: 54 },
-  'first-cert': { status: 'earned', earnedOn: '2026-01-30', rarityPct: 71 },
-  renewed: { status: 'earned', earnedOn: '2025-11-18', rarityPct: 36 },
-  // READY
-  'perfect-quiz': {
-    status: 'ready',
-    rarityPct: 44,
-    railPriority: 1,
-  },
-  // IN PROGRESS
-  'streak-30': {
-    status: 'progress',
-    progress: { current: 14, target: 30, unit: 'days' },
-    personalBest: { value: 14, unit: 'days' },
-    rarityPct: 22,
-    railPriority: 2,
-  },
-  'ten-courses': {
-    status: 'progress',
-    progress: { current: 6, target: 10, unit: 'courses' },
-    rarityPct: 28,
-    railPriority: 3,
-  },
-}
 
 /* ─── Elite — the 22-day streak / new-PB narrative ───────────────────
    Already past their PB. Quantitative milestone is 30-day streak (22/30,
@@ -206,22 +174,12 @@ const _STC: Partial<Record<string, AchievementUserState>> = {
   },
 }
 
-/** Resolve the user-state map for a given brand. */
+/** Resolve the user-state map. XCEL had no case of its own and fell to the
+ *  `default` arm, so it keeps the same map it always read. */
 export function userStateMapFor(
-  brand: Brand,
+  _brand: Brand,
 ): Partial<Record<string, AchievementUserState>> {
-  switch (brand) {
-    case 'mckissock':
-      return _MCK
-    case 'elite':
-    case 'fitzgerald':
-      return _ELITE
-    case 'stc':
-      return _STC
-    case 'cre':
-    default:
-      return _CRE
-  }
+  return _CRE
 }
 
 /** Best-effort sanity check during prototype: ids in a user-state map
@@ -229,12 +187,7 @@ export function userStateMapFor(
  *  so a stray legacy id doesn't break the build. */
 if (import.meta.env.DEV) {
   const knownIds = new Set(ACHIEVEMENT_CATALOG.map((d) => d.id))
-  for (const [brand, map] of [
-    ['cre', _CRE],
-    ['mckissock', _MCK],
-    ['elite', _ELITE],
-    ['stc', _STC],
-  ] as const) {
+  for (const [brand, map] of [['xcel', _CRE]] as const) {
     for (const id of Object.keys(map)) {
       if (!knownIds.has(id)) {
         // eslint-disable-next-line no-console

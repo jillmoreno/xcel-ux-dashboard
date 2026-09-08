@@ -11,11 +11,6 @@ export * from './types'
 export { creBundle, mckissockBundle, eliteBundle, fitzgeraldBundle, stcBundle, xcelBundle }
 
 const BUNDLES: Record<Brand, CatalogBundle> = {
-  cre: creBundle,
-  mckissock: mckissockBundle,
-  elite: eliteBundle,
-  fitzgerald: fitzgeraldBundle,
-  stc: stcBundle,
   xcel: xcelBundle,
 }
 

@@ -46,93 +46,25 @@ type ImageSource = {
 }
 
 const IMAGE_SOURCES: Partial<Record<Brand, Record<'default' | 'mark', ImageSource>>> = {
-  cre: {
-    default: {
-      src: '/brand/colibri-real-estate.svg',
-      alt: 'Colibri Real Estate',
-      nativeWidth: 233.75,
-      nativeHeight: 40,
-    },
-    mark: {
-      src: '/brand/colibri-mark.png',
-      alt: 'Colibri Real Estate',
-      nativeWidth: 165,
-      nativeHeight: 143,
-    },
-  },
-  // Sourced from Figma file Y6ooCQHBLhHGbK0cBY4O9O, node 30:7342.
-  // Olive hummingbird + gray "McKissock Learning" wordmark, intrinsic
-  // 1775×586 PNG.
-  mckissock: {
-    default: {
-      src: '/brand/mckissock-learning.png',
-      alt: 'McKissock Learning',
-      nativeWidth: 1775,
-      nativeHeight: 586,
-    },
-    // No mark-only variant in Figma yet — reuse the horizontal lockup as
-    // a temporary stand-in. Replace when a square mark ships.
-    mark: {
-      src: '/brand/mckissock-learning.png',
-      alt: 'McKissock Learning',
-      nativeWidth: 1775,
-      nativeHeight: 586,
-    },
-  },
-  // Sourced from Figma file uFVpmgm9q9394Wl3Wiypbq, node 8003:1402.
-  // Navy horse mark + "STC Securities Training by Colibri" wordmark in
-  // navy, intrinsic 416×182 PNG (Figma reports 207.717×91 — exported at 2x).
-  stc: {
-    default: {
-      src: '/brand/stc.png',
-      alt: 'STC — Securities Training by Colibri',
-      nativeWidth: 416,
-      nativeHeight: 182,
-      sizeBy: 'height',
-    },
-    mark: {
-      src: '/brand/stc.png',
-      alt: 'STC — Securities Training by Colibri',
-      nativeWidth: 416,
-      nativeHeight: 182,
-      sizeBy: 'height',
-    },
-  },
-  // Sourced from Figma Colibri Design System (U6vAvmQhpyPiVZ8V3dXPX4), node
-  // 3799:1517 — the "Elite Learning Byline" color lockup (hummingbird + "Elite
-  // Learning" wordmark + "by Colibri Healthcare" byline). Exported SVG with the
-  // Figma frame artifacts stripped, intrinsic 229×72. Compact 3.17:1 aspect →
-  // sized by height so it doesn't overflow the 72px header. No square mark in
-  // the file yet — the mark variant reuses the lockup as a stand-in.
-  elite: {
-    default: {
-      src: '/brand/elite-learning.svg',
-      alt: 'Elite Learning',
-      nativeWidth: 229,
-      nativeHeight: 72,
-      sizeBy: 'height',
-      // White byline lockup for dark mode (Figma node 3799:1515 — the white
-      // twin of the color 3799:1517 lockup, same 229×72) — shown only when
-      // `[data-theme='dark']` is applied (the rebrand shell).
-      dark: { src: '/brand/elite-learning-white.svg', nativeWidth: 229, nativeHeight: 72 },
-    },
-    mark: {
-      src: '/brand/elite-learning.svg',
-      alt: 'Elite Learning',
-      nativeWidth: 229,
-      nativeHeight: 72,
-      sizeBy: 'height',
-    },
-  },
+  // Empty: XCEL has no lockup in the repo yet, so every render falls through to
+  // the text wordmark below. The image branch is kept rather than deleted —
+  // see the TODO on WORDMARK_LABEL; dropping the assets in here is meant to be
+  // the whole change.
 }
 
+/**
+ * Width-reference aspect ratio for `sizeBy: 'creWidth'`.
+ *
+ * The LMS sized width-matched lockups against CRE's own (233.75 × 40), so a
+ * taller-aspect mark rendered at the same WIDTH as CRE rather than the same
+ * height. CRE's entry is gone with the other five brands, but the ratio it
+ * supplied was the layout constant — inlining it keeps a future XCEL lockup
+ * sizing exactly as it would have, instead of silently changing scale the day
+ * the asset lands. Rename the `sizeBy` value if that reference ever moves.
+ */
+const REFERENCE_LOCKUP_ASPECT = 233.75 / 40
+
 const WORDMARK_LABEL: Record<Brand, string> = {
-  cre: 'Colibri Real Estate',
-  mckissock: 'McKissock Learning',
-  elite: 'Elite Learning',
-  stc: 'STC',
-  // No licensed FHEA mark wired yet — renders the text wordmark fallback.
-  fitzgerald: 'Fitzgerald',
   // TODO(brand): XCEL's real assets exist and are approved — the full-colour
   // lockup, a WHITE variation for dark/brand backgrounds (the `dark` source,
   // same mechanism Elite uses), and a standalone "White Knight" icon (the
@@ -151,7 +83,7 @@ export function Logo({ variant = 'default', height = 40, className, brand: brand
   // mount Logo without an AccountProvider fall back to CRE rather than
   // throw. App code always has the provider; only test mounts skip it.
   const account = useContext(AccountContext)
-  const brand = brandProp ?? account?.brand ?? 'cre'
+  const brand = brandProp ?? account?.brand ?? 'xcel'
 
   const imageSet = IMAGE_SOURCES[brand]
   if (imageSet) {
@@ -164,8 +96,7 @@ export function Logo({ variant = 'default', height = 40, className, brand: brand
     const dims = (nw: number, nh: number) => {
       const aspect = nw / nh
       if (sizeBy === 'height') return { w: Math.round(aspect * height), h: height }
-      const cre = IMAGE_SOURCES.cre!.default
-      const w = Math.round((cre.nativeWidth / cre.nativeHeight) * height)
+      const w = Math.round(REFERENCE_LOCKUP_ASPECT * height)
       return { w, h: Math.round(w / aspect) }
     }
     const light = dims(entry.nativeWidth, entry.nativeHeight)
@@ -230,7 +161,7 @@ export function Logo({ variant = 'default', height = 40, className, brand: brand
         fontSize,
         lineHeight: 1,
         color: 'var(--color-brand)',
-        letterSpacing: brand === 'stc' ? '0.04em' : 'normal',
+        letterSpacing: 'normal',
         whiteSpace: 'nowrap',
       }}
     >

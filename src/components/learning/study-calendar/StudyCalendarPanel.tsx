@@ -100,19 +100,12 @@ export function StudyCalendarPanel({ pathId }: { pathId?: string } = {}) {
     [hasCalendar, pathId],
   )
 
-  // Non-Member STC — render the locked-state overlay over a dimmed
-  // Daily preview so reviewers see what they're getting when they
-  // upgrade.
-  if (brand === 'stc' && membership === 'non-member') {
-    const previewCalendar = calendar ?? studyCalendarFor(pathId)
-    return (
-      <StudyCalendarLockedState
-        preview={<GridView calendar={previewCalendar} />}
-      />
-    )
-  }
-
-  // Member STC on a path without a calendar — empty state.
+  // The non-member LOCKED state is gone with STC, which sold the study calendar
+  // as a membership benefit behind `StudyCalendarLockedState`. XCEL has no
+  // membership at all (`supportsMembership` is false for it), so a learner can
+  // never be in the non-member state that gated this — the calendar is always
+  // open. `StudyCalendarLockedState` is still in the repo, unreferenced: put
+  // this branch back if a brand with a membership ever returns.
   if (!calendar) return <StudyCalendarEmptyState />
 
   return (

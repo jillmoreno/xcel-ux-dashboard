@@ -154,11 +154,6 @@ const ELITE_JUST_LAUNCHED: JustLaunchedItem[] = [
 ]
 
 const JUST_LAUNCHED_BY_BRAND: Record<Brand, JustLaunchedItem[]> = {
-  cre: [],
-  mckissock: [],
-  elite: ELITE_JUST_LAUNCHED,
-  fitzgerald: ELITE_JUST_LAUNCHED,
-  stc: [],
   // XCEL sells transactional course packages (Standard / Premier) + a B2B
   // Partner programme — no consumer membership, so nothing here is reachable.
   xcel: [],
@@ -1178,11 +1173,6 @@ const XCEL_BENEFIT_ROWS: BenefitRow[] = [
 ]
 
 const BENEFIT_ROWS_BY_BRAND: Record<Brand, BenefitRow[]> = {
-  cre: CRE_BENEFIT_ROWS,
-  mckissock: CRE_BENEFIT_ROWS,
-  elite: ELITE_BENEFIT_ROWS,
-  fitzgerald: ELITE_BENEFIT_ROWS,
-  stc: STC_BENEFIT_ROWS,
   xcel: XCEL_BENEFIT_ROWS,
 }
 
@@ -1215,11 +1205,6 @@ const ELITE_PROGRESS_SNAPSHOT: ProgressSnapshot = {
 }
 
 const PROGRESS_SNAPSHOT_BY_BRAND: Record<Brand, ProgressSnapshot | null> = {
-  cre: null,
-  mckissock: null,
-  elite: ELITE_PROGRESS_SNAPSHOT,
-  fitzgerald: ELITE_PROGRESS_SNAPSHOT,
-  stc: null,
   // XCEL sells transactional course packages (Standard / Premier) + a B2B
   // Partner programme — no consumer membership, so nothing here is reachable.
   xcel: null,
@@ -1264,11 +1249,6 @@ const ELITE_ADDITIONAL_BENEFITS: AdditionalBenefit[] = [
 ]
 
 const ADDITIONAL_BENEFITS_BY_BRAND: Record<Brand, AdditionalBenefit[]> = {
-  cre: [],
-  mckissock: [],
-  elite: ELITE_ADDITIONAL_BENEFITS,
-  fitzgerald: ELITE_ADDITIONAL_BENEFITS,
-  stc: [],
   // XCEL sells transactional course packages (Standard / Premier) + a B2B
   // Partner programme — no consumer membership, so nothing here is reachable.
   xcel: [],

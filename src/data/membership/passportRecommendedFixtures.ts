@@ -75,11 +75,6 @@ const ELITE_RECOMMENDATIONS: PassportRecommendation[] = [
 ]
 
 const RECS_BY_BRAND: Record<Brand, PassportRecommendation[]> = {
-  cre: [],
-  mckissock: [],
-  elite: ELITE_RECOMMENDATIONS,
-  fitzgerald: ELITE_RECOMMENDATIONS,
-  stc: [],
   // XCEL sells transactional course packages (Standard / Premier) + a B2B
   // Partner programme — no consumer membership, so nothing here is reachable.
   xcel: [],
@@ -135,11 +130,6 @@ const ELITE_FEATURED: PassportRecommendation[] = [
 ]
 
 const FEATURED_BY_BRAND: Record<Brand, PassportRecommendation[]> = {
-  cre: [],
-  mckissock: [],
-  elite: ELITE_FEATURED,
-  fitzgerald: ELITE_FEATURED,
-  stc: [],
   // XCEL sells transactional course packages (Standard / Premier) + a B2B
   // Partner programme — no consumer membership, so nothing here is reachable.
   xcel: [],

@@ -96,34 +96,6 @@ const DISCOUNT_PCT = 30
 const DOWNGRADE_BY_BRAND: Partial<
   Record<Brand, { tierLabel: string; price: number; priceLabel: string; keeps: string; loses: string }>
 > = {
-  elite: {
-    tierLabel: 'Passport Lite',
-    price: 48,
-    priceLabel: '$48 / year',
-    keeps: 'CE podcasts and the core course library',
-    loses: 'exam & certification prep, the AI career tools, and the full library',
-  },
-  fitzgerald: {
-    tierLabel: 'Passport Lite',
-    price: 48,
-    priceLabel: '$48 / year',
-    keeps: 'CE podcasts and the core course library',
-    loses: 'exam & certification prep, the AI career tools, and the full library',
-  },
-  cre: {
-    tierLabel: 'Plus Member',
-    price: 49,
-    priceLabel: '$49 / year',
-    keeps: 'your required CE hours and the course library',
-    loses: 'exam prep, the coaching tools, and the designation courses',
-  },
-  mckissock: {
-    tierLabel: 'Plus Member',
-    price: 49,
-    priceLabel: '$49 / year',
-    keeps: 'your required CE hours and the course library',
-    loses: 'exam prep, the coaching tools, and the designation courses',
-  },
 }
 
 /** Money with cents, so a price never renders as "$69.993" or "$48". */

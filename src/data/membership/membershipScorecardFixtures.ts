@@ -80,38 +80,6 @@ type PlanFixture = {
 }
 
 const PLAN_BY_BRAND: Record<Brand, PlanFixture> = {
-  elite: {
-    planLine: 'Nursing · 1-year membership',
-    renewsOn: '11/03/2026',
-    memberSince: '2025-04-23',
-    autoRenew: true,
-    priceLabel: '$48 / year',
-  },
-  fitzgerald: {
-    planLine: 'Nursing · 1-year membership',
-    renewsOn: '01/15/2027',
-    memberSince: '2025-04-23',
-    autoRenew: true,
-    priceLabel: '$48 / year',
-  },
-  cre: {
-    planLine: 'Real Estate · 1-year membership',
-    renewsOn: '11/01/2026',
-    memberSince: '2024-11-12',
-    autoRenew: true,
-    priceLabel: '$99 / year',
-  },
-  mckissock: {
-    planLine: 'Appraisal · 1-year membership',
-    renewsOn: '11/01/2026',
-    memberSince: '2024-11-12',
-    // TODO(data): McKissock deliberately leaves `autoRenew` unset so the
-    // unknown-auto-renew degrade path is demoable.
-    priceLabel: '$99.99 / year',
-  },
-  // STC is the new-user demo fixture — no expiry on the demo user, so the whole
-  // renewal block degrades out.
-  stc: { planLine: 'Financial Services · membership' },
   // XCEL has no membership: no plan line, no renewal, no price. `planLine` is
   // required by the type, so it names the brand rather than inventing a plan —
   // and every surface that would render it is suppressed anyway.
@@ -121,25 +89,12 @@ const PLAN_BY_BRAND: Record<Brand, PlanFixture> = {
 /** Lifetime savings + what was paid, per brand. `savings` absent ⇒ the
  *  scorecard renders without its value banner. */
 const VALUE_BY_BRAND: Record<Brand, { savings?: string; paid?: string; paybackDate?: string; paybackDays?: number }> = {
-  elite: { savings: '$1,180', paid: '$48', paybackDate: 'May 14, 2025', paybackDays: 21 },
-  fitzgerald: { savings: '$1,180', paid: '$48', paybackDate: 'May 14, 2025', paybackDays: 21 },
-  cre: { savings: '$842', paid: '$99', paybackDate: 'Feb 2, 2025', paybackDays: 82 },
-  // TODO(data): McKissock has savings but no authored payback date — the meter
-  // renders without its caption.
-  mckissock: { savings: '$510', paid: '$99.99' },
-  // STC: $0 saved (new user) ⇒ no value banner at all.
-  stc: {},
   // XCEL: no membership ⇒ no membership savings to total.
   xcel: {},
 }
 
 /** Hours of learning per brand. TODO(data): hardcoded 459 today in the KPI band. */
 const HOURS_BY_BRAND: Record<Brand, number> = {
-  elite: 459,
-  fitzgerald: 459,
-  cre: 212,
-  mckissock: 168,
-  stc: 0,
   xcel: 0,
 }
 

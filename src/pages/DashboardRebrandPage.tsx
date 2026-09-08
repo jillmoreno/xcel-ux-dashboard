@@ -45,7 +45,10 @@ export function DashboardRebrandPage() {
   // brand-agnostic section (e.g. Help & Support) can be demoed in any brand
   // from the prototype gateway. Mirrors the one-shot `?membership=` handling.
   const brandParam = params.get('brand')
-  const KNOWN_BRANDS: Brand[] = ['cre', 'mckissock', 'elite', 'stc', 'fitzgerald', 'xcel']
+  // Validated rather than cast: `?brand=` is user-supplied, and a link written
+  // against the six-brand LMS dashboard can still name a brand this repo does
+  // not have. Unknown ⇒ null ⇒ the default seed below.
+  const KNOWN_BRANDS: Brand[] = ['xcel']
   const wantBrand = KNOWN_BRANDS.includes(brandParam as Brand) ? (brandParam as Brand) : null
   // The "pure" Demo view — opened from the Demo tab tile as
   // `/dashboard-rebrand?demo=1`. It swaps the live feature flags for the
@@ -66,9 +69,9 @@ export function DashboardRebrandPage() {
   useEffect(() => {
     if (seeded.current) return
     seeded.current = true
-    // Target brand: an explicit `?brand=` (for brand-agnostic sections like
-    // Help & Support) overrides the default Elite seed.
-    const targetBrand: Brand = wantBrand ?? 'elite'
+    // Target brand: `?brand=` is kept as the seam it was, but with one brand
+    // it can only ever resolve to XCEL. Elite was the LMS's default seed.
+    const targetBrand: Brand = wantBrand ?? 'xcel'
     // An explicit membership param wins — seed the target brand + that
     // membership so a gateway deep-link lands squarely in the member OR
     // non-member view.

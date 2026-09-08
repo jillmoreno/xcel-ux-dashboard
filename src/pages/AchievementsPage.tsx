@@ -87,20 +87,10 @@ const PAGE_NUMBER: Record<TabId, string> = {
   hidden: 'PAGE 06',
 }
 
-/** Per-brand member-since string for the footer ribbon. */
-function memberSinceFor(brand: Brand): string {
-  switch (brand) {
-    case 'mckissock':
-      return 'Sep 2025'
-    case 'elite':
-    case 'fitzgerald':
-      return 'Apr 2025'
-    case 'stc':
-      return 'Jul 2022'
-    case 'cre':
-    default:
-      return 'Feb 2024'
-  }
+/** Member-since string for the footer ribbon. XCEL had no case and fell to the
+ *  `default` arm, so this is the date it already showed. */
+function memberSinceFor(_brand: Brand): string {
+  return 'Feb 2024'
 }
 
 export function AchievementsPage() {

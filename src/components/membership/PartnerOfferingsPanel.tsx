@@ -43,9 +43,9 @@ export function PartnerOfferingsPanel({ locked = false }: { locked?: boolean } =
   const featured = featuredOffersFor(brand)
   const showFeatured = featuredEnabled && featured.length > 0
 
-  // McKissock mirrors its live page — featured cards use solid brand-tint media
-  // blocks (not photos). Other brands keep the photo / gradient treatment.
-  const placeholderMedia = brand === 'mckissock'
+  // McKissock mirrored its live page with solid brand-tint media blocks; every
+  // other brand — XCEL included — keeps the photo / gradient treatment.
+  const placeholderMedia = false
 
   // Split the featured band into a wide lead card + the remaining 2-up row.
   const [lead, ...rest] = featured
