@@ -488,6 +488,21 @@ const _MANDATORY_BY_BRAND: Record<Brand, CourseCardData[]> = {
   // "not purchased", a different thing entirely).
   xcel: [
     {
+      // COMPLETED, and deliberately so: the CE path's summary claims
+      // `mandatory: { completed: 5 }`, but before this row every course in the
+      // list was in-progress or not-started — the gauge said five hours were
+      // done and the list below it showed none. A completed course is also what
+      // makes the "View Certificate" affordance reachable at all.
+      id: 'lp-xcel-ethics',
+      title: 'Insurance Ethics',
+      hours: 5,
+      state: 'FL',
+      delivery: 'online',
+      badge: 'mandatory',
+      status: 'completed',
+      progress: 100,
+    },
+    {
       id: 'lp-xcel-lh-part1',
       title: 'Life & Health Pre-License Course',
       hours: 24,
@@ -528,6 +543,18 @@ const _MANDATORY_BY_BRAND: Record<Brand, CourseCardData[]> = {
       state: 'FL',
       delivery: 'online',
       badge: 'mandatory',
+    },
+    {
+      // The elective half of the same fix — the CE path claims
+      // `elective: { completed: 1 }`.
+      id: 'lp-xcel-flood-basics',
+      title: 'Flood Insurance Basics',
+      hours: 1,
+      state: 'FL',
+      delivery: 'online',
+      badge: 'elective',
+      status: 'completed',
+      progress: 100,
     },
     {
       id: 'lp-xcel-livestream',

@@ -4,7 +4,12 @@ import { describe, expect, it } from 'vitest'
 import { ProgressTrackerCard } from '@/components/learning/ProgressTrackerCard'
 import { learningPathsFor, type LearningPathSummary } from '@/data/learningFixtures'
 
-const WITH_BREAKDOWN = learningPathsFor('xcel')[0] // Florida Nursing — mandatory + elective
+// Florida Life & Health CE — the XCEL path with progress in BOTH categories.
+// It has to be this one, not `[0]`: the gauge only draws an elective arc when
+// elective work is actually complete, and XCEL's two pre-licensing paths sit at
+// `elective: { completed: 0 }`, so they render a single-category gauge and the
+// two-segment assertion below would fail on a correct render.
+const WITH_BREAKDOWN = learningPathsFor('xcel').find((p) => p.id === 'xcel-fl-lh-ce')!
 // A path with neither category breakdown — exercises the single-color fallback.
 const NO_BREAKDOWN: LearningPathSummary = {
   id: 'test-no-breakdown',
