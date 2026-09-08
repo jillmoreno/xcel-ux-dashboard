@@ -11,14 +11,18 @@ import { InlineStudyCalendar } from './InlineStudyCalendar'
  *   - empty + a status filter active → the "No tasks match" message, no CTA
  *   - populated day → the normal list + the "Add a custom task" footer
  *
- * `series-79-calendar-first` reuses the default STUDY_CALENDAR (tasks on
- * 2026-05-06; 2026-05-09 is a weekend gap with none) and — unlike
- * `series-79-15day` — is NOT the `study-calendar-state` flag path, so it
- * never short-circuits into the Create-Calendar harness.
+ * `xcel-fl-lh-prelicensing` carries XCEL's 20-day Life & Health study plan
+ * (`XCEL_LH_STUDY_CALENDAR`), whose tasks run weekdays from 2026-05-11 to
+ * 2026-06-11 — so 2026-05-16 is a weekend gap with none.
+ *
+ * It is also NOT the `study-calendar-state` flag path: that short-circuit into
+ * the Create-Calendar harness is scoped to `series-79-15day` specifically,
+ * which left with STC. The LMS used `series-79-calendar-first` here for exactly
+ * the same reason — a real calendar that the flag does not intercept.
  */
-const PATH_ID = 'series-79-calendar-first'
-const POPULATED_DAY = '2026-05-06'
-const EMPTY_DAY = '2026-05-09'
+const PATH_ID = 'xcel-fl-lh-prelicensing'
+const POPULATED_DAY = '2026-05-11'
+const EMPTY_DAY = '2026-05-16'
 
 function renderCalendar(calDate: string) {
   return render(

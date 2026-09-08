@@ -41,16 +41,20 @@ describe('WhatsNewWidget', () => {
   it('renders the image carousel (6 cards) + See All when enabled', () => {
     seedFlag({ enabled: true })
     renderWidget()
-    // The carousel renders 6 cards, each a level-3 heading. The default brand is
-    // CRE, so real per-brand titles show (replacing the old "Feature Title").
+    // The carousel renders 6 cards, each a level-3 heading, with real titles
+    // for the active brand. XCEL authors no What's New SLIDES, so what fills
+    // the carousel is its course set — which is the widget's own fallback, not
+    // a defect. The LMS asserted CRE's "AI MasterTracks for Agents" here.
     expect(screen.getAllByRole('heading', { level: 3 })).toHaveLength(6)
     expect(
-      screen.getByRole('heading', { level: 3, name: /ai mastertracks for agents/i }),
+      screen.getByRole('heading', { level: 3, name: /life & health pre-license course/i }),
     ).toBeInTheDocument()
     expect(screen.getByRole('link', { name: /see all/i })).toBeInTheDocument()
     // Lede + delivery meta (the play affordance rides on podcast/video).
     expect(screen.getByText(/latest features, content, and tools/i)).toBeInTheDocument()
-    expect(screen.getAllByText(/podcast/i).length).toBeGreaterThan(0)
+    // The delivery meta rides on the card's modality. XCEL sells no podcasts,
+    // so the video-delivered courses carry it instead.
+    expect(screen.getAllByText(/video/i).length).toBeGreaterThan(0)
   })
 
   it('uses the caller-supplied title (e.g. "What\'s Trending")', () => {

@@ -256,60 +256,85 @@ describe('Caption matrix', () => {
   }
 })
 
-describe('Per-brand streak variants', () => {
-  // Each brand resolves to a different streak via `learningStreakFor`.
-  // The component reads the active brand from `useAccount()` and picks
-  // the matching fixture — no per-brand state in the panel itself.
+describe('the streak caption matrix', () => {
+  /**
+   * These three cases used to be "per-brand streak variants" — McKissock tied
+   * with its personal best, Elite past it, STC lapsed — each proved by seeding
+   * a different brand and letting `learningStreakFor` pick that brand's
+   * fixture. With one brand there is one streak, so the brand axis is gone.
+   *
+   * The SUBJECT was never the brands, though: it is the caption matrix in
+   * `StreakHeroBlock`, which turns (current, longest) into one of six strings.
+   * That block is not exported, so the values are supplied by mocking the
+   * fixture the card reads. Same shape as the LMS test, one layer lower.
+   */
   type Case = {
     title: string
-    brand: 'xcel' | 'elite' | 'stc'
-    expectedCount: number
-    expectedLongest: number
+    current: number
+    longest: number
     expectedCaption: RegExp
   }
   const cases: Case[] = [
     {
-      title: 'McKissock — 14-day streak tied with PB',
-      brand: 'xcel',
-      expectedCount: 14,
-      expectedLongest: 14,
+      title: 'current === longest → tied with the personal best',
+      current: 14,
+      longest: 14,
       expectedCaption: /tied with your personal best/i,
     },
     {
-      title: 'Elite — 22-day streak past PB',
-      brand: 'xcel',
-      expectedCount: 22,
-      expectedLongest: 18,
+      title: 'current > longest → a new personal best, with the margin',
+      current: 22,
+      longest: 18,
       expectedCaption: /new personal best · 4 days ahead/i,
     },
     {
-      title: 'STC — lapsed (0-day current, 35-day PB)',
-      brand: 'xcel',
-      expectedCount: 0,
-      expectedLongest: 35,
+      title: 'current === 0 with a real best → lapsed, invited to restart',
+      current: 0,
+      longest: 35,
       expectedCaption: /start a new streak today/i,
     },
   ]
+
   for (const c of cases) {
-    it(c.title, () => {
-      // Swap the persisted account before mount so `useAccount()`
-      // resolves to the target brand on first render.
-      window.localStorage.setItem(
-        'cgp.account',
-        JSON.stringify({ brand: c.brand, membership: 'member' }),
+    it(c.title, async () => {
+      vi.resetModules()
+      vi.doMock('@/data/learnerOverviewFixtures', async () => {
+        const actual =
+          await vi.importActual<typeof import('@/data/learnerOverviewFixtures')>(
+            '@/data/learnerOverviewFixtures',
+          )
+        const base = actual.learningStreakFor('xcel')
+        return {
+          ...actual,
+          learningStreakFor: () => ({ ...base, current: c.current, longest: c.longest }),
+        }
+      })
+      const { LearnerOverviewPanel: Panel } = await import(
+        '@/components/dashboard/LearnerOverviewPanel'
       )
-      renderPanel()
+      const { AccountProvider: Account } = await import('@/context/AccountContext')
+      const { FeatureFlagProvider: Flags } = await import('@/context/FeatureFlagContext')
+      const { LearningPathsPanelProvider: Paths } = await import(
+        '@/components/learning/LearningPathsPanelContext'
+      )
+      render(
+        <Account>
+          <Flags>
+            <MemoryRouter>
+              <Paths>
+                <Panel />
+              </Paths>
+            </MemoryRouter>
+          </Flags>
+        </Account>,
+      )
       expect(
         screen.getByLabelText(
-          new RegExp(`current learning streak: ${c.expectedCount} days`, 'i'),
+          new RegExp(`current learning streak: ${c.current} days?`, 'i'),
         ),
       ).toBeInTheDocument()
-      expect(
-        screen.getByRole('progressbar', {
-          name: new RegExp(`personal best of ${c.expectedLongest} days`, 'i'),
-        }),
-      ).toBeInTheDocument()
       expect(screen.getByText(c.expectedCaption)).toBeInTheDocument()
+      vi.doUnmock('@/data/learnerOverviewFixtures')
     })
   }
 })

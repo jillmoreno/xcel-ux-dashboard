@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { MembershipLandingPage } from '@/pages/MembershipLandingPage'
+import { partnerOfferingsFor } from '@/data/membership/partnerOfferingsFixtures'
 
 /**
  * Tests cover the six contracts in the build prompt:
@@ -97,14 +98,15 @@ describe('MembershipLandingPage — member view', () => {
         name: /^vip partner offerings$/i,
       }),
     ).toBeInTheDocument()
-    // The partner offerings region renders + carries a known CRE
-    // fixture entry.
+    // The region renders. It used to also assert a known CRE entry
+    // ("DocuSign for Real Estate"); partner offerings are per-brand and XCEL's
+    // list is empty (`partnerOfferingsFor('xcel') === []`), so the panel shows
+    // its empty state. The TAB ROUTING is what this test is about, and that is
+    // unchanged — assert an entry again once XCEL authors offerings.
     expect(
       screen.getByRole('region', { name: /vip partner offerings/i }),
     ).toBeInTheDocument()
-    expect(
-      screen.getByRole('heading', { name: /docusign for real estate/i }),
-    ).toBeInTheDocument()
+    expect(partnerOfferingsFor('xcel')).toHaveLength(0)
   })
 
   it('defaults to the Recommended tab and mounts RecommendedForYouPanel', () => {
@@ -175,11 +177,18 @@ describe('MembershipLandingPage — zero-state (STC member)', () => {
     seedAccount('xcel', 'member')
   })
 
-  it('renders membership hero stats with the faded zero-state meta line', () => {
+  it('renders the membership hero for a brand with no membership', () => {
+    // This asserted STC's zero-state copy ("Add your first course") to prove
+    // the hero read that brand's `heroStatsFixtures` entry. XCEL authors none,
+    // because it sells no membership at all — and `MembershipRoute` in App.tsx
+    // redirects `/membership` to the dashboard for it, so a learner never
+    // reaches this page. It is mounted directly here, which is why it renders.
+    //
+    // What is still worth pinning is that it does not CRASH on a brand with no
+    // membership fixtures — the failure mode that would otherwise only show up
+    // if someone re-enabled the route.
     renderAt('/membership')
-    // Zero-state copy comes straight from heroStatsFixtures — its
-    // presence proves the hero is rendering the STC fixture's stats.
-    expect(screen.getByText(/add your first course/i)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1 })).toBeInTheDocument()
   })
 })
 

@@ -25,11 +25,19 @@ describe('LearningPathPage', () => {
         </FeatureFlagProvider>
       </AccountProvider>,
     )
-    expect(screen.getByRole('heading', { level: 2, name: /mandatory/i })).toBeInTheDocument()
-    expect(screen.getByRole('tablist')).toBeInTheDocument()
-    expect(screen.getByRole('tab', { name: /goal tracker/i })).toBeInTheDocument()
-    // CRE's active path is CE, so Goal Tracker is selected by default.
-    expect(screen.getByRole('tab', { name: /goal tracker/i, selected: true })).toBeInTheDocument()
+    // XCEL's active path is PRE-LICENSING, and it carries
+    // `layoutVariant: 'study-calendar-in-tab'` — so the page renders the Study
+    // Plan rather than the Mandatory/Elective sections, and Study Plan is the
+    // selected tab. The LMS asserted the other shape here because CRE's active
+    // path was CE, which has no calendar and defaults to Goal Tracker. Both are
+    // correct; which one you get is the path's `layoutVariant`, so this test
+    // now pins XCEL's arm of that fork.
+    expect(screen.getByRole('heading', { name: /florida life & health pre-licensing/i }))
+      .toBeInTheDocument()
+    // Two tablists render on this layout — the page tabs and the study
+    // calendar's own view switcher — so assert on the tab, not the container.
+    expect(screen.getAllByRole('tablist').length).toBeGreaterThan(0)
+    expect(screen.getByRole('tab', { name: /study plan/i, selected: true })).toBeInTheDocument()
     expect(screen.getByRole('tab', { name: /certificates/i })).toBeInTheDocument()
   })
 
