@@ -90,6 +90,8 @@ describe('section routing (sectionOf)', () => {
    * Sandbox, which is that category's documented behaviour rather than a bug.
    */
   const EXPECTED_PLACEMENT: Record<string, string> = {
+    // The one in-app row, and the only thing on the ungated front door.
+    'xcel-dashboard': 'demo',
     'xcel-lms': 'exploration',
     'xcel-walkthrough': 'exploration',
     'xcel-wireframes': 'exploration',
@@ -126,14 +128,35 @@ describe('section routing (sectionOf)', () => {
     }
   })
 
-  it('Demo is empty, so the ungated front door shows no rows', () => {
-    // Asserted rather than assumed. Every XCEL artifact sits in Exploration, so
-    // nothing is presentation-ready — and the consequence is that a viewer
-    // WITHOUT the password sees an empty Demo section and nothing else. If a row
-    // is ever promoted to Demo, this test is the one that should fail and be
-    // updated, so the change is deliberate.
+  it('Demo holds exactly the rows meant to be ungated', () => {
+    /*
+     * Demo is the UNGATED front door: a viewer with no password sees this
+     * section and nothing else. So what sits here is a decision about what a
+     * stakeholder may see unaccompanied, and it should not be possible to
+     * change it by accident.
+     *
+     * ⚠ This test was previously called "Demo is empty", and its comment
+     * claimed to be the tripwire that would fail if a row were ever promoted.
+     * IT WOULD NOT HAVE. It only asserted that one gated row's title was
+     * absent, which stayed true no matter what else appeared — so when
+     * `xcel-dashboard` was promoted on 2026-09-08 this test passed, and three
+     * unrelated `externalUrl` assertions were what actually caught it.
+     *
+     * It compares the whole set now, in both directions: promoting a row to
+     * Demo fails here, and so does demoting the one that belongs.
+     */
     renderDashboard()
     expect(screen.getByRole('heading', { level: 1, name: 'Demo' })).toBeInTheDocument()
+
+    // Counted from the RENDERED section rather than from the data, because
+    // what a passwordless viewer can reach is the actual concern. Every row
+    // carries one "Actions for <title>" kebab, so the kebabs are the rows.
+    const rows = screen
+      .getAllByRole('button', { name: /^Actions for / })
+      .map((b) => b.getAttribute('aria-label')?.replace(/^Actions for /, ''))
+    expect(rows).toEqual(['XCEL Dashboard — Live Product Build'])
+
+    // …and a gated row is still not among them.
     expect(screen.queryByText('XCEL LMS — Desktop Platform')).not.toBeInTheDocument()
   })
 })
@@ -179,8 +202,43 @@ describe('prototype URLs — served from this repo', () => {
    * no error anywhere. That is why the existence check below matters more than
    * the shape check: shape alone would pass for a file nobody ever copied.
    */
-  it('every row points at a same-origin /prototypes/ path', () => {
+  /**
+   * These three cover the DOCUMENT rows — the ones opening a standalone HTML
+   * file under public/prototypes/. Every row was one until 2026-09-08, when
+   * `xcel-dashboard` arrived pointing at an in-app route instead, so they are
+   * scoped by `to` rather than looping over PROTOTYPE_FEATURES blind.
+   *
+   * The split is asserted below rather than assumed: a row must carry exactly
+   * one of `to` / `externalUrl`, so a new document row cannot skip these
+   * checks by quietly omitting `externalUrl`, which is how the guard would
+   * otherwise be lost.
+   */
+  const documentRows = PROTOTYPE_FEATURES.filter((f) => !f.to)
+  const routeRows = PROTOTYPE_FEATURES.filter((f) => f.to)
+
+  it('every row is either a document or a route, never both and never neither', () => {
     for (const f of PROTOTYPE_FEATURES) {
+      expect(
+        Boolean(f.to) !== Boolean(f.externalUrl),
+        `${f.id} needs exactly one of to / externalUrl`,
+      ).toBe(true)
+    }
+    // Both kinds exist, so neither filter above is vacuously empty.
+    expect(documentRows.length).toBeGreaterThan(0)
+    expect(routeRows.length).toBeGreaterThan(0)
+  })
+
+  it('every route row points into this app, not off it', () => {
+    for (const f of routeRows) {
+      // A same-origin path. An absolute URL here would open the tile in a new
+      // tab via `externalUrl`'s anchor path instead of routing, so it would be
+      // the wrong field.
+      expect(f.to, `${f.id}`).toMatch(/^\/[\w\-/]*(\?.*)?$/)
+    }
+  })
+
+  it('every document row points at a same-origin /prototypes/ path', () => {
+    for (const f of documentRows) {
       expect(f.externalUrl, `${f.id} needs an externalUrl`).toBeTruthy()
       expect(f.externalUrl).toMatch(/^\/prototypes\/[\w.-]+$/)
       // The row's picture and its CTA must be the same artifact.
@@ -188,19 +246,19 @@ describe('prototype URLs — served from this repo', () => {
     }
   })
 
-  it('every row resolves to a file that actually exists in public/', () => {
+  it('every document row resolves to a file that actually exists in public/', () => {
     // The one that earns its keep. A tile pointing at a file nobody copied is
     // invisible in CI and in the build — it only shows up as a preview frame
     // quietly containing the dashboard itself.
-    for (const f of PROTOTYPE_FEATURES) {
+    for (const f of documentRows) {
       const rel = f.externalUrl!.replace(/^\//, '')
       const onDisk = resolve(dirname(fileURLToPath(import.meta.url)), '../../public', rel)
       expect(existsSync(onDisk), `${f.id} → ${f.externalUrl} is not in public/`).toBe(true)
     }
   })
 
-  it('all rows share one base, so a move stays one constant', () => {
-    const bases = new Set(PROTOTYPE_FEATURES.map((f) => f.externalUrl!.replace(/\/[^/]+$/, '')))
+  it('all document rows share one base, so a move stays one constant', () => {
+    const bases = new Set(documentRows.map((f) => f.externalUrl!.replace(/\/[^/]+$/, '')))
     expect(bases.size).toBe(1)
     expect([...bases][0]).toBe('/prototypes')
   })

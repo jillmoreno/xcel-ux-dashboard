@@ -570,6 +570,47 @@ const PROTOTYPE_BASE = '/prototypes'
 
 export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
   {
+    /*
+     * THE ONE IN-APP ROW. Everything else here opens a standalone HTML
+     * document under `public/prototypes/`; this one is a react-router route
+     * into the product app that lives in this repo (`/dashboard-rebrand`),
+     * which is why it carries `to` rather than `externalUrl`.
+     *
+     * ⚠ DO NOT CONFUSE IT WITH `xcel-lms`, which sits in Exploration and is
+     * titled "XCEL LMS — Desktop Platform". That row is a hand-authored HTML
+     * mock-up of these same surfaces; this one is the surfaces themselves. The
+     * two look alike on purpose — the mock-up was the argument for building
+     * it — so each blurb says which it is, and the titles are kept apart.
+     *
+     * It is in DEMO, the ungated front door, deliberately: Demo is the section
+     * a stakeholder can reach without the password, and the product build is
+     * the thing worth showing them. `UxDashboard.smoke.test.tsx` used to assert
+     * Demo was empty precisely so this promotion had to be a decision; that
+     * test now asserts this row is the one thing in it.
+     *
+     * NO `devStatus` — same trap as the Exploration rows. `sectionOf` checks
+     * devStatus BEFORE category, so authoring one here silently moves this row
+     * to Design or Development and it vanishes from the front door.
+     */
+    id: 'xcel-dashboard',
+    title: 'XCEL Dashboard — Live Product Build',
+    accent: 'blue',
+    icon: 'grid',
+    blurb:
+      'The real React application, running on XCEL alone — the left-rail shell, the Current Learning Path band, the Study Plan, My Courses, Certificates, Recommended for You and the Insurance Training Catalog, all rendering XCEL’s own content on the San Juan / Brick palette. Ported from the Common LMS on 2026-09-08 and stripped to one brand: the other five and every fixture, token block and tier table behind them are gone. XCEL sells no membership, so every membership surface is suppressed rather than shown in a non-member state — no tier badge, no upsell bands, no Membership item in the rail or the top nav. The prototype bar’s Persona / Progress / Education switches drive the whole page.',
+    tileBlurb:
+      'The actual React product on XCEL brand colour — shell, learning path, study plan, courses, certificates, catalog. One brand, no membership.',
+    kind: 'explore',
+    status: 'ready',
+    category: 'demo',
+    pinned: true,
+    // An in-app route, not a document. `to` is what makes the tile navigate
+    // rather than open a new tab, and it is also what the row's live preview
+    // frame renders — see the note in FeaturePreviewThumb about the cost.
+    to: '/dashboard-rebrand',
+    brands: ['xcel'],
+  },
+  {
     id: 'xcel-lms',
     title: 'XCEL LMS — Desktop Platform',
     accent: 'blue',

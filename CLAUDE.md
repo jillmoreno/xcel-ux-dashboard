@@ -62,7 +62,15 @@ LMS `CLAUDE.md` says about it holds here.
 
 **Sections.** Two open — Demo · Research — then a divider under a **UX & DEV
 ACCESS** eyebrow holding Design · Exploration · Sandbox · Development · Done ·
-Archive · QA Notes · To Do. All eight restricted sections share **one gate id**
+Archive · QA Notes · To Do.
+
+**Demo holds the live product build** (`xcel-dashboard` → `/dashboard-rebrand`),
+promoted there on 2026-09-08. It is the one row on the ungated front door, so
+what sits in Demo is a decision about what a stakeholder may see without the
+password — `UxDashboard.smoke.test.tsx` compares the whole section against an
+expected set, in both directions, so promoting or demoting a row fails a test
+first. It is also the one row in the file that is an in-app ROUTE rather than a
+standalone HTML document; see "The one in-app row" below. All eight restricted sections share **one gate id**
 (`design-and-development`) and therefore one password, so a reviewer types it
 once. The password comes from `getPrototypePassword()` — `Password123` unless
 overridden. Selecting a locked section opens the modal *over wherever you are*,
@@ -164,6 +172,34 @@ files look the way they do rather than what they currently contain.
 | [`src/data/prototypeFeatures.ts`](src/data/prototypeFeatures.ts) | The five XCEL rows + `PROTOTYPE_BASE`. The type block is verbatim from the LMS (so the ported components compile unchanged) plus one added field, `previewUrl`. Rows are ported verbatim from the LMS dashboard, which still has its own copies. |
 | [`src/data/archivedItems.ts`](src/data/archivedItems.ts) | The Archive table — empty; XCEL has removed nothing yet. |
 | [`src/data/qaNotes.ts`](src/data/qaNotes.ts) | The committed QA seed — empty; findings are authored on the page. |
+
+### The one in-app row
+
+Every row in `prototypeFeatures.ts` opens a standalone HTML document under
+`public/prototypes/` except **`xcel-dashboard`**, which is a react-router route
+(`to: '/dashboard-rebrand'`) into the product app that now lives in this repo.
+
+**Do not confuse it with `xcel-lms`**, the Exploration row titled "XCEL LMS —
+Desktop Platform". That one is a hand-authored HTML mock-up of these same
+surfaces; this one is the surfaces themselves. They look alike on purpose — the
+mock-up was the argument for building it.
+
+Three consequences worth knowing:
+
+- **`to` and `externalUrl` are mutually exclusive**, and a test asserts it. The
+  document-shape guards (same-origin `/prototypes/…`, the file exists in
+  `public/`, one shared base) are scoped to rows WITHOUT `to` — so a new
+  document row cannot skip them by quietly omitting `externalUrl`, which is how
+  that guard would otherwise be lost.
+- **It has no `thumbnail`, so its row preview boots the app** in a scaled
+  iframe. That is the cost `FeaturePreviewThumb` documents. It is accepted here
+  because Demo holds ONE row and a live frame cannot go stale — the same
+  trade-off the thumbnails README describes, landing the other way than it does
+  for `xcel-admin-tool`, which is one of several rows in a section. Add a
+  capture if Demo grows.
+- **No `devStatus`**, same trap as the Exploration rows: `sectionOf` checks it
+  before `category`, so authoring one silently moves this row off the front
+  door.
 
 ### The archive convention
 
@@ -494,12 +530,19 @@ that every row routes where the data says, that the gate holds (including the
 deep-link case), and that the preview resolver resolves for every documented
 component.
 
-Plus two XCEL-specific ones: that every row's `externalUrl` is a **same-origin**
-`/prototypes/…` path which exists in `public/` (corrected 2026-09-03 — this said
-"an absolute URL on a single shared origin", which predates the 2026-09-02 move
-off the cross-origin pointer and contradicted it), and that **Demo is empty** —
-asserted rather than assumed, so promoting a row to the ungated front page is a
-deliberate change that breaks a test first.
+Plus two XCEL-specific ones. First, that every **document** row's `externalUrl`
+is a **same-origin** `/prototypes/…` path which exists in `public/` (corrected
+2026-09-03 — this said "an absolute URL on a single shared origin", which
+predates the 2026-09-02 move off the cross-origin pointer and contradicted it;
+scoped to document rows 2026-09-08, when `xcel-dashboard` arrived as a route).
+
+Second, **what sits in Demo** — the ungated front door. This one said "Demo is
+empty" and claimed to be the tripwire that fails when a row is promoted. **It
+would not have.** It only asserted one gated row's title was absent, which
+stayed true whatever else appeared, so the promotion passed it and three
+unrelated `externalUrl` assertions caught the change instead. It compares the
+whole rendered section now, in both directions, and both were verified to fail
+before being relied on.
 
 Written because the port couldn't be verified visually, and because the failure
 mode that mattered — a missing provider throwing on mount — renders a blank page
