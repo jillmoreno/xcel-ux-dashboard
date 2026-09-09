@@ -317,6 +317,48 @@ grows it to 174×116, which squeezes the title into three lines because the whit
 half is only ~250px wide. The cover stays fixed at 84×56 and the slack falls to
 the bottom of the card, which is what a light day should look like.
 
+### The logo is real now — and dark mode is not (2026-09-09)
+
+`Logo` rendered the text wordmark "XCEL" from the migration until now, because
+the artwork was not in the repo. It is: `/brand/xcel-logo.webp`, the approved
+2024 lockup (`XCEL24_Logo_RGB_45px-2x` from the Colibri Logo Library), 248×91.
+
+A **raster webp, not an SVG**, because that is the export that exists — 2.3KB,
+crisp to ~124px wide, which covers every call site. Swap in the vector if the
+lockup ever needs to go large.
+
+**`sizeBy: 'height'`, and the default would have been wrong.** `sizeBy` defaults
+to `'creWidth'`, which width-matches a reference lockup; at the header's 52px
+that renders this 2.725:1 mark **304×112** — three and a half times the 72px
+header's own height. By height it is 142×52. This is the exact case the
+`sizeBy` docstring warns about, and a test asserts the numbers.
+
+**The brand guide's 95px minimum WIDTH is load-bearing**, which is why
+`MOBILE_LOGO_HEIGHT` in `Header` is **35 and not 34**: at 34 the lockup is 93px
+wide. One pixel, and it is a consequence of the artwork's aspect — re-derive it
+if the lockup is ever replaced.
+
+**The `mark` variant is deliberately absent**, so `IMAGE_SOURCES` is now
+`Partial` per variant. The square "White Knight" is separate artwork that is not
+in the repo; pointing `mark` at the lockup would render a wide horizontal logo
+wherever a square one was asked for. Nothing uses `mark` today.
+
+**KNOWN GAP — the dark header, and it is older than this change.** The lockup is
+full-colour: charcoal wordmark (#3a3a3a) and red knight (#9a1b1e), measuring
+11.37:1 / 8.24:1 on white and **1.33:1 / 1.84:1** on the rebrand shell's dark
+header (#152833). Invisible.
+
+It is not a regression. The text wordmark it replaced sat on `--color-brand`,
+which is `#2d5872` in dark — **1.99:1** on that same header. **Dark mode has
+never had a legible logo here**; the lockup deepens an existing hole rather than
+digging a new one. Recorded rather than papered over, because the two look
+identical from the outside and only one of them is this change's fault.
+
+The fix is the WHITE variation the brand library ships, dropped in as the `dark`
+source — the swap mechanism is already built and needs no code. **Do not
+recolour the full-colour file to approximate it**: that is authoring brand
+artwork, and an official white lockup already exists.
+
 ### The demo rail — what a stakeholder sees first (2026-09-09)
 
 `NAV_SECTION_FLAGS` entries carry an optional `defaultEnabled`, and five are

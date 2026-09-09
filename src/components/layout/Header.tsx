@@ -41,6 +41,17 @@ import { useMobileNav } from './MobileNavContext'
  *  the strip itself + the header's sticky offset so they stay in sync. */
 const BROWSER_CHROME_H = 38
 
+/**
+ * Mobile logo height. **35, not 34** — XCEL's lockup is 2.725:1 and sizes by
+ * HEIGHT, so 34 renders it 93px wide and the brand guide's minimum web size is
+ * 95px on WIDTH. 35 gives exactly 95. One pixel, and it is the only call site
+ * that was under: 52 → 142px and 40 → 109px both clear it comfortably.
+ *
+ * Re-derive this if the lockup is ever replaced with a different aspect — it
+ * is a consequence of the artwork, not a layout preference.
+ */
+const MOBILE_LOGO_HEIGHT = 35
+
 export function Header() {
   const {
     open: pathsOpen,
@@ -227,11 +238,11 @@ export function Header() {
               `brandFullName` is the same string the Switch Account panel shows. */}
           {noHeaderNav ? (
             <span aria-label={logoLabel} style={{ minWidth: 0 }}>
-              <Logo height={platformNav ? (mobile ? 34 : 52) : 40} />
+              <Logo height={platformNav ? (mobile ? MOBILE_LOGO_HEIGHT : 52) : 40} />
             </span>
           ) : (
             <Link to={logoHref} aria-label={logoLabel} style={{ minWidth: 0 }}>
-              <Logo height={platformNav ? (mobile ? 34 : 52) : 40} />
+              <Logo height={platformNav ? (mobile ? MOBILE_LOGO_HEIGHT : 52) : 40} />
             </Link>
           )}
         </div>

@@ -9,9 +9,25 @@ import { AccountContext, type Brand } from '@/context/AccountContext'
  *  - 'default' variant — horizontal mark + wordmark.
  *  - 'mark' variant — square mark only, used inside the cert viewer.
  *
- * CRE, McKissock, Elite, and STC ship real licensed marks under /public/brand/.
- * Fitzgerald and XCEL have no artwork in the repo yet and fall back to the text
- * wordmark (`WORDMARK_LABEL`) — see the note on each entry.
+ * **XCEL ships the real lockup as of 2026-09-09** (`/brand/xcel-logo.webp`).
+ * It rendered the text wordmark until then; the wordmark is still the fallback
+ * for any variant with no artwork — see `IMAGE_SOURCES` and `WORDMARK_LABEL`.
+ *
+ * KNOWN GAP — the DARK header. The lockup is full-colour: charcoal wordmark
+ * (#3a3a3a) over a red knight (#9a1b1e), which measures 11.37:1 and 8.24:1 on
+ * white and **1.33:1 and 1.84:1** on the rebrand shell's dark header
+ * (#152833). It is effectively invisible there.
+ *
+ * That is NOT a regression this introduced — the text wordmark it replaced sat
+ * on `--color-brand`, which is #2d5872 in dark, i.e. **1.99:1** on the same
+ * header. Dark mode has never had a legible logo; the lockup makes an existing
+ * hole marginally deeper rather than digging a new one, which is why it is
+ * recorded here instead of being papered over.
+ *
+ * The fix is the WHITE variation the brand library ships, dropped in as the
+ * `dark` source below — the mechanism is already built and needs no code. Do
+ * NOT recolour the full-colour file to approximate it: that is authoring brand
+ * artwork, and an official white lockup already exists.
  */
 type LogoProps = {
   variant?: 'default' | 'mark'
@@ -45,11 +61,36 @@ type ImageSource = {
   dark?: { src: string; nativeWidth: number; nativeHeight: number }
 }
 
-const IMAGE_SOURCES: Partial<Record<Brand, Record<'default' | 'mark', ImageSource>>> = {
-  // Empty: XCEL has no lockup in the repo yet, so every render falls through to
-  // the text wordmark below. The image branch is kept rather than deleted —
-  // see the TODO on WORDMARK_LABEL; dropping the assets in here is meant to be
-  // the whole change.
+const IMAGE_SOURCES: Partial<
+  Record<Brand, Partial<Record<'default' | 'mark', ImageSource>>>
+> = {
+  xcel: {
+    // The approved 2024 lockup, `XCEL24_Logo_RGB_45px-2x` from the Colibri
+    // Logo Library — the @2x export of the 45px web size, so 248×91 here is
+    // twice the intended render. Only the ratio is read (see `dims`).
+    //
+    // A RASTER webp, not an SVG, because that is the export that exists. It is
+    // 2.3KB and crisp to ~124px wide, which covers every call site; the vector
+    // is worth swapping in if the lockup ever needs to go large.
+    //
+    // NOTE the `mark` variant is deliberately absent. It is the standalone
+    // "White Knight" icon, a different piece of artwork that is not in the
+    // repo — and the record is Partial precisely so the lockup could land
+    // without one. A `variant="mark"` render falls through to the text
+    // wordmark; nothing in this repo asks for it today.
+    default: {
+      src: '/brand/xcel-logo.webp',
+      alt: 'XCEL Insurance Training by Colibri',
+      nativeWidth: 248,
+      nativeHeight: 91,
+      // `height`, NOT `creWidth` — this is exactly the case the `sizeBy` doc
+      // warns about. At the header's 52px, width-matching CRE would render
+      // this 304×112, three-and-a-half times the 72px header's own height.
+      // Sizing by height gives 142×52, which also clears the brand guide's
+      // 95px minimum WIDTH. See the note on the mobile height in `Header`.
+      sizeBy: 'height',
+    },
+  },
 }
 
 /**
@@ -65,15 +106,19 @@ const IMAGE_SOURCES: Partial<Record<Brand, Record<'default' | 'mark', ImageSourc
 const REFERENCE_LOCKUP_ASPECT = 233.75 / 40
 
 const WORDMARK_LABEL: Record<Brand, string> = {
-  // TODO(brand): XCEL's real assets exist and are approved — the full-colour
-  // lockup, a WHITE variation for dark/brand backgrounds (the `dark` source,
-  // same mechanism Elite uses), and a standalone "White Knight" icon (the
-  // `mark` source, which the guide also blesses as a watermark). They live in
-  // the Logo Library at brand.colibrigroup.com/d/gViDk8vkfnm2/logo-library and
-  // are not in this repo, so XCEL falls back to the text wordmark for now.
-  // When wiring them: the minimum web size is 95px on WIDTH, which can fight
-  // the 72px header that makes STC/Elite use `sizeBy: 'height'` — measure
-  // before choosing. Clearspace = the height of "Insurance Training".
+  // The full-colour lockup landed 2026-09-09, so this is now the FALLBACK
+  // rather than what XCEL renders — reached only by a variant with no artwork
+  // (today: `mark`).
+  //
+  // TODO(brand): two of the three approved assets are still missing, both in
+  // the Logo Library at brand.colibrigroup.com/d/gViDk8vkfnm2/logo-library:
+  //   - the WHITE variation, which goes in as the `dark` source and is what
+  //     fixes the dark header (see the file header's KNOWN GAP);
+  //   - the standalone "White Knight" icon, which goes in as `mark` and which
+  //     the guide also blesses as a watermark.
+  // The 95px minimum WIDTH from that guide is already load-bearing — it is why
+  // `MOBILE_LOGO_HEIGHT` in Header is 35 and not 34. Clearspace = the height
+  // of "Insurance Training".
   xcel: 'XCEL',
 }
 
@@ -86,8 +131,12 @@ export function Logo({ variant = 'default', height = 40, className, brand: brand
   const brand = brandProp ?? account?.brand ?? 'xcel'
 
   const imageSet = IMAGE_SOURCES[brand]
-  if (imageSet) {
-    const entry = imageSet[variant]
+  const entry = imageSet?.[variant]
+  // A brand may ship the lockup and not the square mark (XCEL does). Falling
+  // through to the text wordmark for the missing variant is deliberate — the
+  // alternative, pointing `mark` at the lockup, would silently render a wide
+  // horizontal logo everywhere a square one was asked for.
+  if (entry) {
     const { src, alt, sizeBy = 'creWidth', dark } = entry
     // Rendered px for a given native size, honoring `sizeBy`:
     //  - 'height' → honor `height` literally (compact lockups like STC/Elite);
@@ -141,8 +190,8 @@ export function Logo({ variant = 'default', height = 40, className, brand: brand
     )
   }
 
-  // Fitzgerald + XCEL — text wordmarks until licensed artwork is wired.
-  // (Elite and STC used to be here and now ship real marks above.)
+  // Text wordmark — the fallback for a variant with no artwork. XCEL's
+  // `default` ships a real lockup above; only `mark` reaches this now.
   const label = WORDMARK_LABEL[brand]
   // Scale the type roughly to the requested height. 0.6 keeps the line
   // height shorter than the bounding box so the wordmark visually centers.
