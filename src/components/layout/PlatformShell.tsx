@@ -31,7 +31,7 @@ import { GiftRecipientsPanel } from '@/components/account/purchases/GiftRecipien
 import { LibraryPanel } from '@/components/membership/LibraryPanel'
 import { LearningLibraryHero } from '@/components/membership/LearningLibraryHero'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { Podcast, X } from '@/icons'
+import { Flag, Podcast, X } from '@/icons'
 import { Avatar } from '@/components/ui/Avatar'
 import { MembershipBadge } from '@/components/ui/MembershipBadge'
 import { tierBadgeIcon } from '@/components/ui/membershipTierBadge'
@@ -87,6 +87,7 @@ const MEMBERSHIP_MAP: Record<string, string> = {
 const VALID_SECTIONS: PlatformSection[] = [
   'dashboard',
   'study-plan',
+  'readiness',
   'recommended',
   'learning-path',
   'courses',
@@ -829,6 +830,7 @@ function MobileNavDrawer({
 const SECTION_TITLES: Record<PlatformSection, string> = {
   dashboard: 'Home',
   'study-plan': 'Study Plan',
+  readiness: 'Readiness',
   recommended: 'Recommended for You',
   'learning-path': 'Learning Path',
   courses: 'My Courses',
@@ -1251,6 +1253,19 @@ function renderBody(
   // they drop their own title + gutter. Learning Path branches on count
   // (homepage for 2+ paths, single detail otherwise) via LearningPathSection.
   if (active === 'study-plan') return <StudyPlanSection />
+  // Readiness — a deliberate blank, the same shape as Podcasts. The rail item
+  // and the route exist so the section can be navigated to and demoed as
+  // "coming"; there is no readiness model in the fixtures yet. Replace this
+  // branch with the real panel — nothing else about the section needs to move.
+  if (active === 'readiness') {
+    return (
+      <EmptyState
+        title="Readiness"
+        description="How ready you are for your licensing exam will show here."
+        icon={<Flag size={24} aria-hidden />}
+      />
+    )
+  }
   if (active === 'learning-path') return <LearningPathSection />
   // ── Account area ──────────────────────────────────────────────────────
   // Every account section (Profile · Notifications · Licenses · Transcripts ·

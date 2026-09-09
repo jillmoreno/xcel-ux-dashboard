@@ -359,6 +359,33 @@ source — the swap mechanism is already built and needs no code. **Do not
 recolour the full-colour file to approximate it**: that is authoring brand
 artwork, and an official white lockup already exists.
 
+### Readiness — a deliberate blank (2026-09-09)
+
+A rail section (`readiness`) directly after **Study Plan**: the plan is the
+work, this is where you find out whether the work has got you there. It renders
+an `EmptyState` and nothing more — there is no readiness model in the fixtures.
+
+The five registration points are the same ones Resources needed:
+`PlatformSection`, the rail item, `VALID_SECTIONS`, `SECTION_TITLES`,
+`renderBody` — plus a `NAV_SECTION_FLAGS` entry. Replace the `renderBody`
+branch with the real panel when it exists; nothing else about the section has to
+move.
+
+**It is NOT gated on a capability predicate**, unlike the Study Plan row above
+it (`supportsStudyPlan`). That is deliberate rather than an oversight: there is
+nothing behind it to gate on, and inventing a predicate now would be committing
+to the shape of a feature nobody has designed. Its nav flag is the only gate
+until a real fixture exists — wire the predicate then, beside it.
+
+**The demo-rail test caught this before it landed**, which is what that
+assertion is for: a row cannot join the baseline without failing
+`NavSectionFlags.test.tsx` first and being re-decided. Readiness is ON in the
+demo because a stakeholder is meant to see it is coming.
+
+The shell's `<h1>` and the EmptyState's own title both read "Readiness", so the
+word appears twice. That is the existing Podcasts pattern, matched on purpose —
+if the doubling is worth fixing it should be fixed for both, not just here.
+
 ### Two small brand touches (2026-09-09)
 
 **The learner's own avatar carries a thin Brick ring** — `brandRing` on

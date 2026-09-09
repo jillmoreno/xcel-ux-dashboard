@@ -294,6 +294,7 @@ export const NAV_SECTION_FLAGS: {
 }[] = [
   // My Learning
   { section: 'study-plan', label: 'Study Plan' },
+  { section: 'readiness', label: 'Readiness' },
   // Off: Home's Current Learning Path band already IS this.
   { section: 'learning-path', label: 'Learning Path', defaultEnabled: false },
   { section: 'courses', label: 'My Courses' },

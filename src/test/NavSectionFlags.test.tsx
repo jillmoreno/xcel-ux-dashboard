@@ -99,6 +99,11 @@ describe('the Navigation flag group', () => {
     ).toEqual([
       'Home',
       'Study Plan',
+      // Readiness joined the baseline on 2026-09-09 — a deliberate editorial
+      // add, and this assertion is what made it one: the row could not land
+      // without failing here first. It is a blank EmptyState today; it is on
+      // the demo rail because a stakeholder is meant to see it is coming.
+      'Readiness',
       'My Courses',
       'Certificates',
       'Browse Catalog',

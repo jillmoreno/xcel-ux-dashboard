@@ -9,6 +9,7 @@ import {
   BookFullSolid,
   Crown,
   FileText,
+  Flag,
   Gem,
   GemSolid,
   Grid,
@@ -73,6 +74,9 @@ export type PlatformSection =
   // its own rail section now, directly under Home. See LearningPathPage's
   // `studyPlanHasOwnPage`, which is the one fact both sides read.
   | 'study-plan'
+  // Added 2026-09-09, directly after Study Plan. A PLACEHOLDER — the section
+  // renders an EmptyState and there is no readiness fixture behind it yet.
+  | 'readiness'
   | 'recommended'
   | 'learning-path'
   | 'courses'
@@ -234,6 +238,15 @@ export function PlatformSideNav({
     ...(supportsStudyPlan(brand)
       ? [{ id: 'study-plan' as const, label: 'Study Plan', icon: CalendarDay }]
       : []),
+    // Readiness sits directly after the Study Plan: the plan is the work, this
+    // is where you find out whether the work has got you there.
+    //
+    // NOT gated on `supportsStudyPlan` like the row above it, and that is
+    // deliberate rather than an oversight — there is nothing behind it yet to
+    // gate on. Adding a capability predicate now would be inventing the shape
+    // of a feature that has not been designed. Its nav flag is the only gate
+    // until a real readiness fixture exists; wire a predicate then, next to it.
+    { id: 'readiness', label: 'Readiness', icon: Flag },
     { id: 'learning-path', label: pluralLP ? 'Learning Paths' : 'Learning Path', icon: SignsPost, iconActive: SignsPostSolid },
     { id: 'courses', label: 'My Courses', icon: BookFull, iconActive: BookFullSolid },
     { id: 'certificates', label: 'Certificates', icon: Award, iconActive: AwardSolid },
