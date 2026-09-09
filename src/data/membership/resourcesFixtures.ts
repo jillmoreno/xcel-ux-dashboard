@@ -30,8 +30,14 @@ import type { Brand } from '@/context/AccountContext'
  */
 export const MAX_RESOURCE_DESCRIPTION_CHARS = 135
 
-/** Icon plate glyph for a resource card. */
-export type ResourceIcon = 'blog' | 'podcast' | 'facebook'
+/** Icon plate glyph for a resource card.
+ *
+ *  `book` was added 2026-09-09 for XCEL, whose four resources are all READING
+ *  and whose set therefore rendered four identical RSS glyphs. Kept as a new
+ *  key rather than by repointing `blog` at the book glyph: `blog` still means
+ *  a blog for any brand that has one, and a key whose name and picture
+ *  disagree is the kind of thing nobody unpicks later. */
+export type ResourceIcon = 'blog' | 'book' | 'podcast' | 'facebook'
 
 export type Resource = {
   id: string
@@ -91,7 +97,7 @@ const XCEL_RESOURCES: Resource[] = [
       'Study guides, state licensing requirements, and exam-day walkthroughs for every line of authority XCEL covers.',
     promoDescription:
       'Free to read — no purchase needed. Study guides, state requirements, and exam-day walkthroughs.',
-    icon: 'blog',
+    icon: 'book',
     href: 'https://www.xcelsolutions.com/resources',
     cta: 'Browse resources',
   },
@@ -102,7 +108,7 @@ const XCEL_RESOURCES: Resource[] = [
       'Product releases, state rule changes, and exam updates as they happen — so nothing on your test is a surprise.',
     promoDescription:
       'Free to read — no purchase needed. Product releases, state rule changes, and exam updates.',
-    icon: 'blog',
+    icon: 'book',
     href: 'https://www.xcelsolutions.com/resources/blog/industry-updates-and-xcel-improvements',
     cta: 'Read the blog',
   },
@@ -113,7 +119,7 @@ const XCEL_RESOURCES: Resource[] = [
       'What the job actually looks like once you are licensed: the roles, the routes into them, and what each one asks of you.',
     promoDescription:
       'Free to read — no purchase needed. The roles a licence opens up, and the routes into them.',
-    icon: 'blog',
+    icon: 'book',
     href: 'https://www.xcelsolutions.com/resources/guide/insurance-career-guide',
     cta: 'Read the guide',
   },
@@ -124,7 +130,7 @@ const XCEL_RESOURCES: Resource[] = [
       'What insurance professionals earn by role, line of authority, and region — the numbers behind the career decision.',
     promoDescription:
       'Free to read — no purchase needed. What insurance professionals earn by role, line, and region.',
-    icon: 'blog',
+    icon: 'book',
     href: 'https://www.xcelsolutions.com/resources/guide/insurance-agent-salary',
     cta: 'See the numbers',
   },

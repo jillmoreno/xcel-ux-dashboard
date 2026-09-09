@@ -367,6 +367,18 @@ the section was archived.
 same page, which is XCEL's own IA. If that reads redundant, drop the FAQ card
 for XCEL rather than inventing a URL for it.
 
+**The cards use an OPEN BOOK, not the RSS blog glyph** (2026-09-09). All four
+XCEL resources are reading, so the set rendered four identical RSS marks — a
+glyph that says "feed" over a salary guide, four times. `book` is a new
+`ResourceIcon` key rather than `blog` repointed at the book mark: `blog` still
+means a blog for any brand that has one, and a key whose name and picture
+disagree is the kind of thing nobody unpicks later. Three
+`Record<ResourceIcon, …>` maps make the compiler list the call sites
+(`ResourceCard`, `FreeContentBands`, `AccountMenu`), which is the seam working
+— the account dropdown would otherwise have kept the old glyph silently.
+`ACCENT_BY_ICON` gives it the primary ramp, the same as `blog`, because that
+map assigns by content TYPE (reading / audio / community) rather than per item.
+
 **The rule: confirm a URL on the way IN, not later.** An unconfirmed href is
 harmless while nothing renders it and a user-visible defect the moment its
 surface ships — a `TODO(data)` does not survive the thing it is attached to
