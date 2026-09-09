@@ -70,6 +70,34 @@ describe("Jump Back In — Today's Tasks", () => {
     }
   })
 
+  it('titles the card, in the same eyebrow style as the section below it', () => {
+    seed('todays-tasks')
+    const { container } = renderBand()
+    const eyebrows = [...container.querySelectorAll('p')].filter((p) =>
+      /^(jump back in|today's tasks)$/i.test(p.textContent?.trim() ?? ''),
+    )
+    expect(eyebrows.map((e) => e.textContent?.toLowerCase())).toEqual([
+      'jump back in',
+      "today's tasks",
+    ])
+    // Same style, asserted rather than eyeballed: the point of the title is
+    // that the card's two halves read as one level of hierarchy, so a later
+    // tweak to one eyebrow that skips the other is the regression.
+    const style = (el: Element) => {
+      const s = (el as HTMLElement).style
+      return { size: s.fontSize, weight: s.fontWeight, tracking: s.letterSpacing, color: s.color }
+    }
+    expect(style(eyebrows[0])).toEqual(style(eyebrows[1]))
+  })
+
+  it('leaves the shipped Up Next layout untitled', () => {
+    // The title is part of the VARIANT. Adding it to the default would be a
+    // change to what ships, which is not what was asked for.
+    seed('up-next')
+    renderBand()
+    expect(screen.queryByText(/^jump back in$/i)).toBeNull()
+  })
+
   it('always offers View all, even on a day that fits — it is the route in', () => {
     // It used to appear only when the day overflowed, which made the way into
     // the Study Plan come and go with the workload. Today has two tasks and

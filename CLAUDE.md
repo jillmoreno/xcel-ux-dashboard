@@ -266,6 +266,13 @@ to Up Next, so switch Education to **Pre-Licensing** to see the variant.
   moving the clock to the plan's densest day (2026-06-11) and measuring — three
   rows, 85px still clear below, no overflow.
 
+**The card is titled "Jump back in"**, in the same `eyebrowBase` as its own
+"Today's tasks" heading and the navy half's "Current Learning Path" — three
+labels at one level of hierarchy. A test asserts the two eyebrows share a style
+rather than only that both exist, because the regression is tweaking one and
+skipping the other. The title is on the VARIANT only; the shipped Up Next layout
+stays untitled.
+
 **View all is ALWAYS shown**, not only when the day overflows. It is the route
 into the Study Plan from here, and gating it on the workload made that route
 appear and disappear. It names the day's count only when the list is truncated,

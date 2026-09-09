@@ -570,6 +570,25 @@ export function LearnerFocusedBand({
                     keeps its 3:2 rather than becoming a square thumbnail: it is
                     the same course art, and cropping it to a chip loses the
                     only thing it was carrying. */}
+            {/* Card title. The variant labels its lower half "Today's tasks", so
+                without this the card had one titled section and one untitled
+                one — and the untitled one is the card's own subject. Same
+                `eyebrowBase` as that heading and as the navy half's "Current
+                Learning Path", so the three read as one level of hierarchy.
+                The Up Next layout is left alone: it is the shipped default, and
+                adding a title there is a change to what ships rather than to
+                the variant being designed. */}
+            {todaysTasksLayout && (
+              <p
+                style={{
+                  ...eyebrowBase,
+                  color: 'var(--color-text-secondary)',
+                  marginBottom: 12,
+                }}
+              >
+                Jump back in
+              </p>
+            )}
             {todaysTasksLayout ? (
               // FIXED, not flexible. Letting the cover absorb the card's
               // leftover height was tried: it grew to 174×116 and squeezed the
