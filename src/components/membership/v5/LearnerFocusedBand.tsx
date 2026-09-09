@@ -1,5 +1,6 @@
 import { type CSSProperties, type ReactNode } from 'react'
-import { ArrowRight, CalendarDay, CircleCheck, Clock, FileText, Monitor, Podcast } from '@/icons'
+import { Link } from 'react-router-dom'
+import { ArrowRight, CalendarDay, Check, CircleCheck, Clock, FileText, Monitor, Podcast } from '@/icons'
 import { useAccount } from '@/context/AccountContext'
 import { useCourseLauncher } from '@/components/layout/CourseLauncherContext'
 import { useDeviceFrame } from '@/components/layout/DeviceFrameContext'
@@ -13,6 +14,28 @@ import { resolvePathCategories } from '@/components/learning/progressGaugeUtil'
 import { getCourseImage } from '@/utils/courseImage'
 import { CompletedCelebration, type CompletedStat } from './CompletedCelebration'
 import { DiscoveryEmpty } from './JumpBackInDiscoveryEmpty'
+import { KindIcon } from '@/components/learning/study-calendar/TaskRow'
+import {
+  hasStudyCalendarFor,
+  STUDY_CALENDAR_TODAY,
+  studyCalendarFor,
+  supportsStudyPlan,
+  tasksOnDate,
+  type StudyTask,
+} from '@/data/studyCalendarFixtures'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
+
+/**
+ * How many of today's tasks the card shows before deferring to the Study Plan.
+ *
+ * A COUNT, not a measurement. The brief said "if there are more than can be
+ * viewed in the spacing" — the honest version of that would measure the card,
+ * and the card's height is set by the navy half beside it, which varies with
+ * the path's stat tiles. Three rows is what fits at the common height once the
+ * resume block takes its quarter; the overflow link is what makes being wrong
+ * cheap rather than clipping the list silently.
+ */
+const TODAYS_TASKS_VISIBLE = 3
 
 /**
  * LearnerFocusedBand — the "Learner Focused" dashboard version's top section
@@ -127,6 +150,41 @@ export function LearnerFocusedBand({
   const upNext = myCoursesFor(brand)
     .filter((c) => c.myStatus === 'not-started')
     .slice(0, 2)
+
+  /*
+   * Card layout — `clp-jump-back-in`. "Up Next" is the shipped card; "Today's
+   * Tasks" compresses the resume block and fills the rest from the STUDY PLAN.
+   *
+   * The variant falls back when the brand has no study plan. Picking it there
+   * would render a heading over nothing — and it is pickable, because the flag
+   * panel is brand-agnostic. `supportsStudyPlan` is the same one predicate the
+   * rail item and the old tab read.
+   */
+  const jbiVariant = useFeatureFlag('clp-jump-back-in').variant ?? 'up-next'
+  /*
+   * THE PATH MUST ACTUALLY HAVE A PLAN, not just the brand.
+   *
+   * `studyCalendarFor` falls back to STC's Series 79 plan for any id it does
+   * not know — its own docstring calls putting securities tasks under an
+   * insurance path "the one outcome worse than the empty state". The band shows
+   * whichever path is current, and XCEL's CE path deliberately has NO plan (a
+   * renewal cycle with a variable deadline is not a countdown to a booked
+   * exam), so on the default Continuing Ed view this read exactly that
+   * fallback: "Complete Greenlight 1", a securities task, under Florida Life &
+   * Health CE. Caught by looking at it; nothing failed.
+   *
+   * `hasStudyCalendarFor` is the same guard `InlineStudyCalendar` uses. With no
+   * plan the card falls back to the shipped Up Next rather than showing a
+   * heading over an empty list — switch Education to Pre-Licensing to see the
+   * variant, which is where a learner has a plan at all.
+   */
+  const pathHasPlan = supportsStudyPlan(brand) && hasStudyCalendarFor(brand, path.id)
+  const todaysTasksLayout = jbiVariant === 'todays-tasks' && pathHasPlan
+  const todaysTasks: StudyTask[] = todaysTasksLayout
+    ? tasksOnDate(studyCalendarFor(path.id), STUDY_CALENDAR_TODAY)
+    : []
+  const visibleTasks = todaysTasks.slice(0, TODAYS_TASKS_VISIBLE)
+  const hiddenTaskCount = todaysTasks.length - visibleTasks.length
 
   const mandatory = path.mandatory ?? { completed: 0, required: 0 }
   const elective = path.elective ?? { completed: 0, required: 0 }
@@ -505,33 +563,87 @@ export function LearnerFocusedBand({
       >
         {resume ? (
           <>
-            {/* poster cover */}
-            <div
-              aria-hidden
-              style={{
-                height: 168,
-                borderRadius: 'var(--radius-md)',
-                marginBottom: 16,
-                overflow: 'hidden',
-                border: '1px solid var(--color-border-subtle)',
-                background: `center / cover no-repeat url(${resume.imageUrl ?? getCourseImage(resume.id)})`,
-              }}
-            />
-            <h3
-              style={{
-                margin: 0,
-                fontFamily: 'var(--font-heading)',
-                fontWeight: 700,
-                fontSize: 16,
-                color: 'var(--color-text-primary)',
-              }}
-            >
-              {resume.title}
-            </h3>
-            <p style={{ margin: '6px 0 0', fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-text-secondary)' }}>
-              {DELIVERY_LABEL[resume.delivery]} · {resume.badge === 'mandatory' ? 'Mandatory' : 'Elective'} CE
-              {typeof resume.progress === 'number' ? ` · ${resume.progress}% complete` : ''}
-            </p>
+            {/* Resume block. Two shapes:
+                  Up Next      — a 168px cover, then title / meta beneath it.
+                  Today's Tasks — cover and copy side by side at ~a quarter of
+                    the card, so the rest belongs to the task list. The image
+                    keeps its 3:2 rather than becoming a square thumbnail: it is
+                    the same course art, and cropping it to a chip loses the
+                    only thing it was carrying. */}
+            {todaysTasksLayout ? (
+              <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                <div
+                  aria-hidden
+                  style={{
+                    // 3:2, sized down until the resume block lands near the
+                    // quarter of the card the brief asked for. It does not get
+                    // smaller than this: below ~56px the course art stops
+                    // reading as a picture of anything.
+                    width: 84,
+                    height: 56,
+                    flex: 'none',
+                    borderRadius: 'var(--radius-md)',
+                    overflow: 'hidden',
+                    border: '1px solid var(--color-border-subtle)',
+                    background: `center / cover no-repeat url(${resume.imageUrl ?? getCourseImage(resume.id)})`,
+                  }}
+                />
+                <div style={{ minWidth: 0 }}>
+                  <h3
+                    style={{
+                      margin: 0,
+                      fontFamily: 'var(--font-heading)',
+                      fontWeight: 700,
+                      fontSize: 15,
+                      lineHeight: '20px',
+                      color: 'var(--color-text-primary)',
+                    }}
+                  >
+                    {resume.title}
+                  </h3>
+                  <p
+                    style={{
+                      margin: '4px 0 0',
+                      fontFamily: 'var(--font-body)',
+                      fontSize: 12,
+                      color: 'var(--color-text-secondary)',
+                    }}
+                  >
+                    {DELIVERY_LABEL[resume.delivery]} · {resume.badge === 'mandatory' ? 'Mandatory' : 'Elective'} CE
+                    {typeof resume.progress === 'number' ? ` · ${resume.progress}% complete` : ''}
+                  </p>
+                </div>
+              </div>
+            ) : (
+              <>
+                <div
+                  aria-hidden
+                  style={{
+                    height: 168,
+                    borderRadius: 'var(--radius-md)',
+                    marginBottom: 16,
+                    overflow: 'hidden',
+                    border: '1px solid var(--color-border-subtle)',
+                    background: `center / cover no-repeat url(${resume.imageUrl ?? getCourseImage(resume.id)})`,
+                  }}
+                />
+                <h3
+                  style={{
+                    margin: 0,
+                    fontFamily: 'var(--font-heading)',
+                    fontWeight: 700,
+                    fontSize: 16,
+                    color: 'var(--color-text-primary)',
+                  }}
+                >
+                  {resume.title}
+                </h3>
+                <p style={{ margin: '6px 0 0', fontFamily: 'var(--font-body)', fontSize: 12, color: 'var(--color-text-secondary)' }}>
+                  {DELIVERY_LABEL[resume.delivery]} · {resume.badge === 'mandatory' ? 'Mandatory' : 'Elective'} CE
+                  {typeof resume.progress === 'number' ? ` · ${resume.progress}% complete` : ''}
+                </p>
+              </>
+            )}
             <div
               style={{
                 height: 6,
@@ -551,12 +663,17 @@ export function LearnerFocusedBand({
               />
             </div>
 
-            {/* CTA — magenta, directly below the progress bar */}
+            {/* CTA — magenta, directly below the progress bar. Height stays at
+                44 in both layouts: it is the minimum comfortable touch target,
+                and it is the single biggest item in the compact block, so it is
+                also the reason that block lands near a third of the card rather
+                than exactly a quarter. Shrinking it would hit the spec by
+                making the primary action harder to tap. */}
             <button
               type="button"
               onClick={() => launcher.open(resume.id)}
               style={{
-                marginTop: 14,
+                marginTop: todaysTasksLayout ? 12 : 14,
                 display: 'inline-flex',
                 alignItems: 'center',
                 justifyContent: 'center',
@@ -575,16 +692,80 @@ export function LearnerFocusedBand({
               Resume course <ArrowRight size={16} />
             </button>
 
-            {upNext.length > 0 && (
+            {todaysTasksLayout ? (
               <>
                 <div aria-hidden style={{ height: 1, background: 'var(--color-border-subtle)', marginTop: 18 }} />
-                <p style={{ ...eyebrowBase, color: 'var(--color-text-secondary)', marginTop: 18 }}>Up next</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
-                  {upNext.map((c) => (
-                    <UpNextRowLight key={c.id} course={c} />
-                  ))}
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'baseline',
+                    justifyContent: 'space-between',
+                    gap: 12,
+                    marginTop: 18,
+                  }}
+                >
+                  <p style={{ ...eyebrowBase, color: 'var(--color-text-secondary)', margin: 0 }}>
+                    Today's tasks
+                  </p>
+                  {/* Only when the day is genuinely longer than the card. A
+                      permanent "View all" would read as the list being a
+                      teaser even on a day it shows in full. */}
+                  {hiddenTaskCount > 0 && (
+                    <Link
+                      to="/dashboard-rebrand?section=study-plan"
+                      style={{
+                        fontFamily: 'var(--font-body)',
+                        fontSize: 12,
+                        fontWeight: 700,
+                        color: 'var(--color-accent-text)',
+                        textDecoration: 'none',
+                        flex: 'none',
+                      }}
+                    >
+                      View all {todaysTasks.length} →
+                    </Link>
+                  )}
                 </div>
+                {visibleTasks.length > 0 ? (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+                    {visibleTasks.map((t) => (
+                      <TodaysTaskRow key={t.id} task={t} />
+                    ))}
+                  </div>
+                ) : (
+                  /* A plan with nothing due today is a REAL state, not an
+                     error — the plan skips weekends and buffer days. Saying so
+                     beats an empty gap under a heading. */
+                  <p
+                    style={{
+                      margin: '10px 0 0',
+                      fontFamily: 'var(--font-body)',
+                      fontSize: 13,
+                      color: 'var(--color-text-secondary)',
+                    }}
+                  >
+                    Nothing scheduled today.{' '}
+                    <Link
+                      to="/dashboard-rebrand?section=study-plan"
+                      style={{ color: 'var(--color-accent-text)', fontWeight: 700 }}
+                    >
+                      Open your study plan
+                    </Link>
+                  </p>
+                )}
               </>
+            ) : (
+              upNext.length > 0 && (
+                <>
+                  <div aria-hidden style={{ height: 1, background: 'var(--color-border-subtle)', marginTop: 18 }} />
+                  <p style={{ ...eyebrowBase, color: 'var(--color-text-secondary)', marginTop: 18 }}>Up next</p>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+                    {upNext.map((c) => (
+                      <UpNextRowLight key={c.id} course={c} />
+                    ))}
+                  </div>
+                </>
+              )
             )}
           </>
         ) : (
@@ -634,6 +815,87 @@ function KpiDark({ caption, icon, children }: { caption: string; icon?: ReactNod
 }
 
 /** Up-next row on the WHITE (right) card — light surface + dark text. */
+/**
+ * One of today's study-plan tasks in the Jump Back In card.
+ *
+ * Deliberately the same shape as `UpNextRowLight` beside it — same tile, same
+ * type scale — because the two occupy the same slot under a different heading,
+ * and a reviewer comparing the variants should be reading the CONTENT change,
+ * not a restyle. What differs is what a row is: a task with a duration and a
+ * status, rather than a course with hours.
+ */
+function TodaysTaskRow({ task }: { task: StudyTask }) {
+  const done = task.status === 'completed'
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        gap: 12,
+        background: 'var(--color-neutral-75)',
+        border: '1px solid var(--color-border-subtle)',
+        borderRadius: 'var(--radius-md)',
+        padding: '10px 12px',
+      }}
+    >
+      <span
+        style={{
+          width: 36,
+          height: 36,
+          flex: 'none',
+          borderRadius: 'var(--radius-sm)',
+          background: done ? 'var(--color-success-100)' : 'var(--color-primary-100)',
+          display: 'grid',
+          placeItems: 'center',
+          color: done ? 'var(--color-success-800)' : 'var(--color-primary-700)',
+        }}
+      >
+        {done ? <Check size={16} aria-hidden /> : <KindIcon kind={task.kind} size={16} />}
+      </span>
+      <div style={{ minWidth: 0, flex: 1 }}>
+        <p
+          style={{
+            margin: 0,
+            fontFamily: 'var(--font-body)',
+            fontSize: 13,
+            fontWeight: 700,
+            color: 'var(--color-text-primary)',
+            whiteSpace: 'nowrap',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            // Completed tasks stay legible rather than being struck through —
+            // the tick and the tint already say done, and strike-through on a
+            // 13px row is the part that stops being readable first.
+            textDecoration: 'none',
+          }}
+        >
+          {task.title}
+        </p>
+        <p
+          style={{
+            margin: '2px 0 0',
+            fontFamily: 'var(--font-body)',
+            fontSize: 12,
+            color: 'var(--color-text-secondary)',
+          }}
+        >
+          {TASK_KIND_LABEL[task.kind]} · {task.durationMin} min
+        </p>
+      </div>
+    </div>
+  )
+}
+
+/** Sentence-case labels for the row meta. The study calendar's own rows carry
+ *  a full StatusBadge; at this size the kind reads better than the status. */
+const TASK_KIND_LABEL: Record<StudyTask['kind'], string> = {
+  video: 'Video',
+  quiz: 'Quiz',
+  exam: 'Practice exam',
+  reading: 'Reading',
+  custom: 'Task',
+}
+
 function UpNextRowLight({ course }: { course: CourseCardData }) {
   const Icon = course.delivery === 'podcast' ? Podcast : course.delivery === 'video' ? Monitor : FileText
   return (

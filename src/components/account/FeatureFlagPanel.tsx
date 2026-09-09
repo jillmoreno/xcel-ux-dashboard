@@ -117,6 +117,9 @@ const REBRAND_FLAGS = [
   'learning-library-card-style',
   // What's Trending section — on/off for the dashboard-overview carousel.
   'dashboard-whats-new-layout',
+  // Jump Back In card layout inside that band — Up Next courses ⇄ today's
+  // study-plan tasks.
+  'clp-jump-back-in',
   // Full-width Current Learning Path band (navy CLP + Jump Back In) — variant
   // D/E; always, or only when What's New is off (CLP expands to fill the space).
   'dashboard-clp-fullwidth',

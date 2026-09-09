@@ -236,6 +236,38 @@ always show the first. A path with no plan is not an error — `InlineStudyCalen
 renders its own empty state — and the rail item is gated on `supportsStudyPlan`,
 so a brand without the feature never reaches it.
 
+### Jump Back In — the Today's Tasks variant
+
+`clp-jump-back-in` on the Dashboard Rebrand flag page. The white Jump Back In
+card inside the full-width Current Learning Path band has two layouts:
+
+- **Up Next** (default, shipped) — a 168px cover, then title / meta / progress,
+  the Resume CTA, and the next two not-started COURSES.
+- **Today's Tasks** — the resume block compressed to ~30% of the card (cover
+  LEFT at 84×56, title and meta RIGHT of it, progress and CTA below), with the
+  space given to today's tasks from the learner's STUDY PLAN.
+
+**It requires the CURRENT PATH to have a plan, not just the brand**, and that is
+the trap worth knowing. `studyCalendarFor` falls back to STC's Series 79 plan
+for any id it does not recognise — its own docstring calls putting securities
+tasks under an insurance path "the one outcome worse than the empty state". The
+band shows whichever path is current, and XCEL's CE path deliberately has no
+plan, so the first build of this rendered **"Complete Greenlight 1" under
+Florida Life & Health CE**. Types were clean and every test passed; only opening
+the page caught it. `hasStudyCalendarFor` guards it now and the card falls back
+to Up Next, so switch Education to **Pre-Licensing** to see the variant.
+
+**Two numbers are judgement, not measurement**, and both are named constants:
+
+- The resume block lands at **~30%**, not the quarter it was briefed at. The
+  floor is the CTA's 44px touch target — it is the biggest item in the block,
+  and hitting 25% means making the primary action harder to tap.
+- `TODAYS_TASKS_VISIBLE` is **3**, sized to the card rather than to the data.
+  **XCEL's plan tops out at 3 tasks a day, so the View-all link is currently
+  unreachable in the demo** — a denser plan or a lower count would show it. It
+  is covered by `JumpBackInTaskOverflow.test.tsx`, which mocks the day rather
+  than tuning the constant down to make one state demonstrable.
+
 ### The archive convention
 
 Don't delete outright. **Unwire** it (pull it from routes, render paths, flags),

@@ -20,7 +20,10 @@ const KIND_LABEL: Record<StudyTaskKind, string> = {
   custom: 'Custom',
 }
 
-function KindIcon({ kind, size = 16 }: { kind: StudyTaskKind; size?: number }): ReactNode {
+/** Task kind → glyph. Exported so any surface listing study tasks reads the
+ *  same mapping — `LearnerFocusedBand`'s Today's Tasks variant is the second
+ *  one, and a duplicated switch there would drift the day a kind is added. */
+export function KindIcon({ kind, size = 16 }: { kind: StudyTaskKind; size?: number }): ReactNode {
   switch (kind) {
     case 'video':
       return <Video size={size} aria-hidden />

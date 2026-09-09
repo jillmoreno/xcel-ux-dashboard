@@ -1466,6 +1466,30 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'clp-jump-back-in',
+    group: 'Widgets',
+    label: 'Jump Back In — card layout',
+    description:
+      "The white Jump Back In card inside the full-width Current Learning Path band. \"Up Next\" is the shipped layout — a full-width course cover, then title / meta / progress, the Resume CTA, and two not-started courses below. \"Today's Tasks\" compresses the resume block to roughly a quarter of the card (small cover LEFT, title and meta RIGHT of it, progress and CTA below) and gives the space back to today's tasks from the learner's STUDY PLAN, with a View all link into the Study Plan page when the day has more than fit.",
+    defaultEnabled: true,
+    defaultVariant: 'up-next',
+    variants: [
+      {
+        value: 'up-next',
+        label: 'Up Next — courses',
+        description:
+          'The shipped card: large cover, then the next two not-started COURSES. Knows nothing about the study plan, so it reads the same for a learner with a plan and one without.',
+      },
+      {
+        value: 'todays-tasks',
+        label: "Today's Tasks — study plan",
+        description:
+          "Compact resume block over today's tasks from the study plan. Needs the CURRENT PATH to have a plan, not just the brand — XCEL's Continuing Ed path deliberately has none, so on the default view this falls back to Up Next. Switch Education to Pre-Licensing to see it.",
+      },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'dashboard-clp-fullwidth',
     group: 'Widgets',
     label: 'Current Learning Path — full width',
