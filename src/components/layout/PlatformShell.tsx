@@ -41,6 +41,8 @@ import { MembershipBenefitsPanel } from '@/components/membership/MembershipBenef
 import { MembershipStandalonePage } from '@/components/membership/MembershipStandalonePage'
 import { PartnerOfferingsPanel } from '@/components/membership/PartnerOfferingsPanel'
 import { partnerOfferingsFor } from '@/data/membership/partnerOfferingsFixtures'
+import { ResourcesPanel } from '@/components/membership/ResourcesPanel'
+import { resourcesCopyFor, resourcesFor } from '@/data/membership/resourcesFixtures'
 import { NonMemberUpsellHero } from '@/components/membership/NonMemberUpsellHero'
 import { RecommendedForYouPanel } from '@/components/dashboard/recommended/RecommendedForYouPanel'
 import { HelpSupportPanel } from '@/components/support/HelpSupportPanel'
@@ -97,6 +99,7 @@ const VALID_SECTIONS: PlatformSection[] = [
   'm-more',
   'membership',
   'catalog',
+  'resources',
   'support',
   'profile',
   // The rest of the account area — one shell section each, so the account
@@ -832,6 +835,7 @@ const SECTION_TITLES: Record<PlatformSection, string> = {
   certificates: 'Certificates',
   podcasts: 'Podcasts',
   catalog: 'Browse Catalog',
+  resources: 'Resources',
   'm-whats-new': "What's New",
   'm-learning-library': 'Resource Library',
   'm-exam-prep': 'Exam & Cert Prep',
@@ -922,6 +926,22 @@ function heroFor(
   active: PlatformSection,
   brand: Brand,
 ): { meta: SectionHeroMeta; tone: 'brand' | 'light' | 'plain'; hideDescription?: boolean } | null {
+  // Resources carries the same brand band as its Explore siblings, but its copy
+  // is NOT in `SECTION_HERO_META` — `resourcesCopyFor` already owns it, next to
+  // the resource list and to the rule that copy has to follow ("say plainly
+  // that it is free"). Authoring a second entry in the hero table would make
+  // one sentence exist twice, which is the drift the rest of that file is at
+  // pains to avoid. No eyebrow: see MEMBERSHIP_EYEBROW_SECTIONS.
+  if (active === 'resources') {
+    return {
+      meta: {
+        title: SECTION_TITLES.resources,
+        description: resourcesCopyFor(brand).heroDescription,
+        searchPlaceholder: 'Search resources',
+      },
+      tone: 'brand',
+    }
+  }
   if ((HERO_SECTIONS as readonly string[]).includes(active)) {
     // Brand-aware: most of the default copy says "included with your Passport"
     // / "with your membership", which is untrue for a brand that sells none.
@@ -1011,7 +1031,11 @@ function SectionShell({
     // Recommended for You is a curated, personalized surface — no search box
     // (all brands, member + non-member).
     active === 'recommended' ||
-    (active === 'm-more' && partnerOfferingsFor(brand).length <= SEARCH_MIN_ITEMS)
+    (active === 'm-more' && partnerOfferingsFor(brand).length <= SEARCH_MIN_ITEMS) ||
+    // Same rule for Resources — XCEL publishes four, so the box is hidden. It
+    // is a rule rather than a constant `true` because the list is brand-keyed
+    // and a later feed could make it worth filtering.
+    (active === 'resources' && resourcesFor(brand).length <= SEARCH_MIN_ITEMS)
   return (
     // 64px bottom padding gives every section a footer space so content never
     // butts against the viewport edge (matches the other section wrappers).
@@ -1285,6 +1309,10 @@ function renderBody(
     )
   }
   if (active === 'catalog') return <CatalogPage embedded hideSearch />
+  // Resources (the restored Free Content section) — an auto-fill grid of
+  // outbound cards. Members and non-members see the IDENTICAL page; everything
+  // on it is free, which is the section's whole premise. See ResourcesPanel.
+  if (active === 'resources') return <ResourcesPanel />
   // Help & Support (Support group) — the 4-card grid + Customer Support form,
   // Live Chat widget, external FAQs, and Contact Us. Open to members AND
   // non-members (support isn't gated).

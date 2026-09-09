@@ -273,6 +273,7 @@ export const NAV_SECTION_FLAGS: { section: string; label: string }[] = [
   { section: 'certificates', label: 'Certificates' },
   // Explore
   { section: 'catalog', label: 'Browse Catalog' },
+  { section: 'resources', label: 'Resources' },
   { section: 'recommended', label: 'Recommended for You' },
   { section: 'm-learning-library', label: 'Resource Library' },
   { section: 'm-exam-prep', label: 'Exam & Cert Prep' },

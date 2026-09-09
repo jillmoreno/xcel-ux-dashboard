@@ -8,6 +8,7 @@ import {
   ArrowRight,
   BookFullSolid,
   Crown,
+  FileText,
   Gem,
   GemSolid,
   Grid,
@@ -84,6 +85,12 @@ export type PlatformSection =
   | 'm-more'
   | 'membership'
   | 'catalog'
+  // Free Content was ARCHIVED as a rail row (its outbound links moved to the
+  // account dropdown, on the rule that a primary nav row promises you stay
+  // put). It is back on 2026-09-09 as **Resources**, under Browse Catalog —
+  // a RE-WIRE, not a rebuild: `ResourcesPanel`, `ResourceCard` and the
+  // brand-keyed `resourcesFixtures` were kept intact for exactly this.
+  | 'resources'
   | 'support'
   // Account-scoped sections — rendered inside the shell (the rail is the
   // chrome) but NOT rail items; reached from the top-right account dropdown,
@@ -164,12 +171,15 @@ export function PlatformSideNav({
     () => buildRecommendedShelves(brand).length > 0,
     [brand],
   )
-  // ARCHIVED 2026-08-26: the Free Content rail item + section. Those outbound
-  // links (blog, podcast, Resource Center) now live in the ACCOUNT DROPDOWN
-  // (`AccountMenu`) instead — they are the only destinations in the app that
-  // leave it, and a primary nav row promises you stay put. `ResourcesPanel` /
-  // `ResourceCard` are intact and unreferenced; see the `free-content-page` row
-  // in archivedItems.ts for the re-wire.
+  // RESTORED 2026-09-09 as "Resources" (see the `resources` rail item below).
+  //
+  // It was ARCHIVED 2026-08-26 as "Free Content": the outbound links (blog,
+  // podcast, Resource Center) moved to the ACCOUNT DROPDOWN (`AccountMenu`) on
+  // the rule that a primary nav row promises you stay put. That rule has NOT
+  // been repealed and the dropdown rows stay — what changed is the judgement
+  // that four free study aids are worth a rail row a shopper can find, which
+  // an account dropdown is not. The unwired panel is what made this a re-wire
+  // rather than a rebuild; that is the archive convention working.
   // Exam & Cert Prep and Career Tools (Rubi AI) are Elite/Healthcare-oriented
   // benefit sections that don't apply to the real-estate brands — hide their
   // rail items for BOTH of them (CRE and McKissock, which is Real Estate /
@@ -242,6 +252,12 @@ export function PlatformSideNav({
           // Membership → Recommended for You, the rest of the Membership
           // sections, Podcasts, and Free Content.
           { id: 'catalog', label: 'Browse Catalog', icon: Grid, iconActive: GridSolid },
+          // Resources sits directly under Browse Catalog — both are "go and
+          // find something" surfaces, and this is the free half of that pair.
+          // NOT added to the MVP rail above: that list is a Figma-specified
+          // trim (node 53:5290), so growing it would be editing a design
+          // rather than implementing one.
+          { id: 'resources', label: 'Resources', icon: FileText },
           // What's New is fully archived (2026-08-25): the rail row went on
           // 2026-08-17, and the section itself is now unwired — the CTAs that
           // reached it point at Membership and `?section=m-whats-new` redirects

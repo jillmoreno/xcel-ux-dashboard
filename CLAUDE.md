@@ -317,6 +317,42 @@ grows it to 174×116, which squeezes the title into three lines because the whit
 half is only ~250px wide. The cover stays fixed at 84×56 and the slack falls to
 the bottom of the card, which is what a light day should look like.
 
+### Resources — the Free Content section, restored 2026-09-09
+
+A rail section (`resources`) sitting directly **under Browse Catalog**: Browse
+Catalog is what you buy, Resources is the free half of the same "go and find
+something" job, so they read as a pair. The body is XCEL's four outbound
+destinations — Resource Center, the product blog, and the 2026 Career and
+Salary Guides.
+
+**A re-wire, not a rebuild — which is the archive convention paying off.**
+`ResourcesPanel`, `ResourceCard` and the brand-keyed `resourcesFixtures` were
+kept intact and unreferenced when the section was archived on 2026-08-26, so
+restoring it was five registration points and no new component or fixture.
+
+**It does re-open an archived decision, and that decision was not wrong.** Free
+Content was pulled because its rows are OUTBOUND links and "a primary nav row
+promises you stay put" — they moved to the account dropdown, where they still
+are. Both doors are now open, which is normally the `recommended-card-ab-demo`
+mistake. It is accepted here because the two are not the same door: the
+dropdown rows are four separate menu items you must already know to look for,
+and this is one browsable surface a shopper can find. **If that reads wrong in
+review, the cheap fix is dropping the four rows from `AccountMenu`, not
+re-archiving the page.**
+
+The hero copy comes from **`resourcesCopyFor`**, not from `SECTION_HERO_META`.
+That file owns the sentence, next to the resource list and to the rule it has
+to follow ("say plainly that it is free"); a `SECTION_HERO_META` entry would
+make one sentence exist twice. A test compares the rendered hero against the
+fixture rather than against a literal, so the two cannot drift apart quietly.
+No "Included with your membership" eyebrow — `MEMBERSHIP_EYEBROW_SECTIONS`
+already excluded it, and on this page in particular the eyebrow would claim the
+opposite of what the page says.
+
+**Not added to the MVP rail** (`?nav=mvp`). That list is a Figma-specified trim
+(node 53:5290); growing it would be editing a design rather than implementing
+one.
+
 ### `ce-study-plan` — the CE path has a plan now
 
 **This reverses a decision `studyCalendarFixtures.ts` used to state.** The CE
