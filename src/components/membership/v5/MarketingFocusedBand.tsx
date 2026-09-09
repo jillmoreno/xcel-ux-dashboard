@@ -10,8 +10,7 @@ import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import {
   statusTreatment,
   type HomeStatus,
-  type StatusTaxonomy,
-} from '@/components/learning/learningPathsHomeUtil'
+  type StatusTaxonomy, CURRENT_LEARNING_EYEBROW } from '@/components/learning/learningPathsHomeUtil'
 import type { CourseCardData } from '@/components/courses/CourseCard'
 import type { LearningPathSummary } from '@/data/learningFixtures'
 import { LICENSE_TRACKER } from '@/data/dashboardFixtures'
@@ -315,7 +314,7 @@ export function MarketingFocusedBand({
           ...(separate ? SEPARATE_CARD : null),
         }}
       >
-        <p style={eyebrowOnDark}>Current Learning Path</p>
+        <p style={eyebrowOnDark}>{CURRENT_LEARNING_EYEBROW}</p>
 
         {/* White summary card — clickable (→ learning path page) with a
             hover drop-shadow. The `.cre-clp-card` class owns the base + hover

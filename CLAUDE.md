@@ -294,7 +294,7 @@ test asserts one of those rather than only that rows render, so a later
 "simplify this row" cannot quietly re-fork them.
 
 **The card is titled "Jump back in"**, in the same `eyebrowBase` as its own
-"Today's tasks" heading and the navy half's "Current Learning Path" — three
+"Today's tasks" heading and the navy half's "Current Learning Progress" — three
 labels at one level of hierarchy. A test asserts the two eyebrows share a style
 rather than only that both exist, because the regression is tweaking one and
 skipping the other. The title is on the VARIANT only; the shipped Up Next layout
@@ -358,6 +358,37 @@ The fix is the WHITE variation the brand library ships, dropped in as the `dark`
 source — the swap mechanism is already built and needs no code. **Do not
 recolour the full-colour file to approximate it**: that is authoring brand
 artwork, and an official white lockup already exists.
+
+### Two small brand touches (2026-09-09)
+
+**The learner's own avatar carries a thin Brick ring** — `brandRing` on
+`Avatar`, 2px of `--color-cta-500`, which on XCEL is #9A1B1E: the same red as
+the knight in the logo. It marks the rail profile header as *the learner*, since
+every other photo on the dashboard is stock or course art, and it is the ONLY
+call site that sets it.
+
+Deliberately not the existing `ring` prop — that is 3px border + a 2px offset
+outline, ten pixels of chrome on a 48px circle. Under the global border-box
+reset the 2px eats into the box, so the avatar still measures 48 and nothing
+reflows. A non-default `tier` supersedes it, the same way it supersedes `ring`:
+tier bands are concentric and flush, so a red ring outside them would read as a
+fourth band rather than as identity. XCEL has no membership, so the two never
+meet today.
+
+**The band eyebrow is "Current Learning Progress"**, renamed from "Current
+Learning Path". It is ONE exported constant, `CURRENT_LEARNING_EYEBROW` in
+`learningPathsHomeUtil`, because **five** components rendered that literal —
+the Marketing Focused band, the full-width Clp/Jump-Back-In band, the Learner
+Focused band, the completed celebration, and the section lead in
+`MembershipOverview`. They are layout variants and states of the SAME band, so
+renaming four of five would have had the heading change as a reviewer flipped a
+layout flag. The test asserts the constant rather than the words, for the same
+reason.
+
+"Path" survives everywhere it names the PAGE or the object — the `learning-path`
+rail section, "Switch Learning Path", the Learning Paths landing. Only the
+dashboard band's heading moved, where what is shown is progress THROUGH a path
+rather than the path itself.
 
 ### The demo rail — what a stakeholder sees first (2026-09-09)
 

@@ -6,7 +6,7 @@ import { useCourseLauncher } from '@/components/layout/CourseLauncherContext'
 import { useDeviceFrame } from '@/components/layout/DeviceFrameContext'
 import type { CourseCardData } from '@/components/courses/CourseCard'
 import type { LearningPathSummary } from '@/data/learningFixtures'
-import { statusTreatment, type HomeStatus } from '@/components/learning/learningPathsHomeUtil'
+import { statusTreatment, type HomeStatus, CURRENT_LEARNING_EYEBROW } from '@/components/learning/learningPathsHomeUtil'
 import { LICENSE_TRACKER } from '@/data/dashboardFixtures'
 import { myCoursesFor } from '@/data/myCoursesFixtures'
 import { ProgressDonut, CategoryBars } from '@/components/learning/progressGauge'
@@ -363,7 +363,7 @@ export function LearnerFocusedBand({
       >
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
           <div>
-            <p style={{ ...eyebrowBase, color: ACCENT }}>Current Learning Path</p>
+            <p style={{ ...eyebrowBase, color: ACCENT }}>{CURRENT_LEARNING_EYEBROW}</p>
             <h3 style={{ margin: '6px 0 0' }}>
               {onOpenLearningPath || onViewDetails ? (
                 <button

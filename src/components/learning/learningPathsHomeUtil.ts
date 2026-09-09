@@ -678,3 +678,21 @@ export function metaSegments(path: LearningPathSummary): string[] {
     `${path.hours} Hours`,
   ]
 }
+
+/**
+ * The eyebrow over every Current Learning Path band — **"Current Learning
+ * Progress"** as of 2026-09-09, renamed from "Current Learning Path".
+ *
+ * ONE constant because there are FIVE renderers of this label and they are
+ * layout variants and states of the SAME band: the Marketing Focused top band,
+ * the full-width Clp/Jump-Back-In band, the Learner Focused band, the completed
+ * celebration, and the section lead above them in MembershipOverview. Renaming
+ * four of five is the drift this replaces — a reviewer flipping a layout flag
+ * would have watched the heading change with it.
+ *
+ * The word "Path" survives everywhere it names the PAGE or the object (the
+ * `learning-path` rail section, "Switch Learning Path", the Learning Paths
+ * landing). This is only the dashboard band's heading, where what is shown is
+ * progress through a path rather than the path itself.
+ */
+export const CURRENT_LEARNING_EYEBROW = 'Current Learning Progress'

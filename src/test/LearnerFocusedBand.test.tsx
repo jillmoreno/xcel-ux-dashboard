@@ -7,6 +7,7 @@ import { learningPathsFor } from '@/data/learningFixtures'
 import {
   DISCOVERABILITY_DASHBOARD_VERSIONS,
 } from '@/data/dashboardVersions'
+import { CURRENT_LEARNING_EYEBROW } from '@/components/learning/learningPathsHomeUtil'
 
 const PATH = learningPathsFor('xcel')[0] // Florida Nursing — mandatory + elective
 
@@ -35,12 +36,17 @@ function renderBand() {
 }
 
 describe('LearnerFocusedBand', () => {
-  it('renders the joined Current Learning Path + Jump Back In band', () => {
+  it('renders the joined Current Learning Progress + Jump Back In band', () => {
     renderBand()
     const band = screen.getByRole('region', { name: /your learning/i })
     expect(band).toBeInTheDocument()
     // Left (navy) half: eyebrow + path title + the gauge + category bars + KPIs.
-    expect(screen.getByText(/current learning path/i)).toBeInTheDocument()
+    // Against the CONSTANT, not the words: the eyebrow is one string shared by
+    // five renderers of this band, and it has been renamed once already
+    // ("Current Learning Path" → "Current Learning Progress", 2026-09-09). A
+    // literal here fails on the next rename while telling you nothing about
+    // whether the band is right.
+    expect(screen.getByText(CURRENT_LEARNING_EYEBROW)).toBeInTheDocument()
     expect(screen.getByText(PATH.title)).toBeInTheDocument()
     expect(band.querySelector('svg')).toBeTruthy() // the completion gauge
     expect(screen.getByText('Mandatory')).toBeInTheDocument()

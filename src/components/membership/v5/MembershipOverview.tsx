@@ -52,6 +52,7 @@ import {
 } from '@/data/membership/passportProgressFixtures'
 import { Eyebrow, Wrap } from '../v2/passportShared'
 import { WhatsNewSpine } from '../v4/WhatsNewSpine'
+import { CURRENT_LEARNING_EYEBROW } from '@/components/learning/learningPathsHomeUtil'
 
 /**
  * V5 "Your Membership" overview — a mini-dashboard for the membership,
@@ -392,7 +393,7 @@ export function MembershipOverview({
     homeStyleOverview && !clpJumpBackInOnly ? (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-          <p style={sectionLeadStyle}>Current Learning Path</p>
+          <p style={sectionLeadStyle}>{CURRENT_LEARNING_EYEBROW}</p>
           {showViewAllPaths && (
             <button type="button" onClick={openPathsPanel} style={switchPathLinkStyle}>
               {`Switch Learning Path (${pathsCount})`}

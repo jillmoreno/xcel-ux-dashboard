@@ -1,5 +1,6 @@
 import { type CSSProperties, type ReactNode } from 'react'
 import { Check, ChevronRight, CircleCheck } from '@/icons'
+import { CURRENT_LEARNING_EYEBROW } from '@/components/learning/learningPathsHomeUtil'
 
 /**
  * CompletedCelebration — the shared green "you finished the plan" panel used as
@@ -26,7 +27,7 @@ export function CompletedCelebration({
   onViewAll,
   onViewDetails,
   pathsCount,
-  eyebrow = 'Current Learning Path',
+  eyebrow = CURRENT_LEARNING_EYEBROW,
   hideHeader = false,
   style,
 }: {

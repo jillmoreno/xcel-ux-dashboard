@@ -6,7 +6,7 @@ import { useCourseLauncher } from '@/components/layout/CourseLauncherContext'
 import { useDeviceFrame } from '@/components/layout/DeviceFrameContext'
 import type { CourseCardData } from '@/components/courses/CourseCard'
 import type { LearningPathSummary } from '@/data/learningFixtures'
-import { statusTreatment, timeRemaining, type HomeStatus } from '@/components/learning/learningPathsHomeUtil'
+import { statusTreatment, timeRemaining, type HomeStatus, CURRENT_LEARNING_EYEBROW } from '@/components/learning/learningPathsHomeUtil'
 import { CAT_MANDATORY_COLOR, CAT_ELECTIVE_COLOR } from '@/components/learning/progressGauge'
 import { resolvePathCategories } from '@/components/learning/progressGaugeUtil'
 import { LICENSE_TRACKER } from '@/data/dashboardFixtures'
@@ -709,7 +709,7 @@ export function ClpJumpBackInBand({
       >
         {!hideHeader && (
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>
-            <p style={{ ...eyebrowBase, color: ON_DARK }}>Current Learning Path</p>
+            <p style={{ ...eyebrowBase, color: ON_DARK }}>{CURRENT_LEARNING_EYEBROW}</p>
             {showViewAll && onViewAll && (
               <button
                 type="button"
