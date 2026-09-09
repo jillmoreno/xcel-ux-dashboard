@@ -184,7 +184,6 @@ export function LearnerFocusedBand({
     ? tasksOnDate(studyCalendarFor(path.id), STUDY_CALENDAR_TODAY)
     : []
   const visibleTasks = todaysTasks.slice(0, TODAYS_TASKS_VISIBLE)
-  const hiddenTaskCount = todaysTasks.length - visibleTasks.length
 
   const mandatory = path.mandatory ?? { completed: 0, required: 0 }
   const elective = path.elective ?? { completed: 0, required: 0 }
@@ -729,13 +728,27 @@ export function LearnerFocusedBand({
                 >
                   <p style={{ ...eyebrowBase, color: 'var(--color-text-secondary)', margin: 0 }}>
                     Today's tasks
+                    {/* The count is the whole DAY, not the rows on screen —
+                        the question it answers is "how much is scheduled",
+                        which does not change with how many the card can fit.
+                        A step lighter than the label so the label still leads.
+                        Omitted at zero: the empty state below already says
+                        nothing is scheduled, and "(0)" above it says it twice. */}
+                    {todaysTasks.length > 0 && (
+                      <span style={{ color: 'var(--color-text-tertiary)' }}>
+                        {' '}
+                        ({todaysTasks.length})
+                      </span>
+                    )}
                   </p>
                   {/* Always shown, not only on an overflowing day. The link is
                       the way into the Study Plan from here, so hiding it on a
                       light day made the route appear and disappear with the
-                      workload. It names the day's COUNT when the list is
-                      truncated and stays a plain "View all" when it is not, so
-                      it never implies something is hidden that is not. */}
+                      workload.
+                      It used to read "View all 6" when the list was truncated.
+                      The heading carries the day's count now, and the two sit
+                      inches apart — one number, in the place that is about
+                      counting. */}
                   <Link
                     to="/dashboard-rebrand?section=study-plan"
                     style={{
@@ -747,7 +760,7 @@ export function LearnerFocusedBand({
                       flex: 'none',
                     }}
                   >
-                    {hiddenTaskCount > 0 ? `View all ${todaysTasks.length}` : 'View all'} →
+                    View all →
                   </Link>
                 </div>
                 {visibleTasks.length > 0 ? (

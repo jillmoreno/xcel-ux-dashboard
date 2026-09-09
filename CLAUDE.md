@@ -273,10 +273,15 @@ rather than only that both exist, because the regression is tweaking one and
 skipping the other. The title is on the VARIANT only; the shipped Up Next layout
 stays untitled.
 
+**The heading carries the day's count** — "Today's tasks (2)" — and it is the
+count of the whole DAY, not of the rows on screen. On an overflowing day that is
+the distinction that matters: six scheduled, three shown. Omitted at zero, where
+the empty state already says nothing is scheduled.
+
 **View all is ALWAYS shown**, not only when the day overflows. It is the route
 into the Study Plan from here, and gating it on the workload made that route
-appear and disappear. It names the day's count only when the list is truncated,
-so it never implies something is hidden that is not.
+appear and disappear. It carries NO number — it used to read "View all 6", and
+once the heading counted the day the two sat inches apart saying the same thing.
 
 Two layouts were tried for the leftover height and both are wrong, so do not
 re-reach for them: `justify-content: space-between` on the list opens a 139px

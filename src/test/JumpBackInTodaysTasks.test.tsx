@@ -73,13 +73,15 @@ describe("Jump Back In — Today's Tasks", () => {
   it('titles the card, in the same eyebrow style as the section below it', () => {
     seed('todays-tasks')
     const { container } = renderBand()
+    // Matched on the START of the text: the tasks heading carries a count now
+    // ("Today's tasks (2)"), so an exact-match filter silently drops it and the
+    // style comparison below would compare one element to itself.
     const eyebrows = [...container.querySelectorAll('p')].filter((p) =>
-      /^(jump back in|today's tasks)$/i.test(p.textContent?.trim() ?? ''),
+      /^(jump back in|today's tasks)/i.test(p.textContent?.trim() ?? ''),
     )
-    expect(eyebrows.map((e) => e.textContent?.toLowerCase())).toEqual([
-      'jump back in',
-      "today's tasks",
-    ])
+    expect(eyebrows).toHaveLength(2)
+    expect(eyebrows[0].textContent?.toLowerCase()).toBe('jump back in')
+    expect(eyebrows[1].textContent?.toLowerCase()).toMatch(/^today's tasks/)
     // Same style, asserted rather than eyeballed: the point of the title is
     // that the card's two halves read as one level of hierarchy, so a later
     // tweak to one eyebrow that skips the other is the regression.
@@ -88,6 +90,22 @@ describe("Jump Back In — Today's Tasks", () => {
       return { size: s.fontSize, weight: s.fontWeight, tracking: s.letterSpacing, color: s.color }
     }
     expect(style(eyebrows[0])).toEqual(style(eyebrows[1]))
+  })
+
+  it("counts the whole day beside the heading, not the rows on screen", () => {
+    seed('todays-tasks')
+    renderBand()
+    const tasks = tasksOnDate(studyCalendarFor(PLANNED.id), STUDY_CALENDAR_TODAY)
+    // The count is a <span> inside the heading, so the text spans two elements
+    // — match on the container's normalised textContent rather than on a node.
+    expect(
+      screen.getByText((_content, el) => {
+        if (!el || el.tagName !== 'P') return false
+        return new RegExp(`^today's tasks \\(${tasks.length}\\)$`, 'i').test(
+          (el.textContent ?? '').replace(/\s+/g, ' ').trim(),
+        )
+      }),
+    ).toBeInTheDocument()
   })
 
   it('leaves the shipped Up Next layout untitled', () => {
@@ -108,8 +126,8 @@ describe("Jump Back In — Today's Tasks", () => {
     expect(tasks.length).toBeLessThanOrEqual(3)
     const viewAll = screen.getByRole('link', { name: /view all/i })
     expect(viewAll).toHaveAttribute('href', '/dashboard-rebrand?section=study-plan')
-    // …and it does NOT claim a count when nothing is hidden, which would imply
-    // there is more behind it than the list already shows.
+    // The link carries no number — the heading beside it does. Two counts
+    // inches apart is one too many.
     expect(viewAll.textContent).not.toMatch(/\d/)
   })
 

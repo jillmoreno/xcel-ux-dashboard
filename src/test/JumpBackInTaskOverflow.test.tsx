@@ -67,12 +67,22 @@ describe('Today’s Tasks — a day longer than the card', () => {
     expect(screen.queryByText('Stub task 5')).toBeNull()
   })
 
-  it('names the FULL day in the link once the list is truncated', () => {
-    // The link is always present; the COUNT is what the overflow adds. It is
-    // the whole day, not the hidden remainder — the learner is being told how
-    // much there is, not how much is missing.
+  it('counts the whole day in the heading, not the three rows shown', () => {
+    // The distinction that matters on an overflowing day: six are scheduled,
+    // three are on screen. The heading answers "how much is scheduled", so it
+    // must not quietly become a count of what fit.
     renderBand()
-    const viewAll = screen.getByRole('link', { name: /view all 6/i })
+    const heading = screen.getByText((_c, el) => {
+      if (!el || el.tagName !== 'P') return false
+      return /^today's tasks \(6\)$/i.test((el.textContent ?? '').replace(/\s+/g, ' ').trim())
+    })
+    expect(heading).toBeInTheDocument()
+  })
+
+  it('offers View all into the Study Plan, without repeating the count', () => {
+    renderBand()
+    const viewAll = screen.getByRole('link', { name: /view all/i })
     expect(viewAll).toHaveAttribute('href', '/dashboard-rebrand?section=study-plan')
+    expect(viewAll.textContent).not.toMatch(/\d/)
   })
 })
