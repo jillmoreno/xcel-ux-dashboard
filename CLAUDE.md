@@ -317,6 +317,51 @@ grows it to 174×116, which squeezes the title into three lines because the whit
 half is only ~250px wide. The cover stays fixed at 84×56 and the slack falls to
 the bottom of the card, which is what a light day should look like.
 
+### The demo rail — what a stakeholder sees first (2026-09-09)
+
+`NAV_SECTION_FLAGS` entries carry an optional `defaultEnabled`, and five are
+**false**. The committed baseline is:
+
+> Home · Study Plan · My Courses · Certificates — Browse Catalog · Resources ·
+> AI Study Partner — Get Help
+
+Off: Learning Path, Recommended for You, Resource Library, Exam & Cert Prep,
+Podcasts. Two different reasons, and the difference decides whether to bring one
+back. **Learning Path** is off because Home's full-width Current Learning Path
+band already IS it — the rail row was a second door onto what the landing page
+leads with. The other four are simply not what this demo is about; **Podcasts**
+is the sharpest case, since XCEL has no podcast product and the section is an
+EmptyState saying so, i.e. a rail row leading to "not part of the catalog
+today".
+
+**Nothing is disabled.** The flag hides the RAIL ROW; every section still
+resolves, so `?section=podcasts` opens Podcasts and `?section=learning-path`
+opens the Learning Path. That is what makes a hidden section demoable on request
+rather than gone, and it is why trimming the rail is an editorial act rather
+than a feature cut.
+
+`NavSectionFlags.test.tsx` asserts the WHOLE rail in order, not "X is absent" —
+a presence check passes just as happily when an unrelated row appears. A row
+moving in or out should fail that test and be re-decided.
+
+**Two traps this set off, both worth knowing.**
+
+*A brand-rule test read the demo rail.* `XcelNoMembership` asserts XCEL KEEPS
+Exam & Cert Prep (its core product) while dropping Partner Offers — the
+`hiddenBenefitSections` rule. With the demo default off, that row vanished for a
+reason having nothing to do with membership, and the test failed for the wrong
+thing. It now seeds `nav-show-m-exam-prep` ON, so it measures the brand rule and
+NavSectionFlags measures the editorial one. **A test about capability must pin
+the flags it depends on, or an editorial default silently becomes its subject.**
+
+*Demo mode does not read the catalog default alone.* `?demo=1` renders
+`baselineFrom(customDefaults)` — the reviewer's per-browser "Set as default"
+snapshot (`cgp.featureFlags.customDefaults`) **wins over** the committed
+default, per key. That snapshot is local and never committed, so a machine
+holding a stale one shows a different demo rail from a clean machine, with
+nothing in the repo to explain it. If the demo looks wrong on one laptop only,
+that key is the first thing to check.
+
 ### Resources — the Free Content section, restored 2026-09-09
 
 A rail section (`resources`) sitting directly **under Browse Catalog**: Browse

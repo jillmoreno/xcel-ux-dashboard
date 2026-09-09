@@ -62,14 +62,50 @@ describe('the Navigation flag group', () => {
     expect(FEATURE_FLAGS.some((f) => f.key === navSectionFlagKey('dashboard'))).toBe(false)
   })
 
-  it('defines a catalog flag for every listed section, defaulting ON', () => {
-    for (const { section, label } of NAV_SECTION_FLAGS) {
+  it('defines a catalog flag for every listed section, honouring its default', () => {
+    // This asserted `defaultEnabled === true` for every section until
+    // 2026-09-09, when five of them were turned off to trim the demo rail. The
+    // blanket assertion was the wrong shape even before that: it pinned an
+    // incidental fact (they all happened to be on) rather than the rule, so it
+    // would have had to be deleted the first time an editorial call was made.
+    // It now checks the definition matches what the list DECLARES, which is the
+    // thing that must stay true.
+    for (const { section, label, defaultEnabled } of NAV_SECTION_FLAGS) {
       const def = FEATURE_FLAGS.find((f) => f.key === navSectionFlagKey(section))
       expect(def, `${section} has no catalog definition`).toBeTruthy()
-      expect(def!.defaultEnabled, `${section} must default visible`).toBe(true)
+      expect(def!.defaultEnabled, `${section} default disagrees with the list`).toBe(
+        defaultEnabled ?? true,
+      )
       expect(def!.group).toBe('Navigation')
       expect(def!.label).toBe(label)
     }
+  })
+
+  it('opens the XCEL demo on the trimmed rail', () => {
+    // The committed demo baseline, asserted as the WHOLE rail in order rather
+    // than as "X is absent" — a presence check passes just as happily when an
+    // unrelated row appears, and this list is what a stakeholder sees first.
+    //
+    // Every hidden section still resolves from `?section=…`; the flag hides the
+    // rail row only. So a row moving in or out of here is an editorial change
+    // to the demo, never a feature being disabled — and it should fail this
+    // test and be re-decided, not land quietly.
+    renderNav()
+    expect(
+      screen
+        .getAllByRole('button')
+        .map((b) => b.textContent?.trim())
+        .filter((t): t is string => !!t && t !== 'Welcome back, Alicia Navarro'),
+    ).toEqual([
+      'Home',
+      'Study Plan',
+      'My Courses',
+      'Certificates',
+      'Browse Catalog',
+      'Resources',
+      'AI Study Partner',
+      'Get Help',
+    ])
   })
 
   it('offers every one of them on /dashboard-rebrand, where the rail lives', () => {
@@ -84,18 +120,25 @@ describe('the Navigation flag group', () => {
     }
   })
 
-  it('shows every rail item by default', () => {
+  it('shows every rail item whose flag defaults ON', () => {
+    // Was "shows every rail item by default" and asserted Podcasts — which is
+    // one of the five now off in the demo baseline. Repointed at a row that is
+    // still on rather than deleted: the point is that a default-ON flag with no
+    // stored state actually renders.
     renderNav()
     expect(screen.getByRole('button', { name: 'Home' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'My Courses' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Podcasts' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Browse Catalog' })).toBeInTheDocument()
   })
 
   it('hides an item when its flag is off, and keeps Home', () => {
-    hide('courses', 'podcasts')
+    // Both of these default ON, so the assertion is about the FLAG doing the
+    // hiding. Using a default-OFF section here would pass without the flag
+    // being read at all.
+    hide('courses', 'resources')
     renderNav()
     expect(screen.queryByRole('button', { name: 'My Courses' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Podcasts' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Resources' })).toBeNull()
     // Untouched siblings stay.
     expect(screen.getByRole('button', { name: 'Certificates' })).toBeInTheDocument()
     // The one that cannot go.

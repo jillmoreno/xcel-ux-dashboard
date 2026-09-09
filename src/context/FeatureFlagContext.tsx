@@ -265,20 +265,48 @@ const DEFAULT_PLUS_LOFI: FeatureFlagVariant[] = [
  * membership ever returns; the flag is an ADDITIONAL gate on top of those
  * rules, never a replacement for them.
  */
-export const NAV_SECTION_FLAGS: { section: string; label: string }[] = [
+/**
+ * THE DEMO RAIL. `defaultEnabled: false` on an entry means the item is off in a
+ * fresh browser — a real editorial choice about what a stakeholder sees on the
+ * XCEL demo, not a disabled feature. Every section still WORKS; the flag hides
+ * the rail row only, and `?section=…` continues to open it (which is what makes
+ * a hidden section demoable on request rather than gone).
+ *
+ * Trimmed to the shipped story on 2026-09-09 (see CLAUDE.md, "The demo rail").
+ * The five that are off are off for two different reasons, and the distinction
+ * matters when deciding whether to bring one back:
+ *
+ *   - **Learning Path** — its content is already on Home, in the full-width
+ *     Current Learning Path band. The rail row was a second door onto what the
+ *     landing page leads with.
+ *   - **Podcasts · Recommended for You · Resource Library · Exam & Cert Prep**
+ *     — reachable, but not what this demo is about. Podcasts in particular is
+ *     an EmptyState for XCEL (no podcast product), so it was showing a rail row
+ *     that leads to "not part of the catalog today".
+ *
+ * Home is absent from this list entirely and can never be hidden — see below.
+ */
+export const NAV_SECTION_FLAGS: {
+  section: string
+  label: string
+  /** Committed default. Omitted ⇒ true (shown). */
+  defaultEnabled?: boolean
+}[] = [
   // My Learning
   { section: 'study-plan', label: 'Study Plan' },
-  { section: 'learning-path', label: 'Learning Path' },
+  // Off: Home's Current Learning Path band already IS this.
+  { section: 'learning-path', label: 'Learning Path', defaultEnabled: false },
   { section: 'courses', label: 'My Courses' },
   { section: 'certificates', label: 'Certificates' },
   // Explore
   { section: 'catalog', label: 'Browse Catalog' },
   { section: 'resources', label: 'Resources' },
-  { section: 'recommended', label: 'Recommended for You' },
-  { section: 'm-learning-library', label: 'Resource Library' },
-  { section: 'm-exam-prep', label: 'Exam & Cert Prep' },
+  { section: 'recommended', label: 'Recommended for You', defaultEnabled: false },
+  { section: 'm-learning-library', label: 'Resource Library', defaultEnabled: false },
+  { section: 'm-exam-prep', label: 'Exam & Cert Prep', defaultEnabled: false },
   { section: 'm-career-tools', label: 'AI Study Partner' },
-  { section: 'podcasts', label: 'Podcasts' },
+  // Off: XCEL has no podcast product — the section is an EmptyState saying so.
+  { section: 'podcasts', label: 'Podcasts', defaultEnabled: false },
   // Support
   { section: 'support', label: 'Get Help' },
 ]
@@ -296,12 +324,12 @@ export function navSectionFlagKey(section: string): string {
 
 /** The generated Navigation flags, spread into the catalog below. */
 const NAV_SECTION_FLAG_DEFINITIONS: FeatureFlagDefinition[] = NAV_SECTION_FLAGS.map(
-  ({ section, label }) => ({
+  ({ section, label, defaultEnabled = true }) => ({
     key: navSectionFlagKey(section),
     group: 'Navigation',
     label,
     description: `Show "${label}" in the left nav. Off removes the rail item; the section itself still resolves, so a deep link to ?section=${section} continues to open it.`,
-    defaultEnabled: true,
+    defaultEnabled,
     page: 'dashboard-rebrand',
   }),
 )

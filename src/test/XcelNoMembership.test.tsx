@@ -88,6 +88,18 @@ describe('XCEL — a brand with no membership', () => {
   })
 
   it('drops the Membership and Partner Offers rail items, and keeps the two XCEL needs', () => {
+    // Exam & Cert Prep's nav flag is turned ON for this test, because the
+    // subject here is the BRAND rule (`hiddenBenefitSections`), not the demo
+    // rail. It defaults off in the committed demo baseline — an editorial call
+    // about what a stakeholder sees first, made independently and asserted in
+    // NavSectionFlags.test.tsx. Reading the rail with the flag at its demo
+    // value would test that decision twice and this one not at all: the row
+    // would be absent for a reason that has nothing to do with membership,
+    // which is exactly the false pass this seed prevents.
+    window.localStorage.setItem(
+      'cgp.featureFlags',
+      JSON.stringify({ 'nav-show-m-exam-prep': { enabled: true } }),
+    )
     renderRail('xcel')
     const rail = screen.getByRole('navigation', { name: 'Primary' })
     expect(within(rail).queryByRole('button', { name: 'Membership' })).toBeNull()
