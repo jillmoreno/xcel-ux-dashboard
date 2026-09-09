@@ -17,13 +17,14 @@ import { DiscoveryEmpty } from './JumpBackInDiscoveryEmpty'
 import { TaskRow } from '@/components/learning/study-calendar/TaskRow'
 import {
   hasStudyCalendarFor,
+  XCEL_CE_PATH_ID,
   STUDY_CALENDAR_TODAY,
   studyCalendarFor,
   supportsStudyPlan,
   tasksOnDate,
   type StudyTask,
 } from '@/data/studyCalendarFixtures'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { useCeStudyPlanEnabled, useFeatureFlag } from '@/context/FeatureFlagContext'
 
 /**
  * How many of today's tasks the card shows before deferring to the Study Plan.
@@ -188,7 +189,12 @@ export function LearnerFocusedBand({
    * heading over an empty list — switch Education to Pre-Licensing to see the
    * variant, which is where a learner has a plan at all.
    */
-  const pathHasPlan = supportsStudyPlan(brand) && hasStudyCalendarFor(brand, path.id)
+  // The CE path's plan is behind `ce-study-plan` (default ON). Off, CE falls
+  // back to the empty branch it used to take — and therefore to Up Next here.
+  const ceStudyPlan = useCeStudyPlanEnabled()
+  const ceSuppressed = !ceStudyPlan && path.id === XCEL_CE_PATH_ID
+  const pathHasPlan =
+    supportsStudyPlan(brand) && hasStudyCalendarFor(brand, path.id) && !ceSuppressed
   const todaysTasksLayout = jbiVariant === 'todays-tasks' && pathHasPlan
   const todaysTasks: StudyTask[] = todaysTasksLayout
     ? tasksOnDate(studyCalendarFor(path.id), STUDY_CALENDAR_TODAY)

@@ -117,6 +117,9 @@ const REBRAND_FLAGS = [
   'learning-library-card-style',
   // What's Trending section — on/off for the dashboard-overview carousel.
   'dashboard-whats-new-layout',
+  // Whether the Continuing Ed path has a study plan at all. Gates the content
+  // the flag below renders, so the two belong together in the panel.
+  'ce-study-plan',
   // Jump Back In card layout inside that band — Up Next courses ⇄ today's
   // study-plan tasks.
   'clp-jump-back-in',

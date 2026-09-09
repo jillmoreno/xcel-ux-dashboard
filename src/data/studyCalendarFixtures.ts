@@ -1033,15 +1033,179 @@ const STC_PATHS_WITH_CALENDAR = new Set<string>([
 ])
 
 /**
- * XCEL Learning Path ids with a Study Plan. The two pre-licensing paths
- * qualify; the CE path deliberately does NOT — a renewal cycle with a
- * variable, sometimes birthday-based deadline is not the same object as a
- * countdown to a booked exam, and it drops cleanly into the empty branch
- * rather than being given a plan that misdescribes it.
+ * Florida Life & Health CE — the RENEWAL-CYCLE plan.
+ *
+ * ⚠ THIS REVERSES A DECISION THIS FILE USED TO STATE. `XCEL_PATHS_WITH_CALENDAR`
+ * said the CE path "deliberately does NOT" qualify, because "a renewal cycle
+ * with a variable, sometimes birthday-based deadline is not the same object as
+ * a countdown to a booked exam, and it drops cleanly into the empty branch
+ * rather than being given a plan that misdescribes it."
+ *
+ * That objection was about the DEADLINE, and it still stands as written: CE
+ * deadlines really are non-uniform, and the learning path's own fixture says so
+ * ("do not generalise it into a rule"). What it overreached on is the
+ * WORKLOAD. This path has 24 required hours and a concrete deadline in the
+ * demo, and pacing 24 hours across the weeks left is the same job the
+ * pre-licensing plan does — it is just anchored to a renewal date instead of a
+ * sit date. The plan below therefore paces HOURS and never claims an exam:
+ * there is no `examDate`, and the tasks are the CE courses themselves rather
+ * than lessons-then-simulators.
+ *
+ * Gated by the `ce-study-plan` flag, default ON, so the old empty-branch
+ * behaviour is one toggle away rather than deleted.
+ *
+ * Anchored so STUDY_CALENDAR_TODAY (2026-05-19) lands mid-cycle with two tasks
+ * due, matching the density of the pre-licensing plan's ordinary day.
+ *
+ * TODO(data): the six CE topics are XCEL's own (annuities, long-term care,
+ * ethics, flood/NFIP, ACA), but the SPLIT into these task sizes is
+ * representative — swap for the real course hour breakdown before this is
+ * shown as curriculum.
+ */
+export const XCEL_CE_STUDY_CALENDAR: StudyCalendar = {
+  id: 'xcel-ce-cycle',
+  name: 'Life & Health CE — 24 Hour Renewal Plan',
+  // No `examName` / `examDate`: a renewal cycle has neither. The surfaces that
+  // read them fall back to the path's own licence-expiry copy, which is the
+  // language a CE learner is actually shown.
+  examName: 'Florida Life & Health licence renewal',
+  examDate: '2026-10-31',
+  startDate: '2026-04-06',
+  daysPerWeek: 2,
+  bufferDays: 14,
+  excludeNYSEHolidays: false,
+  locked: false,
+  tasks: [
+    // ── Completed earlier in the cycle (6 of 24 hrs) ──────────────────────
+    {
+      id: 'xcel-ce-annuity-video',
+      title: 'Watch Annuity Initial Training',
+      kind: 'video',
+      status: 'completed',
+      dueDate: '2026-04-07',
+      durationMin: 120,
+      href: '/courses/mc-xcel-annuity-training',
+      isCourseLinked: true,
+    },
+    {
+      id: 'xcel-ce-annuity-quiz',
+      title: 'Complete Annuity Training Assessment',
+      kind: 'quiz',
+      status: 'completed',
+      dueDate: '2026-04-14',
+      durationMin: 30,
+      href: '/courses/mc-xcel-annuity-training',
+      isCourseLinked: true,
+    },
+    {
+      id: 'xcel-ce-ltc-video',
+      title: 'Watch Long-Term Care Initial Training',
+      kind: 'video',
+      status: 'completed',
+      dueDate: '2026-04-28',
+      durationMin: 120,
+      href: '/courses/mc-xcel-ltc-training',
+      isCourseLinked: true,
+    },
+    // ── Today (2026-05-19) — two due, matching the pre-licensing cadence ───
+    {
+      id: 'xcel-ce-ethics-video',
+      title: 'Watch Insurance Ethics — Florida Requirements',
+      kind: 'video',
+      status: 'in-progress',
+      dueDate: '2026-05-19',
+      durationMin: 60,
+      progress: 35,
+      href: '/courses/mc-xcel-ethics',
+      isCourseLinked: true,
+    },
+    {
+      id: 'xcel-ce-ethics-notes',
+      title: 'Read Review Notes — Insurance Ethics',
+      kind: 'reading',
+      status: 'upcoming',
+      dueDate: '2026-05-19',
+      durationMin: 25,
+      isCourseLinked: false,
+    },
+    // ── The rest of the cycle ─────────────────────────────────────────────
+    {
+      id: 'xcel-ce-ethics-quiz',
+      title: 'Complete Insurance Ethics Assessment',
+      kind: 'quiz',
+      status: 'upcoming',
+      dueDate: '2026-05-26',
+      durationMin: 30,
+      href: '/courses/mc-xcel-ethics',
+      isCourseLinked: true,
+    },
+    {
+      id: 'xcel-ce-flood-video',
+      title: 'Watch Flood Insurance (NFIP) Training',
+      kind: 'video',
+      status: 'upcoming',
+      dueDate: '2026-06-09',
+      durationMin: 180,
+      href: '/courses/mc-xcel-flood-nfip',
+      isCourseLinked: true,
+    },
+    {
+      id: 'xcel-ce-aca-video',
+      title: 'Watch Health Insurance Marketplace and ACA Update',
+      kind: 'video',
+      status: 'upcoming',
+      dueDate: '2026-06-23',
+      durationMin: 180,
+      href: '/courses/mc-xcel-health-marketplace',
+      isCourseLinked: true,
+    },
+    {
+      id: 'xcel-ce-suitability',
+      title: 'Watch Annuity Suitability Update',
+      kind: 'video',
+      status: 'upcoming',
+      dueDate: '2026-07-07',
+      durationMin: 240,
+      href: '/courses/mc-xcel-annuity-suitability',
+      isCourseLinked: true,
+    },
+    {
+      id: 'xcel-ce-file',
+      title: 'Confirm CE credits filed with Florida DFS',
+      kind: 'custom',
+      status: 'upcoming',
+      dueDate: '2026-10-15',
+      durationMin: 15,
+      isCourseLinked: false,
+    },
+  ],
+}
+
+/** The CE path id, named because two surfaces gate on it specifically. */
+export const XCEL_CE_PATH_ID = 'xcel-fl-lh-ce'
+
+/**
+ * XCEL Learning Path ids with a Study Plan.
+ *
+ * ⚠ CHANGED 2026-09-09 — the CE path is in this set now. It used to be excluded
+ * with the note that "a renewal cycle with a variable, sometimes birthday-based
+ * deadline is not the same object as a countdown to a booked exam, and it drops
+ * cleanly into the empty branch rather than being given a plan that
+ * misdescribes it."
+ *
+ * The deadline half of that is still true and still worth respecting — see the
+ * `XCEL_CE_STUDY_CALENDAR` preamble, which paces HOURS and never claims an exam
+ * date of its own. What the old note overreached on was the workload: 24
+ * required hours against a concrete date is the same pacing job, so the empty
+ * branch was withholding a plan the learner could use.
+ *
+ * The old behaviour is a toggle, not a deletion: the `ce-study-plan` flag
+ * (default ON) suppresses the CE plan at the consuming surfaces.
  */
 const XCEL_PATHS_WITH_CALENDAR = new Set<string>([
   'xcel-fl-lh-prelicensing',
   'xcel-fl-pc-prelicensing',
+  XCEL_CE_PATH_ID,
 ])
 
 /** XCEL path treated as "not yet started" by the demo — see STC's equivalent. */
@@ -1128,6 +1292,9 @@ export function studyCalendarFor(pathId?: string): StudyCalendar {
   }
   if (pathId === 'xcel-fl-lh-prelicensing') {
     return XCEL_LH_STUDY_CALENDAR
+  }
+  if (pathId === XCEL_CE_PATH_ID) {
+    return XCEL_CE_STUDY_CALENDAR
   }
   if (pathId === STC_OFF_TRACK_PATH_ID) {
     return buildOffTrackCalendar()

@@ -247,6 +247,18 @@ card inside the full-width Current Learning Path band has two layouts:
   LEFT at 84×56, title and meta RIGHT of it, progress and CTA below), with the
   space given to today's tasks from the learner's STUDY PLAN.
 
+**Continuing Ed shows tasks too, as of 2026-09-09** — see `ce-study-plan`
+below. Before that the CE path had no plan and the card fell back to Up Next.
+
+**`TaskRow` in a ~255px card needed a fix, and it shipped broken for two
+commits.** Its status cluster is `flexShrink: 0` at ~110px, so the title column
+collapsed to **48px** and `overflow-wrap: anywhere` broke words mid-syllable
+("Insura / nce"). Pre-licensing titles were long enough to wrap badly but short
+enough that it read as ugly rather than broken; a longer CE title made it
+obvious. `compact` now sets `flexWrap: 'wrap'` and gives the title a 150px
+floor, so the status drops to its own line. Nothing wraps at the Study Plan
+page's width, so that surface is untouched.
+
 **It requires the CURRENT PATH to have a plan, not just the brand**, and that is
 the trap worth knowing. `studyCalendarFor` falls back to STC's Series 79 plan
 for any id it does not recognise — its own docstring calls putting securities
@@ -304,6 +316,25 @@ hole between two rows on a light day, and letting the cover absorb the slack
 grows it to 174×116, which squeezes the title into three lines because the white
 half is only ~250px wide. The cover stays fixed at 84×56 and the slack falls to
 the bottom of the card, which is what a light day should look like.
+
+### `ce-study-plan` — the CE path has a plan now
+
+**This reverses a decision `studyCalendarFixtures.ts` used to state.** The CE
+path was excluded from `XCEL_PATHS_WITH_CALENDAR` because "a renewal cycle with
+a variable, sometimes birthday-based deadline is not the same object as a
+countdown to a booked exam, and it drops cleanly into the empty branch rather
+than being given a plan that misdescribes it."
+
+The DEADLINE half of that still stands, and `XCEL_CE_STUDY_CALENDAR` respects
+it: the plan paces HOURS and claims no exam date of its own. What the old note
+overreached on was the WORKLOAD — 24 required hours against a concrete date is
+the same pacing job, so the empty branch was withholding something usable.
+
+Behind `ce-study-plan`, **default ON**. Off restores the prior behaviour
+exactly. Both surfaces that resolve a plan read the same
+`useCeStudyPlanEnabled()` hook — the Jump Back In card and the Study Plan page
+— because one showing a CE plan while the other showed the empty branch is the
+drift the hook exists to prevent.
 
 ### The archive convention
 

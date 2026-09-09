@@ -21,10 +21,13 @@ import {
 const PLANNED = learningPathsFor('xcel').find((p) => p.id === 'xcel-fl-lh-prelicensing')!
 const UNPLANNED = learningPathsFor('xcel').find((p) => p.id === 'xcel-fl-lh-ce')!
 
-function seed(variant: string) {
+function seed(variant: string, ceStudyPlan = true) {
   window.localStorage.setItem(
     'cgp.featureFlags',
-    JSON.stringify({ 'clp-jump-back-in': { enabled: true, variant } }),
+    JSON.stringify({
+      'clp-jump-back-in': { enabled: true, variant },
+      'ce-study-plan': { enabled: ceStudyPlan },
+    }),
   )
 }
 
@@ -145,6 +148,27 @@ describe("Jump Back In — Today's Tasks", () => {
     )
   })
 
+  it('keeps the title readable in a narrow card', () => {
+    /*
+     * `TaskRow`'s status cluster is `flexShrink: 0` at ~110px, so in this
+     * ~255px card the title column collapsed to 48px and `overflow-wrap:
+     * anywhere` broke words mid-syllable ("Insura / nce"). It shipped that way
+     * for two commits — the pre-licensing titles were long enough to wrap
+     * badly but short enough not to look obviously wrong.
+     *
+     * `compact` wraps now, dropping the status onto its own line. Asserted on
+     * the title column's WIDTH, because the rendered text is identical either
+     * way — the defect was only ever visible as layout.
+     */
+    seed('todays-tasks')
+    const { container } = renderBand()
+    const row = container.querySelector('.cre-task-card') as HTMLElement | null
+    expect(row).toBeTruthy()
+    const titleCol = row!.children[1] as HTMLElement
+    expect(titleCol.style.minWidth).toBe('150px')
+    expect(row!.style.flexWrap).toBe('wrap')
+  })
+
   it('uses the Study Plan’s own row, not a lookalike', () => {
     // The row carries things a visual copy did not: a status badge and, on an
     // in-progress task, a progress bar. Asserting one of those is what stops a
@@ -155,17 +179,33 @@ describe("Jump Back In — Today's Tasks", () => {
     expect(container.querySelector('[role="progressbar"]')).toBeTruthy()
   })
 
-  it('falls back to Up Next on a path with no plan — NOT another brand’s tasks', () => {
+  it('shows the CE path its own tasks — never another brand’s', () => {
     /*
      * The regression this exists for. `studyCalendarFor` falls back to STC's
-     * Series 79 plan for any id it does not know, and XCEL's CE path has no
-     * plan by design — so the first build of this variant rendered "Complete
-     * Greenlight 1", a securities task, under Florida Life & Health CE.
-     * Nothing failed; it took looking at the page.
+     * Series 79 plan for any id it does not know, so the first build of this
+     * variant rendered "Complete Greenlight 1", a securities task, under
+     * Florida Life & Health CE. Nothing failed; it took looking at the page.
+     *
+     * CE has a plan of its own now (`ce-study-plan`, default ON), so the
+     * assertion is no longer "falls back to Up Next" — it is that whatever
+     * shows belongs to THIS path.
      */
     seed('todays-tasks')
     renderBand(UNPLANNED)
     expect(screen.queryByText(/greenlight/i)).toBeNull()
+    expect(screen.getByText(/today's tasks/i)).toBeInTheDocument()
+    const ceTasks = tasksOnDate(studyCalendarFor(UNPLANNED.id), STUDY_CALENDAR_TODAY)
+    expect(ceTasks.length).toBeGreaterThan(0)
+    for (const t of ceTasks.slice(0, 2)) {
+      expect(screen.getByText(new RegExp(t.title.slice(0, 24), 'i'))).toBeInTheDocument()
+    }
+  })
+
+  it('falls back to Up Next for CE when ce-study-plan is off', () => {
+    // The prior behaviour, kept as a toggle rather than deleted: only the two
+    // pre-licensing paths had a plan, and CE took the empty branch.
+    seed('todays-tasks', false)
+    renderBand(UNPLANNED)
     expect(screen.queryByText(/today's tasks/i)).toBeNull()
     expect(screen.getByText(/up next/i)).toBeInTheDocument()
   })

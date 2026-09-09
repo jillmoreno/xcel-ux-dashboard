@@ -16,8 +16,9 @@ import { useLearningPathsPanel } from '@/components/learning/LearningPathsPanelC
 import { isHomeActive } from '@/components/learning/learningPathsHomeUtil'
 import { useLearningPathSummariesForBrand } from '@/data/learningPathsCountVariant'
 import { activePathIdFor } from '@/data/learningFixtures'
+import { XCEL_CE_PATH_ID } from '@/data/studyCalendarFixtures'
 import { InlineStudyCalendar } from '@/components/learning/study-calendar/InlineStudyCalendar'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { useCeStudyPlanEnabled, useFeatureFlag } from '@/context/FeatureFlagContext'
 import { useTheme, type NavVariant } from '@/context/ThemeContext'
 import { CertificatesPage } from '@/pages/CertificatesPage'
 import { ProfilePage } from '@/pages/ProfilePage'
@@ -1150,6 +1151,13 @@ function StudyPlanSection() {
   const idParam = params.get('id')
   const pathId =
     idParam && paths.some((p) => p.id === idParam) ? idParam : activePathIdFor(brand)
+  // Same gate the Jump Back In card reads, via the same hook: with
+  // `ce-study-plan` off the CE path has no plan, and this page must show the
+  // empty branch rather than a plan the card is refusing to show.
+  const ceStudyPlan = useCeStudyPlanEnabled()
+  if (!ceStudyPlan && pathId === XCEL_CE_PATH_ID) {
+    return <InlineStudyCalendar />
+  }
   return <InlineStudyCalendar pathId={pathId} />
 }
 

@@ -1466,6 +1466,18 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'ce-study-plan',
+    group: 'Widgets',
+    label: 'Study plan for Continuing Ed',
+    description:
+      "Give the Continuing Ed path a study plan, so its Today's Tasks and its Study Plan page have content. ON by default. Off restores the prior behaviour, where only the two PRE-LICENSING paths had a plan and CE fell to the empty branch — the reasoning being that a renewal cycle with a variable deadline is not a countdown to a booked exam. That still holds for the DEADLINE, which is why the CE plan paces hours and claims no exam date of its own; it did not hold for the workload, which is 24 required hours either way.",
+    // Default ON: a CE learner with 24 hours to place before a renewal date has
+    // the same pacing problem a pre-licensing learner does, and the card and
+    // the Study Plan page both read empty without it.
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'clp-jump-back-in',
     group: 'Widgets',
     label: 'Jump Back In — card layout',
@@ -2660,6 +2672,20 @@ export function useDemoMode(): boolean {
  * omission. Outside a provider every section is visible, matching the
  * safe-default behaviour of `useFeatureFlag`.
  */
+/**
+ * Whether the Continuing Ed path has a study plan (`ce-study-plan`, default ON).
+ *
+ * A hook rather than a bare flag read because BOTH surfaces that resolve a plan
+ * have to agree — the Jump Back In card's Today's Tasks and the Study Plan
+ * page. One showing a CE plan while the other showed the empty branch is the
+ * drift this exists to prevent.
+ *
+ * Outside a provider it returns the catalog default, matching `useFeatureFlag`.
+ */
+export function useCeStudyPlanEnabled(): boolean {
+  return useFeatureFlag('ce-study-plan').enabled
+}
+
 export function useNavSectionVisible(): (section: string) => boolean {
   const ctx = useContext(FeatureFlagContext)
   return useCallback(

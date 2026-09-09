@@ -201,6 +201,16 @@ export function TaskRow({
         display: 'flex',
         alignItems: 'center',
         gap: 14,
+        // WRAP, in `compact` only. The status cluster is `flexShrink: 0`, so in
+        // a container narrower than about 320px it holds its ~110px and the
+        // title column collapses — measured at 48px in the dashboard's Jump
+        // Back In card, narrow enough that `overflow-wrap: anywhere` was
+        // breaking words mid-syllable ("Insura / nce"). Wrapping drops the
+        // cluster onto its own line instead, which keeps the status AND the
+        // title readable; nothing wraps at the Study Plan page's width, so that
+        // surface is unaffected. Scoped to `compact` because only the narrow
+        // callers (the calendar side panel, the dashboard card) can hit it.
+        flexWrap: compact ? 'wrap' : undefined,
         // Reduced from 14px top/bottom → 10px to tighten vertical rhythm
         // when many cards stack in the inline calendar's task column.
         padding: '10px 16px',
@@ -244,7 +254,19 @@ export function TaskRow({
           <KindIcon kind={task.kind} size={18} />
         )}
       </span>
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <div
+        style={{
+          flex: 1,
+          // `compact` gives the title a FLOOR rather than letting it collapse
+          // to nothing: below this the row wraps (see `flexWrap` above) and the
+          // status cluster takes the next line. 150px is roughly the widest
+          // single word these titles carry plus breathing room.
+          minWidth: compact ? 150 : 0,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+        }}
+      >
         {/* Title — wraps freely. Long titles flow to multiple lines
             instead of ellipsis-truncating. */}
         <span
