@@ -1,6 +1,6 @@
 import { type CSSProperties, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, CalendarDay, Check, CircleCheck, Clock, FileText, Monitor, Podcast } from '@/icons'
+import { ArrowRight, CalendarDay, CircleCheck, Clock, FileText, Monitor, Podcast } from '@/icons'
 import { useAccount } from '@/context/AccountContext'
 import { useCourseLauncher } from '@/components/layout/CourseLauncherContext'
 import { useDeviceFrame } from '@/components/layout/DeviceFrameContext'
@@ -14,7 +14,7 @@ import { resolvePathCategories } from '@/components/learning/progressGaugeUtil'
 import { getCourseImage } from '@/utils/courseImage'
 import { CompletedCelebration, type CompletedStat } from './CompletedCelebration'
 import { DiscoveryEmpty } from './JumpBackInDiscoveryEmpty'
-import { KindIcon } from '@/components/learning/study-calendar/TaskRow'
+import { TaskRow } from '@/components/learning/study-calendar/TaskRow'
 import {
   hasStudyCalendarFor,
   STUDY_CALENDAR_TODAY,
@@ -28,14 +28,24 @@ import { useFeatureFlag } from '@/context/FeatureFlagContext'
 /**
  * How many of today's tasks the card shows before deferring to the Study Plan.
  *
- * A COUNT, not a measurement. The brief said "if there are more than can be
- * viewed in the spacing" — the honest version of that would measure the card,
- * and the card's height is set by the navy half beside it, which varies with
- * the path's stat tiles. Three rows is what fits at the common height once the
- * resume block takes its quarter; the overflow link is what makes being wrong
- * cheap rather than clipping the list silently.
+ * TWO, and it was three until the rows became the Study Plan's real `TaskRow`.
+ * That component is ~112px in this column, not the ~66px the bespoke row it
+ * replaced was: the title wraps to two or three lines in a ~250px card, and an
+ * in-progress task carries a progress bar. Measured at both a narrow pane and a
+ * 1600px viewport — 249px and 234px of list space respectively, so two either
+ * way. It is not a narrow-window artifact; the card gets SHORTER as it gets
+ * wider, because its height comes from the navy half beside it.
+ *
+ * Three real rows need ~356px and cannot be bought back from the resume block,
+ * which is 179px total against a floor of ~126 (44px CTA + progress + cover).
+ * So the count follows the row, and the row is the one the Study Plan uses —
+ * matching that was the later decision, and it is the one that wins.
+ *
+ * The View-all link below is what makes this safe rather than lossy, and it is
+ * now genuinely load-bearing: today has exactly two tasks, so any busier day
+ * overflows.
  */
-const TODAYS_TASKS_VISIBLE = 3
+const TODAYS_TASKS_VISIBLE = 2
 
 /**
  * LearnerFocusedBand — the "Learner Focused" dashboard version's top section
@@ -764,12 +774,20 @@ export function LearnerFocusedBand({
                   </Link>
                 </div>
                 {visibleTasks.length > 0 ? (
-                  /* Natural height, top-aligned, fixed gap. Spreading the rows
+                  /* The rows are the study calendar's own `TaskRow`, in
+                     `compact` — the same component the Study Plan page renders,
+                     not a lookalike. This started as a bespoke row that merely
+                     matched the visual language; reusing the real one is what
+                     keeps the two surfaces from drifting, and it brings the
+                     things the copy missed: the status badge, the progress bar
+                     on an in-progress task, the kebab, and the title-prefix
+                     affordances (Read / View / Complete).
+
+                     Natural height, top-aligned, fixed gap. Spreading the rows
                      into the card's leftover height was tried and is wrong: the
                      card is sized by the navy half beside it, so a two-task day
-                     opened a 139px hole between two rows. The leftover goes to
-                     the resume block above instead — see the cover's
-                     `aspectRatio`. */
+                     opened a 139px hole between two rows. The leftover falls to
+                     the bottom instead. */
                   <div
                     style={{
                       display: 'flex',
@@ -779,7 +797,7 @@ export function LearnerFocusedBand({
                     }}
                   >
                     {visibleTasks.map((t) => (
-                      <TodaysTaskRow key={t.id} task={t} />
+                      <TaskRow key={t.id} task={t} compact />
                     ))}
                   </div>
                 ) : (
@@ -865,92 +883,6 @@ function KpiDark({ caption, icon, children }: { caption: string; icon?: ReactNod
 }
 
 /** Up-next row on the WHITE (right) card — light surface + dark text. */
-/**
- * One of today's study-plan tasks in the Jump Back In card.
- *
- * Deliberately the same shape as `UpNextRowLight` beside it — same tile, same
- * type scale — because the two occupy the same slot under a different heading,
- * and a reviewer comparing the variants should be reading the CONTENT change,
- * not a restyle. What differs is what a row is: a task with a duration and a
- * status, rather than a course with hours.
- */
-function TodaysTaskRow({ task }: { task: StudyTask }) {
-  const done = task.status === 'completed'
-  return (
-    <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 12,
-        background: 'var(--color-neutral-75)',
-        border: '1px solid var(--color-border-subtle)',
-        borderRadius: 'var(--radius-md)',
-        padding: '12px',
-        // The list spreads to fill the card, so a row needs a ceiling as well
-        // as a floor: without `maxHeight` a two-task day stretches two rows
-        // into slabs, and with only `minHeight` a three-task day still clumps.
-        minHeight: 60,
-        maxHeight: 76,
-      }}
-    >
-      <span
-        style={{
-          width: 36,
-          height: 36,
-          flex: 'none',
-          borderRadius: 'var(--radius-sm)',
-          background: done ? 'var(--color-success-100)' : 'var(--color-primary-100)',
-          display: 'grid',
-          placeItems: 'center',
-          color: done ? 'var(--color-success-800)' : 'var(--color-primary-700)',
-        }}
-      >
-        {done ? <Check size={16} aria-hidden /> : <KindIcon kind={task.kind} size={16} />}
-      </span>
-      <div style={{ minWidth: 0, flex: 1 }}>
-        <p
-          style={{
-            margin: 0,
-            fontFamily: 'var(--font-body)',
-            fontSize: 13,
-            fontWeight: 700,
-            color: 'var(--color-text-primary)',
-            whiteSpace: 'nowrap',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            // Completed tasks stay legible rather than being struck through —
-            // the tick and the tint already say done, and strike-through on a
-            // 13px row is the part that stops being readable first.
-            textDecoration: 'none',
-          }}
-        >
-          {task.title}
-        </p>
-        <p
-          style={{
-            margin: '2px 0 0',
-            fontFamily: 'var(--font-body)',
-            fontSize: 12,
-            color: 'var(--color-text-secondary)',
-          }}
-        >
-          {TASK_KIND_LABEL[task.kind]} · {task.durationMin} min
-        </p>
-      </div>
-    </div>
-  )
-}
-
-/** Sentence-case labels for the row meta. The study calendar's own rows carry
- *  a full StatusBadge; at this size the kind reads better than the status. */
-const TASK_KIND_LABEL: Record<StudyTask['kind'], string> = {
-  video: 'Video',
-  quiz: 'Quiz',
-  exam: 'Practice exam',
-  reading: 'Reading',
-  custom: 'Task',
-}
-
 function UpNextRowLight({ course }: { course: CourseCardData }) {
   const Icon = course.delivery === 'podcast' ? Podcast : course.delivery === 'video' ? Monitor : FileText
   return (

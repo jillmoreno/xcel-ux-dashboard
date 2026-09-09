@@ -131,18 +131,28 @@ describe("Jump Back In — Today's Tasks", () => {
     expect(viewAll.textContent).not.toMatch(/\d/)
   })
 
-  it('shows up to three tasks without overflowing the card', () => {
-    // Three is the cap, and the card is sized for it — verified against the
-    // plan's densest day (2026-06-11) by moving the clock there and measuring:
-    // three rows, 85px still clear below, no overflow. Asserted here as the
-    // cap, since the fixture's TODAY has two.
+  it('shows at most two tasks — what the real row height allows', () => {
+    // TWO, not the three this held before the rows became the Study Plan's own
+    // `TaskRow`. That component is ~112px in this column against the ~66px of
+    // the bespoke row it replaced, so three no longer fit. Measured at a narrow
+    // pane and at 1600px: two either way. See TODAYS_TASKS_VISIBLE.
     seed('todays-tasks')
     renderBand()
     const rendered = screen.getAllByText(/·\s*\d+\s*min/)
-    expect(rendered.length).toBeLessThanOrEqual(3)
+    expect(rendered.length).toBeLessThanOrEqual(2)
     expect(rendered.length).toBe(
-      Math.min(3, tasksOnDate(studyCalendarFor(PLANNED.id), STUDY_CALENDAR_TODAY).length),
+      Math.min(2, tasksOnDate(studyCalendarFor(PLANNED.id), STUDY_CALENDAR_TODAY).length),
     )
+  })
+
+  it('uses the Study Plan’s own row, not a lookalike', () => {
+    // The row carries things a visual copy did not: a status badge and, on an
+    // in-progress task, a progress bar. Asserting one of those is what stops a
+    // future "simplify this row" from quietly re-forking the two surfaces.
+    seed('todays-tasks')
+    const { container } = renderBand()
+    expect(screen.getByText(/in progress/i)).toBeInTheDocument()
+    expect(container.querySelector('[role="progressbar"]')).toBeTruthy()
   })
 
   it('falls back to Up Next on a path with no plan — NOT another brand’s tasks', () => {

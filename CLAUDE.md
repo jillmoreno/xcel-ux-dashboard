@@ -262,9 +262,24 @@ to Up Next, so switch Education to **Pre-Licensing** to see the variant.
 - The resume block lands at **~30%**, not the quarter it was briefed at. The
   floor is the CTA's 44px touch target — it is the biggest item in the block,
   and hitting 25% means making the primary action harder to tap.
-- `TODAYS_TASKS_VISIBLE` is **3**, and the card is sized for three: verified by
-  moving the clock to the plan's densest day (2026-06-11) and measuring — three
-  rows, 85px still clear below, no overflow.
+- `TODAYS_TASKS_VISIBLE` is **2**, and it was 3 until the rows became the Study
+  Plan's real `TaskRow` (2026-09-09). That component is ~112px in this column
+  against the ~66px of the bespoke row it replaced — the title wraps to two or
+  three lines in a ~250px card, and an in-progress task carries a progress bar.
+  Measured at a narrow pane and at 1600px: **two either way**, and not a
+  narrow-window artifact, because the card gets SHORTER as it gets wider (its
+  height comes from the navy half). Three need ~356px against 249 available,
+  and the difference cannot be bought from the resume block, which is 179px
+  against a floor of ~126. **The row style and "up to three" are in conflict;
+  the row won**, because matching the Study Plan was the later decision.
+
+**The rows are the Study Plan's own `TaskRow` in `compact`**, not a lookalike.
+This started as a bespoke row that merely matched the visual language; reusing
+the real component is what keeps the two surfaces from drifting, and it brought
+what the copy had missed — the status badge, the progress bar on an in-progress
+task, the kebab, and the title-prefix affordances (Read / View / Complete). A
+test asserts one of those rather than only that rows render, so a later
+"simplify this row" cannot quietly re-fork them.
 
 **The card is titled "Jump back in"**, in the same `eyebrowBase` as its own
 "Today's tasks" heading and the navy half's "Current Learning Path" — three
