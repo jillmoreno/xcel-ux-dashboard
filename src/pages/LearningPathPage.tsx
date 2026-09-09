@@ -241,10 +241,23 @@ export function LearningPathPage({
   // that passes some of them and fails others gets a Study Plan tab with no
   // Study Plan in it, or the promos for a feature it cannot reach.
   const hasStudyPlan = supportsStudyPlan(brand)
+  /**
+   * MOVED 2026-09-09 — the Study Plan is its own rail section (`study-plan`,
+   * directly under Home), not a tab here.
+   *
+   * Named rather than deleted because TWO things follow from it and they have
+   * to move together — the same failure the `supportsStudyPlan` comment above
+   * describes. Reverting is flipping this one constant.
+   *
+   * Typed `boolean` rather than left as the literal `true` so the conditions
+   * below stay readable as conditions instead of narrowing to dead code.
+   */
+  const studyPlanHasOwnPage: boolean = true
   // Originally STC-only per the QE PRD ("calendar is mission-critical for
   // high-value B2B partners"); XCEL joined 2026-09-04. The tab is suppressed
-  // for the inline variants since the calendar renders above the tab row.
-  const showStudyCalendar = hasStudyPlan && !calendarAboveTabs
+  // for the inline variants since the calendar renders above the tab row —
+  // and now for every variant, since the Study Plan has a page.
+  const showStudyCalendar = hasStudyPlan && !calendarAboveTabs && !studyPlanHasOwnPage
   // A Study-Plan brand reframes "Goal Tracker" as "Progress Tracker" — its
   // learners track exam-prep progress, not CE-style goal completion.
   // Calendar-above variants relabel it again to "Learning Path" since the tab
@@ -256,11 +269,18 @@ export function LearningPathPage({
       : 'Goal Tracker'
   // A Study-Plan brand drops the Progress Tracker TAB once its key stats
   // (progress, tasks completed, exam date, days left) live in the stat band
-  // above the calendar. XCEL follows STC here — DECIDED 2026-09-04, and marked
+  // above the calendar. XCEL followed STC here — DECIDED 2026-09-04, and marked
   // "for now": if XCEL later wants both tabs this becomes a per-brand flag,
-  // NOT a re-added `brand !== 'xcel'` literal, which is the sixth one this
-  // change exists to delete.
-  const showGoalTrackerTab = !hasStudyPlan || calendarAboveTabs
+  // NOT a re-added `brand !== 'xcel'` literal, which is the sixth one that
+  // change existed to delete.
+  //
+  // ⚠ THE TAB COMES BACK WHEN THE STUDY PLAN LEAVES, and that is the whole
+  // reason `studyPlanHasOwnPage` is a named constant. The condition for
+  // dropping this tab was never "the brand has a Study Plan" — it was "the
+  // stats already show in the band above the calendar". Move the calendar to
+  // its own page and that band goes with it, so a learner would be left with a
+  // one-tab tab bar and no progress view anywhere on this page.
+  const showGoalTrackerTab = !hasStudyPlan || calendarAboveTabs || studyPlanHasOwnPage
   const TABS = useMemo<TabItem<LearningTab>[]>(() => {
     const base: TabItem<LearningTab>[] = []
     if (showGoalTrackerTab) base.push({ id: 'goal-tracker', label: goalTrackerLabel })
@@ -275,11 +295,15 @@ export function LearningPathPage({
   // they need every visit. CE learners default to Goal Tracker (where their
   // widgets live), everyone else to Certificates as before. Calendar-above
   // variants default to the renamed "Learning Path" tab.
+  // Land on the first tab that is actually shown. Before the Study Plan moved
+  // out this read `isCE ? 'goal-tracker' : 'certificates'` for the no-calendar
+  // case — which would now open a pre-licensing learner on Certificates while
+  // an unselected Progress Tracker sat to its left.
   const defaultTab: LearningTab = calendarAboveTabs
     ? 'goal-tracker'
     : showStudyCalendar
       ? 'study-calendar'
-      : isCE
+      : showGoalTrackerTab
         ? 'goal-tracker'
         : 'certificates'
   const [tab, setTab] = useState<LearningTab>(defaultTab)
@@ -316,7 +340,14 @@ export function LearningPathPage({
           {tab === 'goal-tracker' &&
             (isStackedCalendar ? (
               <MandatorySection brand={brand} pathId={activePath.id} embedded={embedded} />
-            ) : showStudyCalendar ? (
+            ) : hasStudyPlan ? (
+              // `hasStudyPlan`, NOT `showStudyCalendar`. That flag was doing two
+              // jobs — "is the Study Plan a tab on this page" and "does this
+              // brand have study-plan progress to show" — and moving the plan to
+              // its own page pulled them apart. Keyed on the tab, this branch
+              // fell through to the Goal Tracker placeholder, so the tab that
+              // came BACK with the move rendered nothing: strictly worse than
+              // the one-tab bar it was meant to fix.
               <StudyProgressPanel pathId={activePath.id} />
             ) : isCE ? (
               <GoalTrackerCePanel path={activePath} />

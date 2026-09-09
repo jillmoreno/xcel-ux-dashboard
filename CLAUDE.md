@@ -201,6 +201,41 @@ Three consequences worth knowing:
   before `category`, so authoring one silently moves this row off the front
   door.
 
+### The Study Plan is its own page — moved 2026-09-09
+
+The Study Plan was a TAB on the Learning Path page. It is now a rail section
+(`study-plan`) sitting directly under Home, because it is the pacing tool a
+learner opens every visit — which is why it was that page's DEFAULT tab before.
+Same `InlineStudyCalendar`; what changed is where it lives, not what it is.
+
+**Moved, not duplicated.** The tab is gone. Two doors onto one surface is what
+got `recommended-card-ab-demo` and the four testing tiles archived, and a test
+asserts the tab's absence so re-adding it without removing the page fails.
+
+**One constant drives it**, `studyPlanHasOwnPage` in `LearningPathPage`, because
+THREE things follow and they have to move together — the same failure mode the
+`supportsStudyPlan` comment in that file describes:
+
+1. The Study Plan tab goes.
+2. **The Progress Tracker tab comes BACK.** It was hidden for XCEL only because
+   its stats showed in the band above the calendar; that band left with the
+   calendar, so without this the page has one tab and no progress view at all.
+3. The default tab re-points, or a pre-licensing learner lands on Certificates
+   with an unselected Progress Tracker to its left.
+
+**The trap, and it bit during this change:** `StudyProgressPanel` was keyed on
+`showStudyCalendar`, which was quietly doing two jobs — "is the Study Plan a tab
+here" and "does this brand have study-plan progress to show". Switching the tab
+off dropped the branch through to the Goal Tracker PLACEHOLDER, so the tab that
+came back rendered nothing. It reads on `hasStudyPlan` now, and the test asserts
+the placeholder is absent rather than only that the tab exists.
+
+Which plan the page shows: `?id=` when present, else `activePathIdFor(brand)`.
+XCEL has TWO paths with a plan, so without the param the section would silently
+always show the first. A path with no plan is not an error — `InlineStudyCalendar`
+renders its own empty state — and the rail item is gated on `supportsStudyPlan`,
+so a brand without the feature never reaches it.
+
 ### The archive convention
 
 Don't delete outright. **Unwire** it (pull it from routes, render paths, flags),

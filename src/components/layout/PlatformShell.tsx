@@ -15,6 +15,8 @@ import { LearningPathsHome } from '@/components/learning/LearningPathsHome'
 import { useLearningPathsPanel } from '@/components/learning/LearningPathsPanelContext'
 import { isHomeActive } from '@/components/learning/learningPathsHomeUtil'
 import { useLearningPathSummariesForBrand } from '@/data/learningPathsCountVariant'
+import { activePathIdFor } from '@/data/learningFixtures'
+import { InlineStudyCalendar } from '@/components/learning/study-calendar/InlineStudyCalendar'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { useTheme, type NavVariant } from '@/context/ThemeContext'
 import { CertificatesPage } from '@/pages/CertificatesPage'
@@ -81,6 +83,7 @@ const MEMBERSHIP_MAP: Record<string, string> = {
 
 const VALID_SECTIONS: PlatformSection[] = [
   'dashboard',
+  'study-plan',
   'recommended',
   'learning-path',
   'courses',
@@ -821,6 +824,7 @@ function MobileNavDrawer({
  *  single title; each embedded page hides its own (subtitles stay). */
 const SECTION_TITLES: Record<PlatformSection, string> = {
   dashboard: 'Home',
+  'study-plan': 'Study Plan',
   recommended: 'Recommended for You',
   'learning-path': 'Learning Path',
   courses: 'My Courses',
@@ -1121,6 +1125,34 @@ function SectionPanel({
  * The landing page also covers the 0-path empty state in both versions so the
  * detail never renders pathless.
  */
+/**
+ * The Study Plan as its own page (`?section=study-plan`), moved out of the
+ * Learning Path page's tab row on 2026-09-09.
+ *
+ * It renders the SAME `InlineStudyCalendar` the tab did — the move is where it
+ * lives, not what it is.
+ *
+ * Which plan it shows: `?id=` when present, so a link into a specific path's
+ * plan keeps working and the Learning Path page can hand off to it; otherwise
+ * the brand's active path. That mirrors `LearningPathSection` rather than
+ * inventing a second rule, and it matters because XCEL has TWO paths with a
+ * plan (Life & Health and P&C pre-licensing) — without `?id=` the section
+ * would silently always show the first.
+ *
+ * A path with no plan is not an error: `InlineStudyCalendar` renders its own
+ * empty / create state. The rail item is gated on `supportsStudyPlan` so a
+ * brand without the feature never reaches this at all.
+ */
+function StudyPlanSection() {
+  const [params] = useSearchParams()
+  const { brand } = useAccount()
+  const paths = useLearningPathSummariesForBrand()
+  const idParam = params.get('id')
+  const pathId =
+    idParam && paths.some((p) => p.id === idParam) ? idParam : activePathIdFor(brand)
+  return <InlineStudyCalendar pathId={pathId} />
+}
+
 function LearningPathSection() {
   const [params, setParams] = useSearchParams()
   const paths = useLearningPathSummariesForBrand()
@@ -1186,6 +1218,7 @@ function renderBody(
   // My Learning sections reuse their existing pages in place, embedded so
   // they drop their own title + gutter. Learning Path branches on count
   // (homepage for 2+ paths, single detail otherwise) via LearningPathSection.
+  if (active === 'study-plan') return <StudyPlanSection />
   if (active === 'learning-path') return <LearningPathSection />
   // ── Account area ──────────────────────────────────────────────────────
   // Every account section (Profile · Notifications · Licenses · Transcripts ·

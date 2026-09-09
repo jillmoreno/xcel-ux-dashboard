@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom'
 import {
   Award,
   AwardSolid,
+  CalendarDay,
   BookFull,
   ArrowRight,
   BookFullSolid,
@@ -39,6 +40,7 @@ import {
 } from '@/context/AccountContext'
 import { resolveMembershipCount } from '@/data/membership/membershipScorecardFixtures'
 import { useFeatureFlag, useNavSectionVisible } from '@/context/FeatureFlagContext'
+import { supportsStudyPlan } from '@/data/studyCalendarFixtures'
 import { useMotivation } from '@/context/MotivationContext'
 import { useProfileAvatar } from '@/context/ProfileAvatarContext'
 import { MotivationalStatementPanel } from '@/components/membership/MotivationalStatementPanel'
@@ -66,6 +68,10 @@ import { buildRecommendedShelves } from '@/data/recommendedCategoriesFixtures'
 
 export type PlatformSection =
   | 'dashboard'
+  // The Study Plan was a TAB on the Learning Path page until 2026-09-09; it is
+  // its own rail section now, directly under Home. See LearningPathPage's
+  // `studyPlanHasOwnPage`, which is the one fact both sides read.
+  | 'study-plan'
   | 'recommended'
   | 'learning-path'
   | 'courses'
@@ -210,6 +216,14 @@ export function PlatformSideNav({
     // MVP navigation (Figma 53:5290) drops "Home" — the dashboard landing is a
     // later addition; the MVP rail leads straight into the learning areas.
     ...(variant === 'mvp' ? [] : [{ id: 'dashboard' as const, label: 'Home', icon: House, iconActive: HouseSolid }]),
+    // Study Plan sits directly under Home — it is the pacing tool a learner
+    // opens every visit, which is why it was the Learning Path page's DEFAULT
+    // tab before it became a page. Gated on `supportsStudyPlan`, the same one
+    // predicate the tab used: a brand without one would otherwise get a rail
+    // item onto an empty state.
+    ...(supportsStudyPlan(brand)
+      ? [{ id: 'study-plan' as const, label: 'Study Plan', icon: CalendarDay }]
+      : []),
     { id: 'learning-path', label: pluralLP ? 'Learning Paths' : 'Learning Path', icon: SignsPost, iconActive: SignsPostSolid },
     { id: 'courses', label: 'My Courses', icon: BookFull, iconActive: BookFullSolid },
     { id: 'certificates', label: 'Certificates', icon: Award, iconActive: AwardSolid },

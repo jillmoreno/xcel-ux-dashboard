@@ -267,6 +267,7 @@ const DEFAULT_PLUS_LOFI: FeatureFlagVariant[] = [
  */
 export const NAV_SECTION_FLAGS: { section: string; label: string }[] = [
   // My Learning
+  { section: 'study-plan', label: 'Study Plan' },
   { section: 'learning-path', label: 'Learning Path' },
   { section: 'courses', label: 'My Courses' },
   { section: 'certificates', label: 'Certificates' },
