@@ -53,3 +53,33 @@ describe('Avatar — tier profile pics', () => {
     expect(badge).toBeTruthy()
   })
 })
+
+describe('the brand ring', () => {
+  it('is a thin Brick border on the avatar circle, not the legacy double ring', () => {
+    // `ring` is 3px border + a 2px offset outline — 10px of chrome on the 48px
+    // rail avatar. `brandRing` is the "slight" treatment asked for, and the
+    // colour is the CTA ramp because that is where XCEL's red lives
+    // (--color-cta-500 is Brick #9A1B1E, the logo knight's own red).
+    const { container } = render(
+      <Avatar initials="AN" imageUrl="/x.jpg" size={48} brandRing />,
+    )
+    const box = container.querySelector('span') as HTMLElement
+    expect(box.style.border).toBe('2px solid var(--color-cta-500)')
+    expect(box.style.outline).toBe('')
+  })
+
+  it('yields to a membership tier, which owns its own concentric rings', () => {
+    // A red ring outside flush tier bands would read as a fourth band rather
+    // than as identity. XCEL has no membership so the two never meet today —
+    // this pins the precedence for a brand that does.
+    const { container } = render(
+      <Avatar initials="AN" imageUrl="/x.jpg" size={48} brandRing tier="pro" />,
+    )
+    expect(container.innerHTML).not.toContain('var(--color-cta-500)')
+  })
+
+  it('is off unless asked for', () => {
+    const { container } = render(<Avatar initials="AN" imageUrl="/x.jpg" size={48} />)
+    expect((container.querySelector('span') as HTMLElement).style.border).toBe('')
+  })
+})

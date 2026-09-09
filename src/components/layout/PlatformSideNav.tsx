@@ -569,7 +569,17 @@ function NavProfileHeader({
             Membership Tiers"): Plus → single ring + Mountain, Pro → double ring
             + Bolt, Premier/Passport → triple gold ring + Crown; non-members get
             the plain avatar (no ring / no badge). */}
-        <Avatar size={48} initials={user.initials} imageUrl={avatarOverride ?? user.avatarUrl} alt={name} tier={avatarTier} />
+        {/* `brandRing` — a thin Brick ring, the logo's own red. It marks this
+            as the learner's OWN avatar; every other photo on the dashboard is
+            stock or course art. Only this one carries it. */}
+        <Avatar
+          size={48}
+          initials={user.initials}
+          imageUrl={avatarOverride ?? user.avatarUrl}
+          alt={name}
+          tier={avatarTier}
+          brandRing
+        />
         <span
           style={{
             display: 'block',

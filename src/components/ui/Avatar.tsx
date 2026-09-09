@@ -33,6 +33,21 @@ type Props = {
    * When set to a non-default tier it supersedes `ring` / `pro` / `accent`.
    */
   tier?: 'default' | 'plus' | 'pro' | 'premier'
+  /**
+   * Thin brand-red ring around the avatar circle — `--color-cta-500`, which on
+   * XCEL is Brick #9A1B1E, the same red as the knight in the logo lockup. Used
+   * on the learner's OWN avatar in the rail profile header so it reads as
+   * theirs rather than as any of the photos on the page.
+   *
+   * Deliberately NOT the `ring` prop, which is the legacy 3px border + 2px
+   * offset outline — a much heavier treatment than this asks for.
+   *
+   * Superseded by a non-default `tier`, the same way `ring` is: tier rings are
+   * concentric and flush, so a red ring outside them would read as a fourth
+   * band rather than as identity. XCEL has no membership, so its avatars are
+   * always `tier: 'default'` and the two never meet today.
+   */
+  brandRing?: boolean
 }
 
 type IconComponent = ComponentType<{ size?: number; 'aria-hidden'?: boolean }>
@@ -82,6 +97,7 @@ export function Avatar({
   pro = false,
   accent = 'tertiary',
   tier,
+  brandRing = false,
 }: Props) {
   // A non-default tier supersedes the legacy `ring`/`pro`/`accent` controls:
   // it picks the ramp, renders concentric tier rings, and carries its own glyph.
@@ -93,13 +109,20 @@ export function Avatar({
   // Badge fill: the tier ramp's -600 (spec) or the legacy accent's -600.
   const badgeFill = tierDef ? `var(--color-${tierDef.ramp}-600)` : palette.badge
 
+  // 2px, not 3: this is the "slight" ring, and the avatar is 48px in its main
+  // call site — the legacy ring's 3px + 2px outline is 10px of chrome on a
+  // 48px circle. Under the global border-box reset the border eats INTO the
+  // box, so the avatar still measures `size` in layout and nothing reflows.
+  const BRAND_RING_WIDTH = 2
   const ringStyle = showLegacyRing
     ? {
         border: `3px solid ${palette.border}`,
         outline: `2px solid ${palette.outline}`,
         outlineOffset: 2,
       }
-    : undefined
+    : !tierDef && brandRing
+      ? { border: `${BRAND_RING_WIDTH}px solid var(--color-cta-500)` }
+      : undefined
 
   const inner = imageUrl ? (
     // Wrap the img so we can zoom in on the face via a CSS transform
