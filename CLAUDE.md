@@ -262,11 +262,21 @@ to Up Next, so switch Education to **Pre-Licensing** to see the variant.
 - The resume block lands at **~30%**, not the quarter it was briefed at. The
   floor is the CTA's 44px touch target — it is the biggest item in the block,
   and hitting 25% means making the primary action harder to tap.
-- `TODAYS_TASKS_VISIBLE` is **3**, sized to the card rather than to the data.
-  **XCEL's plan tops out at 3 tasks a day, so the View-all link is currently
-  unreachable in the demo** — a denser plan or a lower count would show it. It
-  is covered by `JumpBackInTaskOverflow.test.tsx`, which mocks the day rather
-  than tuning the constant down to make one state demonstrable.
+- `TODAYS_TASKS_VISIBLE` is **3**, and the card is sized for three: verified by
+  moving the clock to the plan's densest day (2026-06-11) and measuring — three
+  rows, 85px still clear below, no overflow.
+
+**View all is ALWAYS shown**, not only when the day overflows. It is the route
+into the Study Plan from here, and gating it on the workload made that route
+appear and disappear. It names the day's count only when the list is truncated,
+so it never implies something is hidden that is not.
+
+Two layouts were tried for the leftover height and both are wrong, so do not
+re-reach for them: `justify-content: space-between` on the list opens a 139px
+hole between two rows on a light day, and letting the cover absorb the slack
+grows it to 174×116, which squeezes the title into three lines because the white
+half is only ~250px wide. The cover stays fixed at 84×56 and the slack falls to
+the bottom of the card, which is what a light day should look like.
 
 ### The archive convention
 

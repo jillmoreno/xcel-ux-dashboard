@@ -70,6 +70,35 @@ describe("Jump Back In — Today's Tasks", () => {
     }
   })
 
+  it('always offers View all, even on a day that fits — it is the route in', () => {
+    // It used to appear only when the day overflowed, which made the way into
+    // the Study Plan come and go with the workload. Today has two tasks and
+    // they all show, so this is the non-overflowing case.
+    seed('todays-tasks')
+    renderBand()
+    const tasks = tasksOnDate(studyCalendarFor(PLANNED.id), STUDY_CALENDAR_TODAY)
+    expect(tasks.length).toBeLessThanOrEqual(3)
+    const viewAll = screen.getByRole('link', { name: /view all/i })
+    expect(viewAll).toHaveAttribute('href', '/dashboard-rebrand?section=study-plan')
+    // …and it does NOT claim a count when nothing is hidden, which would imply
+    // there is more behind it than the list already shows.
+    expect(viewAll.textContent).not.toMatch(/\d/)
+  })
+
+  it('shows up to three tasks without overflowing the card', () => {
+    // Three is the cap, and the card is sized for it — verified against the
+    // plan's densest day (2026-06-11) by moving the clock there and measuring:
+    // three rows, 85px still clear below, no overflow. Asserted here as the
+    // cap, since the fixture's TODAY has two.
+    seed('todays-tasks')
+    renderBand()
+    const rendered = screen.getAllByText(/·\s*\d+\s*min/)
+    expect(rendered.length).toBeLessThanOrEqual(3)
+    expect(rendered.length).toBe(
+      Math.min(3, tasksOnDate(studyCalendarFor(PLANNED.id), STUDY_CALENDAR_TODAY).length),
+    )
+  })
+
   it('falls back to Up Next on a path with no plan — NOT another brand’s tasks', () => {
     /*
      * The regression this exists for. `studyCalendarFor` falls back to STC's

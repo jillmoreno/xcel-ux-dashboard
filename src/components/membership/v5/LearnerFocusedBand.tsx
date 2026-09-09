@@ -571,14 +571,18 @@ export function LearnerFocusedBand({
                     the same course art, and cropping it to a chip loses the
                     only thing it was carrying. */}
             {todaysTasksLayout ? (
+              // FIXED, not flexible. Letting the cover absorb the card's
+              // leftover height was tried: it grew to 174×116 and squeezed the
+              // title into three lines, because the white half is only ~250px
+              // wide — a large side-by-side cover takes the width the copy
+              // needs. The block stays compact and any slack falls to the
+              // bottom of the card, which is what a light day should look like.
               <div style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
                 <div
                   aria-hidden
                   style={{
-                    // 3:2, sized down until the resume block lands near the
-                    // quarter of the card the brief asked for. It does not get
-                    // smaller than this: below ~56px the course art stops
-                    // reading as a picture of anything.
+                    // 3:2. Not smaller than this — below ~56px tall the course
+                    // art stops reading as a picture of anything.
                     width: 84,
                     height: 56,
                     flex: 'none',
@@ -707,27 +711,41 @@ export function LearnerFocusedBand({
                   <p style={{ ...eyebrowBase, color: 'var(--color-text-secondary)', margin: 0 }}>
                     Today's tasks
                   </p>
-                  {/* Only when the day is genuinely longer than the card. A
-                      permanent "View all" would read as the list being a
-                      teaser even on a day it shows in full. */}
-                  {hiddenTaskCount > 0 && (
-                    <Link
-                      to="/dashboard-rebrand?section=study-plan"
-                      style={{
-                        fontFamily: 'var(--font-body)',
-                        fontSize: 12,
-                        fontWeight: 700,
-                        color: 'var(--color-accent-text)',
-                        textDecoration: 'none',
-                        flex: 'none',
-                      }}
-                    >
-                      View all {todaysTasks.length} →
-                    </Link>
-                  )}
+                  {/* Always shown, not only on an overflowing day. The link is
+                      the way into the Study Plan from here, so hiding it on a
+                      light day made the route appear and disappear with the
+                      workload. It names the day's COUNT when the list is
+                      truncated and stays a plain "View all" when it is not, so
+                      it never implies something is hidden that is not. */}
+                  <Link
+                    to="/dashboard-rebrand?section=study-plan"
+                    style={{
+                      fontFamily: 'var(--font-body)',
+                      fontSize: 12,
+                      fontWeight: 700,
+                      color: 'var(--color-accent-text)',
+                      textDecoration: 'none',
+                      flex: 'none',
+                    }}
+                  >
+                    {hiddenTaskCount > 0 ? `View all ${todaysTasks.length}` : 'View all'} →
+                  </Link>
                 </div>
                 {visibleTasks.length > 0 ? (
-                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginTop: 8 }}>
+                  /* Natural height, top-aligned, fixed gap. Spreading the rows
+                     into the card's leftover height was tried and is wrong: the
+                     card is sized by the navy half beside it, so a two-task day
+                     opened a 139px hole between two rows. The leftover goes to
+                     the resume block above instead — see the cover's
+                     `aspectRatio`. */
+                  <div
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: 10,
+                      marginTop: 10,
+                    }}
+                  >
                     {visibleTasks.map((t) => (
                       <TodaysTaskRow key={t.id} task={t} />
                     ))}
@@ -835,7 +853,12 @@ function TodaysTaskRow({ task }: { task: StudyTask }) {
         background: 'var(--color-neutral-75)',
         border: '1px solid var(--color-border-subtle)',
         borderRadius: 'var(--radius-md)',
-        padding: '10px 12px',
+        padding: '12px',
+        // The list spreads to fill the card, so a row needs a ceiling as well
+        // as a floor: without `maxHeight` a two-task day stretches two rows
+        // into slabs, and with only `minHeight` a three-task day still clumps.
+        minHeight: 60,
+        maxHeight: 76,
       }}
     >
       <span
