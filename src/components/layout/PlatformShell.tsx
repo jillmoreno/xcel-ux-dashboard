@@ -31,7 +31,7 @@ import { GiftRecipientsPanel } from '@/components/account/purchases/GiftRecipien
 import { LibraryPanel } from '@/components/membership/LibraryPanel'
 import { LearningLibraryHero } from '@/components/membership/LearningLibraryHero'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { Flag, Podcast, X } from '@/icons'
+import { Gauge, Podcast, X } from '@/icons'
 import { Avatar } from '@/components/ui/Avatar'
 import { MembershipBadge } from '@/components/ui/MembershipBadge'
 import { tierBadgeIcon } from '@/components/ui/membershipTierBadge'
@@ -1262,7 +1262,7 @@ function renderBody(
       <EmptyState
         title="Readiness"
         description="How ready you are for your licensing exam will show here."
-        icon={<Flag size={24} aria-hidden />}
+        icon={<Gauge size={24} aria-hidden />}
       />
     )
   }

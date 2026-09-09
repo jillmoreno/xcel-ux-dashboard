@@ -382,6 +382,27 @@ assertion is for: a row cannot join the baseline without failing
 `NavSectionFlags.test.tsx` first and being re-decided. Readiness is ON in the
 demo because a stakeholder is meant to see it is coming.
 
+**The icon is `gauge-simple-high`**, registered as `Gauge`. Compared against
+`gauge`, `gauge-simple`, `gauge-high`, `gauge-max` and `gauge-simple-max` at
+17 / 24 / 48px before choosing, and the rail's **17px** is what decided it:
+plain `gauge`'s needle points straight UP, which at that size reads as an arrow
+in a circle rather than a dial. The `-high` needle sits diagonal and is
+unmistakable. `-simple` drops the tick marks, which mush at 17px.
+
+A needle pinned high could be read as claiming the learner IS ready. Discounted:
+a rail glyph names the topic, not a value — `Award` next to Certificates does
+not mean you have one — and the alternative failure (not reading as a gauge at
+all) is worse.
+
+It replaced `Flag`, whose vendored FA 7.2.0 asset is **clipped**: `flag.svg` is
+`viewBox="0 0 448 512"` but its path starts the pole at `x=-8`, so the left edge
+of the pole is cut flat. That is not a Readiness problem — `Flag` still renders
+in the Feature Flags panel, the admin tools menu, `MembershipStatBar`,
+`LearningRecapBadge`, `ConsistencyCard` and `RubiAiBand`, and it is clipped in
+all of them. The minimal fix is `viewBox="-8 0 456 512"`, which keeps the FA7
+drawing and shifts centring by under 2%; re-vendoring FA 6.6.0's flag also works
+but is a different drawing.
+
 The shell's `<h1>` and the EmptyState's own title both read "Readiness", so the
 word appears twice. That is the existing Podcasts pattern, matched on purpose —
 if the doubling is worth fixing it should be fixed for both, not just here.

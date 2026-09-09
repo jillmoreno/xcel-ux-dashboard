@@ -9,7 +9,7 @@ import {
   BookFullSolid,
   Crown,
   FileText,
-  Flag,
+  Gauge,
   Gem,
   GemSolid,
   Grid,
@@ -246,7 +246,7 @@ export function PlatformSideNav({
     // gate on. Adding a capability predicate now would be inventing the shape
     // of a feature that has not been designed. Its nav flag is the only gate
     // until a real readiness fixture exists; wire a predicate then, next to it.
-    { id: 'readiness', label: 'Readiness', icon: Flag },
+    { id: 'readiness', label: 'Readiness', icon: Gauge },
     { id: 'learning-path', label: pluralLP ? 'Learning Paths' : 'Learning Path', icon: SignsPost, iconActive: SignsPostSolid },
     { id: 'courses', label: 'My Courses', icon: BookFull, iconActive: BookFullSolid },
     { id: 'certificates', label: 'Certificates', icon: Award, iconActive: AwardSolid },

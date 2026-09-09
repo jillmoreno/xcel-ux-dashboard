@@ -58,6 +58,7 @@ import EyeSlashSvg from './eye-slash.svg?react'
 import EnvelopeSvg from './envelope.svg?react'
 import FileLinesSvg from './file-lines.svg?react'
 import FlagSvg from './flag.svg?react'
+import GaugeSvg from './gauge.svg?react'
 import GemSvg from './gem.svg?react'
 import GiftSvg from './gift.svg?react'
 import GraduationCapSvg from './graduation-cap.svg?react'
@@ -204,6 +205,11 @@ export const Envelope = makeIcon(EnvelopeSvg) // FA: envelope (Send Reminder)
 export const FileText = makeIcon(FileLinesSvg) // FA: file-lines
 export const Flag = makeIcon(FlagSvg)
 export const Facebook = makeIcon(FacebookSvg) // FA Free brand: facebook (solid circle)
+// FA: gauge-simple-high. The `-high` needle (diagonal, ~2 o'clock) rather
+// than plain `gauge`, whose needle points straight UP and reads as an arrow
+// in a circle at the rail's 17px — compared side by side at 17 / 24 / 48px
+// before choosing. `-simple` drops the tick marks, which mush at 17px.
+export const Gauge = makeIcon(GaugeSvg)
 export const Gem = makeIcon(GemSvg)
 export const Gift = makeIcon(GiftSvg) // FA: gift (Gift Recipients)
 export const GraduationCap = makeIcon(GraduationCapSvg)
