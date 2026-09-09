@@ -52,10 +52,19 @@ const DEFAULT_CHAT_TOPICS = [
 const SUPPORT_BY_BRAND: Record<Brand, SupportConfig> = {
   xcel: {
     chatName: 'XCEL Chat',
-    // TODO(data): confirm XCEL FAQ URL and support phone number — neither is
-    // in the brand file, so the URL follows the sibling brands' shape and the
-    // phone line is deliberately omitted rather than invented.
-    faqUrl: 'https://www.xcelsolutions.com/faqs/',
+    // CONFIRMED 2026-09-09. The guessed `/faqs/` (the sibling brands' shape)
+    // 404s: XCEL has NO standalone FAQ page. `/faq` exists only as a redirect
+    // to Customer Support, so this points at the destination directly rather
+    // than depending on a redirect the site is free to drop.
+    //
+    // Consequence worth knowing: the FAQ card and Contact Us now lead to the
+    // same page. That is the site's own information architecture, not a
+    // mistake here — but if the card reads redundant in review, the fix is to
+    // drop the FAQ card for XCEL, not to invent a URL for it.
+    //
+    // TODO(data): the support phone number is still unknown — it is not in the
+    // brand file, and the line is deliberately omitted rather than invented.
+    faqUrl: 'https://www.xcelsolutions.com/customer-support',
     issueTypes: DEFAULT_ISSUE_TYPES,
     chatTopics: DEFAULT_CHAT_TOPICS,
     phoneLines: [],

@@ -71,9 +71,17 @@ export type Resource = {
  * so the rule is trivially satisfied here — but it is the same rule that broke
  * the old External Resources page when one gated item sat beside two open ones.
  *
- * TODO(data): the four hrefs are the site's own sections but the exact slugs are
- * unconfirmed (same footing as the other brands' `faqUrl`s). Confirm with the
- * content team before this ships anywhere a reviewer might click through.
+ * The four hrefs were CONFIRMED against the live site on 2026-09-09, and all
+ * four had to change: they were authored as plausible guesses (`/resource-center/`,
+ * `/whats-new/`, `/career-guide/`, `/salary-guide/`) and every one of them 404s.
+ * XCEL nests the whole set under `/resources`, and the two guides carry
+ * descriptive slugs rather than the marketing names.
+ *
+ * The guesses were harmless while the section was archived — nothing rendered
+ * them. Putting Resources back in the rail is what made four dead links a
+ * user-visible defect, and that is the general lesson: an unconfirmed URL is a
+ * bug the moment its surface ships, so confirm on the way IN, not later.
+ * `AccountMenu` reads this same list, so the dropdown was broken too.
  */
 const XCEL_RESOURCES: Resource[] = [
   {
@@ -84,7 +92,7 @@ const XCEL_RESOURCES: Resource[] = [
     promoDescription:
       'Free to read — no purchase needed. Study guides, state requirements, and exam-day walkthroughs.',
     icon: 'blog',
-    href: 'https://www.xcelsolutions.com/resource-center/',
+    href: 'https://www.xcelsolutions.com/resources',
     cta: 'Browse resources',
   },
   {
@@ -95,7 +103,7 @@ const XCEL_RESOURCES: Resource[] = [
     promoDescription:
       'Free to read — no purchase needed. Product releases, state rule changes, and exam updates.',
     icon: 'blog',
-    href: 'https://www.xcelsolutions.com/whats-new/',
+    href: 'https://www.xcelsolutions.com/resources/blog/industry-updates-and-xcel-improvements',
     cta: 'Read the blog',
   },
   {
@@ -106,7 +114,7 @@ const XCEL_RESOURCES: Resource[] = [
     promoDescription:
       'Free to read — no purchase needed. The roles a licence opens up, and the routes into them.',
     icon: 'blog',
-    href: 'https://www.xcelsolutions.com/career-guide/',
+    href: 'https://www.xcelsolutions.com/resources/guide/insurance-career-guide',
     cta: 'Read the guide',
   },
   {
@@ -117,7 +125,7 @@ const XCEL_RESOURCES: Resource[] = [
     promoDescription:
       'Free to read — no purchase needed. What insurance professionals earn by role, line, and region.',
     icon: 'blog',
-    href: 'https://www.xcelsolutions.com/salary-guide/',
+    href: 'https://www.xcelsolutions.com/resources/guide/insurance-agent-salary',
     cta: 'See the numbers',
   },
 ]

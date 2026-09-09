@@ -353,6 +353,28 @@ opposite of what the page says.
 (node 53:5290); growing it would be editing a design rather than implementing
 one.
 
+**All four links were dead, and the archive is why nobody noticed.** The hrefs
+were authored as plausible guesses shaped like the marketing names
+(`/resource-center/`, `/whats-new/`, `/career-guide/`, `/salary-guide/`) under
+a `TODO(data)` saying the slugs were unconfirmed — and all four 404. XCEL nests
+the set under `/resources` and gives the guides descriptive slugs. `AccountMenu`
+reads the same list, so the dropdown rows were broken too, and had been since
+the section was archived.
+
+`supportFixtures.faqUrl` carried the identical defect: the guessed `/faqs/`
+404s, and `/faq` exists only as a redirect to Customer Support. It points at
+`/customer-support` directly now — so the FAQ card and Contact Us lead to the
+same page, which is XCEL's own IA. If that reads redundant, drop the FAQ card
+for XCEL rather than inventing a URL for it.
+
+**The rule: confirm a URL on the way IN, not later.** An unconfirmed href is
+harmless while nothing renders it and a user-visible defect the moment its
+surface ships — a `TODO(data)` does not survive the thing it is attached to
+being switched on. `ResourcesPanel.test.tsx` now asserts the four dead slugs
+stay dead (the `smoke-desktop.mjs` / `ProfilePersonalizeContrast` pattern),
+because the wrong answer here is the one that looks right, and a test cannot
+reach the network to find that out.
+
 ### `ce-study-plan` — the CE path has a plan now
 
 **This reverses a decision `studyCalendarFixtures.ts` used to state.** The CE
