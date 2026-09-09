@@ -367,17 +367,28 @@ the section was archived.
 same page, which is XCEL's own IA. If that reads redundant, drop the FAQ card
 for XCEL rather than inventing a URL for it.
 
-**The cards use an OPEN BOOK, not the RSS blog glyph** (2026-09-09). All four
-XCEL resources are reading, so the set rendered four identical RSS marks — a
-glyph that says "feed" over a salary guide, four times. `book` is a new
-`ResourceIcon` key rather than `blog` repointed at the book mark: `blog` still
-means a blog for any brand that has one, and a key whose name and picture
-disagree is the kind of thing nobody unpicks later. Three
-`Record<ResourceIcon, …>` maps make the compiler list the call sites
-(`ResourceCard`, `FreeContentBands`, `AccountMenu`), which is the seam working
-— the account dropdown would otherwise have kept the old glyph silently.
-`ACCENT_BY_ICON` gives it the primary ramp, the same as `blog`, because that
-map assigns by content TYPE (reading / audio / community) rather than per item.
+**The four cards carry four different glyphs** (2026-09-09): blog for the
+Resource Center (the hub the others sit under), a megaphone for What's New
+(announcements), and an open book for the two guides. They all started as
+`blog`, which rendered four identical RSS marks — a glyph that says "feed" over
+a salary guide, four times.
+
+`book` and `megaphone` are NEW `ResourceIcon` keys, not `blog` repointed:
+`blog` still means a blog, and a key whose name and picture disagree is the
+kind of thing nobody unpicks later. Three `Record<ResourceIcon, …>` maps make
+the compiler list the call sites (`ResourceCard`, `FreeContentBands`,
+`AccountMenu`) — that seam is what stopped the account dropdown keeping the old
+glyph silently.
+
+**Watch what this did to the type, because it decides how to add the next one.**
+`ResourceIcon` began as a CONTENT TYPE (blog / podcast / facebook — one per
+kind of feed), which is why `FreeContentBands` colours a band from it: reading
+primary, audio secondary, community tertiary. Picking glyphs per card for
+variety turns the field into a GLYPH NAME, and the two jobs stop coinciding —
+`megaphone` is not a content type, and it takes the reading ramp because the
+thing it labels is still a blog. Fine while the rule is "reading unless audio
+or community". If a resource ever needs a glyph and a colour that disagree,
+split this into two fields rather than inventing a ramp for a glyph.
 
 **The rule: confirm a URL on the way IN, not later.** An unconfirmed href is
 harmless while nothing renders it and a user-visible defect the moment its

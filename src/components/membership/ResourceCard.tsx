@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { ArrowUpRightFromSquare, Blog, BookOpen, Facebook, Podcast } from '@/icons'
+import { ArrowUpRightFromSquare, Blog, BookOpen, Megaphone, Facebook, Podcast } from '@/icons'
 import { Card } from '@/components/ui/Card'
 import { LoFiCardBody } from '@/components/lo-fi/LoFiPlaceholders'
 import { useLoFi } from '@/context/LoFiContext'
@@ -30,6 +30,7 @@ type Props = {
 const ICONS: Record<ResourceIcon, typeof Blog> = {
   blog: Blog,
   book: BookOpen,
+  megaphone: Megaphone,
   podcast: Podcast,
   facebook: Facebook,
 }

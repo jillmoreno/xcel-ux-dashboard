@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { ArrowUpRightFromSquare, Blog, BookOpen, Facebook, Podcast } from '@/icons'
+import { ArrowUpRightFromSquare, Blog, BookOpen, Megaphone, Facebook, Podcast } from '@/icons'
 import { useAccount } from '@/context/AccountContext'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { resourcesFor, type ResourceIcon } from '@/data/membership/resourcesFixtures'
@@ -76,6 +76,7 @@ export function FreeContentBands() {
 const ICONS: Record<ResourceIcon, typeof Blog> = {
   blog: Blog,
   book: BookOpen,
+  megaphone: Megaphone,
   podcast: Podcast,
   facebook: Facebook,
 }
@@ -102,10 +103,13 @@ const ICONS: Record<ResourceIcon, typeof Blog> = {
  */
 const ACCENT_BY_ICON: Record<ResourceIcon, { bg: string; sub: string }> = {
   blog: { bg: 'var(--color-primary-900)', sub: 'var(--color-primary-100)' },
-  // Reading, same as `blog` — the rule above assigns the ramp by content
-  // TYPE, not per item, so the two share a stop by construction rather
-  // than by coincidence.
+  // Reading, same as `blog` — the rule above assigns the ramp by content TYPE,
+  // not per item, so these share a stop by construction rather than by
+  // coincidence. `megaphone` is the case where the two jobs come apart: it is
+  // a glyph, not a content type, and the thing it labels is still a blog. See
+  // the note on `ResourceIcon` before adding a glyph whose colour would differ.
   book: { bg: 'var(--color-primary-900)', sub: 'var(--color-primary-100)' },
+  megaphone: { bg: 'var(--color-primary-900)', sub: 'var(--color-primary-100)' },
   podcast: { bg: 'var(--color-secondary-800)', sub: 'var(--color-secondary-100)' },
   facebook: { bg: 'var(--color-tertiary-800)', sub: 'var(--color-tertiary-100)' },
 }

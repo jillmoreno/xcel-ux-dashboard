@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { ArrowUpRightFromSquare, Blog, BookOpen, CircleUser, Facebook, LogOut, Podcast, Sliders } from '@/icons'
+import { ArrowUpRightFromSquare, Blog, BookOpen, Megaphone, CircleUser, Facebook, LogOut, Podcast, Sliders } from '@/icons'
 import { Avatar } from '@/components/ui/Avatar'
 import { MembershipBadge } from '@/components/ui/MembershipBadge'
 import { AppearancePreferencesSheet } from '@/components/account/AppearancePreferencesSheet'
@@ -237,6 +237,7 @@ export function AccountMenu({
 const FREE_CONTENT_ICONS: Record<ResourceIcon, typeof Blog> = {
   blog: Blog,
   book: BookOpen,
+  megaphone: Megaphone,
   podcast: Podcast,
   facebook: Facebook,
 }

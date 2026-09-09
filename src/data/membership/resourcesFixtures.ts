@@ -32,12 +32,23 @@ export const MAX_RESOURCE_DESCRIPTION_CHARS = 135
 
 /** Icon plate glyph for a resource card.
  *
- *  `book` was added 2026-09-09 for XCEL, whose four resources are all READING
- *  and whose set therefore rendered four identical RSS glyphs. Kept as a new
- *  key rather than by repointing `blog` at the book glyph: `blog` still means
- *  a blog for any brand that has one, and a key whose name and picture
- *  disagree is the kind of thing nobody unpicks later. */
-export type ResourceIcon = 'blog' | 'book' | 'podcast' | 'facebook'
+ *  `book` and `megaphone` were added 2026-09-09. XCEL's four resources are all
+ *  reading, so the set rendered four identical RSS marks; they are now picked
+ *  per item — blog for the hub, a megaphone for announcements, an open book for
+ *  the two guides.
+ *
+ *  NOTE the drift that introduces, because it decides how to add the next one.
+ *  These keys started as CONTENT TYPES (blog / podcast / facebook — one per
+ *  kind of feed), which is why `FreeContentBands` colours a band by looking at
+ *  this field: reading is primary, audio secondary, community tertiary. Picking
+ *  glyphs per card for visual variety makes the field a GLYPH NAME instead, and
+ *  the two jobs no longer coincide — `megaphone` is not a content type, and it
+ *  takes the reading ramp because the thing it labels is still a blog.
+ *
+ *  That is fine while the ramp rule is "reading unless audio or community". If
+ *  a resource ever needs a glyph and a colour that disagree, split this into
+ *  two fields rather than inventing a ramp for a glyph. */
+export type ResourceIcon = 'blog' | 'book' | 'megaphone' | 'podcast' | 'facebook'
 
 export type Resource = {
   id: string
@@ -97,7 +108,8 @@ const XCEL_RESOURCES: Resource[] = [
       'Study guides, state licensing requirements, and exam-day walkthroughs for every line of authority XCEL covers.',
     promoDescription:
       'Free to read — no purchase needed. Study guides, state requirements, and exam-day walkthroughs.',
-    icon: 'book',
+    // The hub the other three sit under — the blog mark is literal here.
+    icon: 'blog',
     href: 'https://www.xcelsolutions.com/resources',
     cta: 'Browse resources',
   },
@@ -108,7 +120,8 @@ const XCEL_RESOURCES: Resource[] = [
       'Product releases, state rule changes, and exam updates as they happen — so nothing on your test is a surprise.',
     promoDescription:
       'Free to read — no purchase needed. Product releases, state rule changes, and exam updates.',
-    icon: 'book',
+    // Announcements — releases, state rule changes, exam updates.
+    icon: 'megaphone',
     href: 'https://www.xcelsolutions.com/resources/blog/industry-updates-and-xcel-improvements',
     cta: 'Read the blog',
   },
