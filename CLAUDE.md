@@ -447,6 +447,15 @@ which satisfies every acceptance case and answers the brief's other open half:
 an absolute window would make most of a 0-40 scale "at risk", where a fraction
 says the same thing at both sizes. Still invented.
 
+**The score column is the WIDE half of that row** (2026-09-09). It was an even
+split (`1 1 320px` against the stats' `1 1 280px`), which left the `md` gauge
+floating at 206px in a 262px card with the extra width going to padding. It now
+takes `1.4 1 360px` AND the gauge steps to `lg` (276px) — **those two go
+together**: widening the card alone just widens the whitespace, and stepping the
+gauge up alone clips it. The row still wraps, and both columns keep a
+`minWidth`, so a narrow shell drops the stats below the card rather than
+squeezing it under the gauge's own minimum.
+
 **Unresolved, deliberately not guessed:** the mock's softened green (#63bc8e) is
 not reachable — `--color-success-500` is the lightest stop on that ramp and is
 materially deeper, so closing it needs a new ramp stop, not a literal. The

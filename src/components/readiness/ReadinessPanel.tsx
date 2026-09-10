@@ -106,7 +106,7 @@ function ExamReadinessTab({ onOpenInsights }: { onOpenInsights: () => void }) {
           <div style={scoreCardStyle}>
             {/* The gauge brings its own card shell — header row, chip, arc.
                 Wrapping it in `Card` too would nest two bordered surfaces. */}
-            <ReadinessScoreGauge score={data.score} passingScore={PASS_MARK} />
+            <ReadinessScoreGauge score={data.score} passingScore={PASS_MARK} size="lg" />
             <p style={{ ...bodyStyle, margin: 0 }}>{data.scoreExplanation}</p>
             {/* The credibility line. It is NOT from the design — see
                 READINESS_FREQUENCY_NOTE for why it has to be here. */}
@@ -427,14 +427,27 @@ const scoreRowStyle: CSSProperties = {
   alignItems: 'flex-start',
 }
 
+/**
+ * The score column. Widened 2026-09-09 — it was `1 1 320px` beside the stats'
+ * `1 1 280px`, i.e. an even split, which left the `md` gauge (206px) floating
+ * in a 262px card with the width going to padding.
+ *
+ * Now takes the larger share of the row AND the gauge steps up to `lg`
+ * (276px). Those two go together: widening the card alone just makes the
+ * whitespace wider, and stepping the gauge up alone clips it. Change one and
+ * check the other.
+ *
+ * The row still wraps — `scoreRowStyle` is `flexWrap: 'wrap'` and both columns
+ * keep a `minWidth`, so on a narrow shell the stats drop below the card rather
+ * than squeezing it under the gauge's own minimum.
+ */
 const scoreCardStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
-  alignItems: 'flex-start',
+  alignItems: 'stretch',
   gap: 12,
-  padding: 20,
-  flex: '1 1 320px',
-  minWidth: 280,
+  flex: '1.4 1 360px',
+  minWidth: 312,
 }
 
 const breakdownGridStyle: CSSProperties = {
