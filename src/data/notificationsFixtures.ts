@@ -38,12 +38,132 @@ import type { Brand } from '@/context/AccountContext'
  *  the app-wide anchor, at mid-morning so "3h ago" is still the same day. */
 export const NOTIFICATIONS_NOW = new Date(2026, 4, 11, 10, 30)
 
+/**
+ * What a notification is ABOUT — the axis the preferences switch on.
+ *
+ * **Deliberately not the tone.** "3 tasks are overdue" and "your licence
+ * renews in 45 days" are both `warning`, and a learner plainly wants to mute
+ * the first without muting the second: one is study nagging, the other is a
+ * state deadline. Tone is how a notification LOOKS; category is what it is
+ * about, and only the second is a thing anybody would want a switch for.
+ *
+ * Keeping them separate also means the preferences cannot silently re-colour
+ * the feed — a category can gain a tone, or lose one, without touching this.
+ */
+export type NotificationCategory =
+  | 'study-plan'
+  | 'readiness'
+  | 'licence'
+  | 'messages'
+  | 'offers'
+
+export type NotificationChannel = 'in-app' | 'email'
+
+export type NotificationCategoryDef = {
+  id: NotificationCategory
+  label: string
+  description: string
+  /**
+   * True ⇒ the IN-APP switch is locked on.
+   *
+   * Only `licence` is. A learner who mutes their renewal deadline and then
+   * misses it has a real-world problem — a lapsed licence, a state late fee —
+   * that no other category here can cause. This is the one place the product
+   * is entitled to overrule the preference, and saying so in the sheet is
+   * better than quietly ignoring the toggle.
+   *
+   * The EMAIL switch stays adjustable even here: "do not email me" is a
+   * reasonable ask about a channel; "never tell me at all" is the one being
+   * refused.
+   */
+  requiredInApp?: boolean
+}
+
+/**
+ * The five categories, in the order the sheet lists them: the two about the
+ * work, then the one that is compliance, then the two that are other people
+ * talking to you. Offers is last because it is the one most people are
+ * looking for the switch for.
+ */
+export const NOTIFICATION_CATEGORIES: NotificationCategoryDef[] = [
+  {
+    id: 'study-plan',
+    label: 'Study plan',
+    description: 'Tasks due, overdue nudges, and pacing against your exam date.',
+  },
+  {
+    id: 'readiness',
+    label: 'Exam readiness',
+    description: 'Practice and simulator results, and changes to your readiness score.',
+  },
+  {
+    id: 'licence',
+    label: 'Licence & renewals',
+    description: 'CE hour totals and state renewal deadlines.',
+    requiredInApp: true,
+  },
+  {
+    id: 'messages',
+    label: 'Messages',
+    description: 'Replies from your instructor or support.',
+  },
+  {
+    id: 'offers',
+    label: 'Offers & promotions',
+    description: 'Discounts on packages and renewal bundles.',
+  },
+]
+
+/** Channel × category, as the sheet holds it. */
+export type NotificationPrefs = Record<
+  NotificationCategory,
+  Record<NotificationChannel, boolean>
+>
+
+/**
+ * Everything on by default, which is what the shipped product does and what
+ * makes the sheet demonstrate anything — a reviewer opening a sheet of
+ * already-off switches learns nothing about the control.
+ */
+export function defaultNotificationPrefs(): NotificationPrefs {
+  return Object.fromEntries(
+    NOTIFICATION_CATEGORIES.map((c) => [c.id, { 'in-app': true, email: true }]),
+  ) as NotificationPrefs
+}
+
+/**
+ * The feed, with muted categories removed.
+ *
+ * **The in-app switches really filter this list**, and that is the point
+ * rather than a flourish: the Preferences card that stood here before said
+ * "not designed yet" precisely so it would not ship toggles that control
+ * nothing — the Membership Plan card's defect. Wiring them to the feed is
+ * how that promise gets kept rather than reversed.
+ *
+ * A `requiredInApp` category is never filtered, whatever the stored value
+ * says. The switch is locked in the UI, so the two can only disagree if a
+ * stale value is loaded, and the answer then is still "show it".
+ */
+export function visibleNotifications(
+  items: Notification[],
+  prefs: NotificationPrefs,
+): Notification[] {
+  const required = new Set(
+    NOTIFICATION_CATEGORIES.filter((c) => c.requiredInApp).map((c) => c.id),
+  )
+  return items.filter(
+    (n) => required.has(n.category) || prefs[n.category]?.['in-app'] !== false,
+  )
+}
+
 export type NotificationId = string
 
 export type Notification = {
   id: NotificationId
   /** Drives the card's border, glyph and accessible tone word. */
   tone: AlertTone
+  /** What it is ABOUT — the axis the preferences switch on. See the type. */
+  category: NotificationCategory
   title: string
   body: string
   /** Hours before `NOTIFICATIONS_NOW`. Authored, not derived — see above. */
@@ -79,6 +199,7 @@ export type Notification = {
 const XCEL_NOTIFICATIONS: Notification[] = [
   {
     id: 'tasks-overdue',
+    category: 'study-plan',
     tone: 'warning',
     title: '3 study tasks are overdue',
     body: 'Chapters 6 and 7 were due Friday. Your plan still gets you to exam day if you clear them this week.',
@@ -89,6 +210,7 @@ const XCEL_NOTIFICATIONS: Notification[] = [
   },
   {
     id: 'instructor-reply',
+    category: 'messages',
     tone: 'message',
     title: 'Re: Annuity suitability question',
     body: 'Good question — suitability is judged at the point of sale, so the answer turns on what the client disclosed then. I have added a short note to Chapter 7.',
@@ -98,6 +220,7 @@ const XCEL_NOTIFICATIONS: Notification[] = [
   },
   {
     id: 'readiness-moved',
+    category: 'readiness',
     tone: 'info',
     title: 'Your exam readiness moved to 64%',
     body: 'Two more chapters answered correctly. Health insurance basics is still your weakest section.',
@@ -108,6 +231,7 @@ const XCEL_NOTIFICATIONS: Notification[] = [
   },
   {
     id: 'simulator-scored',
+    category: 'readiness',
     tone: 'success',
     title: 'Exam Simulator 2 scored 78%',
     body: 'Above the 70% pass mark. Your review list has been updated with the questions you missed.',
@@ -118,6 +242,7 @@ const XCEL_NOTIFICATIONS: Notification[] = [
   },
   {
     id: 'licence-expiring',
+    category: 'licence',
     tone: 'warning',
     title: 'Your Florida licence renews in 45 days',
     body: 'You have 6 of 24 required CE hours. Renewals filed after the deadline carry a state late fee.',
@@ -127,6 +252,7 @@ const XCEL_NOTIFICATIONS: Notification[] = [
   },
   {
     id: 'certificate-ready',
+    category: 'licence',
     tone: 'success',
     title: 'Certificate ready — Ethics for Insurance Professionals',
     body: 'Your completion certificate has been filed and is ready to download.',
@@ -138,6 +264,7 @@ const XCEL_NOTIFICATIONS: Notification[] = [
   },
   {
     id: 'ce-promo',
+    category: 'offers',
     tone: 'promo',
     title: '20% off your CE renewal package',
     body: 'Renewal season pricing on the Florida 2-15 CE bundle. Use code RENEW20 at checkout before 06/30/2026.',
@@ -148,6 +275,7 @@ const XCEL_NOTIFICATIONS: Notification[] = [
   },
   {
     id: 'attempt-not-saved',
+    category: 'readiness',
     tone: 'error',
     title: "We couldn't save your last practice attempt",
     body: 'Your connection dropped partway through Practice Exam 1. Nothing was scored, and the attempt does not count against you.',

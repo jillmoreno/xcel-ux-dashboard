@@ -1,7 +1,7 @@
 import { useCallback, useState } from 'react'
 import { Sheet } from '@/components/ui/Sheet'
+import { SheetHeader, SHEET_BODY } from '@/components/ui/SheetHeader'
 import {
-  ArrowLeft,
   Bell,
   Check,
   ChevronRight,
@@ -10,7 +10,6 @@ import {
   Monitor,
   Moon,
   Sun,
-  X,
 } from '@/icons'
 import { useTheme, type Appearance } from '@/context/ThemeContext'
 
@@ -106,7 +105,7 @@ export function AppearancePreferencesSheet({ open, onClose }: Props) {
             title="Preferences"
             onClose={handleClose}
           />
-          <div style={BODY}>
+          <div style={SHEET_BODY}>
             <p style={HINT}>Manage how the platform looks and works for you.</p>
             <button type="button" className="cre-menu-item" style={ROW} onClick={() => setView('appearance')}>
               <span style={ROW_IC}><Sun size={20} aria-hidden /></span>
@@ -135,8 +134,9 @@ export function AppearancePreferencesSheet({ open, onClose }: Props) {
             title="Appearance"
             onClose={handleClose}
             onBack={() => setView('root')}
+            backLabel="Back to Preferences"
           />
-          <div style={BODY}>
+          <div style={SHEET_BODY}>
             <p style={HINT}>
               Choose how the platform looks. This changes the page background and the
               left-navigation style.
@@ -199,22 +199,6 @@ export function AppearancePreferencesSheet({ open, onClose }: Props) {
 
 /* -------------------------------------------------------------------------- */
 
-function SheetHeader({ title, onClose, onBack }: { title: string; onClose: () => void; onBack?: () => void }) {
-  return (
-    <header style={HEADER}>
-      {onBack && (
-        <button type="button" aria-label="Back to Preferences" onClick={onBack} className="cre-sheet-close" style={ICON_BTN}>
-          <ArrowLeft size={18} aria-hidden />
-        </button>
-      )}
-      <h2 style={HEADER_TITLE}>{title}</h2>
-      <button type="button" aria-label={`Close ${title}`} onClick={onClose} className="cre-sheet-close" style={{ ...ICON_BTN, marginLeft: 'auto' }}>
-        <X size={16} aria-hidden />
-      </button>
-    </header>
-  )
-}
-
 const STUBS = [
   { t: 'Notifications', d: 'Email and in-app alerts', Icon: Bell },
   { t: 'Language & Region', d: 'English (US)', Icon: Monitor },
@@ -222,34 +206,6 @@ const STUBS = [
 ] as const
 
 /* ---- inline style objects (token-driven) ---- */
-const HEADER: React.CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 12,
-  padding: '20px 18px 16px',
-  borderBottom: '1px solid var(--color-border-subtle)',
-}
-const HEADER_TITLE: React.CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-heading)',
-  fontSize: 18,
-  fontWeight: 800,
-  color: 'var(--color-text-primary)',
-}
-const ICON_BTN: React.CSSProperties = {
-  width: 34,
-  height: 34,
-  display: 'grid',
-  placeItems: 'center',
-  border: 'none',
-  background: 'transparent',
-  borderRadius: 9,
-  cursor: 'pointer',
-  color: 'var(--color-text-secondary)',
-  flex: 'none',
-  padding: 0,
-}
-const BODY: React.CSSProperties = { padding: '14px 18px 24px', overflow: 'auto', flex: 1 }
 const HINT: React.CSSProperties = {
   fontSize: 13,
   lineHeight: 1.5,

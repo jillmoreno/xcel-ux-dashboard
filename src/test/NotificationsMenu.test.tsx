@@ -9,6 +9,7 @@ import { NotificationsPanel } from '@/components/notifications/NotificationsPane
 import { NotificationsProvider } from '@/context/NotificationsContext'
 import { ALERT_TONES, type AlertTone } from '@/components/ui/alertTones'
 import {
+  NOTIFICATION_CATEGORIES,
   formatAge,
   notificationsFor,
   unreadBadgeLabel,
@@ -270,23 +271,118 @@ describe('the full list page', () => {
     ).toBeInTheDocument()
   })
 
-  it('carries the PREFERENCES half of the word, and does not fake it', () => {
-    // "Notifications" already meant preferences here before the bell existed.
-    // The page holds both readings rather than either being renamed — but the
-    // preferences half says it is unbuilt instead of showing toggles that
-    // control nothing, which is the Membership Plan card's defect.
-    seedState('unread')
-    renderWith(<NotificationsPanel />)
-    const prefs = screen.getByRole('region', { name: 'Notification preferences' })
-    expect(within(prefs).getByText(/Not designed yet/)).toBeInTheDocument()
-    expect(within(prefs).queryByRole('switch')).toBeNull()
-    expect(within(prefs).queryByRole('checkbox')).toBeNull()
-  })
-
   it('shows the empty state rather than a bare heading over nothing', () => {
     seedState('empty')
     renderWith(<NotificationsPanel />)
     expect(screen.getByText('Nothing yet')).toBeInTheDocument()
     expect(screen.getByText(/all caught up/i)).toBeInTheDocument()
+  })
+})
+
+describe('notification preferences', () => {
+  const openPrefs = async () => {
+    await userEvent.click(screen.getByRole('button', { name: /^Preferences$/ }))
+    return screen.getByRole('dialog', { name: /Notification preferences/i })
+  }
+
+  it('a category is NOT a tone — two categories share one tone, which is why the axis is separate', () => {
+    // "3 tasks are overdue" and "your licence renews in 45 days" are both
+    // `warning`, and muting the first while keeping the second is the entire
+    // point of the sheet. If the preferences ever key on tone instead, this
+    // fails — which is the moment to notice.
+    const items = notificationsFor('xcel', 'unread')
+    const warnings = items.filter((n) => n.tone === 'warning')
+    expect(new Set(warnings.map((n) => n.category)).size).toBeGreaterThan(1)
+  })
+
+  it('opens from the header, beside Mark all read', async () => {
+    seedState('unread')
+    renderWith(<NotificationsPanel />)
+    const dialog = await openPrefs()
+    for (const c of NOTIFICATION_CATEGORIES) {
+      expect(within(dialog).getByRole('region', { name: c.label })).toBeInTheDocument()
+    }
+    // Two channels per category, no third. Frequency is deliberately absent.
+    expect(within(dialog).getAllByRole('switch')).toHaveLength(
+      NOTIFICATION_CATEGORIES.length * 2,
+    )
+  })
+
+  it('stays available at zero unread, when Mark all read has gone', async () => {
+    // "Turn this off" is a thing a learner wants precisely when the list is
+    // quiet, so this control does not come and go with the unread count.
+    seedState('all-read')
+    renderWith(<NotificationsPanel />)
+    expect(screen.queryByRole('button', { name: /Mark all read/ })).toBeNull()
+    expect(screen.getByRole('button', { name: /^Preferences$/ })).toBeInTheDocument()
+  })
+
+  it('muting a category really removes it — from the page AND the bell', async () => {
+    // The whole justification for shipping these switches. A toggle that
+    // controls nothing is the Membership Plan card's defect, which is why the
+    // card that stood here first said "not designed yet" instead.
+    seedState('unread')
+    renderBoth()
+    const before = document.querySelectorAll('.cre-notification-row').length
+    const dialog = await openPrefs()
+    const offers = within(dialog).getByRole('region', { name: 'Offers & promotions' })
+    await userEvent.click(within(offers).getByRole('switch', { name: /Show in the app/ }))
+    const after = document.querySelectorAll('.cre-notification-row').length
+    expect(after).toBeLessThan(before)
+    expect(screen.queryByLabelText(/^Offer:/)).toBeNull()
+  })
+
+  it('says on the page that the list is filtered', async () => {
+    // A filtered list that looks identical to an unfiltered one is how "where
+    // did my notification go" happens. The answer is on screen, not behind
+    // the sheet that caused it.
+    seedState('unread')
+    renderWith(<NotificationsPanel />)
+    const dialog = await openPrefs()
+    const offers = within(dialog).getByRole('region', { name: 'Offers & promotions' })
+    await userEvent.click(within(offers).getByRole('switch', { name: /Show in the app/ }))
+    expect(screen.getByText(/1 category hidden/)).toBeInTheDocument()
+  })
+
+  it('muting does not mark anything read — unmuting brings it back as it was', async () => {
+    seedState('unread')
+    renderWith(<NotificationsPanel />)
+    const dialog = await openPrefs()
+    const studyPlan = within(dialog).getByRole('region', { name: 'Study plan' })
+    const sw = within(studyPlan).getByRole('switch', { name: /Show in the app/ })
+    // The overdue-tasks row is the unread study-plan one.
+    expect(screen.getByLabelText(/^Warning: 3 study tasks.*Unread\.$/)).toBeInTheDocument()
+    await userEvent.click(sw)
+    expect(screen.queryByLabelText(/^Warning: 3 study tasks/)).toBeNull()
+    await userEvent.click(sw)
+    expect(screen.getByLabelText(/^Warning: 3 study tasks.*Unread\.$/)).toBeInTheDocument()
+  })
+
+  it('locks the licence row in-app but NOT its email — the refusal is about the fact, not the channel', async () => {
+    seedState('unread')
+    renderBoth()
+    const dialog = await openPrefs()
+    const licence = within(dialog).getByRole('region', { name: 'Licence & renewals' })
+    const inApp = within(licence).getByRole('switch', { name: /Show in the app/ })
+    const email = within(licence).getByRole('switch', { name: /Email me/ })
+    expect(inApp).toBeDisabled()
+    expect(inApp).toBeChecked()
+    expect(email).toBeEnabled()
+    // The reason is stated rather than left as a dead control.
+    expect(within(licence).getByText(/lapsed\s+licence/i)).toBeInTheDocument()
+    // And turning the email off does not remove it from the feed.
+    await userEvent.click(email)
+    expect(screen.getAllByLabelText(/Florida licence renews/).length).toBeGreaterThan(0)
+  })
+
+  it('offers no frequency control — a digest is a delivery system, not a switch', async () => {
+    // Recorded here rather than in the sheet's own copy. A sheet that spends
+    // its last paragraph explaining what it does not do reads as unfinished;
+    // this is the place that argument belongs.
+    seedState('unread')
+    renderWith(<NotificationsPanel />)
+    const dialog = await openPrefs()
+    expect(within(dialog).queryByRole('combobox')).toBeNull()
+    expect(within(dialog).queryByRole('radiogroup')).toBeNull()
   })
 })

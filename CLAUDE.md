@@ -1080,11 +1080,77 @@ destination did not. `NotificationsPanel` replaced that one `renderBody`
 branch, which is the Readiness sequence again — register the section first,
 swap one branch later, nothing else moves.
 
-**The preferences card says it is UNBUILT rather than showing toggles.** An
-authored switch that controls nothing is the Membership Plan card's defect
-(announcing a renewal date on a brand that sells no membership), and here a
-reviewer would reasonably flip one and expect the emails to stop. A test
-asserts the card contains no `switch` or `checkbox` role.
+**The preferences are a SHEET now, from a link beside "Mark all read".** They
+were a card that said "not designed yet" for exactly one commit — deliberately,
+rather than a card of toggles that controlled nothing, which is the Membership
+Plan card's defect. What earns them the right to be real is that the in-app
+switches genuinely filter the feed, live, on both surfaces.
+
+**Preferences switch on CATEGORY, not on tone**, and that is the load-bearing
+modelling call. "3 tasks are overdue" and "your licence renews in 45 days" are
+both `warning`, and muting the first while keeping the second is the entire
+point of the sheet — so `Notification` carries a `category` alongside its
+tone. Tone is how a notification LOOKS; category is what it is ABOUT, and only
+the second is something anyone wants a switch for. A test asserts two
+categories share the warning tone, so collapsing the two axes fails.
+
+**Category × channel, and no third axis.** The obvious third is FREQUENCY
+(immediate / daily digest / weekly) and it is absent on purpose: a digest is a
+delivery SYSTEM, not a switch, and offering the control before the system
+exists produces a preference the product cannot honour. Mocking a frequency
+picker is the failure mode, and a test asserts there is no `combobox` or
+`radiogroup`.
+
+**The sheet does NOT explain its own gaps on screen.** It carried two footer
+notes — email being recorded with nothing to send, and frequency being absent
+— and they were removed at Jillienne's request. The reasoning holds: a sheet
+that spends its last paragraph on what it does not do reads as unfinished, and
+the audience for that caveat is whoever builds it, not the learner. The
+arguments live here and in the component doc; the TESTS are what stop them
+being lost. Do not re-add the notes to the UI.
+
+**Email is stored and does nothing.** There is no mail in a prototype. Shown
+anyway rather than hidden: the real product has both channels, and a
+preferences design showing one is not the design. The switch does hold its
+state, so it is a control that works with nothing behind it rather than a
+control that does not work.
+
+**`Licence & renewals` is locked ON in-app.** A learner who mutes their
+renewal deadline and misses it has a lapsed licence and a state late fee — a
+real-world consequence no other category here can cause, and the one place the
+product is entitled to overrule the preference. The switch is disabled with
+the reason stated beside it, which is the honest version of quietly ignoring
+it. Its EMAIL switch stays live: "don't email me" is a reasonable ask about a
+channel; "never tell me at all" is the one being refused. `visibleNotifications`
+re-checks `requiredInApp` rather than trusting the stored value, so a stale
+`false` still shows the row.
+
+**Muting hides; it does not mark read.** Read state is applied BEFORE the
+preference filter, so unmuting a category brings its notifications back
+exactly as they were. "Mark all read" clears only what is VISIBLE, for the
+same reason — clearing hidden rows would mean unmuting reveals things already
+read by a click the learner could not have known applied to them.
+
+**The header says when the list is filtered** ("7 total · 3 unread · 1
+category hidden"). A filtered list that looks identical to an unfiltered one
+is how "where did my notification go" happens, and the answer belongs on
+screen rather than behind the sheet that caused it.
+
+**`SheetHeader` was extracted for this.** `Sheet` deliberately renders no
+chrome — overlay, panel, scroll lock and a visually-hidden title, then
+`{children}` with ZERO padding — so every caller draws its own header, and
+until now exactly one did, privately inside `AppearancePreferencesSheet`.
+Building a near-copy is how two slide-overs end up with headers a few pixels
+and one font weight apart. `SHEET_BODY` travels with it, because a header with
+the wrong padding under it looks exactly like a broken header. **This bit
+first**: the sheet shipped with no header and no padding at all, text running
+edge to edge, because `Sheet`'s name suggests it supplies both.
+
+**Known, not fixed:** `AppearancePreferencesSheet` still lists a DISABLED
+"Notifications — Email and in-app alerts" stub row. It is honest (visibly
+unbuilt) but it now points at nothing while the real sheet lives elsewhere.
+Wiring it means opening a sheet from inside a sheet, which nothing here does
+yet — decide that before reaching for it.
 
 **Read state is in `NotificationsContext`, and that is the whole reason it
 exists.** It started as `useState` inside the bell, which was correct while

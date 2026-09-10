@@ -1,6 +1,7 @@
-import type { CSSProperties } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { Bell, Check, Sliders } from '@/icons'
 import { NotificationRow } from './NotificationRow'
+import { NotificationPreferencesSheet } from './NotificationPreferencesSheet'
 import { useNotifications } from '@/context/NotificationsContext'
 
 /**
@@ -21,14 +22,25 @@ import { useNotifications } from '@/context/NotificationsContext'
  * The account section was already called Notifications before the bell
  * existed — and it meant **preferences** (which emails you get). The bell
  * means the **feed**. Rather than rename either out from under a reviewer,
- * the feed is the page's body and the preferences are a card beneath it, so
- * one address answers both readings of the word. The preferences card is
- * honest about being unbuilt rather than showing dead toggles: an authored
- * switch that controls nothing is the same defect as the Membership Plan
- * card announcing a renewal date on a brand that sells no membership.
+ * the page IS the feed and the preferences open as a sheet over it, from a
+ * link in this header. So one address answers both readings of the word and
+ * the settings are one click from the thing they govern.
+ *
+ * **The preferences were a card that said "not designed yet" for one
+ * commit**, deliberately, rather than a card of toggles that controlled
+ * nothing — the Membership Plan card's defect. They are real now
+ * ([`NotificationPreferencesSheet`](./NotificationPreferencesSheet.tsx)) and
+ * the in-app switches genuinely filter this list, which is what earns them
+ * the right to be here.
+ *
+ * **The header says when the list is filtered.** A muted category makes rows
+ * vanish, and a filtered list that looks identical to an unfiltered one is
+ * how "where did my notification go" happens. The count line carries it, so
+ * the answer is on screen rather than behind the sheet.
  */
 export function NotificationsPanel() {
-  const { items, unread, markRead, markAllRead } = useNotifications()
+  const { items, unread, markRead, markAllRead, mutedCount } = useNotifications()
+  const [prefsOpen, setPrefsOpen] = useState(false)
 
   return (
     <div style={wrapStyle}>
@@ -43,19 +55,43 @@ export function NotificationsPanel() {
               {items.length === 0
                 ? 'Nothing yet'
                 : `${items.length} total · ${unread} unread`}
+              {mutedCount > 0 && (
+                <>
+                  {items.length === 0 ? '' : ' · '}
+                  <span style={mutedNoteStyle}>
+                    {mutedCount} {mutedCount === 1 ? 'category' : 'categories'} hidden
+                  </span>
+                </>
+              )}
             </p>
           </div>
-          {unread > 0 && (
+          <div style={headerActionsStyle}>
+            {unread > 0 && (
+              <button
+                type="button"
+                onClick={markAllRead}
+                className="cre-alert-action"
+                style={markAllStyle}
+              >
+                <Check size={14} aria-hidden />
+                Mark all read
+              </button>
+            )}
+            {/* Preferences sits BESIDE Mark all read rather than under the
+                list, because the two are the only controls that act on the
+                whole feed. It is always shown — unlike Mark all read, which
+                has nothing to do at zero unread — since "turn this off" is a
+                thing a learner wants precisely when the list is quiet. */}
             <button
               type="button"
-              onClick={markAllRead}
+              onClick={() => setPrefsOpen(true)}
               className="cre-alert-action"
               style={markAllStyle}
             >
-              <Check size={14} aria-hidden />
-              Mark all read
+              <Sliders size={14} aria-hidden />
+              Preferences
             </button>
-          )}
+          </div>
         </header>
 
         {items.length === 0 ? (
@@ -86,31 +122,7 @@ export function NotificationsPanel() {
         )}
       </section>
 
-      <section aria-label="Notification preferences" style={cardStyle}>
-        <header style={headerStyle}>
-          <div>
-            <h2 style={titleStyle}>
-              <span aria-hidden style={{ marginRight: 8, verticalAlign: '-2px' }}>
-                <Sliders size={16} aria-hidden />
-              </span>
-              Preferences
-            </h2>
-            <p style={subtitleStyle}>
-              Which of these reach you by email, and how often.
-            </p>
-          </div>
-        </header>
-        {/* Stated as unbuilt rather than mocked. Authored toggles that
-            control nothing are the same defect as a Membership Plan card
-            announcing a renewal on a brand with no membership — and here a
-            reviewer would reasonably flip one and expect the emails to stop. */}
-        <p style={notBuiltStyle}>
-          Not designed yet. The channels this needs (email, SMS, in-app) and the
-          per-category frequency are an open question — the study-plan reminders
-          in particular are daily by default, which is the setting most likely to
-          be turned off first.
-        </p>
-      </section>
+      <NotificationPreferencesSheet open={prefsOpen} onClose={() => setPrefsOpen(false)} />
     </div>
   )
 }
@@ -156,6 +168,17 @@ const subtitleStyle: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 13,
   color: 'var(--color-text-secondary)',
+}
+
+const headerActionsStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 4,
+  flexShrink: 0,
+}
+
+const mutedNoteStyle: CSSProperties = {
+  color: 'var(--color-text-tertiary)',
 }
 
 const markAllStyle: CSSProperties = {
@@ -205,11 +228,3 @@ const emptyBodyStyle: CSSProperties = {
   color: 'var(--color-text-secondary)',
 }
 
-const notBuiltStyle: CSSProperties = {
-  margin: 0,
-  padding: '16px 20px',
-  fontFamily: 'var(--font-body)',
-  fontSize: 13,
-  lineHeight: '20px',
-  color: 'var(--color-text-secondary)',
-}
