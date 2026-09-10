@@ -32,6 +32,13 @@ function pill(name: string) {
   return screen.getByRole('tab', { name })
 }
 
+/** The breakdown moved to its own tab on 2026-09-09, so the filter tests open
+ *  it first. Kept as a helper rather than repeated: if the tab is renamed
+ *  again, one line moves. */
+function openInsights() {
+  fireEvent.click(screen.getByRole('tab', { name: 'Insights' }))
+}
+
 function counts() {
   const m = document.body.textContent?.match(/(\d+) chapters · (\d+) topics/)
   return { chapters: Number(m?.[1]), topics: Number(m?.[2]) }
@@ -49,6 +56,7 @@ describe('the Chapter & Topic filter', () => {
     // happily while a chapter falls into neither group, which is the bug that
     // matters — a weak chapter silently disappearing from a review worklist.
     renderPanel()
+    openInsights()
     fireEvent.click(pill('I Should Review'))
     const review = counts()
     fireEvent.click(pill('I Know This'))
@@ -76,6 +84,7 @@ describe('the Chapter & Topic filter', () => {
     // unscoped text query answers about the wrong column — and would have
     // passed here for the wrong reason.
     renderPanel()
+    openInsights()
     fireEvent.click(pill('I Should Review'))
     const column = screen.getByRole('group', { name: 'Chapters' })
     for (const c of DATA.chapters) {
@@ -89,6 +98,7 @@ describe('the Chapter & Topic filter', () => {
     // Annuities CHAPTER and weak on the Annuities TOPIC, which is exactly why
     // the design shows both columns.
     renderPanel()
+    openInsights()
     fireEvent.click(pill('I Should Review'))
     const column = screen.getByRole('group', { name: 'Topics' })
     for (const t of DATA.topics) {
@@ -101,6 +111,7 @@ describe('the Chapter & Topic filter', () => {
     // "I Should Review" is a worklist, so the weakest chapter leads. Show All
     // is a reference, so it keeps the syllabus order the design shows.
     renderPanel()
+    openInsights()
     fireEvent.click(pill('I Should Review'))
     const firstReview = DATA.chapters
       .filter((c) => bandFor(c.pct) === 'review')
@@ -175,5 +186,32 @@ describe('the Practice Exams tab', () => {
     for (const row of rows) {
       expect(within(row).queryByText(/^(n\/a|—|-)$/i)).toBeNull()
     }
+  })
+})
+
+describe('the tab set', () => {
+  it('puts Insights SECOND, right after the score', () => {
+    // Order is the decision, not just membership. The breakdown is the answer
+    // to the question the score raises, so anywhere after "What to Expect"
+    // buries it behind exam-day logistics. Asserted as a sequence, because a
+    // presence check passes just as happily with the tabs in any order.
+    renderPanel()
+    expect(
+      screen
+        .getAllByRole('tab')
+        .map((t) => t.textContent?.trim())
+        .slice(0, 4),
+    ).toEqual(['Exam Readiness', 'Insights', 'What to Expect', 'Practice Exams'])
+  })
+
+  it('hands off from the score to Insights', () => {
+    // The score's own copy says "aim for the green". Splitting the breakdown
+    // into its own tab moved the answer a click away, so the link is what keeps
+    // that sentence actionable — on the design's single long page the
+    // breakdown was simply the next thing down.
+    renderPanel()
+    expect(screen.queryByRole('group', { name: 'Chapters' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: /see what to review/i }))
+    expect(screen.getByRole('group', { name: 'Chapters' })).toBeInTheDocument()
   })
 })

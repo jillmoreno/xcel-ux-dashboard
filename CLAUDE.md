@@ -375,13 +375,27 @@ most worth guarding.
    Regulatory Requirements) — the direct ask. They are course-detail tabs; this
    is a section of the learner's own dashboard, and four of the five have no
    content here.
-2. **The design's LEFT SUB-RAIL became the three tabs.** It carried navigation
+2. **The design's LEFT SUB-RAIL became the tabs.** It carried navigation
    AND content in one column — a second rail inside the shell's content column
    would sit beside the platform rail already there, which is the gutter cost
    the account sections pay with `AccountSubNav`.
 3. **Study Tips folded into What to Expect; Final Exams into Practice Exams.**
    The three-tab set leaves the design's other two sections homeless and these
    are the joins that hold.
+
+**Insights is its own tab, and it is SECOND** (added 2026-09-09, straight after
+the port). The Chapter & Topic Breakdown sat below the score, on the design's
+one long page. Promoting it changes what it IS: below a score it reads as
+supporting detail; on its own it is the worklist a learner opens between study
+sessions. Order carries the same argument — anywhere after "What to Expect"
+buries the answer behind exam-day logistics. A test asserts the tab SEQUENCE,
+not just that four tabs exist.
+
+**The split has a cost, and the hand-off link is the payment.** The score's copy
+says "aim for the green"; the screen that says WHICH green is now a click away
+instead of the next thing down. `ExamReadinessTab` ends with "See what to
+review →", which switches tabs. Remove the split and the link goes with it —
+do not leave one without the other.
 
 **Practice and licensing attempts stay two lists, and that is not cosmetic.**
 It is the same split the FinServ exam task-type spec found in `StudyTaskKind`:

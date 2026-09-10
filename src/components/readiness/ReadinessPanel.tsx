@@ -41,11 +41,15 @@ import { ReadinessGauge } from './ReadinessGauge'
  *    the exam task-type spec found in `StudyTaskKind`.
  */
 
-type ReadinessTab = 'readiness' | 'expect' | 'practice'
+type ReadinessTab = 'readiness' | 'insights' | 'expect' | 'practice'
 type BreakdownFilter = 'review' | 'know' | 'all'
 
 const TABS = [
   { id: 'readiness' as const, label: 'Exam Readiness' },
+  // Insights is SECOND, directly after the score, because it is the answer to
+  // the question the score raises. It was part of the Exam Readiness tab until
+  // 2026-09-09 — see `InsightsTab`.
+  { id: 'insights' as const, label: 'Insights' },
   { id: 'expect' as const, label: 'What to Expect' },
   { id: 'practice' as const, label: 'Practice Exams' },
 ]
@@ -70,7 +74,8 @@ export function ReadinessPanel() {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <Tabs items={TABS} active={tab} onChange={setTab} />
-      {tab === 'readiness' && <ExamReadinessTab />}
+      {tab === 'readiness' && <ExamReadinessTab onOpenInsights={() => setTab('insights')} />}
+      {tab === 'insights' && <InsightsTab />}
       {tab === 'expect' && <WhatToExpectTab />}
       {tab === 'practice' && <PracticeExamsTab />}
     </div>
@@ -79,23 +84,19 @@ export function ReadinessPanel() {
 
 /* ─── Tab 1 · Exam Readiness ──────────────────────────────────────────── */
 
-function ExamReadinessTab() {
+/**
+ * The score and what it is made of. Nothing else — the Chapter & Topic
+ * Breakdown that used to sit below it is now `InsightsTab`.
+ *
+ * The split leaves this tab short, which is the point: it answers "am I ready"
+ * in one screenful and hands off. What it must NOT do is answer that and then
+ * leave the learner to find the "what should I review" screen themselves —
+ * the score's own copy says "aim for the green", so `onOpenInsights` puts the
+ * route to that answer directly under the sentence that asks for it.
+ */
+function ExamReadinessTab({ onOpenInsights }: { onOpenInsights: () => void }) {
   const { brand } = useAccount()
   const data = readinessFor(brand)
-  const [filter, setFilter] = useState<BreakdownFilter>('review')
-
-  // ONE predicate drives both columns and the pill strip, so the chapter list
-  // and the topic list can never disagree about what "should review" means.
-  const keep = (pct: number) =>
-    filter === 'all' ? true : filter === 'review' ? bandFor(pct) === 'review' : bandFor(pct) !== 'review'
-
-  const chapters = data.chapters.filter((c) => keep(c.pct))
-  const topics = data.topics.filter((t) => keep(t.pct))
-  // "Show All" is the design's own sort order (by chapter number); the two
-  // filtered views sort worst-first, because the list is then a worklist.
-  const sortedChapters =
-    filter === 'all' ? chapters : [...chapters].sort((a, b) => a.pct - b.pct)
-  const sortedTopics = filter === 'all' ? topics : [...topics].sort((a, b) => a.pct - b.pct)
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
@@ -113,6 +114,13 @@ function ExamReadinessTab() {
             {/* The credibility line. It is NOT from the design — see
                 READINESS_FREQUENCY_NOTE for why it has to be here. */}
             <p style={frequencyStyle}>{data.frequencyNote}</p>
+            {/* The hand-off. The sentence above says "aim for the green"; this
+                is the route to the screen that says WHICH green. It exists
+                because Insights became its own tab — on the design's single
+                long page the breakdown was simply the next thing down. */}
+            <button type="button" onClick={onOpenInsights} style={handoffStyle}>
+              See what to review →
+            </button>
           </Card>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: '1 1 280px', minWidth: 260 }}>
             {data.progress.map((row) => (
@@ -132,7 +140,45 @@ function ExamReadinessTab() {
           </div>
         </div>
       </section>
+    </div>
+  )
+}
 
+/* ─── Tab 2 · Insights ────────────────────────────────────────────────── */
+
+/**
+ * The Chapter & Topic Breakdown, promoted out of the Exam Readiness tab on
+ * 2026-09-09 and placed SECOND, directly after the score.
+ *
+ * In the Figma it sits below the score on one long screen. Making it a tab
+ * changes what it is: below a score it reads as supporting detail, but on its
+ * own it is the worklist — the thing a learner opens between study sessions to
+ * decide what to do next. The order matters for the same reason; anywhere after
+ * "What to Expect" would bury the answer behind exam-day logistics.
+ *
+ * The cost is that the score and the breakdown no longer share a screen, so the
+ * number and its explanation are one click apart. `ExamReadinessTab` closes
+ * that with a hand-off link rather than leaving the learner to find this tab.
+ */
+function InsightsTab() {
+  const { brand } = useAccount()
+  const data = readinessFor(brand)
+  const [filter, setFilter] = useState<BreakdownFilter>('review')
+
+  // ONE predicate drives both columns and the pill strip, so the chapter list
+  // and the topic list can never disagree about what "should review" means.
+  const keep = (pct: number) =>
+    filter === 'all' ? true : filter === 'review' ? bandFor(pct) === 'review' : bandFor(pct) !== 'review'
+
+  const chapters = data.chapters.filter((c) => keep(c.pct))
+  const topics = data.topics.filter((t) => keep(t.pct))
+  // "Show All" is the design's own sort order (by chapter number); the two
+  // filtered views sort worst-first, because the list is then a worklist.
+  const sortedChapters = filter === 'all' ? chapters : [...chapters].sort((a, b) => a.pct - b.pct)
+  const sortedTopics = filter === 'all' ? topics : [...topics].sort((a, b) => a.pct - b.pct)
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
       <section style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <h2 style={headingStyle}>Chapter &amp; Topic Breakdown</h2>
         <p style={{ ...bodyStyle, margin: 0 }}>
@@ -201,7 +247,7 @@ function ExamReadinessTab() {
   )
 }
 
-/* ─── Tab 2 · What to Expect ──────────────────────────────────────────── */
+/* ─── Tab 3 · What to Expect ─────────────────────────────────────────── */
 
 /**
  * The design gives this a rail item and no artwork, so the content is authored.
@@ -268,7 +314,7 @@ const STUDY_TIPS: { title: string; body: string }[] = [
   { title: 'Manage stress', body: 'Sit a full-length simulator at exam length once, so the day is not the first time.' },
 ]
 
-/* ─── Tab 3 · Practice Exams ──────────────────────────────────────────── */
+/* ─── Tab 4 · Practice Exams ─────────────────────────────────────────── */
 
 function PracticeExamsTab() {
   const { brand } = useAccount()
@@ -513,4 +559,16 @@ const emptyStyle: CSSProperties = {
   fontSize: 13,
   fontStyle: 'italic',
   color: 'var(--color-text-tertiary)',
+}
+
+const handoffStyle: CSSProperties = {
+  background: 'transparent',
+  border: 'none',
+  padding: 0,
+  cursor: 'pointer',
+  alignSelf: 'flex-start',
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  fontWeight: 700,
+  color: 'var(--color-accent-link)',
 }
