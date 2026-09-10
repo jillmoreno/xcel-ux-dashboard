@@ -4,10 +4,10 @@ import { describe, expect, it } from 'vitest'
 import { StudyWeekSummary } from '@/components/learning/study-calendar/StudyWeekSummary'
 import {
   studyWeeks,
-  studyCalendarFor,
   STUDY_CALENDAR_TODAY,
   XCEL_CE_STUDY_CALENDAR,
   XCEL_LH_STUDY_CALENDAR,
+  type StudyCalendar,
 } from '@/data/studyCalendarFixtures'
 
 /**
@@ -52,12 +52,12 @@ describe('studyWeeks', () => {
 
   it('lets OVERDUE outrank in-progress', () => {
     // A week that is 4-of-5 done with one task past its date is not "in
-    // progress" — it is a week with a problem in it, and the chip has to say so.
-    const cal = {
+    // progress" — it is a week with a problem in it.
+    const cal: StudyCalendar = {
       ...XCEL_LH_STUDY_CALENDAR,
       tasks: [
-        { ...XCEL_LH_STUDY_CALENDAR.tasks[0], id: 'a', dueDate: '2026-05-18', status: 'completed' as const },
-        { ...XCEL_LH_STUDY_CALENDAR.tasks[0], id: 'b', dueDate: '2026-05-18', status: 'not-started' as const },
+        { ...XCEL_LH_STUDY_CALENDAR.tasks[0], id: 'a', dueDate: '2026-05-18', status: 'completed' },
+        { ...XCEL_LH_STUDY_CALENDAR.tasks[0], id: 'b', dueDate: '2026-05-18', status: 'upcoming' },
       ],
     }
     const [week] = studyWeeks(cal, STUDY_CALENDAR_TODAY)
@@ -67,45 +67,61 @@ describe('studyWeeks', () => {
 })
 
 describe('the band', () => {
-  it('opens on the week the learner is IN, not week 1', () => {
-    // The CE plan's first three weeks are complete. Leading with them would put
-    // three rows of history above the row that matters, and on Home the learner
-    // never reaches the fourth.
+  it('shows all SEVEN days of the week, including the empty ones', () => {
+    // The point of a calendar row: a day with nothing on it says "nothing due",
+    // which a list of only-the-busy-days cannot. The first build of this band
+    // was a list of WEEKS and could not answer "which days have work".
     renderBand()
-    const weeks = studyWeeks(XCEL_CE_STUDY_CALENDAR)
-    const current = weeks.find((w) => w.status !== 'complete')!
-    const rows = screen.getAllByRole('listitem')
-    expect(within(rows[0]).getByText(current.label)).toBeInTheDocument()
-  })
-
-  it('states the position in the WHOLE plan, so four rows do not imply four weeks', () => {
-    renderBand()
-    const weeks = studyWeeks(XCEL_CE_STUDY_CALENDAR)
-    const current = weeks.find((w) => w.status !== 'complete')!
-    expect(
-      screen.getByText(new RegExp(`Week ${current.index} of ${weeks.length}`)),
-    ).toBeInTheDocument()
-    expect(screen.getAllByRole('listitem').length).toBeLessThan(weeks.length)
-  })
-
-  it('is a summary — every row leaves for the plan rather than acting in place', () => {
-    // The rule that keeps this from becoming a second Study Plan. If a row ever
-    // grows a "mark complete", there are two places to do one thing.
-    renderBand()
-    for (const row of screen.getAllByRole('listitem')) {
-      const links = within(row).getAllByRole('link')
-      expect(links.length).toBeGreaterThan(0)
-      for (const l of links) {
-        expect(l.getAttribute('href')).toBe('/dashboard-rebrand?section=study-plan')
-      }
-      expect(within(row).queryByRole('button')).toBeNull()
+    const cells = screen.getAllByRole('listitem')
+    expect(cells.length).toBe(7)
+    for (const dow of ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']) {
+      expect(screen.getByText(dow)).toBeInTheDocument()
     }
   })
 
-  it('uses the authored week theme, not "Week N"', () => {
-    // The fallback exists, but a plan with themes must show them — that is the
-    // whole reason the band tells a learner anything they did not already know.
+  it('runs Sunday → Saturday, matching the plan’s own month grid', () => {
     renderBand()
-    expect(screen.queryByText(/^Week \d+$/)).toBeNull()
+    expect(
+      screen.getAllByRole('listitem').map((li) => li.textContent?.slice(0, 3)),
+    ).toEqual(['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT'])
+  })
+
+  it('counts each day’s tasks, and shows a dash rather than "0 tasks"', () => {
+    // A zero invites the reading that something failed to load.
+    //
+    // Read from the ACCESSIBLE LABEL, not the cell's text: the day number and
+    // the count run together in `textContent` ("SUN172 tasks"), so a regex over
+    // it happily reports 172 tasks. That the label is the reliable source here
+    // is also the point of it existing.
+    const week = studyWeeks(XCEL_CE_STUDY_CALENDAR).find((w) => w.end >= STUDY_CALENDAR_TODAY)!
+    renderBand()
+    const shown = screen
+      .getAllByRole('link')
+      .map((a) => Number(a.getAttribute('aria-label')?.match(/: (\d+) tasks?/)?.[1] ?? 0))
+      .reduce((a, b) => a + b, 0)
+    expect(shown).toBe(week.tasks.length)
+    expect(screen.getAllByText('—').length).toBeGreaterThan(0)
+  })
+
+  it('states the position in the WHOLE plan, so seven days do not imply one week', () => {
+    renderBand()
+    const weeks = studyWeeks(XCEL_CE_STUDY_CALENDAR)
+    const current = weeks.find((w) => w.end >= STUDY_CALENDAR_TODAY)!
+    expect(screen.getByText(`Week ${current.index} of ${weeks.length}`)).toBeInTheDocument()
+  })
+
+  it('marks TODAY', () => {
+    renderBand()
+    expect(screen.getByText('TODAY')).toBeInTheDocument()
+  })
+
+  it('is a summary — every cell leaves for the plan rather than acting in place', () => {
+    // The rule that keeps this from becoming a second Study Plan. If a cell
+    // ever grows a "mark complete", there are two places to do one thing.
+    renderBand()
+    for (const cell of screen.getAllByRole('listitem')) {
+      expect(within(cell).getAllByRole('link').length).toBeGreaterThan(0)
+      expect(within(cell).queryByRole('button')).toBeNull()
+    }
   })
 })

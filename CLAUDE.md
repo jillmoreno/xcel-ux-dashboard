@@ -359,35 +359,47 @@ source — the swap mechanism is already built and needs no code. **Do not
 recolour the full-colour file to approximate it**: that is authoring brand
 artwork, and an official white lockup already exists.
 
-### The week-summary band — "Your study weeks" (2026-09-09)
+### The week-summary band — "This week" (2026-09-09)
 
 `StudyWeekSummary`, on Home directly **above Recommended for You**: the last
 thing in the learner's own zone before the discovery zone starts. Behind
 `dashboard-week-summary`, default on.
 
-**It is a SUMMARY, not a second Study Plan.** No task list, no calendar grid, no
-per-task action — every row is a link into the plan, and a test asserts each row
-contains links and NO buttons. That guard is the whole thing keeping this from
-becoming a second place to tick a task off.
+**ONE week as seven DAY CELLS, Sun → Sat** — the Study Plan's own month grid
+with its current row lifted onto Home: same day order, same "today" treatment,
+same task-count line.
 
-**Weeks are SUN–SAT calendar weeks**, not "seven days from the start date",
-because the Study Plan's own month grid is a calendar and a summary that
-disagreed with the grid beside it is worse than no summary. Empty weeks are
-dropped: XCEL's CE plan is paced two days a week over six months and has real
-gaps, where a row reading "0 of 0 done" is noise. `overdue` outranks
-`in-progress` — a week 4-of-5 done with one task past its date is not in
-progress, it is a week with a problem in it.
+**The first build was a list of WEEK rows** (theme, pips, status chip) and was
+wrong. That answered "how is the plan going", which the Current Learning
+Progress band directly above already answers. The question a learner scanning
+Home is actually asking is **which DAYS have work on them**, and only a day grid
+answers it. Same reason the cells show a COUNT and not task titles: the titles
+are one click away, and seven columns of them is the plan itself.
+
+**Empty days are shown, with an em dash rather than "0 tasks".** The empty ones
+are the point of a calendar row — a blank Wednesday says "nothing due", which a
+list of only-the-busy days cannot. A zero, meanwhile, invites the reading that
+something failed to load.
+
+**It is a SUMMARY, not a second Study Plan.** No per-task action anywhere; every
+cell is a link into the plan, and a test asserts each cell contains links and NO
+buttons. That guard is the whole thing keeping this from becoming a second place
+to tick a task off.
+
+**`studyWeeks` drops empty WEEKS**, so "this week" is the nearest week with work
+rather than a literal date match — XCEL's CE plan is paced two days a week over
+six months, and a strip of seven blank days is not a summary. `overdue` outranks
+`in-progress` in a week's status, and OVERDUE outranks TODAY on a cell's flag: a
+reviewer scanning the strip needs the problem to surface, and today's cell is
+already the only filled one.
 
 **`weekThemes` is AUTHORED, not derived.** Deriving a theme from the week's task
 titles reads plausibly until a week spans two subjects, and then it names
 whichever sorted first. A wrong label is worse than `Week N`, which is the
 fallback.
 
-**It shows four weeks starting at the CURRENT one.** The CE plan's first three
-weeks are complete; leading with them puts three rows of history above the row
-that matters. The header line carries "Week 4 of 9" so four rows never imply a
-four-week plan — and a test asserts the row count is LESS than the week count,
-so the window cannot quietly become the whole list.
+**The footer carries "Week 4 of 9"**, so seven day cells never imply a one-week
+plan.
 
 **It reads the persona's path**, the same one the Study Plan section resolves,
 so the two cannot describe different courses. Guarded by `hasStudyCalendarFor`

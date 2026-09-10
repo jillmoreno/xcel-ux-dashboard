@@ -1,38 +1,52 @@
 import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight } from '@/icons'
-import { StatusBadge } from '@/components/ui/StatusBadge'
-import { studyWeeks, type StudyCalendar, type StudyWeek } from '@/data/studyCalendarFixtures'
+import {
+  studyWeeks,
+  STUDY_CALENDAR_TODAY,
+  type StudyCalendar,
+  type StudyTask,
+  type StudyWeek,
+} from '@/data/studyCalendarFixtures'
 
 /**
- * Week summary — the Home band that answers "where am I in the plan" without
- * opening the plan.
+ * Week summary — the Home band that answers "what does THIS WEEK look like"
+ * without opening the plan.
  *
- * Sits directly above Recommended for You: the last thing in the learner's own
- * zone before the discovery zone starts. It is a SUMMARY, not a second Study
- * Plan — no task list, no calendar grid, no per-task actions. Every row is a
- * link into the plan, which is where those live.
+ * Seven day cells, Sunday → Saturday, mirroring the Study Plan's own month
+ * grid: same day order, same "today" treatment, same task-count line. It is the
+ * grid's current row, lifted onto Home.
  *
- * ── Why it does not show every week ─────────────────────────────────────────
- * `WEEKS_SHOWN` is 4, and the window STARTS at the current week rather than at
- * week 1. XCEL's CE plan is nine weeks spread over six months; a learner in
- * week 4 does not need three completed rows above the one they are in, and on
- * Home they never scroll past the fourth. The header line carries the position
- * ("Week 4 of 9") so nothing is lost by not drawing the rest.
+ * ── One week, not a list of them ────────────────────────────────────────────
+ * The first build of this was a LIST of week rows (theme, pips, status chip).
+ * That answered "how is the plan going", which the Current Learning Progress
+ * band directly above already answers. This answers a different question —
+ * which DAYS have work on them — and a learner scanning Home is asking the
+ * second one. It is also why the days show a COUNT rather than the task
+ * titles: the titles are one click away, and seven columns of them is the
+ * plan itself.
+ *
+ * ── It is a SUMMARY ─────────────────────────────────────────────────────────
+ * No per-task action anywhere. Every route out is the same link into the Study
+ * Plan, and a test asserts each cell contains links and no buttons — that is
+ * the guard keeping this from becoming a second place to tick a task off.
  */
 
-const WEEKS_SHOWN = 4
-
-const STATUS_TONE = {
-  complete: { tone: 'success' as const, label: 'COMPLETE' },
-  'in-progress': { tone: 'info' as const, label: 'IN PROGRESS' },
-  overdue: { tone: 'error' as const, label: 'OVERDUE' },
-  upcoming: { tone: 'neutral' as const, label: 'UPCOMING' },
-}
-
+const DOW = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
 
-/** "May 18 – May 24", collapsing to "May 18 – 24" inside one month. */
+/** The one route out of this band — the same target the Jump Back In card's
+ *  "View all" uses, so both entry points land on the same surface. */
+const PLAN_HREF = '/dashboard-rebrand?section=study-plan'
+
+function addDaysIso(iso: string, days: number): string {
+  const [y, m, d] = iso.split('-').map((p) => parseInt(p, 10))
+  const dt = new Date(Date.UTC(y, m - 1, d))
+  dt.setUTCDate(dt.getUTCDate() + days)
+  return dt.toISOString().slice(0, 10)
+}
+
+/** "May 17 – 23", widening to "May 31 – Jun 6" across a month boundary. */
 function rangeLabel(startIso: string, endIso: string): string {
   const [, sm, sd] = startIso.split('-').map((p) => parseInt(p, 10))
   const [, em, ed] = endIso.split('-').map((p) => parseInt(p, 10))
@@ -40,36 +54,51 @@ function rangeLabel(startIso: string, endIso: string): string {
   return sm === em ? `${left} – ${ed}` : `${left} – ${MONTHS[em - 1]} ${ed}`
 }
 
-/** The one route out of this band. Same target the Jump Back In card's
- *  "View all" uses, so both entry points land on the same surface. */
-const PLAN_HREF = '/dashboard-rebrand?section=study-plan'
+type Day = { iso: string; dom: number; dow: string; tasks: StudyTask[]; overdue: number }
 
-export function StudyWeekSummary({ calendar }: { calendar: StudyCalendar }) {
-  const weeks = studyWeeks(calendar)
+/** The week's seven days, INCLUDING the empty ones — that is the point of a
+ *  calendar row. A day with nothing on it says "nothing due", which a list of
+ *  only-the-busy-days cannot. */
+function daysOf(week: StudyWeek, today: string): Day[] {
+  return Array.from({ length: 7 }, (_, i) => {
+    const iso = addDaysIso(week.start, i)
+    const tasks = week.tasks.filter((t) => t.dueDate === iso)
+    return {
+      iso,
+      dom: parseInt(iso.slice(8, 10), 10),
+      dow: DOW[i],
+      tasks,
+      overdue: tasks.filter((t) => t.status !== 'completed' && iso < today).length,
+    }
+  })
+}
+
+export function StudyWeekSummary({
+  calendar,
+  today = STUDY_CALENDAR_TODAY,
+}: {
+  calendar: StudyCalendar
+  today?: string
+}) {
+  const weeks = studyWeeks(calendar, today)
   if (weeks.length === 0) return null
 
-  // The week the learner is IN — the first that is not finished. A plan with
-  // every week complete has no "current" week, so it shows the last one rather
-  // than falling off the end.
-  const currentIdx = Math.max(
-    0,
-    weeks.findIndex((w) => w.status !== 'complete') === -1
-      ? weeks.length - 1
-      : weeks.findIndex((w) => w.status !== 'complete'),
-  )
-  const current = weeks[currentIdx]
-  const shown = weeks.slice(currentIdx, currentIdx + WEEKS_SHOWN)
-  const doneAcross = weeks.reduce((n, w) => n + w.completed, 0)
-  const totalAcross = weeks.reduce((n, w) => n + w.total, 0)
-  const overdueAcross = weeks.reduce((n, w) => n + w.overdue, 0)
+  // The week the learner is IN. `studyWeeks` drops empty weeks, so on a plan
+  // with gaps "this week" is the nearest week that HAS work rather than a
+  // literal date match — a strip of seven blank days is not a summary.
+  const currentIdx = weeks.findIndex((w) => w.end >= today)
+  const week = weeks[currentIdx === -1 ? weeks.length - 1 : currentIdx]
+  const days = daysOf(week, today)
+  const done = week.completed
+  const total = week.total
 
   return (
     <section aria-labelledby="study-week-summary" style={wrapStyle}>
       <div style={headerStyle}>
         <div style={{ minWidth: 0 }}>
-          <p style={eyebrowStyle}>Your study weeks</p>
+          <p style={eyebrowStyle}>This week</p>
           <h2 id="study-week-summary" style={titleStyle}>
-            {calendar.name}
+            {week.label}
           </h2>
         </div>
         <Link to={PLAN_HREF} style={linkStyle}>
@@ -77,80 +106,105 @@ export function StudyWeekSummary({ calendar }: { calendar: StudyCalendar }) {
         </Link>
       </div>
 
-      {/* The plan-level line, so the four rows below never imply the plan is
-          four weeks long. */}
-      <p style={metaStyle}>
-        Week {current.index} of {weeks.length} · {rangeLabel(current.start, current.end)} ·{' '}
-        {doneAcross} of {totalAcross} done
-        {overdueAcross > 0 && (
-          <>
-            {' · '}
-            <span style={{ color: 'var(--color-error-700)', fontWeight: 700 }}>
-              {overdueAcross} overdue
-            </span>
-          </>
-        )}
-      </p>
+      <div style={cardStyle}>
+        <ul role="list" style={gridStyle}>
+          {days.map((day) => (
+            <li key={day.iso} style={{ minWidth: 0 }}>
+              <DayCell day={day} isToday={day.iso === today} />
+            </li>
+          ))}
+        </ul>
 
-      <ul role="list" style={listStyle}>
-        {shown.map((week) => (
-          <li key={week.start}>
-            <WeekRow week={week} />
-          </li>
-        ))}
-      </ul>
+        {/* The footer carries the plan-level position, so seven day cells never
+            imply the plan is one week long. */}
+        <div style={footerStyle}>
+          <span style={footerTextStyle}>
+            <strong style={{ fontWeight: 700 }}>
+              Week {week.index} of {weeks.length}
+            </strong>{' '}
+            · {rangeLabel(week.start, week.end)} ·{' '}
+            <strong style={{ fontWeight: 700 }}>
+              {done} of {total}
+            </strong>{' '}
+            done
+            {week.overdue > 0 && (
+              <>
+                {' · '}
+                <strong style={{ fontWeight: 700, color: 'var(--color-error-700)' }}>
+                  {week.overdue} overdue
+                </strong>
+              </>
+            )}
+          </span>
+          <Link to={PLAN_HREF} style={{ ...linkStyle, fontSize: 13 }}>
+            Week summary <ArrowRight size={13} aria-hidden />
+          </Link>
+        </div>
+      </div>
     </section>
   )
 }
 
-function WeekRow({ week }: { week: StudyWeek }) {
-  const { tone, label } = STATUS_TONE[week.status]
+function DayCell({ day, isToday }: { day: Day; isToday: boolean }) {
+  const count = day.tasks.length
   return (
-    <div style={rowStyle}>
-      <span aria-hidden style={numberStyle}>
-        {week.index}
+    <Link
+      to={PLAN_HREF}
+      aria-label={`${day.dow} ${day.dom}: ${count === 0 ? 'nothing due' : `${count} task${count === 1 ? '' : 's'}`}${
+        day.overdue > 0 ? `, ${day.overdue} overdue` : ''
+      }${isToday ? ', today' : ''}`}
+      style={{ ...cellStyle, ...(isToday ? todayCellStyle : null) }}
+    >
+      <span style={{ ...dowStyle, ...(isToday ? { color: 'var(--color-text-inverse)' } : null) }}>
+        {day.dow}
       </span>
-      <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <span style={rowEyebrowStyle}>{rangeLabel(week.start, week.end)}</span>
-        <span style={rowTitleStyle}>{week.label}</span>
-        {/* One pip per task. A bar would answer "what fraction", which the
-            count beside the badge already says; pips answer "how many", which
-            is the question a five-task week actually raises. Capped so a
-            fifteen-task week does not draw a ruler. */}
-        <span aria-hidden style={pipsStyle}>
-          {week.tasks.slice(0, PIP_CAP).map((task, i) => (
+      <span style={{ ...domStyle, ...(isToday ? { color: 'var(--color-text-inverse)' } : null) }}>
+        {day.dom}
+      </span>
+      <span style={countRowStyle}>
+        {count === 0 ? (
+          // An em dash, not "0 tasks". A zero invites the reading that
+          // something failed to load; a dash reads as "nothing here".
+          <span style={{ ...emptyStyle, ...(isToday ? { color: 'var(--color-text-inverse)' } : null) }}>
+            —
+          </span>
+        ) : (
+          <>
             <span
-              key={task.id}
+              aria-hidden
               style={{
-                ...pipStyle,
+                ...dotStyle,
                 background:
-                  i < week.completed
-                    ? 'var(--color-primary-700)'
-                    : task.status === 'in-progress'
-                      ? 'var(--color-primary-300)'
-                      : 'transparent',
-                borderColor:
-                  i < week.completed ? 'var(--color-primary-700)' : 'var(--color-neutral-300)',
+                  day.overdue > 0
+                    ? 'var(--color-warning-500)'
+                    : isToday
+                      ? 'var(--color-text-inverse)'
+                      : 'var(--color-neutral-400)',
               }}
             />
-          ))}
-          {week.total > PIP_CAP && <span style={pipMoreStyle}>+{week.total - PIP_CAP}</span>}
-        </span>
-      </div>
-      <div style={rightStyle}>
-        <StatusBadge tone={tone}>{label}</StatusBadge>
-        <span style={countStyle}>
-          {week.completed} of {week.total} done
-        </span>
-      </div>
-      <Link to={PLAN_HREF} style={viewStyle} aria-label={`View ${week.label}`}>
-        View <ArrowRight size={13} aria-hidden />
-      </Link>
-    </div>
+            <span
+              style={{ ...countStyle, ...(isToday ? { color: 'var(--color-text-inverse)' } : null) }}
+            >
+              {count} task{count === 1 ? '' : 's'}
+            </span>
+          </>
+        )}
+      </span>
+      {/* The one flag per cell. OVERDUE outranks TODAY: a reviewer scanning the
+          strip needs the problem to surface, and today's cell is already the
+          only filled one. */}
+      <span style={flagRowStyle}>
+        {day.overdue > 0 ? (
+          <span style={overdueFlagStyle}>
+            {day.overdue} OVERDUE
+          </span>
+        ) : isToday ? (
+          <span style={todayFlagStyle}>TODAY</span>
+        ) : null}
+      </span>
+    </Link>
   )
 }
-
-const PIP_CAP = 8
 
 /* ─── styles ───────────────────────────────────────────────────────────── */
 
@@ -186,87 +240,64 @@ const titleStyle: CSSProperties = {
   color: 'var(--color-text-primary)',
 }
 
-const metaStyle: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-body)',
-  fontSize: 13,
-  color: 'var(--color-text-secondary)',
+const cardStyle: CSSProperties = {
+  border: '1px solid var(--color-border-subtle)',
+  borderRadius: 'var(--radius-lg)',
+  overflow: 'hidden',
+  background: 'var(--color-surface-card)',
 }
 
-const listStyle: CSSProperties = {
+const gridStyle: CSSProperties = {
   listStyle: 'none',
   margin: 0,
   padding: 0,
+  display: 'grid',
+  // Seven equal columns, and they stay seven — a calendar row that reflows to
+  // four columns is no longer a week.
+  gridTemplateColumns: 'repeat(7, minmax(0, 1fr))',
+}
+
+const cellStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
-  gap: 8,
-}
-
-const rowStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 16,
-  flexWrap: 'wrap',
-  padding: '14px 18px',
+  gap: 4,
+  minHeight: 104,
+  padding: '10px 8px',
+  textDecoration: 'none',
+  borderRight: '1px solid var(--color-border-subtle)',
   background: 'var(--color-surface-card)',
-  border: '1px solid var(--color-border-subtle)',
-  borderRadius: 'var(--radius-lg)',
 }
 
-const numberStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  flexShrink: 0,
-  width: 34,
-  height: 34,
-  borderRadius: 'var(--radius-pill)',
-  border: '1px solid var(--color-border-subtle)',
-  fontFamily: 'var(--font-body)',
-  fontSize: 14,
-  fontWeight: 700,
-  color: 'var(--color-text-secondary)',
-}
+const todayCellStyle: CSSProperties = { background: 'var(--color-primary-700)' }
 
-const rowEyebrowStyle: CSSProperties = {
+const dowStyle: CSSProperties = {
   fontFamily: 'var(--font-body)',
-  fontSize: 11,
+  fontSize: 10,
   fontWeight: 700,
   letterSpacing: '0.08em',
-  textTransform: 'uppercase',
   color: 'var(--color-text-tertiary)',
 }
 
-const rowTitleStyle: CSSProperties = {
+const domStyle: CSSProperties = {
   fontFamily: 'var(--font-body)',
-  fontSize: 16,
+  fontSize: 18,
   fontWeight: 700,
+  lineHeight: 1,
   color: 'var(--color-text-primary)',
 }
 
-const pipsStyle: CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 5 }
-
-const pipStyle: CSSProperties = {
-  width: 11,
-  height: 11,
-  borderRadius: 3,
-  border: '1px solid',
-  flexShrink: 0,
-}
-
-const pipMoreStyle: CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontSize: 11,
-  fontWeight: 600,
-  color: 'var(--color-text-tertiary)',
-  marginLeft: 2,
-}
-
-const rightStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
+const countRowStyle: CSSProperties = {
+  display: 'inline-flex',
   alignItems: 'center',
-  gap: 4,
+  gap: 6,
+  marginTop: 4,
+  minWidth: 0,
+}
+
+const dotStyle: CSSProperties = {
+  width: 7,
+  height: 7,
+  borderRadius: 'var(--radius-pill)',
   flexShrink: 0,
 }
 
@@ -275,6 +306,50 @@ const countStyle: CSSProperties = {
   fontSize: 12,
   color: 'var(--color-text-secondary)',
   whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+}
+
+const emptyStyle: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 12,
+  color: 'var(--color-text-tertiary)',
+}
+
+const flagRowStyle: CSSProperties = { marginTop: 'auto', minHeight: 14 }
+
+const overdueFlagStyle: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 9,
+  fontWeight: 700,
+  letterSpacing: '0.06em',
+  color: 'var(--color-warning-800)',
+  whiteSpace: 'nowrap',
+}
+
+const todayFlagStyle: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 9,
+  fontWeight: 700,
+  letterSpacing: '0.06em',
+  color: 'var(--color-text-inverse)',
+}
+
+const footerStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 12,
+  flexWrap: 'wrap',
+  padding: '10px 14px',
+  borderTop: '1px solid var(--color-border-subtle)',
+  background: 'var(--color-surface-page)',
+}
+
+const footerTextStyle: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  color: 'var(--color-text-secondary)',
 }
 
 const linkStyle: CSSProperties = {
@@ -282,15 +357,9 @@ const linkStyle: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
   gap: 6,
-  background: 'transparent',
-  border: 'none',
-  padding: 0,
-  cursor: 'pointer',
   flexShrink: 0,
   fontFamily: 'var(--font-body)',
   fontSize: 13,
   fontWeight: 700,
   color: 'var(--color-accent-link)',
 }
-
-const viewStyle: CSSProperties = { ...linkStyle, fontSize: 14 }
