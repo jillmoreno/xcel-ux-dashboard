@@ -249,6 +249,33 @@ typing into it showed anything wrong, which is why the test asserts a field's
 VALUE rather than that the dialog opened. **Any other `Modal` caller on this
 page is exposed to the same trap.**
 
+**Row hover lives in `tokens.css` as `cre-uxlinks-*`, and the prefix matters.**
+Inline `CSSProperties` cannot carry a pseudo-class, so this is a class — the
+`.cre-alert-action` precedent. Three things worth not re-deriving:
+
+- **The tint is `--ux-bg`, not `--ux-card-hover`.** `--ux-bg` is this page's
+  "one step off the card" recessed surface; the note above `LIGHT_PAGE` names
+  it as THE row hover, and `FeatureRow` and the archive table already use it.
+  Two row hovers on one page differing by a few percent read as a bug.
+- **`:focus-within` is the keyboard twin**, not decoration — the row's
+  affordances are a link and two buttons, so a keyboard user tabbing the list
+  gets the same "this row" feedback hover gives. Same reasoning as To Do's move
+  up / move down buttons beside its drag.
+- **`.cre-link-action` was the obvious name and would have been a bug.** It is
+  an established product-wide class (40+ call sites) for TEXT CTAs, carrying a
+  `::after` underline and a brightness filter; these are bordered icon buttons.
+  A second `.cre-link-action:hover` block here would have applied `color` and
+  `border-color` with `!important` to every one of those call sites. A test
+  asserts this panel's block declares no `.cre-link-action` selector.
+
+**Two of these rules need `!important` and one of them failed silently.** The
+anchor carries an inline `text-decoration: none` and the buttons an inline
+`color`/`border`, which beat a stylesheet rule. The underline shipped without
+it: the rule matched, computed, and did nothing, while the row still tinted —
+so it LOOKED right. Only reading the computed `text-decoration-line` in a
+browser caught it, which is why the test asserts the `!important` in the CSS
+source rather than that the class is present.
+
 **Known, not fixed:** the field placeholders measure **4.34:1** on the input
 fill in dark, marginally under AA. It is the shared `--ux-text`-on-`--ux-bg`
 field treatment — `TodoPanel`'s inputs are identical — and every field here is

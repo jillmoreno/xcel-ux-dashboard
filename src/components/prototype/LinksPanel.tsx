@@ -504,6 +504,9 @@ export function LinksPanel() {
             return (
               <li
                 key={link.id}
+                // Hover / focus-within live in `tokens.css` — inline
+                // `CSSProperties` cannot carry a pseudo-class.
+                className="cre-uxlinks-row"
                 style={{
                   ...itemStyle,
                   borderBottom: i === rows.length - 1 ? 'none' : itemStyle.borderBottom,
@@ -511,7 +514,13 @@ export function LinksPanel() {
               >
                 <div style={{ minWidth: 0 }}>
                   {href ? (
-                    <a href={href} target="_blank" rel="noopener noreferrer" style={titleLinkStyle}>
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="cre-uxlinks-title"
+                      style={titleLinkStyle}
+                    >
                       {link.title}
                       <ArrowUpRightFromSquare size={11} aria-hidden style={{ flex: 'none' }} />
                       <span className="cre-visually-hidden"> — opens in a new tab</span>
@@ -531,6 +540,7 @@ export function LinksPanel() {
                       type="button"
                       onClick={() => beginEdit(link)}
                       disabled={busy}
+                      className="cre-uxlinks-action"
                       style={iconBtnStyle}
                       aria-label={`Edit ${link.title}`}
                     >
@@ -540,6 +550,7 @@ export function LinksPanel() {
                       type="button"
                       onClick={() => void remove(link)}
                       disabled={busy}
+                      className="cre-uxlinks-action"
                       style={iconBtnStyle}
                       aria-label={`Remove ${link.title}`}
                     >

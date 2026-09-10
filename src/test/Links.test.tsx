@@ -379,6 +379,63 @@ describe('LinksPanel', () => {
     expect(titles).toEqual(['Newest — same day', 'Middle — same day', 'Oldest'])
   })
 
+  it('carries the hover/focus classes, and they beat the inline styles', async () => {
+    /*
+     * jsdom has no `:hover`, so this asserts the two halves that CAN be checked
+     * and that together are the whole mechanism: the elements carry the hooks,
+     * and the rules that fight an inline style say `!important`.
+     *
+     * That second half is not theoretical. The underline rule shipped WITHOUT
+     * `!important` and did nothing — the anchor's inline `text-decoration: none`
+     * won the cascade. The row still tinted on hover, so it looked right; only
+     * reading the computed `text-decoration-line` in a browser caught it.
+     * A test that merely asserted the class was present would have passed.
+     */
+    mockEndpoint([link()])
+    const { container } = render(<LinksPanel />)
+    await waitFor(() => expect(screen.getByText('1 link')).toBeInTheDocument())
+
+    expect(container.querySelectorAll('.cre-uxlinks-row')).toHaveLength(1)
+    expect(container.querySelectorAll('.cre-uxlinks-title')).toHaveLength(1)
+    // Edit + Remove.
+    expect(container.querySelectorAll('.cre-uxlinks-action')).toHaveLength(2)
+
+    const css = readFileSync(path.resolve(__dirname, '../styles/tokens.css'), 'utf8')
+    const ruleFor = (selector: string) => {
+      const at = css.indexOf(selector)
+      expect(at, `tokens.css must declare ${selector}`).toBeGreaterThan(-1)
+      return css.slice(at, css.indexOf('}', at))
+    }
+
+    // Fights the anchor's inline `text-decoration: none`.
+    expect(ruleFor('.cre-uxlinks-title:hover')).toMatch(/text-decoration:\s*underline\s*!important/)
+    // Fights the shared button style's inline `color` and `border`.
+    const action = ruleFor('.cre-uxlinks-action:hover')
+    expect(action).toMatch(/color:[^;]*!important/)
+    expect(action).toMatch(/border-color:[^;]*!important/)
+
+    // The keyboard twin. A pointer-only hover would leave a keyboard user with
+    // no "this row" feedback at all while tabbing the list.
+    expect(css).toMatch(/\.cre-uxlinks-row:hover,\s*\n\s*\.cre-uxlinks-row:focus-within/)
+    // The row tint is the page's own row-hover surface, not a second one.
+    expect(ruleFor('.cre-uxlinks-row:hover')).toMatch(/background:\s*var\(--ux-bg\)/)
+
+    // …and none of this borrows `.cre-link-action`, which is an established
+    // product-wide class (40+ call sites) for text CTAs with a ::after
+    // underline. These are bordered icon buttons. The first build used that
+    // name, which meant a second `.cre-link-action:hover` block setting
+    // `color` and `border-color` with `!important` — reaching every one of
+    // those call sites. The generic name looked obviously right.
+    expect(container.querySelector('.cre-link-action')).toBeNull()
+    // Scoped to THIS panel's block rather than counting file-wide, so the
+    // assertion is about what Links added and survives edits to the shared
+    // class's own rules.
+    const ownBlock = css.slice(css.indexOf('/* Links panel — the row under'))
+    // Matched at column 0 so this is about SELECTORS — the block's own comment
+    // names the class it is deliberately avoiding, and that prose is the point.
+    expect(ownBlock).not.toMatch(/^\.cre-link-action/m)
+  })
+
   it('shows no search field until the list is long enough to need one', async () => {
     mockEndpoint([link()])
     render(<LinksPanel />)

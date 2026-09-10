@@ -3225,3 +3225,70 @@ a.cre-library-card-title::after {
     animation: none;
   }
 }
+
+/* Links panel — the row under `?section=links`, and the two controls inside it.
+
+   Named `cre-uxlinks-*`, NOT `cre-link-*`. `.cre-link-action` is already an
+   established product-wide class (40+ call sites) meaning "link-style CTA —
+   text plus an optional inline icon, no background or border", carrying a
+   `::after` underline and a brightness filter. These are bordered icon
+   buttons, which is a different thing — and a second `.cre-link-action:hover`
+   block here would have applied `color`/`border-color` with `!important` to
+   every one of those call sites. The generic name looked obviously right,
+   which is exactly why it was dangerous.
+
+   A class rather than inline `CSSProperties` for the same reason
+   `.cre-alert-action` is one: inline styles cannot carry a pseudo-class, and
+   this needs three of them. `LinksPanel` is otherwise all inline styles, per
+   the app's convention.
+
+   The tint is `--ux-bg`, NOT `--ux-card-hover`. That is the deliberate choice:
+   `--ux-bg` is this page's "one step off the card" recessed surface — the note
+   above `LIGHT_PAGE` in `UxDashboardPage` names it as THE row hover, and it is
+   what `FeatureRow` and (through UX_TOKEN_BRIDGE) the archive table's rows
+   already use. `--ux-card-hover` is a different surface, carrying TodoPanel's
+   drag-over. Two row hovers on one page that differ by a few percent read as a
+   bug, not as a distinction.
+
+   `:focus-within` is the keyboard twin, and it is not decoration: the row's
+   affordances are a link and two buttons, so a keyboard user tabbing through
+   the list gets the same "this row" feedback a pointer user gets from hover.
+   Same reasoning as the move up / move down buttons beside To Do's drag. */
+.cre-uxlinks-row {
+  transition: background-color 120ms ease;
+}
+.cre-uxlinks-row:hover,
+.cre-uxlinks-row:focus-within {
+  background: var(--ux-bg);
+}
+
+/* The title carries the row's destination, so it takes the underline rather
+   than the row doing anything clever — a whole-row treatment would suggest the
+   row itself is the target, and the edit/delete buttons sit inside it.
+
+   `!important` because the anchor carries an inline `text-decoration: none`,
+   which wins the cascade over a stylesheet rule. Without it this rule matches,
+   computes, and does nothing — the row still tinted, so it LOOKED fine; only
+   reading the computed `text-decoration-line` showed the underline was never
+   applied. Same reason `.cre-notification-row:hover` needs it. */
+.cre-uxlinks-title:hover,
+.cre-uxlinks-title:focus-visible {
+  text-decoration: underline !important;
+}
+
+/* `!important` because these two carry an inline `color` and `border` from the
+   shared button style, which would otherwise win the cascade — the same reason
+   `.cre-notification-row:hover` needs it. Background is left alone on purpose:
+   the row behind them has just gone recessed, so holding `--ux-card` is what
+   makes them read as raised. */
+.cre-uxlinks-action {
+  transition: color 120ms ease, border-color 120ms ease;
+}
+.cre-uxlinks-action:hover {
+  color: var(--ux-text) !important;
+  border-color: var(--ux-text-3) !important;
+}
+.cre-uxlinks-action:focus-visible {
+  outline: 2px solid var(--ux-accent);
+  outline-offset: 2px;
+}
