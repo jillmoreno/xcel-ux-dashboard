@@ -6,6 +6,8 @@ import {
   type LearningPathSheetStatus,
   type LearningPathSummary,
 } from '@/data/learningFixtures'
+import { resolvePathCategories } from '@/components/learning/progressGaugeUtil'
+import type { LearningPathCategory, LearningPathCategoryBreakdown } from '@/data/learningFixtures'
 
 /**
  * Non-component helpers for the Learning Path homepage (`LearningPathsHome`).
@@ -696,3 +698,31 @@ export function metaSegments(path: LearningPathSummary): string[] {
  * progress through a path rather than the path itself.
  */
 export const CURRENT_LEARNING_EYEBROW = 'Current Learning Progress'
+
+/**
+ * The percentage the Current Learning Progress band SHOWS.
+ *
+ * Not `path.progressPct` — the band sums the path's CATEGORY hours and only
+ * falls back to the authored figure when there is no breakdown. The two differ:
+ * the At Risk persona's `progressPct` is 14 while its hours give 15, so a
+ * surface reading the field instead of this function disagrees with Home by a
+ * point and looks like a rounding bug.
+ *
+ * Extracted 2026-09-09 so the Readiness page could show the same number. Was
+ * inline in `LearnerFocusedBand`; `ClpJumpBackInBand` and `MarketingFocusedBand`
+ * compute their own, and folding those in is worth doing next — they are the
+ * remaining copies of this expression.
+ */
+export function displayedProgressPct(path: {
+  progressPct: number
+  categories?: LearningPathCategory[]
+  mandatory?: LearningPathCategoryBreakdown
+  elective?: LearningPathCategoryBreakdown
+  mandatoryLabel?: string
+  electiveLabel?: string
+}): number {
+  const cats = resolvePathCategories(path)
+  const required = cats.reduce((sum, c) => sum + c.required, 0)
+  const completed = cats.reduce((sum, c) => sum + c.completed, 0)
+  return required > 0 ? Math.round((completed / required) * 100) : path.progressPct
+}

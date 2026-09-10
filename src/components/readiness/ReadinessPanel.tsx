@@ -1,6 +1,8 @@
 import { useState, type CSSProperties } from 'react'
 import { useAccount } from '@/context/AccountContext'
-import { useReadinessState } from '@/context/FeatureFlagContext'
+import { useFeatureFlag, useReadinessState } from '@/context/FeatureFlagContext'
+import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
+import { displayedProgressPct } from '@/components/learning/learningPathsHomeUtil'
 import { Tabs } from '@/components/ui/Tabs'
 import { PillTabs } from '@/components/ui/PillTabs'
 import { Card } from '@/components/ui/Card'
@@ -12,6 +14,7 @@ import {
   readinessForState,
   type ExamAttempt,
   type ReadinessBand,
+  type ReadinessData,
   type ReadinessState,
 } from '@/data/readinessFixtures'
 import { ReadinessScoreGauge } from './ReadinessScoreGauge'
@@ -84,6 +87,33 @@ export function ReadinessPanel() {
   )
 }
 
+/**
+ * The readiness data, resolved against **the same course progress HOME shows**.
+ *
+ * `dashboardProgressPersonaFor` with the `dashboard-progress-state` and
+ * `dashboard-education-type` flags is exactly the call `MembershipOverview`
+ * makes for the Current Learning Progress band — so flipping the Progress
+ * dropdown moves Home and this page together, and neither can be pinned to a
+ * figure the other does not show.
+ *
+ * One hook, used by all three tabs, so the tabs cannot disagree either.
+ */
+function useReadiness(): ReadinessData {
+  const { brand } = useAccount()
+  const progressVariant = useFeatureFlag('dashboard-progress-state').variant ?? 'progress-on-track'
+  const educationType = (useFeatureFlag('dashboard-education-type').variant ?? 'ce') as 'ce' | 'qe'
+  const persona = dashboardProgressPersonaFor(brand, progressVariant, educationType)
+  // No persona for this brand/education pair means Home is showing no populated
+  // path either, so there is no progress to agree with — 0 is then honest
+  // rather than a guess.
+  // `displayedProgressPct`, NOT `path.progressPct` — the band sums CATEGORY
+  // hours and only falls back to the authored field. They differ: the At Risk
+  // persona's field is 14 while its hours give the 15 Home renders, which read
+  // as a rounding bug rather than as two sources.
+  const coursePct = persona ? displayedProgressPct(persona.path) : 0
+  return readinessForState(brand, useReadinessState() as ReadinessState, coursePct)
+}
+
 /* ─── Tab 1 · Exam Readiness ──────────────────────────────────────────── */
 
 /**
@@ -97,8 +127,7 @@ export function ReadinessPanel() {
  * route to that answer directly under the sentence that asks for it.
  */
 function ExamReadinessTab({ onOpenInsights }: { onOpenInsights: () => void }) {
-  const { brand } = useAccount()
-  const data = readinessForState(brand, useReadinessState() as ReadinessState)
+  const data = useReadiness()
   const hasScore = data.score !== null
 
   return (
@@ -176,8 +205,7 @@ function ExamReadinessTab({ onOpenInsights }: { onOpenInsights: () => void }) {
  * that with a hand-off link rather than leaving the learner to find this tab.
  */
 function InsightsTab() {
-  const { brand } = useAccount()
-  const data = readinessForState(brand, useReadinessState() as ReadinessState)
+  const data = useReadiness()
   const [filter, setFilter] = useState<BreakdownFilter>('review')
 
   // ONE predicate drives both columns and the pill strip, so the chapter list
@@ -349,8 +377,7 @@ const STUDY_TIPS: { title: string; body: string }[] = [
 /* ─── Tab 4 · Practice Exams ─────────────────────────────────────────── */
 
 function PracticeExamsTab() {
-  const { brand } = useAccount()
-  const data = readinessForState(brand, useReadinessState() as ReadinessState)
+  const data = useReadiness()
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <section style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

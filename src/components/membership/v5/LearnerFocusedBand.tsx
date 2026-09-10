@@ -6,7 +6,7 @@ import { useCourseLauncher } from '@/components/layout/CourseLauncherContext'
 import { useDeviceFrame } from '@/components/layout/DeviceFrameContext'
 import type { CourseCardData } from '@/components/courses/CourseCard'
 import type { LearningPathSummary } from '@/data/learningFixtures'
-import { statusTreatment, type HomeStatus, CURRENT_LEARNING_EYEBROW } from '@/components/learning/learningPathsHomeUtil'
+import { statusTreatment, displayedProgressPct, type HomeStatus, CURRENT_LEARNING_EYEBROW } from '@/components/learning/learningPathsHomeUtil'
 import { LICENSE_TRACKER } from '@/data/dashboardFixtures'
 import { myCoursesFor } from '@/data/myCoursesFixtures'
 import { ProgressDonut, CategoryBars } from '@/components/learning/progressGauge'
@@ -217,7 +217,9 @@ export function LearnerFocusedBand({
   const cats = resolvePathCategories(path)
   const totalRequired = cats.reduce((sum, c) => sum + c.required, 0)
   const totalCompleted = cats.reduce((sum, c) => sum + c.completed, 0)
-  const percent = totalRequired > 0 ? Math.round((totalCompleted / totalRequired) * 100) : path.progressPct
+  // The band's own percentage, now shared — the Readiness page shows the same
+  // figure and reading `path.progressPct` there put the two a point apart.
+  const percent = displayedProgressPct(path)
   // Dashboard breakdown rule: the segmented gauge + bars render ONLY for
   // exactly two categories; more than two show the overall % here and the full
   // list in the detail panel.

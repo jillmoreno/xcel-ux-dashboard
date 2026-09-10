@@ -1,6 +1,4 @@
 import type { Brand } from '@/context/AccountContext'
-import { progressPct, studyCalendarFor } from '@/data/studyCalendarFixtures'
-import { activePathIdFor } from '@/data/learningFixtures'
 
 /**
  * Exam Readiness — the data behind the `readiness` rail section.
@@ -276,37 +274,40 @@ const STATE_OVERRIDES: Record<
 /**
  * Course progress for the readiness page.
  *
- * **Derived, and the same figure the Study Plan and the Home band show** — it
- * used to be authored per state (0 / 45 / 90 / 100), which had the Readiness
- * page claiming 100% complete while the Study Plan two rail items above it said
- * 32%. A stakeholder sees both in one click.
+ * **PASSED IN, from whatever the HOME band is showing** — see `ReadinessPanel`,
+ * which resolves it through `dashboardProgressPersonaFor`, the same call Home's
+ * `MembershipOverview` makes with the same two flags.
  *
- * ── What varies by state, and what does NOT ─────────────────────────────────
- * Course progress does NOT. How much of the course you have covered is a fact
- * about the course; how ready you are is a fact about how well you are
- * answering. Varying both made them look like one axis, which is the opposite
- * of what this section is for — a learner can be a third of the way in and
- * on track, or a third of the way in and off track, and that difference is the
- * whole reason the score exists.
+ * It went through the Study Plan's `progressPct` first (2026-09-09) and that
+ * was wrong: the Study Plan counts TASKS in one path's calendar, while Home
+ * follows the `dashboard-progress-state` demo axis and the education type.
+ * Readiness pinned to the calendar would read 32% while Home read 63% and a
+ * reviewer flipping the Progress dropdown would watch Home move and Readiness
+ * sit still. Home is the number a stakeholder anchors on, so Readiness follows
+ * Home.
  *
- * So the states move ANSWERED CORRECTLY (and the attempts behind it) against a
- * fixed denominator. Not Started is the exception and answers nothing.
+ * ── What varies by which axis ───────────────────────────────────────────────
+ * Course progress follows the PROGRESS dropdown; the readiness score follows
+ * the READINESS one. That separation is the section's whole point: how much of
+ * the course you have covered and how well you are answering are different
+ * facts, and a learner can be far along and not ready. The readiness states
+ * therefore move ANSWERED CORRECTLY, never the progress figure.
  *
- * ── The 32 vs 30 tension, stated rather than hidden ─────────────────────────
- * `progressPct` counts TASKS; the learning path counts CREDIT HOURS. The
- * calendar fixture's own docstring already noted the two land ~32% and 30% and
- * said "if you change one, change both". They are pinned equal now. The proper
- * fix is one deriving from the other; until then this reads the calendar,
- * because that is the surface a learner checks daily.
+ * Not Started is the one crossover — a learner who has answered nothing has no
+ * questions to report — but it still shows the course progress Home shows,
+ * because reading coursework without sitting a practice exam is an ordinary
+ * thing to have done.
  */
-function progressStatsFor(brand: Brand, o: (typeof STATE_OVERRIDES)[ReadinessState]): CourseProgressStat[] {
-  const pct = progressPct(studyCalendarFor(activePathIdFor(brand)))
-  const empty = o.score === null
-  const answered = empty ? 0 : 120
+function progressStatsFor(
+  coursePct: number,
+  o: (typeof STATE_OVERRIDES)[ReadinessState],
+): CourseProgressStat[] {
+  const pct = Math.max(0, Math.min(100, Math.round(coursePct)))
+  const answered = o.score === null ? 0 : 120
   return [
-    { label: 'Course Progress', value: empty ? '0%' : `${pct}%`, pct: empty ? 0 : pct },
-    { label: 'Chapters Completed', value: empty ? '0 of 20' : `${Math.round((pct / 100) * 20)} of 20` },
-    { label: 'Topics Covered', value: empty ? '0 of 14' : `${Math.round((pct / 100) * 14)} of 14` },
+    { label: 'Course Progress', value: `${pct}%`, pct },
+    { label: 'Chapters Completed', value: `${Math.round((pct / 100) * 20)} of 20` },
+    { label: 'Topics Covered', value: `${Math.round((pct / 100) * 14)} of 14` },
     { label: 'Total Questions Answered', value: `${answered} of 200` },
     { label: 'Answered Correctly', value: `${o.correct} of ${answered}` },
   ]
@@ -314,15 +315,25 @@ function progressStatsFor(brand: Brand, o: (typeof STATE_OVERRIDES)[ReadinessSta
 
 const clampPct = (n: number) => Math.max(0, Math.min(100, Math.round(n)))
 
-/** Readiness for a brand in a given demo state. */
-export function readinessForState(brand: Brand, state: ReadinessState): ReadinessData {
+/**
+ * Readiness for a brand in a given demo state.
+ *
+ * `coursePct` is supplied by the caller rather than looked up here, so the data
+ * layer stays free of flag reads and there is exactly one place that decides
+ * which surface Readiness agrees with. See `ReadinessPanel`.
+ */
+export function readinessForState(
+  brand: Brand,
+  state: ReadinessState,
+  coursePct: number,
+): ReadinessData {
   const base = READINESS_BY_BRAND[brand]
   const o = STATE_OVERRIDES[state]
   const empty = state === 'not-started'
   return {
     ...base,
     score: o.score,
-    progress: progressStatsFor(brand, o),
+    progress: progressStatsFor(coursePct, o),
     chapters: empty ? [] : base.chapters.map((c) => ({ ...c, pct: clampPct(c.pct + o.shift) })),
     topics: empty ? [] : base.topics.map((t) => ({ ...t, pct: clampPct(t.pct + o.shift) })),
     // Attempts accumulate with progress — the simulators are authored newest

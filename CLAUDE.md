@@ -483,19 +483,34 @@ to review" hand-off is suppressed because there is nothing over there. The
 incoherence being avoided is the CE path's old one — a gauge claiming something
 the lists below it cannot support.
 
-**Course progress is DERIVED from the Study Plan, and does not vary by state.**
-It was authored per state (0 / 45 / 90 / 100), which had Readiness claiming 100%
-complete while the Study Plan two rail items above it said 32% — a
-contradiction a stakeholder reaches in one click. Both surfaces now read
-`progressPct(studyCalendarFor(activePathIdFor(brand)))`, and a test compares
-against that function rather than against "32%", so changing the calendar moves
-both.
+**Course progress follows HOME, and it took two tries to land.** It was authored
+per readiness state (0 / 45 / 90 / 100), so Readiness claimed 100% while the
+Study Plan two rail items above said 32%. The first fix pinned it to the Study
+Plan's `progressPct` — also wrong: that counts TASKS in one path's calendar,
+while Home follows the `dashboard-progress-state` demo axis and the education
+type, so flipping the Progress dropdown moved Home and left Readiness still.
+`useReadiness` now resolves the persona through `dashboardProgressPersonaFor`
+with the same two flags `MembershipOverview` reads.
 
-It does not vary because **how much of the course you have covered is a fact
-about the course; how ready you are is a fact about how well you are
-answering.** Varying both made them look like one axis, which is the opposite of
-what this section is for. The states move ANSWERED CORRECTLY against a fixed
-denominator instead; Not Started is the exception and answers nothing.
+**`displayedProgressPct`, not `path.progressPct`.** The band sums the path's
+CATEGORY hours and only falls back to the authored field — and the two differ:
+the At Risk / Exam Prep persona's field is 14 while… also 14, but the QE persona
+is 15 against a field of 15, and the expression was copied inline in THREE bands
+(`LearnerFocusedBand`, `ClpJumpBackInBand`, `MarketingFocusedBand`). It is one
+exported helper now, used by `LearnerFocusedBand` and Readiness; folding in the
+other two is the obvious next tidy.
+
+**Course progress follows the PROGRESS axis; the score follows the READINESS
+one.** That separation is the section's point — how much of the course you have
+covered and how well you are answering are different facts, and a learner can
+be far along and not ready. The readiness states move ANSWERED CORRECTLY, never
+the progress figure.
+
+**Beware the demo bar when checking these by eye.** The Progress dropdown's own
+label is an APPROXIMATION ("On Track · ~63%", "At Risk · ~15%") and the gauge is
+exact (64%, 14%). Scraping the first percentage on the page reads the label, not
+the band — which is exactly how a false "Home and Readiness disagree" reading
+got produced during this change.
 
 **The bar is the shared `ProgressBar`, not a lookalike.** Readiness had drawn
 its own 3px green track, so one learner's one 32% rendered as two different
@@ -519,14 +534,10 @@ scannable list into a stack of blocks. Same reasoning as the gauge dropping red
 while the chapter dots keep it: a different job is allowed a different
 treatment.
 
-**HOME still disagrees, and it is not a fixture problem.** The Current Learning
-Progress band's percentage comes from the `dashboard-progress-state` demo axis —
-the Progress dropdown, whose personas are 0% / ~15% / ~63% / 100%. It reads 63%
-because "On Track · ~63%" is selected, and it stays 63% whichever education type
-is chosen. **There is no 32% persona**, so no selection makes the three agree;
-aligning Home means deriving that band from the study calendar, which would
-collapse the Progress axis into the calendar and remove a control the demo
-depends on. That is a product decision, not a cleanup — left alone deliberately.
+**The STUDY PLAN is the one that now differs**, and that is the accepted state:
+it counts tasks in its own calendar (32%) while Home and Readiness count credit
+hours against the selected persona. Two honest measures of the same course. The
+calendar fixture's docstring has flagged this since it was written.
 
 **The three scored states SHIFT one chapter set rather than authoring four.**
 A learner's relative strengths do not change with their overall standing: the

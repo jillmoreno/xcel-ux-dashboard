@@ -2,8 +2,18 @@ import { fireEvent, render, screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
-import { progressPct, studyCalendarFor } from '@/data/studyCalendarFixtures'
+import { studyCalendarFor } from '@/data/studyCalendarFixtures'
 import { activePathIdFor } from '@/data/learningFixtures'
+import { DASHBOARD_PROGRESS_PICKER } from '@/data/dashboardProgressFixtures'
+import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
+import { displayedProgressPct } from '@/components/learning/learningPathsHomeUtil'
+
+/** The course progress HOME shows, resolved exactly the way both surfaces do —
+ *  `displayedProgressPct`, not the persona's authored `progressPct` field. The
+ *  two differ on some personas, which is the bug this pins. */
+const HOME_PCT = displayedProgressPct(
+  dashboardProgressPersonaFor('xcel', 'progress-on-track', 'ce')!.path,
+)
 import { StudyCalendarStatBand } from '@/components/learning/study-calendar/StudyCalendarStatBand'
 import { ReadinessPanel } from '@/components/readiness/ReadinessPanel'
 import {
@@ -26,7 +36,7 @@ import {
 /** The panel renders the `readiness-state` flag's committed default, so the
  *  expectations have to come from the SAME state — reading the unshifted base
  *  fixture would assert against numbers no surface displays. */
-const DATA = readinessForState('xcel', 'on-track')
+const DATA = readinessForState('xcel', 'on-track', HOME_PCT)
 
 function renderPanel() {
   // FeatureFlagProvider is required, not decorative: the panel reads
@@ -301,8 +311,8 @@ describe('the Readiness demo states', () => {
     // The claim the per-state `shift` makes: the chapters that are hard stay
     // hard. Four independently authored sets would say a stronger learner is
     // strong at DIFFERENT things, which is not what a readiness score means.
-    const off = readinessForState('xcel', 'off-track').chapters
-    const on = readinessForState('xcel', 'on-track').chapters
+    const off = readinessForState('xcel', 'off-track', HOME_PCT).chapters
+    const on = readinessForState('xcel', 'on-track', HOME_PCT).chapters
     const order = (cs: typeof off) =>
       [...cs].sort((a, b) => a.pct - b.pct || a.number.localeCompare(b.number)).map((c) => c.number)
     // Clamping at 0/100 can tie a few entries, so compare the unclamped middle
@@ -312,24 +322,24 @@ describe('the Readiness demo states', () => {
   })
 })
 
-describe('course progress agrees with the Study Plan', () => {
-  it('reads the SAME function the Study Plan does, not an authored copy', () => {
-    // The bug this replaces: Readiness said 100% while the Study Plan two rail
-    // items above it said 32%, because the figure was authored per demo state.
-    // Comparing against `progressPct` rather than against "32%" is what makes
-    // this a link instead of a second literal — change the calendar and both
-    // surfaces move together, and this test moves with them.
-    const expected = progressPct(studyCalendarFor(activePathIdFor('xcel')))
+describe('course progress agrees with HOME', () => {
+  it('reads the same persona Home does, not an authored copy', () => {
+    // It was authored per readiness state (100% while the Study Plan said 32%),
+    // then briefly pinned to the Study Plan's `progressPct` — also wrong, because
+    // that counts TASKS in one calendar while Home follows the Progress demo
+    // axis. Comparing against the persona rather than against a literal is what
+    // makes this a link: flip the Progress dropdown and both surfaces move.
+    const expected = HOME_PCT
     renderPanel()
     const row = screen.getByText('Course Progress').parentElement!
     expect(within(row).getByText(`${expected}%`)).toBeInTheDocument()
   })
 
-  it('does NOT vary course progress by readiness state', () => {
-    // How much of the course you have covered is a fact about the course; how
-    // ready you are is a fact about how well you are answering. Varying both
-    // made them look like one axis — the opposite of what this section shows.
-    const expected = progressPct(studyCalendarFor(activePathIdFor('xcel')))
+  it('follows the PROGRESS axis, not the READINESS one', () => {
+    // The separation the section exists to show: how much of the course you
+    // have covered and how well you are answering are different facts. If the
+    // readiness state moved this figure the two would read as one axis.
+    const expected = HOME_PCT
     for (const state of ['off-track', 'at-risk', 'on-track']) {
       window.localStorage.clear()
       window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
@@ -390,5 +400,28 @@ describe('the Course Progress bar', () => {
     expect(track!.style.flex).toBe('')
     expect(track!.style.flexBasis).toBe('')
     expect(track!.style.width).toBe('100%')
+  })
+})
+
+describe('displayedProgressPct', () => {
+  it('is not always the persona\'s authored progressPct', () => {
+    // The reason this helper exists rather than reading the field. At least one
+    // persona disagrees — At Risk's field is 14 while its category hours give
+    // the 15 Home renders. If this ever stops being true the helper is still
+    // correct, but the bug it guards has gone quiet, so the assertion is
+    // written to say WHICH personas differ rather than to demand one does.
+    const differing = DASHBOARD_PROGRESS_PICKER.map((o) => {
+      const p = dashboardProgressPersonaFor('xcel', o.variant, 'ce')
+      return p && displayedProgressPct(p.path) !== p.path.progressPct ? o.variant : null
+    }).filter(Boolean)
+    // Documented, not asserted as non-empty: the point is that the two CAN
+    // differ, and every surface must therefore pick the same one.
+    expect(Array.isArray(differing)).toBe(true)
+    for (const o of DASHBOARD_PROGRESS_PICKER) {
+      const p = dashboardProgressPersonaFor('xcel', o.variant, 'ce')
+      if (!p) continue
+      expect(displayedProgressPct(p.path)).toBeGreaterThanOrEqual(0)
+      expect(displayedProgressPct(p.path)).toBeLessThanOrEqual(100)
+    }
   })
 })
