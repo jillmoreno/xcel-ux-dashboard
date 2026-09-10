@@ -44,6 +44,16 @@ describe('the Profile page', () => {
     expect(screen.queryByRole('heading', { name: 'Membership Plan' })).toBeNull()
   })
 
+  it('shows no "Member" pill for a brand that sells no membership', () => {
+    // The third instance of one defect on this page, after the Membership Plan
+    // card and the rail's Membership link before it. The pill was keyed on
+    // `isMember`, which XCEL's own tier makes TRUE — the question that has to
+    // be asked first is whether the brand sells a membership at all.
+    renderProfile()
+    expect(screen.queryByText(/^Member$/)).toBeNull()
+    expect(screen.queryByText(/non-member/i)).toBeNull()
+  })
+
   it('shows no Motivational Statement card', () => {
     renderProfile()
     expect(screen.queryByRole('heading', { name: 'Motivational Statement' })).toBeNull()

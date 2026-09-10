@@ -12,7 +12,7 @@ import {
   X,
 } from '@/icons'
 import { Avatar } from '@/components/ui/Avatar'
-import { useAccount } from '@/context/AccountContext'
+import { supportsMembership, useAccount } from '@/context/AccountContext'
 import { useMotivation } from '@/context/MotivationContext'
 import { MotivationalStatementPanel } from '@/components/membership/MotivationalStatementPanel'
 import type { AccountProfile } from '@/data/accountProfileFixtures'
@@ -28,7 +28,7 @@ export function AccountDetailsCard({
   data: AccountProfile['account']
   isMember: boolean
 }) {
-  const { user } = useAccount()
+  const { user, brand } = useAccount()
   const [editOpen, setEditOpen] = useState(false)
   return (
     <>
@@ -42,7 +42,17 @@ export function AccountDetailsCard({
             alt={`${user.firstName} ${user.lastName}`}
           />
           <div style={{ display: 'flex', flexDirection: 'column', gap: 6, minWidth: 0 }}>
-            <MembershipStatusPill isMember={isMember} />
+            {/* Gated on the BRAND, not on `isMember` — the third instance of
+                the same defect on this page (after the Membership Plan card and
+                the rail's Membership link before it). `isMember` answers "is
+                this learner a member", which XCEL's own tier makes true; the
+                question that had to be asked first is whether the brand sells a
+                membership at all. A "Member" pill on a brand with none is a
+                claim about a product that does not exist.
+
+                Deliberately gated rather than deleted: it is correct on a brand
+                that has a membership, and the predicate brings it back there. */}
+            {supportsMembership(brand) && <MembershipStatusPill isMember={isMember} />}
             <span style={nameStyle}>
               {user.firstName} {user.lastName}
             </span>
