@@ -430,6 +430,13 @@ readiness", which is not a thing — readiness is a position on a scale, and the
 scale has to stay visible for the position to mean anything. A test asserts the
 two dash arrays sum to the arc length, so a later "make it fill" fails.
 
+**Flat stroke caps, not round** (2026-09-09). Round caps were not just a
+rounded outer end: each dash extended half the stroke width at BOTH ends, so
+the amber bled past the pass mark into the green and the green bled back under
+it — the two bands overlapped at exactly the boundary the tick exists to mark.
+`CAP` is one constant covering both bands and the tick, because a flat-ended arc
+beside a round-capped tick reads as an oversight rather than a choice.
+
 **Two things the brief asked for were declined under its own rule 0.1** (match
 the app, do not introduce a styling system): the per-component folder and the
 `.module.css`. This app uses inline `CSSProperties` and flat files under

@@ -102,6 +102,20 @@ const BAND_COLOR = {
   empty: 'var(--color-neutral-200)',
 } as const
 
+/**
+ * Stroke cap for the arc bands and the threshold tick — **butt, not round**
+ * (2026-09-09).
+ *
+ * Round caps were not only a rounded outer end: each dash extended by half the
+ * stroke width at BOTH ends, so the amber's cap bled past the pass mark into
+ * the green and the green's bled back under it. The bands overlapped at exactly
+ * the boundary the tick is there to mark. Flat caps make them meet on the line.
+ *
+ * Named once because the tick has to match: a flat-ended arc beside a
+ * round-capped tick reads as an oversight rather than a choice.
+ */
+const CAP = 'butt' as const
+
 const DURATION = 600
 const EASE = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
 
@@ -269,7 +283,7 @@ export function ReadinessScoreGauge({
               fill="none"
               stroke={BAND_COLOR.empty}
               strokeWidth={sw}
-              strokeLinecap="round"
+              strokeLinecap={CAP}
               className={loading && !reduced ? 'cre-readiness-shimmer' : undefined}
             />
           ) : (
@@ -279,7 +293,7 @@ export function ReadinessScoreGauge({
                 fill="none"
                 stroke={BAND_COLOR.risk}
                 strokeWidth={sw}
-                strokeLinecap="round"
+                strokeLinecap={CAP}
                 strokeDasharray={`${L * t} ${L}`}
               />
               <path
@@ -287,7 +301,7 @@ export function ReadinessScoreGauge({
                 fill="none"
                 stroke={BAND_COLOR.pass}
                 strokeWidth={sw}
-                strokeLinecap="round"
+                strokeLinecap={CAP}
                 strokeDasharray={`${L * (1 - t)} ${L}`}
                 strokeDashoffset={-(L * t)}
               />
@@ -301,7 +315,7 @@ export function ReadinessScoreGauge({
               y2={tickOuter.y}
               stroke={empty ? 'var(--color-neutral-500)' : 'var(--color-neutral-darkest)'}
               strokeWidth={2.5}
-              strokeLinecap="round"
+              strokeLinecap={CAP}
             />
           )}
           {!loading && !empty && (
