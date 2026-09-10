@@ -62,6 +62,13 @@ const MAX_ADDED_BY = 100
  *  blocklist. */
 const ALLOWED_PROTOCOLS = ['http:', 'https:']
 
+/** The link taxonomy, re-declared here for the same reason the field limits
+ *  are: this is a trust boundary, and `LINK_TYPES` in `src/data/linkStore.ts`
+ *  is a compile-time claim about code we wrote. `Links.test.tsx` asserts the
+ *  two lists agree by parsing both files, so the duplication cannot drift
+ *  silently. '' is valid — the field is optional. */
+const ALLOWED_TYPES = ['brief', 'design', 'prototype', 'reference']
+
 type Json = Record<string, unknown>
 
 function json(body: unknown, status = 200): Response {
@@ -131,6 +138,13 @@ function validate(input: unknown, id: string): { link: Json } | { errors: string
   const addedBy = str(b.addedBy)?.trim() ?? ''
   if (addedBy.length > MAX_ADDED_BY) errors.push(`addedBy is longer than ${MAX_ADDED_BY} characters.`)
   else out.addedBy = addedBy
+
+  // Optional, and an allow-list rather than free text — a stored value this
+  // build has no label for would render as a chip saying nothing.
+  const type = str(b.type)?.trim() ?? ''
+  if (type && !ALLOWED_TYPES.includes(type)) {
+    errors.push(`type must be one of: ${ALLOWED_TYPES.join(', ')}.`)
+  } else out.type = type
 
   // `yyyy-mm-dd`, stamped server-side when absent, and carried through an edit
   // so editing a link does not re-date it. Kept as a plain date string rather

@@ -200,9 +200,8 @@ fact. An HTML answer counts as no endpoint too — the SPA fallback returns
 index.html with a 200, so a misrouted request would otherwise throw on parse and
 read as a broken page.
 
-**Four fields, and no `group`.** Address, title, optional note, optional
-**Added by**. Grouping is the obvious fifth and it is deliberately absent until
-the list is long enough to want it. Note that an unset note or author is stored
+**Five fields.** Address, title, optional note, optional **Added by**, optional
+**Type**. Note that an unset note, author or type is stored
 as `''` rather than omitted, so "never had one" and "had one and cleared it" are
 one state a client never has to tell apart — and `normalise` supplies `''` for
 records written before `addedBy` existed, so those read as "no author" rather
@@ -216,6 +215,42 @@ fact. A field the author types is honestly what it is. It prefills from
 per link — but **editing an existing link prefills the RECORD's own author**,
 never this browser's: editing someone else's link must not quietly reassign it.
 A test asserts both directions.
+
+**`LINK_TYPES` is INVENTED**, an editorial taxonomy rather than anything XCEL
+publishes — Brief · Design · Prototype · Reference, owned by whoever is running
+the project. It is four because four covers what the list actually holds and
+because the filter strip has to stay one line; a value nothing carries is a
+dead pill. Shaped like `TODO_STAGES` (an `as const` list plus a `| ''` member
+for "not set") because it is the same kind of thing and the two should read
+alike.
+
+**Optional, so no backfill was needed** — the records written before the field
+existed stay valid, and `normalise` degrades an unrecognised value to untyped
+rather than rendering a chip this build has no label for. That degrade is
+tested at the STORE, not through the DOM: an unknown type renders an EMPTY
+chip, so a `queryByText` passes whether or not the degrade works, which is how
+the first version of that test passed against a broken `normalise`.
+
+**The endpoint re-declares the taxonomy as `ALLOWED_TYPES`**, deliberately, for
+the same reason it re-declares the field limits — it is a trust boundary and
+`LINK_TYPES` is a compile-time claim about code we wrote. A test parses both
+files and asserts they agree, the same guard `ALLOWED_PROTOCOLS` gets, so the
+duplication cannot drift silently.
+
+**The chip is a neutral LABEL, not colour-coded**, and `ResourceIcon` is the
+warning: it began as a content type, picked up per-card glyphs for variety, and
+the field's two jobs stopped coinciding. A hue per type would invent a meaning
+ramp nobody asked for — and two of the four palettes are olive-greens a
+"Design" green would vanish into, which is the same reason status colours stay
+off the `--ux-*` palette entirely.
+
+**The filter renders only when more than one type is PRESENT**, and carries no
+per-pill counts — the total sits beside the strip in the toolbar, which is the
+convention `PillTabs` follows. It is a local pill rather than `PillTabs` or the
+page's own `StatusPill`: the first is on brand tokens and this panel is on
+`--ux-*`, and the second is unexported and requires the counts the convention
+says not to show. Measured Light / Dark: chip 5.49 / 8.17, idle pill 6.18 /
+9.52, active pill 10.51 / 11.65.
 
 **The row meta is assembled, not interpolated** — `host · added <date> · by
 <name>`, with absent parts dropped. A trailing "·" reads as a value that failed

@@ -21,7 +21,7 @@
 import { readFileSync } from 'node:fs'
 import path from 'node:path'
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest'
-import { render, screen, waitFor } from '@testing-library/react'
+import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { LinksPanel } from '@/components/prototype/LinksPanel'
@@ -29,7 +29,9 @@ import { UxDashboardPage } from '@/pages/UxDashboardPage'
 import { AccountProvider } from '@/context/AccountContext'
 import { ThemeProvider } from '@/context/ThemeContext'
 import {
+  LINK_TYPES,
   draftProblems,
+  listLinks,
   hostOf,
   safeHref,
   toMarkdown,
@@ -44,6 +46,7 @@ const link = (over: Partial<StoredLink> = {}): StoredLink => ({
   url: 'https://example.com/brief',
   note: '',
   addedBy: '',
+  type: '',
   addedDate: '2026-09-10',
   ...over,
 })
@@ -166,19 +169,19 @@ describe('a stored URL cannot become script', () => {
 
 describe('draftProblems', () => {
   it('requires a title and a full address', () => {
-    expect(draftProblems({ title: '', url: '', note: '', addedBy: '' })).toEqual([
+    expect(draftProblems({ title: '', url: '', note: '', addedBy: '', type: '' })).toEqual([
       'Give the link a title.',
       'Paste the address.',
     ])
-    expect(draftProblems({ title: '  ', url: 'https://a.example', note: '', addedBy: '' })).toEqual([
+    expect(draftProblems({ title: '  ', url: 'https://a.example', note: '', addedBy: '', type: '' })).toEqual([
       'Give the link a title.',
     ])
     // A bare host is the most likely paste, and the message says what is wrong.
-    expect(draftProblems({ title: 'A', url: 'example.com', note: '', addedBy: '' })).toEqual([
+    expect(draftProblems({ title: 'A', url: 'example.com', note: '', addedBy: '', type: '' })).toEqual([
       'That needs to be a full address starting with http:// or https://.',
     ])
-    expect(draftProblems({ title: 'A', url: 'javascript:alert(1)', note: '', addedBy: '' })).toHaveLength(1)
-    expect(draftProblems({ title: 'A', url: 'https://a.example', note: '', addedBy: '' })).toEqual([])
+    expect(draftProblems({ title: 'A', url: 'javascript:alert(1)', note: '', addedBy: '', type: '' })).toHaveLength(1)
+    expect(draftProblems({ title: 'A', url: 'https://a.example', note: '', addedBy: '', type: '' })).toEqual([])
   })
 })
 
@@ -434,6 +437,104 @@ describe('LinksPanel', () => {
     // Matched at column 0 so this is about SELECTORS — the block's own comment
     // names the class it is deliberately avoiding, and that prose is the point.
     expect(ownBlock).not.toMatch(/^\.cre-link-action/m)
+  })
+
+  it('stores a type, shows it as a chip, and filters on it', async () => {
+    const user = userEvent.setup()
+    const { writes } = mockEndpoint([
+      link({ id: 'link-003', title: 'The brief', type: 'brief' }),
+      link({ id: 'link-002', title: 'The Figma', type: 'design' }),
+      link({ id: 'link-001', title: 'Untyped thing', type: '' }),
+    ])
+    const { container } = render(<LinksPanel />)
+
+    await waitFor(() => expect(screen.getByText('3 links')).toBeInTheDocument())
+    // The chips, scoped to the list — the labels also appear as filter pills,
+    // which is the point of asserting them separately.
+    const chips = () =>
+      [...container.querySelectorAll('ul span')].map((el) => el.textContent?.trim())
+    expect(chips()).toContain('Brief')
+    expect(chips()).toContain('Design')
+    expect(screen.getByRole('button', { name: 'Brief' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Design' })).toBeInTheDocument()
+
+    // Filtering narrows the list, and the untyped row is not swept in.
+    await user.click(screen.getByRole('button', { name: 'Design' }))
+    expect(screen.getByText('The Figma')).toBeInTheDocument()
+    expect(screen.queryByText('The brief')).not.toBeInTheDocument()
+    expect(screen.queryByText('Untyped thing')).not.toBeInTheDocument()
+
+    // Clicking the active pill clears it, same as the project sections' pills.
+    await user.click(screen.getByRole('button', { name: 'Design' }))
+    expect(screen.getByText('The brief')).toBeInTheDocument()
+
+    // And a type reaches the endpoint on create.
+    await user.click(screen.getByRole('button', { name: 'Add link' }))
+    await waitFor(() => expect(screen.getByLabelText('Address')).toBeInTheDocument())
+    await user.type(screen.getByLabelText('Address'), 'https://a.example/p')
+    await user.type(screen.getByLabelText('Title'), 'A build')
+    await user.selectOptions(screen.getByLabelText(/Type/), 'prototype')
+    // Scoped to the dialog: with links on screen the toolbar CTA is also named
+    // "Add link", which is fine on screen (the modal traps focus) but ambiguous
+    // to a query.
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Add link' }))
+
+    await waitFor(() => expect(writes).toHaveLength(1))
+    expect(writes[0].body).toMatchObject({ type: 'prototype' })
+  })
+
+  it('hides the type filter until there is more than one type to choose', async () => {
+    // A single pill filters nothing, and "All" beside one option is chrome —
+    // the same rule the project sections' status pills follow.
+    mockEndpoint([link({ id: 'link-001', type: 'brief' }), link({ id: 'link-002', type: 'brief' })])
+    render(<LinksPanel />)
+    await waitFor(() => expect(screen.getByText('2 links')).toBeInTheDocument())
+    expect(screen.queryByRole('group', { name: 'Filter by type' })).not.toBeInTheDocument()
+
+    vi.unstubAllGlobals()
+    mockEndpoint([link({ id: 'link-001', type: 'brief' }), link({ id: 'link-002', type: 'design' })])
+    render(<LinksPanel />)
+    await waitFor(() =>
+      expect(screen.getAllByRole('group', { name: 'Filter by type' })[0]).toBeInTheDocument(),
+    )
+  })
+
+  it('is optional, and an unknown stored type degrades to untyped', async () => {
+    // No backfill was needed for the records written before the field existed,
+    // which is the whole reason it is optional — and a value this build has no
+    // label for must not render a chip saying nothing.
+    mockEndpoint([
+      link({ id: 'link-002', title: 'Legacy row' }),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any -- deliberately off-contract
+      { ...link({ id: 'link-001', title: 'Bogus type' }), type: 'wat' } as any,
+    ])
+    // Asserted at the STORE, not through the DOM. Rendering an unknown type
+    // produces an EMPTY chip — `linkTypeLabel` has no label for it — so a
+    // queryByText('wat') passes whether or not the degrade works, which is
+    // how the first version of this test passed against a broken `normalise`.
+    // The layer where the degrade happens is the layer to test.
+    const index = await listLinks()
+    expect(index.links.map((l) => l.type)).toEqual(['', ''])
+
+    render(<LinksPanel />)
+    await waitFor(() => expect(screen.getByText('2 links')).toBeInTheDocument())
+    // Both rows still render — an unrecognised value must not drop the link.
+    expect(screen.getByText('Legacy row')).toBeInTheDocument()
+    expect(screen.getByText('Bogus type')).toBeInTheDocument()
+    // …and no filter strip appears for a type nothing legitimately carries.
+    expect(screen.queryByRole('group', { name: 'Filter by type' })).not.toBeInTheDocument()
+  })
+
+  it('the endpoint and the client agree on the taxonomy', () => {
+    // The endpoint re-declares the list on purpose — it is a trust boundary,
+    // and `LINK_TYPES` is a compile-time claim about code we wrote. Same
+    // reasoning as `ALLOWED_PROTOCOLS`, so it gets the same source-parsed
+    // guard rather than an import that would erase the boundary.
+    const fn = readFileSync(path.resolve(__dirname, '../../netlify/functions/links.ts'), 'utf8')
+    const declared = /const ALLOWED_TYPES = \[([^\]]*)\]/.exec(fn)
+    expect(declared, 'links.ts must declare ALLOWED_TYPES').toBeTruthy()
+    const serverside = [...declared![1].matchAll(/'([^']+)'/g)].map((m) => m[1])
+    expect(serverside).toEqual(LINK_TYPES.map((t) => t.id))
   })
 
   it('shows no search field until the list is long enough to need one', async () => {

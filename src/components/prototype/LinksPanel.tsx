@@ -38,11 +38,13 @@ import { useCallback, useMemo, useState, type CSSProperties } from 'react'
 import { ArrowUpRightFromSquare, ClipboardList, PenToSquare, Plus, Trash } from '@/icons'
 import { Modal } from '@/components/ui/Modal'
 import {
+  LINK_TYPES,
   LinkWriteError,
   createLink,
   deleteLink,
   draftProblems,
   hostOf,
+  linkTypeLabel,
   readLastAuthor,
   rememberLastAuthor,
   safeHref,
@@ -50,6 +52,7 @@ import {
   toMarkdown,
   useLinks,
   type LinkDraft,
+  type LinkType,
   type StoredLink,
 } from '@/data/linkStore'
 
@@ -182,6 +185,53 @@ const noteTextStyle: CSSProperties = {
   margin: '5px 0 0',
 }
 
+/* A neutral LABEL, deliberately not colour-coded. `ResourceIcon` is the warning
+   here: it began as a content type, picked up per-card glyphs for variety, and
+   the field's two jobs stopped coinciding. A type says what a link IS; giving
+   each one a hue would invent a meaning ramp nobody asked for, and two of the
+   palettes are olive-greens a "Design" green would vanish into. */
+const chipStyle: CSSProperties = {
+  display: 'inline-block',
+  fontSize: 11,
+  fontWeight: 700,
+  letterSpacing: '0.04em',
+  textTransform: 'uppercase',
+  padding: '2px 7px',
+  borderRadius: 999,
+  background: 'var(--ux-chip)',
+  color: 'var(--ux-text-2)',
+  flex: 'none',
+}
+
+const filterRowStyle: CSSProperties = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  gap: 8,
+  marginBottom: 14,
+}
+
+/* No per-pill counts — the total sits beside the strip in the toolbar. The
+   convention the product's `PillTabs` follows, matched here rather than reused
+   because that component is on brand tokens and this panel is on `--ux-*`. */
+const filterPillStyle: CSSProperties = {
+  font: 'inherit',
+  fontSize: 12,
+  fontWeight: 600,
+  padding: '4px 11px',
+  borderRadius: 999,
+  border: '1px solid var(--ux-border)',
+  background: 'var(--ux-card)',
+  color: 'var(--ux-text-2)',
+  cursor: 'pointer',
+}
+
+const filterPillActiveStyle: CSSProperties = {
+  ...filterPillStyle,
+  background: 'var(--ux-accent)',
+  borderColor: 'var(--ux-accent)',
+  color: 'var(--ux-on-accent)',
+}
+
 const emptyStyle: CSSProperties = {
   border: '1px dashed var(--ux-border)',
   borderRadius: 12,
@@ -201,7 +251,7 @@ const toolbarStyle: CSSProperties = {
   flexWrap: 'wrap',
 }
 
-const EMPTY_DRAFT: LinkDraft = { title: '', url: '', note: '', addedBy: '' }
+const EMPTY_DRAFT: LinkDraft = { title: '', url: '', note: '', addedBy: '', type: '' }
 
 /** Below this the search field is a dead control — it costs a row of chrome to
  *  filter a list you can already see all of. Same reasoning as the status pills
@@ -281,6 +331,27 @@ function LinkFormModal({
         </div>
 
         <div style={fieldWrapStyle}>
+          <label style={labelStyle} htmlFor="link-type">
+            Type <span style={optionalStyle}>— optional</span>
+          </label>
+          <select
+            id="link-type"
+            value={draft.type}
+            onChange={(e) => onChange({ type: e.target.value as LinkType })}
+            style={fieldStyle}
+          >
+            {/* '' first, and labelled — a select whose empty option is blank
+                reads as a value that failed to load. */}
+            <option value="">No type</option>
+            {LINK_TYPES.map((t) => (
+              <option key={t.id} value={t.id}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div style={fieldWrapStyle}>
           <label style={labelStyle} htmlFor="link-note">
             Note <span style={optionalStyle}>— optional</span>
           </label>
@@ -334,19 +405,32 @@ export function LinksPanel() {
   const [busy, setBusy] = useState(false)
   const [copied, setCopied] = useState(false)
   const [query, setQuery] = useState('')
+  /** '' = All. Not a `LinkType`, because "no type" is itself a filterable
+   *  value here and would collide with it. */
+  const [typeFilter, setTypeFilter] = useState<string>('')
 
   const q = query.trim().toLowerCase()
   const rows = useMemo(
     () =>
       index.links.filter(
         (l) =>
-          !q ||
-          l.title.toLowerCase().includes(q) ||
-          l.url.toLowerCase().includes(q) ||
-          l.note.toLowerCase().includes(q) ||
-          l.addedBy.toLowerCase().includes(q),
+          (!typeFilter || l.type === typeFilter) &&
+          (!q ||
+            l.title.toLowerCase().includes(q) ||
+            l.url.toLowerCase().includes(q) ||
+            l.note.toLowerCase().includes(q) ||
+            l.addedBy.toLowerCase().includes(q) ||
+            linkTypeLabel(l.type).toLowerCase().includes(q)),
       ),
-    [index.links, q],
+    [index.links, q, typeFilter],
+  )
+
+  /** The types actually PRESENT, in the authored order. A pill for a type
+   *  nothing carries is a dead control — the same rule the project sections'
+   *  status pills follow, which only render what the section actually holds. */
+  const presentTypes = useMemo(
+    () => LINK_TYPES.filter((t) => index.links.some((l) => l.type === t.id)),
+    [index.links],
   )
 
   const change = (patch: Partial<LinkDraft>) => setDraft((d) => ({ ...d, ...patch }))
@@ -378,7 +462,13 @@ export function LinksPanel() {
   const beginEdit = (link: StoredLink) => {
     // The record's OWN author, not this browser's last one — editing someone
     // else's link must not quietly reassign it.
-    setDraft({ title: link.title, url: link.url, note: link.note, addedBy: link.addedBy })
+    setDraft({
+      title: link.title,
+      url: link.url,
+      note: link.note,
+      addedBy: link.addedBy,
+      type: link.type,
+    })
     setErrors([])
     setEditing(link)
   }
@@ -464,6 +554,33 @@ export function LinksPanel() {
         </div>
       )}
 
+      {/* ── type filter ──
+          Only when there is more than one type to choose between: a single
+          pill filters nothing, and "All" beside one option is chrome. */}
+      {presentTypes.length > 1 && (
+        <div style={filterRowStyle} role="group" aria-label="Filter by type">
+          <button
+            type="button"
+            onClick={() => setTypeFilter('')}
+            aria-pressed={typeFilter === ''}
+            style={typeFilter === '' ? filterPillActiveStyle : filterPillStyle}
+          >
+            All
+          </button>
+          {presentTypes.map((t) => (
+            <button
+              key={t.id}
+              type="button"
+              onClick={() => setTypeFilter(typeFilter === t.id ? '' : t.id)}
+              aria-pressed={typeFilter === t.id}
+              style={typeFilter === t.id ? filterPillActiveStyle : filterPillStyle}
+            >
+              {t.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* ── list ── */}
       {index.links.length === 0 ? (
         <div style={emptyStyle}>
@@ -483,7 +600,9 @@ export function LinksPanel() {
           )}
         </div>
       ) : rows.length === 0 ? (
-        <p style={{ fontSize: 13, color: 'var(--ux-text-3)' }}>No links match that search.</p>
+        <p style={{ fontSize: 13, color: 'var(--ux-text-3)' }}>
+          No links match {q && typeFilter ? 'that search and type' : q ? 'that search' : 'that type'}.
+        </p>
       ) : (
         <ul style={listStyle}>
           {rows.map((link, i) => {
@@ -513,6 +632,11 @@ export function LinksPanel() {
                 }}
               >
                 <div style={{ minWidth: 0 }}>
+                  {link.type && (
+                    <span style={{ ...chipStyle, marginBottom: 4 }}>
+                      {linkTypeLabel(link.type)}
+                    </span>
+                  )}
                   {href ? (
                     <a
                       href={href}

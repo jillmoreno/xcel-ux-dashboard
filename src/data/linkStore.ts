@@ -39,6 +39,33 @@ function announce(): void {
   window.dispatchEvent(new Event(LINKS_EVENT))
 }
 
+/**
+ * What kind of thing a link points at.
+ *
+ * INVENTED — an editorial taxonomy, not something XCEL publishes. Owner:
+ * whoever is running the project. It is four because four covers what the list
+ * actually holds (a brief, a Figma file, a deployed build, marketing pages) and
+ * because the filter strip has to stay one line; a value nobody uses is a dead
+ * pill. Add or rename here and the compiler lists the call sites.
+ *
+ * Shaped like `TODO_STAGES` — an `as const` list plus a `| ''` member for "not
+ * set" — because it is the same kind of thing and the two should read alike.
+ * `''` rather than an optional key so "never had one" and "had one and cleared
+ * it" stay one state, the same rule `note` and `addedBy` follow.
+ */
+export const LINK_TYPES = [
+  { id: 'brief', label: 'Brief' },
+  { id: 'design', label: 'Design' },
+  { id: 'prototype', label: 'Prototype' },
+  { id: 'reference', label: 'Reference' },
+] as const
+
+export type LinkType = (typeof LINK_TYPES)[number]['id'] | ''
+
+export function linkTypeLabel(type: LinkType): string {
+  return LINK_TYPES.find((t) => t.id === type)?.label ?? ''
+}
+
 export type StoredLink = {
   /** `link-007`, allocated server-side. */
   id: string
@@ -51,13 +78,16 @@ export type StoredLink = {
    *  identity: nothing authenticates this endpoint, so a name the server claimed
    *  to know would be a guess dressed as a fact. */
   addedBy: string
+  /** What kind of thing it points at. '' when unset — optional, so the records
+   *  written before this field existed stay valid without a backfill. */
+  type: LinkType
   /** `yyyy-mm-dd`, stamped server-side on create and carried through edits. */
   addedDate: string
 }
 
 /** The editable fields. `id` and `addedDate` are not among them — the server
  *  owns both, so a form cannot renumber a link or backdate it. */
-export type LinkDraft = Pick<StoredLink, 'title' | 'url' | 'note' | 'addedBy'>
+export type LinkDraft = Pick<StoredLink, 'title' | 'url' | 'note' | 'addedBy' | 'type'>
 
 export type LinkIndex = {
   /** False when there is no endpoint to talk to — plain `npm run dev`, or a
@@ -182,6 +212,10 @@ function normalise(v: StoredLink): StoredLink {
     // the case `normalise` is here for — those rows read as "no author", not as
     // a broken page.
     addedBy: typeof v.addedBy === 'string' ? v.addedBy : '',
+    // Anything unrecognised degrades to untyped rather than rendering a chip
+    // for a value this build has no label for — the same "normalise, do not
+    // trust" rule the rest of this function follows.
+    type: LINK_TYPES.some((t) => t.id === v.type) ? (v.type as LinkType) : '',
     addedDate: typeof v.addedDate === 'string' ? v.addedDate : '',
   }
 }
@@ -274,7 +308,11 @@ export function toMarkdown(links: StoredLink[]): string {
   return links
     .map((l) => {
       const head = `- [${l.title}](${l.url})`
-      const tail = [l.note.trim(), l.addedBy.trim() && `added by ${l.addedBy.trim()}`]
+      const tail = [
+        linkTypeLabel(l.type),
+        l.note.trim(),
+        l.addedBy.trim() && `added by ${l.addedBy.trim()}`,
+      ]
         .filter(Boolean)
         .join(' · ')
       return tail ? `${head} — ${tail}` : head
