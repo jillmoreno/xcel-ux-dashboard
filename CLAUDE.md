@@ -417,9 +417,47 @@ drives the filter, the chapter dots, the topic bars and the gauge's active band,
 so a chapter can never sit in "I Know This" wearing a red dot. Replace with the
 real thresholds; do not tune them to make a screenshot look better.
 
-**The gauge has NO red, and the bands split at the real pass mark** (restyled
-2026-09-09 to a supplied reference). It shipped as the design's red / amber /
-green; red is gone because this number is the learner's OWN standing, and a
+**`ReadinessScoreGauge` — the widget spec build (2026-09-09).** Replaced the
+240° `ReadinessGauge` outright rather than sitting beside it: two gauges for one
+number is the fork this repo keeps paying for. A 180° band-coloured arc with a
+threshold tick, a value marker, the numeral, a "N to pass" sub-label and a
+status chip, at three sizes, with loading / no-score / animated-mount states.
+
+**The arc is a TRACK, not a value fill**, and that is the load-bearing idea: both
+bands paint full length at full opacity, and the score is carried by the marker
+and the numeral. A progress-style fill would say "you have completed 47% of your
+readiness", which is not a thing — readiness is a position on a scale, and the
+scale has to stay visible for the position to mean anything. A test asserts the
+two dash arrays sum to the arc length, so a later "make it fill" fails.
+
+**Two things the brief asked for were declined under its own rule 0.1** (match
+the app, do not introduce a styling system): the per-component folder and the
+`.module.css`. This app uses inline `CSSProperties` and flat files under
+`src/components/<area>/`. Only the `.types.ts` split survived, because tests
+import the types.
+
+**`StatusBadge` gained an `error` tone** rather than the chip being hand-rolled.
+Every other functional tone was already there; `error` was simply the gap, which
+is the whole reason a bespoke pill would have looked justified.
+
+**The brief contradicted itself, and the mock won.** It set the at-risk window at
+`passingScore - 10` (flagged `{{CONFIRM}}`) and then required 62/75 to read
+AT RISK — thirteen points below. `AT_RISK_FRACTION` is **0.2 of the range**,
+which satisfies every acceptance case and answers the brief's other open half:
+an absolute window would make most of a 0-40 scale "at risk", where a fraction
+says the same thing at both sizes. Still invented.
+
+**Unresolved, deliberately not guessed:** the mock's softened green (#63bc8e) is
+not reachable — `--color-success-500` is the lightest stop on that ramp and is
+materially deeper, so closing it needs a new ramp stop, not a literal. The
+marker ring takes the ACTIVE BAND's colour rather than the mock's fixed teal, on
+the grounds that a fixed hue is a fourth colour with no meaning; one line to
+reverse. No feature flag: the section's only gate is `nav-show-readiness` (rail
+visibility), and gating the gauge separately would leave the tab headless.
+
+**The gauge had NO red before this and still does not** (restyled 2026-09-09 to
+a supplied reference). It shipped as the design's red / amber / green;
+red is gone because this number is the learner's OWN standing, and a
 learner mid-course is below the mark by definition — a red arc for being where
 you are supposed to be reads as a verdict rather than as distance still to
 travel. The walk-through had already settled that for this screen

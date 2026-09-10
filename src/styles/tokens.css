@@ -3166,3 +3166,26 @@ a.cre-library-card-title::after {
   font-size: 12px;
   color: rgb(255 255 255 / 0.7);
 }
+
+/* Readiness gauge loading shimmer. The arc is a single neutral stroke that
+   sweeps toward the lighter stop and back — an SVG path cannot carry a CSS
+   gradient, so this animates the stroke COLOR rather than a background
+   position. Suppressed under reduced motion, where the arc holds the base
+   neutral. */
+@keyframes cre-readiness-shimmer {
+  0%,
+  100% {
+    stroke: var(--color-neutral-200);
+  }
+  50% {
+    stroke: var(--color-neutral-300);
+  }
+}
+.cre-readiness-shimmer {
+  animation: cre-readiness-shimmer 1.4s linear infinite;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cre-readiness-shimmer {
+    animation: none;
+  }
+}

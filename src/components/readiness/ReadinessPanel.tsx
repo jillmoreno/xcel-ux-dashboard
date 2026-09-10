@@ -11,7 +11,7 @@ import {
   type ExamAttempt,
   type ReadinessBand,
 } from '@/data/readinessFixtures'
-import { ReadinessGauge } from './ReadinessGauge'
+import { ReadinessScoreGauge } from './ReadinessScoreGauge'
 
 /**
  * Exam Readiness — the `readiness` rail section, replacing its placeholder.
@@ -103,8 +103,10 @@ function ExamReadinessTab({ onOpenInsights }: { onOpenInsights: () => void }) {
         <h2 style={headingStyle}>Readiness Score</h2>
         <p style={subtleStyle}>{data.pathTitle}</p>
         <div style={scoreRowStyle}>
-          <Card style={scoreCardStyle}>
-            <ReadinessGauge score={data.score} passMark={PASS_MARK} />
+          <div style={scoreCardStyle}>
+            {/* The gauge brings its own card shell — header row, chip, arc.
+                Wrapping it in `Card` too would nest two bordered surfaces. */}
+            <ReadinessScoreGauge score={data.score} passingScore={PASS_MARK} />
             <p style={{ ...bodyStyle, margin: 0 }}>{data.scoreExplanation}</p>
             {/* The credibility line. It is NOT from the design — see
                 READINESS_FREQUENCY_NOTE for why it has to be here. */}
@@ -116,7 +118,7 @@ function ExamReadinessTab({ onOpenInsights }: { onOpenInsights: () => void }) {
             <button type="button" onClick={onOpenInsights} style={handoffStyle}>
               See what to review →
             </button>
-          </Card>
+          </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: '1 1 280px', minWidth: 260 }}>
             {data.progress.map((row) => (
               <div key={row.label} style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '8px 0' }}>

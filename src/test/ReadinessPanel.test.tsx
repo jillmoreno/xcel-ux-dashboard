@@ -145,16 +145,17 @@ describe('the readiness score', () => {
     expect(screen.getByText(DATA.pathTitle)).toBeInTheDocument()
   })
 
-  it('exposes the score AND the pass mark to assistive tech', () => {
-    // The arc's whole meaning is the distance to the mark, and that is carried
-    // by colour and a tick — neither of which reaches a screen reader. The
-    // label has to say both numbers or the gauge is a bare figure.
+  it('exposes the score AND the pass mark as a meter, not an image', () => {
+    // The arc's whole meaning is the distance to the mark, carried by colour
+    // and a tick — neither of which reaches a screen reader. `role="meter"`
+    // with a valuetext says both numbers and the band; the SVG itself is
+    // aria-hidden, so this is the ONLY route to that information.
     renderPanel()
-    expect(
-      screen.getByRole('img', {
-        name: new RegExp(`Readiness score ${DATA.score}.*${PASS_MARK} is a passing score`),
-      }),
-    ).toBeInTheDocument()
+    const meter = screen.getByRole('meter', { name: /readiness score/i })
+    expect(meter).toHaveAttribute('aria-valuenow', String(DATA.score))
+    expect(meter.getAttribute('aria-valuetext')).toMatch(
+      new RegExp(`${DATA.score} out of 100. ${PASS_MARK} required to pass`),
+    )
   })
 
   it('states the pass mark the same in the gauge and in What to Expect', () => {

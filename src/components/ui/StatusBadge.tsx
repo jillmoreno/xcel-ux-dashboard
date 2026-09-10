@@ -4,7 +4,7 @@ type Props = {
   icon?: ReactNode
   children: ReactNode
   /** Tone — semantic alias mapped to CRE tokens. */
-  tone?: 'member' | 'completed' | 'in-progress' | 'success' | 'info' | 'warning' | 'neutral'
+  tone?: 'member' | 'completed' | 'in-progress' | 'success' | 'info' | 'warning' | 'error' | 'neutral'
 }
 
 const TONES: Record<NonNullable<Props['tone']>, { bg: string; fg: string }> = {
@@ -19,6 +19,10 @@ const TONES: Record<NonNullable<Props['tone']>, { bg: string; fg: string }> = {
   success: { bg: 'var(--color-success-100)', fg: 'var(--color-success-800)' },
   info: { bg: 'var(--color-info-100)', fg: 'var(--color-info-800)' },
   warning: { bg: 'var(--color-warning-100)', fg: 'var(--color-warning-800)' },
+  // Added 2026-09-09 for the Readiness gauge's OFF TRACK chip. The ramp
+  // already existed and every other functional tone was here — `error` was the
+  // gap, which is why that chip would otherwise have been hand-rolled.
+  error: { bg: 'var(--color-error-100)', fg: 'var(--color-error-800)' },
   neutral: { bg: 'var(--color-neutral-100)', fg: 'var(--color-neutral-darkest)' },
 }
 
