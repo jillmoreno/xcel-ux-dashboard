@@ -97,8 +97,10 @@ export type ReadinessData = {
   /** The path this readiness is for — the heading says so, because a learner
    *  with two paths must not have to guess which one is being scored. */
   pathTitle: string
-  /** 0-100. The headline number in the gauge. */
-  score: number
+  /** 0-100, or `null` for a learner who has answered nothing. `null` is NOT
+   *  zero: zero is a score, and it would earn an OFF TRACK chip a learner who
+   *  has not sat a question has not earned. */
+  score: number | null
   /** What the score is built from, in the learner's words. */
   scoreExplanation: string
   /** The frequency statement. See `READINESS_FREQUENCY_NOTE`. */
@@ -220,4 +222,118 @@ const READINESS_BY_BRAND: Record<Brand, ReadinessData> = {
 
 export function readinessFor(brand: Brand): ReadinessData {
   return READINESS_BY_BRAND[brand]
+}
+
+/* ─── Demo states ──────────────────────────────────────────────────────── */
+
+/**
+ * The four readiness states the Demo Controls bar switches between, and the
+ * ONLY axis on this page a reviewer can drive.
+ *
+ * `not-started` is genuinely different from the other three, not just a lower
+ * score. A learner who has answered nothing has no percent-correct to report,
+ * so the breakdown is EMPTY and there are no attempts — showing 20 chapters
+ * with scores for someone who has not sat a question is the same incoherence
+ * the CE path had when its gauge claimed six completed hours against a list
+ * with none.
+ */
+export type ReadinessState = 'not-started' | 'off-track' | 'at-risk' | 'on-track'
+
+export const READINESS_PICKER: { state: ReadinessState; label: string }[] = [
+  { state: 'not-started', label: 'Not Started' },
+  { state: 'off-track', label: 'Off Track' },
+  { state: 'at-risk', label: 'At Risk' },
+  { state: 'on-track', label: 'On Track' },
+]
+
+/**
+ * Per-state overrides. The three SCORED states share one chapter/topic set and
+ * shift it by `shift` points.
+ *
+ * That shift is a claim worth stating: a learner's relative strengths do not
+ * change with their overall standing — the chapters that are hard stay hard —
+ * what moves is the level. Authoring four independent 20-chapter sets would
+ * say the opposite, that a stronger learner is strong at DIFFERENT things,
+ * which is not what a readiness score means. Clamped to 0-100.
+ *
+ * The scores are chosen against `PASS_MARK` (70) and `AT_RISK_FRACTION` (0.2 of
+ * the range, so at-risk begins at 50): 38 / 62 / 84 sit clearly inside their
+ * bands rather than on the edges, so a reviewer clicking through sees three
+ * unambiguous chips.
+ */
+const STATE_OVERRIDES: Record<
+  ReadinessState,
+  { score: number | null; shift: number; progress: CourseProgressStat[]; attempts: number }
+> = {
+  'not-started': {
+    score: null,
+    shift: 0,
+    attempts: 0,
+    progress: [
+      { label: 'Course Progress', value: '0%', pct: 0 },
+      { label: 'Chapters Completed', value: '0 of 20' },
+      { label: 'Topics Covered', value: '0 of 14' },
+      { label: 'Total Questions Answered', value: '0 of 200' },
+      { label: 'Answered Correctly', value: '0 of 0' },
+    ],
+  },
+  'off-track': {
+    score: 38,
+    shift: -9,
+    attempts: 1,
+    progress: [
+      { label: 'Course Progress', value: '45%', pct: 45 },
+      { label: 'Chapters Completed', value: '9 of 20' },
+      { label: 'Topics Covered', value: '6 of 14' },
+      { label: 'Total Questions Answered', value: '60 of 200' },
+      { label: 'Answered Correctly', value: '23 of 60' },
+    ],
+  },
+  'at-risk': {
+    score: 62,
+    shift: 0,
+    attempts: 2,
+    progress: [
+      { label: 'Course Progress', value: '90%', pct: 90 },
+      { label: 'Chapters Completed', value: '18 of 20' },
+      { label: 'Topics Covered', value: '12 of 14' },
+      { label: 'Total Questions Answered', value: '120 of 200' },
+      { label: 'Answered Correctly', value: '56 of 120' },
+    ],
+  },
+  'on-track': {
+    score: 84,
+    shift: 22,
+    attempts: 3,
+    progress: [
+      { label: 'Course Progress', value: '100%', pct: 100 },
+      { label: 'Chapters Completed', value: '20 of 20' },
+      { label: 'Topics Covered', value: '14 of 14' },
+      { label: 'Total Questions Answered', value: '186 of 200' },
+      { label: 'Answered Correctly', value: '151 of 186' },
+    ],
+  },
+}
+
+const clampPct = (n: number) => Math.max(0, Math.min(100, Math.round(n)))
+
+/** Readiness for a brand in a given demo state. */
+export function readinessForState(brand: Brand, state: ReadinessState): ReadinessData {
+  const base = READINESS_BY_BRAND[brand]
+  const o = STATE_OVERRIDES[state]
+  const empty = state === 'not-started'
+  return {
+    ...base,
+    score: o.score,
+    progress: o.progress,
+    chapters: empty ? [] : base.chapters.map((c) => ({ ...c, pct: clampPct(c.pct + o.shift) })),
+    topics: empty ? [] : base.topics.map((t) => ({ ...t, pct: clampPct(t.pct + o.shift) })),
+    // Attempts accumulate with progress — the simulators are authored newest
+    // first, so an earlier state has taken the LAST n of them.
+    practiceExams: base.practiceExams.slice(base.practiceExams.length - o.attempts),
+    // The licensing exam has only been sat by someone who got far enough to
+    // book it. A "Not Started" learner with a failed state exam on record is a
+    // contradiction a reviewer would notice immediately.
+    licensingExams: o.attempts >= 2 ? base.licensingExams : [],
+  }
 }

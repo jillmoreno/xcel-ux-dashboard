@@ -1,10 +1,11 @@
 import { fireEvent, render, screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
+import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { ReadinessPanel } from '@/components/readiness/ReadinessPanel'
 import {
   bandFor,
-  readinessFor,
+  readinessForState,
   PASS_MARK,
   READINESS_FREQUENCY_NOTE,
   REVIEW_THRESHOLD,
@@ -19,12 +20,21 @@ import {
  * and the thing most worth pinning here.
  */
 
-const DATA = readinessFor('xcel')
+/** The panel renders the `readiness-state` flag's committed default, so the
+ *  expectations have to come from the SAME state — reading the unshifted base
+ *  fixture would assert against numbers no surface displays. */
+const DATA = readinessForState('xcel', 'on-track')
 
 function renderPanel() {
+  // FeatureFlagProvider is required, not decorative: the panel reads
+  // `readiness-state` through it. Without the provider `useFeatureFlag` falls
+  // back to catalog defaults, so every state seeded into localStorage rendered
+  // as On Track and the demo-state tests passed for the wrong reason.
   return render(
     <AccountProvider>
-      <ReadinessPanel />
+      <FeatureFlagProvider>
+        <ReadinessPanel />
+      </FeatureFlagProvider>
     </AccountProvider>,
   )
 }
@@ -229,5 +239,72 @@ describe('the tab set', () => {
     expect(screen.queryByRole('group', { name: 'Chapters' })).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: /see what to review/i }))
     expect(screen.getByRole('group', { name: 'Chapters' })).toBeInTheDocument()
+  })
+})
+
+describe('the Readiness demo states', () => {
+  /** Seed the flag the way the Demo Controls bar persists it. */
+  function seedState(state: string) {
+    window.localStorage.setItem(
+      'cgp.featureFlags',
+      JSON.stringify({ 'readiness-state': { enabled: true, variant: state } }),
+    )
+  }
+
+  it('defaults to On Track', () => {
+    // The committed default, and the state the section is meant to open on.
+    // Asserted through the RENDER rather than by reading the catalog, so a
+    // default that is right in the flag and wrong in the panel still fails.
+    renderPanel()
+    expect(screen.getByText('ON TRACK')).toBeInTheDocument()
+  })
+
+  it('gives each state a chip on the right side of the pass mark', () => {
+    for (const [state, chip] of [
+      ['off-track', 'OFF TRACK'],
+      ['at-risk', 'AT RISK'],
+      ['on-track', 'ON TRACK'],
+    ] as const) {
+      window.localStorage.clear()
+      window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
+      seedState(state)
+      const { unmount } = renderPanel()
+      expect(screen.getByText(chip), `${state} should read ${chip}`).toBeInTheDocument()
+      unmount()
+    }
+  })
+
+  it('treats Not Started as no score, not a zero', () => {
+    // The incoherence this guards is the one the CE path had: a gauge claiming
+    // something the lists below it cannot support. A learner who has answered
+    // nothing has no percent-correct, so the breakdown is empty, there are no
+    // attempts, and there is NO status chip — a zero would earn OFF TRACK.
+    seedState('not-started')
+    renderPanel()
+    expect(screen.getByText('—')).toBeInTheDocument()
+    expect(screen.getByText('No score yet')).toBeInTheDocument()
+    expect(screen.queryByText(/OFF TRACK|AT RISK|ON TRACK/)).toBeNull()
+    // …and the hand-off is gone, because there is nothing over there to see.
+    expect(screen.queryByRole('button', { name: /see what to review/i })).toBeNull()
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Insights' }))
+    expect(screen.getAllByText('No answers recorded yet.').length).toBe(2)
+
+    fireEvent.click(screen.getByRole('tab', { name: 'Practice Exams' }))
+    expect(screen.getAllByText('No attempts yet.').length).toBe(2)
+  })
+
+  it('keeps relative strengths fixed while the level moves', () => {
+    // The claim the per-state `shift` makes: the chapters that are hard stay
+    // hard. Four independently authored sets would say a stronger learner is
+    // strong at DIFFERENT things, which is not what a readiness score means.
+    const off = readinessForState('xcel', 'off-track').chapters
+    const on = readinessForState('xcel', 'on-track').chapters
+    const order = (cs: typeof off) =>
+      [...cs].sort((a, b) => a.pct - b.pct || a.number.localeCompare(b.number)).map((c) => c.number)
+    // Clamping at 0/100 can tie a few entries, so compare the unclamped middle
+    // of the range where the ordering is strict.
+    const mid = (cs: typeof off) => order(cs.filter((c) => c.pct > 0 && c.pct < 100))
+    expect(mid(on)).toEqual(mid(off).filter((n) => mid(on).includes(n)))
   })
 })

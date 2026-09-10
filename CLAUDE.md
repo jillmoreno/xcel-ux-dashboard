@@ -456,6 +456,37 @@ gauge up alone clips it. The row still wraps, and both columns keep a
 `minWidth`, so a narrow shell drops the stats below the card rather than
 squeezing it under the gauge's own minimum.
 
+**The Demo Controls bar has a READINESS dropdown** (2026-09-09) — Not Started ·
+Off Track · At Risk · On Track, driving `readiness-state`, **default On Track**.
+Deliberately NOT in the flag panel's rebrand scope, the same call
+`dashboard-progress-state` and `dashboard-education-type` made: a control that
+already sits in the always-visible bar is a redundant, worse copy in the panel.
+It is also not in the share-link codec — those two are the dashboard's headline
+axes that every shared link carries, and this one belongs to one section.
+
+**It is a different question from the PROGRESS dropdown**, and the two are
+independent on purpose: progress is how far through the COURSE you are,
+readiness is how ready for the EXAM. A learner can be 90% through and not ready,
+which is the entire reason this section exists.
+
+**`not-started` is not a low score, and the fixture makes that structural.** The
+gauge shows no score and NO chip (a zero would earn OFF TRACK), the breakdown is
+empty, there are no attempts, the progress figures are zeroed, and the "See what
+to review" hand-off is suppressed because there is nothing over there. The
+incoherence being avoided is the CE path's old one — a gauge claiming something
+the lists below it cannot support.
+
+**The three scored states SHIFT one chapter set rather than authoring four.**
+A learner's relative strengths do not change with their overall standing: the
+chapters that are hard stay hard, and what moves is the level. Four independent
+sets would say a stronger learner is strong at DIFFERENT things, which is not
+what a readiness score means. A test asserts the ordering survives the shift.
+
+**Adding these tests found a real gap:** `ReadinessPanel.test.tsx` had been
+rendering without `FeatureFlagProvider`, so `useFeatureFlag` fell back to
+catalog defaults and every state seeded into localStorage rendered as On Track —
+the demo-state tests passed for the wrong reason until the provider went in.
+
 **Unresolved, deliberately not guessed:** the mock's softened green (#63bc8e) is
 not reachable — `--color-success-500` is the lightest stop on that ramp and is
 materially deeper, so closing it needs a new ramp stop, not a literal. The

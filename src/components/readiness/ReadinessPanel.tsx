@@ -1,5 +1,6 @@
 import { useState, type CSSProperties } from 'react'
 import { useAccount } from '@/context/AccountContext'
+import { useReadinessState } from '@/context/FeatureFlagContext'
 import { Tabs } from '@/components/ui/Tabs'
 import { PillTabs } from '@/components/ui/PillTabs'
 import { Card } from '@/components/ui/Card'
@@ -7,9 +8,10 @@ import { CircleCheck, CircleExclamation } from '@/icons'
 import {
   bandFor,
   PASS_MARK,
-  readinessFor,
+  readinessForState,
   type ExamAttempt,
   type ReadinessBand,
+  type ReadinessState,
 } from '@/data/readinessFixtures'
 import { ReadinessScoreGauge } from './ReadinessScoreGauge'
 
@@ -95,7 +97,8 @@ export function ReadinessPanel() {
  */
 function ExamReadinessTab({ onOpenInsights }: { onOpenInsights: () => void }) {
   const { brand } = useAccount()
-  const data = readinessFor(brand)
+  const data = readinessForState(brand, useReadinessState() as ReadinessState)
+  const hasScore = data.score !== null
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
@@ -107,17 +110,31 @@ function ExamReadinessTab({ onOpenInsights }: { onOpenInsights: () => void }) {
             {/* The gauge brings its own card shell — header row, chip, arc.
                 Wrapping it in `Card` too would nest two bordered surfaces. */}
             <ReadinessScoreGauge score={data.score} passingScore={PASS_MARK} size="lg" />
-            <p style={{ ...bodyStyle, margin: 0 }}>{data.scoreExplanation}</p>
-            {/* The credibility line. It is NOT from the design — see
-                READINESS_FREQUENCY_NOTE for why it has to be here. */}
-            <p style={frequencyStyle}>{data.frequencyNote}</p>
+            {/* A learner with no score gets different copy, not the same
+                sentence with a blank in it. The explanation describes how a
+                score is BUILT, which is useful once one exists and is noise
+                before — and the frequency note is a statement about scores, so
+                it has nothing to qualify yet. */}
+            <p style={{ ...bodyStyle, margin: 0 }}>
+              {hasScore
+                ? data.scoreExplanation
+                : 'Your readiness score appears once you have answered some questions. Finish a chapter or sit a practice exam to start it off.'}
+            </p>
+            {hasScore && (
+              // The credibility line. It is NOT from the design — see
+              // READINESS_FREQUENCY_NOTE for why it has to be here.
+              <p style={frequencyStyle}>{data.frequencyNote}</p>
+            )}
             {/* The hand-off. The sentence above says "aim for the green"; this
                 is the route to the screen that says WHICH green. It exists
                 because Insights became its own tab — on the design's single
-                long page the breakdown was simply the next thing down. */}
-            <button type="button" onClick={onOpenInsights} style={handoffStyle}>
-              See what to review →
-            </button>
+                long page the breakdown was simply the next thing down.
+                Suppressed when there is nothing over there to look at. */}
+            {data.chapters.length > 0 && (
+              <button type="button" onClick={onOpenInsights} style={handoffStyle}>
+                See what to review →
+              </button>
+            )}
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: '1 1 280px', minWidth: 260 }}>
             {data.progress.map((row) => (
@@ -159,7 +176,7 @@ function ExamReadinessTab({ onOpenInsights }: { onOpenInsights: () => void }) {
  */
 function InsightsTab() {
   const { brand } = useAccount()
-  const data = readinessFor(brand)
+  const data = readinessForState(brand, useReadinessState() as ReadinessState)
   const [filter, setFilter] = useState<BreakdownFilter>('review')
 
   // ONE predicate drives both columns and the pill strip, so the chapter list
@@ -167,6 +184,10 @@ function InsightsTab() {
   const keep = (pct: number) =>
     filter === 'all' ? true : filter === 'review' ? bandFor(pct) === 'review' : bandFor(pct) !== 'review'
 
+  // Nothing answered at all is a different sentence from nothing in THIS
+  // filter — "Nothing in this group yet" under "I Should Review" reads as good
+  // news to a learner who simply has not started.
+  const noData = data.chapters.length === 0
   const chapters = data.chapters.filter((c) => keep(c.pct))
   const topics = data.topics.filter((t) => keep(t.pct))
   // "Show All" is the design's own sort order (by chapter number); the two
@@ -199,7 +220,9 @@ function InsightsTab() {
           >
             <h3 style={columnHeadStyle}>Chapters</h3>
             {sortedChapters.length === 0 ? (
-              <p style={emptyStyle}>Nothing in this group yet.</p>
+              <p style={emptyStyle}>
+                {noData ? 'No answers recorded yet.' : 'Nothing in this group yet.'}
+              </p>
             ) : (
               sortedChapters.map((c) => (
                 <div key={c.number} style={chapterRowStyle}>
@@ -221,7 +244,9 @@ function InsightsTab() {
           >
             <h3 style={columnHeadStyle}>Topics</h3>
             {sortedTopics.length === 0 ? (
-              <p style={emptyStyle}>Nothing in this group yet.</p>
+              <p style={emptyStyle}>
+                {noData ? 'No answers recorded yet.' : 'Nothing in this group yet.'}
+              </p>
             ) : (
               sortedTopics.map((t) => (
                 <div key={t.title} style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
@@ -318,7 +343,7 @@ const STUDY_TIPS: { title: string; body: string }[] = [
 
 function PracticeExamsTab() {
   const { brand } = useAccount()
-  const data = readinessFor(brand)
+  const data = readinessForState(brand, useReadinessState() as ReadinessState)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <section style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>

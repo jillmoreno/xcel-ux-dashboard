@@ -1654,6 +1654,26 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    // The Readiness section's demo axis. Variant-only, like
+    // `dashboard-progress-state` — the Demo Controls bar exposes it as a
+    // Readiness dropdown, so it is deliberately NOT in the flag panel's
+    // rebrand scope (a redundant, worse copy of a control in the bar).
+    key: 'readiness-state',
+    group: 'Widgets',
+    label: 'Readiness state',
+    description:
+      "Which readiness state the Exam Readiness section shows. Not Started is genuinely different from a low score — the learner has answered nothing, so the gauge shows no score and no status chip, the Chapter & Topic breakdown is empty, and there are no exam attempts. Off Track / At Risk / On Track vary the score, the course-progress figures, the number of simulator attempts, and shift the chapter and topic percentages together (relative strengths stay put; the level moves). Variant-only.",
+    defaultEnabled: true,
+    defaultVariant: 'on-track',
+    variants: [
+      { value: 'not-started', label: 'Not Started', description: 'No score yet — nothing answered, no attempts, empty breakdown.' },
+      { value: 'off-track', label: 'Off Track', description: 'Score 38, below the at-risk window. Part-way through the course.' },
+      { value: 'at-risk', label: 'At Risk', description: 'Score 62 — inside the window below the 70 pass mark.' },
+      { value: 'on-track', label: 'On Track', description: 'Score 84, clear of the pass mark. The default view.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'dashboard-whats-new-layout',
     group: 'Widgets',
     label: "What's Trending section",
@@ -2712,6 +2732,14 @@ export function useDemoMode(): boolean {
  *
  * Outside a provider it returns the catalog default, matching `useFeatureFlag`.
  */
+/**
+ * The Readiness demo state. Falls back to `on-track` — the committed default,
+ * and the state the section is meant to open on.
+ */
+export function useReadinessState(): string {
+  return useFeatureFlag('readiness-state').variant ?? 'on-track'
+}
+
 export function useCeStudyPlanEnabled(): boolean {
   return useFeatureFlag('ce-study-plan').enabled
 }

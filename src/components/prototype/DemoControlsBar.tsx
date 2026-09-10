@@ -28,6 +28,7 @@ import {
   DASHBOARD_PROGRESS_PICKER,
   dashboardEducationSupported,
 } from '@/data/dashboardProgressFixtures'
+import { READINESS_PICKER } from '@/data/readinessFixtures'
 import { educationTypesFor } from '@/data/onboarding/onboardingContent'
 import { PROTOTYPE_SHARE_ORIGIN, copyToClipboard } from './shareLink'
 import {
@@ -92,6 +93,12 @@ export function DemoControlsBar({
   // the two new dropdowns drive directly (they persist via FeatureFlagContext).
   const progressState = useFeatureFlag('dashboard-progress-state')
   const educationTypeFlag = useFeatureFlag('dashboard-education-type')
+  // Readiness state — the Exam Readiness section's own axis. Deliberately NOT
+  // threaded into the share-link codec alongside prog/edu: those two are the
+  // dashboard's headline demo axes and every shared link carries them, while
+  // this one belongs to one section. Add it to `readDemoParams` if a shared
+  // link ever needs to open on a specific readiness state.
+  const readinessState = useFeatureFlag('readiness-state')
   // What's New toggle state mirrors the `dashboard-featured` flag (the Marketing
   // Focused carousel it used to drive was archived): On = Featured hero hidden
   // (`dashboard-featured` disabled); Off = hero shown. Drives the toggle at the
@@ -253,6 +260,10 @@ export function DemoControlsBar({
   // on the trigger.
   const progressLabel =
     DASHBOARD_PROGRESS_PICKER.find((o) => o.variant === progressState.variant)?.label ?? 'Progress'
+
+  const readinessLabel =
+    READINESS_PICKER.find((o) => o.state === (readinessState.variant ?? 'on-track'))?.label ??
+    'Readiness'
 
   // Education (QE/CE) dropdown — only for brands with a QE dashboard persona
   // (CRE · McKissock · STC); brand-true labels ("Pre-Licensing" / "Qualifying
@@ -646,6 +657,43 @@ export function DemoControlsBar({
                     educationTypeFlag.variant ?? DEFAULT_EDUCATION,
                     promotedTier,
                   )
+                  close()
+                }}
+              >
+                <span style={{ flex: 1 }}>{opt.label}</span>
+                {active && <Check size={15} aria-hidden />}
+              </button>
+            )
+          })}
+        </DemoDropdown>
+
+        {/* Readiness state — single-select radiogroup. Drives the Exam Readiness
+            section only; it does not touch the dashboard's own progress axis,
+            which is a different question (how far through the COURSE you are,
+            not how ready for the exam). A learner can be 90% through and not
+            ready, which is the whole reason the section exists. */}
+        <DemoDropdown
+          id="readiness"
+          label={readinessLabel}
+          eyebrow="Readiness"
+          openId={openId}
+          onToggle={toggle}
+          panelRole="radiogroup"
+          panelLabel="Readiness state"
+          panelMinWidth={240}
+        >
+          {READINESS_PICKER.map((opt) => {
+            const active = opt.state === (readinessState.variant ?? 'on-track')
+            return (
+              <button
+                key={opt.state}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                tabIndex={active ? 0 : -1}
+                className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
+                onClick={() => {
+                  setVariant('readiness-state', opt.state)
                   close()
                 }}
               >
