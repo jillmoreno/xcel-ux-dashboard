@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import { Circle, CircleCheck, CircleExclamation } from '@/icons'
+import { ProgressBar } from '@/components/ui/ProgressBar'
 import {
   daysUntilExam,
   formatStatDate,
@@ -148,10 +149,16 @@ function StatusBadge({
 }
 
 function ProgressInline({ pct }: { pct: number }) {
+  // The bar itself is `ProgressBar` now — this composes it with the percentage
+  // label. The treatment was defined here and is still the reference; it moved
+  // out because the Readiness page needed the bar WITHOUT the label and had
+  // drawn a thinner lookalike instead.
   return (
     <div style={progressRowStyle}>
-      <div aria-hidden style={progressTrackStyle}>
-        <div style={{ ...progressFillStyle, width: `${pct}%` }} />
+      {/* The grow lives HERE, not in `ProgressBar` — the bar is layout-neutral
+          so it survives being dropped into a column. */}
+      <div style={{ flex: 1, minWidth: 80 }}>
+        <ProgressBar pct={pct} />
       </div>
       <span style={progressPctStyle}>{pct}%</span>
     </div>
@@ -286,19 +293,7 @@ const progressRowStyle: CSSProperties = {
   width: '100%',
 }
 
-const progressTrackStyle: CSSProperties = {
-  flex: 1,
-  minWidth: 80,
-  height: 8,
-  borderRadius: 'var(--radius-pill)',
-  background: 'var(--color-neutral-100)',
-  overflow: 'hidden',
-}
 
-const progressFillStyle: CSSProperties = {
-  height: '100%',
-  background: 'var(--color-primary-700)',
-}
 
 const progressPctStyle: CSSProperties = {
   fontFamily: 'var(--font-body)',

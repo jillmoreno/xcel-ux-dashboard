@@ -497,6 +497,28 @@ answering.** Varying both made them look like one axis, which is the opposite of
 what this section is for. The states move ANSWERED CORRECTLY against a fixed
 denominator instead; Not Started is the exception and answers nothing.
 
+**The bar is the shared `ProgressBar`, not a lookalike.** Readiness had drawn
+its own 3px green track, so one learner's one 32% rendered as two different
+bars a rail item apart. `ProgressBar` was extracted from `ProgressInline` in
+`StudyCalendarStatBand` — where the treatment was defined and still is the
+reference — and that component now composes it with its `32%` label. Duplicating
+the percentage was the only thing that had stopped the reuse.
+
+**Extracting it broke the bar, and only opening the page caught it.** The style
+carried `flex: 1` because it lived in a flex ROW beside a label; dropped into
+Readiness' flex COLUMN that resolves to `flex-basis: 0%` on the CROSS axis, so
+the bar rendered at ZERO height with `height: 8px` still on the element. tsc was
+clean, and the test asserting `style.height === '8px'` passed while the bar was
+invisible — jsdom has no layout. `ProgressBar` is layout-neutral now
+(`width: 100%`, no flex) and consumers that need it to grow wrap it; the test
+asserts THAT rather than the height.
+
+**The Insights topic bars deliberately stay thin.** They are SCORES, not
+progress — band-coloured, and fourteen in a column where 8px would turn a
+scannable list into a stack of blocks. Same reasoning as the gauge dropping red
+while the chapter dots keep it: a different job is allowed a different
+treatment.
+
 **HOME still disagrees, and it is not a fixture problem.** The Current Learning
 Progress band's percentage comes from the `dashboard-progress-state` demo axis —
 the Progress dropdown, whose personas are 0% / ~15% / ~63% / 100%. It reads 63%

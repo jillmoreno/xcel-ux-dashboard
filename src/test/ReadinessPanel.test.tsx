@@ -4,6 +4,7 @@ import { AccountProvider } from '@/context/AccountContext'
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { progressPct, studyCalendarFor } from '@/data/studyCalendarFixtures'
 import { activePathIdFor } from '@/data/learningFixtures'
+import { StudyCalendarStatBand } from '@/components/learning/study-calendar/StudyCalendarStatBand'
 import { ReadinessPanel } from '@/components/readiness/ReadinessPanel'
 import {
   bandFor,
@@ -341,5 +342,53 @@ describe('course progress agrees with the Study Plan', () => {
       expect(within(row).getByText(`${expected}%`), state).toBeInTheDocument()
       unmount()
     }
+  })
+})
+
+describe('the Course Progress bar', () => {
+  it('is the SAME component the Study Plan stat band uses', () => {
+    // Asserted by rendering both and comparing the bar's own geometry, not by
+    // checking an import — a lookalike is exactly what this replaced, and a
+    // lookalike passes any test that only asks "is there a bar".
+    const { container: readiness } = renderPanel()
+    const readinessTrack = readiness.querySelector('[aria-hidden][style*="border-radius"]')
+
+    const { container: plan } = render(
+      <AccountProvider>
+        <FeatureFlagProvider>
+          <StudyCalendarStatBand calendar={studyCalendarFor(activePathIdFor('xcel'))} />
+        </FeatureFlagProvider>
+      </AccountProvider>,
+    )
+    const planTrack = plan.querySelector('[aria-hidden][style*="border-radius"]')
+
+    const heightOf = (el: Element | null) =>
+      (el as HTMLElement | null)?.style.height ?? 'missing'
+    const bgOf = (el: Element | null) =>
+      (el as HTMLElement | null)?.style.background ?? 'missing'
+
+    expect(heightOf(readinessTrack)).toBe('8px')
+    expect(heightOf(readinessTrack)).toBe(heightOf(planTrack))
+    expect(bgOf(readinessTrack)).toBe(bgOf(planTrack))
+  })
+
+  it('is layout-neutral, so a column context cannot collapse it', () => {
+    // The regression this pins actually happened. The style came from a flex
+    // ROW and carried `flex: 1`; in the Readiness page's flex COLUMN that
+    // resolves to `flex-basis: 0%` on the cross axis, so the bar rendered at
+    // ZERO height with `height: 8px` still on the element. jsdom has no layout,
+    // so the height assertion above passed while the bar was invisible — only
+    // opening the page caught it.
+    //
+    // The property that broke is therefore the thing to assert: the bar itself
+    // declares no flex. Consumers that need it to grow wrap it.
+    const { container } = renderPanel()
+    const track = container.querySelector(
+      '[aria-hidden][style*="border-radius"]',
+    ) as HTMLElement | null
+    expect(track).not.toBeNull()
+    expect(track!.style.flex).toBe('')
+    expect(track!.style.flexBasis).toBe('')
+    expect(track!.style.width).toBe('100%')
   })
 })

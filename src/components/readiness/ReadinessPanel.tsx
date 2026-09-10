@@ -4,6 +4,7 @@ import { useReadinessState } from '@/context/FeatureFlagContext'
 import { Tabs } from '@/components/ui/Tabs'
 import { PillTabs } from '@/components/ui/PillTabs'
 import { Card } from '@/components/ui/Card'
+import { ProgressBar } from '@/components/ui/ProgressBar'
 import { CircleCheck, CircleExclamation } from '@/icons'
 import {
   bandFor,
@@ -143,11 +144,11 @@ function ExamReadinessTab({ onOpenInsights }: { onOpenInsights: () => void }) {
                   <span style={statLabelStyle}>{row.label}</span>
                   <span style={statValueStyle}>{row.value}</span>
                 </div>
-                {row.pct !== undefined && (
-                  <div style={trackStyle}>
-                    <div style={{ ...fillStyle, width: `${row.pct}%`, background: 'var(--color-success-600)' }} />
-                  </div>
-                )}
+                {/* The SHARED bar — the same `ProgressBar` the Study Plan's
+                    stat band uses, not a lookalike. It was a 3px green
+                    hand-rolled track, so one learner's one 32% drew as two
+                    different bars a rail item apart. */}
+                {row.pct !== undefined && <ProgressBar pct={row.pct} />}
                 {row.pct === undefined && <div style={ruleStyle} />}
               </div>
             ))}
@@ -254,6 +255,12 @@ function InsightsTab() {
                     <span style={statLabelStyle}>{t.title}</span>
                     <span style={statValueStyle}>{t.pct}%</span>
                   </div>
+                  {/* Deliberately NOT the shared `ProgressBar`. These are
+                      SCORES, not progress — band-coloured, and fourteen of
+                      them in a column, where the shared bar's 8px would turn a
+                      scannable list into a stack of blocks. Same reasoning as
+                      the gauge keeping red while this page's chapter dots do:
+                      a different job is allowed a different treatment. */}
                   <div style={trackStyle}>
                     <div
                       style={{ ...fillStyle, width: `${t.pct}%`, background: BAND_COLOR[bandFor(t.pct)] }}
