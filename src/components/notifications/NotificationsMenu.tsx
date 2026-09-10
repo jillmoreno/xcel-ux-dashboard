@@ -2,24 +2,15 @@ import {
   useEffect,
   useId,
   useLayoutEffect,
-  useMemo,
   useRef,
   useState,
   type CSSProperties,
 } from 'react'
 import { Link } from 'react-router-dom'
 import { Bell, Check, X } from '@/icons'
-import { ALERT_TONES } from '@/components/ui/alertTones'
-import { useAccount } from '@/context/AccountContext'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
-import {
-  formatAge,
-  notificationsFor,
-  unreadBadgeLabel,
-  unreadCount,
-  type Notification,
-  type NotificationState,
-} from '@/data/notificationsFixtures'
+import { NotificationRow } from './NotificationRow'
+import { useNotifications } from '@/context/NotificationsContext'
+import { unreadBadgeLabel } from '@/data/notificationsFixtures'
 
 /**
  * The header bell + the panel behind it.
@@ -52,23 +43,12 @@ import {
  * its header controls, which act on the LIST rather than on an item.
  */
 export function NotificationsMenu() {
-  const { brand } = useAccount()
-  const state = (useFeatureFlag('notification-state').variant ??
-    'unread') as NotificationState
-  const seed = useMemo(() => notificationsFor(brand, state), [brand, state])
-
-  // Read state is local and ephemeral — a demo that remembers you cleared the
-  // badge shows an empty bell to the next reviewer, which is the same trap
-  // `customDefaults` sets for the demo rail. Re-seeding on `state` also makes
-  // the demo dropdown actually re-demo.
-  const [readIds, setReadIds] = useState<Set<string>>(new Set())
-  useEffect(() => setReadIds(new Set()), [state])
-
-  const items: Notification[] = useMemo(
-    () => seed.map((n) => (readIds.has(n.id) ? { ...n, read: true } : n)),
-    [seed, readIds],
-  )
-  const unread = unreadCount(items)
+  // Items and read state come from `NotificationsContext`, not from local
+  // state. They used to live here, which was fine while the bell was the only
+  // surface — the moment "View all" opened the full page, a local copy meant
+  // clearing a row in the bell left it unread on the page, with the badge
+  // already down. See that context for the rest of the argument.
+  const { items, unread, markRead, markAllRead } = useNotifications()
 
   const [open, setOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -133,8 +113,6 @@ export function NotificationsMenu() {
       document.removeEventListener('keydown', onEsc)
     }
   }, [open])
-
-  const markAllRead = () => setReadIds(new Set(seed.map((n) => n.id)))
 
   return (
     <div ref={ref} style={{ position: 'relative' }}>
@@ -208,7 +186,7 @@ export function NotificationsMenu() {
                   <NotificationRow
                     notification={n}
                     onOpen={() => {
-                      setReadIds((prev) => new Set(prev).add(n.id))
+                      markRead(n.id)
                       if (n.href) setOpen(false)
                     }}
                   />
@@ -217,10 +195,13 @@ export function NotificationsMenu() {
             </ul>
           )}
 
-          {/* The way out to the full page. Always shown, even on an empty
-              list — a route that appears and disappears is one the learner
-              cannot learn. Same call "View all" made on the Today's Tasks
-              card. */}
+          {/* The way out to the full list. Always shown, even on an empty
+              one — a route that appears and disappears is one the learner
+              cannot learn, which is the same call "View all" made on the
+              Today's Tasks card. And it carries NO number, for the reason
+              that card also found: the header two inches up already counts
+              them, and two counts inches apart saying the same thing is the
+              thing that gets edited out of one place and not the other. */}
           <footer style={panelFooterStyle}>
             <Link
               to="/dashboard-rebrand?section=notifications"
@@ -228,77 +209,12 @@ export function NotificationsMenu() {
               className="cre-alert-action"
               style={footerLinkStyle}
             >
-              Notification settings
+              View all →
             </Link>
           </footer>
         </div>
       )}
     </div>
-  )
-}
-
-/* ─── row ─────────────────────────────────────────────────────────── */
-
-function NotificationRow({
-  notification: n,
-  onOpen,
-}: {
-  notification: Notification
-  onOpen: () => void
-}) {
-  const tone = ALERT_TONES[n.tone]
-  const ToneIcon = tone.Icon
-  // The tone word and the unread word are BOTH in the label. Neither is
-  // carried by colour alone — the same rule the week strip's day cells follow.
-  const label = `${tone.label}: ${n.title}. ${formatAge(n.hoursAgo)}.${
-    n.read ? '' : ' Unread.'
-  }`
-
-  const inner = (
-    <>
-      {/* Unread rail. The design's 8px top border does not survive being
-          stacked eight deep — it turns the list into a barcode. It becomes a
-          3px LEADING rail here, which is the same "this row's tone, at the
-          card's edge" idea rotated to suit a list. */}
-      <span
-        aria-hidden
-        style={{
-          ...railStyle,
-          background: n.read ? 'transparent' : tone.border,
-        }}
-      />
-      <span aria-hidden style={{ ...rowIconStyle, color: tone.icon }}>
-        <ToneIcon size={18} aria-hidden />
-      </span>
-      <span style={{ flex: 1, minWidth: 0 }}>
-        <span style={rowTopLineStyle}>
-          <span style={{ ...rowTitleStyle, fontWeight: n.read ? 600 : 700 }}>{n.title}</span>
-          <span style={rowAgeStyle}>{formatAge(n.hoursAgo)}</span>
-        </span>
-        {n.from && <span style={rowFromStyle}>{n.from}</span>}
-        <span style={rowBodyStyle}>{n.body}</span>
-        {n.actionLabel && (
-          <span className="cre-alert-action" style={rowActionStyle}>
-            {n.actionLabel} →
-          </span>
-        )}
-      </span>
-    </>
-  )
-
-  const style: CSSProperties = { ...rowStyle, background: n.read ? 'transparent' : 'var(--color-neutral-extra-light)' }
-
-  // A notification with somewhere to go is a link; one without is a button
-  // that only marks itself read. Rendering the second as an <a href="#"> is
-  // what puts dead links in a menu.
-  return n.href ? (
-    <Link to={n.href} onClick={onOpen} className="cre-notification-row" aria-label={label} style={style}>
-      {inner}
-    </Link>
-  ) : (
-    <button type="button" onClick={onOpen} className="cre-notification-row" aria-label={label} style={{ ...style, width: '100%', textAlign: 'left', border: 'none', font: 'inherit', cursor: 'pointer' }}>
-      {inner}
-    </button>
   )
 }
 
@@ -400,83 +316,6 @@ const listStyle: CSSProperties = {
   // list, short enough that the footer link stays on screen.
   maxHeight: 420,
   overflowY: 'auto',
-}
-
-const rowStyle: CSSProperties = {
-  position: 'relative',
-  display: 'flex',
-  gap: 10,
-  alignItems: 'flex-start',
-  padding: '12px 16px 12px 19px',
-  borderBottom: '1px solid var(--color-border-subtle)',
-  textDecoration: 'none',
-  color: 'inherit',
-}
-
-const railStyle: CSSProperties = {
-  position: 'absolute',
-  left: 0,
-  top: 0,
-  bottom: 0,
-  width: 3,
-}
-
-const rowIconStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  flexShrink: 0,
-  marginTop: 2,
-}
-
-const rowTopLineStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'baseline',
-  justifyContent: 'space-between',
-  gap: 8,
-}
-
-const rowTitleStyle: CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontSize: 14,
-  lineHeight: '20px',
-  color: 'var(--color-text-primary)',
-  minWidth: 0,
-}
-
-const rowAgeStyle: CSSProperties = {
-  flexShrink: 0,
-  fontFamily: 'var(--font-body)',
-  fontSize: 12,
-  fontWeight: 600,
-  color: 'var(--color-text-tertiary)',
-  whiteSpace: 'nowrap',
-}
-
-const rowFromStyle: CSSProperties = {
-  display: 'block',
-  marginTop: 2,
-  fontFamily: 'var(--font-body)',
-  fontSize: 12,
-  fontWeight: 600,
-  color: 'var(--color-text-secondary)',
-}
-
-const rowBodyStyle: CSSProperties = {
-  display: 'block',
-  marginTop: 2,
-  fontFamily: 'var(--font-body)',
-  fontSize: 13,
-  lineHeight: '19px',
-  color: 'var(--color-text-secondary)',
-}
-
-const rowActionStyle: CSSProperties = {
-  display: 'inline-block',
-  marginTop: 6,
-  fontFamily: 'var(--font-body)',
-  fontSize: 13,
-  fontWeight: 600,
-  // Colour comes from `.cre-alert-action` — it has to change with the theme.
 }
 
 const panelFooterStyle: CSSProperties = {

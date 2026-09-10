@@ -5,6 +5,8 @@ import { MemoryRouter } from 'react-router-dom'
 import { AccountProvider } from '@/context/AccountContext'
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { NotificationsMenu } from '@/components/notifications/NotificationsMenu'
+import { NotificationsPanel } from '@/components/notifications/NotificationsPanel'
+import { NotificationsProvider } from '@/context/NotificationsContext'
 import { ALERT_TONES, type AlertTone } from '@/components/ui/alertTones'
 import {
   formatAge,
@@ -29,15 +31,30 @@ function seedState(state: NotificationState) {
   )
 }
 
-function renderMenu() {
+function renderWith(ui: React.ReactNode) {
   return render(
     <MemoryRouter>
       <AccountProvider>
         <FeatureFlagProvider>
-          <NotificationsMenu />
+          <NotificationsProvider>{ui}</NotificationsProvider>
         </FeatureFlagProvider>
       </AccountProvider>
     </MemoryRouter>,
+  )
+}
+
+function renderMenu() {
+  return renderWith(<NotificationsMenu />)
+}
+
+/** Both surfaces at once — how the app mounts them (bell in `Header`, page in
+ *  the shell's `<Outlet />`, one provider above both). */
+function renderBoth() {
+  return renderWith(
+    <>
+      <NotificationsMenu />
+      <NotificationsPanel />
+    </>,
   )
 }
 
@@ -143,7 +160,7 @@ describe('the rows', () => {
 })
 
 describe('the empty state', () => {
-  it('renders instead of an empty list, and KEEPS the settings link', async () => {
+  it('renders instead of an empty list, and KEEPS the way out', async () => {
     // A route that appears and disappears is one the learner cannot learn —
     // the same call "View all" made on the Today's Tasks card.
     seedState('empty')
@@ -151,9 +168,7 @@ describe('the empty state', () => {
     await userEvent.click(bell())
     expect(within(panel()).getByText(/all caught up/i)).toBeInTheDocument()
     expect(within(panel()).queryByRole('listitem')).toBeNull()
-    expect(
-      within(panel()).getByRole('link', { name: /Notification settings/ }),
-    ).toBeInTheDocument()
+    expect(within(panel()).getByRole('link', { name: /View all/ })).toBeInTheDocument()
   })
 })
 
@@ -188,7 +203,7 @@ describe('the theme-aware action colour', () => {
     const p = panel()
     const actionish = [
       within(p).getByRole('button', { name: /Mark all read/ }),
-      within(p).getByRole('link', { name: /Notification settings/ }),
+      within(p).getByRole('link', { name: /View all/ }),
     ]
     for (const el of actionish) {
       expect(el).toHaveClass('cre-alert-action')
@@ -198,5 +213,80 @@ describe('the theme-aware action colour', () => {
     const rowAction = p.querySelector('span.cre-alert-action')
     expect(rowAction).not.toBeNull()
     expect((rowAction as HTMLElement).style.color).toBe('')
+  })
+})
+
+describe('the bell and the full list are two views of ONE list', () => {
+  /**
+   * The reason `NotificationsContext` exists. Read state started as
+   * `useState` inside the bell, which was correct while the bell was the only
+   * surface — and became a fork the moment "View all" opened a second one:
+   * clear a row in the bell, open the page, and it is unread again, with the
+   * badge already down. The two would actively contradict each other.
+   *
+   * Asserted in BOTH directions, because a one-way check passes just as
+   * happily when the page writes to a copy nobody reads.
+   */
+  it('marking read in the bell clears it on the page too', async () => {
+    seedState('unread')
+    renderBoth()
+    await userEvent.click(bell())
+    // Scoped to the bell's panel. Unscoped this matches the page's copy of
+    // the same row too — the same ambiguity that made the Readiness chapter
+    // and topic columns need `role="group"` labels.
+    await userEvent.click(within(panel()).getByRole('button', { name: /^Message:/ }))
+    const list = screen.getByRole('region', { name: 'Your notifications' })
+    expect(within(list).queryByLabelText(/^Message:.*Unread\.$/)).toBeNull()
+  })
+
+  it('Mark all read on the PAGE clears the bell’s badge', async () => {
+    seedState('unread')
+    renderBoth()
+    const list = screen.getByRole('region', { name: 'Your notifications' })
+    await userEvent.click(within(list).getByRole('button', { name: /Mark all read/ }))
+    expect(bell()).toHaveAccessibleName('Notifications — none unread')
+  })
+
+  it('renders the SAME row component on both, so they cannot drift apart', async () => {
+    // Not "both show eight things" — a lookalike row passes that. The rows
+    // are one component, which is what the Jump Back In card had to learn
+    // when its bespoke rows became the Study Plan's real `TaskRow`.
+    seedState('unread')
+    renderBoth()
+    await userEvent.click(bell())
+    const rows = document.querySelectorAll('.cre-notification-row')
+    const items = notificationsFor('xcel', 'unread')
+    expect(rows).toHaveLength(items.length * 2)
+  })
+})
+
+describe('the full list page', () => {
+  it('counts the whole list and the unread separately', () => {
+    seedState('unread')
+    renderWith(<NotificationsPanel />)
+    const items = notificationsFor('xcel', 'unread')
+    expect(
+      screen.getByText(`${items.length} total · ${unreadCount(items)} unread`),
+    ).toBeInTheDocument()
+  })
+
+  it('carries the PREFERENCES half of the word, and does not fake it', () => {
+    // "Notifications" already meant preferences here before the bell existed.
+    // The page holds both readings rather than either being renamed — but the
+    // preferences half says it is unbuilt instead of showing toggles that
+    // control nothing, which is the Membership Plan card's defect.
+    seedState('unread')
+    renderWith(<NotificationsPanel />)
+    const prefs = screen.getByRole('region', { name: 'Notification preferences' })
+    expect(within(prefs).getByText(/Not designed yet/)).toBeInTheDocument()
+    expect(within(prefs).queryByRole('switch')).toBeNull()
+    expect(within(prefs).queryByRole('checkbox')).toBeNull()
+  })
+
+  it('shows the empty state rather than a bare heading over nothing', () => {
+    seedState('empty')
+    renderWith(<NotificationsPanel />)
+    expect(screen.getByText('Nothing yet')).toBeInTheDocument()
+    expect(screen.getByText(/all caught up/i)).toBeInTheDocument()
   })
 })

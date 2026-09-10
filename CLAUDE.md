@@ -1063,14 +1063,50 @@ opens twice. An event may legitimately do both (a certificate is issued →
 toast now, still there tomorrow); `raisesToast` marks that overlap so the two
 systems cannot be quietly conflated later.
 
-**"Notifications" already meant something else here, and still does.** There
-is an account section by that name (`?section=notifications`, Bell icon, in
-the account dropdown and sub-nav). That one is **preferences** — which emails
-you get — and this one is the feed. Two things, one word, and the panel's
-footer links from the feed to the settings so the relationship is visible
-rather than confusing. **If this reads wrong in review, rename the SETTINGS
-page ("Notification preferences"), not the bell** — the bell is what a learner
-means by the word.
+**"Notifications" already meant something else here — and the account section
+now holds BOTH readings.** There was a section by that name
+(`?section=notifications`, Bell icon, in the account dropdown and sub-nav)
+before the bell existed, and it meant **preferences**: which emails you get.
+The bell means the **feed**. Rather than rename either out from under a
+reviewer, the page is the full FEED with a preferences card beneath it, so one
+address answers both readings and the bell's **View all** has somewhere real
+to land.
+
+**That link was "Notification settings" for one commit and it was wrong** —
+not because of the words but because `?section=notifications` was still an
+`AccountSectionPlaceholder`. A footer link into an empty stub is the same
+defect as the four dead Resources slugs: the surface shipped and the
+destination did not. `NotificationsPanel` replaced that one `renderBody`
+branch, which is the Readiness sequence again — register the section first,
+swap one branch later, nothing else moves.
+
+**The preferences card says it is UNBUILT rather than showing toggles.** An
+authored switch that controls nothing is the Membership Plan card's defect
+(announcing a renewal date on a brand that sells no membership), and here a
+reviewer would reasonably flip one and expect the emails to stop. A test
+asserts the card contains no `switch` or `checkbox` role.
+
+**Read state is in `NotificationsContext`, and that is the whole reason it
+exists.** It started as `useState` inside the bell, which was correct while
+the bell was the only surface — and became a fork the moment View all opened
+a second one: clear a row in the bell, open the page, and it is unread again,
+with the badge already down, the two actively contradicting each other. The
+provider is mounted in `AppLayout` inside `FeatureFlagProvider` (it reads
+`notification-state`) and ABOVE both `Header` and `<Outlet />`, because those
+are the two surfaces — under either one it would recreate the fork. Tests
+assert it in BOTH directions, since a one-way check passes just as happily
+when the page writes to a copy nobody reads.
+
+**`NotificationRow` is one component on both surfaces**, with a `size` prop
+for the roomier page. Not "both show eight things" — a lookalike passes that.
+This is the Jump Back In card's lesson applied on the way in: its rows became
+the Study Plan's real `TaskRow` rather than something that merely matched the
+visual language. A test counts rows across both mounts rather than per page.
+
+**View all carries NO number.** The page header two inches away already says
+"8 total · 2 unread", and two counts inches apart saying the same thing is
+exactly what got edited out of one place and not the other on the Today's
+Tasks card.
 
 **Three panel decisions worth not re-deriving.**
 

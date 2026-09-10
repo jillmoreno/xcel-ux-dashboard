@@ -27,6 +27,7 @@ import {
   AccountSectionPlaceholder,
 } from '@/components/account/AccountSectionLayout'
 import { isAccountSection } from '@/components/account/accountSections'
+import { NotificationsPanel } from '@/components/notifications/NotificationsPanel'
 import { GiftRecipientsPanel } from '@/components/account/purchases/GiftRecipientsPanel'
 import { LibraryPanel } from '@/components/membership/LibraryPanel'
 import { LearningLibraryHero } from '@/components/membership/LearningLibraryHero'
@@ -1312,9 +1313,16 @@ function renderBody(
         <ProfilePage />
       ) : active === 'gift-recipients' ? (
         <GiftRecipientsPanel />
+      ) : active === 'notifications' ? (
+        // The header bell's "View all" lands here. It was an
+        // `AccountSectionPlaceholder` until the bell shipped, which made the
+        // link promise a full list and deliver an empty stub — see
+        // `NotificationsPanel` for why the feed and the preferences share one
+        // address rather than one of them being renamed.
+        <NotificationsPanel />
       ) : (
-        // TODO(feature): the remaining five are placeholders — real pages drop
-        // in here, still wrapped by AccountSectionLayout.
+        // TODO(feature): the remaining four are placeholders — real pages
+        // drop in here, still wrapped by AccountSectionLayout.
         <AccountSectionPlaceholder id={active} />
       )
     return (

@@ -8,6 +8,7 @@ import { MembershipVersionsPanelProvider } from '@/components/membership/Members
 import { MembershipPageVersionPanelProvider } from '@/components/membership/MembershipPageVersionPanelContext'
 import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelContext'
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
+import { NotificationsProvider } from '@/context/NotificationsContext'
 import { LearningSetupProvider } from '@/context/LearningSetupContext'
 import { LoFiProvider } from '@/context/LoFiContext'
 import { MotivationProvider } from '@/context/MotivationContext'
@@ -45,6 +46,12 @@ export function AppLayout() {
     // component only swaps its DETAILS. Header + AccountMenu + the
     // Feature Flag panel stay normal so reviewers can toggle back.
     <FeatureFlagProvider>
+      {/* Notification read state, shared by the header bell and the full list
+          at ?section=notifications. Inside FeatureFlagProvider because it
+          reads `notification-state`, and above BOTH `Header` and `<Outlet />`
+          because those are the two surfaces — a provider under either one
+          would recreate the fork it exists to close. */}
+      <NotificationsProvider>
       {/* Learning-setup (Onboarding Flow) state is lifted here — shared by the
           standalone `/onboarding-flow` wizard and the `/dashboard-rebrand`
           hand-off, so a finished wizard's picks carry into the populated
@@ -131,6 +138,7 @@ export function AppLayout() {
         </MotivationProvider>
       </LoFiProvider>
       </LearningSetupProvider>
+      </NotificationsProvider>
     </FeatureFlagProvider>
   )
 }
