@@ -6,11 +6,10 @@
  *  Rendered by `ArchiveTable` in the dashboard's Archive section. Hand-edited;
  *  there is no generator.
  *
- *  EMPTY ON PURPOSE. XCEL has not removed anything yet — it is four artifacts
- *  all still in design. An empty section is the honest state; do not seed it
- *  with rows from the other dashboards' archives to make it look populated,
- *  because a restore note that points at another repo's files is worse than no
- *  row at all.
+ *  NO LONGER EMPTY as of 2026-09-10 — one row. It was empty on purpose before
+ *  that, and the rule behind it still holds: do not seed this with rows from
+ *  the other dashboards' archives to make it look populated, because a restore
+ *  note pointing at another repo's files is worse than no row at all.
  *
  *  THE CONVENTION THIS FILE ENFORCES, for when there is something to put here:
  *
@@ -25,10 +24,10 @@
  *  was deliberately NOT restored — a note that just says "re-add the component"
  *  is how a removal becomes permanent by accident.
  *
- *  The likely FIRST row here, given where this project is: if the four XCEL
- *  rows are ever moved out of the Common LMS dashboard (the open question this
- *  repo was built alongside), that removal belongs in the LMS project's archive,
- *  not this one — the code being unwired is theirs.
+ *  The first row turned out not to be the one predicted here (the XCEL rows
+ *  moving out of the Common LMS dashboard — still an open question, and still
+ *  that project's archive rather than this one, since the code being unwired
+ *  would be theirs). It was a card on the Profile page instead.
  */
 export type ArchivedItem = {
   /** Stable id (kebab-case). */
@@ -55,4 +54,17 @@ export type ArchivedItem = {
   screenshot?: string
 }
 
-export const ARCHIVED_ITEMS: ArchivedItem[] = []
+export const ARCHIVED_ITEMS: ArchivedItem[] = [
+  {
+    id: 'profile-motivational-statement',
+    name: 'Motivational Statement card (Profile)',
+    what: 'A card on the Profile page holding the learner’s own motivational statement, with an edit pencil opening the real `MotivationalStatementPanel` (the only card there wired to anything but a stub).',
+    location:
+      'src/components/account/profile/ProfileCards.tsx (`MotivationalStatementCard`, still exported, no longer imported) · src/components/membership/MotivationalStatementPanel.tsx · src/context/MotivationContext.tsx',
+    dateRemoved: '2026-09-10',
+    reason:
+      'Editorial — removed from the Profile page at Jillienne’s request. NOT a capability or data problem: the statement is real, the panel works, and the context is untouched.',
+    restoreNote:
+      'Re-add `MotivationalStatementCard` to the import from `@/components/account/profile/ProfileCards` in src/pages/ProfilePage.tsx and render it as the FIRST child of the right-hand column, above `MembershipPlanCard`. Nothing else moved: the component, `MotivationalStatementPanel` and `MotivationContext` are all intact and unchanged, and the panel is STILL REACHABLE from the left rail (`NavProfileHeader` → MotivationalStatementPanel), so the feature was never gone — only this second door on it. Deliberately NOT restored alongside it: the Membership Plan card, which left the same page on the same day for an unrelated reason (it is gated on `supportsMembership`, not archived, and returns by itself for a brand that sells one).',
+  },
+]

@@ -170,7 +170,7 @@ files look the way they do rather than what they currently contain.
 | File | Holds |
 |---|---|
 | [`src/data/prototypeFeatures.ts`](src/data/prototypeFeatures.ts) | The five XCEL rows + `PROTOTYPE_BASE`. The type block is verbatim from the LMS (so the ported components compile unchanged) plus one added field, `previewUrl`. Rows are ported verbatim from the LMS dashboard, which still has its own copies. |
-| [`src/data/archivedItems.ts`](src/data/archivedItems.ts) | The Archive table — empty; XCEL has removed nothing yet. |
+| [`src/data/archivedItems.ts`](src/data/archivedItems.ts) | The Archive table — one row as of 2026-09-10 (the Profile page's Motivational Statement card). |
 | [`src/data/qaNotes.ts`](src/data/qaNotes.ts) | The committed QA seed — empty; findings are authored on the page. |
 
 ### The one in-app row
@@ -974,6 +974,28 @@ exactly. Both surfaces that resolve a plan read the same
 `useCeStudyPlanEnabled()` hook — the Jump Back In card and the Study Plan page
 — because one showing a CE plan while the other showed the empty branch is the
 drift the hook exists to prevent.
+
+### Two cards left the Profile page (2026-09-10)
+
+**Different reasons, different mechanisms**, and the distinction is the point:
+
+- **Membership Plan** is gated on `supportsMembership`, a CORRECTNESS fix. It
+  was announcing "Automatically Renews on 11/01/2026 · 108 Days of Membership
+  Remaining" on a brand that sells no membership — the same defect as the
+  Membership nav link the brand-add's suppression list missed. Because it is a
+  brand predicate, it returns on its own for a brand that has one, so it gets
+  NO archive row: a row would tell the next person to re-add something the
+  predicate is deliberately withholding.
+- **Motivational Statement** is UNWIRED — an editorial removal, and the FIRST
+  row this repo's archive has ever held. The component, `MotivationalStatementPanel`
+  and `MotivationContext` are untouched, and the panel is still reachable from
+  the left rail, so the feature is not gone — only its second door.
+
+A test asserts both the removals AND that only the editorial one is archived.
+
+**Still there and arguably the same defect:** Account Details shows a "Member"
+pill on XCEL. Not touched, because membership tier is a live demo axis and this
+was not part of the ask — but it is the same shape, if it ever reads wrong.
 
 ### The archive convention
 

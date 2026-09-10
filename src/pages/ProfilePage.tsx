@@ -1,11 +1,10 @@
 import { useMemo, type CSSProperties } from 'react'
-import { useAccount } from '@/context/AccountContext'
+import { supportsMembership, useAccount } from '@/context/AccountContext'
 import { profileFor } from '@/data/accountProfileFixtures'
 import {
   AccountDetailsCard,
   InterestsCard,
   MembershipPlanCard,
-  MotivationalStatementCard,
   PersonalInformationCard,
 } from '@/components/account/profile/ProfileCards'
 
@@ -19,10 +18,22 @@ import {
  * page renders just the two-column card layout (no top nav, no account sub-nav,
  * no standalone heading).
  *
- * Two columns: Account Details + Personal Information (left) and Motivational
- * Statement + Membership Plan + Interests (right). Each card has an edit pencil —
- * Motivational Statement opens the real `MotivationalStatementPanel` (wired to
- * `MotivationContext`); the rest open a stub panel.
+ * Two columns: Account Details + Personal Information (left) and Interests
+ * (right). Each card has an edit pencil, opening a stub panel.
+ *
+ * TWO CARDS CAME OUT on 2026-09-10, for different reasons:
+ *
+ *  - **Membership Plan** is gated on `supportsMembership`, which is a
+ *    CORRECTNESS fix rather than a preference. It was rendering "Automatically
+ *    Renews on 11/01/2026 · 108 Days of Membership Remaining" on a brand that
+ *    sells no membership — the same defect as the Membership nav link the
+ *    brand-add's suppression list missed. The gate is the brand predicate, so
+ *    it comes back on its own for a brand that has one.
+ *  - **Motivational Statement** is UNWIRED, not gated — an editorial removal.
+ *    `MotivationalStatementCard` and `MotivationalStatementPanel` stay in the
+ *    repo; see the `profile-motivational-statement` row in archivedItems.ts.
+ *    The panel is still reachable from the rail, so the feature is not gone,
+ *    only its second door on this page.
  */
 export function ProfilePage() {
   const { brand, membership } = useAccount()
@@ -39,8 +50,7 @@ export function ProfilePage() {
         </div>
         {/* Right column */}
         <div style={columnStyle}>
-          <MotivationalStatementCard />
-          <MembershipPlanCard data={profile.membershipPlan} />
+          {supportsMembership(brand) && <MembershipPlanCard data={profile.membershipPlan} />}
           <InterestsCard data={profile.interests} />
         </div>
       </div>
