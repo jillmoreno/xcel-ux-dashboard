@@ -1682,6 +1682,37 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    // The header bell. An ENABLE flag, not a variant one — the question a
+    // reviewer asks first is "what does the shell look like without it", and
+    // the header is the one surface where an extra icon changes the whole
+    // top-right cluster's balance.
+    key: 'header-notifications',
+    group: 'Navigation',
+    label: 'Notification bell',
+    description:
+      'Show the notification bell in the header, between Cart and the account menu. Off removes the bell and its unread badge entirely; the Notifications ACCOUNT section (preferences) is unaffected — that one is reached from the account dropdown and is a different thing (settings, not a feed).',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    // The bell's demo axis. Variant-only, and about the UNREAD COUNT rather
+    // than about content: the badge is the whole visual argument, so four
+    // authored lists would demonstrate one control four times.
+    key: 'notification-state',
+    group: 'Widgets',
+    label: 'Notification state',
+    description:
+      'What the notification bell holds. Unread is the default view — three unread items over five read ones, so the badge, the unread rail and the read/unread type weights are all visible at once. All caught up keeps the same eight items with the badge cleared. Nothing yet is the new-learner empty state, which is the half of a notification centre that otherwise never gets designed. Variant-only.',
+    defaultEnabled: true,
+    defaultVariant: 'unread',
+    variants: [
+      { value: 'unread', label: 'Unread · 3', description: 'Three unread over five read. The default view.' },
+      { value: 'all-read', label: 'All caught up', description: 'Same eight items, badge cleared.' },
+      { value: 'empty', label: 'Nothing yet', description: 'No notifications at all — the new-learner empty state.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     // The Readiness section's demo axis. Variant-only, like
     // `dashboard-progress-state` — the Demo Controls bar exposes it as a
     // Readiness dropdown, so it is deliberately NOT in the flag panel's

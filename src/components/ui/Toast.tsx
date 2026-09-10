@@ -1,9 +1,8 @@
-import { useEffect, type ComponentType, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, type CSSProperties, type ReactNode } from 'react'
 import { createPortal } from 'react-dom'
-import { CircleCheck, CircleExclamation, X } from '@/icons'
+import { X } from '@/icons'
+import { ALERT_TONES, type AlertTone } from './alertTones'
 import { useToastFrameAnchor } from '@/utils/overlayFrameBounds'
-
-type ToneIcon = ComponentType<{ size?: number; 'aria-hidden'?: boolean | 'true' | 'false' }>
 
 /**
  * Toast notification surfaced after a destructive- or commit-style action
@@ -14,22 +13,16 @@ type ToneIcon = ComponentType<{ size?: number; 'aria-hidden'?: boolean | 'true' 
  * Renders into `document.body` via portal so it survives parent unmounts
  * (e.g. closing the originating sheet/modal).
  */
-type ToastTone = 'success' | 'error' | 'warning' | 'info'
-
-type ToneTokens = { border: string; icon: string; Icon: ToneIcon }
-
-// Icon now maps to the tone (per Figma node 3625:19356 — success uses a
-// filled check-circle). success → circle-check; the remaining tones reuse
-// circle-exclamation for now (color differentiates them) until dedicated
-// circle-xmark / triangle-exclamation / circle-info SVGs are added to the
-// icon registry. Before today the icon was a hardcoded check for every
-// tone, so an error/warning/info toast would have shown a checkmark.
-const TONE: Record<ToastTone, ToneTokens> = {
-  success: { border: 'var(--color-success-300)', icon: 'var(--color-success-500)', Icon: CircleCheck },
-  error: { border: 'var(--color-error-300)', icon: 'var(--color-error-500)', Icon: CircleExclamation },
-  warning: { border: 'var(--color-warning-300)', icon: 'var(--color-warning-500)', Icon: CircleExclamation },
-  info: { border: 'var(--color-info-300)', icon: 'var(--color-info-500)', Icon: CircleExclamation },
-}
+/**
+ * A toast's tone is an **alert tone** — the same family the notification
+ * centre reads, from one map. Widened beyond the original four when the
+ * Figma "Alerts" file landed: `message` and `promo` exist there too, and a
+ * toast is a legitimate way to surface an incoming message.
+ *
+ * See [`alertTones`](./alertTones.ts) for why the colours live over there
+ * rather than here, and for the `circle-xmark` gap on `error`.
+ */
+export type ToastTone = AlertTone
 
 type Props = {
   open: boolean
@@ -39,6 +32,13 @@ type Props = {
   /** Body copy. Accepts ReactNode so callers can mix bold/regular runs. */
   children: ReactNode
   action?: { label: string; onClick: () => void }
+  /**
+   * The design's outline **Secondary** button, shown to the RIGHT of the
+   * primary (the design's own order — see the footer below). Only rendered
+   * alongside `action`: a lone secondary is a primary wearing the wrong
+   * weight, and the design has no such variant.
+   */
+  secondaryAction?: { label: string; onClick: () => void }
   /** Auto-dismiss after this many ms. `0` disables auto-dismiss. Default 6000. */
   duration?: number
   style?: CSSProperties
@@ -51,6 +51,7 @@ export function Toast({
   title,
   children,
   action,
+  secondaryAction,
   duration = 6000,
   style,
 }: Props) {
@@ -66,7 +67,7 @@ export function Toast({
 
   if (!open) return null
 
-  const palette = TONE[tone]
+  const palette = ALERT_TONES[tone]
   const ToneIcon = palette.Icon
 
   return createPortal(
@@ -148,32 +149,28 @@ export function Toast({
           {children}
         </p>
         {action && (
-          <div style={{ paddingTop: 16 }}>
-            <button
-              type="button"
+          // Primary FIRST, secondary to its right — the design's own order in
+          // the Info and Messages variants (node 1:1372). The Added-to-Cart
+          // variant reverses it, but that card is `AddToCartToast`, which
+          // draws its own footer.
+          <div style={{ paddingTop: 16, display: 'flex', gap: 20, alignItems: 'center' }}>
+            <ToastButton
+              label={action.label}
               onClick={() => {
                 action.onClick()
                 onClose()
               }}
-              style={{
-                display: 'inline-flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                minHeight: 36,
-                padding: '4px 12px',
-                borderRadius: 'var(--radius-md)',
-                background: 'var(--color-action)',
-                color: '#fff',
-                border: 'none',
-                fontFamily: 'var(--font-body)',
-                fontWeight: 600,
-                fontSize: 16,
-                lineHeight: '28px',
-                cursor: 'pointer',
-              }}
-            >
-              {action.label}
-            </button>
+            />
+            {secondaryAction && (
+              <ToastButton
+                variant="secondary"
+                label={secondaryAction.label}
+                onClick={() => {
+                  secondaryAction.onClick()
+                  onClose()
+                }}
+              />
+            )}
           </div>
         )}
       </div>
@@ -200,5 +197,53 @@ export function Toast({
       </button>
     </div>,
     document.body,
+  )
+}
+
+/**
+ * The alert card's CTA. Both weights key off the action colour — a fill for
+ * primary, a `currentColor` outline over the card surface for secondary — so
+ * the pair re-skins per brand exactly as the Figma's orange/outline pair does
+ * on MCK. The secondary takes it through `.cre-alert-action` rather than
+ * inline, because as TEXT it has to change with the theme; see that rule in
+ * `tokens.css`.
+ */
+function ToastButton({
+  label,
+  onClick,
+  variant = 'primary',
+}: {
+  label: string
+  onClick: () => void
+  variant?: 'primary' | 'secondary'
+}) {
+  const secondary = variant === 'secondary'
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      // Only the secondary needs it: its label is action-coloured TEXT, which
+      // on a dark card needs the theme-aware light stop. The primary is white
+      // on the action FILL, which is what that colour is actually for.
+      className={secondary ? 'cre-alert-action' : undefined}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        minHeight: 36,
+        padding: '4px 12px',
+        borderRadius: 'var(--radius-md)',
+        background: secondary ? 'transparent' : 'var(--color-action)',
+        color: secondary ? undefined : '#fff',
+        border: secondary ? '1px solid currentColor' : 'none',
+        fontFamily: 'var(--font-body)',
+        fontWeight: 600,
+        fontSize: 16,
+        lineHeight: '28px',
+        cursor: 'pointer',
+      }}
+    >
+      {label}
+    </button>
   )
 }

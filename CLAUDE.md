@@ -1040,6 +1040,142 @@ Three surfaces, one root cause, found one at a time: the rail's Membership link
 during the migration, then this card, then the pill. **When a brand predicate
 turns something off, sweep for the other places that ask the tier instead.**
 
+### Notifications — the bell, and what a notification IS (2026-09-10)
+
+A bell in the header between Cart and the account menu, an unread badge, and
+a 380px panel. Behind `header-notifications` (default on), with
+`notification-state` as its demo axis. The card treatment is the Figma
+**"Alerts"** port (`kDJB8Xga3bscFwj2rDXuin`, node `4:287`).
+
+**The load-bearing decision is that a notification is not a toast**, and the
+Figma cannot tell you that because it draws them as one component. They are
+different objects:
+
+- A **toast** is feedback on something YOU JUST DID. It is transient because
+  its job ends the moment you have seen it — you already knew.
+- A **notification** is a record of something that happened TO YOU WHILE YOU
+  WERE NOT LOOKING. It is durable because you have not seen it yet.
+
+**Only the second goes in the bell.** Pipe the toast stream in and within one
+session it fills with "Statement saved" — a list of things the learner already
+acknowledged, which is how a notification centre becomes the thing nobody
+opens twice. An event may legitimately do both (a certificate is issued →
+toast now, still there tomorrow); `raisesToast` marks that overlap so the two
+systems cannot be quietly conflated later.
+
+**"Notifications" already meant something else here, and still does.** There
+is an account section by that name (`?section=notifications`, Bell icon, in
+the account dropdown and sub-nav). That one is **preferences** — which emails
+you get — and this one is the feed. Two things, one word, and the panel's
+footer links from the feed to the settings so the relationship is visible
+rather than confusing. **If this reads wrong in review, rename the SETTINGS
+page ("Notification preferences"), not the bell** — the bell is what a learner
+means by the word.
+
+**Three panel decisions worth not re-deriving.**
+
+*The badge counts UNREAD, not total.* A count that never falls is a scold, not
+a signal — the only way to clear "8" would be to delete things. It caps at
+`9+`: past a point the exact number stops being information.
+
+*Opening the panel does not mark everything read.* The shortcut every
+implementation reaches for, and it destroys the one thing the list is good at
+— coming back to something. Rows clear individually on click, plus an explicit
+Mark all read, so clearing stays a decision rather than a side effect of
+glancing. A test asserts the non-behaviour, because it is a one-line change to
+"fix" and nothing else would notice.
+
+*A row is a link, not a card with buttons.* At 380px a two-button footer per
+row turns eight notifications into a wall of chrome. `actionLabel` renders as
+the row's own affordance text and the whole row is the target — the same call
+the Home week strip made. The only real buttons in the panel act on the LIST.
+
+**The design's 8px top border does not survive being stacked.** Eight cards
+deep it reads as a barcode. It becomes a 3px LEADING rail on unread rows —
+the same "this row's tone, at the card's edge" idea rotated for a list — and
+the toast keeps the top border, where there is only ever one card.
+
+**`alertTones.ts` is the one tone map**, read by `Toast` AND the panel. A
+warning that is amber when it fires and grey in the bell an hour later reads
+as two systems; same reasoning as `studyStatusColors.ts` between the Study
+Plan and the week strip. Extracting it also closed a real gap `Toast`'s own
+comment had been carrying: warning / error / info all rendered
+`circle-exclamation`, differing **only in colour**, "until dedicated SVGs are
+added". `triangle-exclamation` and `circle-info` exist now and are wired; a
+test asserts every tone has a DISTINCT glyph. `circle-xmark` is still not in
+the registry, so `error` keeps the exclamation — vendor the FA file and
+repoint one line; do not hand-author the path.
+
+**Four tones are functional, two are brand.** Success / warning / error / info
+take the functional ramps; `message` and `promo` take `--color-primary-*`.
+That follows the design (it draws both in MCK's green rather than a functional
+colour) and it is right rather than incidental: a message from your instructor
+is not a system state, so borrowing the success/warning/error ramp would make
+"you have mail" read as a verdict on you.
+
+**`--color-action` is a FILL colour, and using it as TEXT failed in dark
+mode.** On XCEL it is the Brick #9A1B1E — correct behind white, and **2.05:1**
+as text on the dark shell. tsc was clean, every test passed, the component
+rendered; only measuring the dark theme in a browser caught it. That is the
+*same 2.05:1* the desktop prototype's rail indicator hit, and the rule
+generalised there applies unchanged: **put a LIGHT stop on a dark ground.**
+`.cre-alert-action` swaps to `--color-cta-300` under `[data-theme='dark']` —
+the stop `tokens.css` already labels "on-dark alternative — 5.49:1", measured
+here at 5.49:1 on the panel and 6.10:1 on a tinted unread row. A class rather
+than an inline style because inline `CSSProperties` cannot carry a theme
+selector, and a test asserts no inline `color` is left to win the cascade.
+
+**The panel needs a measured clamp, and the first two attempts were both
+wrong.** It is 380px and anchored to the BELL's right edge — but the bell is
+not the rightmost thing in the header, so at 375px its left edge landed 68px
+OFF SCREEN. `maxWidth` does not help: it sized the panel correctly at 343px
+and hung it in the wrong place. Measuring the PANEL's own rect then looped
+forever in jsdom (no layout engine ⇒ every rect is zero ⇒ the shift compounds
+on each pass). It measures from the ANCHOR now — `anchor.right - panelWidth`
+is the untransformed left edge, so the figure excludes the shift already
+applied and `shiftX` stays out of the dependency list — and bails on a zero
+width, which makes it a no-op in tests rather than a hang.
+
+**The demo axis is about the COUNT, not the content.** `notification-state`
+is Unread · 3 / All caught up / Nothing yet. The badge is the whole visual
+argument, so four authored lists would demonstrate one control four times —
+the same call the "Busy study plan" persona made. `empty` is in there because
+it is what a new learner actually sees, and it is the half of a notification
+centre that otherwise never gets designed.
+
+**Deliberately NOT a Demo Controls dropdown.** That bar already carries five,
+and this is a header control rather than one of the dashboard's headline axes
+— the same line `readiness-state` sits on the other side of. It lives in the
+flag panel; promote it if the bell becomes what a demo is about.
+
+**The bell renders on the rebrand shell only.** Its rows deep-link into
+`?section=…`, which is a shell address; on the classic routes those links
+would leave the layout the learner is standing in.
+
+**Timestamps are anchored, in HOURS BEFORE `NOTIFICATIONS_NOW`** (2026-05-11,
+matching `FIXTURE_TODAY`), not as literal dates. A hardcoded date ages into "8
+months ago" and makes the whole list read as abandoned. `formatAge` is
+deliberately coarse — "2h ago" / "Yesterday" / "May 6" — because what the
+learner is sorting on is today / not today / a while back.
+
+**Content is XCEL's, not the design's.** The Figma ships lorem ipsum and a
+real-estate promo; these are Florida 2-15 notifications about the study plan,
+readiness, licence renewal and an instructor reply. And every `href` was
+confirmed in-app on the way IN — the rule the Resources page had to learn
+after shipping four dead slugs. A notification claims to be about YOUR
+account, so an outbound marketing link is a category error as well as a
+possible 404; a test asserts every href is same-origin.
+
+**What the Figma has that is NOT built.** The file is largely a superset of
+what already shipped — `Toast` IS its Warning/Error/Success/Info card (from
+node `17:14204`) and `AddToCartToast` IS its Promo_Added to Cart (from node
+`471:19219`). What landed new is the dual Primary+Secondary CTA, the correct
+per-tone glyphs, and the `message` / `promo` tones. What did NOT: the Marketing
+Promo card's decorative confetti SVGs, which are MCK brand ornament rather
+than structure, and the promo's "Copy Promo Code" button — promo lives in the
+bell as a row today, and a copy-to-clipboard affordance wants a real cart to
+land in.
+
 ### The archive convention
 
 Don't delete outright. **Unwire** it (pull it from routes, render paths, flags),

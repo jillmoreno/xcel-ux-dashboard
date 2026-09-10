@@ -1021,6 +1021,42 @@ html,
   border-color: var(--color-primary-700);
 }
 
+/* Text-weight CTAs in the alert family — the notification panel's row links,
+   "Mark all read", "Notification settings", and the Toast's outline Secondary
+   button.
+
+   `--color-action` is a FILL colour: it is only ever correct behind white. On
+   XCEL it resolves to the Brick #9A1B1E, which as TEXT on the dark shell
+   measures **2.05:1** — under the 4.5:1 body text needs, and invisible in
+   practice.
+
+   That is the same 2.05:1 the desktop prototype's rail indicator hit, and the
+   rule generalised there applies unchanged: put a LIGHT stop on a dark
+   ground. `--color-cta-300` is the stop this file already labels "on-dark
+   alternative — 5.49:1"; measured here it is 5.49:1 on the panel and 6.10:1
+   on a tinted unread row.
+
+   A class rather than an inline style because the swap is theme-conditional,
+   and inline `CSSProperties` cannot carry a media/attribute selector. */
+.cre-alert-action {
+  color: var(--color-action);
+}
+[data-theme='dark'] .cre-alert-action {
+  color: var(--color-cta-300);
+}
+
+/* Notification centre row — the panel behind the header bell. A row is a
+   link (or, with no destination, a button), so it needs the hover a menu
+   item has; it is not `.cre-menu-item` because that one is a single-line
+   icon+label row and these are three-line cards. */
+.cre-notification-row:hover {
+  background: var(--color-neutral-100) !important;
+}
+.cre-notification-row:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -2px;
+}
+
 .cre-icon-pill {
   display: inline-flex;
   align-items: center;

@@ -5,6 +5,7 @@ import { Logo } from '@/components/brand/Logo'
 import { NavDropdown } from './NavDropdown'
 import { NavLink } from './NavLink'
 import { AccountMenu } from './AccountMenu'
+import { NotificationsMenu } from '@/components/notifications/NotificationsMenu'
 import { LearningPathsPanel } from '@/components/learning/LearningPathsPanel'
 import { useLearningPathsPanel } from '@/components/learning/LearningPathsPanelContext'
 import { DashboardVersionsPanel } from '@/components/dashboard/DashboardVersionsPanel'
@@ -162,9 +163,20 @@ export function Header() {
   // would drop `present=1` and pop the prototype bar + demo controls back into a
   // shared demo — exactly what the audience must never see.
   const noHeaderNav = focusMode || present
+  // The notification bell sits BETWEEN Cart and the account menu, which is
+  // where it belongs rather than where there was room: Cart is about the
+  // store, the bell and the avatar are both about YOU, so the cluster reads
+  // as one commerce control then two personal ones. Putting it outboard of
+  // the avatar would also separate the badge from the profile it reports on.
+  //
+  // It renders on the rebrand shell only — its rows deep-link into
+  // `?section=…`, which is a shell address. On the classic routes those links
+  // would leave the layout the learner is standing in.
+  const showBell = useFeatureFlag('header-notifications').enabled && platformNav
   const utilities = (
     <div className="flex items-center" style={{ gap: 12 }} inert={noHeaderNav || undefined}>
       <CartButton />
+      {showBell && <NotificationsMenu />}
       <AccountMenu initials="SC" />
     </div>
   )
