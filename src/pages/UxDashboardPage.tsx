@@ -21,7 +21,9 @@ import { primaryPreviewSrc } from '@/components/prototype/featurePreviewSrc'
 import { ArchiveTable } from '@/components/prototype/ArchiveTable'
 import { QaNotesPanel } from '@/components/prototype/QaNotesPanel'
 import { TodoPanel } from '@/components/prototype/TodoPanel'
+import { LinksPanel } from '@/components/prototype/LinksPanel'
 import { useTodoOpenCount } from '@/components/prototype/todoStore'
+import { useLinkCount } from '@/data/linkStore'
 import { useQaNoteCount } from '@/data/qaNoteStore'
 import { UX_TOKEN_BRIDGE, mirrorPaletteToRoot } from '@/components/prototype/uxPaletteBridge'
 import {
@@ -110,6 +112,7 @@ import { isPrototypeUnlocked, markPrototypeUnlocked } from '@/components/prototy
 
 type UxSection =
   | 'demo'
+  | 'links'
   | 'research'
   | 'todo'
   | 'design'
@@ -157,6 +160,21 @@ const RESEARCH_DECISIONS = 0
  *  order; the divider is drawn where `restricted` starts. */
 const SECTIONS: SectionDef[] = [
   { id: 'demo', label: 'Demo', blurb: 'Presentation-ready experiences to walk stakeholders through.' },
+  {
+    // Directly under Demo and UNGATED, which is the decision in this entry.
+    // Demo is the passwordless front door and this sits beside it, so a link
+    // added here is a link a stakeholder can reach unaccompanied — the same
+    // consideration `UxDashboard.smoke.test.tsx` guards for Demo's rows. It is
+    // open rather than gated because the section's whole job is being the place
+    // you send someone; behind the shared password it would be a bookmark file.
+    //
+    // No `count` field: links are authored on the page, so a static number is
+    // wrong the moment one is added. Supplied live below, like To Do's and QA
+    // Notes'.
+    id: 'links',
+    label: 'Links',
+    blurb: 'Everything that lives elsewhere — briefs, boards, builds and references. Added on the page, not in code.',
+  },
   {
     id: 'research',
     label: 'Research',
@@ -1151,10 +1169,16 @@ export function UxDashboardPage() {
   /** Live finding count for the QA Notes badge — the committed set plus whatever
    *  has been authored on the page. */
   const qaCount = useQaNoteCount()
+  /** Live link count for the Links badge. There is no committed set to seed
+   *  from, so this starts at 0 and settles on the first fetch. */
+  const linkCount = useLinkCount()
 
   const bySection = useMemo(() => {
     const out: Record<UxSection, PrototypeFeature[]> = {
       demo: [],
+      // Not a list of features — the Links panel owns its own data, so this
+      // stays empty by design and the nav count comes from `useLinkCount`.
+      links: [],
       research: [],
       todo: [],
       design: [],
@@ -1250,7 +1274,9 @@ export function UxDashboardPage() {
                 ? todoOpen
                 : s.id === 'qa-notes'
                   ? qaCount
-                  : (s.count ?? bySection[s.id].length)
+                  : s.id === 'links'
+                    ? linkCount
+                    : (s.count ?? bySection[s.id].length)
             const locked = Boolean(s.gate) && !isOpen(s)
             return (
               <div key={s.id}>
@@ -1409,6 +1435,11 @@ export function UxDashboardPage() {
           <div style={ARCHIVE_BRIDGE}>
             <QaNotesPanel />
           </div>
+        ) : section === 'links' ? (
+          // No `ARCHIVE_BRIDGE` wrapper: the panel is styled on this page's own
+          // `--ux-*` palette rather than the brand tokens, like `TodoPanel`, so
+          // it already re-skins with the four schemes and four appearances.
+          <LinksPanel />
         ) : section === 'todo' ? (
           <TodoPanel />
         ) : section === 'archive' ? (

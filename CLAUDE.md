@@ -26,7 +26,7 @@ the opposite.
 | Routing | react-router-dom v7 |
 | Icons | Font Awesome 7 Pro Light — self-hosted SVGs in `src/icons/` via `vite-plugin-svgr` |
 | Tokens | `src/styles/tokens.css` (`@theme inline`) |
-| Server code | Two Netlify functions over Netlify Blobs — QA Notes + captures |
+| Server code | Three Netlify functions over Netlify Blobs — QA Notes + captures, and Links |
 | Tests | Vitest + @testing-library/react |
 
 ## Scope — read before adding a route
@@ -36,7 +36,7 @@ It is now three things, and where a new screen belongs depends on which:
 
 | Surface | Lives in | Reached at |
 |---|---|---|
-| The UX Dashboard gateway | `src/pages/UxDashboardPage.tsx` + friends | `/`, `/prototype/:id`, `/research-rationale`, `/qa-notes` |
+| The UX Dashboard gateway | `src/pages/UxDashboardPage.tsx` + friends | `/`, `/prototype/:id`, `/research-rationale`, `/qa-notes`, `/links` |
 | The XCEL product app | `src/pages/*`, `src/components/*` | `/dashboard-rebrand` + ~28 product routes |
 | The standalone prototypes | `public/prototypes/*.html` | `/prototypes/…`, opened in a tab or iframed |
 
@@ -60,9 +60,9 @@ project list. Unchanged from the LMS original apart from three strings (the
 brand sub-line, the Research row label, `RESEARCH_DECISIONS`), so anything the
 LMS `CLAUDE.md` says about it holds here.
 
-**Sections.** Two open — Demo · Research — then a divider under a **UX & DEV
-ACCESS** eyebrow holding Design · Exploration · Sandbox · Development · Done ·
-Archive · QA Notes · To Do.
+**Sections.** Three open — Demo · Links · Research — then a divider under a
+**UX & DEV ACCESS** eyebrow holding Design · Exploration · Sandbox ·
+Development · Done · Archive · QA Notes · To Do.
 
 **Demo holds the live product build** (`xcel-dashboard` → `/dashboard-rebrand`),
 promoted there on 2026-09-08. It is the one row on the ungated front door, so
@@ -110,6 +110,112 @@ Every text element was audited to WCAG AA across all 16 palette × appearance
 combinations in the original. **If you add a palette, re-measure** — the note in
 the LMS `CLAUDE.md` about each palette's brightest colour being unusable as small
 text on a light page is the trap.
+
+### Links — the section that is authored on the page (2026-09-10)
+
+A nav section (`links`) directly under **Demo**, plus `/links` as a short address
+for it, holding whatever lives elsewhere — briefs, boards, deployed builds,
+Figma files. Its entire reason for existing is the ask behind it: **a link can be
+added without a code change.** Nothing in `src/` names a link.
+
+**Server-side, not `localStorage`, and that is the decision.** A third Netlify
+function over Blobs (`netlify/functions/links.ts`), the same shape as the two QA
+endpoints. The To Do panel's per-browser store was the cheaper option and it is
+the wrong one here: a links page is *the place you send someone*, so a list only
+its author can see fails at the one job it has. The cost is stated plainly on the
+page ("Saved to the shared store — everyone who opens this site sees it").
+
+**UNLIKE QA Notes, there is no committed seed and therefore no merge.** QA Notes
+ships an array in `qaNotes.ts` that stored records override; this ships nothing,
+so the store IS the list. Do not add a seed file to "make it testable" — the
+merge rule exists over there to stop a destructive action reaching something that
+is in git, and here there is nothing in git to reach.
+
+That leaves a real exposure, and it is worth knowing rather than discovering:
+**Netlify Blobs is not backed up**, so this list lives in exactly one place.
+`toMarkdown` behind *Copy as markdown* is the way out, the same mitigation
+`todoStore` uses. There is deliberately no paste-it-back-into-a-data-file path,
+because there is no data file.
+
+**The URL check is a SECURITY control, not tidiness.** Every stored `url` is
+rendered as an `<a href>`, and `javascript:` in an href executes in this origin —
+so "add a link" would become "run code in every reviewer's browser". Both
+boundaries **allow-list** http and https rather than blocking known-bad schemes:
+the endpoint on the way in, and `safeHref` again at render time, because a record
+written by an older or laxer version must not become live code later. A row whose
+address fails the check still renders, as TEXT marked "not a linkable address" —
+visible so it can be fixed, rather than silently vanishing.
+
+`Links.test.tsx` pins all of that, including a **source-level** assertion that
+the endpoint's `ALLOWED_PROTOCOLS` still names exactly those two and is still
+applied by inclusion. It parses the real declared value out of the file rather
+than duplicating it, the `smoke-desktop.mjs` pattern — a blocklist would pass a
+naive "does it mention javascript" check while being one novel scheme away from
+wrong.
+
+**It is UNGATED, beside Demo — an editorial decision, and tested as one.** Demo
+is the passwordless front door and this sits next to it, so a link added here is
+reachable by a stakeholder unaccompanied. Behind the shared Design & Development
+password it would be a private bookmark file, which is not what it is for. A test
+asserts both the absence of the modal and the position after Demo, so gating or
+moving it fails and gets re-decided — the same reasoning as "Demo holds exactly
+the rows meant to be ungated".
+
+**It is a nav SECTION, not a `PROTOTYPE_FEATURES` row**, which is what keeps
+Demo's own two-directional smoke test meaningful: adding a section does not touch
+the set of rows that test compares. The five registration points are the ones
+Readiness and Resources needed — `UxSection`, `SECTIONS`, the `bySection` map,
+the nav count branch, `renderBody` — plus the `/links` route.
+
+**The nav badge shipped WRONG, and the fix is the mechanism to copy.**
+`useLinkCount` fetched once on mount, so the rail said 2 with three links on
+screen — the same defect `useQaNoteCount`'s own comment describes ("the rail said
+18 while the page said 19"). It is invisible until someone adds a link, which is
+the first thing anyone does here. Every write now fires a `cgp.links` window
+event from inside the store helpers (not from the panel, so a second caller
+cannot leave the badge behind) and the badge re-reads. A `storage` event would
+not do it — that only fires for OTHER tabs. Same mechanism and same reason as
+`todoStore`'s `cgp.todo`. **`useQaNoteCount` still has this bug**; it is one
+section down and unfixed.
+
+**No `ARCHIVE_BRIDGE` wrapper**, unlike the QA panel and the archive table. This
+one is styled on the page's own `--ux-*` palette like `TodoPanel`, so it already
+re-skins with the four schemes and four appearances. Measured in Dark · Fern: the
+row title 12.35:1, the note 9.52:1, the meta and field labels 7.43:1, the Add
+button's ink 11.65:1. The field's 1px border is a low-contrast boundary against
+its card, and that is `TodoPanel`'s exact treatment on the same two tokens —
+if it is worth raising it is worth raising for both, not just here.
+
+**Every write re-reads the collection** rather than patching local state. The
+server owns the id and the date, and the store is shared — another reviewer may
+have added something since the page loaded. An optimistic list is a second,
+quietly diverging copy of state more than one person can write to.
+
+**The composer is HIDDEN when the endpoint is unreachable**, which is what plain
+`npm run dev` looks like — vite serves no `/api/*` at all. The honest response is
+to say so rather than render an Add button that fails on click. `LinkIndex`
+carries `loading` separately from `available` for the same reason `NoteIndex`
+does: for the tick before the first fetch settles, "no endpoint" is not yet a
+fact. An HTML answer counts as no endpoint too — the SPA fallback returns
+index.html with a 200, so a misrouted request would otherwise throw on parse and
+read as a broken page.
+
+**Three fields, and no `group`.** Title, address, optional note. Grouping is the
+obvious fourth and it is deliberately absent until the list is long enough to
+want it — adding it is one field on the record and one `Record` in the panel.
+Note that a note is stored as `''` rather than omitted, so "never had one" and
+"had one and cleared it" are one state a client never has to tell apart.
+
+**Running it locally needs `netlify dev`, and the launch config carries two
+traps** that cost real time here — see `.claude/launch.json`'s
+`xcel-dashboard-netlify` entry. `PORT` must be pinned inside the command, or
+vite inherits the launcher's port and every request reaches vite instead of
+netlify's proxy (the symptom is `/api/*` answering **200 with index.html**, which
+reads as a broken redirect). And `--functions` must be an ABSOLUTE path when this
+runs from a **git worktree**: the CLI resolves the functions dir against the
+REPOSITORY root, so it serves the main checkout's `netlify/functions/` and a
+function added in the worktree is simply missing — while both pre-existing
+endpoints load fine, which is exactly what makes it convincing.
 
 ## The one deliberate divergence: live previews
 
@@ -1626,6 +1732,12 @@ mode that mattered — a missing provider throwing on mount — renders a blank 
 that looks like a styling bug. Extend it when you add a section or change
 `sectionOf`; `EXPECTED_PLACEMENT` in that file is the list to update when a row
 moves.
+
+[`src/test/Links.test.tsx`](src/test/Links.test.tsx) covers the Links section —
+the scheme allow-list at both boundaries, the ungated placement, the live nav
+badge, and the no-endpoint state. See the Links section above for why each of
+those is pinned; the two that shipped wrong once are the badge and (in the
+launch config) the worktree functions path.
 
 The six prototype pages are covered separately by the five jsdom suites in
 [`smoke/`](smoke/) — **`npm run smoke`**, 252 assertions. They are plain node

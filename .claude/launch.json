@@ -13,6 +13,45 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
       "port": 5200
+    },
+    {
+      "// xcel-dashboard-netlify": [
+        "The SAME app, served through `netlify dev` so the Netlify functions and",
+        "Blobs stores are reachable — `npm run dev` is plain vite, which serves no",
+        "/api/* endpoint at all. Needed to exercise QA Notes and Links, both of",
+        "which author into a Blobs store; under the plain dev server they",
+        "correctly report the endpoint as unreachable and hide their composers.",
+        "Port 8899 rather than netlify's default 8888, so it cannot collide with",
+        "a sibling dashboard doing the same thing.",
+        "",
+        "PORT is pinned INSIDE the command on purpose. vite.config.ts reads",
+        "process.env.PORT, and the launcher sets it to this entry's own port — so",
+        "without it vite binds to 8899 too and every request reaches vite instead",
+        "of netlify's proxy. The symptom is /api/* answering 200 with index.html,",
+        "which reads as a routing bug in the app rather than as a port collision.",
+        "",
+        "5201, NOT the 5200 vite.config pins. This entry runs a SECOND vite beside",
+        "whatever `npm run dev` already has on 5200 — including one from another",
+        "git worktree of this same repo, which is the common case when an agent",
+        "run is open. strictPort means the loser dies with EADDRINUSE, and the",
+        "error is above the prompt where it is easy to miss.",
+        "",
+        "--functions is an ABSOLUTE path, and it is the load-bearing flag when",
+        "this runs inside a git worktree. The CLI resolves the functions dir",
+        "against the REPOSITORY root, so from a worktree it serves the main",
+        "checkout`s netlify/functions/ and a function added here is simply",
+        "missing — /api/<new> then 404s (or falls through to the SPA and answers",
+        "200 with index.html), which reads as a broken redirect rather than as",
+        "the wrong directory. Both endpoints that already exist in main load",
+        "fine, which is what makes it convincing."
+      ],
+      "name": "xcel-dashboard-netlify",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": [
+        "-c",
+        "PORT=5201 netlify dev --port 8899 --target-port 5201 --offline --no-open --functions \"$PWD/netlify/functions\""
+      ],
+      "port": 8899
     }
   ]
 }

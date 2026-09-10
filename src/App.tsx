@@ -5,6 +5,7 @@ import { PrototypeFeaturePage } from '@/pages/PrototypeFeaturePage'
 import { PrototypeHandoffDetailPage } from '@/pages/PrototypeHandoffDetailPage'
 import { ResearchRationalePage } from '@/pages/ResearchRationalePage'
 import { QaNotesPage } from '@/pages/QaNotesPage'
+import { LinksPage } from '@/pages/LinksPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { DashboardRebrandPage } from '@/pages/DashboardRebrandPage'
 import { RecommendedCardABComparePage } from '@/pages/RecommendedCardABComparePage'
@@ -119,6 +120,9 @@ export default function App() {
       {/* QA Notes is a section of the UX Dashboard shell, not a standalone page —
           this route just redirects to its canonical URL. */}
       <Route path="/qa-notes" element={<QaNotesPage />} />
+      {/* Both redirect into the gateway shell, which owns the section chrome —
+          see the note at the top of each page. */}
+      <Route path="/links" element={<LinksPage />} />
       <Route
         path="/prototype/:featureId/handoff/:componentId"
         element={<PrototypeHandoffDetailPage />}

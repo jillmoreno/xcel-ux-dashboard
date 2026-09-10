@@ -42,6 +42,7 @@ function renderDashboard(initialPath = '/') {
  *  with the divider drawn where the first gated one starts. */
 const EXPECTED_SECTIONS = [
   'Demo',
+  'Links',
   'Research',
   'Design',
   'Exploration',
