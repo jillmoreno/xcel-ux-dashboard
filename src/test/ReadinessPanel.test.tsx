@@ -5,6 +5,7 @@ import { ReadinessPanel } from '@/components/readiness/ReadinessPanel'
 import {
   bandFor,
   readinessFor,
+  PASS_MARK,
   READINESS_FREQUENCY_NOTE,
   REVIEW_THRESHOLD,
   STRONG_THRESHOLD,
@@ -144,11 +145,25 @@ describe('the readiness score', () => {
     expect(screen.getByText(DATA.pathTitle)).toBeInTheDocument()
   })
 
-  it('exposes the score to assistive tech, not only as a drawn number', () => {
+  it('exposes the score AND the pass mark to assistive tech', () => {
+    // The arc's whole meaning is the distance to the mark, and that is carried
+    // by colour and a tick — neither of which reaches a screen reader. The
+    // label has to say both numbers or the gauge is a bare figure.
     renderPanel()
     expect(
-      screen.getByRole('img', { name: new RegExp(`Readiness score ${DATA.score}`) }),
+      screen.getByRole('img', {
+        name: new RegExp(`Readiness score ${DATA.score}.*${PASS_MARK} is a passing score`),
+      }),
     ).toBeInTheDocument()
+  })
+
+  it('states the pass mark the same in the gauge and in What to Expect', () => {
+    // Two surfaces, one tab apart, so nobody sees both at once — exactly where
+    // a second literal would rot unnoticed. Both read PASS_MARK.
+    renderPanel()
+    expect(screen.getByText(`${PASS_MARK} to pass`)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('tab', { name: 'What to Expect' }))
+    expect(screen.getByText(`${PASS_MARK}%`)).toBeInTheDocument()
   })
 })
 

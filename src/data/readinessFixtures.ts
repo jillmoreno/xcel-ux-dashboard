@@ -38,6 +38,22 @@ export type ReadinessBand = 'review' | 'shaky' | 'strong'
  */
 export const REVIEW_THRESHOLD = 60
 export const STRONG_THRESHOLD = 80
+
+/**
+ * The Florida 2-15 pass mark, and the ONLY number on this page that is not
+ * invented — the state sets it.
+ *
+ * The gauge's green band starts here rather than at `STRONG_THRESHOLD`, which
+ * is the change that made the arc mean something: "green" now reads as "at or
+ * above the mark you have to clear", not as "above a number we chose". It is
+ * also why the gauge dropped its red band — see `ReadinessGauge`.
+ *
+ * `EXAM_FACTS` in ReadinessPanel renders this same figure. It reads the
+ * constant; a second literal is how the arc and the stated pass mark drift
+ * apart, and the two sitting one tab from each other makes that especially
+ * cheap to get wrong.
+ */
+export const PASS_MARK = 70
 export function bandFor(pct: number): ReadinessBand {
   if (pct >= STRONG_THRESHOLD) return 'strong'
   if (pct >= REVIEW_THRESHOLD) return 'shaky'

@@ -417,6 +417,34 @@ drives the filter, the chapter dots, the topic bars and the gauge's active band,
 so a chapter can never sit in "I Know This" wearing a red dot. Replace with the
 real thresholds; do not tune them to make a screenshot look better.
 
+**The gauge has NO red, and the bands split at the real pass mark** (restyled
+2026-09-09 to a supplied reference). It shipped as the design's red / amber /
+green; red is gone because this number is the learner's OWN standing, and a
+learner mid-course is below the mark by definition — a red arc for being where
+you are supposed to be reads as a verdict rather than as distance still to
+travel. The walk-through had already settled that for this screen
+("probabilistic, and it has to say so without discouraging").
+
+**Red did not leave the page**, and the divergence is deliberate: chapter dots
+and topic bars keep it. Red on a CHAPTER is actionable — it names a specific
+thing to fix — while red on YOU is just discouraging. One surface is a worklist
+and the other a self-assessment; they are allowed to speak differently.
+
+Amber runs to **`PASS_MARK`** and green from there. That is 70, the Florida 2-15
+figure the state sets — the only number on this page that is not invented — so
+green means "at or above what you must clear" rather than "above a number we
+chose", which is what the invented `STRONG_THRESHOLD` of 80 meant. A tick marks
+the boundary and the caption names it ("70 to pass"). `EXAM_FACTS` reads the
+same constant: the two sit one tab apart, so nobody sees both at once, which is
+exactly where a second literal would rot unnoticed. A test asserts they agree.
+
+Both bands render at FULL strength. The three-band version dimmed the inactive
+ones to say "you are here"; with two bands the marker and tick already say it,
+and dimming the green made the target the dullest thing on the arc — the
+opposite of what "aim for the green" asks. Green is `--color-success-500`, the
+lightest stop on that ramp; there is no `-400`, so a lighter green needs a new
+ramp stop, not a literal.
+
 **The gauge is a new component, not `ProgressDonut`.** That one is a closed ring
 split into category segments ("how much of each kind"); this is an open 240° arc
 carrying a red→amber→green ramp ("how good is this number"). They look alike and

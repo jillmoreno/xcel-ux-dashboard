@@ -6,9 +6,8 @@ import { Card } from '@/components/ui/Card'
 import { CircleCheck, CircleExclamation } from '@/icons'
 import {
   bandFor,
+  PASS_MARK,
   readinessFor,
-  REVIEW_THRESHOLD,
-  STRONG_THRESHOLD,
   type ExamAttempt,
   type ReadinessBand,
 } from '@/data/readinessFixtures'
@@ -105,11 +104,7 @@ function ExamReadinessTab({ onOpenInsights }: { onOpenInsights: () => void }) {
         <p style={subtleStyle}>{data.pathTitle}</p>
         <div style={scoreRowStyle}>
           <Card style={scoreCardStyle}>
-            <ReadinessGauge
-              score={data.score}
-              reviewThreshold={REVIEW_THRESHOLD}
-              strongThreshold={STRONG_THRESHOLD}
-            />
+            <ReadinessGauge score={data.score} passMark={PASS_MARK} />
             <p style={{ ...bodyStyle, margin: 0 }}>{data.scoreExplanation}</p>
             {/* The credibility line. It is NOT from the design — see
                 READINESS_FREQUENCY_NOTE for why it has to be here. */}
@@ -300,7 +295,10 @@ const EXAM_FACTS: { label: string; value: string; note?: string }[] = [
   { label: 'Exam', value: 'Florida 2-15 Health & Life', note: 'including Annuities & Variable Contracts' },
   { label: 'Questions', value: '165 scored', note: 'plus unscored pretest items' },
   { label: 'Time allowed', value: '3 hours 15 minutes' },
-  { label: 'Passing score', value: '70%' },
+  // Reads the constant the gauge's green band starts at. A literal here is
+  // how the arc and the stated pass mark drift apart — and they sit one tab
+  // from each other, so nobody would see both at once.
+  { label: 'Passing score', value: `${PASS_MARK}%` },
   { label: 'Where', value: 'A PSI test centre', note: 'or online with remote proctoring' },
   { label: 'Bring', value: 'Two forms of ID', note: 'one photo, names matching your registration' },
 ]
