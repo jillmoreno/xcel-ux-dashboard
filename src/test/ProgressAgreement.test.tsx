@@ -108,3 +108,33 @@ describe('course progress agrees across Home, Study Plan and Readiness', () => {
     expect(persona.path.id).toBeTruthy()
   })
 })
+
+describe('the Recommended for You band toggle', () => {
+  /** Seed a flag the way the panel persists it. */
+  function seedFlag(key: string, enabled: boolean) {
+    window.localStorage.setItem('cgp.featureFlags', JSON.stringify({ [key]: { enabled } }))
+  }
+
+  it('shows the band by default', () => {
+    renderShell('/dashboard-rebrand')
+    expect(screen.getByText('Recommended for you')).toBeInTheDocument()
+  })
+
+  it('removes the section entirely when off', () => {
+    // "Hide" means GONE, not an empty header — a section lead over nothing
+    // reads as a load failure. Asserted on the header text rather than on a
+    // card, because cards can be empty for data reasons.
+    seedFlag('dashboard-recommended', false)
+    renderShell('/dashboard-rebrand')
+    expect(screen.queryByText('Recommended for you')).toBeNull()
+  })
+
+  it('is NOT the same control as the left-nav Recommended page', () => {
+    // `nav-show-recommended` hides the rail item for the PAGE; this hides the
+    // band on Home. A reviewer can want either without the other, and wiring
+    // one to both is the mistake this pins.
+    seedFlag('nav-show-recommended', false)
+    renderShell('/dashboard-rebrand')
+    expect(screen.getByText('Recommended for you')).toBeInTheDocument()
+  })
+})

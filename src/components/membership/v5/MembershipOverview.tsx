@@ -232,6 +232,10 @@ export function MembershipOverview({
   // is resolved here rather than inside the band so the band stays a pure
   // presenter of a calendar.
   const weekSummaryOn = useFeatureFlag('dashboard-week-summary').enabled
+  // Whole-section toggle for the Recommended band. Distinct from
+  // `nav-show-recommended`, which hides the PAGE in the left nav — this one is
+  // the band on Home, and a reviewer can want either without the other.
+  const recommendedOn = useFeatureFlag('dashboard-recommended').enabled
   const basePersona = personaEnabled
     ? justOnboarded
       ? dashboardProgressPersonaFor(brand, 'setup-complete-0')
@@ -618,7 +622,7 @@ export function MembershipOverview({
         </Wrap>
       )}
 
-      {showExtras && <DashboardRecommendedBand badged={badged} />}
+      {showExtras && recommendedOn && <DashboardRecommendedBand badged={badged} />}
 
       {/* Free Content promo bands (blog + podcast) — same banner shape as the
           membership upsell band, one colour per content type. Placed BELOW

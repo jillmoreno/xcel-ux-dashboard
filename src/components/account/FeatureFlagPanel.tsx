@@ -95,6 +95,8 @@ const REBRAND_FLAGS = [
   'membership-compare-view',
   // AI MasterTracks section — Dark spotlight band (default) or Light card.
   'aimt-band-style',
+  // Recommended for You band — show/hide the whole section.
+  'dashboard-recommended',
   // Recommended card blurb — show/hide the "what this is" line on the cards.
   'dashboard-recommended-blurb',
   // Recommended band layout — ON = horizontal carousel (scroll); OFF = a

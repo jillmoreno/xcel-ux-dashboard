@@ -1230,6 +1230,21 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    // Show/hide the whole band. Sits ABOVE the three flags that tune it
+    // (`-blurb`, `-carousel`, `home-recommended-card-ab`) because it gates
+    // them: with the section off, those three control nothing, and a reviewer
+    // flipping them with no visible effect is the confusion this ordering
+    // avoids. Same shape as `dashboard-whats-new-layout` does for What's
+    // Trending.
+    key: 'dashboard-recommended',
+    group: 'Widgets',
+    label: 'Recommended for You section',
+    description:
+      'Show the "Recommended for You" band on the Dashboard Rebrand overview — the personalized product carousel below the week summary. Off removes the section entirely, which also makes the three flags that tune it (blurb, carousel, card A/B) inert. Does not affect the Recommended for You PAGE in the left nav, which is `nav-show-recommended`.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'dashboard-recommended-blurb',
     group: 'Recommended For You',
     label: 'Recommended card blurb',

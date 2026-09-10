@@ -431,6 +431,23 @@ so the two cannot describe different courses. Guarded by `hasStudyCalendarFor`
 rather than `supportsStudyPlan` — the same trap the Jump Back In card hit, where
 `studyCalendarFor` falls back to STC's Series 79 plan for an unknown id.
 
+### `dashboard-recommended` — hiding the Recommended band (2026-09-10)
+
+An enable toggle for the whole "Recommended for You" band on the overview,
+default on. Off removes the SECTION, header included — a section lead over
+nothing reads as a load failure, which is what the test asserts on rather than
+on the cards.
+
+**It sits above the three flags that tune it** in the catalog
+(`dashboard-recommended-blurb`, `-carousel`, `home-recommended-card-ab`) because
+it gates them: with the section off those three control nothing, and a reviewer
+flipping them to no visible effect is the confusion the ordering avoids.
+
+**It is NOT `nav-show-recommended`.** That one hides the rail item for the
+Recommended for You PAGE; this hides the band on Home. A reviewer can want
+either without the other, and a test pins that they are independent — wiring one
+control to both is the plausible mistake.
+
 ### The "Busy study plan" persona (2026-09-10)
 
 A dense demo state — 37 study-plan tasks across five weeks — for showing the
