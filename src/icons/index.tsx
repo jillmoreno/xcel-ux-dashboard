@@ -205,10 +205,11 @@ export const Envelope = makeIcon(EnvelopeSvg) // FA: envelope (Send Reminder)
 export const FileText = makeIcon(FileLinesSvg) // FA: file-lines
 export const Flag = makeIcon(FlagSvg)
 export const Facebook = makeIcon(FacebookSvg) // FA Free brand: facebook (solid circle)
-// FA: gauge-simple-high. The `-high` needle (diagonal, ~2 o'clock) rather
-// than plain `gauge`, whose needle points straight UP and reads as an arrow
-// in a circle at the rail's 17px — compared side by side at 17 / 24 / 48px
-// before choosing. `-simple` drops the tick marks, which mush at 17px.
+// FA: gauge-high (7.3.1 light), supplied 2026-09-10 — replaced a 6.6.0
+// `gauge-simple-high`. Same diagonal `-high` needle, which is what makes it
+// read as a dial rather than an arrow in a circle at the rail's 17px; the
+// change is the tick dots and the FA7 generation, which matches the ~70 other
+// 7.x icons here.
 export const Gauge = makeIcon(GaugeSvg)
 export const Gem = makeIcon(GemSvg)
 export const Gift = makeIcon(GiftSvg) // FA: gift (Gift Recipients)

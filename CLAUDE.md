@@ -712,12 +712,16 @@ assertion is for: a row cannot join the baseline without failing
 `NavSectionFlags.test.tsx` first and being re-decided. Readiness is ON in the
 demo because a stakeholder is meant to see it is coming.
 
-**The icon is `gauge-simple-high`**, registered as `Gauge`. Compared against
-`gauge`, `gauge-simple`, `gauge-high`, `gauge-max` and `gauge-simple-max` at
-17 / 24 / 48px before choosing, and the rail's **17px** is what decided it:
-plain `gauge`'s needle points straight UP, which at that size reads as an arrow
-in a circle rather than a dial. The `-high` needle sits diagonal and is
-unmistakable. `-simple` drops the tick marks, which mush at 17px.
+**The icon is `gauge-high`** (FA 7.3.1 light), registered as `Gauge`. The
+`-high` needle is the load-bearing part: plain `gauge` points its needle
+straight UP, which at the rail's 17px reads as an arrow in a circle rather than
+a dial. Compared against `gauge`, `gauge-simple`, `gauge-max` and
+`gauge-simple-max` at 17 / 24 / 48px before choosing.
+
+It briefly shipped as a 6.6.0 `gauge-simple-high` — same needle, no tick dots,
+picked on the assumption the ticks would mush at 17px. The supplied 7.3.1 file
+keeps them and they hold up: its dots are rounder and better separated than the
+6.x ones, and it matches the ~70 other 7.x icons in the registry.
 
 A needle pinned high could be read as claiming the learner IS ready. Discounted:
 a rail glyph names the topic, not a value — `Award` next to Certificates does
