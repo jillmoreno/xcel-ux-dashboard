@@ -31,7 +31,7 @@ import { GiftRecipientsPanel } from '@/components/account/purchases/GiftRecipien
 import { LibraryPanel } from '@/components/membership/LibraryPanel'
 import { LearningLibraryHero } from '@/components/membership/LearningLibraryHero'
 import { EmptyState } from '@/components/ui/EmptyState'
-import { Gauge, Podcast, X } from '@/icons'
+import { Podcast, X } from '@/icons'
 import { Avatar } from '@/components/ui/Avatar'
 import { MembershipBadge } from '@/components/ui/MembershipBadge'
 import { tierBadgeIcon } from '@/components/ui/membershipTierBadge'
@@ -42,6 +42,7 @@ import { MembershipStandalonePage } from '@/components/membership/MembershipStan
 import { PartnerOfferingsPanel } from '@/components/membership/PartnerOfferingsPanel'
 import { partnerOfferingsFor } from '@/data/membership/partnerOfferingsFixtures'
 import { ResourcesPanel } from '@/components/membership/ResourcesPanel'
+import { ReadinessPanel } from '@/components/readiness/ReadinessPanel'
 import { resourcesCopyFor, resourcesFor } from '@/data/membership/resourcesFixtures'
 import { NonMemberUpsellHero } from '@/components/membership/NonMemberUpsellHero'
 import { RecommendedForYouPanel } from '@/components/dashboard/recommended/RecommendedForYouPanel'
@@ -1253,19 +1254,12 @@ function renderBody(
   // they drop their own title + gutter. Learning Path branches on count
   // (homepage for 2+ paths, single detail otherwise) via LearningPathSection.
   if (active === 'study-plan') return <StudyPlanSection />
-  // Readiness — a deliberate blank, the same shape as Podcasts. The rail item
-  // and the route exist so the section can be navigated to and demoed as
-  // "coming"; there is no readiness model in the fixtures yet. Replace this
-  // branch with the real panel — nothing else about the section needs to move.
-  if (active === 'readiness') {
-    return (
-      <EmptyState
-        title="Readiness"
-        description="How ready you are for your licensing exam will show here."
-        icon={<Gauge size={24} aria-hidden />}
-      />
-    )
-  }
+  // Readiness — the Figma "Exam Summary" port. Was a blank EmptyState for
+  // exactly one commit; the note that said "replace this branch with the real
+  // panel, nothing else about the section needs to move" turned out to be
+  // true, which is the argument for registering a section before it has
+  // content rather than after.
+  if (active === 'readiness') return <ReadinessPanel />
   if (active === 'learning-path') return <LearningPathSection />
   // ── Account area ──────────────────────────────────────────────────────
   // Every account section (Profile · Notifications · Licenses · Transcripts ·

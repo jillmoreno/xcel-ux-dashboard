@@ -1,0 +1,516 @@
+import { useState, type CSSProperties } from 'react'
+import { useAccount } from '@/context/AccountContext'
+import { Tabs } from '@/components/ui/Tabs'
+import { PillTabs } from '@/components/ui/PillTabs'
+import { Card } from '@/components/ui/Card'
+import { CircleCheck, CircleExclamation } from '@/icons'
+import {
+  bandFor,
+  readinessFor,
+  REVIEW_THRESHOLD,
+  STRONG_THRESHOLD,
+  type ExamAttempt,
+  type ReadinessBand,
+} from '@/data/readinessFixtures'
+import { ReadinessGauge } from './ReadinessGauge'
+
+/**
+ * Exam Readiness — the `readiness` rail section, replacing its placeholder.
+ * Ported from Figma "Exam Summary" (woOd62dQQyPvtqJ6ZRO0qF).
+ *
+ * ── Three departures from the design, all deliberate ────────────────────────
+ *
+ * 1. **The design's five top tabs are gone** (About the Course · Instructor ·
+ *    Author · Regulatory Requirements). They are course-detail tabs; this is a
+ *    section of the learner's own dashboard, not a course page, and four of the
+ *    five have no content here.
+ *
+ * 2. **The design's LEFT SUB-RAIL is now these three tabs.** It carried both
+ *    navigation (Readiness Score / What to Expect / Study Tips) and content
+ *    (the Final Exams and Practice Exams cards) in one column. A second rail
+ *    inside the shell's content column would sit beside the platform rail that
+ *    is already there — the account sections do exactly that with
+ *    `AccountSubNav`, and CLAUDE.md records the gutter cost. Tabs avoid it.
+ *
+ * 3. **Study Tips folded into What to Expect; Final Exams into Practice
+ *    Exams.** The three-tab set leaves the design's other two sections
+ *    homeless, and these are the joins that hold: study tips ARE what to expect
+ *    of yourself before the day, and a licensing attempt is an attempt. The
+ *    Practice Exams tab keeps them as two LISTS, though — see
+ *    `readinessFixtures`, where the practice/licensing split is the same one
+ *    the exam task-type spec found in `StudyTaskKind`.
+ */
+
+type ReadinessTab = 'readiness' | 'expect' | 'practice'
+type BreakdownFilter = 'review' | 'know' | 'all'
+
+const TABS = [
+  { id: 'readiness' as const, label: 'Exam Readiness' },
+  { id: 'expect' as const, label: 'What to Expect' },
+  { id: 'practice' as const, label: 'Practice Exams' },
+]
+
+const FILTERS = [
+  { id: 'review' as const, label: 'I Should Review' },
+  { id: 'know' as const, label: 'I Know This' },
+  { id: 'all' as const, label: 'Show All' },
+]
+
+/** Band → the dot / bar colour. One map, so a chapter dot and a topic bar at
+ *  the same score can never disagree. */
+const BAND_COLOR: Record<ReadinessBand, string> = {
+  review: 'var(--color-error-500)',
+  shaky: 'var(--color-warning-500)',
+  strong: 'var(--color-success-600)',
+}
+
+export function ReadinessPanel() {
+  const [tab, setTab] = useState<ReadinessTab>('readiness')
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <Tabs items={TABS} active={tab} onChange={setTab} />
+      {tab === 'readiness' && <ExamReadinessTab />}
+      {tab === 'expect' && <WhatToExpectTab />}
+      {tab === 'practice' && <PracticeExamsTab />}
+    </div>
+  )
+}
+
+/* ─── Tab 1 · Exam Readiness ──────────────────────────────────────────── */
+
+function ExamReadinessTab() {
+  const { brand } = useAccount()
+  const data = readinessFor(brand)
+  const [filter, setFilter] = useState<BreakdownFilter>('review')
+
+  // ONE predicate drives both columns and the pill strip, so the chapter list
+  // and the topic list can never disagree about what "should review" means.
+  const keep = (pct: number) =>
+    filter === 'all' ? true : filter === 'review' ? bandFor(pct) === 'review' : bandFor(pct) !== 'review'
+
+  const chapters = data.chapters.filter((c) => keep(c.pct))
+  const topics = data.topics.filter((t) => keep(t.pct))
+  // "Show All" is the design's own sort order (by chapter number); the two
+  // filtered views sort worst-first, because the list is then a worklist.
+  const sortedChapters =
+    filter === 'all' ? chapters : [...chapters].sort((a, b) => a.pct - b.pct)
+  const sortedTopics = filter === 'all' ? topics : [...topics].sort((a, b) => a.pct - b.pct)
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
+      <section style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <h2 style={headingStyle}>Readiness Score</h2>
+        <p style={subtleStyle}>{data.pathTitle}</p>
+        <div style={scoreRowStyle}>
+          <Card style={scoreCardStyle}>
+            <ReadinessGauge
+              score={data.score}
+              reviewThreshold={REVIEW_THRESHOLD}
+              strongThreshold={STRONG_THRESHOLD}
+            />
+            <p style={{ ...bodyStyle, margin: 0 }}>{data.scoreExplanation}</p>
+            {/* The credibility line. It is NOT from the design — see
+                READINESS_FREQUENCY_NOTE for why it has to be here. */}
+            <p style={frequencyStyle}>{data.frequencyNote}</p>
+          </Card>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 4, flex: '1 1 280px', minWidth: 260 }}>
+            {data.progress.map((row) => (
+              <div key={row.label} style={{ display: 'flex', flexDirection: 'column', gap: 4, padding: '8px 0' }}>
+                <div style={statRowStyle}>
+                  <span style={statLabelStyle}>{row.label}</span>
+                  <span style={statValueStyle}>{row.value}</span>
+                </div>
+                {row.pct !== undefined && (
+                  <div style={trackStyle}>
+                    <div style={{ ...fillStyle, width: `${row.pct}%`, background: 'var(--color-success-600)' }} />
+                  </div>
+                )}
+                {row.pct === undefined && <div style={ruleStyle} />}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <section style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <h2 style={headingStyle}>Chapter &amp; Topic Breakdown</h2>
+        <p style={{ ...bodyStyle, margin: 0 }}>
+          Take note of your strongest and weakest areas of study, to discover areas you will want to
+          review before your exam.
+        </p>
+        {/* PillTabs is the house segmented filter, and it carries NO per-pill
+            counts by convention — the total sits beside the strip instead. */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
+          <PillTabs items={FILTERS} active={filter} onChange={setFilter} label="Breakdown filter" size="compact" />
+          <span style={subtleStyle}>
+            {sortedChapters.length} chapters · {sortedTopics.length} topics
+          </span>
+        </div>
+
+        <div style={breakdownGridStyle}>
+          <div
+            role="group"
+            aria-label="Chapters"
+            style={{ display: 'flex', flexDirection: 'column', gap: 8, minWidth: 0 }}
+          >
+            <h3 style={columnHeadStyle}>Chapters</h3>
+            {sortedChapters.length === 0 ? (
+              <p style={emptyStyle}>Nothing in this group yet.</p>
+            ) : (
+              sortedChapters.map((c) => (
+                <div key={c.number} style={chapterRowStyle}>
+                  <span aria-hidden style={{ ...dotStyle, background: BAND_COLOR[bandFor(c.pct)] }} />
+                  <span style={{ minWidth: 0, flex: 1 }}>
+                    <span style={chapterNumStyle}>Chapter {c.number}:</span>
+                    <span style={chapterTitleStyle}>{c.title}</span>
+                  </span>
+                  <span style={pctStyle}>{c.pct}%</span>
+                </div>
+              ))
+            )}
+          </div>
+
+          <div
+            role="group"
+            aria-label="Topics"
+            style={{ display: 'flex', flexDirection: 'column', gap: 10, minWidth: 0 }}
+          >
+            <h3 style={columnHeadStyle}>Topics</h3>
+            {sortedTopics.length === 0 ? (
+              <p style={emptyStyle}>Nothing in this group yet.</p>
+            ) : (
+              sortedTopics.map((t) => (
+                <div key={t.title} style={{ display: 'flex', flexDirection: 'column', gap: 5 }}>
+                  <div style={statRowStyle}>
+                    <span style={statLabelStyle}>{t.title}</span>
+                    <span style={statValueStyle}>{t.pct}%</span>
+                  </div>
+                  <div style={trackStyle}>
+                    <div
+                      style={{ ...fillStyle, width: `${t.pct}%`, background: BAND_COLOR[bandFor(t.pct)] }}
+                    />
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
+      </section>
+    </div>
+  )
+}
+
+/* ─── Tab 2 · What to Expect ──────────────────────────────────────────── */
+
+/**
+ * The design gives this a rail item and no artwork, so the content is authored.
+ * It answers the two questions the walk-through found learners actually ask on
+ * exam day — what the sitting is like, and what to do the week before — which
+ * is where the design's separate "Study Tips" section landed.
+ *
+ * The exam facts are Florida 2-15 and REAL; the study tips are the design's own
+ * six (Create Schedule · Study w/ others · Get Sleep · Try techniques · Vary
+ * location · Manage Stress), which is the one part of that section the Figma
+ * does specify.
+ */
+function WhatToExpectTab() {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <section style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <h2 style={headingStyle}>On the day</h2>
+        <div style={factGridStyle}>
+          {EXAM_FACTS.map((f) => (
+            <Card key={f.label} style={factCardStyle}>
+              <span style={factLabelStyle}>{f.label}</span>
+              <span style={factValueStyle}>{f.value}</span>
+              {f.note && <span style={subtleStyle}>{f.note}</span>}
+            </Card>
+          ))}
+        </div>
+      </section>
+      <section style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <h2 style={headingStyle}>Before the day</h2>
+        <p style={{ ...bodyStyle, margin: 0 }}>
+          Six habits that move a readiness score more reliably than extra hours do.
+        </p>
+        <div style={factGridStyle}>
+          {STUDY_TIPS.map((t) => (
+            <Card key={t.title} style={factCardStyle}>
+              <span style={factValueStyle}>{t.title}</span>
+              <span style={subtleStyle}>{t.body}</span>
+            </Card>
+          ))}
+        </div>
+      </section>
+    </div>
+  )
+}
+
+/** Florida 2-15 sitting. TODO(data): confirm against the current PSI bulletin
+ *  before this is shown to a real learner — these are the published figures at
+ *  time of writing, not a feed. */
+const EXAM_FACTS: { label: string; value: string; note?: string }[] = [
+  { label: 'Exam', value: 'Florida 2-15 Health & Life', note: 'including Annuities & Variable Contracts' },
+  { label: 'Questions', value: '165 scored', note: 'plus unscored pretest items' },
+  { label: 'Time allowed', value: '3 hours 15 minutes' },
+  { label: 'Passing score', value: '70%' },
+  { label: 'Where', value: 'A PSI test centre', note: 'or online with remote proctoring' },
+  { label: 'Bring', value: 'Two forms of ID', note: 'one photo, names matching your registration' },
+]
+
+const STUDY_TIPS: { title: string; body: string }[] = [
+  { title: 'Create a schedule', body: 'Fixed short sessions beat occasional long ones. Your Study Plan already builds one.' },
+  { title: 'Study with others', body: 'Explaining a rider out loud finds the gaps that re-reading hides.' },
+  { title: 'Get sleep', body: 'The night before is worth more than the hour you would have spent revising.' },
+  { title: 'Try techniques', body: 'Self-testing and spaced repetition outperform highlighting, by a lot.' },
+  { title: 'Vary location', body: 'Studying in more than one place makes recall less dependent on any of them.' },
+  { title: 'Manage stress', body: 'Sit a full-length simulator at exam length once, so the day is not the first time.' },
+]
+
+/* ─── Tab 3 · Practice Exams ──────────────────────────────────────────── */
+
+function PracticeExamsTab() {
+  const { brand } = useAccount()
+  const data = readinessFor(brand)
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <section style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <h2 style={headingStyle}>Practice exams</h2>
+        <p style={{ ...bodyStyle, margin: 0 }}>
+          Your simulator attempts. These are scored by us and feed the readiness score.
+        </p>
+        <AttemptList attempts={data.practiceExams} />
+      </section>
+      <section style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <h2 style={headingStyle}>Licensing exam</h2>
+        {/* Kept as its own list rather than merged above. A licensing attempt
+            is sat at PSI and only its outcome reaches us — the same split the
+            exam task-type spec found between `exam` and `licensing-exam`. */}
+        <p style={{ ...bodyStyle, margin: 0 }}>
+          Sat at a PSI test centre. We record the outcome the state reports; these attempts do not
+          feed the readiness score.
+        </p>
+        <AttemptList attempts={data.licensingExams} />
+      </section>
+    </div>
+  )
+}
+
+function AttemptList({ attempts }: { attempts: ExamAttempt[] }) {
+  if (attempts.length === 0) return <p style={emptyStyle}>No attempts yet.</p>
+  return (
+    <div role="list" style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+      {attempts.map((a) => (
+        <Card key={a.id} style={attemptRowStyle} role="listitem">
+          <span
+            aria-hidden
+            style={{ color: a.passed ? 'var(--color-success-600)' : 'var(--color-error-500)', display: 'inline-flex' }}
+          >
+            {a.passed ? <CircleCheck size={18} /> : <CircleExclamation size={18} />}
+          </span>
+          <span style={{ flex: 1, minWidth: 0 }}>
+            <span style={factValueStyle}>{a.label}</span>
+            <span style={{ ...subtleStyle, display: 'block' }}>{formatDate(a.date)}</span>
+          </span>
+          {/* A licensing attempt can have no released score — blank, not a
+              dash. A placeholder in an inapplicable cell reads as a value we
+              failed to fetch (the admin-tool convention, same rule). */}
+          {a.score !== null && <span style={pctStyle}>{a.score}%</span>}
+          <span style={{ ...pctStyle, color: a.passed ? 'var(--color-success-600)' : 'var(--color-error-500)' }}>
+            {a.passed ? 'Pass' : 'Fail'}
+          </span>
+        </Card>
+      ))}
+    </div>
+  )
+}
+
+/** Anchored fixture dates render as authored — no wall-clock formatting, so a
+ *  screenshot taken next year still matches the fixture. */
+function formatDate(iso: string): string {
+  const [y, m, d] = iso.split('-')
+  return `${Number(m)}/${Number(d)}/${y}`
+}
+
+/* ─── styles ───────────────────────────────────────────────────────────── */
+
+const headingStyle: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-heading)',
+  fontSize: 20,
+  fontWeight: 700,
+  color: 'var(--color-text-primary)',
+}
+
+const columnHeadStyle: CSSProperties = {
+  margin: '0 0 2px',
+  fontFamily: 'var(--font-body)',
+  fontSize: 15,
+  fontWeight: 700,
+  color: 'var(--color-text-primary)',
+}
+
+const bodyStyle: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 14,
+  lineHeight: '20px',
+  color: 'var(--color-text-secondary)',
+}
+
+const subtleStyle: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 12,
+  color: 'var(--color-text-tertiary)',
+}
+
+const frequencyStyle: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 12,
+  lineHeight: '17px',
+  fontStyle: 'italic',
+  color: 'var(--color-text-tertiary)',
+}
+
+const scoreRowStyle: CSSProperties = {
+  display: 'flex',
+  gap: 24,
+  flexWrap: 'wrap',
+  alignItems: 'flex-start',
+}
+
+const scoreCardStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: 12,
+  padding: 20,
+  flex: '1 1 320px',
+  minWidth: 280,
+}
+
+const breakdownGridStyle: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+  gap: 24,
+  alignItems: 'start',
+}
+
+const chapterRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+  padding: '10px 14px',
+  background: 'var(--color-surface-card)',
+  border: '1px solid var(--color-border-subtle)',
+  borderRadius: 'var(--radius-md)',
+}
+
+const dotStyle: CSSProperties = {
+  width: 8,
+  height: 8,
+  borderRadius: 'var(--radius-pill)',
+  flexShrink: 0,
+}
+
+const chapterNumStyle: CSSProperties = {
+  display: 'block',
+  fontFamily: 'var(--font-body)',
+  fontSize: 12,
+  color: 'var(--color-text-tertiary)',
+}
+
+const chapterTitleStyle: CSSProperties = {
+  display: 'block',
+  fontFamily: 'var(--font-body)',
+  fontSize: 14,
+  fontWeight: 600,
+  color: 'var(--color-text-primary)',
+}
+
+const pctStyle: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  fontWeight: 700,
+  color: 'var(--color-text-primary)',
+  flexShrink: 0,
+}
+
+const statRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'baseline',
+  justifyContent: 'space-between',
+  gap: 12,
+}
+
+const statLabelStyle: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  color: 'var(--color-text-secondary)',
+  minWidth: 0,
+}
+
+const statValueStyle: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  fontWeight: 700,
+  color: 'var(--color-text-primary)',
+  flexShrink: 0,
+}
+
+const trackStyle: CSSProperties = {
+  height: 3,
+  borderRadius: 'var(--radius-pill)',
+  background: 'var(--color-neutral-200)',
+  overflow: 'hidden',
+}
+
+const fillStyle: CSSProperties = { height: '100%', borderRadius: 'var(--radius-pill)' }
+
+const ruleStyle: CSSProperties = { height: 1, background: 'var(--color-border-subtle)' }
+
+const factGridStyle: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+  gap: 12,
+}
+
+const factCardStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 4,
+  padding: 16,
+}
+
+const factLabelStyle: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 11,
+  fontWeight: 700,
+  letterSpacing: '0.1em',
+  textTransform: 'uppercase',
+  color: 'var(--color-text-tertiary)',
+}
+
+const factValueStyle: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 15,
+  fontWeight: 700,
+  color: 'var(--color-text-primary)',
+}
+
+const attemptRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 12,
+  padding: '12px 16px',
+}
+
+const emptyStyle: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  fontStyle: 'italic',
+  color: 'var(--color-text-tertiary)',
+}

@@ -359,7 +359,70 @@ source — the swap mechanism is already built and needs no code. **Do not
 recolour the full-colour file to approximate it**: that is authoring brand
 artwork, and an official white lockup already exists.
 
-### Readiness — a deliberate blank (2026-09-09)
+### Exam Readiness — the Figma port (2026-09-09)
+
+`ReadinessPanel`, from Figma **"Exam Summary"** (`woOd62dQQyPvtqJ6ZRO0qF`).
+
+**The three node URLs are ONE screen**, not three: nodes 1092:230527 /
+:230931 / :231435 are the Readiness Score screen in the three states of its
+Chapter & Topic filter (I Should Review / I Know This / Show All). The filter is
+therefore the part of the design that is specified three times, and the part
+most worth guarding.
+
+**Three departures from the design, all deliberate:**
+
+1. **The five top tabs are gone** (About the Course · Instructor · Author ·
+   Regulatory Requirements) — the direct ask. They are course-detail tabs; this
+   is a section of the learner's own dashboard, and four of the five have no
+   content here.
+2. **The design's LEFT SUB-RAIL became the three tabs.** It carried navigation
+   AND content in one column — a second rail inside the shell's content column
+   would sit beside the platform rail already there, which is the gutter cost
+   the account sections pay with `AccountSubNav`.
+3. **Study Tips folded into What to Expect; Final Exams into Practice Exams.**
+   The three-tab set leaves the design's other two sections homeless and these
+   are the joins that hold.
+
+**Practice and licensing attempts stay two lists, and that is not cosmetic.**
+It is the same split the FinServ exam task-type spec found in `StudyTaskKind`:
+the existing `'exam'` means the PRACTICE exam, sat in the LMS and scored by us,
+and the external licensing exam needs its own key. Practice attempts feed the
+readiness score; a PSI attempt only reports an outcome. Merging them into
+"attempts" is the regression a test guards.
+
+**The frequency sentence is NOT from the design, and has to stay.** The Figma
+explains what goes INTO the score and stops. The XCEL learner walk-through had
+already answered the harder half — its readiness screen states a FREQUENCY
+rather than a probability ("an estimate, not a prediction · about 7 in 10 passed
+first time") precisely so a score cannot be read as a promise. That decision is
+older than this screen and survives it; `READINESS_FREQUENCY_NOTE` carries it.
+
+**`REVIEW_THRESHOLD` 60 / `STRONG_THRESHOLD` 80 are INVENTED.** The design shows
+the colours and states no rule, and XCEL has published none. One `bandFor`
+drives the filter, the chapter dots, the topic bars and the gauge's active band,
+so a chapter can never sit in "I Know This" wearing a red dot. Replace with the
+real thresholds; do not tune them to make a screenshot look better.
+
+**The gauge is a new component, not `ProgressDonut`.** That one is a closed ring
+split into category segments ("how much of each kind"); this is an open 240° arc
+carrying a red→amber→green ramp ("how good is this number"). They look alike and
+mean different things. The ramp is three fixed bands rather than a gradient
+because the bands ARE the thresholds — a gradient blurs the boundary the score
+is being judged against.
+
+**The content is XCEL's, not the design's.** The Figma is a real-estate course;
+these are Florida 2-15 Life & Health chapters, and the practice exams are the
+three Exam Simulators `learningFixtures` already puts in that path. The
+`EXAM_FACTS` carry a `TODO(data)` — they are the published Florida figures, not
+a feed, and want confirming against the current PSI bulletin.
+
+### Readiness — how the section was registered (2026-09-09)
+
+**Superseded within the day by the section above** — it is no longer blank. Kept
+because the sequence is the point: registering a section with an `EmptyState`
+first, then swapping ONE `renderBody` branch for the real panel, is what made
+the port a single-file change. The note that said "nothing else about the
+section needs to move" turned out to be exactly true.
 
 A rail section (`readiness`) directly after **Study Plan**: the plan is the
 work, this is where you find out whether the work has got you there. It renders
