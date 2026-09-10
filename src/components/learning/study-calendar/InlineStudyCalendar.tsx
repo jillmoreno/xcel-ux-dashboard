@@ -324,7 +324,18 @@ function applyStatusFilter(
  * non-member → locked overlay, no calendar → empty state) so the variant
  * stays consistent with the tab placement on other STC paths.
  */
-export function InlineStudyCalendar({ pathId }: { pathId?: string } = {}) {
+export function InlineStudyCalendar({
+  pathId,
+  coursePct,
+}: {
+  pathId?: string
+  /** Course progress for the stat band's Progress tile, 0-100. Passed down
+   *  rather than derived here so ONE caller decides which measure the plan
+   *  reports — see `StudyCalendarStatBand`'s `coursePct`. Omitted ⇒ the plan's
+   *  own task count, which is what every other embed of this component still
+   *  shows. */
+  coursePct?: number
+} = {}) {
   const { brand } = useAccount()
   const [searchParams] = useSearchParams()
   // `study-calendar-state` feature flag — 3 variants (`add` /
@@ -407,6 +418,7 @@ export function InlineStudyCalendar({ pathId }: { pathId?: string } = {}) {
       calendar={effectiveCalendar}
       initialIso={initialIso}
       pathId={pathId}
+      coursePct={coursePct}
     />
   )
 }
@@ -415,10 +427,12 @@ function InlineStudyCalendarBody({
   calendar: initialCalendar,
   initialIso,
   pathId,
+  coursePct,
 }: {
   calendar: StudyCalendar
   initialIso: string
   pathId?: string
+  coursePct?: number
 }) {
   const today = STUDY_CALENDAR_TODAY
   const [todayY, todayM] = today.split('-').map((p) => parseInt(p, 10))
@@ -736,6 +750,7 @@ function InlineStudyCalendarBody({
           handler stays threaded for that future wiring. */}
       <StudyCalendarStatBand
         calendar={calendar}
+        coursePct={coursePct}
         onOpenActions={() => setEditPanelOpen(true)}
       />
 

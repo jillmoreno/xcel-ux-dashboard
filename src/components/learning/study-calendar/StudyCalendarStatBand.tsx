@@ -12,6 +12,22 @@ import {
 
 type Props = {
   calendar: StudyCalendar
+  /**
+   * Course progress to show in the Progress tile, 0-100.
+   *
+   * When omitted the tile falls back to `progressPct(calendar)` — this plan's
+   * own TASK count — which is what it always showed. It is overridable because
+   * that number is not the one the rest of the app reports: Home's Current
+   * Learning Progress band counts CREDIT HOURS against the selected persona,
+   * and the Readiness page follows Home. Three surfaces, two measures, and the
+   * Study Plan was the odd one out at 32% against Home's 63%.
+   *
+   * The "Tasks Completed" tile beside it still counts tasks, and that is not a
+   * contradiction: the two tiles are labelled as the different things they are.
+   * What was wrong was a tile labelled "Progress" disagreeing with every other
+   * screen's Progress.
+   */
+  coursePct?: number
   /** Reserved for a future actions menu. The Calendar Actions link
    *  is hidden in the v2 layout per Figma node `3370:16917`, but the
    *  prop stays so callers don't break and so the wiring is in place
@@ -36,8 +52,8 @@ type Props = {
  * Stat tiles sit flat (no card border) since the navy band above
  * already groups the row visually.
  */
-export function StudyCalendarStatBand({ calendar }: Props) {
-  const pct = progressPct(calendar)
+export function StudyCalendarStatBand({ calendar, coursePct }: Props) {
+  const pct = coursePct ?? progressPct(calendar)
   const { completed, total } = taskCompletion(calendar)
   const status = pacingStatus(calendar)
   const daysLeft = daysUntilExam(calendar.examDate)

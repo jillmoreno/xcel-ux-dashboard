@@ -15,7 +15,7 @@ import { LearningPathsHome } from '@/components/learning/LearningPathsHome'
 import { useLearningPathsPanel } from '@/components/learning/LearningPathsPanelContext'
 import { isHomeActive } from '@/components/learning/learningPathsHomeUtil'
 import { useLearningPathSummariesForBrand } from '@/data/learningPathsCountVariant'
-import { activePathIdFor } from '@/data/learningFixtures'
+import { activePathIdFor, learningPathsFor } from '@/data/learningFixtures'
 import { XCEL_CE_PATH_ID } from '@/data/studyCalendarFixtures'
 import { InlineStudyCalendar } from '@/components/learning/study-calendar/InlineStudyCalendar'
 import { useCeStudyPlanEnabled, useFeatureFlag } from '@/context/FeatureFlagContext'
@@ -42,6 +42,8 @@ import { MembershipStandalonePage } from '@/components/membership/MembershipStan
 import { PartnerOfferingsPanel } from '@/components/membership/PartnerOfferingsPanel'
 import { partnerOfferingsFor } from '@/data/membership/partnerOfferingsFixtures'
 import { ResourcesPanel } from '@/components/membership/ResourcesPanel'
+import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
+import { displayedProgressPct } from '@/components/learning/learningPathsHomeUtil'
 import { ReadinessPanel } from '@/components/readiness/ReadinessPanel'
 import { resourcesCopyFor, resourcesFor } from '@/data/membership/resourcesFixtures'
 import { NonMemberUpsellHero } from '@/components/membership/NonMemberUpsellHero'
@@ -1176,8 +1178,29 @@ function StudyPlanSection() {
   const { brand } = useAccount()
   const paths = useLearningPathSummariesForBrand()
   const idParam = params.get('id')
-  const pathId =
-    idParam && paths.some((p) => p.id === idParam) ? idParam : activePathIdFor(brand)
+  // Which path this plan is FOR, and it follows Home.
+  //
+  // It used to be `activePathIdFor(brand)` — always the first path — so with
+  // Education on Continuing Ed the dashboard showed the CE path while this
+  // page showed the PRE-LICENSING plan. Two rail items apart, describing
+  // different courses, with no way to tell from either screen. The persona's
+  // own path id is what Home renders, so this reads that; `activePathIdFor`
+  // stays as the fallback for a brand or education type with no persona.
+  const progressVariant = useFeatureFlag('dashboard-progress-state').variant ?? 'progress-on-track'
+  const educationType = (useFeatureFlag('dashboard-education-type').variant ?? 'ce') as 'ce' | 'qe'
+  const homePersona = dashboardProgressPersonaFor(brand, progressVariant, educationType)
+  // Validated against the BRAND's paths, not `paths` — that list is filtered by
+  // the `learning-paths-count` flag and holds one entry by default, so checking
+  // membership there rejected the CE persona's own id and silently fell back to
+  // the pre-licensing plan. The `?id=` param below still checks `paths`,
+  // because that IS a user-supplied value and the visible list is the right
+  // thing to validate it against.
+  const brandPathIds = learningPathsFor(brand).map((p) => p.id)
+  const homePathId =
+    homePersona && brandPathIds.includes(homePersona.path.id)
+      ? homePersona.path.id
+      : activePathIdFor(brand)
+  const pathId = idParam && paths.some((p) => p.id === idParam) ? idParam : homePathId
   // Same gate the Jump Back In card reads, via the same hook: with
   // `ce-study-plan` off the CE path has no plan, and this page must show the
   // empty branch rather than a plan the card is refusing to show.
@@ -1185,7 +1208,19 @@ function StudyPlanSection() {
   if (!ceStudyPlan && pathId === XCEL_CE_PATH_ID) {
     return <InlineStudyCalendar />
   }
-  return <InlineStudyCalendar pathId={pathId} />
+  // The Progress tile reports the SAME course progress Home and Readiness do —
+  // `displayedProgressPct` on the persona's own path, which is the object Home
+  // renders. Deriving it from `learningPathsFor` instead would read the base
+  // fixture rather than the demo persona's override, and disagree again.
+  //
+  // Only when the plan is showing HOME's path: a `?id=` deep link into some
+  // other plan must fall back to that plan's own task count, or the band would
+  // report one course's progress over another's schedule.
+  const coursePct =
+    homePersona && pathId === homePersona.path.id
+      ? displayedProgressPct(homePersona.path)
+      : undefined
+  return <InlineStudyCalendar pathId={pathId} coursePct={coursePct} />
 }
 
 function LearningPathSection() {

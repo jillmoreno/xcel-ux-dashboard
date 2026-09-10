@@ -534,10 +534,33 @@ scannable list into a stack of blocks. Same reasoning as the gauge dropping red
 while the chapter dots keep it: a different job is allowed a different
 treatment.
 
-**The STUDY PLAN is the one that now differs**, and that is the accepted state:
-it counts tasks in its own calendar (32%) while Home and Readiness count credit
-hours against the selected persona. Two honest measures of the same course. The
-calendar fixture's docstring has flagged this since it was written.
+**The STUDY PLAN follows Home too, as of the same day — and the harder half was
+that it was showing a DIFFERENT COURSE.** `StudyPlanSection` resolved its path
+with `activePathIdFor` (always the first), so at the default settings the
+dashboard showed the CE path while the Study Plan showed the PRE-LICENSING
+plan: two rail items apart, describing different courses, with nothing on
+either screen saying so. Matching their percentages would have been meaningless
+while that was true. The section reads the persona's own path id now.
+
+**The guard on that id has a trap in it.** It must validate against
+`learningPathsFor(brand)`, NOT the `useLearningPathSummariesForBrand()` list —
+that one is filtered by `learning-paths-count` and holds a single entry by
+default, so checking membership there rejected the CE persona's id and fell
+silently back to pre-licensing. The `?id=` param still checks the visible list,
+because that is a user-supplied value.
+
+**The Progress tile now takes `coursePct`**, defaulting to the plan's own task
+count for every other embed. The "Tasks Completed" tile beside it still counts
+tasks (3 / 10 against 63%), and that is not a contradiction — the two tiles are
+labelled as the different things they are. What was wrong was a tile labelled
+*Progress* disagreeing with every other Progress in the app.
+
+**`ProgressAgreement.test.tsx` is a cross-surface test on purpose.** Each page's
+own tests were green while the three disagreed — 63 / 32 / 100 — which is
+precisely the failure a per-page suite cannot see. It sweeps every Progress
+persona rather than asserting today's default, because a surface hardcoded to
+the default passes until a reviewer flips the dropdown, which is the first
+thing a reviewer does.
 
 **The three scored states SHIFT one chapter set rather than authoring four.**
 A learner's relative strengths do not change with their overall standing: the

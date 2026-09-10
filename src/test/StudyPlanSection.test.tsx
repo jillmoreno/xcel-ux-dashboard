@@ -8,7 +8,8 @@ import { LearningPathsPanelProvider } from '@/components/learning/LearningPathsP
 import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelContext'
 import { PlatformShell } from '@/components/layout/PlatformShell'
 import { learningPathsFor, activePathIdFor } from '@/data/learningFixtures'
-import { supportsStudyPlan } from '@/data/studyCalendarFixtures'
+import { studyCalendarFor, supportsStudyPlan } from '@/data/studyCalendarFixtures'
+import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
 
 /**
  * The Study Plan as its own rail section, moved out of the Learning Path
@@ -54,11 +55,18 @@ describe('the Study Plan section', () => {
     expect(plan).toBe(home + 1)
   })
 
-  it('opens from ?section=study-plan and renders the plan, not an empty state', () => {
+  it('opens from ?section=study-plan and renders HOME’s plan, not an empty state', () => {
+    // Asserted against the calendar the HOME persona's path resolves to, not a
+    // hardcoded name. The section followed `activePathIdFor` — always the first
+    // path — until 2026-09-09, so with Education on Continuing Ed the dashboard
+    // showed the CE path while this page showed the PRE-LICENSING plan: two
+    // rail items apart, describing different courses. A literal name here
+    // asserted the old behaviour and would have to be edited to describe the
+    // new one, which is exactly what a literal cannot tell you.
+    const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'ce')!
+    const expected = studyCalendarFor(persona.path.id).name
     renderShell('/dashboard-rebrand?section=study-plan')
-    // The active path's plan. Its name is authored on the calendar fixture, so
-    // this fails if the section resolved no path and fell to the empty state.
-    expect(screen.getByText(/20 day study plan/i)).toBeInTheDocument()
+    expect(screen.getByText(expected)).toBeInTheDocument()
   })
 
   it('honours ?id= so BOTH of XCEL’s planned paths are reachable', () => {
