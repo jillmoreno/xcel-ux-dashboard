@@ -401,6 +401,14 @@ fallback.
 **The footer carries "Week 4 of 9"**, so seven day cells never imply a one-week
 plan.
 
+**Its `Wrap` needs `width: 100%`, and that is not cosmetic.** `Wrap` sets
+`margin: 0 auto`, and an auto margin on the CROSS AXIS of a flex column
+overrides `align-items: stretch` — the item collapses to its content width.
+Every other `Wrap` on this page sits inside a `<section>`, a block container
+where auto margins simply centre it, so none of them hit this; as a direct child
+of the overview's column, this one rendered 483px against its siblings' 993.
+`maxWidth` still caps it at the same 1200 the others use.
+
 **It reads the persona's path**, the same one the Study Plan section resolves,
 so the two cannot describe different courses. Guarded by `hasStudyCalendarFor`
 rather than `supportsStudyPlan` — the same trap the Jump Back In card hit, where

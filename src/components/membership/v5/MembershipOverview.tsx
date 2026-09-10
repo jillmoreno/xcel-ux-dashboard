@@ -602,9 +602,18 @@ export function MembershipOverview({
           the discovery zone starts, which is why it sits directly above
           Recommended for You rather than below it. Hidden when the current path
           has no plan; the band is a summary of one, so there is nothing to
-          summarise. */}
+          summarise.
+
+          The Wrap needs `padding: 0` AND `width: 100%`, and the second one is
+          the load-bearing half. `Wrap` sets `margin: 0 auto`, and an auto
+          margin on the CROSS AXIS of a flex column overrides `align-items:
+          stretch` — the item collapses to its content width. Every other Wrap
+          on this page sits inside a `<section>` (a block container, where auto
+          margins simply centre it), so none of them hit this; as a direct child
+          of the column, this one rendered at 483px against its siblings' 993.
+          A `maxWidth` still caps it at the same 1200 the others use. */}
       {showExtras && weekSummaryOn && weekSummaryCalendar && (
-        <Wrap>
+        <Wrap style={{ padding: 0, width: '100%' }}>
           <StudyWeekSummary calendar={weekSummaryCalendar} />
         </Wrap>
       )}
