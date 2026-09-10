@@ -129,10 +129,13 @@ const SECTION_HERO_OVERRIDES: Partial<
       searchPlaceholder: 'Search exam prep',
     },
     'm-career-tools': {
-      // Title matches XCEL's rail label (`careerToolsLabelFor`), not the
-      // default "Rubi AI Tools" — on XCEL, Rubi is an exam study aid, not the
-      // career coach it is on Elite.
-      title: 'AI Study Partner',
+      // Title matches XCEL's rail label (`careerToolsLabelFor`). As of
+      // 2026-09-10 that is "Rubi AI Tools", the same string the DEFAULT above
+      // uses — so this entry now overrides only the description, which is still
+      // XCEL-specific (Rubi is an exam study aid here, not Elite's career
+      // coach). The title is kept rather than dropped so the rule "the hero
+      // heading equals the rail label" stays visible at this call site.
+      title: 'Rubi AI Tools',
       description:
         'Study with Rubi™ — instant step-by-step explanations, practice questions generated on demand, and answers in your language, all built on XCEL’s own curriculum.',
       searchPlaceholder: 'Ask Rubi',

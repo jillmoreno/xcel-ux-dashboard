@@ -1,7 +1,7 @@
 import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, it, expect, beforeEach } from 'vitest'
-import { PlatformSideNav } from '@/components/layout/PlatformSideNav'
+import { PlatformSideNav, careerToolsLabelFor } from '@/components/layout/PlatformSideNav'
 import {
   AccountProvider,
   accessForTier,
@@ -108,8 +108,16 @@ describe('XCEL — a brand with no membership', () => {
     // Rubi is a headline feature — hiding them with the same boolean as Partner
     // Offers is the shortcut this brand must not take.
     expect(within(rail).getByRole('button', { name: 'Exam & Cert Prep' })).toBeInTheDocument()
-    expect(within(rail).getByRole('button', { name: 'AI Study Partner' })).toBeInTheDocument()
+    // "Rubi AI Tools" since 2026-09-10 — it read "AI Study Partner" before,
+    // XCEL's own wording on its site. Asserted against `careerToolsLabelFor`
+    // rather than the string, because WHICH XCEL-true name to use is an
+    // editorial call that has now moved once; what must not change is that it
+    // is not Elite's.
+    expect(
+      within(rail).getByRole('button', { name: careerToolsLabelFor('xcel') }),
+    ).toBeInTheDocument()
     // …and it must NOT read "Career Tools", which is Elite's framing of Rubi.
+    expect(careerToolsLabelFor('xcel')).not.toBe('Career Tools')
     expect(within(rail).queryByRole('button', { name: 'Career Tools' })).toBeNull()
   })
 

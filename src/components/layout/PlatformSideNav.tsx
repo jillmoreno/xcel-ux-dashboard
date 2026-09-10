@@ -643,15 +643,23 @@ function NavProfileHeader({
  *
  * "Career Tools" is ELITE'S framing — Rubi as a career/CV coach (interview
  * reps, resume review, next-move planning). On XCEL, Rubi is an EXAM STUDY
- * AID, and the brand's own name for it on xcelsolutions.com is "AI Study
- * Partner". Shipping "Career Tools" to an insurance pre-licensing candidate
+ * AID, so shipping "Career Tools" to an insurance pre-licensing candidate
  * misdescribes the product they are looking at.
+ *
+ * **XCEL's label changed from "AI Study Partner" to "Rubi AI Tools" on
+ * 2026-09-10**, at Jillienne's request. The half of the reasoning above that
+ * still stands is why it is not "Career Tools": what moved is which XCEL-true
+ * name to use. "AI Study Partner" is the brand's own wording on
+ * xcelsolutions.com and reads as what Rubi DOES; "Rubi AI Tools" leads with the
+ * product's name, which is what the rest of the app already called it —
+ * `SECTION_TITLES` and the default `SECTION_HERO_META` both said "Rubi AI
+ * Tools" the whole time, so this closes a split rather than opening one.
  *
  * A function rather than a second literal inside the array build, so the next
  * brand that reframes Rubi has one place to say so.
  */
-function careerToolsLabelFor(brand: Brand): string {
-  return brand === 'xcel' ? 'AI Study Partner' : 'Career Tools'
+export function careerToolsLabelFor(brand: Brand): string {
+  return brand === 'xcel' ? 'Rubi AI Tools' : 'Career Tools'
 }
 
 /** The learner's motivational statement in the rail. Renders ONLY when a

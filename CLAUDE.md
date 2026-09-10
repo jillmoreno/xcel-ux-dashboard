@@ -975,6 +975,27 @@ exactly. Both surfaces that resolve a plan read the same
 — because one showing a CE plan while the other showed the empty branch is the
 drift the hook exists to prevent.
 
+### Rubi is "Rubi AI Tools" on XCEL now (2026-09-10)
+
+The rail read **"AI Study Partner"** — XCEL's own wording on xcelsolutions.com
+— and it is "Rubi AI Tools" as of 2026-09-10, at Jillienne's request.
+
+**This reverses half of a documented decision, and only half.** The reasoning
+in `careerToolsLabelFor` was: Rubi is a career coach on Elite and an EXAM STUDY
+AID on XCEL, so "Career Tools" misdescribes the product. That still stands and
+is still why the label is not "Career Tools". What moved is which XCEL-true
+name to use — the brand's descriptive one, or the product's own.
+
+**It closes a split rather than opening one.** `SECTION_TITLES` and the default
+`SECTION_HERO_META` both already said "Rubi AI Tools"; only the XCEL override
+and the rail said otherwise, so the two names had been coexisting.
+
+The string lived in FOUR places — `careerToolsLabelFor`, `NAV_SECTION_FLAGS`,
+the `sectionHeroMeta` XCEL override, and `membershipFirstFixtures` — all
+changed together. `XcelNoMembership` asserts against the HELPER rather than the
+string now: which XCEL-true name to use is an editorial call that has moved
+once, while "it is not Elite's" is the rule.
+
 ### Two cards left the Profile page (2026-09-10)
 
 **Different reasons, different mechanisms**, and the distinction is the point:
@@ -993,9 +1014,14 @@ drift the hook exists to prevent.
 
 A test asserts both the removals AND that only the editorial one is archived.
 
-**Still there and arguably the same defect:** Account Details shows a "Member"
-pill on XCEL. Not touched, because membership tier is a live demo axis and this
-was not part of the ask — but it is the same shape, if it ever reads wrong.
+**A THIRD instance of the same defect went with them:** Account Details' "Member"
+pill, keyed on `isMember` — which XCEL's own tier makes true. The question that
+has to be asked first is whether the brand sells a membership at all. Gated on
+`supportsMembership` like the card, so it returns for a brand that has one.
+
+Three surfaces, one root cause, found one at a time: the rail's Membership link
+during the migration, then this card, then the pill. **When a brand predicate
+turns something off, sweep for the other places that ask the tier instead.**
 
 ### The archive convention
 

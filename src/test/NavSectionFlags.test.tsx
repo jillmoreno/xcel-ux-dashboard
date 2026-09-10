@@ -108,7 +108,7 @@ describe('the Navigation flag group', () => {
       'Certificates',
       'Browse Catalog',
       'Resources',
-      'AI Study Partner',
+      'Rubi AI Tools',
       'Get Help',
     ])
   })

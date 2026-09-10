@@ -305,7 +305,7 @@ export const NAV_SECTION_FLAGS: {
   { section: 'recommended', label: 'Recommended for You', defaultEnabled: false },
   { section: 'm-learning-library', label: 'Resource Library', defaultEnabled: false },
   { section: 'm-exam-prep', label: 'Exam & Cert Prep', defaultEnabled: false },
-  { section: 'm-career-tools', label: 'AI Study Partner' },
+  { section: 'm-career-tools', label: 'Rubi AI Tools' },
   // Off: XCEL has no podcast product — the section is an EmptyState saying so.
   { section: 'podcasts', label: 'Podcasts', defaultEnabled: false },
   // Support
