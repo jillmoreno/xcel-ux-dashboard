@@ -483,6 +483,29 @@ to review" hand-off is suppressed because there is nothing over there. The
 incoherence being avoided is the CE path's old one — a gauge claiming something
 the lists below it cannot support.
 
+**Course progress is DERIVED from the Study Plan, and does not vary by state.**
+It was authored per state (0 / 45 / 90 / 100), which had Readiness claiming 100%
+complete while the Study Plan two rail items above it said 32% — a
+contradiction a stakeholder reaches in one click. Both surfaces now read
+`progressPct(studyCalendarFor(activePathIdFor(brand)))`, and a test compares
+against that function rather than against "32%", so changing the calendar moves
+both.
+
+It does not vary because **how much of the course you have covered is a fact
+about the course; how ready you are is a fact about how well you are
+answering.** Varying both made them look like one axis, which is the opposite of
+what this section is for. The states move ANSWERED CORRECTLY against a fixed
+denominator instead; Not Started is the exception and answers nothing.
+
+**HOME still disagrees, and it is not a fixture problem.** The Current Learning
+Progress band's percentage comes from the `dashboard-progress-state` demo axis —
+the Progress dropdown, whose personas are 0% / ~15% / ~63% / 100%. It reads 63%
+because "On Track · ~63%" is selected, and it stays 63% whichever education type
+is chosen. **There is no 32% persona**, so no selection makes the three agree;
+aligning Home means deriving that band from the study calendar, which would
+collapse the Progress axis into the calendar and remove a control the demo
+depends on. That is a product decision, not a cleanup — left alone deliberately.
+
 **The three scored states SHIFT one chapter set rather than authoring four.**
 A learner's relative strengths do not change with their overall standing: the
 chapters that are hard stay hard, and what moves is the level. Four independent

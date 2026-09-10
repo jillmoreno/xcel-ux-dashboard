@@ -1,4 +1,6 @@
 import type { Brand } from '@/context/AccountContext'
+import { progressPct, studyCalendarFor } from '@/data/studyCalendarFixtures'
+import { activePathIdFor } from '@/data/learningFixtures'
 
 /**
  * Exam Readiness — the data behind the `readiness` rail section.
@@ -263,56 +265,51 @@ export const READINESS_PICKER: { state: ReadinessState; label: string }[] = [
  */
 const STATE_OVERRIDES: Record<
   ReadinessState,
-  { score: number | null; shift: number; progress: CourseProgressStat[]; attempts: number }
+  { score: number | null; shift: number; attempts: number; correct: number }
 > = {
-  'not-started': {
-    score: null,
-    shift: 0,
-    attempts: 0,
-    progress: [
-      { label: 'Course Progress', value: '0%', pct: 0 },
-      { label: 'Chapters Completed', value: '0 of 20' },
-      { label: 'Topics Covered', value: '0 of 14' },
-      { label: 'Total Questions Answered', value: '0 of 200' },
-      { label: 'Answered Correctly', value: '0 of 0' },
-    ],
-  },
-  'off-track': {
-    score: 38,
-    shift: -9,
-    attempts: 1,
-    progress: [
-      { label: 'Course Progress', value: '45%', pct: 45 },
-      { label: 'Chapters Completed', value: '9 of 20' },
-      { label: 'Topics Covered', value: '6 of 14' },
-      { label: 'Total Questions Answered', value: '60 of 200' },
-      { label: 'Answered Correctly', value: '23 of 60' },
-    ],
-  },
-  'at-risk': {
-    score: 62,
-    shift: 0,
-    attempts: 2,
-    progress: [
-      { label: 'Course Progress', value: '90%', pct: 90 },
-      { label: 'Chapters Completed', value: '18 of 20' },
-      { label: 'Topics Covered', value: '12 of 14' },
-      { label: 'Total Questions Answered', value: '120 of 200' },
-      { label: 'Answered Correctly', value: '56 of 120' },
-    ],
-  },
-  'on-track': {
-    score: 84,
-    shift: 22,
-    attempts: 3,
-    progress: [
-      { label: 'Course Progress', value: '100%', pct: 100 },
-      { label: 'Chapters Completed', value: '20 of 20' },
-      { label: 'Topics Covered', value: '14 of 14' },
-      { label: 'Total Questions Answered', value: '186 of 200' },
-      { label: 'Answered Correctly', value: '151 of 186' },
-    ],
-  },
+  'not-started': { score: null, shift: 0, attempts: 0, correct: 0 },
+  'off-track': { score: 38, shift: -9, attempts: 1, correct: 26 },
+  'at-risk': { score: 62, shift: 0, attempts: 2, correct: 42 },
+  'on-track': { score: 84, shift: 22, attempts: 3, correct: 57 },
+}
+
+/**
+ * Course progress for the readiness page.
+ *
+ * **Derived, and the same figure the Study Plan and the Home band show** — it
+ * used to be authored per state (0 / 45 / 90 / 100), which had the Readiness
+ * page claiming 100% complete while the Study Plan two rail items above it said
+ * 32%. A stakeholder sees both in one click.
+ *
+ * ── What varies by state, and what does NOT ─────────────────────────────────
+ * Course progress does NOT. How much of the course you have covered is a fact
+ * about the course; how ready you are is a fact about how well you are
+ * answering. Varying both made them look like one axis, which is the opposite
+ * of what this section is for — a learner can be a third of the way in and
+ * on track, or a third of the way in and off track, and that difference is the
+ * whole reason the score exists.
+ *
+ * So the states move ANSWERED CORRECTLY (and the attempts behind it) against a
+ * fixed denominator. Not Started is the exception and answers nothing.
+ *
+ * ── The 32 vs 30 tension, stated rather than hidden ─────────────────────────
+ * `progressPct` counts TASKS; the learning path counts CREDIT HOURS. The
+ * calendar fixture's own docstring already noted the two land ~32% and 30% and
+ * said "if you change one, change both". They are pinned equal now. The proper
+ * fix is one deriving from the other; until then this reads the calendar,
+ * because that is the surface a learner checks daily.
+ */
+function progressStatsFor(brand: Brand, o: (typeof STATE_OVERRIDES)[ReadinessState]): CourseProgressStat[] {
+  const pct = progressPct(studyCalendarFor(activePathIdFor(brand)))
+  const empty = o.score === null
+  const answered = empty ? 0 : 120
+  return [
+    { label: 'Course Progress', value: empty ? '0%' : `${pct}%`, pct: empty ? 0 : pct },
+    { label: 'Chapters Completed', value: empty ? '0 of 20' : `${Math.round((pct / 100) * 20)} of 20` },
+    { label: 'Topics Covered', value: empty ? '0 of 14' : `${Math.round((pct / 100) * 14)} of 14` },
+    { label: 'Total Questions Answered', value: `${answered} of 200` },
+    { label: 'Answered Correctly', value: `${o.correct} of ${answered}` },
+  ]
 }
 
 const clampPct = (n: number) => Math.max(0, Math.min(100, Math.round(n)))
@@ -325,7 +322,7 @@ export function readinessForState(brand: Brand, state: ReadinessState): Readines
   return {
     ...base,
     score: o.score,
-    progress: o.progress,
+    progress: progressStatsFor(brand, o),
     chapters: empty ? [] : base.chapters.map((c) => ({ ...c, pct: clampPct(c.pct + o.shift) })),
     topics: empty ? [] : base.topics.map((t) => ({ ...t, pct: clampPct(t.pct + o.shift) })),
     // Attempts accumulate with progress — the simulators are authored newest

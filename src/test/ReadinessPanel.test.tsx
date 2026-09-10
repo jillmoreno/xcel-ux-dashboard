@@ -2,6 +2,8 @@ import { fireEvent, render, screen, within } from '@testing-library/react'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
+import { progressPct, studyCalendarFor } from '@/data/studyCalendarFixtures'
+import { activePathIdFor } from '@/data/learningFixtures'
 import { ReadinessPanel } from '@/components/readiness/ReadinessPanel'
 import {
   bandFor,
@@ -306,5 +308,38 @@ describe('the Readiness demo states', () => {
     // of the range where the ordering is strict.
     const mid = (cs: typeof off) => order(cs.filter((c) => c.pct > 0 && c.pct < 100))
     expect(mid(on)).toEqual(mid(off).filter((n) => mid(on).includes(n)))
+  })
+})
+
+describe('course progress agrees with the Study Plan', () => {
+  it('reads the SAME function the Study Plan does, not an authored copy', () => {
+    // The bug this replaces: Readiness said 100% while the Study Plan two rail
+    // items above it said 32%, because the figure was authored per demo state.
+    // Comparing against `progressPct` rather than against "32%" is what makes
+    // this a link instead of a second literal — change the calendar and both
+    // surfaces move together, and this test moves with them.
+    const expected = progressPct(studyCalendarFor(activePathIdFor('xcel')))
+    renderPanel()
+    const row = screen.getByText('Course Progress').parentElement!
+    expect(within(row).getByText(`${expected}%`)).toBeInTheDocument()
+  })
+
+  it('does NOT vary course progress by readiness state', () => {
+    // How much of the course you have covered is a fact about the course; how
+    // ready you are is a fact about how well you are answering. Varying both
+    // made them look like one axis — the opposite of what this section shows.
+    const expected = progressPct(studyCalendarFor(activePathIdFor('xcel')))
+    for (const state of ['off-track', 'at-risk', 'on-track']) {
+      window.localStorage.clear()
+      window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
+      window.localStorage.setItem(
+        'cgp.featureFlags',
+        JSON.stringify({ 'readiness-state': { enabled: true, variant: state } }),
+      )
+      const { unmount } = renderPanel()
+      const row = screen.getByText('Course Progress').parentElement!
+      expect(within(row).getByText(`${expected}%`), state).toBeInTheDocument()
+      unmount()
+    }
   })
 })
