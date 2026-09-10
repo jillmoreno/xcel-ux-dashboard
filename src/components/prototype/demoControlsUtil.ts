@@ -242,6 +242,26 @@ export const DEMO_PERSONAS: DemoPersona[] = [
     flags: [{ key: 'dashboard-progress-state', variant: 'new-empty' }],
   },
   {
+    id: 'heavy-plan',
+    label: 'Busy study plan',
+    description:
+      'The dense pre-licensing plan — 37 tasks across five weeks — for showing the week strip, the Study Plan and Today\u2019s Tasks with real volume rather than a renewal cycle\u2019s one-a-week pacing.',
+    profScope: 'primary',
+    // A PERSONA rather than a new dropdown, and rather than a field on the
+    // progress personas. Plan density is a property of the PATH, and Education
+    // already selects the path — so this is a named combination of controls
+    // that exist, not a fifth independent axis on a bar that already has four.
+    //
+    // `exam-prep` is what points at `xcel-fl-lh-prelicensing`, whose calendar
+    // is the 37-task one; the CE path the demo opens on is a renewal cycle
+    // paced two days a week over six months, which is true to that product and
+    // is exactly why it looks sparse.
+    flags: [
+      { key: 'dashboard-education-type', variant: 'exam-prep' },
+      { key: 'dashboard-progress-state', variant: 'progress-on-track' },
+    ],
+  },
+  {
     id: 'no-path',
     label: 'No learning paths (brand)',
     description: 'Edge case — this brand doesn’t offer learning paths at all; the dashboard shows the full-width Jump Back In (resume) only, no CLP.',

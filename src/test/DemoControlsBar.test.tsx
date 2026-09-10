@@ -2,6 +2,7 @@ import { render, screen, fireEvent, within } from '@testing-library/react'
 import { MemoryRouter, useLocation } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { DemoControlsBar } from '@/components/prototype/DemoControlsBar'
+import { personasForBrand } from '@/components/prototype/demoControlsUtil'
 import { AccountProvider } from '@/context/AccountContext'
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
 
@@ -87,11 +88,15 @@ describe('DemoControlsBar — persona dropdown', () => {
     const menu = screen.getByRole('menu', { name: /user personas/i })
     const items = within(menu).getAllByRole('menuitem')
     // The two former What's New personas are now the top-of-dropdown toggle, so
-    // the list leads with the progress journey (Up Next first). SEVEN rows for
-    // XCEL, where the LMS had eight: "Multiple memberships" is dropped, because
-    // a brand with no membership cannot hold several. `XcelNoMembership`
-    // asserts that exclusion directly; this is the count that follows from it.
-    expect(items).toHaveLength(7)
+    // the list leads with the progress journey (Up Next first).
+    //
+    // COUNTED from `personasForBrand`, not hardcoded. It was a literal 7, which
+    // made every persona added to the list a failing test with nothing to say —
+    // the size was never the subject. What IS the subject is that the dropdown
+    // renders the brand's list and drops "Multiple memberships" for a brand
+    // with no membership, both asserted below. Same reasoning as
+    // `flagScopeForPath` being exported so its scope can be counted.
+    expect(items).toHaveLength(personasForBrand('xcel').length)
     expect(items[0]).toHaveTextContent(/^1Up Next/)
     expect(within(menu).getByRole('menuitem', { name: /License expired/i })).toBeInTheDocument()
     expect(within(menu).queryByRole('menuitem', { name: /Multiple memberships/i })).toBeNull()

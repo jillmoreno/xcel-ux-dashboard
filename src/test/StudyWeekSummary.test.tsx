@@ -2,8 +2,11 @@ import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 import { StudyWeekSummary } from '@/components/learning/study-calendar/StudyWeekSummary'
+import { DEMO_PERSONAS } from '@/components/prototype/demoControlsUtil'
+import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
 import {
   studyWeeks,
+  studyCalendarFor,
   STUDY_CALENDAR_TODAY,
   XCEL_CE_STUDY_CALENDAR,
   XCEL_LH_STUDY_CALENDAR,
@@ -123,5 +126,25 @@ describe('the band', () => {
       expect(within(cell).getAllByRole('link').length).toBeGreaterThan(0)
       expect(within(cell).queryByRole('button')).toBeNull()
     }
+  })
+})
+
+describe('the "Busy study plan" persona', () => {
+  it('points at a plan with 30+ tasks, which is the whole reason it exists', () => {
+    // The persona is a named COMBINATION of controls that already exist —
+    // Education picks the path, the path owns the calendar — so what can break
+    // it is the plan behind it thinning out, not the flags. Asserted against
+    // the plan the persona's education variant resolves to, and on the COUNT,
+    // because "dense" is the entire product of this demo affordance.
+    const persona = DEMO_PERSONAS.find((p) => p.id === 'heavy-plan')!
+    const edu = persona.flags.find((f) => f.key === 'dashboard-education-type')!.variant!
+    const path = dashboardProgressPersonaFor('xcel', 'progress-on-track', edu as never)!.path
+    const calendar = studyCalendarFor(path.id)
+    expect(calendar.tasks.length).toBeGreaterThan(30)
+    // …and spread, not dumped in one week. A 37-task plan that is 37 tasks on
+    // one Tuesday demonstrates nothing about a week strip.
+    const weeks = studyWeeks(calendar)
+    expect(weeks.length).toBeGreaterThanOrEqual(4)
+    expect(Math.max(...weeks.map((w) => w.total))).toBeLessThan(calendar.tasks.length / 2)
   })
 })

@@ -414,6 +414,30 @@ so the two cannot describe different courses. Guarded by `hasStudyCalendarFor`
 rather than `supportsStudyPlan` — the same trap the Jump Back In card hit, where
 `studyCalendarFor` falls back to STC's Series 79 plan for an unknown id.
 
+### The "Busy study plan" persona (2026-09-10)
+
+A dense demo state — 37 study-plan tasks across five weeks — for showing the
+week strip, the Study Plan and Today's Tasks with real volume.
+
+**A PERSONA, not a fifth dropdown**, and that is the call worth recording. Plan
+density is a property of the PATH, and the Education axis already selects the
+path: the CE path the demo opens on is a renewal cycle paced two days a week
+over six months, which is true to that product and is exactly why it looks
+sparse. So this needs no new data and no new axis — it is a named combination
+of controls that exist (`dashboard-education-type: exam-prep` +
+`progress-on-track`), which is precisely what `DEMO_PERSONAS` is for. A fifth
+dropdown on a bar that already has four would be paying chrome for a
+combination.
+
+**It is five weeks, not four.** The pre-licensing plan is a real 20-day
+schedule against a booked exam date; compressing it to four weeks means either
+a denser-than-real pace or moving the exam. The value — a busy plan — is there
+either way, so the fixture was left alone.
+
+A test asserts the plan behind the persona has 30+ tasks AND that no single
+week holds more than half of them: 37 tasks on one Tuesday would satisfy a
+count and demonstrate nothing about a week strip.
+
 ### `clp-jump-back-in` now defaults to Today's Tasks
 
 Flipped 2026-09-09. It sat on `up-next` for a day, which meant clearing local
