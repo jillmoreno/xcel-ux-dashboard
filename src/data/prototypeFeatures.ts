@@ -607,7 +607,17 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     // An in-app route, not a document. `to` is what makes the tile navigate
     // rather than open a new tab, and it is also what the row's live preview
     // frame renders — see the note in FeaturePreviewThumb about the cost.
-    to: '/dashboard-rebrand',
+    // `?demo=1`, not the bare route. Demo mode swaps the working flag map for
+    // the COMMITTED baseline before first paint and suspends persistence, so
+    // the Demo row always opens the configuration this repo ships — not
+    // whatever the last person to open `/dashboard-rebrand` in that browser
+    // toggled. Without it a returning reviewer's own tinkering IS the demo,
+    // silently, and the nav is where that shows up first.
+    //
+    // It does NOT hide the Demo Controls bar (that gate is pathname-only), so
+    // a stakeholder can still switch persona / progress / readiness — those
+    // edits are just ephemeral, which is the point of a demo.
+    to: '/dashboard-rebrand?demo=1',
     brands: ['xcel'],
   },
   {

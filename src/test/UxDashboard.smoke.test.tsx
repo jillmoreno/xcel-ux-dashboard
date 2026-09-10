@@ -326,3 +326,22 @@ describe('archive', () => {
     }
   })
 })
+
+describe('the Demo row opens the committed configuration', () => {
+  it('carries `?demo=1`, not the bare route', () => {
+    // Demo mode swaps the working flag map for the committed baseline before
+    // first paint. Without the param, a returning reviewer's own persisted
+    // toggles ARE the demo — silently, and the nav is where that shows first.
+    //
+    // Asserted on the row rather than by rendering, because the failure is a
+    // missing query param on a link that still works perfectly.
+    const row = PROTOTYPE_FEATURES.find((f) => f.id === 'xcel-dashboard')!
+    expect(row.to).toBe('/dashboard-rebrand?demo=1')
+  })
+
+  it('is still the only row in the file with a `to`', () => {
+    // The document-shape guards are scoped to rows WITHOUT `to`; adding the
+    // query param must not have turned another row into a route.
+    expect(PROTOTYPE_FEATURES.filter((f) => f.to).map((f) => f.id)).toEqual(['xcel-dashboard'])
+  })
+})

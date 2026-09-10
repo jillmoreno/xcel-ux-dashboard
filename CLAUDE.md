@@ -191,6 +191,23 @@ Three consequences worth knowing:
   `public/`, one shared base) are scoped to rows WITHOUT `to` — so a new
   document row cannot skip them by quietly omitting `externalUrl`, which is how
   that guard would otherwise be lost.
+- **It opens `?demo=1`, not the bare route** (2026-09-10). Demo mode swaps the
+  working flag map for the COMMITTED baseline before first paint and suspends
+  persistence, so the Demo row always shows the configuration this repo ships.
+  Without it, a returning reviewer's own persisted toggles ARE the demo —
+  silently — and the NAV is where that shows up first, since every rail item
+  has a flag. Verified both ways in one browser: with Study Plan and Readiness
+  toggled off and Podcasts on, the bare route honours all three and `?demo=1`
+  renders the intended rail.
+  It does NOT hide the Demo Controls bar (that gate is pathname-only), so a
+  stakeholder can still switch persona / progress / readiness — those edits are
+  just ephemeral, which is what a demo wants.
+  **The one thing it cannot override is a saved "Set as default" snapshot.**
+  `baselineFrom` reads `customDefaults[key] ?? catalogDefault(def)`, and that
+  snapshot is per-browser and never committed — so a machine holding a stale one
+  shows a different demo from a clean machine with nothing in the repo to
+  explain it. If the demo looks wrong on one laptop only, clear
+  `cgp.featureFlags.customDefaults`.
 - **It has no `thumbnail`, so its row preview boots the app** in a scaled
   iframe. That is the cost `FeaturePreviewThumb` documents. It is accepted here
   because Demo holds ONE row and a live frame cannot go stale — the same
