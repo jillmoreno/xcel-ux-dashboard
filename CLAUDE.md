@@ -359,6 +359,47 @@ source — the swap mechanism is already built and needs no code. **Do not
 recolour the full-colour file to approximate it**: that is authoring brand
 artwork, and an official white lockup already exists.
 
+### The week-summary band — "Your study weeks" (2026-09-09)
+
+`StudyWeekSummary`, on Home directly **above Recommended for You**: the last
+thing in the learner's own zone before the discovery zone starts. Behind
+`dashboard-week-summary`, default on.
+
+**It is a SUMMARY, not a second Study Plan.** No task list, no calendar grid, no
+per-task action — every row is a link into the plan, and a test asserts each row
+contains links and NO buttons. That guard is the whole thing keeping this from
+becoming a second place to tick a task off.
+
+**Weeks are SUN–SAT calendar weeks**, not "seven days from the start date",
+because the Study Plan's own month grid is a calendar and a summary that
+disagreed with the grid beside it is worse than no summary. Empty weeks are
+dropped: XCEL's CE plan is paced two days a week over six months and has real
+gaps, where a row reading "0 of 0 done" is noise. `overdue` outranks
+`in-progress` — a week 4-of-5 done with one task past its date is not in
+progress, it is a week with a problem in it.
+
+**`weekThemes` is AUTHORED, not derived.** Deriving a theme from the week's task
+titles reads plausibly until a week spans two subjects, and then it names
+whichever sorted first. A wrong label is worse than `Week N`, which is the
+fallback.
+
+**It shows four weeks starting at the CURRENT one.** The CE plan's first three
+weeks are complete; leading with them puts three rows of history above the row
+that matters. The header line carries "Week 4 of 9" so four rows never imply a
+four-week plan — and a test asserts the row count is LESS than the week count,
+so the window cannot quietly become the whole list.
+
+**It reads the persona's path**, the same one the Study Plan section resolves,
+so the two cannot describe different courses. Guarded by `hasStudyCalendarFor`
+rather than `supportsStudyPlan` — the same trap the Jump Back In card hit, where
+`studyCalendarFor` falls back to STC's Series 79 plan for an unknown id.
+
+### `clp-jump-back-in` now defaults to Today's Tasks
+
+Flipped 2026-09-09. It sat on `up-next` for a day, which meant clearing local
+flag state silently reverted the card to the shipped layout — the tasks variant
+is the one this demo is about, and Up Next is the comparison.
+
 ### Exam Readiness — the Figma port (2026-09-09)
 
 `ReadinessPanel`, from Figma **"Exam Summary"** (`woOd62dQQyPvtqJ6ZRO0qF`).

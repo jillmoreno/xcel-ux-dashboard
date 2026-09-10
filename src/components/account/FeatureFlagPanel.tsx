@@ -117,6 +117,8 @@ const REBRAND_FLAGS = [
   'learning-library-card-style',
   // What's Trending section — on/off for the dashboard-overview carousel.
   'dashboard-whats-new-layout',
+  // "Your study weeks" band above Recommended for You.
+  'dashboard-week-summary',
   // Whether the Continuing Ed path has a study plan at all. Gates the content
   // the flag below renders, so the two belong together in the panel.
   'ce-study-plan',

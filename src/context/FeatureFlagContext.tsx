@@ -1514,7 +1514,11 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     description:
       "The white Jump Back In card inside the full-width Current Learning Path band. \"Up Next\" is the shipped layout — a full-width course cover, then title / meta / progress, the Resume CTA, and two not-started courses below. \"Today's Tasks\" compresses the resume block to roughly a quarter of the card (small cover LEFT, title and meta RIGHT of it, progress and CTA below) and gives the space back to today's tasks from the learner's STUDY PLAN, with a View all link into the Study Plan page when the day has more than fit.",
     defaultEnabled: true,
-    defaultVariant: 'up-next',
+    // Default flipped to `todays-tasks` 2026-09-09 — the tasks layout is the
+    // one this demo is about, and the shipped Up Next card is the comparison.
+    // It sat on `up-next` for a day, which meant clearing local flag state
+    // silently reverted the card a reviewer thought was the current design.
+    defaultVariant: 'todays-tasks',
     variants: [
       {
         value: 'up-next',
@@ -1651,6 +1655,15 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'qe', label: 'Qualifying Education', description: 'The pre-licensing / get-licensed journey (required coursework toward a first licence).' },
       { value: 'exam-prep', label: 'Exam Prep', description: "Exam preparation as a journey of its own — XCEL's Prep Review Course + Exam Simulators, counted down to the exam date. Other brands fall back to their Qualifying Education persona." },
     ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'dashboard-week-summary',
+    group: 'Widgets',
+    label: 'Week summary band',
+    description:
+      'The "Your study weeks" band on the Dashboard Rebrand overview, directly above Recommended for You — the current week of the learner\'s study plan plus the next three, each with its subject, a pip per task, a status chip and a done count. Summary only: every row opens the Study Plan rather than acting in place. Hidden for a brand or path with no plan.',
+    defaultEnabled: true,
     page: 'dashboard-rebrand',
   },
   {

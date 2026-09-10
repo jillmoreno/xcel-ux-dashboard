@@ -43,6 +43,15 @@ export type StudyCalendar = {
   excludeNYSEHolidays: boolean
   /** When true, admin/manager has locked pacing settings from learner edits. */
   locked: boolean
+  /**
+   * Per-week subject lines, in plan order, for the Home week-summary band.
+   *
+   * AUTHORED rather than derived. Deriving a theme from the week's task titles
+   * reads plausibly right up until a week spans two subjects, and then it names
+   * whichever happened to sort first — a wrong label is worse than none. Weeks
+   * past the end of this array fall back to "Week N".
+   */
+  weekThemes?: string[]
   tasks: StudyTask[]
 }
 
@@ -604,6 +613,17 @@ export const XCEL_LH_STUDY_CALENDAR: StudyCalendar = {
   bufferDays: 1,
   excludeNYSEHolidays: false,
   locked: false,
+  // One line per calendar week, in plan order — see `weekThemes`. Written as
+  // the SUBJECT of the week rather than "Week 3", which the fallback already
+  // covers: the point of the Home band is telling a learner what is coming
+  // without opening the plan.
+  weekThemes: [
+    'Life insurance basics',
+    'Health insurance & policy provisions',
+    'Florida laws & rules',
+    'Prep review course',
+    'Final review & exam',
+  ],
   tasks: [
     // ── Part 1 · Pre-License Education (weeks 1–3) ─────────────────────
     {
@@ -1075,6 +1095,20 @@ export const XCEL_CE_STUDY_CALENDAR: StudyCalendar = {
   bufferDays: 14,
   excludeNYSEHolidays: false,
   locked: false,
+  // CE weeks are single-topic by construction — one required course each — so
+  // the theme IS the course. The gaps between them are the point of a renewal
+  // cycle: this is 24 hours spread over six months, not a sprint.
+  weekThemes: [
+    'Annuity initial training',
+    'Annuity assessment',
+    'Long-term care',
+    'Insurance ethics',
+    'Ethics assessment',
+    'Flood insurance & NFIP',
+    'Health Insurance Marketplace',
+    'Annuity suitability update',
+    'File your CE credits',
+  ],
   tasks: [
     // ── Completed earlier in the cycle (6 of 24 hrs) ──────────────────────
     {
@@ -1730,4 +1764,92 @@ function customUtcToIso(ms: number): string {
   const m = String(dt.getUTCMonth() + 1).padStart(2, '0')
   const d = String(dt.getUTCDate()).padStart(2, '0')
   return `${y}-${m}-${d}`
+}
+
+/* ─── Week summary ─────────────────────────────────────────────────────── */
+
+/**
+ * One week of a plan, as the Home band shows it.
+ *
+ * Weeks are SUN–SAT calendar weeks, not "seven days from the start date",
+ * because the Study Plan's own month grid is a calendar and a summary that
+ * disagreed with the grid beside it would be worse than no summary.
+ */
+export type StudyWeek = {
+  /** 1-based, in plan order. */
+  index: number
+  /** ISO yyyy-mm-dd of the Sunday and Saturday bounding the week. */
+  start: string
+  end: string
+  label: string
+  tasks: StudyTask[]
+  completed: number
+  total: number
+  overdue: number
+  status: 'complete' | 'in-progress' | 'overdue' | 'upcoming'
+}
+
+/** ISO date of the Sunday on or before `iso`. */
+function weekStartOf(iso: string): string {
+  const [y, m, d] = iso.split('-').map((p) => parseInt(p, 10))
+  const dt = new Date(Date.UTC(y, m - 1, d))
+  dt.setUTCDate(dt.getUTCDate() - dt.getUTCDay())
+  return dt.toISOString().slice(0, 10)
+}
+
+function addDaysIso(iso: string, days: number): string {
+  const [y, m, d] = iso.split('-').map((p) => parseInt(p, 10))
+  const dt = new Date(Date.UTC(y, m - 1, d))
+  dt.setUTCDate(dt.getUTCDate() + days)
+  return dt.toISOString().slice(0, 10)
+}
+
+/**
+ * Group a plan's tasks into calendar weeks.
+ *
+ * Weeks with NO tasks are dropped rather than rendered empty: a plan paced at
+ * `daysPerWeek: 2` can leave a gap, and a row reading "0 of 0 done" is noise
+ * the learner has to skip past.
+ *
+ * `status` is derived, never authored — `overdue` outranks everything, because
+ * a week that is 4-of-5 done with one task past its date is not "in progress",
+ * it is a week with a problem in it.
+ */
+export function studyWeeks(
+  calendar: StudyCalendar,
+  today = STUDY_CALENDAR_TODAY,
+): StudyWeek[] {
+  const byWeek = new Map<string, StudyTask[]>()
+  for (const task of calendar.tasks) {
+    const key = weekStartOf(task.dueDate)
+    const list = byWeek.get(key)
+    if (list) list.push(task)
+    else byWeek.set(key, [task])
+  }
+  return [...byWeek.entries()]
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([start, tasks], i) => {
+      const completed = tasks.filter((t) => t.status === 'completed').length
+      const overdue = tasks.filter((t) => t.status !== 'completed' && t.dueDate < today).length
+      const end = addDaysIso(start, 6)
+      const status: StudyWeek['status'] =
+        completed === tasks.length
+          ? 'complete'
+          : overdue > 0
+            ? 'overdue'
+            : start > today
+              ? 'upcoming'
+              : 'in-progress'
+      return {
+        index: i + 1,
+        start,
+        end,
+        label: calendar.weekThemes?.[i] ?? `Week ${i + 1}`,
+        tasks,
+        completed,
+        total: tasks.length,
+        overdue,
+        status,
+      }
+    })
 }

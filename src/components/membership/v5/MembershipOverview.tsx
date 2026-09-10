@@ -53,6 +53,8 @@ import {
 import { Eyebrow, Wrap } from '../v2/passportShared'
 import { WhatsNewSpine } from '../v4/WhatsNewSpine'
 import { CURRENT_LEARNING_EYEBROW } from '@/components/learning/learningPathsHomeUtil'
+import { StudyWeekSummary } from '@/components/learning/study-calendar/StudyWeekSummary'
+import { hasStudyCalendarFor, studyCalendarFor } from '@/data/studyCalendarFixtures'
 
 /**
  * V5 "Your Membership" overview — a mini-dashboard for the membership,
@@ -225,6 +227,11 @@ export function MembershipOverview({
   // The onboarding hand-off destination stays member-only (only a member goes
   // through the setup wizard), even though the persona itself is now decoupled.
   const justOnboarded = personaEnabled && isMember && setup.completed
+  // The week-summary band reads the SAME plan the Study Plan section shows —
+  // the persona's own path — so the two cannot describe different courses. It
+  // is resolved here rather than inside the band so the band stays a pure
+  // presenter of a calendar.
+  const weekSummaryOn = useFeatureFlag('dashboard-week-summary').enabled
   const basePersona = personaEnabled
     ? justOnboarded
       ? dashboardProgressPersonaFor(brand, 'setup-complete-0')
@@ -236,6 +243,15 @@ export function MembershipOverview({
   const persona =
     basePersona && justOnboarded ? personaFromSetup(brand, setup.data) ?? basePersona : basePersona
   const personaSetupComplete = persona ? persona.setupComplete : true
+  // The plan behind the week-summary band. `hasStudyCalendarFor` is the guard,
+  // not `supportsStudyPlan` — `studyCalendarFor` falls back to STC's Series 79
+  // plan for any id it does not know, and putting securities weeks under an
+  // insurance path is the failure its own docstring calls worse than the empty
+  // state. Same trap the Jump Back In card hit.
+  const weekSummaryCalendar =
+    persona && hasStudyCalendarFor(brand, persona.path.id)
+      ? studyCalendarFor(persona.path.id)
+      : null
   // The persona drives the Current Learning Path only when it's a completed
   // persona AND the learner hasn't explicitly picked a different path in the
   // My Learning Paths sheet — so the existing sheet re-point feature still wins
@@ -582,6 +598,17 @@ export function MembershipOverview({
           product carousel. Rebrand overview only. Sits ABOVE What's New so the
           personalized picks lead the discovery zone. (Replaced the former
           Featured Products + 6-tile Recommended discovery row, which was removed.) */}
+      {/* "Your study weeks" — the last thing in the learner's OWN zone before
+          the discovery zone starts, which is why it sits directly above
+          Recommended for You rather than below it. Hidden when the current path
+          has no plan; the band is a summary of one, so there is nothing to
+          summarise. */}
+      {showExtras && weekSummaryOn && weekSummaryCalendar && (
+        <Wrap>
+          <StudyWeekSummary calendar={weekSummaryCalendar} />
+        </Wrap>
+      )}
+
       {showExtras && <DashboardRecommendedBand badged={badged} />}
 
       {/* Free Content promo bands (blog + podcast) — same banner shape as the
