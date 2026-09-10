@@ -47,13 +47,17 @@ export type StoredLink = {
   url: string
   /** '' when there is none — an absent note and a cleared one are one state. */
   note: string
+  /** Who put it here. '' when unset, same rule as `note`. A typed LABEL, not an
+   *  identity: nothing authenticates this endpoint, so a name the server claimed
+   *  to know would be a guess dressed as a fact. */
+  addedBy: string
   /** `yyyy-mm-dd`, stamped server-side on create and carried through edits. */
   addedDate: string
 }
 
 /** The editable fields. `id` and `addedDate` are not among them — the server
  *  owns both, so a form cannot renumber a link or backdate it. */
-export type LinkDraft = Pick<StoredLink, 'title' | 'url' | 'note'>
+export type LinkDraft = Pick<StoredLink, 'title' | 'url' | 'note' | 'addedBy'>
 
 export type LinkIndex = {
   /** False when there is no endpoint to talk to — plain `npm run dev`, or a
@@ -137,6 +141,35 @@ function isLink(v: unknown): v is StoredLink {
   return typeof o.id === 'string' && typeof o.title === 'string' && typeof o.url === 'string'
 }
 
+/**
+ * The last `addedBy` this browser used, so it does not have to be retyped for
+ * every link.
+ *
+ * `localStorage`, per browser, and that is the right scope for it: it is a
+ * convenience about the person at this keyboard, not a fact about the link —
+ * the fact is on the record, which is shared. Failing silently is fine; the
+ * field is optional and an empty prefill costs nothing.
+ */
+const LAST_AUTHOR_KEY = 'cgp.links.lastAuthor'
+
+export function readLastAuthor(): string {
+  try {
+    return localStorage.getItem(LAST_AUTHOR_KEY) ?? ''
+  } catch {
+    return ''
+  }
+}
+
+export function rememberLastAuthor(name: string): void {
+  try {
+    const trimmed = name.trim()
+    if (trimmed) localStorage.setItem(LAST_AUTHOR_KEY, trimmed)
+    else localStorage.removeItem(LAST_AUTHOR_KEY)
+  } catch {
+    /* private mode — the prefill just does not persist */
+  }
+}
+
 /** Normalise rather than trust: a record from an older version of the endpoint
  *  should degrade to a usable row instead of throwing the whole page. */
 function normalise(v: StoredLink): StoredLink {
@@ -145,6 +178,10 @@ function normalise(v: StoredLink): StoredLink {
     title: v.title,
     url: v.url,
     note: typeof v.note === 'string' ? v.note : '',
+    // Absent on every record written before the field existed, which is exactly
+    // the case `normalise` is here for — those rows read as "no author", not as
+    // a broken page.
+    addedBy: typeof v.addedBy === 'string' ? v.addedBy : '',
     addedDate: typeof v.addedDate === 'string' ? v.addedDate : '',
   }
 }
@@ -237,7 +274,10 @@ export function toMarkdown(links: StoredLink[]): string {
   return links
     .map((l) => {
       const head = `- [${l.title}](${l.url})`
-      return l.note.trim() ? `${head} — ${l.note.trim()}` : head
+      const tail = [l.note.trim(), l.addedBy.trim() && `added by ${l.addedBy.trim()}`]
+        .filter(Boolean)
+        .join(' · ')
+      return tail ? `${head} — ${tail}` : head
     })
     .join('\n')
 }

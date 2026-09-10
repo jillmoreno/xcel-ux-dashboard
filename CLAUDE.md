@@ -200,11 +200,60 @@ fact. An HTML answer counts as no endpoint too — the SPA fallback returns
 index.html with a 200, so a misrouted request would otherwise throw on parse and
 read as a broken page.
 
-**Three fields, and no `group`.** Title, address, optional note. Grouping is the
-obvious fourth and it is deliberately absent until the list is long enough to
-want it — adding it is one field on the record and one `Record` in the panel.
-Note that a note is stored as `''` rather than omitted, so "never had one" and
-"had one and cleared it" are one state a client never has to tell apart.
+**Four fields, and no `group`.** Address, title, optional note, optional
+**Added by**. Grouping is the obvious fifth and it is deliberately absent until
+the list is long enough to want it. Note that an unset note or author is stored
+as `''` rather than omitted, so "never had one" and "had one and cleared it" are
+one state a client never has to tell apart — and `normalise` supplies `''` for
+records written before `addedBy` existed, so those read as "no author" rather
+than breaking the row.
+
+**`addedBy` is a typed LABEL, not an identity, and that is deliberate.** Nothing
+authenticates this endpoint (the Netlify site password is the only control), so
+a name the server claimed to know about its caller would be a guess dressed as a
+fact. A field the author types is honestly what it is. It prefills from
+`cgp.links.lastAuthor` — per browser, so a name is typed once rather than once
+per link — but **editing an existing link prefills the RECORD's own author**,
+never this browser's: editing someone else's link must not quietly reassign it.
+A test asserts both directions.
+
+**The row meta is assembled, not interpolated** — `host · added <date> · by
+<name>`, with absent parts dropped. A trailing "·" reads as a value that failed
+to load, which is the admin roster's blank-Seat-cell rule applied here.
+
+**The list is newest-first**, and same-day links tie-break on id, which is
+monotonic — so a second link added today lands above the first rather than
+somewhere arbitrary. A test asserts the RENDERED order, since the order is the
+thing that was asked for rather than an implementation detail of `sortLinks`.
+
+**The form is behind a CTA, not on the page.** It began as an always-visible
+composer above the list, which put four fields of chrome permanently above the
+thing you came to read — adding a link is the occasional act here and reading
+the list is the constant one. It is a `Modal` now, the same component
+`QaNoteForm` uses one section down.
+
+**`--ux-*` DOES work inside that modal**, which is not obvious and cost a wrong
+assumption on the way in. `Modal` portals to `document.body`, outside this
+page's shell — but `UxDashboardPage` calls `mirrorPaletteToRoot`, which exists
+for exactly that case. So the modal re-skins with the four schemes and four
+appearances, and its primary button can take `--ux-accent` (as `QaNoteForm`'s
+already does). Measured in Dark · Fern: title 13.67:1, typed values 13.65:1,
+the primary button's ink 11.65:1, labels and hint 7.29:1.
+
+**`onClose` must be `useCallback`'d, and this bit hard.** `Modal`'s focus effect
+is keyed on `[open, onClose]` and calls `dialogRef.focus()` when it runs, so a
+fresh closure each render re-runs it on EVERY KEYSTROKE and pulls focus off the
+field being typed into. The first build took exactly one character per input and
+dropped the rest — with a clean tsc and a modal that rendered perfectly. Only
+typing into it showed anything wrong, which is why the test asserts a field's
+VALUE rather than that the dialog opened. **Any other `Modal` caller on this
+page is exposed to the same trap.**
+
+**Known, not fixed:** the field placeholders measure **4.34:1** on the input
+fill in dark, marginally under AA. It is the shared `--ux-text`-on-`--ux-bg`
+field treatment — `TodoPanel`'s inputs are identical — and every field here is
+labelled, so nothing is carried by the placeholder alone. Raising it is a
+page-wide change, not a Links one; do not fork the treatment for this panel.
 
 **Running it locally needs `netlify dev`, and the launch config carries two
 traps** that cost real time here — see `.claude/launch.json`'s

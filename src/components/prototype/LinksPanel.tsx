@@ -2,42 +2,49 @@
  * Links — the panel.
  *
  * The section's one requirement is that a link can be added without a code
- * change, so everything here is in service of that: a composer at the top, a
- * list under it, and edit / delete on every row. Nothing about a link is
- * authored in the repo.
+ * change. Nothing here is authored in the repo.
  *
- * Colours come from the page's own `--ux-*` palette rather than the brand
- * tokens, so the panel re-skins with the four schemes and four appearances like
- * the rest of the dashboard — the same choice `TodoPanel` makes, and the reason
- * this one needs no `ARCHIVE_BRIDGE` wrapper the way the archive table and the
- * QA panel do.
+ * ── The form is behind a CTA, not on the page ────────────────────────────────
+ * It started as an always-visible composer above the list, and that was the
+ * wrong default: four fields of chrome sit permanently above the thing you came
+ * to read, and adding a link is the OCCASIONAL act on this page while reading it
+ * is the constant one. The composer is a `Modal` now, opened by a primary
+ * Add link CTA — the same component and the same call `QaNoteForm` makes one
+ * section down, which is what keeps the two authoring surfaces from drifting.
  *
- * Two things worth not re-deriving:
+ * **`--ux-*` custom properties DO work inside it**, which is not obvious and is
+ * worth not re-deriving: `Modal` portals to `document.body`, outside this page's
+ * shell — but `UxDashboardPage` calls `mirrorPaletteToRoot`, which exists for
+ * exactly that case. So the modal re-skins with the four schemes and four
+ * appearances like everything else here, and its primary button can take
+ * `--ux-accent` (as `QaNoteForm`'s already does).
  *
  * ── The store is shared, so every write re-reads ─────────────────────────────
  * `useLinks` re-fetches the collection after each save rather than patching
  * local state optimistically. Another reviewer may have added a link since this
  * page loaded, and the server owns the id and the date — an optimistic list is
  * a second, quietly diverging copy of something more than one person can write
- * to. The cost is a round trip on save, which is invisible against the one the
- * save itself takes.
+ * to.
  *
- * ── An unreachable endpoint HIDES the composer ───────────────────────────────
+ * ── An unreachable endpoint hides every authoring affordance ─────────────────
  * Under plain `npm run dev` there is no function to talk to, and the honest
- * response is to say so rather than to render an Add button that fails on
+ * response is to say so rather than to render an Add link button that fails on
  * click. Same call the QA panel makes, and the reason `LinkIndex` carries
  * `loading` separately from `available`: for the tick before the first fetch
  * settles, "no endpoint" is not yet a fact.
  */
 
-import { useMemo, useState, type CSSProperties } from 'react'
+import { useCallback, useMemo, useState, type CSSProperties } from 'react'
 import { ArrowUpRightFromSquare, ClipboardList, PenToSquare, Plus, Trash } from '@/icons'
+import { Modal } from '@/components/ui/Modal'
 import {
   LinkWriteError,
   createLink,
   deleteLink,
   draftProblems,
   hostOf,
+  readLastAuthor,
+  rememberLastAuthor,
   safeHref,
   saveLink,
   toMarkdown,
@@ -49,14 +56,6 @@ import {
 /* ── styles ───────────────────────────────────────────────────────────────── */
 
 const wrapStyle: CSSProperties = { maxWidth: 820 }
-
-const cardStyle: CSSProperties = {
-  background: 'var(--ux-card)',
-  border: '1px solid var(--ux-border)',
-  borderRadius: 12,
-  padding: 14,
-  marginBottom: 18,
-}
 
 const fieldStyle: CSSProperties = {
   width: '100%',
@@ -80,15 +79,9 @@ const labelStyle: CSSProperties = {
   marginBottom: 5,
 }
 
-const fieldWrapStyle: CSSProperties = { marginBottom: 10 }
+const optionalStyle: CSSProperties = { fontWeight: 400, textTransform: 'none' }
 
-const rowActionsStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 8,
-  marginTop: 4,
-  flexWrap: 'wrap',
-}
+const fieldWrapStyle: CSSProperties = { marginBottom: 12 }
 
 const btnStyle: CSSProperties = {
   display: 'inline-flex',
@@ -97,7 +90,7 @@ const btnStyle: CSSProperties = {
   font: 'inherit',
   fontSize: 13,
   fontWeight: 600,
-  padding: '6px 12px',
+  padding: '7px 13px',
   borderRadius: 8,
   border: '1px solid var(--ux-border)',
   background: 'var(--ux-card)',
@@ -118,17 +111,32 @@ const iconBtnStyle: CSSProperties = {
   color: 'var(--ux-text-3)',
 }
 
-const hintStyle: CSSProperties = { fontSize: 13, color: 'var(--ux-text-3)', margin: '8px 0 0' }
-
 const errorStyle: CSSProperties = {
-  margin: '0 0 10px',
-  padding: '8px 11px',
+  margin: '0 0 14px',
+  padding: '9px 12px',
   borderRadius: 8,
   border: '1px solid var(--ux-border)',
   background: 'var(--ux-bg)',
   color: 'var(--ux-text)',
   fontSize: 13,
   lineHeight: 1.6,
+}
+
+const modalBodyStyle: CSSProperties = { padding: '18px 20px 4px' }
+
+const modalFooterStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+  padding: '14px 20px',
+  borderTop: '1px solid var(--ux-border)',
+}
+
+const modalHintStyle: CSSProperties = {
+  fontSize: 13,
+  lineHeight: 1.6,
+  color: 'var(--ux-text-3)',
+  margin: '2px 0 16px',
 }
 
 const listStyle: CSSProperties = {
@@ -177,10 +185,10 @@ const noteTextStyle: CSSProperties = {
 const emptyStyle: CSSProperties = {
   border: '1px dashed var(--ux-border)',
   borderRadius: 12,
-  padding: '22px 16px',
+  padding: '26px 16px',
   textAlign: 'center',
   display: 'grid',
-  gap: 8,
+  gap: 10,
   justifyItems: 'center',
   color: 'var(--ux-text-2)',
 }
@@ -193,21 +201,135 @@ const toolbarStyle: CSSProperties = {
   flexWrap: 'wrap',
 }
 
-const EMPTY_DRAFT: LinkDraft = { title: '', url: '', note: '' }
+const EMPTY_DRAFT: LinkDraft = { title: '', url: '', note: '', addedBy: '' }
 
 /** Below this the search field is a dead control — it costs a row of chrome to
  *  filter a list you can already see all of. Same reasoning as the status pills
  *  on the project sections, which only render when there is more than one. */
 const SEARCH_THRESHOLD = 6
 
+/** null = closed. 'new' = adding. A `StoredLink` = editing that record. One
+ *  form for all three, so the add and edit paths cannot drift in what they
+ *  validate — the same shape `QaNotesPanel` uses for its editor. */
+type Editing = null | 'new' | StoredLink
+
+/* ── the form ─────────────────────────────────────────────────────────────── */
+
+function LinkFormModal({
+  editing,
+  draft,
+  errors,
+  busy,
+  onChange,
+  onSubmit,
+  onClose,
+}: {
+  editing: Editing
+  draft: LinkDraft
+  errors: string[]
+  busy: boolean
+  onChange: (patch: Partial<LinkDraft>) => void
+  onSubmit: () => void
+  onClose: () => void
+}) {
+  const isEdit = editing !== null && editing !== 'new'
+  return (
+    <Modal
+      open={editing !== null}
+      onClose={onClose}
+      // A pasted address plus a typed title is enough to be worth not losing to
+      // a stray click outside the dialog. Same call `QaNoteForm` makes.
+      disableBackdropClose
+      width={560}
+      title={isEdit ? 'Edit link' : 'Add a link'}
+    >
+      <div style={modalBodyStyle}>
+        {errors.length > 0 && (
+          <div style={errorStyle} role="alert">
+            {errors.map((e) => (
+              <div key={e}>{e}</div>
+            ))}
+          </div>
+        )}
+
+        <div style={fieldWrapStyle}>
+          <label style={labelStyle} htmlFor="link-url">
+            Address
+          </label>
+          <input
+            id="link-url"
+            type="url"
+            inputMode="url"
+            value={draft.url}
+            onChange={(e) => onChange({ url: e.target.value })}
+            placeholder="https://…"
+            style={fieldStyle}
+          />
+        </div>
+
+        <div style={fieldWrapStyle}>
+          <label style={labelStyle} htmlFor="link-title">
+            Title
+          </label>
+          <input
+            id="link-title"
+            value={draft.title}
+            onChange={(e) => onChange({ title: e.target.value })}
+            placeholder="What a reviewer should see"
+            style={fieldStyle}
+          />
+        </div>
+
+        <div style={fieldWrapStyle}>
+          <label style={labelStyle} htmlFor="link-note">
+            Note <span style={optionalStyle}>— optional</span>
+          </label>
+          <input
+            id="link-note"
+            value={draft.note}
+            onChange={(e) => onChange({ note: e.target.value })}
+            placeholder="Why it is here, or what to look at"
+            style={fieldStyle}
+          />
+        </div>
+
+        <div style={fieldWrapStyle}>
+          <label style={labelStyle} htmlFor="link-added-by">
+            Added by <span style={optionalStyle}>— optional</span>
+          </label>
+          <input
+            id="link-added-by"
+            value={draft.addedBy}
+            onChange={(e) => onChange({ addedBy: e.target.value })}
+            placeholder="Your name"
+            style={fieldStyle}
+          />
+        </div>
+
+        <p style={modalHintStyle}>
+          Saved to the shared store — everyone who opens this site sees it, and it survives a
+          cleared cache. The date is stamped for you.
+        </p>
+      </div>
+
+      <div style={modalFooterStyle}>
+        <button type="button" onClick={onSubmit} disabled={busy} style={primaryBtnStyle}>
+          {busy ? 'Saving…' : isEdit ? 'Save changes' : 'Add link'}
+        </button>
+        <button type="button" onClick={onClose} disabled={busy} style={btnStyle}>
+          Cancel
+        </button>
+      </div>
+    </Modal>
+  )
+}
+
 /* ── the panel ────────────────────────────────────────────────────────────── */
 
 export function LinksPanel() {
   const { index, refresh } = useLinks()
+  const [editing, setEditing] = useState<Editing>(null)
   const [draft, setDraft] = useState<LinkDraft>(EMPTY_DRAFT)
-  /** null = the composer is adding; an id = it is editing that row. One form
-   *  for both, so the two paths cannot drift in what they validate. */
-  const [editingId, setEditingId] = useState<string | null>(null)
   const [errors, setErrors] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
   const [copied, setCopied] = useState(false)
@@ -221,17 +343,44 @@ export function LinksPanel() {
           !q ||
           l.title.toLowerCase().includes(q) ||
           l.url.toLowerCase().includes(q) ||
-          l.note.toLowerCase().includes(q),
+          l.note.toLowerCase().includes(q) ||
+          l.addedBy.toLowerCase().includes(q),
       ),
     [index.links, q],
   )
 
-  const set = (patch: Partial<LinkDraft>) => setDraft((d) => ({ ...d, ...patch }))
+  const change = (patch: Partial<LinkDraft>) => setDraft((d) => ({ ...d, ...patch }))
 
-  const reset = () => {
+  /**
+   * Stable identity, and that is load-bearing rather than tidiness.
+   *
+   * `Modal`'s focus effect is keyed on `[open, onClose]` and calls
+   * `dialogRef.focus()` when it runs. A fresh closure each render therefore
+   * re-runs it on EVERY KEYSTROKE, pulling focus off the field being typed
+   * into — the first build of this took exactly one character per input and
+   * dropped the rest. tsc was clean and the modal rendered; only typing into
+   * it showed anything wrong.
+   */
+  const close = useCallback(() => {
+    setEditing(null)
     setDraft(EMPTY_DRAFT)
-    setEditingId(null)
     setErrors([])
+  }, [])
+
+  const beginAdd = () => {
+    // Prefilled from this browser's last author, so a name is typed once rather
+    // than once per link. Still fully editable, and still optional.
+    setDraft({ ...EMPTY_DRAFT, addedBy: readLastAuthor() })
+    setErrors([])
+    setEditing('new')
+  }
+
+  const beginEdit = (link: StoredLink) => {
+    // The record's OWN author, not this browser's last one — editing someone
+    // else's link must not quietly reassign it.
+    setDraft({ title: link.title, url: link.url, note: link.note, addedBy: link.addedBy })
+    setErrors([])
+    setEditing(link)
   }
 
   const submit = async () => {
@@ -246,21 +395,16 @@ export function LinksPanel() {
     setBusy(true)
     setErrors([])
     try {
-      if (editingId) await saveLink(editingId, draft)
+      if (editing && editing !== 'new') await saveLink(editing.id, draft)
       else await createLink(draft)
+      rememberLastAuthor(draft.addedBy)
       await refresh()
-      reset()
+      close()
     } catch (err) {
       setErrors(err instanceof LinkWriteError ? err.errors : ['Could not save.'])
     } finally {
       setBusy(false)
     }
-  }
-
-  const beginEdit = (link: StoredLink) => {
-    setEditingId(link.id)
-    setDraft({ title: link.title, url: link.url, note: link.note })
-    setErrors([])
   }
 
   const remove = async (link: StoredLink) => {
@@ -272,7 +416,7 @@ export function LinksPanel() {
     try {
       await deleteLink(link.id)
       await refresh()
-      if (editingId === link.id) reset()
+      if (editing && editing !== 'new' && editing.id === link.id) close()
     } catch (err) {
       setErrors(err instanceof LinkWriteError ? err.errors : ['Could not remove.'])
     } finally {
@@ -292,87 +436,22 @@ export function LinksPanel() {
 
   return (
     <div style={wrapStyle}>
-      {/* ── composer ── */}
-      {index.available && (
-        <div style={cardStyle}>
-          {errors.length > 0 && (
-            <div style={errorStyle} role="alert">
-              {errors.map((e) => (
-                <div key={e}>{e}</div>
-              ))}
-            </div>
-          )}
-
-          <div style={fieldWrapStyle}>
-            <label style={labelStyle} htmlFor="link-url">
-              Address
-            </label>
-            <input
-              id="link-url"
-              type="url"
-              inputMode="url"
-              value={draft.url}
-              onChange={(e) => set({ url: e.target.value })}
-              placeholder="https://…"
-              style={fieldStyle}
-            />
-          </div>
-
-          <div style={fieldWrapStyle}>
-            <label style={labelStyle} htmlFor="link-title">
-              Title
-            </label>
-            <input
-              id="link-title"
-              value={draft.title}
-              onChange={(e) => set({ title: e.target.value })}
-              placeholder="What a reviewer should see"
-              style={fieldStyle}
-            />
-          </div>
-
-          <div style={fieldWrapStyle}>
-            <label style={labelStyle} htmlFor="link-note">
-              Note <span style={{ fontWeight: 400, textTransform: 'none' }}>— optional</span>
-            </label>
-            <input
-              id="link-note"
-              value={draft.note}
-              onChange={(e) => set({ note: e.target.value })}
-              placeholder="Why it is here, or what to look at"
-              style={fieldStyle}
-            />
-          </div>
-
-          <div style={rowActionsStyle}>
-            <button type="button" onClick={() => void submit()} disabled={busy} style={primaryBtnStyle}>
-              <Plus size={12} aria-hidden />
-              {busy ? 'Saving…' : editingId ? 'Save changes' : 'Add link'}
-            </button>
-            {editingId && (
-              <button type="button" onClick={reset} disabled={busy} style={btnStyle}>
-                Cancel
-              </button>
-            )}
-          </div>
-
-          <p style={hintStyle}>
-            Saved to the shared store — everyone who opens this site sees it, and it survives a
-            cleared cache.
-          </p>
-        </div>
-      )}
-
       {/* ── toolbar ── */}
       {index.links.length > 0 && (
         <div style={toolbarStyle}>
+          {index.available && (
+            <button type="button" onClick={beginAdd} style={primaryBtnStyle}>
+              <Plus size={12} aria-hidden />
+              Add link
+            </button>
+          )}
           {index.links.length >= SEARCH_THRESHOLD && (
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Search links"
               aria-label="Search links"
-              style={{ ...fieldStyle, width: 220 }}
+              style={{ ...fieldStyle, width: 200 }}
             />
           )}
           <span style={{ fontSize: 13, color: 'var(--ux-text-3)' }}>
@@ -393,9 +472,15 @@ export function LinksPanel() {
             {index.loading
               ? 'Checking…'
               : index.available
-                ? 'Paste an address above — nothing here is authored in code.'
+                ? 'Everything here is added on the page — nothing is authored in code.'
                 : 'The authoring endpoint is not reachable from here — run `netlify dev`, or open the deployed site.'}
           </p>
+          {index.available && (
+            <button type="button" onClick={beginAdd} style={primaryBtnStyle}>
+              <Plus size={12} aria-hidden />
+              Add the first link
+            </button>
+          )}
         </div>
       ) : rows.length === 0 ? (
         <p style={{ fontSize: 13, color: 'var(--ux-text-3)' }}>No links match that search.</p>
@@ -406,10 +491,23 @@ export function LinksPanel() {
             // `safeHref`. A row whose address cannot be linked still shows, as
             // text, so it can be found and fixed rather than silently vanishing.
             const href = safeHref(link.url)
+            // Assembled rather than interpolated, so an absent author leaves no
+            // stray separator — a trailing "·" reads as a value that failed to
+            // load, which is the same reason a self-paid Seat cell on the admin
+            // roster is blank rather than "n/a".
+            const meta = [
+              hostOf(link.url),
+              link.addedDate && `added ${link.addedDate}`,
+              link.addedBy.trim() && `by ${link.addedBy.trim()}`,
+              !href && 'not a linkable address',
+            ].filter(Boolean)
             return (
               <li
                 key={link.id}
-                style={{ ...itemStyle, borderBottom: i === rows.length - 1 ? 'none' : itemStyle.borderBottom }}
+                style={{
+                  ...itemStyle,
+                  borderBottom: i === rows.length - 1 ? 'none' : itemStyle.borderBottom,
+                }}
               >
                 <div style={{ minWidth: 0 }}>
                   {href ? (
@@ -424,11 +522,7 @@ export function LinksPanel() {
                       <span className="cre-visually-hidden"> — address cannot be opened</span>
                     </span>
                   )}
-                  <p style={metaStyle}>
-                    {hostOf(link.url)}
-                    {link.addedDate && ` · added ${link.addedDate}`}
-                    {!href && ' · not a linkable address'}
-                  </p>
+                  <p style={metaStyle}>{meta.join(' · ')}</p>
                   {link.note.trim() && <p style={noteTextStyle}>{link.note}</p>}
                 </div>
                 {index.available && (
@@ -458,6 +552,16 @@ export function LinksPanel() {
           })}
         </ul>
       )}
+
+      <LinkFormModal
+        editing={editing}
+        draft={draft}
+        errors={errors}
+        busy={busy}
+        onChange={change}
+        onSubmit={() => void submit()}
+        onClose={close}
+      />
     </div>
   )
 }

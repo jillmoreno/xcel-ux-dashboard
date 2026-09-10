@@ -43,9 +43,17 @@ const link = (over: Partial<StoredLink> = {}): StoredLink => ({
   title: 'FinServ Learner Brief',
   url: 'https://example.com/brief',
   note: '',
+  addedBy: '',
   addedDate: '2026-09-10',
   ...over,
 })
+
+/** The form is behind a CTA now, so every authoring test has to open it. */
+async function openComposer(user: ReturnType<typeof userEvent.setup>, name = /Add (the first )?link/) {
+  await waitFor(() => expect(screen.getByRole('button', { name })).toBeInTheDocument())
+  await user.click(screen.getByRole('button', { name }))
+  await waitFor(() => expect(screen.getByLabelText('Address')).toBeInTheDocument())
+}
 
 /** A fetch that answers the collection endpoint and records writes. */
 function mockEndpoint(links: StoredLink[]) {
@@ -158,19 +166,19 @@ describe('a stored URL cannot become script', () => {
 
 describe('draftProblems', () => {
   it('requires a title and a full address', () => {
-    expect(draftProblems({ title: '', url: '', note: '' })).toEqual([
+    expect(draftProblems({ title: '', url: '', note: '', addedBy: '' })).toEqual([
       'Give the link a title.',
       'Paste the address.',
     ])
-    expect(draftProblems({ title: '  ', url: 'https://a.example', note: '' })).toEqual([
+    expect(draftProblems({ title: '  ', url: 'https://a.example', note: '', addedBy: '' })).toEqual([
       'Give the link a title.',
     ])
     // A bare host is the most likely paste, and the message says what is wrong.
-    expect(draftProblems({ title: 'A', url: 'example.com', note: '' })).toEqual([
+    expect(draftProblems({ title: 'A', url: 'example.com', note: '', addedBy: '' })).toEqual([
       'That needs to be a full address starting with http:// or https://.',
     ])
-    expect(draftProblems({ title: 'A', url: 'javascript:alert(1)', note: '' })).toHaveLength(1)
-    expect(draftProblems({ title: 'A', url: 'https://a.example', note: '' })).toEqual([])
+    expect(draftProblems({ title: 'A', url: 'javascript:alert(1)', note: '', addedBy: '' })).toHaveLength(1)
+    expect(draftProblems({ title: 'A', url: 'https://a.example', note: '', addedBy: '' })).toEqual([])
   })
 })
 
@@ -216,10 +224,11 @@ describe('LinksPanel', () => {
     const { writes } = mockEndpoint([])
     render(<LinksPanel />)
 
-    await waitFor(() => expect(screen.getByLabelText('Address')).toBeInTheDocument())
+    await openComposer(user)
     await user.type(screen.getByLabelText('Address'), 'https://xcelsolutions.com/resources')
     await user.type(screen.getByLabelText('Title'), 'Resource Center')
-    await user.click(screen.getByRole('button', { name: /Add link/ }))
+    await user.type(screen.getByLabelText(/Added by/), 'Jill')
+    await user.click(screen.getByRole('button', { name: 'Add link' }))
 
     await waitFor(() => expect(writes).toHaveLength(1))
     expect(writes[0].method).toBe('POST')
@@ -227,6 +236,7 @@ describe('LinksPanel', () => {
     expect(writes[0].body).toMatchObject({
       title: 'Resource Center',
       url: 'https://xcelsolutions.com/resources',
+      addedBy: 'Jill',
     })
   })
 
@@ -235,13 +245,16 @@ describe('LinksPanel', () => {
     const { writes } = mockEndpoint([])
     render(<LinksPanel />)
 
-    await waitFor(() => expect(screen.getByLabelText('Address')).toBeInTheDocument())
+    await openComposer(user)
     await user.type(screen.getByLabelText('Address'), 'example.com')
     await user.type(screen.getByLabelText('Title'), 'Bare host')
-    await user.click(screen.getByRole('button', { name: /Add link/ }))
+    await user.click(screen.getByRole('button', { name: 'Add link' }))
 
     expect(await screen.findByRole('alert')).toHaveTextContent(/full address/)
     expect(writes).toHaveLength(0)
+    // …and the dialog stays open, holding what was typed. Closing it on a
+    // validation failure would throw away the paste it is complaining about.
+    expect(screen.getByLabelText('Address')).toHaveValue('example.com')
   })
 
   it('hides the composer when there is no endpoint, and says why', async () => {
@@ -253,7 +266,7 @@ describe('LinksPanel', () => {
 
     expect(await screen.findByText(/authoring endpoint is not reachable/)).toBeInTheDocument()
     expect(screen.queryByLabelText('Address')).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /Add link/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Add (the first )?link/ })).not.toBeInTheDocument()
   })
 
   it('treats an HTML answer as no endpoint rather than parsing it', async () => {
@@ -264,6 +277,106 @@ describe('LinksPanel', () => {
     render(<LinksPanel />)
 
     expect(await screen.findByText(/authoring endpoint is not reachable/)).toBeInTheDocument()
+  })
+
+  it('keeps the form behind a CTA rather than on the page', async () => {
+    // The form was an always-visible composer above the list, and that put four
+    // fields of chrome permanently above the thing you came to read. Adding a
+    // link is the occasional act here; reading the list is the constant one.
+    const user = userEvent.setup()
+    mockEndpoint([link()])
+    render(<LinksPanel />)
+
+    await waitFor(() => expect(screen.getByText('1 link')).toBeInTheDocument())
+    expect(screen.queryByLabelText('Address')).not.toBeInTheDocument()
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Add link' }))
+    expect(screen.getByRole('dialog')).toBeInTheDocument()
+    expect(screen.getByLabelText('Address')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument())
+  })
+
+  it('types a WHOLE value into a field, not just its first character', async () => {
+    /*
+     * `Modal`'s focus effect is keyed on `[open, onClose]` and focuses the
+     * dialog when it runs, so an unstable `onClose` re-runs it on every
+     * keystroke and pulls focus off the field. The first build did exactly
+     * that — one character per input, the rest dropped — with a clean tsc and a
+     * modal that rendered perfectly. Only typing into it showed anything wrong,
+     * which is why this asserts the field VALUE rather than that the modal
+     * opened.
+     */
+    const user = userEvent.setup()
+    mockEndpoint([])
+    render(<LinksPanel />)
+
+    await openComposer(user)
+    await user.type(screen.getByLabelText('Address'), 'https://example.com/a/long/path')
+    expect(screen.getByLabelText('Address')).toHaveValue('https://example.com/a/long/path')
+  })
+
+  it('shows who added a link, and leaves no stray separator when nobody did', async () => {
+    mockEndpoint([
+      link({ id: 'link-002', title: 'With author', addedBy: 'Jill', addedDate: '2026-09-10' }),
+      link({ id: 'link-001', title: 'Without author', addedBy: '', addedDate: '2026-09-09' }),
+    ])
+    render(<LinksPanel />)
+
+    const withAuthor = await screen.findByText(/added 2026-09-10 · by Jill/)
+    expect(withAuthor).toBeInTheDocument()
+    // A trailing "·" reads as a value that failed to load — the same reason a
+    // self-paid Seat cell on the admin roster is blank rather than "n/a".
+    const without = screen.getByText(/added 2026-09-09/)
+    expect(without.textContent).not.toMatch(/·\s*$/)
+    expect(without.textContent).not.toMatch(/by\s*$/)
+  })
+
+  it('prefills Added by from this browser, but never reassigns on edit', async () => {
+    const user = userEvent.setup()
+    const { writes } = mockEndpoint([
+      link({ id: 'link-001', title: 'Someone elses', addedBy: 'Dana' }),
+    ])
+    localStorage.setItem('cgp.links.lastAuthor', 'Jill')
+    render(<LinksPanel />)
+
+    // Adding: this browser's last author, so a name is typed once not per link.
+    await openComposer(user, /^Add link$/)
+    expect(screen.getByLabelText(/Added by/)).toHaveValue('Jill')
+    await user.click(screen.getByRole('button', { name: 'Cancel' }))
+
+    // Editing: the RECORD's own author. Editing someone else's link must not
+    // quietly reassign it to whoever is at this keyboard.
+    await user.click(screen.getByRole('button', { name: /Edit Someone elses/ }))
+    expect(screen.getByLabelText(/Added by/)).toHaveValue('Dana')
+    await user.click(screen.getByRole('button', { name: 'Save changes' }))
+
+    await waitFor(() => expect(writes).toHaveLength(1))
+    expect(writes[0].method).toBe('PUT')
+    expect(writes[0].body).toMatchObject({ addedBy: 'Dana' })
+  })
+
+  it('puts the most recently added link on top', async () => {
+    // Asserted on the RENDERED order rather than on `sortLinks`, because the
+    // order is the thing that was asked for. Same-day links tie-break on id,
+    // which is monotonic — so a second link added today still lands above the
+    // first rather than in an arbitrary spot.
+    mockEndpoint([
+      link({ id: 'link-001', title: 'Oldest', addedDate: '2026-09-01' }),
+      link({ id: 'link-003', title: 'Newest — same day', addedDate: '2026-09-10' }),
+      link({ id: 'link-002', title: 'Middle — same day', addedDate: '2026-09-10' }),
+    ])
+    render(<LinksPanel />)
+
+    await waitFor(() => expect(screen.getByText('3 links')).toBeInTheDocument())
+    // Strip only the visually-hidden affordance text, not every em dash — the
+    // titles here deliberately contain one.
+    const titles = screen
+      .getAllByRole('link')
+      .map((a) => a.textContent?.replace(/\s*— opens in a new tab$/, '').trim())
+    expect(titles).toEqual(['Newest — same day', 'Middle — same day', 'Oldest'])
   })
 
   it('shows no search field until the list is long enough to need one', async () => {
@@ -354,10 +467,11 @@ describe('the Links section on the gateway', () => {
       screen.getByRole('button', { name: /^Links/ }).textContent?.replace(/\D/g, '')
     await waitFor(() => expect(badge()).toBe('0'))
 
+    await openComposer(user)
     await user.type(screen.getByLabelText('Address'), 'https://a.example/one')
     await user.type(screen.getByLabelText('Title'), 'One')
     stored.push(link({ id: 'link-001', title: 'One', url: 'https://a.example/one' }))
-    await user.click(screen.getByRole('button', { name: /Add link/ }))
+    await user.click(screen.getByRole('button', { name: 'Add link' }))
 
     await waitFor(() => expect(writes).toHaveLength(1))
     await waitFor(() => expect(badge()).toBe('1'))

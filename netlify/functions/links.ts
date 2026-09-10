@@ -56,6 +56,7 @@ const KEY_PATTERN = /^link-\d{3}$/
 const MAX_TITLE = 200
 const MAX_URL = 2000
 const MAX_NOTE = 500
+const MAX_ADDED_BY = 100
 
 /** Only these reach an href. See the security note above — an allow-list, not a
  *  blocklist. */
@@ -119,6 +120,17 @@ function validate(input: unknown, id: string): { link: Json } | { errors: string
   const note = str(b.note)?.trim() ?? ''
   if (note.length > MAX_NOTE) errors.push(`note is longer than ${MAX_NOTE} characters.`)
   else out.note = note
+
+  // Who put it here. Optional, free text, and the same ''-not-absent rule.
+  //
+  // Deliberately NOT derived from any identity the server has: there is no auth
+  // on this endpoint (see the note at the top), so anything it claimed to know
+  // about who is calling would be a guess dressed as a fact. A field the author
+  // types is honestly what it is — a label — and on a prototype behind one
+  // shared site password that is the truthful shape.
+  const addedBy = str(b.addedBy)?.trim() ?? ''
+  if (addedBy.length > MAX_ADDED_BY) errors.push(`addedBy is longer than ${MAX_ADDED_BY} characters.`)
+  else out.addedBy = addedBy
 
   // `yyyy-mm-dd`, stamped server-side when absent, and carried through an edit
   // so editing a link does not re-date it. Kept as a plain date string rather
