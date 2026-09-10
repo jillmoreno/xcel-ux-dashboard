@@ -398,6 +398,23 @@ titles reads plausibly until a week spans two subjects, and then it names
 whichever sorted first. A wrong label is worse than `Week N`, which is the
 fallback.
 
+**Each day carries its STATE, from the Study Plan's own rule.** `dayStatusOf` +
+`STATUS_CHIP_COLORS` moved out of `InlineStudyCalendar` into
+`studyStatusColors.ts` so both surfaces read one family — a day that shows
+complete-green on the plan and neutral-grey on Home is exactly the drift that
+file exists to prevent. The plan is still the reference; the colours moved, they
+were not re-derived.
+
+Precedence is **OVERDUE → IN PROGRESS → COMPLETED → UPCOMING**, an attention
+order rather than a progress one: a day holding one late task and three finished
+ones is a day with a problem. It matches the plan's own `STATUS_CHIPS` order.
+
+**Never colour alone.** The dot says the state in hue and the flag says it in
+words (DONE / IN PROGRESS / N OVERDUE), and the accessible label carries it too.
+The flag's precedence puts state ABOVE `TODAY` — today's cell is already the
+only filled one, so on a day in progress the more useful word is IN PROGRESS —
+but the label reports today unconditionally, which is what a test asserts.
+
 **The footer carries "Week 4 of 9"**, so seven day cells never imply a one-week
 plan.
 

@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 import { StudyWeekSummary } from '@/components/learning/study-calendar/StudyWeekSummary'
 import { DEMO_PERSONAS } from '@/components/prototype/demoControlsUtil'
+import { dayStatusOf } from '@/components/learning/study-calendar/studyStatusColors'
 import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
 import {
   studyWeeks,
@@ -113,9 +114,17 @@ describe('the band', () => {
     expect(screen.getByText(`Week ${current.index} of ${weeks.length}`)).toBeInTheDocument()
   })
 
-  it('marks TODAY', () => {
+  it('always marks today, but yields the visible flag to a state worth reporting', () => {
+    // Precedence on the flag is OVERDUE → state → TODAY. Today's cell is
+    // already the only filled one, so on a day that is in progress the more
+    // useful word is IN PROGRESS. What must NOT be lost is today itself, which
+    // is why the accessible label carries it unconditionally.
     renderBand()
-    expect(screen.getByText('TODAY')).toBeInTheDocument()
+    const todayLabel = screen
+      .getAllByRole('link')
+      .map((a) => a.getAttribute('aria-label') ?? '')
+      .find((l) => l.includes(', today'))
+    expect(todayLabel).toBeTruthy()
   })
 
   it('is a summary — every cell leaves for the plan rather than acting in place', () => {
@@ -148,3 +157,58 @@ describe('the "Busy study plan" persona', () => {
     expect(Math.max(...weeks.map((w) => w.total))).toBeLessThan(calendar.tasks.length / 2)
   })
 })
+
+describe('per-day state', () => {
+  it('colours and labels each day by the SAME rule the Study Plan uses', () => {
+    // The ask: the plan shows the 18th complete and the 19th in progress, so
+    // Home should say so too. Asserted against `dayStatusOf` — the function
+    // BOTH surfaces call — rather than against "MON 18 is green", which would
+    // pass while the two drifted.
+    const week = studyWeeks(XCEL_LH_STUDY_CALENDAR).find((w) => w.end >= STUDY_CALENDAR_TODAY)!
+    render(
+      <MemoryRouter>
+        <StudyWeekSummary calendar={XCEL_LH_STUDY_CALENDAR} />
+      </MemoryRouter>,
+    )
+    const labels = screen
+      .getAllByRole('link')
+      .map((a) => a.getAttribute('aria-label') ?? '')
+      .filter((l) => /^[A-Z]{3} \d+:/.test(l))
+    expect(labels).toHaveLength(7)
+
+    for (const label of labels) {
+      const dom = Number(label.match(/^[A-Z]{3} (\d+):/)![1])
+      const tasks = week.tasks.filter((t) => Number(t.dueDate.slice(8, 10)) === dom)
+      if (tasks.length === 0) continue
+      const expected = dayStatusOf(tasks, tasks[0].dueDate, STUDY_CALENDAR_TODAY)
+      if (expected && expected !== 'upcoming') {
+        expect(label, `${dom} should report ${expected}`).toContain(STATUS_WORDS[expected])
+      }
+    }
+  })
+
+  it('never carries a day’s state on colour alone', () => {
+    // A coloured dot and nothing else fails for anyone who cannot see the hue.
+    // Every state the dot distinguishes also appears as a word — in the visible
+    // flag AND in the accessible label.
+    render(
+      <MemoryRouter>
+        <StudyWeekSummary calendar={XCEL_LH_STUDY_CALENDAR} />
+      </MemoryRouter>,
+    )
+    expect(screen.getByText('DONE')).toBeInTheDocument()
+    expect(screen.getByText('IN PROGRESS')).toBeInTheDocument()
+    const labels = screen
+      .getAllByRole('link')
+      .map((a) => a.getAttribute('aria-label') ?? '')
+      .filter((l) => /^[A-Z]{3} \d+:/.test(l))
+    expect(labels.some((l) => l.includes('complete'))).toBe(true)
+    expect(labels.some((l) => l.includes('in progress'))).toBe(true)
+  })
+})
+
+const STATUS_WORDS: Record<string, string> = {
+  overdue: 'overdue',
+  'in-progress': 'in progress',
+  completed: 'complete',
+}

@@ -33,6 +33,7 @@ import {
 } from '@/data/studyCalendarFixtures'
 import { learningPathsFor } from '@/data/learningFixtures'
 import { useAccount } from '@/context/AccountContext'
+import { STATUS_CHIP_COLORS } from './studyStatusColors'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { TaskRow } from './TaskRow'
 import { WeekendToggle } from './WeekendToggle'
@@ -75,41 +76,9 @@ type StatusFilterKey =
  * selected, and (c) — already — the task card's status icon tile, so the
  * chip / cell / task badge all read as the same "color = status" mapping.
  */
-const STATUS_CHIP_COLORS: Record<
-  StatusFilterKey,
-  { bg: string; fg: string; border: string }
-> = {
-  overdue: {
-    bg: 'var(--color-warning-100)',
-    fg: 'var(--color-warning-800)',
-    border: 'var(--color-warning-500)',
-  },
-  'in-progress': {
-    bg: 'var(--color-primary-100)',
-    fg: 'var(--color-primary-800)',
-    border: 'var(--color-primary-500)',
-  },
-  upcoming: {
-    // To Do uses neutral-200 (not -100) so it visibly separates from the
-    // default neutral-75 day-cell fill on STC.
-    bg: 'var(--color-neutral-200)',
-    fg: 'var(--color-neutral-darkest)',
-    border: 'var(--color-neutral-400)',
-  },
-  completed: {
-    bg: 'var(--color-success-100)',
-    fg: 'var(--color-success-800)',
-    border: 'var(--color-success-500)',
-  },
-  custom: {
-    // Tertiary tone matches the CustomEventRow icon tile + day-cell
-    // fallback dot, so the chip / row / cell all read as one
-    // "custom-task" color family.
-    bg: 'var(--color-tertiary-100)',
-    fg: 'var(--color-tertiary-800)',
-    border: 'var(--color-tertiary-500)',
-  },
-}
+// STATUS_CHIP_COLORS moved to `studyStatusColors.ts` on 2026-09-10 so the Home
+// week strip could read the same family — this file is still the reference for
+// what these colours MEAN; it just no longer owns them.
 
 const STATUS_CHIPS: Array<{ id: StatusFilterKey; label: string }> = [
   // Ordered by attention priority — matches the All Tasks sort order so

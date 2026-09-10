@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight } from '@/icons'
+import { dayStatusOf, STATUS_CHIP_COLORS } from './studyStatusColors'
 import {
   studyWeeks,
   STUDY_CALENDAR_TODAY,
@@ -54,7 +55,16 @@ function rangeLabel(startIso: string, endIso: string): string {
   return sm === em ? `${left} – ${ed}` : `${left} – ${MONTHS[em - 1]} ${ed}`
 }
 
-type Day = { iso: string; dom: number; dow: string; tasks: StudyTask[]; overdue: number }
+type Day = {
+  iso: string
+  dom: number
+  dow: string
+  tasks: StudyTask[]
+  overdue: number
+  /** The day's overall state, from the SAME rule the Study Plan colours its
+   *  cells by. `null` when nothing is due. */
+  status: ReturnType<typeof dayStatusOf>
+}
 
 /** The week's seven days, INCLUDING the empty ones — that is the point of a
  *  calendar row. A day with nothing on it says "nothing due", which a list of
@@ -69,6 +79,7 @@ function daysOf(week: StudyWeek, today: string): Day[] {
       dow: DOW[i],
       tasks,
       overdue: tasks.filter((t) => t.status !== 'completed' && iso < today).length,
+      status: dayStatusOf(tasks, iso, today),
     }
   })
 }
@@ -151,7 +162,7 @@ function DayCell({ day, isToday }: { day: Day; isToday: boolean }) {
     <Link
       to={PLAN_HREF}
       aria-label={`${day.dow} ${day.dom}: ${count === 0 ? 'nothing due' : `${count} task${count === 1 ? '' : 's'}`}${
-        day.overdue > 0 ? `, ${day.overdue} overdue` : ''
+        day.status && day.status !== 'upcoming' ? `, ${STATUS_WORD[day.status]}` : ''
       }${isToday ? ', today' : ''}`}
       style={{ ...cellStyle, ...(isToday ? todayCellStyle : null) }}
     >
@@ -170,16 +181,21 @@ function DayCell({ day, isToday }: { day: Day; isToday: boolean }) {
           </span>
         ) : (
           <>
+            {/* Coloured by the day's STATE, from the Study Plan's own family —
+                complete reads green here because it reads green there. On
+                today's navy fill the saturated stops still carry (they are the
+                `-500`s the plan puts on a light cell), so only the neutral
+                `upcoming` stop needs swapping for the inverse ink. */}
             <span
               aria-hidden
               style={{
                 ...dotStyle,
                 background:
-                  day.overdue > 0
-                    ? 'var(--color-warning-500)'
+                  day.status && day.status !== 'upcoming'
+                    ? STATUS_CHIP_COLORS[day.status].border
                     : isToday
                       ? 'var(--color-text-inverse)'
-                      : 'var(--color-neutral-400)',
+                      : STATUS_CHIP_COLORS.upcoming.border,
               }}
             />
             <span
@@ -190,13 +206,35 @@ function DayCell({ day, isToday }: { day: Day; isToday: boolean }) {
           </>
         )}
       </span>
-      {/* The one flag per cell. OVERDUE outranks TODAY: a reviewer scanning the
-          strip needs the problem to surface, and today's cell is already the
-          only filled one. */}
+      {/* The one flag per cell, and it is what keeps the day's state off COLOUR
+          ALONE — the dot says it in hue, this says it in words.
+          OVERDUE outranks the rest: a reviewer scanning the strip needs the
+          problem to surface. TODAY comes next only when there is no state worth
+          reporting, since the filled cell already marks today. */}
       <span style={flagRowStyle}>
         {day.overdue > 0 ? (
-          <span style={overdueFlagStyle}>
-            {day.overdue} OVERDUE
+          <span style={overdueFlagStyle}>{day.overdue} OVERDUE</span>
+        ) : day.status === 'completed' ? (
+          <span
+            style={{
+              ...stateFlagStyle,
+              color: isToday
+                ? 'var(--color-text-inverse)'
+                : STATUS_CHIP_COLORS.completed.fg,
+            }}
+          >
+            DONE
+          </span>
+        ) : day.status === 'in-progress' ? (
+          <span
+            style={{
+              ...stateFlagStyle,
+              color: isToday
+                ? 'var(--color-text-inverse)'
+                : STATUS_CHIP_COLORS['in-progress'].fg,
+            }}
+          >
+            IN PROGRESS
           </span>
         ) : isToday ? (
           <span style={todayFlagStyle}>TODAY</span>
@@ -324,6 +362,24 @@ const overdueFlagStyle: CSSProperties = {
   fontWeight: 700,
   letterSpacing: '0.06em',
   color: 'var(--color-warning-800)',
+  whiteSpace: 'nowrap',
+}
+
+/** Words for the state flags + the accessible label, so nothing about a day's
+ *  state is carried by hue alone. */
+const STATUS_WORD: Record<string, string> = {
+  overdue: 'overdue',
+  'in-progress': 'in progress',
+  completed: 'complete',
+  upcoming: 'not started',
+  custom: 'custom',
+}
+
+const stateFlagStyle: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 9,
+  fontWeight: 700,
+  letterSpacing: '0.06em',
   whiteSpace: 'nowrap',
 }
 
