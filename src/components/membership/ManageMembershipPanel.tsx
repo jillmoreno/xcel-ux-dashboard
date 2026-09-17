@@ -9,7 +9,6 @@ import {
 } from '@/context/AccountContext'
 import { tierTintBg } from './tierCardStyle'
 import { useSearchParams } from 'react-router-dom'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import {
   membershipPlanFor,
   paymentMethodOnFile,
@@ -173,7 +172,11 @@ export function ManageMembershipBody({
   // `sheet` runs it here, in place; `page` hands off to a full-width region so
   // the retention offers can sit side by side. See CancelMembershipFlow's header
   // for why the container is the thing worth A/B-ing.
-  const cancelFlow = useFeatureFlag('membership-cancel-flow')
+  // `membership-cancel-flow` was removed from the catalog 2026-09-16 (the XCEL
+  // flag audit — XCEL sells no membership, so nothing here is reachable). Its
+  // committed default was `modal`, which is a hand-off container, so
+  // `handsOff` below stays true. The `sheet` branch is kept for restore.
+  const cancelFlow: { variant?: string } = { variant: 'modal' }
   const [cancelling, setCancelling] = useState(false)
   const [changingPlan, setChangingPlan] = useState(false)
   // A specific membership record (multi) drives the tier lookup + title/state/

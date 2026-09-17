@@ -2,7 +2,6 @@ import type { CSSProperties, ComponentType } from 'react'
 import { Link } from 'react-router-dom'
 import { Monitor, Podcast, Users, Video } from '@/icons'
 import { useAccount, type Brand } from '@/context/AccountContext'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { ShelfScroller } from '@/components/dashboard/recommended/ShelfScroller'
 import { imageForIndex } from '@/utils/courseImage'
 import { Wrap } from './v2/passportShared'
@@ -71,8 +70,12 @@ export function WhatsNewWidget({
   badged = false,
 }: { title?: string; badged?: boolean } = {}) {
   const { brand } = useAccount()
-  const { enabled } = useFeatureFlag('dashboard-whats-new-layout')
-  if (!enabled) return null
+  // The `dashboard-whats-new-layout` gate was removed 2026-09-16 (the XCEL flag
+  // audit). This component was already ARCHIVED off the overview on 2026-08-05
+  // — it has no render site, only the commented-out block in `MembershipOverview`
+  // — so the flag was gating nothing. Dropping the gate rather than pinning it
+  // false means restoring the widget is re-adding that block, not also
+  // un-pinning a constant that would silently render nothing.
 
   const cards = VIBRANT_CARDS_BY_BRAND[brand] ?? CRE_CARDS
 

@@ -11,7 +11,6 @@ import { CertSmall, type CertSmallData } from '@/components/courses/CertSmall'
 import { CourseCard, type CourseCardData, type CourseDelivery } from '@/components/courses/CourseCard'
 import { useJumpBackInPanel } from '@/components/dashboard/JumpBackInPanelContext'
 import { useAccount } from '@/context/AccountContext'
-import { useFeatureFlag, useFeatureFlags } from '@/context/FeatureFlagContext'
 import { useLoFi } from '@/context/LoFiContext'
 import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
 import { issuedCertificatesFor } from '@/data/learningFixtures'
@@ -112,11 +111,12 @@ export function JumpBackInCard({
   const { brand } = useAccount()
   const { openPanel } = useJumpBackInPanel()
   const { loFi } = useLoFi()
-  // `bare` chrome variant — drops the white card container (background,
-  // border, padding) and hides the View All link, so the card reads as
-  // unframed content directly on the page. Read before any early return
-  // so hook order stays stable across the lo-fi flip.
-  const bareChrome = useFeatureFlag('jump-back-in-chrome').variant === 'bare'
+  // `jump-back-in-chrome` was removed from the catalog 2026-09-16 (the XCEL flag
+  // audit — this card renders only on the classic `/dashboard`; the rebrand Home
+  // draws its own `OverviewJumpBackIn`). It defaulted to `framed`, so the card
+  // keeps its white container and View All link. Every `bareChrome` branch below
+  // is kept for restore.
+  const bareChrome = false
   const isV3 = variant === 'v3'
   const isTrio = isV3 && v3Layout === 'stacked-trio'
   const isStacked =
@@ -801,13 +801,10 @@ const JBI_QUICK_LINKS: JbiQuickLink[] = [
 ]
 
 function JumpBackInQuickLinks({ layout }: { layout: 'tiles' | 'list' }) {
-  // Each tile is independently feature-flagged (`jbi-quicklink-<id>`) so
-  // reviewers can turn individual Quick Links on/off in the Feature Flag
-  // panel. Missing key → default visible.
-  const { flags } = useFeatureFlags()
-  const visibleLinks = JBI_QUICK_LINKS.filter(
-    (link) => flags[`jbi-quicklink-${link.id}`]?.enabled ?? true,
-  )
+  // The eight per-tile `jbi-quicklink-<id>` flags were removed from the catalog
+  // 2026-09-16 (the XCEL flag audit). All eight defaulted ON, so every tile is
+  // visible; `JBI_QUICK_LINKS` is the list to edit if one should go.
+  const visibleLinks = JBI_QUICK_LINKS
   // Whole section (heading included) drops out when every tile is off.
   if (visibleLinks.length === 0) return null
   return (

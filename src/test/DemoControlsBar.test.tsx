@@ -102,29 +102,21 @@ describe('DemoControlsBar — persona dropdown', () => {
     expect(within(menu).queryByRole('menuitem', { name: /Multiple memberships/i })).toBeNull()
   })
 
-  it('exposes a What\'s New toggle at the top of the dropdown, default Off', () => {
+  it('has NO Featured / What\'s New switch — it was removed with its flag', () => {
+    // The "Hide Featured Section" switch wrote `dashboard-featured`, removed from
+    // the catalog 2026-09-16 (the XCEL flag audit). `whatsNewFeaturedFor('xcel')`
+    // is an empty fixture, so `FeaturedHero` self-hides whatever the flag said —
+    // the switch showed and hid nothing. Asserted as an ABSENCE so re-adding the
+    // control without first authoring XCEL slides fails here and gets re-decided.
     renderBar()
     fireEvent.click(screen.getByRole('button', { name: /Persona/i }))
-    const sw = screen.getByRole('switch', { name: /hide featured/i })
-    expect(sw).toHaveAttribute('aria-checked', 'false')
-    // Turning it On writes ?wn=on. Since the Marketing Focused carousel band was
-    // archived, the toggle now only shows/hides the Featured hero — it no longer
-    // pins a dashboard version.
-    fireEvent.click(sw)
-    expect(sw).toHaveAttribute('aria-checked', 'true')
-    const search = url()
-    expect(search).toContain('wn=on')
-    expect(search).not.toContain('version=')
+    expect(screen.queryByRole('switch', { name: /hide featured/i })).toBeNull()
+    expect(screen.queryByRole('switch', { name: /what's new/i })).toBeNull()
   })
 
-  it('does NOT disable any persona row when What\'s New is On (the carousel-room gate was retired with the archived Marketing Focused band)', () => {
+  it('leaves every persona row enabled (the carousel-room gate was retired with the archived Marketing Focused band)', () => {
     renderBar()
     fireEvent.click(screen.getByRole('button', { name: /Persona/i }))
-    // Off: the "No learning paths (brand)" row is enabled.
-    expect(screen.getByRole('menuitem', { name: /No learning paths \(brand\)/i })).not.toBeDisabled()
-    // Turn What's New On → the row STAYS enabled (the toggle only hides the
-    // Featured hero now; it no longer needs to make room for a carousel).
-    fireEvent.click(screen.getByRole('switch', { name: /hide featured/i }))
     expect(screen.getByRole('menuitem', { name: /No learning paths \(brand\)/i })).not.toBeDisabled()
   })
 

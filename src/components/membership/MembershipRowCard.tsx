@@ -3,7 +3,6 @@ import { ArrowRight } from '@/icons'
 import { MembershipBadge } from '@/components/ui/MembershipBadge'
 import { tierBadgeIcon } from '@/components/ui/membershipTierBadge'
 import { useAccount, type MembershipTierTone } from '@/context/AccountContext'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import type { MembershipRow } from '@/data/membership/membershipScorecardFixtures'
 import {
   renewalFallbackFor,
@@ -84,7 +83,9 @@ export function MembershipRowCard({
   // Tier-header treatment (default ON). Read here rather than threaded as a
   // prop so BOTH call sites in `MembershipMultiSections` — the tile grid and the
   // band stack — pick it up without either having to know about the flag.
-  const tierHeader = useFeatureFlag('membership-card-tier-header').enabled
+  // `membership-card-tier-header` removed 2026-09-16 (XCEL flag audit 2026-09-16 — removed from the catalog because `supportsMembership('xcel')` is false, so this surface never renders for the one brand this project ships.)
+  // It defaulted ON, so both call sites keep the tier-header card.
+  const tierHeader = true
   if (tierHeader) {
     return <TierHeaderCard row={row} onManage={onManage} layout={layout} />
   }

@@ -115,9 +115,34 @@ describe('the Recommended for You band toggle', () => {
     window.localStorage.setItem('cgp.featureFlags', JSON.stringify({ [key]: { enabled } }))
   }
 
-  it('shows the band by default', () => {
-    renderShell('/dashboard-rebrand')
+  // These pin the FLAG, so they render a version that still has the band.
+  // XCEL's default became QE Focused on 2026-09-16, which drops Recommended as
+  // an editorial rule rather than via the flag — testing the flag at the
+  // default would measure that rule instead, which is the trap the demo-rail
+  // note in CLAUDE.md describes ("a test about capability must pin the flags —
+  // or here the version — it depends on").
+  const WITH_BAND = '/dashboard-rebrand?version=discoverability-learner-focused'
+
+  it('shows the band by default on a version that has one', () => {
+    renderShell(WITH_BAND)
     expect(screen.getByText('Recommended for you')).toBeInTheDocument()
+  })
+
+  it('is dropped by the QE Focused version regardless of the flag', () => {
+    // The editorial half. QE Focused is for a candidate working a fixed
+    // curriculum towards a booked exam — not a shopper — so the discovery band
+    // has no job there. Seeded ON to prove the layout wins over the flag.
+    seedFlag('dashboard-recommended', true)
+    renderShell('/dashboard-rebrand?version=discoverability-qe-focused')
+    expect(screen.queryByText('Recommended for you')).toBeNull()
+  })
+
+  it('is dropped on XCEL\'s DEFAULT view, because that is QE Focused', () => {
+    // Asserted separately from the version-param case: the default is resolved
+    // by `defaultDiscoverabilityVersionFor`, and a change there would otherwise
+    // only show up as a surprise in a screenshot.
+    renderShell('/dashboard-rebrand')
+    expect(screen.queryByText('Recommended for you')).toBeNull()
   })
 
   it('removes the section entirely when off', () => {
@@ -125,7 +150,7 @@ describe('the Recommended for You band toggle', () => {
     // reads as a load failure. Asserted on the header text rather than on a
     // card, because cards can be empty for data reasons.
     seedFlag('dashboard-recommended', false)
-    renderShell('/dashboard-rebrand')
+    renderShell(WITH_BAND)
     expect(screen.queryByText('Recommended for you')).toBeNull()
   })
 
@@ -134,7 +159,7 @@ describe('the Recommended for You band toggle', () => {
     // band on Home. A reviewer can want either without the other, and wiring
     // one to both is the mistake this pins.
     seedFlag('nav-show-recommended', false)
-    renderShell('/dashboard-rebrand')
+    renderShell(WITH_BAND)
     expect(screen.getByText('Recommended for you')).toBeInTheDocument()
   })
 })

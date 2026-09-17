@@ -216,28 +216,16 @@ export type FeatureFlagState = {
  * Source-of-truth feature catalog. Add new entries here and they'll
  * appear in the panel automatically. The order is the render order.
  */
-// Per-widget Lo-Fi variant — scopes the global Lo-Fi wireframe treatment
-// to a single dashboard widget. Appended to each featured widget's flag
-// so reviewers can preview one widget as a placeholder without flipping
-// the whole page via the global Lo-Fi master switch.
-const LO_FI_VARIANT: FeatureFlagVariant = {
-  value: 'lo-fi',
-  label: 'Lo-Fi',
-  description:
-    'Render just this widget as a lo-fi wireframe placeholder. Same treatment as the global Lo-Fi master switch, scoped to this widget.',
-}
-
-// Variant set for widgets that were previously toggle-only — a plain
-// rendered "Default" plus the Lo-Fi placeholder option.
-const DEFAULT_PLUS_LOFI: FeatureFlagVariant[] = [
-  {
-    value: 'default',
-    label: 'Default',
-    description: 'Normal rendered widget.',
-  },
-  LO_FI_VARIANT,
-]
-
+// PER-WIDGET LO-FI IS GONE — removed 2026-09-16 with the flags that carried it.
+// `LO_FI_VARIANT` / `DEFAULT_PLUS_LOFI` appended a "Lo-Fi" option to each
+// dashboard widget's flag so a reviewer could preview ONE widget as a wireframe
+// placeholder. Every flag that offered it was a classic-`/dashboard` flag, and
+// the XCEL flag audit removed all of them, so the option had nowhere left to
+// appear. The GLOBAL Lo-Fi master switch is untouched (`LoFiContext` /
+// `useLoFi`), and every `LoFiScope` wrapper is still in place in DashboardV3 /
+// V4 — they now just receive `on={false}`. Restoring the per-widget scope means
+// re-adding these two consts and the `variant === 'lo-fi'` reads that were
+// pinned alongside each removed flag.
 
 /* ─── left-nav section visibility ──────────────────────────────────────
  *
@@ -300,12 +288,25 @@ export const NAV_SECTION_FLAGS: {
   { section: 'courses', label: 'My Courses' },
   { section: 'certificates', label: 'Certificates' },
   // Explore
-  { section: 'catalog', label: 'Browse Catalog' },
+  //
+  // BROWSE CATALOG IS OFF as of 2026-09-16, which empties the Explore group and
+  // therefore drops the group and its caption from the rail (a group whose
+  // items are all hidden falls out whole — see `PlatformSideNav`). It was the
+  // only row left there once Resources and Rubi moved into My Learning.
+  //
+  // Editorial, not a capability cut, and done through the FLAG rather than by
+  // deleting the row for the reason this baseline exists: the section still
+  // resolves from `?section=catalog`, so a stakeholder who asks to see the
+  // catalogue gets it, and a reviewer can bring the row back from the flag
+  // panel without a code change. The QE Focused default is built for a
+  // candidate working one booked exam — the shop is the least relevant thing on
+  // that rail.
+  { section: 'catalog', label: 'Browse Catalog', defaultEnabled: false },
   { section: 'resources', label: 'Resources' },
   { section: 'recommended', label: 'Recommended for You', defaultEnabled: false },
   { section: 'm-learning-library', label: 'Resource Library', defaultEnabled: false },
   { section: 'm-exam-prep', label: 'Exam & Cert Prep', defaultEnabled: false },
-  { section: 'm-career-tools', label: 'Rubi AI Tools' },
+  { section: 'm-career-tools', label: 'Rubi Insights' },
   // Off: XCEL has no podcast product — the section is an EmptyState saying so.
   { section: 'podcasts', label: 'Podcasts', defaultEnabled: false },
   // Support
@@ -337,433 +338,9 @@ const NAV_SECTION_FLAG_DEFINITIONS: FeatureFlagDefinition[] = NAV_SECTION_FLAGS.
 
 export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
   ...NAV_SECTION_FLAG_DEFINITIONS,
-  {
-    key: 'dashboard-kpi-card',
-    group: 'KPI Card',
-    label: 'Dashboard KPI Card',
-    description:
-      "Hero band at the top of the dashboard showing the welcome row + key stats (credits, progress, certificates). Toggle off to hide it entirely, or switch between the new light treatment and the original dark teal version.",
-    defaultEnabled: true,
-    defaultVariant: 'light',
-    variants: [
-      {
-        value: 'light',
-        label: 'Light',
-        description: 'White card surface, primary-800 text — current V3 default.',
-      },
-      {
-        value: 'dark',
-        label: 'Dark',
-        description: 'Original teal background with white text.',
-      },
-      LO_FI_VARIANT,
-    ],
-    secondaryVariantLabel: 'Orientation',
-    defaultSecondaryVariant: 'auto',
-    secondaryVariants: [
-      {
-        value: 'auto',
-        label: 'Auto',
-        description:
-          "Use each dashboard version's natural orientation — horizontal band on V1–V3, vertical widget on V4.",
-      },
-      {
-        value: 'horizontal',
-        label: 'Horizontal',
-        description:
-          'Force the long, full-width horizontal band (welcome + 4 inline stats) regardless of version.',
-      },
-      {
-        value: 'vertical',
-        label: 'Vertical',
-        description:
-          'Force the short, vertical widget — welcome block on top, stats as a 2×2 grid below. Best in a narrow column.',
-      },
-    ],
-    page: 'dashboard',
-  },
-  {
-    key: 'jump-back-in-card',
-    // One of two mutually-exclusive Jump Back In versions — this is the
-    // original (course-card) version. Enabling the "+ Quick Links"
-    // version below auto-disables this one and vice versa.
-    mutexGroup: 'jump-back-in',
-    group: 'Jump Back In Card',
-    label: 'Jump Back In',
-    description:
-      'Standard Jump Back In tile (no quick links). Toggle to hide; pick a variant to switch between the single full-size course card, the stacked rows, and the 3-card spotlight. Mutually exclusive with the "+ Quick Links" version.',
-    defaultEnabled: true,
-    defaultVariant: 'single',
-    variants: [
-      {
-        value: 'single',
-        label: 'Single card',
-        description:
-          'Current V3 default — one full-size course card for the most recent in-progress course. View All opens the in-progress slide-over.',
-      },
-      {
-        value: 'stacked',
-        label: 'Stacked rows',
-        description:
-          'Up to two smaller in-progress course rows, then a Recently Added subhead with up to two not-started rows (four cards max). View All routes to My Courses.',
-      },
-      {
-        value: 'path-aware',
-        label: 'Stacked + What\'s Next',
-        description:
-          "Demo simulation of the empty-in-progress state — the card title flips to \"What's Next\" and the top rows show two 0%-progress cards (the next not-started courses from the learner's path). Pick this to preview the UX without changing fixture data.",
-      },
-      {
-        value: 'stacked-trio',
-        label: 'Stacked (3 cards)',
-        description:
-          'Three larger stacked cards — one in-progress, one recently added, one recent certificate. Each card is sized up so the tile keeps the same vertical footprint as the 6-card stacked variant.',
-      },
-      LO_FI_VARIANT,
-    ],
-    page: 'dashboard',
-  },
-  {
-    key: 'jump-back-in-card-links',
-    // The second Jump Back In version — in-progress card + a Quick
-    // Links section. Mutually exclusive with the standard version
-    // above (enabling one disables the other).
-    mutexGroup: 'jump-back-in',
-    group: 'Jump Back In Card',
-    label: 'Jump Back In + Quick Links',
-    description:
-      'Alternate Jump Back In tile: the in-progress card on top, then a Quick Links section (Catalog, Certificates, Podcasts, Explore Membership, Recent Purchases). Pick the tile or list presentation, and the in-progress card size. Off by default; enabling it disables the standard Jump Back In version.',
-    defaultEnabled: false,
-    defaultVariant: 'links-tiles',
-    variants: [
-      {
-        value: 'links-tiles',
-        label: 'Quick Links (tiles)',
-        description:
-          'Quick Links render as a 2-up grid of square tiles below the in-progress card.',
-      },
-      {
-        value: 'links-list',
-        label: 'Quick Links (list)',
-        description:
-          'Quick Links render as a vertical list of rows (medallion + label + caption) below the in-progress card.',
-      },
-      LO_FI_VARIANT,
-    ],
-    secondaryVariantLabel: 'Card size',
-    defaultSecondaryVariant: 'normal',
-    secondaryVariants: [
-      {
-        value: 'normal',
-        label: 'Normal size',
-        description:
-          'In-progress card uses the standard compact course card (image header + title + progress).',
-      },
-      {
-        value: 'medium',
-        label: 'Medium size',
-        description:
-          'In-progress card keeps the full card anatomy (image header + title + meta + progress) but with a shorter image and collapsed spacing — a denser take on Normal.',
-      },
-      {
-        value: 'small',
-        label: 'Small size',
-        description:
-          'In-progress card shrinks to a compact row — small thumbnail + title + progress — so the Quick Links sit higher.',
-      },
-    ],
-    page: 'dashboard',
-  },
-  {
-    key: 'jump-back-in-chrome',
-    group: 'Jump Back In Card',
-    label: 'Jump Back In Container',
-    description:
-      'How the Jump Back In card is framed. Framed (default) keeps the white card container + View All link. Bare hides the container (no background, border, or padding) and the View All link, so the content sits directly on the page.',
-    defaultEnabled: true,
-    defaultVariant: 'framed',
-    variants: [
-      {
-        value: 'framed',
-        label: 'Framed',
-        description: 'White card container with border + View All link — current default.',
-      },
-      {
-        value: 'bare',
-        label: 'Bare (no container)',
-        description: 'Drops the white container and the View All link; content sits directly on the page.',
-      },
-    ],
-    page: 'dashboard',
-  },
   // Per-tile toggles for the Jump Back In Quick Links grid — each tile
   // can be turned on/off independently. The Quick Links section hides
   // entirely when every tile is off.
-  {
-    key: 'jbi-quicklink-catalog',
-    group: 'Quick Links Tiles',
-    label: 'Tile — Course Catalog',
-    description: 'Show the "Course Catalog" tile in the Jump Back In Quick Links grid.',
-    defaultEnabled: true,
-    page: 'dashboard',
-  },
-  {
-    key: 'jbi-quicklink-library',
-    group: 'Quick Links Tiles',
-    label: 'Tile — Resource Library',
-    description: 'Show the "Resource Library" tile in the Jump Back In Quick Links grid.',
-    defaultEnabled: true,
-    page: 'dashboard',
-  },
-  {
-    key: 'jbi-quicklink-courses',
-    group: 'Quick Links Tiles',
-    label: 'Tile — My Courses',
-    description: 'Show the "My Courses" tile in the Jump Back In Quick Links grid.',
-    defaultEnabled: true,
-    page: 'dashboard',
-  },
-  {
-    key: 'jbi-quicklink-explore-membership',
-    group: 'Quick Links Tiles',
-    label: 'Tile — Membership',
-    description: 'Show the "Membership" tile in the Jump Back In Quick Links grid.',
-    defaultEnabled: true,
-    page: 'dashboard',
-  },
-  {
-    key: 'jbi-quicklink-podcasts',
-    group: 'Quick Links Tiles',
-    label: 'Tile — Podcasts',
-    description: 'Show the "Podcasts" tile in the Jump Back In Quick Links grid.',
-    defaultEnabled: true,
-    page: 'dashboard',
-  },
-  {
-    key: 'jbi-quicklink-certificates',
-    group: 'Quick Links Tiles',
-    label: 'Tile — Certificates',
-    description: 'Show the "Certificates" tile in the Jump Back In Quick Links grid.',
-    defaultEnabled: true,
-    page: 'dashboard',
-  },
-  {
-    key: 'jbi-quicklink-requirements',
-    group: 'Quick Links Tiles',
-    label: 'Tile — Requirements',
-    description: 'Show the "Requirements" tile in the Jump Back In Quick Links grid.',
-    defaultEnabled: true,
-    page: 'dashboard',
-  },
-  {
-    key: 'jbi-quicklink-notes',
-    group: 'Quick Links Tiles',
-    label: 'Tile — My Notes',
-    description: 'Show the "My Notes" tile in the Jump Back In Quick Links grid.',
-    defaultEnabled: true,
-    page: 'dashboard',
-  },
-  {
-    key: 'learning-path-card',
-    group: 'Learning Path Card',
-    label: 'Learning Path Card',
-    description:
-      'Compact V3 path card with progress ring + status pill + key stats (Hours Completed, Expires, etc.). Bottom-left of the V3 main section right column.',
-    defaultEnabled: true,
-    defaultVariant: 'default',
-    variants: DEFAULT_PLUS_LOFI,
-    page: 'dashboard',
-  },
-  {
-    key: 'courses-summary-card',
-    group: 'Courses Card',
-    label: 'Courses Summary',
-    description:
-      'Enlarged multi-segment half-donut gauge showing Completed / In Progress / Not Started / Recently Added counts. Bottom-right of the V3 main section right column.',
-    defaultEnabled: true,
-    defaultVariant: 'default',
-    variants: DEFAULT_PLUS_LOFI,
-    page: 'dashboard',
-  },
-  {
-    key: 'premium-membership-card',
-    group: 'Right Rail',
-    label: 'Premium Membership Card',
-    description:
-      "Right-rail membership card. Non-members see the benefits checklist variant directly under the Rubi widget; members see the lighter informational SidebarCard at the bottom of the rail. Toggle hides both.",
-    defaultEnabled: true,
-    defaultVariant: 'default',
-    variants: DEFAULT_PLUS_LOFI,
-    page: 'dashboard',
-  },
-  {
-    key: 'whats-new-card',
-    group: 'Right Rail',
-    label: "What's New Card",
-    description:
-      "Right-rail card surfacing the latest platform / catalog updates. Pulled from the shared `SIDEBAR_CARDS` fixture.",
-    defaultEnabled: true,
-    defaultVariant: 'default',
-    variants: DEFAULT_PLUS_LOFI,
-    page: 'dashboard',
-  },
-  {
-    key: 'dashboard-rail-tray',
-    group: 'Right Rail',
-    label: 'Right Rail Tray',
-    description:
-      'Wraps the right-rail cards in a tinted tray (28px padding) so the rail reads as a distinct section from the main column. Pick the tray color, or toggle off to sit the rail cards directly on the page background.',
-    defaultEnabled: true,
-    defaultVariant: 'gray',
-    variants: [
-      {
-        value: 'gray',
-        label: 'Gray',
-        description: 'Neutral light gray (neutral-100) — a step below the page surface.',
-      },
-      {
-        value: 'deep-gray',
-        label: 'Deep gray',
-        description: 'A darker neutral (neutral-200) for a more pronounced divide.',
-      },
-      {
-        value: 'brand',
-        label: 'Brand tint',
-        description: "Soft brand wash (primary-100) — picks up the active brand's primary hue.",
-      },
-      {
-        value: 'accent',
-        label: 'Accent tint',
-        description: 'Soft accent wash (tertiary-100) for a warmer separation.',
-      },
-    ],
-    page: 'dashboard',
-  },
-  {
-    key: 'dashboard-top5-pagination',
-    group: 'Membership Card',
-    label: 'Top 5 Pagination',
-    description:
-      'Show the Featured Products → Top 5 carousel navigation — the prev/next arrows and the page dots that switch between the Popular / Recommended / Top Podcasts views. Toggle off to lock the carousel to a single view with no nav chrome; pick which view below.',
-    defaultEnabled: true,
-    secondaryVariantLabel: 'Shown view',
-    secondaryVariantWhenDisabled: true,
-    defaultSecondaryVariant: 'popular',
-    secondaryVariants: [
-      {
-        value: 'popular',
-        label: 'Popular',
-        description: 'Lock to the "Top 5 right now" view.',
-      },
-      {
-        value: 'recommended',
-        label: 'Recommended',
-        description: 'Lock to the "Recommended for you" view.',
-      },
-      {
-        value: 'podcasts',
-        label: 'Top Podcasts',
-        description: 'Lock to the "Top podcasts" view.',
-      },
-    ],
-    page: 'dashboard',
-  },
-  {
-    key: 'membership-card-layout',
-    group: 'Membership Card',
-    label: 'Layout',
-    description:
-      "Controls how Featured Products is composed when the doubled-height variant is on. Default keeps the current 2-column layout (horizontal Snacks + AI MasterTracks on the left, vertical Top 5 list on the right). Tiles below puts the two feature cards side-by-side at the top and spans the bottom with five Recommended-style square tiles for Top 5 (still showing kind + star rating).",
-    defaultEnabled: true,
-    defaultVariant: 'default',
-    variants: [
-      {
-        value: 'default',
-        label: 'Default (Top 5 right)',
-        description:
-          'Current layout — Snacks + AI MasterTracks stacked on the left, Top 5 list on the right.',
-      },
-      {
-        value: 'tiles-bottom',
-        label: 'Top 5 tiles below',
-        description:
-          'Snacks + AI MasterTracks horizontal cards along the top; Top 5 spans the bottom as five `SimpleCard`-style square tiles (image + title bar), each tile showing the content type and star rating in the bar.',
-      },
-    ],
-    page: 'dashboard',
-  },
-  {
-    key: 'membership-card-theme',
-    group: 'Membership Card',
-    label: 'Theme',
-    description:
-      'Light keeps the current white surface — the default. Dark drops the card onto a deep teal background (primary-800) with inverted eyebrow text, so the Membership block reads as a marketing-style hero. Inner feature cards stay light so they still pop.',
-    defaultEnabled: true,
-    defaultVariant: 'light',
-    variants: [
-      {
-        value: 'light',
-        label: 'Light',
-        description:
-          'White surface — current default. Standard card chrome.',
-      },
-      {
-        value: 'dark',
-        label: 'Dark',
-        description:
-          'Deep teal (primary-800) surface with white eyebrow. Inner feature cards retain their light tint for contrast.',
-      },
-    ],
-    page: 'dashboard',
-  },
-  {
-    key: 'membership-card-height',
-    group: 'Membership Card',
-    label: 'Height',
-    description:
-      'Controls the placeholder Membership card content. Single keeps the existing "To be designed" copy. Double doubles the card height and adds three stacked lo-fi feature sections (Feature 1 / 2 / 3) so reviewers can mock placement for the eventual membership-teaser content.',
-    defaultEnabled: true,
-    defaultVariant: 'single',
-    variants: [
-      {
-        value: 'single',
-        label: 'Single (placeholder)',
-        description:
-          'Current default — "To be designed" subhead + the planned-content one-liner.',
-      },
-      {
-        value: 'double',
-        label: 'Double + 3 features',
-        description:
-          'Roughly 2× the height. Adds three lo-fi sections labeled Feature 1, Feature 2, Feature 3 to scaffold the future membership-teaser content.',
-      },
-    ],
-    page: 'dashboard',
-  },
-  {
-    key: 'membership-card-width',
-    group: 'Membership Card',
-    label: 'Width',
-    description:
-      "Controls where the placeholder Membership card sits on V3. Full-width spans the dashboard above the Jump Back In / Learning Paths / Courses row (current default). Two-thirds drops the card into the right column above Learning Paths + Courses so Jump Back In moves up next to it.",
-    defaultEnabled: true,
-    defaultVariant: 'full',
-    variants: [
-      {
-        value: 'full',
-        label: 'Full width',
-        description:
-          'Spans the whole main column above the Jump Back In row. Matches the original V3 layout.',
-      },
-      {
-        value: 'two-thirds',
-        label: 'Two-thirds width',
-        description:
-          'Sits inside the right column above Learning Paths + Courses (LP + Courses combined width). Jump Back In moves up to the top-left so the row reads JBI · Membership at the top.',
-      },
-    ],
-    page: 'dashboard',
-  },
   {
     key: 'learning-paths-count',
     group: 'Learning Path Card',
@@ -976,109 +553,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     extraPages: ['recommended-for-you'],
   },
   {
-    key: 'dashboard-drag-and-drop',
-    group: 'Not MVP',
-    label: 'Drag-and-Drop Widgets',
-    description:
-      "Demo affordance — when on, every top-level widget on the dashboard becomes draggable. Grab any card and drop it onto another widget in the same column to reorder; widgets snap back to the dashboard grid. Order resets on page refresh (no persistence — this is a UI/UX preview).",
-    defaultEnabled: false,
-    page: 'dashboard',
-  },
-  {
-    key: 'quick-links-card',
-    group: 'Right Rail',
-    label: 'Quick Links',
-    description:
-      '2×2 tile grid in the right rail — Catalog, Resource Library, Podcasts, Certificates. Each tile has a top-left medallion icon + label + caption.',
-    defaultEnabled: true,
-    defaultVariant: 'default',
-    variants: DEFAULT_PLUS_LOFI,
-    page: 'dashboard',
-  },
-  {
-    key: 'rubi-tutor-widget',
-    group: 'Right Rail',
-    label: 'Rubi Tutor Widget',
-    description:
-      'AI assistant widget at the top of the dashboard right rail — "What can I help you with?" prompt + suggested actions. Toggle off to hide the widget entirely.',
-    defaultEnabled: true,
-    defaultVariant: 'default',
-    variants: DEFAULT_PLUS_LOFI,
-    page: 'dashboard',
-  },
-  {
-    key: 'streak-hero-card',
-    group: 'Not MVP',
-    label: 'Streak Hero',
-    description:
-      'Current learning streak card with personal-best progress + 30-day / this-week activity chart. Top of the V3 main section right column.',
-    defaultEnabled: true,
-    defaultVariant: 'default',
-    variants: DEFAULT_PLUS_LOFI,
-    page: 'dashboard',
-  },
-  {
-    key: 'membership-hero-band',
-    label: 'Membership Hero',
-    description:
-      "Welcome band at the top of /membership — eyebrow + greeting + member-since/renewal sub-line + CTAs. Toggle off to hide the whole band, or swap between the dark teal treatment (current) and a light card surface.",
-    defaultEnabled: true,
-    defaultVariant: 'dark',
-    variants: [
-      {
-        value: 'dark',
-        label: 'Dark',
-        description: 'Teal gradient with white text — current default.',
-      },
-      {
-        value: 'light',
-        label: 'Light',
-        description: 'White card surface with primary-800 text.',
-      },
-    ],
-    page: 'membership',
-  },
-  {
-    key: 'membership-v7-bleed-rail',
-    label: 'V7 — Full-bleed dark rail',
-    description:
-      'V7 only. Turn the floating dark nav card into a full-height sidebar: the primary-800 background bleeds to the top, left, and bottom edges of the page (no gutter, no rounded card). Off keeps the current floating-card rail.',
-    defaultEnabled: false,
-    page: 'membership',
-  },
-  {
-    key: 'membership-summary-style',
-    label: 'Membership Summary Style',
-    description:
-      'Visual treatment of the "Membership Summary" KPI band (Member for / You Saved / Credits / Certificates / Time Spent) on the membership overview.',
-    defaultEnabled: true,
-    defaultVariant: 'dark',
-    variants: [
-      {
-        value: 'dark',
-        label: 'Dark band',
-        description: 'Current default — deep teal (secondary-800) surface with white text.',
-      },
-      {
-        value: 'bare',
-        label: 'No background',
-        description: 'Drops the surface entirely; stats sit on the page with primary-700 text.',
-      },
-      {
-        value: 'light',
-        label: 'White card',
-        description: 'White card surface (border-defined) with primary-700 text.',
-      },
-      {
-        value: 'banner',
-        label: 'Banner header',
-        description:
-          'Member only — the dark band gains an upper "Your Membership" banner (Passport Lite badge + plan expiry + a "Manage Membership" link) above the stats. Non-members fall back to the dark band.',
-      },
-    ],
-    page: 'dashboard-rebrand',
-  },
-  {
     key: 'study-calendar-state',
     label: 'Study Plan State',
     description:
@@ -1186,45 +660,167 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'learning-path',
   },
   {
-    key: 'membership-hero-stats',
-    label: 'Hero Stats Row',
+    key: 'dashboard-course-header',
+    group: 'Widgets',
+    label: 'Course header band',
     description:
-      'Three inline stats inside the membership hero (Active courses · Saved to library · Unread replies). Toggle off to hide the stats row while keeping the greeting + CTAs.',
+      'A full-width header above the whole QE Focused overview: the course meta on one line, the course name as a large heading, two actions on the right, and a rule under it. OFF by default — the course name is already the heading of the Current Progress block a few lines below, and this deliberately says it twice, larger, as a page title. Turn it on to see the page read as a course rather than as a dashboard. Its action opens the requirements sheet. The reference had a second button labelled Syllabus (PDF), and the PDF XCEL actually links is a 7-day study PLAN, so it is not offered here rather than mislabelled.',
     defaultEnabled: true,
-    page: 'membership',
-  },
-  {
-    key: 'membership-card-tier-header',
-    label: 'Membership Card — Tier Header',
-    description:
-      'How each membership renders in the "Multiple memberships" page version. ON (default) = the tier-header treatment: a tier-tinted identity block (profession + state + tier pill, with the tier glyph as a large watermark) over a white data body reading Auto-Renews / Expires / Expired on plus Member Tenure in days, and no divider above Manage. OFF = the original all-gradient passport card, where the data sits on the tinted surface and the second cell shows Saved. Applies to BOTH the 3-up tile (3+ memberships) and the landscape band (1–2). Saved leaves the card in the ON state because the roll-up scorecard directly above already totals it.',
-    defaultEnabled: true,
-    page: 'membership',
-  },
-  {
-    key: 'membership-savings-cta',
-    label: 'Non-member Savings CTA',
-    description:
-      'How the non-member dashboard KPI band ends. Split keeps the separate Potential Savings + Current Plan (Free Account) stats. The combined variants merge them into one Potential Savings cell ($1,180 /year) with an "Explore Membership" CTA — subtle (matches the band) or bold (attention-grabbing).',
-    defaultEnabled: true,
-    defaultVariant: 'split',
+    /*
+     * `band` IS THE DEFAULT as of 2026-09-17 (the direct ask: "set this view as
+     * the default").
+     *
+     * It shipped as `none`, and the stated reason was that the band says the
+     * course name TWICE — once as the page title and again as the block's own
+     * heading — which made it a question to look at rather than an answer to
+     * ship. That reason is GONE: `hideHeader` now drops the block's entire
+     * header cluster while the band is on, so the name, the meta and the
+     * progress bar appear once each.
+     *
+     * The flip also settles a real gap. Target Date and Time Remaining left the
+     * block with its KPI row, and the band's stat line is the only thing that
+     * states them — so at `none` the page had no target date and no countdown
+     * anywhere, which is what `the page states its countdown ONLY via the
+     * header band` was pinning as a known consequence.
+     */
+    defaultVariant: 'band',
     variants: [
       {
-        value: 'split',
-        label: 'Split stats',
-        description: 'Separate Potential Savings + Current Plan (Free Account) stats — current default.',
+        value: 'none',
+        label: 'None — no page header',
+        description: 'No change. The block\u2019s own title is the only course name on the page.',
       },
       {
-        value: 'cta',
-        label: 'Combined + subtle CTA',
+        value: 'band',
+        label: 'Header band',
         description:
-          'Merge into one Potential Savings cell (Save $1,180 · /year with membership) + a subtle outlined "Explore Membership" CTA matching the band.',
+          'Meta line, large course name, two right-aligned actions, and a rule under the lot — above everything else on the page.',
+      },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'dashboard-journey-style',
+    group: 'Widgets',
+    label: 'Study Journey — rail style',
+    description:
+      'How the Study Journey rail is drawn. Default is the compact rail: an uppercase eyebrow, a "0 / 4" count, dot nodes on a spine, and a meta line only on stops that are not blocked. "Syllabus" is a formal treatment — a bordered card, a serif heading under a "Syllabus sequence" eyebrow, NUMBERED nodes (01, 02 …), serif row titles, a percentage chip on the active stop, and a meta line on every row including the blocked ones. Same stops and same data in both: the variant does not split, merge or rename anything, and it invents no descriptive copy the fixtures cannot source.',
+    defaultEnabled: true,
+    /* `syllabus` IS THE DEFAULT as of 2026-09-17 (the direct ask). It is no
+       longer a restyle of the compact rail so much as the treatment the version
+       was built around — numbered nodes, "Complete Coursework", titles-only
+       rows, and Get Licensed continuing the same 01-07 sequence. `default`
+       stays in the picker as the comparison. */
+    defaultVariant: 'syllabus',
+    variants: [
+      {
+        value: 'default',
+        label: 'Default — compact rail',
+        description:
+          'Dot nodes, an uppercase eyebrow with the stop count, and no meta line on blocked stops.',
       },
       {
-        value: 'bold',
-        label: 'Combined + bold CTA',
+        value: 'syllabus',
+        label: 'Syllabus sequence',
         description:
-          'Same combined cell on a tinted callout with a filled magenta "Explore Membership" CTA — more attention-grabbing.',
+          'A bordered card with a serif heading, numbered nodes, serif titles, a percentage chip on the active stop, and a meta line on every row.',
+      },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'dashboard-clp-stats',
+    group: 'Widgets',
+    label: 'Current Progress — stats treatment',
+    description:
+      'How the Target Date / Time Remaining / Completed cells and the status strip below them are treated. Default is bare cells on the page grey, divided by vertical rules, with a status-tinted strip under them. "Stat card" gathers the three cells and the status onto one white card with a hairline border and a rule between them, gives each cell a sub-label under its value, and shows Completed as a two-tone fraction. A SEPARATE axis from `dashboard-clp-style`, so the header treatment and the stats treatment can be combined.',
+    defaultEnabled: true,
+    defaultVariant: 'default',
+    variants: [
+      {
+        value: 'default',
+        label: 'Default — bare cells',
+        description:
+          'No change. Three bare cells divided by vertical rules, then the status-tinted strip.',
+      },
+      {
+        value: 'stat-card',
+        label: 'Stat card',
+        description:
+          'One white card holds the three cells and the status, with a hairline border and a rule between them. Each cell gains a sub-label under its value, the Completed figure reads as a two-tone fraction, and the status pill is uppercase on an untinted row.',
+      },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'dashboard-clp-style',
+    group: 'Widgets',
+    label: 'Current Progress — block style',
+    description:
+      'How the Current Progress block on the QE Focused overview is treated. Default is the light block on the page grey — art left, title, meta, a progress bar under it, then the KPI cells and the status strip. "Big number" keeps that light ground and moves the percentage out to its own column on the right, with the bar and the lesson count under it. "Navy card" puts the same cluster on a dark card with light type, a green bar and a white Resume button. All three read the SAME data — this is a treatment, not a different set of facts, and no variant invents lesson-level content the storefront does not publish.',
+    // Variant-only, like `dashboard-heading-font`: the enable toggle is on so
+    // the flag is live and the CHOICE is the variant. "Off" would have to mean
+    // "default", which the variant already says.
+    defaultEnabled: true,
+    defaultVariant: 'default',
+    variants: [
+      {
+        value: 'default',
+        label: 'Default — light block',
+        description:
+          'No change. Art left, title and meta right, the progress bar under the meta with the percentage beside it.',
+      },
+      {
+        value: 'big-number',
+        label: 'Big number — light',
+        description:
+          'Same light ground, but the percentage becomes a large figure in its own right-hand column with the bar and "26 of 42 lessons complete" beneath it. The title and meta keep the left.',
+      },
+      {
+        value: 'navy',
+        label: 'Navy card',
+        description:
+          'The header cluster sits on a dark navy card: light type, a green progress bar, a large percentage on the right and a white Resume button. The KPI cells, status strip and View Requirements stay on the page grey below it.',
+      },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'dashboard-heading-font',
+    group: 'Widgets',
+    label: 'Heading font',
+    description:
+      'Typeface for the HEADINGS on the Dashboard Rebrand overview — the Current Learning Progress title, the section leads, the widget and card titles. Sans (default) is the brand face. Serif re-points `--font-heading` for the page only, so the left rail, the header and the shell’s own page title stay on the brand face and the two sit side by side for comparison. NOTE the serif is a SYSTEM stack standing in for the style, not the face on xcelsolutions.com: that one is Amasis MT, which is unlicensed to us, absent from Google Fonts, and recorded in tokens.css as off-brand for XCEL ("Amasis appears nowhere in the guide"). This variant is for looking at the idea, not for shipping that face.',
+    // Variant-only, like `learning-path-status-display`: the enable toggle is
+    // on so the flag is live, and the CHOICE is the variant. A separate on/off
+    // for a font would be two controls for one decision, and "off" would have
+    // to mean "sans", which the variant already says.
+    defaultEnabled: true,
+    /*
+     * `serif` IS THE DEFAULT as of 2026-09-17 (the direct ask).
+     *
+     * THE CAVEAT BELOW STILL STANDS AND NOW MATTERS MORE: the face is a SYSTEM
+     * STACK (Georgia and its cousins) standing in for the style, not the Amasis
+     * MT on xcelsolutions.com — that one is unlicensed to us, absent from
+     * Google Fonts, and recorded in tokens.css as off-brand for XCEL. Making
+     * this the default means the committed demo now ships a stand-in as its
+     * headline typeface, which is fine for an exploration and would not be fine
+     * for production. Repointing `--font-heading-serif` at a licensed face is
+     * one declaration.
+     */
+    defaultVariant: 'serif',
+    variants: [
+      {
+        value: 'sans',
+        label: 'Sans — the brand face',
+        description:
+          'No change. `--font-heading` as the brand block sets it (Lato on XCEL, itself a documented placeholder for Avenir).',
+      },
+      {
+        value: 'serif',
+        label: 'Serif',
+        description:
+          'Headings on the overview render in a serif (a system stack — Georgia and its cousins). The page only: the rail, the header and the section title stay on the brand face.',
       },
     ],
     page: 'dashboard-rebrand',
@@ -1285,93 +881,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       },
     ],
     page: 'dashboard-rebrand',
-  },
-  {
-    key: 'membership-count',
-    group: 'Navigation',
-    label: 'Show Multiple Memberships',
-    description:
-      'How many memberships the learner holds — a fact about the ACCOUNT, so one flag drives every surface that shows them (the left-rail Membership block and the Membership page\'s "Multiple memberships" version). Off (default) = a single membership: the rail shows the tier badge + Member since / Expires, and the Membership page shows one landscape band. On = multiple, with the variant picking how many: Two renders two landscape bands; three or more render a horizontal carousel of passport tiles. Uses the Elite / Fitzgerald demo fixtures (Elite carries six — one per renewal state); brands with fewer than 2 authored memberships fall back to the single block. Also driven by the Demo Controls bar\'s "Multiple memberships" persona.',
-    defaultEnabled: false,
-    defaultVariant: 'three',
-    variants: [
-      {
-        value: 'two',
-        label: 'Two',
-        description: 'Two memberships — the Membership page renders two stacked landscape bands.',
-      },
-      {
-        value: 'three',
-        label: 'Three',
-        description: 'Three memberships — the Membership page renders a horizontal carousel of passport tiles.',
-      },
-      {
-        value: 'five',
-        label: 'Five',
-        description: 'Five memberships — the carousel scrolls (arrows + peek) since the tiles overflow the row.',
-      },
-      {
-        value: 'seven',
-        label: 'Six',
-        description:
-          'All six — the full Elite set, one membership per renewal state: auto-renews, expires inside the renewal window, expires outside it, payment failed, grace period, and expired. This is the one to pick to review the renewal-state copy end to end. (The value is still `seven` so existing ?ff= links keep working; the set dropped to six on 2026-08-31 when the second expires-outside-window record was removed for rendering copy identical to the first.)',
-      },
-    ],
-    page: 'dashboard-rebrand',
-    // Also surfaces under the Membership page card: the same flag drives the
-    // Membership page's multi-membership view, and a second toggle would let
-    // the rail and the page disagree about how many memberships exist.
-    extraPages: ['membership'],
-  },
-  {
-    // Store for the "Membership Version" picker (opened from the Feature Flag
-    // sheet, next to "Dashboard Version") — drives the Dashboard Rebrand
-    // "Membership" rail section (MembershipStandalonePage). Not listed in
-    // REBRAND_FLAGS: on the rebrand it's set only via the picker, not as a flag
-    // row (mirrors how Dashboard Version isn't a flag). Variant-only.
-    key: 'membership-page-version',
-    group: 'Widgets',
-    label: 'Membership page version',
-    description:
-      'Which layout the Dashboard Rebrand "Membership" rail section renders. Membership Hub (default) is the redesigned at-a-glance hero (personalized heading + a stat band led by Lifetime Member Savings) with the Lo-fi benefits treatment below. Full is the detailed page — hero, comparison grid, upgrade banner, the "Included with Your Membership" shelves, and the "Explore Additional…" benefit spotlights. Set from the "Membership Version" picker in the Feature Flag sheet. (Simple + Lo-fi benefits were archived out of the picker on 2026-08-21 but remain valid values here for deep links.)',
-    defaultEnabled: true,
-    defaultVariant: 'hub',
-    variants: [
-      { value: 'hub', label: 'Membership Hub', description: 'The default — redesigned at-a-glance hero (personalized heading + a Lifetime Member Savings stat band) over the Lo-fi benefits treatment. The hero layout (base / + card / split / savings-on-top) is picked by the separate "membership-hub-hero" flag.' },
-      { value: 'full', label: 'Full page', description: 'The detailed page with every section.' },
-      // ARCHIVED (2026-08-21) — 'simple' + 'lofi' were removed from the
-      // Membership Version PICKER (MEMBERSHIP_PAGE_VERSIONS). Like 'scorecard' /
-      // 'multi' below, they stay valid flag values so the implementations remain
-      // reachable via `?ff=` / deep links and their smoke tests still exercise
-      // them. See ARCHIVED_ITEMS for the re-wire.
-      { value: 'simple', label: 'Simple (archived)', description: 'Hero + comparison grid (when applicable) + the upgrade banner only. Not in the version picker.' },
-      { value: 'lofi', label: 'Lo-fi benefits (archived)', description: 'Full page, but the benefit hero sections become lo-fi wireframe blocks (Benefit N · title · desc · bullets · alternating image). Not in the version picker.' },
-      // 'scorecard' (Two sections) + 'multi' (Multiple memberships) were removed
-      // from the Membership Version PICKER (MEMBERSHIP_PAGE_VERSIONS) but are kept
-      // here as valid flag values so the implementations stay reachable via `?ff=`
-      // / deep links and their smoke tests still exercise them.
-      { value: 'scorecard', label: 'Two sections', description: 'Full page, but the hero’s five-stat band is replaced by two sections beneath it — Current Membership (passport card) + Membership Scorecard (savings-led KPI strip). Benefit sections render lo-fi. Member-only. Not in the version picker.' },
-      { value: 'multi', label: 'Multiple memberships', description: 'For a learner with several memberships: one roll-up savings scorecard over passport cards (grid, or scroll past 3), with Profession + State pill filters below. Benefit sections render lo-fi. Needs Elite or Fitzgerald. Not in the version picker.' },
-    ],
-    page: 'dashboard-rebrand',
-  },
-  {
-    // Hero layout for the "Membership Hub" version (the default Membership page).
-    // Split out from the Membership Version picker: those were hero-only tweaks,
-    // so they live here as a regular flag on the Membership page card. Only
-    // applies when the Membership Version is "Membership Hub".
-    key: 'membership-hub-hero',
-    group: 'Widgets',
-    label: 'Membership Hub — hero layout',
-    description:
-      'How the Membership Hub hero lays out its "at a glance" stats. Base = the savings-led stat band alone. Split cards puts the Current Membership passport card (tier · plan · state · expiry · Manage) and the Lifetime Member Details card (Total Saved bar over the four stats) as two separate cards. Member-only; only applies to the Membership Hub version.',
-    defaultEnabled: true,
-    defaultVariant: 'split',
-    variants: [
-      { value: 'base', label: 'Base (savings band)', description: 'The at-a-glance stat band alone — no membership card.' },
-      { value: 'split', label: 'Split cards', description: 'The membership card and the Lifetime Member Details card (Total Saved bar over the four stats) as two separate cards.' },
-    ],
-    page: 'membership',
   },
   {
     key: 'profession-count',
@@ -1488,29 +997,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
-    key: 'whats-new-image',
-    group: 'Widgets',
-    label: 'Featured background',
-    description:
-      "Background treatment for the Featured hero slides (the full-width rotating hero under the Current Learning Path). Image (default) lays the slide's cover photo behind the copy, under a darkening scrim. No image swaps in a brand-gradient panel — the fallback for slides with no cover photo available — keeping the eyebrow / title / copy / CTA legible. Variant-only.",
-    defaultEnabled: true,
-    // Project default: Image (cover photo behind each slide) — per demo baseline.
-    defaultVariant: 'image',
-    variants: [
-      {
-        value: 'no-image',
-        label: 'No image',
-        description: 'A brand-gradient panel behind the copy — the fallback when no cover photo is available.',
-      },
-      {
-        value: 'image',
-        label: 'Image',
-        description: "The slide's cover photo behind the copy, under a darkening scrim (the default).",
-      },
-    ],
-    page: 'dashboard-rebrand',
-  },
-  {
     key: 'ce-study-plan',
     group: 'Widgets',
     label: 'Study plan for Continuing Ed',
@@ -1578,21 +1064,13 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
           'Drops the Current Learning Path side entirely — a single full-width Jump Back In band (course cover on the left, title / meta / progress and the Resume CTA on the right).',
       },
     ],
-    secondaryVariantLabel: 'When to show',
-    defaultSecondaryVariant: 'always',
-    secondaryVariants: [
-      {
-        value: 'always',
-        label: 'Always',
-        description: 'The full-width Current Learning Path band replaces the top band whenever this flag is on.',
-      },
-      {
-        value: 'when-whats-new-off',
-        label: "When What's New is off",
-        description:
-          "Only when the \"What's Trending\" section is turned off — the Current Learning Path shifts into this full-width view to fill the space the carousel left. With What's New on, the normal top band shows.",
-      },
-    ],
+    // The "When to show" secondary axis went with `dashboard-whats-new-layout`
+    // on 2026-09-16. Its two options were `always` (the default) and
+    // `when-whats-new-off`; the "What's Trending" section the latter waited on
+    // was archived 2026-08-05, so with that flag gone the condition is
+    // permanently true and the two options render identically. Restoring it
+    // means restoring the section, the flag, and the `whatsNewOn` read pinned
+    // false in `MembershipOverview`.
     page: 'dashboard-rebrand',
   },
   {
@@ -1729,45 +1207,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'off-track', label: 'Off Track', description: 'Score 38, below the at-risk window. Part-way through the course.' },
       { value: 'at-risk', label: 'At Risk', description: 'Score 62 — inside the window below the 70 pass mark.' },
       { value: 'on-track', label: 'On Track', description: 'Score 84, clear of the pass mark. The default view.' },
-    ],
-    page: 'dashboard-rebrand',
-  },
-  {
-    key: 'dashboard-whats-new-layout',
-    group: 'Widgets',
-    label: "What's Trending section",
-    description:
-      'Show/hide the "What\'s Trending" section on the Dashboard Rebrand overview — the image-forward carousel of newly-added content (full-bleed cover photos + gradient + title/meta + a play affordance, scrolled like Recommended for you). Off by default (the "What\'s New off" persona is the default view coming in); the "What\'s New on" persona turns it on.',
-    defaultEnabled: false,
-    page: 'dashboard-rebrand',
-  },
-  {
-    // Featured — the single full-width rotating hero on the Dashboard Rebrand
-    // overview, directly under the Current Learning Path. It's the one What's New
-    // surface (the former What's New carousels were retired). The enable toggle
-    // shows/hides the whole widget; the variant picks the motion model:
-    //   - `manual` (default) — no auto-advance (matches our shipped carousels
-    //     + the Carousel component rules; manual arrows/keys/swipe only).
-    //   - `auto` — auto-advances WITH a visible Pause/Play control +
-    //     pause-on-hover/focus + prefers-reduced-motion (WCAG 2.2.2). The
-    //     variant to demo/discuss with stakeholders.
-    // Renders on the Home-style overview (main rebrand, held off the pure Demo).
-    key: 'dashboard-featured',
-    group: 'Widgets',
-    label: 'Featured hero',
-    description:
-      'The full-width "Featured" rotating hero on the Dashboard Rebrand overview, directly under the Current Learning Path (one image at a time; the image, title, and CTA change as you advance). The enable toggle shows/hides it. Variant: Manual (default — no auto-advance, arrows/keys/swipe only) or Auto-rotate (adds a Pause/Play control, pauses on hover/focus, and respects reduced-motion — for stakeholder review).',
-    defaultEnabled: true,
-    defaultVariant: 'manual',
-    variants: [
-      { value: 'manual', label: 'Manual', description: 'No auto-advance — the learner drives it with the arrows, ← / → keys, or swipe. Matches our shipped carousels.' },
-      { value: 'auto', label: 'Auto-rotate (+ pause)', description: 'Auto-advances every 6s with a visible Pause/Play control, pauses on hover/focus, and respects prefers-reduced-motion (WCAG 2.2.2).' },
-    ],
-    secondaryVariantLabel: 'Height',
-    defaultSecondaryVariant: 'standard',
-    secondaryVariants: [
-      { value: 'standard', label: 'Standard', description: 'The full 380px hero (default).' },
-      { value: 'compact', label: 'Compact', description: 'A shorter hero (~260px) with slightly smaller title/description — takes less vertical space.' },
     ],
     page: 'dashboard-rebrand',
   },
@@ -1912,150 +1351,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
-    // INERT since 2026-08-25 — nothing reads this. Its only consumer,
-    // MembershipMultiSections, was unwired with the `multi` page version
-    // (Archive row `membership-multi-page`). Kept so a restore is a re-wire.
-    key: 'membership-multi-pills',
-    group: 'Membership',
-    label: 'Multi-membership filter pills',
-    description:
-      'What the Profession / State pill rows do on the Membership page\'s "Multiple memberships" version — an open design question, so all three are switchable. Filter + roll-up (default): the pills narrow the membership rows AND the scorecard above recomputes to match, so the total always describes what\'s on screen. Filter only: the pills narrow the rows but the scorecard stays the lifetime all-memberships total. Display only: no filtering — profession and state read as labels on each row and the pill rows are hidden. Variant-only; no effect outside that page version.',
-    defaultEnabled: true,
-    defaultVariant: 'filter-rollup',
-    variants: [
-      {
-        value: 'filter-rollup',
-        label: 'Filter + roll-up',
-        description: 'Pills filter the rows and the scorecard recomputes to match the selection.',
-      },
-      {
-        value: 'filter-only',
-        label: 'Filter only',
-        description: 'Pills filter the rows; the scorecard stays the lifetime total across all memberships.',
-      },
-      {
-        value: 'display-only',
-        label: 'Display only',
-        description: 'No filtering — the pill rows are hidden and profession / state are just labels on each row.',
-      },
-    ],
-    page: 'dashboard-rebrand',
-  },
-  {
-    key: 'membership-sections',
-    group: 'Membership',
-    label: 'Current Membership + Scorecard',
-    description:
-      'Splits the Explore Membership summary into two sections directly under the hero: "Current Membership" (the passport-card treatment — tier, plan line, member-since / renews, Manage CTA + auto-renew chip) beside "Membership Scorecard" (a value-realized banner with the payback meter over four metric tiles). OFF (default) is a true no-op — the section renders exactly as it does today (upsell band → quick filter → product sections). Member + non-member; all brands. Concept C from explorations/membership-sections.',
-    defaultEnabled: false,
-    page: 'dashboard-rebrand',
-  },
-  {
-    key: 'membership-cancel-steps',
-    group: 'Membership',
-    label: 'Cancellation flow — steps',
-    description:
-      'How many screens the cancellation flow takes. A SEPARATE axis from `membership-cancel-flow`, which picks the container (modal / page / sheet) — this picks the shape. Stepped (default) is the built flow: retention alternatives, then a review screen listing what happens, then the confirmation. Single screen collapses the first two: the alternatives become stacked full-width rows, and the review content — the five facts and the cancel action — sits underneath them, so cancelling is one click instead of two. Fewer clicks, but the facts a learner should read before ending a membership are no longer a screen of their own, which is the trade being tested. Variant-only (the enable toggle is ignored).',
-    defaultEnabled: true,
-    defaultVariant: 'stepped',
-    variants: [
-      {
-        value: 'stepped',
-        label: 'Stepped',
-        description:
-          'Alternatives, then a review screen, then the confirmation. The exit is a peer card in the alternatives row and leads to review.',
-      },
-      {
-        value: 'single-screen',
-        label: 'Single screen',
-        description:
-          'Alternatives as stacked full-width rows, with the review facts and the cancel action below them. No intermediate screen.',
-      },
-    ],
-    page: 'dashboard-rebrand',
-    extraPages: ['membership'],
-  },
-  {
-    key: 'membership-cancel-flow',
-    group: 'Membership',
-    label: 'Cancellation flow container',
-    description:
-      'Where the self-service cancellation flow runs after "Cancel membership" on the Manage Membership sheet. The STEPS and COPY are identical in every arm — retention offers shown all at once and skippable, a review step, then a confirmation with an undo and an optional reason question — so the only thing being compared is the container. In modal (the default) the sheet hands off to a centred dialog: the offers sit side by side as columns, which is what makes them genuinely parallel rather than a queue, while the dialog keeps the flow a clearly bounded thing the learner can close and return from. In page the handoff goes to a full-width region instead — the same columns with more room, but it takes over the whole view. In sheet the 480px panel swaps its own contents step by step: cheapest to build, calmest to read, but the three offers stack, so the learner scrolls to reach the third and by then the first is gone. Variant-only (the enable toggle is ignored). Both non-sheet arms need a host to hand off to and fall back to the sheet arm where there is none. Comparison: explorations/membership-cancellation/cancellation-flow-options.html.',
-    defaultEnabled: true,
-    defaultVariant: 'modal',
-    variants: [
-      {
-        value: 'modal',
-        label: 'Modal',
-        description:
-          'Cancel hands off to a centred dialog. Offers render as columns — all visible at once, terms inline — inside a bounded overlay the learner can close.',
-      },
-      {
-        value: 'sheet',
-        label: 'In sheet',
-        description:
-          'The flow runs inside the Manage Membership panel, stepping in place with a back link. Offers stack.',
-      },
-      {
-        value: 'page',
-        label: 'Full page',
-        description:
-          'Cancel hands off to a full-width region. Offers render as columns — all visible at once, terms inline, no scrolling between them.',
-      },
-    ],
-    page: 'dashboard-rebrand',
-    // Also surfaces under the Membership page card — the sheet it governs opens
-    // from every membership card's footer CTA on `/membership` too.
-    extraPages: ['membership'],
-  },
-  {
-    key: 'membership-compare-view',
-    label: 'Plan comparison view',
-    description:
-      'How the Membership page renders "Compare your Membership Options" — a feature-matrix Table (default) or the stacked plan Cards. Applies to both the CRE (Plus/Pro/Premier) and Elite (Passport Lite/Passport) non-member comparisons. Variant-only (the enable toggle is ignored).',
-    defaultEnabled: true,
-    // Default: the feature-matrix table.
-    defaultVariant: 'table',
-    variants: [
-      {
-        value: 'table',
-        label: 'Table',
-        description:
-          'The "What\'s Included" feature matrix — plans across the top, features down the side.',
-      },
-      {
-        value: 'cards',
-        label: 'Cards',
-        description: 'The stacked plan cards, each with its own price + benefit bullets.',
-      },
-    ],
-    // Its own "Membership" page card in the panel (kept in REBRAND_FLAGS so it
-    // surfaces on /dashboard-rebrand, where the standalone Membership section lives).
-    page: 'membership',
-  },
-  {
-    key: 'aimt-band-style',
-    label: 'AI MasterTracks band',
-    description:
-      'The AI MasterTracks benefit section treatment — a Dark spotlight band (deep-teal, white text, glass feature cards) or a Light version (white card, dark text, teal-accent feature cards). Variant-only (the enable toggle is ignored).',
-    defaultEnabled: true,
-    // Default: the dark spotlight band.
-    defaultVariant: 'dark',
-    variants: [
-      {
-        value: 'dark',
-        label: 'Dark band',
-        description: 'Deep-teal spotlight band — white text, amber accents, glass feature cards.',
-      },
-      {
-        value: 'light',
-        label: 'Light',
-        description: 'White card — dark text, teal accents, bordered feature cards.',
-      },
-    ],
-    page: 'membership',
-  },
-  {
     key: 'dashboard-career-tools',
     group: 'Widgets',
     label: 'Career Tools section',
@@ -2064,59 +1359,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     // Project default: off (per demo baseline).
     defaultEnabled: false,
     page: 'dashboard-rebrand',
-  },
-  {
-    key: 'partner-offers-featured',
-    group: 'Widgets',
-    label: 'Featured Offers',
-    description:
-      'Add a "Featured Offers" band to the top of the Partner Offers page — a wide hero card + a row of smaller cards (demo data) — and drop the brand\'s regular offers under an "Additional Offerings" subheading. Off (default) renders every offer in one flat grid with no subheadings.',
-    defaultEnabled: false,
-    page: 'dashboard-rebrand',
-  },
-  {
-    key: 'benefits-cta-style',
-    group: 'Membership Benefits',
-    label: 'Benefit CTAs (non-member)',
-    description:
-      'CTA style on the non-member "Membership Benefits" tab heroes. Default shows "Learn more" (deep-links into the benefit) + "Become a member"; single collapses to just "Become a member".',
-    defaultEnabled: true,
-    defaultVariant: 'learn-more',
-    variants: [
-      {
-        value: 'learn-more',
-        label: 'Learn more + Become a member',
-        description: 'Two CTAs — "Learn more" deep-links to the benefit page; "Become a member" anchors to the plans.',
-      },
-      {
-        value: 'join-only',
-        label: 'Become a member only',
-        description: 'A single "Become a member" CTA per hero (anchors to the plans).',
-      },
-    ],
-    page: 'membership',
-  },
-  {
-    key: 'benefits-plans-layout',
-    group: 'Membership Benefits',
-    label: 'Plan block (non-member)',
-    description:
-      'Which plan block the non-member "Membership Benefits" tab renders below the heroes. Default is the Elite-native Passport vs. Passport Lite comparison; strip uses the generic 3-up plan-tier strip.',
-    defaultEnabled: true,
-    defaultVariant: 'comparison',
-    variants: [
-      {
-        value: 'comparison',
-        label: 'Passport comparison',
-        description: 'Passport vs. Passport Lite two-column comparison (PassportPlanComparison).',
-      },
-      {
-        value: 'strip',
-        label: 'Plan-tier strip',
-        description: 'The generic 3-up PlanTierStrip used elsewhere on the non-member page.',
-      },
-    ],
-    page: 'membership',
   },
   {
     // Key kept stable (persisted in localStorage + referenced by the prototype
@@ -2633,8 +1875,18 @@ export function FeatureFlagProvider({ children }: { children: ReactNode }) {
 
   // Snapshot the current state of the given keys as the custom default
   // baseline, merging over any previously-saved keys.
+  // Both of these write the DEFAULT BASELINE — the thing `?demo=1` renders — so
+  // both refuse while the Demo view is on. `FeatureFlagPanel` already hides the
+  // two buttons under `demoMode`, and that was the only guard until 2026-09-16,
+  // when the robot became reachable inside the Demo view (see `AdminToolsMenu`).
+  // A guard that lives only in whether a button renders is one stale call site
+  // away from letting a demoer redefine what "pure" means, from inside the demo
+  // — the same reasoning as `visibleNotifications` re-checking `requiredInApp`
+  // rather than trusting what was stored. Demo mode already suspends ordinary
+  // flag persistence; this closes the one write that bypassed it.
   const saveAsDefault = useCallback(
     (keys: string[]) => {
+      if (demoMode) return
       setCustomDefaults((prev) => {
         const next = { ...prev }
         for (const key of keys) {
@@ -2646,19 +1898,21 @@ export function FeatureFlagProvider({ children }: { children: ReactNode }) {
         return next
       })
     },
-    [flags],
+    [flags, demoMode],
   )
 
   // Clear all saved custom defaults and snap every flag back to the
-  // catalog (factory) defaults.
+  // catalog (factory) defaults. Refused in the Demo view for the same reason as
+  // `saveAsDefault` above — it rewrites the baseline the Demo renders.
   const restoreOriginals = useCallback(() => {
+    if (demoMode) return
     setCustomDefaults({})
     const fresh: Record<string, FeatureFlagState> = {}
     for (const def of FEATURE_FLAGS) {
       fresh[def.key] = catalogDefault(def)
     }
     setFlags(fresh)
-  }, [])
+  }, [demoMode])
 
   const hasCustomDefaults = Object.keys(customDefaults).length > 0
 

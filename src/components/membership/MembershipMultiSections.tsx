@@ -1,6 +1,5 @@
 import { useMemo, useState, type CSSProperties } from 'react'
 import { useAccount } from '@/context/AccountContext'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import {
   multiMembershipRowsFor,
   resolveMembershipCount,
@@ -50,11 +49,11 @@ const BAND_MAX = 2
 
 export function MembershipMultiSections({ onManage }: { onManage?: (id: string) => void } = {}) {
   const { brand } = useAccount()
-  const behavior = (useFeatureFlag('membership-multi-pills').variant ?? 'filter-rollup') as PillBehavior
-  // How many memberships the learner holds — the SAME `membership-count` flag
-  // the left rail reads, so the two surfaces can never disagree.
-  const countFlag = useFeatureFlag('membership-count')
-  const count = resolveMembershipCount(countFlag.enabled, countFlag.variant)
+  // `membership-multi-pills` (default `filter-rollup`) and `membership-count`
+  // (default OFF) removed 2026-09-16 (XCEL flag audit 2026-09-16 — removed from the catalog because `supportsMembership('xcel')` is false, so this surface never renders for the one brand this project ships.)
+  // Both pinned to their committed defaults; every branch is kept for restore.
+  const behavior = 'filter-rollup' as PillBehavior
+  const count = resolveMembershipCount(false, undefined)
   const rows = useMemo(() => multiMembershipRowsFor(brand, count), [brand, count])
 
   const [profession, setProfession] = useState<string>(ALL)

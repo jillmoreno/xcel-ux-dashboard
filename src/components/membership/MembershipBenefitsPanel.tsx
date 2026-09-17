@@ -2,7 +2,6 @@ import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight } from '@/icons'
 import { useAccount } from '@/context/AccountContext'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { benefitRowsFor } from '@/data/membership/membershipFirstFixtures'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { Megaphone } from '@/icons'
@@ -126,7 +125,9 @@ function MemberBenefits({
 function NonMemberBenefits() {
   // Optional plans layout: `comparison` (default — Passport vs. Passport Lite,
   // the Elite-native model) or the generic 3-up `strip`.
-  const planLayout = useFeatureFlag('benefits-plans-layout').variant ?? 'comparison'
+  // `benefits-plans-layout` removed 2026-09-16 (XCEL flag audit 2026-09-16 — removed from the catalog because `supportsMembership('xcel')` is false, so this surface never renders for the one brand this project ships.)
+  // It defaulted to `comparison`; the `strip` branch below is kept for restore.
+  const planLayout: string = 'comparison'
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 32 }}>
       <BenefitsMarketingLead />

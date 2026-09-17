@@ -1,6 +1,7 @@
 import { type CSSProperties, type ReactNode } from 'react'
 import { ArrowRight } from '@/icons'
 import { useDeviceFrame } from '@/components/layout/DeviceFrameContext'
+import { timeRemainingText } from '@/components/learning/learningPathsHomeUtil'
 import type { LearningPathSummary } from '@/data/learningFixtures'
 import { LICENSE_TRACKER } from '@/data/dashboardFixtures'
 
@@ -48,10 +49,9 @@ export function EmptyPathBuildBand({ path, renewal, bleed = false, onBrowseCatal
   const weeksLeft = renewal?.weeksLeft ?? LICENSE_TRACKER.weeksLeft
   const expiresMonth = expires.month.charAt(0) + expires.month.slice(1, 3).toLowerCase()
   const deadline = renewal?.deadline ?? `${expiresMonth} ${expires.day}, ${expires.year}`
-  const yearsLeft = Math.floor(weeksLeft / 52)
-  const remWeeks = weeksLeft % 52
-  const timeLeft =
-    yearsLeft > 0 ? `${yearsLeft} yr${yearsLeft > 1 ? 's' : ''}, ${remWeeks} wks` : `${weeksLeft} wks`
+  // Shared formatter — see `timeRemainingText`. The hand-rolled yr/wks pair
+  // this replaces had no day countdown and broke on a fractional `weeksLeft`.
+  const timeLeft = timeRemainingText(weeksLeft)
 
   const cardChrome: CSSProperties = mobile
     ? { marginLeft: -16, marginRight: -16, borderRadius: 0 }

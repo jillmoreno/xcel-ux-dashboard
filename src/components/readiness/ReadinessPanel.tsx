@@ -2,6 +2,7 @@ import { useState, type CSSProperties } from 'react'
 import { useAccount } from '@/context/AccountContext'
 import { useFeatureFlag, useReadinessState } from '@/context/FeatureFlagContext'
 import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
+import { examFactsFor } from '@/data/nyProducerRequirements'
 import { displayedProgressPct } from '@/components/learning/learningPathsHomeUtil'
 import { Tabs } from '@/components/ui/Tabs'
 import { PillTabs } from '@/components/ui/PillTabs'
@@ -312,18 +313,33 @@ function InsightsTab() {
  * exam day — what the sitting is like, and what to do the week before — which
  * is where the design's separate "Study Tips" section landed.
  *
- * The exam facts are Florida 2-15 and REAL; the study tips are the design's own
- * six (Create Schedule · Study w/ others · Get Sleep · Try techniques · Vary
- * location · Manage Stress), which is the one part of that section the Figma
- * does specify.
+ * The exam facts follow the LEARNER'S OWN PATH's state (see `examFactRows`);
+ * the study tips are the design's own six (Create Schedule · Study w/ others ·
+ * Get Sleep · Try techniques · Vary location · Manage Stress), which is the one
+ * part of that section the Figma does specify.
+ *
+ * The facts carry a NOTE when the state's figures are still invented — the New
+ * York ones are. Saying so on the surface is the same call the readiness score
+ * makes with its frequency sentence: a number a learner might act on has to
+ * admit what it is.
  */
 function WhatToExpectTab() {
+  // Through the SAME hook the score uses, so the facts table and the gauge can
+  // never describe two different sittings.
+  const { examState } = useReadiness()
+  const facts = examFactsFor(examState)
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
       <section style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
         <h2 style={headingStyle}>On the day</h2>
+        {facts.invented && (
+          <p style={subtleStyle}>
+            Placeholder figures for {facts.exam} — confirm against the licensing
+            board before relying on them.
+          </p>
+        )}
         <div style={factGridStyle}>
-          {EXAM_FACTS.map((f) => (
+          {examFactRows(examState).map((f) => (
             <Card key={f.label} style={factCardStyle}>
               <span style={factLabelStyle}>{f.label}</span>
               <span style={factValueStyle}>{f.value}</span>
@@ -350,20 +366,32 @@ function WhatToExpectTab() {
   )
 }
 
-/** Florida 2-15 sitting. TODO(data): confirm against the current PSI bulletin
- *  before this is shown to a real learner — these are the published figures at
- *  time of writing, not a feed. */
-const EXAM_FACTS: { label: string; value: string; note?: string }[] = [
-  { label: 'Exam', value: 'Florida 2-15 Health & Life', note: 'including Annuities & Variable Contracts' },
-  { label: 'Questions', value: '165 scored', note: 'plus unscored pretest items' },
-  { label: 'Time allowed', value: '3 hours 15 minutes' },
-  // Reads the constant the gauge's green band starts at. A literal here is
-  // how the arc and the stated pass mark drift apart — and they sit one tab
-  // from each other, so nobody would see both at once.
-  { label: 'Passing score', value: `${PASS_MARK}%` },
-  { label: 'Where', value: 'A PSI test centre', note: 'or online with remote proctoring' },
-  { label: 'Bring', value: 'Two forms of ID', note: 'one photo, names matching your registration' },
-]
+/**
+ * The sitting's facts, for the state the learner's own path is in.
+ *
+ * ⚠ THIS USED TO BE A FLORIDA CONSTANT, and the change is the point. It was a
+ * hardcoded Florida 2-15 block — correct while Florida was the only demo
+ * licence, and a flat contradiction the moment Home could say New York, two
+ * rail items away, with nothing on either screen admitting it. The same class
+ * of defect as the Study Plan showing a different COURSE from the dashboard.
+ *
+ * `examFactsFor` owns the per-state table; this only shapes it for the list.
+ * The pass mark still comes from one place and is still printed from the same
+ * field the gauge's green band starts at — a literal here is how the arc and
+ * the stated number drift apart, and they sit one tab apart where nobody sees
+ * both at once.
+ */
+function examFactRows(state: string | undefined): { label: string; value: string; note?: string }[] {
+  const f = examFactsFor(state)
+  return [
+    { label: 'Exam', value: f.exam, note: f.examNote },
+    { label: 'Questions', value: f.questions, note: f.questionsNote },
+    { label: 'Time allowed', value: f.timeAllowed },
+    { label: 'Passing score', value: `${f.passMark}%` },
+    { label: 'Where', value: f.where, note: f.whereNote },
+    { label: 'Bring', value: 'Two forms of ID', note: 'one photo, names matching your registration' },
+  ]
+}
 
 const STUDY_TIPS: { title: string; body: string }[] = [
   { title: 'Create a schedule', body: 'Fixed short sessions beat occasional long ones. Your Study Plan already builds one.' },

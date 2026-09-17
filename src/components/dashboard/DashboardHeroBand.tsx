@@ -31,7 +31,6 @@ import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { Avatar } from '@/components/ui/Avatar'
 import { useAccount } from '@/context/AccountContext'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { useLoFi } from '@/context/LoFiContext'
 import { dashboardStatsFor } from '@/data/learnerOverviewFixtures'
 import { Gem } from '@/icons'
@@ -69,15 +68,11 @@ export function DashboardHeroBand({
 } = {}) {
   const { brand, membership, user } = useAccount()
   const { loFi } = useLoFi()
-  // Orientation override from the KPI Card flag's secondary variant.
-  // `auto` falls back to the per-version default passed in via the prop.
-  const orientation = useFeatureFlag('dashboard-kpi-card').secondaryVariant
-  const vertical =
-    orientation === 'vertical'
-      ? true
-      : orientation === 'horizontal'
-        ? false
-        : verticalDefault
+  // `dashboard-kpi-card` was removed from the catalog 2026-09-16 (the XCEL flag
+  // audit — it only drove the classic `/dashboard`). Its secondary variant
+  // defaulted to `auto`, i.e. no override, so orientation is the per-version
+  // default the caller passes in. The `verticalDefault` prop is kept.
+  const vertical = verticalDefault
   const isMember = membership === 'member'
   const isV3 = variant === 'v3'
 

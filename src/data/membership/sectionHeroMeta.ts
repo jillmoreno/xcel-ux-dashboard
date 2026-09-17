@@ -58,7 +58,11 @@ export const SECTION_HERO_META: Record<BrandHeroSection, SectionHeroMeta> = {
     searchPlaceholder: 'Search exam prep',
   },
   'm-career-tools': {
-    title: 'Rubi AI Tools',
+    // Renamed with XCEL's rail label on 2026-09-16 (was "Rubi AI Tools"). The
+    // DESCRIPTION below is still Elite's career-coach framing, which is what
+    // this default is for — but the product's NAME is one name across the repo,
+    // and leaving a second one here is how a third name gets invented later.
+    title: 'Rubi Insights',
     description:
       'Advance your career with Rubi AI — interview simulators, a resume builder, and personalized career-path guidance, all included with membership.',
     searchPlaceholder: 'Search career tools',
@@ -130,12 +134,12 @@ const SECTION_HERO_OVERRIDES: Partial<
     },
     'm-career-tools': {
       // Title matches XCEL's rail label (`careerToolsLabelFor`). As of
-      // 2026-09-10 that is "Rubi AI Tools", the same string the DEFAULT above
+      // 2026-09-16 that is "Rubi Insights", the same string the DEFAULT above
       // uses — so this entry now overrides only the description, which is still
       // XCEL-specific (Rubi is an exam study aid here, not Elite's career
       // coach). The title is kept rather than dropped so the rule "the hero
       // heading equals the rail label" stays visible at this call site.
-      title: 'Rubi AI Tools',
+      title: 'Rubi Insights',
       description:
         'Study with Rubi™ — instant step-by-step explanations, practice questions generated on demand, and answers in your language, all built on XCEL’s own curriculum.',
       searchPlaceholder: 'Ask Rubi',

@@ -14,7 +14,7 @@ import { ProgressTrackerCard } from '@/components/learning/ProgressTrackerCard'
 import { LearningPathDetailPanel } from '@/components/learning/LearningPathDetailPanel'
 import { useLearningPathsPanel } from '@/components/learning/LearningPathsPanelContext'
 import { useAccount, type Brand } from '@/context/AccountContext'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import type { FeatureFlagState } from '@/context/FeatureFlagContext'
 import { LoFiScope, useLoFi } from '@/context/LoFiContext'
 import { LoFiBar, LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
 import { CourseSheet } from '@/components/courses/CourseSheet'
@@ -108,12 +108,16 @@ export function LearnerOverviewPanel({
   // welcome band ↔ membership ↔ jump-back-in row ↔ streak ↔ LP/Courses.
   // V1/V2 also use 24, but kept separate so future variants can diverge.
   const sectionGap = 24
-  const membershipFlag = useFeatureFlag('membership-card-width')
-  // `two-thirds` only takes effect on the V3 layout — that's the only
-  // variant with a right column the card can sit inside. On non-V3
-  // layouts the card always renders above the row (current behavior).
-  const membershipInRightColumn =
-    variant === 'v3' && membershipFlag.variant === 'two-thirds'
+  // ── Flags removed from the catalog 2026-09-16 (the XCEL flag audit) ──
+  // This panel renders only on the classic `/dashboard` (V1–V4), which the XCEL
+  // demo never opens — the route sits behind `dashboard-tab`, default off, and
+  // the rebrand Home draws its own bands. Each flag below is pinned to the
+  // committed default it carried, and every branch is kept so restoring one is
+  // re-adding its catalog entry plus this read.
+  //
+  // `membership-card-width` defaulted to `full`, so the Featured Products card
+  // always renders full-width above the row rather than inside V3's right column.
+  const membershipInRightColumn = false
   // Full-width Featured Products card (non-two-thirds). `lead` renders
   // it above the main section, `trail` below it.
   const fullWidthMembership = !membershipInRightColumn ? (
@@ -160,21 +164,19 @@ function useJumpBackInVersion(): {
   jbiLoFi: boolean
   jbiLinksCardSize: 'normal' | 'medium' | 'small'
 } {
-  const standard = useFeatureFlag('jump-back-in-card')
-  const links = useFeatureFlag('jump-back-in-card-links')
+  // `jump-back-in-card` (default ON, variant `single`) and
+  // `jump-back-in-card-links` (default OFF) were removed 2026-09-16 — see the
+  // note in `LearnerOverviewPanel`. With links off, the standard card wins.
+  const standard: FeatureFlagState = { enabled: true, variant: 'single' }
+  const links: FeatureFlagState = { enabled: false, variant: 'links-tiles' }
   const active = links.enabled ? links : standard
   return {
     showJBI: standard.enabled || links.enabled,
     jbiLayout: jbiLayoutFromVariant(active.variant),
     jbiLoFi: active.variant === 'lo-fi',
-    // Secondary variant on the quick-links flag — sizes the in-progress
-    // card (full compact card vs. a roomy row vs. a small row).
-    jbiLinksCardSize:
-      links.secondaryVariant === 'small'
-        ? 'small'
-        : links.secondaryVariant === 'medium'
-          ? 'medium'
-          : 'normal',
+    // Sized by the removed quick-links flag's secondary variant, which
+    // defaulted to `normal`.
+    jbiLinksCardSize: 'normal',
   }
 }
 
@@ -219,11 +221,14 @@ function V3MainSection({
   //   - Streak off → just drops out of the right-column flex stack.
   const { showJBI, jbiLayout, jbiLoFi, jbiLinksCardSize } =
     useJumpBackInVersion()
-  const streakFlag = useFeatureFlag('streak-hero-card')
+  // `streak-hero-card`, `learning-path-card` and `courses-summary-card` were
+  // removed 2026-09-16 (see the note in `LearnerOverviewPanel`). All three
+  // defaulted ON with the `default` variant, so all three widgets render.
+  const streakFlag: FeatureFlagState = { enabled: true, variant: 'default' }
   const showStreak = streakFlag.enabled
-  const lpFlag = useFeatureFlag('learning-path-card')
+  const lpFlag: FeatureFlagState = { enabled: true, variant: 'default' }
   const showLP = lpFlag.enabled
-  const coursesFlag = useFeatureFlag('courses-summary-card')
+  const coursesFlag: FeatureFlagState = { enabled: true, variant: 'default' }
   const showCourses = coursesFlag.enabled
   const showInnerRow = showLP || showCourses
   const showRightColumn =
@@ -393,11 +398,14 @@ export function useV3MainSectionWidgets(): Record<
   const topPath = sortAndLimitPaths(items, 1)[0]
   const { showJBI, jbiLayout, jbiLoFi, jbiLinksCardSize } =
     useJumpBackInVersion()
-  const streakFlag = useFeatureFlag('streak-hero-card')
+  // `streak-hero-card`, `learning-path-card` and `courses-summary-card` were
+  // removed 2026-09-16 (see the note in `LearnerOverviewPanel`). All three
+  // defaulted ON with the `default` variant, so all three widgets render.
+  const streakFlag: FeatureFlagState = { enabled: true, variant: 'default' }
   const showStreak = streakFlag.enabled
-  const lpFlag = useFeatureFlag('learning-path-card')
+  const lpFlag: FeatureFlagState = { enabled: true, variant: 'default' }
   const showLP = lpFlag.enabled
-  const coursesFlag = useFeatureFlag('courses-summary-card')
+  const coursesFlag: FeatureFlagState = { enabled: true, variant: 'default' }
   const showCourses = coursesFlag.enabled
   // Key order matches the composed view: the Featured Products /
   // Membership card sits at the top (it renders above V3MainSection in
@@ -468,15 +476,15 @@ export function useV3MainSectionWidgets(): Record<
  * tile here for them would just be confusing whitespace. */
 function MembershipPlaceholderCard() {
   const { membership, brand } = useAccount()
-  const heightFlag = useFeatureFlag('membership-card-height')
-  const widthFlag = useFeatureFlag('membership-card-width')
-  const themeFlag = useFeatureFlag('membership-card-theme')
-  const layoutFlag = useFeatureFlag('membership-card-layout')
+  // The four `membership-card-*` flags were removed 2026-09-16 (see the note in
+  // `LearnerOverviewPanel`). Committed defaults: height `single`, width `full`,
+  // theme `light`, layout `default` — so none of the four alternates is active.
+  // Every branch they feed is kept for restore.
   if (membership !== 'member') return null
-  const isDouble = heightFlag.variant === 'double'
-  const isTwoThirds = widthFlag.variant === 'two-thirds'
-  const isDark = themeFlag.variant === 'dark'
-  const isTilesBottom = layoutFlag.variant === 'tiles-bottom'
+  const isDouble = false
+  const isTwoThirds = false
+  const isDark = false
+  const isTilesBottom = false
   // In the doubled two-thirds layout the inner feature columns get a
   // flex-1 filler so they stretch to the card's full height instead of
   // leaving dead space under the shorter column. (The card sizes to its
@@ -643,17 +651,14 @@ function MembershipFeaturedTilesBottom({
   // pagination is off, the flag's secondary "Shown view" variant picks
   // which of the three views is locked in (popular / recommended /
   // top-podcasts) — that's the manual swap trigger in the flag panel.
-  const top5Flag = useFeatureFlag('dashboard-top5-pagination')
-  const showPagination = top5Flag.enabled
+  // `dashboard-top5-pagination` was removed 2026-09-16 (see the note in
+  // `LearnerOverviewPanel`). It defaulted ON, so the arrows + dots show and the
+  // locked-view branch below is unreachable — kept for restore.
+  const showPagination = true
   const viewCount = TOP_FIVE_VIEWS.length
   const lockedViewIndex = Math.max(
     0,
-    TOP_FIVE_VIEWS.findIndex(
-      (v) =>
-        v.id === (top5Flag.secondaryVariant === 'podcasts'
-          ? 'top-podcasts'
-          : top5Flag.secondaryVariant ?? 'popular'),
-    ),
+    TOP_FIVE_VIEWS.findIndex((v) => v.id === 'popular'),
   )
   const effectiveIndex = showPagination ? viewIndex : lockedViewIndex
   const view = TOP_FIVE_VIEWS[effectiveIndex]

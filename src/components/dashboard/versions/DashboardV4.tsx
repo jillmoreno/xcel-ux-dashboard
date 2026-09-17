@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { useAccount } from '@/context/AccountContext'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import type { FeatureFlagState } from '@/context/FeatureFlagContext'
 import { LoFiScope } from '@/context/LoFiContext'
 import { DashboardHeroBand } from '@/components/dashboard/DashboardHeroBand'
 import { useV3MainSectionWidgets } from '@/components/dashboard/LearnerOverviewPanel'
@@ -28,13 +28,17 @@ export function DashboardV4() {
   const { membership } = useAccount()
   const isNonMember = membership === 'non-member'
 
-  const kpiFlag = useFeatureFlag('dashboard-kpi-card')
+  // ── Flags removed from the catalog 2026-09-16 (the XCEL flag audit) ──
+  // Same set as V3: these five only ever drove the classic `/dashboard`, which
+  // the XCEL demo never opens. Pinned to their committed defaults; the branches
+  // they feed are kept so a restore is re-adding the catalog entry + this read.
+  const kpiFlag: FeatureFlagState = { enabled: true, variant: 'light' }
   const kpiEnabled = kpiFlag.enabled
-  const rubiFlag = useFeatureFlag('rubi-tutor-widget')
-  const quickLinksFlag = useFeatureFlag('quick-links-card')
-  const premiumFlag = useFeatureFlag('premium-membership-card')
-  const whatsNewFlag = useFeatureFlag('whats-new-card')
-  const railTrayFlag = useFeatureFlag('dashboard-rail-tray')
+  const rubiFlag: FeatureFlagState = { enabled: true, variant: 'default' }
+  const quickLinksFlag: FeatureFlagState = { enabled: true, variant: 'default' }
+  const premiumFlag: FeatureFlagState = { enabled: true, variant: 'default' }
+  const whatsNewFlag: FeatureFlagState = { enabled: true, variant: 'default' }
+  const railTrayFlag: FeatureFlagState = { enabled: true, variant: 'gray' }
   const railTrayBg =
     {
       gray: 'var(--color-neutral-100)',

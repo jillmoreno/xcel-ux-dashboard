@@ -1,3 +1,4 @@
+import type { DashboardLayout } from '@/data/dashboardVersions'
 import {
   createContext,
   useContext,
@@ -10,6 +11,13 @@ import { ArrowRight } from '@/icons'
 import { useAccount } from '@/context/AccountContext'
 import { tierBadgeIcon } from '@/components/ui/membershipTierBadge'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { getCourseImage } from '@/utils/courseImage'
+import { ProgressBar } from '@/components/ui/ProgressBar'
+import { displayedProgressPct, resolveRenewal, timeRemainingText, longDate } from '@/components/learning/learningPathsHomeUtil'
+import { Sheet } from '@/components/ui/Sheet'
+import { GetLicensedStepPanel } from '@/components/learning/GetLicensedStepPanel'
+import { GET_LICENSED_STEPS } from '@/data/nyProducerRequirements'
+import { resolvePathCategories } from '@/components/learning/progressGaugeUtil'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useWidgetColor } from './widgetColorUtil'
 import { MembershipBadge } from '@/components/ui/MembershipBadge'
@@ -53,8 +61,6 @@ import {
 import { Eyebrow, Wrap } from '../v2/passportShared'
 import { WhatsNewSpine } from '../v4/WhatsNewSpine'
 import { CURRENT_LEARNING_EYEBROW } from '@/components/learning/learningPathsHomeUtil'
-import { StudyWeekSummary } from '@/components/learning/study-calendar/StudyWeekSummary'
-import { hasStudyCalendarFor, studyCalendarFor } from '@/data/studyCalendarFixtures'
 
 /**
  * V5 "Your Membership" overview — a mini-dashboard for the membership,
@@ -102,7 +108,7 @@ export function MembershipOverview({
    *  Jump Back In band replacing the top section), or `marketing-focused`
    *  (single-column, with the joined CLP / What's New marketing carousel band
    *  replacing the top section). Marketing Focused is the rebrand default. */
-  dashboardLayout?: 'default' | 'learner-focused' | 'marketing-focused' | 'badged'
+  dashboardLayout?: DashboardLayout
   /** Switch the shell to the Learning Path section in place, drilled into the
    *  given path's detail (Marketing Focused band's Current Learning Path card
    *  click). */
@@ -116,8 +122,20 @@ export function MembershipOverview({
   // carries a tier badge (Passport / Passport Lite) + optional status badge
   // (New / Member Exclusive). It reuses the marketing-focused structure, so it
   // sets `marketingFocused` too and threads a `badged` flag to the card bands.
+  // "QE Focused" (2026-09-16, XCEL's default) — the qualifying-education
+  // version. It shares Learner Focused's joined top band and stacked structure,
+  // which is why it sets `learnerFocused` too rather than forking the layout;
+  // what it changes is what goes IN that band and what follows it. See
+  // `DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED` for the three departures.
   const badged = dashboardLayout === 'badged'
-  const learnerFocused = dashboardLayout === 'learner-focused'
+  const qeFocused = dashboardLayout === 'qe-focused'
+  // Variant-only flag: the choice IS the variant, so only `.variant` is read.
+  // An `enabled` check here would make "off" a third state meaning "sans",
+  // which the variant already says.
+  const serifHeadings = useFeatureFlag('dashboard-heading-font').variant === 'serif'
+  const courseHeader =
+    (useFeatureFlag('dashboard-course-header').variant ?? 'none') === 'band'
+  const learnerFocused = dashboardLayout === 'learner-focused' || qeFocused
   const marketingFocused = dashboardLayout === 'marketing-focused' || badged
   const stacked = learnerFocused || marketingFocused
   const { brand, membership } = useAccount()
@@ -147,6 +165,41 @@ export function MembershipOverview({
   // Current Learning Path detail panel (segmented breakdown + requirements),
   // opened from the tracker card's footer link.
   const [detailOpen, setDetailOpen] = useState(false)
+  /*
+   * WHICH HALF the sheet opens on — 2026-09-17.
+   *
+   * `LearningPathDetailPanelContent` has taken a `view` of 'tabs' | 'progress'
+   * | 'requirements' since the tab bar came off on QE Focused. Until now this
+   * version could only reach the REQUIREMENTS half, because that was what every
+   * trigger meant; the header band's new "View Details" opens the PROGRESS half
+   * — the gauge, the category bars and the per-category course lists, i.e. the
+   * Course Breakdown.
+   *
+   * State rather than a second sheet: two sheets rendering one component is the
+   * fork this file keeps closing, and the existing prop already does the work.
+   * It resets to 'requirements' on close so a trigger that sets no view (the
+   * journey stops, Get Licensed) keeps its old behaviour.
+   */
+  const [detailView, setDetailView] = useState<'progress' | 'requirements'>('requirements')
+  /*
+   * WHICH GET LICENSED STEP has its sheet open — 2026-09-17.
+   *
+   * The three rows opened the REQUIREMENTS sheet until now, which was the
+   * honest placeholder while nothing described them individually. XCEL's own
+   * requirements page does, and that content is in `GET_LICENSED_STEPS` now, so
+   * each row opens its own step.
+   *
+   * A SEPARATE Sheet from the requirements one, not a third `view` on it: that
+   * panel is about the path, takes a `path` prop and shares its header with the
+   * breakdown. A step is a different object with a different header, and
+   * bending one component around both is how it stops being either.
+   */
+  const [openStepId, setOpenStepId] = useState<string | null>(null)
+  const openStep = GET_LICENSED_STEPS.find((st) => st.id === openStepId) ?? null
+  const openDetail = (view: 'progress' | 'requirements' = 'requirements') => {
+    setDetailView(view)
+    setDetailOpen(true)
+  }
   // "Year in learning" recap archived — the `membership-recap-ticket` flag was
   // removed (2026-08-17). It defaulted off (recap hidden), so the recap no longer
   // renders on the overview. LearningRecapTicket / LearningRecapBadge are kept in
@@ -172,16 +225,18 @@ export function MembershipOverview({
   // Trending" section is off (`dashboard-whats-new-layout`) — the CLP expands
   // to fill the space the carousel left. Rebrand overview only (`showExtras`).
   const clpFullWidthFlag = useFeatureFlag('dashboard-clp-fullwidth')
-  const whatsNewOn = useFeatureFlag('dashboard-whats-new-layout').enabled
   // "Home-style overview" — the V1 CLP + Jump Back In top band + its external
   // "Current Learning Path" lead + the Featured hero below. Now the baseline for
   // the whole Dashboard Rebrand overview, including the pure Demo (`?demo=1`) —
   // promoted 2026-08-05 (was previously held off the Demo behind `!demoScoped`).
   const homeStyleOverview = showExtras
-  const clpFullWidthActive =
-    showExtras &&
-    clpFullWidthFlag.enabled &&
-    (clpFullWidthFlag.secondaryVariant !== 'when-whats-new-off' || !whatsNewOn)
+  // `dashboard-whats-new-layout` was removed from the catalog 2026-09-16 (the
+  // XCEL flag audit): the "What's Trending" section it named was archived
+  // 2026-08-05, so this condition — `secondaryVariant !== 'when-whats-new-off'
+  // || !whatsNewOn` — was its only surviving effect, and with the flag off by
+  // default it was permanently true. `dashboard-clp-fullwidth`'s "When to show"
+  // secondary axis went with it; the band now shows whenever the flag is on.
+  const clpFullWidthActive = showExtras && clpFullWidthFlag.enabled
   // `jump-back-in` drops the Current Learning Path side entirely (full-width
   // Jump Back In only); otherwise the variant picks the D/E stat-tile treatment.
   const clpJumpBackInOnly = clpFullWidthFlag.variant === 'jump-back-in'
@@ -211,7 +266,25 @@ export function MembershipOverview({
   const progressVariant = useFeatureFlag('dashboard-progress-state').variant ?? 'progress-on-track'
   // QE (qualifying / exam-prep) vs CE (renewal) journey for the Current Learning
   // Path. Only CRE · McKissock · STC have a QE persona; other brands ignore it.
-  const educationType = (useFeatureFlag('dashboard-education-type').variant ?? 'ce') as 'ce' | 'qe'
+  // QE Focused resolves to a QUALIFYING journey, not Continuing Ed.
+  //
+  // The flag's committed default is `ce`, so without this the version named for
+  // qualifying education opened on a CE renewal path — the exact incoherence the
+  // Jump Back In card hit when it put securities tasks under an insurance path.
+  //
+  // `exam-prep` still gets through, because it is the OTHER qualifying journey
+  // (Parts 2-3 of the same programme) and a reviewer picking it is making a
+  // real choice about this version. What is refused is `ce`, and the Demo
+  // Controls bar drops that option here rather than leaving a dropdown entry
+  // that silently does nothing.
+  const educationFlagVariant = useFeatureFlag('dashboard-education-type').variant
+  const educationType = (
+    qeFocused
+      ? educationFlagVariant === 'exam-prep'
+        ? 'exam-prep'
+        : 'qe'
+      : educationFlagVariant ?? 'ce'
+  ) as 'ce' | 'qe' | 'exam-prep'
   // Every brand with a progress profile (CRE · McKissock · Elite · STC) gets a
   // populated Current Learning Path; brands without one (dashboardProgressPersonaFor
   // → null) fall back to today's default path resolution below.
@@ -227,15 +300,19 @@ export function MembershipOverview({
   // The onboarding hand-off destination stays member-only (only a member goes
   // through the setup wizard), even though the persona itself is now decoupled.
   const justOnboarded = personaEnabled && isMember && setup.completed
-  // The week-summary band reads the SAME plan the Study Plan section shows —
-  // the persona's own path — so the two cannot describe different courses. It
-  // is resolved here rather than inside the band so the band stays a pure
-  // presenter of a calendar.
-  const weekSummaryOn = useFeatureFlag('dashboard-week-summary').enabled
   // Whole-section toggle for the Recommended band. Distinct from
   // `nav-show-recommended`, which hides the PAGE in the left nav — this one is
   // the band on Home, and a reviewer can want either without the other.
-  const recommendedOn = useFeatureFlag('dashboard-recommended').enabled
+  // Whole-section toggle for the Recommended band, AND the QE Focused version's
+  // standing removal of it. The flag is a reviewer control; the layout rule is
+  // an editorial one — a candidate working a fixed curriculum towards a booked
+  // exam is not shopping, so the discovery band has no job on this version.
+  // Expressed here rather than by shipping the flag off, because the flag has to
+  // keep working on the other two versions.
+  const recommendedOn = useFeatureFlag('dashboard-recommended').enabled && !qeFocused
+  // In-shell course launcher for the Study Journey's stops. Safe outside the
+  // provider (`available` is false), which is what the standalone pages get.
+  const journeyLauncher = useCourseLauncher()
   const basePersona = personaEnabled
     ? justOnboarded
       ? dashboardProgressPersonaFor(brand, 'setup-complete-0')
@@ -247,15 +324,6 @@ export function MembershipOverview({
   const persona =
     basePersona && justOnboarded ? personaFromSetup(brand, setup.data) ?? basePersona : basePersona
   const personaSetupComplete = persona ? persona.setupComplete : true
-  // The plan behind the week-summary band. `hasStudyCalendarFor` is the guard,
-  // not `supportsStudyPlan` — `studyCalendarFor` falls back to STC's Series 79
-  // plan for any id it does not know, and putting securities weeks under an
-  // insurance path is the failure its own docstring calls worse than the empty
-  // state. Same trap the Jump Back In card hit.
-  const weekSummaryCalendar =
-    persona && hasStudyCalendarFor(brand, persona.path.id)
-      ? studyCalendarFor(persona.path.id)
-      : null
   // The persona drives the Current Learning Path only when it's a completed
   // persona AND the learner hasn't explicitly picked a different path in the
   // My Learning Paths sheet — so the existing sheet re-point feature still wins
@@ -320,6 +388,22 @@ export function MembershipOverview({
   // stack in the stacked layout's left column); `default` keeps the fixed
   // 320px Jump Back In + a flexible tracker side-by-side. The color wheel only
   // applies in the stacked layout.
+  // Opens a Study Journey stop. The stops are synthesized per category (they
+  // are not catalogue course ids), so the in-shell launcher is best-effort and
+  // there has to be a fallback — a launcher opening nothing is the one outcome
+  // worse than a second-best destination.
+  //
+  // On QE FOCUSED that fallback is the requirements sheet, not the Learning
+  // Path. XCEL has no learning-path concept (see the band's own note below), so
+  // the old fallback sent a stop with no course to a surface that does not
+  // describe this product. The requirements sheet does: it is what the
+  // programme actually is.
+  const openJourneyStop = (id: string) => {
+    if (journeyLauncher.available) journeyLauncher.open(id)
+    else if (qeFocused) setDetailOpen(true)
+    else if (onOpenLearningPath && activeProgressPath) onOpenLearningPath(activeProgressPath.id)
+  }
+
   const learningCards = activeProgressPath && (
     <>
       <OverviewJumpBackIn
@@ -346,13 +430,58 @@ export function MembershipOverview({
   // Jump Back In). Replaces the Your-Learning row in the stacked layout.
   const learnerFocusedBand = learnerFocused && activeProgressPath && (
     <LearnerFocusedBand
+      // QE Focused carries the whole progress SUMMARY on the navy card — the
+      // gauge, the four category bars and the three KPI cells — and leaves the
+      // section below the per-category course LISTS. Moved here 2026-09-16,
+      // reversing an earlier split that stripped the navy side instead.
+      categoryGauge={qeFocused}
+      // …and drops the navy card entirely: the block sits on the shell's grey.
+      surface={qeFocused ? 'page' : 'navy'}
+      // The header band owns the course name, meta, art and progress bar while
+      // it is on, so the block drops its whole header cluster and starts at the
+      // Resume CTA. See `courseHeaderBand`.
+      hideHeader={courseHeader}
+      // …and swaps Today's Tasks for the Study Journey, which answers "what
+      // comes next" rather than "what is due" — the question the Study Plan
+      // rail item and the week strip below already answer.
+      studyJourney={qeFocused}
+      onOpenStop={openJourneyStop}
+      // Get Licensed steps open the REQUIREMENTS SHEET — the only surface that
+      // describes these three (XCEL's published page covers sitting the exam,
+      // applying, and the CE cycle after). The steps XCEL does not own have no
+      // per-step destination and inventing one is the Resources-slugs defect;
+      // the step that DOES have a real URL (PSI) keeps it and never reaches
+      // this callback.
+      onOpenStep={(id: string) => setOpenStepId(id)}
       path={activeProgressPath}
       course={activeCourse}
       pathsCount={pathsCount}
       showViewAll={showViewAllPaths}
       onViewAll={openPathsPanel}
       onViewDetails={() => setDetailOpen(true)}
-      onOpenLearningPath={onOpenLearningPath}
+      /*
+       * NO `onOpenLearningPath` ON QE FOCUSED — removed 2026-09-16 at
+       * Jillienne's request: **XCEL has no learning-path concept.** The band
+       * IS the programme; there is no separate path object to open.
+       *
+       * One prop closes BOTH doors onto it, which is why it is withheld here
+       * rather than deleted inside the band:
+       *
+       *   - `StudyJourneyWidget` passes it through as the rail's `onViewAll`,
+       *     so the journey's "Open learning path" link stops rendering.
+       *   - The band's TITLE falls back to `onViewDetails`, so it still opens
+       *     the requirements sheet. The title stays clickable and loses
+       *     nothing — it was carrying a `title="Open learning path"` tooltip
+       *     onto the same dead concept, which is the worse half of the two
+       *     because an invisible link is found by accident.
+       *
+       * KEPT for the other versions, which are not XCEL-only surfaces in the
+       * same way: Learner Focused and Marketing Focused still hand it through,
+       * and the tabbed detail sheet still offers "Go to Learning Path". The
+       * `learning-path` section itself is untouched and still resolves from
+       * `?section=learning-path`.
+       */
+      onOpenLearningPath={qeFocused ? undefined : onOpenLearningPath}
       bleed={heroBleed}
       statusOverride={personaStatus}
       renewal={personaRenewal}
@@ -382,6 +511,12 @@ export function MembershipOverview({
       layout={clpLayout}
       jumpBackInOnly={clpJumpBackInOnly}
       hideHeader={homeStyleOverview}
+      // QE Focused puts the whole Progress view in a section below this band,
+      // so the band keeps only the lead-in — otherwise the gauge, the category
+      // `slimLeft` was removed 2026-09-16 with the decision it served. The
+      // summary lives on the navy card now, so the Jump-Back-In-only variant
+      // keeps its normal full band rather than being the one QE view with the
+      // navy side stripped.
       path={activeProgressPath}
       course={activeCourse}
       pathsCount={pathsCount}
@@ -465,15 +600,575 @@ export function MembershipOverview({
   const topBand =
     expiredBand || (clpJumpBackInOnly ? clpFullWidthBand : learnerFocusedBand || clpFullWidthBand)
 
+  /*
+   * COURSE HEADER BAND — `dashboard-course-header`, off by default.
+   *
+   * A page title above everything: the meta on one line, the course name large,
+   * two actions right, a rule under the lot. It deliberately says the course
+   * name TWICE — this and the Current Course Progress block's own heading a few
+   * lines below — which is why it is a variant rather than a default. The
+   * question it exists to answer is whether this page should read as a COURSE
+   * or as a dashboard.
+   *
+   * Both actions go to real destinations and neither is invented:
+   *
+   *   - "State requirements" opens the requirements sheet, the same surface
+   *     "View Requirements" opens.
+   *   - "Study plan (PDF)" is the guide XCEL itself links from the product page
+   *     ("Read our recommended study plan"). The reference called its second
+   *     button "Syllabus (PDF)"; this is a 7-day study PLAN, not a syllabus, and
+   *     labelling it as one would misdescribe the file it opens. The
+   *     reference's other button, "DFS Statutory Rules", has no confirmed URL
+   *     in this repo — the requirements sheet is what we can actually reach.
+   */
+  // The resume course's art, same source the band uses — one course, one
+  // picture, whichever of the two is showing it.
+  const courseCover = activeCourse
+    ? (activeCourse.imageUrl ?? getCourseImage(activeCourse.id))
+    : null
+  /* The cover's box. It was 104 WIDE with the height first fixed at 72 and then
+     stretched to the column; it is a 130px SQUARE as of 2026-09-17 (the direct
+     ask).
+
+     ONE constant now, not a width and a height, because a square is the shape
+     rather than a coincidence of two numbers — and the only way the two can
+     drift apart is if they are written separately.
+
+     Note the square is TALLER than the text column beside it (~105px), so the
+     image is what sets the band's height. That is the intended reading: the art
+     is the first thing in the header and it anchors the block. The bar no
+     longer needs to clear it — the cover is a flex sibling of the whole column,
+     so the alignment is structural. */
+  const COURSE_HEADER_COVER = 130
+  const COURSE_HEADER_COVER_GAP = 16
+  // One resolver, shared with the band below — see the note at the bar.
+  const headerPct = activeProgressPath ? displayedProgressPct(activeProgressPath) : 0
+  /* The count under the bar, from the SAME category list the gauge sums —
+     `resolvePathCategories`, not the authored `progressPct` — so the header's
+     "26 of 42" and its 62% cannot describe different things. */
+  const headerCats = activeProgressPath ? resolvePathCategories(activeProgressPath) : []
+  const headerDone = headerCats.reduce((sum, c) => sum + c.completed, 0)
+  const headerTotal = headerCats.reduce((sum, c) => sum + c.required, 0)
+  const headerUnit = activeProgressPath?.unitLabel ?? 'hrs'
+  /* The three facts under the bar — 2026-09-16, the direct ask. The count was
+     alone here; the target date and the countdown joined it "in the same style
+     as the lessons completed".
+
+     `resolveRenewal` is the SAME pair `LearnerFocusedBand` prints in its KPI
+     cells directly below, so the header and the block cannot disagree about a
+     date the reader can see twice without scrolling.
+
+     The date is spelled out (`longDate`) rather than left as the persona's
+     "12/15/2026". A page header states a date once and has the room; the KPI
+     cell below is a third of a narrow column and does not. Note the band's own
+     FALLBACK deadline is already long-form, so this is that component's native
+     shape rather than a new one invented here. */
+  const headerRenewal = resolveRenewal(personaRenewal)
+  const headerStats: { value: string; caption: string }[] = [
+    { value: longDate(headerRenewal.deadline), caption: 'Target exam date' },
+    { value: timeRemainingText(headerRenewal.weeksLeft), caption: 'Left to complete' },
+    /* Only when there is a breakdown to count. A path with no categories has no
+       honest numerator, and "0 of 0 lessons" reads as a load failure. */
+    ...(headerTotal > 0
+      ? [{ value: `${headerDone} of ${headerTotal} ${headerUnit}`, caption: 'Completed' }]
+      : []),
+  ]
+  const courseHeaderBand = courseHeader && activeProgressPath && (
+    <Wrap style={{ padding: 0, width: '100%' }}>
+      {/* 39, not 18 — 2026-09-17, the direct ask that the divider sit an equal
+          distance from what is above and below it.
+
+          Measured before: 19px above the rule (18 padding + the 1px border)
+          against 40px below, so it hugged the header and floated off the band.
+          The 40 below is the page's OWN section rhythm — `MembershipOverview`
+          puts 40 between its sections and the band's columns use the same —
+          so the rule moves rather than that: 39 + 1px of border puts it at 40
+          from the content above and 40 from the block below. */}
+      {/* A DASHED divider — 2026-09-17, the direct ask.
+      
+          THE COLOUR STEPPED UP WITH IT, and that is the part worth knowing. A
+          dash pattern paints roughly half the pixels of a solid rule, and
+          `--color-border-subtle` was already the faintest line on this page at
+          1.29:1 against the page grey (1.38:1 dark) — dashed at that value it
+          all but disappears, which would leave 39px of air doing the separating
+          and a rule that reads as a rendering artefact.
+      
+          `--color-neutral-300` is 1.55:1 / 1.81:1 and is this surface's
+          established "line you can actually see" — it is what the progress bar
+          track and the KPI rules already use here. Dashed at that value the
+          line reads about as present as the solid subtle one did.
+      
+          NOTE the dash carries NO meaning here. Dashed means "locked / not
+          started" on the journey nodes a column away, and that is a state on a
+          status indicator; this is a section divider, which has no state. Worth
+          saying because the two are on one screen. */}
+      <div style={{ paddingBottom: 39, borderBottom: '1px dashed var(--color-neutral-300)' }}>
+        {/* THE COVER IS A SIBLING OF THE WHOLE COLUMN as of 2026-09-17, not a
+            child of the title row.
+
+            It was 104x72 inside that row, which left ~45px of empty column
+            beneath it: the bar and the stat row below are indented to clear the
+            cover, so the space under the picture belonged to it and nothing
+            filled it. `alignItems: stretch` hands the image the column's full
+            height, so it now runs from the meta line to the foot of the stat
+            row and the crop follows whatever the content needs.
+
+            THIS RETIRES THE MANUAL INDENT. The bar's `marginLeft` was
+            `COURSE_HEADER_COVER_W + COURSE_HEADER_COVER_GAP`, a literal sum
+            that had to be kept in step with the art — the reason those two were
+            constants at all. The alignment is structural now: the bar and the
+            title are in the same column, so they cannot drift apart. */}
+        {/* BOTTOM-ALIGNED (2026-09-17, the direct ask). The square is 130 and
+            the column beside it is ~105, so the two only agree on one edge —
+            and the useful one is the bottom, where the stat row and the foot of
+            the picture make a single line for the eye to stop on. Top-aligned,
+            the leftover 25px hung under the text and read as a gap someone
+            forgot to close. */}
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: COURSE_HEADER_COVER_GAP }}>
+          {courseCover ? (
+            <img
+              src={courseCover}
+              alt=""
+              aria-hidden
+              onError={(e) => {
+                const img = e.currentTarget
+                const fallback = getCourseImage(activeProgressPath.id)
+                if (img.src.endsWith(fallback)) return
+                img.src = fallback
+              }}
+              style={{
+                /* A fixed SQUARE, so the crop is predictable at any content
+                   height. It stretched to the column until 2026-09-17, which
+                   made the art's aspect a function of how long the course title
+                   wrapped — a longer title meant a taller, narrower photograph.
+                   `object-fit: cover` still does the cropping, so the picture is
+                   never distorted. */
+                width: COURSE_HEADER_COVER,
+                height: COURSE_HEADER_COVER,
+                flex: 'none',
+                /* TWO ROUNDED CORNERS, diagonally opposite — top-right and
+                   bottom-left (2026-09-17, the direct ask). The shorthand runs
+                   clockwise from the top-left, so the zeros are the top-left
+                   and bottom-right.
+
+                   Written as the four-value shorthand rather than as two
+                   longhand properties, so the pattern is legible in one line
+                   and a later edit cannot round three corners by touching one
+                   of a pair. */
+                borderRadius: '0 var(--radius-md) 0 var(--radius-md)',
+                objectFit: 'cover',
+                display: 'block',
+              }}
+            />
+          ) : null}
+        <div style={{ flex: 1, minWidth: 0 }}>
+        {/* THE TITLE WRAPS, NOT THE ROW — 2026-09-17, the direct ask.
+            `flex-wrap` sent the whole percentage cluster to its own line the
+            moment the heading got long, which moved the number away from the
+            name it belongs to. The title column flexes and floors at 0 instead,
+            so a long course name takes a second line and the figure stays put.
+            `minWidth: 0` is the half that does the work: a flex item's default
+            `min-width: auto` refuses to shrink below its content, which is what
+            was forcing the wrap in the first place. */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'space-between',
+            gap: 20,
+          }}
+        >
+        {/* THE COURSE ART MOVED UP HERE — 2026-09-16.
+
+            It was beside the block's own title a few lines below. With the
+            header band on, that put the picture next to the SECOND naming of
+            the course rather than the first; up here it sits beside the page
+            title, which is what a course page does.
+
+            The block below drops it while this band is on (`courseHeader`),
+            because one course should have one picture — the duplication that
+            folded the Jump Back In card into the block in the first place.
+
+            Same `<img onError>` mechanism as the block's: a course may name art
+            that is not in the repo yet, and the handler falls back to the stock
+            pool rather than rendering a blank box. */}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          {/* A COURSE PROGRESS EYEBROW, where the meta line was — 2026-09-17,
+              the direct ask.
+
+              What left: "Insurance Pre-Licensing · New York · 42 Lessons". The
+              jurisdiction and the lesson count are both still on the page —
+              "26 of 42 lessons" in the stat row below, and New York in the
+              Get Licensed heading — and the category was the least load-bearing
+              of the three. So the line above the title now labels the block
+              rather than describing the course a second time.
+
+              It takes the SAME caption treatment as the stat row's three, so
+              the band carries one small-caps style rather than two. */}
+          {/* NAVY, via `.cre-eyebrow-ink` — 2026-09-17, the direct ask, and the
+              same ink the Atlas Study Journey, Post-course process and Jump
+              Back In eyebrows already take. This one was the odd grey out.
+
+              NO inline `color`: a navy is a FILL colour on XCEL and needs a
+              light stop on a dark ground, which the class supplies with a theme
+              selector and `CSSProperties` cannot. An inline value here would
+              beat the rule while looking correct — the trap `.cre-uxlinks-title`
+              and the PSI link both hit. */}
+          <p
+            className="cre-eyebrow-ink"
+            style={{
+              margin: '0 0 6px',
+              fontFamily: 'var(--font-body)',
+              fontSize: 11,
+              letterSpacing: '0.08em',
+              textTransform: 'uppercase',
+            }}
+          >
+            Course Progress
+          </p>
+          {/* THE FIGURE LEADS THE TITLE, with the meta line's own dot between
+              them. It was a separate right-hand column; inline, the number and
+              the course it belongs to are one statement read left to right,
+              which is what moving it was for.
+
+              `align-items: baseline` so the 32px figure and the 28px heading
+              sit on one line rather than being centred against each other, and
+              the title still WRAPS — it flexes and floors at 0, so a long name
+              takes a second line and the figure holds its place. */}
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, minWidth: 0 }}>
+            {/* TITLE FIRST, FIGURE RIGHT — 2026-09-17, the direct ask.
+                The figure led the title for a day. Reading left to right the
+                course is the subject and the percentage is what is said about
+                it, which is the order this way round; leading with the number
+                made the heading read as a caption on it. */}
+            <h2
+              style={{
+                margin: 0,
+                minWidth: 0,
+                fontFamily: 'var(--font-heading)',
+                fontWeight: 700,
+                fontSize: 28,
+                lineHeight: 1.15,
+                color: 'var(--color-text-primary)',
+              }}
+            >
+              {activeProgressPath.title}
+            </h2>
+            <span
+              aria-hidden
+              style={{
+                flexShrink: 0,
+                alignSelf: 'center',
+                width: 3,
+                height: 3,
+                borderRadius: '50%',
+                background: 'var(--color-neutral-300)',
+              }}
+            />
+            {/* `flexShrink: 0` so the TITLE gives way and the figure keeps its
+                size — the reverse would squeeze "62%" before a heading that has
+                a whole line to wrap into. */}
+            <span style={{ display: 'flex', alignItems: 'baseline', gap: 2, flexShrink: 0 }}>
+              <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 32, lineHeight: 1, color: 'var(--color-text-primary)' }}>
+                {headerPct}
+              </span>
+              <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 17, lineHeight: 1, color: 'var(--color-text-primary)' }}>
+                %
+              </span>
+            </span>
+          </div>
+        </div>
+        {/* THE RIGHT-HAND PERCENTAGE COLUMN IS GONE (2026-09-17). It held the
+            same figure under a "Course Progress" caption; with the number moved
+            to the LEFT of the title and that caption promoted to the block's
+            eyebrow, keeping it would have printed 62% twice on one line.
+
+            Its own history, because the figure has now been in three places:
+            it started beside the title as a small inline label, moved to its
+            own right-hand column so it read as the page's headline number, and
+            is now the first thing on the title's line. What each move was
+            chasing is the same thing — the number and the course it describes
+            being read as one statement. */}
+        {/* The row that held the percentage column survives as a plain
+            wrapper — `justify-content: space-between` with one child is inert.
+            Kept rather than unwound: collapsing it would re-indent the whole
+            block for no behavioural change, and a future right-hand item would
+            want it back. */}
+        </div>
+        {/* FULL-WIDTH BAR under the title, the figure large on the right.
+
+            It spans the whole band rather than sitting in the title column,
+            which is what makes it read as the PAGE's progress rather than as
+            one more thing beside the name.
+
+            `displayedProgressPct` — the SAME resolver the band below uses, not
+            `path.progressPct`. Those two differ (the band sums the category
+            hours and falls back to the authored field only when there are
+            none), and a page header disagreeing with the block three inches
+            under it is exactly the defect `ProgressAgreement.test.tsx` exists
+            to catch.
+
+            The shared `ProgressBar` with the page-grey `track` override, for
+            the reason the block's own bar needed one: the default track is
+            1.08:1 on this ground. */}
+        {/* The indent that used to live here is gone (2026-09-17) — the bar
+            and the title are in the same flex column now, so it starts where
+            the meta line does by construction rather than by a literal kept in
+            step with the art. See the note at the cover.
+
+            `marginTop: 10`, not 18 — the figure sits on the title's line, so
+            the bar belongs directly under the pair rather than a row away. */}
+        <div style={{ marginTop: 10 }}>
+          <ProgressBar
+            pct={headerPct}
+            height={8}
+            fill="var(--color-primary-500)"
+            track="var(--color-neutral-300)"
+          />
+          {/* The count under the bar, RIGHT-ALIGNED to where the bar ends —
+              which is what ties it to the bar rather than to the title. The
+              percentage above says how far; this says how far out of what, and
+              "Completed" underneath names the pair without repeating either
+              number. Both figures come from the same category list the gauge
+              sums, so they cannot describe different things. */}
+          {/* THREE stats on ONE line, dot-separated — 2026-09-16.
+
+              They were three stacked value-over-caption pairs. One line is the
+              direct ask, and it also settles what the row IS: a caption sitting
+              under its value reads as a small KPI cell, and three of those in a
+              row is the block's own KPI grid said twice. Inline, it is a meta
+              line — the same object as the "Insurance Pre-Licensing · New York ·
+              42 Lessons" line at the top of this band, which is why it takes
+              that line's EXACT separator (a 3px round dot on
+              `--color-neutral-300`) rather than a second kind of dot a few
+              inches away.
+
+              The VALUES take `--font-heading`, not the body face. That is the
+              token `dashboard-heading-font` re-points, so the serif follows the
+              flag rather than being pinned here — pinning a literal serif would
+              make this the one thing on the page that ignores the control.
+
+              Right-aligned, so "Completed" still finishes flush with the bar's
+              end (which is what tied it to the bar in the first place), and it
+              WRAPS: three pairs plus the cover's indent is the widest thing in
+              the band, so at a narrow shell they break rather than squeezing
+              the date. */}
+          {headerStats.length > 0 ? (
+            <div
+              style={{
+                /* 14, up from 8 (2026-09-17, the direct ask). The row sat tight
+                   under the bar and read as the bar's own label; with air it
+                   reads as the line of figures the bar summarises. Still less
+                   than the 18 of the band's own bottom padding, so the bar and
+                   this row stay one group rather than two. */
+                marginTop: 14,
+                display: 'flex',
+                /* NOWRAP on the ROW, wrap inside the CLUSTER. A wrapping flex
+                   container prefers to wrap an item over shrinking it, so with
+                   `wrap` here the 95px CTA jumped to a second line at the LEFT
+                   rather than the pairs giving way — `minWidth: 0` on the
+                   cluster had no effect while this said wrap. Held on one line,
+                   the cluster shrinks and its own pairs wrap among themselves,
+                   which keeps the action on the right edge where it was asked
+                   for. */
+                flexWrap: 'nowrap',
+                alignItems: 'center',
+                /* The three pairs sit LEFT, the CTA sits RIGHT (2026-09-17).
+                   They were spread across the bar's full width with
+                   `space-between`, which put ~40px between each — readable, but
+                   it made three related figures look like three separate
+                   columns. Grouped at a fixed 30 they read as one line of
+                   facts, and the right edge is free for the action.
+
+                   The DOTS are flex siblings of the pairs rather than children
+                   of one, so each sits centred in its own 30px gap instead of
+                   hugging the pair it was nested in. */
+                justifyContent: 'space-between',
+                /* A MINIMUM of 10 between the pairs against 6 inside one,
+                   below. Two values, or the row reads as six evenly spaced
+                   items rather than three pairs — the dot alone cannot carry
+                   the grouping, and it is what stops a wrapped line collapsing
+                   the distinction.
+
+                   It was 14, and the values going 13 → 15px put the content at
+                   689px in a 687px row: it wrapped by TWO PIXELS. `gap` here is
+                   only a floor — `space-between` opens the real gaps to ~40px
+                   at this width — so lowering it changes nothing on screen
+                   except when the row gives up and wraps. Measured after: one
+                   line, 34px of slack.
+
+                   Worth knowing the margin is thin either way. A longer date or
+                   a five-digit lesson count wraps this again, which is why it
+                   is `flex-wrap: wrap` and not `nowrap` — two tidy lines beat
+                   an overflowing one. */
+                gap: 20,
+              }}
+            >
+              {/* `minWidth: 0` so the CLUSTER gives way, not the row. A flex
+                  item's default `min-width: auto` refuses to shrink below its
+                  content, so at 750px of pairs against an 813px row the 95px
+                  CTA had nowhere to go and dropped to a second line at the LEFT
+                  — the one place it must not be. Allowed to shrink, the pairs
+                  wrap among themselves and the action keeps the right edge. */}
+              {/* 15 HERE AND 15 INSIDE EACH GROUP, which is the 30 that was
+                  asked for — split so the dot can live WITH the pair it
+                  introduces rather than beside it.
+
+                  As siblings the dots spaced evenly, and then the cluster
+                  started wrapping: a line ended on a dangling separator with
+                  nothing after it. Bound to the following pair, a dot always
+                  wraps with the pair it belongs to, and the two 15s still
+                  measure 30 between pairs with the dot centred in the gap.
+
+                  `minWidth: 0` so the CLUSTER gives way, not the row. */}
+              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 15, minWidth: 0 }}>
+              {headerStats.map((stat, i) => (
+                <span
+                  key={stat.caption}
+                  style={{ display: 'flex', alignItems: 'baseline', gap: 15 }}
+                >
+                  {i > 0 && (
+                    <span
+                      aria-hidden
+                      style={{
+                        alignSelf: 'center',
+                        flexShrink: 0,
+                        width: 3,
+                        height: 3,
+                        borderRadius: '50%',
+                        background: 'var(--color-neutral-300)',
+                      }}
+                    />
+                  )}
+                  <span style={{ display: 'flex', alignItems: 'baseline', gap: 6 }}>
+                  <span
+                    style={{
+                      /* 14, up from 13 (2026-09-17, the direct ask to make these
+                         slightly larger). The CAPTIONS stay at 11, so the step
+                         between a value and its label widens rather than the
+                         pair just growing.
+
+                         IT WAS 15 FOR A FEW MINUTES AND THAT IS THE NUMBER NOT
+                         TO GO BACK TO. At 15 the three pairs need exactly the
+                         row's own width — measured 687px needed in a 687px
+                         row — so the line wraps or not depending on a pixel,
+                         which is the worst of both. 14 leaves ~20px of slack at
+                         the same width and still reads larger than 13.
+
+                         The row still wraps rather than overflowing if a longer
+                         date or a bigger lesson count ever arrives; this buys
+                         headroom, it does not remove the case. */
+                      fontFamily: 'var(--font-heading)',
+                      fontSize: 14,
+                      fontWeight: 700,
+                      color: 'var(--color-text-primary)',
+                    }}
+                  >
+                    {stat.value}
+                  </span>
+                  <span
+                    style={{
+                      fontFamily: 'var(--font-body)',
+                      fontSize: 11,
+                      letterSpacing: '0.08em',
+                      textTransform: 'uppercase',
+                      color: 'var(--color-text-tertiary)',
+                    }}
+                  >
+                    {stat.caption}
+                  </span>
+                  </span>
+                </span>
+              ))}
+              </div>
+              {/* VIEW DETAILS — opens the sheet on its PROGRESS half, which is
+                  the Course Breakdown: the gauge, the per-category bars and the
+                  course lists under them. That half has been reachable on the
+                  other versions all along (it is the sheet's Progress tab) and
+                  was the one thing QE Focused had no door to, since every
+                  trigger here meant "requirements".
+
+                  `.cre-cta-ink`, with NO inline colour: the CTA ramp is a FILL
+                  colour on XCEL and cta-500 as TEXT is 1.84:1 on the dark page,
+                  so the class swaps to the light stop under
+                  `[data-theme='dark']` — and an inline value would beat it
+                  while looking right, which is the trap the PSI link hit. */}
+              <button
+                  type="button"
+                  onClick={() => openDetail('progress')}
+                  className="cre-link-action cre-cta-ink"
+                  style={{
+                    background: 'transparent',
+                    border: 'none',
+                    padding: 0,
+                    cursor: 'pointer',
+                    fontFamily: 'var(--font-body)',
+                    fontSize: 13,
+                    fontWeight: 700,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  Details →
+                </button>
+            </div>
+          ) : null}
+        </div>
+        </div>{/* content column */}
+        </div>{/* cover + column stretch row */}
+      </div>
+    </Wrap>
+  )
+
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 40 }}>
+    <div
+      /* `dashboard-heading-font` — the `serif` variant re-points
+         `--font-heading` for this subtree only (see `.cre-dash-serif-headings`
+         in tokens.css). A class rather than a style prop threaded through the
+         band, the widgets, the section leads and the cards: custom properties
+         cascade, so one declaration switches every heading inside, inline
+         styles included.
+
+         Scoped to THIS root, so the shell's page title, the left rail and the
+         header keep the brand face — the flag is about the page's headings, and
+         seeing both faces at once is the comparison a reviewer wants. */
+      className={serifHeadings ? 'cre-dash-serif-headings' : undefined}
+      style={{ display: 'flex', flexDirection: 'column', gap: 40 }}
+    >
+      {courseHeaderBand}
       {activeProgressPath && (
         <LearningPathDetailPanel
           open={detailOpen}
           onClose={() => setDetailOpen(false)}
           path={activeProgressPath}
+          // On QE Focused the CTA that opens this says "View Requirements", and
+          // the page behind it already shows every part of the Progress half —
+          // the navy card's gauge and stat tiles, the section's course lists. A
+          // Progress tab here would be a second door onto what the reviewer was
+          // just looking at, which is the pattern that got four testing tiles
+          // archived. So: requirements only, no tab bar.
+          //
+          // Every other version keeps the tabbed sheet, because for them it is
+          // the only door to either half.
+          view={qeFocused ? detailView : 'tabs'}
         />
       )}
+      {/* One step's published detail. `open` is derived from the id rather than
+          held as a second boolean, so the two cannot disagree about whether a
+          sheet is showing. */}
+      <Sheet
+        open={Boolean(openStep)}
+        onClose={() => setOpenStepId(null)}
+        title={openStep?.title ?? ''}
+        width={480}
+      >
+        {openStep ? (
+          <GetLicensedStepPanel
+            step={openStep}
+            state={activeProgressPath?.state}
+            onClose={() => setOpenStepId(null)}
+          />
+        ) : null}
+      </Sheet>
       {stacked ? (
         /* Stacked layout: the Your Learning cards stacked on the left with the
            full-width recap banner beneath. (The landmark used to read "Your
@@ -616,11 +1311,36 @@ export function MembershipOverview({
           margins simply centre it), so none of them hit this; as a direct child
           of the column, this one rendered at 483px against its siblings' 993.
           A `maxWidth` still caps it at the same 1200 the others use. */}
-      {showExtras && weekSummaryOn && weekSummaryCalendar && (
-        <Wrap style={{ padding: 0, width: '100%' }}>
-          <StudyWeekSummary calendar={weekSummaryCalendar} />
-        </Wrap>
-      )}
+      {/* REMOVED 2026-09-16 — the Learning Path Progress section.
+          It rendered the detail panel's Progress half inline here (the gauge,
+          the category bars and the stat tiles first, then the per-category
+          course lists). Both halves of it are now elsewhere on this version:
+
+            - The SUMMARY moved up to the Current Learning Progress block.
+            - The LISTS are the Study Journey, which walks the same categories
+              in curriculum order with each stop's status in words.
+
+          What was left was a second copy of the path title, sub-line, status
+          strip and a "Go to Learning Path" button, directly under a block that
+          already has all four — which is what it looked like on screen.
+
+          ONE THING WENT WITH IT: the course rows' "View Certificate" link, the
+          only place a completed part offered its certificate from Home. The
+          Certificates rail item still holds them; if that affordance is wanted
+          back, the Study Journey's completed stops are where it belongs, not a
+          restored section.
+
+          `LearningPathDetailPanelContent` is unchanged and still renders in the
+          Sheet. Its `embedded` and `hideSummary` props existed only for this
+          section and were removed with it — see that file. */}
+      {/* THE "THIS WEEK" STRIP MOVED TO THE STUDY PLAN PAGE — 2026-09-17, the
+          direct ask. It sat here, directly above Recommended for You, as the
+          last thing in the learner's own zone before the discovery zone
+          started; it is now the last thing on the Study Plan page.
+          `StudyWeekSummary`, `dashboard-week-summary` and the
+          `hasStudyCalendarFor` guard all moved with it — see
+          `StudyPlanSection` in `PlatformShell`. Nothing about the component
+          changed. */}
 
       {showExtras && recommendedOn && <DashboardRecommendedBand badged={badged} />}
 
@@ -1029,8 +1749,11 @@ function MembershipKpis({ vertical = false }: { vertical?: boolean }) {
   const summary = passportMembershipFor(brand)
   const savings = passportSavingsFor(brand)
   const stats = dashboardStatsFor(brand)
-  const variant = useFeatureFlag('membership-summary-style').variant ?? 'dark'
-  const p = KPI_PALETTES[variant] ?? KPI_PALETTES.dark
+  // `membership-summary-style` removed from the catalog 2026-09-16 (XCEL flag audit — `supportsMembership('xcel')` is false, so this never renders for the one brand shipped) —
+  // and this band was already off the rebrand overview (it lives on the
+  // standalone V7 page). Default was `dark`.
+  const variant: string = 'dark'
+  const p = KPI_PALETTES.dark
 
   // The non-member band is gone. It rendered learner progress closing on an
   // upgrade hook (Potential Savings in CTA colour · Free Account), and it was
@@ -1365,4 +2088,3 @@ function daysSince(iso: string): number {
   const [y, m, d] = iso.split('-').map((s) => parseInt(s, 10))
   return Math.max(0, Math.floor((Date.now() - new Date(y, m - 1, d).getTime()) / 86_400_000))
 }
-

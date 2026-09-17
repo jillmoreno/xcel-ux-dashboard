@@ -35,15 +35,31 @@ export function AdminToolsMenu() {
   // `onRebrand` gates the rebrand-only rows. The Dashboard Rebrand shell has its
   // own always-visible Demo Controls bar that owns tier + brand switching, so
   // this hidden menu drops those two duplicates there (see the guards below).
-  const { pathname, search } = useLocation()
+  const { pathname } = useLocation()
   const onRebrand = pathname === '/dashboard-rebrand'
-  // In the "pure" Demo view the tools are hidden by default so stakeholders see
-  // a clean demo. A discreet back door — `?tools=1` on the URL — reveals them
-  // for ephemeral, non-persisting tweaks (demo mode suspends flag persistence,
-  // so nothing here can drift the sandbox or the saved Default baseline). The
-  // Switch Brand / Prototype Password rows write to persisted account state, so
-  // they're dropped from the demo menu (see `!demoMode` guards below).
-  const toolsRevealed = new URLSearchParams(search).get('tools') === '1'
+  // THE DEMO VIEW KEEPS THE ROBOT (2026-09-16, at Jillienne's request). It used
+  // to `return null` under `?demo=1` unless a `?tools=1` back door was set, on
+  // the reasoning that a stakeholder should see a clean demo. Two things make
+  // that cost real and the benefit near-zero here:
+  //
+  //   - The trigger is `opacity: 0` at rest and only fades to 60% when its own
+  //     32px box is hovered, so "clean" was never what the gate was buying —
+  //     there is nothing on screen to clean up.
+  //   - The Demo row on the gateway opens `/dashboard-rebrand?demo=1`, which is
+  //     how most people arrive. Hiding the tools there meant the one route a
+  //     reviewer actually lands on was the one route with no way into the flag
+  //     sheet, and the `?tools=1` back door is undiscoverable by design.
+  //
+  // What made the gate defensible is still true and is what makes removing it
+  // safe: demo mode SUSPENDS flag persistence, and `FeatureFlagPanel` already
+  // drops "Set as default" and "Restore original defaults" under `demoMode`, so
+  // nothing reachable from here can drift the sandbox or redefine the committed
+  // Demo baseline. Changes preview and reset on exit — which the panel now says
+  // on screen, since the dropdown that used to carry that sentence never renders
+  // on the rebrand (the robot opens the sheet directly there).
+  //
+  // `?tools=1` is no longer read. An old link carrying it still works; the param
+  // is simply ignored.
   const ref = useRef<HTMLDivElement>(null)
   const id = useId()
 
@@ -63,10 +79,6 @@ export function AdminToolsMenu() {
       document.removeEventListener('keydown', onEsc)
     }
   }, [open])
-
-  // Demo view: hide the tools entirely unless the `?tools=1` back door is set.
-  // (All hooks above have run, so this conditional return is safe.)
-  if (demoMode && !toolsRevealed) return null
 
   // When the menu is open, force the trigger to stay visible so the
   // user can see what they just clicked even if their cursor drifts

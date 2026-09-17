@@ -18,6 +18,7 @@ import ArrowUpRightFromSquareSvg from './arrow-up-right-from-square.svg?react'
 import ArrowRightFromBracketSvg from './arrow-right-from-bracket.svg?react'
 import AwardSvg from './award.svg?react'
 import AwardSolidSvg from './award-solid.svg?react'
+import ArrowRightToLineSolidSvg from './arrow-right-to-line-solid.svg?react'
 import BellSvg from './bell.svg?react'
 import BoltSvg from './bolt.svg?react'
 import BookSvg from './book.svg?react'
@@ -176,6 +177,14 @@ export const ArrowsRotate = makeIcon(ArrowsRotateSvg) // FA: arrows-rotate (rene
 export const ArrowUpRightFromSquare = makeIcon(ArrowUpRightFromSquareSvg)
 export const Award = makeIcon(AwardSvg)
 export const AwardSolid = makeIcon(AwardSolidSvg) // FA Free solid award
+// FA Pro 7.3.1 SOLID `arrow-right-to-line` — the rail's collapse/expand handle,
+// supplied 2026-09-17. The LEFT-to-line twin is this glyph rotated 180°: the two
+// are exact mirrors, so a transform gives FA's own `arrow-left-to-line` without
+// vendoring a second file or hand-authoring a path (which this repo's rule
+// forbids). SOLID rather than Light, which is what was supplied — and it holds
+// up at the 14px the handle renders: a light-weight arrow into a hairline is
+// mush at that size.
+export const ArrowRightToLineSolid = makeIcon(ArrowRightToLineSolidSvg)
 export const Bell = makeIcon(BellSvg)
 export const Bolt = makeIcon(BoltSvg) // FA: bolt
 export const Book = makeIcon(BookSvg) // FA: book (closed)

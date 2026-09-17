@@ -2,7 +2,6 @@ import { type ComponentType, type CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, Award, Check, Library, Podcast, Robot, Star } from '@/icons'
 import { useAccount } from '@/context/AccountContext'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import {
   benefitHeroesFor,
   type BenefitHero,
@@ -109,7 +108,9 @@ export function BenefitHeroSections({
   // "Learn more" + "Become a member"; `join-only` collapses to a single
   // "Become a member". Read unconditionally (hook rules); used only in
   // the marketing variant.
-  const ctaStyle = useFeatureFlag('benefits-cta-style').variant ?? 'learn-more'
+  // `benefits-cta-style` removed 2026-09-16 (XCEL flag audit 2026-09-16 — removed from the catalog because `supportsMembership('xcel')` is false, so this surface never renders for the one brand this project ships.)
+  // It defaulted to `learn-more`, so the pair of CTAs stands.
+  const ctaStyle: string = 'learn-more'
   const joinOnly = variant === 'marketing' && ctaStyle === 'join-only'
 
   if (heroes.length === 0) return null

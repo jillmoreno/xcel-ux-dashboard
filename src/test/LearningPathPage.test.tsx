@@ -6,6 +6,12 @@ import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { LearningPathsPanelProvider } from '@/components/learning/LearningPathsPanelContext'
 import { LearningPathPage } from '@/pages/LearningPathPage'
 import { beforeEach, describe, it, expect } from 'vitest'
+import { learningPathsFor } from '@/data/learningFixtures'
+
+/** Escape a fixture title for use inside a RegExp — the titles carry `&`. */
+function escapeRe(text: string): string {
+  return text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
 
 beforeEach(() => {
   // Reset persisted brand so each test renders against the default (cre).
@@ -25,8 +31,15 @@ describe('LearningPathPage', () => {
         </FeatureFlagProvider>
       </AccountProvider>,
     )
-    expect(screen.getByRole('heading', { name: /florida life & health pre-licensing/i }))
-      .toBeInTheDocument()
+    // Read from the fixture, not hardcoded. This was `/florida life & health
+    // pre-licensing/i` and broke when the New York Producer path was added and
+    // took the lead slot on 2026-09-16 — the test is about the page rendering
+    // the ACTIVE path's banner, and which path that is was never its subject.
+    // Same lesson as `ProgressFillTones` pinning itself to a named fixture row.
+    const activePath = learningPathsFor('xcel')[0]
+    expect(
+      screen.getByRole('heading', { name: new RegExp(escapeRe(activePath.title), 'i') }),
+    ).toBeInTheDocument()
     expect(screen.getAllByRole('tablist').length).toBeGreaterThan(0)
 
     // NO Study Plan tab — it moved to its own rail section on 2026-09-09

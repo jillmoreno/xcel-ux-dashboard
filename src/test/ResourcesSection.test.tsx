@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
@@ -41,20 +41,41 @@ beforeEach(() => {
 })
 
 describe('the Resources section', () => {
-  it('is a rail item, directly under Browse Catalog', () => {
-    // The placement is the ask, and adjacency is the whole of it: Browse
-    // Catalog is what you buy, Resources is the free half of the same "go and
-    // find something" job. Asserted as an INDEX rather than as presence,
-    // because an item that drifts three rows down still passes a presence
-    // check while no longer reading as a pair.
+  it('is a rail item in MY LEARNING, not Explore', () => {
+    /*
+     * The placement has moved twice on 2026-09-16 and this is where it landed.
+     *
+     * It was `catalog + 1` — directly UNDER Browse Catalog in Explore, the two
+     * read as the paid and free halves of one "go and find something" job. Then
+     * it led Explore. Now it is in MY LEARNING: a pre-licensing candidate does
+     * not browse the reference material, they use it, against the one
+     * curriculum they are working.
+     *
+     * ASSERTED BY GROUP, not by index in the flat button list — and that is the
+     * point of this version of the test. The move changed which `<ul>` the row
+     * belongs to and changed the flat order NOT AT ALL (Resources · Rubi ·
+     * Browse Catalog are still consecutive in that order), so every index-based
+     * assertion in the suite passed the move without noticing it. Each group's
+     * list is labelled by its caption, which is the handle that can see it.
+     */
     renderShell('/dashboard-rebrand')
-    const rail = screen
+    const mine = screen.getByRole('list', { name: 'My Learning' })
+    expect(within(mine).getByRole('button', { name: 'Resources' })).toBeInTheDocument()
+    // There is no Explore group left to be in: Browse Catalog was its last row
+    // and went off in the baseline on 2026-09-16, so the group drops whole.
+    expect(screen.queryByRole('list', { name: 'Explore' })).toBeNull()
+    // It moved WITH Rubi and kept its order relative to it.
+    const mineRows = within(mine)
       .getAllByRole('button')
       .map((b) => b.textContent?.trim())
-      .filter(Boolean) as string[]
-    const catalog = rail.indexOf('Browse Catalog')
-    expect(catalog).toBeGreaterThanOrEqual(0)
-    expect(rail.indexOf('Resources')).toBe(catalog + 1)
+    expect(mineRows.slice(-2)).toEqual(['Resources', 'Rubi Insights'])
+    // At the END of the group — "move up" meant up across the Explore divider,
+    // not above Home, which is the rail's anchor.
+    expect(mineRows[0]).toBe('Home')
+    // …and Browse Catalog is off in the baseline, not merely elsewhere. The
+    // SECTION still resolves from `?section=catalog` — the flag hides the rail
+    // row, it does not disable anything.
+    expect(screen.queryByRole('button', { name: 'Browse Catalog' })).toBeNull()
   })
 
   it('opens from ?section=resources instead of degrading to the dashboard', () => {

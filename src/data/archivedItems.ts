@@ -6,8 +6,8 @@
  *  Rendered by `ArchiveTable` in the dashboard's Archive section. Hand-edited;
  *  there is no generator.
  *
- *  NO LONGER EMPTY as of 2026-09-10 — one row. It was empty on purpose before
- *  that, and the rule behind it still holds: do not seed this with rows from
+ *  NO LONGER EMPTY as of 2026-09-10 — two rows as of 2026-09-16. It was empty on
+ *  purpose before that, and the rule behind it still holds: do not seed this with rows from
  *  the other dashboards' archives to make it look populated, because a restore
  *  note pointing at another repo's files is worse than no row at all.
  *
@@ -56,6 +56,20 @@ export type ArchivedItem = {
 
 export const ARCHIVED_ITEMS: ArchivedItem[] = [
   {
+    id: 'dashboard-mvp-version',
+    name: 'Dashboard MVP (classic /dashboard version)',
+    what:
+      'The sixth entry in the classic dashboard version picker — a pared-back V3 with the right rail hidden, the hero "Saved this year" chip dropped, the content column centred, and Featured Products moved below Learning Path + Courses.',
+    location:
+      'src/components/dashboard/versions/DashboardMVP.tsx (kept, unreferenced). Its MVP_FLAGS snapshot is still in that file.',
+    flag: "Was driven by MVP_FLAGS — a snapshot of eight now-removed catalog flags; the route itself is `/dashboard?version=mvp`, behind `dashboard-tab`.",
+    dateRemoved: '2026-09-16',
+    reason:
+      'It was defined ENTIRELY by a feature-flag snapshot, and the XCEL flag audit removed all eight of those flags from the catalog (they only ever drove the classic /dashboard, which this project\'s demo never opens). Without them MVP renders as V3 with hideRightRail / membershipPlacement="trail" / consolidatedProgress — a second near-identical row in the picker. The three props survive on DashboardV3, so what made MVP a distinct LAYOUT is still there; what is gone is the flag configuration that made it a distinct CONFIGURATION.',
+    restoreNote:
+      'Re-add the eight flags to FEATURE_FLAGS in src/context/FeatureFlagContext.tsx (dashboard-kpi-card, jump-back-in-card, jump-back-in-card-links, dashboard-top5-pagination, membership-card-layout/-height/-width, streak-hero-card) and revert the pinned constants that replaced them in DashboardV3.tsx and LearnerOverviewPanel.tsx — each pin carries a comment naming its flag. Then re-add the `mvp` row to DASHBOARD_VERSIONS (src/data/dashboardVersions.ts) and the `case \'mvp\'` branch + DashboardMVP import to src/pages/DashboardPage.tsx. NOT restored deliberately: nothing in DashboardMVP.tsx itself was edited, so no component work is needed — and note the five right-rail flags in MVP_FLAGS (premium-membership-card, whats-new-card, quick-links-card, rubi-tutor-widget, dashboard-rail-tray) were always moot here, since `hideRightRail` already drops that column.',
+  },
+  {
     id: 'profile-motivational-statement',
     name: 'Motivational Statement card (Profile)',
     what: 'A card on the Profile page holding the learner’s own motivational statement, with an edit pencil opening the real `MotivationalStatementPanel` (the only card there wired to anything but a stub).',
@@ -65,6 +79,18 @@ export const ARCHIVED_ITEMS: ArchivedItem[] = [
     reason:
       'Editorial — removed from the Profile page at Jillienne’s request. NOT a capability or data problem: the statement is real, the panel works, and the context is untouched.',
     restoreNote:
-      'Re-add `MotivationalStatementCard` to the import from `@/components/account/profile/ProfileCards` in src/pages/ProfilePage.tsx and render it as the FIRST child of the right-hand column, above `MembershipPlanCard`. Nothing else moved: the component, `MotivationalStatementPanel` and `MotivationContext` are all intact and unchanged, and the panel is STILL REACHABLE from the left rail (`NavProfileHeader` → MotivationalStatementPanel), so the feature was never gone — only this second door on it. Deliberately NOT restored alongside it: the Membership Plan card, which left the same page on the same day for an unrelated reason (it is gated on `supportsMembership`, not archived, and returns by itself for a brand that sells one).',
+      'Re-add `MotivationalStatementCard` to the import from `@/components/account/profile/ProfileCards` in src/pages/ProfilePage.tsx and render it as the FIRST child of the right-hand column, above `MembershipPlanCard`. Nothing else moved: the component, `MotivationalStatementPanel` and `MotivationContext` are all intact and unchanged, and the STATEMENT itself is still read and written by `ProfilePersonalizePanel` (through `MotivationContext`) and displayed by `ProfilePersonalizeBand`. CORRECTED 2026-09-16: this note used to say the panel was “STILL REACHABLE from the left rail (`NavProfileHeader` → MotivationalStatementPanel)”. That stopped being true when the rail profile header was unwired the same day — see `nav-profile-header` below. `MotivationalStatementPanel` (the slide-over) now has NO live caller, so restoring this card also restores the only door onto it. Deliberately NOT restored alongside it: the Membership Plan card, which left the same page on the same day for an unrelated reason (it is gated on `supportsMembership`, not archived, and returns by itself for a brand that sells one).',
+  },
+  {
+    id: 'nav-profile-header',
+    name: 'Profile header (left rail)',
+    what: 'The pinned top region of the dashboard rail: the learner’s 48px avatar with its thin Brick `brandRing`, “Welcome back, <name>” as a button to the Profile page, their motivational statement, and the divider under the group. On a brand that sells membership it also carried the “Your Membership” summary — moot for XCEL, where `supportsMembership` is false.',
+    location:
+      'src/components/layout/PlatformSideNav.tsx (`NavProfileHeader`, exported, no longer rendered) · `NavMotivationQuote` and `NavMembershipSummary` are reached only through it · src/components/membership/MotivationalStatementPanel.tsx',
+    dateRemoved: '2026-09-16',
+    reason:
+      'Editorial — removed at Jillienne’s request. The header’s account trigger gained the learner’s photo AND name on the same day, so this was the second portrait-and-name of the same person in one viewport, a few hundred pixels apart. The rail now opens on MY LEARNING, which is its job.',
+    restoreNote:
+      'Re-add `<div style={{ flexShrink: 0 }}><NavProfileHeader isMember={isMember} onSelect={onSelect} /></div>` as the first child of the `<nav>` in `PlatformSideNav`, and restore `const isMember = membership === \'member\'` with `membership` back in that component’s `useAccount()` destructure — `NavProfileHeader` is its only consumer, so it was dropped with it. Nothing INSIDE the header changed: the component, `NavMotivationQuote`, `NavMotivationStatementButton`, `NavMembershipSummary` and `MotivationalStatementPanel` are all intact. Two things to decide rather than restore blindly: (1) the header’s account trigger now shows the same photo and name, so bringing this back re-creates the duplication that removed it — consider dropping the name from `.cre-account-pill` instead; (2) `brandRing` on `Avatar` has NO other call site, and it exists to mark this avatar as the learner’s own, so restoring the header restores the only thing that uses it. Deliberately NOT restored with it: nothing — this row is self-contained.',
   },
 ]

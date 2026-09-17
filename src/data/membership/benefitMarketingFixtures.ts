@@ -10,7 +10,7 @@ import type { Brand } from '@/context/AccountContext'
  *     eyebrow + headline + three benefit rows + one CTA.
  *   - `benefitMarketingFor`    → per-benefit copy for the **locked benefit
  *     pages** a non-member reaches by clicking a Passport-only rail item
- *     (Resource Library / Exam & Cert Prep / Rubi AI Tools / Partner Offers).
+ *     (Resource Library / Exam & Cert Prep / Rubi Insights / Partner Offers).
  *     Drives the loud strip's lead line + the marketing block below it.
  *
  * Both are Elite-only; every other brand returns `null` / `[]` so the

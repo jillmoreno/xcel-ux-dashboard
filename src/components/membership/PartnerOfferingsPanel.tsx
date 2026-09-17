@@ -1,6 +1,5 @@
 import type { CSSProperties } from 'react'
 import { useAccount } from '@/context/AccountContext'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { partnerOfferingsFor } from '@/data/membership/partnerOfferingsFixtures'
 import { featuredOffersFor } from '@/data/membership/featuredOffersFixtures'
 import { PartnerOfferingCard } from './PartnerOfferingCard'
@@ -39,7 +38,10 @@ export function PartnerOfferingsPanel({ locked = false }: { locked?: boolean } =
   const { brand } = useAccount()
   const offerings = partnerOfferingsFor(brand)
 
-  const { enabled: featuredEnabled } = useFeatureFlag('partner-offers-featured')
+  // `partner-offers-featured` removed 2026-09-16 (XCEL flag audit 2026-09-16 — removed from the catalog because `supportsMembership('xcel')` is false, so this surface never renders for the one brand this project ships.)
+  // It defaulted OFF — and `partnerOfferingsFor('xcel')` is empty anyway, so
+  // the split never had content to split. The branch below is kept.
+  const featuredEnabled = false
   const featured = featuredOffersFor(brand)
   const showFeatured = featuredEnabled && featured.length > 0
 

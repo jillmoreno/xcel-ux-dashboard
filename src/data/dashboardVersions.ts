@@ -10,6 +10,22 @@ export type DashboardVersionId =
   | 'discoverability-learner-focused'
   | 'discoverability-marketing-focused'
   | 'discoverability-badged'
+  | 'discoverability-qe-focused'
+
+/**
+ * The rebrand overview's LAYOUT, resolved from `?version=` by `PlatformShell`
+ * and threaded to `MembershipOverview`. One exported name because five files
+ * declared this union inline and a fifth member had to be added to every one of
+ * them — the kind of edit that compiles after four of five.
+ *
+ * `default` is the standalone V5/V7 membership page, not a dashboard version.
+ */
+export type DashboardLayout =
+  | 'default'
+  | 'learner-focused'
+  | 'marketing-focused'
+  | 'badged'
+  | 'qe-focused'
 
 export type DashboardVersion = {
   id: DashboardVersionId
@@ -19,15 +35,16 @@ export type DashboardVersion = {
   description: string
 }
 
+// ARCHIVED 2026-09-16 — `mvp` ("Dashboard MVP") was unwired here and in
+// `DashboardPage`'s switch. It was defined ENTIRELY by a snapshot of eight
+// classic-dashboard feature flags (`MVP_FLAGS` in `DashboardMVP.tsx`), and the
+// XCEL flag audit removed all eight from the catalog — without them the MVP
+// renders as V3 with `hideRightRail` / `trail` / `consolidatedProgress`, i.e. a
+// second near-identical entry in this picker. `DashboardMVP.tsx` is kept in the
+// repo unreferenced; see ARCHIVED_ITEMS id `dashboard-mvp-version` for the
+// re-wire steps. The id stays in `DashboardVersionId` so a stored
+// `cgp.dashboard.version` of 'mvp' still type-checks and falls through to V1.
 export const DASHBOARD_VERSIONS: DashboardVersion[] = [
-  {
-    id: 'mvp',
-    label: 'Dashboard MVP',
-    createdAt: '2026-06-15',
-    modifiedAt: '2026-06-15',
-    description:
-      'Pared-back V3 for the MVP scope: the right rail is hidden entirely, the "Saved this year" stat is dropped from the hero header, the remaining single-column content is centered on the page, and Featured Products moves below the Learning Path + Courses widgets.',
-  },
   {
     id: 'v1',
     label: 'Dashboard V1',
@@ -114,6 +131,37 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_BADGED: DashboardVersion = {
     'The Marketing Focused dashboard, with a tier + status badge overlay on every product card. Each card carries a membership tier badge — Passport (gold + crown) or Passport Lite (navy + bolt) — top-left, plus an optional status badge (New or Member Exclusive) top-right, across the What’s New carousel, Recommended for you, and What’s Trending.',
 }
 
+// "QE Focused" — the qualifying-education dashboard, and XCEL's default from
+// 2026-09-16. It is the first version built around a candidate who has not got
+// a licence yet: someone working a fixed curriculum towards a booked exam,
+// where the useful questions are "how much of the requirement have I cleared"
+// and "what comes next", not "what else could I buy".
+//
+// Three departures from Learner Focused, each answering one of those:
+//
+//   1. **The Progress detail is on the PAGE.** The Learning Path detail
+//      slide-over's Progress tab — gauge, category bars, the Deadline / Time
+//      Remaining / Completed tiles, and the per-category course lists with
+//      their completion state — renders inline as a section. A candidate opens
+//      the dashboard to see exactly that, so it should not be a click away.
+//   2. **The top band slims to a lead-in.** Because the section below now
+//      carries the gauge and the stat tiles, the navy half keeps only the path
+//      identity, status and Resume — otherwise the same three facts appear
+//      twice on one screen.
+//   3. **Recommended for You is dropped.** It is a discovery surface, and this
+//      version is deliberately not a discovery dashboard.
+//
+// The white half carries the STUDY JOURNEY rather than Today's Tasks — the
+// curriculum as an ordered sequence. See `StudyJourneyRail`.
+export const DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED: DashboardVersion = {
+  id: 'discoverability-qe-focused',
+  label: 'QE Focused',
+  createdAt: '2026-09-16',
+  modifiedAt: '2026-09-16',
+  description:
+    'Built for a pre-licensing candidate working towards a booked exam. The top band slims to path identity + status + Resume beside a Study Journey — the curriculum as an ordered sequence of chapters and milestone exams. Below it the Learning Path detail sheet\u2019s whole Progress tab renders inline: completion gauge, category bars, Target Date / Time Remaining / Completed tiles, and a course list per requirement category. Recommended for You is dropped \u2014 this version is not a discovery dashboard.',
+}
+
 // "Go to Legacy 2.0 Dashboard" is NOT a version here — because the classic
 // dashboard loads outside this shell (a full navigation to `/dashboard`, the
 // "Legacy Dashboard 2.0" tile link), it renders as a plain jump-off CTA below
@@ -124,6 +172,7 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_BADGED: DashboardVersion = {
 // (Badged Version was archived 2026-08-17 — dropped from this list; re-add
 // DISCOVERABILITY_DASHBOARD_VERSION_BADGED here to restore it to the picker.)
 export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
+  DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
   DISCOVERABILITY_DASHBOARD_VERSION_MARKETING_FOCUSED,
   DISCOVERABILITY_DASHBOARD_VERSION_LEARNER_FOCUSED,
 ]
@@ -131,11 +180,14 @@ export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
 /**
  * Which Discoverability layout a brand lands on with NO `?version=`.
  *
- * Marketing Focused is the house default. **XCEL defaults to Learner Focused**
- * (2026-09-04): it sells a licence, not a membership, so there is no upsell for
- * a marketing carousel to carry — its learners arrive with a booked exam date
- * and a Study Plan, and the Learner Focused band leads with exactly that
- * (progress gauge, category bars, deadline, Resume).
+ * Marketing Focused is the house default. **XCEL defaults to QE Focused**
+ * (2026-09-16). It defaulted to Learner Focused from 2026-09-04 for the right
+ * reason — XCEL sells a licence, not a membership, so there is no upsell for a
+ * marketing carousel to carry, and its learners arrive with a booked exam date.
+ * QE Focused carries that argument further rather than reversing it: Learner
+ * Focused leads with the progress gauge, and this one leads with the whole
+ * requirement breakdown plus what to study next. Learner Focused stays in the
+ * picker so the two can be compared.
  *
  * ⚠ TWO PLACES read a default and they must agree, or the picker marks one
  * layout "Default" while the page loads the other: `PlatformShell`'s
@@ -147,7 +199,7 @@ export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
  */
 export function defaultDiscoverabilityVersionFor(brand: Brand): string {
   return brand === 'xcel'
-    ? DISCOVERABILITY_DASHBOARD_VERSION_LEARNER_FOCUSED.id
+    ? DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED.id
     : DISCOVERABILITY_DASHBOARD_VERSION_MARKETING_FOCUSED.id
 }
 

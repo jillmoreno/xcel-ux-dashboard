@@ -143,9 +143,9 @@ const MANAGED_FLAG_DEFAULTS: PersonaFlagOp[] = [
   // empty-state personas override the variant. (Persona 3's empty-path band still
   // wins the top slot regardless.)
   { key: 'dashboard-clp-fullwidth', enabled: true, variant: 'variant-d', secondaryVariant: 'always' },
-  // What's New widget OFF by default (matches the committed default / the
-  // "What's New off" default view); the "What's New on" persona turns it on.
-  { key: 'dashboard-whats-new-layout', enabled: false },
+  // (`dashboard-whats-new-layout` removed from the baseline 2026-09-16 — the
+  // What's Trending section it gated was archived 2026-08-05, so the flag had
+  // nothing left to turn off.)
   { key: 'dashboard-progress-state', variant: 'progress-on-track' },
   { key: 'profession-count', enabled: true, variant: 'single' },
   { key: 'state-count', enabled: true, variant: 'single' },
@@ -153,10 +153,8 @@ const MANAGED_FLAG_DEFAULTS: PersonaFlagOp[] = [
   // raises this (via its nested count sub-menu), so every other persona lands on
   // one path.
   { key: 'learning-paths-count', enabled: true, variant: 'one' },
-  // Single membership is the baseline — only the "Multiple memberships" persona
-  // raises this (via its nested count sub-menu), so every other persona resets to
-  // one membership.
-  { key: 'membership-count', enabled: false },
+  // (`membership-count` removed from the baseline 2026-09-16 along with the
+  // "Multiple memberships" persona — XCEL sells no membership.)
 ]
 
 /**
@@ -176,7 +174,13 @@ const MANAGED_FLAG_DEFAULTS: PersonaFlagOp[] = [
  * ON = Featured hero hidden. We merge a single `dashboard-featured` off op so a
  * persona picked while the toggle is On keeps the hero hidden.
  */
-const WHATS_NEW_ON: PersonaFlagOp[] = [{ key: 'dashboard-featured', enabled: false }]
+// The What's New / Featured toggle's flag op. `dashboard-featured` was removed
+// from the catalog 2026-09-16 (the XCEL flag audit — the brand has no Featured
+// slides authored, so the hero self-hides regardless), and the toggle that set
+// this went with it. The arm is kept EMPTY rather than deleted so
+// `resolvePersonaFlags`' signature and the `?wn=` codec are unchanged: author
+// XCEL slides, re-add the flag, and put the op back here.
+const WHATS_NEW_ON: PersonaFlagOp[] = []
 
 /** Merge a persona's flag overrides on top of the managed defaults (persona
  *  wins per key), then — when the What's New toggle is On — the `WHATS_NEW_ON`
@@ -299,34 +303,12 @@ export const DEMO_PERSONAS: DemoPersona[] = [
     // taxonomy, so switching to QE renders the N-category gauge + detail list.
     flags: [{ key: 'dashboard-education-type', variant: 'qe' }],
   },
-  {
-    id: 'multi-membership',
-    label: 'Multiple memberships',
-    requiresMembership: true,
-    description: 'Holds several memberships at once. Pick how many below.',
-    profScope: 'all',
-    // Expander (see memCountOptions): the chosen count sets `membership-count`,
-    // which drives the Membership Hub hero's stacked-cards deck ("You have N
-    // Active Memberships"). The page stays on the Membership Hub version with its
-    // Split-cards hero — only the hero updates to the stacked-deck UI; the rest of
-    // the page is unchanged (this replaced the old swap to the retired `multi`
-    // page version). Several memberships ⇒ several professions + states, so those
-    // counts are forced multiple too (they don't alter the membership page — they
-    // surface filter rows on the Library / Learning Paths / Recommended pages).
-    flags: [
-      { key: 'membership-page-version', variant: 'hub' },
-      { key: 'membership-hub-hero', variant: 'split' },
-      { key: 'membership-count', enabled: true },
-      { key: 'profession-count', enabled: true, variant: 'multiple' },
-      { key: 'state-count', enabled: true, variant: 'multiple' },
-    ],
-    memCountOptions: [
-      { label: '2 memberships', countVariant: 'two' },
-      // Seven, not five: the Elite fixtures carry one membership per renewal
-      // state, so this is the option that shows every state at once.
-      { label: '6 memberships', countVariant: 'seven' },
-    ],
-  },
+  // ARCHIVED 2026-09-16 — the "Multiple memberships" persona was removed with
+  // the three flags it drove (`membership-page-version`, `membership-hub-hero`,
+  // `membership-count`). It carried `requiresMembership: true`, so
+  // `personasForBrand` already filtered it out for XCEL, the only brand this
+  // project ships. Its `memCountOptions` sub-menu was the only consumer of that
+  // field; the field itself is kept on the type for the learning-paths twin.
 ]
 
 /** Stable, url-safe slug for a profession label ("Occupational Therapy" →

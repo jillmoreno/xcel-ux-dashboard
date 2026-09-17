@@ -10,7 +10,6 @@ import { DashboardV2 } from '@/components/dashboard/versions/DashboardV2'
 import { DashboardV3 } from '@/components/dashboard/versions/DashboardV3'
 import { DashboardV4 } from '@/components/dashboard/versions/DashboardV4'
 import { DashboardV5 } from '@/components/dashboard/versions/DashboardV5'
-import { DashboardMVP } from '@/components/dashboard/versions/DashboardMVP'
 
 // The selected dashboard version persists across navigations: switching
 // to V2 and clicking away to Catalog / My Learning shouldn't drop the
@@ -54,8 +53,8 @@ export function DashboardPage() {
     urlVersion ?? readStoredVersion() ?? readDefaultDashboardVersion()
 
   switch (version) {
-    case 'mvp':
-      return <DashboardMVP />
+    // 'mvp' archived 2026-09-16 — see DASHBOARD_VERSIONS. A stored or deep-linked
+    // 'mvp' now falls through to the V1 default rather than 404ing.
     case 'v5':
       return <DashboardV5 />
     case 'v4':

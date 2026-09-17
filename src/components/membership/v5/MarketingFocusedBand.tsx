@@ -1,4 +1,4 @@
-import { type CSSProperties, type KeyboardEvent, type ReactNode, useState } from 'react'
+import { Fragment, type CSSProperties, type KeyboardEvent, type ReactNode, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowRight, Megaphone } from '@/icons'
 import { CarouselArrow } from '@/components/ui/CarouselArrow'
@@ -9,6 +9,8 @@ import { useTheme } from '@/context/ThemeContext'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import {
   statusTreatment,
+  timeRemaining,
+  timeRemainingText,
   type HomeStatus,
   type StatusTaxonomy, CURRENT_LEARNING_EYEBROW } from '@/components/learning/learningPathsHomeUtil'
 import type { CourseCardData } from '@/components/courses/CourseCard'
@@ -232,8 +234,10 @@ export function MarketingFocusedBand({
   // month-name to match the Details sheet (`LearningPathDetailPanel`).
   const expiresMonth =
     LICENSE_TRACKER.expires.month.charAt(0) + LICENSE_TRACKER.expires.month.slice(1, 3).toLowerCase()
-  const years = Math.floor(weeksLeft / 52)
-  const remWeeks = weeksLeft % 52
+  // Shared formatter — see `timeRemainingText`. The hand-rolled yr/wks pair
+  // this replaces had no day countdown and broke on a fractional `weeksLeft`.
+  const timeRemain = timeRemaining(weeksLeft)
+  const timeLeftText = timeRemainingText(weeksLeft)
 
   const onTrack = percent >= 50 || weeksLeft > 16
   // Explicit persona status wins; otherwise map the derived tracker state to a
@@ -259,7 +263,7 @@ export function MarketingFocusedBand({
         ]
       : []),
     { label: deadlineLabel, value: `${expiresMonth} ${LICENSE_TRACKER.expires.day}, ${LICENSE_TRACKER.expires.year}` },
-    { label: 'Time Remaining', value: years > 0 ? `${years} yr, ${remWeeks} wks` : `${remWeeks} wks` },
+    { label: 'Time Remaining', value: timeLeftText },
   ]
 
   // Two-segment bar widths (share of total required hours completed).
@@ -504,16 +508,25 @@ export function MarketingFocusedBand({
             captionColor={cardTextMuted}
             valueColor={cardText}
           >
-            {years > 0 && (
-              <>
-                <strong style={{ fontWeight: 700 }}>{years}</strong>
-                <span style={{ fontSize: 12, fontWeight: 600, color: cardTextMuted }}>
-                  {years === 1 ? ' year, ' : ' years, '}
-                </span>
-              </>
+            {/* The shared `timeRemaining` segments — same source as the detail
+                sheet and the other two bands, so "27 days" reads as a day
+                countdown here too rather than as a fraction of a week. */}
+            {timeRemain.expired ? (
+              <strong style={{ fontWeight: 700 }}>Expired</strong>
+            ) : (
+              timeRemain.segments.map((seg, i) => (
+                <Fragment key={seg.unit}>
+                  {i > 0 ? (
+                    <span style={{ fontSize: 12, fontWeight: 600, color: cardTextMuted }}>, </span>
+                  ) : null}
+                  <strong style={{ fontWeight: 700 }}>{seg.value}</strong>
+                  <span style={{ fontSize: 12, fontWeight: 600, color: cardTextMuted }}>
+                    {' '}
+                    {seg.unit}
+                  </span>
+                </Fragment>
+              ))
             )}
-            <strong style={{ fontWeight: 700 }}>{remWeeks}</strong>
-            <span style={{ fontSize: 12, fontWeight: 600, color: cardTextMuted }}> wks</span>
           </StatCard>
         </div>
 

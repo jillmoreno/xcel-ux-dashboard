@@ -1,6 +1,10 @@
 // TODO(data): replace with real Learning Path API integration.
 // Source-of-truth Figma frame: file Nf5WhNJqxn9YVqDLT0MWOl, node 1:2462.
 
+import {
+  NY_LH_PRELICENSING_LESSONS,
+  NY_PRODUCER_HOURS_INVENTED,
+} from '@/data/nyProducerRequirements'
 import type { CertSmallData } from '@/components/courses/CertSmall'
 import type { CourseCardData, CourseStatus } from '@/components/courses/CourseCard'
 import type { HomeStatus } from '@/components/learning/learningPathsHomeUtil'
@@ -64,6 +68,22 @@ export type LearningPathSummary = {
    * global `LICENSE_TRACKER`.
    */
   weeksRemaining?: number
+  /**
+   * What `hours` and the category requirements are COUNTED IN, short form —
+   * "hrs" when unset, so every existing path is unchanged.
+   *
+   * Added 2026-09-16 for the QE path, which measures **days of XCEL's 7-day
+   * study plan** rather than credit hours (see `nyProducerRequirements`). It
+   * rides on the path rather than being threaded as a prop because five
+   * surfaces print the unit — the band's meta line and KPI cell, the category
+   * bars, the journey rows and the detail sheet — and a prop through all five
+   * is how one of them gets missed. The field names the unit once, where the
+   * number it belongs to lives.
+   *
+   * The FULL word is derived, not a second field: "hrs"/"days" pluralise
+   * themselves and a `unitLong` would be a second thing to keep in step.
+   */
+  unitLabel?: string
   /**
    * Explicit compliance status for the detail panel's status band. Set on the
    * progress-state personas (from their `HomeStatus`) so the band shows the
@@ -194,6 +214,39 @@ const _LEARNING_PATHS_BY_BRAND: Record<Brand, LearningPathSummary[]> = {
   // frames Parts 2–3; only the progress persona differs. See the
   // `exam-prep` entry in dashboardProgressFixtures.
   xcel: [
+    // NEW YORK INSURANCE PRODUCER — added 2026-09-16 as the QE Focused version's
+    // demo licence, and FIRST in the list so `learningPathsFor(brand)[0]` and
+    // `activePathIdFor` land on it. Every hour figure comes from
+    // `NY_PRODUCER_HOURS_INVENTED`; see that file's header for why they are
+    // flagged rather than guessed quietly.
+    //
+    // It does NOT replace the Florida paths. The CE renewal cycle below is a
+    // different education type and still demos Florida, and Learner Focused /
+    // Marketing Focused still open on it — so switching version must not
+    // silently switch jurisdiction too.
+    {
+      id: 'xcel-ny-producer-prelicensing',
+      // The PRODUCT's name, from its own page — it read "New York Insurance
+      // Producer Pre-Licensing", which is the licence rather than the thing
+      // XCEL sells.
+      title: 'New York Life and Health Pre-licensing',
+      category: 'Insurance Pre-Licensing',
+      state: 'NY',
+      // LESSONS of the pre-licensing course, not credit hours — see
+      // `nyProducerRequirements` for where 42 comes from and what the
+      // storefront does and does not publish.
+      hours: NY_LH_PRELICENSING_LESSONS,
+      unitLabel: 'lessons',
+      examDate: '12/15/2026',
+      timeLeftLabel: '22 Weeks Left to Exam',
+      progressPct: 62,
+      lastViewedAt: '2026-05-20T09:30:00Z',
+      // ONE measured segment: the pre-licensing course's lessons. Parts 2-3
+      // carry no count, so there is no elective half to split off.
+      mandatory: { completed: 26, required: NY_LH_PRELICENSING_LESSONS },
+      elective: { completed: 0, required: 0 },
+      layoutVariant: 'study-calendar-in-tab',
+    },
     {
       id: 'xcel-fl-lh-prelicensing',
       title: 'Florida Life & Health Pre-Licensing',
@@ -347,6 +400,29 @@ const _LEARNING_PATH_CARDS_BY_BRAND: Record<Brand, LearningPathCardData[]> = {
   // XCEL — mirrors `_LEARNING_PATHS_BY_BRAND.xcel`. `jurisdiction` is the
   // licensing STATE (insurance is state-regulated), unlike STC's 'FINRA'.
   xcel: [
+    // Mirrors the NY path added to `_LEARNING_PATHS_BY_BRAND.xcel` above, and
+    // leads for the same reason. Hours read the invented-figures block.
+    {
+      id: 'xcel-ny-producer-prelicensing',
+      title: 'New York Life and Health Pre-licensing',
+      programType: 'Insurance Pre-Licensing',
+      credentialType: 'Exam Prep',
+      jurisdiction: 'NY',
+      // `totalHours` on a TRANSCRIPT row is credit hours — the state's real 40
+      // for this line of authority. It is deliberately NOT the 7-day plan
+      // figure: a transcript reports what the regulator counts, and the plan is
+      // how XCEL paces getting there.
+      totalHours: NY_PRODUCER_HOURS_INVENTED.preLicenseEducation,
+      status: 'on-track',
+      progressPct: 57,
+      hoursCompleted: 23,
+      enrolledDate: '2026-01-12',
+      expiresDate: '2026-12-15',
+      daysLeftToComplete: 154,
+      totalTimeSpent: { hours: 23 },
+      lastActivityDays: 1,
+      resumeUrl: '/my-learning/path?path=xcel-ny-producer-prelicensing',
+    },
     {
       id: 'xcel-fl-lh-prelicensing',
       title: 'Florida Life & Health Pre-Licensing',
@@ -742,9 +818,20 @@ export function mandatoryHoursFor(brand: Brand): { earned: number; required: num
  */
 export type PathRequirements = {
   totalHours: number
-  mandatoryHours: number
-  electiveHours: number
-  renewalCycleYears: number
+  /**
+   * The Mandatory / Elective split and the renewal cadence — OPTIONAL since
+   * 2026-09-16, when the first PRE-LICENSING entry landed.
+   *
+   * This type was shaped for CE renewal, where all four always apply. A
+   * pre-licensing candidate has no renewal cycle (nothing to renew yet) and no
+   * elective split — the state names one hour figure per line of authority. The
+   * panel already guarded `renewalCycleYears > 0`; these two now guard the same
+   * way, so an entry states what applies instead of padding with zeros that
+   * render as facts.
+   */
+  mandatoryHours?: number
+  electiveHours?: number
+  renewalCycleYears?: number
   /** Heading above the rules list, e.g. the issuing board + cadence. */
   heading: string
   /** The board's renewal rules, one bullet each. */
@@ -762,6 +849,103 @@ export type PathRequirements = {
 }
 
 const _PATH_REQUIREMENTS_BY_ID: Record<string, PathRequirements> = {
+  /*
+   * NEW YORK INSURANCE PRODUCER — Life, Accident & Health (2026-09-16).
+   *
+   * THE FIRST PRE-LICENSING ENTRY HERE, and the reason three of this type's
+   * fields became optional: a candidate has no renewal cycle and the state
+   * names one hour figure per line of authority, not a Mandatory / Elective
+   * split. `totalHours` is the STATE's 40 — deliberately not the path's 56,
+   * which is the state requirement plus XCEL's own prep products. The
+   * distinction is stated in the list rather than left for a reader to notice
+   * the two numbers differ.
+   *
+   * Every rule below is from XCEL's own published requirements page, confirmed
+   * 2026-09-16:
+   * https://www.xcelsolutions.com/new-york/insurance-license/requirements
+   *
+   * Quoted closely rather than paraphrased. The forced-progression rule and the
+   * 70% chapter-assessment floor in particular are the kind of thing a learner
+   * is told once and then has to act on, so the wording stays near the source.
+   */
+  'xcel-ny-producer-prelicensing': {
+    totalHours: 40,
+    // No renewal cycle: this is the route TO a licence.
+    renewalCycleYears: 0,
+    heading:
+      'New York Department of Financial Services — what the state requires before you can be licensed:',
+    items: [
+      'Pre-licensing education — 40 hours for the combined Life, Accident & Health line',
+      'Course completion — every lesson reviewed and every chapter quiz passed, then the final exam',
+      'State exam — 150 scored questions in 150 minutes, 70% to pass, at PSI',
+      'Licence application — filed with the Department, with your certificate of completion attached',
+      'XCEL adds 16 hours of its own prep on top of the state’s 40 (Prep Review, Exam Simulators, Exam Cram). Those are ours, not New York’s.',
+    ],
+    sections: [
+      {
+        title: 'Hours by line of authority',
+        intro: 'New York sets the requirement per line. This path covers the combined line:',
+        items: [
+          'Life, Accident and Health — 40 hours',
+          'Life only — 20 hours',
+          'Accident & Health only — 20 hours',
+          'Personal Lines — 40 hours',
+          'Property and Casualty — 90 hours',
+        ],
+      },
+      {
+        title: 'How the course works',
+        intro:
+          'New York is a forced-progression (locked) state, so the order is not optional:',
+        items: [
+          'Each lesson must be reviewed and each chapter quiz passed before the next chapter unlocks',
+          'Assessments on key topics must be passed with a minimum score of 70% to move on',
+          'The final exam closes out the course',
+        ],
+      },
+      {
+        title: 'Getting your certificate of completion',
+        items: [
+          'Complete the course, including the final exam',
+          'Submit the student attestation',
+          'Download and print the certificate from the Transcript tile on your dashboard',
+          'Submit the certificate to the Department with your licence application',
+          'Course completion rosters are reported to the state weekly',
+        ],
+      },
+      {
+        title: 'Sitting the exam',
+        items: [
+          'Register online with PSI at test-takers.psiexams.com/nyins — exam fee $40',
+          'Test centre or online proctored; run PSI’s compatibility check first if you sit online',
+          'Bring two forms of identification bearing your signature, one a valid government-issued photo ID',
+          'There are no limits on retaking the exam',
+          'Spanish-language exams are available',
+        ],
+      },
+      {
+        title: 'Applying for the licence',
+        items: [
+          'Apply through the DFS portal or electronically via NIPR once you have passed',
+          'New York resident application fee — $80 full, $40 half',
+          'All licensing fees are non-refundable',
+        ],
+      },
+      {
+        title: 'After you are licensed',
+        intro: 'Not required yet — included so the whole cycle is visible:',
+        items: [
+          'Major Lines licences renew by the last day of your birth month, every two years',
+          '15 hours of approved CE for a single line, 30 for combined',
+          'Of those, 1 hour Insurance Law, 1 hour Ethics, 1 hour Diversity, Inclusion and Elimination of Bias',
+          'Annuity products need a one-time 4-hour Annuity Training course before you sell them',
+          'Flood (NFIP) needs an enhanced approved 3-hour course',
+        ],
+      },
+    ],
+    note:
+      'Certificates of completion are valid for a lifetime — but the course must be finished before you sit, since the Department wants the certificate with your application.',
+  },
   'elite-fl-nursing-ce': {
     totalHours: 24,
     mandatoryHours: 9,

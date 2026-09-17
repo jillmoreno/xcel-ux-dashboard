@@ -1,10 +1,12 @@
-import { type ReactNode } from 'react'
+import { useState, type ReactNode, type CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAccount, supportsMembership, type Brand } from '@/context/AccountContext'
-import { defaultDiscoverabilityVersionFor } from '@/data/dashboardVersions'
+import {
+  defaultDiscoverabilityVersionFor,
+  type DashboardLayout,
+} from '@/data/dashboardVersions'
 import { SectionContent } from '@/components/membership/v7/MembershipV7'
 import { ArrowLeft } from '@/icons'
-import { CourseDetailPage } from '@/pages/CourseDetailPage'
 import { ResourceDetailPage } from '@/pages/ResourceDetailPage'
 import { CourseLauncherProvider, useCourseLauncher } from './CourseLauncherContext'
 import { ResourceLauncherProvider, useResourceLauncher } from './ResourceLauncherContext'
@@ -16,9 +18,11 @@ import { useLearningPathsPanel } from '@/components/learning/LearningPathsPanelC
 import { isHomeActive } from '@/components/learning/learningPathsHomeUtil'
 import { useLearningPathSummariesForBrand } from '@/data/learningPathsCountVariant'
 import { activePathIdFor, learningPathsFor } from '@/data/learningFixtures'
-import { XCEL_CE_PATH_ID } from '@/data/studyCalendarFixtures'
+import { XCEL_CE_PATH_ID, hasStudyCalendarFor, studyCalendarFor } from '@/data/studyCalendarFixtures'
 import { InlineStudyCalendar } from '@/components/learning/study-calendar/InlineStudyCalendar'
 import { useCeStudyPlanEnabled, useFeatureFlag } from '@/context/FeatureFlagContext'
+import { StudyWeekSummary } from '@/components/learning/study-calendar/StudyWeekSummary'
+import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
 import { useTheme, type NavVariant } from '@/context/ThemeContext'
 import { CertificatesPage } from '@/pages/CertificatesPage'
 import { ProfilePage } from '@/pages/ProfilePage'
@@ -59,7 +63,13 @@ import {
   type LightHeroSection,
   type SectionHeroMeta,
 } from '@/data/membership/sectionHeroMeta'
-import { PlatformSideNav, type PlatformNavVariant, type PlatformSection } from './PlatformSideNav'
+import {
+  PlatformSideNav,
+  RAIL_GUTTER,
+  RAIL_GUTTER_COLLAPSED,
+  type PlatformNavVariant,
+  type PlatformSection,
+} from './PlatformSideNav'
 
 /**
  * Elite-only platform shell (the `platform-left-nav` flag). Renders on
@@ -188,6 +198,56 @@ function PlatformShellBody() {
   // the origin is the section the launcher overlays (the URL-driven `active`,
   // which is left unchanged while the launcher is open).
   const launcherOpen = launcher.courseId != null
+  /*
+   * MANUAL COLLAPSE, layered over the automatic one — 2026-09-17.
+   *
+   * `null` means "no opinion, follow the launcher", which is what makes the
+   * auto-collapse and the toggle coexist rather than fight: opening Compass
+   * still collapses the rail, and the learner can push it back open without
+   * that choice becoming permanent.
+   *
+   * IT SELF-INVALIDATES ON EVERY LAUNCHER TRANSITION, and getting there took
+   * two goes.
+   *
+   * The bug first: the override reset only on CLOSE, so a learner who expanded
+   * the rail on the dashboard carried that choice INTO the launcher and the
+   * auto-collapse silently did not fire. Measured — expand at home, open
+   * Compass, rail still 220.
+   *
+   * Then the mechanism: resetting it from a `useEffect` on `launcherOpen`
+   * works, and it is a `setState` inside an effect — a cascading render, and a
+   * lint error this repo does not otherwise carry. So the override REMEMBERS
+   * WHICH SCOPE IT WAS MADE IN and is ignored once that changes. Pure
+   * derivation, no effect, and it cannot go stale by construction.
+   *
+   * The scope is the COURSE ID, not a boolean, and that detail is the second
+   * bug: with a boolean, a choice made inside one course matched the NEXT
+   * course too, because both were simply "in the launcher". Keyed by id, each
+   * course gets its own.
+   *
+   * SO: opening a course you have not adjusted collapses the rail; an expand
+   * inside it lasts as long as that course; leaving restores the dashboard's
+   * default. **Reopening the SAME course in one session restores the width you
+   * chose for it** — a deliberate consequence rather than the rule as stated
+   * ("clicking Compass auto-collapses"), and the one place the two differ. It
+   * reads as the product remembering a correction rather than re-imposing
+   * something the learner just undid; forcing the collapse every time needs a
+   * per-open counter, which needs a hook into the launcher's own open.
+   *
+   * Deliberately NOT persisted. A rail width remembered across reloads is a
+   * real feature, and it wants the `cgp.*` treatment plus a decision about
+   * whether it is per-browser or per-account; this is session-local until
+   * someone asks for that.
+   */
+  const [collapseOverride, setCollapseOverride] = useState<{
+    /** The launcher's course id, or `null` for the dashboard. */
+    scope: string | null
+    collapsed: boolean
+  } | null>(null)
+  const railCollapsed =
+    collapseOverride && collapseOverride.scope === launcher.courseId
+      ? collapseOverride.collapsed
+      : launcherOpen
   const railActive: PlatformSection = launcherOpen ? 'profile' : active
   const launcherBackLabel = SECTION_TITLES[active]
   // Selecting a rail item closes any open launcher + writes the section to the
@@ -238,12 +298,14 @@ function PlatformShellBody() {
   // `defaultDiscoverabilityVersionFor`, which the Header's picker reads too so
   // the "Default" pill and the page can't disagree).
   const versionParam = params.get('version') ?? defaultDiscoverabilityVersionFor(brand)
-  const dashboardLayout: 'default' | 'learner-focused' | 'marketing-focused' | 'badged' =
-    versionParam === 'discoverability-learner-focused'
-      ? 'learner-focused'
-      : versionParam === 'discoverability-badged'
-        ? 'badged'
-        : 'marketing-focused'
+  const dashboardLayout: DashboardLayout =
+    versionParam === 'discoverability-qe-focused'
+      ? 'qe-focused'
+      : versionParam === 'discoverability-learner-focused'
+        ? 'learner-focused'
+        : versionParam === 'discoverability-badged'
+          ? 'badged'
+          : 'marketing-focused'
 
   // Mobile preview (the PrototypeBar device toggle → 390px frame) swaps the
   // left-rail desktop shell for a native-feeling single-column mobile layout:
@@ -410,11 +472,29 @@ function PlatformShellBody() {
       style={{
         ...navSurfaceStyle,
         display: 'grid',
-        // Rail is a fixed 264px column anchored flush to the viewport's LEFT
-        // edge at every width (no left filler), so the nav never floats inward
-        // on wide screens. Content stays capped (264 + 1176 = the 1440 content
-        // width); any extra width on ultra-wide screens falls to the right filler.
-        gridTemplateColumns: '264px minmax(0, 1176px) 1fr',
+        /* Rail is a fixed column anchored flush to the viewport's LEFT edge at
+           every width (no left filler), so the nav never floats inward on wide
+           screens. Any extra width on ultra-wide screens falls to the right
+           filler.
+        
+           220, DOWN FROM 264 — 2026-09-17, the direct ask ("seems excessively
+           wide"). Measured: the widest label is "Rubi Insights" at 87px, and a
+           row needs 141px for it (3px active border + 12 padding + 17 icon + 10
+           gap + 87 + 12 padding) plus the rail wrapper's 20px each side — so
+           181px is the floor. 264 left ~83px of slack; 220 leaves 39, which is
+           room for a longer label without being a column of air.
+        
+           THE 44px WENT TO THE CONTENT COLUMN, not away: `264 + 1176 = 1440` is
+           the app's own design width, and the prototype frame's
+           `min(1440px, …)` cap in tokens.css is justified by that exact sum. So
+           `220 + 1220` keeps it — narrowing the rail without moving the total
+           would have silently shrunk the shell's intended width. */
+        /* The rail narrows to 76 while the launcher is open, and the 144px it
+           gives up goes to the CONTENT column — the sum stays 1440 either way,
+           for the reason the note above gives. */
+        gridTemplateColumns: railCollapsed
+          ? '76px minmax(0, 1364px) 1fr'
+          : '220px minmax(0, 1220px) 1fr',
         minHeight: 'calc(100vh - 64px)',
       }}
     >
@@ -443,13 +523,43 @@ function PlatformShellBody() {
             position: 'sticky',
             top: railTop,
             height: `calc(100vh - ${railTop}px)`,
-            padding: '12px 20px 40px',
+            /* Gutters from `PlatformSideNav`, which owns them: the collapse
+               toggle's negative margin cancels this exact value to sit flush on
+               the rail's right edge, and the collapsed 8 is what leaves a 76px
+               column room for a 20px icon over its label. */
+            /* 12 ABOVE, RESTORED — 2026-09-17, the direct ask, and it reverses
+               a change made earlier the same day for a reason that no longer
+               holds.
+            
+               It went to 0 to "shift this up" while the collapse toggle sat at
+               the TOP of the rail: that gave the nav a 28px row above the
+               groups, so the 12 was pushing an already-lowered list further
+               down and the rail started 12px below the content column.
+            
+               The toggle moved to the foot, below Get Help. With nothing above
+               Home any more, 0 put the first row hard against the header's
+               bottom edge — so the padding is doing its original job again
+               rather than compounding a gap that has gone. */
+            padding: `12px ${railCollapsed ? RAIL_GUTTER_COLLAPSED : RAIL_GUTTER}px 40px`,
             boxSizing: 'border-box',
             // A subtle cue that the nav is locked, without looking broken.
             opacity: focus ? 0.85 : undefined,
           }}
         >
-          <PlatformSideNav active={railActive} onSelect={handleSelect} variant={navVariant} />
+          {/* AUTO-COLLAPSED while the Compass launcher is open — 2026-09-17,
+              the direct ask. Driven by `launcherOpen`, the same flag that
+              already blanks the rail's active state, so the two cannot get out
+              of step: a rail that highlighted nothing AND stayed full width
+              would be the worst of both. */}
+          <PlatformSideNav
+            active={railActive}
+            onSelect={handleSelect}
+            variant={navVariant}
+            collapsed={railCollapsed}
+            onToggleCollapse={() =>
+              setCollapseOverride({ scope: launcher.courseId, collapsed: !railCollapsed })
+            }
+          />
         </div>
       </div>
       {/* Content column carries no padding of its own — every section is
@@ -492,11 +602,14 @@ function PlatformShellBody() {
  *  carried by this single contextual "Back to {origin}" link, which names the
  *  section the learner came from and returns there. No breadcrumb. */
 function CourseLauncherView({
-  courseId,
   onBack,
   backLabel,
 }: {
-  courseId: string
+  /* `courseId` is still PASSED by the caller and deliberately not destructured:
+     the placeholder does not need it, and a restored `CourseDetailPage` does.
+     Dropping it from the signature would make putting the page back a change at
+     two call sites instead of one. */
+  courseId?: string
   onBack: () => void
   backLabel: string
 }) {
@@ -525,9 +638,68 @@ function CourseLauncherView({
         <ArrowLeft size={14} aria-hidden />
         Back to {backLabel}
       </button>
-      <CourseDetailPage courseId={courseId} embedded />
+      {/* A LO-FI PLACEHOLDER, where `<CourseDetailPage courseId embedded />`
+          rendered — 2026-09-17, the direct ask: "remove this entire section,
+          and place a large lo-fi square with simple message, this is where
+          Compass Course content will live."
+
+          WHY THIS IS A CALL-SITE CHANGE AND NOT A DELETION. `CourseDetailPage`
+          is 638 lines and has TWO consumers: this launcher and the standalone
+          `/courses/:id` route. Only the launcher is the Compass surface, so the
+          page itself is untouched and still renders in full at its own route —
+          nothing is archived, nothing is lost, and restoring this is swapping
+          one element back.
+
+          WHAT IT WAS SHOWING, and why a placeholder is the more honest state:
+          the embedded page drew the Figma "Learning Launcher" against the
+          catalogue fixture, which for this course meant `mm/dd/yyyy` for both
+          Enrolled and Expires, "Not Started · 0%" under a resume action, a
+          two-item table of contents, and an Enroll button on a course the
+          learner is 62% through. A reviewer reading that would take it for the
+          course player rather than for scaffolding. */}
+      <div style={launcherPlaceholderStyle}>
+        <LoFiWidgetBody rows={4} ariaLabel="Compass course content — placeholder" />
+        <p style={launcherPlaceholderTextStyle}>
+          This is where Compass Course content will live.
+        </p>
+      </div>
     </section>
   )
+}
+
+/* A LARGE square-ish block, not a full-height panel: it has to read as a
+   reserved AREA rather than as a page that failed to load, and the "Back to
+   {origin}" link above it has to stay in view so the learner is never stranded
+   in it.
+   
+   `aspectRatio` with a `maxHeight` cap: square at a narrow column, and on a
+   wide one it stops growing rather than pushing the link off screen. */
+const launcherPlaceholderStyle: CSSProperties = {
+  aspectRatio: '1 / 1',
+  maxHeight: 560,
+  minHeight: 320,
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 24,
+  padding: 40,
+  borderRadius: 'var(--radius-lg)',
+  /* The recessed fill the Jump Back In card uses, so the placeholder reads as
+     the product's own empty surface rather than as a debug box. No border, for
+     the reason that card has none: a stroke round a flat recessed fill reads as
+     a card that has lost its edge. */
+  background: 'color-mix(in srgb, var(--color-primary-500) 5%, var(--color-neutral-100))',
+}
+
+const launcherPlaceholderTextStyle: CSSProperties = {
+  margin: 0,
+  maxWidth: 360,
+  textAlign: 'center',
+  fontFamily: 'var(--font-body)',
+  fontSize: 14,
+  lineHeight: '20px',
+  color: 'var(--color-text-secondary)',
 }
 
 /** In-shell Resource Library resource viewer — the standalone
@@ -579,7 +751,7 @@ function PlatformMobileShell({
   railActive: PlatformSection
   isMember: boolean
   onSelect: (id: PlatformSection) => void
-  dashboardLayout: 'default' | 'learner-focused' | 'marketing-focused' | 'badged'
+  dashboardLayout: DashboardLayout
   navVariant: PlatformNavVariant
   launcher: LauncherLike
   launcherBackLabel: string
@@ -845,7 +1017,7 @@ const SECTION_TITLES: Record<PlatformSection, string> = {
   'm-whats-new': "What's New",
   'm-learning-library': 'Resource Library',
   'm-exam-prep': 'Exam & Cert Prep',
-  'm-career-tools': 'Rubi AI Tools',
+  'm-career-tools': 'Rubi Insights',
   'm-more': 'Partner Offers',
   membership: 'Membership',
   support: 'Help & Support',
@@ -1128,7 +1300,7 @@ function SectionPanel({
   active: PlatformSection
   isMember: boolean
   onSelect: (id: PlatformSection) => void
-  dashboardLayout: 'default' | 'learner-focused' | 'marketing-focused' | 'badged'
+  dashboardLayout: DashboardLayout
   /** Opens a Resource Library resource in-shell (desktop only). */
   onOpenResource?: (resourceId: string) => void
   /** Opens the Learning Path section drilled into a specific path's detail. */
@@ -1206,6 +1378,11 @@ function StudyPlanSection() {
   // `ce-study-plan` off the CE path has no plan, and this page must show the
   // empty branch rather than a plan the card is refusing to show.
   const ceStudyPlan = useCeStudyPlanEnabled()
+  /* READ UNCONDITIONALLY, above the early return below. `flag && useX()` and a
+     hook after a `return` are the same defect, and this file has hit it twice
+     already — the CE branch below returns early, so a flag read placed with the
+     strip would be a conditional hook call. */
+  const weekSummaryOn = useFeatureFlag('dashboard-week-summary').enabled
   if (!ceStudyPlan && pathId === XCEL_CE_PATH_ID) {
     return <InlineStudyCalendar />
   }
@@ -1221,7 +1398,39 @@ function StudyPlanSection() {
     homePersona && pathId === homePersona.path.id
       ? displayedProgressPct(homePersona.path)
       : undefined
-  return <InlineStudyCalendar pathId={pathId} coursePct={coursePct} />
+  // The strip reads THIS page's resolved plan, not the persona's — a `?id=`
+  // deep link shows one plan's calendar, and a week strip summarising a
+  // different one is the "two surfaces, two courses" defect this section's own
+  // path resolution exists to prevent.
+  const weekCalendar = hasStudyCalendarFor(brand, pathId) ? studyCalendarFor(pathId) : null
+  /*
+   * "THIS WEEK" CLOSES THE PAGE — 2026-09-17, the direct ask. It lived on Home,
+   * directly above Recommended for You.
+   *
+   * It keeps its own flag (`dashboard-week-summary`) and its own guard:
+   * `hasStudyCalendarFor`, NOT `supportsStudyPlan`, because `studyCalendarFor`
+   * falls back to STC's Series 79 plan for any id it does not recognise, and
+   * putting securities weeks under an insurance path is what its own docstring
+   * calls worse than the empty state.
+   *
+   * WORTH KNOWING, because it is the tension this move creates: the strip is a
+   * SUMMARY of the plan, and it is now under the plan itself. On Home that was
+   * its whole value — the week's shape without leaving the dashboard. Here the
+   * full month grid is directly above it, so the same days are stated twice on
+   * one screen. It reads as a footer that recaps the current week, which is
+   * defensible on a long scrolling calendar; if it starts to read as
+   * duplication, this is the note that says why.
+   */
+  return (
+    <>
+      <InlineStudyCalendar pathId={pathId} coursePct={coursePct} />
+      {weekSummaryOn && weekCalendar && (
+        <div style={{ marginTop: 32 }}>
+          <StudyWeekSummary calendar={weekCalendar} />
+        </div>
+      )}
+    </>
+  )
 }
 
 function LearningPathSection() {
@@ -1264,7 +1473,7 @@ function renderBody(
   active: PlatformSection,
   isMember: boolean,
   onSelect: (id: PlatformSection) => void,
-  dashboardLayout: 'default' | 'learner-focused' | 'marketing-focused' | 'badged',
+  dashboardLayout: DashboardLayout,
   onOpenResource?: (resourceId: string) => void,
   onOpenLearningPathDetail?: (pathId: string) => void,
 ): ReactNode {

@@ -28,6 +28,7 @@ import {
   Star,
   StarSolid,
   UserSlash,
+  ArrowRightToLineSolid,
 } from '@/icons'
 import { Avatar } from '@/components/ui/Avatar'
 import { MembershipBadge } from '@/components/ui/MembershipBadge'
@@ -120,6 +121,20 @@ type RailItem = {
    *  than its siblings (Bold vs. the rail's SemiBold default). Weight-only, so
    *  it never relies on color; everything else matches sibling rows. */
   emphasis?: boolean
+  /**
+   * The label for the COLLAPSED rail (icon over text, ~76px wide).
+   *
+   * Added 2026-09-17 with the collapse. Falls back to `label`, so an item
+   * without one still reads — it just gets two lines instead of one, which is
+   * the right degrade: a missing short label should look slightly cramped, not
+   * disappear.
+   *
+   * These are AUTHORED, and authored narrowly: only the labels that genuinely
+   * do not fit get one. Abbreviating everything is how a rail ends up with
+   * "Certs" beside "Resources" for no reason — the reference design shortens
+   * where it must and leaves the rest alone.
+   */
+  shortLabel?: string
 }
 
 const MEMBERSHIP_ITEMS: RailItem[] = [
@@ -128,7 +143,7 @@ const MEMBERSHIP_ITEMS: RailItem[] = [
   // See the `rail-whats-new` row in archivedItems.ts.
   { id: 'm-learning-library', label: 'Resource Library', icon: Library, iconActive: LibrarySolid },
   { id: 'm-exam-prep', label: 'Exam & Cert Prep', icon: Award, iconActive: AwardSolid },
-  { id: 'm-career-tools', label: 'Rubi AI Tools', icon: RubiLogo },
+  { id: 'm-career-tools', label: 'Rubi Insights', icon: RubiLogo },
   { id: 'm-more', label: 'Partner Offers', icon: Gem, iconActive: GemSolid },
 ]
 
@@ -142,17 +157,59 @@ const MEMBERSHIP_ITEMS: RailItem[] = [
  *    `?nav=mvp` on `/dashboard-rebrand` (see the Navigation MVP walkthrough). */
 export type PlatformNavVariant = 'full' | 'mvp'
 
+/**
+ * The rail column's own side gutters, owned HERE and applied by `PlatformShell`
+ * to the sticky wrapper it renders this nav inside.
+ *
+ * Exported because the value is shared across files and has to agree with the
+ * collapsed column's arithmetic: 8 each side of 76px leaves 60 for a 20px icon
+ * over a 10px label, where 20 each side would leave 36.
+ *
+ * A THIRD dependent went on 2026-09-17 — the collapse toggle's negative margin,
+ * which cancelled the expanded gutter so a circular handle sat flush on the
+ * rail's right edge. The toggle is an ordinary rail row now and needs no
+ * offset, so the constant has one consumer besides this file. It stays exported
+ * rather than inlined: the padding and the 76px arithmetic still have to agree,
+ * and that is the pair the drift would come from.
+ */
+export const RAIL_GUTTER = 20
+export const RAIL_GUTTER_COLLAPSED = 8
+
 export function PlatformSideNav({
   active,
   onSelect,
   variant = 'full',
+  collapsed = false,
+  onToggleCollapse,
 }: {
   active: PlatformSection
   onSelect: (id: PlatformSection) => void
   variant?: PlatformNavVariant
+  /**
+   * ICON-OVER-SHORT-TEXT state, ~76px wide — 2026-09-17, the direct ask: the
+   * rail auto-collapses when the Compass course launcher opens.
+   *
+   * WHY IT IS DRIVEN BY THE LAUNCHER rather than by a toggle the learner
+   * controls: the launcher is the one surface on this shell that wants the
+   * whole column, and a learner inside a course is not navigating. It is also
+   * why the rail STAYS rather than disappearing — CLAUDE.md's note on the
+   * launcher records that it has no rail item of its own, so orientation rests
+   * on the "Back to {origin}" link; hiding the rail entirely would leave that
+   * link carrying the whole burden.
+   *
+   * The captions go with it. "MY LEARNING" over a 76px column would wrap to
+   * three lines to label rows that are already grouped by a divider, which is
+   * what the reference uses.
+   */
+  collapsed?: boolean
+  /** Toggle the collapse. Omitted → no toggle renders, which is what the
+   *  kiosk/menu embeds want. */
+  onToggleCollapse?: () => void
 }) {
-  const { membership, brand } = useAccount()
-  const isMember = membership === 'member'
+  const { brand } = useAccount()
+  // `membership` / `isMember` are no longer read here: the only consumer was
+  // `NavProfileHeader`, which is unwired (see its call site below). It still
+  // takes the prop, so restoring the header means restoring this line too.
   // The "Membership" page is now part of the Demo as well as the sandbox, so the
   // rail item always shows. It was hidden in the pure Demo (`?demo=1`) while the
   // page was being built; every `page: 'membership'` flag is already
@@ -219,10 +276,11 @@ export function PlatformSideNav({
   const multiplePaths = useLearningPathSummariesForBrand().length > 1
   const lpVersion = useFeatureFlag('learning-path-version').variant ?? 'v1'
   const pluralLP = lpVersion === 'v2' && multiplePaths
-  // Two groups: **My Learning** (the learner's own areas) and a consolidated
-  // **Explore** group that gathers every discovery surface — Course Catalog,
-  // the full Membership set in its V7 order (Rubi AI Tools relabeled "Career
-  // Tools"), and Podcasts. Every item is open in the rail for
+  // Two groups: **My Learning** (the learner's own areas — which since
+  // 2026-09-16 includes Resources and Rubi Insights, the two things a candidate
+  // USES rather than browses) and a consolidated **Explore** group for
+  // discovery proper — Course Catalog, the Membership set in its V7 order, and
+  // Podcasts. Every item is open in the rail for
   // members AND non-members — no lock treatment (clicking a Passport-only
   // section still lands a non-member on its benefit-preview page, handled by the
   // shell's `renderBody`, but the rail itself never shows a lock).
@@ -236,7 +294,7 @@ export function PlatformSideNav({
     // predicate the tab used: a brand without one would otherwise get a rail
     // item onto an empty state.
     ...(supportsStudyPlan(brand)
-      ? [{ id: 'study-plan' as const, label: 'Study Plan', icon: CalendarDay }]
+      ? [{ id: 'study-plan' as const, label: 'Study Plan', shortLabel: 'Plan', icon: CalendarDay }]
       : []),
     // Readiness sits directly after the Study Plan: the plan is the work, this
     // is where you find out whether the work has got you there.
@@ -248,8 +306,33 @@ export function PlatformSideNav({
     // until a real readiness fixture exists; wire a predicate then, next to it.
     { id: 'readiness', label: 'Readiness', icon: Gauge },
     { id: 'learning-path', label: pluralLP ? 'Learning Paths' : 'Learning Path', icon: SignsPost, iconActive: SignsPostSolid },
-    { id: 'courses', label: 'My Courses', icon: BookFull, iconActive: BookFullSolid },
-    { id: 'certificates', label: 'Certificates', icon: Award, iconActive: AwardSolid },
+    { id: 'courses', label: 'My Courses', shortLabel: 'Courses', icon: BookFull, iconActive: BookFullSolid },
+    { id: 'certificates', label: 'Certificates', shortLabel: 'Certs', icon: Award, iconActive: AwardSolid },
+    /* RESOURCES + RUBI MOVED INTO THIS GROUP — 2026-09-16, and this SETTLES a
+       question that was open for one build.
+
+       They led the Explore group earlier the same day, and the note there
+       argued they should stay: the groups are semantic, Explore is every
+       discovery surface, and both of these are discovery. Jillienne's call is
+       that they belong to the learner, and it is the better read of the two —
+       a pre-licensing candidate does not BROWSE the reference material and the
+       AI tutor, they USE them, session after session, against the one
+       curriculum they are working. Browse Catalog is the discovery surface in
+       that group; these two are tools.
+
+       AT THE END, after Certificates, rather than at the top. "Move up" here
+       means up across the EXPLORE divider, which is the whole of the change;
+       putting them above Home would demote the rail's anchor, which nobody
+       asked for. Their relative order (Resources, then Rubi) is carried over
+       unchanged.
+
+       NOT added to the MVP rail: that list is a Figma-specified trim (node
+       53:5290), so growing it would be editing a design rather than
+       implementing one. */
+    { id: 'resources', label: 'Resources', icon: FileText },
+    ...MEMBERSHIP_ITEMS.filter(
+      (i) => i.id === 'm-career-tools' && !hiddenBenefitSections.includes(i.id),
+    ).map((i) => ({ ...i, label: careerToolsLabelFor(brand), shortLabel: 'Rubi' })),
   ]
   const exploreItems: RailItem[] =
     variant === 'mvp'
@@ -261,16 +344,19 @@ export function PlatformSideNav({
           { id: 'm-more', label: 'Partner Offers', icon: Gem, iconActive: GemSolid },
         ]
       : [
-          // Full rail — Browse Catalog anchors the Explore group (first), then
-          // Membership → Recommended for You, the rest of the Membership
-          // sections, Podcasts, and Free Content.
+          /* Browse Catalog anchors this group again.
+
+             `resources` and `m-career-tools` briefly led it (2026-09-16) and
+             have MOVED INTO MY LEARNING on the same day — see the note beside
+             them there. What is left here is discovery proper: the catalogue,
+             and the membership surfaces a brand that sells one gets.
+
+             On XCEL's demo baseline that makes this a one-row group. Kept as a
+             group rather than folded into My Learning: the divider is what says
+             "your things end here, the shop starts", and a learner who has
+             everything of their own above it should still see where buying
+             happens. */
           { id: 'catalog', label: 'Browse Catalog', icon: Grid, iconActive: GridSolid },
-          // Resources sits directly under Browse Catalog — both are "go and
-          // find something" surfaces, and this is the free half of that pair.
-          // NOT added to the MVP rail above: that list is a Figma-specified
-          // trim (node 53:5290), so growing it would be editing a design
-          // rather than implementing one.
-          { id: 'resources', label: 'Resources', icon: FileText },
           // What's New is fully archived (2026-08-25): the rail row went on
           // 2026-08-17, and the section itself is now unwired — the CTAs that
           // reached it point at Membership and `?section=m-whats-new` redirects
@@ -287,10 +373,12 @@ export function PlatformSideNav({
           ...(hasRecommendations
             ? [{ id: 'recommended' as const, label: 'Recommended for You', icon: Star, iconActive: StarSolid }]
             : []),
+          // `m-career-tools` is excluded here — it is in MY LEARNING now (see
+          // the note there). Without this exclusion it renders twice, which a
+          // duplicate React key would warn about but the rail would still draw.
           ...MEMBERSHIP_ITEMS.filter(
-            (i) => !hiddenBenefitSections.includes(i.id),
-          )
-            .map((i) => (i.id === 'm-career-tools' ? { ...i, label: careerToolsLabelFor(brand) } : i)),
+            (i) => i.id !== 'm-career-tools' && !hiddenBenefitSections.includes(i.id),
+          ),
           { id: 'podcasts', label: 'Podcasts', icon: Podcast, iconActive: PodcastSolid },
         ]
   // Note: the `profile` section is NOT in the rail — Profile is reachable only
@@ -374,10 +462,19 @@ export function PlatformSideNav({
       aria-label="Primary"
       style={{ display: 'flex', flexDirection: 'column', height: '100%', minHeight: 0 }}
     >
-      {/* Pinned top region — the profile header never scrolls. */}
-      <div style={{ flexShrink: 0 }}>
-        <NavProfileHeader isMember={isMember} onSelect={onSelect} />
-      </div>
+      {/* THE PROFILE HEADER IS UNWIRED — 2026-09-16, at Jillienne's request.
+          It was the pinned top region here: the learner's 48px avatar, "Welcome
+          back, <name>", their motivational statement, and a divider.
+
+          The header's account trigger carries the learner's photo AND name as
+          of the same day, so this was the second portrait-and-name of the same
+          person in one viewport, a few hundred pixels apart. The rail now opens
+          on MY LEARNING — its actual job.
+
+          `NavProfileHeader` is KEPT and exported, unreferenced, per the archive
+          convention (`ARCHIVED_ITEMS` id `nav-profile-header`) — the same shape
+          as `MotivationalStatementCard` on the Profile page. Restoring it is
+          re-adding the wrapper above; nothing inside it changed. */}
       {/* Scrollable middle region — the nav groups. Buttons stay Tab-focusable,
           so keyboard users reach clipped items by tabbing (the browser scrolls
           the focused row into view). */}
@@ -395,15 +492,31 @@ export function PlatformSideNav({
         }}
       >
         <div ref={contentRef} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          {groups.map((group) => {
+          {groups.map((group, gi) => {
             const captionId = `platform-rail-${group.id}`
             return (
               <div key={group.id} style={{ marginBottom: 8 }}>
-                <p id={captionId} style={CAPTION}>
-                  {group.caption}
-                </p>
+                {/* COLLAPSED: a divider instead of the caption, and no divider
+                    above the FIRST group — a rule at the top of a list fences
+                    it off from the header rather than separating anything.
+
+                    The `<ul>` keeps its accessible name either way: collapsed,
+                    `aria-label` carries the caption text that is no longer on
+                    screen, so a screen reader still hears "My Learning" and
+                    "Support" as the groups they are. Dropping the name with the
+                    visible caption would make the collapse an accessibility
+                    regression rather than a layout change. */}
+                {collapsed ? (
+                  gi > 0 ? <div aria-hidden style={COLLAPSED_DIVIDER} /> : null
+                ) : (
+                  <p id={captionId} style={CAPTION}>
+                    {group.caption}
+                  </p>
+                )}
                 <ul
-                  aria-labelledby={captionId}
+                  {...(collapsed
+                    ? { 'aria-label': group.caption }
+                    : { 'aria-labelledby': captionId })}
                   style={{
                     listStyle: 'none',
                     margin: 0,
@@ -415,16 +528,125 @@ export function PlatformSideNav({
                 >
                   {group.items.map((item) => (
                     <li key={item.id}>
-                      <RailRow item={item} active={active === item.id} onSelect={onSelect} />
+                      <RailRow
+                        item={item}
+                        active={active === item.id}
+                        onSelect={onSelect}
+                        collapsed={collapsed}
+                      />
                     </li>
                   ))}
                 </ul>
               </div>
             )
           })}
+          {/* THE COLLAPSE TOGGLE, as a RAIL ROW below Get Help — 2026-09-17,
+              the direct ask.
+
+              IT SUPERSEDES three earlier passes at this control, and the reason
+              it is better is worth recording: it was a 28px circle at the TOP
+              of the rail, in the page's own colour, hugged flush to the rail's
+              right edge so it read as a handle on the seam. That worked, and it
+              cost a bespoke shape, a bespoke fill, a negative margin that had
+              to cancel the wrapper's gutter, and its own contrast pair — four
+              things to keep right for one button. As a row it inherits all of
+              it from `ROW`/`COLLAPSED_ROW`, including the collapsed
+              icon-over-text treatment, so it cannot drift from its neighbours.
+
+              It is NOT in either `<ul>`, deliberately. The lists are
+              destinations; this changes how the rail is DRAWN and goes nowhere,
+              so putting it in a group would have a screen reader announce it as
+              a ninth place to visit.
+
+              THE LABEL IS THE ACCESSIBLE NAME. "Collapse" / "Expand" is on
+              screen, so there is no `aria-label` competing with it — the third
+              thing asked for, and it also retires the `title` tooltip the
+              circle needed to explain itself. `aria-expanded` still carries the
+              state, which a verb alone cannot. */}
+          {onToggleCollapse ? (
+            <RailToggleRow collapsed={collapsed} onToggle={onToggleCollapse} />
+          ) : null}
         </div>
       </div>
     </nav>
+  )
+}
+
+/**
+ * The collapse/expand row — a rail row that changes how the rail is DRAWN
+ * rather than where it goes.
+ *
+ * Its own component because it needs LOCAL HOVER STATE, the same way `RailRow`
+ * does, and a hook cannot live inside the parent's JSX. Hover was the one thing
+ * the first version of this row missed: it matched its neighbours at rest and
+ * then stayed inert under the cursor, which reads as a disabled row rather than
+ * a control.
+ *
+ * It reads `HOVER_BG` and `IDLE_COLOR` — the SAME constants `RailRow` reads,
+ * not copies of their values — so the two cannot come to disagree about what a
+ * rail row does under the cursor.
+ *
+ * It also carries the rows' transparent `3px` left border. That is not
+ * decoration: every nav row reserves it for the active indicator, so a row
+ * without it sits 3px left of the rest, and the icons visibly fail to line up.
+ * There is no active STATE here — the rail is never "on" this row — so the
+ * border stays transparent always.
+ */
+function RailToggleRow({
+  collapsed,
+  onToggle,
+}: {
+  collapsed: boolean
+  onToggle: () => void
+}) {
+  const [hovered, setHovered] = useState(false)
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      aria-expanded={!collapsed}
+      style={{
+        ...ROW,
+        ...(collapsed ? COLLAPSED_ROW : null),
+        background: hovered ? HOVER_BG : 'transparent',
+        color: hovered ? 'var(--color-nav-fg)' : IDLE_COLOR,
+        borderLeft: '3px solid transparent',
+        fontWeight: 600,
+      }}
+    >
+      <span style={{ display: 'inline-flex', color: 'inherit' }}>
+        <ArrowRightToLineSolid
+          size={collapsed ? 20 : 17}
+          aria-hidden
+          style={{
+            transition: 'transform 140ms ease',
+            transform: collapsed ? 'none' : 'rotate(180deg)',
+          }}
+        />
+      </span>
+      <span
+        style={
+          collapsed
+            ? { fontSize: 10, lineHeight: 1.2, textAlign: 'center', width: '100%' }
+            : { flex: 1, minWidth: 0 }
+        }
+      >
+        {/* "Collapse Menu" expanded, "Expand" collapsed — 2026-09-17.
+        
+            The asymmetry is the rail's OWN `shortLabel` convention, not an
+            oversight: the full phrase where there is room, one word where there
+            is not. At 76px with 8px gutters and the 3px indicator, the label
+            box is ~60px, and "Expand Menu" at 10px wraps to two lines while
+            every other collapsed row is a single line.
+        
+            The two states reading differently is correct anyway — they are
+            different actions, and each label names the one you would be
+            performing. */}
+        {collapsed ? 'Expand' : 'Collapse Menu'}
+      </span>
+    </button>
   )
 }
 
@@ -434,10 +656,13 @@ function RailRow({
   item,
   active,
   onSelect,
+  collapsed = false,
 }: {
   item: RailItem
   active: boolean
   onSelect: (id: PlatformSection) => void
+  /** Icon over short text, centred — see `PlatformSideNav`'s own note. */
+  collapsed?: boolean
 }) {
   // Selected rows swap to the filled/solid glyph when the item provides one;
   // idle/hover rows keep the outline icon.
@@ -461,8 +686,14 @@ function RailRow({
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
       aria-current={active ? 'page' : undefined}
+      /* The FULL label is always the accessible name, so the collapsed rail
+         reads identically to assistive tech — "Rubi Insights", not "Rubi". The
+         `title` gives the same to a mouse, which is what makes an abbreviation
+         a visual economy rather than a loss of information. */
+      {...(collapsed ? { 'aria-label': item.label, title: item.label } : null)}
       style={{
         ...ROW,
+        ...(collapsed ? COLLAPSED_ROW : null),
         // Selected-state treatment = Option C (nav selected-state exploration):
         // a brand-secondary TINT FILL (nav-active @ ~24%) + a tinted icon + a
         // bold label — the current cross-system standard (Material 3 / Carbon /
@@ -492,9 +723,22 @@ function RailRow({
           primary on dark rails, dark primary on the light rail) for contrast.
           Idle/hover icons inherit the row label color. */}
       <span style={{ display: 'inline-flex', color: active ? activeIconColor : 'inherit' }}>
-        <Icon size={17} aria-hidden />
+        <Icon size={collapsed ? 20 : 17} aria-hidden />
       </span>
-      <span style={{ flex: 1, minWidth: 0 }}>{item.label}</span>
+      {/* COLLAPSED shows the SHORT label under a larger glyph. The icon steps
+          17 → 20 because it is carrying more of the row's meaning once the text
+          is 10px — and the text stays, rather than the row becoming an icon
+          alone: an unlabelled glyph rail is the thing every nav study finds
+          people mis-click. `shortLabel` falls back to `label`. */}
+      <span
+        style={
+          collapsed
+            ? { fontSize: 10, lineHeight: 1.2, textAlign: 'center', width: '100%' }
+            : { flex: 1, minWidth: 0 }
+        }
+      >
+        {collapsed ? (item.shortLabel ?? item.label) : item.label}
+      </span>
     </button>
   )
 }
@@ -502,8 +746,20 @@ function RailRow({
 /** Dark-rail profile header — avatar + real greeting, then the "Your
  *  Membership" summary directly beneath (see `NavMembershipSummary`), all
  *  grouped above the header's bottom divider. Ported from `MembershipV7`'s
- *  `NavProfileHeader`. */
-function NavProfileHeader({
+ *  `NavProfileHeader`.
+ *
+ *  **UNWIRED 2026-09-16** — see the note at its old call site in
+ *  `PlatformSideNav`, and `ARCHIVED_ITEMS` id `nav-profile-header`. Exported
+ *  rather than deleted so the code stays intact and the file still compiles
+ *  (an unreferenced local function is a lint error); nothing imports it. Same
+ *  treatment `MotivationalStatementCard` gets on the Profile page.
+ *
+ *  It is the last thing rendering `NavMotivationQuote`, and therefore the last
+ *  door onto `MotivationalStatementPanel`. The STATEMENT itself is unaffected —
+ *  `ProfilePersonalizePanel` still reads and writes it through
+ *  `MotivationContext`, and `ProfilePersonalizeBand` still displays it — so
+ *  what left is this surface, not the feature. */
+export function NavProfileHeader({
   isMember,
   onSelect,
 }: {
@@ -646,11 +902,17 @@ function NavProfileHeader({
  * AID, so shipping "Career Tools" to an insurance pre-licensing candidate
  * misdescribes the product they are looking at.
  *
+ * **XCEL's label is "Rubi Insights" as of 2026-09-16** — it was "Rubi AI
+ * Tools" from 2026-09-10, and "AI Study Partner" before that. The reasoning
+ * below is unchanged by the third name: what moves is which XCEL-true wording
+ * to use, which is an editorial call; what holds is that it is not Elite's
+ * "Career Tools". The original note follows.
+ *
  * **XCEL's label changed from "AI Study Partner" to "Rubi AI Tools" on
  * 2026-09-10**, at Jillienne's request. The half of the reasoning above that
  * still stands is why it is not "Career Tools": what moved is which XCEL-true
  * name to use. "AI Study Partner" is the brand's own wording on
- * xcelsolutions.com and reads as what Rubi DOES; "Rubi AI Tools" leads with the
+ * xcelsolutions.com and reads as what Rubi DOES; the product name leads with the
  * product's name, which is what the rest of the app already called it —
  * `SECTION_TITLES` and the default `SECTION_HERO_META` both said "Rubi AI
  * Tools" the whole time, so this closes a split rather than opening one.
@@ -659,7 +921,7 @@ function NavProfileHeader({
  * brand that reframes Rubi has one place to say so.
  */
 export function careerToolsLabelFor(brand: Brand): string {
-  return brand === 'xcel' ? 'Rubi AI Tools' : 'Career Tools'
+  return brand === 'xcel' ? 'Rubi Insights' : 'Career Tools'
 }
 
 /** The learner's motivational statement in the rail. Renders ONLY when a
@@ -756,17 +1018,18 @@ function NavMembershipSummary({
   // Respect the SAME resolved count the Membership page uses (off ⇒ 1, else the
   // variant's 2 / 3 / 5), so the rail and the page never disagree about how many
   // memberships exist — the fixture now carries five, more than any variant shows.
-  const countFlag = useFeatureFlag('membership-count')
-  const shown = multiMembershipsFor(brand).slice(
-    0,
-    resolveMembershipCount(countFlag.enabled, countFlag.variant),
-  )
+  // `membership-count` removed from the catalog 2026-09-16 (XCEL flag audit — `supportsMembership('xcel')` is false, so this never renders for the one brand shipped).
+  // It defaulted OFF ⇒ a single membership. (`multiMembershipsFor('xcel')` is
+  // empty in any case, so this block never renders today.)
+  const shown = multiMembershipsFor(brand).slice(0, resolveMembershipCount(false, undefined))
   // Float the selected membership (chosen in the "Your Memberships" sheet) to the
   // top so the rail shows the same one the hero front card does.
   const activeIdx = shown.findIndex((m) => m.id === activeMembershipId)
   const memberships =
     activeIdx > 0 ? [shown[activeIdx], ...shown.filter((_, i) => i !== activeIdx)] : shown
-  const showMultiple = isMember && countFlag.enabled && memberships.length > 1
+  // `membership-count` removed 2026-09-16 (default OFF) ⇒ never the multi view.
+  // Was `countFlag.enabled && isMember && memberships.length > 1`.
+  const showMultiple = false
   // Join year (last token of `memberSinceMonthYear`, e.g. "November 2024" →
   // "2024") + plan expiry (`planExpiresOn`, already mm/dd/yyyy; Elite-only, so
   // the "Expires …" clause is dropped for brands without it).
@@ -973,6 +1236,30 @@ const nonMemberBadgeStyle: React.CSSProperties = {
   fontSize: 14,
   fontWeight: 600,
   lineHeight: '20px',
+}
+
+/* `COLLAPSE_TOGGLE` styled the 28px circular handle that sat at the top of the
+   rail until 2026-09-17 — a page-coloured disc hugged to the rail's right edge.
+   It went when the control became an ordinary rail row below Get Help, and with
+   it went a bespoke shape, a bespoke fill, a negative margin cancelling the
+   wrapper's gutter, and its own contrast pair. The row inherits all four from
+   `ROW`. */
+
+/** Icon over short text, centred — the collapsed rail's row. */
+const COLLAPSED_ROW: React.CSSProperties = {
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 5,
+  padding: '10px 4px',
+  textAlign: 'center',
+}
+
+/** Group separator for the collapsed rail, standing in for the caption. */
+const COLLAPSED_DIVIDER: React.CSSProperties = {
+  height: 1,
+  margin: '4px 8px 10px',
+  background: 'var(--color-nav-divider, rgb(255 255 255 / 0.12))',
 }
 
 const ROW: React.CSSProperties = {

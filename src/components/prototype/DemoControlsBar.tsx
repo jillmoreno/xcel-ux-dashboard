@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useLocation, useSearchParams } from 'react-router-dom'
+import { defaultDiscoverabilityVersionFor } from '@/data/dashboardVersions'
 import { UserSlash, Share2, BrowserWindow, Check, ChevronDown } from '@/icons'
 import { ActionMenu } from '@/components/ui/ActionMenu'
 import { Toast } from '@/components/ui/Toast'
@@ -88,7 +89,6 @@ export function DemoControlsBar({
   // Read current count flags so the bar can reflect reality on open (without
   // mutating anything until the reviewer interacts).
   const professionCount = useFeatureFlag('profession-count')
-  const membershipCount = useFeatureFlag('membership-count')
   // Progress / compliance state + QE·CE education type — both variant-only flags
   // the two new dropdowns drive directly (they persist via FeatureFlagContext).
   const progressState = useFeatureFlag('dashboard-progress-state')
@@ -99,12 +99,10 @@ export function DemoControlsBar({
   // this one belongs to one section. Add it to `readDemoParams` if a shared
   // link ever needs to open on a specific readiness state.
   const readinessState = useFeatureFlag('readiness-state')
-  // What's New toggle state mirrors the `dashboard-featured` flag (the Marketing
-  // Focused carousel it used to drive was archived): On = Featured hero hidden
-  // (`dashboard-featured` disabled); Off = hero shown. Drives the toggle at the
-  // top of the Persona dropdown.
-  const featuredFlag = useFeatureFlag('dashboard-featured')
-  const [whatsNewOn, setWhatsNewOn] = useState(false)
+  // The What's New / Featured toggle was removed 2026-09-16 with its flag (see
+  // the note in the Persona dropdown below). `whatsNewOn` is pinned off so the
+  // persona resolver and the `?wn=` codec keep working unchanged.
+  const whatsNewOn = false
 
   // Options come from the brand's membership fixture — never hardcoded.
   const professionOptions = useMemo(() => {
@@ -172,9 +170,6 @@ export function DemoControlsBar({
     // flags.
     if (parsed.prog) setVariant('dashboard-progress-state', parsed.prog)
     if (parsed.edu) setVariant('dashboard-education-type', parsed.edu)
-    // What's New toggle: honor an explicit `?wn=`, else derive from the live
-    // `dashboard-featured` flag (hero hidden ⇒ On).
-    setWhatsNewOn(parsed.wn ?? featuredFlag.enabled === false)
     const hasTPM = Boolean(parsed.tier || parsed.profs.length || parsed.mems.length)
     if (hasTPM) {
       if (parsed.tier) setTier(parsed.tier)
@@ -182,16 +177,15 @@ export function DemoControlsBar({
       setMems(parsed.mems)
       setEnabled('profession-count', true)
       setVariant('profession-count', parsed.profs.length >= 2 ? 'multiple' : 'single')
-      // `membership-count` is a simple on/off "Show Multiple Memberships" flag —
-      // 2+ selected memberships ⇒ on, else off.
-      setEnabled('membership-count', parsed.mems.length >= 2)
+      // `membership-count` was removed from the catalog 2026-09-16 (the XCEL
+      // flag audit — XCEL sells no membership, so `multiMembershipsFor` is
+      // empty and this selector has nothing to select). `?mem=` is still parsed
+      // and still round-trips through the bar's own state; it simply no longer
+      // writes a flag.
     } else {
       // Reflect the live flags without changing them (multiple ⇒ pre-select all).
       if (professionCount.enabled && professionCount.variant === 'multiple') {
         setProfs(professionOptions.map((o) => o.slug))
-      }
-      if (membershipCount.enabled) {
-        setMems(membershipOptions.map((o) => o.id))
       }
     }
     // Intentionally run once on mount only.
@@ -206,7 +200,6 @@ export function DemoControlsBar({
     setMems(nextMems)
     setEnabled('profession-count', true)
     setVariant('profession-count', nextProfs.length >= 2 ? 'multiple' : 'single')
-    setEnabled('membership-count', nextMems.length >= 2)
     const next = new URLSearchParams(searchParams)
     next.set('tier', nextTier)
     if (nextProfs.length) next.set('prof', nextProfs.join(','))
@@ -246,15 +239,6 @@ export function DemoControlsBar({
   // (`dashboard-clp-fullwidth`, the committed default) is always the top band now.
   // The toggle just shows/hides the standalone Featured hero (`dashboard-featured`):
   // On = hero hidden, Off = hero shown. `?wn=on` rides the URL for Share Link.
-  const applyWhatsNew = (next: boolean) => {
-    setWhatsNewOn(next)
-    setEnabled('dashboard-featured', !next)
-    const params = new URLSearchParams(searchParams)
-    if (next) params.set('wn', 'on')
-    else params.delete('wn')
-    setSearchParams(params, { replace: true })
-    // Keep the Persona dropdown open so the reviewer sees the toggle flip in place.
-  }
 
   // Progress / compliance dropdown — the 5 compliance states, current selection
   // on the trigger.
@@ -269,9 +253,27 @@ export function DemoControlsBar({
   // (CRE · McKissock · STC); brand-true labels ("Pre-Licensing" / "Qualifying
   // Ed" / "Exam Prep" vs "Continuing Ed").
   const showEducation = dashboardEducationSupported(brand)
-  const educationOptions = educationTypesFor(brand)
+  // QE Focused drops Continuing Ed from the list. That version resolves to a
+  // QUALIFYING journey by definition (see `MembershipOverview`), so leaving the
+  // CE row here would be a dropdown entry that changes nothing when clicked —
+  // the defect the flag audit spent a pass removing. The two qualifying
+  // journeys (Qualifying Ed / Exam Prep) still switch.
+  const qeFocusedVersion =
+    (searchParams.get('version') ?? defaultDiscoverabilityVersionFor(brand)) ===
+    'discoverability-qe-focused'
+  const educationOptions = educationTypesFor(brand).filter(
+    (o) => !qeFocusedVersion || o.type !== 'ce',
+  )
+  // The label has to reflect what the PAGE resolved, not the raw flag: on QE
+  // Focused a stored `ce` renders as Qualifying Ed, and a bar reading
+  // "Continuing Ed" over a pre-licensing path is worse than no label.
+  const effectiveEducation = qeFocusedVersion
+    ? educationTypeFlag.variant === 'exam-prep'
+      ? 'exam-prep'
+      : 'qe'
+    : (educationTypeFlag.variant ?? 'ce')
   const educationLabel =
-    educationOptions.find((o) => o.type === (educationTypeFlag.variant ?? 'ce'))?.label ?? 'Education'
+    educationOptions.find((o) => o.type === effectiveEducation)?.label ?? 'Education'
 
   // Brand dropdown — switches the whole prototype brand live (relights tokens +
   // per-brand fixtures/personas). Not threaded into the share-link codec: the
@@ -337,7 +339,6 @@ export function DemoControlsBar({
       let variant = op.variant
       if (countVariant) {
         if (persona.pathCountOptions && op.key === 'learning-paths-count') variant = countVariant
-        else if (persona.memCountOptions && op.key === 'membership-count') variant = countVariant
       }
       if (op.enabled !== undefined) setEnabled(op.key, op.enabled)
       if (variant !== undefined) setVariant(op.key, variant)
@@ -521,37 +522,12 @@ export function DemoControlsBar({
           panelLabel="User personas"
           panelMinWidth={420}
         >
-          {/* Hide Featured Section On/Off — the top-of-dropdown toggle applied on
-              top of the selected view below. Shows/hides the standalone Featured
-              hero (the Marketing Focused carousel it used to surface was archived).
-              On = Featured hidden. */}
-          <div style={WN_TOGGLE_ROW}>
-            <span style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-              <span style={{ fontWeight: 700 }}>Hide Featured Section</span>
-              <span style={{ fontSize: 11, opacity: 0.7 }}>
-                {whatsNewOn ? 'Featured hidden' : 'Featured shown'}
-              </span>
-            </span>
-            <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-              <button
-                type="button"
-                role="switch"
-                aria-checked={whatsNewOn}
-                aria-label="Hide Featured section"
-                className="cre-demo-controls-btn"
-                style={{
-                  ...WN_SWITCH,
-                  background: whatsNewOn ? 'var(--color-secondary-500)' : 'var(--color-neutral-200)',
-                }}
-                onClick={() => applyWhatsNew(!whatsNewOn)}
-              >
-                <span aria-hidden style={{ ...WN_SWITCH_LABEL, left: whatsNewOn ? 10 : 'auto', right: whatsNewOn ? 'auto' : 10, color: whatsNewOn ? 'var(--color-neutral-50)' : 'var(--color-text-secondary)' }}>
-                  {whatsNewOn ? 'ON' : 'OFF'}
-                </span>
-                <span aria-hidden style={{ ...WN_SWITCH_KNOB, transform: whatsNewOn ? 'translateX(28px)' : 'translateX(0)' }} />
-              </button>
-            </span>
-          </div>
+          {/* The "Hide Featured Section" toggle was removed 2026-09-16 with the
+              `dashboard-featured` flag it wrote (the XCEL flag audit).
+              `whatsNewFeaturedFor('xcel')` is an empty fixture, so the Featured
+              hero never renders here and the switch showed / hid nothing.
+              `FeaturedHero` and `resolvePersonaFlags`' whatsNewOn arm are kept —
+              author XCEL slides and re-add this row to bring it back. */}
           <div aria-hidden style={WN_DIVIDER} />
           {brandPersonas.map((persona, i) => {
             const countOptions = persona.pathCountOptions ?? persona.memCountOptions
@@ -718,7 +694,7 @@ export function DemoControlsBar({
             panelMinWidth={240}
           >
             {educationOptions.map((opt) => {
-              const active = opt.type === (educationTypeFlag.variant ?? 'ce')
+              const active = opt.type === effectiveEducation
               return (
                 <button
                   key={opt.type}
@@ -762,12 +738,10 @@ export function DemoControlsBar({
               setMems([])
               setEnabled('profession-count', true)
               setVariant('profession-count', 'single')
-              setEnabled('membership-count', false)
               setVariant('dashboard-progress-state', DEFAULT_PROGRESS)
               setVariant('dashboard-education-type', DEFAULT_EDUCATION)
               // (dashboard-clp-layout removed 2026-08-17 — V1 is baked in.)
               // What's New back to Off (the combined band restored).
-              setWhatsNewOn(false)
               setEnabled('dashboard-clp-fullwidth', true)
               setVariant('dashboard-clp-fullwidth', 'variant-d')
               setSecondaryVariant('dashboard-clp-fullwidth', 'always')
@@ -835,7 +809,6 @@ const FF_CAPTURE_EXCLUDE = new Set<string>([
   'dashboard-progress-state',
   'dashboard-education-type',
   'profession-count',
-  'membership-count',
 ])
 
 /** Encode a flag's CURRENT state as an `?ff=` token, or null when it matches the
@@ -928,55 +901,19 @@ const SUBMENU: CSSProperties = {
   gap: 2,
 }
 
-// What's New toggle row at the top of the Persona dropdown + its switch.
-const WN_TOGGLE_ROW: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: 12,
-  padding: '8px 12px',
-  // The row isn't a `.cre-menu-item`, so it would otherwise inherit the demo
-  // bar's white text and vanish on the white dropdown panel. Pin dark text.
-  color: 'var(--color-text-primary)',
-}
-
+// The Persona dropdown's "Hide Featured Section" switch was removed 2026-09-16
+// with the `dashboard-featured` flag (the XCEL flag audit) — its WN_TOGGLE_ROW /
+// WN_SWITCH / WN_SWITCH_LABEL / WN_SWITCH_KNOB styles went with it, since an
+// unused const does not compile here. WN_DIVIDER stays: it still separates the
+// persona rows.
 const WN_DIVIDER: CSSProperties = {
   height: 1,
   margin: '2px 8px 4px',
   background: 'var(--color-border-subtle)',
 }
 
-const WN_SWITCH: CSSProperties = {
-  position: 'relative',
-  flexShrink: 0,
-  width: 58,
-  height: 26,
-  borderRadius: 999,
-  border: 'none',
-  cursor: 'pointer',
-  transition: 'background .15s',
-}
 
-const WN_SWITCH_LABEL: CSSProperties = {
-  position: 'absolute',
-  top: '50%',
-  transform: 'translateY(-50%)',
-  fontSize: 10,
-  fontWeight: 800,
-  letterSpacing: '0.06em',
-}
 
-const WN_SWITCH_KNOB: CSSProperties = {
-  position: 'absolute',
-  top: 3,
-  left: 3,
-  width: 20,
-  height: 20,
-  borderRadius: '50%',
-  background: 'var(--color-neutral-50)',
-  boxShadow: '0 1px 3px rgb(0 0 0 / 0.3)',
-  transition: 'transform .15s',
-}
 
 const NUM_BADGE: CSSProperties = {
   flexShrink: 0,

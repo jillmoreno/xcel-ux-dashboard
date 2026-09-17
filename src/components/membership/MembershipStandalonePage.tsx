@@ -28,7 +28,6 @@ import {
   type MembershipTier,
   type MembershipRecord,
 } from '@/context/AccountContext'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { Modal } from '@/components/ui/Modal'
 import { membershipCompareFor, type MembershipComparePlan } from '@/data/membership/membershipUpgradeFixtures'
 import { ComparePlanCard, compareGridStyle, MembershipUpgradeModal } from './MembershipUpgradeModal'
@@ -254,8 +253,15 @@ export function MembershipStandalonePage({
   // `membership-page-version` flag. Simple keeps only the hero + comparison grid
   // (when the tier has an upgrade path) + the upgrade banner, dropping the
   // "Included…" shelves, benefit spotlights, and success-stats band.
-  const pageVersion = useFeatureFlag('membership-page-version').variant
-  const simple = pageVersion === 'simple'
+  // ── Flags removed from the catalog 2026-09-16 (the XCEL flag audit) ──
+  // This page is unreachable for XCEL: `supportsMembership('xcel')` is false, so
+  // `/membership` redirects to the rebrand shell and `?section=membership` is
+  // refused. `membership-page-version` (default `hub`), `membership-hub-hero`
+  // (`split`), `membership-cancel-flow` (`modal`), `membership-count` (off),
+  // `membership-compare-view` (`table`) and `aimt-band-style` (`dark`) are each
+  // pinned to that committed default below; every branch is kept for restore.
+  const pageVersion: string | undefined = 'hub'
+  const simple = false
   // "Membership Hub" (default): the redesigned at-a-glance hero (Figma 633:132)
   // in place of the standard hero, with the Lo-fi benefits treatment below.
   // Member-only hero; a non-member falls back to the normal NonMemberHero + non-member body.
@@ -263,9 +269,8 @@ export function MembershipStandalonePage({
   // (`membership-hub-hero`), since those were hero-only tweaks rather than page
   // versions. The base card (Figma 633:3385) adds a Current Membership passport
   // card to the LEFT of the savings block.
-  const hub = pageVersion === 'hub'
-  const hubHeroFlag = useFeatureFlag('membership-hub-hero').variant
-  const hubVariant: 'plain' | 'split' = hubHeroFlag === 'split' ? 'split' : 'plain'
+  const hub = true
+  const hubVariant: 'plain' | 'split' = 'split'
   // "Two sections" version (Concept C): the hero's hardcoded five-stat "Your
   // Membership" band is replaced by the Current Membership card + Membership
   // Scorecard rendered directly beneath the hero. Everything below is unchanged,
@@ -356,7 +361,7 @@ export function MembershipStandalonePage({
   // Which container the handed-off flow gets. `modal` (the default) overlays
   // the page; `page` replaces it. Same steps and copy either way — the arms
   // differ only in the container, which is the whole point of the comparison.
-  const cancelContainer = useFeatureFlag('membership-cancel-flow').variant
+  const cancelContainer: string | undefined = 'modal'
   const cancelFlowProps = {
     planTitle: cancelPlanTitle,
     renewal: cancelRenewal,
@@ -675,12 +680,13 @@ export function MemberHubHero({
   // Multiple memberships (Figma 640:3979): when the `membership-count` flag is on
   // and the learner holds 2+ memberships, the Active Membership card becomes a
   // stacked deck, the eyebrow counts them, and the link reads "View All".
-  const countFlag = useFeatureFlag('membership-count')
-  const membershipCount = resolveMembershipCount(countFlag.enabled, countFlag.variant)
+  const membershipCount = resolveMembershipCount(false, undefined)
   const memberships = multiMembershipsFor(brand)
   // The subset in play, capped to the count variant (2 / 5).
   const shownMemberships = memberships.slice(0, membershipCount)
-  const isMulti = countFlag.enabled && shownMemberships.length > 1
+  // `membership-count` removed 2026-09-16 (default OFF) ⇒ single membership.
+  // Was `countFlag.enabled && shownMemberships.length > 1`.
+  const isMulti = false
   // How many of those memberships the learner can actually USE today. The
   // eyebrow used to call all of them "Active", which the fixtures themselves
   // contradict — the set deliberately includes an expired membership and one in
@@ -1300,7 +1306,8 @@ function PlanComparison({ brand, realEstate }: { brand: Brand; realEstate: boole
  *  by every comparison surface — non-member AND member — so the Feature Flag panel's
  *  "Plan comparison view" toggle applies to all Quick Views, not just non-members. */
 function usePlanCompareView(): 'cards' | 'table' {
-  return useFeatureFlag('membership-compare-view').variant === 'cards' ? 'cards' : 'table'
+  // `membership-compare-view` removed 2026-09-16; default was `table`.
+  return 'table'
 }
 
 /** The shared Cards view — the `ComparePlanCard` grid. Used by the non-member
@@ -1638,7 +1645,8 @@ const AIMT_FEATURES = [
 ]
 
 function AiMasterTracksSection() {
-  const light = useFeatureFlag('aimt-band-style').variant === 'light'
+  // `aimt-band-style` removed 2026-09-16; default was `dark`.
+  const light = false
   return (
     <section className={`aimt ${light ? 'aimt--light' : 'aimt--dark'}`} id="ai-mastertracks">
       <div className="aimt-top">
@@ -1746,8 +1754,8 @@ function RealEstateBenefits({
   // Lo-fi benefits — the benefit spotlight bands become wireframe blocks (the
   // stats band stays). Shared by the Lo-fi, Two-sections, and Multiple-
   // memberships versions.
-  const version = useFeatureFlag('membership-page-version').variant
-  const lofi = benefitsAreLoFi(version)
+  // `membership-page-version` removed 2026-09-16; default was `hub`.
+  const lofi = benefitsAreLoFi('hub')
   const statBand = showStats ? (
     <div className="statband">
       <div className="statgrid">
@@ -1768,7 +1776,7 @@ function RealEstateBenefits({
         <LoFiBenefitSections
           heading={heading}
           id="re-benefits"
-          withImage={benefitsShowPhotos(version)}
+          withImage={benefitsShowPhotos('hub')}
           items={RE_LOFI_BENEFITS.filter((b) => show(b.id))}
         />
       </>
@@ -2096,14 +2104,14 @@ function MemberBenefitsSpotlight({
   const { brand } = useAccount()
   // Lo-fi benefits — swap the marketing heroes for wireframe blocks. Shared by
   // the Lo-fi, Two-sections, and Multiple-memberships versions.
-  const version = useFeatureFlag('membership-page-version').variant
-  const lofi = benefitsAreLoFi(version)
+  // `membership-page-version` removed 2026-09-16; default was `hub`.
+  const lofi = benefitsAreLoFi('hub')
   if (lofi) {
     return (
       <LoFiBenefitSections
         heading={heading}
         id={id}
-        withImage={benefitsShowPhotos(version)}
+        withImage={benefitsShowPhotos('hub')}
         items={benefits.map((b) => ({
           // Same authored eyebrow the marketing spot prints, so switching
           // versions never changes what the kicker says.

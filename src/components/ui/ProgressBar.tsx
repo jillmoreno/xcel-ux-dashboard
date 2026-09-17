@@ -23,17 +23,35 @@ export function ProgressBar({
   pct,
   height = 8,
   fill = 'var(--color-primary-700)',
+  track,
   className,
 }: {
   /** 0-100. Clamped, so a bad input cannot overflow the track. */
   pct: number
   height?: number
   fill?: string
+  /**
+   * Track override.
+   *
+   * The default `--color-neutral-100` is correct on a white card and measures
+   * **1.08:1** against the shell's `#f5f5f5` page grey — an empty bar with no
+   * visible track at all, which reads as a bar that failed to render rather
+   * than one at 0%. A caller on the page passes a darker groove.
+   *
+   * Added 2026-09-16 for the Current Course Progress bar, and it is the same
+   * override `CategoryBars` already needed for the same reason on the same
+   * surface — see its own `track` note.
+   */
+  track?: string
   className?: string
 }) {
   const clamped = Math.max(0, Math.min(100, pct))
   return (
-    <div aria-hidden className={className} style={{ ...trackStyle, height }}>
+    <div
+      aria-hidden
+      className={className}
+      style={{ ...trackStyle, height, ...(track ? { background: track } : null) }}
+    >
       <div style={{ ...fillStyle, width: `${clamped}%`, background: fill }} />
     </div>
   )

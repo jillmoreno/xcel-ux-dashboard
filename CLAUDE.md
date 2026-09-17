@@ -387,8 +387,9 @@ files look the way they do rather than what they currently contain.
 | File | Holds |
 |---|---|
 | [`src/data/prototypeFeatures.ts`](src/data/prototypeFeatures.ts) | The five XCEL rows + `PROTOTYPE_BASE`. The type block is verbatim from the LMS (so the ported components compile unchanged) plus one added field, `previewUrl`. Rows are ported verbatim from the LMS dashboard, which still has its own copies. |
-| [`src/data/archivedItems.ts`](src/data/archivedItems.ts) | The Archive table — one row as of 2026-09-10 (the Profile page's Motivational Statement card). |
+| [`src/data/archivedItems.ts`](src/data/archivedItems.ts) | The Archive table — two rows as of 2026-09-16 (the Profile page's Motivational Statement card, and the Dashboard MVP version retired by the flag audit). |
 | [`src/data/qaNotes.ts`](src/data/qaNotes.ts) | The committed QA seed — empty; findings are authored on the page. |
+| [`src/data/nyProducerRequirements.ts`](src/data/nyProducerRequirements.ts) | The New York Insurance Producer licence — the QE Focused version's demo. Sole owner of its INVENTED hour/exam figures, plus `examFactsFor` (the per-state exam facts the Readiness page reads). |
 
 ### The one in-app row
 
@@ -1033,6 +1034,404 @@ The shell's `<h1>` and the EmptyState's own title both read "Readiness", so the
 word appears twice. That is the existing Podcasts pattern, matched on purpose —
 if the doubling is worth fixing it should be fixed for both, not just here.
 
+#### The journey rail lost its blocked meta, and its two completion stops became one (2026-09-16)
+
+**Blocked stops render NO meta line.** Every stop after the current one is
+blocked, so all of their meta lines ended in the same four words — four stacked
+rows of "· After your coursework" under four titles, a paragraph of repetition
+where the point was a sequence.
+
+The trade-off is real: those lines also carried Part 2's 80% target and Part 3's
+"3 simulators, aim for 85%", which now live only on the requirements sheet the
+block links. The blocked REASON survives on the row's `title`, and `statusWords`
+still returns it — only the rendering stopped.
+
+What makes the rule safe rather than arbitrary: **blocked and not-started never
+appear together here**, so the missing words are not what would have told two
+visible states apart. If a path ever mixes them, the words have to come back —
+that is the "never colour alone" rule, and this is an exception the data
+currently permits rather than a repeal.
+
+**"Attestation & Certificate" is ONE stop**, from two. They are still two ACTS in
+XCEL's published certificate-eligibility rules and nothing about that changed;
+they are one MOMENT on this rail — done back to back, unlocking together,
+neither ever true without the other. Two rows spent two of the journey's five
+stops on one wrap-up, and with the blocked meta gone they were two long titles
+saying "certificate" twice. Splitting them back is re-adding one entry to
+`COMPLETION_STOPS`.
+
+#### The columns are 660 : 380, from 514 : 407
+
+They were near-even because they were once two halves of one band. They are not:
+the LEFT column carries the art, the title, the meta, the progress bar, the
+Resume CTA, three KPI cells and a status strip; the right is a list of short
+rows and gives width up cheaply. Measured after: 515px against 296px in the
+pane.
+
+**There are TWO `gridTemplateColumns` in `LearnerFocusedBand`**, and the first
+belongs to the completed-celebration branch, which renders something else
+entirely. It got the edit first and the symptom was the left column getting
+NARROWER — because the live grid had not moved at all. A test asserts exactly
+one of the two carries the new ratio.
+
+### `dashboard-course-header` — the page header band (2026-09-16)
+
+A fourth variant axis, and the only one whose default is OFF: `none` · `band`.
+A full-width header above the whole overview — the meta on one line, the course
+name as a 28px heading, two actions right, and a rule under the lot.
+
+**Off by default because it says the course name TWICE** — this and the Current
+Course Progress block's own heading a few lines below. That repetition is the
+QUESTION the variant asks (should this page read as a COURSE or as a dashboard?)
+rather than an oversight, which is exactly why it cannot be the default answer.
+A test asserts the name appears once when the flag is off.
+
+**NO action of its own — the band is a title, and that is all it is.** Three
+things were tried there and all three left:
+
+- **"DFS Statutory Rules →"** — there is no confirmed DFS URL in this repo. The
+  button opens the **requirements sheet**, which is a surface we can actually
+  reach, labelled "State requirements".
+- **"Syllabus (PDF)"** — the PDF XCEL links is a 7-day study PLAN, not a
+  syllabus. It shipped for one build as "Study plan (PDF)" — true, and pointing
+  at `NY_LH_STUDY_PLAN_URL`, the URL the product page gives under "Read our
+  recommended study plan" — and then went: a lone relabelled button beside a
+  real one is worse than not offering it. The URL is still recorded in the
+  fixture, so wiring it back is one element.
+
+**THE BLOCK BELOW DROPS ITS WHOLE HEADER while the band is on** (`hideHeader`).
+It started as `hideCover` and grew: dropping only the picture left the course
+NAME, the meta line and a second progress bar repeating the band three inches
+above them. What survives is everything the band does not have — the Resume CTA,
+the KPI cells, the status strip, View Requirements — so the block now opens on
+"Resume course". A test asserts the block prints no "% Complete" at all, which
+is what "one course, said once" means.
+
+**A FULL-WIDTH PROGRESS BAR sits under the title** (2026-09-16), with the figure
+on the TITLE'S OWN LINE — the number and the name it belongs to read as one
+statement, and the bar then tucks under both at `marginTop: 10` rather than
+floating a row away from each. It was in the bar's own row on the right for one
+build. It spans the whole band rather than sitting in the title
+column, which is what makes it read as the PAGE's progress rather than as one
+more thing beside the name.
+
+It reads `displayedProgressPct`, the **same resolver the block below uses** —
+not `path.progressPct`. Those two differ (the band sums the category hours and
+falls back to the authored field only when there are none), and a page header
+disagreeing with the block three inches under it is precisely the defect
+`ProgressAgreement.test.tsx` exists to catch. A test asserts both say the same
+number.
+
+It is the shared `ProgressBar` with the page-grey `track` override, for the
+reason the block's own bar needed one: the default track is 1.08:1 on this
+ground.
+
+**It is INDENTED past the cover** so it starts where the meta line and the title
+do rather than under the picture — aligned, it reads as belonging to the course
+name above it; flush left, it reads as belonging to the image. Measured: meta,
+title and bar all at x=448. The cover's width and its gap are CONSTANTS
+(`COURSE_HEADER_COVER_W` / `_GAP`) because three things depend on them — the
+image, the gap, and this indent, which has to clear both. Three literals is how
+that alignment drifts the next time the art is resized.
+
+- **"State requirements →"** replaced them, then moved to the FOOT of the Get
+  Licensed card (2026-09-16). Up there it was an action without a subject, three
+  sections above the thing it elaborates; at the foot of the card about what the
+  state requires, it is the next thing to read. It renders in BOTH journey
+  variants — only the syllabus one draws a card around the section.
+
+**THE COURSE ART LIVES HERE when the band is on.** It was beside the block's own
+title below; with the band on, that put the picture next to the SECOND naming of
+the course rather than the first. `hideCover` on the band drops it there — one
+course, one picture, the same duplication rule that folded the Jump Back In card
+into the block.
+
+The actions are outlined rather than filled: the page's primary action is
+Resume, a few lines below, and two filled buttons above it would argue with it.
+
+### `dashboard-journey-style` — the syllabus treatment (2026-09-16)
+
+A third variant axis, for the Study Journey rail AND the Get Licensed section it
+sits above: `default` · `syllabus`. To a supplied reference.
+
+`syllabus` is a formal restyle — a bordered card headed **"Complete Course"**
+under a wide-tracked **"Study Journey"** eyebrow (it read "Syllabus sequence"
+over "Study Journey" for one build; the eyebrow now matches the section's own
+`aria-label`, and the heading says what the section is FOR — the rail's job is
+getting the course finished, and the licensing card below picks up after that), **"Milestone 0 / 4 Complete"**
+instead of a bare count, **numbered nodes** (01, 02 …) with the active one
+filled, serif row titles prefixed with their number, a green **percentage chip**
+on the stop in progress, a "Part 2" / "Part 3" label on the blocked ones, and a
+**meta line on every row** — including blocked ones, which the compact rail
+drops. Get Licensed becomes **"Get Licensed in New York"** with per-step cards
+and labelled facts ("Vendor: PSI · $40 exam fee").
+
+**`jurisdictionName` is a two-entry map, not a 50-state table**, and it falls
+back to the CODE. A path carries `state: 'NY'`; expanding that to "New York" is
+presentation, so it lives beside the requirements rather than on the path, and
+an unmapped state reads as "NY" rather than as a blank or a guess.
+
+**TIGHTENED 2026-09-16, later the same day** — three things, all against the
+reference:
+
+- **Fewer words per row.** `metaWords` prints group · count · status, which on
+  this treatment says everything twice: the group is already the row's title (or
+  the "Part 2" label on its right) and the status is already the chip. Row 1
+  read *"Pre-licensing Course · 26 / 42 lessons · In progress · 62%"* beside a
+  title saying "Pre-licensing Course" and a chip saying "62% In progress"; row 2
+  read "Part 2 · …" beside a label saying "Part 2". `leanMeta` keeps only what
+  appears nowhere else: the count in words, the published target, the unlock
+  condition.
+- **Lighter, larger titles.** A heading face at 700/15 in a 296px column wrapped
+  every title to three lines and read as shouting. 600/16 sits closer to the
+  reference, which uses a book weight for rows and saves the bold for the
+  section heading. The title row also **wraps** now, so the chip drops to its
+  own line only when the title needs the room — the column is 296px since the
+  band's grid moved to 660:380, and a chip holding ~110px of that left the title
+  ~150.
+- **Get Licensed is its OWN card**, under a "Post-course process" eyebrow, and
+  the widget drops the hairline between them. What changes between the two
+  sections is WHO owns the work — XCEL, then the state — and a card boundary
+  says that more plainly than a rule does.
+
+**IT CHANGES NO DATA.** Same stops, same titles, same numbers. It does not split
+"Attestation & Certificate" back into the two rows the reference shows, because
+the merge was a data decision and a style variant must not quietly undo one. A
+test compares the rendered titles against `journeyStopsFor` to hold that.
+
+**What the reference has that is deliberately NOT reproduced:** "Foundational
+jurisprudence", "Mandatory sworn affidavit of identity & contact hours", "Formal
+pre-licensing completion certificate required for testing", and a course code
+("Code: NY-INS-L&H-2026"). The first three are claims about New York practice
+and the last is a record number; nothing in the fixtures sources any of them.
+What each row says instead is what `metaWords` already knew. A test asserts the
+copy is absent.
+
+### `dashboard-clp-stats` — the stat card (2026-09-16)
+
+A SECOND variant axis, for the Target Date / Time Remaining / Completed cells
+and the status below them: `default` · `stat-card`. Separate from
+`dashboard-clp-style` on purpose, so the header treatment and the stats
+treatment combine rather than multiplying into one list of pairs.
+
+`stat-card` gathers the three cells and the status onto one white card with a
+hairline border and a rule between them, gives each cell a **sub-label** under
+its value, prints Completed as a **two-tone fraction** (the unit moves to the
+sub-label, so the value is a bare "26 / 42" with the denominator dimmed), and
+runs the status pill **uppercase on an untinted row**.
+
+**`StatusStrip` gained a `bare` prop** for it. A tinted row inside a white card
+reads as a second card, and the card is already the surface. The pill keeps its
+tint, which is what carries the state — the wash never did (its own note records
+~1.02:1, i.e. decoration).
+
+**The pace line is DERIVED, not authored.** "~1.5 hrs/day suggested pace" is the
+state's real 40 credit hours (carried on the resume course, since the path
+measures lessons now) over the days remaining. It is omitted rather than guessed
+when there is no course to read hours from.
+
+**What the reference has that is deliberately NOT reproduced:** "You are
+currently pacing 4 days ahead of schedule. Maintaining this velocity ensures
+completion prior to your statutory window." Nothing in the fixtures knows a
+schedule to be ahead of, and the status message is the one the shared
+`statusMessageFor` returns. Authoring the claim would be the move this version
+has refused throughout — a test asserts the copy is absent.
+
+The other sub-labels are LABELS, not claims: "Your exam target date", "Lessons of
+this course". They say what the number is, which is the whole reason the
+treatment has room for a third line.
+
+### `dashboard-clp-style` — three treatments of the block (2026-09-16)
+
+A variant flag on the Current Course Progress block, to a supplied reference (a
+dark resume card with a big percentage on the right). Variant-only, like
+`dashboard-heading-font`: `default` · `big-number` · `navy`.
+
+- **default** — unchanged. Art left, title and meta right, the bar under the
+  meta with the percentage beside it.
+- **big-number** — same light ground; the percentage becomes a 40px figure in
+  its own right-hand column, with the bar and "26 of 42 lessons complete"
+  beneath it. The inline bar+label goes, so the number is still drawn once.
+- **navy** — the same cluster on a `--color-primary-700` card: light type, a
+  green bar, the big figure right, a **white** Resume button (the primary
+  gradient is this card's own colour, so the button would vanish into it). The
+  KPI cells, status strip and View Requirements stay on the page grey below, so
+  the variant dresses the cluster rather than the whole block.
+
+**No variant invents lesson-level content.** The reference shows "Lesson 27 —
+Life insurance policy provisions · 14 minutes left in this lesson"; there is no
+lesson title and no per-lesson timing in the fixtures, and authoring one is the
+rule this version has held throughout. A test sweeps all three variants for that
+copy.
+
+**Navy drops the cover**, as the reference does — and that is what gives the
+title room. The percent column is **160px, not 200**: at 200 the title column
+was left ~140px and "New York Life and Health Pre-licensing" wrapped to five
+lines, the number winning an argument it should not have been in.
+
+**THE `metaRow` SEAM FAILED AGAIN, in the opposite direction.** That row is
+assembled ABOVE the surface-specific markup, so a treatment applied by sweeping
+that markup misses it. It shipped white-on-page-grey at ~1.2:1 when the page
+surface landed; here it kept the PAGE's `--color-text-secondary` on the navy
+card and measured **2.13:1**. Both were invisible to tsc and to every other
+test, and both were caught only by reading the computed colour in a browser.
+
+It resolves through `nMuted` / `nLine` now — which is the argument for those
+existing at all rather than each block picking its own ink: a third treatment
+resolves here too. After the fix every navy value measures **12.25:1**.
+
+**One stale literal went with it.** The no-breakdown fallback read
+"{completed} of {required} **hours** complete" as a hardcoded word, which had
+been wrong since the unit moved — it printed "26 of 42 hours complete" under a
+bar labelled in lessons — and it leaked into the navy variant, where
+`resumeInline` is null and this was the else-branch.
+
+### `dashboard-heading-font` — serif headings, as a variant (2026-09-16)
+
+A variant flag on the Dashboard Rebrand overview: **Sans** (default, the brand
+face) ⇄ **Serif**. Scoped to `dashboard-rebrand` and in the panel's rebrand
+scope.
+
+**It re-points ONE token for a subtree**, which is the whole implementation:
+`MembershipOverview` puts `.cre-dash-serif-headings` on its root, and that class
+declares `--font-heading: var(--font-heading-serif)`. Custom properties cascade,
+and an inline `font-family: var(--font-heading)` resolves against the value the
+element INHERITS — so every heading inside switches, inline styles included,
+with no component knowing the flag exists. The alternative was threading a font
+prop through the band, the two widgets, the section leads and the cards: a dozen
+call sites for one choice.
+
+**Scoped to the overview root on purpose.** The shell's `<h1>`, the left rail
+and the header keep the brand face, so both faces are on screen at once — which
+is the comparison a reviewer flipping this actually wants. Verified: band and
+widget titles Georgia, rail Open Sans, page title Lato.
+
+**Variant-only**, like `learning-path-status-display`: `defaultEnabled: true`
+and the CHOICE is the variant. A separate on/off would be two controls for one
+decision, and "off" would have to mean "sans", which the variant already says.
+
+#### The serif is a STAND-IN, and this is the part not to lose
+
+**The reference is the live xcelsolutions.com heading, which is Amasis MT — and
+this file already says not to reproduce it.** The XCEL typography note in
+`tokens.css` records it as OFF-BRAND: *"the LIVE SITE's Amasis MT serif headings
+are OFF-BRAND (Amasis appears nowhere in the guide). Do not reproduce them."*
+It is also a Monotype face that is not licensed to us and is not on Google
+Fonts, so it could not be reproduced faithfully in any case.
+
+So `--font-heading-serif` is a **system stack** (Georgia and its cousins), and
+two things follow:
+
+- **No asset and no request.** Every face in it ships with the OS, so the
+  variant works offline, inside the Demo frame, and on a machine that has never
+  reached Google Fonts. Adding a webfont for an exploration flag would make the
+  DEFAULT view pay for a variant nobody has chosen.
+- **It answers "what do serif headings look like here", not "here is that
+  face".** Which is what a variant is for. The caveat is in the flag's own
+  DESCRIPTION, where the person flipping it will read it — not only here — and a
+  test asserts both the description and the tokens.css note still say it.
+
+Repointing the token at a licensed face, or at a Google family added to the
+existing `<link>` in `index.html`, is that one declaration.
+
+**Worth remembering when reading this:** XCEL's `--font-heading` is itself a
+placeholder. The brand's face is **Avenir** (Linotype, unlicensed to us); the
+app ships STC's **Lato** because it was already loaded, with **Nunito Sans** as
+the intended substitute. So "Sans" here means the placeholder, not the brand.
+
+### The rail profile header is unwired (2026-09-16)
+
+The pinned top region of the dashboard rail — the learner's 48px avatar with its
+Brick `brandRing`, "Welcome back, <name>" as a button to the Profile page, their
+motivational statement, and the divider under the group — is gone from the rail,
+at Jillienne's request.
+
+**It is the other half of the change above.** The header's account trigger
+gained the learner's photo AND name the same day, so this was the second
+portrait-and-name of the same person in one viewport, a few hundred pixels
+apart. The rail opens on **MY LEARNING** now, which is its job.
+
+**Archived, not deleted** — `ARCHIVED_ITEMS` id `nav-profile-header`.
+`NavProfileHeader` is **exported** rather than left as an unreferenced local
+function, because that is a lint error; it is the same treatment
+`MotivationalStatementCard` gets on the Profile page. Nothing inside it changed.
+
+**Three things travelled with it, and the restore note names all three:**
+
+- **`const isMember = membership === 'member'`** went from `PlatformSideNav` —
+  the header was its only consumer, so `membership` left that `useAccount()`
+  destructure too. A restore that re-adds only the JSX is a compile error.
+- **`NavMembershipSummary`** is reachable only through it. Moot for XCEL
+  (`supportsMembership` is false, so it never rendered), and live for a brand
+  that sells one.
+- **`brandRing` on `Avatar` now has NO call site.** It exists to mark this
+  avatar as the learner's own, and this was documented as its only caller — so
+  restoring the header restores the only thing that uses it. That is also why
+  the new header trigger deliberately does not take it: see above.
+
+**It fixed a restore note that had gone false.** The `profile-motivational-statement`
+row claimed the panel was "STILL REACHABLE from the left rail (`NavProfileHeader`
+→ MotivationalStatementPanel)". Unwiring the header made that untrue, and a
+restore note that lies is worse than none — it is corrected in place, and a test
+pins the correction. **The STATEMENT itself is unaffected:**
+`ProfilePersonalizePanel` still reads and writes it through `MotivationContext`
+and `ProfilePersonalizeBand` still displays it. What has no live caller now is
+`MotivationalStatementPanel`, the slide-over.
+
+**A brand-rule test had to have its control replaced.**
+`XcelNoMembership`'s "no membership pill in the rail" used the greeting as its
+control — proof that "no pill" was suppression rather than the rail failing to
+render. The control is the **Home** row now, and the test also asserts the
+greeting is absent, so it cannot silently start measuring this removal instead
+of the brand rule. Same trap that section already records from the other
+direction: a test about capability must pin what it depends on.
+
+### The header account trigger is the learner (2026-09-16)
+
+The top-right control was a generic `CircleUser` glyph in a `cre-icon-pill`. It
+is the learner's own photo plus their name now, at Jillienne's request — so the
+two ends of the header row, the rail's profile header and this, both say who is
+signed in.
+
+**The real fix was where the learner came from.** `Header` rendered
+`<AccountMenu initials="SC" />` — the ONLY prop it ever passed, and not this
+learner's initials (Alicia Navarro → AN). The component's own comment claimed
+"`Header` always passes the live values from `useAccount().user`"; it did not,
+so the hardcoded prop defaults WERE the menu. Invisible behind a glyph, and a
+second learner the moment the trigger shows a face and a name.
+
+`AccountMenu` resolves its own now, from the same two sources `NavProfileHeader`
+reads: `useAccount().user` and the profile-avatar override. Uploading a photo on
+the Profile page moves both. The props survive as OVERRIDES for an isolated
+mount, which is what they were genuinely being used for.
+
+**`email` is the one field with no source** — `DemoUser` carries a name,
+initials and an avatar but no email, so it stays an authored default rather than
+being derived. `first.last@gmail.com` would be a guess rendered as a fact, which
+is the rule the Links panel's `addedBy` field follows.
+
+**NO `brandRing` on it, deliberately.** The rail's 48px avatar is documented as
+the ONLY call site that carries the Brick ring — that is what marks it as the
+learner's own — and a second ringed avatar in the same viewport spends the
+distinction rather than making it. At 28px a 2px ring is proportionally heavier
+than it is at 48, too. A test pins the absence here and the presence there.
+
+**`cre-account-pill`, not `cre-icon-pill`.** That one is a fixed 40×40 SQUARE
+built for a single glyph and cannot hold a name. The new class is the same pill
+sized to its content and is otherwise identical — radius, hover value,
+transition, transparent rest state — because the trigger sits in a three-item
+cluster beside the cart and the bell, and one that hovers differently reads as a
+different kind of control. A test asserts the two hover rules are the same
+string rather than merely both existing.
+
+**The NAME drops below 900px**, not the pill: at phone widths the header is a
+logo, a hamburger and this cluster, and a full name is the first thing that
+should go. The button's `aria-label` still carries it, so assistive tech loses
+nothing. Measured: 143px wide at desktop, collapsing to 40 — the icon pills'
+own width — at 375.
+
+Measured: the name is 11.37:1 on the white header.
+
 ### Two small brand touches (2026-09-09)
 
 **The learner's own avatar carries a thin Brick ring** — `brandRing` on
@@ -1040,6 +1439,12 @@ if the doubling is worth fixing it should be fixed for both, not just here.
 the knight in the logo. It marks the rail profile header as *the learner*, since
 every other photo on the dashboard is stock or course art, and it is the ONLY
 call site that sets it.
+
+**SUPERSEDED 2026-09-16 — that call site is unwired**, so `brandRing` currently
+has none. The rail profile header is archived (`nav-profile-header`), and the
+header's new account trigger deliberately does not take the ring: a second
+ringed avatar in one viewport spends the distinction rather than making it. The
+reasoning below is unchanged and is what to re-read if the header comes back.
 
 Deliberately not the existing `ring` prop — that is 3px border + a 2px offset
 outline, ten pixels of chrome on a 48px circle. Under the global border-box
@@ -1049,7 +1454,23 @@ tier bands are concentric and flush, so a red ring outside them would read as a
 fourth band rather than as identity. XCEL has no membership, so the two never
 meet today.
 
-**The band eyebrow is "Current Learning Progress"**, renamed from "Current
+**The band eyebrow is "Current Progress"** as of 2026-09-16 — it has moved three
+times: "Current Learning Path" → "Current Learning Progress" (2026-09-09) →
+"Current Course Progress" → this. The first changed WHAT is described (progress
+through a path rather than the path itself); the second changed the OBJECT, for
+a version that tracks one course rather than a path of several; the third drops
+the object altogether.
+
+**Which resolves the warning the second one carried.** The object is already
+named directly above the eyebrow — the block's own heading is the course, and
+with `dashboard-course-header` on, so is the page title. An eyebrow repeating it
+was a third saying of one name. "Current Progress" labels the block without
+competing with it, and it is equally true of a path, so the one-constant rule
+stops costing Learner Focused and Marketing Focused anything.
+
+The original note follows.
+
+**The band eyebrow was "Current Learning Progress"**, renamed from "Current
 Learning Path". It is ONE exported constant, `CURRENT_LEARNING_EYEBROW` in
 `learningPathsHomeUtil`, because **five** components rendered that literal —
 the Marketing Focused band, the full-width Clp/Jump-Back-In band, the Learner
@@ -1069,8 +1490,14 @@ rather than the path itself.
 `NAV_SECTION_FLAGS` entries carry an optional `defaultEnabled`, and five are
 **false**. The committed baseline is:
 
-> Home · Study Plan · My Courses · Certificates — Browse Catalog · Resources ·
-> AI Study Partner — Get Help
+> Home · Study Plan · Readiness · My Courses · Certificates · Resources ·
+> Rubi Insights — Get Help
+
+(As of 2026-09-16. The original 2026-09-09 baseline was: Home · Study Plan ·
+My Courses · Certificates — Browse Catalog · Resources · AI Study Partner —
+Get Help. What moved since: Readiness joined, Rubi was renamed twice, Resources
+and Rubi moved into My Learning, and Browse Catalog went off — which took the
+Explore group with it.)
 
 Off: Learning Path, Recommended for You, Resource Library, Exam & Cert Prep,
 Podcasts. Two different reasons, and the difference decides whether to bring one
@@ -1111,9 +1538,16 @@ that key is the first thing to check.
 
 ### Resources — the Free Content section, restored 2026-09-09
 
-A rail section (`resources`) sitting directly **under Browse Catalog**: Browse
-Catalog is what you buy, Resources is the free half of the same "go and find
-something" job, so they read as a pair. The body is XCEL's four outbound
+A rail section (`resources`). It was **paired with Browse Catalog** — that one
+is what you buy, this is the free half of the same "go and find something" job —
+and sat directly under it until 2026-09-16.
+
+**That pairing is over.** It briefly led the Explore group, then moved into MY
+LEARNING the same day: see "Resources and Rubi are in MY LEARNING" below. The
+argument that replaced it is that a candidate does not browse the reference
+material, they use it — so it is one of the learner's own things rather than the
+free half of the shop. The reasoning below is the original and is what to
+re-read if the pairing is ever wanted back. The body is XCEL's four outbound
 destinations — Resource Center, the product blog, and the 2026 Career and
 Salary Guides.
 
@@ -1209,7 +1643,99 @@ exactly. Both surfaces that resolve a plan read the same
 — because one showing a CE plan while the other showed the empty branch is the
 drift the hook exists to prevent.
 
-### Rubi is "Rubi AI Tools" on XCEL now (2026-09-10)
+### Resources and Rubi are in MY LEARNING (2026-09-16)
+
+The rail reads **Home · Study Plan · Readiness · My Courses · Certificates ·
+Resources · Rubi Insights** — then **Explore: Browse Catalog** — then Support.
+
+**This moved twice in one day, and the second move settles it.** The two first
+led the Explore group (above Browse Catalog), and the note here argued they
+should stay there: the groups are semantic, Explore is every discovery surface,
+and both of these are discovery. Jillienne's call is that they belong to the
+learner, and it is the better read — a pre-licensing candidate does not BROWSE
+the reference material and the AI tutor, they USE them, session after session,
+against the one curriculum they are working. Browse Catalog is the discovery
+surface in that group; these two are tools.
+
+**At the END of My Learning, after Certificates.** "Move up" means up across the
+EXPLORE divider, which is the whole of the change; above Home would demote the
+rail's anchor, which nobody asked for. Their relative order carries over
+unchanged.
+
+**Explore is GONE from the demo rail** (2026-09-16, later the same day). It was a
+one-row group after the move — Browse Catalog alone — and that row is now
+`defaultEnabled: false`, which empties the group and therefore drops it and its
+caption whole, by the existing "a group whose items are ALL hidden falls out"
+rule. The rail is **My Learning · Support**.
+
+Through the FLAG, not by deleting the row, and that is the point of the baseline:
+`?section=catalog` still opens Browse Catalog (verified — the page's `<h1>` reads
+"Browse Catalog"), and a reviewer can bring the row back from the flag panel
+with no code change. Editorial, not a capability cut — the QE Focused default is
+built for a candidate working one booked exam, and the shop is the least
+relevant row on that rail.
+
+The earlier reasoning for keeping it as its own group — "the divider says your
+things end here, the shop starts" — is superseded: with nothing else in it, the
+divider was separating the learner's things from a single row.
+
+`NavSectionFlags` asserts the absence of the LIST rather than of the row, which
+is what proves the drop-empty rule ran: an empty group with a heading over
+nothing is the "reads as a load failure" defect that rule exists to prevent.
+
+**`m-career-tools` is spread in My Learning and filtered out of the later
+`MEMBERSHIP_ITEMS` spread**, or it renders twice — React would warn about the
+duplicate key but the rail would still draw, so the guard is the filter rather
+than the console.
+
+**Not added to the MVP rail** (`?nav=mvp`) — a Figma-specified trim (node
+53:5290).
+
+#### The tests could not see this move, and that is the lesson
+
+Every rail assertion in the suite passed the change **without noticing it**.
+Moving the two rows from the top of Explore into the bottom of My Learning
+changed which `<ul>` they belong to and changed the flat button order **not at
+all** — Resources · Rubi Insights · Browse Catalog are still consecutive in that
+order. So `NavSectionFlags`' whole-rail-in-order list and `ResourcesSection`'s
+index check were both green on both arrangements.
+
+Each group's `<ul>` is `aria-labelledby` its caption, which is the handle that
+CAN see it: `getByRole('list', { name: 'My Learning' })`. Both tests assert
+group membership now, and `NavSectionFlags` says in a comment that its flat list
+is blind to grouping — so the next person does not read a passing in-order
+assertion as proof the groups are right.
+
+Same family as the demo-rail note above ("a presence check passes just as
+happily when an unrelated row appears"), one level up: an ORDER check passes
+just as happily when the grouping changes underneath it.
+
+### Rubi is "Rubi Insights" on XCEL now (2026-09-16)
+
+**Renamed again**, at Jillienne's request: "Rubi AI Tools" → **"Rubi
+Insights"**. The 2026-09-10 note below is unchanged and still explains WHY the
+label is not Elite's "Career Tools" — that rule has survived both renames; what
+keeps moving is which XCEL-true name to use, which is an editorial call.
+
+**Seven non-test sites, all changed together**, and the list is longer than the
+four the note below records, because it now includes the ones that were already
+agreeing: `careerToolsLabelFor`, `MEMBERSHIP_ITEMS`, `NAV_SECTION_FLAGS`,
+`PlatformShell`'s `SECTION_TITLES`, `membershipFirstFixtures`, and BOTH
+`sectionHeroMeta` entries — the XCEL override and the brand-agnostic DEFAULT.
+
+**The default was renamed too, and that is the call worth recording.** Its
+description is still Elite's career-coach framing ("interview simulators, a
+resume builder"), which is what a brand-agnostic default is for — but the
+PRODUCT'S NAME is one name across the repo. Leaving "Rubi AI Tools" there would
+have put a second name in the codebase for a reader to pick between, which is
+how a third one gets invented. The name and the framing are different fields.
+
+`XcelNoMembership` still asserts against `careerToolsLabelFor` rather than the
+string, which is exactly why the second rename touched one line of it (a
+comment). `NavSectionFlags` asserts the whole rail in order and DOES carry the
+string — deliberately, because it is measuring the demo a stakeholder sees.
+
+---
 
 The rail read **"AI Study Partner"** — XCEL's own wording on xcelsolutions.com
 — and it is "Rubi AI Tools" as of 2026-09-10, at Jillienne's request.
@@ -1494,6 +2020,1216 @@ Promo card's decorative confetti SVGs, which are MCK brand ornament rather
 than structure, and the promo's "Copy Promo Code" button — promo lives in the
 bell as a row today, and a copy-to-clipboard affordance wants a real cart to
 land in.
+
+### QE Focused — the new default dashboard version (2026-09-16)
+
+A fourth Discoverability version (`discoverability-qe-focused`), and **XCEL's
+default**. Learner Focused and Marketing Focused stay in the picker so the three
+can be compared.
+
+**It is the first version built for a candidate with no licence yet** — someone
+working a fixed curriculum towards a booked exam, where the useful questions are
+"how much of the requirement have I cleared" and "what comes next", not "what
+else could I buy". Three departures, each answering one of those:
+
+1. **The Progress detail is on the PAGE.** The Learning Path detail sheet's
+   whole Progress tab — gauge, category bars, Target Date / Time Remaining /
+   Completed, and the per-category course lists — renders inline as a section.
+2. **The Current Learning Progress block has NO CARD — it sits on the page
+   grey** (`surface="page"`, 2026-09-16). No background, no shadow, no radius,
+   and the left/right padding goes too so a bare block lines up with the section
+   headings below instead of staying inset by a gutter it no longer has.
+
+   **The type was never the problem; the TRACKS were.** Every text colour clears
+   AA on `#f5f5f5` by a wide margin — title 10.43:1, meta 5.27:1, eyebrow
+   7.0:1, the link 7.56:1. The gauge and bar tracks do not: the light default
+   `--color-neutral-100` is **1.08:1** against the page and `-200` is 1.29:1, so
+   an empty bar would have no visible track and "0 / 8 hrs" would read as a
+   MISSING bar rather than an empty one. The page surface uses
+   `--color-neutral-300` (1.55:1) — a groove rather than a line.
+
+   **The bars are 6px, down from 8** (2026-09-16, the direct ask), as
+   `CATEGORY_BAR_HEIGHT`. Four bars at 8 stacked under a donut read as a block
+   of weight rather than a set of readings, and on this version they are the
+   widest element in the left column.
+
+   **6 rather than an invented value:** it is what `JumpBackInWidget`'s own
+   progress bar uses, and that card now sits directly BELOW these in the same
+   column at the same width — two progress bars inches apart differing by two
+   pixels is the "two treatments a few pixels apart" drift this repo keeps
+   paying for. A test reads the widget's declaration rather than restating 6,
+   so moving one without the other fails.
+
+   **It is NOT 3**, the Readiness Insights topic-bar height: those are SCORES
+   and there are fourteen of them, and that note is explicit that a different
+   job is allowed a different treatment. The shared `ProgressBar` is still 8 —
+   a single overall bar with a percentage beside it, and a separate component,
+   so moving it is a call about every surface that renders one.
+
+   It applies to all four `CategoryBars` call sites, not just this one: one
+   component, one treatment.
+
+   **Known, and shared with the detail sheet:** against that track the amber
+   (`--color-category-elective`) reads 1.34:1 and the tan
+   (`--color-tertiary-500`) 2.17:1. Both are weak in the white panel too (1.92 /
+   3.11) — it is a property of the light palette, not of this surface. Every
+   bar's value is stated in text beside it and the dot carries the hue, so
+   nothing rides on the fill alone. Darkening the track further makes those two
+   worse, not better (at `-400` the amber is 1.09).
+
+   **`onDark` asks whether the GROUND is dark, not whether the surface is the
+   navy card** — and that distinction is load-bearing. The navy card is dark in
+   both themes; the page is `#f5f5f5` light and `#1b1d21` dark. Token colours
+   flip on their own, but `onDark` is a boolean computed in JS, so keying it to
+   the surface would hand the LIGHT category palette to a dark ground and
+   reintroduce the same 1.11:1 slot-0 failure in the other theme. It reads
+   `useTheme()`. Dark actually measures BETTER than light here: every fill
+   clears 3:1 against the track (4.30 / 4.12 / 5.35 / 3.38).
+
+   **`.cre-journey-cta` was renamed `.cre-cta-ink`** when "View Requirements"
+   needed the same treatment — cta-500 as TEXT is 1.84:1 on the dark page. A
+   class named for one component that two use is the `.cre-link-action` lesson
+   from the other direction. `linkBtn()` now takes an OPTIONAL colour so a
+   caller can let the class own it; passing one would beat the class, which is
+   the trap the PSI link already hit.
+
+   **The primary CTA is LIGHT NAVY, not the Brick red** (at Jillienne's request,
+   matching the reference "Start check" button). Same 500→600 gradient
+   structure as the red it replaces — only the ramp moved. White on
+   `--color-primary-500` is 7.64:1 in BOTH themes (XCEL does not re-pin that
+   stop), and the fill reads as a button at 7.64:1 on the widget's white card
+   and 7.0:1 on the page grey. `--color-primary-700` was the other candidate and
+   was rejected because it is the value the navy CARD used — the button would
+   have been the colour of the surface just removed from behind it.
+
+   Scoped to `StudyJourneyWidget`. The other five callers of the red gradient
+   are other surfaces and other versions; moving them is a brand-wide call.
+
+   **The text CTAs followed it onto the primary ramp** — `.cre-cta-ink` is
+   `--color-primary-500` now, not `--color-cta-500` ("View Requirements", "Open
+   learning path", the PSI link, "View All"). The Brick had been carrying two
+   unrelated jobs at once: every action AND the assessment accent. Navy now
+   means "do this"; red means "this is an assessment". Same "one ramp, several
+   jobs" split the desktop prototype's re-palette made.
+
+   **`.cre-journey-milestone` keeps the Brick, and is now the only thing on the
+   page wearing it** — the milestone stop titles and their node rings. It is a
+   category of CONTENT, not a control.
+
+   Both still need a light stop on a dark ground, from opposite ramps:
+   `--color-primary-500` measures 2.21:1 on the dark page (1.99:1 on the dark
+   card), `--color-cta-600` 1.47:1. CTA ink measures 7.0 / 7.64 / 7.76 / 6.98
+   across light page / light card / dark page / dark card.
+
+   **Known, not fixed:** on the DARK card the navy fill is 1.99:1 against its
+   own surface, so the button is identified by its white label and its shape
+   rather than by a fill boundary. That is marginally better than the red it
+   replaces (1.84:1), not a regression.
+
+   **The three KPI cells are BARE, divided by vertical rules** — no fill, no
+   border, no radius. Three tiles in a row read as three cards competing with
+   the Study Journey card beside them, and a container each was chrome around
+   chrome; the numbers are the content and the rule is the separation. `gap: 0`
+   with the rule on the leading edge of cells 2 and 3 — a gap on top of a rule
+   reads as two gutters, and a rule on the FIRST cell would fence the row off
+   from the block it belongs to.
+
+   **`cRule` is a separate value from `cLine`, and the distinction is the
+   point.** `cLine` (`--color-border-subtle`) does the job of a boundary — the
+   meta line's 11px ticks, a card's edge — and measures 1.29:1 on the page grey
+   (1.38:1 dark). These rules are the only thing separating three data points,
+   so they are doing work: `cRule` is `--color-neutral-300`, 1.55:1 / 1.81:1,
+   which is also what this surface uses for the bar track. One "line you can see
+   on the page" rather than two near-identical greys. `-400` reads better still
+   (1.9 / 2.47) and was rejected — at full cell height it draws more attention
+   than the numbers it separates.
+
+   The navy card keeps its TILED cells: bare cells there would lose the
+   translucent fills that make them read as cells at all. Split by surface, not
+   a global restyle, and a test pins both sides.
+
+   **The status is the detail panel's OWN `StatusStrip`, and the "Status"
+   caption is gone.** A status-tinted wash with the pill and the message —
+   exported from `LearningPathDetailPanel` rather than matched, because the
+   Progress section directly below renders the same strip and a lookalike would
+   put two treatments for one status inches apart on one screen. Same argument
+   as `synthCategoryCourses` and the shared `TaskRow`; a test asserts BOTH
+   render the same `STATUS_STRIP_BG` value.
+
+   The caption was chrome: a pill reading "On Track" beside a sentence about the
+   deadline does not need a column saying it is a status, and that column cost
+   104px of a narrow block. The status is still in words, so nothing is carried
+   by the tint.
+
+   `statusTreatment`'s keys differ from the panel's `StatusInfo` by two names —
+   `fill`/`text` against `bg`/`color`. Mapped at the one place they meet rather
+   than renamed; both shapes have other consumers. The LIGHT tone is resolved
+   beside its on-dark twin so the two cannot describe different states.
+
+   Measured: pill ink 5.88:1 light / 5.92:1 dark on the tint, message 5.18 /
+   8.76. **The wash itself is 1.02:1 against the page** (1.19 dark) — it is a
+   HUE shift rather than a luminance one, which a contrast ratio does not
+   capture, and it is equally subtle on the white card in the section below. It
+   is decoration; the pill's label carries the state.
+
+   The navy card keeps the captioned box — the strip's tint composites over
+   `--color-surface-card` and would disappear into the navy.
+
+3. **THERE IS NO PROGRESS SECTION — removed 2026-09-16.** The version began by
+   rendering the detail sheet's whole Progress view inline as a page section.
+   Both halves of it ended up elsewhere, and then the section was the leftover:
+
+   - The SUMMARY moved up to the Current Learning Progress block (gauge,
+     per-category bars, Target Date / Time Remaining / Completed).
+   - The LISTS are the Study Journey, which walks the same categories in
+     curriculum order with each stop's status in words.
+
+   What was left was a second copy of the path title, sub-line, status strip and
+   a "Go to Learning Path" button, directly under a block that already had all
+   four — which is exactly how it read on screen.
+
+   **The route there took three passes, and the passes are the useful part.**
+   First the band was slimmed to a lead-in (`slimLeft`) so the section could own
+   the numbers. Then the numbers moved to the card (`categoryGauge` +
+   `hideSummary`) and `slimLeft` went. Then the section itself went, and
+   `hideSummary` and `embedded` went with it — two props with no caller are two
+   things to keep working for nothing. The Sheet is the panel body's only host
+   again.
+
+   **ONE AFFORDANCE WENT WITH IT:** the course rows' "View Certificate" link,
+   the only place a completed part offered its certificate from Home. The
+   Certificates rail item still holds them. If it is wanted back, the Study
+   Journey's completed stops are where it belongs — **not a restored section**;
+   a test asserts the lists are reachable as the journey so that is visibly the
+   wrong fix.
+4. **Recommended for You is dropped**, as a LAYOUT rule rather than by shipping
+   the flag off — the flag has to keep working on the other two versions. A test
+   seeds it ON and asserts the band is still absent.
+
+**It shares Learner Focused's band and stacked structure** (`qeFocused` sets
+`learnerFocused` too) rather than forking the layout. What changes is what goes
+IN the band and what follows it.
+
+**The page section is the REAL panel body, not a page-shaped copy.**
+`LearningPathDetailPanelContent` gained an `embedded` prop that suppresses the
+two things which only make sense in a slide-over — the "Close" link and the
+pinned-header padding — and nothing else. The sheet still opens from "View
+Requirements", which is normally the two-doors mistake; it is accepted for the
+reason the Resources section gives, that these are not the same door: the
+section is where you land, the sheet is what the OTHER surfaces link to, and
+both render one component. **Do not build a page variant of this view.**
+
+**`categoryGauge` OVERRIDES the band's "two categories only" rule**, and that
+is the interesting part. `hasBreakdown` restricts the segmented gauge to exactly
+two categories, because a 3–5-category path "shows the overall % here and the
+full list in the detail panel" — sound while the panel is a click away, wrong
+when it is the section directly below. Without the override the card showed one
+overall bar and the four-way breakdown was nowhere on screen.
+
+Scoped by a prop rather than applied whenever a path has categories, even
+though the band and the panel disagreeing for a 4-category path is arguably a
+bug everywhere: fixing it on Learner Focused and Marketing Focused changes what
+those ship.
+
+**The category palette had to gain an ON-DARK set, and two slots were
+invisible.** `CATEGORY_PALETTE` is built for the white detail panel. On the navy
+card, measured against the bars' track:
+
+- slot 0 `--color-category-mandatory` — **1.11:1**. That is the FIRST
+  category's colour, so on the New York journey the one bar carrying all the
+  progress read as empty.
+- slot 3 `--color-cta-500` (the Brick) — **1.03:1**. Invisible.
+
+`CATEGORY_PALETTE_ON_DARK` is the same hues at their light stops: 3.89 / 3.74 /
+4.85 / 3.06 / 5.89 / 3.54 / 5.09, every slot clearing 3:1. Same rule as
+`.cre-alert-action` and the desktop prototype's `--rail-accent` — a dark brand
+colour is a FILL on white and needs a light stop on a dark ground. Slot 1 was
+already a light amber, which is why the two-category case never showed this.
+
+**The donut's track had to come down from 0.2 to 0.12 white** with it. The
+lighter track was fine behind the two standardized segment colours; against the
+light-stop palette it put `cta-300` at 2.38:1 and the amber at 2.91:1. At 0.12
+every arc clears 3:1 — and it matches what `CategoryBars` already uses, so the
+donut and the bars beside it stop being two different shades of empty.
+
+**The SHEET keeps the full summary on the light palette** for the consumers
+that still show it. `hideSummary` is `embedded`-only.
+
+#### View Requirements is requirements-only, and the tabs are gone (2026-09-16)
+
+`LearningPathDetailPanelContent` gained `view: 'tabs' | 'progress' |
+'requirements'`. On QE Focused both halves render WITHOUT a tab bar: the "View
+Requirements" CTA opens `requirements`, and the page section is `progress`.
+
+**Because each half is already where it needs to be.** The page behind the sheet
+shows every part of the Progress half — the navy card's gauge and stat tiles,
+the section's course lists — so a Progress tab inside the sheet was a second
+door onto what the reviewer was just looking at, the pattern that got four
+testing tiles archived. And the section had a Requirements tab that the CTA now
+owns.
+
+**`view: 'tabs'` stays the DEFAULT, and that is deliberate.** Three other
+consumers open this sheet — `LearningPathsHome`, the classic dashboard's
+`LearnerOverviewPanel`, and the QE page's own embedded section — and for the
+first two the sheet is the ONLY door to either half. Removing their tabs would
+take the Progress detail away with no replacement. A test pins both: no tabs on
+QE Focused, tabs on Learner Focused.
+
+A single-half view pins the tab state rather than reading it, so a caller cannot
+land on a half the host never meant to offer.
+
+#### The requirements content is XCEL's published New York page
+
+`_PATH_REQUIREMENTS_BY_ID['xcel-ny-producer-prelicensing']`, from
+`https://www.xcelsolutions.com/new-york/insurance-license/requirements`,
+confirmed 2026-09-16. Six sections: hours by line of authority, how the course
+works, the certificate of completion, sitting the exam, applying, and the CE
+cycle that follows.
+
+**Quoted close to the source, not paraphrased.** The forced-progression rule and
+the 70% chapter-assessment floor are the kind of thing a learner is told once
+and then has to act on.
+
+**`totalHours` is the STATE's 40, not the path's 56.** The requirements box is
+about the board's requirement; XCEL's programme adds 16 hours of its own prep
+(Prep Review, Simulators, Exam Cram) on top. The difference is stated in the
+list rather than left for a reader to notice two numbers disagree.
+
+**THE FIRST PRE-LICENSING ENTRY made three fields optional.** `PathRequirements`
+was shaped for CE renewal, where `mandatoryHours`, `electiveHours` and
+`renewalCycleYears` always apply. A candidate has nothing to renew and the state
+names ONE hour figure per line of authority — and a `0` in those slots renders
+as a stated requirement of zero rather than as not-applicable, which is the
+admin roster's blank-Seat-cell rule.
+
+**The exam figures were wrong for one day, in a way worth recording.**
+`examFactsFor('NY')` shipped as "100 questions / 2 hours" — the SINGLE-line
+figure (Life only, Health only, Personal Lines). The demo persona holds the
+COMBINED Life, Accident & Health line, the 40-hour one, which sits **150 scored
+questions in 150 minutes**. The first fetch of the page summarised its per-line
+table as "100 (Life/Health) or 150 (Personal Lines/P&C)", which has it
+backwards. **Read the table, not a summary of it.** Corrected in both places
+that state it — the Readiness facts and the Get Licensed step — and the test
+matches on the NUMBERS rather than the phrasing, so the two surfaces stay free
+to word it differently while being unable to disagree.
+
+**The "Go to Learning Path" CTA is gone from this view** (2026-09-16). The page
+the sheet opens over already carries "Open learning path" on the Study Journey
+widget, so the button was a second door onto one route — inside a sheet whose
+whole job is to state the requirements. Same argument that dropped the Progress
+tab, applied to the header instead of the tab bar.
+
+It is gated on the `view` PROP, not on which half is showing: the tabbed sheet
+documents that CTA as persistent across both tabs, so switching to its
+Requirements TAB must not make it vanish. A test pins both, and also pins that
+"Open learning path" is still on the page — so the removal cannot quietly become
+"there is no way to the learning path from here".
+
+**`embedded` must not make a second scroll container.** The sheet's body is
+`flex: 1; overflow-y: auto`; on a page that collapses to its content and the
+section loses its scrollbar to the page anyway, reading as a clipped section.
+
+**QE Focused resolves a QUALIFYING journey, never CE, and that was a real bug
+for one build.** `dashboard-education-type` defaults to `ce`, so the version
+NAMED for qualifying education opened on a CE renewal path. `exam-prep` still
+gets through — it is the other qualifying journey — and the Demo Controls bar
+**drops Continuing Ed from its Education dropdown here** rather than leaving an
+option that silently does nothing. The bar's label reads what the PAGE resolved,
+not the raw flag.
+
+#### The Study Journey sits on the PAGE — no card (2026-09-16)
+
+`widgetCardStyle` has no background, no border and **no shadow**. It was a
+raised white card, inherited from the outer section back when this was the right
+half of a joined band.
+
+**The shadow went with the fill and the border**, which is one treatment rather
+than three settings: a shadow under a surface with neither fill nor edge reads
+as a card that failed to paint, not as less card.
+
+**The horizontal padding went too** — the move the Current Learning Progress
+block already records: a bare block lines up with its column instead of staying
+inset by a gutter belonging to a card it no longer has. What is left is 4px of
+top padding, so both columns' eyebrows sit on the same line (measured: y=260 for
+each).
+
+`widgetRuleStyle` is untouched — it divides this block's own two halves (the
+journey from Get Licensed) and is not card chrome.
+
+#### The Study Journey widget — its own card, split from the navy side
+
+`StudyJourneyWidget` (2026-09-16). Resume block, then the Study Journey, then
+Get Licensed: one card answering "where am I and what is next", from the course
+in front of the learner to the licence.
+
+**It was the band's right HALF** — a grid sibling of the navy Current Learning
+Path, sharing one radius, one shadow and one `overflow: hidden`. Two things made
+that stop working once QE Focused slimmed the navy side and grew this one:
+
+- **Grid siblings share a row height.** The navy lead-in is four lines; this is
+  a resume block plus ten steps. Joined, the navy half stretched to match and
+  carried a large empty area below its content — which reads as a render
+  failure, not as breathing room. Measured after the split: navy 272px, widget
+  989px, each sized by its own content.
+- **They are no longer halves of one statement.** The navy side's figures moved
+  to the Progress section below, so presenting the two as one surface implied a
+  relationship that section had already taken over.
+
+**`align-items: start` is the load-bearing half of the split.** Without it the
+grid still equalises the row and the navy card stretches exactly as before —
+the joined band with a gap. A test asserts the declaration rather than the
+heights, because jsdom has no layout.
+
+**The column gap is 40, matching what `MembershipOverview` puts between its own
+sections**, so the space between two independent cards reads as the page's own
+rhythm. It was 20 — inherited from when these were two halves of ONE card, where
+the gap stood in for the seam; split, 20 read as two things that had not quite
+come apart.
+
+**A REGRESSION THE PAGE SURFACE CAUSED, and how it hid.** `metaRow` (the
+"Insurance Pre-Licensing · NY · 56 Hours" line and its dividers) is assembled
+ABOVE the navy half's markup. The `surface='page'` colour swaps were applied
+across that markup, so they missed it: the meta line kept
+`rgb(255 255 255 / 0.66)` and rendered white-on-grey at roughly 1.2:1 — content
+that looked like it had failed to load. tsc was clean, all 686 tests passed, and
+it survived several rounds of looking at the page, because a washed-out line is
+easy to read past. Only inspecting the element's computed style caught it.
+
+**The lesson is about the method, not the colour:** a surface variant applied by
+sweeping a block of markup misses anything BUILT outside that block. Both values
+read `cMuted` / `cLine` now, and a test pins the meta colour per surface in both
+directions.
+
+**The joined treatment is KEPT for every other version.** Learner Focused and
+Marketing Focused are two halves of one statement at roughly one height, which
+is what it is for. A test pins both sides of that.
+
+**The widget resolves nothing itself.** The resume course is a prop and
+launching is a callback, so it has no `useCourseLauncher` and no fixture import
+— two components resolving "the course to resume" is how they disagree, which
+is the fork `displayedProgressPct` was extracted to close. A test scans the
+source (comments stripped) to keep it that way.
+
+`DELIVERY_LABEL` moved to `src/utils/courseDelivery.ts` so the split did not add
+a SIXTH private copy of that map. The other five are deliberately not folded in
+— they disagree on wording in places, so collapsing them is a copy decision.
+
+**Known, pre-existing:** `MembershipOverview` wraps the band in its own
+`<section aria-label="Your learning">` and the band carries the same label, so
+two nested regions share a name. Tests select the band by class because of it.
+Worth fixing separately.
+
+#### The Study Journey — sequence, not dates
+
+`StudyJourneyRail` replaces Today's Tasks in the band's white half. It does NOT
+replace the resume block above it: "continue where you left off" is still the
+first thing the card offers.
+
+**The Study Plan and the Study Journey answer different questions, and that is
+why both exist.** The plan is DATE-paced — what is due today, can put you
+behind, unit is a task with a due date. The journey is SEQUENCE-paced — where am
+I in the programme, cannot make you late, unit is a piece of curriculum. A
+journey with due dates is just a worse calendar, so this holds **no dates and no
+overdue state**; a test asserts no stop carries a `dueDate`.
+
+**The stops are derived, never authored** — `resolvePathCategories` →
+`synthCategoryCourses`, the same pair the Progress tab's course lists use. On
+this version those lists are directly below the band, so an authored journey
+would contradict them on the same screen. Both now live in `studyJourneyUtil.ts`
+so there is one derivation rather than two.
+
+**`personaFor` allocates completed hours SEQUENTIALLY, and that changed for
+this** (2026-09-16). It used to be `completed = required × ratio` applied to
+each category independently — a PROPORTIONAL fill, which made the New York
+learner simultaneously 63% through their coursework, 63% through the prep
+review, 63% through the simulators and 63% through the exam cram. The category
+bars survived that as decoration; the journey did not, because a sequence whose
+every stop reads "In progress" answers nothing about what to do next.
+
+Hours now fill the list in order, each category taking what it can before the
+next gets any. **The TOTAL is unchanged** — `round(totalRequired × ratio)`
+either way — so On Track is still 63% and the three-surface agreement holds;
+only the distribution moved. The category list is therefore ORDERED, and the
+order is the curriculum: entry 0 must be what a learner does first.
+
+**Mandatory / Elective are derived from the same allocation**, via a `segment`
+field declaring what used to be implicit in `mandatoryReq` / `electiveReq`. Two
+rules over one set of hours is two answers: under the waterfall
+`mandatoryReq × 0.63` says 25/40 while the categories say 35/40, and BOTH are on
+screen — the Progress section reads categories, the Learner Focused band's
+legend reads the two segments. A profile with no categories keeps the old
+computation exactly.
+
+Tests sweep every progress variant rather than asserting the default, for the
+reason `ProgressAgreement` gives: at most one stop in progress, nothing started
+after a not-started stop, and the segments agreeing with the categories.
+
+**Consequence worth knowing:** pre-license education alone is 40 of the 56
+hours, so on every partial state the prep / simulator / cram stops are
+untouched — the demo never shows "coursework done, now on the simulators". The
+levers are the On Track ratio or the pre-license hour requirement, and the
+latter is one of the invented figures. Left alone rather than tuned, because
+63% is what the Progress dropdown's own label says.
+
+**Assessment categories are MILESTONES** (`simulators`, `exam-cram`) — sitting a
+practice exam is a different act from working a lesson, which is the distinction
+the reference design makes with its Mini Exams.
+
+**They are marked on the NODE, not by red text — and that changed within the
+day.** The titles were `--color-cta-600` (the Brick) for one build. Red MEANS
+something: "Exam Simulators · 6 hrs · Not started" in red read as a failure
+rather than a step not reached yet, and worse because the two milestones happen
+to be the two not-started stops. Same tension the readiness gauge records — red
+on a CHAPTER is actionable, red on YOU is discouraging — and an unreached
+milestone is the second kind.
+
+The distinction is a WEIGHT OF INK on the ring now: `--color-text-primary`
+against an ordinary stop's `--color-text-tertiary`, 11.37:1 vs 6.19:1 on the
+card (13.67 vs 6.18 dark). Same value the "you are here" node uses for its fill,
+so the rail carries two inks rather than three — filled means "here", hollow
+strong means "assessment", hollow weak means "not yet".
+
+A different SHAPE (a diamond) was the other candidate and was rejected: a
+completed milestone carries the check glyph, so rotating the node means
+counter-rotating the icon inside it, for a distinction the group label already
+makes in words. **`.cre-journey-milestone` is gone and nothing on the page wears
+the Brick** — a test asserts the class is absent from `tokens.css`.
+
+#### Jump Back In is INSIDE the progress block (2026-09-16)
+
+The Current Learning Progress block now carries the **course art left of its
+title** and the **Resume CTA** beside the gauge. `JumpBackInWidget` is archived
+(`ARCHIVED_ITEMS` id `jump-back-in-widget`) — kept and exported, unreferenced.
+
+**It was one thing said twice.** The card sat directly below the block with the
+same course, the same art, the same percentage and its own progress bar. Merging
+it removes a whole card without removing any information.
+
+**The single category bar went with it, and that is what made room.** With one
+category the bar restated the donut's 62% AND the "Completed 26 / 42 lessons"
+KPI cell — three sayings of one number within three inches. `showBars` is a
+COUNT rule (`cats.length > 1`), not a version check: any path that ends up with
+one category gets this, and a path with a real breakdown keeps its bars
+everywhere.
+
+**Where the CTA went, and the two placements rejected.** It sits right of the
+donut, in the half the bar vacated — the eye's second stop, beside the progress
+it acts on. Both alternatives are one edit away and named at `resumeInline`:
+
+- **In the header row, opposite the title** — reads as a page action rather than
+  the next step in this course, and puts the primary button *above* the number
+  that motivates it.
+- **At the bottom beside "View Requirements"** — a filled primary button next to
+  a text link makes the link look disabled, and it falls below the fold on a
+  narrow shell.
+
+**Page surface only.** On navy the white half still renders the full resume
+block; two resume blocks in one band is the duplication this removed.
+
+**The art is the resume course's own** (`resumeCover`), so the picture and the
+button are the same course — and it is fixed at 84×56 with no border, for the
+two reasons the card already recorded: it is course art rather than a chip, and
+a border on the page grey boxes the one element that already has edges.
+
+**A horizontal BAR replaced the donut** (2026-09-16), under the meta line and
+inside the text column, so it reads as this course's progress rather than as a
+separate widget: title, what it is, how far through it. The 150px gauge had a
+whole row to itself to say one number the KPI cell below already states as
+"26 / 42 lessons".
+
+It is the **shared `ProgressBar`**, not a lookalike — the rule `ProgressInline`
+was extracted for, after Readiness drew its own 3px bar in a different green and
+one learner's one 32% became two different bars a rail item apart. The
+percentage is printed beside it because nothing else on this surface says "62%"
+once the donut goes; `ProgressBar` deliberately carries no label of its own.
+
+`ProgressBar` gained a **`track` override** for it, the same override
+`CategoryBars` already needed on this surface and for the same reason: the
+default `--color-neutral-100` is 1.08:1 on the page grey, so an empty bar has no
+visible groove.
+
+**The donut is NOT rendered rather than hidden.** `display: none` leaves a gauge
+in the accessibility tree and in every `querySelector('svg')` a test reaches
+for — present while absent. `barInHeader` is tied to `showBars` being false, so
+the bar and the category bars swap TOGETHER: with a real multi-category
+breakdown the donut still earns its row, because it shows the segments and a
+single bar cannot. The navy versions keep theirs, and a test asserts that.
+
+**The Jump Back In copy is gone; only the CTA remains** (2026-09-16). It was an
+eyebrow, the course title and "Course · 45% complete" — all three already said a
+few lines up by the art, the title and the bar. It also quietly closed a
+contradiction: that line printed the COURSE's own progress (45%) directly
+beneath a bar reading 62%, two true numbers measuring different things with
+nothing on screen saying so. If the copy ever comes back it has to say WHICH
+number it is.
+
+**The eyebrow sits ABOVE the art and the title** (2026-09-16). It was inside the
+text column beside the cover, which made it the course's label rather than the
+block's; lifted out, it names the whole block and the row below is a plain
+two-column pairing.
+
+**The art is 132×112** — 84×56 → 132×88 → here. It is no longer 3:2: the text
+column grew a progress bar under the meta, and a 3:2 crop finished well above
+that stack, reading as a thumbnail left behind rather than as the course. The
+WIDTH is held now, not the ratio; `object-fit: cover` does the cropping, so the
+photograph is never distorted.
+
+**It is an `<img>` with an `onError` swap, not a CSS background, and that is
+load-bearing.** `NY_LH_COURSE_IMAGE` points at
+`/courses/ny-life-health.webp`, **which is not in the repo**. The handler falls
+back to `getCourseImage`'s stock pool, so the page shows a real photograph
+either way — the `FeaturePreviewThumb` mechanism, and precisely the case
+CLAUDE.md describes when it says that fallback "lets paths be authored before
+the screenshots exist".
+
+That fallback is the ONLY reason a path to a missing file is allowed here.
+Without it this is the defect the Resources section shipped four of. Verified in
+the browser: the `src` resolves to `/courses/0.webp` today, i.e. the swap fires.
+
+**TO FINISH IT:** save the New York skyline as
+`public/courses/ny-life-health.webp`. Nothing else changes — no code, no
+fixture. The stock pool is real-estate photography, so until then the cover is
+generic rather than wrong.
+
+---
+
+The note below describes the card as it was, and is kept for the restore.
+
+#### Jump Back In was its own widget — in the LEFT column
+
+`JumpBackInWidget` (2026-09-16) — cover, course title, meta, progress bar and the
+Resume CTA, in its own card **under the View Requirements link**, below the
+Current Learning Progress block.
+
+It was the journey card's top third under a rule. Two reasons it earned a card:
+**it answers a different question** ("carry on with this one course" against
+"what is the shape of the programme"), and **it was the only unlabelled block on
+the version** — every other one carries an eyebrow, and this was the untitled
+thing at the top of a titled card. It has "Jump Back In" now.
+
+**It moved from the right column later the same day**, which is the placement to
+keep straight — it shipped as the top card of a two-card right-hand stack.
+Two things moved it:
+
+- **It belongs to the block above it.** "Carry on with this one course" is the
+  next action the progress block's own figures imply. Stacked under the Study
+  Journey's title, the two read as one undifferentiated list of "things on the
+  right".
+- **It gets the width it was short of.** At 330px in the right column the course
+  title wrapped to two lines; across the left column (measured 506px, exactly
+  the progress block's own x and width) it does not.
+
+**No width and no horizontal padding of its own** — it is a block child of the
+left flex COLUMN, so it stretches to the column and lines up with the progress
+block rather than being inset by a gutter that block does not have. That is what
+"same spacing as the progress section" means here, and a test pins the absence
+of a width rather than a pixel figure.
+
+**`marginTop: 20`, and the 40 between the COLUMNS is unchanged.** Two values, so
+the grouping stays legible: 40 separates the left block from the right column,
+20 says the card belongs to the block directly above it. The right column is now
+the Study Journey alone, not a wrapper around a stack — a test asserts that,
+since an empty wrapper is the kind of thing that survives a move and then
+collects a second child.
+
+**The card is RECESSED as of 2026-09-16** — a flat grey fill
+(`--color-neutral-100`), **no border and no shadow**, and a **4px** progress bar
+(down from 6), to a supplied reference. `widgetCardRecessedStyle`.
+
+The Study Journey beside it keeps the raised white card, so the two have
+diverged — which is fine (one action on one course against the shape of the
+whole programme) but **both shells still live in `widgetStyles.ts`**, because
+the way two cards in one column stop agreeing is a second shell defined
+somewhere else. A test asserts each takes the right one and that both are
+declared in that file.
+
+**The grey is a near-miss worth recording.** `--color-primary-100` is the closer
+match to the reference — a cool blue-grey, rgb(233 238 242) against the
+neutral's rgb(236 236 236) — and it is a **trap: it does not invert with the
+theme.** It stays near-white under `[data-theme='dark']`, so the card would have
+rendered near-white with near-white text: title **1.05:1**, meta **1.38:1**.
+Caught by measuring the token in both themes BEFORE writing it. The neutral
+inverts to a navy and holds its relationship to the page either way: **1.08:1
+light / 1.19:1 dark** against the page grey, which is deliberately subtle and
+matches the reference, where the band is a whisper against white.
+
+**The cover lost its border too.** It existed to edge the art against a white
+card; on the recessed grey it draws a box around the only thing in the card that
+already has edges.
+
+**The bar no longer matches `CATEGORY_BAR_HEIGHT`, deliberately.** Those two
+were pinned EQUAL earlier the same day, on the grounds that two progress bars
+inches apart in one column differing by two pixels reads as a bug. What changed
+is the reading of what they are: the category bars are a SET of requirement
+readings on the bare page, four of them scanned against each other; this is ONE
+course's progress inside its own card with the percentage already stated above
+it. Different job, different treatment — the rule `readinessFixtures` records
+for its own 3px topic bars. Both are named constants (`PROGRESS_BAR_HEIGHT` /
+`CATEGORY_BAR_HEIGHT`) and a test names the pair, so if it reads as drift the
+fix is to move both.
+
+**The track moved to `--color-neutral-300`** — `-200` measures 1.21:1 against
+the recessed card, an empty bar with almost no groove. `-300` is also the
+category bars' own track on this version, so the two grooves match even though
+the bars differ.
+
+**And the FILL needed a class, which is the defect measuring caught.** It was an
+inline `background: var(--color-primary-500)` — correct on white. With the card
+on `-100` and the track on `-300`, all three invert to navies in dark, leaving
+the fill at **1.22:1 against its own track**: a progress bar with no visible
+progress, in a card that rendered perfectly. `.cre-jbi-progress-fill` swaps to
+`--color-primary-300` under `[data-theme='dark']` — **4.30:1**, against 4.52:1
+for the light pair. Applied in dark only, because the same stop is 1.29:1 on the
+light track, so it cannot be one swap. The inline style sets NO background, or
+the rule would match, compute and do nothing; a test asserts that.
+
+**`widgetStyles.ts` holds the card shell and the eyebrow.** The two cards are in
+different columns now, which makes agreeing on their surface MORE important
+rather than less — they are the only two cards on the version and they sit side
+by side. A third copy of the shell is how they stop agreeing — the same reason `DELIVERY_LABEL` moved to
+`utils/courseDelivery` rather than being copied. Like the journey widget it
+resolves neither the course nor the launcher: both are the band's, since two
+components resolving "the course to resume" is how they disagree. **Known gap, not
+faked:** the reference INTERLEAVES milestones between chapter groups (A1, A2,
+Mini Exam 1, A3…). That needs a syllabus saying which chapters a mini exam
+covers, and the fixtures carry hour requirements per category, not an outline.
+So milestones sit where the category order puts them. Author the outline and the
+interleaving is a re-sort, not a rebuild.
+
+**The journey ends with two COMPLETION TASKS** — Complete Student Attestation,
+then Download and Print Certificate of Completion — from XCEL's published
+certificate-eligibility rules. They are stops rather than a third section
+because they happen INSIDE the LMS and XCEL knows whether they are done, which
+is precisely the line that puts Schedule / Pass / Apply elsewhere.
+
+They carry **no hours**: a credit-hour figure on "print your certificate" makes
+it look like coursework and would land in the gauge's denominator, which is the
+state's hour requirement and must not grow by two. And they read **"After your
+coursework"** rather than "Not started" until every hour is done — a step the
+product will not let you take must not invite the click. Same reasoning as the
+Licence & renewals notification saying why its switch is disabled.
+
+#### Get Licensed — the three steps XCEL does not own
+
+`GetLicensedRail`, directly under the journey. XCEL's published route to a New
+York licence is four steps; **the Study Journey IS step 1 expanded**, and this
+is steps 2–4 (Schedule State Exam · Pass State Exam · Apply for your License).
+
+**They are a separate section because the OWNER changes.** Everything in the
+journey happens in the LMS. Nothing here does — PSI schedules the sitting, PSI
+scores it, DFS issues the licence.
+
+**So these steps carry NO completion state, and the absence is the design.** A
+tick against "Pass State Exam" would be the product claiming an outcome it has
+no feed for. Each step gets who owns it, what the learner does, and the
+published fee instead. Numbered rather than noded: a numbered list says "do
+these in order" and makes no claim about where you are. A test asserts there is
+no status field, so wiring one in needs a real feed behind it.
+
+**The lede reads forward** — *"Once your course is completed, here are the next
+steps."* (2026-09-16). It said "After your certificate — these three are handled
+by the state", which led with the OWNER, a fact each step's own meta already
+carries (PSI, PSI, NY Dept. of Financial Services), and made the section sound
+like a disclaimer. A learner standing at the end of their coursework wants the
+next step.
+
+**Only one step links out** — PSI's New York registration page, stated on the
+requirements page. The other two have no URL, because an invented href is the
+defect the Resources section shipped four of.
+
+**One more inline-style trap, in the same file, caught the same way.** The PSI
+link spread `titleStyle`, which carries `color: var(--color-text-primary)` —
+and an inline colour BEATS `.cre-journey-cta`, so in dark mode the link
+rendered #f1f3f7 and looked like plain text. The class was present and correct
+the whole time. `titleStyleNoColor` exists so a themed class can own the colour;
+**do not spread a style that sets `color` onto an element whose colour a theme
+class is meant to swap.**
+
+**Status is in WORDS on every stop, and the first build got this wrong.**
+`completed` and `not-started` carry no percentage, so they were distinguishable
+only by the node — same text, one filled circle apart. Never colour alone.
+
+**Three colours failed in dark mode and only measuring caught them.** All three
+were clean in tsc, passed every test, and rendered:
+
+- The milestone title on `--color-cta-600` measured **1.47:1** on the dark card,
+  and "Open learning path" on `-500` **1.84:1**. The CTA ramp is a FILL colour
+  on XCEL (Brick) — the exact failure `.cre-alert-action` documents. Both are
+  classes now (`.cre-journey-milestone` / `.cre-journey-cta`) swapping to
+  `--color-cta-300` under `[data-theme='dark']`: 10.34 / 8.24 light, 5.49 dark.
+  **Classes, not inline styles** — `CSSProperties` cannot carry a theme
+  selector, and an inline `color` would beat the stylesheet anyway.
+- The "you are here" node on `--color-primary-600` measured **1.59:1** on dark:
+  the one node that says where the learner is was the least visible thing on the
+  rail. It is `--color-text-primary` now — near-black on light, near-white on
+  dark. Deliberately not the CTA ramp, which is the milestone ring's job.
+- The un-started node border on `--color-neutral-300` measured **1.63:1** on
+  dark (that token inverts to a navy). `--color-text-tertiary` is 6.19 light /
+  6.18 dark — unusually symmetric, worth keeping.
+
+**Known, not fixed:** the spine is `--color-border-subtle`, 1.41:1 light /
+1.24:1 dark. It is `aria-hidden` decoration carrying nothing the ordered list
+and the per-row status words do not already say, and it is the token every other
+divider on the page uses. Raising it is page-wide, not a Study Journey call.
+
+#### The measure is LESSONS — 42, and Part 1 is the journey's first stop (2026-09-16)
+
+The QE dashboard reported credit HOURS (three of whose four figures were
+authored here), then briefly DAYS of the study plan. It reports **lessons of the
+pre-licensing course** — the unit the product itself uses.
+
+**Where 42 comes from, stated plainly.** The LMS course card: *"0 of 42 lessons
+completed"*. It is **not** on the storefront — that page publishes 40 credit
+hours, three exam simulators and eight "What You'll Learn" topics, and no count
+of lessons, sections, chapters or modules anywhere. So 42 is sourced from the
+PRODUCT rather than the catalogue: a weaker footing than a published figure, and
+a much stronger one than the hour splits it replaces, which had no source at all.
+
+**CONFIRMED from the product page** (raw HTML, not a summary — the lesson from
+the exam-figures correction): "New York Life and Health Pre-licensing Premier",
+**$299.00**, Line of Authority "Life and Health", **Credit Hours 40**; the
+3-Part Training Program (Pre-licensing Course → Prep Review Course → Exam
+Simulator) with **three** simulators unlocked in sequence; **30 days** access to
+Part 1 then **30** for Parts 2–3; recommended **70 / 80 / 85%**; and
+*"prepares you to pass the insurance exam in less than 2 weeks"*.
+
+**ONLY PART 1 IS COUNTED, and that is the shape of the change.** The 42 lessons
+are the pre-licensing course, and the course is the journey's **first stop**.
+Parts 2 and 3 follow it as steps with **no count** (`PROGRAM_PART_STOPS`) —
+because the storefront states none for them, and giving them invented counts to
+keep the gauge multi-segment is exactly the move the hour figures taught us not
+to make. They are still ON the journey: leaving them off would say the programme
+ends with the coursework, which the product page explicitly warns against
+("you may be tempted to stop only after Part 1").
+
+Their `blocked` state is the real rule, not decoration — the page states Parts 2
+and 3 unlock "upon completion of Part 1" — and their meta carries what IS
+published: Part 2's 80% target, and that Part 3 is three simulators at 85%.
+
+**Consequences worth knowing:**
+
+- **The gauge and the category bars show ONE segment.** That is honest — there
+  is one measured thing — and it is why the journey beside it carries the
+  programme's shape instead.
+- **On Track reports 62%**, against the Progress dropdown's "~63%" label. Near
+  enough that the existing label-vs-gauge note covers it; the 7-day model had
+  put it at 57%.
+- **The first stop reads "26 / 42 lessons"**, the course card's own sentence.
+  `JourneyStop.completed` was added for it: a bare "42 lessons" is a denominator,
+  not progress.
+
+**The 7-day study plan survives as a confirmed FACT, not a measure.**
+`NY_LH_STUDY_PLAN_DAYS` = 7, with the link. Worth keeping: the product page's
+own "Read our recommended study plan" points at
+`prepare2pass.com/COURSES/study_guides/lh_ca_7days.pdf` — so despite the `lh_ca`
+in the filename it is the plan the **New York** page links, i.e. XCEL's Life &
+Health plan rather than another state's.
+
+**The recovered chapter list is kept and NOT rendered.**
+`NY_LH_GUIDE_CHAPTERS_PARTIAL` holds twelve titles decoded from that PDF via its
+embedded ToUnicode maps plus a +29/+30 subset shift (each mapping checked
+against a known-good string). It comes back with **no health chapters at all** —
+no medical plans, no Medicare, no disability — which a Life *and* Health course
+must have, so the extraction is short rather than the guide. It exists so the
+next person has the titles and knows what is missing; padding it would be
+authoring a curriculum XCEL does not publish. A test asserts none of it reaches
+the screen.
+
+**`unitLabel` rides on the PATH**, not as a prop — five surfaces print the unit
+(the band's meta line and KPI cell, the category bars, the journey rows, the
+detail sheet) and a prop through five is how one gets missed. `synthCategoryCourses`
+splits by unit: an **hrs** category over 15 halves into "· Part 1 / · Part 2"
+(40 credit hours is not a sequence, so halving is arbitrary but harmless);
+**lessons** never split, because the 42 ARE the course.
+
+**"1 days" — the bug the unit change created.** `hrs` is unit-invariant, so
+nothing here had ever pluralised a count; the moment a unit did, four surfaces
+printed it. `unitCount` in `utils/unitLabel.ts` is the one owner, the
+`DELIVERY_LABEL` precedent.
+
+**Credit hours did not disappear.** The state's **40** is a real regulatory
+figure and still appears where a regulator's number belongs — the requirements
+sheet, the transcript row, the resume card's course hours. Two units on one
+screen meaning different things: 40 credit hours is what New York requires, 42
+lessons is how XCEL's course delivers it.
+
+**A borrowed fixture broke a neighbouring test, and the fix is the rule.**
+`LearnerFocusedBand.test.tsx` took its path from `learningPathsFor('xcel')[0]`
+with a comment calling it "Florida Nursing — mandatory + elective". That had not
+been first for a long time, and when the New York path lost its elective half
+(Part 1 only), a test about the BAND's two-segment rendering failed because of a
+fixture it merely happened to borrow. It builds its own path now — the remedy
+CLAUDE.md already prescribes for exactly this.
+
+#### New York Insurance Producer — the demo licence
+
+**The figures were invented for one day and are not any more.** They shipped as
+flagged placeholders, then were confirmed against XCEL's own published
+requirements page (`https://www.xcelsolutions.com/new-york/insurance-license/requirements`)
+on the same day. `src/data/nyProducerRequirements.ts` is the single owner:
+nothing else in `src/` carries a New York hour count, question count, time
+limit, pass mark or fee.
+
+**The distinction the file now exists to hold:**
+
+- **STATE requirements are real** — 40 hours for Life, Accident & Health
+  (20 + 20), a 100-question / 2-hour PSI sitting, 70% to pass, $40 exam and $80
+  application fees. `invented: false`, and the surface stops apologising.
+- **XCEL's PRODUCT hours are still invented** — Prep Review Course, Exam
+  Simulators and Exam Cram are XCEL's own prep products and the page states no
+  hours for them. The const keeps its `_INVENTED` name for exactly that reason:
+  renaming it would quietly upgrade the confidence of three figures that are
+  still guesses.
+
+**The 40 happening to match the guess is luck, not a reason to trust the next
+one** — the questions (150 → 100), the time (2h30 → 2h) and the provider ("a
+state-approved test centre" → PSI) were all wrong.
+
+**Why the flagging mattered in the first place.** The Florida figures these sit
+beside were never invented — `readinessFixtures.ts` calls `PASS_MARK` "the only
+number on this page that is not invented". Relabelling that 70 as a New York
+figure would have turned a true number into a silently false one. So the
+Readiness page reads the STATE's facts (`examFactsFor`) rather than a module
+constant, and still prints a placeholder line for any state whose figures are
+unconfirmed.
+
+**TODO(data):** P&C (90h) and Personal Lines (40h) are published too but not
+modelled — the demo is one licence.
+
+**`EXAM_FACTS` was a hardcoded Florida 2-15 block** — correct while Florida was
+the only demo licence, and a flat contradiction the moment Home could say New
+York, two rail items away, with nothing on either screen admitting it. Same
+class as the Study Plan showing a different COURSE from the dashboard. The gauge's
+pass mark and the printed one now come from one field, resolved by `useReadiness`
+so every tab agrees.
+
+**What is NOT invented: the four categories.** Pre-License Education → Prep
+Review Course → Exam Simulators → Exam Cram is XCEL's own 3-Part Training
+Program plus the study tool after it — a PRODUCT structure, not a state one, so
+it carries across jurisdictions. Only the hour requirements are state-specific.
+
+**SCOPED to the QE persona, not a jurisdiction sweep.** The CE persona is a
+different education type and still demos the Florida renewal cycle; the Florida
+pre-licensing paths are still in `learningFixtures`. A version switch must not
+silently switch jurisdiction, and a test pins CE on `FL`.
+
+**Its study plan is DERIVED from the Florida L&H one**, not hand-authored — same
+20-day schedule for the same line of authority, so a copy would be a second
+thing to keep in step. **Task dates are deliberately unchanged:** re-pacing
+across the longer New York window was the obvious move and is wrong, because
+every date-driven surface is anchored to `STUDY_CALENDAR_TODAY` and a
+not-yet-started plan renders all of them empty. So the plan finishes months
+before the exam, which is coherent rather than a bug — the 20 days are the
+COURSE, and the sit date is booked separately.
+
+#### Every rail row is a hoverable, clickable target (2026-09-16)
+
+**`.cre-journey-stop` was a class with NO RULE ANYWHERE.** It had been on the
+journey stops since they were built: a clickable row with a chevron and no hover
+feedback at all. Same shape of defect as `--color-border-strong`, which did not
+exist either — a name that looks wired and is not, and nothing fails.
+
+The rule is in `tokens.css` now, and it covers both rails:
+
+- **`background: transparent` moved from the inline style into the class.** It
+  was inline, and an inline value beats a stylesheet rule — so `:hover` would
+  have needed `!important` to do anything, and would have looked fine while
+  doing nothing. That is the `.cre-uxlinks-title` trap exactly. The class owns
+  both states, so neither needs `!important`, and a test asserts no inline
+  `background` is left to win.
+- **The tint is `--color-neutral-100`**, the same value `.cre-notification-row`
+  uses — the established "row hover on a card" here. Two row hovers differing
+  by a few percent read as a bug. It is a neutral, so it inverts with the theme
+  and needs no dark override.
+- **`:focus-visible`, not `:focus`** — these rows are a keyboard user's way
+  through the sequence, and `:focus` would ring them on every mouse click.
+- **8px of inset tint each side, pulled back with `-8` margins**, so no TEXT
+  moves: the row's content stays where it was and only the wash is wider. `-8`
+  against `itemStyle`'s gap of 10 leaves 2px clear of the node column.
+
+Measured: the wash is **1.18:1** on the light card and **1.07:1** dark, where it
+is a HUE shift (a navy against the card) rather than a luminance one — which a
+contrast ratio does not capture. It is decoration; the cursor and the chevron
+carry the affordance, and the row title holds 12.79:1 on the tint. Forking the
+tint per theme would diverge from `.cre-notification-row` for no accessibility
+gain.
+
+**Get Licensed became whole-row targets with it.** It was static text with ONE
+link on the first step's title, so three rows describing three actions read as
+three paragraphs and the single affordance was a differently-coloured word.
+
+**One target per row, never a link inside a button** — that is invalid HTML, and
+two nested targets on a 13px title is a coin flip for the learner. Which element
+the row IS depends on where it goes:
+
+- **`href`** → an `<a>` to PSI, new tab, so a learner mid-journey does not lose
+  the dashboard to a registration flow. Its accessible name is now the whole row
+  (title + detail + owner/fee), which is what a test had to be loosened for.
+- **no href** → a `<button>` into the **requirements sheet**. That is the only
+  surface describing these three — XCEL's published page covers sitting the
+  exam, applying, and the CE cycle after. It is not a per-step destination and
+  does not pretend to be; a step-specific page needs content nobody has
+  authored, and an invented href is the Resources-slugs defect.
+- **neither** → static text with NO chevron, the same rule the journey's blocked
+  completion stops follow: a chevron on a row that opens nothing promises
+  otherwise.
+
+**`titleStyle` for all three rows now, the PSI one included.** The CTA ink was
+carrying "this is interactive" for one step; the hover and the chevron carry it
+for every step, and three identical rows is the point. That also retires the
+`titleStyleNoColor` trap on that row — there is no longer a theme class there
+whose colour an inline style could beat.
+
+#### The "How do I become exam ready?" disclosure is gone (2026-09-16)
+
+A collapsed paragraph under the Study Journey eyebrow, from the reference
+design, explaining that the stops run in order and that readiness means
+coursework done plus simulator scores holding.
+
+The rail says all of that structurally: the stops ARE in order, each carries its
+status in words, and the two assessment stops are marked on the node. A
+disclosure explaining the thing directly beneath it is chrome above the content
+— and a collapsed one is useful once and invisible after, so nobody who needed
+it twice would find it. **Readiness** answers "am I exam ready" with a number
+one rail item away; this was a second, wordier answer.
+
+`explainBodyStyle` survives as `railLedeStyle` — the Get Licensed lede is all
+that still used it, and a style named for a removed disclosure is how the next
+reader looks for something that is not there.
+
+#### There is no learning-path concept on this version (2026-09-16)
+
+Every door onto the `learning-path` section is closed on QE Focused, at
+Jillienne's request: **XCEL has no learning-path concept.** The band IS the
+programme — there is no separate path object to open.
+
+**One withheld prop closes both doors**, which is why the change is in
+`MembershipOverview` (`onOpenLearningPath={qeFocused ? undefined : …}`) rather
+than inside the band:
+
+- `StudyJourneyWidget` passes it through as the rail's `onViewAll`, so the
+  journey's **"Open learning path"** link stops rendering.
+- The band's **TITLE** falls back to `onViewDetails`, so it still opens the
+  requirements sheet. It loses nothing and it was the worse of the two doors —
+  a clickable title carrying a `title="Open learning path"` tooltip onto a dead
+  concept is found by accident.
+
+**The journey-stop fallback moved rather than going away.** Stops are
+synthesized (not catalogue course ids), so the in-shell launcher is best-effort
+and a launcher opening nothing is the one outcome worse than a second-best
+destination. On QE Focused that destination is the requirements sheet — what the
+programme actually is — and the learning-path fallback still applies to the
+versions that have one. It is asserted at SOURCE, deliberately: the launcher is
+available in the test render, so the branch never runs and a DOM test would pass
+without exercising it.
+
+**This inverts a guard added earlier the same day.** The requirements-sheet CTA
+removal was pinned with "…and 'Open learning path' is still on the page", so the
+removal could not become "no way to reach the learning path". That IS now the
+intended state, so the assertion is inverted rather than deleted: no button on
+the page may say "learning path", and the requirements sheet must be what it
+offers instead.
+
+**STILL PRESENT ELSEWHERE, and not swept** — the ask was this version, and the
+rest is a product-wide call with real surface area. What remains:
+
+- The **`learning-path` rail section** itself (off in the demo baseline, but it
+  resolves from `?section=learning-path`), its `SECTION_TITLES` entry, and the
+  `learning-path-page` flag with its V1/V2 variants and "Switch Learning Path".
+- The **tabbed detail sheet's "Go to Learning Path" CTA**, which the other three
+  consumers still show.
+- `LearningPathsHome`, `LearningPathsTable`, `LearningPathCard`, the **Header's
+  "Learning Paths" dropdown**, and `learning-paths-count`.
+- Copy in `JumpBackInDiscoveryEmpty`, `LearningSetupWizard` ("Building your
+  learning path") and four `demoControlsUtil` descriptions.
+- `ClpJumpBackInBand` and `MarketingFocusedBand` carry the same
+  `title="Open learning path"` tooltip on their titles.
+
+If the concept is genuinely absent for XCEL rather than just absent from this
+version, that list is the sweep — and it is a rename-or-remove decision per
+surface, not one edit.
+
+#### Time Remaining is 27 days, and `weeksLeft` is a fraction
+
+`RENEWAL_BY_VARIANT['progress-on-track']` reads `ON_TRACK_DAYS_LEFT / 7`
+(2026-09-16, the direct ask). "22 wks" read as a learner with no reason to open
+the app this month, which is the opposite of what the Study Journey beside it
+says. Under 30 days `timeRemaining` switches to a day countdown on its own — so
+the fixture reaches for the switch rather than adding a unit.
+
+**NO At Risk treatment comes with it**, which was the explicit half of the ask.
+Nothing derives the status from this number for a persona: `STATUS_BY_VARIANT`
+supplies a `statusOverride`, and all four bands plus the detail sheet prefer it
+over their `weeksLeft`-based `derivedStatus`. The sheet's urgent stat tint reads
+the resolved status too, so it stays off. A test asserts it through the RENDERED
+strip, not the fixture — an override only matters if the surface honours it.
+
+**The fraction is what made `timeRemainingText` a prerequisite rather than a
+tidy.** Three bands were hand-rolling `Math.floor(weeksLeft / 52)` + `% 52` with
+no day countdown — `LearnerFocusedBand` interpolated `${weeksLeft} wks`
+directly. At 27/7 those render **"3.857142857142857 wks"**. All three read the
+shared formatter now (`timeRemaining` for styled segments, `timeRemainingText`
+for a string), which is also what makes the band and the sheet it opens agree.
+A test asserts none of them still does that arithmetic.
+
+**It is a SHARED map row, so every on-track persona moved**, the CE renewal one
+included — `RENEWAL_BY_VARIANT` is keyed by variant with no education axis.
+
+**KNOWN, and older than this change: `deadline` and `weeksLeft` in that map have
+never agreed.** `progress-at-risk` is 3 weeks against a date four months out,
+and the anchored fixture today (2026-05-11) is 31 weeks from 12/15/2026, not the
+22 this row used to carry. They are two independently authored demo values. So
+"27 days" sitting beside a Target Date in December is the existing looseness
+rather than a new defect — but it is the most visible instance of it, since the
+two cells are inches apart. Deriving one from the other is the fix and it moves
+every state's visible date, so it is its own change.
+
+#### A removal note rendered as page copy for a day
+
+The note replacing the Learning Path Progress section shipped as a bare
+`/* … */` inside JSX rather than `{/* … */}`. In child position that is TEXT,
+so twenty-eight lines of rationale rendered on Home, on every version. tsc was
+clean and all 700 tests passed; only reading the live DOM caught it.
+
+`QeFocusedVersion.test.tsx` now asserts the rendered overview contains no `/*`
+or `*/` across three versions — the whole page rather than this one note,
+because the mistake is invisible in review and one keystroke away anywhere.
+
+### The robot stays in the Demo view (2026-09-16)
+
+`AdminToolsMenu` — the hidden robot in the prototype bar that opens the Feature
+Flag sheet — used to `return null` whenever demo mode was on, unless a
+`?tools=1` back door was set. **It now renders in the Demo view too**, at
+Jillienne's request.
+
+**The gate was protecting the wrong thing.** Its stated reason was that a
+stakeholder should see a clean demo — but the trigger is `opacity: 0` at rest
+and only fades to 60% when its own 32px box is hovered, so there was nothing on
+screen to clean up. What it actually cost is the case that matters: **the Demo
+row on the gateway opens `/dashboard-rebrand?demo=1`**, which is how most people
+arrive, so the one route a reviewer lands on was the one route with no way into
+the flag sheet. The `?tools=1` back door is undiscoverable by design, which is
+fine for a back door and useless as the primary path.
+
+**What made the gate defensible is still true, and is why removing it is safe:**
+demo mode SUSPENDS flag persistence, and the panel already drops *Set as
+default* and *Restore original defaults* under `demoMode`. Nothing reachable
+from the robot can drift the sandbox or redefine the committed Demo baseline.
+
+**Two things had to change with it, and both are the interesting part.**
+
+**The baseline writes are now refused at the STORE, not just hidden in the UI.**
+`saveAsDefault` and `restoreOriginals` had no `demoMode` guard — the only thing
+stopping a demoer redefining "pure" from inside the Demo was that the panel did
+not render the buttons. That was sound while the panel was unreachable there;
+making it reachable turned it into a guard one stale call site from failing.
+Both now return early under `demoMode`. Same reasoning as `visibleNotifications`
+re-checking `requiredInApp` rather than trusting the stored value, and a test
+asserts the refusal rather than the button's absence.
+
+**The sheet says it is in the Demo view.** The sentence "changes preview here
+only and reset on exit" lived in the robot's DROPDOWN — which never renders on
+the rebrand, because there the robot opens the sheet directly. So a reviewer
+would have flipped a flag, left, come back and found it reverted with nothing on
+screen to explain it. The notice is at the top of the sheet body now, styled as
+a quiet tinted rule rather than a warning banner: nothing is wrong, it is the
+demo's own contract. It also explains the footer's missing buttons.
+
+`?tools=1` is no longer read. An old link carrying it still works — the param is
+simply ignored.
+
+### The flag audit — 47 flags removed 2026-09-16
+
+The catalog came over from the Common LMS with the product app, and most of it
+described surfaces XCEL does not have. **`FEATURE_FLAGS` went from 98 keys to
+51**, and the `/dashboard-rebrand` panel scope from 53 to 24.
+
+**How the set was chosen, because the method is the reusable part.** Every flag
+state in the catalog was flipped one at a time against a render of all 24 shell
+sections plus the ten standalone routes, and the DOM diffed. Of 111 flag states,
+**58 changed nothing anywhere**. That is evidence, not inference — but it has one
+blind spot worth knowing: it measures the INITIAL render, so a flag whose surface
+only appears after a click (a course sheet, a cancel flow, a detail panel) reads
+as dead when it is not. Nothing was removed on the sweep alone; each of the 47
+also has a structural reason below.
+
+**Three groups, three different reasons:**
+
+1. **The classic `/dashboard` — 26 flags.** `dashboard-kpi-card`,
+   `jump-back-in-card`/`-links`/`-chrome`, the eight `jbi-quicklink-*`,
+   `learning-path-card`, `courses-summary-card`, `premium-membership-card`,
+   `whats-new-card`, `dashboard-rail-tray`, `dashboard-top5-pagination`, the four
+   `membership-card-*`, `quick-links-card`, `rubi-tutor-widget`,
+   `streak-hero-card`, `dashboard-drag-and-drop`. They drive `DashboardV1`–`V5`
+   and `LearnerOverviewPanel`, reachable only at `/dashboard` — which sits behind
+   `dashboard-tab` (default OFF, redirecting to Learning Path) and is not what
+   the XCEL demo opens. **Home uses its own `OverviewJumpBackIn`, not the classic
+   `JumpBackInCard`**, which is the thing to check before assuming a
+   dashboard-looking flag reaches the rebrand.
+2. **Membership — 18 flags.** `supportsMembership('xcel')` is false, so every one
+   of these configures a surface the brand cannot reach. Ten were in the Home
+   panel scope. `membership-savings-cta` is the extreme case: **zero
+   `useFeatureFlag` call sites anywhere in `src/`** — it existed only in the
+   catalog.
+3. **Home flags with no XCEL content — 3.** `dashboard-featured` and
+   `whats-new-image` both configure `FeaturedHero`, and
+   `whatsNewFeaturedFor('xcel')` is `[]` (a standing `TODO(data)`), so the hero
+   self-hides whatever they say. `dashboard-whats-new-layout` named the "What's
+   Trending" section, archived 2026-08-05.
+
+**The removal pattern, which is the repo's existing one** (see the
+`membership-recap-ticket` / `dashboard-hero-bleed` notes): delete the catalog
+entry, and at each call site replace the flag read with a **constant pinned to
+that flag's committed default**, carrying a comment that names the flag and the
+date. Every branch the flag fed is KEPT. Restoring one is re-adding its catalog
+entry and un-pinning the constant — never a rebuild.
+
+**Pin the DEFAULT, not `false`.** A `useFeatureFlag` call on a key the catalog no
+longer defines resolves to `{ enabled: false }`, which is not what most of these
+carried — the surface would change silently rather than error. That is why the
+pins are explicit and why `FeatureFlagPanel.test.tsx` asserts the 47 keys are
+absent from the catalog AND from `REBRAND_FLAGS`: a key left in the scope after
+leaving the catalog is silent, since the panel filters the catalog BY the scope.
+
+**Four things went with them, and each is the interesting part of the change:**
+
+- **`DashboardMVP` is archived** (`ARCHIVED_ITEMS` id `dashboard-mvp-version`).
+  It was defined ENTIRELY by `MVP_FLAGS`, a snapshot of eight of the removed
+  flags; without them it renders as V3 with `hideRightRail` / `trail` /
+  `consolidatedProgress`, i.e. a second near-identical row in the version picker.
+  The file is kept, unreferenced. Note five of its thirteen entries were always
+  moot — the right-rail ones, which `hideRightRail` already dropped.
+- **Per-widget Lo-Fi is gone.** `LO_FI_VARIANT` / `DEFAULT_PLUS_LOFI` appended a
+  "Lo-Fi" option to each widget's flag; every flag that offered it was a classic
+  dashboard flag. The GLOBAL Lo-Fi switch (`LoFiContext`) is untouched and every
+  `LoFiScope` wrapper is still in place — they now receive `on={false}`.
+- **`dashboard-clp-fullwidth` lost its "When to show" secondary axis.** Its
+  `when-whats-new-off` option waited on `dashboard-whats-new-layout`; with that
+  gone the condition is permanently true, so the two options rendered
+  identically. `clpFullWidthActive` is now just `showExtras && flag.enabled`.
+- **The Demo Controls bar lost two controls**, both of which had stopped doing
+  anything: the Persona dropdown's "Hide Featured Section" switch (wrote
+  `dashboard-featured`) and the "Multiple memberships" persona (carried
+  `requiresMembership: true`, so `personasForBrand` already hid it for XCEL).
+  `resolvePersonaFlags`' `whatsNewOn` arm is kept but EMPTY so the `?wn=` codec
+  and the function signature are unchanged. The "Membership Version" drill-in row
+  went from the flag panel for the same reason.
+
+**What was deliberately NOT removed, and why it looks removable.**
+`dashboard-recommended-blurb` is inert at the demo default — the blurb only
+exists on the trending/`VibrantCard` treatment, so it needs
+`home-recommended-card-ab: trending` to show. It is a real control behind a
+combination, not a dead one. The `gift-recipients` trio is the other near-miss:
+`supportsGiftRecipients('xcel')` is false, so the panel renders its empty state
+either way — but `giftRecipientsFixtures.ts` names that gap as **the one worth
+fixing**, so removing its flags would have paved over the todo.
+
+**One bug this surfaced, not fixed here.** `dashboard-career-tools` survives (it
+is live on Home, default off) and switching it on prints a **"Member Exclusive"**
+badge and *"all included with membership"* on a brand that sells none. It is the
+same defect as the Membership Plan card and the Account Details "Member" pill —
+`isMember` is true for XCEL because its only tier is `high`. **When a brand
+predicate turns something off, sweep for the places that ask the TIER instead.**
 
 ### The archive convention
 

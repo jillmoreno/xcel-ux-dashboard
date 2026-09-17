@@ -1,6 +1,5 @@
 import { useState, type ReactNode } from 'react'
 import { useAccount } from '@/context/AccountContext'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { DraggableSlot, moveBetween } from '@/components/dashboard/DraggableSlot'
 import { DashboardHeroBand } from '@/components/dashboard/DashboardHeroBand'
 import { LearnerOverviewPanel } from '@/components/dashboard/LearnerOverviewPanel'
@@ -30,7 +29,11 @@ import { SIDEBAR_CARDS } from '@/data/dashboardFixtures'
 export function DashboardV2() {
   const { membership } = useAccount()
   const isNonMember = membership === 'non-member'
-  const dragEnabled = useFeatureFlag('dashboard-drag-and-drop').enabled
+  // `dashboard-drag-and-drop` was removed from the flag catalog 2026-09-16
+  // (the XCEL flag audit — it only ever drove the classic /dashboard, which
+  // this project's demo does not open). It defaulted OFF, so reordering is
+  // pinned off here; every `DraggableSlot` below is kept for restore.
+  const dragEnabled = false
 
   // Drop the Rubi Tutor entry from the generic sidebar list — V2
   // renders it as the dedicated `<RubiTutorWidget>` above the rest of

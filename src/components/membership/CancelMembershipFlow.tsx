@@ -15,7 +15,6 @@ import { Radio } from '@/components/ui/Radio'
 import { Toast } from '@/components/ui/Toast'
 import type { MembershipRenewal } from '@/context/AccountContext'
 import { useAccount } from '@/context/AccountContext'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { formatRenewalDate, daysUntil } from './membershipRenewalState'
 import {
   CANCEL_REASONS,
@@ -220,7 +219,10 @@ export function CancelMembershipFlow({
   // Only meaningful in the WIDE containers. A 480px sheet cannot hold the
   // alternatives and five facts without becoming the scroll it was trying to
   // avoid, so the sheet keeps the stepped flow whatever the flag says.
-  const singleScreen = useFeatureFlag('membership-cancel-steps').variant === 'single-screen' && wide
+  // `membership-cancel-steps` removed 2026-09-16 (XCEL flag audit 2026-09-16 — removed from the catalog because `supportsMembership('xcel')` is false, so this surface never renders for the one brand this project ships.)
+  // It defaulted to `stepped`, so the flow keeps its steps in every container.
+  // Was `useFeatureFlag('membership-cancel-steps').variant === 'single-screen' && wide`.
+  const singleScreen = false
 
   let body: ReactNode = null
 

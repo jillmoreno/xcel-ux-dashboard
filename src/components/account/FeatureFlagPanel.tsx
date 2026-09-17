@@ -6,7 +6,6 @@ import { Tooltip } from '@/components/ui/Tooltip'
 import { Select } from '@/components/ui/Select'
 import { acquireBodyScrollLock } from '@/utils/bodyScrollLock'
 import { useDashboardVersionsPanel } from '@/components/dashboard/DashboardVersionsPanelContext'
-import { useMembershipPageVersionPanel } from '@/components/membership/MembershipPageVersionPanelContext'
 import {
   FEATURE_FLAG_PAGES,
   useFeatureFlags,
@@ -77,24 +76,20 @@ const REBRAND_FLAGS = [
   // Personalize-profile nudge band on the overview.
   // Free Content promo bands (blog + podcast) under the upsell band.
   'dashboard-free-content-bands',
-  // Membership Hub hero layout — base savings band / + Current Membership card /
-  // split cards / savings-on-top (the hero-only variants split out of the
-  // Membership Version picker). Surfaces on the Membership page card.
-  'membership-hub-hero',
-  // Explore Membership — the Current Membership card + Membership Scorecard
-  // sections under the hero (off ⇒ the section is unchanged).
-  'membership-sections',
-  // Multiple-memberships version — what the Profession / State pills do.
-  'membership-multi-pills',
-  // Cancellation flow container — in the Manage Membership sheet (default) or
-  // handed off to a full-width page region.
-  'membership-cancel-flow',
-  'membership-cancel-steps',
-  // Standalone Membership page — plan comparison as a feature-matrix Table
-  // (default) or stacked plan Cards.
-  'membership-compare-view',
-  // AI MasterTracks section — Dark spotlight band (default) or Light card.
-  'aimt-band-style',
+  // Full-width course header above the overview — off by default.
+  'dashboard-course-header',
+  // Study Journey rail treatment — compact rail / syllabus card.
+  'dashboard-journey-style',
+  // Current Course Progress stats treatment — bare cells / stat card. A
+  // separate axis from the block style, so the two combine.
+  'dashboard-clp-stats',
+  // Current Course Progress block treatment — light / big-number / navy card.
+  // Variant-only; a treatment rather than a different set of facts.
+  'dashboard-clp-style',
+  // Heading font on the overview — Sans (brand) ⇄ Serif. Variant-only; see the
+  // catalog entry for why the serif is a system stand-in rather than the face
+  // on the live site.
+  'dashboard-heading-font',
   // Recommended for You band — show/hide the whole section.
   'dashboard-recommended',
   // Recommended card blurb — show/hide the "what this is" line on the cards.
@@ -107,18 +102,12 @@ const REBRAND_FLAGS = [
   // Trending) that overrides the band's card style on the live Home. OFF leaves
   // the band on its normal Card style. Drives the "Recommended Card A/B" tile.
   'home-recommended-card-ab',
-  // Recommended for You *page* (the Explore-rail section) — shelf cards
-  // matching the Home Recommended section ⇄ full-size Course Catalog cards.
-  // Single ⇄ multiple memberships in the left-rail Membership block.
-  'membership-count',
   // Single ⇄ multiple professions — drives the Resource Library Profession filter row.
   'profession-count',
   // Resource Library hero — full custom hero ⇄ compact standard section hero.
   'learning-library-hero',
   // Resource Library card style — compact shelf cards ⇄ classic image-header cards.
   'learning-library-card-style',
-  // What's Trending section — on/off for the dashboard-overview carousel.
-  'dashboard-whats-new-layout',
   // "Your study weeks" band above Recommended for You.
   'dashboard-week-summary',
   // Whether the Continuing Ed path has a study plan at all. Gates the content
@@ -128,16 +117,12 @@ const REBRAND_FLAGS = [
   // study-plan tasks.
   'clp-jump-back-in',
   // Full-width Current Learning Path band (navy CLP + Jump Back In) — variant
-  // D/E; always, or only when What's New is off (CLP expands to fill the space).
+  // D/E, or Jump Back In only. (Its "When to show" secondary axis was removed
+  // 2026-09-16 with `dashboard-whats-new-layout`.)
   'dashboard-clp-fullwidth',
-  // Featured hero — the single full-width rotating hero under the Current
-  // Learning Path (enable toggle + Manual/Auto-rotate motion + Height variant).
-  'dashboard-featured',
   // Career Tools section — show/hide the Rubi AI tool cards at the bottom of
   // the dashboard overview.
   'dashboard-career-tools',
-  // Partner Offers — split into Featured Offers + Additional Offerings.
-  'partner-offers-featured',
   // Left-nav SECTION VISIBILITY — one toggle per rail item (Home excepted; see
   // NAV_SECTION_FLAGS). Spread from the same list the catalog and the rail read,
   // so a new rail item is in scope automatically rather than being authored
@@ -149,8 +134,6 @@ const REBRAND_FLAGS = [
   // (050–950), in one dropdown. Wins over the Appearance preference while on.
   // (Merged the former `platform-nav-color` flag into this one, 2026-08-17.)
   'nav-gray-scale',
-  // Featured hero background — cover photo ⇄ a brand-gradient no-image fallback.
-  'whats-new-image',
   // The Learning Paths count flag drives the Current Learning Path widget's
   // "View All (N)" + the My Learning Paths sheet.
   'learning-paths-count',
@@ -282,7 +265,6 @@ export function flagScopeForPath(pathname: string): string[] | null {
 export function FeatureFlagPanel() {
   const { open, closePanel } = useFeatureFlagPanel()
   const { openPanel: openVersionsPanel } = useDashboardVersionsPanel()
-  const { openPanel: openMembershipPageVersionPanel } = useMembershipPageVersionPanel()
   const {
     flags,
     definitions,
@@ -487,6 +469,21 @@ export function FeatureFlagPanel() {
         </header>
 
         <div style={bodyStyle}>
+          {/* Demo view notice. The robot became reachable under `?demo=1` on
+              2026-09-16 (see `AdminToolsMenu`), and on the rebrand it opens this
+              sheet DIRECTLY — skipping the dropdown that used to carry this
+              sentence. Without it a reviewer flips a flag here, leaves, comes
+              back and finds it reverted, with nothing on screen to say why.
+              Demo mode suspends flag persistence by design; this is that design
+              made visible rather than a warning about a defect. The footer's
+              "Set as default" / "Restore original defaults" are already dropped
+              under `demoMode`, so this explains an absence too. */}
+          {demoMode && (
+            <p style={demoNoticeStyle}>
+              <span style={demoNoticeDotStyle} aria-hidden />
+              Demo view — changes preview here only and reset when you leave.
+            </p>
+          )}
           {/* Dashboard Version is a rebrand-only setting, surfaced here as the
               first option so the robot menu opens a single sheet holding every
               setting. The row drills into the DashboardVersionsPanel (rendered
@@ -513,30 +510,9 @@ export function FeatureFlagPanel() {
               <ChevronRight size={18} aria-hidden style={{ flexShrink: 0 }} />
             </button>
           )}
-          {/* Membership Version — the sibling picker for the rebrand's
-              "Membership" rail section (Full ⇄ Simple). Same drill-in pattern as
-              Dashboard Version; the panel is rendered in Header. */}
-          {onRebrand && (
-            <button
-              type="button"
-              onClick={() => {
-                closePanel()
-                openMembershipPageVersionPanel()
-              }}
-              style={dashboardVersionRowStyle}
-            >
-              <span aria-hidden style={dashboardVersionIconStyle}>
-                <Sliders size={16} aria-hidden />
-              </span>
-              <span style={dashboardVersionTextStyle}>
-                <span style={dashboardVersionLabelStyle}>Membership Version</span>
-                <span style={dashboardVersionCaptionStyle}>
-                  Full page or Simple layout
-                </span>
-              </span>
-              <ChevronRight size={18} aria-hidden style={{ flexShrink: 0 }} />
-            </button>
-          )}
+          {/* The "Membership Version" drill-in row was removed 2026-09-16 with the
+              `membership-page-version` flag it wrote — see the note in `Header`.
+              XCEL cannot reach the standalone Membership page it configured. */}
           {scopedEmpty ? (
             <ScopedEmptyState />
           ) : selectedPage ? (
@@ -1204,6 +1180,33 @@ const closeButtonStyle: CSSProperties = {
   border: 'none',
   color: 'var(--color-text-secondary)',
   cursor: 'pointer',
+}
+
+/* Demo-view notice at the top of the sheet body. Deliberately quiet — a tinted
+   rule rather than a warning banner, because nothing is wrong: it is stating the
+   demo's own contract. The dot carries no meaning colour alone does not, since
+   the sentence says it. */
+const demoNoticeStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  margin: '0 0 14px',
+  padding: '8px 12px',
+  borderRadius: 'var(--radius-md)',
+  background: 'var(--color-neutral-100)',
+  border: '1px solid var(--color-border-subtle)',
+  fontFamily: 'var(--font-body)',
+  fontSize: 12,
+  lineHeight: '17px',
+  color: 'var(--color-text-secondary)',
+}
+
+const demoNoticeDotStyle: CSSProperties = {
+  flexShrink: 0,
+  width: 6,
+  height: 6,
+  borderRadius: '50%',
+  background: 'var(--color-text-tertiary)',
 }
 
 const bodyStyle: CSSProperties = {

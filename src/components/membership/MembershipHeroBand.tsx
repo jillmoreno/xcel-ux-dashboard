@@ -1,7 +1,6 @@
 import type { CSSProperties } from 'react'
 import { Link } from 'react-router-dom'
 import { useAccount } from '@/context/AccountContext'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { useLoFi } from '@/context/LoFiContext'
 import { LoFiHeroBody } from '@/components/lo-fi/LoFiPlaceholders'
 import {
@@ -47,11 +46,12 @@ import {
 export function MembershipHeroBand() {
   const { brand, user } = useAccount()
   const stats = membershipHeroStatsFor(brand)
-  const heroFlag = useFeatureFlag('membership-hero-band')
-  const statsFlag = useFeatureFlag('membership-hero-stats')
+  // `membership-hero-band` (default `dark`) and `membership-hero-stats`
+  // (default ON) removed from the catalog 2026-09-16 (XCEL flag audit — `supportsMembership('xcel')` is false, so this never renders for the one brand shipped).
+  // Both branches are kept for restore.
   const { loFi } = useLoFi()
-  const isLight = heroFlag.variant === 'light'
-  const showStats = statsFlag.enabled
+  const isLight = false
+  const showStats = true
 
   // Lo-Fi: keep the outer dimensions; strip the welcome content.
   if (loFi) {

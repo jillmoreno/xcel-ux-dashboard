@@ -1,7 +1,7 @@
+import type { DashboardLayout } from '@/data/dashboardVersions'
 import { useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAccount } from '@/context/AccountContext'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { Avatar } from '@/components/ui/Avatar'
 import { MembershipBadge } from '@/components/ui/MembershipBadge'
 import { NowPlayingBar, type NowPlayingData } from '@/components/courses/NowPlayingBar'
@@ -32,7 +32,9 @@ import { MembershipOverview, MembershipUpgradeCard } from '../v5/MembershipOverv
 export function MembershipV7() {
   const { membership } = useAccount()
   const isMember = membership === 'member'
-  const bleed = useFeatureFlag('membership-v7-bleed-rail').enabled
+  // `membership-v7-bleed-rail` removed 2026-09-16 (XCEL flag audit 2026-09-16 — removed from the catalog because `supportsMembership('xcel')` is false, so this surface never renders for the one brand this project ships.)
+  // It defaulted OFF; the `bleed` prop threading below is kept for restore.
+  const bleed = false
   // Seed the initial section from `?section=` when valid (the platform
   // left-nav rail deep-links here), else today's default. The param only
   // seeds mount state — in-page selection stays local from then on.
@@ -211,7 +213,7 @@ export function SectionContent({
    *  `learner-focused` (stacked + the joined CLP/Jump Back In top-section card),
    *  or `marketing-focused` (stacked + the joined CLP / What's New marketing
    *  carousel top-section card). */
-  dashboardLayout?: 'default' | 'learner-focused' | 'marketing-focused' | 'badged'
+  dashboardLayout?: DashboardLayout
 }) {
   // Content-gating access resolves from the account TIER, not just membership:
   // the highest member tier (Passport) ⇒ `full` (nothing gated); a lower member

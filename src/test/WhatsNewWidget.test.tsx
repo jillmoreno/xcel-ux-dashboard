@@ -5,15 +5,6 @@ import { AccountProvider } from '@/context/AccountContext'
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { WhatsNewWidget } from '@/components/membership/WhatsNewWidget'
 
-/** Seed the persisted flag state the provider reads on mount. The flag is now a
- *  plain on/off switch — no layout / background variants. */
-function seedFlag(state: { enabled?: boolean }) {
-  window.localStorage.setItem(
-    'cgp.featureFlags',
-    JSON.stringify({ 'dashboard-whats-new-layout': state }),
-  )
-}
-
 function renderWidget(props?: { title?: string }) {
   return render(
     <AccountProvider>
@@ -31,15 +22,12 @@ beforeEach(() => {
 })
 
 describe('WhatsNewWidget', () => {
-  it('returns null when the flag is disabled', () => {
-    seedFlag({ enabled: false })
-    renderWidget()
-    expect(screen.queryByRole('region', { name: /what's new/i })).toBeNull()
-    expect(screen.queryByText(/latest features, content, and tools/i)).toBeNull()
-  })
-
-  it('renders the image carousel (6 cards) + See All when enabled', () => {
-    seedFlag({ enabled: true })
+  // The `dashboard-whats-new-layout` gate was removed 2026-09-16 (the XCEL flag
+  // audit), and with it the "returns null when the flag is disabled" case. The
+  // widget had already been archived off the overview on 2026-08-05, so the flag
+  // was gating a component with no render site. These tests keep covering what
+  // it RENDERS, which is what a restore would depend on.
+  it('renders the image carousel (6 cards) + See All', () => {
     renderWidget()
     // The carousel renders 6 cards, each a level-3 heading, with real titles
     // for the active brand. XCEL authors no What's New SLIDES, so what fills
@@ -58,7 +46,6 @@ describe('WhatsNewWidget', () => {
   })
 
   it('uses the caller-supplied title (e.g. "What\'s Trending")', () => {
-    seedFlag({ enabled: true })
     renderWidget({ title: "What's Trending" })
     // The section header renders the supplied title as visible text.
     expect(screen.getByText("What's Trending")).toBeInTheDocument()

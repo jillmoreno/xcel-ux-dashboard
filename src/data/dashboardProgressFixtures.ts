@@ -19,6 +19,12 @@
  * TODO(data): the required-hour totals, renewal dates, and Jump Back In courses
  * are representative demo values — replace once real per-license progress exists.
  */
+import {
+  NY_LH_COURSE_IMAGE,
+  NY_LH_PRELICENSING_LESSONS,
+  NY_PRODUCER_HOURS_INVENTED,
+} from '@/data/nyProducerRequirements'
+import { XCEL_NY_PRODUCER_PATH_ID } from '@/data/studyCalendarFixtures'
 import type { Brand } from '@/context/AccountContext'
 import type { CourseCardData } from '@/components/courses/CourseCard'
 import type { LearningPathSummary, LearningPathCategoryBreakdown, LearningPathCategory } from '@/data/learningFixtures'
@@ -103,14 +109,32 @@ type BrandProgressProfile = {
   mandatoryLabel?: string
   electiveLabel?: string
   deadlineLabel?: string
+  /** Short unit for `hours` + the category requirements ("hrs" when unset).
+   *  The QE profile measures days of the study plan. */
+  unitLabel?: string
   /**
    * Generalized requirement categories (N > 2) for this journey. When set,
-   * `personaFor` scales each category's completed hours by the progress ratio
-   * and puts the list on the path — the gauge/legend/detail then render N
-   * categories (superseding Mandatory/Elective). `required` is the per-category
-   * hour requirement. Used by the QE "Multiple Categories" journeys.
+   * `personaFor` allocates completed hours across the list and puts it on the
+   * path — the gauge/legend/detail then render N categories (superseding
+   * Mandatory/Elective). `required` is the per-category hour requirement. Used
+   * by the QE "Multiple Categories" journeys.
+   *
+   * THE LIST IS ORDERED, AND THE ORDER IS THE CURRICULUM. `personaFor` fills it
+   * sequentially (see the waterfall there), so entry 0 must be the thing a
+   * learner does first.
+   *
+   * `segment` says which half of the two-segment gauge a category belongs to —
+   * declaring what used to be implicit in `mandatoryReq` / `electiveReq`. It
+   * has to be explicit, because `personaFor` now derives those two totals FROM
+   * this list: without it the category view and the Mandatory/Elective view
+   * would allocate the same hours by two different rules and disagree.
    */
-  categories?: { key: string; label: string; required: number }[]
+  categories?: {
+    key: string
+    label: string
+    required: number
+    segment: 'mandatory' | 'elective'
+  }[]
 }
 
 /**
@@ -159,31 +183,77 @@ const PROFILES: Record<EducationType, Partial<Record<Brand, BrandProgressProfile
     // Training Program. `Target Date` rather than `License Expires`: a
     // candidate has no licence to expire yet. The `exam-prep` entry below
     // shares this path id and covers Parts 2–3.
+    // NEW YORK INSURANCE PRODUCER from 2026-09-16 — the QE Focused version's
+    // demo licence. It was Florida Life & Health; the Florida pre-licensing PATH
+    // is still in `learningFixtures` and still reachable, and the CE persona
+    // below is untouched, so this is a change of which licence the QE journey
+    // demos rather than a jurisdiction sweep.
+    //
+    // Every hour figure reads `NY_PRODUCER_HOURS_INVENTED`. Nothing here should
+    // carry a literal — that file is the single owner, so replacing the invented
+    // numbers with the real DFS requirements is one edit.
     xcel: {
-      pathId: 'xcel-fl-lh-prelicensing',
-      title: 'Florida Life & Health Pre-Licensing',
+      pathId: XCEL_NY_PRODUCER_PATH_ID,
+      // The PRODUCT's own name, from its page. It read "New York Insurance
+      // Producer Pre-Licensing", which is the licence rather than the thing
+      // XCEL sells; "Premier" is dropped because the dashboard tracks the
+      // learner's course, not their package tier.
+      title: 'New York Life and Health Pre-licensing',
       category: 'Insurance Pre-Licensing',
-      state: 'FL',
-      mandatoryReq: 24,
-      electiveReq: 16,
-      licenseExpiresOn: '06/12/2026',
+      state: 'NY',
+      mandatoryReq: NY_LH_PRELICENSING_LESSONS,
+      // Nothing elective. Parts 2 and 3 are steps on the journey with no lesson
+      // count, not a second requirement segment — see the categories below.
+      electiveReq: 0,
+      licenseExpiresOn: '12/15/2026',
       mandatoryLabel: 'Pre-License Education',
       electiveLabel: 'Exam Prep',
       deadlineLabel: 'Target Date',
+      // Lessons of the pre-licensing course, from the LMS course card ("0 of
+      // 42 lessons completed") — see `NY_LH_PRELICENSING_LESSONS`.
+      unitLabel: 'lessons',
       // The 3-Part Training Program plus the study tool that follows it, as
       // four requirement categories summing to the 24 + 16 split above. This
       // is what the "Multiple categories (QE)" demo persona exists to show —
       // without it XCEL renders the plain two-segment gauge and that persona
       // is indistinguishable from the default view.
+      // IN CURRICULUM ORDER — state-required education first, then XCEL's prep
+      // products, then the final review. `personaFor` fills them in this order,
+      // so the journey reads as a sequence rather than four part-done bars.
+      /*
+       * ONE COUNTED CATEGORY — the pre-licensing course, 42 lessons.
+       *
+       * It was four categories in invented hours, then three in days of the
+       * study plan. It is Part 1 alone now, because that is what the product
+       * actually counts: the course card reads "0 of 42 lessons completed" and
+       * nothing on the storefront states a lesson, section or chapter count for
+       * Parts 2 and 3.
+       *
+       * Those two are NOT dropped — they follow the course as steps on the
+       * journey with no count (`PROGRAM_PART_STOPS` in `studyJourneyUtil`), the
+       * same treatment the completion tasks get. Giving them invented counts to
+       * keep the gauge multi-segment is precisely the move the hour figures
+       * taught us not to make.
+       *
+       * Consequence worth knowing: the gauge and the category bars now show ONE
+       * segment. That is honest — there is one measured thing — and it is why
+       * the journey below it carries the programme's shape instead.
+       */
       categories: [
-        { key: 'pre-license', label: 'Pre-License Education', required: 24 },
-        { key: 'prep-review', label: 'Prep Review Course', required: 8 },
-        { key: 'simulators', label: 'Exam Simulators', required: 6 },
-        { key: 'exam-cram', label: 'Exam Cram', required: 2 },
+        { key: 'pre-license', label: 'Pre-licensing Course', required: NY_LH_PRELICENSING_LESSONS, segment: 'mandatory' },
       ],
-      upNext: { id: 'jbi-xcel-qe-lh', title: 'Life & Health Pre-License Course', hours: 24, state: 'FL', delivery: 'online', badge: 'mandatory', status: 'not-started', progress: 0 },
-      resumeMid: { id: 'jbi-xcel-qe-lh', title: 'Life & Health Pre-License Course', hours: 24, state: 'FL', delivery: 'online', badge: 'mandatory', status: 'in-progress', progress: 45 },
-      resumeEarly: { id: 'jbi-xcel-qe-lh', title: 'Life & Health Pre-License Course', hours: 24, state: 'FL', delivery: 'online', badge: 'mandatory', status: 'in-progress', progress: 20 },
+      // The resume card is the PART the learner is on, not the programme. It
+      // briefly carried the path's own title, which put the same string on the
+      // band heading and the card a few inches below it — one learner, one
+      // course, printed twice.
+      //
+      // `hours` here is the COURSE's credit hours: the state's real 40, not a
+      // day count. The two units sit on one screen and mean different things —
+      // 40 credit hours is what New York requires, 7 days is how XCEL's plan
+      // paces it.
+      upNext: { id: 'jbi-xcel-qe-ny', title: 'Pre-licensing Course', imageUrl: NY_LH_COURSE_IMAGE, hours: NY_PRODUCER_HOURS_INVENTED.preLicenseEducation, state: 'NY', delivery: 'online', badge: 'mandatory', status: 'not-started', progress: 0 },
+      resumeMid: { id: 'jbi-xcel-qe-ny', title: 'Pre-licensing Course', imageUrl: NY_LH_COURSE_IMAGE, hours: NY_PRODUCER_HOURS_INVENTED.preLicenseEducation, state: 'NY', delivery: 'online', badge: 'mandatory', status: 'in-progress', progress: 45 },
+      resumeEarly: { id: 'jbi-xcel-qe-ny', title: 'Pre-licensing Course', imageUrl: NY_LH_COURSE_IMAGE, hours: NY_PRODUCER_HOURS_INVENTED.preLicenseEducation, state: 'NY', delivery: 'online', badge: 'mandatory', status: 'in-progress', progress: 20 },
     },
   },
 
@@ -217,10 +287,14 @@ const PROFILES: Record<EducationType, Partial<Record<Brand, BrandProgressProfile
       // matters is when they sit.
       deadlineLabel: 'Exam Date',
       // The 3-Part Program's Parts 2 and 3, as the two gauge segments.
+      // Curriculum order, and the segments reproduce this profile's own
+      // `mandatoryReq: 14` (prep-review 8 + study-tools 6) and
+      // `electiveReq: 8` (simulators) — which is what makes deriving those two
+      // totals from this list a no-op rather than a change.
       categories: [
-        { key: 'prep-review', label: 'Prep Review Course', required: 8 },
-        { key: 'study-tools', label: 'Study Tools & Reviews', required: 6 },
-        { key: 'simulators', label: 'Exam Simulators', required: 8 },
+        { key: 'prep-review', label: 'Prep Review Course', required: 8, segment: 'mandatory' },
+        { key: 'study-tools', label: 'Study Tools & Reviews', required: 6, segment: 'mandatory' },
+        { key: 'simulators', label: 'Exam Simulators', required: 8, segment: 'elective' },
       ],
       upNext: { id: 'jbi-xcel-ep-prep', title: 'Prep Review Course', hours: 8, state: 'FL', delivery: 'online', badge: 'mandatory', status: 'not-started', progress: 0 },
       resumeMid: { id: 'jbi-xcel-ep-sim1', title: 'Exam Simulator 1', hours: 2, state: 'FL', delivery: 'online', badge: 'mandatory', status: 'in-progress', progress: 45 },
@@ -315,10 +389,37 @@ const PROGRESS_RATIOS: Record<DashboardProgressVariant, { m: number; e: number }
   'new-empty': { m: 0, e: 0 },
 }
 
+/**
+ * ON TRACK is 27 DAYS OUT, not 22 weeks — changed 2026-09-16 at Jillienne's
+ * request, and `weeksLeft` is therefore a FRACTION here.
+ *
+ * Why days: the default view is now QE Focused, a New York producer candidate
+ * working a fixed curriculum towards a booked exam. "22 wks" reads as a learner
+ * with no reason to open the app this month, which is the opposite of the story
+ * the Study Journey beside it tells. Under 30 days `timeRemaining` switches to
+ * a day countdown on its own, so the surfaces need no special case — that
+ * switch is exactly what this constant is reaching for.
+ *
+ * **No At Risk treatment comes with it**, which was the explicit ask. The
+ * status is not derived from this number for any persona: `STATUS_BY_VARIANT`
+ * supplies a `statusOverride`, and every band and the detail sheet prefer it
+ * over their `weeksLeft`-based `derivedStatus`. The tint, the pill and the
+ * message all follow the override, so On Track stays On Track at 27 days.
+ *
+ * KNOWN, and not fixed here: `deadline` and `weeksLeft` in this map have never
+ * agreed with each other — `progress-at-risk` is 3 weeks against a date four
+ * months out, and the anchored fixture "today" (2026-05-11) is 31 weeks from
+ * 12/15/2026, not 22. They are two independently authored demo values, which is
+ * why 27 days sits beside a target date in December without that being a new
+ * defect. Deriving one from the other is the fix; it would move every state's
+ * visible date, so it is its own change.
+ */
+const ON_TRACK_DAYS_LEFT = 27
+
 const RENEWAL_BY_VARIANT: Record<DashboardProgressVariant, { deadline: string; weeksLeft: number }> = {
   'setup-complete-0': { deadline: '08/28/2027', weeksLeft: 110 },
   'not-started': { deadline: '08/28/2027', weeksLeft: 110 },
-  'progress-on-track': { deadline: '12/15/2026', weeksLeft: 22 },
+  'progress-on-track': { deadline: '12/15/2026', weeksLeft: ON_TRACK_DAYS_LEFT / 7 },
   // At Risk = under 30 days left (and the requirement <25% done).
   'progress-at-risk': { deadline: '08/05/2026', weeksLeft: 3 },
   // Off Track = still ~3 months of runway, but well behind the pace needed.
@@ -380,22 +481,71 @@ function buildPath(
     mandatoryLabel: profile.mandatoryLabel,
     electiveLabel: profile.electiveLabel,
     deadlineLabel: profile.deadlineLabel,
+    unitLabel: profile.unitLabel,
     jumpBackIn,
   }
 }
 
 function personaFor(profile: BrandProgressProfile, variant: DashboardProgressVariant): DashboardProgressPersona {
   const ratio = PROGRESS_RATIOS[variant]
-  const mandatory = breakdown(profile.mandatoryReq, ratio.m)
-  const elective = breakdown(profile.electiveReq, ratio.e)
-  // Scaled category list (QE multi-category journeys). Each category's completed
-  // hours = its requirement × the progress ratio (uniform m===e across states).
-  const categories: LearningPathCategory[] | undefined = profile.categories?.map((c) => ({
-    key: c.key,
-    label: c.label,
-    required: c.required,
-    completed: Math.round(c.required * ratio.m),
-  }))
+  /*
+   * SEQUENTIAL (WATERFALL) ALLOCATION — changed 2026-09-16.
+   *
+   * It used to be `completed: Math.round(c.required * ratio.m)`: one ratio
+   * applied to every category independently. That is a PROPORTIONAL fill, and
+   * on the four-category New York journey it produced a learner who was
+   * simultaneously 63% through their pre-licensing coursework, 63% through the
+   * prep review, 63% through the exam simulators and 63% through the exam cram.
+   *
+   * Nobody studies like that, and the Study Journey is where it showed: a
+   * SEQUENCE whose every stop read "In progress" says nothing about what to do
+   * next, which is the one question a journey exists to answer. The category
+   * bars had the same problem and it just read as decoration there.
+   *
+   * So the hours now fill the list IN ORDER, each category taking what it can
+   * before the next gets any. The category list is the curriculum order (see
+   * the type's note), so 63% of the way through means "coursework nearly done,
+   * nothing after it started" rather than "everything a bit done".
+   *
+   * THE TOTAL IS UNCHANGED — `round(totalRequired × ratio)` either way — so
+   * `displayedProgressPct` still reports the same figure and the cross-surface
+   * agreement `ProgressAgreement.test.tsx` pins is untouched. Only the
+   * DISTRIBUTION moved.
+   */
+  const catTotalRequired = profile.categories?.reduce((sum, c) => sum + c.required, 0) ?? 0
+  let unallocated = Math.round(catTotalRequired * ratio.m)
+  const categories: LearningPathCategory[] | undefined = profile.categories?.map((c) => {
+    const completed = Math.min(c.required, unallocated)
+    unallocated -= completed
+    return { key: c.key, label: c.label, required: c.required, completed }
+  })
+  /*
+   * Mandatory / Elective are DERIVED from that same allocation when a profile
+   * has categories, rather than computed from `mandatoryReq` × ratio.
+   *
+   * Two rules over one set of hours is two answers. With the proportional fill
+   * they happened to agree; under the waterfall they would not — the New York
+   * persona's categories give 35/40 to pre-licensing and 0 to everything after,
+   * while `mandatoryReq × 0.63` gives 25/40 and `electiveReq × 0.63` gives
+   * 10/16. Both views are on screen: the Progress section reads categories, and
+   * the Learner Focused band's legend reads these two.
+   *
+   * A profile with no categories keeps the old computation exactly.
+   */
+  const segmentTotal = (seg: 'mandatory' | 'elective'): LearningPathCategoryBreakdown => ({
+    completed: (profile.categories ?? [])
+      .map((c, i) => (c.segment === seg ? categories![i].completed : 0))
+      .reduce((a, b) => a + b, 0),
+    required: (profile.categories ?? [])
+      .filter((c) => c.segment === seg)
+      .reduce((a, c) => a + c.required, 0),
+  })
+  const mandatory = categories
+    ? segmentTotal('mandatory')
+    : breakdown(profile.mandatoryReq, ratio.m)
+  const elective = categories
+    ? segmentTotal('elective')
+    : breakdown(profile.electiveReq, ratio.e)
   // The discovery states (`completed-empty` / `new-empty`) have nothing to
   // resume or launch.
   const isDiscovery = variant === 'completed-empty' || variant === 'new-empty'

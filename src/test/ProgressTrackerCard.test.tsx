@@ -3,6 +3,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 import { ProgressTrackerCard } from '@/components/learning/ProgressTrackerCard'
 import { learningPathsFor, type LearningPathSummary } from '@/data/learningFixtures'
+import { CATEGORY_BAR_HEIGHT } from '@/components/learning/progressGauge'
 
 // Florida Life & Health CE — the XCEL path with progress in BOTH categories.
 // It has to be this one, not `[0]`: the gauge only draws an elective arc when
@@ -38,11 +39,15 @@ function renderCard(path: LearningPathSummary, props?: CardProps) {
   )
 }
 
-/** Count the Mandatory/Elective progress-bar tracks (8px-tall clipped bars) —
- *  present in the `bars` layout, absent in `compact`. */
+/** Count the Mandatory/Elective progress-bar tracks (clipped bars at
+ *  `CATEGORY_BAR_HEIGHT`) — present in the `bars` layout, absent in `compact`.
+ *
+ *  Reads the CONSTANT rather than a literal: this said `'8px'` and broke when
+ *  the bars went to 6 on 2026-09-16, reporting zero bars rather than a changed
+ *  height — a height change should not read as a missing element. */
 function barTrackCount(container: HTMLElement): number {
   return [...container.querySelectorAll('div')].filter(
-    (d) => d.style.height === '8px' && d.style.overflow === 'hidden',
+    (d) => d.style.height === `${CATEGORY_BAR_HEIGHT}px` && d.style.overflow === 'hidden',
   ).length
 }
 

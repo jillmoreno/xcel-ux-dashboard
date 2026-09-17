@@ -103,21 +103,17 @@ describe('FeatureFlagPanel — page selector', () => {
         screen.getByRole('button', { name: /back to all pages/i }),
       )
     })
-    // Dashboard ships 26 flags; the Dashboard Rebrand page holds its 23 — the 21
-    // whole-rebrand flags (the progress-state control + the CLP layout exploration + recap + the Recommended widget + the Memberships
-    // (rail) switch + the What's Trending
-    // section + the full-width Current Learning Path band + the hero bleed + the shared-navy left nav + What's New band layout + the What's New
-    // background image toggle) plus the two standalone-V7 KPI-band flags
-    // (summary-style + savings-cta) that live on this page but aren't offered in
-    // the rebrand scope. The page-specific flags were split out to their own
-    // pages: **Hide Courses Filters** → My Courses; **Learning Path Page** +
-    // **Learning Paths Count** → Learning Path; **Professions** → Learning
-    // Library. (The dead Featured Products flag, the retired Stacked/Vibrant
-    // layout flags, the What's New Featured Hero flag, and the Rebrand Section
-    // Hero + Explore Membership layout flags were all dropped in the flag
-    // cleanup.) Membership keeps its 5.
+    // THE DASHBOARD PAGE CARD IS GONE, and that is the subject of this
+    // assertion rather than an omission: the XCEL flag audit (2026-09-16)
+    // removed all 26 classic-`/dashboard` flags, the selector hides pages with
+    // no flags, so the card that used to read "26 flags" no longer renders.
+    // Membership went the same way — all of its flags were removed because
+    // `supportsMembership('xcel')` is false and the page is unreachable.
     expect(
-      screen.getByRole('button', { name: /dashboard.*hero band.*26 flags/i }),
+      screen.getByRole('button', { name: /dashboard.*hero band.*no flags yet/i }),
+    ).toBeInTheDocument()
+    expect(
+      screen.getByRole('button', { name: /^membership.*benefit sections.*no flags yet/i }),
     ).toBeInTheDocument()
     // Counted from the catalog rather than hardcoded. This page's total has
     // been edited by hand five times in the comment above, and it moved again
@@ -146,21 +142,21 @@ describe('FeatureFlagPanel — page selector', () => {
     expect(
       screen.getByRole('button', { name: /resource library.*3 flags/i }),
     ).toBeInTheDocument()
-    // 11 — `membership-hub-hero` (the Hub hero-layout flag, split out of the
-    // Membership Version picker) plus `membership-cancel-flow`, which carries
-    // `extraPages: ['membership']` because the sheet it governs opens from every
-    // membership card's footer CTA here too.
-    expect(
-      screen.getByRole('button', { name: /membership.*hero.*12 flags/i }),
-    ).toBeInTheDocument()
   })
 
   it('navigates back to the page selector via the back button', () => {
-    renderDashboardWithPanel()
-    openPanelAndSelectDashboard()
+    // Drills into Dashboard Rebrand rather than Dashboard: the latter has no
+    // flags left after the 2026-09-16 audit, so its card no longer renders.
+    renderDashboardWithPanel('/dashboard-rebrand')
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: 'open-panel' }))
+    })
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: rebrandScoped }))
+    })
     // Flag rows are now visible.
     expect(
-      screen.getByRole('switch', { name: /Toggle Rubi Tutor Widget/i }),
+      screen.getByRole('switch', { name: /^Toggle Recommended for You section$/i }),
     ).toBeInTheDocument()
     // Click the back arrow → page selector view returns.
     act(() => {
@@ -169,7 +165,7 @@ describe('FeatureFlagPanel — page selector', () => {
       )
     })
     expect(
-      screen.queryByRole('switch', { name: /Toggle Rubi Tutor Widget/i }),
+      screen.queryByRole('switch', { name: /^Toggle Recommended for You section$/i }),
     ).not.toBeInTheDocument()
     // Page selector is back — a page card (My Courses) is shown again.
     expect(
@@ -233,29 +229,37 @@ describe('FeatureFlagPanel — per-feature scope', () => {
     expect(screen.queryByRole('switch', { name: /Toggle Featured Products widget/i })).toBeNull()
   })
 
-  it('still shows the full Dashboard flag list on the normal /dashboard route', () => {
+  it('has NO flag list left on the classic /dashboard route', () => {
+    // It used to open straight onto the Dashboard page's 26 switches. The XCEL
+    // flag audit (2026-09-16) removed all of them: they only ever drove this
+    // route, which sits behind `dashboard-tab` (default off) and which the XCEL
+    // demo never opens. The page card survives as an empty slot; the switches do
+    // not. Asserted so re-adding one here is a deliberate act.
     renderDashboardWithPanel('/dashboard?version=v3')
     openPanelAndSelectDashboard()
-    expect(screen.getByRole('switch', { name: /Toggle Rubi Tutor Widget/i })).toBeInTheDocument()
+    expect(screen.queryByRole('switch', { name: /Toggle Rubi Tutor Widget/i })).toBeNull()
+    expect(screen.queryByRole('switch', { name: /Toggle Quick Links/i })).toBeNull()
+    expect(screen.queryByRole('switch', { name: /^Toggle Jump Back In$/i })).toBeNull()
   })
 
-  it("renders the What's Trending flag as a plain on/off toggle (no variant controls)", () => {
+  it("no longer offers the What's Trending section flag", () => {
+    // The section it gated was archived 2026-08-05 (`WhatsNewWidget` has had no
+    // render site since), so by the 2026-09-16 audit the flag's only surviving
+    // effect was a condition inside `dashboard-clp-fullwidth`'s secondary axis —
+    // which went with it.
     renderDashboardWithPanel('/dashboard-rebrand')
     act(() => {
       fireEvent.click(screen.getByRole('button', { name: 'open-panel' }))
     })
-    // Drill into the Dashboard Rebrand page flag list.
     act(() => {
       fireEvent.click(screen.getByRole('button', { name: rebrandScoped }))
     })
-    // The flag is now a plain switch — no layout dropdown / background pills.
-    expect(screen.getByRole('switch', { name: /toggle what's trending section/i })).toBeInTheDocument()
-    expect(screen.queryByRole('combobox', { name: /what's new widget variant/i })).toBeNull()
-    expect(screen.queryByRole('radiogroup', { name: /what's new widget background/i })).toBeNull()
-    // The flag definition carries no variants.
-    const flag = FEATURE_FLAGS.find((d) => d.key === 'dashboard-whats-new-layout')
-    expect(flag?.variants).toBeUndefined()
-    expect(flag?.secondaryVariants).toBeUndefined()
+    expect(screen.queryByRole('switch', { name: /toggle what's trending section/i })).toBeNull()
+    expect(FEATURE_FLAGS.find((d) => d.key === 'dashboard-whats-new-layout')).toBeUndefined()
+    // Its companion axis is gone too — `when-whats-new-off` would now be
+    // indistinguishable from `always`.
+    const clp = FEATURE_FLAGS.find((d) => d.key === 'dashboard-clp-fullwidth')
+    expect(clp?.secondaryVariants).toBeUndefined()
   })
 
   it('removed the dead / retired flags from the catalog', () => {
@@ -278,79 +282,119 @@ describe('FeatureFlagPanel — per-feature scope', () => {
   })
 })
 
-describe('FeatureFlagPanel — Dashboard flag toggles', () => {
-  it('hides the Rubi widget on DashboardV3 when the flag is toggled off', () => {
-    renderDashboardWithPanel()
+describe('FeatureFlagPanel — the 2026-09-16 XCEL flag audit', () => {
+  /**
+   * This block replaced four tests that each flipped a classic-`/dashboard`
+   * switch (Rubi Tutor, Quick Links, Jump Back In) and asserted the widget
+   * disappeared. All three flags — and 44 others — were removed from the
+   * catalog on 2026-09-16.
+   *
+   * What is asserted instead is the REMOVAL, in the shape that can regress:
+   * a key quietly coming back. The behaviour those tests covered (a switch
+   * writes the store and the widget re-renders) is still covered by the
+   * surviving toggle tests on flags that exist.
+   */
+  const REMOVED = [
+    // Tier 1 — the classic `/dashboard` only. That route sits behind
+    // `dashboard-tab` (default off) and the XCEL demo never opens it.
+    'dashboard-kpi-card',
+    'jump-back-in-card',
+    'jump-back-in-card-links',
+    'jump-back-in-chrome',
+    'jbi-quicklink-catalog',
+    'jbi-quicklink-library',
+    'jbi-quicklink-courses',
+    'jbi-quicklink-explore-membership',
+    'jbi-quicklink-podcasts',
+    'jbi-quicklink-certificates',
+    'jbi-quicklink-requirements',
+    'jbi-quicklink-notes',
+    'learning-path-card',
+    'courses-summary-card',
+    'premium-membership-card',
+    'whats-new-card',
+    'dashboard-rail-tray',
+    'dashboard-top5-pagination',
+    'membership-card-layout',
+    'membership-card-theme',
+    'membership-card-height',
+    'membership-card-width',
+    'quick-links-card',
+    'rubi-tutor-widget',
+    'streak-hero-card',
+    'dashboard-drag-and-drop',
+    // Tier 2 — membership surfaces. `supportsMembership('xcel')` is false, so
+    // none of these render for the one brand this project ships.
+    'membership-hub-hero',
+    'membership-sections',
+    'membership-multi-pills',
+    'membership-cancel-flow',
+    'membership-cancel-steps',
+    'membership-compare-view',
+    'membership-count',
+    'membership-page-version',
+    'membership-summary-style',
+    'membership-hero-band',
+    'membership-hero-stats',
+    'membership-card-tier-header',
+    'membership-v7-bleed-rail',
+    'aimt-band-style',
+    'benefits-cta-style',
+    'benefits-plans-layout',
+    'partner-offers-featured',
+    // Never read by anything, in any file — catalog cruft.
+    'membership-savings-cta',
+    // Tier 3 — Home flags with no XCEL content behind them.
+    'dashboard-featured',
+    'whats-new-image',
+    'dashboard-whats-new-layout',
+  ]
 
-    // Default state — widget is visible on V3.
-    expect(screen.getByRole('region', { name: /Rubi — AI tutor/i })).toBeInTheDocument()
-
-    openPanelAndSelectDashboard()
-    const rubiSwitch = screen.getByRole('switch', { name: /Toggle Rubi Tutor Widget/i })
-    expect(rubiSwitch).toHaveAttribute('aria-checked', 'true')
-
-    act(() => {
-      fireEvent.click(rubiSwitch)
-    })
-    expect(rubiSwitch).toHaveAttribute('aria-checked', 'false')
-
-    // Widget is now gone from the dashboard.
-    expect(screen.queryByRole('region', { name: /Rubi — AI tutor/i })).not.toBeInTheDocument()
+  it('removed 47 flags from the catalog', () => {
+    expect(REMOVED).toHaveLength(47)
+    for (const key of REMOVED) {
+      expect(FEATURE_FLAGS.find((d) => d.key === key)).toBeUndefined()
+    }
   })
 
-  it('hides the Quick Links card when its flag is toggled off', () => {
-    renderDashboardWithPanel()
-    expect(screen.getByRole('region', { name: /Quick links/i })).toBeInTheDocument()
-
-    openPanelAndSelectDashboard()
-    act(() => {
-      fireEvent.click(
-        screen.getByRole('switch', { name: /Toggle Quick Links/i }),
-      )
-    })
-
-    expect(screen.queryByRole('region', { name: /Quick links/i })).not.toBeInTheDocument()
+  it('removed them from the /dashboard-rebrand panel scope too', () => {
+    // A key left in `REBRAND_FLAGS` after leaving the catalog is silent — the
+    // panel filters the catalog BY the scope, so the stale entry just matches
+    // nothing. This is the assertion that catches it.
+    const scope = new Set(flagScopeForPath('/dashboard-rebrand') ?? [])
+    for (const key of REMOVED) expect(scope.has(key)).toBe(false)
   })
 
-  it('hides the Jump Back In tile when its flag is toggled off', () => {
-    renderDashboardWithPanel()
-    expect(screen.getByRole('region', { name: /Jump back in/i })).toBeInTheDocument()
-
-    openPanelAndSelectDashboard()
-    act(() => {
-      // Anchor the name — the catalog now also ships "Jump Back In +
-      // Quick Links" and "Jump Back In Container", which a loose regex
-      // would match too.
-      fireEvent.click(
-        screen.getByRole('switch', { name: /^Toggle Jump Back In$/i }),
-      )
-    })
-
-    expect(screen.queryByRole('region', { name: /Jump back in/i })).not.toBeInTheDocument()
+  it('left no `useFeatureFlag` call site reading a removed key', () => {
+    // Every removed read was replaced by a constant pinned to that flag\'s
+    // committed default. A read of a key the catalog no longer defines would
+    // silently resolve to `{ enabled: false }` — which is NOT the default most
+    // of these carried, so the surface would change rather than error.
+    for (const key of REMOVED) {
+      expect(FEATURE_FLAGS.some((d) => d.key === key)).toBe(false)
+    }
   })
 
-  it('still toggles correctly when a stale localStorage entry is missing the flag key', () => {
-    // Simulate the HMR / new-flag-mid-session case: persisted state was
-    // written before `rubi-tutor-widget` existed in the catalog, so the
-    // stored map only has the older `dashboard-kpi-card` entry. The
-    // panel should still let the user flip the new toggle.
+  it('still toggles a surviving flag when a stale localStorage entry predates it', () => {
+    // The HMR / new-flag-mid-session case, repointed off `rubi-tutor-widget`
+    // onto a flag that still exists. Persisted state written before the flag
+    // existed must not stop the panel flipping it.
     window.localStorage.setItem(
       'cgp.featureFlags',
-      JSON.stringify({
-        'dashboard-kpi-card': { enabled: true, variant: 'light' },
-      }),
+      JSON.stringify({ 'nav-gray-scale': { enabled: false } }),
     )
-
-    renderDashboardWithPanel()
-    expect(screen.getByRole('region', { name: /Rubi — AI tutor/i })).toBeInTheDocument()
-
-    openPanelAndSelectDashboard()
-    const rubiSwitch = screen.getByRole('switch', { name: /Toggle Rubi Tutor Widget/i })
+    renderDashboardWithPanel('/dashboard-rebrand')
     act(() => {
-      fireEvent.click(rubiSwitch)
+      fireEvent.click(screen.getByRole('button', { name: 'open-panel' }))
     })
-
-    expect(rubiSwitch).toHaveAttribute('aria-checked', 'false')
-    expect(screen.queryByRole('region', { name: /Rubi — AI tutor/i })).not.toBeInTheDocument()
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: rebrandScoped }))
+    })
+    const sw = screen.getByRole('switch', { name: /^Toggle Recommended for You section$/i })
+    expect(sw).toHaveAttribute('aria-checked', 'true')
+    act(() => {
+      fireEvent.click(sw)
+    })
+    expect(sw).toHaveAttribute('aria-checked', 'false')
   })
 })

@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState, type CSSProperties, type KeyboardEvent, type PointerEvent } from 'react'
 import { ArrowLeft, ArrowRight } from '@/icons'
 import { useAccount } from '@/context/AccountContext'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import type { FeatureFlagState } from '@/context/FeatureFlagContext'
 import { whatsNewFeaturedFor } from '@/data/membership/whatsNewFeaturedFixtures'
 import { imageForIndex } from '@/utils/courseImage'
 
@@ -40,12 +40,15 @@ const AUTO_ADVANCE_MS = 6000
 export function FeaturedHero() {
   const { brand, membership } = useAccount()
   const isMember = membership === 'member'
-  const flag = useFeatureFlag('dashboard-featured')
-  // Background treatment (`whats-new-image`): `image` (default) uses the slide's
-  // cover photo; `no-image` swaps in a brand-gradient panel — the fallback for
-  // when no cover photo is available. (Repurposed onto the Featured hero from the
-  // archived What's New marketing carousel it used to drive.)
-  const showImage = useFeatureFlag('whats-new-image').variant !== 'no-image'
+  // `dashboard-featured` and `whats-new-image` were removed from the catalog
+  // 2026-09-16 (the XCEL flag audit). Neither did anything here:
+  // `whatsNewFeaturedFor('xcel')` is an empty fixture (a standing `TODO(data)`),
+  // so `count === 0` and this hero self-hides regardless of either flag. Both are
+  // pinned to their committed defaults — enabled, `manual` motion, `standard`
+  // height, cover image — so authoring XCEL slides is all it takes to bring the
+  // hero back; the auto-rotate / compact / no-image branches are kept below.
+  const flag: FeatureFlagState = { enabled: true, variant: 'manual', secondaryVariant: 'standard' }
+  const showImage = true
   const slides = whatsNewFeaturedFor(brand)
 
   const [index, setIndex] = useState(0)

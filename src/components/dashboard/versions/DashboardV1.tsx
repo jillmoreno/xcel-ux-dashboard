@@ -1,6 +1,5 @@
 import { useState, type ReactNode } from 'react'
 import { useAccount } from '@/context/AccountContext'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { DraggableSlot, moveBetween } from '@/components/dashboard/DraggableSlot'
 import { DashboardHeroBand } from '@/components/dashboard/DashboardHeroBand'
 import { ContinueLearningTabs } from '@/components/dashboard/ContinueLearningTabs'
@@ -10,7 +9,11 @@ import { SIDEBAR_CARDS } from '@/data/dashboardFixtures'
 export function DashboardV1() {
   const { membership } = useAccount()
   const sidebar = SIDEBAR_CARDS.filter((c) => !(c.hideForMember && membership === 'member'))
-  const dragEnabled = useFeatureFlag('dashboard-drag-and-drop').enabled
+  // `dashboard-drag-and-drop` was removed from the flag catalog 2026-09-16
+  // (the XCEL flag audit — it only ever drove the classic /dashboard, which
+  // this project's demo does not open). It defaulted OFF, so reordering is
+  // pinned off here; every `DraggableSlot` below is kept for restore.
+  const dragEnabled = false
 
   // Widget registries — id → JSX. Order arrays below drive what shows on
   // screen and in what slot. When the drag-and-drop flag is on, each slot

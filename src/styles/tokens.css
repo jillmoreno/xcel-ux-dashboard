@@ -468,6 +468,28 @@
   --font-heading: 'Brandon Grotesque', 'Helvetica Neue', system-ui, sans-serif;
   --font-body: 'Open Sans', system-ui, -apple-system, sans-serif;
 
+  /* Serif heading alternative — the `dashboard-heading-font` flag's `serif`
+     variant swaps `--font-heading` to this for the dashboard overview.
+     See `.cre-dash-serif-headings` below.
+
+     A SYSTEM STACK, AND A STAND-IN, and both halves of that are deliberate:
+
+     - **No asset, no request.** Every face in it ships with the OS, so the
+       variant works offline, inside the Demo frame, and on a machine that has
+       never loaded Google Fonts. Adding a webfont for an exploration flag would
+       make the DEFAULT view pay for a variant nobody has chosen yet.
+     - **It is not the face in the reference.** That is the live xcelsolutions
+       .com heading, which is Amasis MT — a Monotype slab serif that is not
+       licensed to us, is not on Google Fonts, and which the XCEL note further
+       down this file records as OFF-BRAND ("Amasis appears nowhere in the
+       guide. Do not reproduce them."). So this stack answers "what do serif
+       headings look like here", which is what a variant is for, and does not
+       claim to be that face.
+
+     Repointing it at a real licensed face — or at a Google family added to the
+     existing `<link>` in index.html — is this one declaration. */
+  --font-heading-serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Times New Roman', serif;
+
   /* Radius — project defaults; replace once Nectar DS exposes them */
   --radius-sm: 4px;
   --radius-md: 8px;
@@ -1045,6 +1067,112 @@ html,
   color: var(--color-cta-300);
 }
 
+/* Text-CTA ink and the milestone accent — two ramps, two jobs, both surviving
+   the theme flip.
+
+   `.cre-cta-ink` is ACTION ink: any text CTA whose ground follows the theme.
+   It moved off the CTA ramp onto the PRIMARY ramp on 2026-09-16, with the QE
+   Focused version's filled button — the Brick red had been carrying two
+   unrelated jobs at once (every action AND the assessment accent), which is the
+   same "one ramp, several jobs" problem the desktop prototype's re-palette
+   split. Navy now means "do this"; red means "this is an assessment".
+
+   It was `.cre-journey-cta` for one build and was renamed when the Current
+   Learning Progress block's "View Requirements" needed it too: a class named
+   for one component that two use is the `.cre-link-action` lesson from the
+   other direction.
+
+   `.cre-journey-milestone` IS GONE (2026-09-16, same day it landed). It coloured
+   the Study Journey's assessment stops in the Brick, and red reads as a
+   problem: "Exam Simulators · 6 hrs · Not started" in red looked like a
+   failure rather than a step not reached yet. The distinction moved onto the
+   node as a weight of ink — see `nodeMilestoneStyle` in `StudyJourneyRail`.
+   Nothing on that page wears the Brick now.
+
+   `--color-primary-500` needs a light stop on a dark ground: it measures
+   2.21:1 on the dark page and 1.99:1 on the dark card. The rule
+   `.cre-alert-action` above and the desktop prototype's `--rail-accent` both
+   generalised.
+
+   A class rather than an inline style because inline `CSSProperties` cannot
+   carry a theme selector — and because an inline `color` would beat the
+   stylesheet, which is the trap the Links row-hover rules had to learn.
+   Components using it set NO colour of their own; spreading a style that
+   carries `color` defeats the class, which cost one build on the PSI link.
+
+   Measured — 7.0:1 light page / 7.64:1 light card / 7.76:1 dark page / 6.98:1
+   dark card. */
+.cre-cta-ink {
+  color: var(--color-primary-500);
+}
+[data-theme='dark'] .cre-cta-ink {
+  color: var(--color-primary-300);
+}
+
+/* `.cre-eyebrow-ink` is SECTION-LABEL ink — the small tracked uppercase line
+   over a block's heading ("Atlas Study Journey", "Learning With Compass — Jump
+   Back In"). Navy as of 2026-09-17, the direct ask, up from the neutral greys
+   those eyebrows carried.
+
+   A CLASS rather than a value in `widgetEyebrowStyle`, for the reason this file
+   keeps re-learning: a navy is a FILL colour, and `--color-primary-500` as TEXT
+   measures 2.21:1 on the dark page. It needs a light stop on a dark ground, and
+   `CSSProperties` cannot carry a theme selector. `widgetEyebrowStyle` therefore
+   sets NO `color` at all — an inline one would beat this rule, match, compute
+   and do nothing, which is the `.cre-uxlinks-title` failure exactly.
+
+   It is NOT `.cre-cta-ink`, though the two are a stop apart. That one means
+   "this is an action"; an eyebrow is a label and is not clickable. Sharing the
+   class would be the `.cre-link-action` mistake — a name that stops describing
+   half its call sites — and the two are then one edit from moving together by
+   accident. */
+/* `.cre-stop-title` is the TITLE of a SELECTABLE journey / Get Licensed row —
+   2026-09-17, the direct ask: "if these can be selected, have the fonts be in
+   the blue color. on hover the title will get darker and underline link style
+   will appear, as well as the background hover effect."
+
+   THE ROW ALREADY HAD its background hover (`.cre-journey-stop` above) and a
+   chevron, and the title was plain body ink — so a row that opens something and
+   a row that does not looked identical until the cursor was over it. Blue says
+   it at rest, which is the half that was missing.
+
+   ONLY on rows that open something. The journey's blocked stops carry no class
+   and keep the ordinary ink, because a link-coloured title on a step the
+   product will not let you take is the same broken promise as a chevron on it —
+   the rule those rows already follow.
+
+   THE HOVER GOES DARKER IN LIGHT AND LIGHTER IN DARK, which is what "darker"
+   means on an inverting palette: the ramp's own direction flips, so `-700` is
+   the emphatic end on white and `-200` is on the dark ground. Using `-700` in
+   both would make the dark hover recede instead of advance.
+
+   The title's inline `color` had to GO for any of this to apply — an inline
+   value beats a stylesheet rule, which is the trap `.cre-uxlinks-title` and the
+   PSI link both hit. `titleStyleNoColor` exists in `StudyJourneyRail` for
+   exactly that, and the selectable rows spread it. */
+.cre-stop-title {
+  color: var(--color-primary-500);
+}
+.cre-journey-stop:hover .cre-stop-title,
+.cre-journey-stop:focus-visible .cre-stop-title {
+  color: var(--color-primary-700);
+  text-decoration: underline;
+}
+[data-theme='dark'] .cre-stop-title {
+  color: var(--color-primary-300);
+}
+[data-theme='dark'] .cre-journey-stop:hover .cre-stop-title,
+[data-theme='dark'] .cre-journey-stop:focus-visible .cre-stop-title {
+  color: var(--color-primary-200);
+}
+
+.cre-eyebrow-ink {
+  color: var(--color-primary-700);
+}
+[data-theme='dark'] .cre-eyebrow-ink {
+  color: var(--color-primary-300);
+}
+
 /* Notification centre row — the panel behind the header bell. A row is a
    link (or, with no destination, a button), so it needs the hover a menu
    item has; it is not `.cre-menu-item` because that one is a single-line
@@ -1053,6 +1181,85 @@ html,
   background: var(--color-neutral-100) !important;
 }
 .cre-notification-row:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -2px;
+}
+
+/* Study Journey + Get Licensed rows (`StudyJourneyRail`).
+
+   ADDED 2026-09-16, and the class was already on the journey rows — with NO
+   RULE ANYWHERE. The journey stops had carried `cre-journey-stop` since they
+   were built and had never had a hover state: a clickable row with a chevron
+   and no feedback at all. Same shape of defect as `--color-border-strong`,
+   which did not exist either — a name that looks wired and is not.
+
+   `background: transparent` lives HERE rather than inline on the row. It was
+   inline, and an inline value beats a stylesheet rule, so `:hover` would have
+   needed `!important` to do anything — the rule would match, compute and do
+   nothing while the row still looked fine. That is exactly the trap
+   `.cre-uxlinks-title` documents. The class owns both states, so neither
+   needs `!important`.
+
+   The tint is `--color-neutral-100`, the same value `.cre-notification-row`
+   uses one section up — the established "row hover on a white card" in this
+   product. Two row hovers differing by a few percent read as a bug. It is a
+   neutral, so it inverts with the theme on its own and needs no dark override.
+
+   `:focus-visible` rather than `:focus` — these rows are a keyboard user's way
+   through the sequence, and `:focus` would ring them on every mouse click. */
+/* Serif dashboard headings — the `dashboard-heading-font` flag's `serif`
+   variant. `MembershipOverview` puts this class on its root.
+
+   ONE DECLARATION re-points the token for the whole subtree, and that is why it
+   is a class on a container rather than a per-heading style. Custom properties
+   cascade, and an inline `font-family: var(--font-heading)` resolves against
+   the value the element INHERITS — so every heading inside switches, inline
+   styles included, with no component needing to know the flag exists. The
+   alternative was threading a font prop through the band, the widgets, the
+   section leads and the cards, which is a dozen call sites for one choice.
+
+   Scoped to the overview's root, so the shell's `<h1>`, the left rail and the
+   header keep the brand face: the flag is about the PAGE's headings, and a rail
+   in one face beside a page in another is the comparison a reviewer needs. */
+/* Jump Back In progress fill — a LIGHT stop on a dark ground.
+
+   ADDED 2026-09-16 with the recessed grey card, and it is a defect that
+   measuring caught rather than one that was visible. The fill was an inline
+   `background: var(--color-primary-500)`, which is correct on white. When the
+   card became `--color-neutral-100` and the track moved to `-300`, both of
+   those invert to navies under `[data-theme='dark']` — and so does the
+   primary — leaving the fill at **1.22:1** against its own track. A progress
+   bar with no visible progress, in a card that rendered perfectly.
+
+   `--color-primary-300` measures 4.30:1 on that track. It is only applied in
+   DARK: the same stop is 1.29:1 on the light track, so this cannot be a single
+   swap. Same rule as `.cre-alert-action` and the desktop prototype's
+   `--rail-accent` — put a light stop on a dark ground.
+
+   A CLASS, not an inline style: `CSSProperties` cannot carry a theme selector,
+   and an inline `background` would beat the stylesheet anyway. The fill's
+   inline style therefore sets NO background — a test asserts that, because the
+   rule would otherwise match, compute, and do nothing. */
+.cre-jbi-progress-fill {
+  background: var(--color-primary-500);
+}
+[data-theme='dark'] .cre-jbi-progress-fill {
+  background: var(--color-primary-300);
+}
+
+.cre-dash-serif-headings {
+  --font-heading: var(--font-heading-serif);
+}
+
+.cre-journey-stop {
+  background: transparent;
+  border-radius: var(--radius-md);
+  transition: background-color 120ms ease;
+}
+.cre-journey-stop:hover {
+  background: var(--color-neutral-100);
+}
+.cre-journey-stop:focus-visible {
   outline: 2px solid var(--color-primary-500);
   outline-offset: -2px;
 }
@@ -1078,6 +1285,53 @@ html,
 .cre-icon-pill.is-active:hover {
   background: var(--color-primary-200);
   color: var(--color-primary-700);
+}
+
+/* Account menu trigger — the learner's avatar plus their name (2026-09-16).
+
+   It was a `cre-icon-pill` holding a generic `CircleUser` glyph. That class is a
+   fixed 40×40 SQUARE built for one icon, so it cannot hold a name; this is the
+   same pill sized to its content. Everything else is deliberately identical —
+   radius, hover, transition, the transparent rest state — because it sits in a
+   three-item cluster beside the cart and the bell, and a trigger that hovers
+   differently from its neighbours reads as a different kind of control.
+
+   `padding-left: 4px` against `8px` on the right: the avatar is a circle, so it
+   carries its own optical inset, and an even 8 both sides makes the pill look
+   left-heavy. */
+.cre-account-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  height: 40px;
+  padding: 0 8px 0 4px;
+  border-radius: var(--radius-md);
+  background: transparent;
+  color: var(--color-text-primary);
+  border: none;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+  transition: background-color 120ms ease;
+}
+.cre-account-pill:hover {
+  background: var(--color-neutral-extra-light);
+}
+.cre-account-pill:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -2px;
+}
+
+/* The name drops below 900px. At phone widths the header is a logo, a hamburger
+   and this cluster, and a full name is the first thing that should go — the
+   button's `aria-label` still carries it, so assistive tech loses nothing. */
+@media (max-width: 900px) {
+  .cre-account-pill__name {
+    display: none;
+  }
 }
 
 /* Menu item — used inside header dropdowns (My Learning, Membership,
@@ -1218,12 +1472,15 @@ html,
      MORE content than the old 1280 cap did at that size. */
   width: min(1440px, 100% - 48px);
   /* 1440 = the app's OWN design width, not an arbitrary cap: PlatformShell's
-     grid is `264px minmax(0, 1176px) 1fr` (264 + 1176 = 1440), so at the old
+     grid is `220px minmax(0, 1220px) 1fr` (220 + 1220 = 1440) — it was
+     `264px … 1176px` until 2026-09-17, when the rail narrowed and the 44px it
+     gave up went to the content column precisely so this sum did not move — so
+     at the old
      1280 the demo squeezed the content column to 1016px — 160px under its
      design max — and every reviewer saw a compressed layout. At 1440 the shell
      hits its intended width.
 
-     Going WIDER than 1440 buys nothing: the shell caps content at 1176, so the
+     Going WIDER than 1440 buys nothing: the shell caps content at 1220, so the
      surplus falls to the grid's third `1fr` filler (page background) and only
      the full-bleed bands stretch into it. 1440 is the ceiling worth having.
 

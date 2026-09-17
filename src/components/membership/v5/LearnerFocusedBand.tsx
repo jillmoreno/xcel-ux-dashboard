@@ -1,20 +1,29 @@
-import { type CSSProperties, type ReactNode } from 'react'
+import { Fragment, type CSSProperties, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { ArrowRight, CalendarDay, CircleCheck, Clock, FileText, Monitor, Podcast } from '@/icons'
+import { ArrowRight, CalendarDay, CircleCheck, Clock, FileText, Gauge, Monitor, Podcast } from '@/icons'
 import { useAccount } from '@/context/AccountContext'
+import { useTheme } from '@/context/ThemeContext'
 import { useCourseLauncher } from '@/components/layout/CourseLauncherContext'
 import { useDeviceFrame } from '@/components/layout/DeviceFrameContext'
 import type { CourseCardData } from '@/components/courses/CourseCard'
 import type { LearningPathSummary } from '@/data/learningFixtures'
-import { statusTreatment, displayedProgressPct, type HomeStatus, CURRENT_LEARNING_EYEBROW } from '@/components/learning/learningPathsHomeUtil'
-import { LICENSE_TRACKER } from '@/data/dashboardFixtures'
+import { statusTreatment, displayedProgressPct, timeRemaining, timeRemainingText, resolveRenewal, type HomeStatus, CURRENT_LEARNING_EYEBROW } from '@/components/learning/learningPathsHomeUtil'
 import { myCoursesFor } from '@/data/myCoursesFixtures'
 import { ProgressDonut, CategoryBars } from '@/components/learning/progressGauge'
+import { ProgressBar } from '@/components/ui/ProgressBar'
 import { resolvePathCategories } from '@/components/learning/progressGaugeUtil'
 import { getCourseImage } from '@/utils/courseImage'
+import { DELIVERY_LABEL } from '@/utils/courseDelivery'
+import { unitCount } from '@/utils/unitLabel'
 import { CompletedCelebration, type CompletedStat } from './CompletedCelebration'
 import { DiscoveryEmpty } from './JumpBackInDiscoveryEmpty'
 import { TaskRow } from '@/components/learning/study-calendar/TaskRow'
+import { StudyJourneyWidget } from '@/components/learning/StudyJourneyWidget'
+import { StatusStrip } from '@/components/learning/LearningPathDetailPanel'
+import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
+import { widgetCardRecessedStyle, widgetEyebrowStyle } from '@/components/learning/widgetStyles'
+import { JumpBackInWidget } from '@/components/learning/JumpBackInWidget'
+import { NY_LH_CURRENT_CHAPTER, NY_LH_PROGRAM_PARTS } from '@/data/nyProducerRequirements'
 import {
   hasStudyCalendarFor,
   XCEL_CE_PATH_ID,
@@ -83,6 +92,89 @@ type Props = {
   /** Explicit status (from the `dashboard-progress-state` persona) — drives the
    *  status band instead of re-deriving from the license tracker. */
   statusOverride?: HomeStatus
+  /**
+   * Render the gauge + bars from the path's N CATEGORIES, not the two-segment
+   * Mandatory / Elective pair — and keep the three KPI cells with them.
+   *
+   * ⚠ THIS OVERRIDES THE BAND'S "two categories only" RULE, deliberately.
+   * `hasBreakdown` below restricts the segmented gauge to exactly two
+   * categories, on the reasoning that a 3–5-category path shows the overall %
+   * here and "the full list in the detail panel" — which is sound while the
+   * panel is a click away.
+   *
+   * On QE Focused it is not: the panel's Progress view renders as a SECTION
+   * directly below this band. So the division of labour moved rather than the
+   * rule being wrong — the navy card now carries the whole summary (how am I
+   * doing: gauge, per-category bars, Target Date / Time Remaining / Completed)
+   * and the section below keeps what it is uniquely good at (what exactly is
+   * left: the per-category course lists, completion marks, certificates).
+   *
+   * This replaced a `slimLeft` prop that did the opposite — stripped the gauge
+   * and KPIs from the navy half because the section carried them. Same
+   * duplication, resolved the other way round: the numbers belong on the navy
+   * card, the lists belong in the section.
+   *
+   * Scoped to this version by a prop rather than applied whenever a path has
+   * categories, even though the band and the panel disagreeing for a
+   * 4-category path is arguably a bug everywhere. Fixing it on Learner Focused
+   * and Marketing Focused changes what those versions ship, which is a separate
+   * decision.
+   */
+  categoryGauge?: boolean
+  /**
+   * Which surface the Current Learning Progress half sits on.
+   *
+   * `navy` (default) is the original: a `--color-primary-700` card with a
+   * shadow, its own radius, and on-dark type throughout. Every other version
+   * keeps it.
+   *
+   * `page` drops the card entirely — no background, no shadow, no radius — so
+   * the content sits directly on the shell's `--color-surface-page` grey, and
+   * every colour flips to its light-ground counterpart. For QE Focused
+   * (2026-09-16).
+   *
+   * ⚠ THE TRACKS ARE THE PART THAT BREAKS, not the type. All the text clears AA
+   * on the page grey by a wide margin (title 10.43:1, meta 5.27:1, eyebrow
+   * 7.0:1, the link 7.56:1). The gauge and bar TRACKS do not: the light default
+   * is `--color-neutral-100` at **1.08:1** against `#f5f5f5` and
+   * `--color-neutral-200` at 1.29:1 — an empty bar would have no visible track
+   * at all, so "0 / 8 hrs" would read as a missing bar rather than an empty
+   * one. `page` uses `--color-neutral-300` (1.55:1), which is a groove rather
+   * than a line. Every bar's value is also stated in text beside it, so nothing
+   * is carried by the track alone.
+   */
+  surface?: 'navy' | 'page'
+  /**
+   * Drop this block's whole header cluster — the eyebrow, the course art, the
+   * title, the meta line and the progress bar.
+   *
+   * Set when the page's own course header band is showing
+   * (`dashboard-course-header`), which carries every one of those. It started
+   * as `hideCover` and grew: dropping only the picture left the NAME, the meta
+   * and a second progress bar repeating the band three inches above them. What
+   * survives is everything from the Resume CTA down — the KPI cells, the status
+   * strip, View Requirements — which the band does not have.
+   */
+  hideHeader?: boolean
+  /**
+   * Replace the white half's Today's Tasks block with the STUDY JOURNEY — the
+   * curriculum as an ordered sequence rather than a date-paced day view.
+   *
+   * For the QE Focused dashboard version (2026-09-16). The two answer different
+   * questions and the version picks one: a candidate mid-programme asks "what
+   * comes next", and Today's Tasks answers "what is due" — which the Study Plan
+   * rail item and the week strip below already answer twice.
+   *
+   * It does NOT replace the resume block above it. "Continue where you left
+   * off" is still the first thing the card should offer; the journey is what
+   * fills the space under it.
+   */
+  studyJourney?: boolean
+  /** Open one Study Journey stop (a course id). Omitted → the rows render as
+   *  plain text, which is what the dev-handoff preview wants. */
+  onOpenStop?: (id: string) => void
+  /** Open a Get Licensed step — the requirements sheet. */
+  onOpenStep?: (id: string) => void
   /** Demo renewal override (persona): the Deadline + Time Remaining cells. */
   renewal?: { deadline: string; weeksLeft: number }
   /** Renewal-ready treatment (100% complete): the green completed celebration. */
@@ -113,14 +205,6 @@ const ON_DARK_MUTED = 'rgb(255 255 255 / 0.66)'
 const ON_DARK_LINE = 'rgb(255 255 255 / 0.12)'
 const ACCENT = 'var(--color-secondary-300)' // cyan eyebrow / KPI accents
 
-const DELIVERY_LABEL: Record<string, string> = {
-  online: 'Course',
-  'in-person': 'In Person',
-  classroom: 'Classroom',
-  video: 'Video',
-  podcast: 'Podcast',
-}
-
 const eyebrowBase: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-body)',
@@ -131,6 +215,12 @@ const eyebrowBase: CSSProperties = {
 }
 
 export function LearnerFocusedBand({
+  categoryGauge = false,
+  surface = 'navy',
+  hideHeader = false,
+  studyJourney = false,
+  onOpenStop,
+  onOpenStep,
   path,
   course,
   pathsCount,
@@ -195,7 +285,17 @@ export function LearnerFocusedBand({
   const ceSuppressed = !ceStudyPlan && path.id === XCEL_CE_PATH_ID
   const pathHasPlan =
     supportsStudyPlan(brand) && hasStudyCalendarFor(brand, path.id) && !ceSuppressed
-  const todaysTasksLayout = jbiVariant === 'todays-tasks' && pathHasPlan
+  // The Study Journey takes the lower half when asked for, and it needs no
+  // plan — it is built from the path's CATEGORIES, so it works on a path with
+  // no calendar at all (which is what makes it viable for the CE path too, if
+  // that is ever wanted). Today's Tasks still needs one, hence the two gates.
+  const journeyLayout = studyJourney
+  // The journey renders as its OWN CARD rather than inside the shared white
+  // half, so the split and the swap are one condition. `resume` has to exist
+  // for the widget's resume block; without a course it still renders, opening
+  // straight on the journey.
+  const journeyWidget = journeyLayout
+  const todaysTasksLayout = !journeyLayout && jbiVariant === 'todays-tasks' && pathHasPlan
   const todaysTasks: StudyTask[] = todaysTasksLayout
     ? tasksOnDate(studyCalendarFor(path.id), STUDY_CALENDAR_TODAY)
     : []
@@ -223,14 +323,232 @@ export function LearnerFocusedBand({
   // Dashboard breakdown rule: the segmented gauge + bars render ONLY for
   // exactly two categories; more than two show the overall % here and the full
   // list in the detail panel.
-  const hasBreakdown = cats.length === 2 && cats.every((c) => c.required > 0)
+  /*
+   * Surface-resolved colours. One place, so a light-ground variant is a set of
+   * swaps rather than a second copy of the markup — the fork this file has
+   * already been pulled back from twice.
+   *
+   * `cAccent` is the KPI/gauge accent. On navy that is the light amber
+   * `--color-secondary-300`; on the page it becomes plain `--color-text-primary`
+   * rather than a light accent, because the amber measures 2.08:1 on #f5f5f5
+   * and an accent that has to be squinted at is worse than no accent.
+   */
+  const onPage = surface === 'page'
+  /*
+   * IS MY GROUND DARK? — not "is the surface the navy card".
+   *
+   * The navy card is dark in BOTH themes, so it always wants the on-dark
+   * treatment. The page is not: `--color-surface-page` is #f5f5f5 in light and
+   * #1b1d21 in dark. Every token-based colour below flips on its own, but
+   * `onDark` is a boolean computed here — so without reading the theme, the
+   * page surface would hand the LIGHT category palette to a dark ground and
+   * reintroduce the exact 1.11:1 slot-0 failure the on-dark palette exists to
+   * fix, just in the other theme.
+   */
+  // The hook is called UNCONDITIONALLY. It was `!onPage || useTheme().theme ===
+  // 'dark'`, which short-circuits — so on the navy card `useTheme` never ran,
+  // and a component whose `surface` changed between renders would change its
+  // hook order. eslint's `rules-of-hooks` caught it; nothing at runtime would
+  // have until the order actually shifted.
+  const themeIsDark = useTheme().theme === 'dark'
+  const darkGround = !onPage || themeIsDark
+  const cText = onPage ? 'var(--color-text-primary)' : ON_DARK
+  const cMuted = onPage ? 'var(--color-text-secondary)' : ON_DARK_MUTED
+  const cLine = onPage ? 'var(--color-border-subtle)' : ON_DARK_LINE
+  const cEyebrow = onPage ? 'var(--color-accent-text)' : ACCENT
+  const cAccent = onPage ? 'var(--color-text-primary)' : ACCENT
+  // Tiles and the status box sit ONE STEP ABOVE the page rather than below it —
+  // the inverse of the navy card's translucent-white fills. `--ux-bg`'s note in
+  // the Links panel is the same idea from the other direction.
+  const cTileBg = onPage ? 'var(--color-surface-card)' : 'rgb(255 255 255 / 0.06)'
+  // Navy-only. On the page surface the colour comes from `.cre-cta-ink`
+  // (theme-aware), and passing an inline colour would beat the class.
+  const cLink = ON_DARK
+  // See the `surface` prop note — the light default track is invisible here.
+  const cTrack = onPage ? 'var(--color-neutral-300)' : 'rgb(255 255 255 / 0.12)'
+  /*
+   * RULES THAT HAVE TO BE SEEN, as distinct from `cLine`.
+   *
+   * `cLine` is `--color-border-subtle` and does the job of a boundary — the
+   * meta line's 11px ticks, a card's edge. The KPI dividers are the only thing
+   * separating three data points from each other, so they are doing work, and
+   * border-subtle measures 1.29:1 on the page grey (1.38:1 dark).
+   * `--color-neutral-300` is 1.55:1 / 1.81:1 — the same value this surface
+   * already uses for the bar track, so the block has ONE "line you can see on
+   * the page" rather than two near-identical greys.
+   *
+   * `--color-neutral-400` reads better still (1.9 / 2.47) and was rejected: at
+   * full cell height it draws more attention than the numbers it separates.
+   */
+  const cRule = onPage ? 'var(--color-neutral-300)' : cLine
 
-  const { expires } = LICENSE_TRACKER
-  const weeksLeft = renewal?.weeksLeft ?? LICENSE_TRACKER.weeksLeft
-  const expiresMonth = expires.month.charAt(0) + expires.month.slice(1, 3).toLowerCase()
-  const deadline = renewal?.deadline ?? `${expiresMonth} ${expires.day}, ${expires.year}`
+  // `categoryGauge` lifts the two-category restriction — see its prop note.
+  const hasBreakdown = categoryGauge
+    ? cats.length > 0 && cats.some((c) => c.required > 0)
+    : cats.length === 2 && cats.every((c) => c.required > 0)
+
+  /* One resolver, shared with the course header band above — its stat row
+     prints both of these figures and the KPI cells below print them again, so
+     they sit inches apart on one screen and must not be derived twice. */
+  const { deadline, weeksLeft } = resolveRenewal(renewal)
 
   // Explicit persona status wins; else derive from progress + weeks left.
+  // The resume course's art, for the header cover. Same course the Resume CTA
+  // launches — one picture, one button, one course.
+  const resumeCover = resume && !hideHeader ? (resume.imageUrl ?? getCourseImage(resume.id)) : null
+  /*
+   * Bars render only when there is more than one thing to compare. With a
+   * single category the bar restates the donut's percentage AND the "Completed"
+   * KPI cell — three sayings of one number within three inches.
+   *
+   * A COUNT, not a version check: any path that ends up with one category gets
+   * the same treatment, and a path with a real breakdown keeps its bars on
+   * every version.
+   */
+  const showBars = hasBreakdown && (categoryGauge ? cats.length > 1 : true)
+  /*
+   * A HORIZONTAL BAR IN THE HEADER instead of the donut (2026-09-16).
+   *
+   * Tied to `showBars` being false, i.e. to there being ONE measured thing.
+   * With a real multi-category breakdown the donut still earns its row — it
+   * shows the segments, which a single bar cannot — so the two swap together
+   * rather than the bar being a version check. On this version that means: one
+   * category, no category bars, no donut, one bar under the meta line.
+   */
+  const barInHeader = !showBars && hasBreakdown
+  /*
+   * BLOCK TREATMENT — `dashboard-clp-style`, variant-only (2026-09-16).
+   *
+   * Three ways to dress the SAME cluster. Every variant reads the same data and
+   * none of them invents lesson-level content the storefront does not publish
+   * (the reference mock shows "Lesson 27 — Life insurance policy provisions ·
+   * 14 minutes left"; there is no lesson title and no per-lesson timing in the
+   * fixtures, and authoring one is the rule this version has been holding all
+   * along).
+   *
+   *   - `default`    — the light block: bar under the meta, percentage beside.
+   *   - `big-number` — same ground, percentage promoted to its own right-hand
+   *                    column with the bar and the lesson count beneath it.
+   *   - `navy`       — that same cluster on a dark card, light type, green bar,
+   *                    white CTA. The KPI cells, status strip and View
+   *                    Requirements stay on the page grey below.
+   *
+   * Only meaningful on the page surface: on the navy versions the block IS a
+   * navy card already, so the variants would be dressing a dress.
+   */
+  const clpStyle = useFeatureFlag('dashboard-clp-style').variant ?? 'default'
+  /*
+   * STATS TREATMENT — `dashboard-clp-stats`, a SEPARATE axis from the block
+   * style above, so the two combine. `stat-card` gathers the three KPI cells
+   * and the status onto one white card, gives each cell a sub-label, and prints
+   * Completed as a two-tone fraction.
+   */
+  // The hook is called UNCONDITIONALLY and the surface check applied after.
+  // `onPage && useFeatureFlag(...)` short-circuits, which makes it a
+  // conditional hook call — eslint's `rules-of-hooks` catches it, and it is the
+  // second time this exact shape has appeared in this file (see `darkGround`).
+  const clpStatsVariant = useFeatureFlag('dashboard-clp-stats').variant ?? 'default'
+  const statCard = onPage && clpStatsVariant === 'stat-card'
+  /*
+   * TWO SQUARE TILES replace the KPI row + status strip — 2026-09-16, the
+   * direct ask: "turn this into 2 square tiles, 1 about the Study Pace … 2nd
+   * one will be about Readiness."
+   *
+   * SCOPED to the page surface, and NOT to the `stat-card` variant. The navy
+   * card keeps its three tiled cells for the reason that split already
+   * records — bare cells there would lose the translucent fills that make them
+   * read as cells at all — and `dashboard-clp-stats: stat-card` is itself a
+   * treatment OF those three cells plus the status, so replacing them would
+   * leave that variant with nothing to style.
+   *
+   * WHAT THIS DROPS, and it is worth knowing rather than discovering: Target
+   * Date, Time Remaining and Completed were those three cells. They are stated
+   * once already in the COURSE HEADER BAND's stat row — but that band is behind
+   * `dashboard-course-header`, whose default is `none`. So at the committed
+   * default the three facts are no longer anywhere on Home. Making `band` the
+   * default is the fix if that is wrong; folding them into the pace tile is
+   * not, because it would be a third saying of one set of numbers the last two
+   * changes moved into the header on purpose.
+   */
+  const paceTiles = onPage && !statCard
+  const clpBigNumber = onPage && barInHeader && clpStyle === 'big-number'
+  const clpNavy = onPage && barInHeader && clpStyle === 'navy'
+  // Ink for the navy card. The page values are near-black and would vanish on
+  // it — the "put a LIGHT stop on a dark ground" rule this repo keeps paying
+  // for. Measured on `--color-primary-700`: title 12.6:1, meta 6.9:1, eyebrow
+  // 6.9:1, the green fill 6.4:1 against its track.
+  const nText = clpNavy ? 'var(--color-text-inverse)' : cText
+  const nMuted = clpNavy ? 'rgb(255 255 255 / 0.72)' : cMuted
+  const nEyebrow = clpNavy ? 'rgb(255 255 255 / 0.72)' : cEyebrow
+  const nBarFill = clpNavy ? 'var(--color-success-500)' : cAccent
+  const nBarTrack = clpNavy ? 'rgb(255 255 255 / 0.22)' : cTrack
+  const nLine = clpNavy ? 'rgb(255 255 255 / 0.28)' : cLine
+  /*
+   * RESUME, INLINE — the block absorbs Jump Back In (2026-09-16).
+   *
+   * It sat below as its own card, repeating this block's course: same title,
+   * same art, its own progress bar. With the category bar gone there is a half
+   * of this row free, and the resume action belongs beside the progress it acts
+   * on — "you are 62% through, carry on" is one statement, not two cards.
+   *
+   * The CTA placement was the open question. Two alternatives, both rejected
+   * and both one edit away:
+   *   - **In the header row, opposite the title.** Reads as a page action
+   *     rather than as the next step in this course, and it puts the primary
+   *     button above the number that motivates it.
+   *   - **At the bottom beside "View Requirements".** Puts a filled primary
+   *     button next to a text link, which makes the link look disabled, and it
+   *     is below the fold on a narrow shell.
+   * Here it sits at the eye's second stop, right of the donut.
+   *
+   * Page surface only: on the navy card the white half still renders the full
+   * resume block, and two resume blocks in one band is the duplication this is
+   * removing.
+   */
+  /*
+   * JUMP BACK IN, restored as a WIDGET — 2026-09-17, the direct ask.
+   *
+   * This slot held a bare "Resume course" button. Before that it was the
+   * archived `JumpBackInWidget` (cover, title, meta, progress bar, CTA), which
+   * was folded into the block on 2026-09-16 because everything on it — the same
+   * course, the same art, the same percentage — was already in the block above.
+   *
+   * WHAT MAKES IT EARN THE CARD BACK is that it now says something nothing else
+   * on the page does: WHICH CHAPTER the learner is in. The art, the title and
+   * the percentage stay where they are, in the header band; the card carries a
+   * glyph, the chapter, and the action.
+   *
+   * THE NUMBER IS DERIVED, THE TITLE IS SOURCED, AND THE TWO DO NOT SHARE A
+   * NUMBERING SYSTEM — see `NY_LH_CURRENT_CHAPTER`. 27 is the next lesson
+   * (26 of 42 complete); the title is the fifth of the twelve chapters
+   * recovered from XCEL's own linked study guide. Nothing published maps one to
+   * the other, so pairing them is the demo's choice rather than a fact.
+   *
+   * Still NOT invented: per-lesson timing. The reference reads "· 14 minutes
+   * left" and nothing knows how long a lesson takes; a test forbids it.
+   */
+  const resumeInline =
+    onPage && resume && !clpNavy ? (
+      <JumpBackInWidget
+        course={resume}
+        chapterNumber={totalCompleted > 0 ? totalCompleted + 1 : undefined}
+        /* WHICH PART, derived from the ordered category list rather than typed:
+           the categories ARE the 3-Part Training Program in curriculum order,
+           and the learner is in the first one they have not finished. Clamped
+           to the published count, because the list also carries the attestation
+           stop that sits outside the programme — without the clamp a learner
+           past part three would read "Part 4 of 3". */
+        partNumber={Math.min(
+          NY_LH_PROGRAM_PARTS,
+          Math.max(1, cats.findIndex((c) => c.completed < c.required) + 1 || cats.length),
+        )}
+        chapterTitle={NY_LH_CURRENT_CHAPTER}
+        onResume={(id) => launcher.open(id)}
+      />
+    ) : null
+  // Shared with the Learning Path detail sheet's "Time Remaining", so the band
+  // and the sheet that opens from it cannot disagree about the same number.
+  const timeRemain = timeRemaining(weeksLeft)
   const derivedStatus: HomeStatus = percent >= 50 || weeksLeft > 16 ? 'on-track' : weeksLeft >= 6 ? 'at-risk' : 'off-track'
   const homeStatus: HomeStatus = statusOverride ?? derivedStatus
   // Shared on-dark treatment (the navy band) — the same source the badge +
@@ -238,8 +556,65 @@ export function LearnerFocusedBand({
   // not-started/expired fell back to green) and the message is the shared
   // generic copy (no path title — the card header already carries it).
   const status = statusTreatment(homeStatus, 'compliance', { onDark: true })
+  // The LIGHT tone of the same treatment, for the page surface. Resolved here
+  // beside its on-dark twin so the two can never describe different states.
+  const pageStatus = statusTreatment(homeStatus, 'compliance')
 
-  const meta = [path.category, ...(path.state ? [path.state] : []), `${path.hours} Hours`]
+  // The unit rides on the PATH (`unitLabel`), so a path measured in days of a
+  // study plan and one measured in credit hours both read correctly without
+  // this component knowing which is which. "hrs" when unset — every path but
+  // the QE one.
+  const unit = path.unitLabel ?? 'hrs'
+  const unitLong = unit === 'hrs' ? 'Hours' : unit.charAt(0).toUpperCase() + unit.slice(1)
+  const meta = [path.category, ...(path.state ? [path.state] : []), `${path.hours} ${unitLong}`]
+  /*
+   * SUB-LABELS for the stat card. Each one says what its number IS, which is
+   * the whole reason the treatment has room for a third line.
+   *
+   * The pace figure is DERIVED, not authored: the state's credit-hour
+   * requirement over the days left. Everything else here is a label rather than
+   * a claim — deliberately, because the reference mock also carried "You are
+   * currently pacing 4 days ahead of schedule", and there is nothing in the
+   * fixtures that knows a schedule to be ahead of. Inventing it would be the
+   * move this version has refused all the way through.
+   */
+  const daysLeft = Math.max(1, Math.round(weeksLeft * 7))
+  // From the RESUME COURSE's own credit hours, not a constant imported into a
+  // generic band: the path measures lessons now, and the hours figure that
+  // still exists is the course's (New York's real 40). Omitted when there is no
+  // course to read it from, rather than guessed.
+  const hoursPerDay = resume?.hours ? resume.hours / daysLeft : null
+  const kpiSubLabels = statCard
+    ? {
+        deadline: 'Your exam target date',
+        time: hoursPerDay ? `~${hoursPerDay.toFixed(1)} hrs/day suggested pace` : null,
+        completed: `${unitLong} of this course`,
+      }
+    : null
+  /** The percentage, as its own column. Shared by `big-number` and `navy`. */
+  const percentColumn = (
+    /* 160, not 200. At 200 the title column was left ~140px and "New York Life
+       and Health Pre-licensing" wrapped to five lines — the number won an
+       argument it should not have been in. */
+    <div style={{ flex: 'none', width: 160, minWidth: 0 }}>
+      <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'flex-end', gap: 2 }}>
+        <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 40, lineHeight: 1, color: nText }}>
+          {percent}
+        </span>
+        <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 20, lineHeight: 1, color: nText }}>%</span>
+      </div>
+      <div style={{ marginTop: 10 }}>
+        <ProgressBar pct={percent} height={8} fill={nBarFill} track={nBarTrack} />
+      </div>
+      {/* The count in WORDS under the bar, as the reference does. It is the
+          same pair the KPI cell states as "26 / 42 lessons" — kept because in
+          this treatment the big figure is the only other number, and a bare
+          percentage does not say what it is a percentage OF. */}
+      <p style={{ margin: '6px 0 0', textAlign: 'right', fontFamily: 'var(--font-body)', fontSize: 12, color: nMuted }}>
+        {totalCompleted} of {totalRequired || path.hours} {unit} complete
+      </p>
+    </div>
+  )
   const resumePct = typeof resume?.progress === 'number' ? resume.progress : 0
 
   // Meta line (category · state · hours). On desktop it sits under the title
@@ -256,12 +631,28 @@ export function LearnerFocusedBand({
         marginTop: 7,
         fontFamily: 'var(--font-body)',
         fontSize: 13,
-        color: ON_DARK_MUTED,
+        // Surface-resolved, NOT `ON_DARK_MUTED`. This row is assembled ABOVE the
+        // navy half's markup, so the `surface='page'` colour swaps — which were
+        // applied across that markup — missed it: the meta line rendered white
+        // at 66% on the page grey, roughly 1.2:1, and read as a line that had
+        // failed to load. tsc was clean and every test passed; it took reading
+        // the element's computed style to see it.
+        //
+        // AND IT HAPPENED AGAIN, the other way round, when `clpNavy` landed
+        // (2026-09-16): this row kept the PAGE's `--color-text-secondary` on the
+        // navy card and measured **2.13:1**. Same seam, opposite direction —
+        // which is the argument for `nMuted` existing at all rather than each
+        // block picking its own ink. If a third treatment lands, it resolves
+        // here too.
+        color: nMuted,
       }}
     >
       {meta.map((m, i) => (
         <span key={m} style={{ display: 'flex', alignItems: 'center', gap: 8, whiteSpace: 'nowrap' }}>
-          {i > 0 && <span aria-hidden style={{ width: 1, height: 11, background: ON_DARK_LINE }} />}
+          {/* The divider follows the ink for the same reason. `--color-neutral-300`
+              is 8.68:1 on the navy — a hairline separator brighter than the text
+              it separates. */}
+          {i > 0 && <span aria-hidden style={{ width: 1, height: 11, background: nLine }} />}
           {m}
         </span>
       ))}
@@ -280,7 +671,7 @@ export function LearnerFocusedBand({
           ]
         : []),
       { label: path.deadlineLabel ?? 'License Expires', value: deadline },
-      { label: 'Time Remaining', value: `${weeksLeft} wks` },
+      { label: 'Time Remaining', value: timeRemainingText(weeksLeft) },
     ]
     return (
       <section
@@ -288,7 +679,9 @@ export function LearnerFocusedBand({
         className="cre-learner-focused-band"
         style={{
           display: 'grid',
-          gridTemplateColumns: stack ? 'minmax(0, 1fr)' : 'minmax(0, 514fr) minmax(0, 407fr)',
+          // `minmax(0, 1fr)` (not `1fr`) so the single mobile column can shrink
+        // to the frame width instead of being forced wider by its content.
+        gridTemplateColumns: stack ? 'minmax(0, 1fr)' : 'minmax(0, 514fr) minmax(0, 407fr)',
           ...(mobile
             ? { marginLeft: -16, marginRight: -16, borderRadius: 0 }
             : bleed
@@ -335,38 +728,176 @@ export function LearnerFocusedBand({
       className="cre-learner-focused-band"
       style={{
         display: 'grid',
-        // `minmax(0, 1fr)` (not `1fr`) so the single mobile column can shrink
-        // to the frame width instead of being forced wider by its content.
-        gridTemplateColumns: stack ? 'minmax(0, 1fr)' : 'minmax(0, 514fr) minmax(0, 407fr)',
-        // Mobile: full-bleed — cancel the shell's 16px content gutter with
-        // negative margins + square corners (no shadow) so the band runs
-        // edge-to-edge like the navy profile band above it.
-        ...(mobile
-          ? { marginLeft: -16, marginRight: -16, borderRadius: 0 }
-          : bleed
-            ? HERO_BLEED
-            : {
-                borderRadius: 'var(--radius-lg)',
-                boxShadow:
-                  '0 18px 40px -18px color-mix(in srgb, var(--color-primary-900) 55%, transparent)',
-              }),
-        overflow: 'hidden',
+        /*
+         * 660 : 380 since 2026-09-16, from 514 : 407.
+         *
+         * The two columns were near-even because they were once two halves of
+         * one band. They are not any more: the LEFT one carries the course art,
+         * the title, the meta, the progress bar, the Resume CTA, three KPI
+         * cells and a status strip, and at ~490px the title wrapped to two
+         * lines and the KPI row was tight. The right one is a list of short
+         * rows and gives width up cheaply.
+         *
+         * NOTE there are TWO `gridTemplateColumns` in this file. The other one
+         * belongs to the completed-celebration branch above, which renders a
+         * different thing entirely — it was edited by mistake first, and the
+         * symptom was the left column getting NARROWER, because the live grid
+         * had not moved at all.
+         *
+         * `minmax(0, …fr)` rather than `1fr` so the single mobile column can
+         * shrink to the frame width instead of being forced wider by its
+         * content.
+         */
+        gridTemplateColumns: stack ? 'minmax(0, 1fr)' : 'minmax(0, 660fr) minmax(0, 380fr)',
+        /*
+         * SPLIT, when the Study Journey widget is the right column (2026-09-16).
+         *
+         * Every other version keeps the JOINED treatment: one radius, one
+         * shadow, `overflow: hidden` on the section, halves flush against each
+         * other. That works while the two halves are two halves of one
+         * statement and roughly one height.
+         *
+         * QE Focused broke both. Its navy side is a four-line lead-in and its
+         * right side is a resume block plus ten steps, so as grid siblings the
+         * navy half stretched to match and carried a large empty area below its
+         * content — which reads as a render failure, not as breathing room. And
+         * the navy side's figures moved to the Progress section below, so the
+         * two are no longer one statement.
+         *
+         * Split, the section owns only the columns and the gap; each child
+         * carries its own surface. `align-items: start` is the load-bearing
+         * half — without it the grid still equalises the row and the navy card
+         * stretches exactly as before, which is the joined band with a gap.
+         */
+        ...(journeyWidget
+          ? // 40, matching the gap `MembershipOverview` puts between its own
+            // sections — so the space between these two independent cards reads
+            // as the page's own rhythm rather than a third, narrower value. It
+            // was 20, inherited from when they were two halves of ONE card and
+            // the gap was standing in for the seam; split, 20 read as two things
+            // that had not quite come apart.
+            { gap: 40, alignItems: 'start' }
+          : {
+              // Mobile: full-bleed — cancel the shell's 16px content gutter with
+              // negative margins + square corners (no shadow) so the band runs
+              // edge-to-edge like the navy profile band above it.
+              ...(mobile
+                ? { marginLeft: -16, marginRight: -16, borderRadius: 0 }
+                : bleed
+                  ? HERO_BLEED
+                  : {
+                      borderRadius: 'var(--radius-lg)',
+                      boxShadow:
+                        '0 18px 40px -18px color-mix(in srgb, var(--color-primary-900) 55%, transparent)',
+                    }),
+              overflow: 'hidden',
+            }),
       }}
     >
       {/* ── LEFT · navy · Current Learning Path ── */}
       <div
         style={{
-          background: 'var(--color-primary-700)',
-          color: ON_DARK,
-          padding: '24px 26px',
+          // `page`: no card at all — the content sits on the shell's grey. The
+          // padding goes with it on the left/right, since a bare block should
+          // line up with the section headings below rather than being inset by
+          // a card's gutter it no longer has.
+          background: onPage ? 'transparent' : 'var(--color-primary-700)',
+          color: cText,
+          padding: onPage ? '4px 0 0' : '24px 26px',
           display: 'flex',
           flexDirection: 'column',
+          // Split: the radius and shadow the section used to own move onto the
+          // card. Its CONTENT is untouched — only the surface it sits on.
+          ...(journeyWidget && !onPage
+            ? {
+                borderRadius: 'var(--radius-lg)',
+                boxShadow:
+                  '0 18px 40px -18px color-mix(in srgb, var(--color-primary-900) 55%, transparent)',
+                overflow: 'hidden',
+              }
+            : null),
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 12 }}>
-          <div>
-            <p style={{ ...eyebrowBase, color: ACCENT }}>{CURRENT_LEARNING_EYEBROW}</p>
-            <h3 style={{ margin: '6px 0 0' }}>
+        {/* THE EYEBROW SITS ABOVE EVERYTHING — 2026-09-16.
+            It was inside the text column, beside the cover, which made it the
+            course's label rather than the block's. Lifted out, it names the
+            whole block — the art, the title and the meta all sit under it — and
+            the row below can be a plain two-column pairing. */}
+        {/* THE HEADER CLUSTER. `clpNavy` wraps it in a dark card; the KPI
+            cells, status strip and View Requirements stay on the page grey
+            below, so the variant is a treatment of this cluster rather than a
+            second surface for the whole block. */}
+        <div
+          style={
+            clpNavy
+              ? {
+                  background: 'var(--color-primary-700)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '22px 24px',
+                  marginBottom: 4,
+                }
+              : undefined
+          }
+        >
+        {onPage && !hideHeader ? (
+          <p style={{ ...eyebrowBase, color: nEyebrow, marginBottom: 10 }}>
+            {CURRENT_LEARNING_EYEBROW}
+          </p>
+        ) : null}
+        {hideHeader ? null : (
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: 14 }}>
+          {/* COURSE ART, left of the title — 2026-09-16, when this block
+              absorbed Jump Back In.
+
+              **132×112**, from 84×56 → 132×88 → here. It is no longer 3:2: the
+              text column beside it grew a progress bar under the meta line, and
+              a 3:2 crop left the picture finishing well above that cluster,
+              which read as a thumbnail that had been left behind rather than as
+              the course. Taller squares it off against the title + meta + bar
+              stack.
+
+              The WIDTH is what is held now, not the ratio. `object-fit: cover`
+              does the cropping, so the photograph is never distorted — it just
+              shows less of its sides.
+
+              `resumeCover` is the band's own resume course, so the picture and
+              the Resume CTA below are the same course. Rendered only when there
+              IS one — a path with nothing to resume gets the title flush left
+              rather than a grey box.
+
+              An `<img>` with an `onError` swap, NOT a CSS background, and that
+              is what lets the path be authored before the asset lands: a course
+              may name its own art (`imageUrl`) that is not in the repo yet, and
+              the handler falls back to the stock pool instead of rendering a
+              blank box. Same mechanism and same reason as `FeaturePreviewThumb`
+              on the gateway. NO border: on the page grey it would box the one
+              thing here that already has edges. */}
+          {onPage && resumeCover && !clpNavy ? (
+            <img
+              src={resumeCover}
+              alt=""
+              aria-hidden
+              onError={(e) => {
+                const img = e.currentTarget
+                const fallback = getCourseImage(resume?.id ?? path.id)
+                if (img.src.endsWith(fallback)) return
+                img.src = fallback
+              }}
+              style={{
+                width: 132,
+                height: 112,
+                flex: 'none',
+                borderRadius: 'var(--radius-md)',
+                objectFit: 'cover',
+                display: 'block',
+              }}
+            />
+          ) : null}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            {onPage && resumeCover ? null : (
+              <p style={{ ...eyebrowBase, color: cEyebrow }}>{CURRENT_LEARNING_EYEBROW}</p>
+            )}
+            <h3 style={{ margin: onPage && resumeCover ? 0 : '6px 0 0' }}>
               {onOpenLearningPath || onViewDetails ? (
                 <button
                   type="button"
@@ -377,7 +908,7 @@ export function LearnerFocusedBand({
                     onOpenLearningPath ? onOpenLearningPath(path.id) : onViewDetails?.()
                   }
                   title={onOpenLearningPath ? 'Open learning path' : undefined}
-                  className="cre-clp-title-link--on-dark"
+                  className={onPage ? 'cre-clp-title-link' : 'cre-clp-title-link--on-dark'}
                   style={{
                     background: 'none',
                     border: 'none',
@@ -389,7 +920,7 @@ export function LearnerFocusedBand({
                     fontWeight: 700,
                     fontSize: 22,
                     lineHeight: 1.18,
-                    color: ON_DARK,
+                    color: nText,
                   }}
                 >
                   {path.title}
@@ -401,7 +932,7 @@ export function LearnerFocusedBand({
                     fontWeight: 700,
                     fontSize: 22,
                     lineHeight: 1.18,
-                    color: ON_DARK,
+                    color: cText,
                   }}
                 >
                   {path.title}
@@ -410,47 +941,190 @@ export function LearnerFocusedBand({
             </h3>
             {/* Desktop: meta under the title inside the header cluster. */}
             {!mobile && metaRow}
+            {/* THE PROGRESS BAR LIVES HERE — 2026-09-16, replacing the 150px
+                donut that sat in its own row below (the direct ask).
+
+                Under the meta line and inside the text column, so it reads as
+                this course's progress rather than as a separate widget: title,
+                what it is, how far through it. The donut had a whole row to
+                itself to say one number that the KPI cell below already says as
+                "26 / 42 lessons".
+
+                The SHARED `ProgressBar`, not a lookalike — the rule
+                `ProgressInline` was extracted for, after Readiness drew its own
+                3px bar in a different green and one learner's one 32% became
+                two different bars a rail item apart. The percentage is printed
+                beside it here because this surface has no other place saying
+                "62%" once the donut goes; `ProgressBar` deliberately carries no
+                label of its own.
+
+                `track={cTrack}` for the reason the category bars needed it: the
+                default track is 1.08:1 on the page grey, so an empty bar would
+                have no visible groove. */}
+            {onPage && barInHeader && !clpBigNumber && !clpNavy ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 12 }}>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <ProgressBar pct={percent} height={8} fill={cAccent} track={cTrack} />
+                </div>
+                <span
+                  style={{
+                    flexShrink: 0,
+                    fontFamily: 'var(--font-body)',
+                    fontSize: 13,
+                    fontWeight: 700,
+                    color: cText,
+                    whiteSpace: 'nowrap',
+                  }}
+                >
+                  {percent}% Complete
+                </span>
+              </div>
+            ) : null}
+            {/* The navy card carries its CTA inside, beside the copy — the
+                reference puts the action in the card rather than under it. The
+                light variants leave it where `resumeInline` renders it. */}
+            {clpNavy && resume ? (
+              <button
+                type="button"
+                onClick={() => launcher.open(resume.id)}
+                style={{
+                  marginTop: 16,
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  height: 44,
+                  padding: '0 18px',
+                  borderRadius: 'var(--radius-md)',
+                  border: 0,
+                  cursor: 'pointer',
+                  // White on navy, not the primary gradient: on this card the
+                  // gradient is the card's own colour and the button would
+                  // disappear into it.
+                  background: 'var(--color-text-inverse)',
+                  color: 'var(--color-primary-700)',
+                  fontFamily: 'var(--font-body)',
+                  fontWeight: 700,
+                  fontSize: 14,
+                }}
+              >
+                Resume course <ArrowRight size={16} />
+              </button>
+            ) : null}
           </div>
+          {/* The percentage as its own column — `big-number` and `navy`. */}
+          {clpBigNumber || clpNavy ? percentColumn : null}
           {showViewAll && onViewAll && (
             <button
               type="button"
               onClick={onViewAll}
-              className="cre-link-action"
-              style={{ ...linkBtn(ON_DARK), whiteSpace: 'nowrap', flexShrink: 0 }}
+              className={onPage ? 'cre-link-action cre-cta-ink' : 'cre-link-action'}
+              style={{ ...linkBtn(onPage ? undefined : cLink), whiteSpace: 'nowrap', flexShrink: 0 }}
             >
               {`View All (${pathsCount ?? ''})`}
             </button>
           )}
         </div>
+        )}
+        </div>
         {/* Mobile: meta on its own full-width line below the header row. */}
-        {mobile && metaRow}
+        {mobile && !hideHeader && metaRow}
 
-        {/* Two-segment gauge + Mandatory / Elective bars */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginTop: 20 }}>
+        {/* Gauge + category bars. With `categoryGauge` these are the path's N
+            categories (four, for the New York producer journey) rather than the
+            Mandatory / Elective pair — see that prop's note for why the "two
+            only" rule is lifted there. */}
+        {/* NO TOP MARGIN WHEN THE HEADER IS HIDDEN — 2026-09-17, the direct ask
+            ("shift this up").
+
+            The 20 separates this row from the block's header cluster above it.
+            With `dashboard-course-header` on, `hideHeader` empties that cluster
+            but leaves the element, so the margin was clearing nothing: measured,
+            the Jump Back In card started 16px below the Study Journey's eyebrow
+            in the column beside it, and two columns of one band beginning on
+            different lines reads as a mistake rather than a rhythm.
+
+            Conditional rather than removed — with the band's own header showing,
+            the gap is doing its job. */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 24,
+            marginTop: hideHeader ? 0 : 20,
+          }}
+        >
+          {/* The donut is gone when the bar is in the header — one number, one
+              rendering. NOT `display: none`: a hidden gauge is still in the
+              accessibility tree and still in every `querySelector('svg')` a
+              test reaches for, so it would read as present while being absent.
+              It stays for a real breakdown, where it shows the SEGMENTS and a
+              single bar cannot. */}
+          {barInHeader ? null : (
           <div style={{ flex: 'none' }}>
             <ProgressDonut
               percent={percent}
-              mandatory={hasBreakdown ? mandatory : undefined}
-              elective={hasBreakdown ? elective : undefined}
+              {...(categoryGauge
+                ? { categories: cats }
+                : {
+                    mandatory: hasBreakdown ? mandatory : undefined,
+                    elective: hasBreakdown ? elective : undefined,
+                  })}
               size={150}
               caption="Complete"
-              // `fill` is unused in segmented mode (the arcs use the standardized
-              // Mandatory/Elective colors), but `GaugeColors` requires it.
-              colors={{ track: 'rgb(255 255 255 / 0.2)', fill: ACCENT, text: 'rgb(255 255 255 / 0.85)' }}
+              // Light-stop palette ONLY on navy. On the page the default
+              // palette is the right one — it was built for a light ground —
+              // so this flips with the surface.
+              onDark={darkGround}
+              // TRACK AT 0.12, not 0.2. The lighter track was fine behind the
+              // two standardized Mandatory/Elective colors; against the
+              // light-stop palette it takes cta-300 to 2.38:1 and the amber to
+              // 2.91:1. At 0.12 every arc clears 3:1, and it matches the value
+              // `CategoryBars` already uses for its own track — so the donut
+              // and the bars beside it stop being two shades of empty.
+              //
+              // `fill` is unused in segmented mode (the arcs use the palette),
+              // but `GaugeColors` requires it.
+              colors={{
+                track: cTrack,
+                fill: cAccent,
+                // On the page the centre numeral takes the gauge's own default
+                // (near-black); on navy it stays a soft white.
+                ...(onPage ? {} : { text: 'rgb(255 255 255 / 0.85)' }),
+              }}
             />
           </div>
+          )}
           <div style={{ flex: 1, minWidth: 0 }}>
-            {hasBreakdown ? (
+            {/* ONE CATEGORY ⇒ NO BARS — 2026-09-16.
+                A single category bar is the donut's number and the "Completed"
+                KPI cell said a third time, three inches apart: 62%, a 62%-full
+                bar, and "26 / 42 lessons". The breakdown earns its place when
+                there is something to break DOWN.
+                What takes the space is the RESUME block, which is why this
+                block can absorb Jump Back In rather than sitting above a card
+                that repeats its course. */}
+            {showBars ? (
               <CategoryBars
-                mandatory={mandatory}
-                elective={elective}
+                unit={unit}
+                {...(categoryGauge
+                  ? { categories: cats }
+                  : { mandatory, elective })}
                 mandatoryLabel={path.mandatoryLabel ?? 'Mandatory'}
                 electiveLabel={path.electiveLabel ?? 'Elective'}
-                onDark
+                onDark={darkGround}
+                track={cTrack}
               />
-            ) : (
-              <p style={{ margin: 0, fontSize: 13, color: ON_DARK_MUTED }}>
-                {totalCompleted} of {totalRequired || path.hours} hours complete
+            ) : resumeInline ? (
+              resumeInline
+            ) : clpBigNumber || clpNavy ? null : (
+              // The no-breakdown fallback. It said "hours" as a literal, which
+              // went wrong the moment a path measured something else — it read
+              // "26 of 42 hours complete" under a bar labelled in lessons. And
+              // it leaked into the navy variant, where the percent column
+              // already states the same pair, because `resumeInline` is null
+              // there and this was the else-branch.
+              <p style={{ margin: 0, fontSize: 13, color: cMuted }}>
+                {totalCompleted} of {totalRequired || path.hours} {unit} complete
               </p>
             )}
           </div>
@@ -466,19 +1140,225 @@ export function LearnerFocusedBand({
             this row's existing default and is deliberately NOT changed to the
             other branch's `'License Expires'`; that would move visible copy on
             every brand that sets no label. */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: 10, marginTop: 18 }}>
-          <KpiDark caption={path.deadlineLabel ?? 'Deadline'} icon={<CalendarDay size={13} />}>
+        {/* `gap: 0` when bare — the rule IS the separation, and a gap on top of
+            it would read as two gutters. */}
+        {/* `stat-card` gathers the three cells AND the status onto one white
+            card with a hairline border and a rule between them. The default
+            leaves them bare on the page grey, divided by vertical rules. */}
+        {paceTiles ? (
+          /* TWO SQUARE TILES — Study Pace and Readiness. See `paceTiles`.
+
+             `aspectRatio: 1 / 1` rather than a fixed height, so they stay
+             square at whatever width the column is and grow (rather than
+             clipping) if the status message ever needs the room. `minWidth: 0`
+             because a grid item's default `min-width: auto` refuses to shrink
+             below its content, which is what makes a two-column grid overflow
+             a narrow shell instead of squeezing. */
+          <div
+            style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+              gap: 14,
+              marginTop: 18,
+            }}
+          >
+            <SquareTile
+              caption="Study Pace"
+              icon={<Clock size={13} />}
+              to="/dashboard-rebrand?section=study-plan"
+            >
+              {/* LO-FI LINES, as in the Readiness tile beside it — 2026-09-17,
+                  the direct ask.
+
+                  What they replace is "~1.5 hrs/day · Suggested pace", which
+                  was DERIVED (the resume course's real 40 credit hours over the
+                  days left) rather than invented. It is not deleted: the
+                  derivation still feeds `kpiSubLabels`, so the `stat-card`
+                  variant of `dashboard-clp-stats` prints the same figure. If
+                  the pace is wanted back here, `hoursPerDay` is already in
+                  scope.
+
+                  `LoFiWidgetBody` again rather than hand-drawn bars — the same
+                  primitive, so the two tiles read as one unbuilt pair instead
+                  of two placeholder treatments a few pixels apart. Two rows to
+                  Readiness's three: this tile still carries the status pill and
+                  its message below, so it has less room to fill. */}
+              <LoFiWidgetBody rows={2} ariaLabel="Study pace — placeholder" />
+              {/* The status pill and its message — the half of the strip that
+                  was carrying the meaning. `StatusStrip`'s tint is not reused
+                  here: it measures ~1.02:1 (a hue shift, decoration) and a
+                  tinted band inside a bordered tile reads as a second card,
+                  which is the same call `bare` makes on the stat card. The
+                  PILL keeps its fill, so the state is still in colour AND in
+                  words. */}
+              <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <span
+                  style={{
+                    alignSelf: 'flex-start',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: 5,
+                    fontFamily: 'var(--font-body)',
+                    fontSize: 12,
+                    fontWeight: 600,
+                    whiteSpace: 'nowrap',
+                    color: pageStatus.text,
+                    background: pageStatus.outline ? 'transparent' : pageStatus.fill,
+                    boxShadow: pageStatus.outline
+                      ? `inset 0 0 0 1px ${pageStatus.border}`
+                      : undefined,
+                    padding: '3px 10px',
+                    borderRadius: 'var(--radius-pill)',
+                  }}
+                >
+                  {pageStatus.icon && <pageStatus.icon size={12} aria-hidden />}
+                  {pageStatus.label}
+                </span>
+                <p
+                  style={{
+                    margin: 0,
+                    fontFamily: 'var(--font-body)',
+                    fontSize: 12,
+                    lineHeight: '17px',
+                    color: 'var(--color-text-secondary)',
+                  }}
+                >
+                  {status.message}
+                </p>
+              </div>
+            </SquareTile>
+
+            {/* READINESS — a LO-FI STUB, deliberately (the ask: "leave as lo-fi
+                stub for now").
+
+                It is the repo's own `LoFiWidgetBody`, not hand-drawn grey
+                boxes: that component exists for exactly this slot ("drops into
+                a sidebar widget / dashboard tile"), and a lookalike is how two
+                placeholder treatments end up a few pixels apart.
+
+                NO SCORE, not even a plausible one. There IS a real readiness
+                model one rail item away (`ReadinessPanel`, with a gauge and a
+                number), and printing a figure here that nothing resolved would
+                be the Membership Plan card's defect — a surface making a claim
+                it cannot support. Grey bars say "not built" honestly; a 72%
+                would say something false. */}
+            <SquareTile
+              caption="Readiness"
+              icon={<Gauge size={13} />}
+              to="/dashboard-rebrand?section=readiness"
+            >
+              <LoFiWidgetBody rows={3} ariaLabel="Readiness — placeholder" />
+              <span
+                style={{
+                  marginTop: 'auto',
+                  fontFamily: 'var(--font-body)',
+                  fontSize: 11,
+                  color: 'var(--color-text-tertiary)',
+                }}
+              >
+                Not designed yet
+              </span>
+            </SquareTile>
+          </div>
+        ) : (
+        <div
+          style={
+            statCard
+              ? {
+                  background: 'var(--color-surface-card)',
+                  border: '1px solid var(--color-border-subtle)',
+                  borderRadius: 'var(--radius-lg)',
+                  padding: '18px 20px',
+                  marginTop: 18,
+                }
+              : undefined
+          }
+        >
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: onPage && !statCard ? 0 : 10, marginTop: statCard ? 0 : 18 }}>
+          <KpiDark bare={onPage} bg={cTileBg} line={cLine} ink={cText} captionInk={cMuted} caption={path.deadlineLabel ?? 'Deadline'} icon={<CalendarDay size={13} />} sub={kpiSubLabels?.deadline}>
             {deadline}
           </KpiDark>
-          <KpiDark caption="Time Remaining" icon={<Clock size={13} />}>
-            <span style={{ color: ACCENT }}>{weeksLeft}</span> wks
+          <KpiDark bare={onPage} rule={onPage ? cRule : undefined} bg={cTileBg} line={cLine} ink={cText} captionInk={cMuted} caption="Time Remaining" icon={<Clock size={13} />} sub={kpiSubLabels?.time}>
+            {/* Formatted by the SHARED `timeRemaining`, not `${weeksLeft} wks`
+                — under 30 days it drops to a day countdown ("27 days"), which
+                is what the detail sheet has always shown. The two disagreed:
+                this cell said "3.857142857142857 wks" for anything the sheet
+                called a day count. */}
+            {timeRemain.expired ? (
+              'Expired'
+            ) : (
+              timeRemain.segments.map((seg, i) => (
+                <Fragment key={seg.unit}>
+                  {i > 0 ? ', ' : ''}
+                  <span style={{ color: cAccent }}>{seg.value}</span> {seg.unit}
+                </Fragment>
+              ))
+            )}
           </KpiDark>
-          <KpiDark caption="Completed" icon={<CircleCheck size={13} />}>
-            <span style={{ color: ACCENT }}>{totalCompleted}</span> / {totalRequired || path.hours} hrs
+          <KpiDark bare={onPage} rule={onPage ? cRule : undefined} bg={cTileBg} line={cLine} ink={cText} captionInk={cMuted} caption="Completed" icon={<CircleCheck size={13} />} sub={kpiSubLabels?.completed}>
+            {/* On the stat card the unit moves to the sub-label, so the value
+                is a bare two-tone fraction — the denominator dimmed, because
+                "26 of 42" is one fact and the 42 is the quieter half of it. */}
+            <span style={{ color: cAccent }}>{totalCompleted}</span>{' '}
+            {statCard ? (
+              <span style={{ color: cMuted }}>/ {totalRequired || path.hours}</span>
+            ) : (
+              <>/ {unitCount(totalRequired || path.hours, unit)}</>
+            )}
           </KpiDark>
         </div>
+        {/* The rule between the numbers and the status — the card's own
+            divider, not a section break. */}
+        {statCard ? (
+          <div aria-hidden style={{ height: 1, background: cLine, margin: '16px 0' }} />
+        ) : null}
 
         {/* Full-width Status band */}
+        {/* STATUS.
+            On the page surface this is the detail panel's OWN `StatusStrip` —
+            the status-tinted wash with the pill and the message, and no
+            "Status" caption. Two reasons it is the real component:
+
+              - The Progress section directly below renders the same strip, so a
+                lookalike would put two status treatments for one status inches
+                apart on the same screen.
+              - The label was chrome. A pill reading "On Track" beside a sentence
+                about the deadline does not need a column telling you it is a
+                status, and that column cost 104px of a narrow block.
+
+            `STATUS_STRIP_BG` composites its tint over `--color-surface-card`
+            rather than over transparent, which is why it reads on the page grey
+            as well as on the navy frame it was built for.
+
+            The navy card keeps the captioned box below: its translucent white
+            fill is what makes the row read as a panel there, and the strip's
+            pale tint would disappear into the navy. */}
+        {onPage ? (
+          // On the stat card the strip sits INSIDE the card under its rule, so
+          // it needs no top margin of its own and no tint — the card is already
+          // the surface, and a tinted row inside a white card reads as a second
+          // card. `bare` on `StatusStrip` is what drops the wash.
+          <div style={{ marginTop: statCard ? 0 : 14 }}>
+            <StatusStrip
+              bare={statCard}
+              homeStatus={homeStatus}
+              // `statusTreatment` returns the LIGHT tone here (no `onDark`), and
+              // its keys differ from the panel's `StatusInfo` by two names —
+              // `fill`/`text` against `bg`/`color`. Mapped rather than renamed:
+              // both shapes have other consumers, and this is the only place
+              // they meet.
+              status={{
+                label: pageStatus.label,
+                message: status.message,
+                bg: pageStatus.fill,
+                border: pageStatus.border,
+                color: pageStatus.text,
+                outline: pageStatus.outline,
+                Icon: pageStatus.icon,
+              }}
+            />
+          </div>
+        ) : (
         <div
           style={{
             display: 'flex',
@@ -487,8 +1367,8 @@ export function LearnerFocusedBand({
             marginTop: 14,
             padding: '12px 14px',
             borderRadius: 'var(--radius-md)',
-            background: 'rgb(255 255 255 / 0.06)',
-            border: `1px solid ${ON_DARK_LINE}`,
+            background: cTileBg,
+            border: `1px solid ${cLine}`,
           }}
         >
           <div style={{ flex: 'none', width: 104, display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -502,7 +1382,7 @@ export function LearnerFocusedBand({
                 fontWeight: 700,
                 letterSpacing: '0.1em',
                 textTransform: 'uppercase',
-                color: ON_DARK,
+                color: cText,
               }}
             >
               <CalendarDay size={13} /> Status
@@ -528,11 +1408,15 @@ export function LearnerFocusedBand({
               {status.label}
             </span>
           </div>
-          <span aria-hidden style={{ width: 1, alignSelf: 'stretch', background: ON_DARK_LINE }} />
-          <p style={{ margin: 0, fontFamily: 'var(--font-body)', fontSize: 11, lineHeight: '18px', color: ON_DARK }}>
+          <span aria-hidden style={{ width: 1, alignSelf: 'stretch', background: cLine }} />
+          <p style={{ margin: 0, fontFamily: 'var(--font-body)', fontSize: 11, lineHeight: '18px', color: cText }}>
             {status.message}
           </p>
         </div>
+
+        )}
+        </div>
+        )}
 
         {interestChips && interestChips.length > 0 && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 14 }}>
@@ -543,8 +1427,8 @@ export function LearnerFocusedBand({
                   fontFamily: 'var(--font-body)',
                   fontSize: 11,
                   fontWeight: 700,
-                  background: 'rgb(255 255 255 / 0.14)',
-                  color: ON_DARK,
+                  background: onPage ? 'var(--color-neutral-100)' : 'rgb(255 255 255 / 0.14)',
+                  color: cText,
                   borderRadius: 'var(--radius-sm)',
                   padding: '4px 9px',
                 }}
@@ -555,21 +1439,86 @@ export function LearnerFocusedBand({
           </div>
         )}
 
-        <div style={{ display: 'flex', gap: 18, marginTop: 'auto', paddingTop: 18, justifyContent: 'flex-end' }}>
-          {onViewDetails && (
+        {/* "View Requirements →" IS GONE FROM THE PAGE SURFACE — 2026-09-17,
+            the direct ask.
+
+            SCOPED to `onPage`, not removed outright: on the navy versions this
+            is the block's only route to the requirements sheet, and taking it
+            from them would be changing what they ship for a change asked about
+            this one.
+
+            THE SHEET IS STILL REACHABLE HERE, which is the thing to check
+            before removing a lone link — "State requirements →" sits at the
+            foot of the Get Licensed card in the column beside this one and runs
+            the same `onOpenRequirements`. A test pins that, so this cannot
+            quietly become "there is no way to the requirements from Home". */}
+        <div
+          style={{
+            display: 'flex',
+            gap: 18,
+            marginTop: 'auto',
+            paddingTop: onPage ? 0 : 18,
+            justifyContent: 'flex-end',
+          }}
+        >
+          {onViewDetails && !onPage && (
             <button
               type="button"
               onClick={onViewDetails}
-              className="cre-link-action"
-              style={{ ...linkBtn(ON_DARK) }}
+              // `cre-cta-ink` on the page surface: the CTA ramp is a FILL
+              // colour, and cta-500 as TEXT measures 1.84:1 on the dark page.
+              // The class swaps to the light stop under `[data-theme='dark']`;
+              // an inline colour here would beat it, so there is none.
+              className={onPage ? 'cre-link-action cre-cta-ink' : 'cre-link-action'}
+              style={{ ...linkBtn(onPage ? undefined : cLink) }}
             >
               View Requirements →
             </button>
           )}
         </div>
+
+        {/* JUMP BACK IN IS NOT A SEPARATE CARD ANY MORE — 2026-09-16.
+
+            It was here, under the View Requirements link: its own recessed
+            card with the course art, title, meta, a progress bar and the Resume
+            CTA. Every one of those was already in the block above it — same
+            course, same art, same percentage — so the column read as one thing
+            said twice.
+
+            It is INSIDE the block now: the art is left of the title, and the
+            resume copy and CTA take the half the category bar vacated. See
+            `resumeInline` above.
+
+            `JumpBackInWidget` is kept and still exported, unreferenced, per the
+            archive convention — the band is its only caller and restoring it is
+            re-adding a wrapper here. */}
       </div>
 
-      {/* ── RIGHT · white · Jump Back In ── */}
+      {/* ── RIGHT · the Study Journey widget, as its own card ──
+          QE Focused only. It renders INSTEAD of the white half below rather
+          than inside it: the widget owns its own surface, and threading a
+          `journeyWidget` branch through that markup would have left the resume
+          block duplicated in two places that then drift. See
+          `StudyJourneyWidget` for why it is a separate card at all. */}
+      {journeyWidget ? (
+        /* The journey ALONE in this column as of 2026-09-16. It was two stacked
+           cards — Jump Back In above it — and that card moved to the left
+           column, under the View Requirements link; see the note there.
+
+           Still its own card rather than the journey's old top third: the
+           resume block answers a different question, and it was the only
+           unlabelled block on the version. What changed is which column it
+           answers that question in. */
+        <StudyJourneyWidget
+          path={path}
+          onOpenStop={onOpenStop}
+          onOpenStep={onOpenStep}
+          // The same action "View Requirements" runs — the sheet is the state's
+          // own rules, and the Get Licensed card is where they apply.
+          onOpenRequirements={onViewDetails}
+          onOpenLearningPath={onOpenLearningPath}
+        />
+      ) : (
       <div
         style={{
           background: 'var(--color-surface-card)',
@@ -850,20 +1799,189 @@ export function LearnerFocusedBand({
           </p>
         )}
       </div>
+      )}
     </section>
   )
 }
 
 /* ─── pieces ─────────────────────────────────────────────────────────── */
 
-function KpiDark({ caption, icon, children }: { caption: string; icon?: ReactNode; children: ReactNode }) {
+/**
+ * One KPI cell. Surface colours are PASSED IN rather than read from the
+ * on-dark constants, so the same cell renders on the navy card and on the page
+ * grey — see `LearnerFocusedBand`'s `surface` note. Defaults keep every
+ * existing caller unchanged.
+ */
+/**
+ * One of the two square tiles that replaced the KPI row on the page surface —
+ * Study Pace and Readiness. Added 2026-09-16.
+ *
+ * It is a CARD where `KpiDark` on this surface is deliberately bare, and the
+ * reason the two differ is the reason the cells went bare in the first place:
+ * three cells in a row were three boxes competing with the Study Journey card
+ * beside them, and the numbers were the content. TWO tiles are not a row of
+ * readings — each holds a heading, a figure and a sentence — so the box is
+ * doing the work the vertical rules were doing before.
+ *
+ * The caption takes `KpiDark`'s exact treatment (10px / 700 / 0.1em / uppercase
+ * on `--color-text-secondary`, icon at 13) rather than a near-copy: these sit
+ * where those cells sat, and an eyebrow a pixel off from the one it replaced is
+ * the drift this file keeps paying for.
+ */
+function SquareTile({
+  caption,
+  icon,
+  children,
+  to,
+}: {
+  caption: string
+  icon?: ReactNode
+  children: ReactNode
+  /**
+   * Where the tile's bottom-right "Details →" goes. Omitted → no link.
+   *
+   * A REAL in-shell address, never an invented one: both tiles point at rail
+   * sections that exist (`?section=study-plan`, `?section=readiness`), which is
+   * the rule the Resources section had to learn after shipping four dead slugs.
+   * The Readiness tile is a lo-fi stub and its DESTINATION is still the real
+   * Readiness page — the placeholder is this tile, not the section.
+   */
+  to?: string
+}) {
   return (
     <div
       style={{
-        background: 'rgb(255 255 255 / 0.06)',
-        border: `1px solid ${ON_DARK_LINE}`,
-        borderRadius: 'var(--radius-md)',
-        padding: '11px 13px',
+        // Square at any column width; grows rather than clipping if the content
+        // ever needs more than the width allows.
+        aspectRatio: '1 / 1',
+        minWidth: 0,
+        /* THE JUMP BACK IN CARD'S SURFACE — 2026-09-17, the direct ask. It was
+           a white card with a hairline border; it is the same tinted recess as
+           the card directly above it, with no stroke.
+
+           `widgetCardRecessedStyle` is the owner of that fill, and these read it
+           rather than restating the `color-mix` — three cards in one column
+           agreeing by coincidence is exactly how they stop agreeing, which is
+           why `widgetStyles.ts` exists. The mix is also load-bearing: its own
+           note records that 5% is a CEILING set by the 10px type on it, not a
+           preference.
+
+           No border, for the reason the card above has none: a stroke round a
+           flat recessed fill reads as a card that has lost its edge rather than
+           as a card with one. */
+        background: widgetCardRecessedStyle.background,
+        borderRadius: 'var(--radius-lg)',
+        padding: 16,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
+      }}
+    >
+      {/* THE SHARED WIDGET EYEBROW (2026-09-17, the direct ask to match). It
+          was a near-copy — 10/700 at 0.1em — beside the real one a few pixels
+          up the column, which is the drift `widgetStyles.ts` exists to stop.
+          `.cre-eyebrow-ink` carries the navy, and the constant deliberately
+          sets no colour so that class can own it. */}
+      <span
+        className="cre-eyebrow-ink"
+        style={{ ...widgetEyebrowStyle, display: 'flex', alignItems: 'center', gap: 6 }}
+      >
+        {icon}
+        {caption}
+      </span>
+      {children}
+      {/* BOTTOM-RIGHT, in the header band's own link style (2026-09-17, the
+          direct ask). `margin-top: auto` rather than a spacer: the tile is a
+          fixed square, so the link sits on its floor whatever the content above
+          it does.
+
+          `.cre-cta-ink` with NO inline colour — the CTA ramp is a FILL colour
+          on XCEL and cta-500 as TEXT is 1.84:1 on the dark page, so the class
+          swaps to the light stop under `[data-theme='dark']` and an inline
+          value would beat it while looking correct.
+
+          Same LABEL as the band's, deliberately: three links of one shape doing
+          one kind of thing ("show me the detail behind this") read as a set, and
+          naming each after its own destination would make the shared treatment
+          look accidental. */}
+      {to ? (
+        <Link
+          to={to}
+          className="cre-link-action cre-cta-ink"
+          style={{
+            marginTop: 'auto',
+            alignSelf: 'flex-end',
+            textDecoration: 'none',
+            fontFamily: 'var(--font-body)',
+            fontSize: 13,
+            fontWeight: 700,
+            whiteSpace: 'nowrap',
+          }}
+        >
+          Details →
+        </Link>
+      ) : null}
+    </div>
+  )
+}
+
+function KpiDark({
+  caption,
+  icon,
+  children,
+  bg = 'rgb(255 255 255 / 0.06)',
+  line = ON_DARK_LINE,
+  ink = ON_DARK,
+  captionInk = ON_DARK_MUTED,
+  bare = false,
+  rule,
+  sub,
+  subInk,
+}: {
+  caption: string
+  icon?: ReactNode
+  children: ReactNode
+  bg?: string
+  line?: string
+  ink?: string
+  captionInk?: string
+  /**
+   * Drop the card — no fill, no border, no radius — so the cell sits directly
+   * on whatever is behind it. For the page surface, where three tiles in a row
+   * read as three cards competing with the Study Journey card beside them; the
+   * numbers are the content, and a container each was chrome around chrome.
+   */
+  bare?: boolean
+  /** Vertical rule on the leading edge, for every cell but the first. This is
+   *  what separates the data points once `bare` has taken their boxes away. */
+  rule?: string
+  /**
+   * A third line under the value, saying what the number IS.
+   *
+   * The `stat-card` treatment's whole reason for extra height. `null` and
+   * `undefined` both render nothing, so a caller can omit ONE cell's sub-label
+   * — which the pace line does when there are no course hours to derive it
+   * from, rather than printing a guess.
+   */
+  sub?: string | null
+  subInk?: string
+}) {
+  return (
+    <div
+      style={{
+        ...(bare
+          ? {
+              // Horizontal padding on BOTH sides of the rule, so the three
+              // cells are evenly spaced around it rather than hugging it.
+              padding: '2px 16px',
+              ...(rule ? { borderLeft: `1px solid ${rule}` } : { paddingLeft: 0 }),
+            }
+          : {
+              background: bg,
+              border: `1px solid ${line}`,
+              borderRadius: 'var(--radius-md)',
+              padding: '11px 13px',
+            }),
         display: 'flex',
         flexDirection: 'column',
         gap: 5,
@@ -879,13 +1997,25 @@ function KpiDark({ caption, icon, children }: { caption: string; icon?: ReactNod
           fontWeight: 700,
           letterSpacing: '0.1em',
           textTransform: 'uppercase',
-          color: ON_DARK_MUTED,
+          color: captionInk,
         }}
       >
         {icon}
         {caption}
       </span>
-      <span style={{ fontFamily: 'var(--font-body)', fontSize: 15, fontWeight: 700, color: ON_DARK }}>{children}</span>
+      <span style={{ fontFamily: 'var(--font-body)', fontSize: 15, fontWeight: 700, color: ink }}>{children}</span>
+      {sub ? (
+        <span
+          style={{
+            fontFamily: 'var(--font-body)',
+            fontSize: 11,
+            lineHeight: '15px',
+            color: subInk ?? captionInk,
+          }}
+        >
+          {sub}
+        </span>
+      ) : null}
     </div>
   )
 }
@@ -942,7 +2072,9 @@ function UpNextRowLight({ course }: { course: CourseCardData }) {
   )
 }
 
-function linkBtn(color: string): CSSProperties {
+/** Shared text-link button style. `color` is OMITTED when a theme-aware class
+ *  owns the colour — an inline `color` would win over the class. */
+function linkBtn(color?: string): CSSProperties {
   return {
     background: 'transparent',
     border: 'none',
@@ -951,6 +2083,6 @@ function linkBtn(color: string): CSSProperties {
     fontFamily: 'var(--font-body)',
     fontSize: 13,
     fontWeight: 700,
-    color,
+    ...(color ? { color } : null),
   }
 }

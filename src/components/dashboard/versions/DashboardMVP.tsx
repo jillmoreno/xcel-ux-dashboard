@@ -6,6 +6,14 @@ import {
 import { DashboardV3 } from '@/components/dashboard/versions/DashboardV3'
 
 /**
+ * ARCHIVED 2026-09-16 — this file is kept in the repo but is no longer
+ * referenced. `DashboardMVP` was pulled from `DASHBOARD_VERSIONS` and from
+ * `DashboardPage`'s switch because every flag in `MVP_FLAGS` below (bar
+ * `learning-paths-count`) was removed from the catalog in the XCEL flag audit,
+ * leaving nothing to distinguish this view from V3. `applyFlags` still accepts
+ * these keys — the store is keyed by string — they simply no longer resolve to
+ * anything. See ARCHIVED_ITEMS id `dashboard-mvp-version` for the re-wire steps.
+ *
  * Starting feature-flag configuration for Dashboard MVP — a snapshot of
  * the agreed-on MVP view captured 2026-06-15. The MVP *seeds* these
  * values the first time it's opened in a session (see below); from there

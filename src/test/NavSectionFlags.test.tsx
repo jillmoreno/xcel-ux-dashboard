@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { AccountProvider, useAccount, type Brand } from '@/context/AccountContext'
@@ -106,11 +106,48 @@ describe('the Navigation flag group', () => {
       'Readiness',
       'My Courses',
       'Certificates',
-      'Browse Catalog',
+      // 2026-09-16: Resources and Rubi moved into MY LEARNING, and Browse
+      // Catalog — the only row left in Explore once they had — was switched
+      // off, which drops the group and its caption whole.
+      //
+      // NOTE the flat list did not change when the two moved GROUPS; the
+      // grouping is asserted separately below, because this assertion cannot
+      // see it. What it does see is Browse Catalog leaving.
       'Resources',
-      'Rubi AI Tools',
+      'Rubi Insights',
       'Get Help',
     ])
+  })
+
+  it('groups them under My Learning, not Explore', () => {
+    // The move that the in-order assertion above is BLIND to: it changed which
+    // `<ul>` each row belongs to and changed the flat order not at all, so
+    // every index-based check in this suite passed it without noticing. Each
+    // group's list is labelled by its caption, which is the handle that sees
+    // it — the same reason the demo-rail assertion compares the whole rail
+    // rather than checking that a row is present.
+    renderNav()
+    const mine = screen.getByRole('list', { name: 'My Learning' })
+    const explore = screen.queryByRole('list', { name: 'Explore' })
+    const names = (host: HTMLElement) =>
+      within(host)
+        .getAllByRole('button')
+        .map((b) => b.textContent?.trim())
+    expect(names(mine)).toEqual([
+      'Home',
+      'Study Plan',
+      'Readiness',
+      'My Courses',
+      'Certificates',
+      'Resources',
+      'Rubi Insights',
+    ])
+    // EXPLORE IS GONE — Browse Catalog was its last row and is now off, and a
+    // group whose items are all hidden falls out caption and all. Asserted as
+    // the absence of the LIST, not of the row: an empty group with a heading
+    // over nothing is the "reads as a load failure" defect, and this is what
+    // proves the drop-empty rule is doing its job.
+    expect(explore).toBeNull()
   })
 
   it('offers every one of them on /dashboard-rebrand, where the rail lives', () => {
@@ -133,7 +170,10 @@ describe('the Navigation flag group', () => {
     renderNav()
     expect(screen.getByRole('button', { name: 'Home' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'My Courses' })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Browse Catalog' })).toBeInTheDocument()
+    // Repointed AGAIN on 2026-09-16: Browse Catalog is off in the baseline now.
+    // The row picked here has to be one that is ON, or the test passes without
+    // a default-ON flag ever being read.
+    expect(screen.getByRole('button', { name: 'Resources' })).toBeInTheDocument()
   })
 
   it('hides an item when its flag is off, and keeps Home', () => {

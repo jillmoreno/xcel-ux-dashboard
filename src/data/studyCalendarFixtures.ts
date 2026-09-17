@@ -1032,6 +1032,51 @@ function buildXcelNotStartedCalendar(): StudyCalendar {
 }
 
 /**
+ * NEW YORK INSURANCE PRODUCER — the QE Focused version's plan (2026-09-16).
+ *
+ * DERIVED from `XCEL_LH_STUDY_CALENDAR`, not hand-authored, and that is the
+ * point: the two are the same 20-day course schedule for the same line of
+ * authority, so a second copy would be a second thing to keep in step. Only
+ * identity, the exam it names, and how far through it the learner is differ.
+ *
+ * **Task DATES are deliberately unchanged.** Re-pacing the run across the
+ * longer New York window was the obvious move and is wrong here: every
+ * date-driven surface — the week strip, the Study Plan grid, the Readiness
+ * hand-off — is anchored to `STUDY_CALENDAR_TODAY`, and a plan that has not
+ * started yet renders every one of them empty. Keeping the dates keeps the demo
+ * mid-plan, which is the state worth showing.
+ *
+ * **So the plan finishes months before the exam, and that is coherent rather
+ * than a bug.** The 20-day schedule is the COURSE; the sit date is booked
+ * separately and this candidate booked late. A learner who finishes the
+ * coursework with a wide runway is a real and common state — and it is the one
+ * that makes the Readiness section's "you are on pace" reading meaningful.
+ *
+ * Completion is raised to ~63% by task count so the plan agrees with the 63%
+ * the `xcel-ny-producer-prelicensing` path reports by credit hour. If you change
+ * one, change both — `ProgressAgreement.test.tsx` is what catches it.
+ */
+function buildXcelNyProducerCalendar(): StudyCalendar {
+  const source = XCEL_LH_STUDY_CALENDAR.tasks
+  // 63% of the run, by task count — the figure the path reports by hour.
+  const completeThrough = Math.round(source.length * 0.63)
+  const tasks: StudyTask[] = source.map((t, i) =>
+    i < completeThrough
+      ? { ...t, status: 'completed' as const, progress: undefined }
+      : t,
+  )
+  return {
+    ...XCEL_LH_STUDY_CALENDAR,
+    id: 'xcel-ny-producer-20day',
+    name: 'Insurance Producer — 20 Day Study Plan',
+    examName: 'New York Insurance Producer Exam',
+    // Matches the path's `examDate`. If you change one, change both.
+    examDate: '2026-12-15',
+    tasks,
+  }
+}
+
+/**
  * Set of STC Learning Path ids that currently have a Study Calendar
  * assigned. Anything outside this set returns `false` from
  * `hasStudyCalendarFor` and the Study Calendar tab surfaces its empty
@@ -1236,7 +1281,11 @@ export const XCEL_CE_PATH_ID = 'xcel-fl-lh-ce'
  * The old behaviour is a toggle, not a deletion: the `ce-study-plan` flag
  * (default ON) suppresses the CE plan at the consuming surfaces.
  */
+/** The QE Focused version's path — New York Insurance Producer pre-licensing. */
+export const XCEL_NY_PRODUCER_PATH_ID = 'xcel-ny-producer-prelicensing'
+
 const XCEL_PATHS_WITH_CALENDAR = new Set<string>([
+  XCEL_NY_PRODUCER_PATH_ID,
   'xcel-fl-lh-prelicensing',
   'xcel-fl-pc-prelicensing',
   XCEL_CE_PATH_ID,
@@ -1323,6 +1372,9 @@ export function studyCalendarFor(pathId?: string): StudyCalendar {
   // path, which is the one outcome worse than the empty state.
   if (pathId === XCEL_NOT_STARTED_PATH_ID) {
     return buildXcelNotStartedCalendar()
+  }
+  if (pathId === XCEL_NY_PRODUCER_PATH_ID) {
+    return buildXcelNyProducerCalendar()
   }
   if (pathId === 'xcel-fl-lh-prelicensing') {
     return XCEL_LH_STUDY_CALENDAR

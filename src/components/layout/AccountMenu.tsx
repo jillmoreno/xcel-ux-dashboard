@@ -1,10 +1,11 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { ArrowUpRightFromSquare, Blog, BookOpen, Megaphone, CircleUser, Facebook, LogOut, Podcast, Sliders } from '@/icons'
+import { ArrowUpRightFromSquare, Blog, BookOpen, Megaphone, Facebook, LogOut, Podcast, Sliders } from '@/icons'
 import { Avatar } from '@/components/ui/Avatar'
 import { MembershipBadge } from '@/components/ui/MembershipBadge'
 import { AppearancePreferencesSheet } from '@/components/account/AppearancePreferencesSheet'
 import { useAccount, type MembershipTierTone, type AvatarTierKey } from '@/context/AccountContext'
+import { useProfileAvatar } from '@/context/ProfileAvatarContext'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { accountSectionsFor } from '@/components/account/accountSections'
 import { resourcesFor, type ResourceIcon } from '@/data/membership/resourcesFixtures'
@@ -13,7 +14,8 @@ import { tierBadgeIcon } from '@/components/ui/membershipTierBadge'
 
 
 type AccountMenuProps = {
-  initials: string
+  /** Override the live initials. Optional — see the note in the body. */
+  initials?: string
   /** Full name displayed in the dropdown header. */
   name?: string
   /** Email displayed under the name. */
@@ -25,17 +27,16 @@ type AccountMenuProps = {
 }
 
 export function AccountMenu({
-  initials,
-  // Defaults are CRE-era leftovers — `Header` always passes the live values
-  // from `useAccount().user`, so these only surface in an isolated mount (a
-  // unit test rendering the menu on its own). Repointed at XCEL's demo learner
-  // so such a mount does not display a person from a brand this repo no longer
-  // has. `/brand/sarah.jpg` is still the only demo portrait in public/brand.
-  name = 'Alicia Navarro',
+  initials: initialsProp,
+  name: nameProp,
+  // The ONE field with no source on the model: `DemoUser` carries a name,
+  // initials and an avatar, but no email. Left as an authored default rather
+  // than derived from the name — `first.last@gmail.com` would be a guess
+  // rendered as a fact, which is the `addedBy` rule from the Links panel.
   email = 'alicia.navarro@gmail.com',
-  avatarUrl = '/brand/sarah.jpg',
+  avatarUrl: avatarUrlProp,
   isPro = true,
-}: AccountMenuProps) {
+}: AccountMenuProps = {}) {
   const [open, setOpen] = useState(false)
   const [prefsOpen, setPrefsOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
@@ -52,7 +53,32 @@ export function AccountMenu({
   // Active membership-tier label / tone / avatar treatment for the header badge
   // on the rebrand shell; elsewhere the gold "Pro" pill + tertiary avatar are
   // used instead.
-  const { brand, membership, tierLabel, tierTone, avatarTier } = useAccount()
+  const { brand, membership, tierLabel, tierTone, avatarTier, user } = useAccount()
+  /*
+   * THE LEARNER COMES FROM CONTEXT — 2026-09-16.
+   *
+   * These were props with hardcoded defaults, and the comment above them said
+   * "`Header` always passes the live values from `useAccount().user`". **It did
+   * not.** `Header` rendered `<AccountMenu initials="SC" />` and nothing else,
+   * so the defaults WERE the menu — and "SC" is not even this learner's
+   * initials (Alicia Navarro → AN). Invisible while the trigger was a generic
+   * glyph; the moment it shows a face and a name, a second copy of the learner
+   * is a second learner.
+   *
+   * So the component resolves its own, from the same two sources the rail's
+   * `NavProfileHeader` reads — `useAccount().user` and the profile-avatar
+   * override. The two are the only places the learner appears as a person, one
+   * at each end of the header row, and they cannot now disagree: uploading a
+   * photo on the Profile page moves both.
+   *
+   * The props survive as OVERRIDES for an isolated mount (a unit test rendering
+   * the menu with no AccountProvider above it), which is what they were
+   * genuinely being used for.
+   */
+  const { avatarOverride } = useProfileAvatar()
+  const name = nameProp ?? `${user.firstName} ${user.lastName}`
+  const initials = initialsProp ?? user.initials
+  const avatarUrl = avatarUrlProp ?? avatarOverride ?? user.avatarUrl
   // The account rows come from the CANONICAL list in accountSections.ts, shared
   // with the account sub-nav that sits beside each account page — so the
   // dropdown and the sub-nav always list the same sections in the same order.
@@ -114,9 +140,26 @@ export function AccountMenu({
         aria-controls={id}
         aria-label={`Account menu — ${name}`}
         onClick={() => setOpen((v) => !v)}
-        className="cre-icon-pill"
+        /* `cre-account-pill`, not `cre-icon-pill` — that one is a fixed 40×40
+           square built for a single glyph, and this trigger is now an avatar
+           plus a name. It keeps the pill's hover, radius and transition so the
+           three header utilities still read as one cluster. */
+        className="cre-account-pill"
       >
-        <CircleUser size={20} aria-hidden />
+        {/* The learner's own photo, replacing a generic `CircleUser` glyph.
+            NO `brandRing` and no `tier`: the rail's 48px avatar is documented
+            as the ONLY call site that carries the Brick ring — it is what marks
+            that as the learner — and a second ringed avatar in the same viewport
+            spends the distinction rather than making it. At 28px a 2px ring is
+            proportionally heavier than it is at 48, too. `Avatar` falls back to
+            the initials in a tinted circle when there is no image, so a learner
+            with no photo still gets a person-shaped control rather than a gap. */}
+        <Avatar size={28} initials={initials} imageUrl={avatarUrl} alt={name} />
+        {/* Hidden under 900px by the class's own media query: at phone widths
+            the header is a logo, a hamburger and this cluster, and a full name
+            is the first thing that should go. The `aria-label` above still
+            carries it, so nothing is lost to assistive tech. */}
+        <span className="cre-account-pill__name">{name}</span>
       </button>
       {open && (
         <div

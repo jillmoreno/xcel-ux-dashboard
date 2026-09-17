@@ -1,5 +1,4 @@
 import type { CSSProperties } from 'react'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { MembershipPassportCard } from './MembershipPassportCard'
 import { MembershipScorecard } from './MembershipScorecard'
 
@@ -18,7 +17,9 @@ import { MembershipScorecard } from './MembershipScorecard'
  * what separates the two sections, so each carries only a small text label.
  */
 export function MembershipSections({ onManage }: { onManage?: () => void } = {}) {
-  const { enabled } = useFeatureFlag('membership-sections')
+  // `membership-sections` removed 2026-09-16 (XCEL flag audit 2026-09-16 — removed from the catalog because `supportsMembership('xcel')` is false, so this surface never renders for the one brand this project ships.)
+  // It defaulted OFF, so this section stays hidden; the layout below is kept.
+  const enabled = false
   if (!enabled) return null
   return <MembershipSectionsLayout onManage={onManage} />
 }

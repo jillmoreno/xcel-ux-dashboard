@@ -20,11 +20,14 @@ import {
   coursesWithDerivedStatus,
   mandatoryCoursesFor,
   pathRequirementsFor,
-  type LearningPathCategory,
   type LearningPathCategoryBreakdown,
   type LearningPathSummary,
 } from '@/data/learningFixtures'
 import { LICENSE_TRACKER } from '@/data/dashboardFixtures'
+import { synthCategoryCourses } from './studyJourneyUtil'
+import { unitCount } from '@/utils/unitLabel'
+import { NY_LH_COURSE_CHAPTERS } from '@/data/nyProducerRequirements'
+import { XCEL_NY_PRODUCER_PATH_ID } from '@/data/studyCalendarFixtures'
 import type { CourseCardData } from '@/components/courses/CourseCard'
 import { HOME_STATUS_META, STATUS_STRIP_BG, statusLabel, statusMessageFor, timeRemaining, type HomeStatus } from './learningPathsHomeUtil'
 import { DISCOVERY_COPY } from '@/components/membership/v5/JumpBackInDiscoveryEmpty'
@@ -37,20 +40,6 @@ import { resolvePathCategories } from './progressGaugeUtil'
  * sum to the category requirement, with statuses derived from its completed
  * hours so the row checkmarks track the gauge.
  */
-function synthCategoryCourses(cat: LearningPathCategory, state?: string): CourseCardData[] {
-  const parts = cat.required > 15 ? [Math.ceil(cat.required / 2), Math.floor(cat.required / 2)] : [cat.required]
-  const rows: CourseCardData[] = parts.map((hours, i) => ({
-    id: `${cat.key}-${i + 1}`,
-    title: parts.length > 1 ? `${cat.label} · Part ${i + 1}` : cat.label,
-    hours,
-    state: state ?? 'National',
-    delivery: 'online',
-    badge: 'mandatory',
-    status: 'not-started',
-    progress: 0,
-  }))
-  return coursesWithDerivedStatus(rows, cat.completed)
-}
 
 /**
  * Learning Path detail slide-over — the tabbed (Progress / Requirements) panel
@@ -77,12 +66,20 @@ type Props = {
   /** Personalize the status message with the learner's first name (HOME tile).
    *  Omitted elsewhere → generic copy. */
   firstName?: string
+  /** Which half the sheet shows — see `LearningPathDetailPanelContent`'s note.
+   *  Defaults to the tabbed sheet every existing consumer expects. */
+  view?: 'tabs' | 'progress' | 'requirements'
 }
 
-export function LearningPathDetailPanel({ open, onClose, path, firstName }: Props) {
+export function LearningPathDetailPanel({ open, onClose, path, firstName, view = 'tabs' }: Props) {
   return (
     <Sheet open={open} onClose={onClose} title={path.title} width={480}>
-      <LearningPathDetailPanelContent path={path} onClose={onClose} firstName={firstName} />
+      <LearningPathDetailPanelContent
+        path={path}
+        onClose={onClose}
+        firstName={firstName}
+        view={view}
+      />
     </Sheet>
   )
 }
@@ -97,19 +94,58 @@ export function LearningPathDetailPanel({ open, onClose, path, firstName }: Prop
  */
 export function LearningPathDetailPanelContent({
   path,
-  onClose,
+  onClose = () => {},
   firstName,
+  view = 'tabs',
 }: {
   path: LearningPathSummary
-  onClose: () => void
+  /** Dismiss the host sheet. Optional — an `embedded` host has nothing to
+   *  dismiss, and the internal course-open handler calls it unconditionally. */
+  onClose?: () => void
   /** Personalize the status message (HOME tile); omitted → generic copy. */
   firstName?: string
+  /*
+   * `embedded` and `hideSummary` were REMOVED 2026-09-16 with the page section
+   * they existed for (see `MembershipOverview`). `embedded` dropped the Close
+   * link and the scroll container so this body could render inline;
+   * `hideSummary` dropped the gauge and the stat tiles once those moved to the
+   * Current Learning Progress block. With the section gone the Sheet is the only
+   * host again, and two props with no caller are two things to keep working for
+   * nothing.
+   *
+   * The file-header note about rendering inline still holds — the body is split
+   * from the `Sheet` wrapper, so a future inline host is a prop away rather than
+   * a refactor.
+   */
+  /**
+   * Which half to render, and whether to offer the tab bar at all.
+   *
+   * `tabs` (default) is the original: Progress | Requirements, switchable. The
+   * three older consumers keep it — `LearningPathsHome`, the classic
+   * dashboard's `LearnerOverviewPanel`, and the QE page's own embedded section
+   * all reach a half through it, and for the first two this sheet is the ONLY
+   * door to either.
+   *
+   * `requirements` and `progress` render one half with no tab bar, for a caller
+   * that has already decided. The QE Focused version uses both: its "View
+   * Requirements" CTA opens `requirements` (2026-09-16 — the page beside it
+   * already shows every bit of the Progress half, so a tab back to it was a
+   * second door onto what you were just looking at), and its page section
+   * renders `progress`.
+   *
+   * A single-half view sets no tab state, so a caller cannot land on a tab the
+   * host never meant to offer.
+   */
+  view?: 'tabs' | 'progress' | 'requirements'
 }) {
   const { brand } = useAccount()
   const navigate = useNavigate()
   const focusMode = useFocusMode()
   const launcher = useCourseLauncher()
   const [tab, setTab] = useState<'progress' | 'requirements'>('progress')
+  // `tabs` lets the tab state decide; the single-half views pin it, so the
+  // body below reads ONE value either way.
+  const activeHalf = view === 'tabs' ? tab : view
 
   // Open a course from a row — in-shell Learning Launcher when the panel is
   // inside the Dashboard Rebrand shell, else the standalone `/courses/:id`
@@ -188,7 +224,21 @@ export function LearningPathDetailPanelContent({
   const categoryList = path.categories ?? []
   const multiCategory = categoryList.length > 0
   const categorySections = multiCategory
-    ? categoryList.map((cat) => ({ cat, courses: synthCategoryCourses(cat, path.state) }))
+    ? categoryList.map((cat) => ({
+        cat,
+        /* REAL CHAPTERS for the New York pre-licensing course (2026-09-17).
+           Keyed on the path AND the category, not on the unit: "a lessons-
+           measured pre-license category" would quietly claim these eleven
+           titles for any future course that happened to match. */
+        courses: synthCategoryCourses(
+          cat,
+          path.state,
+          path.unitLabel ?? 'hrs',
+          path.id === XCEL_NY_PRODUCER_PATH_ID && cat.key === 'pre-license'
+            ? NY_LH_COURSE_CHAPTERS
+            : undefined,
+        ),
+      }))
     : []
   // "Empty path" — the learner hasn't added any courses yet. Explicit
   // `coursesAdded: false` on the persona, or simply no courses resolved. Drives
@@ -286,8 +336,29 @@ export function LearningPathDetailPanelContent({
             visible on both Progress and Requirements. */}
         {statusAboveTabs && <div style={{ margin: '2px 0 14px' }}>{statusSection}</div>}
         {/* The "Go to Learning Path" CTA navigates to another route, so it is
-            suppressed in the locked kiosk share view (`?focus=1`). */}
-        {!focusMode && (
+            suppressed in the locked kiosk share view (`?focus=1`).
+
+            It is ALSO suppressed in the `requirements` view (2026-09-16, the
+            direct ask). That view has one caller — QE Focused's "View
+            Requirements" — and the page it opens over already carries "Open
+            learning path" in the Study Journey widget, so this was a second
+            door onto the same route, inside a sheet whose whole job is to state
+            the requirements. The same second-door argument the version used to
+            drop its Progress tab.
+
+            Gated on `view`, NOT on `activeHalf`: in the tabbed view the CTA is
+            documented as persistent across both tabs, so switching to the
+            Requirements TAB must not make it disappear.
+
+            WIDENED to every SINGLE-HALF view on 2026-09-17, when the course
+            header band's new "View Details" made `progress` reachable for the
+            first time — and it arrived carrying this button onto a version that
+            has no learning-path concept at all, which is the decision the whole
+            `onOpenLearningPath={qeFocused ? undefined : …}` withholding exists
+            to hold. The two single-half views have one host between them (QE
+            Focused) and it is the host that refuses the concept, so the test is
+            "is a half being shown on its own", not "which half". */}
+        {!focusMode && view === 'tabs' && (
           <div style={ctaRowStyle}>
             <button
               type="button"
@@ -303,7 +374,8 @@ export function LearningPathDetailPanelContent({
         )}
       </div>
 
-      {/* Tabs */}
+      {/* Tabs — only when the caller has not already chosen a half. */}
+      {view === 'tabs' && (
       <div style={tabsRowStyle}>
         <TabButton active={tab === 'progress'} onClick={() => setTab('progress')}>
           Progress
@@ -312,10 +384,11 @@ export function LearningPathDetailPanelContent({
           Requirements
         </TabButton>
       </div>
+      )}
 
       {/* Scrolling body */}
       <div style={{ flex: 1, overflowY: 'auto', padding: '20px 22px 40px' }}>
-        {tab === 'progress' ? (
+        {activeHalf === 'progress' ? (
           <>
             <div style={{ display: 'flex', gap: 18, alignItems: 'center', marginBottom: 6 }}>
               <ProgressDonut
@@ -361,7 +434,19 @@ export function LearningPathDetailPanelContent({
               </StatTile>
               <StatTile caption="Completed">
                 <span style={statValueStyle}>{totalCompleted}</span>
-                <span style={statSuffixStyle}> / {totalRequired || path.hours} credit hrs</span>
+                {/* THE THIRD hardcoded "hrs" in this file, all fixed together on
+                    2026-09-17. "credit hrs" is a REGULATOR's unit and stays
+                    that wording when the path is measured in hours — the 40 New
+                    York requires really are credit hours. On a lessons path it
+                    was printing "26 / 42 credit hrs" beside a band reading "26
+                    of 42 lessons", which is the same figure in two units, one
+                    of them wrong. */}
+                <span style={statSuffixStyle}>
+                  {' / '}
+                  {(path.unitLabel ?? 'hrs') === 'hrs'
+                    ? `${totalRequired || path.hours} credit hrs`
+                    : unitCount(totalRequired || path.hours, path.unitLabel ?? 'hrs')}
+                </span>
               </StatTile>
             </div>
 
@@ -389,6 +474,7 @@ export function LearningPathDetailPanelContent({
                   courses={catCourses}
                   onOpenCourse={openCourse}
                   expired={expiredPath}
+                  unit={path.unitLabel ?? 'hrs'}
                 />
               ))
             ) : (
@@ -400,6 +486,7 @@ export function LearningPathDetailPanelContent({
                   courses={mandatoryCourses}
                   onOpenCourse={openCourse}
                   expired={expiredPath}
+                  unit={path.unitLabel ?? 'hrs'}
                 />
                 <CourseList
                   label={`${electiveLabel} courses`}
@@ -416,10 +503,19 @@ export function LearningPathDetailPanelContent({
           <>
             <div style={reqBoxStyle}>
               <dl style={reqGridStyle}>
+                {/* Each fact renders only when the entry states it. A
+                    pre-licensing licence has no renewal cycle and no
+                    Mandatory / Elective split, and a `0` in either slot reads
+                    as a stated requirement of zero rather than as "n/a" — the
+                    blank-Seat-cell rule from the admin roster. */}
                 <ReqFact label="Total hours required" value={String(requirements.totalHours)} />
-                <ReqFact label={`${mandatoryLabel} hours`} value={String(requirements.mandatoryHours)} />
-                <ReqFact label={`${electiveLabel} hours`} value={String(requirements.electiveHours)} />
-                {requirements.renewalCycleYears > 0 && (
+                {requirements.mandatoryHours != null && (
+                  <ReqFact label={`${mandatoryLabel} hours`} value={String(requirements.mandatoryHours)} />
+                )}
+                {requirements.electiveHours != null && (
+                  <ReqFact label={`${electiveLabel} hours`} value={String(requirements.electiveHours)} />
+                )}
+                {(requirements.renewalCycleYears ?? 0) > 0 && (
                   <ReqFact label="Renewal cycle" value={`${requirements.renewalCycleYears} years`} />
                 )}
                 {path.licenseExpiresOn && <ReqFact label={deadlineLabel} value={path.licenseExpiresOn} />}
@@ -503,9 +599,40 @@ function StatusSection({
  * keeps the shared badge treatment (tinted fill / hairline outline for Not
  * Started + Expired) plus a leading status glyph.
  */
-function StatusStrip({ homeStatus, status }: { homeStatus: HomeStatus; status: StatusInfo }) {
+/**
+ * Exported 2026-09-16 so `LearnerFocusedBand` renders THIS strip on its page
+ * surface rather than a lookalike. The two sit one section apart on QE Focused
+ * — the band's status directly above the Progress section's — so a copy would
+ * have been two status treatments for one status, inches apart. Same argument
+ * as `synthCategoryCourses` and the shared `TaskRow`.
+ */
+export function StatusStrip({
+  homeStatus,
+  status,
+  bare = false,
+}: {
+  homeStatus: HomeStatus
+  status: StatusInfo
+  /**
+   * Drop the tinted wash and the padding — the strip sits directly on whatever
+   * is behind it.
+   *
+   * Added 2026-09-16 for the `stat-card` treatment, where the strip is INSIDE a
+   * white card under its own rule: a tinted row inside a card reads as a second
+   * card, and the card is already the surface. The pill keeps its tint, which
+   * is what carries the state — the wash never did, and its own note in
+   * CLAUDE.md records that it measures ~1.02:1 and is decoration.
+   */
+  bare?: boolean
+}) {
   return (
-    <div style={{ ...calloutStyle, gap: 12, alignItems: 'center', background: STATUS_STRIP_BG[homeStatus] }}>
+    <div
+      style={
+        bare
+          ? { display: 'flex', gap: 12, alignItems: 'flex-start' }
+          : { ...calloutStyle, gap: 12, alignItems: 'center', background: STATUS_STRIP_BG[homeStatus] }
+      }
+    >
       <span
         style={{
           ...statusBadgeStyle,
@@ -518,7 +645,10 @@ function StatusStrip({ homeStatus, status }: { homeStatus: HomeStatus; status: S
           color: status.color,
         }}
       >
-        {status.label}
+        {/* Uppercase on the bare treatment, matching the reference — a pill on
+            a white card next to 15px values needs the extra weight that the
+            tinted version got from its wash. */}
+        {bare ? status.label.toUpperCase() : status.label}
       </span>
       <p style={stripMessageStyle}>{status.message}</p>
     </div>
@@ -640,6 +770,7 @@ function CourseList({
   courses,
   onOpenCourse,
   expired = false,
+  unit = 'hrs',
 }: {
   label: string
   /** Per-course category label shown in each row's meta (education-type-aware —
@@ -650,9 +781,16 @@ function CourseList({
   onOpenCourse: (id: string) => void
   /** The path's renewal deadline has lapsed — not-started rows render disabled. */
   expired?: boolean
+  /** The path's own unit — "hrs" or "lessons". Threaded rather than assumed:
+   *  both this header and each row printed a hardcoded "hrs" until 2026-09-17. */
+  unit?: string
 }) {
   if (courses.length === 0) return null
-  const hrs = breakdown ? `${breakdown.completed} / ${breakdown.required} hrs` : ''
+  /* THE UNIT, not a hardcoded "hrs". This printed "26 / 42 HRS" on a path
+     measured in LESSONS — the New York course, which is the only thing this
+     panel shows on QE Focused. It has been wrong since the unit moved off
+     hours, and it renders inches from the band that says "26 of 42 lessons". */
+  const hrs = breakdown ? `${breakdown.completed} / ${breakdown.required} ${unit}` : ''
   return (
     <>
       {/* Section header: label · dashed leader · hours-right (Figma 312:2). */}
@@ -662,7 +800,7 @@ function CourseList({
         {hrs && <span style={{ whiteSpace: 'nowrap' }}>{hrs}</span>}
       </div>
       {courses.map((course) => (
-        <CourseRow key={course.id} course={course} typeLabel={typeLabel} onOpen={onOpenCourse} expired={expired} />
+        <CourseRow key={course.id} course={course} typeLabel={typeLabel} onOpen={onOpenCourse} expired={expired} unit={unit} />
       ))}
     </>
   )
@@ -673,11 +811,14 @@ function CourseRow({
   typeLabel,
   onOpen,
   expired = false,
+  unit = 'hrs',
 }: {
   course: CourseCardData
   typeLabel: string
   onOpen: (id: string) => void
   expired?: boolean
+  /** The path's own unit. See the note on `CourseList`. */
+  unit?: string
 }) {
   const focusMode = useFocusMode()
   const status = course.status ?? 'not-started'
@@ -687,7 +828,9 @@ function CourseRow({
   const disabled = expired && status === 'not-started'
   const statusLabel =
     status === 'completed' ? 'Completed' : status === 'in-progress' ? 'In Progress' : 'Not Started'
-  const hoursLabel = `${course.hours} ${course.hours === 1 ? 'hr' : 'hrs'}`
+  // Same defect as the section header's: `unitCount` owns the singular, which
+  // is why "1 lesson" does not read "1 lessons".
+  const hoursLabel = unitCount(course.hours, unit)
   // Status mark — filled accent check (complete), accent-outline circle
   // (in progress), or dashed neutral circle (not started). (Figma 312:2.)
   const markStyle =

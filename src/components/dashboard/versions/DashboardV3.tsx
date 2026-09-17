@@ -1,6 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { useAccount } from '@/context/AccountContext'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import type { FeatureFlagState } from '@/context/FeatureFlagContext'
 import { LoFiScope } from '@/context/LoFiContext'
 import { DraggableSlot, moveBetween } from '@/components/dashboard/DraggableSlot'
 import { DashboardHeroBand } from '@/components/dashboard/DashboardHeroBand'
@@ -50,14 +50,21 @@ export function DashboardV3({
   const { membership } = useAccount()
   const isNonMember = membership === 'non-member'
 
-  const kpiCardFlag = useFeatureFlag('dashboard-kpi-card')
+  // ── Flags removed from the catalog 2026-09-16 (the XCEL flag audit) ──
+  // `dashboard-kpi-card`, `rubi-tutor-widget`, `quick-links-card`,
+  // `premium-membership-card`, `whats-new-card`, `dashboard-drag-and-drop` and
+  // `dashboard-rail-tray` only ever drove this classic `/dashboard`, which the
+  // XCEL demo never opens (the route sits behind `dashboard-tab`, default off).
+  // Each is pinned to the committed default it carried; every branch below is
+  // kept so restoring one is re-adding its catalog entry and this read.
+  const kpiCardFlag: FeatureFlagState = { enabled: true, variant: 'light' }
   const heroBandVariant = kpiCardFlag.variant === 'dark' ? 'v2' : 'v3'
-  const rubiFlag = useFeatureFlag('rubi-tutor-widget')
-  const quickLinksFlag = useFeatureFlag('quick-links-card')
-  const premiumFlag = useFeatureFlag('premium-membership-card')
-  const whatsNewFlag = useFeatureFlag('whats-new-card')
-  const dragEnabled = useFeatureFlag('dashboard-drag-and-drop').enabled
-  const railTrayFlag = useFeatureFlag('dashboard-rail-tray')
+  const rubiFlag: FeatureFlagState = { enabled: true, variant: 'default' }
+  const quickLinksFlag: FeatureFlagState = { enabled: true, variant: 'default' }
+  const premiumFlag: FeatureFlagState = { enabled: true, variant: 'default' }
+  const whatsNewFlag: FeatureFlagState = { enabled: true, variant: 'default' }
+  const dragEnabled = false
+  const railTrayFlag: FeatureFlagState = { enabled: true, variant: 'gray' }
   const railTrayEnabled = railTrayFlag.enabled
   // Map the tray color variant to a token. Tints are all `-100`-level
   // washes so the white cards keep clear contrast on top.
@@ -254,8 +261,9 @@ export function DashboardV3({
   // too: the Featured Products widget spans 2 of the 3 columns (≈⅔)
   // instead of the full width, so the flag isn't silently ignored when
   // drag-and-drop is on.
-  const membershipTwoThirds =
-    useFeatureFlag('membership-card-width').variant === 'two-thirds'
+  // `membership-card-width` was removed 2026-09-16 (see above); its committed
+  // default was `full`, so the Featured Products widget spans the full row.
+  const membershipTwoThirds = false
   const mainSlotStyle = (id: string) => {
     if (id === 'membership-featured' && membershipTwoThirds) {
       return { gridColumn: 'span 2' as const }

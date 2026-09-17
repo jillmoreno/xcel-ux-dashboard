@@ -1,6 +1,5 @@
 import type { CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { useAccount } from '@/context/AccountContext'
 import { Tabs, type TabItem } from '@/components/ui/Tabs'
 import { RecommendedForYouPanel } from '@/components/dashboard/recommended/RecommendedForYouPanel'
@@ -128,7 +127,9 @@ function MembershipV1() {
   // light/dark variant, which the band reads internally). Toggling
   // the flag off hides the whole band from member view; non-member
   // view always renders its own upsell hero regardless.
-  const heroFlag = useFeatureFlag('membership-hero-band')
+  // `membership-hero-band` removed from the catalog 2026-09-16 (XCEL flag audit — `supportsMembership('xcel')` is false, so this never renders for the one brand shipped).
+  // It defaulted ON, so the member hero band renders.
+  const heroFlag = { enabled: true, variant: 'dark' }
 
   // Same atomic URL-state helper used by MyCoursesPage / MyPodcastsPage —
   // a null / empty value drops the param so the default tab leaves

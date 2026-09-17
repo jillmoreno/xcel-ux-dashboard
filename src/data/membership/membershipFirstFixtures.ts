@@ -247,11 +247,12 @@ const XCEL_BENEFIT_ROWS: BenefitRow[] = [
   {
     id: 'career-tools',
     eyebrow: 'Study with an AI partner',
-    // Matches XCEL's rail label (`careerToolsLabelFor` in PlatformSideNav),
-    // which became "Rubi AI Tools" on 2026-09-10. Rubi is still an exam study
-    // aid here rather than the career/CV tool it is on Elite — that is what the
-    // blurb below says; only the name changed.
-    title: 'Rubi AI Tools',
+    // Matches XCEL's rail label (`careerToolsLabelFor` in PlatformSideNav):
+    // "AI Study Partner" → "Rubi AI Tools" (2026-09-10) → "Rubi Insights"
+    // (2026-09-16). Rubi is still an exam study aid here rather than the
+    // career/CV tool it is on Elite — that is what the blurb below says; only
+    // the name has ever changed.
+    title: 'Rubi Insights',
     blurb: 'Rubi™ — instant explanations, worked examples, and practice questions on demand.',
     subtext:
       "Ask Rubi anything from your course. It explains step by step, generates fresh practice questions, and answers in your language — built on XCEL's own curriculum, so what it tells you matches what you are studying.",

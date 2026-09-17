@@ -6,6 +6,7 @@ import {
   type LearningPathSheetStatus,
   type LearningPathSummary,
 } from '@/data/learningFixtures'
+import { LICENSE_TRACKER } from '@/data/dashboardFixtures'
 import { resolvePathCategories } from '@/components/learning/progressGaugeUtil'
 import type { LearningPathCategory, LearningPathCategoryBreakdown } from '@/data/learningFixtures'
 
@@ -231,6 +232,70 @@ export function timeRemaining(weeksLeft: number): { segments: TimeSegment[]; exp
     return { segments, expired: false }
   }
   return { segments: [{ value: weeksLeft, unit: 'wks' }], expired: false }
+}
+
+/**
+ * `timeRemaining` as a plain string — "27 days" / "14 wks" / "1 yr, 30 wks" /
+ * "Expired" — for the call sites that need a value rather than JSX segments.
+ *
+ * ADDED 2026-09-16 because three bands were hand-rolling their own yr/wks
+ * arithmetic (`Math.floor(weeksLeft / 52)` + `% 52`) and none of them had the
+ * day countdown. That was harmless while every persona's `weeksLeft` was a
+ * whole number and comfortably over a month — and it stopped being harmless the
+ * moment one carried a FRACTION, which is how 27 days is expressed in weeks:
+ * those call sites would have rendered "3.857142857142857 wks".
+ *
+ * Use this for a string; use `timeRemaining` directly when the number and its
+ * unit need separate styling.
+ */
+export function timeRemainingText(weeksLeft: number): string {
+  const { segments, expired } = timeRemaining(weeksLeft)
+  if (expired) return 'Expired'
+  return segments.map((s) => `${s.value} ${s.unit}`).join(', ')
+}
+
+/** The persona's renewal override (`RENEWAL_BY_VARIANT`), if it supplied one. */
+export type RenewalOverride = { deadline: string; weeksLeft: number }
+
+/**
+ * The deadline + weeks-left pair a surface should print: the demo persona's
+ * override when there is one, else the `LICENSE_TRACKER` fixture.
+ *
+ * EXTRACTED 2026-09-16, when the course header band became the SECOND surface
+ * printing both figures — `LearnerFocusedBand`'s KPI cells are the first, and
+ * the two sit inches apart on the same screen with the band's cells directly
+ * under the header's. Two components resolving one fact is how they come to
+ * disagree, which is the fork `displayedProgressPct` was extracted to close.
+ *
+ * Note the fallback is already LONG-FORM ("Nov 30, 2026") while every persona
+ * override is a slash date ("12/15/2026"), so the shape of the string depends
+ * on which arm ran. `longDate` below is what makes that invisible.
+ */
+export function resolveRenewal(renewal?: RenewalOverride): RenewalOverride {
+  const { expires } = LICENSE_TRACKER
+  const month = expires.month.charAt(0) + expires.month.slice(1, 3).toLowerCase()
+  return {
+    deadline: renewal?.deadline ?? `${month} ${expires.day}, ${expires.year}`,
+    weeksLeft: renewal?.weeksLeft ?? LICENSE_TRACKER.weeksLeft,
+  }
+}
+
+/**
+ * A deadline spelled out — "12/15/2026" and "Nov 30, 2026" both become
+ * "December 15, 2026".
+ *
+ * An UNPARSEABLE value is returned untouched rather than replaced with a
+ * placeholder: these strings are authored in fixtures, and printing the raw
+ * text is the honest failure. A guessed date would be a wrong fact rendered as
+ * a right one.
+ *
+ * Both accepted shapes parse in LOCAL time (neither is ISO-8601), so there is
+ * no UTC off-by-one to defend against here.
+ */
+export function longDate(value: string): string {
+  const parsed = new Date(value)
+  if (Number.isNaN(parsed.getTime())) return value
+  return parsed.toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' })
 }
 
 /* ─── status taxonomy (label variant) ────────────────────────────────── */
@@ -682,22 +747,42 @@ export function metaSegments(path: LearningPathSummary): string[] {
 }
 
 /**
- * The eyebrow over every Current Learning Path band — **"Current Learning
- * Progress"** as of 2026-09-09, renamed from "Current Learning Path".
+ * The eyebrow over every Current Learning Path band — **"Current Progress"** as
+ * of 2026-09-16.
+ *
+ * It has moved three times: "Current Learning Path" → "Current Learning
+ * Progress" (2026-09-09) → "Current Course Progress" → this. The first rename
+ * changed WHAT is described (progress through a path, rather than the path
+ * itself); the second changed the OBJECT, because the default version tracks a
+ * single course rather than a path of several; this one drops the object
+ * altogether.
+ *
+ * Which is the better answer to the problem the second rename created: the
+ * object is already named directly above this line — the block's own heading is
+ * the course, and with `dashboard-course-header` on, the page title is too. An
+ * eyebrow that repeats it is a third saying of one name. "Current Progress"
+ * labels the block without competing with the thing it labels, and it is
+ * equally true of a path, so the versions below stop being described by a word
+ * that fits only the default one.
  *
  * ONE constant because there are FIVE renderers of this label and they are
  * layout variants and states of the SAME band: the Marketing Focused top band,
  * the full-width Clp/Jump-Back-In band, the Learner Focused band, the completed
  * celebration, and the section lead above them in MembershipOverview. Renaming
- * four of five is the drift this replaces — a reviewer flipping a layout flag
- * would have watched the heading change with it.
+ * four of five is the drift this exists to prevent — a reviewer flipping a
+ * layout flag would watch the heading change with it.
+ *
+ * This also RESOLVES the warning the last rename carried. "Course" was a less
+ * exact word for Learner Focused and Marketing Focused, which still show XCEL's
+ * CE renewal path — a set of courses against an hour requirement. "Current
+ * Progress" is true of both, so the one-constant rule stops costing those two
+ * versions anything.
  *
  * The word "Path" survives everywhere it names the PAGE or the object (the
  * `learning-path` rail section, "Switch Learning Path", the Learning Paths
- * landing). This is only the dashboard band's heading, where what is shown is
- * progress through a path rather than the path itself.
+ * landing).
  */
-export const CURRENT_LEARNING_EYEBROW = 'Current Learning Progress'
+export const CURRENT_LEARNING_EYEBROW = 'Current Progress'
 
 /**
  * The percentage the Current Learning Progress band SHOWS.

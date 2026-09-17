@@ -72,12 +72,16 @@ describe('XCEL — a brand with no membership', () => {
   it('renders no membership pill and no "Non-Member" text in the rail', () => {
     renderRail('xcel')
     const rail = screen.getByRole('navigation', { name: 'Primary' })
-    // The greeting still renders — only the membership block is suppressed.
-    expect(
-      within(rail).getByText(
-        (_, el) => el?.tagName === 'SPAN' && /welcome back, alicia navarro/i.test(el.textContent ?? ''),
-      ),
-    ).toBeInTheDocument()
+    // A CONTROL, so "no membership pill" cannot pass because the rail failed to
+    // render at all. It used to be the "Welcome back, <name>" greeting — the
+    // rail's profile header was unwired on 2026-09-16 for an unrelated
+    // editorial reason (the header's account trigger carries the learner now),
+    // so the control moved to a row that is always there.
+    expect(within(rail).getByRole('button', { name: 'Home' })).toBeInTheDocument()
+    // …and the greeting is gone, which is the thing that changed. Asserted here
+    // rather than only in its own suite so this test cannot silently start
+    // measuring the removal instead of the brand rule.
+    expect(within(rail).queryByText(/welcome back/i)).toBeNull()
     // The "Membership" eyebrow above the tier pill. Scoped to the <p> so it
     // can't accidentally match the rail ITEM of the same name (which is also
     // gone for XCEL, and asserted separately below).
@@ -108,11 +112,11 @@ describe('XCEL — a brand with no membership', () => {
     // Rubi is a headline feature — hiding them with the same boolean as Partner
     // Offers is the shortcut this brand must not take.
     expect(within(rail).getByRole('button', { name: 'Exam & Cert Prep' })).toBeInTheDocument()
-    // "Rubi AI Tools" since 2026-09-10 — it read "AI Study Partner" before,
-    // XCEL's own wording on its site. Asserted against `careerToolsLabelFor`
-    // rather than the string, because WHICH XCEL-true name to use is an
-    // editorial call that has now moved once; what must not change is that it
-    // is not Elite's.
+    // "Rubi Insights" since 2026-09-16 — "Rubi AI Tools" from 2026-09-10, and
+    // "AI Study Partner" (XCEL's own wording on its site) before that. Asserted
+    // against `careerToolsLabelFor` rather than the string, because WHICH
+    // XCEL-true name to use is an editorial call that has now moved TWICE; what
+    // must not change is that it is not Elite's.
     expect(
       within(rail).getByRole('button', { name: careerToolsLabelFor('xcel') }),
     ).toBeInTheDocument()

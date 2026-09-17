@@ -29,6 +29,29 @@ const STROKE = 14
 const RADIUS = (GAUGE_SIZE - STROKE) / 2
 export const GAUGE_CIRCUMFERENCE = 2 * Math.PI * RADIUS
 
+/**
+ * Category bar height — **6, reduced from 8 on 2026-09-16** (the direct ask).
+ *
+ * Four bars at 8px stacked under a donut read as a block of weight rather than
+ * as a set of readings, and on QE Focused they are the widest element in the
+ * left column, so the thickness was the loudest thing in the block.
+ *
+ * 6 rather than an invented value: it is what `JumpBackInWidget`'s own progress
+ * bar uses, and that card now sits directly BELOW these in the same column at
+ * the same width. Two progress bars inches apart differing by two pixels is the
+ * "two treatments a few pixels apart" drift this repo keeps paying for.
+ *
+ * It is NOT 3, the Readiness Insights topic bars' height. Those are SCORES and
+ * there are fourteen of them; the note in `readinessFixtures` is explicit that
+ * a different job is allowed a different treatment. These are progress.
+ *
+ * The shared `ProgressBar` (from `StudyCalendarStatBand`) is still 8. That is a
+ * single overall bar with a percentage beside it rather than one of a stacked
+ * set, and it is a separate component — moving it is a call about every surface
+ * that renders one, not about this block.
+ */
+export const CATEGORY_BAR_HEIGHT = 6
+
 export const CAT_MANDATORY_COLOR = 'var(--color-category-mandatory)'
 export const CAT_ELECTIVE_COLOR = 'var(--color-category-elective)'
 
@@ -36,10 +59,15 @@ export const CAT_ELECTIVE_COLOR = 'var(--color-category-elective)'
 // module) so this file only exports components (react-refresh). Consumers import
 // categoryColorFor / resolvePathCategories / CATEGORY_PALETTE from there.
 import { categoryColorFor } from './progressGaugeUtil'
+import { unitCount } from '@/utils/unitLabel'
 
 /** Themed gauge colors (dark-band reframe). Defaults: neutral track + primary
  *  fill + dark center text. The two category arc colors never change. */
-export type GaugeColors = { track: string; fill: string; text: string }
+/** `text` is optional so a caller can override the track/fill and still take
+ *  the gauge's own default numeral colour — which is what a light ground wants.
+ *  Omitting it was previously impossible, so a light-surface caller had to
+ *  restate the near-black it already defaults to. */
+export type GaugeColors = { track: string; fill: string; text?: string }
 
 export function ProgressDonut({
   percent,
@@ -49,6 +77,7 @@ export function ProgressDonut({
   size = GAUGE_SIZE,
   caption,
   colors,
+  onDark = false,
 }: {
   percent: number
   /** When BOTH category breakdowns are present the donut renders two arcs. */
@@ -61,6 +90,9 @@ export function ProgressDonut({
   /** Center caption under the percent (e.g. "Complete"). Omitted on the panel. */
   caption?: string
   colors?: GaugeColors
+  /** Dark card — the N-category arcs switch to the light-stop palette. See
+   *  `CATEGORY_PALETTE_ON_DARK`; without it slot 0 renders at 1.11:1 on navy. */
+  onDark?: boolean
 }) {
   const track = colors?.track ?? 'var(--color-neutral-200)'
   const text = colors?.text ?? 'var(--color-neutral-darkest)'
@@ -69,7 +101,7 @@ export function ProgressDonut({
   // Mandatory/Elective pair.
   const segs: { completed: number; required: number; color: string }[] =
     categories && categories.length
-      ? categories.map((c, i) => ({ completed: c.completed, required: c.required, color: categoryColorFor(i) }))
+      ? categories.map((c, i) => ({ completed: c.completed, required: c.required, color: categoryColorFor(i, onDark) }))
       : mandatory != null && elective != null
         ? [
             { completed: mandatory.completed, required: mandatory.required, color: CAT_MANDATORY_COLOR },
@@ -183,12 +215,15 @@ function buildLegendList(props: {
   elective?: LearningPathCategoryBreakdown
   mandatoryLabel: string
   electiveLabel: string
+  onDark?: boolean
 }): LegendRow[] {
   if (props.categories && props.categories.length) {
     return props.categories.map((c, i) => ({
       key: c.key,
       label: c.label,
-      color: categoryColorFor(i),
+      // On a dark card the palette switches to its light stops — slot 0 and
+      // slot 3 are unusable on navy otherwise. See `CATEGORY_PALETTE_ON_DARK`.
+      color: categoryColorFor(i, props.onDark),
       breakdown: { completed: c.completed, required: c.required },
     }))
   }
@@ -205,6 +240,8 @@ export function CategoryBars({
   mandatoryLabel = 'Mandatory',
   electiveLabel = 'Elective',
   onDark = false,
+  track,
+  unit = 'hrs',
 }: {
   mandatory?: LearningPathCategoryBreakdown
   elective?: LearningPathCategoryBreakdown
@@ -215,12 +252,31 @@ export function CategoryBars({
   /** Dark-band reframe — light label text + translucent track (the dot/fill
    *  colors stay per the palette, which read on navy/teal). */
   onDark?: boolean
+  /**
+   * Track override.
+   *
+   * The default light track is `--color-neutral-100`, which is correct on a
+   * white card and measures **1.08:1** against the shell's `#f5f5f5` page grey
+   * — an empty bar with no visible track at all. A caller rendering on the page
+   * passes a darker groove. See `LearnerFocusedBand`'s `surface` note.
+   */
+  track?: string
+  /**
+   * What the requirements are counted in, short form. "hrs" by default, so
+   * every existing caller is unchanged; the QE path passes "days" because it
+   * measures days of XCEL's 7-day study plan rather than credit hours.
+   *
+   * Comes from the PATH (`LearningPathSummary.unitLabel`) rather than being
+   * chosen here — the band's KPI cell and meta line print the same unit, and
+   * two components deciding it independently is how they disagree.
+   */
+  unit?: string
 }) {
-  const list = buildLegendList({ categories, mandatory, elective, mandatoryLabel, electiveLabel })
+  const list = buildLegendList({ categories, mandatory, elective, mandatoryLabel, electiveLabel, onDark })
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minWidth: 0 }}>
       {list.map((row) => (
-        <CategoryBar key={row.key} label={row.label} color={row.color} breakdown={row.breakdown} onDark={onDark} />
+        <CategoryBar key={row.key} label={row.label} color={row.color} breakdown={row.breakdown} onDark={onDark} track={track} unit={unit} />
       ))}
     </div>
   )
@@ -245,7 +301,7 @@ export function CategoryLegendCompact({
   electiveLabel?: string
   onDark?: boolean
 }) {
-  const list = buildLegendList({ categories, mandatory, elective, mandatoryLabel, electiveLabel })
+  const list = buildLegendList({ categories, mandatory, elective, mandatoryLabel, electiveLabel, onDark })
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 12, flexShrink: 0 }}>
       {list.map((row) => (
@@ -309,17 +365,23 @@ function CategoryBar({
   color,
   breakdown,
   onDark,
+  track,
+  unit = 'hrs',
 }: {
   label: string
   color: string
   breakdown: LearningPathCategoryBreakdown
   onDark: boolean
+  /** Track override — see `CategoryBars`. */
+  track?: string
+  /** Count unit — see `CategoryBars`. */
+  unit?: string
 }) {
   const { completed, required } = breakdown
   const pct = required > 0 ? Math.min(100, Math.round((completed / required) * 100)) : 0
   const nameColor = onDark ? 'var(--color-text-inverse)' : 'var(--color-text-primary)'
   const countColor = onDark ? 'rgb(255 255 255 / 0.7)' : 'var(--color-text-secondary)'
-  const trackColor = onDark ? 'rgb(255 255 255 / 0.2)' : 'var(--color-neutral-100)'
+  const trackColor = track ?? (onDark ? 'rgb(255 255 255 / 0.2)' : 'var(--color-neutral-100)')
   const topRow: CSSProperties = {
     display: 'flex',
     alignItems: 'center',
@@ -335,10 +397,10 @@ function CategoryBar({
           {label}
         </span>
         <span style={{ color: countColor, fontWeight: 600 }}>
-          <b style={{ color: nameColor }}>{completed}</b> / {required} hrs
+          <b style={{ color: nameColor }}>{completed}</b> / {unitCount(required, unit)}
         </span>
       </div>
-      <div style={{ height: 8, borderRadius: 'var(--radius-pill)', background: trackColor, overflow: 'hidden' }}>
+      <div style={{ height: CATEGORY_BAR_HEIGHT, borderRadius: 'var(--radius-pill)', background: trackColor, overflow: 'hidden' }}>
         <div style={{ width: `${pct}%`, height: '100%', borderRadius: 'var(--radius-pill)', background: color }} />
       </div>
     </div>

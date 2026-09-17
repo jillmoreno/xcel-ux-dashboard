@@ -10,11 +10,6 @@ import { LearningPathsPanel } from '@/components/learning/LearningPathsPanel'
 import { useLearningPathsPanel } from '@/components/learning/LearningPathsPanelContext'
 import { DashboardVersionsPanel } from '@/components/dashboard/DashboardVersionsPanel'
 import { useDashboardVersionsPanel } from '@/components/dashboard/DashboardVersionsPanelContext'
-import { useMembershipPageVersionPanel } from '@/components/membership/MembershipPageVersionPanelContext'
-import {
-  MEMBERSHIP_PAGE_VERSIONS,
-  DEFAULT_MEMBERSHIP_PAGE_VERSION,
-} from '@/data/membershipPageVersions'
 import { useFeatureFlagPanel } from '@/components/account/FeatureFlagPanelContext'
 import { MembershipVersionsPanel } from '@/components/membership/MembershipVersionsPanel'
 import { useMembershipVersionsPanel } from '@/components/membership/MembershipVersionsPanelContext'
@@ -33,7 +28,7 @@ import {
   type MembershipVersionId,
 } from '@/data/membershipVersions'
 import { useAccount, professionFor, supportsMembership } from '@/context/AccountContext'
-import { useFeatureFlag, useFeatureFlags } from '@/context/FeatureFlagContext'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { activePathIdFor, learningPathsFor } from '@/data/learningFixtures'
 import { useDeviceFrame } from './DeviceFrameContext'
 import { useMobileNav } from './MobileNavContext'
@@ -67,13 +62,12 @@ export function Header() {
     closePanel: closeVersionsPanel,
   } = useDashboardVersionsPanel()
   const { openPanel: openFeatureFlagPanel } = useFeatureFlagPanel()
-  const {
-    open: membershipPageVersionOpen,
-    closePanel: closeMembershipPageVersionPanel,
-  } = useMembershipPageVersionPanel()
-  const { setVariant } = useFeatureFlags()
-  const membershipPageVersion =
-    useFeatureFlag('membership-page-version').variant ?? DEFAULT_MEMBERSHIP_PAGE_VERSION
+  // ARCHIVED 2026-09-16 — the "Membership Versions" picker was unwired with the
+  // `membership-page-version` flag it wrote (the XCEL flag audit). It configured
+  // the standalone Membership page, which XCEL cannot reach:
+  // `supportsMembership('xcel')` is false, so `/membership` redirects and
+  // `?section=membership` is refused. `MembershipPageVersionPanelContext`,
+  // `membershipPageVersions.ts` and `DashboardVersionsPanel` are all kept.
   const { open: jumpBackInOpen, closePanel: closeJumpBackInPanel } = useJumpBackInPanel()
   const {
     open: membershipVersionsOpen,
@@ -177,7 +171,11 @@ export function Header() {
     <div className="flex items-center" style={{ gap: 12 }} inert={noHeaderNav || undefined}>
       <CartButton />
       {showBell && <NotificationsMenu />}
-      <AccountMenu initials="SC" />
+      {/* No props — the menu resolves the learner from `useAccount()` and the
+          profile-avatar override, the same two sources the rail's profile
+          header reads. It used to be passed `initials="SC"`, which is not this
+          learner's initials and was the only value it ever received. */}
+      <AccountMenu />
     </div>
   )
   return (
@@ -360,27 +358,6 @@ export function Header() {
           // it slides from the right to match that now-right-anchored sheet.
           onBack={() => {
             closeVersionsPanel()
-            openFeatureFlagPanel()
-          }}
-          side="right"
-        />
-        {/* Membership Version picker (Full ⇄ Simple) for the rebrand's
-            "Membership" rail section — opened from the Feature Flag sheet's
-            "Membership Version" row. Stores its choice in the
-            `membership-page-version` flag; slides from the right + Back returns
-            to the flag sheet, matching the Dashboard Version picker. */}
-        <DashboardVersionsPanel
-          open={membershipPageVersionOpen}
-          onClose={closeMembershipPageVersionPanel}
-          title="Membership Versions"
-          versions={MEMBERSHIP_PAGE_VERSIONS}
-          activeVersionId={membershipPageVersion}
-          onSelectVersion={(id) => setVariant('membership-page-version', id)}
-          defaultVersionId={DEFAULT_MEMBERSHIP_PAGE_VERSION}
-          onSetDefault={() => {}}
-          hideSetDefault
-          onBack={() => {
-            closeMembershipPageVersionPanel()
             openFeatureFlagPanel()
           }}
           side="right"

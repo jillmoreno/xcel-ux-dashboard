@@ -97,6 +97,17 @@ export type ReadinessData = {
   /** The path this readiness is for — the heading says so, because a learner
    *  with two paths must not have to guess which one is being scored. */
   pathTitle: string
+  /**
+   * The licence's jurisdiction, threaded so the gauge's pass mark and the
+   * "On the day" facts table read ONE source (`examFactsFor`). Optional: a
+   * brand with no populated path has no sitting to describe, and the helper
+   * falls back to Florida — the licence every other XCEL fixture is authored
+   * against — rather than rendering an empty facts table.
+   *
+   * Set by `useReadiness`, not by `readinessForState`, because it comes from the
+   * learner's PATH rather than from the readiness state.
+   */
+  examState?: string
   /** 0-100, or `null` for a learner who has answered nothing. `null` is NOT
    *  zero: zero is a score, and it would earn an OFF TRACK chip a learner who
    *  has not sat a question has not earned. */
