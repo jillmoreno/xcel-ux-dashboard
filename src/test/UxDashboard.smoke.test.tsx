@@ -162,24 +162,36 @@ describe('section routing (sectionOf)', () => {
   })
 })
 
-describe('the restricted group is gated', () => {
-  it('prompts for a password instead of revealing Design', async () => {
+/**
+ * The in-app password is NOT enforced on the full build (2026-09-18). The
+ * Netlify site password is the lock on the full site, and on the public site
+ * the restricted group is absent altogether (PublicGateway.test.tsx) — so the
+ * modal had no job on either. These used to assert the opposite; they are
+ * inverted rather than deleted so re-enabling `ENFORCE_SECTION_GATE` fails
+ * here and gets re-decided.
+ */
+describe('the restricted group is open on the full build', () => {
+  it('opens Exploration on click — no password, no lock glyph', async () => {
     const user = userEvent.setup()
     renderDashboard()
-    await user.click(screen.getByRole('button', { name: /Design/ }))
-    expect(screen.queryByText('XCEL LMS — Desktop Platform')).not.toBeInTheDocument()
-    expect(screen.getByRole('dialog')).toBeInTheDocument()
-  })
-
-  it('a deep link into a gated section does not reveal it', () => {
-    renderDashboard('/?section=design')
-    expect(screen.queryByText('XCEL LMS — Desktop Platform')).not.toBeInTheDocument()
-    expect(screen.getByRole('dialog')).toBeInTheDocument()
-  })
-
-  it('leaves the open sections open', () => {
-    renderDashboard('/?section=demo')
+    expect(screen.queryByText(/— locked/)).not.toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: /Exploration/ }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.getByText('XCEL LMS — Desktop Platform')).toBeInTheDocument()
+  })
+
+  it('a deep link into a restricted section lands on it directly', () => {
+    renderDashboard('/?section=exploration')
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Exploration')
+  })
+
+  it('the gate metadata is still there — the public build filters on it', () => {
+    // Not a DOM assertion: the divider and its eyebrow are what the metadata
+    // draws on the full build, so their presence proves the `gate` fields
+    // survived the un-enforcement.
+    renderDashboard()
+    expect(screen.getByText(/UX & Dev Access/i)).toBeInTheDocument()
   })
 })
 

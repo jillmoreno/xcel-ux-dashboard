@@ -138,6 +138,24 @@ type UxSection =
  */
 const DEV_GATE_ID = 'design-and-development'
 
+/**
+ * Whether the in-app password is ENFORCED. `false` since 2026-09-18, at
+ * Jillienne's request, and the reasoning is the two-site split:
+ *
+ * - On the FULL site the Netlify site password is already the lock. Asking
+ *   for a second one inside the app was a second door on a room the reviewer
+ *   had already been let into.
+ * - On the PUBLIC site the gated sections are not locked, they are ABSENT
+ *   (`VISIBLE_SECTIONS`), so there is nothing for a password to guard.
+ *
+ * So on neither build does the modal have a job. The `gate` field on each
+ * `SectionDef` STAYS — it is no longer "ask for a password" but "this section
+ * is not for stakeholders", and it is what the public build filters on. Do not
+ * strip the gates to remove the prompt; flip this instead. Flipping it back
+ * restores the modal, the lock glyphs and the deep-link hold exactly as before.
+ */
+const ENFORCE_SECTION_GATE = false
+
 type SectionDef = {
   id: UxSection
   label: string
@@ -1041,7 +1059,8 @@ export function UxDashboardPage() {
   // than a list of titles. The link is not discarded, just held: the reviewer
   // lands on Demo with the modal up, and unlocking restores the target below.
   const urlDef = urlSection ? VISIBLE_SECTIONS.find((d) => d.id === urlSection) : undefined
-  const urlLocked = Boolean(urlDef?.gate) && !isPrototypeUnlocked(urlDef!.gate!.id)
+  const urlLocked =
+    ENFORCE_SECTION_GATE && Boolean(urlDef?.gate) && !isPrototypeUnlocked(urlDef!.gate!.id)
   const [section, setSectionState] = useState<UxSection>(
     urlLocked ? 'demo' : (urlSection ?? 'demo'),
   )
@@ -1127,7 +1146,7 @@ export function UxDashboardPage() {
   const [query, setQuery] = useState('')
   const [status, setStatus] = useState<FeatureStatusKey | 'all'>('all')
 
-  const isOpen = (def: SectionDef) => !def.gate || unlocked[def.gate.id]
+  const isOpen = (def: SectionDef) => !ENFORCE_SECTION_GATE || !def.gate || unlocked[def.gate.id]
 
   // Demo shows no dev-cycle status. Everything in it is presentation-ready by
   // definition — that is what the section IS — so a status tag there either

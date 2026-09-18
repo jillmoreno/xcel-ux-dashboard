@@ -100,13 +100,21 @@ what sits in Demo is a decision about what a stakeholder may see without the
 password — `UxDashboard.smoke.test.tsx` compares the whole section against an
 expected set, in both directions, so promoting or demoting a row fails a test
 first. It is also the one row in the file that is an in-app ROUTE rather than a
-standalone HTML document; see "The one in-app row" below. All eight restricted sections share **one gate id**
-(`design-and-development`) and therefore one password, so a reviewer types it
-once. The password comes from `getPrototypePassword()` — `Password123` unless
-overridden. Selecting a locked section opens the modal *over wherever you are*,
-so cancelling can't strand you, and a deep link into a gated section is checked
-against the **feature's own** section, not the one being viewed — neither a
-side-door link nor cancelling reveals a gated spec.
+standalone HTML document; see "The one in-app row" below.
+
+**The in-app password is NOT enforced (2026-09-18)** — `ENFORCE_SECTION_GATE`
+in `UxDashboardPage` is `false`. The eight restricted sections still carry a
+`gate` and still share one gate id (`design-and-development`), but the field
+now means "not for stakeholders", which the PUBLIC build filters on, rather
+than "ask for a password". The reasoning is the two-site split below: on the
+full site the Netlify site password is already the lock, and on the public site
+these sections are absent, so the modal had no job on either build. The
+mechanics are all still there behind the constant — `getPrototypePassword()`,
+the modal opening *over wherever you are*, the deep-link hold checked against
+the **feature's own** section — so flipping it back restores the old behaviour
+exactly. `UxDashboard.smoke.test.tsx` asserts the un-enforced state, so
+re-enabling it fails a test and gets re-decided. Do NOT strip the `gate` fields
+to remove the prompt: that would put the sections on the public site.
 
 **Which section a row lands in** is `sectionOf()`: `done` outranks everything,
 then `devStatus`, then `category` as a fallback. Design and Development are the
