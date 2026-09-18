@@ -948,14 +948,6 @@ function sectionOf(
   return 'design'
 }
 
-/** True when the section placement is a fallback rather than authored. */
-function isGuess(f: PrototypeFeature): boolean {
-  // `done` is an authored placement too — a done feature is in Done because
-  // the data says so, not because the category fallback guessed. Counting it
-  // would have the banner claim the Done section was assembled by guesswork.
-  return !f.devStatus && !f.done
-}
-
 /* ── Page ─────────────────────────────────────────────────────────────────── */
 
 const ICONS = { grid: Grid, calendar: CalendarDay, flag: Flag, monitor: Monitor, lightbulb: Lightbulb } as const
@@ -1231,8 +1223,6 @@ export function UxDashboardPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps -- statusTick invalidates an impure localStorage read
   }, [inSection, q, status, done, inDesign, statusTick])
 
-  const guesses = bySection[section].filter(isGuess).length
-
   // The palette, resolved once so the shell and the root mirror below cannot
   // disagree about which scheme is active.
   const paletteVars = PALETTES[palette][theme]
@@ -1487,21 +1477,6 @@ export function UxDashboardPage() {
                   />
                 ))}
               </div>
-            )}
-
-            {/* Only Design and Development are split BY devStatus, so only they
-                can be split wrongly by its absence. The banner used to render
-                anywhere but Demo, which meant a new section inherited copy
-                written for Development ("the testing links have no status of
-                their own") that was not true of it. */}
-            {guesses > 0 && (section === 'design' || section === 'development') && (
-              <p style={noteStyle}>
-                <strong>{guesses}</strong> of these are placed by category, not by an authored status —{' '}
-                {section === 'design'
-                  ? 'anything without a devStatus lands here by default.'
-                  : 'they fall here on category alone.'}{' '}
-                Authoring <code style={codeStyle}>devStatus</code> on them is what makes this split real.
-              </p>
             )}
 
             {rows.length === 0 ? (
@@ -2218,20 +2193,6 @@ const pillCountActiveStyle: CSSProperties = {
 const statusDotStyle: CSSProperties = { width: 7, height: 7, borderRadius: '50%', flex: 'none' }
 
 const countStyle: CSSProperties = { marginLeft: 'auto', fontSize: 12.5, color: 'var(--ux-text-2)' }
-
-/* The "placed by category" notice. On the amber warning ramp it read as an
-   error inside a green page; it is a note, so it sits on the palette's citron
-   instead and keeps its meaning from the copy + the left rule. */
-const noteStyle: CSSProperties = {
-  margin: '0 0 14px',
-  padding: '10px 14px',
-  borderLeft: '3px solid var(--ux-hue-gold)',
-  borderRadius: '0 var(--radius-md) var(--radius-md) 0',
-  background: 'color-mix(in srgb, var(--ux-hue-gold) 16%, var(--ux-card))',
-  color: 'var(--ux-text)',
-  fontSize: 12.5,
-  lineHeight: 1.6,
-}
 
 const codeStyle: CSSProperties = { fontFamily: 'ui-monospace, monospace', fontSize: 12 }
 

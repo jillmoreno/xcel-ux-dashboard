@@ -101,6 +101,12 @@ function componentLines(c: DevHandoffComponent): string[] {
   const badge = c.badge ? ` — ${c.badge}${when ? ` (${when})` : ''}` : ''
   const out = [`### ${c.name}${badge}`, '', locationLine(c.location), '', c.summary, '']
 
+  // The designer's own words lead, as they do on screen — this export is what
+  // gets pasted into a ticket, so it is the one place they matter most.
+  // Paragraphs are already blank-line separated in the field, so it passes
+  // through as-is.
+  if (c.quickSummary) out.push('#### Quick Summary from Jill', '', c.quickSummary.trim(), '')
+
   if (c.userStory) out.push(...userStoryLines(c.userStory))
 
   if (c.variants.length) {

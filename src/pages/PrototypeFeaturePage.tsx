@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
-import { ArrowRight, Bolt, CircleCheck, ClipboardList, Lightbulb, LockSolid, MessageCircle, Share2, X } from '@/icons'
+import { ArrowRight, Bolt, CircleCheck, ClipboardList, Download, Lightbulb, LockSolid, MessageCircle, Share2, X } from '@/icons'
 import { PillTabs, type PillTabItem } from '@/components/ui/PillTabs'
 import { Tabs, type TabItem } from '@/components/ui/Tabs'
 import { ComponentLivePreview } from './PrototypeHandoffDetailPage'
-import { PrototypeBar } from '@/components/layout/PrototypeBar'
+import { PrototypeBar, PROTOTYPE_BAR_HEIGHT } from '@/components/layout/PrototypeBar'
 import { setPrototypeWalkthrough } from '@/components/layout/prototypeWalkthrough'
 import { useAccount, professionFor, type Membership } from '@/context/AccountContext'
 import {
@@ -34,11 +34,16 @@ import {
   DevHandoffDesignSpecBody,
   DevHandoffAcceptanceBody,
   DevHandoffStatesMatrixBody,
+  DevHandoffUserStoryBody,
 } from '@/components/prototype/DevHandoffNotesBody'
 import { getUserJiraTickets } from '@/components/prototype/jiraTicketsUtil'
 import { FeaturePreviewThumb } from '@/components/prototype/FeaturePreviewThumb'
 import { buildEmbedSrc, primaryPreviewSrc } from '@/components/prototype/featurePreviewSrc'
 import { RelatedJiraTickets } from '@/components/prototype/RelatedJiraTickets'
+import {
+  featureHandoffMarkdown,
+  handoffMarkdownFilename,
+} from '@/components/prototype/handoffMarkdown'
 
 /**
  * Per-feature gateway (`/prototype/:featureId`). Lists ONLY the specific pages
@@ -86,9 +91,13 @@ export function PrototypeFeaturePage({
   const feature = featureId ? prototypeFeatureById(featureId) : undefined
   const { brand, membership, setAccount } = useAccount()
   // Which gateway tab is showing (declared before any early return so the hook
-  // order stays stable). Defaults to Design & Product Decisions — the tab that
-  // carries the important information.
-  const [activeTab, setActiveTab] = useState<GatewayTab>('handoff')
+  // order stays stable). Defaults to UI Components & UX Logic, which leads the
+  // set as of 2026-08-31: the components ARE the feature, and the decisions log
+  // is the record of how they got that way.
+  // No hash check needed here any more: a `#<componentId>--acceptance` deep link
+  // wants the components tab, and that is now the default. `componentIdFromHash`
+  // is still what opens the right COMPONENT inside it — see UiComponentsSection.
+  const [activeTab, setActiveTab] = useState<GatewayTab>('components')
 
   // If a feature pins a brand / membership (e.g. STC for the study calendar),
   // switch the demo account on ENTRY so its pages render in the right context.
@@ -170,7 +179,28 @@ export function PrototypeFeaturePage({
       maxWidth={shellMaxWidth}
       embedded={embedded}
     >
-      <header style={{ marginBottom: 32 }}>
+      {/* TWO COLUMNS (2026-08-31). Everything used to stack in one column, which
+          put the thumb's 244px and the CTA's 40px between the blurb and the tab
+          bar — 41% of a 598px header spent on a picture, with the page's actual
+          navigation pushed to 709px, 71% down a 1000px viewport.
+          The picture and the control that opens it stay together as one offer;
+          they just move beside the text instead of under it.
+
+          `flexWrap` with a `1 1 420px` text column means this degrades by
+          STACKING (thumb below text) rather than by crushing either side — the
+          gateway renders at ~1016px embedded and 1280 standalone, and the rail
+          is a fixed 360 because that is the thumb's real width. */}
+      <header
+        style={{
+          marginBottom: 32,
+          display: 'flex',
+          alignItems: 'flex-start',
+          gap: 32,
+          rowGap: 20,
+          flexWrap: 'wrap',
+        }}
+      >
+        <div style={{ flex: '1 1 420px', minWidth: 0 }}>
         <p
           style={{
             margin: 0,
@@ -201,6 +231,7 @@ export function PrototypeFeaturePage({
         <p
           style={{
             margin: '14px 0 0',
+            maxWidth: GATEWAY_PROSE_MEASURE,
             fontSize: 14,
             lineHeight: '22px',
             color: 'var(--color-text-secondary)',
@@ -208,25 +239,27 @@ export function PrototypeFeaturePage({
         >
           {feature.blurb}
         </p>
-        <RelatedJiraTickets
-          scopeKey={feature.id}
-          configTickets={feature.jiraTickets}
-          inherited={inheritedJiraTickets}
-        />
-        {feature.brands && feature.brands.length > 0 && (
-          <div
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              flexWrap: 'wrap',
-              gap: 8,
-              marginTop: 16,
-            }}
-          >
+        {/* ONE metadata row, not two. Brands and Jira were stacked rows of the
+            same label+chips shape, which read as a single noisy zone — and the
+            Jira half spent a whole row rendering "None linked yet". They share a
+            line now, with a hairline between them so the two groups still read
+            as separate facts, and the row wraps when it runs out of width. */}
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+            gap: 8,
+            rowGap: 10,
+            marginTop: 16,
+          }}
+        >
+          {feature.brands && feature.brands.length > 0 && (
             <span style={{ fontSize: 13, fontWeight: 600, color: 'var(--color-text-tertiary)' }}>
               Demo brands:
             </span>
-            {feature.brands.map((b) => {
+          )}
+          {(feature.brands ?? []).map((b) => {
               const active = b === brand
               return (
                 <button
@@ -256,34 +289,79 @@ export function PrototypeFeaturePage({
                 </button>
               )
             })}
-          </div>
-        )}
+          {/* Spacing, not a rule, separates the two groups. A hairline divider
+              sat here and dangled at the end of the line whenever the row
+              wrapped — which it does at the embedded gateway's 624px text
+              column — leaving a stray mark above an orphaned "+ Add ticket".
+              Extra left margin degrades harmlessly: wrapped, it is just leading
+              space. The groups still read apart because the brand pills are
+              filled and colour-coded and the ticket affordance is not. */}
+          <span style={{ marginLeft: feature.brands?.length ? 10 : 0 }}>
+            <RelatedJiraTickets
+              compact
+              scopeKey={feature.id}
+              configTickets={feature.jiraTickets}
+              inherited={inheritedJiraTickets}
+            />
+          </span>
+        </div>
         {/* Primary CTA — directly under Demo brands, so the live prototype is
             one click from the top of the gateway on every tab (it used to be a
             text link inside the Live Preview tab's caption). Follows the
             Demo-brands pick, so it opens the brand on screen. */}
         {/* The picture sits directly above the control that opens it, so the
             two read as one offer rather than as decoration parked elsewhere. */}
-        <FeaturePreviewThumb
-          feature={feature}
-          src={headerPreviewSrc}
-          width={360}
-          height={244}
-          style={{
-            marginTop: 20,
-            borderRadius: 'var(--radius-lg)',
-            boxShadow: 'var(--shadow-card)',
-          }}
-        />
-        {headerPreviewSrc && (
-          <div style={{ marginTop: 16 }}>
-            <OpenLivePreviewButton href={headerPreviewSrc} featureId={feature.id} />
+        </div>
+
+        {/* Media rail. `flex: none` at the thumb's own 360 so it never stretches
+            or shrinks — scaling it would change how the 1440px iframe inside
+            crops, and the whole point of the thumb is that it is a true 1/4
+            render rather than a resized one. */}
+        <div style={{ width: 360, flex: 'none' }}>
+          <FeaturePreviewThumb
+            feature={feature}
+            src={headerPreviewSrc}
+            width={360}
+            height={244}
+            style={{
+              display: 'block',
+              borderRadius: 'var(--radius-lg)',
+              boxShadow: 'var(--shadow-card)',
+            }}
+          />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 16 }}>
+            {headerPreviewSrc && (
+              <OpenLivePreviewButton href={headerPreviewSrc} featureId={feature.id} />
+            )}
+            <GatewayActionsMenu feature={feature} />
           </div>
-        )}
+        </div>
       </header>
 
-      {/* Tab bar — the same three tabs on every feature. */}
-      <div style={{ marginBottom: 24 }}>
+      {/* Tab bar — the same three tabs on every feature, and STICKY: this page
+          runs to ~3,700px on a documented feature, and each tab's body is long
+          enough that a reviewer wants to switch from the bottom of it. Static
+          tabs meant scrolling all the way back up to change view.
+
+          The background has to be opaque or the content scrolls through it.
+          `--ux-bg` is defined only when the gateway is embedded in the UX
+          dashboard's content column (it inherits from that shell's palette
+          root), so the fallback covers the standalone /prototype/:id route —
+          one declaration, correct in both, and it tracks each surface's own
+          light/dark values instead of pinning a colour. */}
+      <div
+        style={{
+          position: 'sticky',
+          // Offset by the prototype bar ONLY when it is on screen. That bar is
+          // itself sticky at z-index 60, so pinning to 0 on the standalone route
+          // put the tabs underneath it — visible to a scroll listener, invisible
+          // to a reader. Embedded in the UX dashboard there is no bar, so 0.
+          top: embedded ? 0 : PROTOTYPE_BAR_HEIGHT,
+          zIndex: 5,
+          marginBottom: 24,
+          background: 'var(--ux-bg, var(--color-surface-page))',
+        }}
+      >
         <Tabs items={tabItems} active={effectiveTab} onChange={setActiveTab} />
       </div>
 
@@ -301,7 +379,7 @@ export function PrototypeFeaturePage({
 
       {effectiveTab === 'components' &&
         (feature.devHandoff?.uiComponents?.length ? (
-          <UiComponentsSection components={feature.devHandoff.uiComponents} featureId={feature.id} />
+          <UiComponentsSection components={feature.devHandoff.uiComponents} embedded={embedded} />
         ) : (
           <TabEmptyState featureId={feature.id} field="devHandoff.uiComponents">
             No per-component breakdown yet — this feature&rsquo;s UI components and the UX logic
@@ -363,13 +441,27 @@ function TabEmptyState({
  *  `PrototypeFeaturePage` to introduce a new tab. */
 type GatewayTab = 'handoff' | 'components' | 'live'
 
+/**
+ * The component id inside a section deep link, or null.
+ *
+ * Anchors are `<componentId>--<sectionId>`, so a link a developer shares points
+ * at a section of one component. Without this the hash only worked if you were
+ * ALREADY on that component — which makes it a bookmark, not a link. Both the
+ * gateway's tab and the component list seed from it so a pasted URL opens the
+ * right place from cold. */
+function componentIdFromHash(): string | null {
+  const hash = typeof window === 'undefined' ? '' : window.location.hash.slice(1)
+  const i = hash.indexOf('--')
+  return i > 0 ? hash.slice(0, i) : null
+}
+
 /** The fixed three-tab set every feature gateway shows, in order. Labels match
  *  each panel's own heading. The ids are deliberately unchanged from when the
  *  tabs were named "Dev Handoff Notes" / "UI Components and UX Rules" — they're
  *  internal, and renaming them would churn nothing but risk. */
 const GATEWAY_TABS: TabItem<GatewayTab>[] = [
-  { id: 'handoff', label: 'Design & Product Decisions' },
   { id: 'components', label: 'UI Components & UX Logic' },
+  { id: 'handoff', label: 'Design & Product Decisions' },
   { id: 'live', label: 'Live Preview' },
 ]
 
@@ -625,6 +717,77 @@ function LivePreviewTab({ feature, pages }: { feature: PrototypeFeature; pages: 
  * click from the top of the gateway on ANY tab — it used to be reachable only
  * as a text link buried in the Live Preview tab's caption.
  */
+/**
+ * The gateway's secondary actions, beside "Open live preview".
+ *
+ * A menu rather than three more buttons: none of these is the thing a reviewer
+ * came to do, and three peers beside the primary CTA would flatten the one
+ * action that matters into a row of four.
+ *
+ * Share Link copies the DEPLOYED url, not the current one — the whole point of
+ * sharing is that it works for someone who is not running the dev server.
+ */
+function GatewayActionsMenu({ feature }: { feature: PrototypeFeature }) {
+  const [toast, setToast] = useState<string | null>(null)
+
+  const markdown = () => featureHandoffMarkdown(feature, PROTOTYPE_SHARE_ORIGIN)
+
+  const download = () => {
+    const blob = new Blob([markdown()], { type: 'text/markdown;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const a = document.createElement('a')
+    a.href = url
+    a.download = handoffMarkdownFilename(feature)
+    document.body.appendChild(a)
+    a.click()
+    a.remove()
+    // Released on the next tick, not immediately: revoking synchronously can
+    // beat the download starting in some browsers.
+    setTimeout(() => URL.revokeObjectURL(url), 0)
+    setToast('Handoff downloaded')
+  }
+
+  return (
+    <>
+      <ActionMenu
+        label="More actions"
+        triggerLabel="Actions"
+        items={[
+          {
+            id: 'share',
+            label: 'Share Link',
+            icon: <Share2 size={15} aria-hidden />,
+            onSelect: () => {
+              void copyToClipboard(`${PROTOTYPE_SHARE_ORIGIN}/prototype/${feature.id}`).then(() =>
+                setToast('Link copied'),
+              )
+            },
+          },
+          {
+            id: 'download-md',
+            label: 'Download .md',
+            icon: <Download size={15} aria-hidden />,
+            onSelect: download,
+          },
+          {
+            id: 'copy-md',
+            label: 'Copy .md',
+            icon: <ClipboardList size={15} aria-hidden />,
+            onSelect: () => {
+              void copyToClipboard(markdown()).then(() => setToast('Handoff copied as Markdown'))
+            },
+          },
+        ]}
+      />
+      <Toast open={toast != null} onClose={() => setToast(null)} title={toast ?? ''} tone="success">
+        {toast === 'Link copied'
+          ? 'The walkthrough link is on your clipboard.'
+          : 'Paste it into a ticket or PR description.'}
+      </Toast>
+    </>
+  )
+}
+
 function OpenLivePreviewButton({ href, featureId }: { href: string; featureId: string }) {
   return (
     <a
@@ -687,33 +850,171 @@ const liveFrameStyle: React.CSSProperties = {
  *  a detail screen. With a single component a tile is pure indirection — there's
  *  nothing to choose between, so the click buys the reader nothing and hides the
  *  UX logic one level down. With several, the tiles are real navigation. */
+/**
+ * The sections of one component's handoff, in reading order.
+ *
+ * These were SUB-TABS for a few hours on 2026-08-31 and that was wrong — see
+ * `UiComponentDetail` for why. They are now jump links over one continuous
+ * scroll, which is why this is `id` + `label` rather than a tab-item type.
+ */
+const COMPONENT_SECTIONS = [
+  // Quick Summary leads (2026-09-09, Jillienne): the designer says what this
+  // thing IS, in their own plain words, before the developer meets a single
+  // token or acceptance criterion. The User Story follows — the PO's framing,
+  // read against the designer's.
+  //
+  // It REPLACED the live component render, which used to lead. That render is
+  // still what the row thumbnails draw (`ComponentThumb`), so `ComponentLivePreview`
+  // is still wired; it just no longer opens the detail. The reasoning: a picture
+  // of the component answers "am I on the right one", which the row list already
+  // answered by the time you are here — and it answered nothing about intent,
+  // which is the thing a handoff exists to carry.
+  //
+  // This array's order MUST match the render order below: the scroll-spy walks
+  // it and takes the last heading past the line, so a mismatch highlights the
+  // wrong chip.
+  // Named, not generic: the heading attributes the words. It is the only
+  // section on the page written by a person rather than derived from the code,
+  // and saying whose it is does the job the removed explainer line was doing.
+  { id: 'quick-summary', label: 'Quick Summary from Jill' },
+  { id: 'story', label: 'User Story' },
+  { id: 'logic', label: 'UX Logic' },
+  { id: 'spec', label: 'Design Spec' },
+  { id: 'acceptance', label: 'Acceptance' },
+  { id: 'states', label: 'States' },
+  { id: 'notes', label: 'Notes' },
+] as const
+
+type ComponentSectionId = (typeof COMPONENT_SECTIONS)[number]['id']
+
+/** Which sections a component actually has — drives the row's chips, so the list
+ *  says what is documented before you spend a click finding out. */
+function authoredSections(c: DevHandoffComponent): string[] {
+  const out: string[] = []
+  if (c.quickSummary) out.push('Quick Summary')
+  if (c.userStory) out.push('User Story')
+  if (c.variants.length) out.push(`${c.variants.length} variant${c.variants.length === 1 ? '' : 's'}`)
+  if (c.uiUxLogic) out.push('UX Logic')
+  if (c.designSpec) out.push('Design Spec')
+  if (c.acceptanceCriteria?.length) out.push('Acceptance')
+  if (c.statesMatrix?.length) out.push('States')
+  return out
+}
+
+/**
+ * "UPDATED · 8/31/26" from an ISO `badgeDate`.
+ *
+ * Parsed by hand rather than through `new Date(iso)` — that is UTC, and in a
+ * western timezone it renders the previous day. This repo has already been
+ * bitten by exactly that (see the three `daysUntil` copies), so no Date object
+ * is constructed here at all: it is pure string math and cannot shift.
+ */
+function formatBadgeDate(iso: string): string | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso)
+  if (!m) return null
+  return `${Number(m[2])}/${Number(m[3])}/${m[1].slice(2)}`
+}
+
+/** The status badge, with its date when one is authored. One component so the
+ *  row and the detail header always render it the same way. */
+function HandoffBadge({
+  label,
+  date,
+  style,
+}: {
+  label: string
+  date?: string
+  style?: React.CSSProperties
+}) {
+  const when = date ? formatBadgeDate(date) : null
+  return (
+    <span style={{ ...handoffBadgeStyle, ...style }}>
+      {label}
+      {when && (
+        // WEIGHT, never opacity, is what marks the date as the qualifier.
+        // This badge's palette has limited headroom (7.62:1), so a dimmed
+        // headroom, so dimming it fails AA at this 10px size — measured
+        // 3.00:1 at 70%, and still 4.42:1 at 90%, against a 4.5 threshold.
+        // The middot already does the separating work.
+        <span style={{ fontWeight: 600 }}> &middot; {when}</span>
+      )}
+    </span>
+  )
+}
+
+const handoffBadgeStyle: React.CSSProperties = {
+  fontSize: 10,
+  fontWeight: 700,
+  letterSpacing: '0.06em',
+  textTransform: 'uppercase',
+  // Warning ramp, not literals. It does NOT invert under [data-theme='dark'],
+  // which matters because the UX dashboard sets that attribute — so these hold
+  // in every appearance. 800 on 100 measures 7.62:1, up from the 5.40:1 the
+  // hand-picked #8a5a00 on #fef3e2 gave.
+  color: 'var(--color-warning-800)',
+  background: 'var(--color-warning-100)',
+  border: '1px solid var(--color-warning-200)',
+  borderRadius: 'var(--radius-pill)',
+  padding: '2px 8px',
+  lineHeight: 1.4,
+  whiteSpace: 'nowrap',
+}
+
+/** The bordered frame each handoff section's body sits in. */
+const inlineHandoffFrameStyle: React.CSSProperties = {
+  padding: 24,
+  background: 'var(--color-surface-page)',
+  border: '1px solid var(--color-border-subtle)',
+  borderRadius: 'var(--radius-lg)',
+}
+
 function UiComponentsSection({
   components,
-  featureId,
+  embedded = false,
 }: {
   components: DevHandoffComponent[]
-  featureId: string
+  /** Forwarded so the section nav can pin below the gateway tab bar, whose own
+   *  sticky offset depends on whether the prototype bar is on screen. */
+  embedded?: boolean
 }) {
   const ordered = [...components]
     .map((c, i) => ({ c, i }))
     .sort((a, b) => (a.c.order ?? a.i + 1000) - (b.c.order ?? b.i + 1000))
     .map(({ c }) => c)
 
-  const [activeId, setActiveId] = useState(ordered[0]?.id ?? '')
-  const active = ordered.find((c) => c.id === activeId) ?? ordered[0]
+  // `null` = the list. A component id = its detail. Master/detail rather than a
+  // persistent side rail because several previews run to ~1232px wide (the
+  // renewal-states trio is three real surfaces side by side) — a rail would
+  // squeeze the one thing the page exists to show.
+  const [openId, setOpenId] = useState<string | null>(() => {
+    const fromHash = componentIdFromHash()
+    return fromHash && components.some((c) => c.id === fromHash) ? fromHash : null
+  })
 
   if (ordered.length === 0) return null
+
+  // One component: no list to choose from, so go straight to the detail and
+  // drop the back link. A list of one is pure indirection — the same reason the
+  // tile grid was removed in the first place.
   if (ordered.length === 1) {
-    return <UiComponentInline component={ordered[0]} featureId={featureId} showPreview />
+    return <UiComponentDetail component={ordered[0]} embedded={embedded} />
   }
 
-  const items: PillTabItem<string>[] = ordered.map((c) => ({
-    id: c.id,
-    // The authored short form when there is one — the full `name` is often a
-    // sentence ("Sheets — Manage Membership + Your Memberships") that would
-    // blow the strip's width.
-    label: c.tabLabel ?? c.name,
-  }))
+  const open = openId ? ordered.find((c) => c.id === openId) : null
+
+  if (open) {
+    return (
+      <UiComponentDetail
+        // Keyed so switching components remounts the panel — several previews
+        // hold local state (a selected tier, an open sheet) and a stale one
+        // would carry into the next component's render.
+        key={open.id}
+        component={open}
+        embedded={embedded}
+        onBack={() => setOpenId(null)}
+      />
+    )
+  }
 
   return (
     <section>
@@ -723,145 +1024,638 @@ function UiComponentsSection({
           fontSize: 14,
           lineHeight: '22px',
           color: 'var(--color-text-secondary)',
-          maxWidth: '72ch',
+          maxWidth: GATEWAY_PROSE_MEASURE,
         }}
       >
-        Each surface from the Live Preview, broken down into its own handoff — the component, where
-        it lives, its variants, and the UX rules that drive it. Pick one to read its spec beside a
-        live render of the real thing.
+        Each surface from the Live Preview, broken down into its own handoff. Open one for the
+        designer&rsquo;s summary of what it is for, then the spec.
       </p>
-      {/* Pills, not underline tabs: this strip sits directly under the
-        * gateway's own underline tab bar, and the same control twice reads as
-        * one filter set nested in another rather than a level below it. Pills
-        * are also what the app uses everywhere else for a segmented picker. */}
-      <PillTabs
-        size="compact"
-        label="Component"
-        items={items}
-        active={active.id}
-        onChange={setActiveId}
-      />
-      {/* Keyed so switching components remounts the preview — several previews
-       *  hold their own local state (a selected tier, an open sheet), and a
-       *  stale one would carry into the next component's render. */}
-      <UiComponentInline key={active.id} component={active} featureId={featureId} showPreview />
+      {/* Rows, not a pill strip. A pill gives a truncated label and nothing
+        * else; at six components with names like "Sheets — Manage Membership +
+        * Your Memberships" the strip was a row of abbreviations. A row carries
+        * the full name, the summary, and chips naming what is actually
+        * documented — so the list answers "is there a spec on this one?"
+        * without spending a click. */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {ordered.map((c, i) => (
+          <UiComponentRow key={c.id} component={c} index={i + 1} onOpen={() => setOpenId(c.id)} />
+        ))}
+      </div>
     </section>
   )
 }
 
-function UiComponentInline({
+/**
+ * An inert miniature of a component's own live preview, for the row list.
+ *
+ * Same idea as `FeaturePreviewThumb` — a live render rather than a capture,
+ * because there is no build step here to re-shoot captures and a static one
+ * starts drifting the moment the component changes. Different mechanism: these
+ * previews are inline React, not an iframe, so the miniature is a CSS scale of
+ * the real thing rather than a shrunken document.
+ *
+ * COST is the whole design problem. Six previews is not six cheap components —
+ * the renewal-states trio alone renders six states across three surfaces. So
+ * this mounts NOTHING until the row is near the viewport, and once mounted it
+ * disconnects: a list that never scrolls pays for the rows you can see.
+ *
+ * Inert by construction (`aria-hidden`, `pointer-events: none`, and it renders
+ * inside a button) — it is a picture of the component, not a second copy to
+ * click. The scale shows the top-left, which is where every one of these
+ * previews puts its most identifying content.
+ */
+function ComponentThumb({ component }: { component: DevHandoffComponent }) {
+  const ref = useRef<HTMLDivElement | null>(null)
+  const [mounted, setMounted] = useState(false)
+  const componentId = component.id
+
+  useEffect(() => {
+    const el = ref.current
+    // An authored image needs no observer and no mount — the whole point of it
+    // is that nothing boots.
+    if (!el || mounted || component.thumbnail) return
+    const io = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return
+        setMounted(true)
+        io.disconnect()
+      },
+      // Ahead of the fold, so a scroll finds the picture already there rather
+      // than watching it pop in.
+      { rootMargin: '300px' },
+    )
+    io.observe(el)
+    return () => io.disconnect()
+  }, [mounted, component.thumbnail])
+
+  const scale = THUMB_W / THUMB_RENDER_W
+  return (
+    <div
+      ref={ref}
+      aria-hidden
+      style={{
+        flex: 'none',
+        width: THUMB_W,
+        height: THUMB_H,
+        overflow: 'hidden',
+        borderRadius: 'var(--radius-sm)',
+        border: '1px solid var(--color-border-subtle)',
+        background: 'var(--color-surface-card)',
+        pointerEvents: 'none',
+      }}
+    >
+      {component.thumbnail ? (
+        <img
+          src={component.thumbnail}
+          alt=""
+          loading="lazy"
+          style={{
+            width: '100%',
+            height: '100%',
+            objectFit: 'cover',
+            objectPosition: 'top left',
+            display: 'block',
+          }}
+        />
+      ) : (
+        mounted && (
+        <div
+          style={{
+            width: THUMB_RENDER_W,
+            height: THUMB_H / scale,
+            transform: `scale(${scale})`,
+            transformOrigin: 'top left',
+          }}
+        >
+          {/* No fallback text: at this size a sentence is illegible, so an
+              unregistered preview shows the empty plate instead. */}
+          <ComponentLivePreview componentId={componentId} fallback={null} />
+        </div>
+        )
+      )}
+    </div>
+  )
+}
+
+/** Thumb box, and the width the preview is rendered at before scaling. 1280 is
+ *  the gateway's own content width, so the miniature is a picture of the layout
+ *  the component actually gets rather than of its narrow reflow. */
+const THUMB_W = 104
+const THUMB_H = 68
+const THUMB_RENDER_W = 1280
+
+function UiComponentRow({
   component,
-  featureId,
-  showPreview = false,
+  index,
+  onOpen,
 }: {
   component: DevHandoffComponent
-  featureId: string
-  /** Render the component's own live preview above the spec. Every walkthrough
-   *  sets it: a page that names a component should show it. (It was
-   *  multi-component-only while the preview sat in a bounded 560px box, where
-   *  a single component's render was worse than the Live Preview tab's. With
-   *  the box gone the render is full-width, so there is nothing left to trade
-   *  and the split was arbitrary.) */
-  showPreview?: boolean
+  index: number
+  onOpen: () => void
 }) {
-  const block = (title: string, note: string, body: React.ReactNode) => (
-    <div style={{ marginTop: 28 }}>
-      <h3 style={handoffSubheadingStyle}>{title}</h3>
-      <p style={{ margin: '6px 0 0', fontSize: 13, lineHeight: '19px', color: 'var(--color-text-secondary)' }}>
-        {note}
+  const [hover, setHover] = useState(false)
+  const chips = authoredSections(component)
+  return (
+    <button
+      type="button"
+      onClick={onOpen}
+      onMouseEnter={() => setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: 14,
+        width: '100%',
+        textAlign: 'left',
+        padding: '14px 16px',
+        borderRadius: 'var(--radius-md)',
+        border: '1px solid var(--color-border-subtle)',
+        background: hover ? 'var(--color-surface-hover)' : 'var(--color-surface-card)',
+        cursor: 'pointer',
+        font: 'inherit',
+      }}
+    >
+      <span
+        aria-hidden
+        style={{
+          flex: 'none',
+          width: 24,
+          height: 24,
+          display: 'grid',
+          placeItems: 'center',
+          borderRadius: 'var(--radius-sm)',
+          background: 'var(--color-primary-100)',
+          color: 'var(--color-primary-700)',
+          fontSize: 12,
+          fontWeight: 700,
+        }}
+      >
+        {index}
+      </span>
+      <ComponentThumb component={component} />
+      <span style={{ flex: 1, minWidth: 0 }}>
+        <span style={{ fontSize: 14, fontWeight: 700, color: 'var(--color-text-primary)' }}>
+          {component.name}
+        </span>
+        <span
+          style={{
+            display: '-webkit-box',
+            WebkitLineClamp: 2,
+            WebkitBoxOrient: 'vertical',
+            overflow: 'hidden',
+            marginTop: 4,
+            maxWidth: GATEWAY_PROSE_MEASURE,
+            fontSize: 13,
+            lineHeight: '19px',
+            color: 'var(--color-text-secondary)',
+          }}
+        >
+          {component.summary}
+        </span>
+        {chips.length > 0 && (
+          <span style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 8 }}>
+            {chips.map((label) => (
+              <span
+                key={label}
+                style={{
+                  padding: '2px 8px',
+                  borderRadius: 'var(--radius-pill)',
+                  background: 'var(--color-neutral-75)',
+                  color: 'var(--color-text-secondary)',
+                  fontSize: 11,
+                  fontWeight: 600,
+                }}
+              >
+                {label}
+              </span>
+            ))}
+          </span>
+        )}
+      </span>
+      {/* Right-aligned, in its own column rather than trailing the name. On the
+          name line the badge sat at a different x on every row (names vary in
+          length), so the statuses could not be compared down the list; pinned
+          right they line up. `marginTop` matches the name's cap height so it
+          reads as belonging to the title row it left. */}
+      {component.badge && (
+        <HandoffBadge
+          label={component.badge}
+          date={component.badgeDate}
+          style={{ flex: 'none', marginTop: 2 }}
+        />
+      )}
+      <ArrowRight
+        size={14}
+        aria-hidden
+        style={{ flex: 'none', marginTop: 4, color: 'var(--color-text-tertiary)' }}
+      />
+    </button>
+  )
+}
+
+/**
+ * The default state of a Quick Summary: an empty box waiting for the designer.
+ *
+ * Deliberately NOT the quiet "add `quickSummary`" line every other un-authored
+ * section shows. Those tell a developer that a spec field is missing, and cost
+ * almost no height on purpose. This one is addressed to JILLIENNE, and it is the
+ * one field on the page nobody else can fill — so it takes real space and reads
+ * as a slot, not a footnote.
+ *
+ * The dashed rule is what says "empty on purpose": a solid frame at this size
+ * reads as a card whose content failed to load. Text is `--color-text-secondary`
+ * (7.51:1 on the page surface), not the `--color-text-tertiary` the quiet lines
+ * use — that is 3.57:1 here, and a prompt nobody can read is not a prompt.
+ *
+ * It carries the SAME left stroke and fill as the filled state, so the two read
+ * as one section in two conditions rather than as two different boxes; only the
+ * dashed remainder separates waiting from written.
+ */
+function QuickSummaryPlaceholder() {
+  return (
+    <div
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        minHeight: 88,
+        padding: '18px 20px',
+        border: '1px dashed var(--color-border-subtle)',
+        borderLeft: '4px solid var(--color-primary-500)',
+        borderRadius: 'var(--radius-lg)',
+        background: 'var(--color-surface-page)',
+      }}
+    >
+      <p
+        style={{
+          margin: 0,
+          fontSize: 14.5,
+          lineHeight: '23px',
+          color: 'var(--color-text-secondary)',
+        }}
+      >
+        Jill add your notes here
       </p>
-      <div style={{ ...inlineHandoffFrameStyle, marginTop: 12 }}>{body}</div>
+    </div>
+  )
+}
+
+/**
+ * The designer's own words about a component.
+ *
+ * Deliberately the plainest render on the page: no chrome, no frame, no
+ * labelled fields — prose at the reading measure, one step up in size from the
+ * spec around it so it reads as someone talking rather than as another
+ * documentation block.
+ *
+ * The formatting vocabulary is TWO things and must stay small — the moment this
+ * grows fields it becomes a form, and a form is what a designer writing in
+ * their own words is being spared:
+ *
+ *   1. Blank lines split blocks.
+ *   2. A block whose every line starts `* ` or `- ` is a list.
+ *
+ * Single newlines inside a paragraph are PRESERVED (`pre-line`) rather than
+ * collapsed. That is not a nicety: notes get pasted in from somewhere else with
+ * their own line structure, and silently reflowing them edits the designer's
+ * words. The first Quick Summary written for this field was a lead-in, three
+ * bullets and a closing line — reflowed, it would have run together into one
+ * paragraph containing literal asterisks.
+ */
+function QuickSummaryBody({ text }: { text: string }) {
+  const proseStyle: React.CSSProperties = {
+    margin: 0,
+    maxWidth: GATEWAY_PROSE_MEASURE,
+    fontSize: 14.5,
+    lineHeight: '23px',
+    color: 'var(--color-text-primary)',
+  }
+  const blocks = text.split(/\n\s*\n/).map((b) => b.trim()).filter(Boolean)
+
+  return (
+    // The shared section frame verbatim — same fill as every other section — with
+    // one embellishment: a 4px brand stroke down the left edge. The fill was
+    // white for a few minutes and that was the louder, worse version; a stroke
+    // marks the section without making it a different KIND of box.
+    //
+    // It replaces the frame's 1px left border rather than sitting inside it, so
+    // there is no doubled edge; the 3px that adds to the left inset is invisible
+    // against a 24px padding and keeps the stroke reading as part of the frame.
+    //
+    // `--color-primary-500` here is NOT the product brand's blue — the gateway
+    // wraps itself in `.cre-prototype-stc-accent` (tokens.css L1153), which
+    // re-points the primary ramp at the page's own teal. So the stroke lands on
+    // the same #358087 as the active tab underline above it and reads as part of
+    // THIS page's system rather than as a brand colour leaking into a doc page.
+    // Measured 4.2:1 on the page surface — decorative, but it clears the 3:1
+    // non-text bar rather than relying on it being noticed.
+    <div
+      style={{
+        ...inlineHandoffFrameStyle,
+        borderLeft: '4px solid var(--color-primary-500)',
+        display: 'grid',
+        gap: 12,
+      }}
+    >
+      {blocks.map((block, i) => {
+        const lines = block.split('\n').map((l) => l.trim()).filter(Boolean)
+        const isList = lines.length > 0 && lines.every((l) => /^[*-]\s+/.test(l))
+        if (isList) {
+          return (
+            // `listStyle` is set explicitly: the app's reset zeroes it globally,
+            // so an unstyled <ul> renders as indented lines with no markers —
+            // which reads as a paragraph someone tabbed, not a list.
+            <ul
+              key={i}
+              style={{ ...proseStyle, margin: 0, paddingLeft: 22, listStyle: 'disc', display: 'grid', gap: 6 }}
+            >
+              {lines.map((line, j) => (
+                <li key={j}>{line.replace(/^[*-]\s+/, '')}</li>
+              ))}
+            </ul>
+          )
+        }
+        return (
+          <p key={i} style={{ ...proseStyle, whiteSpace: 'pre-line' }}>
+            {lines.join('\n')}
+          </p>
+        )
+      })}
+    </div>
+  )
+}
+
+/**
+ * One component's handoff: every section on ONE continuous scroll, with a sticky
+ * jump nav over it.
+ *
+ * This was SUB-TABS for a few hours on 2026-08-31 and a developer reported it
+ * was harder to work with. They were right, and the reason is concrete: the
+ * inactive panels were conditionally rendered, so their content was not in the
+ * DOM at all. That breaks four things a developer does constantly and a reviewer
+ * never does — find-in-page across the handoff, select-all-and-paste into a
+ * ticket, print/PDF, and any deep link to a section.
+ *
+ * The complaint that produced the tabs was real (stacked sections ran past
+ * 3,000px and buried the acceptance criteria), but that is a NAVIGATION problem
+ * and hiding content is the wrong lever for it. Jump links fix the navigation
+ * and cost the developer nothing.
+ *
+ * So: keep everything mounted, give each section a real `id`, and let the nav
+ * scroll rather than swap. If this ever looks like it wants to be tabs again,
+ * re-read the four things above first.
+ */
+function UiComponentDetail({
+  component,
+  embedded = false,
+  onBack,
+}: {
+  component: DevHandoffComponent
+  embedded?: boolean
+  /** Omitted when the feature has a single component — there is no list to
+   *  return to. */
+  onBack?: () => void
+}) {
+  const [activeSection, setActiveSection] = useState<ComponentSectionId>('quick-summary')
+  const anchorFor = (id: ComponentSectionId) => `${component.id}--${id}`
+
+  // The nav pins directly below the gateway's own sticky tab bar, so the two
+  // stack rather than overlap.
+  const navTop = (embedded ? 0 : PROTOTYPE_BAR_HEIGHT) + GATEWAY_TAB_BAR_HEIGHT
+  // Headings clear BOTH sticky bars plus this nav, or a jump lands the heading
+  // underneath them — the classic anchor-under-a-sticky-header bug.
+  const headingScrollMargin = navTop + 56
+
+  // Scroll-spy: the active section is the last one whose heading has passed
+  // under the nav. A plain scroll listener rather than IntersectionObserver
+  // because "last one past the line" is exactly what this expresses, and it
+  // stays correct for a short final section that never fills the viewport
+  // (an observer would leave that one unhighlighted).
+  useEffect(() => {
+    const onScroll = () => {
+      let current: ComponentSectionId = COMPONENT_SECTIONS[0].id
+      for (const sec of COMPONENT_SECTIONS) {
+        const el = document.getElementById(`${component.id}--${sec.id}`)
+        if (el && el.getBoundingClientRect().top <= navTop + 72) current = sec.id
+      }
+      setActiveSection(current)
+    }
+    onScroll()
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [component.id, navTop])
+
+  // Land on the right section when someone opens a shared link.
+  useEffect(() => {
+    const hash = window.location.hash.slice(1)
+    if (!hash.startsWith(`${component.id}--`)) return
+    const el = document.getElementById(hash)
+    if (el) el.scrollIntoView({ block: 'start' })
+  }, [component.id])
+
+  const jump = (id: ComponentSectionId) => {
+    const el = document.getElementById(anchorFor(id))
+    if (!el) return
+    el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    // `replaceState`, not `location.hash = …`: the hash is a deep link a
+    // developer can send, but assigning it would push a router navigation and
+    // fight the smooth scroll.
+    window.history.replaceState(null, '', `#${anchorFor(id)}`)
+  }
+
+  /** One section. `body` is null when the field isn't authored, which renders a
+   *  single quiet line instead of a boxed empty state — an un-authored section
+   *  should cost almost no height on a page you scroll through. */
+  const section = (
+    id: ComponentSectionId,
+    label: string,
+    /** The one-line explainer under the heading. Pass `null` to omit it — Quick
+     *  Summary does, because a line telling the reader they are about to read
+     *  the designer's own words sits between the heading and those words and
+     *  says nothing the heading has not. */
+    note: string | null,
+    body: React.ReactNode | null,
+    missingField?: string,
+    /** Skip the shared bordered frame. The Preview section passes it because
+     *  each variant inside now carries its own container — framing them again
+     *  puts a box in a box and makes the set read as one long thing. */
+    unframed = false,
+  ) => (
+    <div style={{ marginTop: 32 }}>
+      <h4 id={anchorFor(id)} style={{ ...handoffSubheadingStyle, margin: 0, scrollMarginTop: headingScrollMargin }}>
+        {label}
+      </h4>
+      {note && (
+        <p
+          style={{
+            margin: '6px 0 0',
+            maxWidth: GATEWAY_PROSE_MEASURE,
+            fontSize: 13,
+            lineHeight: '19px',
+            color: 'var(--color-text-secondary)',
+          }}
+        >
+          {note}
+        </p>
+      )}
+      {body ? (
+        <div style={unframed ? { marginTop: 12 } : { ...inlineHandoffFrameStyle, marginTop: 12 }}>
+          {body}
+        </div>
+      ) : (
+        <p style={{ margin: '8px 0 0', fontSize: 13, color: 'var(--color-text-tertiary)' }}>
+          Not authored yet — add <code>{missingField}</code> in{' '}
+          <code>src/data/prototypeFeatures.ts</code>.
+        </p>
+      )}
     </div>
   )
 
   return (
     <section>
-      {showPreview ? (
-        /* The tab strip carries the short label; this restates the full name,
-         * which is often the part that says what the surface actually is. */
-        <h3 style={{ ...handoffSubheadingStyle, margin: '20px 0 0' }}>
-          {component.name}
-          {component.badge && <span style={{ ...handoffBadgeStyle, marginLeft: 8 }}>{component.badge}</span>}
-        </h3>
-      ) : (
-        <p
+      {onBack && (
+        <button
+          type="button"
+          onClick={onBack}
           style={{
-            margin: '0 0 4px',
-            fontSize: 14,
-            lineHeight: '22px',
-            color: 'var(--color-text-secondary)',
-            maxWidth: '72ch',
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            marginBottom: 12,
+            padding: 0,
+            border: 'none',
+            background: 'none',
+            color: 'var(--color-action)',
+            fontFamily: 'var(--font-body)',
+            fontSize: 13,
+            fontWeight: 600,
+            cursor: 'pointer',
           }}
         >
-          The component behind this feature — the real thing running below, then where it lives,
-          its variants, the UX rules that drive it, and the spec to build against.
-        </p>
+          <span aria-hidden>&larr;</span> All components
+        </button>
       )}
+
+      <h3 style={{ ...handoffSubheadingStyle, margin: 0 }}>
+        {component.name}
+        {component.badge && (
+          <HandoffBadge
+            label={component.badge}
+            date={component.badgeDate}
+            style={{ marginLeft: 8 }}
+          />
+        )}
+      </h3>
       <p style={{ ...pointerLocationStyle, margin: '8px 0 0' }}>{component.location}</p>
 
-      {showPreview && (
-        /* The component renders straight onto the page — no frame, no height
-         * cap. It briefly sat in a bounded 560px scroll box to keep the tall
-         * previews (some stack every variant and run past 2,900px) from
-         * pushing the spec down the page; a box inside a tab inside a page
-         * read as one container too many, and a nested scroll area is its own
-         * cost. The spec below is now genuinely below a full-length render. */
-        <div style={{ marginTop: 20 }}>
-          <ComponentLivePreview
-            componentId={component.id}
-            fallback={
-              <p style={{ margin: 0, fontSize: 13, color: 'var(--color-text-secondary)' }}>
-                No live preview registered for <code>{component.id}</code> yet — add one to{' '}
-                <code>ComponentLivePreview</code> in{' '}
-                <code>src/pages/PrototypeHandoffDetailPage.tsx</code>.
-              </p>
-            }
-          />
-          <p
-            style={{
-              margin: '8px 0 0',
-              fontSize: 12,
-              lineHeight: '18px',
-              color: 'var(--color-text-secondary)',
-            }}
-          >
-            Rendered from the real component code, so it can&rsquo;t drift the way a screenshot
-            would.{' '}
-            <Link
-              to={`/prototype/${featureId}/handoff/${component.id}`}
-              style={{ color: 'var(--color-action)', fontWeight: 600 }}
+      {/* Jump nav. Looks like the pill strip it replaced on purpose — the shape
+          was never the problem, the hiding was. `aria-current` rather than
+          `role="tab"`: these navigate within a document now, and announcing them
+          as tabs would promise a panel swap that no longer happens. */}
+      <nav
+        aria-label="Sections"
+        style={{
+          position: 'sticky',
+          top: navTop,
+          zIndex: 4,
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: 6,
+          margin: '16px 0 0',
+          padding: '10px 0',
+          background: 'var(--ux-bg, var(--color-surface-page))',
+        }}
+      >
+        {COMPONENT_SECTIONS.map((sec) => {
+          const on = sec.id === activeSection
+          return (
+            <button
+              key={sec.id}
+              type="button"
+              aria-current={on ? 'true' : undefined}
+              onClick={() => jump(sec.id)}
+              style={{
+                padding: '6px 12px',
+                borderRadius: 'var(--radius-xl)',
+                border: 'none',
+                background: on ? 'var(--color-tab-active)' : 'transparent',
+                color: on ? 'var(--color-text-inverse)' : 'var(--color-neutral-dark)',
+                fontFamily: 'var(--font-body)',
+                fontSize: 13,
+                fontWeight: on ? 600 : 400,
+                cursor: 'pointer',
+                whiteSpace: 'nowrap',
+              }}
             >
-              Open the full handoff &rarr;
-            </Link>
-          </p>
-        </div>
+              {sec.label}
+            </button>
+          )
+        })}
+      </nav>
+
+      {section(
+        'quick-summary',
+        'Quick Summary from Jill',
+        null,
+        // Never null: the un-authored state is its own designed box, not the
+        // shared "add this field" line — see `QuickSummaryPlaceholder`.
+        component.quickSummary ? (
+          <QuickSummaryBody text={component.quickSummary} />
+        ) : (
+          <QuickSummaryPlaceholder />
+        ),
+        undefined,
+        // Unframed: the spec frame exists to bound token tables and variant
+        // grids. Plain prose in a box reads as one more spec artefact, which is
+        // the opposite of what this section is.
+        true,
       )}
 
-      {component.uiUxLogic &&
-        block(
-          'UI/UX logic',
-          'The reasoning and rules worked through while designing this component.',
-          <DevHandoffUiUxLogicBody logic={component.uiUxLogic} />,
-        )}
-      {component.designSpec &&
-        block(
-          'Design spec',
-          'Named tokens, states, and responsive notes — values live in tokens.css and Figma, so nothing here restates raw hex / px and can’t drift.',
-          <DevHandoffDesignSpecBody spec={component.designSpec} />,
-        )}
-      {component.acceptanceCriteria && component.acceptanceCriteria.length > 0 &&
-        block(
-          'Acceptance criteria',
-          'Build against these and QA verifies them — the Definition of Done for this component.',
-          <DevHandoffAcceptanceBody items={component.acceptanceCriteria} />,
-        )}
-      {component.statesMatrix && component.statesMatrix.length > 0 &&
-        block(
-          'States matrix',
-          'Every state the build must handle — including loading, empty, error, and overflow paths the happy-path variants don’t show.',
-          <DevHandoffStatesMatrixBody rows={component.statesMatrix} />,
-        )}
-      {block(
+      {section(
+        'story',
+        'User Story',
+        'The Product Owner’s framing — who this is for, what they want, and why it earns a place on the roadmap.',
+        component.userStory ? <DevHandoffUserStoryBody story={component.userStory} /> : null,
+        'userStory',
+      )}
+
+      {section(
+        'logic',
+        'UX Logic',
+        'The reasoning and rules worked through while designing this component.',
+        component.uiUxLogic ? <DevHandoffUiUxLogicBody logic={component.uiUxLogic} /> : null,
+        'uiUxLogic',
+      )}
+
+      {section(
+        'spec',
+        'Design Spec',
+        'Named tokens, states, and responsive notes — values live in tokens.css and Figma, so nothing here restates raw hex / px and can’t drift.',
+        component.designSpec ? <DevHandoffDesignSpecBody spec={component.designSpec} /> : null,
+        'designSpec',
+      )}
+
+      {section(
+        'acceptance',
+        'Acceptance',
+        'Build against these and QA verifies them — the Definition of Done for this component.',
+        component.acceptanceCriteria && component.acceptanceCriteria.length > 0 ? (
+          <DevHandoffAcceptanceBody items={component.acceptanceCriteria} />
+        ) : null,
+        'acceptanceCriteria',
+      )}
+
+      {section(
+        'states',
+        'States',
+        'Every state the build must handle — including loading, empty, error, and overflow paths the happy-path variants don’t show.',
+        component.statesMatrix && component.statesMatrix.length > 0 ? (
+          <DevHandoffStatesMatrixBody rows={component.statesMatrix} />
+        ) : null,
+        'statesMatrix',
+      )}
+
+      {section(
+        'notes',
         'Notes',
         'The full written handoff — variants, UX logic, data, stubs, and a11y.',
         <DevHandoffNotesBody component={component} />,
@@ -869,37 +1663,6 @@ function UiComponentInline({
     </section>
   )
 }
-
-/** Frame around each inline handoff block — mirrors the detail screen's
- *  `previewFrameStyle` so the two surfaces read identically. */
-/** The amber "UPDATED" / "NEW" chip on a handoff component — shared by the
- *  tile grid and the tab strip's inline heading so the two can't drift. */
-const handoffBadgeStyle: React.CSSProperties = {
-  fontSize: 10,
-  fontWeight: 700,
-  letterSpacing: '0.06em',
-  textTransform: 'uppercase',
-  color: '#8a5a00',
-  background: '#fef3e2',
-  border: '1px solid #f0d9a8',
-  borderRadius: 'var(--radius-pill)',
-  padding: '2px 8px',
-  lineHeight: 1.4,
-  whiteSpace: 'nowrap',
-}
-
-const inlineHandoffFrameStyle: React.CSSProperties = {
-  padding: 24,
-  background: 'var(--color-surface-page)',
-  border: '1px solid var(--color-border-subtle)',
-  borderRadius: 'var(--radius-lg)',
-}
-
-/* ─────────────────────────────────────────────────────────────────────────
- *  DEV HANDOFF NOTES — replaces the old "Feature flags" callout. Documents
- *  the feature's key components in depth so a developer can take the next
- *  step from the prototype.
- * ───────────────────────────────────────────────────────────────────────── */
 
 function DevHandoffSection({
   notes,
@@ -960,7 +1723,15 @@ function DevHandoffSection({
         <div style={{ marginTop: 28 }}>
           <h3 style={handoffSubheadingStyle}>Design &amp; product decisions</h3>
           {notes.decisions.intro && (
-            <p style={{ margin: '8px 0 0', fontSize: 13, lineHeight: '19px', color: 'var(--color-text-secondary)' }}>
+            <p
+              style={{
+                margin: '8px 0 0',
+                maxWidth: GATEWAY_PROSE_MEASURE,
+                fontSize: 13,
+                lineHeight: '19px',
+                color: 'var(--color-text-secondary)',
+              }}
+            >
               {notes.decisions.intro}
             </p>
           )}
@@ -981,7 +1752,16 @@ function DevHandoffSection({
                   </span>
                   <DecisionStatusPill status={d.status} />
                 </div>
-                <span style={{ display: 'block', marginTop: 4, fontSize: 13, lineHeight: '19px', color: 'var(--color-text-secondary)' }}>
+                <span
+                  style={{
+                    display: 'block',
+                    marginTop: 4,
+                    maxWidth: GATEWAY_PROSE_MEASURE,
+                    fontSize: 13,
+                    lineHeight: '19px',
+                    color: 'var(--color-text-secondary)',
+                  }}
+                >
                   {d.decision}
                 </span>
                 {d.owner && (
@@ -1005,7 +1785,15 @@ function DevHandoffSection({
               <span style={{ fontSize: 13, fontWeight: 700, color: 'var(--color-warning-700)' }}>Open items</span>
               <ul style={{ margin: '6px 0 0', paddingLeft: 18, display: 'flex', flexDirection: 'column', gap: 4 }}>
                 {notes.decisions.openItems.map((item) => (
-                  <li key={item} style={{ fontSize: 13, lineHeight: '19px', color: 'var(--color-text-secondary)' }}>
+                  <li
+                    key={item}
+                    style={{
+                      maxWidth: GATEWAY_PROSE_MEASURE,
+                      fontSize: 13,
+                      lineHeight: '19px',
+                      color: 'var(--color-text-secondary)',
+                    }}
+                  >
                     {item}
                   </li>
                 ))}
@@ -1192,7 +1980,7 @@ function HandoffComponentTile({
             alignItems: 'center',
             padding: '5px 14px',
             background: DEV_STATUS_STROKE[devStatus],
-            color: '#fff',
+            color: 'var(--color-text-inverse)',
             fontFamily: 'var(--font-body)',
             fontSize: 10,
             fontWeight: 700,
@@ -1325,6 +2113,30 @@ function HandoffComponentTile({
 }
 
 /** Shared chrome for the gateway: prototype banner + back link + centered column. */
+/**
+ * Reading measure for prose on the gateway.
+ *
+ * The content column is 760–1440px wide depending on the page, and every long
+ * paragraph inherited that full width — measured at **145 characters per line**
+ * on the embedded gateway, roughly double the comfortable 45–75. That is what
+ * made the page feel chaotic: at 145ch the eye cannot reliably find the start of
+ * the next line, so well-written prose still reads as a wall.
+ *
+ * `ch` rather than px so it tracks the font size, and the same idiom the
+ * BenefitSections headers already use (52ch / 80ch). 76ch is at the roomy end of
+ * the range on purpose — this is technical prose full of `code` spans, which
+ * read worse when broken too often.
+ *
+ * Applies to PROSE only. Tables, card grids and the decision rows keep the full
+ * column: they are scanned, not read line by line.
+ */
+export const GATEWAY_PROSE_MEASURE = '76ch'
+
+/** Height of the gateway's own sticky tab bar. The component section nav pins
+ *  directly BELOW it, so the two stack instead of overlapping — measured, and
+ *  they have to move together if the tab bar's padding ever changes. */
+export const GATEWAY_TAB_BAR_HEIGHT = 49
+
 export function GatewayShell({
   children,
   back,

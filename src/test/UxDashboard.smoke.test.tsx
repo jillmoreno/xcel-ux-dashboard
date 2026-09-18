@@ -346,3 +346,33 @@ describe('the Demo row opens the committed configuration', () => {
     expect(PROTOTYPE_FEATURES.filter((f) => f.to).map((f) => f.id)).toEqual(['xcel-dashboard'])
   })
 })
+
+/* ── The component detail's jump nav ─────────────────────────────────────────
+ *
+ * Read from the SOURCE, not the module: `COMPONENT_SECTIONS` is deliberately
+ * not exported (PrototypeFeaturePage.tsx is a byte-for-byte copy of the LMS
+ * file, and exporting it here would make the file un-copyable). The LMS
+ * tokenContrast test reads its stylesheet the same way, for the same reason. */
+describe('component detail — COMPONENT_SECTIONS matches the render order', () => {
+  const src = readFileSync(
+    new URL('../pages/PrototypeFeaturePage.tsx', import.meta.url),
+    'utf8',
+  )
+
+  it('declares the sections in the order the detail renders them', () => {
+    // The array: `{ id: 'quick-summary', label: '…' }, …`
+    const arr = src.slice(src.indexOf('const COMPONENT_SECTIONS = ['), src.indexOf('] as const'))
+    const declared = [...arr.matchAll(/\{ id: '([a-z-]+)'/g)].map((m) => m[1])
+    // The render: `{section(\n        'quick-summary',` — one call per section.
+    const rendered = [...src.matchAll(/\{section\(\n\s+'([a-z-]+)',/g)].map((m) => m[1])
+    expect(declared.length).toBeGreaterThan(0)
+    // A mismatch silently highlights the wrong scroll-spy chip and nothing else
+    // fails, which is why this is asserted rather than trusted.
+    expect(rendered).toEqual(declared)
+  })
+
+  it('leads with the Quick Summary, and seeds the active chip from it', () => {
+    expect(src).toMatch(/const COMPONENT_SECTIONS = \[\n(?:\s*\/\/.*\n)*\s*\{ id: 'quick-summary'/)
+    expect(src).toContain("useState<ComponentSectionId>('quick-summary')")
+  })
+})

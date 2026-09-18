@@ -189,7 +189,16 @@ export type DevHandoffState = {
   behavior: string
 }
 
-/** A component documented in depth for the implementing developer. */
+/**
+ * The Product Owner's framing for a component — the WHY, in the form a PO
+ * writes it, ahead of any design or build detail.
+ *
+ * Structured rather than freeform prose on purpose: "as a / I want / so that"
+ * is the format precisely because it forces a role and a benefit to be named,
+ * and a free text field quietly becomes another summary. `value` is the part a
+ * summary can't carry — why it is worth building at all — and `notes` is where
+ * scope, and especially OUT of scope, gets stated before a dev infers it.
+ */
 export type DevHandoffUserStory = {
   /** The role, as the PO would name them — "member holding several licences",
    *  not "user". */
@@ -205,6 +214,7 @@ export type DevHandoffUserStory = {
   notes?: string[]
 }
 
+/** A component documented in depth for the implementing developer. */
 export type DevHandoffComponent = {
   /** Stable id — routes to the detail screen
    *  (`/prototype/:featureId/handoff/:id`) and selects the live preview. */
@@ -240,7 +250,7 @@ export type DevHandoffComponent = {
    * short enough to sit in a tab).
    */
   tabLabel?: string
-  /** Optional short status badge shown on the handoff tile + detail header
+  /** Optional short status badge shown on the component row + detail header
    *  (e.g. "UPDATED", "NEW"). Used to flag a revised spec without dropping the
    *  historical tile it supersedes. */
   badge?: string
@@ -253,17 +263,48 @@ export type DevHandoffComponent = {
    * it unset rather than approximating.
    *
    * ISO here and formatted at the render site — one source date, the same rule
-   * the renewal fixtures follow. It is parsed by hand there, never through
+   * the LMS renewal fixtures follow. It is parsed by hand there, never through
    * `new Date(iso)`, which is UTC and shifts the day in western timezones.
    */
   badgeDate?: string
+  /**
+   * A static thumbnail for the component's row, e.g.
+   * `/prototype-thumbs/components/<prototype>-<state>.png`.
+   *
+   * PREFERRED over the live miniature when set. Three reasons to reach for it:
+   * a preview whose top-left is mostly white reads as a blank plate; a live
+   * render costs a real iframe boot per visible row; and — the one that is easy
+   * to miss — a live render puts its text in the DOM, so find-in-page matches
+   * inside a 104x68 picture. A flat image has none of those problems.
+   *
+   * Optional, and a missing or broken file is not an error: the row falls back
+   * to the live render, so adding one is safe before the image exists and
+   * deleting one is a safe way to retire it.
+   */
+  thumbnail?: string
   /** Where it lives in the codebase (file path, optionally a node). */
   location: string
   /** One- or two-sentence summary of what it is and where it appears. */
   summary: string
+  /**
+   * The DESIGNER's own plain words — what this feature is about, told to the
+   * developer before any spec. Leads the handoff (2026-09-09, Jillienne).
+   *
+   * Deliberately unstructured, and deliberately not written by Claude: this is
+   * the one field on the page that carries the designer's voice, so it is
+   * ASKED FOR, never inferred from the code or paraphrased from `summary`.
+   * Leave it unset rather than guessing — an un-authored Quick Summary renders
+   * its own "add your notes here" box, which is honest, whereas an invented one
+   * reads as the designer's intent and is not.
+   *
+   * Plain text. Blank lines split paragraphs; a block whose every line starts
+   * `* ` or `- ` renders as a list. There is no other formatting, on purpose
+   * (see `QuickSummaryBody` in PrototypeFeaturePage).
+   */
+  quickSummary?: string
   /** The PO's framing — who it's for, what they want, and why it matters.
-   *  Renders SECOND in the handoff, directly after the preview: you see the
-   *  component first, then read the intent against it. */
+   *  Renders SECOND in the handoff, directly after the Quick Summary: the
+   *  designer's words, then the PO's, then the spec. */
   userStory?: DevHandoffUserStory
   /** Every variant/state the component can render. */
   variants: DevHandoffVariant[]

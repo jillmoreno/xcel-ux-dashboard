@@ -29,6 +29,36 @@ the opposite.
 | Server code | Three Netlify functions over Netlify Blobs — QA Notes + captures, and Links |
 | Tests | Vitest + @testing-library/react |
 
+## Gateway sync — read before touching `src/pages` or `src/components`
+
+The gateway code here is a **copy** of the LMS dashboard's
+(`jill-dashboard-ux-designs`), and it drifts. This repo was ported 09-02 from
+PartnerHub, which was itself two weeks behind the LMS at the time, so it arrived
+already missing the 08-31 walkthrough rebuild.
+
+**Gateway last synced from `jill-dashboard-ux-designs` @ `3ff8570` on
+2026-09-18.** To find what has landed since:
+
+```bash
+cd ../jill-dashboard-ux-designs && git log 3ff8570..HEAD --format='%h %ad %s' --date=short -- \
+  src/pages/UxDashboardPage.tsx src/pages/PrototypeFeaturePage.tsx \
+  src/components/prototype src/components/ui src/components/layout \
+  .claude/skills/dev-handoff-notes
+```
+
+Which files are **copied whole**, which are **merged** (`UxDashboardPage.tsx`,
+the type block of `prototypeFeatures.ts`, `shareLink.ts`), and which are **left
+alone** is in the `port-ux-dashboard` skill's sync section. Sync flows BOTH
+ways — this repo's derived share-link origin (`09c5f13`) and `--ux-page` white
+plane (`24aabbc`) went back to the LMS and PartnerHub on 2026-09-18.
+
+What that sync brought in: the 08-31 walkthrough rebuild (`COMPONENT_SECTIONS`
+one-scroll detail, `userStory` / `badgeDate` / `tabLabel`, `handoffMarkdown.ts`
++ the Actions menu's Download / Copy .md), the 09-01 banner removal, and the
+09-09 **Quick Summary** — `quickSummary` on `DevHandoffComponent` leads the
+component detail; **ask Jillienne for it, never draft it** — see
+`.claude/skills/dev-handoff-notes/SKILL.md` (added here in the same pass).
+
 ## Scope — read before adding a route
 
 **CHANGED 2026-09-08. This section used to say "gateway only, four routes".**
@@ -81,8 +111,10 @@ side-door link nor cancelling reveals a gated spec.
 **Which section a row lands in** is `sectionOf()`: `done` outranks everything,
 then `devStatus`, then `category` as a fallback. Design and Development are the
 only two sections split *by* `devStatus`, so they're the only two its absence can
-split wrongly — both render a banner counting the rows placed by that guess.
-Author `devStatus` and it stays at zero.
+split wrongly. **Placement is silent** — the banner that counted rows placed by
+the `category` guess was removed (LMS `8005c5a`, synced here 2026-09-18), so a
+mis-placed row shows no warning on the page. `EXPECTED_PLACEMENT` in the smoke
+test is what catches it now.
 
 **All five XCEL rows sit in Exploration** (moved there 2026-09-02 from Design).
 The same rows are in **Design** over in the LMS dashboard, and that difference is
