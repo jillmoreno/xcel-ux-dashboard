@@ -89,7 +89,7 @@ export function JumpBackInWidget({
         style={{ ...widgetEyebrowStyle, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}
       >
         <BookOpenThin size={13} />
-        Learning With Compass - Jump Back In
+        {COMPASS_NAME} - Jump Back In
       </p>
 
       {/* The action sits on the TITLE'S line (2026-09-17, the direct ask), so
@@ -210,6 +210,22 @@ const chapterEyebrowStyle: CSSProperties = {
  * the thing `Logo`'s own note refuses ("do NOT recolour the full-colour file to
  * approximate it"). If a blue export exists, it supersedes this path.
  */
+/**
+ * "Learning With Compass" — the name of the course-player surface, as XCEL's
+ * own wording has it.
+ *
+ * ONE CONSTANT as of 2026-09-18, when the Compass launcher gained a header that
+ * names the section: this eyebrow and that header are the two places the
+ * product is named, and two literals is how one of them gets renamed alone.
+ * The `CURRENT_LEARNING_EYEBROW` precedent — five components rendered that
+ * literal, so renaming four of five would have had the heading change as a
+ * reviewer flipped a layout flag.
+ *
+ * Note the eyebrow appends its own " - Jump Back In"; the constant is the
+ * PRODUCT's name, not either label in full.
+ */
+export const COMPASS_NAME = 'Learning With Compass'
+
 export const JUMP_BACK_IN_MARK = '/brand/xcel-mark.svg'
 
 /* `markStyle` and `iconWellStyle` went on 2026-09-17 with the 44px well they

@@ -8,7 +8,7 @@ import { useAccount, type MembershipTierTone, type AvatarTierKey } from '@/conte
 import { useProfileAvatar } from '@/context/ProfileAvatarContext'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { accountSectionsFor } from '@/components/account/accountSections'
-import { resourcesFor, type ResourceIcon } from '@/data/membership/resourcesFixtures'
+import { type ResourceIcon } from '@/data/membership/resourcesFixtures'
 import { communityFor } from '@/data/membership/communityFixtures'
 import { tierBadgeIcon } from '@/components/ui/membershipTierBadge'
 
@@ -87,12 +87,31 @@ export function AccountMenu({
   // feature is off rather than leading to an empty section.
   const giftRecipientsOn = useFeatureFlag('gift-recipients').enabled
   const items = accountSectionsFor(brand, giftRecipientsOn)
-  // Free content (the blog, the podcast) lives HERE rather than in the left
-  // rail. These are the only outbound destinations in the menu, and they are
-  // open to everyone — no membership, no gate — so they sit in their own group
-  // below the account destinations rather than among them. Brand-keyed, so a
-  // brand with none (`[]`) shows no group and no stray divider.
-  const freeContent = resourcesFor(brand)
+  /* THE FREE-CONTENT ROWS ARE GONE from this menu — 2026-09-18, the direct
+     ask. They were XCEL's four outbound destinations (Resource Center, What's
+     New, and the two 2026 guides), sitting in their own group below the account
+     destinations because they are open to everyone.
+   
+     THIS IS THE FIX THIS REPO ALREADY NAMED. `resourcesFor` got its own RAIL
+     SECTION back on 2026-09-09, which left both doors open onto one set of
+     links — normally the `recommended-card-ab-demo` mistake. That was accepted
+     at the time on the grounds that the two are not the same door (four menu
+     items you must know to look for, against one browsable surface), and the
+     note recording it said which way to resolve it if it ever read wrong:
+     "the cheap fix is dropping the four rows from `AccountMenu`, not
+     re-archiving the page." That is this change, and the Resources SECTION is
+     untouched and still on the demo rail.
+   
+     NOT ARCHIVED, and it does not want a row: nothing became unreachable and
+     no component was unwired. `resourcesFor` still has three live consumers —
+     `ResourcesPanel`, `FreeContentBands`, and `PlatformShell`'s search gate.
+     Re-adding these rows is restoring the spread below.
+   
+     THE COMMUNITY ROW STAYS, which is why the group survives at all. It is
+     member-gated and comes from its own fixture; `communityFor('xcel')` is
+     null, so on this brand the group is empty and drops whole — divider
+     included — by the `outboundRows.length > 0` guard that was already there
+     for a brand with no resources. */
   // The community group sits in the SAME menu group but comes from its own
   // fixture and is **member-gated** — it is the one item here that membership
   // actually buys. It deliberately does NOT live in `resourcesFor`: mixing a
@@ -102,7 +121,6 @@ export function AccountMenu({
   // use — the Membership page is where they're sold it.
   const community = membership === 'member' ? communityFor(brand) : null
   const outboundRows = [
-    ...freeContent.map((r) => ({ id: r.id, label: r.title, href: r.href, icon: r.icon })),
     ...(community
       ? [
           {
@@ -275,8 +293,13 @@ export function AccountMenu({
 }
 
 /** Same glyph map the resource cards use, so a row and its destination agree.
- *  Shared by the free rows and the member-only community row — both are
- *  outbound, so they read as one group even though their gating differs. */
+ *
+ *  KEPT after the free rows left this menu on 2026-09-18 — the member-only
+ *  community row is typed `ResourceIcon` too, and this is one of the three
+ *  `Record<ResourceIcon, …>` maps that make the COMPILER list every call site
+ *  when a glyph key is added. Dropping it would be losing that seam for no
+ *  gain: it is the thing that stopped this menu silently keeping an old glyph
+ *  when `book` and `megaphone` were added. */
 const FREE_CONTENT_ICONS: Record<ResourceIcon, typeof Blog> = {
   blog: Blog,
   book: BookOpen,

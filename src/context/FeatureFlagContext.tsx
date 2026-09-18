@@ -304,11 +304,24 @@ export const NAV_SECTION_FLAGS: {
   { section: 'catalog', label: 'Browse Catalog', defaultEnabled: false },
   { section: 'resources', label: 'Resources' },
   { section: 'recommended', label: 'Recommended for You', defaultEnabled: false },
-  { section: 'm-learning-library', label: 'Resource Library', defaultEnabled: false },
+  // RESOURCE LIBRARY'S FLAG WAS REMOVED 2026-09-18 (the direct ask) — the row
+  // is pinned hidden in `PlatformSideNav` instead. See the note there: a
+  // section with no definition reads as VISIBLE, so the pin is what preserves
+  // the value this entry carried.
   { section: 'm-exam-prep', label: 'Exam & Cert Prep', defaultEnabled: false },
-  { section: 'm-career-tools', label: 'Rubi Insights' },
-  // Off: XCEL has no podcast product — the section is an EmptyState saying so.
-  { section: 'podcasts', label: 'Podcasts', defaultEnabled: false },
+  // RUBI INSIGHTS IS OFF as of 2026-09-18 (the direct ask). Editorial, and the
+  // same kind of call as Browse Catalog above: XCEL's AI study aid is a real
+  // section and still resolves from `?section=m-career-tools`, but it is not
+  // what the QE Focused demo is about — a candidate working one booked exam is
+  // shown the course, the plan and the readiness score first.
+  //
+  // It is the SECOND row in My Learning to go this way, which leaves Resources
+  // last in that group. Nothing else moves: the flag hides the rail row only.
+  { section: 'm-career-tools', label: 'Rubi Insights', defaultEnabled: false },
+  // PODCASTS' FLAG WAS REMOVED 2026-09-18 (the direct ask), and it is the
+  // clearest case of the three: XCEL has no podcast product, so the section is
+  // an EmptyState saying so and the toggle offered a reviewer a rail row onto
+  // "not part of the catalog today". Pinned hidden in `PlatformSideNav`.
   // Support
   { section: 'support', label: 'Get Help' },
 ]
@@ -316,9 +329,12 @@ export const NAV_SECTION_FLAGS: {
 /**
  * Flag key for a rail section. Stable — persisted to localStorage.
  *
- * `nav-show-` rather than `nav-`, because `nav-gray-scale` already exists and
- * is a nav STYLING flag. Sharing a prefix between "what the rail looks like"
- * and "what the rail contains" would make the catalog ambiguous to scan.
+ * `nav-show-` rather than `nav-`, because `nav-gray-scale` — a nav STYLING
+ * flag — held the bare prefix at the time. Sharing one between "what the rail
+ * looks like" and "what the rail contains" would have made the catalog
+ * ambiguous to scan. That flag was removed on 2026-09-18, so nothing collides
+ * today; the prefix is kept because it is PERSISTED to localStorage, and a
+ * rename would silently orphan every reviewer's stored rail state.
  */
 export function navSectionFlagKey(section: string): string {
   return `nav-show-${section}`
@@ -962,39 +978,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       },
     ],
     page: 'learning-library',
-  },
-  {
-    // Merged 2026-08-17: the old `platform-nav-color` (6 shipped rails) flag was
-    // folded into this one — its six options now live at the TOP of this
-    // dropdown, above the Nectar gray steps. One flag drives every rail color.
-    key: 'nav-gray-scale',
-    group: 'Navigation',
-    label: 'Left Nav Color Options',
-    description:
-      "Force the left-nav rail to a specific color, overriding the user's Appearance preference. OFF by default (the rail follows Appearance — Account menu → Preferences). Turn ON and pick from the dropdown: the six shipped rails — three DARK (Navy #17233F, Graphite #2B2D31, Brand 800 per-brand) + three LIGHT (Light 1 #E3E6EB, Light 2 #E7EAEF, Light 3 a per-brand Brand-100 wash) — OR any Nectar 2.0 Neutral step (050 #FFFFFF → 950 #000000). Light rails + light gray steps carry dark text + the accessible selected bar; dark rails + dark steps carry white text. Light treatments invert to graphite in dark mode so they don't glare.",
-    defaultEnabled: false,
-    defaultVariant: 'navy',
-    variants: [
-      { value: 'navy', label: 'Navy · #17233F', description: 'A shared slate-navy dark rail (white text). A faint blue identity that pairs well with the blue-primary brands.' },
-      { value: 'graphite', label: 'Graphite · #2B2D31', description: 'A shared true-neutral graphite dark rail (white text) — zero hue, so it sits equally beside teal, olive, and blue.' },
-      { value: 'brand-800', label: 'Brand 800 · (per brand)', description: "The brand's own Primary 800 — its deepest navy/olive. Fully on-brand and identical to the dark-mode card surface, so rail + cards read as one family." },
-      { value: 'light', label: 'Light 1 · #E3E6EB', description: 'A neutral light-gray rail with dark text + a hairline right border — open, content-first. Inverts to graphite in dark mode.' },
-      { value: 'light-2', label: 'Light 2 · #E7EAEF', description: 'The same light-rail treatment as Light 1, one step lighter/airier. Inverts to graphite in dark mode.' },
-      { value: 'light-3', label: 'Light 3 · Brand 100 wash (per brand)', description: "A very light brand tint (the brand's Primary 100 mixed 25% with white). Inverts to graphite in dark mode." },
-      { value: '050', label: 'Neutral 050 · #FFFFFF', description: 'White (255/255/255). Dark text.' },
-      { value: '075', label: 'Neutral 075 · #F5F5F5', description: 'Near-white (245). Dark text.' },
-      { value: '100', label: 'Neutral 100 · #ECECEC', description: 'Light gray (236). Dark text.' },
-      { value: '200', label: 'Neutral 200 · #D9D9D9', description: 'Light gray (217). Dark text.' },
-      { value: '300', label: 'Neutral 300 · #C7C7C7', description: 'Light-mid gray (199). Dark text.' },
-      { value: '400', label: 'Neutral 400 · #848484', description: 'Mid gray (132). Dark text.' },
-      { value: '500', label: 'Neutral 500 · #A2A2A2', description: 'Mid gray (162). Dark text.' },
-      { value: '600', label: 'Neutral 600 · #818181', description: 'Mid gray (129). Dark text.' },
-      { value: '700', label: 'Neutral 700 · #616161', description: 'Dark-mid gray (97). White text.' },
-      { value: '800', label: 'Neutral 800 · #404040', description: 'Dark gray (64). White text.' },
-      { value: '900', label: 'Neutral 900 · #202020', description: 'Near-black (32). White text.' },
-      { value: '950', label: 'Neutral 950 · #000000', description: 'Black (0). White text.' },
-    ],
-    page: 'dashboard-rebrand',
   },
   {
     key: 'ce-study-plan',

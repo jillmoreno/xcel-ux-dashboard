@@ -405,6 +405,24 @@ export function PlatformSideNav({
    * an empty "My Learning" subhead over nothing reads as a broken rail.
    */
   const visible = useNavSectionVisible()
+  /* TWO FLAGS LEFT THE CATALOG on 2026-09-18 (the direct ask) —
+     `nav-show-m-learning-library` and `nav-show-podcasts` — and their rows are
+     pinned to the value those flags committed: hidden.
+
+     PINNED HERE RATHER THAN BY DELETING THE ROWS, and the pin is doing real
+     work: `useNavSectionVisible` returns TRUE for a section it finds no
+     definition for. So dropping the two catalog entries on their own would have
+     UNHIDDEN both rows — the opposite of the default they carried, with nothing
+     failing. That is the audit's "pin the DEFAULT, not `false`" rule running in
+     the other direction, and it is the one shape of this mistake that gets
+     louder rather than quieter.
+
+     THE SECTIONS ARE UNTOUCHED. `?section=podcasts` and
+     `?section=m-learning-library` still open, exactly as they did while the
+     flags existed — which is what made hiding them an editorial act rather
+     than a feature cut, and still is. Restoring a row is re-adding its
+     `NAV_SECTION_FLAGS` entry and dropping it from this list. */
+  const RAIL_ROWS_PINNED_HIDDEN = ['m-learning-library', 'podcasts']
   const groups = (
     [
       { id: 'my-learning', caption: 'My Learning', items: myLearningItems },
@@ -412,7 +430,10 @@ export function PlatformSideNav({
       { id: 'support', caption: 'Support', items: supportItems },
     ] as { id: string; caption: string; items: RailItem[] }[]
   )
-    .map((g) => ({ ...g, items: g.items.filter((i) => visible(i.id)) }))
+    .map((g) => ({
+      ...g,
+      items: g.items.filter((i) => !RAIL_ROWS_PINNED_HIDDEN.includes(i.id) && visible(i.id)),
+    }))
     .filter((g) => g.items.length > 0)
 
   // ── Rail scroll / overflow ──────────────────────────────────────────────

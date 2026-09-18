@@ -100,9 +100,17 @@ describe('XCEL — a brand with no membership', () => {
     // value would test that decision twice and this one not at all: the row
     // would be absent for a reason that has nothing to do with membership,
     // which is exactly the false pass this seed prevents.
+    // RUBI'S FLAG IS SEEDED ON TOO, as of 2026-09-18, for exactly the reason
+    // written above it: its rail row went off in the demo baseline that day,
+    // and reading the rail at that value would have failed this test for a
+    // reason having nothing to do with membership. Same trap, second instance
+    // — a test about capability must pin every flag it depends on.
     window.localStorage.setItem(
       'cgp.featureFlags',
-      JSON.stringify({ 'nav-show-m-exam-prep': { enabled: true } }),
+      JSON.stringify({
+        'nav-show-m-exam-prep': { enabled: true },
+        'nav-show-m-career-tools': { enabled: true },
+      }),
     )
     renderRail('xcel')
     const rail = screen.getByRole('navigation', { name: 'Primary' })

@@ -2529,7 +2529,12 @@ describe('the in-shell course launcher is a lo-fi placeholder', () => {
        accessibility regression. */
     const byName = within(rail())
     expect(byName.getByRole('button', { name: 'My Courses' })).toBeTruthy()
-    expect(byName.getByRole('button', { name: 'Rubi Insights' })).toBeTruthy()
+    /* Repointed off 'Rubi Insights' on 2026-09-18 — that row is off in the
+       baseline now. `Certificates` is the better example anyway: its visible
+       text is asserted as the abbreviated "Certs" a few lines above, so the
+       two assertions together are the whole claim — the label shortens and
+       the accessible name does not. */
+    expect(byName.getByRole('button', { name: 'Certificates' })).toBeTruthy()
     expect(byName.getByRole('list', { name: 'My Learning' })).toBeTruthy()
     expect(byName.getByRole('list', { name: 'Support' })).toBeTruthy()
   })

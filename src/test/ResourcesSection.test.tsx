@@ -64,11 +64,15 @@ describe('the Resources section', () => {
     // There is no Explore group left to be in: Browse Catalog was its last row
     // and went off in the baseline on 2026-09-16, so the group drops whole.
     expect(screen.queryByRole('list', { name: 'Explore' })).toBeNull()
-    // It moved WITH Rubi and kept its order relative to it.
+    // It moved WITH Rubi, and was directly ABOVE it until 2026-09-18, when
+    // Rubi's rail row went off in the baseline. So the pair is no longer on
+    // screen to be ordered — what is still assertable, and is the half that
+    // was ever about Resources, is that it is LAST in the group.
     const mineRows = within(mine)
       .getAllByRole('button')
       .map((b) => b.textContent?.trim())
-    expect(mineRows.slice(-2)).toEqual(['Resources', 'Rubi Insights'])
+    expect(mineRows.at(-1)).toBe('Resources')
+    expect(mineRows).not.toContain('Rubi Insights')
     // At the END of the group — "move up" meant up across the Explore divider,
     // not above Home, which is the rail's anchor.
     expect(mineRows[0]).toBe('Home')

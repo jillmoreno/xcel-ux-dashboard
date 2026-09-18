@@ -1487,26 +1487,29 @@ rather than the path itself.
 
 ### The demo rail — what a stakeholder sees first (2026-09-09)
 
-`NAV_SECTION_FLAGS` entries carry an optional `defaultEnabled`, and five are
+`NAV_SECTION_FLAGS` entries carry an optional `defaultEnabled`, and four are
 **false**. The committed baseline is:
 
-> Home · Study Plan · Readiness · My Courses · Certificates · Resources ·
-> Rubi Insights — Get Help
+> Home · Study Plan · Readiness · My Courses · Certificates · Resources —
+> Get Help
 
-(As of 2026-09-16. The original 2026-09-09 baseline was: Home · Study Plan ·
+(As of 2026-09-18. The original 2026-09-09 baseline was: Home · Study Plan ·
 My Courses · Certificates — Browse Catalog · Resources · AI Study Partner —
 Get Help. What moved since: Readiness joined, Rubi was renamed twice, Resources
-and Rubi moved into My Learning, and Browse Catalog went off — which took the
-Explore group with it.)
+and Rubi moved into My Learning, Browse Catalog went off — which took the
+Explore group with it — and then **Rubi went off too**, on 2026-09-18.)
 
-Off: Learning Path, Recommended for You, Resource Library, Exam & Cert Prep,
-Podcasts. Two different reasons, and the difference decides whether to bring one
-back. **Learning Path** is off because Home's full-width Current Learning Path
-band already IS it — the rail row was a second door onto what the landing page
-leads with. The other four are simply not what this demo is about; **Podcasts**
-is the sharpest case, since XCEL has no podcast product and the section is an
-EmptyState saying so, i.e. a rail row leading to "not part of the catalog
-today".
+Off by flag: Learning Path, Browse Catalog, Recommended for You, Exam & Cert
+Prep, **Rubi Insights**. Two different reasons, and the difference decides
+whether to bring one back. **Learning Path** is off because Home's full-width
+Current Learning Path band already IS it — the rail row was a second door onto
+what the landing page leads with. The others are simply not what this demo is
+about.
+
+**Resource Library and Podcasts are off with no flag at all**, as of 2026-09-18
+— their toggles were removed and the rows are pinned hidden in
+`PlatformSideNav`. See "Three flag options were removed" below, including why
+the pin is load-bearing rather than tidy.
 
 **Nothing is disabled.** The flag hides the RAIL ROW; every section still
 resolves, so `?section=podcasts` opens Podcasts and `?section=learning-path`
@@ -1558,13 +1561,39 @@ restoring it was five registration points and no new component or fixture.
 
 **It does re-open an archived decision, and that decision was not wrong.** Free
 Content was pulled because its rows are OUTBOUND links and "a primary nav row
-promises you stay put" — they moved to the account dropdown, where they still
-are. Both doors are now open, which is normally the `recommended-card-ab-demo`
-mistake. It is accepted here because the two are not the same door: the
-dropdown rows are four separate menu items you must already know to look for,
-and this is one browsable surface a shopper can find. **If that reads wrong in
-review, the cheap fix is dropping the four rows from `AccountMenu`, not
-re-archiving the page.**
+promises you stay put" — they moved to the account dropdown. Both doors were
+open for a week, which is normally the `recommended-card-ab-demo` mistake, and
+it was accepted on the grounds that the two are not the same door: the dropdown
+rows are four separate menu items you must already know to look for, and this
+is one browsable surface a shopper can find.
+
+**RESOLVED 2026-09-18 — the four rows are out of `AccountMenu`** (the direct
+ask), which is the fix this note had already named as the cheap one: "not
+re-archiving the page". One door now, and it is the browsable one. The section,
+`ResourcesPanel`, `ResourceCard` and `resourcesFixtures` are all untouched, and
+`resourcesFor` still has three live consumers (`ResourcesPanel`,
+`FreeContentBands`, and `PlatformShell`'s search gate) — so this is **not an
+archive row**: nothing became unreachable and no component was unwired. Putting
+the rows back is restoring one spread in that file.
+
+**The outbound GROUP drops whole on XCEL, divider included.** `communityFor`
+is `null` for this brand, so the four were the group's only members and the
+`outboundRows.length > 0` guard — already there for a brand with no resources —
+does the work. The member-gated community row is kept in the code for a brand
+that has one.
+
+**AND IT CAUGHT A VACUOUS TEST**, which is the part worth reading.
+`MembershipCommunityBand.test.tsx` asserted the community row is hidden from a
+NON-MEMBER, using a free row (the Resource Center) as its control. But
+`communityFor('xcel')` is null, so the row is absent at EVERY tier: the
+assertion passed because the fixture is empty, not because the gate works, and
+the control only ever proved the menu had opened. Nothing noticed until the
+free rows went and the one assertion in it that could fail went with them. It
+now asserts the row's absence at BOTH tiers, asserts the FIXTURE is null so the
+reason is named, and reads the membership gate at SOURCE — because with no
+brand able to render that row, the DOM cannot reach the rule the file is named
+for. Same family as the `normalise` degrade test over in Links: an empty chip
+passes a `queryByText` whether or not the code works.
 
 The hero copy comes from **`resourcesCopyFor`**, not from `SECTION_HERO_META`.
 That file owns the sentence, next to the resource list and to the rule it has
@@ -1647,6 +1676,12 @@ drift the hook exists to prevent.
 
 The rail reads **Home · Study Plan · Readiness · My Courses · Certificates ·
 Resources · Rubi Insights** — then **Explore: Browse Catalog** — then Support.
+
+**Superseded in part, twice:** Browse Catalog went off later the same day
+(below), and **Rubi's own row went off on 2026-09-18** — so of the two rows this
+section moved, only Resources is on the rail today. The MOVE is unchanged and is
+what this section records: Rubi is still the last row of My Learning whenever
+its flag is on, which is what a reviewer sees on flipping it.
 
 **This moved twice in one day, and the second move settles it.** The two first
 led the Explore group (above Browse Catalog), and the note here argued they
@@ -3230,6 +3265,262 @@ badge and *"all included with membership"* on a brand that sells none. It is the
 same defect as the Membership Plan card and the Account Details "Member" pill —
 `isMember` is true for XCEL because its only tier is `high`. **When a brand
 predicate turns something off, sweep for the places that ask the TIER instead.**
+
+### The Compass launcher has a sub-nav (2026-09-18)
+
+Five panes beside the launcher's placeholder — **Overview · Course ·
+Flashcards · Exam Simulator · Progress** — in the account pages' secondary
+navigation style, at Jillienne's request ("this is the secondary navigation
+style that also needs to exist on that page").
+
+**`SubNav` was EXTRACTED for it**, from `AccountSubNav`. That component had
+owned the markup, the geometry and the hover class privately, so a second
+surface meant a near-copy — the way two sub-navs end up a few pixels and one
+font weight apart, which is the same argument that moved `DELIVERY_LABEL` out
+of its fifth private copy. `AccountSubNav` keeps its DATA (which sections this
+brand has, and their gating) and composes the rail; the launcher passes its own
+list. A test asserts BOTH compose it at source and that neither re-declares
+`width: 208`, because the DOM cannot tell a shared component from a faithful
+copy.
+
+The class is still `.cre-account-subnav-item`. Renaming it is a sweep of its
+own — it is referenced by both consumers and by a test — and doing it inside
+the extraction would have hidden the extraction in the diff.
+
+**The rows are 14/20, down from 15/22** (2026-09-18, the direct ask from the
+Compass rail). 14 is the PRIMARY rail's own row size, which is the anchor worth
+using: a second-level nav should not out-size the first-level one beside it, and
+at 15 it did — visibly, with the two a column apart while the launcher is open.
+Rows are 40px now, from 42; the padding is untouched.
+
+**BOTH SURFACES MOVED**, because they are one rail — the account sub-nav took
+it too, verified at 14/20/40px there. A `size` variant for one pixel is how the
+divergence this component was extracted to close comes straight back.
+
+**THE GLYPHS WENT, later the same day** (the direct ask, made from the account
+rail) — text rows, an active pill, nothing else. The reading that justifies it:
+a glyph earns its place where it tells two rows apart faster than the word
+does, which is the shell's 17px collapsed rail, not a 208px column of
+left-aligned labels one level down. Both consumers again; verified zero `<svg>`
+in each.
+
+**The account DROPDOWN keeps its glyphs**, and that is not an inconsistency —
+six unrelated destinations in a floating menu is the case where a mark helps,
+and `AccountSectionDef.icon` is still read there (verified: 8 glyphs still in
+the menu). So `SubNavItem` simply dropped `icon` rather than the data losing
+it; a list that carries one is still assignable.
+
+**And it retired two documented compromises**, which is the part worth
+recording — both of the Compass set's flagged glyphs are gone rather than
+unresolved: Flashcards' `Notebook` STAND-IN (FA's `clone` / `cards-blank` is
+the right drawing and is not vendored) and Progress' `Gauge`, which was the
+Readiness rail row's own glyph with the two on screen together. If glyphs ever
+return to this rail, those are the two to settle first, and vendoring `clone`
+and `chart-line` is what settles them.
+
+**The row's `gap: 10` went with them.** One child needs no gap, and a gap with
+nothing to separate is the leftover this repo keeps finding behind removed
+elements — the journey nodes' white disc, Get Licensed's 10px list gap. Text
+still starts at x=14, the padding's own inset.
+
+**NO PANE HAS CONTENT, and that is the point.** The launcher is a lo-fi
+placeholder, so five panes of authored Compass UI would be five times the
+invention this version has refused throughout. What a pane does is NAME itself
+in an `<h2>` above the placeholder — which is load-bearing rather than
+decorative: every pane draws the same block, so without a heading that moves, a
+click would shift the active pill and change nothing else, i.e. a nav that
+reads as broken. A test sweeps all five for the placeholder AND for the
+`mm/dd/yyyy` / Enroll copy the embedded `CourseDetailPage` used to draw, so a
+pane cannot quietly become a door back to it.
+
+**Pane state is LOCAL, not `?pane=`.** The launcher is not addressable — it
+opens from a Resume click and its `courseId` never reaches the URL — so a
+shareable pane would be a deep link into a surface that cannot be deep-linked
+to. It resets when the launcher closes, which is what reopening a course should
+do.
+
+**TWO GLYPHS ARE STAND-INS**, flagged in `compassCoursePanes.ts` rather than
+left to be discovered, because the registry has neither drawing:
+
+- **Flashcards → `Notebook`.** FA's `clone` / `cards-blank` is the right
+  drawing and is not vendored, and the rule is to vendor the file rather than
+  hand-author the path. Repointing is one line.
+- **Progress → `Gauge`**, which is the Readiness RAIL row's own glyph — and the
+  two are on screen together, since the rail collapses to icon-over-short-text
+  when the launcher opens. Accepted because both are labelled in words at both
+  levels, and because the alternative was worse: `CircleCheck` means "done"
+  everywhere else here and would read as a pane already finished. Vendoring
+  `chart-line` makes this a one-line fix too.
+
+**Measured** (light / dark): active ink on its pill 10.49 / 10.49, idle ink
+5.27 / 10.43, the pane heading 10.43 / 15.19. **The active pill's FILL is
+1.07:1 against the page grey** — `--color-primary-100`, decoration rather than
+a signal — so the state is carried by the heading, the row's weight and
+`aria-current`. That is the account rail's existing treatment, unforked, and
+the reason it passes "never colour alone" at all. In dark the pill does not
+invert (the documented `--color-primary-100` trap) and reads as a bright block
+at 14.45:1 against the page, with its dark navy ink still at 10.49:1 on it —
+legible, and identical to the account pages, which is what not forking means.
+
+**A measurement artifact worth knowing, because it looks exactly like a bug.**
+Clicking a row appeared to move `aria-current` and the font weight while
+leaving the pill's background and colour behind — on the ACCOUNT rail too,
+which is what made it look pre-existing and real. It is neither: the pane was
+hidden (`document.hidden`), which freezes the class's 120ms `background-color`
+/ `color` transitions at `currentTime: 0`, so `getComputedStyle` returns the
+START value. `font-weight` is not transitioned, which is why only it seemed to
+update. **Finish the animations before reading computed style in a hidden
+pane** — `el.getAnimations().forEach(a => a.finish())` — or every transitioned
+property reads one state stale.
+
+### The Compass launcher has a secondary header (2026-09-18)
+
+A bar above the sub-nav, at Jillienne's request: **"Back to Atlas Home"** and
+the section's name on the left, an **Ask Rubi** composer far right, a hairline
+under the lot.
+
+**Why this surface wanted a header at all.** The launcher deliberately had
+none — no rail item, so orientation rested on one contextual back link and
+nothing else, which was right while the page held a single placeholder. It now
+holds a sub-nav, five panes and a tutor composer, and a bar with a rule under
+it is what says "you are inside Compass, and here is the way out" before the
+pane list starts.
+
+**ATLAS AND COMPASS ARE TWO NAMES DOING ONE JOB.** Atlas is the platform (as in
+"Atlas Study Journey"); Compass is the player you are inside. Naming both in
+one bar is what carries the boundary the header draws — you are in Compass, and
+back takes you to Atlas.
+
+**The label keeps the ORIGIN rather than hardcoding "Home".** It prints
+`Back to Atlas {backLabel}`, and `backLabel` is `SECTION_TITLES[active]` — the
+section the learner resumed from. At the demo default that is exactly the "Back
+to Atlas Home" the ask names; resume from the Study Plan and it reads "Back to
+Atlas Study Plan". Hardcoding Home would be a link that lies about where it
+returns you, and this link is the launcher's whole orientation. Asserted at
+SOURCE, because every render a test can reach opens from Home — so a literal
+would pass the DOM check while being wrong for any other origin.
+
+**`COMPASS_NAME` is one constant**, shared with the Jump Back In eyebrow
+("Learning With Compass - Jump Back In"). Those are the two places the product
+is named, and two literals is how one gets renamed alone — the
+`CURRENT_LEARNING_EYEBROW` precedent. The header's name is a `<p>`, not a
+heading: the pane's own `<h2>` is the heading of what you are reading, and two
+headings inches apart is the duplication this version keeps removing.
+
+#### Ask Rubi — a composer in the header, a sheet over the course
+
+**It is NOT `RubiTutorWidget`**, which is the same product in a different
+shape: a full card with a medallion, a headline and three suggested prompts,
+built for the classic dashboard's right rail. What is shared is the treatment
+its own doc names — a pill-shaped "Ask Rubi…" input with a circular send
+button — so the two read as one control at two sizes. That widget also routes
+to `/account/tutoring`, a classic route outside this shell, which is precisely
+the navigation this surface must not do.
+
+**A tutor you consult mid-lesson must not replace the lesson.** So the header
+carries the composer only, and submitting opens a right-hand `Sheet` OVER the
+course: the pane and its sub-nav are still mounted behind it, and closing
+returns you with nothing lost. A test asserts the course is still there.
+
+**NO ANSWER IS INVENTED, and that is the whole design.** There is nothing
+behind this, and a fabricated tutor answer about New York insurance law is
+worse than most invented copy because a learner would act on it. The sheet
+shows two things: the learner's OWN question, labelled "You asked", and a lo-fi
+block saying where the answer will live. The question is echoed rather than
+dropped because a composer that clears itself and shows nothing reads as a
+failed send.
+
+**Send is disabled until there is a question** — an enabled send on an empty
+field is a button that does nothing on click. `cursor: default`, not
+`not-allowed`: the field beside it says what is needed.
+
+#### Three things only measuring caught
+
+**THE INLINE-COLOUR TRAP, for the third time in this repo.** The send button
+carried `color: var(--color-text-inverse)` inline while
+`.cre-ask-rubi-send:disabled` set the ink to tertiary — and an inline colour
+BEATS a stylesheet rule, so the disabled glyph rendered white on the grey disc
+at **1.69:1**, with the rule matching, computing and doing nothing. Neither
+`color` nor `background` is inline now; the class owns both states. After the
+fix: **3.66:1 light / 3.80:1 dark** disabled, **7.64:1** enabled in both.
+(`.cre-uxlinks-title` and the Get Licensed PSI link are the other two.)
+
+**THE PLACEHOLDER IS THIS FIELD'S ONLY VISIBLE LABEL**, and the browser default
+renders it at **2.75:1**. That is not the Links panel's known 4.34:1 — those
+placeholders sit under visible labels and carry nothing alone, which is the
+stated reason not to fork that treatment. Here there is no `<label>`, just an
+`aria-label`, so the placeholder is what identifies the control.
+`.cre-ask-rubi-input::placeholder` takes `--color-text-secondary`: **5.74:1
+light / 9.38:1 dark**. `opacity: 1` with it, because Firefox dims placeholders
+by default and would undo it.
+
+**The pill needed `--color-neutral-300`, not `--color-border-subtle`** — the
+QE page's own `cRule` / `cLine` distinction. Subtle is a boundary on a CARD and
+measures 1.29:1 on this page grey, while the pill's white fill is 1.09:1
+against the same ground, so with the subtle border the field had no visible
+edge at all. `-300` is what this surface already uses for a line doing work
+(the bar grooves, the KPI rules): 1.55:1 / 1.81:1 against the page.
+
+**Known, and shared with the Study Journey's CTA:** in dark the navy send disc
+is 1.99:1 against the pill's own surface, so the button is identified by its
+white glyph and its shape rather than by a fill boundary. That note is already
+recorded for the same ramp on the dark card.
+
+#### A jsdom crash that masks a failing role query, in this file
+
+A failed `getByRole('button', …)` in the launcher's suite throws
+`Cannot set properties of undefined (setting 'background-color')` from jsdom's
+`replaceBackgroundShorthand` instead of reporting the mismatch: Testing Library
+clones every button to build its "available roles" report, and cloning a button
+whose inline style carries a `background` jsdom cannot re-parse blows up. So a
+stale expected name in here surfaces as a stack trace in `node_modules`, not as
+"unable to find role". Read the test name, not the trace.
+
+### Three flag options were removed (2026-09-18)
+
+**Resource Library · Podcasts · Left Nav Color Options** — three rows taken out
+of the flag panel at Jillienne's request, in the same pass that switched Rubi's
+rail row off. Same convention as the 47-flag audit: the catalog entry goes, the
+call site is pinned to a constant carrying that flag's committed default, every
+branch is KEPT, and restoring one is re-adding its entry rather than a rebuild.
+
+**THE TWO NAV ROWS NEEDED A PIN, and the pin is the whole reason this note
+exists.** `useNavSectionVisible` returns **true** for a section it finds no
+definition for. So deleting `nav-show-m-learning-library` and
+`nav-show-podcasts` from `NAV_SECTION_FLAGS` alone would have turned both rows
+**ON** — the inverse of the `defaultEnabled: false` they carried — with a clean
+tsc and no test failing. `RAIL_ROWS_PINNED_HIDDEN` in `PlatformSideNav` holds
+them, and a source-level test reads the declaration AND that it is applied in
+the group filter, because with the flags gone there is no state to seed that
+could tell "pinned hidden" from "hidden by its flag" through the DOM.
+
+That is the audit's **"pin the DEFAULT, not `false`"** rule running the other
+way round, and it is the more dangerous direction: there, a removed flag
+silently resolved to off when its default was on; here, a removed NAV flag
+silently resolves to **on**.
+
+**The sections are untouched.** `?section=podcasts` and
+`?section=m-learning-library` still open — verified — exactly as they did while
+the flags existed. That is what kept this an editorial change rather than a
+capability cut, and it is still true with the toggle gone.
+
+**`nav-gray-scale` pinned cleanly**, being the one whose default was already
+off: `PlatformShell` holds `{ enabled: false, variant: 'navy' }` and the rail
+follows the Appearance preference, which is what it did with the flag off.
+Written out rather than left to the `{ enabled: false }` a missing key resolves
+to, because those two coinciding is luck about this flag's default and not a
+property of the mechanism.
+
+**One stale cross-reference went with it.** `navSectionFlagKey`'s doc explained
+the `nav-show-` prefix by saying `nav-gray-scale` "already exists" and would
+otherwise collide. Nothing collides now — but the prefix STAYS, because it is
+persisted to localStorage and renaming it would orphan every reviewer's stored
+rail state. The comment says that instead.
+
+**And a test had to move off it.** `FeatureFlagPanel.test.tsx`'s stale-storage
+case seeded `nav-gray-scale` as a key written before a flag existed; with the
+flag gone it would have been a key that never exists, which tests nothing. It
+seeds `ce-study-plan` now.
 
 ### The archive convention
 

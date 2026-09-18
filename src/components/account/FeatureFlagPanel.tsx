@@ -129,11 +129,10 @@ const REBRAND_FLAGS = [
   // into the catalog and then silently missing from the panel on the one route
   // where the left nav actually lives.
   ...NAV_SECTION_FLAGS.map((n) => navSectionFlagKey(n.section)),
-  // Left Nav Color Options — the single rail-color flag: the six shipped rails
-  // (Navy / Graphite / Brand 800 / Light 1–3) plus any Nectar Neutral ramp step
-  // (050–950), in one dropdown. Wins over the Appearance preference while on.
-  // (Merged the former `platform-nav-color` flag into this one, 2026-08-17.)
-  'nav-gray-scale',
+  // (Left Nav Color Options — `nav-gray-scale` — was here until 2026-09-18,
+  // when it left the catalog. A key left in this scope after leaving the
+  // catalog is SILENT, since the panel filters the catalog by the scope, which
+  // is why it comes out in the same change rather than later.)
   // The Learning Paths count flag drives the Current Learning Path widget's
   // "View All (N)" + the My Learning Paths sheet.
   'learning-paths-count',

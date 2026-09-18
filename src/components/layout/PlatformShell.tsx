@@ -7,6 +7,10 @@ import {
 } from '@/data/dashboardVersions'
 import { SectionContent } from '@/components/membership/v7/MembershipV7'
 import { ArrowLeft } from '@/icons'
+import { SubNav } from '@/components/ui/SubNav'
+import { AskRubiChat } from '@/components/learning/AskRubiChat'
+import { COMPASS_NAME } from '@/components/learning/JumpBackInWidget'
+import { COMPASS_PANES, type CompassPaneId } from '@/components/learning/compassCoursePanes'
 import { ResourceDetailPage } from '@/pages/ResourceDetailPage'
 import { CourseLauncherProvider, useCourseLauncher } from './CourseLauncherContext'
 import { ResourceLauncherProvider, useResourceLauncher } from './ResourceLauncherContext'
@@ -323,11 +327,23 @@ function PlatformShellBody() {
   // secondary-700 left bar; the pale tint fill alone isn't ≥3:1). A light rail
   // would glare on the dark charcoal page, so in dark theme light rails fall back
   // to graphite.
-  // "Left Nav Color Options" — one demo flag that forces the rail to any of the
-  // six named rails (navy / graphite / brand-800 / Light 1–3) OR any Nectar 2.0
-  // Neutral step (050 #FFFFFF → 950 #000000). Off → the rail follows the user's
-  // Appearance preference. (Merged from the old platform-nav-color + nav-gray-scale.)
-  const navColorFlag = useFeatureFlag('nav-gray-scale')
+  /* "Left Nav Color Options" — FLAG REMOVED 2026-09-18 (the direct ask). It
+     forced the rail to any of the six named rails (navy / graphite / brand-800
+     / Light 1–3) or any Nectar 2.0 Neutral step (050 → 950), overriding the
+     user's Appearance preference.
+
+     PINNED TO ITS COMMITTED DEFAULT — `enabled: false`, `variant: 'navy'` —
+     which is the 2026-09-16 audit's rule, not a convenience: a
+     `useFeatureFlag` read of a key the catalog no longer defines resolves to
+     `{ enabled: false }` with NO variant, and `navColorValue` would then be
+     undefined either way here, so this one happens to coincide. It is written
+     out anyway, because the next removal's might not.
+
+     EVERY BRANCH BELOW IS KEPT. With the flag off the rail follows
+     Appearance (ThemeContext → `navVariant`), which is what it does now;
+     restoring the flag is re-adding its catalog entry and replacing this
+     constant with the read. */
+  const navColorFlag = { enabled: false, variant: 'navy' } as const
   const { theme, navVariant: railVariant } = useTheme()
 
   // The Nectar 2.0 Neutral ramp (Figma node 192:1787). `light` = which steps get
@@ -600,7 +616,11 @@ function PlatformShellBody() {
  *  opened by clicking a Jump Back In card. The launcher has no rail item of its
  *  own, so the rail shows nothing active (see PlatformShellBody); orientation is
  *  carried by this single contextual "Back to {origin}" link, which names the
- *  section the learner came from and returns there. No breadcrumb. */
+ *  section the learner came from and returns there. No breadcrumb.
+ *
+ *  A SUB-NAV sits beside the content as of 2026-09-18 — the same `SubNav` the
+ *  account pages draw, for the reason the extraction note gives: one treatment,
+ *  one hover class, no near-copy. See `COMPASS_PANES`. */
 function CourseLauncherView({
   onBack,
   backLabel,
@@ -613,31 +633,75 @@ function CourseLauncherView({
   onBack: () => void
   backLabel: string
 }) {
+  /* Pane state is LOCAL, not a `?pane=` param. The launcher itself is not
+     addressable — it opens from a Resume click and its own `courseId` never
+     reaches the URL — so a shareable pane would be a deep link into a surface
+     that cannot be deep-linked to. It resets with the launcher, which is what
+     reopening a course should do. */
+  const [pane, setPane] = useState<CompassPaneId>('overview')
+  const paneLabel = COMPASS_PANES.find((p) => p.id === pane)?.label ?? ''
   return (
     <section style={{ padding: '24px 40px 64px' }}>
-      <button
-        type="button"
-        onClick={onBack}
-        className="cre-link-action"
-        aria-label={`Back to ${backLabel}`}
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 6,
-          background: 'transparent',
-          border: 'none',
-          padding: 0,
-          marginBottom: 16,
-          cursor: 'pointer',
-          fontFamily: 'var(--font-body)',
-          fontSize: 14,
-          fontWeight: 600,
-          color: 'var(--color-action)',
-        }}
-      >
-        <ArrowLeft size={14} aria-hidden />
-        Back to {backLabel}
-      </button>
+      {/* THE SECONDARY HEADER — 2026-09-18, the direct ask: "add a secondary
+          header for the Compass Learning section, includes the Back to Atlas
+          Home Link. Far right should have an Ask Rubi Chat section."
+
+          WHY THIS SURFACE WANTED A HEADER AT ALL. The launcher deliberately
+          had none: it has no rail item, so orientation rested on a single
+          contextual back link and nothing else, which was right while the page
+          held one placeholder. It now holds a sub-nav, five panes and a tutor
+          composer — three things needing somewhere to belong — and a bar with a
+          rule under it is what says "you are inside Compass, and here is the
+          way out" before the pane list starts.
+
+          The rule is `--color-border-subtle`, the divider every other seam on
+          this version uses. */}
+      <header style={launcherHeaderStyle}>
+        <div style={launcherHeaderLeftStyle}>
+          <button
+            type="button"
+            onClick={onBack}
+            className="cre-link-action"
+            aria-label={`Back to Atlas ${backLabel}`}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: 6,
+              background: 'transparent',
+              border: 'none',
+              padding: 0,
+              cursor: 'pointer',
+              fontFamily: 'var(--font-body)',
+              fontSize: 14,
+              fontWeight: 600,
+              color: 'var(--color-action)',
+            }}
+          >
+            <ArrowLeft size={14} aria-hidden />
+            {/* "ATLAS" NAMES WHAT YOU GO BACK TO, and the origin is still in
+                the label. The ask says "Back to Atlas Home", which is what
+                this prints at the demo default — `backLabel` is the section
+                the learner came from, so it reads "Back to Atlas Study Plan"
+                if they resumed from there.
+
+                Keeping the origin rather than hardcoding "Home" is the
+                documented reason this link exists: it is the launcher's whole
+                orientation, and a link that says Home while returning you to
+                the Study Plan is worse than a slightly longer label. Atlas is
+                the platform (see "Atlas Study Journey"); Compass is the player
+                you are in — which is what makes the two names carry the
+                boundary this header draws. */}
+            Back to Atlas {backLabel}
+          </button>
+          {/* The SECTION's name, one level above the pane heading below it —
+              the shape the account pages have, where the shell's `<h1>` names
+              the section over the sub-nav. `COMPASS_NAME` is shared with the
+              Jump Back In eyebrow so the product cannot be renamed in one
+              place only. */}
+          <p style={launcherHeaderTitleStyle}>{COMPASS_NAME}</p>
+        </div>
+        <AskRubiChat />
+      </header>
       {/* A LO-FI PLACEHOLDER, where `<CourseDetailPage courseId embedded />`
           rendered — 2026-09-17, the direct ask: "remove this entire section,
           and place a large lo-fi square with simple message, this is where
@@ -657,14 +721,105 @@ function CourseLauncherView({
           two-item table of contents, and an Enroll button on a course the
           learner is 62% through. A reviewer reading that would take it for the
           course player rather than for scaffolding. */}
-      <div style={launcherPlaceholderStyle}>
-        <LoFiWidgetBody rows={4} ariaLabel="Compass course content — placeholder" />
-        <p style={launcherPlaceholderTextStyle}>
-          This is where Compass Course content will live.
-        </p>
+      <div style={launcherRowStyle}>
+        <SubNav
+          ariaLabel="Compass course sections"
+          items={COMPASS_PANES}
+          active={pane}
+          onSelect={setPane}
+        />
+        <div style={launcherBodyStyle}>
+          {/* THE PANE'S NAME, and it is load-bearing rather than decoration:
+              every pane shows the same placeholder, so without a heading that
+              changes, clicking a row would move the active pill and alter
+              nothing else — which reads as a nav that does not work. It is
+              also the account layout's own shape one level down, where the
+              shell's `<h1>` names the section above the sub-nav.
+
+              An `<h2>`, not an `<h1>`: the shell owns the page heading, and
+              this sits under the launcher's own context. */}
+          <h2 style={launcherPaneTitleStyle}>{paneLabel}</h2>
+          <div style={launcherPlaceholderStyle}>
+            <LoFiWidgetBody rows={4} ariaLabel="Compass course content — placeholder" />
+            <p style={launcherPlaceholderTextStyle}>
+              This is where Compass Course content will live.
+            </p>
+          </div>
+        </div>
       </div>
     </section>
   )
+}
+
+/* The two columns, matching `AccountSectionLayout`'s row: nav left, content
+   right, WRAPPING on a narrow column rather than crushing the content — the
+   launcher's own gutter is 40 either side, so there is less room here than on
+   an account page and the wrap matters more.
+
+   `gap: 24` is that layout's figure, and the same reasoning applies: the gap
+   and the section's own left padding read as ONE inset, so the two want to stay
+   in step. `alignItems: 'flex-start'` keeps the rail at its natural height
+   instead of stretching it down the placeholder's 560px. */
+/* Back link + section name left, the Ask Rubi composer FAR RIGHT
+   (`justify-content: space-between`). It wraps rather than crushing the
+   composer — at a narrow column the pill drops under the back link, which is
+   the order they matter in.
+
+   `align-items: center` so the 38px pill centres against the two-line left
+   cluster instead of hanging off its first line. */
+const launcherHeaderStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  flexWrap: 'wrap',
+  gap: 16,
+  paddingBottom: 14,
+  marginBottom: 20,
+  borderBottom: '1px solid var(--color-border-subtle)',
+}
+
+const launcherHeaderLeftStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 4,
+  minWidth: 0,
+}
+
+/* A `<p>`, not a heading. The pane's own `<h2>` is the heading of what you are
+   reading; this is a label for the surface around it, and two headings a few
+   pixels apart is the duplication this version keeps removing. */
+const launcherHeaderTitleStyle: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-heading)',
+  fontSize: 17,
+  lineHeight: '23px',
+  fontWeight: 700,
+  color: 'var(--color-text-primary)',
+}
+
+const launcherRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: 24,
+  flexWrap: 'wrap',
+  width: '100%',
+}
+
+/* `flex: 1 1 520px` + `minWidth: 0` — grows beside the fixed-width rail and
+   wraps below it when the column is narrow. `AccountSectionLayout`'s body
+   value, for the same job. */
+const launcherBodyStyle: CSSProperties = {
+  flex: '1 1 520px',
+  minWidth: 0,
+}
+
+const launcherPaneTitleStyle: CSSProperties = {
+  margin: '0 0 12px',
+  fontFamily: 'var(--font-heading)',
+  fontSize: 20,
+  lineHeight: '26px',
+  fontWeight: 700,
+  color: 'var(--color-text-primary)',
 }
 
 /* A LARGE square-ish block, not a full-height panel: it has to read as a

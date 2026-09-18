@@ -1534,6 +1534,56 @@ html,
   outline-offset: 2px;
 }
 
+/* ASK RUBI's send button (2026-09-18) — the Compass header's composer.
+
+   A CLASS, not inline styles, for the reason `.cre-journey-stop` and
+   `.cre-alert-action` are: `CSSProperties` carries neither `:hover` nor
+   `:disabled`, and the disabled state is the one that matters here — an
+   enabled-looking send on an empty field is a button that does nothing.
+
+   The FILL is on the primary ramp, matching the Study Journey's own CTA: navy
+   means "do this" on this version and the Brick is the assessment accent.
+   White on `--color-primary-500` is 7.64:1 in both themes (XCEL does not
+   re-pin that stop), so the label clears AA either way.
+
+   Disabled is `--color-neutral-300` with tertiary ink — NOT the primary at low
+   opacity, which reads as a button mid-transition. `cursor: default` rather
+   than `not-allowed`: the field beside it says what is needed. */
+/* The placeholder is this field's ONLY visible label — there is no `<label>`,
+   just an `aria-label` — so it is carrying the control's identity rather than
+   being a hint over one. The browser default measures 2.75:1 on the pill;
+   `--color-text-secondary` is 7.43:1 light / 8.76:1 dark. Not a fork of the
+   Links / TodoPanel placeholder treatment, which is a HINT under a visible
+   label and documented as such. */
+.cre-ask-rubi-input::placeholder {
+  color: var(--color-text-secondary);
+  opacity: 1; /* Firefox dims placeholders by default, which would undo this. */
+}
+
+.cre-ask-rubi-send {
+  background: var(--color-primary-500);
+  /* The INK is here, not inline. An inline `color` would beat the `:disabled`
+     rule below — which is exactly what it did on the way in, leaving the
+     disabled glyph white on grey at 1.69:1 while this file looked correct. */
+  color: var(--color-text-inverse);
+  cursor: pointer;
+  transition:
+    background 160ms,
+    color 160ms;
+}
+.cre-ask-rubi-send:hover:not(:disabled) {
+  background: var(--color-primary-600);
+}
+.cre-ask-rubi-send:disabled {
+  background: var(--color-neutral-300);
+  color: var(--color-text-tertiary);
+  cursor: default;
+}
+.cre-ask-rubi-send:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+}
+
 /* Card primitive — default surface used everywhere (course / membership /
    package / individual / cert containers). */
 .cre-card {

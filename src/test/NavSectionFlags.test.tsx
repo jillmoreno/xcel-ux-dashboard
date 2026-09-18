@@ -113,8 +113,11 @@ describe('the Navigation flag group', () => {
       // NOTE the flat list did not change when the two moved GROUPS; the
       // grouping is asserted separately below, because this assertion cannot
       // see it. What it does see is Browse Catalog leaving.
+      // RUBI INSIGHTS LEFT THE BASELINE on 2026-09-18 — the same editorial call
+      // as Browse Catalog two days earlier, and it had to fail here first,
+      // which is the whole point of comparing the rail in full. The section
+      // still resolves from `?section=m-career-tools`; only the row is gone.
       'Resources',
-      'Rubi Insights',
       'Get Help',
     ])
   })
@@ -139,8 +142,8 @@ describe('the Navigation flag group', () => {
       'Readiness',
       'My Courses',
       'Certificates',
+      // …and Resources is the group's last row now that Rubi is off (2026-09-18).
       'Resources',
-      'Rubi Insights',
     ])
     // EXPLORE IS GONE — Browse Catalog was its last row and is now off, and a
     // group whose items are all hidden falls out caption and all. Asserted as

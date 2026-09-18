@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs'
 import { render, screen, act, fireEvent } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -282,6 +283,73 @@ describe('FeatureFlagPanel — per-feature scope', () => {
   })
 })
 
+describe('FeatureFlagPanel — the three options removed 2026-09-18', () => {
+  /**
+   * Three flag rows were removed from the panel at Jillienne's request:
+   * Resource Library, Podcasts and Left Nav Color Options. Asserted in the
+   * same shape as the 47-flag audit above, and for the same reason — the way
+   * this regresses is a key quietly coming back.
+   *
+   * THE TWO NAV ROWS NEEDED A PIN, and it is the interesting part of the
+   * change. `useNavSectionVisible` returns TRUE for a section it finds no
+   * definition for, so deleting those two catalog entries alone would have
+   * UNHIDDEN both rail rows — the inverse of the default they carried. The pin
+   * is in `PlatformSideNav` (`RAIL_ROWS_PINNED_HIDDEN`) and is what the last
+   * assertion here reads.
+   */
+  const REMOVED_2026_09_18 = ['nav-show-m-learning-library', 'nav-show-podcasts', 'nav-gray-scale']
+
+  it('removed all three from the catalog', () => {
+    for (const key of REMOVED_2026_09_18) {
+      expect(FEATURE_FLAGS.find((d) => d.key === key)).toBeUndefined()
+    }
+  })
+
+  it('removed them from the /dashboard-rebrand scope, where the panel reads', () => {
+    // A key left in the scope after leaving the catalog matches nothing and
+    // fails nothing — the panel filters the catalog BY the scope.
+    const scope = new Set(flagScopeForPath('/dashboard-rebrand') ?? [])
+    for (const key of REMOVED_2026_09_18) expect(scope.has(key)).toBe(false)
+  })
+
+  it('took the two nav rows out of NAV_SECTION_FLAGS as well', () => {
+    // The nav flags are GENERATED from that list, so a surviving entry would
+    // put the catalog row (and the panel toggle) straight back.
+    const sections = NAV_SECTION_FLAGS.map((n) => n.section)
+    expect(sections).not.toContain('m-learning-library')
+    expect(sections).not.toContain('podcasts')
+  })
+
+  it('pins those two rail rows hidden, rather than relying on the missing flag', () => {
+    /*
+     * THE ASSERTION THIS FILE EXISTS FOR, in this block. Read at SOURCE
+     * deliberately: with the flags gone there is no state to seed that could
+     * tell "pinned hidden" apart from "hidden because the flag said so", so a
+     * DOM test would pass whether or not the pin is there — and it would pass
+     * for the wrong reason the moment the pin is deleted, because
+     * `useNavSectionVisible`'s no-definition branch returns true.
+     */
+    const src = readFileSync('src/components/layout/PlatformSideNav.tsx', 'utf8')
+    const decl = src.match(/const RAIL_ROWS_PINNED_HIDDEN = \[([^\]]*)\]/)
+    expect(decl, 'RAIL_ROWS_PINNED_HIDDEN is gone — the two rows are visible again').toBeTruthy()
+    expect(decl![1]).toContain("'m-learning-library'")
+    expect(decl![1]).toContain("'podcasts'")
+    // …and it is actually APPLIED in the group filter, not merely declared.
+    expect(src).toContain('!RAIL_ROWS_PINNED_HIDDEN.includes(i.id)')
+  })
+
+  it('left no `useFeatureFlag` read of the rail-colour key', () => {
+    // Pinned to its committed default (`enabled: false`) in `PlatformShell`,
+    // so the rail follows the Appearance preference exactly as it did with the
+    // flag off. A live read would resolve to `{ enabled: false }` with no
+    // variant — which happens to coincide here, and would not for a flag whose
+    // default was ON.
+    const src = readFileSync('src/components/layout/PlatformShell.tsx', 'utf8')
+    expect(src).not.toMatch(/useFeatureFlag\(\s*'nav-gray-scale'\s*\)/)
+    expect(src).toContain("const navColorFlag = { enabled: false, variant: 'navy' } as const")
+  })
+})
+
 describe('FeatureFlagPanel — the 2026-09-16 XCEL flag audit', () => {
   /**
    * This block replaced four tests that each flipped a classic-`/dashboard`
@@ -379,9 +447,13 @@ describe('FeatureFlagPanel — the 2026-09-16 XCEL flag audit', () => {
     // The HMR / new-flag-mid-session case, repointed off `rubi-tutor-widget`
     // onto a flag that still exists. Persisted state written before the flag
     // existed must not stop the panel flipping it.
+    // Seeded key repointed off `nav-gray-scale` on 2026-09-18 — that flag left
+    // the catalog, which would have made this a stale entry for a key that no
+    // longer exists rather than one that predates a flag. `ce-study-plan` is
+    // the stand-in: a surviving flag this test does not otherwise touch.
     window.localStorage.setItem(
       'cgp.featureFlags',
-      JSON.stringify({ 'nav-gray-scale': { enabled: false } }),
+      JSON.stringify({ 'ce-study-plan': { enabled: false } }),
     )
     renderDashboardWithPanel('/dashboard-rebrand')
     act(() => {
