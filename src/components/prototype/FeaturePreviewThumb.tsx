@@ -16,16 +16,15 @@ import { PREVIEW_FRAME_W } from './featurePreviewSrc'
  * so it reads as a picture, not a second copy of the app to interact with.
  *
  * COST: each frame without a `thumbnail` boots the app. One is nothing; a list
- * of them is not — and in this project nine of ten rows point at the same 857KB
- * single-file prototype, so a section renders several copies of it.
- * `loading="lazy"` defers the ones below the fold, and authoring `thumbnail`
- * opts a row out entirely.
+ * of them is not. `loading="lazy"` defers the ones below the fold, and
+ * authoring `thumbnail` on a feature opts it out entirely.
  *
  * A MISSING `thumbnail` FALLS BACK TO THE FRAME, and that is load-bearing.
- * Ported from the LMS, this rendered the `<img>` unconditionally: the docs said
- * a missing file "degrades quietly", but nothing implemented it, so authoring a
- * path before capturing the PNG gave a row a broken image. The `onError` swap
- * below makes the documented behaviour true, which is what lets `thumbnail` be
+ * Until 2026-09-18 this rendered the `<img>` unconditionally: CLAUDE.md said a
+ * missing file "degrades quietly", but nothing implemented it, so authoring a
+ * path before capturing the PNG gave a row a broken image. The PartnerHub port
+ * added the `onError` swap below (ee450ac, 08-27) and it is synced back here. It
+ * makes the documented behaviour true, which is what lets `thumbnail` be
  * authored up front and the screenshots be dropped in afterwards — the order
  * this actually happens in. A deleted PNG likewise reverts to the live frame
  * rather than breaking the row, so removing one is a safe way to retire it.
