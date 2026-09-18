@@ -6,7 +6,7 @@
 <title>XCEL LMS — Desktop Platform</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Open+Sans:wght@300;400;600;700&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
    XCEL tokens — STC structure, XCEL brand colour.
@@ -29,6 +29,11 @@
 :root{
   --font-heading:'Lato',system-ui,-apple-system,sans-serif;
   --font-body:'Open Sans',system-ui,-apple-system,sans-serif;
+  /* The wordmark's face is NOT a theme choice, for the same reason the brand
+     red is not a palette choice. --font-heading moves with data-style; this
+     one never does, so the XCEL lockup reads the same in every style. It is
+     a stand-in for /brand/xcel.svg and should track that asset, not the UI. */
+  --font-brand:'Lato',system-ui,-apple-system,sans-serif;
 
   /* Brand red — constant in every palette. #a81c24 is 7.35:1 on white, so
      it carries the exam accent as real text, not decoration. */
@@ -39,6 +44,15 @@
   --ink:#1f1f23; --ink-2:#4d4d55; --ink-3:#6d6d76;
   --rail:#26262b; --rail-2:#33333a; --rail-line:rgba(255,255,255,.13);
   --rail-txt:rgba(255,255,255,.82); --rail-muted:rgba(255,255,255,.56);
+  /* The rail's three OTHER colours, which used to be hardcoded #fff and
+     rgba(255,255,255,…) in four places — .rprof .nm, .ritem:hover,
+     .ritem[aria-current] and one inline style built in renderRail(). Those
+     values are unchanged here, so classic renders identically; tokenising
+     them is what lets the editorial style put a LIGHT rail in without
+     touching a single rail rule. */
+  --rail-ink:#ffffff;
+  --rail-active:rgba(255,255,255,.1);
+  --rail-hover:rgba(255,255,255,.07);
   /* --rail-accent / --rail-chip / --rail-chip-ink are PALETTE-SCOPED (below).
      The rule that produced them survives the re-palette: a deep colour on this
      near-black rail is close to invisible (the old XCEL red measured 2.05:1,
@@ -158,6 +172,97 @@
   --slate-600:#c98f45; --slate-700:#dcae70;
 }
 
+/* ============================================================
+   STYLE AXIS — data-style on <html>. "classic" (default) is everything
+   above. "editorial" is a THIRD independent axis alongside data-theme and
+   data-palette, so editorial × teal × dark all compose rather than fork.
+
+   It must sit AFTER the dark blocks: `:root[data-theme="dark"]` and
+   `:root[data-style="editorial"]` have the SAME specificity (0,2,0), so
+   source order is what decides. The dark+editorial pair below is (0,3,0)
+   and beats both.
+
+   WHAT THIS STYLE IS. A reduction, not a re-skin: cards and shadows give
+   way to hairline rules and warm ground, one tinted band carries the single
+   promoted thing, and type does the work that containers used to.
+
+   NO RED. Editorial drops --brand-* entirely except ONE badge — the Rubi
+   mark. That has a consequence worth stating, because it is not a colour
+   decision: in classic, red carries the external licensing exam as its only
+   semantic. Editorial has no red to spend on it, so the exam is carried by
+   ink, a hairline rule and the words "Licensing exam" instead. Nothing is
+   lost — the desktop rule was always that the exam is labelled in words and
+   never by colour alone — but the EMPHASIS is gone, and that is a product
+   choice, not a styling one. Reinstating it means giving the exam its own
+   non-red accent, not reaching back for --brand-*.
+
+   Every value below is measured, not picked. The warm ground is LIGHTER
+   than the cool one it replaces (#faf8f5 vs #f4f4f6), which is exactly why
+   the reference's green/ochre status bars could not come over: --success-500
+   fell to 4.27:1 as a label and --warning-500 to 1.71:1 as a bar. So status
+   here is carried by label text, the warm row wash and the button treatment,
+   with every bar a single primary fill on a taupe track.
+   ============================================================ */
+:root[data-style="editorial"]{
+  /* One family. Size, weight and tracking replace family contrast — the
+     reference's serif is deliberately NOT reproduced. 300 is loaded for it. */
+  --font-heading:'Open Sans',system-ui,-apple-system,sans-serif;
+
+  --ink:#22201d; --ink-2:#4f4a43; --ink-3:#6f6862;   /* 15.33 / 8.28 / 5.17 on page */
+  --page:#faf8f5; --card:#ffffff;
+  --line:#e8e3dc; --line-2:#d9d2c8;
+  --n-50:#ffffff; --n-75:#f5f1ea; --n-100:#ebe5db; --n-200:#dcd4c8;
+  --n-300:#c9c0b2; --n-600:#7d7568; --n-700:#5f584d;
+
+  /* The two editorial surfaces. --ed-band is the ONE promoted block (cool,
+     so it separates from the warm page); --ed-wash is the in-progress row
+     tint, which is how a row shows state without a border or a badge. */
+  --ed-band:#e7ebf1; --ed-wash:#f6efe6;
+
+  /* THE LIGHT RAIL. The near-black rail was the heaviest object on the page
+     and the main reason the first pass still did not read as "light" — the
+     reference's nav is near-white with a soft pill. So the rail sits ON the
+     page ground here and a right hairline defines it, exactly as the
+     reference does.
+
+     --rail-active is #d5dde8 and NOT the --ed-band tint it wants to be:
+     that measured 1.13:1 against the warm page, because a cool tint at the
+     same lightness as a warm ground differs in HUE, not luminance, and hue
+     alone cannot say "selected". #d5dde8 gets to 1.29:1 — and the active
+     item also goes to weight 700, so selection never rests on the fill.
+
+     --rail-accent is deliberately NOT repointed. It is the palette's light
+     stop and it serves the focus rings on the DARK prototype bar; a navy
+     primary there would measure ~1.5:1 and strand keyboard users. The
+     editorial rail gets its own focus colour in a rule instead. */
+  --rail:#faf8f5; --rail-2:#f5f1ea; --rail-line:#dcd4c8;
+  --rail-txt:#4f4a43; --rail-muted:#6f6862;
+  --rail-ink:#22201d; --rail-active:#d5dde8; --rail-hover:#ebe5db;
+  --rail-chip:#d5dde8; --rail-chip-ink:#22201d;
+
+  --radius:10px; --radius-sm:8px;
+  --shadow:none;
+}
+:root[data-theme="dark"][data-style="editorial"]{
+  --ink:#f3f1ec; --ink-2:#b8b2a8; --ink-3:#9b948a;
+  /* --ink-3 is #9b948a, NOT the #918a80 that matches the light ramp's step:
+     that measured 4.22:1 on --ed-band and eyebrows are small text. Darkening
+     the band instead would have cost its separation from the page. */
+  --page:#181613; --card:#21201c;
+  --line:#302c26; --line-2:#403b33;
+  --n-50:#21201c; --n-75:#262420; --n-100:#332f28; --n-200:#403b33;
+  --n-300:#4f4941; --n-600:#8d867c; --n-700:#a8a199;
+  --ed-band:#262a31; --ed-wash:#2a2419;
+  /* Dark editorial keeps a dark rail — "light rail" was about weight on a
+     light page, not about inverting the dark theme. It sits on the dark page
+     ground with the same hairline treatment, so the two themes are the same
+     DESIGN rather than two designs. */
+  --rail:#181613; --rail-2:#211f1b; --rail-line:#302c26;
+  --rail-txt:#b8b2a8; --rail-muted:#9b948a;
+  --rail-ink:#f3f1ec; --rail-active:#262a31; --rail-hover:#262420;
+  --rail-chip:#262a31; --rail-chip-ink:#f3f1ec;
+}
+
 *{box-sizing:border-box}
 body{margin:0;background:var(--page);color:var(--ink);font:14px/1.55 var(--font-body);
   -webkit-font-smoothing:antialiased}
@@ -223,9 +328,9 @@ button{font:inherit}
 .logo{display:flex;align-items:center;gap:10px;text-decoration:none}
 .logo img{height:38px;display:block}
 .lock{display:flex;flex-direction:column;line-height:1}
-.lock .w{font-family:var(--font-heading);font-weight:900;font-size:27px;letter-spacing:-.02em;color:var(--ink)}
+.lock .w{font-family:var(--font-brand);font-weight:900;font-size:27px;letter-spacing:-.02em;color:var(--ink)}
 .lock .w i{color:var(--brand-500);font-style:normal}
-.lock .s{font-family:var(--font-heading);font-weight:400;font-size:11px;letter-spacing:.02em;
+.lock .s{font-family:var(--font-brand);font-weight:400;font-size:11px;letter-spacing:.02em;
   color:var(--ink-2);margin-top:3px}
 .lock .s b{font-weight:700;font-size:9px;color:var(--ink-3)}
 .search{margin-left:auto;width:300px;border:1px solid var(--line-2);border-radius:8px;padding:9px 12px;
@@ -245,7 +350,7 @@ button{font:inherit}
 .rprof .av{width:40px;height:40px;border-radius:50%;background:var(--brand-500);color:#fff;
   display:grid;place-items:center;font:700 14px var(--font-body);flex:none;
   box-shadow:0 0 0 2px var(--rail),0 0 0 4px var(--brand-700)}
-.rprof .nm{color:#fff;font-weight:700;font-size:13.5px;white-space:nowrap}
+.rprof .nm{color:var(--rail-ink);font-weight:700;font-size:13.5px;white-space:nowrap}
 .rprof .sub{color:var(--rail-muted);font-size:11px}
 .rlic{margin-top:12px;display:flex;flex-direction:column;gap:4px}
 .rlic .k{font-size:10px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--rail-muted)}
@@ -254,8 +359,8 @@ button{font:inherit}
 .ritem{display:flex;align-items:center;gap:10px;width:100%;text-align:left;appearance:none;border:0;
   background:transparent;color:var(--rail-txt);font:600 13px var(--font-body);padding:9px 16px;cursor:pointer;
   border-left:3px solid transparent}
-.ritem:hover{background:rgba(255,255,255,.07);color:#fff}
-.ritem[aria-current="page"]{background:rgba(255,255,255,.1);color:#fff;border-left-color:var(--rail-accent)}
+.ritem:hover{background:var(--rail-hover);color:var(--rail-ink)}
+.ritem[aria-current="page"]{background:var(--rail-active);color:var(--rail-ink);border-left-color:var(--rail-accent)}
 .ritem:focus-visible{outline:2px solid var(--rail-accent);outline-offset:-2px}
 .ritem .g{width:17px;text-align:center;opacity:.85;flex:none}
 .ritem .badge{margin-left:auto;font-size:10px;font-weight:700;background:#ebb2b6;color:#6f1218;
@@ -374,8 +479,206 @@ body[data-prov="on"] .provnote{display:block}
 .provnote b{color:var(--prov)}
 
 .foot{padding:34px 40px 0;font-size:12px;color:var(--ink-3);max-width:80ch}
+
+/* ============================================================
+   EDITORIAL — the reduced dashboard.
+
+   Read this as a set of substitutions, each replacing a container with a
+   typographic or spatial device:
+     card + shadow      → hairline rule + air        (.ed-sec)
+     card header        → letterspaced eyebrow       (.eyebrow, retracked)
+     hero band          → the page's own ground      (.hero override)
+     status badge       → label text + warm wash     (.ed-row.on)
+     8px rounded track  → 3px hairline track         (.ed-track)
+     stat tile grid     → one dot-separated fact line
+   Only .ed-* classes are new; everything else is an override of a rule the
+   classic style already owns, so classic is untouched by construction.
+   ============================================================ */
+:root[data-style="editorial"] h1{font-size:40px;font-weight:300;letter-spacing:-.025em;line-height:1.08}
+:root[data-style="editorial"] h2{font-size:22px;font-weight:600;letter-spacing:-.012em}
+:root[data-style="editorial"] h3{font-size:15px;font-weight:600;letter-spacing:0}
+/* Wider tracking than classic's .07em — at this size it is the single
+   strongest editorial signal left once the serif is gone. */
+:root[data-style="editorial"] .eyebrow{font-size:10.5px;font-weight:600;letter-spacing:.14em}
+/* More air than classic throughout — the reference's spacing is doing as much
+   work as its type, and a reduction that keeps card-density reads cramped
+   rather than calm. */
+:root[data-style="editorial"] .hero{background:var(--page);padding:44px 48px 28px}
+:root[data-style="editorial"] .hero p{font-size:14px;max-width:62ch}
+:root[data-style="editorial"] .body{padding:0 48px;gap:0}
+:root[data-style="editorial"] .foot{padding:40px 48px 0}
+
+/* ---- the light rail ----
+   Shape changes, not just colour: the 3px left accent border becomes a
+   rounded pill inset from the rail edge, and the glyph column is dropped —
+   the reference's nav is text-only, and at this weight an icon column reads
+   as clutter. Both are reversible in one rule each. */
+:root[data-style="editorial"] .rail{border-right:1px solid var(--rail-line);padding:22px 0 30px}
+:root[data-style="editorial"] .ritem{border-left:0;border-radius:9px;margin:0 10px;
+  width:auto;padding:9px 12px;font-weight:600}
+:root[data-style="editorial"] .ritem .g{display:none}
+/* Weight, not only fill. The pill is 1.29:1 against the ground, so it reads
+   as a tint rather than a block — the bolder label is what makes "selected"
+   unmistakable, and aria-current carries it for anyone not seeing either. */
+:root[data-style="editorial"] .ritem[aria-current="page"]{font-weight:700}
+:root[data-style="editorial"] .ritem:focus-visible{outline:2px solid var(--primary-500);
+  outline-offset:-2px}
+:root[data-style="editorial"] .rcap{letter-spacing:.12em;padding:18px 22px 6px}
+:root[data-style="editorial"] .rprof{padding:0 22px 16px}
+/* The nav badge was #ebb2b6 / #6f1218 — a red tint, and red is spent. */
+:root[data-style="editorial"] .ritem .badge{background:var(--primary-100);color:var(--primary-700)}
+/* Chrome goes quiet too: an opaque white appbar over a warm page is a seam. */
+:root[data-style="editorial"] .appbar{background:var(--page);border-bottom:1px solid var(--line);
+  padding:0 26px}
+:root[data-style="editorial"] .search{background:var(--card);border-color:var(--line-2)}
+:root[data-style="editorial"] .ubtn{border-color:var(--line-2);background:transparent}
+/* The demo strip's 2px rule was the palette's LIGHT stop, chosen for a
+   near-black bar; on a light one it disappears. */
+:root[data-style="editorial"] .demo{border-bottom-color:var(--primary-500)}
+/* Red leaves. The wordmark X and both avatars are the brand's other uses of
+   it, so they go to ink and neutral respectively — the Rubi badge below is
+   the only --brand-* left in this style. */
+:root[data-style="editorial"] .lock .w i{color:var(--ink)}
+:root[data-style="editorial"] .avatar,
+:root[data-style="editorial"] .rprof .av{background:var(--n-200);color:var(--ink);box-shadow:none}
+
+.ed-sec{padding:34px 0 8px;border-top:1px solid var(--line)}
+/* An explicit class, not :first-child — the at-risk and expired states put a
+   .ed-note ahead of the first section, so position cannot be relied on. */
+.ed-sec--first{border-top:0;padding-top:8px}
+.ed-sechead{display:flex;align-items:center;gap:12px;margin-bottom:20px}
+.ed-fact{font-size:14px;color:var(--ink-2);margin-top:9px}
+.ed-fact b{color:var(--ink);font-weight:600}
+
+/* the one promoted block */
+.ed-band{background:var(--ed-band);border-radius:var(--radius);padding:24px 26px}
+.ed-band__top{display:flex;align-items:center;gap:24px;flex-wrap:wrap}
+.ed-band__foot{display:flex;align-items:center;gap:14px;margin-top:20px;flex-wrap:wrap}
+.ed-daynum{font:300 34px/1 var(--font-heading);font-variant-numeric:tabular-nums;color:var(--ink);
+  text-align:center;flex:none}
+.ed-daynum span{display:block;font:600 10px/1 var(--font-body);letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-3);margin-top:5px}
+.ed-dots{display:flex;gap:4px;flex:none}
+.ed-dots i{width:11px;height:11px;border-radius:2px;background:var(--n-200);display:block}
+.ed-dots i.d{background:var(--ink)}
+.ed-dots i.n{background:var(--primary-500)}
+
+/* the readiness figure — a thinner ring than classic's, same two series */
+.ed-ring{display:flex;gap:26px;align-items:center;flex-wrap:wrap}
+.ed-legend{display:flex;flex-direction:column;gap:7px;font-size:12px;color:var(--ink-2);margin-top:12px}
+.ed-legend span{display:inline-flex;align-items:center;gap:8px}
+.ed-legend em{width:10px;height:10px;border-radius:2px;font-style:normal;display:inline-block;flex:none}
+
+/* Rubi — the ONLY red in this style, and only as the badge glyph. The rule,
+   the eyebrow and the button are all ink/primary. */
+.ed-rubi{border-left:3px solid var(--line-2);padding-left:18px}
+.ed-rubi__head{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.ed-rubi__mark{width:19px;height:19px;flex:none;background:var(--brand-500);color:#fff;
+  display:grid;place-items:center;font:700 10px/1 var(--font-body);
+  clip-path:polygon(50% 0,93% 25%,93% 75%,50% 100%,7% 75%,7% 25%)}
+:root[data-theme="dark"] .ed-rubi__mark{color:var(--brand-900)}
+
+.ed-link{background:none;border:0;padding:0;cursor:pointer;color:var(--primary-500);
+  font:600 12.5px var(--font-body);text-decoration:underline;text-underline-offset:3px}
+.ed-link:hover{color:var(--primary-600)}
+.ed-link.q{color:var(--ink-2);text-decoration-color:var(--n-300)}
+.ed-link:focus-visible{outline:2px solid var(--primary-400);outline-offset:3px}
+
+/* rows: state by wash and label, never by a badge */
+/* Every row carries its top rule, including the first — that rule is what
+   separates the list from its own section header, exactly as the reference's
+   assignments table does. */
+.ed-row{display:flex;align-items:center;gap:14px;padding:15px 14px;margin:0 -14px;
+  border-top:1px solid var(--line)}
+.ed-row.on{background:var(--ed-wash);border-radius:var(--radius-sm)}
+.ed-row.on+.ed-row{border-top-color:transparent}
+.ed-tick{width:30px;height:30px;border-radius:8px;background:var(--n-75);flex:none;
+  display:grid;place-items:center;font-size:12px;color:var(--ink-3)}
+.ed-row.done .ed-tick{color:var(--success-700)}
+.ed-row__t{flex:1;min-width:0}
+.ed-row__n{font-size:13.5px;font-weight:600}
+.ed-row__m{font-size:11.5px;color:var(--ink-3);margin-top:2px}
+.ed-row__p{flex:0 0 210px;max-width:210px}
+.ed-track{height:3px;border-radius:2px;background:var(--n-200);overflow:hidden}
+.ed-track i{display:block;height:100%;background:var(--primary-500)}
+.ed-row__s{font-size:11.5px;color:var(--ink-3);margin-top:7px}
+/* The exam row. In classic this is .taskrow.exam — a red left border, red
+   tint and a red pill. Here it is ink and a rule, and the words carry it. */
+.ed-row.exam{border-left:3px solid var(--ink);padding-left:14px;background:var(--n-75);
+  border-radius:var(--radius-sm)}
+.ed-row.exam .ed-tick{background:transparent;color:var(--ink)}
+.ed-note{border-left:3px solid var(--warning-800);padding:2px 0 2px 16px;color:var(--warning-800);
+  font-size:13px;line-height:1.5;margin-bottom:20px}
+.ed-note.err{border-left-color:var(--error-700);color:var(--error-700)}
+.ed-note b{font-weight:700}
+
+/* ============================================================
+   UI/UX DEMO TOOLS — ported from xcel-admin-tool.html. Two differences,
+   both forced by this file's shell: there is no left nav to hang the robot
+   off, so it sits in the appbar util cluster; and being at the TOP of the
+   page it opens DOWNWARD rather than up. Class names are the fork's own
+   (zero collisions here) so the two files stay diffable.
+   ============================================================ */
+.ph-admin-tools{position:relative;display:flex}
+.ph-admin-tools-trigger{width:34px;height:34px;border-radius:50%;border:1px solid transparent;
+  background:transparent;color:var(--ink-2);cursor:pointer;opacity:.3;font-size:13px;
+  transition:opacity .15s ease}
+.ph-admin-tools-trigger:hover{opacity:1;border-color:var(--line-2)}
+.ph-admin-tools-trigger:focus-visible{opacity:1;outline:2px solid var(--primary-400);outline-offset:2px}
+.ph-admin-tools-trigger[aria-expanded="true"]{opacity:1;border-color:var(--line-2);background:var(--n-75)}
+.ph-admin-menu{position:fixed;display:none;min-width:216px;background:var(--card);
+  border:1px solid var(--line-2);border-radius:10px;padding:6px;z-index:80;
+  box-shadow:0 10px 30px rgba(0,0,0,.17)}
+.ph-admin-menu--open{display:block}
+.ph-admin-menu__label{display:block;font-size:9.5px;font-weight:700;letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-3);padding:7px 9px 6px}
+.ph-admin-menu__item{display:flex;align-items:center;gap:10px;width:100%;text-align:left;
+  appearance:none;border:0;background:transparent;color:var(--ink);
+  font:600 12.5px var(--font-body);padding:8px 9px;border-radius:7px;cursor:pointer}
+.ph-admin-menu__item:hover:not(:disabled){background:var(--n-75)}
+.ph-admin-menu__item:disabled{opacity:.42;cursor:not-allowed}
+.ph-admin-menu__item-icon{width:15px;text-align:center;color:var(--ink-3);flex:none}
+.ph-admin-panel-overlay{position:fixed;inset:0;background:rgba(0,0,0,.34);z-index:90;display:none}
+.ph-admin-panel-overlay[aria-hidden="false"]{display:block}
+.ph-admin-panel{position:fixed;top:0;left:0;bottom:0;width:380px;max-width:92vw;
+  background:var(--card);border-right:1px solid var(--line-2);z-index:91;display:none;
+  flex-direction:column}
+.ph-admin-panel[aria-hidden="false"]{display:flex}
+.ph-admin-panel__header{display:flex;align-items:center;gap:12px;padding:16px 18px;
+  border-bottom:1px solid var(--line)}
+.ph-admin-panel__title{margin:0;font:700 15px var(--font-body);color:var(--ink)}
+.ph-admin-panel__close{margin-left:auto;width:30px;height:30px;border-radius:7px;
+  border:1px solid var(--line-2);background:var(--card);color:var(--ink-2);cursor:pointer}
+.ph-admin-panel__close:hover{background:var(--n-75)}
+.ph-admin-panel__body{padding:18px;overflow:auto;font-size:13px;line-height:1.55;color:var(--ink-2)}
+.ph-admin-panel__placeholder{border:1.5px dashed var(--line-2);border-radius:8px;padding:18px;
+  text-align:center;color:var(--ink-3);font-size:12px}
+.ph-version-options{display:flex;flex-direction:column;gap:10px}
+.ph-version-option{display:flex;gap:11px;text-align:left;appearance:none;background:var(--card);
+  border:1px solid var(--line-2);border-radius:9px;padding:13px;cursor:pointer;color:var(--ink)}
+.ph-version-option:hover{border-color:var(--primary-300)}
+.ph-version-option[aria-checked="true"]{border-color:var(--primary-500);
+  box-shadow:inset 0 0 0 1px var(--primary-500)}
+.ph-version-option:focus-visible{outline:2px solid var(--primary-400);outline-offset:2px}
+.ph-version-option__radio{width:15px;height:15px;border-radius:50%;border:2px solid var(--n-300);
+  flex:none;margin-top:3px}
+.ph-version-option[aria-checked="true"] .ph-version-option__radio{border-color:var(--primary-500);
+  background:radial-gradient(circle,var(--primary-500) 0 3.5px,transparent 4px)}
+.ph-version-option__body{min-width:0}
+.ph-version-option__heading{display:flex;align-items:center;gap:0;flex-wrap:wrap}
+.ph-version-option__title{font-weight:700;font-size:13px}
+.ph-version-option__badge{font-size:9px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  padding:2px 6px;border-radius:4px;margin-left:8px;background:var(--n-100);color:var(--ink-2)}
+.ph-version-option__badge--future{background:var(--primary-100);color:var(--primary-700)}
+.ph-version-option__desc{display:block;font-size:12px;color:var(--ink-2);margin-top:5px;line-height:1.5}
+
 @media (max-width:900px){.shell{grid-template-columns:1fr}.rail{flex-direction:row;overflow-x:auto}
-  .hero,.body,.foot{padding-left:20px;padding-right:20px}}
+  .hero,.body,.foot{padding-left:20px;padding-right:20px}
+  :root[data-style="editorial"] .hero,
+  :root[data-style="editorial"] .body,
+  :root[data-style="editorial"] .foot{padding-left:20px;padding-right:20px}
+  :root[data-style="editorial"] .rail{border-right:0;border-bottom:1px solid var(--rail-line)}
+  .ed-row{flex-wrap:wrap}.ed-row__p{flex-basis:100%;max-width:none}}
 </style>
 </head>
 <body data-prov="off">
@@ -384,10 +687,14 @@ body[data-prov="on"] .provnote{display:block}
   <span class="tag">XCEL LMS</span>
   <span>Desktop platform</span>
   <span style="opacity:.4">·</span>
+  <a class="plink" href="/prototypes/xcel-clp-todays-tasks.html">CLP · Today's Tasks variants</a>
   <a class="plink" href="/prototypes/xcel-lms-walkthrough.html">Learner walk-through</a>
   <a class="plink" href="/prototypes/xcel-lms-wireframes.html">Wireframes &amp; overlap</a>
   <a class="plink" href="/prototypes/xcel-lms-admin.html">Admin wireframes</a>
   <a class="plink" href="/prototypes/xcel-lms-exam-task-type-spec.md">Exam task-type spec</a>
+  <a class="plink" href="/prototypes/xcel-study-plan.html">Study plan</a>
+  <a class="plink" href="/prototypes/xcel-nav-collapse.html">Collapsible rail</a>
+  <a class="plink" href="/prototypes/xcel-study-pace-readiness.html">Pace &amp; Readiness</a>
   <a class="plink" href="/prototypes/xcel-finserv-build-plan.html">Build plan</a>
   <span class="sp">
     <span class="palsw" role="radiogroup" aria-label="Colour palette (prototype only)">
@@ -422,9 +729,39 @@ body[data-prov="on"] .provnote{display:block}
   <span class="util">
     <button class="ubtn" aria-label="Help">?</button>
     <button class="ubtn" aria-label="Cart">▤</button>
+    <!-- UI/UX Demo Tools. Invisible-ish at rest (30% opacity), full on
+         hover/focus and pinned visible while open, so it stays out of the
+         learner's read of the header but is reachable in a demo. -->
+    <span class="ph-admin-tools" id="phAdminTools">
+      <button type="button" id="phAdminToolsTrigger" class="ph-admin-tools-trigger"
+        aria-haspopup="menu" aria-expanded="false" aria-controls="phAdminMenu" aria-label="Admin tools">◈</button>
+      <span id="phAdminMenu" class="ph-admin-menu" role="menu" aria-label="Admin tools">
+        <span class="ph-admin-menu__label">UI/UX Demo Tools</span>
+        <button type="button" role="menuitem" class="ph-admin-menu__item" data-admin-action="switch-account">
+          <span class="ph-admin-menu__item-icon" aria-hidden="true">◉</span>Switch Account
+        </button>
+        <button type="button" role="menuitem" class="ph-admin-menu__item" disabled aria-disabled="true" title="Coming soon">
+          <span class="ph-admin-menu__item-icon" aria-hidden="true">⚑</span>Feature Flag
+        </button>
+        <button type="button" role="menuitem" class="ph-admin-menu__item" disabled aria-disabled="true" title="Coming soon">
+          <span class="ph-admin-menu__item-icon" aria-hidden="true">▢</span>Mobile Experience
+        </button>
+      </span>
+    </span>
     <span class="avatar" aria-hidden="true">JR</span>
   </span>
 </header>
+
+<!-- Left-anchored slide-over, same pattern as the fork's Feature Flag panel. -->
+<div class="ph-admin-panel-overlay" id="phAdminPanelOverlay" aria-hidden="true"></div>
+<aside class="ph-admin-panel" id="phAdminPanel" role="dialog" aria-modal="true"
+       aria-labelledby="phAdminPanelTitle" aria-hidden="true">
+  <header class="ph-admin-panel__header">
+    <h2 class="ph-admin-panel__title" id="phAdminPanelTitle">Panel</h2>
+    <button type="button" class="ph-admin-panel__close" id="phAdminPanelClose" aria-label="Close panel">✕</button>
+  </header>
+  <div class="ph-admin-panel__body" id="phAdminPanelBody"></div>
+</aside>
 
 <div class="shell">
   <nav class="rail" id="rail" aria-label="Sections"></nav>
@@ -488,6 +825,113 @@ document.getElementById('provBtn').onclick=function(){
   this.textContent=on?'Show provenance':'Hide provenance';
 };
 
+/* ---------------- style axis ----------------
+   The third axis. Deliberately NOT on the prototype bar with palette and
+   theme: those are things a reviewer flips while judging one design, and
+   this is a choice between two designs. It lives behind the robot instead,
+   which is also the honest place for it — picking a dashboard version is a
+   demo-tool action, not product UI. Persisted like the other two. */
+var STYLES={
+  classic:{ title:'Classic dashboard', badge:'Current',
+    desc:'What is built today — cards, a filled hero band, stat tiles and the recommended shelf.' },
+  editorial:{ title:'Editorial dashboard', badge:'Explore',
+    desc:'The reduction — hairline rules and warm ground instead of cards, one promoted band, and no red except the Rubi mark.' }
+};
+function setStyle(name){
+  if(!STYLES[name]) name='classic';
+  S.style=name;
+  document.documentElement.setAttribute('data-style',name);
+  try{localStorage.setItem('xcel.dt.style',name);}catch(e){}
+  var os=document.querySelectorAll('.ph-version-option');
+  for(var i=0;i<os.length;i++){
+    os[i].setAttribute('aria-checked',String(os[i].getAttribute('data-version')===name));
+  }
+}
+
+/* ---------------- UI/UX demo tools ----------------
+   Ported from xcel-admin-tool.html. Opens DOWNWARD (the trigger is in the
+   header, not at the foot of a nav) and uses position:fixed so the appbar
+   cannot clip it; position is recomputed on each open. */
+(function(){
+  var trigger=document.getElementById('phAdminToolsTrigger');
+  var menu=document.getElementById('phAdminMenu');
+  var panel=document.getElementById('phAdminPanel');
+  var overlay=document.getElementById('phAdminPanelOverlay');
+  var closeBtn=document.getElementById('phAdminPanelClose');
+  var titleEl=document.getElementById('phAdminPanelTitle');
+  var bodyElP=document.getElementById('phAdminPanelBody');
+  if(!trigger||!menu) return;
+  var open=false, panelOpen=false;
+
+  function positionMenu(){
+    var r=trigger.getBoundingClientRect();
+    /* right-aligned to the trigger: it sits near the window edge, so a
+       left-aligned menu would hang off it. */
+    menu.style.left=Math.max(8,r.right-216)+'px';
+    menu.style.top=(r.bottom+8)+'px';
+  }
+  function setOpen(next){
+    open=next;
+    if(open) positionMenu();
+    menu.classList.toggle('ph-admin-menu--open',open);
+    trigger.setAttribute('aria-expanded',open?'true':'false');
+  }
+  trigger.addEventListener('click',function(e){ e.stopPropagation(); setOpen(!open); });
+
+  var SWITCH_BODY=
+    '<p style="margin:0 0 16px">Choose which version of the dashboard to preview. '+
+    'The palette and theme controls on the prototype bar apply to both.</p>'+
+    '<div class="ph-version-options" role="radiogroup" aria-label="Dashboard version">'+
+    ['classic','editorial'].map(function(k){
+      var v=STYLES[k];
+      return '<button type="button" role="radio" aria-checked="false" class="ph-version-option" data-version="'+k+'">'+
+        '<span class="ph-version-option__radio" aria-hidden="true"></span>'+
+        '<span class="ph-version-option__body"><span class="ph-version-option__heading">'+
+        '<span class="ph-version-option__title">'+v.title+'</span>'+
+        '<span class="ph-version-option__badge'+(k==='editorial'?' ph-version-option__badge--future':'')+'">'+v.badge+'</span>'+
+        '</span><span class="ph-version-option__desc">'+v.desc+'</span></span></button>';
+    }).join('')+'</div>';
+
+  var PANEL_CONFIG={ 'switch-account':{ title:'Switch Account', body:SWITCH_BODY } };
+
+  function setPanel(next){
+    panelOpen=next;
+    panel.setAttribute('aria-hidden',next?'false':'true');
+    overlay.setAttribute('aria-hidden',next?'false':'true');
+    if(next) setOpen(false); else trigger.focus();
+  }
+  function openPanel(action){
+    var cfg=PANEL_CONFIG[action]; if(!cfg) return;
+    titleEl.textContent=cfg.title;
+    bodyElP.innerHTML=cfg.body;
+    setPanel(true);
+    /* re-sync the radios to the live style every time it opens */
+    setStyle(S.style);
+    var first=bodyElP.querySelector('.ph-version-option'); if(first) first.focus();
+  }
+
+  menu.addEventListener('click',function(e){
+    var it=e.target.closest('.ph-admin-menu__item');
+    if(!it||it.disabled) return;
+    e.stopPropagation();
+    openPanel(it.getAttribute('data-admin-action'));
+  });
+  bodyElP.addEventListener('click',function(e){
+    var opt=e.target.closest('.ph-version-option'); if(!opt) return;
+    setStyle(opt.getAttribute('data-version'));
+    render();
+    window.scrollTo(0,0);
+  });
+  closeBtn.addEventListener('click',function(){ setPanel(false); });
+  overlay.addEventListener('click',function(){ setPanel(false); });
+  document.addEventListener('click',function(){ if(open) setOpen(false); });
+  document.addEventListener('keydown',function(e){
+    if(e.key!=='Escape') return;
+    if(panelOpen) setPanel(false); else if(open) setOpen(false);
+  });
+  window.addEventListener('resize',function(){ if(open) positionMenu(); });
+})();
+
 /* ---------------- dates ---------------- */
 var MON=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 var LONG=['January','February','March','April','May','June','July','August','September','October','November','December'];
@@ -543,6 +987,7 @@ function applyExam(id){
 }
 
 var S={sec:'dashboard', edu:'qe', prog:'on-track', calView:'daily', courseView:'card',
+       style:'classic',
        exam:'scheduled', examAttempts:[{date:add(TODAY,42),prov:'PSI',outcome:null}]};
 
 function edu(){ return EDU[S.edu]; }
@@ -585,7 +1030,7 @@ function renderRail(){
    '<span style="min-width:0"><span class="nm">Jordan Rivera</span><br>'+
    '<span class="sub">Meridian Insurance Group</span></span></div>'+
    '<div class="rlic"><span class="k">Working toward</span>'+
-   '<span style="color:#fff;font-size:12px;font-weight:600">'+edu().path+'</span>'+
+   '<span style="color:var(--rail-ink);font-size:12px;font-weight:600">'+edu().path+'</span>'+
    '<span class="sub">'+edu().cat+'</span></div></div>'+
    NAV.map(function(g){
      return '<div class="rcap">'+g[0]+'</div>'+g[1].map(function(it){
@@ -736,9 +1181,239 @@ function examCard(){
     '<div class="pad">'+head+inner+'</div></div>';
 }
 
+/* ============================================================
+   THE EDITORIAL DASHBOARD
+
+   A reduction of the classic dashboard's five cards down to three sections.
+   What was dropped, and why:
+     MembershipKpis (4 stat tiles)   → the hero fact line. Hours and chapters
+       are already in the ring and the list; "Seat paid by Meridian" moves to
+       the fact line, where it reads as context rather than as a metric.
+     DashboardRecommendedBand        → dropped. It is an Explore concern with
+       its own nav item, and a carousel is the one thing that cannot be quiet.
+   What was KEPT and re-drawn:
+     ClpJumpBackInBand → the tonight band (the one promoted block)
+     the segmented gauge → a thinner ring, SAME two series
+     the exam card     → one row in the list, carried by ink and words
+     the course list   → editorial rows, state by wash and label
+
+   ONE THING DELIBERATELY NOT BORROWED. The reference states readiness as a
+   probability — "your chance of passing right now, 62%". This ring shows
+   HOURS COMPLETE, which is what XCEL's gauge has always meant, because the
+   walk-through deliberately answers the same question with a frequency
+   ("about 7 in 10 passed first time") rather than a probability, and the
+   admin tool's RISK_RULE_INVENTED is deterministic where Compass's readiness
+   is probabilistic. Borrowing the layout is safe; borrowing the claim would
+   have settled an open question by accident.
+   ============================================================ */
+function edRing(size){
+  var t=totals(), r=(size/2)-6, c=2*Math.PI*r, cx=size/2;
+  var reqFrac=t.reqDone/t.tot, elecFrac=t.elecDone/t.tot;
+  return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'" role="img" '+
+    'aria-label="'+t.pct+' percent of required hours complete">'+
+    '<circle cx="'+cx+'" cy="'+cx+'" r="'+r+'" fill="none" stroke="var(--n-200)" stroke-width="7"/>'+
+    '<circle cx="'+cx+'" cy="'+cx+'" r="'+r+'" fill="none" stroke="var(--primary-500)" stroke-width="7" '+
+      'stroke-dasharray="'+(c*reqFrac)+' '+c+'" stroke-linecap="butt" transform="rotate(-90 '+cx+' '+cx+')"/>'+
+    '<circle cx="'+cx+'" cy="'+cx+'" r="'+r+'" fill="none" stroke="var(--slate-500)" stroke-width="7" '+
+      'stroke-dasharray="'+(c*elecFrac)+' '+c+'" stroke-dashoffset="'+(-c*reqFrac)+'" '+
+      'stroke-linecap="butt" transform="rotate(-90 '+cx+' '+cx+')"/>'+
+    '<text x="'+cx+'" y="'+(cx-2)+'" text-anchor="middle" dominant-baseline="middle" '+
+      'font-family="Open Sans,sans-serif" font-weight="300" font-size="'+(size*0.30)+'" '+
+      'letter-spacing="-1.5" fill="var(--ink)">'+t.pct+'<tspan font-size="'+(size*0.14)+'" dy="'+(-size*0.10)+'">%</tspan></text>'+
+    '<text x="'+cx+'" y="'+(cx+size*0.20)+'" text-anchor="middle" font-family="Open Sans,sans-serif" '+
+      'font-weight="600" letter-spacing="1.4" font-size="'+(size*0.075)+'" fill="var(--ink-3)">COMPLETE</text></svg>';
+}
+/* The week strip. Squares, not a bar: a bar says "how far through", these say
+   "which sessions", which is the thing the band's copy is about. */
+function edDots(){
+  var p=prog(), done=Math.round(p[2]*5), out='', now=(p[0]!=='complete'&&p[0]!=='expired');
+  if(done>5) done=5;
+  for(var i=0;i<7;i++){
+    var cls = i<done ? 'd' : (now&&i===done ? 'n' : '');
+    out+='<i class="'+cls+'"></i>';
+  }
+  return '<span class="ed-dots" aria-hidden="true">'+out+'</span>';
+}
+/* ONE walk over the required chapters, shared by the band and the list.
+   They used to disagree: the band inherited classic's hardcoded "58% through"
+   copy while the list derived its own figure from hours, so the same chapter
+   read 58% and 40% on one screen. Anything either surface says about the
+   current chapter has to come from here. */
+function edReqWalk(){
+  var t=totals();
+  var req=[['Insurance Basics',4],['Life Insurance Policies',6],['Health Insurance Policies',6],
+           ['Policy Provisions',5],['Texas Law &amp; Regulation',5],['Ethics &amp; Consumer Protection',4]];
+  var used=0;
+  return req.map(function(c,i){
+    var st, pct;
+    if(used+c[1]<=t.reqDone){ st='done'; pct=100; used+=c[1]; }
+    else if(used<t.reqDone){ st='prog'; pct=Math.round((t.reqDone-used)/c[1]*100); used=t.reqDone; }
+    else { st='todo'; pct=0; }
+    return {n:c[0], hrs:c[1], st:st, pct:pct, no:i+1, left:Math.round(c[1]*(100-pct)/100*60)};
+  });
+}
+function edCurrent(){
+  var w=edReqWalk(), i;
+  for(i=0;i<w.length;i++) if(w[i].st==='prog') return w[i];
+  for(i=0;i<w.length;i++) if(w[i].st==='todo') return w[i];
+  return w[w.length-1];
+}
+function edTonight(){
+  var p=prog(), t=totals(), d=i2d(TODAY), c=edCurrent(), w=edReqWalk();
+  var DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+  var title, sub, cta;
+  if(p[0]==='complete'){
+    title='Nothing due — requirements met'; sub='Every required hour is complete and reported. The next step is your licensing exam.';
+    cta='Go to my exam';
+  } else if(p[0]==='expired'){
+    title='Your course window has closed'; sub='Completed hours are kept. Contact your agency to be re-enrolled.';
+    cta='Contact agency';
+  } else if(c.pct===0){
+    title='Chapter '+c.no+' · '+c.n; sub='About '+c.hrs+' hrs · video, reading and a chapter quiz. Nothing else is due today.';
+    cta='Begin Chapter '+c.no;
+  } else {
+    title=c.n+' · '+c.left+' minutes left';
+    sub='Chapter '+c.no+' of '+w.length+', '+c.pct+'% through. Nothing else is due today.';
+    cta='Resume session';
+  }
+  return '<div class="ed-band"><div class="ed-band__top">'+
+    '<span class="ed-daynum">'+d.getUTCDate()+'<span>'+DOW[d.getUTCDay()]+'</span></span>'+
+    '<span style="flex:1;min-width:220px"><h3 style="margin-bottom:4px">'+title+'</h3>'+
+    '<span class="tiny" style="color:var(--ink-2)">'+sub+'</span></span>'+
+    '<button class="ed-link q" style="flex:none">Can’t study today</button>'+
+    '<button class="btn"'+(p[0]==='complete'?' data-sec="calendar"':'')+' style="flex:none">'+cta+'</button>'+
+    '</div><div class="ed-band__foot">'+edDots()+
+    '<span class="tiny" style="flex:1;min-width:200px;color:var(--ink-2)">'+
+    t.done+' of '+t.tot+' hours done · '+edu().deadlineL.toLowerCase()+' '+fmt(deadline())+
+    ' · '+(prog()[3]<0?Math.abs(prog()[3])+' days past':prog()[3]+' days left')+'</span>'+
+    '<button class="ed-link" data-sec="calendar" style="flex:none">Adjust your plan →</button>'+
+    '</div></div>';
+}
+function edWhere(){
+  var t=totals(), e=edu(), p=prog();
+  var line = p[0]==='complete'
+    ? 'All '+t.tot+' hours are complete and reported. Nothing is outstanding.'
+    : p[0]==='expired'
+      ? 'Your window closed on '+fmt(deadline())+'. The '+t.done+' hours you finished are kept on your record.'
+      : t.done+' of '+t.tot+' hours are done. At your current pace you will finish before '+fmt(deadline())+'.';
+  return '<div class="ed-ring">'+
+    '<span style="flex:none">'+edRing(132)+'</span>'+
+    '<span style="flex:1 1 260px;min-width:220px">'+
+      '<p style="font-size:15px;line-height:1.6;color:var(--ink);max-width:44ch;margin-bottom:10px">'+line+'</p>'+
+      '<button class="ed-link">How is my '+e.deadlineL.toLowerCase()+' set?</button>'+
+      '<span class="ed-legend"><span><em style="background:var(--primary-500)"></em>'+
+      e.reqL+' · <b>'+t.reqDone+'</b> / '+t.req+' hrs</span>'+
+      '<span><em style="background:var(--slate-500)"></em>'+
+      e.elecL+' · <b>'+t.elecDone+'</b> / '+t.elec+' hrs</span></span>'+
+    '</span>'+
+    '<span style="flex:0 1 270px;min-width:230px">'+edRubi()+'</span>'+
+    '</div>';
+}
+/* The Rubi block. Red appears here and nowhere else in this style, and only
+   as the badge fill — the rule is --line-2, the eyebrow is ink-3 and the
+   button is primary. Note this imports a Compass concept onto an XCEL
+   surface; the assistant does not exist in the XCEL product yet. */
+function edRubi(){
+  var p=prog(), t=totals();
+  var head, body;
+  if(p[0]==='at-risk'){
+    head='Add two study days this week';
+    body='At this pace the remaining '+(t.tot-t.done)+' hours will not fit before '+fmt(deadline())+'. Two extra evenings closes the gap.';
+  } else if(p[0]==='not-started'){
+    head='Set your target date first';
+    body='Your plan is built backwards from the date you want to sit, so nothing can be scheduled until it exists.';
+  } else if(p[0]==='complete'){
+    head='Book your licensing exam';
+    body='Your hours are reported. The only thing left is the external exam, which XCEL does not schedule for you.';
+  } else {
+    /* named from the same walk as the band and the list — a "next step"
+       pointing at a chapter you already finished is the obvious way for this
+       block to go stale. */
+    head='Revisit '+edCurrent().n;
+    body='You marked this chapter confident, but the quiz says otherwise. Closing that gap moves your progress more than anything else this week.';
+  }
+  return '<span class="ed-rubi"><span class="ed-rubi__head">'+
+    '<span class="ed-rubi__mark" aria-hidden="true">R</span>'+
+    '<span class="eyebrow">Rubi · next step</span></span>'+
+    '<h3 style="margin-bottom:7px">'+head+'</h3>'+
+    '<p class="tiny" style="color:var(--ink-2);margin-bottom:12px">'+body+'</p>'+
+    '<button class="btn sec">Show me</button></span>';
+}
+/* The assignments list. Same source data as courseList(), drawn as editorial
+   rows: state is the wash plus the label, never a badge. */
+function edAssignments(){
+  var rows=edReqWalk().map(function(c){
+    var label = c.st==='done' ? 'Completed'
+      : c.st==='prog' ? 'In progress · '+c.pct+'% of this chapter'
+      : 'Not started yet';
+    var action = c.st==='prog'
+      ? '<button class="btn" style="flex:none;padding:8px 14px">Resume →</button>'
+      : c.st==='done'
+        ? '<button class="ed-link q" style="flex:none">Review</button>'
+        : '<button class="ed-link" style="flex:none">Start →</button>';
+    return '<div class="ed-row'+(c.st==='prog'?' on':'')+(c.st==='done'?' done':'')+'">'+
+      '<span class="ed-tick" aria-hidden="true">'+(c.st==='done'?'✓':c.st==='prog'?'◔':'○')+'</span>'+
+      '<span class="ed-row__t"><span class="ed-row__n">'+c.n+'</span>'+
+      '<span class="ed-row__m">'+edu().reqL+' · '+c.hrs+' hrs</span></span>'+
+      '<span class="ed-row__p"><span class="ed-track"><i style="width:'+c.pct+'%"></i></span>'+
+      '<span class="ed-row__s">'+label+'</span></span>'+action+'</div>';
+  }).join('');
+  return rows+edExamRow();
+}
+/* The exam, red-free. In classic this row is a red border, a red tint and a
+   red pill; here the left rule is ink, the surface is n-75 and the words
+   "Licensing exam" plus "Not a course task" do the separating. */
+function edExamRow(){
+  var a=currentAttempt();
+  if(!a) return '<div class="ed-row exam"><span class="ed-tick" aria-hidden="true">◎</span>'+
+    '<span class="ed-row__t"><span class="ed-row__n">Texas Life &amp; Health licensing exam</span>'+
+    '<span class="ed-row__m">Licensing exam · booked with an external provider, not by XCEL</span></span>'+
+    '<span class="ed-row__p"><span class="ed-row__s" style="margin-top:0">Not booked yet</span></span>'+
+    '<button class="ed-link" data-x="sched" style="flex:none">Add the date →</button></div>';
+  var d=days(TODAY,a.date), st=examState();
+  var status = st==='passed' ? 'Passed '+fmt(a.date)
+    : st==='failed' ? 'Not passed · attempt '+S.examAttempts.length+' · coursework unaffected'
+    : st==='awaiting' ? 'Sat on '+fmt(a.date)+' · awaiting result'
+    : fmt(a.date)+' · in '+d+' day'+(d===1?'':'s');
+  return '<div class="ed-row exam"><span class="ed-tick" aria-hidden="true">◎</span>'+
+    '<span class="ed-row__t"><span class="ed-row__n">Texas Life &amp; Health licensing exam</span>'+
+    '<span class="ed-row__m">Licensing exam · '+a.prov+' · not a course task</span></span>'+
+    '<span class="ed-row__p"><span class="ed-row__s" style="margin-top:0">'+status+'</span></span>'+
+    (st==='awaiting'?'<button class="ed-link" data-x="result" style="flex:none">Record result →</button>':
+     st==='failed'?'<button class="ed-link" data-x="retake" style="flex:none">Schedule retake →</button>':
+     st==='passed'?'<button class="ed-link q" data-sec="records" style="flex:none">View record</button>':
+     '<button class="ed-link q" data-x="edit" style="flex:none">Edit</button>')+'</div>';
+}
+function edDashboard(){
+  var p=prog(), h='';
+  if(p[0]==='at-risk') h+='<div class="ed-note"><b>You are behind your plan.</b> '+
+    'At this pace you will not finish before '+fmt(deadline())+'. '+
+    '<button class="ed-link" data-sec="calendar">Rebuild my plan →</button></div>';
+  if(p[0]==='expired') h+='<div class="ed-note err"><b>Your course window closed on '+fmt(deadline())+'.</b> '+
+    'Your completed hours are kept. Contact your agency to be re-enrolled.</div>';
+  h+='<section class="ed-sec ed-sec--first"><div class="ed-sechead"><span class="eyebrow">Today</span></div>'+
+     edTonight()+'</section>';
+  h+='<section class="ed-sec"><div class="ed-sechead"><span class="eyebrow">Where you are</span>'+
+     statusPill()+'</div>'+edWhere()+'</section>';
+  h+='<section class="ed-sec"><div class="ed-sechead"><span class="eyebrow">Your assignments</span>'+
+     '<span class="tiny" style="color:var(--ink-3)">'+totals().done+' of '+totals().tot+' hours · '+
+     edu().reqL.toLowerCase()+' first</span>'+
+     '<button class="ed-link" data-sec="path" style="margin-left:auto">Full learning path →</button>'+
+     '</div>'+edAssignments()+'</section>';
+  h+='<div style="margin-top:26px">'+provNote('The editorial style is a THIRD axis (<b>data-style</b>) beside '+
+     'theme and palette, not a fork. This dashboard drops <b>MembershipKpis</b> (its four stat tiles fold into the '+
+     'fact line) and <b>DashboardRecommendedBand</b> (an Explore concern with its own nav item), and re-draws the '+
+     'rest: <b>ClpJumpBackInBand</b> as the one tinted band, the segmented gauge as a thinner ring with the SAME '+
+     'two series, and <b>ExamDateCard</b> as a single row. Red is gone except the Rubi badge — which means the '+
+     'licensing exam is now carried by ink, a rule and the words, not by colour. The ring shows hours complete, '+
+     'not a probability of passing: the walk-through answers that with a frequency, on purpose.')+'</div>';
+  return h;
+}
+
 /* ---------------- sections ---------------- */
 var SECTIONS={
 dashboard:function(){
+  if(S.style==='editorial') return edDashboard();
   var p=prog(), h='';
   if(p[0]==='at-risk') h+='<div class="warnband"><b>You are behind your plan.</b> '+
     'At this pace you will not finish before '+fmt(deadline())+'. Adding two study days a week closes the gap — '+
@@ -1062,11 +1737,25 @@ function provNote(html){ return '<div class="provnote"><b>Provenance —</b> '+h
 /* ---------------- render ---------------- */
 function render(){
   var m=META[S.sec];
-  document.getElementById('secEyebrow').textContent=m[0];
-  document.getElementById('secTitle').textContent=m[1];
-  document.getElementById('secDesc').textContent=m[2];
+  var edDash = (S.style==='editorial' && S.sec==='dashboard');
+  /* The editorial masthead is the reference's: a greeting eyebrow, the PATH
+     as the headline (not the page name — "Dashboard" is a nav label, not a
+     thing the learner came for), then one dot-separated fact line carrying
+     what the four dropped stat tiles used to say. */
+  document.getElementById('secEyebrow').textContent = edDash ? 'Welcome back, Jordan' : m[0];
+  document.getElementById('secTitle').textContent   = edDash ? edu().path : m[1];
+  if(edDash){
+    var d=prog()[3];
+    document.getElementById('secDesc').innerHTML =
+      'Texas · '+edu().deadlineL+' '+fmt(deadline())+' · <b>'+
+      (d<0?Math.abs(d)+' days past':d+' days left')+'</b> · seat paid by Meridian';
+    document.getElementById('secDesc').className='ed-fact';
+  } else {
+    document.getElementById('secDesc').textContent=m[2];
+    document.getElementById('secDesc').className='';
+  }
   document.getElementById('heroSide').innerHTML =
-    S.sec==='dashboard'
+    (S.sec==='dashboard' && !edDash)
       ? '<div style="text-align:right"><div class="eyebrow">'+edu().deadlineL+'</div>'+
         '<div style="font-family:var(--font-heading);font-weight:900;font-size:19px;margin:3px 0 6px">'+fmt(deadline())+'</div>'+
         statusPill()+'</div>'
@@ -1100,6 +1789,14 @@ document.addEventListener('click',function(e){
   if(x==='result'){ S.exam='failed'; var a=currentAttempt(); if(a) a.outcome='failed'; render(); return; }
   if(x==='edit'){ S.exam='imminent'; var a2=currentAttempt(); if(a2){ a2.date=add(TODAY,5); } render(); return; }
 });
+
+/* Style boots after S exists. Default is classic: the editorial dashboard is
+   an exploration reached through the robot, not the state a reviewer lands
+   in — and every existing smoke assertion is written against classic. */
+(function(){
+  var ss='classic'; try{ ss=localStorage.getItem('xcel.dt.style')||'classic'; }catch(e){}
+  setStyle(ss);
+})();
 
 render();
 })();

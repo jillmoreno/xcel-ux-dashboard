@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XCEL — Sign in</title>
+<link rel="icon" type="image/svg+xml" href="assets/xcel-signin/compass-mark.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Source+Serif+4:wght@400;600&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   XCEL sign-in — Figma frame 666:46.
+
+   NOT the XCEL LMS palette. The LMS prototypes are red-brand on a cool
+   grey page; this is the Compass sign-in, which is warm — a paper ground
+   (#faf0e8) with terracotta and sage wash, and a desaturated blue as the
+   only saturated interactive colour. Two ramps, and they do not overlap:
+
+     --paper / --line / --ink-*   the warm neutral stack. Every border on
+                                  this page is #e0dbcd, never a cool grey;
+                                  dropping a grey hairline in here reads as
+                                  a rendering bug against the cream.
+     --cta                        #3d5a73. The ONLY saturated blue, and it
+                                  carries exactly two jobs — the submit
+                                  button and inline links. It is deliberately
+                                  low-chroma so it recedes behind the hero's
+                                  terracotta rather than competing with it.
+
+   The serif ink (--display / --display-accent) is a THIRD ramp used only
+   in the hero. It is warm brown, not --ink: #553c32 on the gradient is the
+   contrast floor here, and swapping in --ink (#1f1d18) makes the panel look
+   like a different product. Re-measure before darkening the gradient.
+
+   Reference geometry is the 1708x1188 frame. Interior measurements are
+   pinned in px where the design pins them (the 430px form column) and
+   proportional where the design scales (the brand panel), so the page holds
+   its composition off-reference instead of only being right at one width.
+   ============================================================ */
+:root{
+  --font-body:'Inter',system-ui,-apple-system,sans-serif;
+  --font-display:'Source Serif 4',Georgia,'Times New Roman',serif;
+
+  --paper:#faf0e8;
+  --surface:#ffffff;
+  --line:#e0dbcd;
+
+  --ink:#1f1d18;
+  --ink-2:#5b5560;
+  --ink-3:#706b63;
+
+  --cta:#3d5a73;
+  --cta-hover:#334b60;
+  --cta-ring:rgba(61,90,115,.28);
+  --on-cta:#ffffff;
+
+  --display:#553c32;
+  --display-accent:#af5f46;
+
+  --radius:12px;
+  --radius-pill:99px;
+  --shadow-field:0 1px 2px 0 rgba(26,26,22,.05);
+
+  /* Brand-panel wash. Four stacked gradients, angles straight from the
+     Figma fill stack on 666:177 — a sage sweep, two terracotta sweeps at
+     opposing angles, over a flat paper base. Order matters: the base MUST
+     stay last or the terracotta is painted over. */
+  --panel-wash:
+    linear-gradient(21.124deg,  rgba(180,205,195,.35) 41.667%, rgba(210,225,218,.12) 70.833%, rgba(250,240,232,0) 95.833%),
+    linear-gradient(-44.812deg, rgba(225,140,120,.5)      0%,  rgba(238,175,155,.2)  34.615%, rgba(250,240,232,0) 65.385%),
+    linear-gradient(122.907deg, rgba(235,150,120,.7) 14.286%,  rgba(240,180,155,.4)  42.857%, rgba(250,240,232,0) 78.571%),
+    linear-gradient(90deg,      rgb(250,240,232)         0%,   rgb(250,240,232)         100%);
+}
+
+*,*::before,*::after{box-sizing:border-box}
+html,body{height:100%}
+body{
+  margin:0;
+  font-family:var(--font-body);
+  color:var(--ink);
+  background:var(--surface);
+  -webkit-font-smoothing:antialiased;
+}
+:focus-visible{outline:2px solid var(--cta);outline-offset:2px;border-radius:4px}
+
+/* ── Shell ────────────────────────────────────────────────── */
+.page{display:flex;min-height:100vh}
+
+/* 683 / 1708 of the reference frame. */
+.pane-form{
+  flex:0 0 40%;
+  position:relative;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  /* Asymmetric on purpose. The Figma form is NOT centred in its column —
+     its centre sits at y=536.88 of the 1188 frame, 57px above centre. The
+     114px padding difference is what reproduces that lift; equal padding
+     drops the whole column and the composition stops matching the frame. */
+  padding:48px 32px 162px;
+  background:var(--surface);
+}
+/* The 140x4 rule at 40,26. Pinned to the pane, not the form. */
+.pane-form::before{
+  content:'';
+  position:absolute;top:26px;left:40px;
+  width:140px;height:4px;
+  border-radius:var(--radius-pill);
+  background:var(--line);
+}
+
+/* ── Form column ──────────────────────────────────────────── */
+.form{width:100%;max-width:430px}
+
+.brandline{display:flex;align-items:center;gap:12px;margin-bottom:26px}
+.wordmark{display:block;width:141.71px;height:52px;object-fit:contain}
+.wordmark-fallback{
+  display:none;
+  width:141.71px;height:52px;
+  border:1px dashed var(--line);border-radius:6px;
+  align-items:center;justify-content:center;
+  font-size:9.5px;line-height:1.25;text-align:center;
+  color:var(--ink-3);letter-spacing:.02em;
+  padding:4px;
+}
+.brandline[data-wordmark='missing'] .wordmark{display:none}
+.brandline[data-wordmark='missing'] .wordmark-fallback{display:flex}
+
+.poweredby{
+  border-left:1px solid var(--line);
+  padding-left:12px;
+  font-size:10.5px;line-height:12.5px;
+  letter-spacing:.315px;
+  color:var(--ink-3);
+}
+
+.title{
+  margin:0;
+  font-family:var(--font-display);
+  font-weight:600;
+  font-size:44px;line-height:45.76px;
+  letter-spacing:-.88px;
+  color:var(--ink);
+}
+.subtitle{
+  margin:15px 0 0;
+  font-size:15.5px;line-height:18.5px;
+  color:var(--ink-2);
+}
+
+.field{margin-top:29px}
+.field-head{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:8px}
+.label{font-size:13px;line-height:15.5px;font-weight:600;color:var(--ink-2)}
+.link-muted{
+  font-size:13px;line-height:15.5px;font-weight:500;
+  color:var(--ink-3);text-decoration:none;
+}
+.link-muted:hover{color:var(--ink);text-decoration:underline}
+
+.input{
+  width:100%;height:52px;
+  padding:0 16px;
+  font-family:inherit;font-size:15px;line-height:18px;
+  color:var(--ink);
+  background:var(--surface);
+  border:1px solid var(--line);
+  border-radius:var(--radius);
+  box-shadow:var(--shadow-field);
+  transition:border-color .15s ease, box-shadow .15s ease;
+}
+.input::placeholder{color:var(--ink-3)}
+.input:hover{border-color:#cfc7b5}
+.input:focus{
+  outline:none;
+  border-color:var(--cta);
+  box-shadow:var(--shadow-field),0 0 0 3px var(--cta-ring);
+}
+.input[aria-invalid='true']{border-color:#b4453c}
+.input[aria-invalid='true']:focus{box-shadow:var(--shadow-field),0 0 0 3px rgba(180,69,60,.22)}
+
+.error{
+  display:none;
+  margin:6px 0 0;
+  font-size:12.5px;line-height:16px;
+  color:#8f342d;
+}
+.field[data-invalid='true'] .error{display:block}
+
+.submit{
+  width:100%;height:54px;
+  margin-top:20px;
+  font-family:inherit;font-size:15px;line-height:18px;font-weight:600;
+  color:var(--on-cta);
+  background:var(--cta);
+  border:0;border-radius:var(--radius);
+  cursor:pointer;
+  transition:background-color .15s ease;
+}
+.submit:hover{background:var(--cta-hover)}
+.submit:active{transform:translateY(1px)}
+
+.footnote{
+  margin:22px 0 0;
+  text-align:center;
+  font-size:14px;line-height:17px;
+  color:var(--ink-3);
+}
+.footnote a{font-weight:700;color:var(--cta);text-decoration:none}
+.footnote a:hover{text-decoration:underline}
+
+/* ── Brand panel ──────────────────────────────────────────── */
+.pane-brand{
+  flex:1 1 60%;
+  position:relative;
+  overflow:hidden;
+  background:var(--panel-wash);
+  display:flex;flex-direction:column;justify-content:center;
+  /* Pulls the compass + hero group up so its centre lands at 38.8% of the
+     panel — where the Figma group sits, rather than dead centre. */
+  padding:0 0 22.4%;
+}
+
+/* Topographic line art. Insets and rotations are the Figma transforms,
+   expressed against the whole frame. Purely decorative: aria-hidden, and
+   they delete themselves if the export is missing. */
+.contour{position:absolute;pointer-events:none;max-width:none}
+.contour-left{
+  width:153.2%;
+  left:-116.13%;top:-124.06%;
+  transform:rotate(142.81deg);
+  transform-origin:center;
+}
+.contour-right{
+  width:152.5%;
+  left:32.82%;top:.43%;
+  transform:rotate(-150.96deg);
+  transform-origin:center;
+}
+
+.brand-inner{position:relative;z-index:1;padding-left:10.34%}
+.compass{
+  display:block;
+  width:clamp(112px,11.65vw,199px);
+  height:auto;
+  margin-bottom:23px;
+}
+.hero{
+  margin:0;
+  width:90.6%;
+  font-family:var(--font-display);
+  font-weight:400;
+  font-size:clamp(38px,4.33vw,74px);
+  line-height:1.25;
+  letter-spacing:-.5px;
+  color:var(--display);
+}
+.hero em{font-style:normal;font-weight:600;color:var(--display-accent)}
+
+/* ── Missing-art chip ─────────────────────────────────────── */
+.assetchip{
+  position:fixed;right:16px;bottom:16px;z-index:20;
+  display:none;
+  max-width:320px;
+  padding:10px 12px;
+  font-size:11.5px;line-height:1.5;
+  color:var(--ink-2);
+  background:rgba(255,255,255,.94);
+  border:1px solid var(--line);
+  border-radius:10px;
+  box-shadow:0 2px 10px rgba(26,26,22,.08);
+}
+.assetchip[data-show='true']{display:block}
+.assetchip b{font-weight:600;color:var(--ink)}
+.assetchip code{font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}
+
+@media (max-width:900px){
+  .page{flex-direction:column-reverse}
+  .pane-form{flex:1 1 auto;padding:64px 24px 56px}
+  .pane-brand{flex:0 0 auto;min-height:52vh;padding:56px 0}
+  .brand-inner{padding:0 24px}
+  .hero{width:100%;font-size:clamp(34px,7.4vw,74px)}
+  .compass{width:clamp(96px,19vw,199px)}
+}
+@media (prefers-reduced-motion:reduce){
+  *{transition:none!important}
+}
+</style>
+</head>
+<body>
+
+<main class="page">
+
+  <section class="pane-form">
+    <div class="form">
+
+      <div class="brandline" id="brandline">
+        <img class="wordmark" id="wordmark"
+             src="assets/xcel-signin/xcel-wordmark.png"
+             alt="XCEL Insurance Training by Colibri">
+        <span class="wordmark-fallback" aria-hidden="true">XCEL wordmark<br>666:147</span>
+        <span class="poweredby">Powered by Compass</span>
+      </div>
+
+      <h1 class="title">Welcome back</h1>
+      <p class="subtitle">Sign in to pick up where you left off.</p>
+
+      <form id="signin" novalidate>
+
+        <div class="field" id="field-email">
+          <div class="field-head">
+            <label class="label" for="email">Email</label>
+          </div>
+          <input class="input" id="email" name="email" type="email"
+                 autocomplete="username" placeholder="you@example.com"
+                 value="jordan.reyes@colibri.co"
+                 aria-describedby="email-error">
+          <p class="error" id="email-error">Enter your email address.</p>
+        </div>
+
+        <div class="field" id="field-password">
+          <div class="field-head">
+            <label class="label" for="password">Password</label>
+            <a class="link-muted" href="#forgot">Forgot?</a>
+          </div>
+          <!-- Figma shows this field's value as plain text. Kept as
+               type="password" anyway — the frame is showing the filled
+               state, not specifying that XCEL renders passwords in the
+               clear. Toggle to type="text" if the review needs the
+               literal frame. -->
+          <input class="input" id="password" name="password" type="password"
+                 autocomplete="current-password" placeholder="••••••••"
+                 value="compass2026"
+                 aria-describedby="password-error">
+          <p class="error" id="password-error">Enter your password.</p>
+        </div>
+
+        <button class="submit" type="submit">Sign in</button>
+      </form>
+
+      <p class="footnote">New here? <a href="#create">Create an account</a></p>
+    </div>
+  </section>
+
+  <section class="pane-brand">
+    <img class="contour contour-left"  src="assets/xcel-signin/contour-left.svg"  alt="" aria-hidden="true" data-contour>
+    <img class="contour contour-right" src="assets/xcel-signin/contour-right.svg" alt="" aria-hidden="true" data-contour>
+
+    <div class="brand-inner">
+      <img class="compass" src="assets/xcel-signin/compass-mark.svg" alt="" aria-hidden="true">
+      <p class="hero">Navigating Your Professional<br><em>Future</em></p>
+    </div>
+  </section>
+
+</main>
+
+<aside class="assetchip" id="assetchip" hidden></aside>
+
+<script>
+(function () {
+  var missing = [];
+
+  /* Wordmark: structural. Swap in a dimensioned dashed box so the form's
+     top-left keeps its geometry and the gap reads as unfinished. */
+  var wordmark = document.getElementById('wordmark');
+  wordmark.addEventListener('error', function () {
+    document.getElementById('brandline').dataset.wordmark = 'missing';
+    note('xcel-wordmark.png');
+  });
+
+  /* Contours: decorative. Remove on failure — the wash still reads. */
+  Array.prototype.forEach.call(document.querySelectorAll('[data-contour]'), function (img) {
+    img.addEventListener('error', function () {
+      var name = img.getAttribute('src').split('/').pop();
+      img.remove();
+      note(name);
+    });
+  });
+
+  function note(file) {
+    if (missing.indexOf(file) === -1) missing.push(file);
+    var chip = document.getElementById('assetchip');
+    chip.hidden = false;
+    chip.dataset.show = 'true';
+    chip.innerHTML =
+      '<b>Missing art</b> — export from Figma into ' +
+      '<code>assets/xcel-signin/</code>:<br>' +
+      missing.map(function (f) { return '<code>' + f + '</code>'; }).join('<br>');
+  }
+
+  /* Prototype-only validation. No auth, no network — this exists so the
+     error and focus states are demonstrable in a review. */
+  var form = document.getElementById('signin');
+  form.addEventListener('submit', function (e) {
+    e.preventDefault();
+    var ok = true;
+    [['email', 'field-email'], ['password', 'field-password']].forEach(function (pair) {
+      var input = document.getElementById(pair[0]);
+      var field = document.getElementById(pair[1]);
+      var bad = input.value.trim() === '';
+      field.dataset.invalid = bad ? 'true' : 'false';
+      input.setAttribute('aria-invalid', bad ? 'true' : 'false');
+      if (bad && ok) { input.focus(); ok = false; }
+    });
+  });
+
+  form.addEventListener('input', function (e) {
+    var field = e.target.closest('.field');
+    if (field && field.dataset.invalid === 'true') {
+      field.dataset.invalid = 'false';
+      e.target.setAttribute('aria-invalid', 'false');
+    }
+  });
+})();
+</script>
+
+</body>
+</html>

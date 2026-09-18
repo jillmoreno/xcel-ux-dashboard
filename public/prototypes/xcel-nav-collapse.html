@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-palette="navy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XCEL LMS — Collapsible rail</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   XCEL tokens — copied from xcel-lms-desktop.html so this page reads as the
+   same product, and so the rail below IS that rail rather than a sketch of
+   it. Same rule: THE RED IS NOT THE PRIMARY. --brand-* is identity plus the
+   one licensing-exam semantic; --primary-* is interactive and data.
+   ============================================================ */
+:root{
+  --font-heading:'Lato',system-ui,-apple-system,sans-serif;
+  --font-body:'Open Sans',system-ui,-apple-system,sans-serif;
+
+  --brand-100:#f8dee0; --brand-300:#dc858b; --brand-500:#a81c24;
+  --brand-600:#8c171e; --brand-700:#6f1218; --brand-900:#2f080a;
+  --on-primary:#ffffff;
+
+  --ink:#1f1f23; --ink-2:#4d4d55; --ink-3:#6d6d76;
+
+  --n-50:#ffffff; --n-75:#f5f5f6; --n-100:#ececee; --n-200:#d9d9dd;
+  --n-300:#c7c7cc; --n-600:#818188; --n-700:#616168;
+
+  --success-100:#cce7d7; --success-500:#018937; --success-700:#005221;
+  --warning-100:#fdf0d4; --warning-300:#fbd27e; --warning-500:#f9b428; --warning-800:#63470f;
+  --error-100:#f4cccc; --error-500:#cb0000; --error-700:#790000;
+  --info-100:#d2f1f6; --info-700:#12717e;
+
+  --page:#f4f4f6; --card:#ffffff; --line:#e4e4e8; --line-2:#d4d4da;
+  --radius:10px; --radius-sm:7px;
+  --shadow:0 1px 2px rgba(0,0,0,.05), 0 4px 14px rgba(0,0,0,.05);
+  --prov:#5b4bbd; --prov-bg:#f1eefc; --prov-line:#cec6f2;
+}
+
+:root[data-palette="navy"]{
+  --primary-100:#dde5f2; --primary-200:#b4c6e0; --primary-300:#7d9cc6;
+  --primary-400:#4a72a3; --primary-500:#1f4e88; --primary-600:#163d6e;
+  --primary-700:#102d53; --primary-800:#0a1f3b; --primary-900:#061225;
+  --slate-100:#f5ece0; --slate-300:#d7b98c; --slate-500:#a9682a;
+  --slate-600:#8a5420; --slate-700:#6b4218;
+}
+:root[data-palette="graphite"]{
+  --primary-100:#e7e8ec; --primary-200:#ccd0d8; --primary-300:#98a0ae;
+  --primary-400:#6a7385; --primary-500:#3f4753; --primary-600:#333944;
+  --primary-700:#252a33; --primary-800:#1a1e25; --primary-900:#101318;
+  --slate-100:#f5ece0; --slate-300:#d7b98c; --slate-500:#a9682a;
+  --slate-600:#8a5420; --slate-700:#6b4218;
+}
+:root[data-palette="teal"]{
+  --primary-100:#d3e7e7; --primary-200:#9fd0d0; --primary-300:#63b0b2;
+  --primary-400:#2b8a8d; --primary-500:#0f6e72; --primary-600:#0b585b;
+  --primary-700:#084346; --primary-800:#052e30; --primary-900:#031b1c;
+  --slate-100:#f7eee1; --slate-300:#dcbc8c; --slate-500:#b8873f;
+  --slate-600:#94692e; --slate-700:#6e4e22;
+}
+
+:root[data-theme="dark"]{
+  --ink:#f2f2f4; --ink-2:#b6b6be; --ink-3:#8d8d96;
+  --page:#141417; --card:#1d1d21; --line:#2e2e35; --line-2:#3d3d45;
+  --n-50:#1d1d21; --n-75:#232329; --n-100:#2a2a31; --n-200:#3a3a42; --n-300:#4a4a53;
+  --brand-100:#3a1416; --brand-300:#8c272e; --brand-500:#e8737a;
+  --brand-600:#f09aa0; --brand-700:#f6c2c6;
+  --success-100:#16261f; --success-500:#57b585; --success-700:#8fd4b0;
+  --warning-100:#2a2318; --warning-300:#4a3d22; --warning-500:#e0b155; --warning-800:#f0d49a;
+  --error-100:#2b1414; --error-500:#f08a8a; --error-700:#f6b8b8;
+  --info-100:#122428; --info-700:#7fd0dd;
+  --prov:#b0a3ff; --prov-bg:#231f38; --prov-line:#3b3363;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+  /* The panel stays dark in dark mode — it is already the dark surface. It
+     drops to primary-100 (the dark palettes' darkest stop) so it separates
+     from the card behind it instead of merging with it. */
+  --panel:var(--primary-100);
+  --panel-a:var(--primary-500);
+  --panel-b:#dcae70;
+}
+:root[data-theme="dark"][data-palette="navy"]{
+  --primary-100:#15223a; --primary-200:#1d3050; --primary-300:#35598f;
+  --primary-400:#5b86bd; --primary-500:#8fb4e0; --primary-600:#b3cded;
+  --primary-700:#d3e2f5; --on-primary:#0a1f3b;
+  --slate-100:#2a2118; --slate-300:#6b4f24; --slate-500:#a86e28;
+  --slate-600:#c98f45; --slate-700:#dcae70;
+}
+:root[data-theme="dark"][data-palette="graphite"]{
+  --primary-100:#22252b; --primary-200:#2f343d; --primary-300:#4d5563;
+  --primary-400:#7b8494; --primary-500:#aab2c0; --primary-600:#c6ccd6;
+  --primary-700:#dfe3ea; --on-primary:#101318;
+  --slate-100:#2a2118; --slate-300:#6b4f24; --slate-500:#a86e28;
+  --slate-600:#c98f45; --slate-700:#dcae70;
+}
+:root[data-theme="dark"][data-palette="teal"]{
+  --primary-100:#0f2426; --primary-200:#143537; --primary-300:#1f6165;
+  --primary-400:#2f9498; --primary-500:#5fc0c4; --primary-600:#8ed6d9;
+  --primary-700:#bae8ea; --on-primary:#052e30;
+  --slate-100:#2a2118; --slate-300:#6b4f24; --slate-500:#a86e28;
+  --slate-600:#c98f45; --slate-700:#dcae70;
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font:14px/1.55 var(--font-body);
+  -webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-family:var(--font-heading);font-weight:900;letter-spacing:-.015em}
+h1{font-size:26px;line-height:1.18}
+h2{font-size:19px;line-height:1.25}
+h3{font-size:15px;font-weight:700;letter-spacing:-.005em}
+p{margin:0 0 10px}
+button{font:inherit}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);
+  font-family:var(--font-body)}
+.muted{color:var(--ink-2)}
+.tiny{font-size:11.5px;line-height:1.45;color:var(--ink-2)}
+.tiny b{color:var(--ink);font-weight:600}
+/* ---------- prototype bar (sibling convention: pbar / plink / tag / sp) --- */
+.pbar{background:#1a1a1d;color:rgba(255,255,255,.9);display:flex;align-items:center;gap:14px;
+  padding:0 18px;height:40px;font-size:12px;position:sticky;top:0;z-index:60;flex-wrap:wrap}
+.pbar .tag{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:rgba(255,255,255,.5)}
+.pbar .sp{margin-left:auto;display:flex;gap:8px;align-items:center}
+.pbtn{appearance:none;border:1px solid rgba(255,255,255,.2);background:transparent;
+  color:rgba(255,255,255,.85);font-size:11.5px;font-weight:600;padding:6px 10px;border-radius:6px;cursor:pointer}
+.pbtn:hover{background:rgba(255,255,255,.09)}
+.pbtn[aria-pressed="true"]{background:#fff;color:#1a1a1d;border-color:#fff}
+.pbtn:focus-visible{outline:2px solid var(--primary-300);outline-offset:2px}
+.plink{color:rgba(255,255,255,.72);font-size:12px;font-weight:600;text-decoration:none;
+  border-bottom:1px solid rgba(255,255,255,.25);padding-bottom:1px}
+.plink:hover{color:#fff;border-bottom-color:#fff}
+.palsw{display:flex;align-items:center;gap:4px;padding:3px;border-radius:8px;
+  background:rgba(255,255,255,.07);margin-right:4px}
+.pallb{font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:rgba(255,255,255,.5);padding:0 5px 0 4px}
+.palbtn{appearance:none;border:0;background:transparent;color:rgba(255,255,255,.72);
+  font:600 11.5px var(--font-body);padding:4px 8px;border-radius:6px;cursor:pointer;
+  display:flex;align-items:center;gap:5px}
+.palbtn i{width:9px;height:9px;border-radius:50%;display:block;box-shadow:0 0 0 1px rgba(255,255,255,.35)}
+.palbtn:hover{background:rgba(255,255,255,.1);color:#fff}
+.palbtn[aria-checked="true"]{background:#fff;color:#1a1a1d}
+.palbtn[aria-checked="true"] i{box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+.palbtn:focus-visible,.plink:focus-visible{outline:2px solid var(--primary-300);outline-offset:2px}
+
+/* ---------- demo controls ---------- */
+.demo{background:#26262b;border-bottom:2px solid var(--primary-300);
+  display:flex;align-items:center;gap:14px;padding:10px 18px;flex-wrap:wrap;
+  position:sticky;top:40px;z-index:59}
+.demo .lb{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:rgba(255,255,255,.56)}
+.grp{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.dchip{appearance:none;border:1px solid rgba(255,255,255,.13);background:transparent;
+  color:rgba(255,255,255,.82);font-size:11.5px;font-weight:600;padding:6px 11px;border-radius:14px;
+  cursor:pointer;white-space:nowrap}
+.dchip:hover{background:rgba(255,255,255,.08)}
+.dchip[aria-pressed="true"]{background:var(--primary-200);border-color:var(--primary-200);
+  color:var(--primary-700)}
+.dchip:focus-visible{outline:2px solid var(--primary-300);outline-offset:2px}
+.dnote{font-size:11.5px;color:rgba(255,255,255,.56);margin-left:auto}
+
+
+/* ---------- page furniture ---------- */
+.hero{background:var(--card);border-bottom:1px solid var(--line);padding:26px 40px 24px}
+.hero p{max-width:78ch;margin:9px 0 0;color:var(--ink-2);font-size:13.5px}
+.hero p b{color:var(--ink)}
+.body{padding:26px 40px 0;display:flex;flex-direction:column;gap:38px;max-width:1180px}
+.foot{padding:34px 40px 64px;font-size:12px;color:var(--ink-3);max-width:88ch}
+.foot b{color:var(--ink-2)}
+
+.sec{display:flex;flex-direction:column;gap:16px}
+.shead{display:flex;flex-direction:column;gap:6px}
+.shead .lbl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.num{font:900 11px var(--font-body);letter-spacing:.09em;text-transform:uppercase;
+  background:var(--primary-100);color:var(--primary-700);border:1px solid var(--primary-200);
+  border-radius:5px;padding:3px 8px}
+.num.q{background:var(--n-75);color:var(--ink-3);border-color:var(--line-2)}
+.arg{max-width:80ch;color:var(--ink-2);font-size:13.5px;margin:2px 0 0}
+.arg b{color:var(--ink)}
+.note{border-left:3px solid var(--line-2);padding:2px 0 2px 14px;max-width:84ch;
+  font-size:12.5px;line-height:1.6;color:var(--ink-2)}
+.note b{color:var(--ink)}
+.note + .note{margin-top:-4px}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);position:relative}
+.pad{padding:22px 24px}
+.eyebrow{font:700 10px var(--font-body);letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:8px}
+
+/* ============================================================
+   THE RAIL — its own token set, lifted verbatim from
+   xcel-lms-desktop.html, INCLUDING the palette-scoped --rail-accent. The
+   rule that produced it is the one this exploration is most likely to
+   break: a deep colour on the near-black rail is close to invisible (the
+   XCEL red measures 2.05:1, under the 3:1 a state indicator needs), so the
+   selected-state indicator is always a LIGHT stop. Collapsing the rail
+   makes that indicator carry MORE weight, not less — with the label gone
+   it is the only thing left saying where you are.
+   ============================================================ */
+:root{
+  --rail:#26262b; --rail-2:#33333a; --rail-line:rgba(255,255,255,.13);
+  --rail-txt:rgba(255,255,255,.82); --rail-muted:rgba(255,255,255,.56);
+  --rail-ink:#ffffff;
+  --rail-active:rgba(255,255,255,.1);
+  --rail-hover:rgba(255,255,255,.07);
+
+  /* The three widths. Named, not inlined, because every concept below is a
+     different value of ONE of them and the content column has to move with
+     it — the grid template reads --rail-w and nothing else. */
+  --rail-w-exp:252px;      /* the shipped rail, unchanged */
+  --rail-w-col:64px;       /* icons only — 44px target + 10px each side */
+  --rail-w-mini:88px;      /* icons + micro-label */
+  --rail-w:var(--rail-w-exp);
+
+  /* Target size. WCAG 2.5.8 sets 24×24 as the AA floor and 2.5.5 sets 44×44
+     as AAA; 44 is also the figure every platform HIG lands on. An expanded
+     rail gets it free from the label — a collapsed one has to be given it
+     deliberately, which is the single most common defect in this pattern. */
+  --tap:44px;
+}
+:root[data-palette="navy"]{     --rail-accent:#7d9cc6; --rail-chip:#b4c6e0; --rail-chip-ink:#102d53 }
+:root[data-palette="graphite"]{ --rail-accent:#98a0ae; --rail-chip:#c8cdd6; --rail-chip-ink:#252a33 }
+:root[data-palette="teal"]{     --rail-accent:#63b0b2; --rail-chip:#9fd0d0; --rail-chip-ink:#084346 }
+
+/* ---------- the demo stage ---------- */
+.stagewrap{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;
+  box-shadow:var(--shadow);background:var(--card);max-width:1080px}
+.stage{display:grid;grid-template-columns:var(--rail-w) minmax(0,1fr);min-height:430px;
+  position:relative}
+.stage[data-collapsed="true"]{--rail-w:var(--rail-w-col)}
+.stage[data-collapsed="true"][data-concept="mini"]{--rail-w:var(--rail-w-mini)}
+
+/* The width change is the only thing that animates, and it is the only thing
+   that SHOULD: sliding the labels out draws the eye to text that is leaving.
+   They cross-fade in place instead. Both are off under reduced motion. */
+.stage .rail{transition:width .18s ease}
+@media (prefers-reduced-motion:reduce){
+  .stage .rail,.ritem .lbl,.rcap{transition:none !important}
+}
+
+/* ---------- rail ---------- */
+.rail{background:var(--rail);padding:14px 0 18px;display:flex;flex-direction:column;gap:3px;
+  position:relative;min-width:0}
+.rprof{padding:0 14px 13px;border-bottom:1px solid var(--rail-line);margin-bottom:10px;min-width:0}
+.rprof .row{display:flex;gap:10px;align-items:center;min-width:0}
+.rprof .av{width:36px;height:36px;border-radius:50%;background:var(--brand-500);color:#fff;
+  display:grid;place-items:center;font:700 13px var(--font-body);flex:none;
+  box-shadow:0 0 0 2px var(--rail),0 0 0 4px var(--brand-700)}
+.rprof .nm{color:var(--rail-ink);font-weight:700;font-size:13px;white-space:nowrap}
+.rprof .sub{color:var(--rail-muted);font-size:11px;white-space:nowrap}
+.rprof .who{min-width:0;overflow:hidden}
+
+.rcap{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--rail-muted);padding:12px 16px 4px;white-space:nowrap;transition:opacity .12s ease}
+
+.ritem{display:flex;align-items:center;gap:10px;width:100%;text-align:left;appearance:none;border:0;
+  background:transparent;color:var(--rail-txt);font:600 13px var(--font-body);
+  padding:0 16px;min-height:var(--tap);cursor:pointer;
+  border-left:3px solid transparent;position:relative;overflow:hidden}
+.ritem:hover{background:var(--rail-hover);color:var(--rail-ink)}
+.ritem[aria-current="page"]{background:var(--rail-active);color:var(--rail-ink);
+  border-left-color:var(--rail-accent)}
+.ritem:focus-visible{outline:2px solid var(--rail-accent);outline-offset:-2px}
+.ritem .g{width:17px;text-align:center;opacity:.85;flex:none;font-size:15px}
+.ritem .lbl{white-space:nowrap;transition:opacity .12s ease}
+.ritem .badge{margin-left:auto;font-size:10px;font-weight:700;background:var(--rail-chip);
+  color:var(--rail-chip-ink);border-radius:9px;padding:2px 6px;flex:none}
+
+/* ---- COLLAPSED -----------------------------------------------------------
+   The label is not removed. It is taken out of the visual flow and left in
+   the accessibility tree, which is what guarantees every button keeps a real
+   accessible name whether or not a tooltip ever fires. A tooltip is a hint;
+   it is not allowed to be the name of the thing. */
+.sr{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap;border:0}
+
+.stage[data-collapsed="true"] .rail{align-items:stretch}
+.stage[data-collapsed="true"] .ritem{justify-content:center;padding:0;gap:0;
+  border-left:0;border-radius:0}
+.stage[data-collapsed="true"] .ritem .lbl{position:absolute;width:1px;height:1px;padding:0;
+  margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%);white-space:nowrap}
+.stage[data-collapsed="true"] .ritem .g{width:auto}
+/* The selected state can no longer be a left border on a 64px rail — a 3px
+   edge stripe beside a centred glyph reads as a rendering artefact. It
+   becomes a filled pill, which is the same indicator at a size the eye can
+   find without a label next to it. */
+.stage[data-collapsed="true"] .ritem[aria-current="page"]{background:transparent}
+.stage[data-collapsed="true"] .ritem[aria-current="page"] .g{
+  background:var(--rail-active);box-shadow:inset 0 0 0 1.5px var(--rail-accent);
+  color:var(--rail-ink);border-radius:9px;width:38px;height:34px;display:grid;place-items:center}
+.stage[data-collapsed="true"] .rcap{opacity:0;height:1px;padding:0;overflow:hidden}
+/* …replaced by a rule, so the two groups are still two groups. The group's
+   aria-label survives in either state, so the caption's disappearance is
+   visual only. */
+.stage[data-collapsed="true"] .rgroup + .rgroup{
+  border-top:1px solid var(--rail-line);margin-top:9px;padding-top:9px}
+.stage[data-collapsed="true"] .rprof{padding:0 0 13px;display:grid;place-items:center}
+.stage[data-collapsed="true"] .rprof .who{display:none}
+
+/* The badge has nowhere to go. It becomes a dot — and a dot is colour alone,
+   so the word it stood for moves into the button's accessible name instead
+   of being dropped. Losing the word is the bug; losing the pill is fine. */
+.stage[data-collapsed="true"] .ritem .badge{position:absolute;top:8px;right:11px;
+  width:8px;height:8px;padding:0;border-radius:50%;background:var(--brand-300);
+  text-indent:-999px;overflow:hidden}
+
+/* ---- MINI (concept B) — icons + a micro-label --------------------------- */
+.stage[data-collapsed="true"][data-concept="mini"] .ritem{flex-direction:column;gap:3px;
+  padding:7px 2px;min-height:56px;justify-content:center}
+.stage[data-collapsed="true"][data-concept="mini"] .ritem .lbl{position:static;width:auto;
+  height:auto;margin:0;clip:auto;clip-path:none;overflow:hidden;
+  font-size:9.5px;font-weight:700;letter-spacing:.01em;line-height:1.15;text-align:center;
+  max-width:100%;text-overflow:ellipsis}
+.stage[data-collapsed="true"][data-concept="mini"] .ritem[aria-current="page"] .g{
+  width:34px;height:26px;border-radius:7px}
+.stage[data-collapsed="true"][data-concept="mini"] .ritem .badge{top:5px;right:16px}
+
+/* ---- FLYOUT (concept C) ------------------------------------------------- */
+.flyout{position:absolute;left:var(--rail-w-col);top:0;bottom:0;width:206px;z-index:12;
+  background:var(--rail-2);border-right:1px solid var(--rail-line);
+  box-shadow:6px 0 18px rgba(0,0,0,.22);padding:14px 0;overflow:auto}
+.flyout[hidden]{display:none}
+.flyout .fcap{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:var(--rail-muted);padding:10px 16px 4px}
+.flyout .fitem{display:flex;align-items:center;gap:9px;width:100%;text-align:left;appearance:none;
+  border:0;background:transparent;color:var(--rail-txt);font:600 13px var(--font-body);
+  padding:0 16px;min-height:var(--tap);cursor:pointer}
+.flyout .fitem:hover{background:var(--rail-hover);color:var(--rail-ink)}
+.flyout .fitem[aria-current="page"]{color:var(--rail-ink);background:var(--rail-active)}
+.flyout .fitem:focus-visible{outline:2px solid var(--rail-accent);outline-offset:-2px}
+
+/* ---- the toggle --------------------------------------------------------- */
+/* Bottom is the default. `margin-top:auto` pins it to the foot of the rail
+   rather than letting it sit under the last nav item, which on a tall
+   viewport leaves a visible gap — see the note in §02 about mini, where the
+   items are 56px tall and that gap is at its worst. */
+.rtoggle{margin-top:auto;display:flex;align-items:center;gap:10px;width:100%;appearance:none;
+  border:0;border-top:1px solid var(--rail-line);background:transparent;color:var(--rail-muted);
+  font:600 12px var(--font-body);padding:0 16px;min-height:var(--tap);cursor:pointer}
+.rtoggle:hover{background:var(--rail-hover);color:var(--rail-ink)}
+.rtoggle:focus-visible{outline:2px solid var(--rail-accent);outline-offset:-2px}
+.rtoggle .chev{font-size:13px;flex:none;width:17px;text-align:center}
+.stage[data-collapsed="true"] .rtoggle{justify-content:center;padding:0;gap:0}
+/* TOP placement. The rule flips to the underside and the auto margin goes,
+   so it sits with the identity block as chrome for the rail rather than as
+   the last thing in it. Visual order and DOM order stay the same — putting
+   it at the top visually while leaving it last in the DOM would send focus
+   backwards up the page, which is the fix that looks free and is not. */
+.stage[data-tpos="top"] .rtoggle{margin-top:0;margin-bottom:8px;
+  border-top:0;border-bottom:1px solid var(--rail-line)}
+.stage[data-collapsed="true"] .rtoggle .tlbl{position:absolute;width:1px;height:1px;padding:0;
+  margin:-1px;overflow:hidden;clip:rect(0 0 0 0);clip-path:inset(50%)}
+
+/* ---- the tooltip -------------------------------------------------------- */
+.tip{position:absolute;z-index:40;background:var(--rail-2);color:var(--rail-ink);
+  border:1px solid var(--rail-line);border-radius:var(--radius-sm);
+  padding:7px 11px;font:600 12.5px var(--font-body);white-space:nowrap;pointer-events:auto;
+  box-shadow:0 6px 18px rgba(0,0,0,.3)}
+.tip[hidden]{display:none}
+.tip .k{display:block;font-size:10.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+  color:var(--rail-muted);margin-bottom:1px}
+.tip::before{content:'';position:absolute;left:-5px;top:50%;margin-top:-5px;width:9px;height:9px;
+  background:var(--rail-2);border-left:1px solid var(--rail-line);border-bottom:1px solid var(--rail-line);
+  transform:rotate(45deg)}
+
+/* ---- the fake content column ------------------------------------------- */
+.fake{background:var(--page);padding:20px 24px;min-width:0}
+.fakebar{height:52px;background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  display:flex;align-items:center;padding:0 16px;gap:10px;margin-bottom:14px}
+.fakebar .lk{font:900 15px var(--font-heading);color:var(--brand-500)}
+.fakebar .ttl{font:700 13px var(--font-body);color:var(--ink-2)}
+.fakebar .w{margin-left:auto;font-size:11.5px;color:var(--ink-3)}
+.fakegrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.fakecard{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  padding:14px 15px;min-height:96px}
+.fakecard .h{font:700 12.5px var(--font-body);color:var(--ink);margin-bottom:8px}
+.fakeline{height:7px;border-radius:4px;background:var(--n-100);margin-bottom:6px}
+.fakeline.s{width:62%}
+.fakebarfill{height:7px;border-radius:4px;background:var(--primary-500);width:44%}
+
+/* ---- the concept comparison -------------------------------------------- */
+.cons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;max-width:1080px}
+.con{border:1px solid var(--line);border-radius:var(--radius);background:var(--card);
+  padding:16px 17px;display:flex;flex-direction:column;gap:9px}
+.con.on{border-color:var(--primary-300);box-shadow:0 0 0 3px var(--primary-100)}
+.con .ck{font:700 10px var(--font-body);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+.con h3{margin:0}
+.con .w{font-size:12.5px;line-height:1.6;color:var(--ink-2);margin:0}
+.con .w b{color:var(--ink)}
+.con dl{margin:4px 0 0;display:grid;grid-template-columns:auto minmax(0,1fr);gap:4px 9px;
+  font-size:12px;line-height:1.45}
+.con dt{font-weight:700;color:var(--ink-3);white-space:nowrap}
+.con dd{margin:0;color:var(--ink-2)}
+.con .pick{margin-top:auto;padding-top:10px;font-size:11.5px;font-weight:700;color:var(--primary-700)}
+
+/* ---- the tooltip contract table ---------------------------------------- */
+.rules{border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--card);
+  max-width:1000px}
+.rrow{display:grid;grid-template-columns:186px minmax(0,1fr);gap:0;border-bottom:1px solid var(--line)}
+.rrow:last-child{border-bottom:0}
+.rrow .rk{padding:13px 16px;background:var(--n-75);border-right:1px solid var(--line);
+  font:700 12.5px var(--font-body);color:var(--ink)}
+.rrow .rv{padding:13px 16px;font-size:12.5px;line-height:1.6;color:var(--ink-2)}
+.rrow .rv b{color:var(--ink)}
+.rrow .rv code{font-size:11.5px;background:var(--n-75);border:1px solid var(--line);
+  border-radius:4px;padding:1px 5px}
+.wcag{display:inline-block;font:700 10px var(--font-body);letter-spacing:.06em;text-transform:uppercase;
+  background:var(--info-100);color:var(--info-700);border-radius:4px;padding:2px 6px;margin-left:6px}
+
+/* ---- invented rules ----------------------------------------------------- */
+.invs{display:grid;gap:9px;max-width:1000px}
+.inv{display:grid;grid-template-columns:230px minmax(0,1fr) 128px;gap:14px;align-items:baseline;
+  border:1px solid var(--line);border-radius:var(--radius-sm);padding:11px 14px;background:var(--card)}
+.inv code{font:700 11.5px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--primary-700)}
+.inv .d{font-size:12.5px;line-height:1.55;color:var(--ink-2)}
+.inv .d b{color:var(--ink)}
+.inv .o{font-size:11px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--ink-3);
+  text-align:right}
+
+.holes{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:14px;max-width:1080px}
+.hole{border:1px dashed var(--line-2);border-radius:var(--radius);padding:15px 16px;
+  background:repeating-linear-gradient(45deg,transparent,transparent 7px,var(--n-75) 7px,var(--n-75) 14px)}
+.hole h3{margin-bottom:6px}
+.hole p{margin:0;font-size:12px;line-height:1.6;color:var(--ink-2)}
+
+@media (max-width:1000px){
+  .cons{grid-template-columns:1fr}
+  .inv{grid-template-columns:1fr}
+  .inv .o{text-align:left}
+}
+</style>
+</head>
+<body>
+
+<div class="pbar">
+  <span class="tag">XCEL LMS</span>
+  <span>Collapsible rail</span>
+  <span style="opacity:.4">·</span>
+  <a class="plink" href="/prototypes/xcel-lms-desktop.html">Desktop platform</a>
+  <a class="plink" href="/prototypes/xcel-study-plan.html">Study plan</a>
+  <a class="plink" href="/prototypes/xcel-study-pace-readiness.html">Pace &amp; Readiness</a>
+  <a class="plink" href="/prototypes/xcel-lms-walkthrough.html">Learner walk-through</a>
+  <a class="plink" href="/prototypes/xcel-lms-wireframes.html">Wireframes &amp; overlap</a>
+  <a class="plink" href="/prototypes/xcel-finserv-build-plan.html">Build plan</a>
+  <span class="sp">
+    <span class="palsw" role="radiogroup" aria-label="Colour palette (prototype only)">
+      <span class="pallb">Palette</span>
+      <button class="palbtn" role="radio" data-pal="navy"     aria-checked="true"><i style="background:#1f4e88"></i>Navy</button>
+      <button class="palbtn" role="radio" data-pal="graphite" aria-checked="false"><i style="background:#3f4753"></i>Graphite</button>
+      <button class="palbtn" role="radio" data-pal="teal"     aria-checked="false"><i style="background:#0f6e72"></i>Teal</button>
+    </span>
+    <button class="pbtn" id="themeBtn" aria-pressed="false">Dark</button>
+  </span>
+</div>
+
+<div class="demo">
+  <span class="lb">Collapsed rail is</span>
+  <span class="grp" id="dConcept" role="group" aria-label="Which collapsed treatment"></span>
+  <span class="lb" style="margin-left:6px">Collapse control sits</span>
+  <span class="grp" id="dTpos" role="group" aria-label="Where the collapse toggle sits"></span>
+  <span class="dnote" id="axNote"></span>
+</div>
+
+<div class="hero">
+  <h1>Collapsing the rail — the label is the easy part to remove and the hard part to replace</h1>
+  <p>The shipped rail is <b>252px</b> of a 1440px screen, permanently, on a product whose main job is
+  reading course content. Collapsing it to icons buys back about <b>13% of the width</b>. What it costs
+  is every word in the navigation, and a tooltip only gives those words back to people who hover.</p>
+  <p>So this page takes the three usual collapsed treatments and drives the <i>same</i> rail through all of
+  them — the real seven sections, the real tokens, the real "Behind" badge. Use the toggle at the foot of
+  the rail, then hover and <b>tab</b> through it. The keyboard pass is the one that separates them.</p>
+</div>
+
+<div class="body">
+
+  <!-- ============================= 01 ============================= -->
+  <div class="sec">
+    <div class="shead">
+      <span class="lbl"><span class="num">01</span><h2>The rail, collapsing — drive it</h2></span>
+      <p class="arg">The real seven sections, the real tokens, the real badge. Hover an icon for the
+      tooltip; then <b>tab</b> into the rail, which is where these come apart — the readout under the
+      stage is read off the rail itself, so it reports the order you actually get rather than the one
+      the prose claims. Where the collapse control belongs is <b>argued in §03</b>; the axis
+      is live so both can be judged here.</p>
+    </div>
+
+    <div class="stagewrap">
+      <div class="stage" id="stage" data-collapsed="false" data-concept="mini" data-tpos="bottom"></div>
+    </div>
+    <p class="note" id="tabOrder"></p>
+
+    <p class="note"><b>What the toggle is, in markup.</b> One <code>&lt;button&gt;</code> carrying
+    <code>aria-expanded</code> and <code>aria-controls</code> pointed at the nav — not a
+    <code>role="switch"</code>, and not two buttons that swap. Its <i>own</i> accessible name says what
+    pressing it will do ("Collapse navigation" / "Expand navigation"), so a screen-reader user is told the
+    action, and <code>aria-expanded</code> separately reports the state.</p>
+
+    <p class="note"><b>The thing that survives collapse is the accessible name.</b> Every label in the rail
+    stays in the DOM in every state — collapsed, it moves to a clip-path box instead of being deleted. So
+    each button is named "Study Calendar" whether or not a tooltip ever fires, and the tooltip is a
+    <i>hint</i> rather than the name of the thing. Wiring the name through <code>title</code> or through
+    the tooltip element is the defect this page exists to rule out: it strands anyone not using a pointer.</p>
+  </div>
+
+  <!-- ============================= 02 ============================= -->
+  <div class="sec">
+    <div class="shead">
+      <span class="lbl"><span class="num">02</span><h2>Three treatments, and what each actually costs</h2></span>
+      <p class="arg">They are not three visual styles — they are three different answers to
+      <b>"where do the words live now"</b>. A costs them to a hover, B keeps a shortened copy on screen,
+      C moves them into a temporary panel. Pick the card above to drive the stage.</p>
+    </div>
+    <div class="cons" id="cons"></div>
+
+    <p class="note"><b>B needs authored short labels, not truncation.</b> "Records &amp; Certificates" does
+    not become "Records &amp;…" — it becomes <b>Records</b>, which is a different string somebody has to
+    write and approve. Every micro-label in the stage is a fourth field on the nav row for exactly that
+    reason. A rail that ellipsises instead is the tell that this step was skipped.</p>
+
+    <p class="note"><b>And the short label is not free to be any word.</b> It has to be contained in the
+    full one, because a voice-control user says what they can see: "click <i>For you</i>" has to reach a
+    button whose name contains "For you".<span class="wcag">WCAG 2.5.3</span> That constraint bit here —
+    the Explore section was called <b>Recommended</b> with a micro-label of <b>For you</b>, which is a
+    button nobody can ask for out loud. The full label became <b>Recommended for you</b> rather than the
+    micro-label becoming something worse. <b>A smoke assertion now checks every pair</b>, so the next
+    short label that is not a substring of its own full label fails a test instead of shipping.</p>
+
+    <p class="note"><b>C's cost is not in the panel, it is in the pointer.</b> A flyout that opens on hover
+    opens on the way past it — moving the cursor from the content to the browser's back button crosses the
+    rail and the panel appears over what you were reading. Everything that follows (an open delay, a close
+    grace period, an exit corridor) is compensation for a trigger nobody asked for. Opening it on
+    <i>click</i> costs one interaction and removes all three.</p>
+  </div>
+
+  <!-- ============================= 03 ============================= -->
+  <div class="sec">
+    <div class="shead">
+      <span class="lbl"><span class="num">03</span><h2>Where the collapse control sits — bottom, but it is close</h2></span>
+      <p class="arg">Both are well-precedented: top is Slack and Notion, bottom is Linear, Figma and Jira.
+      Neither is wrong, and three of the usual arguments turn out not to decide it here. <b>The fourth
+      does.</b> Flip the axis above and read the tab order under the stage.</p>
+    </div>
+
+    <div class="rules">
+      <div class="rrow"><div class="rk">Tab order<br><span style="font-weight:400;color:var(--ink-3);font-size:11.5px">→ bottom</span></div>
+        <div class="rv">At the top it is genuinely first, because visual order has to match DOM order —
+        so every keyboard pass through the nav starts on a <b>chrome control rather than a
+        destination</b>.<span class="wcag">WCAG 2.4.3</span> Placing it visually at the top while leaving
+        it last in the markup is the fix that looks free and is not: focus would jump backwards up the
+        rail. Real, but small — one Tab.</div></div>
+
+      <div class="rrow"><div class="rk">Discovery<br><span style="font-weight:400;color:var(--ink-3);font-size:11.5px">→ neither</span></div>
+        <div class="rv">The case against the bottom is that it falls below the fold on a long nav.
+        <b>This nav is seven items.</b> It does not reach the fold at any viewport we support, so the
+        argument does not apply — it would if this were the admin tool's left-nav, which is exactly why
+        this page does not speak for that one.</div></div>
+
+      <div class="rrow"><div class="rk">Pointer distance<br><span style="font-weight:400;color:var(--ink-3);font-size:11.5px">→ top, weakly</span></div>
+        <div class="rv">The top of the rail is a place the cursor already goes — the logo and the profile
+        are there. The bottom is a dedicated trip. This is a genuine point for the top, and it is worth
+        very little, because <b>collapsing is a once-a-week action, not a once-a-minute one</b>. Optimising
+        travel to a setting is how settings end up in the way of the work.</div></div>
+
+      <div class="rrow"><div class="rk">The mobile sheet<br><span style="font-weight:400;color:var(--ink-3);font-size:11.5px">→ bottom, decisively</span></div>
+        <div class="rv">Under <code>SHEET_BELOW_PX</code> this rail stops collapsing and becomes a sheet,
+        which needs a <b>menu</b> button — and that button's conventional home is the top left. Put the
+        collapse control there too and <b>the same pixel is two different controls at two widths</b>:
+        one toggles a persistent width, the other opens and closes an overlay. Nobody reads the
+        breakpoint; they just learn that the corner is unpredictable. The bottom keeps them apart by
+        construction.</div></div>
+    </div>
+
+    <p class="note"><b>One thing the top does better, and it is worth taking either way.</b> Collapsed,
+    the profile block reduces to a lone avatar with dead space beside it, and a top-placed toggle fills
+    that row tidily. If the bottom placement stands, that gap still wants solving — probably by letting
+    the profile row shrink rather than by moving a control into it.</p>
+
+    <p class="note"><b>Not to be confused with a third option.</b> A chevron floating on the rail's outer
+    edge, half over the content, is the one placement to avoid: a control that straddles the boundary
+    between two regions belongs to neither, is the first thing people fail to find, and has no honest
+    place in the tab order at all.</p>
+  </div>
+
+  <!-- ============================= 04 ============================= -->
+  <div class="sec">
+    <div class="shead">
+      <span class="lbl"><span class="num">04</span><h2>The tooltip contract — the part that is usually wrong</h2></span>
+      <p class="arg">A collapsed rail makes tooltips load-bearing, and the browser's native
+      <code>title</code> attribute fails every line of this table. It is not a shortcut to the pattern; it
+      is the absence of it.</p>
+    </div>
+    <div class="rules">
+      <div class="rrow"><div class="rk">It is never the name</div><div class="rv">The button is named by
+        its own label element. The tooltip is attached with <code>aria-describedby</code>, so it is read
+        <b>after</b> the name, as a description. If deleting the tooltip would leave a button called
+        "button", the wiring is wrong.</div></div>
+      <div class="rrow"><div class="rk">Keyboard gets it instantly</div><div class="rv">Hover waits
+        <code>TIP_HOVER_DELAY</code> so that crossing the rail does not strobe. <b>Focus does not wait at
+        all</b> — a keyboard user has already spent a keystroke to get there; making them hold still is
+        making them wait for nothing.</div></div>
+      <div class="rrow"><div class="rk">Dismissible, hoverable, persistent</div><div class="rv">
+        <b>Escape</b> closes it without moving focus. The pointer can travel onto the tooltip itself
+        without it vanishing — hence <code>TIP_CLOSE_GRACE</code>. And it stays while hover or focus
+        remains; it does not time out on its own.<span class="wcag">WCAG 1.4.13</span></div></div>
+      <div class="rrow"><div class="rk">One tooltip, not seven</div><div class="rv">A single node is moved
+        and re-labelled, so only one can ever be open and there is one <code>id</code> for
+        <code>aria-describedby</code> to point at. Seven tooltips means seven ways to leave one on screen.</div></div>
+      <div class="rrow"><div class="rk">Not on touch, and not the only route</div><div class="rv">There is
+        no hover on a touch screen, so on a narrow viewport the rail does not collapse to icons at all — it
+        becomes a sheet with full labels. A tooltip must never carry information that exists nowhere
+        else.</div></div>
+      <div class="rrow"><div class="rk">Expanded means no tooltip</div><div class="rv">When the label is
+        visible the tooltip is suppressed entirely. A tooltip that repeats the word next to it teaches
+        people that tooltips contain nothing, which is what they will assume when one finally
+        matters.</div></div>
+    </div>
+  </div>
+
+  <!-- ============================= 04 ============================= -->
+  <div class="sec">
+    <div class="shead">
+      <span class="lbl"><span class="num">05</span><h2>Invented rules — replace these, don't re-derive them</h2></span>
+      <p class="arg">Same convention as the admin tool and the study plan: every number the behaviour
+      depends on is one named constant with an owner, and this list renders <b>from the same array the
+      logic reads</b>, so the documentation cannot drift from what the stage above is doing.</p>
+    </div>
+    <div class="invs" id="invs"></div>
+  </div>
+
+  <!-- ============================= 05 ============================= -->
+  <div class="sec">
+    <div class="shead">
+      <span class="lbl"><span class="num q">06</span><h2>Open, and known to be</h2></span>
+      <p class="arg">Core concept only — collapsed versus expanded, and the tooltip. These are the edges
+      this pass deliberately did not settle.</p>
+    </div>
+    <div class="holes">
+      <div class="hole"><h3>Whose choice is it, and for how long</h3>
+        <p>The state persists per browser here. Per <i>user</i> is the honest version, and it raises the
+        question this exploration cannot answer alone: does a learner who collapsed the rail on a laptop
+        want it collapsed on the tablet they study on at night, where the screen is narrower and the
+        labels matter more?</p></div>
+      <div class="hole"><h3>Auto-collapse, and whether it may ever override</h3>
+        <p>Collapsing below a width threshold is standard and mostly right. The unsettled half is what
+        happens when the window grows back: restoring the rail overrules a person who may have collapsed
+        it deliberately, and not restoring it leaves them narrow forever. A remembered explicit choice has
+        to outrank the breakpoint, which means storing <i>why</i> it is collapsed, not just that it
+        is.</p></div>
+      <div class="hole"><h3>Seven glyphs that do not exist yet</h3>
+        <p>The stage uses typographic stand-ins. Collapsed, the icon <i>is</i> the nav item, and
+        "Learning Path" versus "My Courses" versus "Course Catalog" are three things one icon set has to
+        keep visibly apart at 17px. That is an icon commission, and it is the real dependency under
+        concept A — not the CSS.</p></div>
+      <div class="hole"><h3>What the badge dot is allowed to mean</h3>
+        <p>Collapsed, "Behind" becomes a dot, and a dot can only say <i>something</i>. If a second state
+        ever needs the same corner — an unread count, a due date — they collide, and the answer is
+        probably that only one state in the whole rail is ever permitted a dot. Not decided.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="foot">
+  <p><b>Scope.</b> The learner desktop rail only. The admin tool's left nav is a different problem — deeper,
+  and it has a second level — and nothing here should be ported to it without re-asking question 03.</p>
+  <p><b>Not a <code>PROTOTYPE_FEATURES</code> row</b>, for the same reason as the study plan and the build
+  plan: it is reachable from its siblings' mastheads, and a second row into the same body of work is what
+  got the four testing tiles archived. Row count is still six.</p>
+</div>
+
+<div class="tip" id="tip" role="tooltip" hidden></div>
+
+<script>
+/* ============================================================
+   State. Three things, all persisted, all readable from the DOM afterwards
+   so the smoke suite can assert against the rendered result rather than
+   against these variables.
+   ============================================================ */
+var LS_COLLAPSED='xcel.nav.collapsed', LS_CONCEPT='xcel.nav.concept', LS_TPOS='xcel.nav.tpos';
+var S={ concept:'mini', collapsed:false, sec:'calendar', tpos:'bottom' };
+try{
+  if(localStorage.getItem(LS_COLLAPSED)==='1') S.collapsed=true;
+  var c=localStorage.getItem(LS_CONCEPT); if(c) S.concept=c;
+  var t=localStorage.getItem(LS_TPOS); if(t) S.tpos=t;
+}catch(e){}
+
+/* ---- invented rules. One constant each, named loudly, with an owner. ---- */
+var TIP_HOVER_DELAY   = 400;   // ms before a hover tooltip appears
+var TIP_FOCUS_DELAY   = 0;     // ms before a FOCUS tooltip appears — none
+var TIP_CLOSE_GRACE   = 120;   // ms the tooltip survives after the pointer leaves
+var FLYOUT_OPEN_DELAY = 220;   // ms of hover before concept C opens its panel
+var SHEET_BELOW_PX    = 900;   // viewport width under which icons stop being an option
+
+var INVENTED=[
+ ['TIP_HOVER_DELAY', TIP_HOVER_DELAY+' ms', 'Pointer rests on an icon for <b>'+TIP_HOVER_DELAY+'ms</b> before the tooltip appears. Long enough that crossing the rail on the way somewhere else shows nothing; short enough that a deliberate hover does not feel broken.', 'FinServ product'],
+ ['TIP_FOCUS_DELAY', TIP_FOCUS_DELAY+' ms', 'Keyboard focus shows the tooltip <b>immediately</b>. The delay exists to filter out accidental hovers, and there is no such thing as an accidental Tab.', 'FinServ product'],
+ ['TIP_CLOSE_GRACE', TIP_CLOSE_GRACE+' ms', 'The tooltip survives <b>'+TIP_CLOSE_GRACE+'ms</b> after the pointer leaves the icon, so it can be moved onto and its text selected. Required, not a nicety.', 'FinServ product'],
+ ['FLYOUT_OPEN_DELAY', FLYOUT_OPEN_DELAY+' ms', 'Concept C only. Hover held for <b>'+FLYOUT_OPEN_DELAY+'ms</b> before the panel opens over the content. Shorter than the tooltip delay because the panel is the primary route to the labels, not a hint about one.', 'FinServ product'],
+ ['SHEET_BELOW_PX', SHEET_BELOW_PX+' px', 'Under <b>'+SHEET_BELOW_PX+'px</b> the rail does not collapse to icons at all — it becomes a full-label sheet. Below this width the device probably has no hover, and icons without hover are unlabelled buttons.', 'FinServ product + design']
+];
+
+/* ---- the nav. Fourth field is the AUTHORED micro-label for concept B;
+        it is not a truncation of the third and must be written, not
+        computed. ---------------------------------------------------------- */
+var NAV=[
+  ['MY LEARNING',[
+    ['dashboard','Dashboard','Dash','▤','Where you are, what is next'],
+    ['path','Learning Path','Path','◈','Every requirement for this licence'],
+    ['calendar','Study Calendar','Calendar','▦','Your plan, and the exam itself'],
+    ['courses','My Courses','Courses','▥','Everything you own'],
+    ['records','Records & Certificates','Records','✓','Completions and credit hours, by state']
+  ]],
+  ['EXPLORE',[
+    /* "Recommended for you", not "Recommended", BECAUSE the micro-label is
+       "For you". WCAG 2.5.3 Label in Name: what a person can SEE has to be
+       inside what a voice-control user can SAY. "For you" under a button
+       named "Recommended" is a button you cannot ask for out loud. Changing
+       the full label was the cheaper fix than inventing a worse short one —
+       and the desktop page already titles this section that way. */
+    ['recommended','Recommended for you','For you','★','Based on your licence and your state'],
+    ['catalog','Course Catalog','Catalog','⊞','Everything XCEL offers']
+  ]]
+];
+var TITLES={dashboard:'Dashboard',path:'Learning Path',calendar:'Study Calendar',
+  courses:'My Courses',records:'Records & Certificates',recommended:'Recommended for you',
+  catalog:'Course Catalog'};
+
+var CONCEPTS=[
+ {k:'icon', nm:'Icons only', w:'64px',
+  gist:'The glyph alone, at a 44px target, with the label held in the accessibility tree and offered as a tooltip on hover or focus.',
+  rows:[['Buys back','188px — the most of the three'],
+        ['Words live','in a tooltip, and in the accessible name'],
+        ['Breaks when','two sections need icons the learner cannot tell apart'],
+        ['Keyboard','fine — focus shows the tooltip with no delay']],
+  pick:'The default. It is the only one of the three whose cost is a design dependency (icons) rather than an interaction cost.'},
+ {k:'mini', nm:'Icons + micro-label', w:'88px',
+  gist:'A second authored string under each glyph, held to one short word, so nothing depends on hover at all.',
+  rows:[['Buys back','164px'],
+        ['Words live','on screen, permanently, in shortened form'],
+        ['Breaks when','a label has no honest one-word form, or a translation grows 30–40%'],
+        ['Keyboard','nothing to reveal — there is no hidden state']],
+  pick:'The safe one, and the one Spanish will test first. Worth it if the icon set is the thing blocking you.'},
+ {k:'flyout', nm:'Icons + hover flyout', w:'64px',
+  gist:'Collapsed to icons, but hovering the rail slides a full-label panel over the content rather than showing a tooltip per item.',
+  rows:[['Buys back','188px, until the panel is open'],
+        ['Words live','in a temporary panel over the content'],
+        ['Breaks when','the pointer crosses the rail on its way elsewhere'],
+        ['Keyboard','needs its own open-on-focus rule, or the panel never appears']],
+  pick:'Right when the nav is deep enough to have a second level, which this one is not. Hold it for the admin tool.'}
+];
+
+/* ============================================================
+   Render
+   ============================================================ */
+var stage=document.getElementById('stage');
+
+function railHtml(){
+  var groups=NAV.map(function(g,gi){
+    var items=g[1].map(function(it){
+      var cur = S.sec===it[0];
+      var badge = it[0]==='calendar' ? '<span class="badge">Behind</span>' : '';
+      /* The label span is present in EVERY state. Collapsed it is clipped,
+         never removed — that is what keeps the accessible name real. */
+      return '<button class="ritem" type="button" data-sec="'+it[0]+'" data-tip="'+it[1]+'" '+
+        'data-hint="'+it[4]+'"'+(cur?' aria-current="page"':'')+'>'+
+        '<span class="g" aria-hidden="true">'+it[3]+'</span>'+
+        /* In mini the VISIBLE string is the short one and the NAME is the
+           full one, so the short label is hidden from the accessibility
+           tree and the full label supplies the name. Leaving both exposed
+           names the button "Dash Dashboard", which is how these rails end
+           up read aloud twice. */
+        (S.collapsed&&S.concept==='mini'
+          ? '<span class="lbl" aria-hidden="true">'+it[2]+'</span><span class="sr">'+it[1]+'</span>'
+          : '<span class="lbl">'+it[1]+'</span>')+
+        badge+'</button>';
+    }).join('');
+    return '<div class="rgroup" role="group" aria-label="'+g[0]+'">'+
+      '<div class="rcap" aria-hidden="true">'+g[0]+'</div>'+items+'</div>';
+  }).join('');
+
+  /* ONE toggle, placed by the axis. It is the same markup in both positions —
+     the placement moves it in the DOM, not just on screen, which is the
+     entire point of the comparison: at the top it is genuinely first in the
+     tab order, and the readout under the stage shows that rather than
+     claiming it. */
+  var toggle='<button class="rtoggle" type="button" id="railToggle" aria-controls="railNav" '+
+      'aria-expanded="'+(!S.collapsed)+'">'+
+      '<span class="chev" aria-hidden="true">'+(S.collapsed?'›':'‹')+'</span>'+
+      '<span class="tlbl">'+(S.collapsed?'Expand navigation':'Collapse navigation')+'</span>'+
+    '</button>';
+
+  return '<nav class="rail" id="railNav" aria-label="Sections">'+
+    '<div class="rprof"><div class="row"><span class="av" aria-hidden="true">JR</span>'+
+      '<span class="who"><span class="nm">Jordan Rivera</span><br>'+
+      '<span class="sub">Meridian Insurance Group</span></span></div></div>'+
+    (S.tpos==='top' ? toggle : '')+
+    groups+
+    (S.tpos==='top' ? '' : toggle)+
+  '</nav>'+
+  flyoutHtml()+
+  fakeHtml();
+}
+
+function flyoutHtml(){
+  if(!(S.collapsed && S.concept==='flyout')) return '';
+  var inner=NAV.map(function(g){
+    return '<div class="fcap">'+g[0]+'</div>'+g[1].map(function(it){
+      return '<button class="fitem" type="button" data-sec="'+it[0]+'"'+
+        (S.sec===it[0]?' aria-current="page"':'')+'>'+
+        '<span class="g" aria-hidden="true">'+it[3]+'</span>'+it[1]+'</button>';
+    }).join('');
+  }).join('');
+  return '<div class="flyout" id="flyout" hidden>'+inner+'</div>';
+}
+
+function fakeHtml(){
+  return '<div class="fake">'+
+    '<div class="fakebar"><span class="lk" aria-hidden="true">X</span>'+
+      '<span class="ttl">'+TITLES[S.sec]+'</span>'+
+      '<span class="w" id="widthNote"></span></div>'+
+    '<div class="fakegrid">'+
+      '<div class="fakecard"><div class="h">Course progress</div>'+
+        '<div class="fakeline"></div><div class="fakebarfill"></div></div>'+
+      '<div class="fakecard"><div class="h">Next up</div>'+
+        '<div class="fakeline"></div><div class="fakeline s"></div></div>'+
+      '<div class="fakecard"><div class="h">Licensing exam</div>'+
+        '<div class="fakeline"></div><div class="fakeline s"></div></div>'+
+      '<div class="fakecard"><div class="h">Study calendar</div>'+
+        '<div class="fakeline"></div><div class="fakeline s"></div></div>'+
+    '</div></div>';
+}
+
+function widthNote(){
+  var w = S.collapsed ? (S.concept==='mini'?'88px':'64px') : '252px';
+  var back = S.collapsed ? (S.concept==='mini'?'164px':'188px') : '0px';
+  var el=document.getElementById('widthNote');
+  if(el) el.textContent='Rail '+w+' · '+back+' back to content';
+}
+
+/* The tab-order readout. READ OFF THE DOM, never authored — which is the
+   whole reason it is worth having: it cannot describe an order the rail does
+   not actually have, and moving the toggle in the markup moves it here with
+   no second edit. It is also the only place the cost of the top placement is
+   visible rather than argued. */
+function tabOrder(){
+  var el=document.getElementById('tabOrder'); if(!el) return;
+  var names=[].slice.call(document.querySelectorAll('#railNav button')).map(function(b){
+    var c=b.cloneNode(true);
+    [].slice.call(c.querySelectorAll('[aria-hidden="true"]')).forEach(function(n){ n.remove(); });
+    /* Joined with a space, the way a browser joins the contributions of
+       separate elements — otherwise the badge runs into the label and the
+       readout says "Study CalendarBehind", which is not what is announced. */
+    return [].slice.call(c.children).map(function(n){ return n.textContent; })
+      .join(' ').replace(/\s+/g,' ').trim();
+  });
+  var first=names[0]||'';
+  el.innerHTML='<b>Tab order, read off the rail:</b> '+names.join(' → ')+
+    ' — <b>'+(/navigation$/.test(first)
+      ? 'a chrome control before any destination, every time'
+      : 'the first stop is a place you can go')+'</b>.';
+}
+
+function render(){
+  hideTip(true);
+  stage.setAttribute('data-collapsed', S.collapsed?'true':'false');
+  stage.setAttribute('data-concept', S.concept);
+  stage.setAttribute('data-tpos', S.tpos);
+  stage.innerHTML=railHtml();
+  widthNote();
+  tabOrder();
+  bindFlyout();
+  renderConcepts();
+  renderChips();
+  try{
+    localStorage.setItem(LS_COLLAPSED, S.collapsed?'1':'0');
+    localStorage.setItem(LS_CONCEPT, S.concept);
+    localStorage.setItem(LS_TPOS, S.tpos);
+  }catch(e){}
+}
+
+var TPOS=[{k:'bottom',nm:'Bottom'},{k:'top',nm:'Top'}];
+
+function renderChips(){
+  document.getElementById('dConcept').innerHTML=CONCEPTS.map(function(c){
+    return '<button class="dchip" type="button" data-con="'+c.k+'" aria-pressed="'+
+      (S.concept===c.k)+'">'+c.nm+'</button>';
+  }).join('');
+  document.getElementById('dTpos').innerHTML=TPOS.map(function(t){
+    return '<button class="dchip" type="button" data-tpos="'+t.k+'" aria-pressed="'+
+      (S.tpos===t.k)+'">'+t.nm+'</button>';
+  }).join('');
+  document.getElementById('axNote').textContent =
+    S.collapsed ? 'Collapsed — hover or tab into the rail' : 'Expanded — collapse it to compare';
+}
+
+function renderConcepts(){
+  document.getElementById('cons').innerHTML=CONCEPTS.map(function(c){
+    return '<div class="con'+(S.concept===c.k?' on':'')+'" data-con="'+c.k+'">'+
+      '<span class="ck">Collapsed width '+c.w+'</span>'+
+      '<h3>'+c.nm+'</h3>'+
+      '<p class="w">'+c.gist+'</p>'+
+      '<dl>'+c.rows.map(function(r){return '<dt>'+r[0]+'</dt><dd>'+r[1]+'</dd>';}).join('')+'</dl>'+
+      '<div class="pick">'+c.pick+'</div></div>';
+  }).join('');
+}
+
+document.getElementById('invs').innerHTML=INVENTED.map(function(r){
+  return '<div class="inv"><code>'+r[0]+'</code> <span class="d">'+r[2]+'</span>'+
+    '<span class="o">'+r[3]+'</span></div>';
+}).join('');
+
+/* ============================================================
+   The tooltip. ONE node, moved and re-labelled — so only one can ever be
+   open, and there is one id for aria-describedby to point at.
+   ============================================================ */
+var tip=document.getElementById('tip');
+var tipT=null, closeT=null, tipOwner=null, flyT=null;
+
+function tipAllowed(){ return S.collapsed && S.concept!=='flyout'; }
+
+function showTip(btn){
+  if(!tipAllowed()||!btn) return;
+  clearTimeout(closeT); closeT=null;
+  if(tipOwner&&tipOwner!==btn) tipOwner.removeAttribute('aria-describedby');
+  tipOwner=btn;
+  tip.innerHTML='<span class="k">'+btn.getAttribute('data-tip')+'</span>'+
+                btn.getAttribute('data-hint');
+  tip.hidden=false;
+  var r=btn.getBoundingClientRect();
+  tip.style.top=(window.pageYOffset+r.top+r.height/2-tip.offsetHeight/2)+'px';
+  tip.style.left=(window.pageXOffset+r.right+10)+'px';
+  btn.setAttribute('aria-describedby','tip');
+}
+function hideTip(now){
+  clearTimeout(tipT); tipT=null;
+  var go=function(){
+    tip.hidden=true;
+    if(tipOwner){ tipOwner.removeAttribute('aria-describedby'); tipOwner=null; }
+  };
+  clearTimeout(closeT);
+  if(now) go(); else closeT=setTimeout(go, TIP_CLOSE_GRACE);
+}
+/* Hoverable: the pointer may travel onto the tooltip itself. WCAG 1.4.13. */
+tip.addEventListener('mouseenter', function(){ clearTimeout(closeT); });
+tip.addEventListener('mouseleave', function(){ hideTip(); });
+
+/* Dismissible: Escape closes it and does NOT move focus. */
+document.addEventListener('keydown', function(e){
+  if(e.key!=='Escape') return;
+  var fly=document.getElementById('flyout');
+  if(fly&&!fly.hidden){ fly.hidden=true; }
+  hideTip(true);
+});
+
+/* ============================================================
+   Events — delegated, so a re-render never leaves a listener behind.
+   ============================================================ */
+stage.addEventListener('click', function(e){
+  var t=e.target.closest('#railToggle');
+  if(t){ S.collapsed=!S.collapsed; render();
+         var nb=document.getElementById('railToggle'); if(nb) nb.focus(); return; }
+  var it=e.target.closest('.ritem,.fitem');
+  if(it){ S.sec=it.getAttribute('data-sec'); render(); return; }
+});
+
+stage.addEventListener('mouseover', function(e){
+  var it=e.target.closest('.ritem');
+  if(!it) return;
+  if(tipAllowed()){
+    clearTimeout(tipT);
+    tipT=setTimeout(function(){ showTip(it); }, TIP_HOVER_DELAY);
+  }
+});
+stage.addEventListener('mouseout', function(e){
+  var it=e.target.closest('.ritem');
+  if(it){ clearTimeout(tipT); tipT=null; hideTip(); }
+});
+
+/* Focus shows it with NO delay — see TIP_FOCUS_DELAY. */
+stage.addEventListener('focusin', function(e){
+  var it=e.target.closest('.ritem');
+  if(it&&tipAllowed()){ clearTimeout(tipT); showTip(it); }
+  if(S.collapsed&&S.concept==='flyout'&&(it||e.target.closest('.fitem'))) openFlyout();
+});
+stage.addEventListener('focusout', function(e){
+  if(e.target.closest('.ritem')) hideTip();
+});
+
+/* ---- concept C's panel ---- */
+function openFlyout(){
+  var f=document.getElementById('flyout'); if(f) f.hidden=false;
+}
+/* Bound to the rail and the panel themselves rather than delegated from the
+   stage: mouseenter/mouseleave do not bubble, and catching them in the
+   capture phase would fire for the content column too — which is precisely
+   the "opens on the way past" failure this concept is being judged on. */
+function bindFlyout(){
+  if(!(S.collapsed&&S.concept==='flyout')) return;
+  var rail=document.getElementById('railNav'), f=document.getElementById('flyout');
+  if(!rail||!f) return;
+  var close=function(){ clearTimeout(flyT); f.hidden=true; };
+  rail.addEventListener('mouseenter', function(){
+    clearTimeout(flyT); flyT=setTimeout(openFlyout, FLYOUT_OPEN_DELAY);
+  });
+  rail.addEventListener('mouseleave', function(e){
+    clearTimeout(flyT);
+    if(!e.relatedTarget||!f.contains(e.relatedTarget)) close();
+  });
+  f.addEventListener('mouseleave', function(e){
+    if(!e.relatedTarget||!rail.contains(e.relatedTarget)) close();
+  });
+}
+
+document.getElementById('dTpos').addEventListener('click', function(e){
+  var b=e.target.closest('.dchip'); if(!b) return;
+  S.tpos=b.getAttribute('data-tpos');
+  render();
+});
+document.getElementById('dConcept').addEventListener('click', function(e){
+  var b=e.target.closest('.dchip'); if(!b) return;
+  S.concept=b.getAttribute('data-con');
+  if(!S.collapsed) S.collapsed=true;   /* the axis only means something collapsed */
+  render();
+});
+document.getElementById('cons').addEventListener('click', function(e){
+  var c=e.target.closest('.con'); if(!c) return;
+  S.concept=c.getAttribute('data-con');
+  if(!S.collapsed) S.collapsed=true;
+  render();
+});
+
+/* ---- prototype bar ---- */
+document.querySelectorAll('.palbtn').forEach(function(b){
+  b.addEventListener('click', function(){
+    document.documentElement.setAttribute('data-palette', b.getAttribute('data-pal'));
+    document.querySelectorAll('.palbtn').forEach(function(x){
+      x.setAttribute('aria-checked', String(x===b)); });
+  });
+});
+document.getElementById('themeBtn').addEventListener('click', function(){
+  var d=document.documentElement.getAttribute('data-theme')==='dark';
+  document.documentElement.setAttribute('data-theme', d?'light':'dark');
+  this.setAttribute('aria-pressed', String(!d));
+  this.textContent = d?'Dark':'Light';
+});
+
+render();
+</script>
+</body>
+</html>

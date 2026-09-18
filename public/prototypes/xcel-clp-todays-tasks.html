@@ -1,0 +1,1228 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-palette="navy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XCEL LMS — Current Learning Path · Today's Tasks variants</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   XCEL tokens — copied from xcel-lms-desktop.html so this page reads as the
+   same product. Same rule applies: THE RED IS NOT THE PRIMARY. --brand-* is
+   identity plus the one licensing-exam semantic; --primary-* is interactive
+   and data; --slate-* is the second data hue.
+
+   NOTE ON THE SOURCE MOCK: the card this page explores had a RED primary
+   button ("Resume course"). That predates the 2026-09-02 split and is not
+   reproduced — every CTA here is --primary-*. If red comes back as the
+   interactive colour, the exam accent has nothing left to be.
+   ============================================================ */
+:root{
+  --font-heading:'Lato',system-ui,-apple-system,sans-serif;
+  --font-body:'Open Sans',system-ui,-apple-system,sans-serif;
+
+  --brand-100:#f8dee0; --brand-300:#dc858b; --brand-500:#a81c24;
+  --brand-600:#8c171e; --brand-700:#6f1218; --brand-900:#2f080a;
+  --on-primary:#ffffff;
+
+  --ink:#1f1f23; --ink-2:#4d4d55; --ink-3:#6d6d76;
+
+  --n-50:#ffffff; --n-75:#f5f5f6; --n-100:#ececee; --n-200:#d9d9dd;
+  --n-300:#c7c7cc; --n-600:#818188; --n-700:#616168;
+
+  --success-100:#cce7d7; --success-500:#018937; --success-700:#005221;
+  --warning-100:#fdf0d4; --warning-300:#fbd27e; --warning-500:#f9b428; --warning-800:#63470f;
+  --error-100:#f4cccc; --error-500:#cb0000; --error-700:#790000;
+  --info-100:#d2f1f6; --info-700:#12717e;
+
+  --page:#f4f4f6; --card:#ffffff; --line:#e4e4e8; --line-2:#d4d4da;
+  --radius:10px; --radius-sm:7px;
+  --shadow:0 1px 2px rgba(0,0,0,.05), 0 4px 14px rgba(0,0,0,.05);
+  --prov:#5b4bbd; --prov-bg:#f1eefc; --prov-line:#cec6f2;
+
+  /* ---- the dark CLP panel -------------------------------------------
+     The source mock's left half is a dark slab, so it needs its own small
+     token set: the page's --ink-* are for light surfaces and would vanish
+     on it. Every value below is MEASURED, not picked:
+       panel-ink   white           14.58–16.72:1 on the three panels
+       panel-a     primary-200      8.62–10.81:1
+       panel-b     #c9861f          4.80– 5.50:1, and 1.75/1.96/1.79
+                                    against panel-a — clear of the 1.6:1
+                                    the house rule sets for two gauge
+                                    segments that must read as two things.
+     A LIGHTER bronze fails that second test (#e8a33d lands at 1.24–1.39,
+     i.e. the same arc in two hues) — the identical trap the dark-mode
+     gauge hit in xcel-lms-desktop.html. Re-measure before lightening it. */
+  --panel:var(--primary-800);
+  --panel-ink:#ffffff;
+  --panel-txt:rgba(255,255,255,.82);
+  --panel-muted:rgba(255,255,255,.60);
+  --panel-line:rgba(255,255,255,.15);
+  --panel-fill:rgba(255,255,255,.07);
+  --panel-a:var(--primary-200);
+  --panel-b:#c9861f;
+  --panel-track:rgba(255,255,255,.16);
+}
+
+:root[data-palette="navy"]{
+  --primary-100:#dde5f2; --primary-200:#b4c6e0; --primary-300:#7d9cc6;
+  --primary-400:#4a72a3; --primary-500:#1f4e88; --primary-600:#163d6e;
+  --primary-700:#102d53; --primary-800:#0a1f3b; --primary-900:#061225;
+  --slate-100:#f5ece0; --slate-300:#d7b98c; --slate-500:#a9682a;
+  --slate-600:#8a5420; --slate-700:#6b4218;
+}
+:root[data-palette="graphite"]{
+  --primary-100:#e7e8ec; --primary-200:#ccd0d8; --primary-300:#98a0ae;
+  --primary-400:#6a7385; --primary-500:#3f4753; --primary-600:#333944;
+  --primary-700:#252a33; --primary-800:#1a1e25; --primary-900:#101318;
+  --slate-100:#f5ece0; --slate-300:#d7b98c; --slate-500:#a9682a;
+  --slate-600:#8a5420; --slate-700:#6b4218;
+}
+:root[data-palette="teal"]{
+  --primary-100:#d3e7e7; --primary-200:#9fd0d0; --primary-300:#63b0b2;
+  --primary-400:#2b8a8d; --primary-500:#0f6e72; --primary-600:#0b585b;
+  --primary-700:#084346; --primary-800:#052e30; --primary-900:#031b1c;
+  --slate-100:#f7eee1; --slate-300:#dcbc8c; --slate-500:#b8873f;
+  --slate-600:#94692e; --slate-700:#6e4e22;
+}
+
+:root[data-theme="dark"]{
+  --ink:#f2f2f4; --ink-2:#b6b6be; --ink-3:#8d8d96;
+  --page:#141417; --card:#1d1d21; --line:#2e2e35; --line-2:#3d3d45;
+  --n-50:#1d1d21; --n-75:#232329; --n-100:#2a2a31; --n-200:#3a3a42; --n-300:#4a4a53;
+  --brand-100:#3a1416; --brand-300:#8c272e; --brand-500:#e8737a;
+  --brand-600:#f09aa0; --brand-700:#f6c2c6;
+  --success-100:#16261f; --success-500:#57b585; --success-700:#8fd4b0;
+  --warning-100:#2a2318; --warning-300:#4a3d22; --warning-500:#e0b155; --warning-800:#f0d49a;
+  --error-100:#2b1414; --error-500:#f08a8a; --error-700:#f6b8b8;
+  --info-100:#122428; --info-700:#7fd0dd;
+  --prov:#b0a3ff; --prov-bg:#231f38; --prov-line:#3b3363;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+  /* The panel stays dark in dark mode — it is already the dark surface. It
+     drops to primary-100 (the dark palettes' darkest stop) so it separates
+     from the card behind it instead of merging with it. */
+  --panel:var(--primary-100);
+  --panel-a:var(--primary-500);
+  --panel-b:#dcae70;
+}
+:root[data-theme="dark"][data-palette="navy"]{
+  --primary-100:#15223a; --primary-200:#1d3050; --primary-300:#35598f;
+  --primary-400:#5b86bd; --primary-500:#8fb4e0; --primary-600:#b3cded;
+  --primary-700:#d3e2f5; --on-primary:#0a1f3b;
+  --slate-100:#2a2118; --slate-300:#6b4f24; --slate-500:#a86e28;
+  --slate-600:#c98f45; --slate-700:#dcae70;
+}
+:root[data-theme="dark"][data-palette="graphite"]{
+  --primary-100:#22252b; --primary-200:#2f343d; --primary-300:#4d5563;
+  --primary-400:#7b8494; --primary-500:#aab2c0; --primary-600:#c6ccd6;
+  --primary-700:#dfe3ea; --on-primary:#101318;
+  --slate-100:#2a2118; --slate-300:#6b4f24; --slate-500:#a86e28;
+  --slate-600:#c98f45; --slate-700:#dcae70;
+}
+:root[data-theme="dark"][data-palette="teal"]{
+  --primary-100:#0f2426; --primary-200:#143537; --primary-300:#1f6165;
+  --primary-400:#2f9498; --primary-500:#5fc0c4; --primary-600:#8ed6d9;
+  --primary-700:#bae8ea; --on-primary:#052e30;
+  --slate-100:#2a2118; --slate-300:#6b4f24; --slate-500:#a86e28;
+  --slate-600:#c98f45; --slate-700:#dcae70;
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font:14px/1.55 var(--font-body);
+  -webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-family:var(--font-heading);font-weight:900;letter-spacing:-.015em}
+h1{font-size:26px;line-height:1.18}
+h2{font-size:19px;line-height:1.25}
+h3{font-size:15px;font-weight:700;letter-spacing:-.005em}
+p{margin:0 0 10px}
+button{font:inherit}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);
+  font-family:var(--font-body)}
+.muted{color:var(--ink-2)}
+.tiny{font-size:11.5px;line-height:1.45;color:var(--ink-2)}
+.tiny b{color:var(--ink);font-weight:600}
+
+/* ---------- prototype bar (sibling convention: pbar / plink / tag / sp) --- */
+.pbar{background:#1a1a1d;color:rgba(255,255,255,.9);display:flex;align-items:center;gap:14px;
+  padding:0 18px;height:40px;font-size:12px;position:sticky;top:0;z-index:60;flex-wrap:wrap}
+.pbar .tag{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:rgba(255,255,255,.5)}
+.pbar .sp{margin-left:auto;display:flex;gap:8px;align-items:center}
+.pbtn{appearance:none;border:1px solid rgba(255,255,255,.2);background:transparent;
+  color:rgba(255,255,255,.85);font-size:11.5px;font-weight:600;padding:6px 10px;border-radius:6px;cursor:pointer}
+.pbtn:hover{background:rgba(255,255,255,.09)}
+.pbtn[aria-pressed="true"]{background:#fff;color:#1a1a1d;border-color:#fff}
+.pbtn:focus-visible{outline:2px solid var(--primary-300);outline-offset:2px}
+.plink{color:rgba(255,255,255,.72);font-size:12px;font-weight:600;text-decoration:none;
+  border-bottom:1px solid rgba(255,255,255,.25);padding-bottom:1px}
+.plink:hover{color:#fff;border-bottom-color:#fff}
+.palsw{display:flex;align-items:center;gap:4px;padding:3px;border-radius:8px;
+  background:rgba(255,255,255,.07);margin-right:4px}
+.pallb{font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:rgba(255,255,255,.5);padding:0 5px 0 4px}
+.palbtn{appearance:none;border:0;background:transparent;color:rgba(255,255,255,.72);
+  font:600 11.5px var(--font-body);padding:4px 8px;border-radius:6px;cursor:pointer;
+  display:flex;align-items:center;gap:5px}
+.palbtn i{width:9px;height:9px;border-radius:50%;display:block;box-shadow:0 0 0 1px rgba(255,255,255,.35)}
+.palbtn:hover{background:rgba(255,255,255,.1);color:#fff}
+.palbtn[aria-checked="true"]{background:#fff;color:#1a1a1d}
+.palbtn[aria-checked="true"] i{box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+.palbtn:focus-visible,.plink:focus-visible{outline:2px solid var(--primary-300);outline-offset:2px}
+
+/* ---------- demo controls ---------- */
+.demo{background:#26262b;border-bottom:2px solid var(--primary-300);
+  display:flex;align-items:center;gap:14px;padding:10px 18px;flex-wrap:wrap;
+  position:sticky;top:40px;z-index:59}
+.demo .lb{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:rgba(255,255,255,.56)}
+.grp{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.dchip{appearance:none;border:1px solid rgba(255,255,255,.13);background:transparent;
+  color:rgba(255,255,255,.82);font-size:11.5px;font-weight:600;padding:6px 11px;border-radius:14px;
+  cursor:pointer;white-space:nowrap}
+.dchip:hover{background:rgba(255,255,255,.08)}
+.dchip[aria-pressed="true"]{background:var(--primary-200);border-color:var(--primary-200);
+  color:var(--primary-700)}
+.dchip:focus-visible{outline:2px solid var(--primary-300);outline-offset:2px}
+.dnote{font-size:11.5px;color:rgba(255,255,255,.56);margin-left:auto}
+
+/* ---------- page furniture ---------- */
+.hero{background:var(--card);border-bottom:1px solid var(--line);padding:26px 40px 24px}
+.hero p{max-width:76ch;margin:8px 0 0;color:var(--ink-2);font-size:13.5px}
+.body{padding:26px 40px 0;display:flex;flex-direction:column;gap:34px;max-width:1180px}
+.foot{padding:34px 40px 60px;font-size:12px;color:var(--ink-3);max-width:84ch}
+
+.vsec{display:flex;flex-direction:column;gap:14px}
+.vhead{display:flex;flex-direction:column;gap:5px}
+.vhead .lbl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.vhead .num{font:900 11px var(--font-body);letter-spacing:.09em;text-transform:uppercase;
+  background:var(--primary-100);color:var(--primary-700);border:1px solid var(--primary-200);
+  border-radius:5px;padding:3px 8px}
+.vhead .num.base{background:var(--n-75);color:var(--ink-3);border-color:var(--line-2)}
+.vhead .arg{max-width:78ch;color:var(--ink-2);font-size:13.5px;margin:2px 0 0}
+.vnote{border-left:3px solid var(--line-2);padding:2px 0 2px 14px;max-width:82ch;
+  font-size:12.5px;line-height:1.6;color:var(--ink-2)}
+.vnote b{color:var(--ink)}
+.vnote .cost{color:var(--warning-800);font-weight:700}
+:root[data-theme="dark"] .vnote .cost{color:var(--warning-800)}
+
+/* ---------- the card ---------- */
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);position:relative;overflow:hidden;max-width:960px}
+.clp{display:flex;flex-wrap:wrap;align-items:stretch}
+.clp .lh{background:var(--panel);color:var(--panel-ink);padding:22px 24px 18px;
+  flex:1 1 470px;min-width:0;display:flex;flex-direction:column}
+.clp .rh{background:var(--card);padding:20px 22px;flex:0 1 356px;min-width:290px;
+  display:flex;flex-direction:column}
+.clp.stacked{display:block}
+.clp .lh .eyebrow{color:var(--panel-b)}
+.clp .lh h2{color:var(--panel-ink);margin-top:5px}
+.clp .lh .sub{color:var(--panel-muted);font-size:12px;margin-top:5px}
+.gwrap{display:flex;gap:20px;align-items:center;margin-top:18px;flex-wrap:wrap}
+.pbars{flex:1;min-width:190px}
+.pbrow{margin-bottom:10px}
+.pbrow .t{display:flex;justify-content:space-between;font-size:12px;margin-bottom:5px;
+  color:var(--panel-txt);align-items:center;gap:8px}
+.pbrow .t .d{display:inline-flex;align-items:center;gap:7px}
+.pbrow .t em{width:8px;height:8px;border-radius:50%;font-style:normal;display:block}
+.pbrow .t b{color:var(--panel-ink)}
+.ptrack{height:7px;border-radius:4px;background:var(--panel-track);overflow:hidden}
+.ptrack i{display:block;height:100%}
+.pstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:18px}
+.pstat{background:var(--panel-fill);border:1px solid var(--panel-line);border-radius:var(--radius-sm);
+  padding:10px 11px}
+.pstat .k{font-size:9.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--panel-muted)}
+.pstat .v{font-family:var(--font-heading);font-weight:900;font-size:16px;margin-top:4px;color:var(--panel-ink)}
+.pstat .v.amber{color:var(--panel-b)}
+.pstatus{display:flex;gap:14px;align-items:flex-start;background:var(--panel-fill);
+  border:1px solid var(--panel-line);border-radius:var(--radius-sm);padding:11px 12px;margin-top:10px}
+.pstatus .k{font-size:9.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;
+  color:var(--panel-muted);margin-bottom:6px}
+.pstatus .msg{font-size:12px;color:var(--panel-txt);line-height:1.45;flex:1}
+.ppill{display:inline-flex;font:700 10.5px var(--font-body);letter-spacing:.04em;text-transform:uppercase;
+  padding:4px 9px;border-radius:5px;border:1px solid}
+.ppill.ok{color:#c7f0d8;background:rgba(1,137,55,.28);border-color:rgba(199,240,216,.5)}
+.ppill.warn{color:#fbe2ac;background:rgba(249,180,40,.2);border-color:rgba(251,210,126,.55)}
+.ppill.err{color:#ffc9c9;background:rgba(203,0,0,.26);border-color:rgba(255,201,201,.5)}
+.plfoot{margin-top:auto;padding-top:16px;text-align:right}
+.plfoot button{appearance:none;background:none;border:0;color:var(--panel-a);font:700 12.5px var(--font-body);
+  cursor:pointer;padding:0}
+.plfoot button:hover{text-decoration:underline}
+
+/* ---------- right-hand panel bits ---------- */
+.rhead{display:flex;align-items:baseline;gap:10px;margin-bottom:12px}
+.rhead .link{margin-left:auto;color:var(--primary-500);font-weight:700;font-size:11.5px;
+  background:none;border:0;cursor:pointer;padding:0}
+.rhead .link:hover{text-decoration:underline}
+.thumb{height:118px;border-radius:var(--radius-sm);background:linear-gradient(135deg,var(--primary-400),var(--primary-700));
+  display:grid;place-items:center;color:rgba(255,255,255,.5);font:700 11px var(--font-body);
+  letter-spacing:.08em;text-transform:uppercase;margin-bottom:12px}
+.btn{appearance:none;border:1px solid var(--primary-500);background:var(--primary-500);color:var(--on-primary);
+  font:700 12.5px var(--font-body);padding:10px 16px;border-radius:7px;cursor:pointer}
+.btn:hover{background:var(--primary-600);border-color:var(--primary-600)}
+.btn.sec{background:transparent;color:var(--primary-500);border-color:var(--line-2)}
+.btn.sec:hover{background:var(--primary-100);border-color:var(--primary-300)}
+.btn.ghost{background:transparent;color:var(--ink-2);border-color:var(--line-2)}
+.btn.sm{padding:7px 11px;font-size:11.5px;border-radius:6px}
+.btn.wide{width:100%}
+.btn:focus-visible{outline:2px solid var(--primary-400);outline-offset:2px}
+.lnk{background:none;border:0;padding:0;color:var(--ink-2);font:600 11.5px var(--font-body);
+  cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.lnk:hover{color:var(--ink)}
+.track{height:7px;border-radius:4px;background:var(--n-100);overflow:hidden}
+.track i{display:block;height:100%;background:var(--primary-500)}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:10px;font-weight:700;letter-spacing:.04em;
+  text-transform:uppercase;padding:3px 7px;border-radius:5px;border:1px solid;white-space:nowrap}
+.p-ok{color:var(--success-700);background:var(--success-100);border-color:var(--success-500)}
+.p-warn{color:var(--warning-800);background:var(--warning-100);border-color:var(--warning-300)}
+.p-err{color:var(--error-700);background:var(--error-100);border-color:var(--error-500)}
+.p-brand{color:#fff;background:var(--brand-500);border-color:var(--brand-500)}
+:root[data-theme="dark"] .p-brand{color:var(--brand-900)}
+
+/* task rows — shared by every variant so the differences are structural,
+   not cosmetic. A variant that needed its own row style would be arguing
+   about the row, which is not what this page is for. */
+.tlist{display:flex;flex-direction:column;gap:7px}
+.trow{display:flex;align-items:flex-start;gap:10px;padding:9px 10px;border:1px solid var(--line);
+  border-radius:var(--radius-sm);background:var(--card);text-align:left;width:100%;cursor:pointer}
+.trow:hover{border-color:var(--primary-300);background:var(--n-75)}
+.trow:focus-visible{outline:2px solid var(--primary-400);outline-offset:1px}
+.mark{width:17px;height:17px;border-radius:50%;flex:none;border:2px solid var(--n-300);margin-top:1px;
+  display:grid;place-items:center;font-size:9px;color:#fff;line-height:1}
+.mark.done{background:var(--success-500);border-color:var(--success-500)}
+.mark.prog{border-color:var(--primary-500);border-width:3px}
+.mark.miss{border-color:var(--error-500);border-style:solid;color:var(--error-500);font-weight:900}
+.mark.clock{border-color:var(--brand-500);color:var(--brand-500);font-size:8px;font-weight:900}
+.trow .t{flex:1;min-width:0}
+.trow .t .n{font-size:12.5px;font-weight:700;line-height:1.35;color:var(--ink)}
+.trow .t .m{font-size:11px;color:var(--ink-3);margin-top:2px;line-height:1.4}
+.trow .mins{font:700 11px var(--font-body);color:var(--ink-2);background:var(--n-75);
+  border:1px solid var(--line);border-radius:5px;padding:3px 6px;flex:none;white-space:nowrap}
+.trow.late{border-color:var(--error-500);background:var(--error-100)}
+.trow.late .t .n,.trow.late .t .m{color:var(--error-700)}
+.trow.late .mins{background:transparent;border-color:var(--error-500);color:var(--error-700)}
+.trow.fixed{border-left:4px solid var(--brand-500)}
+.trow.done .t .n{text-decoration:line-through;color:var(--ink-3)}
+
+/* the overdue band — the shape borrowed from the week-strip callout */
+.oband{border:1px solid var(--warning-300);background:var(--warning-100);color:var(--warning-800);
+  border-radius:var(--radius-sm);padding:12px 13px;display:flex;gap:11px;align-items:flex-start}
+.oband.hard{border-color:var(--error-500);background:var(--error-100);color:var(--error-700)}
+.oband .ic{width:22px;height:22px;border-radius:50%;flex:none;display:grid;place-items:center;
+  background:var(--warning-500);color:#3a2a08;font:900 12px var(--font-body)}
+.oband.hard .ic{background:var(--error-500);color:#fff}
+.oband .bd{flex:1;min-width:0}
+.oband .hl{font:700 13px var(--font-body);line-height:1.35}
+.oband .sub{font-size:11.5px;line-height:1.5;margin-top:3px}
+.oband .acts{display:flex;gap:7px;flex-wrap:wrap;margin-top:10px;align-items:center}
+
+.grpk{font-size:9.5px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);
+  margin:2px 0 7px;display:flex;align-items:center;gap:8px}
+.grpk.late{color:var(--error-700)}
+.grpk .ct{background:var(--n-100);border-radius:9px;padding:1px 7px;font-size:10px;letter-spacing:0}
+.grpk.late .ct{background:var(--error-100);color:var(--error-700)}
+.rfoot{margin-top:auto;padding-top:12px;font-size:11.5px;color:var(--ink-3)}
+.rfoot.rule{border-top:1px solid var(--line);margin-top:12px}
+
+/* ---------- variant D: the full-width strip ---------- */
+.strip{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);max-width:960px}
+.strip .pad{padding:16px 18px}
+.week{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:8px;margin-top:12px}
+.day{border:1px solid var(--line);border-radius:var(--radius-sm);padding:9px 6px;text-align:center;
+  background:var(--card)}
+.day .dn{font-size:9.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+.day .dd{font-family:var(--font-heading);font-weight:900;font-size:17px;margin:2px 0 6px}
+.day .dm{font-size:10px;color:var(--ink-3)}
+.day .dot{width:19px;height:19px;border-radius:50%;margin:0 auto 6px;display:grid;place-items:center;
+  font-size:9px;color:#fff;border:2px solid var(--n-300)}
+.day.done{border-color:var(--success-500);background:var(--success-100)}
+.day.done .dot{background:var(--success-500);border-color:var(--success-500)}
+.day.miss{border-color:var(--warning-300);background:var(--warning-100)}
+.day.miss .dot{background:var(--warning-500);border-color:var(--warning-500);color:#3a2a08}
+.day.today{border:2px solid var(--primary-500)}
+.day.today .dot{background:var(--primary-500);border-color:var(--primary-500);color:var(--on-primary)}
+.day.rest .dot{border-style:dashed}
+.tcols{display:grid;grid-template-columns:repeat(auto-fit,minmax(258px,1fr));gap:8px;margin-top:12px}
+
+/* ============================================================
+   ROUND 2 — the study plan's OWN calendar vocabulary.
+
+   Round 1's week strip invented a language: ✓/✕ dots and a text caption
+   under each day ("20 min", "missed", "catch-up", "rest"). The Study
+   Calendar in xcel-lms-desktop.html already has one, and it is different
+   in three ways worth keeping:
+
+     1. LOAD BARS, not captions. Each day carries up to two thin bars —
+        primary for required, slate for elective — so the eye reads the
+        SHAPE of the week (heavy Monday, empty Sunday) without reading a
+        word. That is why the plan grid survives at 82px per cell and the
+        captioned strip does not.
+     2. OFF DAYS ARE A SURFACE, not a label. Weekends and buffer days get
+        --n-75. The plan never writes "rest" in a cell.
+     3. THE EXAM IS A TINTED CELL. --brand-100 with a --brand-600 label,
+        the one place brand red is a semantic. Same rule as .taskrow.exam.
+
+   What the plan grid does NOT have is a completion state — its bars are
+   scheduled load, not progress. So the one thing added here is the plan's
+   own .mark, sat in the cell's top-right, and a rule for the bars:
+     done    bars at the 500 stops (solid, earned)
+     planned bars at the 300 stops (the plan grid's own weight)
+     missed  bars stay 300, the CELL goes amber — the day failed, not the work
+   ============================================================ */
+.wk{display:grid;grid-template-columns:minmax(0,1fr) 348px}
+.wk .lft{padding:16px 18px;min-width:0}
+.wk .rgt{padding:16px 18px;border-left:1px solid var(--line);background:var(--n-75);
+  display:flex;flex-direction:column;min-width:0}
+.cgrid{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;margin-top:10px}
+.cdow{font-size:10px;font-weight:700;text-transform:uppercase;color:var(--ink-3);
+  padding-bottom:2px;text-align:center;letter-spacing:.04em}
+.cell{border:1px solid var(--line);border-radius:6px;min-height:74px;padding:6px;background:var(--card);
+  display:flex;flex-direction:column;text-align:left;width:100%;font:inherit;color:inherit}
+.cell .top{display:flex;align-items:center;justify-content:space-between;gap:4px;margin-bottom:6px}
+.cell .dnum{font-size:11px;font-weight:700;color:var(--ink-3);line-height:1}
+.cell .bar{height:5px;border-radius:3px;margin-bottom:3px}
+.cell .xm{font-size:9px;font-weight:700;color:var(--brand-600);line-height:1.2;margin-top:2px}
+.cell .mk{width:13px;height:13px;border-radius:50%;border:2px solid var(--n-300);flex:none;
+  display:grid;place-items:center;font-size:7px;color:#fff;line-height:1}
+.cell .mk.done{background:var(--success-500);border-color:var(--success-500)}
+.cell .mk.miss{border-color:var(--warning-500);background:var(--warning-500);color:#3a2a08;font-weight:900}
+.cell .mk.prog{border-color:var(--primary-500);border-width:3px}
+.cell.off{background:var(--n-75)}
+.cell.miss{border-color:var(--warning-300);background:var(--warning-100)}
+.cell.today{border:2px solid var(--primary-500);padding:5px}
+.cell.today .dnum{color:var(--primary-500)}
+.cell.exam{background:var(--brand-100);border-color:var(--brand-300)}
+.cell.exam .dnum{color:var(--brand-600)}
+.cell.pick{cursor:pointer}
+.cell.pick:hover{border-color:var(--primary-400)}
+.cell.pick:focus-visible{outline:2px solid var(--primary-400);outline-offset:1px}
+.cell[aria-pressed="true"]{box-shadow:0 0 0 2px var(--primary-500);border-color:var(--primary-500)}
+.wkhead{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap}
+.wkhead .link{margin-left:auto;color:var(--primary-500);font-weight:700;font-size:11.5px;
+  background:none;border:0;cursor:pointer;padding:0}
+.wkhead .link:hover{text-decoration:underline}
+.wklegend{display:flex;gap:14px;flex-wrap:wrap;font-size:11px;color:var(--ink-3);margin-top:10px}
+.wklegend span{display:inline-flex;align-items:center;gap:6px}
+.wklegend em{width:16px;height:5px;border-radius:3px;font-style:normal;display:inline-block}
+
+/* The plan's own task row, kept as close to taskRow() in the desktop
+   prototype as 348px allows: mark, title, meta, and a right-hand
+   affordance that is a Done pill or a Start/Resume button. */
+.prow{display:flex;align-items:flex-start;gap:10px;padding:10px 11px;border:1px solid var(--line);
+  border-radius:var(--radius-sm);background:var(--card)}
+.prow+.prow{margin-top:7px}
+.prow .t{flex:1;min-width:0}
+.prow .t .n{font-size:12.5px;font-weight:700;line-height:1.35;color:var(--ink)}
+.prow .t .m{font-size:11px;color:var(--ink-3);margin-top:2px;line-height:1.4}
+.prow .act{flex:none;align-self:center}
+.prow.exam{border-color:var(--brand-300);border-left:4px solid var(--brand-500);background:var(--brand-100)}
+:root[data-theme="dark"] .prow.exam{background:rgba(168,28,36,.16)}
+.prow.late{border-color:var(--warning-300);background:var(--warning-100)}
+.prow.late .t .m{color:var(--warning-800)}
+.prow.done .t .n{color:var(--ink-3)}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:var(--radius-sm);padding:10px 11px}
+.stat .k{font-size:9.5px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.stat .v{font-family:var(--font-heading);font-weight:900;font-size:15px;margin-top:3px;color:var(--ink)}
+.rdiv{display:flex;align-items:center;gap:12px;margin:8px 0 -6px}
+.rdiv .ln{flex:1;height:1px;background:var(--line-2)}
+.rdiv .tx{font:900 11px var(--font-body);letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+
+/* ---------- provenance ---------- */
+.prov{position:absolute;top:8px;right:10px;background:var(--prov-bg);border:1px solid var(--prov-line);
+  color:var(--prov);font:700 10px/1 ui-monospace,SFMono-Regular,Menlo,monospace;padding:4px 7px;
+  border-radius:5px;z-index:3;display:none;white-space:nowrap}
+body[data-prov="on"] .prov{display:block}
+
+@media (max-width:820px){
+  .hero,.body,.foot{padding-left:20px;padding-right:20px}
+  .clp .rh{border-top:1px solid var(--line);flex:1 1 100%}
+  .week{grid-template-columns:repeat(4,minmax(0,1fr))}
+}
+</style>
+</head>
+<body data-prov="off">
+
+<div class="pbar">
+  <span class="tag">XCEL LMS</span>
+  <span>CLP · Today's Tasks variants</span>
+  <span style="opacity:.4">·</span>
+  <a class="plink" href="/prototypes/xcel-lms-desktop.html">Desktop platform</a>
+  <a class="plink" href="/prototypes/xcel-lms-walkthrough.html">Learner walk-through</a>
+  <a class="plink" href="/prototypes/xcel-lms-wireframes.html">Wireframes &amp; overlap</a>
+  <a class="plink" href="/prototypes/xcel-lms-admin.html">Admin wireframes</a>
+  <a class="plink" href="/prototypes/xcel-study-plan.html">Study plan</a>
+  <a class="plink" href="/prototypes/xcel-nav-collapse.html">Collapsible rail</a>
+  <a class="plink" href="/prototypes/xcel-study-pace-readiness.html">Pace &amp; Readiness</a>
+  <a class="plink" href="/prototypes/xcel-finserv-build-plan.html">Build plan</a>
+  <span class="sp">
+    <span class="palsw" role="radiogroup" aria-label="Colour palette (prototype only)">
+      <span class="pallb">Palette</span>
+      <button class="palbtn" role="radio" data-pal="navy"     aria-checked="true"><i style="background:#1f4e88"></i>Navy</button>
+      <button class="palbtn" role="radio" data-pal="graphite" aria-checked="false"><i style="background:#3f4753"></i>Graphite</button>
+      <button class="palbtn" role="radio" data-pal="teal"     aria-checked="false"><i style="background:#0f6e72"></i>Teal</button>
+    </span>
+    <button class="pbtn" id="provBtn" aria-pressed="false">Show provenance</button>
+    <button class="pbtn" id="themeBtn" aria-pressed="false">Dark</button>
+  </span>
+</div>
+
+<div class="demo">
+  <span class="lb">Day state</span>
+  <span class="grp" id="dDay" role="group" aria-label="Day state"></span>
+  <span class="dnote" id="dayNote"></span>
+</div>
+
+<div class="hero">
+  <h1>Today's Tasks — nine readings of the same panel</h1>
+  <p>The Current Learning Path card's right-hand panel currently ends in <b>Up next</b>: one line naming
+  the chapter after this one. That line answers <i>what comes after</i>, which is a question nobody is
+  asking while they are logged in. <b>Today's Tasks</b> answers <i>what am I here to do</i> — but the
+  moment a task can be overdue, the panel has two jobs, and the variants below differ in how much room
+  they are willing to give the second one. Switch the day state above; every variant re-renders.</p>
+  <p><b>Round 1 (baseline, A–E)</b> asks how much of the panel overdue is allowed to take.
+  <b>Round 2 (D1–D3)</b> develops the one that won — D, the week calendar — by throwing away the
+  calendar it invented and rebuilding it in the <a href="/prototypes/xcel-lms-desktop.html" style="color:var(--primary-500)">Study
+  Calendar</a>'s own vocabulary, with the tasks in a right-hand column. All three round-2 variants share
+  one week model, so the only thing being compared is what the calendar is <i>for</i>.</p>
+</div>
+
+<div class="body" id="body"></div>
+
+<div class="foot" id="foot"></div>
+
+<script>
+/* ============================================================
+   ONE data model, six renderers. Every variant reads DAY[state] — a variant
+   cannot quietly show a task the others don't have, which is the only way a
+   side-by-side comparison means anything.
+
+   Task kinds, per the three things a "task" was asked to cover:
+     session  a scheduled chunk from the study plan (the week-strip objects)
+     item     a named course object — chapter, quiz, module
+     fixed    a deadline-bound obligation with a CLOCK: a livestream at 2pm,
+              a booking window closing. This is the kind a flat list flattens,
+              and the reason variant E exists.
+   ============================================================ */
+
+var TODAY_TASKS = [
+  {k:'session', n:'Chapter 8 · Annuity Suitability', m:'Study session · video and reading', mins:'24 min', st:'todo'},
+  {k:'item',    n:'Chapter 7 quiz',                  m:'10 questions · pass at 70%',         mins:'10 min', st:'todo'},
+  {k:'fixed',   n:'Livestream — Life &amp; Health review', m:'Elective · 6 hrs credit · seat held', mins:'2:00 PM', st:'todo', at:'2:00 PM'}
+];
+
+var DAY = {
+  clear:{
+    label:'On plan',
+    note:'Nothing overdue. This is the state the panel is usually designed in — and the one it is least often in.',
+    overdue:[],
+    today:TODAY_TASKS,
+    lag:null
+  },
+  one:{
+    label:'One overdue',
+    note:'A single missed session. Recoverable inside the week — the plan does not need to move.',
+    overdue:[
+      {k:'session', n:'Chapter 7 · Policy Provisions', m:'Video · required · missed Tuesday', mins:'24 min', st:'miss', due:'Tue 8 Sep'}
+    ],
+    today:TODAY_TASKS,
+    lag:{sessions:1, mins:'24 minutes', pct:74, mark:75, hard:false}
+  },
+  behind:{
+    label:'Badly behind',
+    note:'Three overdue, one of them a graded item with its own deadline. The week cannot absorb this — a decision is due.',
+    overdue:[
+      {k:'item',    n:'Chapter 6 quiz',                m:'Required · was due last Friday',   mins:'30 min', st:'miss', due:'Fri 4 Sep'},
+      {k:'session', n:'Chapter 7 · Policy Provisions', m:'Reading · required · missed Monday', mins:'20 min', st:'miss', due:'Mon 7 Sep'},
+      {k:'session', n:'Chapter 7 · Policy Provisions', m:'Video · required · missed Tuesday',  mins:'24 min', st:'miss', due:'Tue 8 Sep'}
+    ],
+    today:TODAY_TASKS,
+    lag:{sessions:3, mins:'74 minutes', pct:68, mark:75, hard:true}
+  }
+};
+
+/* ============================================================
+   THE WEEK — round 2's model, and the reason round 1's strip could not be
+   developed as it stood. That strip carried a caption per day and nothing
+   else, so the calendar could never DRIVE anything: there was no per-day
+   task list behind a cell to show.
+
+   Real dates, because a calendar that lies about its own weekdays cannot
+   be reviewed. 1 Sep 2026 is a Tuesday, so 7 Sep is Monday, TODAY is
+   Wednesday 9 Sep, and the licensing exam on Thursday 17 Sep is 8 days
+   out — which is what makes the two-week variant worth drawing.
+
+   req / elec are load-bar widths as a percentage of a full study day.
+   ============================================================ */
+var TODAY_N = 9;
+
+function planWeek(state){
+  var miss = state==='behind' ? {7:1,8:1} : state==='one' ? {8:1} : {};
+  function day(dow,n,o){
+    o=o||{};
+    var st = o.off ? 'off' : n===TODAY_N ? 'today' : miss[n] ? 'miss' : n<TODAY_N ? 'done' : 'plan';
+    var tasks=(o.tasks||[]).map(function(t){
+      var c={}; for(var k in t) c[k]=t[k];
+      c.st = st==='done' ? 'done' : st==='miss' ? 'miss' : 'todo';
+      return c;
+    });
+    return {dow:dow, n:n, st:st, req:o.req||0, elec:o.elec||0, tasks:tasks, exam:!!o.exam,
+            key:'d'+n, off:!!o.off};
+  }
+  return [
+    day('Mon',7,{req:70, tasks:[{k:'session',n:'Chapter 7 · Policy Provisions',m:'Reading · required',mins:'20 min'}]}),
+    day('Tue',8,{req:85, tasks:[{k:'session',n:'Chapter 7 · Policy Provisions',m:'Video · required',mins:'24 min'}]}),
+    day('Wed',9,{req:40, elec:80, tasks:TODAY_TASKS}),
+    day('Thu',10,{elec:62, tasks:[{k:'item',n:'Chapter 8 quiz',m:'10 questions · elective',mins:'18 min'}]}),
+    day('Fri',11,{req:95, tasks:[{k:'item',n:'Progress Exam 2',m:'Practice exam · 30 questions',mins:'30 min'}]}),
+    day('Sat',12,{off:true}),
+    day('Sun',13,{off:true})
+  ];
+}
+
+/* Week two. Only drawn by the two-week variant, and its whole reason for
+   existing is the exam cell on Thursday 17 — the date the plan is built
+   backwards from, which a seven-day window can never show. */
+function planWeek2(){
+  function d(dow,n,o){ o=o||{};
+    return {dow:dow,n:n,st:o.off?'off':o.exam?'exam':'plan',req:o.req||0,elec:o.elec||0,
+            tasks:o.tasks||[],exam:!!o.exam,key:'d'+n,off:!!o.off}; }
+  return [
+    d('Mon',14,{req:70, tasks:[{k:'item',n:'Chapter 9 · Texas Law',m:'Reading · required',mins:'25 min',st:'todo'}]}),
+    d('Tue',15,{req:70, tasks:[{k:'item',n:'Chapter 9 quiz',m:'Required',mins:'15 min',st:'todo'}]}),
+    d('Wed',16,{req:45, elec:45, tasks:[{k:'item',n:'Final review',m:'Practice exam · timed',mins:'45 min',st:'todo'}]}),
+    d('Thu',17,{exam:true, tasks:[{k:'exam',n:'Texas Life &amp; Health licensing exam',
+       m:'Licensing exam · PSI · Austin North · 09:00',mins:'2 hrs',st:'todo'}]}),
+    d('Fri',18,{off:true}), d('Sat',19,{off:true}), d('Sun',20,{off:true})
+  ];
+}
+
+var S = {day:'one', sel:null};
+function D(){ return DAY[S.day]; }
+
+/* ---------- shared pieces ---------- */
+
+function gauge(size){
+  var pct=63, req=6/24, elec=9/24;
+  var r=(size/2)-9, c=2*Math.PI*r, cx=size/2;
+  return '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'" role="img" '+
+    'aria-label="'+pct+' percent complete">'+
+    '<circle cx="'+cx+'" cy="'+cx+'" r="'+r+'" fill="none" stroke="var(--panel-track)" stroke-width="11"/>'+
+    '<circle cx="'+cx+'" cy="'+cx+'" r="'+r+'" fill="none" stroke="var(--panel-a)" stroke-width="11" '+
+      'stroke-dasharray="'+(c*req)+' '+c+'" stroke-linecap="butt" transform="rotate(-90 '+cx+' '+cx+')"/>'+
+    '<circle cx="'+cx+'" cy="'+cx+'" r="'+r+'" fill="none" stroke="var(--panel-b)" stroke-width="11" '+
+      'stroke-dasharray="'+(c*elec)+' '+c+'" stroke-dashoffset="'+(-c*req)+'" '+
+      'stroke-linecap="butt" transform="rotate(-90 '+cx+' '+cx+')"/>'+
+    '<text x="'+cx+'" y="'+(cx+2)+'" text-anchor="middle" dominant-baseline="middle" '+
+      'font-family="Lato,sans-serif" font-weight="900" font-size="'+(size*0.27)+'" fill="var(--panel-ink)">'+pct+'%</text>'+
+    '<text x="'+cx+'" y="'+(cx+size*0.2)+'" text-anchor="middle" font-family="Open Sans,sans-serif" '+
+      'font-size="'+(size*0.085)+'" fill="rgba(255,255,255,.62)">complete</text></svg>';
+}
+
+/* The dark half. IDENTICAL in every variant — the whole comparison is about
+   the right-hand panel, so anything that moves on the left is noise. Its one
+   concession to state is the status pill and its sentence. */
+function clpLeft(){
+  var d=D(), st, cls, msg;
+  if(!d.lag){ st='On Track'; cls='ok';
+    msg='You are on pace to finish before your deadline. Keep the momentum going.'; }
+  else if(!d.lag.hard){ st='Slipping'; cls='warn';
+    msg='One missed session. Still inside your deadline, but the margin is thinner than it was.'; }
+  else { st='At Risk'; cls='err';
+    msg='At this pace you will not finish before 12/15/2026. The plan needs to change, or the date does.'; }
+
+  return '<div class="lh">'+
+    '<span class="eyebrow">Current learning path</span>'+
+    '<h2>Florida Life &amp; Health CE</h2>'+
+    '<div class="sub">Insurance Continuing Education &nbsp;|&nbsp; FL &nbsp;|&nbsp; 24 Hours</div>'+
+    '<div class="gwrap">'+gauge(114)+
+      '<div class="pbars">'+
+        '<div class="pbrow"><div class="t"><span class="d"><em style="background:var(--panel-a)"></em>Initial Training</span>'+
+          '<span><b>6</b> / 10 hrs</span></div>'+
+          '<div class="ptrack"><i style="width:60%;background:var(--panel-a)"></i></div></div>'+
+        '<div class="pbrow"><div class="t"><span class="d"><em style="background:var(--panel-b)"></em>Refresher Training</span>'+
+          '<span><b>9</b> / 14 hrs</span></div>'+
+          '<div class="ptrack"><i style="width:64%;background:var(--panel-b)"></i></div></div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="pstats">'+
+      '<div class="pstat"><div class="k">Deadline</div><div class="v">12/15/2026</div></div>'+
+      '<div class="pstat"><div class="k">Time remaining</div><div class="v amber">22 wks</div></div>'+
+      '<div class="pstat"><div class="k">Completed</div><div class="v"><span class="amber">15</span> / 24 hrs</div></div>'+
+    '</div>'+
+    '<div class="pstatus"><div><div class="k">Status</div><span class="ppill '+cls+'">'+st+'</span></div>'+
+      '<div class="msg">'+msg+'</div></div>'+
+    '<div class="plfoot"><button type="button">View Requirements →</button></div>'+
+  '</div>';
+}
+
+function markFor(t){
+  if(t.st==='miss') return '<span class="mark miss" aria-hidden="true">!</span>';
+  if(t.st==='done') return '<span class="mark done" aria-hidden="true">✓</span>';
+  if(t.k==='fixed') return '<span class="mark clock" aria-hidden="true">◷</span>';
+  return '<span class="mark" aria-hidden="true"></span>';
+}
+
+/* One row renderer for every variant. opts.late paints the overdue treatment;
+   opts.due appends the date a missed thing was due, which is the difference
+   between "you missed something" and "you missed THIS, on Tuesday". */
+function trow(t,opts){
+  opts=opts||{};
+  var cls='trow'+(opts.late?' late':'')+(t.k==='fixed'&&!opts.late?' fixed':'')+(t.st==='done'?' done':'');
+  var meta=t.m+(opts.due&&t.due?' · due '+t.due:'');
+  return '<button type="button" class="'+cls+'">'+markFor(t)+
+    '<span class="t"><span class="n">'+t.n+'</span><span class="m">'+meta+'</span></span>'+
+    '<span class="mins">'+t.mins+'</span></button>';
+}
+
+function sumMins(list){
+  var n=0; for(var i=0;i<list.length;i++){
+    var m=/(\d+)\s*min/.exec(list[i].mins); if(m) n+=parseInt(m[1],10);
+    else n+=60; /* the livestream is an hour in the seat */
+  } return n;
+}
+
+/* ---------- V0 · baseline: Up next ---------- */
+function v0(){
+  return '<div class="rh"><span class="prov">jumpBackIn() · today</span>'+
+    '<div class="thumb">Course cover</div>'+
+    '<h3>Long-Term Care Initial Training</h3>'+
+    '<div class="tiny" style="margin:4px 0 9px">Course · Mandatory CE · 45% complete</div>'+
+    '<div class="track" style="margin-bottom:12px"><i style="width:45%"></i></div>'+
+    '<button class="btn wide">Resume course →</button>'+
+    '<div class="rfoot rule">'+
+      '<div class="grpk" style="margin-bottom:8px">Up next</div>'+
+      '<div class="tlist">'+
+        '<div class="trow" style="cursor:default"><span class="mark"></span>'+
+          '<span class="t"><span class="n">Prep Review Course</span><span class="m">Mandatory · 8 hrs</span></span></div>'+
+        '<div class="trow" style="cursor:default"><span class="mark"></span>'+
+          '<span class="t"><span class="n">Livestream Exam Review — Life &amp; H…</span><span class="m">Elective · 6 hrs</span></span></div>'+
+      '</div>'+
+    '</div></div>';
+}
+
+/* ---------- V A · Today in the panel ---------- */
+function vA(){
+  var d=D(), h='<div class="rh"><span class="prov">TodayList · in-panel</span>';
+  h+='<div class="rhead"><span class="eyebrow">Today · Wed 9 Sep</span>'+
+     '<button class="link">Whole plan ›</button></div>';
+  if(d.overdue.length){
+    h+='<div class="grpk late">Overdue <span class="ct">'+d.overdue.length+' · '+sumMins(d.overdue)+' min</span></div>'+
+       '<div class="tlist" style="margin-bottom:12px">';
+    for(var i=0;i<d.overdue.length;i++) h+=trow(d.overdue[i],{late:true,due:true});
+    h+='</div><div class="grpk">Today <span class="ct">'+d.today.length+'</span></div>';
+  }
+  h+='<div class="tlist">';
+  for(var j=0;j<d.today.length;j++) h+=trow(d.today[j],{});
+  h+='</div>';
+  h+='<div class="rfoot rule">'+sumMins(d.today)+' min planned today · '+
+     (d.overdue.length?'<b style="color:var(--error-700)">'+sumMins(d.overdue)+' min carried over</b>':'nothing carried over')+'</div>';
+  return h+'</div>';
+}
+
+/* ---------- V B · overdue as its own band ---------- */
+function vB(){
+  var d=D(), h='<div class="rh"><span class="prov">TodayList + OverdueBand</span>';
+  if(d.lag){
+    h+='<div class="oband'+(d.lag.hard?' hard':'')+'" style="margin-bottom:14px">'+
+       '<span class="ic">'+(d.lag.hard?'!':'⚡')+'</span><div class="bd">'+
+       '<div class="hl">'+d.lag.sessions+' session'+(d.lag.sessions===1?'':'s')+' gone — '+d.lag.mins+'.</div>'+
+       '<div class="sub">That is 12/15 down to <b>'+d.lag.pct+'%</b>, under the '+d.lag.mark+'% mark. '+
+       (d.lag.hard?'Catching up inside this week is no longer realistic.'
+                  :'Four short sessions buy it back without moving the date.')+'</div>'+
+       '<div class="acts"><button class="btn sm">Reshape my week</button>'+
+       '<button class="btn sm sec">Keep my plan</button>'+
+       (d.lag.hard?'<button class="lnk">Move my exam date</button>':'')+'</div>'+
+       '</div></div>';
+  }
+  h+='<div class="rhead"><span class="eyebrow">Today · Wed 9 Sep</span>'+
+     '<button class="link">Whole plan ›</button></div><div class="tlist">';
+  for(var j=0;j<D().today.length;j++) h+=trow(D().today[j],{});
+  h+='</div><div class="rfoot rule">'+sumMins(D().today)+' min planned today</div>';
+  return h+'</div>';
+}
+
+/* ---------- V C · the takeover ---------- */
+function vC(){
+  var d=D();
+  if(!d.lag||!d.lag.hard) return vA().replace('TodayList · in-panel','TodayList · below threshold → falls back to A');
+  return '<div class="rh"><span class="prov">RecoveryPanel · over threshold</span>'+
+    '<span class="pill p-err" style="align-self:flex-start;margin-bottom:10px">Plan off track</span>'+
+    '<h3 style="font-size:17px;line-height:1.3">'+d.lag.sessions+' sessions gone — '+d.lag.mins+'.</h3>'+
+    '<p class="tiny" style="margin:8px 0 0;font-size:12.5px">Your 12/15 finish is down to <b>'+d.lag.pct+'%</b> '+
+      'likely, under the '+d.lag.mark+'% mark. Today\'s three tasks will not close that on their own — '+
+      'the shape of the week has to change, or the date does.</p>'+
+    '<div style="display:flex;flex-direction:column;gap:8px;margin-top:14px">'+
+      '<button class="btn wide">Reshape my week</button>'+
+      '<button class="btn wide sec">Keep my plan and push on</button>'+
+      '<button class="lnk" style="align-self:center;margin-top:2px">Move my exam date</button>'+
+    '</div>'+
+    '<div class="rfoot rule"><button class="lnk" style="text-decoration:none;color:var(--primary-500);font-size:12px">'+
+      'Today: '+d.today.length+' tasks · '+sumMins(d.today)+' min ›</button></div>'+
+  '</div>';
+}
+
+/* ---------- V E · time-of-day ---------- */
+function vE(){
+  var d=D(), flex=[], fixed=[];
+  for(var i=0;i<d.today.length;i++){ (d.today[i].k==='fixed'?fixed:flex).push(d.today[i]); }
+  var h='<div class="rh"><span class="prov">TodayTimeline · anchored</span>'+
+    '<div class="rhead"><span class="eyebrow">Today · Wed 9 Sep</span>'+
+    '<button class="link">Whole plan ›</button></div>';
+  if(d.overdue.length){
+    h+='<div class="grpk late">Carried over <span class="ct">'+d.overdue.length+'</span></div><div class="tlist" style="margin-bottom:12px">';
+    for(var a=0;a<d.overdue.length;a++) h+=trow(d.overdue[a],{late:true,due:true});
+    h+='</div>';
+  }
+  h+='<div class="grpk">Any time today <span class="ct">'+sumMins(flex)+' min</span></div><div class="tlist">';
+  for(var b=0;b<flex.length;b++) h+=trow(flex[b],{});
+  h+='</div>';
+  if(fixed.length){
+    h+='<div class="grpk" style="margin-top:13px">Fixed time <span class="ct">starts 2:00 PM</span></div><div class="tlist">';
+    for(var c=0;c<fixed.length;c++) h+=trow(fixed[c],{});
+    h+='</div>';
+  }
+  h+='<div class="rfoot rule">The livestream is the only thing here with a clock. Everything above it moves.</div>';
+  return h+'</div>';
+}
+
+/* ---------- V D · the full-width strip ---------- */
+function vD(){
+  var d=D(), wk=planWeek(S.day);
+  var h='<div class="strip" style="position:relative"><span class="prov">TodayStrip · full width</span><div class="pad">'+
+    '<div class="rhead"><span class="eyebrow">Week 7 of 8 · Regulation &amp; Ethics</span>'+
+    '<button class="link">See the whole plan ›</button></div>'+
+    '<div class="tiny">'+
+      (wk.filter(function(x){return x.st==='done'}).length)+' done &nbsp;|&nbsp; '+
+      (wk.filter(function(x){return x.st==='miss'}).length)+' missed &nbsp;|&nbsp; 8 days to the exam</div>'+
+    '<div class="week">';
+  for(var i=0;i<wk.length;i++){
+    var w=wk[i], cls=w.st==='off'?'rest':w.st,
+        sym = w.st==='done'?'✓':w.st==='miss'?'✕':w.st==='today'?'▶':'',
+        cap = w.st==='off'?(w.n===12?'catch-up':'rest'):w.st==='miss'?'missed':sumMins(w.tasks)+' min';
+    h+='<div class="day '+cls+'"><div class="dn">'+w.dow+'</div><div class="dd">'+w.n+'</div>'+
+       '<div class="dot">'+sym+'</div><div class="dm">'+cap+'</div></div>';
+  }
+  h+='</div>';
+  if(d.lag){
+    h+='<div class="oband'+(d.lag.hard?' hard':'')+'" style="margin-top:14px">'+
+       '<span class="ic">'+(d.lag.hard?'!':'⚡')+'</span><div class="bd">'+
+       '<div class="hl">'+d.lag.sessions+' session'+(d.lag.sessions===1?'':'s')+' gone — '+d.lag.mins+'.</div>'+
+       '<div class="sub">That is 12/15 down to <b>'+d.lag.pct+'%</b>, under the '+d.lag.mark+'% mark. '+
+       (d.lag.hard?'Catching up inside this week is no longer realistic.'
+                  :'Four short sessions buy it back without moving the date.')+'</div>'+
+       '<div class="acts"><button class="btn sm">Reshape my week</button>'+
+       '<button class="btn sm sec">Keep my plan</button>'+
+       '<button class="lnk">Move my exam date</button></div></div></div>';
+  }
+  h+='<div class="grpk" style="margin-top:16px">Today · Wed 9 Sep <span class="ct">'+sumMins(d.today)+' min</span></div>'+
+     '<div class="tcols">';
+  for(var j=0;j<d.today.length;j++) h+=trow(d.today[j],{});
+  h+='</div></div></div>';
+  return h;
+}
+
+/* ============================================================
+   ROUND 2 — the calendar rebuilt in the study plan's own vocabulary,
+   tasks in a right-hand column.
+
+   Everything below reuses the plan's pieces rather than inventing near-
+   misses of them: calGrid()'s cell (day number, load bars, off-day
+   surface, brand-tinted exam day) and taskRow()'s row (mark, title, meta,
+   and a Done pill or a Start/Resume button on the right).
+   ============================================================ */
+
+function fmtDur(n){
+  if(n<60) return n+' min';
+  var h=Math.floor(n/60), m=n%60;
+  return h+' hr'+(m?' '+m:'');
+}
+
+/* Load bars — the plan grid's way of saying how heavy a day is without
+   spending a word on it. Done days get the 500 stops (earned), everything
+   else the 300s the plan grid itself uses. */
+function loadBars(d){
+  var done=d.st==='done';
+  var h='';
+  if(d.req)  h+='<span class="bar" style="width:'+d.req+'%;background:'+(done?'var(--primary-500)':'var(--primary-300)')+'"></span>';
+  if(d.elec) h+='<span class="bar" style="width:'+d.elec+'%;background:'+(done?'var(--slate-500)':'var(--slate-300)')+'"></span>';
+  if(!h&&!d.off) h+='<span class="bar" style="width:100%;background:var(--n-100)"></span>';
+  return h;
+}
+
+function planCell(d,opts){
+  opts=opts||{};
+  var cls='cell '+(d.exam?'exam':d.st==='off'?'off':d.st);
+  var mk = d.st==='done'?'<span class="mk done" aria-hidden="true">✓</span>'
+         : d.st==='miss'?'<span class="mk miss" aria-hidden="true">!</span>'
+         : d.st==='today'?'<span class="mk prog" aria-hidden="true"></span>':'';
+  var inner='<span class="top"><span class="dnum">'+d.n+'</span>'+mk+'</span>'+
+    (d.exam?'<span class="xm">Exam · PSI</span>':loadBars(d));
+  var lbl=d.dow+' '+d.n+' September'+(d.st==='miss'?', missed':d.st==='today'?', today':'');
+  if(opts.pick) return '<button type="button" class="'+cls+' pick" data-cell="'+d.key+'" '+
+    'aria-pressed="'+(opts.on?'true':'false')+'" aria-label="'+lbl+'">'+inner+'</button>';
+  return '<div class="'+cls+'" aria-label="'+lbl+'">'+inner+'</div>';
+}
+
+function calGridWrap(rows,opts){
+  var h='<div class="cgrid">';
+  var dows=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+  for(var i=0;i<7;i++) h+='<div class="cdow">'+dows[i]+'</div>';
+  for(var r=0;r<rows.length;r++)
+    for(var c=0;c<rows[r].length;c++)
+      h+=planCell(rows[r][c],{pick:opts&&opts.pick, on:opts&&opts.sel===rows[r][c].key});
+  return h+'</div>';
+}
+
+function wkLegend(extra){
+  return '<div class="wklegend">'+
+    '<span><em style="background:var(--primary-300)"></em>Required</span>'+
+    '<span><em style="background:var(--slate-300)"></em>Elective</span>'+
+    '<span><em style="background:var(--n-75);box-shadow:inset 0 0 0 1px var(--line)"></em>Rest / buffer</span>'+
+    (extra?'<span><em style="background:var(--brand-100);box-shadow:inset 0 0 0 1px var(--brand-300)"></em>Licensing exam</span>':'')+
+    '</div>';
+}
+
+/* The plan's task row. Same anatomy as taskRow() in the desktop prototype —
+   mark, title, meta, and a right-hand affordance that is a pill when there
+   is nothing to do and a button when there is. */
+function planRow(t,opts){
+  opts=opts||{};
+  var cls='prow'+(t.k==='exam'?' exam':'')+(opts.late?' late':'')+(t.st==='done'?' done':'');
+  var act;
+  if(t.k==='exam')          act='<span class="pill p-brand">Not a course task</span>';
+  else if(t.st==='done')    act='<span class="pill p-ok">Done</span>';
+  else if(opts.late)        act='<button class="btn sm sec">Catch up</button>';
+  else if(opts.quiet)       act='';
+  else                      act='<button class="btn sm'+(opts.primary?'':' sec')+'">'+(opts.primary?'Start':'Start')+'</button>';
+  return '<div class="'+cls+'">'+markFor(t)+
+    '<span class="t"><span class="n">'+t.n+'</span><span class="m">'+t.m+' · '+t.mins+'</span></span>'+
+    (act?'<span class="act">'+act+'</span>':'')+'</div>';
+}
+
+function comingUp(withExam){
+  var wk=planWeek(S.day), h='<div class="grpk" style="margin-top:16px">Coming up</div>';
+  h+=planRow(wk[3].tasks[0],{quiet:true});
+  if(withExam) h+=planRow({k:'exam',n:'Texas Life &amp; Health licensing exam',
+    m:'Licensing exam · PSI · Thu 17 Sep', mins:'in 8 days', st:'todo'},{});
+  return h;
+}
+
+/* Right column, D1 and D3: always today. */
+function todayCol(withExam){
+  var d=D(), h='';
+  h+='<div class="wkhead"><h3>Today · Wed 9 Sep</h3></div>'+
+     '<div class="tiny" style="margin:4px 0 12px">'+d.today.length+' tasks · about '+fmtDur(sumMins(d.today))+'</div>';
+  if(d.overdue.length){
+    h+='<div class="grpk late">Overdue <span class="ct">'+d.overdue.length+' · '+fmtDur(sumMins(d.overdue))+'</span></div>';
+    for(var i=0;i<d.overdue.length;i++) h+=planRow(d.overdue[i],{late:true});
+    h+='<div class="grpk" style="margin-top:16px">Today</div>';
+  }
+  for(var j=0;j<d.today.length;j++) h+=planRow(d.today[j],{primary:j===0});
+  h+=comingUp(withExam);
+  return h;
+}
+
+/* Right column, D2: follows the selected cell. */
+function selCol(){
+  var wk=planWeek(S.day).concat(planWeek2()), sel=S.sel||'d'+TODAY_N, day=wk[0];
+  for(var i=0;i<wk.length;i++) if(wk[i].key===sel) day=wk[i];
+  var d=D();
+  var isToday=day.n===TODAY_N;
+  var title=isToday?'Today · Wed 9 Sep':day.dow+' '+day.n+' September';
+  var tag = day.exam?'<span class="pill p-brand">Licensing exam</span>'
+          : day.st==='miss'?'<span class="pill p-warn">Missed</span>'
+          : day.st==='done'?'<span class="pill p-ok">Done</span>'
+          : day.st==='off'?'<span class="pill" style="color:var(--ink-3);background:var(--n-75);border-color:var(--line-2)">Buffer</span>'
+          : isToday?'':'<span class="pill" style="color:var(--info-700);background:var(--info-100);border-color:var(--info-700)">Planned</span>';
+  var h='<div class="wkhead"><h3>'+title+'</h3></div>'+
+    '<div style="margin:7px 0 12px;display:flex;gap:7px;align-items:center;flex-wrap:wrap">'+tag+
+    '<span class="tiny">'+(day.tasks.length?day.tasks.length+' task'+(day.tasks.length===1?'':'s')+' · '+fmtDur(sumMins(day.tasks)):'Nothing scheduled')+'</span></div>';
+
+  if(!day.tasks.length){
+    h+='<div style="border:1px dashed var(--line-2);border-radius:var(--radius-sm);padding:18px 14px;'+
+       'text-align:center;color:var(--ink-3);font-size:12px;background:var(--card)">'+
+       'A buffer day. The plan leaves it empty on purpose — it is what absorbs a missed session '+
+       'without moving your exam date.'+
+       (d.overdue.length?'<div style="margin-top:11px"><button class="btn sm sec">Move '+d.overdue.length+
+        ' overdue task'+(d.overdue.length===1?'':'s')+' here</button></div>':'')+'</div>';
+  } else {
+    for(var j=0;j<day.tasks.length;j++)
+      h+=planRow(day.tasks[j],{late:day.st==='miss', primary:isToday&&j===0});
+  }
+  if(day.st==='miss'){
+    h+='<div class="tiny" style="margin-top:11px">This day is behind you. Catching it up adds it to '+
+       '<b>today</b> rather than re-opening Tuesday.</div>';
+  }
+  if(isToday) h+=comingUp(false);
+  h+='<div class="rfoot rule" style="color:var(--ink-3)">Pick any day to see what sits on it.</div>';
+  return h;
+}
+
+function shortfall(inline){
+  var d=D(); if(!d.lag) return '';
+  return '<div class="oband'+(d.lag.hard?' hard':'')+'" style="margin-top:'+(inline?'14px':'0')+'">'+
+    '<span class="ic">'+(d.lag.hard?'!':'⚡')+'</span><div class="bd">'+
+    '<div class="hl">'+d.lag.sessions+' session'+(d.lag.sessions===1?'':'s')+' gone — '+d.lag.mins+'.</div>'+
+    '<div class="sub">That is 12/15 down to <b>'+d.lag.pct+'%</b>, under the '+d.lag.mark+'% mark. '+
+    (d.lag.hard?'Catching up inside this week is no longer realistic.'
+               :'Saturday is a buffer day — one session there buys it back without moving the date.')+'</div>'+
+    '<div class="acts"><button class="btn sm">Reshape my week</button>'+
+    '<button class="btn sm sec">Keep my plan</button>'+
+    (d.lag.hard?'<button class="lnk">Move my exam date</button>':'')+'</div></div></div>';
+}
+
+/* ---------- D1 · the plan's grid, read only ---------- */
+function d1(){
+  return '<div class="strip" style="position:relative"><span class="prov">calGrid() cell · one week</span>'+
+    '<div class="wk"><div class="lft">'+
+      '<div class="wkhead"><span class="eyebrow">Week 7 of 8 · Regulation &amp; Ethics</span>'+
+      '<button class="link">See the whole plan ›</button></div>'+
+      calGridWrap([planWeek(S.day)])+
+      wkLegend(false)+
+      shortfall(true)+
+    '</div><div class="rgt">'+todayCol(true)+'</div></div></div>';
+}
+
+/* ---------- D2 · the grid as a picker ---------- */
+function d2(){
+  return '<div class="strip" style="position:relative"><span class="prov">calGrid() cell · selectable</span>'+
+    '<div class="wk"><div class="lft">'+
+      '<div class="wkhead"><span class="eyebrow">Week 7 of 8 · Regulation &amp; Ethics</span>'+
+      '<button class="link">See the whole plan ›</button></div>'+
+      calGridWrap([planWeek(S.day)],{pick:true, sel:S.sel||'d'+TODAY_N})+
+      wkLegend(false)+
+      shortfall(true)+
+    '</div><div class="rgt">'+selCol()+'</div></div></div>';
+}
+
+/* ---------- D3 · two weeks, so the exam is in view ---------- */
+function d3(){
+  return '<div class="strip" style="position:relative"><span class="prov">calGrid() cell · fortnight</span>'+
+    '<div class="wk"><div class="lft">'+
+      '<div class="wkhead"><span class="eyebrow">7–20 September · the run-up</span>'+
+      '<button class="link">See the whole plan ›</button></div>'+
+      calGridWrap([planWeek(S.day),planWeek2()])+
+      wkLegend(true)+
+      shortfall(true)+
+    '</div><div class="rgt">'+todayCol(false)+'</div></div></div>';
+}
+
+/* ---------- page assembly ---------- */
+
+var VARIANTS=[
+  {id:'v0', num:'Baseline', base:true, t:'Up next — what ships today',
+   arg:'The panel as it stands: resume the course, then one line naming the chapter after this one. It has no '+
+       'concept of a day and therefore no concept of late — the state switcher does nothing to it, which is the point.',
+   note:'<b>What it gets right:</b> one job, one button, no arithmetic. <b>What it costs:</b> '+
+        '<span class="cost">"Up next" is answered by the Resume button already</span> — the learner is going to '+
+        'the next thing by pressing it. The list underneath is a table of contents, not a prompt to act, and it '+
+        'is the only part of the card that never changes when the learner falls behind.',
+   render:function(){ return '<div class="card"><div class="clp">'+clpLeft()+v0()+'</div></div>'; }},
+
+  {id:'vA', num:'Variant A', t:'Today, in the panel',
+   arg:'The smallest possible swap: same panel, same footprint, Up next becomes a short checklist of what is due '+
+       'today. Overdue is a property of a row — red mark, red border, the date it was due — plus a count above the group.',
+   note:'<b>The argument:</b> overdue is not a different kind of thing, it is today\'s task with yesterday\'s date, '+
+        'so it belongs in the same list. Cheapest to build and the only variant with no new layout. '+
+        '<b>What it costs:</b> <span class="cost">at three overdue the panel is a wall of red rows</span> and the '+
+        'thing you actually came to do is below the fold. The list also has no room for the consequence — it can '+
+        'say you missed Tuesday, but not what missing Tuesday did to your date.',
+   render:function(){ return '<div class="card"><div class="clp">'+clpLeft()+vA()+'</div></div>'; }},
+
+  {id:'vB', num:'Variant B', t:'Overdue gets its own band',
+   arg:'Two containers, because there are two questions. The band on top answers <i>what did falling behind cost me '+
+       'and what do I do about it</i>; the list below answers <i>what am I here to do</i>. The band is absent when '+
+       'nothing is late, and the list rises to fill the space.',
+   note:'<b>The argument:</b> a count of missed sessions is not actionable — the consequence is. The band is the '+
+        'only place in the card where <b>minutes lost</b> becomes <b>percentage points off your finish date</b>, '+
+        'which is the sentence that makes someone act. <b>What it costs:</b> '+
+        '<span class="cost">two competing calls to action in a 356px column</span> — Reshape my week sits directly '+
+        'above Start Chapter 8, and they want opposite things. It also needs the plan-confidence number to exist; '+
+        'the 71% / 75% figures here are invented, exactly like <code>RISK_RULE_INVENTED</code> in the admin tool.',
+   render:function(){ return '<div class="card"><div class="clp">'+clpLeft()+vB()+'</div></div>'; }},
+
+  {id:'vC', num:'Variant C', t:'Past a threshold, recovery takes the panel',
+   arg:'B\'s band, escalated: once the shortfall crosses a line, the panel stops being a task list and becomes a '+
+       'decision. Today collapses to a single link at the foot. Below the threshold it falls back to A — switch to '+
+       '<b>On plan</b> or <b>One overdue</b> above and it is A again.',
+   note:'<b>The argument:</b> at some point the honest answer is not "do today\'s work", it is "today\'s work no '+
+        'longer adds up — pick something". Giving the learner three real options (reshape, push on, move the date) '+
+        'is more respectful than a to-do list that quietly cannot succeed. <b>What it costs:</b> '+
+        '<span class="cost">a threshold nobody has set</span>, and it is the same threshold the admin tool\'s Risk '+
+        'column needs — if Compass owns readiness, this panel is either a second opinion on the same learner or '+
+        'Compass\'s number wearing our badge. It also hides the work behind a link on the day the learner is least '+
+        'likely to go looking for it.',
+   render:function(){ return '<div class="card"><div class="clp">'+clpLeft()+vC()+'</div></div>'; }},
+
+  {id:'vD', num:'Variant D', t:'Today leaves the card entirely',
+   arg:'The CLP card goes back to progress and Resume, and Today becomes its own full-width section beneath it — '+
+       'week context, the shortfall band, and the tasks laid out across the page instead of stacked in a column. '+
+       'This is the shape of the study-plan strip, brought onto the dashboard.',
+   note:'<b>The argument:</b> a 356px rail cannot carry a task list with times, states, durations and a recovery '+
+        'decision — every earlier variant is fighting that width. Given the full page, the week that produced the '+
+        'shortfall sits next to the shortfall itself, and a task row has room for its own metadata. '+
+        '<b>What it costs:</b> <span class="cost">two cards where there was one</span>, and the dashboard already '+
+        'has the exam card, the record band and the recommended shelf competing below the fold. It also splits '+
+        '"how am I doing" from "what do I do" across a card boundary — the two things a learner opens the dashboard for.',
+   render:function(){
+     return '<div class="card" style="margin-bottom:14px"><div class="clp">'+clpLeft()+v0RH()+'</div></div>'+vD(); }},
+
+  {id:'vE', num:'Variant E', t:'Grouped by when, not by what',
+   arg:'A\'s footprint, but the list is ordered by the clock: carried over, then anything you can do whenever, then '+
+       'the things with a fixed start time pinned at the bottom with the hour on them.',
+   note:'<b>The argument:</b> one of these tasks is not like the others. A livestream at 2:00 PM, a booking window '+
+        'closing Friday and an exam seat are <b>obligations</b>, not to-dos — you cannot do them at 9pm because you '+
+        'felt like it, and a flat list that sorts them alongside "Chapter 7 quiz · 10 min" flattens exactly the '+
+        'thing that makes them urgent. <b>What it costs:</b> <span class="cost">three group headers in a panel that '+
+        'often has three rows</span>, so on a light day the chrome outweighs the content. Grouping also implies '+
+        'the product knows a task\'s time — which is true for a livestream and invented for a study session.',
+   render:function(){ return '<div class="card"><div class="clp">'+clpLeft()+vE()+'</div></div>'; }},
+
+  /* ---- round two ---------------------------------------------------- */
+  {id:'d1', num:'D1', divider:'Round 2 — D, in the study plan\'s own language',
+   t:'The plan\'s grid, tasks on the right',
+   arg:'Round 1\'s strip invented a calendar. This one borrows the Study Calendar\'s, cell for cell: the day '+
+       'number, the two <b>load bars</b> (required in primary, elective in slate), the <code>--n-75</code> surface '+
+       'that means a rest or buffer day, and the brand-tinted exam cell. Tasks move to a right-hand column and '+
+       'become the plan\'s own rows — mark, title, meta, and a Start button.',
+   note:'<b>What changed and why.</b> The strip captioned every day ("20 min", "missed", "catch-up", "rest"); the '+
+        'plan grid captions none of them, because a bar shows load faster than a number reads. That is what lets '+
+        'this survive at 82px a cell. Off days stopped saying "rest" and became a surface. '+
+        '<b>The one thing genuinely added:</b> the plan grid has no completion state — its bars are scheduled load, '+
+        'not progress — so a <code>.mark</code> sits in each cell\'s top-right, and a done day\'s bars go to the 500 '+
+        'stops while a missed day keeps 300 bars in an amber cell. <b>The day failed, not the work.</b> '+
+        '<span class="cost">Cost: the grid is decoration here</span> — you cannot click it, so it competes for '+
+        'width with the only interactive thing on the card.',
+   render:function(){ return d1(); }},
+
+  {id:'d2', num:'D2', t:'The grid as a picker',
+   arg:'Same cells, now selectable — and the right-hand column follows the selection. Today is selected by '+
+       'default; click Tuesday to see the session you missed, or Saturday to find out what a buffer day is for. '+
+       '<b>Try the picker in each day state</b> — the same cell means different things.',
+   note:'<b>The argument:</b> a calendar\'s job is navigation. D1\'s grid is a picture of the week; this one is '+
+        'the way into it, which is the difference between a widget that reports and a widget that gets used. It '+
+        'also earns its width — the right column is doing seven jobs instead of one. Two details worth keeping: '+
+        'the buffer day is the <b>only</b> honest destination for a missed session, so selecting Saturday offers to '+
+        'move the overdue work there rather than nagging about it; and catching up a missed Tuesday adds it to '+
+        '<b>today</b> rather than re-opening Tuesday, because a plan that lets you edit the past cannot be trusted '+
+        'to project the future. <span class="cost">Cost: a selected state the dashboard has to remember</span>, and '+
+        'a right column whose heading changes under the learner — the reason today has to be the default and has to '+
+        'be visibly labelled <i>Today</i>, not just outlined.',
+   render:function(){ return d2(); }},
+
+  {id:'d3', num:'D3', t:'Two weeks, so the exam is on the calendar',
+   arg:'The same grid run to a fortnight. Nothing else changes — but Thursday 17 September comes into view, and '+
+       'with it the brand-tinted exam cell the plan grid already draws.',
+   note:'<b>The argument:</b> the plan is <i>built backwards from the exam date</i> — that is the sentence the '+
+        'Study Calendar leads with. A seven-day window can never show the thing everything is counted back from, '+
+        'so the week view is permanently arguing with its own premise. Fourteen cells is also where the load bars '+
+        'start to pay: the shape of the run-up (heavy, heavy, light, exam) is legible at a glance in a way seven '+
+        'captioned days never were. <span class="cost">Cost: double the height for a second week that is mostly '+
+        'plan</span>, and the exam cell is eight days of empty space away from the tasks beside it — the calendar '+
+        'gets more true and less urgent at the same time.',
+   render:function(){ return d3(); }}
+];
+
+/* D's card keeps the baseline right-hand panel minus Up next — the whole
+   point of that variant is that the panel gives the list up. */
+function v0RH(){
+  return '<div class="rh"><span class="prov">jumpBackIn() · resume only</span>'+
+    '<div class="thumb">Course cover</div>'+
+    '<h3>Long-Term Care Initial Training</h3>'+
+    '<div class="tiny" style="margin:4px 0 9px">Course · Mandatory CE · 45% complete</div>'+
+    '<div class="track" style="margin-bottom:12px"><i style="width:45%"></i></div>'+
+    '<button class="btn wide">Resume course →</button>'+
+    '<div class="rfoot">Today lives in its own section below.</div></div>';
+}
+
+function render(){
+  var d=D(), out='';
+  for(var i=0;i<VARIANTS.length;i++){
+    var v=VARIANTS[i];
+    if(v.divider) out+='<div class="rdiv"><span class="tx">'+v.divider+'</span><span class="ln"></span></div>';
+    out+='<section class="vsec" id="'+v.id+'">'+
+      '<div class="vhead"><div class="lbl"><span class="num'+(v.base?' base':'')+'">'+v.num+'</span>'+
+      '<h2>'+v.t+'</h2></div><p class="arg">'+v.arg+'</p></div>'+
+      v.render()+
+      '<div class="vnote">'+v.note+'</div></section>';
+  }
+  document.getElementById('body').innerHTML=out;
+  document.getElementById('dayNote').textContent=d.note;
+
+  var chips=document.querySelectorAll('#dDay .dchip');
+  for(var c=0;c<chips.length;c++) chips[c].setAttribute('aria-pressed', chips[c].dataset.day===S.day?'true':'false');
+}
+
+function buildChips(){
+  var host=document.getElementById('dDay'), h='';
+  for(var k in DAY) h+='<button class="dchip" data-day="'+k+'" aria-pressed="false">'+DAY[k].label+'</button>';
+  host.innerHTML=h;
+  host.addEventListener('click',function(e){
+    var b=e.target.closest('.dchip'); if(!b) return;
+    /* Clearing the selection on a state change is deliberate: the day the
+       learner had picked may not mean the same thing any more — Tuesday is
+       done in one state and missed in another. Falling back to today is the
+       only selection that is always true. */
+    S.day=b.dataset.day; S.sel=null; render();
+  });
+}
+
+/* Delegated once on the container, not re-bound per render — render()
+   replaces innerHTML, so per-cell listeners would leak on every state flip. */
+document.getElementById('body').addEventListener('click',function(e){
+  var c=e.target.closest('.cell.pick'); if(!c) return;
+  S.sel=c.dataset.cell; render();
+  var again=document.querySelector('#d2 .cell[data-cell="'+S.sel+'"]');
+  if(again) again.focus();
+});
+
+document.getElementById('foot').innerHTML=
+  '<p><b>Reading round 1.</b> The dark half of the card is identical in all six — every difference is in the '+
+  'right-hand panel, so anything that moves on the left would be noise. All six read one <code>DAY[state]</code> '+
+  'object, so no variant can show a task the others do not have.</p>'+
+  '<p><b>Reading round 2.</b> These drop the CLP card (it sits above them unchanged, resume-only, as in D) and '+
+  'show only the section. They share <code>planWeek(state)</code> — real dates, because a calendar that lies '+
+  'about its own weekdays cannot be reviewed. 1 Sep 2026 is a Tuesday, so today is <b>Wednesday 9 Sep</b> and the '+
+  'licensing exam falls on <b>Thursday 17 Sep</b>, eight days out. That is the fact D3 exists to expose.</p>'+
+  '<p><b>What round 2 borrowed, and the one thing it added.</b> Borrowed from <code>calGrid()</code>: the cell, '+
+  'the day number, the two load bars, the <code>--n-75</code> off-day surface and the <code>--brand-100</code> '+
+  'exam cell. Borrowed from <code>taskRow()</code>: the mark, the meta line, and the Done-pill-or-Start-button '+
+  'affordance. Added: a completion state, which the plan grid does not have — its bars are scheduled load, not '+
+  'progress. The rule is <b>done days go to the 500 stops, missed days keep 300 bars in an amber cell</b>, so the '+
+  'cell says the day failed without implying the work changed.</p>'+
+  '<p><b>What is invented here and would need an owner.</b> The plan-confidence figures (74% / 68% against a 75% '+
+  'mark) and the threshold that fires variant C. Both are the same unsettled question as '+
+  '<code>RISK_RULE_INVENTED</code> in the admin tool — a deterministic rule of ours sitting next to Compass\'s '+
+  'probabilistic readiness. Two opinions on one learner is worse than one.</p>'+
+  '<p><b>Not reproduced from the source mock:</b> the red Resume button. Brand red carries identity and the '+
+  'licensing exam only — see the note at the top of this file and the 2026-09-02 entry in <code>CLAUDE.md</code>. '+
+  'Every CTA here is <code>--primary-*</code> and follows the palette switcher.</p>'+
+  '<p>This page has no <code>PROTOTYPE_FEATURES</code> row, deliberately — it is a second door into the desktop '+
+  'platform prototype, reachable from its masthead, the same as the brief-vs-existing extract and the build plan.</p>';
+
+/* prototype-bar controls */
+document.getElementById('themeBtn').addEventListener('click',function(){
+  var on=document.documentElement.getAttribute('data-theme')==='dark';
+  document.documentElement.setAttribute('data-theme',on?'light':'dark');
+  this.setAttribute('aria-pressed',String(!on)); this.textContent=on?'Dark':'Light';
+});
+document.getElementById('provBtn').addEventListener('click',function(){
+  var on=document.body.getAttribute('data-prov')==='on';
+  document.body.setAttribute('data-prov',on?'off':'on');
+  this.setAttribute('aria-pressed',String(!on));
+});
+document.querySelector('.palsw').addEventListener('click',function(e){
+  var b=e.target.closest('.palbtn'); if(!b) return;
+  document.documentElement.setAttribute('data-palette',b.dataset.pal);
+  var all=this.querySelectorAll('.palbtn');
+  for(var i=0;i<all.length;i++) all[i].setAttribute('aria-checked',String(all[i]===b));
+});
+
+buildChips();
+render();
+</script>
+</body>
+</html>

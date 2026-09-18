@@ -1,0 +1,995 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-palette="navy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XCEL LMS — Study Pace &amp; Readiness widgets</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   XCEL tokens — copied from xcel-lms-desktop.html so this page reads as the
+   same product. THE RED IS NOT THE PRIMARY: --brand-* is identity plus the
+   one licensing-exam semantic; --primary-* is interactive and data.
+
+   ONE USE OF RED ON THIS PAGE: the state-exam tick on the pace timeline.
+   The coursework-due marker and the projected-finish marker are both
+   --primary-*, because they are our data. A learner reading the timeline
+   should be able to tell "the thing I control" from "the thing I booked"
+   by colour before they read a single label.
+   ============================================================ */
+:root{
+  --font-heading:'Lato',system-ui,-apple-system,sans-serif;
+  --font-body:'Open Sans',system-ui,-apple-system,sans-serif;
+
+  --brand-100:#f8dee0; --brand-300:#dc858b; --brand-500:#a81c24;
+  --brand-600:#8c171e; --brand-700:#6f1218; --brand-900:#2f080a;
+  --on-primary:#ffffff;
+
+  --ink:#1f1f23; --ink-2:#4d4d55; --ink-3:#6d6d76;
+
+  --n-50:#ffffff; --n-75:#f5f5f6; --n-100:#ececee; --n-200:#d9d9dd;
+  --n-300:#c7c7cc; --n-600:#818188; --n-700:#616168;
+
+  --success-100:#cce7d7; --success-500:#018937; --success-700:#005221;
+  --warning-100:#fdf0d4; --warning-300:#fbd27e; --warning-500:#f9b428; --warning-800:#63470f;
+  --error-100:#f4cccc; --error-500:#cb0000; --error-700:#790000;
+  --info-100:#d2f1f6; --info-700:#12717e;
+
+  --page:#f4f4f6; --card:#ffffff; --line:#e4e4e8; --line-2:#d4d4da;
+  --radius:10px; --radius-sm:7px;
+  --shadow:0 1px 2px rgba(0,0,0,.05), 0 4px 14px rgba(0,0,0,.05);
+}
+:root[data-palette="navy"]{
+  --primary-100:#dde5f2; --primary-200:#b4c6e0; --primary-300:#7d9cc6;
+  --primary-400:#4a72a3; --primary-500:#1f4e88; --primary-600:#163d6e;
+  --primary-700:#102d53; --primary-800:#0a1f3b; --primary-900:#061225;
+}
+:root[data-palette="graphite"]{
+  --primary-100:#e7e8ec; --primary-200:#ccd0d8; --primary-300:#98a0ae;
+  --primary-400:#6a7385; --primary-500:#3f4753; --primary-600:#333944;
+  --primary-700:#252a33; --primary-800:#1a1e25; --primary-900:#101318;
+}
+:root[data-palette="teal"]{
+  --primary-100:#d3e7e7; --primary-200:#9fd0d0; --primary-300:#63b0b2;
+  --primary-400:#2b8a8d; --primary-500:#0f6e72; --primary-600:#0b585b;
+  --primary-700:#084346; --primary-800:#052e30; --primary-900:#031b1c;
+}
+:root[data-theme="dark"]{
+  --ink:#f2f2f4; --ink-2:#b6b6be; --ink-3:#8d8d96;
+  --page:#141417; --card:#1d1d21; --line:#2e2e35; --line-2:#3d3d45;
+  --n-50:#1d1d21; --n-75:#232329; --n-100:#2a2a31; --n-200:#3a3a42; --n-300:#4a4a53;
+  --brand-100:#3a1416; --brand-300:#8c272e; --brand-500:#e8737a;
+  --brand-600:#f09aa0; --brand-700:#f6c2c6;
+  --success-100:#16261f; --success-500:#57b585; --success-700:#8fd4b0;
+  --warning-100:#2a2318; --warning-300:#4a3d22; --warning-500:#e0b155; --warning-800:#f0d49a;
+  --error-100:#2b1414; --error-500:#f08a8a; --error-700:#f6b8b8;
+  --info-100:#122428; --info-700:#7fd0dd;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+}
+:root[data-theme="dark"][data-palette="navy"]{
+  --primary-100:#15223a; --primary-200:#1d3050; --primary-300:#35598f;
+  --primary-400:#5b86bd; --primary-500:#8fb4e0; --primary-600:#b3cded;
+  --primary-700:#d3e2f5; --on-primary:#0a1f3b;
+}
+:root[data-theme="dark"][data-palette="graphite"]{
+  --primary-100:#22252b; --primary-200:#2f343d; --primary-300:#4d5563;
+  --primary-400:#7b8494; --primary-500:#aab2c0; --primary-600:#c6ccd6;
+  --primary-700:#dfe3ea; --on-primary:#101318;
+}
+:root[data-theme="dark"][data-palette="teal"]{
+  --primary-100:#0f2426; --primary-200:#143537; --primary-300:#1f6165;
+  --primary-400:#2f9498; --primary-500:#5fc0c4; --primary-600:#8ed6d9;
+  --primary-700:#bae8ea; --on-primary:#052e30;
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font:14px/1.55 var(--font-body);
+  -webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-family:var(--font-heading);font-weight:900;letter-spacing:-.015em}
+h1{font-size:26px;line-height:1.18}
+h2{font-size:19px;line-height:1.25}
+h3{font-size:15px;font-weight:700;letter-spacing:-.005em}
+p{margin:0 0 10px}
+button{font:inherit}
+.muted{color:var(--ink-2)}
+.tiny{font-size:11.5px;line-height:1.45;color:var(--ink-2)}
+.tiny b{color:var(--ink);font-weight:600}
+
+/* ---------- prototype bar (sibling convention: pbar / plink / tag / sp) --- */
+.pbar{background:#1a1a1d;color:rgba(255,255,255,.9);display:flex;align-items:center;gap:14px;
+  padding:0 18px;height:40px;font-size:12px;position:sticky;top:0;z-index:60;flex-wrap:wrap}
+.pbar .tag{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:rgba(255,255,255,.5)}
+.pbar .sp{margin-left:auto;display:flex;gap:8px;align-items:center}
+.pbtn{appearance:none;border:1px solid rgba(255,255,255,.2);background:transparent;
+  color:rgba(255,255,255,.85);font-size:11.5px;font-weight:600;padding:6px 10px;border-radius:6px;cursor:pointer}
+.pbtn:hover{background:rgba(255,255,255,.09)}
+.pbtn[aria-pressed="true"]{background:#fff;color:#1a1a1d;border-color:#fff}
+.pbtn:focus-visible{outline:2px solid var(--primary-300);outline-offset:2px}
+.plink{color:rgba(255,255,255,.72);font-size:12px;font-weight:600;text-decoration:none;
+  border-bottom:1px solid rgba(255,255,255,.25);padding-bottom:1px}
+.plink:hover{color:#fff;border-bottom-color:#fff}
+.palsw{display:flex;align-items:center;gap:4px;padding:3px;border-radius:8px;
+  background:rgba(255,255,255,.07);margin-right:4px}
+.pallb{font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:rgba(255,255,255,.5);padding:0 5px 0 4px}
+.palbtn{appearance:none;border:0;background:transparent;color:rgba(255,255,255,.72);
+  font:600 11.5px var(--font-body);padding:4px 8px;border-radius:6px;cursor:pointer;
+  display:flex;align-items:center;gap:5px}
+.palbtn i{width:9px;height:9px;border-radius:50%;display:block;box-shadow:0 0 0 1px rgba(255,255,255,.35)}
+.palbtn:hover{background:rgba(255,255,255,.1);color:#fff}
+.palbtn[aria-checked="true"]{background:#fff;color:#1a1a1d}
+.palbtn[aria-checked="true"] i{box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+.palbtn:focus-visible,.plink:focus-visible{outline:2px solid var(--primary-300);outline-offset:2px}
+
+/* ---------- demo controls ---------- */
+.demo{background:#26262b;border-bottom:2px solid var(--primary-300);
+  display:flex;align-items:center;gap:12px;padding:10px 18px;flex-wrap:wrap;
+  position:sticky;top:40px;z-index:59}
+.demo .lb{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:rgba(255,255,255,.56)}
+.grp{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.dchip{appearance:none;border:1px solid rgba(255,255,255,.13);background:transparent;
+  color:rgba(255,255,255,.82);font-size:11.5px;font-weight:600;padding:6px 11px;border-radius:14px;
+  cursor:pointer;white-space:nowrap}
+.dchip:hover{background:rgba(255,255,255,.08)}
+.dchip[aria-pressed="true"]{background:var(--primary-200);border-color:var(--primary-200);
+  color:var(--primary-700)}
+.dchip:focus-visible{outline:2px solid var(--primary-300);outline-offset:2px}
+.dnote{font-size:11.5px;color:rgba(255,255,255,.56);margin-left:auto}
+
+/* ---------- page furniture ---------- */
+.hero{background:var(--card);border-bottom:1px solid var(--line);padding:26px 40px 24px}
+.hero p{max-width:78ch;margin:9px 0 0;color:var(--ink-2);font-size:13.5px}
+.hero p b{color:var(--ink)}
+.body{padding:26px 40px 0;display:flex;flex-direction:column;gap:38px;max-width:1180px}
+.foot{padding:34px 40px 64px;font-size:12px;color:var(--ink-3);max-width:88ch}
+.foot b{color:var(--ink-2)}
+.sec{display:flex;flex-direction:column;gap:16px}
+.shead{display:flex;flex-direction:column;gap:6px}
+.shead .lbl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.num{font:900 11px var(--font-body);letter-spacing:.09em;text-transform:uppercase;
+  background:var(--primary-100);color:var(--primary-700);border:1px solid var(--primary-200);
+  border-radius:5px;padding:3px 8px}
+.arg{max-width:80ch;color:var(--ink-2);font-size:13.5px;margin:2px 0 0}
+.arg b{color:var(--ink)}
+.note{border-left:3px solid var(--line-2);padding:2px 0 2px 14px;max-width:84ch;
+  font-size:12.5px;line-height:1.6;color:var(--ink-2)}
+.note b{color:var(--ink)}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);position:relative}
+
+/* ---------- the widgets themselves (product UI, lo-fi) ---------- */
+.slice{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;max-width:640px}
+.slice.wide{max-width:980px;grid-template-columns:repeat(3,minmax(0,1fr))}
+.w{background:var(--n-75);border:1px solid var(--line);border-radius:var(--radius);
+  padding:16px 16px 14px;display:flex;flex-direction:column;gap:10px;min-height:250px;min-width:0}
+.w .eb{display:flex;align-items:center;gap:7px;font:700 10px var(--font-body);letter-spacing:.1em;
+  text-transform:uppercase;color:var(--ink-3)}
+.w .eb svg{width:13px;height:13px;stroke:currentColor;fill:none;stroke-width:1.6;flex:none}
+.w .eb .sub{font-weight:600;letter-spacing:.06em;color:var(--ink-3);text-transform:none;font-size:10.5px}
+.w .head{font:700 14px/1.35 var(--font-heading);letter-spacing:-.005em;color:var(--ink)}
+.w .body-t{font-size:12px;line-height:1.55;color:var(--ink-2);margin:0}
+.w .body-t b{color:var(--ink);font-weight:600}
+.w .foot-r{margin-top:auto;display:flex;align-items:center;gap:10px;padding-top:6px}
+.w .foot-r .det{margin-left:auto;font:600 12px var(--font-body);color:var(--primary-500);
+  text-decoration:none}
+.w .foot-r .det:hover{text-decoration:underline}
+.pill{display:inline-block;font:700 10px var(--font-body);letter-spacing:.07em;text-transform:uppercase;
+  border-radius:4px;padding:3px 7px;border:1px solid;align-self:flex-start}
+.pill.p1{background:var(--success-100);color:var(--success-700);border-color:var(--success-500)}
+.pill.p2{background:var(--warning-100);color:var(--warning-800);border-color:var(--warning-300)}
+.pill.p3{background:var(--error-100);color:var(--error-700);border-color:var(--error-500)}
+.pill.p0{background:var(--n-100);color:var(--ink-3);border-color:var(--line-2)}
+.btn{appearance:none;border:0;border-radius:var(--radius-sm);background:var(--primary-500);
+  color:var(--on-primary);font:700 12px var(--font-body);padding:7px 13px;cursor:pointer}
+.btn.ghost{background:transparent;color:var(--primary-500);border:1px solid var(--primary-300)}
+.btn:focus-visible{outline:2px solid var(--primary-400);outline-offset:2px}
+
+/* the pace timeline: today → exam, with coursework-due and projected-finish */
+.tl{position:relative;height:38px;margin:4px 2px 0}
+.tl .trk{position:absolute;left:0;right:0;top:11px;height:3px;background:var(--n-200);border-radius:2px}
+.tl .fill{position:absolute;left:0;top:11px;height:3px;background:var(--primary-500);border-radius:2px}
+.tl .mk{position:absolute;top:6px;width:13px;height:13px;border-radius:50%;transform:translateX(-50%);
+  background:var(--card);border:2px solid var(--primary-500)}
+.tl .mk.proj{background:var(--primary-500)}
+.tl .mk.due{border-style:dashed}
+.tl .mk.exam{border-radius:2px;width:4px;height:17px;top:4px;background:var(--brand-500);border:0}
+.tl .lab{position:absolute;top:24px;font-size:9.5px;line-height:1.2;letter-spacing:.03em;color:var(--ink-3);
+  transform:translateX(-50%);white-space:nowrap}
+.tl .lab.exam{color:var(--brand-500);font-weight:700}
+.tl .lab.proj{color:var(--primary-600);font-weight:700}
+.tl .lab.today{transform:none}
+.tl .lab.r{transform:translateX(-100%)}
+/* the readiness list */
+.rl{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.rl li{display:flex;align-items:flex-start;gap:8px;font-size:12.5px;line-height:1.4;color:var(--ink)}
+.rl li .g{flex:none;width:16px;height:16px;border-radius:50%;display:grid;place-items:center;
+  font:900 10px var(--font-body);margin-top:1px}
+.rl li .g.rv{background:var(--warning-100);color:var(--warning-800);border:1px solid var(--warning-300)}
+.rl li .g.ok{background:var(--success-100);color:var(--success-700)}
+.rl li .g.nc{background:var(--n-100);color:var(--ink-3);border:1px dashed var(--line-2)}
+.rl li .t{flex:1;min-width:0}
+.rl li .t small{display:block;font-size:10.5px;color:var(--ink-3);margin-top:1px}
+.rl li a{color:var(--primary-500);font:600 11.5px var(--font-body);text-decoration:none;white-space:nowrap}
+.rl li a:hover{text-decoration:underline}
+.rl li.held{color:var(--ink-2)}
+
+/* ---------- ladders ---------- */
+.ladder{display:flex;flex-direction:column;gap:14px;max-width:1000px}
+.lrow{display:grid;grid-template-columns:170px minmax(0,1fr) minmax(0,1fr);gap:0;border:1px solid var(--line);
+  border-radius:var(--radius);overflow:hidden;background:var(--card)}
+.lrow .lk{padding:15px 16px;border-right:1px solid var(--line);background:var(--n-75)}
+.lrow .lk .nm{font:700 13.5px var(--font-heading);letter-spacing:-.005em}
+.lrow .lk .rg{font-size:11px;color:var(--ink-3);margin-top:4px;line-height:1.45}
+.lrow .lk .rg code{font:600 10.5px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink-2)}
+.lrow .lw{padding:14px;border-right:1px solid var(--line);min-width:0}
+.lrow .lw .w{min-height:0}
+.lrow .lwhy{padding:15px 18px;font-size:12.5px;line-height:1.6;color:var(--ink-2);min-width:0}
+.lrow .lwhy b{color:var(--ink)}
+.lrow.quiet .lk{background:var(--card)}
+.lrow.warn .lk{background:var(--warning-100)}
+.lrow.hard .lk{background:var(--error-100)}
+.lrow.good .lk{background:var(--success-100)}
+
+/* ---------- side-by-side naming variants ---------- */
+.vars{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;max-width:1100px}
+/* option C — the scored gauge */
+.gauge{display:flex;flex-direction:column;align-items:center;margin:2px 0 0}
+.gauge svg{width:100%;max-width:190px;height:auto;display:block;overflow:visible}
+.gauge .gn{font:900 30px/1 var(--font-heading);letter-spacing:-.02em;fill:var(--ink)}
+.gauge .gp{font:600 10px var(--font-body);fill:var(--ink-3)}
+.gauge .arc-lo{stroke:var(--warning-300);fill:none;stroke-width:14;stroke-linecap:butt}
+.gauge .arc-hi{stroke:var(--success-500);fill:none;stroke-width:14;stroke-linecap:butt}
+.gauge .arc-mk{stroke:var(--ink);stroke-width:2}
+.gauge .dot{fill:var(--card);stroke:var(--success-700);stroke-width:2}
+.gauge .dot.lo{stroke:var(--warning-800)}
+.w .src{font-size:10.5px;line-height:1.45;color:var(--ink-3);margin:0}
+.var{display:flex;flex-direction:column;gap:10px}
+.var .vh{display:flex;align-items:baseline;gap:9px}
+.var .vh .vn{font:900 11px var(--font-body);letter-spacing:.09em;text-transform:uppercase;
+  color:var(--primary-700);background:var(--primary-100);border:1px solid var(--primary-200);
+  border-radius:5px;padding:2px 7px}
+.var .vh h3{font-size:14px}
+.var .vt{font-size:12px;line-height:1.6;color:var(--ink-2)}
+.var .vt b{color:var(--ink)}
+
+/* ---------- two objects ---------- */
+.objs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;max-width:900px}
+.obj{border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;background:var(--card)}
+.obj h3{margin-bottom:3px}
+.obj .who{font:700 10px var(--font-body);letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:10px;display:block}
+.obj ul{margin:0;padding-left:17px;font-size:12.5px;line-height:1.65;color:var(--ink-2)}
+.obj ul b{color:var(--ink)}
+.obj.pace{border-left:3px solid var(--primary-500)}
+.obj.ready{border-left:3px solid var(--success-500)}
+
+/* ---------- rules + holes ---------- */
+.rules{width:100%;border-collapse:collapse;max-width:900px;font-size:12.5px}
+.rules th{text-align:left;font:700 10px var(--font-body);letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-3);border-bottom:1px solid var(--line-2);padding:0 12px 7px 0}
+.rules td{padding:10px 12px 10px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink-2)}
+.rules td code{font:600 11.5px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink);
+  background:var(--n-75);border:1px solid var(--line);border-radius:4px;padding:2px 5px;white-space:nowrap}
+.rules td b{color:var(--ink)}
+.holes{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:14px;max-width:980px}
+.hole{border:1px dashed var(--line-2);border-radius:var(--radius);padding:15px 16px;
+  background:repeating-linear-gradient(135deg,transparent,transparent 7px,var(--n-75) 7px,var(--n-75) 14px)}
+.hole h3{margin-bottom:6px}
+.hole p{margin:0;font-size:12px;line-height:1.6;color:var(--ink-2)}
+
+@media (max-width:900px){
+  .slice,.slice.wide,.vars,.objs{grid-template-columns:minmax(0,1fr)}
+  .lrow{grid-template-columns:minmax(0,1fr)}
+  .lrow .lk,.lrow .lw{border-right:0;border-bottom:1px solid var(--line)}
+  .hero,.body,.foot{padding-left:20px;padding-right:20px}
+}
+</style>
+</head>
+<body>
+
+<div class="pbar">
+  <span class="tag">XCEL LMS</span>
+  <span>Study Pace &amp; Readiness</span>
+  <span style="opacity:.4">·</span>
+  <a class="plink" href="/prototypes/xcel-lms-desktop.html">Desktop platform</a>
+  <a class="plink" href="/prototypes/xcel-study-plan.html">Study plan &amp; goals</a>
+  <a class="plink" href="/prototypes/xcel-lms-walkthrough.html">Learner walk-through</a>
+  <a class="plink" href="/prototypes/xcel-clp-todays-tasks.html">Today's Tasks</a>
+  <a class="plink" href="/prototypes/xcel-lms-wireframes.html">Wireframes &amp; overlap</a>
+  <a class="plink" href="/prototypes/xcel-finserv-build-plan.html">Build plan</a>
+  <a class="plink" href="/prototypes/xcel-nav-collapse.html">Collapsible rail</a>
+  <span class="sp">
+    <span class="palsw" role="radiogroup" aria-label="Colour palette (prototype only)">
+      <span class="pallb">Palette</span>
+      <button class="palbtn" role="radio" data-pal="navy"     aria-checked="true"><i style="background:#1f4e88"></i>Navy</button>
+      <button class="palbtn" role="radio" data-pal="graphite" aria-checked="false"><i style="background:#3f4753"></i>Graphite</button>
+      <button class="palbtn" role="radio" data-pal="teal"     aria-checked="false"><i style="background:#0f6e72"></i>Teal</button>
+    </span>
+    <button class="pbtn" id="themeBtn" aria-pressed="false">Dark</button>
+  </span>
+</div>
+
+<div class="demo">
+  <span class="lb">Progress</span>
+  <span class="grp" id="dStage" role="group" aria-label="Where the learner is in the course"></span>
+  <span class="lb" style="margin-left:6px">Their pace</span>
+  <span class="grp" id="dRate" role="group" aria-label="Observed lessons per week"></span>
+  <span class="lb" style="margin-left:6px">Quizzes</span>
+  <span class="grp" id="dQuiz" role="group" aria-label="Chapter quiz results"></span>
+  <span class="lb" style="margin-left:6px">Practice exam</span>
+  <span class="grp" id="dPE" role="group" aria-label="Practice exam taken"></span>
+  <span class="dnote" id="axNote"></span>
+</div>
+
+<div class="hero">
+  <h1>Study Pace &amp; Readiness — two widgets, two different questions</h1>
+  <p>The dashboard's second row has two empty cards. They look alike and they are not: <b>Study Pace asks
+  <i>will you get through the coursework before your exam date</i></b>, and every word on it derives from
+  lessons finished per week against lessons left and days left. <b>Readiness asks <i>of what you have
+  covered, what has not held up</i></b>, and it derives from chapter quizzes and, later, the practice exam.
+  One is about time; the other is about knowledge. Neither shows a percentage.</p>
+  <p>Four demo axes above. <b>Progress</b> and <b>Their pace</b> drive Study Pace; <b>Quizzes</b> and
+  <b>Practice exam</b> drive Readiness. Every date, minute and topic on this page is recomputed from
+  them — nothing is authored — so the widgets can be judged in every state they can reach rather than
+  the one that photographs well.</p>
+</div>
+
+<div class="body">
+
+  <!-- ============================= 01 ============================= -->
+  <div class="sec">
+    <div class="shead">
+      <span class="lbl"><span class="num">01</span><h2>The two widgets, live</h2></span>
+      <p class="arg">At the size and proportion of the dashboard's second row. Flip the axes; both re-render.
+      Readiness is shown in its <b>chapter-title</b> naming here — section 03 puts the two naming options
+      side by side.</p>
+    </div>
+    <div class="slice" id="live"></div>
+    <div class="note" id="liveNote"></div>
+  </div>
+
+  <!-- ============================= 02 ============================= -->
+  <div class="sec">
+    <div class="shead">
+      <span class="lbl"><span class="num">02</span><h2>Study Pace — every state it can be in</h2></span>
+      <p class="arg">Each row is the same renderer fed a fixed situation, so the copy is derived, not typed.
+      The verdict comes from <b>one ratio</b>: lessons a week you actually do, over lessons a week the exam
+      date now requires. Minutes are only the translation of that ratio into an evening — never the
+      thing being measured. Time in the product is not on this widget at all; an open tab is not studying.</p>
+    </div>
+    <div class="ladder" id="paceLadder"></div>
+    <div class="note"><b>The tolerance band is deliberate.</b> Between <code>PACE_TOLERANCE_INVENTED</code> and
+    1.0 the learner is slightly behind and the widget says <b>On track</b> anyway — the coursework buffer
+    before the exam is what makes that honest. A widget that changes colour for one slow week teaches the
+    learner to stop reading it, and then has nothing left to say when it matters. Same rule as the study
+    plan's drift states.</div>
+    <div class="note"><b>Behind recommends more time and nothing else.</b> That was the call for this widget: one
+    suggestion, no fork. It quietly assumes the exam date is fixed — reasonable for a booked state exam, and
+    the study-plan page argues the opposite for a self-set target. The one state where the widget cannot
+    honour that is <b>Not enough time</b>: when even the ceiling pace does not land before the exam, the only
+    honest sentence mentions the date.</div>
+  </div>
+
+  <!-- ============================= 03 ============================= -->
+  <div class="sec">
+    <div class="shead">
+      <span class="lbl"><span class="num">03</span><h2>Readiness — two ways to name what needs another look</h2></span>
+      <p class="arg">Same data, same state, three treatments. <b>A</b> names the chapter the learner studied,
+      so every line has a Resume target. <b>B</b> names the domain the state exam is weighted by, so the list
+      is about the exam rather than the course. The difference is not cosmetic: a chapter can feed two
+      domains and a domain can span two chapters, and only one of these lists can be clicked straight back
+      into a lesson.</p>
+    </div>
+    <div class="vars">
+      <div class="var">
+        <div class="vh"><span class="vn">A</span><h3>Chapter titles</h3></div>
+        <div id="readA"></div>
+        <p class="vt"><b>For:</b> each line resumes a lesson. <b>Against:</b> the exam does not test chapters;
+        a learner who reviews "Life Policy Types" may still be soft on the domain it half-covers.</p>
+      </div>
+      <div class="var">
+        <div class="vh"><span class="vn">B</span><h3>State exam outline domains</h3></div>
+        <div id="readB"></div>
+        <p class="vt"><b>For:</b> speaks the exam's language, and the practice exam already reports this way.
+        <b>Against:</b> a domain flagged by one shaky chapter stays flagged until <i>every</i> chapter in it
+        holds — and the Review link has to pick one chapter to land on.</p>
+      </div>
+      <div class="var">
+        <div class="vh"><span class="vn">C</span><h3>A score, with the pass mark</h3></div>
+        <div id="readC"></div>
+        <p class="vt"><b>For:</b> one number is legible at a glance, and "70 to pass" gives it a meaning the
+        learner already understands from every exam they have sat. <b>Against:</b> it says <i>how much</i> but
+        not <i>what</i> — the topic list is the actionable half and this has none — and the reference it comes
+        from blends <i>completion</i> into the score, which makes a progress number wear a readiness badge.
+        Here the score is quiz and practice-exam results <b>only</b>; progress is Study Pace's job.</p>
+      </div>
+    </div>
+    <div class="note" id="readNote"></div>
+  </div>
+
+  <!-- ============================= 04 ============================= -->
+  <div class="sec">
+    <div class="shead">
+      <span class="lbl"><span class="num">04</span><h2>Readiness — the ladder, and when the word "ready" is allowed</h2></span>
+      <p class="arg">Before the practice exam there is <b>no verdict</b>: the widget lists topics or says there is
+      nothing to list, and never says <i>ready</i>. The practice exam is what earns the word, because it is
+      the only instrument that covers the whole outline — including lessons the learner has not reached.</p>
+    </div>
+    <div class="ladder" id="readLadder"></div>
+  </div>
+
+  <!-- ============================= 05 ============================= -->
+  <div class="sec">
+    <div class="shead">
+      <span class="lbl"><span class="num">05</span><h2>What each widget is not</h2></span>
+    </div>
+    <div class="objs">
+      <div class="obj pace">
+        <h3>Study Pace</h3>
+        <span class="who">Time · derived from lessons and dates</span>
+        <ul>
+          <li><b>Not time on task.</b> Minutes spent in lessons is noisy and unflattering; lessons completed is
+          what "on track" actually means. Minutes appear only as the translation of a pace.</li>
+          <li><b>Not a plan editor.</b> It reports against the plan; changing the date or the evenings lives on
+          the Study Plan page it links to.</li>
+          <li><b>Not a per-lesson estimate.</b> The "18 minutes" on Jump Back In is the lesson's length; this
+          widget's minutes are what the week needs.</li>
+        </ul>
+      </div>
+      <div class="obj ready">
+        <h3>Readiness</h3>
+        <span class="who">Knowledge · derived from quizzes and the practice exam</span>
+        <ul>
+          <li><b>Not Compass readiness.</b> Compass computes a probabilistic low / medium / high we do not own.
+          This is deterministic and ours: <i>what you have shown us</i>, not <i>what we predict</i>. If both
+          ship, they need different names or one of them goes.</li>
+          <li><b>Not a score.</b> The quiz percentages exist and set the threshold; they are never displayed.
+          A learner sees topics, not numbers.</li>
+          <li><b>Not a gate.</b> Nothing here blocks booking. It informs the decision the learner already has
+          the right to make.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================= 06 ============================= -->
+  <div class="sec">
+    <div class="shead">
+      <span class="lbl"><span class="num">06</span><h2>Invented rules, and the holes</h2></span>
+      <p class="arg">Every threshold is one named constant with an owner, rendered here from the same array the
+      logic reads. Replace them; do not re-derive them.</p>
+    </div>
+    <table class="rules" id="rules"><thead><tr><th>Constant</th><th>Value</th><th>What it does</th><th>Owner</th></tr></thead><tbody></tbody></table>
+    <div class="holes">
+      <div class="hole"><h3>The fixed-date assumption</h3><p>Behind recommends more time and never questions the
+      date. For a PSI-booked state exam that is right. For a learner whose "exam date" is still a self-set
+      target, the study-plan page says the honest move is to price both. Which date this widget is reading
+      needs deciding before the copy is final.</p></div>
+      <div class="hole"><h3>Two readiness opinions</h3><p>If Compass ships its readiness signal to this
+      dashboard, the second row has two cards answering "am I ready" with different methods. The admin
+      roster's Risk column has the same collision. Nobody has settled which wins.</p></div>
+      <div class="hole"><h3>What counts as shaky</h3><p><code>QUIZ_SHAKY_INVENTED</code> is a threshold on a score
+      we refuse to show. Which attempt counts — first, best, latest? A retaken quiz passed on the third try
+      is a different fact from one passed cold, and the widget currently cannot tell them apart.</p></div>
+      <div class="hole"><h3>Chapters that span domains</h3><p>Option B flags a domain if <i>any</i> covered chapter in
+      it is shaky. New York Regulation is fed by chapters 1 and 12; a strong chapter 12 does not clear a weak
+      chapter 1. That is probably right, but the Review link then has to choose a chapter to land on.</p></div>
+      <div class="hole"><h3>What the score is made of</h3><p>Option C averages fixture quiz scores and blends
+      the practice exam. The reference it answers folds <i>course completion</i> in too, and that is the trap:
+      a learner at 40% complete with perfect quizzes would score badly for a reason that has nothing to do
+      with knowledge. If a score ships, its ingredients have to be stated on the card, and completion should
+      not be one of them.</p></div>
+      <div class="hole"><h3>The trailing window</h3><p>Observed pace is lessons in the last
+      <code>PACE_WINDOW_DAYS_INVENTED</code> days. A learner who front-loaded and then paused reads as Paused
+      even if they are miles ahead. Whether "ahead overall, stalled lately" deserves its own sentence is open.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="foot">
+  <b>Nothing on this page is an authored figure.</b> Dates derive from days-left and lessons-left; minutes
+  derive from lessons-per-week and <code>MINS_PER_LESSON_INVENTED</code>; topic lists derive from the quiz
+  and practice-exam fixtures. Guarded by <code>smoke/smoke-pace-readiness.mjs</code>, which asserts the
+  relationships — behind is only said when the projection lands after the date, "ready" never appears before
+  the practice exam, no percentage sign appears inside either widget — rather than string matches.
+</div>
+
+<script>
+/* ============================================================
+   MODEL
+   ============================================================ */
+var EXAM = new Date(2026,11,15);           // 15 Dec 2026 — the booked state exam (fixed on this widget)
+var TOTAL = 42;                            // lessons in the course (matches the dashboard fixture)
+
+/* ---- invented rules — replace, don't re-derive. Rendered into §06 from THIS array. ---- */
+var RULES = [
+ {k:'COURSE_BUFFER_INVENTED',  v:5,   u:'days',        t:'Coursework must finish this many days BEFORE the exam to count as "in time" — finishing the night before is not finishing.', o:'FinServ product'},
+ {k:'PACE_WINDOW_INVENTED',    v:14,  u:'days',        t:'Trailing window the observed pace is measured over.', o:'FinServ product'},
+ {k:'PACE_MIN_LESSONS_INVENTED',v:3,  u:'lessons',     t:'Lessons complete before we quote an observed pace at all. Under it, the widget states the required pace only.', o:'FinServ product'},
+ {k:'PACE_TOLERANCE_INVENTED', v:0.85,u:'ratio',       t:'Observed ÷ required above which we still say On track. The band between this and 1.0 is "slightly behind", and the widget says nothing about it.', o:'Learning design'},
+ {k:'PACE_AHEAD_INVENTED',     v:1.3, u:'ratio',       t:'Observed ÷ required above which we say Ahead and quote the early finish.', o:'Learning design'},
+ {k:'MINS_PER_LESSON_INVENTED',v:35,  u:'min',         t:'Average lesson length, used ONLY to translate lessons-per-week into minutes-per-night. Never measured from the learner.', o:'Content'},
+ {k:'NIGHTS_PER_WEEK_INVENTED',v:4,   u:'nights',      t:'How many evenings a weekly ask is spread across when quoted as "a night".', o:'Learning design'},
+ {k:'CEILING_MINS_INVENTED',   v:210, u:'min/night',   t:'Over six nights, the pace beyond which we stop recommending more time and say the date cannot be reached.', o:'Learning design'},
+ {k:'QUIZ_SHAKY_INVENTED',     v:70,  u:'%',           t:'Chapter quiz score under which the chapter is listed for review. The score itself is never shown.', o:'Content / assessment'},
+ {k:'PRACTICE_UNLOCK_INVENTED',v:0.5, u:'of lessons',  t:'Share of lessons complete before the practice exam is offered — and therefore before the word "ready" can appear.', o:'FinServ product'},
+ {k:'PASS_MARK_INVENTED',      v:70,  u:'score',       t:'Option C only: the mark the gauge turns green at. Set to the state exam’s published pass mark, not a house number.', o:'Content / assessment'},
+ {k:'FIXTURE_SCORES_INVENTED', v:'86 · 56', u:'quiz',  t:'Option C only: a strong quiz scores 86 and a shaky one 56 in this demo, because the real per-chapter scores are not in the fixtures. The gauge averages them.', o:'Demo only'}
+];
+function R(k){ for(var i=0;i<RULES.length;i++) if(RULES[i].k===k) return RULES[i].v; throw new Error('no rule '+k); }
+
+/* ---- the course: 12 chapters, 42 lessons, each chapter mapped to a state-exam outline domain ---- */
+var CHAPTERS = [
+ {n:1, t:'New York Insurance Regulation',                 l:3, d:'Insurance Regulation'},
+ {n:2, t:'General Insurance Concepts',                    l:3, d:'General Insurance'},
+ {n:3, t:'Life Insurance Basics',                         l:4, d:'Life Insurance Basics'},
+ {n:4, t:'Life Policy Types',                             l:4, d:'Life Insurance Policies'},
+ {n:5, t:'Life Policy Provisions, Options and Riders',    l:5, d:'Policy Provisions, Options and Riders'},
+ {n:6, t:'Annuities',                                     l:3, d:'Annuities'},
+ {n:7, t:'Life Taxation & Retirement Plans',              l:3, d:'Federal Tax Considerations'},
+ {n:8, t:'Health Insurance Basics',                       l:4, d:'Health Insurance Basics'},
+ {n:9, t:'Medical Expense Insurance',                     l:4, d:'Medical Plans'},
+ {n:10,t:'Disability Income Insurance',                   l:3, d:'Disability Income'},
+ {n:11,t:'Group Health, Medicare & Long-Term Care',       l:3, d:'Group Health, Medicare & LTC'},
+ {n:12,t:'New York Health Insurance Law',                 l:3, d:'Insurance Regulation'}
+];
+(function(){ var s=0; CHAPTERS.forEach(function(c){ s+=c.l; }); if(s!==TOTAL) throw new Error('chapter lessons sum to '+s+', not '+TOTAL); })();
+
+/* ---- demo axes ---- */
+var STAGES=[
+ {id:'start', lb:'Just started',      done:2,  daysLeft:60},
+ {id:'mid',   lb:'Midway (the mock)', done:26, daysLeft:27},
+ {id:'late',  lb:'Late start',        done:20, daysLeft:8},
+ {id:'near',  lb:'Nearly done',       done:39, daysLeft:10},
+ {id:'done',  lb:'Coursework done',   done:42, daysLeft:6}
+];
+var RATES=[
+ {id:'brisk', lb:'Brisk',  pw:7},
+ {id:'steady',lb:'Steady', pw:5},
+ {id:'light', lb:'Light',  pw:3},
+ {id:'paused',lb:'Paused', pw:0}
+];
+/* chapter numbers whose quiz fell under QUIZ_SHAKY_INVENTED */
+var QUIZ=[
+ {id:'solid', lb:'All held up',   shaky:[]},
+ {id:'mixed', lb:'A couple soft', shaky:[4,5]},
+ {id:'rough', lb:'Several soft',  shaky:[1,2,4,5]}
+];
+/* practice exam: a whole-outline instrument, so it can flag chapters NOT yet covered (9 below) */
+var PE=[
+ {id:'no',  lb:'Not taken'},
+ {id:'yes', lb:'Taken'}
+];
+var PE_SHAKY={ solid:[], mixed:[5,9], rough:[1,2,4,5,12] };
+
+var S={stage:'mid', rate:'steady', quiz:'mixed', pe:'no'};
+function stage(){ return STAGES.filter(function(x){return x.id===S.stage;})[0]; }
+function rate(){  return RATES.filter(function(x){return x.id===S.rate;})[0]; }
+function quiz(){  return QUIZ.filter(function(x){return x.id===S.quiz;})[0]; }
+
+/* ---- helpers ---- */
+function addDays(d,n){ var x=new Date(d.getTime()); x.setDate(x.getDate()+n); return x; }
+function dayDiff(a,b){ return Math.round((b-a)/86400000); }
+function fmt(d){ return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
+function hm(m){ m=Math.round(m); var h=Math.floor(m/60),r=m%60;
+  if(!h) return r+' min'; if(!r) return h+(h===1?' hour':' hours');
+  return h+(r>=30?'½':'')+(h===1&&r<30?' hour':' hours'); }
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
+function pl(n,w){ return n+' '+w+(n===1?'':'s'); }
+
+/* ============================================================
+   STUDY PACE — the model. One ratio decides the state.
+   ============================================================ */
+function paceModel(done, daysLeft, pw){
+  var today=addDays(EXAM,-daysLeft);
+  var remaining=TOTAL-done;
+  var due=addDays(EXAM,-R('COURSE_BUFFER_INVENTED'));
+  var courseDays=dayDiff(today,due);
+  var mpl=R('MINS_PER_LESSON_INVENTED'), nights=R('NIGHTS_PER_WEEK_INVENTED');
+  var m={today:today, due:due, remaining:remaining, pw:pw, daysLeft:daysLeft};
+
+  if(remaining<=0){
+    m.state='complete'; m.pill=['p1','Complete'];
+    m.head='Coursework done, '+pl(daysLeft,'day')+' before your exam.';
+    m.body='There is nothing left for Study Pace to measure. Readiness is the card that matters now.';
+    m.proj=today; return m;
+  }
+  var reqPw = remaining/(Math.max(courseDays,1)/7);           // lessons a week the date now needs
+  var reqNight = reqPw*mpl/nights;                             // as minutes on each of NIGHTS evenings
+  var ceilingPw = R('CEILING_MINS_INVENTED')*6/mpl;            // the most we will ever recommend
+  m.reqPw=reqPw; m.reqNight=reqNight;
+  m.proj = pw>0 ? addDays(today, Math.ceil(remaining/pw*7)) : null;
+
+  if(courseDays<1 || reqPw>ceilingPw){
+    m.state='impossible'; m.pill=['p3','Not enough time'];
+    var landing=addDays(today, Math.ceil(remaining/ceilingPw*7));
+    m.head='Coursework won’t finish before your exam at any realistic pace.';
+    m.body='Even at '+hm(R('CEILING_MINS_INVENTED'))+' a night, six nights a week, you’d land around <b>'+fmt(landing)+'</b>. Talk to us about your exam date.';
+    m.proj=landing; m.cta=['Get help','ghost']; return m;
+  }
+  if(done<R('PACE_MIN_LESSONS_INVENTED')){
+    m.state='finding'; m.pill=['p0','Finding your pace'];
+    m.head='A few more lessons and we’ll know how you’re going.';
+    m.body='To finish by <b>'+fmt(due)+'</b>, aim for about '+pl(Math.ceil(reqPw),'lesson')+' a week — around <b>'+hm(reqNight)+' a night</b>, '+nights+' nights.';
+    m.proj=null; return m;
+  }
+  if(pw===0){
+    m.state='paused'; m.pill=['p2','Paused'];
+    m.head='No lessons in the last two weeks.';
+    m.body='To finish by <b>'+fmt(due)+'</b> you’d now need about <b>'+hm(reqNight)+' a night</b>, '+nights+' nights a week. Picking up where you left off is the whole ask.';
+    m.cta=['Resume','solid']; return m;
+  }
+  var ratio=pw/reqPw; m.ratio=ratio;
+  if(ratio>=R('PACE_AHEAD_INVENTED')){
+    m.state='ahead'; m.pill=['p1','Ahead'];
+    m.head='You’re ahead of where you need to be.';
+    m.body='At this pace you’d finish coursework around <b>'+fmt(m.proj)+'</b>, '+pl(dayDiff(m.proj,EXAM),'day')+' before your exam. Keep going, or ease off a little — both work.';
+    return m;
+  }
+  if(ratio>=R('PACE_TOLERANCE_INVENTED')){
+    m.state='ontrack'; m.slightly=ratio<1; m.pill=['p1','On track'];
+    m.head='You’re on pace to finish before your exam.';
+    m.body='About <b>'+hm(pw*mpl/nights)+' a night</b>, '+nights+' nights a week, keeps it that way.';
+    return m;
+  }
+  m.state='behind'; m.pill=['p2','Behind'];
+  var extra=(reqPw-pw)*mpl/nights;
+  m.head = m.proj>EXAM ? 'At this pace you’d finish after your exam date.'
+                       : 'At this pace you’d finish right up against your exam, with no time to review.';
+  m.body='Adding about <b>'+hm(extra)+' a night</b>, '+nights+' nights a week, gets you back to finishing by <b>'+fmt(due)+'</b>.';
+  m.cta=['Adjust my plan','ghost'];
+  return m;
+}
+
+function timeline(m){
+  var start=m.today, end=EXAM;
+  if(m.proj && m.proj>end) end=m.proj;
+  var span=Math.max(dayDiff(start,end),1);
+  var pct=function(d){ return Math.min(100,Math.max(0,dayDiff(start,d)/span*100)); };
+  var pDue=pct(m.due), pEx=pct(EXAM);
+  var h='<div class="tl" role="img" aria-label="'+esc(tlLabel(m))+'">'+
+    '<div class="trk"></div>';
+  if(m.proj) h+='<div class="fill" style="width:'+pct(m.proj)+'%"></div>';
+  h+='<div class="mk due" style="left:'+pDue+'%" title="Coursework due"></div>'+
+     '<div class="mk exam" style="left:'+pEx+'%" title="State exam"></div>';
+  if(m.proj && m.state!=='complete') h+='<div class="mk proj" style="left:'+pct(m.proj)+'%"></div>';
+  h+='<div class="lab today">Today</div>';
+  if(m.proj && m.state!=='complete' && Math.abs(pct(m.proj)-pEx)>14 && pct(m.proj)>18)
+    h+='<div class="lab proj" style="left:'+pct(m.proj)+'%">You’d finish</div>';
+  h+='<div class="lab exam'+(pEx>86?' r':'')+'" style="left:'+pEx+'%">Exam · '+fmt(EXAM)+'</div>';
+  return h+'</div>';
+}
+function tlLabel(m){
+  var s='Today to your exam on '+fmt(EXAM)+'. Coursework due '+fmt(m.due)+'.';
+  if(m.proj && m.state!=='complete') s+=' At your pace you would finish '+fmt(m.proj)+'.';
+  return s;
+}
+
+function paceWidget(m){
+  var ico='<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.3"/><path d="M8 4.5V8l2.4 1.6"/></svg>';
+  var h='<div class="w" data-widget="pace" data-state="'+m.state+'">'+
+    '<div class="eb">'+ico+'Study pace</div>'+
+    '<span class="pill '+m.pill[0]+'">'+m.pill[1]+'</span>'+
+    '<div class="head">'+m.head+'</div>'+
+    '<p class="body-t">'+m.body+'</p>'+
+    (m.state==='finding'||m.state==='complete' ? '' : timeline(m))+
+    '<div class="foot-r">'+
+      (m.cta ? '<button class="btn'+(m.cta[1]==='ghost'?' ghost':'')+'">'+m.cta[0]+'</button>' : '')+
+      '<a class="det" href="/prototypes/xcel-study-plan.html">Details →</a></div>'+
+  '</div>';
+  return h;
+}
+
+/* ============================================================
+   READINESS — the model. Lists topics; the practice exam earns the verdict.
+   ============================================================ */
+function coveredChapters(done){
+  var out=[], acc=0;
+  CHAPTERS.forEach(function(c){ acc+=c.l; if(acc<=done) out.push(c.n); });
+  return out;
+}
+function readModel(done, quizShaky, peTaken, naming){
+  var covered=coveredChapters(done);
+  var peOpen = done/TOTAL >= R('PRACTICE_UNLOCK_INVENTED');
+  var pe = peTaken && peOpen;
+  var m={covered:covered, peOpen:peOpen, pe:pe, naming:naming, items:[]};
+
+  /* which chapters are soft: quiz results for covered chapters, or the practice exam's whole-outline read */
+  var soft = pe ? PE_SHAKY[quizShaky.id] : quizShaky.shaky.filter(function(n){ return covered.indexOf(n)>=0; });
+  m.softChapters=soft;
+
+  if(covered.length===0 && !pe){
+    m.state='none'; m.sub='what you’ve covered';
+    m.head='Nothing to review yet.';
+    m.body='Finish a chapter and its quiz starts building this. You’ll see topics here, never scores.';
+    return m;
+  }
+  /* build the list in the chosen vocabulary */
+  var byChapter=function(n){ return CHAPTERS.filter(function(c){return c.n===n;})[0]; };
+  if(naming==='chapter'){
+    soft.forEach(function(n){ var c=byChapter(n);
+      m.items.push({t:c.t, nc:covered.indexOf(n)<0, ch:c.n}); });
+  } else {
+    var seen={};
+    soft.forEach(function(n){ var c=byChapter(n); if(seen[c.d]) return; seen[c.d]=true;
+      var chs=CHAPTERS.filter(function(x){return x.d===c.d;}).map(function(x){return x.n;});
+      var anyCovered=chs.some(function(x){return covered.indexOf(x)>=0;});
+      m.items.push({t:c.d, nc:!anyCovered, ch:c.n, multi:chs.length>1}); });
+  }
+  var remaining=TOTAL-done;
+
+  if(!pe){
+    m.sub='what you’ve covered';
+    if(soft.length===0){
+      m.state='clear';
+      m.head='Nothing to review so far.';
+      m.body= remaining>0
+        ? 'Everything you’ve covered has held up. '+(peOpen?'The practice exam is open whenever you want a fuller read.':'Lessons still ahead aren’t counted yet.')
+        : 'Everything held up. Take the practice exam to see whether you’re ready.';
+      if(remaining===0) m.cta=['Take the practice exam','solid'];
+    } else {
+      m.state='review';
+      m.head='Worth another look before the exam.';
+      m.body= remaining>0 ? 'Everything else you’ve covered has held up.' : 'Everything else held up. The practice exam will give a fuller read.';
+      if(remaining===0) m.cta=['Take the practice exam','ghost'];
+    }
+    return m;
+  }
+  /* practice exam taken — the verdict is allowed */
+  m.sub='practice exam';
+  if(soft.length===0 && remaining===0){
+    m.state='ready'; m.pill=['p1','Ready'];
+    m.head='You’re ready.';
+    m.body='Every area held up on the practice exam. Book when you’re ready — nothing here is a gate.';
+    m.cta=['Schedule my state exam','solid'];
+  } else if(soft.length===0){
+    m.state='ready-partial';
+    m.head='Everything held up — including on the practice exam.';
+    m.body='Finish the remaining lessons and you’re there.';
+  } else {
+    m.state='almost'; m.pill=['p2','Review first'];
+    m.head='Almost. Review these before you book.';
+    m.body='Everything else held up on the practice exam.';
+  }
+  return m;
+}
+
+function readWidget(m){
+  var ico='<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.3"/><circle cx="8" cy="8" r="2.4"/></svg>';
+  var h='<div class="w" data-widget="readiness" data-state="'+m.state+'" data-naming="'+m.naming+'">'+
+    '<div class="eb">'+ico+'Readiness <span class="sub">· '+m.sub+'</span></div>'+
+    (m.pill ? '<span class="pill '+m.pill[0]+'">'+m.pill[1]+'</span>' : '')+
+    '<div class="head">'+m.head+'</div>';
+  if(m.items.length){
+    h+='<ul class="rl">';
+    m.items.forEach(function(it){
+      h+='<li><span class="g '+(it.nc?'nc':'rv')+'" aria-hidden="true">'+(it.nc?'·':'↑')+'</span>'+
+         '<span class="t">'+esc(it.t)+(it.nc?'<small>Not covered yet</small>':(it.multi?'<small>Two chapters feed this</small>':''))+'</span>'+
+         '<a href="#ch'+it.ch+'">'+(it.nc?'Preview':'Review')+' →</a></li>';
+    });
+    h+='</ul>';
+  }
+  h+='<p class="body-t">'+m.body+'</p>'+
+    '<div class="foot-r">'+
+      (m.cta ? '<button class="btn'+(m.cta[1]==='ghost'?' ghost':'')+'">'+m.cta[0]+'</button>' : '')+
+      '<a class="det" href="#readiness">Details →</a></div>'+
+  '</div>';
+  return h;
+}
+
+/* ============================================================
+   OPTION C — the scored gauge. Same inputs as A and B; the number is an
+   average of per-chapter quiz scores (fixture values, see RULES) blended
+   with the practice exam when taken. Completion is deliberately NOT in it.
+   ============================================================ */
+function scoreModel(done, quizShaky, peTaken){
+  var covered=coveredChapters(done);
+  var pe = peTaken && done/TOTAL >= R('PRACTICE_UNLOCK_INVENTED');
+  var m={covered:covered, pe:pe, pass:R('PASS_MARK_INVENTED')};
+  if(covered.length===0 && !pe){ m.state='none'; return m; }
+  var sum=0;
+  covered.forEach(function(n){ sum += quizShaky.shaky.indexOf(n)>=0 ? 56 : 86; });
+  var quizAvg = covered.length ? sum/covered.length : null;
+  var peScore = pe ? 90 - 6*PE_SHAKY[quizShaky.id].length : null;
+  var score = quizAvg===null ? peScore : (peScore===null ? quizAvg : (quizAvg+peScore)/2);
+  m.score=Math.round(score);
+  m.above = m.score>=m.pass;
+  m.state = m.above ? 'above' : 'below';
+  m.src = pe ? 'Chapter quizzes and your practice exam.' : 'Chapter quizzes only — the practice exam will sharpen this.';
+  return m;
+}
+function gauge(m){
+  /* half-ring, 0–100 left to right; amber below the pass mark, green at and above it */
+  var cx=95, cy=92, r=72, W=190, H=104;
+  var pt=function(v){ var a=Math.PI*(1-v/100); return [cx+r*Math.cos(a), cy-r*Math.sin(a)]; };
+  var arc=function(a,b){ var p=pt(a), q=pt(b); return 'M'+p[0].toFixed(1)+' '+p[1].toFixed(1)+' A'+r+' '+r+' 0 0 1 '+q[0].toFixed(1)+' '+q[1].toFixed(1); };
+  var pm=pt(m.pass), pIn=[cx+(r-11)*Math.cos(Math.PI*(1-m.pass/100)), cy-(r-11)*Math.sin(Math.PI*(1-m.pass/100))],
+      pOut=[cx+(r+11)*Math.cos(Math.PI*(1-m.pass/100)), cy-(r+11)*Math.sin(Math.PI*(1-m.pass/100))];
+  var sd=pt(m.score);
+  return '<div class="gauge"><svg viewBox="0 0 '+W+' '+H+'" role="img" aria-label="Readiness score '+m.score+' of 100, pass mark '+m.pass+'">'+
+    '<path class="arc-lo" d="'+arc(0,m.pass)+'"/>'+
+    '<path class="arc-hi" d="'+arc(m.pass,100)+'"/>'+
+    '<line class="arc-mk" x1="'+pIn[0].toFixed(1)+'" y1="'+pIn[1].toFixed(1)+'" x2="'+pOut[0].toFixed(1)+'" y2="'+pOut[1].toFixed(1)+'"/>'+
+    '<circle class="dot'+(m.above?'':' lo')+'" cx="'+sd[0].toFixed(1)+'" cy="'+sd[1].toFixed(1)+'" r="5"/>'+
+    '<text class="gn" x="'+cx+'" y="'+(cy-14)+'" text-anchor="middle">'+m.score+'</text>'+
+    '<text class="gp" x="'+cx+'" y="'+(cy+2)+'" text-anchor="middle">'+m.pass+' to pass</text>'+
+  '</svg></div>';
+}
+function scoreWidget(m){
+  var ico='<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.3"/><circle cx="8" cy="8" r="2.4"/></svg>';
+  var h='<div class="w" data-widget="readiness" data-state="'+m.state+'" data-naming="score">'+
+    '<div class="eb">'+ico+'Readiness score</div>';
+  if(m.state==='none'){
+    h+='<div class="head">No score yet.</div><p class="body-t">Your first chapter quiz starts this. The gauge shows where you stand against the pass mark, never a prediction of passing.</p>';
+  } else {
+    h+='<span class="pill '+(m.above?'p1':'p2')+'">'+(m.above?'Above the pass mark':'Below the pass mark')+'</span>'+
+       gauge(m)+
+       '<p class="body-t">'+(m.above ? 'Your quiz results are clearing the bar the exam sets.' : 'Your quiz results are under the bar the exam sets — the topic list says where.')+'</p>'+
+       '<p class="src">'+m.src+' A score, not a prediction.</p>';
+  }
+  h+='<div class="foot-r"><a class="det" href="#readiness">Details →</a></div></div>';
+  return h;
+}
+
+/* ============================================================
+   CHROME
+   ============================================================ */
+function chips(host,list,cur,cb){
+  host.innerHTML='';
+  list.forEach(function(o){
+    var b=document.createElement('button');
+    b.className='dchip'; b.type='button'; b.textContent=o.lb;
+    b.setAttribute('aria-pressed', o.id===cur?'true':'false');
+    b.onclick=function(){ cb(o.id); };
+    host.appendChild(b);
+  });
+}
+Array.prototype.forEach.call(document.querySelectorAll('.palbtn'),function(b){
+  b.onclick=function(){
+    Array.prototype.forEach.call(document.querySelectorAll('.palbtn'),function(x){ x.setAttribute('aria-checked','false'); });
+    b.setAttribute('aria-checked','true');
+    document.documentElement.setAttribute('data-palette',b.getAttribute('data-pal'));
+  };
+});
+var tb=document.getElementById('themeBtn');
+tb.onclick=function(){
+  var dark=document.documentElement.getAttribute('data-theme')==='dark';
+  document.documentElement.setAttribute('data-theme',dark?'light':'dark');
+  tb.setAttribute('aria-pressed',dark?'false':'true');
+  tb.textContent=dark?'Dark':'Light';
+};
+
+/* ============================================================
+   RENDER
+   ============================================================ */
+var PACE_NOTES={
+ finding:'<b>Under three lessons we do not quote a pace</b> — two data points extrapolated to a month is a number nobody should be told. The widget states what the date requires instead, which is the same sentence the study plan’s first offer is built from.',
+ ahead:'<b>Ahead quotes the early finish and offers nothing.</b> There is no upsell into a nearer exam date here; that belongs to the study plan, where both options get priced.',
+ ontrack:'<b>On track is the state that has to earn silence.</b> The timeline still moves — the filled dot is where this pace lands — but the sentence only says what keeps it true.',
+ behind:'<b>Behind recommends more time, once, and names the day it gets you back to.</b> It does not raise its voice, and it does not offer to move the date — see the note under section 02 for what that assumes.',
+ paused:'<b>Paused is Behind with a different first sentence.</b> The ask is the same — minutes a night — but the lead names the fact that caused it, because "you’re behind" is a verdict and "no lessons in two weeks" is something they can act on tonight.',
+ impossible:'<b>This is the one state where the date has to be mentioned.</b> The recommendation has a ceiling; past it, more minutes is not an honest answer. The button goes to a person, not a form.',
+ complete:'<b>Complete hands over.</b> The widget names how early they finished and points at Readiness, which is now the only question left.'
+};
+function stateNote(m){
+  var s=PACE_NOTES[m.state]||'';
+  if(m.state==='ontrack'&&m.slightly) s+=' <b>Right now the learner is actually slightly behind</b> — the ratio is under 1.0 but inside the tolerance band — and the widget deliberately says nothing about it.';
+  return s;
+}
+
+function render(){
+  var st=stage(), r=rate(), qz=quiz(), peT=S.pe==='yes';
+  var pm=paceModel(st.done, st.daysLeft, r.pw);
+  var rmA=readModel(st.done, qz, peT, 'chapter');
+  var rmB=readModel(st.done, qz, peT, 'domain');
+
+  document.getElementById('live').innerHTML=paceWidget(pm)+readWidget(rmA);
+  document.getElementById('liveNote').innerHTML=stateNote(pm);
+  document.getElementById('readA').innerHTML=readWidget(rmA);
+  document.getElementById('readB').innerHTML=readWidget(rmB);
+  document.getElementById('readC').innerHTML=scoreWidget(scoreModel(st.done, qz, peT));
+
+  var rn='';
+  if(peT && !rmA.peOpen) rn='<b>The practice exam is not open yet at this progress</b> — it unlocks at half the lessons — so the "Taken" chip is being ignored and both widgets read from chapter quizzes only. That is the rule, not a demo limitation.';
+  else if(rmA.pe) rn='<b>Practice-exam mode.</b> The list now comes from a whole-outline instrument, so it can name a topic the learner has not reached yet (marked <i>Not covered yet</i>) — that is a preview, not a review, and the link says so.';
+  else if(rmA.state==='review') rn='<b>Quiz mode.</b> Only covered chapters can appear. Option B collapses chapters that share a domain — Insurance Regulation is fed by chapters 1 and 12 — so its list can be shorter than A’s'+(rmB.items.length<rmA.items.length?' (it is here: '+rmB.items.length+' to '+rmA.items.length+')':'')+', and a shared domain says so under its name.';
+  else rn='<b>Nothing to list.</b> Note the widget does not say "ready" — it says nothing has failed so far, which is a smaller and truer claim before the practice exam.';
+  document.getElementById('readNote').innerHTML=rn;
+
+  var note='Today is '+fmt(pm.today)+' · '+pl(pm.remaining,'lesson')+' left · '+pl(st.daysLeft,'day')+' to the exam';
+  if(pm.reqPw) note+=' · needs '+pm.reqPw.toFixed(1)+'/wk, doing '+r.pw+'/wk';
+  document.getElementById('axNote').textContent=note;
+
+  chips(document.getElementById('dStage'),STAGES,S.stage,function(id){ S.stage=id; render(); });
+  chips(document.getElementById('dRate'),RATES,S.rate,function(id){ S.rate=id; render(); });
+  chips(document.getElementById('dQuiz'),QUIZ,S.quiz,function(id){ S.quiz=id; render(); });
+  chips(document.getElementById('dPE'),PE,S.pe,function(id){ S.pe=id; render(); });
+}
+
+/* ---- the ladders: fixed situations through the same renderers ---- */
+var PACE_LADDER=[
+ {nm:'Finding your pace', cls:'quiet', done:2, days:60, pw:5,
+  rg:'done &lt; <code>PACE_MIN_LESSONS</code>'},
+ {nm:'Ahead',             cls:'good',  done:26,days:27, pw:7,
+  rg:'ratio ≥ <code>PACE_AHEAD</code>'},
+ {nm:'On track',          cls:'good',  done:26,days:27, pw:5.6,
+  rg:'ratio ≥ <code>PACE_TOLERANCE</code>'},
+ {nm:'Slightly behind',   cls:'good',  done:26,days:27, pw:4.6,
+  rg:'<code>TOLERANCE</code> ≤ ratio &lt; 1.0 — <b>reads as On track</b>'},
+ {nm:'Behind',            cls:'warn',  done:26,days:27, pw:3,
+  rg:'ratio &lt; <code>PACE_TOLERANCE</code>'},
+ {nm:'Paused',            cls:'warn',  done:26,days:27, pw:0,
+  rg:'no lessons in <code>PACE_WINDOW</code> days'},
+ {nm:'Not enough time',   cls:'hard',  done:20,days:8,  pw:5,
+  rg:'required &gt; <code>CEILING</code> pace'},
+ {nm:'Complete',          cls:'good',  done:42,days:6,  pw:5,
+  rg:'remaining = 0'}
+];
+var PACE_WHY={
+ 'Finding your pace':'Nothing about the learner is quoted back to them yet. The required pace IS shown, because it is a fact about the date, not a judgement about them.',
+ 'Ahead':'The early date is the reward. No badge escalation, no confetti, and no nudge toward booking sooner — that decision has costs this card cannot see.',
+ 'On track':'The most common state, so the quietest. One sentence about what keeps it true; the timeline carries the rest.',
+ 'Slightly behind':'Identical to On track, on purpose. The buffer before the exam absorbs a slow week; saying so would spend the learner’s attention on a problem the system already priced in.',
+ 'Behind':'One recommendation, in minutes, with the day it restores. The head sentence is conditional: "after your exam date" only when the projection actually lands after it, otherwise "no time to review".',
+ 'Paused':'Leads with the observable fact rather than the verdict. The ask is the same shape as Behind. The button is Resume, not a plan editor.',
+ 'Not enough time':'The recommendation has a ceiling. Past it the widget stops asking for more minutes and names the only variable left — the date — and routes to a person.',
+ 'Complete':'Finishing early is stated in days, not celebrated. Then the widget points sideways at Readiness, which is now the whole question.'
+};
+function renderPaceLadder(){
+  var h=document.getElementById('paceLadder'); h.innerHTML='';
+  PACE_LADDER.forEach(function(row){
+    var m=paceModel(row.done,row.days,row.pw);
+    var d=document.createElement('div'); d.className='lrow '+row.cls; d.setAttribute('data-ladder',m.state+(m.slightly?'-slight':''));
+    d.innerHTML='<div class="lk"><div class="nm">'+row.nm+'</div><div class="rg">'+row.rg+
+      (m.ratio?'<br>ratio '+m.ratio.toFixed(2):'')+'</div></div>'+
+      '<div class="lw">'+paceWidget(m)+'</div>'+
+      '<div class="lwhy">'+PACE_WHY[row.nm]+'</div>';
+    h.appendChild(d);
+  });
+}
+var READ_LADDER=[
+ {nm:'No quizzes yet',        cls:'quiet', done:2,  q:'solid', pe:false,
+  rg:'no chapter complete', why:'The card exists from day one so the row does not jump when it fills. It promises topics, never scores — the one sentence of policy the learner reads.'},
+ {nm:'Nothing to review',     cls:'good',  done:26, q:'solid', pe:false,
+  rg:'covered ∩ shaky = ∅ · no practice exam', why:'It does not say <i>ready</i>. Sixteen lessons have not been taught; the honest claim is that nothing has failed so far, scoped to what was covered.'},
+ {nm:'Review these',          cls:'warn',  done:26, q:'mixed', pe:false,
+  rg:'covered ∩ shaky ≠ ∅', why:'Topics, each with a Review link back into the chapter. No count in the header, no score beside a line. "Everything else held up" is the only reassurance, and it is true.'},
+ {nm:'Practice exam earns it',cls:'quiet', done:42, q:'solid', pe:false,
+  rg:'remaining = 0 · no practice exam', why:'Coursework is done and every quiz held, and the widget still will not say ready. The practice exam is the only instrument that covers the whole outline, so it is the only one that can.'},
+ {nm:'Ready',                 cls:'good',  done:42, q:'solid', pe:true,
+  rg:'practice exam · nothing soft · remaining = 0', why:'The first and only time the word appears, and it comes with the disclaimer that it is not a gate. Booking is the learner’s call.'},
+ {nm:'Almost',                cls:'warn',  done:42, q:'mixed', pe:true,
+  rg:'practice exam · soft ≠ ∅', why:'Same shape as Review these, now sourced from the practice exam and carrying a pill because a verdict is allowed. The CTA is review, not retake — the practice exam is not the thing to grind.'},
+ {nm:'Practice exam, mid-course',cls:'warn',done:26, q:'mixed', pe:true,
+  rg:'practice exam · remaining &gt; 0', why:'The whole-outline read can name a topic they have not reached. It is marked <i>Not covered yet</i> and the link says Preview, because sending someone to review a lesson they never took is a bug wearing helpful copy.'}
+];
+function renderReadLadder(){
+  var h=document.getElementById('readLadder'); h.innerHTML='';
+  READ_LADDER.forEach(function(row){
+    var qz=QUIZ.filter(function(x){return x.id===row.q;})[0];
+    var m=readModel(row.done,qz,row.pe,'chapter');
+    var d=document.createElement('div'); d.className='lrow '+row.cls; d.setAttribute('data-ladder',m.state);
+    d.innerHTML='<div class="lk"><div class="nm">'+row.nm+'</div><div class="rg">'+row.rg+'</div></div>'+
+      '<div class="lw">'+readWidget(m)+'</div>'+
+      '<div class="lwhy">'+row.why+'</div>';
+    h.appendChild(d);
+  });
+}
+function renderRules(){
+  var tb=document.querySelector('#rules tbody'); tb.innerHTML='';
+  RULES.forEach(function(r){
+    var tr=document.createElement('tr');
+    tr.innerHTML='<td><code>'+r.k+'</code></td><td><b>'+r.v+'</b> '+r.u+'</td><td>'+r.t+'</td><td>'+r.o+'</td>';
+    tb.appendChild(tr);
+  });
+}
+
+render(); renderPaceLadder(); renderReadLadder(); renderRules();
+</script>
+</body>
+</html>

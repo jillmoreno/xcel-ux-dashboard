@@ -1,0 +1,1063 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-palette="navy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XCEL LMS — Study plan &amp; goal-setting logic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   XCEL tokens — copied from xcel-lms-desktop.html so this page reads as the
+   same product. Same rule applies: THE RED IS NOT THE PRIMARY. --brand-* is
+   identity plus the one licensing-exam semantic; --primary-* is interactive
+   and data; --slate-* is the second data hue.
+
+   ONE USE OF RED ON THIS PAGE: the state exam sit-date. That is the external
+   licensing exam, which is --brand-*'s single semantic everywhere else in the
+   product. The course-completion date — a different fact, and the one the
+   goal picker is actually about — is --primary-*. Keeping those two dates in
+   two colours is the whole reason the split exists.
+   ============================================================ */
+:root{
+  --font-heading:'Lato',system-ui,-apple-system,sans-serif;
+  --font-body:'Open Sans',system-ui,-apple-system,sans-serif;
+
+  --brand-100:#f8dee0; --brand-300:#dc858b; --brand-500:#a81c24;
+  --brand-600:#8c171e; --brand-700:#6f1218; --brand-900:#2f080a;
+  --on-primary:#ffffff;
+
+  --ink:#1f1f23; --ink-2:#4d4d55; --ink-3:#6d6d76;
+
+  --n-50:#ffffff; --n-75:#f5f5f6; --n-100:#ececee; --n-200:#d9d9dd;
+  --n-300:#c7c7cc; --n-600:#818188; --n-700:#616168;
+
+  --success-100:#cce7d7; --success-500:#018937; --success-700:#005221;
+  --warning-100:#fdf0d4; --warning-300:#fbd27e; --warning-500:#f9b428; --warning-800:#63470f;
+  --error-100:#f4cccc; --error-500:#cb0000; --error-700:#790000;
+  --info-100:#d2f1f6; --info-700:#12717e;
+
+  --page:#f4f4f6; --card:#ffffff; --line:#e4e4e8; --line-2:#d4d4da;
+  --radius:10px; --radius-sm:7px;
+  --shadow:0 1px 2px rgba(0,0,0,.05), 0 4px 14px rgba(0,0,0,.05);
+  --prov:#5b4bbd; --prov-bg:#f1eefc; --prov-line:#cec6f2;
+
+  /* ---- the dark CLP panel -------------------------------------------
+     The source mock's left half is a dark slab, so it needs its own small
+     token set: the page's --ink-* are for light surfaces and would vanish
+     on it. Every value below is MEASURED, not picked:
+       panel-ink   white           14.58–16.72:1 on the three panels
+       panel-a     primary-200      8.62–10.81:1
+       panel-b     #c9861f          4.80– 5.50:1, and 1.75/1.96/1.79
+                                    against panel-a — clear of the 1.6:1
+                                    the house rule sets for two gauge
+                                    segments that must read as two things.
+     A LIGHTER bronze fails that second test (#e8a33d lands at 1.24–1.39,
+     i.e. the same arc in two hues) — the identical trap the dark-mode
+     gauge hit in xcel-lms-desktop.html. Re-measure before lightening it. */
+  --panel:var(--primary-800);
+  --panel-ink:#ffffff;
+  --panel-txt:rgba(255,255,255,.82);
+  --panel-muted:rgba(255,255,255,.60);
+  --panel-line:rgba(255,255,255,.15);
+  --panel-fill:rgba(255,255,255,.07);
+  --panel-a:var(--primary-200);
+  --panel-b:#c9861f;
+  --panel-track:rgba(255,255,255,.16);
+}
+
+:root[data-palette="navy"]{
+  --primary-100:#dde5f2; --primary-200:#b4c6e0; --primary-300:#7d9cc6;
+  --primary-400:#4a72a3; --primary-500:#1f4e88; --primary-600:#163d6e;
+  --primary-700:#102d53; --primary-800:#0a1f3b; --primary-900:#061225;
+  --slate-100:#f5ece0; --slate-300:#d7b98c; --slate-500:#a9682a;
+  --slate-600:#8a5420; --slate-700:#6b4218;
+}
+:root[data-palette="graphite"]{
+  --primary-100:#e7e8ec; --primary-200:#ccd0d8; --primary-300:#98a0ae;
+  --primary-400:#6a7385; --primary-500:#3f4753; --primary-600:#333944;
+  --primary-700:#252a33; --primary-800:#1a1e25; --primary-900:#101318;
+  --slate-100:#f5ece0; --slate-300:#d7b98c; --slate-500:#a9682a;
+  --slate-600:#8a5420; --slate-700:#6b4218;
+}
+:root[data-palette="teal"]{
+  --primary-100:#d3e7e7; --primary-200:#9fd0d0; --primary-300:#63b0b2;
+  --primary-400:#2b8a8d; --primary-500:#0f6e72; --primary-600:#0b585b;
+  --primary-700:#084346; --primary-800:#052e30; --primary-900:#031b1c;
+  --slate-100:#f7eee1; --slate-300:#dcbc8c; --slate-500:#b8873f;
+  --slate-600:#94692e; --slate-700:#6e4e22;
+}
+
+:root[data-theme="dark"]{
+  --ink:#f2f2f4; --ink-2:#b6b6be; --ink-3:#8d8d96;
+  --page:#141417; --card:#1d1d21; --line:#2e2e35; --line-2:#3d3d45;
+  --n-50:#1d1d21; --n-75:#232329; --n-100:#2a2a31; --n-200:#3a3a42; --n-300:#4a4a53;
+  --brand-100:#3a1416; --brand-300:#8c272e; --brand-500:#e8737a;
+  --brand-600:#f09aa0; --brand-700:#f6c2c6;
+  --success-100:#16261f; --success-500:#57b585; --success-700:#8fd4b0;
+  --warning-100:#2a2318; --warning-300:#4a3d22; --warning-500:#e0b155; --warning-800:#f0d49a;
+  --error-100:#2b1414; --error-500:#f08a8a; --error-700:#f6b8b8;
+  --info-100:#122428; --info-700:#7fd0dd;
+  --prov:#b0a3ff; --prov-bg:#231f38; --prov-line:#3b3363;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+  /* The panel stays dark in dark mode — it is already the dark surface. It
+     drops to primary-100 (the dark palettes' darkest stop) so it separates
+     from the card behind it instead of merging with it. */
+  --panel:var(--primary-100);
+  --panel-a:var(--primary-500);
+  --panel-b:#dcae70;
+}
+:root[data-theme="dark"][data-palette="navy"]{
+  --primary-100:#15223a; --primary-200:#1d3050; --primary-300:#35598f;
+  --primary-400:#5b86bd; --primary-500:#8fb4e0; --primary-600:#b3cded;
+  --primary-700:#d3e2f5; --on-primary:#0a1f3b;
+  --slate-100:#2a2118; --slate-300:#6b4f24; --slate-500:#a86e28;
+  --slate-600:#c98f45; --slate-700:#dcae70;
+}
+:root[data-theme="dark"][data-palette="graphite"]{
+  --primary-100:#22252b; --primary-200:#2f343d; --primary-300:#4d5563;
+  --primary-400:#7b8494; --primary-500:#aab2c0; --primary-600:#c6ccd6;
+  --primary-700:#dfe3ea; --on-primary:#101318;
+  --slate-100:#2a2118; --slate-300:#6b4f24; --slate-500:#a86e28;
+  --slate-600:#c98f45; --slate-700:#dcae70;
+}
+:root[data-theme="dark"][data-palette="teal"]{
+  --primary-100:#0f2426; --primary-200:#143537; --primary-300:#1f6165;
+  --primary-400:#2f9498; --primary-500:#5fc0c4; --primary-600:#8ed6d9;
+  --primary-700:#bae8ea; --on-primary:#052e30;
+  --slate-100:#2a2118; --slate-300:#6b4f24; --slate-500:#a86e28;
+  --slate-600:#c98f45; --slate-700:#dcae70;
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font:14px/1.55 var(--font-body);
+  -webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-family:var(--font-heading);font-weight:900;letter-spacing:-.015em}
+h1{font-size:26px;line-height:1.18}
+h2{font-size:19px;line-height:1.25}
+h3{font-size:15px;font-weight:700;letter-spacing:-.005em}
+p{margin:0 0 10px}
+button{font:inherit}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3);
+  font-family:var(--font-body)}
+.muted{color:var(--ink-2)}
+.tiny{font-size:11.5px;line-height:1.45;color:var(--ink-2)}
+.tiny b{color:var(--ink);font-weight:600}
+
+/* ---------- prototype bar (sibling convention: pbar / plink / tag / sp) --- */
+.pbar{background:#1a1a1d;color:rgba(255,255,255,.9);display:flex;align-items:center;gap:14px;
+  padding:0 18px;height:40px;font-size:12px;position:sticky;top:0;z-index:60;flex-wrap:wrap}
+.pbar .tag{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:rgba(255,255,255,.5)}
+.pbar .sp{margin-left:auto;display:flex;gap:8px;align-items:center}
+.pbtn{appearance:none;border:1px solid rgba(255,255,255,.2);background:transparent;
+  color:rgba(255,255,255,.85);font-size:11.5px;font-weight:600;padding:6px 10px;border-radius:6px;cursor:pointer}
+.pbtn:hover{background:rgba(255,255,255,.09)}
+.pbtn[aria-pressed="true"]{background:#fff;color:#1a1a1d;border-color:#fff}
+.pbtn:focus-visible{outline:2px solid var(--primary-300);outline-offset:2px}
+.plink{color:rgba(255,255,255,.72);font-size:12px;font-weight:600;text-decoration:none;
+  border-bottom:1px solid rgba(255,255,255,.25);padding-bottom:1px}
+.plink:hover{color:#fff;border-bottom-color:#fff}
+.palsw{display:flex;align-items:center;gap:4px;padding:3px;border-radius:8px;
+  background:rgba(255,255,255,.07);margin-right:4px}
+.pallb{font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:rgba(255,255,255,.5);padding:0 5px 0 4px}
+.palbtn{appearance:none;border:0;background:transparent;color:rgba(255,255,255,.72);
+  font:600 11.5px var(--font-body);padding:4px 8px;border-radius:6px;cursor:pointer;
+  display:flex;align-items:center;gap:5px}
+.palbtn i{width:9px;height:9px;border-radius:50%;display:block;box-shadow:0 0 0 1px rgba(255,255,255,.35)}
+.palbtn:hover{background:rgba(255,255,255,.1);color:#fff}
+.palbtn[aria-checked="true"]{background:#fff;color:#1a1a1d}
+.palbtn[aria-checked="true"] i{box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+.palbtn:focus-visible,.plink:focus-visible{outline:2px solid var(--primary-300);outline-offset:2px}
+
+/* ---------- demo controls ---------- */
+.demo{background:#26262b;border-bottom:2px solid var(--primary-300);
+  display:flex;align-items:center;gap:14px;padding:10px 18px;flex-wrap:wrap;
+  position:sticky;top:40px;z-index:59}
+.demo .lb{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:rgba(255,255,255,.56)}
+.grp{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.dchip{appearance:none;border:1px solid rgba(255,255,255,.13);background:transparent;
+  color:rgba(255,255,255,.82);font-size:11.5px;font-weight:600;padding:6px 11px;border-radius:14px;
+  cursor:pointer;white-space:nowrap}
+.dchip:hover{background:rgba(255,255,255,.08)}
+.dchip[aria-pressed="true"]{background:var(--primary-200);border-color:var(--primary-200);
+  color:var(--primary-700)}
+.dchip:focus-visible{outline:2px solid var(--primary-300);outline-offset:2px}
+.dnote{font-size:11.5px;color:rgba(255,255,255,.56);margin-left:auto}
+
+
+/* ---------- page furniture ---------- */
+.hero{background:var(--card);border-bottom:1px solid var(--line);padding:26px 40px 24px}
+.hero p{max-width:78ch;margin:9px 0 0;color:var(--ink-2);font-size:13.5px}
+.hero p b{color:var(--ink)}
+.body{padding:26px 40px 0;display:flex;flex-direction:column;gap:38px;max-width:1180px}
+.foot{padding:34px 40px 64px;font-size:12px;color:var(--ink-3);max-width:88ch}
+.foot b{color:var(--ink-2)}
+
+.sec{display:flex;flex-direction:column;gap:16px}
+.shead{display:flex;flex-direction:column;gap:6px}
+.shead .lbl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.num{font:900 11px var(--font-body);letter-spacing:.09em;text-transform:uppercase;
+  background:var(--primary-100);color:var(--primary-700);border:1px solid var(--primary-200);
+  border-radius:5px;padding:3px 8px}
+.num.q{background:var(--n-75);color:var(--ink-3);border-color:var(--line-2)}
+.arg{max-width:80ch;color:var(--ink-2);font-size:13.5px;margin:2px 0 0}
+.arg b{color:var(--ink)}
+.note{border-left:3px solid var(--line-2);padding:2px 0 2px 14px;max-width:84ch;
+  font-size:12.5px;line-height:1.6;color:var(--ink-2)}
+.note b{color:var(--ink)}
+.note + .note{margin-top:-4px}
+
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);
+  box-shadow:var(--shadow);position:relative}
+.pad{padding:22px 24px}
+.eyebrow{font:700 10px var(--font-body);letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:8px}
+
+/* ---------- §01 the reference, rebuilt ---------- */
+.two{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:22px;align-items:start}
+.refcard{max-width:560px}
+.refgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin-top:14px}
+.refgrid.two-up{grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);margin-top:10px}
+.refopt{border:1px solid var(--line-2);border-radius:var(--radius-sm);padding:12px 13px;
+  display:flex;flex-direction:column;gap:9px;background:var(--card)}
+.refopt.on{background:var(--slate-100);border-color:var(--slate-300)}
+.refopt .rt{font:700 13px var(--font-heading);color:var(--slate-600);letter-spacing:-.005em}
+.refopt.on .rt{color:var(--slate-700)}
+.refrow{display:flex;align-items:baseline;gap:9px}
+.refrow .n{font:900 21px var(--font-heading);color:var(--ink);min-width:32px}
+.refrow .u{font-size:11px;line-height:1.25;color:var(--ink-2)}
+.refbtn{align-self:flex-start;margin-top:14px;background:var(--n-300);color:var(--n-700);
+  border:0;border-radius:var(--radius-sm);padding:11px 20px;font-weight:700;font-size:13.5px}
+.crit{display:flex;flex-direction:column;gap:12px}
+.critrow{display:flex;gap:11px;align-items:flex-start}
+.critrow .k{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;
+  font:900 11px var(--font-body);background:var(--error-100);color:var(--error-700);margin-top:1px}
+.critrow .k.ok{background:var(--success-100);color:var(--success-700)}
+.critrow .t{font-size:12.5px;line-height:1.55;color:var(--ink-2)}
+.critrow .t b{color:var(--ink)}
+
+/* ---------- §02 two objects ---------- */
+.objs{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;max-width:820px}
+.obj{border:1px solid var(--line);border-radius:var(--radius);padding:18px 20px;background:var(--card)}
+.obj h3{margin-bottom:3px}
+.obj .who{font:700 10px var(--font-body);letter-spacing:.09em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:10px;display:block}
+.obj ul{margin:0;padding-left:17px;font-size:12.5px;line-height:1.65;color:var(--ink-2)}
+.obj ul b{color:var(--ink)}
+.obj.goal{border-left:3px solid var(--primary-500)}
+.obj.plan{border-left:3px solid var(--slate-500)}
+
+/* ---------- §03 the stages ---------- */
+.stages{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:0;max-width:980px;
+  border:1px solid var(--line);border-radius:var(--radius);overflow:hidden;background:var(--card)}
+.stg{padding:14px 15px 15px;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:7px}
+.stg:last-child{border-right:0}
+.stg.here{background:var(--primary-100)}
+.stg .sn{font:900 10px var(--font-body);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+.stg.here .sn{color:var(--primary-700)}
+.stg .sh{font:700 13.5px var(--font-heading);letter-spacing:-.005em}
+.stg .st{font-size:11.5px;line-height:1.5;color:var(--ink-2)}
+.stg .trig{font-size:11px;line-height:1.45;color:var(--ink-3);border-top:1px dashed var(--line-2);
+  padding-top:7px;margin-top:auto}
+.stg .trig b{color:var(--ink-2);font-weight:600}
+
+/* the live surface */
+.surf{max-width:620px}
+.surf .bar{height:34px;background:var(--panel);display:flex;align-items:center;padding:0 14px;
+  color:var(--panel-muted);font-size:11px;font-weight:600;letter-spacing:.04em;
+  border-radius:var(--radius) var(--radius) 0 0}
+.chap{display:flex;align-items:center;gap:12px;padding:16px 18px;border-bottom:1px solid var(--line)}
+.chap .ring{flex:none}
+.chap .ct{flex:1;min-width:0}
+.chap .ct .a{font:700 14px var(--font-heading);letter-spacing:-.005em}
+.chap .ct .b{font-size:12px;color:var(--ink-2);margin-top:2px}
+.btn{appearance:none;border:0;border-radius:var(--radius-sm);background:var(--primary-500);
+  color:var(--on-primary);font:700 13px var(--font-body);padding:9px 16px;cursor:pointer}
+.btn.sm{padding:7px 13px;font-size:12px}
+.btn.ghost{background:transparent;color:var(--primary-500);border:1px solid var(--primary-300)}
+.btn.quiet{background:transparent;color:var(--ink-2);border:1px solid var(--line-2)}
+.btn:focus-visible{outline:2px solid var(--primary-400);outline-offset:2px}
+
+.nudge{padding:14px 18px;display:flex;gap:13px;align-items:flex-start}
+.nudge.lvl0{display:none}
+.nudge.lvl1{border-top:1px solid var(--line)}
+.nudge.lvl2{background:var(--primary-100);border-top:1px solid var(--primary-200)}
+.nudge.lvl3{background:var(--warning-100);border-top:1px solid var(--warning-300)}
+.nudge .nt{flex:1;min-width:0;font-size:12.5px;line-height:1.55;color:var(--ink-2)}
+.nudge .nt b{color:var(--ink)}
+.nudge .na{display:flex;gap:8px;align-items:center;flex:none}
+.nudge .dis{background:transparent;border:0;color:var(--ink-3);font-size:11.5px;cursor:pointer;
+  text-decoration:underline;text-underline-offset:2px}
+.inlnk{background:transparent;border:0;color:var(--primary-500);font:600 12px var(--font-body);
+  cursor:pointer;text-decoration:underline;text-underline-offset:2px;padding:0}
+
+/* ---------- §04 the picker ---------- */
+.picker{max-width:880px}
+.pk{display:grid;grid-template-columns:minmax(0,1fr) 250px;gap:0}
+.pkL{padding:20px 22px;border-right:1px solid var(--line);min-width:0}
+.pkR{padding:20px 20px;background:var(--n-75);border-radius:0 var(--radius) var(--radius) 0;
+  display:flex;flex-direction:column;gap:14px}
+.paces{display:flex;flex-direction:column;gap:9px;margin-top:12px}
+.pace{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:12px;align-items:center;
+  border:1px solid var(--line-2);border-radius:var(--radius-sm);padding:12px 14px;cursor:pointer;
+  background:var(--card);text-align:left;font:inherit;color:inherit;width:100%}
+.pace:hover{border-color:var(--primary-300)}
+.pace[aria-checked="true"]{border-color:var(--primary-500);box-shadow:inset 0 0 0 1px var(--primary-500);
+  background:var(--primary-100)}
+.pace:focus-visible{outline:2px solid var(--primary-400);outline-offset:2px}
+.pace .dot{width:15px;height:15px;border-radius:50%;border:2px solid var(--n-300);display:block}
+.pace[aria-checked="true"] .dot{border-color:var(--primary-500);
+  box-shadow:inset 0 0 0 3px var(--card),inset 0 0 0 9px var(--primary-500)}
+.pace .cost{font:700 13.5px var(--font-heading);letter-spacing:-.005em}
+.pace .sub{font-size:11.5px;color:var(--ink-2);margin-top:2px}
+.pace .fin{text-align:right;flex:none}
+.pace .fin .d{font:700 13px var(--font-body);color:var(--ink);white-space:nowrap}
+.pace .fin .l{font-size:10px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);margin-top:1px}
+.pace.hot{border-color:var(--line-2)}
+.longsit{display:inline-block;margin-left:7px;font:700 9.5px var(--font-body);letter-spacing:.07em;
+  text-transform:uppercase;color:var(--warning-800);background:var(--warning-100);
+  border:1px solid var(--warning-300);border-radius:4px;padding:2px 5px;vertical-align:1px}
+
+.dfield{display:flex;flex-direction:column;gap:6px}
+.dfield label{font:700 11px var(--font-body);letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3)}
+.dfield input{font:600 14px var(--font-body);padding:9px 11px;border:1px solid var(--line-2);
+  border-radius:var(--radius-sm);background:var(--card);color:var(--ink);width:100%}
+.dfield input:focus-visible{outline:2px solid var(--primary-400);outline-offset:1px;border-color:var(--primary-400)}
+.outbig{font:900 26px/1.1 var(--font-heading);letter-spacing:-.02em;color:var(--primary-600)}
+.outlbl{font:700 10px var(--font-body);letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3)}
+.outexam{font:900 18px/1.15 var(--font-heading);letter-spacing:-.015em;color:var(--brand-500)}
+.outsep{height:1px;background:var(--line-2)}
+.warnbox{background:var(--warning-100);border:1px solid var(--warning-300);border-radius:var(--radius-sm);
+  padding:11px 12px;font-size:12px;line-height:1.55;color:var(--warning-800)}
+.warnbox b{font-weight:700}
+.okbox{background:var(--success-100);border:1px solid var(--success-500);border-radius:var(--radius-sm);
+  padding:11px 12px;font-size:12px;line-height:1.55;color:var(--success-700)}
+.pkfoot{border-top:1px solid var(--line);padding:14px 22px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pkfoot .fin{margin-left:auto;font-size:12px;color:var(--ink-2)}
+
+/* ---------- §05 drift ---------- */
+.drifts{display:flex;flex-direction:column;gap:14px;max-width:940px}
+.drift{display:grid;grid-template-columns:150px minmax(0,1fr);gap:0;border:1px solid var(--line);
+  border-radius:var(--radius);overflow:hidden;background:var(--card)}
+.drift .dk{padding:15px 16px;border-right:1px solid var(--line);background:var(--n-75)}
+.drift .dk .nm{font:700 13.5px var(--font-heading);letter-spacing:-.005em}
+.drift .dk .rg{font-size:11px;color:var(--ink-3);margin-top:3px;line-height:1.4}
+.drift .dv{padding:15px 18px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.drift .msg{font-size:13px;line-height:1.55;color:var(--ink)}
+.drift .msg b{font-weight:700}
+.drift .acts{display:flex;gap:8px;flex-wrap:wrap}
+.drift .why{font-size:11.5px;line-height:1.55;color:var(--ink-3);border-top:1px dashed var(--line-2);padding-top:9px}
+.drift .why b{color:var(--ink-2);font-weight:600}
+.drift.quiet .dk{background:var(--card)}
+.drift.warn .dk{background:var(--warning-100)}
+.drift.hard .dk{background:var(--error-100)}
+.drift.good .dk{background:var(--success-100)}
+
+.pill{display:inline-block;font:700 10px var(--font-body);letter-spacing:.07em;text-transform:uppercase;
+  border-radius:4px;padding:3px 7px;border:1px solid}
+.pill.p1{background:var(--success-100);color:var(--success-700);border-color:var(--success-500)}
+.pill.p2{background:var(--warning-100);color:var(--warning-800);border-color:var(--warning-300)}
+.pill.p3{background:var(--error-100);color:var(--error-700);border-color:var(--error-500)}
+.pill.p0{background:var(--n-75);color:var(--ink-3);border-color:var(--line-2)}
+
+/* ---------- §06 rules + holes ---------- */
+.rules{width:100%;border-collapse:collapse;max-width:900px;font-size:12.5px}
+.rules th{text-align:left;font:700 10px var(--font-body);letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-3);border-bottom:1px solid var(--line-2);padding:0 12px 7px 0}
+.rules td{padding:10px 12px 10px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink-2)}
+.rules td code{font:600 11.5px ui-monospace,SFMono-Regular,Menlo,monospace;color:var(--ink);
+  background:var(--n-75);border:1px solid var(--line);border-radius:4px;padding:2px 5px;white-space:nowrap}
+.rules td b{color:var(--ink)}
+.holes{display:grid;grid-template-columns:repeat(auto-fit,minmax(255px,1fr));gap:14px;max-width:980px}
+.hole{border:1px dashed var(--line-2);border-radius:var(--radius);padding:15px 16px;
+  background:repeating-linear-gradient(135deg,transparent,transparent 7px,var(--n-75) 7px,var(--n-75) 14px)}
+.hole h3{margin-bottom:6px}
+.hole p{margin:0;font-size:12px;line-height:1.6;color:var(--ink-2)}
+
+@media (max-width:900px){
+  .two,.objs{grid-template-columns:minmax(0,1fr)}
+  .stages{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .stg{border-bottom:1px solid var(--line)}
+  .pk{grid-template-columns:minmax(0,1fr)}
+  .pkL{border-right:0;border-bottom:1px solid var(--line)}
+  .pkR{border-radius:0 0 var(--radius) var(--radius)}
+  .drift{grid-template-columns:minmax(0,1fr)}
+  .drift .dk{border-right:0;border-bottom:1px solid var(--line)}
+  .hero,.body,.foot{padding-left:20px;padding-right:20px}
+  .refgrid{grid-template-columns:minmax(0,1fr)}
+}
+</style>
+</head>
+<body>
+
+<div class="pbar">
+  <span class="tag">XCEL LMS</span>
+  <span>Study plan &amp; goal-setting</span>
+  <span style="opacity:.4">·</span>
+  <a class="plink" href="/prototypes/xcel-lms-desktop.html">Desktop platform</a>
+  <a class="plink" href="/prototypes/xcel-lms-walkthrough.html">Learner walk-through</a>
+  <a class="plink" href="/prototypes/xcel-clp-todays-tasks.html">Today's Tasks</a>
+  <a class="plink" href="/prototypes/xcel-lms-wireframes.html">Wireframes &amp; overlap</a>
+  <a class="plink" href="/prototypes/xcel-finserv-build-plan.html">Build plan</a>
+  <a class="plink" href="/prototypes/xcel-nav-collapse.html">Collapsible rail</a>
+  <a class="plink" href="/prototypes/xcel-study-pace-readiness.html">Pace &amp; Readiness</a>
+  <span class="sp">
+    <span class="palsw" role="radiogroup" aria-label="Colour palette (prototype only)">
+      <span class="pallb">Palette</span>
+      <button class="palbtn" role="radio" data-pal="navy"     aria-checked="true"><i style="background:#1f4e88"></i>Navy</button>
+      <button class="palbtn" role="radio" data-pal="graphite" aria-checked="false"><i style="background:#3f4753"></i>Graphite</button>
+      <button class="palbtn" role="radio" data-pal="teal"     aria-checked="false"><i style="background:#0f6e72"></i>Teal</button>
+    </span>
+    <button class="pbtn" id="themeBtn" aria-pressed="false">Dark</button>
+  </span>
+</div>
+
+<div class="demo">
+  <span class="lb">Stage</span>
+  <span class="grp" id="dStage" role="group" aria-label="Where the learner is"></span>
+  <span class="lb" style="margin-left:6px">Their pace</span>
+  <span class="grp" id="dRate" role="group" aria-label="Observed learner pace"></span>
+  <span class="dnote" id="axNote"></span>
+</div>
+
+<div class="hero">
+  <h1>Study plan — let them start, then ask for a date</h1>
+  <p>A 40-hour Texas Life &amp; Health pre-licensing course is roughly a <b>30-day</b> piece of work, and
+  the learner who just bought it does not yet know that. Asking them on day zero to commit to
+  <i>5 credit hours a week</i> asks for a number they have no basis to pick — so this explores the
+  opposite order: <b>let them study first, watch how fast they actually go, and then make one concrete
+  offer built from their own rate.</b></p>
+  <p>Two demo axes above. <b>Stage</b> moves the learner through the pre-plan window and re-renders the
+  goal surface. <b>Their pace</b> changes the observed minutes-per-credit-hour, and every date on this
+  page recomputes from it — which is the claim being tested: that a plan offer is only worth making once
+  it is <i>theirs</i>.</p>
+</div>
+
+<div class="body">
+
+  <!-- ============================= 01 ============================= -->
+  <div class="sec">
+    <div class="shead">
+      <span class="lbl"><span class="num">01</span><h2>The reference, and the three questions it cannot answer</h2></span>
+      <p class="arg">Rebuilt on XCEL tokens so the comparison is about structure, not styling. It gets one
+      important thing right — <b>it treats the goal as adjustable rather than fixed at purchase</b> — and it
+      is the thing worth keeping.</p>
+    </div>
+    <div class="two">
+      <div class="card pad refcard">
+        <div class="eyebrow">Reference concept · rebuilt</div>
+        <h2>Weekly Study Goal</h2>
+        <p class="tiny" style="margin-top:7px;max-width:62ch">Adjust your study goal to better suit your
+        needs by choosing one of the options below. Your current progress will be saved, and your estimated
+        completion date will re-calculate.</p>
+        <div class="refgrid">
+          <div class="refopt"><span class="rt">Aggressive</span>
+            <div class="refrow"><span class="n">10</span><span class="u">Credit hours<br>per week</span></div>
+            <div class="refrow"><span class="n">10</span><span class="u">Weeks<br>to Complete</span></div></div>
+          <div class="refopt"><span class="rt">Recommended</span>
+            <div class="refrow"><span class="n">5</span><span class="u">Credit hours<br>per week</span></div>
+            <div class="refrow"><span class="n">19</span><span class="u">Weeks<br>to Complete</span></div></div>
+          <div class="refopt on"><span class="rt">Relaxed</span>
+            <div class="refrow"><span class="n">2</span><span class="u">Credit hours<br>per week</span></div>
+            <div class="refrow"><span class="n">48</span><span class="u">Weeks<br>to Complete</span></div></div>
+        </div>
+        <div class="refgrid two-up">
+          <div class="refopt"><span class="rt">Custom</span>
+            <div class="refrow"><span class="n" style="border:1px solid var(--line-2);border-radius:5px;padding:5px 14px;font-size:14px;color:var(--ink-3)">&nbsp;</span><span class="u">Credit hours<br>per week</span></div></div>
+          <div class="refopt"><span class="rt">My Date</span>
+            <p class="tiny" style="margin:0">Enter the date you want to be completed and we'll calculate your study goal for you.</p>
+            <div class="refrow"><span class="n" style="border:1px solid var(--line-2);border-radius:5px;padding:6px 12px;font:600 12px var(--font-body);color:var(--ink-3)">mm/dd/yyyy</span></div></div>
+        </div>
+        <button class="refbtn">Set Goal</button>
+      </div>
+
+      <div class="crit">
+        <div class="critrow"><span class="k ok">✓</span><span class="t"><b>Worth keeping.</b> The goal is
+        presented as re-settable, progress is explicitly preserved, and the completion date is stated as a
+        <i>re-calculation</i> rather than a promise. All three survive into everything below.</span></div>
+        <div class="critrow"><span class="k">1</span><span class="t"><b>It asks for the derived number and
+        derives the real one.</b> Nobody walks in knowing whether 5 credit hours a week is a lot. Almost
+        everybody walks in with a date — a start date at an agency, an exam window, "before the holidays".
+        The date is the fact the learner owns; the pace is the thing we should be working out for them.
+        Here the date is the fifth and smallest option, in a card that shows no result.</span></div>
+        <div class="critrow"><span class="k">2</span><span class="t"><b>The presets are labelled by ambition,
+        and priced in weeks.</b> "Aggressive / Recommended / Relaxed" grades the learner before they have
+        done anything, and <i>19 weeks</i> is not a unit anyone feels. What can actually be judged is a
+        Tuesday: <i>about an hour a night, five nights, done by 16 October.</i></span></div>
+        <div class="critrow"><span class="k">3</span><span class="t"><b>There is no second half.</b> The card
+        is a first-run moment with no model of what happens once the learner is behind it — which is the
+        state a plan spends most of its life in. Section 05 is that half.</span></div>
+        <div class="critrow"><span class="k">4</span><span class="t"><b>10 / 19 / 48 weeks is a
+        renewal-cycle frame.</b> It fits continuing education, where the deadline is a licence expiry two
+        years out. Pre-licensing is a sprint with an external exam at the end of it, so the unit is days and
+        the finish line is <i>being ready to sit</i>, not <i>being done</i>.</span></div>
+      </div>
+    </div>
+    <p class="note"><b>The one-line version.</b> Keep the three-preset shape; invert what it asks for.
+    The learner picks <i>when</i>; we quote <i>what it costs per evening</i>; either side can be edited and
+    the other follows.</p>
+  </div>
+
+  <!-- ============================= 02 ============================= -->
+  <div class="sec">
+    <div class="shead">
+      <span class="lbl"><span class="num">02</span><h2>Two objects, deliberately kept apart</h2></span>
+      <p class="arg">Most of the confusion in this area comes from one object doing both jobs. Separating
+      them is what makes every later state answerable — in particular the one where the learner is behind,
+      because then you can ask <b>which of the two moves</b> instead of quietly sliding both.</p>
+    </div>
+    <div class="objs">
+      <div class="obj goal">
+        <span class="who">Learner-owned · rarely changes</span>
+        <h3>The Goal</h3>
+        <ul>
+          <li><b>One date:</b> when they want to sit the state exam.</li>
+          <li>Comes from outside the product — a job start, a licence window, an agency deadline.</li>
+          <li>Changing it is a decision, and is always explicit.</li>
+          <li>It is the only thing we ask the learner to choose.</li>
+        </ul>
+      </div>
+      <div class="obj plan">
+        <span class="who">System-owned · re-derived freely</span>
+        <h3>The Plan</h3>
+        <ul>
+          <li><b>A pace:</b> which evenings, and how long each one.</li>
+          <li>Derived from the goal, the hours left, and <b>their observed rate</b>.</li>
+          <li>Re-derived silently whenever reality moves. No confirmation needed.</li>
+          <li>It is what the dashboard, the calendar and Today's Tasks all read.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="note"><b>Why the exam date and the completion date are two different facts, in two
+    different colours.</b> Finishing the coursework is a <span style="color:var(--primary-600);font-weight:700">primary</span>
+    event — it is ours, it is data, we control it. Sitting the licensing exam is a
+    <span style="color:var(--brand-500);font-weight:700">brand-red</span> event — external, scheduled by PSI,
+    and red's one semantic everywhere else in this product. A picker that returns a single date has
+    already lost that distinction. This one returns both, and the gap between them is
+    <code style="font-size:11.5px">EXAM_BUFFER_INVENTED</code>.</p>
+  </div>
+
+  <!-- ============================= 03 ============================= -->
+  <div class="sec">
+    <div class="shead">
+      <span class="lbl"><span class="num">03</span><h2>The pre-plan window — four stages, none of them on a timer</h2></span>
+      <p class="arg">The ask was to let people start studying before being pushed into a plan. The trap is
+      implementing that as a countdown — "nag on day 7" — because a countdown nags the learner who has done
+      nothing (and has no basis to answer) while leaving alone the one who did four chapters in a weekend
+      (and would love an answer). <b>Every trigger below is earned progress, not elapsed time.</b></p>
+    </div>
+    <div class="stages" id="stages"></div>
+    <div class="card surf" id="surf"></div>
+    <p class="note" id="stageNote"></p>
+    <p class="note"><b>The 30-day finding, stated plainly:</b> in a course that is itself about 30 days long,
+    <b>you cannot spend 30 days unplanned.</b> A grace window has to be a fraction of the course, and the
+    natural fraction is not a number of days at all — it is <i>until we know how fast they go</i>, which on
+    the pace axis above lands somewhere between the first chapter and the second. That is the window.</p>
+    <p class="note"><b>Stage 3 is the only one that is not dismissible, and only in one case.</b> If a hard
+    external deadline exists — course access expiring, an agency-set date, a licence window — the card stays.
+    But it arrives <b>pre-filled with that deadline</b>, so the learner is choosing whether to beat it, not
+    whether to have a goal at all. Absent a hard deadline, even stage 3 can be dismissed; it just returns.
+    There is no blocking modal anywhere in this flow.</p>
+  </div>
+
+  <!-- ============================= 04 ============================= -->
+  <div class="sec">
+    <div class="shead">
+      <span class="lbl"><span class="num">04</span><h2>The picker — date and pace on one surface, each recalculating the other</h2></span>
+      <p class="arg">Three presets priced in <b>evenings</b>, a date field as a peer rather than a fifth
+      card, and a live readout of both dates. Type a date and the presets re-rank against it; pick a preset
+      and the date field fills in. Everything here is computed from the demo axes above — change
+      <b>Their pace</b> and watch every number move.</p>
+    </div>
+    <div class="card picker" id="picker"></div>
+    <p class="note" id="pickNote"></p>
+    <p class="note"><b>The impossible date is the case the reference has no answer for.</b> Ask for a sit
+    date nine days out on 34 remaining hours and something has to give. Refusing the date is wrong — some
+    learners really do have a Friday deadline and really will do nothing else that week. Accepting it
+    silently is worse. So the picker <b>quotes the cost and lets them take it</b>, and only calls a date
+    unreachable past <code style="font-size:11.5px">CEILING_MINS_INVENTED</code>, where the arithmetic stops
+    being a pace and starts being a fiction.</p>
+  </div>
+
+  <!-- ============================= 05 ============================= -->
+  <div class="sec">
+    <div class="shead">
+      <span class="lbl"><span class="num">05</span><h2>After the plan — five states, and what each is allowed to say</h2></span>
+      <p class="arg">A plan is a promise with a comparison built into it, so the interesting design is not
+      the promise — it is the tone ladder. <b>The single most important row here is the second one</b>,
+      where the correct behaviour is to say nothing at all.</p>
+    </div>
+    <div class="drifts" id="drifts"></div>
+    <p class="note"><b>Why "slightly behind" must be silent.</b> A plan that raises its voice for one missed
+    Tuesday teaches the learner that its voice means nothing, and by the time it has something real to say
+    they have stopped reading it. The tolerance is the design, not an oversight —
+    <code style="font-size:11.5px">DRIFT_TOLERANCE_INVENTED</code> exists so that the first alert a learner
+    ever sees is one worth acting on.</p>
+    <p class="note"><b>Never slide the date silently.</b> When the goal and the plan can no longer both be
+    true, both options are put on screen with their price attached — <i>keep the date, here is the new
+    evening</i> versus <i>keep the evening, here is the new date</i>. A product that quietly moves the
+    finish line is the reason learners stop believing completion estimates.</p>
+  </div>
+
+  <!-- ============================= 06 ============================= -->
+  <div class="sec">
+    <div class="shead">
+      <span class="lbl"><span class="num">06</span><h2>Invented rules — replace these, don't re-derive them</h2></span>
+      <p class="arg">Every threshold on this page is made up by me. Each is one named constant with an owner,
+      following the convention the admin tool uses, so that swapping in a real one is a single edit rather
+      than an archaeology exercise.</p>
+    </div>
+    <table class="rules">
+      <thead><tr><th style="width:230px">Constant</th><th>Rule</th><th style="width:150px">Owner</th></tr></thead>
+      <tbody id="rulesBody"></tbody>
+    </table>
+  </div>
+
+  <!-- ============================= 07 ============================= -->
+  <div class="sec">
+    <div class="shead">
+      <span class="lbl"><span class="num q">07</span><h2>Open, and known to be</h2></span>
+    </div>
+    <div class="holes">
+      <div class="hole"><h3>Whose deadline wins</h3><p>An agency buys the seat and sets a date; the learner
+      sets their own, earlier or later. Two goals on one course. Neither "agency always wins" nor "learner
+      always wins" is obviously right, and the admin roster already has an opinion about who is at risk —
+      which would then be measuring against a date the learner never agreed to.</p></div>
+      <div class="hole"><h3>Study days, or all seven</h3><p>The presets here price evenings and weekends
+      separately, which is honest but means the plan has a <i>shape</i> — and a shape can be violated by
+      someone who studies fine, just on the wrong days. Does the plan care which evenings, or only how many
+      minutes a week?</p></div>
+      <div class="hole"><h3>Whether we can quote an exam date at all</h3><p>The buffer between finishing and
+      sitting is a made-up seven days. Real PSI availability varies by state and by month, and a quoted
+      sit-date we cannot honour is worse than no sit-date. This may have to become a range, or a link.</p></div>
+      <div class="hole"><h3>Where the goal lives on the dashboard</h3><p>Stage 2 puts a card in the
+      dashboard's second slot — the slot the recommended band occupies in classic, and the slot editorial
+      deletes outright. The goal nudge and the recommended band cannot both be the second thing.</p></div>
+    </div>
+  </div>
+
+</div>
+
+<div class="foot">
+  <b>Scope.</b> This is the set-up and drift half of the lifecycle: pre-plan studying, the nudge ladder, the
+  picker, and the five post-plan states. Readiness and booking the state exam are not covered here — they
+  live in the <a href="/prototypes/xcel-lms-walkthrough.html" style="color:var(--primary-500)">learner
+  walk-through</a>, which carries one learner through the whole arc with state.<br><br>
+  <b>Not a <code>PROTOTYPE_FEATURES</code> row.</b> Same reasoning as
+  <code>xcel-lms-brief-vs-existing.html</code> and the build plan: this is a second door into the FinServ
+  learner work, and a second row into one body of work is what got the earlier tiles archived. Reachable
+  from the sibling mastheads instead. Row count stays six.<br><br>
+  <b>Every number on this page is computed</b> from the two demo axes and the constants in section 06 —
+  there are no authored dates. That is deliberate, and it is the same discipline the build plan applies to
+  its counts: an authored figure beside a derived one is the failure mode this repo keeps writing down.
+</div>
+
+<script>
+/* ============================================================
+   ONE model. Every date, percentage and minutes figure on this page is
+   derived from it — there is not a single authored date in the markup, which
+   is the same discipline xcel-finserv-build-plan.html applies to its counts.
+
+   The course: Texas Life & Health pre-licensing, 40 credit hours, 12
+   chapters. A credit hour is SEAT TIME, so "real minutes per credit hour"
+   is the one number that varies by learner, and it is the demo axis.
+   ============================================================ */
+var HOURS=40, CHAPTERS=12, HPC=HOURS/CHAPTERS;
+var TODAY=new Date(2026,8,16);
+
+/* ---- invented rules: one constant each, an owner each ------------------- */
+var NUDGE_AFTER_INVENTED  = 1;    // chapters complete before the first offer
+var ESCALATE_AT_INVENTED  = 4;    // chapters complete before it becomes a card
+var EXAM_BUFFER_INVENTED  = 7;    // days between coursework done and sit date
+var DRIFT_TOLERANCE_INVENTED = 1; // sessions behind that we say nothing about
+var DRIFT_ALERT_INVENTED  = 2;    // sessions behind that earns a correction
+var STRAIN_MINS_INVENTED  = 120;  // min/night over 5 nights before we flag cost
+var CEILING_MINS_INVENTED = 210;  // min/night over 6 nights before "unreachable"
+var AHEAD_OFFER_INVENTED  = 3;    // sessions ahead before we offer to pull in
+
+var RULES=[
+ ['NUDGE_AFTER_INVENTED','First goal offer fires at <b>'+NUDGE_AFTER_INVENTED+' chapter complete</b> — or 45 minutes studied, whichever lands first. Before that we have no rate to quote.','FinServ product'],
+ ['ESCALATE_AT_INVENTED','At <b>'+ESCALATE_AT_INVENTED+' chapters</b> with still no goal, the nudge stops being a line and becomes a dashboard card.','FinServ product'],
+ ['EXAM_BUFFER_INVENTED','<b>'+EXAM_BUFFER_INVENTED+' days</b> held between coursework complete and the quoted state-exam sit date.','FinServ + state ops'],
+ ['DRIFT_TOLERANCE_INVENTED','Behind by less than <b>'+DRIFT_TOLERANCE_INVENTED+' planned session</b> — say nothing at all.','FinServ product'],
+ ['DRIFT_ALERT_INVENTED','<b>'+DRIFT_ALERT_INVENTED+' or more sessions</b> behind with the date still reachable — offer the cheapest correction, not a re-plan.','FinServ product'],
+ ['STRAIN_MINS_INVENTED','Over <b>'+STRAIN_MINS_INVENTED+' min a night</b> across 5 nights — quote the cost, still accept the date.','FinServ product'],
+ ['CEILING_MINS_INVENTED','Over <b>'+CEILING_MINS_INVENTED+' min a night</b> across 6 nights — call the date unreachable rather than pretend.','FinServ product'],
+ ['AHEAD_OFFER_INVENTED','<b>'+AHEAD_OFFER_INVENTED+' or more sessions</b> ahead — offer to pull the exam date in.','FinServ product']
+];
+
+/* ---- the two demo axes -------------------------------------------------- */
+var RATES=[
+ {id:'fast',lb:'Fast',   m:42,note:'42 real minutes per credit hour — reads quickly, skips the replays.'},
+ {id:'typ', lb:'Typical',m:58,note:'58 real minutes per credit hour — roughly seat time, which is what a credit hour is meant to be.'},
+ {id:'slow',lb:'Slow',   m:76,note:'76 real minutes per credit hour — re-watches, takes notes, retakes quizzes.'}
+];
+var STAGES=[
+ {id:'s0',lb:'Nothing done',       done:0, lvl:0,
+  sn:'Stage 0', sh:'Unplanned',    st:'No goal surface anywhere. The course opens on Chapter 1 and nothing else asks for anything.',
+  trig:'Leaves on: <b>first chapter complete</b>'},
+ {id:'s1',lb:'Chapter 1 done',     done:1, lvl:1,
+  sn:'Stage 1', sh:'The offer',    st:'We now have a rate. One inline, dismissible line, pre-filled with a date built from their own pace.',
+  trig:'Leaves on: <b>4 chapters, still no goal</b>'},
+ {id:'s2',lb:'4 chapters, no goal',done:4, lvl:2,
+  sn:'Stage 2', sh:'The card',     st:'Persistent card in the dashboard. Still dismissible, but it comes back. Copy shifts from invitation to consequence.',
+  trig:'Leaves on: <b>nearing exam eligibility</b>'},
+ {id:'s3',lb:'Near eligibility',   done:9, lvl:3,
+  sn:'Stage 3', sh:'Load-bearing', st:'The goal stops being optional because booking a state exam needs a date. Pre-filled if a hard deadline exists.',
+  trig:'Ends on: <b>a goal is set</b>'}
+];
+
+/* ---- paces, priced in evenings ----------------------------------------- */
+var PACES=[
+ {id:'most',nights:5,mins:105,cost:'Most evenings',  sub:'5 nights a week · about 1 hr 45 each'},
+ {id:'wknd',nights:2,mins:165,cost:'Weekends only',  sub:'Saturday and Sunday · about 2¾ hours each'},
+ {id:'few', nights:3,mins:90, cost:'A few evenings', sub:'3 nights a week · about 90 minutes each'}
+];
+
+var S={stage:'s1', rate:'typ', pace:'most', target:null, custom:false};
+
+/* ---- helpers ----------------------------------------------------------- */
+function stage(){ for(var i=0;i<STAGES.length;i++) if(STAGES[i].id===S.stage) return STAGES[i]; }
+function rate(){ for(var i=0;i<RATES.length;i++) if(RATES[i].id===S.rate) return RATES[i]; }
+function pace(id){ for(var i=0;i<PACES.length;i++) if(PACES[i].id===id) return PACES[i]; }
+function weekly(p){ return p.nights*p.mins; }
+function addDays(d,n){ var x=new Date(d.getTime()); x.setDate(x.getDate()+n); return x; }
+function dayDiff(a,b){ return Math.round((b-a)/86400000); }
+function fmt(d){ return d.toLocaleDateString('en-GB',{weekday:'short',day:'numeric',month:'short'}); }
+function fmtIso(d){ var m=d.getMonth()+1,dd=d.getDate();
+  return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(dd<10?'0':'')+dd; }
+function hm(m){ var h=Math.floor(m/60),r=Math.round(m%60);
+  return h? h+' hr'+(r?' '+r+' min':''):r+' min'; }
+function doneHours(){ return stage().done*HPC; }
+function remMins(){ return Math.round((HOURS-doneHours())*rate().m); }
+function finishFor(p){ return addDays(TODAY, Math.ceil(remMins()/weekly(p)*7)); }
+
+/* Given a target SIT date, what pace does it demand? The coursework has to be
+   finished EXAM_BUFFER days before it, so the plan is worked backwards
+   through the buffer — the same shape the walk-through uses. */
+function demand(target){
+  var courseDays=dayDiff(TODAY,target)-EXAM_BUFFER_INVENTED;
+  if(courseDays<1) return {bad:'too-soon',courseDays:courseDays};
+  var wk=remMins()/(courseDays/7), n5=wk/5, n6=wk/6;
+  return {courseDays:courseDays, weekly:wk, n5:Math.round(n5), n6:Math.round(n6),
+          strain:n5>STRAIN_MINS_INVENTED, over:n6>CEILING_MINS_INVENTED,
+          finish:addDays(TODAY,courseDays)};
+}
+function closestPace(target){
+  var best=null,bd=1e9,sign=0;
+  for(var i=0;i<PACES.length;i++){
+    var gap=dayDiff(finishFor(PACES[i]),addDays(target,-EXAM_BUFFER_INVENTED));
+    if(Math.abs(gap)<bd){ bd=Math.abs(gap); best=PACES[i]; sign=gap; }
+  }
+  return {p:best, off:bd, sign:sign};
+}
+
+/* ============================ chrome ==================================== */
+function chips(host,list,cur,cb){
+  host.innerHTML='';
+  list.forEach(function(o){
+    var b=document.createElement('button');
+    b.className='dchip'; b.type='button'; b.textContent=o.lb;
+    b.setAttribute('aria-pressed', o.id===cur?'true':'false');
+    b.onclick=function(){ cb(o.id); };
+    host.appendChild(b);
+  });
+}
+Array.prototype.forEach.call(document.querySelectorAll('.palbtn'),function(b){
+  b.onclick=function(){
+    Array.prototype.forEach.call(document.querySelectorAll('.palbtn'),function(x){
+      x.setAttribute('aria-checked','false'); });
+    b.setAttribute('aria-checked','true');
+    document.documentElement.setAttribute('data-palette',b.getAttribute('data-pal'));
+  };
+});
+var tb=document.getElementById('themeBtn');
+tb.onclick=function(){
+  var dark=document.documentElement.getAttribute('data-theme')==='dark';
+  document.documentElement.setAttribute('data-theme',dark?'light':'dark');
+  tb.setAttribute('aria-pressed',dark?'false':'true');
+  tb.textContent=dark?'Dark':'Light';
+};
+
+/* ============================ 03 · stages =============================== */
+var CHAPTER_NAMES=['Insurance Basics','Policy Provisions','Life Products','Annuity Suitability',
+  'Health Basics','Disability Income','Group Plans','Medicare','Underwriting','Texas Law',
+  'Ethics &amp; Consumer Protection','Final Review'];
+
+function renderStages(){
+  var h=document.getElementById('stages'); h.innerHTML='';
+  STAGES.forEach(function(s){
+    var d=document.createElement('div');
+    d.className='stg'+(s.id===S.stage?' here':'');
+    d.innerHTML='<span class="sn">'+s.sn+'</span><div class="sh">'+s.sh+'</div>'+
+                '<div class="st">'+s.st+'</div><div class="trig">'+s.trig+'</div>';
+    h.appendChild(d);
+  });
+}
+
+var STAGE_NOTES={
+ s0:'<b>Stage 0 is the whole point of the ask.</b> The learner has bought a course and wants to open it. '+
+    'Any goal surface here asks them to estimate a thing they have no data about, and the estimate will be '+
+    'wrong — which then makes every "on track" message for the next month wrong too. <b>A bad goal is worse '+
+    'than no goal</b>, because the product immediately starts reporting against it.',
+ s1:'<b>Stage 1 is the move.</b> The offer is not a house default — it is <i>their</i> Chapter 1, timed and '+
+    'extrapolated. Flip the pace axis and watch the quoted date move by weeks. That is what makes the word '+
+    '"recommended" mean anything, and it is precisely what the reference concept cannot do, because it asks '+
+    'before it has watched.',
+ s2:'<b>Stage 2 changes the argument, not the volume.</b> The card does not say "you should set a goal" — it '+
+    'says what we cannot tell them without one. A learner who is content not knowing whether they are on '+
+    'track is allowed to stay here, and dismissing it costs them nothing.',
+ s3:'<b>Stage 3 is the only place the goal becomes load-bearing</b>, and it gets there by the product needing '+
+    'it rather than by us insisting. You cannot book a PSI seat without a date. If the agency or the course '+
+    'window has already set one, this card arrives filled in and the learner is only deciding whether to beat it.'
+};
+
+function renderSurf(){
+  var st=stage(), r=rate(), h=document.getElementById('surf');
+  var pct=Math.round(st.done/CHAPTERS*100);
+  var ch1=Math.round(HPC*r.m);
+  var offer=finishFor(pace('most'));
+  var sit=addDays(offer,EXAM_BUFFER_INVENTED);
+  var nud='';
+
+  if(st.lvl===1){
+    nud='<div class="nudge lvl1"><div class="nt">You finished Chapter 1 in <b>'+hm(ch1)+'</b>. '+
+        'At that pace the remaining <b>'+Math.round(HOURS-doneHours())+' hours</b> land around '+
+        '<b>'+fmt(offer)+'</b>. Want to aim for a date?</div>'+
+        '<div class="na"><button class="btn sm">Set a target date</button>'+
+        '<button class="dis">Not now</button></div></div>';
+  } else if(st.lvl===2){
+    nud='<div class="nudge lvl2"><div class="nt"><b>'+st.done+' chapters in, no target date.</b> '+
+        'We can tell you what you have done, but not whether you are on track — those are different '+
+        'questions and only one of them needs a date. Most evenings would put you at <b>'+fmt(offer)+'</b>.'+
+        '</div><div class="na"><button class="btn sm">Choose a date</button>'+
+        '<button class="dis">Later</button></div></div>';
+  } else if(st.lvl===3){
+    nud='<div class="nudge lvl3"><div class="nt"><b>You are '+(CHAPTERS-st.done)+' chapters from exam '+
+        'eligibility.</b> Booking with PSI needs a date, and the rest of the plan is built backwards from it. '+
+        'At your pace the earliest realistic sit date is <b>'+fmt(sit)+'</b>.</div>'+
+        '<div class="na"><button class="btn sm">Choose my exam date</button></div></div>';
+  }
+
+  h.innerHTML=
+    '<div class="bar">MY COURSE · TEXAS LIFE &amp; HEALTH · 40 HOURS</div>'+
+    '<div class="chap"><div class="ct">'+
+      '<div class="a">'+(st.done>=CHAPTERS?'Coursework complete':'Chapter '+(st.done+1)+' · '+
+        CHAPTER_NAMES[Math.min(CHAPTERS-1,st.done)])+'</div>'+
+      '<div class="b">'+st.done+' of '+CHAPTERS+' chapters · '+Math.round(doneHours())+' of '+HOURS+' hours'+
+        (st.lvl===0?' · nothing recorded yet':'')+'</div>'+
+      '<div style="height:6px;border-radius:3px;background:var(--n-100);margin-top:9px;overflow:hidden">'+
+        '<div style="height:100%;width:'+pct+'%;background:var(--primary-500)"></div></div>'+
+    '</div><button class="btn">'+(st.done?'Resume':'Start')+'</button></div>'+
+    nud+
+    (st.lvl===0?'<div style="padding:13px 18px;font-size:12px;color:var(--ink-3);'+
+      'border-top:1px dashed var(--line-2)">Nothing here asks for a plan. There is one quiet '+
+      '<button class="inlnk">Set a target date</button> link in the course header for the learner who '+
+      'arrives already knowing their date — it is never promoted, and never returns if ignored.</div>':'');
+
+  document.getElementById('stageNote').innerHTML=STAGE_NOTES[st.id];
+}
+
+/* ============================ 04 · picker =============================== */
+function renderPicker(){
+  var h=document.getElementById('picker');
+  if(!S.target) S.target=addDays(finishFor(pace('most')),EXAM_BUFFER_INVENTED);
+  var dem=demand(S.target), near=closestPace(S.target);
+
+  var rows=PACES.map(function(p){
+    var f=finishFor(p), sit=addDays(f,EXAM_BUFFER_INVENTED);
+    var on=!S.custom && S.pace===p.id;
+    var hot=p.mins>STRAIN_MINS_INVENTED;
+    return '<button class="pace'+(hot?' hot':'')+'" role="radio" aria-checked="'+(on?'true':'false')+
+      '" data-p="'+p.id+'"><span class="dot"></span>'+
+      '<span><span class="cost">'+p.cost+(hot?'<span class="longsit">long sittings</span>':'')+
+        '</span><span class="sub">'+p.sub+
+        ' · '+(Math.round(weekly(p)/6)/10)+' hrs a week</span></span>'+
+      '<span class="fin"><span class="d">'+fmt(f)+'</span><span class="l">coursework done</span>'+
+        '<span class="d" style="color:var(--brand-500);margin-top:5px;display:block">'+fmt(sit)+'</span>'+
+        '<span class="l">sit on or after</span></span></button>';
+  }).join('');
+
+  var box;
+  if(dem.bad==='too-soon'){
+    box='<div class="warnbox"><b>That date is inside the exam buffer.</b> The coursework would have to be '+
+        'finished before today, and we hold '+EXAM_BUFFER_INVENTED+' days clear for scheduling.</div>';
+  } else if(dem.over){
+    box='<div class="warnbox"><b>We cannot make this date honest.</b> '+dem.courseDays+' days for '+
+        Math.round(remMins()/60)+' hours of study works out at '+dem.n6+' minutes a night, six nights a '+
+        'week. Pick a later date, or treat this as full-time study and talk to your agency.</div>';
+  } else if(dem.strain){
+    box='<div class="warnbox"><b>Reachable, but it is a big ask.</b> '+dem.n5+' minutes a night, five '+
+        'nights a week, for '+dem.courseDays+' days. You can still set it — we will just be honest about '+
+        'what it costs.</div>';
+  } else if(dem.n5>75){
+    box='<div class="okbox"><b>That works.</b> '+dem.n5+' minutes a night across five evenings, with '+
+        dem.courseDays+' days to work with. Real, but it is most of an evening.</div>';
+  } else {
+    box='<div class="okbox"><b>That fits comfortably.</b> '+dem.n5+' minutes a night across five evenings, '+
+        'with '+dem.courseDays+' days to work with.</div>';
+  }
+
+  h.innerHTML=
+   '<div class="pk"><div class="pkL">'+
+     '<div class="eyebrow">Your goal</div>'+
+     '<h2>When do you want to sit the state exam?</h2>'+
+     '<p class="tiny" style="margin-top:7px;max-width:58ch">Name a date and we will work the study plan '+
+       'backwards from it, or pick the evenings you can give and we will tell you the date. '+
+       '<b>You have '+Math.round(HOURS-doneHours())+' hours left</b>, and at your pace so far that is about '+
+       hm(remMins())+' of real study.</p>'+
+     '<div class="paces" role="radiogroup" aria-label="Study pace">'+rows+'</div>'+
+     '<div class="dfield" style="margin-top:16px;max-width:260px">'+
+       '<label for="tg">Or name the date</label>'+
+       '<input type="date" id="tg" value="'+fmtIso(S.target)+'" min="'+fmtIso(addDays(TODAY,1))+'"></div>'+
+     (S.custom?'<p class="tiny" style="margin-top:9px;color:var(--ink-3)">Closest preset: <b>'+near.p.cost+
+        '</b> — '+(near.off===0?'exactly on it':near.off+' day'+(near.off===1?'':'s')+' '+
+        (near.sign>0?'later than you asked':'earlier than you asked'))+'.</p>':'')+
+   '</div><div class="pkR">'+
+     '<div><div class="outlbl">Coursework done by</div>'+
+       '<div class="outbig">'+(dem.bad?'—':fmt(dem.finish))+'</div></div>'+
+     '<div class="outsep"></div>'+
+     '<div><div class="outlbl">State exam · on or after</div>'+
+       '<div class="outexam">'+fmt(S.target)+'</div>'+
+       '<div class="tiny" style="margin-top:4px;color:var(--ink-3)">Held '+EXAM_BUFFER_INVENTED+
+       ' days clear of your last chapter. XCEL does not book this for you.</div></div>'+
+     '<div class="outsep"></div>'+
+     '<div><div class="outlbl">What that costs you</div>'+
+       '<div style="font:700 14px var(--font-body);margin-top:3px">'+
+         (dem.bad?'Not achievable':dem.n5+' min a night · 5 nights')+'</div></div>'+
+     box+
+   '</div></div>'+
+   '<div class="pkfoot">'+
+     '<button class="btn"'+(dem.over||dem.bad?' disabled style="opacity:.45"':'')+'>Set my goal</button>'+
+     '<button class="btn quiet">Keep studying without one</button>'+
+     '<span class="fin">Changing this later keeps every hour you have done.</span></div>';
+
+  Array.prototype.forEach.call(h.querySelectorAll('.pace'),function(b){
+    b.onclick=function(){
+      S.pace=b.getAttribute('data-p'); S.custom=false;
+      S.target=addDays(finishFor(pace(S.pace)),EXAM_BUFFER_INVENTED);
+      renderPicker(); renderNote();
+    };
+  });
+  var tg=h.querySelector('#tg');
+  tg.onchange=function(){
+    var v=tg.value.split('-');
+    if(v.length===3 && v[0]){
+      S.target=new Date(+v[0],+v[1]-1,+v[2]); S.custom=true;
+      renderPicker(); renderNote();
+    }
+  };
+}
+
+function renderNote(){
+  var d30=demand(addDays(TODAY,30+EXAM_BUFFER_INVENTED));
+  document.getElementById('pickNote').innerHTML=
+    '<b>The 30-day finding, and it is not the one I expected.</b> Finishing this course inside 30 days needs '+
+    (d30.bad?'more time than exists':'<b>'+d30.n5+' minutes a night, five nights a week</b>')+
+    ' at this learner’s rate — which is the <i>top</i> preset, not the middle one. So 30 days is the '+
+    'aggressive end of a 40-hour course, not its default. '+
+    (d30.over?'<b>At this rate it is past the ceiling entirely.</b> ':
+     d30.strain?'<b>At this rate it is already over the strain threshold.</b> ':'')+
+    'Any copy implying a month is the normal path sets the drift states in section 05 up to fire for almost '+
+    'everybody. Flip the pace axis to Slow and read that sentence again.';
+}
+
+/* ============================ 05 · drift ================================ */
+function renderDrift(){
+  var r=rate(), P=pace('most'), h=document.getElementById('drifts');
+  var total=Math.round(HOURS*r.m);
+  var planDays=Math.ceil(total/weekly(P)*7);
+  var start=addDays(TODAY,-14), elapsed=14;
+  var onPlanFinish=addDays(start,planDays);
+  var onPlanSit=addDays(onPlanFinish,EXAM_BUFFER_INVENTED);
+  var daysLeft=Math.max(1,planDays-elapsed);
+
+  function calc(behind){
+    var plannedMins=elapsed/7*weekly(P);
+    var actual=Math.max(0,plannedMins-behind*P.mins);
+    var rem=total-actual;
+    var slip=Math.ceil(Math.abs(behind)*P.mins/(weekly(P)/7));
+    var nightsLeft=Math.max(1,Math.round(daysLeft*P.nights/7));
+    return {rem:rem, slip:slip, perNight:Math.round(rem/nightsLeft), nightsLeft:nightsLeft};
+  }
+
+  var c6=calc(6), c3=calc(AHEAD_OFFER_INVENTED);
+
+  var rows=[
+   {cls:'good', nm:'On pace', rg:'within half a session', pill:'p1|quiet',
+    msg:'On plan for <b>'+fmt(onPlanSit)+'</b>. Chapter '+
+        Math.min(CHAPTERS,Math.round(elapsed/planDays*CHAPTERS)+1)+' tonight.',
+    acts:'<button class="btn sm">Resume</button>',
+    why:'<b>One line, no adjective.</b> A working plan should be close to invisible — nobody sets a goal in '+
+        'order to be congratulated about it every evening.'},
+
+   {cls:'quiet', nm:'Slightly behind', rg:'under '+DRIFT_TOLERANCE_INVENTED+' session down', pill:'p0|silent',
+    msg:'<span style="color:var(--ink-3)">Nothing is shown. The dashboard reads exactly as the row above it.</span>',
+    acts:'<button class="btn sm">Resume</button>',
+    why:'<b>The most important row on this page.</b> They are about '+Math.round(0.8*P.mins)+' minutes down — '+
+        'one short evening. Saying so trains them to discount the next message, and by the time we have '+
+        'something real to say they have stopped reading. The tolerance <i>is</i> the design.'},
+
+   {cls:'warn', nm:'Behind', rg:DRIFT_ALERT_INVENTED+'+ sessions, date still reachable', pill:'p2|correct',
+    msg:'You are about <b>'+DRIFT_ALERT_INVENTED+' evenings behind</b>. Two extra sessions this week and '+
+        '<b>'+fmt(onPlanSit)+'</b> is back on.',
+    acts:'<button class="btn sm">Add two evenings this week</button>'+
+         '<button class="btn sm ghost">See my plan</button>',
+    why:'<b>Offer the cheapest correction first, never a re-plan.</b> The goal has not failed and the date has '+
+        'not moved — this is one week that needs two extra hours. Opening the plan editor here would tell the '+
+        'learner that the thing they committed to is already wrong.'},
+
+   {cls:'hard', nm:'Date at risk', rg:'the goal and the plan can no longer both be true', pill:'p3|decide',
+    msg:'<b>'+fmt(onPlanSit)+' no longer fits at 1 hr 45 a night.</b> Something has to move, and which one '+
+        'is your call:',
+    acts:'<button class="btn sm">Keep the date — '+c6.perNight+' min a night, '+c6.nightsLeft+' nights left</button>'+
+         '<button class="btn sm ghost">Keep the pace — move to '+fmt(addDays(onPlanSit,c6.slip))+'</button>',
+    why:'<b>Both options priced, neither pre-selected.</b> A product that quietly slides its own finish line is '+
+        'the reason nobody believes completion estimates. Note that the <i>exam</i> date is what is being '+
+        'negotiated — the coursework date is only its input.'},
+
+   {cls:'good', nm:'Ahead', rg:AHEAD_OFFER_INVENTED+'+ sessions ahead', pill:'p1|offer',
+    msg:'You are about <b>'+AHEAD_OFFER_INVENTED+' evenings ahead</b>. <b>'+fmt(onPlanSit)+'</b> could come '+
+        'forward to <b>'+fmt(addDays(onPlanSit,-c3.slip))+'</b> if you want to sit sooner.',
+    acts:'<button class="btn sm">Bring my date forward</button>'+
+         '<button class="btn sm quiet">Keep '+fmt(onPlanSit)+'</button>',
+    why:'<b>Under-served nearly everywhere.</b> A learner who is ahead has earned a choice, and "keep the date" '+
+        'is a real answer — some of them are ahead precisely because the date is fixed by something outside us.'}
+  ];
+
+  h.innerHTML=rows.map(function(o){
+    var p=o.pill.split('|');
+    return '<div class="drift '+o.cls+'"><div class="dk">'+
+      '<div class="nm">'+o.nm+'</div><div class="rg">'+o.rg+'</div>'+
+      '<div style="margin-top:8px"><span class="pill '+p[0]+'">'+p[1]+'</span></div></div>'+
+      '<div class="dv"><div class="msg">'+o.msg+'</div>'+
+      '<div class="acts">'+o.acts+'</div><div class="why">'+o.why+'</div></div></div>';
+  }).join('');
+}
+
+/* ============================ rules ===================================== */
+function renderRules(){
+  document.getElementById('rulesBody').innerHTML=RULES.map(function(r){
+    return '<tr><td><code>'+r[0]+'</code></td><td>'+r[1]+'</td><td>'+r[2]+'</td></tr>';
+  }).join('');
+}
+
+/* ============================ boot ====================================== */
+function renderAll(){
+  renderStages(); renderSurf(); renderPicker(); renderNote(); renderDrift();
+  document.getElementById('axNote').textContent=rate().note;
+}
+function pickStage(id){ S.stage=id; S.custom=false; S.target=null; renderAxes(); renderAll(); }
+function pickRate(id){  S.rate=id;  S.custom=false; S.target=null; renderAxes(); renderAll(); }
+function renderAxes(){
+  chips(document.getElementById('dStage'),STAGES,S.stage,pickStage);
+  chips(document.getElementById('dRate'), RATES, S.rate, pickRate);
+}
+renderAxes(); renderRules(); renderAll();
+</script>
+</body>
+</html>
