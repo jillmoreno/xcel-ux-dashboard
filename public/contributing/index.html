@@ -43,6 +43,264 @@
   <p class="meta">Last updated 18 September 2026 · Owner: Jillienne Moreno · Applies to <code>jillmoreno/xcel-ux-dashboard</code></p>
 </header>
 
+<!-- ── View switch: Quick walkthrough (default) · Full guide ─────────────
+     Two views of one document. The quick view is nine illustrated cards for a
+     first read; the full guide is the reference. Both are in this file, so the
+     PDF carries both (print shows quick first, then the full guide) and neither
+     can drift from the other's facts without the diff showing it. -->
+<div class="views noprint" role="tablist" aria-label="How much detail">
+  <button type="button" role="tab" id="tab-quick" aria-controls="view-quick" aria-selected="true">Quick walkthrough</button>
+  <button type="button" role="tab" id="tab-full" aria-controls="view-full" aria-selected="false">Full guide</button>
+  <span class="views-hint">Two minutes with pictures, or the whole thing.</span>
+</div>
+
+<!-- ═══════════════════════════ QUICK WALKTHROUGH ═══════════════════════════ -->
+<div id="view-quick" class="view" role="tabpanel" aria-labelledby="tab-quick">
+
+<p class="print-only eyebrow">Part 1 · Quick walkthrough</p>
+
+<section id="q-loop">
+  <h2>The loop, in one picture</h2>
+  <div class="shot wide" role="img" aria-label="Diagram: your branch is built by Netlify at its own address; you add that address to Refinement on the full site, where the team sees it; a toggle makes it visible to stakeholders on the public site; a pull request and the promote step move it into Prototypes.">
+    <svg viewBox="0 0 720 210" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif">
+      <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#6b7280"/></marker></defs>
+      <!-- you -->
+      <rect x="14" y="60" width="128" height="86" rx="10" fill="#fff" stroke="#dfe3e8"/>
+      <text x="78" y="86" text-anchor="middle" font-size="11" font-weight="700" fill="#6b7280" letter-spacing="1.2">YOUR BRANCH</text>
+      <text x="78" y="108" text-anchor="middle" font-size="12.5" fill="#1b1d21" font-family="ui-monospace, Menlo, monospace">feat/…</text>
+      <text x="78" y="128" text-anchor="middle" font-size="11" fill="#454b55">git push</text>
+      <!-- netlify -->
+      <line x1="142" y1="103" x2="186" y2="103" stroke="#6b7280" stroke-width="1.5" marker-end="url(#ar)"/>
+      <rect x="188" y="60" width="150" height="86" rx="10" fill="#fff" stroke="#dfe3e8"/>
+      <text x="263" y="86" text-anchor="middle" font-size="11" font-weight="700" fill="#6b7280" letter-spacing="1.2">BRANCH BUILD</text>
+      <text x="263" y="106" text-anchor="middle" font-size="10.5" fill="#1f4e88" font-family="ui-monospace, Menlo, monospace">feat-…--ux-demo-</text>
+      <text x="263" y="120" text-anchor="middle" font-size="10.5" fill="#1f4e88" font-family="ui-monospace, Menlo, monospace">xceldashboard.netlify.app</text>
+      <text x="263" y="138" text-anchor="middle" font-size="10.5" fill="#454b55">no password · not private</text>
+      <!-- refinement -->
+      <line x1="338" y1="103" x2="382" y2="103" stroke="#6b7280" stroke-width="1.5" marker-end="url(#ar)"/>
+      <text x="360" y="92" text-anchor="middle" font-size="10" fill="#6b7280">paste</text>
+      <rect x="384" y="30" width="170" height="146" rx="10" fill="#fff" stroke="#dfe3e8"/>
+      <text x="469" y="54" text-anchor="middle" font-size="11" font-weight="700" fill="#6b7280" letter-spacing="1.2">REFINEMENT</text>
+      <rect x="400" y="66" width="138" height="30" rx="6" fill="#f5f5f5" stroke="#dfe3e8"/>
+      <text x="410" y="85" font-size="11" fill="#1b1d21">Your link</text>
+      <rect x="480" y="72" width="50" height="18" rx="9" fill="#fff" stroke="#dfe3e8"/><text x="505" y="85" text-anchor="middle" font-size="9" font-weight="700" fill="#454b55">Team only</text>
+      <text x="469" y="118" text-anchor="middle" font-size="10.5" fill="#454b55">the team sees it</text>
+      <rect x="400" y="128" width="138" height="30" rx="6" fill="#e9eef4" stroke="#dfe3e8"/>
+      <text x="410" y="147" font-size="11" fill="#1b1d21">Your link</text>
+      <rect x="492" y="134" width="38" height="18" rx="9" fill="#1f4e88"/><text x="511" y="147" text-anchor="middle" font-size="9" font-weight="700" fill="#fff">Public</text>
+      <text x="469" y="172" text-anchor="middle" font-size="10" fill="#6b7280">↑ "Show on public site" on → stakeholders see it</text>
+      <!-- prototypes -->
+      <line x1="554" y1="103" x2="598" y2="103" stroke="#6b7280" stroke-width="1.5" marker-end="url(#ar)"/>
+      <text x="576" y="92" text-anchor="middle" font-size="10" fill="#6b7280">PR</text>
+      <rect x="600" y="60" width="108" height="86" rx="10" fill="#1f4e88"/>
+      <text x="654" y="86" text-anchor="middle" font-size="11" font-weight="700" fill="#cfdcec" letter-spacing="1.2">PROTOTYPES</text>
+      <text x="654" y="108" text-anchor="middle" font-size="12" fill="#fff">the product</text>
+      <text x="654" y="128" text-anchor="middle" font-size="10.5" fill="#cfdcec">promote → merge</text>
+    </svg>
+  </div>
+  <p class="small">Left to right: you push a branch, Netlify builds it at its own address, you paste that address into Refinement where the team sees it, a toggle shows it to stakeholders, and a PR plus the promote step lands it in Prototypes. Everything below is one of those boxes in detail.</p>
+</section>
+
+<section id="q-steps">
+  <h2>Nine steps</h2>
+  <div class="qgrid">
+
+    <article class="qcard">
+      <h3><span class="n">1</span>Clone and run</h3>
+      <div class="shot" role="img" aria-label="A terminal window showing git clone, npm install and npm run dev, then a browser at localhost:5200">
+        <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace, Menlo, monospace">
+          <rect x="8" y="8" width="304" height="134" rx="8" fill="#1b1d21"/>
+          <circle cx="24" cy="22" r="4" fill="#ff5f57"/><circle cx="38" cy="22" r="4" fill="#febc2e"/><circle cx="52" cy="22" r="4" fill="#28c840"/>
+          <text x="22" y="52" font-size="11" fill="#9cc2e5">$ <tspan fill="#f1f3f7">git clone …/xcel-ux-dashboard.git</tspan></text>
+          <text x="22" y="72" font-size="11" fill="#9cc2e5">$ <tspan fill="#f1f3f7">cd xcel-ux-dashboard</tspan></text>
+          <text x="22" y="92" font-size="11" fill="#9cc2e5">$ <tspan fill="#f1f3f7">npm install</tspan></text>
+          <text x="22" y="112" font-size="11" fill="#9cc2e5">$ <tspan fill="#f1f3f7">npm run dev</tspan></text>
+          <text x="22" y="132" font-size="11" fill="#8fd1ad">➜  Local: http://localhost:5200/</text>
+        </svg>
+      </div>
+      <p>Once. Download the project, install it, run it. Port <strong>5200</strong> — the sibling dashboards use 5180 and 5190 and look identical, so a wrong port shows the wrong project with no error.</p>
+    </article>
+
+    <article class="qcard">
+      <h3><span class="n">2</span>Make a branch</h3>
+      <div class="shot" role="img" aria-label="A diagram of the main line with a branch called feat/study-streak-card splitting off it">
+        <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif">
+          <line x1="30" y1="100" x2="290" y2="100" stroke="#6b7280" stroke-width="3"/>
+          <circle cx="60" cy="100" r="6" fill="#6b7280"/><circle cx="120" cy="100" r="6" fill="#6b7280"/><circle cx="260" cy="100" r="6" fill="#6b7280"/>
+          <text x="30" y="128" font-size="11" fill="#454b55" font-weight="700">main</text>
+          <path d="M120 100 C150 100 150 50 180 50 L 290 50" fill="none" stroke="#1f4e88" stroke-width="3"/>
+          <circle cx="200" cy="50" r="6" fill="#1f4e88"/><circle cx="250" cy="50" r="6" fill="#1f4e88"/>
+          <text x="150" y="36" font-size="11" fill="#1f4e88" font-family="ui-monospace, Menlo, monospace">feat/study-streak-card</text>
+          <text x="150" y="84" font-size="10" fill="#6b7280">your commits</text>
+        </svg>
+      </div>
+      <p>Your own line of work. <code>git checkout -b feat/your-thing</code>. Lowercase, dashes, a short prefix. The name becomes a web address in step 5 — slashes turn into dashes there.</p>
+    </article>
+
+    <article class="qcard">
+      <h3><span class="n">3</span>Build it in Claude Code</h3>
+      <div class="shot" role="img" aria-label="A Claude Code prompt asking for a card behind a feature flag, a file tree showing src and public/demos, and a flag toggle set to on">
+        <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif">
+          <rect x="10" y="10" width="190" height="52" rx="10" fill="#e9eef4"/>
+          <text x="22" y="30" font-size="10.5" fill="#1b1d21">Add a study-streak card to Home,</text>
+          <text x="22" y="46" font-size="10.5" fill="#1b1d21">behind a flag — default ON here.</text>
+          <rect x="10" y="74" width="190" height="66" rx="8" fill="#fff" stroke="#dfe3e8"/>
+          <text x="22" y="94" font-size="10.5" fill="#454b55" font-family="ui-monospace, Menlo, monospace">src/ <tspan fill="#6b7280">← React product work</tspan></text>
+          <text x="22" y="112" font-size="10.5" fill="#454b55" font-family="ui-monospace, Menlo, monospace">public/demos/ <tspan fill="#6b7280">← HTML explorations</tspan></text>
+          <text x="22" y="130" font-size="10.5" fill="#454b55" font-family="ui-monospace, Menlo, monospace">CLAUDE.md <tspan fill="#6b7280">← read first</tspan></text>
+          <rect x="216" y="40" width="94" height="70" rx="8" fill="#fff" stroke="#dfe3e8"/>
+          <text x="263" y="60" text-anchor="middle" font-size="9.5" fill="#6b7280" font-weight="700" letter-spacing="1">YOUR FLAG</text>
+          <rect x="240" y="72" width="46" height="22" rx="11" fill="#1f4e88"/><circle cx="275" cy="83" r="8" fill="#fff"/>
+          <text x="263" y="106" text-anchor="middle" font-size="9.5" fill="#1b1d21">on, on your branch</text>
+        </svg>
+      </div>
+      <p>Say which kind of work it is — a React surface (<code>src/</code>) or an HTML exploration (<code>public/demos/</code>) — and ask for a feature flag with its default <strong>on</strong> on your branch. Let Claude read <code>CLAUDE.md</code> first.</p>
+    </article>
+
+    <article class="qcard">
+      <h3><span class="n">4</span>Run the checks</h3>
+      <div class="shot" role="img" aria-label="Three rows with green ticks: tsc, vitest, lint">
+        <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" font-family="ui-monospace, Menlo, monospace">
+          <g font-size="11.5">
+            <rect x="12" y="18" width="296" height="32" rx="6" fill="#e8f4ee"/><text x="26" y="39" fill="#2f6b4f">✓</text><text x="46" y="39" fill="#1b1d21">npx tsc -b --noEmit</text><text x="300" y="39" text-anchor="end" fill="#2f6b4f" font-family="system-ui, sans-serif" font-size="10">types</text>
+            <rect x="12" y="58" width="296" height="32" rx="6" fill="#e8f4ee"/><text x="26" y="79" fill="#2f6b4f">✓</text><text x="46" y="79" fill="#1b1d21">npx vitest run</text><text x="300" y="79" text-anchor="end" fill="#2f6b4f" font-family="system-ui, sans-serif" font-size="10">832 tests</text>
+            <rect x="12" y="98" width="296" height="32" rx="6" fill="#e8f4ee"/><text x="26" y="119" fill="#2f6b4f">✓</text><text x="46" y="119" fill="#1b1d21">npm run lint</text><text x="300" y="119" text-anchor="end" fill="#2f6b4f" font-family="system-ui, sans-serif" font-size="10">style</text>
+          </g>
+        </svg>
+      </div>
+      <p>Before every push. A failing test is usually a recorded decision talking to you — read its comment. If you touched <code>public/prototypes/</code>, add <code>npm run smoke</code>.</p>
+    </article>
+
+    <article class="qcard">
+      <h3><span class="n">5</span>Push — that is the deploy</h3>
+      <div class="shot" role="img" aria-label="git push flowing to a Netlify cloud, then a browser address bar showing the branch build URL">
+        <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif"><defs><marker id="ar5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#6b7280"/></marker></defs>
+          <rect x="12" y="20" width="118" height="30" rx="6" fill="#1b1d21"/><text x="71" y="40" text-anchor="middle" font-size="11" fill="#f1f3f7" font-family="ui-monospace, Menlo, monospace">git push</text>
+          <line x1="132" y1="35" x2="168" y2="35" stroke="#6b7280" stroke-width="1.5" marker-end="url(#ar5)"/>
+          <path d="M190 48 a14 14 0 0 1 4-27 a18 18 0 0 1 34 -4 a13 13 0 0 1 10 24 a10 10 0 0 1 -6 7 z" fill="#e9eef4" stroke="#1f4e88"/>
+          <text x="216" y="40" text-anchor="middle" font-size="9.5" fill="#1f4e88" font-weight="700">Netlify builds</text>
+          <text x="216" y="66" text-anchor="middle" font-size="9.5" fill="#6b7280">~2–3 minutes</text>
+          <rect x="12" y="86" width="296" height="52" rx="8" fill="#fff" stroke="#dfe3e8"/>
+          <rect x="22" y="96" width="276" height="20" rx="10" fill="#f5f5f5"/>
+          <text x="30" y="110" font-size="8" fill="#1b1d21" font-family="ui-monospace, Menlo, monospace">feat-study-streak-card--ux-demo-xceldashboard.netlify.app</text>
+          <text x="22" y="131" font-size="9.5" fill="#1f4e88" font-family="ui-monospace, Menlo, monospace">/dashboard-rebrand?demo=1 <tspan fill="#6b7280" font-family="system-ui, sans-serif">← the link to share</tspan></text>
+        </svg>
+      </div>
+      <p>Netlify builds every pushed branch as its own site, no password. Share <code>…/dashboard-rebrand?demo=1</code> so reviewers see your committed defaults, not their own leftover toggles. <strong>Branch addresses are not private.</strong></p>
+    </article>
+
+    <article class="qcard">
+      <h3><span class="n">6</span>Add it to Refinement</h3>
+      <div class="shot" role="img" aria-label="The Refinement section on the full site with an Add link button, and the form: Address, Title, Note, Added by, and the Show on public site checkbox unticked">
+        <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif">
+          <rect x="8" y="8" width="84" height="134" rx="6" fill="#f5f5f5"/>
+          <text x="18" y="34" font-size="10" fill="#6b7280">Prototypes</text>
+          <rect x="12" y="42" width="76" height="20" rx="4" fill="#1f4e88"/><text x="18" y="56" font-size="10" fill="#fff" font-weight="700">Refinement</text>
+          <text x="18" y="82" font-size="10" fill="#6b7280">Other Links</text><text x="18" y="102" font-size="10" fill="#6b7280">Research</text>
+          <text x="104" y="26" font-size="12" font-weight="700" fill="#1b1d21">Refinement</text>
+          <rect x="248" y="14" width="62" height="20" rx="5" fill="#1f4e88"/><text x="279" y="28" text-anchor="middle" font-size="9.5" fill="#fff" font-weight="700">Add link</text>
+          <rect x="104" y="42" width="206" height="100" rx="8" fill="#fff" stroke="#dfe3e8"/>
+          <g font-size="9.5" fill="#454b55">
+            <text x="114" y="60">Address</text><rect x="170" y="50" width="130" height="14" rx="3" fill="#f5f5f5"/><text x="175" y="60" font-size="8" fill="#1b1d21" font-family="ui-monospace, Menlo, monospace">https://feat-…?demo=1</text>
+            <text x="114" y="80">Title</text><rect x="170" y="70" width="130" height="14" rx="3" fill="#f5f5f5"/><text x="175" y="80" font-size="8" fill="#1b1d21">Streak card — feat/…</text>
+            <text x="114" y="100">Note</text><rect x="170" y="90" width="130" height="14" rx="3" fill="#f5f5f5"/><text x="175" y="100" font-size="8" fill="#1b1d21">Home, under Current Progress</text>
+            <rect x="114" y="116" width="11" height="11" rx="2" fill="#fff" stroke="#6b7280"/><text x="131" y="125">Show on public site <tspan fill="#6b7280">— leave off</tspan></text>
+          </g>
+        </svg>
+      </div>
+      <p>On the <strong>full site</strong>: Refinement → <strong>Add link</strong>. Paste the address, title it with your branch name, say where to look. Leave <em>Show on public site</em> off. Saved to a shared store — the team sees it at once.</p>
+    </article>
+
+    <article class="qcard">
+      <h3><span class="n">7</span>Discuss and iterate</h3>
+      <div class="shot" role="img" aria-label="A Refinement row marked Team only, with edit and remove buttons, and an arrow looping back to push again">
+        <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif"><defs><marker id="ar7" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#6b7280"/></marker></defs>
+          <rect x="12" y="24" width="296" height="56" rx="8" fill="#fff" stroke="#dfe3e8"/>
+          <text x="24" y="46" font-size="11" font-weight="600" fill="#1b1d21">Study streak card — feat/…</text>
+          <text x="24" y="64" font-size="9.5" fill="#6b7280">netlify.app · added 18 Sep · by Sam</text>
+          <rect x="222" y="36" width="52" height="16" rx="8" fill="#fff" stroke="#dfe3e8"/><text x="248" y="47.5" text-anchor="middle" font-size="8.5" font-weight="700" fill="#454b55">Team only</text>
+          <rect x="280" y="34" width="20" height="20" rx="4" fill="#fff" stroke="#dfe3e8"/><text x="290" y="48" text-anchor="middle" font-size="10" fill="#454b55">✎</text>
+          <path d="M160 96 C160 130 60 130 60 100" fill="none" stroke="#1f4e88" stroke-width="1.5" marker-end="url(#ar7)"/>
+          <text x="130" y="140" text-anchor="middle" font-size="9.5" fill="#1f4e88">change → checks → push · same address</text>
+          <text x="236" y="112" text-anchor="middle" font-size="10" fill="#454b55">the team talks where it</text>
+          <text x="236" y="126" text-anchor="middle" font-size="10" fill="#454b55">already talks — not here</text>
+        </svg>
+      </div>
+      <p>The team opens the row and talks. You change, check, push — the address stays the same, so the row stays right. <strong>Edit</strong> the row if its title or note should change.</p>
+    </article>
+
+    <article class="qcard">
+      <h3><span class="n">8</span>Flip it public</h3>
+      <div class="shot" role="img" aria-label="The Show on public site checkbox ticked, the row's chip now reads Public, and a stakeholder icon on the public site sees the same row">
+        <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif"><defs><marker id="ar8" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#6b7280"/></marker></defs>
+          <rect x="12" y="16" width="150" height="118" rx="8" fill="#fff" stroke="#dfe3e8"/>
+          <text x="24" y="36" font-size="9.5" font-weight="700" fill="#6b7280" letter-spacing="1">FULL SITE · EDIT</text>
+          <rect x="24" y="52" width="12" height="12" rx="2" fill="#1f4e88"/><text x="30" y="62" text-anchor="middle" font-size="9" fill="#fff" font-weight="700">✓</text>
+          <text x="42" y="62" font-size="9.5" fill="#1b1d21">Show on public site</text>
+          <rect x="24" y="80" width="126" height="40" rx="6" fill="#e9eef4"/>
+          <text x="32" y="97" font-size="9.5" font-weight="600" fill="#1b1d21">Study streak card</text>
+          <rect x="32" y="103" width="36" height="13" rx="6.5" fill="#1f4e88"/><text x="50" y="112.5" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">Public</text>
+          <line x1="164" y1="75" x2="196" y2="75" stroke="#6b7280" stroke-width="1.5" marker-end="url(#ar8)"/>
+          <rect x="198" y="16" width="110" height="118" rx="8" fill="#f5f5f5" stroke="#dfe3e8"/>
+          <text x="253" y="36" text-anchor="middle" font-size="9.5" font-weight="700" fill="#6b7280" letter-spacing="1">PUBLIC SITE</text>
+          <circle cx="253" cy="64" r="12" fill="#dfe3e8"/><circle cx="253" cy="60" r="4.5" fill="#6b7280"/><path d="M243 74 a10 7 0 0 1 20 0z" fill="#6b7280"/>
+          <rect x="210" y="86" width="86" height="34" rx="6" fill="#fff" stroke="#dfe3e8"/>
+          <text x="218" y="101" font-size="9" font-weight="600" fill="#1b1d21">Study streak card</text>
+          <text x="218" y="113" font-size="8.5" fill="#6b7280">read-only</text>
+        </svg>
+      </div>
+      <p>When it is ready for stakeholders, Jillienne (or you, once agreed) edits the row and ticks <strong>Show on public site</strong>. It appears on the public site's list, read-only. Untick to take it back — nothing is deleted.</p>
+    </article>
+
+    <article class="qcard">
+      <h3><span class="n">9</span>PR → promote → merge → retire</h3>
+      <div class="shot" role="img" aria-label="A pull request card, then a promote checklist deciding each flag, then a merge into main, then the Refinement row removed">
+        <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif"><defs><marker id="ar9" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5 0 10z" fill="#6b7280"/></marker></defs>
+          <rect x="10" y="30" width="86" height="64" rx="8" fill="#fff" stroke="#dfe3e8"/>
+          <text x="53" y="50" text-anchor="middle" font-size="9.5" font-weight="700" fill="#6b7280" letter-spacing="1">YOU · PR</text>
+          <text x="53" y="70" text-anchor="middle" font-size="10" fill="#1b1d21">feat/… → main</text>
+          <text x="53" y="84" text-anchor="middle" font-size="9" fill="#6b7280">on GitHub</text>
+          <line x1="98" y1="62" x2="114" y2="62" stroke="#6b7280" stroke-width="1.5" marker-end="url(#ar9)"/>
+          <rect x="116" y="18" width="110" height="88" rx="8" fill="#fff" stroke="#dfe3e8"/>
+          <text x="171" y="36" text-anchor="middle" font-size="9.5" font-weight="700" fill="#6b7280" letter-spacing="1">JILLIENNE · PROMOTE</text>
+          <g font-size="9" fill="#1b1d21">
+            <rect x="126" y="46" width="10" height="10" rx="2" fill="#1f4e88"/><text x="130.5" y="54" font-size="7.5" fill="#fff" text-anchor="middle" font-weight="700">✓</text><text x="142" y="54" font-family="ui-monospace, Menlo, monospace">study-streak</text><circle cx="214" cy="51" r="4" fill="#2f6b4f"/>
+            <rect x="126" y="64" width="10" height="10" rx="2" fill="#fff" stroke="#6b7280"/><text x="142" y="72" font-family="ui-monospace, Menlo, monospace">nav-test</text><circle cx="214" cy="69" r="4" fill="#fff" stroke="#6b7280"/>
+            <text x="171" y="94" text-anchor="middle" fill="#6b7280" font-size="8">● ships · ○ back to main</text>
+          </g>
+          <line x1="228" y1="62" x2="244" y2="62" stroke="#6b7280" stroke-width="1.5" marker-end="url(#ar9)"/>
+          <rect x="246" y="30" width="64" height="64" rx="8" fill="#1f4e88"/>
+          <text x="278" y="56" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">merge</text>
+          <text x="278" y="72" text-anchor="middle" font-size="9" fill="#cfdcec">both sites</text>
+          <text x="278" y="84" text-anchor="middle" font-size="9" fill="#cfdcec">rebuild</text>
+          <rect x="60" y="118" width="200" height="22" rx="6" fill="#f5f5f5" stroke="#dfe3e8" stroke-dasharray="3 3"/>
+          <text x="160" y="133" text-anchor="middle" font-size="9.5" fill="#6b7280">then: Remove the Refinement row — it lives in Prototypes now</text>
+        </svg>
+      </div>
+      <p>Open a PR. Jillienne runs <code>promote-to-prototype</code> on your branch — each flag your branch changed is kept on or set back to <code>main</code>'s value — then merges. Both sites rebuild. Remove your Refinement row.</p>
+    </article>
+
+  </div>
+</section>
+
+<section id="q-rules">
+  <h2>Four rules that cover most mistakes</h2>
+  <div class="qrules">
+    <div class="callout warn"><span class="lab">Never push to main</span><p>Every push to <code>main</code> rebuilds the public site. Branch, then PR.</p></div>
+    <div class="callout warn"><span class="lab">Promotion is a flag, not a tile</span><p>Prototypes holds exactly one row and a test guards it. Your work reaches it by a flag default flipping on <code>main</code>.</p></div>
+    <div class="callout warn"><span class="lab">Review HTML goes in public/demos/</span><p><code>public/prototypes/</code> is 404'd on the public site — a file there is invisible on your branch build too.</p></div>
+    <div class="callout warn"><span class="lab">Branch addresses are public</span><p>Anyone with the link can open one. Nothing confidential on a branch.</p></div>
+  </div>
+  <p class="small noprint">Need the why behind any of these, the form field by field, or the troubleshooting table? Switch to the <a href="#full" data-view="full">Full guide</a>.</p>
+</section>
+
+</div><!-- /view-quick -->
+
+<!-- ═══════════════════════════════ FULL GUIDE ═══════════════════════════════ -->
+<div id="view-full" class="view" role="tabpanel" aria-labelledby="tab-full" hidden>
+
+<p class="print-only eyebrow" style="page-break-before: always">Part 2 · Full guide</p>
+
 <nav class="toc" aria-label="Contents">
   <p>Contents</p>
   <ol>
@@ -304,6 +562,46 @@ npm run lint            # code style</code></pre>
   </table>
   </div>
 </section>
+
+</div><!-- /view-full -->
+
+<script>
+  // The view switch. Hash-addressable (#quick / #full) so a link can open the
+  // full guide directly, remembered per browser, and a no-op in print — the
+  // stylesheet shows both views there. Progressive: with scripting off, the
+  // quick view shows (the full one is `hidden`) and the tabs do nothing.
+  (function () {
+    var tabs = document.querySelectorAll('[role="tab"]');
+    var views = { quick: document.getElementById('view-quick'), full: document.getElementById('view-full') };
+    function show(name, push) {
+      if (!views[name]) name = 'quick';
+      Object.keys(views).forEach(function (k) {
+        views[k].hidden = k !== name;
+        var t = document.getElementById('tab-' + k);
+        if (t) t.setAttribute('aria-selected', String(k === name));
+      });
+      try { localStorage.setItem('xcel.contributing.view', name); } catch (e) {}
+      if (push && history.replaceState) history.replaceState(null, '', '#' + name);
+    }
+    tabs.forEach(function (t) {
+      t.addEventListener('click', function () { show(t.id.replace('tab-', ''), true); });
+    });
+    document.querySelectorAll('[data-view]').forEach(function (a) {
+      a.addEventListener('click', function (e) { e.preventDefault(); show(a.getAttribute('data-view'), true); window.scrollTo(0, 0); });
+    });
+    var fromHash = (location.hash || '').replace('#', '');
+    var saved = null;
+    try { saved = localStorage.getItem('xcel.contributing.view'); } catch (e) {}
+    // A hash naming a SECTION of the full guide (#steps, #glossary…) should
+    // open the full guide and let the browser scroll to it.
+    if (fromHash && !views[fromHash] && document.getElementById(fromHash)) {
+      show(views.quick.querySelector('#' + fromHash) ? 'quick' : 'full', false);
+      setTimeout(function () { var el = document.getElementById(fromHash); if (el) el.scrollIntoView(); }, 0);
+    } else {
+      show(views[fromHash] ? fromHash : saved || 'quick', false);
+    }
+  })();
+</script>
 
 <footer>
   <p>Part of the XCEL UX Dashboard. The reasoning behind every decision described here is in the repo's <code>CLAUDE.md</code>; the one-time site setup is in <code>README.md</code> under “Two Netlify sites, one repo”. Stakeholders get a shorter companion page, <a href="/about/">How to read this dashboard</a>.</p>

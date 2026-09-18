@@ -108,6 +108,21 @@ in each file's header comment and in the README), sharing one stylesheet at
 | `public/contributing/index.html` | designers | the gated **Contributing** section — an iframe of the page (`GuideFrame`) — and `/contributing/` directly | 404'd at the edge: `/contributing/*` is in `BLOCKED` |
 | `public/about/index.html` | stakeholders | the **"How to read this dashboard"** link at the foot of the rail, OUTSIDE the `<nav>`, on every build | reachable — it is the orientation a reviewer gets |
 
+**The Contributing page has TWO VIEWS in one file** (2026-09-18, at
+Jillienne's request — the full guide was "a lot of reading"): a **Quick
+walkthrough** (default — the loop as one diagram, nine illustrated step cards,
+four rules) and the **Full guide**. A `role="tablist"` switch toggles `hidden`
+on two panels; `#quick` / `#full` address them, a hash naming a full-guide
+section opens that view and scrolls, and the choice is remembered per browser.
+Print shows BOTH, quick first, so the PDF is the whole thing. The
+illustrations are inline SVG drawn in LITERAL light-palette hex — not CSS
+variables — because weasyprint's SVG renderer does not read them, and each SVG
+carries its OWN arrow-marker `<defs>` because weasyprint renders inline SVGs in
+isolation (a shared `url(#ar)` lost every arrowhead after the first drawing).
+The `.shot` frame stays white in dark mode for the same reason a screenshot
+would. Weasyprint's fallback font is wider than the browser's, so label widths
+in the drawings were sized against the PDF, not the screen.
+
 **The section is an iframe, not JSX**, for the `ComponentLivePreview` reason:
 the same document is the section, the standalone page and the PDF source, and
 re-typing it as a component is how the three drift. It is a self-contained
