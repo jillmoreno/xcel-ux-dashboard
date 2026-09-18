@@ -21,9 +21,10 @@ import { primaryPreviewSrc } from '@/components/prototype/featurePreviewSrc'
 import { ArchiveTable } from '@/components/prototype/ArchiveTable'
 import { QaNotesPanel } from '@/components/prototype/QaNotesPanel'
 import { TodoPanel } from '@/components/prototype/TodoPanel'
-import { LinksPanel } from '@/components/prototype/LinksPanel'
+import { DemoPanel, LinksPanel } from '@/components/prototype/LinksPanel'
 import { useTodoOpenCount } from '@/components/prototype/todoStore'
 import { useLinkCount } from '@/data/linkStore'
+import { useDemoCount } from '@/data/demoStore'
 import { useQaNoteCount } from '@/data/qaNoteStore'
 import { UX_TOKEN_BRIDGE, mirrorPaletteToRoot } from '@/components/prototype/uxPaletteBridge'
 import {
@@ -114,6 +115,7 @@ import { isPublicGateway } from '@/data/gatewayMode'
 type UxSection =
   | 'demo'
   | 'links'
+  | 'prototypes'
   | 'research'
   | 'todo'
   | 'design'
@@ -178,9 +180,34 @@ const RESEARCH_DECISIONS = 0
 /** Open sections first, then the restricted group. The order here IS the nav
  *  order; the divider is drawn where `restricted` starts. */
 const SECTIONS: SectionDef[] = [
-  { id: 'demo', label: 'Demo', blurb: 'Presentation-ready experiences to walk stakeholders through.' },
   {
-    // Directly under Demo and UNGATED, which is the decision in this entry.
+    // The REVIEW INBOX, authored on the page (2026-09-18). Work in progress —
+    // a designer's branch, built by Netlify at its own URL — put here so the
+    // team can open it and, once the row is flipped public, stakeholders can
+    // too. Nothing in `PROTOTYPE_FEATURES` routes here; `bySection.demo` is
+    // empty by design and the count is `useDemoCount`. See `demoStore.ts`.
+    //
+    // Before 2026-09-18 this held the product build. That row is in
+    // Prototypes now, directly below — the two used to be one section, and
+    // the split is what made "put your branch up for discussion" and "this is
+    // what we have decided" two different acts.
+    id: 'demo',
+    label: 'Demo',
+    blurb: 'Work in review — branches and explorations the team is discussing. Added on the page, not in code.',
+  },
+  {
+    // The product as it stands: the live React build at its committed flag
+    // baseline. ONE row (`xcel-dashboard`), and promoting a feature here means
+    // flipping its flag default on `main` — `.claude/skills/promote-to-prototype`
+    // — never adding a row. Ungated, beside Demo, because this is the thing
+    // stakeholders are sent to see. `UxDashboard.smoke.test.tsx` compares the
+    // whole section against an expected set, in both directions.
+    id: 'prototypes',
+    label: 'Prototypes',
+    blurb: 'The live product build — where we have landed, at the committed baseline.',
+  },
+  {
+    // Directly under Prototypes and UNGATED, which is the decision in this entry.
     // Demo is the passwordless front door and this sits beside it, so a link
     // added here is a link a stakeholder can reach unaccompanied — the same
     // consideration `UxDashboard.smoke.test.tsx` guards for Demo's rows. It is
@@ -304,7 +331,9 @@ const FIRST_RESTRICTED = VISIBLE_SECTIONS.findIndex((s) => s.gate)
  *  than silently dropping the reviewer on Demo. */
 const LEGACY_SECTIONS: Record<string, UxSection> = {
   demo: 'demo',
-  dashboard: 'demo',
+  // The old tile landing's name for the product-build section, which is
+  // Prototypes now rather than Demo.
+  dashboard: 'prototypes',
   dev: 'development',
   exploration: 'exploration',
 }
@@ -979,7 +1008,10 @@ function sectionOf(
       ? 'development'
       : 'design'
   }
-  if (f.category === 'demo' || f.category === 'dashboard') return 'demo'
+  // The product build. `demo` / `dashboard` are the LMS's names for the same
+  // thing and route here too; nothing routes to the Demo SECTION, which is a
+  // panel authored on the page rather than a list of rows (2026-09-18).
+  if (f.category === 'prototype' || f.category === 'demo' || f.category === 'dashboard') return 'prototypes'
   if (f.category === 'testing') return 'development'
   // Ported outside products get their own section rather than sitting in Design
   // — they are a different kind of thing, and they carry their own gate.
@@ -1153,7 +1185,7 @@ export function UxDashboardPage() {
   // says "Ready" (no information) or contradicts the section's own promise.
   // The filter pills go with it: a control that filters an attribute the rows
   // do not show is a dead control.
-  const showStatus = section !== 'demo'
+  const showStatus = section !== 'prototypes'
 
 
   // A feature gateway opened INSIDE this frame (`?open=<featureId>`). Demo rows
@@ -1172,7 +1204,7 @@ export function UxDashboardPage() {
     ? VISIBLE_SECTIONS.find((d) => d.id === sectionOf(openCandidate, rollupOf(openCandidate)))
     : undefined
   const openFeature = openCandidate && openDef && isOpen(openDef) ? openCandidate : undefined
-  const opensInFrame = (f: PrototypeFeature) => section !== 'demo' && !f.externalUrl && !f.to
+  const opensInFrame = (f: PrototypeFeature) => section !== 'prototypes' && !f.externalUrl && !f.to
   const setOpen = (id: string | null) => {
     const p = new URLSearchParams(params)
     if (id) p.set('open', id)
@@ -1208,10 +1240,17 @@ export function UxDashboardPage() {
   /** Live link count for the Links badge. There is no committed set to seed
    *  from, so this starts at 0 and settles on the first fetch. */
   const linkCount = useLinkCount()
+  /** Live demo count. On the public build only the rows flipped public are
+   *  shown, so the badge counts only those — a badge over a shorter list reads
+   *  as a load failure. Same mechanism as `useLinkCount`; see `demoStore.ts`. */
+  const demoCount = useDemoCount(isPublicGateway() ? (l) => l.isPublic : undefined)
 
   const bySection = useMemo(() => {
     const out: Record<UxSection, PrototypeFeature[]> = {
+      // Not a list of features — the Demo panel owns its own data, so this
+      // stays empty by design and the nav count comes from `useDemoCount`.
       demo: [],
+      prototypes: [],
       // Not a list of features — the Links panel owns its own data, so this
       // stays empty by design and the nav count comes from `useLinkCount`.
       links: [],
@@ -1310,7 +1349,9 @@ export function UxDashboardPage() {
                   ? qaCount
                   : s.id === 'links'
                     ? linkCount
-                    : (s.count ?? bySection[s.id].length)
+                    : s.id === 'demo'
+                      ? demoCount
+                      : (s.count ?? bySection[s.id].length)
             const locked = Boolean(s.gate) && !isOpen(s)
             return (
               <div key={s.id}>
@@ -1474,6 +1515,11 @@ export function UxDashboardPage() {
           // `--ux-*` palette rather than the brand tokens, like `TodoPanel`, so
           // it already re-skins with the four schemes and four appearances.
           <LinksPanel />
+        ) : section === 'demo' ? (
+          // The same panel as Links with a different board behind it — see
+          // `LinkBoardPanel`. Read-only and filtered to public rows on the
+          // public build; that asymmetry is the review gate.
+          <DemoPanel />
         ) : section === 'todo' ? (
           <TodoPanel />
         ) : section === 'archive' ? (

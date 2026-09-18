@@ -38,23 +38,48 @@ import { useCallback, useMemo, useState, type CSSProperties } from 'react'
 import { ArrowUpRightFromSquare, ClipboardList, PenToSquare, Plus, Trash } from '@/icons'
 import { Modal } from '@/components/ui/Modal'
 import {
+  LINKS_BOARD,
   LINK_TYPES,
   LinkWriteError,
-  createLink,
-  deleteLink,
   draftProblems,
   hostOf,
   linkTypeLabel,
-  readLastAuthor,
-  rememberLastAuthor,
   safeHref,
-  saveLink,
   toMarkdown,
-  useLinks,
+  type LinkBoard,
   type LinkDraft,
   type LinkType,
   type StoredLink,
 } from '@/data/linkStore'
+import { DEMO_BOARD } from '@/data/demoStore'
+import { isPublicGateway } from '@/data/gatewayMode'
+
+/**
+ * What one board CALLS things and SHOWS. `LinksPanel` and `DemoPanel` below
+ * are the two instances; the panel itself is `LinkBoardPanel`, shared since
+ * 2026-09-18 so the two authoring surfaces cannot drift — the same reason the
+ * Jump Back In card's rows became the Study Plan's real `TaskRow`.
+ */
+export type LinkBoardPresentation = {
+  board: LinkBoard
+  /** 'link' / 'demo' — the singular noun in every label and count. */
+  noun: string
+  nounPlural: string
+  /** Whether the Type field and its filter strip render. Links only. */
+  showType: boolean
+  /** Whether the form carries the "Show on public site" toggle and rows show a
+   *  Public / Team chip. Demo only. */
+  showPublicToggle: boolean
+  /** Show only rows with `isPublic` — the public build's Demo. */
+  publicOnly: boolean
+  /** No Add / Edit / Remove anywhere, whatever the endpoint says. The public
+   *  build's Demo: stakeholders read it, designers author it on the full site. */
+  readOnly: boolean
+  /** The empty-state sentence when the endpoint IS reachable. */
+  emptyHint: string
+  /** The sentence under the form's fields. */
+  saveHint: string
+}
 
 /* ── styles ───────────────────────────────────────────────────────────────── */
 
@@ -251,7 +276,7 @@ const toolbarStyle: CSSProperties = {
   flexWrap: 'wrap',
 }
 
-const EMPTY_DRAFT: LinkDraft = { title: '', url: '', note: '', addedBy: '', type: '' }
+const EMPTY_DRAFT: LinkDraft = { title: '', url: '', note: '', addedBy: '', type: '', isPublic: false }
 
 /** Below this the search field is a dead control — it costs a row of chrome to
  *  filter a list you can already see all of. Same reasoning as the status pills
@@ -266,6 +291,7 @@ type Editing = null | 'new' | StoredLink
 /* ── the form ─────────────────────────────────────────────────────────────── */
 
 function LinkFormModal({
+  p,
   editing,
   draft,
   errors,
@@ -274,6 +300,7 @@ function LinkFormModal({
   onSubmit,
   onClose,
 }: {
+  p: LinkBoardPresentation
   editing: Editing
   draft: LinkDraft
   errors: string[]
@@ -291,7 +318,7 @@ function LinkFormModal({
       // a stray click outside the dialog. Same call `QaNoteForm` makes.
       disableBackdropClose
       width={560}
-      title={isEdit ? 'Edit link' : 'Add a link'}
+      title={isEdit ? `Edit ${p.noun}` : `Add a ${p.noun}`}
     >
       <div style={modalBodyStyle}>
         {errors.length > 0 && (
@@ -330,26 +357,28 @@ function LinkFormModal({
           />
         </div>
 
-        <div style={fieldWrapStyle}>
-          <label style={labelStyle} htmlFor="link-type">
-            Type <span style={optionalStyle}>— optional</span>
-          </label>
-          <select
-            id="link-type"
-            value={draft.type}
-            onChange={(e) => onChange({ type: e.target.value as LinkType })}
-            style={fieldStyle}
-          >
-            {/* '' first, and labelled — a select whose empty option is blank
-                reads as a value that failed to load. */}
-            <option value="">No type</option>
-            {LINK_TYPES.map((t) => (
-              <option key={t.id} value={t.id}>
-                {t.label}
-              </option>
-            ))}
-          </select>
-        </div>
+        {p.showType && (
+          <div style={fieldWrapStyle}>
+            <label style={labelStyle} htmlFor="link-type">
+              Type <span style={optionalStyle}>— optional</span>
+            </label>
+            <select
+              id="link-type"
+              value={draft.type}
+              onChange={(e) => onChange({ type: e.target.value as LinkType })}
+              style={fieldStyle}
+            >
+              {/* '' first, and labelled — a select whose empty option is blank
+                  reads as a value that failed to load. */}
+              <option value="">No type</option>
+              {LINK_TYPES.map((t) => (
+                <option key={t.id} value={t.id}>
+                  {t.label}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
 
         <div style={fieldWrapStyle}>
           <label style={labelStyle} htmlFor="link-note">
@@ -377,15 +406,33 @@ function LinkFormModal({
           />
         </div>
 
-        <p style={modalHintStyle}>
-          Saved to the shared store — everyone who opens this site sees it, and it survives a
-          cleared cache. The date is stamped for you.
-        </p>
+        {p.showPublicToggle && (
+          <div style={fieldWrapStyle}>
+            {/* A checkbox, not a toggle switch or a select: it is one yes/no
+                fact with a real consequence, and the label says the
+                consequence in words. Off by default — a row is team-only until
+                someone decides otherwise, never the reverse. */}
+            <label style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={draft.isPublic === true}
+                onChange={(e) => onChange({ isPublic: e.target.checked })}
+                style={{ margin: 0, width: 15, height: 15, accentColor: 'var(--ux-accent)' }}
+              />
+              Show on public site
+            </label>
+            <p style={{ ...optionalStyle, margin: '4px 0 0 23px', fontSize: 12 }}>
+              Off: only the team sees this row. On: stakeholders with the public link see it too.
+            </p>
+          </div>
+        )}
+
+        <p style={modalHintStyle}>{p.saveHint}</p>
       </div>
 
       <div style={modalFooterStyle}>
         <button type="button" onClick={onSubmit} disabled={busy} style={primaryBtnStyle}>
-          {busy ? 'Saving…' : isEdit ? 'Save changes' : 'Add link'}
+          {busy ? 'Saving…' : isEdit ? 'Save changes' : `Add ${p.noun}`}
         </button>
         <button type="button" onClick={onClose} disabled={busy} style={btnStyle}>
           Cancel
@@ -397,8 +444,18 @@ function LinkFormModal({
 
 /* ── the panel ────────────────────────────────────────────────────────────── */
 
-export function LinksPanel() {
-  const { index, refresh } = useLinks()
+export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
+  const { index: rawIndex, refresh } = p.board.useLinks()
+  const { createLink, saveLink, deleteLink, readLastAuthor, rememberLastAuthor } = p.board
+  // `publicOnly` filters at the INDEX, not at render, so the count, the search
+  // and the empty state all describe the same list a stakeholder can see.
+  const index = useMemo(
+    () => (p.publicOnly ? { ...rawIndex, links: rawIndex.links.filter((l) => l.isPublic) } : rawIndex),
+    [rawIndex, p.publicOnly],
+  )
+  // What "can author here" means: the endpoint answers AND this build is not
+  // read-only. Every Add / Edit / Remove affordance below reads this one flag.
+  const canAuthor = index.available && !p.readOnly
   const [editing, setEditing] = useState<Editing>(null)
   const [draft, setDraft] = useState<LinkDraft>(EMPTY_DRAFT)
   const [errors, setErrors] = useState<string[]>([])
@@ -429,8 +486,8 @@ export function LinksPanel() {
    *  nothing carries is a dead control — the same rule the project sections'
    *  status pills follow, which only render what the section actually holds. */
   const presentTypes = useMemo(
-    () => LINK_TYPES.filter((t) => index.links.some((l) => l.type === t.id)),
-    [index.links],
+    () => (p.showType ? LINK_TYPES.filter((t) => index.links.some((l) => l.type === t.id)) : []),
+    [index.links, p.showType],
   )
 
   const change = (patch: Partial<LinkDraft>) => setDraft((d) => ({ ...d, ...patch }))
@@ -468,6 +525,7 @@ export function LinksPanel() {
       note: link.note,
       addedBy: link.addedBy,
       type: link.type,
+      isPublic: link.isPublic,
     })
     setErrors([])
     setEditing(link)
@@ -529,23 +587,23 @@ export function LinksPanel() {
       {/* ── toolbar ── */}
       {index.links.length > 0 && (
         <div style={toolbarStyle}>
-          {index.available && (
+          {canAuthor && (
             <button type="button" onClick={beginAdd} style={primaryBtnStyle}>
               <Plus size={12} aria-hidden />
-              Add link
+              Add {p.noun}
             </button>
           )}
           {index.links.length >= SEARCH_THRESHOLD && (
             <input
               value={query}
               onChange={(e) => setQuery(e.target.value)}
-              placeholder="Search links"
-              aria-label="Search links"
+              placeholder={`Search ${p.nounPlural}`}
+              aria-label={`Search ${p.nounPlural}`}
               style={{ ...fieldStyle, width: 200 }}
             />
           )}
           <span style={{ fontSize: 13, color: 'var(--ux-text-3)' }}>
-            {rows.length} {rows.length === 1 ? 'link' : 'links'}
+            {rows.length} {rows.length === 1 ? p.noun : p.nounPlural}
           </span>
           <button type="button" onClick={() => void copy()} style={{ ...btnStyle, marginLeft: 'auto' }}>
             <ClipboardList size={12} aria-hidden />
@@ -584,24 +642,24 @@ export function LinksPanel() {
       {/* ── list ── */}
       {index.links.length === 0 ? (
         <div style={emptyStyle}>
-          <p style={{ margin: 0, fontWeight: 600, color: 'var(--ux-text)' }}>No links yet.</p>
+          <p style={{ margin: 0, fontWeight: 600, color: 'var(--ux-text)' }}>No {p.nounPlural} yet.</p>
           <p style={{ margin: 0, fontSize: 13 }}>
             {index.loading
               ? 'Checking…'
               : index.available
-                ? 'Everything here is added on the page — nothing is authored in code.'
+                ? p.emptyHint
                 : 'The authoring endpoint is not reachable from here — run `netlify dev`, or open the deployed site.'}
           </p>
-          {index.available && (
+          {canAuthor && (
             <button type="button" onClick={beginAdd} style={primaryBtnStyle}>
               <Plus size={12} aria-hidden />
-              Add the first link
+              Add the first {p.noun}
             </button>
           )}
         </div>
       ) : rows.length === 0 ? (
         <p style={{ fontSize: 13, color: 'var(--ux-text-3)' }}>
-          No links match {q && typeFilter ? 'that search and type' : q ? 'that search' : 'that type'}.
+          No {p.nounPlural} match {q && typeFilter ? 'that search and type' : q ? 'that search' : 'that type'}.
         </p>
       ) : (
         <ul style={listStyle}>
@@ -632,9 +690,24 @@ export function LinksPanel() {
                 }}
               >
                 <div style={{ minWidth: 0 }}>
-                  {link.type && (
+                  {p.showType && link.type && (
                     <span style={{ ...chipStyle, marginBottom: 4 }}>
                       {linkTypeLabel(link.type)}
+                    </span>
+                  )}
+                  {/* On the full site the chip says WHO can see the row — the
+                      one fact about a Demo row a reviewer needs before sending
+                      the link on. Not rendered when `publicOnly`: every row
+                      there is public, and a chip saying so on each is noise. */}
+                  {p.showPublicToggle && !p.publicOnly && (
+                    <span
+                      style={{
+                        ...chipStyle,
+                        marginBottom: 4,
+                        ...(link.isPublic ? { background: 'var(--ux-accent)', color: 'var(--ux-on-accent)' } : {}),
+                      }}
+                    >
+                      {link.isPublic ? 'Public' : 'Team only'}
                     </span>
                   )}
                   {href ? (
@@ -658,7 +731,7 @@ export function LinksPanel() {
                   <p style={metaStyle}>{meta.join(' · ')}</p>
                   {link.note.trim() && <p style={noteTextStyle}>{link.note}</p>}
                 </div>
-                {index.available && (
+                {canAuthor && (
                   <div style={{ display: 'flex', gap: 6, flex: 'none' }}>
                     <button
                       type="button"
@@ -689,6 +762,7 @@ export function LinksPanel() {
       )}
 
       <LinkFormModal
+        p={p}
         editing={editing}
         draft={draft}
         errors={errors}
@@ -699,4 +773,49 @@ export function LinksPanel() {
       />
     </div>
   )
+}
+
+/* ── the two instances ────────────────────────────────────────────────────── */
+
+const LINKS_PRESENTATION: LinkBoardPresentation = {
+  board: LINKS_BOARD,
+  noun: 'link',
+  nounPlural: 'links',
+  showType: true,
+  showPublicToggle: false,
+  publicOnly: false,
+  readOnly: false,
+  emptyHint: 'Everything here is added on the page — nothing is authored in code.',
+  saveHint:
+    'Saved to the shared store — everyone who opens this site sees it, and it survives a cleared cache. The date is stamped for you.',
+}
+
+/** Links: authorable on BOTH sites, an editorial decision recorded in CLAUDE.md
+ *  ("it is the place you send someone"). */
+export function LinksPanel() {
+  return <LinkBoardPanel p={LINKS_PRESENTATION} />
+}
+
+/**
+ * Demo: the work-in-review inbox. Authorable on the FULL site only; the public
+ * build renders it read-only and filtered to the rows someone has flipped
+ * public. That asymmetry IS the review gate — see `demoStore.ts`.
+ */
+export function DemoPanel() {
+  const pub = isPublicGateway()
+  const p: LinkBoardPresentation = {
+    board: DEMO_BOARD,
+    noun: 'demo',
+    nounPlural: 'demos',
+    showType: false,
+    showPublicToggle: true,
+    publicOnly: pub,
+    readOnly: pub,
+    emptyHint: pub
+      ? 'Nothing is being shown for review right now.'
+      : 'Push a branch, paste its Netlify URL here, and the team can open it. Flip "Show on public site" when it is ready for stakeholders.',
+    saveHint:
+      'Saved to the shared store — the team sees it on the full site right away. The date is stamped for you.',
+  }
+  return <LinkBoardPanel p={p} />
 }

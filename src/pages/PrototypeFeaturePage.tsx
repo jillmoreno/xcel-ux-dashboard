@@ -70,7 +70,8 @@ function backSectionHref(feature: PrototypeFeature): string {
       ? '/?section=development'
       : '/?section=design'
   }
-  if (feature.category === 'demo' || feature.category === 'dashboard') return '/?section=demo'
+  if (feature.category === 'prototype' || feature.category === 'demo' || feature.category === 'dashboard')
+    return '/?section=prototypes'
   if (feature.category === 'testing') return '/?section=development'
   if (feature.category === 'exploration') return '/?section=exploration'
   return '/?section=design'

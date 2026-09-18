@@ -46,7 +46,7 @@ The same `main` branch deploys to **two** Netlify projects. One push builds both
 
 | Site | Who it is for | Shows | Build env vars |
 |---|---|---|---|
-| **Public** — the existing site, the URL stakeholders already have | anyone with the link | Demo · Links · Research **only**. The gated sections are absent, not locked: no nav rows, no password prompt, deep links land on Demo, and `/prototypes/*` 404s | `VITE_GATEWAY_MODE = public` |
+| **Public** — the existing site, the URL stakeholders already have | anyone with the link | Demo · Prototypes · Links · Research **only**. The gated sections are absent, not locked: no nav rows, no password prompt, deep links land on Demo, and `/prototypes/*` 404s. Demo is read-only here and shows only rows flipped public | `VITE_GATEWAY_MODE = public` |
 | **Full** — a new site | Jillienne and the team | everything, locked and unlocked, exactly as before | `BLOBS_SITE_ID` + `BLOBS_TOKEN` (see below) |
 
 Nothing is configured per site in the repo — `netlify.toml` and the code are
@@ -63,7 +63,7 @@ time, so the ONLY per-site difference is what each project sets in
    whole point of the arrangement is that both sites build from a push.
 2. **On the existing (public) site**, add the env var `VITE_GATEWAY_MODE` =
    `public` (scope: Builds). Trigger a deploy. The site now shows only Demo,
-   Links and Research. Note its **Project ID** (*Project configuration →
+   Prototypes, Links and Research. Note its **Project ID** (*Project configuration →
    General → Project information*) for step 4.
 3. **Create the full site**: *Add new project → Import an existing project →
    GitHub → this repo*, branch `main`. Netlify reads `netlify.toml`, so build
@@ -85,16 +85,39 @@ time, so the ONLY per-site difference is what each project sets in
    same links as the public one. If Links shows the "endpoint unreachable"
    state, the token or ID is wrong — the function log will say.
 
-After that, `git push` is the whole workflow. To preview what stakeholders
-will see locally: `npm run build:public && npx vite preview`.
+6. **Turn on branch deploys on the public site** — this is what gives a
+   designer's branch a stakeholder-reachable URL. *Project configuration →
+   Build & deploy → Branches and deploy contexts → Configure → Branch deploys:
+   All*. Every pushed branch then builds at
+   `<branch>--ux-demo-xceldashboard.netlify.app` (slashes in branch names become
+   dashes). A branch URL is not private — anyone who has it can open it — so the
+   team should know that before pushing.
+
+After that, `git push` is the whole workflow.
+
+### Demo vs Prototypes — the two ungated sections
+
+| | Demo | Prototypes |
+|---|---|---|
+| What | Work in review — a designer's branch URL, or an HTML file in `public/demos/` | The live product build at its committed flag baseline |
+| Who adds | Any designer, on the full site: **Demo → Add demo** | Jillienne, by promoting a flag default on `main` |
+| Stakeholders see it when | Someone flips the row's **Show on public site** on | It is merged to `main` |
+| Where it is authored | On the page (Netlify Blobs) — no commit | `FEATURE_FLAGS` in code, via `.claude/skills/promote-to-prototype` |
+
+The loop, in one line: branch → push → add to Demo (team-only) → discuss →
+flip public → stakeholders → PR → `/promote-to-prototype` → merge → retire the
+Demo row. The Contributing guide (below, once written) walks each step.
+
+To preview what stakeholders will see locally: `npm run build:public && npx vite preview`.
 
 **What is and is not hidden on the public build.** Hidden: the eight gated
-sections and their rows, `/prototype/:id` for any non-Demo row (and its
-handoff detail), `/qa-notes`, and the static folders `/prototypes/`,
-`/testing/`, `/ngat-admin/`, `/archive/`, `/qa/` (edge 404, via the generated
-`_redirects`). Reachable: `/`, `/links`, `/research-rationale`, and the whole
-product app (`/dashboard-rebrand` and the ~28 routes under it), because the
-Demo row IS the product app and it links between its own routes. If a product
+sections and their rows, `/prototype/:id` for any non-Prototypes row (and its
+handoff detail), `/qa-notes`, Demo rows not flipped public, and the static
+folders `/prototypes/`, `/testing/`, `/ngat-admin/`, `/archive/`, `/qa/` (edge
+404, via the generated `_redirects`). Reachable: `/`, `/links`,
+`/research-rationale`, `/demos/*`, `/api/*`, and the whole product app
+(`/dashboard-rebrand` and the ~28 routes under it), because the Prototypes row
+IS the product app and it links between its own routes. If a product
 route should not be public, that is a separate decision.
 
 ## The prototypes live here

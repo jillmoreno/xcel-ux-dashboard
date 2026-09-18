@@ -44,7 +44,7 @@ function renderAt(Page: React.ComponentType, path: string) {
   )
 }
 
-const PUBLIC_SECTIONS = ['Demo', 'Links', 'Research']
+const PUBLIC_SECTIONS = ['Demo', 'Prototypes', 'Links', 'Research']
 const GATED_SECTIONS = ['Design', 'Exploration', 'Sandbox', 'Development', 'Done', 'Archive', 'QA Notes', 'To Do']
 
 beforeEach(() => {
@@ -146,11 +146,22 @@ describe('public build — the edge rules', () => {
 
 describe('shared Blobs store', () => {
   it('every endpoint opens its store through the one helper, and the vars are all-or-nothing', () => {
-    for (const fn of ['links', 'qa-notes', 'qa-captures']) {
+    // links / demos go through the shared board handler, which opens the store;
+    // the two QA functions open it directly. Either way nothing calls
+    // `getStore` except `netlify/lib/store.ts`.
+    for (const fn of ['qa-notes', 'qa-captures']) {
       const src = readFileSync(resolve(here, `../../netlify/functions/${fn}.ts`), 'utf8')
       expect(src).toContain("from '../lib/store'")
       expect(src).not.toMatch(/\bgetStore\(/)
     }
+    for (const fn of ['links', 'demos']) {
+      const src = readFileSync(resolve(here, `../../netlify/functions/${fn}.ts`), 'utf8')
+      expect(src).toContain("from '../lib/linkBoard'")
+      expect(src).not.toMatch(/\bgetStore\(/)
+    }
+    const board = readFileSync(resolve(here, '../../netlify/lib/linkBoard.ts'), 'utf8')
+    expect(board).toContain("from './store'")
+    expect(board).not.toMatch(/\bgetStore\(/)
     const helper = readFileSync(resolve(here, '../../netlify/lib/store.ts'), 'utf8')
     expect(helper).toContain('BLOBS_SITE_ID')
     expect(helper).toContain('BLOBS_TOKEN')

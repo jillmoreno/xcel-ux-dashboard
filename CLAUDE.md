@@ -90,17 +90,99 @@ project list. Unchanged from the LMS original apart from three strings (the
 brand sub-line, the Research row label, `RESEARCH_DECISIONS`), so anything the
 LMS `CLAUDE.md` says about it holds here.
 
-**Sections.** Three open — Demo · Links · Research — then a divider under a
-**UX & DEV ACCESS** eyebrow holding Design · Exploration · Sandbox ·
+**Sections.** Four open — Demo · Prototypes · Links · Research — then a divider
+under a **UX & DEV ACCESS** eyebrow holding Design · Exploration · Sandbox ·
 Development · Done · Archive · QA Notes · To Do.
 
-**Demo holds the live product build** (`xcel-dashboard` → `/dashboard-rebrand`),
-promoted there on 2026-09-08. It is the one row on the ungated front door, so
-what sits in Demo is a decision about what a stakeholder may see without the
-password — `UxDashboard.smoke.test.tsx` compares the whole section against an
-expected set, in both directions, so promoting or demoting a row fails a test
-first. It is also the one row in the file that is an in-app ROUTE rather than a
-standalone HTML document; see "The one in-app row" below.
+**Prototypes holds the live product build** (`xcel-dashboard` →
+`/dashboard-rebrand?demo=1`), the one feature row on the ungated front door.
+What sits there is a decision about what a stakeholder may see unaccompanied —
+`UxDashboard.smoke.test.tsx` compares the whole section against an expected
+set, in both directions, so promoting or demoting a row fails a test first. It
+is also the one row in the file that is an in-app ROUTE rather than a
+standalone HTML document; see "The one in-app row" below. **It was called Demo
+until 2026-09-18**, and the product build was promoted into it on 2026-09-08;
+older notes that say "the Demo row" or "the Demo baseline" mean this section.
+
+### Demo is the review inbox; Prototypes is the product (2026-09-18)
+
+The old Demo section did two jobs — "here is the product as it stands" and
+"here is something we want to talk about" — and they are different acts by
+different people. Splitting them is what lets a second designer put work in
+front of stakeholders without a commit, while keeping "what we have decided"
+something only a merge to `main` can change.
+
+| Section | What it is | Who changes it | How |
+|---|---|---|---|
+| **Demo** | Work in review — a designer's branch at its Netlify branch URL, or an HTML file in `public/demos/` | any designer | on the page: Demo → Add demo |
+| **Prototypes** | The product at its committed flag baseline | Jillienne | `.claude/skills/promote-to-prototype`, on the PR, before merge |
+
+**Demo is authored on the page**, the Links pattern: a fourth Netlify function
+(`demos.ts`) over Blobs, the same panel, the same store code. Both are
+instances of one board now — `netlify/lib/linkBoard.ts` serves both endpoints
+from a config, `createLinkBoard` in `linkStore.ts` builds both client stores,
+and `LinkBoardPanel` renders both with a `LinkBoardPresentation`. Two
+hand-copied panels is how a validation rule gets fixed in one and not the
+other. `LinksPanel` and `DemoPanel` are the two instances; `linkStore.ts` still
+exports the Links functions by name so nothing that imported them changed.
+
+**The one field Demo adds is `isPublic`, and it is the review gate.** Off by
+default. The FULL site shows every row with a Public / Team-only chip and the
+toggle in the form; the PUBLIC build renders `DemoPanel` read-only and filtered
+to `isPublic` rows, and its nav badge counts only those. So the flow is
+"designer adds → team sees → Jillienne flips → stakeholders see", and there is
+no commit anywhere in it. `Demo.test.tsx` pins both sides — including that the
+public build offers no Add / Edit / Remove whatever the endpoint says, and that
+the endpoint stores the flag as strictly boolean `true` so a truthy string
+cannot publish a row.
+
+**Links has no `isPublic` and its endpoint DROPS the field** (`publicFlag:
+false`), so a Links record cannot quietly acquire one. Demo has no `type` for
+the mirror reason. The client type `StoredLink` carries both fields for both
+boards and normalises the absent one, so a consumer never asks which board a
+record came from.
+
+**Why a branch is reviewable at all: branch deploys on the public site.** A
+designer sets their flag's default ON on their branch, pushes, and
+`<branch>--ux-demo-xceldashboard.netlify.app/dashboard-rebrand?demo=1` renders
+their work at that branch's committed baseline — with no password, because it
+is the public site's build. `main`'s baseline is untouched. That is the whole
+reason the review link is the public site's branch deploy and not the full
+site's: stakeholders cannot open the full site. It also means every pushed
+branch has a URL, which is fine as long as the team knows it. **Branch deploys
+have to be switched on in Netlify** (Build & deploy → Branches and deploy
+contexts → Branch deploys: All); the README says where.
+
+**`public/demos/` exists because `/prototypes/` is 404'd on the public build.**
+HTML work-in-review needs to be served from somewhere the public site's branch
+deploy can reach; that folder is deliberately absent from `BLOCKED` in
+`scripts/public-redirects.mjs`, and `Demo.test.tsx` asserts it stays absent.
+Nothing there gets a `PROTOTYPE_FEATURES` row — the Demo panel is its listing —
+and nothing should live there long. `public/demos/README.md` says the same to
+whoever opens the folder.
+
+**The promote skill was renamed, not rewritten.** `promote-to-demo` →
+`promote-to-prototype`, now checked into `.claude/skills/` so Claude Code
+sessions in this repo carry it, with the Cowork copy kept under the old name as
+an alias. Its logic — diff the branch's `FEATURE_FLAGS` against `main`, ask per
+flag, apply, commit — was already right; what changed is the vocabulary, that it
+runs ON THE PR BEFORE MERGE (merging publishes to two sites now), that a
+DECLINED flag must be set back to `main`'s value (the designer turned it on to
+see their work), and a final step to retire the branch's Demo row.
+
+**`FeatureCategory` gained `'prototype'`** for the one row, and `sectionOf`
+routes `demo` / `dashboard` there too so an LMS-ported row lands in the right
+place. `isPublicFeature` accepts all three. The `dashboard` legacy alias in
+`LEGACY_SECTIONS` points at `prototypes` now. Demo stays the landing section
+(`?section=` absent), so a stakeholder arriving on the public link sees what is
+being discussed first and the product one click away — flip the default in
+`useState<UxSection>` if that reads wrong in practice.
+
+**`sectionOf` still names Demo nowhere**, and `bySection.demo` is empty by
+design; the count is `useDemoCount`, which took an optional filter for the
+public build's badge. The Demo blurb on the section, the panel's empty-state
+sentence and the form's hint each say the same thing — added on the page, team
+first, public on a flip — because the panel is where a designer learns the rule.
 
 **The in-app password is NOT enforced (2026-09-18)** — `ENFORCE_SECTION_GATE`
 in `UxDashboardPage` is `false`. The eight restricted sections still carry a

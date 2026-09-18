@@ -18,7 +18,23 @@
 
 import { useCallback, useEffect, useState } from 'react'
 
-const BASE = '/api/links'
+/**
+ * SHARED with the Demo board since 2026-09-18. Everything below the type
+ * declarations is `createLinkBoard(config)`, and this module's named exports
+ * are the LINKS instance of it — so every existing import keeps working, and
+ * `demoStore.ts` is a second instance with a different endpoint, event and
+ * label rather than a second copy of this file.
+ */
+export type LinkBoardConfig = {
+  /** `/api/links` — the collection; `${base}/:id` is one record. */
+  base: string
+  /** Window event fired on every write, so a nav badge can re-read. */
+  event: string
+  /** `localStorage` key for the last `addedBy` this browser typed. Shared
+   *  across boards on purpose — it is a fact about the person at the keyboard,
+   *  not about the board. */
+  lastAuthorKey: string
+}
 
 /**
  * Fired on every successful write, so the nav badge re-reads without the page
@@ -33,11 +49,6 @@ const BASE = '/api/links'
  * hypothetical: the badge shipped saying 2 with three links on screen, which is
  * the same defect `useQaNoteCount` still has one section down.
  */
-const LINKS_EVENT = 'cgp.links'
-
-function announce(): void {
-  window.dispatchEvent(new Event(LINKS_EVENT))
-}
 
 /**
  * What kind of thing a link points at.
@@ -81,13 +92,20 @@ export type StoredLink = {
   /** What kind of thing it points at. '' when unset — optional, so the records
    *  written before this field existed stay valid without a backfill. */
   type: LinkType
+  /** Whether the PUBLIC build shows this row. Only the Demo board's endpoint
+   *  stores it (Links drops the field); everywhere else it normalises to
+   *  `false`, so a consumer never has to ask which board a record came from. */
+  isPublic: boolean
   /** `yyyy-mm-dd`, stamped server-side on create and carried through edits. */
   addedDate: string
 }
 
 /** The editable fields. `id` and `addedDate` are not among them — the server
- *  owns both, so a form cannot renumber a link or backdate it. */
-export type LinkDraft = Pick<StoredLink, 'title' | 'url' | 'note' | 'addedBy' | 'type'>
+ *  owns both, so a form cannot renumber a link or backdate it. `isPublic` is
+ *  optional on the way IN because only one board has the control for it. */
+export type LinkDraft = Pick<StoredLink, 'title' | 'url' | 'note' | 'addedBy' | 'type'> & {
+  isPublic?: boolean
+}
 
 export type LinkIndex = {
   /** False when there is no endpoint to talk to — plain `npm run dev`, or a
@@ -173,28 +191,26 @@ function isLink(v: unknown): v is StoredLink {
 
 /**
  * The last `addedBy` this browser used, so it does not have to be retyped for
- * every link.
+ * every record.
  *
  * `localStorage`, per browser, and that is the right scope for it: it is a
- * convenience about the person at this keyboard, not a fact about the link —
+ * convenience about the person at this keyboard, not a fact about the record —
  * the fact is on the record, which is shared. Failing silently is fine; the
  * field is optional and an empty prefill costs nothing.
  */
-const LAST_AUTHOR_KEY = 'cgp.links.lastAuthor'
-
-export function readLastAuthor(): string {
+function readLastAuthorFrom(key: string): string {
   try {
-    return localStorage.getItem(LAST_AUTHOR_KEY) ?? ''
+    return localStorage.getItem(key) ?? ''
   } catch {
     return ''
   }
 }
 
-export function rememberLastAuthor(name: string): void {
+function rememberLastAuthorIn(key: string, name: string): void {
   try {
     const trimmed = name.trim()
-    if (trimmed) localStorage.setItem(LAST_AUTHOR_KEY, trimmed)
-    else localStorage.removeItem(LAST_AUTHOR_KEY)
+    if (trimmed) localStorage.setItem(key, trimmed)
+    else localStorage.removeItem(key)
   } catch {
     /* private mode — the prefill just does not persist */
   }
@@ -216,6 +232,9 @@ function normalise(v: StoredLink): StoredLink {
     // for a value this build has no label for — the same "normalise, do not
     // trust" rule the rest of this function follows.
     type: LINK_TYPES.some((t) => t.id === v.type) ? (v.type as LinkType) : '',
+    // Strictly `true`, so a record from a board without the field — or an
+    // older record from one with it — reads as team-only, never as public.
+    isPublic: v.isPublic === true,
     addedDate: typeof v.addedDate === 'string' ? v.addedDate : '',
   }
 }
@@ -251,51 +270,6 @@ export class LinkWriteError extends Error {
   }
 }
 
-export async function listLinks(): Promise<LinkIndex> {
-  try {
-    const res = await fetch(BASE, { headers: { accept: 'application/json' } })
-    if (!res.ok) return UNAVAILABLE
-    // A misrouted request returns index.html with a 200, which would throw on
-    // parse rather than reporting "no backend". Check before parsing.
-    if (!(res.headers.get('content-type') ?? '').includes('application/json')) return UNAVAILABLE
-    const body = (await res.json()) as { links?: unknown }
-    const raw = Array.isArray(body.links) ? body.links : []
-    return { available: true, loading: false, links: sortLinks(raw.filter(isLink).map(normalise)) }
-  } catch {
-    return UNAVAILABLE
-  }
-}
-
-export async function createLink(draft: LinkDraft): Promise<StoredLink> {
-  const res = await fetch(BASE, {
-    method: 'POST',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(draft),
-  })
-  if (!res.ok) throw new LinkWriteError(await problems(res, `Could not save (${res.status}).`))
-  const body = (await res.json()) as { link: StoredLink }
-  announce()
-  return body.link
-}
-
-export async function saveLink(id: string, draft: LinkDraft): Promise<StoredLink> {
-  const res = await fetch(`${BASE}/${encodeURIComponent(id)}`, {
-    method: 'PUT',
-    headers: { 'content-type': 'application/json' },
-    body: JSON.stringify(draft),
-  })
-  if (!res.ok) throw new LinkWriteError(await problems(res, `Could not save (${res.status}).`))
-  const body = (await res.json()) as { link: StoredLink }
-  announce()
-  return body.link
-}
-
-export async function deleteLink(id: string): Promise<void> {
-  const res = await fetch(`${BASE}/${encodeURIComponent(id)}`, { method: 'DELETE' })
-  if (!res.ok) throw new LinkWriteError(await problems(res, `Could not delete (${res.status}).`))
-  announce()
-}
-
 /**
  * The list as markdown, for getting it out of a store nothing backs up.
  *
@@ -320,63 +294,161 @@ export function toMarkdown(links: StoredLink[]): string {
     .join('\n')
 }
 
-/* ── hooks ────────────────────────────────────────────────────────────────── */
+
+/* ── the board ────────────────────────────────────────────────────────────── */
+
+/** Everything a panel needs to read and write one board. */
+export type LinkBoard = ReturnType<typeof createLinkBoard>
 
 /**
- * The list, plus a refresh.
- *
- * Every write re-reads the collection rather than patching local state. That is
- * a deliberate choice over the optimistic version: the endpoint owns the id and
- * the date, and it is shared — another reviewer may have added a link since the
- * page loaded. Re-reading is how the page stays true to a store more than one
- * person can write to.
+ * Build the client for one endpoint. Every write fires `cfg.event` from INSIDE
+ * these helpers rather than from the panel, so a second caller cannot add a
+ * record and leave the nav badge behind — that is not hypothetical: the Links
+ * badge shipped saying 2 with three links on screen. A plain `storage` event
+ * would not do it — that only fires for OTHER tabs.
  */
-export function useLinks() {
-  const [index, setIndex] = useState<LinkIndex>(EMPTY_LINK_INDEX)
+export function createLinkBoard(cfg: LinkBoardConfig) {
+  function announce(): void {
+    window.dispatchEvent(new Event(cfg.event))
+  }
 
-  const refresh = useCallback(async () => {
-    const next = await listLinks()
-    setIndex(next)
-    return next
-  }, [])
+  async function listLinks(): Promise<LinkIndex> {
+    try {
+      const res = await fetch(cfg.base, { headers: { accept: 'application/json' } })
+      if (!res.ok) return UNAVAILABLE
+      // A misrouted request returns index.html with a 200, which would throw on
+      // parse rather than reporting "no backend". Check before parsing.
+      if (!(res.headers.get('content-type') ?? '').includes('application/json')) return UNAVAILABLE
+      const body = (await res.json()) as { links?: unknown }
+      const raw = Array.isArray(body.links) ? body.links : []
+      return { available: true, loading: false, links: sortLinks(raw.filter(isLink).map(normalise)) }
+    } catch {
+      return UNAVAILABLE
+    }
+  }
 
-  useEffect(() => {
-    let live = true
-    void listLinks().then((next) => {
-      if (live) setIndex(next)
+  async function createLink(draft: LinkDraft): Promise<StoredLink> {
+    const res = await fetch(cfg.base, {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(draft),
     })
-    return () => {
-      live = false
-    }
-  }, [])
+    if (!res.ok) throw new LinkWriteError(await problems(res, `Could not save (${res.status}).`))
+    const body = (await res.json()) as { link: StoredLink }
+    announce()
+    return body.link
+  }
 
-  return { index, refresh }
-}
+  async function saveLink(id: string, draft: LinkDraft): Promise<StoredLink> {
+    const res = await fetch(`${cfg.base}/${encodeURIComponent(id)}`, {
+      method: 'PUT',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(draft),
+    })
+    if (!res.ok) throw new LinkWriteError(await problems(res, `Could not save (${res.status}).`))
+    const body = (await res.json()) as { link: StoredLink }
+    announce()
+    return body.link
+  }
 
-/**
- * How many links there are, for the nav badge.
- *
- * A live count for the same reason To Do's and QA Notes' are: a number that
- * cannot change is only correct until someone adds something. Seeds at 0 rather
- * than at a committed length, because there is no committed set to seed from.
- */
-export function useLinkCount(): number {
-  const [count, setCount] = useState(0)
-  useEffect(() => {
-    let live = true
-    const read = () => {
-      void listLinks().then((index) => {
-        if (live) setCount(index.links.length)
+  async function deleteLink(id: string): Promise<void> {
+    const res = await fetch(`${cfg.base}/${encodeURIComponent(id)}`, { method: 'DELETE' })
+    if (!res.ok) throw new LinkWriteError(await problems(res, `Could not delete (${res.status}).`))
+    announce()
+  }
+
+  /* ── hooks ── */
+
+  /**
+   * The list, plus a refresh.
+   *
+   * Every write re-reads the collection rather than patching local state. That is
+   * a deliberate choice over the optimistic version: the endpoint owns the id and
+   * the date, and it is shared — another reviewer may have added a link since the
+   * page loaded. Re-reading is how the page stays true to a store more than one
+   * person can write to.
+   */
+  function useLinks() {
+    const [index, setIndex] = useState<LinkIndex>(EMPTY_LINK_INDEX)
+
+    const refresh = useCallback(async () => {
+      const next = await listLinks()
+      setIndex(next)
+      return next
+    }, [])
+
+    useEffect(() => {
+      let live = true
+      void listLinks().then((next) => {
+        if (live) setIndex(next)
       })
-    }
-    read()
-    // Re-read on every write, wherever it came from. Without this the badge is
-    // correct only until the first link is added — see `LINKS_EVENT`.
-    window.addEventListener(LINKS_EVENT, read)
-    return () => {
-      live = false
-      window.removeEventListener(LINKS_EVENT, read)
-    }
-  }, [])
-  return count
+      return () => {
+        live = false
+      }
+    }, [])
+
+    return { index, refresh }
+  }
+
+  /**
+   * How many links there are, for the nav badge.
+   *
+   * A live count for the same reason To Do's and QA Notes' are: a number that
+   * cannot change is only correct until someone adds something. Seeds at 0 rather
+   * than at a committed length, because there is no committed set to seed from.
+   */
+  function useLinkCount(filter?: (l: StoredLink) => boolean): number {
+    const [count, setCount] = useState(0)
+    useEffect(() => {
+      let live = true
+      const read = () => {
+        void listLinks().then((index) => {
+          // `filter` lets the public build's Demo badge count only the rows it
+          // shows — a badge saying 5 over a list of 2 reads as a load failure.
+          if (live) setCount(filter ? index.links.filter(filter).length : index.links.length)
+        })
+      }
+      read()
+      // Re-read on every write, wherever it came from. Without this the badge is
+      // correct only until the first link is added — see `cfg.event`.
+      window.addEventListener(cfg.event, read)
+      return () => {
+        live = false
+        window.removeEventListener(cfg.event, read)
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps -- the filter is a pure predicate on the row; callers pass a stable one
+    }, [])
+    return count
+  }
+
+  return {
+    config: cfg,
+    listLinks,
+    createLink,
+    saveLink,
+    deleteLink,
+    useLinks,
+    useLinkCount,
+    readLastAuthor: () => readLastAuthorFrom(cfg.lastAuthorKey),
+    rememberLastAuthor: (name: string) => rememberLastAuthorIn(cfg.lastAuthorKey, name),
+  }
 }
+
+/* ── the Links instance ───────────────────────────────────────────────────── */
+
+export const LINKS_BOARD = createLinkBoard({
+  base: '/api/links',
+  event: 'cgp.links',
+  lastAuthorKey: 'cgp.links.lastAuthor',
+})
+
+export const {
+  listLinks,
+  createLink,
+  saveLink,
+  deleteLink,
+  useLinks,
+  useLinkCount,
+  readLastAuthor,
+  rememberLastAuthor,
+} = LINKS_BOARD

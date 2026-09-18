@@ -72,6 +72,12 @@ export type FeatureAccent = 'teal' | 'gold' | 'blue' | 'neutral'
 export type FeatureCategory =
   | 'demo'
   | 'dashboard'
+  /** The live product build — the ONE row on the ungated Prototypes section
+   *  (2026-09-18). Not in the LMS type block; added here when Demo became the
+   *  authored-on-the-page review inbox and the product app needed a section
+   *  of its own. `demo` / `dashboard` still route to Prototypes too, so LMS
+   *  rows ported with those categories land in the right place. */
+  | 'prototype'
   | 'dev-handoff'
   | 'testing'
   | 'exploration'
@@ -623,11 +629,11 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
      * two look alike on purpose — the mock-up was the argument for building
      * it — so each blurb says which it is, and the titles are kept apart.
      *
-     * It is in DEMO, the ungated front door, deliberately: Demo is the section
-     * a stakeholder can reach without the password, and the product build is
-     * the thing worth showing them. `UxDashboard.smoke.test.tsx` used to assert
-     * Demo was empty precisely so this promotion had to be a decision; that
-     * test now asserts this row is the one thing in it.
+     * It is in PROTOTYPES (2026-09-18; DEMO before that), the ungated section
+     * that holds the product as it stands — what the promote-to-prototype
+     * skill promotes INTO. Demo is the review inbox now, authored on the page,
+     * so nothing in this file routes there. `UxDashboard.smoke.test.tsx`
+     * asserts this row is the one thing in Prototypes.
      *
      * NO `devStatus` — same trap as the Exploration rows. `sectionOf` checks
      * devStatus BEFORE category, so authoring one here silently moves this row
@@ -643,7 +649,7 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
       'The actual React product on XCEL brand colour — shell, learning path, study plan, courses, certificates, catalog. One brand, no membership.',
     kind: 'explore',
     status: 'ready',
-    category: 'demo',
+    category: 'prototype',
     pinned: true,
     // An in-app route, not a document. `to` is what makes the tile navigate
     // rather than open a new tab, and it is also what the row's live preview

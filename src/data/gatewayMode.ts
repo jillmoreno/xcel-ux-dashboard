@@ -49,12 +49,15 @@ export function isPublicGateway(): boolean {
 
 /**
  * Is a feature row reachable on the public build? Only rows that live in
- * Demo — the one ungated feature section. This deliberately re-derives a
- * NARROWER rule than `sectionOf` on the home page: that one lets a per-browser
- * "mark done" override move a row, and honours `devStatus`, both of which can
- * only move a row OUT of Demo, never into it. So `category === 'demo'` is the
- * necessary condition, and a row that fails it can never be a Demo row.
+ * Prototypes — the one ungated FEATURE section (Demo is a panel, not a list
+ * of rows). This deliberately re-derives a NARROWER rule than `sectionOf` on
+ * the home page: that one lets a per-browser "mark done" override move a row,
+ * and honours `devStatus`, both of which can only move a row OUT of
+ * Prototypes, never into it. So the category is the necessary condition, and
+ * a row that fails it can never be a Prototypes row.
  */
 export function isPublicFeature(feature: { category: string }): boolean {
-  return feature.category === 'demo' || feature.category === 'dashboard'
+  return (
+    feature.category === 'prototype' || feature.category === 'demo' || feature.category === 'dashboard'
+  )
 }

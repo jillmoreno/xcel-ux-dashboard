@@ -47,6 +47,7 @@ const link = (over: Partial<StoredLink> = {}): StoredLink => ({
   note: '',
   addedBy: '',
   type: '',
+  isPublic: false,
   addedDate: '2026-09-10',
   ...over,
 })
@@ -151,12 +152,12 @@ describe('a stored URL cannot become script', () => {
     // naive "does it mention javascript" check while being one novel scheme
     // away from wrong, so what is asserted is the SHAPE: an allow-list naming
     // exactly the two protocols `safeHref` accepts.
-    const src = readFileSync(
-      path.resolve(__dirname, '../../netlify/functions/links.ts'),
-      'utf8',
-    )
+    // The handler is shared with the Demo board since 2026-09-18, so the
+    // declaration lives in `netlify/lib/linkBoard.ts`; `links.ts` is a
+    // config. Asserting on the shared file is what guards BOTH boards.
+    const src = readFileSync(path.resolve(__dirname, '../../netlify/lib/linkBoard.ts'), 'utf8')
     const declared = /const ALLOWED_PROTOCOLS = \[([^\]]*)\]/.exec(src)
-    expect(declared, 'links.ts must declare ALLOWED_PROTOCOLS').toBeTruthy()
+    expect(declared, 'linkBoard.ts must declare ALLOWED_PROTOCOLS').toBeTruthy()
     const protocols = [...declared![1].matchAll(/'([^']+)'/g)].map((m) => m[1])
     expect(protocols).toEqual(['http:', 'https:'])
 
@@ -530,9 +531,13 @@ describe('LinksPanel', () => {
     // and `LINK_TYPES` is a compile-time claim about code we wrote. Same
     // reasoning as `ALLOWED_PROTOCOLS`, so it gets the same source-parsed
     // guard rather than an import that would erase the boundary.
-    const fn = readFileSync(path.resolve(__dirname, '../../netlify/functions/links.ts'), 'utf8')
+    const fn = readFileSync(path.resolve(__dirname, '../../netlify/lib/linkBoard.ts'), 'utf8')
     const declared = /const ALLOWED_TYPES = \[([^\]]*)\]/.exec(fn)
-    expect(declared, 'links.ts must declare ALLOWED_TYPES').toBeTruthy()
+    expect(declared, 'linkBoard.ts must declare ALLOWED_TYPES').toBeTruthy()
+    // …and links.ts actually passes it, so the config cannot quietly drop the
+    // taxonomy and let any string through.
+    const cfg = readFileSync(path.resolve(__dirname, '../../netlify/functions/links.ts'), 'utf8')
+    expect(cfg).toMatch(/types: ALLOWED_TYPES/)
     const serverside = [...declared![1].matchAll(/'([^']+)'/g)].map((m) => m[1])
     expect(serverside).toEqual(LINK_TYPES.map((t) => t.id))
   })
@@ -568,7 +573,7 @@ describe('the Links section on the gateway', () => {
       </MemoryRouter>,
     )
 
-  it('opens with NO password prompt, and sits directly under Demo', async () => {
+  it('opens with NO password prompt, and sits directly under Prototypes', async () => {
     /*
      * Both halves are the editorial decision. Links is ungated because the
      * section's job is being the place you send someone — behind the shared
@@ -586,15 +591,15 @@ describe('the Links section on the gateway', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(await screen.findByRole('heading', { level: 1, name: 'Links' })).toBeInTheDocument()
 
-    // Position: the nav item immediately after Demo. Order carries the argument
-    // that this belongs with the open front door rather than with the gated
-    // pipeline sections.
+    // Position: the nav item immediately after Prototypes (Demo · Prototypes
+    // · Links since 2026-09-18). Order carries the argument that this belongs
+    // with the open front door rather than with the gated pipeline sections.
     const labels = screen
       .getAllByRole('button')
       .map((b) => b.textContent?.replace(/\d+$/, '').trim())
-    const demoAt = labels.indexOf('Demo')
-    expect(demoAt).toBeGreaterThanOrEqual(0)
-    expect(labels[demoAt + 1]).toBe('Links')
+    const protoAt = labels.indexOf('Prototypes')
+    expect(protoAt).toBeGreaterThanOrEqual(0)
+    expect(labels[protoAt + 1]).toBe('Links')
   })
 
   it('a deep link into the section opens it', async () => {
@@ -635,12 +640,12 @@ describe('the Links section on the gateway', () => {
     await waitFor(() => expect(badge()).toBe('1'))
   })
 
-  it('does not add a row to the Demo section', async () => {
-    // Links is a nav SECTION, not a `PROTOTYPE_FEATURES` row, so Demo's own
-    // set is untouched — which is what keeps its two-directional smoke test
-    // meaningful rather than needing an edit for every new section.
+  it('does not add a row to the Prototypes section', async () => {
+    // Links is a nav SECTION, not a `PROTOTYPE_FEATURES` row, so Prototypes'
+    // own set is untouched — which is what keeps its two-directional smoke
+    // test meaningful rather than needing an edit for every new section.
     mockEndpoint([])
-    renderDashboard()
+    renderDashboard('/?section=prototypes')
     const rows = screen
       .getAllByRole('button', { name: /^Actions for / })
       .map((b) => b.getAttribute('aria-label')?.replace(/^Actions for /, ''))

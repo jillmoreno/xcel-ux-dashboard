@@ -43,6 +43,16 @@
   to = "/.netlify/functions/links"
   status = 200
 
+[[redirects]]
+  from = "/api/demos/*"
+  to = "/.netlify/functions/demos/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api/demos"
+  to = "/.netlify/functions/demos"
+  status = 200
+
 # SPA fallback — every unknown path returns index.html so react-router handles it.
 [[redirects]]
   from = "/*"

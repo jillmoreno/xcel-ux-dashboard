@@ -42,6 +42,7 @@ function renderDashboard(initialPath = '/') {
  *  with the divider drawn where the first gated one starts. */
 const EXPECTED_SECTIONS = [
   'Demo',
+  'Prototypes',
   'Links',
   'Research',
   'Design',
@@ -91,8 +92,8 @@ describe('section routing (sectionOf)', () => {
    * Sandbox, which is that category's documented behaviour rather than a bug.
    */
   const EXPECTED_PLACEMENT: Record<string, string> = {
-    // The one in-app row, and the only thing on the ungated front door.
-    'xcel-dashboard': 'demo',
+    // The one in-app row, and the only feature row on the ungated front door.
+    'xcel-dashboard': 'prototypes',
     'xcel-lms': 'exploration',
     'xcel-walkthrough': 'exploration',
     'xcel-wireframes': 'exploration',
@@ -129,12 +130,13 @@ describe('section routing (sectionOf)', () => {
     }
   })
 
-  it('Demo holds exactly the rows meant to be ungated', () => {
+  it('Prototypes holds exactly the rows meant to be ungated', () => {
     /*
-     * Demo is the UNGATED front door: a viewer with no password sees this
-     * section and nothing else. So what sits here is a decision about what a
-     * stakeholder may see unaccompanied, and it should not be possible to
-     * change it by accident.
+     * Prototypes (Demo until 2026-09-18, when Demo became the authored-on-the-
+     * page review inbox) is the UNGATED front door for FEATURE ROWS: a viewer
+     * with no password sees this section's rows and no others. So what sits
+     * here is a decision about what a stakeholder may see unaccompanied, and
+     * it should not be possible to change it by accident.
      *
      * ⚠ This test was previously called "Demo is empty", and its comment
      * claimed to be the tripwire that would fail if a row were ever promoted.
@@ -144,10 +146,10 @@ describe('section routing (sectionOf)', () => {
      * unrelated `externalUrl` assertions were what actually caught it.
      *
      * It compares the whole set now, in both directions: promoting a row to
-     * Demo fails here, and so does demoting the one that belongs.
+     * Prototypes fails here, and so does demoting the one that belongs.
      */
-    renderDashboard()
-    expect(screen.getByRole('heading', { level: 1, name: 'Demo' })).toBeInTheDocument()
+    renderDashboard('/?section=prototypes')
+    expect(screen.getByRole('heading', { level: 1, name: 'Prototypes' })).toBeInTheDocument()
 
     // Counted from the RENDERED section rather than from the data, because
     // what a passwordless viewer can reach is the actual concern. Every row
@@ -340,7 +342,7 @@ describe('archive', () => {
   })
 })
 
-describe('the Demo row opens the committed configuration', () => {
+describe('the Prototypes row opens the committed configuration', () => {
   it('carries `?demo=1`, not the bare route', () => {
     // Demo mode swaps the working flag map for the committed baseline before
     // first paint. Without the param, a returning reviewer's own persisted

@@ -53,7 +53,10 @@ if (!existsSync(join(dist, '404.html'))) {
  * product app; `/archive/` and `/qa/` are the Archive and QA Notes sections'
  * own assets. `/prototype-thumbs/` is NOT blocked: a row thumbnail is a
  * screenshot of a list row, and the Demo row may grow one. `/api/*` is not
- * here either — Links is ungated and needs its endpoint.
+ * here either — Links is ungated and needs its endpoint, and neither is
+ * `/demos/`: that folder exists to be REACHABLE on the public build, so a
+ * designer's branch deploy can put HTML in front of stakeholders (see
+ * `public/demos/README.md`).
  */
 const BLOCKED = ['/prototypes/*', '/testing/*', '/ngat-admin/*', '/archive/*', '/qa/*']
 
