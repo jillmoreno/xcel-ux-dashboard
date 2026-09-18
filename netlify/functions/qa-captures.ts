@@ -6,7 +6,7 @@
  * dropped them: the page's whole job is handing findings to engineering, and a
  * screenshot living in one browser's IndexedDB does not do that.
  *
- * Backed by Netlify Blobs on a SITE-WIDE store (`getStore`, not
+ * Backed by Netlify Blobs on a SITE-WIDE store (`openStore` → `getStore`, not
  * `getDeployStore`) so captures survive every deploy. A deploy-scoped store
  * would silently empty the page on the next push, which is the one failure mode
  * that would make this worse than committing the files.
@@ -42,7 +42,7 @@
  * Identity), not a secret in the bundle.
  */
 
-import { getStore } from '@netlify/blobs'
+import { openStore } from '../lib/store'
 
 export const config = {
   path: ['/api/qa-captures', '/api/qa-captures/:key'],
@@ -96,7 +96,7 @@ export default async function handler(req: Request): Promise<Response> {
   const tail = url.pathname.replace(/^.*\/qa-captures\/?/, '')
   const key = tail ? decodeURIComponent(tail) : null
 
-  const store = getStore({ name: STORE_NAME, consistency: 'strong' })
+  const store = openStore(STORE_NAME)
 
   // ── collection ────────────────────────────────────────────────────────────
   if (!key) {

@@ -33,7 +33,7 @@
  * that ever comes off, this endpoint needs a real control before it goes public.
  */
 
-import { getStore } from '@netlify/blobs'
+import { openStore, type Store } from '../lib/store'
 
 export const config = {
   path: ['/api/qa-notes', '/api/qa-notes/:id'],
@@ -178,7 +178,7 @@ function validate(input: unknown, id: string): { note: Json } | { errors: string
 }
 
 /** Highest `qa-NNN` already stored, as a number. */
-async function highestStored(store: ReturnType<typeof getStore>): Promise<number> {
+async function highestStored(store: Store): Promise<number> {
   const { blobs } = await store.list()
   let max = 0
   for (const b of blobs) {
@@ -195,7 +195,7 @@ export default async function handler(req: Request): Promise<Response> {
   // same record. The display id is re-cased inside `validate`.
   const id = tail ? decodeURIComponent(tail).toLowerCase() : null
 
-  const store = getStore({ name: STORE_NAME, consistency: 'strong' })
+  const store = openStore(STORE_NAME)
 
   // ── collection ────────────────────────────────────────────────────────────
   if (!id) {

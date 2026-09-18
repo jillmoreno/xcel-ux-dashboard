@@ -38,7 +38,7 @@
  * reviewer is invited to click.
  */
 
-import { getStore } from '@netlify/blobs'
+import { openStore, type Store } from '../lib/store'
 
 export const config = {
   path: ['/api/links', '/api/links/:id'],
@@ -158,7 +158,7 @@ function validate(input: unknown, id: string): { link: Json } | { errors: string
 }
 
 /** Highest `link-NNN` already stored, as a number. */
-async function highestStored(store: ReturnType<typeof getStore>): Promise<number> {
+async function highestStored(store: Store): Promise<number> {
   const { blobs } = await store.list()
   let max = 0
   for (const b of blobs) {
@@ -173,7 +173,7 @@ export default async function handler(req: Request): Promise<Response> {
   const tail = url.pathname.replace(/^.*\/links\/?/, '')
   const id = tail ? decodeURIComponent(tail).toLowerCase() : null
 
-  const store = getStore({ name: STORE_NAME, consistency: 'strong' })
+  const store = openStore(STORE_NAME)
 
   // ── collection ────────────────────────────────────────────────────────────
   if (!id) {

@@ -72,6 +72,7 @@ import {
 import { Toast } from '@/components/ui/Toast'
 import { PrototypePasswordModal } from '@/components/prototype/PrototypeLock'
 import { isPrototypeUnlocked, markPrototypeUnlocked } from '@/components/prototype/prototypeLockUtil'
+import { isPublicGateway } from '@/data/gatewayMode'
 
 /**
  * UX dashboard — the prototype's front door, at `/` (and still reachable at
@@ -261,8 +262,23 @@ const SECTIONS: SectionDef[] = [
   },
 ]
 
-/** Where the divider goes — the first restricted section. */
-const FIRST_RESTRICTED = SECTIONS.findIndex((s) => s.gate)
+/**
+ * The sections THIS BUILD shows. On the public Netlify project
+ * (`VITE_GATEWAY_MODE=public`, see `gatewayMode.ts`) every gated section is
+ * dropped from the list — not locked, ABSENT: no nav row, no divider, no
+ * password modal, and `sectionFromParam` below cannot resolve a `?section=`
+ * pointing at one, so a deep link lands on Demo with nothing to unlock.
+ *
+ * `SECTIONS` above stays the authored full set; everything that renders or
+ * resolves a section reads THIS list. A new gated section needs no change here.
+ */
+const VISIBLE_SECTIONS: SectionDef[] = isPublicGateway()
+  ? SECTIONS.filter((s) => !s.gate)
+  : SECTIONS
+
+/** Where the divider goes — the first restricted section. `-1` on the public
+ *  build, so the divider and its "UX & Dev Access" eyebrow never draw. */
+const FIRST_RESTRICTED = VISIBLE_SECTIONS.findIndex((s) => s.gate)
 
 /** `?section=` values the OLD tile landing wrote, mapped onto the new sections.
  *  Feature gateways still link back with these ("← Back"), and links already
@@ -278,10 +294,19 @@ const LEGACY_SECTIONS: Record<string, UxSection> = {
 function sectionFromParam(value: string | null, tab: string | null): UxSection | null {
   // The archive used to be a TAB inside the dev section (`?section=dev&tab=archive`),
   // so that pairing has to resolve to the archive section, not to Development.
-  if (tab === 'archive') return 'archive'
-  if (!value) return null
-  if (SECTIONS.some((s) => s.id === value)) return value as UxSection
-  return LEGACY_SECTIONS[value] ?? null
+  const isVisible = (id: string) => VISIBLE_SECTIONS.some((s) => s.id === id)
+  const resolved: UxSection | null =
+    tab === 'archive'
+      ? 'archive'
+      : !value
+        ? null
+        : isVisible(value)
+          ? (value as UxSection)
+          : (LEGACY_SECTIONS[value] ?? null)
+  // Checked AFTER resolving, so a legacy alias (`dev` → Development) or the
+  // archive-tab pairing cannot name a section this build does not show — on
+  // the public build those land on Demo like any other unknown value.
+  return resolved && isVisible(resolved) ? resolved : null
 }
 
 /* ── Theme ────────────────────────────────────────────────────────────────
@@ -1015,7 +1040,7 @@ export function UxDashboardPage() {
   // row's whole spec can be deep-linked with `?open=`, that hole leaks more
   // than a list of titles. The link is not discarded, just held: the reviewer
   // lands on Demo with the modal up, and unlocking restores the target below.
-  const urlDef = urlSection ? SECTIONS.find((d) => d.id === urlSection) : undefined
+  const urlDef = urlSection ? VISIBLE_SECTIONS.find((d) => d.id === urlSection) : undefined
   const urlLocked = Boolean(urlDef?.gate) && !isPrototypeUnlocked(urlDef!.gate!.id)
   const [section, setSectionState] = useState<UxSection>(
     urlLocked ? 'demo' : (urlSection ?? 'demo'),
@@ -1125,7 +1150,7 @@ export function UxDashboardPage() {
   const openId = params.get('open')
   const openCandidate = openId ? prototypeFeatureById(openId) : undefined
   const openDef = openCandidate
-    ? SECTIONS.find((d) => d.id === sectionOf(openCandidate, rollupOf(openCandidate)))
+    ? VISIBLE_SECTIONS.find((d) => d.id === sectionOf(openCandidate, rollupOf(openCandidate)))
     : undefined
   const openFeature = openCandidate && openDef && isOpen(openDef) ? openCandidate : undefined
   const opensInFrame = (f: PrototypeFeature) => section !== 'demo' && !f.externalUrl && !f.to
@@ -1255,7 +1280,7 @@ export function UxDashboardPage() {
             one system of separators rather than two. */}
         <hr style={{ ...brandDividerStyle, borderTopColor: nav.border }} />
         <nav style={navListStyle}>
-          {SECTIONS.map((s, i) => {
+          {VISIBLE_SECTIONS.map((s, i) => {
             const active = s.id === section
             // To Do's count is the live number of OPEN items, not a feature
             // tally — `bySection.todo` is always empty by design.
@@ -1402,7 +1427,7 @@ export function UxDashboardPage() {
                 aria-hidden
                 style={{ transform: 'rotate(180deg)', flex: 'none' }}
               />
-              All {SECTIONS.find((s) => s.id === section)!.label.toLowerCase()} projects
+              All {VISIBLE_SECTIONS.find((s) => s.id === section)!.label.toLowerCase()} projects
             </button>
             <PrototypeFeaturePage featureId={openFeature.id} embedded />
           </>
@@ -1412,8 +1437,8 @@ export function UxDashboardPage() {
           <p style={{ ...eyebrowStyle, color: 'var(--ux-eyebrow)' }}>
             Prototype demo, features and specifications
           </p>
-          <h1 style={h1Style}>{SECTIONS.find((s) => s.id === section)!.label}</h1>
-          <p style={ledeStyle}>{SECTIONS.find((s) => s.id === section)!.blurb}</p>
+          <h1 style={h1Style}>{VISIBLE_SECTIONS.find((s) => s.id === section)!.label}</h1>
+          <p style={ledeStyle}>{VISIBLE_SECTIONS.find((s) => s.id === section)!.blurb}</p>
         </header>
 
         {section === 'research' ? (

@@ -1,4 +1,5 @@
-import { Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import { Navigate, Route, Routes, useLocation, useParams } from 'react-router-dom'
+import type { ReactElement } from 'react'
 import { AppLayout } from '@/components/layout/AppLayout'
 import { UxDashboardPage } from '@/pages/UxDashboardPage'
 import { PrototypeFeaturePage } from '@/pages/PrototypeFeaturePage'
@@ -32,6 +33,31 @@ import {
 } from '@/data/giftRecipientsFixtures'
 import { recCardEnvTarget, recCardTestPath } from '@/data/recCardTest'
 import { demoEnvTarget } from '@/data/demoPin'
+import { isPublicGateway, isPublicFeature } from '@/data/gatewayMode'
+import { prototypeFeatureById } from '@/data/prototypeFeatures'
+
+/**
+ * On the PUBLIC Netlify project (`VITE_GATEWAY_MODE=public`) the gated
+ * sections are not locked, they are absent — and a route that opens one of
+ * their rows has to be absent too, or the nav hides what a pasted URL still
+ * reaches. Wraps `/prototype/:featureId` and its handoff detail: a row that is
+ * not in Demo redirects home. On the full build it renders the page unchanged.
+ *
+ * `/qa-notes` is closed the same way below. `/links` and `/research-rationale`
+ * stay open (their sections are ungated), and the product app's own routes
+ * (`/dashboard-rebrand` and the ~28 under `AppLayout`) are untouched — the Demo
+ * row opens the product, and the product links between its own routes.
+ */
+function PublicGate({ featureId, children }: { featureId?: string; children: ReactElement }) {
+  if (!isPublicGateway()) return children
+  const feature = featureId ? prototypeFeatureById(featureId) : undefined
+  return feature && isPublicFeature(feature) ? children : <Navigate to="/" replace />
+}
+
+function GatedPrototypeRoute({ children }: { children: ReactElement }) {
+  const { featureId } = useParams()
+  return <PublicGate featureId={featureId}>{children}</PublicGate>
+}
 
 /**
  * Gates the classic `/dashboard` route behind the `dashboard-tab` flag (OFF by
@@ -112,20 +138,38 @@ export default function App() {
           distinct landing surface (no platform header). `/` is the front
           door; each guided feature gets its own curated page list. */}
       <Route path="/" element={<UxDashboardPage />} />
-      <Route path="/prototype/:featureId" element={<PrototypeFeaturePage />} />
+      <Route
+        path="/prototype/:featureId"
+        element={
+          <GatedPrototypeRoute>
+            <PrototypeFeaturePage />
+          </GatedPrototypeRoute>
+        }
+      />
       {/* The exploration's own route, kept so links already shared still work.
             It renders the same page as "/". */}
         <Route path="/ux-dashboard" element={<UxDashboardPage />} />
         <Route path="/research-rationale" element={<ResearchRationalePage />} />
       {/* QA Notes is a section of the UX Dashboard shell, not a standalone page —
           this route just redirects to its canonical URL. */}
-      <Route path="/qa-notes" element={<QaNotesPage />} />
+      <Route
+        path="/qa-notes"
+        element={
+          <PublicGate>
+            <QaNotesPage />
+          </PublicGate>
+        }
+      />
       {/* Both redirect into the gateway shell, which owns the section chrome —
           see the note at the top of each page. */}
       <Route path="/links" element={<LinksPage />} />
       <Route
         path="/prototype/:featureId/handoff/:componentId"
-        element={<PrototypeHandoffDetailPage />}
+        element={
+          <GatedPrototypeRoute>
+            <PrototypeHandoffDetailPage />
+          </GatedPrototypeRoute>
+        }
       />
       <Route element={<AppLayout />}>
         <Route path="/dashboard" element={<DashboardRoute />} />

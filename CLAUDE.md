@@ -143,6 +143,86 @@ combinations in the original. **If you add a palette, re-measure** — the note 
 the LMS `CLAUDE.md` about each palette's brightest colour being unusable as small
 text on a light page is the trap.
 
+### Two Netlify sites — the public build (2026-09-18)
+
+The repo deploys to TWO Netlify projects from one branch: the **existing site
+is now the PUBLIC one** (Demo · Links · Research, nothing else), and a **new
+site is the FULL one** (everything, behind the Netlify site password). Setup
+steps are in the README under "Two Netlify sites, one repo"; this records the
+decisions.
+
+**ONE build-time env var, `VITE_GATEWAY_MODE=public`, and nothing else differs
+per site** — not the branch, not `netlify.toml`, not the build command. This is
+the `VITE_DEMO_TARGET` pattern (`demoPin.ts`) applied to the gateway: a project
+that sets the var gets a different build, one that sets nothing gets the whole
+app. A parse failure (`publc`) resolves to FULL, deliberately — a typo has to
+fail towards showing the maintainer everything, never towards hiding it.
+
+**The gated sections are ABSENT on the public build, not locked.**
+`VISIBLE_SECTIONS` in `UxDashboardPage` filters `SECTIONS` to the ungated ones
+at module load, and every render or resolve reads that list — the nav, the
+divider (`FIRST_RESTRICTED` becomes `-1`), `sectionFromParam` (so
+`?section=design`, the legacy `dev` alias and the `tab=archive` pairing all
+land on Demo), and `openDef` (so `?open=` cannot open a gated row in-frame).
+The password modal therefore never mounts. `SECTIONS` itself is untouched, so a
+new gated section needs no change here.
+
+**Routes are closed in `App.tsx`, not in the pages.** `PublicGate` wraps
+`/prototype/:id`, its handoff detail and `/qa-notes`: a row that is not in Demo
+redirects home. `isPublicFeature` is deliberately NARROWER than `sectionOf` —
+`category === 'demo'` is a necessary condition for Demo, since a `devStatus` or
+a per-browser "mark done" can only move a row OUT of it. Note `/prototype/:id`
+had NO gate on the full build before this and still has none; the modal on the
+home page was the only thing between a pasted URL and an Exploration row's
+gateway. Worth knowing, not changed.
+
+**Static files cannot be hidden client-side, so `scripts/public-redirects.mjs`
+404s them at the edge.** It is npm's `postbuild` hook (so `npm run build`, the
+Netlify command, picks it up unchanged) and writes `dist/_redirects` ONLY when
+the var is `public`. `_redirects` rather than `netlify.toml` because the toml is
+shared and has no per-project conditional, and because Netlify evaluates
+`_redirects` BEFORE the toml — which is what lets a 404 beat the toml's `/*` SPA
+fallback. Blocked: `/prototypes/*` (every document row), `/testing/*` and
+`/ngat-admin/*` (LMS leftovers), `/archive/*`, `/qa/*`. NOT blocked:
+`/prototype-thumbs/*` (a Demo row may grow one) and `/api/*` (Links is
+ungated). The target is `public/404.html`, which Netlify also serves for a
+mistyped address — a hidden prototype and a typo look the same, on purpose.
+
+**The product app is fully reachable on the public build.** `/dashboard-rebrand`
+IS the Demo row, and it links between its own ~28 routes, so closing any of them
+would break the demo from inside. If a product route should be private, that is
+its own decision.
+
+**Netlify Blobs are PER SITE, and that was the real trap.** Two sites means two
+`links` stores, two `qa-notes` stores, two capture stores — a link added on one
+site invisible on the other. `netlify/lib/store.ts` is now the one place the
+three functions open a store: if `BLOBS_SITE_ID` + `BLOBS_TOKEN` are set it
+opens THAT site's store, otherwise the ambient one. The FULL site sets both,
+pointing at the public site (which owns the data, having always held it); the
+public site sets neither and changes nothing. **Both or neither** — one without
+the other throws rather than silently opening a private store, which is the
+failure that would be invisible until someone compared the two sites. The
+helper lives OUTSIDE `netlify/functions/` because every file in that directory
+deploys as an endpoint; `tsconfig.functions.json` includes `netlify/lib`.
+
+**Consequence for QA Notes:** the page is closed on the public site but its
+endpoints are not — they are the store the full site reads through. Blocking
+`/api/qa-*` on the public build would break QA Notes on the full one.
+
+`PublicGateway.test.tsx` pins all of it, and has to `vi.resetModules()` +
+dynamic-import the page after `vi.stubEnv`, because `VISIBLE_SECTIONS` is
+computed at module load — a top-of-file import would test the full build with a
+public label on it. It also parses `BLOCKED` out of the script (the
+`ALLOWED_PROTOCOLS` pattern) and asserts every document row's `externalUrl`
+falls under a blocked prefix, so a row pointing at a new static folder fails
+here rather than shipping reachable.
+
+**Also fixed in passing:** `UxDashboard.smoke.test.tsx` read a source file via
+`new URL(…, import.meta.url)`, which under the jsdom environment is jsdom's
+`URL` and Node's `readFileSync` rejects it ("must be of scheme file") — the
+whole file failed to collect. It resolves a path now, like its two sibling
+reads.
+
 ### Links — the section that is authored on the page (2026-09-10)
 
 A nav section (`links`) directly under **Demo**, plus `/links` as a short address

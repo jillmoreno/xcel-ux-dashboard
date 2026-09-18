@@ -354,8 +354,11 @@ describe('the Demo row opens the committed configuration', () => {
  * file, and exporting it here would make the file un-copyable). The LMS
  * tokenContrast test reads its stylesheet the same way, for the same reason. */
 describe('component detail — COMPONENT_SECTIONS matches the render order', () => {
+  // A PATH, not a `new URL(…)`: under the jsdom environment the global `URL`
+  // is jsdom's, and Node's `readFileSync` rejects it ("must be of scheme
+  // file"). Same shape the two reads above use.
   const src = readFileSync(
-    new URL('../pages/PrototypeFeaturePage.tsx', import.meta.url),
+    resolve(dirname(fileURLToPath(import.meta.url)), '../pages/PrototypeFeaturePage.tsx'),
     'utf8',
   )
 

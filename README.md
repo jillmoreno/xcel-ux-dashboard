@@ -33,10 +33,69 @@ not as a port error. Don't align them.
 | Command | What it does |
 |---|---|
 | `npm run dev` | Vite dev server on :5200 |
-| `npm run build` | `tsc -b && vite build` → `dist/` |
+| `npm run build` | `tsc -b && vite build` → `dist/`, then the `postbuild` hook (`scripts/public-redirects.mjs`, a no-op on the full build) |
+| `npm run build:public` | The same build with `VITE_GATEWAY_MODE=public` — what the stakeholder site ships. Writes `dist/_redirects` |
 | `npm run typecheck` | Types only, no emit |
 | `npm test` | Vitest — the dashboard smoke test |
+| `npm run smoke` | The eight jsdom suites over the standalone prototypes (`npm test` does NOT run these) |
 | `npm run lint` | ESLint |
+
+## Two Netlify sites, one repo
+
+The same `main` branch deploys to **two** Netlify projects. One push builds both.
+
+| Site | Who it is for | Shows | Build env vars |
+|---|---|---|---|
+| **Public** — the existing site, the URL stakeholders already have | anyone with the link | Demo · Links · Research **only**. The gated sections are absent, not locked: no nav rows, no password prompt, deep links land on Demo, and `/prototypes/*` 404s | `VITE_GATEWAY_MODE = public` |
+| **Full** — a new site | Jillienne and the team | everything, locked and unlocked, exactly as before | `BLOBS_SITE_ID` + `BLOBS_TOKEN` (see below) |
+
+Nothing is configured per site in the repo — `netlify.toml` and the code are
+identical for both. The switch is `src/data/gatewayMode.ts`, read at build
+time, so the ONLY per-site difference is what each project sets in
+**Project configuration → Environment variables**.
+
+### Setting it up (once)
+
+1. **Confirm the existing site is Git-connected.** Netlify → the existing
+   project → *Project configuration → Build & deploy → Continuous deployment*.
+   It should show this GitHub repo and branch `main`. If it instead says the
+   site is deployed manually / via CLI, link it there ("Link repository") — the
+   whole point of the arrangement is that both sites build from a push.
+2. **On the existing (public) site**, add the env var `VITE_GATEWAY_MODE` =
+   `public` (scope: Builds). Trigger a deploy. The site now shows only Demo,
+   Links and Research. Note its **Project ID** (*Project configuration →
+   General → Project information*) for step 4.
+3. **Create the full site**: *Add new project → Import an existing project →
+   GitHub → this repo*, branch `main`. Netlify reads `netlify.toml`, so build
+   command and publish directory are already right; set **no**
+   `VITE_GATEWAY_MODE`. Put the Netlify site password on this one (*Project
+   configuration → Access & security → Visitor access*) — it is the site with
+   everything on it.
+4. **Point the full site at the shared data.** Netlify Blobs are per site, so
+   without this the new site would have empty Links, QA Notes and captures.
+   On the FULL site set both:
+   - `BLOBS_SITE_ID` — the public site's Project ID from step 2
+   - `BLOBS_TOKEN` — a personal access token (*User settings → Applications →
+     Personal access tokens → New access token*). Store it as a **secret**.
+
+   Both or neither: the functions refuse to start with only one, rather than
+   silently opening a private store. The public site sets neither and keeps
+   using its own store as before — it OWNS the data.
+5. **Trigger a deploy on the full site** and check the Links page shows the
+   same links as the public one. If Links shows the "endpoint unreachable"
+   state, the token or ID is wrong — the function log will say.
+
+After that, `git push` is the whole workflow. To preview what stakeholders
+will see locally: `npm run build:public && npx vite preview`.
+
+**What is and is not hidden on the public build.** Hidden: the eight gated
+sections and their rows, `/prototype/:id` for any non-Demo row (and its
+handoff detail), `/qa-notes`, and the static folders `/prototypes/`,
+`/testing/`, `/ngat-admin/`, `/archive/`, `/qa/` (edge 404, via the generated
+`_redirects`). Reachable: `/`, `/links`, `/research-rationale`, and the whole
+product app (`/dashboard-rebrand` and the ~28 routes under it), because the
+Demo row IS the product app and it links between its own routes. If a product
+route should not be public, that is a separate decision.
 
 ## The prototypes live here
 
