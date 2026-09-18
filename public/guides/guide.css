@@ -1,0 +1,174 @@
+/*
+  Shared stylesheet for the two static guides —
+  /contributing/ (designers, full site only) and /about/ (stakeholders, public).
+
+  Self-contained on purpose: system fonts, no app CSS, no build step. Both
+  pages are also rendered to PDF from this same file (see the comment at the
+  top of each index.html), so everything here has a @media print answer.
+
+  Colour: the same two greys public/404.html uses (#f5f5f5 / #1b1d21) so a
+  guide, a 404 and the product's page grey read as one family; the accent is
+  the desktop prototype's Navy 500 (#1f4e88), the "do this" colour the QE
+  dashboard settled on rather than the Brick red.
+*/
+:root {
+  --bg: #f5f5f5;
+  --card: #ffffff;
+  --ink: #1b1d21;
+  --ink-2: #454b55;
+  --ink-3: #6b7280;
+  --line: #dfe3e8;
+  --accent: #1f4e88;
+  --accent-soft: #e9eef4;
+  --warn-soft: #fbf3e3;
+  --warn-ink: #7a5a15;
+  --good-soft: #e8f4ee;
+  --good-ink: #2f6b4f;
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+  --sans: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1b1d21;
+    --card: #24272d;
+    --ink: #f1f3f7;
+    --ink-2: #c5cad3;
+    --ink-3: #9aa2ae;
+    --line: #363b44;
+    --accent: #9cc2e5;
+    --accent-soft: #263445;
+    --warn-soft: #3a3221;
+    --warn-ink: #e6c67a;
+    --good-soft: #213a2e;
+    --good-ink: #8fd1ad;
+  }
+}
+html { color-scheme: light dark; }
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font: 15px/1.6 var(--sans);
+  background: var(--bg);
+  color: var(--ink);
+  -webkit-font-smoothing: antialiased;
+}
+a { color: var(--accent); }
+code, kbd {
+  font-family: var(--mono);
+  font-size: 0.88em;
+  background: var(--accent-soft);
+  padding: 1px 5px;
+  border-radius: 4px;
+}
+pre {
+  font-family: var(--mono);
+  font-size: 13px;
+  line-height: 1.55;
+  background: var(--card);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 12px 14px;
+  overflow-x: auto;
+  margin: 10px 0 0;
+}
+pre code { background: none; padding: 0; font-size: inherit; }
+
+.page { max-width: 760px; margin: 0 auto; padding: 32px 24px 80px; }
+
+/* ── masthead ─────────────────────────────────────────────────────────── */
+.mast { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; margin-bottom: 8px; }
+.eyebrow { font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--ink-3); margin: 0 0 6px; }
+h1 { font-size: 30px; line-height: 1.15; margin: 0 0 10px; letter-spacing: -.01em; }
+.lede { font-size: 17px; color: var(--ink-2); margin: 0 0 22px; max-width: 60ch; }
+.meta { font-size: 12.5px; color: var(--ink-3); margin: 0 0 28px; }
+.actions { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  font: 600 13.5px/1 var(--sans);
+  color: #fff; background: var(--accent);
+  padding: 10px 14px; border-radius: 8px; text-decoration: none;
+  border: 1px solid transparent;
+}
+@media (prefers-color-scheme: dark) { .btn { color: #0f1a26; } }
+.btn.ghost { color: var(--accent); background: transparent; border-color: var(--line); }
+.btn svg { width: 14px; height: 14px; }
+
+/* ── on-page contents ──────────────────────────────────────────────────── */
+.toc { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 14px 18px; margin: 0 0 32px; }
+.toc p { margin: 0 0 6px; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); }
+.toc ol { margin: 0; padding-left: 20px; columns: 2; column-gap: 24px; font-size: 14px; }
+.toc li { break-inside: avoid; margin: 2px 0; }
+@media (max-width: 560px) { .toc ol { columns: 1; } }
+
+/* ── sections ──────────────────────────────────────────────────────────── */
+section { margin: 0 0 40px; }
+h2 { font-size: 21px; line-height: 1.25; margin: 0 0 12px; padding-top: 8px; letter-spacing: -.005em; }
+h2 .num { color: var(--ink-3); font-weight: 500; margin-right: 8px; font-variant-numeric: tabular-nums; }
+h3 { font-size: 15.5px; margin: 22px 0 6px; }
+p { margin: 0 0 12px; }
+ul, ol { margin: 0 0 12px; padding-left: 22px; }
+li { margin: 4px 0; }
+li > p { margin: 0 0 6px; }
+.small { font-size: 13.5px; color: var(--ink-2); }
+
+/* Callouts — three tones, and the label says which. Never colour alone. */
+.callout { border: 1px solid var(--line); border-left-width: 4px; border-radius: 8px; padding: 12px 16px; margin: 14px 0; background: var(--card); }
+.callout .lab { display: block; font-size: 11px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-bottom: 4px; color: var(--ink-3); }
+.callout.warn { background: var(--warn-soft); border-left-color: var(--warn-ink); }
+.callout.warn .lab { color: var(--warn-ink); }
+.callout.good { background: var(--good-soft); border-left-color: var(--good-ink); }
+.callout.good .lab { color: var(--good-ink); }
+.callout.tip { border-left-color: var(--accent); }
+.callout.tip .lab { color: var(--accent); }
+.callout p:last-child { margin-bottom: 0; }
+
+/* Step cards */
+.step { background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 18px 20px; margin: 0 0 14px; }
+.step h3 { margin-top: 0; display: flex; gap: 10px; align-items: baseline; }
+.step h3 .n { flex: none; width: 24px; height: 24px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; display: inline-grid; place-items: center; transform: translateY(-1px); }
+@media (prefers-color-scheme: dark) { .step h3 .n { color: #0f1a26; } }
+.step .who { font-size: 12px; color: var(--ink-3); margin: -4px 0 10px 34px; }
+
+/* Tables */
+table { width: 100%; border-collapse: collapse; font-size: 14px; margin: 10px 0 14px; background: var(--card); border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+th, td { text-align: left; vertical-align: top; padding: 9px 12px; border-top: 1px solid var(--line); }
+th { font-size: 11.5px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--ink-3); border-top: 0; background: var(--bg); }
+td:first-child { font-weight: 600; white-space: nowrap; }
+.tablewrap { overflow-x: auto; }
+
+/* A drawn "screen" — a labelled box standing in for a screenshot. */
+.ui { border: 1px solid var(--line); border-radius: 8px; background: var(--card); padding: 12px 14px; margin: 10px 0 14px; font-size: 13.5px; }
+.ui .uihead { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--ink-3); font-weight: 700; margin-bottom: 8px; }
+.ui .row { display: flex; justify-content: space-between; gap: 12px; padding: 7px 0; border-top: 1px dashed var(--line); }
+.ui .row:first-of-type { border-top: 0; }
+.ui .chip { font-size: 11px; font-weight: 700; border: 1px solid var(--line); border-radius: 999px; padding: 1px 8px; color: var(--ink-2); white-space: nowrap; }
+.ui .field { display: grid; grid-template-columns: 130px 1fr; gap: 10px; padding: 6px 0; border-top: 1px dashed var(--line); }
+.ui .field b { font-weight: 600; color: var(--ink-2); }
+.ui .field:first-of-type { border-top: 0; }
+.ui .hint { font-size: 12.5px; color: var(--ink-3); }
+
+/* Flow strip */
+.flow { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: 13px; margin: 8px 0 18px; }
+.flow span { background: var(--card); border: 1px solid var(--line); border-radius: 999px; padding: 4px 11px; }
+.flow i { color: var(--ink-3); font-style: normal; }
+
+footer { border-top: 1px solid var(--line); margin-top: 48px; padding-top: 16px; font-size: 13px; color: var(--ink-3); }
+
+/* ── print / PDF ───────────────────────────────────────────────────────── */
+@page { size: A4; margin: 18mm 16mm 20mm; @bottom-right { content: counter(page) " / " counter(pages); font: 10px system-ui, sans-serif; color: #6b7280; } }
+@media print {
+  :root { --bg: #fff; --card: #fff; --ink: #1b1d21; --ink-2: #454b55; --ink-3: #6b7280; --line: #d5d9df; --accent: #1f4e88; --accent-soft: #eef2f7; --warn-soft: #fbf3e3; --warn-ink: #7a5a15; --good-soft: #e8f4ee; --good-ink: #2f6b4f; }
+  html { color-scheme: light; }
+  body { font-size: 11pt; background: #fff; }
+  .page { max-width: none; padding: 0; }
+  .actions, .noprint { display: none !important; }
+  .toc ol { columns: 2; }
+  h1 { font-size: 24pt; }
+  h2 { font-size: 15pt; page-break-after: avoid; }
+  h3 { page-break-after: avoid; }
+  /* Sections are too long to keep whole; the blocks inside them are not. */
+  .step, .callout, .ui, table, pre, .toc { page-break-inside: avoid; }
+  a { color: var(--accent); text-decoration: none; }
+  a[href^="http"]::after { content: " (" attr(href) ")"; font-size: 9pt; color: var(--ink-3); word-break: break-all; }
+  .btn::after, .toc a::after, .noref::after { content: none !important; }
+}

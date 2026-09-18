@@ -109,7 +109,7 @@ Demo for a few hours. Read `demo` in code as Refinement.)
 
 The loop, in one line: branch → push → add to Refinement (team-only) → discuss →
 flip public → stakeholders → PR → `/promote-to-prototype` → merge → retire the
-Refinement row. The Contributing guide (below, once written) walks each step.
+Refinement row. The [Contributing guide](#contributing) walks each step.
 
 To preview what stakeholders will see locally: `npm run build:public && npx vite preview`.
 
@@ -122,6 +122,39 @@ folders `/prototypes/`, `/testing/`, `/ngat-admin/`, `/archive/`, `/qa/` (edge
 (`/dashboard-rebrand` and the ~28 routes under it), because the Prototypes row
 IS the product app and it links between its own routes. If a product
 route should not be public, that is a separate decision.
+
+## Contributing
+
+Two guides ship with the site, both static HTML with a PDF beside them:
+
+| Guide | For | Where |
+|---|---|---|
+| **Contributing to the dashboard** | designers adding work | the **Contributing** section on the full site (last in UX & Dev Access), or `/contributing/` there directly. 404'd on the public site. Source: `public/contributing/index.html` |
+| **How to read this dashboard** | stakeholders with the public link | the "How to read this dashboard" link at the foot of the rail, on both sites — `/about/`. Source: `public/about/index.html` |
+
+The short version of the designer one:
+
+1. `git clone https://github.com/jillmoreno/xcel-ux-dashboard.git && cd xcel-ux-dashboard && npm install && npm run dev`
+2. `git checkout -b feat/<your-thing>` — lowercase, dashes; slashes become dashes in the URL.
+3. Work in Claude Code. Product work goes in `src/` **behind a feature flag whose default is ON on your branch**; standalone HTML review work goes in `public/demos/` (not `public/prototypes/`, which the public build 404s).
+4. `npx tsc -b --noEmit && npx vitest run && npm run lint` (plus `npm run smoke` if you touched `public/prototypes/`).
+5. `git push -u origin feat/<your-thing>`. Netlify builds it at `https://feat-<your-thing>--ux-demo-xceldashboard.netlify.app`; the review link is that plus `/dashboard-rebrand?demo=1`. Branch URLs are not private.
+6. Full site → **Refinement → Add link**. Paste the URL, title it with the branch name, note where to look. Leave **Show on public site** off.
+7. Discuss; push again — same URL.
+8. Jillienne flips **Show on public site** on when it is ready for stakeholders.
+9. Open a PR. Jillienne runs `/promote-to-prototype` on the branch (decides each flag default), merges, and the Refinement row is removed.
+
+**Regenerating the PDFs** after editing either page — they are rendered from
+the HTML, not authored separately:
+
+```bash
+pip install weasyprint          # once
+weasyprint public/contributing/index.html public/contributing/contributing.pdf
+weasyprint public/about/index.html public/about/about.pdf
+```
+
+`PublicGateway.test.tsx` asserts both PDFs exist and that `/about/` never
+mentions git, Netlify, pull requests or the full site — it is the public page.
 
 ## The prototypes live here
 
@@ -171,22 +204,18 @@ a row's title, blurb or status has to be made in both files.
 
 ## Sections
 
-Same set as the sibling dashboards: Demo · Research, then a gated **UX & DEV
-ACCESS** group — Design · Exploration · Sandbox · Development · Done · Archive ·
-QA Notes · To Do. One password (`Password123` by default) opens the whole group.
+Four open — **Prototypes · Refinement · Other Links · Research** — then the
+**UX & DEV ACCESS** group: Design · Exploration · Sandbox · Development · Done ·
+Archive · QA Notes · To Do · Contributing. (As of 2026-09-18 the in-app password
+is not enforced — the Netlify site password on the full site is the lock, and
+on the public site the group is absent. See CLAUDE.md.)
 
-Two are empty on purpose right now:
+**Research** is empty on purpose: XCEL has no per-decision log. Its reasoning is
+inside the wireframes page and the exam spec. `ResearchPanel` says so and names
+what would fill it.
 
-- **Demo** — every XCEL artifact is still in design, so nothing is
-  presentation-ready. Consequence worth knowing: a viewer without the password
-  sees an empty front page. If you want the Desktop Platform to greet people,
-  change its `devStatus` to `done` or drop it and set `category: 'demo'`.
-- **Research** — XCEL has no per-decision log. Its reasoning is inside the
-  wireframes page and the exam spec. `ResearchPanel` says so and names what
-  would fill it.
-
-All four rows land in **Design**, because `devStatus: 'in-design'` outranks their
-`category: 'sandbox'`.
+The six FinServ rows land in **Exploration**; the one product row,
+`xcel-dashboard`, is in **Prototypes**.
 
 ## QA Notes and To Do
 

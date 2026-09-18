@@ -92,9 +92,39 @@ LMS `CLAUDE.md` says about it holds here.
 
 **Sections.** Four open — **Prototypes · Refinement · Other Links · Research**
 — then a divider under a **UX & DEV ACCESS** eyebrow holding Design ·
-Exploration · Sandbox · Development · Done · Archive · QA Notes · To Do.
-Prototypes is first and is the landing section (`DEFAULT_SECTION`); a bare `/`
-opens it and selecting it drops `?section=` from the URL.
+Exploration · Sandbox · Development · Done · Archive · QA Notes · To Do ·
+Contributing. Prototypes is first and is the landing section
+(`DEFAULT_SECTION`); a bare `/` opens it and selecting it drops `?section=`
+from the URL.
+
+### The two guides (2026-09-18)
+
+Two static pages, each with a PDF rendered FROM it (weasyprint; the command is
+in each file's header comment and in the README), sharing one stylesheet at
+`public/guides/guide.css`:
+
+| Page | Audience | Reached | On the public build |
+|---|---|---|---|
+| `public/contributing/index.html` | designers | the gated **Contributing** section — an iframe of the page (`GuideFrame`) — and `/contributing/` directly | 404'd at the edge: `/contributing/*` is in `BLOCKED` |
+| `public/about/index.html` | stakeholders | the **"How to read this dashboard"** link at the foot of the rail, OUTSIDE the `<nav>`, on every build | reachable — it is the orientation a reviewer gets |
+
+**The section is an iframe, not JSX**, for the `ComponentLivePreview` reason:
+the same document is the section, the standalone page and the PDF source, and
+re-typing it as a component is how the three drift. It is a self-contained
+document (system fonts, its own light/dark), so it does NOT follow the page's
+`--ux-*` palette — accepted, because it also has to print.
+
+**The About link is outside the `<nav>` on purpose.** Both nav-order tests
+read the buttons inside `<nav>`; a thirteenth entry there would be a section.
+It takes `margin-top: auto` (which `themeWrapStyle` used to carry) so it and
+Appearance travel to the foot together.
+
+**`/about/` is asserted to say nothing about the process** — no git, Netlify,
+pull request, `FEATURE_FLAGS`, or "full site" — because it is the public page,
+and a stray sentence about branches would tell a stakeholder where the other
+site is. `PublicGateway.test.tsx`, "the two guides". The PDFs are asserted to
+exist and to be PDFs; nothing can assert they are CURRENT, so regenerate them
+whenever the HTML changes.
 
 **Prototypes holds the live product build** (`xcel-dashboard` →
 `/dashboard-rebrand?demo=1`), the one feature row on the ungated front door.

@@ -1,0 +1,314 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>Contributing to the XCEL UX Dashboard</title>
+<!--
+  The DESIGNER guide — how a second designer gets work onto this dashboard.
+  Served from the FULL site as the "Contributing" section (an iframe of this
+  page) and at /contributing/ directly. On the PUBLIC build the whole folder is
+  404'd at the edge (scripts/public-redirects.mjs): it describes the team's
+  working process, which is not for stakeholders — they get /about/ instead.
+
+  Self-contained: system fonts, one shared stylesheet (../guides/guide.css), no
+  app code. The PDF beside this file is rendered FROM this file:
+
+      weasyprint public/contributing/index.html public/contributing/contributing.pdf
+
+  Regenerate it whenever this page changes — a test asserts the PDF exists and
+  is newer than nothing, but cannot know it is current. Last updated 2026-09-18.
+-->
+<link rel="stylesheet" href="../guides/guide.css" />
+</head>
+<body>
+<div class="page">
+
+<header>
+  <div class="mast">
+    <div>
+      <p class="eyebrow">XCEL UX Dashboard · for designers</p>
+      <h1>Contributing to the dashboard</h1>
+    </div>
+    <div class="actions">
+      <a class="btn" href="contributing.pdf" download>
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 2v8m0 0 3-3m-3 3L5 7M3 12v1.5h10V12"/></svg>
+        Download as PDF
+      </a>
+      <a class="btn ghost noprint" href="/">← Back to the dashboard</a>
+    </div>
+  </div>
+  <p class="lede">How to get your work in front of the team and then in front of stakeholders — from cloning the repo to seeing your change land in Prototypes — without needing anyone to hand-hold a deploy.</p>
+  <p class="meta">Last updated 18 September 2026 · Owner: Jillienne Moreno · Applies to <code>jillmoreno/xcel-ux-dashboard</code></p>
+</header>
+
+<nav class="toc" aria-label="Contents">
+  <p>Contents</p>
+  <ol>
+    <li><a href="#big-picture">The big picture</a></li>
+    <li><a href="#need">What you need before you start</a></li>
+    <li><a href="#steps">The nine steps</a></li>
+    <li><a href="#two-kinds">Two kinds of work, two homes</a></li>
+    <li><a href="#flags">Feature flags — the one rule</a></li>
+    <li><a href="#refinement-form">The Refinement form, field by field</a></li>
+    <li><a href="#dont">Things not to do</a></li>
+    <li><a href="#trouble">When something looks wrong</a></li>
+    <li><a href="#glossary">Glossary</a></li>
+  </ol>
+</nav>
+
+<!-- ───────────────────────────────────────────────────────────────────── -->
+<section id="big-picture">
+  <h2><span class="num">01</span>The big picture</h2>
+  <p>The dashboard is <strong>one codebase deployed to two websites</strong>. Every <code>git push</code> to <code>main</code> rebuilds both.</p>
+
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Site</th><th>Who opens it</th><th>What it shows</th></tr></thead>
+    <tbody>
+      <tr><td>The <strong>full</strong> site</td><td>You, Jillienne, the team. Behind a Netlify password.</td><td>Everything — Prototypes, Refinement, Other Links, Research, and the whole <em>UX &amp; Dev Access</em> group (Design, Exploration, Sandbox, Development, Done, Archive, QA Notes, To Do, and this guide).</td></tr>
+      <tr><td>The <strong>public</strong> site</td><td>Stakeholders, with the link. No password.</td><td>Only Prototypes, Refinement, Other Links and Research. The rest is not locked — it is <em>absent</em>. Refinement shows only the rows someone has flipped to public, and is read-only there.</td></tr>
+    </tbody>
+  </table>
+  </div>
+
+  <p>Two sections do the work of getting a design in front of people, and they are different acts:</p>
+  <ul>
+    <li><strong>Refinement</strong> is the review inbox. It is a list of links you add <em>on the page</em> — no code, no commit. A row points at your branch's own build (or an HTML file on it). The team sees every row; stakeholders see a row only after its <em>Show on public site</em> toggle is on.</li>
+    <li><strong>Prototypes</strong> is the product as it stands — the live React build at the flag defaults committed on <code>main</code>. Only a merge to <code>main</code> changes it, and only Jillienne decides what merges into that baseline.</li>
+  </ul>
+
+  <p>So the loop is:</p>
+  <div class="flow">
+    <span>branch</span><i>→</i><span>push</span><i>→</i><span>Refinement · Add link</span><i>→</i><span>team discusses</span><i>→</i><span>flip public</span><i>→</i><span>stakeholders</span><i>→</i><span>PR</span><i>→</i><span>promote</span><i>→</i><span>merge</span><i>→</i><span>retire the row</span>
+  </div>
+  <p class="small">The rest of this guide walks each of those, in order, with the exact commands and the exact fields.</p>
+</section>
+
+<!-- ───────────────────────────────────────────────────────────────────── -->
+<section id="need">
+  <h2><span class="num">02</span>What you need before you start</h2>
+  <ul>
+    <li><strong>Access to the GitHub repo</strong> <code>jillmoreno/xcel-ux-dashboard</code> with permission to push branches. Ask Jillienne if you cannot see it.</li>
+    <li><strong>Node.js 20 or newer</strong> and <strong>git</strong> installed. Check with <code>node -v</code> and <code>git --version</code> in Terminal.</li>
+    <li><strong>Claude Code</strong>, for working in the repo. The repo carries its own instructions (<code>CLAUDE.md</code>) and skills (<code>.claude/skills/</code>), so a fresh Claude Code session already knows the project's rules.</li>
+    <li><strong>The full site's address and password.</strong> Ask Jillienne — it is not written down here on purpose.</li>
+  </ul>
+  <div class="callout tip">
+    <span class="lab">You do not need</span>
+    <p>A Netlify account, any deploy tooling, or to know how the two sites are configured. Pushing a branch is the deploy. Everything else is set up once, centrally, and described in the README for whoever maintains it.</p>
+  </div>
+</section>
+
+<!-- ───────────────────────────────────────────────────────────────────── -->
+<section id="steps">
+  <h2><span class="num">03</span>The nine steps</h2>
+
+  <div class="step">
+    <h3><span class="n">1</span>Clone the repo and run it</h3>
+    <p class="who">You · once</p>
+    <p>Clone means "download the project as a git repository". You do this once; after that you pull updates rather than re-downloading.</p>
+<pre><code>git clone https://github.com/jillmoreno/xcel-ux-dashboard.git
+cd xcel-ux-dashboard
+npm install
+npm run dev</code></pre>
+    <p>Open <a href="http://localhost:5200" class="noref">http://localhost:5200</a>. You should see the dashboard. The port is <strong>5200</strong> on purpose — the sibling dashboards use 5180 and 5190, and they look alike, so a wrong port shows you the wrong project with no error.</p>
+    <p class="small">Refinement and Other Links will say their endpoint is unreachable when you run <code>npm run dev</code>. That is expected — those two lists live on Netlify, and plain <code>vite</code> does not serve them. You add rows on the full site, not locally.</p>
+  </div>
+
+  <div class="step">
+    <h3><span class="n">2</span>Make a branch</h3>
+    <p class="who">You · every piece of work</p>
+    <p>A branch is your own copy of the code to work on. Nothing you do on it touches what anyone else sees until it is merged.</p>
+<pre><code>git checkout main
+git pull
+git checkout -b feat/study-streak-card</code></pre>
+    <p><strong>Naming:</strong> lowercase, words joined with dashes, a short prefix that says what kind of thing it is — <code>feat/</code>, <code>explore/</code>, <code>fix/</code>. The branch name becomes part of a web address in step 5, and slashes turn into dashes there, so <code>feat/study-streak-card</code> becomes <code>feat-study-streak-card</code>.</p>
+  </div>
+
+  <div class="step">
+    <h3><span class="n">3</span>Do the work in Claude Code</h3>
+    <p class="who">You · with Claude</p>
+    <p>Open the repo folder in Claude Code and describe what you are building. Three things make this go smoothly:</p>
+    <ul>
+      <li><strong>Tell Claude which kind of work it is</strong> — a React surface of the product, or a standalone HTML exploration. Section 04 explains the difference; it decides where the files go.</li>
+      <li><strong>Ask Claude to put new product work behind a feature flag</strong>, and to set that flag's default <em>on</em> for your branch. Section 05 explains why. Claude knows the flag catalog (<code>src/context/FeatureFlagContext.tsx</code>).</li>
+      <li><strong>Let Claude read <code>CLAUDE.md</code> first.</strong> It is the project's memory — every decision, every trap, every "we tried that and here is why not". A change that contradicts it will be questioned in review.</li>
+    </ul>
+    <p>Commit as you go. Small commits with plain-English messages are easier for everyone to follow than one big one at the end.</p>
+<pre><code>git add -A
+git commit -m "feat: study streak card on Home, behind dashboard-study-streak"</code></pre>
+  </div>
+
+  <div class="step">
+    <h3><span class="n">4</span>Check it before you push</h3>
+    <p class="who">You · before every push</p>
+    <p>Run the three checks. They are the same ones review will run, so a green result here means no surprises later.</p>
+<pre><code>npx tsc -b --noEmit     # types
+npx vitest run          # the test suite (~800 tests, about a minute)
+npm run lint            # code style</code></pre>
+    <p>If you edited anything under <code>public/prototypes/</code>, also run <code>npm run smoke</code> — those pages have their own suites and <code>vitest</code> does not run them.</p>
+    <p class="small">A failing test is usually the suite telling you a decision is recorded somewhere — for example, the nav order, or which rows sit on the public front door. Read the test's comment; it will say what was decided and why. If your change is meant to re-decide it, update the test in the same commit and say so in the message.</p>
+  </div>
+
+  <div class="step">
+    <h3><span class="n">5</span>Push — that is the deploy</h3>
+    <p class="who">You · Netlify does the rest</p>
+<pre><code>git push -u origin feat/study-streak-card</code></pre>
+    <p>Netlify notices the new branch and builds it as its own website, with no password, at:</p>
+    <pre><code>https://feat-study-streak-card--ux-demo-xceldashboard.netlify.app</code></pre>
+    <p>That is <code>&lt;your-branch-with-dashes&gt;--ux-demo-xceldashboard.netlify.app</code>. The build takes two to three minutes. Every later push to the same branch updates the same address.</p>
+    <p><strong>The link to share is the product, in demo mode:</strong></p>
+    <pre><code>https://feat-study-streak-card--ux-demo-xceldashboard.netlify.app/dashboard-rebrand?demo=1</code></pre>
+    <p class="small"><code>?demo=1</code> makes the page show your branch's <em>committed</em> flag defaults — what you set in step 3 — rather than whatever toggles the person opening it last left in their own browser. Without it, a reviewer may see their own leftover settings and think that is your design.</p>
+    <div class="callout warn">
+      <span class="lab">Know this</span>
+      <p>A branch address is <strong>not private</strong>. Anyone who has it can open it, and every pushed branch gets one. That is what makes stakeholder review possible without a password — and it is why nothing confidential goes on a branch.</p>
+    </div>
+  </div>
+
+  <div class="step">
+    <h3><span class="n">6</span>Add it to Refinement</h3>
+    <p class="who">You · on the full site</p>
+    <p>Open the <strong>full</strong> site, click <strong>Refinement</strong> in the left nav, then <strong>Add link</strong> (or <strong>Add the first link</strong> if the list is empty). Paste the address from step 5, give it a title, and write a one-line note saying where to look. Leave <strong>Show on public site</strong> off. Section 06 has every field.</p>
+    <p>The row appears immediately for everyone on the full site. It is saved to a shared store, not to your browser, so the team sees it the moment you save.</p>
+  </div>
+
+  <div class="step">
+    <h3><span class="n">7</span>Discuss, iterate, push again</h3>
+    <p class="who">You and the team</p>
+    <p>The team opens your row, looks, and talks — wherever the team talks. You make changes on the branch, run the checks, push. The address does not change, so the Refinement row is still right. If what the row <em>is</em> changes, use <strong>Edit</strong> on the row to update its title or note.</p>
+    <p class="small">There is deliberately no comment thread on the row. Refinement is a list of things to look at, not a place to record the discussion; that stays where the team already talks.</p>
+  </div>
+
+  <div class="step">
+    <h3><span class="n">8</span>Flip it public when it is ready for stakeholders</h3>
+    <p class="who">Jillienne — or you, once agreed</p>
+    <p>Edit the row and switch <strong>Show on public site</strong> on. From that moment the row shows on the public site's Refinement list, read-only, and stakeholders with the public link can open your branch build. Switch it off again to take it back out — nothing is deleted.</p>
+    <p>The convention is that Jillienne flips it, because the public list is what stakeholders read as "what the team wants us to look at". If she has asked you to flip your own, go ahead.</p>
+  </div>
+
+  <div class="step">
+    <h3><span class="n">9</span>Open a pull request → promote → merge → retire the row</h3>
+    <p class="who">You open the PR · Jillienne promotes and merges</p>
+    <p>When the work is agreed, open a pull request from your branch to <code>main</code> on GitHub. Jillienne then runs the <code>promote-to-prototype</code> skill <em>on your branch, before merging</em>. It lists every feature flag your branch changed and asks her, flag by flag, whether that default ships in Prototypes. Approved flags keep your "on"; declined ones are set back to <code>main</code>'s value, so the work lands in the sandbox sections of the full site without reaching the public product.</p>
+    <p>She merges. Both sites rebuild. The last step is retiring your Refinement row — <strong>Remove</strong> on the row — because the thing it pointed at is now in Prototypes (or the branch is gone).</p>
+    <div class="callout good">
+      <span class="lab">Done looks like</span>
+      <p>Your flag's default is on in <code>main</code>, the Prototypes section shows your work at <code>/dashboard-rebrand?demo=1</code>, and Refinement no longer lists your branch.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ───────────────────────────────────────────────────────────────────── -->
+<section id="two-kinds">
+  <h2><span class="num">04</span>Two kinds of work, two homes</h2>
+  <p>Where files go depends on what you are making, and picking wrong is the most common mistake in this repo.</p>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>You are making</th><th>It lives in</th><th>Reviewers open</th><th>Promoted by</th></tr></thead>
+    <tbody>
+      <tr><td>A React surface of the product</td><td><code>src/</code> — a page in the shell, a card, a panel, a variant of an existing block. Behind a feature flag.</td><td><code>&lt;branch&gt;--…netlify.app/dashboard-rebrand?demo=1</code></td><td>Flipping the flag's default on <code>main</code> (the promote skill).</td></tr>
+      <tr><td>A standalone HTML exploration</td><td><code>public/demos/&lt;your-file&gt;.html</code> — a hand-authored page answering a brief, not wired into the app.</td><td><code>&lt;branch&gt;--…netlify.app/demos/&lt;your-file&gt;.html</code></td><td>Moving it to <code>public/prototypes/</code> with a row in <code>prototypeFeatures.ts</code> if it is a finished exploration, or rebuilding it in <code>src/</code> if it became a product surface.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <div class="callout warn">
+    <span class="lab">Why <code>public/demos/</code> and not <code>public/prototypes/</code></span>
+    <p>The public site 404s everything under <code>/prototypes/</code> at the edge — that folder holds the finished FinServ explorations, which are gated. A file there is invisible on your branch's public build too. <code>public/demos/</code> is deliberately left open for exactly this: HTML in review. Nothing should live there long, and nothing there gets a row in the feature list — the Refinement panel is its listing.</p>
+  </div>
+</section>
+
+<!-- ───────────────────────────────────────────────────────────────────── -->
+<section id="flags">
+  <h2><span class="num">05</span>Feature flags — the one rule</h2>
+  <p>Every change to the product starts <strong>invisible to Prototypes</strong>: behind a flag whose default on <code>main</code> is off (or set to the existing variant). That is what lets many designers work on the same product without anyone's half-finished idea appearing in front of stakeholders.</p>
+  <p>On <strong>your branch</strong>, you set that flag's default <em>on</em>. That is what makes your branch build show your work at <code>?demo=1</code>. It also means the promote skill can see, mechanically, exactly which defaults your branch changed — the list it asks Jillienne about in step 9 is the diff of the flag catalog between your branch and <code>main</code>.</p>
+  <ul>
+    <li>Flags live in <code>src/context/FeatureFlagContext.tsx</code>, in <code>FEATURE_FLAGS</code>. Ask Claude to add yours there and to add it to the <code>/dashboard-rebrand</code> panel scope so reviewers can toggle it.</li>
+    <li>Reviewers can flip flags live on your build: hover the prototype bar and find the robot icon, which opens the flag sheet. In demo mode those flips are temporary and reset on exit.</li>
+    <li>Do not promote by adding a row to Prototypes. That section holds exactly one row — the product build — and a test compares it in both directions, so a second row fails the suite.</li>
+  </ul>
+</section>
+
+<!-- ───────────────────────────────────────────────────────────────────── -->
+<section id="refinement-form">
+  <h2><span class="num">06</span>The Refinement form, field by field</h2>
+  <p>This is what <strong>Add link</strong> opens on the full site.</p>
+  <div class="ui" role="img" aria-label="The Add link form: Address, Title, Note, Added by, and the Show on public site toggle">
+    <div class="uihead">Refinement · Add link</div>
+    <div class="field"><b>Address</b><span>The full <code>https://…</code> link. Required. Only <code>http</code> and <code>https</code> addresses are accepted — anything else is refused, on purpose, because every address here is rendered as a real link for everyone.</span></div>
+    <div class="field"><b>Title</b><span>What it is, in a few words. Required. Include the branch name so the row can be matched to a PR later: <em>“Study streak card — feat/study-streak-card”</em>.</span></div>
+    <div class="field"><b>Note</b><span>Optional, but use it. Say where to look and what question you want answered: <em>“Home, under Current Progress. Is the streak motivating or nagging?”</em></span></div>
+    <div class="field"><b>Added by</b><span>Your name. Optional; remembered in your browser so you type it once. It is a label, not a login — nothing checks it.</span></div>
+    <div class="field"><b>Show on public site</b><span>A checkbox, <strong>off by default</strong>. The hint under it reads: <em>“Off: only the team sees this row. On: stakeholders with the public link see it too.”</em></span></div>
+  </div>
+  <p>On the list, each row carries a chip — <strong>Team only</strong> or <strong>Public</strong> — so you can see at a glance what stakeholders can see. The nav badge on Refinement counts all rows on the full site and only the public ones on the public site.</p>
+  <p class="small">There is no <em>Type</em> field here, unlike Other Links. Every Refinement row is the same kind of thing — work in review — and the toggle is what tells rows apart.</p>
+</section>
+
+<!-- ───────────────────────────────────────────────────────────────────── -->
+<section id="dont">
+  <h2><span class="num">07</span>Things not to do</h2>
+  <ul>
+    <li><strong>Don't push to <code>main</code>.</strong> Every push to <code>main</code> rebuilds the public site. Work on a branch; get there through a PR.</li>
+    <li><strong>Don't add a row to Prototypes</strong> or change a row's <code>category</code> to <code>'prototype'</code>. Promotion is a flag default, never a tile move.</li>
+    <li><strong>Don't put review HTML in <code>public/prototypes/</code>.</strong> It is 404'd on the public build. Use <code>public/demos/</code>.</li>
+    <li><strong>Don't change a flag's default on <code>main</code> yourself.</strong> That is the promote step, and it is Jillienne's call.</li>
+    <li><strong>Don't paste a stakeholder the full site's address.</strong> They cannot open it, and the password is the team's. The review link is your branch build on the public site's domain.</li>
+    <li><strong>Don't invent data.</strong> A number, a URL, a lesson count or a fee that XCEL has not published is flagged as <code>INVENTED</code> in the code and named as such on screen. <code>CLAUDE.md</code> records why, several times over.</li>
+    <li><strong>Don't draft the Quick Summary</strong> on a dev-handoff component — ask Jillienne for it. The <code>dev-handoff-notes</code> skill says the same.</li>
+  </ul>
+</section>
+
+<!-- ───────────────────────────────────────────────────────────────────── -->
+<section id="trouble">
+  <h2><span class="num">08</span>When something looks wrong</h2>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Symptom</th><th>Likely cause</th><th>Try</th></tr></thead>
+    <tbody>
+      <tr><td>Branch address 404s</td><td>Netlify hasn't finished the build, or branch deploys were switched off.</td><td>Wait three minutes and reload. If it still fails, check the branch name has slashes turned to dashes; then ask Jillienne to confirm branch deploys are on.</td></tr>
+      <tr><td>Branch shows old main, not your work</td><td>Your flag default is off on the branch, or you opened the page without <code>?demo=1</code>.</td><td>Add <code>?demo=1</code>. Then check <code>FEATURE_FLAGS</code> on your branch has your flag's default on.</td></tr>
+      <tr><td>The demo looks different on one laptop only</td><td>That browser holds a saved "Set as default" flag snapshot, which wins over the committed default per key.</td><td>In that browser's DevTools → Application → Local Storage, delete <code>cgp.featureFlags.customDefaults</code>.</td></tr>
+      <tr><td>Refinement says "endpoint unreachable"</td><td>You are on <code>npm run dev</code> locally, which serves no <code>/api/*</code>.</td><td>Add rows on the full site, not locally. (<code>netlify dev</code> works locally but needs setup; see <code>.claude/launch.json</code>.)</td></tr>
+      <tr><td>Row shows "not a linkable address"</td><td>The address wasn't <code>http(s)</code>, or was saved by an older version.</td><td>Edit the row and paste the full <code>https://</code> address.</td></tr>
+      <tr><td>Stakeholder can't see your row</td><td><em>Show on public site</em> is off.</td><td>Edit the row → switch it on. Check the chip reads <strong>Public</strong>.</td></tr>
+      <tr><td>Tests fail on something you didn't touch</td><td>A decision is pinned — nav order, section contents, a colour that must keep failing.</td><td>Read the test's comment. Either your change re-decides it (update the test, say so) or it exposed a real regression.</td></tr>
+      <tr><td><code>git</code> says <code>index.lock</code> exists</td><td>A previous git process died mid-write.</td><td><code>rm .git/index.lock</code> — only if no other git command is running.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ───────────────────────────────────────────────────────────────────── -->
+<section id="glossary">
+  <h2><span class="num">09</span>Glossary</h2>
+  <div class="tablewrap">
+  <table>
+    <tbody>
+      <tr><td>Repo</td><td>The project's code, in git. <code>jillmoreno/xcel-ux-dashboard</code> on GitHub.</td></tr>
+      <tr><td>Clone</td><td>Download the repo to your machine, once.</td></tr>
+      <tr><td>Branch</td><td>Your own line of work inside the repo. Nothing on it is public until merged — but its <em>build</em> has a public address.</td></tr>
+      <tr><td>Push</td><td>Send your commits to GitHub. Netlify builds every pushed branch.</td></tr>
+      <tr><td>Branch deploy</td><td>The website Netlify builds for one branch: <code>&lt;branch&gt;--ux-demo-xceldashboard.netlify.app</code>.</td></tr>
+      <tr><td><code>?demo=1</code></td><td>Demo mode: render the committed flag defaults, ignore the viewer's own saved toggles, don't persist flips.</td></tr>
+      <tr><td>Feature flag</td><td>A named switch in <code>FEATURE_FLAGS</code>. Off on <code>main</code> until promoted; on on your branch so your build shows it.</td></tr>
+      <tr><td>Prototypes</td><td>The section holding the live product build at <code>main</code>'s flag defaults. One row. Changed only by merging.</td></tr>
+      <tr><td>Refinement</td><td>The review inbox: links added on the page, team-only until flipped public. Its internal id is <code>demo</code> — you will see that in URLs (<code>?section=demo</code>) and code.</td></tr>
+      <tr><td>Other Links</td><td>Everything else that lives elsewhere: briefs, boards, Figma files. Also added on the page.</td></tr>
+      <tr><td>Promote</td><td>Jillienne's step on your PR: decide per flag whether its "on" default ships in Prototypes. Skill: <code>promote-to-prototype</code>.</td></tr>
+      <tr><td>Full site / public site</td><td>The password-protected everything site, and the passwordless stakeholder site. Same code; one build-time switch.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<footer>
+  <p>Part of the XCEL UX Dashboard. The reasoning behind every decision described here is in the repo's <code>CLAUDE.md</code>; the one-time site setup is in <code>README.md</code> under “Two Netlify sites, one repo”. Stakeholders get a shorter companion page, <a href="/about/">How to read this dashboard</a>.</p>
+</footer>
+
+</div>
+</body>
+</html>

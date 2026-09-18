@@ -45,7 +45,7 @@ function renderAt(Page: React.ComponentType, path: string) {
 }
 
 const PUBLIC_SECTIONS = ['Prototypes', 'Refinement', 'Other Links', 'Research']
-const GATED_SECTIONS = ['Design', 'Exploration', 'Sandbox', 'Development', 'Done', 'Archive', 'QA Notes', 'To Do']
+const GATED_SECTIONS = ['Design', 'Exploration', 'Sandbox', 'Development', 'Done', 'Archive', 'QA Notes', 'To Do', 'Contributing']
 
 beforeEach(() => {
   sessionStorage.clear()
@@ -90,6 +90,15 @@ describe('public build — the nav', () => {
     expect(screen.queryByRole('button', { name: /^Add link/ })).toBeNull()
     // No lock glyph either — nothing on this build is "locked", it is gone.
     expect(screen.queryByText(/— locked/)).toBeNull()
+  })
+
+  it('keeps the stakeholder guide link — the one piece of orientation a reviewer gets', async () => {
+    const Page = await loadPublicPage()
+    renderAt(Page, '/')
+    const link = screen.getByRole('link', { name: /How to read this dashboard/ })
+    expect(link).toHaveAttribute('href', '/about/')
+    // And no trace of the designer guide's name anywhere on the page.
+    expect(screen.queryByText(/Contributing/)).toBeNull()
   })
 
   it('never asks for a password, whatever the URL carries', async () => {
@@ -143,6 +152,46 @@ describe('public build — the edge rules', () => {
 
   it('writes nothing on the full build', () => {
     expect(script).toMatch(/mode !== 'public'[\s\S]*process\.exit\(0\)/)
+  })
+
+  it('404s the designer guide and leaves the stakeholder guide and their shared stylesheet reachable', () => {
+    const m = script.match(/const BLOCKED = \[([^\]]+)\]/)
+    const blocked = [...m![1].matchAll(/'([^']+)'/g)].map((x) => x[1])
+    expect(blocked).toContain('/contributing/*')
+    expect(blocked.some((b) => b.startsWith('/about'))).toBe(false)
+    // Both guides link ../guides/guide.css; blocking it would unstyle /about/.
+    expect(blocked.some((b) => b.startsWith('/guides'))).toBe(false)
+  })
+})
+
+describe('the two guides', () => {
+  const pub = resolve(here, '../../public')
+
+  it('each is a self-contained page with its PDF beside it and the one shared stylesheet', () => {
+    for (const [folder, pdf] of [
+      ['contributing', 'contributing.pdf'],
+      ['about', 'about.pdf'],
+    ] as const) {
+      const html = readFileSync(resolve(pub, folder, 'index.html'), 'utf8')
+      expect(html).toContain('href="../guides/guide.css"')
+      expect(html).toContain(`href="${pdf}" download`)
+      // Nothing from the app — the page has to render on its own and in print.
+      expect(html).not.toMatch(/src="\/assets\//)
+      expect(readFileSync(resolve(pub, folder, pdf)).subarray(0, 5).toString()).toBe('%PDF-')
+    }
+    expect(() => readFileSync(resolve(pub, 'guides/guide.css'))).not.toThrow()
+  })
+
+  it('the stakeholder guide says nothing about the team’s working process', () => {
+    // It is the PUBLIC page. The designer vocabulary — git, the password, the
+    // full site's sections — belongs in /contributing/, which the public build
+    // cannot reach. A sentence about branches leaking in here would tell a
+    // stakeholder how the sausage is made and, worse, where the other site is.
+    const about = readFileSync(resolve(pub, 'about/index.html'), 'utf8')
+      .replace(/<!--[\s\S]*?-->/g, '') // the header comment MAY name /contributing/
+    for (const word of ['git ', 'git clone', 'Netlify', 'pull request', 'FEATURE_FLAGS', 'promote-to-prototype', 'full site']) {
+      expect(about, `about/index.html mentions "${word}"`).not.toContain(word)
+    }
   })
 })
 

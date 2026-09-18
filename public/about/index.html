@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex" />
+<title>How to read the XCEL UX Dashboard</title>
+<!--
+  The STAKEHOLDER guide — what a reviewer with the public link is looking at,
+  and how to look at it. Reachable on BOTH builds at /about/ (the nav's
+  "How to read this dashboard" link). Deliberately says nothing about the
+  team's working process, git, or the password-protected site — that is the
+  designer guide at /contributing/, which the public build 404s.
+
+  Self-contained: system fonts, one shared stylesheet (../guides/guide.css), no
+  app code. The PDF beside this file is rendered FROM this file:
+
+      weasyprint public/about/index.html public/about/about.pdf
+
+  Regenerate it whenever this page changes. Last updated 2026-09-18.
+-->
+<link rel="stylesheet" href="../guides/guide.css" />
+</head>
+<body>
+<div class="page">
+
+<header>
+  <div class="mast">
+    <div>
+      <p class="eyebrow">XCEL UX Dashboard · for reviewers</p>
+      <h1>How to read this dashboard</h1>
+    </div>
+    <div class="actions">
+      <a class="btn" href="about.pdf" download>
+        <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true"><path d="M8 2v8m0 0 3-3m-3 3L5 7M3 12v1.5h10V12"/></svg>
+        Download as PDF
+      </a>
+      <a class="btn ghost noprint" href="/">← Back to the dashboard</a>
+    </div>
+  </div>
+  <p class="lede">A five-minute orientation: what each section is, what is decided versus what is being discussed, how to open and drive the prototype, and how to tell the design team what you think.</p>
+  <p class="meta">Last updated 18 September 2026 · Owner: Jillienne Moreno, UX Design</p>
+</header>
+
+<nav class="toc" aria-label="Contents">
+  <p>Contents</p>
+  <ol>
+    <li><a href="#what">What you are looking at</a></li>
+    <li><a href="#sections">The four sections</a></li>
+    <li><a href="#prototype">Opening and driving the prototype</a></li>
+    <li><a href="#refinement">Reading Refinement</a></li>
+    <li><a href="#feedback">Giving feedback</a></li>
+    <li><a href="#not-here">What is not here</a></li>
+    <li><a href="#wrong">If something looks wrong</a></li>
+    <li><a href="#faq">Questions we get asked</a></li>
+  </ol>
+</nav>
+
+<!-- ───────────────────────────────────────────────────────────────────── -->
+<section id="what">
+  <h2><span class="num">01</span>What you are looking at</h2>
+  <p>This is the design team's front door for the <strong>XCEL learner platform</strong> — the next-generation LMS for insurance, mortgage and banking pre-licensing and continuing education. It is a working prototype, not the shipped product: real screens, real interaction, demo data.</p>
+  <p>The page has a left-hand rail with four sections and a main area showing whichever one is selected. It opens on <strong>Prototypes</strong>, because that is the thing most people come to see.</p>
+  <div class="callout tip">
+    <span class="lab">The one distinction that matters</span>
+    <p><strong>Prototypes</strong> is what the team has landed on. <strong>Refinement</strong> is what the team is still discussing. Everything else on this page is supporting material. If you only remember one thing, remember that.</p>
+  </div>
+</section>
+
+<!-- ───────────────────────────────────────────────────────────────────── -->
+<section id="sections">
+  <h2><span class="num">02</span>The four sections</h2>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>Section</th><th>What it is</th><th>How to read it</th></tr></thead>
+    <tbody>
+      <tr><td>Prototypes</td><td>The live learner dashboard, as it currently stands. One entry, which opens the product itself.</td><td>This is the agreed baseline. Nothing appears here by accident — every element on it was a decision, and changing it takes a deliberate step by the design lead.</td></tr>
+      <tr><td>Refinement</td><td>Work in review — a list of links to designs the team is discussing. Each row is a designer's build of one idea, with a note saying where to look.</td><td>Nothing here is decided. A row may change from one day to the next, or disappear. That is the point of the section, not a fault.</td></tr>
+      <tr><td>Other Links</td><td>Things that live elsewhere and are useful alongside the designs — briefs, boards, references.</td><td>Background reading. Open what is relevant to you.</td></tr>
+      <tr><td>Research</td><td>Where the reasoning behind decisions will be catalogued, one entry per decision.</td><td>Currently empty by design — XCEL's rationale lives inside the explorations themselves for now, and the page says so.</td></tr>
+    </tbody>
+  </table>
+  </div>
+  <p class="small">The numbers beside section names are counts of what is inside. The <strong>Appearance</strong> control at the foot of the rail changes the colour scheme of this dashboard page only — it does not change the product you open from it.</p>
+</section>
+
+<!-- ───────────────────────────────────────────────────────────────────── -->
+<section id="prototype">
+  <h2><span class="num">03</span>Opening and driving the prototype</h2>
+  <p>In <strong>Prototypes</strong>, click the single entry. The learner dashboard opens in the same window, with a dark <strong>prototype bar</strong> across the top. That bar is scaffolding for reviewers; a learner would never see it.</p>
+
+  <h3>The Demo Controls</h3>
+  <p>The bar carries a few dropdowns that change <em>who</em> you are looking at, so one prototype can show many situations:</p>
+  <ul>
+    <li><strong>Persona</strong> — named example learners with different circumstances.</li>
+    <li><strong>Progress</strong> — how far through the course the learner is (on track, at risk, and so on). The label is approximate; the page itself shows the exact figure.</li>
+    <li><strong>Education</strong> — pre-licensing versus continuing education, which changes the whole shape of the course.</li>
+    <li><strong>Readiness</strong> — how prepared for the state exam the learner is. Deliberately separate from Progress: a learner can be far through the course and not ready.</li>
+  </ul>
+  <p>Change them freely. <strong>Nothing you flip is saved</strong> — the prototype opens in "demo mode", which shows the team's agreed configuration and forgets your changes when you leave. Reload and you are back at the baseline.</p>
+
+  <h3>The left rail inside the product</h3>
+  <p>Home · Study Plan · Readiness · My Courses · Certificates · Resources · Rubi Insights · Get Help. Each is a real section you can open. Some sections the team has built but chosen not to show on the rail (Learning Path, Browse Catalog, Podcasts among them); they are hidden, not gone, and a designer can show you one on request.</p>
+
+  <h3>What the data is</h3>
+  <p>The learner, their course and their progress are <strong>demo fixtures</strong>. Where a number is a real published fact — the New York state's 40 credit hours, the 70% pass mark, PSI's exam fee — it is real and sourced. Where the team has had to guess a figure XCEL has not published, the code marks it as invented and the screen says so rather than presenting it as fact. If a number looks wrong to you, say so: that is exactly the kind of feedback the fixtures exist to draw out.</p>
+  <div class="callout warn">
+    <span class="lab">Worth knowing</span>
+    <p>Dates in the prototype are anchored to a fixed "today" (11 May 2026) so that nothing ages into "eight months ago" between reviews. A countdown that seems not to move between visits is doing that on purpose.</p>
+  </div>
+</section>
+
+<!-- ───────────────────────────────────────────────────────────────────── -->
+<section id="refinement">
+  <h2><span class="num">04</span>Reading Refinement</h2>
+  <p>Each row is a link plus a short note. The note is the designer telling you where to look and what question they are asking. Open the link, find the thing the note names, form a view.</p>
+  <div class="ui" role="img" aria-label="An example Refinement row: a title, a note saying where to look, and who added it">
+    <div class="uihead">Refinement · example row</div>
+    <div class="row"><span><strong>Study streak card — feat/study-streak-card</strong><br /><span class="hint">Home, under Current Progress. Is the streak motivating or nagging? · added 18 Sep · by Sam</span></span><span class="chip">↗</span></div>
+  </div>
+  <p>Three things to hold in mind while you look:</p>
+  <ul>
+    <li><strong>It is one idea, isolated.</strong> A Refinement build is the agreed baseline <em>plus one change</em>, so what you see differing from Prototypes is the thing under discussion.</li>
+    <li><strong>It may be mid-change.</strong> The designer might push an update while you are looking. If a page reloads differently, that is why.</li>
+    <li><strong>You only see what the team has chosen to show.</strong> The team's own list is longer; a row reaches this page only when someone decides it is ready for your eyes.</li>
+  </ul>
+  <p class="small">If Refinement is empty, it says "Nothing is being shown for review right now." That is a true statement about this moment, not an error.</p>
+</section>
+
+<!-- ───────────────────────────────────────────────────────────────────── -->
+<section id="feedback">
+  <h2><span class="num">05</span>Giving feedback</h2>
+  <p>The dashboard has no comment box, on purpose — feedback belongs in the conversation the team is already having, where it can be answered. Send it to whoever shared the link with you, or to Jillienne directly.</p>
+  <p>What makes feedback easy to act on:</p>
+  <ul>
+    <li><strong>Say which section and which row.</strong> "Refinement → the study streak card" beats "the new thing".</li>
+    <li><strong>Say which settings you had.</strong> If it matters, name the Persona, Progress, Education and Readiness you were on. The same screen can look quite different across them.</li>
+    <li><strong>Separate "this is wrong" from "I'd prefer".</strong> Both are useful; they are answered differently. A wrong number gets fixed; a preference gets discussed.</li>
+    <li><strong>Screenshots help</strong>, with the browser's address bar visible — the address says exactly which build and which page you were on.</li>
+  </ul>
+</section>
+
+<!-- ───────────────────────────────────────────────────────────────────── -->
+<section id="not-here">
+  <h2><span class="num">06</span>What is not here</h2>
+  <p>The design team works from a fuller version of this dashboard that also holds explorations still in design, developer hand-off notes, QA findings, an archive and a to-do list. Those are not on this link — not hidden behind a lock, simply not present. If you need to see one of them, ask Jillienne; she can walk you through it or share a specific piece into Refinement.</p>
+</section>
+
+<!-- ───────────────────────────────────────────────────────────────────── -->
+<section id="wrong">
+  <h2><span class="num">07</span>If something looks wrong</h2>
+  <div class="tablewrap">
+  <table>
+    <thead><tr><th>What you see</th><th>What it usually means</th><th>Try</th></tr></thead>
+    <tbody>
+      <tr><td>A page saying "There's nothing at this address"</td><td>Either a mistyped link, or a page that is not part of the public dashboard.</td><td>Go back to the dashboard and open things from there. If a link you were sent does this, tell the sender.</td></tr>
+      <tr><td>A Refinement link that won't load</td><td>The designer has just pushed a change and the new version is still being built (a couple of minutes).</td><td>Wait, then reload.</td></tr>
+      <tr><td>The prototype looks different from last time</td><td>Either the team has landed a change, or you were on a different Persona / Progress setting.</td><td>Check the Demo Controls; then check with the team whether Prototypes changed.</td></tr>
+      <tr><td>A "Not started" or empty screen</td><td>Probably a deliberate state — the fixtures cover the empty case as well as the busy one.</td><td>Change Progress or Readiness and see whether it fills in.</td></tr>
+      <tr><td>A figure marked as an estimate or invented</td><td>XCEL has not published that number yet; the team has flagged it rather than guessed silently.</td><td>If you know the real figure, that is the most useful feedback you can give.</td></tr>
+    </tbody>
+  </table>
+  </div>
+</section>
+
+<!-- ───────────────────────────────────────────────────────────────────── -->
+<section id="faq">
+  <h2><span class="num">08</span>Questions we get asked</h2>
+  <h3>Is this the real product?</h3>
+  <p>No. It is a working prototype built on the same design system the product will use, so what you see is faithful to how it will look and behave — but the data is demo data and nothing you do here affects any learner.</p>
+  <h3>Can I share the link?</h3>
+  <p>Yes. It is not password-protected; anyone with it can open it. Please share it with people who are part of the review, not more widely — it is work in progress.</p>
+  <h3>Why can't I change anything on the dashboard page itself?</h3>
+  <p>Because this link is the read-only view. The team adds and arranges things from its own version. Your influence on it is your feedback.</p>
+  <h3>Something I saw last week has gone. Was it rejected?</h3>
+  <p>Not necessarily. A Refinement row goes away when it is either promoted into Prototypes (look there), parked, or taken back to the team-only list for more work. Ask, and the team will tell you which.</p>
+  <h3>Why does the prototype open with "?demo=1" in the address?</h3>
+  <p>That switch tells the prototype to show the team's agreed configuration and to forget any settings you change. Keep it in the address when you share a link, so the next person sees the same thing you did.</p>
+</section>
+
+<footer>
+  <p>XCEL UX Dashboard · UX Design, Colibri Group. <a href="/">Back to the dashboard</a>.</p>
+</footer>
+
+</div>
+</body>
+</html>

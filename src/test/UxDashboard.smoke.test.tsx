@@ -5,7 +5,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { UxDashboardPage } from '@/pages/UxDashboardPage'
 import { AccountProvider } from '@/context/AccountContext'
 import { ThemeProvider } from '@/context/ThemeContext'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync, readFileSync, statSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PROTOTYPE_FEATURES, componentPreviewUrl } from '@/data/prototypeFeatures'
@@ -53,6 +53,7 @@ const EXPECTED_SECTIONS = [
   'Archive',
   'QA Notes',
   'To Do',
+  'Contributing',
 ]
 
 beforeEach(() => {
@@ -80,6 +81,28 @@ describe('XCEL dashboard — mount and nav', () => {
     }
     const positions = EXPECTED_SECTIONS.map((s) => labels.findIndex((l) => l.includes(s)))
     expect(positions).toEqual([...positions].sort((a, b) => a - b))
+  })
+
+  it('Contributing renders the static designer guide in a frame — one document, not a JSX copy', () => {
+    renderDashboard('/?section=contributing')
+    const frame = screen.getByTitle('Contributing to the dashboard')
+    expect(frame.tagName).toBe('IFRAME')
+    expect(frame).toHaveAttribute('src', '/contributing/')
+    // …and that document exists, with its PDF beside it. The guide's own header
+    // comment says how the PDF is regenerated; this only proves neither is missing.
+    const dir = resolve(dirname(fileURLToPath(import.meta.url)), '../../public/contributing')
+    const html = readFileSync(resolve(dir, 'index.html'), 'utf8')
+    expect(html).toContain('href="contributing.pdf"')
+    expect(statSync(resolve(dir, 'contributing.pdf')).size).toBeGreaterThan(10_000)
+  })
+
+  it('the foot of the rail links the stakeholder guide, outside the section nav', () => {
+    renderDashboard()
+    const link = screen.getByRole('link', { name: /How to read this dashboard/ })
+    expect(link).toHaveAttribute('href', '/about/')
+    // Not a section: it must not be inside the <nav>, or it becomes a
+    // thirteenth row and the order assertion above starts counting it.
+    expect(screen.getByRole('navigation')).not.toContainElement(link)
   })
 })
 

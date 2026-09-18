@@ -3549,3 +3549,17 @@ a.cre-library-card-title::after {
   outline: 2px solid var(--ux-accent);
   outline-offset: 2px;
 }
+
+/* The "How to read this dashboard" link at the foot of the gateway rail
+   (UxDashboardPage, 2026-09-18). Same `--ux-bg` tint the rail rows and the
+   Links rows use for hover — one row hover per page — and the underline needs
+   `!important` for the reason `.cre-uxlinks-title` records: the anchor carries
+   an inline `text-decoration: none`. */
+.cre-uxnav-about {
+  transition: background-color 120ms ease;
+}
+.cre-uxnav-about:hover,
+.cre-uxnav-about:focus-visible {
+  background: var(--ux-bg);
+  text-decoration: underline !important;
+}

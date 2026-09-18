@@ -48,6 +48,7 @@ import {
 import { ActionMenu } from '@/components/ui/ActionMenu'
 import {
   ArrowLeft,
+  ArrowUpRightFromSquare,
   Bolt,
   CalendarDay,
   Check,
@@ -125,6 +126,7 @@ type UxSection =
   | 'done'
   | 'archive'
   | 'qa-notes'
+  | 'contributing'
 
 /**
  * ONE gate for every restricted section — Design, Exploration, Development,
@@ -311,6 +313,23 @@ const SECTIONS: SectionDef[] = [
     label: 'To Do',
     blurb: 'Upcoming projects and loose ends — paste them in, tag a stage, drag to rank.',
     gate: { id: DEV_GATE_ID, title: 'To Do' },
+  },
+  {
+    // The designer guide (2026-09-18) — how a second designer gets work onto
+    // this dashboard: clone, branch, flag, push, Refinement, promote. It is a
+    // static page (`public/contributing/index.html`, with a PDF beside it)
+    // shown here in an iframe, so the same document is the section, the
+    // standalone page and the download, and none of the three can drift.
+    //
+    // GATED, and last: it describes the team's working process, which is not
+    // for stakeholders — they get `/about/` from the link at the foot of this
+    // rail instead. The public build 404s `/contributing/*` at the edge too
+    // (`scripts/public-redirects.mjs`), because a client-side gate cannot hide
+    // a static file.
+    id: 'contributing',
+    label: 'Contributing',
+    blurb: 'How to get your work onto this dashboard — clone, branch, push, add to Refinement, promote.',
+    gate: { id: DEV_GATE_ID, title: 'Contributing' },
   },
 ]
 
@@ -1277,6 +1296,8 @@ export function UxDashboardPage() {
       // Not a list of features — the QA panel owns its own data, so this stays
       // empty by design and the nav count comes from the `count` field.
       'qa-notes': [],
+      // A static guide in an iframe; nothing to count.
+      contributing: [],
     }
     for (const f of PROTOTYPE_FEATURES) {
       out[sectionOf(f, rollupOf(f), done[f.id] ?? !!f.done)].push(f)
@@ -1410,6 +1431,23 @@ export function UxDashboardPage() {
             )
           })}
         </nav>
+        {/* The stakeholder guide — `public/about/index.html`, "How to read
+            this dashboard". OUTSIDE the <nav> so it is not a section, and on
+            EVERY build: on the public site it is the orientation a reviewer
+            with the link gets, and on the full site it is how the team
+            previews what stakeholders are told. Its designer twin is the
+            gated Contributing section above. */}
+        <a
+          href="/about/"
+          target="_blank"
+          rel="noopener"
+          style={{ ...aboutLinkStyle, color: nav.muted }}
+          className="cre-uxnav-about"
+        >
+          <span style={{ minWidth: 0 }}>How to read this dashboard</span>
+          <ArrowUpRightFromSquare size={11} aria-hidden style={{ flex: 'none' }} />
+          <span className="cre-visually-hidden"> (opens in a new tab)</span>
+        </a>
         <div ref={themeRef} style={themeWrapStyle}>
           <button
             type="button"
@@ -1534,6 +1572,8 @@ export function UxDashboardPage() {
           <DemoPanel />
         ) : section === 'todo' ? (
           <TodoPanel />
+        ) : section === 'contributing' ? (
+          <GuideFrame src="/contributing/" title="Contributing to the dashboard" />
         ) : section === 'archive' ? (
           <div style={ARCHIVE_BRIDGE}>
             <ArchiveTable />
@@ -1950,6 +1990,39 @@ function ResearchPanel() {
   )
 }
 
+/**
+ * A static guide rendered in place — the Contributing section. The document
+ * is `public/contributing/index.html`, which is ALSO the standalone page and
+ * the source the PDF beside it is rendered from, so showing it in an iframe
+ * here rather than re-typing it as JSX is what keeps the three from drifting
+ * (the `ComponentLivePreview` argument: the preview is data). The guide is
+ * self-contained — system fonts, its own stylesheet, light/dark from the OS —
+ * so it does not follow this page's palette, and that is accepted: it is a
+ * document, and it prints.
+ *
+ * Height: the shell's main column scrolls, so the frame is sized to the
+ * viewport minus the header above it rather than to its content — an iframe
+ * cannot report its content height cross-document without a script, and a
+ * fixed generous height would leave a long empty tail on short guides.
+ */
+function GuideFrame({ src, title }: { src: string; title: string }) {
+  return (
+    <iframe
+      src={src}
+      title={title}
+      style={{
+        display: 'block',
+        width: '100%',
+        height: 'calc(100vh - 220px)',
+        minHeight: 480,
+        border: '1px solid var(--ux-border)',
+        borderRadius: 'var(--radius-lg)',
+        background: 'var(--ux-card)',
+      }}
+    />
+  )
+}
+
 function StatusPill({
   label,
   count,
@@ -2095,10 +2168,26 @@ const navCountStyle: CSSProperties = {
   textAlign: 'center',
 }
 
-/** `marginTop: auto` pushes it to the foot of the rail. It used to share that
- *  job with a footer paragraph below it, which split the free space between
- *  the two; with the paragraph gone this takes it outright. */
-const themeWrapStyle: CSSProperties = { position: 'relative', margin: 'auto 0 0' }
+/** The "How to read this dashboard" link, sitting directly above Appearance at
+ *  the foot of the rail. `marginTop: auto` is on THIS element now rather than
+ *  on the Appearance wrap, so the two travel to the foot together. Same 12.5px
+ *  and muted ink as the Appearance button so the foot reads as one quiet
+ *  group of chrome under the sections. */
+const aboutLinkStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 6,
+  margin: 'auto 0 8px',
+  padding: '6px 12px',
+  fontSize: 12.5,
+  textDecoration: 'none',
+  borderRadius: 'var(--radius-md)',
+}
+
+/** Sits under the About link at the foot of the rail. It used to carry the
+ *  `margin-top: auto` itself (and before that shared it with a footer
+ *  paragraph); the About link above takes it now. */
+const themeWrapStyle: CSSProperties = { position: 'relative' }
 
 const themeBtnStyle: CSSProperties = {
   display: 'flex',
