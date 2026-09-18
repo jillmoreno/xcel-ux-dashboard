@@ -133,7 +133,9 @@ describe('public build — the edge rules', () => {
     // And the Links endpoint must NOT be — the section is ungated.
     expect(blocked.some((b) => b.startsWith('/api'))).toBe(false)
     // The rules point at the committed 404 page, which vite copies into dist.
-    expect(script).toMatch(/\/404\.html\s+404/)
+    // FORCED. An unforced rule is ignored when a real file exists at the path —
+    // and a real file always exists here. Shipped unforced once; nothing was hidden.
+    expect(script).toMatch(/\/404\.html\s+404!/)
     expect(() => readFileSync(resolve(here, '../../public/404.html'))).not.toThrow()
   })
 

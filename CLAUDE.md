@@ -182,7 +182,7 @@ Netlify command, picks it up unchanged) and writes `dist/_redirects` ONLY when
 the var is `public`. `_redirects` rather than `netlify.toml` because the toml is
 shared and has no per-project conditional, and because Netlify evaluates
 `_redirects` BEFORE the toml — which is what lets a 404 beat the toml's `/*` SPA
-fallback. Blocked: `/prototypes/*` (every document row), `/testing/*` and
+fallback — and every rule is FORCED (`404!`): an unforced rule is skipped whenever a real file exists at the path, which here is every path, and the first deploy shipped that way with nothing hidden. Blocked: `/prototypes/*` (every document row), `/testing/*` and
 `/ngat-admin/*` (LMS leftovers), `/archive/*`, `/qa/*`. NOT blocked:
 `/prototype-thumbs/*` (a Demo row may grow one) and `/api/*` (Links is
 ungated). The target is `public/404.html`, which Netlify also serves for a
