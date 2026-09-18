@@ -41,9 +41,9 @@ function renderDashboard(initialPath = '/') {
 /** The nav order is load-bearing: open sections first, then the gated group,
  *  with the divider drawn where the first gated one starts. */
 const EXPECTED_SECTIONS = [
-  'Demo',
   'Prototypes',
-  'Links',
+  'Refinement',
+  'Other Links',
   'Research',
   'Design',
   'Exploration',
@@ -148,7 +148,8 @@ describe('section routing (sectionOf)', () => {
      * It compares the whole set now, in both directions: promoting a row to
      * Prototypes fails here, and so does demoting the one that belongs.
      */
-    renderDashboard('/?section=prototypes')
+    // Prototypes is the landing section, so a bare `/` is the case that matters.
+    renderDashboard()
     expect(screen.getByRole('heading', { level: 1, name: 'Prototypes' })).toBeInTheDocument()
 
     // Counted from the RENDERED section rather than from the data, because

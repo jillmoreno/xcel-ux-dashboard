@@ -90,9 +90,11 @@ project list. Unchanged from the LMS original apart from three strings (the
 brand sub-line, the Research row label, `RESEARCH_DECISIONS`), so anything the
 LMS `CLAUDE.md` says about it holds here.
 
-**Sections.** Four open — Demo · Prototypes · Links · Research — then a divider
-under a **UX & DEV ACCESS** eyebrow holding Design · Exploration · Sandbox ·
-Development · Done · Archive · QA Notes · To Do.
+**Sections.** Four open — **Prototypes · Refinement · Other Links · Research**
+— then a divider under a **UX & DEV ACCESS** eyebrow holding Design ·
+Exploration · Sandbox · Development · Done · Archive · QA Notes · To Do.
+Prototypes is first and is the landing section (`DEFAULT_SECTION`); a bare `/`
+opens it and selecting it drops `?section=` from the URL.
 
 **Prototypes holds the live product build** (`xcel-dashboard` →
 `/dashboard-rebrand?demo=1`), the one feature row on the ungated front door.
@@ -104,7 +106,17 @@ standalone HTML document; see "The one in-app row" below. **It was called Demo
 until 2026-09-18**, and the product build was promoted into it on 2026-09-08;
 older notes that say "the Demo row" or "the Demo baseline" mean this section.
 
-### Demo is the review inbox; Prototypes is the product (2026-09-18)
+### Refinement is the review inbox; Prototypes is the product (2026-09-18)
+
+**Labels vs ids, because they differ.** The review inbox is LABELLED
+"Refinement" and its section id, Blobs store and endpoint are all `demo`
+(`?section=demo`, the `demos` store, `/api/demos`, `DemoPanel`, `Demo.test.tsx`).
+It was labelled Demo for a few hours and renamed at Jillienne's request —
+Refinement is what happens there — and the id was kept so nothing churned.
+Likewise "Other Links" is section id `links`. Read `demo` in code as
+Refinement. Its Add button says **"Add link"**, the same verb as Other Links,
+because what a designer adds IS a link (to their branch); the two boards are
+told apart by the public toggle and the Type field, not the verb.
 
 The old Demo section did two jobs — "here is the product as it stands" and
 "here is something we want to talk about" — and they are different acts by
@@ -114,7 +126,7 @@ something only a merge to `main` can change.
 
 | Section | What it is | Who changes it | How |
 |---|---|---|---|
-| **Demo** | Work in review — a designer's branch at its Netlify branch URL, or an HTML file in `public/demos/` | any designer | on the page: Demo → Add demo |
+| **Refinement** (id `demo`) | Work in review — a designer's branch at its Netlify branch URL, or an HTML file in `public/demos/` | any designer | on the page: Refinement → Add link |
 | **Prototypes** | The product at its committed flag baseline | Jillienne | `.claude/skills/promote-to-prototype`, on the PR, before merge |
 
 **Demo is authored on the page**, the Links pattern: a fourth Netlify function
@@ -173,10 +185,10 @@ see their work), and a final step to retire the branch's Demo row.
 **`FeatureCategory` gained `'prototype'`** for the one row, and `sectionOf`
 routes `demo` / `dashboard` there too so an LMS-ported row lands in the right
 place. `isPublicFeature` accepts all three. The `dashboard` legacy alias in
-`LEGACY_SECTIONS` points at `prototypes` now. Demo stays the landing section
-(`?section=` absent), so a stakeholder arriving on the public link sees what is
-being discussed first and the product one click away — flip the default in
-`useState<UxSection>` if that reads wrong in practice.
+`LEGACY_SECTIONS` points at `prototypes` now. **Prototypes is the landing
+section** (`DEFAULT_SECTION`), at Jillienne's request — a stakeholder arriving
+on the public link sees the product first, with what is being discussed one
+click away.
 
 **`sectionOf` still names Demo nowhere**, and `bySection.demo` is empty by
 design; the count is `useDemoCount`, which took an optional filter for the

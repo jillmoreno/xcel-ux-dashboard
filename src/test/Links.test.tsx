@@ -573,7 +573,7 @@ describe('the Links section on the gateway', () => {
       </MemoryRouter>,
     )
 
-  it('opens with NO password prompt, and sits directly under Prototypes', async () => {
+  it('opens with NO password prompt, and sits directly under Refinement', async () => {
     /*
      * Both halves are the editorial decision. Links is ungated because the
      * section's job is being the place you send someone — behind the shared
@@ -587,19 +587,19 @@ describe('the Links section on the gateway', () => {
     mockEndpoint([])
     renderDashboard()
 
-    await user.click(screen.getByRole('button', { name: /^Links/ }))
+    await user.click(screen.getByRole('button', { name: /^Other Links/ }))
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
-    expect(await screen.findByRole('heading', { level: 1, name: 'Links' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { level: 1, name: 'Other Links' })).toBeInTheDocument()
 
-    // Position: the nav item immediately after Prototypes (Demo · Prototypes
-    // · Links since 2026-09-18). Order carries the argument that this belongs
-    // with the open front door rather than with the gated pipeline sections.
+    // Position: Prototypes · Refinement · Other Links · Research, in that
+    // order (2026-09-18). Order carries the argument that this belongs with
+    // the open front door rather than with the gated pipeline sections.
     const labels = screen
       .getAllByRole('button')
       .map((b) => b.textContent?.replace(/\d+$/, '').trim())
     const protoAt = labels.indexOf('Prototypes')
     expect(protoAt).toBeGreaterThanOrEqual(0)
-    expect(labels[protoAt + 1]).toBe('Links')
+    expect(labels.slice(protoAt, protoAt + 4)).toEqual(['Prototypes', 'Refinement', 'Other Links', 'Research'])
   })
 
   it('a deep link into the section opens it', async () => {
@@ -627,7 +627,7 @@ describe('the Links section on the gateway', () => {
     renderDashboard('/?section=links')
 
     const badge = () =>
-      screen.getByRole('button', { name: /^Links/ }).textContent?.replace(/\D/g, '')
+      screen.getByRole('button', { name: /^Other Links/ }).textContent?.replace(/\D/g, '')
     await waitFor(() => expect(badge()).toBe('0'))
 
     await openComposer(user)
@@ -645,7 +645,7 @@ describe('the Links section on the gateway', () => {
     // own set is untouched — which is what keeps its two-directional smoke
     // test meaningful rather than needing an edit for every new section.
     mockEndpoint([])
-    renderDashboard('/?section=prototypes')
+    renderDashboard()
     const rows = screen
       .getAllByRole('button', { name: /^Actions for / })
       .map((b) => b.getAttribute('aria-label')?.replace(/^Actions for /, ''))

@@ -44,7 +44,7 @@ function renderAt(Page: React.ComponentType, path: string) {
   )
 }
 
-const PUBLIC_SECTIONS = ['Demo', 'Prototypes', 'Links', 'Research']
+const PUBLIC_SECTIONS = ['Prototypes', 'Refinement', 'Other Links', 'Research']
 const GATED_SECTIONS = ['Design', 'Exploration', 'Sandbox', 'Development', 'Done', 'Archive', 'QA Notes', 'To Do']
 
 beforeEach(() => {
@@ -69,7 +69,7 @@ describe('gatewayMode — parsing', () => {
     expect(parseGatewayMode('full')).toBe('full')
   })
 
-  it('treats exactly the Demo row as public — every other authored row is not', () => {
+  it('treats exactly the Prototypes row as public — every other authored row is not', () => {
     const pub = PROTOTYPE_FEATURES.filter(isPublicFeature).map((f) => f.id)
     expect(pub).toEqual(['xcel-dashboard'])
   })
@@ -86,6 +86,8 @@ describe('public build — the nav', () => {
     expect(labels).toEqual(PUBLIC_SECTIONS)
     for (const s of GATED_SECTIONS) expect(screen.queryByText(s)).toBeNull()
     expect(screen.queryByText(/UX & Dev Access/i)).toBeNull()
+    // Refinement's board is read-only here: no composer whatever the store says.
+    expect(screen.queryByRole('button', { name: /^Add link/ })).toBeNull()
     // No lock glyph either — nothing on this build is "locked", it is gone.
     expect(screen.queryByText(/— locked/)).toBeNull()
   })
@@ -95,8 +97,8 @@ describe('public build — the nav', () => {
     for (const path of ['/?section=design', '/?section=dev', '/?section=dev&tab=archive', '/?section=todo']) {
       const { unmount } = renderAt(Page, path)
       expect(screen.queryByRole('dialog')).toBeNull()
-      // Landed on Demo — its h1 is the section label.
-      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Demo')
+      // Landed on Prototypes, the default — its h1 is the section label.
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Prototypes')
       unmount()
     }
   })

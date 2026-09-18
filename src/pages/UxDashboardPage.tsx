@@ -181,44 +181,51 @@ const RESEARCH_DECISIONS = 0
  *  order; the divider is drawn where `restricted` starts. */
 const SECTIONS: SectionDef[] = [
   {
-    // The REVIEW INBOX, authored on the page (2026-09-18). Work in progress —
-    // a designer's branch, built by Netlify at its own URL — put here so the
-    // team can open it and, once the row is flipped public, stakeholders can
-    // too. Nothing in `PROTOTYPE_FEATURES` routes here; `bySection.demo` is
-    // empty by design and the count is `useDemoCount`. See `demoStore.ts`.
-    //
-    // Before 2026-09-18 this held the product build. That row is in
-    // Prototypes now, directly below — the two used to be one section, and
-    // the split is what made "put your branch up for discussion" and "this is
-    // what we have decided" two different acts.
-    id: 'demo',
-    label: 'Demo',
-    blurb: 'Work in review — branches and explorations the team is discussing. Added on the page, not in code.',
-  },
-  {
-    // The product as it stands: the live React build at its committed flag
-    // baseline. ONE row (`xcel-dashboard`), and promoting a feature here means
-    // flipping its flag default on `main` — `.claude/skills/promote-to-prototype`
-    // — never adding a row. Ungated, beside Demo, because this is the thing
-    // stakeholders are sent to see. `UxDashboard.smoke.test.tsx` compares the
-    // whole section against an expected set, in both directions.
+    // FIRST, and the landing section: the product as it stands — the live
+    // React build at its committed flag baseline. ONE row (`xcel-dashboard`),
+    // and promoting a feature here means flipping its flag default on `main` —
+    // `.claude/skills/promote-to-prototype` — never adding a row. Ungated,
+    // because this is the thing stakeholders are sent to see.
+    // `UxDashboard.smoke.test.tsx` compares the whole section against an
+    // expected set, in both directions.
     id: 'prototypes',
     label: 'Prototypes',
     blurb: 'The live product build — where we have landed, at the committed baseline.',
   },
   {
-    // Directly under Prototypes and UNGATED, which is the decision in this entry.
-    // Demo is the passwordless front door and this sits beside it, so a link
-    // added here is a link a stakeholder can reach unaccompanied — the same
-    // consideration `UxDashboard.smoke.test.tsx` guards for Demo's rows. It is
-    // open rather than gated because the section's whole job is being the place
-    // you send someone; behind the shared password it would be a bookmark file.
+    // The REVIEW INBOX, authored on the page (2026-09-18) — labelled
+    // "Refinement" because that is what happens here: a designer's branch,
+    // built by Netlify at its own URL, put up so the team can open it and
+    // discuss it, and — once the row is flipped public — stakeholders can too.
+    // Nothing in `PROTOTYPE_FEATURES` routes here; `bySection.demo` is empty by
+    // design and the count is `useDemoCount`. See `demoStore.ts`.
+    //
+    // The id stays `demo` so `?section=demo` links, the `demos` Blobs store and
+    // the `/api/demos` endpoint do not churn on a label change. Before
+    // 2026-09-18 this section (then labelled Demo) held the product build; that
+    // row is in Prototypes now.
+    id: 'demo',
+    label: 'Refinement',
+    blurb: 'Work in review — branches and explorations the team is discussing. Added on the page, not in code.',
+  },
+  {
+    // Directly under Refinement and UNGATED, which is the decision in this entry.
+    // Prototypes is the passwordless front door and this sits beside it, so a
+    // link added here is a link a stakeholder can reach unaccompanied — the
+    // same consideration `UxDashboard.smoke.test.tsx` guards for Prototypes'
+    // rows. It is open rather than gated because the section's whole job is
+    // being the place you send someone; behind the shared password it would be
+    // a bookmark file.
+    //
+    // Labelled "Other Links" (2026-09-18) so it reads as the catch-all beside
+    // Refinement, whose rows are ALSO links — briefs, boards, Figma files,
+    // anything that is not a branch under review.
     //
     // No `count` field: links are authored on the page, so a static number is
     // wrong the moment one is added. Supplied live below, like To Do's and QA
     // Notes'.
     id: 'links',
-    label: 'Links',
+    label: 'Other Links',
     blurb: 'Everything that lives elsewhere — briefs, boards, builds and references. Added on the page, not in code.',
   },
   {
@@ -320,6 +327,11 @@ const SECTIONS: SectionDef[] = [
 const VISIBLE_SECTIONS: SectionDef[] = isPublicGateway()
   ? SECTIONS.filter((s) => !s.gate)
   : SECTIONS
+
+/** The section a bare `/` opens — the first in the nav, and the one a
+ *  stakeholder should see first: the product itself. `?section=` is dropped
+ *  from the URL when this is selected, so the landing address stays clean. */
+const DEFAULT_SECTION: UxSection = 'prototypes'
 
 /** Where the divider goes — the first restricted section. `-1` on the public
  *  build, so the divider and its "UX & Dev Access" eyebrow never draw. */
@@ -1094,12 +1106,12 @@ export function UxDashboardPage() {
   const urlLocked =
     ENFORCE_SECTION_GATE && Boolean(urlDef?.gate) && !isPrototypeUnlocked(urlDef!.gate!.id)
   const [section, setSectionState] = useState<UxSection>(
-    urlLocked ? 'demo' : (urlSection ?? 'demo'),
+    urlLocked ? DEFAULT_SECTION : (urlSection ?? DEFAULT_SECTION),
   )
   const setSection = (next: UxSection) => {
     setSectionState(next)
     const p = new URLSearchParams(params)
-    if (next === 'demo') p.delete('section')
+    if (next === DEFAULT_SECTION) p.delete('section')
     else p.set('section', next)
     // Changing section closes an open gateway — the list you land on is the
     // list for that section, not someone else's feature.
@@ -1628,7 +1640,7 @@ export function UxDashboardPage() {
             // named a feature should land on that feature once it opens.
             setSectionState(asking.id)
             const p = new URLSearchParams(params)
-            if (asking.id === 'demo') p.delete('section')
+            if (asking.id === DEFAULT_SECTION) p.delete('section')
             else p.set('section', asking.id)
             if (asking.id !== urlSection) p.delete('open')
             setParams(p, { replace: true })

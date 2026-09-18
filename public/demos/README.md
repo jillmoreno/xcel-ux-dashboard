@@ -17,12 +17,13 @@ branch deploys, which is where a stakeholder review link points.
 1. On your branch, add `public/demos/<your-thing>.html`.
 2. Push. Netlify builds the branch; your file is at
    `https://<branch>--ux-demo-xceldashboard.netlify.app/demos/<your-thing>.html`.
-3. On the full site, Demo → Add demo → paste that URL. Leave "Show on public
-   site" off until it is ready for stakeholders.
+3. On the full site, Refinement → Add link → paste that URL. Leave "Show on
+   public site" off until it is ready for stakeholders.
 4. When it is promoted, it moves out of here — into `public/prototypes/` with a
    `PROTOTYPE_FEATURES` row if it is a finished exploration, or into the React
    app if it became a product surface — and the Demo row is retired.
 
 **What this folder is not:** a home. Nothing should live here for long, and
-nothing here gets a `PROTOTYPE_FEATURES` row — the Demo panel is its listing.
-The smoke suites do not cover it.
+nothing here gets a `PROTOTYPE_FEATURES` row — the Refinement panel is its listing.
+The smoke suites do not cover it. (The section's id is `demo`, which is why the
+folder and the endpoint are named that way.)

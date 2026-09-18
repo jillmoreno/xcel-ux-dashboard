@@ -1,6 +1,6 @@
 ---
 name: promote-to-prototype
-description: At merge time, decide which of a branch's flag-driven changes become the PROTOTYPES baseline — the live XCEL product build stakeholders see. Run it ON THE PR, BEFORE MERGING. Diffs the branch against main, surfaces every flag whose committed default the branch changed (including flags gating new components), asks Jillienne per flag whether — and to which variant — it becomes the baseline, applies the FEATURE_FLAGS edits plus the CLAUDE.md note, commits, and reminds you to retire the branch's Demo row. Never moves tiles. Formerly "promote-to-demo" — that name still works as an alias. Trigger on "promote to prototype", "promote to demo", "merge this branch", "which changes go in the prototype", "ready to merge", "include in the prototype", "/promote-to-prototype", "/promote-to-demo".
+description: At merge time, decide which of a branch's flag-driven changes become the PROTOTYPES baseline — the live XCEL product build stakeholders see. Run it ON THE PR, BEFORE MERGING. Diffs the branch against main, surfaces every flag whose committed default the branch changed (including flags gating new components), asks Jillienne per flag whether — and to which variant — it becomes the baseline, applies the FEATURE_FLAGS edits plus the CLAUDE.md note, commits, and reminds you to retire the branch's Refinement row. Never moves tiles. Formerly "promote-to-demo" — that name still works as an alias. Trigger on "promote to prototype", "promote to demo", "merge this branch", "which changes go in the prototype", "ready to merge", "include in the prototype", "/promote-to-prototype", "/promote-to-demo".
 version: 1.0.0
 author: UX Design — Colibri
 last_updated: 2026-09-18
@@ -19,7 +19,7 @@ The XCEL UX Dashboard has two ungated sections and they are different acts:
 
 | Section | What it is | How things get in |
 |---|---|---|
-| **Demo** | The review inbox. A designer's branch, built by Netlify at its own URL, put up for the team (and, once flipped public, stakeholders) to discuss. | Added on the page — Demo → Add demo. No commit. |
+| **Refinement** (section id `demo`) | The review inbox. A designer's branch, built by Netlify at its own URL, put up for the team (and, once flipped public, stakeholders) to discuss. | Added on the page — Refinement → Add link. No commit. |
 | **Prototypes** | The product as it stands: `xcel-dashboard` → `/dashboard-rebrand?demo=1`, rendering the committed defaults in `FEATURE_FLAGS`. | **This skill.** A flag-baseline change on `main`. Never a new row. |
 
 Until 2026-09-18 the product build sat in a section called Demo and this skill
@@ -49,7 +49,7 @@ read handoffs.
 sites, so the flag defaults have to be decided before the merge, not after.
 The sequence is: designer opens PR → you run this skill on their branch →
 it commits the decided defaults to the branch → you merge → both sites
-rebuild → you retire the Demo row.
+rebuild → you retire the Refinement row.
 
 ## Steps
 
@@ -118,13 +118,13 @@ git push
 Then tell Jillienne the branch is ready to merge, and summarise: which flag
 defaults now ship in Prototypes, and what stayed sandbox-only.
 
-### 6. After the merge — retire the Demo row
+### 6. After the merge — retire the Refinement row
 
-The branch's Demo row points at a branch URL that will go stale once the branch
+The branch's Refinement row points at a branch URL that will go stale once the branch
 is deleted, and the work it showed is now in Prototypes (or the sandbox). Remind
-Jillienne, in one line, to open Demo on the full site and either **remove** the
+Jillienne, in one line, to open Refinement on the full site and either **remove** the
 row or **edit** it to point at the merged surface if discussion continues. The
-skill cannot do this — Demo is authored on the page, not in code.
+skill cannot do this — Refinement is authored on the page, not in code.
 
 ## Guardrails
 
@@ -138,4 +138,4 @@ skill cannot do this — Demo is authored on the page, not in code.
   rail changed — nothing else.
 - **On the branch, before the merge.** Never on `main` after: `main` is live on
   two sites.
-- **Retire the Demo row.** Say it every time.
+- **Retire the Refinement row.** Say it every time.

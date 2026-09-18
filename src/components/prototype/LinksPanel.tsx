@@ -797,16 +797,20 @@ export function LinksPanel() {
 }
 
 /**
- * Demo: the work-in-review inbox. Authorable on the FULL site only; the public
- * build renders it read-only and filtered to the rows someone has flipped
- * public. That asymmetry IS the review gate — see `demoStore.ts`.
+ * Refinement (section id `demo`): the work-in-review inbox. Authorable on the
+ * FULL site only; the public build renders it read-only and filtered to the
+ * rows someone has flipped public. That asymmetry IS the review gate — see
+ * `demoStore.ts`.
  */
 export function DemoPanel() {
   const pub = isPublicGateway()
   const p: LinkBoardPresentation = {
     board: DEMO_BOARD,
-    noun: 'demo',
-    nounPlural: 'demos',
+    // "link", not "demo" — what the designer is adding IS a link (to their
+    // branch), and "Add link" is what the button on the neighbouring Other
+    // Links panel says. Two boards, one verb.
+    noun: 'link',
+    nounPlural: 'links',
     showType: false,
     showPublicToggle: true,
     publicOnly: pub,

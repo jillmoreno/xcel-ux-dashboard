@@ -119,11 +119,11 @@ describe('DemoPanel on the full site', () => {
     mockEndpoint([demo(), demo({ id: 'demo-002', title: 'Nav concept B', isPublic: true })])
     render(<DemoPanel />)
 
-    await waitFor(() => expect(screen.getByText('2 demos')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText('2 links')).toBeInTheDocument())
     expect(screen.getByText('Team only')).toBeInTheDocument()
     expect(screen.getByText('Public')).toBeInTheDocument()
 
-    await user.click(screen.getByRole('button', { name: 'Add demo' }))
+    await user.click(screen.getByRole('button', { name: 'Add link' }))
     const toggle = await screen.findByLabelText('Show on public site')
     // Off by default — a row is team-only until someone decides otherwise.
     expect(toggle).not.toBeChecked()
@@ -136,11 +136,11 @@ describe('DemoPanel on the full site', () => {
     const { writes } = mockEndpoint([])
     render(<DemoPanel />)
 
-    await user.click(await screen.findByRole('button', { name: 'Add the first demo' }))
+    await user.click(await screen.findByRole('button', { name: 'Add the first link' }))
     await user.type(screen.getByLabelText('Address'), 'https://feat-x--site.netlify.app/dashboard-rebrand?demo=1')
     await user.type(screen.getByLabelText('Title'), 'Feature X')
     await user.click(screen.getByLabelText('Show on public site'))
-    await user.click(screen.getByRole('button', { name: 'Add demo' }))
+    await user.click(screen.getByRole('button', { name: 'Add link' }))
 
     await waitFor(() => expect(writes).toHaveLength(1))
     expect(writes[0].url).toBe('/api/demos')
@@ -170,7 +170,7 @@ describe('DemoPanel on the public build', () => {
     await waitFor(() => expect(screen.getByText('Public thing')).toBeInTheDocument())
     expect(screen.queryByText('Team-only thing')).not.toBeInTheDocument()
     // The count describes the list a stakeholder sees, not the store.
-    expect(screen.getByText('1 demo')).toBeInTheDocument()
+    expect(screen.getByText('1 link')).toBeInTheDocument()
     // No chip — every row here is public, and saying so on each is noise.
     expect(screen.queryByText('Public')).not.toBeInTheDocument()
     expect(screen.queryByText('Team only')).not.toBeInTheDocument()
@@ -184,7 +184,7 @@ describe('DemoPanel on the public build', () => {
     const Panel = await loadPublicDemoPanel()
     mockEndpoint([demo({ isPublic: false })])
     render(<Panel />)
-    await waitFor(() => expect(screen.getByText('No demos yet.')).toBeInTheDocument())
+    await waitFor(() => expect(screen.getByText('No links yet.')).toBeInTheDocument())
     expect(screen.getByText(/Nothing is being shown for review/)).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Add/ })).not.toBeInTheDocument()
   })
@@ -193,6 +193,9 @@ describe('DemoPanel on the public build', () => {
 /* ── Links is unchanged by all this ───────────────────────────────────────── */
 
 describe('LinksPanel keeps its own shape', () => {
+  // Both boards say "Add link" now — the Refinement noun is deliberately the
+  // same verb, since what a designer adds there IS a link. What tells them
+  // apart is the toggle and the Type field, asserted below.
   it('has no public toggle and still has the Type field', async () => {
     const user = userEvent.setup()
     mockEndpoint([])
