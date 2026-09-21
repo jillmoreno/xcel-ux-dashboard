@@ -18,7 +18,7 @@
       weasyprint public/contributing/index.html public/contributing/contributing.pdf
 
   Regenerate it whenever this page changes — a test asserts the PDF exists and
-  is newer than nothing, but cannot know it is current. Last updated 2026-09-18.
+  is newer than nothing, but cannot know it is current. Last updated 2026-09-21.
 -->
 <link rel="stylesheet" href="../guides/guide.css" />
 </head>
@@ -194,7 +194,7 @@
           <text x="232" y="66" text-anchor="middle" font-size="9.5" fill="#6b7280">~2–3 minutes</text>
           <rect x="12" y="86" width="296" height="52" rx="8" fill="#fff" stroke="#dfe3e8"/>
           <rect x="22" y="96" width="276" height="20" rx="10" fill="#f5f5f5"/>
-          <text x="30" y="110" font-size="8" fill="#1b1d21" font-family="ui-monospace, Menlo, monospace">feat-study-streak-card--ux-demo-xceldashboard.netlify.app</text>
+          <text x="30" y="110" font-size="7" fill="#1b1d21" font-family="ui-monospace, Menlo, monospace">feat-study-streak-card--ux-design-xceldashboard.netlify.app</text>
           <text x="22" y="131" font-size="9.5" fill="#1f4e88" font-family="ui-monospace, Menlo, monospace">/dashboard-rebrand?demo=1 <tspan fill="#6b7280" font-family="system-ui, sans-serif">← the link to share</tspan></text>
         </svg>
       </div>
@@ -301,7 +301,7 @@
   <div class="qrules">
     <div class="callout warn"><span class="lab">Never push to main</span><p>Every push to <code>main</code> rebuilds the public site. Branch, then PR.</p></div>
     <div class="callout warn"><span class="lab">Promotion is a flag, not a tile</span><p>Prototypes holds exactly one row and a test guards it. Your work reaches it by a flag default flipping on <code>main</code>.</p></div>
-    <div class="callout warn"><span class="lab">Review HTML goes in public/demos/</span><p><code>public/prototypes/</code> is 404'd on the public site — a file there is invisible on your branch build too.</p></div>
+    <div class="callout warn"><span class="lab">Review HTML goes in public/demos/</span><p>Both folders work on your branch build. <code>public/demos/</code> is for work in review and is meant to be short-lived; <code>public/prototypes/</code> is for a document that is becoming a permanent row. Only the second needs a row in the project list.</p></div>
     <div class="callout warn"><span class="lab">Every branch gets an address</span><p>Anyone with the link and the site password can open it — including work you are not ready to show. Nothing confidential on a branch.</p></div>
   </div>
   <p class="small noprint">Need the why behind any of these, the form field by field, or the troubleshooting table? Switch to the <a href="#full" data-view="full">Full guide</a>.</p>
@@ -407,7 +407,7 @@
       <span class="lab">You are done when</span>
       <p>Claude has confirmed it is on your branch. Ask <em>"Which branch am I on?"</em> any time you are unsure — the answer should never be <code>main</code> while you are working.</p>
     </div>
-    <p><strong>Why the name matters.</strong> In step 5 it becomes part of a web address, and the slash turns into a dash: <code>feat/study-streak-card</code> is reviewed at <code>feat-study-streak-card--ux-demo-xceldashboard.netlify.app</code>. Spaces and capital letters would break that, which is why the rule is lowercase and dashes.</p>
+    <p><strong>Why the name matters.</strong> In step 5 it becomes part of a web address, and the slash turns into a dash: <code>feat/study-streak-card</code> is reviewed at <code>feat-study-streak-card--ux-design-xceldashboard.netlify.app</code>. Spaces and capital letters would break that, which is why the rule is lowercase and dashes.</p>
     <h3 style="font-size:14px;margin-top:14px">If something looks wrong</h3>
     <ul class="small">
       <li><strong>Claude says the name is not valid.</strong> There is probably a space or a capital letter in it. Lowercase, dashes only — take the corrected name Claude offers.</li>
@@ -444,10 +444,10 @@
     <p><strong>What this is.</strong> So far your work is only on your computer. <em>Pushing</em> sends it up to your branch on GitHub. Claude does it through the GitHub connection. Say:</p>
     <p><em>"Commit everything with the message 'study streak card on Home' and push it to feat/study-streak-card."</em></p>
     <p>Claude confirms. Within a few seconds, Netlify notices the push and starts building your branch as its own website at:</p>
-    <pre><code>https://feat-study-streak-card--ux-demo-xceldashboard.netlify.app</code></pre>
-    <p>That is <code>your-branch-with-dashes</code> followed by <code>--ux-demo-xceldashboard.netlify.app</code>. The build takes two to three minutes. Every later push to the same branch updates the same address.</p>
+    <pre><code>https://feat-study-streak-card--ux-design-xceldashboard.netlify.app</code></pre>
+    <p>That is <code>your-branch-with-dashes</code> followed by <code>--ux-design-xceldashboard.netlify.app</code>. The build takes two to three minutes. Every later push to the same branch updates the same address.</p>
     <p><strong>The link to share is the product, in demo mode:</strong></p>
-    <pre><code>https://feat-study-streak-card--ux-demo-xceldashboard.netlify.app/dashboard-rebrand?demo=1</code></pre>
+    <pre><code>https://feat-study-streak-card--ux-design-xceldashboard.netlify.app/dashboard-rebrand?demo=1</code></pre>
     <p class="small"><code>?demo=1</code> makes the page show your branch's <em>committed</em> flag defaults — what you set in step 3 — rather than whatever toggles the person opening it last left in their own browser. Without it, a reviewer may see their own leftover settings and think that is your design.</p>
     <div class="callout good">
       <span class="lab">You are done when</span>
@@ -455,7 +455,8 @@
     </div>
     <div class="callout warn">
       <span class="lab">Know this</span>
-      <p><strong>Every pushed branch gets an address</strong>, and anyone with the link and the site password can open it — including work you are not ready to show yet. That is what makes stakeholder review possible, and it is why nothing confidential goes on a branch.</p>
+      <p><strong>Every pushed branch gets an address</strong>, and anyone with the link and the site password can open it — including work you are not ready to show yet. That is what makes review possible, and it is why nothing confidential goes on a branch.</p>
+      <p>A branch address is a copy of the <em>whole</em> dashboard, so it carries the team-only sections as well as your work. The house icon in the dark bar is hidden on branch builds for that reason — someone you send a review link to lands on your work, not on the project list.</p>
     </div>
     <p class="small"><strong>If Claude says it cannot push</strong>, the GitHub connection is missing or has expired — <em>Settings → Connectors → GitHub</em>. <strong>If the address 404s after five minutes</strong>, ask Claude <em>"What is the exact name of the branch I pushed?"</em> and check the address uses it, dashes for slashes; then ask Jillienne to confirm branch deploys are on.</p>
   </div>
@@ -558,7 +559,7 @@
     <li><strong>Don't add a row to Prototypes</strong> or change a row's <code>category</code> to <code>'prototype'</code>. Promotion is a flag default, never a tile move.</li>
     <li><strong>Don't put review HTML in <code>public/prototypes/</code>.</strong> It is 404'd on the public build. Use <code>public/demos/</code>.</li>
     <li><strong>Don't change a flag's default on <code>main</code> yourself.</strong> That is the promote step, and it is Jillienne's call.</li>
-    <li><strong>Don't paste a stakeholder the full site's address.</strong> The review link is your branch build on the public site's domain.</li>
+    <li><strong>Send your branch build, never the main dashboard.</strong> Your branch address shows your work; the main address shows what is already decided, and everything else the team is doing.</li>
     <li><strong>Don't invent data.</strong> A number, a URL, a lesson count or a fee that XCEL has not published is flagged as <code>INVENTED</code> in the code and named as such on screen. <code>CLAUDE.md</code> records why, several times over.</li>
     <li><strong>Don't draft the Quick Summary</strong> on a dev-handoff component — ask Jillienne for it. The <code>dev-handoff-notes</code> skill says the same.</li>
   </ul>
@@ -598,7 +599,7 @@
       <tr><td>Push</td><td>Send your commits up to your branch on GitHub. Claude does it through the GitHub connector. Netlify builds every pushed branch.</td></tr>
       <tr><td>GitHub connector</td><td>The link between the Claude desktop app and your GitHub account (<em>Settings → Connectors</em>). It is what lets Claude clone, push and open pull requests for you.</td></tr>
       <tr><td>Pull request (PR)</td><td>The GitHub page that asks for your branch to be merged into <code>main</code>. You ask Claude to open it; Jillienne reviews, promotes and merges.</td></tr>
-      <tr><td>Branch deploy</td><td>The website Netlify builds for one branch: <code>&lt;branch&gt;--ux-demo-xceldashboard.netlify.app</code>.</td></tr>
+      <tr><td>Branch deploy</td><td>The website Netlify builds for one branch: <code>&lt;branch&gt;--ux-design-xceldashboard.netlify.app</code>.</td></tr>
       <tr><td><code>?demo=1</code></td><td>Demo mode: render the committed flag defaults, ignore the viewer's own saved toggles, don't persist flips.</td></tr>
       <tr><td>Feature flag</td><td>A named switch in <code>FEATURE_FLAGS</code>. Off on <code>main</code> until promoted; on on your branch so your build shows it.</td></tr>
       <tr><td>Prototypes</td><td>The section holding the live product build at <code>main</code>'s flag defaults. One row. Changed only by merging.</td></tr>

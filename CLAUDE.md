@@ -213,16 +213,77 @@ the mirror reason. The client type `StoredLink` carries both fields for both
 boards and normalises the absent one, so a consumer never asks which board a
 record came from.
 
-**Why a branch is reviewable at all: branch deploys on the public site.** A
-designer sets their flag's default ON on their branch, pushes, and
-`<branch>--ux-demo-xceldashboard.netlify.app/dashboard-rebrand?demo=1` renders
-their work at that branch's committed baseline — with no password, because it
-is the public site's build. `main`'s baseline is untouched. That is the whole
-reason the review link is the public site's branch deploy and not the full
-site's: stakeholders cannot open the full site. It also means every pushed
-branch has a URL, which is fine as long as the team knows it. **Branch deploys
-have to be switched on in Netlify** (Build & deploy → Branches and deploy
-contexts → Branch deploys: All); the README says where.
+**Why a branch is reviewable at all: branch deploys.** A designer sets their
+flag's default ON on their branch, pushes, and
+`<branch>--<host>/dashboard-rebrand?demo=1` renders their work at that branch's
+committed baseline. `main`'s baseline is untouched. Every pushed branch has a
+URL, which is fine as long as the team knows it. **Branch deploys have to be
+switched on in Netlify** (Build & deploy → Branches and deploy contexts →
+Branch deploys: All), and switching them on does NOT retroactively build
+branches already pushed — the next push to each does. The README says where.
+
+#### Branch deploys build on the FULL site (2026-09-21)
+
+**This reverses what this section said for three days.** It read: branch
+deploys on the PUBLIC site, "with no password, because it is the public site's
+build… stakeholders cannot open the full site." Both halves of that were
+wrong, and the second was wrong about this project's own setup:
+
+- **Both sites carry a Netlify site password**, so the public build was never
+  the passwordless one. The split between them is about what the nav SHOWS, not
+  about who can get in. The real gate is the build: gated sections are absent
+  from the public bundle. The password is a shared string that lives on a
+  Netlify project tag — treat it as a speed bump, not a control.
+- **A public-mode branch build shows a designer NOTHING for gated work.** Any
+  change to Exploration, QA Notes, a `PROTOTYPE_FEATURES` row, the guides —
+  the sections are filtered out and `/prototypes/*` is 404'd at the edge, so
+  the branch URL renders a trimmed gateway that cannot display the thing under
+  review. Branch builds exist for designers reviewing each other's work and
+  every designer has full-site access, so the audience and the build were
+  mismatched.
+
+So `branch_host` is now the FULL site, `ux-design-xceldashboard.netlify.app`.
+The public site (`ux-demo-xceldashboard.netlify.app`) builds `main` only.
+
+**The cost, stated plainly:** a branch URL is a full-gateway build, so a
+stakeholder who reaches one through a Refinement row flipped public is looking
+at a build that contains every team-only section. They land on
+`/dashboard-rebrand?demo=1` — the product, not the gateway — but the dark
+prototype bar carried a **house icon linking to `/`**, which made the whole
+project list one click away. A visible button, not a wander.
+
+**The fix drops that icon on branch builds** — `src/data/deployContext.ts`,
+fed by `VITE_DEPLOY_CONTEXT` set per context in `netlify.toml` (so it travels
+with the repo rather than being set on one Netlify project and forgotten on the
+other). The walkthrough "← Back" pill goes with it for the same reason; an
+explicit `back` prop still wins, because that is passed by gateway pages where
+the reviewer is already inside the gateway.
+
+**It removes the SIGNPOST, not the page.** `/` still resolves on a branch
+deploy. That is proportionate rather than lazy: everyone who can open the site
+holds the password, so the job is not putting the door in front of someone, not
+locking it. If it ever has to be a real gate, the honest fix is applying the
+`VITE_GATEWAY_MODE=public` trim to branch builds — which costs designers the
+ability to review gated work, which is exactly why it was not done. Do not
+"tighten" this by hiding more links; either it stays a signpost or the build
+changes.
+
+**`parseDeployContext` fails the OPPOSITE way from `parseGatewayMode`**, and
+that is deliberate. A typo in `GATEWAY_MODE` must fail towards showing the
+maintainer everything; a missing `DEPLOY_CONTEXT` must fail towards showing the
+house icon, because hiding it on the production dashboard is a silent,
+permanent regression to the control every reviewer uses. The toml entry is
+pinned by `DeployContext.test.tsx`, which parses the real file — so losing the
+block fails a test rather than leaking quietly. That test was verified to fail
+before it was relied on.
+
+**Consequence for `public/demos/`:** its stated reason ("`/prototypes/` is
+404'd on the public build") no longer applies to branch review, because a
+branch build is a full build and serves both folders. The folder still earns
+its place, but the distinction is now PERMANENCE rather than reachability —
+`public/demos/` is short-lived work in review, `public/prototypes/` is a
+document becoming a permanent row. The public site still 404s the latter, so
+the `BLOCKED` list and its test are unchanged.
 
 **`public/demos/` exists because `/prototypes/` is 404'd on the public build.**
 HTML work-in-review needs to be served from somewhere the public site's branch
@@ -234,7 +295,8 @@ whoever opens the folder.
 
 **`promote-to-refinement` is the other bracket** (2026-09-21). Step 6 of the
 loop was the one manual step, and the one where the URL is easy to get wrong
-(`feat/x` → `feat-x--ux-demo-xceldashboard.netlify.app`, plus `?demo=1`). The
+(`feat/x` → `feat-x--ux-design-xceldashboard.netlify.app`, plus `?demo=1` —
+the host moved to the full site on 2026-09-21, see above). The
 skill (`.claude/skills/promote-to-refinement/`, Cowork copy under the same
 name) derives the branch URL, checks the branch is pushed and built, drafts
 the row, and opens the FULL site at `/?section=demo&add=1&url=…&title=…&note=…`.

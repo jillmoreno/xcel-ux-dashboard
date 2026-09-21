@@ -85,12 +85,25 @@ time, so the ONLY per-site difference is what each project sets in
    same links as the public one. If Links shows the "endpoint unreachable"
    state, the token or ID is wrong — the function log will say.
 
-6. **Turn on branch deploys on the public site** — this is what gives a
-   designer's branch a stakeholder-reachable URL. *Project configuration →
+6. **Turn on branch deploys on the FULL site** (`ux-design-xceldashboard`) —
+   this is what gives a designer's branch its own URL. *Project configuration →
    Build & deploy → Branches and deploy contexts → Configure → Branch deploys:
    All*. Every pushed branch then builds at
-   `<branch>--ux-demo-xceldashboard.netlify.app` (slashes in branch names become
-   dashes). Anyone with the link and the site password can open a branch build —
+   `<branch>--ux-design-xceldashboard.netlify.app` (slashes in branch names
+   become dashes). Enabling it does **not** retroactively build branches already
+   pushed — the next push to each does.
+
+   **The full site, not the public one** (decided 2026-09-21; it was the public
+   site until then). Branch builds exist for designers reviewing each other's
+   work, and they all have full-site access — where the public build would show
+   them nothing at all for any change to a gated section. The cost is that a
+   branch URL is a full-gateway build, so a stakeholder reaching one through a
+   Refinement row flipped public could see the team-only sections; the prototype
+   bar's home icon is therefore dropped on branch builds
+   (`src/data/deployContext.ts`). That removes the signpost, not the page. See
+   CLAUDE.md for the full reasoning.
+
+   Anyone with the link and the site password can open a branch build —
    including work that is not ready to show — so the team should know that
    before pushing.
 
@@ -144,11 +157,13 @@ github.com is opened only to accept the invitation**:
    (lowercase, dashes). It reaches GitHub on the first push.
 3. Describe the work to Claude. Product work goes in `src/` **behind a feature
    flag whose default is ON on your branch**; standalone HTML review work goes
-   in `public/demos/` (not `public/prototypes/`, which the public build 404s).
+   in `public/demos/` (short-lived), and `public/prototypes/` is for a document
+   becoming a permanent row. Both are reachable on a branch build now that
+   branches build on the full site; only the public site still 404s the latter.
 4. *"Run the type check, the tests and lint."* (Plus *"and the smoke suites"*
    if you touched `public/prototypes/`.)
 5. *"Commit everything and push it to feat/<your-thing>."* Netlify builds it
-   at `https://feat-<your-thing>--ux-demo-xceldashboard.netlify.app`; the
+   at `https://feat-<your-thing>--ux-design-xceldashboard.netlify.app`; the
    review link is that plus `/dashboard-rebrand?demo=1`. Every pushed branch
    gets an address.
 6. Full site → **Refinement → Add link** — or say `/promote-to-refinement` and
