@@ -139,3 +139,11 @@ skill cannot do this — Refinement is authored on the page, not in code.
 - **On the branch, before the merge.** Never on `main` after: `main` is live on
   two sites.
 - **Retire the Refinement row.** Say it every time.
+
+## The other half
+
+`promote-to-refinement` is the skill that PUT the row on Refinement in the
+first place — from the designer's branch, opening the full site's Add form
+prefilled with the branch URL. This skill takes it off. Run that one on the
+branch when the work is ready to show; run this one on the PR when it is ready
+to ship.

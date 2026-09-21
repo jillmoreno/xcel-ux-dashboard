@@ -108,6 +108,15 @@ in each file's header comment and in the README), sharing one stylesheet at
 | `public/contributing/index.html` | designers | the gated **Contributing** section — an iframe of the page (`GuideFrame`) — and `/contributing/` directly | 404'd at the edge: `/contributing/*` is in `BLOCKED` |
 | `public/about/index.html` | stakeholders | the **"How to read this dashboard"** link at the foot of the rail, OUTSIDE the `<nav>`, on every build | reachable — it is the orientation a reviewer gets |
 
+**The Contributing guide assumes NO TERMINAL** (2026-09-21, at Jillienne's
+request — "someone who knows basically nothing about GitHub or Claude"). The
+two tools are github.com in the browser (make the branch, open the PR) and
+the Claude desktop app with its GitHub connector (clone, edit, run the
+checks, commit, push). Every instruction is a sentence the designer SAYS to
+Claude, not a command. Nobody runs the site locally — the Netlify branch
+build is the preview. Do not reintroduce `git …` / `npm …` / `localhost:5200`
+into that page; the README's short version follows the same rule.
+
 **The Contributing page has TWO VIEWS in one file** (2026-09-18, at
 Jillienne's request — the full guide was "a lot of reading"): a **Quick
 walkthrough** (default — the loop as one diagram, nine illustrated step cards,
@@ -217,6 +226,23 @@ deploy can reach; that folder is deliberately absent from `BLOCKED` in
 Nothing there gets a `PROTOTYPE_FEATURES` row — the Demo panel is its listing —
 and nothing should live there long. `public/demos/README.md` says the same to
 whoever opens the folder.
+
+**`promote-to-refinement` is the other bracket** (2026-09-21). Step 6 of the
+loop was the one manual step, and the one where the URL is easy to get wrong
+(`feat/x` → `feat-x--ux-demo-xceldashboard.netlify.app`, plus `?demo=1`). The
+skill (`.claude/skills/promote-to-refinement/`, Cowork copy under the same
+name) derives the branch URL, checks the branch is pushed and built, drafts
+the row, and opens the FULL site at `/?section=demo&add=1&url=…&title=…&note=…`.
+**It does not POST.** Both sites are behind a Netlify password that also
+fronts `/api/demos`; scripting the login would put the password on every
+designer's machine. So the page reads the four params, `DemoPanel` opens the
+Add form with them (`LinkBoardPresentation.prefill`, once `canAuthor` is true
+— never on the public build), and the designer's click is the gate. **The
+PAGE strips the params, not the panel**: `UxDashboardPage` owns the router
+state, and a `history.replaceState` from inside the panel would leave
+`useSearchParams` still holding `add=1`, so the next `setSection` would write
+it straight back and the form would reopen. `Demo.test.tsx` pins the prefill
+opening once with the toggle off, and doing nothing on the public build.
 
 **The promote skill was renamed, not rewritten.** `promote-to-demo` →
 `promote-to-prototype`, now checked into `.claude/skills/` so Claude Code

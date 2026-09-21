@@ -34,7 +34,7 @@
  * settles, "no endpoint" is not yet a fact.
  */
 
-import { useCallback, useMemo, useState, type CSSProperties } from 'react'
+import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react'
 import { ArrowUpRightFromSquare, ClipboardList, PenToSquare, Plus, Trash } from '@/icons'
 import { Modal } from '@/components/ui/Modal'
 import {
@@ -79,7 +79,23 @@ export type LinkBoardPresentation = {
   emptyHint: string
   /** The sentence under the form's fields. */
   saveHint: string
+  /**
+   * Fields to open the Add form WITH, once, as soon as the panel can author.
+   * This is the hand-off the `promote-to-refinement` skill uses: it derives
+   * the branch URL and the title in Claude Code and opens the full site at
+   * `/?section=demo&add=1&url=…&title=…&note=…`; the PAGE reads those params
+   * (it owns the router state) and passes them here. Nothing is saved without
+   * the designer's click — the form's own validation and the endpoint's both
+   * still run. Ignored whenever the panel cannot author (public build,
+   * endpoint down), so a prefill link opened on the public site does nothing.
+   */
+  prefill?: LinkPrefill | null
+  /** Called once the prefill has been consumed, so the owner can take the
+   *  params off the address and a reload does not reopen the form. */
+  onPrefillConsumed?: () => void
 }
+
+export type LinkPrefill = { url: string; title: string; note: string }
 
 /* ── styles ───────────────────────────────────────────────────────────────── */
 
@@ -516,6 +532,30 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
     setEditing('new')
   }
 
+  /**
+   * The prefill — see `LinkBoardPresentation.prefill`. Waits until the
+   * endpoint has answered (before that `canAuthor` is false for the wrong
+   * reason), fires once, and tells the owner so the params come off the
+   * address. The owner is the page, which holds the router state: stripping
+   * them here with `history.replaceState` would leave the router believing
+   * they were still there, and the next section change would write them back.
+   */
+  const [prefillConsumed, setPrefillConsumed] = useState(false)
+  const { prefill, onPrefillConsumed } = p
+  useEffect(() => {
+    if (prefillConsumed || !prefill || !canAuthor) return
+    // Intentional, the `FeatureFlagPanel` precedent: the draft is SEEDED once
+    // an external fact arrives (the endpoint answered) and the designer then
+    // edits it, so it cannot be derived during render.
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setPrefillConsumed(true)
+    setDraft({ ...EMPTY_DRAFT, addedBy: readLastAuthor(), url: prefill.url, title: prefill.title, note: prefill.note })
+    setErrors([])
+    setEditing('new')
+    /* eslint-enable react-hooks/set-state-in-effect */
+    onPrefillConsumed?.()
+  }, [prefillConsumed, prefill, canAuthor, readLastAuthor, onPrefillConsumed])
+
   const beginEdit = (link: StoredLink) => {
     // The record's OWN author, not this browser's last one — editing someone
     // else's link must not quietly reassign it.
@@ -802,7 +842,13 @@ export function LinksPanel() {
  * rows someone has flipped public. That asymmetry IS the review gate — see
  * `demoStore.ts`.
  */
-export function DemoPanel() {
+export function DemoPanel({
+  prefill,
+  onPrefillConsumed,
+}: {
+  prefill?: LinkPrefill | null
+  onPrefillConsumed?: () => void
+} = {}) {
   const pub = isPublicGateway()
   const p: LinkBoardPresentation = {
     board: DEMO_BOARD,
@@ -820,6 +866,11 @@ export function DemoPanel() {
       : 'Push a branch, paste its Netlify URL here, and the team can open it. Flip "Show on public site" when it is ready for stakeholders.',
     saveHint:
       'Saved to the shared store — the team sees it on the full site right away. The date is stamped for you.',
+    // From `/?section=demo&add=1&url=…&title=…&note=…` — what
+    // `promote-to-refinement` opens. Refinement only: Other Links is authored
+    // by hand, so `LinksPanel` passes nothing.
+    prefill,
+    onPrefillConsumed,
   }
   return <LinkBoardPanel p={p} />
 }

@@ -46,8 +46,8 @@ The same `main` branch deploys to **two** Netlify projects. One push builds both
 
 | Site | Who it is for | Shows | Build env vars |
 |---|---|---|---|
-| **Public** — the existing site, the URL stakeholders already have | anyone with the link | Prototypes · Refinement · Other Links · Research **only**. The gated sections are absent, not locked: no nav rows, no password prompt, deep links land on Prototypes, and `/prototypes/*` 404s. Refinement is read-only here and shows only rows flipped public | `VITE_GATEWAY_MODE = public` |
-| **Full** — a new site | Jillienne and the team | everything, locked and unlocked, exactly as before | `BLOBS_SITE_ID` + `BLOBS_TOKEN` (see below) |
+| **Public** — the existing site, the URL stakeholders already have | designers and stakeholders, with the link — demos and training | Prototypes · Refinement · Other Links · Research **only**. The gated sections are absent, not locked: no nav rows, no password prompt, deep links land on Prototypes, and `/prototypes/*` 404s. Refinement is read-only here and shows only rows flipped public | `VITE_GATEWAY_MODE = public` |
+| **Full** — a new site | designers and developers — refinement and hand-offs | everything, locked and unlocked, exactly as before | `BLOBS_SITE_ID` + `BLOBS_TOKEN` (see below) |
 
 Nothing is configured per site in the repo — `netlify.toml` and the code are
 identical for both. The switch is `src/data/gatewayMode.ts`, read at build
@@ -90,8 +90,9 @@ time, so the ONLY per-site difference is what each project sets in
    Build & deploy → Branches and deploy contexts → Configure → Branch deploys:
    All*. Every pushed branch then builds at
    `<branch>--ux-demo-xceldashboard.netlify.app` (slashes in branch names become
-   dashes). A branch URL is not private — anyone who has it can open it — so the
-   team should know that before pushing.
+   dashes). Anyone with the link and the site password can open a branch build —
+   including work that is not ready to show — so the team should know that
+   before pushing.
 
 After that, `git push` is the whole workflow.
 
@@ -132,17 +133,31 @@ Two guides ship with the site, both static HTML with a PDF beside them:
 | **Contributing to the dashboard** | designers adding work | the **Contributing** section on the full site (last in UX & Dev Access), or `/contributing/` there directly. 404'd on the public site. Source: `public/contributing/index.html` |
 | **How to read this dashboard** | stakeholders with the public link | the "How to read this dashboard" link at the foot of the rail, on both sites — `/about/`. Source: `public/about/index.html` |
 
-The short version of the designer one:
+The short version of the designer one — **github.com in the browser + the
+Claude desktop app with its GitHub connector; no terminal anywhere**:
 
-1. `git clone https://github.com/jillmoreno/xcel-ux-dashboard.git && cd xcel-ux-dashboard && npm install && npm run dev`
-2. `git checkout -b feat/<your-thing>` — lowercase, dashes; slashes become dashes in the URL.
-3. Work in Claude Code. Product work goes in `src/` **behind a feature flag whose default is ON on your branch**; standalone HTML review work goes in `public/demos/` (not `public/prototypes/`, which the public build 404s).
-4. `npx tsc -b --noEmit && npx vitest run && npm run lint` (plus `npm run smoke` if you touched `public/prototypes/`).
-5. `git push -u origin feat/<your-thing>`. Netlify builds it at `https://feat-<your-thing>--ux-demo-xceldashboard.netlify.app`; the review link is that plus `/dashboard-rebrand?demo=1`. Branch URLs are not private.
-6. Full site → **Refinement → Add link**. Paste the URL, title it with the branch name, note where to look. Leave **Show on public site** off.
-7. Discuss; push again — same URL.
+1. Once: make an empty folder, connect it in the Claude desktop app, say
+   *"Clone the GitHub repository jillmoreno/xcel-ux-dashboard into this folder."*
+   Nobody runs the site locally — the branch build is the preview.
+2. On github.com, click the `main` branch button → type `feat/<your-thing>`
+   (lowercase, dashes) → **Create branch … from main**. Tell Claude *"Switch
+   to the branch feat/<your-thing>."*
+3. Describe the work to Claude. Product work goes in `src/` **behind a feature
+   flag whose default is ON on your branch**; standalone HTML review work goes
+   in `public/demos/` (not `public/prototypes/`, which the public build 404s).
+4. *"Run the type check, the tests and lint."* (Plus *"and the smoke suites"*
+   if you touched `public/prototypes/`.)
+5. *"Commit everything and push it to feat/<your-thing>."* Netlify builds it
+   at `https://feat-<your-thing>--ux-demo-xceldashboard.netlify.app`; the
+   review link is that plus `/dashboard-rebrand?demo=1`. Every pushed branch
+   gets an address.
+6. Full site → **Refinement → Add link** — or say `/promote-to-refinement` and
+   click the prefilled link it gives you. Leave **Show on public site** off.
+7. Discuss; change, check, push again — same URL.
 8. Jillienne flips **Show on public site** on when it is ready for stakeholders.
-9. Open a PR. Jillienne runs `/promote-to-prototype` on the branch (decides each flag default), merges, and the Refinement row is removed.
+9. On github.com, **Compare & pull request**, add Jillienne as reviewer. She
+   runs `/promote-to-prototype` on the branch (decides each flag default),
+   merges, and the Refinement row is removed.
 
 **Regenerating the PDFs** after editing either page — they are rendered from
 the HTML, not authored separately:

@@ -1,4 +1,5 @@
 import {
+  useCallback,
   useEffect,
   useMemo,
   useRef,
@@ -1138,6 +1139,31 @@ export function UxDashboardPage() {
     setParams(p, { replace: true })
   }
 
+  /**
+   * `?section=demo&add=1&url=…&title=…&note=…` — the `promote-to-refinement`
+   * skill's hand-off (2026-09-21). The page owns the router state, so it is
+   * the page that reads the four params and takes them off the address once
+   * `DemoPanel` has opened its form with them; the panel stripping them itself
+   * via `history.replaceState` would leave the router believing they were
+   * still there, and the next `setSection` would write them straight back.
+   * Read once, into state, so the object identity is stable across renders.
+   */
+  const [demoPrefill] = useState(() =>
+    params.has('add')
+      ? { url: params.get('url') ?? '', title: params.get('title') ?? '', note: params.get('note') ?? '' }
+      : null,
+  )
+  const consumeDemoPrefill = useCallback(() => {
+    setParams(
+      (prev) => {
+        const p = new URLSearchParams(prev)
+        for (const k of ['add', 'url', 'title', 'note']) p.delete(k)
+        return p
+      },
+      { replace: true },
+    )
+  }, [setParams])
+
   // Session unlock state, seeded from the shared store so a section already
   // opened on the landing page opens straight through here.
   const [unlocked, setUnlocked] = useState<Record<string, boolean>>(() => ({
@@ -1569,7 +1595,7 @@ export function UxDashboardPage() {
           // The same panel as Links with a different board behind it — see
           // `LinkBoardPanel`. Read-only and filtered to public rows on the
           // public build; that asymmetry is the review gate.
-          <DemoPanel />
+          <DemoPanel prefill={demoPrefill} onPrefillConsumed={consumeDemoPrefill} />
         ) : section === 'todo' ? (
           <TodoPanel />
         ) : section === 'contributing' ? (

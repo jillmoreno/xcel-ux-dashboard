@@ -147,6 +147,44 @@ describe('DemoPanel on the full site', () => {
     expect((writes[0].body as { isPublic: unknown }).isPublic).toBe(true)
   })
 
+  it('opens the Add form prefilled from the promote-to-refinement hand-off, once, and reports it', async () => {
+    // The page reads `?add=1&url=…&title=…&note=…` and passes them down; the
+    // panel opens the form with them the moment the endpoint answers, then
+    // tells the page so the params come off the address. Nothing is saved.
+    const { writes } = mockEndpoint([])
+    const consumed = vi.fn()
+    render(
+      <DemoPanel
+        prefill={{
+          url: 'https://feat-streak--ux-demo-xceldashboard.netlify.app/dashboard-rebrand?demo=1',
+          title: 'Study streak card — feat/streak',
+          note: 'Home, under Current Progress.',
+        }}
+        onPrefillConsumed={consumed}
+      />,
+    )
+    const dialog = await screen.findByRole('dialog')
+    expect(within(dialog).getByLabelText('Address')).toHaveValue(
+      'https://feat-streak--ux-demo-xceldashboard.netlify.app/dashboard-rebrand?demo=1',
+    )
+    expect(within(dialog).getByLabelText('Title')).toHaveValue('Study streak card — feat/streak')
+    expect(within(dialog).getByLabelText(/^Note/)).toHaveValue('Home, under Current Progress.')
+    // Team-only by default, whatever the hand-off says — the toggle is a decision.
+    expect(within(dialog).getByLabelText('Show on public site')).not.toBeChecked()
+    expect(consumed).toHaveBeenCalledTimes(1)
+    expect(writes).toHaveLength(0)
+  })
+
+  it('a prefill does nothing on the public build — it cannot author', async () => {
+    const Panel = await loadPublicDemoPanel()
+    mockEndpoint([demo({ isPublic: true })])
+    const consumed = vi.fn()
+    render(<Panel prefill={{ url: 'https://x.netlify.app', title: 'X', note: '' }} onPrefillConsumed={consumed} />)
+    await waitFor(() => expect(screen.getByText('1 link')).toBeInTheDocument())
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
+    expect(consumed).not.toHaveBeenCalled()
+  })
+
   it('editing prefills the row’s own visibility', async () => {
     const user = userEvent.setup()
     mockEndpoint([demo({ isPublic: true })])
