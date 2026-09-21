@@ -133,15 +133,15 @@ Two guides ship with the site, both static HTML with a PDF beside them:
 | **Contributing to the dashboard** | designers adding work | the **Contributing** section on the full site (last in UX & Dev Access), or `/contributing/` there directly. 404'd on the public site. Source: `public/contributing/index.html` |
 | **How to read this dashboard** | stakeholders with the public link | the "How to read this dashboard" link at the foot of the rail, on both sites — `/about/`. Source: `public/about/index.html` |
 
-The short version of the designer one — **github.com in the browser + the
-Claude desktop app with its GitHub connector; no terminal anywhere**:
+The short version of the designer one — **the Claude desktop app with its
+GitHub connector; every step is a sentence said to Claude; no terminal, and
+github.com is opened only to accept the invitation**:
 
 1. Once: make an empty folder, connect it in the Claude desktop app, say
    *"Clone the GitHub repository jillmoreno/xcel-ux-dashboard into this folder."*
    Nobody runs the site locally — the branch build is the preview.
-2. On github.com, click the `main` branch button → type `feat/<your-thing>`
-   (lowercase, dashes) → **Create branch … from main**. Tell Claude *"Switch
-   to the branch feat/<your-thing>."*
+2. *"Make a new branch called feat/<your-thing> from main and switch to it."*
+   (lowercase, dashes). It reaches GitHub on the first push.
 3. Describe the work to Claude. Product work goes in `src/` **behind a feature
    flag whose default is ON on your branch**; standalone HTML review work goes
    in `public/demos/` (not `public/prototypes/`, which the public build 404s).
@@ -155,8 +155,8 @@ Claude desktop app with its GitHub connector; no terminal anywhere**:
    click the prefilled link it gives you. Leave **Show on public site** off.
 7. Discuss; change, check, push again — same URL.
 8. Jillienne flips **Show on public site** on when it is ready for stakeholders.
-9. On github.com, **Compare & pull request**, add Jillienne as reviewer. She
-   runs `/promote-to-prototype` on the branch (decides each flag default),
+9. *"Open a pull request from feat/<your-thing> to main and add Jillienne as
+   reviewer."* She runs `/promote-to-prototype` on the branch (decides each flag default),
    merges, and the Refinement row is removed.
 
 **Regenerating the PDFs** after editing either page — they are rendered from

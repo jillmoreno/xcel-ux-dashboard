@@ -110,12 +110,17 @@ in each file's header comment and in the README), sharing one stylesheet at
 
 **The Contributing guide assumes NO TERMINAL** (2026-09-21, at Jillienne's
 request — "someone who knows basically nothing about GitHub or Claude"). The
-two tools are github.com in the browser (make the branch, open the PR) and
-the Claude desktop app with its GitHub connector (clone, edit, run the
-checks, commit, push). Every instruction is a sentence the designer SAYS to
-Claude, not a command. Nobody runs the site locally — the Netlify branch
-build is the preview. Do not reintroduce `git …` / `npm …` / `localhost:5200`
-into that page; the README's short version follows the same rule.
+ONE tool is the Claude desktop app with its GitHub connector (clone, branch,
+edit, run the checks, commit, push, open the PR). Every instruction is a
+sentence the designer SAYS to Claude, not a command. github.com is opened
+exactly once, to accept the invitation — the branch (step 2) and the PR
+(step 9) were on github.com for one revision and moved to Claude the same
+day, because they were the only two steps that were not a sentence and the
+branch name is validated just as well by Claude as by GitHub's branch box.
+Nobody runs the site locally — the Netlify branch build is the preview. Do
+not reintroduce `git …` / `npm …` / `localhost:5200` into that page, and do
+not send the designer back to github.com for a step Claude can do; the
+README's short version follows the same rule.
 
 **The Contributing page has TWO VIEWS in one file** (2026-09-18, at
 Jillienne's request — the full guide was "a lot of reading"): a **Quick

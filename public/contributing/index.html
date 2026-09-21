@@ -39,7 +39,7 @@
       <a class="btn ghost noprint" href="/">← Back to the dashboard</a>
     </div>
   </div>
-  <p class="lede">How to get your work in front of the team and then in front of stakeholders — from getting the project onto your computer to seeing your change land in Prototypes. Everything happens in two places you already have: <strong>github.com</strong> in your browser and the <strong>Claude desktop app</strong>. Nothing is typed into a terminal.</p>
+  <p class="lede">How to get your work in front of the team and then in front of stakeholders — from getting the project onto your computer to seeing your change land in Prototypes. Everything happens in the <strong>Claude desktop app</strong>: each step is a sentence you say to Claude. Nothing is typed into a terminal, and github.com is only opened once, to accept the invitation.</p>
   <p class="meta">Last updated 21 September 2026 · Owner: Jillienne Moreno · Applies to <code>jillmoreno/xcel-ux-dashboard</code></p>
 </header>
 
@@ -126,25 +126,21 @@
 
     <article class="qcard">
       <h3><span class="n">2</span>Make a branch</h3>
-      <div class="shot" role="img" aria-label="github.com: the branch button above the file list reads main; a dropdown with a text box containing feat/study-streak-card and the line Create branch feat/study-streak-card from main.">
+      <div class="shot" role="img" aria-label="A Claude desktop chat. You: Make a new branch called feat/study-streak-card from main and switch to it. Claude: Done — you're on feat/study-streak-card. It will appear on GitHub the first time you push.">
         <svg viewBox="0 0 320 150" xmlns="http://www.w3.org/2000/svg" font-family="system-ui, sans-serif">
           <rect x="8" y="8" width="304" height="134" rx="8" fill="#fff" stroke="#dfe3e8"/>
-          <text x="18" y="24" font-size="9" fill="#6b7280">github.com / jillmoreno / <tspan fill="#1b1d21" font-weight="600">xcel-ux-dashboard</tspan></text>
-          <rect x="18" y="32" width="64" height="18" rx="4" fill="#f5f5f5" stroke="#6b7280"/>
-          <text x="27" y="44.5" font-size="9" fill="#1b1d21">⑂ main ▾</text>
-          <text x="92" y="44.5" font-size="8.5" fill="#6b7280">← click this</text>
-          <rect x="18" y="56" width="220" height="78" rx="6" fill="#fff" stroke="#6b7280"/>
-          <rect x="26" y="64" width="204" height="16" rx="3" fill="#f5f5f5" stroke="#dfe3e8"/>
-          <text x="31" y="75.5" font-size="8.5" fill="#1b1d21" font-family="ui-monospace, Menlo, monospace">feat/study-streak-card</text>
-          <text x="26" y="94" font-size="8.5" fill="#6b7280">Branches</text>
-          <text x="26" y="106" font-size="8.5" fill="#1b1d21">⑂ main <tspan fill="#6b7280">default</tspan></text>
-          <rect x="22" y="112" width="212" height="16" rx="3" fill="#e9eef4"/>
-          <text x="26" y="123.5" font-size="8.5" fill="#1f4e88" font-weight="600">＋ Create branch feat/study-streak-card from main</text>
-          <text x="248" y="80" font-size="8" fill="#6b7280">← 1 type</text>
-          <text x="248" y="124" font-size="8" fill="#6b7280">← 2 click</text>
+          <rect x="8" y="8" width="304" height="26" rx="8" fill="#f5f5f5"/><rect x="8" y="26" width="304" height="8" fill="#f5f5f5"/>
+          <text x="20" y="25" font-size="9" fill="#6b7280">Folder: Documents › xcel-ux-dashboard <tspan fill="#2f6b4f">· GitHub connected</tspan></text>
+          <rect x="70" y="44" width="232" height="34" rx="10" fill="#e9eef4"/>
+          <text x="82" y="58" font-size="9.5" fill="#1b1d21">Make a new branch called <tspan font-family="ui-monospace, Menlo, monospace">feat/study-</tspan></text>
+          <text x="82" y="71" font-size="9.5" fill="#1b1d21"><tspan font-family="ui-monospace, Menlo, monospace">streak-card</tspan> from main and switch to it.</text>
+          <rect x="18" y="88" width="232" height="44" rx="10" fill="#fff" stroke="#dfe3e8"/>
+          <text x="30" y="103" font-size="9.5" fill="#1b1d21">Done — you're on <tspan font-family="ui-monospace, Menlo, monospace">feat/study-streak-card</tspan>.</text>
+          <text x="30" y="116" font-size="9.5" fill="#6b7280">Nothing on main has changed. The branch</text>
+          <text x="30" y="127" font-size="9.5" fill="#6b7280">appears on GitHub the first time you push.</text>
         </svg>
       </div>
-      <p>On <strong>github.com</strong>: click the <strong>main</strong> button above the file list, type <code>feat/your-thing</code> (lowercase, dashes), click <strong>Create branch … from main</strong>. Then tell Claude <em>"Switch to the branch feat/your-thing."</em> A branch is your own copy to work in — nothing on it changes what anyone else sees until it is merged.</p>
+      <p>Tell Claude <em>"Make a new branch called feat/your-thing from main and switch to it."</em> Name it <code>feat/</code> plus two or three words, lowercase, joined with dashes. A branch is your own copy to work in — nothing on it changes what anyone else sees until it is merged.</p>
     </article>
 
     <article class="qcard">
@@ -155,13 +151,15 @@
           <text x="22" y="30" font-size="10.5" fill="#1b1d21">Add a study-streak card to Home,</text>
           <text x="22" y="46" font-size="10.5" fill="#1b1d21">behind a flag — default ON here.</text>
           <rect x="10" y="74" width="190" height="66" rx="8" fill="#fff" stroke="#dfe3e8"/>
-          <text x="22" y="94" font-size="10.5" fill="#454b55" font-family="ui-monospace, Menlo, monospace">src/ <tspan fill="#6b7280">← React product work</tspan></text>
-          <text x="22" y="112" font-size="10.5" fill="#454b55" font-family="ui-monospace, Menlo, monospace">public/demos/ <tspan fill="#6b7280">← HTML explorations</tspan></text>
-          <text x="22" y="130" font-size="10.5" fill="#454b55" font-family="ui-monospace, Menlo, monospace">CLAUDE.md <tspan fill="#6b7280">← Claude reads it</tspan></text>
-          <rect x="216" y="40" width="94" height="70" rx="8" fill="#fff" stroke="#dfe3e8"/>
-          <text x="263" y="60" text-anchor="middle" font-size="9.5" fill="#6b7280" font-weight="700" letter-spacing="1">YOUR FLAG</text>
-          <rect x="240" y="72" width="46" height="22" rx="11" fill="#1f4e88"/><circle cx="275" cy="83" r="8" fill="#fff"/>
-          <text x="263" y="106" text-anchor="middle" font-size="9.5" fill="#1b1d21">on, on your branch</text>
+          <text x="22" y="94" font-size="10" fill="#454b55" font-family="ui-monospace, Menlo, monospace">src/ <tspan fill="#6b7280">← React work</tspan></text>
+          <text x="22" y="112" font-size="10" fill="#454b55" font-family="ui-monospace, Menlo, monospace">public/demos/ <tspan fill="#6b7280">← HTML</tspan></text>
+          <text x="22" y="130" font-size="10" fill="#454b55" font-family="ui-monospace, Menlo, monospace">CLAUDE.md <tspan fill="#6b7280">← Claude reads</tspan></text>
+          <rect x="212" y="10" width="98" height="130" rx="8" fill="#fff" stroke="#dfe3e8"/>
+          <text x="261" y="34" text-anchor="middle" font-size="9.5" fill="#6b7280" font-weight="700" letter-spacing="1">YOUR FLAG</text>
+          <rect x="238" y="52" width="46" height="22" rx="11" fill="#1f4e88"/><circle cx="273" cy="63" r="8" fill="#fff"/>
+          <text x="261" y="96" text-anchor="middle" font-size="9.5" fill="#1b1d21">default: on</text>
+          <text x="261" y="110" text-anchor="middle" font-size="9" fill="#6b7280">on your branch</text>
+          <text x="261" y="124" text-anchor="middle" font-size="9" fill="#6b7280">only</text>
         </svg>
       </div>
       <p>In the Claude desktop app, describe the work. Say which kind it is — a React surface (<code>src/</code>) or an HTML exploration (<code>public/demos/</code>) — and ask for a feature flag with its default <strong>on</strong> on your branch. Every so often: <em>"Commit what we have so far."</em></p>
@@ -274,7 +272,7 @@
           <rect x="10" y="30" width="86" height="64" rx="8" fill="#fff" stroke="#dfe3e8"/>
           <text x="53" y="50" text-anchor="middle" font-size="9.5" font-weight="700" fill="#6b7280" letter-spacing="1">YOU · PR</text>
           <text x="53" y="70" text-anchor="middle" font-size="10" fill="#1b1d21">feat/… → main</text>
-          <text x="53" y="84" text-anchor="middle" font-size="9" fill="#6b7280">on github.com</text>
+          <text x="53" y="84" text-anchor="middle" font-size="9" fill="#6b7280">one line to Claude</text>
           <line x1="98" y1="62" x2="114" y2="62" stroke="#6b7280" stroke-width="1.5" marker-end="url(#ar9)"/>
           <rect x="116" y="18" width="110" height="88" rx="8" fill="#fff" stroke="#dfe3e8"/>
           <text x="171" y="36" text-anchor="middle" font-size="9.5" font-weight="700" fill="#6b7280" letter-spacing="1">JILLIENNE · PROMOTE</text>
@@ -292,7 +290,7 @@
           <text x="160" y="133" text-anchor="middle" font-size="9.5" fill="#6b7280">then: Remove the Refinement row — it lives in Prototypes now</text>
         </svg>
       </div>
-      <p>On github.com, click <strong>Compare &amp; pull request</strong> on the yellow banner and add Jillienne as reviewer. She runs <code>promote-to-prototype</code> on your branch — each flag your branch changed is kept on or set back to <code>main</code>'s value — then merges. Both sites rebuild. Remove your Refinement row.</p>
+      <p>Tell Claude <em>"Open a pull request from feat/your-thing to main and add Jillienne as reviewer."</em> She runs <code>promote-to-prototype</code> on your branch — each flag your branch changed is kept on or set back to <code>main</code>'s value — then merges. Both sites rebuild. Remove your Refinement row.</p>
     </article>
 
   </div>
@@ -398,26 +396,24 @@
 
   <div class="step">
     <h3><span class="n">2</span>Make a branch</h3>
-    <p class="who">You · every time you start a piece of work · on github.com, then one line to Claude</p>
+    <p class="who">You · every time you start a piece of work · one line to Claude</p>
     <p><strong>What a branch is, in plain words.</strong> The project has one official copy, called <code>main</code>. That is what both websites are built from. A <em>branch</em> is your own private copy of the project, with a name on it. You make your changes there. Nothing you do on your branch changes <code>main</code> — or either website — until Jillienne merges it in step 9. So you cannot break anything by working on a branch. That is the whole point of having one.</p>
     <ol>
-      <li><strong>Open the project on github.com</strong> — <code>github.com/jillmoreno/xcel-ux-dashboard</code>.</li>
-      <li><strong>Find the branch button.</strong> Just above the list of files, on the left, there is a grey button with a little fork icon that reads <strong>main</strong>. Click it.</li>
-      <li><strong>Type your branch name in the box that appears.</strong> The pattern is <code>feat/</code> plus two or three words joined with dashes — for example <code>feat/study-streak-card</code>. All lowercase, no spaces. (Use <code>explore/</code> for an exploration or <code>fix/</code> for a fix; <code>feat/</code> is right for most things.)</li>
-      <li><strong>Click "Create branch feat/… from main".</strong> As you type, that line appears at the bottom of the list. Clicking it makes the branch. The grey button now reads your branch name instead of <code>main</code>.</li>
-      <li><strong>Tell Claude.</strong> Back in the Claude desktop app, in your project chat, send:<br /><em>"Switch to the branch feat/study-streak-card and bring it up to date."</em><br />Claude moves your folder onto your branch so everything you do from here lands there.</li>
+      <li><strong>Choose a name.</strong> The pattern is <code>feat/</code> plus two or three words joined with dashes — for example <code>feat/study-streak-card</code>. All lowercase, no spaces. (Use <code>explore/</code> for an exploration or <code>fix/</code> for a fix; <code>feat/</code> is right for most things.)</li>
+      <li><strong>Tell Claude.</strong> In the Claude desktop app, in your project chat, send:<br /><em>"Make a new branch called feat/study-streak-card from main and switch to it."</em><br />Claude makes the branch on your computer and moves your folder onto it, so everything you do from here lands there. If the name breaks the rule, Claude will say so — accept its suggestion.</li>
+      <li><strong>Nothing to do on GitHub.</strong> The branch exists only on your computer until step 5. The first push creates it on GitHub, and from then on it has its own web address.</li>
     </ol>
     <div class="callout good">
       <span class="lab">You are done when</span>
-      <p>The branch button on github.com shows your branch name, and Claude has confirmed it is on that branch.</p>
+      <p>Claude has confirmed it is on your branch. Ask <em>"Which branch am I on?"</em> any time you are unsure — the answer should never be <code>main</code> while you are working.</p>
     </div>
     <p><strong>Why the name matters.</strong> In step 5 it becomes part of a web address, and the slash turns into a dash: <code>feat/study-streak-card</code> is reviewed at <code>feat-study-streak-card--ux-demo-xceldashboard.netlify.app</code>. Spaces and capital letters would break that, which is why the rule is lowercase and dashes.</p>
     <h3 style="font-size:14px;margin-top:14px">If something looks wrong</h3>
     <ul class="small">
-      <li><strong>"Create branch …" does not appear as you type.</strong> There is probably a space or a capital letter in the name. Lowercase, dashes only.</li>
-      <li><strong>"A branch named … already exists."</strong> Someone (maybe you, earlier) already made it. Either pick it from the list, or choose a slightly different name.</li>
-      <li><strong>You realise you have been working on <code>main</code>.</strong> Do not panic and do not push. Make the branch on github.com as above, then tell Claude: <em>"I made changes on main by mistake — move them onto feat/… and leave main untouched."</em> Claude moves your work across.</li>
-      <li><strong>Claude says it cannot see the branch.</strong> Wait ten seconds and ask again — GitHub sometimes takes a moment to show a new branch. If it still cannot, check you spelt the name the same in both places.</li>
+      <li><strong>Claude says the name is not valid.</strong> There is probably a space or a capital letter in it. Lowercase, dashes only — take the corrected name Claude offers.</li>
+      <li><strong>Claude says a branch with that name already exists.</strong> Someone (maybe you, earlier) already made it. Either say <em>"Switch to it and bring it up to date"</em> to carry on there, or choose a slightly different name.</li>
+      <li><strong>You realise you have been working on <code>main</code>.</strong> Do not panic and do not push. Tell Claude: <em>"I made changes on main by mistake — make a branch called feat/… , move my changes onto it, and leave main untouched."</em> Claude moves your work across.</li>
+      <li><strong>You want to pick up a branch you started on another computer.</strong> Say <em>"Switch to the branch feat/… from GitHub and bring it up to date."</em> Claude fetches it.</li>
     </ul>
   </div>
 
@@ -455,13 +451,13 @@
     <p class="small"><code>?demo=1</code> makes the page show your branch's <em>committed</em> flag defaults — what you set in step 3 — rather than whatever toggles the person opening it last left in their own browser. Without it, a reviewer may see their own leftover settings and think that is your design.</p>
     <div class="callout good">
       <span class="lab">You are done when</span>
-      <p>On github.com, your branch's page shows your commit message at the top of the file list, and two or three minutes later the address above opens and shows your work.</p>
+      <p>Claude confirms the push went through, and two or three minutes later the address above opens and shows your work. (If you are curious, the branch is now visible at <code>github.com/jillmoreno/xcel-ux-dashboard/branches</code> — but you never need to look.)</p>
     </div>
     <div class="callout warn">
       <span class="lab">Know this</span>
       <p><strong>Every pushed branch gets an address</strong>, and anyone with the link and the site password can open it — including work you are not ready to show yet. That is what makes stakeholder review possible, and it is why nothing confidential goes on a branch.</p>
     </div>
-    <p class="small"><strong>If Claude says it cannot push</strong>, the GitHub connection is missing or has expired — <em>Settings → Connectors → GitHub</em>. <strong>If the address 404s after five minutes</strong>, check the branch name on github.com matches, dashes for slashes; then ask Jillienne to confirm branch deploys are on.</p>
+    <p class="small"><strong>If Claude says it cannot push</strong>, the GitHub connection is missing or has expired — <em>Settings → Connectors → GitHub</em>. <strong>If the address 404s after five minutes</strong>, ask Claude <em>"What is the exact name of the branch I pushed?"</em> and check the address uses it, dashes for slashes; then ask Jillienne to confirm branch deploys are on.</p>
   </div>
 
   <div class="step">
@@ -492,13 +488,12 @@
   <div class="step">
     <h3><span class="n">9</span>Open a pull request → promote → merge → retire the row</h3>
     <p class="who">You open the PR · Jillienne promotes and merges</p>
-    <p><strong>What a pull request is.</strong> It is the formal "please bring my branch into <code>main</code>" — a page on github.com that shows every change, where Jillienne reviews and merges. You open it; she does the rest.</p>
+    <p><strong>What a pull request is.</strong> It is the formal "please bring my branch into <code>main</code>" — a page on GitHub that shows every change, where Jillienne reviews and merges. You open it; she does the rest.</p>
     <ol>
-      <li>Open <code>github.com/jillmoreno/xcel-ux-dashboard</code>. If you pushed recently there is a yellow banner naming your branch with a green <strong>Compare &amp; pull request</strong> button — click it. (No banner? Click <strong>Pull requests</strong> → <strong>New pull request</strong>, and pick your branch as <em>compare</em>, <code>main</code> as <em>base</em>.)</li>
-      <li>Give it a title (your Refinement row's title is fine) and, in the description, paste the "where to look" note and the branch build address.</li>
-      <li>On the right, under <strong>Reviewers</strong>, add Jillienne. Click <strong>Create pull request</strong>.</li>
+      <li><strong>Tell Claude.</strong> <em>"Open a pull request from feat/study-streak-card to main, titled 'Study streak card', and add Jillienne as reviewer. In the description, put my Refinement note and the branch build address."</em> Claude opens it through the GitHub connection and gives you the link.</li>
+      <li><strong>Open the link once</strong> to check the title and description read the way you want. That is the one page on github.com you will see in this whole loop, and you do not have to change anything on it.</li>
     </ol>
-    <p class="small">Or ask Claude: <em>"Open a pull request from feat/… to main, titled …, and ask Jillienne to review."</em> It can do that through the GitHub connection too.</p>
+    <p class="small"><strong>If Claude says it cannot open a pull request</strong>, the GitHub connection may not have that permission — send Jillienne the branch name and the build address instead, and she will open it.</p>
     <p>Jillienne then runs the <code>promote-to-prototype</code> skill <em>on your branch, before merging</em>. It lists every feature flag your branch changed and asks her, flag by flag, whether that default ships in Prototypes. Approved flags keep your "on"; declined ones are set back to <code>main</code>'s value, so the work lands in the sandbox sections of the full site without reaching the public product.</p>
     <p>She merges. Both sites rebuild. The last step is retiring your Refinement row — <strong>Remove</strong> on the row — because the thing it pointed at is now in Prototypes (or the branch is gone).</p>
     <div class="callout good">
@@ -602,7 +597,7 @@
       <tr><td>Branch</td><td>Your own line of work inside the repo. Nothing on it is public until merged — but its <em>build</em> has a public address.</td></tr>
       <tr><td>Push</td><td>Send your commits up to your branch on GitHub. Claude does it through the GitHub connector. Netlify builds every pushed branch.</td></tr>
       <tr><td>GitHub connector</td><td>The link between the Claude desktop app and your GitHub account (<em>Settings → Connectors</em>). It is what lets Claude clone, push and open pull requests for you.</td></tr>
-      <tr><td>Pull request (PR)</td><td>The github.com page that asks for your branch to be merged into <code>main</code>. You open it; Jillienne reviews, promotes and merges.</td></tr>
+      <tr><td>Pull request (PR)</td><td>The GitHub page that asks for your branch to be merged into <code>main</code>. You ask Claude to open it; Jillienne reviews, promotes and merges.</td></tr>
       <tr><td>Branch deploy</td><td>The website Netlify builds for one branch: <code>&lt;branch&gt;--ux-demo-xceldashboard.netlify.app</code>.</td></tr>
       <tr><td><code>?demo=1</code></td><td>Demo mode: render the committed flag defaults, ignore the viewer's own saved toggles, don't persist flips.</td></tr>
       <tr><td>Feature flag</td><td>A named switch in <code>FEATURE_FLAGS</code>. Off on <code>main</code> until promoted; on on your branch so your build shows it.</td></tr>
