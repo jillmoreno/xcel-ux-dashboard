@@ -101,7 +101,7 @@ time, so the ONLY per-site difference is what each project sets in
    Refinement row flipped public could see the team-only sections; the prototype
    bar's home icon is therefore dropped on branch builds
    (`src/data/deployContext.ts`). That removes the signpost, not the page. See
-   CLAUDE.md for the full reasoning.
+   `docs/gateway.md` for the full reasoning.
 
    Anyone with the link and the site password can open a branch build —
    including work that is not ready to show — so the team should know that
@@ -210,7 +210,7 @@ Run the page suites with **`npm run smoke`** — five jsdom scripts in
 [`smoke/`](smoke/), 252 assertions. They are plain node, not vitest, so
 `npm test` does not run them; run both.
 
-See CLAUDE.md → "The six prototype pages" for what each page argues and the
+See [`docs/prototypes.md`](docs/prototypes.md) for what each page argues and the
 findings behind them.
 
 **What this costs.** Two ways it breaks with no error in this app:
@@ -238,7 +238,7 @@ Four open — **Prototypes · Refinement · Other Links · Research** — then t
 **UX & DEV ACCESS** group: Design · Exploration · Sandbox · Development · Done ·
 Archive · QA Notes · To Do · Contributing. (As of 2026-09-18 the in-app password
 is not enforced — the Netlify site password on the full site is the lock, and
-on the public site the group is absent. See CLAUDE.md.)
+on the public site the group is absent. See `docs/gateway.md`.)
 
 **Research** is empty on purpose: XCEL has no per-decision log. Its reasoning is
 inside the wireframes page and the exam spec. `ResearchPanel` says so and names
@@ -263,4 +263,6 @@ invisible on another.
 repos self-host, so the dashboard chrome matches. **Confirm the webfont licence
 with the brand team before this is publicly reachable.**
 
-See [CLAUDE.md](CLAUDE.md) for architecture and the full port notes.
+[CLAUDE.md](CLAUDE.md) is the map — which surface you are changing, the
+conventions and how to verify. The detail is in [`docs/`](docs/), one file per
+surface: the product app, the gateway, the prototypes, the admin tool, testing.
