@@ -46,6 +46,16 @@ describe('Header', () => {
     // missed, and it went unnoticed because the route already redirected, so
     // the symptom was a dead link rather than a wrong page.
     expect(screen.queryByRole('link', { name: /^membership$/i })).toBeNull()
-    expect(screen.getByRole('link', { name: /cart/i })).toBeInTheDocument()
+    // Cart is GONE as of 2026-09-21 (the direct ask, "no cart"), and this
+    // assertion is INVERTED rather than deleted — the same treatment the
+    // Membership link above gets, and for the same reason: a deleted line
+    // cannot tell the next person the absence is deliberate, and this control
+    // reappearing should fail a test rather than pass one.
+    //
+    // It was a `<Link to="#">` and had never gone anywhere, in a product where
+    // the learner is already enrolled and buys on xcelsolutions.com. Unwired,
+    // not deleted — `CartButton` is still exported from `Header.tsx`; see
+    // ARCHIVED_ITEMS `header-cart`.
+    expect(screen.queryByRole('link', { name: /cart/i })).toBeNull()
   })
 })

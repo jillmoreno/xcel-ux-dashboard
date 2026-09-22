@@ -8,7 +8,7 @@ import {
   type ReactNode,
 } from 'react'
 import { ArrowRight } from '@/icons'
-import { useAccount } from '@/context/AccountContext'
+import { useAccount, supportsMembership } from '@/context/AccountContext'
 import { tierBadgeIcon } from '@/components/ui/membershipTierBadge'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { getCourseImage } from '@/utils/courseImage'
@@ -17,6 +17,7 @@ import { displayedProgressPct, resolveRenewal, timeRemainingText, longDate } fro
 import { Sheet } from '@/components/ui/Sheet'
 import { GetLicensedStepPanel } from '@/components/learning/GetLicensedStepPanel'
 import { GET_LICENSED_STEPS } from '@/data/nyProducerRequirements'
+import { examDateRenewal, useExamDate } from '@/data/examDateStore'
 import { resolvePathCategories } from '@/components/learning/progressGaugeUtil'
 import { Link, useSearchParams } from 'react-router-dom'
 import { useWidgetColor } from './widgetColorUtil'
@@ -128,7 +129,15 @@ export function MembershipOverview({
   // what it changes is what goes IN that band and what follows it. See
   // `DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED` for the three departures.
   const badged = dashboardLayout === 'badged'
-  const qeFocused = dashboardLayout === 'qe-focused'
+  // "Testing" (2026-09-21) — QE Focused with the home screen's second row given
+  // over to the PACING exploration: the Readiness tile dropped, Study Pace
+  // across the full width. It sets `qeFocused` for the same reason QE Focused
+  // sets `learnerFocused` — it IS that version apart from one tile, and
+  // re-listing the page surface, the category gauge, the Study Journey, the
+  // dropped Recommended band and the requirements-only sheet here is how those
+  // two versions start to disagree about things nobody decided to change.
+  const testing = dashboardLayout === 'testing'
+  const qeFocused = dashboardLayout === 'qe-focused' || testing
   // Variant-only flag: the choice IS the variant, so only `.variant` is read.
   // An `enabled` check here would make "off" a third state meaning "sans",
   // which the variant already says.
@@ -343,7 +352,24 @@ export function MembershipOverview({
         ? persona!.path.jumpBackIn ?? jumpBackInCourse
         : jumpBackInCourse
   const personaStatus = personaDrivesPath ? persona!.status : undefined
-  const personaRenewal = personaDrivesPath ? persona!.renewal : undefined
+  const personaRenewalBase = personaDrivesPath ? persona!.renewal : undefined
+  /*
+   * THE LEARNER'S OWN BOOKED EXAM DATE WINS — 2026-09-21. Entered on the
+   * Schedule State Exam card ("Already scheduled? Enter the exam date and we
+   * will use that to help you prep!"), and this is the line that makes the
+   * second half of that sentence true.
+   *
+   * Applied HERE rather than in the band, because `personaRenewal` feeds BOTH
+   * the band and the course header band's stat row — so one stored value moves
+   * the Target Exam Date, the days remaining AND the Pacing tile's required
+   * rate together. Overriding it further down would leave the header printing
+   * the persona's date beside a countdown to the learner's, which is exactly
+   * the cross-surface disagreement `ProgressAgreement.test.tsx` exists for.
+   *
+   * It falls back to the persona rather than replacing it: with nothing stored
+   * the demo is unchanged, and clearing the field restores it.
+   */
+  const personaRenewal = examDateRenewal(useExamDate()) ?? personaRenewalBase
   const personaRenewalReady = personaDrivesPath ? (persona!.renewalReady ?? false) : false
   // Browse Catalog (discovery empty state) → open the Course Catalog rail
   // section in place, preserving the shell's other params (per the "stay in the
@@ -426,180 +452,13 @@ export function MembershipOverview({
       </div>
     </>
   )
-  // The Learner Focused version's joined top-section card (navy CLP + white
-  // Jump Back In). Replaces the Your-Learning row in the stacked layout.
-  const learnerFocusedBand = learnerFocused && activeProgressPath && (
-    <LearnerFocusedBand
-      // QE Focused carries the whole progress SUMMARY on the navy card — the
-      // gauge, the four category bars and the three KPI cells — and leaves the
-      // section below the per-category course LISTS. Moved here 2026-09-16,
-      // reversing an earlier split that stripped the navy side instead.
-      categoryGauge={qeFocused}
-      // …and drops the navy card entirely: the block sits on the shell's grey.
-      surface={qeFocused ? 'page' : 'navy'}
-      // The header band owns the course name, meta, art and progress bar while
-      // it is on, so the block drops its whole header cluster and starts at the
-      // Resume CTA. See `courseHeaderBand`.
-      hideHeader={courseHeader}
-      // …and swaps Today's Tasks for the Study Journey, which answers "what
-      // comes next" rather than "what is due" — the question the Study Plan
-      // rail item and the week strip below already answer.
-      studyJourney={qeFocused}
-      onOpenStop={openJourneyStop}
-      // Get Licensed steps open the REQUIREMENTS SHEET — the only surface that
-      // describes these three (XCEL's published page covers sitting the exam,
-      // applying, and the CE cycle after). The steps XCEL does not own have no
-      // per-step destination and inventing one is the Resources-slugs defect;
-      // the step that DOES have a real URL (PSI) keeps it and never reaches
-      // this callback.
-      onOpenStep={(id: string) => setOpenStepId(id)}
-      path={activeProgressPath}
-      course={activeCourse}
-      pathsCount={pathsCount}
-      showViewAll={showViewAllPaths}
-      onViewAll={openPathsPanel}
-      onViewDetails={() => setDetailOpen(true)}
-      /*
-       * NO `onOpenLearningPath` ON QE FOCUSED — removed 2026-09-16 at
-       * Jillienne's request: **XCEL has no learning-path concept.** The band
-       * IS the programme; there is no separate path object to open.
-       *
-       * One prop closes BOTH doors onto it, which is why it is withheld here
-       * rather than deleted inside the band:
-       *
-       *   - `StudyJourneyWidget` passes it through as the rail's `onViewAll`,
-       *     so the journey's "Open learning path" link stops rendering.
-       *   - The band's TITLE falls back to `onViewDetails`, so it still opens
-       *     the requirements sheet. The title stays clickable and loses
-       *     nothing — it was carrying a `title="Open learning path"` tooltip
-       *     onto the same dead concept, which is the worse half of the two
-       *     because an invisible link is found by accident.
-       *
-       * KEPT for the other versions, which are not XCEL-only surfaces in the
-       * same way: Learner Focused and Marketing Focused still hand it through,
-       * and the tabbed detail sheet still offers "Go to Learning Path". The
-       * `learning-path` section itself is untouched and still resolves from
-       * `?section=learning-path`.
-       */
-      onOpenLearningPath={qeFocused ? undefined : onOpenLearningPath}
-      bleed={heroBleed}
-      statusOverride={personaStatus}
-      renewal={personaRenewal}
-      renewalReady={personaRenewalReady}
-      interestChips={setupChips}
-      onBrowseCatalog={browseCatalog}
-      onViewCertificate={viewCertificate}
-    />
-  )
-  // The Marketing Focused version's joined top-section card (navy CLP column +
-  // the full-bleed What's New marketing carousel). Replaces the Your-Learning
-  // row in the stacked layout.
-  // marketingFocusedBand ARCHIVED — the MarketingFocusedBand (CLP + What's New
-  // marketing carousel) no longer participates in the top-band chain. See the
-  // note above + src/data/archivedItems.ts.
-  // The full-width Current Learning Path + Jump Back In band (`dashboard-clp-
-  // fullwidth`). When active it takes over the top band — the CLP fills the
-  // full home width instead of sitting beside a What's New carousel.
-  //
-  // On the Home-style overview the band's own "Current Learning Path" eyebrow +
-  // switch row is lifted OUT of the navy card (`hideHeader`) and rendered above
-  // it as a section lead — matching the "Featured" lead below — with "Switch
-  // Learning Path (N)" far-right in the CTA color.
-  const clpBand = clpFullWidthActive && activeProgressPath && (
-    <ClpJumpBackInBand
-      variant={clpFullWidthVariant}
-      layout={clpLayout}
-      jumpBackInOnly={clpJumpBackInOnly}
-      hideHeader={homeStyleOverview}
-      // QE Focused puts the whole Progress view in a section below this band,
-      // so the band keeps only the lead-in — otherwise the gauge, the category
-      // `slimLeft` was removed 2026-09-16 with the decision it served. The
-      // summary lives on the navy card now, so the Jump-Back-In-only variant
-      // keeps its normal full band rather than being the one QE view with the
-      // navy side stripped.
-      path={activeProgressPath}
-      course={activeCourse}
-      pathsCount={pathsCount}
-      showViewAll={showViewAllPaths}
-      onViewAll={openPathsPanel}
-      onViewDetails={() => setDetailOpen(true)}
-      onOpenLearningPath={onOpenLearningPath}
-      bleed={heroBleed}
-      statusOverride={personaStatus}
-      renewal={personaRenewal}
-      renewalReady={personaRenewalReady}
-      interestChips={setupChips}
-      jumpBackInMode={jumpBackInMode}
-      discoveryTone={discoveryTone}
-      onBrowseCatalog={browseCatalog}
-      onViewCertificate={viewCertificate}
-    />
-  )
-  // On the Home-style overview every top band (the CLP band AND the Expired
-  // card) is lifted under an external "Current Learning Path" lead + a
-  // "Switch Learning Path (N)" jump-off — so the header reads consistently
-  // whichever state is showing. Off that (the pure Demo) the band renders bare.
-  //
-  // EXCEPT the Jump-Back-In-only band (`clpJumpBackInOnly` — the "No learning
-  // paths (brand)" edge case): there IS no Current Learning Path, so the "Current
-  // Learning Path" lead (and the path-switcher) would be misleading — drop the
-  // header and let the band render bare.
-  const withClpLead = (bandEl: ReactNode) =>
-    homeStyleOverview && !clpJumpBackInOnly ? (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
-          <p style={sectionLeadStyle}>{CURRENT_LEARNING_EYEBROW}</p>
-          {showViewAllPaths && (
-            <button type="button" onClick={openPathsPanel} style={switchPathLinkStyle}>
-              {`Switch Learning Path (${pathsCount})`}
-            </button>
-          )}
-        </div>
-        {bandEl}
-      </div>
-    ) : (
-      bandEl
-    )
-  const clpFullWidthBand = clpBand && withClpLead(clpBand)
-  // Expired renewal cycle (`progress-expired` persona / status 'expired') — the
-  // CLP band is replaced by the charcoal "Expired" card (parallel to the
-  // Completed `renewalReady` treatment). Wins the top-band slot over the version
-  // bands; shares the "Current Learning Path" lead so the header stays put.
-  const expiredBand = personaDrivesPath && personaStatus === 'expired' && activeProgressPath &&
-    withClpLead(
-      <ExpiredCycleBand
-        path={activeProgressPath}
-        renewal={personaRenewal}
-        bleed={heroBleed}
-        onViewDetails={() => setDetailOpen(true)}
-      />,
-    )
-  // The band that replaces the Your-Learning row. The expired card wins first;
-  // then an EXPLICITLY-selected version band (Learner Focused) — the version the
-  // reviewer picked must win, otherwise the committed-on `dashboard-clp-fullwidth`
-  // flag silently overrides it and Learner Focused renders as the Marketing
-  // Focused CLP band (the reported "something killed Learner Focused" bug);
-  // then the full-width CLP band (when its flag is active). `learnerFocusedBand`
-  // is only non-null when `learner-focused` is selected, so the default
-  // `marketing-focused` path is unchanged — it falls straight through to
-  // `clpFullWidthBand` (the committed-on combined CLP band). `null` on the
-  // standalone `default` layout, which keeps the side-by-side cards below.
-  // marketingFocusedBand removed from the chain (archived).
-  //
-  // ONE EXCEPTION to `learnerFocusedBand` winning: the Jump-Back-In-only band
-  // (`clpJumpBackInOnly` — the "No learning paths (brand)" persona). Learner
-  // Focused's whole top band IS the Current Learning Path, so on a brand with
-  // none there is nothing for it to draw; it would render the default path and
-  // contradict the persona. Letting only THIS variant through preserves the fix
-  // the ordering exists for — a CLP flag in its ordinary `variant-d` state
-  // still must not override Learner Focused.
-  //
-  // This was inert until 2026-09-04: the persona only ever ran on Marketing
-  // Focused, because that was every brand's default. XCEL defaults to Learner
-  // Focused, which is where it surfaced.
-  const topBand =
-    expiredBand || (clpJumpBackInOnly ? clpFullWidthBand : learnerFocusedBand || clpFullWidthBand)
-
+  /*
+   * NARROW HEADER — the band is in the band's LEFT COLUMN rather than
+   * full-width above it (Testing; see `headerSlot`). It is ~630px instead of
+   * ~1040, and two of this block's layout decisions were made against the wide
+   * measurement and invert at this one. Both are below, each at its own site.
+   */
+  const narrowHeader = testing
   /*
    * COURSE HEADER BAND — `dashboard-course-header`, off by default.
    *
@@ -666,7 +525,15 @@ export function MembershipOverview({
   const headerRenewal = resolveRenewal(personaRenewal)
   const headerStats: { value: string; caption: string }[] = [
     { value: longDate(headerRenewal.deadline), caption: 'Target exam date' },
-    { value: timeRemainingText(headerRenewal.weeksLeft), caption: 'Left to complete' },
+    /* "To complete course", not "Left to complete" (2026-09-21, the direct
+       ask). The value beside it is already a remaining figure — "27 days" — so
+       "left" was the caption repeating what the number says, and naming the
+       OBJECT is the half the pair was missing. It also matches its neighbours,
+       which both say what the figure is ABOUT (the target exam date, the
+       lessons completed) rather than which direction it counts.
+
+       Sentence case in source; the row uppercases it in CSS. */
+    { value: timeRemainingText(headerRenewal.weeksLeft), caption: 'To complete course' },
     /* Only when there is a breakdown to count. A path with no categories has no
        honest numerator, and "0 of 0 lessons" reads as a load failure. */
     ...(headerTotal > 0
@@ -724,7 +591,27 @@ export function MembershipOverview({
             the picture make a single line for the eye to stop on. Top-aligned,
             the leftover 25px hung under the text and read as a gap someone
             forgot to close. */}
-        <div style={{ display: 'flex', alignItems: 'flex-end', gap: COURSE_HEADER_COVER_GAP }}>
+        {/* TOP-ALIGNED WHEN NARROW, and the note above is why rather than an
+            exception to it: bottom-alignment is right because "the square is
+            130 and the column beside it is ~105, so the two only agree on one
+            edge". In the left column the title wraps to two lines and that
+            column becomes ~213 — TALLER than the square — so the premise
+            inverts and the 83px of slack moves under the picture, dropping it
+            away from the title it is supposed to anchor. Top-aligned, the art
+            sits beside the eyebrow and the name, which is what "the art is the
+            first thing in the header" means. */}
+        <div
+          /* Below 1100px this stacks the cover above the text — see the class
+             in tokens.css. The narrow column cannot hold a 130px square, a
+             28px name and the figure at once, and everything it gives up comes
+             off the title. No class on the wide header, which has the room. */
+          className={narrowHeader ? 'cre-course-header-narrow' : undefined}
+          style={{
+            display: 'flex',
+            alignItems: narrowHeader ? 'flex-start' : 'flex-end',
+            gap: COURSE_HEADER_COVER_GAP,
+          }}
+        >
           {courseCover ? (
             <img
               src={courseCover}
@@ -1021,13 +908,32 @@ export function MembershipOverview({
                   measure 30 between pairs with the dot centred in the gap.
 
                   `minWidth: 0` so the CLUSTER gives way, not the row. */}
-              <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 15, minWidth: 0 }}>
+              {/* STACKED WHEN NARROW, with no dots — and this follows the note
+                  above rather than contradicting it. Binding the dot to the
+                  pair AFTER it fixed the dangling separator at the end of a
+                  wrapped line, and traded it for a LEADING one at the start of
+                  the next. At full width that is rare enough to accept; in the
+                  left column the row wraps every time, so all three pairs
+                  rendered as a bullet list whose first item had no bullet.
+
+                  A column is the honest answer at this width: the dots exist to
+                  separate pairs on ONE line, and there is no longer one line for
+                  them to separate. */}
+              <div
+                style={{
+                  display: 'flex',
+                  ...(narrowHeader
+                    ? { flexDirection: 'column', alignItems: 'flex-start', gap: 6 }
+                    : { flexWrap: 'wrap', alignItems: 'center', gap: 15 }),
+                  minWidth: 0,
+                }}
+              >
               {headerStats.map((stat, i) => (
                 <span
                   key={stat.caption}
                   style={{ display: 'flex', alignItems: 'baseline', gap: 15 }}
                 >
-                  {i > 0 && (
+                  {i > 0 && !narrowHeader && (
                     <span
                       aria-hidden
                       style={{
@@ -1119,6 +1025,203 @@ export function MembershipOverview({
     </Wrap>
   )
 
+  /* ── Moved ABOVE the band chain 2026-09-21 ────────────────────────────
+     `courseHeaderBand` is a PROP of `LearnerFocusedBand` on the Testing
+     version (`headerSlot`), so it has to be declared before the band element
+     that consumes it. It previously sat below the chain, which is fine for a
+     value only the JSX return reads and a TDZ error the moment a sibling
+     const does.
+
+     The block is UNCHANGED, only relocated — its own dependencies
+     (`activeCourse`, `activeProgressPath`, `personaRenewal`, `courseHeader`)
+     all resolve well above here. */
+
+  // The Learner Focused version's joined top-section card (navy CLP + white
+  // Jump Back In). Replaces the Your-Learning row in the stacked layout.
+  const learnerFocusedBand = learnerFocused && activeProgressPath && (
+    <LearnerFocusedBand
+      // QE Focused carries the whole progress SUMMARY on the navy card — the
+      // gauge, the four category bars and the three KPI cells — and leaves the
+      // section below the per-category course LISTS. Moved here 2026-09-16,
+      // reversing an earlier split that stripped the navy side instead.
+      categoryGauge={qeFocused}
+      // …and drops the navy card entirely: the block sits on the shell's grey.
+      surface={qeFocused ? 'page' : 'navy'}
+      // The header band owns the course name, meta, art and progress bar while
+      // it is on, so the block drops its whole header cluster and starts at the
+      // Resume CTA. See `courseHeaderBand`.
+      hideHeader={courseHeader}
+      // …and swaps Today's Tasks for the Study Journey, which answers "what
+      // comes next" rather than "what is due" — the question the Study Plan
+      // rail item and the week strip below already answer.
+      studyJourney={qeFocused}
+      // TESTING ONLY — drop the Readiness half of the square-tile pair and give
+      // the whole row to Study Pace. One prop rather than two ("hide readiness"
+      // + "widen pace") because they are not separable: a lone square tile in a
+      // ~506px column is a 506px box holding two lines, so removing one tile
+      // and reshaping the other are the same decision.
+      paceOnly={testing}
+      // …and the course header band moves INSIDE the left column with it. See
+      // the prop's own note: narrowing the header and lifting the Study Journey
+      // are one change, because the header was the full-width block pushing the
+      // grid down.
+      headerSlot={testing ? courseHeaderBand : undefined}
+      onOpenStop={openJourneyStop}
+      // Get Licensed steps open the REQUIREMENTS SHEET — the only surface that
+      // describes these three (XCEL's published page covers sitting the exam,
+      // applying, and the CE cycle after). The steps XCEL does not own have no
+      // per-step destination and inventing one is the Resources-slugs defect;
+      // the step that DOES have a real URL (PSI) keeps it and never reaches
+      // this callback.
+      onOpenStep={(id: string) => setOpenStepId(id)}
+      path={activeProgressPath}
+      course={activeCourse}
+      pathsCount={pathsCount}
+      showViewAll={showViewAllPaths}
+      onViewAll={openPathsPanel}
+      onViewDetails={() => setDetailOpen(true)}
+      /*
+       * NO `onOpenLearningPath` ON QE FOCUSED — removed 2026-09-16 at
+       * Jillienne's request: **XCEL has no learning-path concept.** The band
+       * IS the programme; there is no separate path object to open.
+       *
+       * One prop closes BOTH doors onto it, which is why it is withheld here
+       * rather than deleted inside the band:
+       *
+       *   - `StudyJourneyWidget` passes it through as the rail's `onViewAll`,
+       *     so the journey's "Open learning path" link stops rendering.
+       *   - The band's TITLE falls back to `onViewDetails`, so it still opens
+       *     the requirements sheet. The title stays clickable and loses
+       *     nothing — it was carrying a `title="Open learning path"` tooltip
+       *     onto the same dead concept, which is the worse half of the two
+       *     because an invisible link is found by accident.
+       *
+       * KEPT for the other versions, which are not XCEL-only surfaces in the
+       * same way: Learner Focused and Marketing Focused still hand it through,
+       * and the tabbed detail sheet still offers "Go to Learning Path". The
+       * `learning-path` section itself is untouched and still resolves from
+       * `?section=learning-path`.
+       */
+      onOpenLearningPath={qeFocused ? undefined : onOpenLearningPath}
+      bleed={heroBleed}
+      statusOverride={personaStatus}
+      renewal={personaRenewal}
+      renewalReady={personaRenewalReady}
+      interestChips={setupChips}
+      onBrowseCatalog={browseCatalog}
+      onViewCertificate={viewCertificate}
+    />
+  )
+  // The Marketing Focused version's joined top-section card (navy CLP column +
+  // the full-bleed What's New marketing carousel). Replaces the Your-Learning
+  // row in the stacked layout.
+  // marketingFocusedBand ARCHIVED — the MarketingFocusedBand (CLP + What's New
+  // marketing carousel) no longer participates in the top-band chain. See the
+  // note above + src/data/archivedItems.ts.
+  // The full-width Current Learning Path + Jump Back In band (`dashboard-clp-
+  // fullwidth`). When active it takes over the top band — the CLP fills the
+  // full home width instead of sitting beside a What's New carousel.
+  //
+  // On the Home-style overview the band's own "Current Learning Path" eyebrow +
+  // switch row is lifted OUT of the navy card (`hideHeader`) and rendered above
+  // it as a section lead — matching the "Featured" lead below — with "Switch
+  // Learning Path (N)" far-right in the CTA color.
+  const clpBand = clpFullWidthActive && activeProgressPath && (
+    <ClpJumpBackInBand
+      variant={clpFullWidthVariant}
+      layout={clpLayout}
+      jumpBackInOnly={clpJumpBackInOnly}
+      hideHeader={homeStyleOverview}
+      // QE Focused puts the whole Progress view in a section below this band,
+      // so the band keeps only the lead-in — otherwise the gauge, the category
+      // `slimLeft` was removed 2026-09-16 with the decision it served. The
+      // summary lives on the navy card now, so the Jump-Back-In-only variant
+      // keeps its normal full band rather than being the one QE view with the
+      // navy side stripped.
+      path={activeProgressPath}
+      course={activeCourse}
+      pathsCount={pathsCount}
+      showViewAll={showViewAllPaths}
+      onViewAll={openPathsPanel}
+      onViewDetails={() => setDetailOpen(true)}
+      onOpenLearningPath={onOpenLearningPath}
+      bleed={heroBleed}
+      statusOverride={personaStatus}
+      renewal={personaRenewal}
+      renewalReady={personaRenewalReady}
+      interestChips={setupChips}
+      jumpBackInMode={jumpBackInMode}
+      discoveryTone={discoveryTone}
+      onBrowseCatalog={browseCatalog}
+      onViewCertificate={viewCertificate}
+    />
+  )
+  // On the Home-style overview every top band (the CLP band AND the Expired
+  // card) is lifted under an external "Current Learning Path" lead + a
+  // "Switch Learning Path (N)" jump-off — so the header reads consistently
+  // whichever state is showing. Off that (the pure Demo) the band renders bare.
+  //
+  // EXCEPT the Jump-Back-In-only band (`clpJumpBackInOnly` — the "No learning
+  // paths (brand)" edge case): there IS no Current Learning Path, so the "Current
+  // Learning Path" lead (and the path-switcher) would be misleading — drop the
+  // header and let the band render bare.
+  const withClpLead = (bandEl: ReactNode) =>
+    homeStyleOverview && !clpJumpBackInOnly ? (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12 }}>
+          <p style={sectionLeadStyle}>{CURRENT_LEARNING_EYEBROW}</p>
+          {showViewAllPaths && (
+            <button type="button" onClick={openPathsPanel} style={switchPathLinkStyle}>
+              {`Switch Learning Path (${pathsCount})`}
+            </button>
+          )}
+        </div>
+        {bandEl}
+      </div>
+    ) : (
+      bandEl
+    )
+  const clpFullWidthBand = clpBand && withClpLead(clpBand)
+  // Expired renewal cycle (`progress-expired` persona / status 'expired') — the
+  // CLP band is replaced by the charcoal "Expired" card (parallel to the
+  // Completed `renewalReady` treatment). Wins the top-band slot over the version
+  // bands; shares the "Current Learning Path" lead so the header stays put.
+  const expiredBand = personaDrivesPath && personaStatus === 'expired' && activeProgressPath &&
+    withClpLead(
+      <ExpiredCycleBand
+        path={activeProgressPath}
+        renewal={personaRenewal}
+        bleed={heroBleed}
+        onViewDetails={() => setDetailOpen(true)}
+      />,
+    )
+  // The band that replaces the Your-Learning row. The expired card wins first;
+  // then an EXPLICITLY-selected version band (Learner Focused) — the version the
+  // reviewer picked must win, otherwise the committed-on `dashboard-clp-fullwidth`
+  // flag silently overrides it and Learner Focused renders as the Marketing
+  // Focused CLP band (the reported "something killed Learner Focused" bug);
+  // then the full-width CLP band (when its flag is active). `learnerFocusedBand`
+  // is only non-null when `learner-focused` is selected, so the default
+  // `marketing-focused` path is unchanged — it falls straight through to
+  // `clpFullWidthBand` (the committed-on combined CLP band). `null` on the
+  // standalone `default` layout, which keeps the side-by-side cards below.
+  // marketingFocusedBand removed from the chain (archived).
+  //
+  // ONE EXCEPTION to `learnerFocusedBand` winning: the Jump-Back-In-only band
+  // (`clpJumpBackInOnly` — the "No learning paths (brand)" persona). Learner
+  // Focused's whole top band IS the Current Learning Path, so on a brand with
+  // none there is nothing for it to draw; it would render the default path and
+  // contradict the persona. Letting only THIS variant through preserves the fix
+  // the ordering exists for — a CLP flag in its ordinary `variant-d` state
+  // still must not override Learner Focused.
+  //
+  // This was inert until 2026-09-04: the persona only ever ran on Marketing
+  // Focused, because that was every brand's default. XCEL defaults to Learner
+  // Focused, which is where it surfaced.
+  const topBand =
+    expiredBand || (clpJumpBackInOnly ? clpFullWidthBand : learnerFocusedBand || clpFullWidthBand)
+
+
   return (
     <div
       /* `dashboard-heading-font` — the `serif` variant re-points
@@ -1134,7 +1237,11 @@ export function MembershipOverview({
       className={serifHeadings ? 'cre-dash-serif-headings' : undefined}
       style={{ display: 'flex', flexDirection: 'column', gap: 40 }}
     >
-      {courseHeaderBand}
+      {/* FULL-WIDTH, above the grid — every version but Testing, which hands
+          this to the band as `headerSlot` so it sits in the left column and the
+          Study Journey can start at the top beside it. Rendered in ONE place or
+          the other, never both. */}
+      {testing ? null : courseHeaderBand}
       {activeProgressPath && (
         <LearningPathDetailPanel
           open={detailOpen}
@@ -1420,8 +1527,26 @@ export function MembershipOverview({
  */
 function CareerToolsSection() {
   const enabled = useFeatureFlag('dashboard-career-tools').enabled
-  const { access: acctAccess } = useAccount()
+  const { access: acctAccess, brand } = useAccount()
   if (!enabled) return null
+  /*
+   * NO "MEMBER EXCLUSIVE" ON A BRAND THAT SELLS NO MEMBERSHIP — 2026-09-21,
+   * the direct ask ("no member upsells for XCEL"). This is the bug the flag
+   * audit recorded and left: switching the flag on printed a "Member
+   * Exclusive" badge and "all included with membership" for XCEL.
+   *
+   * THE WHOLE SECTION, not just the badge and the lede. `benefitRowsFor`
+   * returns `[]` for every brand but Elite, so on XCEL `BenefitSections`
+   * self-hides and what was left was a section header over nothing — which is
+   * the "reads as a load failure" defect `dashboard-recommended` states as its
+   * own reason for removing the header with the cards.
+   *
+   * `supportsMembership`, not `isMember`: the question is whether the BRAND
+   * sells a membership, not what tier this learner holds. Asking the tier is
+   * the root cause this predicate keeps catching — XCEL's only tier is `high`,
+   * so `isMember` is true for it and every tier-keyed check passes.
+   */
+  if (!supportsMembership(brand)) return null
   // Launch (Rubi) cards don't gate on access, but pass a valid value.
   const access = acctAccess === 'full' ? 'full' : 'lite'
   return (

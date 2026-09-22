@@ -99,6 +99,60 @@ export const widgetCardStyle: CSSProperties = {
 }
 
 /**
+ * FRAMED — a white card, for the TESTING version (2026-09-21, the direct ask:
+ * "add a frame, white background around this content", then "remove stroke").
+ *
+ * **It reverses `widgetCardStyle` above, deliberately**, and the note there is
+ * kept rather than rewritten: the card was removed on 2026-09-16 when the
+ * journey was one of two stacked blocks on the page grey and a raised card put
+ * chrome around chrome. On Testing that column holds this and nothing else,
+ * with the left column's blocks sitting bare on the grey — so a frame here
+ * distinguishes the two columns rather than competing with a neighbour. Same
+ * component, different composition, opposite answer.
+ *
+ * **FILL ONLY — no stroke and no shadow** (the stroke went 2026-09-21, hours
+ * after it landed: "remove stroke").
+ *
+ * It shipped for those hours as fill + a 1px `--color-border-subtle` edge. What
+ * is left is the white surface alone, which is the same treatment
+ * `widgetCardRecessedStyle` opposite it already has — a card defined by its
+ * fill, with nothing drawn round it. The two columns now differ by SURFACE
+ * rather than by one having an outline.
+ *
+ * **NO SHADOW IN ITS PLACE**, and this is the part to hold. Removing an edge
+ * and adding a shadow is not removing chrome, it is swapping one kind for
+ * another — and it would make this a RAISED card, a different claim about the
+ * column's depth from the flat recess opposite. The removal note above states
+ * the rule this follows: fill, edge and shadow are ONE treatment, so the fill
+ * is allowed to be the whole of it.
+ *
+ * **THE COST, stated rather than discovered:** the card is now carried by a
+ * 1.09:1 (light) / 1.11:1 (dark) fill against the page and nothing else. That
+ * is deliberately subtle and it matches the recessed tile's 1.16:1, so the page
+ * is consistent — but there is no longer a second cue. If the card needs to
+ * read harder, the honest lever is the FILL, not a re-added outline.
+ *
+ * **The horizontal padding stays**, and it belongs to the FILL rather than to
+ * the departed edge: a bare block lines up with its column, a filled one needs
+ * its own gutter or the content sits on the boundary. 20 rather than the recessed card's 16 — that
+ * one is sized to line its eyebrow up with the tiles stacked beneath it in the
+ * SAME column, and this card has no such neighbour; 20 is the value a card this
+ * tall wants before the rule that divides its two halves reaches the edge.
+ *
+ * `--color-surface-card` rather than a literal white: it inverts with the
+ * theme, which `#fff` would not — the trap `widgetCardRecessedStyle` records
+ * from the other direction with `--color-primary-100`.
+ */
+export const widgetCardFramedStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  background: 'var(--color-surface-card)',
+  borderRadius: 'var(--radius-lg)',
+  padding: 20,
+  minWidth: 0,
+}
+
+/**
  * Section label. Matched to the Current Learning Progress block's eyebrow and
  * to "Get Licensed", so every label on this version reads at one level of
  * hierarchy — the rule CLAUDE.md records for the three eyebrows on the Today's

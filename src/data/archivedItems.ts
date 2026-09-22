@@ -56,6 +56,17 @@ export type ArchivedItem = {
 
 export const ARCHIVED_ITEMS: ArchivedItem[] = [
   {
+    id: 'header-cart',
+    name: 'Header cart button',
+    what: 'The shopping-cart icon pill in the top-right header cluster, left of the notification bell and the account menu.',
+    location: 'src/components/layout/Header.tsx — `CartButton`, exported and unreferenced.',
+    dateRemoved: '2026-09-21',
+    reason:
+      'The direct ask ("no cart"). It was a `<Link to="#">` — a control that has never gone anywhere — in a product where the learner is already enrolled and buys course packages on xcelsolutions.com rather than inside the LMS, so it promised a storefront this app does not have. Removed in the same pass as the membership upsell band and the Career Tools "Member Exclusive" badge, but for a DIFFERENT reason: those two are a correctness fix behind `supportsMembership` and return on their own for a brand that sells a membership, whereas this is editorial and therefore archived.',
+    restoreNote:
+      'Re-add `<CartButton />` as the first child of the `utilities` cluster in `Header.tsx` (directly above `{showBell && <NotificationsMenu />}`), and delete the block comment that replaced it. The component itself is unchanged and still exported from that file — drop the `export` again if it regains its only in-file caller, since it was exported solely to keep an unreferenced local function from failing lint. NOT restored with it, and a separate decision: the `to="#"` href. It never resolved, so a restore that matters wants a real destination (a cart route, or an outbound link to the xcelsolutions.com basket) rather than the dead link this was. Nothing else moved — the bell and the account menu keep their positions, and the cluster comment explaining why the bell sits between Cart and the avatar was deliberately left in place.',
+  },
+  {
     id: 'dashboard-mvp-version',
     name: 'Dashboard MVP (classic /dashboard version)',
     what:

@@ -786,6 +786,49 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'dashboard-pacing-style',
+    group: 'Widgets',
+    label: 'Pacing tile — treatment',
+    description:
+      'Which treatment the Study Pace tile renders on the TESTING home version (`?version=discoverability-testing`), where it takes the whole row because the Readiness stub beside it is dropped. Four answers to "am I pacing to finish in time": Lo-fi is the current stub, kept so the others can be compared against what ships today. Rate states a suggested hrs/day. Runway lays the work remaining against the time remaining on one track. Balance states the two remaining figures and derives nothing. EVERY figure in every treatment is derived from data the fixtures already carry — the resume course’s credit hours, the path’s unit totals and the days to the target date. None of them invents an observed rate, a schedule to be ahead of, or a projected finish date, because nothing here knows any of those. The status pill and its message are the same in all four, so the comparison is about the pacing figure and not about whether the state is shown.',
+    // Variant-only, like `dashboard-clp-style`: the enable toggle is on so the
+    // flag is live and the CHOICE is the variant. "Off" would have to mean
+    // "lo-fi", which the variant already says.
+    defaultEnabled: true,
+    // `runway` rather than `lo-fi`. The version exists to look at pacing, so
+    // opening it on the stub would make the whole thing read as unchanged —
+    // and `lo-fi` is one click away, which is the direction that comparison
+    // should run.
+    defaultVariant: 'runway',
+    variants: [
+      {
+        value: 'lo-fi',
+        label: 'Lo-fi — the current stub',
+        description:
+          'What ships on QE Focused today: two grey placeholder rows above the status pill and its message. Here so the three real treatments can be judged against it rather than only against each other.',
+      },
+      {
+        value: 'rate',
+        label: 'Rate — a suggested pace',
+        description:
+          'PRESCRIPTIVE. One figure — the resume course’s credit hours over the days to the target date — read as "~1.5 hrs/day", with the target named underneath. This is the derivation the lo-fi stub replaced on 2026-09-17; it still feeds the `stat-card` variant of `dashboard-clp-stats`, so nothing new is invented to show it here. Omitted, not guessed, when there is no course to read hours from.',
+      },
+      {
+        value: 'runway',
+        label: 'Runway — work against time',
+        description:
+          'SPATIAL. One track carrying how much of the course is done, with the work left on one end and the days left on the other, and the rate that closes the gap stated beneath it ("about 4 lessons a week to finish on time"). It answers whether the remaining work fits the remaining time — which is the pacing question — without claiming a projected finish date, because no observed rate exists in the fixtures to project from.',
+      },
+      {
+        value: 'balance',
+        label: 'Balance — the two figures',
+        description:
+          'DESCRIPTIVE, and deliberately the one that derives nothing: the work left and the days left as two plain figures, side by side, with no rate and no verdict. It is here as the honest floor — if a learner can pace themselves from those two numbers, the derived versions above are chrome, and that is worth finding out before building one of them properly.',
+      },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'dashboard-heading-font',
     group: 'Widgets',
     label: 'Heading font',

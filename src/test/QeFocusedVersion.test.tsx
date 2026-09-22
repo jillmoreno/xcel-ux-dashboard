@@ -1590,7 +1590,10 @@ describe('the course header band flag', () => {
     const stats = headerStatRow(container)
     expect(stats.map((s) => s.caption)).toEqual([
       'Target exam date',
-      'Left to complete',
+      // RENAMED 2026-09-21 from "Left to complete" — the value beside it is
+      // already a remaining figure, so "left" repeated the number; the caption
+      // names the object instead, like its two neighbours.
+      'To complete course',
       'Completed',
     ])
     expect(stats[0].value).toBe('December 15, 2026')
@@ -2857,7 +2860,7 @@ describe('Time Remaining is a day countdown, with no At Risk treatment', () => {
     const row = Array.from(container.querySelectorAll<HTMLElement>('div')).find(
       (d) => d.style.justifyContent === 'space-between' && d.style.alignItems === 'center',
     )!
-    expect(row.textContent).toMatch(/Left to complete/i)
+    expect(row.textContent).toMatch(/To complete course/i)
     expect(row.textContent).toMatch(/27\s*days/i)
     expect(row.textContent).not.toMatch(/wks/i)
   })

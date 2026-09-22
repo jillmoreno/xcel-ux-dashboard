@@ -170,6 +170,50 @@ type Props = {
    * fills the space under it.
    */
   studyJourney?: boolean
+  /**
+   * Drop the READINESS tile and give the whole row to Study Pace, which stops
+   * being square.
+   *
+   * For the TESTING dashboard version (2026-09-21), whose entire subject is the
+   * pacing treatment — see `DISCOVERABILITY_DASHBOARD_VERSION_TESTING`.
+   *
+   * ONE prop rather than two, because the two halves are not separable. The
+   * pair's `aspectRatio: 1 / 1` is a property of there being TWO of them: alone
+   * in this column a square tile is a ~506px box holding two lines of text. So
+   * "hide Readiness" and "reshape Study Pace" are the same decision, and
+   * splitting them would let a caller choose the one arrangement that is wrong.
+   *
+   * WHAT IS LOST, and it is nothing: the Readiness tile has been a deliberate
+   * lo-fi stub since 2026-09-17 ("Not designed yet"), and its DESTINATION —
+   * the real `ReadinessPanel` — is a rail item away and untouched. The
+   * placeholder is the tile, not the section.
+   */
+  paceOnly?: boolean
+  /**
+   * The page's course header band, rendered INSIDE this block's left column
+   * instead of full-width above the whole grid.
+   *
+   * For the TESTING version (2026-09-21, the direct ask: "shift [the Study
+   * Journey] up so it's directly under the header, then reduce the width of the
+   * course progress section to align with the other components").
+   *
+   * THE TWO HALVES OF THAT ASK ARE ONE CHANGE, which is why it is a slot rather
+   * than a width override plus a reorder. The header was a full-width sibling
+   * ABOVE the grid, so it pushed the whole grid — the Study Journey included —
+   * down past it. Moving it into the left column narrows it to that column AND
+   * frees the right column to start at the top, because the grid now begins
+   * where the header used to. Setting a `max-width` on it instead would have
+   * narrowed the header and left the journey exactly where it was.
+   *
+   * A SLOT rather than building the header here: it is `MembershipOverview`'s,
+   * it reads that component's own resolvers, and re-deriving it would be the
+   * second owner of "the course to show" that `displayedProgressPct` was
+   * extracted to close.
+   *
+   * `hideHeader` is still set alongside it — the block's own header cluster
+   * stays empty, because this band is what carries the name and the bar.
+   */
+  headerSlot?: ReactNode
   /** Open one Study Journey stop (a course id). Omitted → the rows render as
    *  plain text, which is what the dev-handoff preview wants. */
   onOpenStop?: (id: string) => void
@@ -219,6 +263,8 @@ export function LearnerFocusedBand({
   surface = 'navy',
   hideHeader = false,
   studyJourney = false,
+  paceOnly = false,
+  headerSlot,
   onOpenStop,
   onOpenStep,
   path,
@@ -450,6 +496,18 @@ export function LearnerFocusedBand({
   const clpStatsVariant = useFeatureFlag('dashboard-clp-stats').variant ?? 'default'
   const statCard = onPage && clpStatsVariant === 'stat-card'
   /*
+   * PACING TREATMENT — `dashboard-pacing-style`, read only by the `paceOnly`
+   * (Testing) arrangement, where the Study Pace tile has the whole row. On
+   * every other version the tile is still half of the square pair and stays the
+   * lo-fi stub, so this flag is inert there.
+   *
+   * Unconditional hook call again, then the arrangement check — the same
+   * `rules-of-hooks` trap `clpStatsVariant` above records, now for the third
+   * time in this file.
+   */
+  const pacingVariant = useFeatureFlag('dashboard-pacing-style').variant ?? 'runway'
+  const pacingStyle = paceOnly ? pacingVariant : 'lo-fi'
+  /*
    * TWO SQUARE TILES replace the KPI row + status strip — 2026-09-16, the
    * direct ask: "turn this into 2 square tiles, 1 about the Study Pace … 2nd
    * one will be about Readiness."
@@ -591,6 +649,221 @@ export function LearnerFocusedBand({
         completed: `${unitLong} of this course`,
       }
     : null
+  /* ── PACING (the Testing version) ────────────────────────────────────────
+     Every figure below is DERIVED from what the fixtures already carry — the
+     path's unit totals, the days to the target date, and the resume course's
+     own credit hours. Nothing here knows an OBSERVED rate, a schedule to be
+     ahead of, or a projected finish date, so no treatment states one. That is
+     the same line the `stat-card` sub-labels hold ("You are currently pacing 4
+     days ahead of schedule" was in the reference mock and is not in the app).
+
+     `unitsLeft` reads `totalRequired || path.hours` — the same fallback the
+     "26 of 42 lessons complete" line and the Completed KPI cell use, so the
+     three cannot disagree about the denominator. */
+  const unitsLeft = Math.max(0, (totalRequired || path.hours) - totalCompleted)
+  /* The rate that closes the gap, in the PATH's own unit rather than in hours:
+     `rate` already offers hrs/day, and the point of having both treatments is
+     that "put in 1.5 hours a night" and "clear 4 lessons a week" are different
+     instructions, not the same one twice. Rounded UP — a rounded-down rate
+     finishes late, which is the one direction a suggested pace must not err in.
+     Null at zero work left, where a required rate is meaningless rather than 0. */
+  const unitsPerWeek = unitsLeft > 0 ? Math.ceil(unitsLeft / (daysLeft / 7)) : null
+  /* Whole weeks remaining, for the runway strip. `daysLeft` is already floored
+     at 1, so this is at least 1 — an empty strip would read as a failed render
+     rather than as "no time left". */
+  const weeksLeftWhole = Math.max(1, Math.ceil(daysLeft / 7))
+
+  /* The status pill and its message. IDENTICAL in every pacing treatment and
+     therefore defined once — the comparison is meant to be about the pacing
+     figure, and four hand-copied status clusters is how one of them ends up a
+     weight or a gap different and makes its treatment look better than it is.
+
+     `StatusStrip`'s tint is deliberately not reused: it measures ~1.02:1 (a hue
+     shift, i.e. decoration) and a tinted band inside a tile reads as a second
+     card, which is the same call `bare` makes on the stat card. The PILL keeps
+     its fill, so the state is carried in colour AND in words.
+
+     `marginTop: 'auto'` puts it on the tile's floor whatever the treatment
+     above it does — the tiles are fixed-height squares in the paired
+     arrangement, and this is what stops a two-line treatment and a four-line
+     one placing their status at different heights. */
+  const pacingStatus = (
+    <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
+      <span
+        style={{
+          alignSelf: 'flex-start',
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 5,
+          fontFamily: 'var(--font-body)',
+          fontSize: 12,
+          fontWeight: 600,
+          whiteSpace: 'nowrap',
+          color: pageStatus.text,
+          background: pageStatus.outline ? 'transparent' : pageStatus.fill,
+          boxShadow: pageStatus.outline ? `inset 0 0 0 1px ${pageStatus.border}` : undefined,
+          padding: '3px 10px',
+          borderRadius: 'var(--radius-pill)',
+        }}
+      >
+        {pageStatus.icon && <pageStatus.icon size={12} aria-hidden />}
+        {pageStatus.label}
+      </span>
+      <p
+        style={{
+          margin: 0,
+          fontFamily: 'var(--font-body)',
+          fontSize: 12,
+          lineHeight: '17px',
+          color: 'var(--color-text-secondary)',
+        }}
+      >
+        {status.message}
+      </p>
+    </div>
+  )
+
+  /* The pacing figure — one treatment of the tile's headline. `--font-heading`
+     rather than the body face because this is the tile's heading in everything
+     but markup, and it has to follow `dashboard-heading-font` like every other
+     one on the page (the serif variant re-points that token for the subtree, so
+     a body-face figure here would be the one number that stayed sans). */
+  const pacingFigureStyle: CSSProperties = {
+    margin: 0,
+    fontFamily: 'var(--font-heading)',
+    fontSize: 30,
+    lineHeight: '34px',
+    fontWeight: 700,
+    color: cText,
+  }
+  /* The unit, riding on the figure's baseline rather than under it: "1.5" and
+     "hrs/day" are one statement, and stacking them makes the unit read as a
+     caption for a number that could mean anything. */
+  const pacingUnitStyle: CSSProperties = {
+    fontFamily: 'var(--font-body)',
+    fontSize: 13,
+    fontWeight: 600,
+    color: cMuted,
+  }
+  const pacingNoteStyle: CSSProperties = {
+    margin: 0,
+    fontFamily: 'var(--font-body)',
+    fontSize: 12,
+    lineHeight: '17px',
+    color: cMuted,
+  }
+
+  /* RUNWAY's strip — one segment per remaining WEEK, the last one part-filled
+     by the days that do not make a whole week (27 days ⇒ four segments, the
+     last at 6/7). It is the only spatial element in any treatment, and it is
+     deliberately NOT a progress bar: the block directly above already runs a
+     full-width `ProgressBar` for this course with the percentage beside it, so
+     a second bar here would be the third saying of one number in one column —
+     the duplication that folded the Jump Back In card into this block.
+
+     `--color-text-tertiary` for the fill rather than a ramp stop, and that is
+     the load-bearing choice: it measures 6.19:1 light / 6.18:1 dark, which is
+     unusually symmetric, so the strip needs no theme swap. `--color-primary-500`
+     would have wanted one — on this recessed tile the primary and the
+     `--color-neutral-300` track are both navies in dark and the fill lands at
+     1.22:1, which is the exact failure `.cre-jbi-progress-fill` exists for.
+
+     `aria-hidden`: the note directly beneath states the same two facts in
+     words, so nothing is carried by the strip alone. */
+  const runwayStrip = (
+    <div aria-hidden style={{ display: 'flex', gap: 4 }}>
+      {Array.from({ length: weeksLeftWhole }, (_, i) => {
+        const remainder = daysLeft % 7
+        const isLast = i === weeksLeftWhole - 1
+        const fraction = isLast && remainder > 0 ? remainder / 7 : 1
+        return (
+          <span
+            key={i}
+            style={{
+              flex: 1,
+              height: 6,
+              borderRadius: 'var(--radius-pill)',
+              background: cRule,
+              overflow: 'hidden',
+            }}
+          >
+            <span
+              style={{
+                display: 'block',
+                height: '100%',
+                width: `${fraction * 100}%`,
+                borderRadius: 'var(--radius-pill)',
+                background: 'var(--color-text-tertiary)',
+              }}
+            />
+          </span>
+        )
+      })}
+    </div>
+  )
+
+  /* The four treatments. Each is a WHOLE answer to "am I pacing to finish in
+     time" rather than a restyle of one answer — see `dashboard-pacing-style`:
+     `rate` prescribes TIME (hours a day), `runway` prescribes WORK (units a
+     week) and shows the shape of what is left, `balance` prescribes nothing and
+     states the two remaining figures, and `lo-fi` is what ships today, kept so
+     the other three are judged against it and not only against each other.
+
+     `rate` is OMITTED, not guessed, when there is no resume course to read
+     credit hours from — the same rule `kpiSubLabels` follows. The status
+     cluster below still carries the state, so the tile is never empty. */
+  const pacingBody =
+    pacingStyle === 'rate' ? (
+      hoursPerDay ? (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          <p style={pacingFigureStyle}>
+            ~{hoursPerDay.toFixed(1)} <span style={pacingUnitStyle}>hrs/day</span>
+          </p>
+          <p style={pacingNoteStyle}>Suggested pace to finish by {deadline}.</p>
+        </div>
+      ) : null
+    ) : pacingStyle === 'runway' ? (
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+        {unitsPerWeek ? (
+          <p style={pacingFigureStyle}>
+            ~{unitsPerWeek} <span style={pacingUnitStyle}>{unit} a week</span>
+          </p>
+        ) : null}
+        {runwayStrip}
+        <p style={pacingNoteStyle}>
+          {/* THE SHARED FORMATTER, not `unitCount(daysLeft, 'days')` — 2026-09-21.
+              It printed raw days, which agreed with the KPI cell only while the
+              deadline was inside 30 days (where `timeRemaining` also counts in
+              days). A learner-entered exam date further out put "50 days to go"
+              on this tile beside "7 wks" in the header, three inches apart: the
+              same fact in two units, which is the cross-surface disagreement
+              `ProgressAgreement.test.tsx` exists to catch. Weeks also pair
+              better with the rate above, which is per week. */}
+          {unitCount(unitsLeft, unit)} left · {timeRemainingText(weeksLeft)} to go
+        </p>
+      </div>
+    ) : pacingStyle === 'balance' ? (
+      /* Bare cells split by a vertical rule — the arrangement the KPI row above
+         already uses on this surface, and `cRule` is its rule. A second pair of
+         boxes inside a tile would be chrome around chrome, which is the call
+         that took the borders off those cells in the first place. */
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
+        <div style={{ minWidth: 0 }}>
+          <p style={pacingFigureStyle}>{unitsLeft}</p>
+          <p style={{ ...pacingNoteStyle, marginTop: 2 }}>{unit} left</p>
+        </div>
+        <div style={{ minWidth: 0, borderLeft: `1px solid ${cRule}`, paddingLeft: 14 }}>
+          <p style={pacingFigureStyle}>{daysLeft}</p>
+          <p style={{ ...pacingNoteStyle, marginTop: 2 }}>days left</p>
+        </div>
+      </div>
+    ) : (
+      /* LO-FI — what ships on QE Focused today. Two rows rather than the
+         Readiness tile's three because this tile also carries the status pill
+         and its message, so it has less room to fill. */
+      <LoFiWidgetBody rows={2} ariaLabel="Study pace — placeholder" />
+    )
+
   /** The percentage, as its own column. Shared by `big-number` and `navy`. */
   const percentColumn = (
     /* 160, not 200. At 200 the title column was left ~140px and "New York Life
@@ -818,6 +1091,17 @@ export function LearnerFocusedBand({
             : null),
         }}
       >
+        {/* THE COURSE HEADER BAND, when the Testing version hands it down —
+            see `headerSlot`. First child of the LEFT COLUMN, so it takes that
+            column's width and the right column's Study Journey starts level
+            with it rather than below the whole thing.
+
+            The band brings its own bottom rule, and inside this column that
+            rule now spans the column rather than the page — which is what it
+            should do here: it separates the header from the Jump Back In block
+            directly beneath it, and a full-width rule would cut across the
+            Study Journey beside it, which the rule has nothing to say about. */}
+        {headerSlot}
         {/* THE EYEBROW SITS ABOVE EVERYTHING — 2026-09-16.
             It was inside the text column, beside the cover, which made it the
             course's label rather than the block's. Lifted out, it names the
@@ -1146,18 +1430,27 @@ export function LearnerFocusedBand({
             card with a hairline border and a rule between them. The default
             leaves them bare on the page grey, divided by vertical rules. */}
         {paceTiles ? (
-          /* TWO SQUARE TILES — Study Pace and Readiness. See `paceTiles`.
+          /* THE SQUARE-TILE ROW — Study Pace and Readiness. See `paceTiles`.
 
-             `aspectRatio: 1 / 1` rather than a fixed height, so they stay
-             square at whatever width the column is and grow (rather than
-             clipping) if the status message ever needs the room. `minWidth: 0`
-             because a grid item's default `min-width: auto` refuses to shrink
-             below its content, which is what makes a two-column grid overflow
-             a narrow shell instead of squeezing. */
+             TWO ARRANGEMENTS, and `paceOnly` picks between them:
+
+               - the PAIR (every version but Testing): two 1:1 tiles side by
+                 side. `aspectRatio` rather than a fixed height, so they stay
+                 square at whatever width the column is and GROW rather than
+                 clipping if the status message ever needs the room.
+               - SOLO (Testing): Readiness goes and Study Pace takes the row,
+                 losing the square with it. Square was a property of there
+                 being two — alone in this ~506px column a 1:1 tile is a 506px
+                 box holding two lines of text.
+
+             `minWidth: 0` on the grid either way, because a grid item's default
+             `min-width: auto` refuses to shrink below its content, which is
+             what makes a two-column grid overflow a narrow shell rather than
+             squeeze. */
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+              gridTemplateColumns: paceOnly ? '1fr' : 'repeat(2, minmax(0, 1fr))',
               gap: 14,
               marginTop: 18,
             }}
@@ -1166,70 +1459,27 @@ export function LearnerFocusedBand({
               caption="Study Pace"
               icon={<Clock size={13} />}
               to="/dashboard-rebrand?section=study-plan"
+              square={!paceOnly}
             >
-              {/* LO-FI LINES, as in the Readiness tile beside it — 2026-09-17,
-                  the direct ask.
+              {/* The treatment — `dashboard-pacing-style` on Testing, and the
+                  lo-fi stub everywhere else. See `pacingBody`.
 
-                  What they replace is "~1.5 hrs/day · Suggested pace", which
-                  was DERIVED (the resume course's real 40 credit hours over the
-                  days left) rather than invented. It is not deleted: the
-                  derivation still feeds `kpiSubLabels`, so the `stat-card`
-                  variant of `dashboard-clp-stats` prints the same figure. If
-                  the pace is wanted back here, `hoursPerDay` is already in
-                  scope.
-
-                  `LoFiWidgetBody` again rather than hand-drawn bars — the same
-                  primitive, so the two tiles read as one unbuilt pair instead
-                  of two placeholder treatments a few pixels apart. Two rows to
-                  Readiness's three: this tile still carries the status pill and
-                  its message below, so it has less room to fill. */}
-              <LoFiWidgetBody rows={2} ariaLabel="Study pace — placeholder" />
+                  The stub has been what ships since 2026-09-17, the direct ask.
+                  What it replaced was "~1.5 hrs/day · Suggested pace", which was
+                  DERIVED (the resume course's real 40 credit hours over the days
+                  left) rather than invented — and is not deleted: the derivation
+                  still feeds `kpiSubLabels`, so the `stat-card` variant of
+                  `dashboard-clp-stats` prints the same figure, and the `rate`
+                  treatment above is that line given the tile to itself. */}
+              {pacingBody}
               {/* The status pill and its message — the half of the strip that
-                  was carrying the meaning. `StatusStrip`'s tint is not reused
-                  here: it measures ~1.02:1 (a hue shift, decoration) and a
-                  tinted band inside a bordered tile reads as a second card,
-                  which is the same call `bare` makes on the stat card. The
-                  PILL keeps its fill, so the state is still in colour AND in
-                  words. */}
-              <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <span
-                  style={{
-                    alignSelf: 'flex-start',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 5,
-                    fontFamily: 'var(--font-body)',
-                    fontSize: 12,
-                    fontWeight: 600,
-                    whiteSpace: 'nowrap',
-                    color: pageStatus.text,
-                    background: pageStatus.outline ? 'transparent' : pageStatus.fill,
-                    boxShadow: pageStatus.outline
-                      ? `inset 0 0 0 1px ${pageStatus.border}`
-                      : undefined,
-                    padding: '3px 10px',
-                    borderRadius: 'var(--radius-pill)',
-                  }}
-                >
-                  {pageStatus.icon && <pageStatus.icon size={12} aria-hidden />}
-                  {pageStatus.label}
-                </span>
-                <p
-                  style={{
-                    margin: 0,
-                    fontFamily: 'var(--font-body)',
-                    fontSize: 12,
-                    lineHeight: '17px',
-                    color: 'var(--color-text-secondary)',
-                  }}
-                >
-                  {status.message}
-                </p>
-              </div>
+                  was carrying the meaning, and the same element in every
+                  treatment. See `pacingStatus`. */}
+              {pacingStatus}
             </SquareTile>
 
             {/* READINESS — a LO-FI STUB, deliberately (the ask: "leave as lo-fi
-                stub for now").
+                stub for now"), and ABSENT on the Testing version.
 
                 It is the repo's own `LoFiWidgetBody`, not hand-drawn grey
                 boxes: that component exists for exactly this slot ("drops into
@@ -1241,24 +1491,30 @@ export function LearnerFocusedBand({
                 number), and printing a figure here that nothing resolved would
                 be the Membership Plan card's defect — a surface making a claim
                 it cannot support. Grey bars say "not built" honestly; a 72%
-                would say something false. */}
-            <SquareTile
-              caption="Readiness"
-              icon={<Gauge size={13} />}
-              to="/dashboard-rebrand?section=readiness"
-            >
-              <LoFiWidgetBody rows={3} ariaLabel="Readiness — placeholder" />
-              <span
-                style={{
-                  marginTop: 'auto',
-                  fontFamily: 'var(--font-body)',
-                  fontSize: 11,
-                  color: 'var(--color-text-tertiary)',
-                }}
+                would say something false.
+
+                DROPPING IT ON TESTING costs nothing for the same reason: the
+                placeholder is this tile, and the section it points at is
+                untouched and still on the rail. */}
+            {paceOnly ? null : (
+              <SquareTile
+                caption="Readiness"
+                icon={<Gauge size={13} />}
+                to="/dashboard-rebrand?section=readiness"
               >
-                Not designed yet
-              </span>
-            </SquareTile>
+                <LoFiWidgetBody rows={3} ariaLabel="Readiness — placeholder" />
+                <span
+                  style={{
+                    marginTop: 'auto',
+                    fontFamily: 'var(--font-body)',
+                    fontSize: 11,
+                    color: 'var(--color-text-tertiary)',
+                  }}
+                >
+                  Not designed yet
+                </span>
+              </SquareTile>
+            )}
           </div>
         ) : (
         <div
@@ -1517,6 +1773,17 @@ export function LearnerFocusedBand({
           // own rules, and the Get Licensed card is where they apply.
           onOpenRequirements={onViewDetails}
           onOpenLearningPath={onOpenLearningPath}
+          // FRAMED on Testing — a white card with a hairline edge instead of
+          // sitting bare on the page grey. Reuses `paceOnly`, which is already
+          // this version's marker on this component, rather than adding a
+          // second boolean that would always be set with it: the two would only
+          // ever differ by mistake. Rename both if a version ever wants one
+          // without the other.
+          framed={paceOnly}
+          // …and the post-course steps become their own cards. A separate prop
+          // from `framed` because they are different questions — one is this
+          // widget's surface, the other is how many widgets there are.
+          splitSteps={paceOnly}
         />
       ) : (
       <div
@@ -1833,6 +2100,7 @@ function SquareTile({
   icon,
   children,
   to,
+  square = true,
 }: {
   caption: string
   icon?: ReactNode
@@ -1847,13 +2115,28 @@ function SquareTile({
    * Readiness page — the placeholder is this tile, not the section.
    */
   to?: string
+  /**
+   * Hold a 1:1 aspect ratio. Default on — it is what makes the PAIR read as a
+   * pair.
+   *
+   * Off for the Testing version's solo Study Pace tile, where the Readiness
+   * half is dropped and this one takes the whole row: a square at ~506px is a
+   * 506px box holding two lines. The tile then sizes to its content, which is
+   * what a full-width card should do anyway.
+   *
+   * A prop rather than a second component, and rather than the caller
+   * overriding the style: the two arrangements differ in exactly this one
+   * declaration, and a `WideTile` beside this would be the near-copy that
+   * `widgetStyles.ts` exists to prevent.
+   */
+  square?: boolean
 }) {
   return (
     <div
       style={{
         // Square at any column width; grows rather than clipping if the content
         // ever needs more than the width allows.
-        aspectRatio: '1 / 1',
+        ...(square ? { aspectRatio: '1 / 1' } : null),
         minWidth: 0,
         /* THE JUMP BACK IN CARD'S SURFACE — 2026-09-17, the direct ask. It was
            a white card with a hairline border; it is the same tinted recess as

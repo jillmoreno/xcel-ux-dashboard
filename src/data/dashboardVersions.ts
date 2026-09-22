@@ -11,6 +11,7 @@ export type DashboardVersionId =
   | 'discoverability-marketing-focused'
   | 'discoverability-badged'
   | 'discoverability-qe-focused'
+  | 'discoverability-testing'
 
 /**
  * The rebrand overview's LAYOUT, resolved from `?version=` by `PlatformShell`
@@ -26,6 +27,7 @@ export type DashboardLayout =
   | 'marketing-focused'
   | 'badged'
   | 'qe-focused'
+  | 'testing'
 
 export type DashboardVersion = {
   id: DashboardVersionId
@@ -162,6 +164,66 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED: DashboardVersion = {
     'Built for a pre-licensing candidate working towards a booked exam. The top band slims to path identity + status + Resume beside a Study Journey — the curriculum as an ordered sequence of chapters and milestone exams. Below it the Learning Path detail sheet\u2019s whole Progress tab renders inline: completion gauge, category bars, Target Date / Time Remaining / Completed tiles, and a course list per requirement category. Recommended for You is dropped \u2014 this version is not a discovery dashboard.',
 }
 
+// "Testing" — QE Focused with the home screen's second row opened up for the
+// PACING exploration. Added 2026-09-21, and it is a WORKING version rather than
+// a candidate: it exists so the pacing treatments can be compared on the real
+// home screen against real data, not so a stakeholder can be shown a fourth
+// layout.
+//
+// Two departures from QE Focused, and they are one change seen from both ends:
+//
+//   1. **The Readiness tile is dropped.** It is the right-hand half of the
+//      band's square-tile pair and has been a deliberate lo-fi stub since
+//      2026-09-17 ("Not designed yet"). There IS a real readiness model one
+//      rail item away (`ReadinessPanel`), so the stub is the placeholder, not
+//      the section — dropping it here costs nothing and takes an unbuilt
+//      surface out of the frame while the built one beside it is being judged.
+//   2. **Study Pace takes the whole row**, and stops being square. Square was
+//      a property of the PAIR, not of the content; alone in a ~506px column a
+//      1:1 tile would be a 506px box holding two lines. `dashboard-pacing-
+//      style` then picks the treatment inside it.
+//
+// It inherits everything else QE Focused does — the page-surface band, the
+// category gauge, the Study Journey, no Recommended band, the requirements-only
+// detail sheet — because the question being asked is about ONE tile and every
+// other difference would be noise in the comparison.
+export const DISCOVERABILITY_DASHBOARD_VERSION_TESTING: DashboardVersion = {
+  id: 'discoverability-testing',
+  label: 'Testing',
+  createdAt: '2026-09-21',
+  modifiedAt: '2026-09-21',
+  description:
+    'QE Focused with the home screen\u2019s second row given over to the Pacing exploration. The Readiness tile \u2014 a lo-fi stub since 2026-09-17 \u2014 is dropped, and Study Pace takes the full width and stops being square. Which pacing treatment renders there is `dashboard-pacing-style`: Lo-fi (the stub, for comparison), Rate (a suggested hrs/day), Runway (work remaining laid against time remaining) or Balance (the two figures, no derived rate). Everything else matches QE Focused so the comparison is about the one tile.',
+}
+
+/**
+ * Does this version resolve a QUALIFYING journey (pre-licensing / exam prep)
+ * rather than a CE renewal cycle?
+ *
+ * TWO PLACES act on this and they must agree, which is why it is a function
+ * rather than an `=== 'discoverability-qe-focused'` in each:
+ *
+ *   - `MembershipOverview` forces `educationType` to `qe` / `exam-prep`, so the
+ *     version named for qualifying education cannot open on a CE path.
+ *   - `DemoControlsBar` drops Continuing Ed from its Education dropdown for the
+ *     same reason, and labels the control with what the PAGE resolved.
+ *
+ * They were two hardcoded id comparisons, and adding Testing broke the second
+ * one silently: the page resolved a pre-licensing path while the bar above it
+ * still offered — and read — "Continuing Ed", which is exactly the "dropdown
+ * entry that changes nothing when clicked" the flag audit spent a pass
+ * removing. The bar calls this now; `MembershipOverview` tests the LAYOUT
+ * (`qe-focused` plus `testing`), because that is the value it is threaded.
+ *
+ * A new QE-shaped version is one entry here, not two edits in two files.
+ */
+export function isQualifyingEducationVersion(versionId: string): boolean {
+  return (
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED.id ||
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_TESTING.id
+  )
+}
+
 // "Go to Legacy 2.0 Dashboard" is NOT a version here — because the classic
 // dashboard loads outside this shell (a full navigation to `/dashboard`, the
 // "Legacy Dashboard 2.0" tile link), it renders as a plain jump-off CTA below
@@ -173,6 +235,7 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED: DashboardVersion = {
 // DISCOVERABILITY_DASHBOARD_VERSION_BADGED here to restore it to the picker.)
 export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
   DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
+  DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
   DISCOVERABILITY_DASHBOARD_VERSION_MARKETING_FOCUSED,
   DISCOVERABILITY_DASHBOARD_VERSION_LEARNER_FOCUSED,
 ]
