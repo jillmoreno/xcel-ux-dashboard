@@ -6,6 +6,7 @@ import {
   suggestedNights,
   defaultPreset,
   formatEvening,
+  formatEveningSpoken,
   formatPaceDate,
   presetLabel,
   isoPlusDays,
@@ -204,5 +205,44 @@ describe('formatting', () => {
 
   it('returns an unparseable date unchanged rather than NaN', () => {
     expect(formatPaceDate('not-a-date')).toBe('not-a-date')
+  })
+})
+
+describe('formatEveningSpoken', () => {
+  /* The glyph is right to SHOW and wrong to HEAR. These pin the pairing rather
+     than the strings on their own: the two functions must round through the
+     SAME quarter-hour rule, or the sheet shows one answer and speaks another. */
+  it('says minutes under the hour', () => {
+    expect(formatEveningSpoken(45)).toBe('45 minutes')
+    expect(formatEveningSpoken(1)).toBe('1 minute')
+  })
+
+  it('says whole hours without a minutes tail', () => {
+    expect(formatEveningSpoken(60)).toBe('1 hour')
+    expect(formatEveningSpoken(120)).toBe('2 hours')
+  })
+
+  it('speaks the quarters `formatEvening` draws', () => {
+    expect(formatEvening(105)).toBe('1¾ hours')
+    expect(formatEveningSpoken(105)).toBe('1 hour 45 minutes')
+    expect(formatEveningSpoken(90)).toBe('1 hour 30 minutes')
+  })
+
+  it('ROUNDS THROUGH THE SAME RULE, not off the raw minutes', () => {
+    /* The defect this guards, and it is invisible in isolation: reading
+       `Math.round(mins)` directly would show 98 minutes as "1½ hours" and speak
+       it as "1 hour 38 minutes" — two different answers to one question, which
+       is worse than the fraction it set out to fix. */
+    expect(formatEvening(98)).toBe('1¾ hours')
+    // Raw rounding would speak "1 hour 38 minutes" here, against a figure the
+    // sheet is drawing as 1¾ — the disagreement the shared rule prevents.
+    expect(formatEveningSpoken(98)).toBe('1 hour 45 minutes')
+  })
+
+  it('degrades with the figure it mirrors', () => {
+    // `formatEvening` returns an em dash for a pace that cannot fit; a reader
+    // needs words rather than a punctuation mark read aloud as nothing.
+    expect(formatEvening(Infinity)).toBe('—')
+    expect(formatEveningSpoken(Infinity)).toBe('not available')
   })
 })
