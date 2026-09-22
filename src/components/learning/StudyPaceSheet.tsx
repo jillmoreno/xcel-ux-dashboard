@@ -125,6 +125,26 @@ const SPRINT_WINDOWS = [7, 10, 14] as const
  *  learner who genuinely has more than that does not need this screen. */
 const MAX_DAY_HOURS = 8
 
+/**
+ * THE MONTH STRIP, SWITCHED OFF — 2026-09-22, the direct ask ("hide the
+ * calendar from the sheet view for all of them").
+ *
+ * A CONSTANT RATHER THAN A DELETION, which is a deliberate departure from how
+ * `AimRow` was removed an hour earlier. That was markup; this is 70 lines of
+ * offset arithmetic (which day is `studyDays[n]`, where the ceiling falls
+ * inside a four-week window) that took a browser session to get right, and
+ * "restoring it should be a re-wire, never a rebuild" is the repo's own rule.
+ * One word here brings it back.
+ *
+ * Typed `boolean` rather than left as a `false` literal so the ternary below is
+ * not a constant condition — the lint rule would otherwise flag the switch
+ * itself as the defect.
+ *
+ * ⚠ ITS CSS AND THE COMPONENT BOTH STAY, and nothing else reads either. That
+ * is the cost of the switch and it is the point of it.
+ */
+const SHOW_PLAN_CALENDAR: boolean = false
+
 /** Mon-first index of a `Date`'s weekday — `getDay()` is Sunday-first, and the
  *  whole module is Monday-first. Written once and used everywhere here. */
 function weekdayOf(d: Date): number {
@@ -373,7 +393,9 @@ function PaceSheetBody({
               accessExpiresAt={accessExpiresAt}
               examDate={draft.examDate}
             />
-            <PlanCalendar today={today} sim={sim} hardEndIso={model.hardEndIso} />
+            {SHOW_PLAN_CALENDAR ? (
+              <PlanCalendar today={today} sim={sim} hardEndIso={model.hardEndIso} />
+            ) : null}
 
             <Group label="Put it on a calendar">
               <SwitchRow

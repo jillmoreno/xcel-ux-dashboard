@@ -241,18 +241,19 @@ describe('StudyPaceSheet — the outcome reads the simulator', () => {
     expect(within(dialog).getByRole('button', { name: /^Save pace/ })).not.toBeDisabled()
   })
 
-  it('draws the week it simulated, and hides it from a screen reader', async () => {
-    const { dialog } = await openStyle('blocks')
-    const cal = dialog.querySelector('.cre-pace-sheet__cal')!
-    expect(cal.getAttribute('aria-hidden')).not.toBeNull()
-    expect(cal.querySelectorAll('[data-study="true"]').length).toBeGreaterThan(0)
-    expect(cal.querySelectorAll('[data-finish="true"]').length).toBe(1)
-    /* The deadline is drawn as an EDGE so it can coincide with a study day or
-       with the finish — at most one cell, and NONE when the ceiling falls past
-       the four weeks the strip draws, which is the common case on a fresh
-       course. Asserted as "never more than one" rather than "always one": the
-       alternative pins the fixture's expiry into a calendar test. */
-    expect(cal.querySelectorAll('[data-end="true"]').length).toBeLessThanOrEqual(1)
+  it('draws no calendar — the strip is switched off', () => {
+    /* HIDDEN 2026-09-22, the direct ask, on every style screen rather than on
+       one. Asserted as an ABSENCE so that switching `SHOW_PLAN_CALENDAR` back
+       on fails here and gets re-decided, rather than quietly reappearing in a
+       sheet someone has since redesigned around its absence. */
+    return openStyle('blocks').then(({ dialog }) => {
+      expect(dialog.querySelector('.cre-pace-sheet__cal')).toBeNull()
+      expect(within(dialog).queryByText('Your plan')).toBeNull()
+      // …and the outcome above it still states every fact the grid drew.
+      expect(dialog.querySelector('.cre-pace-sheet__outcome')!.textContent).toMatch(
+        /a week[\s\S]*Finishes/,
+      )
+    })
   })
 })
 
