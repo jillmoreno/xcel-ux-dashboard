@@ -56,6 +56,45 @@ import type { CSSProperties } from 'react'
  * No border (the direct ask) and no shadow either: a shadow under a flat
  * recessed fill reads as a raised card that has lost its edge.
  */
+/**
+ * THE RULED CARD — 2026-09-21, the direct asks on the pacing card, then
+ * "apply that same update to the Learning with Compass widget".
+ *
+ * A white card with a hairline, a 6px brand rule down the left edge, and the
+ * top-left / bottom-right corners squared. The diagonal corner pattern is the
+ * course art's own (`0 md 0 md` in the header band above), so the column reads
+ * as one family rather than as three ideas about corners.
+ *
+ * ⚠ FOUR BORDER LONGHANDS, NOT `border` + `borderLeft`. That pairing renders as
+ * a LEFT RULE AND NOTHING ELSE, and it looks correct in the source: a `border`
+ * shorthand carrying a `var()` cannot be expanded into longhands by the CSSOM,
+ * so setting `border-left` afterwards invalidates it and the other three
+ * resolve to empty. Written out, each side is its own declaration and nothing
+ * overrides anything. This shipped wrong for one build.
+ *
+ * ⚠ `--color-primary-400` for the rule, NOT `-500`. `-500` measures ~2.2:1
+ * against the dark charcoal page — under the 3:1 a 6px bar needs to read as an
+ * element rather than a smudge. `-400` is one of the ramp's few symmetric stops
+ * here, which is what lets this take no theme swap; the same property that made
+ * `--color-text-tertiary` the right fill for the runway strip.
+ *
+ * `--color-surface-card` rather than a literal white: it is white in light and
+ * the brand navy on the dark canvas, which is the whole reason the token
+ * exists.
+ */
+export const widgetCardRuledStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  background: 'var(--color-surface-card)',
+  borderTop: '1px solid var(--color-neutral-300)',
+  borderRight: '1px solid var(--color-neutral-300)',
+  borderBottom: '1px solid var(--color-neutral-300)',
+  borderLeft: '6px solid var(--color-primary-400)',
+  borderRadius: '0 var(--radius-lg) 0 var(--radius-lg)',
+  padding: 16,
+  minWidth: 0,
+}
+
 export const widgetCardRecessedStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',

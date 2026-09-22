@@ -8,8 +8,8 @@ import {
   defaultPreset,
   formatEvening,
   formatPaceDate,
-  dateFromIso,
-  daysBetween,
+  defaultWeekdays,
+  WEEKDAY_LABELS,
 } from '@/lib/studyPace'
 
 /**
@@ -47,8 +47,17 @@ function renderTile(props: Partial<React.ComponentProps<typeof StudyPaceTile>> =
 
 /** The sheet renders in a portal, so query the dialog rather than the tile. */
 const sheet = () => screen.getByRole('dialog')
+/**
+ * Open the sheet from whichever control the current shape offers — "Adjust" on
+ * the square, "Customize Study Plan" on the card since the 2026-09-21 redesign.
+ *
+ * MATCHED BY ROLE, not by label, precisely because the label differs and the
+ * CLAIM does not: both shapes open the SAME sheet, which is the reuse the card
+ * variant rests on. A helper pinned to one label would make a rename read as a
+ * broken sheet.
+ */
 const openSheet = async (user: ReturnType<typeof userEvent.setup>) => {
-  await user.click(screen.getByRole('button', { name: 'Adjust' }))
+  await user.click(screen.getByRole('button', { name: /Adjust|Customize Study Plan/ }))
   return sheet()
 }
 
@@ -241,64 +250,71 @@ describe('StudyPaceTile — the presets card', () => {
     studyPace({ today: TODAY, hoursRemaining: 24, accessExpiresAt: '2026-10-18' })
 
   const renderCard = (props: Partial<React.ComponentProps<typeof StudyPaceTile>> = {}) =>
-    renderTile({ layout: 'card', onStart: () => {}, ...props })
+    renderTile({ layout: 'card', ...props })
 
-  it('states the evening and the nights the model derives', () => {
+  it('states the evening and the week the model derives', () => {
     renderCard()
     const preset = defaultPreset(model())
-    /* ASSERTED ON `textContent`, not via `getByText`: the head line bolds its
-       own figure, and `getByText`'s default matcher reads only an element's
-       DIRECT text nodes — so a sentence split by a `<b>` is invisible to it.
-       That is the "broken up by multiple elements" trap, and it fails as a
-       missing element rather than as a wrong string. */
+    /* ASSERTED ON `textContent`, not via `getByText`: the headline sets its own
+       figure at a larger size, which makes it a child element, and
+       `getByText`'s default matcher reads only an element's DIRECT text nodes —
+       so a sentence split by a `<span>` is invisible to it. That is the "broken
+       up by multiple elements" trap, and it fails as a missing element rather
+       than as a wrong string.
+
+       BOTH FIGURES COME FROM ONE FORMATTER. The design sets the nightly figure
+       and its unit at different sizes, so the card splits `formatEvening`'s
+       output rather than deriving the number again — a second rounding here is
+       how "1¾ hours a night" and "8¾ hours a week" would stop being the same
+       arithmetic. */
     expect(document.body.textContent).toContain(
-      `About ${formatEvening(preset.minsPerNight)} a night, ${preset.nights} nights a week.`,
+      `About ${formatEvening(preset.minsPerNight)} a night, ${formatEvening(preset.minsPerWeek)} a week`,
     )
   })
 
-  it('the room it claims agrees with the access date it names', () => {
-    /* THE TWO HALVES OF ONE SENTENCE, checked against each other and against
-       the model: the days of slack, and the date they are slack before. A card
-       reading "5 days before access ends on Oct 18" while the finish it just
-       printed is six days earlier is the kind of disagreement that looks
-       perfectly plausible on screen. */
+  it('draws the week, shading the nights the pace falls on', () => {
+    /* THE DESIGN'S BIGGEST ADDITION. The old card said "5 nights a week" and
+       left the learner to picture it.
+
+       The days are NOT invented for this strip: with no plan built it renders
+       `defaultWeekdays(nights)` — the same helper the sheet uses to propose a
+       calendar, moved to `@/lib/studyPace` when this second caller arrived. Two
+       surfaces deriving "which nights" apart from each other is how a card
+       comes to shade Mon–Thu while the plan behind it builds Mon–Wed + Fri. */
     renderCard()
     const preset = defaultPreset(model())
-    const claim = /(\d+) days? before access ends on ([A-Z][a-z]{2} \d+)/.exec(
-      document.body.textContent ?? '',
+    const strip = document.querySelector('[aria-hidden]')!
+    const cells = Array.from(strip.querySelectorAll('span'))
+    expect(cells.map((c) => c.textContent)).toEqual([...WEEKDAY_LABELS])
+    const shaded = cells.filter((c) => c.style.background !== 'transparent')
+    expect(shaded).toHaveLength(preset.nights)
+    // …and they are the FIRST n, Monday-first — the helper's own rule.
+    expect(shaded.map((c) => c.textContent)).toEqual(
+      defaultWeekdays(preset.nights).map((i) => WEEKDAY_LABELS[i]),
     )
-    expect(claim).toBeTruthy()
-    const [, days, date] = claim as RegExpExecArray
-    /* The date is the learner's OWN expiry, not the model's `hardEndIso` — that
-       is a day earlier, because finishing the day access dies is not finishing.
-       Printing the internal ceiling would be the card disagreeing by one day
-       with the date on the learner's receipt. */
-    expect(date).toBe(formatPaceDate('2026-10-18'))
-    expect(Number(days)).toBe(
-      daysBetween(dateFromIso(preset.finishIso) as Date, dateFromIso('2026-10-18') as Date),
-    )
-    // …and it is the finish the model derived, not a second one.
-    expect(document.body.textContent).toContain(formatPaceDate(preset.finishIso))
   })
 
-  it('explains where the number came from only while it is still ours', async () => {
-    const user = userEvent.setup()
+  it('hides the strip from a screen reader, because the sentence says it', () => {
+    /* The accessible name must never depend on which cells are filled. The
+       headline above already states the pace in words, so a reader walking
+       seven day names to count four of them learns nothing new. */
     renderCard()
-    expect(screen.getByText(/Set from when your access ends, not from a guess/)).toBeInTheDocument()
-    const dialog = await openSheet(user)
-    await user.click(within(dialog).getByRole('radio', { name: /Full window|Relaxed/ }))
-    await user.click(within(dialog).getByRole('button', { name: 'Save pace' }))
-    expect(screen.queryByText(/not from a guess/)).toBeNull()
+    const strip = document.querySelector('[aria-hidden]')!
+    expect(strip.getAttribute('aria-hidden')).not.toBeNull()
   })
 
-  it('names the CEILING, never a window length', () => {
-    /* The prototype said "set from your 30-day access" — true of the window it
-       assumed, false of any course whose access differs, and unknowable from
-       what this component is given. The ceiling is the fact the model actually
-       used, it is already on screen, and it stays true when an exam date takes
-       over as the thing doing the work. */
+  it('states the window and the finish date it lands on', () => {
+    /* THE THREE BODY LINES, checked against the model rather than as strings:
+       the days left agree with the ceiling the model resolved, the access date
+       is the learner's OWN expiry (not `hardEndIso`, which is a day earlier
+       because finishing the day access dies is not finishing), and the finish
+       is the preset's. */
     renderCard()
-    expect(screen.queryByText(/\d+-day access/)).toBeNull()
+    const preset = defaultPreset(model())
+    const text = document.body.textContent ?? ''
+    expect(text).toContain(`You have ${model().daysToCeiling} days left to finish`)
+    expect(text).toContain(`Access ends on ${formatPaceDate('2026-10-18')}`)
+    expect(text).toContain(`you will finish around ${formatPaceDate(preset.finishIso)}`)
   })
 
   it('follows the exam date when that is what binds', async () => {
@@ -309,86 +325,67 @@ describe('StudyPaceTile — the presets card', () => {
     await user.clear(field)
     await user.type(field, '2026-10-10')
     await user.click(within(dialog).getByRole('button', { name: 'Save pace' }))
-    // The sentence and the timeline label both move onto the exam, together —
-    // a card explaining itself against one ceiling while drawing another is the
-    // silent switch `binding` exists to prevent.
-    expect(screen.getByText(/before your exam on/)).toBeInTheDocument()
-    expect(screen.getByText(new RegExp(`Exam · ${formatPaceDate('2026-10-10')}`))).toBeInTheDocument()
-  })
-
-  it('draws the timeline from Today to the ceiling, and hides it from the reader', () => {
-    /* DECORATION: every fact it draws is printed in words in the sentence above
-       it and in its own two labels, so the graphic carries nothing on its own.
-       That is what keeps the accessible name off colour and off position. */
-    renderCard()
-    expect(screen.getByText('Today')).toBeInTheDocument()
-    expect(screen.getByText(`Access ends · ${formatPaceDate('2026-10-18')}`)).toBeInTheDocument()
-    // No `role="img"` with a described graphic — the square tile's timeline
-    // needs one because it has no labels; this one has them.
-    expect(screen.queryByRole('img')).toBeNull()
+    // The window line moves onto the exam — a card explaining itself against
+    // one ceiling while the model priced another is the silent switch
+    // `binding` exists to prevent.
+    expect(document.body.textContent).toContain(`Your exam is on ${formatPaceDate('2026-10-10')}`)
+    expect(document.body.textContent).not.toMatch(/Access ends on/)
   })
 
   it('claims no deadline on a course that has none', () => {
     /* No access window and no exam date: the model has nothing to aim at and
-       falls back to its default horizon. The card must then claim no ceiling,
-       name the date as a target rather than a cut-off, and draw no end-stop. */
+       falls back to its default horizon. The card must NOT then say "you have N
+       days left to finish the course material" — that is a deadline the data
+       does not have — and names the date as a target instead. */
     renderCard({ accessExpiresAt: undefined })
-    expect(screen.queryByText(/before access ends/)).toBeNull()
-    expect(screen.queryByText(/not from a guess/)).toBeNull()
-    expect(screen.getByText(/no access deadline, so that date is a suggested target/)).toBeInTheDocument()
-    expect(screen.queryByText(/Access ends ·/)).toBeNull()
+    const text = document.body.textContent ?? ''
+    expect(text).not.toMatch(/left to finish the course material/)
+    expect(text).not.toMatch(/Access ends on/)
+    expect(text).toMatch(/no access deadline, so the date below is a suggested target/)
+    // …and it still states the finish, which is the one thing it can.
+    expect(text).toMatch(/you will finish around/)
   })
 
-  it('operates two things, and they are Start and Adjust', () => {
+  it('operates exactly one thing, and it opens the shared sheet', () => {
+    /* The claim the square makes too: this is a statement, not a control panel.
+       The redesign replaced Start studying + Adjust with one link, so the count
+       went from two to one — and `Details →` is still absent, because the
+       buttons ARE this card's floor. */
     renderCard()
-    expect(screen.getAllByRole('button').map((b) => b.textContent?.trim())).toEqual([
-      'Start studying',
-      'Adjust',
-    ])
-    // The square's floor is gone with the square: no `Details →`, and no preset
-    // strip — the claim `StudyPaceTile — the tile operates nothing` makes above.
+    const buttons = screen.getAllByRole('button')
+    expect(buttons.map((b) => b.textContent?.trim())).toEqual(['Customize Study Plan'])
+    expect(buttons[0].getAttribute('aria-haspopup')).toBe('dialog')
     expect(screen.queryByRole('link')).toBeNull()
     expect(screen.queryByRole('radio')).toBeNull()
   })
 
-  it('omits Start when there is nothing for it to start', () => {
-    // A "Start studying" that starts nothing is the invented affordance this
-    // version keeps refusing; the button is dropped rather than rendered inert.
-    renderCard({ onStart: undefined })
-    expect(screen.getAllByRole('button').map((b) => b.textContent?.trim())).toEqual(['Adjust'])
-  })
-
-  it('takes the primary CTA off the Brick and the secondary off inline ink', () => {
-    /* `--color-action` is a FILL colour measuring 2.05:1 as TEXT on the dark
-       shell, and this version moved every CTA onto the primary ramp — navy
-       means "do this", red means "this is an assessment". Adjust takes BOTH its
-       ink and its stroke from `.cre-cta-ink` (`borderColor: currentColor`), so
-       the dark-mode swap reaches the outline without a second declaration and
-       no inline value can beat the class. */
+  it('takes the CTA off the design’s magenta and off inline ink', () => {
+    /* ⚠ THE DESIGN SPECIFIES `#a24796`. That is the CRE file's accent; on XCEL
+       the equivalent ramp is the Brick, a FILL colour measuring 2.05:1 as TEXT
+       on the dark shell and the ramp this version deliberately moved every CTA
+       off on 2026-09-16 ("navy means do this; red means this is an
+       assessment"). `.cre-cta-ink` owns that decision and carries the dark-mode
+       swap a hex cannot — so the assertion is the ABSENCE of an inline colour,
+       which is what lets the class win. */
     renderCard()
-    const [start, adjust] = screen.getAllByRole('button')
-    /* ASSERTED AS THE ABSENCE OF INLINE COLOUR, not the presence of a token.
-       `.cre-cta-fill` carries the fill AND the label ink because the pair has
-       to INVERT in dark — the navy is 2.75:1 against the dark card, under the
-       3:1 a control's shape needs — and an inline `background` would beat the
-       class while looking correct in light mode. That is the failure mode this
-       pins: a button that renders, passes tsc and dissolves in one theme. */
-    expect(start.className).toContain('cre-cta-fill')
-    expect(start.style.background).toBe('')
-    expect(start.style.color).toBe('')
-    expect(adjust.className).toContain('cre-cta-ink')
-    expect(adjust.style.color).toBe('')
-    expect(adjust.style.borderColor).not.toMatch(/rgb|#|var\(/)
+    const cta = screen.getByRole('button', { name: /Customize Study Plan/ })
+    expect(cta.className).toContain('cre-cta-ink')
+    expect(cta.style.color).toBe('')
+    expect(document.body.innerHTML).not.toMatch(/a24796/i)
   })
 
   it('carries the provenance in its eyebrow, and flips it on first touch', async () => {
+    /* The prototype's §02 finding, kept through the redesign: the product
+       should not go on calling a figure the learner picked a recommendation.
+       The chip that used to say it is gone — it was the same word the eyebrow
+       says — so the eyebrow is where it lives now. */
     const user = userEvent.setup()
     renderCard()
-    const eyebrow = () => screen.getByText(/^Study Pace$/).parentElement as HTMLElement
-    expect(eyebrow().textContent).toContain('Study Pace · recommended')
+    expect(screen.getByText('Recommended Study Pace')).toBeInTheDocument()
     const dialog = await openSheet(user)
     await user.click(within(dialog).getByRole('radio', { name: '6' }))
-    expect(eyebrow().textContent).toContain('Study Pace · yours')
+    expect(screen.getByText('Your Study Pace')).toBeInTheDocument()
+    expect(screen.queryByText('Recommended Study Pace')).toBeNull()
   })
 
   it('keeps the square shape untouched in the default layout', () => {

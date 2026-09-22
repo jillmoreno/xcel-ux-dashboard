@@ -3620,9 +3620,34 @@ a.cre-library-card-title::after {
 .cre-course-header-narrow {
   flex-direction: row;
 }
+/* THE ART RUNS THE FULL HEIGHT OF THE HEADER here — 2026-09-21, the direct ask
+   that it "stretch vertically to align with the bottom of the divider line that
+   separates the 62%". Stretched, its foot lands on the stat row's own rule and
+   the two make one line for the eye to stop on, which is the same reason the
+   wide band bottom-aligns its cover.
+
+   `height: auto` is the half that does the work: the element carries no inline
+   height in this arrangement, so `align-self: stretch` has something to
+   stretch. `object-fit: cover` still does the cropping, so a taller box
+   re-crops the photograph rather than distorting it.
+
+   IN CSS AND NOT INLINE because it has to come BACK OFF below 1100px, where the
+   cover stacks ABOVE the text — stretched there it would run the full column
+   WIDTH, which is the full-bleed strip the note above rejects. An inline
+   `align-self` would win over the media query while looking correct in the
+   wide case, which is the trap `.cre-cta-ink` and `.cre-uxlinks-title` both
+   record. */
+.cre-course-header-narrow > img {
+  align-self: stretch;
+  height: auto;
+}
 @media (max-width: 1100px) {
   .cre-course-header-narrow {
     flex-direction: column;
     align-items: flex-start;
+  }
+  .cre-course-header-narrow > img {
+    align-self: flex-start;
+    height: 130px;
   }
 }

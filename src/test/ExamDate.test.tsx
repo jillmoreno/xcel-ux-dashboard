@@ -164,10 +164,10 @@ describe('the entered date moves the whole page, not just the card', () => {
     writeExamDate('2026-05-31')
     seedPacing('presets')
     renderShell()
-    const tile = screen.getByText(/^Study Pace/).parentElement as HTMLElement
-    expect(tile.textContent).toMatch(/before your exam on May 31/)
+    const tile = screen.getByText(/^(?:Recommended |Your )?Study Pace$/).parentElement as HTMLElement
+    expect(tile.textContent).toMatch(/Your exam is on May 31/)
     // …and it stops naming access, which is no longer the binding ceiling.
-    expect(tile.textContent).not.toMatch(/before access ends/)
+    expect(tile.textContent).not.toMatch(/Access ends on/)
   })
 
   it('does not read a booked exam date as the learner adjusting the pace', () => {
@@ -179,9 +179,11 @@ describe('the entered date moves the whole page, not just the card', () => {
     writeExamDate('2026-05-31')
     seedPacing('presets')
     renderShell()
-    const tile = screen.getByText(/^Study Pace/).parentElement as HTMLElement
-    expect(tile.textContent).toMatch(/· recommended/)
-    expect(tile.textContent).toMatch(/not from a guess/)
+    const tile = screen.getByText(/^(?:Recommended |Your )?Study Pace$/).parentElement as HTMLElement
+    /* The eyebrow, which is where the 2026-09-21 redesign moved the
+       provenance — the chip that carried it went, because it said the same
+       word the eyebrow says. */
+    expect(tile.textContent).toMatch(/^Recommended Study Pace/)
   })
 
   it('states the remaining time in ONE unit across both surfaces', () => {

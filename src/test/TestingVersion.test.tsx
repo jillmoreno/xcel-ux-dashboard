@@ -66,13 +66,14 @@ function renderShell(url: string) {
 /**
  * The Study Pace TILE — the eyebrow's parent, which is the tile element.
  *
- * MATCHED AS A REGEX, not the literal: the `presets` treatment appends a second
- * clause to the same eyebrow ("Study Pace · recommended", "· yours" once the
- * learner has adjusted anything), and `getByText` runs on `textContent`, so the
- * literal stops finding the tile the moment that suffix exists.
+ * MATCHED AS A REGEX, not the literal, because the `presets` treatment writes
+ * its own eyebrow: "Recommended Study Pace", becoming "Your Study Pace" once
+ * the learner adjusts anything (the 2026-09-21 Figma redesign moved the
+ * provenance off a chip and into the eyebrow). The four other treatments keep
+ * the bare "Study Pace".
  */
 function paceTile(): HTMLElement {
-  return screen.getByText(/^Study Pace(?: · (?:recommended|yours))?$/).parentElement as HTMLElement
+  return screen.getByText(/^(?:Recommended |Your )?Study Pace$/).parentElement as HTMLElement
 }
 
 /**
@@ -219,11 +220,11 @@ describe('the pacing treatments', () => {
     renderShell(TESTING_URL)
     const tile = paceTile()
     expect(within(tile).queryByText('On Track')).toBeNull()
-    // The conclusion in words: a named course, and the date the derived pace
-    // lands on. With a ceiling this sentence continues "…, N days before access
-    // ends on <date>"; this fixture has none, which `StudyPaceTile.test.tsx`
-    // covers with a course that does.
-    expect(tile.textContent).toMatch(/Finishes .+ by [A-Z][a-z]{2} \d+/)
+    // The conclusion in words: the window the learner has, and the date the
+    // derived pace lands on. Both are body lines of the 2026-09-21 Figma
+    // redesign, which replaced the pill and the timeline with this sentence.
+    expect(tile.textContent).toMatch(/You have \d+ days left to finish/)
+    expect(tile.textContent).toMatch(/you will finish around [A-Z][a-z]{2} \d+/)
   })
 
   it.each(ALL_VARIANTS)('%s invents no projection the fixtures cannot support', (variant) => {
@@ -330,12 +331,27 @@ describe('the pacing treatments', () => {
 describe('the presets pacing card', () => {
   const seedPresets = () => seed({ 'dashboard-pacing-style': { enabled: true, variant: 'presets' } })
 
-  it('states an evening, a nights count and the date it lands on', () => {
+  it('states an evening, a week and the date it lands on', () => {
     seedPresets()
     renderShell(TESTING_URL)
     const text = paceTile().textContent ?? ''
-    expect(text).toMatch(/About .+ a night, \d nights a week\./)
-    expect(text).toMatch(/Finishes .+ by [A-Z][a-z]{2} \d+/)
+    // The redesign's headline: a nightly figure and a weekly one, both out of
+    // the same formatter. It said "N nights a week" before — the WEEK STRIP
+    // now carries how many nights, and in which days.
+    expect(text).toMatch(/About .+ a night, .+ a week/)
+    expect(text).toMatch(/you will finish around [A-Z][a-z]{2} \d+/)
+  })
+
+  it('draws the week strip', () => {
+    // The redesign's biggest addition: the old card said "5 nights a week" and
+    // left the learner to picture it. Which DAYS is not invented here — the
+    // shared `defaultWeekdays` helper is what the sheet proposes too.
+    seedPresets()
+    renderShell(TESTING_URL)
+    const text = paceTile().textContent ?? ''
+    for (const day of ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']) {
+      expect(text).toContain(day)
+    }
   })
 
   it('the room it claims agrees with the access date it names', () => {
@@ -352,14 +368,17 @@ describe('the presets pacing card', () => {
     seedPresets()
     renderShell(TESTING_URL)
     const text = paceTile().textContent ?? ''
-    const claim = /Finishes .+ by ([A-Z][a-z]{2} \d+), (\d+) days? before access ends on ([A-Z][a-z]{2} \d+)/.exec(text)
+    const claim = /You have (\d+) days left to finish the course material\. \(Access ends on ([A-Z][a-z]{2} \d+)\.\)/.exec(text)
     expect(claim).toBeTruthy()
-    const [, finish, days, ends] = claim as RegExpExecArray
+    const [, days, ends] = claim as RegExpExecArray
+    const finishMatch = /you will finish around ([A-Z][a-z]{2} \d+)/.exec(text)
+    expect(finishMatch).toBeTruthy()
     const day = (s: string) => new Date(`${s}, 2026`).getTime() / 86_400_000
-    expect(Math.round(day(ends) - day(finish))).toBe(Number(days))
-    // …and the timeline's end-stop names the SAME date the sentence does, so
-    // the graphic and the words cannot point at different days.
-    expect(text).toContain(`Access ends · ${ends}`)
+    /* THE FINISH LANDS INSIDE THE WINDOW the line above it claims. That is the
+       relationship the whole card exists to state, and the one that reads as
+       perfectly plausible when it is wrong. */
+    expect(day(finishMatch![1])).toBeLessThanOrEqual(day(ends))
+    expect(Number(days)).toBeGreaterThan(0)
   })
 
   it('names the ceiling it used, never a window length', () => {
@@ -377,7 +396,10 @@ describe('the presets pacing card', () => {
     renderShell(TESTING_URL)
     const text = paceTile().textContent ?? ''
     expect(text).not.toMatch(/\d+-day access/)
-    expect(text).toMatch(/Set from when your access ends, not from a guess/)
+    // The DATE access ends, which is the fact the model used — not a window
+    // length, which is the prototype's sentence and is wrong the moment a
+    // course's window differs.
+    expect(text).toMatch(/Access ends on [A-Z][a-z]{2} \d+/)
   })
 
   it('keeps the expiry badge OFF the default version’s Jump Back In card', () => {
@@ -407,45 +429,50 @@ describe('the presets pacing card', () => {
     const user = userEvent.setup()
     seedPresets()
     renderShell(TESTING_URL)
-    expect(paceTile().textContent).toMatch(/· recommended/)
+    expect(paceTile().textContent).toMatch(/^Recommended Study Pace/)
 
-    await user.click(within(paceTile()).getByRole('button', { name: 'Adjust' }))
+    await user.click(within(paceTile()).getByRole('button', { name: 'Customize Study Plan' }))
     const dialog = screen.getByRole('dialog')
     await user.click(within(dialog).getByRole('radio', { name: /Full window|Relaxed/ }))
     await user.click(within(dialog).getByRole('button', { name: 'Save pace' }))
 
-    expect(paceTile().textContent).toMatch(/· yours/)
+    expect(paceTile().textContent).toMatch(/^Your Study Pace/)
   })
 
-  it('offers two real buttons and no third control', () => {
-    // The card operates Start and Adjust, and nothing else — the same claim
-    // `StudyPaceTile.test.tsx` counts on the square, which is what keeps this a
-    // statement rather than a control panel. No `Details →` link either: the
-    // buttons ARE the floor here.
+  it('operates exactly one thing, and no more', () => {
+    /* The card operates Customize Study Plan and nothing else — the same claim
+       `StudyPaceTile.test.tsx` counts on the square, and what keeps this a
+       statement rather than a control panel. The 2026-09-21 redesign took the
+       count from two (Start studying + Adjust) to one. No `Details →` link
+       either: the control IS this card's floor. */
     seedPresets()
     renderShell(TESTING_URL)
     const tile = paceTile()
     const names = within(tile)
       .getAllByRole('button')
       .map((b) => b.textContent?.trim())
-    expect(names).toEqual(['Start studying', 'Adjust'])
+    expect(names).toEqual(['Customize Study Plan'])
     expect(within(tile).queryByRole('link', { name: /Details/ })).toBeNull()
     expect(within(tile).queryByRole('radio')).toBeNull()
-    // …and it is about the course the band resumes, named in the same words the
-    // Jump Back In block beside it uses, rather than a second course.
-    const course = /Finishes (.+?) by /.exec(tile.textContent ?? '')?.[1]
-    expect(course).toBeTruthy()
-    expect(document.body.textContent).toContain(course as string)
+    /* ⚠ THE CARD NO LONGER NAMES THE COURSE, and that is the redesign's call
+       rather than a regression. It used to open "Finishes <course> by <date>";
+       the Figma copy says "the course material", generic — because the course
+       is named twice already in the header band directly above it, and this
+       card is about the pace rather than about which course it is. Asserted as
+       the absence so a later edit putting the title back has to be deliberate. */
+    expect(tile.textContent).toMatch(/left to finish the course material/)
   })
 
-  it('Adjust opens the SHARED sheet, not a second one', () => {
+  it('Customize Study Plan opens the SHARED sheet, not a second one', () => {
     /* The reuse this whole variant rests on. A `presets` card that grew its own
        sheet would be a second copy of the four groups — and of the exam date and
        the study-plan calendar, both of which write. */
     seedPresets()
     renderShell(TESTING_URL)
     expect(
-      within(paceTile()).getByRole('button', { name: 'Adjust' }).getAttribute('aria-haspopup'),
+      within(paceTile())
+        .getByRole('button', { name: 'Customize Study Plan' })
+        .getAttribute('aria-haspopup'),
     ).toBe('dialog')
   })
 

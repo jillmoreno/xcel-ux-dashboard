@@ -693,7 +693,17 @@ export function MembershipOverview({
                    `object-fit: cover` still does the cropping, so the picture is
                    never distorted. */
                 width: COURSE_HEADER_COVER,
-                height: COURSE_HEADER_COVER,
+                /* HEIGHT IS THE CLASS'S in the left column — 2026-09-21, the
+                   direct ask ("have the image stretch vertically to align with
+                   the bottom of the divider line that separates the 62%"). The
+                   art now runs the full height of the header's content, so its
+                   foot lands on the same line as the stat row's rule.
+                   `.cre-course-header-narrow > img` owns it, because the rule
+                   has to come BACK OFF below 1100px where the cover stacks
+                   above the text — and an inline `alignSelf` would beat the
+                   media query while looking correct.
+                   The full-width band keeps the fixed square. */
+                ...(narrowHeader ? null : { height: COURSE_HEADER_COVER }),
                 flex: 'none',
                 /* TWO ROUNDED CORNERS, diagonally opposite — top-right and
                    bottom-left (2026-09-17, the direct ask). The shorthand runs

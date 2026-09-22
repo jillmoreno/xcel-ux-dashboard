@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react'
 import { ArrowRight, BookOpenThin } from '@/icons'
 import type { CourseCardData } from '@/components/courses/CourseCard'
-import { widgetCardRecessedStyle, widgetEyebrowStyle } from './widgetStyles'
+import { widgetCardRuledStyle, widgetEyebrowStyle } from './widgetStyles'
 import { NY_LH_PROGRAM_PARTS, NY_LH_LESSON_MINUTES_INVENTED } from '@/data/nyProducerRequirements'
 
 /**
@@ -53,7 +53,7 @@ export function JumpBackInWidget({
 }) {
   if (!course) return null
   return (
-    <section aria-label="Jump back in" style={widgetCardRecessedStyle}>
+    <section aria-label="Jump back in" style={widgetCardRuledStyle}>
       {/* The SHARED eyebrow type — same face, size, weight and tracking as the
           Study Journey's, which is what "match the Study Journey font" asked
           for — with the INK resolved for this surface.

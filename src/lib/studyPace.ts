@@ -327,3 +327,24 @@ export function presetLabel(preset: PacePreset): string {
   if (preset.id === 'relaxed') return preset.state === 'easy' ? 'Relaxed' : 'Full window'
   return PRESET_LABELS[preset.id]
 }
+
+/** Short weekday labels, Monday-first — the order `plan.weekdays` indexes into
+ *  (0 = Mon … 6 = Sun). */
+export const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
+
+/**
+ * Which days a pace of `n` nights falls on before the learner says otherwise —
+ * the first `n`, Monday-first.
+ *
+ * MOVED HERE from `StudyPaceSheet` on 2026-09-21, unchanged, because a SECOND
+ * caller arrived: the `presets` card draws a week strip and has to shade the
+ * same days the sheet would propose. Two surfaces deriving "which nights" apart
+ * from each other is how a card comes to shade Mon–Thu while the plan behind it
+ * builds Mon–Wed + Fri.
+ *
+ * It is a DEFAULT, not a claim about the learner: the moment they build a plan,
+ * `plan.weekdays` is authoritative and both surfaces read that instead.
+ */
+export function defaultWeekdays(n: number): number[] {
+  return Array.from({ length: Math.max(1, Math.min(7, n)) }, (_, i) => i)
+}

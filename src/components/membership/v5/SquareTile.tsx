@@ -1,6 +1,10 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
-import { widgetCardRecessedStyle, widgetEyebrowStyle } from '@/components/learning/widgetStyles'
+import {
+  widgetCardRecessedStyle,
+  widgetCardRuledStyle,
+  widgetEyebrowStyle,
+} from '@/components/learning/widgetStyles'
 
 /*
  * EXTRACTED 2026-09-21 from `LearnerFocusedBand`, unchanged apart from the
@@ -34,17 +38,20 @@ export function SquareTile({
   to,
   action,
   square = true,
+  surface = 'recessed',
 }: {
   /**
-   * The eyebrow's text. A `ReactNode` rather than a `string` as of 2026-09-21,
-   * for the `presets` pacing treatment, whose eyebrow carries a SECOND clause
-   * in dimmer ink ("Study Pace · recommended" → "· yours" once the learner has
-   * adjusted anything). Every other caller still passes a plain string.
+   * The eyebrow's text.
    *
-   * ⚠ A caption with element children breaks `getByText('Study Pace')` — the
-   * matcher runs on `textContent`, which is then the whole eyebrow. Tests that
-   * find the tile by its caption use a regex; see `paceTile()` in
-   * `TestingVersion.test.tsx`.
+   * ⚠ IT IS NOT ALWAYS "Study Pace". The `presets` card writes its own —
+   * "Recommended Study Pace", becoming "Your Study Pace" the moment the learner
+   * adjusts anything — so tests that find a tile by its caption match a regex
+   * rather than the literal; see `paceTile()` in `TestingVersion.test.tsx`.
+   *
+   * A `ReactNode` rather than a `string` since 2026-09-21. The redesign left it
+   * a plain string at every call site again, but the type stays widened: a
+   * caption with element children is a thing this eyebrow can hold, and
+   * narrowing it back would be a change that only looks like a tidy.
    */
   caption: ReactNode
   icon?: ReactNode
@@ -82,6 +89,16 @@ export function SquareTile({
    * near-copy `widgetStyles.ts` exists to prevent.
    */
   square?: boolean
+  /**
+   * The tile's shell. `recessed` (default) is the tinted fill every tile has
+   * carried since 2026-09-17. `ruled` is the pacing card's — no fill, a
+   * hairline, and a 6px brand rule down the left edge, with the top-left and
+   * bottom-right corners squared.
+   *
+   * A PROP, so the Readiness stub beside it and Testing 2's square are
+   * untouched: they are the same component and must stay the same tile.
+   */
+  surface?: 'recessed' | 'ruled'
 }) {
   return (
     <div
@@ -104,8 +121,33 @@ export function SquareTile({
            No border, for the reason the card above has none: a stroke round a
            flat recessed fill reads as a card that has lost its edge rather than
            as a card with one. */
-        background: widgetCardRecessedStyle.background,
-        borderRadius: 'var(--radius-lg)',
+        /* TWO SURFACES — 2026-09-21, the direct ask on the pacing card:
+           "remove background, add light stroke, add 6px left line on container,
+           adjust so top left of container radius is 0, and bottom right of
+           container radius is 0".
+
+           `ruled` READS `widgetCardRuledStyle`, which owns the white fill, the
+           hairline, the 6px rule and the squared corners — and owns them
+           because the Jump Back In card takes the same treatment. Two cards
+           restating one shell is the drift `widgetStyles.ts` exists to stop,
+           and its note carries the reasoning (including why the borders are
+           four longhands and not `border` + `borderLeft`).
+
+           A prop rather than a second component, for the reason `square` is
+           one: the arrangements differ in exactly these declarations. */
+        ...(surface === 'ruled'
+          ? {
+              background: widgetCardRuledStyle.background,
+              borderTop: widgetCardRuledStyle.borderTop,
+              borderRight: widgetCardRuledStyle.borderRight,
+              borderBottom: widgetCardRuledStyle.borderBottom,
+              borderLeft: widgetCardRuledStyle.borderLeft,
+              borderRadius: widgetCardRuledStyle.borderRadius,
+            }
+          : {
+              background: widgetCardRecessedStyle.background,
+              borderRadius: 'var(--radius-lg)',
+            }),
         padding: 16,
         display: 'flex',
         flexDirection: 'column',

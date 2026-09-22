@@ -1585,9 +1585,13 @@ export function LearnerFocusedBand({
                  there is nothing to state. It falls through to the lo-fi stub,
                  which is the honest empty rather than a guessed one.
 
-                 `onStart` is the band's OWN launcher, the same call the Resume
-                 CTA makes, so two buttons on one page cannot open different
-                 things. */
+                 NO `onStart` as of the 2026-09-21 redesign. The card carried a
+                 "Start studying" button wired to this band's own launcher; the
+                 Figma replaced both its buttons with one "Customize Study
+                 Plan", which opens the pace sheet. Starting the course is the
+                 Resume CTA's job a few inches up, and it is still there — so
+                 the prop went rather than being kept for a button nothing
+                 renders. */
               <StudyPaceTile
                 layout="card"
                 today={FIXTURE_TODAY}
@@ -1595,7 +1599,6 @@ export function LearnerFocusedBand({
                 accessExpiresAt={resume.expiresAt}
                 courseTitle={resume.title}
                 examDate={examDate}
-                onStart={() => launcher.open(resume.id)}
               />
             ) : (
               <SquareTile

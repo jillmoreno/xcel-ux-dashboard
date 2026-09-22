@@ -14,6 +14,8 @@ import {
   STRAIN_MINS,
   EXAM_BUFFER_DAYS,
   STYLE_FACTORS,
+  WEEKDAY_LABELS,
+  defaultWeekdays,
   type PacePreset,
   type PresetId,
   type StudyStyle,
@@ -54,7 +56,10 @@ export type PaceChoices = {
   plan: { weekdays: number[]; startTime: string } | null
 }
 
-const WEEKDAYS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']
+/* MOVED to `@/lib/studyPace` on 2026-09-21 — the `presets` card draws the
+   same strip, and two surfaces deriving "which nights" apart from each other is
+   how one comes to shade Mon–Thu while the plan behind it builds Mon–Wed + Fri. */
+const WEEKDAYS = WEEKDAY_LABELS
 /** The time of day the calendar proposes before the learner changes it. An
  *  evening default assumes a working adult, which is who buys this course. */
 const DEFAULT_START_TIME = '19:00'
@@ -637,9 +642,6 @@ function SessionPreview({
 
 /* ─── small helpers ──────────────────────────────────────────────────── */
 
-function defaultWeekdays(n: number): number[] {
-  return Array.from({ length: Math.max(1, Math.min(7, n)) }, (_, i) => i)
-}
 
 function longDate(iso: string): string {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso)
