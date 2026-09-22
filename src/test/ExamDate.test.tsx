@@ -94,19 +94,37 @@ describe('examDateRenewal', () => {
 })
 
 describe('the entered date moves the whole page, not just the card', () => {
-  /** The course header band's Target Exam Date, as rendered. */
-  const targetDate = () =>
-    /([A-Z][a-z]+ \d{1,2}, \d{4})/.exec(
-      screen.getByText(/Target exam date/i).parentElement?.parentElement?.textContent ?? '',
+  /** The course header band's countdown, as rendered. */
+  const countdown = () =>
+    /(\d+ (?:days?|wks?|yrs?))/.exec(
+      screen.getByText(/To complete course/i).parentElement?.textContent ?? '',
     )?.[1]
 
-  it('re-points the Target Exam Date', () => {
+  it('re-points the page, which no longer prints the date itself', () => {
+    /* REWRITTEN 2026-09-21. This asserted the header's Target Exam Date cell,
+       which the direct ask ("remove") took off the row — so the page prints the
+       entered date nowhere, and the claim moves to what the date still DRIVES.
+
+       That is not a weaker feature, but it is a quieter one, and it is the half
+       worth pinning now: the Schedule State Exam card promises "enter the exam
+       date and we will use it to help you prep", and with no date echoed back
+       the countdown IS the echo. If that stopped moving, the field would be the
+       control-that-does-nothing this whole feature exists not to be. */
     writeExamDate('2026-06-30')
     renderShell()
-    expect(document.body.textContent).toMatch(/June 30, 2026/)
-    // …and the persona's own date is gone, rather than both being on screen.
-    expect(document.body.textContent).not.toMatch(/December 15, 2026/)
-    expect(targetDate()).toBe('June 30, 2026')
+    expect(countdown()).toBe(timeRemainingText(50 / 7))
+    /* THE HEADER prints no date now — neither the entered one nor the
+       persona's, which is the cell's absence rather than a fallback. Scoped to
+       the header rather than the page, because the SCHEDULE STATE EXAM CARD
+       still echoes the date back to the person who just typed it, and that is
+       a confirmation on the control that asked for it rather than a second
+       copy of the removed cell. */
+    const header = screen.getByText(/To complete course/i).closest('div')!
+      .parentElement!.parentElement!
+    expect(header.textContent).not.toMatch(/June 30, 2026|December 15, 2026/)
+    expect(
+      document.querySelector('section[aria-label="Schedule State Exam"]')?.textContent,
+    ).toMatch(/June 30, 2026/)
   })
 
   it('re-points the countdown AND the pacing rate together', () => {
@@ -186,10 +204,16 @@ describe('the entered date moves the whole page, not just the card', () => {
   })
 
   it('falls back to the persona with nothing stored', () => {
-    // The demo is unchanged until someone types a date, and clearing restores
-    // it — which is what makes a per-browser override safe to ship.
+    /* The demo is unchanged until someone types a date, and clearing restores
+       it — which is what makes a per-browser override safe to ship.
+
+       Checked through the COUNTDOWN as of 2026-09-21, for the reason the test
+       above records: the header no longer prints the date, so the persona's
+       own renewal shows as its week count. 27 days is December 15 measured
+       from the fixture clock — the same fact this always asserted, in the only
+       shape the page still states it. */
     renderShell()
-    expect(targetDate()).toBe('December 15, 2026')
+    expect(countdown()).toBe(timeRemainingText(27 / 7))
   })
 })
 

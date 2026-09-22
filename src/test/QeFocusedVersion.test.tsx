@@ -1590,7 +1590,16 @@ describe('the course header band flag', () => {
        So the value/caption are found by their declarations rather than by
        index: `spans[0]` is the dot on two of the three groups. */
     const cluster = row.children[0] as HTMLElement
-    return (Array.from(cluster.children) as HTMLElement[]).map((cell) => {
+    /* THE PAIRS LIVE IN THEIR OWN CONTAINER as of 2026-09-21: the cluster is
+       [figure, pairs], so that the percentage can sit to the LEFT of the group
+       at the narrow width instead of stacking on top of it. Found as the
+       cluster's element child that is a `div` — the figure is a `span` — rather
+       than by index, so a later addition to the row does not silently shift
+       which element these assertions read. */
+    const pairs = (Array.from(cluster.children) as HTMLElement[]).find(
+      (el) => el.tagName === 'DIV',
+    )!
+    return (Array.from(pairs.children) as HTMLElement[]).map((cell) => {
       const spans = Array.from(cell.querySelectorAll<HTMLElement>('span'))
       const value = spans.find((el) => el.style.fontWeight === '700')!
       const caption = spans.find((el) => el.style.textTransform === 'uppercase')!
@@ -1609,24 +1618,48 @@ describe('the course header band flag', () => {
     )
   }
 
-  it('prints target date, time remaining and the count under the bar', () => {
-    // Added 2026-09-16 — the count was alone here. Order matches the KPI cells
-    // below, so the eye reads one sequence twice rather than two shuffles of
-    // one set, and "Completed" stays last, i.e. flush with the bar's end.
+  it('prints the figure, time remaining and the count under the bar', () => {
+    /* The count was alone here until 2026-09-16, when the target date and the
+       countdown joined it. THE DATE LEFT AGAIN on 2026-09-21 (the direct ask,
+       "remove") and the PERCENTAGE arrived in its place at the head of the row,
+       moving down off the title's line.
+
+       So the row is now the figure plus two pairs, and "Completed" is still
+       last — flush with the bar's end, which is what tied it to the bar. */
     seedHeader('band')
     const { container } = renderShell(QE_URL)
     const stats = headerStatRow(container)
     expect(stats.map((s) => s.caption)).toEqual([
-      'Target exam date',
       // RENAMED 2026-09-21 from "Left to complete" — the value beside it is
       // already a remaining figure, so "left" repeated the number; the caption
-      // names the object instead, like its two neighbours.
+      // names the object instead, like its neighbour.
       'To complete course',
       'Completed',
     ])
-    expect(stats[0].value).toBe('December 15, 2026')
-    expect(stats[1].value).toBe('27 days')
-    expect(stats[2].value).toBe('26 of 42 lessons')
+    expect(stats[0].value).toBe('27 days')
+    expect(stats[1].value).toBe('26 of 42 lessons')
+    // …and the exam DATE is gone from the row rather than merely reordered.
+    expect(stats.map((s) => s.caption)).not.toContain('Target exam date')
+    expect(container.textContent).not.toMatch(/December 15, 2026/)
+  })
+
+  it('leads the row with the percentage, at its own size', () => {
+    /* 2026-09-21, the direct ask: "move the 62% to the left of the 27 days and
+       lessons completed components". It is the FIRST child of the cluster and
+       it is NOT a pair — no caption, and 32px against the pairs' 14 — because
+       it is the figure the bar draws and they are its context. Sized to match
+       them it would read as a third equal cell and the bar would lose its
+       number. */
+    seedHeader('band')
+    const { container } = renderShell(QE_URL)
+    const row = headerStatRow(container)[0].row
+    const figure = (row.children[0] as HTMLElement).children[0] as HTMLElement
+    expect(figure.textContent).toBe('62%')
+    expect(figure.querySelector<HTMLElement>('span')?.style.fontSize).toBe('32px')
+    expect(figure.querySelector<HTMLElement>('span[style*="uppercase"]')).toBeNull()
+    // …and it is no longer on the title's line, rather than being in both.
+    const heading = container.querySelector<HTMLElement>('h2')!
+    expect(heading.parentElement?.textContent).not.toMatch(/62/)
   })
 
   it('gives all three pairs ONE style, and the values the HEADING face', () => {
@@ -1688,8 +1721,16 @@ describe('the course header band flag', () => {
        which both measures 30 and lets a wrap take the dot with its pair. */
     const row = headerStatRow(container)[0].row
     const cluster = row.children[0] as HTMLElement
-    expect(cluster.style.gap).toBe('15px')
-    expect((cluster.children[1] as HTMLElement).style.gap).toBe('15px')
+    /* READ OFF THE PAIRS CONTAINER AND A PAIR, not off `cluster.children[1]`.
+       That index used to be the second stat group and is now the pairs
+       container, which also carries a 15 — so the assertion kept passing while
+       measuring a different thing. The 30 this is about is the container's gap
+       BEFORE a group's dot plus the group's own gap after it. */
+    const pairsBox = (Array.from(cluster.children) as HTMLElement[]).find(
+      (el) => el.tagName === 'DIV',
+    )!
+    expect(pairsBox.style.gap).toBe('15px')
+    expect((pairsBox.children[0] as HTMLElement).style.gap).toBe('15px')
     // …and the value still sits tight to its own caption.
     const pair = cluster.querySelector<HTMLElement>('span[style*="gap: 6px"]')!
     expect(pair).toBeTruthy()
@@ -1705,17 +1746,22 @@ describe('the course header band flag', () => {
      * through the helper, since an override only matters if the surface
      * honours it.
      *
-     * The FORMATS differ on purpose — spelled out in the page header, the
-     * persona's slash date in the narrow cell — so this matches on the date
-     * itself rather than on the string.
+     * ⚠ THE DATE HALF WENT WITH THE CELL on 2026-09-21 (the direct ask,
+     * "remove"). The header prints no date now, so the agreement is asserted
+     * through the COUNTDOWN — which is derived from the same `resolveRenewal`
+     * pair and is therefore the same claim: one resolver, two surfaces, no
+     * chance to disagree. The navy half below still prints the date and is
+     * still checked for it.
+     *
+     * Worth stating rather than silently narrowing: this test got WEAKER. It
+     * used to catch a header and a block disagreeing about a date, and there is
+     * now only one surface printing one, so there is nothing left to compare.
      */
     seedHeader('band')
     const { container } = renderShell(QE_URL)
     const stats = headerStatRow(container)
     const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!
-    expect(stats[0].value).toBe(longDate(persona.renewal!.deadline))
-    expect(new Date(stats[0].value!).getTime()).toBe(new Date('12/15/2026').getTime())
-    expect(stats[1].value).toBe(timeRemainingText(persona.renewal!.weeksLeft))
+    expect(stats[0].value).toBe(timeRemainingText(persona.renewal!.weeksLeft))
     /*
      * The BLOCK's own Target Date / Time Remaining cells were the second copy
      * this asserted against, and they left on 2026-09-17 with the KPI row —
@@ -2912,6 +2958,14 @@ describe('Time Remaining is a day countdown, with no At Risk treatment', () => {
      * That is recorded rather than asserted as correct: the fix, if it is
      * wrong, is to default the flag to `band`, and this test is what tells
      * whoever does that it was a known consequence rather than a coincidence.
+     *
+     * ⚠ THE DATE IS NOW GONE FROM HOME ENTIRELY, on this version, in both
+     * states. The header band's Target Exam Date cell was removed on 2026-09-21
+     * (the direct ask, "remove"), so turning the band ON no longer brings the
+     * date back — only the countdown. Asserted in both directions, because
+     * "the date is absent" is exactly what this test used to prove was
+     * CONDITIONAL, and a reader who did not know it had been removed would read
+     * the absence as the flag being off.
      */
     const bare = renderShell(QE_URL)
     expect(bare.container.textContent).not.toMatch(/27 days/)
@@ -2920,7 +2974,7 @@ describe('Time Remaining is a day countdown, with no At Risk treatment', () => {
     seedCourseHeader()
     const withBand = renderShell(QE_URL)
     expect(withBand.container.textContent).toMatch(/27 days/)
-    expect(withBand.container.textContent).toMatch(/December 15, 2026/)
+    expect(withBand.container.textContent).not.toMatch(/December 15, 2026/)
   })
 
   it('never renders the fraction the fixture actually carries', () => {

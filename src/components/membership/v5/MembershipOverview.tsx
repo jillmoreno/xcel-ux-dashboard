@@ -13,7 +13,7 @@ import { tierBadgeIcon } from '@/components/ui/membershipTierBadge'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { getCourseImage } from '@/utils/courseImage'
 import { ProgressBar } from '@/components/ui/ProgressBar'
-import { displayedProgressPct, resolveRenewal, timeRemainingText, longDate } from '@/components/learning/learningPathsHomeUtil'
+import { displayedProgressPct, resolveRenewal, timeRemainingText } from '@/components/learning/learningPathsHomeUtil'
 import { Sheet } from '@/components/ui/Sheet'
 import { GetLicensedStepPanel } from '@/components/learning/GetLicensedStepPanel'
 import { GET_LICENSED_STEPS } from '@/data/nyProducerRequirements'
@@ -529,16 +529,33 @@ export function MembershipOverview({
 
      `resolveRenewal` is the SAME pair `LearnerFocusedBand` prints in its KPI
      cells directly below, so the header and the block cannot disagree about a
-     date the reader can see twice without scrolling.
+     figure the reader can see twice without scrolling.
 
-     The date is spelled out (`longDate`) rather than left as the persona's
-     "12/15/2026". A page header states a date once and has the room; the KPI
-     cell below is a third of a narrow column and does not. Note the band's own
-     FALLBACK deadline is already long-form, so this is that component's native
-     shape rather than a new one invented here. */
+     ⚠ The note that stood here about spelling the date out (`longDate`, "a page
+     header states a date once and has the room") went with the date cell on
+     2026-09-21 — it described a cell this row no longer has. What survives of
+     it is the rule it rested on, which still governs the countdown: the header
+     and the block read ONE resolved renewal. */
   const headerRenewal = resolveRenewal(personaRenewal)
   const headerStats: { value: string; caption: string }[] = [
-    { value: longDate(headerRenewal.deadline), caption: 'Target exam date' },
+    /* THE TARGET EXAM DATE CELL IS GONE — 2026-09-21, the direct ask
+       ("remove"), pointed at the "December 15, 2026 · TARGET EXAM DATE" pair.
+       It joined the row on 2026-09-16 with the countdown, when the lesson count
+       was alone here.
+
+       WHAT SURVIVES IT, because the removal looks larger than it is: the
+       countdown beside it derives from the same `headerRenewal`, so a date
+       entered on the Schedule State Exam card still moves this row and still
+       moves the Study Pace tile. The DATE itself is still echoed back on that
+       card ("Your exam date · June 30, 2026 · Edit") — the confirmation lives
+       on the control that asked for it, which is where it was always most
+       useful. What went is the second, passive copy up here.
+
+       `longDate` left this file's imports with the cell — its only caller
+       here. `StudyJourneyWidget` still uses it for that echo.
+
+       `resolveRenewal` is unchanged and still feeds the countdown, so nothing
+       downstream of the date resolution moved with the cell. */
     /* "To complete course", not "Left to complete" (2026-09-21, the direct
        ask). The value beside it is already a remaining figure — "27 days" — so
        "left" was the caption repeating what the number says, and naming the
@@ -554,6 +571,37 @@ export function MembershipOverview({
       ? [{ value: `${headerDone} of ${headerTotal} ${headerUnit}`, caption: 'Completed' }]
       : []),
   ]
+  /* THE FIGURE, as its own element — 2026-09-21, the direct ask: "move the 62%
+     to the left of the 27 days and lessons completed components". It now LEADS
+     THE STAT ROW instead of sitting on the title's line.
+
+     ITS FOURTH POSITION, and the moves are worth reading in order because each
+     one chased the same thing: a small inline label beside the title → its own
+     right-hand column, so it read as the page's headline number → back inline,
+     leading the title, so the number and the course were one statement → here.
+     What this move buys that the last one did not: the figure now sits with the
+     OTHER figures, and the row below the bar reads as the complete set of what
+     the bar summarises rather than as two of three facts with the headline one
+     a line above.
+
+     IT KEEPS ITS SIZE. 32px against the row's 13px values is deliberate — it is
+     the figure the bar draws, and the two cells beside it are its context. Sized
+     to match them it would read as a third equal cell and the bar would be left
+     without a number.
+
+     A const rather than JSX in place, because the row it joins renders twice
+     (the wide band and the narrow left column) and a second copy is how the two
+     arrangements start disagreeing. */
+  const headerPercent = (
+    <span style={{ display: 'flex', alignItems: 'baseline', gap: 2, flexShrink: 0 }}>
+      <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 32, lineHeight: 1, color: 'var(--color-text-primary)' }}>
+        {headerPct}
+      </span>
+      <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 17, lineHeight: 1, color: 'var(--color-text-primary)' }}>
+        %
+      </span>
+    </span>
+  )
   const courseHeaderBand = courseHeader && activeProgressPath && (
     <Wrap style={{ padding: 0, width: '100%' }}>
       {/* 39, not 18 — 2026-09-17, the direct ask that the divider sit an equal
@@ -727,21 +775,17 @@ export function MembershipOverview({
           >
             Course Progress
           </p>
-          {/* THE FIGURE LEADS THE TITLE, with the meta line's own dot between
-              them. It was a separate right-hand column; inline, the number and
-              the course it belongs to are one statement read left to right,
-              which is what moving it was for.
+          {/* THE TITLE IS ALONE ON THIS LINE as of 2026-09-21 — the figure
+              moved down to lead the stat row (see `headerPercent`), and its
+              separator dot went with it rather than being left to dangle after
+              the heading.
 
-              `align-items: baseline` so the 32px figure and the 28px heading
-              sit on one line rather than being centred against each other, and
-              the title still WRAPS — it flexes and floors at 0, so a long name
-              takes a second line and the figure holds its place. */}
+              The flex row is KEPT with the title as its only child, for the
+              reason the percentage column's own wrapper was kept when that
+              moved: unwinding it re-indents the block for no behavioural
+              change, and `minWidth: 0` is still what lets a long course name
+              wrap instead of overflowing. */}
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, minWidth: 0 }}>
-            {/* TITLE FIRST, FIGURE RIGHT — 2026-09-17, the direct ask.
-                The figure led the title for a day. Reading left to right the
-                course is the subject and the percentage is what is said about
-                it, which is the order this way round; leading with the number
-                made the heading read as a caption on it. */}
             <h2
               style={{
                 margin: 0,
@@ -755,28 +799,6 @@ export function MembershipOverview({
             >
               {activeProgressPath.title}
             </h2>
-            <span
-              aria-hidden
-              style={{
-                flexShrink: 0,
-                alignSelf: 'center',
-                width: 3,
-                height: 3,
-                borderRadius: '50%',
-                background: 'var(--color-neutral-300)',
-              }}
-            />
-            {/* `flexShrink: 0` so the TITLE gives way and the figure keeps its
-                size — the reverse would squeeze "62%" before a heading that has
-                a whole line to wrap into. */}
-            <span style={{ display: 'flex', alignItems: 'baseline', gap: 2, flexShrink: 0 }}>
-              <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 32, lineHeight: 1, color: 'var(--color-text-primary)' }}>
-                {headerPct}
-              </span>
-              <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 17, lineHeight: 1, color: 'var(--color-text-primary)' }}>
-                %
-              </span>
-            </span>
           </div>
         </div>
         {/* THE RIGHT-HAND PERCENTAGE COLUMN IS GONE (2026-09-17). It held the
@@ -936,18 +958,57 @@ export function MembershipOverview({
               <div
                 style={{
                   display: 'flex',
+                  /* THE FIGURE SITS TO THE LEFT OF THE PAIRS IN BOTH
+                     ARRANGEMENTS — 2026-09-21, the direct ask ("move the 62% to
+                     the left of the 27 days and lessons completed
+                     components"). This outer row is what makes that true at the
+                     NARROW width, where the pairs stack: figure on the left,
+                     the two pairs as a column beside it. Stacking the figure on
+                     top of them instead — which is what a single flat column
+                     did — puts it ABOVE, not left.
+
+                     `center` when narrow so the 32px figure sits against the
+                     middle of the two-line column rather than on the first
+                     line's baseline; `baseline` when wide, where everything is
+                     on one line and the figure's baseline is the row's. */
+                  alignItems: narrowHeader ? 'center' : 'baseline',
+                  gap: 15,
+                  minWidth: 0,
+                }}
+              >
+              {/* THE FIGURE LEADS THE ROW. It is a sibling of the pairs rather
+                  than a `headerStats` entry, because a stat entry is a
+                  value-over-caption pair at 14px and this is the bar's own
+                  headline number at 32 — folding it into the list would either
+                  flatten it to a third equal cell or make the list's one shape
+                  two.
+
+                  It carries no dot of its own; the pair after it brings one,
+                  which is the rule that already stops a wrapped line ending on
+                  a dangling separator. */}
+              {headerPercent}
+              {/* THE PAIRS, in their own container so the figure can sit beside
+                  the GROUP of them rather than joining their flow. */}
+              <div
+                style={{
+                  display: 'flex',
                   ...(narrowHeader
                     ? { flexDirection: 'column', alignItems: 'flex-start', gap: 6 }
                     : { flexWrap: 'wrap', alignItems: 'center', gap: 15 }),
                   minWidth: 0,
                 }}
               >
-              {headerStats.map((stat, i) => (
+              {headerStats.map((stat) => (
                 <span
                   key={stat.caption}
                   style={{ display: 'flex', alignItems: 'baseline', gap: 15 }}
                 >
-                  {i > 0 && !narrowHeader && (
+                  {/* `i >= 0` in effect — every pair now has something before
+                      it, since the figure leads the row. Written against the
+                      figure rather than as a bare `!narrowHeader` so that a row
+                      rendered without it would go back to skipping the first
+                      dot. */}
+                  {!narrowHeader && (
                     <span
                       aria-hidden
                       style={{
@@ -982,6 +1043,15 @@ export function MembershipOverview({
                       fontSize: 14,
                       fontWeight: 700,
                       color: 'var(--color-text-primary)',
+                      /* A VALUE NEVER BREAKS MID-PHRASE — 2026-09-21, with the
+                         percentage moving into this row. The figure takes ~70px
+                         off the left at the narrow width, and the first thing
+                         the pairs did with the loss was wrap "27 days" to "27 /
+                         days" and "26 of 42 lessons" across three lines: a
+                         number severed from its unit, which reads as two facts.
+                         The CAPTION may still wrap — it is a label, and
+                         "TO COMPLETE / COURSE" loses nothing. */
+                      whiteSpace: 'nowrap',
                     }}
                   >
                     {stat.value}
@@ -1000,6 +1070,7 @@ export function MembershipOverview({
                   </span>
                 </span>
               ))}
+              </div>
               </div>
               {/* VIEW DETAILS — opens the sheet on its PROGRESS half, which is
                   the Course Breakdown: the gauge, the per-category bars and the
