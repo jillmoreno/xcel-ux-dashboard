@@ -776,6 +776,46 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     livePreviewUrl: `${PROTOTYPE_BASE}/xcel-lms-exam-spec.html`,
     brands: ['xcel'],
   },
+  {
+    /*
+     * PACE PRESETS — a row, as of 2026-09-22, and this REVERSES a decision.
+     *
+     * `docs/prototypes.md` records this page as "the sixth page with no row",
+     * masthead-linked from its siblings rather than tiled, on the rule that a
+     * second row into one body of work is what got `recommended-card-ab-demo`
+     * and the four testing tiles archived.
+     *
+     * What changed: the pacing work is no longer a companion to the Study Plan
+     * exploration — it is the thing two dashboard versions (Testing, Testing 2)
+     * are now built around, and the argument for those versions lives on this
+     * page. A reviewer sent to compare them needs it, and "open a sibling
+     * prototype and find the masthead link" is not a route anyone takes.
+     *
+     * The rule it bends is still right for the pages that remain row-less
+     * (`xcel-lms-brief-vs-existing`, `xcel-finserv-build-plan`,
+     * `xcel-study-plan`, `xcel-nav-collapse`, `xcel-study-pace-readiness`) —
+     * they elaborate a row that exists. This one no longer does.
+     *
+     * NO `devStatus`, like every other Exploration row: `sectionOf` checks it
+     * BEFORE `category`, so adding one silently moves this out of Exploration
+     * and into Design. `UxDashboard.smoke.test.tsx` asserts the inverse.
+     */
+    id: 'xcel-pace-presets',
+    title: 'XCEL LMS — Pace presets from the access window',
+    accent: 'blue',
+    icon: 'calendar',
+    blurb:
+      'Three finish dates the learner already owns — Relaxed (the whole access window), Recommended (that minus a buffer) and Focused (the storefront’s own “less than two weeks”) — with the pace derived from whichever they pick rather than asked for. Four UI treatments of the same model, a card whose only control is Adjust, and a 3×3 grid across 12-, 20- and 42-lesson courses showing that “Relaxed” only earns the word on the short ones.',
+    tileBlurb:
+      'Relaxed / Recommended / Focused as three dates inside the 30-day access window — four UI treatments, three course sizes.',
+    kind: 'explore',
+    kindLabel: 'Exploration',
+    status: 'ready',
+    category: 'exploration',
+    externalUrl: `${PROTOTYPE_BASE}/xcel-pace-presets.html`,
+    livePreviewUrl: `${PROTOTYPE_BASE}/xcel-pace-presets.html`,
+    brands: ['xcel'],
+  },
 ]
 
 export function prototypeFeatureById(id: string): PrototypeFeature | undefined {

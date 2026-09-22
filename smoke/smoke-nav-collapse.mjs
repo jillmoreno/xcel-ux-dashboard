@@ -288,7 +288,13 @@ const run = async () => {
 
   /* ---------- it is not a PROTOTYPE_FEATURES row ---------- */
   const feats = fs.readFileSync(new URL('../src/data/prototypeFeatures.ts', import.meta.url), 'utf8');
-  ck('deliberately NOT a sixth-plus tile row', !/xcel-nav-collapse/.test(feats));
+  /* Matches a ROW, not a mention. It was a bare `/xcel-nav-collapse/` substring
+     scan of the whole file and gave a FALSE POSITIVE on 2026-09-22, when a
+     comment on the newly-tiled `xcel-pace-presets` row listed this page among
+     the ones that stay row-less — the test failed because the file talked about
+     it, which is the opposite of what it means to assert. An id in the data is
+     the thing being ruled out. */
+  ck('deliberately NOT a tile row', !/id:\s*'xcel-nav-collapse'/.test(feats));
 
   /* ---------- report ---------- */
   const fail = log.filter(l => l.startsWith('FAIL'));

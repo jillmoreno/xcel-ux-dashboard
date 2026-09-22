@@ -123,6 +123,9 @@ describe('section routing (sectionOf)', () => {
     'xcel-admin': 'exploration',
     'xcel-admin-tool': 'exploration',
     'xcel-exam-spec': 'exploration',
+    // Added 2026-09-22 — see the row's own note in `prototypeFeatures.ts` for
+    // why this page stopped being masthead-only and took a tile.
+    'xcel-pace-presets': 'exploration',
   }
 
   it('accounts for every authored feature', () => {
