@@ -796,6 +796,68 @@
   --color-accent-text: var(--color-primary-200);
 }
 
+/* ATLAS/COMPASS GLOBAL NAVIGATION — the left rail for that dashboard version
+   (`AtlasCompassSideNav`), Figma node 49:3365, 2026-09-22.
+
+   Two of the design's colours are not on any XCEL ramp, so they are declared
+   here as their own tokens rather than approximated with a nearby stop:
+   `#004d7c` (the active row's ink and left bar — a bluer, deeper navy than
+   San Juan) and `#dfe3eb` (the active fill AND the rail's right rule).
+   The caption is San Juan itself (`--color-primary-500`) and the idle ink is
+   `--color-neutral-700`, both as the design names them.
+
+   Measured, light: active ink 7.0:1 on the active fill · idle ink 6.2:1 on
+   white · caption 7.6:1 on white. The rule is 1.3:1 against white — a
+   boundary, not information, and the same weight every divider here has.
+
+   DARK VALUES ARE NOT FROM THE DESIGN, which is light only. They keep the
+   same structure (a filled active row with a bar, a muted caption) on the dark
+   card: active ink `primary-200` on a translucent `primary-300` wash, caption
+   `primary-300`, idle ink `--color-text-secondary`. Re-measure if the design
+   ships a dark frame. */
+[data-brand='xcel'] {
+  --color-atlas-nav-surface: var(--color-surface-card);
+  --color-atlas-nav-rule: #dfe3eb;
+  --color-atlas-nav-caption: var(--color-primary-500);
+  --color-atlas-nav-ink: var(--color-neutral-700);
+  --color-atlas-nav-active-ink: #004d7c;
+  --color-atlas-nav-active-fill: #dfe3eb;
+  --color-atlas-nav-hover: var(--color-neutral-100);
+}
+[data-theme='dark'][data-brand='xcel'] {
+  --color-atlas-nav-rule: var(--color-border-subtle);
+  --color-atlas-nav-caption: var(--color-primary-300);
+  --color-atlas-nav-ink: var(--color-text-secondary);
+  --color-atlas-nav-active-ink: var(--color-primary-200);
+  --color-atlas-nav-active-fill: rgb(157 179 194 / 0.16);
+}
+
+/* The row owns its colour, background and border in EVERY state — none of
+   them is inline — so `:hover` and `[aria-current]` need no `!important` (the
+   `.cre-uxlinks-title` trap). Idle is Medium 500; active is SemiBold 600. */
+.cre-atlas-nav-row {
+  padding: 4px 8px 4px 16px;
+  background: transparent;
+  border: none;
+  color: var(--color-atlas-nav-ink);
+  font-weight: 500;
+  transition: background-color 120ms ease;
+}
+.cre-atlas-nav-row:hover {
+  background: var(--color-atlas-nav-hover);
+}
+.cre-atlas-nav-row:focus-visible {
+  outline: 2px solid var(--color-atlas-nav-active-ink);
+  outline-offset: -2px;
+}
+.cre-atlas-nav-row[aria-current='page'] {
+  background: var(--color-atlas-nav-active-fill);
+  border-left: 3px solid var(--color-atlas-nav-active-ink);
+  padding-left: 13px;
+  color: var(--color-atlas-nav-active-ink);
+  font-weight: 600;
+}
+
 /* The prototype bar is constant "prototype chrome" — it stays the dark charcoal
    strip with white text/icons in BOTH themes. The dark theme inverts the
    neutral ramp (neutral-800 → light gray, neutral-50 → navy), which would flip

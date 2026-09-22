@@ -11,6 +11,7 @@ export type DashboardVersionId =
   | 'discoverability-marketing-focused'
   | 'discoverability-badged'
   | 'discoverability-qe-focused'
+  | 'discoverability-atlas-compass-nav'
 
 /**
  * The rebrand overview's LAYOUT, resolved from `?version=` by `PlatformShell`
@@ -162,6 +163,32 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED: DashboardVersion = {
     'Built for a pre-licensing candidate working towards a booked exam. The top band slims to path identity + status + Resume beside a Study Journey — the curriculum as an ordered sequence of chapters and milestone exams. Below it the Learning Path detail sheet\u2019s whole Progress tab renders inline: completion gauge, category bars, Target Date / Time Remaining / Completed tiles, and a course list per requirement category. Recommended for You is dropped \u2014 this version is not a discovery dashboard.',
 }
 
+// "Atlas/Compass Global Navigation" — 2026-09-22. A new version for exploring
+// ONE navigation across the two surfaces the learner moves between: Atlas (this
+// dashboard — the Study Journey, readiness, the programme) and Compass (the
+// course content the launcher opens). Today those are joined only by the
+// launcher's "Back to …" link and the rail auto-collapsing.
+//
+// It STARTS as QE Focused, deliberately: `PlatformShell` resolves it to the
+// `qe-focused` layout, so every QE rule (the qualifying journey, no Recommended
+// band, no learning-path doors) holds, and the only thing this version is
+// about is the navigation. Changing the nav is then an edit keyed on
+// `isAtlasCompassNavVersion`, not a fork of the page body.
+export const DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV: DashboardVersion = {
+  id: 'discoverability-atlas-compass-nav',
+  label: 'Atlas/Compass Global Navigation',
+  createdAt: '2026-09-22',
+  modifiedAt: '2026-09-22',
+  description:
+    'The QE Focused dashboard, as the starting point for one global navigation spanning Atlas (the dashboard, Study Journey and readiness) and Compass (the course content). The page body is QE Focused unchanged; this version is where the navigation is explored.',
+}
+
+/** True for the Atlas/Compass Global Navigation version. One helper so the
+ *  shell and the demo bar cannot disagree about which version is on. */
+export function isAtlasCompassNavVersion(versionId: string | null | undefined): boolean {
+  return versionId === DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV.id
+}
+
 // "Go to Legacy 2.0 Dashboard" is NOT a version here — because the classic
 // dashboard loads outside this shell (a full navigation to `/dashboard`, the
 // "Legacy Dashboard 2.0" tile link), it renders as a plain jump-off CTA below
@@ -173,6 +200,7 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED: DashboardVersion = {
 // DISCOVERABILITY_DASHBOARD_VERSION_BADGED here to restore it to the picker.)
 export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
   DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
+  DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV,
   DISCOVERABILITY_DASHBOARD_VERSION_MARKETING_FOCUSED,
   DISCOVERABILITY_DASHBOARD_VERSION_LEARNER_FOCUSED,
 ]

@@ -11,6 +11,7 @@ import { PlatformShell } from '@/components/layout/PlatformShell'
 import {
   DISCOVERABILITY_DASHBOARD_VERSIONS,
   DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
+  DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV,
   defaultDiscoverabilityVersionFor,
 } from '@/data/dashboardVersions'
 import { journeyStopsFor, metaWords, statusWords } from '@/components/learning/studyJourneyUtil'
@@ -153,6 +154,70 @@ describe('QE Focused resolves a QUALIFYING journey, never Continuing Ed', () => 
       screen.getAllByText(/New York Life and Health Pre-licensing/i).length,
     ).toBeGreaterThan(0)
     expect(screen.queryByText(/Florida Life & Health CE/i)).toBeNull()
+  })
+})
+
+describe('Atlas/Compass Global Navigation starts as QE Focused', () => {
+  it('sits second in the picker, under the default', () => {
+    expect(DISCOVERABILITY_DASHBOARD_VERSIONS[1]).toBe(
+      DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV,
+    )
+    expect(DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV.label).toBe(
+      'Atlas/Compass Global Navigation',
+    )
+  })
+
+  it('renders the QE Focused body — the qualifying journey, not CE', () => {
+    // Resolved to the `qe-focused` layout on purpose: the version is about the
+    // navigation, so a missed QE rule here would be an accidental difference.
+    renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav')
+    expect(
+      screen.getAllByText(/New York Life and Health Pre-licensing/i).length,
+    ).toBeGreaterThan(0)
+    expect(screen.queryByText(/Florida Life & Health CE/i)).toBeNull()
+  })
+
+  it('draws the Figma rail (49:3365) — the whole rail, in order AND in its groups', () => {
+    // An order check alone is blind to grouping (the Resources/Rubi lesson),
+    // so each group is read through its own `aria-labelledby` list.
+    renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav')
+    const nav = screen.getByRole('navigation', { name: 'Primary' })
+    const names = (list: HTMLElement) =>
+      within(list).getAllByRole('button').map((b) => b.textContent)
+    expect(names(within(nav).getByRole('list', { name: 'My Learning' }))).toEqual([
+      'Home',
+      'Study Plan',
+      'Certificates & Transcripts',
+      'Resources',
+    ])
+    expect(names(within(nav).getByRole('list', { name: 'Support' }))).toEqual(['Get Help'])
+    expect(within(nav).getAllByRole('button')).toHaveLength(5)
+    // No collapse control — the design has none, so the shell pins it open.
+    expect(within(nav).queryByRole('button', { name: /collapse|expand/i })).toBeNull()
+    expect(within(nav).getByRole('button', { name: 'Home' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+  })
+
+  it('leaves every other version on the shared rail', () => {
+    renderShell('/dashboard-rebrand?version=discoverability-qe-focused')
+    const nav = screen.getByRole('navigation', { name: 'Primary' })
+    expect(within(nav).queryByText('Certificates & Transcripts')).toBeNull()
+    expect(nav.querySelector('.cre-atlas-nav-row')).toBeNull()
+  })
+
+  it('keeps the row states in the class, with nothing inline to beat them', () => {
+    // An inline padding / colour / background would win over
+    // `[aria-current='page']` and the active row would look idle.
+    renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav')
+    const home = screen.getByRole('button', { name: 'Home' })
+    expect(home.style.padding).toBe('')
+    expect(home.style.paddingLeft).toBe('')
+    expect(home.style.color).toBe('')
+    expect(home.style.background).toBe('')
+    const css = readFileSync('src/styles/tokens.css', 'utf8')
+    expect(css).toMatch(/\.cre-atlas-nav-row\[aria-current='page'\]\s*\{[^}]*border-left: 3px solid/)
   })
 })
 
@@ -2672,7 +2737,10 @@ describe('the in-shell course launcher is a lo-fi placeholder', () => {
        is doing its original job again. Verified in the browser: 12px above the
        first item in both rail widths. */
     const shell = readFileSync('src/components/layout/PlatformShell.tsx', 'utf8')
-    expect(shell).toMatch(/padding: `12px \$\{railCollapsed \? RAIL_GUTTER_COLLAPSED : RAIL_GUTTER\}px 40px`/)
+    // Both rails keep it: the shared one, and the Atlas/Compass rail (whose
+    // design is 12 / 20 / 24).
+    expect(shell).toMatch(/`12px \$\{railCollapsed \? RAIL_GUTTER_COLLAPSED : RAIL_GUTTER\}px 40px`/)
+    expect(shell).toMatch(/`12px \$\{RAIL_GUTTER\}px 24px`/)
   })
 
   it('no longer offsets the toggle against the rail gutter', () => {

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useLocation, useSearchParams } from 'react-router-dom'
-import { defaultDiscoverabilityVersionFor } from '@/data/dashboardVersions'
+import { defaultDiscoverabilityVersionFor, isAtlasCompassNavVersion } from '@/data/dashboardVersions'
 import { UserSlash, Share2, BrowserWindow, Check, ChevronDown } from '@/icons'
 import { ActionMenu } from '@/components/ui/ActionMenu'
 import { Toast } from '@/components/ui/Toast'
@@ -258,9 +258,11 @@ export function DemoControlsBar({
   // CE row here would be a dropdown entry that changes nothing when clicked —
   // the defect the flag audit spent a pass removing. The two qualifying
   // journeys (Qualifying Ed / Exam Prep) still switch.
+  // Atlas/Compass Global Navigation renders the QE Focused body, so the same
+  // rule applies to it.
+  const activeVersion = searchParams.get('version') ?? defaultDiscoverabilityVersionFor(brand)
   const qeFocusedVersion =
-    (searchParams.get('version') ?? defaultDiscoverabilityVersionFor(brand)) ===
-    'discoverability-qe-focused'
+    activeVersion === 'discoverability-qe-focused' || isAtlasCompassNavVersion(activeVersion)
   const educationOptions = educationTypesFor(brand).filter(
     (o) => !qeFocusedVersion || o.type !== 'ce',
   )

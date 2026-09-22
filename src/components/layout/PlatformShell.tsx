@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useAccount, supportsMembership, type Brand } from '@/context/AccountContext'
 import {
   defaultDiscoverabilityVersionFor,
+  isAtlasCompassNavVersion,
   type DashboardLayout,
 } from '@/data/dashboardVersions'
 import { SectionContent } from '@/components/membership/v7/MembershipV7'
@@ -70,6 +71,7 @@ import {
   type PlatformNavVariant,
   type PlatformSection,
 } from './PlatformSideNav'
+import { AtlasCompassSideNav } from './AtlasCompassSideNav'
 
 /**
  * Elite-only platform shell (the `platform-left-nav` flag). Renders on
@@ -244,10 +246,19 @@ function PlatformShellBody() {
     scope: string | null
     collapsed: boolean
   } | null>(null)
+  // Atlas/Compass Global Navigation swaps in its own rail (Figma 49:3365),
+  // which has no collapse control — so it never collapses, not even for the
+  // Compass launcher. A collapsed column with no way to re-open it would strand
+  // the learner in a 76px strip.
+  const atlasNav = isAtlasCompassNavVersion(
+    params.get('version') ?? defaultDiscoverabilityVersionFor(brand),
+  )
   const railCollapsed =
-    collapseOverride && collapseOverride.scope === launcher.courseId
-      ? collapseOverride.collapsed
-      : launcherOpen
+    atlasNav
+      ? false
+      : collapseOverride && collapseOverride.scope === launcher.courseId
+        ? collapseOverride.collapsed
+        : launcherOpen
   const railActive: PlatformSection = launcherOpen ? 'profile' : active
   const launcherBackLabel = SECTION_TITLES[active]
   // Selecting a rail item closes any open launcher + writes the section to the
@@ -299,7 +310,9 @@ function PlatformShellBody() {
   // the "Default" pill and the page can't disagree).
   const versionParam = params.get('version') ?? defaultDiscoverabilityVersionFor(brand)
   const dashboardLayout: DashboardLayout =
-    versionParam === 'discoverability-qe-focused'
+    // Atlas/Compass Global Navigation shares QE Focused's page body — it
+    // differs in navigation only (see `isAtlasCompassNavVersion`).
+    versionParam === 'discoverability-qe-focused' || isAtlasCompassNavVersion(versionParam)
       ? 'qe-focused'
       : versionParam === 'discoverability-learner-focused'
         ? 'learner-focused'
@@ -492,9 +505,13 @@ function PlatformShellBody() {
         /* The rail narrows to 76 while the launcher is open, and the 144px it
            gives up goes to the CONTENT column — the sum stays 1440 either way,
            for the reason the note above gives. */
-        gridTemplateColumns: railCollapsed
-          ? '76px minmax(0, 1364px) 1fr'
-          : '220px minmax(0, 1220px) 1fr',
+        /* The Atlas rail is 260 per its design; the content column gives up
+           the 40 so the sum stays 1440. */
+        gridTemplateColumns: atlasNav
+          ? '260px minmax(0, 1180px) 1fr'
+          : railCollapsed
+            ? '76px minmax(0, 1364px) 1fr'
+            : '220px minmax(0, 1220px) 1fr',
         minHeight: 'calc(100vh - 64px)',
       }}
     >
@@ -503,11 +520,14 @@ function PlatformShellBody() {
           tester sees the full nav yet can't click into any other section. */}
       <div
         style={{
-          background: 'var(--color-nav-surface)',
+          // Atlas: a white rail with a 1px rule (Figma 49:3365).
+          background: atlasNav ? 'var(--color-atlas-nav-surface)' : 'var(--color-nav-surface)',
           // Rail right border — transparent in every mode (the rail blends
           // into the content pane); kept as a token hook in case a separator
           // is wanted later.
-          borderRight: '1px solid var(--color-nav-border)',
+          borderRight: atlasNav
+            ? '1px solid var(--color-atlas-nav-rule)'
+            : '1px solid var(--color-nav-border)',
         }}
       >
         {/* Pin the rail: sticky within its column so it never scrolls away with
@@ -540,7 +560,10 @@ function PlatformShellBody() {
                Home any more, 0 put the first row hard against the header's
                bottom edge — so the padding is doing its original job again
                rather than compounding a gap that has gone. */
-            padding: `12px ${railCollapsed ? RAIL_GUTTER_COLLAPSED : RAIL_GUTTER}px 40px`,
+            // Atlas: the design's 12 / 20 / 24.
+            padding: atlasNav
+              ? `12px ${RAIL_GUTTER}px 24px`
+              : `12px ${railCollapsed ? RAIL_GUTTER_COLLAPSED : RAIL_GUTTER}px 40px`,
             boxSizing: 'border-box',
             // A subtle cue that the nav is locked, without looking broken.
             opacity: focus ? 0.85 : undefined,
@@ -551,15 +574,19 @@ function PlatformShellBody() {
               already blanks the rail's active state, so the two cannot get out
               of step: a rail that highlighted nothing AND stayed full width
               would be the worst of both. */}
-          <PlatformSideNav
-            active={railActive}
-            onSelect={handleSelect}
-            variant={navVariant}
-            collapsed={railCollapsed}
-            onToggleCollapse={() =>
-              setCollapseOverride({ scope: launcher.courseId, collapsed: !railCollapsed })
-            }
-          />
+          {atlasNav ? (
+            <AtlasCompassSideNav active={railActive} onSelect={handleSelect} />
+          ) : (
+            <PlatformSideNav
+              active={railActive}
+              onSelect={handleSelect}
+              variant={navVariant}
+              collapsed={railCollapsed}
+              onToggleCollapse={() =>
+                setCollapseOverride({ scope: launcher.courseId, collapsed: !railCollapsed })
+              }
+            />
+          )}
         </div>
       </div>
       {/* Content column carries no padding of its own — every section is
