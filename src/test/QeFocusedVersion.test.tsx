@@ -1685,6 +1685,41 @@ describe('the course header band flag', () => {
     expect(container.textContent).not.toMatch(/December 15, 2026/)
   })
 
+  it('hides the percentage AND its divider at 0%', () => {
+    /* 2026-09-21, the direct ask. A 32px "0%" leading the row is the page's
+       headline number saying nothing, next to a bar drawing nothing — it reads
+       as a figure that failed to load rather than as a course not begun.
+
+       BOTH, from ONE condition. The rule exists to separate the figure from the
+       pairs, so without a figure it is a divider at the start of a row with
+       nothing on its left. Asserted together because two conditions is how they
+       would come apart. */
+    window.localStorage.setItem(
+      'cgp.featureFlags',
+      JSON.stringify({
+        'dashboard-course-header': { enabled: true, variant: 'band' },
+        'dashboard-progress-state': { enabled: true, variant: 'not-started' },
+      }),
+    )
+    const { container } = renderShell(QE_URL)
+    const row = headerStatRow(container)[0].row
+    const cluster = row.children[0] as HTMLElement
+    expect(
+      Array.from(cluster.querySelectorAll<HTMLElement>('span')).some(
+        (el) => el.style.fontSize === '32px',
+      ),
+    ).toBe(false)
+    const pairsBox = (Array.from(cluster.children) as HTMLElement[]).find(
+      (el) => el.tagName === 'DIV',
+    )!
+    expect(pairsBox.style.borderLeft).toBe('')
+    expect(pairsBox.style.paddingLeft).toBe('')
+    // …and the cells that CAN be stated still are, which is what makes hiding
+    // the figure an editorial call rather than the row failing to render.
+    expect(row.textContent).toMatch(/To complete course/i)
+    expect(row.textContent).toMatch(/of \d+ lessons/i)
+  })
+
   it('leads the row with the percentage, at its own size', () => {
     /* 2026-09-21, the direct ask: "move the 62% to the left of the 27 days and
        lessons completed components". It is the FIRST child of the cluster and
@@ -1822,7 +1857,13 @@ describe('the course header band flag', () => {
     const navy = renderShell('/dashboard-rebrand?version=discoverability-learner-focused')
     const band = navy.container.querySelector<HTMLElement>('.cre-learner-focused-band')!
     expect(band.textContent).toMatch(/Target Date|Deadline/i)
-    expect(band.textContent).toMatch(/12\/15\/2026/)
+    /* THE DATE COMES OUT OF THE PERSONA, not a literal. It was `12/15/2026`,
+       authored independently of the countdown beside it — the disagreement that
+       map's own note recorded for weeks. As of 2026-09-21 the deadline is
+       DERIVED from the days left (the 30-day cap forced it), so pinning the old
+       literal would be pinning the bug. Read from the same persona the
+       countdown below is read from, which is the agreement this test is for. */
+    expect(band.textContent).toContain(persona.renewal!.deadline)
     expect(band.textContent).toContain(timeRemainingText(persona.renewal!.weeksLeft))
   })
 
@@ -3074,15 +3115,32 @@ describe('Time Remaining is a day countdown, with no At Risk treatment', () => {
     expect(tile.textContent).not.toMatch(/At Risk/i)
   })
 
-  it('leaves the OTHER demo states alone', () => {
-    // A shared map: moving one row must not move the rest. At Risk in
-    // particular is the state whose 3 weeks is load-bearing.
+  it('keeps EVERY demo state inside the 30-day window', () => {
+    /* REWRITTEN 2026-09-21. It read "leaves the OTHER demo states alone" and
+       pinned Off Track at 12 weeks — the claim being that moving On Track to
+       days must not move the rest of a shared map.
+
+       The direct ask reversed the premise: "demo data for now should never be
+       more than 30 days to complete course". So the invariant is no longer
+       "the others are untouched", it is "no state exceeds the cap" — asserted
+       across the whole picker rather than on the two rows that used to be
+       interesting, because a cap is only a cap if nothing escapes it.
+
+       At Risk's 21 days survives unchanged, which is worth keeping visible: it
+       was the load-bearing one, and it was already inside the window. */
+    for (const { variant } of DASHBOARD_PROGRESS_PICKER) {
+      const p = dashboardProgressPersonaFor('xcel', variant, 'qe')!
+      expect(p.renewal!.weeksLeft * 7, variant).toBeLessThanOrEqual(30)
+      /* …and every one therefore prints a DAY countdown, never weeks. EXPIRED
+         is the exemption and not a gap: its deadline is behind the fixture
+         clock, so the formatter says "Expired" rather than counting anything —
+         which is the state, not a unit. */
+      expect(timeRemainingText(p.renewal!.weeksLeft), variant).toMatch(
+        variant === 'progress-expired' ? /^Expired$/ : /days?$/,
+      )
+    }
     const at = dashboardProgressPersonaFor('xcel', 'progress-at-risk', 'qe')!
-    expect(at.renewal!.weeksLeft).toBe(3)
     expect(timeRemainingText(at.renewal!.weeksLeft)).toBe('21 days')
-    const off = dashboardProgressPersonaFor('xcel', 'progress-off-track', 'qe')!
-    expect(off.renewal!.weeksLeft).toBe(12)
-    expect(timeRemainingText(off.renewal!.weeksLeft)).toBe('12 wks')
   })
 })
 

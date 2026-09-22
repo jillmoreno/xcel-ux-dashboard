@@ -25,6 +25,7 @@ import {
   NY_PRODUCER_HOURS_INVENTED,
 } from '@/data/nyProducerRequirements'
 import { XCEL_NY_PRODUCER_PATH_ID } from '@/data/studyCalendarFixtures'
+import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 import type { Brand } from '@/context/AccountContext'
 import type { CourseCardData } from '@/components/courses/CourseCard'
 import type { LearningPathSummary, LearningPathCategoryBreakdown, LearningPathCategory } from '@/data/learningFixtures'
@@ -435,30 +436,88 @@ const PROGRESS_RATIOS: Record<DashboardProgressVariant, { m: number; e: number }
  * over their `weeksLeft`-based `derivedStatus`. The tint, the pill and the
  * message all follow the override, so On Track stays On Track at 27 days.
  *
- * KNOWN, and not fixed here: `deadline` and `weeksLeft` in this map have never
- * agreed with each other — `progress-at-risk` is 3 weeks against a date four
- * months out, and the anchored fixture "today" (2026-05-11) is 31 weeks from
- * 12/15/2026, not 22. They are two independently authored demo values, which is
- * why 27 days sits beside a target date in December without that being a new
- * defect. Deriving one from the other is the fix; it would move every state's
- * visible date, so it is its own change.
+ * FIXED 2026-09-21, and it was forced rather than chosen. This note used to end
+ * "`deadline` and `weeksLeft` in this map have never agreed with each other …
+ * deriving one from the other is the fix; it would move every state's visible
+ * date, so it is its own change." The direct ask — "demo data for now should
+ * never be more than 30 days to complete course" — IS that change: capping the
+ * countdown while leaving authored deadlines would have put "20 days to
+ * complete" beside a date in 2027 on every state but this one, turning a
+ * documented quirk into a fresh contradiction.
+ *
+ * So the table below authors DAYS and derives the deadline from
+ * `FIXTURE_TODAY`. One number per state, and the pair can no longer disagree.
  */
 const ON_TRACK_DAYS_LEFT = 27
 
-const RENEWAL_BY_VARIANT: Record<DashboardProgressVariant, { deadline: string; weeksLeft: number }> = {
-  'setup-complete-0': { deadline: '08/28/2027', weeksLeft: 110 },
-  'not-started': { deadline: '08/28/2027', weeksLeft: 110 },
-  'progress-on-track': { deadline: '12/15/2026', weeksLeft: ON_TRACK_DAYS_LEFT / 7 },
-  // At Risk = under 30 days left (and the requirement <25% done).
-  'progress-at-risk': { deadline: '08/05/2026', weeksLeft: 3 },
-  // Off Track = still ~3 months of runway, but well behind the pace needed.
-  'progress-off-track': { deadline: '10/20/2026', weeksLeft: 12 },
-  // Expired = deadline already passed, requirement unmet.
-  'progress-expired': { deadline: '06/30/2026', weeksLeft: 0 },
-  'complete-100': { deadline: '07/31/2026', weeksLeft: 40 },
-  'completed-empty': { deadline: '07/31/2026', weeksLeft: 40 },
-  'new-empty': { deadline: '08/28/2027', weeksLeft: 110 },
+/**
+ * The cap the ask sets — "demo data for now should never be more than 30 days
+ * to complete course".
+ *
+ * ⚠ 29, NOT 30, and the off-by-one is the whole point rather than a rounding
+ * habit. `timeRemaining` switches to a day countdown at `days < 30`, so 30 is
+ * the one value inside the cap that still renders as "4 wks" — a state nominally
+ * within the window and visibly outside it. 29 is the largest value that both
+ * satisfies the ask and reads as the ask intends.
+ *
+ * It also sits just inside the pre-licensing access window the course fixture
+ * carries (30 days), so no state counts down longer than the access it is
+ * counting inside — which is the thing that read as wrong to begin with.
+ */
+const MAX_DEMO_DAYS_LEFT = 29
+
+/** `FIXTURE_TODAY` + n days, as the zero-padded `MM/DD/YYYY` every consumer of
+ *  `deadline` already parses. Built from local parts, never from an ISO string
+ *  — the UTC off-by-one `courseExpiry` documents. */
+function deadlineIn(days: number): string {
+  const d = new Date(FIXTURE_TODAY)
+  d.setDate(d.getDate() + days)
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${mm}/${dd}/${d.getFullYear()}`
 }
+
+/** Days left per state — every one at or under {@link MAX_DEMO_DAYS_LEFT}. */
+const DAYS_LEFT_BY_VARIANT: Record<DashboardProgressVariant, number> = {
+  // A fresh start has the whole window.
+  'setup-complete-0': MAX_DEMO_DAYS_LEFT,
+  'not-started': MAX_DEMO_DAYS_LEFT,
+  'progress-on-track': ON_TRACK_DAYS_LEFT,
+  // At Risk = a short runway with the requirement barely begun.
+  'progress-at-risk': 21,
+  // Off Track = less room than On Track and well behind the pace needed. It was
+  // "~3 months of runway"; the 30-day cap makes that story unavailable, so what
+  // distinguishes it now is the SHORTFALL rather than the horizon — which is
+  // what `STATUS_BY_VARIANT`'s override was always carrying anyway.
+  'progress-off-track': 14,
+  // Expired = the deadline is behind us. The STATE comes from the status
+  // override, not from this number; the date is a day in the past so the two
+  // do not contradict each other on the surfaces that print it.
+  'progress-expired': -1,
+  'complete-100': MAX_DEMO_DAYS_LEFT,
+  'completed-empty': MAX_DEMO_DAYS_LEFT,
+  'new-empty': MAX_DEMO_DAYS_LEFT,
+}
+
+const RENEWAL_BY_VARIANT: Record<DashboardProgressVariant, { deadline: string; weeksLeft: number }> =
+  Object.fromEntries(
+    (Object.keys(DAYS_LEFT_BY_VARIANT) as DashboardProgressVariant[]).map((v) => {
+      const days = DAYS_LEFT_BY_VARIANT[v]
+      return [
+        v,
+        {
+          deadline: deadlineIn(days),
+          /* A FRACTION on purpose. `timeRemaining` switches to a day countdown
+             under 30 days and every state is now inside that, so what the
+             surfaces print is days — the weeks value exists because that is the
+             unit the consumers take, not because anything displays weeks. Never
+             below 0: an expired state's date is in the past, but a negative
+             countdown renders "-1 days" beside a required rate of infinity. */
+          weeksLeft: Math.max(0, days) / 7,
+        },
+      ]
+    }),
+  ) as Record<DashboardProgressVariant, { deadline: string; weeksLeft: number }>
 
 const STATUS_BY_VARIANT: Record<DashboardProgressVariant, HomeStatus> = {
   // The onboarding hand-off destination reads as On Track (a fresh, on-schedule

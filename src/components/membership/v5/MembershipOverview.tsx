@@ -591,7 +591,20 @@ export function MembershipOverview({
 
      A const rather than JSX in place, because the row it joins renders twice
      (the wide band and the narrow left column) and a second copy is how the two
-     arrangements start disagreeing. */
+     arrangements start disagreeing.
+
+     ⚠ NOT RENDERED AT ZERO — 2026-09-21, the direct ask ("for 0% (not started)
+     lets hide the percentage and the divider line in the top section"). A 32px
+     "0%" leading the row is the page's headline number saying nothing, beside a
+     bar drawing nothing, and it reads as a figure that failed to load rather
+     than as a course not begun. The two cells beside it still carry the honest
+     facts — the window, and "0 of 42 lessons completed".
+
+     THE DIVIDER GOES WITH IT, necessarily: it exists to separate the figure
+     from the pairs, so with no figure it would be a rule at the start of a row
+     with nothing on its left. One condition drives both, rather than two that
+     could drift apart. */
+  const showHeaderPercent = headerPct > 0
   const headerPercent = (
     <span style={{ display: 'flex', alignItems: 'baseline', gap: 2, flexShrink: 0 }}>
       <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: 32, lineHeight: 1, color: 'var(--color-text-primary)' }}>
@@ -990,7 +1003,7 @@ export function MembershipOverview({
                   It carries no dot of its own; the pair after it brings one,
                   which is the rule that already stops a wrapped line ending on
                   a dangling separator. */}
-              {headerPercent}
+              {showHeaderPercent ? headerPercent : null}
               {/* THE PAIRS, in their own container so the figure can sit beside
                   the GROUP of them rather than joining their flow.
 
@@ -1020,8 +1033,15 @@ export function MembershipOverview({
                     ? { flexDirection: 'column', alignItems: 'flex-start', gap: 6 }
                     : { flexWrap: 'wrap', alignItems: 'center', gap: 15 }),
                   minWidth: 0,
-                  borderLeft: '1px solid var(--color-neutral-300)',
-                  paddingLeft: 15,
+                  /* The rule and the inset it brings belong to the FIGURE — see
+                     `showHeaderPercent`. With nothing on its left there is
+                     nothing to divide, and the pairs start at the row's edge. */
+                  ...(showHeaderPercent
+                    ? {
+                        borderLeft: '1px solid var(--color-neutral-300)',
+                        paddingLeft: 15,
+                      }
+                    : null),
                 }}
               >
               {headerStats.map((stat, i) => (
