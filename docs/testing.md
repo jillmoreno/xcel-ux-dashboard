@@ -44,7 +44,7 @@ those is pinned; the two that shipped wrong once are the badge and (in the
 launch config) the worktree functions path.
 
 The six row-backed prototype pages are covered separately by the jsdom suites
-in [`smoke/`](smoke/) — **`npm run smoke`**, 537 assertions across eight files. They
+in [`smoke/`](smoke/) — **`npm run smoke`**, 617 assertions across nine files. They
 are plain node scripts, not vitest, so `npm test` does NOT run them; run both.
 
 **Three pages have no suite at all**, all of them row-less ones:

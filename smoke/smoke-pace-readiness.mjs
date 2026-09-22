@@ -168,6 +168,47 @@ axis('#dPE', 'Taken'); ck('option C names the practice exam once it is blended i
 axis('#dPE', 'Not taken'); axis('#dQuiz', 'A couple soft');
 ck('option C never mentions completion as an ingredient', !/complet/i.test(T(readC())));
 
+/* ---------- §02 the recommendation ---------- */
+const rec = () => q('#recWidget [data-widget="recommend"]');
+const recMins = () => { const m = T(rec().querySelector('.head')).match(/About (.+?) a night, (\d) nights/); return m && { mins: m[1], nights: +m[2] }; };
+const toMin = t => { const h = t.match(/(\d+)([¼½¾])? hour/), mn = t.match(/(\d+) min/); const F = { '¼': 15, '½': 30, '¾': 45 }; return h ? +h[1] * 60 + (h[2] ? F[h[2]] : 0) : (mn ? +mn[1] : NaN); };
+const dayChip = l => { const b = all('#recDays .mchip').find(x => x.textContent.trim() === l); click(b); };
+
+ck('the recommendation renders set on load, with nothing asked', !!rec() && rec().dataset.adjusted === 'false' &&
+   /Recommended/.test(T(rec().querySelector('.pill'))) && /Adjust/.test(T(rec())));
+ck('day one is derived from the 30-day access, not the exam', /30-day access/.test(T(rec())) && !/exam/i.test(T(rec())));
+ck('the recommendation timeline has no exam tick — access end is not red',
+   !rec().querySelector('.tl .mk.exam') && !!rec().querySelector('.tl .mk.acc'));
+ck('day one finish sits the buffer before access ends', /5 days before/.test(T(rec())));
+ck('the word Relaxed appears nowhere on the widget', !/relaxed/i.test(T(rec())));
+const d1 = recMins();
+ck('the recommended evening is under the strain line', d1 && toMin(d1.mins) <= 120, JSON.stringify(d1));
+ck('Adjust is collapsed by default and toggles', (() => {
+  const b = q('#recAdjBtn'); if (!b || b.getAttribute('aria-expanded') !== 'false' || !q('#recAdj').hidden) return false;
+  click(b); return q('#recAdjBtn').getAttribute('aria-expanded') === 'true' && !q('#recAdj').hidden;
+})());
+ck('Finish-by can never be later than the day before access ends', (() => {
+  const i = q('#recFinish'); return i && i.max === '2026-10-17' && i.value === '2026-10-13';
+})(), q('#recFinish')?.max + ' / ' + q('#recFinish')?.value);
+click(all('#recAdj [data-nights]').find(b => b.dataset.nights === '6'));
+const six = recMins();
+ck('more nights → a shorter evening, and the pill becomes Your pace', six && six.nights === 6 && toMin(six.mins) < toMin(d1.mins) &&
+   /Your pace/.test(T(rec().querySelector('.pill'))) && rec().dataset.adjusted === 'true');
+click(all('#recAdj [data-style]').find(b => b.dataset.style === 'thorough'));
+const thorough = recMins();
+ck('Thorough costs more per night than Average at the same nights', toMin(thorough.mins) > toMin(six.mins), six.mins + ' → ' + thorough.mins);
+(() => { const i = q('#recFinish'); i.value = '2026-11-30'; i.dispatchEvent(new window.Event('change', { bubbles: true })); })();
+ck('a finish date past access is clamped, not accepted', q('#recFinish').value === '2026-10-17' && /1 day before/.test(T(rec())));
+click(q('#recReset'));
+ck('Reset returns to the recommended state', rec().dataset.adjusted === 'false' && recMins().mins === d1.mins && q('#recFinish').value === '2026-10-13');
+dayChip('Day 10');
+const d10 = recMins();
+ck('day 10 re-derives and moves to five nights to stay under strain', d10 && d10.nights === 5 && toMin(d10.mins) <= 120, JSON.stringify(d10));
+dayChip('Day 22');
+ck('day 22 will not fit and routes to an extension, quoting no pace',
+   rec().dataset.state === 'impossible' && /Extend access/.test(T(rec())) && !/^About/.test(T(rec().querySelector('.head'))));
+dayChip('Day 1');
+
 /* the ladders render every row through the real model */
 ck('pace ladder has 8 rows, all rendered', all('#paceLadder .lrow').length === 8 &&
    all('#paceLadder .lrow [data-widget="pace"]').length === 8);
@@ -178,7 +219,7 @@ ck('the Not-enough-time row is reached and routes to a person',
 
 /* constants table derives from RULES */
 const ruleRows = all('#rules tbody tr');
-ck('rules table renders from the RULES array', ruleRows.length === (html.match(/^ \{k:'[A-Z_]+_INVENTED'/gm) || []).length && ruleRows.length >= 10,
+ck('rules table renders from the RULES array', ruleRows.length === (html.match(/^ \{k:'[A-Z_]+'/gm) || []).length && ruleRows.length >= 14,
    ruleRows.length + ' rows');
 ck('every rule names an owner', ruleRows.every(tr => T(tr.children[3]).length > 3));
 

@@ -1109,6 +1109,42 @@ html,
   color: var(--color-primary-300);
 }
 
+/* `.cre-cta-fill` is `.cre-cta-ink`'s FILLED twin — a solid primary button, for
+   the one CTA on a surface that is the thing to do next. Added 2026-09-21 with
+   the `presets` pacing card's "Start studying".
+
+   IT IS NOT `--color-action`, for the reason the block above records: the Brick
+   is a FILL that measures 2.05:1 as TEXT, it was carrying two unrelated jobs,
+   and this version moved every CTA onto the primary ramp. Navy means "do this".
+
+   WHY IT NEEDS THE DARK STOP AT ALL, which is the part that is easy to get
+   wrong. The LABEL is fine in both themes — white on `-500` is 7.64:1 either
+   way — so the button never looks broken in a screenshot and never fails a
+   text-contrast check. What fails is the button's own SHAPE: `-500` on the dark
+   card measures **2.75:1** (measured in the browser, not derived), under the
+   3:1 that WCAG 1.4.11 asks of a control's boundary, so the navy CTA dissolves
+   into the navy card while its text floats on top. That is the exact class of
+   defect this file keeps paying for — renders, passes tsc, passes tests,
+   invisible in one theme.
+
+   So dark INVERTS rather than nudging: the fill goes to `-300` and the ink goes
+   dark with it. Measured in the browser against the recessed widget card —
+   fill/card 6.02:1 light and 9.65:1 dark; label/fill 7.64:1 light and 8.27:1
+   dark. (Measured, because the card is a `color-mix` recess rather than the
+   page white, and reasoning about it from the ramp gives the wrong answer.)
+
+   Consumers set NEITHER `background` NOR `color` inline; an inline value beats
+   the rule while looking correct, which is the `.cre-uxlinks-title` failure and
+   the one this class exists to make unrepeatable. */
+.cre-cta-fill {
+  background: var(--color-primary-500);
+  color: var(--color-text-inverse);
+}
+[data-theme='dark'] .cre-cta-fill {
+  background: var(--color-primary-300);
+  color: var(--color-primary-900);
+}
+
 /* `.cre-eyebrow-ink` is SECTION-LABEL ink — the small tracked uppercase line
    over a block's heading ("Atlas Study Journey", "Learning With Compass — Jump
    Back In"). Navy as of 2026-09-17, the direct ask, up from the neutral greys
@@ -3562,4 +3598,724 @@ a.cre-library-card-title::after {
 .cre-uxnav-about:focus-visible {
   background: var(--ux-bg);
   text-decoration: underline !important;
+}
+
+/* THE COURSE HEADER IN THE BAND'S LEFT COLUMN (Testing, 2026-09-21).
+
+   The header is ~633px there against ~1040 full-width, and it holds a 130px
+   square cover, a 28px course name and the percentage beside it. That fits
+   while the column is wide. It stops fitting as the shell narrows: the cover
+   and the figure are both fixed, so every pixel comes off the TITLE — measured
+   at a 900px viewport the title column was 85px and the name set one word per
+   line.
+
+   Below 1100px the cover goes ABOVE the text instead of beside it, which hands
+   the title the whole column. It stays a 130px square rather than stretching to
+   the column width: it is course art, and a full-bleed strip would re-crop the
+   photograph to make room for a layout problem.
+
+   A CLASS because inline `CSSProperties` cannot carry a media query — the same
+   reason `.cre-alert-action` and `.cre-uxlinks-*` exist. Scoped to the narrow
+   header, so the full-width band on every other version is untouched. */
+.cre-course-header-narrow {
+  flex-direction: row;
+}
+/* THE ART RUNS THE FULL HEIGHT OF THE HEADER here — 2026-09-21, the direct ask
+   that it "stretch vertically to align with the bottom of the divider line that
+   separates the 62%". Stretched, its foot lands on the stat row's own rule and
+   the two make one line for the eye to stop on, which is the same reason the
+   wide band bottom-aligns its cover.
+
+   `height: auto` is the half that does the work: the element carries no inline
+   height in this arrangement, so `align-self: stretch` has something to
+   stretch. `object-fit: cover` still does the cropping, so a taller box
+   re-crops the photograph rather than distorting it.
+
+   IN CSS AND NOT INLINE because it has to come BACK OFF below 1100px, where the
+   cover stacks ABOVE the text — stretched there it would run the full column
+   WIDTH, which is the full-bleed strip the note above rejects. An inline
+   `align-self` would win over the media query while looking correct in the
+   wide case, which is the trap `.cre-cta-ink` and `.cre-uxlinks-title` both
+   record. */
+.cre-course-header-narrow > img {
+  align-self: stretch;
+  height: auto;
+}
+@media (max-width: 1100px) {
+  .cre-course-header-narrow {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .cre-course-header-narrow > img {
+    align-self: flex-start;
+    height: 130px;
+  }
+}
+
+/* ============================================================================
+   THE STUDY PACE SHEET — `cre-pace-sheet__*`
+   ============================================================================
+   Added 2026-09-21, rebuilding `StudyPaceSheet.tsx` off 35 inline style objects.
+   They are here rather than in a sibling file because this project has exactly
+   ONE stylesheet and no component-CSS convention to follow; inventing one for a
+   single component is a bigger decision than this fix.
+
+   THE TYPE FLOOR IS `--text-body-sm` (14px), and it is the reason most of these
+   classes exist. The sheet ran a 9px chip, 10px group labels, a 10.5px day
+   toggle and 11.5px hints — six sizes, five of them below the smallest token in
+   the scale. There is NO token under 14px and this does not add one: a caption
+   step would be a licence to go back under the floor, and the ask was explicit
+   that copy gets cut before type does.
+
+   SPACING IS LOCAL, on `--pace-*` custom properties declared on the root class.
+   The repo has no `--space-*` scale to collapse onto — adding one is a
+   repo-wide change and out of this fix's scope — so the sheet's own 22/13/11/
+   9/7/6/5/4 collapse onto four named steps here, scoped so nothing else can
+   inherit them.
+   ========================================================================= */
+.cre-pace-sheet {
+  --pace-gap-group: 20px;
+  --pace-gap-row: 12px;
+  --pace-gap-tight: 8px;
+  --pace-pad-x: 20px;
+  /* 44 is the minimum comfortable touch target, and the ask names it for the
+     day toggles, Clear and Reset. Declared once so the three cannot drift. */
+  --pace-hit: 44px;
+}
+
+/* THE THREE FLEX CHILDREN. `Sheet`'s panel is already
+   `display:flex; flex-direction:column; overflow:hidden`, which is what makes
+   this possible from the inside without touching that component (out of scope,
+   ticketed separately). */
+.cre-pace-sheet__header {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--pace-gap-row);
+  padding: 18px var(--pace-pad-x) 14px;
+  border-bottom: 1px solid var(--color-border-subtle);
+}
+/* ⚠ `min-height: 0` IS LOAD-BEARING. A flex child's default `min-height: auto`
+   refuses to shrink below its content, so without it this body grows to its
+   natural height, pushes the footer past the panel's edge, and `overflow:hidden`
+   on the panel clips the Save button clean off — the bug this rebuild exists to
+   fix. The `overflow-y` here does nothing on its own until that line is
+   present. */
+.cre-pace-sheet__body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: var(--pace-gap-group);
+  /* Horizontal padding on each of the three children rather than on a shared
+     wrapper, so the scrollbar rides the panel edge instead of floating inside
+     a gutter. */
+  padding: 18px var(--pace-pad-x);
+}
+.cre-pace-sheet__footer {
+  flex: none;
+  display: flex;
+  align-items: center;
+  /* The TIGHT step, not the row step: at 460px the three labels plus two
+     12px gaps measured 419px against 420px of usable width and wrapped by a
+     pixel, costing 44px of height in the one panel where height is the whole
+     problem. 8px buys the margin back. */
+  gap: var(--pace-gap-tight);
+  padding: 14px var(--pace-pad-x) 18px;
+  border-top: 1px solid var(--color-border-subtle);
+}
+/* NOWRAP ON THE LABELS, and it is not cosmetic at this width. The panel is
+   460px and the footer holds three controls; left to wrap, "Save pace & build
+   my plan" broke across two lines inside its own button and "Reset to
+   recommended" broke after "to". A control whose label wraps mid-phrase reads
+   as two controls. They hold one line each and the ROW wraps instead if it ever
+   has to — a second row of whole labels beats one row of broken ones. */
+.cre-pace-sheet__footer { flex-wrap: wrap; }
+.cre-pace-sheet__footer > * { white-space: nowrap; }
+
+/* ── type ────────────────────────────────────────────────────────────── */
+.cre-pace-sheet__group-label {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+.cre-pace-sheet__hint {
+  margin: 0;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  color: var(--color-text-secondary);
+}
+.cre-pace-sheet__strong {
+  color: var(--color-text-primary);
+  font-weight: 600;
+}
+.cre-pace-sheet__title {
+  margin: 0;
+  font-family: var(--font-heading);
+  font-size: var(--text-h4-semibold);
+  line-height: var(--text-h4-semibold--line-height);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+/* ── shared focus ring ───────────────────────────────────────────────────
+   One rule for every control in the sheet. It is `:focus-visible`, so it shows
+   for keyboard and never for a mouse click, and it is OFFSET so it reads
+   against a control that already has a 1px border of its own. This could not
+   exist while the styles were inline — `CSSProperties` carries no pseudo-class,
+   which is why the sheet had no visible focus at all. */
+.cre-pace-sheet :focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
+  border-radius: var(--radius-sm);
+}
+[data-theme='dark'] .cre-pace-sheet :focus-visible {
+  outline-color: var(--color-primary-300);
+}
+
+/* ── group + rows ────────────────────────────────────────────────────── */
+.cre-pace-sheet__group {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pace-gap-row);
+}
+.cre-pace-sheet__aims {
+  display: flex;
+  flex-direction: column;
+  gap: var(--pace-gap-tight);
+}
+.cre-pace-sheet__aim {
+  display: grid;
+  grid-template-columns: 16px minmax(0, 1fr) auto;
+  gap: var(--pace-gap-row);
+  align-items: center;
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-card);
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+/* SELECTED: the ground is a tint in light and would be a near-black wash in
+   dark, where `--color-primary-100` sits on the same end of the ramp as the
+   panel. The BORDER carries the state in both themes and the tint is a hint —
+   the same split the pacing card's week strip had to make. */
+.cre-pace-sheet__aim[aria-checked='true'] {
+  border-color: var(--color-primary-500);
+  box-shadow: inset 0 0 0 1px var(--color-primary-500);
+  background: var(--color-primary-100);
+}
+[data-theme='dark'] .cre-pace-sheet__aim[aria-checked='true'] {
+  background: color-mix(in srgb, var(--color-primary-500) 22%, transparent);
+}
+/* `aria-disabled`, NOT `disabled` — the row stays focusable so it can explain
+   itself via `aria-describedby`. A `disabled` button is skipped by the tab
+   order and by most screen-reader element lists, which is the opposite of what
+   a row saying "this won't fit" needs to do. */
+.cre-pace-sheet__aim[aria-disabled='true'] {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.cre-pace-sheet__radio {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid var(--color-border-strong);
+}
+.cre-pace-sheet__aim[aria-checked='true'] .cre-pace-sheet__radio {
+  border-color: var(--color-primary-500);
+  /* The inner ring reads the PANEL's own surface, so the dot's hole matches
+     whatever the sheet is sitting on in either theme. */
+  box-shadow:
+    inset 0 0 0 2px var(--color-surface-card),
+    inset 0 0 0 8px var(--color-primary-500);
+}
+.cre-pace-sheet__aim-name {
+  display: flex;
+  align-items: center;
+  gap: var(--pace-gap-tight);
+  flex-wrap: wrap;
+  font-family: var(--font-heading);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+.cre-pace-sheet__aim-evening {
+  display: block;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  font-weight: 700;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-primary);
+}
+.cre-pace-sheet__aim-evening[data-state='heavy'] { color: var(--color-warning-800); }
+.cre-pace-sheet__aim-evening[data-state='no'] { color: var(--color-error-700); }
+.cre-pace-sheet__chip {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: 1;
+  font-weight: 700;
+  color: var(--color-primary-700);
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-primary-300);
+  border-radius: var(--radius-sm);
+  padding: 3px 6px;
+}
+[data-theme='dark'] .cre-pace-sheet__chip {
+  color: var(--color-primary-200);
+  background: transparent;
+}
+
+/* ── segments (days a week) ──────────────────────────────────────────── */
+.cre-pace-sheet__segments {
+  display: flex;
+  gap: var(--pace-gap-tight);
+}
+.cre-pace-sheet__segment {
+  flex: 1;
+  min-height: var(--pace-hit);
+  padding: 0;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-card);
+  color: var(--color-text-secondary);
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: 600;
+  cursor: pointer;
+}
+.cre-pace-sheet__segment[aria-checked='true'] {
+  border-color: var(--color-primary-500);
+  background: var(--color-primary-500);
+  color: var(--color-text-inverse);
+}
+
+/* ── day toggles ─────────────────────────────────────────────────────── */
+.cre-pace-sheet__days {
+  display: flex;
+  gap: 6px;
+}
+.cre-pace-sheet__day {
+  flex: 1;
+  min-width: 0;
+  min-height: var(--pace-hit);
+  padding: 0;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-card);
+  color: var(--color-text-tertiary);
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: 700;
+  cursor: pointer;
+}
+.cre-pace-sheet__day[aria-pressed='true'] {
+  border-color: var(--color-primary-400);
+  background: var(--color-primary-100);
+  color: var(--color-primary-700);
+}
+[data-theme='dark'] .cre-pace-sheet__day[aria-pressed='true'] {
+  background: color-mix(in srgb, var(--color-primary-500) 22%, transparent);
+  color: var(--color-primary-200);
+}
+
+/* ── switch ──────────────────────────────────────────────────────────── */
+.cre-pace-sheet__switch-row {
+  display: flex;
+  gap: var(--pace-gap-row);
+  align-items: flex-start;
+  padding: 14px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-card);
+}
+.cre-pace-sheet__switch-row[data-on='true'] {
+  border-color: var(--color-primary-400);
+  background: var(--color-primary-100);
+}
+[data-theme='dark'] .cre-pace-sheet__switch-row[data-on='true'] {
+  background: color-mix(in srgb, var(--color-primary-500) 22%, transparent);
+}
+.cre-pace-sheet__switch {
+  flex: none;
+  width: 40px;
+  height: 24px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--color-border-strong);
+  background: var(--color-surface-sunken);
+  position: relative;
+  cursor: pointer;
+  margin-top: 1px;
+}
+.cre-pace-sheet__switch[aria-checked='true'] {
+  border-color: var(--color-primary-500);
+  background: var(--color-primary-500);
+}
+.cre-pace-sheet__switch-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  /* The knob reads the panel surface, so it stays visible against the track in
+     both themes — a hard white knob is invisible on the dark panel's own white
+     highlights. The shadow is the card token, not a hand-rolled rgba. */
+  background: var(--color-surface-card);
+  box-shadow: var(--shadow-card);
+  transition: left 120ms;
+}
+.cre-pace-sheet__switch[aria-checked='true'] .cre-pace-sheet__switch-knob { left: 18px; }
+.cre-pace-sheet__switch-title {
+  display: block;
+  font-family: var(--font-heading);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+
+/* ── native inputs, matched to the segments ──────────────────────────── */
+.cre-pace-sheet__input {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: 600;
+  min-height: var(--pace-hit);
+  padding: 0 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-card);
+  color: var(--color-text-primary);
+  max-width: 190px;
+  /* THE CHEAP FIX FOR THE PICKER GLYPH. A `<input type="date">`'s calendar icon
+     is drawn by the browser from the element's own colour scheme, so on the
+     dark panel it rendered a near-black icon on a near-black field. Declaring
+     the scheme hands the UA the right palette for the icon AND the popup. */
+  color-scheme: light dark;
+}
+.cre-pace-sheet__field-row {
+  display: flex;
+  gap: var(--pace-gap-row);
+  align-items: flex-end;
+  flex-wrap: wrap;
+}
+.cre-pace-sheet__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+.cre-pace-sheet__field-label {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  font-weight: 600;
+  color: var(--color-text-secondary);
+}
+
+/* ── text buttons (Clear · Reset) ────────────────────────────────────── */
+.cre-pace-sheet__text-button {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--pace-hit);
+  padding: 0 4px;
+  background: transparent;
+  border: 0;
+  color: var(--color-text-secondary);
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.cre-pace-sheet__reset { margin-left: auto; }
+
+/* ── binding note ────────────────────────────────────────────────────── */
+.cre-pace-sheet__binding[data-binding='exam'] {
+  border-left: 3px solid var(--color-warning-500);
+  padding-left: 12px;
+  color: var(--color-warning-800);
+}
+.cre-pace-sheet__binding[data-binding='both'],
+.cre-pace-sheet__binding[data-binding='access']:not(:first-child) {
+  border-left: 3px solid var(--color-primary-300);
+  padding-left: 12px;
+}
+
+/* ── session preview ─────────────────────────────────────────────────── */
+.cre-pace-sheet__sessions {
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  overflow: hidden;
+}
+.cre-pace-sheet__session {
+  display: flex;
+  align-items: baseline;
+  gap: var(--pace-gap-row);
+  padding: 10px 12px;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+}
+.cre-pace-sheet__session + .cre-pace-sheet__session,
+.cre-pace-sheet__sessions-foot {
+  border-top: 1px solid var(--color-border-subtle);
+}
+.cre-pace-sheet__session-date {
+  font-weight: 700;
+  min-width: 96px;
+  color: var(--color-text-primary);
+}
+.cre-pace-sheet__session-time {
+  color: var(--color-text-secondary);
+  font-variant-numeric: tabular-nums;
+}
+.cre-pace-sheet__sessions-foot {
+  padding: 10px 12px;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  color: var(--color-text-secondary);
+}
+
+/* ── THE ADJUST-YOUR-PACE FLOW — 2026-09-22 ──────────────────────────────
+   The sheet became two levels: a chooser of study STYLES, then one screen per
+   style. Ported from `adjust-your-pace-prototype.html`, whose argument is that
+   a learner does not think in "nights a week" — they think "I have Tuesday
+   evenings and most of Sunday", and the finish date is the answer.
+
+   Everything here reuses the `--pace-*` sizing vars the sheet already sets, so
+   the new screens cannot drift from the groups they sit beside. */
+.cre-pace-sheet__option {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  text-align: left;
+  width: 100%;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  background: var(--color-surface-card);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  min-height: var(--pace-hit);
+}
+.cre-pace-sheet__option:hover {
+  border-color: var(--color-primary-300);
+}
+/* The escape hatch reads as one — a dashed edge says "not one of the shaped
+   answers" without needing a word to say it. */
+.cre-pace-sheet__option[data-shape='custom'] {
+  border-style: dashed;
+}
+.cre-pace-sheet__option-title {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  font-weight: 700;
+  display: block;
+}
+.cre-pace-sheet__option-body {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  color: var(--color-text-secondary);
+  display: block;
+}
+.cre-pace-sheet__recommend {
+  border: 2px solid var(--color-primary-500);
+  background: var(--color-primary-100);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+[data-theme='dark'] .cre-pace-sheet__recommend {
+  background: color-mix(in srgb, var(--color-primary-500) 18%, transparent);
+  border-color: var(--color-primary-300);
+}
+/* ── the outcome box: one pace, one verdict ──────────────────────────── */
+.cre-pace-sheet__outcome {
+  background: var(--color-surface-parchment);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cre-pace-sheet__outcome-figure {
+  font-family: var(--font-heading-serif);
+  font-size: var(--text-h4-semibold);
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+.cre-pace-sheet__badge {
+  align-self: flex-start;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+}
+/* TONE CARRIES A WORD TOO, never colour alone — the message inside each badge
+   says what happened, so the fill is reinforcement rather than the signal. */
+.cre-pace-sheet__badge[data-tone='good'] {
+  background: var(--color-success-100);
+  color: var(--color-success-700);
+}
+.cre-pace-sheet__badge[data-tone='warn'] {
+  background: var(--color-warning-100);
+  color: var(--color-warning-700);
+}
+.cre-pace-sheet__badge[data-tone='bad'] {
+  background: var(--color-error-100);
+  color: var(--color-error-700);
+}
+.cre-pace-sheet__advice {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  background: var(--color-warning-100);
+  color: var(--color-warning-700);
+}
+/* ── the day-hours steppers ──────────────────────────────────────────── */
+.cre-pace-sheet__step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--pace-hit);
+}
+.cre-pace-sheet__step-label {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  min-width: 0;
+}
+.cre-pace-sheet__step-value {
+  width: 64px;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.cre-pace-sheet__step-value[data-off='true'] {
+  color: var(--color-text-tertiary);
+  font-weight: 500;
+}
+.cre-pace-sheet__stepper {
+  width: var(--pace-hit);
+  height: var(--pace-hit);
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-card);
+  color: var(--color-primary-700);
+  font-size: var(--text-body);
+  font-weight: 700;
+  cursor: pointer;
+}
+.cre-pace-sheet__stepper:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+[data-theme='dark'] .cre-pace-sheet__stepper {
+  color: var(--color-primary-200);
+}
+/* ── the month strip ─────────────────────────────────────────────────── */
+.cre-pace-sheet__cal {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+.cre-pace-sheet__cal-head {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: 700;
+  color: var(--color-text-tertiary);
+  text-align: center;
+}
+.cre-pace-sheet__cal-cell {
+  min-height: 30px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-card);
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cre-pace-sheet__cal-cell[data-out='true'] {
+  opacity: 0.35;
+}
+.cre-pace-sheet__cal-cell[data-study='true'] {
+  background: var(--color-primary-100);
+  border-color: var(--color-primary-300);
+  color: var(--color-primary-700);
+}
+.cre-pace-sheet__cal-cell[data-finish='true'] {
+  background: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+  color: var(--color-text-inverse);
+  font-weight: 700;
+}
+/* THE DEADLINE AS AN EDGE, not a fill: it can coincide with a study day or with
+   the finish, and a fill would have to win or lose against them. */
+.cre-pace-sheet__cal-cell[data-end='true'] {
+  box-shadow: inset 0 -3px 0 var(--color-error-500);
+}
+.cre-pace-sheet__legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  color: var(--color-text-secondary);
+}
+.cre-pace-sheet__legend > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cre-pace-sheet__swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+/* ── the back link + the summary the dashboard will show ─────────────── */
+.cre-pace-sheet__back {
+  align-self: flex-start;
+}
+.cre-pace-sheet__summary {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  color: var(--color-text-secondary);
+  width: 100%;
+}
+.cre-pace-sheet__summary b {
+  color: var(--color-text-primary);
 }

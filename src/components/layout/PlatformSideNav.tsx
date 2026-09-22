@@ -181,10 +181,25 @@ export function PlatformSideNav({
   variant = 'full',
   collapsed = false,
   onToggleCollapse,
+  hiddenSections,
 }: {
   active: PlatformSection
   onSelect: (id: PlatformSection) => void
   variant?: PlatformNavVariant
+  /**
+   * Extra rail rows to drop, on top of whatever `NAV_SECTION_FLAGS` already
+   * hides. For a DASHBOARD VERSION that wants a shorter rail than the demo
+   * baseline — `PlatformShell` owns which, because "what this version shows" is
+   * a shell decision and the rail should not know a dashboard version exists.
+   *
+   * It hides the ROW ONLY. Every section still resolves, so `?section=readiness`
+   * still opens Readiness — the same rule `NAV_SECTION_FLAGS` follows, and what
+   * makes a trimmed rail an editorial act rather than a feature cut.
+   *
+   * A group whose items ALL go drops out with its caption, by the existing
+   * rule below — which is the behaviour this wants, not a special case.
+   */
+  hiddenSections?: readonly PlatformSection[]
   /**
    * ICON-OVER-SHORT-TEXT state, ~76px wide — 2026-09-17, the direct ask: the
    * rail auto-collapses when the Compass course launcher opens.
@@ -412,7 +427,13 @@ export function PlatformSideNav({
       { id: 'support', caption: 'Support', items: supportItems },
     ] as { id: string; caption: string; items: RailItem[] }[]
   )
-    .map((g) => ({ ...g, items: g.items.filter((i) => visible(i.id)) }))
+    .map((g) => ({
+      ...g,
+      // `hiddenSections` is applied ALONGSIDE the flag check, not instead of
+      // it: a version's trim and the demo baseline are different decisions by
+      // different people, and either one hiding a row is reason enough.
+      items: g.items.filter((i) => visible(i.id) && !hiddenSections?.includes(i.id)),
+    }))
     .filter((g) => g.items.length > 0)
 
   // ── Rail scroll / overflow ──────────────────────────────────────────────

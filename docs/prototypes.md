@@ -370,19 +370,147 @@ you've shown us*, not *what we predict*). If both ship on this dashboard the sec
 row has two cards answering "am I ready" by different methods — the same collision
 the admin roster's Risk column has. Listed as a hole, unresolved.
 
+**§02 — the recommendation, added 2026-09-21.** The moment *before* Study Pace has
+anything to measure. Jillienne's brief: a small widget that recommends a pace from
+the time the course is available (30 days), **auto-set**, with an **Adjust** CTA.
+Two references were on the table — a "What is your study pace?" chooser (Thorough /
+Average / Quick) and a Goal Tracker's Aggressive / Recommended / Relaxed hours-per-week
+presets — and both open by *asking*. This widget *tells*: the access window is a date
+the learner already bought, not a number they have to judge, which is what
+reconciles a day-one recommendation with the study-plan page's argument against
+day-zero questions.
+
+- **Derived from `ACCESS_DAYS_CONFIRMED` (30 — the one figure here that is not
+  invented; it is on the XCEL product page) minus `ACCESS_BUFFER_INVENTED` (5).**
+  Recommended nights = the fewest of 3/4/5/6 that keep an evening under
+  `STRAIN_MINS_INVENTED` (120). Day one lands at ~1½ hours a night, four nights —
+  heavy, and the card says so rather than hiding it; the study-plan page found the
+  same thing (30 days is this course's aggressive end).
+- **Adjust changes three things and only ever in one direction:** nights a week
+  (segmented, the recommendation marked with a dot), study style (Thorough / Average
+  / Quick as `STYLE_FACTORS_INVENTED` 1.3 / 1 / 0.75 × minutes-per-lesson — kept from
+  the reference because it changes the honest cost, but demoted from a gate to an
+  adjustment), and a **Finish-by** date whose `max` is the day before access ends. A
+  later date is clamped, not accepted. The pill flips from *Recommended* to *Your
+  pace* the moment anything is touched.
+- **There is no Relaxed, and that is the finding.** Inside a fixed window the slowest
+  pace that still finishes *is* the recommendation; anything gentler is an extension,
+  which is a purchase, not a pace. A test asserts the word never appears.
+- **A small in-section axis (Day 1 · Day 10 · Day 22)** shows it re-deriving: day 10
+  moves to five nights to stay under strain; day 22 (22 lessons, 3 days) is past the
+  ceiling and renders **Won't fit → Extend access** with no pace quoted, because no
+  number is honest there. What an extension *is* — and whether an agency-sponsored
+  learner can buy one — is a new hole.
+- **The access-end tick on its timeline is ink, not red.** Red stays the exam's.
+- `hm()` was rewritten for it to quarter-hour precision: the old hour rounding made
+  68 and 89 minutes both read "1 hour", i.e. two different plans as one.
+
 **Invented rules, same convention:** `COURSE_BUFFER_INVENTED` (5d) ·
 `PACE_WINDOW_INVENTED` (14d) · `PACE_MIN_LESSONS_INVENTED` (3) ·
 `PACE_TOLERANCE_INVENTED` (0.85) · `PACE_AHEAD_INVENTED` (1.3) ·
 `MINS_PER_LESSON_INVENTED` (35) · `NIGHTS_PER_WEEK_INVENTED` (4) ·
 `CEILING_MINS_INVENTED` (210) · `QUIZ_SHAKY_INVENTED` (70) ·
 `PRACTICE_UNLOCK_INVENTED` (0.5) · `PASS_MARK_INVENTED` (70) ·
-`FIXTURE_SCORES_INVENTED` (86 · 56). All in one `RULES` array with an owner each,
-read via `R(key)` and rendered into §06 from the same array.
+`FIXTURE_SCORES_INVENTED` (86 · 56) · `ACCESS_DAYS_CONFIRMED` (30) ·
+`ACCESS_BUFFER_INVENTED` (5d) · `STRAIN_MINS_INVENTED` (120) ·
+`STYLE_FACTORS_INVENTED` (1.3 · 1 · 0.75). All in one `RULES` array with an owner each,
+read via `R(key)` and rendered into §07 from the same array.
 
-Guarded by [smoke-pace-readiness.mjs](smoke/smoke-pace-readiness.mjs), **42
+Guarded by [smoke-pace-readiness.mjs](smoke/smoke-pace-readiness.mjs), **56
 assertions**, which sweeps every combination of the four demo axes and asserts
 relationships (Behind's head sentence agrees with where the projection lands; every
 state is reachable; quiz mode never lists an uncovered chapter) rather than strings.
+
+### Pace presets — the sixth page with no row
+
+[xcel-pace-presets.html](public/prototypes/xcel-pace-presets.html) (added
+2026-09-21) takes the **other reading** of the access window that §02 of the
+pace-and-readiness page refused: aim at *all* 30 days, and the Goal Tracker's
+Aggressive / Recommended / Relaxed presets become **three dates the learner already
+owns** — Relaxed is the day before access ends, Recommended is that minus
+`ACCESS_BUFFER_INVENTED`, Focused is the storefront's own claim ("pass in less than
+2 weeks", `FOCUSED_DAYS_CONFIRMED` = 14). Nobody chooses a number; they choose a
+date and the pace derives. Not a `PROTOTYPE_FEATURES` row; masthead-linked from
+every sibling and from §02 of the pace-and-readiness page. Row count is still six.
+
+**Three demo axes: Course (12 · 20 · 42 lessons) · How they study (Thorough /
+Average / Quick) · Day of access (1 · 8 · 15).** Course is the point of the page.
+
+- **§01 is one derivation table** every widget reads. **All three presets share ONE
+  nights count**, derived from Recommended (the fewest of 3/4/5/6 that keep its
+  evening under `STRAIN_MINS_INVENTED`). That rule was added after the first render:
+  choosing nights per-preset made a 3-night Relaxed (2 hours) read *heavier per
+  evening* than a 4-night Recommended (1¾), and the presets stopped being
+  comparable. A test asserts the shared count and that per-night cost rises
+  Relaxed → Recommended → Focused.
+- **Focused is dropped when it is no longer faster than Recommended** (Day 15: two
+  weeks out lands after the buffered finish). A preset that is not faster than the
+  one beside it is a label with nothing behind it; the derivation table marks it
+  *Dropped* and every variant loses the option.
+- **§02 — the card, and the sheet behind Adjust.** Jillienne picked variant A on
+  2026-09-21 and asked that the presets and nights come OFF the card: **the card
+  operates nothing** — two buttons, Start studying and Adjust, and a test counts
+  them. Everything adjustable is in one right-hand sheet (`role="dialog"`,
+  `aria-modal`, closed by scrim / Esc / Save) in four groups:
+  **Aim** (the three presets as radio rows) · **How many days a week** (3/4/5/6, the
+  derived one marked *suggested*) · **Exam date** (optional) · **Create a study
+  plan** (a switch). The card's pill flips *Recommended → Relaxed/Focused* and its
+  eyebrow *recommended → yours* the moment the learner chooses, and the "set from
+  your 30-day access" sentence is dropped because it no longer is.
+- **TWO ceilings, and the sheet says which one binds.** The access window and the
+  exam date are different limits; coursework must finish `EXAM_BUFFER_INVENTED`
+  (7 — deliberately the same constant the study-plan page uses) before a sit date,
+  so **whichever comes first governs**, and a `.bindnote` states it in words:
+  *your exam date is the one doing the work* vs *your access is still the one doing
+  the work*. An exam booked inside the window pulls every preset earlier; one past
+  it leaves the window binding and only stretches the timeline. The exam tick on
+  that timeline is the one place red is spent.
+- **The weekday picker only exists once the calendar is switched on.** Days-a-week
+  is all the pace needs, so that is all the sheet asks — until *Create a study plan*
+  reveals weekday toggles, a start time, and a preview of the first four dated
+  sessions. **Ticking days then becomes authoritative and re-prices the evening**
+  rather than quietly disagreeing with the count; a test asserts the card behind
+  follows. The plan writes into the product's own **Study Plan** page (the rail
+  section that already exists), not an `.ics` download.
+- **§03 keeps B, C and D as candidates for the sheet's Aim group** rather than
+  deleting them: B · three cards (costs more vertical space than the sheet has once
+  the other groups are under it — which is why the rows version won) · C · the
+  finish-date slider (still the best answer for a date the presets don't offer) ·
+  D · the week strip (this one *survived* — the weekday picker under Create a study
+  plan is D made operable).
+- **§03 — the 3×3 grid, and the finding: "Relaxed" earns its name on the short
+  courses only.** At Average / Day 1, Relaxed costs 34 min on 12 lessons, 56 min on
+  20, 1½ hours on 42. So the label is a property of *course length*, not of the
+  preset, and the page proposes it be **conditional**: keep the warm word only when
+  the evening is under `EASY_MINS_INVENTED` (45), otherwise call it **Full window**.
+  The grid labels do exactly that and a test asserts 12 earns it and 42 does not.
+- **Focused on 42 lessons at Average is flagged heavy** — the two-week marketing
+  claim priced honestly. A hole notes either the claim assumes a shorter course or an
+  evening this page would flag.
+- **The study style changes the *week*, not necessarily the evening**: Quick and
+  Thorough can land on the same 1¾-hour figure at 3 vs 5 nights because the nights
+  count adapts. The test compares nights × minutes, not minutes.
+- **Access end is ink, never red.** Red stays the exam's; a test greps the CSS.
+
+Rules (`RULES`, rendered into §04): `ACCESS_DAYS_CONFIRMED` (30) ·
+`FOCUSED_DAYS_CONFIRMED` (14) · `ACCESS_BUFFER_INVENTED` (5) ·
+`MINS_PER_LESSON_INVENTED` (35) · `STYLE_FACTORS_INVENTED` (1.3 · 1 · 0.75) ·
+`STRAIN_MINS_INVENTED` (120) · `CEILING_MINS_INVENTED` (210) · `EASY_MINS_INVENTED`
+(45) · `SESSION_START_INVENTED` (19:00) · `EXAM_BUFFER_INVENTED` (7). Guarded by
+[smoke-pace-presets.mjs](smoke/smoke-pace-presets.mjs), **66 assertions**.
+
+**One class collision worth not repeating:** the sheet's preset rows were first
+called `.aim`, which already existed on this page as the grid header's aim label —
+so `querySelectorAll('.aim')` returned six elements, three of them `<span>`s with no
+`.as` child. They are `.aimrow` now. A page this size needs its new class names
+grepped before they are used.
+
+**Three new holes, all about the calendar:** what happens to already-written
+sessions when the pace later changes (rewrite, append, or let them disagree);
+whether a typed, unverified exam date should outrank one booked through the
+walk-through's own flow — the admin roster's Risk column would then be measuring
+against a date the learner may have invented; and what the three presets mean on a
+CE course with **no access window at all**, where Relaxed has nothing to aim at.
 
 ### There is no source/served split — moved here 2026-09-03
 
@@ -403,8 +531,9 @@ The five smoke suites moved with them, to **[`smoke/`](smoke/)**, reading
 `../public/prototypes/` rather than a source next door. A sixth,
 `smoke-study-plan.mjs`, was added 2026-09-16 with the study-plan page, and a
 seventh, `smoke-nav-collapse.mjs`, with the collapsible-rail page the same day, and an
-eighth, `smoke-pace-readiness.mjs`, on 2026-09-17. Run them
-with **`npm run smoke`** — 41 + 48 + 210 + 42 + 58 + 75 + 42 + 21 = **537 assertions**. Two things
+eighth, `smoke-pace-readiness.mjs`, on 2026-09-17, and a ninth, `smoke-pace-presets.mjs`,
+on 2026-09-21. Run them
+with **`npm run smoke`** — 41 + 48 + 210 + 42 + 58 + 75 + 56 + 66 + 21 = **617 assertions**. Two things
 changed on the way over, both because these assertions were written against the
 other repo: `smoke-tiles.mjs` now expects each row in **Exploration** (there the
 rows carried `devStatus: 'in-design'` to force them into Design; here XCEL *is*

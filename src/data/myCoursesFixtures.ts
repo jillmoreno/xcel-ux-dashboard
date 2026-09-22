@@ -9,6 +9,7 @@
 
 import type { CourseCardData } from '@/components/courses/CourseCard'
 import type { Brand } from '@/context/AccountContext'
+import { readDemoDayOffset } from './demoDay'
 import { createImagePicker } from '@/utils/topicImage'
 
 /**
@@ -49,7 +50,26 @@ export const RECENTLY_ADDED_WINDOW_DAYS = 15
  * (see file header). The project's other fixtures (study calendar, streak)
  * anchor to 2026-05-20 — kept distinct here so the Recently Added window
  * lines up with the fixture data without re-dating every record. */
-export const FIXTURE_TODAY = new Date(2026, 4, 11)
+/**
+ * THE DEMO'S ANCHORED "today".
+ *
+ * Still 2026-05-11 by default, and still one constant every dated surface
+ * reads — what changed on 2026-09-21 is that a demo control can shift it by
+ * whole days (`demoDay.ts`). The base is a MONDAY, which made the pace card's
+ * week strip unreadable: it draws how much of each day was studied, and on a
+ * Monday nothing has elapsed to draw.
+ *
+ * The offset is read ONCE here, at module load, which is why changing it
+ * reloads the page — see `demoDay.ts` for why that is the mechanism rather
+ * than a workaround. Every consumer keeps importing this constant unchanged,
+ * so they cannot disagree about the date.
+ */
+export const FIXTURE_TODAY_BASE = new Date(2026, 4, 11)
+export const FIXTURE_TODAY = (() => {
+  const d = new Date(FIXTURE_TODAY_BASE)
+  d.setDate(d.getDate() + readDemoDayOffset())
+  return d
+})()
 
 /**
  * Returns true when the record was added to the learner's library within

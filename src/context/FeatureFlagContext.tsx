@@ -729,6 +729,15 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'study-pace-widget',
+    group: 'Widgets',
+    label: 'Study Pace — live widget',
+    description:
+      'Replaces the lo-fi Study Pace placeholder with the real derived widget, in the "Testing 2" dashboard version only (QE Focused keeps its stub whatever this says). The tile itself carries NO controls — a pace, a timeline and two buttons — and Adjust opens a sheet holding the three finish dates (Relaxed / Recommended / Focused), days a week, an exam date, and building a study plan on the calendar. Every figure derives from the resume course\u2019s published credit hours and the two ceilings (course access expiry, and the exam date minus a review buffer); nothing is authored. Off ⇒ Testing 2 shows the same placeholder as QE Focused, which is what makes this switch worth having.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'dashboard-clp-stats',
     group: 'Widgets',
     label: 'Current Progress — stats treatment',
@@ -781,6 +790,101 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
         label: 'Navy card',
         description:
           'The header cluster sits on a dark navy card: light type, a green progress bar, a large percentage on the right and a white Resume button. The KPI cells, status strip and View Requirements stay on the page grey below it.',
+      },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'dashboard-journey-complete',
+    group: 'Widgets',
+    label: 'Study Journey — when the coursework is done',
+    description:
+      'What the Study Journey column does once the course is 100% complete. Only has an effect at 100%; below it the two variants are identical. Full keeps all four coursework stops on screen, each reading Completed, with the licensing steps (Schedule State Exam · Pass State Exam · Get Licensed) below them — so the column shows what was finished and what is still ahead. Collapsed shrinks the finished coursework card to a single "Coursework complete" summary so the licensing steps LEAD the column, on the argument that at 100% the only things left to do are the licensing ones and a four-stop list of finished work is a receipt rather than a next action. Both are honest about the same state; they disagree about whether a learner at 100% is still reading their coursework or has moved past it.',
+    defaultEnabled: true,
+    // `full` — the state the ask described first, and the one that changes
+    // least from what every other progress level shows. Collapsed is the
+    // exploration, one click away.
+    defaultVariant: 'full',
+    variants: [
+      {
+        value: 'full',
+        label: 'Full — every stop, all complete',
+        description:
+          'The coursework card keeps its four stops, each marked Completed, and the licensing steps follow. The column reads as a record of the whole journey with the remaining steps at the end.',
+      },
+      {
+        value: 'collapsed',
+        label: 'Collapsed — coursework as one line',
+        description:
+          'The four finished stops become a single "Coursework complete" line, so Schedule State Exam leads the column. Argues that finished work is a receipt and the licensing steps are the only actionable things left.',
+      },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'dashboard-pacing-style',
+    group: 'Widgets',
+    label: 'Pacing tile — treatment',
+    description:
+      'Which treatment the Study Pace tile renders on the TESTING home version (`?version=discoverability-testing`), where it takes the whole row because the Readiness stub beside it is dropped. Five answers to "am I pacing to finish in time": Lo-fi is the current stub, kept so the others can be compared against what ships today. Rate states a suggested hrs/day. Runway lays the work remaining against the time remaining on one track. Balance states the two remaining figures and derives nothing. Presets states a finish DATE and the room left after it, and is the only one you can operate. EVERY figure in every treatment is derived from data the fixtures already carry — the resume course’s credit hours and access expiry, the path’s unit totals and the days to the target date. None of them invents an observed rate, a schedule to be ahead of, or a projected finish date, because nothing here knows any of those. The status pill and its message are the same in the first four, so the comparison there is about the pacing figure and not about whether the state is shown; Presets is the one exception and states the same fact as a sentence instead — see its own note.',
+    // Variant-only, like `dashboard-clp-style`: the enable toggle is on so the
+    // flag is live and the CHOICE is the variant. "Off" would have to mean
+    // "lo-fi", which the variant already says.
+    defaultEnabled: true,
+    /*
+     * `presets` as of 2026-09-21. It was `runway` — chosen when the only thing
+     * that mattered was not opening on the stub ("the version exists to look at
+     * pacing, so opening it on `lo-fi` would make the whole thing read as
+     * unchanged"). That reasoning expired the moment Testing became XCEL's
+     * DEFAULT VERSION on the same day.
+     *
+     * WHY THIS IS NOW A DESIGN DECISION AND NOT A STARTING POSITION. `?demo=1`
+     * renders the committed default baseline and IGNORES stored flags, and no
+     * URL parameter sets one — so on a review link this value is not where a
+     * stakeholder begins, it is the whole of what they see. Landing them on
+     * `runway` would have been picking a winner among five treatments by
+     * inheritance rather than by decision.
+     *
+     * `presets` is the one to state: the only treatment that derives every
+     * figure end to end, answers the pacing question with an OUTCOME rather
+     * than a quantity, and can be operated.
+     *
+     * Scoped as it always was — this flag is read only under the `paceOnly`
+     * arrangement, so the change cannot reach Testing 2 or QE Focused. The
+     * other four stay one click away in the panel, which is the direction the
+     * comparison should run.
+     */
+    defaultVariant: 'presets',
+    variants: [
+      {
+        value: 'lo-fi',
+        label: 'Lo-fi — the current stub',
+        description:
+          'What ships on QE Focused today: two grey placeholder rows above the status pill and its message. Here so the three real treatments can be judged against it rather than only against each other.',
+      },
+      {
+        value: 'rate',
+        label: 'Rate — a suggested pace',
+        description:
+          'PRESCRIPTIVE. One figure — the resume course’s credit hours over the days to the target date — read as "~1.5 hrs/day", with the target named underneath. This is the derivation the lo-fi stub replaced on 2026-09-17; it still feeds the `stat-card` variant of `dashboard-clp-stats`, so nothing new is invented to show it here. Omitted, not guessed, when there is no course to read hours from.',
+      },
+      {
+        value: 'runway',
+        label: 'Runway — work against time',
+        description:
+          'SPATIAL. One track carrying how much of the course is done, with the work left on one end and the days left on the other, and the rate that closes the gap stated beneath it ("about 4 lessons a week to finish on time"). It answers whether the remaining work fits the remaining time — which is the pacing question — without claiming a projected finish date, because no observed rate exists in the fixtures to project from.',
+      },
+      {
+        value: 'balance',
+        label: 'Balance — the two figures',
+        description:
+          'DESCRIPTIVE, and deliberately the one that derives nothing: the work left and the days left as two plain figures, side by side, with no rate and no verdict. It is here as the honest floor — if a learner can pace themselves from those two numbers, the derived versions above are chrome, and that is worth finding out before building one of them properly.',
+      },
+      {
+        value: 'presets',
+        label: 'Presets — a date, and the room after it',
+        description:
+          'CONCLUSIVE, and the only treatment you can OPERATE. The wide card from the `xcel-pace-presets` prototype, §02: an evening and a nights-a-week as a sentence, the finish date it lands on, how many days of room that leaves before the ceiling, a timeline from Today to a hard end-stop, and two real buttons — Start studying, and Adjust, which opens the same sheet the Testing 2 tile uses (the three finish dates, days a week, your exam date, and a study plan on the calendar). The other four state a QUANTITY and leave you to judge whether it is enough; this one states the OUTCOME and makes the quantity the subordinate clause. It reads `src/lib/studyPace.ts` — the same model Testing 2 renders, so a fix to the derivation reaches both versions at once — and the two ceilings it can be bound by, course access and an exam date, are named on the card rather than switched between silently. It is the ONE treatment without the shared status pill: the sentence already states the conclusion that pill labels, and two pills in two vocabularies stacked nine pixels apart is exactly the confusion the pace chip exists to avoid.',
       },
     ],
     page: 'dashboard-rebrand',
@@ -1100,6 +1204,12 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
         value: 'progress-at-risk',
         label: 'At Risk · ~15%',
         description: '~15% complete with under 30 days left (requirement <25% done) — the At Risk warning treatment.',
+      },
+      {
+        value: 'progress-off-track',
+        label: 'Off Track · won\u2019t finish',
+        description:
+          "Partway in with far too little time left \u2014 the pace the course now demands is past what anyone studies in an evening, so the Study Pace card drops its nightly figure and names the two real options (extend access, or cut what is left). The only variant that reaches the pace model's `state: 'no'`; it does so with a SHORT WINDOW (11 days), not a long course. Set by the \"Pace \u2014 won't finish\" personas.",
       },
       {
         value: 'progress-expired',

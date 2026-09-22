@@ -1,6 +1,6 @@
 import { useState, type CSSProperties } from 'react'
 import { LockSolid } from '@/icons'
-import { useAccount } from '@/context/AccountContext'
+import { useAccount, supportsMembership } from '@/context/AccountContext'
 import { membershipBecomeFor, membershipUpgradeFor } from '@/data/membership/membershipUpgradeFixtures'
 import { MembershipUpgradeModal } from './MembershipUpgradeModal'
 
@@ -35,6 +35,31 @@ export function WhatsNewUpsellBand({
   // (`access === 'full'`) — hide the band entirely. Lite members + non-members
   // still see it (upgrade / join).
   if (access === 'full') return null
+  /*
+   * A BRAND THAT SELLS NO MEMBERSHIP HAS NOTHING TO UPSELL — 2026-09-21, the
+   * direct ask ("no member upsells for XCEL").
+   *
+   * Guarded HERE rather than at the call sites, because there are five of them
+   * (`MembershipOverview` twice, `UpgradeBanner`, `MembershipBenefitsPanel`,
+   * `MembershipStandalonePage`) and gating four of five is how this defect
+   * survives a sweep. One owner; every caller is fixed at once.
+   *
+   * WHY `access === 'full'` ABOVE DID NOT ALREADY COVER IT, which is the part
+   * worth not re-deriving. `supportsMembership`'s own note says a brand here
+   * must have a SINGLE `high` tier so `accessForTier` resolves to `'full'` —
+   * and it does, until something sets the tier to `'non-member'`, which the
+   * demo tier switch and the stored account state can both do. That is the
+   * exact "SUPPRESS, NEVER DOWNGRADE" failure that note warns about, and it
+   * lists four surfaces it breaks; this band was a fifth.
+   *
+   * The symptom was visible and still easy to read past: the title renders
+   * "Unlock Membership Benefits. Starting at  / year" — with NOTHING between
+   * "at" and "/", because `membershipUpgradeFixtures` deliberately leaves
+   * XCEL's price blank ("a filled-in stub here would read as product truth in
+   * a screenshot"). That file's comment claims "every surface reading this map
+   * is suppressed for it"; it was not true of this one, and is now.
+   */
+  if (!supportsMembership(brand)) return null
   // Brand-aware pricing so the band matches the upsell modal it opens:
   // non-members join at the entry tier's price (Plus $99 for CRE, Passport Lite
   // $48 for Elite, …); lite members upgrade at the full tier's price. A `price`

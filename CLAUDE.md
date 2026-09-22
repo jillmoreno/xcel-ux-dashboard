@@ -115,7 +115,7 @@ written too thinly — name the files, the call sites, and anything deliberately
 npx tsc -b --noEmit     # the real guardrail — `Brand` is a one-member union,
                         # so a stray brand literal is a compile error
 npx vitest run          # ~842 tests
-npm run smoke           # the jsdom suites over public/prototypes/ — 537 assertions
+npm run smoke           # the jsdom suites over public/prototypes/ — 617 assertions
 ```
 
 **`npm test` does NOT run the smoke suites.** Run both. If you touched a guide,

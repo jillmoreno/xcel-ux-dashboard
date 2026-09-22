@@ -217,6 +217,51 @@ button{font:inherit}
 .rl li a:hover{text-decoration:underline}
 .rl li.held{color:var(--ink-2)}
 
+/* ---------- §02 the recommendation ---------- */
+.rec2{display:grid;grid-template-columns:minmax(0,1.05fr) minmax(0,1fr);gap:22px;align-items:start;max-width:1000px}
+.rec2 .w{min-height:0;background:var(--card)}
+.mchips{display:flex;gap:6px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
+.mchips .lb{font:700 10px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-right:4px}
+.mchip{appearance:none;border:1px solid var(--line-2);background:var(--card);color:var(--ink-2);
+  font:600 11.5px var(--font-body);padding:5px 10px;border-radius:12px;cursor:pointer}
+.mchip[aria-pressed="true"]{background:var(--primary-100);border-color:var(--primary-300);color:var(--primary-700)}
+.mchip:focus-visible{outline:2px solid var(--primary-400);outline-offset:2px}
+.tl .mk.acc{border-color:var(--ink-3);border-style:solid;background:var(--ink-3);width:4px;height:17px;top:4px;border-radius:2px;border:0}
+.tl .lab.acc{color:var(--ink-2);font-weight:700}
+.adj{border-top:1px solid var(--line);margin:4px -16px -14px;padding:14px 16px 16px;display:flex;flex-direction:column;gap:14px;
+  background:var(--n-75);border-radius:0 0 var(--radius) var(--radius)}
+.adj[hidden]{display:none}
+.adj .row{display:flex;flex-direction:column;gap:7px}
+.adj .row .k{font:700 10px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.seg{display:inline-flex;border:1px solid var(--line-2);border-radius:var(--radius-sm);overflow:hidden;background:var(--card)}
+.seg button{appearance:none;border:0;border-right:1px solid var(--line-2);background:transparent;color:var(--ink-2);
+  font:600 12px var(--font-body);padding:7px 12px;cursor:pointer;min-width:44px}
+.seg button:last-child{border-right:0}
+.seg button[aria-checked="true"]{background:var(--primary-500);color:var(--on-primary)}
+.seg button:focus-visible{outline:2px solid var(--primary-400);outline-offset:-2px}
+.styles{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+.style{appearance:none;text-align:left;border:1px solid var(--line-2);border-radius:var(--radius-sm);background:var(--card);
+  padding:9px 10px;cursor:pointer;font:inherit;color:inherit;display:flex;flex-direction:column;gap:3px}
+.style[aria-checked="true"]{border-color:var(--primary-500);box-shadow:inset 0 0 0 1px var(--primary-500);background:var(--primary-100)}
+.style:focus-visible{outline:2px solid var(--primary-400);outline-offset:2px}
+.style .sn{font:700 12.5px var(--font-heading);letter-spacing:-.005em}
+.style .ss{font-size:10.5px;line-height:1.4;color:var(--ink-2)}
+.adj input[type=date]{font:600 12.5px var(--font-body);padding:7px 9px;border:1px solid var(--line-2);border-radius:var(--radius-sm);
+  background:var(--card);color:var(--ink);max-width:170px}
+.adj input:focus-visible{outline:2px solid var(--primary-400);outline-offset:1px}
+.adj .hint{font-size:11px;color:var(--ink-3);line-height:1.45}
+.adj .hint.warn{color:var(--warning-800)}
+.adj .hint.bad{color:var(--error-700)}
+.adj .foot{display:flex;gap:10px;align-items:center;border-top:1px dashed var(--line-2);padding-top:12px}
+.adj .foot .lnk{margin-left:auto;background:transparent;border:0;color:var(--ink-3);font:600 11.5px var(--font-body);
+  cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.recwhy{display:flex;flex-direction:column;gap:12px}
+.recwhy .critrow{display:flex;gap:11px;align-items:flex-start}
+.recwhy .k{flex:none;width:22px;height:22px;border-radius:50%;display:grid;place-items:center;
+  font:900 11px var(--font-body);background:var(--primary-100);color:var(--primary-700);margin-top:1px}
+.recwhy .t{font-size:12.5px;line-height:1.55;color:var(--ink-2)}
+.recwhy .t b{color:var(--ink)}
+
 /* ---------- ladders ---------- */
 .ladder{display:flex;flex-direction:column;gap:14px;max-width:1000px}
 .lrow{display:grid;grid-template-columns:170px minmax(0,1fr) minmax(0,1fr);gap:0;border:1px solid var(--line);
@@ -282,7 +327,8 @@ button{font:inherit}
 .hole p{margin:0;font-size:12px;line-height:1.6;color:var(--ink-2)}
 
 @media (max-width:900px){
-  .slice,.slice.wide,.vars,.objs{grid-template-columns:minmax(0,1fr)}
+  .slice,.slice.wide,.vars,.objs,.rec2{grid-template-columns:minmax(0,1fr)}
+  .styles{grid-template-columns:minmax(0,1fr)}
   .lrow{grid-template-columns:minmax(0,1fr)}
   .lrow .lk,.lrow .lw{border-right:0;border-bottom:1px solid var(--line)}
   .hero,.body,.foot{padding-left:20px;padding-right:20px}
@@ -302,6 +348,7 @@ button{font:inherit}
   <a class="plink" href="/prototypes/xcel-lms-wireframes.html">Wireframes &amp; overlap</a>
   <a class="plink" href="/prototypes/xcel-finserv-build-plan.html">Build plan</a>
   <a class="plink" href="/prototypes/xcel-nav-collapse.html">Collapsible rail</a>
+  <a class="plink" href="/prototypes/xcel-pace-presets.html">Pace presets</a>
   <span class="sp">
     <span class="palsw" role="radiogroup" aria-label="Colour palette (prototype only)">
       <span class="pallb">Palette</span>
@@ -335,7 +382,8 @@ button{font:inherit}
   <p>Four demo axes above. <b>Progress</b> and <b>Their pace</b> drive Study Pace; <b>Quizzes</b> and
   <b>Practice exam</b> drive Readiness. Every date, minute and topic on this page is recomputed from
   them — nothing is authored — so the widgets can be judged in every state they can reach rather than
-  the one that photographs well.</p>
+  the one that photographs well. Section 02 adds the moment <i>before</i> any of that: the recommended
+  pace, set from the 30-day access window on day one.</p>
 </div>
 
 <div class="body">
@@ -345,7 +393,7 @@ button{font:inherit}
     <div class="shead">
       <span class="lbl"><span class="num">01</span><h2>The two widgets, live</h2></span>
       <p class="arg">At the size and proportion of the dashboard's second row. Flip the axes; both re-render.
-      Readiness is shown in its <b>chapter-title</b> naming here — section 03 puts the two naming options
+      Readiness is shown in its <b>chapter-title</b> naming here — section 04 puts the naming options
       side by side.</p>
     </div>
     <div class="slice" id="live"></div>
@@ -353,9 +401,39 @@ button{font:inherit}
   </div>
 
   <!-- ============================= 02 ============================= -->
+  <div class="sec" id="rec">
+    <div class="shead">
+      <span class="lbl"><span class="num">02</span><h2>Before there is a pace — the recommendation</h2></span>
+      <p class="arg">Added 2026-09-21. On day one Study Pace has nothing to measure, and the two references
+      for this moment both <b>ask</b> the learner something first — a study style (Thorough / Average / Quick)
+      or an hours-per-week preset. This widget <b>tells</b> instead. The course comes with <b>30 days of
+      access</b>: that is a date the learner already bought, not a number they have to judge, so the
+      recommendation is derived from it and arrives set. The only decision left is whether to adjust.</p>
+    </div>
+    <div class="mchips" role="group" aria-label="Day of access (demo)"><span class="lb">Demo · day of access</span><span id="recDays"></span>
+      <button class="mchip" id="recOpen" aria-pressed="false" style="margin-left:10px">Show Adjust open</button></div>
+    <div class="rec2">
+      <div id="recWidget"></div>
+      <div class="recwhy" id="recWhy"></div>
+    </div>
+    <div class="note"><b>There is no Relaxed option, and that is a finding, not an omission.</b> The reference's
+    Aggressive / Recommended / Relaxed presets assume the course waits for you. Inside a 30-day window the
+    slowest pace that still finishes <i>is</i> the recommendation — anything gentler means buying an extension,
+    which is a purchase, not a pace. The Adjust panel therefore only lets you finish <b>earlier</b>, spread the
+    work across <b>more or fewer nights</b>, or change <b>how</b> you study; it never offers a slower plan.</div>
+    <div class="note"><b>Taken further on its own page.</b> <a href="/prototypes/xcel-pace-presets.html">Pace presets</a> takes the
+    other reading of the window — aim at all 30 days, so Relaxed / Recommended / Focused become three dates — and shows
+    four UI variants of it across 12-, 20- and 42-lesson courses.</div>
+    <div class="note"><b>Study style is an adjustment, not a gate.</b> Thorough / Average / Quick is worth keeping
+    from the reference because it changes the honest minutes-per-lesson figure — notes and normal-speed video
+    genuinely cost more. But asking it up front, before the learner has opened a lesson, is the same day-zero
+    question the study-plan page argues against. Here it sits under Adjust with Average pre-selected.</div>
+  </div>
+
+  <!-- ============================= 03 ============================= -->
   <div class="sec">
     <div class="shead">
-      <span class="lbl"><span class="num">02</span><h2>Study Pace — every state it can be in</h2></span>
+      <span class="lbl"><span class="num">03</span><h2>Study Pace — every state it can be in</h2></span>
       <p class="arg">Each row is the same renderer fed a fixed situation, so the copy is derived, not typed.
       The verdict comes from <b>one ratio</b>: lessons a week you actually do, over lessons a week the exam
       date now requires. Minutes are only the translation of that ratio into an evening — never the
@@ -377,7 +455,7 @@ button{font:inherit}
   <!-- ============================= 03 ============================= -->
   <div class="sec">
     <div class="shead">
-      <span class="lbl"><span class="num">03</span><h2>Readiness — two ways to name what needs another look</h2></span>
+      <span class="lbl"><span class="num">04</span><h2>Readiness — two ways to name what needs another look</h2></span>
       <p class="arg">Same data, same state, three treatments. <b>A</b> names the chapter the learner studied,
       so every line has a Resume target. <b>B</b> names the domain the state exam is weighted by, so the list
       is about the exam rather than the course. The difference is not cosmetic: a chapter can feed two
@@ -414,7 +492,7 @@ button{font:inherit}
   <!-- ============================= 04 ============================= -->
   <div class="sec">
     <div class="shead">
-      <span class="lbl"><span class="num">04</span><h2>Readiness — the ladder, and when the word "ready" is allowed</h2></span>
+      <span class="lbl"><span class="num">05</span><h2>Readiness — the ladder, and when the word "ready" is allowed</h2></span>
       <p class="arg">Before the practice exam there is <b>no verdict</b>: the widget lists topics or says there is
       nothing to list, and never says <i>ready</i>. The practice exam is what earns the word, because it is
       the only instrument that covers the whole outline — including lessons the learner has not reached.</p>
@@ -425,7 +503,7 @@ button{font:inherit}
   <!-- ============================= 05 ============================= -->
   <div class="sec">
     <div class="shead">
-      <span class="lbl"><span class="num">05</span><h2>What each widget is not</h2></span>
+      <span class="lbl"><span class="num">06</span><h2>What each widget is not</h2></span>
     </div>
     <div class="objs">
       <div class="obj pace">
@@ -459,7 +537,7 @@ button{font:inherit}
   <!-- ============================= 06 ============================= -->
   <div class="sec">
     <div class="shead">
-      <span class="lbl"><span class="num">06</span><h2>Invented rules, and the holes</h2></span>
+      <span class="lbl"><span class="num">07</span><h2>Invented rules, and the holes</h2></span>
       <p class="arg">Every threshold is one named constant with an owner, rendered here from the same array the
       logic reads. Replace them; do not re-derive them.</p>
     </div>
@@ -483,6 +561,15 @@ button{font:inherit}
       a learner at 40% complete with perfect quizzes would score badly for a reason that has nothing to do
       with knowledge. If a score ships, its ingredients have to be stated on the card, and completion should
       not be one of them.</p></div>
+      <div class="hole"><h3>Minutes per lesson vs credit hours</h3><p>The recommendation prices a lesson at
+      <code>MINS_PER_LESSON_INVENTED</code> (35 min). The storefront publishes <b>40 credit hours</b> for the same 42
+      lessons — about 57 min each. If seat-time is the real figure, every nightly ask on this page is ~1.6× too
+      light, and the day-one recommendation becomes nearly three hours a night. Which number the product
+      believes has to be settled before this copy is trusted.</p></div>
+      <div class="hole"><h3>What "Extend access" is</h3><p>The Won’t-fit state routes to an extension because
+      nothing else is honest. Whether one exists as a product, what it costs, and whether a learner on an
+      agency-sponsored seat can buy it themselves are all undecided — and the last one is the same "who pays"
+      hole the catalogue has.</p></div>
       <div class="hole"><h3>The trailing window</h3><p>Observed pace is lessons in the last
       <code>PACE_WINDOW_DAYS_INVENTED</code> days. A learner who front-loaded and then paused reads as Paused
       even if they are miles ahead. Whether "ahead overall, stalled lately" deserves its own sentence is open.</p></div>
@@ -518,6 +605,10 @@ var RULES = [
  {k:'CEILING_MINS_INVENTED',   v:210, u:'min/night',   t:'Over six nights, the pace beyond which we stop recommending more time and say the date cannot be reached.', o:'Learning design'},
  {k:'QUIZ_SHAKY_INVENTED',     v:70,  u:'%',           t:'Chapter quiz score under which the chapter is listed for review. The score itself is never shown.', o:'Content / assessment'},
  {k:'PRACTICE_UNLOCK_INVENTED',v:0.5, u:'of lessons',  t:'Share of lessons complete before the practice exam is offered — and therefore before the word "ready" can appear.', o:'FinServ product'},
+ {k:'ACCESS_DAYS_CONFIRMED',   v:30,  u:'days',        t:'Access to the pre-licensing course from purchase. CONFIRMED from the XCEL product page ("30 days access to Part 1") — the one figure here that is not invented.', o:'Storefront'},
+ {k:'ACCESS_BUFFER_INVENTED',  v:5,   u:'days',        t:'The recommendation aims to finish coursework this many days before access ends, so one slow week does not cost the course.', o:'Learning design'},
+ {k:'STRAIN_MINS_INVENTED',    v:120, u:'min/night',   t:'Over this the recommendation adds a night rather than quote it; under Adjust it is flagged as heavy but allowed.', o:'Learning design'},
+ {k:'STYLE_FACTORS_INVENTED',  v:'1.3 · 1 · 0.75', u:'× minutes', t:'Thorough / Average / Quick multiply MINS_PER_LESSON. Notes and normal-speed video cost more; essentials-only at 2× speed costs less.', o:'Learning design'},
  {k:'PASS_MARK_INVENTED',      v:70,  u:'score',       t:'Option C only: the mark the gauge turns green at. Set to the state exam’s published pass mark, not a house number.', o:'Content / assessment'},
  {k:'FIXTURE_SCORES_INVENTED', v:'86 · 56', u:'quiz',  t:'Option C only: a strong quiz scores 86 and a shaky one 56 in this demo, because the real per-chapter scores are not in the fixtures. The gauge averages them.', o:'Demo only'}
 ];
@@ -576,9 +667,13 @@ function quiz(){  return QUIZ.filter(function(x){return x.id===S.quiz;})[0]; }
 function addDays(d,n){ var x=new Date(d.getTime()); x.setDate(x.getDate()+n); return x; }
 function dayDiff(a,b){ return Math.round((b-a)/86400000); }
 function fmt(d){ return d.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
-function hm(m){ m=Math.round(m); var h=Math.floor(m/60),r=m%60;
-  if(!h) return r+' min'; if(!r) return h+(h===1?' hour':' hours');
-  return h+(r>=30?'½':'')+(h===1&&r<30?' hour':' hours'); }
+/* minutes → "45 min" / "1 hour" / "1¼ hours" — quarter-hour precision above an
+   hour, because "about 1 hour" for 68 AND 89 minutes is the kind of rounding
+   that makes two different plans read as the same one. */
+function hm(m){ m=Math.round(m); if(m<60) return m+' min';
+  var q=Math.round(m/15)/4, h=Math.floor(q), fr=q-h, FR={0:'',0.25:'¼',0.5:'½',0.75:'¾'};
+  if(fr===0&&h===0){ h=1; }
+  return h+FR[fr]+(h===1&&fr===0?' hour':' hours'); }
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;'); }
 function pl(n,w){ return n+' '+w+(n===1?'':'s'); }
 
@@ -837,6 +932,137 @@ function scoreWidget(m){
 }
 
 /* ============================================================
+   §02 — THE RECOMMENDATION. Derived from the access window, not from the
+   learner. Adjust can only make it earlier, spread it differently, or change
+   the study style; it can never make it later than the window allows.
+   ============================================================ */
+var PURCHASED = new Date(2026,8,18);                 // Sep 18 — the reference's own start date
+var REC_DAYS=[ {id:'d1',lb:'Day 1',day:1,done:0}, {id:'d10',lb:'Day 10',day:10,done:10}, {id:'d22',lb:'Day 22',day:22,done:20} ];
+var STYLES=[
+ {id:'thorough',nm:'Thorough',f:1.3, ss:'All the tools · notes while you study · videos at normal speed'},
+ {id:'avg',     nm:'Average', f:1,   ss:'All the tools · a few notes · videos at normal speed'},
+ {id:'quick',   nm:'Quick',   f:0.75,ss:'Essential tools only · no notes · videos at 2× speed'}
+];
+var NIGHT_OPTS=[3,4,5,6];
+var REC={day:'d1', nights:null, style:'avg', finish:null, open:false};   // null = recommended
+function recDay(){ return REC_DAYS.filter(function(x){return x.id===REC.day;})[0]; }
+function styleOf(id){ return STYLES.filter(function(x){return x.id===id;})[0]; }
+
+function recModel(){
+  var d=recDay(), today=addDays(PURCHASED,d.day-1);
+  var accessEnd=addDays(PURCHASED,R('ACCESS_DAYS_CONFIRMED'));
+  var recFinish=addDays(accessEnd,-R('ACCESS_BUFFER_INVENTED'));
+  var finish = REC.finish ? REC.finish : recFinish;
+  if(finish>addDays(accessEnd,-1)) finish=addDays(accessEnd,-1);
+  var remaining=TOTAL-d.done;
+  var days=Math.max(dayDiff(today,finish),1);
+  var f=styleOf(REC.style).f;
+  var weeklyMins = remaining/(days/7) * R('MINS_PER_LESSON_INVENTED') * f;
+  /* recommended nights: the fewest that keep an evening under the strain line */
+  var recNights=null;
+  for(var i=0;i<NIGHT_OPTS.length;i++){ if(weeklyMins/NIGHT_OPTS[i] <= R('STRAIN_MINS_INVENTED')){ recNights=NIGHT_OPTS[i]; break; } }
+  var nights = REC.nights || recNights || 6;
+  var perNight = weeklyMins/nights;
+  var m={today:today, accessEnd:accessEnd, recFinish:recFinish, finish:finish, remaining:remaining, days:days,
+         nights:nights, recNights:recNights, perNight:perNight, weeklyMins:weeklyMins,
+         adjusted: !!(REC.nights||REC.finish||REC.style!=='avg'),
+         daysSpare: dayDiff(finish,accessEnd)};
+  var ceilingWeekly=R('CEILING_MINS_INVENTED')*6;
+  if(remaining<=0){ m.state='done'; }
+  else if(weeklyMins>ceilingWeekly){ m.state='impossible'; }
+  else if(perNight>R('STRAIN_MINS_INVENTED')){ m.state='heavy'; }
+  else m.state='ok';
+  return m;
+}
+function recTimeline(m){
+  var span=Math.max(dayDiff(m.today,m.accessEnd),1), pct=function(d){ return Math.min(100,Math.max(0,dayDiff(m.today,d)/span*100)); };
+  return '<div class="tl" role="img" aria-label="Today to the end of access on '+fmt(m.accessEnd)+'. Coursework planned to finish '+fmt(m.finish)+'.">'+
+    '<div class="trk"></div><div class="fill" style="width:'+pct(m.finish)+'%"></div>'+
+    '<div class="mk proj" style="left:'+pct(m.finish)+'%"></div>'+
+    '<div class="mk acc" style="left:100%"></div>'+
+    '<div class="lab today">Today</div>'+
+    (pct(m.finish)<78?'<div class="lab proj" style="left:'+pct(m.finish)+'%">Finish · '+fmt(m.finish)+'</div>':'')+
+    '<div class="lab acc r" style="left:100%">Access ends · '+fmt(m.accessEnd)+'</div></div>';
+}
+function recWidget(m){
+  var ico='<svg viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.3"/><path d="M8 4.5V8l2.4 1.6"/></svg>';
+  var st=styleOf(REC.style);
+  var h='<div class="w" data-widget="recommend" data-state="'+m.state+'" data-adjusted="'+m.adjusted+'">'+
+    '<div class="eb">'+ico+'Study pace <span class="sub">· '+(m.adjusted?'yours':'recommended')+'</span></div>';
+  if(m.state==='impossible'){
+    h+='<span class="pill p3">Won’t fit</span>'+
+       '<div class="head">The remaining lessons won’t fit in the access you have left.</div>'+
+       '<p class="body-t">'+pl(m.remaining,'lesson')+' in '+pl(m.days,'day')+' is more than '+hm(R('CEILING_MINS_INVENTED'))+' a night, six nights a week. The honest options are an extension or fewer lessons — not a bigger number.</p>'+
+       recTimeline(m)+
+       '<div class="foot-r"><button class="btn">Extend access</button><a class="det" href="#rec">Details →</a></div></div>';
+    return h;
+  }
+  h+='<span class="pill '+(m.adjusted?'p1':'p0')+'">'+(m.adjusted?'Your pace':'Recommended')+'</span>'+
+     '<div class="head">About <b>'+hm(m.perNight)+' a night</b>, '+m.nights+' nights a week.</div>'+
+     '<p class="body-t">'+(REC.finish
+        ? 'Finishes the coursework by <b>'+fmt(m.finish)+'</b>, '+pl(m.daysSpare,'day')+' before your access ends on '+fmt(m.accessEnd)+'.'
+        : 'Set from your <b>'+R('ACCESS_DAYS_CONFIRMED')+'-day access</b>, not from a guess: it finishes the coursework by <b>'+fmt(m.finish)+'</b>, '+pl(m.daysSpare,'day')+' before access ends on '+fmt(m.accessEnd)+'.')+
+     (st.id!=='avg'?' Studying <b>'+st.nm.toLowerCase()+'</b>.':'')+
+     (m.state==='heavy'?' <b>That is a heavy evening</b> — adding a night brings it down.':'')+'</p>'+
+     recTimeline(m)+
+     '<div class="foot-r"><button class="btn">'+(recDay().done?'Keep going':'Start studying')+'</button>'+
+       '<button class="btn ghost" id="recAdjBtn" aria-expanded="'+REC.open+'" aria-controls="recAdj">Adjust</button>'+
+       '<a class="det" href="#rec">Details →</a></div>'+
+     recAdjust(m)+
+  '</div>';
+  return h;
+}
+function recAdjust(m){
+  var maxIso=fmtIso(addDays(m.accessEnd,-1)), minIso=fmtIso(addDays(m.today,1));
+  var hint = m.state==='heavy' ? '<div class="hint warn">Over '+hm(R('STRAIN_MINS_INVENTED'))+' a night is a lot to keep up. Adding a night brings it to about '+hm(m.weeklyMins/Math.min(6,m.nights+1))+'.</div>'
+           : '<div class="hint">Leaves '+pl(m.daysSpare,'day')+' before access ends'+(m.daysSpare<R('ACCESS_BUFFER_INVENTED')?' — less slack than we’d recommend.':'.')+'</div>';
+  var h='<div class="adj" id="recAdj"'+(REC.open?'':' hidden')+'>'+
+    '<div class="row"><span class="k">Nights a week</span><div class="seg" role="radiogroup" aria-label="Nights a week">';
+  NIGHT_OPTS.forEach(function(n){ h+='<button type="button" role="radio" data-nights="'+n+'" aria-checked="'+(n===m.nights)+'">'+n+(n===m.recNights?' ·':'')+'</button>'; });
+  h+='</div><div class="hint">The dot marks the recommendation — the fewest nights that keep an evening under '+hm(R('STRAIN_MINS_INVENTED'))+'.</div></div>'+
+    '<div class="row"><span class="k">How you study</span><div class="styles" role="radiogroup" aria-label="Study style">';
+  STYLES.forEach(function(st){ h+='<button type="button" class="style" role="radio" data-style="'+st.id+'" aria-checked="'+(st.id===REC.style)+'"><span class="sn">'+st.nm+'</span><span class="ss">'+st.ss+'</span></button>'; });
+  h+='</div></div>'+
+    '<div class="row"><label class="k" for="recFinish">Finish by</label>'+
+      '<input type="date" id="recFinish" value="'+fmtIso(m.finish)+'" min="'+minIso+'" max="'+maxIso+'">'+hint+
+      '<div class="hint">Earlier is allowed; later than '+fmt(addDays(m.accessEnd,-1))+' is not — that is when access ends.</div></div>'+
+    '<div class="foot"><button class="btn" id="recSave">Save pace</button>'+
+      '<button type="button" class="lnk" id="recReset">Reset to recommended</button></div>'+
+  '</div>';
+  return h;
+}
+function fmtIso(d){ var m=d.getMonth()+1,dd=d.getDate(); return d.getFullYear()+'-'+(m<10?'0':'')+m+'-'+(dd<10?'0':'')+dd; }
+var REC_WHY={
+ d1:[['1','<b>Nothing was asked.</b> The number on the card came from two facts the learner already owns — 42 lessons and 30 days of access — and one house rule, the buffer. That is the whole difference from both references, which open with a question.'],
+     ['2','<b>It is heavy, and it says so honestly.</b> Forty-two lessons in twenty-five days is well over an hour a night. The study-plan page found the same thing: 30 days is the aggressive end of this course, not its middle. A recommendation that hid that would set up the Behind state for nearly everyone.'],
+     ['3','<b>Adjust only goes one way.</b> Fewer or more nights, a different study style, an earlier finish. Never later — see the note below on why Relaxed cannot exist here.']],
+ d10:[['1','<b>Opened again on day 10, it re-derives.</b> Ten lessons done, thirty-two left, sixteen days to the buffered finish. The nightly ask has grown, and the recommendation quietly moved to five nights to keep an evening under the strain line rather than quote a heavier four.'],
+      ['2','<b>The "recommended" label survives only while nothing has been touched.</b> The moment any control changes, the pill reads <i>Your pace</i> — the product should not keep calling a number the learner chose a recommendation.']],
+ d22:[['1','<b>The window can run out, and the widget must say so rather than quote an absurd number.</b> Twenty-two lessons in three days is past the ceiling at six nights a week. No pace fixes that.'],
+      ['2','<b>The button is Extend access, and that is a product decision, not a UX one.</b> Whether an extension exists, what it costs, and whether an agency-sponsored seat can buy one are all open. The widget can only route to the answer.']]
+};
+function renderRec(){
+  var m=recModel();
+  document.getElementById('recWidget').innerHTML=recWidget(m);
+  var host=document.getElementById('recDays'); host.innerHTML='';
+  REC_DAYS.forEach(function(o){ var b=document.createElement('button'); b.className='mchip'; b.type='button'; b.textContent=o.lb;
+    b.setAttribute('aria-pressed',o.id===REC.day?'true':'false');
+    b.onclick=function(){ REC.day=o.id; REC.nights=null; REC.finish=null; REC.style='avg'; renderRec(); }; host.appendChild(b); });
+  var ob=document.getElementById('recOpen'); ob.setAttribute('aria-pressed',REC.open?'true':'false'); ob.textContent=REC.open?'Hide Adjust':'Show Adjust open';
+  ob.onclick=function(){ REC.open=!REC.open; renderRec(); };
+  document.getElementById('recWhy').innerHTML=(REC_WHY[REC.day]||[]).map(function(r){ return '<div class="critrow"><span class="k">'+r[0]+'</span><span class="t">'+r[1]+'</span></div>'; }).join('');
+  var ab=document.getElementById('recAdjBtn'); if(ab) ab.onclick=function(){ REC.open=!REC.open; renderRec(); };
+  Array.prototype.forEach.call(document.querySelectorAll('#recAdj [data-nights]'),function(b){ b.onclick=function(){ REC.nights=+b.getAttribute('data-nights'); renderRec(); }; });
+  Array.prototype.forEach.call(document.querySelectorAll('#recAdj [data-style]'),function(b){ b.onclick=function(){ REC.style=b.getAttribute('data-style'); renderRec(); }; });
+  var fi=document.getElementById('recFinish'); if(fi) fi.onchange=function(){
+    var p=fi.value.split('-'); if(p.length!==3) return; var d=new Date(+p[0],+p[1]-1,+p[2]);
+    var mm=recModel(); var max=addDays(mm.accessEnd,-1);
+    REC.finish = d>max ? max : (d<=mm.today ? addDays(mm.today,1) : d); renderRec(); };
+  var rs=document.getElementById('recReset'); if(rs) rs.onclick=function(){ REC.nights=null; REC.finish=null; REC.style='avg'; renderRec(); };
+  var sv=document.getElementById('recSave'); if(sv) sv.onclick=function(){ REC.open=false; renderRec(); };
+}
+
+/* ============================================================
    CHROME
    ============================================================ */
 function chips(host,list,cur,cb){
@@ -871,7 +1097,7 @@ var PACE_NOTES={
  finding:'<b>Under three lessons we do not quote a pace</b> — two data points extrapolated to a month is a number nobody should be told. The widget states what the date requires instead, which is the same sentence the study plan’s first offer is built from.',
  ahead:'<b>Ahead quotes the early finish and offers nothing.</b> There is no upsell into a nearer exam date here; that belongs to the study plan, where both options get priced.',
  ontrack:'<b>On track is the state that has to earn silence.</b> The timeline still moves — the filled dot is where this pace lands — but the sentence only says what keeps it true.',
- behind:'<b>Behind recommends more time, once, and names the day it gets you back to.</b> It does not raise its voice, and it does not offer to move the date — see the note under section 02 for what that assumes.',
+ behind:'<b>Behind recommends more time, once, and names the day it gets you back to.</b> It does not raise its voice, and it does not offer to move the date — see the note under section 03 for what that assumes.',
  paused:'<b>Paused is Behind with a different first sentence.</b> The ask is the same — minutes a night — but the lead names the fact that caused it, because "you’re behind" is a verdict and "no lessons in two weeks" is something they can act on tonight.',
  impossible:'<b>This is the one state where the date has to be mentioned.</b> The recommendation has a ceiling; past it, more minutes is not an honest answer. The button goes to a person, not a form.',
  complete:'<b>Complete hands over.</b> The widget names how early they finished and points at Readiness, which is now the only question left.'
@@ -989,7 +1215,7 @@ function renderRules(){
   });
 }
 
-render(); renderPaceLadder(); renderReadLadder(); renderRules();
+render(); renderRec(); renderPaceLadder(); renderReadLadder(); renderRules();
 </script>
 </body>
 </html>

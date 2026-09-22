@@ -25,6 +25,7 @@ import {
   NY_PRODUCER_HOURS_INVENTED,
 } from '@/data/nyProducerRequirements'
 import { XCEL_NY_PRODUCER_PATH_ID } from '@/data/studyCalendarFixtures'
+import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 import type { Brand } from '@/context/AccountContext'
 import type { CourseCardData } from '@/components/courses/CourseCard'
 import type { LearningPathSummary, LearningPathCategoryBreakdown, LearningPathCategory } from '@/data/learningFixtures'
@@ -68,6 +69,9 @@ export type DashboardProgressPersona = {
   jumpBackInId?: string
   /** Demo renewal override for the band's Deadline / Time Remaining cells. */
   renewal?: { deadline: string; weeksLeft: number }
+  /** Minutes studied per day this week, Monday-first — see
+   *  `STUDY_MINUTES_BY_VARIANT`. Absent when there is no progress to read. */
+  weekMinutes?: number[]
   /** Renewal-ready treatment (100% complete): swap the resume card for a
    *  "Requirements met" state + a View certificate / Start next cycle CTA. */
   renewalReady?: boolean
@@ -251,9 +255,38 @@ const PROFILES: Record<EducationType, Partial<Record<Brand, BrandProgressProfile
       // day count. The two units sit on one screen and mean different things —
       // 40 credit hours is what New York requires, 7 days is how XCEL's plan
       // paces it.
-      upNext: { id: 'jbi-xcel-qe-ny', title: 'Pre-licensing Course', imageUrl: NY_LH_COURSE_IMAGE, hours: NY_PRODUCER_HOURS_INVENTED.preLicenseEducation, state: 'NY', delivery: 'online', badge: 'mandatory', status: 'not-started', progress: 0 },
-      resumeMid: { id: 'jbi-xcel-qe-ny', title: 'Pre-licensing Course', imageUrl: NY_LH_COURSE_IMAGE, hours: NY_PRODUCER_HOURS_INVENTED.preLicenseEducation, state: 'NY', delivery: 'online', badge: 'mandatory', status: 'in-progress', progress: 45 },
-      resumeEarly: { id: 'jbi-xcel-qe-ny', title: 'Pre-licensing Course', imageUrl: NY_LH_COURSE_IMAGE, hours: NY_PRODUCER_HOURS_INVENTED.preLicenseEducation, state: 'NY', delivery: 'online', badge: 'mandatory', status: 'in-progress', progress: 20 },
+      //
+      // THE 30-DAY ACCESS WINDOW (2026-09-21). Added so the course carries the
+      // one fact the pacing surfaces need and had been deriving nothing from:
+      // when access ends. Without it `studyPace` has NO CEILING — `binding`
+      // resolves to `'none'`, it falls back to the Focused horizon, and both
+      // the `presets` card and Testing 2's tile quote a date nothing enforces.
+      //
+      // **30 IS SOURCED, NOT PICKED.** XCEL's own product page — "30 days
+      // access to Part 1" — which is `ACCESS_DAYS_CONFIRMED` in
+      // `xcel-pace-presets.html`'s rules table, one of the two constants there
+      // that come from the storefront rather than from us. This IS Part 1.
+      //
+      // ⚠ `enrolledAt` IS LOAD-BEARING, and dropping it as redundant is the
+      // mistake this note exists to stop. `warnWindowFor` clamps the countdown
+      // to HALF the enrolment window, so 30 days of access gives a 15-day
+      // warning window and the badge stays off at 23 days out. Without
+      // `enrolledAt` there is no window to halve, the configured 60 stands, and
+      // the Jump Back In card grows an "expiring soon" badge — on QE Focused,
+      // which is XCEL's DEFAULT version and the thing a stakeholder lands on.
+      // The clamp's own header calls this out: it exists so a course whose
+      // window is shorter than its countdown does not warn from the day it is
+      // bought.
+      //
+      // Dates are relative to FIXTURE_TODAY (2026-05-11), like every other date
+      // in this file: enrolled a week ago, 23 days of access left.
+      //
+      // All THREE states share the pair — it is one course, and an access
+      // window that changed with how far along the learner is would be the
+      // fixture contradicting itself.
+      upNext: { id: 'jbi-xcel-qe-ny', title: 'Pre-licensing Course', imageUrl: NY_LH_COURSE_IMAGE, hours: NY_PRODUCER_HOURS_INVENTED.preLicenseEducation, state: 'NY', delivery: 'online', badge: 'mandatory', status: 'not-started', progress: 0, enrolledAt: '2026-05-04', expiresAt: '2026-06-03' },
+      resumeMid: { id: 'jbi-xcel-qe-ny', title: 'Pre-licensing Course', imageUrl: NY_LH_COURSE_IMAGE, hours: NY_PRODUCER_HOURS_INVENTED.preLicenseEducation, state: 'NY', delivery: 'online', badge: 'mandatory', status: 'in-progress', progress: 45, enrolledAt: '2026-05-04', expiresAt: '2026-06-03' },
+      resumeEarly: { id: 'jbi-xcel-qe-ny', title: 'Pre-licensing Course', imageUrl: NY_LH_COURSE_IMAGE, hours: NY_PRODUCER_HOURS_INVENTED.preLicenseEducation, state: 'NY', delivery: 'online', badge: 'mandatory', status: 'in-progress', progress: 20, enrolledAt: '2026-05-04', expiresAt: '2026-06-03' },
     },
   },
 
@@ -406,29 +439,131 @@ const PROGRESS_RATIOS: Record<DashboardProgressVariant, { m: number; e: number }
  * over their `weeksLeft`-based `derivedStatus`. The tint, the pill and the
  * message all follow the override, so On Track stays On Track at 27 days.
  *
- * KNOWN, and not fixed here: `deadline` and `weeksLeft` in this map have never
- * agreed with each other — `progress-at-risk` is 3 weeks against a date four
- * months out, and the anchored fixture "today" (2026-05-11) is 31 weeks from
- * 12/15/2026, not 22. They are two independently authored demo values, which is
- * why 27 days sits beside a target date in December without that being a new
- * defect. Deriving one from the other is the fix; it would move every state's
- * visible date, so it is its own change.
+ * FIXED 2026-09-21, and it was forced rather than chosen. This note used to end
+ * "`deadline` and `weeksLeft` in this map have never agreed with each other …
+ * deriving one from the other is the fix; it would move every state's visible
+ * date, so it is its own change." The direct ask — "demo data for now should
+ * never be more than 30 days to complete course" — IS that change: capping the
+ * countdown while leaving authored deadlines would have put "20 days to
+ * complete" beside a date in 2027 on every state but this one, turning a
+ * documented quirk into a fresh contradiction.
+ *
+ * So the table below authors DAYS and derives the deadline from
+ * `FIXTURE_TODAY`. One number per state, and the pair can no longer disagree.
  */
 const ON_TRACK_DAYS_LEFT = 27
 
-const RENEWAL_BY_VARIANT: Record<DashboardProgressVariant, { deadline: string; weeksLeft: number }> = {
-  'setup-complete-0': { deadline: '08/28/2027', weeksLeft: 110 },
-  'not-started': { deadline: '08/28/2027', weeksLeft: 110 },
-  'progress-on-track': { deadline: '12/15/2026', weeksLeft: ON_TRACK_DAYS_LEFT / 7 },
-  // At Risk = under 30 days left (and the requirement <25% done).
-  'progress-at-risk': { deadline: '08/05/2026', weeksLeft: 3 },
-  // Off Track = still ~3 months of runway, but well behind the pace needed.
-  'progress-off-track': { deadline: '10/20/2026', weeksLeft: 12 },
-  // Expired = deadline already passed, requirement unmet.
-  'progress-expired': { deadline: '06/30/2026', weeksLeft: 0 },
-  'complete-100': { deadline: '07/31/2026', weeksLeft: 40 },
-  'completed-empty': { deadline: '07/31/2026', weeksLeft: 40 },
-  'new-empty': { deadline: '08/28/2027', weeksLeft: 110 },
+/**
+ * The cap the ask sets — "demo data for now should never be more than 30 days
+ * to complete course".
+ *
+ * ⚠ 29, NOT 30, and the off-by-one is the whole point rather than a rounding
+ * habit. `timeRemaining` switches to a day countdown at `days < 30`, so 30 is
+ * the one value inside the cap that still renders as "4 wks" — a state nominally
+ * within the window and visibly outside it. 29 is the largest value that both
+ * satisfies the ask and reads as the ask intends.
+ *
+ * It also sits just inside the pre-licensing access window the course fixture
+ * carries (30 days), so no state counts down longer than the access it is
+ * counting inside — which is the thing that read as wrong to begin with.
+ */
+const MAX_DEMO_DAYS_LEFT = 29
+
+/** `FIXTURE_TODAY` + n days, as the zero-padded `MM/DD/YYYY` every consumer of
+ *  `deadline` already parses. Built from local parts, never from an ISO string
+ *  — the UTC off-by-one `courseExpiry` documents. */
+function deadlineIn(days: number): string {
+  const d = new Date(FIXTURE_TODAY)
+  d.setDate(d.getDate() + days)
+  const mm = String(d.getMonth() + 1).padStart(2, '0')
+  const dd = String(d.getDate()).padStart(2, '0')
+  return `${mm}/${dd}/${d.getFullYear()}`
+}
+
+/** Days left per state — every one at or under {@link MAX_DEMO_DAYS_LEFT}. */
+const DAYS_LEFT_BY_VARIANT: Record<DashboardProgressVariant, number> = {
+  // A fresh start has the whole window.
+  'setup-complete-0': MAX_DEMO_DAYS_LEFT,
+  'not-started': MAX_DEMO_DAYS_LEFT,
+  'progress-on-track': ON_TRACK_DAYS_LEFT,
+  // At Risk = a short runway with the requirement barely begun.
+  'progress-at-risk': 21,
+  // Off Track = less room than On Track and well behind the pace needed. It was
+  // "~3 months of runway"; the 30-day cap makes that story unavailable, so what
+  // distinguishes it now is the SHORTFALL rather than the horizon — which is
+  // what `STATUS_BY_VARIANT`'s override was always carrying anyway.
+  /* 10, matching the short access window this state's course now carries (see
+     the jump-back-in chain). A renewal countdown LONGER than the access it sits
+     inside is the kind of disagreement the deadline/days-left pair was just
+     rebuilt to stop. */
+  'progress-off-track': 10,
+  // Expired = the deadline is behind us. The STATE comes from the status
+  // override, not from this number; the date is a day in the past so the two
+  // do not contradict each other on the surfaces that print it.
+  'progress-expired': -1,
+  'complete-100': MAX_DEMO_DAYS_LEFT,
+  'completed-empty': MAX_DEMO_DAYS_LEFT,
+  'new-empty': MAX_DEMO_DAYS_LEFT,
+}
+
+const RENEWAL_BY_VARIANT: Record<DashboardProgressVariant, { deadline: string; weeksLeft: number }> =
+  Object.fromEntries(
+    (Object.keys(DAYS_LEFT_BY_VARIANT) as DashboardProgressVariant[]).map((v) => {
+      const days = DAYS_LEFT_BY_VARIANT[v]
+      return [
+        v,
+        {
+          deadline: deadlineIn(days),
+          /* A FRACTION on purpose. `timeRemaining` switches to a day countdown
+             under 30 days and every state is now inside that, so what the
+             surfaces print is days — the weeks value exists because that is the
+             unit the consumers take, not because anything displays weeks. Never
+             below 0: an expired state's date is in the past, but a negative
+             countdown renders "-1 days" beside a required rate of infinity. */
+          weeksLeft: Math.max(0, days) / 7,
+        },
+      ]
+    }),
+  ) as Record<DashboardProgressVariant, { deadline: string; weeksLeft: number }>
+
+/**
+ * MINUTES ACTUALLY STUDIED, Monday-first, for the week containing
+ * `FIXTURE_TODAY` — 2026-09-21, the direct ask that the pace card's week strip
+ * stop being a suggestion once there is progress to read.
+ *
+ * ⚠ THIS IS NEW DEMO DATA, and authoring it was the decision rather than a
+ * detail. The pacing version has refused observed rates throughout — its flag
+ * description says none of the treatments "invents an observed rate, a schedule
+ * to be ahead of, or a projected finish date, because nothing here knows any of
+ * those", and a test sweeps every treatment for that copy. Deriving a week's
+ * activity from a progress PERCENTAGE would have been exactly that invention:
+ * plausible, unfalsifiable and false. Giving the model the fact instead is the
+ * honest way to have it.
+ *
+ * PER VARIANT, which is the whole point — the demo picker has to change the
+ * strip. `not-started` is absent deliberately: with nothing studied there is
+ * nothing to read, and the card falls back to stating the suggested week.
+ *
+ * ⚠ THE FIXTURE CLOCK IS A MONDAY (2026-05-11), so only index 0 has elapsed and
+ * the strip shows ONE filled circle whatever these say. The later days are
+ * authored anyway — they are what the week looks like, and they become visible
+ * the moment the clock moves. See the card's own note for the two ways out.
+ *
+ * NOT `LEARNING_STREAK.recent30`, which already carries per-day minutes: it is
+ * one array for every brand and every state (so the picker would not move it),
+ * and its "today" is 2026-05-20 — nine days off this file's clock.
+ */
+const STUDY_MINUTES_BY_VARIANT: Partial<Record<DashboardProgressVariant, number[]>> = {
+  // Behind: a short Monday against a target of roughly an hour and three
+  // quarters, which is what "at risk" should look like in a week rather than
+  // only in a status pill.
+  'progress-at-risk': [25, 0, 40, 0, 0, 0, 0],
+  // On track: a full Monday, then a week that keeps the pace.
+  'progress-on-track': [105, 95, 110, 0, 100, 0, 0],
+  'progress-off-track': [30, 0, 0, 45, 0, 0, 0],
+  // Finished: the week tapers because there is nothing left to do.
+  'complete-100': [60, 40, 0, 0, 0, 0, 0],
+  'progress-expired': [0, 0, 0, 0, 0, 0, 0],
 }
 
 const STATUS_BY_VARIANT: Record<DashboardProgressVariant, HomeStatus> = {
@@ -566,7 +701,39 @@ function personaFor(profile: BrandProgressProfile, variant: DashboardProgressVar
         ? profile.resumeMid
         : variant === 'progress-at-risk' || variant === 'progress-expired'
           ? profile.resumeEarly
-          : undefined // complete-100 → renewal-ready card replaces Jump Back In
+          : variant === 'progress-off-track'
+            ? /* OFF TRACK GETS A SHORT WINDOW, and that is what finally makes
+                 the model's "won't fit" state reachable — 2026-09-21.
+                 `state: 'no'` needs `minsPerWeek` past `CEILING_MINS × 6`
+                 (1260). With 32 hours left against the standard 30-day window
+                 that is 610, so no progress level could ever trigger it and the
+                 card's whole unreachable-pace branch was dead copy.
+
+                 11 days of access against 32 hours of work is ~1344 — over the
+                 line, and true to what the state is FOR: someone who bought
+                 late and left it. It is the window that is short here, not the
+                 course that is long, because a learner cannot change the course.
+
+                 ⚠ IT ALSO FIXES A SILENT FALLBACK. `progress-off-track` was
+                 absent from this chain entirely and fell through to
+                 `undefined`, which sent the band to `myCoursesFor(brand)` and a
+                 different course with a stock photo — the same defect
+                 `complete-100` had. */
+              { ...profile.resumeEarly, expiresAt: '2026-05-22' }
+          : variant === 'complete-100'
+            ? /* THE COURSE AT 100%, not `undefined` — 2026-09-21. This read
+                 "complete-100 → renewal-ready card replaces Jump Back In",
+                 which was true while the band returned that card instead of
+                 itself. It no longer does (the ask for a completed state on the
+                 normal band), so an absent course fell through to the band's
+                 `myCoursesFor(brand)` fallback and the page came up showing a
+                 DIFFERENT course: a Florida CE record with a stock photo of a
+                 house, under a header naming the New York pre-licensing path,
+                 with "Review course" pointing at it.
+
+                 `resumeMid` at 100% progress — same course record, finished. */
+              { ...profile.resumeMid, progress: 100, status: 'completed' as const }
+            : undefined
   // Jump Back In slot mode — auto-derived from the variant. A not-started course
   // is "Up Next" (launch), a partial course is "Resume", and the discovery
   // states send the learner to the catalog.
@@ -584,6 +751,7 @@ function personaFor(profile: BrandProgressProfile, variant: DashboardProgressVar
     jumpBackInMode,
     discoveryTone,
     renewal: RENEWAL_BY_VARIANT[variant],
+    weekMinutes: STUDY_MINUTES_BY_VARIANT[variant],
     renewalReady: variant === 'complete-100',
     // Carry the state's time + deadline onto the path so the detail panel's
     // Time Remaining ("Xd" / "N wks" / "Y yr, N wks") AND License Expires read
@@ -630,13 +798,35 @@ export type ProgressPickerOption = {
   variant: DashboardProgressVariant
   label: string
   status: HomeStatus
+  /**
+   * Present = the row is OFFERED BUT NOT SELECTABLE, and this says why.
+   *
+   * For a state the flag supports and the DESIGN does not yet — the fixtures
+   * resolve it, so the dashboard would render something, but nobody has decided
+   * what that something should say. Picking it would put a reviewer in front of
+   * a screen the team has not agreed on and let them read it as the proposal.
+   *
+   * SHOWN RATHER THAN DROPPED: the state is part of the compliance story and a
+   * stakeholder who asks "what about expired?" should see it listed and pending,
+   * not absent. Deleting the row would read as "we forgot".
+   *
+   * ⚠ NOT A KILL SWITCH. The variant stays declared and `?ff=` / the Feature
+   * Flag panel still reach it — this governs the reviewer-facing picker only, so
+   * whoever is DESIGNING the state can still open it.
+   */
+  unavailable?: string
 }
 
 export const DASHBOARD_PROGRESS_PICKER: ProgressPickerOption[] = [
   { variant: 'not-started', label: 'Not Started · 0%', status: 'not-started' },
   { variant: 'progress-on-track', label: 'On Track · ~63%', status: 'on-track' },
   { variant: 'progress-at-risk', label: 'At Risk · ~15%', status: 'at-risk' },
-  { variant: 'progress-expired', label: 'Expired', status: 'expired' },
+  {
+    variant: 'progress-expired',
+    label: 'Expired',
+    status: 'expired',
+    unavailable: 'Requirements for the expired state are not defined yet.',
+  },
   { variant: 'complete-100', label: 'Completed · 100%', status: 'completed' },
 ]
 

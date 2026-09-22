@@ -44,7 +44,13 @@ beforeEach(() => {
 
 describe('the Study Plan section', () => {
   it('is a rail item, directly under Home', () => {
-    renderShell('/dashboard-rebrand')
+    /* QE FOCUSED BY NAME, not the default. This asserts the rail BASELINE, and
+       the two pacing versions drop Study Plan as a property of their layout —
+       so once Testing 2 became XCEL's default on 2026-09-21, a bare
+       `/dashboard-rebrand` here was checking the baseline against a rail
+       deliberately trimmed of the very row under test. The SECTION still
+       resolves on those versions; it is the row that is hidden. */
+    renderShell('/dashboard-rebrand?version=discoverability-qe-focused')
     const rail = screen
       .getAllByRole('button')
       .map((b) => b.textContent?.trim())

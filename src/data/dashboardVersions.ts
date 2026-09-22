@@ -11,7 +11,8 @@ export type DashboardVersionId =
   | 'discoverability-marketing-focused'
   | 'discoverability-badged'
   | 'discoverability-qe-focused'
-
+  | 'discoverability-testing'
+  | 'discoverability-testing-2'
 /**
  * The rebrand overview's LAYOUT, resolved from `?version=` by `PlatformShell`
  * and threaded to `MembershipOverview`. One exported name because five files
@@ -26,7 +27,8 @@ export type DashboardLayout =
   | 'marketing-focused'
   | 'badged'
   | 'qe-focused'
-
+  | 'testing'
+  | 'testing-2'
 export type DashboardVersion = {
   id: DashboardVersionId
   label: string
@@ -162,6 +164,99 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED: DashboardVersion = {
     'Built for a pre-licensing candidate working towards a booked exam. The top band slims to path identity + status + Resume beside a Study Journey — the curriculum as an ordered sequence of chapters and milestone exams. Below it the Learning Path detail sheet\u2019s whole Progress tab renders inline: completion gauge, category bars, Target Date / Time Remaining / Completed tiles, and a course list per requirement category. Recommended for You is dropped \u2014 this version is not a discovery dashboard.',
 }
 
+// "Testing 2" (2026-09-21) — a CLONE of QE Focused carrying the PRESET-AND-SHEET
+// answer to the pacing slot.
+//
+// **It is the second of two, and the pairing is the point.** "Testing"
+// (`discoverability-testing`, built on the same day on its own branch) asks what
+// the tile should SHOW — it drops Readiness, gives Study Pace the full width, and
+// offers four treatments behind `dashboard-pacing-style`. This one asks what the
+// learner should be able to DO: the tile keeps its square and shows one derived
+// pace with NO controls, and everything adjustable moves behind Adjust into a
+// sheet — the three finish dates, days a week, an exam date, and building a study
+// plan on the calendar. The two are not competing drafts of one design; they are
+// different questions about the same slot, and both want answering.
+//
+// Both are layouts of their own rather than flags ON QE Focused, for one reason:
+// they have to be openable SIDE BY SIDE in separate tabs, and a flag is global to
+// the session — flipping it would change every tab at once.
+//
+// Everything QE Focused does, this does, because `MembershipOverview` treats
+// `testing-2` as qe-focused for every other decision. The ONLY divergence is the
+// left square tile, which renders the real `StudyPaceTile` instead of the lo-fi
+// stub. Readiness stays lo-fi here: it is the next thing, not this one.
+export const DISCOVERABILITY_DASHBOARD_VERSION_TESTING_2: DashboardVersion = {
+  id: 'discoverability-testing-2',
+  label: 'Testing 2',
+  createdAt: '2026-09-21',
+  modifiedAt: '2026-09-21',
+  description:
+    'QE Focused with a LIVE Study Pace tile in the square slot. The tile itself operates nothing — it states one derived pace and offers Adjust, which opens a sheet holding the three finish dates (Relaxed / Recommended / Focused, each a date rather than a weekly quota), how many days a week, an optional exam date, and a switch that turns the pace into sessions on the Study Plan. Two ceilings can bind — course access expiry, and the exam date minus a review buffer — and the sheet says which one is doing the work. Readiness is still a lo-fi stub. Compare with Testing, which asks what the tile should show rather than what it should let you change.',
+}
+
+// "Testing" — QE Focused with the home screen's second row opened up for the
+// PACING exploration. Added 2026-09-21, and it is a WORKING version rather than
+// a candidate: it exists so the pacing treatments can be compared on the real
+// home screen against real data, not so a stakeholder can be shown a fourth
+// layout.
+//
+// Two departures from QE Focused, and they are one change seen from both ends:
+//
+//   1. **The Readiness tile is dropped.** It is the right-hand half of the
+//      band's square-tile pair and has been a deliberate lo-fi stub since
+//      2026-09-17 ("Not designed yet"). There IS a real readiness model one
+//      rail item away (`ReadinessPanel`), so the stub is the placeholder, not
+//      the section — dropping it here costs nothing and takes an unbuilt
+//      surface out of the frame while the built one beside it is being judged.
+//   2. **Study Pace takes the whole row**, and stops being square. Square was
+//      a property of the PAIR, not of the content; alone in a ~506px column a
+//      1:1 tile would be a 506px box holding two lines. `dashboard-pacing-
+//      style` then picks the treatment inside it.
+//
+// It inherits everything else QE Focused does — the page-surface band, the
+// category gauge, the Study Journey, no Recommended band, the requirements-only
+// detail sheet — because the question being asked is about ONE tile and every
+// other difference would be noise in the comparison.
+export const DISCOVERABILITY_DASHBOARD_VERSION_TESTING: DashboardVersion = {
+  id: 'discoverability-testing',
+  label: 'Testing',
+  createdAt: '2026-09-21',
+  modifiedAt: '2026-09-21',
+  description:
+    'QE Focused with the home screen\u2019s second row given over to the Pacing exploration. The Readiness tile \u2014 a lo-fi stub since 2026-09-17 \u2014 is dropped, and Study Pace takes the full width and stops being square. Which pacing treatment renders there is `dashboard-pacing-style`: Lo-fi (the stub, for comparison), Rate (a suggested hrs/day), Runway (work remaining laid against time remaining) or Balance (the two figures, no derived rate). Everything else matches QE Focused so the comparison is about the one tile.',
+}
+
+/**
+ * Does this version resolve a QUALIFYING journey (pre-licensing / exam prep)
+ * rather than a CE renewal cycle?
+ *
+ * TWO PLACES act on this and they must agree, which is why it is a function
+ * rather than an `=== 'discoverability-qe-focused'` in each:
+ *
+ *   - `MembershipOverview` forces `educationType` to `qe` / `exam-prep`, so the
+ *     version named for qualifying education cannot open on a CE path.
+ *   - `DemoControlsBar` drops Continuing Ed from its Education dropdown for the
+ *     same reason, and labels the control with what the PAGE resolved.
+ *
+ * They were two hardcoded id comparisons, and adding Testing broke the second
+ * one silently: the page resolved a pre-licensing path while the bar above it
+ * still offered — and read — "Continuing Ed", which is exactly the "dropdown
+ * entry that changes nothing when clicked" the flag audit spent a pass
+ * removing. The bar calls this now; `MembershipOverview` tests the LAYOUT
+ * (`qe-focused` plus `testing`), because that is the value it is threaded.
+ *
+ * A new QE-shaped version is one entry here, not two edits in two files.
+ */
+export function isQualifyingEducationVersion(versionId: string): boolean {
+  return (
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED.id ||
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_TESTING.id ||
+    // Testing 2 is a QE clone too — without this the demo bar would offer
+    // Continuing Ed on a page that resolves a pre-licensing path, which is
+    // the exact defect the note above records.
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_TESTING_2.id
+  )}
+
 // "Go to Legacy 2.0 Dashboard" is NOT a version here — because the classic
 // dashboard loads outside this shell (a full navigation to `/dashboard`, the
 // "Legacy Dashboard 2.0" tile link), it renders as a plain jump-off CTA below
@@ -173,21 +268,43 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED: DashboardVersion = {
 // DISCOVERABILITY_DASHBOARD_VERSION_BADGED here to restore it to the picker.)
 export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
   DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
-  DISCOVERABILITY_DASHBOARD_VERSION_MARKETING_FOCUSED,
+  DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
+  DISCOVERABILITY_DASHBOARD_VERSION_TESTING_2,  DISCOVERABILITY_DASHBOARD_VERSION_MARKETING_FOCUSED,
   DISCOVERABILITY_DASHBOARD_VERSION_LEARNER_FOCUSED,
 ]
 
 /**
  * Which Discoverability layout a brand lands on with NO `?version=`.
  *
- * Marketing Focused is the house default. **XCEL defaults to QE Focused**
- * (2026-09-16). It defaulted to Learner Focused from 2026-09-04 for the right
- * reason — XCEL sells a licence, not a membership, so there is no upsell for a
- * marketing carousel to carry, and its learners arrive with a booked exam date.
- * QE Focused carries that argument further rather than reversing it: Learner
- * Focused leads with the progress gauge, and this one leads with the whole
- * requirement breakdown plus what to study next. Learner Focused stays in the
- * picker so the two can be compared.
+ * Marketing Focused is the house default. **XCEL defaults to TESTING**
+ * (2026-09-21, the direct ask: "i actually wanted Testing 1 as the default").
+ *
+ * THE LINEAGE, because each step carried the last one's argument forward rather
+ * than reversing it. Learner Focused from 2026-09-04 — XCEL sells a licence,
+ * not a membership, so there is no upsell for a marketing carousel to carry and
+ * its learners arrive with a booked exam date. QE Focused from 2026-09-16 —
+ * Learner Focused leads with the progress gauge, and this leads with the whole
+ * requirement breakdown plus what to study next. Testing now — QE Focused with
+ * the Readiness stub dropped, the whole square row given to Study Pace, the
+ * trimmed three-row rail and the journey split into four widgets. Both earlier
+ * versions stay in the picker so the three can be compared.
+ *
+ * ⚠ THIS REVERSES A DECISION THAT WAS PINNED, and the pin was right when it was
+ * written. Testing shipped on 2026-09-21 explicitly NOT as the default, with a
+ * test asserting it, because "a fourth picker entry that quietly became what a
+ * stakeholder lands on is the worst outcome this change could have". Nothing
+ * about that reasoning was wrong — what changed is that it is no longer quiet.
+ * This is the deliberate promotion the pin existed to force, and the test was
+ * rewritten to assert the new default rather than deleted, so the original
+ * subject survives.
+ *
+ * ⚠ WHAT IT MOVES, and it is the whole point of the pin: the public link and
+ * the `?demo=1` baseline now open on TESTING, whose Study Pace tile renders
+ * `dashboard-pacing-style`'s committed default — `runway`. So the landing page
+ * is now a pacing EXPLORATION rather than a settled design, and which treatment
+ * a stakeholder sees is a flag default rather than a version decision. Changing
+ * `defaultVariant` is how that is answered; it was deliberately left alone here
+ * because it is a separate call.
  *
  * ⚠ TWO PLACES read a default and they must agree, or the picker marks one
  * layout "Default" while the page loads the other: `PlatformShell`'s
@@ -199,7 +316,7 @@ export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
  */
 export function defaultDiscoverabilityVersionFor(brand: Brand): string {
   return brand === 'xcel'
-    ? DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED.id
+    ? DISCOVERABILITY_DASHBOARD_VERSION_TESTING.id
     : DISCOVERABILITY_DASHBOARD_VERSION_MARKETING_FOCUSED.id
 }
 

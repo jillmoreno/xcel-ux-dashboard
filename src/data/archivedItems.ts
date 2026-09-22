@@ -56,6 +56,29 @@ export type ArchivedItem = {
 
 export const ARCHIVED_ITEMS: ArchivedItem[] = [
   {
+    id: 'learner-band-completed-celebration',
+    name: 'Completed celebration band (100%)',
+    what: 'The green "You’re all caught up!" card the Learner Focused band returned INSTEAD of itself at 100% — a success half with the completed stats and a View Certificate action, joined to a white panel offering Browse Catalog.',
+    location:
+      'src/components/membership/v5/LearnerFocusedBand.tsx — the `if (renewalReady) { … }` early return, replaced by a block comment at the same spot. `CompletedCelebration` and its `CompletedStat` type are UNTOUCHED in `CompletedCelebration.tsx` and still used by `ClpJumpBackInBand` and `MarketingFocusedBand`.',
+    dateRemoved: '2026-09-21',
+    reason:
+      'The direct ask for a completed state on the NORMAL band ("the course image should not disappear"). The early return was why nothing else survived 100%: the course header and its art, the Study Journey, the Jump Back In card and the pace tile were all below it and never rendered. What replaced it is the band in a completed state — the pace tile hidden, Jump Back In reading "Review Course Material", and the journey marking all four coursework stops complete. The celebration is not wrong, it is a different answer to the same state, and keeping both would have said "complete" twice on one screen.',
+    restoreNote:
+      'Re-add one `if (renewalReady) { … }` block at the top of `LearnerFocusedBand`’s render, above the `return (` — it built a `CompletedStat[]` from `mandatory`/`elective` when `hasBreakdown`, then `deadline` and `timeRemainingText(weeksLeft)`, and returned a `<section aria-label="Learning path complete" className="cre-learner-focused-band">` with a two-column grid wrapping `<CompletedCelebration …>`. Re-import `CompletedCelebration` and `type CompletedStat` from `./CompletedCelebration`, and `DiscoveryEmpty` from `./JumpBackInDiscoveryEmpty` (both imports went with it). `renewalReady`, `onBrowseCatalog` and `onViewCertificate` are ALL STILL PROPS — `renewalReady` now drives the completed treatments inside the band, and the other two are accepted-and-ignored precisely so a restore needs no caller changes; re-add them to the destructure. NOT restored deliberately: the second `gridTemplateColumns: stack ? …` declaration that lived in that branch. A test (`has only ONE grid to edit now`) pins its absence, because the celebration grid once received an edit meant for the live one and the symptom was the left column silently getting narrower — re-adding the branch means updating that test and inheriting the warning in it.',
+  },
+  {
+    id: 'header-cart',
+    name: 'Header cart button',
+    what: 'The shopping-cart icon pill in the top-right header cluster, left of the notification bell and the account menu.',
+    location: 'src/components/layout/Header.tsx — `CartButton`, exported and unreferenced.',
+    dateRemoved: '2026-09-21',
+    reason:
+      'The direct ask ("no cart"). It was a `<Link to="#">` — a control that has never gone anywhere — in a product where the learner is already enrolled and buys course packages on xcelsolutions.com rather than inside the LMS, so it promised a storefront this app does not have. Removed in the same pass as the membership upsell band and the Career Tools "Member Exclusive" badge, but for a DIFFERENT reason: those two are a correctness fix behind `supportsMembership` and return on their own for a brand that sells a membership, whereas this is editorial and therefore archived.',
+    restoreNote:
+      'Re-add `<CartButton />` as the first child of the `utilities` cluster in `Header.tsx` (directly above `{showBell && <NotificationsMenu />}`), and delete the block comment that replaced it. The component itself is unchanged and still exported from that file — drop the `export` again if it regains its only in-file caller, since it was exported solely to keep an unreferenced local function from failing lint. NOT restored with it, and a separate decision: the `to="#"` href. It never resolved, so a restore that matters wants a real destination (a cart route, or an outbound link to the xcelsolutions.com basket) rather than the dead link this was. Nothing else moved — the bell and the account menu keep their positions, and the cluster comment explaining why the bell sits between Cart and the avatar was deliberately left in place.',
+  },
+  {
     id: 'dashboard-mvp-version',
     name: 'Dashboard MVP (classic /dashboard version)',
     what:

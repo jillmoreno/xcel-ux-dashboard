@@ -98,6 +98,8 @@ const MEMBERSHIP_MAP: Record<string, string> = {
   'm-more': 'more',
 }
 
+import { dashboardLayoutForVersion, hiddenRailSectionsFor } from '@/components/layout/dashboardRail'
+
 const VALID_SECTIONS: PlatformSection[] = [
   'dashboard',
   'study-plan',
@@ -298,15 +300,41 @@ function PlatformShellBody() {
   // `defaultDiscoverabilityVersionFor`, which the Header's picker reads too so
   // the "Default" pill and the page can't disagree).
   const versionParam = params.get('version') ?? defaultDiscoverabilityVersionFor(brand)
-  const dashboardLayout: DashboardLayout =
-    versionParam === 'discoverability-qe-focused'
-      ? 'qe-focused'
-      : versionParam === 'discoverability-learner-focused'
-        ? 'learner-focused'
-        : versionParam === 'discoverability-badged'
-          ? 'badged'
-          : 'marketing-focused'
+  const dashboardLayout: DashboardLayout = dashboardLayoutForVersion(versionParam)
 
+
+  /*
+   * THE TESTING VERSION'S RAIL — 2026-09-21, the direct ask: no Study Plan, no
+   * Readiness, no Resources, no Rubi Insights, and no Collapse Menu.
+   *
+   * It leaves **Home · My Courses · Certificates**, then Support. That is the
+   * rail for a candidate working one booked exam, and it is the same editorial
+   * argument the demo baseline already makes for Browse Catalog — the four
+   * rows that go are either answered on Home (the Study Plan's pacing is the
+   * thing this version's own Pacing tile is exploring) or are tools beside the
+   * work rather than the work.
+   *
+   * ROWS ONLY. Every section still resolves — `?section=readiness` still opens
+   * Readiness — which is the rule `NAV_SECTION_FLAGS` states and what makes a
+   * trimmed rail editorial rather than a feature cut.
+   *
+   * NOT `NAV_SECTION_FLAGS`, deliberately, and this is the decision worth
+   * recording. Those flags are the DEMO BASELINE: one committed rail that
+   * `NavSectionFlags.test.tsx` asserts whole and in order. Flipping four of
+   * them here would change what QE Focused — XCEL's default, the version a
+   * stakeholder lands on — shows, which is not what "for this version" asked
+   * for. So the trim is a property of the LAYOUT and the baseline is untouched.
+   */
+  /* BOTH pacing versions, as of 2026-09-21 — the direct ask on Testing 2
+     ("update Testing 2 to have these nav elements, hide all others").
+     `'testing-2'` joined the trim rather than getting one of its own: the two
+     versions are a matched pair asking different questions of ONE tile, and a
+     rail that differed between them would be a second variable in that
+     comparison. QE Focused — the baseline this deliberately did not touch — is
+     still untouched. The set lives in `hiddenRailSectionsFor`, which the phone
+     drawer reads too. */
+  const trimmedRailSections = hiddenRailSectionsFor(dashboardLayout)
+  const testingLayout = trimmedRailSections != null
   // Mobile preview (the PrototypeBar device toggle → 390px frame) swaps the
   // left-rail desktop shell for a native-feeling single-column mobile layout:
   // a navy profile band on top + a fixed bottom tab bar. The rail's content
@@ -555,9 +583,24 @@ function PlatformShellBody() {
             active={railActive}
             onSelect={handleSelect}
             variant={navVariant}
+            hiddenSections={trimmedRailSections}
             collapsed={railCollapsed}
-            onToggleCollapse={() =>
-              setCollapseOverride({ scope: launcher.courseId, collapsed: !railCollapsed })
+            /*
+             * NO TOGGLE ON TESTING — 2026-09-21, the direct ask ("hide the
+             * collapse menu"). ONE WITHHELD PROP, which is the mechanism the
+             * rail already documents ("Omitted → no toggle renders, which is
+             * what the kiosk/menu embeds want") and the same shape as
+             * `onOpenLearningPath={qeFocused ? undefined : …}` on the band.
+             *
+             * `collapsed` is still PASSED, deliberately. The launcher
+             * auto-collapse is not the learner's control and must keep working:
+             * hiding the toggle removes the manual affordance, not the state.
+             */
+            onToggleCollapse={
+              testingLayout
+                ? undefined
+                : () =>
+                    setCollapseOverride({ scope: launcher.courseId, collapsed: !railCollapsed })
             }
           />
         </div>
@@ -816,7 +859,16 @@ function PlatformMobileShell({
       </div>
       {/* The rail lives in a hamburger drawer (opened from the header). While the
           launcher is open, `railActive` shows nothing active (mirrors desktop). */}
-      <MobileNavDrawer active={railActive} onSelect={onSelect} navVariant={navVariant} />
+      <MobileNavDrawer
+        active={railActive}
+        onSelect={onSelect}
+        navVariant={navVariant}
+        /* Derived from the SAME constant the desktop rail uses, off the layout
+           this shell already has — so the phone and the desktop cannot show
+           different sets. Re-deriving it here rather than threading a prop down
+           keeps one owner for the rule. */
+        hiddenSections={hiddenRailSectionsFor(dashboardLayout)}
+      />
     </div>
   )
 }
@@ -916,10 +968,12 @@ function MobileNavDrawer({
   active,
   onSelect,
   navVariant,
+  hiddenSections,
 }: {
   active: PlatformSection
   onSelect: (id: PlatformSection) => void
   navVariant: PlatformNavVariant
+  hiddenSections?: readonly PlatformSection[]
 }) {
   const { open, setOpen } = useMobileNav()
   if (!open) return null
@@ -995,6 +1049,12 @@ function MobileNavDrawer({
             close()
           }}
           variant={navVariant}
+          /* Threaded so the phone menu and the desktop rail cannot show
+             different sets — this drawer reuses the real rail precisely so the
+             two stay in sync, and a trim applied to one of them would undo
+             that. It already renders no collapse toggle (no `onToggleCollapse`),
+             so the other half of this version's trim needs nothing here. */
+          hiddenSections={hiddenSections}
         />
       </div>
     </div>
