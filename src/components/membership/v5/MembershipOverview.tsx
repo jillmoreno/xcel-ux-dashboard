@@ -128,10 +128,17 @@ export function MembershipOverview({
   // what it changes is what goes IN that band and what follows it. See
   // `DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED` for the three departures.
   const badged = dashboardLayout === 'badged'
-  const qeFocused = dashboardLayout === 'qe-focused'
+  // "Testing 2" is QE Focused plus the live pace tile, so every decision below
+  // reads `qeFocused` and gets the same answer for both. The one place they
+  // diverge is `livePace`, threaded to the band.
+  const testingVersion = dashboardLayout === 'testing-2'
+  const qeFocused = dashboardLayout === 'qe-focused' || testingVersion
   // Variant-only flag: the choice IS the variant, so only `.variant` is read.
   // An `enabled` check here would make "off" a third state meaning "sans",
   // which the variant already says.
+  // Scoped to the Testing version by `livePace` below — the flag alone never
+  // reaches QE Focused, which is the point of putting the widget in a version.
+  const studyPaceFlag = useFeatureFlag('study-pace-widget').enabled
   const serifHeadings = useFeatureFlag('dashboard-heading-font').variant === 'serif'
   const courseHeader =
     (useFeatureFlag('dashboard-course-header').variant ?? 'none') === 'band'
@@ -445,6 +452,11 @@ export function MembershipOverview({
       // comes next" rather than "what is due" — the question the Study Plan
       // rail item and the week strip below already answer.
       studyJourney={qeFocused}
+      // THE ONE DIVERGENCE between QE Focused and Testing. Off ⇒ the left
+      // square tile keeps its lo-fi placeholder; on ⇒ it renders the real
+      // derived pace and its Adjust sheet. Gated by the flag as well so it can
+      // be turned off inside the Testing version without leaving it.
+      livePace={testingVersion && studyPaceFlag}
       onOpenStop={openJourneyStop}
       // Get Licensed steps open the REQUIREMENTS SHEET — the only surface that
       // describes these three (XCEL's published page covers sitting the exam,

@@ -301,6 +301,12 @@ function PlatformShellBody() {
   const dashboardLayout: DashboardLayout =
     versionParam === 'discoverability-qe-focused'
       ? 'qe-focused'
+      : // "Testing 2" is a CLONE of QE Focused — see its entry in
+        // `dashboardVersions`. It resolves to its own layout rather than to
+        // 'qe-focused' so the two can be opened in two tabs and compared;
+        // everything downstream treats it as QE Focused except the one tile.
+        versionParam === 'discoverability-testing-2'
+        ? 'testing-2'
       : versionParam === 'discoverability-learner-focused'
         ? 'learner-focused'
         : versionParam === 'discoverability-badged'

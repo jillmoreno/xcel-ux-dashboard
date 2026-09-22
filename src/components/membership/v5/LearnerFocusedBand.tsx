@@ -8,21 +8,22 @@ import { useDeviceFrame } from '@/components/layout/DeviceFrameContext'
 import type { CourseCardData } from '@/components/courses/CourseCard'
 import type { LearningPathSummary } from '@/data/learningFixtures'
 import { statusTreatment, displayedProgressPct, timeRemaining, timeRemainingText, resolveRenewal, type HomeStatus, CURRENT_LEARNING_EYEBROW } from '@/components/learning/learningPathsHomeUtil'
-import { myCoursesFor } from '@/data/myCoursesFixtures'
+import { myCoursesFor, FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 import { ProgressDonut, CategoryBars } from '@/components/learning/progressGauge'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { resolvePathCategories } from '@/components/learning/progressGaugeUtil'
 import { getCourseImage } from '@/utils/courseImage'
 import { DELIVERY_LABEL } from '@/utils/courseDelivery'
 import { unitCount } from '@/utils/unitLabel'
+import { SquareTile } from './SquareTile'
 import { CompletedCelebration, type CompletedStat } from './CompletedCelebration'
 import { DiscoveryEmpty } from './JumpBackInDiscoveryEmpty'
 import { TaskRow } from '@/components/learning/study-calendar/TaskRow'
 import { StudyJourneyWidget } from '@/components/learning/StudyJourneyWidget'
 import { StatusStrip } from '@/components/learning/LearningPathDetailPanel'
 import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
-import { widgetCardRecessedStyle, widgetEyebrowStyle } from '@/components/learning/widgetStyles'
 import { JumpBackInWidget } from '@/components/learning/JumpBackInWidget'
+import { StudyPaceTile } from '@/components/learning/StudyPaceTile'
 import { NY_LH_CURRENT_CHAPTER, NY_LH_PROGRAM_PARTS } from '@/data/nyProducerRequirements'
 import {
   hasStudyCalendarFor,
@@ -170,6 +171,19 @@ type Props = {
    * fills the space under it.
    */
   studyJourney?: boolean
+  /**
+   * Render the LIVE Study Pace tile instead of its lo-fi placeholder.
+   *
+   * The "Testing 2" dashboard version only — QE Focused is XCEL's default and
+   * keeps the stub, so the thing most people open stays the reviewed one. See
+   * `DISCOVERABILITY_DASHBOARD_VERSION_TESTING_2`, which records why this is a
+   * version rather than a flag on QE Focused: two tabs, side by side.
+   *
+   * The Readiness tile beside it stays lo-fi in BOTH. That is deliberate and
+   * not an oversight — the pace model is derived from facts the product has,
+   * and there is still no readiness model to derive anything from.
+   */
+  livePace?: boolean
   /** Open one Study Journey stop (a course id). Omitted → the rows render as
    *  plain text, which is what the dev-handoff preview wants. */
   onOpenStop?: (id: string) => void
@@ -219,6 +233,7 @@ export function LearnerFocusedBand({
   surface = 'navy',
   hideHeader = false,
   studyJourney = false,
+  livePace = false,
   onOpenStop,
   onOpenStep,
   path,
@@ -1162,71 +1177,95 @@ export function LearnerFocusedBand({
               marginTop: 18,
             }}
           >
-            <SquareTile
-              caption="Study Pace"
-              icon={<Clock size={13} />}
-              to="/dashboard-rebrand?section=study-plan"
-            >
-              {/* LO-FI LINES, as in the Readiness tile beside it — 2026-09-17,
-                  the direct ask.
+            {/* THE LIVE TILE, in the "Testing 2" version only (`livePace`).
 
-                  What they replace is "~1.5 hrs/day · Suggested pace", which
-                  was DERIVED (the resume course's real 40 credit hours over the
-                  days left) rather than invented. It is not deleted: the
-                  derivation still feeds `kpiSubLabels`, so the `stat-card`
-                  variant of `dashboard-clp-stats` prints the same figure. If
-                  the pace is wanted back here, `hoursPerDay` is already in
-                  scope.
+                Its own file rather than more of this one: the pace model, the
+                sheet and four groups of controls would add ~400 lines to a
+                component already past 1,800, and none of it is specific to this
+                band. `SquareTile` moved out beside it so both branches render
+                the SAME square — a tile treatment that exists twice is the
+                drift `widgetStyles.ts` was written to stop.
 
-                  `LoFiWidgetBody` again rather than hand-drawn bars — the same
-                  primitive, so the two tiles read as one unbuilt pair instead
-                  of two placeholder treatments a few pixels apart. Two rows to
-                  Readiness's three: this tile still carries the status pill and
-                  its message below, so it has less room to fill. */}
-              <LoFiWidgetBody rows={2} ariaLabel="Study pace — placeholder" />
-              {/* The status pill and its message — the half of the strip that
-                  was carrying the meaning. `StatusStrip`'s tint is not reused
-                  here: it measures ~1.02:1 (a hue shift, decoration) and a
-                  tinted band inside a bordered tile reads as a second card,
-                  which is the same call `bare` makes on the stat card. The
-                  PILL keeps its fill, so the state is still in colour AND in
-                  words. */}
-              <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
-                <span
-                  style={{
-                    alignSelf: 'flex-start',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: 5,
-                    fontFamily: 'var(--font-body)',
-                    fontSize: 12,
-                    fontWeight: 600,
-                    whiteSpace: 'nowrap',
-                    color: pageStatus.text,
-                    background: pageStatus.outline ? 'transparent' : pageStatus.fill,
-                    boxShadow: pageStatus.outline
-                      ? `inset 0 0 0 1px ${pageStatus.border}`
-                      : undefined,
-                    padding: '3px 10px',
-                    borderRadius: 'var(--radius-pill)',
-                  }}
-                >
-                  {pageStatus.icon && <pageStatus.icon size={12} aria-hidden />}
-                  {pageStatus.label}
-                </span>
-                <p
-                  style={{
-                    margin: 0,
-                    fontFamily: 'var(--font-body)',
-                    fontSize: 12,
-                    lineHeight: '17px',
-                    color: 'var(--color-text-secondary)',
-                  }}
-                >
-                  {status.message}
-                </p>
-              </div>
-            </SquareTile>
+                It is fed REAL facts, not props invented for it: the resume
+                course's published credit hours against its own progress, and
+                its access expiry. `FIXTURE_TODAY` is the anchored demo clock
+                every other prototype surface passes, so the states render the
+                same whenever the page is opened. */}
+            {livePace && resume ? (
+              <StudyPaceTile
+                today={FIXTURE_TODAY}
+                hoursRemaining={resume.hours * (1 - (resume.progress ?? 0) / 100)}
+                accessExpiresAt={resume.expiresAt}
+                courseTitle={resume.title}
+                detailsTo="/dashboard-rebrand?section=study-plan"
+              />
+            ) : (
+              <SquareTile
+                caption="Study Pace"
+                icon={<Clock size={13} />}
+                to="/dashboard-rebrand?section=study-plan"
+              >
+                {/* LO-FI LINES, as in the Readiness tile beside it — 2026-09-17,
+                    the direct ask.
+
+                    What they replace is "~1.5 hrs/day · Suggested pace", which
+                    was DERIVED (the resume course's real 40 credit hours over the
+                    days left) rather than invented. It is not deleted: the
+                    derivation still feeds `kpiSubLabels`, so the `stat-card`
+                    variant of `dashboard-clp-stats` prints the same figure. If
+                    the pace is wanted back here, `hoursPerDay` is already in
+                    scope.
+
+                    `LoFiWidgetBody` again rather than hand-drawn bars — the same
+                    primitive, so the two tiles read as one unbuilt pair instead
+                    of two placeholder treatments a few pixels apart. Two rows to
+                    Readiness's three: this tile still carries the status pill and
+                    its message below, so it has less room to fill. */}
+                <LoFiWidgetBody rows={2} ariaLabel="Study pace — placeholder" />
+                {/* The status pill and its message — the half of the strip that
+                    was carrying the meaning. `StatusStrip`'s tint is not reused
+                    here: it measures ~1.02:1 (a hue shift, decoration) and a
+                    tinted band inside a bordered tile reads as a second card,
+                    which is the same call `bare` makes on the stat card. The
+                    PILL keeps its fill, so the state is still in colour AND in
+                    words. */}
+                <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: 8 }}>
+                  <span
+                    style={{
+                      alignSelf: 'flex-start',
+                      display: 'inline-flex',
+                      alignItems: 'center',
+                      gap: 5,
+                      fontFamily: 'var(--font-body)',
+                      fontSize: 12,
+                      fontWeight: 600,
+                      whiteSpace: 'nowrap',
+                      color: pageStatus.text,
+                      background: pageStatus.outline ? 'transparent' : pageStatus.fill,
+                      boxShadow: pageStatus.outline
+                        ? `inset 0 0 0 1px ${pageStatus.border}`
+                        : undefined,
+                      padding: '3px 10px',
+                      borderRadius: 'var(--radius-pill)',
+                    }}
+                  >
+                    {pageStatus.icon && <pageStatus.icon size={12} aria-hidden />}
+                    {pageStatus.label}
+                  </span>
+                  <p
+                    style={{
+                      margin: 0,
+                      fontFamily: 'var(--font-body)',
+                      fontSize: 12,
+                      lineHeight: '17px',
+                      color: 'var(--color-text-secondary)',
+                    }}
+                  >
+                    {status.message}
+                  </p>
+                </div>
+              </SquareTile>
+            )}
 
             {/* READINESS — a LO-FI STUB, deliberately (the ask: "leave as lo-fi
                 stub for now").
@@ -1812,119 +1851,6 @@ export function LearnerFocusedBand({
  * grey — see `LearnerFocusedBand`'s `surface` note. Defaults keep every
  * existing caller unchanged.
  */
-/**
- * One of the two square tiles that replaced the KPI row on the page surface —
- * Study Pace and Readiness. Added 2026-09-16.
- *
- * It is a CARD where `KpiDark` on this surface is deliberately bare, and the
- * reason the two differ is the reason the cells went bare in the first place:
- * three cells in a row were three boxes competing with the Study Journey card
- * beside them, and the numbers were the content. TWO tiles are not a row of
- * readings — each holds a heading, a figure and a sentence — so the box is
- * doing the work the vertical rules were doing before.
- *
- * The caption takes `KpiDark`'s exact treatment (10px / 700 / 0.1em / uppercase
- * on `--color-text-secondary`, icon at 13) rather than a near-copy: these sit
- * where those cells sat, and an eyebrow a pixel off from the one it replaced is
- * the drift this file keeps paying for.
- */
-function SquareTile({
-  caption,
-  icon,
-  children,
-  to,
-}: {
-  caption: string
-  icon?: ReactNode
-  children: ReactNode
-  /**
-   * Where the tile's bottom-right "Details →" goes. Omitted → no link.
-   *
-   * A REAL in-shell address, never an invented one: both tiles point at rail
-   * sections that exist (`?section=study-plan`, `?section=readiness`), which is
-   * the rule the Resources section had to learn after shipping four dead slugs.
-   * The Readiness tile is a lo-fi stub and its DESTINATION is still the real
-   * Readiness page — the placeholder is this tile, not the section.
-   */
-  to?: string
-}) {
-  return (
-    <div
-      style={{
-        // Square at any column width; grows rather than clipping if the content
-        // ever needs more than the width allows.
-        aspectRatio: '1 / 1',
-        minWidth: 0,
-        /* THE JUMP BACK IN CARD'S SURFACE — 2026-09-17, the direct ask. It was
-           a white card with a hairline border; it is the same tinted recess as
-           the card directly above it, with no stroke.
-
-           `widgetCardRecessedStyle` is the owner of that fill, and these read it
-           rather than restating the `color-mix` — three cards in one column
-           agreeing by coincidence is exactly how they stop agreeing, which is
-           why `widgetStyles.ts` exists. The mix is also load-bearing: its own
-           note records that 5% is a CEILING set by the 10px type on it, not a
-           preference.
-
-           No border, for the reason the card above has none: a stroke round a
-           flat recessed fill reads as a card that has lost its edge rather than
-           as a card with one. */
-        background: widgetCardRecessedStyle.background,
-        borderRadius: 'var(--radius-lg)',
-        padding: 16,
-        display: 'flex',
-        flexDirection: 'column',
-        gap: 10,
-      }}
-    >
-      {/* THE SHARED WIDGET EYEBROW (2026-09-17, the direct ask to match). It
-          was a near-copy — 10/700 at 0.1em — beside the real one a few pixels
-          up the column, which is the drift `widgetStyles.ts` exists to stop.
-          `.cre-eyebrow-ink` carries the navy, and the constant deliberately
-          sets no colour so that class can own it. */}
-      <span
-        className="cre-eyebrow-ink"
-        style={{ ...widgetEyebrowStyle, display: 'flex', alignItems: 'center', gap: 6 }}
-      >
-        {icon}
-        {caption}
-      </span>
-      {children}
-      {/* BOTTOM-RIGHT, in the header band's own link style (2026-09-17, the
-          direct ask). `margin-top: auto` rather than a spacer: the tile is a
-          fixed square, so the link sits on its floor whatever the content above
-          it does.
-
-          `.cre-cta-ink` with NO inline colour — the CTA ramp is a FILL colour
-          on XCEL and cta-500 as TEXT is 1.84:1 on the dark page, so the class
-          swaps to the light stop under `[data-theme='dark']` and an inline
-          value would beat it while looking correct.
-
-          Same LABEL as the band's, deliberately: three links of one shape doing
-          one kind of thing ("show me the detail behind this") read as a set, and
-          naming each after its own destination would make the shared treatment
-          look accidental. */}
-      {to ? (
-        <Link
-          to={to}
-          className="cre-link-action cre-cta-ink"
-          style={{
-            marginTop: 'auto',
-            alignSelf: 'flex-end',
-            textDecoration: 'none',
-            fontFamily: 'var(--font-body)',
-            fontSize: 13,
-            fontWeight: 700,
-            whiteSpace: 'nowrap',
-          }}
-        >
-          Details →
-        </Link>
-      ) : null}
-    </div>
-  )
-}
-
 function KpiDark({
   caption,
   icon,

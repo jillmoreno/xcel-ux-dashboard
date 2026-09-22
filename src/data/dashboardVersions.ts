@@ -11,6 +11,7 @@ export type DashboardVersionId =
   | 'discoverability-marketing-focused'
   | 'discoverability-badged'
   | 'discoverability-qe-focused'
+  | 'discoverability-testing-2'
 
 /**
  * The rebrand overview's LAYOUT, resolved from `?version=` by `PlatformShell`
@@ -26,6 +27,7 @@ export type DashboardLayout =
   | 'marketing-focused'
   | 'badged'
   | 'qe-focused'
+  | 'testing-2'
 
 export type DashboardVersion = {
   id: DashboardVersionId
@@ -162,6 +164,36 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED: DashboardVersion = {
     'Built for a pre-licensing candidate working towards a booked exam. The top band slims to path identity + status + Resume beside a Study Journey — the curriculum as an ordered sequence of chapters and milestone exams. Below it the Learning Path detail sheet\u2019s whole Progress tab renders inline: completion gauge, category bars, Target Date / Time Remaining / Completed tiles, and a course list per requirement category. Recommended for You is dropped \u2014 this version is not a discovery dashboard.',
 }
 
+// "Testing 2" (2026-09-21) — a CLONE of QE Focused carrying the PRESET-AND-SHEET
+// answer to the pacing slot.
+//
+// **It is the second of two, and the pairing is the point.** "Testing"
+// (`discoverability-testing`, built on the same day on its own branch) asks what
+// the tile should SHOW — it drops Readiness, gives Study Pace the full width, and
+// offers four treatments behind `dashboard-pacing-style`. This one asks what the
+// learner should be able to DO: the tile keeps its square and shows one derived
+// pace with NO controls, and everything adjustable moves behind Adjust into a
+// sheet — the three finish dates, days a week, an exam date, and building a study
+// plan on the calendar. The two are not competing drafts of one design; they are
+// different questions about the same slot, and both want answering.
+//
+// Both are layouts of their own rather than flags ON QE Focused, for one reason:
+// they have to be openable SIDE BY SIDE in separate tabs, and a flag is global to
+// the session — flipping it would change every tab at once.
+//
+// Everything QE Focused does, this does, because `MembershipOverview` treats
+// `testing-2` as qe-focused for every other decision. The ONLY divergence is the
+// left square tile, which renders the real `StudyPaceTile` instead of the lo-fi
+// stub. Readiness stays lo-fi here: it is the next thing, not this one.
+export const DISCOVERABILITY_DASHBOARD_VERSION_TESTING_2: DashboardVersion = {
+  id: 'discoverability-testing-2',
+  label: 'Testing 2',
+  createdAt: '2026-09-21',
+  modifiedAt: '2026-09-21',
+  description:
+    'QE Focused with a LIVE Study Pace tile in the square slot. The tile itself operates nothing — it states one derived pace and offers Adjust, which opens a sheet holding the three finish dates (Relaxed / Recommended / Focused, each a date rather than a weekly quota), how many days a week, an optional exam date, and a switch that turns the pace into sessions on the Study Plan. Two ceilings can bind — course access expiry, and the exam date minus a review buffer — and the sheet says which one is doing the work. Readiness is still a lo-fi stub. Compare with Testing, which asks what the tile should show rather than what it should let you change.',
+}
+
 // "Go to Legacy 2.0 Dashboard" is NOT a version here — because the classic
 // dashboard loads outside this shell (a full navigation to `/dashboard`, the
 // "Legacy Dashboard 2.0" tile link), it renders as a plain jump-off CTA below
@@ -173,6 +205,7 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED: DashboardVersion = {
 // DISCOVERABILITY_DASHBOARD_VERSION_BADGED here to restore it to the picker.)
 export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
   DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
+  DISCOVERABILITY_DASHBOARD_VERSION_TESTING_2,
   DISCOVERABILITY_DASHBOARD_VERSION_MARKETING_FOCUSED,
   DISCOVERABILITY_DASHBOARD_VERSION_LEARNER_FOCUSED,
 ]

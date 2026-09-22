@@ -781,6 +781,122 @@ and the last is a record number; nothing in the fixtures sources any of them.
 What each row says instead is what `metaWords` already knew. A test asserts the
 copy is absent.
 
+### Testing 2, and the live Study Pace tile (2026-09-21)
+
+**A new dashboard version, `discoverability-testing-2`, labelled "Testing 2"** —
+a clone of QE Focused whose only divergence is that the left square tile renders
+a real widget instead of its lo-fi stub. `?version=discoverability-testing-2`.
+
+**It is the SECOND of two, and the pairing is the point.** "Testing"
+(`discoverability-testing`, built the same day on
+`claude/home-screen-testing-version-6714f7`) asks **what the tile should SHOW**:
+it drops Readiness, gives Study Pace the full width, and offers four treatments
+behind `dashboard-pacing-style` (Lo-fi / Rate / Runway / Balance). Testing 2 asks
+**what the learner should be able to DO**: the tile keeps its square and states
+one derived pace with no controls at all, and everything adjustable moves behind
+Adjust into a sheet. They are not competing drafts of one design — they are
+different questions about the same slot, and both want answering. Named "2"
+rather than merged so the picker carries both and neither branch has to win.
+
+**Why a version and not a flag on QE Focused.** A flag is global to the session,
+so flipping it changes every tab; the whole point is opening these **side by side
+in separate tabs**. QE Focused is also XCEL's default, so the thing most people
+open stays the reviewed one. `MembershipOverview` treats `testing-2` as
+`qe-focused` for every other decision (`qeFocused = dashboardLayout ===
+'qe-focused' || testingVersion`), so the two cannot drift apart by accident; the
+single difference is the `livePace` prop threaded to `LearnerFocusedBand`.
+
+There is a flag too — **`study-pace-widget`**, default ON — but it is scoped:
+`livePace={testingVersion && studyPaceFlag}`. Off, Testing 2 shows the same
+placeholder as QE Focused, which is what makes the switch worth having. It is a
+separate axis from the other branch's `dashboard-pacing-style`, deliberately:
+two versions exploring one slot should not share a control, or flipping one
+re-renders the other's argument.
+
+**`SquareTile` moved out of `LearnerFocusedBand`** into its own file, unchanged
+apart from one added prop (`action`, a control on the tile's floor beside
+`Details →`). It moved because a second caller arrived; a tile treatment that
+exists twice is the drift `widgetStyles.ts` exists to stop.
+
+#### The model — `src/lib/studyPace.ts`
+
+Ported from [`public/prototypes/xcel-pace-presets.html`](../public/prototypes/xcel-pace-presets.html),
+which is still where the argument is made. Pure functions, no React. Three
+claims survive the port:
+
+1. **A preset is a DATE, not a weekly quota.** Relaxed / Recommended / Focused
+   are three dates the learner already owns; the pace derives from whichever
+   they pick. Nobody is asked to judge whether 5 hours a week is a lot.
+2. **TWO ceilings can bind and the UI must say which.** Course access expiry
+   (`expiresAt` on the resume course, minus one — finishing the day access dies
+   is not finishing) and, when the learner gives one, the exam date minus
+   `EXAM_BUFFER_DAYS`. The SOONER governs; `binding` records it.
+   `EXAM_BUFFER_DAYS` is 7 **deliberately equal** to `xcel-study-plan.html`'s
+   own constant — two surfaces disagreeing about how long revision takes is how
+   a learner stops believing either.
+3. **One nights count across all three presets**, derived from Recommended.
+   Per-preset nights made a 3-night Relaxed read heavier per evening than a
+   4-night Recommended, and the presets stopped being comparable.
+
+**THE ONE DEPARTURE, and it is an improvement.** The prototype priced a lesson
+at `MINS_PER_LESSON_INVENTED` (35) and flagged the gap between that and the
+storefront's published credit hours as its biggest hole — if seat-time were the
+real figure, every evening it quoted was ~1.6x too light. **The product does not
+need the invention**: a course record carries real `hours`, so this module works
+in HOURS OF WORK REMAINING and the hole closes by construction. Nothing converts
+lessons to minutes.
+
+`presetLabel()` carries the prototype's §03 finding into code: **"Relaxed" is a
+property of the COURSE, not of the preset.** Under `EASY_MINS` (45) the word
+stands; above it the preset is described as **Full window**, because on a long
+course the full window still costs most of an evening and calling that relaxed is
+the product lying in a warm voice.
+
+Dates follow `courseExpiry`'s rule — never `new Date(isoString)`, which parses as
+UTC and renders the previous day in a western timezone. A test pins it.
+
+#### The surface — `StudyPaceTile` + `StudyPaceSheet`
+
+**THE TILE OPERATES NOTHING**, and this is the whole difference from Testing,
+which spends the slot on showing more. Jillienne's call on 2026-09-21: one
+control, Adjust. No preset strip, no nights picker, no date field. That is what keeps a
+dashboard tile a *statement* rather than a control panel someone has to read
+before they can start studying, and `StudyPaceTile.test.tsx` counts the buttons
+so a strip cannot creep back on.
+
+The sheet (the repo's own `Sheet` — Esc, scroll lock and focus restore already
+handled) has **four groups, and the order is the argument**: what are you aiming
+at (the three dates as radio rows, the evening shown beside each as a
+consequence) · how many days a week · your exam date · create a study plan.
+
+**The weekday picker exists only under the fourth**, and that is the structural
+decision worth not undoing: days-a-week is all the PACE needs, so that is all the
+first three ask. A calendar cannot be built without real weekdays and a time, so
+those questions arrive with the thing that needs them — and from then on ticking
+days is authoritative and re-prices the evening rather than letting the count and
+the calendar quietly disagree.
+
+The pace chip is deliberately **not `StatusBadge`**: that vocabulary is the six
+COMPLIANCE states, and this is a different axis (how heavy the chosen pace is).
+Two meanings wearing one badge is how a learner reads "At Risk" off a tile that is
+only saying their evenings are long.
+
+**Readiness stays lo-fi in BOTH versions**, and that is not an oversight: the
+pace model derives from facts the product has, and there is still no readiness
+model to derive anything from. Grey bars say "not built"; a plausible number
+would say something false.
+
+**Open, and known:** what happens to sessions already written when the pace later
+changes (rewrite, append, or let them disagree); whether a typed, unverified exam
+date should outrank one booked through the walk-through's own flow — the admin
+roster's Risk column would then be measuring against a date the learner may have
+invented; and what the three presets mean on a CE course with no access window at
+all, where Relaxed has nothing to aim at.
+
+Tests: [`src/test/studyPace.test.ts`](../src/test/studyPace.test.ts) (25, the
+model) and [`src/test/StudyPaceTile.test.tsx`](../src/test/StudyPaceTile.test.tsx)
+(16, the surface).
+
 ### `dashboard-clp-stats` — the stat card (2026-09-16)
 
 A SECOND variant axis, for the Target Date / Time Remaining / Completed cells

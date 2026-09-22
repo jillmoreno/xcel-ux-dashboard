@@ -729,6 +729,15 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'study-pace-widget',
+    group: 'Widgets',
+    label: 'Study Pace — live widget',
+    description:
+      'Replaces the lo-fi Study Pace placeholder with the real derived widget, in the "Testing 2" dashboard version only (QE Focused keeps its stub whatever this says). The tile itself carries NO controls — a pace, a timeline and two buttons — and Adjust opens a sheet holding the three finish dates (Relaxed / Recommended / Focused), days a week, an exam date, and building a study plan on the calendar. Every figure derives from the resume course\u2019s published credit hours and the two ceilings (course access expiry, and the exam date minus a review buffer); nothing is authored. Off ⇒ Testing 2 shows the same placeholder as QE Focused, which is what makes this switch worth having.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'dashboard-clp-stats',
     group: 'Widgets',
     label: 'Current Progress — stats treatment',
