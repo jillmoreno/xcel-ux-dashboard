@@ -1,17 +1,18 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useMemo, useRef, useState, type ReactNode } from 'react'
 import { Sheet } from '@/components/ui/Sheet'
 import { Button } from '@/components/ui/Button'
+import { X } from '@/icons'
 import {
   studyPace,
   defaultPreset,
   formatEvening,
+  formatEveningSpoken,
   formatPaceDate,
   presetLabel,
   isoPlusDays,
   isoFromDate,
   daysUntil,
   NIGHT_OPTIONS,
-  STRAIN_MINS,
   EXAM_BUFFER_DAYS,
   STYLE_FACTORS,
   WEEKDAY_LABELS,
@@ -31,7 +32,7 @@ import {
  *      beside it as a consequence, not as the thing being chosen.
  *   2. **How many days a week** — the only lever that changes the shape of the
  *      week without moving the date.
- *   3. **Your exam date** — optional. TWO CEILINGS can bind (access expiry, and
+ *   3. **Your state exam** — optional. TWO CEILINGS can bind (access expiry, and
  *      the exam minus its review buffer) and the sheet SAYS which one is doing
  *      the work. A pace that silently switched ceilings is how a learner stops
  *      believing the number.
@@ -43,6 +44,32 @@ import {
  * time, so those questions arrive with the thing that needs them — and from
  * then on ticking days is authoritative and re-prices the evening, rather than
  * letting the count and the calendar quietly disagree.
+ *
+ * ─── REBUILT 2026-09-21 ──────────────────────────────────────────────────
+ *
+ * The four groups, the binding note, the weekday rule, `presetLabel`'s
+ * conditional word, the dated session preview and every `data-*` hook are
+ * unchanged — they are why this component exists. What changed:
+ *
+ *   • **IT CLIPPED ITS OWN FOOTER.** The sheet rendered two children into a
+ *     panel that is `display:flex; column; overflow:hidden`, so the content
+ *     grew past the panel edge and Save was unreachable with the plan open.
+ *     It is now header / scroll body / footer, and `min-height: 0` on the body
+ *     is the line that actually fixes it.
+ *   • **THE SAVE CONTRACT IS SETTLED** — see `PaceSheetBody`. It used to write
+ *     preset/nights/exam straight through while `plan` waited for the button,
+ *     so "Save pace" was already true of three of the four fields and a Cancel
+ *     would have restored nothing.
+ *   • **STYLES ARE CLASSES** (`cre-pace-sheet__*` in `tokens.css`). Inline
+ *     `CSSProperties` cannot carry `:focus-visible` or a theme selector, which
+ *     is why the sheet had no visible focus ring and two of its grounds assumed
+ *     a light background.
+ *   • Type floor of `--text-body-sm`; roving tabindex on both radio groups;
+ *     `aria-disabled` on the row that cannot be chosen; spoken durations.
+ *
+ * `Sheet` itself is untouched (its missing focus trap is ticketed separately).
+ * Everything here is done from INSIDE the children, which its flex column
+ * makes possible.
  */
 
 export type PaceChoices = {
@@ -64,16 +91,15 @@ const WEEKDAYS = WEEKDAY_LABELS
  *  evening default assumes a working adult, which is who buys this course. */
 const DEFAULT_START_TIME = '19:00'
 
-export function StudyPaceSheet({
-  open,
-  onClose,
-  today,
-  hoursRemaining,
-  accessExpiresAt,
-  courseTitle,
-  choices,
-  onChange,
-}: {
+const RECOMMENDED: PaceChoices = {
+  presetId: null,
+  nights: null,
+  examDate: null,
+  style: 'average',
+  plan: null,
+}
+
+export function StudyPaceSheet(props: {
   open: boolean
   onClose: () => void
   today: Date
@@ -83,8 +109,59 @@ export function StudyPaceSheet({
   choices: PaceChoices
   onChange: (next: PaceChoices) => void
 }) {
-  /** Draft weekday/time live here, not in `choices`: nothing is written to the
-   *  learner's plan until they press the button that says it will be. */
+  return (
+    <Sheet open={props.open} onClose={props.onClose} title="Adjust your pace" width={460}>
+      {/* MOUNTED ONLY WHILE OPEN, and that is what seeds the draft. `Sheet`
+          returns null when closed but THIS component stays mounted, so state
+          held out here would survive a close and a re-open — a discarded draft
+          coming back the next time the sheet opens. An inner component that
+          unmounts with the panel gets fresh `useState` initialisers from
+          `choices` every time, with no effect to synchronise and no
+          `set-state-in-effect` lint to argue with. */}
+      {props.open ? <PaceSheetBody {...props} /> : null}
+    </Sheet>
+  )
+}
+
+/**
+ * THE SAVE CONTRACT: **everything in this sheet is a draft.**
+ *
+ * It used to be neither one thing nor the other — `set()` wrote preset, nights
+ * and exam date straight to the parent on every click while `plan` alone waited
+ * for the button. So the tile re-priced behind an open sheet, "Save pace"
+ * described one field in four, and a Cancel button would have had nothing to
+ * restore.
+ *
+ * All four now live here and `onChange` fires ONCE, from Save. Cancel, Escape
+ * and a scrim click are the same path — they unmount this component and the
+ * draft goes with it, which is why discarding needs no handler of its own.
+ *
+ * WHAT IT COSTS, and it is a real loss: the tile no longer re-prices live
+ * behind the open sheet. The sheet's own figures still move on every keystroke
+ * (the aim rows, the segments, the session preview all read `draft`), so the
+ * feedback the live model gave is still there — it is just inside the panel the
+ * learner is looking at. The sub-line's "everything below re-prices as you
+ * change it" went with the change, because a Save button beside that sentence
+ * is the product contradicting itself.
+ */
+function PaceSheetBody({
+  onClose,
+  today,
+  hoursRemaining,
+  accessExpiresAt,
+  courseTitle,
+  choices,
+  onChange,
+}: {
+  onClose: () => void
+  today: Date
+  hoursRemaining: number
+  accessExpiresAt?: string
+  courseTitle?: string
+  choices: PaceChoices
+  onChange: (next: PaceChoices) => void
+}) {
+  const [draft, setDraft] = useState<PaceChoices>(choices)
   const [planOn, setPlanOn] = useState(choices.plan != null)
   const [weekdays, setWeekdays] = useState<number[] | null>(choices.plan?.weekdays ?? null)
   const [startTime, setStartTime] = useState(choices.plan?.startTime ?? DEFAULT_START_TIME)
@@ -95,86 +172,151 @@ export function StudyPaceSheet({
         today,
         hoursRemaining,
         accessExpiresAt,
-        examDate: choices.examDate ?? undefined,
-        nights: choices.nights ?? undefined,
-        style: choices.style,
+        examDate: draft.examDate ?? undefined,
+        nights: draft.nights ?? undefined,
+        style: draft.style,
       }),
-    [today, hoursRemaining, accessExpiresAt, choices.examDate, choices.nights, choices.style],
+    [today, hoursRemaining, accessExpiresAt, draft.examDate, draft.nights, draft.style],
   )
   const selected =
-    (choices.presetId && model.presets.find((p) => p.id === choices.presetId)) || defaultPreset(model)
+    (draft.presetId && model.presets.find((p) => p.id === draft.presetId)) || defaultPreset(model)
   const days = weekdays ?? defaultWeekdays(selected.nights)
-  const set = (patch: Partial<PaceChoices>) => onChange({ ...choices, ...patch })
+  const set = (patch: Partial<PaceChoices>) => setDraft((d) => ({ ...d, ...patch }))
+
+  /* THE CONTROL REFLECTS WHAT IT SETS. `Segment` used to compare against
+     `selected.nights` — the MODEL's derived value — while setting
+     `draft.nights`. Until the learner picked one they differed, so the
+     highlighted segment was the model's suggestion and clicking it wrote a
+     value that had not been there before. It reads the draft first and falls
+     back to the suggestion only while there is nothing to read. */
+  const nightsShown = draft.nights ?? selected.nights
+  /** Ticking weekdays is authoritative once the calendar is on — so group 2 is
+   *  being driven from group 4, and says so rather than jumping silently. */
+  const nightsFromPlan = planOn && weekdays != null
 
   return (
-    <Sheet open={open} onClose={onClose} title="Adjust your pace" width={460}>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 22, paddingBottom: 8 }}>
-        <p style={{ ...hint, marginTop: -4 }}>
-          {Math.round(hoursRemaining)} hours left{courseTitle ? ` of ${courseTitle}` : ''}. Everything below
-          re-prices as you change it.
+    <div className="cre-pace-sheet" style={sheetShell}>
+      {/* ── HEADER ───────────────────────────────────────────────────────
+          `aria-hidden` on the visible title: `Sheet` already renders an sr-only
+          one for its `aria-labelledby`, and two copies of the same string give
+          the dialog a doubled accessible name. */}
+      <header className="cre-pace-sheet__header">
+        <h2 className="cre-pace-sheet__title" aria-hidden>
+          Adjust your pace
+        </h2>
+        <button
+          type="button"
+          aria-label="Close"
+          onClick={onClose}
+          className="cre-pace-sheet__text-button"
+          style={{ textDecoration: 'none' }}
+        >
+          <X size={18} aria-hidden />
+        </button>
+      </header>
+
+      {/* ── SCROLL BODY ─────────────────────────────────────────────────── */}
+      <div className="cre-pace-sheet__body">
+        <p className="cre-pace-sheet__hint">
+          {Math.round(hoursRemaining)} hours left{courseTitle ? ` of ${courseTitle}` : ''}.
         </p>
 
         {/* 1 · AIM */}
         <Group label="What are you aiming at?">
-          <div role="radiogroup" aria-label="Finish date" style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
-            {model.presets.map((p) => (
-              <AimRow
-                key={p.id}
-                preset={p}
-                checked={p.id === selected.id}
-                recommended={p.id === 'recommended'}
-                onSelect={() => set({ presetId: p.id })}
-              />
-            ))}
-          </div>
-          <BindingNote model={model} today={today} accessExpiresAt={accessExpiresAt} examDate={choices.examDate} />
+          <RadioGroup
+            label="Finish date"
+            orientation="vertical"
+            className="cre-pace-sheet__aims"
+            count={model.presets.length}
+            activeIndex={Math.max(0, model.presets.findIndex((p) => p.id === selected.id))}
+            onMove={(i) => {
+              const next = model.presets[i]
+              if (next && next.state !== 'no') set({ presetId: next.id })
+            }}
+          >
+            {(itemProps) =>
+              model.presets.map((p, i) => (
+                <AimRow
+                  key={p.id}
+                  preset={p}
+                  checked={p.id === selected.id}
+                  recommended={p.id === 'recommended'}
+                  onSelect={() => set({ presetId: p.id })}
+                  {...itemProps(i)}
+                />
+              ))
+            }
+          </RadioGroup>
+          <BindingNote model={model} today={today} accessExpiresAt={accessExpiresAt} examDate={draft.examDate} />
         </Group>
 
         {/* 2 · DAYS A WEEK */}
         <Group label="How many days a week?">
-          <div role="radiogroup" aria-label="Days a week" style={{ display: 'flex', gap: 6 }}>
-            {NIGHT_OPTIONS.map((n) => (
-              <Segment
-                key={n}
-                checked={n === selected.nights}
-                onSelect={() => {
-                  set({ nights: n })
-                  setWeekdays(null)
-                }}
-              >
-                {n}
-              </Segment>
-            ))}
-          </div>
-          <p style={hint}>
-            We suggest the fewest days that keep an evening under{' '}
-            <b style={strong}>{formatEvening(STRAIN_MINS)}</b>. Fewer days means longer evenings, not less work.
+          <RadioGroup
+            label="Days a week"
+            orientation="horizontal"
+            className="cre-pace-sheet__segments"
+            count={NIGHT_OPTIONS.length}
+            activeIndex={Math.max(0, NIGHT_OPTIONS.indexOf(nightsShown as (typeof NIGHT_OPTIONS)[number]))}
+            onMove={(i) => {
+              set({ nights: NIGHT_OPTIONS[i] })
+              setWeekdays(null)
+            }}
+          >
+            {(itemProps) =>
+              NIGHT_OPTIONS.map((n, i) => (
+                <Segment
+                  key={n}
+                  checked={n === nightsShown}
+                  onSelect={() => {
+                    set({ nights: n })
+                    setWeekdays(null)
+                  }}
+                  {...itemProps(i)}
+                >
+                  {n}
+                </Segment>
+              ))
+            }
+          </RadioGroup>
+          {/* THE JUMP, MADE VISIBLE. Ticking a weekday in group 4 rewrites this
+              group, correctly and — until now — silently. `aria-live` because
+              the change happens two groups away from where the learner is
+              looking. */}
+          <p className="cre-pace-sheet__hint" aria-live="polite">
+            {nightsFromPlan
+              ? 'Set by the days you picked below.'
+              : 'Fewer days means longer evenings, not less work.'}
           </p>
         </Group>
 
         {/* 3 · EXAM DATE */}
-        <Group label="Have you booked your state exam?">
-          <div style={{ display: 'flex', gap: 10, alignItems: 'flex-end', flexWrap: 'wrap' }}>
+        <Group label="Your state exam">
+          <div className="cre-pace-sheet__field-row">
             <Field label="Exam date (optional)" htmlFor="pace-exam">
               <input
                 id="pace-exam"
                 type="date"
-                value={choices.examDate ?? ''}
+                className="cre-pace-sheet__input"
+                value={draft.examDate ?? ''}
                 min={isoPlusDays(today, 1)}
                 onChange={(e) => set({ examDate: e.target.value || null })}
-                style={input}
               />
             </Field>
-            {choices.examDate ? (
-              <button type="button" onClick={() => set({ examDate: null })} style={clearButton}>
+            {draft.examDate ? (
+              <button
+                type="button"
+                onClick={() => set({ examDate: null })}
+                className="cre-pace-sheet__text-button"
+              >
                 Clear
               </button>
             ) : null}
           </div>
-          <p style={hint}>
-            We aim to finish coursework <b style={strong}>{EXAM_BUFFER_DAYS} days</b> before you sit, so there is
-            time to review. Whichever comes first — your exam or the end of your access — is the one your pace is
-            built on.
+          <p className="cre-pace-sheet__hint">
+            Coursework finishes <b className="cre-pace-sheet__strong">{EXAM_BUFFER_DAYS} days</b> before you
+            sit, so there is time to review. Whichever comes first — your exam or your access — sets your
+            pace.
           </p>
         </Group>
 
@@ -186,21 +328,22 @@ export function StudyPaceSheet({
               const next = !planOn
               setPlanOn(next)
               if (next && !weekdays) setWeekdays(defaultWeekdays(selected.nights))
-              if (!next) set({ plan: null })
+              if (!next) {
+                setWeekdays(null)
+                set({ plan: null })
+              }
             }}
             title="Create a study plan"
             body={
               selected.state === 'no'
-                ? 'Sessions on your Study Plan, once there is a pace that fits.'
-                : `Turns this pace into ${selected.nights} sessions a week of about ${formatEvening(
-                    selected.minsPerNight,
-                  )} on your Study Plan, so each day tells you what to do.`
+                ? 'Once there is a pace that fits.'
+                : 'Puts each session on your Study Plan.'
             }
           />
           {planOn && selected.state !== 'no' ? (
             <>
-              <span style={groupLabel}>Which days, and when?</span>
-              <div role="group" aria-label="Study days" style={{ display: 'flex', gap: 4 }}>
+              <span className="cre-pace-sheet__group-label">Which days, and when?</span>
+              <div role="group" aria-label="Study days" className="cre-pace-sheet__days">
                 {WEEKDAYS.map((d, i) => (
                   <DayToggle
                     key={d}
@@ -221,9 +364,9 @@ export function StudyPaceSheet({
                 <input
                   id="pace-time"
                   type="time"
+                  className="cre-pace-sheet__input"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value || DEFAULT_START_TIME)}
-                  style={input}
                 />
               </Field>
               <SessionPreview today={today} preset={selected} weekdays={days} startTime={startTime} />
@@ -232,49 +375,140 @@ export function StudyPaceSheet({
         </Group>
       </div>
 
-      <div
-        style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: 10,
-          paddingTop: 14,
-          marginTop: 4,
-          borderTop: '1px solid var(--color-border-subtle)',
-        }}
-      >
+      {/* ── FOOTER ───────────────────────────────────────────────────────
+          A SIBLING of the scroll body, not the last thing inside it — which is
+          the whole point: pinned, always reachable, and the reason the panel
+          can no longer clip it. */}
+      <footer className="cre-pace-sheet__footer">
         <Button
           onClick={() => {
-            if (planOn && selected.state !== 'no') set({ plan: { weekdays: days, startTime } })
+            onChange({
+              ...draft,
+              plan: planOn && selected.state !== 'no' ? { weekdays: days, startTime } : null,
+            })
             onClose()
           }}
         >
-          {planOn ? 'Save pace & build my plan' : 'Save pace'}
+          {/* "Save pace & plan", not "Save pace & build my plan". The long form
+              measured 210px of a 420px footer and pushed Reset onto a second
+              row — 44px of height in the panel whose height is the whole bug.
+              The short form keeps both nouns (the pace is saved, the plan is
+              built) and holds one row. The no-plan label stays EXACTLY
+              "Save pace"; tests pin that one. */}
+          {planOn ? 'Save pace & plan' : 'Save pace'}
         </Button>
+        <button type="button" onClick={onClose} className="cre-pace-sheet__text-button">
+          Cancel
+        </button>
         <button
           type="button"
           onClick={() => {
-            onChange({ presetId: null, nights: null, examDate: null, style: 'average', plan: null })
+            setDraft(RECOMMENDED)
             setPlanOn(false)
             setWeekdays(null)
             setStartTime(DEFAULT_START_TIME)
           }}
-          style={{ ...clearButton, marginLeft: 'auto' }}
+          className="cre-pace-sheet__text-button cre-pace-sheet__reset"
         >
           Reset to recommended
         </button>
-      </div>
-    </Sheet>
+      </footer>
+    </div>
   )
 }
+
+/* The shell fills the panel so its three children can divide it. Inline because
+   it is three declarations describing this component's relationship to `Sheet`,
+   not a reusable treatment. */
+const sheetShell = {
+  display: 'flex',
+  flexDirection: 'column',
+  minHeight: 0,
+  flex: 1,
+} as const
 
 /* ─── pieces ─────────────────────────────────────────────────────────── */
 
 function Group({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <section style={{ display: 'flex', flexDirection: 'column', gap: 9 }}>
-      <span style={groupLabel}>{label}</span>
+    <section className="cre-pace-sheet__group">
+      <span className="cre-pace-sheet__group-label">{label}</span>
       {children}
     </section>
+  )
+}
+
+/**
+ * A radio group with ROVING TABINDEX — one tab stop, arrows to move.
+ *
+ * Both groups in this sheet were lists of `role="radio"` buttons, every one of
+ * them tabbable and none of them reachable by arrow key: seven tab stops to
+ * cross the sheet, and the keyboard interaction the role promises simply absent.
+ * A native radio group is one stop and arrows select within it, and a custom
+ * one has to be built to match or it should not claim the role.
+ *
+ * `onMove` both MOVES AND SELECTS, which is the native behaviour for a radio
+ * group (unlike a tablist, where selection can follow focus optionally). Home
+ * and End jump to the ends.
+ */
+function RadioGroup({
+  label,
+  orientation,
+  className,
+  count,
+  activeIndex,
+  onMove,
+  children,
+}: {
+  label: string
+  orientation: 'vertical' | 'horizontal'
+  className: string
+  count: number
+  activeIndex: number
+  onMove: (index: number) => void
+  children: (itemProps: (i: number) => { tabIndex: number; ref: (el: HTMLButtonElement | null) => void }) => ReactNode
+}) {
+  const refs = useRef<(HTMLButtonElement | null)[]>([])
+  const prev = orientation === 'vertical' ? 'ArrowUp' : 'ArrowLeft'
+  const next = orientation === 'vertical' ? 'ArrowDown' : 'ArrowRight'
+
+  const go = (i: number) => {
+    const clamped = (i + count) % count
+    onMove(clamped)
+    refs.current[clamped]?.focus()
+  }
+
+  return (
+    <div
+      role="radiogroup"
+      aria-label={label}
+      className={className}
+      onKeyDown={(e) => {
+        if (e.key === prev) {
+          e.preventDefault()
+          go(activeIndex - 1)
+        } else if (e.key === next) {
+          e.preventDefault()
+          go(activeIndex + 1)
+        } else if (e.key === 'Home') {
+          e.preventDefault()
+          go(0)
+        } else if (e.key === 'End') {
+          e.preventDefault()
+          go(count - 1)
+        }
+      }}
+    >
+      {children((i) => ({
+        /* ONE STOP PER GROUP: the active option is tabbable, the rest are
+           reachable only by arrow — which is what makes this a single stop in
+           the sheet's tab order rather than four. */
+        tabIndex: i === activeIndex ? 0 : -1,
+        ref: (el: HTMLButtonElement | null) => {
+          refs.current[i] = el
+        },
+      }))}
+    </div>
   )
 }
 
@@ -283,116 +517,72 @@ function AimRow({
   checked,
   recommended,
   onSelect,
+  tabIndex,
+  ref,
 }: {
   preset: PacePreset
   checked: boolean
   recommended: boolean
   onSelect: () => void
+  tabIndex: number
+  ref: (el: HTMLButtonElement | null) => void
 }) {
   const unfittable = preset.state === 'no'
+  const reasonId = `pace-aim-${preset.id}-why`
   return (
     <button
+      ref={ref}
       type="button"
       role="radio"
       aria-checked={checked}
-      disabled={unfittable}
-      onClick={onSelect}
-      data-preset={preset.id}
-      style={{
-        display: 'grid',
-        gridTemplateColumns: '16px minmax(0, 1fr) auto',
-        gap: 11,
-        alignItems: 'center',
-        textAlign: 'left',
-        padding: '11px 13px',
-        borderRadius: 'var(--radius-md)',
-        border: `1px solid ${checked ? 'var(--color-primary-500)' : 'var(--color-border-subtle)'}`,
-        boxShadow: checked ? 'inset 0 0 0 1px var(--color-primary-500)' : undefined,
-        background: checked ? 'var(--color-primary-100)' : 'var(--color-surface-card)',
-        cursor: unfittable ? 'not-allowed' : 'pointer',
-        opacity: unfittable ? 0.5 : 1,
-        font: 'inherit',
-        color: 'inherit',
+      /* `aria-disabled`, NOT `disabled` — see the class's own note. A disabled
+         button drops out of the tab order and out of most screen-reader element
+         lists, so the one row that most needs to explain itself would be the
+         one a keyboard user cannot reach. The click is refused in the handler
+         instead. */
+      aria-disabled={unfittable || undefined}
+      aria-describedby={unfittable ? reasonId : undefined}
+      tabIndex={tabIndex}
+      onClick={() => {
+        if (!unfittable) onSelect()
       }}
+      data-preset={preset.id}
+      className="cre-pace-sheet__aim"
     >
-      <span
-        aria-hidden
-        style={{
-          width: 14,
-          height: 14,
-          borderRadius: '50%',
-          border: `2px solid ${checked ? 'var(--color-primary-500)' : 'var(--color-border-strong)'}`,
-          boxShadow: checked ? 'inset 0 0 0 2px var(--color-surface-card), inset 0 0 0 8px var(--color-primary-500)' : undefined,
-        }}
-      />
+      <span aria-hidden className="cre-pace-sheet__radio" />
       <span style={{ minWidth: 0 }}>
-        <span
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: 6,
-            flexWrap: 'wrap',
-            fontFamily: 'var(--font-heading)',
-            fontSize: 13,
-            fontWeight: 700,
-            color: 'var(--color-text-primary)',
-          }}
-        >
+        <span className="cre-pace-sheet__aim-name">
           {/* `presetLabel`, not the raw name: "Relaxed" is only kept while the
               evening is genuinely light. On a long course the same date is
               described as what it is. */}
           {presetLabel(preset)}
-          {recommended ? <RecommendedChip /> : null}
+          {recommended ? <span className="cre-pace-sheet__chip">Recommended</span> : null}
         </span>
-        <span style={{ ...hint, display: 'block', marginTop: 2 }}>
+        <span className="cre-pace-sheet__hint" style={{ display: 'block' }}>
           Finish by {formatPaceDate(preset.finishIso)}
         </span>
+        {unfittable ? (
+          <span id={reasonId} className="cre-pace-sheet__hint" style={{ display: 'block' }}>
+            There is not enough time left for this pace.
+          </span>
+        ) : null}
       </span>
       <span style={{ textAlign: 'right' }}>
-        <span
-          style={{
-            display: 'block',
-            fontFamily: 'var(--font-body)',
-            fontSize: 13,
-            fontWeight: 700,
-            whiteSpace: 'nowrap',
-            fontVariantNumeric: 'tabular-nums',
-            color:
-              preset.state === 'heavy'
-                ? 'var(--color-warning-800)'
-                : unfittable
-                  ? 'var(--color-error-700)'
-                  : 'var(--color-text-primary)',
-          }}
-        >
-          {unfittable ? '—' : formatEvening(preset.minsPerNight)}
+        <span className="cre-pace-sheet__aim-evening" data-state={preset.state}>
+          {/* SHOWN as the glyph, SPOKEN as words. `formatEvening` returns `1¾
+              hours`, which a screen reader may render as "three quarters",
+              "3/4" or nothing — on the one figure this sheet exists to convey.
+              Both come from the same rounding; see `formatEveningSpoken`. */}
+          <span aria-hidden>{unfittable ? '—' : formatEvening(preset.minsPerNight)}</span>
+          {unfittable ? null : (
+            <span className="cre-sr-only">{formatEveningSpoken(preset.minsPerNight)}</span>
+          )}
         </span>
-        <span style={{ ...hint, display: 'block', fontSize: 10, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <span className="cre-pace-sheet__hint" style={{ display: 'block' }}>
           {unfittable ? 'won’t fit' : 'a night'}
         </span>
       </span>
     </button>
-  )
-}
-
-function RecommendedChip() {
-  return (
-    <span
-      style={{
-        fontFamily: 'var(--font-body)',
-        fontSize: 9,
-        fontWeight: 700,
-        letterSpacing: '0.07em',
-        textTransform: 'uppercase',
-        color: 'var(--color-primary-700)',
-        background: 'var(--color-surface-card)',
-        border: '1px solid var(--color-primary-300)',
-        borderRadius: 4,
-        padding: '1px 4px',
-      }}
-    >
-      Recommended
-    </span>
   )
 }
 
@@ -417,41 +607,34 @@ function BindingNote({
   const accessLeft = daysUntil(accessExpiresAt, today)
   if (!examDate) {
     return (
-      <p style={hint} data-binding="access">
-        {accessExpiresAt && accessLeft != null
-          ? <>These come from your course access, which ends <b style={strong}>{formatPaceDate(accessExpiresAt)}</b>.</>
-          : <>These come from the time you have left on this course.</>}
+      <p className="cre-pace-sheet__hint cre-pace-sheet__binding" data-binding="access">
+        {accessExpiresAt && accessLeft != null ? (
+          <>
+            These come from your course access, which ends{' '}
+            <b className="cre-pace-sheet__strong">{formatPaceDate(accessExpiresAt)}</b>.
+          </>
+        ) : (
+          <>These come from the time you have left on this course.</>
+        )}
       </p>
     )
   }
-  const tone =
-    model.binding === 'exam'
-      ? { border: 'var(--color-warning-500)', color: 'var(--color-warning-800)' }
-      : { border: 'var(--color-primary-300)', color: 'var(--color-text-secondary)' }
   return (
-    <p
-      data-binding={model.binding}
-      style={{
-        ...hint,
-        borderLeft: `3px solid ${tone.border}`,
-        paddingLeft: 11,
-        color: tone.color,
-      }}
-    >
+    <p className="cre-pace-sheet__hint cre-pace-sheet__binding" data-binding={model.binding}>
       {model.binding === 'exam' ? (
         <>
-          <b style={strong}>Your exam date is the one doing the work.</b> Sitting on{' '}
+          <b className="cre-pace-sheet__strong">Your exam date is the one doing the work.</b> Sitting on{' '}
           {formatPaceDate(examDate)} means coursework has to be done by {formatPaceDate(model.hardEndIso)}
           {accessExpiresAt ? <> — sooner than your access ends on {formatPaceDate(accessExpiresAt)}</> : null}.
         </>
       ) : model.binding === 'both' ? (
         <>
-          <b style={strong}>Both dates land on the same day.</b> Your exam buffer and the end of your access agree
-          for once.
+          <b className="cre-pace-sheet__strong">Both dates land on the same day.</b> Your exam buffer and the
+          end of your access agree for once.
         </>
       ) : (
         <>
-          <b style={strong}>Your access is still the one doing the work.</b> It ends{' '}
+          <b className="cre-pace-sheet__strong">Your access is still the one doing the work.</b> It ends{' '}
           {accessExpiresAt ? formatPaceDate(accessExpiresAt) : 'first'}, before your exam on{' '}
           {formatPaceDate(examDate)} would require.
         </>
@@ -472,62 +655,22 @@ function SwitchRow({
   body: string
 }) {
   return (
-    <div
-      style={{
-        display: 'flex',
-        gap: 11,
-        alignItems: 'flex-start',
-        padding: '12px 13px',
-        borderRadius: 'var(--radius-md)',
-        border: `1px solid ${checked ? 'var(--color-primary-400)' : 'var(--color-border-subtle)'}`,
-        background: checked ? 'var(--color-primary-100)' : 'var(--color-surface-card)',
-      }}
-    >
+    <div className="cre-pace-sheet__switch-row" data-on={checked}>
       <button
         type="button"
         role="switch"
         aria-checked={checked}
         aria-label={title}
         onClick={onToggle}
-        style={{
-          flex: 'none',
-          width: 38,
-          height: 22,
-          borderRadius: 11,
-          border: `1px solid ${checked ? 'var(--color-primary-500)' : 'var(--color-border-strong)'}`,
-          background: checked ? 'var(--color-primary-500)' : 'var(--color-surface-sunken)',
-          position: 'relative',
-          cursor: 'pointer',
-          marginTop: 1,
-        }}
+        className="cre-pace-sheet__switch"
       >
-        <span
-          aria-hidden
-          style={{
-            position: 'absolute',
-            top: 2,
-            left: checked ? 18 : 2,
-            width: 16,
-            height: 16,
-            borderRadius: '50%',
-            background: 'var(--color-surface-card)',
-            boxShadow: '0 1px 2px rgb(0 0 0 / 0.25)',
-          }}
-        />
+        <span aria-hidden className="cre-pace-sheet__switch-knob" />
       </button>
       <span style={{ flex: 1, minWidth: 0 }}>
-        <span
-          style={{
-            display: 'block',
-            fontFamily: 'var(--font-heading)',
-            fontSize: 13,
-            fontWeight: 700,
-            color: 'var(--color-text-primary)',
-          }}
-        >
-          {title}
+        <span className="cre-pace-sheet__switch-title">{title}</span>
+        <span className="cre-pace-sheet__hint" style={{ display: 'block' }}>
+          {body}
         </span>
-        <span style={{ ...hint, display: 'block', marginTop: 3 }}>{body}</span>
       </span>
     </div>
   )
@@ -540,19 +683,7 @@ function DayToggle({ label, pressed, onToggle }: { label: string; pressed: boole
       aria-pressed={pressed}
       onClick={onToggle}
       data-weekday={label}
-      style={{
-        flex: 1,
-        padding: '9px 0',
-        borderRadius: 6,
-        border: `1px solid ${pressed ? 'var(--color-primary-400)' : 'var(--color-border-subtle)'}`,
-        background: pressed ? 'var(--color-primary-100)' : 'var(--color-surface-card)',
-        color: pressed ? 'var(--color-primary-700)' : 'var(--color-text-tertiary)',
-        fontFamily: 'var(--font-body)',
-        fontSize: 10.5,
-        fontWeight: 700,
-        letterSpacing: '0.04em',
-        cursor: 'pointer',
-      }}
+      className="cre-pace-sheet__day"
     >
       {/* The letter is a label, not the name: the accessible name has to survive
           the abbreviation, which is the same rule the collapsible rail landed on. */}
@@ -587,53 +718,20 @@ function SessionPreview({
       sessions.push(isoFromDate(cursor))
     }
   }
-  if (!sessions.length) return <p style={hint}>No sessions fall before your finish date.</p>
+  if (!sessions.length)
+    return <p className="cre-pace-sheet__hint">No sessions fall before your finish date.</p>
   const perNight = preset.minsPerWeek / weekdays.length
   return (
-    <div
-      style={{
-        border: '1px solid var(--color-border-subtle)',
-        borderRadius: 'var(--radius-md)',
-        overflow: 'hidden',
-      }}
-    >
-      {sessions.map((iso, i) => (
-        <div
-          key={iso}
-          data-session={iso}
-          style={{
-            display: 'flex',
-            alignItems: 'baseline',
-            gap: 10,
-            padding: '8px 11px',
-            borderTop: i ? '1px solid var(--color-border-subtle)' : undefined,
-            fontFamily: 'var(--font-body)',
-            fontSize: 12,
-          }}
-        >
-          <span style={{ fontWeight: 700, minWidth: 82, color: 'var(--color-text-primary)' }}>
-            {longDate(iso)}
-          </span>
-          <span style={{ color: 'var(--color-text-secondary)', fontVariantNumeric: 'tabular-nums' }}>
+    <div className="cre-pace-sheet__sessions">
+      {sessions.map((iso) => (
+        <div key={iso} data-session={iso} className="cre-pace-sheet__session">
+          <span className="cre-pace-sheet__session-date">{longDate(iso)}</span>
+          <span className="cre-pace-sheet__session-time">
             {clock(startTime)} – {clock(startTime, perNight)}
           </span>
-          {i === 0 ? (
-            <span style={{ marginLeft: 'auto', fontSize: 10.5, color: 'var(--color-text-tertiary)' }}>
-              first session
-            </span>
-          ) : null}
         </div>
       ))}
-      <div
-        style={{
-          padding: '7px 11px',
-          borderTop: '1px solid var(--color-border-subtle)',
-          textAlign: 'center',
-          fontFamily: 'var(--font-body)',
-          fontSize: 11,
-          color: 'var(--color-text-tertiary)',
-        }}
-      >
+      <div className="cre-pace-sheet__sessions-foot">
         …repeating until {formatPaceDate(preset.finishIso)}
       </div>
     </div>
@@ -664,8 +762,8 @@ function clock(time: string, addMins = 0): string {
 
 function Field({ label, htmlFor, children }: { label: string; htmlFor: string; children: ReactNode }) {
   return (
-    <span style={{ display: 'flex', flexDirection: 'column', gap: 5, minWidth: 0 }}>
-      <label htmlFor={htmlFor} style={{ fontFamily: 'var(--font-body)', fontSize: 11, fontWeight: 600, color: 'var(--color-text-secondary)' }}>
+    <span className="cre-pace-sheet__field">
+      <label htmlFor={htmlFor} className="cre-pace-sheet__field-label">
         {label}
       </label>
       {children}
@@ -673,75 +771,34 @@ function Field({ label, htmlFor, children }: { label: string; htmlFor: string; c
   )
 }
 
-function Segment({ checked, onSelect, children }: { checked: boolean; onSelect: () => void; children: ReactNode }) {
+function Segment({
+  checked,
+  onSelect,
+  children,
+  tabIndex,
+  ref,
+}: {
+  checked: boolean
+  onSelect: () => void
+  children: ReactNode
+  tabIndex: number
+  ref: (el: HTMLButtonElement | null) => void
+}) {
   return (
     <button
+      ref={ref}
       type="button"
       role="radio"
       aria-checked={checked}
+      tabIndex={tabIndex}
       onClick={onSelect}
       data-nights={String(children)}
-      style={{
-        flex: 1,
-        padding: '8px 0',
-        borderRadius: 'var(--radius-md)',
-        border: `1px solid ${checked ? 'var(--color-primary-500)' : 'var(--color-border-subtle)'}`,
-        background: checked ? 'var(--color-primary-500)' : 'var(--color-surface-card)',
-        color: checked ? 'var(--color-text-inverse)' : 'var(--color-text-secondary)',
-        fontFamily: 'var(--font-body)',
-        fontSize: 12.5,
-        fontWeight: 600,
-        cursor: 'pointer',
-      }}
+      className="cre-pace-sheet__segment"
     >
       {children}
     </button>
   )
 }
-
-const groupLabel = {
-  fontFamily: 'var(--font-body)',
-  fontSize: 10,
-  fontWeight: 700,
-  letterSpacing: '0.09em',
-  textTransform: 'uppercase',
-  color: 'var(--color-text-tertiary)',
-} as const
-
-const hint = {
-  margin: 0,
-  fontFamily: 'var(--font-body)',
-  fontSize: 11.5,
-  lineHeight: '17px',
-  color: 'var(--color-text-secondary)',
-} as const
-
-const strong = { color: 'var(--color-text-primary)', fontWeight: 600 } as const
-
-const input = {
-  fontFamily: 'var(--font-body)',
-  fontSize: 12.5,
-  fontWeight: 600,
-  padding: '8px 10px',
-  borderRadius: 'var(--radius-md)',
-  border: '1px solid var(--color-border-subtle)',
-  background: 'var(--color-surface-card)',
-  color: 'var(--color-text-primary)',
-  maxWidth: 180,
-} as const
-
-const clearButton = {
-  background: 'transparent',
-  border: 0,
-  padding: '0 0 9px',
-  color: 'var(--color-text-tertiary)',
-  fontFamily: 'var(--font-body)',
-  fontSize: 11.5,
-  fontWeight: 600,
-  textDecoration: 'underline',
-  textUnderlineOffset: 2,
-  cursor: 'pointer',
-} as const
 
 /** Re-exported so a caller can offer the style axis without a second import. */
 export { STYLE_FACTORS }

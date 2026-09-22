@@ -348,3 +348,31 @@ export const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] 
 export function defaultWeekdays(n: number): number[] {
   return Array.from({ length: Math.max(1, Math.min(7, n)) }, (_, i) => i)
 }
+
+/**
+ * The same evening, spoken — `1¾ hours` → `"1 hour 45 minutes"`.
+ *
+ * ADDITIVE, and deliberately separate from {@link formatEvening} rather than a
+ * change to it: the tile, the smoke suites and the sheet all read that
+ * function's output, and `¾` is the right thing to SHOW. It is the wrong thing
+ * to HEAR — a screen reader renders the vulgar fraction as "three quarters",
+ * "3/4", or nothing at all depending on the engine, so the one figure this
+ * whole component exists to communicate is the one a listener may not get.
+ *
+ * Callers pair them: the glyph visually, this in a `.cre-sr-only` span.
+ *
+ * ⚠ IT ROUNDS THROUGH THE SAME QUARTER-HOUR RULE, not off the raw minutes. If
+ * it read `Math.round(mins)` directly, 98 minutes would be shown as "1½ hours"
+ * and spoken as "1 hour 38 minutes" — two different answers to one question,
+ * which is worse than the fraction it set out to fix.
+ */
+export function formatEveningSpoken(mins: number): string {
+  if (!Number.isFinite(mins)) return 'not available'
+  const m = Math.round(mins)
+  if (m < 60) return `${m} ${m === 1 ? 'minute' : 'minutes'}`
+  const quarters = Math.round(m / 15)
+  const hours = Math.floor(quarters / 4)
+  const rem = (quarters % 4) * 15
+  const hourPart = `${hours} ${hours === 1 ? 'hour' : 'hours'}`
+  return rem ? `${hourPart} ${rem} minutes` : hourPart
+}
