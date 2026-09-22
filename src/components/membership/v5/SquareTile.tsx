@@ -35,7 +35,18 @@ export function SquareTile({
   action,
   square = true,
 }: {
-  caption: string
+  /**
+   * The eyebrow's text. A `ReactNode` rather than a `string` as of 2026-09-21,
+   * for the `presets` pacing treatment, whose eyebrow carries a SECOND clause
+   * in dimmer ink ("Study Pace · recommended" → "· yours" once the learner has
+   * adjusted anything). Every other caller still passes a plain string.
+   *
+   * ⚠ A caption with element children breaks `getByText('Study Pace')` — the
+   * matcher runs on `textContent`, which is then the whole eyebrow. Tests that
+   * find the tile by its caption use a regex; see `paceTile()` in
+   * `TestingVersion.test.tsx`.
+   */
+  caption: ReactNode
   icon?: ReactNode
   children: ReactNode
   /**

@@ -144,6 +144,25 @@ const TESTING_HIDDEN_RAIL_SECTIONS = [
   'm-career-tools',
 ] as const satisfies readonly PlatformSection[]
 
+/**
+ * Which layouts carry the trim — BOTH pacing versions as of 2026-09-21, when
+ * Testing 2 was asked for the same rail ("hide all others").
+ *
+ * A FUNCTION, because the rule had two call sites written as two literal
+ * comparisons — the desktop rail and the phone drawer — and the drawer's own
+ * note already claimed "one owner for the rule" while being the second copy of
+ * it. Adding `'testing-2'` to one and not the other would have given the phone
+ * a fuller rail than the desktop on the same version, which is the silent
+ * divergence `MobileNavDrawer` reuses the real rail to prevent.
+ */
+function hiddenRailSectionsFor(
+  layout: DashboardLayout,
+): readonly PlatformSection[] | undefined {
+  return layout === 'testing' || layout === 'testing-2'
+    ? TESTING_HIDDEN_RAIL_SECTIONS
+    : undefined
+}
+
 
 export function PlatformShell() {
   // Wrap the shell in the in-shell course-launcher provider so a card deep in
@@ -360,10 +379,16 @@ function PlatformShellBody() {
    * stakeholder lands on — shows, which is not what "for this version" asked
    * for. So the trim is a property of the LAYOUT and the baseline is untouched.
    */
-  const testingLayout = dashboardLayout === 'testing'
-  const trimmedRailSections: readonly PlatformSection[] | undefined = testingLayout
-    ? TESTING_HIDDEN_RAIL_SECTIONS
-    : undefined
+  /* BOTH pacing versions, as of 2026-09-21 — the direct ask on Testing 2
+     ("update Testing 2 to have these nav elements, hide all others").
+     `'testing-2'` joined the trim rather than getting one of its own: the two
+     versions are a matched pair asking different questions of ONE tile, and a
+     rail that differed between them would be a second variable in that
+     comparison. QE Focused — the baseline this deliberately did not touch — is
+     still untouched. The set lives in `hiddenRailSectionsFor`, which the phone
+     drawer reads too. */
+  const trimmedRailSections = hiddenRailSectionsFor(dashboardLayout)
+  const testingLayout = trimmedRailSections != null
   // Mobile preview (the PrototypeBar device toggle → 390px frame) swaps the
   // left-rail desktop shell for a native-feeling single-column mobile layout:
   // a navy profile band on top + a fixed bottom tab bar. The rail's content
@@ -896,9 +921,7 @@ function PlatformMobileShell({
            this shell already has — so the phone and the desktop cannot show
            different sets. Re-deriving it here rather than threading a prop down
            keeps one owner for the rule. */
-        hiddenSections={
-          dashboardLayout === 'testing' ? TESTING_HIDDEN_RAIL_SECTIONS : undefined
-        }
+        hiddenSections={hiddenRailSectionsFor(dashboardLayout)}
       />
     </div>
   )

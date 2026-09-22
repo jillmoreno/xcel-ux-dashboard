@@ -204,6 +204,37 @@ type Props = {
    */
   paceOnly?: boolean
   /**
+   * The ATLAS STUDY JOURNEY treatment: the journey drawn as a framed white card,
+   * and the post-course steps split out as one widget each (`framed` +
+   * `splitSteps` on `StudyJourneyWidget`).
+   *
+   * SPLIT OFF `paceOnly` on 2026-09-21, which is the rename that prop's own
+   * note asked for in advance ("Rename both if a version ever wants one without
+   * the other"). Testing 2 is that version: it wants this journey and it keeps
+   * the square tile PAIR, which is exactly what `paceOnly` denies. Left on
+   * `paceOnly` the only way to give Testing 2 this journey would have been to
+   * give it Testing's tile row too, silently changing the one thing that makes
+   * the two versions a pair worth comparing.
+   *
+   * TWO PROPS, not one, even though both versions now set both: they are
+   * different editorial decisions — what the square row shows, and how the
+   * journey column is built — and a third version wanting one without the other
+   * is precisely what just happened.
+   */
+  journeyCards?: boolean
+  /**
+   * ISO yyyy-mm-dd — the learner's BOOKED exam date (`examDateStore`), entered
+   * on the Schedule State Exam card. Passed straight through to the Study Pace
+   * tile, which prices against whichever ceiling binds.
+   *
+   * It reaches this component as a RAW ISO string rather than as
+   * `personaRenewal`'s formatted pair, because the pace model measures with it
+   * and `examDateRenewal` returns a display deadline plus a week count — two
+   * shapes of one fact, and the tile needs the one that can be compared to a
+   * course's expiry.
+   */
+  examDate?: string
+  /**
    * The page's course header band, rendered INSIDE this block's left column
    * instead of full-width above the whole grid.
    *
@@ -278,6 +309,8 @@ export function LearnerFocusedBand({
   studyJourney = false,
   livePace = false,
   paceOnly = false,
+  journeyCards = false,
+  examDate,
   headerSlot,  onOpenStop,
   onOpenStep,
   path,
@@ -870,6 +903,48 @@ export function LearnerFocusedBand({
           <p style={{ ...pacingNoteStyle, marginTop: 2 }}>days left</p>
         </div>
       </div>
+    ) : pacingStyle === 'presets' ? (
+      /* PRESETS RENDERS THE WHOLE TILE, not a body — so this arm is
+         unreachable, and it is here anyway so the chain still lists all five
+         treatments and nobody reads the four above it as the complete set.
+         `paceTileEl` below is where it is actually built.
+
+         WHY IT COULD NOT LIVE HERE. Everything in this chain renders INSIDE the
+         `SquareTile` a few lines down. The presets card owns its own eyebrow —
+         "Study Pace · recommended", switching to "· yours" the moment the
+         learner adjusts anything — and that suffix is driven by state held in
+         `StudyPaceTile` (`choices`). Rendering the card in this slot would
+         either nest a tile inside a tile (two cards, two eyebrows, two floors)
+         or force `choices` to be lifted into this component, duplicating the
+         state Testing 2's tile already owns and giving the two shapes two
+         different ideas of what "adjusted" means.
+
+         IT ALSO DROPS `pacingStatus`, alone among the five. The reasoning, and
+         what it costs:
+
+           - TWO PILLS IN TWO VOCABULARIES. `pacingStatus` is the six COMPLIANCE
+             states ("On Track"); the card's own pill is the pace axis
+             (Recommended / Relaxed / heavy). `PaceChip`'s note already records
+             why those two must not share a badge — a learner reading "At Risk"
+             off a statement that is only saying their evenings are long. Nine
+             pixels apart is the same collision with a gap in it.
+           - THIS CARD ANSWERS THE STATUS QUESTION IN ITS BODY. The other four
+             state a QUANTITY (hrs/day, units a week, two figures) and need the
+             status pill to say whether that quantity is enough. This one states
+             the OUTCOME — "finishes by Apr 29, 5 days before access ends on
+             May 4" — which is the derivation "On Track" is a label for. Keeping
+             both would print the conclusion twice, once derived and once
+             asserted.
+           - `pacingStatus` IS `marginTop: 'auto'`, so it lands on the tile's
+             floor. On this card the floor is the two buttons, and the tile would
+             end on a pill and a sentence BELOW its own primary call to action.
+
+         WHAT IT COSTS, and a reviewer should know it: the five treatments are no
+         longer status-constant, so this one cannot be compared to the other four
+         on "does the state show" — it shows it as a sentence rather than as a
+         pill. `TestingVersion.test.tsx` pins the four and pins this one's
+         replacement separately, rather than quietly dropping the guarantee. */
+      null
     ) : (
       /* LO-FI — what ships on QE Focused today. Two rows rather than the
          Readiness tile's three because this tile also carries the status pill
@@ -1488,7 +1563,39 @@ export function LearnerFocusedBand({
                 hoursRemaining={resume.hours * (1 - (resume.progress ?? 0) / 100)}
                 accessExpiresAt={resume.expiresAt}
                 courseTitle={resume.title}
+                examDate={examDate}
                 detailsTo="/dashboard-rebrand?section=study-plan"
+              />
+            ) : pacingStyle === 'presets' && resume ? (
+              /* PRESETS — the Testing version's fifth treatment, and the only
+                 one that is a whole TILE rather than a body inside the
+                 `SquareTile` below. See the `presets` arm of `pacingBody` for
+                 why it sits here and for the `pacingStatus` decision.
+
+                 THE SAME COMPONENT Testing 2 renders, in its `card` shape — so
+                 the model, the `choices` state and the Adjust sheet are reused
+                 rather than rebuilt, and a fix to the pace derivation reaches
+                 both versions at once. The facts are the same three this file
+                 already feeds it: the resume course's published credit hours
+                 against its own progress, its access expiry, and the anchored
+                 fixture clock.
+
+                 `&& resume` for the reason `rate` is omitted without one — the
+                 card is entirely course-derived, and with no course to read
+                 there is nothing to state. It falls through to the lo-fi stub,
+                 which is the honest empty rather than a guessed one.
+
+                 `onStart` is the band's OWN launcher, the same call the Resume
+                 CTA makes, so two buttons on one page cannot open different
+                 things. */
+              <StudyPaceTile
+                layout="card"
+                today={FIXTURE_TODAY}
+                hoursRemaining={resume.hours * (1 - (resume.progress ?? 0) / 100)}
+                accessExpiresAt={resume.expiresAt}
+                courseTitle={resume.title}
+                examDate={examDate}
+                onStart={() => launcher.open(resume.id)}
               />
             ) : (
               <SquareTile
@@ -1810,17 +1917,20 @@ export function LearnerFocusedBand({
           // own rules, and the Get Licensed card is where they apply.
           onOpenRequirements={onViewDetails}
           onOpenLearningPath={onOpenLearningPath}
-          // FRAMED on Testing — a white card with a hairline edge instead of
-          // sitting bare on the page grey. Reuses `paceOnly`, which is already
-          // this version's marker on this component, rather than adding a
-          // second boolean that would always be set with it: the two would only
-          // ever differ by mistake. Rename both if a version ever wants one
-          // without the other.
-          framed={paceOnly}
-          // …and the post-course steps become their own cards. A separate prop
-          // from `framed` because they are different questions — one is this
-          // widget's surface, the other is how many widgets there are.
-          splitSteps={paceOnly}
+          // FRAMED — a white card with a hairline edge instead of sitting bare
+          // on the page grey.
+          //
+          // DRIVEN BY `journeyCards`, NOT `paceOnly`, as of 2026-09-21. It rode
+          // on `paceOnly` while Testing was the only version that wanted this
+          // treatment, and that prop's own note called the split in advance:
+          // "Rename both if a version ever wants one without the other."
+          // Testing 2 is that version — it wants this journey and keeps its
+          // square tile PAIR, which is the whole thing `paceOnly` means.
+          framed={journeyCards}
+          // …and the post-course steps become their own cards. Still a separate
+          // prop from `framed` because they are different questions — one is
+          // this widget's surface, the other is how many widgets there are.
+          splitSteps={journeyCards}
         />
       ) : (
       <div

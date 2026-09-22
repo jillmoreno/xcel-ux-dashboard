@@ -41,6 +41,17 @@ function renderShell(url = TESTING_URL) {
   )
 }
 
+/** Pin ONE pacing treatment. Needed as of 2026-09-21: these are cross-surface
+ *  claims about what the Study Pace tile says, and the tile now has five
+ *  treatments that say it differently — so a test that leaves the choice to the
+ *  flag's default is really asserting whichever treatment last won that vote. */
+function seedPacing(variant: string) {
+  window.localStorage.setItem(
+    'cgp.featureFlags',
+    JSON.stringify({ 'dashboard-pacing-style': { enabled: true, variant } }),
+  )
+}
+
 beforeEach(() => {
   window.localStorage.clear()
   window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
@@ -103,7 +114,14 @@ describe('the entered date moves the whole page, not just the card', () => {
     // Pace tile both derive from the same `weeksLeft`, so a date that moved one
     // and not the other would be the disagreement `ProgressAgreement.test.tsx`
     // exists to catch.
+    //
+    // SEEDS `runway` EXPLICITLY as of 2026-09-21. The claim is about a tile
+    // that states remaining time in the PATH's units, which is what `runway`
+    // does — it rode on the flag's default until that default moved to
+    // `presets`, a treatment that expresses the same fact as a DATE and so can
+    // never contain a week count. The test below carries the presets half.
     writeExamDate('2026-06-30')
+    seedPacing('runway')
     renderShell()
     const expected = timeRemainingText(50 / 7)
     expect(document.body.textContent).toContain(expected)
@@ -111,12 +129,56 @@ describe('the entered date moves the whole page, not just the card', () => {
     expect(tile.textContent).toContain(expected)
   })
 
+  it('reaches the PRESETS card too, in its own idiom', () => {
+    /* THE SAME CLAIM for the default view's treatment, and it is the one that
+       was actually broken. `presets` reads `src/lib/studyPace.ts`, which takes
+       the exam date as one of two ceilings — and nothing was passing it one, so
+       the card priced against course access alone while the header three inches
+       above it had re-pointed onto the booked exam.
+
+       Harmless only while the exam sat OUTSIDE the access window, where access
+       binds and the card was right for the wrong reason. Asserted with an exam
+       INSIDE it, where the card must switch ceilings and say so — the silent
+       switch `binding` exists to prevent.
+
+       Expressed as a date rather than a week count, because that is this
+       treatment's whole argument: it states the outcome, not the quantity. */
+    writeExamDate('2026-05-31')
+    seedPacing('presets')
+    renderShell()
+    const tile = screen.getByText(/^Study Pace/).parentElement as HTMLElement
+    expect(tile.textContent).toMatch(/before your exam on May 31/)
+    // …and it stops naming access, which is no longer the binding ceiling.
+    expect(tile.textContent).not.toMatch(/before access ends/)
+  })
+
+  it('does not read a booked exam date as the learner adjusting the pace', () => {
+    /* A date the learner booked on the Schedule State Exam card is something
+       the product was TOLD, not something they changed on this tile. Counting
+       it as an adjustment would open a fresh page on "· yours" with the
+       provenance clause already suppressed — both of which say the opposite of
+       what just happened. It is compared to its SEED, not to null. */
+    writeExamDate('2026-05-31')
+    seedPacing('presets')
+    renderShell()
+    const tile = screen.getByText(/^Study Pace/).parentElement as HTMLElement
+    expect(tile.textContent).toMatch(/· recommended/)
+    expect(tile.textContent).toMatch(/not from a guess/)
+  })
+
   it('states the remaining time in ONE unit across both surfaces', () => {
     /* The tile printed raw days while the header used the shared formatter, so
        past 30 days they read "50 days to go" and "7 wks" three inches apart —
        the same fact in two units. Asserted as agreement rather than as a
-       string, so either surface may reword. */
+       string, so either surface may reword.
+
+       `runway` BY NAME, for the reason the test above records: this is a claim
+       about the treatment that states remaining TIME, and it stopped being the
+       default on 2026-09-21. `presets` states a finish date instead, so it has
+       no unit to disagree in — which is not this test passing, it is this test
+       not applying. */
     writeExamDate('2026-06-30')
+    seedPacing('runway')
     renderShell()
     const tile = screen.getByText('Study Pace').parentElement as HTMLElement
     expect(tile.textContent).not.toMatch(/\d+ days to go/)

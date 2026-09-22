@@ -8,6 +8,8 @@ import {
   formatEvening,
   formatPaceDate,
   presetLabel,
+  dateFromIso,
+  daysBetween,
   EASY_MINS,
   type PacePreset,
   type PaceModel,
@@ -45,6 +47,53 @@ export type StudyPaceTileProps = {
   detailsTo?: string
   /** Course name, for the sheet's sub-line. */
   courseTitle?: string
+  /**
+   * ISO yyyy-mm-dd — the learner's BOOKED exam date, from `examDateStore`,
+   * entered on the Schedule State Exam card.
+   *
+   * THREADED IN 2026-09-21, when `presets` became the default view's treatment.
+   * Without it this surface was the one place on the page that did not know the
+   * date: the header's Target Exam Date and its countdown both re-point off the
+   * store, while the pace kept pricing against course access alone. Harmless
+   * while the exam sat outside the access window (access binds, and the card
+   * was right for the wrong reason) and wrong the moment it sat inside — the
+   * card would quote a finish date LATER than the exam it was meant to prepare
+   * for, which is precisely the cross-surface disagreement `EXAM_BUFFER_DAYS`
+   * was made equal to the study plan's own constant to avoid.
+   *
+   * It SEEDS `choices` rather than bypassing them, so the sheet's own exam
+   * field shows the same date and the two cannot render different models. See
+   * `adjusted` for why a seeded date does not count as the learner adjusting.
+   */
+  examDate?: string
+  /**
+   * WHICH SHAPE — added 2026-09-21 with `dashboard-pacing-style: presets`.
+   *
+   *   - `'tile'` (default) is Testing 2's square: a pace chip, the evening, a
+   *     hairline timeline and a finish date, with `Adjust` on the tile floor
+   *     beside `Details →`. Unchanged.
+   *   - `'card'` is the Testing version's fifth pacing treatment — the wide
+   *     card from `xcel-pace-presets.html` §02, which states the same derived
+   *     pace as a sentence and ends in two real buttons.
+   *
+   * ONE PROP ON THIS COMPONENT rather than a second component, and that is the
+   * whole reason the variant is cheap: the model, the `choices` state and the
+   * sheet are identical in both shapes, and only the arrangement differs. A
+   * `StudyPaceCard` beside this would own a second copy of `choices` and a
+   * second `StudyPaceSheet` mount, which is how the two shapes start
+   * disagreeing about what "adjusted" means.
+   */
+  layout?: 'tile' | 'card'
+  /**
+   * What the card's PRIMARY button does. Card layout only.
+   *
+   * Optional, and the button is omitted without it rather than rendered inert:
+   * "Start studying" that starts nothing is the invented affordance this
+   * version keeps refusing. The band passes its own course launcher — the same
+   * `launcher.open(resume.id)` the Resume CTA above it calls, so the two
+   * buttons on one page cannot open different things.
+   */
+  onStart?: () => void
 }
 
 export function StudyPaceTile({
@@ -53,6 +102,9 @@ export function StudyPaceTile({
   accessExpiresAt,
   detailsTo,
   courseTitle,
+  examDate,
+  layout = 'tile',
+  onStart,
 }: StudyPaceTileProps) {
   const [open, setOpen] = useState(false)
   /**
@@ -61,10 +113,14 @@ export function StudyPaceTile({
    * not been told" — which is how the tile knows whether to keep calling its
    * own number a recommendation.
    */
+  /** The exam date we STARTED with — the learner's booked one, if the page
+   *  already knows it. Kept so `adjusted` can tell "the product was told this"
+   *  from "the learner changed it here". */
+  const seededExamDate = examDate ?? null
   const [choices, setChoices] = useState<PaceChoices>({
     presetId: null,
     nights: null,
-    examDate: null,
+    examDate: seededExamDate,
     style: 'average',
     plan: null,
   })
@@ -85,17 +141,52 @@ export function StudyPaceTile({
   const selected: PacePreset =
     (choices.presetId && model.presets.find((p) => p.id === choices.presetId)) || defaultPreset(model)
   /** Untouched ⇒ the number is still ours to call "recommended". The moment any
-   *  of it is the learner's, the tile stops claiming credit for it. */
+   *  of it is the learner's, the tile stops claiming credit for it.
+   *
+   *  ⚠ THE EXAM DATE IS COMPARED TO ITS SEED, not to null. A date the learner
+   *  booked on the Schedule State Exam card is something the product was TOLD,
+   *  not something they changed here — treating it as an adjustment would make
+   *  a freshly-loaded page open on "· yours" with its provenance clause already
+   *  suppressed, which is the opposite of what both say. Changing it in the
+   *  sheet still counts, because then it differs from the seed. */
   const adjusted =
-    choices.presetId != null || choices.nights != null || choices.examDate != null || choices.style !== 'average'
+    choices.presetId != null ||
+    choices.nights != null ||
+    choices.examDate !== seededExamDate ||
+    choices.style !== 'average'
+
+  const card = layout === 'card'
 
   return (
     <>
       <SquareTile
-        caption="Study Pace"
+        /* THE EYEBROW CARRIES THE PROVENANCE in the card shape, and it is the
+           one thing on it that changes the moment the learner touches
+           anything — the prototype's §02 finding, kept verbatim: "the product
+           should not keep calling a number the learner picked a
+           recommendation". The square keeps the bare caption, where the same
+           fact is already on the chip a few pixels below it. */
+        caption={
+          card ? (
+            <>
+              Study Pace
+              <span style={{ color: 'var(--color-text-tertiary)' }}>
+                {' '}· {adjusted ? 'yours' : 'recommended'}
+              </span>
+            </>
+          ) : (
+            'Study Pace'
+          )
+        }
         icon={<Clock size={13} />}
-        to={detailsTo}
+        /* THE CARD HAS NO TILE FLOOR. Its controls are two real buttons in the
+           body, so `to`/`action` would add a third and a fourth control to a
+           treatment whose whole argument is that it operates nothing except
+           Start and Adjust. */
+        to={card ? undefined : detailsTo}
+        square={!card}
         action={
+          card ? undefined : (
           <button
             type="button"
             onClick={() => setOpen(true)}
@@ -114,9 +205,25 @@ export function StudyPaceTile({
           >
             Adjust
           </button>
+          )
         }
       >
-        <PaceBody model={model} preset={selected} adjusted={adjusted} plan={choices.plan} />
+        {card ? (
+          <PaceCardBody
+            model={model}
+            preset={selected}
+            adjusted={adjusted}
+            plan={choices.plan}
+            today={today}
+            courseTitle={courseTitle}
+            accessExpiresAt={accessExpiresAt}
+            examDate={choices.examDate ?? undefined}
+            onAdjust={() => setOpen(true)}
+            onStart={onStart}
+          />
+        ) : (
+          <PaceBody model={model} preset={selected} adjusted={adjusted} plan={choices.plan} />
+        )}
       </SquareTile>
       <StudyPaceSheet
         open={open}
@@ -276,3 +383,372 @@ function PaceTimeline({ model, preset }: { model: PaceModel; preset: PacePreset 
     </div>
   )
 }
+
+/* ─── the CARD shape (`layout="card"`) ───────────────────────────────────
+ *
+ * `dashboard-pacing-style: presets` — the FIFTH treatment of the Testing
+ * version's full-width Study Pace tile, ported from
+ * `public/prototypes/xcel-pace-presets.html` §02.
+ *
+ * WHAT MAKES IT A DIFFERENT ANSWER from the four beside it, rather than a
+ * restyle of one: `rate`, `runway` and `balance` all state a QUANTITY and leave
+ * the learner to judge whether it is enough. This one states the OUTCOME — a
+ * date, and how much room is left after it — and the quantity is the
+ * subordinate clause. It is the only treatment that answers "am I pacing to
+ * finish in time" with yes-or-no rather than with a number.
+ *
+ * IT DOES NOT SHOW `pacingStatus`, and that is a decision rather than an
+ * oversight — see the arm in `LearnerFocusedBand`'s `pacingBody` for the
+ * reasoning and for what it costs.
+ */
+function PaceCardBody({
+  model,
+  preset,
+  adjusted,
+  plan,
+  today,
+  courseTitle,
+  accessExpiresAt,
+  examDate,
+  onAdjust,
+  onStart,
+}: {
+  model: PaceModel
+  preset: PacePreset
+  adjusted: boolean
+  plan: PaceChoices['plan']
+  today: Date
+  courseTitle?: string
+  accessExpiresAt?: string
+  examDate?: string
+  onAdjust: () => void
+  onStart?: () => void
+}) {
+  /* THE DATE THE LEARNER OWNS, not the model's `hardEndIso`. The ceiling the
+     maths uses is expiry minus one (finishing the day access dies is not
+     finishing) and the exam minus a revision buffer — both correct, and both
+     one day off from the date printed on the learner's receipt. The sentence
+     names the date they recognise and the timeline ends on the same one, so
+     the two cannot disagree by a day. */
+  const ceilingIso = model.binding === 'exam' ? examDate : accessExpiresAt
+  const ceiling = dateFromIso(ceilingIso)
+  const finish = dateFromIso(preset.finishIso)
+  /** Days of room between finishing and the ceiling. Null when there is no
+   *  ceiling at all, where "5 days before nothing" is not a sentence. */
+  const slack = ceiling && finish ? daysBetween(finish, ceiling) : null
+
+  const controls = (
+    <CardControls onAdjust={onAdjust} onStart={onStart} model={model} preset={preset} />
+  )
+
+  if (preset.state === 'no') {
+    return (
+      <div style={cardStack}>
+        <PaceChip tone="critical">Won’t fit</PaceChip>
+        <p style={cardHead}>
+          The work left won’t fit before{' '}
+          {model.binding === 'exam' ? 'your exam' : 'your access ends'}.
+        </p>
+        <p style={cardBody}>
+          {model.binding === 'exam'
+            ? 'No pace fixes that. A later exam date, or less to do before it.'
+            : 'No pace fixes that. The honest options are an extension, or less to do.'}
+        </p>
+        {controls}
+      </div>
+    )
+  }
+
+  return (
+    <div style={cardStack}>
+      {/* THE PILL, and the reason it is `PaceChip` rather than a new element:
+          this axis (how heavy the chosen pace is, and whose choice it was)
+          already has a chip with a documented tone map, and a second one a few
+          pixels away would be the drift `widgetStyles.ts` exists to stop. */}
+      <PaceChip tone={preset.state === 'heavy' ? 'warning' : adjusted ? 'positive' : 'neutral'}>
+        {adjusted ? presetLabel(preset) : 'Recommended'}
+        {preset.state === 'heavy' ? ' · heavy' : ''}
+      </PaceChip>
+
+      <p style={cardHead}>
+        About{' '}
+        <b style={{ fontWeight: 800 }}>{formatEvening(preset.minsPerNight)} a night</b>,{' '}
+        {preset.nights} nights a week.
+      </p>
+
+      <p style={cardBody}>
+        Finishes{courseTitle ? ' ' : ' your course'}
+        {courseTitle ? <b style={emphasis}>{courseTitle}</b> : null} by{' '}
+        <b style={emphasis}>{formatPaceDate(preset.finishIso)}</b>
+        {slack != null && ceilingIso ? (
+          <>
+            , {slack} {slack === 1 ? 'day' : 'days'} before{' '}
+            {model.binding === 'exam' ? 'your exam on' : 'access ends on'}{' '}
+            {formatPaceDate(ceilingIso)}
+          </>
+        ) : null}
+        .{/* WHERE THE NUMBER CAME FROM, and ONLY while the number is still ours
+             — the moment the learner adjusts anything, the product has no claim
+             left to make about its own provenance.
+
+             IT NAMES THE CEILING, NOT A WINDOW LENGTH. The prototype said "set
+             from your 30-day access", which was true of the pre-licensing
+             window it assumed and is false of this fixture's year of access —
+             and would go on being false for any course whose window differs.
+             The ceiling is the fact the model actually used, it is already on
+             screen two clauses up, and it stays true when an exam date takes
+             over as the thing doing the work. */}
+        {adjusted ? null : (
+          <>
+            {' '}
+            {model.binding === 'exam'
+              ? 'Set from your exam date, not from a guess.'
+              : model.binding === 'both'
+                ? 'Set from your exam date and your access, not from a guess.'
+                : model.binding === 'access'
+                  ? 'Set from when your access ends, not from a guess.'
+                  : /* NO CEILING — and this is the ONE case where the card must
+                       not claim the date is sourced, because it is not. With
+                       neither an access window nor an exam date the model has
+                       nothing to aim at and falls back to the Focused horizon
+                       (`FOCUSED_DAYS`, the storefront's "less than 2 weeks"):
+                       a sensible DEFAULT, but a default is exactly what "not
+                       from a guess" denies. So the claim is dropped and the
+                       date is labelled for what it is. The alternative — saying
+                       nothing — leaves a finish date on the card with no
+                       explanation, which reads as a deadline. */
+                  'This course has no access deadline, so that date is a suggested target rather than a cut-off.'}
+          </>
+        )}
+        {preset.state === 'heavy' ? <> <b style={emphasis}>That is a heavy evening.</b></> : null}
+        {plan ? ' Your study plan is on the calendar.' : null}
+      </p>
+
+      <PaceCardTimeline today={today} model={model} preset={preset} ceilingIso={ceilingIso} />
+      {controls}
+    </div>
+  )
+}
+
+/**
+ * Today → the ceiling, with the chosen finish marked on it.
+ *
+ * DECORATION, and deliberately so: every fact it draws — the finish date, the
+ * room after it, and the date access ends — is printed in words in the sentence
+ * directly above and in the two labels beside it. So the graphic is
+ * `aria-hidden` and the LABELS are not, which is what keeps the accessible name
+ * off colour and off position.
+ *
+ * ⚠ `--color-text-tertiary` for the fill, NOT `--color-primary-500`. This is
+ * the same call `runwayStrip` records one file over: tertiary measures 6.19:1
+ * light / 6.18:1 dark, which is unusually symmetric, so the strip needs no
+ * theme swap — where the primary and the track are both navies in dark and the
+ * fill lands near 1.2:1, the exact failure `.cre-jbi-progress-fill` exists for.
+ */
+function PaceCardTimeline({
+  today,
+  model,
+  preset,
+  ceilingIso,
+}: {
+  today: Date
+  model: PaceModel
+  preset: PacePreset
+  ceilingIso?: string
+}) {
+  const ceiling = dateFromIso(ceilingIso)
+  /* The track spans to the date the LABEL names, so the end-stop and the words
+     under it are the same day. Falls back to the model's own ceiling when there
+     is no dated one to draw to. */
+  const span = Math.max(ceiling ? daysBetween(today, ceiling) : model.daysToCeiling, 1)
+  const pct = Math.max(3, Math.min(100, (preset.days / span) * 100))
+  return (
+    <div>
+      <div
+        aria-hidden
+        style={{
+          position: 'relative',
+          height: 8,
+          margin: '2px 0 8px',
+          borderRadius: 'var(--radius-pill)',
+          background: 'var(--color-border-subtle)',
+        }}
+      >
+        <span
+          style={{
+            position: 'absolute',
+            inset: '0 auto 0 0',
+            width: `${pct}%`,
+            borderRadius: 'var(--radius-pill)',
+            background: 'var(--color-text-tertiary)',
+          }}
+        />
+        {/* The finish, as a dot ON the fill. Ringed in the tile's own fill so it
+            stays legible where it lands hard against the end-stop. */}
+        <span
+          style={{
+            position: 'absolute',
+            top: -2,
+            left: `${pct}%`,
+            width: 12,
+            height: 12,
+            marginLeft: -6,
+            borderRadius: '50%',
+            background: 'var(--color-text-primary)',
+            boxShadow: '0 0 0 2px var(--color-surface-card)',
+          }}
+        />
+        {/* The HARD END-STOP — a full-height tick, not a marker on the track:
+            it is the one point on this line that is not a choice.
+
+            DRAWN ONLY WHEN THERE IS ONE. With no access window and no exam date
+            the model aims at a default horizon, and a hard stop drawn on a date
+            nothing enforces is the graphic saying what the sentence above it
+            refuses to. The track then runs Today → the finish dot and stops. */}
+        {ceilingIso ? (
+          <span
+            style={{
+              position: 'absolute',
+              top: -3,
+              right: 0,
+              width: 2,
+              height: 14,
+              borderRadius: 1,
+              background: 'var(--color-text-primary)',
+            }}
+          />
+        ) : null}
+      </div>
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'baseline',
+          justifyContent: 'space-between',
+          gap: 12,
+          fontFamily: 'var(--font-body)',
+          fontSize: 11,
+          fontWeight: 600,
+          letterSpacing: '0.01em',
+          color: 'var(--color-text-secondary)',
+        }}
+      >
+        <span>Today</span>
+        {ceilingIso ? (
+          <span>
+            {model.binding === 'exam' ? 'Exam' : 'Access ends'} · {formatPaceDate(ceilingIso)}
+          </span>
+        ) : null}
+      </div>
+    </div>
+  )
+}
+
+/**
+ * The two buttons, and the whole of what this card operates.
+ *
+ * START IS A NAVY FILL, not the Brick. `--color-action` is a FILL colour that
+ * measures 2.05:1 as TEXT on the dark shell, and this version moved every CTA
+ * onto the primary ramp on 2026-09-16 — navy means "do this", red means "this
+ * is an assessment" (see `.cre-cta-ink` in tokens.css). The filled shape is the
+ * one the Study Journey's own Save button already uses, rather than a fifth
+ * button treatment.
+ *
+ * ADJUST takes its ink AND its stroke from `.cre-cta-ink` with
+ * `borderColor: currentColor` and NO inline colour — the shared
+ * `Button variant="secondary"` draws both from `--color-action`, and an inline
+ * value would beat the class's dark-mode swap while looking correct.
+ */
+function CardControls({
+  onAdjust,
+  onStart,
+  model,
+  preset,
+}: {
+  onAdjust: () => void
+  onStart?: () => void
+  model: PaceModel
+  preset: PacePreset
+}) {
+  const stuck = preset.state === 'no'
+  return (
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 2 }}>
+      {onStart && !stuck ? (
+        <button
+          type="button"
+          onClick={onStart}
+          /* `.cre-cta-fill` owns BOTH the fill and the label ink, and this
+             button sets neither inline. The navy is 2.75:1 against the dark
+             card — under the 3:1 a control's shape needs — so dark inverts the
+             pair, and a theme selector is the only thing that can carry that.
+             An inline `background` here would beat the class while looking
+             perfectly correct in light mode. */
+          className="cre-cta-fill"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            height: 40,
+            padding: '0 18px',
+            borderRadius: 'var(--radius-md)',
+            border: 0,
+            cursor: 'pointer',
+            fontFamily: 'var(--font-body)',
+            fontSize: 14,
+            fontWeight: 700,
+          }}
+        >
+          Start studying
+        </button>
+      ) : null}
+      <button
+        type="button"
+        onClick={onAdjust}
+        aria-haspopup="dialog"
+        className="cre-cta-ink"
+        style={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          height: 40,
+          padding: '0 18px',
+          borderRadius: 'var(--radius-md)',
+          border: '1px solid currentColor',
+          cursor: 'pointer',
+          background: 'transparent',
+          fontFamily: 'var(--font-body)',
+          fontSize: 14,
+          fontWeight: 700,
+        }}
+      >
+        {stuck && model.binding === 'exam' ? 'Change my exam date' : 'Adjust'}
+      </button>
+    </div>
+  )
+}
+
+const cardStack = { display: 'flex', flexDirection: 'column', gap: 10 } as const
+
+/* `--font-heading` rather than the body face, for the reason `pacingFigureStyle`
+   records one file over: this is the tile's heading in everything but markup,
+   so it has to follow `dashboard-heading-font` like every other one on the page
+   — a body-face head here would be the one that stayed sans under the serif
+   variant. */
+const cardHead = {
+  margin: 0,
+  fontFamily: 'var(--font-heading)',
+  fontSize: 19,
+  lineHeight: '25px',
+  fontWeight: 700,
+  letterSpacing: '-0.01em',
+  color: 'var(--color-text-primary)',
+} as const
+
+const cardBody = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  lineHeight: '19px',
+  color: 'var(--color-text-secondary)',
+} as const
+
+const emphasis = { color: 'var(--color-text-primary)', fontWeight: 600 } as const

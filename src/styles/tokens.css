@@ -1109,6 +1109,42 @@ html,
   color: var(--color-primary-300);
 }
 
+/* `.cre-cta-fill` is `.cre-cta-ink`'s FILLED twin — a solid primary button, for
+   the one CTA on a surface that is the thing to do next. Added 2026-09-21 with
+   the `presets` pacing card's "Start studying".
+
+   IT IS NOT `--color-action`, for the reason the block above records: the Brick
+   is a FILL that measures 2.05:1 as TEXT, it was carrying two unrelated jobs,
+   and this version moved every CTA onto the primary ramp. Navy means "do this".
+
+   WHY IT NEEDS THE DARK STOP AT ALL, which is the part that is easy to get
+   wrong. The LABEL is fine in both themes — white on `-500` is 7.64:1 either
+   way — so the button never looks broken in a screenshot and never fails a
+   text-contrast check. What fails is the button's own SHAPE: `-500` on the dark
+   card measures **2.75:1** (measured in the browser, not derived), under the
+   3:1 that WCAG 1.4.11 asks of a control's boundary, so the navy CTA dissolves
+   into the navy card while its text floats on top. That is the exact class of
+   defect this file keeps paying for — renders, passes tsc, passes tests,
+   invisible in one theme.
+
+   So dark INVERTS rather than nudging: the fill goes to `-300` and the ink goes
+   dark with it. Measured in the browser against the recessed widget card —
+   fill/card 6.02:1 light and 9.65:1 dark; label/fill 7.64:1 light and 8.27:1
+   dark. (Measured, because the card is a `color-mix` recess rather than the
+   page white, and reasoning about it from the ramp gives the wrong answer.)
+
+   Consumers set NEITHER `background` NOR `color` inline; an inline value beats
+   the rule while looking correct, which is the `.cre-uxlinks-title` failure and
+   the one this class exists to make unrepeatable. */
+.cre-cta-fill {
+  background: var(--color-primary-500);
+  color: var(--color-text-inverse);
+}
+[data-theme='dark'] .cre-cta-fill {
+  background: var(--color-primary-300);
+  color: var(--color-primary-900);
+}
+
 /* `.cre-eyebrow-ink` is SECTION-LABEL ink — the small tracked uppercase line
    over a block's heading ("Atlas Study Journey", "Learning With Compass — Jump
    Back In"). Navy as of 2026-09-17, the direct ask, up from the neutral greys

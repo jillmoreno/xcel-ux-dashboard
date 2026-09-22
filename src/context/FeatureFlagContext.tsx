@@ -799,16 +799,35 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Widgets',
     label: 'Pacing tile — treatment',
     description:
-      'Which treatment the Study Pace tile renders on the TESTING home version (`?version=discoverability-testing`), where it takes the whole row because the Readiness stub beside it is dropped. Four answers to "am I pacing to finish in time": Lo-fi is the current stub, kept so the others can be compared against what ships today. Rate states a suggested hrs/day. Runway lays the work remaining against the time remaining on one track. Balance states the two remaining figures and derives nothing. EVERY figure in every treatment is derived from data the fixtures already carry — the resume course’s credit hours, the path’s unit totals and the days to the target date. None of them invents an observed rate, a schedule to be ahead of, or a projected finish date, because nothing here knows any of those. The status pill and its message are the same in all four, so the comparison is about the pacing figure and not about whether the state is shown.',
+      'Which treatment the Study Pace tile renders on the TESTING home version (`?version=discoverability-testing`), where it takes the whole row because the Readiness stub beside it is dropped. Five answers to "am I pacing to finish in time": Lo-fi is the current stub, kept so the others can be compared against what ships today. Rate states a suggested hrs/day. Runway lays the work remaining against the time remaining on one track. Balance states the two remaining figures and derives nothing. Presets states a finish DATE and the room left after it, and is the only one you can operate. EVERY figure in every treatment is derived from data the fixtures already carry — the resume course’s credit hours and access expiry, the path’s unit totals and the days to the target date. None of them invents an observed rate, a schedule to be ahead of, or a projected finish date, because nothing here knows any of those. The status pill and its message are the same in the first four, so the comparison there is about the pacing figure and not about whether the state is shown; Presets is the one exception and states the same fact as a sentence instead — see its own note.',
     // Variant-only, like `dashboard-clp-style`: the enable toggle is on so the
     // flag is live and the CHOICE is the variant. "Off" would have to mean
     // "lo-fi", which the variant already says.
     defaultEnabled: true,
-    // `runway` rather than `lo-fi`. The version exists to look at pacing, so
-    // opening it on the stub would make the whole thing read as unchanged —
-    // and `lo-fi` is one click away, which is the direction that comparison
-    // should run.
-    defaultVariant: 'runway',
+    /*
+     * `presets` as of 2026-09-21. It was `runway` — chosen when the only thing
+     * that mattered was not opening on the stub ("the version exists to look at
+     * pacing, so opening it on `lo-fi` would make the whole thing read as
+     * unchanged"). That reasoning expired the moment Testing became XCEL's
+     * DEFAULT VERSION on the same day.
+     *
+     * WHY THIS IS NOW A DESIGN DECISION AND NOT A STARTING POSITION. `?demo=1`
+     * renders the committed default baseline and IGNORES stored flags, and no
+     * URL parameter sets one — so on a review link this value is not where a
+     * stakeholder begins, it is the whole of what they see. Landing them on
+     * `runway` would have been picking a winner among five treatments by
+     * inheritance rather than by decision.
+     *
+     * `presets` is the one to state: the only treatment that derives every
+     * figure end to end, answers the pacing question with an OUTCOME rather
+     * than a quantity, and can be operated.
+     *
+     * Scoped as it always was — this flag is read only under the `paceOnly`
+     * arrangement, so the change cannot reach Testing 2 or QE Focused. The
+     * other four stay one click away in the panel, which is the direction the
+     * comparison should run.
+     */
+    defaultVariant: 'presets',
     variants: [
       {
         value: 'lo-fi',
@@ -833,6 +852,12 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
         label: 'Balance — the two figures',
         description:
           'DESCRIPTIVE, and deliberately the one that derives nothing: the work left and the days left as two plain figures, side by side, with no rate and no verdict. It is here as the honest floor — if a learner can pace themselves from those two numbers, the derived versions above are chrome, and that is worth finding out before building one of them properly.',
+      },
+      {
+        value: 'presets',
+        label: 'Presets — a date, and the room after it',
+        description:
+          'CONCLUSIVE, and the only treatment you can OPERATE. The wide card from the `xcel-pace-presets` prototype, §02: an evening and a nights-a-week as a sentence, the finish date it lands on, how many days of room that leaves before the ceiling, a timeline from Today to a hard end-stop, and two real buttons — Start studying, and Adjust, which opens the same sheet the Testing 2 tile uses (the three finish dates, days a week, your exam date, and a study plan on the calendar). The other four state a QUANTITY and leave you to judge whether it is enough; this one states the OUTCOME and makes the quantity the subordinate clause. It reads `src/lib/studyPace.ts` — the same model Testing 2 renders, so a fix to the derivation reaches both versions at once — and the two ceilings it can be bound by, course access and an exam date, are named on the card rather than switched between silently. It is the ONE treatment without the shared status pill: the sentence already states the conclusion that pill labels, and two pills in two vocabularies stacked nine pixels apart is exactly the confusion the pace chip exists to avoid.',
       },
     ],
     page: 'dashboard-rebrand',

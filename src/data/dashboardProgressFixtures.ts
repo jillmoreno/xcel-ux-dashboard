@@ -251,9 +251,38 @@ const PROFILES: Record<EducationType, Partial<Record<Brand, BrandProgressProfile
       // day count. The two units sit on one screen and mean different things —
       // 40 credit hours is what New York requires, 7 days is how XCEL's plan
       // paces it.
-      upNext: { id: 'jbi-xcel-qe-ny', title: 'Pre-licensing Course', imageUrl: NY_LH_COURSE_IMAGE, hours: NY_PRODUCER_HOURS_INVENTED.preLicenseEducation, state: 'NY', delivery: 'online', badge: 'mandatory', status: 'not-started', progress: 0 },
-      resumeMid: { id: 'jbi-xcel-qe-ny', title: 'Pre-licensing Course', imageUrl: NY_LH_COURSE_IMAGE, hours: NY_PRODUCER_HOURS_INVENTED.preLicenseEducation, state: 'NY', delivery: 'online', badge: 'mandatory', status: 'in-progress', progress: 45 },
-      resumeEarly: { id: 'jbi-xcel-qe-ny', title: 'Pre-licensing Course', imageUrl: NY_LH_COURSE_IMAGE, hours: NY_PRODUCER_HOURS_INVENTED.preLicenseEducation, state: 'NY', delivery: 'online', badge: 'mandatory', status: 'in-progress', progress: 20 },
+      //
+      // THE 30-DAY ACCESS WINDOW (2026-09-21). Added so the course carries the
+      // one fact the pacing surfaces need and had been deriving nothing from:
+      // when access ends. Without it `studyPace` has NO CEILING — `binding`
+      // resolves to `'none'`, it falls back to the Focused horizon, and both
+      // the `presets` card and Testing 2's tile quote a date nothing enforces.
+      //
+      // **30 IS SOURCED, NOT PICKED.** XCEL's own product page — "30 days
+      // access to Part 1" — which is `ACCESS_DAYS_CONFIRMED` in
+      // `xcel-pace-presets.html`'s rules table, one of the two constants there
+      // that come from the storefront rather than from us. This IS Part 1.
+      //
+      // ⚠ `enrolledAt` IS LOAD-BEARING, and dropping it as redundant is the
+      // mistake this note exists to stop. `warnWindowFor` clamps the countdown
+      // to HALF the enrolment window, so 30 days of access gives a 15-day
+      // warning window and the badge stays off at 23 days out. Without
+      // `enrolledAt` there is no window to halve, the configured 60 stands, and
+      // the Jump Back In card grows an "expiring soon" badge — on QE Focused,
+      // which is XCEL's DEFAULT version and the thing a stakeholder lands on.
+      // The clamp's own header calls this out: it exists so a course whose
+      // window is shorter than its countdown does not warn from the day it is
+      // bought.
+      //
+      // Dates are relative to FIXTURE_TODAY (2026-05-11), like every other date
+      // in this file: enrolled a week ago, 23 days of access left.
+      //
+      // All THREE states share the pair — it is one course, and an access
+      // window that changed with how far along the learner is would be the
+      // fixture contradicting itself.
+      upNext: { id: 'jbi-xcel-qe-ny', title: 'Pre-licensing Course', imageUrl: NY_LH_COURSE_IMAGE, hours: NY_PRODUCER_HOURS_INVENTED.preLicenseEducation, state: 'NY', delivery: 'online', badge: 'mandatory', status: 'not-started', progress: 0, enrolledAt: '2026-05-04', expiresAt: '2026-06-03' },
+      resumeMid: { id: 'jbi-xcel-qe-ny', title: 'Pre-licensing Course', imageUrl: NY_LH_COURSE_IMAGE, hours: NY_PRODUCER_HOURS_INVENTED.preLicenseEducation, state: 'NY', delivery: 'online', badge: 'mandatory', status: 'in-progress', progress: 45, enrolledAt: '2026-05-04', expiresAt: '2026-06-03' },
+      resumeEarly: { id: 'jbi-xcel-qe-ny', title: 'Pre-licensing Course', imageUrl: NY_LH_COURSE_IMAGE, hours: NY_PRODUCER_HOURS_INVENTED.preLicenseEducation, state: 'NY', delivery: 'online', badge: 'mandatory', status: 'in-progress', progress: 20, enrolledAt: '2026-05-04', expiresAt: '2026-06-03' },
     },
   },
 

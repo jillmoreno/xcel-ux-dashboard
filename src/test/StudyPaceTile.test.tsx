@@ -3,6 +3,14 @@ import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { StudyPaceTile } from '@/components/learning/StudyPaceTile'
+import {
+  studyPace,
+  defaultPreset,
+  formatEvening,
+  formatPaceDate,
+  dateFromIso,
+  daysBetween,
+} from '@/lib/studyPace'
 
 /**
  * The two claims this widget exists to keep, and which a refactor is most
@@ -212,5 +220,182 @@ describe('StudyPaceSheet — the study plan calendar', () => {
     await user.click(within(dialog).getByRole('button', { name: 'Save pace' }))
     expect(screen.getByText('Recommended')).toBeInTheDocument()
     expect(screen.getByText(/a night · 4 nights a week/)).toBeInTheDocument()
+  })
+})
+
+/**
+ * THE CARD SHAPE — `layout="card"`, the Testing version's `presets` pacing
+ * treatment (2026-09-21). Ported from `xcel-pace-presets.html` §02.
+ *
+ * These are here rather than in `TestingVersion.test.tsx` because the claims
+ * are about AGREEMENT WITH THE MODEL, and that needs a ceiling to agree about.
+ * The course the band paces on Testing carries no `expiresAt` at all, so the
+ * integration suite can only pin the card's internal consistency and its
+ * wiring; a ceiling is a prop here, so this is where the arithmetic lives.
+ *
+ * Nothing below asserts a literal date or a literal day count — every figure
+ * comes back out of `studyPace` and is compared to what the card printed.
+ */
+describe('StudyPaceTile — the presets card', () => {
+  const model = () =>
+    studyPace({ today: TODAY, hoursRemaining: 24, accessExpiresAt: '2026-10-18' })
+
+  const renderCard = (props: Partial<React.ComponentProps<typeof StudyPaceTile>> = {}) =>
+    renderTile({ layout: 'card', onStart: () => {}, ...props })
+
+  it('states the evening and the nights the model derives', () => {
+    renderCard()
+    const preset = defaultPreset(model())
+    /* ASSERTED ON `textContent`, not via `getByText`: the head line bolds its
+       own figure, and `getByText`'s default matcher reads only an element's
+       DIRECT text nodes — so a sentence split by a `<b>` is invisible to it.
+       That is the "broken up by multiple elements" trap, and it fails as a
+       missing element rather than as a wrong string. */
+    expect(document.body.textContent).toContain(
+      `About ${formatEvening(preset.minsPerNight)} a night, ${preset.nights} nights a week.`,
+    )
+  })
+
+  it('the room it claims agrees with the access date it names', () => {
+    /* THE TWO HALVES OF ONE SENTENCE, checked against each other and against
+       the model: the days of slack, and the date they are slack before. A card
+       reading "5 days before access ends on Oct 18" while the finish it just
+       printed is six days earlier is the kind of disagreement that looks
+       perfectly plausible on screen. */
+    renderCard()
+    const preset = defaultPreset(model())
+    const claim = /(\d+) days? before access ends on ([A-Z][a-z]{2} \d+)/.exec(
+      document.body.textContent ?? '',
+    )
+    expect(claim).toBeTruthy()
+    const [, days, date] = claim as RegExpExecArray
+    /* The date is the learner's OWN expiry, not the model's `hardEndIso` — that
+       is a day earlier, because finishing the day access dies is not finishing.
+       Printing the internal ceiling would be the card disagreeing by one day
+       with the date on the learner's receipt. */
+    expect(date).toBe(formatPaceDate('2026-10-18'))
+    expect(Number(days)).toBe(
+      daysBetween(dateFromIso(preset.finishIso) as Date, dateFromIso('2026-10-18') as Date),
+    )
+    // …and it is the finish the model derived, not a second one.
+    expect(document.body.textContent).toContain(formatPaceDate(preset.finishIso))
+  })
+
+  it('explains where the number came from only while it is still ours', async () => {
+    const user = userEvent.setup()
+    renderCard()
+    expect(screen.getByText(/Set from when your access ends, not from a guess/)).toBeInTheDocument()
+    const dialog = await openSheet(user)
+    await user.click(within(dialog).getByRole('radio', { name: /Full window|Relaxed/ }))
+    await user.click(within(dialog).getByRole('button', { name: 'Save pace' }))
+    expect(screen.queryByText(/not from a guess/)).toBeNull()
+  })
+
+  it('names the CEILING, never a window length', () => {
+    /* The prototype said "set from your 30-day access" — true of the window it
+       assumed, false of any course whose access differs, and unknowable from
+       what this component is given. The ceiling is the fact the model actually
+       used, it is already on screen, and it stays true when an exam date takes
+       over as the thing doing the work. */
+    renderCard()
+    expect(screen.queryByText(/\d+-day access/)).toBeNull()
+  })
+
+  it('follows the exam date when that is what binds', async () => {
+    const user = userEvent.setup()
+    renderCard()
+    const dialog = await openSheet(user)
+    const field = within(dialog).getByLabelText(/Exam date/)
+    await user.clear(field)
+    await user.type(field, '2026-10-10')
+    await user.click(within(dialog).getByRole('button', { name: 'Save pace' }))
+    // The sentence and the timeline label both move onto the exam, together —
+    // a card explaining itself against one ceiling while drawing another is the
+    // silent switch `binding` exists to prevent.
+    expect(screen.getByText(/before your exam on/)).toBeInTheDocument()
+    expect(screen.getByText(new RegExp(`Exam · ${formatPaceDate('2026-10-10')}`))).toBeInTheDocument()
+  })
+
+  it('draws the timeline from Today to the ceiling, and hides it from the reader', () => {
+    /* DECORATION: every fact it draws is printed in words in the sentence above
+       it and in its own two labels, so the graphic carries nothing on its own.
+       That is what keeps the accessible name off colour and off position. */
+    renderCard()
+    expect(screen.getByText('Today')).toBeInTheDocument()
+    expect(screen.getByText(`Access ends · ${formatPaceDate('2026-10-18')}`)).toBeInTheDocument()
+    // No `role="img"` with a described graphic — the square tile's timeline
+    // needs one because it has no labels; this one has them.
+    expect(screen.queryByRole('img')).toBeNull()
+  })
+
+  it('claims no deadline on a course that has none', () => {
+    /* No access window and no exam date: the model has nothing to aim at and
+       falls back to its default horizon. The card must then claim no ceiling,
+       name the date as a target rather than a cut-off, and draw no end-stop. */
+    renderCard({ accessExpiresAt: undefined })
+    expect(screen.queryByText(/before access ends/)).toBeNull()
+    expect(screen.queryByText(/not from a guess/)).toBeNull()
+    expect(screen.getByText(/no access deadline, so that date is a suggested target/)).toBeInTheDocument()
+    expect(screen.queryByText(/Access ends ·/)).toBeNull()
+  })
+
+  it('operates two things, and they are Start and Adjust', () => {
+    renderCard()
+    expect(screen.getAllByRole('button').map((b) => b.textContent?.trim())).toEqual([
+      'Start studying',
+      'Adjust',
+    ])
+    // The square's floor is gone with the square: no `Details →`, and no preset
+    // strip — the claim `StudyPaceTile — the tile operates nothing` makes above.
+    expect(screen.queryByRole('link')).toBeNull()
+    expect(screen.queryByRole('radio')).toBeNull()
+  })
+
+  it('omits Start when there is nothing for it to start', () => {
+    // A "Start studying" that starts nothing is the invented affordance this
+    // version keeps refusing; the button is dropped rather than rendered inert.
+    renderCard({ onStart: undefined })
+    expect(screen.getAllByRole('button').map((b) => b.textContent?.trim())).toEqual(['Adjust'])
+  })
+
+  it('takes the primary CTA off the Brick and the secondary off inline ink', () => {
+    /* `--color-action` is a FILL colour measuring 2.05:1 as TEXT on the dark
+       shell, and this version moved every CTA onto the primary ramp — navy
+       means "do this", red means "this is an assessment". Adjust takes BOTH its
+       ink and its stroke from `.cre-cta-ink` (`borderColor: currentColor`), so
+       the dark-mode swap reaches the outline without a second declaration and
+       no inline value can beat the class. */
+    renderCard()
+    const [start, adjust] = screen.getAllByRole('button')
+    /* ASSERTED AS THE ABSENCE OF INLINE COLOUR, not the presence of a token.
+       `.cre-cta-fill` carries the fill AND the label ink because the pair has
+       to INVERT in dark — the navy is 2.75:1 against the dark card, under the
+       3:1 a control's shape needs — and an inline `background` would beat the
+       class while looking correct in light mode. That is the failure mode this
+       pins: a button that renders, passes tsc and dissolves in one theme. */
+    expect(start.className).toContain('cre-cta-fill')
+    expect(start.style.background).toBe('')
+    expect(start.style.color).toBe('')
+    expect(adjust.className).toContain('cre-cta-ink')
+    expect(adjust.style.color).toBe('')
+    expect(adjust.style.borderColor).not.toMatch(/rgb|#|var\(/)
+  })
+
+  it('carries the provenance in its eyebrow, and flips it on first touch', async () => {
+    const user = userEvent.setup()
+    renderCard()
+    const eyebrow = () => screen.getByText(/^Study Pace$/).parentElement as HTMLElement
+    expect(eyebrow().textContent).toContain('Study Pace · recommended')
+    const dialog = await openSheet(user)
+    await user.click(within(dialog).getByRole('radio', { name: '6' }))
+    expect(eyebrow().textContent).toContain('Study Pace · yours')
+  })
+
+  it('keeps the square shape untouched in the default layout', () => {
+    // The card is a fifth treatment, not a replacement: Testing 2's tile still
+    // renders exactly as it did, with one control on a 1:1 tile.
+    renderTile()
+    expect(screen.getAllByRole('button')).toHaveLength(1)
+    expect(screen.getByText('Study Pace')).toBeInTheDocument()
   })
 })

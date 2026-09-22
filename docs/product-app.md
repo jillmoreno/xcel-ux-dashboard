@@ -1218,7 +1218,7 @@ as the only variable), and the Testing half is carried by the section still
 resolving. A test whose premise has changed is rewritten with the change
 recorded in it — deleting it would lose the original subject.
 
-#### The four pacing treatments — `dashboard-pacing-style`
+#### The pacing treatments — `dashboard-pacing-style`
 
 Variant-only, default **`runway`**, in the rebrand panel scope. Each is a WHOLE
 answer to "am I pacing to finish in time" rather than a restyle of one answer —
@@ -1282,6 +1282,74 @@ figure 8.98 / 12.49, unit and note 4.53 / 8.58, strip fill against its track
 fill in light (5.05:1 dark), marginally under AA at 12px/600. It is
 `statusTreatment`'s shared compliance pill, unchanged by this work and identical
 on QE Focused — raising it is a page-wide change, not a pacing one.
+
+#### …and a fifth, `presets` (2026-09-21)
+
+The wide card from [`xcel-pace-presets.html`](../public/prototypes/xcel-pace-presets.html)
+§02, rendered in the product. `defaultVariant` is **unchanged** — Testing still
+opens on `runway`, so the committed default is untouched.
+
+| Variant | Says | Unit |
+|---|---|---|
+| `presets` | you will be done by this date, with this much room after it | a date |
+
+**It is the only one that states an OUTCOME.** The four above state a QUANTITY
+and leave the learner to judge whether it is enough; this one answers the pacing
+question with a date and makes the quantity the subordinate clause. It is also
+the only one you can OPERATE — two real buttons, Start studying and Adjust.
+
+**IT IS `StudyPaceTile` IN A SECOND SHAPE, not a second component.** One prop,
+`layout: 'tile' | 'card'`. That is the whole reason the variant is cheap: the
+model (`src/lib/studyPace.ts`), the `choices` state and the Adjust sheet are
+Testing 2's, reused unchanged, so a fix to the derivation reaches both versions
+at once. A `StudyPaceCard` beside it would own a second copy of `choices` and a
+second `StudyPaceSheet` mount, which is how two shapes start disagreeing about
+what "adjusted" means.
+
+**It renders the whole TILE, so it is NOT an arm of `pacingBody`.** Everything
+in that chain renders *inside* the shared `SquareTile`; this card owns its own
+eyebrow, because the eyebrow is what carries the provenance ("Study Pace ·
+recommended" → "· yours" on first touch, the prototype's §02 finding). The chain
+keeps an explicit `presets` arm returning `null` with the reasoning, so nobody
+reads the four above it as the complete set.
+
+**IT IS THE ONE TREATMENT WITHOUT `pacingStatus`**, and that is a decision:
+
+- Two pills in two vocabularies. `pacingStatus` is the six COMPLIANCE states;
+  the card's own chip is the pace axis. `PaceChip`'s note already records why
+  those must not share a badge, and nine pixels apart is the same collision.
+- The card answers the status question in its body. "Finishes by May 28, 11 days
+  before your exam on Jun 8" is the derivation "On Track" is a label for.
+- `pacingStatus` is `marginTop: 'auto'`, so keeping it would put a pill and a
+  sentence *below* the card's own primary CTA.
+
+**What that costs:** the five treatments are no longer status-constant. A
+reviewer comparing them has to know this one states the state as a sentence.
+`TestingVersion.test.tsx` pins the four and pins this one's replacement
+separately rather than quietly widening the sweep.
+
+**THE FIXTURE HAS NO CEILING, and the card says so.** The course this tile paces
+is the QE profile's Jump Back In fixture (`jbi-xcel-qe-ny`, 40 NY credit hours),
+which carries **no `expiresAt`** — not the My Courses record, which is a
+different course. So `binding` is `'none'`, the model falls back to its Focused
+horizon, and there is no access date to name. The card therefore prints no
+window length, no "before access ends", and **no end-stop on the timeline**, and
+labels the date as a suggested target rather than a cut-off. The prototype's
+"set from your 30-day access" is not restored under any binding — the card names
+the CEILING the model used, which stays true whatever the window is and stays
+true when an exam date takes over. Give the learner an exam date in the sheet
+and the full sentence and the end-stop both appear, both pointing at it.
+
+**`.cre-cta-fill` is new**, and it is the filled twin of `.cre-cta-ink`. The
+primary button is navy, not the Brick — this version moved every CTA onto the
+primary ramp. It needs a theme selector because the LABEL is fine in both themes
+(white on `-500` is 7.64:1) while the button's own SHAPE is not: `-500` on the
+dark card measures **2.75:1**, under the 3:1 WCAG 1.4.11 asks of a control's
+boundary, so the navy CTA dissolves into the navy card with its text floating on
+top. Dark inverts the pair instead of nudging it. Measured — fill against the
+card 6.02:1 light / 9.65:1 dark, label against fill 7.64:1 / 8.27:1. The
+timeline reuses `runway`'s `--color-text-tertiary` for exactly the reason above
+it records.
 
 #### One rule had two owners, and adding this version broke the other
 

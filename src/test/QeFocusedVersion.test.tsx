@@ -11,6 +11,7 @@ import { PlatformShell } from '@/components/layout/PlatformShell'
 import {
   DISCOVERABILITY_DASHBOARD_VERSIONS,
   DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
+  DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
   defaultDiscoverabilityVersionFor,
 } from '@/data/dashboardVersions'
 import { journeyStopsFor, metaWords, statusWords } from '@/components/learning/studyJourneyUtil'
@@ -92,6 +93,19 @@ function seedClassic(extra: Record<string, unknown> = {}) {
   )
 }
 
+/**
+ * QE Focused, NAMED rather than implied.
+ *
+ * Every render in this file used to pass a bare `/dashboard-rebrand` and rely
+ * on QE Focused being what XCEL resolves to. That made ~95 assertions about
+ * THIS version silently depend on which version happened to be default — and
+ * when the default moved to Testing 2 on 2026-09-21, all of them started
+ * testing a different page while still being named for this one. A suite about
+ * a specific version asks for it by name; `defaultDiscoverabilityVersionFor` is
+ * tested on its own, once, below.
+ */
+const QE_URL = '/dashboard-rebrand?version=discoverability-qe-focused'
+
 function renderShell(url: string) {
   return render(
     <MemoryRouter initialEntries={[url]}>
@@ -122,11 +136,25 @@ describe('the QE Focused version is registered and default', () => {
     )
   })
 
-  it('is what XCEL resolves to with no ?version=', () => {
-    // TWO callers read this — PlatformShell's fallback and the Header's
-    // "Default" pill — and the helper exists so they cannot disagree. Asserting
-    // the helper covers both.
+  it('is NO LONGER what XCEL resolves to — Testing is, since 2026-09-21', () => {
+    /* REWRITTEN, not deleted, and the original subject is the point. This
+       asserted QE Focused as XCEL's default from 2026-09-16; the direct ask on
+       2026-09-21 moved it to the Testing version, and a test whose premise has
+       changed is rewritten with the change recorded in it.
+
+       TWO callers read this — `PlatformShell`'s `?version=` fallback and the
+       Header's "Default" pill — and the helper exists so they cannot disagree,
+       so asserting the helper covers both. That is also why this moving is a
+       real event rather than a constant edit: it changes what the public link
+       and the `?demo=1` baseline open on.
+
+       QE Focused stays in the picker and stays fully covered — every other test
+       in this file now names it explicitly (`QE_URL`) rather than inheriting it
+       from this default. */
     expect(defaultDiscoverabilityVersionFor('xcel')).toBe(
+      DISCOVERABILITY_DASHBOARD_VERSION_TESTING.id,
+    )
+    expect(DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)).toContain(
       DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED.id,
     )
   })
@@ -145,7 +173,7 @@ describe('QE Focused resolves a QUALIFYING journey, never Continuing Ed', () => 
     // NAMED for qualifying education opened on a CE renewal path — the same
     // class of incoherence as the Jump Back In card putting securities tasks
     // under an insurance path, which only opening the page caught.
-    renderShell('/dashboard-rebrand')
+    renderShell(QE_URL)
     // `getAllBy` — the title appears in the band's lead-in AND in the Progress
     // section's own header below it, which is expected: the section is the
     // detail behind the lead-in and both name the path.
@@ -169,7 +197,7 @@ describe('there is NO Learning Path Progress section', () => {
    * all four.
    */
   it('is gone from the page', () => {
-    renderShell('/dashboard-rebrand')
+    renderShell(QE_URL)
     expect(screen.queryByRole('region', { name: /learning path progress/i })).toBeNull()
   })
 
@@ -182,7 +210,7 @@ describe('there is NO Learning Path Progress section', () => {
     // Asserted across the whole overview rather than on this one note, because
     // the mistake is invisible in review and one keystroke away anywhere.
     for (const url of [
-      '/dashboard-rebrand',
+      QE_URL,
       '/dashboard-rebrand?version=discoverability-learner-focused',
       '/dashboard-rebrand?version=discoverability-marketing-focused',
     ]) {
@@ -195,7 +223,7 @@ describe('there is NO Learning Path Progress section', () => {
   it('leaves exactly ONE of each fact it used to duplicate', () => {
     // The reason it went. Asserted by count, because the failure was
     // duplication rather than absence.
-    renderShell('/dashboard-rebrand')
+    renderShell(QE_URL)
     expect(screen.getAllByText(/New York Life and Health Pre-licensing/i)).toHaveLength(1)
     expect(screen.getAllByText(/On Track/)).toHaveLength(1)
     // "Time Remaining" used to be the third fact checked here. It is not on the
@@ -226,7 +254,7 @@ describe('there is NO Learning Path Progress section', () => {
     seedClassic()
     // The lists are not lost, they are the journey. Asserted so "restore the
     // section to get the lists back" is visibly the wrong fix.
-    renderShell('/dashboard-rebrand')
+    renderShell(QE_URL)
     const list = screen.getByRole('list', { name: /study journey stops/i })
     // ONE row for the course, not a split: the 42 lessons ARE the pre-licensing
     // course and it is the journey's first part. Under hours a big category
@@ -242,7 +270,7 @@ describe('there is NO Learning Path Progress section', () => {
 
 describe('the Study Journey replaces Today\'s Tasks', () => {
   it('renders the journey and not the day view', () => {
-    renderShell('/dashboard-rebrand')
+    renderShell(QE_URL)
     expect(screen.getByText(STUDY_JOURNEY_EYEBROW)).toBeInTheDocument()
     // Today's Tasks answers "what is due"; the Study Plan rail item and the
     // week strip already answer that twice. Asserted as an absence so bringing
@@ -316,7 +344,7 @@ describe('the Study Journey replaces Today\'s Tasks', () => {
     // `completed` and `not-started` carry no percentage, so without the words
     // they were distinguishable only by the node — same text, one filled circle
     // apart. The rule the Home week strip's DONE / IN PROGRESS flags follow.
-    renderShell('/dashboard-rebrand')
+    renderShell(QE_URL)
     // Scoped to the journey's own rows — the ordered list — rather than a
     // guessed ancestor. `Completed` also appears in the Progress section below,
     // so an over-wide scope would pass without the words being on the STOPS.
@@ -400,7 +428,7 @@ describe('the New York Life and Health demo course', () => {
     // would be authoring a curriculum XCEL does not publish.
     const src = readFileSync('src/data/nyProducerRequirements.ts', 'utf8')
     expect(src).toMatch(/NY_LH_GUIDE_CHAPTERS_PARTIAL/)
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     expect(container.textContent).not.toMatch(/Nature of Insurance|Annunities/)
   })
 
@@ -618,7 +646,7 @@ describe('nothing on the page says "1 days"', () => {
     // count. The moment one path measured DAYS, four surfaces printed "1 days"
     // — the category bars, the band KPI cell, the journey rows and the detail
     // sheet. Fixing them one at a time is how three get fixed.
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     expect(container.textContent).not.toMatch(/\b1 (days|lessons|hrs)\b/)
     // …and it IS printing counts, so this is not passing because nothing says a
     // unit at all.
@@ -644,7 +672,7 @@ describe('the Get Licensed section', () => {
     // (PSI, PSI, NY Dept. of Financial Services) — and made the section sound
     // like a disclaimer. A learner at the end of their coursework wants the
     // next step.
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     expect(container.textContent).toMatch(/Once your course is completed, here are the next steps/)
     expect(container.textContent).not.toMatch(/handled by the state/)
   })
@@ -656,7 +684,7 @@ describe('the Get Licensed section', () => {
     // the block's own header treatment, which the new `band` default hides.
 
     seedClassic()
-    renderShell('/dashboard-rebrand')
+    renderShell(QE_URL)
     expect(screen.getByText('Get Licensed')).toBeInTheDocument()
     for (const step of GET_LICENSED_STEPS) {
       expect(screen.getByText(step.title)).toBeInTheDocument()
@@ -690,7 +718,7 @@ describe('the Get Licensed section', () => {
        So the assertion moves to where the link lives: the sheet. What it still
        pins is unchanged — one confirmed destination, opening in a new tab, and
        no invented href anywhere. */
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     fireEvent.click(
       within(container).getByRole('button', { name: new RegExp(withHref[0].title, 'i') }),
     )
@@ -725,7 +753,7 @@ describe('the Study Journey widget is its own block', () => {
     // the fill and the border because the three are ONE treatment: a shadow
     // under a surface with neither fill nor edge reads as a card that failed to
     // paint, not as less card.
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const journey = container.querySelector<HTMLElement>('[aria-label="Study journey"]')!
     expect(journey.style.background).toBe('')
     expect(journey.style.border).toBe('')
@@ -755,7 +783,7 @@ describe('the Study Journey widget is its own block', () => {
     // in its own `<section aria-label="Your learning">` and the band carries the
     // same label, so the accessible query finds two. (That duplication predates
     // this change and is worth fixing separately.)
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const band = container.querySelector<HTMLElement>('.cre-learner-focused-band')!
     expect(band.style.alignItems).toBe('start')
     // 40, the same gap `MembershipOverview` uses between its own sections, so
@@ -789,7 +817,7 @@ describe('the Study Journey widget is its own block', () => {
     // All three are the widget's, so they move together. Their ORDER is the
     // point — resume first ("continue where you left off" is still the first
     // thing offered), then where you are, then what the state needs.
-    renderShell('/dashboard-rebrand')
+    renderShell(QE_URL)
     expect(screen.getByRole('button', { name: /^resume\b/i })).toBeInTheDocument()
     expect(screen.getByText(STUDY_JOURNEY_EYEBROW)).toBeInTheDocument()
     expect(screen.getByText('Get Licensed')).toBeInTheDocument()
@@ -845,7 +873,7 @@ describe('the category palette on a dark card', () => {
 
 describe('View Requirements shows the requirements and nothing else', () => {
   it('opens with no tab bar and no Progress half', async () => {
-    renderShell('/dashboard-rebrand')
+    renderShell(QE_URL)
     fireEvent.click(screen.getByRole('button', { name: /state requirements/i }))
     const sheet = await screen.findByRole('dialog')
     // No way back to Progress — the page behind this sheet already shows all of
@@ -863,7 +891,7 @@ describe('View Requirements shows the requirements and nothing else', () => {
     // learning path" on the Study Journey widget, so the button was a second
     // door onto one route — and a requirements sheet's job is to state the
     // requirements, not to navigate out of them.
-    renderShell('/dashboard-rebrand')
+    renderShell(QE_URL)
     fireEvent.click(screen.getByRole('button', { name: /state requirements/i }))
     const sheet = await screen.findByRole('dialog')
     expect(within(sheet).queryByRole('button', { name: /go to learning path/i })).toBeNull()
@@ -883,7 +911,7 @@ describe('View Requirements shows the requirements and nothing else', () => {
   })
 
   it('states the requirements from XCEL\'s published page', async () => {
-    renderShell('/dashboard-rebrand')
+    renderShell(QE_URL)
     fireEvent.click(screen.getByRole('button', { name: /state requirements/i }))
     const sheet = await screen.findByRole('dialog')
     const text = sheet.textContent ?? ''
@@ -934,7 +962,7 @@ describe('View Requirements shows the requirements and nothing else', () => {
 describe('the Current Learning Progress block sits on the page, not a navy card', () => {
   it('drops the card entirely', () => {
     // No background, no shadow, no radius — the content is on the shell's grey.
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const half = container.querySelector<HTMLElement>('.cre-learner-focused-band')!
       .children[0] as HTMLElement
     expect(half.style.background).toBe('transparent')
@@ -975,7 +1003,7 @@ describe('the Current Learning Progress block sits on the page, not a navy card'
        the PAGE surface. The rule it pins is about the CLASS, not that link, so
        it moves to the text CTA that is still here — "State requirements →" at
        the foot of Get Licensed, which opens the same sheet. */
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const band = container.querySelector<HTMLElement>('.cre-learner-focused-band')!
     const link = Array.from(band.querySelectorAll('button')).find((b) =>
       /State requirements/i.test(b.textContent ?? ''),
@@ -1006,7 +1034,7 @@ describe('the Current Learning Progress block sits on the page, not a navy card'
     // donut → the header progress bar that replaced the donut. The VALUE is the
     // same one throughout and still has to clear the page grey, which is why
     // `ProgressBar` needed a `track` override at all.
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const half = container.querySelector<HTMLElement>('.cre-learner-focused-band')!
       .children[0] as HTMLElement
     const tracks = Array.from(half.querySelectorAll<HTMLElement>('div')).filter(
@@ -1030,7 +1058,7 @@ describe('XCEL has no learning-path concept on this version', () => {
    * instead.
    */
   it('renders no "Open learning path" link on the Study Journey', () => {
-    renderShell('/dashboard-rebrand')
+    renderShell(QE_URL)
     expect(screen.queryByRole('button', { name: /open learning path/i })).toBeNull()
     expect(screen.queryByRole('button', { name: /learning path/i })).toBeNull()
   })
@@ -1043,7 +1071,7 @@ describe('XCEL has no learning-path concept on this version', () => {
     // tooltip — the worse of the two doors, because an invisible link is found
     // by accident. It falls back to `onViewDetails`, so it still does something
     // and what it does now exists.
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const band = container.querySelector<HTMLElement>('.cre-learner-focused-band')!
     const title = within(band).getByRole('button', {
       name: /New York Life and Health Pre-licensing/i,
@@ -1098,7 +1126,7 @@ describe('every rail row is a hoverable, clickable target', () => {
    * the journey rows above: whole-row target, hover wash, chevron.
    */
   it('gives every Get Licensed step a row target and a chevron', () => {
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const licensed = Array.from(container.querySelectorAll('ol')).find((ol) =>
       /Schedule State Exam/.test(ol.textContent ?? ''),
     )!
@@ -1128,7 +1156,7 @@ describe('every rail row is a hoverable, clickable target', () => {
        described these three at all, and the note said plainly that it was not a
        per-step destination and did not pretend to be. Each step has its own
        published detail now, so each row opens that. */
-    renderShell('/dashboard-rebrand')
+    renderShell(QE_URL)
     const step = GET_LICENSED_STEPS.find((s) => !s.href)!
     fireEvent.click(screen.getByRole('button', { name: new RegExp(step.title, 'i') }))
     const sheet = await screen.findByRole('dialog')
@@ -1149,7 +1177,7 @@ describe('every rail row is a hoverable, clickable target', () => {
      * step the product will not let you take is the same broken promise as a
      * chevron on it, which those rows already refuse.
      */
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const list = container.querySelector('ol[aria-label="Study journey stops"]')!
     const linked = Array.from(list.querySelectorAll('.cre-stop-title'))
     // Exactly the one stop that is reachable — the rest are blocked.
@@ -1209,7 +1237,7 @@ describe('every rail row is a hoverable, clickable target', () => {
     // It was `background: 'transparent'` inline, which wins over a stylesheet
     // rule — so `:hover` would have needed `!important` to do anything, and
     // would have looked fine while doing nothing. The class owns both states.
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const rows = Array.from(container.querySelectorAll<HTMLElement>('.cre-journey-stop'))
     expect(rows.length).toBeGreaterThan(0)
     for (const row of rows) expect(row.style.background).toBe('')
@@ -1222,7 +1250,7 @@ describe('every rail row is a hoverable, clickable target', () => {
     // A collapsed paragraph explaining that the stops run in order, directly
     // above a rail whose stops run in order and say their status in words.
     // Readiness answers "am I exam ready" with a number one rail item away.
-    renderShell('/dashboard-rebrand')
+    renderShell(QE_URL)
     expect(screen.queryByText(/how do i become exam ready/i)).toBeNull()
     expect(screen.queryByText(/you are exam ready when the coursework/i)).toBeNull()
   })
@@ -1265,7 +1293,7 @@ describe('the heading-font flag', () => {
   })
 
   it('adds the class AT THE DEFAULT, because serif is the default now', () => {
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     /* INVERTED 2026-09-17. It asserted the class was ABSENT at the default,
        which was the whole point while `sans` shipped — the brand face untouched
        unless a reviewer opted in. Serif is the default now, so the class is on
@@ -1278,7 +1306,7 @@ describe('the heading-font flag', () => {
 
   it('re-points --font-heading on the overview root for `serif`', () => {
     seedVariant('serif')
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const root = container.querySelector('.cre-dash-serif-headings')
     expect(root).toBeTruthy()
     // The band lives INSIDE it, which is what makes one declaration enough:
@@ -1292,7 +1320,7 @@ describe('the heading-font flag', () => {
     // in another is the comparison a reviewer needs, so the class is on the
     // overview root rather than the shell.
     seedVariant('serif')
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const root = container.querySelector<HTMLElement>('.cre-dash-serif-headings')!
     const rail = container.querySelector<HTMLElement>('nav[aria-label="Primary"]')!
     expect(root).not.toContainElement(rail)
@@ -1352,7 +1380,7 @@ describe('the course header band flag', () => {
     expect(flagScopeForPath('/dashboard-rebrand')).toContain('dashboard-course-header')
     // Still exactly ONE naming of the course, which is what the old default was
     // protecting — now achieved with the band ON rather than by withholding it.
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     expect(
       within(container).getAllByText(/New York Life and Health Pre-licensing/i),
     ).toHaveLength(1)
@@ -1360,7 +1388,7 @@ describe('the course header band flag', () => {
 
   it('adds the band above everything, with a rule under it', () => {
     seedHeader('band')
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const heading = container.querySelector('h2')!
     expect(heading.textContent).toMatch(/New York Life and Health Pre-licensing/)
     // Above the band, not inside it.
@@ -1433,7 +1461,7 @@ describe('the course header band flag', () => {
 
   it('runs a full-width bar under the title, figure large on the right', () => {
     seedHeader('band')
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const heading = container.querySelector('h2')!
     const bar = Array.from(container.querySelectorAll<HTMLElement>('div')).find(
       (d) => d.style.background === 'var(--color-neutral-300)',
@@ -1487,7 +1515,7 @@ describe('the course header band flag', () => {
     const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!
     const expected = displayedProgressPct(persona.path)
     seedHeader('band')
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const big = Array.from(container.querySelectorAll<HTMLElement>('span')).find(
       (el) => el.style.fontSize === '32px',
     )!
@@ -1516,7 +1544,7 @@ describe('the course header band flag', () => {
      * So the band is a title, and that is all it is.
      */
     seedHeader('band')
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const row = Array.from(container.querySelectorAll<HTMLElement>('div')).find((d) =>
       /dashed/.test(d.style.borderBottom),
     )!
@@ -1586,7 +1614,7 @@ describe('the course header band flag', () => {
     // below, so the eye reads one sequence twice rather than two shuffles of
     // one set, and "Completed" stays last, i.e. flush with the bar's end.
     seedHeader('band')
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const stats = headerStatRow(container)
     expect(stats.map((s) => s.caption)).toEqual([
       'Target exam date',
@@ -1607,7 +1635,7 @@ describe('the course header band flag', () => {
     // it is invisible in review: three near-identical pairs where one is a
     // weight or two pixels off.
     seedHeader('band')
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const stats = headerStatRow(container)
     const shape = stats.map(({ cell }) => {
       const spans = Array.from(cell.querySelectorAll<HTMLElement>('span'))
@@ -1644,7 +1672,7 @@ describe('the course header band flag', () => {
     // top of this band, which is why it takes that line's EXACT separator
     // rather than a second kind of dot three inches away.
     seedHeader('band')
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const dots = headerStatDots(container)
     expect(dots).toHaveLength(2)
     for (const dot of dots) {
@@ -1682,7 +1710,7 @@ describe('the course header band flag', () => {
      * itself rather than on the string.
      */
     seedHeader('band')
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const stats = headerStatRow(container)
     const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!
     expect(stats[0].value).toBe(longDate(persona.renewal!.deadline))
@@ -1713,7 +1741,7 @@ describe('the course header band flag', () => {
        One sheet, a `view` prop: two sheets rendering one component is the fork
        this file keeps closing. */
     seedHeader('band')
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     fireEvent.click(within(container).getByRole('button', { name: /^details/i }))
     const dialog = screen.getByRole('dialog')
     // The breakdown half, and NOT the tabbed chrome.
@@ -1733,7 +1761,7 @@ describe('the course header band flag', () => {
        
        The tabbed sheet keeps it, which the other consumers depend on. */
     seedHeader('band')
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     fireEvent.click(within(container).getByRole('button', { name: /^details/i }))
     const dialog = screen.getByRole('dialog')
     expect(dialog.textContent).not.toMatch(/Learning Path/i)
@@ -1780,19 +1808,19 @@ describe('the Study Journey rail style flag', () => {
     // Inverted 2026-09-17: the syllabus IS the default, so what needs pinning is
     // that the compact treatment is still reachable — it is the comparison the
     // picker exists for.
-    const atDefault = renderShell('/dashboard-rebrand')
+    const atDefault = renderShell(QE_URL)
     expect(atDefault.container.textContent).toMatch(/Complete Coursework/)
     expect(atDefault.container.textContent).toMatch(/Post-course process/i)
     atDefault.unmount()
     seedJourney('default')
-    const compact = renderShell('/dashboard-rebrand')
+    const compact = renderShell(QE_URL)
     expect(compact.container.textContent).not.toMatch(/Complete Coursework|Post-course process/i)
     expect(compact.container.textContent).toMatch(/Atlas Study Journey/)
   })
 
   it('numbers the stops on the NODE and names the sequence', () => {
     seedJourney('syllabus')
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     // "Study Journey" is the eyebrow; the heading read "Syllabus sequence" then
     // "Complete Course", and is "Complete Coursework" as of 2026-09-17 —
     // matching the supplied reference, and the truer of the two words, since
@@ -1822,14 +1850,14 @@ describe('the Study Journey rail style flag', () => {
      *     stop's own group, i.e. the row named twice.
      */
     seedJourney('syllabus')
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     expect(container.textContent).not.toMatch(/Milestone/)
     const list = container.querySelector('ol[aria-label="Study journey stops"]')!
     expect(list.textContent).not.toMatch(/62% In progress/i)
     expect(list.textContent).not.toMatch(/Part 2|Part 3/)
     // The COMPACT rail keeps its count: with no room for per-row detail, the
     // position in the sequence is the only summary it can offer.
-    const plain = renderShell('/dashboard-rebrand')
+    const plain = renderShell(QE_URL)
     expect(
       plain.container.querySelector('ol[aria-label="Study journey stops"]'),
     ).toBeTruthy()
@@ -1852,7 +1880,7 @@ describe('the Study Journey rail style flag', () => {
      * the thing was never reachable at all.
      */
     seedJourney('syllabus')
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const list = container.querySelector('ol[aria-label="Study journey stops"]')!
     // The count, in words, on the row that has one.
     expect(list.textContent).toMatch(/26 of 42 lessons complete/)
@@ -1895,7 +1923,7 @@ describe('the Study Journey rail style flag', () => {
      * Asserted as the declaration, since jsdom has no layout. Verified in the
      * browser: 29px node-to-node in BOTH lists.
      */
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const lists = Array.from(container.querySelectorAll<HTMLElement>('ol')).filter(
       (o) => /Pre-licensing Course|Schedule State Exam/.test(o.textContent ?? ''),
     )
@@ -1923,7 +1951,7 @@ describe('the Study Journey rail style flag', () => {
      * Dashing those three said "locked" about steps that are not, which is the
      * same class of wrong as a chevron on a row that opens nothing.
      */
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const nodeOf = (li: Element) => li.querySelector<HTMLElement>('span > span')!
     const journey = container.querySelector('ol[aria-label="Study journey stops"]')!
     const journeyNodes = Array.from(journey.querySelectorAll('li')).map(nodeOf)
@@ -1957,7 +1985,7 @@ describe('the Study Journey rail style flag', () => {
      * takes a `path` and shares its header with the breakdown, and a step is a
      * different object.
      */
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     /* A BUTTON, not a link — the Schedule row went out to PSI directly until
        its sheet existed. The PSI URL is inside the sheet now, alongside the
        system check and the retake policy, which are the two things a learner
@@ -1997,7 +2025,7 @@ describe('the Study Journey rail style flag', () => {
     expect(hrefs).toContain('https://www.dfs.ny.gov/apps_and_licensing/agents_and_brokers/home')
     // New tab, and the themed class rather than an inline colour — the CTA ramp
     // is a fill colour on XCEL and cta-500 as TEXT is 1.84:1 on the dark page.
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     fireEvent.click(within(container).getByRole('button', { name: /apply for your license/i }))
     /* Scoped to the step's OWN bullet links. The sheet also carries the
        governing-agency block, whose `tel:` and `mailto:` deliberately do NOT
@@ -2026,7 +2054,7 @@ describe('the Study Journey rail style flag', () => {
      * one and missing from two.
      */
     for (const step of GET_LICENSED_STEPS) {
-      const view = renderShell('/dashboard-rebrand')
+      const view = renderShell(QE_URL)
       fireEvent.click(
         within(view.container).getByRole('button', { name: new RegExp(step.title, 'i') }),
       )
@@ -2081,7 +2109,7 @@ describe('the Study Journey rail style flag', () => {
      * step.
      */
     seedJourney('syllabus')
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     /* Scoped to the BAND. The page-wide version of this caught the "This week"
        strip, which is a white bordered card belonging to another component
        entirely — an over-wide scope that would have gone on passing for a
@@ -2102,7 +2130,7 @@ describe('the Study Journey rail style flag', () => {
 
   it('names the jurisdiction on Get Licensed, from a map not a literal', () => {
     seedJourney('syllabus')
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     expect(container.textContent).toMatch(/Get Licensed in New York/)
     /* THE LEDE IS GONE from this treatment (2026-09-17) — the eyebrow
        ("Post-course process") and the heading ("Get Licensed in New York")
@@ -2148,7 +2176,7 @@ describe('the Study Journey rail style flag', () => {
       dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!.path,
     ).map((st) => st.title)
     seedJourney('syllabus')
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     for (const title of before) expect(container.textContent).toContain(title)
     expect(container.textContent).not.toMatch(/jurisprudence|sworn affidavit|NY-INS-/i)
     // …and it did not split the merged completion stop back into two.
@@ -2182,13 +2210,13 @@ describe('the CLP stats treatment flag', () => {
   })
 
   it('changes nothing at the default', () => {
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     expect(statCard(container)).toBeUndefined()
   })
 
   it('gathers the cells and the status onto one card, with sub-labels', () => {
     seedStats('stat-card')
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const card = statCard(container)!
     expect(card).toBeTruthy()
     // The status comes INSIDE the card, under its rule.
@@ -2206,7 +2234,7 @@ describe('the CLP stats treatment flag', () => {
     // currently pacing 4 days ahead of schedule"; nothing in the fixtures knows
     // a schedule to be ahead of, so that claim is NOT reproduced.
     seedStats('stat-card')
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const card = statCard(container)!
     expect(card.textContent).toMatch(/~1\.5 hrs\/day suggested pace/)
     expect(card.textContent).not.toMatch(/days ahead of schedule|velocity/)
@@ -2217,7 +2245,7 @@ describe('the CLP stats treatment flag', () => {
     // already the surface. The pill keeps its tint, which is what carries the
     // state — the wash never did (~1.02:1, decoration, per its own note).
     seedStats('stat-card')
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const card = statCard(container)!
     const strip = Array.from(card.querySelectorAll<HTMLElement>('div')).find((d) =>
       /On pace|on pace|momentum/.test(d.textContent ?? ''),
@@ -2237,7 +2265,7 @@ describe('the columns are not near-even any more', () => {
     // Resume CTA, three KPI cells and a status strip; the right is a list of
     // short rows and gives width up cheaply. Measured after: 515px against
     // 296px in the pane, and the KPI row stops being tight.
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const band = container.querySelector<HTMLElement>('.cre-learner-focused-band')!
     expect(band.style.gridTemplateColumns).toBe('minmax(0, 660fr) minmax(0, 380fr)')
   })
@@ -2286,7 +2314,7 @@ describe('the CLP block style flag', () => {
     // the block's own header treatment, which the new `band` default hides.
 
     seedClassic()
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     expect(navyCard(container)).toBeUndefined()
     // The bar stays inline beside its percentage rather than in a column.
     expect(container.textContent).toMatch(/62% Complete/)
@@ -2294,7 +2322,7 @@ describe('the CLP block style flag', () => {
 
   it('big-number promotes the figure to its own column, on the light ground', () => {
     seedStyle('big-number')
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     expect(navyCard(container)).toBeUndefined()
     const band = container.querySelector<HTMLElement>('.cre-learner-focused-band')!
     const big = Array.from(band.querySelectorAll<HTMLElement>('span')).find(
@@ -2309,7 +2337,7 @@ describe('the CLP block style flag', () => {
 
   it('navy puts the cluster on a card and keeps the rest on the page', () => {
     seedStyle('navy')
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const card = navyCard(container)!
     expect(card).toBeTruthy()
     // The reference has no cover; dropping it is what gives the title room.
@@ -2343,7 +2371,7 @@ describe('the CLP block style flag', () => {
      * (12.25:1 after the fix).
      */
     seedStyle('navy')
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const card = navyCard(container)!
     // The element that SETS the colour, not the outermost one containing the
     // text — several wrappers match the text and none of them carry the ink.
@@ -2364,7 +2392,7 @@ describe('the CLP block style flag', () => {
     // along.
     for (const v of ['default', 'big-number', 'navy']) {
       seedStyle(v)
-      const { container, unmount } = renderShell('/dashboard-rebrand')
+      const { container, unmount } = renderShell(QE_URL)
       expect(container.textContent, v).not.toMatch(/Lesson \d+ —|minutes left/)
       unmount()
     }
@@ -2380,7 +2408,7 @@ describe('the header carries a horizontal bar, not a donut', () => {
     // already says as "26 / 42 lessons". The bar sits inside the text column,
     // under the meta, so it reads as this course's progress rather than as a
     // separate widget: title, what it is, how far through it.
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const band = container.querySelector<HTMLElement>('.cre-learner-focused-band')!
     // NOT rendered, not `display: none` — a hidden gauge is still in the
     // accessibility tree and still in every `querySelector('svg')` a test
@@ -2435,7 +2463,7 @@ describe('the single category shows NO bar', () => {
     // earns its place when there is something to compare.
     const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!
     expect(persona.path.categories).toHaveLength(1)
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const band = container.querySelector<HTMLElement>('.cre-learner-focused-band')!
     // The CATEGORY bars, not every bar: the header carries one progress bar of
     // its own since 2026-09-16 (it replaced the donut), and it matches the same
@@ -2481,7 +2509,7 @@ describe('the in-shell course launcher is a lo-fi placeholder', () => {
    * consumers, and only the launcher is the Compass surface.
    */
   it('shows the placeholder and none of the old course chrome', () => {
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     fireEvent.click(within(container).getByRole('button', { name: /^resume\b/i }))
     const placeholder = screen.getByRole('region', { name: /compass course content/i })
     expect(placeholder).toBeTruthy()
@@ -2507,7 +2535,7 @@ describe('the in-shell course launcher is a lo-fi placeholder', () => {
      * its own, so orientation rests on "Back to {origin}", and hiding the rail
      * would leave that link carrying all of it.
      */
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const rail = () => container.querySelector<HTMLElement>('nav[aria-label="Primary"]')!
     const labels = () => Array.from(rail().querySelectorAll('button')).map((b) => b.textContent)
     // Full labels before.
@@ -2545,7 +2573,7 @@ describe('the in-shell course launcher is a lo-fi placeholder', () => {
        the ROTATION is what keeps them apart — a drill-in chevron never turns.
        `bars` was the other vendored candidate and is wrong: a hamburger says
        "open the menu", and at 76px the rail is already open. */
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const rail = () => container.querySelector<HTMLElement>('nav[aria-label="Primary"]')!
     const toggle = () => within(rail()).getByRole('button', { name: /^(Collapse Menu|Expand)$/ })
     // Expanded at rest: the label says what the click DOES, not what the state
@@ -2596,7 +2624,7 @@ describe('the in-shell course launcher is a lo-fi placeholder', () => {
      * always collapses, an expand inside lasts as long as the course, and
      * leaving restores the dashboard's default.
      */
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const rail = () => container.querySelector<HTMLElement>('nav[aria-label="Primary"]')!
     const toggle = () => within(rail()).getByRole('button', { name: /^(Collapse Menu|Expand)$/ })
     const labels = () => Array.from(rail().querySelectorAll('button')).map((b) => b.textContent)
@@ -2642,7 +2670,7 @@ describe('the in-shell course launcher is a lo-fi placeholder', () => {
      * row does under the cursor. Compared against a live row here rather than
      * against a literal, which is what makes that sharing the subject.
      */
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const rail = container.querySelector<HTMLElement>('nav[aria-label="Primary"]')!
     const rows = Array.from(rail.querySelectorAll<HTMLElement>('button'))
     const toggle = rows.find((b) => b.textContent === 'Collapse Menu')!
@@ -2691,7 +2719,7 @@ describe('the in-shell course launcher is a lo-fi placeholder', () => {
     
        `RAIL_GUTTER` is still exported and still read by the wrapper's padding —
        it lost this consumer, not its purpose. */
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const rail = container.querySelector<HTMLElement>('nav[aria-label="Primary"]')!
     const toggle = Array.from(rail.querySelectorAll('button')).find(
       (b) => b.textContent === 'Collapse Menu',
@@ -2786,7 +2814,7 @@ describe('the KPI cells are bare, divided by rules', () => {
       'cgp.featureFlags',
       JSON.stringify({ 'dashboard-clp-stats': { enabled: true, variant: 'stat-card' } }),
     )
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     expect(container.textContent).toMatch(/hrs\/day suggested pace/i)
     // …and the tile it left does NOT print it twice.
     expect(container.textContent).not.toMatch(/Suggested pace/)
@@ -2795,7 +2823,7 @@ describe('the KPI cells are bare, divided by rules', () => {
   it('shows lo-fi lines in the Study Pace tile, matching Readiness', () => {
     // The same primitive in both, so the pair reads as one unbuilt set rather
     // than two placeholder treatments a few pixels apart.
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const tiles = Array.from(container.querySelectorAll<HTMLElement>('div')).filter(
       (d) => d.style.aspectRatio === '1 / 1',
     )
@@ -2811,7 +2839,7 @@ describe('the KPI cells are bare, divided by rules', () => {
   })
 
   it('no longer renders them on the page surface — the tiles took the row', () => {
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const half = container.querySelector<HTMLElement>('.cre-learner-focused-band')!
       .children[0] as HTMLElement
     const row = Array.from(half.querySelectorAll<HTMLElement>('div')).find(
@@ -2856,7 +2884,7 @@ describe('Time Remaining is a day countdown, with no At Risk treatment', () => {
     // when the tiles took the row. The countdown is the course header band's
     // stat row now, so that is where it is read.
     seedCourseHeader()
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const row = Array.from(container.querySelectorAll<HTMLElement>('div')).find(
       (d) => d.style.justifyContent === 'space-between' && d.style.alignItems === 'center',
     )!
@@ -2885,12 +2913,12 @@ describe('Time Remaining is a day countdown, with no At Risk treatment', () => {
      * wrong, is to default the flag to `band`, and this test is what tells
      * whoever does that it was a known consequence rather than a coincidence.
      */
-    const bare = renderShell('/dashboard-rebrand')
+    const bare = renderShell(QE_URL)
     expect(bare.container.textContent).not.toMatch(/27 days/)
     expect(bare.container.textContent).not.toMatch(/12\/15\/2026|December 15, 2026/)
     bare.unmount()
     seedCourseHeader()
-    const withBand = renderShell('/dashboard-rebrand')
+    const withBand = renderShell(QE_URL)
     expect(withBand.container.textContent).toMatch(/27 days/)
     expect(withBand.container.textContent).toMatch(/December 15, 2026/)
   })
@@ -2899,7 +2927,7 @@ describe('Time Remaining is a day countdown, with no At Risk treatment', () => {
     // `weeksLeft` is 27/7. The cell used to interpolate it directly
     // (`${weeksLeft} wks`), which would have printed 3.857142857142857 — the
     // defect that made the shared formatter a prerequisite rather than a tidy.
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     expect(container.textContent).not.toMatch(/3\.85/)
   })
 
@@ -2929,7 +2957,7 @@ describe('Time Remaining is a day countdown, with no At Risk treatment', () => {
     const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!
     expect(persona.renewal!.weeksLeft * 7).toBe(27)
     expect(persona.status).toBe('on-track')
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const band = container.querySelector<HTMLElement>('.cre-learner-focused-band')!
     expect(band.textContent).toMatch(/On Track/i)
     expect(band.textContent).not.toMatch(/At Risk/i)
@@ -2977,7 +3005,7 @@ describe('the status is the detail panel\'s own strip', () => {
      * inside a bordered tile reads as a second card, which is the call `bare`
      * already makes for the stat card.
      */
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const strips = Array.from(container.querySelectorAll<HTMLElement>('div')).filter(
       (d) => d.style.background === STATUS_STRIP_BG['on-track'],
     )
@@ -3001,7 +3029,7 @@ describe('the status is the detail panel\'s own strip', () => {
     // A pill reading "On Track" beside a sentence about the deadline does not
     // need a column telling you it is a status — and that column cost 104px of
     // a narrow block.
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const half = container.querySelector<HTMLElement>('.cre-learner-focused-band')!
       .children[0] as HTMLElement
     // No trailing `\b`: the DOM renders the caption and the pill adjacent, as
@@ -3033,7 +3061,7 @@ describe('the meta line follows the surface', () => {
     // markup — missed it: the line rendered `rgb(255 255 255 / 0.66)` on
     // #f5f5f5, roughly 1.2:1, and read as content that had failed to load.
     // tsc was clean and every test passed.
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const half = container.querySelector<HTMLElement>('.cre-learner-focused-band')!
       .children[0] as HTMLElement
     // The DEEPEST div that carries a colour and the text — an ancestor matches
@@ -3083,7 +3111,7 @@ describe('milestones are marked by the NODE, not by red text', () => {
      * checks: NO stop title is on the CTA/Brick ramp. Red on an unreached
      * milestone read as a failure rather than a step not yet taken.
      */
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const titles = Array.from(
       container.querySelectorAll<HTMLElement>('.cre-journey-stop'),
     ).map((b) => b.querySelector('span span') as HTMLElement)
@@ -3139,7 +3167,7 @@ describe('Jump Back In is INSIDE the progress block', () => {
    * still absent, and that is what these now pin.
    */
   it('renders the card, and it does NOT repeat the block’s facts', () => {
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const card = screen.getByRole('region', { name: /jump back in/i })
     // The chapter, which is the reason it exists.
     expect(card.textContent).toMatch(/Lesson 27/)
@@ -3199,7 +3227,7 @@ describe('Jump Back In is INSIDE the progress block', () => {
     const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!
     const cats = resolvePathCategories(persona.path)
     const done = cats.reduce((sum, c) => sum + c.completed, 0)
-    renderShell('/dashboard-rebrand')
+    renderShell(QE_URL)
     const card = screen.getByRole('region', { name: /jump back in/i })
     // The chapter and the title are separate elements, so `textContent` reads
     // "Chapter 27Life Insurance…" with no space — a trailing `\b` never
@@ -3220,7 +3248,7 @@ describe('Jump Back In is INSIDE the progress block', () => {
        `height: 44` and no horizontal padding at all, so the label sat hard
        against both edges. That was invisible while the label was two short
        words and obvious the moment it became four. */
-    renderShell('/dashboard-rebrand')
+    renderShell(QE_URL)
     const card = screen.getByRole('region', { name: /jump back in/i })
     const cta = within(card).getByRole('button', { name: /^resume\b/i })
     expect(cta.textContent).toMatch(/^\s*Resume\s*$/)
@@ -3242,7 +3270,7 @@ describe('Jump Back In is INSIDE the progress block', () => {
        at the default, and clamped — without the clamp a learner past the third
        category reads "Part 4 of 3". */
     expect(NY_LH_PROGRAM_PARTS).toBe(3)
-    renderShell('/dashboard-rebrand')
+    renderShell(QE_URL)
     const card = screen.getByRole('region', { name: /jump back in/i })
     expect(card.querySelectorAll('p')[1].textContent).toContain(
       `Part 1 of ${NY_LH_PROGRAM_PARTS}`,
@@ -3278,7 +3306,7 @@ describe('Jump Back In is INSIDE the progress block', () => {
      * for something XCEL publishes. The storefront states 40 credit hours and
      * "less than 2 weeks"; neither divides into a per-lesson figure honestly.
      */
-    renderShell('/dashboard-rebrand')
+    renderShell(QE_URL)
     const card = screen.getByRole('region', { name: /jump back in/i })
     expect(card.textContent).toContain(
       `Estimated Time to Complete: ${NY_LH_LESSON_MINUTES_INVENTED} minutes`,
@@ -3300,7 +3328,7 @@ describe('Jump Back In is INSIDE the progress block', () => {
     // the block's own header treatment, which the new `band` default hides.
 
     seedClassic()
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const band = container.querySelector<HTMLElement>('.cre-learner-focused-band')!
     const title = within(band).getByRole('button', {
       name: /New York Life and Health Pre-licensing/i,
@@ -3334,7 +3362,7 @@ describe('Jump Back In is INSIDE the progress block', () => {
     // authored before the asset lands, the `FeaturePreviewThumb` mechanism.
     // Without it, pointing at a missing file is the defect the Resources
     // section shipped four of.
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const cover = container.querySelector<HTMLImageElement>(
       '.cre-learner-focused-band img[aria-hidden]',
     )!
@@ -3356,7 +3384,7 @@ describe('Jump Back In is INSIDE the progress block', () => {
     seedClassic()
     // It was inside the text column beside the cover, which made it the
     // course's label rather than the block's.
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const band = container.querySelector<HTMLElement>('.cre-learner-focused-band')!
     const eyebrow = within(band).getByText(CURRENT_LEARNING_EYEBROW)
     const cover = band.querySelector<HTMLImageElement>('img[aria-hidden]')!
@@ -3373,7 +3401,7 @@ describe('Jump Back In is INSIDE the progress block', () => {
     // the block's own header treatment, which the new `band` default hides.
 
     seedClassic()
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const band = container.querySelector<HTMLElement>('.cre-learner-focused-band')!
     const cta = within(band).getByRole('button', { name: /^resume\b/i })
     // 44px stays 44px — the minimum comfortable touch target and the biggest
@@ -3398,7 +3426,7 @@ describe('Jump Back In is INSIDE the progress block', () => {
     seedClassic()
     // The duplication that removed the card: two titles, two covers, two
     // percentages for one course.
-    const { container } = renderShell('/dashboard-rebrand')
+    const { container } = renderShell(QE_URL)
     const band = container.querySelector<HTMLElement>('.cre-learner-focused-band')!
     expect(band.querySelectorAll('img[aria-hidden]')).toHaveLength(1)
     expect(within(band).getAllByRole('button', { name: /^resume\b/i })).toHaveLength(1)

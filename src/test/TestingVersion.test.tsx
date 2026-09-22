@@ -1,5 +1,6 @@
 import { readFileSync } from 'node:fs'
 import { render, screen, within } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
@@ -62,10 +63,33 @@ function renderShell(url: string) {
   )
 }
 
-/** The Study Pace TILE — the eyebrow's parent, which is the tile element. */
+/**
+ * The Study Pace TILE — the eyebrow's parent, which is the tile element.
+ *
+ * MATCHED AS A REGEX, not the literal: the `presets` treatment appends a second
+ * clause to the same eyebrow ("Study Pace · recommended", "· yours" once the
+ * learner has adjusted anything), and `getByText` runs on `textContent`, so the
+ * literal stops finding the tile the moment that suffix exists.
+ */
 function paceTile(): HTMLElement {
-  return screen.getByText('Study Pace').parentElement as HTMLElement
+  return screen.getByText(/^Study Pace(?: · (?:recommended|yours))?$/).parentElement as HTMLElement
 }
+
+/**
+ * ⚠ THE COURSE THIS TILE PACES IS THE JUMP BACK IN COURSE, NOT THE MY COURSES
+ * RECORD. `LearnerFocusedBand` takes `course={activeCourse}` from
+ * `MembershipOverview`, which resolves the QE profile's `jumpBackIn` fixture —
+ * a 40-hour New York pre-licensing course carrying NO `expiresAt`. The
+ * `myCoursesFor('xcel')` in-progress record is a different course (24 Florida
+ * hours, a year of access) and is not on this screen. The two are easy to
+ * mistake for each other, and a test built on the wrong one passes or fails for
+ * reasons unconnected to the treatment.
+ *
+ * So the assertions below are about the card's INTERNAL CONSISTENCY and its
+ * wiring. Agreement with `src/lib/studyPace.ts` is pinned in
+ * `StudyPaceTile.test.tsx`, where the hours and the access date are props and a
+ * ceiling can actually be given.
+ */
 
 beforeEach(() => {
   window.localStorage.clear()
@@ -79,12 +103,24 @@ describe('the Testing version is registered without displacing anything', () => 
     )
   })
 
-  it('does NOT become XCEL’s default', () => {
-    // The load-bearing one. This version exists to be opened deliberately; a
-    // fourth picker entry that silently became the landing page would put an
-    // exploration in front of every stakeholder arriving on the public link.
+  it('IS XCEL’s default, as of 2026-09-21', () => {
+    /* INVERTED, and the inversion is the record worth keeping. This test read
+       "does NOT become XCEL's default" from the day the version shipped, and
+       its reasoning was: "a fourth picker entry that silently became the
+       landing page would put an exploration in front of every stakeholder
+       arriving on the public link."
+
+       That is now the deliberate decision rather than the accident — the direct
+       ask on 2026-09-21 — so the test asserts the new fact instead of being
+       deleted, and the old claim stays readable above it.
+
+       WHAT THE OLD TEST WAS PROTECTING became a decision rather than an
+       accident, the same day: the landing page is a pacing exploration, so
+       which of the five treatments a stakeholder sees could not be left to
+       inheritance. `dashboard-pacing-style`'s `defaultVariant` moved to
+       `presets`, pinned further down this file. */
     expect(defaultDiscoverabilityVersionFor('xcel')).toBe(
-      DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED.id,
+      DISCOVERABILITY_DASHBOARD_VERSION_TESTING.id,
     )
   })
 
@@ -147,7 +183,11 @@ describe('the Study Pace tile takes the row', () => {
 })
 
 describe('the pacing treatments', () => {
+  /** The four that render a BODY inside the shared tile. */
   const VARIANTS = ['lo-fi', 'rate', 'runway', 'balance'] as const
+  /** …and `presets`, which renders the whole tile. Sweeps that are about the
+   *  treatment's CLAIMS rather than its chrome run over all five. */
+  const ALL_VARIANTS = [...VARIANTS, 'presets'] as const
 
   it.each(VARIANTS)('%s keeps the status pill and its message', (variant) => {
     // The status half is what was carrying the meaning all along, and it is the
@@ -155,6 +195,15 @@ describe('the pacing treatments', () => {
     // the comparison would be about whether the state is shown rather than
     // about the pacing figure — and one of the four would win for the wrong
     // reason.
+    //
+    // `presets` IS DELIBERATELY NOT IN THIS LIST, and the exemption is narrow
+    // enough to be worth stating rather than widening the sweep: that treatment
+    // states the conclusion the pill labels ("finishes by <date>, <n> days
+    // before access ends on <date>") as a derived SENTENCE, and carries its own
+    // pill on the pace axis. Two pills in two vocabularies, stacked, is the
+    // confusion the pace chip exists to avoid — see the `presets` arm of
+    // `pacingBody`. The guarantee is not dropped, it moves: the block below
+    // pins the sentence the way this pins the pill.
     seed({ 'dashboard-pacing-style': { enabled: true, variant } })
     renderShell(TESTING_URL)
     const tile = paceTile()
@@ -162,7 +211,22 @@ describe('the pacing treatments', () => {
     expect(tile.textContent).toMatch(/on pace to finish/i)
   })
 
-  it.each(VARIANTS)('%s invents no projection the fixtures cannot support', (variant) => {
+  it('presets states the compliance conclusion instead of the pill', () => {
+    // The other half of the exemption above: it may drop the pill only because
+    // it answers the same question in words. A `presets` card carrying neither
+    // would be the treatment that quietly says less than the four beside it.
+    seed({ 'dashboard-pacing-style': { enabled: true, variant: 'presets' } })
+    renderShell(TESTING_URL)
+    const tile = paceTile()
+    expect(within(tile).queryByText('On Track')).toBeNull()
+    // The conclusion in words: a named course, and the date the derived pace
+    // lands on. With a ceiling this sentence continues "…, N days before access
+    // ends on <date>"; this fixture has none, which `StudyPaceTile.test.tsx`
+    // covers with a course that does.
+    expect(tile.textContent).toMatch(/Finishes .+ by [A-Z][a-z]{2} \d+/)
+  })
+
+  it.each(ALL_VARIANTS)('%s invents no projection the fixtures cannot support', (variant) => {
     // Nothing here knows an OBSERVED rate, a schedule to be ahead of, or a
     // projected finish date. The reference mock for this block carried "You are
     // currently pacing 4 days ahead of schedule"; authoring it is the move this
@@ -223,6 +287,16 @@ describe('the pacing treatments', () => {
     expect(text).not.toMatch(/a week|hrs\/day/)
   })
 
+  it.each(ALL_VARIANTS)('%s states no percentage', (variant) => {
+    /* A `%` on this tile is a PROGRESS claim, and the block directly above it
+       already states progress — twice on some treatments. The rule lives here
+       rather than on the Get Licensed cards, where "70% to pass" is the state's
+       published pass mark and a sourced fact about the exam. */
+    seed({ 'dashboard-pacing-style': { enabled: true, variant } })
+    renderShell(TESTING_URL)
+    expect(paceTile().textContent).not.toMatch(/%/)
+  })
+
   it('leaves the tile lo-fi on every OTHER version, whatever the flag says', () => {
     // The flag is inert off Testing: elsewhere Study Pace is still half of the
     // square pair and the stub is what ships. A treatment leaking onto QE
@@ -230,6 +304,155 @@ describe('the pacing treatments', () => {
     seed({ 'dashboard-pacing-style': { enabled: true, variant: 'runway' } })
     renderShell(QE_URL)
     expect(paceTile().textContent).not.toMatch(/a week/)
+  })
+
+  it('keeps presets off QE Focused too', () => {
+    // The same rule for the one treatment that renders a whole tile rather than
+    // a body — it reaches the render site by a different branch, so "the flag is
+    // inert elsewhere" has to be proved again rather than inherited.
+    seed({ 'dashboard-pacing-style': { enabled: true, variant: 'presets' } })
+    renderShell(QE_URL)
+    const tile = paceTile()
+    expect(tile.style.aspectRatio).toBe('1 / 1')
+    expect(within(tile).queryByRole('button', { name: 'Start studying' })).toBeNull()
+  })
+})
+
+/**
+ * PRESETS — the fifth treatment (2026-09-21).
+ *
+ * Every assertion here is a RELATIONSHIP against `src/lib/studyPace.ts`, never
+ * a literal. The card's figures are all derived from the resume course's
+ * published hours and its own access expiry, so a test pinning today's "Apr 29"
+ * or today's "5 days" would break on the next fixture edit and tell nobody
+ * anything about the treatment.
+ */
+describe('the presets pacing card', () => {
+  const seedPresets = () => seed({ 'dashboard-pacing-style': { enabled: true, variant: 'presets' } })
+
+  it('states an evening, a nights count and the date it lands on', () => {
+    seedPresets()
+    renderShell(TESTING_URL)
+    const text = paceTile().textContent ?? ''
+    expect(text).toMatch(/About .+ a night, \d nights a week\./)
+    expect(text).toMatch(/Finishes .+ by [A-Z][a-z]{2} \d+/)
+  })
+
+  it('the room it claims agrees with the access date it names', () => {
+    /* THE TWO HALVES OF ONE SENTENCE, checked against each other: the days of
+       slack, the date they are slack before, and the finish they are measured
+       from. A card reading "5 days before access ends on Jun 3" while the
+       finish it just printed is six days earlier is the kind of disagreement
+       that looks perfectly plausible on screen.
+
+       Parsed rather than compared to literals — the course's hours, progress
+       and access window all move, and a test carrying today's answer would
+       fail on the next fixture edit. Agreement with `studyPace` itself is
+       pinned in `StudyPaceTile.test.tsx`, where those are props. */
+    seedPresets()
+    renderShell(TESTING_URL)
+    const text = paceTile().textContent ?? ''
+    const claim = /Finishes .+ by ([A-Z][a-z]{2} \d+), (\d+) days? before access ends on ([A-Z][a-z]{2} \d+)/.exec(text)
+    expect(claim).toBeTruthy()
+    const [, finish, days, ends] = claim as RegExpExecArray
+    const day = (s: string) => new Date(`${s}, 2026`).getTime() / 86_400_000
+    expect(Math.round(day(ends) - day(finish))).toBe(Number(days))
+    // …and the timeline's end-stop names the SAME date the sentence does, so
+    // the graphic and the words cannot point at different days.
+    expect(text).toContain(`Access ends · ${ends}`)
+  })
+
+  it('names the ceiling it used, never a window length', () => {
+    /* THE TRAP THIS TREATMENT WAS BUILT OVER. The prototype's card said "set
+       from your 30-day access" — true of the window it assumed, and false the
+       moment a course's window differs. The card names the CEILING instead:
+       the fact the model actually used, already on screen two clauses up, and
+       still true when an exam date takes over as the thing doing the work.
+
+       The window is now genuinely 30 days (see `dashboardProgressFixtures`),
+       which is exactly why this assertion has to stay — the prototype's
+       sentence would pass a reader's eye today and be wrong again on the next
+       course that reaches this card. */
+    seedPresets()
+    renderShell(TESTING_URL)
+    const text = paceTile().textContent ?? ''
+    expect(text).not.toMatch(/\d+-day access/)
+    expect(text).toMatch(/Set from when your access ends, not from a guess/)
+  })
+
+  it('keeps the expiry badge OFF the default version’s Jump Back In card', () => {
+    /* THE BLAST RADIUS of giving that course an access window, pinned rather
+       than trusted. `expiresAt` on a card record is what turns the expiry badge
+       on, and this course's window (30 days) is shorter than the default 60-day
+       countdown — so without `enrolledAt`, `warnWindowFor` has no window to
+       halve, the 60 stands, and QE Focused (XCEL's DEFAULT, the thing a
+       stakeholder lands on) grows an "expiring soon" badge it never had.
+
+       The clamp is what prevents that, and it is invisible at the call site —
+       a later edit dropping `enrolledAt` as redundant would look harmless and
+       change the default version. */
+    seed()
+    renderShell(QE_URL)
+    expect(document.body.textContent).not.toMatch(/Expires|Expiring|Expired/i)
+  })
+
+  it('stops calling the number a recommendation once it is the learner’s', async () => {
+    /* The prototype's §02 finding, and the one thing on the card that changes
+       when the learner touches it: the product should not go on calling a
+       figure the learner picked a recommendation. Driven through the REAL
+       sheet, because that is the only way `adjusted` can become true — which
+       also proves the card and Testing 2's square share one `choices` state.
+       (The provenance CLAUSE follows the same boolean and is pinned in
+       `StudyPaceTile.test.tsx`, where a course with a ceiling prints one.) */
+    const user = userEvent.setup()
+    seedPresets()
+    renderShell(TESTING_URL)
+    expect(paceTile().textContent).toMatch(/· recommended/)
+
+    await user.click(within(paceTile()).getByRole('button', { name: 'Adjust' }))
+    const dialog = screen.getByRole('dialog')
+    await user.click(within(dialog).getByRole('radio', { name: /Full window|Relaxed/ }))
+    await user.click(within(dialog).getByRole('button', { name: 'Save pace' }))
+
+    expect(paceTile().textContent).toMatch(/· yours/)
+  })
+
+  it('offers two real buttons and no third control', () => {
+    // The card operates Start and Adjust, and nothing else — the same claim
+    // `StudyPaceTile.test.tsx` counts on the square, which is what keeps this a
+    // statement rather than a control panel. No `Details →` link either: the
+    // buttons ARE the floor here.
+    seedPresets()
+    renderShell(TESTING_URL)
+    const tile = paceTile()
+    const names = within(tile)
+      .getAllByRole('button')
+      .map((b) => b.textContent?.trim())
+    expect(names).toEqual(['Start studying', 'Adjust'])
+    expect(within(tile).queryByRole('link', { name: /Details/ })).toBeNull()
+    expect(within(tile).queryByRole('radio')).toBeNull()
+    // …and it is about the course the band resumes, named in the same words the
+    // Jump Back In block beside it uses, rather than a second course.
+    const course = /Finishes (.+?) by /.exec(tile.textContent ?? '')?.[1]
+    expect(course).toBeTruthy()
+    expect(document.body.textContent).toContain(course as string)
+  })
+
+  it('Adjust opens the SHARED sheet, not a second one', () => {
+    /* The reuse this whole variant rests on. A `presets` card that grew its own
+       sheet would be a second copy of the four groups — and of the exam date and
+       the study-plan calendar, both of which write. */
+    seedPresets()
+    renderShell(TESTING_URL)
+    expect(
+      within(paceTile()).getByRole('button', { name: 'Adjust' }).getAttribute('aria-haspopup'),
+    ).toBe('dialog')
+  })
+
+  it('loses the square, like every other treatment on this version', () => {
+    seedPresets()
+    renderShell(TESTING_URL)
+    expect(paceTile().style.aspectRatio).toBe('')
   })
 })
 
@@ -693,18 +916,35 @@ describe('the collapse control', () => {
 })
 
 describe('the pacing flag is wired where a reviewer will find it', () => {
-  it('is in the catalog as a variant-only flag with four treatments', () => {
+  it('is in the catalog as a variant-only flag with five treatments', () => {
     const def = FEATURE_FLAGS.find((f) => f.key === 'dashboard-pacing-style')
     expect(def).toBeTruthy()
     expect(def?.defaultEnabled).toBe(true)
-    expect(def?.variants?.map((v) => v.value)).toEqual(['lo-fi', 'rate', 'runway', 'balance'])
+    // `presets` was APPENDED (2026-09-21). Order is asserted as well as
+    // membership: the panel renders the variants in this order, and the four
+    // that were here first are the ones a reviewer has already looked at.
+    expect(def?.variants?.map((v) => v.value)).toEqual([
+      'lo-fi',
+      'rate',
+      'runway',
+      'balance',
+      'presets',
+    ])
   })
 
-  it('opens on a real treatment rather than the stub', () => {
-    // The version exists to look at pacing; landing on `lo-fi` would make the
-    // whole thing read as unchanged.
+  it('opens on `presets` — the treatment, not just a non-stub', () => {
+    /* It asserted `runway` until 2026-09-21, under a weaker claim: "the version
+       exists to look at pacing, so landing on `lo-fi` would make the whole
+       thing read as unchanged." Any real treatment satisfied that.
+
+       The claim is stronger now because this version became XCEL's DEFAULT the
+       same day. `?demo=1` renders the committed baseline and IGNORES stored
+       flags, and no URL parameter sets one — so this value is not where a
+       stakeholder starts, it is the entirety of what they see on a review link.
+       Which treatment sits here is therefore a design decision, and pinning the
+       specific one is the point rather than an over-tight assertion. */
     const def = FEATURE_FLAGS.find((f) => f.key === 'dashboard-pacing-style')
-    expect(def?.defaultVariant).toBe('runway')
+    expect(def?.defaultVariant).toBe('presets')
   })
 
   it('is in the rebrand panel scope', () => {

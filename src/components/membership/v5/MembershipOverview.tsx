@@ -376,7 +376,14 @@ export function MembershipOverview({
    * It falls back to the persona rather than replacing it: with nothing stored
    * the demo is unchanged, and clearing the field restores it.
    */
-  const personaRenewal = examDateRenewal(useExamDate()) ?? personaRenewalBase
+  /* HOISTED out of the call below (2026-09-21) so the RAW stored date can reach
+     the Study Pace tile as well. `examDateRenewal` returns a formatted deadline
+     plus a week count — the right shape for the header's stat row and the wrong
+     one for the pace model, which has to compare this date to a course's access
+     expiry to decide which ceiling binds. One `useExamDate()` call feeding both
+     is what stops the two surfaces reading different values of one fact. */
+  const storedExamDate = useExamDate()
+  const personaRenewal = examDateRenewal(storedExamDate) ?? personaRenewalBase
   const personaRenewalReady = personaDrivesPath ? (persona!.renewalReady ?? false) : false
   // Browse Catalog (discovery empty state) → open the Course Catalog rail
   // section in place, preserving the shell's other params (per the "stay in the
@@ -1068,6 +1075,20 @@ export function MembershipOverview({
       // ~506px column is a 506px box holding two lines, so removing one tile
       // and reshaping the other are the same decision.
       paceOnly={testing}
+      // THE ATLAS STUDY JOURNEY TREATMENT — framed card + the post-course steps
+      // as four widgets. On BOTH pacing versions as of 2026-09-21, the direct
+      // ask ("update testing 2 view to have the newer Atlas Study Journey UI").
+      //
+      // A SEPARATE PROP FROM `paceOnly`, which is what made this a one-line
+      // change: it rode on `paceOnly` while Testing was the only version that
+      // wanted it, and Testing 2's whole identity is the square tile PAIR that
+      // `paceOnly` removes. See the prop's note on the band.
+      journeyCards={testing || testingVersion}
+      // The learner's booked exam date, so the Study Pace tile prices against
+      // the SAME date the header's Target Exam Date and countdown moved to.
+      // Threaded 2026-09-21, when `presets` became the default view's treatment
+      // and the tile's silence about the exam stopped being harmless.
+      examDate={storedExamDate ?? undefined}
       // TESTING 2 ONLY — the left square tile renders the real derived pace and
       // its Adjust sheet instead of the lo-fi placeholder. A SEPARATE prop from
       // `paceOnly` because the two versions ask different questions of this
