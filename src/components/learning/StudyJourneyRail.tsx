@@ -136,12 +136,18 @@ export function StudyJourneyRail({
   const leanMeta = (stop: JourneyStop): string => {
     const unit = path.unitLabel ?? 'hrs'
     const bits: string[] = []
-    if (stop.hours != null) {
-      bits.push(
-        stop.completed != null
-          ? `${stop.completed} of ${stop.hours} ${unit} complete`
-          : unitCount(stop.hours, unit),
-      )
+    /* THE COMPLETION COUNT IS GONE — 2026-09-21, the direct ask ("this is shown
+       already"). Row 1 read "26 of 42 lessons complete" three inches under the
+       course header's own stat row saying "26 of 42 lessons COMPLETED", which
+       is the duplication this whole treatment was trimming; it simply survived
+       the first pass because the header gained that cell later.
+
+       ⚠ ONLY THE "X of Y complete" FORM GOES. A stop with no completion still
+       prints its SIZE ("8 hrs"), which appears nowhere else on the page and is
+       how a learner sizes up a step they have not reached. Dropping the whole
+       branch would have taken that with it. */
+    if (stop.hours != null && stop.completed == null) {
+      bits.push(unitCount(stop.hours, unit))
     }
     // Everything after "Part N" in the group — the published target, which the
     // right-hand label does not carry.

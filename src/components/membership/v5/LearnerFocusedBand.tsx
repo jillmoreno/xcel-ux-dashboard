@@ -645,7 +645,14 @@ export function LearnerFocusedBand({
     onPage && resume && !clpNavy ? (
       <JumpBackInWidget
         course={resume}
-        chapterNumber={totalCompleted > 0 ? totalCompleted + 1 : undefined}
+        /* ALWAYS THE NEXT LESSON, including the first — 2026-09-21, the direct
+           ask to show the lesson line at 0%. The guard hid it when nothing was
+           complete, which was the one state where naming the lesson is most
+           useful: "Lesson 1 · Part 1 of 3" tells a learner where they are about
+           to start. The arithmetic was already right at zero — completed + 1 is
+           1 — so the guard was suppressing a correct number, not avoiding a
+           wrong one. */
+        chapterNumber={totalCompleted + 1}
         /* WHICH PART, derived from the ordered category list rather than typed:
            the categories ARE the 3-Part Training Program in curriculum order,
            and the learner is in the first one they have not finished. Clamped

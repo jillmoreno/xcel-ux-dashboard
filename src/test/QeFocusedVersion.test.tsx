@@ -646,10 +646,21 @@ describe('nothing on the page says "1 days"', () => {
     // count. The moment one path measured DAYS, four surfaces printed "1 days"
     // — the category bars, the band KPI cell, the journey rows and the detail
     // sheet. Fixing them one at a time is how three get fixed.
+    /* SEEDS THE HEADER BAND for the anti-vacuity half. The journey rail used to
+       be the surface printing "26 of 42 lessons" here; that sub-line was removed
+       on 2026-09-21 because the header's own stat row already said it. So the
+       guard now reads the surface that DOES print a count — otherwise this test
+       would keep passing while nothing on the page printed a unit at all, which
+       is precisely what it exists to rule out. */
+    window.localStorage.setItem(
+      'cgp.featureFlags',
+      JSON.stringify({
+        ...CLASSIC_FLAGS,
+        'dashboard-course-header': { enabled: true, variant: 'band' },
+      }),
+    )
     const { container } = renderShell(QE_URL)
     expect(container.textContent).not.toMatch(/\b1 (days|lessons|hrs)\b/)
-    // …and it IS printing counts, so this is not passing because nothing says a
-    // unit at all.
     expect(container.textContent).toMatch(/\b42 lessons\b/)
     // One owner, so a fifth surface gets it for free.
     for (const f of [
@@ -1998,7 +2009,7 @@ describe('the Study Journey rail style flag', () => {
     ).toBeTruthy()
   })
 
-  it('prints a sub-line on the ACTIVE row only', () => {
+  it('prints NO sub-line, now that the header carries the count', () => {
     /*
      * The syllabus treatment printed `leanMeta` on all four rows until
      * 2026-09-17 — three of them ending in "Unlocks after coursework" under
@@ -2014,12 +2025,22 @@ describe('the Study Journey rail style flag', () => {
      * asserts, because a rule about what is NOT rendered passes vacuously if
      * the thing was never reachable at all.
      */
+    /* ⚠ THE PREMISE INVERTED on 2026-09-21. This asserted a sub-line on the
+       ACTIVE row — the count in words — while the other three rows had none.
+       The direct ask removed that count ("this is shown already"): the course
+       header's stat row states "26 of 42 lessons COMPLETED" three inches above
+       it, which is the duplication this treatment was trimming in the first
+       place and which simply survived the first pass because the header gained
+       that cell later.
+
+       So the active row has no sub-line either, and what this test now pins is
+       that removing it did not take the STATE with it — the half that was
+       always the point. */
     seedJourney('syllabus')
     const { container } = renderShell(QE_URL)
     const list = container.querySelector('ol[aria-label="Study journey stops"]')!
-    // The count, in words, on the row that has one.
-    expect(list.textContent).toMatch(/26 of 42 lessons complete/)
-    // …and nothing under the three that do not.
+    expect(list.textContent).not.toMatch(/26 of 42 lessons complete/)
+    // …and nothing under the three that never had one.
     expect(list.textContent).not.toMatch(/Unlocks after coursework/)
     expect(list.textContent).not.toMatch(/aim for 80%|aim for 85%/)
     /* The state is still carried in WORDS, off-screen.

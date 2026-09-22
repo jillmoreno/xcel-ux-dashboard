@@ -52,8 +52,23 @@ export function JumpBackInWidget({
   onResume?: (courseId: string) => void
 }) {
   if (!course) return null
+  /* NOTHING STARTED YET — 2026-09-21, three direct asks on the 0% state.
+     "Jump Back In", "Resume" and a hidden lesson line all assume there is a
+     place to jump back TO. At 0% there is not: the card is the first thing the
+     learner does, and naming it as a return trip is the product describing a
+     history they do not have.
+
+     Read off the COURSE rather than taken as a prop: the widget already has the
+     record, and a `started` boolean threaded in beside a `course` that already
+     answers the question is a second source for one fact. */
+  const started = (course.progress ?? 0) > 0
   return (
-    <section aria-label="Jump back in" style={widgetCardRuledStyle}>
+    /* THE LANDMARK NAME FOLLOWS THE VISIBLE ONE. This repo's own rule, from the
+       Get Licensed arrival card: "a region announced as 'Apply for your
+       License' while reading 'Get Licensed in New York' is the 'Dash Dashboard'
+       defect in miniature." A card reading "Let's get started" must not
+       announce itself as "Jump back in". */
+    <section aria-label={started ? 'Jump back in' : 'Let’s get started'} style={widgetCardRuledStyle}>
       {/* The SHARED eyebrow type — same face, size, weight and tracking as the
           Study Journey's, which is what "match the Study Journey font" asked
           for — with the INK resolved for this surface.
@@ -89,7 +104,7 @@ export function JumpBackInWidget({
         style={{ ...widgetEyebrowStyle, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}
       >
         <BookOpenThin size={13} />
-        Learning With Compass - Jump Back In
+        {started ? 'Learning With Compass - Jump Back In' : 'Let’s get started'}
       </p>
 
       {/* The action sits on the TITLE'S line (2026-09-17, the direct ask), so
@@ -135,7 +150,7 @@ export function JumpBackInWidget({
           so the title column gives way first; the reverse would break "Resume"
           onto two lines, which is the one thing here that must stay one tap. */}
       <button type="button" onClick={() => onResume?.(course.id)} style={ctaStyle}>
-        Resume <ArrowRight size={16} />
+        {started ? 'Resume' : 'Start course'} <ArrowRight size={16} />
       </button>
       </div>
 
