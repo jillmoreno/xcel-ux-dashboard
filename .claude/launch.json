@@ -10,8 +10,8 @@
         "Do NOT add autoPort: a moving port is the thing that convention stops."
       ],
       "name": "xcel-dashboard",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": ["run", "dev"],
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "PATH=\"$HOME/.local/bin:$PATH\" npm run dev"],
       "port": 5200
     },
     {
