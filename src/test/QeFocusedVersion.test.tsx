@@ -1386,7 +1386,37 @@ describe('the course header band flag', () => {
     ).toHaveLength(1)
   })
 
-  it('adds the band above everything, with a rule under it', () => {
+  /**
+   * The course header band's own wrapper — the element holding the title, the
+   * bar and the stat row.
+   *
+   * ⚠ FOUND BY ITS CONTENT, not by a declaration. It was found by the dashed
+   * `border-bottom` that used to sit under it, with a note explaining that
+   * keying on the STYLE rather than the colour meant "the next colour change
+   * does not break these two tests". That held until 2026-09-21, when the rule
+   * itself was removed (the direct ask) and both tests broke on an anchor that
+   * had nothing to do with what they assert. Content is the stabler handle: the
+   * band is the thing that holds this heading AND this stat row, whatever it is
+   * drawn with.
+   */
+  function headerBandRow(container: HTMLElement): HTMLElement {
+    const heading = container.querySelector('h2')!
+    /* THE DEEPEST div holding the title, the stat row AND the cover — all three,
+       because the first two alone select the TEXT COLUMN, which is one level too
+       deep: the art is that column's sibling, so `row.querySelector('img')` came
+       back null and the test failed on the cover rather than on the band. Three
+       conditions name the band unambiguously at either width (the wide header
+       carries no `cre-course-header-narrow` class to key on). */
+    const all = Array.from(container.querySelectorAll<HTMLElement>('div')).filter(
+      (d) =>
+        d.contains(heading) &&
+        /26 of 42 lessons/.test(d.textContent ?? '') &&
+        d.querySelector('img[aria-hidden]') != null,
+    )
+    return all[all.length - 1]
+  }
+
+  it('adds the band above everything', () => {
     seedHeader('band')
     const { container } = renderShell(QE_URL)
     const heading = container.querySelector('h2')!
@@ -1405,11 +1435,25 @@ describe('the course header band flag', () => {
        the pixels of a solid line and the subtle token was already the faintest
        line on the page at 1.29:1. Keying on the style rather than the value
        means the next colour change does not break these two tests. */
-    const row = Array.from(container.querySelectorAll<HTMLElement>('div')).find((d) =>
-      /dashed/.test(d.style.borderBottom),
-    )!
+    /* THE DASHED RULE UNDER THE BAND IS GONE — 2026-09-21, the direct ask
+       ("remove the dashed divider line"). What replaced it is the ruled cards
+       below: both now carry their own hairline and a 6px left rule, so the
+       header is already visibly a different thing and a second separator was
+       drawing a boundary the cards had started drawing themselves. The 40px
+       gap is unchanged — the padding took the pixel the border was
+       contributing. */
+    const row = headerBandRow(container)
     expect(row).toBeTruthy()
     expect(row.contains(heading)).toBe(true)
+    /* THE ABSENCE, asserted across the whole band rather than on one element:
+       the claim is that nothing separates the header from the block below any
+       more, and pinning it to a single node would pass just as happily if the
+       rule moved one div up. */
+    expect(
+      Array.from(container.querySelectorAll<HTMLElement>('div')).some((d) =>
+        /dashed/.test(d.style.borderBottom),
+      ),
+    ).toBe(false)
     /* THE META LINE IS GONE — 2026-09-17. It read "Insurance Pre-Licensing ·
        New York · 42 Lessons" above the title and is now a "Course Progress"
        eyebrow, with the percentage moved to the LEFT of the course name and a
@@ -1545,9 +1589,7 @@ describe('the course header band flag', () => {
      */
     seedHeader('band')
     const { container } = renderShell(QE_URL)
-    const row = Array.from(container.querySelectorAll<HTMLElement>('div')).find((d) =>
-      /dashed/.test(d.style.borderBottom),
-    )!
+    const row = headerBandRow(container)
     /* ONE action as of 2026-09-17, and only one: "View Details →", which opens
        the sheet on its PROGRESS half — the Course Breakdown. That half had been
        unreachable on this version, because every trigger here meant

@@ -81,14 +81,32 @@ import type { CSSProperties } from 'react'
  * `--color-surface-card` rather than a literal white: it is white in light and
  * the brand navy on the dark canvas, which is the whole reason the token
  * exists.
+ *
+ * THE HAIRLINE IS A LIGHT BLUE, not a grey — 2026-09-21, the direct ask that it
+ * be "a lighter blue, similar to the background color in the Mon, tue, wed
+ * components", then "go even lighter". It is `--color-primary-100`, which is
+ * exactly the fill those cells use, so the card's edge and the strip inside it
+ * are the same value rather than two blues a stop apart.
+ *
+ * ⚠ IT IS A FAINT LINE ON PURPOSE — roughly 1.1:1 on the white card, which is
+ * below anything that could be called a visible boundary on its own. That is
+ * the asked-for look and it is safe here for one structural reason: the 6px
+ * `-400` rule down the left edge is what actually bounds the card (4.27:1
+ * against the fill), and these three sides are a tint finishing the shape
+ * rather than drawing it. Take the left rule away and this stroke would have to
+ * step back up — they are one decision, not two.
+ *
+ * It replaced `--color-neutral-300`, the grey this surface uses for rules: the
+ * card now agrees with the week strip inside it instead of with the dividers
+ * outside it.
  */
 export const widgetCardRuledStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   background: 'var(--color-surface-card)',
-  borderTop: '1px solid var(--color-neutral-300)',
-  borderRight: '1px solid var(--color-neutral-300)',
-  borderBottom: '1px solid var(--color-neutral-300)',
+  borderTop: '1px solid var(--color-primary-100)',
+  borderRight: '1px solid var(--color-primary-100)',
+  borderBottom: '1px solid var(--color-primary-100)',
   borderLeft: '6px solid var(--color-primary-400)',
   borderRadius: '0 var(--radius-lg) 0 var(--radius-lg)',
   padding: 16,

@@ -141,7 +141,22 @@ export function SquareTile({
               borderTop: widgetCardRuledStyle.borderTop,
               borderRight: widgetCardRuledStyle.borderRight,
               borderBottom: widgetCardRuledStyle.borderBottom,
-              borderLeft: widgetCardRuledStyle.borderLeft,
+              /* NO 6px LEFT RULE HERE — 2026-09-21, the direct ask ("remove
+                 the thicker left stroke here on this component"), pointed at
+                 the pacing card specifically. The Jump Back In card above it
+                 keeps its rule; this one takes the same hairline on all four
+                 sides.
+
+                 ⚠ THE HAIRLINE'S OWN NOTE IS NOW LOAD-BEARING FOR THIS CARD.
+                 `--color-primary-100` at ~1.1:1 was safe while the 6px rule
+                 bounded the card and the tint merely finished the shape. With
+                 the rule gone, what separates this card from the page is its
+                 WHITE FILL against the page grey, not its stroke. That reads,
+                 and it is the asked-for look — but it means the card is a fill
+                 with a tint round it rather than a bordered box, and a future
+                 change that moves this card onto a white surface would leave
+                 it with no edge at all. */
+              borderLeft: widgetCardRuledStyle.borderTop,
               borderRadius: widgetCardRuledStyle.borderRadius,
             }
           : {

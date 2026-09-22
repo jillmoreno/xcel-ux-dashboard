@@ -604,34 +604,28 @@ export function MembershipOverview({
   )
   const courseHeaderBand = courseHeader && activeProgressPath && (
     <Wrap style={{ padding: 0, width: '100%' }}>
-      {/* 39, not 18 — 2026-09-17, the direct ask that the divider sit an equal
-          distance from what is above and below it.
+      {/* THE DASHED DIVIDER IS GONE — 2026-09-21, the direct ask ("remove the
+          dashed divider line"). It arrived on 2026-09-17 to separate this
+          header from the block below it, and what replaced it is the ruled
+          cards under it: both now carry their own hairline and a 6px left
+          rule, so the header is already visibly a different thing from what
+          follows and a second separator was drawing a boundary the cards had
+          started drawing themselves.
 
-          Measured before: 19px above the rule (18 padding + the 1px border)
-          against 40px below, so it hugged the header and floated off the band.
-          The 40 below is the page's OWN section rhythm — `MembershipOverview`
-          puts 40 between its sections and the band's columns use the same —
-          so the rule moves rather than that: 39 + 1px of border puts it at 40
-          from the content above and 40 from the block below. */}
-      {/* A DASHED divider — 2026-09-17, the direct ask.
-      
-          THE COLOUR STEPPED UP WITH IT, and that is the part worth knowing. A
-          dash pattern paints roughly half the pixels of a solid rule, and
-          `--color-border-subtle` was already the faintest line on this page at
-          1.29:1 against the page grey (1.38:1 dark) — dashed at that value it
-          all but disappears, which would leave 39px of air doing the separating
-          and a rule that reads as a rendering artefact.
-      
-          `--color-neutral-300` is 1.55:1 / 1.81:1 and is this surface's
-          established "line you can actually see" — it is what the progress bar
-          track and the KPI rules already use here. Dashed at that value the
-          line reads about as present as the solid subtle one did.
-      
-          NOTE the dash carries NO meaning here. Dashed means "locked / not
-          started" on the journey nodes a column away, and that is a state on a
-          status indicator; this is a section divider, which has no state. Worth
-          saying because the two are on one screen. */}
-      <div style={{ paddingBottom: 39, borderBottom: '1px dashed var(--color-neutral-300)' }}>
+          WHAT WENT WITH IT, and why the number changed: the spacing was 39 +
+          the rule's own 1px, chosen so the line sat 40 from the content above
+          and 40 from the block below — the page's own section rhythm, which
+          `MembershipOverview` uses between every section and the band's columns
+          repeat. With no border to make up the last pixel the padding takes it,
+          so the gap below the header is still exactly 40 and nothing else on
+          the page had to move.
+
+          The colour note that stood here (why a dashed rule needed
+          `--color-neutral-300` rather than `--color-border-subtle`, a dash
+          painting half the pixels of a solid line) went with the rule. The
+          finding it records is still live on the vertical divider in the stat
+          row above, which is on the same token for the same reason. */}
+      <div style={{ paddingBottom: 40 }}>
         {/* THE COVER IS A SIBLING OF THE WHOLE COLUMN as of 2026-09-17, not a
             child of the title row.
 
