@@ -225,13 +225,23 @@ export function timeRemaining(weeksLeft: number): { segments: TimeSegment[]; exp
     return { segments: [{ value: days, unit: days === 1 ? 'day' : 'days' }], expired: false }
   }
   const years = Math.floor(weeksLeft / 52)
-  const remWeeks = weeksLeft % 52
+  /* ROUNDED — 2026-09-21. Both week values below were raw, which was invisible
+     for as long as every `weeksLeft` reaching this branch was a whole number:
+     a FRACTIONAL one under 30 days takes the `days` branch above (already
+     rounded), so the only way here was a whole number. A learner-entered exam
+     date produced the first fractional value over 30 days and the cell rendered
+     "7.142857142857143 wks".
+
+     This function's own docstring already describes that failure at the three
+     call sites it was extracted to fix — it just had the same bug itself, one
+     branch further in. */
+  const remWeeks = Math.round(weeksLeft % 52)
   if (years > 0) {
     const segments: TimeSegment[] = [{ value: years, unit: years === 1 ? 'yr' : 'yrs' }]
     if (remWeeks > 0) segments.push({ value: remWeeks, unit: 'wks' })
     return { segments, expired: false }
   }
-  return { segments: [{ value: weeksLeft, unit: 'wks' }], expired: false }
+  return { segments: [{ value: Math.round(weeksLeft), unit: 'wks' }], expired: false }
 }
 
 /**

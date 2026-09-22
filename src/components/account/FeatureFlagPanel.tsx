@@ -86,6 +86,10 @@ const REBRAND_FLAGS = [
   // Current Course Progress block treatment — light / big-number / navy card.
   // Variant-only; a treatment rather than a different set of facts.
   'dashboard-clp-style',
+  // Pacing tile treatment on the Testing version — lo-fi / rate / runway /
+  // balance. Variant-only, and inert on every other version, where the tile is
+  // still half of the square pair.
+  'dashboard-pacing-style',
   // Heading font on the overview — Sans (brand) ⇄ Serif. Variant-only; see the
   // catalog entry for why the serif is a system stand-in rather than the face
   // on the live site.

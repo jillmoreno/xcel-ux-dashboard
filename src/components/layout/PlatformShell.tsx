@@ -128,6 +128,23 @@ const VALID_SECTIONS: PlatformSection[] = [
   'gift-recipients',
 ]
 
+/**
+ * Rail rows the TESTING dashboard version drops (2026-09-21). See the note at
+ * `trimmedRailSections` for why this is a layout property rather than four
+ * `NAV_SECTION_FLAGS` edits.
+ *
+ * `m-career-tools` is Rubi Insights — the id kept its Elite-era name through
+ * two renames (see `careerToolsLabelFor`), so the rail LABEL and this id do not
+ * match and that is expected rather than a mistake.
+ */
+const TESTING_HIDDEN_RAIL_SECTIONS = [
+  'study-plan',
+  'readiness',
+  'resources',
+  'm-career-tools',
+] as const satisfies readonly PlatformSection[]
+
+
 export function PlatformShell() {
   // Wrap the shell in the in-shell course-launcher provider so a card deep in
   // the content (the Jump Back In tile) can open the Learning Launcher in place.
@@ -307,12 +324,46 @@ function PlatformShellBody() {
         // everything downstream treats it as QE Focused except the one tile.
         versionParam === 'discoverability-testing-2'
         ? 'testing-2'
-      : versionParam === 'discoverability-learner-focused'
-        ? 'learner-focused'
-        : versionParam === 'discoverability-badged'
-          ? 'badged'
-          : 'marketing-focused'
+      : // "Testing" — QE Focused with the pace/readiness row given over to the
+        // pacing exploration. Its own layout value rather than a flag on
+        // `qe-focused`, so the picker, the URL and the page all name the same
+        // thing; `MembershipOverview` then sets `qeFocused` for it so every
+        // other QE behaviour is inherited rather than re-listed.
+        versionParam === 'discoverability-testing'
+        ? 'testing'
+        : versionParam === 'discoverability-learner-focused'
+          ? 'learner-focused'
+          : versionParam === 'discoverability-badged'
+            ? 'badged'
+            : 'marketing-focused'
 
+
+  /*
+   * THE TESTING VERSION'S RAIL — 2026-09-21, the direct ask: no Study Plan, no
+   * Readiness, no Resources, no Rubi Insights, and no Collapse Menu.
+   *
+   * It leaves **Home · My Courses · Certificates**, then Support. That is the
+   * rail for a candidate working one booked exam, and it is the same editorial
+   * argument the demo baseline already makes for Browse Catalog — the four
+   * rows that go are either answered on Home (the Study Plan's pacing is the
+   * thing this version's own Pacing tile is exploring) or are tools beside the
+   * work rather than the work.
+   *
+   * ROWS ONLY. Every section still resolves — `?section=readiness` still opens
+   * Readiness — which is the rule `NAV_SECTION_FLAGS` states and what makes a
+   * trimmed rail editorial rather than a feature cut.
+   *
+   * NOT `NAV_SECTION_FLAGS`, deliberately, and this is the decision worth
+   * recording. Those flags are the DEMO BASELINE: one committed rail that
+   * `NavSectionFlags.test.tsx` asserts whole and in order. Flipping four of
+   * them here would change what QE Focused — XCEL's default, the version a
+   * stakeholder lands on — shows, which is not what "for this version" asked
+   * for. So the trim is a property of the LAYOUT and the baseline is untouched.
+   */
+  const testingLayout = dashboardLayout === 'testing'
+  const trimmedRailSections: readonly PlatformSection[] | undefined = testingLayout
+    ? TESTING_HIDDEN_RAIL_SECTIONS
+    : undefined
   // Mobile preview (the PrototypeBar device toggle → 390px frame) swaps the
   // left-rail desktop shell for a native-feeling single-column mobile layout:
   // a navy profile band on top + a fixed bottom tab bar. The rail's content
@@ -561,9 +612,24 @@ function PlatformShellBody() {
             active={railActive}
             onSelect={handleSelect}
             variant={navVariant}
+            hiddenSections={trimmedRailSections}
             collapsed={railCollapsed}
-            onToggleCollapse={() =>
-              setCollapseOverride({ scope: launcher.courseId, collapsed: !railCollapsed })
+            /*
+             * NO TOGGLE ON TESTING — 2026-09-21, the direct ask ("hide the
+             * collapse menu"). ONE WITHHELD PROP, which is the mechanism the
+             * rail already documents ("Omitted → no toggle renders, which is
+             * what the kiosk/menu embeds want") and the same shape as
+             * `onOpenLearningPath={qeFocused ? undefined : …}` on the band.
+             *
+             * `collapsed` is still PASSED, deliberately. The launcher
+             * auto-collapse is not the learner's control and must keep working:
+             * hiding the toggle removes the manual affordance, not the state.
+             */
+            onToggleCollapse={
+              testingLayout
+                ? undefined
+                : () =>
+                    setCollapseOverride({ scope: launcher.courseId, collapsed: !railCollapsed })
             }
           />
         </div>
@@ -822,7 +888,18 @@ function PlatformMobileShell({
       </div>
       {/* The rail lives in a hamburger drawer (opened from the header). While the
           launcher is open, `railActive` shows nothing active (mirrors desktop). */}
-      <MobileNavDrawer active={railActive} onSelect={onSelect} navVariant={navVariant} />
+      <MobileNavDrawer
+        active={railActive}
+        onSelect={onSelect}
+        navVariant={navVariant}
+        /* Derived from the SAME constant the desktop rail uses, off the layout
+           this shell already has — so the phone and the desktop cannot show
+           different sets. Re-deriving it here rather than threading a prop down
+           keeps one owner for the rule. */
+        hiddenSections={
+          dashboardLayout === 'testing' ? TESTING_HIDDEN_RAIL_SECTIONS : undefined
+        }
+      />
     </div>
   )
 }
@@ -922,10 +999,12 @@ function MobileNavDrawer({
   active,
   onSelect,
   navVariant,
+  hiddenSections,
 }: {
   active: PlatformSection
   onSelect: (id: PlatformSection) => void
   navVariant: PlatformNavVariant
+  hiddenSections?: readonly PlatformSection[]
 }) {
   const { open, setOpen } = useMobileNav()
   if (!open) return null
@@ -1001,6 +1080,12 @@ function MobileNavDrawer({
             close()
           }}
           variant={navVariant}
+          /* Threaded so the phone menu and the desktop rail cannot show
+             different sets — this drawer reuses the real rail precisely so the
+             two stay in sync, and a trim applied to one of them would undo
+             that. It already renders no collapse toggle (no `onToggleCollapse`),
+             so the other half of this version's trim needs nothing here. */
+          hiddenSections={hiddenSections}
         />
       </div>
     </div>

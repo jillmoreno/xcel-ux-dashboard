@@ -422,8 +422,40 @@ export type LicensingStep = {
   detail: string
   /** Who owns the step — never XCEL, for all three. */
   owner: string
+  /**
+   * A SHORT form of `owner`, for the narrow step CARDS (2026-09-21, the direct
+   * ask: "change to NY - $80 application fee").
+   *
+   * Only the licensing authority needs one — "NY Dept. of Financial Services"
+   * is 30 characters on a ~300px card and wrapped its fee onto a second line,
+   * where "PSI" is already short. Omitted → `owner` is used, so a step wants
+   * this only when the full name does not fit.
+   *
+   * The FULL name is unchanged and is what the Get Licensed RAIL still prints
+   * on QE Focused, which has the width for it. This is the same split
+   * `jurisdictionName` already makes between the code a path carries and the
+   * name a surface spells out — an abbreviation is presentation, so it lives
+   * beside the content rather than replacing it.
+   */
+  ownerShort?: string
   /** Published fee, when the page states one. */
   fee?: string
+  /**
+   * Label for the link that opens this step's own detail sheet, when the step
+   * is rendered as its OWN WIDGET (2026-09-21) rather than as a row in the Get
+   * Licensed rail.
+   *
+   * AUTHORED PER STEP rather than one shared string, because what the sheet
+   * answers differs: how to register, what the sitting is like, how to apply.
+   * "What to expect" on the application step would be the generic label that
+   * tells a learner nothing — which is the reason `ResourceIcon`'s four glyphs
+   * stopped all being `blog`.
+   *
+   * It lives in the DATA, beside the content it labels, so the label and the
+   * sections it opens cannot drift. A `switch` on `step.id` at the call site
+   * was the alternative and is how a fourth step ships with no label.
+   */
+  detailLabel?: string
   /** The real destination, when there is one. Confirmed on the way IN. */
   href?: string
   /**
@@ -492,8 +524,27 @@ export const NY_GOVERNING_AGENCY = {
 export const GET_LICENSED_STEPS: LicensingStep[] = [
   {
     id: 'schedule-exam',
+    /* "Schedule State Exam", not "How to register" — 2026-09-21, the direct
+       ask. It names the ACT rather than the reading, which is what the other
+       two labels do for their own steps.
+
+       TWO THINGS IT CREATES, both deliberate and both one line to reverse:
+       it repeats the card's own heading, and it promises an action while
+       opening the step's DETAIL SHEET. The sheet is the scheduling
+       information — its first bullet is the PSI registration link, and the
+       card names PSI in its meta — so the route is right even though the label
+       is bolder than "How to register" was. Point `detailLabel` back, or give
+       this step's card the external `href`, if the promise reads as too
+       strong. */
+    detailLabel: 'Schedule State Exam',
     title: 'Schedule State Exam',
-    detail: 'Register with PSI once your certificate of completion is in hand.',
+    /* XCEL's own voice, 2026-09-21 (the direct ask), replacing the published
+       page's "Register with PSI once your certificate of completion is in
+       hand." The PRECONDITION that line carried is not lost — forced
+       progression and the certificate requirement are both stated in this
+       step's `sections` and in the requirements sheet, which is where a learner
+       acting on them will be. What the card wants is the invitation. */
+    detail: 'Schedule your exam when you’re ready.',
     owner: 'PSI',
     fee: '$40 exam fee',
     href: 'https://test-takers.psiexams.com/nyins',
@@ -528,6 +579,7 @@ export const GET_LICENSED_STEPS: LicensingStep[] = [
   },
   {
     id: 'pass-exam',
+    detailLabel: 'What to expect',
     title: 'Pass State Exam',
     detail: '150 questions in 150 minutes. 70% to pass.',
     owner: 'PSI',
@@ -554,9 +606,11 @@ export const GET_LICENSED_STEPS: LicensingStep[] = [
   },
   {
     id: 'apply-license',
+    detailLabel: 'How to apply',
     title: 'Apply for your License',
     detail: 'Submit your certificate of completion with the application.',
     owner: 'NY Dept. of Financial Services',
+    ownerShort: 'NY',
     fee: '$80 application fee',
     sections: [
       {

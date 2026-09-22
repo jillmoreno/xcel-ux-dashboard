@@ -781,6 +781,536 @@ and the last is a record number; nothing in the fixtures sources any of them.
 What each row says instead is what `metaWords` already knew. A test asserts the
 copy is absent.
 
+### Testing — the pacing exploration version (2026-09-21)
+
+A fourth Discoverability version (`discoverability-testing`, labelled
+**Testing**), at Jillienne's request: *"a Home Version specifically for Testing
+— readiness removed, and explore the Pacing section UI."*
+
+**It is QE Focused with ONE change**, and that is deliberate. `dashboardLayout`
+gains `'testing'`, and `MembershipOverview` sets `qeFocused` for it the same way
+QE Focused sets `learnerFocused` — it IS that version apart from one tile, and
+re-listing the page surface, the category gauge, the Study Journey, the dropped
+Recommended band and the requirements-only sheet would be how the two start
+disagreeing about things nobody decided to change. What differs is the band's
+square-tile row.
+
+**It is NOT the default, and a test pins that.** `defaultDiscoverabilityVersionFor`
+still returns QE Focused for XCEL. A fourth picker entry that quietly became
+what a stakeholder lands on is the worst outcome this change could have, since
+the public link opens on the default.
+
+**The Readiness tile is dropped, and it costs nothing.** It has been a
+deliberate lo-fi stub since 2026-09-17 ("Not designed yet"), and the placeholder
+is the TILE, not the section — the real `ReadinessPanel` is one rail item away,
+untouched, and is where the tile pointed. A test asserts the rail row survives,
+so the removal cannot read as dropping the feature.
+
+**`paceOnly` is ONE prop, not two, because the two halves are not separable.**
+The pair's `aspectRatio: 1 / 1` is a property of there being TWO of them: alone
+in this ~506px column a square tile is a 506px box holding two lines. So "hide
+Readiness" and "reshape Study Pace" are the same decision, and splitting them
+would let a caller pick the one arrangement that is wrong. `SquareTile` takes a
+`square` prop rather than gaining a `WideTile` beside it.
+
+#### The post-course steps are four widgets now (2026-09-21)
+
+The direct ask: "I want the complete coursework section to be its own widget,
+and then the 2nd widget to be Schedule State Exam, 3rd widget, Pass the Exam
+(sub-link what to expect), 4th widget, Get Licensed — Apply for your license."
+
+The right column is now **four cards**: Complete Coursework (the journey, stops
+01–04), then one card per published licensing step.
+
+**It is still ONE component returning ONE element**, and that is not cosmetic:
+this is the band's second GRID CHILD. Four siblings would become four grid items
+and collapse the two-column layout, so the split renders a flex column holding
+the four cards.
+
+**WHAT THE SPLIT COSTS, and what pays it back.** The 01→07 sequence was one
+spine down one card, and separate cards cannot draw a continuous line. The
+NUMBERS carry it instead — each step's eyebrow is "Step 05/06/07", continuing
+from the journey's REAL stop count rather than a literal (merging two completion
+stops into one already changed that offset once). Lose the numbers and the four
+cards read as four unrelated things; a test pins the sequence.
+
+**The rows became static cards with an explicit sub-link.** The rail rows were
+whole-row targets because a link inside a button is invalid HTML and two nested
+targets on a 13px title is a coin flip. A card has room to separate them, so the
+content is text and the affordance is a named link — which is what lets the
+ask's "sub-link" exist at all.
+
+**`detailLabel` is AUTHORED PER STEP, in the data.** "How to register" / "What
+to expect" / "How to apply" — because what each sheet answers differs, and "What
+to expect" on the application step is the generic label that tells a learner
+nothing (the reason `ResourceIcon`'s four glyphs stopped all being `blog`). It
+lives beside the sections it opens so the label and the content cannot drift; a
+`switch` on `step.id` at the call site is how a fourth step ships unlabelled.
+
+**One behaviour changed: `schedule-exam` no longer leaves the app on click.**
+Its ROW was an `<a>` straight out to PSI; its card opens the step's own sheet,
+whose FIRST BULLET is that same PSI link. The destination is one click further
+away rather than gone, and the three cards now behave identically instead of one
+of them navigating away without warning.
+
+**The arrival card is named for the DESTINATION**, per the ask: heading "Get
+Licensed in New York", with the published step title "Apply for your License" as
+its lead line so the ACTION is still named. The other two use their step title
+directly. Its `aria-label` is the VISIBLE HEADING, not the step title — a region
+announced as "Apply for your License" while reading "Get Licensed in New York"
+is the "Dash Dashboard" defect in miniature.
+
+**"State requirements" sits on the LAST card only.** It was at the foot of the
+Get Licensed card, which this split dissolves; it belongs on the card about
+applying to the state, which is why it was moved there in the first place.
+
+**THE OWNER/FEE LINE NEEDS A FEE TO EXIST** (2026-09-21, "remove", pointed at
+Pass State Exam's meta — the bare word "PSI"). A rule rather than an exemption
+for that step: a meta line is a PAIRING, and with no fee to pair with the owner
+was a one-word row under a sentence, reading as a label for something missing.
+Written as "only when there is a fee", so a fourth step with one gets the line
+and one without does not, and nobody has to remember which id was exempt.
+
+What it costs: the owner is the reason these steps are separate from the
+coursework at all, and on Pass State Exam that fact now lives only in the step's
+own sheet, which its "What to expect" link opens. The other two cards still name
+theirs beside the fee. Dropping the `step.fee` condition puts it back on all
+three. A test asserts the RULE across all three rather than the one absence —
+an absence check alone passes just as happily if every meta line vanishes.
+
+**THE CARDS SETTLED INTO ONE ORDER** across three passes of "remove"
+(2026-09-21): **eyebrow → heading → meta → body → link**.
+
+- The arrival card's LEAD LINE went. It carried the step title ("Apply for your
+  License") under the overridden heading so the action was named as well as the
+  destination — the third saying of one thing, with the detail below already
+  stating what you do and the link reading "How to apply". `heading` is purely
+  a heading override again, and the step title now appears nowhere on that card.
+- The Schedule card's DETAIL went, replaced by the capture's own invitation.
+  ONE boolean (`hasCapture`) drives both, because they are one decision: two
+  lines of invitation on one card is the duplication this column keeps
+  trimming, and two conditions would let a later edit put both back. **The DATA
+  is untouched** — the compact Get Licensed rail still prints `step.detail` on
+  QE Focused, where there is no capture to replace it.
+- The META moved above the body and took a SHORT owner form. `ownerShort` is
+  `'NY'` for the licensing authority only: "NY Dept. of Financial Services" is
+  30 characters in a ~300px column and wrapped its fee to a second line. The
+  full name is unchanged in the data and still prints on the compact rail — the
+  same split `jurisdictionName` already makes between a code and a spelled-out
+  name, since an abbreviation is presentation rather than a rename. The move
+  applies to ALL THREE cards, not just the one asked about: the Schedule card
+  has no detail line and Pass State Exam has no meta, so leaving the arrival
+  card alone would have made it the only one ordered differently.
+
+**THE REQUIREMENTS ACTION LEFT THE CARDS** (2026-09-21) — a full-width
+secondary button below the four, where it was a text link at the foot of the
+arrival card. Out there it reads as what it is: the state's own rules, which
+elaborate the whole post-course sequence rather than its last step. It also
+stops the arrival card being the only one with two affordances. Its label is
+**jurisdiction-resolved** (`New York State Requirements`) from the same
+`jurisdictionName` call the card's heading uses, so a Florida path cannot get a
+button naming New York.
+
+**It is the shared `Button`'s SECONDARY SHAPE but not that component**, and the
+reason is this version's palette: `Button.secondary` draws its ink and border
+from `--color-action`, which on XCEL is the Brick red — a FILL colour measuring
+2.05:1 as TEXT on the dark shell (the `.cre-alert-action` failure), and the ramp
+this version deliberately moved every CTA off ("navy means do this; red means
+this is an assessment"). A red outlined button would have been the only red
+control on the page. `.cre-cta-ink` with `borderColor: currentColor` lets ONE
+declaration own the ink and the stroke, dark-mode swap included. Measured
+7.00:1 light / 7.76:1 dark, with `borderTopColor === color` in both.
+
+**Full width by INHERITANCE** — a flex column stretches its children, so it
+matches the cards exactly and cannot drift if the column resizes. The test
+asserts the absence of a measured width rather than a pixel figure.
+
+**The step CTAs had to stop being `nowrap`.** That came from `SquareTile`'s
+"Details →", where the label is two words and can never outgrow its tile; these
+labels are authored per step, and the longest measured **211px spilling 13px
+past a 218px card** at a 1000px viewport. They wrap left-aligned now.
+
+A test asserting the full name on the rail had to **seed the COMPACT treatment**
+— those rows print their owner/fee only there, and the catalog default is
+`syllabus`, which drops it. Rendered at the default the test would have found no
+owner anywhere and passed for a reason having nothing to do with the
+abbreviation.
+
+**STILL NO COMPLETION STATE**, and four cards make that easier to forget than
+three rows did. Nothing here gets a tick, a status or a progress figure: PSI
+schedules the sitting, PSI scores it, DFS issues the licence, and the product
+has no feed for any of it.
+
+##### A test written too strictly, twice, on the same assertion
+
+The "no completion state" guard failed twice before it was right, and both
+failures are the *reverse* of this repo's usual trap — strict enough to be
+wrong rather than loose enough to pass for the wrong reason:
+
+- `/complete/i` matched the published copy "your certificate of **completion**",
+  which appears on two of the three cards. Word-boundaried status labels now.
+- `/%/` matched "**70%** to pass" — the STATE's published pass mark, a fact
+  about the exam rather than a claim about this learner. The "no percentages"
+  rule belongs to the pacing tile, where a figure would be a progress claim;
+  borrowing it here would have banned the one sourced number on the card.
+
+An earlier structural test also needed **updating, not deleting**: the right
+column used to BE the `Study journey` section and is now a wrapper holding four,
+so its assertion reads "contains" rather than "is". Its subject — where the
+course header went — is unchanged.
+
+#### The learner's own exam date (2026-09-21)
+
+The Schedule State Exam card asks for it: *"Schedule your exam when you're
+ready. Already scheduled? Enter the exam date and we will use that to help you
+prep!"*
+
+**The second half of that sentence is the whole reason it earns a place.** A
+field that only remembered what you typed would be the Membership Plan card's
+defect — a control that looks like it does something. Entering a date re-points
+the page's **Target Exam Date**, the remaining-time cell, and therefore the
+Pacing tile's required rate. Verified end to end in the browser: Dec 15 2026 →
+Jun 30 2026, 27 days → 7 wks, ~5 lessons a week → ~3.
+
+**`examDateStore` is a `useSyncExternalStore` over `localStorage`**, the
+`demoControlsVisibility` pattern, for its reason: the input is in one card and
+the figures it moves are in two other blocks. A `storage` event would NOT do it
+— that fires only for OTHER tabs, the defect the Links nav badge shipped with.
+
+**The override is applied at `personaRenewal` in `MembershipOverview`**, not in
+the band, because that one value feeds BOTH the band and the course header
+band's stat row. Overriding further down would leave the header printing the
+persona's date beside a countdown to the learner's.
+
+**It FALLS BACK to the persona rather than replacing it** — with nothing stored
+the demo is unchanged, and Clear restores it. It is per browser and never
+committed, the same footing as `cgp.featureFlags.customDefaults`, so a machine
+holding one shows a different Target Exam Date with nothing in the repo to
+explain it. That is why the card shows the date back with Change / Clear rather
+than swallowing it.
+
+**The field is sized to its CONTENT, not stretched.** It was `flex: 1 1 140px`
+and grew to fill the card — 200px against an intrinsic 136 — which puts empty
+field beside `mm/dd/yyyy`. `flex: 0 1 auto` rather than a measured literal,
+because a date input's natural width depends on the locale's format and the
+platform's own control, so a number right in one browser clips in another. It
+keeps SHRINK, so a narrow card wraps Save below it rather than cutting the date.
+
+**Two things in `examDateRenewal` are load-bearing:**
+
+- **`deadline` is `M/D/YYYY`, never the ISO string typed.** `longDate` parses
+  it, and its own note records that both shapes it accepts parse in LOCAL time
+  "so there is no UTC off-by-one to defend against". An ISO-8601 string parses
+  as UTC and prints the day BEFORE west of Greenwich — the exact off-by-one that
+  note relies on the format to avoid.
+- **`weeksLeft` counts from `FIXTURE_TODAY`**, not the wall clock. Everything
+  date-driven here is anchored to 2026-05-11.
+
+A date at or before the fixture today returns null and falls back: a negative
+countdown renders "0 days" beside a required rate of infinity, and a booked exam
+in the past is a data-entry slip rather than a state to design for.
+
+**The step's `detail` changed to XCEL's own voice** ("Schedule your exam when
+you're ready.") from the published page's "Register with PSI once your
+certificate of completion is in hand." The PRECONDITION is not lost — forced
+progression and the certificate requirement are both in this step's `sections`
+and in the requirements sheet, which is where a learner acting on them will be.
+Note this is shared data, so the rail row on QE Focused says it too.
+
+##### It exposed a latent bug in the shared time formatter
+
+`timeRemaining` returned **raw** `weeksLeft` in its weeks branch, so the header
+cell rendered **"7.142857142857143 wks"**.
+
+It had never been reachable: a FRACTIONAL `weeksLeft` under 30 days takes the
+`days` branch, which rounds, so the only way into the weeks branch was a whole
+number. A learner-entered date produced the first fractional value past 30 days.
+**That function's own docstring describes this exact failure** at the three call
+sites it was extracted to fix ("those call sites would have rendered
+'3.857142857142857 wks'") — it had the same bug one branch further in. Both week
+values are rounded now, which fixes every surface that formats a deadline.
+
+**And a unit disagreement, in the same pass.** The Pacing tile printed raw days
+(`unitCount(daysLeft, 'days')`) while the header used the formatter, so past 30
+days they read "50 days to go" and "7 wks" three inches apart — the same fact in
+two units. The tile reads `timeRemainingText` now, which also pairs better with
+the rate above it, since that is per week. At the committed default (27 days)
+nothing moved: both still say "27 days".
+
+#### The Study Journey is framed again (2026-09-21)
+
+The direct ask: "add a frame, white background around this content", then
+"remove stroke" the same day. `widgetCardFramedStyle` — `--color-surface-card`,
+`radius-lg`, 20px padding, and nothing else.
+
+**IT REVERSES A RECORDED DECISION**, and the note it reverses is kept rather
+than rewritten. The card was removed on 2026-09-16 ("remove the background white
+and stroke") when the journey was one of two stacked blocks in that column and a
+raised card put chrome around chrome. On TESTING the column holds this and
+nothing else, with the left column's blocks bare on the page grey — so a frame
+here distinguishes the two columns instead of competing with a neighbour. Same
+component, different composition, opposite answer; both shells live in
+`widgetStyles.ts`, which is what that file is for.
+
+**FILL ONLY — no stroke, no shadow.** It shipped with a 1px
+`--color-border-subtle` edge for a few hours and the stroke came off the same
+day ("remove stroke"). What is left is the white surface alone, which is the
+same treatment `widgetCardRecessedStyle` opposite it already has: a card defined
+by its fill with nothing drawn round it. The two columns differ by SURFACE now
+rather than by one having an outline.
+
+**NOTHING WAS PUT IN THE STROKE'S PLACE, and that is the part to hold.**
+Removing an edge and adding a shadow is not removing chrome, it is swapping one
+kind for another — and a shadow would make this a RAISED card, a different claim
+about the column's depth from the flat recess opposite. The 2026-09-16 removal
+note states the rule this follows: fill, edge and shadow are ONE treatment, so
+the fill is allowed to be the whole of it. A test pins the absence of both, and
+the border assertion was INVERTED rather than deleted so a re-added outline
+fails.
+
+**The horizontal padding comes back with the fill**, for the reason it left: a
+bare block lines up with its column, a filled one needs a gutter or the content
+sits on the edge. 20 rather than the recessed card's 16 — that one is sized to
+line its eyebrow up with the tiles stacked beneath it in the SAME column, and
+this card has no such neighbour.
+
+**`--color-surface-card`, never a literal white** — it inverts with the theme.
+That is the `--color-primary-100` trap `widgetCardRecessedStyle` records, from
+the other direction.
+
+**It reuses `paceOnly` rather than adding a second boolean.** That prop is
+already this version's marker on this component, and a `framed` that was always
+set with it would only ever differ by mistake. Rename both if a version ever
+wants one without the other.
+
+**Measured, both themes.** Light: card #ffffff on the #f5f5f5 page, 1.09:1;
+eyebrow 12.25, heading 11.37, stop title 7.64, meta 6.19, the CTA 7.64. Dark:
+card #152833 on #1b1d21, 1.11:1; eyebrow 6.98, heading 13.67, meta 6.18, CTA
+6.98. Every ink clears AA on the new surface.
+
+**THE COST, stated rather than left to be discovered:** with the stroke gone the
+card is carried by that 1.09 / 1.11 fill and nothing else. It is deliberately
+subtle and it matches the recessed tile's 1.16:1, so the page is consistent —
+but there is no second cue any more. If the card ever needs to read harder, the
+honest lever is the FILL, not a re-added outline.
+
+Checked against the live `syllabus` journey variant (the catalog default): its
+two halves carry no fill or border of their own, so the frame does not produce
+cards inside a card.
+
+#### The course header moved into the band's left column (2026-09-21)
+
+The ask was two things — "shift [the Study Journey] up so it's directly under
+the header, then reduce the width of the course progress section to align with
+the other components" — and they are **one change**.
+
+The course header band was a full-width block ABOVE the grid, so it pushed the
+whole grid, Study Journey included, down past it. Moving it into the LEFT COLUMN
+narrows it to that column *and* frees the right column to start at the top,
+because the grid now begins where the header used to. A `max-width` on the
+header would have done the first half and left the journey exactly where it was.
+
+**A SLOT (`headerSlot`), not a rebuild.** The band takes the element; it is
+still `MembershipOverview`'s, still reads that component's own resolvers.
+Re-deriving it inside the band would be a second owner of "the course to show",
+which is the fork `displayedProgressPct` was extracted to close. `hideHeader` is
+still set alongside it, so the block's own header cluster stays empty.
+
+**It is rendered in ONE place or the other, never both** — a test counts the
+eyebrow, because the course name already appears twice on this page by design
+and a third would be the duplication `dashboard-course-header` exists to ask
+about.
+
+**`courseHeaderBand`'s whole block moved ABOVE the band chain** (518 lines,
+relocated unchanged). It sat below, which is fine for a value only the JSX
+return reads and a TDZ error the moment a sibling const consumes it. Its
+dependencies all resolve well above the new position.
+
+**Measured after:** header and the Study Pace tile both at x=284, w=633 —
+exactly aligned; the journey at y=256 against the header's 260, i.e. level. QE
+Focused is untouched: its header is still full-width above the grid, asserted in
+both directions.
+
+##### Two layout decisions inverted at the narrower measurement
+
+Both were made against the ~1040px full-width band and are wrong at ~633:
+
+- **The cover was `align-items: flex-end`**, because "the square is 130 and the
+  column beside it is ~105, so the two only agree on one edge". In the left
+  column the title wraps to two lines and that column becomes ~213 — TALLER
+  than the square — so the premise inverts and the slack moves *under* the
+  picture, dropping it away from the title it anchors. Top-aligned when narrow.
+- **The stat row's separator dots.** They are bound to the pair AFTER them,
+  which fixed a dangling separator at the end of a wrapped line and traded it
+  for a LEADING one at the start of the next. At full width that is rare enough
+  to accept; in the left column the row wraps every time, so all three pairs
+  rendered as a bullet list **whose first item had no bullet**. Narrow stacks
+  them in a column with no dots — the dots exist to separate pairs on ONE line,
+  and there is no longer one line.
+
+Neither is an exception to the note it sits under; each is the same reasoning at
+the other measurement, which is why both are scoped to `narrowHeader` rather
+than changed outright.
+
+##### And one that only a resize caught
+
+At a **900px viewport** the left column is ~315px, and the cover (130) and the
+figure are both fixed — so everything the column gives up comes off the TITLE.
+Measured: an 85px title column setting the course name **one word per line**.
+Invisible at the width this was being reviewed at.
+
+`.cre-course-header-narrow` in tokens.css stacks the cover ABOVE the text below
+**1100px**, which hands the title the whole column. It stays a 130px square
+rather than stretching: it is course art, and a full-bleed strip would re-crop
+the photograph to solve a layout problem. A CLASS because inline
+`CSSProperties` cannot carry a media query — the `.cre-alert-action` reason —
+and tokens.css already carries 17 of them, including the header's own
+`max-width: 900px` name-drop.
+
+#### The rail is trimmed to three rows (2026-09-21)
+
+The direct ask: no Study Plan, no Readiness, no Resources, no Rubi Insights, and
+no Collapse Menu. Testing's rail is **Home · My Courses · Certificates**, then
+Support · Get Help.
+
+**NOT `NAV_SECTION_FLAGS`, and that is the decision.** Those flags are the
+committed DEMO BASELINE — one rail that `NavSectionFlags.test.tsx` asserts whole
+and in order — and QE Focused, XCEL's default, is what a stakeholder lands on.
+Flipping four of them would have trimmed THAT rail too, which is not what "for
+this version" asked for. So the trim is a property of the LAYOUT
+(`TESTING_HIDDEN_RAIL_SECTIONS` in `PlatformShell`, threaded as the rail's
+`hiddenSections`) and the baseline is untouched. A test asserts the QE Focused
+rail is unchanged, in full and in order.
+
+**Rows only — every section still resolves.** `?section=readiness` still opens
+Readiness on Testing, which is the rule `NAV_SECTION_FLAGS` already states and
+what makes a trimmed rail an editorial act rather than a feature cut. Asserted,
+because it is the half that would quietly stop being true.
+
+**`hiddenSections` is applied ALONGSIDE the flag check**, not instead of it: a
+version's trim and the demo baseline are different decisions by different
+people, and either hiding a row is reason enough. The existing "a group whose
+items are ALL hidden drops out, caption and all" rule then does the rest — which
+is why Explore needed no special case.
+
+**The collapse toggle goes by ONE WITHHELD PROP**, the mechanism the rail
+already documents ("Omitted → no toggle renders, which is what the kiosk/menu
+embeds want") and the same shape as `onOpenLearningPath={qeFocused ? undefined
+: …}` on the band. **`collapsed` is still passed**: the launcher auto-collapse
+is not the learner's control and must keep working — hiding the toggle removes
+the affordance, not the state.
+
+**The phone drawer derives the same set from the same constant.**
+`MobileNavDrawer` reuses the real rail precisely so the two cannot drift, and a
+trim applied to one of them would undo that. It already renders no collapse
+toggle, so that half needed nothing.
+
+**`m-career-tools` is Rubi Insights.** The id kept its Elite-era name through
+two renames (see `careerToolsLabelFor`), so the rail LABEL and the id in that
+constant do not match — expected, not a mistake.
+
+**One earlier test had to be REWRITTEN rather than deleted.** "Leaves the
+Readiness SECTION on the rail either way" was added hours before, when the
+Readiness TILE was dropped, and it proved the feature survived by finding the
+rail row on Testing. This ask removed that row, so the proof moved: it asserts
+the row on QE FOCUSED (whose rail this did not touch, leaving the tile removal
+as the only variable), and the Testing half is carried by the section still
+resolving. A test whose premise has changed is rewritten with the change
+recorded in it — deleting it would lose the original subject.
+
+#### The four pacing treatments — `dashboard-pacing-style`
+
+Variant-only, default **`runway`**, in the rebrand panel scope. Each is a WHOLE
+answer to "am I pacing to finish in time" rather than a restyle of one answer —
+the axis is **prescription → prediction → description**:
+
+| Variant | Says | Unit |
+|---|---|---|
+| `lo-fi` | nothing — the current stub, kept so the other three are judged against what ships | — |
+| `rate` | put in this much time | hrs/day |
+| `runway` | clear this much work, and here is the shape of what is left | units/week |
+| `balance` | here are the two numbers; you decide | none |
+
+**`rate` and `runway` are not the same prescription twice.** "Put in 1.5 hours a
+night" and "clear 4 lessons a week" are different instructions — one is a
+calendar habit, the other is output — and which one a learner can actually act
+on is the question worth testing. `balance` is the honest floor: if the two raw
+figures are enough, the derived versions above are chrome, and that is worth
+finding out before building one of them properly.
+
+**EVERY figure is derived; none is authored.** `unitsLeft` reads the same
+`totalRequired || path.hours` fallback the "26 of 42 lessons complete" line and
+the Completed KPI cell use, so the three cannot disagree about the denominator.
+`hoursPerDay` is the derivation `kpiSubLabels` already feeds the `stat-card`
+variant with — the `rate` treatment is that line given the tile to itself, not a
+new claim. Nothing here knows an OBSERVED rate, a schedule to be ahead of, or a
+projected finish date, so **no treatment states one**; the reference mock's "You
+are currently pacing 4 days ahead of schedule" is the move this version refuses,
+and a test sweeps all four variants for that copy.
+
+`rate` is **omitted, not guessed**, when there is no resume course to read
+credit hours from — the same rule `kpiSubLabels` follows. The status cluster
+still carries the state, so the tile is never empty.
+
+**The required rate rounds UP** (`Math.ceil`). A rounded-down rate finishes
+late, which is the one direction a suggested pace must not err in: 16 lessons
+over 27 days is 4.15/week, and at 4 you need 28 days.
+
+**The status pill and its message are ONE element shared by all four**
+(`pacingStatus`). The comparison is meant to be about the pacing figure, and
+four hand-copied status clusters is how one ends up a weight or a gap different
+and wins for the wrong reason.
+
+**`runway`'s strip is deliberately NOT a progress bar.** The block directly
+above already runs a full-width `ProgressBar` for this course with the
+percentage beside it, so a second bar here would be the third saying of one
+number in one column — the duplication that folded the Jump Back In card into
+this block. It is one segment per remaining WEEK with the last part-filled by
+the days that do not make a whole one (27 days ⇒ four segments, the last at
+6/7), which is a fact the bar above does not carry.
+
+**Its fill is `--color-text-tertiary`, and that is the load-bearing choice.**
+6.19:1 light / 6.18:1 dark — unusually symmetric, so the strip needs **no theme
+swap**. `--color-primary-500` would have wanted one: on this recessed tile the
+primary and the `--color-neutral-300` track are both navies in dark and the fill
+lands at 1.22:1, which is the exact failure `.cre-jbi-progress-fill` exists for
+and which that class's own note records. Measured in the browser, both themes —
+figure 8.98 / 12.49, unit and note 4.53 / 8.58, strip fill against its track
+3.66 / 3.80, against the tile 4.89 / 5.65.
+
+**Known, pre-existing:** the status pill's ink measures **4.23:1** on its own
+fill in light (5.05:1 dark), marginally under AA at 12px/600. It is
+`statusTreatment`'s shared compliance pill, unchanged by this work and identical
+on QE Focused — raising it is a page-wide change, not a pacing one.
+
+#### One rule had two owners, and adding this version broke the other
+
+`DemoControlsBar` decided whether to drop Continuing Ed from its Education
+dropdown by comparing the version id to `'discoverability-qe-focused'`
+literally, while `MembershipOverview` forced the education type from the
+LAYOUT. Testing inherits the page's QE resolution and silently fell out of the
+bar's copy: **the page resolved a pre-licensing path while the bar above it
+still offered — and displayed — "Continuing Ed"**, which is precisely the
+"dropdown entry that changes nothing when clicked" the flag audit spent a pass
+removing. tsc was clean and all 832 tests passed; only opening the page and
+reading the bar caught it.
+
+`isQualifyingEducationVersion` in `dashboardVersions.ts` owns the rule now and
+the bar calls it. A new QE-shaped version is one entry there, not two edits in
+two files.
+
+#### What is tested
+
+`TestingVersion.test.tsx`, 27 assertions. The Readiness tile is pinned in BOTH
+directions (absent here, present on QE Focused) because an absence check passes
+just as happily when the whole tile row fails to render — and both directions
+were **verified to fail** before being relied on, by flipping `paceOnly` to each
+constant. The runway strip is asserted against the days figure the tile itself
+prints rather than against today's 27, and the work-left figure is asserted to
+AGREE with the block's own completed line rather than to equal 16 — the
+relationship, not the number, which is what `ProgressAgreement.test.tsx` exists
+to protect.
+
 ### Testing 2, and the live Study Pace tile (2026-09-21)
 
 **A new dashboard version, `discoverability-testing-2`, labelled "Testing 2"** —

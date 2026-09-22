@@ -73,12 +73,29 @@ export function StudyJourneyRail({
   path,
   onOpenStop,
   onViewAll,
+  stepRange = false,
 }: {
   path: LearningPathSummary
   /** Open a stop. Omitted → the rows render as plain text rather than links. */
   onOpenStop?: (id: string) => void
   /** Route into the full Learning Path. */
   onViewAll?: () => void
+  /**
+   * Prefix the eyebrow with this card's STEP RANGE — "Steps 01–04 · Atlas Study
+   * Journey" (2026-09-21, the direct ask).
+   *
+   * ONLY FOR THE SPLIT (Testing), where the post-course steps are their own
+   * cards labelled "Step 05", "Step 06", "Step 07". Without it the column's
+   * four eyebrows read "Atlas Study Journey / Step 05 / Step 06 / Step 07" and
+   * the sequence appears to start at 05; with it the numbers run down the left
+   * edge of every card and the four read as one route.
+   *
+   * NOT on the single-card treatment, deliberately: there is no set of eyebrows
+   * there for the range to join, and the stops numbered 01-04 sit directly
+   * under it — so it would be the same figures twice, three lines apart. One
+   * line to change if the range is wanted everywhere.
+   */
+  stepRange?: boolean
 }) {
   /*
    * RAIL TREATMENT — `dashboard-journey-style`, variant-only (2026-09-16).
@@ -97,6 +114,14 @@ export function StudyJourneyRail({
    */
   const syllabus = useFeatureFlag('dashboard-journey-style').variant === 'syllabus'
   const stops = journeyStopsFor(path)
+  /* DERIVED from the real stop count, never authored — merging two completion
+     stops into one already changed it once, and the same count is what
+     `StudyJourneyWidget` offsets the licensing steps by. The two cannot
+     disagree about where 04 ends and 05 begins. */
+  const eyebrowText =
+    stepRange && stops.length > 0
+      ? `Steps 01\u2013${String(stops.length).padStart(2, '0')} \u00b7 ${STUDY_JOURNEY_EYEBROW}`
+      : STUDY_JOURNEY_EYEBROW
   /*
    * LESS WORDS. `metaWords` prints group · count · status, which on this
    * treatment says everything twice: the group is already the row's title (or
@@ -157,7 +182,7 @@ export function StudyJourneyRail({
                   `aria-label`, and the heading says what the section is FOR: the
                   rail's job is getting the course finished, and the licensing
                   card below it picks up after that. */}
-              <p className="cre-eyebrow-ink" style={syllabusEyebrowStyle}>{STUDY_JOURNEY_EYEBROW}</p>
+              <p className="cre-eyebrow-ink" style={syllabusEyebrowStyle}>{eyebrowText}</p>
               {/* "Complete Coursework" as of 2026-09-17, matching the supplied
                   reference. It was "Complete Course" for a day — the word the
                   reference uses is the broader one, and it is the more accurate
@@ -167,7 +192,7 @@ export function StudyJourneyRail({
               <p style={syllabusTitleStyle}>Complete Coursework</p>
             </>
           ) : (
-            <p className="cre-eyebrow-ink" style={eyebrowStyle}>{STUDY_JOURNEY_EYEBROW}</p>
+            <p className="cre-eyebrow-ink" style={eyebrowStyle}>{eyebrowText}</p>
           )}
         </div>
         {/* Position in the sequence, not a percentage — a journey's own unit.

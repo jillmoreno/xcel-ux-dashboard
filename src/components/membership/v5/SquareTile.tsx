@@ -33,6 +33,7 @@ export function SquareTile({
   children,
   to,
   action,
+  square = true,
 }: {
   caption: string
   icon?: ReactNode
@@ -56,13 +57,27 @@ export function SquareTile({
    * Readiness page — the placeholder is this tile, not the section.
    */
   to?: string
+  /**
+   * Hold a 1:1 aspect ratio. Default on — it is what makes the PAIR read as a
+   * pair.
+   *
+   * Off for the Testing version's solo Study Pace tile, where the Readiness
+   * half is dropped and this one takes the whole row: a square at ~506px is a
+   * 506px box holding two lines. The tile then sizes to its content, which is
+   * what a full-width card should do anyway.
+   *
+   * A prop rather than a second component: the two arrangements differ in
+   * exactly this one declaration, and a `WideTile` beside this would be the
+   * near-copy `widgetStyles.ts` exists to prevent.
+   */
+  square?: boolean
 }) {
   return (
     <div
       style={{
         // Square at any column width; grows rather than clipping if the content
         // ever needs more than the width allows.
-        aspectRatio: '1 / 1',
+        ...(square ? { aspectRatio: '1 / 1' } : null),
         minWidth: 0,
         /* THE JUMP BACK IN CARD'S SURFACE — 2026-09-17, the direct ask. It was
            a white card with a hairline border; it is the same tinted recess as

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useLocation, useSearchParams } from 'react-router-dom'
-import { defaultDiscoverabilityVersionFor } from '@/data/dashboardVersions'
+import { defaultDiscoverabilityVersionFor, isQualifyingEducationVersion } from '@/data/dashboardVersions'
 import { UserSlash, Share2, BrowserWindow, Check, ChevronDown } from '@/icons'
 import { ActionMenu } from '@/components/ui/ActionMenu'
 import { Toast } from '@/components/ui/Toast'
@@ -258,9 +258,14 @@ export function DemoControlsBar({
   // CE row here would be a dropdown entry that changes nothing when clicked —
   // the defect the flag audit spent a pass removing. The two qualifying
   // journeys (Qualifying Ed / Exam Prep) still switch.
-  const qeFocusedVersion =
-    (searchParams.get('version') ?? defaultDiscoverabilityVersionFor(brand)) ===
-    'discoverability-qe-focused'
+  // Shared with `MembershipOverview` via `isQualifyingEducationVersion` rather
+  // than compared to an id here: this was a hardcoded
+  // `=== 'discoverability-qe-focused'`, and the Testing version — which
+  // inherits the page's QE resolution — silently fell out of it, leaving the
+  // bar offering and displaying "Continuing Ed" over a pre-licensing path.
+  const qeFocusedVersion = isQualifyingEducationVersion(
+    searchParams.get('version') ?? defaultDiscoverabilityVersionFor(brand),
+  )
   const educationOptions = educationTypesFor(brand).filter(
     (o) => !qeFocusedVersion || o.type !== 'ce',
   )
