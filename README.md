@@ -94,6 +94,27 @@ time, so the ONLY per-site difference is what each project sets in
    including work that is not ready to show — so the team should know that
    before pushing.
 
+7. **Optional — the automatic branch list.** The Refinement section can list
+   every branch Netlify has built, so a designer does not have to find and
+   paste their own branch URL. It is off until credentials exist, and it works
+   with **no new configuration** if you did step 4: it falls back to
+   `BLOBS_SITE_ID` + `BLOBS_TOKEN`, which are already the right site and the
+   right token.
+
+   To point it somewhere else, set these on the FULL site instead:
+   - `NETLIFY_API_TOKEN` — a personal access token (store it as a **secret**)
+   - `NETLIFY_SITE_ID` — the Project ID of the site whose BRANCH DEPLOYS these
+     are, which is the **public** site (that is where a branch is reviewed)
+   - `BRANCH_SITE_HOST` — optional, only used if a deploy does not carry its
+     own branch alias. Defaults to `ux-demo-xceldashboard.netlify.app`.
+   - `PRODUCTION_BRANCH` — optional, defaults to `main`.
+
+   It lists only branches whose latest build **succeeded**, so every address in
+   it opens. It never appears on the public site — branch names are internal,
+   and both the endpoint and the panel refuse there independently. Nothing in
+   it publishes anything: its **Add** button opens the ordinary Add form with
+   the address filled in, and the review gate is unchanged.
+
 After that, `git push` is the whole workflow.
 
 ### Prototypes vs Refinement — the two ungated sections

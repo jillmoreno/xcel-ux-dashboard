@@ -53,6 +53,13 @@
   to = "/.netlify/functions/demos"
   status = 200
 
+# The automatic branch list behind the Refinement strip. Read-only, and it
+# refuses outright on the public build (see netlify/functions/branches.ts).
+[[redirects]]
+  from = "/api/branches"
+  to = "/.netlify/functions/branches"
+  status = 200
+
 # SPA fallback — every unknown path returns index.html so react-router handles it.
 [[redirects]]
   from = "/*"

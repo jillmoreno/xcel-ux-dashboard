@@ -244,6 +244,75 @@ state, and a `history.replaceState` from inside the panel would leave
 it straight back and the form would reopen. `Demo.test.tsx` pins the prefill
 opening once with the toggle off, and doing nothing on the public build.
 
+**The automatic branch list — the strip above the rows** (2026-09-21). Step 6
+still needs a designer to say "this one"; what it no longer needs is anyone to
+find and paste a URL. `/api/branches` (`netlify/functions/branches.ts`) lists
+every branch with a Netlify build, and `BranchStrip` in `LinksPanel.tsx` renders
+them above the Refinement rows with one action each: **Add**.
+
+**IT LISTS DEPLOYS, NOT BRANCHES, and that is the decision.** GitHub's branch
+list is the obvious source and the wrong one: a pushed branch Netlify has not
+built yet has no URL that opens, so listing it produces a link that 404s until
+some later moment nobody is watching for. That is the defect the Resources
+section shipped four of, and the rule it had to learn — confirm a URL on the way
+IN, not later. A deploy in state `ready` IS that confirmation. `context ===
+'branch-deploy'` drops production (`main` IS Prototypes) and drops DEPLOY
+PREVIEWS, which die with their PR; the branch alias survives and always points
+at the newest build, which is the link this board is about.
+
+**THE STRIP NEVER WRITES, and that is what keeps the review gate.** A branch
+having a build is a fact about Netlify; a Refinement row is somebody ASKING to
+be reviewed — it carries the note saying where to look, whose it is, and
+`isPublic`. Those are different things. So **Add** opens the same form a
+designer would have filled in by hand, with the address and a draft title in it,
+and the click is the gate — the identical contract `promote-to-refinement` has,
+and for the identical reason. The NOTE is left empty deliberately: it is the one
+field the strip could fill from the commit subject and the one it must not,
+because "where to look" is what only the person who did the work knows, and a
+plausible wrong note reads as reviewed when nobody wrote it. `isPublic` stays
+false.
+
+**Auto-creating rows was the other option and is the trap:** the store would
+fill with branches nobody offered, `isPublic` would have nothing meaningful to
+hang on, and deleting a row would just bring it back on the next build.
+
+**Branch names are internal, and TWO independent controls keep them off the
+public build** — neither relied on alone. (1) The public project sets no API
+token, so there is nothing to call with. (2) `VITE_GATEWAY_MODE=public` makes
+the endpoint **404 outright**. One would be enough right up until someone sets
+the Blobs vars on the public project to share a store, which is a reasonable
+thing to do and would silently switch (1) off. `showBranches` on the
+presentation is the client half — Other Links is not about branches either.
+
+**Config, and the fallback is the point.** `NETLIFY_API_TOKEN` +
+`NETLIFY_SITE_ID` (the site whose BRANCH DEPLOYS these are — the **public** one,
+because that is where a branch is reviewed), falling back to `BLOBS_TOKEN` +
+`BLOBS_SITE_ID`. That fallback is deliberate rather than lazy: those two are
+already set on the FULL project and already point at the public site, so the
+feature needs NO new configuration on a site that is already set up — the
+difference between it working and it sitting behind a step nobody did.
+
+**Silent when there is no endpoint; loud when there is one and it is
+misconfigured.** A grey box above a healthy board every time someone runs `npm
+run dev` is noise that looks like a fault in the board underneath — but an
+expired token IS a fault nobody would otherwise notice, since the list just goes
+quietly empty. `configured` is how the client knows OUR endpoint answered; valid
+JSON without it is the SPA fallback or a test stub, i.e. "no endpoint here".
+
+**A branch already on the board drops out**, matched on the branch alias in the
+row's HOST (`feat-x--…`) rather than on the whole URL — the strip offers the
+review path and a designer may have added the root, a deeper path or a different
+query, and what makes them one review is the branch. Matching the href would let
+a row whose NOTE mentions the branch count as listed. The count says how many it
+dropped, so a designer who cannot find their branch can see why.
+
+`Branches.test.tsx` pins the selection rules, that Add writes nothing, that the
+note stays empty and the toggle off, the absence on the public build and on
+Other Links, and both halves of the public-build guard at source. The pure
+selection logic is `netlify/lib/branchDeploys.ts` — split out so a test can
+reach it without a network or a token, the same split `linkBoard.ts` makes by
+exporting `validateRecord`.
+
 **The promote skill was renamed, not rewritten.** `promote-to-demo` →
 `promote-to-prototype`, now checked into `.claude/skills/` so Claude Code
 sessions in this repo carry it, with the Cowork copy kept under the old name as
@@ -602,7 +671,7 @@ field treatment — `TodoPanel`'s inputs are identical — and every field here 
 labelled, so nothing is carried by the placeholder alone. Raising it is a
 page-wide change, not a Links one; do not fork the treatment for this panel.
 
-**Running it locally needs `netlify dev`, and the launch config carries two
+**Running it locally needs `netlify dev`, and the launch config carries three
 traps** that cost real time here — see `.claude/launch.json`'s
 `xcel-dashboard-netlify` entry. `PORT` must be pinned inside the command, or
 vite inherits the launcher's port and every request reaches vite instead of
@@ -612,6 +681,14 @@ runs from a **git worktree**: the CLI resolves the functions dir against the
 REPOSITORY root, so it serves the main checkout's `netlify/functions/` and a
 function added in the worktree is simply missing — while both pre-existing
 endpoints load fine, which is exactly what makes it convincing.
+
+And **PATH**, added 2026-09-21: the launcher's shell does not inherit the login
+PATH, so a bare `netlify` is `command not found` and the pane reports it as the
+dev server exiting during startup — which reads as a crash in the app rather
+than a missing binary. The entry sets it, and note netlify-cli installs to npm's
+global prefix (`$HOME/.local/node/bin` here), NOT the `$HOME/.local/bin` the
+sibling `xcel-dashboard` entry uses for node and npm. The CLI is not a
+dependency of this repo: `npm install -g netlify-cli`.
 
 ## The one deliberate divergence: live previews
 

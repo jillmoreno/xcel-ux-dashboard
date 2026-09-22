@@ -43,13 +43,24 @@
         "missing — /api/<new> then 404s (or falls through to the SPA and answers",
         "200 with index.html), which reads as a broken redirect rather than as",
         "the wrong directory. Both endpoints that already exist in main load",
-        "fine, which is what makes it convincing."
+        "fine, which is what makes it convincing.",
+        "",
+        "PATH is set for the same reason the xcel-dashboard entry sets one: the",
+        "launcher's shell does not inherit the user's login PATH, so a bare",
+        "`netlify` is `command not found` and the pane reports it as the dev",
+        "server exiting during startup \u2014 which reads as a crash in the app.",
+        "netlify-cli installs to npm's global prefix, and this machine's is",
+        "$HOME/.local/node, so its bin directory is $HOME/.local/node/bin \u2014",
+        "NOT the $HOME/.local/bin the other entry uses, which holds node/npm and",
+        "not this. Both are on the front here so either layout works.",
+        "",
+        "If `netlify` is missing entirely: npm install -g netlify-cli"
       ],
       "name": "xcel-dashboard-netlify",
       "runtimeExecutable": "sh",
       "runtimeArgs": [
         "-c",
-        "PORT=5201 netlify dev --port 8899 --target-port 5201 --offline --no-open --functions \"$PWD/netlify/functions\""
+        "PATH=\"$HOME/.local/node/bin:$HOME/.local/bin:$PATH\" PORT=5201 netlify dev --port 8899 --target-port 5201 --offline --no-open --functions \"$PWD/netlify/functions\""
       ],
       "port": 8899
     }
