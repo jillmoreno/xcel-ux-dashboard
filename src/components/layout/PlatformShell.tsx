@@ -98,6 +98,8 @@ const MEMBERSHIP_MAP: Record<string, string> = {
   'm-more': 'more',
 }
 
+import { dashboardLayoutForVersion, hiddenRailSectionsFor } from '@/components/layout/dashboardRail'
+
 const VALID_SECTIONS: PlatformSection[] = [
   'dashboard',
   'study-plan',
@@ -127,42 +129,6 @@ const VALID_SECTIONS: PlatformSection[] = [
   'purchases',
   'gift-recipients',
 ]
-
-/**
- * Rail rows the TESTING dashboard version drops (2026-09-21). See the note at
- * `trimmedRailSections` for why this is a layout property rather than four
- * `NAV_SECTION_FLAGS` edits.
- *
- * `m-career-tools` is Rubi Insights — the id kept its Elite-era name through
- * two renames (see `careerToolsLabelFor`), so the rail LABEL and this id do not
- * match and that is expected rather than a mistake.
- */
-const TESTING_HIDDEN_RAIL_SECTIONS = [
-  'study-plan',
-  'readiness',
-  'resources',
-  'm-career-tools',
-] as const satisfies readonly PlatformSection[]
-
-/**
- * Which layouts carry the trim — BOTH pacing versions as of 2026-09-21, when
- * Testing 2 was asked for the same rail ("hide all others").
- *
- * A FUNCTION, because the rule had two call sites written as two literal
- * comparisons — the desktop rail and the phone drawer — and the drawer's own
- * note already claimed "one owner for the rule" while being the second copy of
- * it. Adding `'testing-2'` to one and not the other would have given the phone
- * a fuller rail than the desktop on the same version, which is the silent
- * divergence `MobileNavDrawer` reuses the real rail to prevent.
- */
-function hiddenRailSectionsFor(
-  layout: DashboardLayout,
-): readonly PlatformSection[] | undefined {
-  return layout === 'testing' || layout === 'testing-2'
-    ? TESTING_HIDDEN_RAIL_SECTIONS
-    : undefined
-}
-
 
 export function PlatformShell() {
   // Wrap the shell in the in-shell course-launcher provider so a card deep in
@@ -334,27 +300,7 @@ function PlatformShellBody() {
   // `defaultDiscoverabilityVersionFor`, which the Header's picker reads too so
   // the "Default" pill and the page can't disagree).
   const versionParam = params.get('version') ?? defaultDiscoverabilityVersionFor(brand)
-  const dashboardLayout: DashboardLayout =
-    versionParam === 'discoverability-qe-focused'
-      ? 'qe-focused'
-      : // "Testing 2" is a CLONE of QE Focused — see its entry in
-        // `dashboardVersions`. It resolves to its own layout rather than to
-        // 'qe-focused' so the two can be opened in two tabs and compared;
-        // everything downstream treats it as QE Focused except the one tile.
-        versionParam === 'discoverability-testing-2'
-        ? 'testing-2'
-      : // "Testing" — QE Focused with the pace/readiness row given over to the
-        // pacing exploration. Its own layout value rather than a flag on
-        // `qe-focused`, so the picker, the URL and the page all name the same
-        // thing; `MembershipOverview` then sets `qeFocused` for it so every
-        // other QE behaviour is inherited rather than re-listed.
-        versionParam === 'discoverability-testing'
-        ? 'testing'
-        : versionParam === 'discoverability-learner-focused'
-          ? 'learner-focused'
-          : versionParam === 'discoverability-badged'
-            ? 'badged'
-            : 'marketing-focused'
+  const dashboardLayout: DashboardLayout = dashboardLayoutForVersion(versionParam)
 
 
   /*

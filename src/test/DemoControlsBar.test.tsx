@@ -173,3 +173,41 @@ describe('DemoControlsBar — persona dropdown', () => {
     expect(search).toMatch(/life-health/)
   })
 })
+
+describe('DemoControlsBar — an axis with nowhere to land', () => {
+  /* Both pacing versions drop the Readiness rail row, and Testing is the brand
+     default — so the bar's DEFAULT state used to be a pill reading
+     "Readiness: On Track" over a dashboard with no Readiness on it and no way
+     to reach one. The control is inert there and live everywhere else. */
+  const readinessPill = () => screen.getByRole('button', { name: /Readiness/ })
+
+  it('is inert on the versions that hide the section', () => {
+    renderBar('/dashboard-rebrand?version=discoverability-testing')
+    const pill = readinessPill()
+    expect(pill).toBeDisabled()
+    // …and it does NOT keep stating a state it cannot produce.
+    expect(pill.textContent).not.toContain('On Track')
+    expect(pill.title).toContain('hides the Readiness section')
+    // Disabled means disabled: no panel, however it is clicked.
+    fireEvent.click(pill)
+    expect(screen.queryByRole('radiogroup', { name: 'Readiness state' })).toBeNull()
+  })
+
+  it('is inert on Testing 2 as well, because the rail rule covers both', () => {
+    /* The assertion that would catch someone re-listing the versions in the bar
+       instead of asking `railHidesSection` — Testing 2 was added to the rail
+       trim later, and a hand-written copy of the rule is exactly what would
+       have been updated in one place and not the other. */
+    renderBar('/dashboard-rebrand?version=discoverability-testing-2')
+    expect(readinessPill()).toBeDisabled()
+  })
+
+  it('stays live where the section is a rail click away', () => {
+    renderBar('/dashboard-rebrand?version=discoverability-qe-focused')
+    const pill = readinessPill()
+    expect(pill).not.toBeDisabled()
+    expect(pill.textContent).toContain('On Track')
+    fireEvent.click(pill)
+    expect(screen.getByRole('radiogroup', { name: 'Readiness state' })).toBeTruthy()
+  })
+})

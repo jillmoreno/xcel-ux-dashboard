@@ -31,6 +31,7 @@ import {
   dashboardEducationSupported,
 } from '@/data/dashboardProgressFixtures'
 import { READINESS_PICKER } from '@/data/readinessFixtures'
+import { railHidesSection } from '@/components/layout/dashboardRail'
 import { educationTypesFor } from '@/data/onboarding/onboardingContent'
 import { PROTOTYPE_SHARE_ORIGIN, copyToClipboard } from './shareLink'
 import {
@@ -249,6 +250,23 @@ export function DemoControlsBar({
   const readinessLabel =
     READINESS_PICKER.find((o) => o.state === (readinessState.variant ?? 'on-track'))?.label ??
     'Readiness'
+  /* IS THERE A READINESS SECTION TO DRIVE? — 2026-09-22. Both pacing versions
+     drop the Readiness rail row (`TESTING_HIDDEN_RAIL_SECTIONS`), and Testing
+     is now the brand default — so the bar's own default state was a pill
+     reading "READINESS: On Track" over a dashboard with no Readiness on it and
+     no way to reach one.
+
+     ASKED OF THE RAIL, not re-listed here. `railHidesSection` derives from the
+     same constant the rail and the phone drawer read, so the day the row comes
+     back (or a Readiness component lands on the pacing versions) this control
+     re-enables itself — no second edit, and no chance of the bar and the rail
+     disagreeing about what the page has on it. It stays LIVE on QE Focused,
+     Learner Focused and Marketing Focused, where the section is a rail click
+     away and the dropdown does exactly what it says. */
+  const readinessReachable = !railHidesSection(
+    searchParams.get('version') ?? defaultDiscoverabilityVersionFor(brand),
+    'readiness',
+  )
 
   // Education (QE/CE) dropdown — only for brands with a QE dashboard persona
   // (CRE · McKissock · STC); brand-true labels ("Pre-Licensing" / "Qualifying
@@ -695,13 +713,20 @@ export function DemoControlsBar({
             ready, which is the whole reason the section exists. */}
         <DemoDropdown
           id="readiness"
-          label={readinessLabel}
+          /* NOT the resolved state when there is no section: a greyed pill
+             still reading "On Track" is the same false claim, just dimmer. */
+          label={readinessReachable ? readinessLabel : 'Not on this version'}
           eyebrow="Readiness"
           openId={openId}
           onToggle={toggle}
           panelRole="radiogroup"
           panelLabel="Readiness state"
           panelMinWidth={240}
+          disabledNote={
+            readinessReachable
+              ? undefined
+              : 'This version hides the Readiness section, so there is nothing for this control to change. Switch to QE Focused, Learner Focused or Marketing Focused to use it.'
+          }
         >
           {READINESS_PICKER.map((opt) => {
             const active = opt.state === (readinessState.variant ?? 'on-track')
