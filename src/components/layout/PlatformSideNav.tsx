@@ -75,6 +75,11 @@ export type PlatformSection =
   // its own rail section now, directly under Home. See LearningPathPage's
   // `studyPlanHasOwnPage`, which is the one fact both sides read.
   | 'study-plan'
+  // The Atlas/Compass rail's COURSE page, directly under Study Plan
+  // (2026-09-22). A BLANK page for now — its title and nothing else. Not the
+  // same section as `courses` (My Courses, the list); this is the one course
+  // the learner is working. Only the Atlas rail links to it.
+  | 'course'
   // Added 2026-09-09, directly after Study Plan. A PLACEHOLDER — the section
   // renders an EmptyState and there is no readiness fixture behind it yet.
   | 'readiness'

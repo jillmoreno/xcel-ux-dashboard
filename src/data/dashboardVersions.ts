@@ -245,7 +245,7 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV: DashboardVersi
   createdAt: '2026-09-22',
   modifiedAt: '2026-09-22',
   description:
-    'The Testing home under one global navigation spanning Atlas (the dashboard, Study Journey and readiness) and Compass (the course content): a text-only left rail from the Atlas/Compass Figma \u2014 Home, Study Plan, Certificates & Transcripts, Resources, Get Help \u2014 that stays open while a course is open.',
+    'The Testing home under one global navigation spanning Atlas (the dashboard, Study Journey and readiness) and Compass (the course content): a text-only left rail from the Atlas/Compass Figma \u2014 Home, Study Plan, Course, Certificates & Transcripts, Resources, Get Help \u2014 that stays open while a course is open.',
 }
 
 /** True for the Atlas/Compass Global Navigation version. One helper so the

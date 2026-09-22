@@ -237,17 +237,34 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
     expect(names(within(nav).getByRole('list', { name: 'My Learning' }))).toEqual([
       'Home',
       'Study Plan',
+      'Course',
       'Certificates & Transcripts',
       'Resources',
     ])
     expect(names(within(nav).getByRole('list', { name: 'Support' }))).toEqual(['Get Help'])
-    expect(within(nav).getAllByRole('button')).toHaveLength(5)
+    expect(within(nav).getAllByRole('button')).toHaveLength(6)
     // No collapse control — the design has none, so the shell pins it open.
     expect(within(nav).queryByRole('button', { name: /collapse|expand/i })).toBeNull()
     expect(within(nav).getByRole('button', { name: 'Home' })).toHaveAttribute(
       'aria-current',
       'page',
     )
+  })
+
+  it('Course opens a new, BLANK Course page', () => {
+    const { container } = renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav')
+    fireEvent.click(screen.getByRole('button', { name: 'Course' }))
+    const nav = screen.getByRole('navigation', { name: 'Primary' })
+    expect(within(nav).getByRole('button', { name: 'Course' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+    const h1 = screen.getByRole('heading', { level: 1, name: 'Course' })
+    // The title and nothing else — the page is blank until it is designed.
+    const section = h1.closest('section')!
+    expect(section.children).toHaveLength(1)
+    // It is not My Courses.
+    expect(container.textContent).not.toMatch(/My Courses/)
   })
 
   it('leaves every other version on the shared rail', () => {

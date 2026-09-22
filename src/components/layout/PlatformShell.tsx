@@ -105,6 +105,7 @@ import { dashboardLayoutForVersion, hiddenRailSectionsFor } from '@/components/l
 const VALID_SECTIONS: PlatformSection[] = [
   'dashboard',
   'study-plan',
+  'course',
   'readiness',
   'recommended',
   'learning-path',
@@ -1091,6 +1092,7 @@ function MobileNavDrawer({
 const SECTION_TITLES: Record<PlatformSection, string> = {
   dashboard: 'Home',
   'study-plan': 'Study Plan',
+  course: 'Course',
   readiness: 'Readiness',
   recommended: 'Recommended for You',
   'learning-path': 'Learning Path',
@@ -1584,6 +1586,11 @@ function renderBody(
   // they drop their own title + gutter. Learning Path branches on count
   // (homepage for 2+ paths, single detail otherwise) via LearningPathSection.
   if (active === 'study-plan') return <StudyPlanSection />
+  // Course — the Atlas/Compass rail's page (2026-09-22). BLANK BY DESIGN for
+  // now: the shell draws the "Course" title and the body is left empty until
+  // the page is designed. Explicit rather than falling through to whatever
+  // renders below, so the blank is a decision and not an accident.
+  if (active === 'course') return null
   // Readiness — the Figma "Exam Summary" port. Was a blank EmptyState for
   // exactly one commit; the note that said "replace this branch with the real
   // panel, nothing else about the section needs to move" turned out to be

@@ -32,6 +32,8 @@ export const ATLAS_RAIL_GROUPS: readonly {
     items: [
       { id: 'dashboard', label: 'Home' },
       { id: 'study-plan', label: 'Study Plan' },
+      // Added 2026-09-22 — a new, blank Course page (the `course` section).
+      { id: 'course', label: 'Course' },
       { id: 'certificates', label: 'Certificates & Transcripts' },
       { id: 'resources', label: 'Resources' },
     ],

@@ -17,8 +17,9 @@ import { ATLAS_RAIL_GROUPS } from './dashboardRail'
  * What the design changes, against the demo rail:
  *
  * - **Text only.** No glyph column.
- * - **Five destinations.** Home · Study Plan · Certificates & Transcripts ·
- *   Resources, then Support · Get Help. Readiness, My Courses and Rubi
+ * - **Six destinations.** Home · Study Plan · Course · Certificates &
+ *   Transcripts · Resources, then Support · Get Help. Course (2026-09-22) is
+ *   not in the Figma frame — it was added after, and its page is blank. Readiness, My Courses and Rubi
  *   Insights are not in the design; their sections still resolve from
  *   `?section=`, the same way every flag-hidden row does.
  * - **"Certificates & Transcripts"** is the design's label for the existing

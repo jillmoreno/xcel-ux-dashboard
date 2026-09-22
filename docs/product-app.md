@@ -1512,8 +1512,12 @@ that is how two copies of one home start to drift.
 **What it adds is the rail**, `AtlasCompassSideNav`, from Figma
 `hXiYWnaiZWIwWmaTk7pk3F` node 49:3365:
 
-- **Text only**, five rows — Home · Study Plan · Certificates & Transcripts ·
-  Resources, then Support · Get Help. "Certificates & Transcripts" is the
+- **Text only**, six rows — Home · Study Plan · Course · Certificates &
+  Transcripts · Resources, then Support · Get Help. **Course** was added
+  2026-09-22, after the Figma frame: a new `course` section (not `courses`,
+  which is My Courses) whose page is deliberately BLANK — the shell's "Course"
+  title and an explicit `return null` body, until it is designed. Only the
+  Atlas rail links to it; it still resolves from `?section=course` anywhere. "Certificates & Transcripts" is the
   design's label for the existing `certificates` section, not a new one; the
   page's own heading still says "Certificates".
 - **The list is data** — `ATLAS_RAIL_GROUPS` in `dashboardRail.ts` — so
