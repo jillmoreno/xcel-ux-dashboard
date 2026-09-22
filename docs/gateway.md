@@ -83,6 +83,23 @@ in each file's header comment and in the README), sharing one stylesheet at
 | `public/contributing/index.html` | designers | the gated **Contributing** section — an iframe of the page (`GuideFrame`) — and `/contributing/` directly | 404'd at the edge: `/contributing/*` is in `BLOCKED` |
 | `public/about/index.html` | stakeholders | the **"How to read this dashboard"** link at the foot of the rail, OUTSIDE the `<nav>`, on every build | reachable — it is the orientation a reviewer gets |
 
+### Review recaps (2026-09-22)
+
+`public/recaps/` holds the notes written after a review session —
+`pd-review-recap-0922.html` is the first. It sits under `public/` for one
+reason: so the team can open it on the **branch build**, the same way they open
+anything else there. It is not linked from the gateway and has no
+`PROTOTYPE_FEATURES` row.
+
+**`/recaps/*` is in `BLOCKED`**, and that is the whole point of the folder
+existing rather than the file sitting loose at the `public/` root. A recap names
+colleagues, records which parts we have no confidence to test yet, and says what
+engineering has not been shown — the public site's audience is the people it is
+written about. A file at `public/pd-review-recap-0922.html` would be served on
+BOTH sites with nothing in front of it. `PublicGateway.test.tsx` asserts both
+that `/recaps/*` is blocked and that the folder is non-empty, so the rule cannot
+quietly end up guarding nothing while the next recap lands at the root.
+
 **The Contributing guide assumes NO TERMINAL** (2026-09-21, at Jillienne's
 request — "someone who knows basically nothing about GitHub or Claude"). The
 ONE tool is the Claude desktop app with its GitHub connector (clone, branch,
@@ -398,7 +415,8 @@ the var is `public`. `_redirects` rather than `netlify.toml` because the toml is
 shared and has no per-project conditional, and because Netlify evaluates
 `_redirects` BEFORE the toml — which is what lets a 404 beat the toml's `/*` SPA
 fallback — and every rule is FORCED (`404!`): an unforced rule is skipped whenever a real file exists at the path, which here is every path, and the first deploy shipped that way with nothing hidden. Blocked: `/prototypes/*` (every document row), `/testing/*` and
-`/ngat-admin/*` (LMS leftovers), `/archive/*`, `/qa/*`. NOT blocked:
+`/ngat-admin/*` (LMS leftovers), `/archive/*`, `/qa/*`, `/contributing/*` (the
+designer guide) and, since 2026-09-22, `/recaps/*`. NOT blocked:
 `/prototype-thumbs/*` (a Demo row may grow one) and `/api/*` (Links is
 ungated). The target is `public/404.html`, which Netlify also serves for a
 mistyped address — a hidden prototype and a typo look the same, on purpose.

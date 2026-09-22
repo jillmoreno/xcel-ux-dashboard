@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
-import { readFileSync } from 'node:fs'
+import { readFileSync, readdirSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { AccountProvider } from '@/context/AccountContext'
@@ -161,6 +161,19 @@ describe('public build — the edge rules', () => {
     expect(blocked.some((b) => b.startsWith('/about'))).toBe(false)
     // Both guides link ../guides/guide.css; blocking it would unstyle /about/.
     expect(blocked.some((b) => b.startsWith('/guides'))).toBe(false)
+  })
+
+  it('404s the review recaps — internal notes that live under public/ only for the branch build', () => {
+    // A recap names colleagues and records what we have not yet shown
+    // engineering. It is under `public/` so the FULL site can serve it to the
+    // team; the public site is the audience it is written about.
+    const m = script.match(/const BLOCKED = \[([^\]]+)\]/)
+    const blocked = [...m![1].matchAll(/'([^']+)'/g)].map((x) => x[1])
+    expect(blocked).toContain('/recaps/*')
+    // The rule must be guarding something — an empty folder would make this
+    // test pass while the next recap gets dropped at the public/ root instead,
+    // where nothing blocks it. That is the mistake this assertion catches.
+    expect(readdirSync(resolve(here, '../../public/recaps')).length).toBeGreaterThan(0)
   })
 })
 
