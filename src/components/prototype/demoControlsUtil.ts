@@ -112,21 +112,26 @@ export type DemoPersona = {
    *  memberships" persona uses this. A persona has at most one of the two. */
   memCountOptions?: { label: string; countVariant: string }[]
   /**
-   * Whole days to shift the demo clock by when this persona is applied — see
-   * `demoDay.ts`. Omitted ⇒ the anchor stands (a Monday).
+   * When set, the persona row is an EXPANDER over the DEMO CLOCK: clicking it
+   * reveals which day of the week to place the scenario on, and the chosen
+   * offset shifts `FIXTURE_TODAY` app-wide (see `demoDay.ts`).
    *
-   * A FIELD ON THE PERSONA, not a fifth dropdown, which is the rule
-   * `heavy-plan` already records: "a named combination of controls that exist,
-   * not a fifth independent axis on a bar that already has four". The day is
-   * not interesting on its own — it is interesting as part of "on pace, on a
-   * Thursday", because the week strip needs elapsed days to show anything.
+   * AN EXPANDER, not nine flat rows, and not a fifth dropdown — 2026-09-21,
+   * the direct ask ("there's a lot going on in that persona list now"). Three
+   * pace states crossed with three days was nine rows in a list that already
+   * had eight, which buried the personas that were there first. It is also the
+   * rule `heavy-plan` records: the day is not an independent axis, it is part
+   * of "on pace, on a Thursday" — the strip has nothing to draw until some of
+   * the week has elapsed.
    *
-   * ⚠ APPLYING IT RELOADS THE PAGE. `FIXTURE_TODAY` is evaluated once at module
-   * load and read by ~30 call sites, several in plain data modules with no
-   * React context; the reload is what makes every one of them agree about the
-   * date rather than only the pace card. See `demoDay.ts`.
+   * The same mechanism `pathCountOptions` uses, generalised: that one was
+   * hardwired to count flags, so the axis is now a third shape beside it.
+   *
+   * ⚠ CHOOSING ONE RELOADS THE PAGE. `FIXTURE_TODAY` is evaluated once at
+   * module load and read by plain data modules with no React context; the
+   * reload is what makes every dated surface agree. See `demoDay.ts`.
    */
-  dayOffset?: number
+  dayOptions?: { label: string; dayOffset: number }[]
   /** Optional dashboard version to force via the `?version=` URL param (e.g.
    *  `discoverability-marketing-focused`). Set when the persona's look depends
    *  on a specific dashboard version rather than the default. Omitted → the
@@ -223,6 +228,16 @@ export function resolvePersonaFlags(persona: DemoPersona, whatsNewOn = false): P
 //   6    scale (multiple learning paths)
 //   7    multiple categories (QE)
 //   8    scale (multiple memberships)
+/** The three clock positions every pace scenario offers. Shared, so the three
+ *  rows cannot drift into offering different days. Monday is the anchor itself
+ *  — kept as an option because "the week has barely started" is a real state
+ *  worth showing, not only the one the fixture is stuck in. */
+const PACE_DAY_OPTIONS = [
+  { label: 'Monday — the week has just begun', dayOffset: 0 },
+  { label: 'Thursday — most of the week has happened', dayOffset: 3 },
+  { label: 'Saturday — the study nights are behind them', dayOffset: 5 },
+]
+
 export const DEMO_PERSONAS: DemoPersona[] = [
   {
     id: 'up-next',
@@ -282,90 +297,47 @@ export const DEMO_PERSONAS: DemoPersona[] = [
     ],
   },
   /* ─── PACE SCENARIOS (2026-09-21) ─────────────────────────────────────
-     Three pace states, each on three days of the week. Nine rows, which is a
-     lot for one dropdown — and they are rows rather than a new axis for the
-     reason `heavy-plan` gives above: the day is only interesting crossed with
-     a pace state, because the week strip has nothing to draw until some of the
-     week has elapsed.
+     Three pace states, each expanding to the day of the week it happens on.
 
-     THE DAY IS WHY THESE EXIST AT ALL. The anchor is a Monday, so at the
-     default clock every one of these shows one circle and six empty rings. On
-     Thursday four days have happened and the strip finally says something.
+     It was NINE FLAT ROWS for one build, which buried the eight personas that
+     were here first — the direct ask to collapse them. The day expands instead,
+     which is the shape "Multiple learning paths" already uses and the reason
+     `heavy-plan` gives for not adding a fifth dropdown: the day is not
+     interesting on its own, only crossed with a pace state.
+
+     THE DAY IS WHY THESE EXIST. The anchor is a Monday, so at the default clock
+     every one of them shows one circle and six empty rings. On Thursday four
+     days have happened and the strip finally says something.
 
      "Behind" is NOT a new progress state: it is the ordinary at-risk learner
-     read against THIS WEEK's target (`weekStanding`), which is a comparison of
-     two real numbers rather than an invented schedule. */
+     read against THIS WEEK's target (`weekStanding`), which compares two real
+     numbers rather than inventing a schedule to be behind. */
   {
-    id: 'pace-on-track-mon',
-    label: 'Pace — on pace, Monday',
-    description: 'Keeping the pace — the week strip fills to target on every day that has happened.',
+    id: 'pace-on-track',
+    label: 'Pace — on pace',
+    description:
+      'Keeping the pace — the week strip fills to target on every day that has happened, and the card says nothing about catching up.',
     profScope: 'primary',
-    dayOffset: 0,
     flags: [{ key: 'dashboard-progress-state', variant: 'progress-on-track' }],
+    dayOptions: PACE_DAY_OPTIONS,
   },
   {
-    id: 'pace-on-track-thu',
-    label: 'Pace — on pace, Thursday',
-    description: 'Keeping the pace — the week strip fills to target on every day that has happened.',
+    id: 'pace-behind',
+    label: 'Pace — behind this week',
+    description:
+      'Short of this week’s target — the card names the gap and what a night has to become to close it.',
     profScope: 'primary',
-    dayOffset: 3,
-    flags: [{ key: 'dashboard-progress-state', variant: 'progress-on-track' }],
-  },
-  {
-    id: 'pace-on-track-sat',
-    label: 'Pace — on pace, Saturday',
-    description: 'Keeping the pace — the week strip fills to target on every day that has happened.',
-    profScope: 'primary',
-    dayOffset: 5,
-    flags: [{ key: 'dashboard-progress-state', variant: 'progress-on-track' }],
-  },
-  {
-    id: 'pace-behind-mon',
-    label: 'Pace — behind this week, Monday',
-    description: 'Short of this week\u2019s target — the card names the gap and what a night has to become to close it.',
-    profScope: 'primary',
-    dayOffset: 0,
     flags: [{ key: 'dashboard-progress-state', variant: 'progress-at-risk' }],
+    dayOptions: PACE_DAY_OPTIONS,
   },
   {
-    id: 'pace-behind-thu',
-    label: 'Pace — behind this week, Thursday',
-    description: 'Short of this week\u2019s target — the card names the gap and what a night has to become to close it.',
+    id: 'pace-wont-fit',
+    label: 'Pace — won’t finish',
+    description:
+      'So far behind that the shortfall outruns the nights left in the week, and no honest evening closes it.',
     profScope: 'primary',
-    dayOffset: 3,
-    flags: [{ key: 'dashboard-progress-state', variant: 'progress-at-risk' }],
-  },
-  {
-    id: 'pace-behind-sat',
-    label: 'Pace — behind this week, Saturday',
-    description: 'Short of this week\u2019s target — the card names the gap and what a night has to become to close it.',
-    profScope: 'primary',
-    dayOffset: 5,
-    flags: [{ key: 'dashboard-progress-state', variant: 'progress-at-risk' }],
-  },
-  {
-    id: 'pace-wont-fit-mon',
-    label: 'Pace — won\u2019t finish, Monday',
-    description: 'So far behind that the strip is mostly empty and the shortfall outruns the nights left in the week.',
-    profScope: 'primary',
-    dayOffset: 0,
     flags: [{ key: 'dashboard-progress-state', variant: 'progress-off-track' }],
-  },
-  {
-    id: 'pace-wont-fit-thu',
-    label: 'Pace — won\u2019t finish, Thursday',
-    description: 'So far behind that the strip is mostly empty and the shortfall outruns the nights left in the week.',
-    profScope: 'primary',
-    dayOffset: 3,
-    flags: [{ key: 'dashboard-progress-state', variant: 'progress-off-track' }],
-  },
-  {
-    id: 'pace-wont-fit-sat',
-    label: 'Pace — won\u2019t finish, Saturday',
-    description: 'So far behind that the strip is mostly empty and the shortfall outruns the nights left in the week.',
-    profScope: 'primary',
-    dayOffset: 5,
-    flags: [{ key: 'dashboard-progress-state', variant: 'progress-off-track' }],
+    dayOptions: PACE_DAY_OPTIONS,
   },
   {
     id: 'no-path',

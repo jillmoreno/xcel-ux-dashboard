@@ -320,7 +320,7 @@ export function DemoControlsBar({
   // feature-flag overrides, applied in one click. `apply` seats the tier + count
   // flags + URL; the flag loop then applies the managed-flag baseline merged with
   // the persona's overrides (so the persona lands on a deterministic state).
-  const applyPersona = (persona: DemoPersona, countVariant?: string) => {
+  const applyPersona = (persona: DemoPersona, countVariant?: string, dayOffset?: number) => {
     // Resolve the persona's scope against THIS brand's options rather than a
     // hardcoded slug list — `primary` takes the first, `all` takes every one.
     const personaProfs =
@@ -393,7 +393,7 @@ export function DemoControlsBar({
        last one: a clock that persisted across persona changes would be a hidden
        fifth variable on a bar that shows four. And it only reloads when the day
        actually changes, so picking a persona at the anchor stays instant. */
-    const nextOffset = persona.dayOffset ?? 0
+    const nextOffset = dayOffset ?? 0
     if (nextOffset !== readDemoDayOffset()) setDemoDayOffset(nextOffset)
   }
 
@@ -553,7 +553,12 @@ export function DemoControlsBar({
           <div aria-hidden style={WN_DIVIDER} />
           {brandPersonas.map((persona, i) => {
             const countOptions = persona.pathCountOptions ?? persona.memCountOptions
-            const isExpander = !!countOptions?.length
+            /* THREE KINDS OF EXPANDER NOW. `dayOptions` is the demo clock's —
+               it carries an offset rather than a flag variant, which is why it
+               is a third shape beside the two count lists rather than another
+               entry in them. */
+            const dayOptions = persona.dayOptions
+            const isExpander = !!countOptions?.length || !!dayOptions?.length
             const expanded = expandedPersona === persona.id
             // No persona rows are disabled by the What's New toggle anymore. That
             // gate existed only because the (now-archived) Marketing Focused
@@ -599,20 +604,38 @@ export function DemoControlsBar({
                 {isExpander && expanded && (
                   <div
                     role="menu"
-                    aria-label={persona.memCountOptions ? 'Number of memberships' : 'Number of learning paths'}
+                    aria-label={
+                      dayOptions
+                        ? 'Day of the week'
+                        : persona.memCountOptions
+                          ? 'Number of memberships'
+                          : 'Number of learning paths'
+                    }
                     style={SUBMENU}
                   >
-                    {countOptions!.map((opt) => (
-                      <button
-                        key={opt.countVariant}
-                        type="button"
-                        role="menuitem"
-                        className="cre-menu-item cre-demo-controls-btn"
-                        onClick={() => applyPersona(persona, opt.countVariant)}
-                      >
-                        <span style={{ flex: 1 }}>{opt.label}</span>
-                      </button>
-                    ))}
+                    {dayOptions
+                      ? dayOptions.map((opt) => (
+                          <button
+                            key={opt.dayOffset}
+                            type="button"
+                            role="menuitem"
+                            className="cre-menu-item cre-demo-controls-btn"
+                            onClick={() => applyPersona(persona, undefined, opt.dayOffset)}
+                          >
+                            <span style={{ flex: 1 }}>{opt.label}</span>
+                          </button>
+                        ))
+                      : countOptions!.map((opt) => (
+                          <button
+                            key={opt.countVariant}
+                            type="button"
+                            role="menuitem"
+                            className="cre-menu-item cre-demo-controls-btn"
+                            onClick={() => applyPersona(persona, opt.countVariant)}
+                          >
+                            <span style={{ flex: 1 }}>{opt.label}</span>
+                          </button>
+                        ))}
                   </div>
                 )}
               </div>
