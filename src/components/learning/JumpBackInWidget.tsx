@@ -37,6 +37,7 @@ export function JumpBackInWidget({
   chapterNumber,
   partNumber,
   chapterTitle,
+  complete = false,
   onResume,
 }: {
   /** The course to resume. Absent → the widget renders nothing; the Study
@@ -49,6 +50,14 @@ export function JumpBackInWidget({
   partNumber?: number
   /** That chapter's title, from `NY_LH_CURRENT_CHAPTER`. */
   chapterTitle?: string
+  /**
+   * The coursework is finished — 2026-09-21, the direct ask. The card becomes a
+   * door back into material already covered: "Review Course Material", one CTA,
+   * and a line saying what was completed. The lesson and the chapter title go,
+   * because neither answers anything at 100% — there is no lesson you are ON,
+   * and the header band names the course.
+   */
+  complete?: boolean
   onResume?: (courseId: string) => void
 }) {
   if (!course) return null
@@ -68,7 +77,10 @@ export function JumpBackInWidget({
        License' while reading 'Get Licensed in New York' is the 'Dash Dashboard'
        defect in miniature." A card reading "Let's get started" must not
        announce itself as "Jump back in". */
-    <section aria-label={started ? 'Jump back in' : 'Let’s get started'} style={widgetCardRuledStyle}>
+    <section
+      aria-label={complete ? 'Review course material' : started ? 'Jump back in' : 'Let’s get started'}
+      style={widgetCardRuledStyle}
+    >
       {/* The SHARED eyebrow type — same face, size, weight and tracking as the
           Study Journey's, which is what "match the Study Journey font" asked
           for — with the INK resolved for this surface.
@@ -104,7 +116,11 @@ export function JumpBackInWidget({
         style={{ ...widgetEyebrowStyle, display: 'flex', alignItems: 'center', gap: 6, marginBottom: 12 }}
       >
         <BookOpenThin size={13} />
-        {started ? 'Learning With Compass - Jump Back In' : 'Let’s get started'}
+        {complete
+          ? 'Review Course Material'
+          : started
+            ? 'Learning With Compass - Jump Back In'
+            : 'Let’s get started'}
       </p>
 
       {/* The action sits on the TITLE'S line (2026-09-17, the direct ask), so
@@ -115,42 +131,56 @@ export function JumpBackInWidget({
           bottom edge and drifting away from what it acts on. */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
       <div style={{ flex: 1, minWidth: 0 }}>
-          {chapterNumber != null ? (
-            <p style={chapterEyebrowStyle}>
-              Lesson {chapterNumber}
-              {partNumber != null ? (
-                <>
-                  {/* The same 3px round dot the page header's meta line and its
-                      stat row use — one separator on this page, not a third
-                      kind three inches from the other two. */}
-                  <span aria-hidden style={dotStyle} />
-                  Part {partNumber} of {NY_LH_PROGRAM_PARTS}
-                </>
+          {/* AT 100% THE LESSON, THE TITLE AND THE ESTIMATE ALL GO — the direct
+              ask. None of them answers anything once the coursework is done:
+              there is no lesson you are ON, the header band already names the
+              course, and an estimate to complete something already complete is
+              a figure with nothing behind it.
+
+              What replaces them is the COMPLETION LINE, which is the one fact
+              this card can still state. It counts the journey's own coursework
+              stops rather than re-deriving a total, so it cannot disagree with
+              the column beside it. */}
+          {complete ? (
+            <p style={courseTitleStyle}>All coursework complete</p>
+          ) : (
+            <>
+              {chapterNumber != null ? (
+                <p style={chapterEyebrowStyle}>
+                  Lesson {chapterNumber}
+                  {partNumber != null ? (
+                    <>
+                      {/* The same 3px round dot the page header's meta line and
+                          its stat row use — one separator on this page, not a
+                          third kind three inches from the other two. */}
+                      <span aria-hidden style={dotStyle} />
+                      Part {partNumber} of {NY_LH_PROGRAM_PARTS}
+                    </>
+                  ) : null}
+                </p>
               ) : null}
-            </p>
-          ) : null}
-          {/* The title comes from `NY_LH_GUIDE_CHAPTERS_PARTIAL` — a chapter
-              XCEL's own linked study guide publishes — rather than from copy
-              written to fill this card. It has the card's full width now that
-              the action is at the foot, so it wraps only when it genuinely
-              needs to. */}
-          <h3 style={courseTitleStyle}>{chapterTitle ?? course.title}</h3>
-          {/* ESTIMATED TIME — 2026-09-17, the direct ask, and the figure is
-              INVENTED. See `NY_LH_LESSON_MINUTES_INVENTED`: nothing in the
-              fixtures knows a lesson's length, and this version refused the
-              reference mock's "· 14 minutes left" three times on exactly that
-              ground. It is here because it was asked for, it reads from a
-              constant whose name says what it is, and the tests that used to
-              forbid the copy now pin it to that constant instead. */}
-          <p style={estimateStyle}>
-            Estimated Time to Complete: {NY_LH_LESSON_MINUTES_INVENTED} minutes
-          </p>
+              {/* The title comes from `NY_LH_GUIDE_CHAPTERS_PARTIAL` — a chapter
+                  XCEL's own linked study guide publishes — rather than from copy
+                  written to fill this card. */}
+              <h3 style={courseTitleStyle}>{chapterTitle ?? course.title}</h3>
+              {/* ESTIMATED TIME — 2026-09-17, the direct ask, and the figure is
+                  INVENTED. See `NY_LH_LESSON_MINUTES_INVENTED`: nothing in the
+                  fixtures knows a lesson's length, and this version refused the
+                  reference mock's "· 14 minutes left" three times on exactly
+                  that ground. It is here because it was asked for, it reads from
+                  a constant whose name says what it is, and the tests that used
+                  to forbid the copy now pin it to that constant instead. */}
+              <p style={estimateStyle}>
+                Estimated Time to Complete: {NY_LH_LESSON_MINUTES_INVENTED} minutes
+              </p>
+            </>
+          )}
       </div>
       {/* 44px stays 44px — the minimum comfortable touch target. `flexShrink: 0`
           so the title column gives way first; the reverse would break "Resume"
           onto two lines, which is the one thing here that must stay one tap. */}
       <button type="button" onClick={() => onResume?.(course.id)} style={ctaStyle}>
-        {started ? 'Resume' : 'Start course'} <ArrowRight size={16} />
+        {complete ? 'Review course' : started ? 'Resume' : 'Start course'} <ArrowRight size={16} />
       </button>
       </div>
 

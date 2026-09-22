@@ -438,10 +438,25 @@ function PaceCardBody({
         <p style={cardHeadline}>
           The work left won’t fit before {examBinds ? 'your exam' : 'your access ends'}.
         </p>
+        {/* TWO WAYS OUT, NAMED — 2026-09-21, the direct ask: "they will need to
+            adjust their study pace drastically or consider extending the course
+            to finish the content."
+
+            ⚠ NO FIGURE, and that is the one thing this copy must not do. A pace
+            that reaches this state needs more than `CEILING_MINS` a night, and
+            the model's own note on that constant says why quoting it is wrong:
+            "no number is honest there, and the answer is more time or fewer
+            lessons, not a bigger figure." So the card says DRASTICALLY and
+            leaves the arithmetic alone — the same rule that stops the
+            behind-this-week line printing "7 hours a night".
+
+            The previous copy said "No pace fixes that", which was the model's
+            position and not the learner's: a drastic pace does fix it, it is
+            just not one we would recommend. Naming both options is the ask. */}
         <p style={cardBody}>
           {examBinds
-            ? 'No pace fixes that. A later exam date, or less to do before it.'
-            : 'No pace fixes that. The honest options are an extension, or less to do.'}
+            ? 'Finishing in time would take a drastic jump in pace. The realistic options are a later exam date, or less to do before it.'
+            : 'Finishing in time would take a drastic jump in pace. Consider extending your course access instead — or trimming what is left.'}
         </p>
         <CustomizeLink onClick={onCustomize} />
       </div>

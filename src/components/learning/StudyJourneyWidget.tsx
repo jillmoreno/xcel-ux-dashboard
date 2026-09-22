@@ -101,7 +101,19 @@ export function StudyJourneyWidget({
   // separates them instead.
   const syllabus = useFeatureFlag('dashboard-journey-style').variant === 'syllabus'
   const shell = framed ? widgetCardFramedStyle : widgetCardStyle
-  const stepStart = journeyStopsFor(path).length + 1
+  const stops = journeyStopsFor(path)
+  const stepStart = stops.length + 1
+  /* COLLAPSED — `dashboard-journey-complete`, and it only means anything at
+     100%. Below that the two variants are identical, which is why the flag is
+     read here and applied against `courseworkDone` rather than gating the
+     whole branch: a collapsed card on a learner with work left would hide the
+     thing they are doing.
+
+     The hook is called UNCONDITIONALLY and the state check applied after — the
+     `rules-of-hooks` trap `LearnerFocusedBand` records three times over. */
+  const completeStyle = useFeatureFlag('dashboard-journey-complete').variant ?? 'full'
+  const courseworkDone = stops.length > 0 && stops.every((st) => st.status === 'completed')
+  const collapseCoursework = courseworkDone && completeStyle === 'collapsed'
 
   if (splitSteps) {
     /* FOUR WIDGETS — the coursework, then one per post-course step.
@@ -121,17 +133,31 @@ export function StudyJourneyWidget({
        numbers and the four cards read as four unrelated things. */
     return (
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20, minWidth: 0 }}>
-        <section aria-label="Study journey" style={shell}>
-          <StudyJourneyRail
-            path={path}
-            onOpenStop={onOpenStop}
-            onViewAll={onOpenLearningPath ? () => onOpenLearningPath(path.id) : undefined}
-            /* "Steps 01–04 · Atlas Study Journey" — so the four cards' eyebrows
-               run 01-04, 05, 06, 07 down the column instead of the sequence
-               appearing to start at 05. Split only; see the prop's note. */
-            stepRange
-          />
-        </section>
+        {/* THE FINISHED COURSEWORK AS ONE LINE, when the flag asks for it. The
+            argument the variant exists to test: at 100% the only actionable
+            things left are the licensing steps, and four stops of finished work
+            above them is a receipt rather than a next action. The full variant
+            disagrees — see the flag's own description. */}
+        {collapseCoursework ? (
+          <section aria-label="Study journey" style={shell}>
+            <p className="cre-eyebrow-ink" style={collapsedEyebrowStyle}>
+              {`Steps 01\u2013${String(stops.length).padStart(2, '0')} · Atlas Study Journey`}
+            </p>
+            <p style={collapsedTitleStyle}>Coursework complete</p>
+          </section>
+        ) : (
+          <section aria-label="Study journey" style={shell}>
+            <StudyJourneyRail
+              path={path}
+              onOpenStop={onOpenStop}
+              onViewAll={onOpenLearningPath ? () => onOpenLearningPath(path.id) : undefined}
+              /* "Steps 01–04 · Atlas Study Journey" — so the four cards' eyebrows
+                 run 01-04, 05, 06, 07 down the column instead of the sequence
+                 appearing to start at 05. Split only; see the prop's note. */
+              stepRange
+            />
+          </section>
+        )}
         {GET_LICENSED_STEPS.map((step, i) => (
           <LicensingStepWidget
             key={step.id}
@@ -603,4 +629,20 @@ const captureLinkStyle: CSSProperties = {
   fontSize: 12,
   fontWeight: 700,
   whiteSpace: 'nowrap',
+}
+
+/* The collapsed card's two lines. Same eyebrow treatment as the rail it
+   replaces, so the column keeps one label shape whichever variant is on. */
+const collapsedEyebrowStyle: CSSProperties = {
+  ...widgetEyebrowStyle,
+  margin: '0 0 6px',
+}
+const collapsedTitleStyle: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-heading)',
+  fontWeight: 700,
+  fontSize: 21,
+  lineHeight: '27px',
+  letterSpacing: '-0.01em',
+  color: 'var(--color-text-primary)',
 }

@@ -611,20 +611,46 @@ describe('the two completion tasks on the journey', () => {
     expect(statusWords(tasks[0])).toBe('After your coursework')
   })
 
-  it('unblocks only when every hour of coursework is complete', () => {
+  it('COMPLETES when every hour of coursework is complete', () => {
+    /* It used to assert `Not started` here — unblocked but not done, because
+       nothing in the fixtures recorded an attestation. Changed 2026-09-21 by a
+       direct decision: "100% means the Attestation and certificate step is
+       complete. Step 1–4 is part of the course."
+
+       So the step is now complete BY DEFINITION rather than by a feed, and the
+       test below pins the half that still constrains it: never before the
+       coursework is. */
     const done = dashboardProgressPersonaFor('xcel', 'complete-100', 'qe')!
     const tasks = journeyStopsFor(done.path).filter((s) => s.group === 'Course completion')
     for (const t of tasks) expect(t.blocked).toBe(false)
-    expect(statusWords(tasks[0])).toBe('Not started')
+    expect(statusWords(tasks[0])).toBe('Completed')
   })
 
-  it('never claims they are complete — nothing records them yet', () => {
-    // The demo has no attestation or certificate feed. Asserted so a later
-    // "mark them done so the demo looks finished" needs a real source.
+  it('claims them complete ONLY once the coursework is', () => {
+    /* ⚠ THIS TEST'S PREMISE WAS DELIBERATELY REVERSED, and it worked as
+       designed. It read "never claims they are complete — nothing records them
+       yet", with the note: "Asserted so a later 'mark them done so the demo
+       looks finished' needs a real source."
+
+       That is exactly the change that then came — 2026-09-21, as an explicit
+       DEFINITION rather than a feed: "100% means the Attestation and
+       certificate step is complete. Step 1–4 is part of the course." The guard
+       did its job: it made the change a decision instead of a drift.
+
+       What it guards now is the half that still holds — they are never complete
+       while any coursework is outstanding, so no state short of 100% can show a
+       finished certificate. A real attestation service would replace the
+       definition; until then the demo asserts the two move together. */
     for (const opt of DASHBOARD_PROGRESS_PICKER) {
       const persona = dashboardProgressPersonaFor('xcel', opt.variant, 'qe')!
-      const tasks = journeyStopsFor(persona.path).filter((s) => s.group === 'Course completion')
-      for (const t of tasks) expect(t.status, opt.variant).not.toBe('completed')
+      const stops = journeyStopsFor(persona.path)
+      const tasks = stops.filter((s) => s.group === 'Course completion')
+      const courseworkDone = stops
+        .filter((s) => s.group !== 'Course completion' && s.hours != null)
+        .every((s) => s.status === 'completed')
+      for (const t of tasks) {
+        expect(t.status === 'completed', opt.variant).toBe(courseworkDone)
+      }
     }
   })
 
@@ -2426,18 +2452,23 @@ describe('the columns are not near-even any more', () => {
     expect(band.style.gridTemplateColumns).toBe('minmax(0, 660fr) minmax(0, 380fr)')
   })
 
-  it('edits the LIVE grid, not the completed-celebration one', () => {
-    // There are two `gridTemplateColumns` in the band. The first belongs to the
-    // completed-celebration branch, which renders something else entirely — it
-    // got the edit first, and the symptom was the left column getting NARROWER,
-    // because the live grid had not moved at all. jsdom would not have caught
-    // that either, which is why this reads the source.
+  it('has only ONE grid to edit now', () => {
+    /* ⚠ THE HAZARD THIS GUARDED IS GONE, which is why the assertion inverted.
+       There used to be TWO `gridTemplateColumns` in this band — the live one and
+       the completed-celebration branch's — and the celebration's got an edit
+       meant for the live one, with the symptom being the left column getting
+       NARROWER because the real grid had not moved. jsdom could not see that,
+       which is why this reads the source.
+
+       The celebration was unwired on 2026-09-21 (the ask for the normal band at
+       100%), taking its grid with it. So the test now pins the ABSENCE of the
+       second grid: one declaration, carrying the live split. If a second ever
+       returns, this fails and whoever added it inherits the warning above. */
     const src = readFileSync('src/components/membership/v5/LearnerFocusedBand.tsx', 'utf8')
     const grids = src.match(/gridTemplateColumns: stack \?[^\n]*/g)!
-    expect(grids).toHaveLength(2)
-    // The celebration grid keeps the old near-even split; only one moved.
-    expect(grids.filter((g) => g.includes('660fr'))).toHaveLength(1)
-    expect(grids.filter((g) => g.includes('514fr'))).toHaveLength(1)
+    expect(grids).toHaveLength(1)
+    expect(grids[0]).toContain('660fr')
+    expect(src).not.toContain('514fr')
   })
 })
 

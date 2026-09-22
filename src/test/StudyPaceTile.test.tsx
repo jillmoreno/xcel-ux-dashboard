@@ -11,6 +11,7 @@ import {
   defaultWeekdays,
   WEEKDAY_LABELS,
 } from '@/lib/studyPace'
+import { FEATURE_FLAGS } from '@/context/FeatureFlagContext'
 
 /**
  * The two claims this widget exists to keep, and which a refactor is most
@@ -649,5 +650,50 @@ describe('StudyPaceTile — the week strip reads real minutes', () => {
     expect(shaded).toHaveLength(preset.nights)
     // …and every one of them is drawn FULL: a suggestion has no partial state.
     for (const cell of shaded) expect(fillPct(cell)).toBe(100)
+  })
+})
+
+describe('StudyPaceTile — the week that cannot be salvaged', () => {
+  /* 32 hours of coursework against an 11-day window: `minsPerWeek` past
+     `CEILING_MINS × 6`, which is the model's own definition of "no pace fits".
+     The numbers are the `progress-off-track` fixture's, and the first assertion
+     below pins that they still reach the state — a card test that silently
+     stopped exercising the branch it names is the failure this guards. */
+  const model = () =>
+    studyPace({ today: TODAY, hoursRemaining: 32, accessExpiresAt: '2026-09-29' })
+
+  it('is the state the copy is written for', () => {
+    expect(defaultPreset(model()).state).toBe('no')
+  })
+
+  it('names BOTH ways out and quotes no figure', () => {
+    /* THE ONE RULE THIS COPY MUST KEEP — 2026-09-21. A pace reaching this state
+       needs more than `CEILING_MINS` a night, and `CEILING_MINS`' own note says
+       why printing it is wrong: "no number is honest there, and the answer is
+       more time or fewer lessons, not a bigger figure." So the card says
+       DRASTICALLY and names the two options the learner actually has. A
+       well-meaning refactor that "helpfully" restores the nightly figure here
+       is what this asserts against. */
+    renderTile({ layout: 'card', hoursRemaining: 32, accessExpiresAt: '2026-09-29' })
+    const text = document.body.textContent ?? ''
+    expect(text).toContain('won’t fit before your access ends')
+    expect(text).toContain('drastic jump in pace')
+    expect(text).toContain('extending your course access')
+    // No hours, no minutes, no nightly number — in any of the card's copy.
+    expect(text).not.toMatch(/\d+\s*(hours?|minutes?|mins?)\s*a\s*night/i)
+    // …and the one control the card ever offers is still there.
+    expect(screen.getByRole('button', { name: /Customize Study Plan/ })).toBeTruthy()
+  })
+
+  it('is reachable from the demo controls, not just from the model', () => {
+    /* THE SILENT FALLBACK THIS FIXES — 2026-09-21. `progress-off-track` lived
+       in `DashboardProgressVariant` and in every `*_BY_VARIANT` map, and the
+       "Pace — won't finish" persona set it, but it was never declared on the
+       flag — so the seed was ignored, the dashboard fell back to On Track, and
+       the whole branch above was unreachable dead copy that still type-checked
+       and still passed every test. Pinning the catalog is the only assertion
+       that would have caught it. */
+    const flag = FEATURE_FLAGS.find((f) => f.key === 'dashboard-progress-state')!
+    expect(flag.variants?.map((v) => v.value)).toContain('progress-off-track')
   })
 })

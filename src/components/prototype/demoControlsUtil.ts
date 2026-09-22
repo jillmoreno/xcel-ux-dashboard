@@ -334,7 +334,7 @@ export const DEMO_PERSONAS: DemoPersona[] = [
     id: 'pace-wont-fit',
     label: 'Pace — won’t finish',
     description:
-      'So far behind that the shortfall outruns the nights left in the week, and no honest evening closes it.',
+      'Bought late and left it \u2014 19% done with 11 days of access. The work left does not fit at any pace we would recommend, so the card drops the nightly figure and names the two ways out.',
     profScope: 'primary',
     flags: [{ key: 'dashboard-progress-state', variant: 'progress-off-track' }],
     dayOptions: PACE_DAY_OPTIONS,

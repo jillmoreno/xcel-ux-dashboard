@@ -56,6 +56,18 @@ export type ArchivedItem = {
 
 export const ARCHIVED_ITEMS: ArchivedItem[] = [
   {
+    id: 'learner-band-completed-celebration',
+    name: 'Completed celebration band (100%)',
+    what: 'The green "You’re all caught up!" card the Learner Focused band returned INSTEAD of itself at 100% — a success half with the completed stats and a View Certificate action, joined to a white panel offering Browse Catalog.',
+    location:
+      'src/components/membership/v5/LearnerFocusedBand.tsx — the `if (renewalReady) { … }` early return, replaced by a block comment at the same spot. `CompletedCelebration` and its `CompletedStat` type are UNTOUCHED in `CompletedCelebration.tsx` and still used by `ClpJumpBackInBand` and `MarketingFocusedBand`.',
+    dateRemoved: '2026-09-21',
+    reason:
+      'The direct ask for a completed state on the NORMAL band ("the course image should not disappear"). The early return was why nothing else survived 100%: the course header and its art, the Study Journey, the Jump Back In card and the pace tile were all below it and never rendered. What replaced it is the band in a completed state — the pace tile hidden, Jump Back In reading "Review Course Material", and the journey marking all four coursework stops complete. The celebration is not wrong, it is a different answer to the same state, and keeping both would have said "complete" twice on one screen.',
+    restoreNote:
+      'Re-add one `if (renewalReady) { … }` block at the top of `LearnerFocusedBand`’s render, above the `return (` — it built a `CompletedStat[]` from `mandatory`/`elective` when `hasBreakdown`, then `deadline` and `timeRemainingText(weeksLeft)`, and returned a `<section aria-label="Learning path complete" className="cre-learner-focused-band">` with a two-column grid wrapping `<CompletedCelebration …>`. Re-import `CompletedCelebration` and `type CompletedStat` from `./CompletedCelebration`, and `DiscoveryEmpty` from `./JumpBackInDiscoveryEmpty` (both imports went with it). `renewalReady`, `onBrowseCatalog` and `onViewCertificate` are ALL STILL PROPS — `renewalReady` now drives the completed treatments inside the band, and the other two are accepted-and-ignored precisely so a restore needs no caller changes; re-add them to the destructure. NOT restored deliberately: the second `gridTemplateColumns: stack ? …` declaration that lived in that branch. A test (`has only ONE grid to edit now`) pins its absence, because the celebration grid once received an edit meant for the live one and the symptom was the left column silently getting narrower — re-adding the branch means updating that test and inheriting the warning in it.',
+  },
+  {
     id: 'header-cart',
     name: 'Header cart button',
     what: 'The shopping-cart icon pill in the top-right header cluster, left of the notification bell and the account menu.',

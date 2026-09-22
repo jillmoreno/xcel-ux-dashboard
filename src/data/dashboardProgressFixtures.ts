@@ -492,7 +492,11 @@ const DAYS_LEFT_BY_VARIANT: Record<DashboardProgressVariant, number> = {
   // "~3 months of runway"; the 30-day cap makes that story unavailable, so what
   // distinguishes it now is the SHORTFALL rather than the horizon — which is
   // what `STATUS_BY_VARIANT`'s override was always carrying anyway.
-  'progress-off-track': 14,
+  /* 10, matching the short access window this state's course now carries (see
+     the jump-back-in chain). A renewal countdown LONGER than the access it sits
+     inside is the kind of disagreement the deadline/days-left pair was just
+     rebuilt to stop. */
+  'progress-off-track': 10,
   // Expired = the deadline is behind us. The STATE comes from the status
   // override, not from this number; the date is a day in the past so the two
   // do not contradict each other on the surfaces that print it.
@@ -697,7 +701,39 @@ function personaFor(profile: BrandProgressProfile, variant: DashboardProgressVar
         ? profile.resumeMid
         : variant === 'progress-at-risk' || variant === 'progress-expired'
           ? profile.resumeEarly
-          : undefined // complete-100 → renewal-ready card replaces Jump Back In
+          : variant === 'progress-off-track'
+            ? /* OFF TRACK GETS A SHORT WINDOW, and that is what finally makes
+                 the model's "won't fit" state reachable — 2026-09-21.
+                 `state: 'no'` needs `minsPerWeek` past `CEILING_MINS × 6`
+                 (1260). With 32 hours left against the standard 30-day window
+                 that is 610, so no progress level could ever trigger it and the
+                 card's whole unreachable-pace branch was dead copy.
+
+                 11 days of access against 32 hours of work is ~1344 — over the
+                 line, and true to what the state is FOR: someone who bought
+                 late and left it. It is the window that is short here, not the
+                 course that is long, because a learner cannot change the course.
+
+                 ⚠ IT ALSO FIXES A SILENT FALLBACK. `progress-off-track` was
+                 absent from this chain entirely and fell through to
+                 `undefined`, which sent the band to `myCoursesFor(brand)` and a
+                 different course with a stock photo — the same defect
+                 `complete-100` had. */
+              { ...profile.resumeEarly, expiresAt: '2026-05-22' }
+          : variant === 'complete-100'
+            ? /* THE COURSE AT 100%, not `undefined` — 2026-09-21. This read
+                 "complete-100 → renewal-ready card replaces Jump Back In",
+                 which was true while the band returned that card instead of
+                 itself. It no longer does (the ask for a completed state on the
+                 normal band), so an absent course fell through to the band's
+                 `myCoursesFor(brand)` fallback and the page came up showing a
+                 DIFFERENT course: a Florida CE record with a stock photo of a
+                 house, under a header naming the New York pre-licensing path,
+                 with "Review course" pointing at it.
+
+                 `resumeMid` at 100% progress — same course record, finished. */
+              { ...profile.resumeMid, progress: 100, status: 'completed' as const }
+            : undefined
   // Jump Back In slot mode — auto-derived from the variant. A not-started course
   // is "Up Next" (launch), a partial course is "Resume", and the discovery
   // states send the learner to the catalog.

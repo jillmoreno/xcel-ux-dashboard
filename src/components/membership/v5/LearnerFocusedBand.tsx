@@ -16,8 +16,6 @@ import { getCourseImage } from '@/utils/courseImage'
 import { DELIVERY_LABEL } from '@/utils/courseDelivery'
 import { unitCount } from '@/utils/unitLabel'
 import { SquareTile } from './SquareTile'
-import { CompletedCelebration, type CompletedStat } from './CompletedCelebration'
-import { DiscoveryEmpty } from './JumpBackInDiscoveryEmpty'
 import { TaskRow } from '@/components/learning/study-calendar/TaskRow'
 import { StudyJourneyWidget } from '@/components/learning/StudyJourneyWidget'
 import { StatusStrip } from '@/components/learning/LearningPathDetailPanel'
@@ -279,6 +277,11 @@ type Props = {
   /** Interest / modality chips shown on the CLP after the setup wizard completes. */
   interestChips?: string[]
   /** Opens the Course Catalog (completed state's Browse Catalog CTA). */
+  /** ⚠ ACCEPTED AND IGNORED since 2026-09-21. Both of these fed the completed
+   *  celebration this band used to return early into; the ask replaced that
+   *  with the normal band. They stay on the type so every caller compiles
+   *  unchanged and so restoring the branch is a one-file change — see the
+   *  ARCHIVED_ITEMS row. */
   onBrowseCatalog?: () => void
   /** Opens the Certificates page (completed state's secondary "View Certificate"). */
   onViewCertificate?: () => void
@@ -335,8 +338,6 @@ export function LearnerFocusedBand({
   renewal,
   renewalReady = false,
   interestChips,
-  onBrowseCatalog,
-  onViewCertificate,
 }: Props) {
   const { brand } = useAccount()
   const launcher = useCourseLauncher()
@@ -584,7 +585,12 @@ export function LearnerFocusedBand({
    * not, because it would be a third saying of one set of numbers the last two
    * changes moved into the header on purpose.
    */
-  const paceTiles = onPage && !statCard
+  /* ⚠ AND NOT COMPLETE. With the pace tile hidden at 100% (see its own note),
+     the PAIR still has Readiness to show and keeps the row — but on the
+     `paceOnly` arrangement Readiness is already dropped, so the row would
+     render as an empty 18px gap above the Jump Back In card. Both halves gone
+     means no row. */
+  const paceTiles = onPage && !statCard && !(renewalReady && paceOnly)
   const clpBigNumber = onPage && barInHeader && clpStyle === 'big-number'
   const clpNavy = onPage && barInHeader && clpStyle === 'navy'
   // Ink for the navy card. The page values are near-black and would vanish on
@@ -652,7 +658,12 @@ export function LearnerFocusedBand({
            to start. The arithmetic was already right at zero — completed + 1 is
            1 — so the guard was suppressing a correct number, not avoiding a
            wrong one. */
+        /* …and NOT at all once complete: the card drops the lesson line with
+           the title and the estimate. Passed anyway rather than conditioned
+           here, because which of the card's three states applies is the card's
+           question, not the band's. */
         chapterNumber={totalCompleted + 1}
+        complete={renewalReady}
         /* WHICH PART, derived from the ordered category list rather than typed:
            the categories ARE the 3-Part Training Program in curriculum order,
            and the learner is in the first one they have not finished. Clamped
@@ -1037,68 +1048,25 @@ export function LearnerFocusedBand({
     </div>
   )
 
-  // ── Completed celebration (Option 5) ── 100% complete: the shared green
-  // success left half (with a secondary "View Certificate" under the details)
-  // joined to the white "all caught up" panel on the right.
-  if (renewalReady) {
-    const completedStats: CompletedStat[] = [
-      ...(hasBreakdown
-        ? [
-            { label: path.mandatoryLabel ?? 'Mandatory', value: `${mandatory.completed} / ${mandatory.required}` },
-            { label: path.electiveLabel ?? 'Elective', value: `${elective.completed} / ${elective.required}` },
-          ]
-        : []),
-      { label: path.deadlineLabel ?? 'License Expires', value: deadline },
-      { label: 'Time Remaining', value: timeRemainingText(weeksLeft) },
-    ]
-    return (
-      <section
-        aria-label="Learning path complete"
-        className="cre-learner-focused-band"
-        style={{
-          display: 'grid',
-          // `minmax(0, 1fr)` (not `1fr`) so the single mobile column can shrink
-        // to the frame width instead of being forced wider by its content.
-        gridTemplateColumns: stack ? 'minmax(0, 1fr)' : 'minmax(0, 514fr) minmax(0, 407fr)',
-          ...(mobile
-            ? { marginLeft: -16, marginRight: -16, borderRadius: 0 }
-            : bleed
-              ? HERO_BLEED
-              : {
-                  borderRadius: 'var(--radius-lg)',
-                  boxShadow: '0 18px 40px -18px color-mix(in srgb, var(--color-primary-900) 55%, transparent)',
-                }),
-          overflow: 'hidden',
-        }}
-      >
-        <CompletedCelebration
-          title={path.title}
-          creditHoursTotal={totalRequired || path.hours}
-          stats={completedStats}
-          onViewDetails={onViewDetails}
-          showViewAll={showViewAll}
-          onViewAll={onViewAll}
-          pathsCount={pathsCount}
-        />
-        <div
-          style={{
-            background: 'var(--color-surface-card)',
-            padding: '24px 26px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-          }}
-        >
-          <DiscoveryEmpty
-            tone="completed"
-            onBrowseCatalog={onBrowseCatalog}
-            onViewCertificate={onViewCertificate}
-            compact
-          />
-        </div>
-      </section>
-    )
-  }
+  /* ── THE COMPLETED CELEBRATION IS UNWIRED ── 2026-09-21, the direct ask.
+     At 100% this band used to RETURN EARLY into a green "You're all caught up"
+     card, which is why the course art, the Study Journey, the Jump Back In card
+     and the pace tile all vanished at 100% — none of them rendered. The ask was
+     for the normal band in a completed state ("the course image should not
+     disappear"), so the early return is gone and the band below runs at every
+     progress level.
+
+     UNWIRED, NOT DELETED, per the archive convention: `CompletedCelebration`
+     and its `CompletedStat` type are untouched in their own file and still have
+     callers (`ClpJumpBackInBand`, `MarketingFocusedBand`). What was removed
+     here is the ~60-line branch that built this band's own stat list and
+     returned that component instead of the band. See the ARCHIVED_ITEMS row —
+     bringing it back is re-adding one `if (renewalReady)` block, not rebuilding
+     a component.
+
+     `renewalReady` IS STILL A PROP and still means what it meant. It now feeds
+     the completed treatments INSIDE the band (the Review Course card, the
+     hidden pace tile) rather than replacing it. */
 
   return (
     <section
@@ -1552,10 +1520,19 @@ export function LearnerFocusedBand({
              `min-width: auto` refuses to shrink below its content, which is
              what makes a two-column grid overflow a narrow shell rather than
              squeeze. */
+          /* THE PACE TILE GOES AT 100% — 2026-09-21, the direct ask ("study
+             pace widget should no longer be visible, hide it"). There is no
+             pace left to keep: every figure on it derives from work remaining,
+             and with none remaining the card would state an evening for nothing.
+
+             On TESTING the row is pace-only, so the row goes with it. On the
+             PAIR, Readiness stays and takes the full width — the same call
+             `paceOnly` already makes in reverse, for the same reason: a lone
+             1:1 tile in a ~506px column is a 506px box holding two lines. */
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: paceOnly ? '1fr' : 'repeat(2, minmax(0, 1fr))',
+              gridTemplateColumns: paceOnly || renewalReady ? '1fr' : 'repeat(2, minmax(0, 1fr))',
               gap: 14,
               marginTop: 18,
             }}
@@ -1574,7 +1551,7 @@ export function LearnerFocusedBand({
                 its access expiry. `FIXTURE_TODAY` is the anchored demo clock
                 every other prototype surface passes, so the states render the
                 same whenever the page is opened. */}
-            {livePace && resume ? (
+            {renewalReady ? null : livePace && resume ? (
               <StudyPaceTile
                 today={FIXTURE_TODAY}
                 hoursRemaining={resume.hours * (1 - (resume.progress ?? 0) / 100)}

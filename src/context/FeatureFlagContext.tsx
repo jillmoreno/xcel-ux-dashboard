@@ -795,6 +795,33 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'dashboard-journey-complete',
+    group: 'Widgets',
+    label: 'Study Journey — when the coursework is done',
+    description:
+      'What the Study Journey column does once the course is 100% complete. Only has an effect at 100%; below it the two variants are identical. Full keeps all four coursework stops on screen, each reading Completed, with the licensing steps (Schedule State Exam · Pass State Exam · Get Licensed) below them — so the column shows what was finished and what is still ahead. Collapsed shrinks the finished coursework card to a single "Coursework complete" summary so the licensing steps LEAD the column, on the argument that at 100% the only things left to do are the licensing ones and a four-stop list of finished work is a receipt rather than a next action. Both are honest about the same state; they disagree about whether a learner at 100% is still reading their coursework or has moved past it.',
+    defaultEnabled: true,
+    // `full` — the state the ask described first, and the one that changes
+    // least from what every other progress level shows. Collapsed is the
+    // exploration, one click away.
+    defaultVariant: 'full',
+    variants: [
+      {
+        value: 'full',
+        label: 'Full — every stop, all complete',
+        description:
+          'The coursework card keeps its four stops, each marked Completed, and the licensing steps follow. The column reads as a record of the whole journey with the remaining steps at the end.',
+      },
+      {
+        value: 'collapsed',
+        label: 'Collapsed — coursework as one line',
+        description:
+          'The four finished stops become a single "Coursework complete" line, so Schedule State Exam leads the column. Argues that finished work is a receipt and the licensing steps are the only actionable things left.',
+      },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'dashboard-pacing-style',
     group: 'Widgets',
     label: 'Pacing tile — treatment',
@@ -1177,6 +1204,12 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
         value: 'progress-at-risk',
         label: 'At Risk · ~15%',
         description: '~15% complete with under 30 days left (requirement <25% done) — the At Risk warning treatment.',
+      },
+      {
+        value: 'progress-off-track',
+        label: 'Off Track · won\u2019t finish',
+        description:
+          "Partway in with far too little time left \u2014 the pace the course now demands is past what anyone studies in an evening, so the Study Pace card drops its nightly figure and names the two real options (extend access, or cut what is left). The only variant that reaches the pace model's `state: 'no'`; it does so with a SHORT WINDOW (11 days), not a long course. Set by the \"Pace \u2014 won't finish\" personas.",
       },
       {
         value: 'progress-expired',
