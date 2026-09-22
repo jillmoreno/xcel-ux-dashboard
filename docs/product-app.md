@@ -783,6 +783,18 @@ copy is absent.
 
 ### Testing — the pacing exploration version (2026-09-21)
 
+> **XCEL'S DEFAULT SINCE 2026-09-22**, and therefore what the **Prototypes**
+> section shows: `defaultDiscoverabilityVersionFor('xcel')` returns this
+> version's id, so a fresh `/dashboard-rebrand?demo=1` with no `?version=`
+> lands here. That promotion is a data change in `dashboardVersions.ts`, not a
+> flag — worth knowing, because the flag catalog is the first place anyone
+> looks for "what does Prototypes render" and this line is not in it.
+>
+> It ships with three flag defaults that the landing version needs in order to
+> have anything to show: `dashboard-pacing-style: 'presets'` (the wide Study
+> Pace card and its Adjust sheet), `study-pace-widget` enabled, and
+> `dashboard-journey-complete: 'full'`.
+
 A fourth Discoverability version (`discoverability-testing`, labelled
 **Testing**), at Jillienne's request: *"a Home Version specifically for Testing
 — readiness removed, and explore the Pacing section UI."*
@@ -1175,7 +1187,8 @@ Support · Get Help.
 
 **NOT `NAV_SECTION_FLAGS`, and that is the decision.** Those flags are the
 committed DEMO BASELINE — one rail that `NavSectionFlags.test.tsx` asserts whole
-and in order — and QE Focused, XCEL's default, is what a stakeholder lands on.
+and in order — and the default version (QE Focused when this was written,
+Testing since 2026-09-22) is what a stakeholder lands on.
 Flipping four of them would have trimmed THAT rail too, which is not what "for
 this version" asked for. So the trim is a property of the LAYOUT
 (`TESTING_HIDDEN_RAIL_SECTIONS` in `PlatformShell`, threaded as the rail's
@@ -1398,8 +1411,9 @@ rather than merged so the picker carries both and neither branch has to win.
 
 **Why a version and not a flag on QE Focused.** A flag is global to the session,
 so flipping it changes every tab; the whole point is opening these **side by side
-in separate tabs**. QE Focused is also XCEL's default, so the thing most people
-open stays the reviewed one. `MembershipOverview` treats `testing-2` as
+in separate tabs**. QE Focused was also XCEL's default when this was written —
+Testing took that on 2026-09-22 — so the thing most people open stays the
+reviewed one either way. `MembershipOverview` treats `testing-2` as
 `qe-focused` for every other decision (`qeFocused = dashboardLayout ===
 'qe-focused' || testingVersion`), so the two cannot drift apart by accident; the
 single difference is the `livePace` prop threaded to `LearnerFocusedBand`.
@@ -2311,9 +2325,19 @@ land in.
 
 ### QE Focused — the new default dashboard version (2026-09-16)
 
+> **SUPERSEDED AS THE DEFAULT, 2026-09-22.** `defaultDiscoverabilityVersionFor('xcel')`
+> now returns **Testing** (see "Testing — the pacing exploration version"), so a
+> fresh `/dashboard-rebrand?demo=1` — which is the whole of the **Prototypes**
+> section — lands on the pacing work rather than here. Everything below still
+> describes QE Focused correctly and it is still one pick away in the version
+> picker; only the word "default" moved. Promoted with
+> `dashboard-pacing-style: presets`, `study-pace-widget` on and
+> `dashboard-journey-complete: full`, which are the three flags that give the
+> landing version something to render.
+
 A fourth Discoverability version (`discoverability-qe-focused`), and **XCEL's
-default**. Learner Focused and Marketing Focused stay in the picker so the three
-can be compared.
+default until 2026-09-22**. Learner Focused and Marketing Focused stay in the
+picker so the three can be compared.
 
 **It is the first version built for a candidate with no licence yet** — someone
 working a fixed curriculum towards a booked exam, where the useful questions are
