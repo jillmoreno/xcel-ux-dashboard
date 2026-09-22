@@ -6,6 +6,7 @@ import { ActionMenu } from '@/components/ui/ActionMenu'
 import { Toast } from '@/components/ui/Toast'
 import { DemoBar, DemoDropdown } from './DemoBar'
 import { licensedProfessionsFor } from '@/data/licensedStatesFixtures'
+import { readDemoDayOffset, setDemoDayOffset } from '@/data/demoDay'
 import { useDemoMenus, DEMO_WHITE, DEMO_HOVER_FILL } from './demoBarUtil'
 import {
   defaultMemberTier,
@@ -378,6 +379,22 @@ export function DemoControlsBar({
     else next.delete('version')
     setSearchParams(next, { replace: true })
     close()
+    /* THE CLOCK LAST, AND IT RELOADS — so it has to come after the URL write,
+       which would otherwise never run.
+
+       `FIXTURE_TODAY` is evaluated once at module load and read by ~30 call
+       sites, several of them plain data modules with no React context to
+       subscribe to. Reloading is what makes the header countdown, the study
+       calendar and the pace card all agree it is Thursday, rather than the card
+       moving alone — the cross-surface disagreement this repo treats as a
+       defect. See `demoDay.ts`.
+
+       A persona with NO `dayOffset` clears the shift rather than inheriting the
+       last one: a clock that persisted across persona changes would be a hidden
+       fifth variable on a bar that shows four. And it only reloads when the day
+       actually changes, so picking a persona at the anchor stays instant. */
+    const nextOffset = persona.dayOffset ?? 0
+    if (nextOffset !== readDemoDayOffset()) setDemoDayOffset(nextOffset)
   }
 
   // The full captured demo state as URL params. Brand + membership live in

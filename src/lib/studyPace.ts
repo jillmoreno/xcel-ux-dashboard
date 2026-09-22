@@ -376,3 +376,93 @@ export function formatEveningSpoken(mins: number): string {
   const hourPart = `${hours} ${hours === 1 ? 'hour' : 'hours'}`
   return rem ? `${hourPart} ${rem} minutes` : hourPart
 }
+
+/** How this week is going against the pace — see {@link weekStanding}. */
+export type WeekStanding = {
+  /** Minutes the elapsed study days of this week asked for. */
+  expected: number
+  /** Minutes actually studied across those days. */
+  actual: number
+  /** `expected - actual`, floored at 0. */
+  shortfall: number
+  /** Minutes a night for the REST of the week that still lands on target. */
+  catchUpPerNight: number
+  /** Nights left in the week that this pace studies on. */
+  nightsLeft: number
+  behind: boolean
+  /**
+   * Whether `catchUpPerNight` is a number anyone could act on.
+   *
+   * False once the catch-up evening passes {@link CEILING_MINS} — the same
+   * threshold the model already uses to refuse a pace outright ("no number is
+   * honest there, and the answer is more time or fewer lessons, not a bigger
+   * figure"). A card that answers "you are behind" with "7 hours a night" has
+   * technically told the truth and practically said nothing.
+   */
+  recoverable: boolean
+}
+
+/**
+ * Is this week on pace, and if not, what closes the gap?
+ *
+ * ⚠ IT COMPARES ACTUAL MINUTES TO THIS WEEK'S TARGET — not progress against
+ * the share of the access window that has elapsed. That distinction is the
+ * whole reason this function is safe to add to a version that has refused
+ * observed rates throughout: the second comparison invents a SCHEDULE the
+ * learner was never given and then reports them behind it, which is the "you
+ * are 4 days behind" claim the fixtures cannot support and a test blocks. This
+ * one reads two numbers the product actually has — what the pace asked for on
+ * the days that have happened, and what was done on them.
+ *
+ * ONLY ELAPSED STUDY NIGHTS COUNT toward `expected`. A Thursday that has not
+ * arrived is not a Thursday they missed, and a rest day was never asked for —
+ * counting either would report a shortfall the learner did not incur.
+ *
+ * `catchUpPerNight` spreads the gap over the nights STILL TO COME, which is the
+ * only honest form of "pick up the pace": it is a number they can act on rather
+ * than a scolding. With no nights left it is `Infinity` and the caller should
+ * say the week is lost rather than quote it.
+ */
+export function weekStanding(input: {
+  /** Minutes studied per day, Monday-first, 7 entries. */
+  weekMinutes: number[]
+  /** Mon-first index of today, 0–6. */
+  todayIndex: number
+  /** Mon-first indices this pace studies on. */
+  nights: number[]
+  minsPerNight: number
+}): WeekStanding {
+  const { weekMinutes, todayIndex, nights, minsPerNight } = input
+  /* ⚠ STRICTLY BEFORE TODAY. Today's session is not a missed one — the evening
+     has not happened yet — and counting it would report every learner behind
+     from the moment they open the page on a study day, until they study. That
+     is the nagging failure, and it is the same rule as "a Thursday that has not
+     arrived is not a Thursday they missed", applied one day closer. Caught by
+     reading the card: the persona named "on pace" was telling itself it was
+     behind on a Thursday morning. */
+  const elapsedNights = nights.filter((d) => d < todayIndex)
+  const expected = elapsedNights.length * minsPerNight
+  // Every day counts toward ACTUAL, including days the pace did not ask for:
+  // studying on a rest day is still studying, and not crediting it would show a
+  // shortfall to someone who did the work on a different evening.
+  const actual = weekMinutes.slice(0, todayIndex + 1).reduce((a, b) => a + (b || 0), 0)
+  // …but minutes done TODAY still count. Studying early on a day that was not
+  // yet required is credit, not noise.
+  const shortfall = Math.max(0, expected - actual)
+  // Today counts as a night still to come, which is what makes the catch-up
+  // spendable: it is the first evening they can act on.
+  const nightsLeft = nights.filter((d) => d >= todayIndex).length
+  const catchUpPerNight = nightsLeft > 0 ? minsPerNight + shortfall / nightsLeft : Infinity
+  return {
+    expected,
+    actual,
+    shortfall,
+    nightsLeft,
+    catchUpPerNight,
+    recoverable: catchUpPerNight <= CEILING_MINS,
+    // A tolerance, not a knife edge: finishing an evening a few minutes short is
+    // not being behind, and a card that says so on a rounding error stops being
+    // believed. One tenth of a session.
+    behind: shortfall > minsPerNight * 0.1,
+  }
+}

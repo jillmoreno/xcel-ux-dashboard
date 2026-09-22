@@ -8,6 +8,7 @@ import {
   formatEvening,
   formatPaceDate,
   presetLabel,
+  weekStanding,
   defaultWeekdays,
   EASY_MINS,
   WEEKDAY_LABELS,
@@ -460,6 +461,13 @@ function PaceCardBody({
    *  same default the sheet would propose, from the shared helper — so the
    *  strip and the plan behind it cannot shade different days. */
   const nights = plan?.weekdays ?? defaultWeekdays(preset.nights)
+  const todayIndex = (today.getDay() + 6) % 7
+  /** Null when there is nothing studied to compare — a learner at 0% has not
+   *  had a bad week, they have not had a week. */
+  const standing =
+    weekMinutes != null
+      ? weekStanding({ weekMinutes, todayIndex, nights, minsPerNight: preset.minsPerNight })
+      : null
 
   return (
     <div style={cardStack}>
@@ -479,8 +487,42 @@ function PaceCardBody({
         nights={nights}
         weekMinutes={weekMinutes}
         target={preset.minsPerNight}
-        todayIndex={(today.getDay() + 6) % 7}
+        todayIndex={todayIndex}
       />
+
+      {/* PICK UP THE PACE, as a number they can act on — 2026-09-21.
+          Shown only when there IS a shortfall and nights left to spend it on,
+          which is the difference between a prompt and a scolding. It reads
+          `weekStanding`, which compares minutes done to what this week's
+          elapsed nights asked for — NOT progress against the share of the
+          window that has elapsed, which would be the invented schedule this
+          version refuses.
+
+          ⚠ IT ONLY QUOTES A CATCH-UP IT BELIEVES. Past `CEILING_MINS` — the
+          model's own "no number is honest there" threshold — the arithmetic
+          still produces a figure and the card stops printing it: answering
+          "you are behind" with "7 hours a night" is technically true and
+          practically nothing. Caught by reading the rendered card, not by a
+          test: every assertion passed while it said exactly that. */}
+      {standing?.behind ? (
+        <p style={{ ...cardBody, color: 'var(--color-warning-800)' }}>
+          {standing.recoverable ? (
+            <>
+              You are <b style={emphasis}>{formatEvening(standing.shortfall)}</b> short this week.{' '}
+              <b style={emphasis}>{formatEvening(standing.catchUpPerNight)}</b> a night for the rest
+              of it catches you up.
+            </>
+          ) : (
+            <>
+              You are <b style={emphasis}>{formatEvening(standing.shortfall)}</b> short this week.
+              {standing.nightsLeft > 0
+                ? ' No evening left in it realistically closes that.'
+                : ' There are no study nights left in it.'}{' '}
+              Next week carries the difference.
+            </>
+          )}
+        </p>
+      ) : null}
 
       <div style={cardBody}>
         {/* LINE ONE — the window. Omitted entirely when nothing bounds it:

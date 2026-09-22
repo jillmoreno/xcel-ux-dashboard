@@ -7,6 +7,8 @@ import {
   defaultPreset,
   formatEvening,
   formatEveningSpoken,
+  weekStanding,
+  CEILING_MINS,
   formatPaceDate,
   presetLabel,
   isoPlusDays,
@@ -244,5 +246,96 @@ describe('formatEveningSpoken', () => {
     // needs words rather than a punctuation mark read aloud as nothing.
     expect(formatEvening(Infinity)).toBe('—')
     expect(formatEveningSpoken(Infinity)).toBe('not available')
+  })
+})
+
+describe('weekStanding', () => {
+  /* ⚠ WHAT IT COMPARES is the whole reason it is safe to have. Minutes done
+     against what THIS WEEK's elapsed nights asked for — two numbers the product
+     has. Not progress against the share of the access window that has elapsed,
+     which invents a schedule the learner was never given and then reports them
+     behind it. */
+  const base = { nights: [0, 1, 2, 3], minsPerNight: 60 }
+
+  it('counts only the study nights BEFORE today', () => {
+    /* Wednesday is today. Mon and Tue were required; WEDNESDAY IS NOT YET a
+       missed night — the evening has not happened. Counting it would report
+       every learner behind from the moment they open the page on a study day,
+       which is the nagging failure. Minutes done today still COUNT, though:
+       studying early is credit. */
+    const s = weekStanding({ ...base, weekMinutes: [60, 60, 60, 0, 0, 0, 0], todayIndex: 2 })
+    expect(s.expected).toBe(120)
+    expect(s.actual).toBe(180)
+    expect(s.behind).toBe(false)
+  })
+
+  it('credits work done on a day the pace did not ask for', () => {
+    /* Studying on a rest day is still studying. Counting only planned days
+       would report a shortfall to someone who did the work on another evening —
+       the card scolding a learner who is not behind. */
+    const s = weekStanding({
+      ...base,
+      // Nothing on Mon/Tue/Wed, two hours on Sunday-of-last... here: index 4,
+      // a day outside `nights`, still inside the elapsed window.
+      weekMinutes: [0, 0, 0, 0, 180, 0, 0],
+      todayIndex: 4,
+    })
+    expect(s.actual).toBe(180)
+    // Mon–Thu were required (four nights before today, index 4) = 240.
+    expect(s.shortfall).toBe(60)
+  })
+
+  it('spreads the gap over the nights STILL TO COME', () => {
+    // Monday missed; today is Wednesday, so Wed and Thu are still to come.
+    const s = weekStanding({ ...base, weekMinutes: [0, 60, 0, 0, 0, 0, 0], todayIndex: 2 })
+    expect(s.shortfall).toBe(60)
+    expect(s.nightsLeft).toBe(2)
+    // Two nights left carry their own hour plus half the missed one each.
+    expect(s.catchUpPerNight).toBe(90)
+  })
+
+  it('refuses to vouch for a catch-up nobody could do', () => {
+    /* THE DEFECT THIS CAUGHT, and it was found by reading the rendered card
+       rather than by a failing test — every assertion passed while the card
+       said "7 hours a night for the rest of it catches you up".
+
+       `CEILING_MINS` is the model's OWN "no number is honest there" threshold,
+       already used to refuse a pace outright. Past it the arithmetic still
+       produces a figure and `recoverable` says not to print it. */
+    const s = weekStanding({
+      ...base,
+      weekMinutes: [0, 0, 0, 0, 0, 0, 0],
+      todayIndex: 3, // Mon–Wed missed; only Thursday left to carry them
+    })
+    expect(s.behind).toBe(true)
+    expect(s.nightsLeft).toBe(1)
+    expect(s.catchUpPerNight).toBeGreaterThan(CEILING_MINS)
+    expect(s.recoverable).toBe(false)
+  })
+
+  it('vouches for one that is merely hard', () => {
+    const s = weekStanding({ ...base, weekMinutes: [0, 60, 0, 0, 0, 0, 0], todayIndex: 2 })
+    expect(s.catchUpPerNight).toBe(90)
+    expect(s.recoverable).toBe(true)
+  })
+
+  it('reports an unspendable gap rather than an infinite evening', () => {
+    // Behind, with no study nights left in the week: the caller must say the
+    // week is lost instead of quoting a number nobody can act on.
+    const s = weekStanding({ ...base, weekMinutes: [0, 0, 0, 0, 0, 0, 0], todayIndex: 6 })
+    expect(s.behind).toBe(true)
+    expect(s.nightsLeft).toBe(0)
+    expect(s.catchUpPerNight).toBe(Infinity)
+    expect(s.recoverable).toBe(false)
+  })
+
+  it('does not call a rounding error being behind', () => {
+    /* A tolerance, not a knife edge — a card that says "you are behind" because
+       an evening ran four minutes short stops being believed. */
+    // Tuesday: Monday was required and came up four minutes short.
+    const s = weekStanding({ ...base, weekMinutes: [56, 0, 0, 0, 0, 0, 0], todayIndex: 1 })
+    expect(s.expected).toBe(60)
+    expect(s.shortfall).toBe(4)
+    expect(s.behind).toBe(false)
   })
 })
