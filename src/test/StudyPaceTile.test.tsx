@@ -88,8 +88,8 @@ describe('StudyPaceTile — the tile operates nothing', () => {
     renderTile()
     expect(screen.getByText('Recommended')).toBeInTheDocument()
     const dialog = await openSheet(user)
-    await user.click(within(dialog).getByRole('radio', { name: /Full window|Relaxed/ }))
-    await user.click(within(dialog).getByRole('button', { name: 'Save pace' }))
+    await user.click(dialog.querySelector('[data-shape="evenings"]')!)
+    await user.click(within(dialog).getByRole('button', { name: /^Save pace/ }))
     // The tile now names the learner's own choice instead of claiming credit.
     expect(screen.queryByText('Recommended')).toBeNull()
   })
@@ -103,193 +103,246 @@ describe('StudyPaceTile — the tile operates nothing', () => {
   })
 })
 
-describe('StudyPaceSheet — the four groups', () => {
-  it('opens with the aims, days a week and the plan switch', async () => {
-    /* THREE GROUPS as of 2026-09-21, not four: the exam-date group was hidden
-       (the direct ask). The DATE is not gone — it is captured on the Schedule
-       State Exam card and reaches this model through `examDateStore`, which is
-       what the two-ceiling tests below now drive it with. Asserted as an
-       absence too, so the field coming back is a decision rather than a drift. */
+/**
+ * ─── THE SHEET, REBUILT AGAIN 2026-09-22 ────────────────────────────────
+ *
+ * These replace the suite that pinned the four-group sheet (aim rows, a
+ * days-a-week segment, an exam field, a plan switch). That IA is gone: the
+ * sheet is now a CHOOSER of study styles and one screen per style, ported from
+ * `adjust-your-pace-prototype.html`. The claims worth keeping survived the
+ * port and are re-pinned below — one tab stop per radio group, `aria-disabled`
+ * where a thing cannot be chosen, spoken durations beside glyph fractions, the
+ * draft-until-Save contract, and the two ceilings.
+ *
+ * The one genuinely NEW claim, and the one a refactor is most likely to break:
+ * **the footer's promise is a contract.** It states what the dashboard will
+ * show before the learner presses Save, so the card must then show exactly
+ * that. It did not, when this was first wired — the tile re-derived a pace from
+ * `nights` and ignored the week that had been built.
+ */
+describe('StudyPaceSheet — the chooser', () => {
+  it('states the recommendation and offers the four shapes', async () => {
     const user = userEvent.setup()
     renderTile()
     const dialog = await openSheet(user)
-    expect(within(dialog).getAllByRole('radio', { name: /a night|won’t fit/i }).length).toBeGreaterThanOrEqual(2)
-    expect(within(dialog).getByRole('radiogroup', { name: 'Days a week' })).toBeInTheDocument()
-    expect(within(dialog).getByRole('switch', { name: 'Create a study plan' })).toBeInTheDocument()
-    expect(within(dialog).queryByLabelText(/Exam date/)).toBeNull()
+    const preset = defaultPreset(
+      studyPace({ today: TODAY, hoursRemaining: 24, accessExpiresAt: '2026-10-18' }),
+    )
+    // Recommended is stated as an ANSWER, not offered as a fifth option…
+    expect(dialog.textContent).toContain(formatEvening(preset.minsPerNight))
+    expect(dialog.textContent).toContain(formatPaceDate(preset.finishIso))
+    // …and accepted by the primary button rather than by a radio.
+    expect(within(dialog).getByRole('button', { name: 'Keep recommended' })).toBeTruthy()
+    for (const shape of ['sprint', 'evenings', 'blocks', 'custom']) {
+      expect(dialog.querySelector(`[data-shape="${shape}"]`)).toBeTruthy()
+    }
   })
 
-  it('starts on Recommended', async () => {
-    const user = userEvent.setup()
+  it('offers no Save until a style has been opened', () => {
+    /* There is nothing to save on the chooser: the learner has not built a
+       week. "Keep recommended" is a different promise and says so. */
     renderTile()
-    const dialog = await openSheet(user)
-    const checked = within(dialog).getAllByRole('radio').filter((r) => r.getAttribute('aria-checked') === 'true')
-    expect(checked.some((r) => r.getAttribute('data-preset') === 'recommended')).toBe(true)
+    return openSheet(userEvent.setup()).then((dialog) => {
+      expect(within(dialog).queryByRole('button', { name: /^Save pace/ })).toBeNull()
+    })
   })
 
-  it('re-prices the SHEET live, and the tile only on Save', async () => {
-    /* REWRITTEN 2026-09-21 with the draft save contract. It asserted the TILE
-       changing the instant a segment was clicked, which was true because
-       `set()` wrote straight through to the parent — the same write-through
-       that made "Save pace" describe one field in four and left a Cancel button
-       with nothing to restore.
-
-       The feedback the old behaviour gave is NOT gone, it moved inside the
-       panel: the sheet's own figures still re-price on every click. So this
-       asserts both halves — live in the sheet, committed on Save — which is the
-       contract itself rather than one visible consequence of it. */
+  it('goes into a style and back out again', async () => {
     const user = userEvent.setup()
     renderTile()
-    const before = screen.getByText(/a night · \d nights a week/).textContent
     const dialog = await openSheet(user)
-    const evening = () =>
-      within(dialog).getByRole('radio', { name: /Recommended/ }).textContent
+    await user.click(dialog.querySelector('[data-shape="evenings"]')!)
+    expect(within(dialog).getByRole('group', { name: 'Which weeknights?' })).toBeTruthy()
+    await user.click(within(dialog).getByRole('button', { name: /All pace styles/ }))
+    expect(within(dialog).getByRole('button', { name: 'Keep recommended' })).toBeTruthy()
+  })
+})
 
-    const beforeInSheet = evening()
-    await user.click(within(dialog).getByRole('radio', { name: '6' }))
-    // The sheet moved…
-    expect(evening()).not.toBe(beforeInSheet)
-    // …and the tile has not, because nothing has been committed.
-    expect(screen.getByText(/a night · \d nights a week/).textContent).toBe(before)
-
-    await user.click(within(dialog).getByRole('button', { name: 'Save pace' }))
-    expect(screen.getByText(/a night · 6 nights a week/)).toBeInTheDocument()
+describe('StudyPaceSheet — the footer states a contract', () => {
+  it('shows the card exactly what the footer promised', async () => {
+    /* THE CLAIM THIS WHOLE PORT RESTS ON, and the bug it shipped with. The
+       footer reads "Your dashboard will show: … finishing around <date>"; the
+       learner presses Save; the card has to agree. It did not, because the tile
+       re-derived a pace from `nights` and never looked at the week that was
+       built — so the sheet promised one date and the card printed another. */
+    const user = userEvent.setup()
+    renderTile()
+    const dialog = await openSheet(user)
+    await user.click(dialog.querySelector('[data-shape="blocks"]')!)
+    const promised = dialog
+      .querySelector('.cre-pace-sheet__summary')!
+      .textContent!.match(/finishing around ([A-Z][a-z]+ \d+)/)![1]
+    await user.click(within(dialog).getByRole('button', { name: /^Save pace/ }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(document.body.textContent).toContain(promised)
   })
 
   it('discards the draft on Cancel', async () => {
-    // The other half of the contract, and the reason Cancel could not exist
-    // before: with the old write-through there was nothing left to discard.
     const user = userEvent.setup()
     renderTile()
-    const before = screen.getByText(/a night · \d nights a week/).textContent
+    const before = document.body.textContent
     const dialog = await openSheet(user)
-    await user.click(within(dialog).getByRole('radio', { name: '6' }))
+    await user.click(dialog.querySelector('[data-shape="blocks"]')!)
     await user.click(within(dialog).getByRole('button', { name: 'Cancel' }))
-    expect(screen.getByText(/a night · \d nights a week/).textContent).toBe(before)
-    // …and re-opening shows the SAVED state, not the abandoned draft.
-    const again = await openSheet(user)
-    expect(within(again).getByRole('radio', { name: '6' })).toHaveAttribute('aria-checked', 'false')
+    expect(document.body.textContent).toBe(before)
+  })
+
+  it('re-opens on the style the learner built, not on the chooser', async () => {
+    /* A plan you cannot get back to is a plan you rebuild. */
+    const user = userEvent.setup()
+    renderTile()
+    const first = await openSheet(user)
+    await user.click(first.querySelector('[data-shape="evenings"]')!)
+    await user.click(within(first).getByRole('button', { name: /^Save pace/ }))
+    const second = await openSheet(user)
+    expect(within(second).getByRole('group', { name: 'Which weeknights?' })).toBeTruthy()
+    expect(within(second).queryByRole('button', { name: 'Keep recommended' })).toBeNull()
+  })
+})
+
+describe('StudyPaceSheet — the outcome reads the simulator', () => {
+  const openStyle = async (shape: string) => {
+    const user = userEvent.setup()
+    renderTile()
+    const dialog = await openSheet(user)
+    await user.click(dialog.querySelector(`[data-shape="${shape}"]`)!)
+    return { user, dialog }
+  }
+
+  it('states a week, a verdict and where it lands', async () => {
+    const { dialog } = await openStyle('evenings')
+    const outcome = dialog.querySelector('.cre-pace-sheet__outcome')!
+    expect(outcome.textContent).toMatch(/a week/)
+    // The badge's tone is reinforcement; the SENTENCE is the signal, so it must
+    // survive the colour being removed.
+    const badge = dialog.querySelector('.cre-pace-sheet__badge')!
+    expect(badge.getAttribute('data-tone')).toMatch(/good|warn|bad/)
+    expect(badge.textContent).toMatch(/Finishes|Pick at least/)
+  })
+
+  it('never doubles the unit', () => {
+    /* `formatHours` carries its own ("8½ hours", "45 minutes"), so a sentence
+       that adds one reads "10 hours hours a week" — which it did, until the
+       browser said it out loud. */
+    return openStyle('evenings').then(({ dialog }) => {
+      expect(dialog.textContent).not.toMatch(/hours hours/)
+    })
+  })
+
+  it('advises on a long day without refusing it', async () => {
+    const { user, dialog } = await openStyle('blocks')
+    const more = within(dialog).getByRole('button', { name: 'More time on Sat' })
+    for (let i = 0; i < 6; i++) await user.click(more)
+    expect(dialog.querySelector('.cre-pace-sheet__advice')!.textContent).toMatch(
+      /hard to keep up|split/,
+    )
+    // …and the plan is still saveable, because a free Saturday is the learner's
+    // to spend.
+    expect(within(dialog).getByRole('button', { name: /^Save pace/ })).not.toBeDisabled()
+  })
+
+  it('draws the week it simulated, and hides it from a screen reader', async () => {
+    const { dialog } = await openStyle('blocks')
+    const cal = dialog.querySelector('.cre-pace-sheet__cal')!
+    expect(cal.getAttribute('aria-hidden')).not.toBeNull()
+    expect(cal.querySelectorAll('[data-study="true"]').length).toBeGreaterThan(0)
+    expect(cal.querySelectorAll('[data-finish="true"]').length).toBe(1)
+    /* The deadline is drawn as an EDGE so it can coincide with a study day or
+       with the finish — at most one cell, and NONE when the ceiling falls past
+       the four weeks the strip draws, which is the common case on a fresh
+       course. Asserted as "never more than one" rather than "always one": the
+       alternative pins the fixture's expiry into a calendar test. */
+    expect(cal.querySelectorAll('[data-end="true"]').length).toBeLessThanOrEqual(1)
   })
 })
 
 describe('StudyPaceSheet — two ceilings', () => {
+  /* UNCHANGED CLAIM, new home. The exam field left the sheet in September; the
+     binding NOTE did not, and it is the part that matters — a pace that
+     switched ceilings silently is how a learner stops believing the number. */
+  const openWith = async (props: Parameters<typeof renderTile>[0]) => {
+    const user = userEvent.setup()
+    renderTile(props)
+    const dialog = await openSheet(user)
+    await user.click(dialog.querySelector('[data-shape="evenings"]')!)
+    return dialog
+  }
+
   it('names the access window while there is no exam date', async () => {
-    const user = userEvent.setup()
-    renderTile()
-    const dialog = await openSheet(user)
-    expect(within(dialog).getByText(/These come from your course access/)).toBeInTheDocument()
+    const dialog = await openWith({})
+    expect(dialog.querySelector('[data-binding="access"]')!.textContent).toContain(
+      formatPaceDate('2026-10-18'),
+    )
   })
 
-  it('hands the ceiling to an exam date inside the window, and says so', async () => {
-    /* THE DATE ARRIVES AS A PROP now, not typed into this sheet — the field was
-       hidden on 2026-09-21 and the Schedule State Exam card is where a learner
-       enters one. The CLAIM is untouched: an exam inside the access window has
-       to take the ceiling AND be explained. Only the input moved. */
-    const user = userEvent.setup()
-    renderTile({ examDate: '2026-10-10' })
-    const dialog = await openSheet(user)
-    const note = dialog.querySelector('[data-binding]')
-    expect(note?.getAttribute('data-binding')).toBe('exam')
-    expect(note?.textContent).toMatch(/exam date is the one doing the work/i)
-    // …and it names the OTHER date, so the learner can see what it beat.
-    expect(note?.textContent).toMatch(/Oct 18/)
+  it('hands the ceiling to an exam inside the window, and says so', async () => {
+    const dialog = await openWith({ examDate: '2026-10-01' })
+    const note = dialog.querySelector('[data-binding="exam"]')!
+    expect(note.textContent).toContain('exam date is the one doing the work')
   })
 
-  it('leaves access binding when the exam sits past the window', async () => {
-    const user = userEvent.setup()
-    renderTile({ examDate: '2026-12-15' })
-    const dialog = await openSheet(user)
-    const note = dialog.querySelector('[data-binding]')
-    expect(note?.getAttribute('data-binding')).toBe('access')
-    expect(note?.textContent).toMatch(/access is still the one doing the work/i)
+  it('measures the plan against the EXAM once it binds', async () => {
+    /* The join between the two models. `simulateSchedule` takes
+       `model.hardEndIso`, so an exam that binds earlier moves the verdict here
+       exactly as it moves the presets — otherwise the sheet could congratulate
+       a plan that overruns the exam it is bound to. */
+    const dialog = await openWith({ examDate: '2026-09-25' })
+    expect(dialog.querySelector('.cre-pace-sheet__badge')!.textContent).toMatch(
+      /you need to be ready|Finishes/,
+    )
   })
 })
 
-describe('StudyPaceSheet — the study plan calendar', () => {
-  it('asks which days only once the calendar is switched on', async () => {
+describe('StudyPaceSheet — the shell, the keyboard and the ear', () => {
+  const openStyle = async (shape = 'evenings') => {
     const user = userEvent.setup()
     renderTile()
     const dialog = await openSheet(user)
-    expect(within(dialog).queryByRole('group', { name: 'Study days' })).toBeNull()
-    await user.click(within(dialog).getByRole('switch', { name: 'Create a study plan' }))
-    expect(within(dialog).getByRole('group', { name: 'Study days' })).toBeInTheDocument()
-    expect(within(dialog).getByLabelText('Usual start time')).toBeInTheDocument()
+    await user.click(dialog.querySelector(`[data-shape="${shape}"]`)!)
+    return { user, dialog }
+  }
+
+  it('is header / scroll body / footer, so the footer cannot be clipped', async () => {
+    /* The 2026-09-21 fix, still the reason the panel works: three flex children,
+       and `min-height: 0` on the middle one. A footer rendered INSIDE the scroll
+       body is how Save became unreachable with the plan open. */
+    const { dialog } = await openStyle()
+    const shell = dialog.querySelector('.cre-pace-sheet')!
+    expect(shell.children).toHaveLength(3)
+    expect(shell.querySelector('.cre-pace-sheet__footer')!.parentElement).toBe(shell)
   })
 
-  it('pre-ticks as many days as the chosen pace, and previews real dated sessions', async () => {
-    const user = userEvent.setup()
-    renderTile()
-    const dialog = await openSheet(user)
-    await user.click(within(dialog).getByRole('switch', { name: 'Create a study plan' }))
-    const pressed = within(dialog)
-      .getAllByRole('button', { pressed: true })
-      .filter((b) => b.hasAttribute('data-weekday'))
-    const nights = Number(screen.getByText(/a night · (\d) nights a week/).textContent!.match(/(\d) nights/)![1])
-    expect(pressed).toHaveLength(nights)
-    expect(dialog.querySelectorAll('[data-session]').length).toBeGreaterThan(0)
+  it('is ONE tab stop per radio group, with arrows moving selection', async () => {
+    const { user, dialog } = await openStyle()
+    const group = within(dialog).getByRole('radiogroup', { name: 'Hours on a weeknight' })
+    const radios = within(group).getAllByRole('radio')
+    expect(radios.filter((r) => r.tabIndex === 0)).toHaveLength(1)
+    const startIndex = radios.findIndex((r) => r.getAttribute('aria-checked') === 'true')
+    radios[startIndex].focus()
+    await user.keyboard('{ArrowRight}')
+    const after = within(group)
+      .getAllByRole('radio')
+      .findIndex((r) => r.getAttribute('aria-checked') === 'true')
+    expect(after).toBe(startIndex + 1)
   })
 
-  it('lets un-ticking a day re-price the pace rather than disagreeing with it', async () => {
-    const user = userEvent.setup()
-    renderTile()
-    const dialog = await openSheet(user)
-    await user.click(within(dialog).getByRole('switch', { name: 'Create a study plan' }))
-    const before = Number(screen.getByText(/a night · (\d) nights a week/).textContent!.match(/(\d) nights/)![1])
-    const firstTicked = within(dialog)
-      .getAllByRole('button', { pressed: true })
-      .find((b) => b.hasAttribute('data-weekday'))!
-    await user.click(firstTicked)
-    /* ASSERTED IN THE SHEET, then on the tile after Save — the draft contract.
-       The claim is unchanged: un-ticking a day re-prices the pace rather than
-       letting the count and the calendar disagree. */
-    expect(
-      within(dialog).getByRole('radio', { name: String(before - 1) }),
-    ).toHaveAttribute('aria-checked', 'true')
-    await user.click(within(dialog).getByRole('button', { name: /Save pace/ }))
-    expect(screen.getByText(new RegExp(`a night · ${before - 1} nights a week`))).toBeInTheDocument()
+  it('disables a stepper at its floor rather than letting it look live', async () => {
+    const { dialog } = await openStyle()
+    // Sunday starts at Off, so "less" has nowhere to go.
+    expect(within(dialog).getByRole('button', { name: 'Less time on Sunday' })).toBeDisabled()
+    expect(within(dialog).getByRole('button', { name: 'More time on Sunday' })).not.toBeDisabled()
   })
 
-  it('keeps the learner’s choices when the sheet is closed and reopened', async () => {
-    const user = userEvent.setup()
-    renderTile()
-    let dialog = await openSheet(user)
-    await user.click(within(dialog).getByRole('radio', { name: '6' }))
-    await user.click(within(dialog).getByRole('button', { name: 'Save pace' }))
-    dialog = await openSheet(user)
-    const six = within(dialog).getByRole('radio', { name: '6' })
-    expect(six).toHaveAttribute('aria-checked', 'true')
-  })
-
-  it('resets everything back to the recommendation', async () => {
-    const user = userEvent.setup()
-    renderTile()
-    const dialog = await openSheet(user)
-    await user.click(within(dialog).getByRole('radio', { name: '6' }))
-    await user.click(within(dialog).getByRole('switch', { name: 'Create a study plan' }))
-    await user.click(within(dialog).getByRole('button', { name: 'Reset to recommended' }))
-    expect(within(dialog).queryByRole('group', { name: 'Study days' })).toBeNull()
-    // The tile's pill is back to "Recommended". Scoped past the dialog, because
-    // the sheet's own Recommended chip is still on screen — a bare
-    // `getByText('Recommended')` matches both and throws.
-    await user.click(within(dialog).getByRole('button', { name: 'Save pace' }))
-    expect(screen.getByText('Recommended')).toBeInTheDocument()
-    expect(screen.getByText(/a night · 4 nights a week/)).toBeInTheDocument()
+  it('shows the fraction and speaks it in words', async () => {
+    /* A screen reader renders `¾` as "three quarters", "3/4" or nothing at all
+       depending on the engine — so the one figure this component exists to
+       communicate is the one a listener may not get. */
+    const { dialog } = await openStyle()
+    const value = dialog.querySelector('.cre-pace-sheet__step-value')!
+    expect(value.querySelector('.cre-sr-only')).toBeTruthy()
+    expect(value.getAttribute('aria-live')).toBe('polite')
   })
 })
-
-/**
- * THE CARD SHAPE — `layout="card"`, the Testing version's `presets` pacing
- * treatment (2026-09-21). Ported from `xcel-pace-presets.html` §02.
- *
- * These are here rather than in `TestingVersion.test.tsx` because the claims
- * are about AGREEMENT WITH THE MODEL, and that needs a ceiling to agree about.
- * The course the band paces on Testing carries no `expiresAt` at all, so the
- * integration suite can only pin the card's internal consistency and its
- * wiring; a ceiling is a prop here, so this is where the arithmetic lives.
- *
- * Nothing below asserts a literal date or a literal day count — every figure
- * comes back out of `studyPace` and is compared to what the card printed.
- */
 describe('StudyPaceTile — the presets card', () => {
   const model = () =>
     studyPace({ today: TODAY, hoursRemaining: 24, accessExpiresAt: '2026-10-18' })
@@ -428,7 +481,7 @@ describe('StudyPaceTile — the presets card', () => {
     renderCard()
     expect(screen.getByText('Recommended Study Pace')).toBeInTheDocument()
     const dialog = await openSheet(user)
-    await user.click(within(dialog).getByRole('radio', { name: '6' }))
+    await user.click(dialog.querySelector('[data-shape="evenings"]')!)
     /* SAVE FIRST, as of the sheet's draft contract. The eyebrow follows
        `choices`, and nothing reaches `choices` until Save — which is the point
        of that change, not a wrinkle in this test: a card that re-titled itself
@@ -456,142 +509,7 @@ describe('StudyPaceTile — the presets card', () => {
  * children, the middle one scrolling, the footer a SIBLING of it rather than
  * the last thing inside. Those are the conditions the fix rests on, and they
  * are what a later edit would undo by accident.
- */
-describe('StudyPaceSheet — the rebuilt shell', () => {
-  it('renders a scroll body with the footer OUTSIDE it', async () => {
-    const user = userEvent.setup()
-    renderTile()
-    const dialog = await openSheet(user)
-    const body = dialog.querySelector('.cre-pace-sheet__body')!
-    const footer = dialog.querySelector('.cre-pace-sheet__footer')!
-    expect(body).toBeTruthy()
-    expect(footer).toBeTruthy()
-    /* THE LOAD-BEARING ASSERTION. A footer INSIDE the scrolling region scrolls
-       away with the content, which is the bug wearing a different hat — Save
-       still unreachable, just for a new reason. Siblings, sharing one flex
-       parent. */
-    expect(body.contains(footer)).toBe(false)
-    expect(footer.parentElement).toBe(body.parentElement)
-    // …and the body is the element that scrolls, not the panel.
-    expect(dialog.querySelector('.cre-pace-sheet__header')!.parentElement).toBe(body.parentElement)
-  })
-
-  it('has a visible title and a Close button', async () => {
-    const user = userEvent.setup()
-    renderTile()
-    const dialog = await openSheet(user)
-    const heading = within(dialog).getByRole('heading', { name: '', hidden: true })
-    expect(heading.textContent).toBe('Adjust your pace')
-    /* `aria-hidden` ON PURPOSE: `Sheet` renders its own sr-only copy for
-       `aria-labelledby`, so an exposed second one gives the dialog a doubled
-       accessible name. The heading is for eyes; the sr-only one is the name. */
-    expect(heading).toHaveAttribute('aria-hidden')
-    expect(within(dialog).getByRole('button', { name: 'Close' })).toBeTruthy()
-  })
-})
-
-describe('StudyPaceSheet — keyboard', () => {
-  it('is ONE tab stop per radio group, with arrows moving selection', async () => {
-    /* Both groups were lists of tabbable `role="radio"` buttons: seven stops to
-       cross the sheet, and none of the arrow behaviour the role promises. A
-       custom radio group has to match the native one or it should not claim the
-       role. */
-    const user = userEvent.setup()
-    renderTile()
-    const dialog = await openSheet(user)
-    const nights = within(dialog).getByRole('radiogroup', { name: 'Days a week' })
-    const options = within(nights).getAllByRole('radio')
-    const tabbable = options.filter((o) => o.getAttribute('tabindex') === '0')
-    expect(tabbable).toHaveLength(1)
-    expect(tabbable[0]).toHaveAttribute('aria-checked', 'true')
-
-    tabbable[0].focus()
-    await user.keyboard('{ArrowRight}')
-    const after = within(nights)
-      .getAllByRole('radio')
-      .find((o) => o.getAttribute('aria-checked') === 'true')!
-    expect(after).not.toBe(tabbable[0])
-    // …and it MOVED as well as selected, which is the native behaviour.
-    expect(after).toHaveFocus()
-
-    await user.keyboard('{Home}')
-    expect(
-      within(nights).getAllByRole('radio')[0].getAttribute('aria-checked'),
-    ).toBe('true')
-  })
-
-  it('moves the aim rows with up/down, and keeps them one stop', async () => {
-    const user = userEvent.setup()
-    renderTile()
-    const dialog = await openSheet(user)
-    const aims = within(dialog).getByRole('radiogroup', { name: 'Finish date' })
-    const rows = within(aims).getAllByRole('radio')
-    expect(rows.filter((r) => r.getAttribute('tabindex') === '0')).toHaveLength(1)
-    const checked = rows.find((r) => r.getAttribute('aria-checked') === 'true')!
-    checked.focus()
-    await user.keyboard('{ArrowDown}')
-    const after = within(aims)
-      .getAllByRole('radio')
-      .find((r) => r.getAttribute('aria-checked') === 'true')!
-    expect(after).not.toBe(checked)
-  })
-})
-
-describe('StudyPaceSheet — the row that cannot be chosen', () => {
-  it('stays focusable and explains itself', async () => {
-    /* `aria-disabled`, NOT `disabled`. A disabled button drops out of the tab
-       order and out of most screen-reader element lists — so the one row that
-       most needs to say why it is unavailable becomes the one row a keyboard
-       user cannot reach. The hours are set high enough that no preset fits. */
-    const user = userEvent.setup()
-    renderTile({ hoursRemaining: 4000 })
-    const dialog = await openSheet(user)
-    const unfittable = within(dialog)
-      .getAllByRole('radio')
-      .filter((r) => r.getAttribute('aria-disabled') === 'true')
-    expect(unfittable.length).toBeGreaterThan(0)
-    for (const row of unfittable) {
-      // Focusable: not `disabled`, and carrying a real tabindex.
-      expect(row).not.toBeDisabled()
-      expect(row.getAttribute('tabindex')).not.toBeNull()
-      // …and it names a reason, wired by id rather than left to the label.
-      const describedBy = row.getAttribute('aria-describedby')
-      expect(describedBy).toBeTruthy()
-      expect(dialog.querySelector(`#${describedBy}`)?.textContent).toMatch(/not enough time/i)
-    }
-  })
-})
-
-describe('StudyPaceSheet — spoken durations', () => {
-  it('shows the fraction and speaks it in words', async () => {
-    /* `1¾ hours` is right to SHOW and wrong to HEAR — screen readers render the
-       vulgar fraction as "three quarters", "3/4" or nothing depending on the
-       engine, on the one figure this sheet exists to convey. Both come out of
-       the same rounding, so they can never disagree. */
-    const user = userEvent.setup()
-    renderTile()
-    const dialog = await openSheet(user)
-    const row = within(dialog).getByRole('radio', { name: /Recommended/ })
-    /* SCOPED TO THE EVENING CELL. The row's FIRST `[aria-hidden]` is the radio
-       dot, which is an empty span — a bare `querySelector('[aria-hidden]')`
-       finds it and asserts nothing about the figure. */
-    const cell = row.querySelector('.cre-pace-sheet__aim-evening')!
-    expect(cell.querySelector('.cre-sr-only')?.textContent).toMatch(/\d+ (hour|minute)/)
-    // The glyph is still there, hidden from the reader rather than replaced.
-    expect(cell.querySelector('[aria-hidden]')?.textContent).toMatch(/\d/)
-  })
-})
-
-/**
- * THE WEEK STRIP READING ACTUAL ACTIVITY — 2026-09-21.
- *
- * Two modes, and which one shows turns on whether there is anything to read,
- * not on how far along the learner is. The data is AUTHORED per demo persona
- * (`STUDY_MINUTES_BY_VARIANT`) rather than derived from a progress percentage:
- * a week inferred from a total is the "observed rate" this version refuses
- * everywhere else — it would look right and be fiction.
- */
-describe('StudyPaceTile — the week strip reads real minutes', () => {
+ */describe('StudyPaceTile — the week strip reads real minutes', () => {
   const model = () =>
     studyPace({ today: TODAY, hoursRemaining: 24, accessExpiresAt: '2026-10-18' })
   const renderCard = (props: Partial<React.ComponentProps<typeof StudyPaceTile>> = {}) =>

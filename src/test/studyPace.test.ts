@@ -19,6 +19,11 @@ import {
   STRAIN_MINS,
   EASY_MINS,
   type PaceInput,
+  simulateSchedule,
+  scheduleStanding,
+  scheduleAdvice,
+  hoursPerDayWithin,
+  evenWeek,
 } from '@/lib/studyPace'
 
 /**
@@ -337,5 +342,160 @@ describe('weekStanding', () => {
     expect(s.expected).toBe(60)
     expect(s.shortfall).toBe(4)
     expect(s.behind).toBe(false)
+  })
+})
+
+describe('simulateSchedule — a week, walked', () => {
+  /* Thu 21 May 2026. A WEEKDAY THAT IS NOT MONDAY on purpose: the walk starts
+     from today's own weekday, and every off-by-one in the Mon-first shift
+     disappears if the fixture starts on a Monday. */
+  const TODAY = new Date(2026, 4, 21)
+
+  it('lands the finish on a day the schedule actually studies', () => {
+    const sim = simulateSchedule({
+      today: TODAY,
+      hoursRemaining: 10,
+      hoursByWeekday: evenWeek([0, 1, 2, 3, 4], 2), // Mon–Fri, 2h
+      hardEndIso: '2026-06-03',
+    })!
+    expect(sim.hoursPerWeek).toBe(10)
+    expect(sim.daysPerWeek).toBe(5)
+    // Thu + Fri = 4h, then Mon/Tue/Wed next week spend the last 6.
+    expect(sim.finishIso).toBe('2026-05-27')
+    expect(sim.studyDays).toEqual([0, 1, 4, 5, 6])
+  })
+
+  it('answers differently for the same week on a different day', () => {
+    /* THE WHOLE REASON IT IS A WALK. A division by 10 hours a week gives one
+       answer; these two learners have identical schedules and finish two days
+       apart because one starts on a Saturday with nothing scheduled. */
+    const args = {
+      hoursRemaining: 10,
+      hoursByWeekday: evenWeek([0, 1, 2, 3, 4], 2),
+      hardEndIso: '2026-06-03',
+    }
+    const thursday = simulateSchedule({ ...args, today: new Date(2026, 4, 21) })!
+    const saturday = simulateSchedule({ ...args, today: new Date(2026, 4, 23) })!
+    expect(thursday.finishIso).not.toBe(saturday.finishIso)
+    expect(saturday.studyDays[0]).toBe(2) // nothing until Monday
+  })
+
+  it('measures its buffer against the CEILING, not raw expiry', () => {
+    /* The one departure from the prototype. `hardEndIso` is expiry minus one
+       (or the exam minus its review buffer); a simulator holding its own idea
+       of the deadline is how the sheet comes to congratulate a plan the tile
+       above it calls late. */
+    const sim = simulateSchedule({
+      today: TODAY,
+      hoursRemaining: 4,
+      hoursByWeekday: evenWeek([0, 1, 2, 3, 4, 5, 6], 2),
+      hardEndIso: '2026-05-25',
+    })!
+    expect(sim.finishIso).toBe('2026-05-22')
+    expect(sim.bufferDays).toBe(3)
+  })
+
+  it('refuses to invent a date for a week that is not a plan', () => {
+    const empty = simulateSchedule({
+      today: TODAY,
+      hoursRemaining: 10,
+      hoursByWeekday: evenWeek([], 2),
+      hardEndIso: '2026-06-03',
+    })
+    expect(empty).toBeNull()
+    // …and for one that cannot land inside the horizon at all.
+    const hopeless = simulateSchedule({
+      today: TODAY,
+      hoursRemaining: 4000,
+      hoursByWeekday: evenWeek([0], 1),
+      hardEndIso: '2026-06-03',
+    })
+    expect(hopeless).toBeNull()
+  })
+})
+
+describe('scheduleStanding — what the buffer means', () => {
+  const TODAY = new Date(2026, 4, 21)
+  const sim = (hoursRemaining: number, hardEndIso: string) =>
+    simulateSchedule({
+      today: TODAY,
+      hoursRemaining,
+      hoursByWeekday: evenWeek([0, 1, 2, 3, 4, 5, 6], 2),
+      hardEndIso,
+    })
+
+  it('names the EXAM when the exam is what binds', () => {
+    /* Telling a learner bound by an exam that they have "run past access"
+       sends them to the wrong fix — extend the course, rather than move the
+       exam. The sentence has to name the thing that actually stops them. */
+    const late = scheduleStanding(sim(40, '2026-05-25'), 'exam')
+    expect(late.tone).toBe('bad')
+    expect(late.message).toContain('after you need to be ready')
+    expect(scheduleStanding(sim(40, '2026-05-25'), 'access').message).toContain(
+      'after your access ends',
+    )
+  })
+
+  it('separates comfortable from only-just', () => {
+    // Lands exactly on the last usable day.
+    expect(scheduleStanding(sim(4, '2026-05-22'), 'access').tone).toBe('warn')
+    // …one day of room is still "only just".
+    expect(scheduleStanding(sim(4, '2026-05-23'), 'access').tone).toBe('warn')
+    // …and past the tight threshold it is good.
+    expect(scheduleStanding(sim(4, '2026-05-30'), 'access').tone).toBe('good')
+  })
+
+  it('says what to do when there is no plan yet, rather than printing a date', () => {
+    const none = scheduleStanding(null, 'access')
+    expect(none.tone).toBe('bad')
+    expect(none.message).toBe('Pick at least one study day.')
+  })
+})
+
+describe('scheduleAdvice / hoursPerDayWithin', () => {
+  const TODAY = new Date(2026, 4, 21)
+
+  it('advises on long days without blocking them', () => {
+    const long = simulateSchedule({
+      today: TODAY,
+      hoursRemaining: 40,
+      hoursByWeekday: evenWeek([5, 6], 5),
+      hardEndIso: '2026-08-01',
+    })
+    expect(scheduleAdvice(long)).toContain('split')
+    const brutal = simulateSchedule({
+      today: TODAY,
+      hoursRemaining: 40,
+      hoursByWeekday: evenWeek([5, 6], 8),
+      hardEndIso: '2026-08-01',
+    })
+    expect(scheduleAdvice(brutal)).toContain('hard to keep up')
+    const fine = simulateSchedule({
+      today: TODAY,
+      hoursRemaining: 40,
+      hoursByWeekday: evenWeek([0, 1, 2, 3, 4], 2),
+      hardEndIso: '2026-08-01',
+    })
+    expect(scheduleAdvice(fine)).toBeNull()
+  })
+
+  it('counts the sessions inside the window, not the days', () => {
+    /* A 7-day window from a Thursday contains ONE Saturday, so 6 hours of work
+       on Saturdays only is a 6-hour day — not 6/7ths of one. */
+    expect(
+      hoursPerDayWithin({ today: TODAY, hoursRemaining: 6, weekdays: [5], windowDays: 7 }),
+    ).toBe(6)
+    // …and a window with no chosen day in it is 0, a real state rather than NaN.
+    expect(
+      hoursPerDayWithin({ today: TODAY, hoursRemaining: 6, weekdays: [0], windowDays: 3 }),
+    ).toBe(0)
+  })
+
+  it('rounds the day UP to the quarter hour', () => {
+    /* A fortnight from Thursday holds SIX Mon/Tue/Weds, so 10 hours is 1.67 a
+       day → 1¾, never 1½: rounding down quotes a pace that finishes late. */
+    expect(
+      hoursPerDayWithin({ today: TODAY, hoursRemaining: 10, weekdays: [0, 1, 2], windowDays: 14 }),
+    ).toBe(1.75)
   })
 })

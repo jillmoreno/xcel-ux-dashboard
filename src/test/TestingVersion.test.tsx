@@ -436,8 +436,12 @@ describe('the presets pacing card', () => {
 
     await user.click(within(paceTile()).getByRole('button', { name: 'Customize Study Plan' }))
     const dialog = screen.getByRole('dialog')
-    await user.click(within(dialog).getByRole('radio', { name: /Full window|Relaxed/ }))
-    await user.click(within(dialog).getByRole('button', { name: 'Save pace' }))
+    /* UPDATED 2026-09-22 with the sheet's new IA. It used to pick one of the
+       three preset radio rows; the sheet is now a chooser of study STYLES, so
+       the equivalent gesture is opening one and saving the week it builds. The
+       CLAIM is unchanged, which is why this was edited rather than dropped. */
+    await user.click(dialog.querySelector('[data-shape="evenings"]')!)
+    await user.click(within(dialog).getByRole('button', { name: /^Save pace/ }))
 
     expect(paceTile().textContent).toMatch(/^Your Study Pace/)
   })

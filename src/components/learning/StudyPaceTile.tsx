@@ -14,6 +14,9 @@ import {
   WEEKDAY_LABELS,
   type PacePreset,
   type PaceModel,
+  simulateSchedule,
+  activeDays,
+  daysUntil,
 } from '@/lib/studyPace'
 
 /**
@@ -123,6 +126,8 @@ export function StudyPaceTile({
     nights: null,
     examDate: seededExamDate,
     style: 'average',
+    approach: null,
+    schedule: null,
     plan: null,
   })
 
@@ -139,8 +144,50 @@ export function StudyPaceTile({
     [today, hoursRemaining, accessExpiresAt, choices.examDate, choices.nights, choices.style],
   )
 
-  const selected: PacePreset =
+  /**
+   * THE SAVED WEEK BEATS THE DERIVED PRESET — 2026-09-22.
+   *
+   * Without this the sheet lies. Its footer states "your dashboard will show:
+   * 16 hours a week, finishing around May 23" beside the Save button, the
+   * learner presses it, and the card goes on reporting the preset's own May 29
+   * — because the tile re-derived a pace from `nights` and never looked at the
+   * week that was actually built. The footer's promise is the contract; this is
+   * what keeps it.
+   *
+   * `simulateSchedule` against `model.hardEndIso`, so the card and the sheet
+   * measure the same deadline — including an exam date that binds earlier.
+   */
+  const sim = useMemo(
+    () =>
+      choices.schedule
+        ? simulateSchedule({
+            today,
+            hoursRemaining,
+            hoursByWeekday: choices.schedule,
+            hardEndIso: model.hardEndIso,
+          })
+        : null,
+    [choices.schedule, today, hoursRemaining, model.hardEndIso],
+  )
+
+  const derived: PacePreset =
     (choices.presetId && model.presets.find((p) => p.id === choices.presetId)) || defaultPreset(model)
+  /* The preset the card SPEAKS. A saved week overrides the finish date and the
+     nightly figure with its own — the same preset shape, so every consumer
+     below is unchanged and none of them needs to know where it came from. */
+  const selected: PacePreset = sim
+    ? {
+        ...derived,
+        finishIso: sim.finishIso,
+        days: Math.max(0, daysUntil(sim.finishIso, today) ?? derived.days),
+        nights: sim.daysPerWeek,
+        minsPerNight: Math.round((sim.hoursPerWeek / Math.max(1, sim.daysPerWeek)) * 60),
+        minsPerWeek: Math.round(sim.hoursPerWeek * 60),
+        /* A saved week that overruns is `no` whatever the preset said — the
+           learner built it, and the card must not congratulate it. */
+        state: sim.bufferDays < 0 ? 'no' : derived.state,
+      }
+    : derived
   /** Untouched ⇒ the number is still ours to call "recommended". The moment any
    *  of it is the learner's, the tile stops claiming credit for it.
    *
@@ -152,9 +199,39 @@ export function StudyPaceTile({
    *  sheet still counts, because then it differs from the seed. */
   const adjusted =
     choices.presetId != null ||
+    choices.schedule != null ||
     choices.nights != null ||
     choices.examDate !== seededExamDate ||
     choices.style !== 'average'
+
+  /**
+   * WHICH DAYS THE STRIP SHADES. `plan.weekdays` when the learner put the plan
+   * on a calendar, the saved WEEK's own days when they built one but left the
+   * calendar switch off, and the model's suggestion only when there is neither.
+   *
+   * The middle case is the one that was wrong: a learner who set Thursday,
+   * Saturday and Sunday and did not want calendar entries still got a strip
+   * shading Mon–Wed, because the card read `plan` and a `null` plan told it
+   * nothing. Building a week and putting it on a calendar are two different
+   * decisions, and only the second one is about the calendar.
+   */
+  const studyDays: number[] | null =
+    choices.plan?.weekdays ?? (choices.schedule ? activeDays(choices.schedule) : null)
+
+  /**
+   * WHAT THE PILL CALLS THIS PACE.
+   *
+   * `presetLabel` answers it only while the pace IS a preset. A week the
+   * learner built on the Adjust screens has no preset behind it — `presetId`
+   * stays null, so the pill fell through to `defaultPreset`'s own name and went
+   * on saying "Recommended" about a schedule the product never recommended.
+   * That is the precise claim the provenance rule exists to stop.
+   */
+  const paceLabel = !adjusted
+    ? 'Recommended'
+    : choices.schedule
+      ? 'Your pace'
+      : presetLabel(selected)
 
   const card = layout === 'card'
 
@@ -206,6 +283,7 @@ export function StudyPaceTile({
             model={model}
             preset={selected}
             plan={choices.plan}
+            studyDays={studyDays}
             courseTitle={courseTitle}
             accessExpiresAt={accessExpiresAt}
             examDate={choices.examDate ?? undefined}
@@ -214,7 +292,13 @@ export function StudyPaceTile({
             onCustomize={() => setOpen(true)}
           />
         ) : (
-          <PaceBody model={model} preset={selected} adjusted={adjusted} plan={choices.plan} />
+          <PaceBody
+            model={model}
+            preset={selected}
+            adjusted={adjusted}
+            paceLabel={paceLabel}
+            plan={choices.plan}
+          />
         )}
       </SquareTile>
       <StudyPaceSheet
@@ -237,11 +321,14 @@ function PaceBody({
   model,
   preset,
   adjusted,
+  paceLabel,
   plan,
 }: {
   model: PaceModel
   preset: PacePreset
   adjusted: boolean
+  /** What to call this pace — see the tile's note. */
+  paceLabel: string
   plan: PaceChoices['plan']
 }) {
   if (preset.state === 'no') {
@@ -262,7 +349,7 @@ function PaceBody({
           "Recommended" only while it is still ours. `presetLabel` is what keeps
           "Relaxed" honest on a long course — see its note. */}
       <PaceChip tone={preset.state === 'heavy' ? 'warning' : adjusted ? 'positive' : 'neutral'}>
-        {adjusted ? presetLabel(preset) : 'Recommended'}
+        {paceLabel}
         {preset.state === 'heavy' ? ' · heavy' : ''}
       </PaceChip>
       <div>
@@ -408,6 +495,7 @@ function PaceCardBody({
   model,
   preset,
   plan,
+  studyDays,
   courseTitle,
   accessExpiresAt,
   examDate,
@@ -418,6 +506,8 @@ function PaceCardBody({
   model: PaceModel
   preset: PacePreset
   plan: PaceChoices['plan']
+  /** Days the saved week studies, when there is one — see the tile's note. */
+  studyDays?: number[] | null
   courseTitle?: string
   accessExpiresAt?: string
   examDate?: string
@@ -475,7 +565,7 @@ function PaceCardBody({
   /** Which nights. The learner's plan when they have built one; otherwise the
    *  same default the sheet would propose, from the shared helper — so the
    *  strip and the plan behind it cannot shade different days. */
-  const nights = plan?.weekdays ?? defaultWeekdays(preset.nights)
+  const nights = studyDays ?? plan?.weekdays ?? defaultWeekdays(preset.nights)
   const todayIndex = (today.getDay() + 6) % 7
   /** Null when there is nothing studied to compare — a learner at 0% has not
    *  had a bad week, they have not had a week. */

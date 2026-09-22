@@ -4088,3 +4088,234 @@ a.cre-library-card-title::after {
   font-size: var(--text-body-sm);
   color: var(--color-text-secondary);
 }
+
+/* ── THE ADJUST-YOUR-PACE FLOW — 2026-09-22 ──────────────────────────────
+   The sheet became two levels: a chooser of study STYLES, then one screen per
+   style. Ported from `adjust-your-pace-prototype.html`, whose argument is that
+   a learner does not think in "nights a week" — they think "I have Tuesday
+   evenings and most of Sunday", and the finish date is the answer.
+
+   Everything here reuses the `--pace-*` sizing vars the sheet already sets, so
+   the new screens cannot drift from the groups they sit beside. */
+.cre-pace-sheet__option {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  text-align: left;
+  width: 100%;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  background: var(--color-surface-card);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  min-height: var(--pace-hit);
+}
+.cre-pace-sheet__option:hover {
+  border-color: var(--color-primary-300);
+}
+/* The escape hatch reads as one — a dashed edge says "not one of the shaped
+   answers" without needing a word to say it. */
+.cre-pace-sheet__option[data-shape='custom'] {
+  border-style: dashed;
+}
+.cre-pace-sheet__option-title {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  font-weight: 700;
+  display: block;
+}
+.cre-pace-sheet__option-body {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  color: var(--color-text-secondary);
+  display: block;
+}
+.cre-pace-sheet__recommend {
+  border: 2px solid var(--color-primary-500);
+  background: var(--color-primary-100);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+[data-theme='dark'] .cre-pace-sheet__recommend {
+  background: color-mix(in srgb, var(--color-primary-500) 18%, transparent);
+  border-color: var(--color-primary-300);
+}
+/* ── the outcome box: one pace, one verdict ──────────────────────────── */
+.cre-pace-sheet__outcome {
+  background: var(--color-surface-parchment);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cre-pace-sheet__outcome-figure {
+  font-family: var(--font-heading-serif);
+  font-size: var(--text-h4-semibold);
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+.cre-pace-sheet__badge {
+  align-self: flex-start;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+}
+/* TONE CARRIES A WORD TOO, never colour alone — the message inside each badge
+   says what happened, so the fill is reinforcement rather than the signal. */
+.cre-pace-sheet__badge[data-tone='good'] {
+  background: var(--color-success-100);
+  color: var(--color-success-700);
+}
+.cre-pace-sheet__badge[data-tone='warn'] {
+  background: var(--color-warning-100);
+  color: var(--color-warning-700);
+}
+.cre-pace-sheet__badge[data-tone='bad'] {
+  background: var(--color-error-100);
+  color: var(--color-error-700);
+}
+.cre-pace-sheet__advice {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  background: var(--color-warning-100);
+  color: var(--color-warning-700);
+}
+/* ── the day-hours steppers ──────────────────────────────────────────── */
+.cre-pace-sheet__step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--pace-hit);
+}
+.cre-pace-sheet__step-label {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  min-width: 0;
+}
+.cre-pace-sheet__step-value {
+  width: 64px;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.cre-pace-sheet__step-value[data-off='true'] {
+  color: var(--color-text-tertiary);
+  font-weight: 500;
+}
+.cre-pace-sheet__stepper {
+  width: var(--pace-hit);
+  height: var(--pace-hit);
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-card);
+  color: var(--color-primary-700);
+  font-size: var(--text-body);
+  font-weight: 700;
+  cursor: pointer;
+}
+.cre-pace-sheet__stepper:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+[data-theme='dark'] .cre-pace-sheet__stepper {
+  color: var(--color-primary-200);
+}
+/* ── the month strip ─────────────────────────────────────────────────── */
+.cre-pace-sheet__cal {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+.cre-pace-sheet__cal-head {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: 700;
+  color: var(--color-text-tertiary);
+  text-align: center;
+}
+.cre-pace-sheet__cal-cell {
+  min-height: 30px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-card);
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cre-pace-sheet__cal-cell[data-out='true'] {
+  opacity: 0.35;
+}
+.cre-pace-sheet__cal-cell[data-study='true'] {
+  background: var(--color-primary-100);
+  border-color: var(--color-primary-300);
+  color: var(--color-primary-700);
+}
+.cre-pace-sheet__cal-cell[data-finish='true'] {
+  background: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+  color: var(--color-text-inverse);
+  font-weight: 700;
+}
+/* THE DEADLINE AS AN EDGE, not a fill: it can coincide with a study day or with
+   the finish, and a fill would have to win or lose against them. */
+.cre-pace-sheet__cal-cell[data-end='true'] {
+  box-shadow: inset 0 -3px 0 var(--color-error-500);
+}
+.cre-pace-sheet__legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  color: var(--color-text-secondary);
+}
+.cre-pace-sheet__legend > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cre-pace-sheet__swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+/* ── the back link + the summary the dashboard will show ─────────────── */
+.cre-pace-sheet__back {
+  align-self: flex-start;
+}
+.cre-pace-sheet__summary {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  color: var(--color-text-secondary);
+  width: 100%;
+}
+.cre-pace-sheet__summary b {
+  color: var(--color-text-primary);
+}
