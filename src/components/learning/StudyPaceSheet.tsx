@@ -9,11 +9,9 @@ import {
   formatEveningSpoken,
   formatPaceDate,
   presetLabel,
-  isoPlusDays,
   isoFromDate,
   daysUntil,
   NIGHT_OPTIONS,
-  EXAM_BUFFER_DAYS,
   STYLE_FACTORS,
   WEEKDAY_LABELS,
   defaultWeekdays,
@@ -290,35 +288,31 @@ function PaceSheetBody({
           </p>
         </Group>
 
-        {/* 3 · EXAM DATE */}
-        <Group label="Your state exam">
-          <div className="cre-pace-sheet__field-row">
-            <Field label="Exam date (optional)" htmlFor="pace-exam">
-              <input
-                id="pace-exam"
-                type="date"
-                className="cre-pace-sheet__input"
-                value={draft.examDate ?? ''}
-                min={isoPlusDays(today, 1)}
-                onChange={(e) => set({ examDate: e.target.value || null })}
-              />
-            </Field>
-            {draft.examDate ? (
-              <button
-                type="button"
-                onClick={() => set({ examDate: null })}
-                className="cre-pace-sheet__text-button"
-              >
-                Clear
-              </button>
-            ) : null}
-          </div>
-          <p className="cre-pace-sheet__hint">
-            Coursework finishes <b className="cre-pace-sheet__strong">{EXAM_BUFFER_DAYS} days</b> before you
-            sit, so there is time to review. Whichever comes first — your exam or your access — sets your
-            pace.
-          </p>
-        </Group>
+        {/* 3 · EXAM DATE — HIDDEN 2026-09-21, the direct ask ("hide"), pointed
+            at this group.
+
+            ⚠ THE EXAM DATE IS NOT GONE, and that is the only reason hiding the
+            field is survivable. It has a SECOND and better home: the Schedule
+            State Exam card's own capture ("Already scheduled? Enter the exam
+            date and we'll use it to help you prep"), which writes
+            `examDateStore`. That store reaches this sheet — the band threads it
+            to `StudyPaceTile`, which seeds `choices.examDate` from it — so the
+            model still switches ceilings and `BindingNote` above still names
+            which one is doing the work and what it beat. This removed a SECOND
+            entry point for one fact, not the fact.
+
+            WHAT WENT WITH IT, and it is worth knowing rather than discovering:
+            the exam-BUFFER sentence ("coursework finishes 7 days before you
+            sit … whichever comes first sets your pace") lived in this group and
+            went too. `BindingNote`'s exam message still states the consequence
+            — "coursework has to be done by <date>" — but the RULE behind the
+            number is no longer written down anywhere on this surface. Putting
+            that one sentence under the binding note would restore it without
+            bringing the field back.
+
+            Deleted rather than commented out: the field, its Clear button and
+            the hint are all reconstructible from this note and from git, and a
+            block of dead JSX is the thing that rots. */}
 
         {/* 4 · THE STUDY PLAN */}
         <Group label="Put it on a calendar">

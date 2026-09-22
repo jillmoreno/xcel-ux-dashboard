@@ -348,10 +348,13 @@ describe('the presets pacing card', () => {
     // shared `defaultWeekdays` helper is what the sheet proposes too.
     seedPresets()
     renderShell(TESTING_URL)
-    const text = paceTile().textContent ?? ''
-    for (const day of ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun']) {
-      expect(text).toContain(day)
-    }
+    /* COUNTED, not searched for. The strip became circular indicators labelled
+       by INITIAL on 2026-09-21, and `toContain('M')` against the whole tile is
+       satisfied by any sentence on it — an assertion that cannot fail is worse
+       than none. Seven dots, in order, is the claim. */
+    const strip = paceTile().querySelector('[aria-hidden]')!
+    const cells = [...strip.querySelectorAll('span')].map((c) => c.textContent)
+    expect(cells).toEqual(['M', 'T', 'W', 'T', 'F', 'S', 'S'])
   })
 
   it('the room it claims agrees with the access date it names', () => {

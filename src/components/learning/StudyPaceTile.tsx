@@ -508,41 +508,47 @@ function PaceCardBody({
  */
 function WeekStrip({ nights }: { nights: number[] }) {
   return (
-    /* SEVEN ON ONE LINE, ALWAYS. `nowrap` with `minWidth: 0` on the cells, not
-       `wrap` with a floor: a wrapping strip put SUN alone on a second row in
-       the ~260px left column, which reads as an eighth day rather than as the
-       end of the week. A week is a fixed set of seven and the row is the unit,
-       so the cells shrink together instead. */
-    <div aria-hidden style={{ display: 'flex', flexWrap: 'nowrap', gap: 4 }}>
+    /* SEVEN DOTS, NOT SEVEN BUTTONS — 2026-09-21, the direct ask ("make these
+       circles so they look less like buttons. they are just indicators").
+       They were full-width rounded rectangles with a 1px ring and an uppercase
+       label, which is the exact shape of the day toggles in the Adjust sheet —
+       and those ARE buttons. Two identical-looking controls a click apart, one
+       of them inert, is the affordance lying about itself.
+
+       Circles at a fixed size, left-aligned rather than stretched across the
+       card: a row of seven things that fills its container reads as a control
+       group, and a short row of dots reads as a readout.
+
+       INITIALS, not three-letter names, which the ask allows ("abbreviate the
+       names more if needed") and the circle requires — "WED" does not fit a
+       28px dot at a legible size. M T W T F S S repeats its letters, and that
+       is the calendar convention precisely because the POSITION carries the
+       day; it is safe here for the stronger reason that the whole strip is
+       `aria-hidden` and the sentence above states the pace in words. Nothing
+       depends on telling Tuesday from Thursday by its glyph. */
+    <div aria-hidden style={{ display: 'flex', gap: 6 }}>
       {WEEKDAY_LABELS.map((label, i) => {
         const on = nights.includes(i)
         return (
           <span
             key={label}
             style={{
-              flex: '1 1 0',
-              minWidth: 0,
-              overflow: 'hidden',
-              textAlign: 'center',
-              padding: '5px 2px',
-              borderRadius: 'var(--radius-sm)',
+              width: 28,
+              height: 28,
+              flex: 'none',
+              display: 'inline-flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              borderRadius: '50%',
               fontFamily: 'var(--font-body)',
-              fontSize: 10,
+              fontSize: 11,
               fontWeight: 700,
-              letterSpacing: '0.02em',
-              textTransform: 'uppercase',
-              /* ⚠ THE FILL CANNOT CARRY THE STATE ON THIS GROUND, and measuring
-                 it is how that was found: `--color-primary-100` against the
-                 tile's own recessed tint is **1.09:1** in light. That is not a
-                 porting error — the design's `#d0ddf0` on its white card is
-                 1.37:1, the same order. A pale tint on a pale card is a hint,
-                 not a signal.
-
-                 So the STROKE and the INK carry it, and the fill is the hint it
-                 always was. Measured: studied ink on its own fill 10.49:1 both
-                 themes, unstudied ink on the card 4.88:1 light / 5.63:1 dark,
-                 and the studied stroke steps up to `-400` so the distinction
-                 survives even where the two fills read alike. */
+              lineHeight: 1,
+              /* The studied days are a filled dot; the rest are an empty ring.
+                 The FILL is the signal now that the shape is not a control —
+                 there is no border-vs-background ambiguity to resolve, so the
+                 tint that could only ever be a hint on the rectangles does the
+                 work here. Ink measured at 10.49:1 on its own fill. */
               background: on ? 'var(--color-primary-100)' : 'transparent',
               boxShadow: `inset 0 0 0 1px ${
                 on ? 'var(--color-primary-400)' : 'var(--color-border-subtle)'
@@ -550,7 +556,7 @@ function WeekStrip({ nights }: { nights: number[] }) {
               color: on ? 'var(--color-primary-700)' : 'var(--color-text-tertiary)',
             }}
           >
-            {label}
+            {label.slice(0, 1)}
           </span>
         )
       })}

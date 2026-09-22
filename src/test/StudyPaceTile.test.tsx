@@ -103,14 +103,19 @@ describe('StudyPaceTile — the tile operates nothing', () => {
 })
 
 describe('StudyPaceSheet — the four groups', () => {
-  it('opens with the three aims, days a week, an exam field and the plan switch', async () => {
+  it('opens with the aims, days a week and the plan switch', async () => {
+    /* THREE GROUPS as of 2026-09-21, not four: the exam-date group was hidden
+       (the direct ask). The DATE is not gone — it is captured on the Schedule
+       State Exam card and reaches this model through `examDateStore`, which is
+       what the two-ceiling tests below now drive it with. Asserted as an
+       absence too, so the field coming back is a decision rather than a drift. */
     const user = userEvent.setup()
     renderTile()
     const dialog = await openSheet(user)
     expect(within(dialog).getAllByRole('radio', { name: /a night|won’t fit/i }).length).toBeGreaterThanOrEqual(2)
     expect(within(dialog).getByRole('radiogroup', { name: 'Days a week' })).toBeInTheDocument()
-    expect(within(dialog).getByLabelText(/Exam date/)).toBeInTheDocument()
     expect(within(dialog).getByRole('switch', { name: 'Create a study plan' })).toBeInTheDocument()
+    expect(within(dialog).queryByLabelText(/Exam date/)).toBeNull()
   })
 
   it('starts on Recommended', async () => {
@@ -175,12 +180,13 @@ describe('StudyPaceSheet — two ceilings', () => {
   })
 
   it('hands the ceiling to an exam date inside the window, and says so', async () => {
+    /* THE DATE ARRIVES AS A PROP now, not typed into this sheet — the field was
+       hidden on 2026-09-21 and the Schedule State Exam card is where a learner
+       enters one. The CLAIM is untouched: an exam inside the access window has
+       to take the ceiling AND be explained. Only the input moved. */
     const user = userEvent.setup()
-    renderTile()
+    renderTile({ examDate: '2026-10-10' })
     const dialog = await openSheet(user)
-    const field = within(dialog).getByLabelText(/Exam date/)
-    await user.clear(field)
-    await user.type(field, '2026-10-10')
     const note = dialog.querySelector('[data-binding]')
     expect(note?.getAttribute('data-binding')).toBe('exam')
     expect(note?.textContent).toMatch(/exam date is the one doing the work/i)
@@ -190,11 +196,8 @@ describe('StudyPaceSheet — two ceilings', () => {
 
   it('leaves access binding when the exam sits past the window', async () => {
     const user = userEvent.setup()
-    renderTile()
+    renderTile({ examDate: '2026-12-15' })
     const dialog = await openSheet(user)
-    const field = within(dialog).getByLabelText(/Exam date/)
-    await user.clear(field)
-    await user.type(field, '2026-12-15')
     const note = dialog.querySelector('[data-binding]')
     expect(note?.getAttribute('data-binding')).toBe('access')
     expect(note?.textContent).toMatch(/access is still the one doing the work/i)
@@ -326,12 +329,15 @@ describe('StudyPaceTile — the presets card', () => {
     const preset = defaultPreset(model())
     const strip = document.querySelector('[aria-hidden]')!
     const cells = Array.from(strip.querySelectorAll('span'))
-    expect(cells.map((c) => c.textContent)).toEqual([...WEEKDAY_LABELS])
+    /* INITIALS as of 2026-09-21, when the strip became circular indicators —
+       "WED" does not fit a 28px dot at a legible size. Compared against the
+       shared labels rather than a literal list, so the two cannot drift. */
+    expect(cells.map((c) => c.textContent)).toEqual(WEEKDAY_LABELS.map((d) => d[0]))
     const shaded = cells.filter((c) => c.style.background !== 'transparent')
     expect(shaded).toHaveLength(preset.nights)
     // …and they are the FIRST n, Monday-first — the helper's own rule.
     expect(shaded.map((c) => c.textContent)).toEqual(
-      defaultWeekdays(preset.nights).map((i) => WEEKDAY_LABELS[i]),
+      defaultWeekdays(preset.nights).map((i) => WEEKDAY_LABELS[i][0]),
     )
   })
 
@@ -358,14 +364,11 @@ describe('StudyPaceTile — the presets card', () => {
     expect(text).toContain(`you will finish around ${formatPaceDate(preset.finishIso)}`)
   })
 
-  it('follows the exam date when that is what binds', async () => {
-    const user = userEvent.setup()
-    renderCard()
-    const dialog = await openSheet(user)
-    const field = within(dialog).getByLabelText(/Exam date/)
-    await user.clear(field)
-    await user.type(field, '2026-10-10')
-    await user.click(within(dialog).getByRole('button', { name: 'Save pace' }))
+  it('follows the exam date when that is what binds', () => {
+    /* Driven by the PROP as of 2026-09-21 — the sheet's exam field was hidden,
+       and this is the path a real one takes anyway: the Schedule State Exam
+       card writes `examDateStore`, the band threads it here. */
+    renderCard({ examDate: '2026-10-10' })
     // The window line moves onto the exam — a card explaining itself against
     // one ceiling while the model priced another is the silent switch
     // `binding` exists to prevent.
