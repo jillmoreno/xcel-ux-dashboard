@@ -56,6 +56,63 @@ import type { CSSProperties } from 'react'
  * No border (the direct ask) and no shadow either: a shadow under a flat
  * recessed fill reads as a raised card that has lost its edge.
  */
+/**
+ * THE RULED CARD — 2026-09-21, the direct asks on the pacing card, then
+ * "apply that same update to the Learning with Compass widget".
+ *
+ * A white card with a hairline, a 6px brand rule down the left edge, and the
+ * top-left / bottom-right corners squared. The diagonal corner pattern is the
+ * course art's own (`0 md 0 md` in the header band above), so the column reads
+ * as one family rather than as three ideas about corners.
+ *
+ * ⚠ FOUR BORDER LONGHANDS, NOT `border` + `borderLeft`. That pairing renders as
+ * a LEFT RULE AND NOTHING ELSE, and it looks correct in the source: a `border`
+ * shorthand carrying a `var()` cannot be expanded into longhands by the CSSOM,
+ * so setting `border-left` afterwards invalidates it and the other three
+ * resolve to empty. Written out, each side is its own declaration and nothing
+ * overrides anything. This shipped wrong for one build.
+ *
+ * ⚠ `--color-primary-400` for the rule, NOT `-500`. `-500` measures ~2.2:1
+ * against the dark charcoal page — under the 3:1 a 6px bar needs to read as an
+ * element rather than a smudge. `-400` is one of the ramp's few symmetric stops
+ * here, which is what lets this take no theme swap; the same property that made
+ * `--color-text-tertiary` the right fill for the runway strip.
+ *
+ * `--color-surface-card` rather than a literal white: it is white in light and
+ * the brand navy on the dark canvas, which is the whole reason the token
+ * exists.
+ *
+ * THE HAIRLINE IS A LIGHT BLUE, not a grey — 2026-09-21, the direct ask that it
+ * be "a lighter blue, similar to the background color in the Mon, tue, wed
+ * components", then "go even lighter". It is `--color-primary-100`, which is
+ * exactly the fill those cells use, so the card's edge and the strip inside it
+ * are the same value rather than two blues a stop apart.
+ *
+ * ⚠ IT IS A FAINT LINE ON PURPOSE — roughly 1.1:1 on the white card, which is
+ * below anything that could be called a visible boundary on its own. That is
+ * the asked-for look and it is safe here for one structural reason: the 6px
+ * `-400` rule down the left edge is what actually bounds the card (4.27:1
+ * against the fill), and these three sides are a tint finishing the shape
+ * rather than drawing it. Take the left rule away and this stroke would have to
+ * step back up — they are one decision, not two.
+ *
+ * It replaced `--color-neutral-300`, the grey this surface uses for rules: the
+ * card now agrees with the week strip inside it instead of with the dividers
+ * outside it.
+ */
+export const widgetCardRuledStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  background: 'var(--color-surface-card)',
+  borderTop: '1px solid var(--color-primary-100)',
+  borderRight: '1px solid var(--color-primary-100)',
+  borderBottom: '1px solid var(--color-primary-100)',
+  borderLeft: '6px solid var(--color-primary-400)',
+  borderRadius: '0 var(--radius-lg) 0 var(--radius-lg)',
+  padding: 16,
+  minWidth: 0,
+}
+
 export const widgetCardRecessedStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
@@ -95,6 +152,60 @@ export const widgetCardStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   padding: '4px 0 0',
+  minWidth: 0,
+}
+
+/**
+ * FRAMED — a white card, for the TESTING version (2026-09-21, the direct ask:
+ * "add a frame, white background around this content", then "remove stroke").
+ *
+ * **It reverses `widgetCardStyle` above, deliberately**, and the note there is
+ * kept rather than rewritten: the card was removed on 2026-09-16 when the
+ * journey was one of two stacked blocks on the page grey and a raised card put
+ * chrome around chrome. On Testing that column holds this and nothing else,
+ * with the left column's blocks sitting bare on the grey — so a frame here
+ * distinguishes the two columns rather than competing with a neighbour. Same
+ * component, different composition, opposite answer.
+ *
+ * **FILL ONLY — no stroke and no shadow** (the stroke went 2026-09-21, hours
+ * after it landed: "remove stroke").
+ *
+ * It shipped for those hours as fill + a 1px `--color-border-subtle` edge. What
+ * is left is the white surface alone, which is the same treatment
+ * `widgetCardRecessedStyle` opposite it already has — a card defined by its
+ * fill, with nothing drawn round it. The two columns now differ by SURFACE
+ * rather than by one having an outline.
+ *
+ * **NO SHADOW IN ITS PLACE**, and this is the part to hold. Removing an edge
+ * and adding a shadow is not removing chrome, it is swapping one kind for
+ * another — and it would make this a RAISED card, a different claim about the
+ * column's depth from the flat recess opposite. The removal note above states
+ * the rule this follows: fill, edge and shadow are ONE treatment, so the fill
+ * is allowed to be the whole of it.
+ *
+ * **THE COST, stated rather than discovered:** the card is now carried by a
+ * 1.09:1 (light) / 1.11:1 (dark) fill against the page and nothing else. That
+ * is deliberately subtle and it matches the recessed tile's 1.16:1, so the page
+ * is consistent — but there is no longer a second cue. If the card needs to
+ * read harder, the honest lever is the FILL, not a re-added outline.
+ *
+ * **The horizontal padding stays**, and it belongs to the FILL rather than to
+ * the departed edge: a bare block lines up with its column, a filled one needs
+ * its own gutter or the content sits on the boundary. 20 rather than the recessed card's 16 — that
+ * one is sized to line its eyebrow up with the tiles stacked beneath it in the
+ * SAME column, and this card has no such neighbour; 20 is the value a card this
+ * tall wants before the rule that divides its two halves reaches the edge.
+ *
+ * `--color-surface-card` rather than a literal white: it inverts with the
+ * theme, which `#fff` would not — the trap `widgetCardRecessedStyle` records
+ * from the other direction with `--color-primary-100`.
+ */
+export const widgetCardFramedStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  background: 'var(--color-surface-card)',
+  borderRadius: 'var(--radius-lg)',
+  padding: 20,
   minWidth: 0,
 }
 

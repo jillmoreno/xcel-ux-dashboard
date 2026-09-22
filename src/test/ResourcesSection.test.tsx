@@ -57,8 +57,16 @@ describe('the Resources section', () => {
      * Browse Catalog are still consecutive in that order), so every index-based
      * assertion in the suite passed the move without noticing it. Each group's
      * list is labelled by its caption, which is the handle that can see it.
+     *
+     * RENDERED ON QE FOCUSED BY NAME, not on whatever is default. This is a
+     * test of the rail BASELINE (`NAV_SECTION_FLAGS`), and the two pacing
+     * versions trim four rows off it as a property of their LAYOUT — Resources
+     * among them. It passed on a bare `/dashboard-rebrand` only while the
+     * default happened to be a version with the full rail; when the default
+     * moved to Testing 2 on 2026-09-21 it started asserting the baseline
+     * against a deliberately trimmed rail.
      */
-    renderShell('/dashboard-rebrand')
+    renderShell('/dashboard-rebrand?version=discoverability-qe-focused')
     const mine = screen.getByRole('list', { name: 'My Learning' })
     expect(within(mine).getByRole('button', { name: 'Resources' })).toBeInTheDocument()
     // There is no Explore group left to be in: Browse Catalog was its last row

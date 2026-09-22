@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import type { PlatformSection } from './PlatformSideNav'
+import { ATLAS_RAIL_GROUPS } from './dashboardRail'
 
 /**
  * The left rail for the **Atlas/Compass Global Navigation** dashboard version
@@ -25,9 +26,11 @@ import type { PlatformSection } from './PlatformSideNav'
  * - **No collapse control**, so the shell pins this rail open (including while
  *   the Compass launcher is open — see `PlatformShell`).
  *
- * The list is FIXED to the design rather than filtered by the
- * `nav-show-*` flags: the flags describe the demo rail, and applying them here
- * would let a flag silently take a row out of a design that names it.
+ * The list is `ATLAS_RAIL_GROUPS` in `dashboardRail.ts` — data, so the demo bar
+ * can ask it which sections are reachable. It is FIXED to the design rather
+ * than filtered by the `nav-show-*` flags: the flags describe the demo rail,
+ * and applying them here would let a flag silently take a row out of a design
+ * that names it.
  *
  * The surface (white, 1px right rule, 12 / 20 / 24 padding, 260 wide) is set by
  * the shell's wrapper; this component draws the groups. Colours are the
@@ -35,26 +38,6 @@ import type { PlatformSection } from './PlatformSideNav'
  * states are `.cre-atlas-nav-row` there, because inline styles cannot carry a
  * pseudo-class.
  */
-
-type AtlasNavItem = { id: PlatformSection; label: string }
-
-const ATLAS_NAV_GROUPS: { id: string; caption: string; items: AtlasNavItem[] }[] = [
-  {
-    id: 'my-learning',
-    caption: 'My Learning',
-    items: [
-      { id: 'dashboard', label: 'Home' },
-      { id: 'study-plan', label: 'Study Plan' },
-      { id: 'certificates', label: 'Certificates & Transcripts' },
-      { id: 'resources', label: 'Resources' },
-    ],
-  },
-  {
-    id: 'support',
-    caption: 'Support',
-    items: [{ id: 'support', label: 'Get Help' }],
-  },
-]
 
 export function AtlasCompassSideNav({
   active,
@@ -65,7 +48,7 @@ export function AtlasCompassSideNav({
 }) {
   return (
     <nav aria-label="Primary" style={NAV}>
-      {ATLAS_NAV_GROUPS.map((group, gi) => {
+      {ATLAS_RAIL_GROUPS.map((group, gi) => {
         const captionId = `atlas-rail-${group.id}`
         return (
           <div key={group.id} style={GROUP}>

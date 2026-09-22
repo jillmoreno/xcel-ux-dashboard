@@ -85,12 +85,25 @@ time, so the ONLY per-site difference is what each project sets in
    same links as the public one. If Links shows the "endpoint unreachable"
    state, the token or ID is wrong — the function log will say.
 
-6. **Turn on branch deploys on the public site** — this is what gives a
-   designer's branch a stakeholder-reachable URL. *Project configuration →
+6. **Turn on branch deploys on the FULL site** (`ux-design-xceldashboard`) —
+   this is what gives a designer's branch its own URL. *Project configuration →
    Build & deploy → Branches and deploy contexts → Configure → Branch deploys:
    All*. Every pushed branch then builds at
-   `<branch>--ux-demo-xceldashboard.netlify.app` (slashes in branch names become
-   dashes). Anyone with the link and the site password can open a branch build —
+   `<branch>--ux-design-xceldashboard.netlify.app` (slashes in branch names
+   become dashes). Enabling it does **not** retroactively build branches already
+   pushed — the next push to each does.
+
+   **The full site, not the public one** (decided 2026-09-21; it was the public
+   site until then). Branch builds exist for designers reviewing each other's
+   work, and they all have full-site access — where the public build would show
+   them nothing at all for any change to a gated section. The cost is that a
+   branch URL is a full-gateway build, so a stakeholder reaching one through a
+   Refinement row flipped public could see the team-only sections; the prototype
+   bar's home icon is therefore dropped on branch builds
+   (`src/data/deployContext.ts`). That removes the signpost, not the page. See
+   `docs/gateway.md` for the full reasoning.
+
+   Anyone with the link and the site password can open a branch build —
    including work that is not ready to show — so the team should know that
    before pushing.
 
@@ -154,30 +167,32 @@ Two guides ship with the site, both static HTML with a PDF beside them:
 | **Contributing to the dashboard** | designers adding work | the **Contributing** section on the full site (last in UX & Dev Access), or `/contributing/` there directly. 404'd on the public site. Source: `public/contributing/index.html` |
 | **How to read this dashboard** | stakeholders with the public link | the "How to read this dashboard" link at the foot of the rail, on both sites — `/about/`. Source: `public/about/index.html` |
 
-The short version of the designer one — **github.com in the browser + the
-Claude desktop app with its GitHub connector; no terminal anywhere**:
+The short version of the designer one — **the Claude desktop app with its
+GitHub connector; every step is a sentence said to Claude; no terminal, and
+github.com is opened only to accept the invitation**:
 
 1. Once: make an empty folder, connect it in the Claude desktop app, say
    *"Clone the GitHub repository jillmoreno/xcel-ux-dashboard into this folder."*
    Nobody runs the site locally — the branch build is the preview.
-2. On github.com, click the `main` branch button → type `feat/<your-thing>`
-   (lowercase, dashes) → **Create branch … from main**. Tell Claude *"Switch
-   to the branch feat/<your-thing>."*
+2. *"Make a new branch called feat/<your-thing> from main and switch to it."*
+   (lowercase, dashes). It reaches GitHub on the first push.
 3. Describe the work to Claude. Product work goes in `src/` **behind a feature
    flag whose default is ON on your branch**; standalone HTML review work goes
-   in `public/demos/` (not `public/prototypes/`, which the public build 404s).
+   in `public/demos/` (short-lived), and `public/prototypes/` is for a document
+   becoming a permanent row. Both are reachable on a branch build now that
+   branches build on the full site; only the public site still 404s the latter.
 4. *"Run the type check, the tests and lint."* (Plus *"and the smoke suites"*
    if you touched `public/prototypes/`.)
 5. *"Commit everything and push it to feat/<your-thing>."* Netlify builds it
-   at `https://feat-<your-thing>--ux-demo-xceldashboard.netlify.app`; the
+   at `https://feat-<your-thing>--ux-design-xceldashboard.netlify.app`; the
    review link is that plus `/dashboard-rebrand?demo=1`. Every pushed branch
    gets an address.
 6. Full site → **Refinement → Add link** — or say `/promote-to-refinement` and
    click the prefilled link it gives you. Leave **Show on public site** off.
 7. Discuss; change, check, push again — same URL.
 8. Jillienne flips **Show on public site** on when it is ready for stakeholders.
-9. On github.com, **Compare & pull request**, add Jillienne as reviewer. She
-   runs `/promote-to-prototype` on the branch (decides each flag default),
+9. *"Open a pull request from feat/<your-thing> to main and add Jillienne as
+   reviewer."* She runs `/promote-to-prototype` on the branch (decides each flag default),
    merges, and the Refinement row is removed.
 
 **Regenerating the PDFs** after editing either page — they are rendered from
@@ -216,7 +231,7 @@ Run the page suites with **`npm run smoke`** — five jsdom scripts in
 [`smoke/`](smoke/), 252 assertions. They are plain node, not vitest, so
 `npm test` does not run them; run both.
 
-See CLAUDE.md → "The six prototype pages" for what each page argues and the
+See [`docs/prototypes.md`](docs/prototypes.md) for what each page argues and the
 findings behind them.
 
 **What this costs.** Two ways it breaks with no error in this app:
@@ -244,7 +259,7 @@ Four open — **Prototypes · Refinement · Other Links · Research** — then t
 **UX & DEV ACCESS** group: Design · Exploration · Sandbox · Development · Done ·
 Archive · QA Notes · To Do · Contributing. (As of 2026-09-18 the in-app password
 is not enforced — the Netlify site password on the full site is the lock, and
-on the public site the group is absent. See CLAUDE.md.)
+on the public site the group is absent. See `docs/gateway.md`.)
 
 **Research** is empty on purpose: XCEL has no per-decision log. Its reasoning is
 inside the wireframes page and the exam spec. `ResearchPanel` says so and names
@@ -269,4 +284,6 @@ invisible on another.
 repos self-host, so the dashboard chrome matches. **Confirm the webfont licence
 with the brand team before this is publicly reachable.**
 
-See [CLAUDE.md](CLAUDE.md) for architecture and the full port notes.
+[CLAUDE.md](CLAUDE.md) is the map — which surface you are changing, the
+conventions and how to verify. The detail is in [`docs/`](docs/), one file per
+surface: the product app, the gateway, the prototypes, the admin tool, testing.

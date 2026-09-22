@@ -169,7 +169,23 @@ export function Header() {
   const showBell = useFeatureFlag('header-notifications').enabled && platformNav
   const utilities = (
     <div className="flex items-center" style={{ gap: 12 }} inert={noHeaderNav || undefined}>
-      <CartButton />
+      {/* CART — UNWIRED 2026-09-21, the direct ask ("no cart"). See
+          ARCHIVED_ITEMS id `header-cart`.
+
+          It was a `<Link to="#">`: a control that has never gone anywhere, in a
+          product where the learner is already enrolled and buys on
+          xcelsolutions.com rather than in the LMS. So it promised a storefront
+          this app does not have.
+
+          EDITORIAL, so it is unwired + archived rather than gated on a brand
+          predicate — unlike the membership upsells removed in the same pass,
+          which are a CORRECTNESS fix and return on their own for a brand that
+          sells one. There is no `supportsCart` to hang this on, and inventing
+          one would be a predicate that is false for every brand in the union.
+
+          The comment below about the cluster reading "one commerce control then
+          two personal ones" is kept because it is the argument for where the
+          BELL sits, which has not changed. */}
       {showBell && <NotificationsMenu />}
       {/* No props — the menu resolves the learner from `useAccount()` and the
           profile-avatar override, the same two sources the rail's profile
@@ -396,7 +412,13 @@ export function Header() {
   )
 }
 
-function CartButton() {
+/**
+ * UNWIRED 2026-09-21 — see the note at the utilities cluster and ARCHIVED_ITEMS
+ * `header-cart`. EXPORTED rather than left as an unreferenced local function,
+ * because that is a lint error; the same treatment `NavProfileHeader` and
+ * `MotivationalStatementCard` get.
+ */
+export function CartButton() {
   return (
     <Link to="#" aria-label="Cart" className="cre-icon-pill">
       <ShoppingCart size={20} aria-hidden />

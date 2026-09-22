@@ -6,6 +6,7 @@ import {
   readPrototypeWalkthrough,
 } from './prototypeWalkthrough'
 import { prototypeFeatureById } from '@/data/prototypeFeatures'
+import { isBranchDeploy } from '@/data/deployContext'
 
 // Guiding quotes shown on the right of the prototype bar. Kept as JS
 // strings (not inline JSX text) so the apostrophes / smart quotes don't
@@ -185,9 +186,17 @@ export function PrototypeBar({
   // the shell's coordinate system — rail flush-left, rail+content capped at
   // 1440 — matching the app header + Demo Controls bar.
   const platformNav = pathname === '/dashboard-rebrand'
+  // Both of the bar's routes INTO the gateway — the house icon and the
+  // walkthrough "← Back" pill — are dropped on a branch deploy. Those builds
+  // carry the full gateway (see `deployContext.ts`), and a stakeholder reaching
+  // a branch URL through a public Refinement row must not find a button to it.
+  // An explicit `back` prop still wins: it is passed by gateway pages, where
+  // the reviewer is already inside the gateway and removing Back would only
+  // strand them.
+  const gatewayLinks = showHomeLink && !isBranchDeploy()
   const backTarget: { to: string; label: string; title?: string } | null = back
     ? { to: back.to, label: back.label ?? 'Back', title: back.title }
-    : showHomeLink && walkthroughFeatureId && !onGatewayRoute
+    : gatewayLinks && walkthroughFeatureId && !onGatewayRoute
       ? {
           // Explore walkthroughs open the platform directly (no curated
           // gateway), so their Back returns to the Common Dashboard landing;
@@ -229,7 +238,7 @@ export function PrototypeBar({
           gap: 16,
         }}
       >
-        {showHomeLink && <PrototypeHomeIcon />}
+        {gatewayLinks && <PrototypeHomeIcon />}
         {/* The "← Back" pill — from an explicit `back` prop (shows regardless of
             route, e.g. the landing's section → overview) or the session
             walkthrough (feature gateways). */}
@@ -240,7 +249,7 @@ export function PrototypeBar({
             title={backTarget.title}
           />
         )}
-        {(showHomeLink || backTarget) && (
+        {(gatewayLinks || backTarget) && (
           <span
             aria-hidden
             style={{

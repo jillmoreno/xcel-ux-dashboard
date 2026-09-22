@@ -112,6 +112,7 @@ export function DemoDropdown({
   panelRole = 'menu',
   panelLabel,
   panelMinWidth = 220,
+  disabledNote,
   children,
 }: {
   id: string
@@ -123,20 +124,45 @@ export function DemoDropdown({
   panelRole?: 'menu' | 'radiogroup'
   panelLabel: string
   panelMinWidth?: number
+  /** Present = the control is INERT, and this says why. See the note below. */
+  disabledNote?: string
   children: ReactNode
 }) {
-  const isOpen = openId === id
+  /* AN AXIS WITH NOWHERE TO LAND — 2026-09-22. The bar offers one dropdown per
+     demo axis, and a version that doesn't render the surface behind one leaves
+     the pill stating a state the page cannot show: "READINESS: On Track" above
+     a dashboard with no Readiness on it.
+
+     KEPT VISIBLE, not hidden, and that is the choice. The axis still exists and
+     a reviewer who came looking for it should find it greyed with a reason
+     rather than wonder whether they mis-remembered the bar. Hiding it would
+     also make the bar's controls jump position between versions.
+
+     `disabled` (not just `aria-disabled`) because there is nothing here to
+     announce or operate — no partial state, no "press to hear why". The reason
+     rides on `title`, which is the one thing a disabled button still surfaces. */
+  const isDisabled = disabledNote != null
+  const isOpen = openId === id && !isDisabled
   return (
     <div style={{ position: 'relative' }}>
       <button
         type="button"
         className="cre-demo-controls-btn"
-        style={DEMO_TRIGGER}
-        aria-haspopup={panelRole === 'radiogroup' ? undefined : 'menu'}
-        aria-expanded={isOpen}
+        style={{
+          ...DEMO_TRIGGER,
+          ...(isDisabled ? { opacity: 0.4, cursor: 'not-allowed' } : null),
+        }}
+        disabled={isDisabled}
+        title={disabledNote}
+        aria-haspopup={isDisabled || panelRole === 'radiogroup' ? undefined : 'menu'}
+        aria-expanded={isDisabled ? undefined : isOpen}
         onClick={() => onToggle(id)}
-        onMouseEnter={(e) => (e.currentTarget.style.background = DEMO_HOVER_FILL)}
-        onMouseLeave={(e) => (e.currentTarget.style.background = DEMO_FAINT_FILL)}
+        onMouseEnter={(e) => {
+          if (!isDisabled) e.currentTarget.style.background = DEMO_HOVER_FILL
+        }}
+        onMouseLeave={(e) => {
+          if (!isDisabled) e.currentTarget.style.background = DEMO_FAINT_FILL
+        }}
       >
         {eyebrow && <span style={DEMO_TRIGGER_EYEBROW}>{eyebrow}:</span>}
         {label}

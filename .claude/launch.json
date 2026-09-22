@@ -3,16 +3,33 @@
   "configurations": [
     {
       "// xcel-dashboard": [
-        "Port 5200, matching vite.config.ts, which pins it with strictPort: true.",
+        "Port 5200 is the CONVENTIONAL port, matching vite.config.ts.",
         "One fixed port per dashboard — 5180 Common LMS / 5190 PartnerHub / 5200",
         "XCEL — because all three look alike, so a collision reads as 'the new",
         "dashboard is showing the old project's rows' rather than as an error.",
-        "Do NOT add autoPort: a moving port is the thing that convention stops."
+        "",
+        "CHANGED 2026-09-21: autoPort is now true. This line used to read 'Do NOT",
+        "add autoPort'. That rule was written against the CROSS-dashboard case —",
+        "two different repos fighting over one port, the browser still serving",
+        "the loser's app. autoPort does not bring that back: the launcher picks a",
+        "free port, hands it to vite via PORT (vite.config.ts already reads it)",
+        "and opens THAT url, so a preview can never land on a sibling dashboard.",
+        "What it fixes is the case the convention never covered — a SECOND",
+        "session of THIS repo, usually another git worktree, where 5200 is",
+        "already held by an identical xcel-dashboard and strictPort just kills",
+        "whichever starts second.",
+        "",
+        "Nothing here needs 5200 specifically: no OAuth callback, webhook or CORS",
+        "origin is pinned to it, and the functions live on the netlify entry",
+        "below. `npm run dev` is bare vite with no --port flag, so PORT is the",
+        "single source of truth — do not add one. 5200 is still the port you get",
+        "whenever nothing else holds it."
       ],
       "name": "xcel-dashboard",
       "runtimeExecutable": "sh",
       "runtimeArgs": ["-c", "PATH=\"$HOME/.local/bin:$PATH\" npm run dev"],
-      "port": 5200
+      "port": 5200,
+      "autoPort": true
     },
     {
       "// xcel-dashboard-netlify": [

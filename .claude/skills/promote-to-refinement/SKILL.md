@@ -17,13 +17,18 @@ with everything filled in. The designer looks, maybe edits the note, and clicks
 ## Config — set once per repo
 
 ```yaml
-full_site: "https://REPLACE-ME.netlify.app"           # the FULL site (designers + developers)
-public_site_host: "ux-demo-xceldashboard.netlify.app"  # branch builds live under this host
-review_path: "/dashboard-rebrand?demo=1"              # what a product branch is reviewed at
+full_site: "https://ux-design-xceldashboard.netlify.app"  # the FULL site (designers + developers)
+branch_host: "ux-design-xceldashboard.netlify.app"       # branch builds live under this host
+review_path: "/dashboard-rebrand?demo=1"                 # what a product branch is reviewed at
 ```
 
-If `full_site` still says `REPLACE-ME`, ask Jillienne for the full site's
-address, write it here, and commit that edit on its own before continuing.
+**`branch_host` is the FULL site, changed 2026-09-21** — it was the public site
+(`ux-demo-xceldashboard`) until then. Branch builds are for designers reviewing
+each other's work, and a public-mode branch build shows them nothing at all for
+any change to a gated section. The consequence is that a branch URL is a full
+build; the prototype bar's home icon is dropped there so a stakeholder who gets
+the link through a public Refinement row is not one click from the project list.
+See CLAUDE.md, "Branch deploys build on the FULL site".
 
 ## Why the last step is a click, not a POST
 
@@ -55,7 +60,7 @@ trimmed:
 ```bash
 BRANCH=$(git rev-parse --abbrev-ref HEAD)
 SLUG=$(printf '%s' "$BRANCH" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+|-+$//g')
-echo "https://${SLUG}--ux-demo-xceldashboard.netlify.app"
+echo "https://${SLUG}--ux-design-xceldashboard.netlify.app"
 ```
 
 ### 2. Is it pushed?
@@ -79,9 +84,9 @@ git rev-parse --verify --quiet "origin/${BRANCH}" >/dev/null && echo pushed || e
 git diff --name-only origin/main...HEAD -- public/demos/ | grep '\.html$'
 ```
 
-- **Files listed** → offer each as `https://<slug>--<public_site_host>/demos/<file>`.
+- **Files listed** → offer each as `https://<slug>--<branch_host>/demos/<file>`.
   If there is exactly one, default to it.
-- **None** → default to the product: `https://<slug>--<public_site_host><review_path>`.
+- **None** → default to the product: `https://<slug>--<branch_host><review_path>`.
 - Ask ONE question with **AskUserQuestion** only if there is a real choice
   (several demo files, or demo files AND product changes under `src/`).
 
