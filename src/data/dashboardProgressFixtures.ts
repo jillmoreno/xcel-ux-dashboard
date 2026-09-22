@@ -69,6 +69,9 @@ export type DashboardProgressPersona = {
   jumpBackInId?: string
   /** Demo renewal override for the band's Deadline / Time Remaining cells. */
   renewal?: { deadline: string; weeksLeft: number }
+  /** Minutes studied per day this week, Monday-first — see
+   *  `STUDY_MINUTES_BY_VARIANT`. Absent when there is no progress to read. */
+  weekMinutes?: number[]
   /** Renewal-ready treatment (100% complete): swap the resume card for a
    *  "Requirements met" state + a View certificate / Start next cycle CTA. */
   renewalReady?: boolean
@@ -519,6 +522,46 @@ const RENEWAL_BY_VARIANT: Record<DashboardProgressVariant, { deadline: string; w
     }),
   ) as Record<DashboardProgressVariant, { deadline: string; weeksLeft: number }>
 
+/**
+ * MINUTES ACTUALLY STUDIED, Monday-first, for the week containing
+ * `FIXTURE_TODAY` — 2026-09-21, the direct ask that the pace card's week strip
+ * stop being a suggestion once there is progress to read.
+ *
+ * ⚠ THIS IS NEW DEMO DATA, and authoring it was the decision rather than a
+ * detail. The pacing version has refused observed rates throughout — its flag
+ * description says none of the treatments "invents an observed rate, a schedule
+ * to be ahead of, or a projected finish date, because nothing here knows any of
+ * those", and a test sweeps every treatment for that copy. Deriving a week's
+ * activity from a progress PERCENTAGE would have been exactly that invention:
+ * plausible, unfalsifiable and false. Giving the model the fact instead is the
+ * honest way to have it.
+ *
+ * PER VARIANT, which is the whole point — the demo picker has to change the
+ * strip. `not-started` is absent deliberately: with nothing studied there is
+ * nothing to read, and the card falls back to stating the suggested week.
+ *
+ * ⚠ THE FIXTURE CLOCK IS A MONDAY (2026-05-11), so only index 0 has elapsed and
+ * the strip shows ONE filled circle whatever these say. The later days are
+ * authored anyway — they are what the week looks like, and they become visible
+ * the moment the clock moves. See the card's own note for the two ways out.
+ *
+ * NOT `LEARNING_STREAK.recent30`, which already carries per-day minutes: it is
+ * one array for every brand and every state (so the picker would not move it),
+ * and its "today" is 2026-05-20 — nine days off this file's clock.
+ */
+const STUDY_MINUTES_BY_VARIANT: Partial<Record<DashboardProgressVariant, number[]>> = {
+  // Behind: a short Monday against a target of roughly an hour and three
+  // quarters, which is what "at risk" should look like in a week rather than
+  // only in a status pill.
+  'progress-at-risk': [25, 0, 40, 0, 0, 0, 0],
+  // On track: a full Monday, then a week that keeps the pace.
+  'progress-on-track': [105, 95, 110, 0, 100, 0, 0],
+  'progress-off-track': [30, 0, 0, 45, 0, 0, 0],
+  // Finished: the week tapers because there is nothing left to do.
+  'complete-100': [60, 40, 0, 0, 0, 0, 0],
+  'progress-expired': [0, 0, 0, 0, 0, 0, 0],
+}
+
 const STATUS_BY_VARIANT: Record<DashboardProgressVariant, HomeStatus> = {
   // The onboarding hand-off destination reads as On Track (a fresh, on-schedule
   // plan) — distinct from the picker's explicit Not Started state below.
@@ -672,6 +715,7 @@ function personaFor(profile: BrandProgressProfile, variant: DashboardProgressVar
     jumpBackInMode,
     discoveryTone,
     renewal: RENEWAL_BY_VARIANT[variant],
+    weekMinutes: STUDY_MINUTES_BY_VARIANT[variant],
     renewalReady: variant === 'complete-100',
     // Carry the state's time + deadline onto the path so the detail panel's
     // Time Remaining ("Xd" / "N wks" / "Y yr, N wks") AND License Expires read

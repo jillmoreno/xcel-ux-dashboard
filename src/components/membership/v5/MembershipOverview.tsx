@@ -1206,6 +1206,10 @@ export function MembershipOverview({
       // Threaded 2026-09-21, when `presets` became the default view's treatment
       // and the tile's silence about the exam stopped being harmless.
       examDate={storedExamDate ?? undefined}
+      // Minutes studied per day this week, from the demo persona. Absent at 0%
+      // — with nothing studied the pace card states the suggested week instead
+      // of reading an empty one back as failure.
+      weekMinutes={personaDrivesPath ? persona!.weekMinutes : undefined}
       // TESTING 2 ONLY — the left square tile renders the real derived pace and
       // its Adjust sheet instead of the lo-fi placeholder. A SEPARATE prop from
       // `paceOnly` because the two versions ask different questions of this

@@ -235,6 +235,15 @@ type Props = {
    */
   examDate?: string
   /**
+   * Minutes studied per day this week, Monday-first — the demo persona's, so
+   * the progress picker moves the pace card's week strip.
+   *
+   * Absent means "nothing to read", not "a week of zeros": the card shows its
+   * suggested week instead. A learner at 0% has not had a bad week, they have
+   * not had a week.
+   */
+  weekMinutes?: number[]
+  /**
    * The page's course header band, rendered INSIDE this block's left column
    * instead of full-width above the whole grid.
    *
@@ -311,6 +320,7 @@ export function LearnerFocusedBand({
   paceOnly = false,
   journeyCards = false,
   examDate,
+  weekMinutes,
   headerSlot,  onOpenStop,
   onOpenStep,
   path,
@@ -1599,6 +1609,7 @@ export function LearnerFocusedBand({
                 accessExpiresAt={resume.expiresAt}
                 courseTitle={resume.title}
                 examDate={examDate}
+                weekMinutes={weekMinutes}
               />
             ) : (
               <SquareTile

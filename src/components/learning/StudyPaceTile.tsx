@@ -67,6 +67,16 @@ export type StudyPaceTileProps = {
    */
   examDate?: string
   /**
+   * Minutes studied per day this week, Monday-first. Absent ⇒ nothing to read,
+   * and the week strip states the SUGGESTED week instead of an actual one.
+   *
+   * ⚠ IT IS DATA, NOT A DERIVATION, and that is the point. A week's activity
+   * inferred from a progress percentage is precisely the "observed rate" this
+   * version has refused everywhere else — it would look right and be fiction.
+   * The demo personas author it (`STUDY_MINUTES_BY_VARIANT`).
+   */
+  weekMinutes?: number[]
+  /**
    * WHICH SHAPE — added 2026-09-21 with `dashboard-pacing-style: presets`.
    *
    *   - `'tile'` (default) is Testing 2's square: a pace chip, the evening, a
@@ -93,6 +103,7 @@ export function StudyPaceTile({
   detailsTo,
   courseTitle,
   examDate,
+  weekMinutes,
   layout = 'tile',
 }: StudyPaceTileProps) {
   const [open, setOpen] = useState(false)
@@ -197,6 +208,8 @@ export function StudyPaceTile({
             courseTitle={courseTitle}
             accessExpiresAt={accessExpiresAt}
             examDate={choices.examDate ?? undefined}
+            weekMinutes={weekMinutes}
+            today={today}
             onCustomize={() => setOpen(true)}
           />
         ) : (
@@ -397,6 +410,8 @@ function PaceCardBody({
   courseTitle,
   accessExpiresAt,
   examDate,
+  weekMinutes,
+  today,
   onCustomize,
 }: {
   model: PaceModel
@@ -405,6 +420,8 @@ function PaceCardBody({
   courseTitle?: string
   accessExpiresAt?: string
   examDate?: string
+  weekMinutes?: number[]
+  today: Date
   onCustomize: () => void
 }) {
   /* THE DATE THE LEARNER OWNS, not the model's `hardEndIso`. The ceiling the
@@ -458,7 +475,12 @@ function PaceCardBody({
         {nightUnit} a night, {weekly} a week
       </p>
 
-      <WeekStrip nights={nights} />
+      <WeekStrip
+        nights={nights}
+        weekMinutes={weekMinutes}
+        target={preset.minsPerNight}
+        todayIndex={(today.getDay() + 6) % 7}
+      />
 
       <div style={cardBody}>
         {/* LINE ONE — the window. Omitted entirely when nothing bounds it:
@@ -506,29 +528,49 @@ function PaceCardBody({
  * theme flip), and the unstudied cells take the same `--color-border-subtle`
  * hairline the rest of this surface uses.
  */
-function WeekStrip({ nights }: { nights: number[] }) {
+function WeekStrip({
+  nights,
+  weekMinutes,
+  target,
+  todayIndex,
+}: {
+  nights: number[]
+  weekMinutes?: number[]
+  target: number
+  todayIndex: number
+}) {
+  /* TWO MODES, and which one shows is a question of whether there is anything
+     to read — not of how far along the learner is.
+
+       • SUGGESTION (no `weekMinutes`): the nights this pace falls on, tinted.
+         What the card has always shown.
+       • ACTUAL (`weekMinutes` present): how much of each day's target was
+         actually studied, as a fill level. Authored per demo persona; see
+         `STUDY_MINUTES_BY_VARIANT` for why it is data rather than a derivation.
+
+     ⚠ ONLY ELAPSED DAYS READ AS ACTUAL. A Thursday that has not happened is not
+     a Thursday they missed, and filling it grey would say it was. Days after
+     today stay empty rings.
+
+     ⚠ AT THE FIXTURE CLOCK THIS SHOWS ONE FILLED CIRCLE. `FIXTURE_TODAY` is a
+     MONDAY, so exactly one day of the Mon-first week has elapsed — the feature
+     is correct and nearly invisible. Two ways out, both decisions rather than
+     fixes: anchor the strip to the trailing seven days (which breaks its
+     alignment with `plan.weekdays`, the Mon-first set the sheet writes), or
+     move the demo clock off a Monday. Left as-is deliberately; the honest
+     rendering of a week that has just begun is a week that has just begun. */
+  const actual = weekMinutes != null
   return (
-    /* SEVEN DOTS, NOT SEVEN BUTTONS — 2026-09-21, the direct ask ("make these
-       circles so they look less like buttons. they are just indicators").
-       They were full-width rounded rectangles with a 1px ring and an uppercase
-       label, which is the exact shape of the day toggles in the Adjust sheet —
-       and those ARE buttons. Two identical-looking controls a click apart, one
-       of them inert, is the affordance lying about itself.
-
-       Circles at a fixed size, left-aligned rather than stretched across the
-       card: a row of seven things that fills its container reads as a control
-       group, and a short row of dots reads as a readout.
-
-       INITIALS, not three-letter names, which the ask allows ("abbreviate the
-       names more if needed") and the circle requires — "WED" does not fit a
-       28px dot at a legible size. M T W T F S S repeats its letters, and that
-       is the calendar convention precisely because the POSITION carries the
-       day; it is safe here for the stronger reason that the whole strip is
-       `aria-hidden` and the sentence above states the pace in words. Nothing
-       depends on telling Tuesday from Thursday by its glyph. */
     <div aria-hidden style={{ display: 'flex', gap: 6 }}>
       {WEEKDAY_LABELS.map((label, i) => {
-        const on = nights.includes(i)
+        const planned = nights.includes(i)
+        const elapsed = i <= todayIndex
+        const done = actual && elapsed ? Math.min(1, (weekMinutes[i] ?? 0) / Math.max(target, 1)) : 0
+        /* In ACTUAL mode a day is "on" once any of it is done; in SUGGESTION
+           mode it is "on" if the pace falls there. The ring, the ink and the
+           fill all follow that one boolean so a half-done day cannot end up
+           with a studied ring and unstudied ink. */
+        const on = actual ? done > 0 : planned
         return (
           <span
             key={label}
@@ -544,12 +586,15 @@ function WeekStrip({ nights }: { nights: number[] }) {
               fontSize: 11,
               fontWeight: 700,
               lineHeight: 1,
-              /* The studied days are a filled dot; the rest are an empty ring.
-                 The FILL is the signal now that the shape is not a control —
-                 there is no border-vs-background ambiguity to resolve, so the
-                 tint that could only ever be a hint on the rectangles does the
-                 work here. Ink measured at 10.49:1 on its own fill. */
-              background: on ? 'var(--color-primary-100)' : 'transparent',
+              /* THE FILL RISES FROM THE BOTTOM, which is what makes a partial
+                 day read as partial rather than as a different colour. A
+                 conic sweep would read as a timer; a level reads as an amount,
+                 which is what minutes-against-a-target is. */
+              background: on
+                ? `linear-gradient(to top, var(--color-primary-100) ${Math.round(
+                    (actual ? done : 1) * 100,
+                  )}%, transparent ${Math.round((actual ? done : 1) * 100)}%)`
+                : 'transparent',
               boxShadow: `inset 0 0 0 1px ${
                 on ? 'var(--color-primary-400)' : 'var(--color-border-subtle)'
               }`,

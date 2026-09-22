@@ -580,3 +580,74 @@ describe('StudyPaceSheet — spoken durations', () => {
     expect(cell.querySelector('[aria-hidden]')?.textContent).toMatch(/\d/)
   })
 })
+
+/**
+ * THE WEEK STRIP READING ACTUAL ACTIVITY — 2026-09-21.
+ *
+ * Two modes, and which one shows turns on whether there is anything to read,
+ * not on how far along the learner is. The data is AUTHORED per demo persona
+ * (`STUDY_MINUTES_BY_VARIANT`) rather than derived from a progress percentage:
+ * a week inferred from a total is the "observed rate" this version refuses
+ * everywhere else — it would look right and be fiction.
+ */
+describe('StudyPaceTile — the week strip reads real minutes', () => {
+  const model = () =>
+    studyPace({ today: TODAY, hoursRemaining: 24, accessExpiresAt: '2026-10-18' })
+  const renderCard = (props: Partial<React.ComponentProps<typeof StudyPaceTile>> = {}) =>
+    renderTile({ layout: 'card', ...props })
+
+  /** The strip's cells, in order. */
+  const cells = () =>
+    [...document.querySelector('[aria-hidden]')!.querySelectorAll('span')] as HTMLElement[]
+  /** How full a cell is drawn, 0–100. The fill is a bottom-up gradient stop. */
+  const fillPct = (el: HTMLElement) =>
+    Number(/([\d.]+)%/.exec(el.style.background)?.[1] ?? 0)
+
+  const TODAY_INDEX = (TODAY.getDay() + 6) % 7
+
+  it('fills each elapsed day by minutes against that day’s target', () => {
+    const preset = defaultPreset(model())
+    const target = preset.minsPerNight
+    // A full day, a half day, and a day with nothing — all in the past.
+    const week = [0, 0, 0, 0, 0, 0, 0]
+    week[0] = target
+    week[1] = target / 2
+    renderCard({ weekMinutes: week })
+    const c = cells()
+    expect(fillPct(c[0])).toBe(100)
+    expect(fillPct(c[1])).toBe(50)
+    // A day with nothing studied is an empty ring, not a filled grey one.
+    expect(c[2].style.background).toBe('transparent')
+  })
+
+  it('clamps a day that ran long to full, rather than overflowing it', () => {
+    const preset = defaultPreset(model())
+    const week = [preset.minsPerNight * 3, 0, 0, 0, 0, 0, 0]
+    renderCard({ weekMinutes: week })
+    expect(fillPct(cells()[0])).toBe(100)
+  })
+
+  it('leaves days that have not happened EMPTY, whatever the data says', () => {
+    /* A Thursday that has not arrived is not a Thursday they missed, and
+       filling it would say it was. The fixture authors the whole week — the
+       later days become visible when the clock moves, not before. */
+    const week = [0, 0, 0, 0, 0, 0, 0].map(() => 999)
+    renderCard({ weekMinutes: week })
+    const c = cells()
+    for (let i = TODAY_INDEX + 1; i < 7; i += 1) {
+      expect(c[i].style.background, `day ${i}`).toBe('transparent')
+    }
+  })
+
+  it('falls back to the SUGGESTED week when there is nothing to read', () => {
+    /* Absent minutes means "no week yet", not "a week of zeros" — a learner at
+       0% has not had a bad week, they have not had a week. The strip states the
+       nights the pace falls on instead, which is what it always did. */
+    const preset = defaultPreset(model())
+    renderCard()
+    const shaded = cells().filter((c) => c.style.background !== 'transparent')
+    expect(shaded).toHaveLength(preset.nights)
+    // …and every one of them is drawn FULL: a suggestion has no partial state.
+    for (const cell of shaded) expect(fillPct(cell)).toBe(100)
+  })
+})
