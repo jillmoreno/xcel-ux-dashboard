@@ -3,6 +3,7 @@ import { MemoryRouter, useLocation } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { DemoControlsBar } from '@/components/prototype/DemoControlsBar'
 import { personasForBrand } from '@/components/prototype/demoControlsUtil'
+import { DASHBOARD_PROGRESS_PICKER } from '@/data/dashboardProgressFixtures'
 import { AccountProvider } from '@/context/AccountContext'
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
 
@@ -120,11 +121,19 @@ describe('DemoControlsBar — persona dropdown', () => {
     expect(screen.getByRole('menuitem', { name: /No learning paths \(brand\)/i })).not.toBeDisabled()
   })
 
-  it('the "License expired" persona sets the progress state to expired (writes ?prog=progress-expired)', () => {
+  it('the "License expired" persona no longer applies — the state is withheld', () => {
+    /* CHANGED 2026-09-22. This asserted the persona WROTE `?prog=progress-expired`,
+       and it was right until Expired was withheld for having no agreed design.
+       Inverted rather than deleted: the row is still in the list, and the thing
+       worth pinning is that clicking it now changes nothing. Restoring the
+       state means dropping `unavailable` from the persona AND from
+       `DASHBOARD_PROGRESS_PICKER`, at which point this flips back. */
     renderBar()
     fireEvent.click(screen.getByRole('button', { name: /Persona/i }))
-    fireEvent.click(screen.getByRole('menuitem', { name: /License expired/i }))
-    expect(url()).toContain('prog=progress-expired')
+    const row = screen.getByRole('menuitem', { name: /License expired/i })
+    expect(row).toBeDisabled()
+    fireEvent.click(row)
+    expect(url()).not.toContain('prog=progress-expired')
   })
 })
 
@@ -209,5 +218,50 @@ describe('DemoControlsBar — an axis with nowhere to land', () => {
     expect(pill.textContent).toContain('On Track')
     fireEvent.click(pill)
     expect(screen.getByRole('radiogroup', { name: 'Readiness state' })).toBeTruthy()
+  })
+})
+
+describe('DemoControlsBar — a state with no agreed design', () => {
+  /* Expired is withheld 2026-09-22: the flag and the fixtures both resolve it,
+     so picking it renders SOMETHING — just not a screen anyone has agreed on. */
+  const openProgress = () => {
+    fireEvent.click(screen.getByRole('button', { name: /Progress/ }))
+    return screen.getByRole('radiogroup', { name: 'Progress / compliance state' })
+  }
+
+  it('offers Expired but refuses to apply it', () => {
+    renderBar()
+    const row = within(openProgress()).getByRole('radio', { name: /Expired/ })
+    expect(row.getAttribute('aria-disabled')).toBe('true')
+    // The row says why, in the row — not only in a mouse-only tooltip.
+    expect(row.textContent).toContain('Not designed yet')
+    fireEvent.click(row)
+    // …and the click changed nothing: no `?prog=`, panel still open.
+    expect(url()).not.toContain('progress-expired')
+    expect(screen.getByRole('radiogroup', { name: 'Progress / compliance state' })).toBeTruthy()
+  })
+
+  it('closes the OTHER door to the same state', () => {
+    /* The assertion that matters. Greying a state in one picker settles
+       nothing — the persona list reaches `dashboard-progress-state` too, so
+       "License expired" would have left it one click away. */
+    renderBar()
+    fireEvent.click(screen.getByRole('button', { name: /Persona/i }))
+    expect(screen.getByRole('menuitem', { name: /License expired/i })).toBeDisabled()
+  })
+
+  it('keeps both doors in step, whichever state is withheld next', () => {
+    /* Structural, not about Expired: every withheld picker state must have no
+       live persona that applies it, and vice versa. This is what fails if
+       someone withholds a state in one list and forgets the other. */
+    const withheld = new Set(
+      DASHBOARD_PROGRESS_PICKER.filter((o) => o.unavailable).map((o) => o.variant),
+    )
+    for (const persona of personasForBrand('xcel')) {
+      const applies = persona.flags.some(
+        (f) => f.key === 'dashboard-progress-state' && withheld.has(f.variant as never),
+      )
+      if (applies) expect(persona.unavailable).toBeTruthy()
+    }
   })
 })

@@ -150,6 +150,16 @@ export type DemoPersona = {
    *  leaves no room for the What's New carousel). The Persona dropdown DISABLES
    *  the row while the What's New toggle is On. */
   disabledWhenWhatsNewOn?: boolean
+  /**
+   * Present = the row is LISTED BUT NOT APPLICABLE, and this says why.
+   *
+   * The persona-list twin of `unavailable` on `ProgressPickerOption`, and it
+   * exists because greying a state in ONE picker settles nothing: the Progress
+   * dropdown and this list both reach `dashboard-progress-state`, so blocking
+   * Expired in one left it a click away in the other. Whatever the reason a
+   * state is withheld, both doors have to agree.
+   */
+  unavailable?: string
 }
 
 /**
@@ -257,6 +267,11 @@ export const DEMO_PERSONAS: DemoPersona[] = [
     // No clp override → default combined variant-d band; the expired progress
     // state drives the status band + pill and a part-done (resume) Jump Back In.
     flags: [{ key: 'dashboard-progress-state', variant: 'progress-expired' }],
+    /* WITHHELD 2026-09-22 — the requirements for the expired state are not
+       defined. Kept in the list rather than cut: "what happens when they run
+       out of time" is a real question stakeholders ask, and a row that says
+       "not designed yet" answers it better than an absence. */
+    unavailable: 'Requirements for the expired state are not defined yet.',
   },
   {
     id: 'completed-empty',

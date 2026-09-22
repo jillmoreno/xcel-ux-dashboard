@@ -798,13 +798,35 @@ export type ProgressPickerOption = {
   variant: DashboardProgressVariant
   label: string
   status: HomeStatus
+  /**
+   * Present = the row is OFFERED BUT NOT SELECTABLE, and this says why.
+   *
+   * For a state the flag supports and the DESIGN does not yet — the fixtures
+   * resolve it, so the dashboard would render something, but nobody has decided
+   * what that something should say. Picking it would put a reviewer in front of
+   * a screen the team has not agreed on and let them read it as the proposal.
+   *
+   * SHOWN RATHER THAN DROPPED: the state is part of the compliance story and a
+   * stakeholder who asks "what about expired?" should see it listed and pending,
+   * not absent. Deleting the row would read as "we forgot".
+   *
+   * ⚠ NOT A KILL SWITCH. The variant stays declared and `?ff=` / the Feature
+   * Flag panel still reach it — this governs the reviewer-facing picker only, so
+   * whoever is DESIGNING the state can still open it.
+   */
+  unavailable?: string
 }
 
 export const DASHBOARD_PROGRESS_PICKER: ProgressPickerOption[] = [
   { variant: 'not-started', label: 'Not Started · 0%', status: 'not-started' },
   { variant: 'progress-on-track', label: 'On Track · ~63%', status: 'on-track' },
   { variant: 'progress-at-risk', label: 'At Risk · ~15%', status: 'at-risk' },
-  { variant: 'progress-expired', label: 'Expired', status: 'expired' },
+  {
+    variant: 'progress-expired',
+    label: 'Expired',
+    status: 'expired',
+    unavailable: 'Requirements for the expired state are not defined yet.',
+  },
   { variant: 'complete-100', label: 'Completed · 100%', status: 'completed' },
 ]
 

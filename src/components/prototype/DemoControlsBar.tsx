@@ -583,7 +583,11 @@ export function DemoControlsBar({
             // carousel had no room in the full-takeover views; the toggle now just
             // shows/hides the Featured hero, which never conflicts with a persona.
             // (`persona.disabledWhenWhatsNewOn` is retained but inert.)
-            const disabled = false
+            /* …but a persona CAN be withheld because the state it applies has no
+               agreed design yet (`unavailable`). Both doors to
+               `dashboard-progress-state` — this list and the Progress dropdown —
+               have to agree, or greying one just moves the click. */
+            const disabled = persona.unavailable != null
             return (
               <div key={persona.id}>
                 <button
@@ -593,6 +597,7 @@ export function DemoControlsBar({
                   aria-expanded={isExpander ? expanded : undefined}
                   aria-disabled={disabled || undefined}
                   disabled={disabled}
+                  title={persona.unavailable}
                   className="cre-menu-item cre-demo-controls-btn"
                   onClick={() =>
                     disabled
@@ -607,9 +612,16 @@ export function DemoControlsBar({
                   <span style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2, textAlign: 'left' }}>
                     <span style={{ fontWeight: 700 }}>
                       {persona.label}
-                      {disabled && <span style={{ fontWeight: 600, opacity: 0.8 }}> · off only</span>}
+                      {disabled && (
+                        <span style={{ fontWeight: 600, opacity: 0.8 }}> · not designed yet</span>
+                      )}
                     </span>
-                    <span style={{ fontSize: 11, opacity: 0.7, lineHeight: 1.3 }}>{persona.description}</span>
+                    {/* The REASON replaces the description on a withheld row.
+                        The description sells a state the reviewer cannot open;
+                        what they need instead is why not. */}
+                    <span style={{ fontSize: 11, opacity: 0.7, lineHeight: 1.3 }}>
+                      {persona.unavailable ?? persona.description}
+                    </span>
                   </span>
                   {isExpander && (
                     <ChevronDown
@@ -680,15 +692,37 @@ export function DemoControlsBar({
         >
           {DASHBOARD_PROGRESS_PICKER.map((opt) => {
             const active = opt.variant === progressState.variant
+            /* A STATE THE DESIGN HAS NOT ANSWERED YET — 2026-09-22, Expired.
+               The flag and the fixtures both resolve it, so picking it renders
+               SOMETHING; what it renders is just not a screen anyone has agreed
+               on. Offering it unmarked invites a stakeholder to read an
+               unreviewed page as the proposal. See `unavailable` on
+               `ProgressPickerOption` for why the row is greyed rather than cut. */
+            const unavailable = opt.unavailable
             return (
               <button
                 key={opt.variant}
                 type="button"
                 role="radio"
                 aria-checked={active}
+                /* `aria-disabled`, NOT `disabled` — the same call the pace
+                   sheet's unpickable row documents. A disabled button drops out
+                   of the tab order and out of most screen-reader element lists,
+                   so the one row that most needs to explain itself becomes the
+                   one that cannot be reached to hear the explanation. The click
+                   is refused in the handler instead. */
+                aria-disabled={unavailable ? true : undefined}
+                aria-describedby={unavailable ? `${opt.variant}-why` : undefined}
                 tabIndex={active ? 0 : -1}
+                title={unavailable}
+                style={
+                  unavailable
+                    ? { opacity: 0.45, cursor: 'not-allowed', alignItems: 'flex-start' }
+                    : undefined
+                }
                 className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
                 onClick={() => {
+                  if (unavailable) return
                   setVariant('dashboard-progress-state', opt.variant)
                   const promotedTier = ensureMemberForPersona()
                   writeProgEdu(
@@ -699,7 +733,24 @@ export function DemoControlsBar({
                   close()
                 }}
               >
-                <span style={{ flex: 1 }}>{opt.label}</span>
+                <span style={{ flex: 1 }}>
+                  {opt.label}
+                  {unavailable && (
+                    /* The reason IN THE ROW, not only on `title`: a tooltip is
+                       mouse-only, and "why is this greyed out" is the whole
+                       question the row has to answer. */
+                    <span
+                      id={`${opt.variant}-why`}
+                      style={{ display: 'block', fontSize: 11, fontWeight: 500, opacity: 0.85 }}
+                    >
+                      Not designed yet
+                    </span>
+                  )}
+                </span>
+                {/* STILL CHECKED WHEN ACTIVE, withheld or not. The row is
+                    unpickable, but the flag is still reachable by `?ff=` and the
+                    Feature Flag panel — and a bar that hid the tick would be
+                    misreporting the state the page is actually in. */}
                 {active && <Check size={15} aria-hidden />}
               </button>
             )
