@@ -1,0 +1,783 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XCEL LMS — Learner home (standalone)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   XCEL LMS — the learner home, as a standalone document.
+
+   This is a hand-authored copy of what the React product renders at
+   /dashboard-rebrand?demo=1 — the QE Focused overview. It exists so the home
+   page can be read, sent and marked up without booting the app, and so a
+   redesign of it can be drawn without touching product code.
+
+   ── IT IS A COPY, AND THAT IS THE ONE THING THAT CAN ROT ────────────────
+   Every other prototype in this folder is the ONLY home of what it draws.
+   This one is not: /dashboard-rebrand is the live surface and this trails it.
+   Measured against the running app on 2026-09-21. If the two disagree, the
+   app is right. Re-measure before trusting a number here.
+
+   ── THE PALETTE IS THE PRODUCT'S, NOT THE SIBLINGS' ─────────────────────
+   Every other page here copies xcel-lms-desktop.html's exploration palette:
+   --brand-* (the wordmark red, carrying identity plus the licensing-exam
+   semantic), --primary-* (interactive and data), --slate-*.
+
+   THIS PAGE DOES NOT. It declares the app's OWN tokens — --color-primary-*,
+   --color-cta-*, --color-neutral-* — at the values [data-brand='xcel'] resolves
+   them to, read out of the running app rather than retyped from the guide.
+   The reason is what the page is FOR: the siblings ask "what should this look
+   like", where a shared exploration palette is the point, and this one says
+   "here is what it looks like", where a near-miss palette would make every
+   comparison against the real screen a lie. The navy #2d5872 here IS
+   --color-primary-500, not a colour chosen to resemble it.
+
+   So do not "align this page with its siblings" by swapping the ramps. The two
+   palettes disagree on purpose, and the divergence is the honest half.
+
+   ── LIGHT ONLY, AND THE REASON IS A FINDING ─────────────────────────────
+   There is no theme toggle, following xcel-admin-tool.html's rule that a
+   control which lies is worse than an absent one.
+
+   The app HAS a dark theme and the home page does not survive it. Measured in
+   the browser on 2026-09-21: the rail's inks are hardcoded literals that do
+   not invert — the caption stays #5f636c and the idle item #565a63 while the
+   page goes to #1b1d21 and the header to #152833 — so the whole rail renders
+   near-black on near-black. The logo goes with it (the full-colour lockup is
+   1.33:1 on the dark header, a gap CLAUDE.md already records under "The logo
+   is real now — and dark mode is not").
+
+   That is the PRODUCT's defect, not this page's, and it is recorded here
+   rather than quietly worked around. A dark variant of this document is
+   worth drawing only after the rail's inks are tokens.
+
+   ── ASSETS ARE THE APP'S OWN, SAME-ORIGIN ───────────────────────────────
+   /brand/xcel-logo.webp, /brand/sarah.jpg and /courses/ny-life-health.webp are
+   served out of public/ by the same site, so this references them rather than
+   keeping a second copy that can drift from the product's. Each carries an
+   onerror fallback (the FeaturePreviewThumb pattern): the lockup falls back to
+   a text wordmark, the cover to the stock pool, the avatar to initials. A
+   missing file degrades the page; it never breaks it.
+
+   ── NOTHING HERE NAVIGATES ──────────────────────────────────────────────
+   Every control is real markup in its real state and inert on click. There is
+   no second page to go to, and wiring a button to a destination this document
+   does not contain is how a prototype starts lying about what exists. The
+   prototype bar says so once, on screen.
+   ============================================================ */
+:root{
+  /* Type. The app's --font-heading is Lato (a placeholder for the brand's
+     unlicensed Avenir); the serif is the `dashboard-heading-font: serif`
+     variant, which is ON in the shipped demo — a SYSTEM stack, deliberately,
+     because the live site's Amasis MT is off-brand and unlicensed. */
+  --font-body:'Open Sans',system-ui,-apple-system,sans-serif;
+  --font-heading:'Lato','Helvetica Neue',system-ui,sans-serif;
+  --font-serif:Georgia,'Iowan Old Style','Palatino Linotype',Palatino,'Times New Roman',serif;
+
+  /* ---- the app's XCEL ramps, read out of [data-brand='xcel'] ---- */
+  --color-primary-100:#e9eef2; --color-primary-200:#c7d4dd; --color-primary-300:#9db3c2;
+  --color-primary-500:#2d5872; --color-primary-600:#26495f; --color-primary-700:#1d3849;
+  --color-primary-800:#152833;
+
+  /* The Brick. Identity and assessment, never an action — the navy carries
+     "do this" on this version. Here it is the notification badge alone. */
+  --color-cta-300:#d98486; --color-cta-500:#9a1b1e; --color-cta-600:#7f1619;
+
+  --color-neutral-50:#ffffff; --color-neutral-75:#f5f5f5; --color-neutral-100:#ececec;
+  --color-neutral-200:#d9d9d9; --color-neutral-300:#c7c7c7;
+
+  --color-success-500:#018937; --color-success-600:#006d2c;
+
+  --color-surface-page:#f5f5f5;
+  --color-surface-card:#ffffff;
+  --color-border-subtle:#d9d9d9;
+
+  --color-text-primary:#3a3a3a;
+  --color-text-secondary:#666666;
+  --color-text-tertiary:#616161;
+
+  /* The rail's inks. LITERALS in the app too — that is the dark-mode finding
+     in the header comment, reproduced faithfully rather than fixed here. */
+  --rail-caption:#5f636c;
+  --rail-idle:#565a63;
+  --rail-active-ink:#1b1d21;
+  --rail-active-bg:rgba(29,56,73,.24);
+
+  --radius-sm:4px; --radius-md:8px; --radius-lg:12px; --radius-pill:9999px;
+
+  /* The recessed card fill: 5% of the primary mixed into neutral-100. Five is
+     a CEILING, not a preference — the 10px eyebrow on it is
+     --color-text-secondary and measures 4.53:1 at this value and fails below
+     it. Darkening the card means moving that text to --color-text-primary
+     first. Mixed from the 500, never --color-primary-100, which does not
+     invert with the theme. */
+  --recessed:color-mix(in srgb, var(--color-primary-500) 5%, var(--color-neutral-100));
+}
+
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{background:var(--color-surface-page);color:var(--color-text-primary);
+  font:400 16px/1.5 var(--font-body);-webkit-font-smoothing:antialiased}
+
+.vh{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;
+  clip:rect(0 0 0 0);white-space:nowrap;border:0}
+
+/* ---------- prototype bar (chrome, not product) ---------- */
+.pbar{background:#1a1a1d;color:rgba(255,255,255,.9);display:flex;align-items:center;gap:14px;
+  padding:0 18px;height:40px;font-size:12px;position:sticky;top:0;z-index:60;flex-wrap:wrap}
+.pbar .tag{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:rgba(255,255,255,.5)}
+.pbar .sp{margin-left:auto;display:flex;gap:10px;align-items:center}
+.pbar .note{font-size:11px;color:rgba(255,255,255,.45)}
+.plink{color:rgba(255,255,255,.72);font-size:12px;font-weight:600;text-decoration:none;
+  border-bottom:1px solid rgba(255,255,255,.25);padding-bottom:1px}
+.plink:hover{color:#fff;border-bottom-color:#fff}
+.plink:focus-visible{outline:2px solid var(--color-primary-300);outline-offset:2px}
+
+/* ---------- shell ---------- */
+.shell{display:grid;grid-template-columns:220px minmax(0,1fr);min-height:calc(100vh - 40px)}
+
+/* ---------- header ---------- */
+.hdr{grid-column:1 / -1;background:var(--color-surface-card);
+  border-bottom:1px solid var(--color-border-subtle)}
+.hdr-in{height:72px;display:flex;align-items:center;justify-content:space-between;padding:0 24px}
+.logo{display:flex;align-items:center;height:52px;text-decoration:none}
+.logo img{height:52px;width:auto;display:block}
+.logo .wordmark{font:900 30px/1 var(--font-heading);letter-spacing:.02em;color:var(--color-cta-500)}
+.util{display:flex;align-items:center;gap:0}
+.iconpill{width:40px;height:40px;display:inline-flex;align-items:center;justify-content:center;
+  border:0;background:transparent;border-radius:var(--radius-md);cursor:pointer;
+  color:var(--color-text-primary);position:relative}
+.iconpill:hover,.acctpill:hover{background:var(--color-neutral-100)}
+.iconpill:focus-visible,.acctpill:focus-visible{outline:2px solid var(--color-primary-500);outline-offset:2px}
+.badge{position:absolute;top:2px;right:2px;min-width:18px;height:18px;padding:0 5px;
+  border-radius:var(--radius-pill);background:var(--color-cta-500);color:#fff;
+  font:700 11px/18px var(--font-body);text-align:center}
+/* Same pill as its two neighbours, sized to its content — a trigger in a
+   three-item cluster that hovers differently reads as a different control. */
+.acctpill{height:40px;display:inline-flex;align-items:center;gap:8px;padding:0 8px 0 4px;
+  border:0;background:transparent;border-radius:var(--radius-md);cursor:pointer}
+.acctpill .ava{width:28px;height:28px;border-radius:var(--radius-pill);object-fit:cover;display:block}
+.acctpill .avafb{width:28px;height:28px;border-radius:var(--radius-pill);display:none;
+  align-items:center;justify-content:center;background:var(--color-primary-500);color:#fff;
+  font:700 11px var(--font-body)}
+.acctpill .nm{font:600 14px var(--font-body);color:var(--color-text-primary);white-space:nowrap}
+/* The NAME drops below 900px, not the pill: at phone widths the header is a
+   logo and this cluster, and a full name is the first thing that should go.
+   The button keeps it in its aria-label, so assistive tech loses nothing. */
+@media (max-width:900px){.acctpill .nm{display:none}.acctpill{padding:0;width:40px;justify-content:center}}
+
+/* ---------- rail ---------- */
+/* NO right border. The app declares one and sets it transparent — the white
+   rail against the grey page is the whole separation, and a hairline on top of
+   a surface change reads as two boundaries. The header's bottom border is real
+   (--color-border-subtle) because there the two surfaces are both white. */
+.rail{background:var(--color-surface-card);border-right:1px solid transparent;
+  padding:12px 20px 40px}
+.rail nav{display:flex;flex-direction:column;gap:8px}
+.railgrp{margin:0 0 8px}
+.railcap{margin:0 0 8px;padding:0 8px;font:700 11px var(--font-body);letter-spacing:.1em;
+  text-transform:uppercase;color:var(--rail-caption)}
+.raillist{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:4px}
+.railitem{width:100%;display:flex;align-items:center;gap:10px;padding:10px 12px;border:0;
+  background:transparent;border-radius:var(--radius-md);cursor:pointer;text-align:left;
+  font:600 14px/17px var(--font-body);color:var(--rail-idle)}
+.railitem:hover{background:var(--color-neutral-100)}
+.railitem:focus-visible{outline:2px solid var(--color-primary-500);outline-offset:-2px}
+/* Squared on the LEADING edge, rounded at the trailing one. Measured in the
+   app: the active row shares its x and its width with every idle row exactly —
+   it does NOT bleed to the rail's edge, and the asymmetric radius is the whole
+   of the indicator. Drawn that way here rather than the flush-to-edge version
+   that the shape suggests, because the shape is the only thing suggesting it. */
+.railitem[aria-current="page"]{background:var(--rail-active-bg);color:var(--rail-active-ink);
+  font-weight:700;border-radius:0 var(--radius-md) var(--radius-md) 0}
+.railitem .ic{width:17px;height:17px;flex:0 0 auto;display:flex;align-items:center;justify-content:center}
+.railitem .ic svg{width:17px;height:17px;fill:currentColor;display:block}
+
+/* ---------- content ---------- */
+.content{padding:24px 40px 64px}
+.wrap{max-width:1200px;margin:0 auto;width:100%}
+.stack{display:flex;flex-direction:column;gap:40px}
+
+/* The serif is scoped to this subtree, exactly as the app scopes it to the
+   overview root: the rail and the header keep the sans, so both faces are on
+   screen at once, which is the comparison the variant is for. */
+.serif h2,.serif h3.sf,.serif .figure,.serif .metaval{font-family:var(--font-serif)}
+
+/* ---------- course progress block ---------- */
+/* IN THE LEFT COLUMN, not spanning the page — 2026-09-21, the direct ask.
+   It was full-width above the band, which pushed the Study Journey a whole
+   course-header down the page: the thing that answers "what do I do next" was
+   the last thing you reached. Narrowed into the 660fr column, the journey
+   starts at the top beside it and both columns lead with their eyebrow.
+
+   The dashed rule stays and now spans the column rather than the page. It is
+   still doing its job — separating the course header from the cards under it —
+   and a page-wide rule under a column-wide block would draw a line to nowhere.
+
+   THE CLEARANCE IS THE APP'S OWN, 39 ABOVE THE RULE AND 40 BELOW. It was
+   trimmed to 22/24 when this moved into the column, which was a compression
+   nothing asked for: narrowing the block is what lets the journey come up, and
+   the space under it costs the journey nothing, because the two columns are
+   independently sized (`align-items: start`). What the trim actually did was
+   make the header read as a caption rather than as the thing the page opens
+   with. The 40 below is the same figure `.stack` used to supply when this was a
+   page-level section — the block changed column, not rank. */
+.coursehead{padding-bottom:39px;margin-bottom:40px;
+  border-bottom:1px dashed var(--color-neutral-300)}
+/* `flex-start`, where the full-width version used `flex-end`. At this width the
+   title wraps to two lines and the text column is taller than the 130px cover,
+   so bottom-aligning would start the picture BELOW the eyebrow it belongs to.
+   Top-aligned, the cover, the eyebrow and the right column's eyebrow all begin
+   on one line, which is the rhythm the two columns are for. */
+.coursehead .row{display:flex;align-items:flex-start;gap:16px}
+.cover{width:130px;height:130px;flex:0 0 auto;object-fit:cover;display:block;
+  border-radius:0 var(--radius-md) 0 var(--radius-md)}
+.eyebrow{margin:0 0 6px;font:400 11px var(--font-body);letter-spacing:.08em;
+  text-transform:uppercase;color:var(--color-primary-700)}
+.titlerow{display:flex;align-items:baseline;gap:12px;min-width:0}
+.coursehead h2{margin:0;min-width:0;font-weight:700;font-size:28px;line-height:1.15;
+  color:var(--color-text-primary)}
+.dot{flex-shrink:0;align-self:center;width:3px;height:3px;border-radius:50%;
+  background:var(--color-neutral-300);display:inline-block}
+.pctwrap{display:flex;align-items:baseline;gap:2px;flex-shrink:0}
+.pctwrap .figure{font-weight:700;font-size:32px;line-height:1;color:var(--color-text-primary)}
+.pctwrap .sign{font-family:var(--font-serif);font-weight:700;font-size:17px;line-height:1;
+  color:var(--color-text-primary)}
+.bar{width:100%;height:8px;border-radius:var(--radius-pill);
+  background:var(--color-neutral-300);overflow:hidden}
+.bar>i{display:block;height:100%;border-radius:var(--radius-pill);background:var(--color-primary-500)}
+/* BARE CELLS DIVIDED BY VERTICAL RULES, where the full-width version ran the
+   three facts inline separated by interpuncts.
+
+   THE SWAP IS FORCED BY THE COLUMN, AND IT IS NOT INVENTED. Inline, the three
+   facts measure ~690px and the text column is ~552, so the row wraps — and a
+   wrapped line ENDS ON AN INTERPUNCT, which reads as a value that failed to
+   load. That is the admin roster's blank-Seat-cell rule (a placeholder in an
+   inapplicable slot looks like a fetch that failed) arriving from the other
+   direction, and it is why the separator cannot just be left to wrap.
+
+   Stacking the label under its value is the app's OWN treatment for these three
+   facts when they have to hold a column rather than a page: bare cells, no
+   fill, no border, no radius, `gap: 0` with the rule on the LEADING edge of
+   cells 2 and 3. A gap on top of a rule reads as two gutters, and a rule on the
+   first cell would fence the row off from the block it belongs to.
+
+   `--color-neutral-300` for the rule, not `--color-border-subtle`. The subtle
+   token is for a boundary and measures 1.29:1 on this ground; these rules are
+   the only thing separating three data points, so they are doing work —
+   neutral-300 is 1.55:1. `-400` reads better still (1.9) and was rejected: at
+   full cell height it draws more attention than the numbers it separates. */
+.metarow{margin-top:14px;display:flex;flex-wrap:wrap;align-items:flex-end;
+  justify-content:space-between;gap:10px 20px}
+.metas{display:flex;align-items:stretch;gap:0;min-width:0}
+.meta{display:flex;flex-direction:column;gap:2px;padding-right:16px}
+.meta + .meta{padding-left:16px;border-left:1px solid var(--color-neutral-300)}
+.metaval{font-size:14px;font-weight:700;line-height:1.3;color:var(--color-text-primary)}
+.metalb{font:400 11px var(--font-body);letter-spacing:.08em;text-transform:uppercase;
+  color:var(--color-text-tertiary);white-space:nowrap}
+
+/* The one text-CTA treatment on the page. Navy, not the Brick: the red was
+   carrying every action AND the assessment accent, and the split is that navy
+   means "do this" while red means "this is an assessment". */
+.cta{background:transparent;border:0;padding:0;cursor:pointer;
+  font:700 13px var(--font-body);color:var(--color-primary-500);white-space:nowrap}
+.cta:hover{text-decoration:underline}
+.cta:focus-visible{outline:2px solid var(--color-primary-500);outline-offset:2px;border-radius:2px}
+
+/* ---------- the two columns ---------- */
+/* 660 : 380, from a near-even 514 : 407. They are not two halves of one thing:
+   the left carries the resume card and two tiles, the right is a list of short
+   rows and gives width up cheaply.
+
+   `align-items: start` is load-bearing. Without it the grid equalises the row
+   and the shorter column stretches to the taller one, carrying a large empty
+   area that reads as a render failure rather than as breathing room. */
+.band{display:grid;grid-template-columns:minmax(0,660fr) minmax(0,380fr);gap:40px;align-items:start}
+@media (max-width:1100px){.band{grid-template-columns:minmax(0,1fr)}}
+.col{display:flex;flex-direction:column;padding:4px 0 0;min-width:0}
+
+/* ---------- recessed cards ---------- */
+.recessed{display:flex;flex-direction:column;background:var(--recessed);
+  border-radius:var(--radius-lg);padding:16px;min-width:0}
+/* 10/600 at 0.18em, matched to the Study Journey's own eyebrow — one constant
+   rather than two that happen to agree. The wide tracking is what makes a
+   small uppercase line read as a document's label rather than as a heading
+   that shrank. */
+.weyebrow{margin:0;display:flex;align-items:center;gap:6px;font:600 10px var(--font-body);
+  letter-spacing:.18em;text-transform:uppercase;color:var(--color-primary-700)}
+.weyebrow svg{width:13px;height:13px;fill:currentColor;flex:0 0 auto}
+
+.jbi .weyebrow{margin-bottom:12px}
+.jbi .body{display:flex;align-items:center;gap:16px}
+.jbi .lesson{margin:0 0 3px;font:700 10px var(--font-body);letter-spacing:.1em;
+  text-transform:uppercase;color:var(--color-text-secondary)}
+.jbi .lesson .dot{margin:0 8px;vertical-align:middle}
+.jbi h3{margin:0;font:700 15px/20px var(--font-body);color:var(--color-text-primary)}
+.jbi .est{margin:4px 0 0;font:400 12px/16px var(--font-body);color:var(--color-text-secondary)}
+/* White on --color-primary-500 is 7.64:1 in both themes. It is the navy rather
+   than the Brick for the reason .cta is: on this version red is not an action. */
+.btn{flex-shrink:0;height:44px;padding:0 20px;display:inline-flex;align-items:center;
+  justify-content:center;gap:8px;border:0;border-radius:var(--radius-md);cursor:pointer;
+  background:linear-gradient(135deg,var(--color-primary-500),var(--color-primary-600));
+  color:#fff;font:700 14px var(--font-body)}
+.btn svg{width:16px;height:16px;fill:currentColor}
+.btn:hover{filter:brightness(1.08)}
+.btn:focus-visible{outline:2px solid var(--color-primary-500);outline-offset:2px}
+
+.tiles{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin-top:18px}
+@media (max-width:640px){.tiles{grid-template-columns:minmax(0,1fr)}}
+/* SQUARE, by aspect-ratio rather than a fixed height — so they stay square at
+   whatever width the column is, and GROW rather than clipping if the status
+   message ever needs the room. `min-width: 0` because a grid item's default
+   `min-width: auto` refuses to shrink below its content, which is what makes a
+   two-column grid overflow a narrow shell instead of squeezing. */
+.tile{gap:10px;aspect-ratio:1 / 1;min-width:0}
+@media (max-width:640px){.tile{aspect-ratio:auto}}
+/* The grey bars are the app's own unbuilt-content placeholders, kept rather
+   than filled in: these two tiles are where Study Pace and Readiness are going
+   and neither is designed on this surface yet. Drawing something plausible
+   here is how a mock-up becomes a claim. What each one WILL hold is explored
+   in xcel-study-pace-readiness.html. */
+.skel{display:flex;flex-direction:column;gap:10px}
+.skel i{display:block;height:12px;border-radius:6px;background:var(--color-neutral-200)}
+.tile .foot{margin-top:auto;padding-top:16px}
+.chip{display:inline-flex;align-items:center;gap:5px;padding:3px 10px;
+  border-radius:var(--radius-pill);font:600 12px var(--font-body);
+  background:color-mix(in srgb, var(--color-success-500) 16%, transparent);
+  color:var(--color-success-600)}
+.tile p{margin:8px 0 0;font:400 12px var(--font-body);color:var(--color-text-secondary)}
+.tile .unbuilt{font:400 11px var(--font-body);color:var(--color-text-tertiary)}
+.tile .ctarow{display:flex;justify-content:flex-end;margin-top:12px}
+
+/* ---------- study journey / get licensed ---------- */
+/* The column already supplies the 4px, so the FIRST block in it must not add
+   its own — that is 8px against the left column's 4 and puts the two eyebrows
+   on different lines, which is the one alignment a two-column page owes you. */
+.wsec{display:flex;flex-direction:column;padding:4px 0 0}
+.col > .wsec:first-child{padding-top:0}
+.wsec h3{margin:6px 0 0;font-family:var(--font-serif);font-weight:700;font-size:21px;
+  line-height:1.3;letter-spacing:-.01em;color:var(--color-text-primary)}
+.wrule{height:1px;background:var(--color-border-subtle);margin-top:18px}
+.steps{list-style:none;margin:14px 0 0;padding:0;display:flex;flex-direction:column}
+.step{display:flex;gap:10px;padding-bottom:8px}
+.gutter{display:flex;flex-direction:column;align-items:center;flex:0 0 26px}
+.node{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;
+  justify-content:center;font:700 10px var(--font-body);flex:0 0 auto}
+/* "You are here" is a FILLED node. It was --color-primary-600 and measured
+   1.59:1 on the dark card — the one node saying where the learner is was the
+   least visible thing on the rail. Kept as the deep primary on white here,
+   where it is the strongest ink in the column. */
+.node.now{background:var(--color-primary-700);border:2px solid var(--color-primary-500);color:#fff}
+.node.next{border:1px dashed var(--color-neutral-300);color:var(--color-text-tertiary)}
+.node.ext{border:1px solid var(--color-neutral-300);color:var(--color-text-tertiary)}
+.spine{width:2px;flex:1 1 auto;min-height:18px;background:var(--color-neutral-200);margin-top:2px}
+/* The row hover. `background: transparent` lives HERE and not inline: an
+   inline value beats a stylesheet rule, so :hover would have needed
+   !important to do anything — and would have looked fine while doing nothing.
+   The 8px inset tint is pulled back with -8 margins so no text moves. */
+.stoprow{flex:1 1 auto;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  background:transparent;border:0;padding:4px 8px;margin:0 -8px;border-radius:var(--radius-md);
+  cursor:pointer;text-align:left;font:inherit;color:inherit}
+.stoprow:hover{background:var(--color-neutral-100)}
+.stoprow:focus-visible{outline:2px solid var(--color-primary-500);outline-offset:-2px}
+.stoprow .tt{display:flex;flex-direction:column;min-width:0}
+.stoprow .t{font:600 13px var(--font-body);letter-spacing:-.005em;color:var(--color-primary-500)}
+.stoprow .s{font:400 12px var(--font-body);color:var(--color-text-tertiary)}
+.stoprow .chev{width:14px;height:14px;fill:var(--color-text-tertiary);flex:0 0 auto}
+/* A BLOCKED stop is static text with no chevron — a chevron on a row that
+   opens nothing promises otherwise — and it renders NO meta line. Every stop
+   after the current one is blocked, so all of their metas ended in the same
+   four words: four stacked rows of "After your coursework", a paragraph of
+   repetition where the point was a sequence. The words survive in the
+   accessible name, which is what keeps the rule safe: blocked and not-started
+   never appear together here, so the missing line is not what would have told
+   two visible states apart. */
+.stopstatic{flex:1 1 auto;display:flex;flex-direction:column;padding:2px 0 14px;min-width:0}
+.stopstatic .t{font:400 13px var(--font-body);letter-spacing:-.005em;color:var(--color-text-tertiary)}
+.railfoot{display:flex;justify-content:flex-end;margin-top:14px}
+.railfoot .cta{font-weight:600}
+.lede{margin:12px 0 0;font:400 12px/17px var(--font-body);color:var(--color-text-secondary)}
+
+/* The narrow-width block lives LAST on purpose: it overrides base rules at
+   equal specificity, so placed earlier the base declarations win and the
+   media query computes and does nothing. It did, for one build — the cover
+   stayed 130px and the meta cells kept their 16px indent. */
+/* ---------- narrow widths ----------
+   THE APP TURNS THE RAIL INTO A SHEET HERE; this document does not, because a
+   hamburger and an overlay is a component with behaviour, and inventing one
+   would be the page claiming an interaction the copy cannot vouch for.
+
+   What it does instead is the most literal degradation available: one column,
+   the rail full-width above the content with its items wrapping. Nothing new is
+   drawn, every row stays reachable, and the page stops being a 155px gutter
+   next to a 220px rail — which is what it was before this block existed.
+
+   900px is the app's own breakpoint, the width at which the header drops the
+   learner's name. Matching it keeps the two documents describing one product
+   rather than two. */
+@media (max-width:900px){
+  .shell{grid-template-columns:minmax(0,1fr)}
+  .rail{padding:12px 16px;border-bottom:1px solid var(--color-border-subtle)}
+  .rail nav{flex-direction:row;flex-wrap:wrap;gap:8px 20px;align-items:flex-start}
+  .railgrp{margin:0}
+  .raillist{flex-direction:row;flex-wrap:wrap}
+  .railitem{width:auto}
+  /* The indicator is a full pill here: squared on the leading edge is an edge
+     treatment, and in a wrapping row there is no edge for it to sit against. */
+  .railitem[aria-current="page"]{border-radius:var(--radius-md)}
+  .content{padding:20px 16px 48px}
+  .hdr-in{padding:0 16px}
+  /* The cover goes full-width above the title rather than shrinking beside it:
+     at this width a 130px square leaves the 28px heading about 190px, which
+     breaks "Pre-licensing" across three lines. */
+  .coursehead .row{flex-direction:column;gap:14px}
+  .cover{width:100%;height:120px;border-radius:var(--radius-md)}
+  /* The vertical rules go with the row. Stacked, each fact is already alone on
+     its line and its label already sits under its value, so the divider would
+     be separating things nothing was running together. */
+  .metas{flex-direction:column;gap:12px}
+  .meta{padding-right:0}
+  .meta + .meta{padding-left:0;border-left:0}
+  .metarow{align-items:flex-start}
+}
+</style>
+</head>
+<body>
+
+<div class="pbar">
+  <span class="tag">XCEL LMS</span>
+  <span>Learner home</span>
+  <span style="opacity:.4">·</span>
+  <a class="plink" href="/prototypes/xcel-lms-desktop.html">Desktop platform</a>
+  <a class="plink" href="/prototypes/xcel-lms-walkthrough.html">Learner walk-through</a>
+  <a class="plink" href="/prototypes/xcel-study-plan.html">Study plan</a>
+  <a class="plink" href="/prototypes/xcel-study-pace-readiness.html">Pace &amp; Readiness</a>
+  <a class="plink" href="/prototypes/xcel-nav-collapse.html">Collapsible rail</a>
+  <a class="plink" href="/prototypes/xcel-lms-wireframes.html">Wireframes &amp; overlap</a>
+  <a class="plink" href="/prototypes/xcel-finserv-build-plan.html">Build plan</a>
+  <span class="sp">
+    <span class="note">Static copy of /dashboard-rebrand · light only · nothing navigates</span>
+  </span>
+</div>
+
+<!-- One sprite, so a glyph is defined once and used wherever it appears.
+     Every path is the app's own vendored Font Awesome 7 Pro Light file from
+     src/icons/, not a redraw. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true" focusable="false"><defs>
+<symbol id="i-house" viewBox="0 0 576 512"><path d="M575.8 255.5c0 18-15 32.1-32 32.1l-32 0 .7 160.2c0 2.7-.2 5.4-.5 8.1l0 16.2c0 22.1-17.9 40-40 40l-16 0c-1.1 0-2.2 0-3.3-.1-1.4 .1-2.8 .1-4.2 .1L416 512l-24 0c-22.1 0-40-17.9-40-40l0-24 0-64c0-17.7-14.3-32-32-32l-64 0c-17.7 0-32 14.3-32 32l0 64 0 24c0 22.1-17.9 40-40 40l-24 0-31.9 0c-1.5 0-3-.1-4.5-.2-1.2 .1-2.4 .2-3.6 .2l-16 0c-22.1 0-40-17.9-40-40l0-112c0-.9 0-1.9 .1-2.8l0-61.5-32 0c-18 0-32-14-32-32.1 0-9 3-17 10-24L266.4 8c7-7 15-8 22-8s15 2 21 7L564.8 231.5c8 7 12 15 11 24z"/></symbol>
+<symbol id="i-calendar" viewBox="0 0 448 512"><path d="M112 0c8.8 0 16 7.2 16 16l0 48 192 0 0-48c0-8.8 7.2-16 16-16s16 7.2 16 16l0 48 32 0c35.3 0 64 28.7 64 64l0 288c0 35.3-28.7 64-64 64L64 480c-35.3 0-64-28.7-64-64L0 128C0 92.7 28.7 64 64 64l32 0 0-48c0-8.8 7.2-16 16-16zM384 96L64 96c-17.7 0-32 14.3-32 32l0 288c0 17.7 14.3 32 32 32l320 0c17.7 0 32-14.3 32-32l0-288c0-17.7-14.3-32-32-32zM144 256c-8.8 0-16 7.2-16 16l0 64c0 8.8 7.2 16 16 16l64 0c8.8 0 16-7.2 16-16l0-64c0-8.8-7.2-16-16-16l-64 0zM96 272c0-26.5 21.5-48 48-48l64 0c26.5 0 48 21.5 48 48l0 64c0 26.5-21.5 48-48 48l-64 0c-26.5 0-48-21.5-48-48l0-64z"/></symbol>
+<symbol id="i-gauge" viewBox="0 0 640 640"><path d="M320 96C443.7 96 544 196.3 544 320C544 443.7 443.7 544 320 544C196.3 544 96 443.7 96 320C96 196.3 196.3 96 320 96zM320 576C461.4 576 576 461.4 576 320C576 178.6 461.4 64 320 64C178.6 64 64 178.6 64 320C64 461.4 178.6 576 320 576zM344 160C344 146.7 333.3 136 320 136C306.7 136 296 146.7 296 160C296 173.3 306.7 184 320 184C333.3 184 344 173.3 344 160zM288 416C288 398.3 302.3 384 320 384C337.7 384 352 398.3 352 416C352 433.7 337.7 448 320 448C302.3 448 288 433.7 288 416zM384 416C384 397.4 376.1 380.7 363.5 369L446.1 215.6C450.3 207.8 447.4 198.1 439.6 193.9C431.8 189.7 422.1 192.6 417.9 200.4L335.3 353.8C330.4 352.6 325.3 352 320 352C284.7 352 256 380.7 256 416C256 451.3 284.7 480 320 480C355.3 480 384 451.3 384 416zM232 208C232 194.7 221.3 184 208 184C194.7 184 184 194.7 184 208C184 221.3 194.7 232 208 232C221.3 232 232 221.3 232 208zM160 344C173.3 344 184 333.3 184 320C184 306.7 173.3 296 160 296C146.7 296 136 306.7 136 320C136 333.3 146.7 344 160 344zM504 320C504 306.7 493.3 296 480 296C466.7 296 456 306.7 456 320C456 333.3 466.7 344 480 344C493.3 344 504 333.3 504 320z"/></symbol>
+<symbol id="i-bookfull" viewBox="0 0 640 640"><path d="M96 128C96 92.7 124.7 64 160 64L496 64C522.5 64 544 85.5 544 112L544 432C544 452.9 530.6 470.7 512 477.3L512 544L528 544C536.8 544 544 551.2 544 560C544 568.8 536.8 576 528 576L160 576C124.7 576 96 547.3 96 512L96 512L96 128zM160 480C142.3 480 128 494.3 128 512C128 529.7 142.3 544 160 544L480 544L480 480L160 480zM128 456.6C137.4 451.2 148.3 448 160 448L496 448C504.8 448 512 440.8 512 432L512 112C512 103.2 504.8 96 496 96L160 96C142.3 96 128 110.3 128 128L128 456.6zM240 192L432 192C440.8 192 448 199.2 448 208C448 216.8 440.8 224 432 224L240 224C231.2 224 224 216.8 224 208C224 199.2 231.2 192 240 192zM240 288L432 288C440.8 288 448 295.2 448 304C448 312.8 440.8 320 432 320L240 320C231.2 320 224 312.8 224 304C224 295.2 231.2 288 240 288z"/></symbol>
+<symbol id="i-award" viewBox="0 0 448 512"><path d="M252.6-24c-17.6-10.7-39.7-10.7-57.3 0-10.7 6.5-18.4 10.1-26 12.1s-16.1 2.8-28.6 2.5c-20.6-.5-39.7 10.6-49.6 28.6-6 10.9-10.9 17.9-16.5 23.5S62.2 53.2 51.3 59.2c-18.1 9.9-29.1 29-28.6 49.6 .3 12.5-.5 20.9-2.5 28.6s-5.6 15.3-12.1 26c-10.7 17.6-10.7 39.7 0 57.3 6.5 10.7 10.1 18.4 12.1 26s2.8 16.1 2.5 28.6c-.5 20.6 10.6 39.7 28.6 49.6 10.9 6 17.9 10.9 23.5 16.5s10.5 12.5 16.5 23.5l.1 .1-49.9 93.6c-8.3 15.5-2.5 34.9 13.1 43.2l75.8 40.8c15.6 8.4 35.1 2.5 43.5-13.2l50.3-95 50.3 95c8.3 15.7 27.8 21.6 43.5 13.2l75.8-40.8c15.5-8.4 21.4-27.7 13.1-43.2l-49.9-93.6c0 0 0-.1 .1-.1 6-10.9 10.9-17.9 16.5-23.5s12.5-10.5 23.5-16.5c18.1-9.9 29.1-29 28.6-49.6-.3-12.5 .5-20.9 2.5-28.6s5.6-15.3 12.1-26c10.7-17.6 10.7-39.7 0-57.3-6.5-10.7-10.1-18.4-12.1-26s-2.8-16.1-2.5-28.6c.5-20.6-10.6-39.7-28.6-49.6-10.9-6-17.9-10.9-23.5-16.5s-10.5-12.5-16.5-23.5c-9.9-18.1-29-29.1-49.6-28.6-12.5 .3-20.9-.5-28.6-2.5s-15.3-5.6-26-12.1zm80 411.7l45.7 85.7-75.8 40.8-54.9-103.6c1.7-.8 3.3-1.7 4.9-2.7 10.7-6.5 18.4-10.1 26-12.1s16.1-2.8 28.6-2.5c9 .2 17.7-1.8 25.5-5.6zM69.6 473.5l45.7-85.7c7.8 3.8 16.5 5.8 25.5 5.6 12.5-.3 20.9 .5 28.6 2.5s15.3 5.6 26 12.1c1.6 1 3.2 1.9 4.9 2.7l-54.9 103.7-75.8-40.8zM212 3.4c7.4-4.5 16.6-4.5 24 0 12 7.3 22.7 12.5 34.4 15.7s23.5 3.9 37.6 3.6c8.6-.2 16.6 4.4 20.8 12 6.7 12.4 13.4 22.2 21.9 30.8S369 80.6 381.4 87.3c7.6 4.1 12.2 12.1 12 20.8-.3 14.1 .5 25.9 3.6 37.6s8.4 22.3 15.7 34.4c4.5 7.4 4.5 16.6 0 24-7.3 12-12.5 22.7-15.7 34.4s-3.9 23.5-3.6 37.6c.2 8.6-4.4 16.6-12 20.8-12.3 6.7-22.2 13.4-30.8 21.9s-15.2 18.4-21.9 30.8c-4.1 7.6-12.1 12.2-20.8 12-14.1-.3-25.9 .5-37.6 3.6S248 373.3 236 380.6c-7.4 4.5-16.6 4.5-24 0-12-7.3-22.7-12.5-34.4-15.7s-23.5-3.9-37.6-3.6c-8.6 .2-16.6-4.4-20.8-12-6.7-12.3-13.4-22.2-21.9-30.8S79 303.4 66.6 296.7c-7.6-4.1-12.2-12.1-12-20.8 .3-14.1-.5-25.9-3.6-37.6S42.7 216 35.4 204c-4.5-7.4-4.5-16.6 0-24 7.3-12 12.5-22.7 15.7-34.4s3.9-23.5 3.6-37.6c-.2-8.6 4.4-16.6 12-20.8 12.4-6.7 22.2-13.4 30.8-21.9S112.6 47 119.3 34.6c4.1-7.6 12.1-12.2 20.8-12 14.1 .3 25.9-.5 37.6-3.6S200 10.7 212 3.4zM304 192a80 80 0 1 1 -160 0 80 80 0 1 1 160 0zM224 80a112 112 0 1 0 0 224 112 112 0 1 0 0-224z"/></symbol>
+<symbol id="i-file" viewBox="0 0 384 512"><path d="M64 32l128 0 0 96c0 35.3 28.7 64 64 64l96 0 0 256c0 17.7-14.3 32-32 32L64 480c-17.7 0-32-14.3-32-32L32 64c0-17.7 14.3-32 32-32zM224 45.3L338.7 160 256 160c-17.7 0-32-14.3-32-32l0-82.7zM64 0C28.7 0 0 28.7 0 64L0 448c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-261.5c0-17-6.7-33.3-18.7-45.3L242.7 18.7C230.7 6.7 214.5 0 197.5 0L64 0zm48 256c-8.8 0-16 7.2-16 16s7.2 16 16 16l160 0c8.8 0 16-7.2 16-16s-7.2-16-16-16l-160 0zm0 96c-8.8 0-16 7.2-16 16s7.2 16 16 16l160 0c8.8 0 16-7.2 16-16s-7.2-16-16-16l-160 0z"/></symbol>
+<symbol id="i-rubi" viewBox="0 0 120 135"><path d="M59.9954 9.0952C61.3137 9.0952 62.6047 9.44991 63.7412 10.1139L107.217 35.5167C109.49 36.8446 110.899 39.3003 110.899 41.938V93.0711C110.899 95.6997 109.49 98.1645 107.217 99.4924L63.7412 124.895C62.6047 125.559 61.3137 125.914 59.9954 125.914C58.6772 125.914 57.3862 125.559 56.2497 124.895L12.7737 99.4924C10.5008 98.1645 9.0916 95.7088 9.0916 93.0711V41.938C9.0916 39.3094 10.5008 36.8446 12.7737 35.5167L56.2497 10.1139C57.3862 9.44991 58.6772 9.0952 59.9954 9.0952ZM59.9954 0C57.1134 0 54.2405 0.754901 51.6675 2.25561L8.19153 27.6585C3.11842 30.6235 0 36.0534 0 41.9289V93.0621C0 98.9375 3.11842 104.367 8.19153 107.332L51.6675 132.735C54.2405 134.236 57.1225 134.991 59.9954 134.991C62.8684 134.991 65.7504 134.236 68.3234 132.735L111.799 107.332C116.872 104.367 119.991 98.9375 119.991 93.0621V41.9289C119.991 36.0534 116.872 30.6235 111.799 27.6585L68.3324 2.25561C65.7595 0.754901 62.8775 0 60.0045 0H59.9954Z"/><path d="M60.4591 29.1046L62.0995 35.4318C64.9632 46.4639 73.573 55.0677 84.5913 57.9325L90.916 59.5735L84.5913 61.2146C73.5635 64.0794 64.9632 72.6926 62.0995 83.7153L60.4591 90.0424L58.8187 83.7153C55.9551 72.6831 47.3452 64.0794 36.3269 61.2146L30.0023 59.5735L36.3269 57.9325C47.3547 55.0677 55.9551 46.4545 58.8187 35.4318L60.4591 29.1046Z"/><path d="M82.279 29.1046L82.809 31.027C83.6923 34.2103 86.0675 36.7115 89.0904 37.6417L90.916 38.1998L89.0904 38.7579C86.0675 39.6881 83.6923 42.1893 82.809 45.3726L82.279 47.295L81.749 45.3726C80.8656 42.1893 78.4904 39.6881 75.4675 38.7579L73.6419 38.1998L75.4675 37.6417C78.4904 36.7115 80.8656 34.2103 81.749 31.027L82.279 29.1046Z"/><path d="M3.52754 102.084V81.6658C28.9931 81.6658 48.1946 87.9687 60.0045 112.871C70.5326 88.2143 91.016 81.6658 116.482 81.6658V101.566L60.0045 132.726L3.52754 102.084Z"/></symbol>
+<symbol id="i-lifering" viewBox="0 0 640 640"><path d="M466.7 489.3C427.4 523.4 376.1 544 320 544C263.9 544 212.6 523.4 173.3 489.3L264.4 398.3C280.1 409.4 299.3 416 320 416C340.7 416 359.9 409.4 375.6 398.3L466.6 489.3zM489.3 466.7L398.3 375.7C409.4 359.9 416 340.7 416 320C416 299.3 409.4 280.1 398.3 264.4L489.3 173.3C523.4 212.6 544 263.9 544 320C544 376.1 523.4 427.4 489.3 466.7zM512 489.4C551.8 444.3 576 385 576 320C576 255 551.8 195.8 512 150.6L523.3 139.3C529.5 133.1 529.5 122.9 523.3 116.7C517.1 110.5 506.9 110.5 500.7 116.7L489.4 128C444.2 88.2 384.9 64 320 64C255.1 64 195.8 88.2 150.6 128L139.3 116.7C133.1 110.5 122.9 110.5 116.7 116.7C110.5 122.9 110.5 133.1 116.7 139.3L128 150.6C88.2 195.8 64 255.1 64 320C64 384.9 88.2 444.2 128 489.4L116.7 500.7C110.5 506.9 110.5 517.1 116.7 523.3C122.9 529.5 133.1 529.5 139.3 523.3L150.6 512C195.7 551.8 255 576 320 576C385 576 444.2 551.8 489.4 512L500.7 523.3C506.9 529.5 517.1 529.5 523.3 523.3C529.5 517.1 529.5 506.9 523.3 500.7L512 489.4zM466.7 150.7L375.7 241.8C359.9 230.6 340.7 224 320 224C299.3 224 280.1 230.6 264.4 241.7L173.3 150.7C212.6 116.6 263.9 96 320 96C376.1 96 427.4 116.6 466.7 150.7zM241.7 375.6L150.6 466.6C116.6 427.4 96 376.1 96 320C96 263.9 116.6 212.6 150.7 173.3L241.8 264.4C230.6 280.1 224 299.3 224 320C224 340.7 230.6 359.9 241.7 375.6zM256 320C256 284.7 284.7 256 320 256C355.3 256 384 284.7 384 320C384 355.3 355.3 384 320 384C284.7 384 256 355.3 256 320z"/></symbol>
+<symbol id="i-collapse" viewBox="0 0 640 640"><path d="M576 160C576 142.3 561.7 128 544 128C526.3 128 512 142.3 512 160L512 480C512 497.7 526.3 512 544 512C561.7 512 576 497.7 576 480L576 160zM438.6 342.6C451.1 330.1 451.1 309.8 438.6 297.3L310.6 169.3C298.1 156.8 277.8 156.8 265.3 169.3C252.8 181.8 252.8 202.1 265.3 214.6L338.7 288L96 288C78.3 288 64 302.3 64 320C64 337.7 78.3 352 96 352L338.7 352L265.3 425.4C252.8 437.9 252.8 458.2 265.3 470.7C277.8 483.2 298.1 483.2 310.6 470.7L438.6 342.7z"/></symbol>
+<symbol id="i-cart" viewBox="0 0 640 512"><path d="M16 0C7.2 0 0 7.2 0 16S7.2 32 16 32l45.3 0C69 32 75.7 37.5 77 45.1l50.9 279.7c6.2 34.2 36 59.1 70.8 59.1L464 384c8.8 0 16-7.2 16-16s-7.2-16-16-16l-265.3 0c-19.3 0-35.9-13.8-39.4-32.8l-5.7-31.2 313 0c33.9 0 63.3-23.7 70.4-56.9L569.4 80.4C574.8 55.5 555.8 32 530.3 32L106.6 32C99.9 13.1 81.9 0 61.3 0L16 0zm97 64l417.3 0c5.1 0 8.9 4.7 7.8 9.7L505.8 224.4c-4 18.4-20.2 31.6-39.1 31.6L147.9 256 113 64zm75 396a20 20 0 1 1 40 0 20 20 0 1 1 -40 0zm72 0a52 52 0 1 0 -104 0 52 52 0 1 0 104 0zm172-20a20 20 0 1 1 0 40 20 20 0 1 1 0-40zm0 72a52 52 0 1 0 0-104 52 52 0 1 0 0 104z"/></symbol>
+<symbol id="i-bell" viewBox="0 0 448 512"><path d="M224 0c-8.8 0-16 7.2-16 16l0 16.8C127.1 40.8 64 109 64 192l0 10.3c0 45.1-15.4 88.9-43.5 124.1L10.4 339C3.7 347.4 0 357.9 0 368.6 0 394.8 21.2 416 47.4 416l353.2 0c26.2 0 47.4-21.2 47.4-47.4 0-10.8-3.7-21.2-10.4-29.6l-10.1-12.6c-28.2-35.2-43.5-79-43.5-124.1l0-10.3c0-83-63.1-151.2-144-159.2L240 16c0-8.8-7.2-16-16-16zm0 64c70.7 0 128 57.3 128 128l0 10.3c0 52.4 17.8 103.2 50.6 144.1L412.6 359c2.2 2.7 3.4 6.1 3.4 9.6 0 8.5-6.9 15.4-15.4 15.4L47.4 384c-8.5 0-15.4-6.9-15.4-15.4 0-3.5 1.2-6.9 3.4-9.6l10.1-12.6C78.2 305.5 96 254.7 96 202.3L96 192c0-70.7 57.3-128 128-128zM156.1 464c9.9 28 36.6 48 67.9 48s58-20 67.9-48L256 464c-7.3 9.7-18.9 16-32 16s-24.7-6.3-32-16l-35.9 0z"/></symbol>
+<symbol id="i-book" viewBox="0 0 512 512"><path d="M248 86l-23.3-9.7C179.9 57.6 131.8 48 83.2 48L48 48C30.3 48 16 62.3 16 80l0 352c0 17.7 14.3 32 32 32l35.2 0c52.8 0 105.1 10.5 153.8 30.8l11 4.6 0-413.3zm16 413.3l11-4.6C323.7 474.5 376 464 428.8 464l35.2 0c17.7 0 32-14.3 32-32l0-352c0-17.7-14.3-32-32-32l-35.2 0c-48.6 0-96.7 9.6-141.5 28.3L264 86 264 499.3zM230.9 61.5L256 72 281.1 61.5C327.9 42 378.1 32 428.8 32L464 32c26.5 0 48 21.5 48 48l0 352c0 26.5-21.5 48-48 48l-35.2 0c-50.7 0-100.9 10-147.7 29.5l-12.8 5.3c-7.9 3.3-16.7 3.3-24.6 0l-12.8-5.3C184.1 490 133.9 480 83.2 480L48 480c-26.5 0-48-21.5-48-48L0 80C0 53.5 21.5 32 48 32l35.2 0c50.7 0 100.9 10 147.7 29.5z"/></symbol>
+<symbol id="i-clock" viewBox="0 0 512 512"><path d="M480 256a224 224 0 1 1 -448 0 224 224 0 1 1 448 0zM0 256a256 256 0 1 0 512 0 256 256 0 1 0 -512 0zM240 112l0 144c0 5.4 2.7 10.3 7.1 13.3l96 64c7.4 4.9 17.3 2.9 22.2-4.4s2.9-17.3-4.4-22.2L272 247.4 272 112c0-8.8-7.2-16-16-16s-16 7.2-16 16z"/></symbol>
+<symbol id="i-chevron" viewBox="0 0 320 512"><path d="M315.3 244.7c6.2 6.2 6.2 16.4 0 22.6l-208 208c-6.2 6.2-16.4 6.2-22.6 0s-6.2-16.4 0-22.6L281.4 256 84.7 59.3c-6.2-6.2-6.2-16.4 0-22.6s16.4-6.2 22.6 0l208 208z"/></symbol>
+<symbol id="i-arrow" viewBox="0 0 512 512"><path d="M507.3 267.3c6.2-6.2 6.2-16.4 0-22.6l-176-176c-6.2-6.2-16.4-6.2-22.6 0s-6.2 16.4 0 22.6L457.4 240 16 240c-8.8 0-16 7.2-16 16s7.2 16 16 16l441.4 0-148.7 148.7c-6.2 6.2-6.2 16.4 0 22.6s16.4 6.2 22.6 0l176-176z"/></symbol>
+</defs></svg>
+
+<div class="shell">
+
+  <header class="hdr">
+    <div class="hdr-in">
+      <a class="logo" href="#" aria-label="XCEL Solutions — home">
+        <img src="/brand/xcel-logo.webp" alt="XCEL Solutions"
+             onerror="this.style.display='none';this.nextElementSibling.style.display='block'">
+        <span class="wordmark" style="display:none" aria-hidden="true">XCEL</span>
+      </a>
+      <div class="util">
+        <button class="iconpill" type="button" aria-label="Cart">
+          <svg width="20" height="20" aria-hidden="true"><use href="#i-cart"/></svg>
+        </button>
+        <button class="iconpill" type="button" aria-label="Notifications, 3 unread">
+          <svg width="20" height="20" aria-hidden="true"><use href="#i-bell"/></svg>
+          <span class="badge" aria-hidden="true">3</span>
+        </button>
+        <!-- The trigger is the learner's own photo and name. NO brand ring on
+             it, deliberately: the rail's 48px avatar is the only call site that
+             carries the Brick ring, and a second ringed avatar in one viewport
+             spends the distinction rather than making it. -->
+        <button class="acctpill" type="button" aria-label="Account — Alicia Navarro">
+          <img class="ava" src="/brand/sarah.jpg" alt=""
+               onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <span class="avafb" aria-hidden="true">AN</span>
+          <span class="nm">Alicia Navarro</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="rail">
+    <nav aria-label="Platform">
+      <div class="railgrp">
+        <p class="railcap" id="cap-learning">My Learning</p>
+        <ul class="raillist" aria-labelledby="cap-learning">
+          <li><button class="railitem" type="button" aria-current="page">
+            <span class="ic"><svg aria-hidden="true"><use href="#i-house"/></svg></span>Home</button></li>
+          <li><button class="railitem" type="button">
+            <span class="ic"><svg aria-hidden="true"><use href="#i-calendar"/></svg></span>Study Plan</button></li>
+          <li><button class="railitem" type="button">
+            <span class="ic"><svg aria-hidden="true"><use href="#i-gauge"/></svg></span>Readiness</button></li>
+          <li><button class="railitem" type="button">
+            <span class="ic"><svg aria-hidden="true"><use href="#i-bookfull"/></svg></span>My Courses</button></li>
+          <li><button class="railitem" type="button">
+            <span class="ic"><svg aria-hidden="true"><use href="#i-award"/></svg></span>Certificates</button></li>
+          <!-- Resources and Rubi sit at the END of My Learning, not in an
+               Explore group: a candidate does not BROWSE the reference material
+               and the tutor, they use them against one curriculum. Explore is
+               gone from this baseline entirely — Browse Catalog was its only
+               row and it is off, so the group drops whole. -->
+          <li><button class="railitem" type="button">
+            <span class="ic"><svg aria-hidden="true"><use href="#i-file"/></svg></span>Resources</button></li>
+          <li><button class="railitem" type="button">
+            <span class="ic"><svg aria-hidden="true"><use href="#i-rubi"/></svg></span>Rubi Insights</button></li>
+        </ul>
+      </div>
+      <div class="railgrp">
+        <p class="railcap" id="cap-support">Support</p>
+        <ul class="raillist" aria-labelledby="cap-support">
+          <li><button class="railitem" type="button">
+            <span class="ic"><svg aria-hidden="true"><use href="#i-lifering"/></svg></span>Get Help</button></li>
+        </ul>
+      </div>
+      <button class="railitem" type="button" aria-expanded="true">
+        <span class="ic"><svg aria-hidden="true"><use href="#i-collapse"/></svg></span>Collapse Menu</button>
+    </nav>
+  </div>
+
+  <main class="content">
+    <h1 class="vh">Home</h1>
+    <div class="wrap serif">
+      <div class="stack">
+
+        <section aria-label="Your learning">
+          <div class="band">
+
+            <!-- ============ LEFT COLUMN ============ -->
+            <div class="col">
+            <!-- ============ COURSE PROGRESS ============
+                 The course is named ONCE on this page. The block below used to
+                 repeat the title, the meta line and a second progress bar a few
+                 inches under this one; what survives down there is everything this
+                 does not have. -->
+            <section class="coursehead" aria-label="Course progress">
+              <div class="row">
+                <img class="cover" src="/courses/ny-life-health.webp" alt="" aria-hidden="true"
+                     onerror="this.onerror=null;this.src='/courses/0.webp'">
+                <div style="flex:1 1 0;min-width:0">
+                  <p class="eyebrow">Course Progress</p>
+                  <div class="titlerow">
+                    <h2>New York Life and Health Pre-licensing</h2>
+                    <span class="dot" aria-hidden="true"></span>
+                    <span class="pctwrap">
+                      <span class="figure">62</span><span class="sign">%</span>
+                    </span>
+                  </div>
+                  <div style="margin-top:10px">
+                    <div class="bar" aria-hidden="true"><i style="width:62%"></i></div>
+                    <div class="metarow">
+                      <div class="metas">
+                        <span class="meta">
+                          <span class="metaval">December 15, 2026</span>
+                          <span class="metalb">Target exam date</span>
+                        </span>
+                        <span class="meta">
+                          <span class="metaval">27 days</span>
+                          <span class="metalb">Left to complete</span>
+                        </span>
+                        <!-- LESSONS, not credit hours. 42 is the LMS course card's
+                             own figure; the state's 40 credit hours is a different
+                             unit for a different audience and lives on the
+                             requirements sheet. -->
+                        <span class="meta">
+                          <span class="metaval">26 of 42 lessons</span>
+                          <span class="metalb">Completed</span>
+                        </span>
+                      </div>
+                      <button class="cta" type="button">Details &rarr;</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+
+              <section class="recessed jbi" aria-label="Jump back in">
+                <p class="weyebrow">
+                  <svg aria-hidden="true"><use href="#i-book"/></svg>Learning with Compass - Jump back in
+                </p>
+                <div class="body">
+                  <div style="flex:1 1 0;min-width:0">
+                    <p class="lesson">Lesson 27<span class="dot" aria-hidden="true"></span>Part 1 of 3</p>
+                    <h3>Life Insurance Policy Provisions, Options and Riders</h3>
+                    <p class="est">Estimated Time to Complete: 18 minutes</p>
+                  </div>
+                  <button class="btn" type="button">
+                    Resume <svg aria-hidden="true"><use href="#i-arrow"/></svg>
+                  </button>
+                </div>
+              </section>
+
+              <div class="tiles">
+                <section class="recessed tile" aria-label="Study pace">
+                  <span class="weyebrow"><svg aria-hidden="true"><use href="#i-clock"/></svg>Study pace</span>
+                  <div class="skel" aria-hidden="true"><i style="width:80%"></i><i style="width:60%"></i></div>
+                  <div class="foot">
+                    <span class="chip">On Track</span>
+                    <p>You&rsquo;re on pace to finish before your deadline. Keep the momentum going.</p>
+                    <div class="ctarow"><button class="cta" type="button">Details &rarr;</button></div>
+                  </div>
+                </section>
+
+                <section class="recessed tile" aria-label="Readiness">
+                  <span class="weyebrow"><svg aria-hidden="true"><use href="#i-gauge"/></svg>Readiness</span>
+                  <div class="skel" aria-hidden="true">
+                    <i style="width:80%"></i><i style="width:60%"></i><i style="width:70%"></i>
+                  </div>
+                  <div class="foot">
+                    <span class="unbuilt">Not designed yet</span>
+                    <div class="ctarow"><button class="cta" type="button">Details &rarr;</button></div>
+                  </div>
+                </section>
+              </div>
+            </div>
+
+            <!-- ============ RIGHT COLUMN ============
+                 No card: no fill, no border, no shadow, and no horizontal
+                 padding, so this column lines up with the block above instead
+                 of sitting inset by a gutter belonging to a card it no longer
+                 has. The shadow went with the fill and the edge because they
+                 are ONE treatment — a shadow under a surface with neither
+                 reads as a card that failed to paint. -->
+            <section class="col" aria-label="Study journey">
+              <div class="wsec">
+                <p class="weyebrow">Atlas Study Journey</p>
+                <h3>Complete Coursework</h3>
+
+                <!-- SEQUENCE, not dates. The Study Plan is date-paced and can
+                     put you behind; this is curriculum-paced and cannot. A
+                     journey with due dates is just a worse calendar, so no
+                     stop here carries one and there is no overdue state. -->
+                <ol class="steps">
+                  <li class="step">
+                    <span class="gutter">
+                      <span class="node now">01</span>
+                      <span class="spine" aria-hidden="true"></span>
+                    </span>
+                    <button class="stoprow" type="button">
+                      <span class="tt">
+                        <span class="t">Pre-licensing Course</span>
+                        <span class="s">26 of 42 lessons complete</span>
+                      </span>
+                      <svg class="chev" aria-hidden="true"><use href="#i-chevron"/></svg>
+                    </button>
+                  </li>
+                  <li class="step">
+                    <span class="gutter">
+                      <span class="node next">02</span>
+                      <span class="spine" aria-hidden="true"></span>
+                    </span>
+                    <span class="stopstatic">
+                      <span class="t">Prep Review Course</span>
+                      <span class="vh">After your coursework</span>
+                    </span>
+                  </li>
+                  <li class="step">
+                    <span class="gutter">
+                      <span class="node next">03</span>
+                      <span class="spine" aria-hidden="true"></span>
+                    </span>
+                    <span class="stopstatic">
+                      <span class="t">Exam Simulators</span>
+                      <span class="vh">After your coursework</span>
+                    </span>
+                  </li>
+                  <!-- ONE stop, from two. Attestation and the certificate are
+                       still two ACTS in XCEL's published eligibility rules;
+                       they are one MOMENT on this rail — done back to back,
+                       unlocking together, neither ever true without the other.
+                       Two rows spent two of five stops on one wrap-up. -->
+                  <li class="step">
+                    <span class="gutter"><span class="node next">04</span></span>
+                    <span class="stopstatic">
+                      <span class="t">Attestation &amp; Certificate</span>
+                      <span class="vh">After your coursework</span>
+                    </span>
+                  </li>
+                </ol>
+              </div>
+
+              <div class="wrule" aria-hidden="true"></div>
+
+              <!-- ============ GET LICENSED ============
+                   A separate section because the OWNER changes. Everything
+                   above happens in the LMS; nothing here does — PSI schedules
+                   the sitting, PSI scores it, DFS issues the licence.
+
+                   So these steps carry NO completion state, and the absence is
+                   the design: a tick against "Pass State Exam" would be the
+                   product claiming an outcome it has no feed for. Numbered
+                   rather than noded — a numbered list says "do these in order"
+                   and makes no claim about where you are. -->
+              <div class="wsec" style="margin-top:14px">
+                <p class="weyebrow">Post-course process</p>
+                <h3>Get Licensed in New York</h3>
+                <p class="lede">Once your course is completed, here are the next steps.</p>
+                <ol class="steps">
+                  <li class="step">
+                    <span class="gutter">
+                      <span class="node ext">05</span>
+                      <span class="spine" aria-hidden="true"></span>
+                    </span>
+                    <button class="stoprow" type="button">
+                      <span class="tt"><span class="t">Schedule State Exam</span></span>
+                      <svg class="chev" aria-hidden="true"><use href="#i-chevron"/></svg>
+                    </button>
+                  </li>
+                  <li class="step">
+                    <span class="gutter">
+                      <span class="node ext">06</span>
+                      <span class="spine" aria-hidden="true"></span>
+                    </span>
+                    <button class="stoprow" type="button">
+                      <span class="tt"><span class="t">Pass State Exam</span></span>
+                      <svg class="chev" aria-hidden="true"><use href="#i-chevron"/></svg>
+                    </button>
+                  </li>
+                  <li class="step">
+                    <span class="gutter"><span class="node ext">07</span></span>
+                    <button class="stoprow" type="button">
+                      <span class="tt"><span class="t">Apply for your License</span></span>
+                      <svg class="chev" aria-hidden="true"><use href="#i-chevron"/></svg>
+                    </button>
+                  </li>
+                </ol>
+                <!-- At the FOOT of the card about what the state requires, not
+                     up in the page header where it was an action without a
+                     subject three sections above the thing it elaborates. -->
+                <div class="railfoot">
+                  <button class="cta" type="button">State requirements &rarr;</button>
+                </div>
+              </div>
+            </section>
+
+          </div>
+        </section>
+
+      </div>
+    </div>
+  </main>
+</div>
+
+</body>
+</html>

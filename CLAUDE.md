@@ -3921,6 +3921,92 @@ assertions**, which sweeps every combination of the four demo axes and asserts
 relationships (Behind's head sentence agrees with where the projection lands; every
 state is reachable; quiz mode never lists an uncovered chapter) rather than strings.
 
+### The learner home — the sixth page with no row
+
+[xcel-home.html](public/prototypes/xcel-home.html) (added 2026-09-21) is the
+learner home as a standalone document — a hand-authored copy of what the React
+product renders at `/dashboard-rebrand?demo=1`. It is **not** a
+`PROTOTYPE_FEATURES` row, same reasoning as the five pages above: the
+`xcel-dashboard` row already opens that surface, and a second row into the same
+body of work is what got `recommended-card-ab-demo` archived. Row count is still
+six. It is reachable from every sibling's bar, and links back to them.
+
+**IT IS THE ONLY PAGE HERE THAT IS A COPY, and that is the thing to know.**
+Every other prototype in the folder is the sole home of what it draws; this one
+trails a live surface. It was measured against the running app rather than
+retyped from the source — tokens read out of `[data-brand='xcel']` in the
+browser, geometry read off the rendered nodes — so it is accurate as of
+**2026-09-21** and will drift. If the two disagree, the app is right.
+
+**The palette is the PRODUCT's, not the siblings'.** Every other page copies
+`xcel-lms-desktop.html`'s exploration ramps (`--brand-*` identity plus the one
+licensing-exam semantic, `--primary-*` interactive and data). This one declares
+the app's own `--color-primary-*` / `--color-cta-*` / `--color-neutral-*` at
+their XCEL values. The reason is what the page is FOR: the siblings ask what
+this *should* look like, where a shared palette is the point, and this one says
+what it *does* look like, where a near-miss palette makes every comparison
+against the real screen a lie. **Do not "align it with its siblings"** by
+swapping the ramps — the divergence is the honest half.
+
+**It is light-only, and the reason is a finding.** There is no theme toggle,
+following `xcel-admin-tool.html`'s rule that a control which lies is worse than
+an absent one. The app HAS a dark theme and this page does not survive it:
+**the rail's inks are hardcoded literals that do not invert** — the caption
+stays `#5f636c` and the idle item `#565a63` while the page goes to `#1b1d21`
+and the header to `#152833`, so the whole rail renders near-black on near-black.
+The logo goes with it, which is the gap "The logo is real now — and dark mode is
+not" already records. That is the PRODUCT's defect, recorded here rather than
+worked around; a dark variant of this document is worth drawing only after
+those inks become tokens.
+
+**Assets are the app's own, same-origin** — `/brand/xcel-logo.webp`,
+`/brand/sarah.jpg`, `/courses/ny-life-health.webp` — rather than a second copy
+that can drift, each with an `onerror` fallback so a missing file degrades the
+page instead of breaking it. (Note `ny-life-health.webp` **does** exist now; the
+"TO FINISH IT" note under the Jump Back In section is stale.)
+
+**Nothing navigates.** Every control is real markup in its real state and inert
+on click, and the bar says so once. There is no second page to reach, and
+wiring a button to a destination the document does not contain is how a
+prototype starts lying about what exists.
+
+#### The journey leads the page (2026-09-21)
+
+The course header spans the full width in the app, which puts the Study Journey
+a whole block down — the answer to "what do I do next" was the last thing you
+reached. Here the header is **inside the left column**, narrowed, so both
+columns start together and the journey is at the top. **This is the one place
+the document deliberately departs from the app**, at Jillienne's request.
+
+**The narrowing forced one treatment change, and it is not invented.** Inline,
+the three facts (target date · days left · lessons) measure ~690px against a
+~552px text column, so the row wraps — and a wrapped line ENDS ON AN
+INTERPUNCT, which reads as a value that failed to load. That is the admin
+roster's blank-Seat-cell rule arriving from the other direction. So the facts
+become **bare cells divided by vertical rules**, value over label, which is the
+app's own treatment for these three facts when they have to hold a column
+rather than a page: `gap: 0` with the rule on the LEADING edge of cells 2 and 3
+(a gap on top of a rule reads as two gutters; a rule on the first cell would
+fence the row off from the block it belongs to), on `--color-neutral-300`
+rather than `--color-border-subtle` because these rules are doing work.
+
+`.row` also goes `flex-start` where the full-width version is `flex-end`: at
+this width the title wraps to two lines and the text column is taller than the
+130px cover, so bottom-aligning would start the picture *below* the eyebrow it
+belongs to.
+
+Guarded by [smoke-home.mjs](smoke/smoke-home.mjs), **57 assertions**. Because
+the page is static, they pin what a careless edit would get wrong about the
+PRODUCT rather than behaviour: the rail is the demo baseline in order **and in
+its two named groups** (an order check alone is blind to grouping — the trap
+the Resources/Rubi move already sprang once), the course is named once, the
+measure is lessons with no credit-hour figure leaking in, blocked stops render
+no visible meta but keep their status in the accessible name and carry no
+chevron, Get Licensed steps claim no outcome, the copy the product deliberately
+refuses is still absent, red is spent only on the unread badge, every asset is
+same-origin with a fallback, and the header has not drifted back out to full
+width.
+
 ### There is no source/served split — moved here 2026-09-03
 
 These five pages and their smoke suites used to live in
@@ -3940,8 +4026,9 @@ The five smoke suites moved with them, to **[`smoke/`](smoke/)**, reading
 `../public/prototypes/` rather than a source next door. A sixth,
 `smoke-study-plan.mjs`, was added 2026-09-16 with the study-plan page, and a
 seventh, `smoke-nav-collapse.mjs`, with the collapsible-rail page the same day, and an
-eighth, `smoke-pace-readiness.mjs`, on 2026-09-17. Run them
-with **`npm run smoke`** — 41 + 48 + 210 + 42 + 58 + 75 + 42 + 21 = **537 assertions**. Two things
+eighth, `smoke-pace-readiness.mjs`, on 2026-09-17, and a ninth,
+`smoke-home.mjs`, on 2026-09-21. Run them
+with **`npm run smoke`** — 41 + 48 + 210 + 42 + 58 + 75 + 42 + 57 + 21 = **594 assertions**. Two things
 changed on the way over, both because these assertions were written against the
 other repo: `smoke-tiles.mjs` now expects each row in **Exploration** (there the
 rows carried `devStatus: 'in-design'` to force them into Design; here XCEL *is*
@@ -4348,17 +4435,19 @@ those is pinned; the two that shipped wrong once are the badge and (in the
 launch config) the worktree functions path.
 
 The six row-backed prototype pages are covered separately by the jsdom suites
-in [`smoke/`](smoke/) — **`npm run smoke`**, 537 assertions across eight files. They
+in [`smoke/`](smoke/) — **`npm run smoke`**, 594 assertions across nine files. They
 are plain node scripts, not vitest, so `npm test` does NOT run them; run both.
 
-**Three pages have no suite at all**, all of them row-less ones:
-`xcel-lms-brief-vs-existing.html`, `xcel-finserv-build-plan.html` and
-`xcel-clp-todays-tasks.html`. The build plan is the one that matters — 66 rows of
-authored data, a JS render path, and a duplicate-key failure mode that is legal
-JavaScript. Adding a suite for it is the most valuable test work outstanding in
-this repo. (The fourth row-less page, `xcel-study-plan.html`, ships with its own
-suite — being row-less is not a reason to go uncovered, it is only the reason
-`smoke-tiles.mjs` will not notice.)
+**Four pages have no suite at all**, all of them row-less ones:
+`xcel-lms-brief-vs-existing.html`, `xcel-finserv-build-plan.html`,
+`xcel-clp-todays-tasks.html` and `xcel-signin.html` (that last one was missing
+from this list until 2026-09-21). The build plan is the one that matters — 66
+rows of authored data, a JS render path, and a duplicate-key failure mode that
+is legal JavaScript. Adding a suite for it is the most valuable test work
+outstanding in this repo. (The other row-less pages — `xcel-study-plan.html`,
+`xcel-nav-collapse.html`, `xcel-study-pace-readiness.html` and
+`xcel-home.html` — each ship their own suite: being row-less is not a reason to
+go uncovered, it is only the reason `smoke-tiles.mjs` will not notice.)
 
 ### The product app's tests — added 2026-09-08
 

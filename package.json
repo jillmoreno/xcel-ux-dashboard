@@ -12,7 +12,7 @@
     "preview": "vite preview",
     "test": "vitest run",
     "typecheck": "tsc -b --noEmit",
-    "smoke": "node smoke/smoke.mjs && node smoke/smoke-walkthrough.mjs && node smoke/smoke-desktop.mjs && node smoke/smoke-admin.mjs && node smoke/smoke-study-plan.mjs && node smoke/smoke-nav-collapse.mjs && node smoke/smoke-pace-readiness.mjs && node smoke/smoke-tiles.mjs"
+    "smoke": "node smoke/smoke.mjs && node smoke/smoke-walkthrough.mjs && node smoke/smoke-desktop.mjs && node smoke/smoke-admin.mjs && node smoke/smoke-study-plan.mjs && node smoke/smoke-nav-collapse.mjs && node smoke/smoke-pace-readiness.mjs && node smoke/smoke-home.mjs && node smoke/smoke-tiles.mjs"
   },
   "dependencies": {
     "@netlify/blobs": "^11.0.1",
