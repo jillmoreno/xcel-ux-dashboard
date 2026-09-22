@@ -1707,7 +1707,13 @@ describe('the course header band flag', () => {
     seedHeader('band')
     const { container } = renderShell(QE_URL)
     const dots = headerStatDots(container)
-    expect(dots).toHaveLength(2)
+    /* ONE dot for two pairs, as of 2026-09-21. It was two for three pairs; the
+       Target Exam Date cell went, and the first surviving pair gave up its dot
+       when a vertical RULE took over separating the group from the percentage
+       that now leads the row. Dots go between PAIRS, the rule goes between the
+       figure and the group — two separators doing one job three pixels apart is
+       what this counts against. */
+    expect(dots).toHaveLength(1)
     for (const dot of dots) {
       expect(dot.style.width).toBe('3px')
       expect(dot.style.background).toBe('var(--color-neutral-300)')

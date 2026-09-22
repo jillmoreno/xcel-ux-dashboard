@@ -988,7 +988,27 @@ export function MembershipOverview({
                   a dangling separator. */}
               {headerPercent}
               {/* THE PAIRS, in their own container so the figure can sit beside
-                  the GROUP of them rather than joining their flow. */}
+                  the GROUP of them rather than joining their flow.
+
+                  A RULE BETWEEN THE FIGURE AND THEM, and the inset that comes
+                  with it — 2026-09-21, the direct ask ("shift these to the
+                  right a little bit and add a light vertical divider line
+                  between the percentage and them"). One declaration does both:
+                  the border draws the line and the padding is the shift, so the
+                  gap after the rule cannot drift from the rule itself.
+
+                  `--color-neutral-300`, which is this surface's established
+                  "line you can actually see" — the progress bar's track, the
+                  row's own separator dots and the band's dashed divider are all
+                  on it. `--color-border-subtle` is the fainter one and is
+                  documented here as too faint to carry a line at 1.29:1 light /
+                  1.38:1 dark; a rule that vanishes in one theme is the failure
+                  this file keeps paying for.
+
+                  IT SPANS THE PAIRS, not the row: in the narrow column that is
+                  two lines of text and the rule reads as grouping them against
+                  the figure, which is what a divider between two things should
+                  do. */}
               <div
                 style={{
                   display: 'flex',
@@ -996,19 +1016,21 @@ export function MembershipOverview({
                     ? { flexDirection: 'column', alignItems: 'flex-start', gap: 6 }
                     : { flexWrap: 'wrap', alignItems: 'center', gap: 15 }),
                   minWidth: 0,
+                  borderLeft: '1px solid var(--color-neutral-300)',
+                  paddingLeft: 15,
                 }}
               >
-              {headerStats.map((stat) => (
+              {headerStats.map((stat, i) => (
                 <span
                   key={stat.caption}
                   style={{ display: 'flex', alignItems: 'baseline', gap: 15 }}
                 >
-                  {/* `i >= 0` in effect — every pair now has something before
-                      it, since the figure leads the row. Written against the
-                      figure rather than as a bare `!narrowHeader` so that a row
-                      rendered without it would go back to skipping the first
-                      dot. */}
-                  {!narrowHeader && (
+                  {/* BACK TO `i > 0` — the RULE now separates the figure from
+                      the pairs, so a dot on the first pair would be a second
+                      separator doing the same job three pixels away. Dots go
+                      between PAIRS; the rule goes between the figure and the
+                      group. */}
+                  {i > 0 && !narrowHeader && (
                     <span
                       aria-hidden
                       style={{
