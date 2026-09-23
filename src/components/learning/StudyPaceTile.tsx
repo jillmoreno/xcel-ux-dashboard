@@ -987,7 +987,10 @@ function PaceStatsRow({
             two sentences contradict each other, and the cell is already
             carrying the honest answer. The Course Access cell keeps its own
             sub-line in every state, so the row does not lose its shape. */}
-        {noFit ? null : <p style={statsSubStyle}>At your current pace.</p>}
+        {/* NO FULL STOP — 2026-09-23, matching "Ends May 29" in the cell
+            beside it. Both are four-word fragments in the same row, and one
+            punctuated like a sentence made the pair look unconsidered. */}
+        {noFit ? null : <p style={statsSubStyle}>At your current pace</p>}
       </div>
       <div style={{ ...statsCellStyle, ...statsDividedStyle }}>
         <p style={statsEyebrowStyle}>Status</p>
