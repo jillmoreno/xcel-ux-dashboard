@@ -20,6 +20,11 @@ import {
 import type { CourseCardData } from '@/components/courses/CourseCard'
 import { resolvePathCategories } from './progressGaugeUtil'
 import { unitCount } from '@/utils/unitLabel'
+import {
+  NY_LH_COURSE_EXAM_ITEMS,
+  NY_LH_PRELICENSING_LESSON_COUNT,
+  NY_LH_PREP_REVIEW_LESSONS,
+} from '@/data/nyProducerRequirements'
 
 /**
  * Synthesize a category's course rows from its hour requirement.
@@ -189,16 +194,62 @@ export type JourneyStop = {
  * `blocked` follows the real rule rather than being decoration: Parts 2 and 3
  * unlock "upon completion of Part 1", which the page states outright.
  */
+/**
+ * THE FIVE STEPS, 1:1 WITH THE LMS'S OWN BREADCRUMB — 2026-09-23, the direct
+ * ask, against a screenshot of the product's step strip:
+ *
+ *   `Pre-Licensing (41) · Exam (1) · Prep Review · Simulated Exams · Survey`
+ *
+ * and the five titles Jillienne specified from it:
+ *
+ *   1. Pre-Licensing (41)      2. Exam (1) & Attestation     3. Prep Review (23)
+ *   4. Simulated Exams         5. Survey & Certificate
+ *
+ * WHAT CHANGED, and it is more than a rename. The journey had FOUR stops
+ * (Pre-licensing Course → Prep Review Course → Exam Simulators → Attestation &
+ * Certificate) built from what the public storefront publishes. The LMS shows a
+ * FIFTH act the storefront never mentions — the course exam that closes Part 1
+ * — and puts it SECOND, before Prep Review. The old order implied a learner
+ * takes the prep course before the exam it prepares nothing for; the real
+ * sequence is exam first, prep review after.
+ *
+ * ATTESTATION MOVED. It was half of the closing stop ("Attestation &
+ * Certificate"); it rides with the exam now, and the closing stop is the survey
+ * and the certificate. Both pairings are Jillienne's, from the product; neither
+ * is derivable from anything in this repo.
+ *
+ * THE NUMBERING FOLLOWS AUTOMATICALLY. `StudyJourneyWidget` prints
+ * `Steps 01–NN` off `stops.length` and starts the licensing cards at
+ * `stepStart`, so a fifth stop renumbers Schedule State Exam and the rest from
+ * 05/06/07 to 06/07/08 with no edit. That is the payoff of the derivation the
+ * widget's own note argued for.
+ */
+const COURSE_EXAM_STOP: { id: string; title: string; group: string; milestone: boolean } = {
+  id: 'course-exam-and-attestation',
+  title: `Exam (${NY_LH_COURSE_EXAM_ITEMS}) & Attestation`,
+  // 70% is the storefront's recommended score for Part 1's course exams, which
+  // is the one published fact about this step.
+  group: 'Part 1 · aim for 70%',
+  // An assessment, so it draws with the milestone node the simulators use.
+  milestone: true,
+}
+
 const PROGRAM_PART_STOPS: { id: string; title: string; group: string; milestone: boolean }[] = [
   {
     id: 'prep-review-course',
-    title: 'Prep Review Course',
+    // The count is the LMS's, not ours — see `NY_LH_PREP_REVIEW_LESSONS`. It
+    // rides on the LABEL and nowhere near the gauge's denominator.
+    title: `Prep Review (${NY_LH_PREP_REVIEW_LESSONS})`,
     group: 'Part 2 · aim for 80%',
     milestone: false,
   },
   {
     id: 'exam-simulators',
-    title: 'Exam Simulators',
+    /* "Simulated Exams", the LMS's own words, replacing "Exam Simulators"
+       — the storefront's. The id keeps the old spelling deliberately: nothing
+       displays it, and changing it would churn every test that reaches for the
+       stop by id for no gain. */
+    title: 'Simulated Exams',
     // Three, each unlocked by the previous — the page's own words. An
     // assessment, so it draws as a milestone the way the old simulators
     // category did.
@@ -225,7 +276,11 @@ const PROGRAM_PART_STOPS: { id: string; title: string; group: string; milestone:
 const COMPLETION_STOPS: { id: string; title: string; group: string }[] = [
   {
     id: 'attestation-and-certificate',
-    title: 'Attestation & Certificate',
+    /* "Survey & Certificate" as of 2026-09-23 — the attestation half moved up
+       to ride with the course exam (see `COURSE_EXAM_STOP`), and the LMS's own
+       strip ends on a Survey the storefront never mentions. The id is unchanged
+       for the reason the simulators' is: nothing displays it. */
+    title: 'Survey & Certificate',
     group: 'Course completion',
   },
 ]
@@ -288,8 +343,43 @@ export function journeyStopsFor(path: LearningPathSummary): JourneyStop[] {
           blocked: !courseworkDone,
         }))
       : []
+  /*
+   * STEP 1 AND STEP 2, on the lessons path only.
+   *
+   * The course stop's title is RETITLED HERE rather than at its source, and the
+   * distinction matters. Its source is the requirement category's `label`
+   * ("Pre-licensing Course") in `dashboardProgressFixtures`, which also names a
+   * SEGMENT OF THE PROGRESS GAUGE. "Pre-Licensing (41)" is a journey step's
+   * name; a gauge segment reading "(41)" beside a bar already showing 26/42
+   * would be two counts of different things touching. So the rename lands on
+   * the journey's copy of the title and nowhere else.
+   *
+   * ONLY WHEN THERE IS ONE COURSE STOP. An hours path splits into several, and
+   * retitling the first of those "Pre-Licensing (41)" would name a New York
+   * lesson count on a Florida hours path.
+   */
+  const lessonsPath = (path.unitLabel ?? 'hrs') === 'lessons'
+  const namedCourseStops =
+    lessonsPath && courseStops.length === 1
+      ? [{ ...courseStops[0], title: `Pre-Licensing (${NY_LH_PRELICENSING_LESSON_COUNT})` }]
+      : courseStops
+  /* The course exam sits between the coursework and Part 2 — the LMS's order,
+     and the reason this is not just a rename. `blocked` on the same rule as
+     Parts 2 and 3: you cannot sit the exam for a course you have not finished,
+     and "Not started" would invite a click that cannot work. */
+  const examStops: JourneyStop[] = lessonsPath
+    ? [
+        {
+          ...COURSE_EXAM_STOP,
+          hours: null,
+          status: courseworkDone ? ('completed' as const) : ('not-started' as const),
+          blocked: !courseworkDone,
+        },
+      ]
+    : []
   return [
-    ...courseStops,
+    ...namedCourseStops,
+    ...examStops,
     ...partStops,
     ...COMPLETION_STOPS.map((task) => ({
       ...task,

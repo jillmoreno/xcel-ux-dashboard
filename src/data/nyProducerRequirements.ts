@@ -85,6 +85,45 @@
 export const NY_LH_PRELICENSING_LESSONS = 42
 
 /**
+ * HOW THE 42 SPLIT — 41 lessons plus 1 course exam, supplied 2026-09-23 from
+ * the LMS's own step breadcrumb: `Pre-Licensing (41) · Exam (1) · Prep Review ·
+ * Simulated Exams · Survey`.
+ *
+ * ⚠ THE SPLIT IS SOURCED; THE SUM IS AN INFERENCE, and it is the one thing to
+ * check before this goes anywhere load-bearing. 41 + 1 = 42 exactly, and 42 is
+ * what the course card has always printed, so the reading is that the card's
+ * "42 lessons" counts the 41 lessons AND the exam that closes Part 1. That
+ * arithmetic is the whole evidence. Nothing published states it in words, and
+ * the alternative — the course is 41 and the card has been off by one — fits
+ * the same two numbers.
+ *
+ * WHAT TURNS ON IT: {@link NY_LH_PRELICENSING_LESSONS} stays 42, so every
+ * surface counting "26 of 42" keeps counting the same thing and the Compass
+ * tree keeps 42 rows, with row 42 titled as the exam. If the inference is
+ * wrong, the fix is a one-line change here and the 42 becomes 41 everywhere it
+ * is read from — which is why these are constants rather than literals.
+ */
+export const NY_LH_PRELICENSING_LESSON_COUNT = 41
+export const NY_LH_COURSE_EXAM_ITEMS = 1
+
+/**
+ * Part 2's lesson count — 23, from the same LMS breadcrumb.
+ *
+ * ⚠ THIS IS NEW INFORMATION, and it retires a refusal rather than adding a
+ * number. `NY_LH_PRELICENSING_LESSONS`'s own note says Parts 2 and 3 "cannot be
+ * requirement categories without a number being invented for them, which is the
+ * move the hour figures taught us not to make" — because the storefront states
+ * no count. It still states none; the LMS does, and that is a source rather
+ * than an invention.
+ *
+ * IT IS STILL NOT A REQUIREMENT CATEGORY. The number rides on the journey
+ * step's LABEL only. Putting it in the gauge's denominator would grow the
+ * measure the dashboard reports progress against, which is the state's
+ * requirement, and 23 of XCEL's own prep lessons are not part of that.
+ */
+export const NY_LH_PREP_REVIEW_LESSONS = 23
+
+/**
  * The 7-day study plan XCEL links from the product page
  * (`https://prepare2pass.com/COURSES/study_guides/lh_ca_7days.pdf`, "Read our
  * recommended study plan"). Kept as a fact about the product even though the
@@ -418,8 +457,13 @@ export const NY_LH_LESSON_TITLES_INVENTED: Record<number, string> = {
   39: 'Qualified Plans: 401(k), IRA and Roth',
   40: 'Nonqualified Plans and Employer-Sponsored Benefits',
   // Chapter 11 — Uses of Life Insurance
-  41: 'Business Uses: Buy-Sell, Key Person and Split-Dollar',
-  42: 'Personal Uses, Needs Analysis and Exam Review',
+  41: 'Uses of Life Insurance: Business and Personal',
+  /* THE 42ND ROW IS THE EXAM, not a lesson — see
+     {@link NY_LH_PRELICENSING_LESSON_COUNT}. It was "Personal Uses, Needs
+     Analysis and Exam Review" for an hour, which merged into 41 when the LMS
+     breadcrumb turned up and said Part 1 is 41 lessons plus one exam. The tree
+     and the journey's step 2 now name the same thing. */
+  42: 'Course Final Exam',
 }
 
 /**

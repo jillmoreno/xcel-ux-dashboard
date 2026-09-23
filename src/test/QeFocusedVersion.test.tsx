@@ -306,29 +306,39 @@ describe('the Study Journey replaces Today\'s Tasks', () => {
     const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!
     const stops = journeyStopsFor(persona.path)
     /*
-     * THE PRE-LICENSING COURSE IS THE FIRST PART, and the only counted one.
+     * FIVE STOPS, 1:1 WITH THE LMS'S OWN STEP BREADCRUMB — 2026-09-23, the
+     * direct ask against a screenshot of it.
      *
-     * 42 lessons, from the LMS course card. Parts 2 and 3 follow it as steps
-     * with NO count, because the storefront states none for them — inventing
-     * one to keep the gauge multi-segment is the move the hour figures taught
-     * us not to make. They are still ON the journey, because leaving them off
-     * would say the programme ends with the coursework, which the product page
-     * explicitly warns against.
+     * ⚠ THIS USED TO BE FOUR, and the fourth was in the wrong place. The
+     * journey was built from the public storefront, which never mentions the
+     * course exam that closes Part 1; the LMS shows it, and shows it SECOND.
+     * The old order had a learner taking the Prep Review before the exam it
+     * prepares nothing for. Attestation moved up to ride with that exam, and
+     * the closing stop became the survey and the certificate.
+     *
+     * The counts in the labels are the LMS's too — 41 lessons plus 1 exam in
+     * Part 1, 23 in the Prep Review. See `NY_LH_PRELICENSING_LESSON_COUNT`,
+     * whose note flags that the 41 + 1 = 42 reconciliation is an inference.
      */
     expect(stops.map((s) => s.title)).toEqual([
-      'Pre-licensing Course',
-      'Prep Review Course',
-      'Exam Simulators',
-      // ONE completion stop, from XCEL's published certificate-eligibility
-      // rules — two acts, one moment.
-      'Attestation & Certificate',
+      'Pre-Licensing (41)',
+      'Exam (1) & Attestation',
+      'Prep Review (23)',
+      'Simulated Exams',
+      'Survey & Certificate',
     ])
-    // Exactly one counted stop, and it carries the whole requirement.
+    /* STILL EXACTLY ONE COUNTED STOP, which is the property the renaming must
+       not have quietly broken: the labels now print 41 and 23, and the
+       temptation is to make those requirement figures. They are not. The gauge's
+       denominator is the state's requirement and stays the whole 42. */
     const counted = stops.filter((s) => s.hours != null)
     expect(counted).toHaveLength(1)
     expect(counted[0].hours).toBe(NY_LH_PRELICENSING_LESSONS)
-    // Assessments are milestones; coursework is not.
-    expect(stops.filter((s) => s.milestone).map((s) => s.title)).toEqual(['Exam Simulators'])
+    // Assessments are milestones; coursework is not. Two of them now.
+    expect(stops.filter((s) => s.milestone).map((s) => s.title)).toEqual([
+      'Exam (1) & Attestation',
+      'Simulated Exams',
+    ])
   })
 
   it('reads the first stop the way the course card does', () => {
@@ -348,10 +358,14 @@ describe('the Study Journey replaces Today\'s Tasks', () => {
     // work — the same reason the completion tasks are blocked.
     const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!
     const stops = journeyStopsFor(persona.path)
-    expect(stops.find((s) => s.title === 'Prep Review Course')?.blocked).toBe(true)
-    expect(stops.find((s) => s.title === 'Exam Simulators')?.blocked).toBe(true)
+    expect(stops.find((s) => s.title === 'Prep Review (23)')?.blocked).toBe(true)
+    expect(stops.find((s) => s.title === 'Simulated Exams')?.blocked).toBe(true)
+    /* AND THE COURSE EXAM, added 2026-09-23 — it sits between Part 1 and Part 2
+       and follows the same rule for a plainer reason: you cannot sit the exam
+       for a course you have not finished. */
+    expect(stops.find((s) => s.title.startsWith('Exam (1)'))?.blocked).toBe(true)
     // …and they say what they are, including the published targets.
-    expect(stops.find((s) => s.title === 'Exam Simulators')?.group).toMatch(/3 simulators/)
+    expect(stops.find((s) => s.title === 'Simulated Exams')?.group).toMatch(/3 simulators/)
   })
 
   it('states every stop\'s status in WORDS, not colour alone', () => {
@@ -615,7 +629,11 @@ describe('the two completion tasks on the journey', () => {
     // certificate-eligibility rules and nothing about that changed; they are
     // one MOMENT on this rail — done back to back, unlocking together, neither
     // ever true without the other.
-    expect(tasks.map((t) => t.title)).toEqual(['Attestation & Certificate'])
+    /* "Survey & Certificate" as of 2026-09-23. The attestation half moved up to
+       ride with the course exam — the LMS pairs them there — and the LMS's strip
+       ends on a Survey the storefront never mentions. Still ONE stop: two acts,
+       one moment, which is the property this line has always pinned. */
+    expect(tasks.map((t) => t.title)).toEqual(['Survey & Certificate'])
     // It is LAST.
     expect(stops.slice(-1)).toEqual(tasks)
     // NO COUNT. A lesson figure on "print your certificate" makes it look like
@@ -1239,7 +1257,7 @@ describe('every rail row is a hoverable, clickable target', () => {
     const linked = Array.from(list.querySelectorAll('.cre-stop-title'))
     // Exactly the one stop that is reachable — the rest are blocked.
     expect(linked).toHaveLength(1)
-    expect(linked[0].textContent).toMatch(/Pre-licensing Course/)
+    expect(linked[0].textContent).toMatch(/^Pre-Licensing \(\d+\)$/)
     // NO inline colour, or the class would match, compute and do nothing —
     // the trap `.cre-uxlinks-title` and the PSI link both hit.
     expect((linked[0] as HTMLElement).style.color).toBe('')
@@ -2024,9 +2042,12 @@ describe('the Study Journey rail style flag', () => {
     // The digits are on the NODE, and the title is just the title. They were
     // in both places ("01. Pre-licensing Course" beside a node reading 01),
     // which is one numbering system too many for a column being scanned.
-    expect(list.textContent).toMatch(/01Pre-licensing Course/)
-    expect(list.textContent).toMatch(/02Prep Review Course/)
-    expect(list.textContent).not.toMatch(/01\. Pre-licensing Course/)
+    expect(list.textContent).toMatch(/01Pre-Licensing \(\d+\)/)
+    // 02 IS THE COURSE EXAM as of 2026-09-23, not the Prep Review — the LMS's
+    // order, and the substance of that change rather than a relabelling.
+    expect(list.textContent).toMatch(/02Exam \(\d+\) & Attestation/)
+    expect(list.textContent).toMatch(/03Prep Review \(\d+\)/)
+    expect(list.textContent).not.toMatch(/01\. Pre-Licensing/)
   })
 
   it('drops the summary count, the chip and the Part labels', () => {
@@ -2127,7 +2148,7 @@ describe('the Study Journey rail style flag', () => {
      */
     const { container } = renderShell(QE_URL)
     const lists = Array.from(container.querySelectorAll<HTMLElement>('ol')).filter(
-      (o) => /Pre-licensing Course|Schedule State Exam/.test(o.textContent ?? ''),
+      (o) => /Pre-Licensing \(|Schedule State Exam/.test(o.textContent ?? ''),
     )
     expect(lists).toHaveLength(2)
     for (const ol of lists) {
@@ -2382,7 +2403,7 @@ describe('the Study Journey rail style flag', () => {
     for (const title of before) expect(container.textContent).toContain(title)
     expect(container.textContent).not.toMatch(/jurisprudence|sworn affidavit|NY-INS-/i)
     // …and it did not split the merged completion stop back into two.
-    expect(before).toContain('Attestation & Certificate')
+    expect(before).toContain('Survey & Certificate')
   })
 })
 
@@ -3364,9 +3385,13 @@ describe('milestones are marked by the NODE, not by red text', () => {
     // 6.18 dark), so it reads as a weight of ink rather than a hue.
     const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!
     const stops = journeyStopsFor(persona.path)
-    // One milestone: the simulators, which are the only assessment in the
-    // programme. "Exam Cram" left with the hours model — no such product.
-    expect(stops.filter((st) => st.milestone).map((st) => st.title)).toEqual(['Exam Simulators'])
+    /* TWO milestones as of 2026-09-23 — the course exam that closes Part 1
+       joined the simulators when the journey was matched to the LMS's own step
+       strip. "Exam Cram" left with the hours model — no such product. */
+    expect(stops.filter((st) => st.milestone).map((st) => st.title)).toEqual([
+      'Exam (1) & Attestation',
+      'Simulated Exams',
+    ])
   })
 
   it('leaves no Brick on the page', () => {

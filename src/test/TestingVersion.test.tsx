@@ -12,6 +12,8 @@ import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelC
 import { PlatformShell } from '@/components/layout/PlatformShell'
 import { jurisdictionName } from '@/data/nyProducerRequirements'
 import { learningPathsFor } from '@/data/learningFixtures'
+import { journeyStopsFor } from '@/components/learning/studyJourneyUtil'
+import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
 import { XCEL_NY_PRODUCER_PATH_ID } from '@/data/studyCalendarFixtures'
 import {
   DISCOVERABILITY_DASHBOARD_VERSIONS,
@@ -757,15 +759,28 @@ describe('the post-course steps are their own widgets', () => {
     expect(first?.textContent?.trim()).toBe('Atlas Study Journey')
   })
 
-  it('numbers the steps 05-07, continuing the journey', () => {
-    // Derived from the journey's REAL stop count, not a literal — merging two
-    // completion stops into one already changed that offset once.
+  it('numbers the licensing steps straight on from the journey', () => {
+    /* ⚠ DERIVED NOW, NOT A LITERAL — and the old comment claimed the derivation
+       while the assertion hard-coded 05/06/07. It has been wrong twice for the
+       same reason: merging the two completion stops into one changed the offset
+       in 2026-09, and matching the journey to the LMS's five-step strip on the
+       23rd changed it again, to 06/07/08. A literal cannot catch a renumbering
+       it was edited to match, so this reads the stop count the widget itself
+       reads. */
     seed()
     renderShell(TESTING_URL)
+    const stops = journeyStopsFor(
+      dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!.path,
+    )
     const steps = [...rightColumn().querySelectorAll('p')]
       .map((p) => p.textContent?.trim())
       .filter((t) => /^Step \d\d$/.test(t ?? ''))
-    expect(steps).toEqual(['Step 05', 'Step 06', 'Step 07'])
+    expect(steps).toEqual(
+      steps.map((_, i) => `Step ${String(stops.length + 1 + i).padStart(2, '0')}`),
+    )
+    // …and there are three of them, continuing without a gap.
+    expect(steps).toHaveLength(3)
+    expect(steps[0]).toBe(`Step ${String(stops.length + 1).padStart(2, '0')}`)
   })
 
   it('names each card by its VISIBLE heading', () => {
