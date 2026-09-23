@@ -614,11 +614,13 @@ function PaceOptionPicker({
               date the Course completion cell prints a few lines down, stated
               three times over in a row of three.
             */}
-            <span style={optionMetaStyle}>
+            <span style={on ? optionMetaActiveStyle : optionMetaStyle}>
               {fits ? `${o.nights} ${o.nights === 1 ? 'day' : 'days'} a week` : 'Will not fit'}
             </span>
             {fits ? (
-              <span style={optionMetaStyle}>{formatEvening(o.priced.minsPerNight)} a night</span>
+              <span style={on ? optionMetaActiveStyle : optionMetaStyle}>
+                {formatEvening(o.priced.minsPerNight)} a night
+              </span>
             ) : null}
           </button>
         )
@@ -657,6 +659,26 @@ const optionStyle: CSSProperties = {
 const optionActiveStyle: CSSProperties = {
   borderColor: 'var(--color-primary-500)',
   backgroundColor: 'color-mix(in srgb, var(--color-primary-500) 8%, transparent)',
+  /*
+   * A THICK, SQUARE-CORNERED FOOT — 2026-09-23, the direct ask.
+   *
+   * It makes the selected option read as ATTACHED to what is under it rather
+   * than as one of three equal boxes, which is the relationship that is
+   * actually true: the headline, the week strip and the three cells below all
+   * describe the plan this option names. A tab, in other words — the same
+   * shape the page rail's active row uses a 3px bar for.
+   *
+   * 3px, and only on the foot: a thicker ring all round would read as heavier
+   * emphasis rather than as a join, and the other three edges are still the
+   * 1px the unselected options carry.
+   */
+  borderBottomWidth: 3,
+  borderBottomLeftRadius: 0,
+  borderBottomRightRadius: 0,
+  /* The 2px the thicker border takes, given back — otherwise the selected
+     option is 2px taller than the two beside it and the grid stretches them to
+     match, so picking one nudges all three. */
+  paddingBottom: 7,
 }
 
 const optionNameStyle: CSSProperties = {
@@ -672,6 +694,16 @@ const optionMetaStyle: CSSProperties = {
   fontSize: 11,
   lineHeight: '15px',
   color: 'var(--color-text-tertiary)',
+}
+
+/* THE SELECTED OPTION'S FIGURES IN THE BODY INK — 2026-09-23, the direct ask.
+   Tertiary is right for the two plans a learner is only considering; on the one
+   they have chosen it reads as disabled, and these are the two numbers the rest
+   of the card is about to elaborate. The unselected pair keep the lighter ink,
+   which is what makes the chosen one read as chosen. */
+const optionMetaActiveStyle: CSSProperties = {
+  ...optionMetaStyle,
+  color: 'var(--color-text-primary)',
 }
 
 /* ─── the tile's own content ─────────────────────────────────────────── */
