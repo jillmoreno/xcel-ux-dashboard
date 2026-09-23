@@ -3,6 +3,7 @@ import { GetLicensedRail, StudyJourneyRail } from './StudyJourneyRail'
 import { useState, type CSSProperties } from 'react'
 import { journeyStopsFor } from './studyJourneyUtil'
 import { clearExamDate, useExamDate, writeExamDate } from '@/data/examDateStore'
+import { dateFromIso } from '@/lib/studyPace'
 import { longDate } from './learningPathsHomeUtil'
 import {
   GET_LICENSED_STEPS,
@@ -180,6 +181,7 @@ export function StudyJourneyWidget({
             number={stepStart + i}
             shell={shell}
             onOpenStep={onOpenStep}
+            state={path.state}
             /* The arrival card is named for the DESTINATION rather than the
                action, per the ask ("Get Licensed - Apply for your license"): the
                heading says where the route ends and the lead line says what you
@@ -317,6 +319,7 @@ function LicensingStepWidget({
   shell,
   onOpenStep,
   heading,
+  state,
 }: {
   step: LicensingStep
   /** Continues the journey's 01-04. See the note in `StudyJourneyWidget`. */
@@ -332,6 +335,9 @@ function LicensingStepWidget({
    * thing. This is a heading override and nothing else now.
    */
   heading?: string
+  /** The path's jurisdiction CODE ("NY"), for the scheduled heading. Passed
+   *  rather than derived: the widget has no path. */
+  state?: string
 }) {
   /*
    * Owner and fee on one line, ASSEMBLED rather than interpolated — a trailing
@@ -386,6 +392,24 @@ function LicensingStepWidget({
    * than it should. This is a rendering rule for the widget, not a deletion.
    */
   const hasCapture = step.id === 'schedule-exam'
+  /*
+   * THE SCHEDULED STATE — 2026-09-23, the direct ask: "When saved: Header -
+   * change to NY State Exam Scheduled. Change the CTA link to Edit Exam Date."
+   *
+   * `editing` LIVES HERE rather than inside the capture, because the control
+   * that opens the editor is now the card's own footer link and the panel it
+   * opens is the capture's. Two components cannot own one disclosure; lifting
+   * it is what stops the link and the panel disagreeing about which state is
+   * showing.
+   *
+   * THE STATE CODE IS THE PATH'S, not a literal. "NY State Exam Scheduled" is
+   * what the ask names because New York is the demo, and typing NY here would
+   * put a wrong jurisdiction on every other path the moment one exists — the
+   * defect `jurisdictionName`'s own fallback was written for.
+   */
+  const storedExam = useExamDate()
+  const [editingExam, setEditingExam] = useState(false)
+  const scheduled = hasCapture && Boolean(storedExam) && !editingExam
   return (
     /* The accessible name is the VISIBLE heading, not the step title, so the
        arrival card is not announced as "Apply for your License" while reading
@@ -411,7 +435,7 @@ function LicensingStepWidget({
           color: 'var(--color-text-primary)',
         }}
       >
-        {heading ?? step.title}
+        {scheduled && state ? `${state} State Exam Scheduled` : (heading ?? step.title)}
       </p>
       {/* NO LEAD LINE — 2026-09-21, the direct ask ("remove"). The arrival card
           briefly carried its step title ("Apply for your License") under the
@@ -465,11 +489,17 @@ function LicensingStepWidget({
           the light stop under `[data-theme='dark']` and an inline value would
           beat it while looking correct. The trap `titleStyleNoColor` exists
           for, one file over. */}
-      {hasCapture ? <ExamDateCapture /> : null}
-      {onOpenStep ? (
+      {hasCapture ? (
+        <ExamDateCapture
+          stored={storedExam}
+          editing={editingExam}
+          onDone={() => setEditingExam(false)}
+        />
+      ) : null}
+      {onOpenStep || scheduled ? (
         <button
           type="button"
-          onClick={() => onOpenStep(step.id)}
+          onClick={() => (scheduled ? setEditingExam(true) : onOpenStep?.(step.id))}
           className="cre-link-action cre-cta-ink"
           style={{
             marginTop: 12,
@@ -490,7 +520,7 @@ function LicensingStepWidget({
             textAlign: 'left',
           }}
         >
-          {step.detailLabel ?? 'What to expect'} →
+          {scheduled ? 'Edit Exam Date' : (step.detailLabel ?? 'What to expect')} →
         </button>
       ) : null}
     </section>
@@ -522,47 +552,47 @@ function LicensingStepWidget({
  * reversible — it is stored per browser and never committed, so a stale one
  * would otherwise be unexplainable from the repo.
  */
-function ExamDateCapture() {
-  const stored = useExamDate()
-  const [editing, setEditing] = useState(false)
+function ExamDateCapture({
+  stored,
+  editing,
+  onDone,
+}: {
+  stored: string | null
+  /** Owned by the CARD, not here — its "Edit Exam Date" link is what opens the
+   *  editor now, so the two cannot disagree about which state is showing. */
+  editing: boolean
+  onDone: () => void
+}) {
   const [draft, setDraft] = useState('')
   const open = editing || !stored
 
+  /*
+   * ⚠ THE SET STATE IS NOW THE FIGMA CALENDAR, and the state it replaces is
+   * worth recording because it was doing a job: "Your exam date · December 15,
+   * 2026 · Change · Clear" — a caption, the date in words, and two links.
+   *
+   * WHAT SURVIVES THE SWAP. The date is still visible and still reversible,
+   * which is the requirement the old note set ("a value that can silently
+   * override the page's headline figure has to be visible and reversible"). The
+   * calendar carries the date; CHANGE moved out to the card's own CTA as "Edit
+   * Exam Date", per the ask.
+   *
+   * ⚠ WHAT DOES NOT. `Clear` has no home in the new design and is not drawn in
+   * the Figma. It survives INSIDE the editor instead — open the editor and the
+   * field can be emptied and saved — so the value is still reversible without a
+   * link on the resting card. That is a real reduction in discoverability for a
+   * control that resets a demo figure, and it is flagged rather than quietly
+   * dropped: if a reviewer gets stuck with a stale date, this is why.
+   */
   if (!open) {
     return (
-      <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <p style={{ ...captureHintStyle, margin: 0 }}>Your exam date</p>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
-          <span
-            style={{
-              fontFamily: 'var(--font-heading)',
-              fontSize: 14,
-              fontWeight: 700,
-              color: 'var(--color-text-primary)',
-            }}
-          >
-            {longDate(stored ? isoToSlashes(stored) : '')}
-          </span>
-          <button
-            type="button"
-            onClick={() => {
-              setDraft(stored ?? '')
-              setEditing(true)
-            }}
-            className="cre-link-action cre-cta-ink"
-            style={captureLinkStyle}
-          >
-            Change
-          </button>
-          <button
-            type="button"
-            onClick={() => clearExamDate()}
-            className="cre-link-action cre-cta-ink"
-            style={captureLinkStyle}
-          >
-            Clear
-          </button>
-        </div>
+      <div style={{ marginTop: 12 }}>
+        <ExamDateCalendar iso={stored} />
+        {/* The date in WORDS for the accessibility tree, since the calendar is
+            `aria-hidden` — three stacked fragments ("SEPTEMBER", "28", "2025")
+            do not read as a date, and the card's heading only says one is
+            scheduled. */}
+        <p style={srOnlyDateStyle}>Exam scheduled for {longDate(isoToSlashes(stored))}</p>
       </div>
     )
   }
@@ -607,7 +637,7 @@ function ExamDateCapture() {
           disabled={!draft}
           onClick={() => {
             writeExamDate(draft)
-            setEditing(false)
+            onDone()
           }}
           style={{
             flex: 'none',
@@ -625,9 +655,154 @@ function ExamDateCapture() {
         >
           Save
         </button>
+        {stored ? (
+          <button
+            type="button"
+            onClick={() => {
+              clearExamDate()
+              onDone()
+            }}
+            className="cre-link-action cre-cta-ink"
+            style={{ ...captureLinkStyle, alignSelf: 'center' }}
+          >
+            Clear
+          </button>
+        ) : null}
       </div>
     </div>
   )
+}
+
+/** Off-screen but in the accessibility tree — the pattern `StudyJourneyRail`'s
+ *  own `srOnlyStyle` uses. */
+const srOnlyDateStyle: CSSProperties = {
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  margin: 0,
+  overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  whiteSpace: 'nowrap',
+}
+
+
+/**
+ * THE EXAM-DATE CALENDAR — Figma `2.0 - Learning Path Page`, node 1195:16026
+ * (the tear-off inside `CalendarProgressAndGoalTracker`, 1195:8978).
+ *
+ * 2026-09-23, the direct ask: when a date is entered, this is what the Schedule
+ * State Exam card shows.
+ *
+ * WHAT WAS TAKEN AND WHAT WAS NOT. The node is a LICENSE TRACKER in its Expired
+ * state, on the MCK brand: an orange "Begin New Cycle" button, orange links,
+ * Open Sans throughout, and an "Expired" status word above the calendar. None
+ * of that is here. The calendar is the piece the ask points at; the chrome
+ * around it belongs to a different card on a different brand, and its status
+ * word is already this card's heading ("NY State Exam Scheduled"), so keeping
+ * it would print the state twice.
+ *
+ * ⚠ THE TWO RINGS ARE REDRAWN RATHER THAN DOWNLOADED, which is a deliberate
+ * departure from the design-to-code rule that assets are used as exported. They
+ * export as `Line 172` / `Line 173` — two zero-height strokes with round caps,
+ * i.e. geometry rather than artwork. Committing two SVG files to draw two
+ * straight lines cuts against this repo's asset conventions (one icon registry,
+ * `vite-plugin-svgr`, nothing loose in `public/`), and a stroke is the one kind
+ * of "asset" that survives being expressed as a border-radius. Said out loud
+ * here because a silent substitution is the thing that rule exists to stop.
+ *
+ * THE GEOMETRY IS THE DESIGN'S, in its own units: a 140x149 box, the body
+ * inset 9px from the top with a 12px radius and a 1px `#a2a2a2` rule — which is
+ * `--color-neutral-500` exactly, so the design's neutral ramp and ours already
+ * agree — a 19px grey cap, and rings at 27% and 64% of the width.
+ *
+ * THE TYPE IS OURS. The design sets all three lines in Open Sans SemiBold
+ * because that is MCK's only face. Here the DAY takes `--font-heading`, the
+ * token every other display figure on this page uses (the band's percentage,
+ * the pace card's "2¾"), so it follows `dashboard-heading-font` rather than
+ * being the one numeral that ignores the control. Month and year stay on
+ * `--font-body`: at 16px they are labels, not figures.
+ */
+function ExamDateCalendar({ iso }: { iso: string }) {
+  const d = dateFromIso(iso)
+  if (!d) return null
+  return (
+    <div style={calShellStyle} aria-hidden>
+      <div style={calRingStyle(38)} />
+      <div style={calRingStyle(89)} />
+      <div style={calBodyStyle}>
+        <div style={calCapStyle} />
+        <p style={calMonthStyle}>{d.toLocaleDateString('en-US', { month: 'long' }).toUpperCase()}</p>
+        <p style={calDayStyle}>{d.getDate()}</p>
+        <p style={calYearStyle}>{d.getFullYear()}</p>
+      </div>
+    </div>
+  )
+}
+
+const calShellStyle: CSSProperties = {
+  position: 'relative',
+  width: 140,
+  height: 149,
+  flex: 'none',
+}
+
+/* The two binder rings, at the design's 27.14% and 63.57% of 140. Round-capped
+   by a pill radius, which is what the exported strokes' `linecap` draws. */
+const calRingStyle = (left: number): CSSProperties => ({
+  position: 'absolute',
+  top: 0,
+  left,
+  width: 7,
+  height: 18,
+  borderRadius: 'var(--radius-pill)',
+  background: 'var(--color-text-primary)',
+})
+
+const calBodyStyle: CSSProperties = {
+  position: 'absolute',
+  top: 9,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  borderRadius: 12,
+  border: '1px solid var(--color-neutral-500)',
+  background: 'var(--color-surface-card)',
+  overflow: 'hidden',
+  textAlign: 'center',
+}
+
+/** The grey cap the rings pass through. */
+const calCapStyle: CSSProperties = {
+  height: 19,
+  background: 'var(--color-neutral-500)',
+}
+
+const calMonthStyle: CSSProperties = {
+  margin: '10px 0 0',
+  fontFamily: 'var(--font-body)',
+  fontSize: 16,
+  fontWeight: 600,
+  lineHeight: '22px',
+  color: 'var(--color-text-primary)',
+}
+
+const calDayStyle: CSSProperties = {
+  margin: '2px 0 0',
+  fontFamily: 'var(--font-heading)',
+  fontSize: 50,
+  fontWeight: 600,
+  lineHeight: '58px',
+  color: 'var(--color-text-primary)',
+}
+
+const calYearStyle: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 16,
+  fontWeight: 600,
+  lineHeight: '28px',
+  color: 'var(--color-text-primary)',
 }
 
 /** `2026-12-15` → `12/15/2026`, the shape `longDate` parses in LOCAL time. See

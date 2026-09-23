@@ -212,17 +212,42 @@ describe('the capture on the Schedule State Exam card', () => {
     expect(within(card()).getByLabelText(/Already scheduled\?/i)).toBeTruthy()
   })
 
-  it('saves a typed date and shows it back, with a way out', () => {
+  it('saves a typed date and shows the Figma calendar, with a way back', () => {
+    /* ⚠ THE SET STATE CHANGED SHAPE 2026-09-23 — Figma node 1195:16026, the
+       direct ask. It was a caption, the date in words and two links ("Your exam
+       date · June 30, 2026 · Change · Clear"). It is the tear-off calendar now,
+       with the heading and the footer link carrying the state instead.
+
+       WHAT THIS STILL PINS is the requirement the old assertion existed for and
+       the new design must not quietly drop: the date is VISIBLE and the value is
+       REVERSIBLE. A stored date silently re-points the page's headline figure,
+       and it lives in localStorage rather than the repo, so a stale one nobody
+       can see or clear is unexplainable from the source. */
     renderShell()
     const input = within(card()).getByLabelText(/Already scheduled\?/i)
     fireEvent.change(input, { target: { value: '2026-06-30' } })
     fireEvent.click(within(card()).getByRole('button', { name: 'Save' }))
     expect(readExamDate()).toBe('2026-06-30')
-    // Shown back, spelled out — a value that silently overrides the page's
-    // headline figure has to be visible and reversible.
-    expect(within(card()).getByText('June 30, 2026')).toBeTruthy()
-    expect(within(card()).getByRole('button', { name: 'Change' })).toBeTruthy()
-    expect(within(card()).getByRole('button', { name: 'Clear' })).toBeTruthy()
+
+    // VISIBLE — the calendar's three fragments, and the date in words for the
+    // accessibility tree, since the calendar itself is `aria-hidden`.
+    expect(within(card()).getByText('JUNE')).toBeTruthy()
+    expect(within(card()).getByText('30')).toBeTruthy()
+    expect(within(card()).getByText('2026')).toBeTruthy()
+    expect(card().textContent).toContain('Exam scheduled for June 30, 2026')
+
+    // The heading and the footer link both moved. "NY", from the path — not a
+    // literal, or every other jurisdiction would read New York.
+    expect(within(card()).getByText('NY State Exam Scheduled')).toBeTruthy()
+    const edit = within(card()).getByRole('button', { name: /Edit Exam Date/ })
+
+    // REVERSIBLE — Edit reopens the editor, which is where Clear lives now.
+    fireEvent.click(edit)
+    expect(within(card()).getByLabelText(/Already scheduled\?/i)).toBeTruthy()
+    fireEvent.click(within(card()).getByRole('button', { name: 'Clear' }))
+    expect(readExamDate()).toBeNull()
+    // …and the card is back to asking.
+    expect(within(card()).queryByText('NY State Exam Scheduled')).toBeNull()
   })
 
   it('appears on the Schedule card ONLY', () => {
