@@ -551,7 +551,6 @@ function PlatformShellBody() {
         completedLessons={launcher.meta.completedLessons ?? 0}
         totalLessons={launcher.meta.totalLessons ?? 0}
         onClose={launcher.close}
-        closeLabel={launcherBackLabel}
       />
     )
   }

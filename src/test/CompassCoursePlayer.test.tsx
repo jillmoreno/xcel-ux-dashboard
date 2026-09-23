@@ -278,13 +278,39 @@ describe('the player states the course that was opened', () => {
   })
 })
 
-describe('the only wired control is Close', () => {
-  it('returns to the dashboard it covered', () => {
+describe('the wired controls: up to Overview, out to Home', () => {
+  it('the toolbar ✕ goes UP to Overview, it does not leave', () => {
+    /* ⚠ THIS TEST USED TO ASSERT THE OPPOSITE — 2026-09-23, the direct ask:
+       "clicking on this should navigate to the Overview."
+
+       The ✕ called the same handler as the Home crumb, so two controls did one
+       thing and the course's own front door was reachable only from the middle
+       crumb. Closing a lesson should land on the course, the way closing a
+       chapter lands on the book.
+
+       BOTH HALVES ARE ASSERTED, because the bug this replaces would pass a
+       test that only checked the destination: the player must still be OPEN.
+       An exit that happens to render Overview underneath would satisfy "shows
+       Overview" and be the old behaviour. */
+    seed()
+    renderShell(TESTING_URL)
+    startCourse()
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: 'Back to Overview' }))
+    })
+    expect(screen.getByLabelText('Course contents')).toBeTruthy()
+    expect(screen.getByRole('region', { name: 'Overview page' })).toBeTruthy()
+  })
+
+  it('leaves for the dashboard from Home, and only from Home', () => {
+    /* The exit did not disappear, it narrowed to the one control that NAMES
+       itself. A glyph-only ✕ leaving the course was the asymmetry the ask
+       corrects; "Home" is a word, and words can be pressed deliberately. */
     seed()
     const { container } = renderShell(TESTING_URL)
     startCourse()
     act(() => {
-      fireEvent.click(screen.getByRole('button', { name: /Close course player/ }))
+      fireEvent.click(screen.getByRole('button', { name: 'Home' }))
     })
     expect(screen.queryByLabelText('Course contents')).toBeNull()
     expect(container.querySelector('.cre-platform-shell-grid')).not.toBeNull()
@@ -296,7 +322,7 @@ describe('the only wired control is Close', () => {
        not is the thing a reviewer reports as broken.
      
        THE COUNT KEEPS GROWING and that is the rule working, not eroding: Home,
-       the eight page rows, the two contents expanders and Close all DO
+       the eight page rows, the two contents expanders and the toolbar ✕ all DO
        something. Asserted as "every button has a handler's effect we have
        named" rather than a number — the invariant is that nothing pressable is
        inert, not that the list stays short. */
@@ -308,11 +334,11 @@ describe('the only wired control is Close', () => {
         .getAllByRole('button')
         .map((b) => (b.getAttribute('aria-label') ?? b.textContent ?? '').trim())
 
-    // ON COURSE: the crumbs, the contents expander and Close.
+    // ON COURSE: the crumbs, the contents expander and the ✕ (up to Overview).
     expect(names()).toContain('Home')
     expect(names()).toContain('Overview')
     expect(names().some((n) => /Completed \d+ of \d+/.test(n))).toBe(true)
-    expect(names().some((n) => /Close course player/.test(n))).toBe(true)
+    expect(names()).toContain('Back to Overview')
     // The four inert bits of chrome are NOT among them.
     for (const inert of ['Notes', 'Ask Rubi', 'Next', 'Previous']) {
       expect(names()).not.toContain(inert)

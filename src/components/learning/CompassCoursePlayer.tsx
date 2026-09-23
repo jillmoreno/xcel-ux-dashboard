@@ -159,17 +159,26 @@ export function CompassCoursePlayer({
   completedLessons,
   totalLessons,
   onClose,
-  closeLabel,
 }: {
   courseTitle: string
   percentComplete: number
   /** The card's "26 of 42 lessons", both halves. See `CompassContents`. */
   completedLessons: number
   totalLessons: number
+  /**
+   * Leave the player for the dashboard underneath. ONE CALLER as of
+   * 2026-09-23: the Home crumb.
+   *
+   * ⚠ `closeLabel` WENT WITH THE SECOND CALLER. It named the section the
+   * player would return to — `SECTION_TITLES[active]`, so "My Courses" when
+   * the course was launched from there — and existed only to build the ✕'s
+   * screen-reader name. The ✕ goes to Overview now and the crumb says the
+   * visible word "Home", which under 2.5.3 (Label in Name) has to BE its
+   * accessible name, so there is nothing left for a section title to label.
+   * `launcherBackLabel` still feeds the mobile shell; it just stops coming
+   * here.
+   */
   onClose: () => void
-  /** Names what Close returns to, for the screen-reader label only — the
-   *  design gives the control no visible text. */
-  closeLabel: string
 }) {
   /*
    * WHICH VIEW THE PLAYER IS SHOWING — 2026-09-23, the direct ask: "When user
@@ -253,8 +262,8 @@ export function CompassCoursePlayer({
           <>
         <CompassTopBar
           chapterTitle={currentChapter}
-          onClose={onClose}
-          closeLabel={closeLabel}
+          onBack={() => setPage('overview')}
+          backLabel="Overview"
         />
         <div style={playerBodyStyle}>
           <div style={readingColumnStyle}>
@@ -767,12 +776,28 @@ function LessonRow({ n, state }: { n: number; state: 'done' | 'current' | 'upcom
 
 function CompassTopBar({
   chapterTitle,
-  onClose,
-  closeLabel,
+  onBack,
+  backLabel,
 }: {
   chapterTitle: string
-  onClose: () => void
-  closeLabel: string
+  /**
+   * ⚠ IT GOES UP A LEVEL, IT DOES NOT CLOSE THE PLAYER — 2026-09-23, the
+   * direct ask: "clicking on this should navigate to the Overview."
+   *
+   * It was `onClose`, the same handler the Home crumb calls, so the ✕ and the
+   * first breadcrumb were two controls doing one thing while the middle crumb
+   * — the course's own front door — was the only way to reach Overview. That
+   * made leaving the course EASIER than stepping back inside it, which is the
+   * wrong way round for a ✕ that sits on a lesson: closing a lesson should
+   * land on the course, the way closing a chapter lands on the book.
+   *
+   * Home still leaves, from the crumb, which is where the exit belongs — it is
+   * labelled with the word "Home" rather than being an unnamed glyph.
+   */
+  onBack: () => void
+  /** Where the ✕ lands, for the screen-reader name — the design gives the
+   *  control no visible text, so the name is the only thing saying so. */
+  backLabel: string
 }) {
   /* THE DATE CHIP READS THE LEARNER'S OWN EXAM DATE. The mock hardcodes
      "August 14, 2026 · 8 Days Out"; this reads `cgp.examDate` — the date typed
@@ -906,8 +931,12 @@ function CompassTopBar({
         {/* THE ONLY WIRED CONTROL ON THE SCREEN. */}
         <button
           type="button"
-          onClick={onClose}
-          aria-label={`Close course player and return to ${closeLabel}`}
+          onClick={onBack}
+          /* "Back to Overview", not "Close…". The control's job changed and an
+             accessible name still saying "close course player" would describe
+             the old one — the specific failure of a glyph-only control, where
+             nothing visible contradicts a stale name. */
+          aria-label={`Back to ${backLabel}`}
           style={{ ...iconButtonStyle, cursor: 'pointer' }}
         >
           <X size={13} aria-hidden style={mutedIconStyle} />
