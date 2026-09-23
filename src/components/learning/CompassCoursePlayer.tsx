@@ -1014,7 +1014,11 @@ const readingFooterStyle: CSSProperties = {
   justifyContent: 'space-between',
   gap: 16,
   height: 72,
-  padding: '0 80px',
+  /* 40, down from the Figma's 80 — 2026-09-22, the direct ask. The mock is
+     drawn at 1680 wide where 80 reads as a margin; at the widths this actually
+     renders the two controls were pulled well inside the reading column they
+     belong to. */
+  padding: '0 40px',
   background: 'var(--color-surface-card)',
   borderTop: '1px solid var(--compass-rule)',
   flexShrink: 0,
