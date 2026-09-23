@@ -263,13 +263,36 @@ export function isQualifyingEducationVersion(versionId: string): boolean {
 // the version list rather than a selectable card. See the `secondaryCta` prop on
 // DashboardVersionsPanel + the rebrand branch in Header.
 //
-// Marketing Focused leads the list — it's the default.
-// (Badged Version was archived 2026-08-17 — dropped from this list; re-add
-// DISCOVERABILITY_DASHBOARD_VERSION_BADGED here to restore it to the picker.)
+/*
+ * THE PICKER LIST. Three entries as of 2026-09-22, down from five.
+ *
+ * QE FOCUSED and MARKETING FOCUSED were archived on the direct ask — "we are
+ * going in the direction of Testing Version". Same mechanism Badged got on
+ * 2026-08-17 and for the same reason: pulled from THIS LIST only. Both consts,
+ * both `discoverability-*` type members, every `?version=` resolution branch
+ * and every component they render are KEPT, so restoring either is a one-line
+ * re-add here and a deep link to it still resolves today.
+ *
+ * ⚠ ARCHIVING QE FOCUSED DOES NOT ARCHIVE THE QE LAYOUT, and anyone reading
+ * this as "QE is gone" will break the thing that replaced it. `MembershipOverview`
+ * computes `qeFocused = dashboardLayout === 'qe-focused' || testing || testingVersion`
+ * — Testing and Testing 2 ARE the QE arrangement, plus their departures from
+ * it. The layout, its components and `QeFocusedVersion.test.tsx`'s 161 tests
+ * are all still live and still the best description of what Testing inherits.
+ * What went is one row in a picker.
+ *
+ * ⚠ MARKETING FOCUSED IS STILL THE HOUSE DEFAULT for any brand that is not
+ * XCEL — see `defaultDiscoverabilityVersionFor` below. With `Brand` a
+ * one-member union that branch is unreachable today, but it is the seam a
+ * second brand re-enters through, exactly like the `[data-brand]` selector in
+ * `tokens.css`. The const stays for that reason as much as for restoring it.
+ *
+ * (Badged Version was archived 2026-08-17 — re-add
+ * DISCOVERABILITY_DASHBOARD_VERSION_BADGED here to restore it to the picker.)
+ */
 export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
-  DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
   DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
-  DISCOVERABILITY_DASHBOARD_VERSION_TESTING_2,  DISCOVERABILITY_DASHBOARD_VERSION_MARKETING_FOCUSED,
+  DISCOVERABILITY_DASHBOARD_VERSION_TESTING_2,
   DISCOVERABILITY_DASHBOARD_VERSION_LEARNER_FOCUSED,
 ]
 

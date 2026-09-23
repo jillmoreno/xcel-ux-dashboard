@@ -126,8 +126,22 @@ describe('the Testing version is registered without displacing anything', () => 
     )
   })
 
-  it('leaves QE Focused leading the picker', () => {
+  it('now LEADS the picker, which QE Focused used to', () => {
+    /* INVERTED 2026-09-22, and the original subject is why it survives rather
+       than being deleted. This file's whole premise was that Testing was added
+       "without displacing anything" — it sat third behind QE Focused, and this
+       test pinned that restraint.
+
+       The direct ask ended it: "we are going in the direction of Testing
+       Version", and QE Focused and Marketing Focused came off the picker. So
+       the claim inverts — Testing leads because there is nothing left in front
+       of it. QE Focused is ARCHIVED, not deleted: it still resolves by
+       `?version=`, which is what keeps `QeFocusedVersion.test.tsx` describing
+       the layout this version inherits. */
     expect(DISCOVERABILITY_DASHBOARD_VERSIONS[0]).toBe(
+      DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
+    )
+    expect(DISCOVERABILITY_DASHBOARD_VERSIONS).not.toContain(
       DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
     )
   })

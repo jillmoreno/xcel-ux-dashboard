@@ -10,6 +10,7 @@ import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelC
 import { PlatformShell } from '@/components/layout/PlatformShell'
 import {
   DISCOVERABILITY_DASHBOARD_VERSIONS,
+  DISCOVERABILITY_DASHBOARD_VERSION_MARKETING_FOCUSED,
   DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
   DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
   defaultDiscoverabilityVersionFor,
@@ -127,43 +128,59 @@ beforeEach(() => {
   window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
 })
 
-describe('the QE Focused version is registered and default', () => {
-  it('leads the Discoverability picker', () => {
-    // Leads rather than merely appears: the picker's order is what a reviewer
-    // reads as "the one we are on".
-    expect(DISCOVERABILITY_DASHBOARD_VERSIONS[0]).toBe(
-      DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
-    )
+describe('the QE Focused version is ARCHIVED but still reachable', () => {
+  /*
+   * 2026-09-22, the direct ask: "we can go ahead and remove these versions, we
+   * are going in the direction of Testing Version."
+   *
+   * It came off the PICKER LIST only — the same mechanism Badged got in August.
+   * The const, the type member, the `?version=` branches and every component
+   * are kept, so a deep link still resolves. That is not a technicality: it is
+   * what lets the 160 tests below go on describing this layout, which is the
+   * layout Testing and Testing 2 are built on.
+   */
+  it('is gone from the picker', () => {
+    const ids = DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)
+    expect(ids).not.toContain(DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED.id)
+    // Marketing Focused went in the same pass, for the same reason.
+    expect(ids).not.toContain('discoverability-marketing-focused')
   })
 
-  it('is NO LONGER what XCEL resolves to — Testing is, since 2026-09-21', () => {
-    /* REWRITTEN, not deleted, and the original subject is the point. This
-       asserted QE Focused as XCEL's default from 2026-09-16; the direct ask on
-       2026-09-21 moved it to the Testing version, and a test whose premise has
-       changed is rewritten with the change recorded in it.
+  it('still RESOLVES, which is what keeps this file meaningful', () => {
+    /* Archiving a version must not make it unreachable — every test below
+       renders `QE_URL`. If a later change starts rejecting unlisted versions,
+       this fails first and explains why 160 tests are about to. */
+    const { container } = renderShell(QE_URL)
+    expect(container.querySelector('.cre-learner-focused-band')).not.toBeNull()
+  })
 
-       TWO callers read this — `PlatformShell`'s `?version=` fallback and the
-       Header's "Default" pill — and the helper exists so they cannot disagree,
-       so asserting the helper covers both. That is also why this moving is a
-       real event rather than a constant edit: it changes what the public link
-       and the `?demo=1` baseline open on.
+  it('leaves Testing leading the picker, with Testing 2 and Learner Focused', () => {
+    // Order is what a reviewer reads as "the one we are on".
+    expect(DISCOVERABILITY_DASHBOARD_VERSIONS[0]).toBe(
+      DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
+    )
+    expect(DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)).toEqual([
+      'discoverability-testing',
+      'discoverability-testing-2',
+      'discoverability-learner-focused',
+    ])
+  })
 
-       QE Focused stays in the picker and stays fully covered — every other test
-       in this file now names it explicitly (`QE_URL`) rather than inheriting it
-       from this default. */
+  it('is still what XCEL does NOT resolve to — Testing is', () => {
     expect(defaultDiscoverabilityVersionFor('xcel')).toBe(
       DISCOVERABILITY_DASHBOARD_VERSION_TESTING.id,
     )
-    expect(DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)).toContain(
-      DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED.id,
-    )
   })
 
-  it('keeps Learner Focused and Marketing Focused selectable', () => {
-    // The point of adding rather than replacing: the three can be compared.
-    const ids = DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)
-    expect(ids).toContain('discoverability-learner-focused')
-    expect(ids).toContain('discoverability-marketing-focused')
+  it('keeps Marketing Focused as the HOUSE default for a non-XCEL brand', () => {
+    /* ⚠ THE REASON THE CONST SURVIVES ARCHIVAL. `Brand` is a one-member union,
+       so this branch is unreachable today — and it is the seam a second brand
+       re-enters through, exactly like the `[data-brand]` selector in
+       `tokens.css`. Deleting the version outright would leave that fallback
+       pointing at nothing, and the failure would appear on the day someone
+       adds a brand, not today. */
+    const marketing = DISCOVERABILITY_DASHBOARD_VERSION_MARKETING_FOCUSED
+    expect(marketing.id).toBe('discoverability-marketing-focused')
   })
 })
 

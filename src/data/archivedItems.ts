@@ -56,6 +56,32 @@ export type ArchivedItem = {
 
 export const ARCHIVED_ITEMS: ArchivedItem[] = [
   {
+    id: 'discoverability-qe-focused',
+    name: 'QE Focused (dashboard version)',
+    what: 'The pre-licensing dashboard built for a candidate working towards a booked exam — the slim top band (path identity + status + Resume) beside the Study Journey, the Learning Path detail sheet\u2019s whole Progress tab rendered inline, and Recommended for You dropped. XCEL\u2019s default from 2026-09-16 until Testing took it on 2026-09-21.',
+    location:
+      'FULLY INTACT. `DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED` in `src/data/dashboardVersions.ts`, its `discoverability-qe-focused` type member, every `?version=` resolution branch, and every component it renders. Only the entry in `DISCOVERABILITY_DASHBOARD_VERSIONS` was removed, so `?version=discoverability-qe-focused` STILL RESOLVES — `QeFocusedVersion.test.tsx` (163 tests) renders it on every one.',
+    flag: '?version=discoverability-qe-focused (still resolves)',
+    dateRemoved: '2026-09-22',
+    reason:
+      'The direct ask: "we can go ahead and remove these versions, we are going in the direction of Testing Version." Testing and Testing 2 are both built on this arrangement and had made it the thing behind the thing — a picker row nobody would choose, sitting in front of the two versions the work is actually happening on.',
+    restoreNote:
+      'Re-add `DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED` to `DISCOVERABILITY_DASHBOARD_VERSIONS` in `src/data/dashboardVersions.ts`. That is the whole restore — one line — and the picker order is the array order, so put it where it should read. NOTHING ELSE WAS UNWIRED, which is the point: two tests pin that (`is gone from the picker` and `still RESOLVES, which is what keeps this file meaningful`) and both would need updating. \u26a0 DO NOT "finish the job" by deleting the QE LAYOUT. `MembershipOverview` computes `qeFocused = dashboardLayout === \'qe-focused\' || testing || testingVersion` — Testing and Testing 2 ARE this arrangement plus their departures from it, so removing the layout removes them. What was archived is one row in a picker, not a design.',
+  },
+  {
+    id: 'discoverability-marketing-focused',
+    name: 'Marketing Focused (dashboard version)',
+    what: 'The house Discoverability dashboard — the joined top card with the Jump Back In half replaced by a full-bleed "What\u2019s New" carousel (rotating brand-gradient slides with dot navigation), the left half keeping a compact Current Learning Path, a Deadline / Time Remaining stat row and a Jump Back In card.',
+    location:
+      'FULLY INTACT, exactly as QE Focused above — const, type member, `?version=` branches and components all kept; only the picker entry went. `?version=discoverability-marketing-focused` still resolves.',
+    flag: '?version=discoverability-marketing-focused (still resolves)',
+    dateRemoved: '2026-09-22',
+    reason:
+      'Same ask, same pass. XCEL sells a licence rather than a membership, so there was never an upsell for the marketing carousel to carry — the reasoning that moved XCEL off it on 2026-09-04 and never moved back.',
+    restoreNote:
+      'One line: re-add `DISCOVERABILITY_DASHBOARD_VERSION_MARKETING_FOCUSED` to `DISCOVERABILITY_DASHBOARD_VERSIONS`. \u26a0 THE CONST IS LOAD-BEARING EVEN WHILE ARCHIVED, and this is the half worth reading twice: `defaultDiscoverabilityVersionFor` returns it for any brand that is NOT XCEL. `Brand` is a one-member union so that branch is unreachable today, which makes it exactly the kind of thing a later cleanup deletes as dead — and the failure would surface on the day someone adds a second brand, not on the day of the delete. It is the same seam the `[data-brand]` selector in `tokens.css` is kept for. A test pins it.',
+  },
+  {
     id: 'clp-stats-stat-card',
     name: 'Current Progress — the `stat-card` treatment',
     what: 'The three KPI cells and the status strip gathered onto ONE white card: a sub-label under each cell ("Your exam target date", "~1.5 hrs/day suggested pace", "lessons of this course"), Completed printed as a two-tone fraction with the denominator dimmed, a hairline rule between the numbers and the status, and the strip rendered `bare` inside the card rather than tinted.',
