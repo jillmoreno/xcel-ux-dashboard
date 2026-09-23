@@ -1,6 +1,13 @@
-import { useState, type CSSProperties } from 'react'
+import { useState, type ComponentType, type CSSProperties } from 'react'
 import {
   ArrowLeft,
+  BookFull,
+  ClipboardList,
+  Gauge,
+  Layout,
+  Notebook,
+  RubiLogo,
+  ShoePrints,
   ArrowRight,
   CalendarDay,
   ChevronRight,
@@ -62,6 +69,50 @@ import { formatExamChip } from './compassPlayerUtil'
  * hierarchy the fixtures cannot support. When a real outline arrives, the
  * child row is `TocChildItem` below, already built and already styled.
  */
+/**
+ * THE PLAYER'S OWN PAGES — 2026-09-23, the direct ask: "make this section have
+ * pages like the Home screen ui. Options are Overview, Course, Flashcards, Exam
+ * Simulator, Progress, Resources, Readiness, Rubi Insights."
+ *
+ * A course-scoped rail, sitting where the dashboard's own rail would be if the
+ * player were not a takeover. Only COURSE is built; the other seven render the
+ * bare ground, which is the same shell Overview got an hour earlier and for the
+ * same reason — these are pages being designed, not courseware standing in for
+ * something we do not have.
+ *
+ * ICONS: three are the DASHBOARD RAIL'S OWN — Readiness is `Gauge`, Resources
+ * is `FileText`, Rubi Insights is `RubiLogo` — because those three sections
+ * exist out there too and a learner who has seen them in the rail should not
+ * have to learn a second glyph for the same thing. The other five are chosen
+ * from the registry and are the softest part of this: `ShoePrints` for Progress
+ * in particular is the repo's journey glyph rather than an obvious "progress"
+ * mark. Swapping any of them is one line.
+ */
+export type CompassPage =
+  | 'overview'
+  | 'course'
+  | 'flashcards'
+  | 'exam-simulator'
+  | 'progress'
+  | 'resources'
+  | 'readiness'
+  | 'rubi-insights'
+
+const COMPASS_PAGES: {
+  id: CompassPage
+  label: string
+  icon: ComponentType<{ size?: number; 'aria-hidden'?: boolean }>
+}[] = [
+  { id: 'overview', label: 'Overview', icon: Layout },
+  { id: 'course', label: 'Course', icon: BookFull },
+  { id: 'flashcards', label: 'Flashcards', icon: Notebook },
+  { id: 'exam-simulator', label: 'Exam Simulator', icon: ClipboardList },
+  { id: 'progress', label: 'Progress', icon: ShoePrints },
+  { id: 'resources', label: 'Resources', icon: FileText },
+  { id: 'readiness', label: 'Readiness', icon: Gauge },
+  { id: 'rubi-insights', label: 'Rubi Insights', icon: RubiLogo },
+]
+
 export function CompassCoursePlayer({
   courseTitle,
   percentComplete,
@@ -93,7 +144,7 @@ export function CompassCoursePlayer({
    * Local state, not a route: the launcher has no URL of its own (it overlays
    * a section), so a `?view=` would be a parameter on the page underneath.
    */
-  const [view, setView] = useState<'course' | 'overview'>('course')
+  const [page, setPage] = useState<CompassPage>('course')
 
   const currentChapter =
     NY_LH_COURSE_CHAPTERS[NY_LH_CURRENT_CHAPTER_INDEX] ?? NY_LH_COURSE_CHAPTERS[0]
@@ -106,9 +157,8 @@ export function CompassCoursePlayer({
         completedLessons={completedLessons}
         totalLessons={totalLessons}
         onLeave={onClose}
-        view={view}
-        onShowOverview={() => setView('overview')}
-        onShowCourse={() => setView('course')}
+        page={page}
+        onSelectPage={setPage}
       />
       <div style={rightOfSidebarStyle}>
         {/* OVERVIEW IS A BLANK GROUND for now, by instruction — the nav stays,
@@ -117,8 +167,12 @@ export function CompassCoursePlayer({
             placeholder with a caption: the lo-fi block says "something is
             coming here", and this is a page being designed rather than one
             standing in for courseware we do not have. */}
-        {view === 'overview' ? (
-          <div style={overviewGroundStyle} aria-label="Course overview" role="region" />
+        {page !== 'course' ? (
+          <div
+            style={overviewGroundStyle}
+            role="region"
+            aria-label={`${COMPASS_PAGES.find((p) => p.id === page)?.label ?? ''} page`}
+          />
         ) : (
           <>
         <CompassTopBar
@@ -179,20 +233,19 @@ function CompassSidebar({
   completedLessons,
   totalLessons,
   onLeave,
-  view,
-  onShowOverview,
-  onShowCourse,
+  page,
+  onSelectPage,
 }: {
   courseTitle: string
   percentComplete: number
   completedLessons: number
   totalLessons: number
-  /** Home is the only crumb that LEAVES the player now. */
+  /** Home is the only crumb that LEAVES the player. */
   onLeave: () => void
-  view: 'course' | 'overview'
-  onShowOverview: () => void
-  onShowCourse: () => void
+  page: CompassPage
+  onSelectPage: (page: CompassPage) => void
 }) {
+  const activeLabel = COMPASS_PAGES.find((p) => p.id === page)?.label ?? ''
   return (
     <aside style={sidebarStyle} aria-label="Course contents">
       {/*
@@ -239,42 +292,17 @@ function CompassSidebar({
         <span aria-hidden style={crumbSlashStyle}>
           /
         </span>
-        {/* OVERVIEW NO LONGER LEAVES. It was a second way out while there was
-            nothing behind it; it is a page of this course now, so it switches
-            the view and the crumb after it becomes the link back. Exactly one
-            crumb carries `aria-current` at a time — the trail has to say which
-            page you are on, or it is decoration. */}
-        {view === 'overview' ? (
-          <span style={crumbHereStyle} aria-current="page">
-            Overview
-          </span>
-        ) : (
-          <button
-            type="button"
-            onClick={onShowOverview}
-            className="cre-link-action cre-cta-ink"
-            style={crumbButtonStyle}
-          >
-            Overview
-          </button>
-        )}
-        <span aria-hidden style={crumbSlashStyle}>
-          /
-        </span>
-        {view === 'overview' ? (
-          <button
-            type="button"
-            onClick={onShowCourse}
-            className="cre-link-action cre-cta-ink"
-            style={crumbButtonStyle}
-          >
-            Course
-          </button>
-        ) : (
-          <span style={crumbHereStyle} aria-current="page">
-            Course
-          </span>
-        )}
+        {/* THE TRAIL FOLLOWS THE NAV. It was a fixed "Home / Overview /
+            Course", which was right while those were the only two pages; with
+            eight it would read "Overview / Course" while the learner sat on
+            Flashcards. One crumb for wherever you are, marked `aria-current`,
+            and the nav below is what moves between them. */}
+        {/* NO `aria-current` HERE, and that is the correction rather than an
+            omission. The page rail below marks the active row with it, and for
+            one build both carried it — two elements claiming to be the current
+            page, which is worse than neither. The RAIL keeps it: it is the
+            actual navigation, and this trail is now derived from it. */}
+        <span style={crumbHereStyle}>{activeLabel}</span>
       </p>
 
       <div style={sidebarHeadStyle}>
@@ -307,9 +335,97 @@ function CompassSidebar({
         </div>
       </div>
 
-      <p style={sidebarEyebrowStyle}>Table of Contents</p>
+      {/* THE PAGE RAIL. Styled after the dashboard's own rows — icon, label, a
+          tinted active state with a solid left bar — because a learner arriving
+          from that rail should not have to learn a second way of reading "you
+          are here". The colours are the PRIMARY ramp rather than the
+          `--color-nav-*` tokens: those are tuned for the dark rail, and this
+          sidebar is `--color-surface-card`. */}
+      <nav aria-label="Course pages">
+        <ul style={pageNavListStyle}>
+          {COMPASS_PAGES.map((p) => (
+            <li key={p.id}>
+              <CompassNavRow
+                item={p}
+                active={p.id === page}
+                onSelect={() => onSelectPage(p.id)}
+              />
+            </li>
+          ))}
+        </ul>
+      </nav>
+
+      {/* THE CONTENTS TREE BELONGS TO THE COURSE PAGE, and shows only there.
+          Eight nav rows plus a lesson list plus its two expanders is more than
+          a 220px column holds, and the tree answers "where am I in the
+          coursework" — a question the other seven pages are not asking. */}
+      {page === 'course' ? (
+        <>
+      {/* "Course Content", not "Table of Contents" — 2026-09-23, the direct
+          ask. Note the reading column's placeholder caption says the same two
+          words; that one names the COURSEWARE that will render there, this one
+          names the list. They do not collide today (the placeholder only shows
+          on the Course view, beside this) but the two are one rename apart from
+          reading as the same thing. */}
+      <p style={sidebarEyebrowStyle}>Course Content</p>
       <CompassContents completedLessons={completedLessons} totalLessons={totalLessons} />
+        </>
+      ) : null}
     </aside>
+  )
+}
+
+/**
+ * One page row. The dashboard rail's shape — icon, label, a 3px left bar that
+ * is solid on the active row and transparent otherwise, so the text never
+ * shifts between states.
+ *
+ * ITS OWN COMPONENT because it needs local hover state, which is the same
+ * reason `RailRow` is one out in `PlatformSideNav`. Not a reuse of that one:
+ * it reads `--color-nav-*`, tuned for the dark rail, and would be invisible on
+ * this white sidebar.
+ */
+function CompassNavRow({
+  item,
+  active,
+  onSelect,
+}: {
+  item: (typeof COMPASS_PAGES)[number]
+  active: boolean
+  onSelect: () => void
+}) {
+  const [hovered, setHovered] = useState(false)
+  const Icon = item.icon
+  return (
+    <button
+      type="button"
+      onClick={onSelect}
+      onMouseEnter={() => setHovered(true)}
+      onMouseLeave={() => setHovered(false)}
+      aria-current={active ? 'page' : undefined}
+      style={{
+        ...pageNavRowStyle,
+        borderLeftColor: active ? 'var(--color-primary-500)' : 'transparent',
+        /* `backgroundColor`, NOT the `background` shorthand. jsdom's shorthand
+           parser throws on `color-mix()` — it fails while CLONING the node,
+           which is what testing-library's role queries do, so the symptom is an
+           unrelated-looking TypeError deep in a `getByRole` rather than
+           anything pointing here. The longhand skips that parser entirely, and
+           the dashboard rail's own active tint is set the same way. */
+        backgroundColor: active
+          ? 'color-mix(in srgb, var(--color-primary-500) 10%, transparent)'
+          : hovered
+            ? 'var(--color-neutral-75)'
+            : 'transparent',
+        color: active ? 'var(--color-primary-500)' : 'var(--color-text-secondary)',
+        fontWeight: active ? 700 : 600,
+      }}
+    >
+      <span style={{ display: 'inline-flex', color: 'inherit', flexShrink: 0 }}>
+        <Icon size={16} aria-hidden />
+      </span>
+      <span style={{ flex: 1, minWidth: 0 }}>{item.label}</span>
+    </button>
   )
 }
 
@@ -872,6 +988,36 @@ const tocThreadLineStyle: CSSProperties = {
   top: 20,
   bottom: -4,
   borderLeft: '1px dashed var(--color-neutral-300)',
+}
+
+const pageNavListStyle: CSSProperties = {
+  listStyle: 'none',
+  margin: '2px 0 0',
+  padding: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 2,
+}
+
+const pageNavRowStyle: CSSProperties = {
+  width: '100%',
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+  padding: '8px 10px',
+  /* The bar is ALWAYS 3px and only its colour changes — an active row that
+     grows a border shifts its own label, which is the flicker the dashboard
+     rail's own note records. */
+  borderWidth: '0 0 0 3px',
+  borderStyle: 'solid',
+  borderColor: 'transparent',
+  borderRadius: 'var(--radius-md)',
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  lineHeight: 1.2,
+  textAlign: 'left',
+  cursor: 'pointer',
+  transition: 'background 120ms, color 120ms',
 }
 
 const contentsStyle: CSSProperties = {

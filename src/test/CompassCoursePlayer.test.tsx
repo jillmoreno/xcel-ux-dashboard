@@ -239,36 +239,31 @@ describe('the only wired control is Close', () => {
   })
 
   it('renders the rest as static chrome — no stray buttons to press', () => {
-    /* STATIC BY INSTRUCTION. Notes, Demo, Rubi, search and settings render and
-       do nothing, so they are NOT buttons — a control that looks pressable and
-       is not is the thing a reviewer reports as broken.
+    /* STATIC BY INSTRUCTION. Notes, Ask Rubi, search and settings render and do
+       nothing, so they are NOT buttons — a control that looks pressable and is
+       not is the thing a reviewer reports as broken.
      
-       THREE, not one, as of 2026-09-22: the two breadcrumb crumbs became real
-       when they were asked to wear the house link-CTA. That is the same rule
-       in the same direction rather than an exception to it — they now LOOK
-       pressable, so they had to BE pressable. The list is asserted by name so
-       a fourth cannot appear quietly. */
+       THE COUNT KEEPS GROWING and that is the rule working, not eroding: Home,
+       the eight page rows, the two contents expanders and Close all DO
+       something. Asserted as "every button has a handler's effect we have
+       named" rather than a number — the invariant is that nothing pressable is
+       inert, not that the list stays short. */
     seed()
     renderShell(TESTING_URL)
     startCourse()
     const names = screen.getAllByRole('button').map(
-      (b) => b.getAttribute('aria-label') ?? b.textContent,
+      (b) => (b.getAttribute('aria-label') ?? b.textContent ?? '').trim(),
     )
-    /* FIVE, not three, since the contents tree became 42 lessons: the
-       completed run and the upcoming run each collapse behind a link CTA. Both
-       DO something, which is why they are buttons — the rule this test pins is
-       that anything LOOKING pressable is pressable, not that the count stays
-       small. Asserted by name so a sixth cannot appear quietly. */
-    /* IN DOCUMENT ORDER, which is the sidebar and then the toolbar — Close
-       is last because the top bar follows the nav in the DOM, not because it
-       is least important. */
-    expect(names).toEqual([
-      'Home',
-      'Overview',
-      expect.stringMatching(/Completed \d+ of \d+/),
-      expect.stringMatching(/Show all \d+ lessons/),
-      expect.stringMatching(/Close course player/),
-    ])
+    for (const p of ['Overview', 'Course', 'Flashcards', 'Exam Simulator', 'Progress', 'Resources', 'Readiness', 'Rubi Insights']) {
+      expect(names).toContain(p)
+    }
+    expect(names).toContain('Home')
+    expect(names.some((n) => /Completed \d+ of \d+/.test(n))).toBe(true)
+    expect(names.some((n) => /Close course player/.test(n))).toBe(true)
+    // The four inert bits of chrome are NOT among them.
+    for (const inert of ['Notes', 'Ask Rubi', 'Next', 'Previous']) {
+      expect(names).not.toContain(inert)
+    }
   })
 
   it('leaves via Home — the one crumb that still exits', () => {
@@ -296,8 +291,11 @@ describe('the only wired control is Close', () => {
     seed()
     renderShell(TESTING_URL)
     startCourse()
-    for (const name of ['Home', 'Overview']) {
-      const el = screen.getByRole('button', { name })
+    /* HOME ALONE since 2026-09-23. "Overview" was the second crumb; it is a
+       PAGE ROW in the course rail now and wears that rail's treatment instead,
+       so asserting the link-CTA on it would pin the wrong component. */
+    {
+      const el = screen.getByRole('button', { name: 'Home' })
       expect(el.className).toContain('cre-link-action')
       expect(el.className).toContain('cre-cta-ink')
       expect(el.style.color).toBe('')
@@ -308,13 +306,24 @@ describe('the only wired control is Close', () => {
        colour. 13/600 is measured off Home's "Customize Study Plan"; the weight
        is on the control and the size is inherited from the row, so both are
        asserted where they are actually set. */
-    const crumbRow = screen.getByText('Course').parentElement as HTMLElement
+    /* Found via the trail element. "Course" and "Overview" both appear twice
+       in the sidebar now — once in the trail, once as a rail row — so a
+       by-text lookup finds two. */
+    const crumbRow = screen.getByLabelText('Course contents').querySelector('p') as HTMLElement
     expect(crumbRow.style.fontSize).toBe('13px')
-    expect(screen.getByRole('button', { name: 'Overview' }).style.fontWeight).toBe('600')
-    // The crumb you are on shares the size and differs only in weight and ink.
-    expect(screen.getByText('Course').style.fontWeight).toBe('500')
-    // …and the crumb you are ON is not a link.
-    expect(screen.getByText('Course').tagName).toBe('SPAN')
+    expect(within(crumbRow).getByRole('button', { name: 'Home' }).style.fontWeight).toBe('600')
+    // The crumb naming the active page shares the size and differs in weight.
+    const here = crumbRow.querySelector('span:last-child') as HTMLElement
+    expect(here.style.fontWeight).toBe('500')
+    // …and the crumb you are ON is not a link. It names the ACTIVE PAGE now,
+    // so it reads "Course" only because Course is where the player opens.
+    /* The trail's own crumb is a plain span, not a link and not `aria-current`
+       — the rail below carries that. Found via the trail element rather than by
+       text, since "Course" now appears twice in the sidebar: once as the trail
+       and once as a rail row. */
+    const trail = screen.getByLabelText('Course contents').querySelector('p')!
+    expect(trail.querySelector('[aria-current="page"]')).toBeNull()
+    expect(trail.textContent).toContain('Course')
   })
 })
 
@@ -612,8 +621,9 @@ describe('the Overview view', () => {
    */
   const openOverview = () => {
     const sidebar = screen.getByLabelText('Course contents')
+    const nav = within(sidebar).getByRole('navigation', { name: 'Course pages' })
     act(() => {
-      fireEvent.click(within(sidebar).getByRole('button', { name: 'Overview' }))
+      fireEvent.click(within(nav).getByRole('button', { name: 'Overview' }))
     })
   }
 
@@ -622,14 +632,30 @@ describe('the Overview view', () => {
     const { container } = renderShell(TESTING_URL)
     startCourse()
     openOverview()
-    // The nav survives, contents and all.
+    /* The nav column survives — the page rail, the course title and its
+       progress. The CONTENTS TREE does not, and that is deliberate: it belongs
+       to the Course page and answers "where am I in the coursework", which is
+       not a question the other seven pages ask. Eight rail rows plus 42 lessons
+       plus two expanders is also more than a 220px column holds. */
     const sidebar = screen.getByLabelText('Course contents')
-    expect(sidebar.textContent).toContain('Completed 26 of 42')
-    // …and everything on the right is gone, replaced by the ground.
+    expect(sidebar.textContent).toContain('New York Life and Health Pre-licensing')
+    expect(within(sidebar).getByRole('navigation', { name: 'Course pages' })).toBeTruthy()
+    expect(sidebar.textContent).not.toContain('Completed 26 of 42')
+    expect(sidebar.textContent).not.toContain('Show all')
+    /* …and everything on the right is gone, replaced by the ground.
+     
+       ⚠ NOT asserted by searching the whole tree for "Course Content". That
+       string names TWO things since 2026-09-23 — the reading column's
+       placeholder caption AND the nav's own eyebrow — so a whole-container
+       check cannot tell "the placeholder is gone" from "the eyebrow is still
+       there", and it failed the moment the eyebrow was renamed. The reading
+       column is identified by its own landmark instead. */
     expect(screen.queryByLabelText('Chat with Rubi')).toBeNull()
     expect(container.textContent).not.toContain('Estimated Time to Complete')
-    expect(container.textContent).not.toContain('Course Content')
-    expect(screen.getByRole('region', { name: 'Course overview' })).toBeTruthy()
+    expect(container.querySelector('main')).toBeNull()
+    /* Named "<Page> page" since the rail landed — every one of the seven
+       unbuilt pages renders the same ground, so the label has to say WHICH. */
+    expect(screen.getByRole('region', { name: 'Overview page' })).toBeTruthy()
   })
 
   it('does NOT leave the player — Home is still the only exit', () => {
@@ -644,8 +670,15 @@ describe('the Overview view', () => {
     expect(screen.getByLabelText('Course contents')).toBeTruthy()
   })
 
-  it('moves `aria-current` to the crumb you are on, and only that one', () => {
-    // A trail that marks two pages, or none, is decoration.
+  it('marks exactly ONE element as the current page — the rail row', () => {
+    /* ⚠ A BUG THIS CAUGHT. For one build the breadcrumb's trailing span AND the
+       active rail row both carried `aria-current="page"` — two elements
+       claiming to be the current page, which is worse than neither. The RAIL
+       keeps it: it is the actual navigation, and the trail is derived from it.
+
+       Also pins that the trail FOLLOWS the rail. It used to read a fixed
+       "Home / Overview / Course", which would have said "Overview / Course"
+       while the learner sat on Flashcards. */
     seed()
     renderShell(TESTING_URL)
     startCourse()
@@ -653,13 +686,42 @@ describe('the Overview view', () => {
     const current = () =>
       [...sidebar.querySelectorAll('[aria-current="page"]')].map((el) => el.textContent?.trim())
     expect(current()).toEqual(['Course'])
-    openOverview()
-    expect(current()).toEqual(['Overview'])
-    // …and Course becomes the way back.
+    expect(sidebar.querySelector('p')?.textContent).toContain('Course')
+
     act(() => {
-      fireEvent.click(within(sidebar).getByRole('button', { name: 'Course' }))
+      fireEvent.click(within(sidebar).getByRole('button', { name: 'Flashcards' }))
     })
-    expect(current()).toEqual(['Course'])
-    expect(screen.getByLabelText('Chat with Rubi')).toBeTruthy()
+    expect(current()).toEqual(['Flashcards'])
+    expect(sidebar.querySelector('p')?.textContent).toContain('Flashcards')
+    // …and the right-hand side is the bare ground for it.
+    expect(screen.getByRole('region', { name: 'Flashcards page' })).toBeTruthy()
+    expect(screen.queryByLabelText('Chat with Rubi')).toBeNull()
+  })
+
+  it('gives all eight pages a row, and only Course is built', () => {
+    seed()
+    renderShell(TESTING_URL)
+    startCourse()
+    const sidebar = screen.getByLabelText('Course contents')
+    const nav = within(sidebar).getByRole('navigation', { name: 'Course pages' })
+    const labels = [...nav.querySelectorAll('button')].map((b) => b.textContent?.trim())
+    expect(labels).toEqual([
+      'Overview',
+      'Course',
+      'Flashcards',
+      'Exam Simulator',
+      'Progress',
+      'Resources',
+      'Readiness',
+      'Rubi Insights',
+    ])
+    // Course renders the player; every other page renders the ground.
+    for (const label of labels.filter((l) => l !== 'Course')) {
+      act(() => {
+        fireEvent.click(within(nav).getByRole('button', { name: label! }))
+      })
+      expect(screen.getByRole('region', { name: `${label} page` })).toBeTruthy()
+      expect(screen.queryByRole('main')).toBeNull()
+    }
   })
 })
