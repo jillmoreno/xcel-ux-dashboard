@@ -660,46 +660,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'learning-path',
   },
   {
-    key: 'dashboard-course-header',
-    group: 'Widgets',
-    label: 'Course header band',
-    description:
-      'A full-width header above the whole QE Focused overview: the course meta on one line, the course name as a large heading, two actions on the right, and a rule under it. OFF by default — the course name is already the heading of the Current Progress block a few lines below, and this deliberately says it twice, larger, as a page title. Turn it on to see the page read as a course rather than as a dashboard. Its action opens the requirements sheet. The reference had a second button labelled Syllabus (PDF), and the PDF XCEL actually links is a 7-day study PLAN, so it is not offered here rather than mislabelled.',
-    defaultEnabled: true,
-    /*
-     * `band` IS THE DEFAULT as of 2026-09-17 (the direct ask: "set this view as
-     * the default").
-     *
-     * It shipped as `none`, and the stated reason was that the band says the
-     * course name TWICE — once as the page title and again as the block's own
-     * heading — which made it a question to look at rather than an answer to
-     * ship. That reason is GONE: `hideHeader` now drops the block's entire
-     * header cluster while the band is on, so the name, the meta and the
-     * progress bar appear once each.
-     *
-     * The flip also settles a real gap. Target Date and Time Remaining left the
-     * block with its KPI row, and the band's stat line is the only thing that
-     * states them — so at `none` the page had no target date and no countdown
-     * anywhere, which is what `the page states its countdown ONLY via the
-     * header band` was pinning as a known consequence.
-     */
-    defaultVariant: 'band',
-    variants: [
-      {
-        value: 'none',
-        label: 'None — no page header',
-        description: 'No change. The block\u2019s own title is the only course name on the page.',
-      },
-      {
-        value: 'band',
-        label: 'Header band',
-        description:
-          'Meta line, large course name, two right-aligned actions, and a rule under the lot — above everything else on the page.',
-      },
-    ],
-    page: 'dashboard-rebrand',
-  },
-  {
     key: 'dashboard-journey-style',
     group: 'Widgets',
     label: 'Study Journey — rail style',
@@ -738,25 +698,41 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
-    key: 'dashboard-clp-stats',
+    key: 'dashboard-course-header',
     group: 'Widgets',
-    label: 'Current Progress — stats treatment',
+    label: 'Course header band',
     description:
-      'How the Target Date / Time Remaining / Completed cells and the status strip below them are treated. Default is bare cells on the page grey, divided by vertical rules, with a status-tinted strip under them. "Stat card" gathers the three cells and the status onto one white card with a hairline border and a rule between them, gives each cell a sub-label under its value, and shows Completed as a two-tone fraction. A SEPARATE axis from `dashboard-clp-style`, so the header treatment and the stats treatment can be combined.',
+      'A full-width header above the whole QE Focused overview: the course meta on one line, the course name as a large heading, two actions on the right, and a rule under it. OFF by default — the course name is already the heading of the Current Progress block a few lines below, and this deliberately says it twice, larger, as a page title. Turn it on to see the page read as a course rather than as a dashboard. Its action opens the requirements sheet. The reference had a second button labelled Syllabus (PDF), and the PDF XCEL actually links is a 7-day study PLAN, so it is not offered here rather than mislabelled.',
     defaultEnabled: true,
-    defaultVariant: 'default',
+    /*
+     * `band` IS THE DEFAULT as of 2026-09-17 (the direct ask: "set this view as
+     * the default").
+     *
+     * It shipped as `none`, and the stated reason was that the band says the
+     * course name TWICE — once as the page title and again as the block's own
+     * heading — which made it a question to look at rather than an answer to
+     * ship. That reason is GONE: `hideHeader` now drops the block's entire
+     * header cluster while the band is on, so the name, the meta and the
+     * progress bar appear once each.
+     *
+     * The flip also settles a real gap. Target Date and Time Remaining left the
+     * block with its KPI row, and the band's stat line is the only thing that
+     * states them — so at `none` the page had no target date and no countdown
+     * anywhere, which is what `the page states its countdown ONLY via the
+     * header band` was pinning as a known consequence.
+     */
+    defaultVariant: 'band',
     variants: [
       {
-        value: 'default',
-        label: 'Default — bare cells',
-        description:
-          'No change. Three bare cells divided by vertical rules, then the status-tinted strip.',
+        value: 'none',
+        label: 'None — no page header',
+        description: 'No change. The block\u2019s own title is the only course name on the page.',
       },
       {
-        value: 'stat-card',
-        label: 'Stat card',
+        value: 'band',
+        label: 'Header band',
         description:
-          'One white card holds the three cells and the status, with a hairline border and a rule between them. Each cell gains a sub-label under its value, the Completed figure reads as a two-tone fraction, and the status pill is uppercase on an untinted row.',
+          'Meta line, large course name, two right-aligned actions, and a rule under the lot — above everything else on the page.',
       },
     ],
     page: 'dashboard-rebrand',

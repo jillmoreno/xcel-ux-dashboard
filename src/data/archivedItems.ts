@@ -56,6 +56,19 @@ export type ArchivedItem = {
 
 export const ARCHIVED_ITEMS: ArchivedItem[] = [
   {
+    id: 'clp-stats-stat-card',
+    name: 'Current Progress — the `stat-card` treatment',
+    what: 'The three KPI cells and the status strip gathered onto ONE white card: a sub-label under each cell ("Your exam target date", "~1.5 hrs/day suggested pace", "lessons of this course"), Completed printed as a two-tone fraction with the denominator dimmed, a hairline rule between the numbers and the status, and the strip rendered `bare` inside the card rather than tinted.',
+    location:
+      'GIT HISTORY ONLY — branches inside `src/components/membership/v5/LearnerFocusedBand.tsx` keyed off one `statCard` boolean, not a separate component. `git log -S "kpiSubLabels"` finds the whole treatment.',
+    flag: 'dashboard-clp-stats (retired)',
+    dateRemoved: '2026-09-22',
+    reason:
+      'Default — three bare cells divided by vertical rules — won. It was already the committed default, so the flag offered one live answer and one the project had not chosen.',
+    restoreNote:
+      'Re-add `dashboard-clp-stats` to `FEATURE_FLAGS` (variants `default` / `stat-card`, `defaultVariant: \'default\'`) and to the `FeatureFlagPanel.tsx` scope. In `LearnerFocusedBand.tsx` restore `const clpStatsVariant = useFeatureFlag(\'dashboard-clp-stats\').variant ?? \'default\'` and `const statCard = onPage && clpStatsVariant === \'stat-card\'` — the hook call must stay UNCONDITIONAL — then re-gate SIX sites that were flattened: `paceTiles` (had `&& !statCard`), the wrapper `<div>` above the KPI grid (was the white card`s background/border/padding), the grid`s `gap` and `marginTop`, the Completed cell`s two-tone fraction, the hairline rule under the numbers, and `StatusStrip``s `marginTop` + `bare`. ALSO restore `kpiSubLabels` and the two locals it alone used — `hoursPerDay` and `daysLeft` — plus the `sub=` prop on all three `KpiDark` cells. NOT restored by any of that: `hoursPerDay` also fed the retired `rate` pacing treatment (see `pacing-treatment-exploration`), so the derivation comes back here but its other consumer does not.',
+  },
+  {
     id: 'pacing-treatment-exploration',
     name: 'Study Pace treatments — Rate, Runway, Balance',
     what: 'Three of the five answers the Testing version offered to "am I pacing to finish in time", each a WHOLE answer rather than a restyle of one. Rate stated a suggested ~hrs/day and the date it finished by. Runway stated ~units a week over a segmented strip — one segment per remaining WEEK, the last part-filled — with "N lessons left · N wks to go" beneath. Balance stated the two remaining figures (units left, days left) in bare cells split by a vertical rule and derived nothing from them.',

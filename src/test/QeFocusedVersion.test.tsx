@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
@@ -2366,14 +2366,20 @@ describe('the Study Journey rail style flag', () => {
   })
 })
 
-describe('the CLP stats treatment flag', () => {
-  function seedStats(variant: string) {
-    window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
-    window.localStorage.setItem(
-      'cgp.featureFlags',
-      JSON.stringify({ 'dashboard-clp-stats': { enabled: true, variant } }),
-    )
-  }
+describe('the CLP stats treatment', () => {
+  /*
+   * RETIRED 2026-09-22. `dashboard-clp-stats` was a second axis beside the
+   * block style: `stat-card` gathered the three KPI cells and the status onto
+   * one white card, with a sub-label under each cell, Completed as a two-tone
+   * fraction, and the strip rendered `bare` inside the card. `default` — three
+   * bare cells split by vertical rules — was already the committed default, and
+   * won.
+   *
+   * The four tests here described the card. They are gone with it; what is kept
+   * is the shape of the page that survived, asserted POSITIVELY rather than as
+   * "the card is absent", so this still fails if the treatment comes back
+   * half-wired.
+   */
   const statCard = (c: HTMLElement) =>
     Array.from(c.querySelectorAll<HTMLElement>('div')).find(
       (d) =>
@@ -2381,62 +2387,51 @@ describe('the CLP stats treatment flag', () => {
         /Target Date/i.test(d.textContent ?? ''),
     )
 
-  it('is its own axis, so it combines with the block style', () => {
-    const def = FEATURE_FLAGS.find((f) => f.key === 'dashboard-clp-stats')!
-    expect(def.page).toBe('dashboard-rebrand')
-    expect(def.defaultVariant).toBe('default')
-    expect(def.variants?.map((v) => v.value)).toEqual(['default', 'stat-card'])
-    expect(flagScopeForPath('/dashboard-rebrand')).toContain('dashboard-clp-stats')
-    // Two separate flags, not one list of combinations.
+  it('has no flag left, and leaves the block-style axis alone', () => {
+    // The two were separate flags rather than one list of combinations, so
+    // retiring this one must not have taken the other with it.
+    expect(FEATURE_FLAGS.find((f) => f.key === 'dashboard-clp-stats')).toBeUndefined()
+    expect(flagScopeForPath('/dashboard-rebrand')).not.toContain('dashboard-clp-stats')
     expect(FEATURE_FLAGS.find((f) => f.key === 'dashboard-clp-style')).toBeTruthy()
+    expect(flagScopeForPath('/dashboard-rebrand')).toContain('dashboard-clp-style')
   })
 
-  it('changes nothing at the default', () => {
+  it('puts nothing on a white card', () => {
+    /* The card is the whole of what `stat-card` did, so its absence is the
+       assertion — checked at the committed default AND on the classic layout,
+       because the two render different things into this region and the card
+       could only ever have appeared in one of them.
+
+       NOT asserted here: that the three KPI cells render. They do not, on
+       either layout — the square-tiles change replaced that row, and the
+       header band states the same facts. A test claiming to find "Time
+       Remaining" passes by matching the Study Journey instead, which is how a
+       cell-shape test ends up testing nothing. */
     const { container } = renderShell(QE_URL)
     expect(statCard(container)).toBeUndefined()
+    cleanup()
+    seedClassic()
+    const classic = renderShell(QE_URL)
+    expect(statCard(classic.container)).toBeUndefined()
   })
 
-  it('gathers the cells and the status onto one card, with sub-labels', () => {
-    seedStats('stat-card')
-    const { container } = renderShell(QE_URL)
-    const card = statCard(container)!
-    expect(card).toBeTruthy()
-    // The status comes INSIDE the card, under its rule.
-    expect(card.textContent).toMatch(/ON TRACK/)
-    // Each cell says what its number is.
-    expect(card.textContent).toMatch(/Your exam target date/)
-    expect(card.textContent).toMatch(/Lessons of this course/)
-    // Two-tone fraction: the unit moved to the sub-label, so the value is bare.
-    expect(card.textContent).toMatch(/26\s*\/\s*42/)
-  })
+  it('carries no sub-labels under the cells', () => {
+    /* ⚠ A DERIVATION WENT WITH THIS, and it is worth knowing rather than
+       discovering. The "~N hrs/day suggested pace" sub-label was the last home
+       of `hoursPerDay` — the resume course's real credit hours over the days
+       left — after the Study Pace tile stopped printing it on 2026-09-17 and
+       the `rate` pacing treatment was retired earlier today.
 
-  it('DERIVES the pace line rather than authoring it', () => {
-    // 40 credit hours (the state's real figure, carried on the resume course)
-    // over 27 days left = ~1.5/day. The reference mock also carried "You are
-    // currently pacing 4 days ahead of schedule"; nothing in the fixtures knows
-    // a schedule to be ahead of, so that claim is NOT reproduced.
-    seedStats('stat-card')
-    const { container } = renderShell(QE_URL)
-    const card = statCard(container)!
-    expect(card.textContent).toMatch(/~1\.5 hrs\/day suggested pace/)
-    expect(card.textContent).not.toMatch(/days ahead of schedule|velocity/)
-  })
+       It is NOT the same figure the presets card states. That card derives its
+       evening from `src/lib/studyPace.ts`, against the access window or a
+       booked exam; this one was credit-hours over calendar days. The old
+       derivation is gone from the product, not relocated.
 
-  it('drops the strip TINT inside the card, keeping the pill', () => {
-    // A tinted row inside a white card reads as a second card, and the card is
-    // already the surface. The pill keeps its tint, which is what carries the
-    // state — the wash never did (~1.02:1, decoration, per its own note).
-    seedStats('stat-card')
+       `archivedItems.ts` row `clp-stats-stat-card` carries the restore. */
+    seedClassic()
     const { container } = renderShell(QE_URL)
-    const card = statCard(container)!
-    const strip = Array.from(card.querySelectorAll<HTMLElement>('div')).find((d) =>
-      /On pace|on pace|momentum/.test(d.textContent ?? ''),
-    )!
-    expect(strip.style.background).toBe('')
-    const pill = Array.from(card.querySelectorAll<HTMLElement>('span')).find((el) =>
-      /ON TRACK/.test(el.textContent ?? ''),
-    )!
-    expect(pill.style.background).not.toBe('')
+    expect(container.textContent).not.toMatch(/hrs\/day suggested pace/i)
+    expect(container.textContent).not.toMatch(/Your exam target date/i)
   })
 })
 
@@ -2983,30 +2978,6 @@ describe('the KPI cells are bare, divided by rules', () => {
    * The navy card's TILED cells are untouched, and the test below still pins
    * them.
    */
-  it('keeps the derived PACE reachable, on the stat-card variant', () => {
-    /*
-     * The Study Pace tile printed "~1.5 hrs/day · Suggested pace" until
-     * 2026-09-17, when it was replaced with lo-fi lines. That figure is the one
-     * DERIVED number on the version — the resume course's real 40 credit hours
-     * over the days left — so losing it entirely would be losing the only thing
-     * here that is computed from published data rather than chosen.
-     *
-     * It is not lost: `kpiSubLabels` still feeds it to `dashboard-clp-stats`'s
-     * `stat-card` treatment. Pinned because NOTHING pinned it before — removing
-     * it from the tile broke no test, which is exactly how a derivation gets
-     * quietly deleted later.
-     */
-    window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
-    window.localStorage.setItem(
-      'cgp.featureFlags',
-      JSON.stringify({ 'dashboard-clp-stats': { enabled: true, variant: 'stat-card' } }),
-    )
-    const { container } = renderShell(QE_URL)
-    expect(container.textContent).toMatch(/hrs\/day suggested pace/i)
-    // …and the tile it left does NOT print it twice.
-    expect(container.textContent).not.toMatch(/Suggested pace/)
-  })
-
   it('shows lo-fi lines in the Study Pace tile, matching Readiness', () => {
     // The same primitive in both, so the pair reads as one unbuilt set rather
     // than two placeholder treatments a few pixels apart.

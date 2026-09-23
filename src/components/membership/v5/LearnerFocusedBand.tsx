@@ -541,17 +541,13 @@ export function LearnerFocusedBand({
    */
   const clpStyle = useFeatureFlag('dashboard-clp-style').variant ?? 'default'
   /*
-   * STATS TREATMENT — `dashboard-clp-stats`, a SEPARATE axis from the block
-   * style above, so the two combine. `stat-card` gathers the three KPI cells
-   * and the status onto one white card, gives each cell a sub-label, and prints
-   * Completed as a two-tone fraction.
+   * STATS TREATMENT — settled 2026-09-22. `dashboard-clp-stats` offered a
+   * second axis beside the block style: `stat-card` gathered the three KPI
+   * cells and the status onto one white card, with a sub-label under each cell
+   * and Completed as a two-tone fraction. `default` — three bare cells split by
+   * vertical rules — won, and the flag was retired. See `archivedItems.ts`, row
+   * `clp-stats-stat-card`.
    */
-  // The hook is called UNCONDITIONALLY and the surface check applied after.
-  // `onPage && useFeatureFlag(...)` short-circuits, which makes it a
-  // conditional hook call — eslint's `rules-of-hooks` catches it, and it is the
-  // second time this exact shape has appeared in this file (see `darkGround`).
-  const clpStatsVariant = useFeatureFlag('dashboard-clp-stats').variant ?? 'default'
-  const statCard = onPage && clpStatsVariant === 'stat-card'
   /*
    * PACING TREATMENT — no longer a flag. `dashboard-pacing-style` offered five
    * answers on the Testing arrangement; `presets` won on 2026-09-22 and the
@@ -590,7 +586,7 @@ export function LearnerFocusedBand({
      `paceOnly` arrangement Readiness is already dropped, so the row would
      render as an empty 18px gap above the Jump Back In card. Both halves gone
      means no row. */
-  const paceTiles = onPage && !statCard && !(renewalReady && paceOnly)
+  const paceTiles = onPage && !(renewalReady && paceOnly)
   const clpBigNumber = onPage && barInHeader && clpStyle === 'big-number'
   const clpNavy = onPage && barInHeader && clpStyle === 'navy'
   // Ink for the navy card. The page values are near-black and would vanish on
@@ -699,30 +695,6 @@ export function LearnerFocusedBand({
   const unit = path.unitLabel ?? 'hrs'
   const unitLong = unit === 'hrs' ? 'Hours' : unit.charAt(0).toUpperCase() + unit.slice(1)
   const meta = [path.category, ...(path.state ? [path.state] : []), `${path.hours} ${unitLong}`]
-  /*
-   * SUB-LABELS for the stat card. Each one says what its number IS, which is
-   * the whole reason the treatment has room for a third line.
-   *
-   * The pace figure is DERIVED, not authored: the state's credit-hour
-   * requirement over the days left. Everything else here is a label rather than
-   * a claim — deliberately, because the reference mock also carried "You are
-   * currently pacing 4 days ahead of schedule", and there is nothing in the
-   * fixtures that knows a schedule to be ahead of. Inventing it would be the
-   * move this version has refused all the way through.
-   */
-  const daysLeft = Math.max(1, Math.round(weeksLeft * 7))
-  // From the RESUME COURSE's own credit hours, not a constant imported into a
-  // generic band: the path measures lessons now, and the hours figure that
-  // still exists is the course's (New York's real 40). Omitted when there is no
-  // course to read it from, rather than guessed.
-  const hoursPerDay = resume?.hours ? resume.hours / daysLeft : null
-  const kpiSubLabels = statCard
-    ? {
-        deadline: 'Your exam target date',
-        time: hoursPerDay ? `~${hoursPerDay.toFixed(1)} hrs/day suggested pace` : null,
-        completed: `${unitLong} of this course`,
-      }
-    : null
   /* The status pill and its message. IDENTICAL in every pacing treatment and
      therefore defined once — the comparison is meant to be about the pacing
      figure, and four hand-copied status clusters is how one of them ends up a
@@ -1508,24 +1480,12 @@ export function LearnerFocusedBand({
             )}
           </div>
         ) : (
-        <div
-          style={
-            statCard
-              ? {
-                  background: 'var(--color-surface-card)',
-                  border: '1px solid var(--color-border-subtle)',
-                  borderRadius: 'var(--radius-lg)',
-                  padding: '18px 20px',
-                  marginTop: 18,
-                }
-              : undefined
-          }
-        >
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: onPage && !statCard ? 0 : 10, marginTop: statCard ? 0 : 18 }}>
-          <KpiDark bare={onPage} bg={cTileBg} line={cLine} ink={cText} captionInk={cMuted} caption={path.deadlineLabel ?? 'Deadline'} icon={<CalendarDay size={13} />} sub={kpiSubLabels?.deadline}>
+        <div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, minmax(0, 1fr))', gap: onPage ? 0 : 10, marginTop: 18 }}>
+          <KpiDark bare={onPage} bg={cTileBg} line={cLine} ink={cText} captionInk={cMuted} caption={path.deadlineLabel ?? 'Deadline'} icon={<CalendarDay size={13} />}>
             {deadline}
           </KpiDark>
-          <KpiDark bare={onPage} rule={onPage ? cRule : undefined} bg={cTileBg} line={cLine} ink={cText} captionInk={cMuted} caption="Time Remaining" icon={<Clock size={13} />} sub={kpiSubLabels?.time}>
+          <KpiDark bare={onPage} rule={onPage ? cRule : undefined} bg={cTileBg} line={cLine} ink={cText} captionInk={cMuted} caption="Time Remaining" icon={<Clock size={13} />}>
             {/* Formatted by the SHARED `timeRemaining`, not `${weeksLeft} wks`
                 — under 30 days it drops to a day countdown ("27 days"), which
                 is what the detail sheet has always shown. The two disagreed:
@@ -1542,24 +1502,11 @@ export function LearnerFocusedBand({
               ))
             )}
           </KpiDark>
-          <KpiDark bare={onPage} rule={onPage ? cRule : undefined} bg={cTileBg} line={cLine} ink={cText} captionInk={cMuted} caption="Completed" icon={<CircleCheck size={13} />} sub={kpiSubLabels?.completed}>
-            {/* On the stat card the unit moves to the sub-label, so the value
-                is a bare two-tone fraction — the denominator dimmed, because
-                "26 of 42" is one fact and the 42 is the quieter half of it. */}
+          <KpiDark bare={onPage} rule={onPage ? cRule : undefined} bg={cTileBg} line={cLine} ink={cText} captionInk={cMuted} caption="Completed" icon={<CircleCheck size={13} />}>
             <span style={{ color: cAccent }}>{totalCompleted}</span>{' '}
-            {statCard ? (
-              <span style={{ color: cMuted }}>/ {totalRequired || path.hours}</span>
-            ) : (
-              <>/ {unitCount(totalRequired || path.hours, unit)}</>
-            )}
+            <>/ {unitCount(totalRequired || path.hours, unit)}</>
           </KpiDark>
         </div>
-        {/* The rule between the numbers and the status — the card's own
-            divider, not a section break. */}
-        {statCard ? (
-          <div aria-hidden style={{ height: 1, background: cLine, margin: '16px 0' }} />
-        ) : null}
-
         {/* Full-width Status band */}
         {/* STATUS.
             On the page surface this is the detail panel's OWN `StatusStrip` —
@@ -1585,9 +1532,8 @@ export function LearnerFocusedBand({
           // it needs no top margin of its own and no tint — the card is already
           // the surface, and a tinted row inside a white card reads as a second
           // card. `bare` on `StatusStrip` is what drops the wash.
-          <div style={{ marginTop: statCard ? 0 : 14 }}>
+          <div style={{ marginTop: 14 }}>
             <StatusStrip
-              bare={statCard}
               homeStatus={homeStatus}
               // `statusTreatment` returns the LIGHT tone here (no `onDark`), and
               // its keys differ from the panel's `StatusInfo` by two names —

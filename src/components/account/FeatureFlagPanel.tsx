@@ -77,14 +77,13 @@ const REBRAND_FLAGS = [
   // Free Content promo bands (blog + podcast) under the upsell band.
   'dashboard-free-content-bands',
   // Full-width course header above the overview — off by default.
-  'dashboard-course-header',
   // Study Journey rail treatment — compact rail / syllabus card.
   'dashboard-journey-style',
   // Current Course Progress stats treatment — bare cells / stat card. A
   // separate axis from the block style, so the two combine.
-  'dashboard-clp-stats',
   // Current Course Progress block treatment — light / big-number / navy card.
   // Variant-only; a treatment rather than a different set of facts.
+  'dashboard-course-header',
   'dashboard-clp-style',
   // Pacing tile treatment on the Testing version — lo-fi / rate / runway /
   // balance. Variant-only, and inert on every other version, where the tile is
