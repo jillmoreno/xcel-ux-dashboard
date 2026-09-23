@@ -58,7 +58,8 @@ export const CAT_ELECTIVE_COLOR = 'var(--color-category-elective)'
 // Category palette + normalizer live in progressGaugeUtil (a non-component
 // module) so this file only exports components (react-refresh). Consumers import
 // categoryColorFor / resolvePathCategories / CATEGORY_PALETTE from there.
-import { categoryColorFor } from './progressGaugeUtil'
+import { categoryColorFor, CATEGORY_PALETTE } from './progressGaugeUtil'
+import type { JourneyStepRow } from './studyJourneyUtil'
 import { unitCount } from '@/utils/unitLabel'
 
 /** Themed gauge colors (dark-band reframe). Defaults: neutral track + primary
@@ -403,6 +404,127 @@ function CategoryBar({
       <div style={{ height: CATEGORY_BAR_HEIGHT, borderRadius: 'var(--radius-pill)', background: trackColor, overflow: 'hidden' }}>
         <div style={{ width: `${pct}%`, height: '100%', borderRadius: 'var(--radius-pill)', background: color }} />
       </div>
+    </div>
+  )
+}
+
+/**
+ * THE STEP 1 BREAKDOWN — the rows under the Details panel's donut on a lessons
+ * path. `CategoryBar`'s shape, with two differences the journey forces.
+ *
+ * A ROW MAY HAVE NO DENOMINATOR. Attestation & Affidavit and Survey &
+ * Certificate are single acts and nothing publishes a count for them, so they
+ * print the journey's own status words ("After your coursework") where the
+ * others print "0 / 23 lessons". They still get a bar, empty or full, so the
+ * column reads as one set rather than four bars and two captions.
+ *
+ * A ROW MAY BE BLOCKED, and says so in the same words the journey rail uses —
+ * not "Not started", which invites a click at a step the product will not let
+ * you take. The label drops to the tertiary ink there, matching the rail's own
+ * treatment of a blocked stop.
+ *
+ * NOT `CategoryBars`. That one exists to decompose the donut and its rows sum
+ * to the centre; these deliberately do not — see `journeyStepRows`. Sharing the
+ * component would have made the difference invisible at both call sites.
+ */
+export function JourneyStepBars({
+  rows,
+  track,
+}: {
+  rows: JourneyStepRow[]
+  /** Track override — see `CategoryBars`; the same 1.08:1 trap applies. */
+  track?: string
+}) {
+  const trackColor = track ?? 'var(--color-neutral-100)'
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 12, minWidth: 0 }}>
+      {rows.map((row) => {
+        const color = CATEGORY_PALETTE[row.colorIndex % CATEGORY_PALETTE.length]
+        const pct =
+          row.count && row.count > 0 ? Math.min(100, Math.round((row.done / row.count) * 100)) : 0
+        return (
+          <div key={row.key} style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: 10,
+                fontFamily: 'var(--font-body)',
+                fontSize: 13,
+              }}
+            >
+              <span
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: 8,
+                  minWidth: 0,
+                  fontWeight: 600,
+                  color: row.blocked ? 'var(--color-text-tertiary)' : 'var(--color-text-primary)',
+                }}
+              >
+                <span
+                  aria-hidden
+                  style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: '50%',
+                    background: color,
+                    flexShrink: 0,
+                    /* A BLOCKED ROW'S DOT IS HOLLOW, the same distinction the
+                       journey rail draws with a dashed ring: colour alone would
+                       carry "reached / not reached" and 1.4.1 says it may not. */
+                    ...(row.blocked ? { background: 'transparent', border: `2px solid ${color}` } : null),
+                  }}
+                />
+                <span style={{ minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                  {row.label}
+                </span>
+              </span>
+              <span
+                style={{
+                  color: 'var(--color-text-secondary)',
+                  fontWeight: 600,
+                  flexShrink: 0,
+                  /* The status words are a SENTENCE, not a reading — lighter and
+                     unemphasised, so a column mixing the two does not read as
+                     six numbers of which two are strange. */
+                  ...(row.count == null
+                    ? { fontWeight: 400, color: 'var(--color-text-tertiary)' }
+                    : null),
+                }}
+              >
+                {row.count == null ? (
+                  row.status
+                ) : (
+                  <>
+                    <b style={{ color: 'var(--color-text-primary)' }}>{row.done}</b>{' '}
+                    / {unitCount(row.count, row.unit)}
+                  </>
+                )}
+              </span>
+            </div>
+            <div
+              style={{
+                height: CATEGORY_BAR_HEIGHT,
+                borderRadius: 'var(--radius-pill)',
+                background: trackColor,
+                overflow: 'hidden',
+              }}
+            >
+              <div
+                style={{
+                  width: `${row.count == null ? (row.blocked ? 0 : 100) : pct}%`,
+                  height: '100%',
+                  borderRadius: 'var(--radius-pill)',
+                  background: color,
+                }}
+              />
+            </div>
+          </div>
+        )
+      })}
     </div>
   )
 }

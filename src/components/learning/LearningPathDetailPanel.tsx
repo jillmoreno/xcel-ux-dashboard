@@ -31,7 +31,8 @@ import { XCEL_NY_PRODUCER_PATH_ID } from '@/data/studyCalendarFixtures'
 import type { CourseCardData } from '@/components/courses/CourseCard'
 import { HOME_STATUS_META, STATUS_STRIP_BG, statusLabel, statusMessageFor, timeRemaining, type HomeStatus } from './learningPathsHomeUtil'
 import { DISCOVERY_COPY } from '@/components/membership/v5/JumpBackInDiscoveryEmpty'
-import { CategoryBars, ProgressDonut } from './progressGauge'
+import { CategoryBars, JourneyStepBars, ProgressDonut } from './progressGauge'
+import { journeyStepRows } from './studyJourneyUtil'
 import { resolvePathCategories } from './progressGaugeUtil'
 
 /**
@@ -165,6 +166,26 @@ export function LearningPathDetailPanelContent({
   const totalCompleted = cats.reduce((s, c) => s + c.completed, 0)
   const percent = totalRequired > 0 ? Math.round((totalCompleted / totalRequired) * 100) : path.progressPct
   const hasBreakdown = cats.length >= 2
+  /*
+   * THE STEP 1 BREAKDOWN, for a path the journey covers — 2026-09-23, the
+   * direct ask: "for pre-licensing, this type of data should be appearing in
+   * the Details view, the lines and colors would be based on the items in the
+   * Step 1 container."
+   *
+   * WHY THIS PANEL HAD NOTHING. `resolvePathCategories` returns ONE category
+   * for pre-licensing (the 42 lessons), so `hasBreakdown` is false and the
+   * donut has rendered alone since the path was authored — while the CE path
+   * two clicks away shows a segmented gauge and three labelled bars. The data
+   * for a breakdown does exist; it just lives on the JOURNEY rather than in the
+   * requirement categories.
+   *
+   * ONLY WHEN THE CATEGORIES CANNOT ALREADY DO IT. A path with two or more
+   * requirement categories keeps `CategoryBars` — those rows DO sum to the
+   * donut, which is the stronger relationship, and showing both would put two
+   * breakdowns of one path under one gauge.
+   */
+  const stepRows = hasBreakdown ? [] : journeyStepRows(path)
+  const hasStepRows = stepRows.length > 1
   // Education-type-aware labels (CE defaults when the path omits them).
   const mandatoryLabel = path.mandatoryLabel ?? 'Mandatory'
   const electiveLabel = path.electiveLabel ?? 'Elective'
@@ -402,6 +423,20 @@ export function LearningPathDetailPanelContent({
                 </div>
               )}
             </div>
+
+            {/* STEP 1's OWN ITEMS, on a path whose requirement categories are a
+                single row. BELOW the donut rather than beside it, unlike
+                `CategoryBars`: there are six of these against the CE path's
+                three, and six rows in the ~180px left of a 104px gauge wraps
+                every label. Full width also stops them reading as a
+                decomposition of the arc they sit under, which they are not —
+                see `journeyStepRows`. */}
+            {hasStepRows && (
+              <div style={{ marginTop: 16 }}>
+                <p style={stepRowsEyebrowStyle}>Step 1 · Complete Coursework</p>
+                <JourneyStepBars rows={stepRows} />
+              </div>
+            )}
 
             {/* KPI row — Deadline / Time Remaining / Completed (Figma 2:4655). */}
             <div style={statRowStyle}>
@@ -1073,6 +1108,19 @@ const tabsRowStyle: CSSProperties = {
   borderBottom: '1px solid var(--color-border-subtle)',
 }
 // KPI row — Deadline / Time Remaining / Completed (Figma 2:4655).
+/** The Step 1 rows' heading. The journey's own eyebrow words, so a reviewer
+ *  moving between the Details panel and the Study Journey card recognises the
+ *  same container rather than reading two lists of similar names. */
+const stepRowsEyebrowStyle: CSSProperties = {
+  margin: '0 0 10px',
+  fontFamily: 'var(--font-body)',
+  fontSize: 10,
+  fontWeight: 600,
+  letterSpacing: '0.16em',
+  textTransform: 'uppercase',
+  color: 'var(--color-text-tertiary)',
+}
+
 const statRowStyle: CSSProperties = {
   display: 'flex',
   gap: 12,

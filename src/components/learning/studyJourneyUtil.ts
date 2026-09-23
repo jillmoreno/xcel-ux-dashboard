@@ -502,3 +502,116 @@ export function metaWords(stop: JourneyStop, unit = 'hrs'): string {
     .filter(Boolean)
     .join(' · ')
 }
+
+/**
+ * ONE STEP-1 ITEM AS A GAUGE ROW — what the Details panel draws under the donut
+ * for a lessons path.
+ *
+ * `count` is `null` for the two stops nobody publishes a number for
+ * (Attestation & Affidavit, Survey & Certificate). They are single ACTS rather
+ * than a quantity of anything, and inventing a "1" so every row could carry a
+ * fraction is the move `nyProducerRequirements` exists to stop — it would read
+ * as a sourced figure. Those rows print `status` instead.
+ */
+export type JourneyStepRow = {
+  key: string
+  label: string
+  /** Palette slot, assigned by position — see `journeyStepRows`. */
+  colorIndex: number
+  /** Published count for the step, or null when there is none. */
+  count: number | null
+  /**
+   * What that count counts. NOT the path's unit: only two of these six are in
+   * lessons. The first build printed "0 / 1 lesson" against the course exam and
+   * "0 / 3 lessons" against the simulators, because the row took
+   * `path.unitLabel` like `CategoryBars` does — right for a path measured in one
+   * thing, wrong for a container holding four different ones.
+   */
+  unit: string
+  /** How many of `count` are done. Always 0 or `count` today; see below. */
+  done: number
+  /** The words the journey rail prints for this stop. */
+  status: string
+  blocked: boolean
+}
+
+/**
+ * The Step 1 container as gauge rows — 2026-09-23, the direct ask: "for
+ * pre-licensing, this type of data should be appearing in the Details view, the
+ * lines and colors would be based on the items in the Step 1 container."
+ *
+ * ⚠ THESE ROWS DO NOT SUM TO THE DONUT, AND THAT IS THE DECISION RATHER THAN A
+ * DEFECT. The gauge's contract everywhere else is that the arcs add up to the
+ * centre number — on the CE path 8/8 + 6/6 + 0/8 is 14/22 is the 64% in the
+ * middle. Step 1's items total about 69 units (42 lessons + 1 exam + 23 prep +
+ * 3 simulators, plus two uncounted acts), so 26 done is ~38%, not the 62% the
+ * card that opened the panel prints.
+ *
+ * Asked which number wins, the answer was to keep 62%. So the donut stays a
+ * SINGLE ARC at the path's own percentage and these rows sit under it as a
+ * breakdown of what Step 1 contains — a legend, not a decomposition. Anything
+ * that later makes them sum has to move the headline percentage on the Details
+ * panel, the course-progress card, the band header and the Compass player
+ * sidebar together, which is why it was a question and not a default.
+ *
+ * ⚠ FOUR OF THE SIX ARE ALL-OR-NOTHING, which the bars will show honestly and
+ * bluntly: every stop after the lessons derives its status from `courseworkDone`
+ * (see `journeyStopsFor`), so their bars read empty until the coursework
+ * finishes and then fill at once. That is the model the product already
+ * committed to — "100% means the Attestation and certificate step is complete.
+ * Step 1-4 is part of the course" — not a gap in this function. A real per-part
+ * feed replaces `done` here and nothing else changes.
+ *
+ * COLOURS BY POSITION, into `CATEGORY_PALETTE`, so the rows speak the language
+ * the CE path's gauge already uses rather than inventing a second one. Six
+ * stops against seven slots, so no two share a hue.
+ */
+/**
+ * What each Step 1 stop's own count is counted in, by stop id.
+ *
+ * A MAP RATHER THAN THE PATH'S UNIT, because the container is not measured in
+ * one thing: 42 lessons, 1 exam, 23 lessons and 3 simulators. Keyed on the ids
+ * `COURSE_EXAM_STOP` / `PROGRAM_PART_STOPS` already declare, so a stop that
+ * gains a count later gets its unit here and nowhere else. Anything unlisted
+ * falls back to the path's unit, which is right for the course stop — the only
+ * one whose id is derived rather than authored.
+ */
+const STEP_UNITS: Record<string, string> = {
+  'course-exam-and-attestation': 'exam',
+  'prep-review-course': 'lessons',
+  'exam-simulators': 'simulators',
+}
+
+export function journeyStepRows(path: LearningPathSummary): JourneyStepRow[] {
+  const counts = /\s*\((\d+)\)\s*$/
+  const pathUnit = path.unitLabel ?? 'lessons'
+  return journeyStopsFor(path).map((stop, i) => {
+    /* The count is READ BACK OFF THE LABEL rather than threaded through
+       `JourneyStop`, because the label is where it was authored and the two
+       cannot then disagree — "Prep Review (23)" and a `required: 23` field are
+       one fact typed twice. `hours` is not it: only the first stop carries one,
+       and it is the whole 42 rather than the parenthetical. */
+    const fromLabel = counts.exec(stop.title)
+    const count = fromLabel ? Number(fromLabel[1]) : null
+    const done =
+      stop.status === 'completed'
+        ? (count ?? 0)
+        : stop.completed != null
+          ? stop.completed
+          : 0
+    return {
+      key: stop.id,
+      /* THE PARENTHETICAL COMES OFF, because the row prints the fraction on the
+         right: "Pre-Licensing Lessons (42) … 26 / 42 lessons" states 42 twice,
+         three inches apart. It stays on the journey RAIL, where there is no
+         second number and it is the only place the size of the step appears. */
+      label: stop.title.replace(counts, ''),
+      colorIndex: i,
+      count,
+      unit: STEP_UNITS[stop.id] ?? pathUnit,
+      done,
+      status: statusWords(stop),
+      blocked: Boolean(stop.blocked),
+    }
+  })
+}

@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, within, act } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
@@ -15,7 +15,12 @@ import {
   DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
   defaultDiscoverabilityVersionFor,
 } from '@/data/dashboardVersions'
-import { journeyStopsFor, metaWords, statusWords } from '@/components/learning/studyJourneyUtil'
+import {
+  journeyStepRows,
+  journeyStopsFor,
+  metaWords,
+  statusWords,
+} from '@/components/learning/studyJourneyUtil'
 import { CATEGORY_BAR_HEIGHT } from '@/components/learning/progressGauge'
 import {
   CATEGORY_PALETTE,
@@ -3811,5 +3816,103 @@ describe('Jump Back In is INSIDE the progress block', () => {
     // this removed.
     renderShell('/dashboard-rebrand?version=discoverability-learner-focused')
     expect(screen.getAllByRole('button', { name: /^resume\b/i }).length).toBeGreaterThan(0)
+  })
+})
+
+describe('the Details panel shows Step 1 for a pre-licensing path', () => {
+  /*
+   * 2026-09-23, the direct ask: "for pre-licensing, this type of data should be
+   * appearing in the Details view, the lines and colors would be based on the
+   * items in the Step 1 container."
+   *
+   * WHY THE PANEL HAD NOTHING. `resolvePathCategories` returns ONE category for
+   * this path (the 42 lessons), so `hasBreakdown` was false and the donut has
+   * rendered alone since the path was authored — while the CE path two clicks
+   * away showed a segmented gauge and three labelled bars. The data existed; it
+   * lived on the journey rather than in the requirement categories.
+   */
+  it('derives one row per Step 1 stop, in the journey’s own order', () => {
+    const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!
+    const rows = journeyStepRows(persona.path)
+    const stops = journeyStopsFor(persona.path)
+    // Same stops, same order — one derivation, not a parallel list.
+    expect(rows.map((r) => r.key)).toEqual(stops.map((s) => s.id))
+    expect(rows.map((r) => r.label)).toEqual([
+      'Pre-Licensing Lessons',
+      'Course Exam',
+      'Attestation & Affidavit',
+      'Prep Review',
+      'Simulated Exams',
+      'Survey & Certificate',
+    ])
+    /* THE PARENTHETICAL IS OFF, and that is the point of asserting the labels:
+       the row prints the fraction on the right, so "Pre-Licensing Lessons (42)
+       … 26 / 42 lessons" would state 42 twice. It stays on the journey RAIL,
+       where there is no second number. */
+    for (const r of rows) expect(r.label).not.toMatch(/\(\d+\)/)
+  })
+
+  it('counts each stop in ITS OWN unit, not the path’s', () => {
+    /* ⚠ A BUG THE FIRST BUILD SHIPPED. The row took `path.unitLabel` the way
+       `CategoryBars` does, so the course exam read "0 / 1 lesson" and the
+       simulators "0 / 3 lessons". Right for a path measured in one thing; wrong
+       for a container holding four different ones. */
+    const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!
+    const byKey = Object.fromEntries(journeyStepRows(persona.path).map((r) => [r.key, r]))
+    expect(byKey['course-exam-and-attestation'].unit).toBe('exam')
+    expect(byKey['exam-simulators'].unit).toBe('simulators')
+    expect(byKey['prep-review-course'].unit).toBe('lessons')
+  })
+
+  it('leaves the two uncounted acts without a denominator', () => {
+    /* Attestation & Affidavit and Survey & Certificate are single ACTS and
+       nothing publishes a count for them. Inventing a "1" so every row could
+       carry a fraction is the move `nyProducerRequirements` exists to stop — it
+       would read as a sourced figure. They print the journey's status words. */
+    const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!
+    const rows = journeyStepRows(persona.path)
+    const uncounted = rows.filter((r) => r.count == null)
+    expect(uncounted.map((r) => r.label)).toEqual([
+      'Attestation & Affidavit',
+      'Survey & Certificate',
+    ])
+    for (const r of uncounted) expect(r.status).toBe('After your coursework')
+  })
+
+  it('does NOT sum to the donut, and that is the recorded decision', () => {
+    /* ⚠ THE PROPERTY MOST LIKELY TO BE "FIXED" BY MISTAKE. Everywhere else the
+       gauge's arcs add up to its centre number. Here they cannot: Step 1's
+       items total ~69 units, so 26 done is ~38%, not the 62% the card that
+       opened this panel prints. Asked which number wins, the answer was to keep
+       62% — so the donut stays a SINGLE ARC and these rows are a legend.
+
+       Anything that later makes them sum has to move the headline percentage on
+       four surfaces together. This pins the gap so that change is deliberate. */
+    const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!
+    const rows = journeyStepRows(persona.path)
+    const counted = rows.filter((r) => r.count != null)
+    const totalUnits = counted.reduce((n, r) => n + (r.count ?? 0), 0)
+    const totalDone = counted.reduce((n, r) => n + r.done, 0)
+    expect(totalUnits).toBeGreaterThan(NY_LH_PRELICENSING_LESSONS)
+    // The rows' own percentage is well below the path's — they are not the same
+    // measure and must not be read as one.
+    expect(Math.round((totalDone / totalUnits) * 100)).toBeLessThan(50)
+  })
+
+  it('renders the rows under the donut, with the journey’s eyebrow', () => {
+    renderShell(QE_URL)
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: /Details/ }))
+    })
+    const panel = document.querySelector('.cre-sheet-panel--right') as HTMLElement
+    expect(panel).toBeTruthy()
+    expect(panel.textContent).toContain('Step 1 · Complete Coursework')
+    for (const label of ['Pre-Licensing Lessons', 'Course Exam', 'Simulated Exams']) {
+      expect(panel.textContent).toContain(label)
+    }
+    // The units reach the DOM, not just the derivation.
+    expect(panel.textContent).toMatch(/0\s*\/\s*1 exam/)
+    expect(panel.textContent).toMatch(/0\s*\/\s*3 simulators/)
+    expect(panel.textContent).toContain('After your coursework')
   })
 })
