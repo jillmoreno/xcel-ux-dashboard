@@ -8,7 +8,6 @@ import {
   FileText,
   House,
   MagnifyingGlass,
-  Plus,
   Sliders,
   X,
 } from '@/icons'
@@ -250,8 +249,12 @@ function CompassSidebar({
         })}
       </ol>
 
-      <p style={sidebarEyebrowStyle}>Resources</p>
-      <p style={sidebarItemStyle}>Get Help</p>
+      {/* RESOURCES / GET HELP REMOVED — 2026-09-22, the direct ask pointed at
+          "Get Help". The EYEBROW went with it rather than being left behind: it
+          was the section's only item, and a heading with nothing under it reads
+          as a failed render rather than as a deliberate empty state. Support is
+          not lost — the dashboard rail this player covers still carries Get
+          Help, and Close is two clicks from it. */}
     </aside>
   )
 }
@@ -423,16 +426,19 @@ function CompassTopBar({
           <span style={pillStrongStyle}>Notes</span>
           <span style={notesCountStyle}>0</span>
         </span>
-        {/* DASHED, as drawn — the design marks this control as the one that is
-            not real yet, and the dashed border is how it says so. Kept rather
-            than tidied to a solid one: it is the mock's own annotation. */}
-        <span style={demoPillStyle}>
-          <Plus size={13} aria-hidden style={mutedIconStyle} />
-          <span style={pillStrongStyle}>Demo</span>
-        </span>
+        {/* THE "DEMO" PILL IS GONE — 2026-09-22, the direct ask. It was drawn
+            DASHED in the mock, which is how a Figma marks a control that is not
+            real yet; rendered faithfully, that annotation became a live-looking
+            button in a learner's course player, which is what the UX scan
+            filed under "prototype scaffolding in a learner surface". A note in
+            the design is not a control in the product. */}
+        {/* "Ask Rubi", not "Rubi" — 2026-09-22, the direct ask. The pill is a
+            way IN to the panel, and a bare product name labels the thing
+            rather than the action; the aside's own header keeps "Rubi" because
+            there it IS the name of what you are looking at. */}
         <span style={rubiPillStyle}>
           <RubiMark size={16} />
-          <span style={pillStrongStyle}>Rubi</span>
+          <span style={pillStrongStyle}>Ask Rubi</span>
         </span>
       </div>
 
@@ -844,19 +850,6 @@ const tocChildTextNowStyle: CSSProperties = {
 }
 
 
-const sidebarItemStyle: CSSProperties = {
-  margin: 0,
-  display: 'flex',
-  alignItems: 'center',
-  minHeight: 34,
-  padding: '4px 8px 4px 16px',
-  borderRadius: 'var(--radius-md)',
-  fontFamily: 'var(--font-body)',
-  fontSize: 14,
-  fontWeight: 500,
-  lineHeight: '20px',
-  color: 'var(--color-neutral-700)',
-}
 
 /* top bar */
 
@@ -962,10 +955,6 @@ const squarePillStyle: CSSProperties = {
   borderRadius: 'var(--radius-md)',
 }
 
-const demoPillStyle: CSSProperties = {
-  ...squarePillStyle,
-  borderStyle: 'dashed',
-}
 
 const rubiPillStyle: CSSProperties = {
   ...squarePillStyle,

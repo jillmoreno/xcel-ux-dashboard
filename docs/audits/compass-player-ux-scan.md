@@ -105,6 +105,10 @@ Notes, Demo, Rubi, Previous, Next, Rubi's ×, and the three suggestion chips all
 render with borders, radii and button proportions, and none is focusable,
 announced, or operable.
 
+> **EIGHT as of 2026-09-22** — Demo was removed outright, which is the other
+> valid answer to this finding: a control that should not be pressable does not
+> need to be made pressable. The remaining eight are unchanged.
+
 **This is the "whole thing static" decision working exactly as specified**, and
 it is recorded here rather than filed as a surprise. It is still the finding a
 reviewer will report first, because a bordered 38px pill reading "Notes 0" is
@@ -200,9 +204,10 @@ entirely rather than defaulted to an invented countdown.
 
 ### Content & CTA — 76
 
-- **[Medium] "Demo"** is prototype scaffolding rendered inside a learner
+- ~~**[Medium] "Demo"** is prototype scaffolding rendered inside a learner
   surface. It is dashed in the mock to mark it as unbuilt, which a stakeholder
-  will not read as an annotation.
+  will not read as an annotation.~~ **FIXED 2026-09-22** — removed. A note in
+  the design is not a control in the product.
 - **[Medium] The placeholder says nothing.** The lo-fi variant it replaced
   explained itself ("this is where Compass Course content will live"); this one
   shows a ghosted caption and a grey block. A reviewer who has not been briefed
