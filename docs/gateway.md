@@ -65,12 +65,17 @@ project list. Unchanged from the LMS original apart from three strings (the
 brand sub-line, the Research row label, `RESEARCH_DECISIONS`), so anything the
 LMS `CLAUDE.md` says about it holds here.
 
-**Sections.** Four open — **Prototypes · Refinement · Other Links · Research**
-— then a divider under a **UX & DEV ACCESS** eyebrow holding Design ·
-Exploration · Sandbox · Development · Done · Archive · QA Notes · To Do ·
-Contributing. Prototypes is first and is the landing section
-(`DEFAULT_SECTION`); a bare `/` opens it and selecting it drops `?section=`
-from the URL.
+**Sections.** Six open, under three eyebrows added 2026-09-23 for the public
+Demo build — **Demo** (Prototypes), **Design & Research** (Refinement · Other
+Links · Research), **Dev Handoff** (Development · Done) — then a divider
+under a **UX & DEV ACCESS** eyebrow holding Design · Exploration · Sandbox ·
+Archive · QA Notes · To Do · Contributing. Development and Done were pulled
+out of the `design-and-development` gate for this (see `NAV_EYEBROWS` and the
+comments on those two `SectionDef`s in `UxDashboardPage.tsx`) — they are no
+longer restricted and now show on the public build. Design, Exploration,
+Sandbox, Archive, QA Notes, To Do and Contributing keep the gate, unchanged.
+Prototypes is first and is the landing section (`DEFAULT_SECTION`); a bare `/`
+opens it and selecting it drops `?section=` from the URL.
 
 ### The two guides (2026-09-18)
 
@@ -327,7 +332,9 @@ sentence and the form's hint each say the same thing — added on the page, team
 first, public on a flip — because the panel is where a designer learns the rule.
 
 **The in-app password is NOT enforced (2026-09-18)** — `ENFORCE_SECTION_GATE`
-in `UxDashboardPage` is `false`. The eight restricted sections still carry a
+in `UxDashboardPage` is `false`. The seven restricted sections (Design,
+Exploration, Sandbox, Archive, QA Notes, To Do, Contributing — Development and
+Done were pulled out 2026-09-23, see "Sections" above) still carry a
 `gate` and still share one gate id (`design-and-development`), but the field
 now means "not for stakeholders", which the PUBLIC build filters on, rather
 than "ask for a password". The reasoning is the two-site split below: on the

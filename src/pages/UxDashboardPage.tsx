@@ -130,11 +130,16 @@ type UxSection =
   | 'contributing'
 
 /**
- * ONE gate for every restricted section — Design, Exploration, Development,
- * Done and Archive all share this id, so a reviewer types the password once
- * and the whole group opens. (Exploration used to carry its own id and its own
- * hardcoded password, which meant two prompts for one body of work and, worse,
- * a password the Admin tools override could not reach.)
+ * ONE gate for every restricted section — Design, Exploration, Sandbox,
+ * Archive, QA Notes, To Do and Contributing all share this id, so a reviewer
+ * types the password once and the whole group opens. (Exploration used to
+ * carry its own id and its own hardcoded password, which meant two prompts
+ * for one body of work and, worse, a password the Admin tools override could
+ * not reach.)
+ *
+ * Development and Done shared it too until 2026-09-23, when they were pulled
+ * out and ungated (see the comments on those two `SectionDef`s) so they could
+ * show on the public Demo build under their own "Dev Handoff" eyebrow.
  *
  * The id matches the one the archived tile landing uses, so unlocking on either
  * surface carries to the other. The password itself is not here: it comes from
@@ -260,20 +265,27 @@ const SECTIONS: SectionDef[] = [
     gate: { id: DEV_GATE_ID, title: 'Sandbox' },
   },
   {
+    // UNGATED since 2026-09-23, at Jillienne's request — Development and Done
+    // moved out of the shared `design-and-development` gate and now sit under
+    // their own "Dev Handoff" eyebrow (see `NAV_EYEBROWS` below), visible on
+    // the PUBLIC build for the first time. Design, Exploration and Sandbox
+    // keep their gate and stay exactly where they are — this only pulls
+    // Development and Done out of that group, nothing else in it moved.
     id: 'development',
     label: 'Development',
     blurb: 'Specified and handed off, in build, or under test.',
-    gate: { id: DEV_GATE_ID, title: 'Development' },
   },
   {
     // Finished work, pulled out of the pipeline sections so those show only
     // what is still moving. Done is a STATE, not a stage, which is why it
     // outranks everything else in `sectionOf` — a feature that is done is done
     // whatever its devStatus says.
+    //
+    // UNGATED alongside Development, same reasoning and same date — see the
+    // comment there.
     id: 'done',
     label: 'Done',
     blurb: 'Finished and signed off — kept for reference, not in flight.',
-    gate: { id: DEV_GATE_ID, title: 'Done' },
   },
   {
     // Last, and gated like the rest of the restricted group — the archive used
@@ -356,6 +368,27 @@ const DEFAULT_SECTION: UxSection = 'prototypes'
 /** Where the divider goes — the first restricted section. `-1` on the public
  *  build, so the divider and its "UX & Dev Access" eyebrow never draw. */
 const FIRST_RESTRICTED = VISIBLE_SECTIONS.findIndex((s) => s.gate)
+
+/**
+ * Eyebrow labels drawn above specific ungated rows in the nav rail, added
+ * 2026-09-23 for the public Demo build — keyed by section id rather than
+ * index, so reordering `SECTIONS` cannot silently leave a label on the wrong
+ * row. Each names the row it sits directly above:
+ *
+ *   Demo             → Prototypes
+ *   Design & Research → Refinement, Other Links, Research
+ *   Dev Handoff      → Development, Done
+ *
+ * Deliberately separate from `FIRST_RESTRICTED` / "UX & Dev Access" below,
+ * which is computed rather than authored here — that one has to keep finding
+ * whichever section is first to still carry a `gate`, and stays untouched by
+ * this table.
+ */
+const NAV_EYEBROWS: Partial<Record<UxSection, string>> = {
+  prototypes: 'Demo',
+  demo: 'Design & Research',
+  development: 'Dev Handoff',
+}
 
 /** `?section=` values the OLD tile landing wrote, mapped onto the new sections.
  *  Feature gateways still link back with these ("← Back"), and links already
@@ -1414,6 +1447,16 @@ export function UxDashboardPage() {
             const locked = Boolean(s.gate) && !isOpen(s)
             return (
               <div key={s.id}>
+                {/* NAV_EYEBROWS rows first — authored, by id, above specific
+                    ungated sections (Demo, Design & Research, Dev Handoff).
+                    The very first row (Prototypes) skips the rule: the brand
+                    divider above the <nav> already separates it. */}
+                {NAV_EYEBROWS[s.id] && (
+                  <>
+                    {i > 0 && <hr style={{ ...dividerStyle, borderTopColor: nav.border }} />}
+                    <p style={{ ...navEyebrowStyle, color: nav.muted }}>{NAV_EYEBROWS[s.id]}</p>
+                  </>
+                )}
                 {/* The divider and its eyebrow are drawn ONCE, before the first
                     restricted section, so adding another restricted section
                     below needs no change here. */}
