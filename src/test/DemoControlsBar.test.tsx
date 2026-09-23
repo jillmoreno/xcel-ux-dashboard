@@ -144,10 +144,20 @@ describe('DemoControlsBar — Progress / Education with a non-member account', (
     // picking a Progress state no longer force-promotes the account to a member
     // tier — it just writes ?prog=, leaving the non-member account intact.
     renderBar()
+    /* ⚠ NOT STARTED, not At Risk — 2026-09-23, when the picker was cut to two
+       rows. The claim here was never about WHICH state: it is that picking one
+       writes `?prog=` and leaves a non-member account alone.
+
+       ⚠ IT HAS TO BE THE NON-DEFAULT ONE, which is the trap a first rewrite
+       walked into. The bar CLEARS `?prog=` when the chosen state is already
+       the default — the same behaviour Reset relies on two tests below — so
+       picking On Track wrote an empty URL and the assertion failed against
+       nothing. Of the two rows left, `not-started` is the one that is not the
+       default. */
     fireEvent.click(screen.getByRole('button', { name: /Progress/i }))
-    fireEvent.click(screen.getByRole('radio', { name: /At Risk/i }))
+    fireEvent.click(screen.getByRole('radio', { name: /Not Started/i }))
     const search = url()
-    expect(search).toContain('prog=progress-at-risk')
+    expect(search).toContain('prog=not-started')
     expect(search).not.toContain('tier=low')
   })
 
@@ -222,23 +232,51 @@ describe('DemoControlsBar — an axis with nowhere to land', () => {
 })
 
 describe('DemoControlsBar — a state with no agreed design', () => {
-  /* Expired is withheld 2026-09-22: the flag and the fixtures both resolve it,
-     so picking it renders SOMETHING — just not a screen anyone has agreed on. */
+  /* Expired is withheld: the flag and the fixtures both resolve it, so picking
+     it renders SOMETHING — just not a screen anyone has agreed on. */
   const openProgress = () => {
     fireEvent.click(screen.getByRole('button', { name: /Progress/ }))
     return screen.getByRole('radiogroup', { name: 'Progress / compliance state' })
   }
 
-  it('offers Expired but refuses to apply it', () => {
+  it('does not offer Expired at all', () => {
+    /*
+     * ⚠ THIS TEST CHANGED SIDES ON 2026-09-23, and the change is the record of
+     * a reversal rather than a test bending to code.
+     *
+     * It asserted the row was OFFERED-BUT-DISABLED, saying "Not designed yet"
+     * in the row itself — the 2026-09-22 decision, argued on `unavailable`'s
+     * own type: a stakeholder who asks "what about expired?" should see it
+     * listed and pending, not absent, because deleting it reads as "we forgot".
+     *
+     * The picker was then cut to two rows by direct ask ("should ONLY include
+     * the Not Started 0% and On Track 63%"), which takes Expired out of the
+     * list entirely. The `unavailable` MECHANISM is untouched and still works
+     * — nothing else uses it today, so re-adding the row is how it comes back.
+     *
+     * WHAT SURVIVES UNCHANGED is the claim underneath: the state is still
+     * unreachable from the demo controls, by both doors. The test below pins
+     * the persona one, and it did not need editing.
+     */
     renderBar()
-    const row = within(openProgress()).getByRole('radio', { name: /Expired/ })
-    expect(row.getAttribute('aria-disabled')).toBe('true')
-    // The row says why, in the row — not only in a mouse-only tooltip.
-    expect(row.textContent).toContain('Not designed yet')
-    fireEvent.click(row)
-    // …and the click changed nothing: no `?prog=`, panel still open.
+    expect(within(openProgress()).queryByRole('radio', { name: /Expired/ })).toBeNull()
     expect(url()).not.toContain('progress-expired')
-    expect(screen.getByRole('radiogroup', { name: 'Progress / compliance state' })).toBeTruthy()
+  })
+
+  it('offers exactly the two states the ask named, and no more', () => {
+    /* The picker is a deliberately short menu now, so its LENGTH is a claim.
+       Derived from the list rather than hard-coded, so re-adding a row updates
+       both together — but a row appearing by accident still shows up here as a
+       changed count in a test named for it. */
+    renderBar()
+    const rows = within(openProgress()).getAllByRole('radio')
+    expect(rows.map((r) => r.textContent?.trim())).toEqual(
+      DASHBOARD_PROGRESS_PICKER.map((o) => o.label),
+    )
+    expect(DASHBOARD_PROGRESS_PICKER.map((o) => o.variant)).toEqual([
+      'not-started',
+      'progress-on-track',
+    ])
   })
 
   it('closes the OTHER door to the same state', () => {

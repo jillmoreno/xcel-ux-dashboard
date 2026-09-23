@@ -915,17 +915,40 @@ export type ProgressPickerOption = {
   unavailable?: string
 }
 
+/**
+ * ⚠ TWO ROWS, NOT FIVE — 2026-09-23, the direct ask: the Progress control
+ * "should ONLY include the Not Started 0% and On Track 63%".
+ *
+ * WHAT WAS REMOVED, so putting it back is a re-add and not a rebuild:
+ *
+ *   { variant: 'progress-at-risk',    label: 'At Risk · ~15%',    status: 'at-risk' },
+ *   { variant: 'progress-expired',    label: 'Expired',           status: 'expired',
+ *     unavailable: 'Requirements for the expired state are not defined yet.' },
+ *   { variant: 'complete-100',        label: 'Completed · 100%',  status: 'completed' },
+ *
+ * ⚠ THE VARIANTS THEMSELVES ARE UNTOUCHED. This list is the REVIEWER-FACING
+ * PICKER and nothing else: `dashboard-progress-state` still declares all five,
+ * the fixtures still resolve them, and `?ff=dashboard-progress-state:complete-100`
+ * or the Feature Flag panel still reaches every one. Nothing was deleted — a
+ * menu got shorter.
+ *
+ * ⚠ IT NARROWS TEST COVERAGE, which is the cost to know about. Four suites
+ * iterate this list rather than naming states — `ProgressAgreement`,
+ * `ReadinessPanel`, `QeFocusedVersion` and `DemoControlsBar` — so they still
+ * pass and now sweep two states instead of five. At Risk and Completed stop
+ * being checked for cross-surface agreement by anything at all. If those states
+ * matter again, re-add the rows above rather than writing new assertions.
+ *
+ * ⚠ AND IT REVERSES A DECISION RECORDED ON `unavailable` DIRECTLY BELOW ITS
+ * OWN TYPE: "SHOWN RATHER THAN DROPPED — a stakeholder who asks 'what about
+ * expired?' should see it listed and pending, not absent. Deleting the row
+ * would read as 'we forgot'." That argument still stands on its own terms; the
+ * ask overrides it for this branch, and `unavailable` remains the middle
+ * ground if the Expired row should come back as visible-but-unpickable.
+ */
 export const DASHBOARD_PROGRESS_PICKER: ProgressPickerOption[] = [
   { variant: 'not-started', label: 'Not Started · 0%', status: 'not-started' },
   { variant: 'progress-on-track', label: 'On Track · ~63%', status: 'on-track' },
-  { variant: 'progress-at-risk', label: 'At Risk · ~15%', status: 'at-risk' },
-  {
-    variant: 'progress-expired',
-    label: 'Expired',
-    status: 'expired',
-    unavailable: 'Requirements for the expired state are not defined yet.',
-  },
-  { variant: 'complete-100', label: 'Completed · 100%', status: 'completed' },
 ]
 
 /**
