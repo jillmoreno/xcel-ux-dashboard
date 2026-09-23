@@ -261,16 +261,17 @@ function CompassSidebar({
         this player's chrome follows by NOT looking pressable. So they got the
         style and the behaviour together.
 
-        BOTH GO TO THE SAME PLACE, which is honest rather than sloppy: up from
-        the course player is the dashboard, and there is no separate Overview
-        surface in this product to send the second one to. If one ever exists,
-        this is the call site.
+        THEY NOW GO TO DIFFERENT PLACES, which is the half this note used to
+        record as unresolvable: "Home" leaves the player for the dashboard,
+        "Overview" selects the player's own Overview page. That second
+        destination did not exist when the crumbs were first wired — the note
+        said so and named this the call site if one ever appeared. It has.
 
         NO INLINE `color`. `.cre-cta-ink` carries it and re-points on the dark
         theme; an inline colour would beat the stylesheet, which is the trap
         that class's own note in `tokens.css` records.
 
-        "Course" stays a plain span — it is the page you are on, and a
+        The LAST crumb stays a plain span — it is the page you are on, and a
         breadcrumb's last crumb is not a link.
       */}
       <p style={breadcrumbStyle}>
@@ -292,17 +293,42 @@ function CompassSidebar({
         <span aria-hidden style={crumbSlashStyle}>
           /
         </span>
-        {/* THE TRAIL FOLLOWS THE NAV. It was a fixed "Home / Overview /
-            Course", which was right while those were the only two pages; with
-            eight it would read "Overview / Course" while the learner sat on
-            Flashcards. One crumb for wherever you are, marked `aria-current`,
-            and the nav below is what moves between them. */}
-        {/* NO `aria-current` HERE, and that is the correction rather than an
-            omission. The page rail below marks the active row with it, and for
-            one build both carried it — two elements claiming to be the current
-            page, which is worse than neither. The RAIL keeps it: it is the
-            actual navigation, and this trail is now derived from it. */}
-        <span style={crumbHereStyle}>{activeLabel}</span>
+        {/* OVERVIEW IS AN ANCESTOR, NOT A SIBLING — restored 2026-09-23 on the
+            direct correction, "breadcrumbs should be Home, Overview, Course."
+
+            The build in between dropped it, and the reasoning recorded here was
+            wrong about the SHAPE rather than about breadcrumbs: it read the
+            page rail as the trail's source, so eight sibling pages meant one
+            crumb for wherever you were. But the eight rows all hang off the
+            course's Overview — it is the course's own front door, one level
+            under Home — so the trail is Home → Overview → wherever, and only
+            the LAST crumb moves as the rail does.
+
+            On Overview itself the third crumb would just repeat the second, so
+            Overview becomes the here-crumb and the trail is two long.
+
+            NO `aria-current` ON THE HERE-CRUMB, which is a correction rather
+            than an omission: for one build the trail and the active rail row
+            both carried it — two elements claiming to be the current page,
+            worse than neither. The rail keeps it; it is the real navigation. */}
+        {page === 'overview' ? (
+          <span style={crumbHereStyle}>Overview</span>
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={() => onSelectPage('overview')}
+              className="cre-link-action cre-cta-ink"
+              style={crumbButtonStyle}
+            >
+              Overview
+            </button>
+            <span aria-hidden style={crumbSlashStyle}>
+              /
+            </span>
+            <span style={crumbHereStyle}>{activeLabel}</span>
+          </>
+        )}
       </p>
 
       <div style={sidebarHeadStyle}>

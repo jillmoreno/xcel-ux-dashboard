@@ -291,11 +291,16 @@ describe('the only wired control is Close', () => {
     seed()
     renderShell(TESTING_URL)
     startCourse()
-    /* HOME ALONE since 2026-09-23. "Overview" was the second crumb; it is a
-       PAGE ROW in the course rail now and wears that rail's treatment instead,
-       so asserting the link-CTA on it would pin the wrong component. */
-    {
-      const el = screen.getByRole('button', { name: 'Home' })
+    /* BOTH CRUMBS AGAIN as of 2026-09-23. For one build this asserted "Home"
+       alone, on the reasoning that Overview had become a rail row and the
+       trail named only the active page. The trail is Home / Overview / <page>
+       once more — Overview is the course's front door, an ANCESTOR of the
+       eight rail rows rather than a sibling — so the second crumb is a control
+       again and needs the same pin. Found inside the trail, because "Overview"
+       also names a rail row and a by-role lookup would find two. */
+    const crumbRow = screen.getByLabelText('Course contents').querySelector('p') as HTMLElement
+    for (const name of ['Home', 'Overview']) {
+      const el = within(crumbRow).getByRole('button', { name })
       expect(el.className).toContain('cre-link-action')
       expect(el.className).toContain('cre-cta-ink')
       expect(el.style.color).toBe('')
@@ -306,10 +311,6 @@ describe('the only wired control is Close', () => {
        colour. 13/600 is measured off Home's "Customize Study Plan"; the weight
        is on the control and the size is inherited from the row, so both are
        asserted where they are actually set. */
-    /* Found via the trail element. "Course" and "Overview" both appear twice
-       in the sidebar now — once in the trail, once as a rail row — so a
-       by-text lookup finds two. */
-    const crumbRow = screen.getByLabelText('Course contents').querySelector('p') as HTMLElement
     expect(crumbRow.style.fontSize).toBe('13px')
     expect(within(crumbRow).getByRole('button', { name: 'Home' }).style.fontWeight).toBe('600')
     // The crumb naming the active page shares the size and differs in weight.
@@ -676,9 +677,8 @@ describe('the Overview view', () => {
        claiming to be the current page, which is worse than neither. The RAIL
        keeps it: it is the actual navigation, and the trail is derived from it.
 
-       Also pins that the trail FOLLOWS the rail. It used to read a fixed
-       "Home / Overview / Course", which would have said "Overview / Course"
-       while the learner sat on Flashcards. */
+       Also pins that the trail's LAST crumb follows the rail — the first two
+       are fixed (Home, then the course's Overview) and only the tail moves. */
     seed()
     renderShell(TESTING_URL)
     startCourse()
@@ -696,6 +696,53 @@ describe('the Overview view', () => {
     // …and the right-hand side is the bare ground for it.
     expect(screen.getByRole('region', { name: 'Flashcards page' })).toBeTruthy()
     expect(screen.queryByLabelText('Chat with Rubi')).toBeNull()
+  })
+
+  it('reads Home / Overview / <page>, and collapses to two crumbs ON Overview', () => {
+    /* ⚠ A REGRESSION THIS GUARDS, and the reason it is a test rather than a
+       comment: the trail lost its Overview crumb for one build. The rail
+       arrived with eight rows, the trail was re-derived FROM the rail, and a
+       fixed three-crumb trail looked like a bug waiting to happen — it would
+       have read "Home / Overview / Course" on Flashcards.
+
+       The shape was the error. Overview is not the ninth sibling, it is the
+       course's front door, so the other seven hang UNDER it: Home → Overview →
+       wherever. Only the tail crumb follows the rail. Deriving the whole trail
+       from the rail flattened a two-level hierarchy into one and dropped the
+       level the learner needs to climb back to.
+
+       On Overview the third crumb would repeat the second, so the trail is two
+       long there and Overview stops being a link — you do not link to the page
+       you are on. */
+    seed()
+    renderShell(TESTING_URL)
+    startCourse()
+    const crumbs = () =>
+      (screen.getByLabelText('Course contents').querySelector('p') as HTMLElement).textContent
+        ?.split('/')
+        .map((s) => s.trim())
+
+    expect(crumbs()).toEqual(['Home', 'Overview', 'Course'])
+
+    const sidebar = screen.getByLabelText('Course contents')
+    act(() => {
+      fireEvent.click(within(sidebar).getByRole('button', { name: 'Readiness' }))
+    })
+    // The first two crumbs are FIXED; only the tail moved.
+    expect(crumbs()).toEqual(['Home', 'Overview', 'Readiness'])
+
+    // The Overview crumb is a real control — it selects the page, and does NOT
+    // leave the player the way Home does.
+    const crumbRow = sidebar.querySelector('p') as HTMLElement
+    act(() => {
+      fireEvent.click(within(crumbRow).getByRole('button', { name: 'Overview' }))
+    })
+    expect(screen.getByRole('region', { name: 'Overview page' })).toBeTruthy()
+    expect(crumbs()).toEqual(['Home', 'Overview'])
+    // …and on the page itself it is no longer pressable.
+    expect(
+      within(sidebar.querySelector('p') as HTMLElement).queryByRole('button', { name: 'Overview' }),
+    ).toBeNull()
   })
 
   it('gives all eight pages a row, and only Course is built', () => {
