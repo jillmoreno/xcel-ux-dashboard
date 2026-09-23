@@ -623,6 +623,21 @@ function PaceOptionPicker({
                 {formatEvening(o.priced.minsPerNight)} a night
               </span>
             ) : null}
+            {/* HOW LONG IT TAKES — 2026-09-23, the direct ask for a third line.
+                The two above are the COST (how often, how long each time); this
+                is what the learner gets for it, and it is the axis the three
+                plans actually differ on.
+
+                A DURATION, not the finish date. The date came off these cards
+                an hour ago because the Course completion cell below prints it;
+                "complete in 14 days" says the same fact as a length, which is
+                what makes three plans comparable at a glance without doing
+                calendar arithmetic. */}
+            {fits ? (
+              <span style={on ? optionMetaActiveStyle : optionMetaStyle}>
+                Complete in {o.priced.days} {o.priced.days === 1 ? 'day' : 'days'}
+              </span>
+            ) : null}
             {/* THE POINTER — 2026-09-23, the direct ask: "a small filled
                 triangle pointing down from the bottom border to help indicate
                 to the user they can switch this pace option."
@@ -1410,7 +1425,6 @@ function CustomizeLink({ onClick, disabled }: { onClick: () => void; disabled?: 
     <button
       type="button"
       onClick={disabled ? undefined : onClick}
-      disabled={disabled}
       {...(disabled ? {} : { 'aria-haspopup': 'dialog' as const })}
       /*
        * DISABLED ON THE `options` CHOOSER — 2026-09-23, the direct note: "if
@@ -1425,20 +1439,21 @@ function CustomizeLink({ onClick, disabled }: { onClick: () => void; disabled?: 
        *
        * ⚠ IT TAKES "BUILD MY OWN" WITH IT, and that is the cost to weigh: the
        * sheet's custom screens are the only way to express a week that is not
-       * "the first N days", and on this variant nothing reaches them. Disabled
-       * rather than hidden so the absence is visible and the decision is
-       * legible; `title` says why, since a greyed control that explains nothing
-       * is the thing reviewers report as broken.
+       * "the first N days", and on this variant nothing reaches them.
+       *
+       * ⚠ AND IT LOOKS LIVE, by instruction — 2026-09-23: "don't make it appear
+       * disabled, just disable the link to trigger the sheet at this time." It
+       * carried `disabled`, a 0.45 opacity and a `title` explaining itself for
+       * an hour. So this is knowingly a control that looks pressable and is
+       * not, which is the shape the rest of this card avoids on purpose (the
+       * top bar's Notes and Ask Rubi are spans for exactly that reason). It
+       * reads as temporary — "at this time" — rather than as the finished
+       * state, and the fix when the time comes is to give it somewhere to go
+       * rather than to re-grey it.
        */
-      title={
-        disabled
-          ? 'Pick a pace from the three above. Building a custom week is available on the other Study Pace treatment.'
-          : undefined
-      }
       className="cre-link-action cre-cta-ink"
       style={{
-        opacity: disabled ? 0.45 : 1,
-        cursor: disabled ? 'not-allowed' : 'pointer',
+        cursor: 'pointer',
         alignSelf: 'flex-end',
         marginTop: 2,
         display: 'inline-flex',
