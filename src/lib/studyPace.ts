@@ -352,6 +352,42 @@ export function presetLabel(preset: PacePreset): string {
   return PRESET_LABELS[preset.id]
 }
 
+/**
+ * Which of the four names this plan goes by.
+ *
+ * ⚠ IT LIVES HERE, NOT ON THE CARD, and that is a lint rule rather than taste:
+ * `StudyPaceTile.tsx` may export only components (`react-refresh`), and a
+ * non-component export there costs the file its fast refresh. `presetLabel` is
+ * three lines up for the same reason, and the two answer the same question in
+ * two vocabularies — the model's and the card's.
+ *
+ * MAPPED ONTO WHAT THE CARD ALREADY KNOWS rather than stored: the model builds
+ * `relaxed` / `recommended` / `focused`, and a learner who has built their own
+ * week has no preset at all. So the four labels are a renaming of states that
+ * exist, which is why no sheet work came with them.
+ *
+ * `Custom` is the one that matters to get right — it is the provenance rule
+ * `paceLabel` was written for: a schedule the learner built is not something
+ * the product recommended, and going on calling it "Recommended" is the precise
+ * claim that rule exists to stop.
+ */
+export function paceBadgeLabel(
+  adjusted: boolean,
+  ownSchedule: boolean,
+  preset: PacePreset,
+): string {
+  if (ownSchedule) return 'Custom'
+  if (!adjusted) return 'Recommended'
+  /* "Focused & Quick" / "Steady & Relaxed" as of 2026-09-23 (they were "Quick
+     Finish" and "Evenings Only" for an hour). Both name the TRADE rather than
+     one side of it, which is what makes them readable as a set beside
+     "Recommended" — and "Evenings Only" was a claim about when the learner
+     studies, which this card does not know. */
+  if (preset.id === 'focused') return 'Focused & Quick'
+  if (preset.id === 'relaxed') return 'Steady & Relaxed'
+  return 'Recommended'
+}
+
 /** Short weekday labels, Monday-first — the order `plan.weekdays` indexes into
  *  (0 = Mon … 6 = Sun). */
 export const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const

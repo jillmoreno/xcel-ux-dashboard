@@ -100,6 +100,9 @@ const REBRAND_FLAGS = [
   // Study Pace card's lower half — Prose (three sentences) ⇄ Stats (three
   // divided cells). Variant-only; see the catalog entry.
   'study-pace-readout',
+  // Which preset the Study Pace card opens on — the Pacing demo control's
+  // flag. Variant-only; see the catalog entry.
+  'study-pace-preset',
   // Recommended for You band — show/hide the whole section.
   'dashboard-recommended',
   // Recommended card blurb — show/hide the "what this is" line on the cards.

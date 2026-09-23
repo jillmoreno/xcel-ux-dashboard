@@ -87,7 +87,13 @@ function renderShell(url: string) {
  * the bare "Study Pace".
  */
 function paceTile(): HTMLElement {
-  return screen.getByText(/^(?:Recommended |Your )?Study Pace$/).parentElement as HTMLElement
+  /* ⚠ THE PREFIX IS OPEN-ENDED as of 2026-09-23. It was `(?:Recommended |Your )?`
+     — the two names the eyebrow could carry. It is built from
+     `paceBadgeLabel` now and can say Recommended / Focused & Quick /
+     Steady & Relaxed / Custom, so the locator matches ANY prefix rather than
+     being edited every time that vocabulary grows. Still anchored on
+     "Study Pace" at the end, which is what makes it this tile. */
+  return screen.getByText(/Study Pace$/).parentElement as HTMLElement
 }
 
 /**
@@ -462,7 +468,14 @@ describe('the presets pacing card', () => {
     await user.click(dialog.querySelector('[data-shape="evenings"]')!)
     await user.click(within(dialog).getByRole('button', { name: /^Save pace/ }))
 
-    expect(paceTile().textContent).toMatch(/^Your Study Pace/)
+    /* "CUSTOM STUDY PACE" as of 2026-09-23. The eyebrow is built from
+       `paceBadgeLabel` now and names WHICH plan the card is showing; a week
+       built on the Adjust screens has no preset behind it, so it answers
+       Custom. The CLAIM is unchanged — the product must not go on calling a
+       figure the learner picked a recommendation — which is why this was
+       edited rather than dropped. */
+    expect(paceTile().textContent).toMatch(/^Custom Study Pace/)
+    expect(paceTile().textContent).not.toMatch(/Recommended/)
   })
 
   it('operates exactly one thing, and no more', () => {

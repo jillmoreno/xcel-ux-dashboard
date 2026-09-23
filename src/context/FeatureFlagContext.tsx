@@ -849,6 +849,36 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'study-pace-preset',
+    group: 'Widgets',
+    label: 'Study pace preset',
+    description:
+      'Which of the model’s presets the Study Pace card opens on, so the three plans can be compared without going through the Adjust sheet — 2026-09-23, the direct ask for a Pacing demo control. `recommended` (default) is the card as a learner finds it. `focused` is the fastest plan the model will build and `relaxed` spends the whole window; the card names them "Focused & Quick Study Pace" and "Steady & Relaxed Study Pace" in its own heading. ⚠ IT SEEDS `choices.presetId`, the same field the sheet writes, so the card treats it as an ADJUSTMENT: picking anything but Recommended is indistinguishable from the learner having chosen it, which is what makes the comparison honest rather than a fourth rendering. A preset the model drops (Focused disappears once it is no longer faster than Recommended — see `studyPace`) falls back to the default, so the control cannot show a plan that does not exist.',
+    defaultEnabled: true,
+    defaultVariant: 'recommended',
+    variants: [
+      {
+        value: 'recommended',
+        label: 'Recommended',
+        description:
+          'No seed. The model’s own suggestion, finishing `RECOMMENDED_BUFFER_DAYS` short of the ceiling so there is review time at the end.',
+      },
+      {
+        value: 'focused',
+        label: 'Focused & Quick',
+        description:
+          'The fastest plan offered — up to a fortnight, or the ceiling if that is sooner. Heavier evenings, and the most days to review at the end.',
+      },
+      {
+        value: 'relaxed',
+        label: 'Steady & Relaxed',
+        description:
+          'The whole window spent. The lightest evenings the course allows, and one day to review.',
+      },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'study-pace-readout',
     group: 'Widgets',
     label: 'Study Pace readout',

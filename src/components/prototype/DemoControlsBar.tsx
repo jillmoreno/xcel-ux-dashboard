@@ -74,6 +74,20 @@ import {
  *     single⇄multiple flag the rail already reads; the exact selection is the
  *     bar's own UI. TODO(demo): wire a subset override if the rail ever filters.
  */
+/**
+ * The Pacing control's rows.
+ *
+ * LABELS ARE THE CARD'S OWN, not the flag's variant values — a reviewer picks
+ * "Focused & Quick" here and reads "Focused & Quick Study Pace" on the card.
+ * They come from `paceBadgeLabel`'s vocabulary; if that renames again, this
+ * renames with it or the bar starts describing a heading nobody sees.
+ */
+const PACE_PRESET_PICKER: { value: string; label: string }[] = [
+  { value: 'recommended', label: 'Recommended' },
+  { value: 'focused', label: 'Focused & Quick' },
+  { value: 'relaxed', label: 'Steady & Relaxed' },
+]
+
 export function DemoControlsBar({
   open = true,
   fullBleed = false,
@@ -94,6 +108,7 @@ export function DemoControlsBar({
   // Progress / compliance state + QE·CE education type — both variant-only flags
   // the two new dropdowns drive directly (they persist via FeatureFlagContext).
   const progressState = useFeatureFlag('dashboard-progress-state')
+  const paceState = useFeatureFlag('study-pace-preset')
   const educationTypeFlag = useFeatureFlag('dashboard-education-type')
   // Readiness state — the Exam Readiness section's own axis. Deliberately NOT
   // threaded into the share-link codec alongside prog/edu: those two are the
@@ -791,6 +806,47 @@ export function DemoControlsBar({
                 className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
                 onClick={() => {
                   setVariant('readiness-state', opt.state)
+                  close()
+                }}
+              >
+                <span style={{ flex: 1 }}>{opt.label}</span>
+                {active && <Check size={15} aria-hidden />}
+              </button>
+            )
+          })}
+        </DemoDropdown>
+
+        {/* PACING — which of the model's three presets the Study Pace card opens
+            on. 2026-09-23, the direct ask: a control that shows "the differences
+            between the Recommended, Focused & Quick, and Steady & Relaxed".
+
+            ITS OWN AXIS, beside Progress rather than inside it. Progress says
+            how far through the course the learner is; this says which plan they
+            are working to. The two combine — Focused & Quick at 3 days is still
+            a plan that will not fit — and folding either into the other would
+            lose half the grid a reviewer is here to walk. */}
+        <DemoDropdown
+          id="pacing"
+          label={PACE_PRESET_PICKER.find((o) => o.value === (paceState.variant ?? 'recommended'))?.label ?? 'Recommended'}
+          eyebrow="Pacing"
+          openId={openId}
+          onToggle={toggle}
+          panelRole="radiogroup"
+          panelLabel="Study pace preset"
+          panelMinWidth={240}
+        >
+          {PACE_PRESET_PICKER.map((opt) => {
+            const active = opt.value === (paceState.variant ?? 'recommended')
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                tabIndex={active ? 0 : -1}
+                className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
+                onClick={() => {
+                  setVariant('study-pace-preset', opt.value)
                   close()
                 }}
               >

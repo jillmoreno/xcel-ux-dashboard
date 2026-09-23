@@ -106,15 +106,24 @@ describe('StudyPaceTile — the tile operates nothing', () => {
     expect(screen.getByText(/Finishes by/)).toBeInTheDocument()
   })
 
-  it('calls the number "Recommended" only while it is still ours', async () => {
-    const user = userEvent.setup()
+  it('names no pace at all on the TILE layout', () => {
+    /* ⚠ REWRITTEN 2026-09-23, and the rewrite is the record of a decision
+       rather than a test bending to the code. This asserted the tile printed
+       "Recommended" and stopped once the learner chose — the provenance rule.
+
+       The BADGE that carried it was removed the same day ("remove the badges
+       altogether in the widget because it's showing in the name of the card").
+       On the CARD layout the name moved into the eyebrow, and the test below
+       pins it there. The tile has no eyebrow of its own — its caption is a bare
+       "Study Pace" — so on this layout the name is simply gone.
+
+       That is a real reduction, and pinning the absence is what makes it a
+       decision someone can find: the tile no longer says which plan it is
+       showing, in either direction. `paceBadgeLabel` is exported for whenever
+       it should. */
     renderTile()
-    expect(screen.getByText('Recommended')).toBeInTheDocument()
-    const dialog = await openSheet(user)
-    await user.click(dialog.querySelector('[data-shape="evenings"]')!)
-    await user.click(within(dialog).getByRole('button', { name: /^Save pace/ }))
-    // The tile now names the learner's own choice instead of claiming credit.
     expect(screen.queryByText('Recommended')).toBeNull()
+    expect(screen.queryByText(/Focused & Quick|Steady & Relaxed|Custom/)).toBeNull()
   })
 
   it('links Details at a real in-shell address', () => {
@@ -512,7 +521,13 @@ describe('StudyPaceTile — the presets card', () => {
        "Your Study Pace" while the learner was still deciding, and could still
        press Cancel, would be claiming a choice they had not made. */
     await user.click(within(dialog).getByRole('button', { name: /Save pace/ }))
-    expect(screen.getByText('Your Study Pace')).toBeInTheDocument()
+    /* "CUSTOM STUDY PACE" as of 2026-09-23, not "Your Study Pace". The eyebrow
+       is built from `paceBadgeLabel` now, so it names WHICH plan this is —
+       Recommended / Focused & Quick / Steady & Relaxed / Custom — and a week
+       built on the Adjust screens has no preset behind it. The rule is
+       unchanged and is the whole reason that branch exists: the product must
+       not go on calling a figure the learner picked a recommendation. */
+    expect(screen.getByText('Custom Study Pace')).toBeInTheDocument()
     expect(screen.queryByText('Recommended Study Pace')).toBeNull()
   })
 

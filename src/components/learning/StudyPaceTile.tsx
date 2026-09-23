@@ -14,6 +14,8 @@ import {
   WEEKDAY_LABELS,
   type PacePreset,
   type PaceModel,
+  type PresetId,
+  paceBadgeLabel,
   simulateSchedule,
   activeDays,
   daysUntil,
@@ -140,8 +142,26 @@ export function StudyPaceTile({
    *  already knows it. Kept so `adjusted` can tell "the product was told this"
    *  from "the learner changed it here". */
   const seededExamDate = examDate ?? null
+  /*
+   * THE PACING DEMO CONTROL — `study-pace-preset`, 2026-09-23.
+   *
+   * SEEDS `choices.presetId`, the same field the Adjust sheet writes, rather
+   * than overriding the selected preset downstream. That is what makes the
+   * comparison honest: the card treats a seeded preset exactly as it treats a
+   * chosen one, so its heading flips to "Focused & Quick Study Pace" and its
+   * `adjusted` branch fires — which is the state a reviewer is trying to see.
+   * Overriding further down would have shown the plan while the card still
+   * called it Recommended.
+   *
+   * `recommended` SEEDS NOTHING, deliberately. `presetId: null` is the model's
+   * own suggestion standing, and writing `'recommended'` into it would make a
+   * freshly-loaded page read as adjusted before anyone touched anything — the
+   * same defect the `examDate !== seededExamDate` comparison exists to avoid a
+   * few lines down.
+   */
+  const seededPreset = useFeatureFlag('study-pace-preset').variant ?? 'recommended'
   const [choices, setChoices] = useState<PaceChoices>({
-    presetId: null,
+    presetId: seededPreset === 'recommended' ? null : (seededPreset as PresetId),
     nights: null,
     examDate: seededExamDate,
     style: 'average',
@@ -263,11 +283,6 @@ export function StudyPaceTile({
    */
 
   const card = layout === 'card'
-  /* The readout variant is needed UP HERE too, for the caption's pill — the
-     hook is called unconditionally at the top level of the component, which is
-     the rules-of-hooks trap this file's header records three times over. */
-  const readoutVariant = useFeatureFlag('study-pace-readout').variant ?? 'prose'
-
   return (
     <>
       <SquareTile
@@ -282,7 +297,21 @@ export function StudyPaceTile({
            whose pace it is instead. */
         caption={
           <>
-            {card ? (adjusted ? 'Your Study Pace' : 'Recommended Study Pace') : 'Study Pace'}
+            {/* THE NAME IS THE CARD'S NAME — 2026-09-23. It was
+                "Recommended Study Pace" hard-coded, with the preset's name in a
+                badge beside it; the badge is gone and the eyebrow takes the
+                name, so "Focused & Quick Study Pace" and "Steady & Relaxed
+                Study Pace" read as what this card IS rather than as a label
+                stuck on it.
+            
+                IT STILL FLIPS TO THE LEARNER'S. `paceBadgeLabel` answers
+                "Custom" for a week they built, so the eyebrow says "Custom
+                Study Pace" — which keeps the provenance rule the old
+                "Your Study Pace" was there for: the product must not go on
+                calling a figure the learner picked a recommendation. */}
+            {card
+              ? `${paceBadgeLabel(adjusted, Boolean(choices.schedule), selected)} Study Pace`
+              : 'Study Pace'}
             {/*
               THE PACE PILL, ON THE TILE'S TOP RIGHT — 2026-09-23, the direct
               ask when the Status cell became Days to review: "Don't lose the
@@ -305,13 +334,7 @@ export function StudyPaceTile({
               uppercase at 0.1em and the pill would inherit both, which turns
               "Recommended · heavy" into a second caption rather than a chip.
             */}
-            {card && readoutVariant === 'stats' ? (
-              <span style={captionPillSlotStyle}>
-                <PaceBadge>
-                  {paceBadgeLabel(adjusted, Boolean(choices.schedule), selected)}
-                </PaceBadge>
-              </span>
-            ) : null}
+
           </>
         }
         icon={<Clock size={13} />}
@@ -362,8 +385,6 @@ export function StudyPaceTile({
           <PaceBody
             model={model}
             preset={selected}
-            adjusted={adjusted}
-            ownSchedule={Boolean(choices.schedule)}
             plan={choices.plan}
           />
         )}
@@ -387,25 +408,14 @@ export function StudyPaceTile({
 function PaceBody({
   model,
   preset,
-  adjusted,
-  ownSchedule,
   plan,
 }: {
   model: PaceModel
   preset: PacePreset
-  adjusted: boolean
-  /**
-   * The learner built their own week, so no preset is behind it — the input
-   * `paceBadgeLabel` needs to say `Custom` rather than name a preset.
-   *
-   * ⚠ IT REPLACED `paceLabel: string` on 2026-09-23. That prop was the finished
-   * label and this one is an input to it, which is the right way round now that
-   * two surfaces render the badge: the tile and the card's caption slot both
-   * call `paceBadgeLabel`, so neither can be handed a label the other would
-   * have spelled differently. `paceLabel` still exists one level up and is
-   * still where the provenance rule lives.
-   */
-  ownSchedule: boolean
+  /* `adjusted` and `ownSchedule` were props here for one afternoon, feeding the
+     badge this layout no longer draws. `paceBadgeLabel` is exported and takes
+     both, so restoring a name here is re-adding two props rather than
+     rebuilding the derivation. */
   plan: PaceChoices['plan']
 }) {
   if (preset.state === 'no') {
@@ -425,11 +435,12 @@ function PaceBody({
       {/* The pill names the PRESET once it is the learner's, and says
           "Recommended" only while it is still ours. `presetLabel` is what keeps
           "Relaxed" honest on a long course — see its note. */}
-      {/* THE SAME BADGE as the card's top-right slot — one vocabulary for one
-          fact. `paceLabel` is still the provenance rule's home; the BADGE reads
-          the same three states through `paceBadgeLabel` and maps them onto the
-          four names the ask supplies. */}
-      <PaceBadge>{paceBadgeLabel(adjusted, ownSchedule, preset)}</PaceBadge>
+      {/* NO BADGE HERE EITHER — 2026-09-23, "remove the badges altogether".
+          The TILE layout has no eyebrow of its own to carry the name (its
+          caption is the bare "Study Pace"), so this one is simply gone rather
+          than moved. If the tile ever needs to say which plan it is showing,
+          `paceBadgeLabel` is the function to call and the caption is where it
+          should land — not a badge beside it. */}
       <div>
         <div
           style={{
@@ -472,69 +483,25 @@ const sentence = {
  * pace is. Two different meanings wearing one badge is how a learner reads "At
  * Risk" off a tile that is only saying their evenings are long.
  */
-/**
- * THE PACING BADGE — 2026-09-23, the direct ask: "pacing should be a simple
- * gray square badge. Recommended, Quick Finish, Evenings Only, Custom."
+/*
+ * `PaceBadge` LIVED HERE and was removed 2026-09-23, hours after it arrived —
+ * the direct ask: "remove the badges altogether in the widget because it's
+ * showing in the name of the card."
  *
- * GRAY AND SQUARE, with no tone axis at all. `PaceChip` carries four tones and
- * a pill radius; this carries one neutral and `--radius-sm`. The tones went
- * because the badge now names WHICH PLAN this is, and a plan is not good or
- * bad news — the card says how heavy the evenings are in the sentence above it,
- * which is where that signal belongs.
+ * It was right. The badge said "Recommended" beside an eyebrow already reading
+ * RECOMMENDED STUDY PACE, which is the same duplication the ORIGINAL pill was
+ * removed for in 2026-09; re-adding it under a new shape reproduced the defect
+ * rather than fixing it. The name belongs in one place and the card's own
+ * heading is that place, so `paceBadgeLabel` feeds the eyebrow instead.
  *
- * ⚠ IT DROPS THE "· heavy" MODIFIER, and that is a real loss to weigh. The old
- * pill read "Recommended · heavy" in amber when the nightly figure passed
- * `STRAIN_MINS`, so the strain had a marker of its own. The four labels are
- * fixed by the ask and none of them carries it, so the only thing saying a
- * plan is punishing is now the figure itself ("About 2¾ hours a night"). Worth
- * restoring as a second badge or a tint if the strain turns out to need one.
- *
- * THE SHEET IS UNTOUCHED, by instruction — these are labels for states the card
- * can already be in, not four new presets to choose between. `Quick Finish` and
- * `Evenings Only` are this vocabulary's names for the `focused` and `relaxed`
- * presets the model already builds; nothing new is selectable.
+ * ⚠ WHAT WENT WITH IT, twice over. The pill carried a "· heavy" modifier in
+ * amber when the nightly figure passed `STRAIN_MINS`; the grey badge dropped
+ * the amber, and this drops the marker entirely. Nothing on the card now says a
+ * plan is punishing except the figure itself ("About 2¾ hours a night"). That
+ * is a deliberate consequence of two asks in a row rather than an oversight,
+ * and it is the thing to restore first if strain turns out to need a signal.
  */
-function PaceBadge({ children }: { children: React.ReactNode }) {
-  return (
-    <span
-      style={{
-        alignSelf: 'flex-start',
-        fontFamily: 'var(--font-body)',
-        fontSize: 11,
-        fontWeight: 700,
-        letterSpacing: '0.02em',
-        padding: '3px 8px',
-        borderRadius: 'var(--radius-sm)',
-        background: 'var(--color-neutral-100)',
-        color: 'var(--color-text-secondary)',
-        whiteSpace: 'nowrap',
-      }}
-    >
-      {children}
-    </span>
-  )
-}
 
-/**
- * Which of the four names this plan goes by.
- *
- * MAPPED ONTO WHAT THE CARD ALREADY KNOWS rather than stored: the model builds
- * `relaxed` / `recommended` / `focused`, and a learner who has built their own
- * week has no preset at all. So the four labels are a renaming of states that
- * exist, which is why no sheet work came with them.
- *
- * `Custom` is the one that matters to get right — it is the provenance rule
- * `paceLabel` was written for: a schedule the learner built is not something
- * the product recommended, and going on calling it "Recommended" is the precise
- * claim that rule exists to stop.
- */
-function paceBadgeLabel(adjusted: boolean, ownSchedule: boolean, preset: PacePreset): string {
-  if (!adjusted) return 'Recommended'
-  if (ownSchedule) return 'Custom'
-  if (preset.id === 'focused') return 'Quick Finish'
-  if (preset.id === 'relaxed') return 'Evenings Only'
-  return 'Recommended'
-}
 
 function PaceChip({
   tone,
@@ -1086,7 +1053,7 @@ function PaceStatsRow({
   const daysToReview = finish && ceiling ? Math.max(0, daysBetween(finish, ceiling)) : null
   return (
     <div style={statsRowStyle}>
-      <div style={statsCellStyle}>
+      <div style={statsFirstCellStyle}>
         <p style={statsEyebrowStyle}>{examBinds ? 'Time to exam' : 'Course access'}</p>
         {/* PLURALISED HERE, not by `unitCount` — that helper appends the unit
             it is given and nothing more, so `unitCount(17, 'day')` printed
@@ -1154,7 +1121,7 @@ function PaceStatsRow({
         state said in arithmetic — which the cell beside it already says in
         words.
       */}
-      <div style={{ ...statsCellStyle, ...statsDividedStyle }}>
+      <div style={{ ...statsCellStyle, ...statsDividedStyle, paddingRight: 0 }}>
         <p style={statsEyebrowStyle}>Days to review</p>
         <p style={statsValueStyle}>
           {daysToReview == null
@@ -1173,12 +1140,36 @@ const statsRowStyle: CSSProperties = {
   alignItems: 'start',
 }
 
+/*
+ * 18px EACH SIDE OF A DIVIDER, and NONE on the row's outer edges —
+ * 2026-09-23, the direct ask: "remove left padding and have the divider lines
+ * be more centered between the 2 components."
+ *
+ * It was a flat `0 14px` on every cell, which did two things wrong at once.
+ * The first cell's own 14px indented "COURSE ACCESS" from the card's content
+ * edge, so the readout started 14px right of the headline and the week strip
+ * above it — a row that looked inset rather than aligned. And 14 left the
+ * divider nearer the cell after it than the one before, because the cell
+ * before ends in whatever space its text does not use while the cell after
+ * starts at its padding exactly.
+ *
+ * So the outer edges lose their padding (`:first-child` gets no left, and the
+ * last cell needs no right — the row ends at the card's own padding) and the
+ * inner gutter grows to 36, split 18/18 by the border. Wider is what makes it
+ * read as centred; the arithmetic was already symmetric.
+ */
 const statsCellStyle: CSSProperties = {
   minWidth: 0,
-  padding: '0 14px',
+  padding: '0 18px',
   display: 'flex',
   flexDirection: 'column',
   gap: 3,
+}
+
+/** The row's first cell — flush with the card's content edge. */
+const statsFirstCellStyle: CSSProperties = {
+  ...statsCellStyle,
+  paddingLeft: 0,
 }
 
 /** First cell has no rule; the other two carry their own left border. */
@@ -1243,14 +1234,6 @@ const statsSubStyle: CSSProperties = {
 function splitFigure(s: string): [string, string] {
   const i = s.lastIndexOf(' ')
   return i < 0 ? [s, ''] : [s.slice(0, i), s.slice(i + 1)]
-}
-
-/** Pushes the pill to the eyebrow row's right edge and undoes the two caption
- *  properties it would otherwise inherit. */
-const captionPillSlotStyle: CSSProperties = {
-  marginLeft: 'auto',
-  textTransform: 'none',
-  letterSpacing: 'normal',
 }
 
 const cardStack = { display: 'flex', flexDirection: 'column', gap: 14 } as const
