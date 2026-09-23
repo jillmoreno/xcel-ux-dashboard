@@ -22,7 +22,6 @@ import { resolvePathCategories } from './progressGaugeUtil'
 import { unitCount } from '@/utils/unitLabel'
 import {
   NY_LH_COURSE_EXAM_ITEMS,
-  NY_LH_PRELICENSING_LESSON_COUNT,
   NY_LH_PREP_REVIEW_LESSONS,
 } from '@/data/nyProducerRequirements'
 
@@ -202,7 +201,7 @@ export type JourneyStop = {
  *
  * and the five titles Jillienne specified from it:
  *
- *   1. Pre-Licensing (41)      2. Exam (1) & Attestation     3. Prep Review (23)
+ *   1. Pre-Licensing Lessons   2. Course Exam (1) & Attestation   3. Prep Review (23)
  *   4. Simulated Exams         5. Survey & Certificate
  *
  * WHAT CHANGED, and it is more than a rename. The journey had FOUR stops
@@ -226,7 +225,13 @@ export type JourneyStop = {
  */
 const COURSE_EXAM_STOP: { id: string; title: string; group: string; milestone: boolean } = {
   id: 'course-exam-and-attestation',
-  title: `Exam (${NY_LH_COURSE_EXAM_ITEMS}) & Attestation`,
+  /* "Course Exam", not "Exam" — 2026-09-23, the direct ask. The strip this
+     was copied from says "Exam", and it can: it sits inside the course, where
+     there is only one exam to mean. This rail does not. Three steps below it
+     is Simulated Exams, and two CARDS below that are Schedule State Exam and
+     Pass State Exam — so a bare "Exam" on a column holding four of them names
+     the wrong one about as often as the right one. */
+  title: `Course Exam (${NY_LH_COURSE_EXAM_ITEMS}) & Attestation`,
   // 70% is the storefront's recommended score for Part 1's course exams, which
   // is the one published fact about this step.
   group: 'Part 1 · aim for 70%',
@@ -355,13 +360,19 @@ export function journeyStopsFor(path: LearningPathSummary): JourneyStop[] {
    * the journey's copy of the title and nowhere else.
    *
    * ONLY WHEN THERE IS ONE COURSE STOP. An hours path splits into several, and
-   * retitling the first of those "Pre-Licensing (41)" would name a New York
-   * lesson count on a Florida hours path.
+   * retitling the first of those would name a New York step on a Florida path.
+   *
+   * NO COUNT IN THE LABEL as of 2026-09-23 ("Change to Pre-Licensing Lessons").
+   * It read "Pre-Licensing (41)" for an hour. The 41 is still recorded — see
+   * `NY_LH_PRELICENSING_LESSON_COUNT`, which the Compass tree's 42nd row
+   * depends on — it is just not on this label. The other two counts stay,
+   * because 23 and 1 appear nowhere else on the screen and 41 sits three inches
+   * under a card already printing "26 of 42 lessons".
    */
   const lessonsPath = (path.unitLabel ?? 'hrs') === 'lessons'
   const namedCourseStops =
     lessonsPath && courseStops.length === 1
-      ? [{ ...courseStops[0], title: `Pre-Licensing (${NY_LH_PRELICENSING_LESSON_COUNT})` }]
+      ? [{ ...courseStops[0], title: 'Pre-Licensing Lessons' }]
       : courseStops
   /* The course exam sits between the coursework and Part 2 — the LMS's order,
      and the reason this is not just a rename. `blocked` on the same rule as

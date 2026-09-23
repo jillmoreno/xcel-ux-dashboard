@@ -102,7 +102,22 @@ export function StudyJourneyWidget({
   const syllabus = useFeatureFlag('dashboard-journey-style').variant === 'syllabus'
   const shell = framed ? widgetCardFramedStyle : widgetCardStyle
   const stops = journeyStopsFor(path)
-  const stepStart = stops.length + 1
+  /*
+   * THE LICENSING CARDS START AT 2 — 2026-09-23, the direct ask: "This whole
+   * section will be Step 1 - Complete Coursework. Step 2 - Schedule State
+   * Exam....etc."
+   *
+   * ⚠ IT WAS DERIVED FROM `stops.length`, and that derivation was the right
+   * answer to the wrong question. It kept the cards numbering on from the
+   * journey's stops, so five stops meant the cards read 06/07/08 — an
+   * eight-step journey to a licence. There are FOUR steps. The coursework is
+   * one of them, and the five stops are what it is made of, not five steps in
+   * their own right. That is also why the stops lost their digits in the same
+   * change; see the rail.
+   *
+   * A CONSTANT NOW, deliberately: the number of stops must NOT move it again.
+   */
+  const stepStart = 2
   /* COLLAPSED — `dashboard-journey-complete`, and it only means anything at
      100%. Below that the two variants are identical, which is why the flag is
      read here and applied against `courseworkDone` rather than gating the
@@ -141,7 +156,7 @@ export function StudyJourneyWidget({
         {collapseCoursework ? (
           <section aria-label="Study journey" style={shell}>
             <p className="cre-eyebrow-ink" style={collapsedEyebrowStyle}>
-              {`Steps 01\u2013${String(stops.length).padStart(2, '0')} · Atlas Study Journey`}
+              {`Step 1 · Atlas Study Journey`}
             </p>
             <p style={collapsedTitleStyle}>Coursework complete</p>
           </section>
@@ -383,7 +398,7 @@ function LicensingStepWidget({
           and each other. It rides in the eyebrow slot the journey card already
           uses, so all four cards label themselves the same way. */}
       <p className="cre-eyebrow-ink" style={widgetEyebrowStyle}>
-        Step {String(number).padStart(2, '0')}
+        Step {number}
       </p>
       <p
         style={{

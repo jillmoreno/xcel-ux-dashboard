@@ -735,17 +735,21 @@ describe('the post-course steps are their own widgets', () => {
     ])
   })
 
-  it('carries the journey’s own range in its eyebrow, so the sequence starts at 01', () => {
-    /* Without it the column's four eyebrows read "Atlas Study Journey / Step
-       05 / Step 06 / Step 07" and the sequence appears to begin at 05. The
-       range is DERIVED from the real stop count — the same count the licensing
-       steps are offset by — so the two cannot disagree about where 04 ends. */
+  it('calls the whole coursework card Step 1 in its eyebrow', () => {
+    /* Without it the column's eyebrows read "Atlas Study Journey / Step 6 /
+       Step 7 / Step 8" and the sequence appears to begin at 6. The range is
+       DERIVED from the real stop count — the same count the licensing steps are
+       offset by — so the two cannot disagree about where the journey ends.
+
+       UNPADDED as of 2026-09-23, the direct ask ("make 01, 1, etc."). The regex
+       pins the ABSENCE of the leading zero, since that is the whole change and
+       a `\\d+` would pass either way. */
     seed()
     renderShell(TESTING_URL)
     const eyebrows = [...rightColumn().querySelectorAll('p.cre-eyebrow-ink')].map((p) =>
       p.textContent?.trim(),
     )
-    expect(eyebrows[0]).toMatch(/^Steps 01\u2013\d\d \u00b7 Atlas Study Journey$/)
+    expect(eyebrows[0]).toBe('Step 1 \u00b7 Atlas Study Journey')
   })
 
   it('leaves the single-card treatment’s eyebrow alone', () => {
@@ -759,28 +763,28 @@ describe('the post-course steps are their own widgets', () => {
     expect(first?.textContent?.trim()).toBe('Atlas Study Journey')
   })
 
-  it('numbers the licensing steps straight on from the journey', () => {
-    /* ⚠ DERIVED NOW, NOT A LITERAL — and the old comment claimed the derivation
-       while the assertion hard-coded 05/06/07. It has been wrong twice for the
-       same reason: merging the two completion stops into one changed the offset
-       in 2026-09, and matching the journey to the LMS's five-step strip on the
-       23rd changed it again, to 06/07/08. A literal cannot catch a renumbering
-       it was edited to match, so this reads the stop count the widget itself
-       reads. */
+  it('numbers the licensing cards 2, 3, 4 — after the coursework, not after its stops', () => {
+    /* ⚠ THE DERIVATION IS THE REGRESSION THIS NOW GUARDS, which inverts what
+       this test used to be for. It read the journey's stop count and offset the
+       cards past it — so five stops produced "Step 06/07/08" and the column
+       described an eight-step route to a licence.
+
+       There are FOUR steps: the coursework, then these three. The stops are
+       what step 1 is made of. Asserted as literals AND against a changing stop
+       count, so adding a sixth stop fails here instead of silently renumbering
+       three cards. */
     seed()
     renderShell(TESTING_URL)
+    const steps = [...rightColumn().querySelectorAll('p')]
+      .map((p) => p.textContent?.trim())
+      .filter((t) => /^Step \d+$/.test(t ?? ''))
+    expect(steps).toEqual(['Step 2', 'Step 3', 'Step 4'])
+    // …and they do NOT follow the stop count, which is the thing that broke.
     const stops = journeyStopsFor(
       dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!.path,
     )
-    const steps = [...rightColumn().querySelectorAll('p')]
-      .map((p) => p.textContent?.trim())
-      .filter((t) => /^Step \d\d$/.test(t ?? ''))
-    expect(steps).toEqual(
-      steps.map((_, i) => `Step ${String(stops.length + 1 + i).padStart(2, '0')}`),
-    )
-    // …and there are three of them, continuing without a gap.
-    expect(steps).toHaveLength(3)
-    expect(steps[0]).toBe(`Step ${String(stops.length + 1).padStart(2, '0')}`)
+    expect(stops.length).toBeGreaterThan(1)
+    expect(steps[0]).not.toBe(`Step ${stops.length + 1}`)
   })
 
   it('names each card by its VISIBLE heading', () => {

@@ -158,7 +158,7 @@ describe('the Atlas Study Journey treatment (2026-09-21)', () => {
     ])
   })
 
-  it('carries the journey’s own range in its eyebrow, so the sequence starts at 01', () => {
+  it('calls the whole coursework card Step 1 in its eyebrow', () => {
     /* Without it the column reads "Atlas Study Journey / Step 05 / 06 / 07" and
        the sequence appears to begin at 05. DERIVED from the real stop count, so
        the range and the steps' offset cannot disagree. */
@@ -167,7 +167,7 @@ describe('the Atlas Study Journey treatment (2026-09-21)', () => {
     const eyebrows = [...rightColumn().querySelectorAll('p.cre-eyebrow-ink')].map((p) =>
       p.textContent?.trim(),
     )
-    expect(eyebrows[0]).toMatch(/^Steps 01–\d\d · Atlas Study Journey$/)
+    expect(eyebrows[0]).toBe('Step 1 · Atlas Study Journey')
   })
 
   it('leaves QE Focused on the single-card treatment', () => {

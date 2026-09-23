@@ -316,13 +316,17 @@ describe('the Study Journey replaces Today\'s Tasks', () => {
      * prepares nothing for. Attestation moved up to ride with that exam, and
      * the closing stop became the survey and the certificate.
      *
-     * The counts in the labels are the LMS's too — 41 lessons plus 1 exam in
-     * Part 1, 23 in the Prep Review. See `NY_LH_PRELICENSING_LESSON_COUNT`,
-     * whose note flags that the 41 + 1 = 42 reconciliation is an inference.
+     * The counts in two of the labels are the LMS's too — 1 exam closing Part
+     * 1, 23 in the Prep Review. See `NY_LH_PRELICENSING_LESSON_COUNT`, whose
+     * note flags that the 41 + 1 = 42 reconciliation is an inference.
+     *
+     * STEP 1 CARRIES NO COUNT, unlike the other two: "(41)" sat three inches
+     * under a card already printing "26 of 42 lessons", and two counts of the
+     * same course arguing is worse than one count stated once.
      */
     expect(stops.map((s) => s.title)).toEqual([
-      'Pre-Licensing (41)',
-      'Exam (1) & Attestation',
+      'Pre-Licensing Lessons',
+      'Course Exam (1) & Attestation',
       'Prep Review (23)',
       'Simulated Exams',
       'Survey & Certificate',
@@ -336,7 +340,7 @@ describe('the Study Journey replaces Today\'s Tasks', () => {
     expect(counted[0].hours).toBe(NY_LH_PRELICENSING_LESSONS)
     // Assessments are milestones; coursework is not. Two of them now.
     expect(stops.filter((s) => s.milestone).map((s) => s.title)).toEqual([
-      'Exam (1) & Attestation',
+      'Course Exam (1) & Attestation',
       'Simulated Exams',
     ])
   })
@@ -363,7 +367,7 @@ describe('the Study Journey replaces Today\'s Tasks', () => {
     /* AND THE COURSE EXAM, added 2026-09-23 — it sits between Part 1 and Part 2
        and follows the same rule for a plainer reason: you cannot sit the exam
        for a course you have not finished. */
-    expect(stops.find((s) => s.title.startsWith('Exam (1)'))?.blocked).toBe(true)
+    expect(stops.find((s) => s.title.startsWith('Course Exam (1)'))?.blocked).toBe(true)
     // …and they say what they are, including the published targets.
     expect(stops.find((s) => s.title === 'Simulated Exams')?.group).toMatch(/3 simulators/)
   })
@@ -1257,7 +1261,7 @@ describe('every rail row is a hoverable, clickable target', () => {
     const linked = Array.from(list.querySelectorAll('.cre-stop-title'))
     // Exactly the one stop that is reachable — the rest are blocked.
     expect(linked).toHaveLength(1)
-    expect(linked[0].textContent).toMatch(/^Pre-Licensing \(\d+\)$/)
+    expect(linked[0].textContent).toBe('Pre-Licensing Lessons')
     // NO inline colour, or the class would match, compute and do nothing —
     // the trap `.cre-uxlinks-title` and the PSI link both hit.
     expect((linked[0] as HTMLElement).style.color).toBe('')
@@ -2039,15 +2043,24 @@ describe('the Study Journey rail style flag', () => {
     expect(container.textContent).toMatch(/Complete Coursework/)
     expect(container.textContent).not.toMatch(/Syllabus sequence/i)
     const list = container.querySelector('ol[aria-label="Study journey stops"]')!
-    // The digits are on the NODE, and the title is just the title. They were
-    // in both places ("01. Pre-licensing Course" beside a node reading 01),
-    // which is one numbering system too many for a column being scanned.
-    expect(list.textContent).toMatch(/01Pre-Licensing \(\d+\)/)
-    // 02 IS THE COURSE EXAM as of 2026-09-23, not the Prep Review — the LMS's
-    // order, and the substance of that change rather than a relabelling.
-    expect(list.textContent).toMatch(/02Exam \(\d+\) & Attestation/)
-    expect(list.textContent).toMatch(/03Prep Review \(\d+\)/)
-    expect(list.textContent).not.toMatch(/01\. Pre-Licensing/)
+    /* ⚠ THE NODES CARRY NO DIGITS AT ALL as of 2026-09-23 — "just make circles.
+       The steps are getting to be too much."
+
+       This test was about WHERE the number lived: it had been in the title and
+       on the node both ("01. Pre-licensing Course" beside a node reading 01),
+       and the fix put it on the node alone. The answer now is neither. Five
+       numbered stops plus three numbered cards described an eight-step journey;
+       there are four steps, and these five are what step 1 is made of.
+
+       So the assertion inverts — the list names its stops and numbers none of
+       them. The `<ol>` still carries the order for anyone not looking at it,
+       which is why the node column was always `aria-hidden`. */
+    const text = list.textContent ?? ''
+    expect(text).toContain('Pre-Licensing Lessons')
+    expect(text).toContain('Course Exam (1) & Attestation')
+    // NO ordinal anywhere in the list — padded, bare, or trailing a full stop.
+    expect(text).not.toMatch(/\d\s*\.?\s*Pre-Licensing/)
+    expect(text).not.toMatch(/\d\s*\.?\s*Course Exam/)
   })
 
   it('drops the summary count, the chip and the Part labels', () => {
@@ -2148,16 +2161,31 @@ describe('the Study Journey rail style flag', () => {
      */
     const { container } = renderShell(QE_URL)
     const lists = Array.from(container.querySelectorAll<HTMLElement>('ol')).filter(
-      (o) => /Pre-Licensing \(|Schedule State Exam/.test(o.textContent ?? ''),
+      (o) => /Pre-Licensing Lessons|Schedule State Exam/.test(o.textContent ?? ''),
     )
     expect(lists).toHaveLength(2)
     for (const ol of lists) {
       // No list gap in either — the `<li>` owns the spacing, outside the hover
       // target so the wash stays centred on its own text.
       expect(ol.style.gap).toBe('')
-      const li = ol.querySelector<HTMLElement>('li')!
-      expect(li.style.paddingBottom).toBe('8px')
     }
+    /* ⚠ THE TWO ROW HEIGHTS DIVERGED ON 2026-09-23, and this test is narrowed
+       rather than deleted because the thing it was protecting is still real.
+       Both lists carried 8px so seven rows read as one route to a licence. The
+       ask that day — "reduce the spacing between steps 1-5" — applies to the
+       journey and not to Get Licensed, so the journey is 3px and Get Licensed
+       keeps 8.
+
+       WHAT SURVIVES: neither list uses a list `gap`, which is the mechanism
+       half (a gap would break the connector into dashes between rows, where
+       padding lets the `flex: 1` spine reach through). WHAT DOES NOT: the
+       claim that the two measure the same. On the Testing version — the
+       direction this product is going — Get Licensed is three separate CARDS
+       and there is no second list to match, so the divergence is only visible
+       on this archived version. */
+    const [journey, getLicensed] = lists
+    expect(journey.querySelector<HTMLElement>('li')!.style.paddingBottom).toBe('3px')
+    expect(getLicensed.querySelector<HTMLElement>('li')!.style.paddingBottom).toBe('8px')
   })
 
   it('dashes a LOCKED node and leaves an OPEN one solid', () => {
@@ -2379,10 +2407,26 @@ describe('the Study Journey rail style flag', () => {
     expect(
       within(container).getByRole('button', { name: /state requirements/i }),
     ).toBeInTheDocument()
-    // The three rows still read as a sequence, continuing the journey's
-    // numbering rather than restarting — 01-04 above, 05-07 here.
-    expect(container.textContent).toMatch(/05/)
-    expect(container.textContent).toMatch(/07/)
+    /* THE THREE ROWS ARE STEPS 2, 3 AND 4 — the coursework above them is step
+       1, whole, and its stops are not steps.
+
+       ⚠ THIS LINE HAS BEEN HAND-CORRECTED THREE TIMES (05-07, then 06-08, then
+       the leading zeros), always because it tracked the journey's STOP COUNT.
+       That is the thing that stopped: the count no longer moves these. Pinned
+       as literals, and separately against the stop count, so a sixth stop fails
+       here rather than silently renumbering them a fourth time. */
+    // Found by CONTENT — the two lists are not siblings, so `:last-of-type`
+    // returns the journey's.
+    const list = [...container.querySelectorAll<HTMLElement>('ol')].find((o) =>
+      /Schedule State Exam/.test(o.textContent ?? ''),
+    )!
+    expect(list.textContent).toMatch(/2/)
+    expect(list.textContent).toMatch(new RegExp(String(1 + GET_LICENSED_STEPS.length)))
+    const stopCount = journeyStopsFor(
+      dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!.path,
+    ).length
+    expect(stopCount).toBeGreaterThan(1)
+    expect(list.textContent).not.toContain(String(stopCount + 1))
     // `jurisdictionName` falls back to the CODE rather than blanking or
     // guessing, so an unmapped state still reads.
     expect(jurisdictionName('NY')).toBe('New York')
@@ -3389,7 +3433,7 @@ describe('milestones are marked by the NODE, not by red text', () => {
        joined the simulators when the journey was matched to the LMS's own step
        strip. "Exam Cram" left with the hours model — no such product. */
     expect(stops.filter((st) => st.milestone).map((st) => st.title)).toEqual([
-      'Exam (1) & Attestation',
+      'Course Exam (1) & Attestation',
       'Simulated Exams',
     ])
   })
