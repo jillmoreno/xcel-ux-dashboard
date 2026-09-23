@@ -276,14 +276,35 @@ export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
 /**
  * Which Discoverability layout a brand lands on with NO `?version=`.
  *
- * Marketing Focused is the house default. **XCEL defaults to QE Focused**
- * (2026-09-16). It defaulted to Learner Focused from 2026-09-04 for the right
- * reason — XCEL sells a licence, not a membership, so there is no upsell for a
- * marketing carousel to carry, and its learners arrive with a booked exam date.
- * QE Focused carries that argument further rather than reversing it: Learner
- * Focused leads with the progress gauge, and this one leads with the whole
- * requirement breakdown plus what to study next. Learner Focused stays in the
- * picker so the two can be compared.
+ * Marketing Focused is the house default. **XCEL defaults to TESTING**
+ * (2026-09-21, the direct ask: "i actually wanted Testing 1 as the default").
+ *
+ * THE LINEAGE, because each step carried the last one's argument forward rather
+ * than reversing it. Learner Focused from 2026-09-04 — XCEL sells a licence,
+ * not a membership, so there is no upsell for a marketing carousel to carry and
+ * its learners arrive with a booked exam date. QE Focused from 2026-09-16 —
+ * Learner Focused leads with the progress gauge, and this leads with the whole
+ * requirement breakdown plus what to study next. Testing now — QE Focused with
+ * the Readiness stub dropped, the whole square row given to Study Pace, the
+ * trimmed three-row rail and the journey split into four widgets. Both earlier
+ * versions stay in the picker so the three can be compared.
+ *
+ * ⚠ THIS REVERSES A DECISION THAT WAS PINNED, and the pin was right when it was
+ * written. Testing shipped on 2026-09-21 explicitly NOT as the default, with a
+ * test asserting it, because "a fourth picker entry that quietly became what a
+ * stakeholder lands on is the worst outcome this change could have". Nothing
+ * about that reasoning was wrong — what changed is that it is no longer quiet.
+ * This is the deliberate promotion the pin existed to force, and the test was
+ * rewritten to assert the new default rather than deleted, so the original
+ * subject survives.
+ *
+ * ⚠ WHAT IT MOVES, and it is the whole point of the pin: the public link and
+ * the `?demo=1` baseline now open on TESTING, whose Study Pace tile renders
+ * `dashboard-pacing-style`'s committed default — `runway`. So the landing page
+ * is now a pacing EXPLORATION rather than a settled design, and which treatment
+ * a stakeholder sees is a flag default rather than a version decision. Changing
+ * `defaultVariant` is how that is answered; it was deliberately left alone here
+ * because it is a separate call.
  *
  * ⚠ TWO PLACES read a default and they must agree, or the picker marks one
  * layout "Default" while the page loads the other: `PlatformShell`'s
@@ -295,7 +316,7 @@ export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
  */
 export function defaultDiscoverabilityVersionFor(brand: Brand): string {
   return brand === 'xcel'
-    ? DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED.id
+    ? DISCOVERABILITY_DASHBOARD_VERSION_TESTING.id
     : DISCOVERABILITY_DASHBOARD_VERSION_MARKETING_FOCUSED.id
 }
 

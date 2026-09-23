@@ -327,3 +327,397 @@ export function presetLabel(preset: PacePreset): string {
   if (preset.id === 'relaxed') return preset.state === 'easy' ? 'Relaxed' : 'Full window'
   return PRESET_LABELS[preset.id]
 }
+
+/** Short weekday labels, Monday-first — the order `plan.weekdays` indexes into
+ *  (0 = Mon … 6 = Sun). */
+export const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const
+
+/**
+ * Which days a pace of `n` nights falls on before the learner says otherwise —
+ * the first `n`, Monday-first.
+ *
+ * MOVED HERE from `StudyPaceSheet` on 2026-09-21, unchanged, because a SECOND
+ * caller arrived: the `presets` card draws a week strip and has to shade the
+ * same days the sheet would propose. Two surfaces deriving "which nights" apart
+ * from each other is how a card comes to shade Mon–Thu while the plan behind it
+ * builds Mon–Wed + Fri.
+ *
+ * It is a DEFAULT, not a claim about the learner: the moment they build a plan,
+ * `plan.weekdays` is authoritative and both surfaces read that instead.
+ */
+export function defaultWeekdays(n: number): number[] {
+  return Array.from({ length: Math.max(1, Math.min(7, n)) }, (_, i) => i)
+}
+
+/**
+ * The same evening, spoken — `1¾ hours` → `"1 hour 45 minutes"`.
+ *
+ * ADDITIVE, and deliberately separate from {@link formatEvening} rather than a
+ * change to it: the tile, the smoke suites and the sheet all read that
+ * function's output, and `¾` is the right thing to SHOW. It is the wrong thing
+ * to HEAR — a screen reader renders the vulgar fraction as "three quarters",
+ * "3/4", or nothing at all depending on the engine, so the one figure this
+ * whole component exists to communicate is the one a listener may not get.
+ *
+ * Callers pair them: the glyph visually, this in a `.cre-sr-only` span.
+ *
+ * ⚠ IT ROUNDS THROUGH THE SAME QUARTER-HOUR RULE, not off the raw minutes. If
+ * it read `Math.round(mins)` directly, 98 minutes would be shown as "1½ hours"
+ * and spoken as "1 hour 38 minutes" — two different answers to one question,
+ * which is worse than the fraction it set out to fix.
+ */
+export function formatEveningSpoken(mins: number): string {
+  if (!Number.isFinite(mins)) return 'not available'
+  const m = Math.round(mins)
+  if (m < 60) return `${m} ${m === 1 ? 'minute' : 'minutes'}`
+  const quarters = Math.round(m / 15)
+  const hours = Math.floor(quarters / 4)
+  const rem = (quarters % 4) * 15
+  const hourPart = `${hours} ${hours === 1 ? 'hour' : 'hours'}`
+  return rem ? `${hourPart} ${rem} minutes` : hourPart
+}
+
+/** How this week is going against the pace — see {@link weekStanding}. */
+export type WeekStanding = {
+  /** Minutes the elapsed study days of this week asked for. */
+  expected: number
+  /** Minutes actually studied across those days. */
+  actual: number
+  /** `expected - actual`, floored at 0. */
+  shortfall: number
+  /** Minutes a night for the REST of the week that still lands on target. */
+  catchUpPerNight: number
+  /** Nights left in the week that this pace studies on. */
+  nightsLeft: number
+  behind: boolean
+  /**
+   * Whether `catchUpPerNight` is a number anyone could act on.
+   *
+   * False once the catch-up evening passes {@link CEILING_MINS} — the same
+   * threshold the model already uses to refuse a pace outright ("no number is
+   * honest there, and the answer is more time or fewer lessons, not a bigger
+   * figure"). A card that answers "you are behind" with "7 hours a night" has
+   * technically told the truth and practically said nothing.
+   */
+  recoverable: boolean
+}
+
+/**
+ * Is this week on pace, and if not, what closes the gap?
+ *
+ * ⚠ IT COMPARES ACTUAL MINUTES TO THIS WEEK'S TARGET — not progress against
+ * the share of the access window that has elapsed. That distinction is the
+ * whole reason this function is safe to add to a version that has refused
+ * observed rates throughout: the second comparison invents a SCHEDULE the
+ * learner was never given and then reports them behind it, which is the "you
+ * are 4 days behind" claim the fixtures cannot support and a test blocks. This
+ * one reads two numbers the product actually has — what the pace asked for on
+ * the days that have happened, and what was done on them.
+ *
+ * ONLY ELAPSED STUDY NIGHTS COUNT toward `expected`. A Thursday that has not
+ * arrived is not a Thursday they missed, and a rest day was never asked for —
+ * counting either would report a shortfall the learner did not incur.
+ *
+ * `catchUpPerNight` spreads the gap over the nights STILL TO COME, which is the
+ * only honest form of "pick up the pace": it is a number they can act on rather
+ * than a scolding. With no nights left it is `Infinity` and the caller should
+ * say the week is lost rather than quote it.
+ */
+export function weekStanding(input: {
+  /** Minutes studied per day, Monday-first, 7 entries. */
+  weekMinutes: number[]
+  /** Mon-first index of today, 0–6. */
+  todayIndex: number
+  /** Mon-first indices this pace studies on. */
+  nights: number[]
+  minsPerNight: number
+}): WeekStanding {
+  const { weekMinutes, todayIndex, nights, minsPerNight } = input
+  /* ⚠ STRICTLY BEFORE TODAY. Today's session is not a missed one — the evening
+     has not happened yet — and counting it would report every learner behind
+     from the moment they open the page on a study day, until they study. That
+     is the nagging failure, and it is the same rule as "a Thursday that has not
+     arrived is not a Thursday they missed", applied one day closer. Caught by
+     reading the card: the persona named "on pace" was telling itself it was
+     behind on a Thursday morning. */
+  const elapsedNights = nights.filter((d) => d < todayIndex)
+  const expected = elapsedNights.length * minsPerNight
+  // Every day counts toward ACTUAL, including days the pace did not ask for:
+  // studying on a rest day is still studying, and not crediting it would show a
+  // shortfall to someone who did the work on a different evening.
+  const actual = weekMinutes.slice(0, todayIndex + 1).reduce((a, b) => a + (b || 0), 0)
+  // …but minutes done TODAY still count. Studying early on a day that was not
+  // yet required is credit, not noise.
+  const shortfall = Math.max(0, expected - actual)
+  // Today counts as a night still to come, which is what makes the catch-up
+  // spendable: it is the first evening they can act on.
+  const nightsLeft = nights.filter((d) => d >= todayIndex).length
+  const catchUpPerNight = nightsLeft > 0 ? minsPerNight + shortfall / nightsLeft : Infinity
+  return {
+    expected,
+    actual,
+    shortfall,
+    nightsLeft,
+    catchUpPerNight,
+    recoverable: catchUpPerNight <= CEILING_MINS,
+    // A tolerance, not a knife edge: finishing an evening a few minutes short is
+    // not being behind, and a card that says so on a rounding error stops being
+    // believed. One tenth of a session.
+    behind: shortfall > minsPerNight * 0.1,
+  }
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   THE SCHEDULE SIMULATOR — 2026-09-22.
+
+   Ported from `adjust-your-pace-prototype.html`, whose whole argument is that a
+   learner does not think in "nights a week". They think "I have Tuesday and
+   Thursday evenings and most of Sunday", and the finish date is the ANSWER, not
+   the question. Everything above this line derives a pace from a DATE; this
+   derives a date from a WEEK.
+
+   The two are not rivals and neither replaces the other. `studyPace` still
+   prices the three presets the tile shows and still resolves which ceiling
+   binds — this walks a schedule the learner built and reports where it lands.
+   `resolveCeiling` is what joins them: the simulator measures its buffer
+   against `hardEndIso`, so an exam date moves the verdict here exactly as it
+   moves the presets, and the sheet cannot end up congratulating a plan that
+   overruns the exam it is bound to.
+
+   ⚠ ONE DEPARTURE FROM THE PROTOTYPE, and it is the reason the ported code is
+   not a copy. The prototype measures its buffer against raw access expiry
+   (`END = Jun 3`). This measures against `hardEndIso` — expiry MINUS ONE, or
+   the exam minus its review buffer, whichever binds — because finishing on the
+   day access dies is not finishing, and the rest of this module has said so
+   since it was written. A simulator with its own idea of the deadline is the
+   cross-surface disagreement this repo treats as a defect.
+   ──────────────────────────────────────────────────────────────────────────── */
+
+/** How far ahead the walk will look before calling a schedule hopeless. A year:
+ *  long enough that any schedule a human would actually build resolves, short
+ *  enough that a near-empty week terminates instead of spinning. */
+const SIM_HORIZON_DAYS = 365
+
+/** Below this, a day's entry is treated as "not a study day" rather than as a
+ *  very short one — floating-point dust from the steppers, not intent. */
+const MIN_STUDY_HOURS = 0.01
+
+export type ScheduleSim = {
+  /** ISO yyyy-mm-dd the last hour of work lands on. */
+  finishIso: string
+  /** Day offsets from today (0 = today) the plan studies on, finish included. */
+  studyDays: number[]
+  /**
+   * Whole days between the finish and the binding ceiling. Zero = it lands ON
+   * the last usable day; NEGATIVE = it overruns, and by how much.
+   */
+  bufferDays: number
+  /** Hours the week asks for, summed across the seven days. */
+  hoursPerWeek: number
+  /** The longest single day, in hours — what the "split it up" advice reads. */
+  longestDayHours: number
+  /** How many days of the week carry any hours at all. */
+  daysPerWeek: number
+}
+
+/**
+ * Walk the calendar day by day, spending the schedule's hours until the course
+ * is done, and report where that lands.
+ *
+ * A WALK, NOT A DIVISION, and that is the point of it. `hoursRemaining / hoursPerWeek × 7`
+ * gets the right answer only for an even week; the moment a learner says
+ * "nothing Monday, six hours Saturday" the answer depends on WHICH DAY TODAY IS,
+ * and a division cannot see that. Two learners with identical schedules finish
+ * on different dates if one starts on a Friday — which is true, and is exactly
+ * what a learner checking the calendar would notice first if it were wrong.
+ *
+ * Starts at TODAY inclusive: today's session has not necessarily happened, and
+ * the alternative (start tomorrow) quietly loses a day off every plan built in
+ * the morning.
+ *
+ * @param hoursByWeekday Seven entries, **Monday-first** — the same 0 = Mon … 6 = Sun
+ *   order as {@link WEEKDAY_LABELS} and `plan.weekdays`. A `Date`'s own
+ *   `getDay()` is Sunday-first and must be converted; see the shift below.
+ * @returns `null` when the week is empty, or when the course cannot finish
+ *   within {@link SIM_HORIZON_DAYS} — both mean "this is not a plan", and a
+ *   caller that printed a date for either would be inventing one.
+ */
+export function simulateSchedule(input: {
+  today: Date
+  hoursRemaining: number
+  hoursByWeekday: number[]
+  hardEndIso: string
+}): ScheduleSim | null {
+  const week = Array.from({ length: 7 }, (_, i) =>
+    Math.max(0, Number(input.hoursByWeekday[i]) || 0),
+  )
+  const hoursPerWeek = week.reduce((a, b) => a + b, 0)
+  const daysPerWeek = week.filter((h) => h >= MIN_STUDY_HOURS).length
+  const longestDayHours = week.reduce((a, b) => Math.max(a, b), 0)
+  if (hoursPerWeek < MIN_STUDY_HOURS) return null
+  if (input.hoursRemaining <= 0) return null
+
+  /* MONDAY-FIRST INDEX of the day the walk is standing on. The `+ 6) % 7` shift
+     is the one the week strip and `weekStanding` already use — written out
+     rather than imported from them because getting it wrong is silent: the plan
+     would simply study on the wrong days and still produce a plausible date. */
+  let remaining = input.hoursRemaining
+  const studyDays: number[] = []
+  for (let offset = 0; offset < SIM_HORIZON_DAYS; offset++) {
+    const weekday = (((input.today.getDay() + offset) % 7) + 6) % 7
+    const hours = week[weekday]
+    if (hours < MIN_STUDY_HOURS) continue
+    studyDays.push(offset)
+    remaining -= hours
+    if (remaining <= MIN_STUDY_HOURS) {
+      const finishIso = isoPlusDays(input.today, offset)
+      return {
+        finishIso,
+        studyDays,
+        bufferDays: daysBetweenIso(finishIso, input.hardEndIso),
+        hoursPerWeek,
+        longestDayHours,
+        daysPerWeek,
+      }
+    }
+  }
+  return null
+}
+
+/** Whole days from `a` to `b`, both ISO. Positive when `b` is later. Built on
+ *  the module's own ISO rules rather than `new Date(iso)`, per the file header. */
+function daysBetweenIso(a: string, b: string): number {
+  const [ay, am, ad] = a.split('-').map(Number)
+  const [by, bm, bd] = b.split('-').map(Number)
+  return Math.round((Date.UTC(by, bm - 1, bd) - Date.UTC(ay, am - 1, ad)) / MS_PER_DAY)
+}
+
+export type ScheduleStanding = {
+  /** `good` = room to spare, `warn` = it only just lands, `bad` = it overruns. */
+  tone: 'good' | 'warn' | 'bad'
+  /** One line, ready to render. States the consequence, never a bare number. */
+  message: string
+}
+
+/** Days of buffer at or under which a plan is "only just" landing rather than
+ *  comfortable. A weekend of illness is two days, which is the point. */
+export const TIGHT_BUFFER_DAYS = 2
+
+/**
+ * What a simulated schedule's buffer MEANS, in the learner's terms.
+ *
+ * Reads `binding` so the sentence names the thing that actually stops them: a
+ * plan bound by an exam that overruns has not "run past access", it has run
+ * past the date they have to be ready by, and telling them the wrong one sends
+ * them to the wrong fix (extend access vs. move the exam).
+ */
+export function scheduleStanding(
+  sim: ScheduleSim | null,
+  binding: Binding,
+  emptyMessage = 'Pick at least one study day.',
+): ScheduleStanding {
+  if (!sim) return { tone: 'bad', message: emptyMessage }
+  const ceiling = binding === 'exam' ? 'you need to be ready' : 'your access ends'
+  const finish = formatPaceDate(sim.finishIso)
+  if (sim.bufferDays < 0) {
+    const over = -sim.bufferDays
+    return {
+      tone: 'bad',
+      message: `Finishes ${finish} — ${over} ${over === 1 ? 'day' : 'days'} after ${ceiling}.`,
+    }
+  }
+  if (sim.bufferDays === 0) {
+    return { tone: 'warn', message: `Finishes ${finish}, your last usable day.` }
+  }
+  if (sim.bufferDays <= TIGHT_BUFFER_DAYS) {
+    return {
+      tone: 'warn',
+      message: `Finishes ${finish} — only ${sim.bufferDays} ${sim.bufferDays === 1 ? 'day' : 'days'} to spare.`,
+    }
+  }
+  return {
+    tone: 'good',
+    message: `Finishes ${finish} — ${sim.bufferDays} days to spare before ${ceiling}.`,
+  }
+}
+
+/** A day longer than this is advised to be broken into sessions. */
+export const LONG_DAY_HOURS = 4
+/** A day longer than THIS is advised against entirely — see the note below. */
+export const UNSUSTAINABLE_DAY_HOURS = 6
+
+/**
+ * The advice a schedule earns, or `null` when it earns none.
+ *
+ * DELIBERATELY NOT A BLOCKER. The learner may genuinely have a free Saturday,
+ * and a product that refuses to let them spend it is wrong more often than the
+ * warning is. It says what tends to happen and what the alternative is; the
+ * plan saves either way.
+ */
+export function scheduleAdvice(sim: ScheduleSim | null): string | null {
+  if (!sim) return null
+  if (sim.longestDayHours > UNSUSTAINABLE_DAY_HOURS) {
+    return `Your longest day is over ${UNSUSTAINABLE_DAY_HOURS} hours. That is hard to keep up — a later finish date, or one more study day, buys it back.`
+  }
+  if (sim.longestDayHours > LONG_DAY_HOURS) {
+    return `We will split anything over ${LONG_DAY_HOURS} hours into sessions with a break between them.`
+  }
+  return null
+}
+
+/** Round UP to the next quarter hour. Rounding DOWN would quote a pace that
+ *  finishes late, which is the one direction this figure must not be wrong in. */
+export function ceilQuarterHour(hours: number): number {
+  return Math.ceil(hours * 4 - 1e-9) / 4
+}
+
+/**
+ * Spread `hoursRemaining` evenly across whichever of `weekdays` fall inside the
+ * next `windowDays`, and return the per-day figure.
+ *
+ * The "finish fast" and "finish by this date" screens are the same question —
+ * *given a deadline and some days, how long is a day?* — so they share this
+ * rather than each dividing for themselves.
+ *
+ * @returns `0` when no chosen weekday falls inside the window, which is a real
+ *   state (Sat-only, a 3-day window starting Monday) and not an error.
+ */
+export function hoursPerDayWithin(input: {
+  today: Date
+  hoursRemaining: number
+  weekdays: number[]
+  windowDays: number
+}): number {
+  let sessions = 0
+  for (let offset = 0; offset < input.windowDays; offset++) {
+    const weekday = (((input.today.getDay() + offset) % 7) + 6) % 7
+    if (input.weekdays.includes(weekday)) sessions++
+  }
+  return sessions ? ceilQuarterHour(input.hoursRemaining / sessions) : 0
+}
+
+/** `[1.5, 0, 2, …]` from a day list and one figure — the shape
+ *  {@link simulateSchedule} takes, built from the shape the toggles produce. */
+export function evenWeek(weekdays: number[], hoursPerDay: number): number[] {
+  return Array.from({ length: 7 }, (_, i) => (weekdays.includes(i) ? hoursPerDay : 0))
+}
+
+/** `1½ hours` / `45 minutes` for an HOURS figure — {@link formatEvening} takes
+ *  minutes, and every screen here works in hours. */
+export function formatHours(hours: number): string {
+  return formatEvening(Math.round(hours * 60))
+}
+
+/**
+ * Mon-first indices of the days a week actually studies — the bridge between
+ * the Adjust screens' HOURS shape and `plan.weekdays`, which every other
+ * surface reads.
+ *
+ * HERE rather than in the sheet, where it was written: the tile needs it too
+ * (to shade the strip for a week built without a calendar), and a `.tsx` that
+ * exports components cannot share a function without costing Fast Refresh for
+ * the whole file.
+ */
+export function activeDays(week: number[]): number[] {
+  return week.map((h, i) => (h > 0 ? i : -1)).filter((i) => i >= 0)
+}

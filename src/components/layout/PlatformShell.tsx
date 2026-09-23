@@ -98,6 +98,8 @@ const MEMBERSHIP_MAP: Record<string, string> = {
   'm-more': 'more',
 }
 
+import { dashboardLayoutForVersion, hiddenRailSectionsFor } from '@/components/layout/dashboardRail'
+
 const VALID_SECTIONS: PlatformSection[] = [
   'dashboard',
   'study-plan',
@@ -127,23 +129,6 @@ const VALID_SECTIONS: PlatformSection[] = [
   'purchases',
   'gift-recipients',
 ]
-
-/**
- * Rail rows the TESTING dashboard version drops (2026-09-21). See the note at
- * `trimmedRailSections` for why this is a layout property rather than four
- * `NAV_SECTION_FLAGS` edits.
- *
- * `m-career-tools` is Rubi Insights — the id kept its Elite-era name through
- * two renames (see `careerToolsLabelFor`), so the rail LABEL and this id do not
- * match and that is expected rather than a mistake.
- */
-const TESTING_HIDDEN_RAIL_SECTIONS = [
-  'study-plan',
-  'readiness',
-  'resources',
-  'm-career-tools',
-] as const satisfies readonly PlatformSection[]
-
 
 export function PlatformShell() {
   // Wrap the shell in the in-shell course-launcher provider so a card deep in
@@ -315,27 +300,7 @@ function PlatformShellBody() {
   // `defaultDiscoverabilityVersionFor`, which the Header's picker reads too so
   // the "Default" pill and the page can't disagree).
   const versionParam = params.get('version') ?? defaultDiscoverabilityVersionFor(brand)
-  const dashboardLayout: DashboardLayout =
-    versionParam === 'discoverability-qe-focused'
-      ? 'qe-focused'
-      : // "Testing 2" is a CLONE of QE Focused — see its entry in
-        // `dashboardVersions`. It resolves to its own layout rather than to
-        // 'qe-focused' so the two can be opened in two tabs and compared;
-        // everything downstream treats it as QE Focused except the one tile.
-        versionParam === 'discoverability-testing-2'
-        ? 'testing-2'
-      : // "Testing" — QE Focused with the pace/readiness row given over to the
-        // pacing exploration. Its own layout value rather than a flag on
-        // `qe-focused`, so the picker, the URL and the page all name the same
-        // thing; `MembershipOverview` then sets `qeFocused` for it so every
-        // other QE behaviour is inherited rather than re-listed.
-        versionParam === 'discoverability-testing'
-        ? 'testing'
-        : versionParam === 'discoverability-learner-focused'
-          ? 'learner-focused'
-          : versionParam === 'discoverability-badged'
-            ? 'badged'
-            : 'marketing-focused'
+  const dashboardLayout: DashboardLayout = dashboardLayoutForVersion(versionParam)
 
 
   /*
@@ -360,10 +325,16 @@ function PlatformShellBody() {
    * stakeholder lands on — shows, which is not what "for this version" asked
    * for. So the trim is a property of the LAYOUT and the baseline is untouched.
    */
-  const testingLayout = dashboardLayout === 'testing'
-  const trimmedRailSections: readonly PlatformSection[] | undefined = testingLayout
-    ? TESTING_HIDDEN_RAIL_SECTIONS
-    : undefined
+  /* BOTH pacing versions, as of 2026-09-21 — the direct ask on Testing 2
+     ("update Testing 2 to have these nav elements, hide all others").
+     `'testing-2'` joined the trim rather than getting one of its own: the two
+     versions are a matched pair asking different questions of ONE tile, and a
+     rail that differed between them would be a second variable in that
+     comparison. QE Focused — the baseline this deliberately did not touch — is
+     still untouched. The set lives in `hiddenRailSectionsFor`, which the phone
+     drawer reads too. */
+  const trimmedRailSections = hiddenRailSectionsFor(dashboardLayout)
+  const testingLayout = trimmedRailSections != null
   // Mobile preview (the PrototypeBar device toggle → 390px frame) swaps the
   // left-rail desktop shell for a native-feeling single-column mobile layout:
   // a navy profile band on top + a fixed bottom tab bar. The rail's content
@@ -896,9 +867,7 @@ function PlatformMobileShell({
            this shell already has — so the phone and the desktop cannot show
            different sets. Re-deriving it here rather than threading a prop down
            keeps one owner for the rule. */
-        hiddenSections={
-          dashboardLayout === 'testing' ? TESTING_HIDDEN_RAIL_SECTIONS : undefined
-        }
+        hiddenSections={hiddenRailSectionsFor(dashboardLayout)}
       />
     </div>
   )

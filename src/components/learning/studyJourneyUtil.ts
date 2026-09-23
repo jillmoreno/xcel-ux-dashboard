@@ -280,7 +280,11 @@ export function journeyStopsFor(path: LearningPathSummary): JourneyStop[] {
       ? PROGRAM_PART_STOPS.map((part) => ({
           ...part,
           hours: null,
-          status: 'not-started' as const,
+          // COMPLETE ONCE THE COURSEWORK IS — 2026-09-21, the direct ask:
+          // "100% means the Attestation and certificate step is complete.
+          // Step 1–4 is part of the course." Parts 2 and 3 are inside that
+          // definition, so they finish with it.
+          status: courseworkDone ? ('completed' as const) : ('not-started' as const),
           blocked: !courseworkDone,
         }))
       : []
@@ -290,10 +294,18 @@ export function journeyStopsFor(path: LearningPathSummary): JourneyStop[] {
     ...COMPLETION_STOPS.map((task) => ({
       ...task,
       hours: null,
-      // Nothing in the fixtures records an attestation or a certificate
-      // download, so they are never `completed` in the demo. When a real feed
-      // exists this is where it lands.
-      status: 'not-started' as const,
+      /* ⚠ THIS NOTE USED TO SAY THEY ARE NEVER COMPLETED. It read: "Nothing in
+         the fixtures records an attestation or a certificate download, so they
+         are never `completed` in the demo. When a real feed exists this is
+         where it lands." That was true of the DATA and is now overridden by a
+         definition — 2026-09-21, the direct ask: "100% means the Attestation
+         and certificate step is complete. Step 1–4 is part of the course."
+
+         So finishing the coursework IS finishing these, by definition rather
+         than by a feed. Worth knowing which it is: a real attestation service
+         would replace this line, and until one exists the demo is asserting
+         that the two always move together. */
+      status: courseworkDone ? ('completed' as const) : ('not-started' as const),
       milestone: false,
       blocked: !courseworkDone,
     })),

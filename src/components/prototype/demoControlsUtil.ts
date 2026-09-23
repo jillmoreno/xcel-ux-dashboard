@@ -111,6 +111,27 @@ export type DemoPersona = {
    *  (`two` ⇒ 2, `three` ⇒ 3+) instead of a path count. Only the "Multiple
    *  memberships" persona uses this. A persona has at most one of the two. */
   memCountOptions?: { label: string; countVariant: string }[]
+  /**
+   * When set, the persona row is an EXPANDER over the DEMO CLOCK: clicking it
+   * reveals which day of the week to place the scenario on, and the chosen
+   * offset shifts `FIXTURE_TODAY` app-wide (see `demoDay.ts`).
+   *
+   * AN EXPANDER, not nine flat rows, and not a fifth dropdown — 2026-09-21,
+   * the direct ask ("there's a lot going on in that persona list now"). Three
+   * pace states crossed with three days was nine rows in a list that already
+   * had eight, which buried the personas that were there first. It is also the
+   * rule `heavy-plan` records: the day is not an independent axis, it is part
+   * of "on pace, on a Thursday" — the strip has nothing to draw until some of
+   * the week has elapsed.
+   *
+   * The same mechanism `pathCountOptions` uses, generalised: that one was
+   * hardwired to count flags, so the axis is now a third shape beside it.
+   *
+   * ⚠ CHOOSING ONE RELOADS THE PAGE. `FIXTURE_TODAY` is evaluated once at
+   * module load and read by plain data modules with no React context; the
+   * reload is what makes every dated surface agree. See `demoDay.ts`.
+   */
+  dayOptions?: { label: string; dayOffset: number }[]
   /** Optional dashboard version to force via the `?version=` URL param (e.g.
    *  `discoverability-marketing-focused`). Set when the persona's look depends
    *  on a specific dashboard version rather than the default. Omitted → the
@@ -129,6 +150,16 @@ export type DemoPersona = {
    *  leaves no room for the What's New carousel). The Persona dropdown DISABLES
    *  the row while the What's New toggle is On. */
   disabledWhenWhatsNewOn?: boolean
+  /**
+   * Present = the row is LISTED BUT NOT APPLICABLE, and this says why.
+   *
+   * The persona-list twin of `unavailable` on `ProgressPickerOption`, and it
+   * exists because greying a state in ONE picker settles nothing: the Progress
+   * dropdown and this list both reach `dashboard-progress-state`, so blocking
+   * Expired in one left it a click away in the other. Whatever the reason a
+   * state is withheld, both doors have to agree.
+   */
+  unavailable?: string
 }
 
 /**
@@ -207,6 +238,16 @@ export function resolvePersonaFlags(persona: DemoPersona, whatsNewOn = false): P
 //   6    scale (multiple learning paths)
 //   7    multiple categories (QE)
 //   8    scale (multiple memberships)
+/** The three clock positions every pace scenario offers. Shared, so the three
+ *  rows cannot drift into offering different days. Monday is the anchor itself
+ *  — kept as an option because "the week has barely started" is a real state
+ *  worth showing, not only the one the fixture is stuck in. */
+const PACE_DAY_OPTIONS = [
+  { label: 'Monday — the week has just begun', dayOffset: 0 },
+  { label: 'Thursday — most of the week has happened', dayOffset: 3 },
+  { label: 'Saturday — the study nights are behind them', dayOffset: 5 },
+]
+
 export const DEMO_PERSONAS: DemoPersona[] = [
   {
     id: 'up-next',
@@ -226,6 +267,11 @@ export const DEMO_PERSONAS: DemoPersona[] = [
     // No clp override → default combined variant-d band; the expired progress
     // state drives the status band + pill and a part-done (resume) Jump Back In.
     flags: [{ key: 'dashboard-progress-state', variant: 'progress-expired' }],
+    /* WITHHELD 2026-09-22 — the requirements for the expired state are not
+       defined. Kept in the list rather than cut: "what happens when they run
+       out of time" is a real question stakeholders ask, and a row that says
+       "not designed yet" answers it better than an absence. */
+    unavailable: 'Requirements for the expired state are not defined yet.',
   },
   {
     id: 'completed-empty',
@@ -264,6 +310,49 @@ export const DEMO_PERSONAS: DemoPersona[] = [
       { key: 'dashboard-education-type', variant: 'exam-prep' },
       { key: 'dashboard-progress-state', variant: 'progress-on-track' },
     ],
+  },
+  /* ─── PACE SCENARIOS (2026-09-21) ─────────────────────────────────────
+     Three pace states, each expanding to the day of the week it happens on.
+
+     It was NINE FLAT ROWS for one build, which buried the eight personas that
+     were here first — the direct ask to collapse them. The day expands instead,
+     which is the shape "Multiple learning paths" already uses and the reason
+     `heavy-plan` gives for not adding a fifth dropdown: the day is not
+     interesting on its own, only crossed with a pace state.
+
+     THE DAY IS WHY THESE EXIST. The anchor is a Monday, so at the default clock
+     every one of them shows one circle and six empty rings. On Thursday four
+     days have happened and the strip finally says something.
+
+     "Behind" is NOT a new progress state: it is the ordinary at-risk learner
+     read against THIS WEEK's target (`weekStanding`), which compares two real
+     numbers rather than inventing a schedule to be behind. */
+  {
+    id: 'pace-on-track',
+    label: 'Pace — on pace',
+    description:
+      'Keeping the pace — the week strip fills to target on every day that has happened, and the card says nothing about catching up.',
+    profScope: 'primary',
+    flags: [{ key: 'dashboard-progress-state', variant: 'progress-on-track' }],
+    dayOptions: PACE_DAY_OPTIONS,
+  },
+  {
+    id: 'pace-behind',
+    label: 'Pace — behind this week',
+    description:
+      'Short of this week’s target — the card names the gap and what a night has to become to close it.',
+    profScope: 'primary',
+    flags: [{ key: 'dashboard-progress-state', variant: 'progress-at-risk' }],
+    dayOptions: PACE_DAY_OPTIONS,
+  },
+  {
+    id: 'pace-wont-fit',
+    label: 'Pace — won’t finish',
+    description:
+      'Bought late and left it \u2014 19% done with 11 days of access. The work left does not fit at any pace we would recommend, so the card drops the nightly figure and names the two ways out.',
+    profScope: 'primary',
+    flags: [{ key: 'dashboard-progress-state', variant: 'progress-off-track' }],
+    dayOptions: PACE_DAY_OPTIONS,
   },
   {
     id: 'no-path',

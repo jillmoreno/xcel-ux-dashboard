@@ -783,6 +783,18 @@ copy is absent.
 
 ### Testing — the pacing exploration version (2026-09-21)
 
+> **XCEL'S DEFAULT SINCE 2026-09-22**, and therefore what the **Prototypes**
+> section shows: `defaultDiscoverabilityVersionFor('xcel')` returns this
+> version's id, so a fresh `/dashboard-rebrand?demo=1` with no `?version=`
+> lands here. That promotion is a data change in `dashboardVersions.ts`, not a
+> flag — worth knowing, because the flag catalog is the first place anyone
+> looks for "what does Prototypes render" and this line is not in it.
+>
+> It ships with three flag defaults that the landing version needs in order to
+> have anything to show: `dashboard-pacing-style: 'presets'` (the wide Study
+> Pace card and its Adjust sheet), `study-pace-widget` enabled, and
+> `dashboard-journey-complete: 'full'`.
+
 A fourth Discoverability version (`discoverability-testing`, labelled
 **Testing**), at Jillienne's request: *"a Home Version specifically for Testing
 — readiness removed, and explore the Pacing section UI."*
@@ -1175,7 +1187,8 @@ Support · Get Help.
 
 **NOT `NAV_SECTION_FLAGS`, and that is the decision.** Those flags are the
 committed DEMO BASELINE — one rail that `NavSectionFlags.test.tsx` asserts whole
-and in order — and QE Focused, XCEL's default, is what a stakeholder lands on.
+and in order — and the default version (QE Focused when this was written,
+Testing since 2026-09-22) is what a stakeholder lands on.
 Flipping four of them would have trimmed THAT rail too, which is not what "for
 this version" asked for. So the trim is a property of the LAYOUT
 (`TESTING_HIDDEN_RAIL_SECTIONS` in `PlatformShell`, threaded as the rail's
@@ -1218,7 +1231,7 @@ as the only variable), and the Testing half is carried by the section still
 resolving. A test whose premise has changed is rewritten with the change
 recorded in it — deleting it would lose the original subject.
 
-#### The four pacing treatments — `dashboard-pacing-style`
+#### The pacing treatments — `dashboard-pacing-style`
 
 Variant-only, default **`runway`**, in the rebrand panel scope. Each is a WHOLE
 answer to "am I pacing to finish in time" rather than a restyle of one answer —
@@ -1283,6 +1296,74 @@ fill in light (5.05:1 dark), marginally under AA at 12px/600. It is
 `statusTreatment`'s shared compliance pill, unchanged by this work and identical
 on QE Focused — raising it is a page-wide change, not a pacing one.
 
+#### …and a fifth, `presets` (2026-09-21)
+
+The wide card from [`xcel-pace-presets.html`](../public/prototypes/xcel-pace-presets.html)
+§02, rendered in the product. `defaultVariant` is **unchanged** — Testing still
+opens on `runway`, so the committed default is untouched.
+
+| Variant | Says | Unit |
+|---|---|---|
+| `presets` | you will be done by this date, with this much room after it | a date |
+
+**It is the only one that states an OUTCOME.** The four above state a QUANTITY
+and leave the learner to judge whether it is enough; this one answers the pacing
+question with a date and makes the quantity the subordinate clause. It is also
+the only one you can OPERATE — two real buttons, Start studying and Adjust.
+
+**IT IS `StudyPaceTile` IN A SECOND SHAPE, not a second component.** One prop,
+`layout: 'tile' | 'card'`. That is the whole reason the variant is cheap: the
+model (`src/lib/studyPace.ts`), the `choices` state and the Adjust sheet are
+Testing 2's, reused unchanged, so a fix to the derivation reaches both versions
+at once. A `StudyPaceCard` beside it would own a second copy of `choices` and a
+second `StudyPaceSheet` mount, which is how two shapes start disagreeing about
+what "adjusted" means.
+
+**It renders the whole TILE, so it is NOT an arm of `pacingBody`.** Everything
+in that chain renders *inside* the shared `SquareTile`; this card owns its own
+eyebrow, because the eyebrow is what carries the provenance ("Study Pace ·
+recommended" → "· yours" on first touch, the prototype's §02 finding). The chain
+keeps an explicit `presets` arm returning `null` with the reasoning, so nobody
+reads the four above it as the complete set.
+
+**IT IS THE ONE TREATMENT WITHOUT `pacingStatus`**, and that is a decision:
+
+- Two pills in two vocabularies. `pacingStatus` is the six COMPLIANCE states;
+  the card's own chip is the pace axis. `PaceChip`'s note already records why
+  those must not share a badge, and nine pixels apart is the same collision.
+- The card answers the status question in its body. "Finishes by May 28, 11 days
+  before your exam on Jun 8" is the derivation "On Track" is a label for.
+- `pacingStatus` is `marginTop: 'auto'`, so keeping it would put a pill and a
+  sentence *below* the card's own primary CTA.
+
+**What that costs:** the five treatments are no longer status-constant. A
+reviewer comparing them has to know this one states the state as a sentence.
+`TestingVersion.test.tsx` pins the four and pins this one's replacement
+separately rather than quietly widening the sweep.
+
+**THE FIXTURE HAS NO CEILING, and the card says so.** The course this tile paces
+is the QE profile's Jump Back In fixture (`jbi-xcel-qe-ny`, 40 NY credit hours),
+which carries **no `expiresAt`** — not the My Courses record, which is a
+different course. So `binding` is `'none'`, the model falls back to its Focused
+horizon, and there is no access date to name. The card therefore prints no
+window length, no "before access ends", and **no end-stop on the timeline**, and
+labels the date as a suggested target rather than a cut-off. The prototype's
+"set from your 30-day access" is not restored under any binding — the card names
+the CEILING the model used, which stays true whatever the window is and stays
+true when an exam date takes over. Give the learner an exam date in the sheet
+and the full sentence and the end-stop both appear, both pointing at it.
+
+**`.cre-cta-fill` is new**, and it is the filled twin of `.cre-cta-ink`. The
+primary button is navy, not the Brick — this version moved every CTA onto the
+primary ramp. It needs a theme selector because the LABEL is fine in both themes
+(white on `-500` is 7.64:1) while the button's own SHAPE is not: `-500` on the
+dark card measures **2.75:1**, under the 3:1 WCAG 1.4.11 asks of a control's
+boundary, so the navy CTA dissolves into the navy card with its text floating on
+top. Dark inverts the pair instead of nudging it. Measured — fill against the
+card 6.02:1 light / 9.65:1 dark, label against fill 7.64:1 / 8.27:1. The
+timeline reuses `runway`'s `--color-text-tertiary` for exactly the reason above
+it records.
+
 #### One rule had two owners, and adding this version broke the other
 
 `DemoControlsBar` decided whether to drop Continuing Ed from its Education
@@ -1330,8 +1411,9 @@ rather than merged so the picker carries both and neither branch has to win.
 
 **Why a version and not a flag on QE Focused.** A flag is global to the session,
 so flipping it changes every tab; the whole point is opening these **side by side
-in separate tabs**. QE Focused is also XCEL's default, so the thing most people
-open stays the reviewed one. `MembershipOverview` treats `testing-2` as
+in separate tabs**. QE Focused was also XCEL's default when this was written —
+Testing took that on 2026-09-22 — so the thing most people open stays the
+reviewed one either way. `MembershipOverview` treats `testing-2` as
 `qe-focused` for every other decision (`qeFocused = dashboardLayout ===
 'qe-focused' || testingVersion`), so the two cannot drift apart by accident; the
 single difference is the `livePace` prop threaded to `LearnerFocusedBand`.
@@ -2243,9 +2325,19 @@ land in.
 
 ### QE Focused — the new default dashboard version (2026-09-16)
 
+> **SUPERSEDED AS THE DEFAULT, 2026-09-22.** `defaultDiscoverabilityVersionFor('xcel')`
+> now returns **Testing** (see "Testing — the pacing exploration version"), so a
+> fresh `/dashboard-rebrand?demo=1` — which is the whole of the **Prototypes**
+> section — lands on the pacing work rather than here. Everything below still
+> describes QE Focused correctly and it is still one pick away in the version
+> picker; only the word "default" moved. Promoted with
+> `dashboard-pacing-style: presets`, `study-pace-widget` on and
+> `dashboard-journey-complete: full`, which are the three flags that give the
+> landing version something to render.
+
 A fourth Discoverability version (`discoverability-qe-focused`), and **XCEL's
-default**. Learner Focused and Marketing Focused stay in the picker so the three
-can be compared.
+default until 2026-09-22**. Learner Focused and Marketing Focused stay in the
+picker so the three can be compared.
 
 **It is the first version built for a candidate with no licence yet** — someone
 working a fixed curriculum towards a booked exam, where the useful questions are

@@ -16,8 +16,6 @@ import { getCourseImage } from '@/utils/courseImage'
 import { DELIVERY_LABEL } from '@/utils/courseDelivery'
 import { unitCount } from '@/utils/unitLabel'
 import { SquareTile } from './SquareTile'
-import { CompletedCelebration, type CompletedStat } from './CompletedCelebration'
-import { DiscoveryEmpty } from './JumpBackInDiscoveryEmpty'
 import { TaskRow } from '@/components/learning/study-calendar/TaskRow'
 import { StudyJourneyWidget } from '@/components/learning/StudyJourneyWidget'
 import { StatusStrip } from '@/components/learning/LearningPathDetailPanel'
@@ -204,6 +202,46 @@ type Props = {
    */
   paceOnly?: boolean
   /**
+   * The ATLAS STUDY JOURNEY treatment: the journey drawn as a framed white card,
+   * and the post-course steps split out as one widget each (`framed` +
+   * `splitSteps` on `StudyJourneyWidget`).
+   *
+   * SPLIT OFF `paceOnly` on 2026-09-21, which is the rename that prop's own
+   * note asked for in advance ("Rename both if a version ever wants one without
+   * the other"). Testing 2 is that version: it wants this journey and it keeps
+   * the square tile PAIR, which is exactly what `paceOnly` denies. Left on
+   * `paceOnly` the only way to give Testing 2 this journey would have been to
+   * give it Testing's tile row too, silently changing the one thing that makes
+   * the two versions a pair worth comparing.
+   *
+   * TWO PROPS, not one, even though both versions now set both: they are
+   * different editorial decisions — what the square row shows, and how the
+   * journey column is built — and a third version wanting one without the other
+   * is precisely what just happened.
+   */
+  journeyCards?: boolean
+  /**
+   * ISO yyyy-mm-dd — the learner's BOOKED exam date (`examDateStore`), entered
+   * on the Schedule State Exam card. Passed straight through to the Study Pace
+   * tile, which prices against whichever ceiling binds.
+   *
+   * It reaches this component as a RAW ISO string rather than as
+   * `personaRenewal`'s formatted pair, because the pace model measures with it
+   * and `examDateRenewal` returns a display deadline plus a week count — two
+   * shapes of one fact, and the tile needs the one that can be compared to a
+   * course's expiry.
+   */
+  examDate?: string
+  /**
+   * Minutes studied per day this week, Monday-first — the demo persona's, so
+   * the progress picker moves the pace card's week strip.
+   *
+   * Absent means "nothing to read", not "a week of zeros": the card shows its
+   * suggested week instead. A learner at 0% has not had a bad week, they have
+   * not had a week.
+   */
+  weekMinutes?: number[]
+  /**
    * The page's course header band, rendered INSIDE this block's left column
    * instead of full-width above the whole grid.
    *
@@ -239,6 +277,11 @@ type Props = {
   /** Interest / modality chips shown on the CLP after the setup wizard completes. */
   interestChips?: string[]
   /** Opens the Course Catalog (completed state's Browse Catalog CTA). */
+  /** ⚠ ACCEPTED AND IGNORED since 2026-09-21. Both of these fed the completed
+   *  celebration this band used to return early into; the ask replaced that
+   *  with the normal band. They stay on the type so every caller compiles
+   *  unchanged and so restoring the branch is a one-file change — see the
+   *  ARCHIVED_ITEMS row. */
   onBrowseCatalog?: () => void
   /** Opens the Certificates page (completed state's secondary "View Certificate"). */
   onViewCertificate?: () => void
@@ -278,6 +321,9 @@ export function LearnerFocusedBand({
   studyJourney = false,
   livePace = false,
   paceOnly = false,
+  journeyCards = false,
+  examDate,
+  weekMinutes,
   headerSlot,  onOpenStop,
   onOpenStep,
   path,
@@ -292,8 +338,6 @@ export function LearnerFocusedBand({
   renewal,
   renewalReady = false,
   interestChips,
-  onBrowseCatalog,
-  onViewCertificate,
 }: Props) {
   const { brand } = useAccount()
   const launcher = useCourseLauncher()
@@ -541,7 +585,12 @@ export function LearnerFocusedBand({
    * not, because it would be a third saying of one set of numbers the last two
    * changes moved into the header on purpose.
    */
-  const paceTiles = onPage && !statCard
+  /* ⚠ AND NOT COMPLETE. With the pace tile hidden at 100% (see its own note),
+     the PAIR still has Readiness to show and keeps the row — but on the
+     `paceOnly` arrangement Readiness is already dropped, so the row would
+     render as an empty 18px gap above the Jump Back In card. Both halves gone
+     means no row. */
+  const paceTiles = onPage && !statCard && !(renewalReady && paceOnly)
   const clpBigNumber = onPage && barInHeader && clpStyle === 'big-number'
   const clpNavy = onPage && barInHeader && clpStyle === 'navy'
   // Ink for the navy card. The page values are near-black and would vanish on
@@ -602,7 +651,19 @@ export function LearnerFocusedBand({
     onPage && resume && !clpNavy ? (
       <JumpBackInWidget
         course={resume}
-        chapterNumber={totalCompleted > 0 ? totalCompleted + 1 : undefined}
+        /* ALWAYS THE NEXT LESSON, including the first — 2026-09-21, the direct
+           ask to show the lesson line at 0%. The guard hid it when nothing was
+           complete, which was the one state where naming the lesson is most
+           useful: "Lesson 1 · Part 1 of 3" tells a learner where they are about
+           to start. The arithmetic was already right at zero — completed + 1 is
+           1 — so the guard was suppressing a correct number, not avoiding a
+           wrong one. */
+        /* …and NOT at all once complete: the card drops the lesson line with
+           the title and the estimate. Passed anyway rather than conditioned
+           here, because which of the card's three states applies is the card's
+           question, not the band's. */
+        chapterNumber={totalCompleted + 1}
+        complete={renewalReady}
         /* WHICH PART, derived from the ordered category list rather than typed:
            the categories ARE the 3-Part Training Program in curriculum order,
            and the learner is in the first one they have not finished. Clamped
@@ -870,6 +931,48 @@ export function LearnerFocusedBand({
           <p style={{ ...pacingNoteStyle, marginTop: 2 }}>days left</p>
         </div>
       </div>
+    ) : pacingStyle === 'presets' ? (
+      /* PRESETS RENDERS THE WHOLE TILE, not a body — so this arm is
+         unreachable, and it is here anyway so the chain still lists all five
+         treatments and nobody reads the four above it as the complete set.
+         `paceTileEl` below is where it is actually built.
+
+         WHY IT COULD NOT LIVE HERE. Everything in this chain renders INSIDE the
+         `SquareTile` a few lines down. The presets card owns its own eyebrow —
+         "Study Pace · recommended", switching to "· yours" the moment the
+         learner adjusts anything — and that suffix is driven by state held in
+         `StudyPaceTile` (`choices`). Rendering the card in this slot would
+         either nest a tile inside a tile (two cards, two eyebrows, two floors)
+         or force `choices` to be lifted into this component, duplicating the
+         state Testing 2's tile already owns and giving the two shapes two
+         different ideas of what "adjusted" means.
+
+         IT ALSO DROPS `pacingStatus`, alone among the five. The reasoning, and
+         what it costs:
+
+           - TWO PILLS IN TWO VOCABULARIES. `pacingStatus` is the six COMPLIANCE
+             states ("On Track"); the card's own pill is the pace axis
+             (Recommended / Relaxed / heavy). `PaceChip`'s note already records
+             why those two must not share a badge — a learner reading "At Risk"
+             off a statement that is only saying their evenings are long. Nine
+             pixels apart is the same collision with a gap in it.
+           - THIS CARD ANSWERS THE STATUS QUESTION IN ITS BODY. The other four
+             state a QUANTITY (hrs/day, units a week, two figures) and need the
+             status pill to say whether that quantity is enough. This one states
+             the OUTCOME — "finishes by Apr 29, 5 days before access ends on
+             May 4" — which is the derivation "On Track" is a label for. Keeping
+             both would print the conclusion twice, once derived and once
+             asserted.
+           - `pacingStatus` IS `marginTop: 'auto'`, so it lands on the tile's
+             floor. On this card the floor is the two buttons, and the tile would
+             end on a pill and a sentence BELOW its own primary call to action.
+
+         WHAT IT COSTS, and a reviewer should know it: the five treatments are no
+         longer status-constant, so this one cannot be compared to the other four
+         on "does the state show" — it shows it as a sentence rather than as a
+         pill. `TestingVersion.test.tsx` pins the four and pins this one's
+         replacement separately, rather than quietly dropping the guarantee. */
+      null
     ) : (
       /* LO-FI — what ships on QE Focused today. Two rows rather than the
          Readiness tile's three because this tile also carries the status pill
@@ -945,68 +1048,25 @@ export function LearnerFocusedBand({
     </div>
   )
 
-  // ── Completed celebration (Option 5) ── 100% complete: the shared green
-  // success left half (with a secondary "View Certificate" under the details)
-  // joined to the white "all caught up" panel on the right.
-  if (renewalReady) {
-    const completedStats: CompletedStat[] = [
-      ...(hasBreakdown
-        ? [
-            { label: path.mandatoryLabel ?? 'Mandatory', value: `${mandatory.completed} / ${mandatory.required}` },
-            { label: path.electiveLabel ?? 'Elective', value: `${elective.completed} / ${elective.required}` },
-          ]
-        : []),
-      { label: path.deadlineLabel ?? 'License Expires', value: deadline },
-      { label: 'Time Remaining', value: timeRemainingText(weeksLeft) },
-    ]
-    return (
-      <section
-        aria-label="Learning path complete"
-        className="cre-learner-focused-band"
-        style={{
-          display: 'grid',
-          // `minmax(0, 1fr)` (not `1fr`) so the single mobile column can shrink
-        // to the frame width instead of being forced wider by its content.
-        gridTemplateColumns: stack ? 'minmax(0, 1fr)' : 'minmax(0, 514fr) minmax(0, 407fr)',
-          ...(mobile
-            ? { marginLeft: -16, marginRight: -16, borderRadius: 0 }
-            : bleed
-              ? HERO_BLEED
-              : {
-                  borderRadius: 'var(--radius-lg)',
-                  boxShadow: '0 18px 40px -18px color-mix(in srgb, var(--color-primary-900) 55%, transparent)',
-                }),
-          overflow: 'hidden',
-        }}
-      >
-        <CompletedCelebration
-          title={path.title}
-          creditHoursTotal={totalRequired || path.hours}
-          stats={completedStats}
-          onViewDetails={onViewDetails}
-          showViewAll={showViewAll}
-          onViewAll={onViewAll}
-          pathsCount={pathsCount}
-        />
-        <div
-          style={{
-            background: 'var(--color-surface-card)',
-            padding: '24px 26px',
-            display: 'flex',
-            flexDirection: 'column',
-            justifyContent: 'center',
-          }}
-        >
-          <DiscoveryEmpty
-            tone="completed"
-            onBrowseCatalog={onBrowseCatalog}
-            onViewCertificate={onViewCertificate}
-            compact
-          />
-        </div>
-      </section>
-    )
-  }
+  /* ── THE COMPLETED CELEBRATION IS UNWIRED ── 2026-09-21, the direct ask.
+     At 100% this band used to RETURN EARLY into a green "You're all caught up"
+     card, which is why the course art, the Study Journey, the Jump Back In card
+     and the pace tile all vanished at 100% — none of them rendered. The ask was
+     for the normal band in a completed state ("the course image should not
+     disappear"), so the early return is gone and the band below runs at every
+     progress level.
+
+     UNWIRED, NOT DELETED, per the archive convention: `CompletedCelebration`
+     and its `CompletedStat` type are untouched in their own file and still have
+     callers (`ClpJumpBackInBand`, `MarketingFocusedBand`). What was removed
+     here is the ~60-line branch that built this band's own stat list and
+     returned that component instead of the band. See the ARCHIVED_ITEMS row —
+     bringing it back is re-adding one `if (renewalReady)` block, not rebuilding
+     a component.
+
+     `renewalReady` IS STILL A PROP and still means what it meant. It now feeds
+     the completed treatments INSIDE the band (the Review Course card, the
+     hidden pace tile) rather than replacing it. */
 
   return (
     <section
@@ -1460,10 +1520,19 @@ export function LearnerFocusedBand({
              `min-width: auto` refuses to shrink below its content, which is
              what makes a two-column grid overflow a narrow shell rather than
              squeeze. */
+          /* THE PACE TILE GOES AT 100% — 2026-09-21, the direct ask ("study
+             pace widget should no longer be visible, hide it"). There is no
+             pace left to keep: every figure on it derives from work remaining,
+             and with none remaining the card would state an evening for nothing.
+
+             On TESTING the row is pace-only, so the row goes with it. On the
+             PAIR, Readiness stays and takes the full width — the same call
+             `paceOnly` already makes in reverse, for the same reason: a lone
+             1:1 tile in a ~506px column is a 506px box holding two lines. */
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: paceOnly ? '1fr' : 'repeat(2, minmax(0, 1fr))',
+              gridTemplateColumns: paceOnly || renewalReady ? '1fr' : 'repeat(2, minmax(0, 1fr))',
               gap: 14,
               marginTop: 18,
             }}
@@ -1482,13 +1551,49 @@ export function LearnerFocusedBand({
                 its access expiry. `FIXTURE_TODAY` is the anchored demo clock
                 every other prototype surface passes, so the states render the
                 same whenever the page is opened. */}
-            {livePace && resume ? (
+            {renewalReady ? null : livePace && resume ? (
               <StudyPaceTile
                 today={FIXTURE_TODAY}
                 hoursRemaining={resume.hours * (1 - (resume.progress ?? 0) / 100)}
                 accessExpiresAt={resume.expiresAt}
                 courseTitle={resume.title}
+                examDate={examDate}
                 detailsTo="/dashboard-rebrand?section=study-plan"
+              />
+            ) : pacingStyle === 'presets' && resume ? (
+              /* PRESETS — the Testing version's fifth treatment, and the only
+                 one that is a whole TILE rather than a body inside the
+                 `SquareTile` below. See the `presets` arm of `pacingBody` for
+                 why it sits here and for the `pacingStatus` decision.
+
+                 THE SAME COMPONENT Testing 2 renders, in its `card` shape — so
+                 the model, the `choices` state and the Adjust sheet are reused
+                 rather than rebuilt, and a fix to the pace derivation reaches
+                 both versions at once. The facts are the same three this file
+                 already feeds it: the resume course's published credit hours
+                 against its own progress, its access expiry, and the anchored
+                 fixture clock.
+
+                 `&& resume` for the reason `rate` is omitted without one — the
+                 card is entirely course-derived, and with no course to read
+                 there is nothing to state. It falls through to the lo-fi stub,
+                 which is the honest empty rather than a guessed one.
+
+                 NO `onStart` as of the 2026-09-21 redesign. The card carried a
+                 "Start studying" button wired to this band's own launcher; the
+                 Figma replaced both its buttons with one "Customize Study
+                 Plan", which opens the pace sheet. Starting the course is the
+                 Resume CTA's job a few inches up, and it is still there — so
+                 the prop went rather than being kept for a button nothing
+                 renders. */
+              <StudyPaceTile
+                layout="card"
+                today={FIXTURE_TODAY}
+                hoursRemaining={resume.hours * (1 - (resume.progress ?? 0) / 100)}
+                accessExpiresAt={resume.expiresAt}
+                courseTitle={resume.title}
+                examDate={examDate}
+                weekMinutes={weekMinutes}
               />
             ) : (
               <SquareTile
@@ -1810,17 +1915,20 @@ export function LearnerFocusedBand({
           // own rules, and the Get Licensed card is where they apply.
           onOpenRequirements={onViewDetails}
           onOpenLearningPath={onOpenLearningPath}
-          // FRAMED on Testing — a white card with a hairline edge instead of
-          // sitting bare on the page grey. Reuses `paceOnly`, which is already
-          // this version's marker on this component, rather than adding a
-          // second boolean that would always be set with it: the two would only
-          // ever differ by mistake. Rename both if a version ever wants one
-          // without the other.
-          framed={paceOnly}
-          // …and the post-course steps become their own cards. A separate prop
-          // from `framed` because they are different questions — one is this
-          // widget's surface, the other is how many widgets there are.
-          splitSteps={paceOnly}
+          // FRAMED — a white card with a hairline edge instead of sitting bare
+          // on the page grey.
+          //
+          // DRIVEN BY `journeyCards`, NOT `paceOnly`, as of 2026-09-21. It rode
+          // on `paceOnly` while Testing was the only version that wanted this
+          // treatment, and that prop's own note called the split in advance:
+          // "Rename both if a version ever wants one without the other."
+          // Testing 2 is that version — it wants this journey and keeps its
+          // square tile PAIR, which is the whole thing `paceOnly` means.
+          framed={journeyCards}
+          // …and the post-course steps become their own cards. Still a separate
+          // prop from `framed` because they are different questions — one is
+          // this widget's surface, the other is how many widgets there are.
+          splitSteps={journeyCards}
         />
       ) : (
       <div

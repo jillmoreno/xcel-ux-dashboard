@@ -6,6 +6,7 @@ import { ActionMenu } from '@/components/ui/ActionMenu'
 import { Toast } from '@/components/ui/Toast'
 import { DemoBar, DemoDropdown } from './DemoBar'
 import { licensedProfessionsFor } from '@/data/licensedStatesFixtures'
+import { readDemoDayOffset, setDemoDayOffset } from '@/data/demoDay'
 import { useDemoMenus, DEMO_WHITE, DEMO_HOVER_FILL } from './demoBarUtil'
 import {
   defaultMemberTier,
@@ -30,6 +31,7 @@ import {
   dashboardEducationSupported,
 } from '@/data/dashboardProgressFixtures'
 import { READINESS_PICKER } from '@/data/readinessFixtures'
+import { railHidesSection } from '@/components/layout/dashboardRail'
 import { educationTypesFor } from '@/data/onboarding/onboardingContent'
 import { PROTOTYPE_SHARE_ORIGIN, copyToClipboard } from './shareLink'
 import {
@@ -248,6 +250,23 @@ export function DemoControlsBar({
   const readinessLabel =
     READINESS_PICKER.find((o) => o.state === (readinessState.variant ?? 'on-track'))?.label ??
     'Readiness'
+  /* IS THERE A READINESS SECTION TO DRIVE? — 2026-09-22. Both pacing versions
+     drop the Readiness rail row (`TESTING_HIDDEN_RAIL_SECTIONS`), and Testing
+     is now the brand default — so the bar's own default state was a pill
+     reading "READINESS: On Track" over a dashboard with no Readiness on it and
+     no way to reach one.
+
+     ASKED OF THE RAIL, not re-listed here. `railHidesSection` derives from the
+     same constant the rail and the phone drawer read, so the day the row comes
+     back (or a Readiness component lands on the pacing versions) this control
+     re-enables itself — no second edit, and no chance of the bar and the rail
+     disagreeing about what the page has on it. It stays LIVE on QE Focused,
+     Learner Focused and Marketing Focused, where the section is a rail click
+     away and the dropdown does exactly what it says. */
+  const readinessReachable = !railHidesSection(
+    searchParams.get('version') ?? defaultDiscoverabilityVersionFor(brand),
+    'readiness',
+  )
 
   // Education (QE/CE) dropdown — only for brands with a QE dashboard persona
   // (CRE · McKissock · STC); brand-true labels ("Pre-Licensing" / "Qualifying
@@ -319,7 +338,7 @@ export function DemoControlsBar({
   // feature-flag overrides, applied in one click. `apply` seats the tier + count
   // flags + URL; the flag loop then applies the managed-flag baseline merged with
   // the persona's overrides (so the persona lands on a deterministic state).
-  const applyPersona = (persona: DemoPersona, countVariant?: string) => {
+  const applyPersona = (persona: DemoPersona, countVariant?: string, dayOffset?: number) => {
     // Resolve the persona's scope against THIS brand's options rather than a
     // hardcoded slug list — `primary` takes the first, `all` takes every one.
     const personaProfs =
@@ -378,6 +397,22 @@ export function DemoControlsBar({
     else next.delete('version')
     setSearchParams(next, { replace: true })
     close()
+    /* THE CLOCK LAST, AND IT RELOADS — so it has to come after the URL write,
+       which would otherwise never run.
+
+       `FIXTURE_TODAY` is evaluated once at module load and read by ~30 call
+       sites, several of them plain data modules with no React context to
+       subscribe to. Reloading is what makes the header countdown, the study
+       calendar and the pace card all agree it is Thursday, rather than the card
+       moving alone — the cross-surface disagreement this repo treats as a
+       defect. See `demoDay.ts`.
+
+       A persona with NO `dayOffset` clears the shift rather than inheriting the
+       last one: a clock that persisted across persona changes would be a hidden
+       fifth variable on a bar that shows four. And it only reloads when the day
+       actually changes, so picking a persona at the anchor stays instant. */
+    const nextOffset = dayOffset ?? 0
+    if (nextOffset !== readDemoDayOffset()) setDemoDayOffset(nextOffset)
   }
 
   // The full captured demo state as URL params. Brand + membership live in
@@ -536,14 +571,23 @@ export function DemoControlsBar({
           <div aria-hidden style={WN_DIVIDER} />
           {brandPersonas.map((persona, i) => {
             const countOptions = persona.pathCountOptions ?? persona.memCountOptions
-            const isExpander = !!countOptions?.length
+            /* THREE KINDS OF EXPANDER NOW. `dayOptions` is the demo clock's —
+               it carries an offset rather than a flag variant, which is why it
+               is a third shape beside the two count lists rather than another
+               entry in them. */
+            const dayOptions = persona.dayOptions
+            const isExpander = !!countOptions?.length || !!dayOptions?.length
             const expanded = expandedPersona === persona.id
             // No persona rows are disabled by the What's New toggle anymore. That
             // gate existed only because the (now-archived) Marketing Focused
             // carousel had no room in the full-takeover views; the toggle now just
             // shows/hides the Featured hero, which never conflicts with a persona.
             // (`persona.disabledWhenWhatsNewOn` is retained but inert.)
-            const disabled = false
+            /* …but a persona CAN be withheld because the state it applies has no
+               agreed design yet (`unavailable`). Both doors to
+               `dashboard-progress-state` — this list and the Progress dropdown —
+               have to agree, or greying one just moves the click. */
+            const disabled = persona.unavailable != null
             return (
               <div key={persona.id}>
                 <button
@@ -553,6 +597,7 @@ export function DemoControlsBar({
                   aria-expanded={isExpander ? expanded : undefined}
                   aria-disabled={disabled || undefined}
                   disabled={disabled}
+                  title={persona.unavailable}
                   className="cre-menu-item cre-demo-controls-btn"
                   onClick={() =>
                     disabled
@@ -567,9 +612,16 @@ export function DemoControlsBar({
                   <span style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 2, textAlign: 'left' }}>
                     <span style={{ fontWeight: 700 }}>
                       {persona.label}
-                      {disabled && <span style={{ fontWeight: 600, opacity: 0.8 }}> · off only</span>}
+                      {disabled && (
+                        <span style={{ fontWeight: 600, opacity: 0.8 }}> · not designed yet</span>
+                      )}
                     </span>
-                    <span style={{ fontSize: 11, opacity: 0.7, lineHeight: 1.3 }}>{persona.description}</span>
+                    {/* The REASON replaces the description on a withheld row.
+                        The description sells a state the reviewer cannot open;
+                        what they need instead is why not. */}
+                    <span style={{ fontSize: 11, opacity: 0.7, lineHeight: 1.3 }}>
+                      {persona.unavailable ?? persona.description}
+                    </span>
                   </span>
                   {isExpander && (
                     <ChevronDown
@@ -582,20 +634,38 @@ export function DemoControlsBar({
                 {isExpander && expanded && (
                   <div
                     role="menu"
-                    aria-label={persona.memCountOptions ? 'Number of memberships' : 'Number of learning paths'}
+                    aria-label={
+                      dayOptions
+                        ? 'Day of the week'
+                        : persona.memCountOptions
+                          ? 'Number of memberships'
+                          : 'Number of learning paths'
+                    }
                     style={SUBMENU}
                   >
-                    {countOptions!.map((opt) => (
-                      <button
-                        key={opt.countVariant}
-                        type="button"
-                        role="menuitem"
-                        className="cre-menu-item cre-demo-controls-btn"
-                        onClick={() => applyPersona(persona, opt.countVariant)}
-                      >
-                        <span style={{ flex: 1 }}>{opt.label}</span>
-                      </button>
-                    ))}
+                    {dayOptions
+                      ? dayOptions.map((opt) => (
+                          <button
+                            key={opt.dayOffset}
+                            type="button"
+                            role="menuitem"
+                            className="cre-menu-item cre-demo-controls-btn"
+                            onClick={() => applyPersona(persona, undefined, opt.dayOffset)}
+                          >
+                            <span style={{ flex: 1 }}>{opt.label}</span>
+                          </button>
+                        ))
+                      : countOptions!.map((opt) => (
+                          <button
+                            key={opt.countVariant}
+                            type="button"
+                            role="menuitem"
+                            className="cre-menu-item cre-demo-controls-btn"
+                            onClick={() => applyPersona(persona, opt.countVariant)}
+                          >
+                            <span style={{ flex: 1 }}>{opt.label}</span>
+                          </button>
+                        ))}
                   </div>
                 )}
               </div>
@@ -622,15 +692,37 @@ export function DemoControlsBar({
         >
           {DASHBOARD_PROGRESS_PICKER.map((opt) => {
             const active = opt.variant === progressState.variant
+            /* A STATE THE DESIGN HAS NOT ANSWERED YET — 2026-09-22, Expired.
+               The flag and the fixtures both resolve it, so picking it renders
+               SOMETHING; what it renders is just not a screen anyone has agreed
+               on. Offering it unmarked invites a stakeholder to read an
+               unreviewed page as the proposal. See `unavailable` on
+               `ProgressPickerOption` for why the row is greyed rather than cut. */
+            const unavailable = opt.unavailable
             return (
               <button
                 key={opt.variant}
                 type="button"
                 role="radio"
                 aria-checked={active}
+                /* `aria-disabled`, NOT `disabled` — the same call the pace
+                   sheet's unpickable row documents. A disabled button drops out
+                   of the tab order and out of most screen-reader element lists,
+                   so the one row that most needs to explain itself becomes the
+                   one that cannot be reached to hear the explanation. The click
+                   is refused in the handler instead. */
+                aria-disabled={unavailable ? true : undefined}
+                aria-describedby={unavailable ? `${opt.variant}-why` : undefined}
                 tabIndex={active ? 0 : -1}
+                title={unavailable}
+                style={
+                  unavailable
+                    ? { opacity: 0.45, cursor: 'not-allowed', alignItems: 'flex-start' }
+                    : undefined
+                }
                 className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
                 onClick={() => {
+                  if (unavailable) return
                   setVariant('dashboard-progress-state', opt.variant)
                   const promotedTier = ensureMemberForPersona()
                   writeProgEdu(
@@ -641,7 +733,24 @@ export function DemoControlsBar({
                   close()
                 }}
               >
-                <span style={{ flex: 1 }}>{opt.label}</span>
+                <span style={{ flex: 1 }}>
+                  {opt.label}
+                  {unavailable && (
+                    /* The reason IN THE ROW, not only on `title`: a tooltip is
+                       mouse-only, and "why is this greyed out" is the whole
+                       question the row has to answer. */
+                    <span
+                      id={`${opt.variant}-why`}
+                      style={{ display: 'block', fontSize: 11, fontWeight: 500, opacity: 0.85 }}
+                    >
+                      Not designed yet
+                    </span>
+                  )}
+                </span>
+                {/* STILL CHECKED WHEN ACTIVE, withheld or not. The row is
+                    unpickable, but the flag is still reachable by `?ff=` and the
+                    Feature Flag panel — and a bar that hid the tick would be
+                    misreporting the state the page is actually in. */}
                 {active && <Check size={15} aria-hidden />}
               </button>
             )
@@ -655,13 +764,20 @@ export function DemoControlsBar({
             ready, which is the whole reason the section exists. */}
         <DemoDropdown
           id="readiness"
-          label={readinessLabel}
+          /* NOT the resolved state when there is no section: a greyed pill
+             still reading "On Track" is the same false claim, just dimmer. */
+          label={readinessReachable ? readinessLabel : 'Not on this version'}
           eyebrow="Readiness"
           openId={openId}
           onToggle={toggle}
           panelRole="radiogroup"
           panelLabel="Readiness state"
           panelMinWidth={240}
+          disabledNote={
+            readinessReachable
+              ? undefined
+              : 'This version hides the Readiness section, so there is nothing for this control to change. Switch to QE Focused, Learner Focused or Marketing Focused to use it.'
+          }
         >
           {READINESS_PICKER.map((opt) => {
             const active = opt.state === (readinessState.variant ?? 'on-track')
