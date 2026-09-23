@@ -113,6 +113,7 @@ export function DemoDropdown({
   panelLabel,
   panelMinWidth = 220,
   disabledNote,
+  hidden = false,
   children,
 }: {
   id: string
@@ -126,8 +127,22 @@ export function DemoDropdown({
   panelMinWidth?: number
   /** Present = the control is INERT, and this says why. See the note below. */
   disabledNote?: string
+  /**
+   * GONE ENTIRELY, which is a different thing from `disabledNote` — 2026-09-23.
+   *
+   * `disabledNote` greys an axis that exists but has nowhere to land, and the
+   * note below argues hard for keeping it VISIBLE: a reviewer who came looking
+   * for it should find it with a reason rather than doubt their memory.
+   *
+   * This is for the other case, a MODERATED USER TEST, where the reviewer is a
+   * participant who was never told the bar exists. A greyed pill there is not
+   * reassurance, it is a question they will ask out loud in the middle of a
+   * task. `DemoControlsBar`'s `only` prop is the one caller.
+   */
+  hidden?: boolean
   children: ReactNode
 }) {
+  if (hidden) return null
   /* AN AXIS WITH NOWHERE TO LAND — 2026-09-22. The bar offers one dropdown per
      demo axis, and a version that doesn't render the surface behind one leaves
      the pill stating a state the page cannot show: "READINESS: On Track" above

@@ -91,12 +91,29 @@ const PACE_PRESET_PICKER: { value: string; label: string }[] = [
 export function DemoControlsBar({
   open = true,
   fullBleed = false,
+  only,
 }: {
   open?: boolean
   /** Full-bleed (Demo frame): span the whole screen width, skipping the 1440
    *  cap — used when the chrome sits outside the centered device window. */
   fullBleed?: boolean
+  /**
+   * SHOW ONLY THESE CONTROLS — 2026-09-23, for the moderated user-test link
+   * (`?test=1`, see `PrototypeChrome`). Ids are the dropdowns' own
+   * (`persona`, `progress`, `readiness`, `pacing`, `education`, `quick`,
+   * `brand`) plus `actions` for the Reset + kebab block.
+   *
+   * ⚠ A WHITELIST, NOT A HIDE-LIST, deliberately. A participant must never see
+   * a control the session did not intend, and a hide-list fails OPEN: the next
+   * dropdown added to this bar would appear in every test link until someone
+   * remembered to add it. This fails closed.
+   *
+   * Undefined ⇒ everything, which is every normal load.
+   */
+  only?: readonly string[]
 }) {
+  /** Is this control in the session's whitelist? See `only`. */
+  const show = (id: string) => only == null || only.includes(id)
   const { pathname } = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const { brand, membership, tier, setTier, setBrand } = useAccount()
@@ -501,6 +518,7 @@ export function DemoControlsBar({
         {BRAND_PICKER && (
         <DemoDropdown
           id="brand"
+          hidden={!show('brand')}
           label={brandLabel}
           eyebrow="Brand"
           openId={openId}
@@ -536,6 +554,7 @@ export function DemoControlsBar({
         {showTierSwitch && (
         <DemoDropdown
           id="quick"
+          hidden={!show('quick')}
           label={activeQuickView ? activeQuickView.label : 'Quick views'}
           eyebrow={activeQuickView ? 'Quick view' : undefined}
           openId={openId}
@@ -570,6 +589,7 @@ export function DemoControlsBar({
             Sits alongside Quick views; doesn't replace it. */}
         <DemoDropdown
           id="persona"
+          hidden={!show('persona')}
           label="Persona"
           eyebrow="Persona"
           openId={openId}
@@ -697,6 +717,7 @@ export function DemoControlsBar({
         {/* Progress / compliance state — single-select radiogroup */}
         <DemoDropdown
           id="progress"
+          hidden={!show('progress')}
           label={progressLabel}
           eyebrow="Progress"
           openId={openId}
@@ -779,6 +800,7 @@ export function DemoControlsBar({
             ready, which is the whole reason the section exists. */}
         <DemoDropdown
           id="readiness"
+          hidden={!show('readiness')}
           /* NOT the resolved state when there is no section: a greyed pill
              still reading "On Track" is the same false claim, just dimmer. */
           label={readinessReachable ? readinessLabel : 'Not on this version'}
@@ -827,6 +849,7 @@ export function DemoControlsBar({
             lose half the grid a reviewer is here to walk. */}
         <DemoDropdown
           id="pacing"
+          hidden={!show('pacing')}
           label={PACE_PRESET_PICKER.find((o) => o.value === (paceState.variant ?? 'recommended'))?.label ?? 'Recommended'}
           eyebrow="Pacing"
           openId={openId}
@@ -862,6 +885,7 @@ export function DemoControlsBar({
         {showEducation && (
           <DemoDropdown
             id="education"
+            hidden={!show('education')}
             label={educationLabel}
             eyebrow="Education"
             openId={openId}
@@ -895,7 +919,9 @@ export function DemoControlsBar({
           </DemoDropdown>
         )}
 
-        {/* Actions */}
+        {/* Actions — Reset + the kebab. Gated like the dropdowns: a participant
+            pressing Reset mid-session would silently re-baseline the demo. */}
+        {show('actions') && (
         <div style={ACTIONS}>
           <button
             type="button"
@@ -964,6 +990,7 @@ export function DemoControlsBar({
             ]}
           />
         </div>
+        )}
       </DemoBar>
 
       <Toast

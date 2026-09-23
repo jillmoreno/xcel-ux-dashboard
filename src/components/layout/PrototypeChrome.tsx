@@ -15,6 +15,9 @@ import { useDemoControlsVisibility } from '@/components/prototype/demoControlsVi
  * Self-contained — it only needs the route (for the Demo toggle gate) and the
  * shared Demo-controls visibility store; none of Header's heavy panel state.
  */
+/** The only demo controls a `?test=1` participant session shows. */
+const TEST_VIEW_CONTROLS = ['progress'] as const
+
 export function PrototypeChrome() {
   const { pathname, search } = useLocation()
   const { open: demoOpen, toggle: toggleDemo } = useDemoControlsVisibility()
@@ -38,6 +41,32 @@ export function PrototypeChrome() {
   // deep-link init applies the captured demo state (`?tier=&prof=&mem=&prog=&edu=`)
   // even though no controls are shown.
   if (params.get('present') === '1') return <DemoControlsBar open={false} />
+  /*
+   * `?test=1` — THE MODERATED USER-TEST VIEW, 2026-09-23. The link
+   * `promote-to-testing` builds, and the third shape of this bar rather than a
+   * rename of either above it.
+   *
+   * WHAT IT KEEPS, and why it is not `chrome=off`: the dark demo STAGE and the
+   * browser-window frame stay (forced in `DeviceFrameContext`, like
+   * `present=1`), and so does the demo controls bar — carrying the PROGRESS
+   * dropdown and nothing else. The direct ask was to keep the bar and the
+   * background and hide the rest; `chrome=off` removes all three, which is why
+   * it is the wrong tool here even though it looks like the right one.
+   *
+   * WHY PROGRESS SURVIVES ALONE: it is the one axis a moderator changes
+   * BETWEEN tasks — "now imagine you are two weeks in" — so taking it away
+   * would mean a reload and a re-paste of the session link mid-session. Every
+   * other control either re-baselines the demo (Reset, the kebab), swaps the
+   * whole scenario (Persona, Education) or changes a treatment the session is
+   * supposed to be holding still (Pacing, Readiness).
+   *
+   * ⚠ A WHITELIST, so it fails CLOSED — see `DemoControlsBar`'s `only`. The
+   * next dropdown added to that bar does NOT appear in test links by default,
+   * which is the right direction for a control a participant must never meet.
+   */
+  if (params.get('test') === '1') {
+    return <DemoControlsBar open fullBleed={framed} only={TEST_VIEW_CONTROLS} />
+  }
   // Routes that carry a hide-able stakeholder demo banner (→ show the toggle).
   const showDemoToggle = pathname === '/dashboard-rebrand' || pathname === '/onboarding-flow'
   return (

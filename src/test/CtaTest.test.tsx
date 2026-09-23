@@ -8,6 +8,11 @@ import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { LearningPathsPanelProvider } from '@/components/learning/LearningPathsPanelContext'
 import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelContext'
 import { PlatformShell } from '@/components/layout/PlatformShell'
+import { PrototypeChrome } from '@/components/layout/PrototypeChrome'
+import { DemoControlsBar } from '@/components/prototype/DemoControlsBar'
+import { DashboardVersionsPanelProvider } from '@/components/dashboard/DashboardVersionsPanelContext'
+import { MembershipVersionsPanelProvider } from '@/components/membership/MembershipVersionsPanelContext'
+import { FeatureFlagPanelProvider } from '@/components/account/FeatureFlagPanelContext'
 import { CtaTestProvider, parseDeadParam } from '@/context/CtaTestContext'
 import { TESTABLE_CTAS, TESTABLE_CTA_IDS, testableCtasByRegion } from '@/data/testableCtas'
 import { DISCOVERABILITY_DASHBOARD_VERSION_TESTING } from '@/data/dashboardVersions'
@@ -396,5 +401,87 @@ describe('on the Home dashboard', () => {
       fireEvent.click(resume!)
     })
     expect(screen.getByLabelText('Course contents')).toBeTruthy()
+  })
+})
+
+/* ─── The participant's view of the chrome ────────────────────────────────── */
+
+describe('?test=1 — the moderated session view', () => {
+  /*
+   * The direct ask, 2026-09-23: keep the demo controls bar and the demo
+   * background, hide everything on them except Progress.
+   *
+   * ⚠ THIS REPLACED A WRONG ANSWER. The first attempt reached for the existing
+   * `?chrome=off`, which hides the prototype bar, the demo controls AND the
+   * demo stage — three things when one was wanted. `test=1` is the third shape
+   * of this chrome rather than a rename of `chrome=off` or `present=1`.
+   */
+  /* ⚠ THE THREE PANEL PROVIDERS ARE FOR THE DEFAULT BRANCH ONLY. `AdminToolsMenu`
+     lives on the prototype bar and throws without them; the `?test=1` path
+     renders no prototype bar at all, so a harness built around the test view
+     alone would have passed while the CONTROL case could not even mount — and
+     the control case is the one proving this stays invisible to everyone else.
+     Same stack `DemoMode.test.tsx` uses. */
+  const renderChrome = (search: string) =>
+    render(
+      <MemoryRouter initialEntries={[`/dashboard-rebrand${search}`]}>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <DashboardVersionsPanelProvider>
+              <MembershipVersionsPanelProvider>
+                <FeatureFlagPanelProvider>
+                  <PrototypeChrome />
+                </FeatureFlagPanelProvider>
+              </MembershipVersionsPanelProvider>
+            </DashboardVersionsPanelProvider>
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+
+  it('keeps the demo bar, showing Progress and nothing else', () => {
+    renderChrome('?test=1')
+    expect(screen.getByRole('button', { name: /Progress/i })).toBeTruthy()
+    for (const gone of [/Persona/i, /Readiness/i, /Pacing/i, /Education/i, /^Reset$/, /Demo actions/i]) {
+      expect(screen.queryByRole('button', { name: gone }), String(gone)).toBeNull()
+    }
+  })
+
+  it('drops the prototype bar with it', () => {
+    /* The dark strip — home icon, the Demo pill, the device toggles, the
+       "UI/UX PROTOTYPE" wordmark and the joke. All scaffolding a participant
+       was never told about. */
+    const { container } = renderChrome('?test=1')
+    expect(container.querySelector('.cre-prototype-bar')).toBeNull()
+    expect(screen.queryByRole('link', { name: /Prototype home/i })).toBeNull()
+  })
+
+  it('leaves every control alone on a normal load', () => {
+    /* The direction that matters more: this must be invisible to everyone not
+       in a session. */
+    renderChrome('')
+    for (const there of [/Progress/i, /Persona/i, /Pacing/i, /^Reset$/]) {
+      expect(screen.getByRole('button', { name: there }), String(there)).toBeTruthy()
+    }
+  })
+
+  it('whitelists rather than hide-lists', () => {
+    /* ⚠ THE CLAIM THAT KEEPS THIS SAFE AS THE BAR GROWS. A hide-list would
+       fail OPEN — the next dropdown added would appear in every test link
+       until someone remembered it. Asserted by rendering the bar with an
+       `only` naming a control that is not Progress: everything else, including
+       Progress, must be gone. */
+    render(
+      <MemoryRouter initialEntries={['/dashboard-rebrand']}>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <DemoControlsBar open only={['persona']} />
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+    expect(screen.getByRole('button', { name: /Persona/i })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /Progress/i })).toBeNull()
+    expect(screen.queryByRole('button', { name: /^Reset$/ })).toBeNull()
   })
 })
