@@ -3,6 +3,7 @@ import { render, screen, within, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { StudyPaceTile } from '@/components/learning/StudyPaceTile'
+import { StudyPaceSheet } from '@/components/learning/StudyPaceSheet'
 import {
   studyPace,
   defaultPreset,
@@ -166,21 +167,77 @@ describe('StudyPaceTile — the tile operates nothing', () => {
  * that. It did not, when this was first wired — the tile re-derived a pace from
  * `nights` and ignored the week that had been built.
  */
+
+/**
+ * Open the sheet ALREADY ON a style screen, the way a returning learner does.
+ *
+ * ⚠ THE CHOOSER'S THREE STYLE ROWS WENT ON 2026-09-23 — it offers the three
+ * NAMED PLANS and Build my own now, and the first three apply and close. The
+ * `sprint` / `evenings` / `blocks` screens are intact but no row opens them.
+ *
+ * THEY ARE STILL REACHABLE, though, and this is the real path rather than a
+ * test hack: `PaceSheetBody` seeds its screen from `choices.approach`, so a
+ * learner who built an evenings plan before today re-opens on it. Rendering
+ * the sheet directly with that approach set is exactly that state — which is
+ * also why these tests still earn their place: the screens are live code for
+ * anyone who has one saved.
+ *
+ * ⚠ IF THE ROWS COME BACK, these should go back through the chooser. A test
+ * that only ever enters by the back door stops noticing the front one is
+ * bricked.
+ */
+async function openSheetAt(approach: 'sprint' | 'evenings' | 'blocks' | 'custom') {
+  const view = render(
+    <MemoryRouter>
+      <StudyPaceSheet
+        open
+        onClose={() => {}}
+        today={TODAY}
+        hoursRemaining={24}
+        accessExpiresAt="2026-10-18"
+        courseTitle="Life & Health Pre-License Course"
+        choices={{
+          presetId: null,
+          nights: null,
+          examDate: null,
+          style: 'average',
+          approach,
+          schedule: null,
+          plan: null,
+        }}
+        onChange={() => {}}
+      />
+    </MemoryRouter>,
+  )
+  return { view, dialog: await screen.findByRole('dialog') }
+}
+
 describe('StudyPaceSheet — the chooser', () => {
-  it('states the recommendation and offers the four shapes', async () => {
+  it('offers the three named plans and Build my own, with Recommended checked', async () => {
+    /* ⚠ REWRITTEN 2026-09-23. It asserted the OLD shape: "Recommended is stated
+       as an ANSWER, not offered as a fifth option", in a block above four style
+       rows. The ask inverted exactly that — "Recommended will be selected by
+       default, but will still be part of the existing list" — so it is one row
+       of four now and the styles it used to sit above are gone.
+
+       The three plans apply and close; only Build my own opens a screen. */
     const user = userEvent.setup()
     renderTile()
     const dialog = await openSheet(user)
-    const preset = defaultPreset(
-      studyPace({ today: TODAY, hoursRemaining: 24, accessExpiresAt: '2026-10-18' }),
-    )
-    // Recommended is stated as an ANSWER, not offered as a fifth option…
-    expect(dialog.textContent).toContain(formatEvening(preset.minsPerNight))
-    expect(dialog.textContent).toContain(formatPaceDate(preset.finishIso))
-    // …and accepted by the primary button rather than by a radio.
-    expect(within(dialog).getByRole('button', { name: 'Keep recommended' })).toBeTruthy()
-    for (const shape of ['sprint', 'evenings', 'blocks', 'custom']) {
-      expect(dialog.querySelector(`[data-shape="${shape}"]`)).toBeTruthy()
+    const group = within(dialog).getByRole('radiogroup', { name: 'Study pace' })
+    const rows = within(group).getAllByRole('radio')
+    expect(rows.map((r) => r.querySelector('.cre-pace-sheet__option-title')?.textContent)).toEqual([
+      'Steady & Relaxed',
+      'Recommended',
+      'Focused & Quick',
+    ])
+    // Recommended, by default — `presetId` is null until the learner chooses.
+    expect(rows.filter((r) => r.getAttribute('aria-checked') === 'true')).toHaveLength(1)
+    expect(rows[1].getAttribute('aria-checked')).toBe('true')
+    // …and Build my own is the one row that still leads somewhere.
+    expect(dialog.querySelector('[data-shape="custom"]')).toBeTruthy()
+    for (const gone of ['sprint', 'evenings', 'blocks']) {
+      expect(dialog.querySelector(`[data-shape="${gone}"]`)).toBeNull()
     }
   })
 
@@ -193,14 +250,15 @@ describe('StudyPaceSheet — the chooser', () => {
     })
   })
 
-  it('goes into a style and back out again', async () => {
+  it('goes back out of a style to the chooser', async () => {
+    /* Entered through `choices.approach` rather than a row — see `openSheetAt`.
+       The way OUT is unchanged and is what this pins: the back link returns to
+       the chooser, which is now the four-row list. */
     const user = userEvent.setup()
-    renderTile()
-    const dialog = await openSheet(user)
-    await user.click(dialog.querySelector('[data-shape="evenings"]')!)
+    const { dialog } = await openSheetAt('evenings')
     expect(within(dialog).getByRole('group', { name: 'Which weeknights?' })).toBeTruthy()
     await user.click(within(dialog).getByRole('button', { name: /All pace styles/ }))
-    expect(within(dialog).getByRole('button', { name: 'Keep recommended' })).toBeTruthy()
+    expect(within(dialog).getByRole('radiogroup', { name: 'Study pace' })).toBeTruthy()
   })
 })
 
@@ -212,9 +270,13 @@ describe('StudyPaceSheet — the footer states a contract', () => {
        re-derived a pace from `nights` and never looked at the week that was
        built — so the sheet promised one date and the card printed another. */
     const user = userEvent.setup()
+    /* THROUGH "BUILD MY OWN" as of 2026-09-23 — the chooser's style rows are
+       gone and this assertion needs the SHEET WIRED TO THE TILE (it checks the
+       card agrees with the footer after Save), which `openSheetAt` cannot give
+       it. Build my own is the one door left that still builds a week. */
     renderTile()
     const dialog = await openSheet(user)
-    await user.click(dialog.querySelector('[data-shape="blocks"]')!)
+    await user.click(dialog.querySelector('[data-shape="custom"]')!)
     const promised = dialog
       .querySelector('.cre-pace-sheet__summary')!
       .textContent!.match(/finishing around ([A-Z][a-z]+ \d+)/)![1]
@@ -228,7 +290,7 @@ describe('StudyPaceSheet — the footer states a contract', () => {
     renderTile()
     const before = document.body.textContent
     const dialog = await openSheet(user)
-    await user.click(dialog.querySelector('[data-shape="blocks"]')!)
+    await user.click(dialog.querySelector('[data-shape="custom"]')!)
     await user.click(within(dialog).getByRole('button', { name: 'Cancel' }))
     expect(document.body.textContent).toBe(before)
   })
@@ -238,20 +300,30 @@ describe('StudyPaceSheet — the footer states a contract', () => {
     const user = userEvent.setup()
     renderTile()
     const first = await openSheet(user)
-    await user.click(first.querySelector('[data-shape="evenings"]')!)
+    await user.click(first.querySelector('[data-shape="custom"]')!)
     await user.click(within(first).getByRole('button', { name: /^Save pace/ }))
     const second = await openSheet(user)
-    expect(within(second).getByRole('group', { name: 'Which weeknights?' })).toBeTruthy()
+    /* THE CUSTOM SCREEN as of 2026-09-23 — the evenings row is gone from the
+       chooser, so Build my own is the round trip available from the tile.
+
+       ASSERTED AS "NOT THE CHOOSER" rather than by naming a control on the
+       screen, which is the claim itself and is also what survives the screens
+       being re-arranged: the back link only exists on a screen, and the plan
+       radiogroup only exists on the chooser. A plan you cannot get back to is a
+       plan you rebuild. */
+    expect(within(second).getByRole('button', { name: /All pace styles/ })).toBeTruthy()
+    expect(within(second).queryByRole('radiogroup', { name: 'Study pace' })).toBeNull()
     expect(within(second).queryByRole('button', { name: 'Keep recommended' })).toBeNull()
   })
 })
 
 describe('StudyPaceSheet — the outcome reads the simulator', () => {
-  const openStyle = async (shape: string) => {
+  /* Entered through `choices.approach`, not a chooser row — those went on
+     2026-09-23. See `openSheetAt`, which explains why this is the real path
+     and not a test hack. */
+  const openStyle = async (shape: 'sprint' | 'evenings' | 'blocks' | 'custom') => {
     const user = userEvent.setup()
-    renderTile()
-    const dialog = await openSheet(user)
-    await user.click(dialog.querySelector(`[data-shape="${shape}"]`)!)
+    const { dialog } = await openSheetAt(shape)
     return { user, dialog }
   }
 
@@ -311,7 +383,7 @@ describe('StudyPaceSheet — two ceilings', () => {
     const user = userEvent.setup()
     renderTile(props)
     const dialog = await openSheet(user)
-    await user.click(dialog.querySelector('[data-shape="evenings"]')!)
+    await user.click(dialog.querySelector('[data-shape="custom"]')!)
     return dialog
   }
 
@@ -341,11 +413,10 @@ describe('StudyPaceSheet — two ceilings', () => {
 })
 
 describe('StudyPaceSheet — the shell, the keyboard and the ear', () => {
-  const openStyle = async (shape = 'evenings') => {
+  /* As above — `choices.approach`, not a chooser row. */
+  const openStyle = async (shape: 'sprint' | 'evenings' | 'blocks' | 'custom' = 'evenings') => {
     const user = userEvent.setup()
-    renderTile()
-    const dialog = await openSheet(user)
-    await user.click(dialog.querySelector(`[data-shape="${shape}"]`)!)
+    const { dialog } = await openSheetAt(shape)
     return { user, dialog }
   }
 
@@ -550,7 +621,7 @@ describe('StudyPaceTile — the presets card', () => {
 
     // …and it still MOVES, which is the half the old test proved by flipping.
     const dialog = await openSheet(user)
-    await user.click(dialog.querySelector('[data-shape="evenings"]')!)
+    await user.click(dialog.querySelector('[data-shape="custom"]')!)
     await user.click(within(dialog).getByRole('button', { name: /Save pace/ }))
     const after = nameThenGap()
     expect(after.heading).toBe(`${paceNameFor(after.gap)} Study Pace`)

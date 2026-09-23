@@ -482,7 +482,7 @@ describe('the presets pacing card', () => {
        three preset radio rows; the sheet is now a chooser of study STYLES, so
        the equivalent gesture is opening one and saving the week it builds. The
        CLAIM is unchanged, which is why this was edited rather than dropped. */
-    await user.click(dialog.querySelector('[data-shape="evenings"]')!)
+    await user.click(dialog.querySelector('[data-shape="custom"]')!)
     await user.click(within(dialog).getByRole('button', { name: /^Save pace/ }))
 
     /* ⚠ THE CLAIM NARROWED THE SAME DAY, and this records it rather than

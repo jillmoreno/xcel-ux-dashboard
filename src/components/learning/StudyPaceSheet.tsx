@@ -1,12 +1,11 @@
 import { useMemo, useRef, useState, type ReactNode } from 'react'
 import { Sheet } from '@/components/ui/Sheet'
 import { Button } from '@/components/ui/Button'
-import { X } from '@/icons'
+import { X, Check } from '@/icons'
 import {
   studyPace,
   defaultPreset,
   formatEvening,
-  formatEveningSpoken,
   formatPaceDate,
   isoFromDate,
   daysUntil,
@@ -25,6 +24,8 @@ import {
   formatHours,
   type ScheduleSim,
   type ScheduleStanding,
+  paceOptionsFor,
+  type PaceOption,
 } from '@/lib/studyPace'
 
 /**
@@ -234,6 +235,23 @@ function PaceSheetBody({
     [today, hoursRemaining, accessExpiresAt, draft.examDate, draft.nights, draft.style],
   )
   const recommended = defaultPreset(model)
+  /* THE THREE NAMED PLANS, from the same function the card's picker uses — so
+     the sheet and the card cannot offer plans that differ in nights or in
+     wording. Read off the DRAFT's exam date and style, like `model` above. */
+  const plans = useMemo(
+    () =>
+      paceOptionsFor({
+        today,
+        hoursRemaining,
+        accessExpiresAt,
+        examDate: draft.examDate ?? undefined,
+        style: draft.style,
+      }),
+    [today, hoursRemaining, accessExpiresAt, draft.examDate, draft.style],
+  )
+  /* Recommended by default — `choices.presetId` is null until the learner has
+     chosen, which is exactly the state "Recommended" describes. */
+  const activePlan: PresetId = choices.presetId ?? 'recommended'
 
   /* THE FOUR SCREENS' OWN STATE, seeded from the saved schedule where it can be
      read back and from sensible starts where it cannot. Held together rather
@@ -358,7 +376,27 @@ function PaceSheetBody({
         </p>
 
         {screen == null ? (
-          <Chooser recommended={recommended} model={model} onPick={setScreen} />
+          <Chooser
+            recommended={recommended}
+            model={model}
+            onPick={setScreen}
+            plans={plans}
+            activePlan={activePlan}
+            /* APPLIES AND CLOSES, bypassing the draft deliberately — see the
+               Chooser's own note. There is nothing to fill in, so there is
+               nothing a Cancel could restore. `schedule: null` because a
+               hand-built week would otherwise beat the plan just chosen. */
+            onApplyPlan={(plan) => {
+              onChange({
+                ...draft,
+                presetId: plan.id,
+                nights: plan.nights,
+                schedule: null,
+                approach: null,
+              })
+              onClose()
+            }}
+          />
         ) : (
           <>
             <button
@@ -477,22 +515,26 @@ function PaceSheetBody({
 
 /* ── SCREEN 0 · THE CHOOSER ──────────────────────────────────────────────── */
 
+/*
+ * ⚠ `sprint`, `evenings` AND `blocks` LEFT THIS LIST on 2026-09-23 — the direct
+ * ask: the chooser now offers the three NAMED PLANS the card offers, and
+ * "don't implement anything after Build My Own. If the user clicks on any of
+ * the other three, the sheet will close and the study pace widget will update."
+ *
+ * So the first three apply a plan and close; only `custom` still opens a screen.
+ *
+ * ⚠ THEIR SCREENS ARE INTACT AND UNREACHABLE, which is this repo's archive
+ * convention rather than an oversight: `SprintScreen`, `EveningsScreen` and
+ * `BlocksScreen` are all still here, still typed, still wired to `screen` —
+ * nothing was deleted, and restoring one is re-adding its row below. What
+ * WOULD be lost by deleting them is the only place a learner can express a
+ * week that is not "the first N days": Long sessions on free days in
+ * particular has no equivalent in the three named plans.
+ *
+ * `PaceApproach` keeps all four members for the same reason — `choices.approach`
+ * may already hold one from a plan a learner built before today.
+ */
 const APPROACHES: { id: PaceApproach; title: string; body: string }[] = [
-  {
-    id: 'sprint',
-    title: 'Finish fast',
-    body: 'I have most of the day free and want to be done in a week or two.',
-  },
-  {
-    id: 'evenings',
-    title: 'Evenings only',
-    body: 'My days are busy. I will set what I can manage on a weeknight.',
-  },
-  {
-    id: 'blocks',
-    title: 'Long sessions on free days',
-    body: 'My week changes. I would rather do long sessions on the days I am free.',
-  },
   {
     id: 'custom',
     title: 'Build my own',
@@ -514,42 +556,92 @@ function Chooser({
   recommended,
   model,
   onPick,
+  plans,
+  activePlan,
+  onApplyPlan,
 }: {
   recommended: PacePreset
   model: ReturnType<typeof studyPace>
   onPick: (a: PaceApproach) => void
+  /** The three named plans — see `paceOptionsFor`. */
+  plans: PaceOption[]
+  activePlan: PresetId | null
+  /** Applies the plan and closes the sheet. No draft: there is nothing to
+   *  fill in, so there is nothing to discard. */
+  onApplyPlan: (plan: PaceOption) => void
 }) {
   const fits = recommended.state !== 'no'
   return (
     <>
-      <div className="cre-pace-sheet__recommend">
-        <span className="cre-pace-sheet__group-label">Recommended for you</span>
-        {fits ? (
-          <>
-            <span className="cre-pace-sheet__outcome-figure">
-              {formatEvening(recommended.minsPerNight)} a night, {recommended.nights} days a week
-            </span>
-            <span className="cre-pace-sheet__hint">
-              Finishing around{' '}
-              <b className="cre-pace-sheet__strong">{formatPaceDate(recommended.finishIso)}</b>.
-              <span className="cre-sr-only">
-                {' '}
-                That is {formatEveningSpoken(recommended.minsPerNight)} on each study evening.
-              </span>
-            </span>
-          </>
-        ) : (
-          /* NO FIGURE when nothing fits — the same rule the tile keeps. A pace
-             past the ceiling has no honest number, and the answer is more time
-             or fewer lessons rather than a bigger one. */
-          <span className="cre-pace-sheet__hint">
-            There is no pace we would recommend for the time left. Building your own week below
-            will show you what it would actually take.
-          </span>
-        )}
-      </div>
+      {/*
+        THE THREE NAMED PLANS, AS THE CHOICE — 2026-09-23, the direct ask.
+        
+        RECOMMENDED IS IN THE LIST, not above it. It used to sit in its own
+        highlighted block over a list of four "styles", which made it read as
+        the answer and the list as the escape hatch. The ask is explicit that it
+        is "selected by default, but will still be part of the existing list" —
+        so it is one row of four, pre-selected, and the other two are peers
+        rather than alternatives to it.
+        
+        A RADIOGROUP, because exactly one is true and the selection is the
+        point. `aria-checked` carries it; the tint and the tick are not doing
+        that job alone.
+        
+        PICKING ONE APPLIES AND CLOSES. There is no screen behind these three —
+        "if the user clicks on any of the other three, the sheet will close and
+        the study pace widget will update" — which is also why they are not
+        drafts: the sheet's save contract exists for the screens that build a
+        week, and a single-click choice with nothing to fill in has nothing to
+        discard.
+      */}
+      <Group label="Choose your pace">
+        <div role="radiogroup" aria-label="Study pace" className="cre-pace-sheet__plans">
+          {plans.map((o) => {
+            const on = o.id === activePlan
+            const planFits = o.priced.state !== 'no'
+            return (
+              <button
+                key={o.id}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                tabIndex={on ? 0 : -1}
+                data-plan={o.id}
+                className="cre-pace-sheet__option"
+                onClick={() => onApplyPlan(o)}
+              >
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span className="cre-pace-sheet__option-title">{o.name}</span>
+                  <span className="cre-pace-sheet__option-body">
+                    {planFits
+                      ? `${o.nights} ${o.nights === 1 ? 'day' : 'days'} a week · ${formatEvening(
+                          o.priced.minsPerNight,
+                        )} a night · finishing ${formatPaceDate(o.priced.finishIso)}`
+                      : 'The work left will not fit at this pace.'}
+                  </span>
+                </span>
+                {on ? (
+                  <span aria-hidden style={{ alignSelf: 'center' }}>
+                    <Check size={15} />
+                  </span>
+                ) : null}
+              </button>
+            )
+          })}
+        </div>
+      </Group>
 
-      <Group label="Or pick the style that fits your life">
+      {!fits ? (
+        /* NO FIGURE when nothing fits — the same rule the tile keeps. A pace
+           past the ceiling has no honest number, and the answer is more time or
+           fewer lessons rather than a bigger one. */
+        <p className="cre-pace-sheet__hint">
+          There is no pace we would recommend for the time left. Building your own week below will
+          show you what it would actually take.
+        </p>
+      ) : null}
+
+      <Group label="Or set it yourself">
         {APPROACHES.map((a) => (
           <button
             key={a.id}

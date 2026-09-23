@@ -451,6 +451,7 @@ export function StudyPaceTile({
             today={today}
             onCustomize={() => setOpen(true)}
             options={chooserVariant === 'options' ? options : undefined}
+            customizeDisabled={chooserVariant === 'options'}
             activeOption={activeOption}
             onPickOption={(o) =>
               setChoices((c) => ({
@@ -921,6 +922,7 @@ function PaceCardBody({
   options,
   activeOption,
   onPickOption,
+  customizeDisabled,
 }: {
   model: PaceModel
   preset: PacePreset
@@ -940,6 +942,8 @@ function PaceCardBody({
   onPickNights?: (nights: number) => void
   /** The three named plans, on the `options` chooser only. */
   options?: PaceOption[]
+  /** True on `options`, where the card itself is the picker. */
+  customizeDisabled?: boolean
   activeOption?: PresetId | null
   onPickOption?: (option: PaceOption) => void
 }) {
@@ -1032,7 +1036,7 @@ function PaceCardBody({
             ? 'Finishing in time would take a drastic jump in pace. The realistic options are a later exam date, or less to do before it.'
             : 'Finishing in time would take a drastic jump in pace. Consider extending your course access instead — or trimming what is left.'}
         </p>
-        <CustomizeLink onClick={onCustomize} />
+        <CustomizeLink onClick={onCustomize} disabled={customizeDisabled} />
       </div>
     )
   }
@@ -1203,7 +1207,7 @@ function PaceCardBody({
         {readout === 'stats' ? null : <p style={cardHelper}>{FINISH_DATE_NOTE}</p>}
       </div>
 
-      <CustomizeLink onClick={onCustomize} />
+      <CustomizeLink onClick={onCustomize} disabled={customizeDisabled} />
     </div>
   )
 }
@@ -1362,14 +1366,40 @@ function WeekStrip({
  * week, the exam date and the study-plan calendar. A second sheet for a renamed
  * button is how the two would drift.
  */
-function CustomizeLink({ onClick }: { onClick: () => void }) {
+function CustomizeLink({ onClick, disabled }: { onClick: () => void; disabled?: boolean }) {
   return (
     <button
       type="button"
-      onClick={onClick}
-      aria-haspopup="dialog"
+      onClick={disabled ? undefined : onClick}
+      disabled={disabled}
+      {...(disabled ? {} : { 'aria-haspopup': 'dialog' as const })}
+      /*
+       * DISABLED ON THE `options` CHOOSER — 2026-09-23, the direct note: "if
+       * the other study pace widget variant is on, the Customize link will be
+       * disabled."
+       *
+       * The two treatments answer the same question in two places: on `options`
+       * the three plans are ON the card, so a link into a sheet offering the
+       * same three would be one door too many. On `strip` the card has no
+       * picker and the sheet IS the picker, which is what the sheet's chooser
+       * was just rebuilt for.
+       *
+       * ⚠ IT TAKES "BUILD MY OWN" WITH IT, and that is the cost to weigh: the
+       * sheet's custom screens are the only way to express a week that is not
+       * "the first N days", and on this variant nothing reaches them. Disabled
+       * rather than hidden so the absence is visible and the decision is
+       * legible; `title` says why, since a greyed control that explains nothing
+       * is the thing reviewers report as broken.
+       */
+      title={
+        disabled
+          ? 'Pick a pace from the three above. Building a custom week is available on the other Study Pace treatment.'
+          : undefined
+      }
       className="cre-link-action cre-cta-ink"
       style={{
+        opacity: disabled ? 0.45 : 1,
+        cursor: disabled ? 'not-allowed' : 'pointer',
         alignSelf: 'flex-end',
         marginTop: 2,
         display: 'inline-flex',
@@ -1378,7 +1408,6 @@ function CustomizeLink({ onClick }: { onClick: () => void }) {
         background: 'transparent',
         border: 0,
         padding: 0,
-        cursor: 'pointer',
         fontFamily: 'var(--font-body)',
         fontSize: 13,
         fontWeight: 600,

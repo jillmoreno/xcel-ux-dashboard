@@ -3875,6 +3875,15 @@ a.cre-library-card-title::after {
 }
 
 /* ── group + rows ────────────────────────────────────────────────────── */
+/* The chooser's three named plans — a column, spaced like the option rows it
+   sits with. Added 2026-09-23 with the plan picker; the rows themselves reuse
+   `.cre-pace-sheet__option`, so only the wrapper is new. */
+.cre-pace-sheet__plans {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .cre-pace-sheet__group {
   display: flex;
   flex-direction: column;
