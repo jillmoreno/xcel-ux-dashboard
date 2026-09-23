@@ -514,6 +514,18 @@ export function MembershipOverview({
      so the alignment is structural. */
   const COURSE_HEADER_COVER = 130
   const COURSE_HEADER_COVER_GAP = 16
+  /**
+   * What the header's progress bar occupies — its 8px height plus the 2px of
+   * rhythm between it and the stat row's own 14px margin.
+   *
+   * Spent as padding ABOVE the eyebrow when the bar is hidden at 0%, so the
+   * header keeps its height and the cluster moves down instead of the block
+   * collapsing. A named constant rather than a 10 at each end because the two
+   * uses must stay equal: if the bar's height ever changes and this does not,
+   * the header grows or shrinks at 0% only — a difference nobody would see
+   * until they flipped the demo's PROGRESS control.
+   */
+  const HEADER_BAR_RESERVE = 10
   // One resolver, shared with the band below — see the note at the bar.
   const headerPct = activeProgressPath ? displayedProgressPct(activeProgressPath) : 0
   /* The count under the bar, from the SAME category list the gauge sums —
@@ -727,7 +739,7 @@ export function MembershipOverview({
               }}
             />
           ) : null}
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ flex: 1, minWidth: 0, paddingTop: headerPct > 0 ? 0 : HEADER_BAR_RESERVE }}>
         {/* THE TITLE WRAPS, NOT THE ROW — 2026-09-17, the direct ask.
             `flex-wrap` sent the whole percentage cluster to its own line the
             moment the heading got long, which moved the number away from the
@@ -859,12 +871,37 @@ export function MembershipOverview({
             `marginTop: 10`, not 18 — the figure sits on the title's line, so
             the bar belongs directly under the pair rather than a row away. */}
         <div style={{ marginTop: 10 }}>
-          <ProgressBar
-            pct={headerPct}
-            height={8}
-            fill="var(--color-primary-500)"
-            track="var(--color-neutral-300)"
-          />
+          {/* HIDDEN AT NOUGHT — 2026-09-23, the direct ask: "at 0% hide this bar
+              and shift the title and eyebrow down."
+
+              An empty groove is the one state where this bar costs more than it
+              says. Everywhere else it reports a position; at 0 it reports that
+              there is nothing to report, in the widest element of the band, and
+              the stat row directly beneath already prints "0 of 42 lessons
+              COMPLETED" in words. A full-width empty track also reads as a
+              failed load rather than as a starting point, which is the wrong
+              first impression on the one screen a learner sees before they
+              begin.
+
+              THE SPACE IS KEPT, which is the second half of the ask and the
+              less obvious half. `HEADER_BAR_RESERVE` goes back as padding above
+              the eyebrow, so the title and eyebrow shift DOWN by exactly what
+              the bar occupied and the header's overall height does not change.
+              That matters structurally rather than cosmetically: the cover art
+              is `align-self: stretch` (see `.cre-course-header-narrow > img` in
+              tokens.css), so a shorter header would re-crop the photograph, and
+              the art's foot is deliberately aligned with the stat row's rule —
+              "stretch vertically to align with the bottom of the divider line",
+              the 2026-09-21 ask. Letting the block collapse would have broken
+              that alignment to fix a bar. */}
+          {headerPct > 0 ? (
+            <ProgressBar
+              pct={headerPct}
+              height={8}
+              fill="var(--color-primary-500)"
+              track="var(--color-neutral-300)"
+            />
+          ) : null}
           {/* The count under the bar, RIGHT-ALIGNED to where the bar ends —
               which is what ties it to the bar rather than to the title. The
               percentage above says how far; this says how far out of what, and

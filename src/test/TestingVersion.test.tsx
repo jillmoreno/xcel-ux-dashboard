@@ -1027,3 +1027,54 @@ describe('the pacing treatment a review link lands on', () => {
     expect(paceTile().querySelector('[aria-label="Study pace — placeholder"]')).toBeNull()
   })
 })
+
+
+describe('the course header bar at nought', () => {
+  /*
+   * 2026-09-23, the direct ask: "at 0% hide this bar and shift the title and
+   * eyebrow down."
+   *
+   * An empty groove is the one state where the bar costs more than it says.
+   * Everywhere else it reports a position; at 0 it reports that there is
+   * nothing to report, in the widest element of the band, directly above a stat
+   * row already printing "0 of 42 lessons COMPLETED" in words.
+   */
+  const headerBars = (container: HTMLElement) =>
+    [...container.querySelectorAll<HTMLElement>('div[aria-hidden="true"]')].filter(
+      (el) => el.style.borderRadius === 'var(--radius-pill)' && el.style.height === '8px',
+    )
+
+  it('hides the bar at 0% and keeps it above nought', () => {
+    seed({ 'dashboard-progress-state': { enabled: true, variant: 'not-started' } })
+    const { container, unmount } = renderShell(TESTING_URL)
+    expect(container.textContent).toMatch(/0 of \d+ lessons/i)
+    expect(headerBars(container)).toHaveLength(0)
+    unmount()
+
+    /* AND THE OTHER HALF, which is the assertion that would have been missed:
+       "hidden at 0" is trivially satisfiable by never rendering it. */
+    seed({ 'dashboard-progress-state': { enabled: true, variant: 'progress-on-track' } })
+    const onTrack = renderShell(TESTING_URL)
+    expect(headerBars(onTrack.container).length).toBeGreaterThan(0)
+  })
+
+  it('reserves the space rather than letting the header collapse', () => {
+    /* ⚠ THE STRUCTURAL HALF, and the reason this is a test rather than a
+       comment. The cover art is `align-self: stretch` (see
+       `.cre-course-header-narrow > img` in tokens.css) and its foot is
+       deliberately aligned with the stat row's rule — "stretch vertically to
+       align with the bottom of the divider line", the 2026-09-21 ask. A header
+       that simply lost 10px at 0% would re-crop the photograph and break that
+       alignment to fix a bar, and nothing on screen would say why. */
+    seed({ 'dashboard-progress-state': { enabled: true, variant: 'not-started' } })
+    const { container } = renderShell(TESTING_URL)
+    const eyebrow = [...container.querySelectorAll<HTMLElement>('p.cre-eyebrow-ink')].find(
+      (el) => /course progress/i.test(el.textContent ?? ''),
+    )
+    expect(eyebrow).toBeTruthy()
+    // The padding lands on the column that holds the eyebrow and the title.
+    const column = eyebrow!.closest('div[style*="padding-top"]') as HTMLElement | null
+    expect(column).toBeTruthy()
+    expect(column!.style.paddingTop).toBe('10px')
+  })
+})
