@@ -323,23 +323,36 @@ function LicensingStepWidget({
    * "·" reads as a value that failed to load, which is the admin roster's
    * blank-cell rule and the same shape as the Links panel's row meta.
    *
-   * THE LINE NEEDS A FEE TO EXIST — 2026-09-21, the direct ask ("remove"),
-   * pointed at Pass State Exam's meta, which was the bare word "PSI".
+   * THE LINE IS THE FEE — 2026-09-22, the direct ask ("Remove the PSI, leave
+   * the fee"), pointed at Schedule State Exam's "PSI · $40 exam fee".
    *
-   * A RULE rather than a special case for that step: a meta line is a pairing,
-   * and with no fee to pair with, the owner was a one-word row under a sentence
-   * — chrome that reads as a label for something missing. Written as "only when
-   * there is a fee", so a fourth step with a fee gets the line and one without
-   * does not, and nobody has to remember which id was exempt.
+   * IT FINISHES A MOVE STARTED THE DAY BEFORE. That ask ("remove") was pointed
+   * at Pass State Exam's meta, which was the bare word "PSI", and it was
+   * written as a RULE rather than an exemption for one id — "a meta line is a
+   * pairing, and with no fee to pair with the owner is a one-word row under a
+   * sentence". The owner has now been removed from both ends of that pairing,
+   * so what is left is the rule it was always converging on: the meta line
+   * states the FEE, and nothing else.
+   *
+   * KEPT AS A RULE for the same reason as last time — a condition on
+   * `step.id` would mean remembering which step was exempt, and there are
+   * three of these plus whatever a second state adds.
+   *
+   * IT ALSO DROPS "NY" FROM APPLY FOR YOUR LICENSE, which the ask did not
+   * name. That card read "NY · $80 application fee" via `ownerShort`, and the
+   * card's own title is "Get Licensed in New York" — so the owner was saying
+   * the state twice. Pass State Exam is unchanged either way: it has no fee,
+   * so it had no meta line under the previous rule and has none under this one.
    *
    * WHAT IS LOST, and where it survives: the owner is the reason these steps
    * are separate from the coursework at all ("everything in the journey happens
-   * inside the LMS and nothing here does"), and on Pass State Exam that fact is
-   * now only in the step's own sheet, which the card's "What to expect" link
-   * opens. The other two cards still name their owner beside the fee. Delete
-   * the `step.fee` condition to put it back on all three.
+   * inside the LMS and nothing here does"). That fact is now in each step's own
+   * sheet rather than on any card — `GetLicensedStepPanel`, which the card's
+   * detail link opens, and which still names PSI, DFS and NIPR. `step.owner`
+   * and `step.ownerShort` are UNTOUCHED in the data and still read by
+   * `StudyJourneyRail`; restoring the pairing here is one line.
    */
-  const meta = step.fee ? [step.ownerShort ?? step.owner, step.fee].filter(Boolean).join(' · ') : ''
+  const meta = step.fee ?? ''
   /*
    * THIS CARD CARRIES THE EXAM-DATE CAPTURE — and therefore does NOT print the
    * step's detail line (2026-09-21, the direct ask: "remove", pointed at

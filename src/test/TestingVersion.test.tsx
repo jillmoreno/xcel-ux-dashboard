@@ -720,30 +720,38 @@ describe('the post-course steps are their own widgets', () => {
     expect(within(col).getByRole('button', { name: /How to apply/ })).toBeTruthy()
   })
 
-  it('shows the owner/fee line only where there is a FEE', () => {
-    /* Pass State Exam publishes no fee, so its meta was the bare word "PSI" —
-       a one-word row under a sentence, which reads as a label for something
-       missing. The rule is "needs a fee", not "except step 06", so a fourth
-       step sorts itself out.
-   
-       Asserted as the RULE across all three rather than as one absence: an
-       absence check alone would pass just as happily if every meta line
-       vanished. */
+  it('states the FEE on the meta line, and never the owner', () => {
+    /* 2026-09-22: the meta line is the fee alone. It was `owner · fee`, and
+       the owner came off both ends in two asks a day apart — Pass State Exam's
+       bare "PSI" first (it publishes no fee, so the pairing had nothing to
+       pair), then Schedule State Exam's "PSI · $40 exam fee".
+
+       ASSERTED AS THE RULE ACROSS ALL THREE, which is the shape this test has
+       always had and the reason it survived the change rather than being
+       deleted: the note it carried warned that "an absence check alone would
+       pass just as happily if every meta line vanished". So the fees are
+       pinned POSITIVELY and the owners negatively, and a regression in either
+       direction fails.
+
+       The owner is not gone from the product — `step.owner` / `ownerShort` are
+       untouched in the data, the Get Licensed RAIL still prints the full "NY
+       Dept. of Financial Services" (asserted in QeFocusedVersion.test.tsx), and
+       each step's sheet still names PSI and DFS. It is gone from these CARDS. */
     seed()
     renderShell(TESTING_URL)
     const cards = [...rightColumn().querySelectorAll(':scope > section')].slice(1)
     const [schedule, pass, apply] = cards.map((c) => c.textContent ?? '')
-    expect(schedule).toMatch(/PSI · \$40 exam fee/)
-    /* THE SHORT OWNER FORM on the card — "NY", not the 30-character
-       "NY Dept. of Financial Services", which wrapped its fee to a second line
-       in a ~300px column. The FULL name is untouched in the data and is what
-       the Get Licensed rail still prints on QE Focused; asserted there too, so
-       the abbreviation cannot quietly become the only name. */
-    expect(apply).toMatch(/NY · \$80 application fee/)
+    // The fees survive — the half of the line that was kept.
+    expect(schedule).toMatch(/\$40 exam fee/)
+    expect(apply).toMatch(/\$80 application fee/)
+    // …with no owner in front of either, in short or long form.
+    expect(schedule).not.toMatch(/PSI/)
+    expect(apply).not.toMatch(/NY · /)
     expect(apply).not.toMatch(/Dept\. of Financial Services/)
-    // The one with no fee carries no owner line — and nothing else on that card
-    // names PSI either, so this is a genuine absence rather than a moved word.
+    // Pass State Exam publishes no fee, so it has no meta line at all — the
+    // case that produced the rule, and still the one that proves it is a rule.
     expect(pass).not.toMatch(/PSI/)
+    expect(pass).not.toMatch(/fee/)
   })
 
   it('puts the requirements action BELOW the cards, not inside one', () => {
