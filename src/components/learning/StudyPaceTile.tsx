@@ -713,12 +713,40 @@ function PaceCardBody({
      trap this file's own header records three times over. */
   const readout = useFeatureFlag('study-pace-readout').variant ?? 'prose'
 
+  /* ABOVE THE EARLY RETURN TOO, because the won't-fit branch draws the strip
+     now — see its own note. Plain derivations, not hooks, but they were below
+     the return and the branch could not reach them. */
+  const nights = studyDays ?? plan?.weekdays ?? defaultWeekdays(preset.nights)
+  const todayIndex = (today.getDay() + 6) % 7
+
   if (preset.state === 'no') {
     return (
       <div style={cardStack}>
         <p style={cardHeadline}>
           The work left won’t fit before {examBinds ? 'your exam' : 'your access ends'}.
         </p>
+        {/*
+          ⚠ THE STRIP STAYS WHEN NOTHING FITS — 2026-09-23, the direct note:
+          "if it's not achievable, don't remove the days of the week. It already
+          says not achievable in the course completion."
+          
+          IT WAS A TRAP, not just an omission. At 0% the strip is the control,
+          and picking three nights is what puts the card in this state — so the
+          branch that removed it took away the only way back. A learner (or a
+          reviewer) could reach a dead end in one click and have nothing to
+          undo it with but the Adjust sheet.
+          
+          The state is already named twice over — the headline says it and the
+          completion cell reads "Not achievable" — so the strip is not needed to
+          carry the news, which is what makes keeping it free.
+        */}
+        <WeekStrip
+          nights={nights}
+          weekMinutes={weekMinutes}
+          target={preset.minsPerNight}
+          todayIndex={todayIndex}
+          onPick={onPickNights}
+        />
         {/* THE CELLS STAY, AND THE GAP IS NAMED — 2026-09-23, the chosen
             answer. One layout in every state, so the readout is somewhere a
             learner can rely on finding rather than something that appears when
@@ -787,11 +815,10 @@ function PaceCardBody({
     ? `${preset.nights} days`
     : formatEvening(preset.minsPerWeek)
 
-  /** Which nights. The learner's plan when they have built one; otherwise the
-   *  same default the sheet would propose, from the shared helper — so the
-   *  strip and the plan behind it cannot shade different days. */
-  const nights = studyDays ?? plan?.weekdays ?? defaultWeekdays(preset.nights)
-  const todayIndex = (today.getDay() + 6) % 7
+  /* `nights` and `todayIndex` are derived above the `state: 'no'` return —
+     which nights is the learner's plan when they have built one, otherwise the
+     same default the sheet would propose, from the shared helper, so the strip
+     and the plan behind it cannot shade different days. */
   /** Null when there is nothing studied to compare — a learner at 0% has not
    *  had a bad week, they have not had a week. */
   const standing =
