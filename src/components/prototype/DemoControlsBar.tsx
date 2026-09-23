@@ -82,6 +82,14 @@ import {
  * They come from `paceBadgeLabel`'s vocabulary; if that renames again, this
  * renames with it or the bar starts describing a heading nobody sees.
  */
+/** The Navigation A/B — which course-content body Resume opens. Labels are
+ *  deliberately bare: a moderator reads them out and a participant must not be
+ *  told which one is "the new one". */
+const NAVIGATION_PICKER: { value: string; label: string }[] = [
+  { value: 'option-1', label: 'Option 1' },
+  { value: 'option-2', label: 'Option 2' },
+]
+
 const PACE_PRESET_PICKER: { value: string; label: string }[] = [
   { value: 'recommended', label: 'Recommended' },
   { value: 'focused', label: 'Focused & Quick' },
@@ -126,6 +134,7 @@ export function DemoControlsBar({
   // the two new dropdowns drive directly (they persist via FeatureFlagContext).
   const progressState = useFeatureFlag('dashboard-progress-state')
   const paceState = useFeatureFlag('study-pace-preset')
+  const navState = useFeatureFlag('dashboard-navigation')
   const educationTypeFlag = useFeatureFlag('dashboard-education-type')
   // Readiness state — the Exam Readiness section's own axis. Deliberately NOT
   // threaded into the share-link codec alongside prog/edu: those two are the
@@ -870,6 +879,55 @@ export function DemoControlsBar({
                 className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
                 onClick={() => {
                   setVariant('study-pace-preset', opt.value)
+                  close()
+                }}
+              >
+                <span style={{ flex: 1 }}>{opt.label}</span>
+                {active && <Check size={15} aria-hidden />}
+              </button>
+            )
+          })}
+        </DemoDropdown>
+
+        {/* NAVIGATION — which course-content page Resume opens. 2026-09-23.
+
+            ⚠ IT IS AN A/B, NOT A TREATMENT PICKER, which is why it defaults to
+            Option 1 on this branch rather than to the newer arm: the control
+            condition has to be the default or the comparison has no baseline.
+            A moderator normally assigns it per participant from the session
+            link (`?ff=dashboard-navigation:option-2`) rather than switching it
+            here mid-task.
+
+            NOT IN `?test=1`'s whitelist, deliberately — a participant who spots
+            a control labelled "Option 1 / Option 2" has been told there is a
+            comparison, which is most of what the session is trying not to say.
+            See `TEST_VIEW_CONTROLS` in `PrototypeChrome`. */}
+        <DemoDropdown
+          id="navigation"
+          hidden={!show('navigation')}
+          label={
+            NAVIGATION_PICKER.find((o) => o.value === (navState.variant ?? 'option-1'))?.label ??
+            'Option 1'
+          }
+          eyebrow="Navigation"
+          openId={openId}
+          onToggle={toggle}
+          panelRole="radiogroup"
+          panelLabel="Navigation version"
+          panelMinWidth={240}
+        >
+          {NAVIGATION_PICKER.map((opt) => {
+            const active = opt.value === (navState.variant ?? 'option-1')
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                tabIndex={active ? 0 : -1}
+                className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
+                onClick={() => {
+                  setVariant('dashboard-navigation', opt.value)
                   close()
                 }}
               >

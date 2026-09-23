@@ -1,4 +1,6 @@
 import { useState, type ComponentType, type CSSProperties } from 'react'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { CourseContentV2 } from './CourseContentV2'
 import {
   ArrowLeft,
   BookFull,
@@ -194,6 +196,17 @@ export function CompassCoursePlayer({
    * a section), so a `?view=` would be a parameter on the page underneath.
    */
   const [page, setPage] = useState<CompassPage>('course')
+  /*
+   * WHICH COURSE BODY — `dashboard-navigation`, 2026-09-23.
+   *
+   * ⚠ READ HERE RATHER THAN BRANCHED AT THE LAUNCHER, which was the other
+   * obvious place. A second `<CompassCoursePlayerV2>` beside this one in
+   * `PlatformShell` would have forked the SHELL as well — sidebar, breadcrumb,
+   * Overview, the eight rail pages — and an A/B whose two arms differ in a
+   * dozen untracked places cannot attribute anything a participant says. Only
+   * the course body forks; everything around it is literally the same code.
+   */
+  const navVariant = useFeatureFlag('dashboard-navigation').variant ?? 'option-1'
 
   const currentChapter =
     NY_LH_COURSE_CHAPTERS[NY_LH_CURRENT_CHAPTER_INDEX] ?? NY_LH_COURSE_CHAPTERS[0]
@@ -258,6 +271,11 @@ export function CompassCoursePlayer({
             role="region"
             aria-label={`${COMPASS_PAGES.find((p) => p.id === page)?.label ?? ''} page`}
           />
+        ) : navVariant === 'option-2' ? (
+          /* Option 2 owns this whole region — see `CourseContentV2`. It starts
+             as an exact copy of the branch below, so the two render
+             identically until someone edits that file on purpose. */
+          <CourseContentV2 chapterTitle={currentChapter} onBack={() => setPage('overview')} />
         ) : (
           <>
         <CompassTopBar
@@ -774,7 +792,7 @@ function LessonRow({ n, state }: { n: number; state: 'done' | 'current' | 'upcom
 
 /* ─── the top bar ──────────────────────────────────────────────────────── */
 
-function CompassTopBar({
+export function CompassTopBar({
   chapterTitle,
   onBack,
   backLabel,
@@ -948,7 +966,7 @@ function CompassTopBar({
 
 /* ─── the Rubi aside ───────────────────────────────────────────────────── */
 
-function RubiAside() {
+export function RubiAside() {
   return (
     <aside style={rubiAsideStyle} aria-label="Chat with Rubi">
       <div style={rubiHeaderStyle}>

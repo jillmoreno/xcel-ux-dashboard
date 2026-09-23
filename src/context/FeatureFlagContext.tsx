@@ -849,6 +849,38 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'dashboard-navigation',
+    group: 'Widgets',
+    label: 'Navigation',
+    description:
+      'Which course-content surface Resume opens. `option-1` is the Compass player as it stands — the 260px contents sidebar, the toolbar and the reading column. `option-2` opens a second version of the COURSE CONTENT page only: same shell, same sidebar and breadcrumb, its own body. ⚠ THE TWO SHARE EVERYTHING EXCEPT THAT BODY — see `CourseContentV2`, which is the one file Option 2 owns and the only place to make them differ.',
+    // Variant-only, like `study-pace-chooser` below.
+    defaultEnabled: true,
+    /* ⚠ `option-1` ON THE BRANCH TOO, which breaks this repo's usual rule that
+       a designer's branch defaults its own work ON. Option 2 is one half of an
+       A/B a moderator assigns PER PARTICIPANT from the session link
+       (`?ff=dashboard-navigation:option-2`), not a proposal replacing Option 1
+       — so defaulting it on would silently make every other link, and every
+       reviewer's sandbox, the variant. The control condition has to be the
+       default or the comparison has no baseline. */
+    defaultVariant: 'option-1',
+    variants: [
+      {
+        value: 'option-1',
+        label: 'Option 1 — the current course page',
+        description:
+          'Resume opens the Compass player unchanged: contents sidebar, toolbar, the reading column with Previous / Next, and the Rubi panel.',
+      },
+      {
+        value: 'option-2',
+        label: 'Option 2 — the alternate course page',
+        description:
+          'Resume opens the same player with a different COURSE CONTENT body (`CourseContentV2`). Everything outside that body — the sidebar, the breadcrumb, the Overview page and the other seven rail pages — is identical, so any difference a participant reports is the body.',
+      },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'study-pace-chooser',
     group: 'Widgets',
     label: 'Study Pace chooser',

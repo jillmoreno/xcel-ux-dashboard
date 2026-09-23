@@ -1,10 +1,10 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { render, screen, fireEvent, act } from '@testing-library/react'
+import { render, screen, fireEvent, act, cleanup } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
-import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
+import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { LearningPathsPanelProvider } from '@/components/learning/LearningPathsPanelContext'
 import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelContext'
 import { PlatformShell } from '@/components/layout/PlatformShell'
@@ -483,5 +483,95 @@ describe('?test=1 — the moderated session view', () => {
     expect(screen.getByRole('button', { name: /Persona/i })).toBeTruthy()
     expect(screen.queryByRole('button', { name: /Progress/i })).toBeNull()
     expect(screen.queryByRole('button', { name: /^Reset$/ })).toBeNull()
+  })
+})
+
+/* ─── The Navigation A/B ──────────────────────────────────────────────────── */
+
+describe('dashboard-navigation — Option 1 / Option 2', () => {
+  /*
+   * 2026-09-23: a demo control that switches which course-content page Resume
+   * opens, so a moderator can put the two in front of different participants.
+   */
+  const seedNav = (variant?: string) => {
+    window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
+    if (variant) {
+      window.localStorage.setItem(
+        'cgp.featureFlags',
+        JSON.stringify({ 'dashboard-navigation': { enabled: true, variant } }),
+      )
+    }
+  }
+
+  const openCourse = () => {
+    render(
+      <MemoryRouter initialEntries={[TESTING_URL]}>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <CtaTestProvider>
+              <LearningPathsPanelProvider>
+                <JumpBackInPanelProvider>
+                  <PlatformShell />
+                </JumpBackInPanelProvider>
+              </LearningPathsPanelProvider>
+            </CtaTestProvider>
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: /Resume|Start course/ }))
+    })
+  }
+
+  it('defaults to Option 1, not to the new arm', () => {
+    /* ⚠ THIS BREAKS THIS REPO'S USUAL BRANCH RULE ON PURPOSE, and the test is
+       where that decision is enforced. A designer's branch normally defaults
+       its own work ON so the branch build shows it. Option 2 is one arm of an
+       A/B a moderator assigns per participant — defaulting it on would make
+       every other session link, and every reviewer's sandbox, silently the
+       variant, and the comparison would have no baseline. */
+    seedNav()
+    expect(FEATURE_FLAGS.find((f) => f.key === 'dashboard-navigation')?.defaultVariant).toBe(
+      'option-1',
+    )
+  })
+
+  it('opens the same shell either way, so only the body is the variable', () => {
+    /* ⚠ THE CLAIM THE WHOLE A/B RESTS ON. The fork is the course BODY; the
+       sidebar, the breadcrumb and the eight rail pages are literally the same
+       code. If a second player ever appears beside this one, an arm can drift
+       in a dozen untracked places and nothing a participant says can be
+       attributed. */
+    seedNav('option-2')
+    openCourse()
+    expect(screen.getByLabelText('Course contents')).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Home' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Overview' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: 'Back to Overview' })).toBeTruthy()
+  })
+
+  it('renders identically to Option 1 until someone edits CourseContentV2', () => {
+    /*
+     * ⚠ THE BASELINE ASSERTION, and it is meant to FAIL the day the variant is
+     * designed — at which point it is replaced by assertions about whatever
+     * the difference turns out to be.
+     *
+     * A variant that arrives already different cannot be verified: there is no
+     * moment where the two are known to match, so a later "did we mean to
+     * change that?" has no answer. This pins the known-equal starting point so
+     * the first real difference is a deliberate edit against it.
+     */
+    seedNav('option-1')
+    const { container: one } = { container: document.body }
+    openCourse()
+    const optionOne = one.querySelector('[aria-label="Course contents"]')?.parentElement?.textContent
+    cleanup()
+    window.localStorage.clear()
+    seedNav('option-2')
+    openCourse()
+    const optionTwo = document.body.querySelector('[aria-label="Course contents"]')?.parentElement
+      ?.textContent
+    expect(optionTwo).toBe(optionOne)
   })
 })
