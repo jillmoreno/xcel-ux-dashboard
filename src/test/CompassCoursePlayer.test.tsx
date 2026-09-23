@@ -12,6 +12,7 @@ import {
   NY_LH_CURRENT_CHAPTER_INDEX,
   NY_LH_CURRENT_LESSON_PART,
   NY_LH_LESSON_PARTS,
+  NY_LH_LESSON_MINUTES_INVENTED,
 } from '@/data/nyProducerRequirements'
 import { formatExamChip } from '@/components/learning/compassPlayerUtil'
 
@@ -422,6 +423,20 @@ describe('the top bar states where you are', () => {
     const spans = [...topBar().querySelectorAll('span')].map((el) => el.textContent?.trim())
     expect(spans.indexOf('Current Lesson')).toBeGreaterThanOrEqual(0)
     expect(spans.indexOf('Current Lesson')).toBeLessThan(spans.indexOf(current))
+  })
+
+  it('states the estimate the way the Home card does', () => {
+    /* Same words and the same constant on both surfaces — the figure is
+       INVENTED (`NY_LH_LESSON_MINUTES_INVENTED`), so the thing worth pinning is
+       that neither surface retypes it and they cannot drift to two different
+       durations for one lesson. */
+    seed()
+    renderShell(TESTING_URL)
+    const card = screen.getByRole('region', { name: /jump back in/i })
+    const line = `Estimated Time to Complete: ${NY_LH_LESSON_MINUTES_INVENTED} minutes`
+    expect(card.textContent).toContain(line)
+    startCourse()
+    expect(topBar().textContent).toContain(line)
   })
 
   it('still knows the lesson, even though it no longer prints it', () => {

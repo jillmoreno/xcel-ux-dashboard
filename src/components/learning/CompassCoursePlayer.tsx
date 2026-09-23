@@ -14,6 +14,7 @@ import {
 import {
   NY_LH_COURSE_CHAPTERS,
   NY_LH_CURRENT_CHAPTER_INDEX,
+  NY_LH_LESSON_MINUTES_INVENTED,
 } from '@/data/nyProducerRequirements'
 import { readExamDate } from '@/data/examDateStore'
 import { ProgressBar } from '@/components/ui/ProgressBar'
@@ -474,6 +475,22 @@ function CompassTopBar({
               designer's. */}
           <span style={nowPlayingEyebrowStyle}>Current Lesson</span>
           <span style={nowPlayingChapterStyle}>{chapterTitle}</span>
+          {/* THE ESTIMATE, as the Home card states it — 2026-09-23, the direct
+              ask: "add the estimated time to complete line under the title like
+              we have in the home card." Same words, same 12/16 in
+              `--color-text-secondary`, same 4px above, so the two read as one
+              sentence repeated rather than two facts that happen to agree.
+
+              ⚠ THE FIGURE IS INVENTED and now says so on a SECOND surface.
+              `NY_LH_LESSON_MINUTES_INVENTED` carries the warning in its name:
+              nothing in the fixtures knows a lesson's length, and this version
+              refused the reference mock's "· 14 minutes left" three times on
+              exactly that ground before it was asked for directly. Reading the
+              constant rather than retyping 18 is what keeps one edit enough
+              when a real duration arrives. */}
+          <span style={nowPlayingEstimateStyle}>
+            Estimated Time to Complete: {NY_LH_LESSON_MINUTES_INVENTED} minutes
+          </span>
         </span>
         {/* NO PROGRESS HERE — 2026-09-23, the direct ask: "this progress
             belongs in the nav. we do not need multiple progress, its
@@ -1005,6 +1022,16 @@ const nowPlayingChapterStyle: CSSProperties = {
      in the first place; the bar can take two lines more cheaply than the
      reader can take an ellipsis. */
   minWidth: 0,
+}
+
+/* 12/16 in `--color-text-secondary`, 4px above — the Home card's own values,
+   copied deliberately rather than approximated. */
+const nowPlayingEstimateStyle: CSSProperties = {
+  marginTop: 4,
+  fontFamily: 'var(--font-body)',
+  fontSize: 12,
+  lineHeight: '16px',
+  color: 'var(--color-text-secondary)',
 }
 
 const nowPlayingEyebrowStyle: CSSProperties = {
