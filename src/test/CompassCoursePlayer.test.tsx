@@ -124,8 +124,11 @@ describe('the player states the course that was opened', () => {
     startCourse()
     const sidebar = screen.getByLabelText('Course contents')
     expect(within(sidebar).getByRole('heading', { level: 1 }).textContent).toBe(dashboardCourse)
-    // The percentage agrees too, and is not the 0 an unresolved course gives.
-    const pct = sidebar.textContent?.match(/(\d+)% Complete/)?.[1]
+    /* The percentage agrees too, and is not the 0 an unresolved course gives.
+       Read as a bare "N%" since 2026-09-23: the grey "N% Complete" chip became
+       Home's shared `ProgressBar` with the figure printed beside it, which
+       carries no label of its own. */
+    const pct = sidebar.textContent?.match(/(\d+)%/)?.[1]
     expect(pct).toBeTruthy()
     expect(Number(pct)).toBeGreaterThan(0)
   })
@@ -393,38 +396,90 @@ describe('the top bar states where you are', () => {
     expect(topBar().textContent).not.toMatch(/…|\.\.\./)
   })
 
-  it('carries the lesson detail, agreeing with the card that opened it', () => {
-    /* The lesson number comes through `launcher.meta` from the SAME expression
-       the Jump Back In card's `chapterNumber` uses. Asserted as agreement
-       rather than as a literal: two surfaces naming different lessons is the
-       defect this whole meta channel was added to prevent. */
-    seed()
-    renderShell(TESTING_URL)
-    const card = screen.getByRole('region', { name: /jump back in/i })
-    const cardLesson = card.textContent?.match(/Lesson (\d+)/)?.[1]
-    expect(cardLesson).toBeTruthy()
-    startCourse()
-    expect(topBar().textContent).toContain(`Lesson ${cardLesson}`)
-    expect(topBar().textContent).toContain(
-      `Part ${NY_LH_CURRENT_LESSON_PART} of ${NY_LH_LESSON_PARTS}`,
-    )
-  })
+  it('labels the chapter with a "Current Lesson" eyebrow, above it', () => {
+    /* ⚠ INVERTED 2026-09-23, one ask after the one that added it. This pinned
+       that the bar carried "Lesson 27 · Part 1 of 3" and that the number agreed
+       with the card. The direct ask replaced that line with an eyebrow reading
+       "Current Lesson", moved above the chapter title — so the number and the
+       part are no longer rendered in the player at all.
 
-  it('calls the percentage what it is — the COURSE, not the section', () => {
-    /* ⚠ A CORRECTION, not a copy tweak. The pill read "Section: <chapter>"
-       beside a number that is the COURSE percentage — the same figure the
-       sidebar prints under the course title. Nothing here tracks per-chapter
-       progress, so the old label attributed the whole course's progress to one
-       chapter. */
+       Kept rather than deleted, and asserting the ABSENCE as well as the new
+       label, so re-adding the detail is a decision. The Jump Back In card still
+       states both, and the lesson number still reaches the launcher through
+       `LaunchedCourseMeta` — only this component's prop was dropped. */
     seed()
     renderShell(TESTING_URL)
     startCourse()
     const bar = topBar().textContent ?? ''
-    expect(bar).toMatch(/\d+% of course/)
+    expect(bar).toContain('Current Lesson')
+    expect(bar).not.toMatch(/Lesson \d+/)
+    expect(bar).not.toMatch(/Part \d+ of \d+/)
+
+    /* THE EYEBROW IS ABOVE THE TITLE, which is the half that makes it an
+       eyebrow rather than a caption — asserted by document order, since both
+       are spans in one column and a style check would not catch a swap. */
+    const current = NY_LH_COURSE_CHAPTERS[NY_LH_CURRENT_CHAPTER_INDEX]
+    const spans = [...topBar().querySelectorAll('span')].map((el) => el.textContent?.trim())
+    expect(spans.indexOf('Current Lesson')).toBeGreaterThanOrEqual(0)
+    expect(spans.indexOf('Current Lesson')).toBeLessThan(spans.indexOf(current))
+  })
+
+  it('still knows the lesson, even though it no longer prints it', () => {
+    // The meta channel is the part that was hard to get right — four failed
+    // derivations — so its survival is pinned separately from the rendering.
+    seed()
+    renderShell(TESTING_URL)
+    const card = screen.getByRole('region', { name: /jump back in/i })
+    expect(card.textContent).toMatch(/Lesson \d+/)
+    expect(card.textContent).toContain(
+      `Part ${NY_LH_CURRENT_LESSON_PART} of ${NY_LH_LESSON_PARTS}`,
+    )
+  })
+
+  it('states NO percentage — there is one progress readout, in the nav', () => {
+    /* TWO REWRITES IN TWO DAYS, and both are the same claim narrowing.
+     
+       First it pinned that the bar's pill said "Section: <chapter>" beside the
+       COURSE percentage — a label attributing the whole course's progress to
+       one chapter, since nothing here tracks per-chapter progress. That was
+       corrected to "N% of course".
+
+       Then the direct ask: "this progress belongs in the nav. we do not need
+       multiple progress, its confusing." Two readouts of one number is not
+       twice the information; it is a reader checking whether they disagree. So
+       the top bar states WHERE YOU ARE and the nav states HOW FAR — and this
+       asserts the toolbar carries no percentage at all, which is the only
+       version of the claim that cannot drift back. */
+    seed()
+    renderShell(TESTING_URL)
+    startCourse()
+    const bar = topBar().textContent ?? ''
     expect(bar).not.toMatch(/Section:/)
-    // …and it is the same number the sidebar states, which is the point.
+    expect(bar).not.toMatch(/\d+%/)
+    // …and the nav is where it lives, exactly once.
     const sidebar = screen.getByLabelText('Course contents')
-    const pct = sidebar.textContent?.match(/(\d+)% Complete/)?.[1]
-    expect(bar).toContain(`${pct}% of course`)
+    expect(sidebar.textContent?.match(/\d+%/g)).toHaveLength(1)
+  })
+
+  it('uses the SHARED ProgressBar, matching Home rather than resembling it', () => {
+    /* The rule that component was extracted for: Readiness once drew its own
+       3px bar in a different green, and one learner's 32% became two different
+       bars a rail item apart. A lookalike here would do it again, one screen
+       apart this time. */
+    seed()
+    renderShell(TESTING_URL)
+    startCourse()
+    const sidebar = screen.getByLabelText('Course contents')
+    const pct = sidebar.textContent?.match(/(\d+)%/)?.[1]
+    /* `ProgressBar` renders an `aria-hidden` track with a single fill child
+       whose width IS the percentage, and carries no role — it is decorative by
+       design, because the figure beside it is the accessible statement. So the
+       assertion is its shape and its number, not a role it deliberately does
+       not have. */
+    const fill = [...sidebar.querySelectorAll('div[aria-hidden="true"] > div')].find((d) =>
+      (d as HTMLElement).style.width.endsWith('%'),
+    ) as HTMLElement | undefined
+    expect(fill).toBeTruthy()
+    expect(fill!.style.width).toBe(`${pct}%`)
   })
 })

@@ -14,10 +14,9 @@ import {
 import {
   NY_LH_COURSE_CHAPTERS,
   NY_LH_CURRENT_CHAPTER_INDEX,
-  NY_LH_CURRENT_LESSON_PART,
-  NY_LH_LESSON_PARTS,
 } from '@/data/nyProducerRequirements'
 import { readExamDate } from '@/data/examDateStore'
+import { ProgressBar } from '@/components/ui/ProgressBar'
 import { formatExamChip } from './compassPlayerUtil'
 
 /**
@@ -64,15 +63,11 @@ import { formatExamChip } from './compassPlayerUtil'
 export function CompassCoursePlayer({
   courseTitle,
   percentComplete,
-  lessonNumber,
   onClose,
   closeLabel,
 }: {
   courseTitle: string
   percentComplete: number
-  /** The lesson the learner is on, from the opener. Null when unknown, and the
-   *  lesson line is omitted rather than guessed. */
-  lessonNumber?: number | null
   onClose: () => void
   /** Names what Close returns to, for the screen-reader label only — the
    *  design gives the control no visible text. */
@@ -91,8 +86,6 @@ export function CompassCoursePlayer({
       <div style={rightOfSidebarStyle}>
         <CompassTopBar
           chapterTitle={currentChapter}
-          lessonNumber={lessonNumber}
-          percentComplete={percentComplete}
           onClose={onClose}
           closeLabel={closeLabel}
         />
@@ -215,7 +208,32 @@ function CompassSidebar({
 
       <div style={sidebarHeadStyle}>
         <h1 style={sidebarTitleStyle}>{courseTitle}</h1>
-        <p style={percentChipStyle}>{percentComplete}% Complete</p>
+        {/*
+          THE HOME PAGE'S TREATMENT — 2026-09-23, the direct ask: "change the
+          progress in the nav to better match the style used in the Home page."
+
+          It was a grey pill reading "62% Complete". Home states the same fact
+          as the SHARED `ProgressBar` with the percentage printed beside it, and
+          this is now the only progress readout in the player (the top bar's was
+          removed in the same pass), so it is the one that has to be right.
+
+          THE SHARED COMPONENT, NOT A LOOKALIKE, which is the rule that
+          component was extracted for: Readiness once drew its own 3px bar in a
+          different green and one learner's 32% became two different bars a rail
+          item apart. The percentage is printed beside it because `ProgressBar`
+          deliberately carries no label of its own.
+
+          NO `track` OVERRIDE, unlike Home's call. The default
+          `--color-neutral-100` measures 1.08:1 on the shell's page grey, which
+          is why the band passes a darker groove — this sidebar is
+          `--color-surface-card`, the white the default was designed for.
+        */}
+        <div style={progressRowStyle}>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <ProgressBar pct={percentComplete} height={8} fill="var(--color-primary-500)" />
+          </div>
+          <span style={progressPctStyle}>{percentComplete}%</span>
+        </div>
       </div>
 
       <p style={sidebarEyebrowStyle}>Table of Contents</p>
@@ -378,14 +396,10 @@ export function TocChildItem({
 
 function CompassTopBar({
   chapterTitle,
-  lessonNumber,
-  percentComplete,
   onClose,
   closeLabel,
 }: {
   chapterTitle: string
-  lessonNumber?: number | null
-  percentComplete: number
   onClose: () => void
   closeLabel: string
 }) {
@@ -429,30 +443,53 @@ function CompassTopBar({
           says what it is.
         */}
         <span style={nowPlayingStyle}>
+          {/* AN EYEBROW ABOVE THE TITLE — 2026-09-23, the direct ask: "Change
+              this to eyebrow 'Current Lesson' and move it above the title of
+              the chapter."
+
+              It was "Lesson 27 · Part 1 of 3" BELOW the title. An eyebrow reads
+              as a label for what follows, which is the relationship that was
+              missing: the bar states where you are, and the words above the
+              name say what kind of thing the name is.
+
+              ⚠ THE NUMBER AND THE PART ARE NO LONGER RENDERED ANYWHERE IN THE
+              PLAYER. They were added two asks ago and this replaces the line
+              that carried them, so it is a deliberate loss rather than an
+              oversight. The Jump Back In card still states both.
+
+              WHAT SURVIVES FOR A RESTORE is the part that was hard: the lesson
+              number still reaches the launcher through `LaunchedCourseMeta`,
+              supplied by the card's own expression, so the two surfaces cannot
+              name different lessons. Only this component's prop was dropped,
+              because tsc will not carry an unread one. Re-rendering the detail
+              is a prop and a span.
+
+              ⚠ AND IT LABELS A CHAPTER AS A LESSON. The title below is a
+              CHAPTER name from `NY_LH_COURSE_CHAPTERS`; the course counts 42
+              lessons against 11 chapters, and nothing published maps one onto
+              the other. "Current Lesson" over a chapter name asserts the
+              equivalence this repo has otherwise refused to assert. Rendered
+              as asked and recorded here, because the alternative label
+              ("Current Chapter") is one word and the decision is the
+              designer's. */}
+          <span style={nowPlayingEyebrowStyle}>Current Lesson</span>
           <span style={nowPlayingChapterStyle}>{chapterTitle}</span>
-          {lessonNumber != null ? (
-            <span style={nowPlayingLessonStyle}>
-              Lesson {lessonNumber}
-              <span aria-hidden style={lessonDotStyle} />
-              Part {NY_LH_CURRENT_LESSON_PART} of {NY_LH_LESSON_PARTS}
-            </span>
-          ) : null}
         </span>
-        <span style={courseProgressStyle}>
-          <span aria-hidden style={progressTrackStyle}>
-            {/* The dot rides the percentage. The Figma pins it at the left
-                because the mock is drawn at 0%; reading it as "always left"
-                would make the bar state a number its own indicator disagrees
-                with. Inset by half the dot so it cannot overhang either end. */}
-            <span
-              style={{
-                ...progressDotStyle,
-                left: `calc(${Math.min(100, Math.max(0, percentComplete))}% - 6.5px)`,
-              }}
-            />
-          </span>
-          <span style={pillStrongStyle}>{percentComplete}% of course</span>
-        </span>
+        {/* NO PROGRESS HERE — 2026-09-23, the direct ask: "this progress
+            belongs in the nav. we do not need multiple progress, its
+            confusing."
+
+            The bar and "62% of course" stated the same figure the sidebar
+            already prints under the course title, eight inches apart on one
+            screen. Two readouts of one number is not twice the information; it
+            is a reader checking whether they disagree. The nav keeps it,
+            because that is where the course is identified — the number belongs
+            next to the thing it measures.
+
+            The top bar is now purely WHERE YOU ARE (chapter, lesson, part) and
+            the controls. That split is also why this was the right one to drop
+            rather than the chip: a bar in the toolbar reads as progress through
+            the current chapter, which is not what the figure is. */}
       </div>
 
       <div style={topBarActionsStyle}>
@@ -675,30 +712,52 @@ const sidebarHeadStyle: CSSProperties = {
   padding: '4px 8px 8px 0',
 }
 
-/* BLUE, and the EYEBROWS below went neutral in the same pass — 2026-09-22, the
-   direct ask. The two swapped inks: the title was the grey and the section
-   eyebrows were the blue, which had the accent on the labels and the neutral on
-   the thing being labelled. The course name is the subject of this sidebar, so
-   it takes the brand ink and the eyebrows step back to body black. */
+/*
+ * THE SERIF, IN BODY BLACK — 2026-09-23, the direct ask: "change this to black
+ * and the source serif font used in the home screen". It was blue for a day,
+ * from the ask before this one.
+ *
+ * MEASURED OFF HOME rather than guessed: that page's course title computes to
+ * the Georgia stack in `rgb(58,58,58)`, which are `--font-heading-serif` and
+ * `--color-text-primary`.
+ *
+ * `--font-heading-serif` DIRECTLY, not `--font-heading`. Home reaches the serif
+ * because `dashboard-heading-font: serif` re-points the heading token for that
+ * subtree; the player is a full-window takeover outside it, so referencing
+ * `--font-heading` here would render Lato and silently not match. The ask was
+ * for the serif, so the serif is what is named.
+ *
+ * THE SIZE DOES NOT FOLLOW. Home sets 28/700 in a full-width band; this column
+ * is 220px and the name runs to 38 characters. Matching the face and the ink is
+ * what makes the two read as one product — matching the display size would put
+ * a four-line headline in a sidebar.
+ */
 const sidebarTitleStyle: CSSProperties = {
   margin: 0,
-  fontFamily: 'var(--font-body)',
-  fontSize: 14,
-  fontWeight: 500,
-  lineHeight: '21px',
-  color: 'var(--color-primary-500)',
+  fontFamily: 'var(--font-heading-serif)',
+  fontSize: 16,
+  fontWeight: 600,
+  lineHeight: '22px',
+  color: 'var(--color-text-primary)',
 }
 
-const percentChipStyle: CSSProperties = {
-  margin: 0,
-  alignSelf: 'flex-start',
-  padding: '0 8px',
-  borderRadius: 'var(--radius-md)',
-  background: 'var(--color-neutral-75)',
+const progressRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 12,
+  marginTop: 2,
+}
+
+/* 13/700, the size and weight Home prints beside its own bar — the point of
+   matching is that one learner's one percentage looks like one thing. */
+const progressPctStyle: CSSProperties = {
+  flexShrink: 0,
   fontFamily: 'var(--font-body)',
   fontSize: 13,
+  fontWeight: 700,
   lineHeight: '20px',
-  color: 'var(--color-neutral-800)',
+  color: 'var(--color-text-primary)',
+  whiteSpace: 'nowrap',
 }
 
 const sidebarEyebrowStyle: CSSProperties = {
@@ -948,32 +1007,17 @@ const nowPlayingChapterStyle: CSSProperties = {
   minWidth: 0,
 }
 
-const nowPlayingLessonStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
+const nowPlayingEyebrowStyle: CSSProperties = {
   fontFamily: 'var(--font-body)',
-  fontSize: 12,
-  lineHeight: '17px',
+  fontSize: 10,
+  fontWeight: 700,
+  letterSpacing: '0.1em',
+  textTransform: 'uppercase',
+  lineHeight: '15px',
   color: 'var(--color-text-tertiary)',
 }
 
-/* The same 3px round dot the Jump Back In card's own lesson line uses — one
-   separator on this surface, not a second kind of it. */
-const lessonDotStyle: CSSProperties = {
-  display: 'inline-block',
-  width: 3,
-  height: 3,
-  borderRadius: '50%',
-  margin: '0 8px',
-  background: 'var(--color-neutral-300)',
-}
 
-const courseProgressStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 8,
-  flexShrink: 0,
-}
 
 const pillTextStyle: CSSProperties = {
   fontFamily: 'var(--font-body)',
@@ -1002,26 +1046,7 @@ const pillDotStyle: CSSProperties = {
   flexShrink: 0,
 }
 
-const progressTrackStyle: CSSProperties = {
-  position: 'relative',
-  display: 'inline-flex',
-  alignItems: 'center',
-  width: 260,
-  maxWidth: '30vw',
-  height: 4,
-  borderRadius: 'var(--radius-pill)',
-  background: 'var(--color-neutral-300)',
-  flexShrink: 0,
-}
 
-const progressDotStyle: CSSProperties = {
-  position: 'absolute',
-  width: 13,
-  height: 13,
-  borderRadius: '50%',
-  background: 'var(--color-surface-card)',
-  border: '2px solid var(--color-primary-500)',
-}
 
 const squarePillStyle: CSSProperties = {
   ...pillBase,
