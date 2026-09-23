@@ -192,7 +192,11 @@ function TocSectionTitle({
   return (
     <span style={tocSectionRowStyle}>
       {done ? (
-        <CircleCheck size={15} aria-hidden style={{ color: 'var(--color-primary-500)' }} />
+        <CircleCheck
+          size={13}
+          aria-hidden
+          style={{ color: 'var(--color-primary-500)', flexShrink: 0, marginTop: 2 }}
+        />
       ) : (
         /* AN OPEN RING, drawn in CSS rather than pulled from the registry.
            There is no plain `circle` glyph in `@/icons` — `circle-dashed` is
@@ -484,7 +488,7 @@ const percentChipStyle: CSSProperties = {
 }
 
 const sidebarEyebrowStyle: CSSProperties = {
-  margin: '4px 0 0',
+  margin: '10px 0 0',
   fontFamily: 'var(--font-body)',
   fontSize: 11,
   fontWeight: 700,
@@ -496,35 +500,63 @@ const sidebarEyebrowStyle: CSSProperties = {
 
 const tocListStyle: CSSProperties = {
   listStyle: 'none',
-  margin: 0,
+  margin: '2px 0 0',
   padding: 0,
   display: 'flex',
   flexDirection: 'column',
+  /* 6px BETWEEN SECTIONS. With every title on one line the design needs none —
+     the 30px rows space themselves. Wrapped titles have no such gap, and two
+     three-line chapters with nothing between them read as one six-line block. */
+  gap: 6,
 }
 
+/*
+ * TOP-ALIGNED AND PADDED, NOT THE DESIGN'S 30px CENTRED ROW — 2026-09-22.
+ *
+ * The Figma's section titles are short single-line labels ("Insurance Basics"),
+ * so a fixed 30px row with everything vertically centred is right there. The
+ * REAL chapter names are up to 48 characters and wrap to two and three lines in
+ * a 220px column, and at that point the design's values fail in two ways at
+ * once: the bullet floats to the middle of a three-line block instead of
+ * marking its first line, and consecutive wrapped titles run together because
+ * a fixed height leaves no space between them.
+ *
+ * So the row grows with its content, the icon pins to the first line, and the
+ * spacing moves from `minHeight` to padding + a gap on the list — which is the
+ * same rhythm at one line and survives three.
+ */
 const tocSectionRowStyle: CSSProperties = {
   display: 'flex',
-  alignItems: 'center',
-  gap: 10,
-  minHeight: 30,
-  paddingRight: 8,
+  alignItems: 'flex-start',
+  gap: 9,
+  padding: '3px 8px 3px 0',
   borderRadius: 'var(--radius-md)',
 }
 
 const tocRingStyle: CSSProperties = {
-  width: 13,
-  height: 13,
+  width: 12,
+  height: 12,
   flexShrink: 0,
   borderRadius: '50%',
   border: '1.5px solid var(--color-primary-500)',
+  /* Optically centred on the FIRST LINE of a wrapped title: (17px line - 12px
+     ring) / 2 rounds to 2, plus the row's own 3px top padding already applied
+     to both. Without it the ring sits on the cap-line and reads high. */
+  marginTop: 2,
 }
 
 const tocRingSmallStyle: CSSProperties = { ...tocRingStyle, width: 11, height: 11 }
 
+/* 13/17, down from the design's 15/20. The mock's labels are short enough that
+   15 reads as a comfortable nav size; on titles that wrap twice it reads as a
+   heading and the column stops being scannable. 13 is the size the design
+   already uses for its CHILD rows, so this is the tree's own smaller step
+   rather than a new one, and 17 tightens the leading inside a wrapped title so
+   the two lines group before the gap separates them from the next item. */
 const tocSectionTextStyle: CSSProperties = {
   fontFamily: 'var(--font-body)',
-  fontSize: 15,
-  lineHeight: '20px',
+  fontSize: 13,
+  lineHeight: '17px',
   color: 'var(--color-neutral-800)',
 }
 
@@ -535,29 +567,31 @@ const tocSectionTextNowStyle: CSSProperties = {
 }
 
 const tocStateLineStyle: CSSProperties = {
-  margin: 0,
+  margin: '2px 0 0 5px',
   display: 'flex',
   alignItems: 'center',
-  minHeight: 30,
-  paddingLeft: 24,
+  minHeight: 22,
+  paddingLeft: 17,
   borderLeft: '2px solid var(--color-primary-500)',
-  marginLeft: 7,
   fontFamily: 'var(--font-body)',
-  fontSize: 13,
-  lineHeight: '20px',
-  color: 'var(--color-neutral-800)',
+  fontSize: 12,
+  lineHeight: '17px',
+  color: 'var(--color-text-tertiary)',
 }
 
 const tocUpNextStyle: CSSProperties = {
-  margin: 0,
+  margin: '2px 0 0',
   display: 'flex',
   alignItems: 'center',
   minHeight: 18,
-  paddingLeft: 26,
+  paddingLeft: 21,
   fontFamily: 'var(--font-body)',
-  fontSize: 13,
-  lineHeight: '20px',
-  color: 'var(--color-neutral-800)',
+  fontSize: 12,
+  lineHeight: '17px',
+  /* Tertiary, like Done. These two are STATE LABELS on the row above them, not
+     entries in the tree — at the same weight and colour as a chapter they read
+     as a twelfth and thirteenth chapter called "Done" and "Up next". */
+  color: 'var(--color-text-tertiary)',
 }
 
 const tocChildRowStyle: CSSProperties = {
