@@ -80,6 +80,21 @@ export function CompassCoursePlayer({
    *  design gives the control no visible text. */
   closeLabel: string
 }) {
+  /*
+   * WHICH VIEW THE PLAYER IS SHOWING — 2026-09-23, the direct ask: "When user
+   * clicks there, keep this left nav for now. and everything on the right will
+   * be the background color."
+   *
+   * Overview is a THIRD state rather than a fourth exit. The breadcrumb's two
+   * crumbs both closed the player until now, which was right while there was
+   * nothing behind them; Overview is a page of this course, so it keeps the
+   * contents nav and replaces only the right-hand side. Home still leaves.
+   *
+   * Local state, not a route: the launcher has no URL of its own (it overlays
+   * a section), so a `?view=` would be a parameter on the page underneath.
+   */
+  const [view, setView] = useState<'course' | 'overview'>('course')
+
   const currentChapter =
     NY_LH_COURSE_CHAPTERS[NY_LH_CURRENT_CHAPTER_INDEX] ?? NY_LH_COURSE_CHAPTERS[0]
 
@@ -91,8 +106,21 @@ export function CompassCoursePlayer({
         completedLessons={completedLessons}
         totalLessons={totalLessons}
         onLeave={onClose}
+        view={view}
+        onShowOverview={() => setView('overview')}
+        onShowCourse={() => setView('course')}
       />
       <div style={rightOfSidebarStyle}>
+        {/* OVERVIEW IS A BLANK GROUND for now, by instruction — the nav stays,
+            the toolbar and the reading column and Rubi all go, and what is left
+            is the page colour waiting for content. Deliberately not a lo-fi
+            placeholder with a caption: the lo-fi block says "something is
+            coming here", and this is a page being designed rather than one
+            standing in for courseware we do not have. */}
+        {view === 'overview' ? (
+          <div style={overviewGroundStyle} aria-label="Course overview" role="region" />
+        ) : (
+          <>
         <CompassTopBar
           chapterTitle={currentChapter}
           onClose={onClose}
@@ -136,6 +164,8 @@ export function CompassCoursePlayer({
           </div>
           <RubiAside />
         </div>
+          </>
+        )}
       </div>
     </div>
   )
@@ -149,13 +179,19 @@ function CompassSidebar({
   completedLessons,
   totalLessons,
   onLeave,
+  view,
+  onShowOverview,
+  onShowCourse,
 }: {
   courseTitle: string
   percentComplete: number
   completedLessons: number
   totalLessons: number
-  /** Both crumbs are "up" from the player, and up is the dashboard. */
+  /** Home is the only crumb that LEAVES the player now. */
   onLeave: () => void
+  view: 'course' | 'overview'
+  onShowOverview: () => void
+  onShowCourse: () => void
 }) {
   return (
     <aside style={sidebarStyle} aria-label="Course contents">
@@ -203,20 +239,42 @@ function CompassSidebar({
         <span aria-hidden style={crumbSlashStyle}>
           /
         </span>
-        <button
-          type="button"
-          onClick={onLeave}
-          className="cre-link-action cre-cta-ink"
-          style={crumbButtonStyle}
-        >
-          Overview
-        </button>
+        {/* OVERVIEW NO LONGER LEAVES. It was a second way out while there was
+            nothing behind it; it is a page of this course now, so it switches
+            the view and the crumb after it becomes the link back. Exactly one
+            crumb carries `aria-current` at a time — the trail has to say which
+            page you are on, or it is decoration. */}
+        {view === 'overview' ? (
+          <span style={crumbHereStyle} aria-current="page">
+            Overview
+          </span>
+        ) : (
+          <button
+            type="button"
+            onClick={onShowOverview}
+            className="cre-link-action cre-cta-ink"
+            style={crumbButtonStyle}
+          >
+            Overview
+          </button>
+        )}
         <span aria-hidden style={crumbSlashStyle}>
           /
         </span>
-        <span style={crumbHereStyle} aria-current="page">
-          Course
-        </span>
+        {view === 'overview' ? (
+          <button
+            type="button"
+            onClick={onShowCourse}
+            className="cre-link-action cre-cta-ink"
+            style={crumbButtonStyle}
+          >
+            Course
+          </button>
+        ) : (
+          <span style={crumbHereStyle} aria-current="page">
+            Course
+          </span>
+        )}
       </p>
 
       <div style={sidebarHeadStyle}>
@@ -632,6 +690,12 @@ const playerStyle: CSSProperties = {
   flex: 1,
   minHeight: 0,
   background: 'var(--color-surface-card)',
+}
+
+const overviewGroundStyle: CSSProperties = {
+  flex: 1,
+  minHeight: 0,
+  background: 'var(--compass-ground)',
 }
 
 const rightOfSidebarStyle: CSSProperties = {

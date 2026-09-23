@@ -271,22 +271,21 @@ describe('the only wired control is Close', () => {
     ])
   })
 
-  it('leaves via either crumb, the same as Close', () => {
-    // Both crumbs are "up", and up from the player is the dashboard. Asserted
-    // for each rather than once, because they are two call sites of one intent
-    // and wiring only the first is the easy miss.
-    for (const name of ['Home', 'Overview']) {
-      seed()
-      const { container, unmount } = renderShell(TESTING_URL)
-      startCourse()
-      expect(screen.getByLabelText('Course contents')).toBeTruthy()
-      act(() => {
-        fireEvent.click(screen.getByRole('button', { name }))
-      })
-      expect(screen.queryByLabelText('Course contents')).toBeNull()
-      expect(container.querySelector('.cre-platform-shell-grid')).not.toBeNull()
-      unmount()
-    }
+  it('leaves via Home — the one crumb that still exits', () => {
+    /* ⚠ NARROWED 2026-09-23. This asserted BOTH crumbs left the player, which
+       was right while Overview had nothing behind it. Overview is now a page of
+       this course and switches the view instead, so Home is the only exit and
+       the old sweep would have passed on a bug — it clicked Overview, saw the
+       player gone, and called that success. */
+    seed()
+    const { container } = renderShell(TESTING_URL)
+    startCourse()
+    expect(screen.getByLabelText('Course contents')).toBeTruthy()
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: 'Home' }))
+    })
+    expect(screen.queryByLabelText('Course contents')).toBeNull()
+    expect(container.querySelector('.cre-platform-shell-grid')).not.toBeNull()
   })
 
   it('wears the house link-CTA classes, and sets no colour of its own', () => {
@@ -598,5 +597,69 @@ describe('the invented lesson titles', () => {
     const keys = Object.keys(NY_LH_LESSON_TITLES_INVENTED).map(Number)
     expect(Math.min(...keys)).toBeGreaterThan(0)
     expect(Math.max(...keys)).toBeLessThanOrEqual(42)
+  })
+})
+
+describe('the Overview view', () => {
+  /*
+   * 2026-09-23, the direct ask: "When user clicks there, keep this left nav for
+   * now. and everything on the right will be the background color."
+   *
+   * Overview is a THIRD STATE rather than a fourth exit. Both breadcrumb crumbs
+   * used to close the player, which was right while there was nothing behind
+   * them; Overview is a page of this course, so it keeps the contents nav and
+   * replaces only the right-hand side. Home still leaves.
+   */
+  const openOverview = () => {
+    const sidebar = screen.getByLabelText('Course contents')
+    act(() => {
+      fireEvent.click(within(sidebar).getByRole('button', { name: 'Overview' }))
+    })
+  }
+
+  it('keeps the nav and blanks the right-hand side', () => {
+    seed()
+    const { container } = renderShell(TESTING_URL)
+    startCourse()
+    openOverview()
+    // The nav survives, contents and all.
+    const sidebar = screen.getByLabelText('Course contents')
+    expect(sidebar.textContent).toContain('Completed 26 of 42')
+    // …and everything on the right is gone, replaced by the ground.
+    expect(screen.queryByLabelText('Chat with Rubi')).toBeNull()
+    expect(container.textContent).not.toContain('Estimated Time to Complete')
+    expect(container.textContent).not.toContain('Course Content')
+    expect(screen.getByRole('region', { name: 'Course overview' })).toBeTruthy()
+  })
+
+  it('does NOT leave the player — Home is still the only exit', () => {
+    /* The regression this guards: Overview closed the launcher until today, so
+       the easy mistake is leaving that handler wired and having the crumb both
+       switch the view and drop the learner back on the dashboard. */
+    seed()
+    const { container } = renderShell(TESTING_URL)
+    startCourse()
+    openOverview()
+    expect(container.querySelector('.cre-platform-shell-grid')).toBeNull()
+    expect(screen.getByLabelText('Course contents')).toBeTruthy()
+  })
+
+  it('moves `aria-current` to the crumb you are on, and only that one', () => {
+    // A trail that marks two pages, or none, is decoration.
+    seed()
+    renderShell(TESTING_URL)
+    startCourse()
+    const sidebar = screen.getByLabelText('Course contents')
+    const current = () =>
+      [...sidebar.querySelectorAll('[aria-current="page"]')].map((el) => el.textContent?.trim())
+    expect(current()).toEqual(['Course'])
+    openOverview()
+    expect(current()).toEqual(['Overview'])
+    // …and Course becomes the way back.
+    act(() => {
+      fireEvent.click(within(sidebar).getByRole('button', { name: 'Course' }))
+    })
+    expect(current()).toEqual(['Course'])
+    expect(screen.getByLabelText('Chat with Rubi')).toBeTruthy()
   })
 })
