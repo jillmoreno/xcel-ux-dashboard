@@ -156,7 +156,20 @@ describe('the player states the course that was opened', () => {
     expect(NY_LH_CURRENT_CHAPTER_INDEX).toBeGreaterThan(0)
     const now = NY_LH_COURSE_CHAPTERS[NY_LH_CURRENT_CHAPTER_INDEX]
     expect(within(sidebar).getByText(now)).toBeTruthy()
-    expect(within(sidebar).getByText('Done')).toBeTruthy()
+    /* COUNTED OFF THE BULLETS, not the word. This asserted `getByText('Done')`
+       until 2026-09-22, when the last of the three state labels was removed —
+       the bullets carry the state now, so reading it anywhere else would be
+       testing a label that no longer exists. Exactly the chapters BEFORE the
+       current one are filled: one fewer than the current index would mean an
+       off-by-one, one more would mean the current chapter marked complete. */
+    const filled = [...sidebar.querySelectorAll('ol > li')].filter(
+      (li) =>
+        (li.querySelector('span > span') as HTMLElement | null)?.style.background ===
+        'var(--color-primary-500)',
+    )
+    expect(filled).toHaveLength(NY_LH_CURRENT_CHAPTER_INDEX)
+    // …and no state label survives anywhere in the tree.
+    expect(within(sidebar).queryByText('Done')).toBeNull()
   })
 })
 

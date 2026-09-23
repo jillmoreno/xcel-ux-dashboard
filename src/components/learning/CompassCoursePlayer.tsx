@@ -231,25 +231,20 @@ function CompassSidebar({
               ) : null}
               <TocSectionTitle title={chapter} done={done} now={now} />
               {/*
-                THE STATE LABELS ARE GONE — 2026-09-22, the direct ask, pointed
-                at "Now" and "Up next".
+                NO STATE LABELS AT ALL — 2026-09-22, two asks a few minutes
+                apart: "Now" and "Up next" first, then "remove Done too".
 
-                They were the Figma's, and they made sense there: the mock's
-                bullets are all the same open circle, so the words were the only
-                thing separating the current chapter from the eight untouched
-                ones. That stopped being true when the bullets became three
-                distinct states earlier the same day — a filled navy tick, a
-                navy ring, a grey ring. The current chapter is ALSO bold and
-                navy in its text. "Now" was a fourth telling of one fact, and
-                "Up next" labelled a chapter whose only claim was being adjacent
-                to it.
+                All three were the Figma's, and they earned their place there:
+                the mock's bullets are all the same open circle, so the words
+                were the only thing separating done from current from untouched.
+                That stopped being true when the bullets became three distinct
+                states earlier the same day — a filled navy tick, a navy ring, a
+                grey ring — and the current chapter went bold navy in its text
+                as well. Each label was a second telling of what its own bullet
+                already said.
 
-                `Done` SURVIVES for now and is the odd one left — see the note
-                on `tocStateLineStyle`.
+                The tree is now bullets and chapter names, and nothing else.
               */}
-              {done && i === NY_LH_CURRENT_CHAPTER_INDEX - 1 ? (
-                <p style={tocStateLineStyle}>Done</p>
-              ) : null}
             </li>
           )
         })}
@@ -799,22 +794,6 @@ const tocSectionTextNowStyle: CSSProperties = {
    thread when there was none; with the dashed connector running down the whole
    column it would be a SECOND vertical line in the same 6px, one solid and one
    dashed, two pixels apart. The indent alone places the label now. */
-/* `Done` IS THE LAST STATE LABEL STANDING. "Now" and "Up next" were removed on
-   2026-09-22 as a fourth telling of what the bullets already say; this one was
-   not named in that ask and is kept rather than swept up with them. It is the
-   same redundancy — a filled navy tick is not ambiguous — so it is a one-line
-   deletion whenever that is wanted. */
-const tocStateLineStyle: CSSProperties = {
-  margin: '2px 0 0',
-  display: 'flex',
-  alignItems: 'center',
-  minHeight: 20,
-  paddingLeft: 21,
-  fontFamily: 'var(--font-body)',
-  fontSize: 12,
-  lineHeight: '17px',
-  color: 'var(--color-text-tertiary)',
-}
 
 
 const tocChildRowStyle: CSSProperties = {
