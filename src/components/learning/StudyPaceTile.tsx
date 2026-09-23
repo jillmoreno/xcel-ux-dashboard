@@ -589,15 +589,36 @@ function PaceOptionPicker({
             style={{ ...optionStyle, ...(on ? optionActiveStyle : null) }}
           >
             <span style={optionNameStyle}>{o.name}</span>
+            {/*
+              TWO LINES, AND BOTH SAY "A WEEK" OR "A NIGHT" — 2026-09-23, the
+              direct note: "this logic needs clarification of 3 nights/week, and
+              not just 3 nights total to finish the entire course."
+
+              It read "3¼ hours a night · 3 nights", and the second half was
+              genuinely ambiguous: three nights could be the whole commitment
+              rather than the weekly rhythm, which on a card about finishing a
+              course is a plausible misreading. Splitting the line and spelling
+              out the period fixes it, and there is room now that the finish
+              date has gone.
+
+              "DAYS A WEEK", not "nights a week", to match the headline
+              underneath ("About 3¼ hours a night, 3 days a week"). The model
+              calls them nights and the strip's own accessible name does too,
+              but a learner reads this card, not the model — and one card
+              carrying both words for one thing is the drift this repo keeps
+              paying for.
+
+              ⚠ THE FINISH DATE IS GONE from these cards — the second half of
+              the note: "we are showing the course completion in the details
+              below, so we can remove that from the selections." It was the same
+              date the Course completion cell prints a few lines down, stated
+              three times over in a row of three.
+            */}
             <span style={optionMetaStyle}>
-              {fits
-                ? `${formatEvening(o.priced.minsPerNight)} a night · ${o.nights} ${
-                    o.nights === 1 ? 'night' : 'nights'
-                  }`
-                : 'Will not fit'}
+              {fits ? `${o.nights} ${o.nights === 1 ? 'day' : 'days'} a week` : 'Will not fit'}
             </span>
             {fits ? (
-              <span style={optionMetaStyle}>Finishes {formatPaceDate(o.priced.finishIso)}</span>
+              <span style={optionMetaStyle}>{formatEvening(o.priced.minsPerNight)} a night</span>
             ) : null}
           </button>
         )
