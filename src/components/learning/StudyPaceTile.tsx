@@ -1,5 +1,5 @@
 import { useMemo, useState, type CSSProperties } from 'react'
-import { ChevronRight, Clock } from '@/icons'
+import { ChevronRight, CircleInfo, Clock } from '@/icons'
 import { SquareTile } from '@/components/membership/v5/SquareTile'
 import { StudyPaceSheet, type PaceChoices } from './StudyPaceSheet'
 import {
@@ -18,8 +18,11 @@ import {
   simulateSchedule,
   activeDays,
   daysUntil,
+  daysBetween,
+  dateFromIso,
 } from '@/lib/studyPace'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { Tooltip } from '@/components/ui/Tooltip'
 
 /**
  * STUDY PACE — the live tile. "Testing 2" dashboard version only; QE Focused
@@ -262,6 +265,10 @@ export function StudyPaceTile({
       : presetLabel(selected)
 
   const card = layout === 'card'
+  /* The readout variant is needed UP HERE too, for the caption's pill — the
+     hook is called unconditionally at the top level of the component, which is
+     the rules-of-hooks trap this file's header records three times over. */
+  const readoutVariant = useFeatureFlag('study-pace-readout').variant ?? 'prose'
 
   return (
     <>
@@ -275,7 +282,51 @@ export function StudyPaceTile({
            the product should not go on calling a figure the learner picked a
            recommendation, so the moment anything is adjusted the eyebrow says
            whose pace it is instead. */
-        caption={card ? (adjusted ? 'Your Study Pace' : 'Recommended Study Pace') : 'Study Pace'}
+        caption={
+          <>
+            {card ? (adjusted ? 'Your Study Pace' : 'Recommended Study Pace') : 'Study Pace'}
+            {/*
+              THE PACE PILL, ON THE TILE'S TOP RIGHT — 2026-09-23, the direct
+              ask when the Status cell became Days to review: "Don't lose the
+              pace status logic, just move the pill to the top right."
+
+              THE LOGIC IS UNMOVED, only the pill. Same `PaceChip`, same tones,
+              same `presetLabel` + heavy modifier the other treatment renders
+              inline — so the two placements cannot drift into two readings of
+              one state.
+
+              ⚠ IT STILL SAYS "RECOMMENDED" BESIDE AN EYEBROW READING
+              "RECOMMENDED STUDY PACE", which is the duplication the chip was
+              removed for in the first place (see the caption's own note). It is
+              back by instruction rather than by oversight, and the eyebrow
+              still flips to "Your Study Pace" the moment anything is adjusted —
+              at which point the pair reads as intended and the overlap is only
+              in the default state.
+
+              `textTransform` and `letterSpacing` RESET: the eyebrow is
+              uppercase at 0.1em and the pill would inherit both, which turns
+              "Recommended · heavy" into a second caption rather than a chip.
+            */}
+            {card && readoutVariant === 'stats' ? (
+              <span style={captionPillSlotStyle}>
+                <PaceChip
+                  tone={
+                    selected.state === 'no'
+                      ? 'critical'
+                      : selected.state === 'heavy'
+                        ? 'warning'
+                        : adjusted
+                          ? 'positive'
+                          : 'neutral'
+                  }
+                >
+                  {selected.state === 'no' ? 'Won\u2019t fit' : paceLabel}
+                  {selected.state === 'heavy' ? ' \u00b7 heavy' : ''}
+                </PaceChip>
+              </span>
+            ) : null}
+          </>
+        }
         icon={<Clock size={13} />}
         /* THE CARD HAS NO TILE FLOOR. Its one control sits in the body, so
            `to`/`action` would add a second and a third to a treatment whose
@@ -763,10 +814,13 @@ function PaceCardBody({
             composited to about 3.5:1. Small and grey is where that failure
             usually gets made, so the token is doing the work rather than a
             lightened colour. */}
-        <p style={cardHelper}>
-          Your estimated finish date will update as you progress through the material
-          and your study pace changes.
-        </p>
+        {/* THE NOTE MOVES INTO THE TIP on the stats readout — 2026-09-23. It
+            qualifies the completion date, and on that variant the date has a
+            cell of its own with room for the marker; as a third line under a
+            row of cells it read as a footnote to the whole card rather than to
+            the one figure it is about. The prose variant keeps it in place,
+            where there is no cell to attach it to. */}
+        {readout === 'stats' ? null : <p style={cardHelper}>{FINISH_DATE_NOTE}</p>}
       </div>
 
       <CustomizeLink onClick={onCustomize} />
@@ -916,6 +970,18 @@ function CustomizeLink({ onClick }: { onClick: () => void }) {
 
 
 /**
+ * The note that the finish date moves.
+ *
+ * ONE STRING, TWO HOMES — the prose variant prints it as the card's third line;
+ * the stats variant hangs it off an info tip on the Course completion cell
+ * (2026-09-23, the direct ask). Shared rather than typed twice because it is
+ * the same caveat about the same figure, and two copies of a caveat drift into
+ * two different promises.
+ */
+const FINISH_DATE_NOTE =
+  'Your estimated finish date will update as you progress through the material and your study pace changes.'
+
+/**
  * THE THREE-CELL READOUT — `study-pace-readout: stats`.
  *
  * 2026-09-23, the direct ask: Course Access, Estimated Completion Date and
@@ -949,6 +1015,13 @@ function PaceStatsRow({
   examBinds: boolean
 }) {
   const noFit = preset.state === 'no'
+  /* Finish → ceiling, both as local dates. `daysBetween` rather than
+     `daysToCeiling - preset.days`: the ceiling is already expiry-minus-one, so
+     that subtraction is a day short, and the two dates are what the cells
+     beside this one actually print. */
+  const finish = dateFromIso(preset.finishIso)
+  const ceiling = dateFromIso(ceilingIso)
+  const daysToReview = finish && ceiling ? Math.max(0, daysBetween(finish, ceiling)) : null
   return (
     <div style={statsRowStyle}>
       <div style={statsCellStyle}>
@@ -971,7 +1044,18 @@ function PaceStatsRow({
         ) : null}
       </div>
       <div style={{ ...statsCellStyle, ...statsDividedStyle }}>
-        <p style={statsEyebrowStyle}>Course completion</p>
+        <p style={{ ...statsEyebrowStyle, display: 'flex', alignItems: 'center', gap: 5 }}>
+          Course completion
+          {/* A REAL BUTTON, because `Tooltip` needs a focusable trigger and a
+              tip only a mouse can reach is not a tip. `type="button"` so it
+              cannot submit anything, and an `aria-label` because the glyph has
+              no text of its own. */}
+          <Tooltip content={FINISH_DATE_NOTE}>
+            <button type="button" aria-label="About this date" style={statsInfoStyle}>
+              <CircleInfo size={12} aria-hidden />
+            </button>
+          </Tooltip>
+        </p>
         <p style={noFit ? { ...statsValueStyle, ...statsValueMutedStyle } : statsValueStyle}>
           {noFit ? 'Not achievable' : formatPaceDate(preset.finishIso)}
         </p>
@@ -992,19 +1076,30 @@ function PaceStatsRow({
             punctuated like a sentence made the pair look unconsidered. */}
         {noFit ? null : <p style={statsSubStyle}>At your current pace</p>}
       </div>
+      {/*
+        DAYS TO REVIEW — 2026-09-23, replacing the Status cell. The gap between
+        the plan's finish date and the day access ends: time the learner still
+        has the course open, with the coursework already behind them.
+        
+        ⚠ IT IS NOT A NEW FIGURE, it is one the model was already choosing and
+        never showing. `RECOMMENDED_BUFFER_DAYS` is why Recommended finishes
+        five days short of the ceiling rather than on it — so this cell prints
+        the reason that preset exists. It moves with the preset, which is the
+        point: Relaxed spends the buffer and shows 1, Focused banks more.
+        
+        CLAMPED AT NOUGHT. A plan that overruns its ceiling gives a negative
+        gap, and "-6 days" of prep time is not a reading, it is the won't-fit
+        state said in arithmetic — which the cell beside it already says in
+        words.
+      */}
       <div style={{ ...statsCellStyle, ...statsDividedStyle }}>
-        <p style={statsEyebrowStyle}>Status</p>
-        {/* THE PACE AXIS, via the card's own chip — same component, same tones,
-            so this cell and the other treatment's pill cannot drift into two
-            vocabularies for one fact. */}
-        <div style={{ marginTop: 2 }}>
-          <PaceChip
-            tone={noFit ? 'critical' : preset.state === 'heavy' ? 'warning' : 'neutral'}
-          >
-            {noFit ? 'Won\u2019t fit' : presetLabel(preset)}
-            {preset.state === 'heavy' ? ' \u00b7 heavy' : ''}
-          </PaceChip>
-        </div>
+        <p style={statsEyebrowStyle}>Days to review</p>
+        <p style={statsValueStyle}>
+          {daysToReview == null
+            ? '\u2014'
+            : `${daysToReview} ${daysToReview === 1 ? 'day' : 'days'}`}
+        </p>
+        <p style={statsSubStyle}>Extra prep time</p>
       </div>
     </div>
   )
@@ -1060,6 +1155,19 @@ const statsValueMutedStyle: CSSProperties = {
   color: 'var(--color-text-tertiary)',
 }
 
+/** The tip's trigger. No box, no padding — it sits inside an eyebrow and any
+ *  chrome would make a 10px caption look like a control. */
+const statsInfoStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  background: 'none',
+  border: 0,
+  padding: 0,
+  cursor: 'pointer',
+  color: 'var(--color-text-tertiary)',
+  lineHeight: 0,
+}
+
 const statsSubStyle: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-body)',
@@ -1073,6 +1181,14 @@ const statsSubStyle: CSSProperties = {
 function splitFigure(s: string): [string, string] {
   const i = s.lastIndexOf(' ')
   return i < 0 ? [s, ''] : [s.slice(0, i), s.slice(i + 1)]
+}
+
+/** Pushes the pill to the eyebrow row's right edge and undoes the two caption
+ *  properties it would otherwise inherit. */
+const captionPillSlotStyle: CSSProperties = {
+  marginLeft: 'auto',
+  textTransform: 'none',
+  letterSpacing: 'normal',
 }
 
 const cardStack = { display: 'flex', flexDirection: 'column', gap: 14 } as const

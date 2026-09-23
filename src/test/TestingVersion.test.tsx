@@ -288,8 +288,27 @@ describe('the pacing treatment', () => {
     // The access END date survives as the countdown's second line — the half
     // the prose would otherwise have taken with it.
     expect(tile.textContent).toMatch(/Ends [A-Z][a-z]{2} \d+/)
-    // …and the two things that survive BOTH variants.
-    expect(tile.textContent).toMatch(/Your estimated finish date will update/)
+    /* DAYS TO REVIEW replaced the Status cell the same day. It is the gap
+       between the plan's finish and the day access ends — the reason
+       `RECOMMENDED_BUFFER_DAYS` exists, printed for the first time. */
+    expect(tile.textContent).toMatch(/Days to review/i)
+    expect(tile.textContent).toMatch(/Extra prep time/i)
+
+    /* ⚠ THE FINISH-DATE NOTE IS NO LONGER ON THE CARD, and asserting its
+       absence is the point: it moved into a tip on the Course completion cell,
+       so a version that printed it BOTH places would pass a `toContain` and be
+       wrong. The trigger is what is on screen; the copy arrives on hover. */
+    expect(tile.textContent).not.toMatch(/Your estimated finish date will update/)
+    expect(within(tile).getByRole('button', { name: 'About this date' })).toBeTruthy()
+
+    /* THE PACE PILL MOVED TO THE TILE'S TOP RIGHT rather than being dropped —
+       the logic is unchanged, only the placement. It sits in the eyebrow row,
+       which is why this looks for it beside the caption. */
+    const caption = tile.querySelector('.cre-eyebrow-ink') as HTMLElement
+    expect(caption.textContent).toMatch(/Recommended Study Pace/i)
+    expect(caption.textContent).toMatch(/Recommended/)
+
+    // …and the one thing that survives BOTH variants.
     expect(within(tile).getByRole('button', { name: /Customize Study Plan/ })).toBeTruthy()
   })
 
