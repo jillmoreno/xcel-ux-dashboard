@@ -759,6 +759,19 @@ function CompassTopBar({
               `--color-text-secondary`, same 4px above, so the two read as one
               sentence repeated rather than two facts that happen to agree.
 
+              "ABOUT 18 MINUTES" as of 2026-09-23, the direct ask, replacing
+              "Estimated Time to Complete: 18 minutes" — six words of label in
+              front of the three that carry the fact, on a figure that is an
+              estimate whether or not the line says so. It is also the voice the
+              Study Pace card two tiles away already uses ("About 4 hours a
+              night"), so the product hedges the same way twice rather than two
+              ways once.
+
+              CHANGED ON BOTH SURFACES, which is the point of the paragraph
+              above: the home card was asked to be the model for this line, so
+              the two diverging would undo that ask rather than honour this
+              one.
+
               ⚠ THE FIGURE IS INVENTED and now says so on a SECOND surface.
               `NY_LH_LESSON_MINUTES_INVENTED` carries the warning in its name:
               nothing in the fixtures knows a lesson's length, and this version
@@ -767,7 +780,7 @@ function CompassTopBar({
               constant rather than retyping 18 is what keeps one edit enough
               when a real duration arrives. */}
           <span style={nowPlayingEstimateStyle}>
-            Estimated Time to Complete: {NY_LH_LESSON_MINUTES_INVENTED} minutes
+            About {NY_LH_LESSON_MINUTES_INVENTED} minutes
           </span>
         </span>
         {/* NO PROGRESS HERE — 2026-09-23, the direct ask: "this progress

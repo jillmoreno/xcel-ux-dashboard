@@ -1126,15 +1126,28 @@ const spineStyle: CSSProperties = {
 }
 
 /* THE SYLLABUS SPINE, TIGHTENED 2026-09-23 on the direct ask ("reduce the
-   spacing between steps 1-5"). 18 -> 8 here and 8 -> 3 on the item's
-   `paddingBottom` below: ~55px node-to-node becomes ~40px, so five steps read
-   as one block rather than a column you scan down.
+   spacing between steps 1-5"). 18 -> 14 here and 8 -> 3 on the item's
+   `paddingBottom` below: ~55px node-to-node becomes ~42px, so the steps read as
+   one block rather than a column you scan down.
 
    BOTH NUMBERS MOVED TOGETHER because either alone would have done it badly.
    Cutting only the spine leaves the ROWS as far apart and shortens the line
    between them, which reads as a broken connector; cutting only the padding
-   crowds the titles while the spine still reserves its 18px. */
-const syllabusSpineStyle: CSSProperties = { ...spineStyle, minHeight: 8 }
+   crowds the titles while the spine still reserves its 18px.
+
+   ⚠ 14, NOT 8, AND THE FLOOR IS DOING REAL WORK. It was 8 for an hour and was
+   reported as "should be dashed, not solid" — which it already was. Every row
+   but the first carries a status sub-line ("After your coursework"), so every
+   spine but the first was 15px; the first was 9. A 2px dashed border draws
+   roughly a 4px dash and a 4px gap, so nine pixels is one dash and a stub, and
+   it reads as a short solid rule. The dash only says "not done yet" if the
+   segment is long enough to repeat.
+
+   So this floor is a LEGIBILITY MINIMUM rather than spacing: it must stay above
+   about two dash cycles. Anything that shortens the first row again — dropping
+   the sub-line from the others, say — has to be checked against it, because the
+   failure is silent and looks like a status bug rather than a sizing one. */
+const syllabusSpineStyle: CSSProperties = { ...spineStyle, minHeight: 14 }
 
 /** The same spine, dashed — every segment except one under a completed step.
  *  `width: 0` with a left border, because a 2px dashed BACKGROUND is not a

@@ -171,7 +171,7 @@ export function JumpBackInWidget({
                   a constant whose name says what it is, and the tests that used
                   to forbid the copy now pin it to that constant instead. */}
               <p style={estimateStyle}>
-                Estimated Time to Complete: {NY_LH_LESSON_MINUTES_INVENTED} minutes
+                About {NY_LH_LESSON_MINUTES_INVENTED} minutes
               </p>
             </>
           )}

@@ -3652,8 +3652,10 @@ describe('Jump Back In is INSIDE the progress block', () => {
      * was one of this version's standing rules.
      *
      * On 2026-09-17 Jillienne asked for "Estimated Time to Complete: 18
-     * minutes", so the line is on the card. What the rule becomes, rather than
-     * disappearing, is this: the figure must come from
+     * minutes", so the line is on the card — shortened to "About 18 minutes" on
+     * 2026-09-23, six words of label dropped from in front of the three that
+     * carry the fact. What the rule becomes, rather than disappearing, is this:
+     * the figure must come from
      * `NY_LH_LESSON_MINUTES_INVENTED` — a constant whose NAME says it is a
      * guess, sitting with the other three `_INVENTED` figures a reader greps
      * for — and never from a literal typed into the component.
@@ -3664,9 +3666,7 @@ describe('Jump Back In is INSIDE the progress block', () => {
      */
     renderShell(QE_URL)
     const card = screen.getByRole('region', { name: /jump back in/i })
-    expect(card.textContent).toContain(
-      `Estimated Time to Complete: ${NY_LH_LESSON_MINUTES_INVENTED} minutes`,
-    )
+    expect(card.textContent).toContain(`About ${NY_LH_LESSON_MINUTES_INVENTED} minutes`)
     // The name is the guard: it must stay greppable alongside the others.
     const src = readFileSync('src/data/nyProducerRequirements.ts', 'utf8')
     expect(src).toMatch(/NY_LH_LESSON_MINUTES_INVENTED/)

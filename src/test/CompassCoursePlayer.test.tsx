@@ -557,9 +557,7 @@ describe('the top bar states where you are', () => {
     startCourse()
     const bar = topBar().textContent ?? ''
     expect(bar).toContain(NY_LH_COURSE_CHAPTERS[NY_LH_CURRENT_CHAPTER_INDEX])
-    expect(bar).toContain(
-      `Estimated Time to Complete: ${NY_LH_LESSON_MINUTES_INVENTED} minutes`,
-    )
+    expect(bar).toContain(`About ${NY_LH_LESSON_MINUTES_INVENTED} minutes`)
     expect(bar).not.toMatch(/Current Lesson/i)
     expect(bar).not.toMatch(/Lesson \d+/)
     expect(bar).not.toMatch(/Part \d+ of \d+/)
@@ -569,11 +567,16 @@ describe('the top bar states where you are', () => {
     /* Same words and the same constant on both surfaces — the figure is
        INVENTED (`NY_LH_LESSON_MINUTES_INVENTED`), so the thing worth pinning is
        that neither surface retypes it and they cannot drift to two different
-       durations for one lesson. */
+       durations for one lesson.
+
+       THE WORDS SHORTENED TOGETHER on 2026-09-23 ("About 18 minutes"), which is
+       what this test exists to force: the home card was asked to be the model
+       for the player's line, so a change to one that skipped the other would
+       undo that ask. It caught exactly that when the player was edited first. */
     seed()
     renderShell(TESTING_URL)
     const card = screen.getByRole('region', { name: /jump back in/i })
-    const line = `Estimated Time to Complete: ${NY_LH_LESSON_MINUTES_INVENTED} minutes`
+    const line = `About ${NY_LH_LESSON_MINUTES_INVENTED} minutes`
     expect(card.textContent).toContain(line)
     startCourse()
     expect(topBar().textContent).toContain(line)
@@ -736,7 +739,9 @@ describe('the Overview view', () => {
        there", and it failed the moment the eyebrow was renamed. The reading
        column is identified by its own landmark instead. */
     expect(screen.queryByLabelText('Chat with Rubi')).toBeNull()
-    expect(container.textContent).not.toContain('Estimated Time to Complete')
+    expect(container.textContent).not.toContain(
+      `About ${NY_LH_LESSON_MINUTES_INVENTED} minutes`,
+    )
     expect(container.querySelector('main')).toBeNull()
     /* Named "<Page> page" since the rail landed — every one of the seven
        unbuilt pages renders the same ground, so the label has to say WHICH. */
