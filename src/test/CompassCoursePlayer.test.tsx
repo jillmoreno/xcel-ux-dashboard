@@ -13,6 +13,8 @@ import {
   NY_LH_CURRENT_LESSON_PART,
   NY_LH_LESSON_PARTS,
   NY_LH_LESSON_MINUTES_INVENTED,
+  NY_LH_LESSON_TITLES_INVENTED,
+  NY_LH_CURRENT_CHAPTER,
 } from '@/data/nyProducerRequirements'
 import { formatExamChip } from '@/components/learning/compassPlayerUtil'
 
@@ -155,10 +157,15 @@ describe('the player states the course that was opened', () => {
     startCourse()
     const sidebar = screen.getByLabelText('Course contents')
     expect(sidebar.textContent).toContain(`Completed ${doneStr} of ${totalStr}`)
-    // The current lesson is the one after the last completed, and it leads.
-    expect(sidebar.textContent).toContain(`Lesson ${Number(doneStr) + 1}`)
-    // No chapter names in the tree any more — the top bar carries the one.
-    expect(sidebar.textContent).not.toContain(NY_LH_COURSE_CHAPTERS[0])
+    /* The current lesson is the one after the last completed, and it leads.
+       Named by its TITLE since 2026-09-23 — `NY_LH_LESSON_TITLES_INVENTED`
+       authors the visible window, and lesson 27's entry REFERENCES
+       `NY_LH_CURRENT_CHAPTER` rather than retyping it, so the tree and the card
+       cannot name the learner's position two different things. That agreement
+       is what this asserts; the string itself is a fixture. */
+    const current = Number(doneStr) + 1
+    expect(sidebar.textContent).toContain(NY_LH_LESSON_TITLES_INVENTED[current])
+    expect(NY_LH_LESSON_TITLES_INVENTED[current]).toBe(NY_LH_CURRENT_CHAPTER)
   })
 
   it('keeps the current lesson at the TOP, with the completed run collapsed', () => {
@@ -173,9 +180,9 @@ describe('the player states the course that was opened', () => {
     expect(done).toBeGreaterThan(0)
     // Not one of the completed lessons is rendered while collapsed…
     expect(sidebar.textContent).not.toMatch(new RegExp(`Lesson ${done}\\b`))
-    // …and the current one leads the list.
+    // …and the current one leads the list, by its authored title.
     const rows = [...sidebar.querySelectorAll('ol > li')].map((li) => li.textContent?.trim())
-    expect(rows[0]).toBe(`Lesson ${done + 1}`)
+    expect(rows[0]).toBe(NY_LH_LESSON_TITLES_INVENTED[done + 1])
   })
 
   it('expands the completed run on demand, and collapses it again', () => {
@@ -551,5 +558,45 @@ describe('the top bar states where you are', () => {
     ) as HTMLElement | undefined
     expect(fill).toBeTruthy()
     expect(fill!.style.width).toBe(`${pct}%`)
+  })
+})
+
+describe('the invented lesson titles', () => {
+  /*
+   * ⚠ AUTHORED DATA. `NY_LH_LESSON_TITLES_INVENTED` covers the window a
+   * reviewer sees and nothing else, which is what keeps it legible AS
+   * invention — 42 plausible titles would be indistinguishable from a real
+   * syllabus. These pin the two properties that make the invention safe.
+   */
+  it('makes lesson 27 the SAME string the card names, by reference', () => {
+    // Not "equal to the same literal" — the map holds the constant itself, so
+    // moving the demo's chapter moves both surfaces at once.
+    expect(NY_LH_LESSON_TITLES_INVENTED[27]).toBe(NY_LH_CURRENT_CHAPTER)
+  })
+
+  it('falls back to the ordinal outside the authored window', () => {
+    /* The fallback is the honesty mechanism, not an edge case: expanding the
+       completed run drops straight back to "Lesson 12", so where the authoring
+       stops is visible at a glance. */
+    seed()
+    renderShell(TESTING_URL)
+    startCourse()
+    const sidebar = screen.getByLabelText('Course contents')
+    act(() => {
+      fireEvent.click(within(sidebar).getByRole('button', { name: /Completed \d+ of \d+/ }))
+    })
+    const rows = [...sidebar.querySelectorAll('ol > li')].map((li) => li.textContent?.trim())
+    expect(rows).toContain('Lesson 1')
+    expect(rows).toContain('Lesson 12')
+    // …and the authored ones still read as titles, in the same list.
+    expect(rows).toContain(NY_LH_LESSON_TITLES_INVENTED[27])
+  })
+
+  it('authors no title for a lesson the tree cannot reach', () => {
+    // A title past the course length would never render and would be a claim
+    // nobody could check — the map stops inside the course.
+    const keys = Object.keys(NY_LH_LESSON_TITLES_INVENTED).map(Number)
+    expect(Math.min(...keys)).toBeGreaterThan(0)
+    expect(Math.max(...keys)).toBeLessThanOrEqual(42)
   })
 })

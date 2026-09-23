@@ -263,6 +263,8 @@ export const NY_LH_LESSON_PARTS = 3
  */
 export const NY_LH_CURRENT_LESSON_PART = 1
 
+
+
 /**
  * Minutes to finish the current lesson — **INVENTED**, and the name says so for
  * the reason `NY_PRODUCER_HOURS_INVENTED` keeps its suffix: a figure that looks
@@ -318,6 +320,41 @@ export const NY_LH_CURRENT_CHAPTER_INDEX = 4
  */
 export const NY_LH_CURRENT_CHAPTER: string =
   NY_LH_COURSE_CHAPTERS[NY_LH_CURRENT_CHAPTER_INDEX]
+
+/**
+ * ⚠ INVENTED LESSON TITLES — authored 2026-09-23 on the direct ask ("can we
+ * have lesson 27 title match what is demo, and then make up the others that
+ * are shown on the screen 28-33").
+ *
+ * WHAT IS REAL HERE IS EXACTLY ONE ENTRY. Lesson 27 reads
+ * {@link NY_LH_CURRENT_CHAPTER} — REFERENCED, not retyped, so the course
+ * player's contents tree and the Jump Back In card cannot drift into naming the
+ * learner's position two different things. Everything from 28 down is written
+ * to look like a New York Life & Health pre-licensing outline and is sourced
+ * from nobody.
+ *
+ * COVERAGE IS THE VISIBLE WINDOW ONLY, and that is deliberate rather than
+ * unfinished. The tree shows the current lesson plus six, so 27–33 is what a
+ * reviewer sees; lessons 1–26 and 34–42 fall back to "Lesson N" in the
+ * component. The fallback IS the honesty mechanism — expanding "Completed 26 of
+ * 42" or "Show all" makes the authored window obvious at a glance, where 42
+ * invented titles would read as a real syllabus and be impossible to tell from
+ * one.
+ *
+ * `_INVENTED` in the name for the same reason the other three carry it: someone
+ * grepping for what this demo made up finds this with them. When a real outline
+ * arrives it replaces this map and the component needs no change — the lookup
+ * and the fallback already handle a partial map.
+ */
+export const NY_LH_LESSON_TITLES_INVENTED: Record<number, string> = {
+  27: NY_LH_CURRENT_CHAPTER,
+  28: 'Beneficiary Designations and Settlement Options',
+  29: 'Policy Loans, Withdrawals and Surrenders',
+  30: 'Underwriting: Applications and Insurable Interest',
+  31: 'Risk Classification and Substandard Ratings',
+  32: 'Policy Issue, Delivery and Free Look',
+  33: 'Group Life: Eligibility, Conversion and Portability',
+}
 
 /**
  * Hour requirements — **superseded as the dashboard's MEASURE** (see the days

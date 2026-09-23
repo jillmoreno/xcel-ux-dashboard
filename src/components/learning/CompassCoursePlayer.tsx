@@ -15,6 +15,7 @@ import {
   NY_LH_COURSE_CHAPTERS,
   NY_LH_CURRENT_CHAPTER_INDEX,
   NY_LH_LESSON_MINUTES_INVENTED,
+  NY_LH_LESSON_TITLES_INVENTED,
 } from '@/data/nyProducerRequirements'
 import { readExamDate } from '@/data/examDateStore'
 import { ProgressBar } from '@/components/ui/ProgressBar'
@@ -403,8 +404,14 @@ function LessonRow({ n, state }: { n: number; state: 'done' | 'current' | 'upcom
       ) : (
         <span aria-hidden style={state === 'current' ? tocRingNowStyle : tocRingIdleStyle} />
       )}
+      {/* THE TITLE WHERE ONE IS AUTHORED, the ordinal otherwise — and the
+          fallback is doing real work rather than guarding an edge case.
+          `NY_LH_LESSON_TITLES_INVENTED` covers only the window a reviewer sees
+          (27–33); expanding the completed run or Show all drops straight back
+          to "Lesson 12", which is what makes the authored stretch visible
+          instead of passing for a real syllabus. */}
       <span style={state === 'current' ? tocSectionTextNowStyle : tocSectionTextStyle}>
-        Lesson {n}
+        {NY_LH_LESSON_TITLES_INVENTED[n] ?? `Lesson ${n}`}
       </span>
     </span>
   )
