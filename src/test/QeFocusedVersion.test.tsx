@@ -2689,8 +2689,23 @@ describe('the in-shell course launcher is a lo-fi placeholder', () => {
    *
    * It is a CALL-SITE change, not a deletion: the page is 638 lines with two
    * consumers, and only the launcher is the Compass surface.
+   *
+   * ⚠ THESE NOW PIN `course-launcher-style: lo-fi` EXPLICITLY — 2026-09-22.
+   * The launcher grew a second variant (the Compass player, node 49:2903) and
+   * `compass` is the branch default, so a test rendering without seeding got
+   * the player and failed on every assertion below. That is the rule CLAUDE.md
+   * already states, applied in the usual direction: a test about a capability
+   * must pin the flags it depends on, or an editorial default silently becomes
+   * its subject. What these are about is the PLACEHOLDER and the rail
+   * behaviour around it, both of which are still live on that variant.
    */
+  const seedLoFi = () =>
+    window.localStorage.setItem(
+      'cgp.featureFlags',
+      JSON.stringify({ 'course-launcher-style': { enabled: true, variant: 'lo-fi' } }),
+    )
   it('shows the placeholder and none of the old course chrome', () => {
+    seedLoFi()
     const { container } = renderShell(QE_URL)
     fireEvent.click(within(container).getByRole('button', { name: /^resume\b/i }))
     const placeholder = screen.getByRole('region', { name: /compass course content/i })
@@ -2717,6 +2732,7 @@ describe('the in-shell course launcher is a lo-fi placeholder', () => {
      * its own, so orientation rests on "Back to {origin}", and hiding the rail
      * would leave that link carrying all of it.
      */
+    seedLoFi()
     const { container } = renderShell(QE_URL)
     const rail = () => container.querySelector<HTMLElement>('nav[aria-label="Primary"]')!
     const labels = () => Array.from(rail().querySelectorAll('button')).map((b) => b.textContent)
@@ -2755,6 +2771,7 @@ describe('the in-shell course launcher is a lo-fi placeholder', () => {
        the ROTATION is what keeps them apart — a drill-in chevron never turns.
        `bars` was the other vendored candidate and is wrong: a hamburger says
        "open the menu", and at 76px the rail is already open. */
+    seedLoFi()
     const { container } = renderShell(QE_URL)
     const rail = () => container.querySelector<HTMLElement>('nav[aria-label="Primary"]')!
     const toggle = () => within(rail()).getByRole('button', { name: /^(Collapse Menu|Expand)$/ })
@@ -2806,6 +2823,7 @@ describe('the in-shell course launcher is a lo-fi placeholder', () => {
      * always collapses, an expand inside lasts as long as the course, and
      * leaving restores the dashboard's default.
      */
+    seedLoFi()
     const { container } = renderShell(QE_URL)
     const rail = () => container.querySelector<HTMLElement>('nav[aria-label="Primary"]')!
     const toggle = () => within(rail()).getByRole('button', { name: /^(Collapse Menu|Expand)$/ })
@@ -2852,6 +2870,7 @@ describe('the in-shell course launcher is a lo-fi placeholder', () => {
      * row does under the cursor. Compared against a live row here rather than
      * against a literal, which is what makes that sharing the subject.
      */
+    seedLoFi()
     const { container } = renderShell(QE_URL)
     const rail = container.querySelector<HTMLElement>('nav[aria-label="Primary"]')!
     const rows = Array.from(rail.querySelectorAll<HTMLElement>('button'))
@@ -2901,6 +2920,7 @@ describe('the in-shell course launcher is a lo-fi placeholder', () => {
     
        `RAIL_GUTTER` is still exported and still read by the wrapper's padding —
        it lost this consumer, not its purpose. */
+    seedLoFi()
     const { container } = renderShell(QE_URL)
     const rail = container.querySelector<HTMLElement>('nav[aria-label="Primary"]')!
     const toggle = Array.from(rail.querySelectorAll('button')).find(

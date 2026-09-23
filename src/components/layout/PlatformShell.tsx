@@ -49,6 +49,7 @@ import { partnerOfferingsFor } from '@/data/membership/partnerOfferingsFixtures'
 import { ResourcesPanel } from '@/components/membership/ResourcesPanel'
 import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
 import { displayedProgressPct } from '@/components/learning/learningPathsHomeUtil'
+import { CompassCoursePlayer } from '@/components/learning/CompassCoursePlayer'
 import { ReadinessPanel } from '@/components/readiness/ReadinessPanel'
 import { resourcesCopyFor, resourcesFor } from '@/data/membership/resourcesFixtures'
 import { NonMemberUpsellHero } from '@/components/membership/NonMemberUpsellHero'
@@ -200,6 +201,37 @@ function PlatformShellBody() {
   // the origin is the section the launcher overlays (the URL-driven `active`,
   // which is left unchanged while the launcher is open).
   const launcherOpen = launcher.courseId != null
+  /* Which surface the launcher opens — see `course-launcher-style`. Read
+     UNCONDITIONALLY, above the early return below, because a hook after a
+     conditional return is the `rules-of-hooks` trap three notes in
+     `LearnerFocusedBand` already record. */
+  const launcherStyle = useFeatureFlag('course-launcher-style').variant ?? 'lo-fi'
+  /*
+   * WHAT THE PLAYER IS A PLAYER FOR comes from the OPENER, not from a lookup
+   * here — `launcher.meta`, supplied by the card that called `open()`.
+   *
+   * FOUR DERIVATIONS WERE TRIED IN THIS SPOT FIRST and every one rendered
+   * something wrong, which is why the context grew a field instead:
+   *
+   *   - THE PERSONA'S PATH via `dashboard-education-type`. That flag's catalog
+   *     default is `ce` while the Testing version is qualifying education, so
+   *     the sidebar read "Florida Life & Health CE" beside a card naming the
+   *     New York pre-licensing course. The VERSION decides this, not the flag.
+   *   - `findLearningCourseById`, the standalone `CourseDetailPage`'s resolver.
+   *     It searches learning-path COURSE ids; the launcher passes a jumpBackIn
+   *     id. Null every time, falling through to the persona above — failing
+   *     SILENTLY, which is what made the first fix look like it worked.
+   *   - `myCoursesFor(brand)`, the list the card falls back to when no course
+   *     is passed. A persona-driven path supplies its own, so this missed too.
+   *   - `learningPathsFor(brand)` matched on `jumpBackIn.id`. The closest of
+   *     the four and still wrong: the path is a PERSONA OVERRIDE and is not in
+   *     that list at all.
+   *
+   * The common thread is that no registry the shell can reach holds the object
+   * the card is rendering. The card is holding it, so the card passes it.
+   */
+  const launchedTitle = launcher.meta.title ?? ''
+  const launchedPercent = launcher.meta.percentComplete ?? 0
   /*
    * MANUAL COLLAPSE, layered over the automatic one — 2026-09-17.
    *
@@ -490,6 +522,37 @@ function PlatformShellBody() {
   // (The header's Cart / Account / hamburger + logo link are also neutralized —
   // see Header — and `?chrome=off` hides the prototype tools.)
   const focus = params.get('focus') === '1'
+
+  /*
+   * THE COMPASS TAKEOVER — `course-launcher-style: compass`.
+   *
+   * Returned BEFORE the shell grid, not rendered inside it, and that is the
+   * whole structural point of the variant. The player draws its own 260px
+   * contents sidebar in the space the dashboard rail occupies, so the two
+   * cannot share a screen; `lo-fi` keeps the rail and renders in the content
+   * column exactly as it always has, a few lines below.
+   *
+   * THE GLOBAL HEADER SURVIVES THIS because it is not ours — `<Header />` sits
+   * in `AppLayout`, ABOVE this component, so an early return here drops the
+   * rail and the content column and leaves the header where the design draws
+   * it. Nothing had to be rebuilt or lifted.
+   *
+   * The title and the percentage are the persona's own — `displayedProgressPct`
+   * on the path Home renders — for the reason the Study Plan tile's note
+   * records: any other source reads the base fixture rather than the demo
+   * persona's override, and the player would state a different percentage from
+   * the dashboard it just covered.
+   */
+  if (launcherOpen && launcherStyle === 'compass') {
+    return (
+      <CompassCoursePlayer
+        courseTitle={launchedTitle}
+        percentComplete={launchedPercent}
+        onClose={launcher.close}
+        closeLabel={launcherBackLabel}
+      />
+    )
+  }
 
   return (
     <div

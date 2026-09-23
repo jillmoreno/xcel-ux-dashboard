@@ -17,11 +17,36 @@ import {
  * A context (not prop-threading) so the trigger card doesn't have to pass a
  * callback up through `MembershipV7`'s `SectionContent` → `MembershipOverview`.
  */
+/**
+ * What the OPENER knows about the course and the launcher cannot work out.
+ *
+ * Added 2026-09-22 for the Compass player, whose sidebar states the course
+ * title and its percentage. Four attempts to derive those from `courseId`
+ * inside the shell were all wrong, and the reason is structural rather than a
+ * missing lookup: the id is a `jumpBackIn` card's, the card belongs to a
+ * PERSONA's path override, and that path is not in `learningPathsFor(brand)`
+ * at all — so no registry the shell can reach contains it. The component that
+ * opens the launcher is holding the path; it passes what it has.
+ *
+ * OPTIONAL, so every existing `open(id)` call site keeps working unchanged —
+ * the lo-fi launcher needs none of it.
+ */
+export type LaunchedCourseMeta = {
+  /** The course as the learner would name it — the path title, which is what
+   *  the dashboard's own COURSE PROGRESS heading states. */
+  title?: string
+  /** 0–100, the same figure Home shows for that path. */
+  percentComplete?: number
+}
+
 type CourseLauncherState = {
   /** The course whose launcher is open in-shell, or `null` for the normal section. */
   courseId: string | null
+  /** What the opener knew about it — see `LaunchedCourseMeta`. Empty when the
+   *  caller passed none. */
+  meta: LaunchedCourseMeta
   /** Open the in-shell launcher for a course. */
-  open: (courseId: string) => void
+  open: (courseId: string, meta?: LaunchedCourseMeta) => void
   /** Close the launcher and return to the active section. */
   close: () => void
   /** True only inside the shell provider — lets consumers (e.g. `CourseSheet`)
@@ -31,6 +56,7 @@ type CourseLauncherState = {
 
 const NOOP: CourseLauncherState = {
   courseId: null,
+  meta: {},
   open: () => {},
   close: () => {},
   available: false,
@@ -40,14 +66,25 @@ const CourseLauncherContext = createContext<CourseLauncherState | null>(null)
 
 export function CourseLauncherProvider({ children }: { children: ReactNode }) {
   const [courseId, setCourseId] = useState<string | null>(null)
+  const [meta, setMeta] = useState<LaunchedCourseMeta>({})
   const value = useMemo<CourseLauncherState>(
     () => ({
       courseId,
-      open: (id: string) => setCourseId(id),
-      close: () => setCourseId(null),
+      meta,
+      open: (id: string, next?: LaunchedCourseMeta) => {
+        setCourseId(id)
+        // Replaced, not merged: stale meta from a previous open would title the
+        // new course with the old one's name, which is the exact failure the
+        // four derivation attempts produced.
+        setMeta(next ?? {})
+      },
+      close: () => {
+        setCourseId(null)
+        setMeta({})
+      },
       available: true,
     }),
-    [courseId],
+    [courseId, meta],
   )
   return (
     <CourseLauncherContext.Provider value={value}>{children}</CourseLauncherContext.Provider>

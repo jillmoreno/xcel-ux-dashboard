@@ -738,6 +738,57 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    /*
+     * COURSE LAUNCHER — which surface "Start course" / "Resume" opens into.
+     *
+     * The launcher has rendered a LO-FI PLACEHOLDER since 2026-09-17 (the
+     * direct ask: "a large lo-fi square with simple message, this is where
+     * Compass Course content will live"). `compass` is the built player from
+     * Figma `Atlas-Compass-Global-Navigation` node 49:2903 — the contents
+     * sidebar, the exam-date and section-progress bar, the reading column and
+     * the Rubi aside.
+     *
+     * VARIANT-ONLY, like `dashboard-clp-style`: the enable toggle stays on so
+     * the flag is live and the CHOICE is the variant. "Off" would have to mean
+     * "lo-fi", which the variant already says.
+     *
+     * DEFAULT `compass` ON THIS BRANCH, which is the Contributing guide's rule
+     * for a branch build — the branch deploy is the review link, so the work
+     * has to be what it opens on. It is NOT yet a baseline decision: whether
+     * this is what `?demo=1` renders on `main` is `/promote-to-prototype`'s
+     * call, and `lo-fi` is one click away in this panel for the comparison.
+     *
+     * ⚠ THE TWO VARIANTS DIFFER IN SHELL, not just in the panel they draw.
+     * `compass` is a FULL-WINDOW TAKEOVER: its own 260px contents sidebar sits
+     * where the dashboard rail is, so `PlatformShell` drops the rail and the
+     * content column for it and keeps only the global header. `lo-fi` stays
+     * inside the content column with the rail beside it, as it always has.
+     * A reviewer switching between them is switching layouts, not skins.
+     */
+    key: 'course-launcher-style',
+    group: 'Widgets',
+    label: 'Course launcher — what Start course opens',
+    description:
+      'Which surface the Jump Back In card opens when a learner starts or resumes a course. Lo-fi is the placeholder that has stood there since 2026-09-17 — a large grey square reading "Compass Course content will live here" — kept so the new player can be compared against what ships today. Compass is the built course player: a contents sidebar with the chapter tree and its done / now / up next states, a bar carrying the learner\u2019s own exam date and the section progress, the reading column with its Previous and Next controls, and the Rubi aside. Compass is a FULL-WINDOW takeover — its contents sidebar occupies the space the dashboard rail does, so switching variants switches layout rather than styling. Everything in it is static except Close; the centre is deliberately still a "Course Content" placeholder, which is what the Figma itself draws, because the courseware is Compass\u2019s and neither the design nor this repo has it.',
+    defaultEnabled: true,
+    defaultVariant: 'compass',
+    variants: [
+      {
+        value: 'lo-fi',
+        label: 'Lo-fi — the placeholder',
+        description:
+          'What ships today: a Back link and a large grey square saying Compass course content will live here. Kept for comparison, and still the honest state wherever the player is not the subject.',
+      },
+      {
+        value: 'compass',
+        label: 'Compass — the course player',
+        description:
+          'The built player from Figma node 49:2903. Takes the full window: contents sidebar, exam-date and progress bar, reading column, Rubi aside. Static except Close.',
+      },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'dashboard-clp-style',
     group: 'Widgets',
     label: 'Current Progress — block style',

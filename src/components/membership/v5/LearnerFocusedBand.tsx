@@ -671,7 +671,12 @@ export function LearnerFocusedBand({
           Math.max(1, cats.findIndex((c) => c.completed < c.required) + 1 || cats.length),
         )}
         chapterTitle={NY_LH_CURRENT_CHAPTER}
-        onResume={(id) => launcher.open(id)}
+        /* THE OPENER SUPPLIES THE COURSE, because the shell cannot derive it:
+           `id` is this jumpBackIn card's, and the path carrying it is a persona
+           override that is not in `learningPathsFor(brand)`. The Compass player
+           states both of these in its sidebar; passing them here is what stops
+           it naming a different course from the card just clicked. */
+        onResume={(id) => launcher.open(id, { title: path.title, percentComplete: percent })}
       />
     ) : null
   // Shared with the Learning Path detail sheet's "Time Remaining", so the band

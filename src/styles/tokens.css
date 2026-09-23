@@ -556,6 +556,36 @@
   --rubi-pill-text: #730d0d; /* rubi/primary/700 */
 }
 
+/* ----------------------------------------------------------------------------
+   Compass Course Player tokens.
+
+   The warm "reading" palette the course player sits on — Figma
+   `Atlas-Compass-Global-Navigation`, node 49:2903. Declared at the base rather
+   than in the brand block because Compass is the COURSE surface: the same
+   parchment ground whatever brand wraps it, exactly like the Rubi tokens above.
+
+   WHY NEW TOKENS AND NOT THE TERTIARY RAMP. XCEL's tertiary is Beech
+   (#9d815a), and its 100/200 stops (#f5f0e9 / #e6dccd) are close enough to
+   these to be tempting and wrong: they are a BRAND tint that moves if the brand
+   does, and this ground must not. `--color-surface-parchment` is likewise
+   already spoken for — it is the guides' cream (#faf4e1), a full shade warmer
+   and yellower than the player's near-white.
+
+   The two structural colours are NOT new: the design's #2d5872 is exactly
+   `--color-primary-500` under `[data-brand='xcel']`, and is referenced as that
+   token so the player follows the brand where it should. #3d5a73 — the button
+   and progress-dot navy — is within 2% of it and is treated as the same
+   intent rather than pinned as a fourth near-navy.
+   ---------------------------------------------------------------------------- */
+:root {
+  --compass-ground: #f8f6f3; /* the reading column's page */
+  --compass-content: #f0ece6; /* the Course Content placeholder block */
+  --compass-rule: #e0dbcd; /* hairlines: footer top, Rubi header/footer */
+  --compass-edge: #c3bba5; /* the stronger border — Rubi's left edge, buttons */
+  --compass-thread: #e2d9cd; /* the vertical line down the TOC's child items */
+  --compass-current: #eceef0; /* the fill behind the TOC's current child */
+}
+
 /* ============================================================================
    Brand override block
    `AccountProvider` sets `data-brand="xcel"` on <html>, and the variables

@@ -84,6 +84,7 @@ const REBRAND_FLAGS = [
   // Current Course Progress block treatment — light / big-number / navy card.
   // Variant-only; a treatment rather than a different set of facts.
   'dashboard-course-header',
+  'course-launcher-style',
   'dashboard-clp-style',
   // Pacing tile treatment on the Testing version — lo-fi / rate / runway /
   // balance. Variant-only, and inert on every other version, where the tile is
