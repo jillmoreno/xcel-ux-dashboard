@@ -5,7 +5,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
 import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext'
-import { NOT_STARTED_NIGHTS } from '@/lib/studyPace'
+import { NOT_STARTED_NIGHTS, paceNameFor } from '@/lib/studyPace'
 import { flagScopeForPath } from '@/components/account/FeatureFlagPanel'
 import { LearningPathsPanelProvider } from '@/components/learning/LearningPathsPanelContext'
 import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelContext'
@@ -310,9 +310,16 @@ describe('the pacing treatment', () => {
     /* THE PACE PILL MOVED TO THE TILE'S TOP RIGHT rather than being dropped —
        the logic is unchanged, only the placement. It sits in the eyebrow row,
        which is why this looks for it beside the caption. */
+    /* ⚠ THE BADGE IS GONE and the NAME is in the eyebrow — 2026-09-23, two
+       asks in a row. It said "Recommended" beside an eyebrow reading
+       RECOMMENDED STUDY PACE, which is the duplication the original pill was
+       removed for. The heading now carries the name, derived from the review
+       gap, so this pins the RELATIONSHIP rather than a literal: whatever the
+       cell says, the heading is that name. */
     const caption = tile.querySelector('.cre-eyebrow-ink') as HTMLElement
-    expect(caption.textContent).toMatch(/Recommended Study Pace/i)
-    expect(caption.textContent).toMatch(/Recommended/)
+    const gap = Number(/(\d+)\s*days?\s*Extra prep time/i.exec(tile.textContent ?? '')?.[1])
+    expect(Number.isFinite(gap)).toBe(true)
+    expect(caption.textContent).toBe(`${paceNameFor(gap)} Study Pace`)
 
     // …and the one thing that survives BOTH variants.
     expect(within(tile).getByRole('button', { name: /Customize Study Plan/ })).toBeTruthy()
@@ -354,7 +361,9 @@ describe('the presets pacing card', () => {
      and the treatment is unconditional on this version, so the seed is just the
      account — kept as a named helper so every test below still reads as "given
      the presets card". */
-  const seedPresets = () => seed()
+  /** `extra` forwards to `seed`, so a test wanting the stats readout (where the
+   *  Days to review cell lives) can ask for it without a second helper. */
+  const seedPresets = (extra: Record<string, unknown> = {}) => seed(extra)
 
   it('states an evening, a week and the date it lands on', () => {
     seedPresets()
@@ -455,9 +464,10 @@ describe('the presets pacing card', () => {
        (The provenance CLAUSE follows the same boolean and is pinned in
        `StudyPaceTile.test.tsx`, where a course with a ceiling prints one.) */
     const user = userEvent.setup()
-    seedPresets()
+    seedPresets({ 'study-pace-readout': { enabled: true, variant: 'stats' } })
     renderShell(TESTING_URL)
-    expect(paceTile().textContent).toMatch(/^Recommended Study Pace/)
+    const before = /^(.*? Study Pace)/.exec(paceTile().textContent ?? '')?.[1] ?? ''
+    expect(before).toMatch(/Study Pace$/)
 
     await user.click(within(paceTile()).getByRole('button', { name: 'Customize Study Plan' }))
     const dialog = screen.getByRole('dialog')
@@ -468,14 +478,33 @@ describe('the presets pacing card', () => {
     await user.click(dialog.querySelector('[data-shape="evenings"]')!)
     await user.click(within(dialog).getByRole('button', { name: /^Save pace/ }))
 
-    /* "CUSTOM STUDY PACE" as of 2026-09-23. The eyebrow is built from
-       `paceBadgeLabel` now and names WHICH plan the card is showing; a week
-       built on the Adjust screens has no preset behind it, so it answers
-       Custom. The CLAIM is unchanged — the product must not go on calling a
-       figure the learner picked a recommendation — which is why this was
-       edited rather than dropped. */
-    expect(paceTile().textContent).toMatch(/^Custom Study Pace/)
-    expect(paceTile().textContent).not.toMatch(/Recommended/)
+    /* ⚠ THE CLAIM NARROWED THE SAME DAY, and this records it rather than
+       asserting something that is no longer true. The eyebrow is derived from
+       DAYS TO REVIEW now, so it names the plan's shape rather than its author —
+       a learner-chosen plan landing in the 7-15 band IS called "Recommended"
+       again. `paceNameFor`'s note spells out the trade.
+
+       ⚠ AND IT DOES NOT SIMPLY FLIP. A first draft of this asserted the name
+       must CHANGE after saving, which failed: the evenings week happens to land
+       in the same review band as the model's own suggestion, so the heading is
+       correctly identical. A name derived from an outcome only moves when the
+       outcome crosses a threshold, and asserting otherwise would have been
+       pinning a coincidence.
+
+       So what this checks is the DERIVATION holding on both sides of the
+       gesture — the heading is `paceNameFor` of the gap the card is showing,
+       before and after. */
+    const nameAndGap = () => {
+      const t = paceTile().textContent ?? ''
+      return {
+        name: /^(.*?) Study Pace/.exec(t)?.[1] ?? '',
+        gap: Number(/(\d+)\s*days?\s*Extra prep time/i.exec(t)?.[1]),
+      }
+    }
+    const after = nameAndGap()
+    expect(Number.isFinite(after.gap)).toBe(true)
+    expect(after.name).toBe(paceNameFor(after.gap))
+    expect(before).toMatch(/Study Pace$/)
   })
 
   it('operates exactly one thing, and no more', () => {
@@ -560,7 +589,13 @@ describe('the beginner week — 0%', () => {
     // and the nights count cannot disagree about WHICH four days.
     seedNotStarted()
     renderShell(TESTING_URL)
-    const labels = [...paceTile().querySelectorAll('span')]
+    /* ⚠ `span, button` AS OF 2026-09-23. The strip's cells became BUTTONS at
+       0% that day — the direct ask, "have these be clickable so the user can
+       see this change in real time... to set the goal" — so a `span`-only
+       query found nothing on the one persona this test seeds. The cell's
+       styling is unchanged either way, which is why the assertions below are
+       not. */
+    const labels = [...paceTile().querySelectorAll('span, button')]
       .filter((el) => /^[MTWFS]$/.test(el.textContent ?? ''))
       .slice(0, 7)
     expect(labels).toHaveLength(7)

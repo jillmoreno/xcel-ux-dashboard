@@ -353,39 +353,52 @@ export function presetLabel(preset: PacePreset): string {
 }
 
 /**
- * Which of the four names this plan goes by.
+ * How many days of review a plan leaves, and what that makes it.
  *
- * ⚠ IT LIVES HERE, NOT ON THE CARD, and that is a lint rule rather than taste:
- * `StudyPaceTile.tsx` may export only components (`react-refresh`), and a
- * non-component export there costs the file its fast refresh. `presetLabel` is
- * three lines up for the same reason, and the two answer the same question in
- * two vocabularies — the model's and the card's.
+ * 2026-09-23, the direct ask: the card's name follows the OUTCOME rather than
+ * which preset produced it — "Focused & Quick if the user will complete with
+ * more than 15 days to review, Recommended if at least 7, Relaxed if 3 or
+ * less."
  *
- * MAPPED ONTO WHAT THE CARD ALREADY KNOWS rather than stored: the model builds
- * `relaxed` / `recommended` / `focused`, and a learner who has built their own
- * week has no preset at all. So the four labels are a renaming of states that
- * exist, which is why no sheet work came with them.
+ * ⚠ THE ASK LEAVES 4-6 UNSTATED, and this reads the three rules as one
+ * descending ladder: anything that is not Focused and not Recommended is
+ * Relaxed. That covers the three cases named and gives the middle band a home;
+ * the alternative — a fourth name for 4-6 days — would be inventing a
+ * vocabulary nobody asked for. Worth confirming if a plan landing at 5 ever
+ * looks mislabelled.
  *
- * `Custom` is the one that matters to get right — it is the provenance rule
- * `paceLabel` was written for: a schedule the learner built is not something
- * the product recommended, and going on calling it "Recommended" is the precise
- * claim that rule exists to stop.
+ * ⚠ IT SUPERSEDES A PRESET-BASED MAPPING, and takes one real risk with it. The
+ * old version answered `Custom` for a week the learner built, which was the
+ * provenance rule's home: the product must not go on calling a figure the
+ * learner picked a recommendation. Now a learner-chosen plan landing in the
+ * 7-15 band is called "Recommended". The defence is that the ladder names the
+ * PLAN's shape rather than its author — "Recommended" here means "lands where
+ * we would have put it" — but it is a genuine narrowing of that rule and the
+ * reason it is spelled out at length here.
  */
-export function paceBadgeLabel(
-  adjusted: boolean,
-  ownSchedule: boolean,
-  preset: PacePreset,
-): string {
-  if (ownSchedule) return 'Custom'
-  if (!adjusted) return 'Recommended'
-  /* "Focused & Quick" / "Steady & Relaxed" as of 2026-09-23 (they were "Quick
-     Finish" and "Evenings Only" for an hour). Both name the TRADE rather than
-     one side of it, which is what makes them readable as a set beside
-     "Recommended" — and "Evenings Only" was a claim about when the learner
-     studies, which this card does not know. */
-  if (preset.id === 'focused') return 'Focused & Quick'
-  if (preset.id === 'relaxed') return 'Steady & Relaxed'
-  return 'Recommended'
+export const REVIEW_DAYS_FOCUSED = 15
+export const REVIEW_DAYS_RECOMMENDED = 7
+
+export function paceNameFor(daysToReview: number | null): string {
+  if (daysToReview == null) return 'Recommended'
+  if (daysToReview > REVIEW_DAYS_FOCUSED) return 'Focused & Quick'
+  if (daysToReview >= REVIEW_DAYS_RECOMMENDED) return 'Recommended'
+  return 'Steady & Relaxed'
+}
+
+/**
+ * Days between a plan's finish and the ceiling it was priced against — the
+ * "Days to review" cell, and now the input the card's own NAME is derived from.
+ *
+ * ONE FUNCTION so the cell and the heading cannot disagree: they were two
+ * derivations for an afternoon and that is exactly how a card comes to print
+ * "Steady & Relaxed" above a readout saying 16 days.
+ */
+export function daysToReviewFor(finishIso: string, ceilingIso?: string): number | null {
+  const finish = dateFromIso(finishIso)
+  const ceiling = dateFromIso(ceilingIso)
+  if (!finish || !ceiling) return null
+  return Math.max(0, daysBetween(finish, ceiling))
 }
 
 /** Short weekday labels, Monday-first — the order `plan.weekdays` indexes into
@@ -560,7 +573,7 @@ const SIM_HORIZON_DAYS = 365
 
 /** Below this, a day's entry is treated as "not a study day" rather than as a
  *  very short one — floating-point dust from the steppers, not intent. */
-const MIN_STUDY_HOURS = 0.01
+export const MIN_STUDY_HOURS = 0.01
 
 export type ScheduleSim = {
   /** ISO yyyy-mm-dd the last hour of work lands on. */

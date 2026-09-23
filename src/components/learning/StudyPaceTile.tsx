@@ -10,12 +10,14 @@ import {
   weekStanding,
   defaultWeekdays,
   NOT_STARTED_NIGHTS,
+  MIN_STUDY_HOURS,
   EASY_MINS,
   WEEKDAY_LABELS,
   type PacePreset,
   type PaceModel,
   type PresetId,
-  paceBadgeLabel,
+  paceNameFor,
+  daysToReviewFor,
   simulateSchedule,
   activeDays,
   daysUntil,
@@ -247,12 +249,19 @@ export function StudyPaceTile({
    *  a freshly-loaded page open on "· yours" with its provenance clause already
    *  suppressed, which is the opposite of what both say. Changing it in the
    *  sheet still counts, because then it differs from the seed. */
-  const adjusted =
-    choices.presetId != null ||
-    choices.schedule != null ||
-    choices.nights != null ||
-    choices.examDate !== seededExamDate ||
-    choices.style !== 'average'
+  /*
+   * `adjusted` LIVED HERE and lost its last consumer on 2026-09-23, when the
+   * card's name stopped asking "did the learner change anything" and started
+   * asking "how much review does this plan leave" — see `paceNameFor`, whose
+   * own note records what that narrowed.
+   *
+   * WHAT IT KNEW, for whoever needs it back: a pace is adjusted when
+   * `presetId`, `schedule` or `nights` is set, the style is off `average`, or
+   * the exam date differs from `seededExamDate` — that last comparison rather
+   * than a null check, because a date the DEMO seeded is not something the
+   * learner changed, and treating it as one made a freshly-loaded page open as
+   * though they had.
+   */
 
   /**
    * WHICH DAYS THE STRIP SHADES. `plan.weekdays` when the learner put the plan
@@ -282,6 +291,13 @@ export function StudyPaceTile({
    * `Custom` there for exactly that reason.
    */
 
+  /* THE CEILING THE PLAN WAS PRICED AGAINST, and the review gap it leaves.
+     Derived HERE rather than in the stats row, because the card's NAME reads it
+     too — two derivations is how a heading comes to disagree with the cell
+     three lines under it. */
+  const ceilingForName = model.binding === 'exam' ? (choices.examDate ?? undefined) : accessExpiresAt
+  const daysToReview = daysToReviewFor(selected.finishIso, ceilingForName)
+
   const card = layout === 'card'
   return (
     <>
@@ -309,9 +325,7 @@ export function StudyPaceTile({
                 Study Pace" — which keeps the provenance rule the old
                 "Your Study Pace" was there for: the product must not go on
                 calling a figure the learner picked a recommendation. */}
-            {card
-              ? `${paceBadgeLabel(adjusted, Boolean(choices.schedule), selected)} Study Pace`
-              : 'Study Pace'}
+            {card ? `${paceNameFor(daysToReview)} Study Pace` : 'Study Pace'}
             {/*
               THE PACE PILL, ON THE TILE'S TOP RIGHT — 2026-09-23, the direct
               ask when the Status cell became Days to review: "Don't lose the
@@ -380,6 +394,62 @@ export function StudyPaceTile({
             weekMinutes={weekMinutes}
             today={today}
             onCustomize={() => setOpen(true)}
+            /*
+             * WRITES `choices.nights`, the same field the sheet writes, so a
+             * pick from the strip and a pick from the sheet are one state. The
+             * model re-prices on the next render and every figure below — the
+             * nightly hours, the finish date, the review gap and therefore the
+             * card's own NAME — follows from it.
+             *
+             * ⚠ AT 0% ONLY — 2026-09-23, the direct note: the strip is there
+             * "to set the goal". Before the learner starts, picking nights is
+             * choosing a plan; once they are underway the strip REPORTS one,
+             * and a circle that silently re-prices a plan they are partway
+             * through is a different and more dangerous control. Changing it
+             * then goes through Customize Study Plan, which shows the
+             * consequences before committing them.
+             *
+             * `undefined` rather than a disabled button: a control that is not
+             * offered says less wrongly than one that looks offered and is not,
+             * and `WeekStrip` falls back to its decorative `aria-hidden` span
+             * when there is no handler.
+             */
+            onPickNights={
+              notStarted
+                ? (n) =>
+                    setChoices((c) => ({
+                      ...c,
+                      nights: n,
+                      /*
+                       * ⚠ IT WRITES A WEEK, NOT JUST A COUNT, and the first
+                       * build wrote only the count — which looked right and did
+                       * almost nothing. `studyPace` takes `nights` as how to
+                       * SPLIT a plan, not how long it takes: the finish date
+                       * comes from the preset's `days`, so six nights instead
+                       * of four made the evenings shorter and moved neither the
+                       * completion date, the review gap, nor therefore the
+                       * card's name. The ask is explicit that all of those
+                       * follow, so they have to.
+                       *
+                       * A WEEK goes down the `simulateSchedule` path instead,
+                       * the same one the sheet's saved plans take: the learner
+                       * keeps the evening length they are looking at and adding
+                       * a night finishes them sooner. That is what "set the
+                       * goal" means here — the nights are the commitment and
+                       * the date is the consequence, rather than the reverse.
+                       *
+                       * The first `n` days Monday-first, because nothing
+                       * downstream knows WHICH nights — see `WeekStrip`'s
+                       * `onPick`. `MIN_STUDY_HOURS` is the floor
+                       * `simulateSchedule` counts a day at, so a very light
+                       * evening still registers as a study night.
+                       */
+                      schedule: Array.from({ length: 7 }, (_, i) =>
+                        i < n ? Math.max(MIN_STUDY_HOURS, selected.minsPerNight / 60) : 0,
+                      ),
+                    }))
+                : undefined
+            }
           />
         ) : (
           <PaceBody
@@ -614,6 +684,7 @@ function PaceCardBody({
   weekMinutes,
   today,
   onCustomize,
+  onPickNights,
 }: {
   model: PaceModel
   preset: PacePreset
@@ -629,6 +700,8 @@ function PaceCardBody({
   weekMinutes?: number[]
   today: Date
   onCustomize: () => void
+  /** Set the nights a week from the strip — see `WeekStrip`'s `onPick`. */
+  onPickNights?: (nights: number) => void
 }) {
   /* THE DATE THE LEARNER OWNS, not the model's `hardEndIso`. The ceiling the
      maths uses is expiry minus one (finishing the day access dies is not
@@ -745,6 +818,7 @@ function PaceCardBody({
         weekMinutes={weekMinutes}
         target={preset.minsPerNight}
         todayIndex={todayIndex}
+        onPick={onPickNights}
       />
 
       {/* PICK UP THE PACE, as a number they can act on — 2026-09-21.
@@ -878,11 +952,27 @@ function WeekStrip({
   weekMinutes,
   target,
   todayIndex,
+  onPick,
 }: {
   nights: number[]
   weekMinutes?: number[]
   target: number
   todayIndex: number
+  /**
+   * Set the number of study nights a week — 2026-09-23, the direct ask: "have
+   * these be clickable so the user can see this change in real time."
+   *
+   * ⚠ IT PICKS A COUNT, NOT A DAY, and that is the model's shape rather than a
+   * shortcut. `studyPace` prices a number of nights; nothing downstream knows
+   * WHICH nights, and `defaultWeekdays` fills the first n Monday-first. So
+   * clicking Friday means "five nights" and lights Mon-Fri — it cannot mean
+   * "Mon, Tue, Thu, Fri", because there is nowhere to put that. The sheet is
+   * where an arbitrary week is built, and it writes `choices.schedule`.
+   *
+   * Absent in ACTUAL mode: those circles report minutes already studied, and a
+   * past week is not a thing to pick.
+   */
+  onPick?: (nights: number) => void
 }) {
   /* TWO MODES, and which one shows is a question of whether there is anything
      to read — not of how far along the learner is.
@@ -905,8 +995,19 @@ function WeekStrip({
      move the demo clock off a Monday. Left as-is deliberately; the honest
      rendering of a week that has just begun is a week that has just begun. */
   const actual = weekMinutes != null
+  /* INTERACTIVE ONLY IN SUGGESTION MODE — see `onPick`. The whole strip drops
+     `aria-hidden` when it becomes a control: a row of buttons hidden from the
+     accessibility tree is a keyboard trap with no name, which is worse than the
+     decoration it used to be. As decoration it stays hidden, because the
+     sentence above already states the pace in words. */
+  const pickable = Boolean(onPick) && !actual
   return (
-    <div aria-hidden style={{ display: 'flex', gap: 6 }}>
+    <div
+      {...(pickable
+        ? { role: 'group' as const, 'aria-label': 'Study nights a week' }
+        : { 'aria-hidden': true })}
+      style={{ display: 'flex', gap: 6 }}
+    >
       {WEEKDAY_LABELS.map((label, i) => {
         const planned = nights.includes(i)
         const elapsed = i <= todayIndex
@@ -916,10 +1017,7 @@ function WeekStrip({
            fill all follow that one boolean so a half-done day cannot end up
            with a studied ring and unstudied ink. */
         const on = actual ? done > 0 : planned
-        return (
-          <span
-            key={label}
-            style={{
+        const dayStyle = {
               width: 28,
               height: 28,
               flex: 'none',
@@ -944,10 +1042,29 @@ function WeekStrip({
                 on ? 'var(--color-primary-400)' : 'var(--color-border-subtle)'
               }`,
               color: on ? 'var(--color-primary-700)' : 'var(--color-text-tertiary)',
-            }}
+        } satisfies CSSProperties
+        if (!pickable) {
+          return (
+            <span key={label} style={dayStyle}>
+              {label.slice(0, 1)}
+            </span>
+          )
+        }
+        return (
+          <button
+            key={label}
+            type="button"
+            /* THE FULL DAY NAME, and how many nights this picks. The visible
+               glyph is one letter and two of them are "T" — an accessible name
+               of "T" would be unusable, and 2.5.3 (Label in Name) is satisfied
+               because the visible text is contained in it. */
+            aria-label={`${label} — ${i + 1} ${i === 0 ? 'night' : 'nights'} a week`}
+            aria-pressed={planned}
+            onClick={() => onPick?.(i + 1)}
+            style={{ ...dayStyle, border: 0, padding: 0, cursor: 'pointer' }}
           >
             {label.slice(0, 1)}
-          </span>
+          </button>
         )
       })}
     </div>

@@ -10,6 +10,7 @@ import {
   formatPaceDate,
   defaultWeekdays,
   WEEKDAY_LABELS,
+  paceNameFor,
 } from '@/lib/studyPace'
 import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
@@ -380,8 +381,10 @@ describe('StudyPaceTile — the presets card', () => {
   const model = () =>
     studyPace({ today: TODAY, hoursRemaining: 24, accessExpiresAt: '2026-10-18' })
 
-  const renderCard = (props: Partial<React.ComponentProps<typeof StudyPaceTile>> = {}) =>
-    renderTile({ layout: 'card', ...props })
+  const renderCard = (
+    props: Partial<React.ComponentProps<typeof StudyPaceTile>> = {},
+    readout: 'prose' | 'stats' = 'prose',
+  ) => renderTile({ layout: 'card', ...props }, readout)
 
   it('states the evening and the week the model derives', () => {
     renderCard()
@@ -505,30 +508,38 @@ describe('StudyPaceTile — the presets card', () => {
     expect(document.body.innerHTML).not.toMatch(/a24796/i)
   })
 
-  it('carries the provenance in its eyebrow, and flips it on first touch', async () => {
-    /* The prototype's §02 finding, kept through the redesign: the product
-       should not go on calling a figure the learner picked a recommendation.
-       The chip that used to say it is gone — it was the same word the eyebrow
-       says — so the eyebrow is where it lives now. */
+  it('names itself from the review gap, not from who chose the plan', async () => {
+    /* ⚠ REWRITTEN 2026-09-23, and the rewrite records a rule being NARROWED
+       rather than a test bending. This asserted the prototype's §02 finding:
+       the card said "Recommended Study Pace" until the learner touched it and
+       "Your Study Pace" after, so the product never went on calling a figure
+       they picked a recommendation.
+
+       The eyebrow is derived from DAYS TO REVIEW now — the direct ask — so the
+       name describes the plan's shape rather than its author, and a
+       learner-chosen plan landing in the 7-15 band is called "Recommended"
+       again. `paceNameFor`'s own note spells out that trade at length.
+
+       WHAT IS STILL WORTH PINNING, and what this now checks: the heading and
+       the Days to review cell are ONE derivation. They were briefly two, which
+       is exactly how a card comes to print "Steady & Relaxed" over a readout
+       saying 16 days. */
     const user = userEvent.setup()
-    renderCard()
-    expect(screen.getByText('Recommended Study Pace')).toBeInTheDocument()
+    renderCard({}, 'stats')
+    const nameThenGap = () => {
+      const heading = screen.getByText(/Study Pace$/).textContent ?? ''
+      const gap = Number(/(\d+)\s*days?\s*Extra prep time/i.exec(document.body.textContent ?? '')?.[1])
+      return { heading, gap }
+    }
+    const before = nameThenGap()
+    expect(before.heading).toBe(`${paceNameFor(before.gap)} Study Pace`)
+
+    // …and it still MOVES, which is the half the old test proved by flipping.
     const dialog = await openSheet(user)
     await user.click(dialog.querySelector('[data-shape="evenings"]')!)
-    /* SAVE FIRST, as of the sheet's draft contract. The eyebrow follows
-       `choices`, and nothing reaches `choices` until Save — which is the point
-       of that change, not a wrinkle in this test: a card that re-titled itself
-       "Your Study Pace" while the learner was still deciding, and could still
-       press Cancel, would be claiming a choice they had not made. */
     await user.click(within(dialog).getByRole('button', { name: /Save pace/ }))
-    /* "CUSTOM STUDY PACE" as of 2026-09-23, not "Your Study Pace". The eyebrow
-       is built from `paceBadgeLabel` now, so it names WHICH plan this is —
-       Recommended / Focused & Quick / Steady & Relaxed / Custom — and a week
-       built on the Adjust screens has no preset behind it. The rule is
-       unchanged and is the whole reason that branch exists: the product must
-       not go on calling a figure the learner picked a recommendation. */
-    expect(screen.getByText('Custom Study Pace')).toBeInTheDocument()
-    expect(screen.queryByText('Recommended Study Pace')).toBeNull()
+    const after = nameThenGap()
+    expect(after.heading).toBe(`${paceNameFor(after.gap)} Study Pace`)
   })
 
   it('keeps the square shape untouched in the default layout', () => {
@@ -551,8 +562,10 @@ describe('StudyPaceTile — the presets card', () => {
  */describe('StudyPaceTile — the week strip reads real minutes', () => {
   const model = () =>
     studyPace({ today: TODAY, hoursRemaining: 24, accessExpiresAt: '2026-10-18' })
-  const renderCard = (props: Partial<React.ComponentProps<typeof StudyPaceTile>> = {}) =>
-    renderTile({ layout: 'card', ...props })
+  const renderCard = (
+    props: Partial<React.ComponentProps<typeof StudyPaceTile>> = {},
+    readout: 'prose' | 'stats' = 'prose',
+  ) => renderTile({ layout: 'card', ...props }, readout)
 
   /** The strip's cells, in order. */
   const cells = () =>
