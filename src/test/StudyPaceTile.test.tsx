@@ -88,7 +88,9 @@ function renderTile(
 const sheet = () => screen.getByRole('dialog')
 /**
  * Open the sheet from whichever control the current shape offers — "Adjust" on
- * the square, "Customize Study Plan" on the card since the 2026-09-21 redesign.
+ * the square, and the card's own plan link since the 2026-09-21 redesign —
+ * "Customize Study Plan" at 0%, "Adjust Study Plan" once the learner has
+ * started (2026-09-23).
  *
  * MATCHED BY ROLE, not by label, precisely because the label differs and the
  * CLAIM does not: both shapes open the SAME sheet, which is the reuse the card
@@ -486,8 +488,15 @@ describe('StudyPaceTile — the presets card', () => {
        output rather than deriving the number again — a second rounding here is
        how "1¾ hours a night" and "8¾ hours a week" would stop being the same
        arithmetic. */
+    /* ⚠ DAYS A WEEK, NOT HOURS, as of 2026-09-23. The second clause used to be
+       `formatEvening(preset.minsPerWeek)` for a started learner; it is now the
+       night COUNT in both states, because the three plan cards that used to
+       state the week's shape are hidden once the learner is under way and the
+       observed-average line below needs something to sit against. The card's
+       own note carries the argument. Still derived from the preset, so the
+       figure and the sentence cannot drift. */
     expect(document.body.textContent).toContain(
-      `About ${formatEvening(preset.minsPerNight)} a night, ${formatEvening(preset.minsPerWeek)} a week`,
+      `About ${formatEvening(preset.minsPerNight)} a night, ${preset.nights} days a week`,
     )
   })
 
@@ -572,7 +581,11 @@ describe('StudyPaceTile — the presets card', () => {
        buttons ARE this card's floor. */
     renderCard()
     const buttons = screen.getAllByRole('button')
-    expect(buttons.map((b) => b.textContent?.trim())).toEqual(['Customize Study Plan'])
+    /* ⚠ "ADJUST", NOT "CUSTOMIZE" — 2026-09-23. `renderCard` passes no
+       `notStarted`, so this is a learner already under way, and the link takes
+       the verb for a plan that is already running. The 0% block below pins the
+       other label. */
+    expect(buttons.map((b) => b.textContent?.trim())).toEqual(['Adjust Study Plan'])
     expect(buttons[0].getAttribute('aria-haspopup')).toBe('dialog')
     expect(screen.queryByRole('link')).toBeNull()
     expect(screen.queryByRole('radio')).toBeNull()
@@ -587,7 +600,7 @@ describe('StudyPaceTile — the presets card', () => {
        swap a hex cannot — so the assertion is the ABSENCE of an inline colour,
        which is what lets the class win. */
     renderCard()
-    const cta = screen.getByRole('button', { name: /Customize Study Plan/ })
+    const cta = screen.getByRole('button', { name: /Adjust Study Plan/ })
     expect(cta.className).toContain('cre-cta-ink')
     expect(cta.style.color).toBe('')
     expect(document.body.innerHTML).not.toMatch(/a24796/i)
@@ -656,32 +669,60 @@ describe('StudyPaceTile — the presets card', () => {
   /** The strip's cells, in order. */
   const cells = () =>
     [...document.querySelector('[aria-hidden]')!.querySelectorAll('span')] as HTMLElement[]
-  /** How full a cell is drawn, 0–100. The fill is a bottom-up gradient stop. */
-  const fillPct = (el: HTMLElement) =>
-    Number(/([\d.]+)%/.exec(el.style.background)?.[1] ?? 0)
+  /**
+   * Is the cell drawn as studied?
+   *
+   * ⚠ A BOOLEAN, NOT A PERCENTAGE, since 2026-09-23. This was `fillPct`, which
+   * read the stop off a bottom-up gradient, because ACTUAL mode filled each
+   * disc in proportion to how much of that evening's target was done. The ask
+   * made studied nights solid to match the 0% treatment, so there is no level
+   * left to measure — see the strip's own note for what that costs.
+   */
+  const isFilled = (el: HTMLElement) => el.style.background !== 'transparent'
 
   const TODAY_INDEX = (TODAY.getDay() + 6) % 7
 
-  it('fills each elapsed day by minutes against that day’s target', () => {
+  it('marks an elapsed day studied or not, and no longer by how much', () => {
+    /* ⚠ THIS TEST RECORDS A LOSS, and it is the reason to keep reading. It used
+       to assert a HALF day drew at 50% and a full one at 100% — the strip filled
+       each disc in proportion to minutes against that evening's target, which is
+       what made a light night visibly light.
+
+       2026-09-23 made studied nights solid, to match the treatment the 0% strip
+       had just been given ("the days of the week being filled in will be solid
+       like the update we did for 0%"). A solid disc has no level in it, so a
+       token 20 minutes and a full evening now render identically — asserted
+       here rather than merely allowed, so that restoring the level is a
+       deliberate reversal of a named decision and not a bug fix.
+
+       WHAT STILL CARRIES THE SHORTFALL: the `standing.behind` sentence under
+       the strip, and the observed-average line above it. Both are words. */
     const preset = defaultPreset(model())
     const target = preset.minsPerNight
-    // A full day, a half day, and a day with nothing — all in the past.
+    // A full day, a token one, and a day with nothing — all in the past.
     const week = [0, 0, 0, 0, 0, 0, 0]
     week[0] = target
-    week[1] = target / 2
+    week[1] = Math.round(target / 5)
     renderCard({ weekMinutes: week })
     const c = cells()
-    expect(fillPct(c[0])).toBe(100)
-    expect(fillPct(c[1])).toBe(50)
+    expect(isFilled(c[0])).toBe(true)
+    expect(isFilled(c[1])).toBe(true)
+    // …and they are drawn the SAME. This is the cost, pinned.
+    expect(c[1].style.background).toBe(c[0].style.background)
     // A day with nothing studied is an empty ring, not a filled grey one.
-    expect(c[2].style.background).toBe('transparent')
+    expect(isFilled(c[2])).toBe(false)
   })
 
-  it('clamps a day that ran long to full, rather than overflowing it', () => {
+  it('draws a studied night solid, with light letters on it', () => {
+    /* The pair that has to move together: a solid `primary-500` disc needs
+       `primary-100` ink, and a rule that changed one without the other would
+       leave dark letters on a dark fill. Asserted as the specific stops rather
+       than "not transparent", because the contrast claim IS the stops. */
     const preset = defaultPreset(model())
-    const week = [preset.minsPerNight * 3, 0, 0, 0, 0, 0, 0]
-    renderCard({ weekMinutes: week })
-    expect(fillPct(cells()[0])).toBe(100)
+    renderCard({ weekMinutes: [preset.minsPerNight, 0, 0, 0, 0, 0, 0] })
+    const cell = cells()[0]
+    expect(cell.style.background).toContain('--color-primary-500')
+    expect(cell.style.color).toContain('--color-primary-100')
   })
 
   it('leaves days that have not happened EMPTY, whatever the data says', () => {
@@ -702,10 +743,10 @@ describe('StudyPaceTile — the presets card', () => {
        nights the pace falls on instead, which is what it always did. */
     const preset = defaultPreset(model())
     renderCard()
-    const shaded = cells().filter((c) => c.style.background !== 'transparent')
+    const shaded = cells().filter(isFilled)
     expect(shaded).toHaveLength(preset.nights)
-    // …and every one of them is drawn FULL: a suggestion has no partial state.
-    for (const cell of shaded) expect(fillPct(cell)).toBe(100)
+    // …and every one of them is drawn solid: a suggestion has no partial state.
+    for (const cell of shaded) expect(cell.style.background).toContain('--color-primary-500')
   })
 })
 
@@ -738,7 +779,7 @@ describe('StudyPaceTile — the week that cannot be salvaged', () => {
     // No hours, no minutes, no nightly number — in any of the card's copy.
     expect(text).not.toMatch(/\d+\s*(hours?|minutes?|mins?)\s*a\s*night/i)
     // …and the one control the card ever offers is still there.
-    expect(screen.getByRole('button', { name: /Customize Study Plan/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Adjust Study Plan/ })).toBeTruthy()
   })
 
   it('is reachable from the demo controls, not just from the model', () => {
@@ -798,7 +839,16 @@ describe('study-pace-chooser: options — three named plans', () => {
    * The `strip` treatment is unchanged and is what every other block in this
    * file pins — "don't lose current logic, make it a flagged variant".
    */
-  const renderOptions = () => renderTile({ layout: 'card' }, 'stats', 'options')
+  /*
+   * ⚠ `notStarted: true` BY DEFAULT — 2026-09-23. The picker is now shown only
+   * to a learner who has not started ("the 3 options will not be shown,
+   * assuming user already selected one"), so a render without it has no
+   * radiogroup at all and every assertion in this block fails as a missing
+   * element rather than as a changed one. The started state has its own block
+   * directly below.
+   */
+  const renderOptions = (props: Partial<React.ComponentProps<typeof StudyPaceTile>> = {}) =>
+    renderTile({ layout: 'card', notStarted: true, ...props }, 'stats', 'options')
   /** 30 days past this file's `TODAY`, as ISO. */
   const CEILING_30D = (() => {
     const d = new Date(TODAY)
@@ -902,5 +952,77 @@ describe('study-pace-chooser: options — three named plans', () => {
     const radios = within(group).getAllByRole('radio')
     expect(radios[2].getAttribute('aria-checked')).toBe('true')
     expect(radios.filter((r) => r.getAttribute('aria-checked') === 'true')).toHaveLength(1)
+  })
+})
+
+/**
+ * ─── THE SAME CHOOSER, ONCE THE LEARNER IS UNDER WAY ────────────────────────
+ *
+ * 2026-09-23, the direct ask, about the 63% state: the heading becomes the
+ * plan's name, "the 3 options will not be shown, assuming user already selected
+ * one", Customize becomes Adjust, the studied nights go solid, and the card
+ * states the goal beside the pace actually being kept.
+ *
+ * WHY IT IS A SEPARATE BLOCK rather than a flag on the one above: these are not
+ * the same card with a prop flipped, they are the two halves of one decision —
+ * the picker's disappearance is what forces the heading to stop saying "Set"
+ * and the link to stop being inert. Pinning them together is what stops one
+ * half being reverted on its own.
+ */
+describe('study-pace-chooser: options — the learner who has already started', () => {
+  const TARGET = 120
+  /** A week with three studied nights among the elapsed days, so the observed
+   *  average has something to average. `TODAY` is a Friday — index 4 — so
+   *  Mon/Tue/Thu are all in the past and Sunday is not. */
+  const WEEK = [TARGET, TARGET / 2, 0, TARGET, 0, 0, 999]
+  const renderStarted = () =>
+    renderTile({ layout: 'card', weekMinutes: WEEK }, 'stats', 'options')
+
+  it('puts the picker away and names the plan instead', () => {
+    renderStarted()
+    expect(screen.queryByRole('radiogroup', { name: 'Study pace' })).toBeNull()
+    expect(screen.queryByText('Set your Study Pace (optional)')).toBeNull()
+    /* ⚠ THE NAME COMES FROM THE SELECTED OPTION, NOT FROM THE REVIEW GAP, and
+       the two disagree in exactly this state — which is why the assertion is
+       "Recommended" rather than `paceNameFor(...)`. Nothing has been picked, so
+       the card opens on Recommended; deriving the heading from days-to-review
+       would have it announce a plan the learner never chose, with the picker
+       that would have shown the truth now hidden. */
+    expect(screen.getByText(/Recommended Study Pace/)).toBeTruthy()
+  })
+
+  it('gives the link back its purpose, and the right verb', () => {
+    /* `customizeDisabled` is set on this chooser because the plans are ON the
+       card. With them gone the link is the only way left to change pace, so an
+       inert one would strand the state — the regression this pins. */
+    renderStarted()
+    const cta = screen.getByRole('button', { name: /Adjust Study Plan/ })
+    expect(cta.getAttribute('aria-haspopup')).toBe('dialog')
+    expect(screen.queryByRole('button', { name: /Customize Study Plan/ })).toBeNull()
+  })
+
+  it('states the goal in nights, and the pace actually being kept', () => {
+    renderStarted()
+    const text = document.body.textContent ?? ''
+    /* THE GOAL — derived, so the sentence and the plan cannot drift. Days a
+       week rather than hours, because the picker that used to carry the week's
+       shape is gone. */
+    expect(text).toMatch(/About .+ a night, \d+ days a week/)
+    /* THE READING — averaged over NIGHTS STUDIED among the ELAPSED days, which
+       is three of them here: the Sunday's 999 is in the future and must not
+       count, and the two rest days must not dilute the evening. */
+    const elapsed = WEEK.slice(0, ((TODAY.getDay() + 6) % 7) + 1).filter((m) => m > 0)
+    expect(elapsed).toHaveLength(3)
+    const mean = Math.round(elapsed.reduce((a, b) => a + b, 0) / elapsed.length)
+    expect(text).toContain(`You’re averaging ${formatEvening(mean)} a night`)
+    expect(text).toContain(`${elapsed.length} days a week`)
+  })
+
+  it('says nothing about an average when the week is still empty', () => {
+    /* A learner who has not studied this week has no average. "0 hours a night"
+       would be a judgement rather than a reading, and this card has exactly one
+       line allowed to judge. */
+    renderTile({ layout: 'card', weekMinutes: [0, 0, 0, 0, 0, 0, 0] }, 'stats', 'options')
+    expect(document.body.textContent).not.toContain('averaging')
   })
 })

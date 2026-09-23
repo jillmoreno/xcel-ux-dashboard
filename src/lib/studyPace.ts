@@ -928,3 +928,63 @@ export function formatHours(hours: number): string {
 export function activeDays(week: number[]): number[] {
   return week.map((h, i) => (h > 0 ? i : -1)).filter((i) => i >= 0)
 }
+
+/** What the learner is ACTUALLY doing — see {@link observedPace}. */
+export type ObservedPace = {
+  /** Study nights among the elapsed days of this week. */
+  nights: number
+  /** Mean minutes across those nights — the length of a typical evening. */
+  minsPerNight: number
+  /** Minutes studied so far this week. */
+  total: number
+  /** How many days of the week have happened, today included. */
+  daysElapsed: number
+}
+
+/**
+ * The pace the learner is keeping, as opposed to the one the plan asks for.
+ *
+ * 2026-09-23, the direct ask: the card should show "the Study Pace Goal
+ * (2 hours/night, 6 days/week) and the Actual Users Average Pace".
+ *
+ * ⚠ IT AVERAGES OVER NIGHTS STUDIED, NOT OVER DAYS ELAPSED, and the difference
+ * is the whole point of the number. Dividing by elapsed days answers "how much
+ * do you do per day", which for anyone studying four nights a week is a figure
+ * they will never recognise — it is their evening diluted by their rest days.
+ * Dividing by the nights they actually sat down answers "how long is YOUR
+ * evening", which is the quantity the goal's own "2 hours a night" states, so
+ * the two are comparable side by side. The nights count carries the other axis.
+ *
+ * ⚠ ELAPSED DAYS ONLY, today included — the same rule as {@link weekStanding},
+ * for the same reason turned around. That function refuses to count a Thursday
+ * that has not arrived as a Thursday they MISSED; this one refuses to count it
+ * as one they STUDIED. Fixture weeks are authored whole, so without the gate a
+ * Monday would report minutes from a Friday that has not happened.
+ *
+ * ⚠ AT THE DEMO CLOCK THIS SEES ONE DAY. `FIXTURE_TODAY` is a Monday, so the
+ * honest answer on a fresh load is an average over a single evening — which is
+ * why `demoDay.ts` exists and what its own header is about. Advance the demo
+ * day to see a week's worth; do not "fix" this by reading unelapsed days.
+ *
+ * Null when no elapsed day has any minutes on it: a learner who has not studied
+ * this week has no average, and printing "0 hours a night" would be a
+ * judgement rather than a reading.
+ */
+export function observedPace(input: {
+  /** Minutes studied per day, Monday-first, 7 entries. */
+  weekMinutes: number[]
+  /** Mon-first index of today, 0–6. */
+  todayIndex: number
+}): ObservedPace | null {
+  const { weekMinutes, todayIndex } = input
+  const elapsed = weekMinutes.slice(0, todayIndex + 1)
+  const studied = elapsed.filter((m) => (m || 0) > 0)
+  if (studied.length === 0) return null
+  const total = studied.reduce((a, b) => a + b, 0)
+  return {
+    nights: studied.length,
+    minsPerNight: Math.round(total / studied.length),
+    total,
+    daysElapsed: elapsed.length,
+  }
+}

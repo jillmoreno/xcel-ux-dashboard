@@ -14,6 +14,7 @@ import {
   defaultPreset,
   formatEvening,
   formatPaceDate,
+  observedPace,
   weekStanding,
   defaultWeekdays,
   NOT_STARTED_NIGHTS,
@@ -401,11 +402,31 @@ export function StudyPaceTile({
             
                 The bare tile keeps "Study Pace" — it has neither a picker nor a
                 name to carry. */}
+            {/* ⚠ A FOURTH CASE, 2026-09-23: on `options`, the invitation is
+                only for a learner who has not started. The direct ask — "Set
+                Your Study Pace will be updated to the Recommended Study Pace"
+                — follows from the picker going away at 63%: a heading that
+                says "Set" above a card with nothing to set on it is a control
+                that has gone missing rather than a state that has moved on.
+
+                ⚠ THE NAME COMES FROM THE SELECTED OPTION, NOT FROM
+                `paceNameFor`, and the two genuinely disagree here. The `strip`
+                branch derives its name from the review gap, which is right
+                there because that treatment has no picker and nothing else to
+                name. On `options` the learner's chosen plan IS the pace, and at
+                63% the gap arithmetic would call the Recommended plan "Steady &
+                Relaxed" — 17 days of access against a 13-day finish leaves 4
+                days of review, under `paceNameFor`'s 7-day cut. Naming the card
+                after a plan the learner never picked, while the picker that
+                would have shown the truth is hidden, is the one failure this
+                heading cannot have. */}
             {!card
               ? 'Study Pace'
               : chooserVariant === 'strip'
                 ? `${paceNameFor(daysToReview)} Study Pace`
-                : 'Set your Study Pace (optional)'}
+                : notStarted
+                  ? 'Set your Study Pace (optional)'
+                  : `${options.find((o) => o.id === activeOption)?.name ?? paceNameFor(daysToReview)} Study Pace`}
             {/*
               THE PACE PILL, ON THE TILE'S TOP RIGHT — 2026-09-23, the direct
               ask when the Status cell became Days to review: "Don't lose the
@@ -1118,7 +1139,8 @@ function PaceCardBody({
   if (preset.state === 'no') {
     return (
       <div style={cardStack}>
-        {options && onPickOption ? (
+        {/* Same rule as the main branch — see its note. */}
+        {options && onPickOption && notStarted ? (
           <PaceOptionPicker
             options={options}
             active={activeOption ?? null}
@@ -1188,7 +1210,11 @@ function PaceCardBody({
             ? 'Finishing in time would take a drastic jump in pace. The realistic options are a later exam date, or less to do before it.'
             : 'Finishing in time would take a drastic jump in pace. Consider extending your course access instead — or trimming what is left.'}
         </p>
-        <CustomizeLink onClick={onCustomize} disabled={customizeDisabled} />
+        <CustomizeLink
+          onClick={onCustomize}
+          disabled={customizeDisabled && notStarted}
+          label={notStarted ? undefined : 'Adjust Study Plan'}
+        />
       </div>
     )
   }
@@ -1214,9 +1240,29 @@ function PaceCardBody({
    * the course needs spread over those four nights, so the sentence never
    * trades honesty for a friendlier number.
    */
-  const weekly = notStarted
-    ? `${preset.nights} days`
-    : formatEvening(preset.minsPerWeek)
+  /*
+   * ⚠ DAYS A WEEK IN BOTH STATES as of 2026-09-23, which REVERSES the split
+   * above for the started learner. It had been hours a week there — "15½ hours
+   * a week" — on the argument that a learner already in the course is judging a
+   * workload rather than a commitment, and that argument still holds on its own
+   * terms.
+   *
+   * WHAT CHANGED IS WHERE THE OTHER FACT LIVED. The three plan cards used to
+   * state "6 days a week" right above this sentence, so the week's SHAPE was on
+   * the card whatever this clause said. At 63% the picker is gone (see its
+   * note), and with it the only other place the card named how many evenings
+   * the plan wants — while the line directly underneath now reports how many
+   * the learner is actually keeping. A goal of "15½ hours a week" has nothing
+   * for "4 days a week" to sit against; "6 days a week" does.
+   *
+   * Hours a week is still derivable and still true — it is `minsPerNight ×
+   * nights` — which is the asymmetry that settles it: the reader can get the
+   * workload from the shape, not the shape from the workload.
+   */
+  const weekly = `${preset.nights} days`
+  /** What the learner is actually doing, against what the plan asks. Null at 0%
+   *  and for a week with nothing on it yet — see `observedPace`. */
+  const observed = weekMinutes != null ? observedPace({ weekMinutes, todayIndex }) : null
 
   /* `nights` and `todayIndex` are derived above the `state: 'no'` return —
      which nights is the learner's plan when they have built one, otherwise the
@@ -1231,7 +1277,23 @@ function PaceCardBody({
 
   return (
     <div style={cardStack}>
-      {options && onPickOption ? (
+      {/*
+        ⚠ THE PICKER IS FOR LEARNERS WHO HAVE NOT STARTED — 2026-09-23, the
+        direct ask: at 63% "the 3 options will not be shown, assuming user
+        already selected one."
+
+        `notStarted` IS THE PROXY FOR "has a pace", and it is a proxy rather
+        than the thing itself. The product has no field recording that a learner
+        accepted a plan; what it has is progress, and anyone partway through a
+        course has been keeping SOME pace whether they chose it or not. So the
+        card stops asking and starts reporting.
+
+        IT ALSO REMOVES THE CARD'S ONLY CONTROL, which is why `customizeDisabled`
+        now follows the same condition — see `CustomizeLink`. Hiding the picker
+        while leaving the link inert would have left this state with no way to
+        change pace at all.
+      */}
+      {options && onPickOption && notStarted ? (
         <PaceOptionPicker options={options} active={activeOption ?? null} onPick={onPickOption} />
       ) : null}
       {/* THE HEADLINE. "About" and the trailing clause are the same weight and
@@ -1245,6 +1307,62 @@ function PaceCardBody({
         </span>{' '}
         {nightUnit} a night, {weekly} a week
       </p>
+
+      {/*
+        THE PACE THEY ARE KEEPING, UNDER THE PACE THEY ARE AIMING AT —
+        2026-09-23, the direct ask: show "the Study Pace Goal (2 hours/night,
+        6 days/week) and the Actual Users Average Pace".
+
+        TWO LINES RATHER THAN ONE SENTENCE, because they are two different
+        kinds of statement. The headline is a PLAN and stays the card's biggest
+        thing; this is a READING, and a reading that competed with it would turn
+        the card into a scoreboard — which is the tone every note in this file
+        has been steering away from.
+
+        ⚠ IT IS NOT A VERDICT, and the wording is load-bearing. "You're
+        averaging" reports; "you're behind" judges, and there is already exactly
+        one line on this card allowed to do that — the `standing.behind` block
+        below, which fires on a measured shortfall and offers a number to close
+        it. Two places saying the learner is short, in different arithmetic,
+        is how a card starts contradicting itself.
+
+        ⚠ AND IT IS THE ELAPSED WEEK ONLY. At the demo clock that is a single
+        Monday, so the figure is one evening and the nights clause is suppressed
+        below — see `observedPace` for why reading the unelapsed days instead
+        would be the wrong fix, and `demoDay.ts` for the control that exists to
+        move the clock.
+      */}
+      {observed ? (
+        <p
+          style={{
+            ...cardBody,
+            /* ⚠ `block`, OVERRIDING `cardBody`'s COLUMN FLEX. That style is a
+               flex column with a 2px gap, which is right for the stacked
+               stat lines it was written for and wrong for a sentence: every
+               contiguous text run becomes its own anonymous flex item, so
+               "You're averaging / 1¾ hours / a night." came out on three
+               lines with the `<b>` stranded in the middle. Block display puts
+               the inline children back in normal flow and lets the figure sit
+               inside the sentence, which is the whole point of emphasising it
+               rather than pulling it out. */
+            display: 'block',
+            marginTop: -4,
+          }}
+        >
+          You’re averaging <b style={emphasis}>{formatEvening(observed.minsPerNight)}</b> a night
+          {/* THE NIGHTS CLAUSE NEEDS A WEEK TO BE ABOUT. With one or two days
+              elapsed, "1 day a week" is not the learner's habit — it is the
+              calendar's, and stating it beside a goal of six would read as a
+              gap they have not had the chance to open yet. */}
+          {observed.daysElapsed >= 3 ? (
+            <>
+              , <b style={emphasis}>{observed.nights}</b>{' '}
+              {observed.nights === 1 ? 'day' : 'days'} a week
+            </>
+          ) : null}
+          {'.'}
+        </p>
+      ) : null}
 
       <WeekStrip
         nights={nights}
@@ -1359,7 +1477,19 @@ function PaceCardBody({
         {readout === 'stats' ? null : <p style={cardHelper}>{FINISH_DATE_NOTE}</p>}
       </div>
 
-      <CustomizeLink onClick={onCustomize} disabled={customizeDisabled} />
+      {/*
+        ⚠ `&& notStarted` — THE LINK COMES BACK TO LIFE ONCE THE PICKER GOES.
+        `customizeDisabled` is set on the `options` chooser because the three
+        plans are ON the card, so a link into a sheet offering the same three
+        would be one door too many. That reasoning expires exactly when the
+        plans do: at 63% the card shows no picker, so an inert link would leave
+        the state with no way to change pace at all.
+      */}
+      <CustomizeLink
+        onClick={onCustomize}
+        disabled={customizeDisabled && notStarted}
+        label={notStarted ? undefined : 'Adjust Study Plan'}
+      />
     </div>
   )
 }
@@ -1462,43 +1592,41 @@ function WeekStrip({
               fontSize: 11,
               fontWeight: 700,
               lineHeight: 1,
-              /* THE FILL RISES FROM THE BOTTOM, which is what makes a partial
-                 day read as partial rather than as a different colour. A
-                 conic sweep would read as a timer; a level reads as an amount,
-                 which is what minutes-against-a-target is. */
               /*
-               * A SOLID DISC WITH LIGHT LETTERS when the night is planned —
-               * 2026-09-23, the direct ask. It was a pale `primary-100` fill
-               * with dark ink, which read as "tinted" rather than "on" beside
-               * the plan cards above it, and those now carry a solid selected
-               * treatment of their own.
+               * A SOLID DISC WITH LIGHT LETTERS, IN BOTH MODES — 2026-09-23.
+               * The pale `primary-100` fill read as "tinted" rather than "on"
+               * beside the plan cards, which now carry a solid selected
+               * treatment of their own; the ask made suggestion mode solid
+               * first and then actual mode to match ("the days of the week
+               * being filled in will be solid like the update we did for 0%").
                *
-               * ⚠ SUGGESTION MODE ONLY. In ACTUAL mode the fill is a LEVEL —
-               * how much of the evening's target was studied — so a 30% disc
-               * would put light letters on 70% of white and lose them
-               * entirely. That mode keeps the pale fill and the dark ink, which
-               * is legible at any level. The gradient stays either way because
-               * it is what draws a partial day.
+               * ⚠ IT COSTS THE LEVEL, and that is the trade to know about.
+               * ACTUAL mode used to fill from the bottom in proportion to how
+               * much of the evening's target was studied — a level, deliberately
+               * not a conic sweep, because minutes-against-a-target is an amount
+               * and not a timer. A solid disc cannot say that, so a night at 25
+               * of 105 minutes now looks exactly like a night at 105.
+               *
+               * WHERE THE SHORTFALL STILL SHOWS: the `standing.behind` line
+               * under the strip, which states the gap in minutes and what closes
+               * it, and the observed-average line above, which reports the
+               * evening the learner is actually keeping. Both are words rather
+               * than a rendering, which is arguably where a number that precise
+               * belonged anyway — the strip's job in every other state is WHICH
+               * NIGHTS, not how full they were.
+               *
+               * ⚠ AT RISK IS THE STATE THIS FLATTERS. `progress-at-risk` is
+               * authored as [25, 0, 40, …] against a target near an hour and
+               * three quarters — two token evenings that now read as two
+               * complete ones. If that state stops looking at risk at a glance,
+               * this is why, and the fix is a treatment that distinguishes a
+               * short night from a full one without going back to a wash.
                */
-              background: on
-                ? `linear-gradient(to top, ${
-                    actual ? 'var(--color-primary-100)' : 'var(--color-primary-500)'
-                  } ${Math.round((actual ? done : 1) * 100)}%, transparent ${Math.round(
-                    (actual ? done : 1) * 100,
-                  )}%)`
-                : 'transparent',
+              background: on ? 'var(--color-primary-500)' : 'transparent',
               boxShadow: `inset 0 0 0 1px ${
-                on
-                  ? actual
-                    ? 'var(--color-primary-400)'
-                    : 'var(--color-primary-500)'
-                  : 'var(--color-border-subtle)'
+                on ? 'var(--color-primary-500)' : 'var(--color-border-subtle)'
               }`,
-              color: on
-                ? actual
-                  ? 'var(--color-primary-700)'
-                  : 'var(--color-primary-100)'
-                : 'var(--color-text-tertiary)',
+              color: on ? 'var(--color-primary-100)' : 'var(--color-text-tertiary)',
         } satisfies CSSProperties
         if (!pickable) {
           return (
@@ -1542,7 +1670,22 @@ function WeekStrip({
  * week, the exam date and the study-plan calendar. A second sheet for a renamed
  * button is how the two would drift.
  */
-function CustomizeLink({ onClick, disabled }: { onClick: () => void; disabled?: boolean }) {
+function CustomizeLink({
+  onClick,
+  disabled,
+  label = 'Customize Study Plan',
+}: {
+  onClick: () => void
+  disabled?: boolean
+  /**
+   * "Adjust Study Plan" once the learner is under way — 2026-09-23, the direct
+   * ask. CUSTOMIZE is what you do to something you are setting up; ADJUST is
+   * what you do to something already running, and by 63% the plan is running.
+   * The sheet behind it is the same sheet either way, which is the point: the
+   * verb tracks the learner's situation, not a second destination.
+   */
+  label?: string
+}) {
   return (
     <button
       type="button"
@@ -1590,7 +1733,7 @@ function CustomizeLink({ onClick, disabled }: { onClick: () => void; disabled?: 
         whiteSpace: 'nowrap',
       }}
     >
-      Customize Study Plan
+      {label}
       <ChevronRight size={14} aria-hidden />
     </button>
   )

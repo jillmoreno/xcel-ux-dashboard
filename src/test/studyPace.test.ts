@@ -7,6 +7,7 @@ import {
   defaultPreset,
   formatEvening,
   formatEveningSpoken,
+  observedPace,
   weekStanding,
   CEILING_MINS,
   formatPaceDate,
@@ -497,5 +498,50 @@ describe('scheduleAdvice / hoursPerDayWithin', () => {
     expect(
       hoursPerDayWithin({ today: TODAY, hoursRemaining: 10, weekdays: [0, 1, 2], windowDays: 14 }),
     ).toBe(1.75)
+  })
+})
+
+describe('observedPace', () => {
+  /*
+   * The pace the learner is KEEPING, which the card prints under the one it is
+   * asking for — 2026-09-23, "the Study Pace Goal … and the Actual Users
+   * Average Pace".
+   */
+  it('averages over nights studied, not over days elapsed', () => {
+    /* THE DISTINCTION THE FUNCTION EXISTS FOR. Three evenings of 120, 60 and 90
+       across a Friday's worth of week: divided by the nights actually sat down
+       that is 90 minutes, and divided by the five elapsed days it would be 54 —
+       a figure describing nobody's evening, and one that cannot be compared to
+       the goal's own "2 hours a night". */
+    const s = observedPace({ weekMinutes: [120, 60, 0, 90, 0, 0, 0], todayIndex: 4 })!
+    expect(s.nights).toBe(3)
+    expect(s.minsPerNight).toBe(90)
+    expect(s.total).toBe(270)
+  })
+
+  it('will not count a day that has not happened', () => {
+    /* `weekStanding`'s rule, turned around: that one refuses to call an unlived
+       Friday a Friday they missed, this one refuses to call it one they
+       studied. Fixture weeks are authored whole, so without the gate a Monday
+       would report minutes from the end of the week. */
+    const s = observedPace({ weekMinutes: [100, 999, 999, 999, 999, 999, 999], todayIndex: 0 })!
+    expect(s.nights).toBe(1)
+    expect(s.minsPerNight).toBe(100)
+    expect(s.daysElapsed).toBe(1)
+  })
+
+  it('has no answer for a week with nothing in it', () => {
+    /* Null rather than a zero. "0 hours a night" is a judgement; the absence of
+       a reading is a reading. */
+    expect(observedPace({ weekMinutes: [0, 0, 0, 0, 0, 0, 0], todayIndex: 6 })).toBeNull()
+  })
+
+  it('credits a night the pace never asked for', () => {
+    /* Studying on a rest day is still studying — the same credit
+       `weekStanding` gives, and for the same reason: the function reads
+       minutes, not compliance with a calendar. */
+    const s = observedPace({ weekMinutes: [0, 0, 0, 0, 0, 45, 0], todayIndex: 6 })!
+    expect(s.nights).toBe(1)
+    expect(s.minsPerNight).toBe(45)
   })
 })

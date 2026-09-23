@@ -334,7 +334,7 @@ describe('the pacing treatment', () => {
     expect(caption.textContent).toBe(`${paceNameFor(gap)} Study Pace`)
 
     // …and the one thing that survives BOTH variants.
-    expect(within(tile).getByRole('button', { name: /Customize Study Plan/ })).toBeTruthy()
+    expect(within(tile).getByRole('button', { name: /Adjust Study Plan/ })).toBeTruthy()
   })
 
   it('leaves the tile lo-fi on every OTHER version', () => {
@@ -481,7 +481,7 @@ describe('the presets pacing card', () => {
     const before = /^(.*? Study Pace)/.exec(paceTile().textContent ?? '')?.[1] ?? ''
     expect(before).toMatch(/Study Pace$/)
 
-    await user.click(within(paceTile()).getByRole('button', { name: 'Customize Study Plan' }))
+    await user.click(within(paceTile()).getByRole('button', { name: 'Adjust Study Plan' }))
     const dialog = screen.getByRole('dialog')
     /* UPDATED 2026-09-22 with the sheet's new IA. It used to pick one of the
        three preset radio rows; the sheet is now a chooser of study STYLES, so
@@ -520,7 +520,7 @@ describe('the presets pacing card', () => {
   })
 
   it('operates exactly one thing, and no more', () => {
-    /* The card operates Customize Study Plan and nothing else — the same claim
+    /* The card operates its one plan link and nothing else — the same claim
        `StudyPaceTile.test.tsx` counts on the square, and what keeps this a
        statement rather than a control panel. The 2026-09-21 redesign took the
        count from two (Start studying + Adjust) to one. No `Details →` link
@@ -531,7 +531,7 @@ describe('the presets pacing card', () => {
     const names = within(tile)
       .getAllByRole('button')
       .map((b) => b.textContent?.trim())
-    expect(names).toEqual(['Customize Study Plan'])
+    expect(names).toEqual(['Adjust Study Plan'])
     expect(within(tile).queryByRole('link', { name: /Details/ })).toBeNull()
     expect(within(tile).queryByRole('radio')).toBeNull()
     /* ⚠ THE CARD NO LONGER NAMES THE COURSE, and that is the redesign's call
@@ -543,7 +543,7 @@ describe('the presets pacing card', () => {
     expect(tile.textContent).toMatch(/left to finish the course material/)
   })
 
-  it('Customize Study Plan opens the SHARED sheet, not a second one', () => {
+  it('the plan link opens the SHARED sheet, not a second one', () => {
     /* The reuse this whole variant rests on. A `presets` card that grew its own
        sheet would be a second copy of the four groups — and of the exam date and
        the study-plan calendar, both of which write. */
@@ -551,7 +551,7 @@ describe('the presets pacing card', () => {
     renderShell(TESTING_URL)
     expect(
       within(paceTile())
-        .getByRole('button', { name: 'Customize Study Plan' })
+        .getByRole('button', { name: 'Adjust Study Plan' })
         .getAttribute('aria-haspopup'),
     ).toBe('dialog')
   })
@@ -617,10 +617,11 @@ describe('the beginner week — 0%', () => {
        ring and the ink, which all follow the same boolean.
 
        ⚠ `-500`, NOT `-100`, as of 2026-09-23. The pale `primary-100` fill was
-       the SUGGESTION treatment until the direct ask made planned nights solid
-       with light letters. `primary-100` is still the fill in ACTUAL mode, where
-       the gradient is a level rather than an on/off — which is why this asserts
-       the specific stop rather than "has a gradient". */
+       the old treatment; the direct ask made an ON night a solid `primary-500`
+       disc with `primary-100` letters. It applied to the SUGGESTION strip
+       first and to the ACTUAL one within the hour ("the days of the week being
+       filled in will be solid like the update we did for 0%"), so both modes
+       now draw the same disc and `primary-100` survives only as the ink. */
     const filled = labels.filter((el) =>
       (el as HTMLElement).style.background.includes('--color-primary-500'),
     )
@@ -634,12 +635,25 @@ describe('the beginner week — 0%', () => {
   it('leaves a learner who HAS started on the derived week', () => {
     /* The guard. `notStarted` is passed from `resume.progress`, so a mid-course
        learner must keep the nights the model picked — handing the beginner's
-       default to someone at 62% would understate their week. */
+       default to someone at 62% would understate their week.
+
+       ⚠ HOW THE GUARD IS READ CHANGED ON 2026-09-23, and the claim did not.
+       It used to be a COPY test: the second clause said "hours a week" for a
+       started learner and "days a week" only at 0%, so the two states were
+       told apart by their wording. Both say days now — the started card lost
+       its picker, and with it the only other place the week's shape was stated,
+       so the sentence took it over.
+
+       So it is read as a NUMBER instead, which is what the guard was always
+       about: the count must be the model's, not the beginner's. That is a
+       stronger assertion than the one it replaces — the old wording would still
+       have passed if a started learner had been handed four nights. */
     seed()
     renderShell(TESTING_URL)
     const tile = paceTile()
-    expect(tile.textContent).toMatch(/hours a week/)
-    expect(tile.textContent).not.toMatch(/days a week/)
+    const stated = /,\s*(\d+) days a week/.exec(tile.textContent ?? '')
+    expect(stated, 'the card states a nights-a-week count').toBeTruthy()
+    expect(Number(stated![1])).not.toBe(NOT_STARTED_NIGHTS)
   })
 })
 
