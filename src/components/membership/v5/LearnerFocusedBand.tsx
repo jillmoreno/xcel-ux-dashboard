@@ -691,6 +691,10 @@ export function LearnerFocusedBand({
                second derivation — the player's top bar and this card must not
                disagree about which lesson the learner is on. */
             lessonNumber: totalCompleted + 1,
+            /* The SAME two figures the block above prints as "26 of 42
+               lessons" — the contents tree counts what this card counts. */
+            completedLessons: totalCompleted,
+            totalLessons: totalRequired || path.hours,
           })
         }
       />

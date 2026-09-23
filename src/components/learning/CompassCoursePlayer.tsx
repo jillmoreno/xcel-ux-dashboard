@@ -1,4 +1,4 @@
-import type { CSSProperties } from 'react'
+import { useState, type CSSProperties } from 'react'
 import {
   ArrowLeft,
   ArrowRight,
@@ -64,11 +64,16 @@ import { formatExamChip } from './compassPlayerUtil'
 export function CompassCoursePlayer({
   courseTitle,
   percentComplete,
+  completedLessons,
+  totalLessons,
   onClose,
   closeLabel,
 }: {
   courseTitle: string
   percentComplete: number
+  /** The card's "26 of 42 lessons", both halves. See `CompassContents`. */
+  completedLessons: number
+  totalLessons: number
   onClose: () => void
   /** Names what Close returns to, for the screen-reader label only — the
    *  design gives the control no visible text. */
@@ -82,6 +87,8 @@ export function CompassCoursePlayer({
       <CompassSidebar
         courseTitle={courseTitle}
         percentComplete={percentComplete}
+        completedLessons={completedLessons}
+        totalLessons={totalLessons}
         onLeave={onClose}
       />
       <div style={rightOfSidebarStyle}>
@@ -138,10 +145,14 @@ export function CompassCoursePlayer({
 function CompassSidebar({
   courseTitle,
   percentComplete,
+  completedLessons,
+  totalLessons,
   onLeave,
 }: {
   courseTitle: string
   percentComplete: number
+  completedLessons: number
+  totalLessons: number
   /** Both crumbs are "up" from the player, and up is the dashboard. */
   onLeave: () => void
 }) {
@@ -238,94 +249,145 @@ function CompassSidebar({
       </div>
 
       <p style={sidebarEyebrowStyle}>Table of Contents</p>
-      <ol style={tocListStyle}>
-        {NY_LH_COURSE_CHAPTERS.map((chapter, i) => {
-          const done = i < NY_LH_CURRENT_CHAPTER_INDEX
-          const now = i === NY_LH_CURRENT_CHAPTER_INDEX
-          return (
-            <li key={chapter} style={tocItemStyle}>
-              {/* THE DASHED THREAD joining one bullet to the next. Drawn per
-                  item and omitted on the last, so the line ends at the final
-                  bullet rather than trailing into the Resources heading. It
-                  crosses the list's 6px gap (`bottom: -6`) — without that it
-                  would break at every item boundary, which is the opposite of
-                  connecting them. `aria-hidden`: the states are already in the
-                  text and the icons, and a decorative rule is not a third. */}
-              {i < NY_LH_COURSE_CHAPTERS.length - 1 ? (
-                <span aria-hidden style={tocThreadLineStyle} />
-              ) : null}
-              <TocSectionTitle title={chapter} done={done} now={now} />
-              {/*
-                NO STATE LABELS AT ALL — 2026-09-22, two asks a few minutes
-                apart: "Now" and "Up next" first, then "remove Done too".
-
-                All three were the Figma's, and they earned their place there:
-                the mock's bullets are all the same open circle, so the words
-                were the only thing separating done from current from untouched.
-                That stopped being true when the bullets became three distinct
-                states earlier the same day — a filled navy tick, a navy ring, a
-                grey ring — and the current chapter went bold navy in its text
-                as well. Each label was a second telling of what its own bullet
-                already said.
-
-                The tree is now bullets and chapter names, and nothing else.
-              */}
-            </li>
-          )
-        })}
-      </ol>
-
-      {/* RESOURCES / GET HELP REMOVED — 2026-09-22, the direct ask pointed at
-          "Get Help". The EYEBROW went with it rather than being left behind: it
-          was the section's only item, and a heading with nothing under it reads
-          as a failed render rather than as a deliberate empty state. Support is
-          not lost — the dashboard rail this player covers still carries Get
-          Help, and Close is two clicks from it. */}
+      <CompassContents completedLessons={completedLessons} totalLessons={totalLessons} />
     </aside>
   )
 }
 
-function TocSectionTitle({
-  title,
-  done,
-  now,
+/** How many UNSTARTED lessons show before the "Show all" link appears. Six is
+ *  the point where the column stops being a list you can take in and becomes
+ *  one you scroll — with 42 lessons and 26 done there are 15 ahead, and all of
+ *  them pushed Resources off the screen. */
+const UPCOMING_PREVIEW = 6
+
+/**
+ * THE CONTENTS TREE — 42 LESSONS, collapsed around where the learner is.
+ *
+ * 2026-09-23, the direct ask: "there should be 42 lessons listed in that table
+ * of contents according to the home screen 26 of 42 completed. So lets show 1
+ * line with a solid checkmark next to a link CTA that is Completed 26 of 42.
+ * Clicking on that link will expand to show all of the completed lessons, this
+ * will help the most current lesson to always be at the top, and if there would
+ * be excessive scrolling for the uncompleted we can add a 'show all' link cta
+ * to expand the entire list as well."
+ *
+ * IT REPLACES A CHAPTER TREE, and that is the substance of the change. The list
+ * was `NY_LH_COURSE_CHAPTERS` — eleven chapter names — while every count on the
+ * dashboard is in LESSONS. The two never reconciled (the note this file used to
+ * carry called it "one honest gap"), and a contents tree that cannot agree with
+ * "26 of 42" about how much there is cannot show a learner where they are.
+ *
+ * ⚠ THE COUNTS ARE SOURCED; THE TITLES ARE ORDINALS. `completedLessons` and
+ * `totalLessons` are summed off `resolvePathCategories`, the same two figures
+ * the card prints. What no source in this repo publishes is a lesson NAME —
+ * there are 11 chapter names and 42 lessons, with no mapping between them. So
+ * a row reads "Lesson 27" and nothing more. Inventing 42 titles to fill the
+ * column is the move this version has refused everywhere else, and it would be
+ * the most convincing invention on the screen.
+ *
+ * WHERE THE CHAPTER NAME WENT: the top bar states it, for the current lesson
+ * only, which is the one place the pairing is already asserted.
+ */
+function CompassContents({
+  completedLessons,
+  totalLessons,
 }: {
-  title: string
-  done: boolean
-  now: boolean
+  completedLessons: number
+  totalLessons: number
 }) {
+  const [showCompleted, setShowCompleted] = useState(false)
+  const [showAllUpcoming, setShowAllUpcoming] = useState(false)
+
+  /* Clamped so a fixture that ever reports more done than exist cannot produce
+     a negative run of upcoming lessons or a current lesson past the end. */
+  const done = Math.max(0, Math.min(completedLessons, totalLessons))
+  const current = done < totalLessons ? done + 1 : null
+  const upcoming: number[] = []
+  for (let n = done + 2; n <= totalLessons; n++) upcoming.push(n)
+  const visibleUpcoming = showAllUpcoming ? upcoming : upcoming.slice(0, UPCOMING_PREVIEW)
+  const hiddenUpcoming = upcoming.length - visibleUpcoming.length
+  const rows: { n: number; state: 'current' | 'upcoming' }[] = [
+    ...(current != null ? [{ n: current, state: 'current' as const }] : []),
+    ...visibleUpcoming.map((n) => ({ n, state: 'upcoming' as const })),
+  ]
+
+  return (
+    <div style={contentsStyle}>
+      {/* THE COMPLETED SUMMARY — one line standing in for 26 rows, which is
+          what keeps the current lesson at the top of the column rather than
+          26 rows down it. A real <button>: it is the only thing here that
+          does something, and `aria-expanded` is how that is announced. */}
+      {done > 0 ? (
+        <button
+          type="button"
+          onClick={() => setShowCompleted((v) => !v)}
+          aria-expanded={showCompleted}
+          className="cre-link-action cre-cta-ink"
+          style={completedSummaryStyle}
+        >
+          <span aria-hidden style={tocDoneDotStyle}>
+            <Check
+              size={9}
+              aria-hidden
+              style={{
+                color: 'var(--color-text-inverse)',
+                stroke: 'currentColor',
+                strokeWidth: 38,
+                strokeLinecap: 'round',
+                strokeLinejoin: 'round',
+              }}
+            />
+          </span>
+          Completed {done} of {totalLessons}
+        </button>
+      ) : null}
+
+      {showCompleted ? (
+        <ol style={lessonListStyle}>
+          {Array.from({ length: done }, (_, i) => i + 1).map((n, i, all) => (
+            <li key={n} style={tocItemStyle}>
+              {i < all.length - 1 ? <span aria-hidden style={tocThreadLineStyle} /> : null}
+              <LessonRow n={n} state="done" />
+            </li>
+          ))}
+        </ol>
+      ) : null}
+
+      {/* THE DASHED THREAD joins one bullet to the next, and is omitted on the
+          last row so the line ends at a bullet rather than trailing into the
+          link below. Rows are numbered off the rendered slice, not the lesson
+          number, so collapsing the upcoming list still ends the thread at the
+          last VISIBLE row. */}
+      <ol style={lessonListStyle}>
+        {rows.map((row, i) => (
+          <li key={row.n} style={tocItemStyle}>
+            {i < rows.length - 1 ? <span aria-hidden style={tocThreadLineStyle} /> : null}
+            <LessonRow n={row.n} state={row.state} />
+          </li>
+        ))}
+      </ol>
+
+      {hiddenUpcoming > 0 ? (
+        <button
+          type="button"
+          onClick={() => setShowAllUpcoming(true)}
+          className="cre-link-action cre-cta-ink"
+          style={showAllStyle}
+        >
+          Show all {totalLessons} lessons
+        </button>
+      ) : null}
+    </div>
+  )
+}
+
+/** One lesson. The bullet states the state — the three the tree already had,
+ *  now on lessons rather than chapters. */
+function LessonRow({ n, state }: { n: number; state: 'done' | 'current' | 'upcoming' }) {
   return (
     <span style={tocSectionRowStyle}>
-      {/*
-        THREE STATES, THREE BULLETS — 2026-09-22, the direct ask. They were two
-        (an outline check for done, one navy ring for everything else), which
-        made the current chapter and the eight untouched ones identical.
-
-          - DONE is a SOLID navy disc with a white check. There is no solid
-            `circle-check` in `@/icons` — only the outline — so the disc is CSS
-            and the tick is the registry's bare `Check` sitting in it. That is
-            a composition of two things the repo already has rather than a new
-            asset to keep in sync.
-          - NOW is the navy OUTLINE ring, which the mock already had right.
-          - NOT STARTED is the same ring in `--color-neutral-300`. Grey is the
-            whole signal: a navy ring on a chapter nobody has opened reads as
-            active, which is what it looked like before.
-
-        Still CSS rings rather than a `circle` glyph: there is none in the
-        registry, and `circle-dashed` is the nearest, which reads as "optional"
-        — the wrong claim for a chapter simply not reached yet.
-      */}
-      {done ? (
+      {state === 'done' ? (
         <span aria-hidden style={tocDoneDotStyle}>
-          {/* 9 in a 14 disc — the ratio FA's own solid `circle-check` uses.
-              STROKED as well as sized, and the stroke is the half that fixes
-              it: the registry is Font Awesome Pro LIGHT, so `check` is a
-              hairline path drawn for 16px and up. Scaled to 9 it renders
-              sub-pixel and the disc reads as a plain dot, which is what "cant
-              see the checkmark" was. Painting the same `currentColor` as a
-              stroke thickens the glyph without a second asset or a heavier
-              weight the registry does not have. 38 of a 448-unit viewBox is
-              roughly a Regular-weight stem. */}
           <Check
             size={9}
             aria-hidden
@@ -339,55 +401,10 @@ function TocSectionTitle({
           />
         </span>
       ) : (
-        <span aria-hidden style={now ? tocRingNowStyle : tocRingIdleStyle} />
+        <span aria-hidden style={state === 'current' ? tocRingNowStyle : tocRingIdleStyle} />
       )}
-      <span style={now ? tocSectionTextNowStyle : tocSectionTextStyle}>{title}</span>
-    </span>
-  )
-}
-
-/**
- * A CHILD ROW — built, styled to the design, and NOT RENDERED, which is
- * deliberate and is the component half of the "one honest gap" the file header
- * records. `NY_LH_COURSE_CHAPTERS` is flat, so there are no children to pass
- * it. It is kept rather than deleted because the moment a real outline lands
- * this is the row it renders into, and rebuilding it from the Figma a second
- * time is the work this saves.
- */
-export function TocChildItem({
-  label,
-  done,
-  now,
-}: {
-  label: string
-  done: boolean
-  now: boolean
-}) {
-  return (
-    <span style={tocChildRowStyle}>
-      <span aria-hidden style={tocThreadStyle} />
-      <span style={now ? tocChildInnerNowStyle : tocChildInnerStyle}>
-        {/* The same three states as a section title, one step smaller — a
-            child row that marked done differently from its parent would read
-            as a different kind of completion. */}
-        {done ? (
-          <span aria-hidden style={tocDoneDotSmallStyle}>
-            <Check
-              size={8}
-              aria-hidden
-              style={{
-                color: 'var(--color-text-inverse)',
-                stroke: 'currentColor',
-                strokeWidth: 38,
-                strokeLinecap: 'round',
-                strokeLinejoin: 'round',
-              }}
-            />
-          </span>
-        ) : (
-          <span aria-hidden style={now ? tocRingSmallStyle : tocRingSmallIdleStyle} />
-        )}
-        <span style={now ? tocChildTextNowStyle : tocChildTextStyle}>{label}</span>
+      <span style={state === 'current' ? tocSectionTextNowStyle : tocSectionTextStyle}>
+        Lesson {n}
       </span>
     </span>
   )
@@ -772,16 +789,62 @@ const sidebarEyebrowStyle: CSSProperties = {
   color: 'var(--color-text-primary)',
 }
 
-const tocListStyle: CSSProperties = {
+const tocItemStyle: CSSProperties = { position: 'relative' }
+
+const tocThreadLineStyle: CSSProperties = {
+  position: 'absolute',
+  /* Centred under a 14px bullet at the row's left edge: 7 - half the 1px rule. */
+  left: 6.5,
+  /* Below the bullet (3px row padding + 1px nudge + 14px bullet + 2), running
+     past the row's own bottom to cross the list's 4px gap — without that it
+     breaks at every boundary, which is the opposite of connecting them. */
+  top: 20,
+  bottom: -4,
+  borderLeft: '1px dashed var(--color-neutral-300)',
+}
+
+const contentsStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 6,
+  marginTop: 2,
+}
+
+const lessonListStyle: CSSProperties = {
   listStyle: 'none',
-  margin: '2px 0 0',
+  margin: 0,
   padding: 0,
   display: 'flex',
   flexDirection: 'column',
-  /* 6px BETWEEN SECTIONS. With every title on one line the design needs none —
-     the 30px rows space themselves. Wrapped titles have no such gap, and two
-     three-line chapters with nothing between them read as one six-line block. */
-  gap: 6,
+  /* 4, not the 6 the chapter tree used. Chapter names wrapped to two and three
+     lines and needed the gap to stop consecutive ones merging; "Lesson 27" is
+     one line, so the same 6 left the column looking gappy. */
+  gap: 4,
+}
+
+/* The two CTAs share the house link style (`cre-link-action cre-cta-ink`) and
+   set no colour of their own — the class carries it and re-points on the dark
+   theme, which is the trap that class's note in `tokens.css` records. */
+const completedSummaryStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 9,
+  alignSelf: 'flex-start',
+  background: 'transparent',
+  border: 0,
+  padding: '3px 0',
+  cursor: 'pointer',
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  fontWeight: 600,
+  lineHeight: '17px',
+}
+
+const showAllStyle: CSSProperties = {
+  ...completedSummaryStyle,
+  /* Indented to the lesson TEXT rather than the bullet, so it reads as an
+     action on the list instead of another row in it. */
+  marginLeft: 23,
 }
 
 /*
@@ -852,23 +915,8 @@ const tocDoneDotStyle: CSSProperties = {
   background: 'var(--color-primary-500)',
 }
 
-const tocRingSmallStyle: CSSProperties = { ...tocRingNowStyle, width: 12, height: 12 }
-const tocRingSmallIdleStyle: CSSProperties = { ...tocRingIdleStyle, width: 12, height: 12 }
-const tocDoneDotSmallStyle: CSSProperties = { ...tocDoneDotStyle, width: 12, height: 12 }
 
-const tocItemStyle: CSSProperties = { position: 'relative' }
 
-const tocThreadLineStyle: CSSProperties = {
-  position: 'absolute',
-  /* Centred under a 14px bullet at the row's left edge: 7 - half the 1px rule. */
-  left: 6.5,
-  /* Starts below the bullet (3px row padding + 1px nudge + 14px bullet + 2) and
-     runs past the item's own bottom to cross the list gap. Re-derived when the
-     bullet grew to 14 — left stale it would start inside the disc. */
-  top: 20,
-  bottom: -6,
-  borderLeft: '1px dashed var(--color-neutral-300)',
-}
 
 /* 13/17, down from the design's 15/20. The mock's labels are short enough that
    15 reads as a comfortable nav size; on titles that wrap twice it reads as a
@@ -889,58 +937,11 @@ const tocSectionTextNowStyle: CSSProperties = {
   color: 'var(--color-primary-500)',
 }
 
-/* NO LEFT BORDER any more. It was a 2px solid navy rule standing in for a
-   thread when there was none; with the dashed connector running down the whole
-   column it would be a SECOND vertical line in the same 6px, one solid and one
-   dashed, two pixels apart. The indent alone places the label now. */
 
 
-const tocChildRowStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 17,
-  minHeight: 32,
-  paddingLeft: 7,
-}
 
-const tocThreadStyle: CSSProperties = {
-  width: 2,
-  alignSelf: 'stretch',
-  flexShrink: 0,
-  background: 'var(--compass-thread)',
-}
 
-const tocChildInnerStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 10,
-  flex: 1,
-  minWidth: 0,
-  paddingLeft: 10,
-  paddingRight: 8,
-  alignSelf: 'stretch',
-  borderRadius: 'var(--radius-md)',
-}
 
-const tocChildInnerNowStyle: CSSProperties = {
-  ...tocChildInnerStyle,
-  background: 'var(--compass-current)',
-}
-
-const tocChildTextStyle: CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontSize: 13,
-  lineHeight: '20px',
-  color: 'var(--color-neutral-800)',
-}
-
-const tocChildTextNowStyle: CSSProperties = {
-  ...tocChildTextStyle,
-  flex: 1,
-  minWidth: 0,
-  fontWeight: 600,
-  color: 'var(--color-primary-500)',
-}
 
 
 

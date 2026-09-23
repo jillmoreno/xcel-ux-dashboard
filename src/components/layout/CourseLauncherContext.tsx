@@ -46,6 +46,18 @@ export type LaunchedCourseMeta = {
    * the note above.
    */
   lessonNumber?: number
+  /**
+   * Lessons finished and lessons in the course — the two halves of the card's
+   * "26 of 42 lessons", summed off `resolvePathCategories`.
+   *
+   * SOURCED, both of them, which matters because the contents tree now lists
+   * lessons rather than chapters. What is NOT sourced anywhere is a lesson
+   * TITLE: the repo publishes 11 chapter names and no lesson names at all, so
+   * the tree labels rows by ordinal. Passing the counts rather than deriving
+   * them keeps the tree and the card counting the same course.
+   */
+  completedLessons?: number
+  totalLessons?: number
 }
 
 type CourseLauncherState = {

@@ -134,51 +134,88 @@ describe('the player states the course that was opened', () => {
     expect(Number(pct)).toBeGreaterThan(0)
   })
 
-  it('builds the contents from the NY fixtures, not the mock', () => {
-    /* The Figma draws "Florida Life & Health" and a Florida chapter list. The
-       tree here is `NY_LH_COURSE_CHAPTERS`, and the current chapter carries the
-       Now badge — real states over a prettier mock. */
+  it('lists LESSONS, counted off the same figures as the card', () => {
+    /* ⚠ THE TREE CHANGED UNIT 2026-09-23, the direct ask: "there should be 42
+       lessons listed in that table of contents according to the home screen 26
+       of 42 completed."
+
+       It listed `NY_LH_COURSE_CHAPTERS` — eleven chapter names — while every
+       count on the dashboard is in LESSONS. A contents tree that cannot agree
+       with "26 of 42" about how much there is cannot show a learner where they
+       are.
+
+       THE COUNTS ARE SOURCED AND THE TITLES ARE ORDINALS. Asserted as agreement
+       with the card rather than as 42, because the number is a fixture. */
     seed()
     renderShell(TESTING_URL)
+    const block = screen.getByText(/of \d+ lessons/i).closest('section, div') as HTMLElement
+    const [, doneStr, totalStr] =
+      block.textContent?.match(/(\d+) of (\d+) lessons/i) ?? []
+    expect(doneStr).toBeTruthy()
     startCourse()
     const sidebar = screen.getByLabelText('Course contents')
-    for (const chapter of NY_LH_COURSE_CHAPTERS) {
-      expect(within(sidebar).getByText(chapter)).toBeTruthy()
-    }
-    expect(sidebar.textContent).not.toMatch(/Florida/)
-    /* NO STATE LABELS — 2026-09-22. This asserted "Now" and "Up next" were
-       present; the direct ask removed both as a fourth telling of what the
-       bullets already say. Inverted rather than deleted, so a reinstatement is
-       a decision rather than a drift back. The states themselves are pinned by
-       the bullet tests below, which is where they now live. */
-    expect(within(sidebar).queryByText('Now')).toBeNull()
-    expect(within(sidebar).queryByText('Up next')).toBeNull()
+    expect(sidebar.textContent).toContain(`Completed ${doneStr} of ${totalStr}`)
+    // The current lesson is the one after the last completed, and it leads.
+    expect(sidebar.textContent).toContain(`Lesson ${Number(doneStr) + 1}`)
+    // No chapter names in the tree any more — the top bar carries the one.
+    expect(sidebar.textContent).not.toContain(NY_LH_COURSE_CHAPTERS[0])
   })
 
-  it('marks exactly the chapters before the current one as done', () => {
+  it('keeps the current lesson at the TOP, with the completed run collapsed', () => {
+    /* The reason the summary line exists: 26 completed rows would put the
+       lesson a learner is actually on 26 rows down a 220px column. Collapsed,
+       it is the first row in the list. */
     seed()
     renderShell(TESTING_URL)
     startCourse()
     const sidebar = screen.getByLabelText('Course contents')
-    // The current chapter is the one the Jump Back In card names, so the count
-    // of completed stops is derived from the same index rather than restated.
-    expect(NY_LH_CURRENT_CHAPTER_INDEX).toBeGreaterThan(0)
-    const now = NY_LH_COURSE_CHAPTERS[NY_LH_CURRENT_CHAPTER_INDEX]
-    expect(within(sidebar).getByText(now)).toBeTruthy()
-    /* COUNTED OFF THE BULLETS, not the word. This asserted `getByText('Done')`
-       until 2026-09-22, when the last of the three state labels was removed —
-       the bullets carry the state now, so reading it anywhere else would be
-       testing a label that no longer exists. Exactly the chapters BEFORE the
-       current one are filled: one fewer than the current index would mean an
-       off-by-one, one more would mean the current chapter marked complete. */
-    const filled = [...sidebar.querySelectorAll('ol > li')].filter(
-      (li) =>
-        (li.querySelector('span > span') as HTMLElement | null)?.style.background ===
-        'var(--color-primary-500)',
-    )
-    expect(filled).toHaveLength(NY_LH_CURRENT_CHAPTER_INDEX)
-    // …and no state label survives anywhere in the tree.
-    expect(within(sidebar).queryByText('Done')).toBeNull()
+    const done = Number(sidebar.textContent?.match(/Completed (\d+) of/)?.[1])
+    expect(done).toBeGreaterThan(0)
+    // Not one of the completed lessons is rendered while collapsed…
+    expect(sidebar.textContent).not.toMatch(new RegExp(`Lesson ${done}\\b`))
+    // …and the current one leads the list.
+    const rows = [...sidebar.querySelectorAll('ol > li')].map((li) => li.textContent?.trim())
+    expect(rows[0]).toBe(`Lesson ${done + 1}`)
+  })
+
+  it('expands the completed run on demand, and collapses it again', () => {
+    seed()
+    renderShell(TESTING_URL)
+    startCourse()
+    const sidebar = screen.getByLabelText('Course contents')
+    const summary = within(sidebar).getByRole('button', { name: /Completed \d+ of \d+/ })
+    expect(summary).toHaveAttribute('aria-expanded', 'false')
+    act(() => {
+      fireEvent.click(summary)
+    })
+    expect(summary).toHaveAttribute('aria-expanded', 'true')
+    expect(sidebar.textContent).toContain('Lesson 1')
+    act(() => {
+      fireEvent.click(summary)
+    })
+    expect(sidebar.textContent).not.toContain('Lesson 1')
+  })
+
+  it('previews the upcoming lessons, with Show all for the rest', () => {
+    /* The other half of the ask — "if there would be excessive scrolling for
+       the uncompleted we can add a 'show all' link cta". Asserted against the
+       real total rather than a literal count of rows. */
+    seed()
+    renderShell(TESTING_URL)
+    startCourse()
+    const sidebar = screen.getByLabelText('Course contents')
+    const total = Number(sidebar.textContent?.match(/Completed \d+ of (\d+)/)?.[1])
+    const before = sidebar.querySelectorAll('ol > li').length
+    expect(before).toBeLessThan(total)
+    const showAll = within(sidebar).getByRole('button', { name: /Show all \d+ lessons/ })
+    act(() => {
+      fireEvent.click(showAll)
+    })
+    const after = sidebar.querySelectorAll('ol > li').length
+    expect(after).toBeGreaterThan(before)
+    // Every remaining lesson is now listed, ending at the last one.
+    expect(sidebar.textContent).toContain(`Lesson ${total}`)
+    expect(within(sidebar).queryByRole('button', { name: /Show all/ })).toBeNull()
   })
 })
 
@@ -210,9 +247,19 @@ describe('the only wired control is Close', () => {
     const names = screen.getAllByRole('button').map(
       (b) => b.getAttribute('aria-label') ?? b.textContent,
     )
+    /* FIVE, not three, since the contents tree became 42 lessons: the
+       completed run and the upcoming run each collapse behind a link CTA. Both
+       DO something, which is why they are buttons — the rule this test pins is
+       that anything LOOKING pressable is pressable, not that the count stays
+       small. Asserted by name so a sixth cannot appear quietly. */
+    /* IN DOCUMENT ORDER, which is the sidebar and then the toolbar — Close
+       is last because the top bar follows the nav in the DOM, not because it
+       is least important. */
     expect(names).toEqual([
       'Home',
       'Overview',
+      expect.stringMatching(/Completed \d+ of \d+/),
+      expect.stringMatching(/Show all \d+ lessons/),
       expect.stringMatching(/Close course player/),
     ])
   })
@@ -329,31 +376,40 @@ describe('the contents tree reads its three states apart', () => {
     seed()
     renderShell(TESTING_URL)
     startCourse()
-    const [done, , , , now, , notStarted] = bullets()
+    const sidebar = screen.getByLabelText('Course contents')
+    // Expand the completed run so all three states are on screen at once.
+    act(() => {
+      fireEvent.click(within(sidebar).getByRole('button', { name: /Completed \d+ of \d+/ }))
+    })
+    const all = bullets()
+    const done = all[0]
+    const current = all.find((b) => b.style.border?.includes('var(--color-primary-500)'))!
+    const upcoming = all.find((b) => b.style.border?.includes('var(--color-neutral-300)'))!
     // Done is FILLED and carries a tick; the other two are hollow and do not.
     expect(done.style.background).toBe('var(--color-primary-500)')
     expect(done.querySelector('svg')).not.toBeNull()
-    expect(now.querySelector('svg')).toBeNull()
-    expect(notStarted.querySelector('svg')).toBeNull()
+    expect(current.querySelector('svg')).toBeNull()
+    expect(upcoming.querySelector('svg')).toBeNull()
     // …and the two hollow ones differ by ink, which is the whole signal.
-    expect(now.style.border).toContain('var(--color-primary-500)')
-    expect(notStarted.style.border).toContain('var(--color-neutral-300)')
-    expect(now.style.border).not.toBe(notStarted.style.border)
+    expect(current.style.border).not.toBe(upcoming.style.border)
   })
 
-  it('threads the bullets together, and stops at the last one', () => {
-    // The line ends at the final bullet rather than trailing into Resources,
-    // so it is one fewer than the chapters — the assertion that catches an
-    // off-by-one in either direction.
+  it('threads the rows together, and stops at the last VISIBLE one', () => {
+    /* The thread is drawn per row and omitted on the last, so the line ends at
+       a bullet rather than trailing into the link below it. Counted off the
+       RENDERED rows rather than the lesson total — collapsing the upcoming run
+       has to end the thread at the last visible row, which is the case a
+       total-based count would miss. */
     seed()
     renderShell(TESTING_URL)
     startCourse()
-    const items = [...document.querySelectorAll('aside[aria-label="Course contents"] ol > li')]
+    const sidebar = screen.getByLabelText('Course contents')
+    const items = [...sidebar.querySelectorAll('ol > li')]
     const threaded = items.filter((li) =>
       [...li.children].some((c) => (c as HTMLElement).style.position === 'absolute'),
     )
-    expect(items).toHaveLength(NY_LH_COURSE_CHAPTERS.length)
-    expect(threaded).toHaveLength(NY_LH_COURSE_CHAPTERS.length - 1)
+    expect(items.length).toBeGreaterThan(1)
+    expect(threaded).toHaveLength(items.length - 1)
   })
 
   it('keeps the bullets above the thread, not struck through by it', () => {
