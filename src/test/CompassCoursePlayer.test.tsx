@@ -222,6 +222,17 @@ describe('the only wired control is Close', () => {
       expect(el.className).toContain('cre-cta-ink')
       expect(el.style.color).toBe('')
     }
+    /* AND THE TYPE, which the first pass missed — it took "link style" to mean
+       the classes and kept the Figma's 11px/500, so the crumbs had the right
+       colour and the wrong size. The house CTA is a type ramp as much as a
+       colour. 13/600 is measured off Home's "Customize Study Plan"; the weight
+       is on the control and the size is inherited from the row, so both are
+       asserted where they are actually set. */
+    const crumbRow = screen.getByText('Course').parentElement as HTMLElement
+    expect(crumbRow.style.fontSize).toBe('13px')
+    expect(screen.getByRole('button', { name: 'Overview' }).style.fontWeight).toBe('600')
+    // The crumb you are on shares the size and differs only in weight and ink.
+    expect(screen.getByText('Course').style.fontWeight).toBe('500')
     // …and the crumb you are ON is not a link.
     expect(screen.getByText('Course').tagName).toBe('SPAN')
   })
@@ -268,5 +279,68 @@ describe('the exam-date chip', () => {
     startCourse()
     // Singular at one day — the chip is a sentence, not a template.
     expect(screen.getByText('1 Day Out')).toBeTruthy()
+  })
+})
+
+describe('the contents tree reads its three states apart', () => {
+  /*
+   * 2026-09-22, the direct ask. There were TWO bullets — an outline check for
+   * done and one navy ring for everything else — so the chapter a learner is
+   * ON and the eight they have not opened looked identical, and the navy on an
+   * untouched chapter read as active.
+   *
+   * Asserted as the three being DISTINCT rather than as three hex values: the
+   * claim is that a learner can tell them apart, and pinning the literals would
+   * fail on any repalette while telling nobody whether that still held.
+   */
+  const bullets = () =>
+    [...document.querySelectorAll('aside[aria-label="Course contents"] ol > li')].map(
+      (li) => li.querySelector('span > span') as HTMLElement,
+    )
+
+  it('gives done, current and not-started three different bullets', () => {
+    seed()
+    renderShell(TESTING_URL)
+    startCourse()
+    const [done, , , , now, , notStarted] = bullets()
+    // Done is FILLED and carries a tick; the other two are hollow and do not.
+    expect(done.style.background).toBe('var(--color-primary-500)')
+    expect(done.querySelector('svg')).not.toBeNull()
+    expect(now.querySelector('svg')).toBeNull()
+    expect(notStarted.querySelector('svg')).toBeNull()
+    // …and the two hollow ones differ by ink, which is the whole signal.
+    expect(now.style.border).toContain('var(--color-primary-500)')
+    expect(notStarted.style.border).toContain('var(--color-neutral-300)')
+    expect(now.style.border).not.toBe(notStarted.style.border)
+  })
+
+  it('threads the bullets together, and stops at the last one', () => {
+    // The line ends at the final bullet rather than trailing into Resources,
+    // so it is one fewer than the chapters — the assertion that catches an
+    // off-by-one in either direction.
+    seed()
+    renderShell(TESTING_URL)
+    startCourse()
+    const items = [...document.querySelectorAll('aside[aria-label="Course contents"] ol > li')]
+    const threaded = items.filter((li) =>
+      [...li.children].some((c) => (c as HTMLElement).style.position === 'absolute'),
+    )
+    expect(items).toHaveLength(NY_LH_COURSE_CHAPTERS.length)
+    expect(threaded).toHaveLength(NY_LH_COURSE_CHAPTERS.length - 1)
+  })
+
+  it('keeps the bullets above the thread, not struck through by it', () => {
+    /* The thread runs down the column behind the bullets. Without an opaque
+       fill and a stacking context on each bullet the dashes cross the open
+       rings and they read as struck through — which is why every state shares
+       one base rather than only the filled one carrying a background. */
+    seed()
+    renderShell(TESTING_URL)
+    startCourse()
+    for (const b of bullets()) {
+      expect(b.style.position).toBe('relative')
+      expect(b.style.zIndex).toBe('1')
+      expect(b.style.background).not.toBe('')
+    }
   })
 })

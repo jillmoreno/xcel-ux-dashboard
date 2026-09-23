@@ -4,7 +4,7 @@ import {
   ArrowRight,
   CalendarDay,
   ChevronRight,
-  CircleCheck,
+  Check,
   FileText,
   House,
   MagnifyingGlass,
@@ -112,8 +112,16 @@ export function CompassCoursePlayer({
                 <ArrowLeft size={16} aria-hidden />
                 Previous
               </span>
+              {/* "Next", not the Figma's "Next: Reading" — 2026-09-22, the
+                  direct ask. The mock's suffix names the TYPE of the next item
+                  (a reading, a knowledge check, a recap), which this cannot
+                  know: the contents tree is eleven flat chapters and the centre
+                  is a placeholder, so there is nothing here that knows what
+                  comes next is a reading. The bare verb is the honest half, and
+                  the suffix comes back with the outline that would populate
+                  it — same gap `TocChildItem` is waiting on. */}
               <span style={nextButtonStyle}>
-                Next: Reading
+                Next
                 <ArrowRight size={16} aria-hidden />
               </span>
             </footer>
@@ -172,7 +180,7 @@ function CompassSidebar({
           aria-label="Back to the dashboard"
           style={crumbButtonStyle}
         >
-          <House size={11} aria-hidden />
+          <House size={13} aria-hidden />
         </button>
         <span aria-hidden style={crumbSlashStyle}>
           /
@@ -181,7 +189,7 @@ function CompassSidebar({
           type="button"
           onClick={onLeave}
           className="cre-link-action cre-cta-ink"
-          style={{ ...crumbButtonStyle, fontWeight: 500 }}
+          style={crumbButtonStyle}
         >
           Overview
         </button>
@@ -205,7 +213,17 @@ function CompassSidebar({
           const now = i === NY_LH_CURRENT_CHAPTER_INDEX
           const upNext = i === NY_LH_CURRENT_CHAPTER_INDEX + 1
           return (
-            <li key={chapter}>
+            <li key={chapter} style={tocItemStyle}>
+              {/* THE DASHED THREAD joining one bullet to the next. Drawn per
+                  item and omitted on the last, so the line ends at the final
+                  bullet rather than trailing into the Resources heading. It
+                  crosses the list's 6px gap (`bottom: -6`) — without that it
+                  would break at every item boundary, which is the opposite of
+                  connecting them. `aria-hidden`: the states are already in the
+                  text and the icons, and a decorative rule is not a third. */}
+              {i < NY_LH_COURSE_CHAPTERS.length - 1 ? (
+                <span aria-hidden style={tocThreadLineStyle} />
+              ) : null}
               <TocSectionTitle title={chapter} done={done} now={now} />
               {/* The one-word state line under a section, as drawn. Only the
                   finished section and the one after the current section carry
@@ -237,19 +255,31 @@ function TocSectionTitle({
 }) {
   return (
     <span style={tocSectionRowStyle}>
+      {/*
+        THREE STATES, THREE BULLETS — 2026-09-22, the direct ask. They were two
+        (an outline check for done, one navy ring for everything else), which
+        made the current chapter and the eight untouched ones identical.
+
+          - DONE is a SOLID navy disc with a white check. There is no solid
+            `circle-check` in `@/icons` — only the outline — so the disc is CSS
+            and the tick is the registry's bare `Check` sitting in it. That is
+            a composition of two things the repo already has rather than a new
+            asset to keep in sync.
+          - NOW is the navy OUTLINE ring, which the mock already had right.
+          - NOT STARTED is the same ring in `--color-neutral-300`. Grey is the
+            whole signal: a navy ring on a chapter nobody has opened reads as
+            active, which is what it looked like before.
+
+        Still CSS rings rather than a `circle` glyph: there is none in the
+        registry, and `circle-dashed` is the nearest, which reads as "optional"
+        — the wrong claim for a chapter simply not reached yet.
+      */}
       {done ? (
-        <CircleCheck
-          size={13}
-          aria-hidden
-          style={{ color: 'var(--color-primary-500)', flexShrink: 0, marginTop: 2 }}
-        />
+        <span aria-hidden style={tocDoneDotStyle}>
+          <Check size={7} aria-hidden style={{ color: 'var(--color-text-inverse)' }} />
+        </span>
       ) : (
-        /* AN OPEN RING, drawn in CSS rather than pulled from the registry.
-           There is no plain `circle` glyph in `@/icons` — `circle-dashed` is
-           the nearest and reads as "optional", which is the wrong claim for a
-           chapter that simply has not started. A bordered span is the same
-           shape the design draws and needs no new asset. */
-        <span aria-hidden style={tocRingStyle} />
+        <span aria-hidden style={now ? tocRingNowStyle : tocRingIdleStyle} />
       )}
       <span style={now ? tocSectionTextNowStyle : tocSectionTextStyle}>{title}</span>
       {now ? <span style={tocNowBadgeStyle}>Now</span> : null}
@@ -278,10 +308,15 @@ export function TocChildItem({
     <span style={tocChildRowStyle}>
       <span aria-hidden style={tocThreadStyle} />
       <span style={now ? tocChildInnerNowStyle : tocChildInnerStyle}>
+        {/* The same three states as a section title, one step smaller — a
+            child row that marked done differently from its parent would read
+            as a different kind of completion. */}
         {done ? (
-          <CircleCheck size={12} aria-hidden style={{ color: 'var(--color-primary-500)' }} />
+          <span aria-hidden style={tocDoneDotSmallStyle}>
+            <Check size={6} aria-hidden style={{ color: 'var(--color-text-inverse)' }} />
+          </span>
         ) : (
-          <span aria-hidden style={tocRingSmallStyle} />
+          <span aria-hidden style={now ? tocRingSmallStyle : tocRingSmallIdleStyle} />
         )}
         <span style={now ? tocChildTextNowStyle : tocChildTextStyle}>{label}</span>
         {now ? <span style={tocNowBadgeStyle}>Now</span> : null}
@@ -486,19 +521,32 @@ const sidebarStyle: CSSProperties = {
   borderRight: '1px solid var(--color-border-subtle)',
 }
 
+/*
+ * 13/600, MEASURED OFF THE REFERENCE rather than eyeballed — Home's
+ * "Customize Study Plan" computes to 13px / 600 / 19.5px, and the ask was for
+ * the same link-style CTA.
+ *
+ * The first pass took "link style" to mean the CLASSES and kept the Figma's
+ * 11px/500, so the crumbs had the right colour and hover and the wrong type —
+ * which is what "the size still looks wrong" was pointing at. The house CTA is
+ * a type ramp as much as a colour: matching half of it is not matching it.
+ *
+ * The separators and the House glyph scale with it; "Course" takes the size but
+ * not the weight, because it is the page you are on rather than an action.
+ */
 const breadcrumbStyle: CSSProperties = {
   margin: 0,
   display: 'flex',
   alignItems: 'center',
-  gap: 3,
+  gap: 4,
   fontFamily: 'var(--font-body)',
-  fontSize: 11,
-  lineHeight: '19px',
+  fontSize: 13,
+  lineHeight: '19.5px',
 }
 
 const crumbSlashStyle: CSSProperties = {
   color: 'var(--color-neutral-400)',
-  fontSize: 10,
+  fontSize: 12,
 }
 
 /* The crumb controls carry NO colour — `.cre-cta-ink` does, and it swaps on the
@@ -515,9 +563,15 @@ const crumbButtonStyle: CSSProperties = {
   fontFamily: 'inherit',
   fontSize: 'inherit',
   lineHeight: 'inherit',
+  /* 600 — the reference CTA's weight. Inherited size, explicit weight: the
+     <p> carries the ramp and this is the half that differs from the crumb you
+     are on. */
+  fontWeight: 600,
 }
 
 const crumbHereStyle: CSSProperties = { color: 'var(--color-text-tertiary)', fontWeight: 500 }
+/* NB: `crumbHereStyle` sets no size — it inherits the 13 from `breadcrumbStyle`
+   so the three crumbs sit on one baseline, and differs only in weight and ink. */
 
 const sidebarHeadStyle: CSSProperties = {
   display: 'flex',
@@ -593,19 +647,57 @@ const tocSectionRowStyle: CSSProperties = {
   borderRadius: 'var(--radius-md)',
 }
 
-const tocRingStyle: CSSProperties = {
+/* The shared bullet box. Every state is 12x12 and nudged 2px down so it sits
+   optically centred on the FIRST LINE of a wrapped title — (17px line - 12px
+   bullet) / 2 — rather than on the cap-line, where it reads high. All three
+   share it so a state change can never move the text. */
+const tocBulletBase: CSSProperties = {
   width: 12,
   height: 12,
   flexShrink: 0,
   borderRadius: '50%',
-  border: '1.5px solid var(--color-primary-500)',
-  /* Optically centred on the FIRST LINE of a wrapped title: (17px line - 12px
-     ring) / 2 rounds to 2, plus the row's own 3px top padding already applied
-     to both. Without it the ring sits on the cap-line and reads high. */
   marginTop: 2,
+  /* ABOVE THE DASHED THREAD, which runs behind the column. Without this the
+     line crosses the open rings and they read as struck through. */
+  position: 'relative',
+  zIndex: 1,
+  background: 'var(--color-surface-card)',
 }
 
-const tocRingSmallStyle: CSSProperties = { ...tocRingStyle, width: 11, height: 11 }
+const tocRingNowStyle: CSSProperties = {
+  ...tocBulletBase,
+  border: '1.5px solid var(--color-primary-500)',
+}
+
+const tocRingIdleStyle: CSSProperties = {
+  ...tocBulletBase,
+  border: '1.5px solid var(--color-neutral-300)',
+}
+
+const tocDoneDotStyle: CSSProperties = {
+  ...tocBulletBase,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  background: 'var(--color-primary-500)',
+}
+
+const tocRingSmallStyle: CSSProperties = { ...tocRingNowStyle, width: 11, height: 11 }
+const tocRingSmallIdleStyle: CSSProperties = { ...tocRingIdleStyle, width: 11, height: 11 }
+const tocDoneDotSmallStyle: CSSProperties = { ...tocDoneDotStyle, width: 11, height: 11 }
+
+const tocItemStyle: CSSProperties = { position: 'relative' }
+
+const tocThreadLineStyle: CSSProperties = {
+  position: 'absolute',
+  /* Centred under a 12px bullet at the row's left edge: 6 - half the 1px rule. */
+  left: 5.5,
+  /* Starts below the bullet (3px row padding + 2px nudge + 12px bullet + 2) and
+     runs past the item's own bottom to cross the list gap. */
+  top: 19,
+  bottom: -6,
+  borderLeft: '1px dashed var(--color-neutral-300)',
+}
 
 /* 13/17, down from the design's 15/20. The mock's labels are short enough that
    15 reads as a comfortable nav size; on titles that wrap twice it reads as a
@@ -626,13 +718,16 @@ const tocSectionTextNowStyle: CSSProperties = {
   color: 'var(--color-primary-500)',
 }
 
+/* NO LEFT BORDER any more. It was a 2px solid navy rule standing in for a
+   thread when there was none; with the dashed connector running down the whole
+   column it would be a SECOND vertical line in the same 6px, one solid and one
+   dashed, two pixels apart. The indent alone places the label now. */
 const tocStateLineStyle: CSSProperties = {
-  margin: '2px 0 0 5px',
+  margin: '2px 0 0',
   display: 'flex',
   alignItems: 'center',
-  minHeight: 22,
-  paddingLeft: 17,
-  borderLeft: '2px solid var(--color-primary-500)',
+  minHeight: 20,
+  paddingLeft: 21,
   fontFamily: 'var(--font-body)',
   fontSize: 12,
   lineHeight: '17px',
