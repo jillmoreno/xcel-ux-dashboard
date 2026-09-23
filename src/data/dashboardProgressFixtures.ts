@@ -278,15 +278,44 @@ const PROFILES: Record<EducationType, Partial<Record<Brand, BrandProgressProfile
       // window is shorter than its countdown does not warn from the day it is
       // bought.
       //
-      // Dates are relative to FIXTURE_TODAY (2026-05-11), like every other date
-      // in this file: enrolled a week ago, 23 days of access left.
-      //
-      // All THREE states share the pair — it is one course, and an access
-      // window that changed with how far along the learner is would be the
-      // fixture contradicting itself.
-      upNext: { id: 'jbi-xcel-qe-ny', title: 'Pre-licensing Course', imageUrl: NY_LH_COURSE_IMAGE, hours: NY_PRODUCER_HOURS_INVENTED.preLicenseEducation, state: 'NY', delivery: 'online', badge: 'mandatory', status: 'not-started', progress: 0, enrolledAt: '2026-05-04', expiresAt: '2026-06-03' },
-      resumeMid: { id: 'jbi-xcel-qe-ny', title: 'Pre-licensing Course', imageUrl: NY_LH_COURSE_IMAGE, hours: NY_PRODUCER_HOURS_INVENTED.preLicenseEducation, state: 'NY', delivery: 'online', badge: 'mandatory', status: 'in-progress', progress: 45, enrolledAt: '2026-05-04', expiresAt: '2026-06-03' },
-      resumeEarly: { id: 'jbi-xcel-qe-ny', title: 'Pre-licensing Course', imageUrl: NY_LH_COURSE_IMAGE, hours: NY_PRODUCER_HOURS_INVENTED.preLicenseEducation, state: 'NY', delivery: 'online', badge: 'mandatory', status: 'in-progress', progress: 20, enrolledAt: '2026-05-04', expiresAt: '2026-06-03' },
+      /*
+       * Dates are relative to FIXTURE_TODAY (2026-05-11), like every other date
+       * in this file.
+       *
+       * ⚠ THE EXPIRY MOVED 2026-09-23, from 2026-06-03, and the reason is a
+       * disagreement a learner could read off one screen: the header cell said
+       * "29 days to complete course" while the Study Pace card two tiles down
+       * said "22 days left to finish the course material". Both were right
+       * about their own fixture and neither knew about the other.
+       *
+       *   - The header counts to the RENEWAL deadline, derived from
+       *     `DAYS_LEFT_BY_VARIANT` — 29 for this state.
+       *   - The card counts to this ACCESS expiry, minus one. `resolveCeiling`
+       *     subtracts a day on purpose ("finishing on the day access dies is
+       *     not finishing"), so a 30-day window shows 29 usable days.
+       *
+       * The old date was `enrolledAt` + 30, i.e. a 30-day window that started a
+       * week ago and had 23 days left. `MAX_DEMO_DAYS_LEFT`'s own note assumed
+       * the opposite — it says 29 "sits just inside the pre-licensing access
+       * window the course fixture carries (30 days)", which was only true of a
+       * window starting today. So the two fixtures were built against different
+       * readings of the same 30 days.
+       *
+       * FIXTURE_TODAY + 30 makes the note true and the surfaces agree: 29 in
+       * both places, one date. `enrolledAt` stays where it was — the learner
+       * did enrol a week ago, and that is not what either figure counts.
+       *
+       * ⚠ IF JUN 3 IS THE REAL ACCESS DATE, this is the wrong end to fix and
+       * `DAYS_LEFT_BY_VARIANT` should come down to 22 instead. One line either
+       * way; nothing else reads these two against each other.
+       *
+       * All THREE states share the pair — it is one course, and an access
+       * window that changed with how far along the learner is would be the
+       * fixture contradicting itself.
+       */
+      upNext: { id: 'jbi-xcel-qe-ny', title: 'Pre-licensing Course', imageUrl: NY_LH_COURSE_IMAGE, hours: NY_PRODUCER_HOURS_INVENTED.preLicenseEducation, state: 'NY', delivery: 'online', badge: 'mandatory', status: 'not-started', progress: 0, enrolledAt: '2026-05-04', expiresAt: '2026-06-10' },
+      resumeMid: { id: 'jbi-xcel-qe-ny', title: 'Pre-licensing Course', imageUrl: NY_LH_COURSE_IMAGE, hours: NY_PRODUCER_HOURS_INVENTED.preLicenseEducation, state: 'NY', delivery: 'online', badge: 'mandatory', status: 'in-progress', progress: 45, enrolledAt: '2026-05-04', expiresAt: '2026-06-10' },
+      resumeEarly: { id: 'jbi-xcel-qe-ny', title: 'Pre-licensing Course', imageUrl: NY_LH_COURSE_IMAGE, hours: NY_PRODUCER_HOURS_INVENTED.preLicenseEducation, state: 'NY', delivery: 'online', badge: 'mandatory', status: 'in-progress', progress: 20, enrolledAt: '2026-05-04', expiresAt: '2026-06-10' },
     },
   },
 

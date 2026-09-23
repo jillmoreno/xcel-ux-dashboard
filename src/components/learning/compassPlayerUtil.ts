@@ -35,3 +35,26 @@ export function formatExamChip(stored: string): { date: string; countdown: strin
   }
 }
 
+
+
+/**
+ * THE HEIGHT OF THE FIRST ROW IN A LEFT COLUMN — 38px.
+ *
+ * Shared by the Compass player's breadcrumb (`Home / Overview / Course`) and
+ * the dashboard rail's first section caption ("MY LEARNING"), because the two
+ * are the SAME COLUMN as far as a learner is concerned: the player is a
+ * full-window takeover, so entering and leaving a course swaps one for the
+ * other in place.
+ *
+ * 2026-09-23, the direct ask — "so when they click back to home it doesn't feel
+ * like the left nav is jumping around". The breadcrumb reserved 38px and the
+ * caption block came to 24.5 (16.5 of text plus an 8px margin), so everything
+ * below it — Home, My Courses, Certificates — sat 13.5px higher than the course
+ * title it had just replaced. Small enough to read as a flicker rather than as
+ * a layout, which is what makes it feel like a glitch.
+ *
+ * A CONSTANT RATHER THAN 38 TYPED TWICE: the two live in different components,
+ * in different trees, and nothing renders them together, so a drift here is
+ * invisible until someone switches views and watches for it.
+ */
+export const LEFT_COLUMN_FIRST_ROW_HEIGHT = 38

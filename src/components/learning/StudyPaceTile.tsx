@@ -699,7 +699,22 @@ function PaceCardBody({
         <p style={{ margin: 0 }}>
           At this pace, you will finish around <b style={emphasis}>{formatPaceDate(preset.finishIso)}</b>.
         </p>
-        <p style={{ margin: 0 }}>
+        {/* HELPER TEXT, NOT A THIRD FACT — 2026-09-23, the direct ask: "reduce
+            the size of this font so it sits more as helper text."
+
+            The two lines above state the window and the finish date; this one
+            says the finish date is not a promise. At the body's own 12.5/20 it
+            was a peer of the facts it qualifies, and it is the longest line on
+            the card, so it read as the most important thing there. Dropping to
+            11.5/16 and the tertiary ink puts it a step behind them.
+
+            IT KEEPS THE 4.5:1 FLOOR. `--color-text-tertiary` is 6.19:1 light
+            and 6.18:1 dark on the card — the same token the journey rail's
+            blocked rows use, chosen there over an `opacity: 0.55` that
+            composited to about 3.5:1. Small and grey is where that failure
+            usually gets made, so the token is doing the work rather than a
+            lightened colour. */}
+        <p style={cardHelper}>
           Your estimated finish date will update as you progress through the material
           and your study pace changes.
         </p>
@@ -883,4 +898,33 @@ const cardBody = {
   color: 'var(--color-text-secondary)',
 } as const
 
-const emphasis = { color: 'var(--color-text-primary)', fontWeight: 700 } as const
+/*
+ * THE CARD'S FIGURES, IN THE HEADING FACE — 2026-09-23, the direct ask pointed
+ * at "22 days" and "May 29": "change this to the serif font".
+ *
+ * `--font-heading`, not a literal serif stack, for the reason `cardHeadline`
+ * already records one screen up: the token follows `dashboard-heading-font`, so
+ * a hard-coded serif here would be the one thing on the card that stayed serif
+ * when the page went sans. Source Serif 4 is that token's serif stop.
+ *
+ * APPLIED TO EVERY `emphasis`, INCLUDING THE BEHIND-PACE WARNING LINES, which
+ * is more than the two the ask named. One treatment: a figure in this card is
+ * serif. Serifing only the two on screen today would have left "you are 2 hours
+ * short this week" in the body face — a rule nobody could state, breaking the
+ * first time a learner fell behind.
+ */
+/** The qualifier under the two fact lines — see its call site. 11.5/16 against
+ *  the body's 12.5/20, in the tertiary ink, with a little air above so it reads
+ *  as a note on the block rather than the next line of it. */
+const cardHelper = {
+  margin: '2px 0 0',
+  fontSize: 11.5,
+  lineHeight: '16px',
+  color: 'var(--color-text-tertiary)',
+} as const
+
+const emphasis = {
+  color: 'var(--color-text-primary)',
+  fontFamily: 'var(--font-heading)',
+  fontWeight: 700,
+} as const

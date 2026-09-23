@@ -49,6 +49,7 @@ import { useProfileAvatar } from '@/context/ProfileAvatarContext'
 import { MotivationalStatementPanel } from '@/components/membership/MotivationalStatementPanel'
 import { useLearningPathSummariesForBrand } from '@/data/learningPathsCountVariant'
 import { buildRecommendedShelves } from '@/data/recommendedCategoriesFixtures'
+import { LEFT_COLUMN_FIRST_ROW_HEIGHT } from '@/components/learning/compassPlayerUtil'
 
 /**
  * Platform left-nav rail — the Elite-only "Left-Nav Platform Shell"
@@ -530,7 +531,10 @@ export function PlatformSideNav({
                 {collapsed ? (
                   gi > 0 ? <div aria-hidden style={COLLAPSED_DIVIDER} /> : null
                 ) : (
-                  <p id={captionId} style={CAPTION}>
+                  <p
+                    id={captionId}
+                    style={gi === 0 ? FIRST_CAPTION : CAPTION}
+                  >
                     {group.caption}
                   </p>
                 )}
@@ -1237,6 +1241,27 @@ const CAPTION: React.CSSProperties = {
   letterSpacing: '0.1em',
   textTransform: 'uppercase',
   color: 'var(--color-nav-caption)',
+}
+
+/**
+ * The FIRST caption reserves the same height as the Compass player's breadcrumb
+ * — see `LEFT_COLUMN_FIRST_ROW_HEIGHT`, which carries the reasoning.
+ *
+ * ONLY THE FIRST. The later captions ("SUPPORT") have nothing to line up with;
+ * growing them too would space the rail out to fix a seam that exists in one
+ * place. Centred rather than top-aligned, so the caption sits where the
+ * breadcrumb's own text sits inside the same 38px.
+ *
+ * The 8px bottom margin is INSIDE the box now (`box-sizing` is border-box
+ * project-wide, but a margin is not), so it is subtracted from the reserved
+ * height rather than added to it — otherwise the rail would overshoot by 8 and
+ * jump the other way.
+ */
+const FIRST_CAPTION: React.CSSProperties = {
+  ...CAPTION,
+  minHeight: LEFT_COLUMN_FIRST_ROW_HEIGHT - 8,
+  display: 'flex',
+  alignItems: 'center',
 }
 
 // Non-member status pill — the Figma "Membership Tiers / Non-Member" badge

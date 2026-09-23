@@ -28,7 +28,7 @@ import {
 } from '@/data/nyProducerRequirements'
 import { readExamDate } from '@/data/examDateStore'
 import { ProgressBar } from '@/components/ui/ProgressBar'
-import { formatExamChip } from './compassPlayerUtil'
+import { formatExamChip, LEFT_COLUMN_FIRST_ROW_HEIGHT } from './compassPlayerUtil'
 
 /**
  * COMPASS COURSE PLAYER — Figma `Atlas-Compass-Global-Navigation`, node 49:2903.
@@ -986,7 +986,7 @@ const breadcrumbStyle: CSSProperties = {
    * this row is the same 38 — so its centre lands at 30 too, and the two stay
    * aligned if either one's type changes.
    */
-  minHeight: 38,
+  minHeight: LEFT_COLUMN_FIRST_ROW_HEIGHT,
   flexShrink: 0,
 }
 
