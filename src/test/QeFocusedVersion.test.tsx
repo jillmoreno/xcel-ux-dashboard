@@ -37,6 +37,7 @@ import {
   NY_PRODUCER_HOURS_INVENTED,
   NY_LH_GUIDE_CHAPTERS_PARTIAL,
   NY_LH_CURRENT_CHAPTER,
+  NY_LH_COURSE_CHAPTERS,
   NY_LH_PROGRAM_PARTS,
   NY_LH_LESSON_MINUTES_INVENTED,
   NY_GOVERNING_AGENCY,
@@ -3391,7 +3392,12 @@ describe('Jump Back In is INSIDE the progress block', () => {
     const card = screen.getByRole('region', { name: /jump back in/i })
     // The chapter, which is the reason it exists.
     expect(card.textContent).toMatch(/Lesson 27/)
-    expect(card.textContent).toMatch(/Life Insurance Policy Provisions/)
+    /* READ FROM THE CONSTANT, not retyped. This was the literal
+       "Life Insurance Policy Provisions" and broke on 2026-09-22 when
+       `NY_LH_CURRENT_CHAPTER` moved to the list the course player renders —
+       which is the fix working, not a regression. Asserting the constant means
+       the next move of that kind changes one place. */
+    expect(card.textContent).toContain(NY_LH_CURRENT_CHAPTER)
     /* NOT the COURSE ART — the header band shows it at 130px two inches up, and
        a second smaller copy of one photograph is what archived this card.
 
@@ -3441,8 +3447,24 @@ describe('Jump Back In is INSIDE the progress block', () => {
      * here so that is a recorded choice rather than something a later reader
      * takes for a fact.
      */
-    expect(NY_LH_GUIDE_CHAPTERS_PARTIAL).toContain(NY_LH_CURRENT_CHAPTER)
-    expect(NY_LH_CURRENT_CHAPTER).toBe('Life Insurance Policy Provisions, Options and Riders')
+    /* ⚠ THE LIST MOVED 2026-09-22, and the original subject survives it. This
+       asserted the title came from `NY_LH_GUIDE_CHAPTERS_PARTIAL`, the twelve
+       decoded from the study guide PDF. That was fine while this card was the
+       ONLY surface naming a chapter — the choice of list was invisible.
+
+       The Compass course player renders `NY_LH_COURSE_CHAPTERS` in its contents
+       tree and marks the same index current, so the two disagreed on screen:
+       the card named a chapter that was not in the tree at all. One list, read
+       by both, is the fix; the assertion follows it.
+
+       The claim being made is unchanged and is the reason this test exists —
+       the title is SOURCED, not authored, and it is paired with a lesson number
+       from a different numbering system that nothing published reconciles. */
+    expect(NY_LH_COURSE_CHAPTERS).toContain(NY_LH_CURRENT_CHAPTER)
+    expect(NY_LH_CURRENT_CHAPTER).toBe('Life Insurance Premiums, Proceeds & Beneficiaries')
+    // The decoded list is still in the repo, still unrendered — the independent
+    // record of what the PDF says. It simply is not what any surface reads.
+    expect(NY_LH_GUIDE_CHAPTERS_PARTIAL).not.toContain(NY_LH_CURRENT_CHAPTER)
     // The number tracks the fixture rather than being typed into the card.
     const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!
     const cats = resolvePathCategories(persona.path)

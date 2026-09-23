@@ -246,8 +246,36 @@ export const NY_LH_PROGRAM_PARTS = 3
 export const NY_LH_LESSON_MINUTES_INVENTED = 18
 
 export const NY_LH_CURRENT_CHAPTER_INDEX = 4
+/**
+ * The chapter the demo learner is on.
+ *
+ * ⚠ READS `NY_LH_COURSE_CHAPTERS` AS OF 2026-09-22. It read
+ * `NY_LH_GUIDE_CHAPTERS_PARTIAL` — the twelve decoded from the study guide PDF
+ * — which was defensible while ONE surface showed a chapter name: the Jump
+ * Back In card, where the choice of list was invisible.
+ *
+ * THE COMPASS COURSE PLAYER MADE IT VISIBLE AND WRONG. Its contents tree
+ * renders `NY_LH_COURSE_CHAPTERS` (the eleven Jillienne supplied, which the
+ * note on that list already calls the thing on screen), and marks index 4 as
+ * the current one. So the card said "Life Insurance Policy Provisions, Options
+ * and Riders" while the tree three inches away highlighted "Life Insurance
+ * Premiums, Proceeds & Beneficiaries" — and the card's chapter was not in the
+ * tree AT ALL, because the two lists differ by more than order. A learner
+ * clicking Resume was told they were somewhere the contents could not show
+ * them.
+ *
+ * One list, read by both surfaces, is the fix. `NY_LH_GUIDE_CHAPTERS_PARTIAL`
+ * stays exactly as its own note says — unrendered, the independent record of
+ * what the PDF says.
+ *
+ * WHAT THIS DOES NOT FIX, and it is the open question underneath: nothing
+ * published maps a LESSON number onto a chapter. The card counts 42 lessons
+ * and says "Lesson 27"; this list counts 11 chapters and says index 4. The two
+ * numbering systems still do not reconcile — they now at least name the same
+ * chapter.
+ */
 export const NY_LH_CURRENT_CHAPTER: string =
-  NY_LH_GUIDE_CHAPTERS_PARTIAL[NY_LH_CURRENT_CHAPTER_INDEX]
+  NY_LH_COURSE_CHAPTERS[NY_LH_CURRENT_CHAPTER_INDEX]
 
 /**
  * Hour requirements — **superseded as the dashboard's MEASURE** (see the days
