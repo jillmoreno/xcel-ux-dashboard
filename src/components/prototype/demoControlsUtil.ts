@@ -345,15 +345,11 @@ export const DEMO_PERSONAS: DemoPersona[] = [
     flags: [{ key: 'dashboard-progress-state', variant: 'progress-at-risk' }],
     dayOptions: PACE_DAY_OPTIONS,
   },
-  {
-    id: 'pace-wont-fit',
-    label: 'Pace — won’t finish',
-    description:
-      'Bought late and left it \u2014 19% done with 11 days of access. The work left does not fit at any pace we would recommend, so the card drops the nightly figure and names the two ways out.',
-    profScope: 'primary',
-    flags: [{ key: 'dashboard-progress-state', variant: 'progress-off-track' }],
-    dayOptions: PACE_DAY_OPTIONS,
-  },
+  /* `pace-wont-fit` ARCHIVED 2026-09-23 — see `ARCHIVED_ITEMS`
+     (`progress-off-track`). It was the only door onto the pace model's
+     `state: 'no'` branch; At Risk reaches it now that the demo's day counts are
+     29 / 17 / 3, and two personas demonstrating one branch is one too many. The
+     variant and every fixture behind it are intact and still resolve. */
   {
     id: 'no-path',
     label: 'No learning paths (brand)',

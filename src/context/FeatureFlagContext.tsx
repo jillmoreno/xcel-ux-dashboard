@@ -1221,12 +1221,13 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
         label: 'At Risk · ~15%',
         description: '~15% complete with under 30 days left (requirement <25% done) — the At Risk warning treatment.',
       },
-      {
-        value: 'progress-off-track',
-        label: 'Off Track · won\u2019t finish',
-        description:
-          "Partway in with far too little time left \u2014 the pace the course now demands is past what anyone studies in an evening, so the Study Pace card drops its nightly figure and names the two real options (extend access, or cut what is left). The only variant that reaches the pace model's `state: 'no'`; it does so with a SHORT WINDOW (11 days), not a long course. Set by the \"Pace \u2014 won't finish\" personas.",
-      },
+      /* `progress-off-track` ARCHIVED 2026-09-23 — see `ARCHIVED_ITEMS`. Its
+         whole job was reaching the pace model's `state: 'no'`, which At Risk
+         now does at 3 days. ⚠ RE-DECLARING IT HERE IS HALF THE RESTORE: the
+         variant was once absent from this list while every fixture behind it
+         existed, so the seed was silently ignored and the branch was
+         unreachable dead copy that still type-checked and still passed. That is
+         why this is a comment rather than a quiet deletion. */
       {
         value: 'progress-expired',
         label: 'Expired',

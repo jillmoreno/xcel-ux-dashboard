@@ -12,6 +12,7 @@ import {
   WEEKDAY_LABELS,
 } from '@/lib/studyPace'
 import { FEATURE_FLAGS } from '@/context/FeatureFlagContext'
+import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
 
 /**
  * The two claims this widget exists to keep, and which a refactor is most
@@ -611,8 +612,41 @@ describe('StudyPaceTile — the week that cannot be salvaged', () => {
        flag — so the seed was ignored, the dashboard fell back to On Track, and
        the whole branch above was unreachable dead copy that still type-checked
        and still passed every test. Pinning the catalog is the only assertion
-       that would have caught it. */
+       that would have caught it.
+
+       ⚠ RE-AIMED 2026-09-23. `progress-off-track` was archived that day as
+       redundant (see `ARCHIVED_ITEMS`), so it is deliberately NOT in the
+       catalog any more and asserting that it is would fail. The CLAIM is
+       unchanged and is the reason this test exists: the branch above must have
+       a door in the demo. AT RISK is that door now — 3 days against ~36
+       remaining lessons — so this pins the door rather than the doorway it used
+       to be.
+
+       If Off Track is ever restored, put its assertion back ALONGSIDE this one
+       rather than instead of it. The failure mode is a branch with no way in,
+       and two ways in is not the problem. */
     const flag = FEATURE_FLAGS.find((f) => f.key === 'dashboard-progress-state')!
-    expect(flag.variants?.map((v) => v.value)).toContain('progress-off-track')
+    const values = flag.variants?.map((v) => v.value) ?? []
+    expect(values).toContain('progress-at-risk')
+    expect(values).not.toContain('progress-off-track')
+
+    /* AND THE STATE ITSELF, not just the catalog entry — which is the half the
+       original assertion could not make, and the half that would catch At Risk
+       drifting back to a runway where a pace fits. The figures are the
+       persona's own. */
+    const atRisk = dashboardProgressPersonaFor('xcel', 'progress-at-risk', 'qe')!
+    const course = atRisk.path.jumpBackIn
+    const remaining =
+      (atRisk.path.mandatory?.required ?? 0) - (atRisk.path.mandatory?.completed ?? 0)
+    expect(remaining).toBeGreaterThan(0)
+    expect(
+      defaultPreset(
+        studyPace({
+          today: TODAY,
+          hoursRemaining: remaining,
+          accessExpiresAt: course?.expiresAt,
+        }),
+      ).state,
+    ).toBe('no')
   })
 })

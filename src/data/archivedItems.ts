@@ -56,6 +56,19 @@ export type ArchivedItem = {
 
 export const ARCHIVED_ITEMS: ArchivedItem[] = [
   {
+    id: 'progress-off-track',
+    name: 'Off Track (demo progress state)',
+    what: 'A Progress persona for a learner who bought late and left it — 19% done against an 11-day access window, which puts the work past any pace the model will recommend. The Study Pace card drops its nightly figure and names the two ways out (extend access, or cut what is left). Reached from the PERSONA dropdown as "Pace — won\u2019t finish"; it was never a row in the Progress dropdown itself.',
+    location:
+      'FULLY INTACT. `progress-off-track` is still a member of `DashboardProgressVariant` and still has its entry in every map in `src/data/dashboardProgressFixtures.ts` \u2014 `DAYS_LEFT_BY_VARIANT` (10), `STATUS_BY_VARIANT`, the ratio map, and its own branch in the jump-back-in chain with the short `expiresAt: 2026-05-22` that makes the state reachable. So a stored flag value or a `?ff=dashboard-progress-state:progress-off-track` override STILL RESOLVES. Two things were unwired: the `pace-wont-fit` persona in `src/components/prototype/demoControlsUtil.ts`, and the variant\u2019s entry in the `dashboard-progress-state` catalog in `src/context/FeatureFlagContext.tsx`. Both sites carry a comment where the entry was.',
+    flag: 'dashboard-progress-state: progress-off-track (still resolves)',
+    dateRemoved: '2026-09-23',
+    reason:
+      'Redundant as of the same day. Off Track existed to reach the pace model\u2019s `state: \'no\'` \u2014 its own flag description said so \u2014 and it did that with a deliberately short window rather than with a long course. When the demo\u2019s day counts were re-authored to 29 / 17 / 3, At Risk at 3 days against ~36 remaining lessons reaches the same branch on its own. Two personas demonstrating one branch is one too many, and Off Track was the one nobody had asked for.',
+    restoreNote:
+      'TWO EDITS, and the order does not matter. (1) Re-add the `progress-off-track` variant to `dashboard-progress-state` in `src/context/FeatureFlagContext.tsx`, between `progress-at-risk` and `progress-expired` \u2014 a comment marks the spot. (2) Re-add the `pace-wont-fit` persona to `DEMO_PERSONAS` in `src/components/prototype/demoControlsUtil.ts`, likewise. \u26a0 EDIT (1) IS NOT OPTIONAL and is the trap this note exists for: the variant lived in every fixture map while being ABSENT from the flag catalog once before, so the persona\u2019s seed was silently ignored, the dashboard fell back to On Track, and the whole unreachable-pace branch was dead copy that still type-checked and still passed every test. `StudyPaceTile.test.tsx` had a test pinning the catalog for exactly that reason; it was inverted to pin At Risk instead, so restoring this should restore that assertion too. NOT restored deliberately: nothing in `dashboardProgressFixtures.ts` was touched, so no fixture work is needed \u2014 and consider whether At Risk should go back to a longer runway at the same time, since the two now overlap by design rather than by accident.',
+  },
+  {
     id: 'discoverability-qe-focused',
     name: 'QE Focused (dashboard version)',
     what: 'The pre-licensing dashboard built for a candidate working towards a booked exam — the slim top band (path identity + status + Resume) beside the Study Journey, the Learning Path detail sheet\u2019s whole Progress tab rendered inline, and Recommended for You dropped. XCEL\u2019s default from 2026-09-16 until Testing took it on 2026-09-21.',
