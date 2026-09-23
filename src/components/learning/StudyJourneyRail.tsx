@@ -454,6 +454,7 @@ export function StudyJourneyRail({
               {interactive ? (
                 <button
                   type="button"
+                  data-cta-id="home.journey-stop"
                   onClick={() => onOpenStop?.(stop.id)}
                   className="cre-journey-stop"
                   style={rowButtonStyle}

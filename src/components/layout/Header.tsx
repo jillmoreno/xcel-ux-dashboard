@@ -267,7 +267,12 @@ export function Header() {
               <Logo height={platformNav ? (mobile ? MOBILE_LOGO_HEIGHT : 52) : 40} />
             </span>
           ) : (
-            <Link to={logoHref} aria-label={logoLabel} style={{ minWidth: 0 }}>
+            <Link
+              to={logoHref}
+              aria-label={logoLabel}
+              data-cta-id="header.logo"
+              style={{ minWidth: 0 }}
+            >
               <Logo height={platformNav ? (mobile ? MOBILE_LOGO_HEIGHT : 52) : 40} />
             </Link>
           )}

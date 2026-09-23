@@ -1169,6 +1169,7 @@ export function MembershipOverview({
                   while looking right, which is the trap the PSI link hit. */}
               <button
                   type="button"
+                  data-cta-id="home.course-details"
                   onClick={() => openDetail('progress')}
                   className="cre-link-action cre-cta-ink"
                   style={{

@@ -118,6 +118,7 @@ export function NotificationsMenu() {
     <div ref={ref} style={{ position: 'relative' }}>
       <button
         type="button"
+        data-cta-id="header.notifications"
         aria-haspopup="dialog"
         aria-expanded={open}
         aria-controls={id}

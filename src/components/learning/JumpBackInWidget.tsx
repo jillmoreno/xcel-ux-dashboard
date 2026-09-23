@@ -179,7 +179,13 @@ export function JumpBackInWidget({
       {/* 44px stays 44px — the minimum comfortable touch target. `flexShrink: 0`
           so the title column gives way first; the reverse would break "Resume"
           onto two lines, which is the one thing here that must stay one tap. */}
-      <button type="button" onClick={() => onResume?.(course.id)} style={ctaStyle}>
+      <button
+        type="button"
+        /* See `TESTABLE_CTAS` — the attribute is the whole integration. */
+        data-cta-id="home.resume"
+        onClick={() => onResume?.(course.id)}
+        style={ctaStyle}
+      >
         {complete ? 'Review course' : started ? 'Resume' : 'Start course'} <ArrowRight size={16} />
       </button>
       </div>

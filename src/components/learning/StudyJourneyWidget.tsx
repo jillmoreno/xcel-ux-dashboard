@@ -212,6 +212,7 @@ export function StudyJourneyWidget({
         {onOpenRequirements ? (
           <button
             type="button"
+            data-cta-id="home.state-requirements"
             onClick={onOpenRequirements}
             className="cre-cta-ink"
             style={{
@@ -313,6 +314,19 @@ export function StudyJourneyWidget({
  * now behave identically instead of one of them leaving the app without
  * warning.
  */
+/**
+ * Licensing step id → the catalog id a test run can kill.
+ *
+ * A MAP RATHER THAN A FIELD ON THE STEP, because `LicensingStep` is product
+ * data — it describes the New York licence, and a research instrument has no
+ * business in it. This is the seam between the two.
+ */
+const LICENSING_STEP_CTA: Record<string, string | undefined> = {
+  'schedule-exam': 'home.schedule-exam',
+  'pass-exam': 'home.what-to-expect',
+  'apply-license': 'home.how-to-apply',
+}
+
 function LicensingStepWidget({
   step,
   number,
@@ -499,6 +513,12 @@ function LicensingStepWidget({
       {onOpenStep || scheduled ? (
         <button
           type="button"
+          /* ⚠ DERIVED FROM THE STEP — one element renders all three licensing
+             cards, so a literal would kill the wrong one. `LICENSING_STEP_CTA`
+             maps the step ids to the catalog's; an unmapped step gets no
+             attribute at all, which is the right failure (a control no run can
+             kill, rather than one that dies with its neighbour). */
+          data-cta-id={LICENSING_STEP_CTA[step.id]}
           onClick={() => (scheduled ? setEditingExam(true) : onOpenStep?.(step.id))}
           className="cre-link-action cre-cta-ink"
           style={{
@@ -634,6 +654,7 @@ function ExamDateCapture({
         />
         <button
           type="button"
+          data-cta-id="home.exam-date-save"
           disabled={!draft}
           onClick={() => {
             writeExamDate(draft)
@@ -658,6 +679,7 @@ function ExamDateCapture({
         {stored ? (
           <button
             type="button"
+            data-cta-id="home.exam-date-clear"
             onClick={() => {
               clearExamDate()
               onDone()

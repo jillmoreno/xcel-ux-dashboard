@@ -135,6 +135,7 @@ export function AccountMenu({
     <div ref={ref} style={{ position: 'relative' }}>
       <button
         type="button"
+        data-cta-id="header.account"
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={id}

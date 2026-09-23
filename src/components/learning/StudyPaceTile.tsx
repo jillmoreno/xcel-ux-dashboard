@@ -646,6 +646,9 @@ function PaceOptionPicker({
           <button
             key={o.id}
             type="button"
+            /* ONE ID ON ALL THREE, on purpose — "do they read this as a
+               choice" is a single question. See `TESTABLE_CTAS`. */
+            data-cta-id="home.pace-option"
             role="radio"
             aria-checked={on}
             tabIndex={on ? 0 : -1}
@@ -1639,6 +1642,7 @@ function WeekStrip({
           <button
             key={label}
             type="button"
+            data-cta-id="home.week-strip"
             /* THE FULL DAY NAME, and how many nights this picks. The visible
                glyph is one letter and two of them are "T" — an accessible name
                of "T" would be unusable, and 2.5.3 (Label in Name) is satisfied
@@ -1689,6 +1693,7 @@ function CustomizeLink({
   return (
     <button
       type="button"
+      data-cta-id="home.study-pace-adjust"
       onClick={disabled ? undefined : onClick}
       {...(disabled ? {} : { 'aria-haspopup': 'dialog' as const })}
       /*
@@ -1822,7 +1827,12 @@ function PaceStatsRow({
               cannot submit anything, and an `aria-label` because the glyph has
               no text of its own. */}
           <Tooltip content={FINISH_DATE_NOTE}>
-            <button type="button" aria-label="About this date" style={statsInfoStyle}>
+            <button
+              type="button"
+              data-cta-id="home.study-pace-info"
+              aria-label="About this date"
+              style={statsInfoStyle}
+            >
               <CircleInfo size={12} aria-hidden />
             </button>
           </Tooltip>

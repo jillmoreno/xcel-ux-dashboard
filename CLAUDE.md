@@ -72,7 +72,7 @@ and a pull request that edits them is usually a sign something was misunderstood
 | `src/data/gatewayMode.ts`, `src/data/deployContext.ts` | the per-site and per-context build switches |
 | `netlify.toml`, `scripts/public-redirects.mjs` | how the two sites and branch builds differ |
 | `netlify/functions/`, `netlify/lib/` | the Refinement / Links / QA Notes endpoints |
-| `.claude/skills/` | `promote-to-prototype` and `promote-to-refinement` — Jillienne's |
+| `.claude/skills/` | `promote-to-prototype`, `promote-to-refinement` and `promote-to-testing` — Jillienne's |
 | `public/contributing/`, `public/about/` | the two guides (regenerate the PDFs if you do edit them) |
 
 ## Stack

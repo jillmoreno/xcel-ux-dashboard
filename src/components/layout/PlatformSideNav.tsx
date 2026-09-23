@@ -707,6 +707,13 @@ function RailRow({
   return (
     <button
       type="button"
+      /* ⚠ DERIVED, NOT LITERAL — one element renders every rail row, so the id
+         has to come from the item. `TESTABLE_CTAS` registers the four that
+         survive the Testing layout (`nav.dashboard`, `nav.courses`,
+         `nav.certificates`, `nav.support`); the rest simply never match a
+         session's list, which is the right failure — an unregistered row is a
+         control no run can kill, not a crash. */
+      data-cta-id={`nav.${item.id}`}
       onClick={() => onSelect(item.id)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
