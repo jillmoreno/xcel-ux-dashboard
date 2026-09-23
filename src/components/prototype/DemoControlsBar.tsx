@@ -898,10 +898,12 @@ export function DemoControlsBar({
             link (`?ff=dashboard-navigation:option-2`) rather than switching it
             here mid-task.
 
-            NOT IN `?test=1`'s whitelist, deliberately — a participant who spots
-            a control labelled "Option 1 / Option 2" has been told there is a
-            comparison, which is most of what the session is trying not to say.
-            See `TEST_VIEW_CONTROLS` in `PrototypeChrome`. */}
+            ⚠ IT IS IN `?test=1`'s WHITELIST, by direct ask, and it is the one
+            entry there with a cost: a participant who spots a control labelled
+            "Option 1 / Option 2" has been told a comparison exists. The reason
+            it is in anyway — switching arms mid-session beats reloading and
+            re-pasting the link — is recorded at `TEST_VIEW_CONTROLS` in
+            `PrototypeChrome`. */}
         <DemoDropdown
           id="navigation"
           hidden={!show('navigation')}

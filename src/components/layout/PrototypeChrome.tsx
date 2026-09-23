@@ -15,8 +15,26 @@ import { useDemoControlsVisibility } from '@/components/prototype/demoControlsVi
  * Self-contained — it only needs the route (for the Demo toggle gate) and the
  * shared Demo-controls visibility store; none of Header's heavy panel state.
  */
-/** The only demo controls a `?test=1` participant session shows. */
-const TEST_VIEW_CONTROLS = ['progress'] as const
+/**
+ * The only demo controls a `?test=1` participant session shows.
+ *
+ * ⚠ `navigation` IS HERE BY DIRECT ASK — 2026-09-23 — and it is the entry to
+ * think twice about. The others on the bar are hidden because they re-baseline
+ * the demo or move a treatment the session is holding still. This one is
+ * different: it is the A/B's own independent variable, so putting it in front
+ * of a participant tells them a comparison exists, which is most of what a
+ * moderated session is trying not to say.
+ *
+ * IT IS IN ANYWAY because switching arms mid-session is worth more than that
+ * risk here: without it, showing someone both versions means reloading and
+ * re-pasting the session link, which breaks the task far more visibly than a
+ * control they were never invited to touch. Moderator discipline — not the
+ * code — is what keeps it unpressed.
+ *
+ * `progress` is the other survivor, for the plainer reason that a moderator
+ * changes it between tasks ("now imagine you are two weeks in").
+ */
+const TEST_VIEW_CONTROLS = ['progress', 'navigation'] as const
 
 export function PrototypeChrome() {
   const { pathname, search } = useLocation()
@@ -53,12 +71,12 @@ export function PrototypeChrome() {
    * background and hide the rest; `chrome=off` removes all three, which is why
    * it is the wrong tool here even though it looks like the right one.
    *
-   * WHY PROGRESS SURVIVES ALONE: it is the one axis a moderator changes
-   * BETWEEN tasks — "now imagine you are two weeks in" — so taking it away
-   * would mean a reload and a re-paste of the session link mid-session. Every
-   * other control either re-baselines the demo (Reset, the kebab), swaps the
-   * whole scenario (Persona, Education) or changes a treatment the session is
-   * supposed to be holding still (Pacing, Readiness).
+   * WHAT SURVIVES: the two controls a moderator uses DURING a session —
+   * Progress ("now imagine you are two weeks in") and Navigation (switching
+   * the A/B's arms). Everything else either re-baselines the demo (Reset, the
+   * kebab), swaps the whole scenario (Persona, Education) or moves a treatment
+   * the session is holding still (Pacing, Readiness). See
+   * `TEST_VIEW_CONTROLS`, where Navigation's own trade-off is recorded.
    *
    * ⚠ A WHITELIST, so it fails CLOSED — see `DemoControlsBar`'s `only`. The
    * next dropdown added to that bar does NOT appear in test links by default,

@@ -439,9 +439,14 @@ describe('?test=1 — the moderated session view', () => {
       </MemoryRouter>,
     )
 
-  it('keeps the demo bar, showing Progress and nothing else', () => {
+  it('keeps the demo bar, showing only the controls a moderator uses live', () => {
+    /* ⚠ TWO SURVIVORS AS OF 2026-09-23, not one — `navigation` was added to
+       the whitelist by direct ask. It is the entry with a cost: a participant
+       who spots "Option 1 / Option 2" has been told a comparison exists.
+       `TEST_VIEW_CONTROLS` records why it is in anyway. */
     renderChrome('?test=1')
     expect(screen.getByRole('button', { name: /Progress/i })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Navigation/i })).toBeTruthy()
     for (const gone of [/Persona/i, /Readiness/i, /Pacing/i, /Education/i, /^Reset$/, /Demo actions/i]) {
       expect(screen.queryByRole('button', { name: gone }), String(gone)).toBeNull()
     }
