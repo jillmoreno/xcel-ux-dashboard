@@ -10,6 +10,7 @@ import {
   presetLabel,
   weekStanding,
   defaultWeekdays,
+  NOT_STARTED_NIGHTS,
   EASY_MINS,
   WEEKDAY_LABELS,
   type PacePreset,
@@ -98,6 +99,20 @@ export type StudyPaceTileProps = {
    * disagreeing about what "adjusted" means.
    */
   layout?: 'tile' | 'card'
+  /**
+   * The learner has not started the course — 2026-09-22, the direct ask.
+   *
+   * Two things change, and only at 0%: the week defaults to
+   * `NOT_STARTED_NIGHTS` (four, Mon–Thu) instead of the nights `buildPreset`
+   * would derive, and the sentence's second clause states DAYS A WEEK rather
+   * than hours a week.
+   *
+   * AN EXPLICIT PROP, not inferred from `weekMinutes == null`. That prop is
+   * authored per persona and absent for plenty of learners who HAVE started, so
+   * reading it as "not started" would hand the beginner's default to someone
+   * mid-course. The caller knows the percentage; it passes it.
+   */
+  notStarted?: boolean
 }
 
 export function StudyPaceTile({
@@ -109,6 +124,7 @@ export function StudyPaceTile({
   examDate,
   weekMinutes,
   layout = 'tile',
+  notStarted = false,
 }: StudyPaceTileProps) {
   const [open, setOpen] = useState(false)
   /**
@@ -138,10 +154,21 @@ export function StudyPaceTile({
         hoursRemaining,
         accessExpiresAt,
         examDate: choices.examDate ?? undefined,
-        nights: choices.nights ?? undefined,
+        /* The learner's choice first; then the beginner's four; then the
+           derivation. `notStarted` only ever supplies a DEFAULT — picking a
+           nights count in the sheet overrides it like any other. */
+        nights: choices.nights ?? (notStarted ? NOT_STARTED_NIGHTS : undefined),
         style: choices.style,
       }),
-    [today, hoursRemaining, accessExpiresAt, choices.examDate, choices.nights, choices.style],
+    [
+      today,
+      hoursRemaining,
+      accessExpiresAt,
+      choices.examDate,
+      choices.nights,
+      choices.style,
+      notStarted,
+    ],
   )
 
   /**
@@ -284,6 +311,7 @@ export function StudyPaceTile({
             preset={selected}
             plan={choices.plan}
             studyDays={studyDays}
+            notStarted={notStarted}
             courseTitle={courseTitle}
             accessExpiresAt={accessExpiresAt}
             examDate={choices.examDate ?? undefined}
@@ -498,6 +526,7 @@ function PaceCardBody({
   preset,
   plan,
   studyDays,
+  notStarted,
   courseTitle,
   accessExpiresAt,
   examDate,
@@ -510,6 +539,9 @@ function PaceCardBody({
   plan: PaceChoices['plan']
   /** Days the saved week studies, when there is one — see the tile's note. */
   studyDays?: number[] | null
+  /** 0% — see the tile's `notStarted` note. Changes the sentence's second
+   *  clause and, upstream, the nights the model was built with. */
+  notStarted?: boolean
   courseTitle?: string
   accessExpiresAt?: string
   examDate?: string
@@ -562,7 +594,23 @@ function PaceCardBody({
      because "about 1 hour" for both 68 and 89 minutes makes two different plans
      read as one. So the single formatted string is split on its last space. */
   const [nightFigure, nightUnit] = splitFigure(formatEvening(preset.minsPerNight))
-  const weekly = formatEvening(preset.minsPerWeek)
+  /*
+   * THE SECOND CLAUSE — hours a week normally, DAYS a week at 0%.
+   *
+   * 2026-09-22, the direct ask. Both state the same plan; they answer different
+   * questions. "15½ hours a week" is a workload, and it is the right second
+   * fact for a learner already in the course who is judging whether they are
+   * keeping up. A learner who has not opened it yet is deciding whether to
+   * start, and "4 days a week" is the commitment — the shape of the week rather
+   * than its size.
+   *
+   * The FIRST clause is unchanged and still derived: the evening is whatever
+   * the course needs spread over those four nights, so the sentence never
+   * trades honesty for a friendlier number.
+   */
+  const weekly = notStarted
+    ? `${preset.nights} days`
+    : formatEvening(preset.minsPerWeek)
 
   /** Which nights. The learner's plan when they have built one; otherwise the
    *  same default the sheet would propose, from the shared helper — so the
@@ -652,7 +700,8 @@ function PaceCardBody({
           At this pace, you will finish around <b style={emphasis}>{formatPaceDate(preset.finishIso)}</b>.
         </p>
         <p style={{ margin: 0 }}>
-          Your estimated finish date will update as your study pace changes.
+          Your estimated finish date will update as you progress through the material
+          and your study pace changes.
         </p>
       </div>
 

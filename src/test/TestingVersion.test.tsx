@@ -5,6 +5,7 @@ import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
 import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext'
+import { NOT_STARTED_NIGHTS } from '@/lib/studyPace'
 import { flagScopeForPath } from '@/components/account/FeatureFlagPanel'
 import { LearningPathsPanelProvider } from '@/components/learning/LearningPathsPanelContext'
 import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelContext'
@@ -424,6 +425,74 @@ describe('the presets pacing card', () => {
     seedPresets()
     renderShell(TESTING_URL)
     expect(paceTile().style.aspectRatio).toBe('')
+  })
+})
+
+describe('the beginner week — 0%', () => {
+  /*
+   * 2026-09-22, the direct ask: "at 0% this should default to about ## hours a
+   * night, 4 days a week, and the calendar should indicate a mon-thurs
+   * schedule."
+   *
+   * TWO THINGS, and only at 0%. The nights count stops being derived and
+   * becomes `NOT_STARTED_NIGHTS`, and the sentence's second clause states DAYS
+   * rather than HOURS a week. Both are starting positions: a learner who picks
+   * a nights count or builds a plan overrides them like any other default.
+   */
+  const seedNotStarted = () =>
+    seed({ 'dashboard-progress-state': { enabled: true, variant: 'not-started' } })
+
+  it('states days a week, not hours a week', () => {
+    seedNotStarted()
+    renderShell(TESTING_URL)
+    const tile = paceTile()
+    expect(tile.textContent).toMatch(new RegExp(`${NOT_STARTED_NIGHTS} days a week`))
+    // The hours-a-week clause is what it REPLACES, so its absence is the claim.
+    expect(tile.textContent).not.toMatch(/hours a week/)
+  })
+
+  it('still DERIVES the evening — the four nights change the maths, not the honesty', () => {
+    /* The point of the ask is the shape of the week, not a friendlier number.
+       The evening is whatever the course needs spread over four nights, so it
+       is still a figure the fixtures support. Asserted as "a figure is stated"
+       rather than as its value, which moves with the fixture. */
+    seedNotStarted()
+    renderShell(TESTING_URL)
+    expect(paceTile().textContent).toMatch(/About\s*\d+(½|¼|¾)?\s*hours? a night/)
+  })
+
+  it('shades Mon–Thu on the week strip', () => {
+    // `defaultWeekdays(4)` is Monday-first and returns [0,1,2,3], so the strip
+    // and the nights count cannot disagree about WHICH four days.
+    seedNotStarted()
+    renderShell(TESTING_URL)
+    const labels = [...paceTile().querySelectorAll('span')]
+      .filter((el) => /^[MTWFS]$/.test(el.textContent ?? ''))
+      .slice(0, 7)
+    expect(labels).toHaveLength(7)
+    /* A studied cell is filled with `--color-primary-100`; an unstudied one is
+       `transparent`. Every cell carries a `background`, so the presence of the
+       property says nothing — the FILL is what differs, along with the ring and
+       the ink, which all follow the same boolean. */
+    const filled = labels.filter((el) =>
+      (el as HTMLElement).style.background.includes('--color-primary-100'),
+    )
+    expect(filled).toHaveLength(NOT_STARTED_NIGHTS)
+    expect(filled.map((el) => el.textContent)).toEqual(['M', 'T', 'W', 'T'])
+    // …and the other three are explicitly transparent, not merely different.
+    const empty = labels.filter((el) => (el as HTMLElement).style.background === 'transparent')
+    expect(empty.map((el) => el.textContent)).toEqual(['F', 'S', 'S'])
+  })
+
+  it('leaves a learner who HAS started on the derived week', () => {
+    /* The guard. `notStarted` is passed from `resume.progress`, so a mid-course
+       learner must keep the nights the model picked — handing the beginner's
+       default to someone at 62% would understate their week. */
+    seed()
+    renderShell(TESTING_URL)
+    const tile = paceTile()
+    expect(tile.textContent).toMatch(/hours a week/)
+    expect(tile.textContent).not.toMatch(/days a week/)
   })
 })
 

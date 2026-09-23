@@ -1384,6 +1384,11 @@ export function LearnerFocusedBand({
                 accessExpiresAt={resume.expiresAt}
                 courseTitle={resume.title}
                 examDate={examDate}
+                /* 0% — the beginner's week. `resume.progress` is the same
+                   figure the card above it counts lessons with, so the pace
+                   tile and the "0 of 42 lessons" line cannot disagree about
+                   whether the learner has started. See the tile's own note. */
+                notStarted={(resume.progress ?? 0) <= 0}
                 detailsTo="/dashboard-rebrand?section=study-plan"
               />
             ) : pacingStyle === 'presets' && resume ? (
@@ -1420,6 +1425,11 @@ export function LearnerFocusedBand({
                 courseTitle={resume.title}
                 examDate={examDate}
                 weekMinutes={weekMinutes}
+                /* 0% — the beginner's week. `resume.progress` is the same
+                   figure the card above it counts lessons with, so the pace
+                   tile and the "0 of 42 lessons" line cannot disagree about
+                   whether the learner has started. See the tile's own note. */
+                notStarted={(resume.progress ?? 0) <= 0}
               />
             ) : (
               <SquareTile

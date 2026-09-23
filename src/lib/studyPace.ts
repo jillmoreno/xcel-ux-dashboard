@@ -71,6 +71,30 @@ export type StudyStyle = keyof typeof STYLE_FACTORS
 /** The nights-a-week options offered, in the order the picker shows them. */
 export const NIGHT_OPTIONS = [3, 4, 5, 6] as const
 
+/**
+ * The week a learner who has not started yet is shown — 2026-09-22, the direct
+ * ask ("at 0% this should default to ## hours a night, 4 days a week, and the
+ * calendar should indicate a mon-thurs schedule").
+ *
+ * WHY A DEFAULT RATHER THAN THE DERIVATION. Past 0% the nights count is
+ * CHOSEN by `buildPreset` — the fewest nights that keep an evening under
+ * `STRAIN_MINS` — which is the right answer for a learner with a deadline
+ * bearing down and the wrong FIRST thing to say to one who has opened the
+ * course today. At 0% the derivation had picked six nights and printed
+ * "15½ hours a week", which is a workload, not an invitation.
+ *
+ * FOUR, and Mon–Thu specifically: `defaultWeekdays(4)` returns `[0,1,2,3]`, and
+ * that helper is Monday-first, so the strip shades Mon–Thu with no second
+ * source of truth about which days those are.
+ *
+ * IT IS A STARTING POSITION, NOT A CLAIM. The moment the learner picks a nights
+ * count or builds a plan, `choices.nights` / `plan.weekdays` win — the same
+ * rule `defaultWeekdays` already states. And the evening is still DERIVED: the
+ * hours are whatever the course needs spread over four nights, never a figure
+ * authored to look comfortable.
+ */
+export const NOT_STARTED_NIGHTS = 4
+
 export type PresetId = 'relaxed' | 'recommended' | 'focused'
 export type PaceState = 'easy' | 'ok' | 'heavy' | 'no'
 /** Which ceiling is actually governing the pace. */
