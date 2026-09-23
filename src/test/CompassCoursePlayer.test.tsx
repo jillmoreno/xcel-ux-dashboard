@@ -748,6 +748,52 @@ describe('the Overview view', () => {
     expect(screen.getByRole('region', { name: 'Overview page' })).toBeTruthy()
   })
 
+  it('lays out four lo-fi bands with headings and no invented content', () => {
+    /* 2026-09-23, the direct ask: "add some lo-fi sections like the course
+       content on the other page that is based on this screenshot...but leave
+       out all the graphics and text, just headers."
+
+       ⚠ THE ABSENCES ARE THE ASSERTION. The screenshot this was read off
+       carries a named learner, an Arizona licence, an exam date, a 28%
+       readiness ring, exam-weighted assignments and three paragraphs of Rubi
+       copy — none of it sourced here. A test that only checked the four
+       headings were present would pass just as happily with all of that copied
+       in, which is the failure mode worth guarding on a stakeholder screen. */
+    seed()
+    renderShell(TESTING_URL)
+    startCourse()
+    openOverview()
+    const region = screen.getByRole('region', { name: 'Overview page' })
+    expect(region.textContent).toContain('Your learning journey')
+    for (const eyebrow of ['Start here', 'Where you are', 'Your assignments', 'Rubi insights']) {
+      expect(region.textContent).toContain(eyebrow)
+    }
+    // Nothing from the screenshot but the headings.
+    expect(region.textContent).not.toMatch(/Jordan|Arizona|readiness|28%|Provisions/i)
+    // Four blocks, all `aria-hidden` — they are placeholders, not content, and
+    // a screen reader walking four empty divs learns nothing the eyebrows did
+    // not already say.
+    const blocks = region.querySelectorAll('div[aria-hidden="true"]')
+    expect(blocks).toHaveLength(4)
+    /* THE HEIGHTS DIFFER, which is the point of a lo-fi layout: a column of
+       equal blocks says every band carries the same weight. */
+    const heights = [...blocks].map((b) => (b as HTMLElement).style.height)
+    expect(new Set(heights).size).toBe(4)
+  })
+
+  it('leaves the other six pages as the bare ground', () => {
+    /* Overview got sections; Flashcards and the rest did not, and that is the
+       distinction. These are pages nobody has designed yet, where Overview is
+       one being designed now — a lo-fi band on the other six would claim a
+       layout decision that has not been made. */
+    seed()
+    renderShell(TESTING_URL)
+    startCourse()
+    goPage('Flashcards')
+    const region = screen.getByRole('region', { name: 'Flashcards page' })
+    expect(region.children).toHaveLength(0)
+  })
+
   it('does NOT leave the player — Home is still the only exit', () => {
     /* The regression this guards: Overview closed the launcher until today, so
        the easy mistake is leaving that handler wired and having the crumb both

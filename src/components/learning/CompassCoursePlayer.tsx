@@ -115,6 +115,36 @@ const COMPASS_PAGES: {
   { id: 'rubi-insights', label: 'Rubi Insights', icon: RubiLogo },
 ]
 
+/**
+ * THE OVERVIEW PAGE'S LO-FI SECTIONS — 2026-09-23, the direct ask: "add some
+ * lo-fi sections like the course content on the other page that is based on
+ * this screenshot...but leave out all the graphics and text, just headers."
+ *
+ * Read off a supplied screenshot of a learning-journey overview: a first-check
+ * card under START HERE, a readiness ring and a Rubi panel under WHERE YOU ARE,
+ * an assignments table, and three learning-tip cards under RUBI INSIGHTS.
+ *
+ * ⚠ THE EYEBROWS ARE THE ONLY THING TAKEN FROM IT, deliberately and by
+ * instruction. The screenshot carries a named learner, an Arizona licence, an
+ * exam date, a 28% readiness ring, three exam-weighted assignments and three
+ * paragraphs of Rubi copy — none of which this repo sources, and all of which
+ * would read as real the moment they were on screen. `NY_LH_LESSON_TITLES_
+ * INVENTED` records what it costs to author that kind of thing and then have to
+ * label it. So the headings say what each band IS and the block below says the
+ * content is not built yet.
+ *
+ * HEIGHTS ARE THE SCREENSHOT'S PROPORTIONS, not round numbers — a single card,
+ * then a ring beside copy, then a table of rows, then three stacked tips. A
+ * column of equal blocks would say every band is the same weight, which is the
+ * one thing a lo-fi layout is for showing it is not.
+ */
+const OVERVIEW_SECTIONS: { eyebrow: string; height: number }[] = [
+  { eyebrow: 'Start here', height: 104 },
+  { eyebrow: 'Where you are', height: 196 },
+  { eyebrow: 'Your assignments', height: 268 },
+  { eyebrow: 'Rubi insights', height: 224 },
+]
+
 export function CompassCoursePlayer({
   courseTitle,
   percentComplete,
@@ -169,7 +199,19 @@ export function CompassCoursePlayer({
             placeholder with a caption: the lo-fi block says "something is
             coming here", and this is a page being designed rather than one
             standing in for courseware we do not have. */}
-        {page !== 'course' ? (
+        {page === 'overview' ? (
+          <div style={overviewGroundStyle} role="region" aria-label="Overview page">
+            <div style={overviewColumnStyle}>
+              <h2 style={overviewTitleStyle}>Your learning journey</h2>
+              {OVERVIEW_SECTIONS.map((section) => (
+                <section key={section.eyebrow} style={overviewSectionStyle}>
+                  <p style={overviewEyebrowStyle}>{section.eyebrow}</p>
+                  <div aria-hidden style={{ ...overviewBlockStyle, height: section.height }} />
+                </section>
+              ))}
+            </div>
+          </div>
+        ) : page !== 'course' ? (
           <div
             style={overviewGroundStyle}
             role="region"
@@ -917,6 +959,63 @@ const playerStyle: CSSProperties = {
   flex: 1,
   minHeight: 0,
   background: 'var(--color-surface-card)',
+}
+
+/* The overview's own column. The READING COLUMN'S rhythm rather than a new one
+   — same scroll container, same centred measure — so moving between Course and
+   Overview does not re-teach the page. Narrower than the reading column's 830
+   because these are bands of UI rather than a page of prose, and 104px of
+   gutter on a band reads as a page that failed to fill. */
+const overviewColumnStyle: CSSProperties = {
+  flex: 1,
+  minHeight: 0,
+  overflowY: 'auto',
+  padding: '40px 40px 56px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 28,
+}
+
+/* The serif, at the size the sidebar's course title uses rather than the
+   reading column's 34px placeholder caption — this is a page heading inside the
+   player, not the player's own subject. */
+const overviewTitleStyle: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-heading-serif)',
+  fontSize: 26,
+  fontWeight: 600,
+  lineHeight: '32px',
+  letterSpacing: '-0.01em',
+  color: 'var(--color-text-primary)',
+}
+
+const overviewSectionStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 10,
+}
+
+/* The CONTENTS eyebrow's treatment, not a third one — see `sidebarEyebrowStyle`.
+   The two are the only eyebrows in this player and a reviewer sees them on
+   adjacent screens. */
+const overviewEyebrowStyle: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 10,
+  fontWeight: 600,
+  letterSpacing: '0.16em',
+  textTransform: 'uppercase',
+  color: 'var(--color-text-tertiary)',
+}
+
+/* `--compass-content`, the same fill the reading column's placeholder uses, so
+   "not built yet" looks the same on both pages. No border and no caption: the
+   caption belongs to the Course placeholder, where it names courseware that
+   will be served in; here the eyebrow above already says what the band is. */
+const overviewBlockStyle: CSSProperties = {
+  width: '100%',
+  background: 'var(--compass-content)',
+  borderRadius: 'var(--radius-md)',
 }
 
 const overviewGroundStyle: CSSProperties = {
