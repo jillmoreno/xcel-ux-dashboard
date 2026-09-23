@@ -1293,6 +1293,52 @@ html,
 
    `:focus-visible` rather than `:focus` — these rows are a keyboard user's way
    through the sequence, and `:focus` would ring them on every mouse click. */
+/* ─────────────────────────────────────────────────────────────────────────
+   THE THREE-TIER TEXT RAMP — the `dashboard-text-tiers` flag's `tiers`
+   variant. `DashboardRebrandPage` writes `data-text-tiers` onto <html> while
+   it is mounted and clears it on unmount, the same scoping the dark theme uses
+   a few lines up in that file.
+
+   WHERE IT COMES FROM: `public/prototypes/xcel-signin.html`, which has carried
+   `--ink` / `--ink-2` / `--ink-3` since it was authored. The ramp had never
+   reached the React product — the answer to "have these tiers been considered
+   for all of these pages" was no — so this variant is what makes the comparison
+   possible rather than a rewrite that assumes the answer.
+
+   MEASURED ON OUR FILLS, not the prototype's. It publishes 16.0 / 6.8 / 5.0 on
+   its own off-white surface; on ours they are:
+
+       ink   #1f1d18   16.84 on white   15.44 on the page ground   AAA
+       muted #5b5560    7.21             6.61                      AA
+       faint #706b63    5.29             4.85                      AA
+
+   All six clear AA and the ladder descends, which is the property the ramp it
+   replaces did NOT have on this brand until 2026-09-23 — see the tertiary note
+   in the XCEL block above.
+
+   ⚠ THE REAL DIFFERENCE IS HUE, NOT CONTRAST. Both ramps pass; these are warm
+   greys (brown- and violet-tinted) where the guide's are true neutrals. That is
+   what a reviewer should be looking at, and it is why the neutral variant is
+   kept rather than deleted.
+
+   LIGHT ONLY. `[data-theme='dark']` re-pins these three to a blue-tinted set
+   chosen against a navy ground, and warm greys on navy is a second design
+   question. The `:not([data-theme='dark'])` guard is what keeps this variant
+   from silently answering it — the same guard pattern the dark blocks
+   elsewhere in this file use in the other direction.
+
+   ONE DECLARATION EACH, on the root, because custom properties cascade: every
+   component reading `--color-text-secondary` switches with no component knowing
+   the flag exists — including the Compass player, which is a full-window
+   takeover rendered outside the overview's subtree and would be missed by the
+   container-class approach `cre-dash-serif-headings` uses.
+   ───────────────────────────────────────────────────────────────────────── */
+:root[data-text-tiers='tiers']:not([data-theme='dark']) {
+  --color-text-primary: #1f1d18;   /* ink   — headings & body */
+  --color-text-secondary: #5b5560; /* muted — secondary text, captions, eyebrows */
+  --color-text-tertiary: #706b63;  /* faint — third-tier meta */
+}
+
 /* Serif dashboard headings — the `dashboard-heading-font` flag's `serif`
    variant. `MembershipOverview` puts this class on its root.
 

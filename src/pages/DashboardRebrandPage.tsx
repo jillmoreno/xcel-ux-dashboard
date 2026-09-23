@@ -2,7 +2,7 @@ import { useEffect, useLayoutEffect, useRef } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAccount, type Brand } from '@/context/AccountContext'
 import { useTheme } from '@/context/ThemeContext'
-import { useFeatureFlags } from '@/context/FeatureFlagContext'
+import { useFeatureFlag, useFeatureFlags } from '@/context/FeatureFlagContext'
 import { parseTierParam } from '@/components/prototype/demoControlsUtil'
 import { PlatformShell } from '@/components/layout/PlatformShell'
 
@@ -110,6 +110,31 @@ export function DashboardRebrandPage() {
       root.style.colorScheme = 'light'
     }
   }, [theme])
+
+  /*
+   * THE TEXT RAMP — `dashboard-text-tiers`, scoped exactly the way dark mode is
+   * above: written onto <html> while this page is mounted, deleted on unmount,
+   * so the gateway at `/` and the standalone prototypes keep the ramp they have.
+   *
+   * ON THE ROOT rather than on a container class, unlike
+   * `cre-dash-serif-headings`. The Compass course player is a FULL-WINDOW
+   * TAKEOVER — `PlatformShell` returns it before the shell grid — so it sits
+   * outside `MembershipOverview`'s subtree entirely and a container class would
+   * have left the one screen a learner spends the most time on unchanged.
+   *
+   * Only the `tiers` variant writes anything; `neutral` leaves the attribute
+   * off, so the default path adds no selector to match and the comparison is
+   * against the real thing rather than against a re-declaration of it.
+   */
+  const textTiers = useFeatureFlag('dashboard-text-tiers').variant ?? 'neutral'
+  useEffect(() => {
+    const root = document.documentElement
+    if (textTiers !== 'tiers') return
+    root.dataset.textTiers = textTiers
+    return () => {
+      delete root.dataset.textTiers
+    }
+  }, [textTiers])
 
   // The learning-experience setup state lives in AppLayout's LearningSetupProvider
   // (shared with the standalone `/onboarding-flow` wizard) so a finished wizard's

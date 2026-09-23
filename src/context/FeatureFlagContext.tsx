@@ -849,6 +849,37 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'dashboard-text-tiers',
+    group: 'Widgets',
+    label: 'Text tiers',
+    description:
+      'The THREE-TIER text ramp from the sign-in prototype (`public/prototypes/xcel-signin.html`), applied to the whole Dashboard Rebrand app — ink #1f1d18 for headings and body, muted #5b5560 for secondary text, captions and eyebrows, faint #706b63 for third-tier meta (weights, timings, sub-labels). Measured on OUR two fills rather than the prototype’s: 16.84 / 7.21 / 5.29 on white, 15.44 / 6.61 / 4.85 on the page ground — AAA, AA, AA, and a correctly descending ladder. The `neutral` variant is the ramp as it stands (#3a3a3a / #666666 / #737373, the XCEL guide’s Charcoal and Gray plus a neutral third stop) and is kept for comparison. NOTE the two ramps differ in HUE as well as value: the tiers are warm — brown- and violet-tinted greys off an off-white surface — where the guide’s are true neutrals on white. That is the thing to look at, not the contrast; both ramps pass.',
+    // Variant-only, like `dashboard-heading-font`: the enable toggle is on so
+    // the flag is live and the CHOICE is the variant. "Off" would have to mean
+    // "neutral", which the variant already says.
+    defaultEnabled: true,
+    /* `tiers` ON THE BRANCH, per the Contributing guide's rule — the branch
+       deploy is the review link, so the work has to be what it shows. Whether
+       it becomes the `?demo=1` baseline on main is `/promote-to-prototype`'s
+       call, not this default's. */
+    defaultVariant: 'tiers',
+    variants: [
+      {
+        value: 'neutral',
+        label: 'Neutral — the ramp as it stands',
+        description:
+          'No change. `--color-text-primary` / `-secondary` / `-tertiary` as the XCEL brand block sets them: Charcoal #3a3a3a and Gray #666666 from the brand guide, plus #737373 for the third tier (11.37 / 5.74 / 4.74 on white).',
+      },
+      {
+        value: 'tiers',
+        label: 'Tiers — ink / muted / faint',
+        description:
+          'Re-points the three text tokens to the prototype’s warm ramp for the Dashboard Rebrand routes only, so the gateway and the standalone prototypes are untouched and the two can be compared side by side with `?ff=dashboard-text-tiers:neutral`. LIGHT THEME ONLY: dark mode re-pins these tokens to a blue-tinted set of its own, and dropping warm greys onto a navy ground is a second design question rather than this one.',
+      },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'dashboard-heading-font',
     group: 'Widgets',
     label: 'Heading font',

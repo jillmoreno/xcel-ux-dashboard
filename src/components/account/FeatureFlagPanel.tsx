@@ -93,6 +93,10 @@ const REBRAND_FLAGS = [
   // catalog entry for why the serif is a system stand-in rather than the face
   // on the live site.
   'dashboard-heading-font',
+  // Text ramp for the whole rebrand app — Neutral (the brand guide's Charcoal
+  // and Gray) ⇄ Tiers (the sign-in prototype's warm ink / muted / faint).
+  // Variant-only; light theme only. See the catalog entry.
+  'dashboard-text-tiers',
   // Recommended for You band — show/hide the whole section.
   'dashboard-recommended',
   // Recommended card blurb — show/hide the "what this is" line on the cards.
