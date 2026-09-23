@@ -623,6 +623,21 @@ function PaceOptionPicker({
                 {formatEvening(o.priced.minsPerNight)} a night
               </span>
             ) : null}
+            {/* THE POINTER — 2026-09-23, the direct ask: "a small filled
+                triangle pointing down from the bottom border to help indicate
+                to the user they can switch this pace option."
+
+                It finishes the tab the thick square foot started: the foot says
+                this option is joined to what is under it, and the pointer says
+                which part. Together they are the one thing on the row that
+                reads as a CONTROL rather than a status — three cards that
+                differ only in tint could be a readout.
+
+                A BORDER TRIANGLE, not a glyph: it is 6px of geometry, no icon
+                in the registry matches it, and the colour has to track the
+                selected border exactly. `aria-hidden` because it says nothing
+                `aria-checked` has not already said. */}
+            {on ? <span aria-hidden style={optionPointerStyle} /> : null}
           </button>
         )
       })}
@@ -640,6 +655,10 @@ const optionRowStyle: CSSProperties = {
    segment is a shape for one word. The resting state is the page's own sunken
    fill so the row reads as three choices rather than three buttons. */
 const optionStyle: CSSProperties = {
+  /* For the selected option's pointer, which hangs below the box. Set on every
+     option rather than only the selected one so the two share a layout and
+     selecting cannot re-flow the row. */
+  position: 'relative',
   display: 'flex',
   flexDirection: 'column',
   gap: 2,
@@ -680,6 +699,26 @@ const optionActiveStyle: CSSProperties = {
      option is 2px taller than the two beside it and the grid stretches them to
      match, so picking one nudges all three. */
   paddingBottom: 7,
+}
+
+/* Sits ON the bottom border, pointing down. Centred on the option rather than
+   on the card: it points at the row it belongs to.
+
+   ⚠ `calc(100% + 3px)`, NOT `100%`. A percentage `top` resolves against the
+   containing block's PADDING box, so plain `100%` put the triangle's apex
+   inside the 3px rule and only half of it showed — measured at -3px from the
+   button's outer edge. The offset is the border's own width, which is why it is
+   written as the sum rather than as 3: change the foot and this follows. */
+const optionPointerStyle: CSSProperties = {
+  position: 'absolute',
+  top: 'calc(100% + 3px)',
+  left: '50%',
+  transform: 'translateX(-50%)',
+  width: 0,
+  height: 0,
+  borderLeft: '6px solid transparent',
+  borderRight: '6px solid transparent',
+  borderTop: '6px solid var(--color-primary-500)',
 }
 
 const optionNameStyle: CSSProperties = {
