@@ -280,7 +280,11 @@ describe('the pacing treatment', () => {
     // The two facts the prose stated, now as cells.
     expect(tile.textContent).toMatch(/Course access/i)
     expect(tile.textContent).toMatch(/\d+ days/)
-    expect(tile.textContent).toMatch(/Estimated completion date/i)
+    expect(tile.textContent).toMatch(/Course completion/i)
+    /* The estimate is still LABELLED an estimate — the qualifier moved under
+       the date on 2026-09-23 so the caption could shorten, and a cell that
+       printed a bare date would be promising one. */
+    expect(tile.textContent).toMatch(/At your current pace/i)
     // The access END date survives as the countdown's second line — the half
     // the prose would otherwise have taken with it.
     expect(tile.textContent).toMatch(/Ends [A-Z][a-z]{2} \d+/)

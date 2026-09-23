@@ -971,10 +971,23 @@ function PaceStatsRow({
         ) : null}
       </div>
       <div style={{ ...statsCellStyle, ...statsDividedStyle }}>
-        <p style={statsEyebrowStyle}>Estimated completion date</p>
+        <p style={statsEyebrowStyle}>Course completion</p>
         <p style={noFit ? { ...statsValueStyle, ...statsValueMutedStyle } : statsValueStyle}>
           {noFit ? 'Not achievable' : formatPaceDate(preset.finishIso)}
         </p>
+        {/* "AT YOUR CURRENT PACE" — 2026-09-23, the direct ask, and it is what
+            lets the eyebrow shorten from "Estimated completion date" to "Course
+            completion". The qualifier moved rather than vanished: the estimate
+            is still labelled an estimate, just under the date instead of in
+            front of it, where the caption had been the longest in the row and
+            the only one to wrap.
+
+            ⚠ SUPPRESSED WHEN NOTHING FITS. "At your current pace" under "Not
+            achievable" names a pace the model has just refused to give — the
+            two sentences contradict each other, and the cell is already
+            carrying the honest answer. The Course Access cell keeps its own
+            sub-line in every state, so the row does not lose its shape. */}
+        {noFit ? null : <p style={statsSubStyle}>At your current pace.</p>}
       </div>
       <div style={{ ...statsCellStyle, ...statsDividedStyle }}>
         <p style={statsEyebrowStyle}>Status</p>
