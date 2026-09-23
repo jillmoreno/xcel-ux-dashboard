@@ -7,7 +7,6 @@ import {
   defaultPreset,
   formatEvening,
   formatPaceDate,
-  presetLabel,
   weekStanding,
   defaultWeekdays,
   NOT_STARTED_NIGHTS,
@@ -249,20 +248,19 @@ export function StudyPaceTile({
   const studyDays: number[] | null =
     choices.plan?.weekdays ?? (choices.schedule ? activeDays(choices.schedule) : null)
 
-  /**
-   * WHAT THE PILL CALLS THIS PACE.
+  /*
+   * `paceLabel` LIVED HERE and was removed 2026-09-23, when the badge became
+   * one of four fixed names — see `paceBadgeLabel`, which is where its logic
+   * went and which both surfaces now call.
    *
-   * `presetLabel` answers it only while the pace IS a preset. A week the
-   * learner built on the Adjust screens has no preset behind it — `presetId`
-   * stays null, so the pill fell through to `defaultPreset`'s own name and went
-   * on saying "Recommended" about a schedule the product never recommended.
-   * That is the precise claim the provenance rule exists to stop.
+   * ⚠ THE RULE IT CARRIED SURVIVED THE MOVE, and it is the one thing to check
+   * if this ever comes back: `presetLabel` answers "what is this pace called"
+   * only while the pace IS a preset. A week the learner built on the Adjust
+   * screens has no preset behind it — `presetId` stays null, so the label fell
+   * through to `defaultPreset`'s own name and went on saying "Recommended"
+   * about a schedule the product never recommended. `paceBadgeLabel` answers
+   * `Custom` there for exactly that reason.
    */
-  const paceLabel = !adjusted
-    ? 'Recommended'
-    : choices.schedule
-      ? 'Your pace'
-      : presetLabel(selected)
 
   const card = layout === 'card'
   /* The readout variant is needed UP HERE too, for the caption's pill — the
@@ -309,20 +307,9 @@ export function StudyPaceTile({
             */}
             {card && readoutVariant === 'stats' ? (
               <span style={captionPillSlotStyle}>
-                <PaceChip
-                  tone={
-                    selected.state === 'no'
-                      ? 'critical'
-                      : selected.state === 'heavy'
-                        ? 'warning'
-                        : adjusted
-                          ? 'positive'
-                          : 'neutral'
-                  }
-                >
-                  {selected.state === 'no' ? 'Won\u2019t fit' : paceLabel}
-                  {selected.state === 'heavy' ? ' \u00b7 heavy' : ''}
-                </PaceChip>
+                <PaceBadge>
+                  {paceBadgeLabel(adjusted, Boolean(choices.schedule), selected)}
+                </PaceBadge>
               </span>
             ) : null}
           </>
@@ -376,7 +363,7 @@ export function StudyPaceTile({
             model={model}
             preset={selected}
             adjusted={adjusted}
-            paceLabel={paceLabel}
+            ownSchedule={Boolean(choices.schedule)}
             plan={choices.plan}
           />
         )}
@@ -401,14 +388,24 @@ function PaceBody({
   model,
   preset,
   adjusted,
-  paceLabel,
+  ownSchedule,
   plan,
 }: {
   model: PaceModel
   preset: PacePreset
   adjusted: boolean
-  /** What to call this pace — see the tile's note. */
-  paceLabel: string
+  /**
+   * The learner built their own week, so no preset is behind it — the input
+   * `paceBadgeLabel` needs to say `Custom` rather than name a preset.
+   *
+   * ⚠ IT REPLACED `paceLabel: string` on 2026-09-23. That prop was the finished
+   * label and this one is an input to it, which is the right way round now that
+   * two surfaces render the badge: the tile and the card's caption slot both
+   * call `paceBadgeLabel`, so neither can be handed a label the other would
+   * have spelled differently. `paceLabel` still exists one level up and is
+   * still where the provenance rule lives.
+   */
+  ownSchedule: boolean
   plan: PaceChoices['plan']
 }) {
   if (preset.state === 'no') {
@@ -428,10 +425,11 @@ function PaceBody({
       {/* The pill names the PRESET once it is the learner's, and says
           "Recommended" only while it is still ours. `presetLabel` is what keeps
           "Relaxed" honest on a long course — see its note. */}
-      <PaceChip tone={preset.state === 'heavy' ? 'warning' : adjusted ? 'positive' : 'neutral'}>
-        {paceLabel}
-        {preset.state === 'heavy' ? ' · heavy' : ''}
-      </PaceChip>
+      {/* THE SAME BADGE as the card's top-right slot — one vocabulary for one
+          fact. `paceLabel` is still the provenance rule's home; the BADGE reads
+          the same three states through `paceBadgeLabel` and maps them onto the
+          four names the ask supplies. */}
+      <PaceBadge>{paceBadgeLabel(adjusted, ownSchedule, preset)}</PaceBadge>
       <div>
         <div
           style={{
@@ -474,6 +472,70 @@ const sentence = {
  * pace is. Two different meanings wearing one badge is how a learner reads "At
  * Risk" off a tile that is only saying their evenings are long.
  */
+/**
+ * THE PACING BADGE — 2026-09-23, the direct ask: "pacing should be a simple
+ * gray square badge. Recommended, Quick Finish, Evenings Only, Custom."
+ *
+ * GRAY AND SQUARE, with no tone axis at all. `PaceChip` carries four tones and
+ * a pill radius; this carries one neutral and `--radius-sm`. The tones went
+ * because the badge now names WHICH PLAN this is, and a plan is not good or
+ * bad news — the card says how heavy the evenings are in the sentence above it,
+ * which is where that signal belongs.
+ *
+ * ⚠ IT DROPS THE "· heavy" MODIFIER, and that is a real loss to weigh. The old
+ * pill read "Recommended · heavy" in amber when the nightly figure passed
+ * `STRAIN_MINS`, so the strain had a marker of its own. The four labels are
+ * fixed by the ask and none of them carries it, so the only thing saying a
+ * plan is punishing is now the figure itself ("About 2¾ hours a night"). Worth
+ * restoring as a second badge or a tint if the strain turns out to need one.
+ *
+ * THE SHEET IS UNTOUCHED, by instruction — these are labels for states the card
+ * can already be in, not four new presets to choose between. `Quick Finish` and
+ * `Evenings Only` are this vocabulary's names for the `focused` and `relaxed`
+ * presets the model already builds; nothing new is selectable.
+ */
+function PaceBadge({ children }: { children: React.ReactNode }) {
+  return (
+    <span
+      style={{
+        alignSelf: 'flex-start',
+        fontFamily: 'var(--font-body)',
+        fontSize: 11,
+        fontWeight: 700,
+        letterSpacing: '0.02em',
+        padding: '3px 8px',
+        borderRadius: 'var(--radius-sm)',
+        background: 'var(--color-neutral-100)',
+        color: 'var(--color-text-secondary)',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      {children}
+    </span>
+  )
+}
+
+/**
+ * Which of the four names this plan goes by.
+ *
+ * MAPPED ONTO WHAT THE CARD ALREADY KNOWS rather than stored: the model builds
+ * `relaxed` / `recommended` / `focused`, and a learner who has built their own
+ * week has no preset at all. So the four labels are a renaming of states that
+ * exist, which is why no sheet work came with them.
+ *
+ * `Custom` is the one that matters to get right — it is the provenance rule
+ * `paceLabel` was written for: a schedule the learner built is not something
+ * the product recommended, and going on calling it "Recommended" is the precise
+ * claim that rule exists to stop.
+ */
+function paceBadgeLabel(adjusted: boolean, ownSchedule: boolean, preset: PacePreset): string {
+  if (!adjusted) return 'Recommended'
+  if (ownSchedule) return 'Custom'
+  if (preset.id === 'focused') return 'Quick Finish'
+  if (preset.id === 'relaxed') return 'Evenings Only'
+  return 'Recommended'
+}
+
 function PaceChip({
   tone,
   children,
