@@ -398,3 +398,65 @@ describe('FeatureFlagPanel — the 2026-09-16 XCEL flag audit', () => {
     expect(sw).toHaveAttribute('aria-checked', 'false')
   })
 })
+
+describe('FeatureFlagPanel — collapsible groups', () => {
+  /**
+   * The panel is long enough that a reviewer works inside one group at a
+   * time — Navigation alone is fourteen rows. These pin the two things that
+   * make collapsing worth having: it actually hides the group's rows, and
+   * the choice survives closing and reopening the panel.
+   *
+   * Group names are the storage keys, deliberately: a reviewer comparing one
+   * group across several flag pages wants it collapsed on all of them.
+   */
+  const openRebrandPanel = () => {
+    renderDashboardWithPanel('/dashboard-rebrand')
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: 'open-panel' }))
+    })
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: rebrandScoped }))
+    })
+  }
+
+  it('starts expanded, and collapsing hides the group body', () => {
+    openRebrandPanel()
+    const header = screen.getByRole('button', { name: /^Navigation/ })
+    // Default is expanded — someone who has never collapsed anything sees
+    // exactly the panel that existed before this was added.
+    expect(header).toHaveAttribute('aria-expanded', 'true')
+    const body = document.getElementById(header.getAttribute('aria-controls')!)
+    expect(body).not.toBeNull()
+    expect(body).not.toHaveAttribute('hidden')
+
+    act(() => {
+      fireEvent.click(header)
+    })
+    expect(header).toHaveAttribute('aria-expanded', 'false')
+    expect(body).toHaveAttribute('hidden')
+  })
+
+  it('remembers the collapsed group across a reopen', () => {
+    window.localStorage.setItem(
+      'cgp.featureFlagPanel.collapsedGroups',
+      JSON.stringify({ Navigation: true }),
+    )
+    openRebrandPanel()
+    const header = screen.getByRole('button', { name: /^Navigation/ })
+    expect(header).toHaveAttribute('aria-expanded', 'false')
+    expect(
+      document.getElementById(header.getAttribute('aria-controls')!),
+    ).toHaveAttribute('hidden')
+  })
+
+  it('survives unreadable storage rather than failing to open', () => {
+    // Private mode and blocked site-data both THROW on access. A flag panel
+    // that cannot open is a worse failure than one that forgets a collapse.
+    window.localStorage.setItem('cgp.featureFlagPanel.collapsedGroups', 'not json{')
+    openRebrandPanel()
+    expect(screen.getByRole('button', { name: /^Navigation/ })).toHaveAttribute(
+      'aria-expanded',
+      'true',
+    )
+  })
+})

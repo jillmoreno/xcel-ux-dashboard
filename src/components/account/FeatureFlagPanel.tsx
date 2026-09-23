@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
 import { useLocation } from 'react-router-dom'
-import { ArrowLeft, ChevronRight, Flag, HelpCircle, Sliders, X } from '@/icons'
+import { ArrowLeft, ChevronDown, ChevronRight, Flag, HelpCircle, Sliders, X } from '@/icons'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { Select } from '@/components/ui/Select'
 import { acquireBodyScrollLock } from '@/utils/bodyScrollLock'
@@ -729,15 +729,44 @@ function FlagListView({
   onVariantChange: (key: string, value: string) => void
   onSecondaryVariantChange: (key: string, value: string) => void
 }) {
+  // Collapsed groups, remembered per viewer. The panel is long — Navigation
+  // alone is ten rows — and a reviewer usually works inside one group at a
+  // time. Default is EXPANDED for every group, so someone who has never
+  // collapsed anything sees exactly what they saw before.
+  //
+  // localStorage rather than component state alone: the panel unmounts on
+  // close, and re-opening it to find every group expanded again is the thing
+  // that makes collapsing not worth doing. Reads and writes are wrapped —
+  // private mode and blocked site-data both throw on access, and a flag panel
+  // that cannot open is a worse failure than one that forgets.
+  const listId = useId()
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
+    try {
+      const raw = window.localStorage.getItem(COLLAPSED_GROUPS_KEY)
+      const parsed = raw ? JSON.parse(raw) : null
+      return parsed && typeof parsed === 'object' ? parsed : {}
+    } catch {
+      return {}
+    }
+  })
+  const toggleGroup = (group: string) => {
+    setCollapsed((prev) => {
+      const next = { ...prev, [group]: !prev[group] }
+      try {
+        window.localStorage.setItem(COLLAPSED_GROUPS_KEY, JSON.stringify(next))
+      } catch {
+        // ignore — the session keeps the state in memory either way
+      }
+      return next
+    })
+  }
+
   // Group flags by their `group` so the panel mirrors the dashboard's
   // on-page sections. Ungrouped flags render first as a flat list; then
   // each group renders under a subhead, ordered by FLAG_GROUP_ORDER
   // (groups not listed there fall back to first-appearance order). A
   // flag's catalog order is preserved within its group, so the catalog
   // stays the source of truth for intra-group ordering.
-  type Item =
-    | { kind: 'group-header'; group: string }
-    | { kind: 'flag'; def: FeatureFlagDefinition }
   const ungrouped: FeatureFlagDefinition[] = []
   const byGroup = new Map<string, FeatureFlagDefinition[]>()
   const firstSeen: string[] = []
@@ -756,12 +785,6 @@ function FlagListView({
     ...FLAG_GROUP_ORDER.filter((g) => byGroup.has(g)),
     ...firstSeen.filter((g) => !FLAG_GROUP_ORDER.includes(g)),
   ]
-  const items: Item[] = []
-  for (const def of ungrouped) items.push({ kind: 'flag', def })
-  for (const group of orderedGroups) {
-    items.push({ kind: 'group-header', group })
-    for (const def of byGroup.get(group)!) items.push({ kind: 'flag', def })
-  }
 
   return (
     <>
@@ -774,32 +797,65 @@ function FlagListView({
         </p>
       ) : (
         <ul style={flagListStyle}>
-          {items.map((item) =>
-            item.kind === 'group-header' ? (
-              <li
-                key={`group:${item.group}`}
-                style={groupHeaderItemStyle}
-                aria-hidden
-              >
-                <span style={groupHeaderLabelStyle}>{item.group}</span>
-                <span aria-hidden style={groupHeaderRuleStyle} />
+          {ungrouped.map((def) => (
+            <li key={def.key}>
+              <FlagRow
+                def={def}
+                state={flags[def.key]}
+                onToggle={(enabled) => onToggle(def.key, enabled)}
+                onVariantChange={(value) => onVariantChange(def.key, value)}
+                onSecondaryVariantChange={(value) =>
+                  onSecondaryVariantChange(def.key, value)
+                }
+              />
+            </li>
+          ))}
+          {orderedGroups.map((group) => {
+            const defs = byGroup.get(group)!
+            const open = !collapsed[group]
+            const bodyId = `${listId}-group-${slugifyGroup(group)}`
+            return (
+              <li key={`group:${group}`}>
+                <button
+                  type="button"
+                  onClick={() => toggleGroup(group)}
+                  aria-expanded={open}
+                  aria-controls={bodyId}
+                  style={groupHeaderButtonStyle}
+                >
+                  <ChevronDown
+                    size={12}
+                    aria-hidden
+                    style={{
+                      flexShrink: 0,
+                      transition: 'transform 120ms ease',
+                      transform: open ? 'rotate(0deg)' : 'rotate(-90deg)',
+                    }}
+                  />
+                  <span style={groupHeaderLabelStyle}>{group}</span>
+                  <span aria-hidden style={groupHeaderRuleStyle} />
+                  <span style={groupHeaderCountStyle}>{defs.length}</span>
+                </button>
+                <ul id={bodyId} hidden={!open} style={groupBodyStyle}>
+                  {defs.map((def) => (
+                    <li key={def.key}>
+                      <FlagRow
+                        def={def}
+                        state={flags[def.key]}
+                        onToggle={(enabled) => onToggle(def.key, enabled)}
+                        onVariantChange={(value) =>
+                          onVariantChange(def.key, value)
+                        }
+                        onSecondaryVariantChange={(value) =>
+                          onSecondaryVariantChange(def.key, value)
+                        }
+                      />
+                    </li>
+                  ))}
+                </ul>
               </li>
-            ) : (
-              <li key={item.def.key}>
-                <FlagRow
-                  def={item.def}
-                  state={flags[item.def.key]}
-                  onToggle={(enabled) => onToggle(item.def.key, enabled)}
-                  onVariantChange={(value) =>
-                    onVariantChange(item.def.key, value)
-                  }
-                  onSecondaryVariantChange={(value) =>
-                    onSecondaryVariantChange(item.def.key, value)
-                  }
-                />
-              </li>
-            ),
-          )}
+            )
+          })}
         </ul>
       )}
     </>
@@ -1364,11 +1420,47 @@ const flagListStyle: CSSProperties = {
   gap: 12,
 }
 
-const groupHeaderItemStyle: CSSProperties = {
+/** Where a viewer's collapsed groups live. Group NAMES are the keys, so the
+ *  set is shared across flag pages — "Navigation" collapsed on one page is
+ *  collapsed on the next, which is what a reviewer scanning several pages
+ *  for one group actually wants. */
+const COLLAPSED_GROUPS_KEY = 'cgp.featureFlagPanel.collapsedGroups'
+
+/** Group name → a DOM-id-safe fragment for `aria-controls`. Group names carry
+ *  spaces ("Jump Back In Card") and the id has to be stable across renders. */
+function slugifyGroup(group: string): string {
+  return group.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+}
+
+const groupHeaderButtonStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: 10,
   marginTop: 8,
+  width: '100%',
+  padding: '4px 0',
+  border: 'none',
+  background: 'none',
+  color: 'var(--color-primary-700)',
+  cursor: 'pointer',
+  textAlign: 'left',
+}
+
+const groupHeaderCountStyle: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 11,
+  fontWeight: 600,
+  color: 'var(--color-text-tertiary)',
+  flexShrink: 0,
+}
+
+const groupBodyStyle: CSSProperties = {
+  listStyle: 'none',
+  margin: 0,
+  padding: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 12,
 }
 
 const groupHeaderLabelStyle: CSSProperties = {
