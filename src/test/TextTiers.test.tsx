@@ -46,10 +46,13 @@ describe('dashboard-text-tiers', () => {
     const def = FEATURE_FLAGS.find((f) => f.key === 'dashboard-text-tiers')
     expect(def).toBeTruthy()
     expect(def?.defaultEnabled).toBe(true)
-    // `tiers` ON THE BRANCH — the Contributing guide's rule, since the branch
-    // deploy is the review link. Whether it becomes the `?demo=1` baseline on
-    // main is `/promote-to-prototype`'s call.
-    expect(def?.defaultVariant).toBe('tiers')
+    /* ⚠ `neutral`, FLIPPED 2026-09-23 AFTER THE REVIEW, and the assertion is
+       the record of a decision rather than a default nobody chose. It shipped
+       as `tiers` under the Contributing guide's rule — the branch deploy is the
+       review link — and the review found the two ramps hard to tell apart,
+       because the ink is a third of a system whose warm paper we did not take.
+       The flag stays so the comparison is one URL away. See the catalog note. */
+    expect(def?.defaultVariant).toBe('neutral')
     expect(def?.variants?.map((v) => v.value)).toEqual(['neutral', 'tiers'])
     expect(flagScopeForPath('/dashboard-rebrand')).toContain('dashboard-text-tiers')
   })

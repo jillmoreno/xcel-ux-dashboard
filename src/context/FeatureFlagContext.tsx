@@ -858,11 +858,37 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     // the flag is live and the CHOICE is the variant. "Off" would have to mean
     // "neutral", which the variant already says.
     defaultEnabled: true,
-    /* `tiers` ON THE BRANCH, per the Contributing guide's rule — the branch
-       deploy is the review link, so the work has to be what it shows. Whether
-       it becomes the `?demo=1` baseline on main is `/promote-to-prototype`'s
-       call, not this default's. */
-    defaultVariant: 'tiers',
+    /*
+     * ⚠ `neutral`, AND THE FLIP IS THE FINDING — 2026-09-23, after the
+     * side-by-side. The branch shipped `tiers` for an hour under the
+     * Contributing guide's rule (the branch deploy is the review link, so it
+     * should show the work). The review answered the question: "they look
+     * basically the same."
+     *
+     * THEY DO, AND THE MEASUREMENTS SAY WHY. Stop for stop the two ramps
+     * differ by dE 14.1 / 9.5 / 6.0, almost all of it LIGHTNESS on the top
+     * tier. The warm tint carries a chroma of only 3.8 / 7.3 / 5.2 — and it
+     * sits on a ground of chroma 0.0. Warmth is relational: the prototype
+     * pairs this ink with `--paper: #faf0e8` and `--line: #e0dbcd`, so the
+     * whole field is warm and the ink belongs to it. Dropped onto our neutral
+     * `#f5f5f5`, warm ink at chroma 5 is a grey with nothing to be warm
+     * against.
+     *
+     * So the variant as built asks for a hue the XCEL guide does not publish,
+     * in exchange for a contrast gain invisible at 12px. Leaving it on would
+     * have moved the committed baseline in a way no reviewer could perceive —
+     * the risk of a palette change with none of the benefit.
+     *
+     * THE FLAG STAYS for now, off by default, so the comparison is one URL
+     * away (`?ff=dashboard-text-tiers:tiers`). What is worth testing next is
+     * the SURFACES rather than the ink — see the variant description.
+     *
+     * NOTE the real defect this exploration surfaced was fixed independently
+     * and is not in this flag: `--color-text-tertiary` was DARKER than the
+     * body ink on the XCEL brand, running the ladder backwards. See the
+     * tertiary note in `tokens.css`.
+     */
+    defaultVariant: 'neutral',
     variants: [
       {
         value: 'neutral',
@@ -872,9 +898,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       },
       {
         value: 'tiers',
-        label: 'Tiers — ink / muted / faint',
+        label: 'Tiers — ink / muted / faint (reviewed, not adopted)',
         description:
-          'Re-points the three text tokens to the prototype’s warm ramp for the Dashboard Rebrand routes only, so the gateway and the standalone prototypes are untouched and the two can be compared side by side with `?ff=dashboard-text-tiers:neutral`. LIGHT THEME ONLY: dark mode re-pins these tokens to a blue-tinted set of its own, and dropping warm greys onto a navy ground is a second design question rather than this one.',
+          'Re-points the three text tokens to the prototype’s warm ramp for the Dashboard Rebrand routes only, so the gateway and the standalone prototypes are untouched. LIGHT THEME ONLY: dark mode re-pins these tokens to a blue-tinted set of its own. ⚠ REVIEWED 2026-09-23 AND NOT ADOPTED — side by side the two ramps are hard to tell apart, because this is a THIRD of the prototype’s system. There the ink is paired with `--paper: #faf0e8` and `--line: #e0dbcd`; here it lands on a neutral `#f5f5f5` ground, and warm ink at a chroma of 5 has nothing to be warm against. The thing worth testing next is the SURFACES with the ink, not the ink alone — and that one collides with the navy CTA, the dark rail and the whole `[data-theme=\'dark\']` block, so it is a piece of work rather than a token swap.',
       },
     ],
     page: 'dashboard-rebrand',
