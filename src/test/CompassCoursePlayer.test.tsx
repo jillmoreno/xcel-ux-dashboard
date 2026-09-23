@@ -170,14 +170,60 @@ describe('the only wired control is Close', () => {
   it('renders the rest as static chrome — no stray buttons to press', () => {
     /* STATIC BY INSTRUCTION. Notes, Demo, Rubi, search and settings render and
        do nothing, so they are NOT buttons — a control that looks pressable and
-       is not is the thing a reviewer reports as broken. Close is the one
-       exception, and this pins that it is the ONLY one inside the player. */
+       is not is the thing a reviewer reports as broken.
+     
+       THREE, not one, as of 2026-09-22: the two breadcrumb crumbs became real
+       when they were asked to wear the house link-CTA. That is the same rule
+       in the same direction rather than an exception to it — they now LOOK
+       pressable, so they had to BE pressable. The list is asserted by name so
+       a fourth cannot appear quietly. */
     seed()
     renderShell(TESTING_URL)
     startCourse()
-    const buttons = screen.getAllByRole('button')
-    expect(buttons).toHaveLength(1)
-    expect(buttons[0].getAttribute('aria-label')).toMatch(/Close course player/)
+    const names = screen.getAllByRole('button').map(
+      (b) => b.getAttribute('aria-label') ?? b.textContent,
+    )
+    expect(names).toEqual([
+      'Back to the dashboard',
+      'Overview',
+      expect.stringMatching(/Close course player/),
+    ])
+  })
+
+  it('leaves via either crumb, the same as Close', () => {
+    // Both crumbs are "up", and up from the player is the dashboard. Asserted
+    // for each rather than once, because they are two call sites of one intent
+    // and wiring only the first is the easy miss.
+    for (const name of ['Back to the dashboard', 'Overview']) {
+      seed()
+      const { container, unmount } = renderShell(TESTING_URL)
+      startCourse()
+      expect(screen.getByLabelText('Course contents')).toBeTruthy()
+      act(() => {
+        fireEvent.click(screen.getByRole('button', { name }))
+      })
+      expect(screen.queryByLabelText('Course contents')).toBeNull()
+      expect(container.querySelector('.cre-platform-shell-grid')).not.toBeNull()
+      unmount()
+    }
+  })
+
+  it('wears the house link-CTA classes, and sets no colour of its own', () => {
+    /* The direct ask: the same link style as Home's "Customize Study Plan".
+       `.cre-cta-ink` carries the colour and re-points it on the dark theme, so
+       an inline `color` here would beat the stylesheet — the trap that class's
+       own note in `tokens.css` records. This pins the absence. */
+    seed()
+    renderShell(TESTING_URL)
+    startCourse()
+    for (const name of ['Back to the dashboard', 'Overview']) {
+      const el = screen.getByRole('button', { name })
+      expect(el.className).toContain('cre-link-action')
+      expect(el.className).toContain('cre-cta-ink')
+      expect(el.style.color).toBe('')
+    }
+    // …and the crumb you are ON is not a link.
+    expect(screen.getByText('Course').tagName).toBe('SPAN')
   })
 })
 

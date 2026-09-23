@@ -78,7 +78,11 @@ export function CompassCoursePlayer({
 
   return (
     <div style={playerStyle}>
-      <CompassSidebar courseTitle={courseTitle} percentComplete={percentComplete} />
+      <CompassSidebar
+        courseTitle={courseTitle}
+        percentComplete={percentComplete}
+        onLeave={onClose}
+      />
       <div style={rightOfSidebarStyle}>
         <CompassTopBar
           sectionTitle={currentChapter}
@@ -126,25 +130,67 @@ export function CompassCoursePlayer({
 function CompassSidebar({
   courseTitle,
   percentComplete,
+  onLeave,
 }: {
   courseTitle: string
   percentComplete: number
+  /** Both crumbs are "up" from the player, and up is the dashboard. */
+  onLeave: () => void
 }) {
   return (
     <aside style={sidebarStyle} aria-label="Course contents">
-      {/* BREADCRUMB. Static text, like everything else here — the design's
-          first two crumbs are links and Close is the only wired way out, so
-          rendering them as anchors would offer two exits and honour one. */}
+      {/*
+        BREADCRUMB — the two crumbs are REAL, as of 2026-09-22, and wear the
+        house link-CTA (`cre-link-action cre-cta-ink`): the direct ask, pointed
+        at "Customize Study Plan" on Home.
+
+        THEY WERE STATIC, and the note here argued that rendering them as
+        anchors "would offer two exits and honour one". The ask settles the
+        other half of that trade: dressing them as the house CTA and leaving
+        them inert is the worse end of it — a control that looks pressable and
+        is not is what gets reported as broken, which is the rule the rest of
+        this player's chrome follows by NOT looking pressable. So they got the
+        style and the behaviour together.
+
+        BOTH GO TO THE SAME PLACE, which is honest rather than sloppy: up from
+        the course player is the dashboard, and there is no separate Overview
+        surface in this product to send the second one to. If one ever exists,
+        this is the call site.
+
+        NO INLINE `color`. `.cre-cta-ink` carries it and re-points on the dark
+        theme; an inline colour would beat the stylesheet, which is the trap
+        that class's own note in `tokens.css` records.
+
+        "Course" stays a plain span — it is the page you are on, and a
+        breadcrumb's last crumb is not a link.
+      */}
       <p style={breadcrumbStyle}>
-        <House size={11} aria-hidden />
+        <button
+          type="button"
+          onClick={onLeave}
+          className="cre-link-action cre-cta-ink"
+          aria-label="Back to the dashboard"
+          style={crumbButtonStyle}
+        >
+          <House size={11} aria-hidden />
+        </button>
         <span aria-hidden style={crumbSlashStyle}>
           /
         </span>
-        <span style={crumbLinkStyle}>Overview</span>
+        <button
+          type="button"
+          onClick={onLeave}
+          className="cre-link-action cre-cta-ink"
+          style={{ ...crumbButtonStyle, fontWeight: 500 }}
+        >
+          Overview
+        </button>
         <span aria-hidden style={crumbSlashStyle}>
           /
         </span>
-        <span style={crumbHereStyle}>Course</span>
+        <span style={crumbHereStyle} aria-current="page">
+          Course
+        </span>
       </p>
 
       <div style={sidebarHeadStyle}>
@@ -448,7 +494,6 @@ const breadcrumbStyle: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 11,
   lineHeight: '19px',
-  color: 'var(--color-primary-500)',
 }
 
 const crumbSlashStyle: CSSProperties = {
@@ -456,7 +501,22 @@ const crumbSlashStyle: CSSProperties = {
   fontSize: 10,
 }
 
-const crumbLinkStyle: CSSProperties = { color: 'var(--color-primary-500)', fontWeight: 500 }
+/* The crumb controls carry NO colour — `.cre-cta-ink` does, and it swaps on the
+   dark theme. Everything else here is the reset a <button> needs to sit in a
+   line of text. */
+const crumbButtonStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 4,
+  background: 'transparent',
+  border: 0,
+  padding: 0,
+  cursor: 'pointer',
+  fontFamily: 'inherit',
+  fontSize: 'inherit',
+  lineHeight: 'inherit',
+}
+
 const crumbHereStyle: CSSProperties = { color: 'var(--color-text-tertiary)', fontWeight: 500 }
 
 const sidebarHeadStyle: CSSProperties = {
