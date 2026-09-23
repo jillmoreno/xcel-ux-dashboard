@@ -232,6 +232,7 @@ function PlatformShellBody() {
    */
   const launchedTitle = launcher.meta.title ?? ''
   const launchedPercent = launcher.meta.percentComplete ?? 0
+  const launchedLesson = launcher.meta.lessonNumber ?? null
   /*
    * MANUAL COLLAPSE, layered over the automatic one — 2026-09-17.
    *
@@ -548,6 +549,7 @@ function PlatformShellBody() {
       <CompassCoursePlayer
         courseTitle={launchedTitle}
         percentComplete={launchedPercent}
+        lessonNumber={launchedLesson}
         onClose={launcher.close}
         closeLabel={launcherBackLabel}
       />

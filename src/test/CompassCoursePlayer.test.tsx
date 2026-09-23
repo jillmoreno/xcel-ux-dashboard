@@ -7,7 +7,12 @@ import { flagScopeForPath } from '@/components/account/FeatureFlagPanel'
 import { LearningPathsPanelProvider } from '@/components/learning/LearningPathsPanelContext'
 import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelContext'
 import { PlatformShell } from '@/components/layout/PlatformShell'
-import { NY_LH_COURSE_CHAPTERS, NY_LH_CURRENT_CHAPTER_INDEX } from '@/data/nyProducerRequirements'
+import {
+  NY_LH_COURSE_CHAPTERS,
+  NY_LH_CURRENT_CHAPTER_INDEX,
+  NY_LH_CURRENT_LESSON_PART,
+  NY_LH_LESSON_PARTS,
+} from '@/data/nyProducerRequirements'
 import { formatExamChip } from '@/components/learning/compassPlayerUtil'
 
 /**
@@ -360,5 +365,66 @@ describe('the contents tree reads its three states apart', () => {
       expect(b.style.zIndex).toBe('1')
       expect(b.style.background).not.toBe('')
     }
+  })
+})
+
+describe('the top bar states where you are', () => {
+  /*
+   * 2026-09-23, the direct ask: "this should definitely include the Chapter
+   * Name, and lesson details here, maybe take it out of the pill."
+   *
+   * The pill was the problem rather than its styling — a fixed-height rounded
+   * container with `nowrap` had one line for a 48-character chapter name and
+   * elided it to "Life Insurance Premiu…", losing the one fact the bar exists
+   * to state.
+   */
+  const topBar = () => {
+    const bars = [...document.querySelectorAll('header')]
+    return bars[bars.length - 1] as HTMLElement
+  }
+
+  it('names the chapter in full, and does not truncate it', () => {
+    seed()
+    renderShell(TESTING_URL)
+    startCourse()
+    const current = NY_LH_COURSE_CHAPTERS[NY_LH_CURRENT_CHAPTER_INDEX]
+    expect(topBar().textContent).toContain(current)
+    // The whole name, not a prefix of it — the failure mode was an ellipsis.
+    expect(topBar().textContent).not.toMatch(/…|\.\.\./)
+  })
+
+  it('carries the lesson detail, agreeing with the card that opened it', () => {
+    /* The lesson number comes through `launcher.meta` from the SAME expression
+       the Jump Back In card's `chapterNumber` uses. Asserted as agreement
+       rather than as a literal: two surfaces naming different lessons is the
+       defect this whole meta channel was added to prevent. */
+    seed()
+    renderShell(TESTING_URL)
+    const card = screen.getByRole('region', { name: /jump back in/i })
+    const cardLesson = card.textContent?.match(/Lesson (\d+)/)?.[1]
+    expect(cardLesson).toBeTruthy()
+    startCourse()
+    expect(topBar().textContent).toContain(`Lesson ${cardLesson}`)
+    expect(topBar().textContent).toContain(
+      `Part ${NY_LH_CURRENT_LESSON_PART} of ${NY_LH_LESSON_PARTS}`,
+    )
+  })
+
+  it('calls the percentage what it is — the COURSE, not the section', () => {
+    /* ⚠ A CORRECTION, not a copy tweak. The pill read "Section: <chapter>"
+       beside a number that is the COURSE percentage — the same figure the
+       sidebar prints under the course title. Nothing here tracks per-chapter
+       progress, so the old label attributed the whole course's progress to one
+       chapter. */
+    seed()
+    renderShell(TESTING_URL)
+    startCourse()
+    const bar = topBar().textContent ?? ''
+    expect(bar).toMatch(/\d+% of course/)
+    expect(bar).not.toMatch(/Section:/)
+    // …and it is the same number the sidebar states, which is the point.
+    const sidebar = screen.getByLabelText('Course contents')
+    const pct = sidebar.textContent?.match(/(\d+)% Complete/)?.[1]
+    expect(bar).toContain(`${pct}% of course`)
   })
 })

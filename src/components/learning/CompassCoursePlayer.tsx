@@ -14,6 +14,8 @@ import {
 import {
   NY_LH_COURSE_CHAPTERS,
   NY_LH_CURRENT_CHAPTER_INDEX,
+  NY_LH_CURRENT_LESSON_PART,
+  NY_LH_LESSON_PARTS,
 } from '@/data/nyProducerRequirements'
 import { readExamDate } from '@/data/examDateStore'
 import { formatExamChip } from './compassPlayerUtil'
@@ -62,11 +64,15 @@ import { formatExamChip } from './compassPlayerUtil'
 export function CompassCoursePlayer({
   courseTitle,
   percentComplete,
+  lessonNumber,
   onClose,
   closeLabel,
 }: {
   courseTitle: string
   percentComplete: number
+  /** The lesson the learner is on, from the opener. Null when unknown, and the
+   *  lesson line is omitted rather than guessed. */
+  lessonNumber?: number | null
   onClose: () => void
   /** Names what Close returns to, for the screen-reader label only — the
    *  design gives the control no visible text. */
@@ -84,7 +90,8 @@ export function CompassCoursePlayer({
       />
       <div style={rightOfSidebarStyle}>
         <CompassTopBar
-          sectionTitle={currentChapter}
+          chapterTitle={currentChapter}
+          lessonNumber={lessonNumber}
           percentComplete={percentComplete}
           onClose={onClose}
           closeLabel={closeLabel}
@@ -370,12 +377,14 @@ export function TocChildItem({
 /* ─── the top bar ──────────────────────────────────────────────────────── */
 
 function CompassTopBar({
-  sectionTitle,
+  chapterTitle,
+  lessonNumber,
   percentComplete,
   onClose,
   closeLabel,
 }: {
-  sectionTitle: string
+  chapterTitle: string
+  lessonNumber?: number | null
   percentComplete: number
   onClose: () => void
   closeLabel: string
@@ -400,14 +409,40 @@ function CompassTopBar({
             <span style={pillTextStyle}>{examChip.countdown}</span>
           </span>
         ) : null}
-        <span style={progressPillStyle}>
-          <span style={pillTextStyle}>
-            <strong style={{ fontWeight: 700 }}>Section:</strong> {sectionTitle}
-          </span>
+        {/*
+          OUT OF THE PILL — 2026-09-23, the direct ask: "this should definitely
+          include the Chapter Name, and lesson details here, maybe take it out
+          of the pill".
+
+          The pill was the problem, not the styling of it. A fixed-height
+          rounded container with `white-space: nowrap` had one line to spend on
+          a chapter name that runs to 48 characters, so it truncated to "Life
+          Insurance Premiu…" — the one fact the bar exists to state, elided.
+          Unwrapped, the name gets a line of its own and the lesson detail gets
+          the one beneath it.
+
+          ⚠ "SECTION:" IS GONE, AND THAT IS A CORRECTION, not a trim. The label
+          said Section and the number beside it is the COURSE percentage — the
+          same 62% the sidebar prints under the course title. Nothing here
+          tracks per-chapter progress, so a "Section: …  62%" pill was quietly
+          attributing the whole course's progress to one chapter. The figure now
+          says what it is.
+        */}
+        <span style={nowPlayingStyle}>
+          <span style={nowPlayingChapterStyle}>{chapterTitle}</span>
+          {lessonNumber != null ? (
+            <span style={nowPlayingLessonStyle}>
+              Lesson {lessonNumber}
+              <span aria-hidden style={lessonDotStyle} />
+              Part {NY_LH_CURRENT_LESSON_PART} of {NY_LH_LESSON_PARTS}
+            </span>
+          ) : null}
+        </span>
+        <span style={courseProgressStyle}>
           <span aria-hidden style={progressTrackStyle}>
             {/* The dot rides the percentage. The Figma pins it at the left
                 because the mock is drawn at 0%; reading it as "always left"
-                would make the pill state a number its own indicator disagrees
+                would make the bar state a number its own indicator disagrees
                 with. Inset by half the dot so it cannot overhang either end. */}
             <span
               style={{
@@ -416,7 +451,7 @@ function CompassTopBar({
               }}
             />
           </span>
-          <span style={pillStrongStyle}>{percentComplete}%</span>
+          <span style={pillStrongStyle}>{percentComplete}% of course</span>
         </span>
       </div>
 
@@ -894,11 +929,50 @@ const pillBase: CSSProperties = {
 
 const pillStyle: CSSProperties = { ...pillBase }
 
-const progressPillStyle: CSSProperties = {
-  ...pillBase,
-  gap: 8,
-  padding: '9px 16px',
+const nowPlayingStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
   minWidth: 0,
+  flex: '1 1 auto',
+}
+
+const nowPlayingChapterStyle: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 14,
+  fontWeight: 600,
+  lineHeight: '20px',
+  color: 'var(--color-text-primary)',
+  /* WRAPS rather than truncating. The pill's `nowrap` is what elided the name
+     in the first place; the bar can take two lines more cheaply than the
+     reader can take an ellipsis. */
+  minWidth: 0,
+}
+
+const nowPlayingLessonStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  fontFamily: 'var(--font-body)',
+  fontSize: 12,
+  lineHeight: '17px',
+  color: 'var(--color-text-tertiary)',
+}
+
+/* The same 3px round dot the Jump Back In card's own lesson line uses — one
+   separator on this surface, not a second kind of it. */
+const lessonDotStyle: CSSProperties = {
+  display: 'inline-block',
+  width: 3,
+  height: 3,
+  borderRadius: '50%',
+  margin: '0 8px',
+  background: 'var(--color-neutral-300)',
+}
+
+const courseProgressStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 8,
+  flexShrink: 0,
 }
 
 const pillTextStyle: CSSProperties = {

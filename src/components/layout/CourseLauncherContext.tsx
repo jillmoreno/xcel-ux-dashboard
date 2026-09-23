@@ -37,6 +37,15 @@ export type LaunchedCourseMeta = {
   title?: string
   /** 0–100, the same figure Home shows for that path. */
   percentComplete?: number
+  /**
+   * The lesson the learner is on — the same number the Jump Back In card
+   * prints, derived from completed lessons + 1.
+   *
+   * Passed for the same reason the title is: it is `totalCompleted + 1` off the
+   * persona's resolved categories, and the shell cannot reach that object. See
+   * the note above.
+   */
+  lessonNumber?: number
 }
 
 type CourseLauncherState = {

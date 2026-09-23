@@ -683,7 +683,16 @@ export function LearnerFocusedBand({
            override that is not in `learningPathsFor(brand)`. The Compass player
            states both of these in its sidebar; passing them here is what stops
            it naming a different course from the card just clicked. */
-        onResume={(id) => launcher.open(id, { title: path.title, percentComplete: percent })}
+        onResume={(id) =>
+          launcher.open(id, {
+            title: path.title,
+            percentComplete: percent,
+            /* The SAME expression `chapterNumber` uses a few lines up, not a
+               second derivation — the player's top bar and this card must not
+               disagree about which lesson the learner is on. */
+            lessonNumber: totalCompleted + 1,
+          })
+        }
       />
     ) : null
   // Shared with the Learning Path detail sheet's "Time Remaining", so the band
