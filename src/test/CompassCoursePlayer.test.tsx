@@ -397,32 +397,31 @@ describe('the top bar states where you are', () => {
     expect(topBar().textContent).not.toMatch(/…|\.\.\./)
   })
 
-  it('labels the chapter with a "Current Lesson" eyebrow, above it', () => {
-    /* ⚠ INVERTED 2026-09-23, one ask after the one that added it. This pinned
-       that the bar carried "Lesson 27 · Part 1 of 3" and that the number agreed
-       with the card. The direct ask replaced that line with an eyebrow reading
-       "Current Lesson", moved above the chapter title — so the number and the
-       part are no longer rendered in the player at all.
+  it('states the chapter and its estimate, and labels the unit as neither', () => {
+    /* ⚠ THIRD REWRITE IN A DAY, and the arc is the point rather than the churn.
+       It pinned "Lesson 27 · Part 1 of 3"; then a "Current Lesson" eyebrow that
+       replaced it; now neither.
 
-       Kept rather than deleted, and asserting the ABSENCE as well as the new
-       label, so re-adding the detail is a decision. The Jump Back In card still
-       states both, and the lesson number still reaches the launcher through
-       `LaunchedCourseMeta` — only this component's prop was dropped. */
+       The eyebrow's removal settles a tension it introduced. The title is a
+       CHAPTER name from `NY_LH_COURSE_CHAPTERS`, and the course counts 42
+       lessons against 11 chapters with no published mapping — "Current Lesson"
+       over a chapter asserted that equivalence. The bar now names the chapter
+       and its estimate and claims nothing about the unit, which is the only
+       reading the fixtures support.
+
+       Asserted as three absences plus what remains, so any of the three
+       discarded labels coming back is a decision rather than a drift. */
     seed()
     renderShell(TESTING_URL)
     startCourse()
     const bar = topBar().textContent ?? ''
-    expect(bar).toContain('Current Lesson')
+    expect(bar).toContain(NY_LH_COURSE_CHAPTERS[NY_LH_CURRENT_CHAPTER_INDEX])
+    expect(bar).toContain(
+      `Estimated Time to Complete: ${NY_LH_LESSON_MINUTES_INVENTED} minutes`,
+    )
+    expect(bar).not.toMatch(/Current Lesson/i)
     expect(bar).not.toMatch(/Lesson \d+/)
     expect(bar).not.toMatch(/Part \d+ of \d+/)
-
-    /* THE EYEBROW IS ABOVE THE TITLE, which is the half that makes it an
-       eyebrow rather than a caption — asserted by document order, since both
-       are spans in one column and a style check would not catch a swap. */
-    const current = NY_LH_COURSE_CHAPTERS[NY_LH_CURRENT_CHAPTER_INDEX]
-    const spans = [...topBar().querySelectorAll('span')].map((el) => el.textContent?.trim())
-    expect(spans.indexOf('Current Lesson')).toBeGreaterThanOrEqual(0)
-    expect(spans.indexOf('Current Lesson')).toBeLessThan(spans.indexOf(current))
   })
 
   it('states the estimate the way the Home card does', () => {

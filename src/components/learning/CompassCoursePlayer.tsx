@@ -444,36 +444,18 @@ function CompassTopBar({
           says what it is.
         */}
         <span style={nowPlayingStyle}>
-          {/* AN EYEBROW ABOVE THE TITLE — 2026-09-23, the direct ask: "Change
-              this to eyebrow 'Current Lesson' and move it above the title of
-              the chapter."
+          {/* NO EYEBROW — 2026-09-23, added and removed within the hour.
+              "Current Lesson" sat here for one build, and its removal settles a
+              tension it had introduced: the title below is a CHAPTER name from
+              `NY_LH_COURSE_CHAPTERS`, and the course counts 42 lessons against
+              11 chapters with nothing published mapping one onto the other. A
+              label reading "Current Lesson" over a chapter asserted that
+              equivalence. Without it the bar states the chapter and its
+              estimate and claims nothing about the unit.
 
-              It was "Lesson 27 · Part 1 of 3" BELOW the title. An eyebrow reads
-              as a label for what follows, which is the relationship that was
-              missing: the bar states where you are, and the words above the
-              name say what kind of thing the name is.
-
-              ⚠ THE NUMBER AND THE PART ARE NO LONGER RENDERED ANYWHERE IN THE
-              PLAYER. They were added two asks ago and this replaces the line
-              that carried them, so it is a deliberate loss rather than an
-              oversight. The Jump Back In card still states both.
-
-              WHAT SURVIVES FOR A RESTORE is the part that was hard: the lesson
-              number still reaches the launcher through `LaunchedCourseMeta`,
-              supplied by the card's own expression, so the two surfaces cannot
-              name different lessons. Only this component's prop was dropped,
-              because tsc will not carry an unread one. Re-rendering the detail
-              is a prop and a span.
-
-              ⚠ AND IT LABELS A CHAPTER AS A LESSON. The title below is a
-              CHAPTER name from `NY_LH_COURSE_CHAPTERS`; the course counts 42
-              lessons against 11 chapters, and nothing published maps one onto
-              the other. "Current Lesson" over a chapter name asserts the
-              equivalence this repo has otherwise refused to assert. Rendered
-              as asked and recorded here, because the alternative label
-              ("Current Chapter") is one word and the decision is the
-              designer's. */}
-          <span style={nowPlayingEyebrowStyle}>Current Lesson</span>
+              The lesson NUMBER and PART, which the eyebrow had replaced, remain
+              unrendered here — the Jump Back In card states both, and the
+              number still reaches the launcher through `LaunchedCourseMeta`. */}
           <span style={nowPlayingChapterStyle}>{chapterTitle}</span>
           {/* THE ESTIMATE, as the Home card states it — 2026-09-23, the direct
               ask: "add the estimated time to complete line under the title like
@@ -1034,15 +1016,6 @@ const nowPlayingEstimateStyle: CSSProperties = {
   color: 'var(--color-text-secondary)',
 }
 
-const nowPlayingEyebrowStyle: CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontSize: 10,
-  fontWeight: 700,
-  letterSpacing: '0.1em',
-  textTransform: 'uppercase',
-  lineHeight: '15px',
-  color: 'var(--color-text-tertiary)',
-}
 
 
 
