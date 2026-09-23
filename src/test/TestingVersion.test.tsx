@@ -100,7 +100,12 @@ function paceTile(): HTMLElement {
      Steady & Relaxed / Custom, so the locator matches ANY prefix rather than
      being edited every time that vocabulary grows. Still anchored on
      "Study Pace" at the end, which is what makes it this tile. */
-  return screen.getByText(/Study Pace$/).parentElement as HTMLElement
+  /* ⚠ NOT ANCHORED AT THE END any more. The `options` treatment's heading is
+     "Set your Study Pace (optional)" as of 2026-09-23, so a `$` anchor finds
+     nothing there; `strip` still ends with it. Matching the phrase wherever it
+     falls covers every treatment, including the bare tile's plain "Study
+     Pace". */
+  return screen.getByText(/Study Pace/).parentElement as HTMLElement
 }
 
 /**

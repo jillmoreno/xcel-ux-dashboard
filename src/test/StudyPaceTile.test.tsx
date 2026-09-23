@@ -806,9 +806,12 @@ describe('study-pace-chooser: options — three named plans', () => {
     return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
   })()
 
-  it('drops the derived name from the heading', () => {
+  it('invites rather than naming the current plan', () => {
     renderOptions()
-    expect(screen.getByText('Study Pace')).toBeTruthy()
+    /* "Set your Study Pace (optional)" as of 2026-09-23 — the heading's job on
+       this treatment is to say the three plans below are a CHOICE, and that the
+       card is useful without one. */
+    expect(screen.getByText('Set your Study Pace (optional)')).toBeTruthy()
     // The `strip` treatment's heading named the plan; this one does not, because
     // the plan is named in the picker directly below it.
     expect(screen.queryByText(/Steady & Relaxed Study Pace|Recommended Study Pace/)).toBeNull()

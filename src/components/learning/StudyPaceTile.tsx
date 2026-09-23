@@ -379,9 +379,26 @@ export function StudyPaceTile({
                 Study Pace" — which keeps the provenance rule the old
                 "Your Study Pace" was there for: the product must not go on
                 calling a figure the learner picked a recommendation. */}
-            {card && chooserVariant === 'strip'
-              ? `${paceNameFor(daysToReview)} Study Pace`
-              : 'Study Pace'}
+            {/* THREE HEADINGS FOR THREE JOBS.
+            
+                `strip` NAMES THE CURRENT PLAN — "Steady & Relaxed Study Pace" —
+                because that treatment has no picker and the heading is the only
+                place the plan is named.
+            
+                `options` INVITES — "Set your Study Pace (optional)", the direct
+                ask of 2026-09-23. The three plans are right underneath, so the
+                heading's job is to say they are a choice rather than a readout,
+                and "(optional)" says the card is useful without one: the
+                learner already has a pace, and picking is how they change it
+                rather than a step they owe us.
+            
+                The bare tile keeps "Study Pace" — it has neither a picker nor a
+                name to carry. */}
+            {!card
+              ? 'Study Pace'
+              : chooserVariant === 'strip'
+                ? `${paceNameFor(daysToReview)} Study Pace`
+                : 'Set your Study Pace (optional)'}
             {/*
               THE PACE PILL, ON THE TILE'S TOP RIGHT — 2026-09-23, the direct
               ask when the Status cell became Days to review: "Don't lose the
