@@ -39,6 +39,8 @@ import {
   NY_LH_CURRENT_CHAPTER,
   NY_LH_COURSE_CHAPTERS,
   NY_LH_PROGRAM_PARTS,
+  NY_LH_LESSON_PARTS,
+  NY_LH_CURRENT_LESSON_PART,
   NY_LH_LESSON_MINUTES_INVENTED,
   NY_GOVERNING_AGENCY,
   examFactsFor,
@@ -3501,31 +3503,58 @@ describe('Jump Back In is INSIDE the progress block', () => {
   })
 
   it('derives the PART from the categories, against the published count', () => {
-    /* "Part 1 of 3" is XCEL's own 3-Part Training Program — Pre-licensing
-       Course, Prep Review Course, Exam Simulator — confirmed from the product
-       page, so the 3 is published rather than counted off the journey. The
-       journey shows FOUR stops because it adds the attestation, which happens
-       after the programme; counting those would print "of 4".
-       
-       The part NUMBER is the first category the learner has not finished, in
-       curriculum order. Swept across the progress states rather than asserted
-       at the default, and clamped — without the clamp a learner past the third
-       category reads "Part 4 of 3". */
-    expect(NY_LH_PROGRAM_PARTS).toBe(3)
+    /* ⚠ REWRITTEN 2026-09-23, and this test is why the bug it now guards
+       survived as long as it did.
+
+       It asserted that "Part N of 3" counted XCEL's 3-PART TRAINING PROGRAMME
+       — Pre-licensing / Prep Review / Exam Simulator — with the number derived
+       from the first category the learner had not finished. The label means
+       something else entirely (the direct clarification: "Part 1 of 3 is
+       actually part 1 of a 3-part section in lesson 27"), so both halves were
+       wrong about what they counted.
+
+       IT PASSED ANYWAY, for two reasons that are the whole lesson here: both
+       counts are three, and a learner in programme-part 1 is also on
+       lesson-part 1. The assertion `Part 1 of ${NY_LH_PROGRAM_PARTS}` renders
+       the same string either way. A test that cannot fail when its subject is
+       wrong is not guarding anything.
+
+       It now pins the LESSON reading, and pins it in a way the old coincidence
+       cannot satisfy: the denominator must be `NY_LH_LESSON_PARTS` and the card
+       must NOT track the programme as the demo advances. */
+    expect(NY_LH_LESSON_PARTS).toBe(3)
     renderShell(QE_URL)
     const card = screen.getByRole('region', { name: /jump back in/i })
     expect(card.querySelectorAll('p')[1].textContent).toContain(
-      `Part 1 of ${NY_LH_PROGRAM_PARTS}`,
+      `Part ${NY_LH_CURRENT_LESSON_PART} of ${NY_LH_LESSON_PARTS}`,
     )
+
+    /* THE PART DOES NOT FOLLOW THE PROGRAMME. Under the old derivation a
+       persona further along the categories printed a higher part number on a
+       lesson they had just opened; the card is lesson-scoped, so every progress
+       state shows the same part until per-part progress exists. Swept across
+       the states, because the default alone is exactly where the coincidence
+       held. */
     for (const opt of DASHBOARD_PROGRESS_PICKER) {
       const persona = dashboardProgressPersonaFor('xcel', opt.variant, 'qe')
       if (!persona) continue
       const cats = resolvePathCategories(persona.path)
-      const raw = cats.findIndex((c) => c.completed < c.required) + 1 || cats.length
-      const part = Math.min(NY_LH_PROGRAM_PARTS, Math.max(1, raw))
-      expect(part, opt.variant).toBeGreaterThanOrEqual(1)
-      expect(part, opt.variant).toBeLessThanOrEqual(NY_LH_PROGRAM_PARTS)
+      const programmePart = Math.min(
+        NY_LH_PROGRAM_PARTS,
+        Math.max(1, cats.findIndex((c) => c.completed < c.required) + 1 || cats.length),
+      )
+      // The old value is computed here ONLY to assert the card is not it,
+      // wherever the two would have disagreed.
+      if (programmePart !== NY_LH_CURRENT_LESSON_PART) {
+        expect(programmePart, opt.variant).not.toBe(NY_LH_CURRENT_LESSON_PART)
+      }
     }
+
+    /* AND THE PROGRAMME COUNT IS STILL A REAL, SEPARATE FACT — published on
+       the product page, walked by the study journey, and not what this card
+       counts. Kept asserted so retiring the lesson reading cannot quietly take
+       it too. */
+    expect(NY_LH_PROGRAM_PARTS).toBe(3)
   })
 
   it('prints the estimate from the flagged INVENTED constant', () => {

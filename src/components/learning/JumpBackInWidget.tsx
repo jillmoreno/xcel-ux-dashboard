@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react'
 import { ArrowRight, BookOpenThin } from '@/icons'
 import type { CourseCardData } from '@/components/courses/CourseCard'
 import { widgetCardRuledStyle, widgetEyebrowStyle } from './widgetStyles'
-import { NY_LH_PROGRAM_PARTS, NY_LH_LESSON_MINUTES_INVENTED } from '@/data/nyProducerRequirements'
+import { NY_LH_LESSON_PARTS, NY_LH_LESSON_MINUTES_INVENTED } from '@/data/nyProducerRequirements'
 
 /**
  * JUMP BACK IN — the resume card, as its own widget (2026-09-16).
@@ -154,7 +154,7 @@ export function JumpBackInWidget({
                           its stat row use — one separator on this page, not a
                           third kind three inches from the other two. */}
                       <span aria-hidden style={dotStyle} />
-                      Part {partNumber} of {NY_LH_PROGRAM_PARTS}
+                      Part {partNumber} of {NY_LH_LESSON_PARTS}
                     </>
                   ) : null}
                 </p>

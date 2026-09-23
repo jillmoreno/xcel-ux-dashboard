@@ -22,7 +22,7 @@ import { StatusStrip } from '@/components/learning/LearningPathDetailPanel'
 import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
 import { JumpBackInWidget } from '@/components/learning/JumpBackInWidget'
 import { StudyPaceTile } from '@/components/learning/StudyPaceTile'
-import { NY_LH_CURRENT_CHAPTER, NY_LH_PROGRAM_PARTS } from '@/data/nyProducerRequirements'
+import { NY_LH_CURRENT_CHAPTER, NY_LH_CURRENT_LESSON_PART } from '@/data/nyProducerRequirements'
 import {
   hasStudyCalendarFor,
   XCEL_CE_PATH_ID,
@@ -660,16 +660,23 @@ export function LearnerFocusedBand({
            question, not the band's. */
         chapterNumber={totalCompleted + 1}
         complete={renewalReady}
-        /* WHICH PART, derived from the ordered category list rather than typed:
-           the categories ARE the 3-Part Training Program in curriculum order,
-           and the learner is in the first one they have not finished. Clamped
-           to the published count, because the list also carries the attestation
-           stop that sits outside the programme — without the clamp a learner
-           past part three would read "Part 4 of 3". */
-        partNumber={Math.min(
-          NY_LH_PROGRAM_PARTS,
-          Math.max(1, cats.findIndex((c) => c.completed < c.required) + 1 || cats.length),
-        )}
+        /* WHICH PART OF THE LESSON — corrected 2026-09-23, on the direct
+           clarification: "Part 1 of 3 is actually part 1 of a 3-part section in
+           lesson 27."
+
+           This derived the PROGRAMME part instead: which of Pre-licensing /
+           Prep Review / Exam Simulator the learner had reached, from the first
+           unfinished category, clamped to three. Both counts are three and a
+           learner in programme-part 1 is also on lesson-part 1, so the string
+           rendered correctly for entirely the wrong reason — and would have
+           diverged the moment the demo advanced past the pre-licensing course,
+           reading "Part 2 of 3" on a lesson just opened.
+
+           `NY_LH_CURRENT_LESSON_PART` rather than a derivation, because nothing
+           in the fixtures tracks a position INSIDE a lesson — progress counts
+           whole lessons, so the learner is at the start of lesson 27 and part 1
+           is what that means. See the constant. */
+        partNumber={NY_LH_CURRENT_LESSON_PART}
         chapterTitle={NY_LH_CURRENT_CHAPTER}
         /* THE OPENER SUPPLIES THE COURSE, because the shell cannot derive it:
            `id` is this jumpBackIn card's, and the path carrying it is a persona

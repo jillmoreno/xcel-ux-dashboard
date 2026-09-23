@@ -222,6 +222,48 @@ export const NY_LH_COURSE_CHAPTERS = [
 export const NY_LH_PROGRAM_PARTS = 3
 
 /**
+ * How many PARTS a lesson is split into — three, supplied by Jillienne on
+ * 2026-09-23: "Part 1 of 3 is actually part 1 of a 3-part section in lesson 27."
+ *
+ * ⚠ IT IS NOT {@link NY_LH_PROGRAM_PARTS}, AND THE CARD WAS USING THAT ONE.
+ * The Jump Back In card renders "Lesson 27 · Part 1 of 3", and until today both
+ * halves of that label were wrong about what they counted: the denominator was
+ * the programme's three parts (Pre-licensing / Prep Review / Exam Simulator)
+ * and the numerator was WHICH OF THOSE the learner had reached, derived from
+ * the ordered category list. The label means neither of those things — it is a
+ * position inside ONE LESSON.
+ *
+ * TWO COINCIDENCES HID IT, which is the only reason it survived review: both
+ * counts are three, and a learner in programme-part 1 is also on lesson-part 1,
+ * so the rendered string was right for entirely the wrong reason. It would have
+ * diverged the moment the demo advanced past the pre-licensing course — the
+ * card would have read "Part 2 of 3" because of where they were in the
+ * PROGRAMME, on a lesson they had just opened.
+ *
+ * SUPPLIED, NOT PUBLISHED, and separate from the `_INVENTED` constants for that
+ * reason — nobody made this number up to fill a card, but no source in this
+ * repo states it either. It is also the SAME FOR EVERY LESSON, which is a
+ * simplification rather than a fact: nothing here knows lesson 14 from lesson
+ * 27. A real per-lesson part count replaces this constant and nothing else.
+ */
+export const NY_LH_LESSON_PARTS = 3
+
+/**
+ * Which part of the current lesson the demo learner is on.
+ *
+ * ONE, and stated rather than derived, because NOTHING IN THE FIXTURES TRACKS
+ * IT. Progress is counted in whole lessons — "26 of 42 complete" — so the
+ * learner is at the START of lesson 27 by definition, and part 1 is what that
+ * means. Deriving it from anything available would be inventing a position
+ * inside a lesson the fixtures resolve only to its boundary.
+ *
+ * It is a constant so that real per-part progress replaces one value, and so a
+ * reader asking "why is this always 1" finds the answer instead of the maths
+ * that used to produce it.
+ */
+export const NY_LH_CURRENT_LESSON_PART = 1
+
+/**
  * Minutes to finish the current lesson — **INVENTED**, and the name says so for
  * the reason `NY_PRODUCER_HOURS_INVENTED` keeps its suffix: a figure that looks
  * like a measurement and is a guess must be impossible to mistake for one.
