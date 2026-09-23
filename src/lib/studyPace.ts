@@ -401,6 +401,140 @@ export function daysToReviewFor(finishIso: string, ceilingIso?: string): number 
   return Math.max(0, daysBetween(finish, ceiling))
 }
 
+/**
+ * THE THREE PLANS A LEARNER PICKS BETWEEN — 2026-09-23, the direct ask:
+ * "3 selectable options below that title. Recommended = somewhere in between
+ * the 2 below. Focused & Quick = studying 7 days / week. Steady & Relaxed =
+ * studying the least amount to still finish in time."
+ *
+ * ⚠ NOT THREE NEW PLANS. These ARE `studyPace`'s own `relaxed` / `recommended`
+ * / `focused` presets, given the three names and a nights count each. The ask
+ * said not to lose the current logic and this is what that means in practice:
+ * the model still decides how long each plan takes, and all this adds is which
+ * evenings it falls on.
+ *
+ * HOW THE NIGHTS ARE CHOSEN, per option:
+ *
+ *   • Focused & Quick — SEVEN, flat. The ask names it, and the fastest preset
+ *     is the one where seven evenings are the point.
+ *   • Steady & Relaxed — the FEWEST that still fits. "The least amount to still
+ *     finish in time" is a search, not a constant: at 42 lessons over a 29-day
+ *     window three nights prices at 203 minutes, inside the 210 ceiling, so
+ *     three it is. On a shorter window three would breach it and the answer
+ *     becomes four, or five.
+ *   • Recommended — the model's own suggestion, which is the first nights count
+ *     whose evening stays under `STRAIN_MINS`. That is already "somewhere in
+ *     between": it cannot be fewer than the relaxed answer (a shorter plan
+ *     needs at least as many evenings) and it is rarely seven.
+ *
+ * ⚠ THE ORDER IS RELAXED → RECOMMENDED → FOCUSED, fewest nights to most, and
+ * the array is returned that way so a caller never has to sort. It is also the
+ * order the ask lists them in once you read "the 2 below" as the outer pair.
+ */
+export type PaceOption = {
+  id: PresetId
+  name: string
+  nights: number
+  /** The plan as the model prices it, with those nights. */
+  priced: Omit<PacePreset, 'id'>
+}
+
+/** The most evenings a week there are. Seven, and named because
+ *  `Focused & Quick` is defined as all of them. */
+export const ALL_NIGHTS = 7
+
+export function paceOptionsFor(input: PaceInput): PaceOption[] {
+  const { daysToCeiling } = resolveCeiling(input)
+  const recommendedDays = Math.max(1, daysToCeiling - (RECOMMENDED_BUFFER_DAYS - 1))
+
+  /*
+   * ⚠ THE FLOOR IS `NIGHT_OPTIONS[0]`, NOT ONE, and a first build searched from
+   * one — which produced a "Steady & Relaxed" of TWO nights a week on a long
+   * course. Two is not a week this product offers: the Adjust sheet's own list
+   * starts at three, so the picker was inventing a plan the sheet would refuse
+   * to show. Reading the floor off that list rather than typing 3 keeps the two
+   * controls agreeing by construction.
+   */
+  const MIN_NIGHTS = NIGHT_OPTIONS[0]
+
+  /** The fewest nights (from the floor up) whose plan the model will price. */
+  const fewestThatFits = (days: number): number | null => {
+    for (let n = MIN_NIGHTS; n <= ALL_NIGHTS; n++) {
+      if (priceFinish(input, days, n).state !== 'no') return n
+    }
+    return null
+  }
+
+  /** The fewest nights whose evening is merely HEAVY rather than punishing. */
+  const fewestUnderStrain = (days: number): number | null => {
+    for (let n = MIN_NIGHTS; n <= ALL_NIGHTS; n++) {
+      if (priceFinish(input, days, n).minsPerNight <= STRAIN_MINS) return n
+    }
+    return null
+  }
+
+  /*
+   * ⚠ "FITS" MEANS `state !== 'no'`, NOT `minsPerNight <= CEILING_MINS`, and
+   * the difference is what a first build got wrong on every single option. The
+   * model's own refusal is about the WEEK — `minsPerWeek > CEILING_MINS × 6` —
+   * so a plan of seven evenings at exactly 210 minutes passes a per-night test
+   * and is still one the model will not quote. Every option came back
+   * `state: 'no'`, which is to say the picker offered three plans and called
+   * all three impossible.
+   */
+  const relaxedNights = fewestThatFits(daysToCeiling) ?? ALL_NIGHTS
+  const recommendedNights = Math.max(
+    relaxedNights,
+    fewestUnderStrain(recommendedDays) ?? fewestThatFits(recommendedDays) ?? ALL_NIGHTS,
+  )
+
+  /**
+   * The EARLIEST finish seven evenings can honestly reach.
+   *
+   * ⚠ NOT `FOCUSED_DAYS`, and a first build used it and shipped a
+   * contradiction: `studyPace` clamps focused to `min(14, daysToCeiling)`, so
+   * against a 13-day window focused became 13 days while recommended (the
+   * window minus its buffer) was 9 — and the picker offered a "Focused & Quick"
+   * finishing FOUR DAYS LATER than the option above it. `studyPace` never shows
+   * that because it DROPS focused once it stops being faster; a picker of three
+   * fixed names cannot drop one, so it has to be fastest by construction.
+   *
+   * Defining it as "how soon can seven evenings get me there" is also the ask's
+   * own definition — Focused & Quick is seven days a week — rather than a
+   * fortnight that happens to be the usual answer.
+   */
+  const focusedDays = (() => {
+    for (let d = 1; d <= daysToCeiling; d++) {
+      if (priceFinish(input, d, ALL_NIGHTS).state !== 'no') return d
+    }
+    return daysToCeiling
+  })()
+
+  return [
+    {
+      id: 'relaxed',
+      name: 'Steady & Relaxed',
+      nights: relaxedNights,
+      priced: priceFinish(input, daysToCeiling, relaxedNights),
+    },
+    {
+      id: 'recommended',
+      name: 'Recommended',
+      nights: recommendedNights,
+      /* NEVER SLOWER THAN RELAXED and never faster than Focused — the middle
+         option has to BE in the middle, which the day counts do not guarantee
+         on a short window where the buffer eats most of it. */
+      priced: priceFinish(input, Math.max(focusedDays, recommendedDays), recommendedNights),
+    },
+    {
+      id: 'focused',
+      name: 'Focused & Quick',
+      nights: ALL_NIGHTS,
+      priced: priceFinish(input, focusedDays, ALL_NIGHTS),
+    },
+  ]
+}
+
 /** Short weekday labels, Monday-first — the order `plan.weekdays` indexes into
  *  (0 = Mon … 6 = Sun). */
 export const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'] as const

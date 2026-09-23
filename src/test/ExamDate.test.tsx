@@ -63,7 +63,13 @@ beforeEach(() => {
      still states it in words. */
   window.localStorage.setItem(
     'cgp.featureFlags',
-    JSON.stringify({ 'study-pace-readout': { enabled: true, variant: 'prose' } }),
+    JSON.stringify({
+      'study-pace-readout': { enabled: true, variant: 'prose' },
+      /* And `strip`, for the same reason — `options` puts three named plans
+         above the card, so a heading assertion anchored with `^` reads the
+         picker instead. See the note in `StudyPaceTile.test.tsx`. */
+      'study-pace-chooser': { enabled: true, variant: 'strip' },
+    }),
   )
   clearExamDate()
 })

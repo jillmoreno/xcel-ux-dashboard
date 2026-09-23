@@ -103,6 +103,9 @@ const REBRAND_FLAGS = [
   // Which preset the Study Pace card opens on — the Pacing demo control's
   // flag. Variant-only; see the catalog entry.
   'study-pace-preset',
+  // How the Study Pace card offers a choice — the clickable week Strip, or
+  // three named Options. Variant-only; see the catalog entry.
+  'study-pace-chooser',
   // Recommended for You band — show/hide the whole section.
   'dashboard-recommended',
   // Recommended card blurb — show/hide the "what this is" line on the cards.

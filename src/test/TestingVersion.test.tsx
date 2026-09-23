@@ -57,7 +57,14 @@ function seed(extra: Record<string, unknown> = {}) {
      tests select it. */
   window.localStorage.setItem(
     'cgp.featureFlags',
-    JSON.stringify({ 'study-pace-readout': { enabled: true, variant: 'prose' }, ...extra }),
+    JSON.stringify({
+      'study-pace-readout': { enabled: true, variant: 'prose' },
+      /* `strip` unless a test says otherwise — `options` is the branch default
+         and puts three radio buttons above the card, which several assertions
+         here count. See the same note in `StudyPaceTile.test.tsx`. */
+      'study-pace-chooser': { enabled: true, variant: 'strip' },
+      ...extra,
+    }),
   )
 }
 

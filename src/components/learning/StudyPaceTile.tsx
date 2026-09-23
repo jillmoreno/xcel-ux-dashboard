@@ -17,6 +17,8 @@ import {
   type PaceModel,
   type PresetId,
   paceNameFor,
+  paceOptionsFor,
+  type PaceOption,
   daysToReviewFor,
   simulateSchedule,
   activeDays,
@@ -162,6 +164,9 @@ export function StudyPaceTile({
    * few lines down.
    */
   const seededPreset = useFeatureFlag('study-pace-preset').variant ?? 'recommended'
+  /* READ ABOVE THE MODEL, because the model's nights depend on it — see
+     `optionNights`. One hook, unconditionally, per this file's header. */
+  const chooserVariant = useFeatureFlag('study-pace-chooser').variant ?? 'options'
   const [choices, setChoices] = useState<PaceChoices>({
     presetId: seededPreset === 'recommended' ? null : (seededPreset as PresetId),
     nights: null,
@@ -171,6 +176,34 @@ export function StudyPaceTile({
     schedule: null,
     plan: null,
   })
+
+  /*
+   * THE THREE PLANS — derived from the INPUT rather than from the model, which
+   * is what lets them sit above it and feed it.
+   *
+   * ⚠ THEY HAVE TO FEED IT, and a first build did not. The picker priced
+   * "Focused & Quick" at seven nights while the card underneath re-derived its
+   * own nights from `suggestedNights` and printed five hours over four — so the
+   * option a learner had selected stated one plan and the sentence below it
+   * stated another. On the `options` chooser the picker is the authority: its
+   * nights are the model's nights until the learner says otherwise.
+   */
+  const options = useMemo(
+    () =>
+      paceOptionsFor({
+        today,
+        hoursRemaining,
+        accessExpiresAt,
+        examDate: choices.examDate ?? undefined,
+        style: choices.style,
+      }),
+    [today, hoursRemaining, accessExpiresAt, choices.examDate, choices.style],
+  )
+  /** The nights the SELECTED option asks for — Recommended until one is
+   *  picked, which is also the plan the card should open on. */
+  const optionNights = (
+    options.find((o) => o.id === (choices.presetId ?? 'recommended')) ?? options[1]
+  )?.nights
 
   const model: PaceModel = useMemo(
     () =>
@@ -182,7 +215,13 @@ export function StudyPaceTile({
         /* The learner's choice first; then the beginner's four; then the
            derivation. `notStarted` only ever supplies a DEFAULT — picking a
            nights count in the sheet overrides it like any other. */
-        nights: choices.nights ?? (notStarted ? NOT_STARTED_NIGHTS : undefined),
+        /* The learner's own first; then the picker's, when that is the chooser
+           on show; then the beginner's four. `optionNights` is what keeps the
+           card's sentence agreeing with the option lit above it. */
+        nights:
+          choices.nights ??
+          (chooserVariant === 'options' ? optionNights : undefined) ??
+          (notStarted ? NOT_STARTED_NIGHTS : undefined),
         style: choices.style,
       }),
     [
@@ -193,6 +232,8 @@ export function StudyPaceTile({
       choices.nights,
       choices.style,
       notStarted,
+      chooserVariant,
+      optionNights,
     ],
   )
 
@@ -298,6 +339,19 @@ export function StudyPaceTile({
   const ceilingForName = model.binding === 'exam' ? (choices.examDate ?? undefined) : accessExpiresAt
   const daysToReview = daysToReviewFor(selected.finishIso, ceilingForName)
 
+  /*
+   * HOW THE CARD OFFERS A CHOICE — `study-pace-chooser`, 2026-09-23.
+   *
+   * `options` puts three named plans under a plain "Study Pace" heading;
+   * `strip` keeps the derived heading and the clickable week. Both are live and
+   * neither is a rename of the other: the strip asks WHICH EVENINGS, the
+   * options ask WHICH PLAN, and the second is the direction the ask moved to.
+   */
+
+  /** Which of the three is showing. Matched on the PRESET the model resolved,
+   *  so a pace arrived at through the sheet still lights the right option. */
+  const activeOption = options.find((o) => o.id === selected.id)?.id ?? null
+
   const card = layout === 'card'
   return (
     <>
@@ -325,7 +379,9 @@ export function StudyPaceTile({
                 Study Pace" — which keeps the provenance rule the old
                 "Your Study Pace" was there for: the product must not go on
                 calling a figure the learner picked a recommendation. */}
-            {card ? `${paceNameFor(daysToReview)} Study Pace` : 'Study Pace'}
+            {card && chooserVariant === 'strip'
+              ? `${paceNameFor(daysToReview)} Study Pace`
+              : 'Study Pace'}
             {/*
               THE PACE PILL, ON THE TILE'S TOP RIGHT — 2026-09-23, the direct
               ask when the Status cell became Days to review: "Don't lose the
@@ -394,6 +450,20 @@ export function StudyPaceTile({
             weekMinutes={weekMinutes}
             today={today}
             onCustomize={() => setOpen(true)}
+            options={chooserVariant === 'options' ? options : undefined}
+            activeOption={activeOption}
+            onPickOption={(o) =>
+              setChoices((c) => ({
+                ...c,
+                presetId: o.id,
+                nights: o.nights,
+                /* CLEARED, because a saved week would beat the preset — see the
+                   note at `sim`. Picking a named plan is choosing the model's
+                   answer, so any hand-built week the learner had is no longer
+                   what they mean. */
+                schedule: null,
+              }))
+            }
             /*
              * WRITES `choices.nights`, the same field the sheet writes, so a
              * pick from the strip and a pick from the sheet are one state. The
@@ -471,6 +541,116 @@ export function StudyPaceTile({
       />
     </>
   )
+}
+
+
+/**
+ * THE THREE NAMED PLANS — `study-pace-chooser: options`, 2026-09-23.
+ *
+ * A RADIOGROUP, not three buttons. They are one choice with three answers and
+ * exactly one is always true, which is what `radio` means; three independent
+ * buttons would let a screen reader user press two and learn nothing about
+ * which is current. `aria-checked` carries the state, so the selected tint is
+ * not doing that job alone (1.4.1).
+ *
+ * EACH ONE SHOWS WHAT IT COSTS AND WHAT IT BUYS — the evening it asks for and
+ * the date it lands on. A picker of three bare names would make the learner
+ * choose one to find out what it means, which is the thing this card exists to
+ * save them from. `formatEvening` rather than a second rounding: its
+ * quarter-hour rule is why "about 1 hour" cannot mean both 68 and 89 minutes.
+ *
+ * NO FIGURES ON A PLAN THAT WILL NOT FIT. `priceFinish` returns `Infinity` and
+ * `state: 'no'` there, and the model's own note on `CEILING_MINS` says why
+ * printing the number is wrong: "no number is honest there, and the answer is
+ * more time or fewer lessons, not a bigger figure."
+ */
+function PaceOptionPicker({
+  options,
+  active,
+  onPick,
+}: {
+  options: PaceOption[]
+  active: PresetId | null
+  onPick: (option: PaceOption) => void
+}) {
+  return (
+    <div role="radiogroup" aria-label="Study pace" style={optionRowStyle}>
+      {options.map((o) => {
+        const on = o.id === active
+        const fits = o.priced.state !== 'no'
+        return (
+          <button
+            key={o.id}
+            type="button"
+            role="radio"
+            aria-checked={on}
+            tabIndex={on ? 0 : -1}
+            onClick={() => onPick(o)}
+            style={{ ...optionStyle, ...(on ? optionActiveStyle : null) }}
+          >
+            <span style={optionNameStyle}>{o.name}</span>
+            <span style={optionMetaStyle}>
+              {fits
+                ? `${formatEvening(o.priced.minsPerNight)} a night · ${o.nights} ${
+                    o.nights === 1 ? 'night' : 'nights'
+                  }`
+                : 'Will not fit'}
+            </span>
+            {fits ? (
+              <span style={optionMetaStyle}>Finishes {formatPaceDate(o.priced.finishIso)}</span>
+            ) : null}
+          </button>
+        )
+      })}
+    </div>
+  )
+}
+
+const optionRowStyle: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+  gap: 8,
+}
+
+/* A CARD EACH, not a segmented control: every option carries three lines, and a
+   segment is a shape for one word. The resting state is the page's own sunken
+   fill so the row reads as three choices rather than three buttons. */
+const optionStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 2,
+  minWidth: 0,
+  padding: '9px 11px',
+  textAlign: 'left',
+  cursor: 'pointer',
+  borderRadius: 'var(--radius-md)',
+  border: '1px solid var(--color-border-subtle)',
+  background: 'var(--color-surface-card)',
+}
+
+/* THE SELECTED ONE takes the primary tint and a solid ring — the same pairing
+   the week strip's studied nights use, so "chosen" looks the same twice on one
+   card. `backgroundColor`, not `background`: a `color-mix()` in the shorthand
+   throws in jsdom while testing-library clones the node, which cost this repo a
+   confusing afternoon once already. */
+const optionActiveStyle: CSSProperties = {
+  borderColor: 'var(--color-primary-500)',
+  backgroundColor: 'color-mix(in srgb, var(--color-primary-500) 8%, transparent)',
+}
+
+const optionNameStyle: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 12.5,
+  fontWeight: 700,
+  lineHeight: '17px',
+  color: 'var(--color-text-primary)',
+}
+
+const optionMetaStyle: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 11,
+  lineHeight: '15px',
+  color: 'var(--color-text-tertiary)',
 }
 
 /* ─── the tile's own content ─────────────────────────────────────────── */
@@ -685,6 +865,9 @@ function PaceCardBody({
   today,
   onCustomize,
   onPickNights,
+  options,
+  activeOption,
+  onPickOption,
 }: {
   model: PaceModel
   preset: PacePreset
@@ -702,6 +885,10 @@ function PaceCardBody({
   onCustomize: () => void
   /** Set the nights a week from the strip — see `WeekStrip`'s `onPick`. */
   onPickNights?: (nights: number) => void
+  /** The three named plans, on the `options` chooser only. */
+  options?: PaceOption[]
+  activeOption?: PresetId | null
+  onPickOption?: (option: PaceOption) => void
 }) {
   /* THE DATE THE LEARNER OWNS, not the model's `hardEndIso`. The ceiling the
      maths uses is expiry minus one (finishing the day access dies is not
@@ -722,6 +909,13 @@ function PaceCardBody({
   if (preset.state === 'no') {
     return (
       <div style={cardStack}>
+        {options && onPickOption ? (
+          <PaceOptionPicker
+            options={options}
+            active={activeOption ?? null}
+            onPick={onPickOption}
+          />
+        ) : null}
         <p style={cardHeadline}>
           The work left won’t fit before {examBinds ? 'your exam' : 'your access ends'}.
         </p>
@@ -828,6 +1022,9 @@ function PaceCardBody({
 
   return (
     <div style={cardStack}>
+      {options && onPickOption ? (
+        <PaceOptionPicker options={options} active={activeOption ?? null} onPick={onPickOption} />
+      ) : null}
       {/* THE HEADLINE. "About" and the trailing clause are the same weight and
           size; only the figure steps up, which is what makes the sentence read
           as a sentence with one number in it rather than as a stat with words

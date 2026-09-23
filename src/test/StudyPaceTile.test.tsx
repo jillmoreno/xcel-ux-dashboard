@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, within, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { StudyPaceTile } from '@/components/learning/StudyPaceTile'
@@ -11,6 +11,9 @@ import {
   defaultWeekdays,
   WEEKDAY_LABELS,
   paceNameFor,
+  paceOptionsFor,
+  priceFinish,
+  NIGHT_OPTIONS,
 } from '@/lib/studyPace'
 import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
@@ -49,10 +52,20 @@ const TODAY = new Date(2026, 8, 18) // Fri 18 Sep 2026
 function renderTile(
   props: Partial<React.ComponentProps<typeof StudyPaceTile>> = {},
   readout: 'prose' | 'stats' = 'prose',
+  chooser: 'strip' | 'options' = 'strip',
 ) {
+  /* ⚠ `strip` BY DEFAULT, pinned for the same reason `prose` is — 2026-09-23,
+     when `study-pace-chooser` arrived and `options` became the BRANCH default.
+     The assertions in this file were written against the card that names its
+     plan in the heading and offers the week strip; `options` puts three
+     radio buttons above all of it, which changes both the heading and the
+     button count. The `options` treatment has its own block at the end. */
   window.localStorage.setItem(
     'cgp.featureFlags',
-    JSON.stringify({ 'study-pace-readout': { enabled: true, variant: readout } }),
+    JSON.stringify({
+      'study-pace-readout': { enabled: true, variant: readout },
+      'study-pace-chooser': { enabled: true, variant: chooser },
+    }),
   )
   return render(
     <MemoryRouter>
@@ -384,7 +397,8 @@ describe('StudyPaceTile — the presets card', () => {
   const renderCard = (
     props: Partial<React.ComponentProps<typeof StudyPaceTile>> = {},
     readout: 'prose' | 'stats' = 'prose',
-  ) => renderTile({ layout: 'card', ...props }, readout)
+    chooser: 'strip' | 'options' = 'strip',
+  ) => renderTile({ layout: 'card', ...props }, readout, chooser)
 
   it('states the evening and the week the model derives', () => {
     renderCard()
@@ -565,7 +579,8 @@ describe('StudyPaceTile — the presets card', () => {
   const renderCard = (
     props: Partial<React.ComponentProps<typeof StudyPaceTile>> = {},
     readout: 'prose' | 'stats' = 'prose',
-  ) => renderTile({ layout: 'card', ...props }, readout)
+    chooser: 'strip' | 'options' = 'strip',
+  ) => renderTile({ layout: 'card', ...props }, readout, chooser)
 
   /** The strip's cells, in order. */
   const cells = () =>
@@ -698,5 +713,120 @@ describe('StudyPaceTile — the week that cannot be salvaged', () => {
         }),
       ).state,
     ).toBe('no')
+  })
+})
+
+describe('study-pace-chooser: options — three named plans', () => {
+  /*
+   * 2026-09-23, the direct ask: "I want the recommended study pace title to be
+   * just Study Pace. And I want 3 selectable options below that title.
+   * Recommended = somewhere in between the 2 below. Focused & Quick = studying
+   * 7 days / week. Steady & Relaxed = studying the least amount to still finish
+   * in time."
+   *
+   * The `strip` treatment is unchanged and is what every other block in this
+   * file pins — "don't lose current logic, make it a flagged variant".
+   */
+  const renderOptions = () => renderTile({ layout: 'card' }, 'stats', 'options')
+  /** 30 days past this file's `TODAY`, as ISO. */
+  const CEILING_30D = (() => {
+    const d = new Date(TODAY)
+    d.setDate(d.getDate() + 30)
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  })()
+
+  it('drops the derived name from the heading', () => {
+    renderOptions()
+    expect(screen.getByText('Study Pace')).toBeTruthy()
+    // The `strip` treatment's heading named the plan; this one does not, because
+    // the plan is named in the picker directly below it.
+    expect(screen.queryByText(/Steady & Relaxed Study Pace|Recommended Study Pace/)).toBeNull()
+  })
+
+  it('offers exactly the three, as one radiogroup', () => {
+    /* A RADIOGROUP because they are one choice with three answers and exactly
+       one is always true. Three independent buttons would let a screen-reader
+       user press two and learn nothing about which is current. */
+    renderOptions()
+    const group = screen.getByRole('radiogroup', { name: 'Study pace' })
+    const radios = within(group).getAllByRole('radio')
+    /* The NAME is the option's first line — read off the element rather than
+       regexed out of `textContent`, which also carries the evening and the
+       date. */
+    expect(radios.map((r) => r.querySelector('span')?.textContent)).toEqual([
+      'Steady & Relaxed',
+      'Recommended',
+      'Focused & Quick',
+    ])
+    expect(radios.filter((r) => r.getAttribute('aria-checked') === 'true')).toHaveLength(1)
+  })
+
+  it('makes Focused & Quick genuinely the quickest', () => {
+    /* ⚠ A BUG THIS CAUGHT, and the reason this assertion is about ORDER rather
+       than about a date. The first build priced Focused at `FOCUSED_DAYS`
+       clamped to the window — so against a short window (an entered exam date)
+       Focused became 13 days while Recommended was 9, and the picker offered a
+       "Focused & Quick" finishing FOUR DAYS LATER than the option above it.
+
+       `studyPace` never shows that, because it DROPS focused once it stops
+       being faster. A picker of three fixed names cannot drop one, so it has to
+       be fastest by construction. */
+    const short = paceOptionsFor({
+      today: TODAY,
+      hoursRemaining: 24,
+      // A tight ceiling — the shape that produced the inversion.
+      accessExpiresAt: '2026-09-27',
+    })
+    const byId = Object.fromEntries(short.map((o) => [o.id, o]))
+    expect(byId.focused.priced.days).toBeLessThanOrEqual(byId.recommended.priced.days)
+    expect(byId.recommended.priced.days).toBeLessThanOrEqual(byId.relaxed.priced.days)
+  })
+
+  it('reads the ask literally: seven nights, and the fewest that still fit', () => {
+    /* A ceiling 30 days past THIS file's `TODAY` — the NY fixture's own dates
+       are months behind it, which resolves to no window at all and makes every
+       option collapse to seven nights. */
+    const opts = paceOptionsFor({ today: TODAY, hoursRemaining: 42, accessExpiresAt: CEILING_30D })
+    const byId = Object.fromEntries(opts.map((o) => [o.id, o]))
+    // "Focused & Quick = studying 7 days / week" — flat, by definition.
+    expect(byId.focused.nights).toBe(7)
+    /* "Steady & Relaxed = studying the least amount to still finish in time" —
+       a SEARCH, not a constant: the fewest nights the model will still price,
+       over the whole window.
+
+       ⚠ "STILL FINISH" IS `state !== 'no'`, not a per-night ceiling, and that
+       distinction is the bug this pins. The model refuses on the WEEK
+       (`minsPerWeek > CEILING_MINS × 6`), so a first build testing
+       `minsPerNight <= CEILING_MINS` returned plans the model would not quote —
+       every one of the three came back `state: 'no'`. */
+    const input = { today: TODAY, hoursRemaining: 42, accessExpiresAt: CEILING_30D }
+    expect(byId.relaxed.nights).toBeLessThan(7)
+    expect(byId.relaxed.priced.state).not.toBe('no')
+    /* …and it is the FEWEST: one below breaches, or is under the floor. The
+       floor is `NIGHT_OPTIONS[0]`, because two nights a week is not a week the
+       Adjust sheet offers — a first build searched from one and produced a
+       two-night "Steady & Relaxed" the sheet would have refused to show. */
+    expect(byId.relaxed.nights).toBeGreaterThanOrEqual(NIGHT_OPTIONS[0])
+    if (byId.relaxed.nights > NIGHT_OPTIONS[0]) {
+      expect(
+        priceFinish(input, byId.relaxed.priced.days, byId.relaxed.nights - 1).state,
+      ).toBe('no')
+    }
+    // "Recommended = somewhere in between the 2 below."
+    expect(byId.recommended.nights).toBeGreaterThanOrEqual(byId.relaxed.nights)
+    expect(byId.recommended.nights).toBeLessThanOrEqual(byId.focused.nights)
+  })
+
+  it('re-prices the whole card when a plan is picked', () => {
+    renderOptions()
+    const group = screen.getByRole('radiogroup', { name: 'Study pace' })
+    const before = document.body.textContent ?? ''
+    fireEvent.click(within(group).getAllByRole('radio')[2])
+    const after = document.body.textContent ?? ''
+    expect(after).not.toBe(before)
+    // The picked one is the checked one, and it is still the only checked one.
+    const radios = within(group).getAllByRole('radio')
+    expect(radios[2].getAttribute('aria-checked')).toBe('true')
+    expect(radios.filter((r) => r.getAttribute('aria-checked') === 'true')).toHaveLength(1)
   })
 })

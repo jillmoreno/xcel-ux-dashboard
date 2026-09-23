@@ -849,6 +849,36 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'study-pace-chooser',
+    group: 'Widgets',
+    label: 'Study Pace chooser',
+    description:
+      'How the Study Pace card lets a learner pick a plan. `strip` is the card as it stands — the heading names the current plan ("Steady & Relaxed Study Pace") and the week strip is clickable at 0% to set the nights. `options` is the newer direction: the heading is a plain "Study Pace" and three named plans sit under it — Steady & Relaxed (the fewest evenings that still finish in time), Recommended (the model’s own suggestion, which lands between the other two), and Focused & Quick (all seven evenings). ⚠ THE THREE ARE NOT NEW PLANS: they are `studyPace`’s existing relaxed / recommended / focused presets with a nights count each, so the model still decides how long every plan takes — see `paceOptionsFor`.',
+    // Variant-only, like `dashboard-heading-font`.
+    defaultEnabled: true,
+    /* `options` ON THE BRANCH, per the Contributing guide's rule. `strip` is
+       kept rather than replaced because the ask was explicit — "don't lose
+       current logic, make it a flagged variant" — and because the two answer
+       different questions: the strip asks which evenings, the options ask which
+       plan. */
+    defaultVariant: 'options',
+    variants: [
+      {
+        value: 'strip',
+        label: 'Strip — the heading names the plan',
+        description:
+          'The clickable week strip at 0%, with the heading derived from the review gap (>15 days Focused & Quick, ≥7 Recommended, else Steady & Relaxed). Picking a night count writes a week and the card re-prices live.',
+      },
+      {
+        value: 'options',
+        label: 'Options — three named plans',
+        description:
+          'A plain "Study Pace" heading with three selectable plans under it, each showing the evening it asks for and the date it lands on. The week strip stays below as a readout of the chosen plan rather than a control.',
+      },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'study-pace-preset',
     group: 'Widgets',
     label: 'Study pace preset',
