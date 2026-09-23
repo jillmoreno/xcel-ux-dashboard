@@ -783,17 +783,43 @@ copy is absent.
 
 ### Testing — the pacing exploration version (2026-09-21)
 
-> **XCEL'S DEFAULT SINCE 2026-09-22**, and therefore what the **Prototypes**
-> section shows: `defaultDiscoverabilityVersionFor('xcel')` returns this
-> version's id, so a fresh `/dashboard-rebrand?demo=1` with no `?version=`
-> lands here. That promotion is a data change in `dashboardVersions.ts`, not a
-> flag — worth knowing, because the flag catalog is the first place anyone
-> looks for "what does Prototypes render" and this line is not in it.
+> ⚠ **NO LONGER XCEL'S DEFAULT.** It was, from 2026-09-22, and this paragraph
+> used to say so. `defaultDiscoverabilityVersionFor('xcel')` returns
+> **Testing** (`discoverability-testing`) now, and QE Focused was archived from
+> the picker on 2026-09-22 — see `ARCHIVED_ITEMS`. Its `?version=` still
+> resolves and 163 tests still render it, which is why this section stays.
 >
-> It ships with three flag defaults that the landing version needs in order to
-> have anything to show: `dashboard-pacing-style: 'presets'` (the wide Study
-> Pace card and its Adjust sheet), `study-pace-widget` enabled, and
-> `dashboard-journey-complete: 'full'`.
+> What a fresh `/dashboard-rebrand?demo=1` lands on is the Testing version.
+> That is a data change in `dashboardVersions.ts`, not a flag — worth knowing,
+> because the flag catalog is the first place anyone looks for "what does
+> Prototypes render" and this line is not in it.
+
+**THE COMMITTED REBRAND DEMO DEFAULTS**, as of 2026-09-23 — what `?demo=1`
+renders with nothing stored. Kept here rather than in the catalog because the
+catalog says what each flag DOES; this says which way the baseline is set.
+
+| Flag | Baseline | What it puts on the page |
+|---|---|---|
+| `course-launcher-style` | `compass` | Start course / Resume opens the full Compass course player — the takeover with the contents tree, the eight-page rail and the Rubi aside — rather than the lo-fi placeholder |
+| `study-pace-chooser` | `options` | "Set your Study Pace (optional)" over three selectable plans (Steady & Relaxed / Recommended / Focused & Quick). ⚠ It also disables Customize Study Plan, so **Build my own is unreachable in the baseline** |
+| `study-pace-readout` | `stats` | The card's lower half is three divided cells — Course Access, Course Completion, Days to Review — instead of three sentences |
+| `dashboard-text-tiers` | `neutral` | **Nothing.** The warm ink ramp ships OFF, reviewed and declined 2026-09-23; the flag is here so the comparison stays one URL away (`?ff=dashboard-text-tiers:tiers`) |
+| `study-pace-widget` | on | The Study Pace card exists at all |
+| `dashboard-journey-complete` | `full` | Finished coursework stays as four stops rather than collapsing to one line |
+| `dashboard-journey-style` | `syllabus` | The numbered-node journey rail |
+| `dashboard-heading-font` | `serif` | ⚠ A SYSTEM serif standing in for Amasis MT, which is unlicensed to us — fine for an exploration, not for production |
+| `dashboard-course-header` | `band` | The course header band above the block |
+
+⚠ `study-pace-preset` IS IN THE CATALOG AND WAS NOT PROMOTED (2026-09-23). Its
+default, `recommended`, seeds nothing, so it cannot move the baseline — it only
+powers the Pacing control in the demo bar. It is listed here so nobody reads its
+absence from the table above as an oversight.
+
+**RETIRED ON THIS MERGE**, their winners hardcoded: `dashboard-pacing-style`
+(the presets card is now unconditional) and `dashboard-clp-stats` (the default
+stat treatment won). The `progress-off-track` variant of
+`dashboard-progress-state` was archived the same day — At Risk reaches the pace
+model's unreachable state on its own now.
 
 A fourth Discoverability version (`discoverability-testing`, labelled
 **Testing**), at Jillienne's request: *"a Home Version specifically for Testing
