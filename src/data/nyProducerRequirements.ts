@@ -333,27 +333,93 @@ export const NY_LH_CURRENT_CHAPTER: string =
  * to look like a New York Life & Health pre-licensing outline and is sourced
  * from nobody.
  *
- * COVERAGE IS THE VISIBLE WINDOW ONLY, and that is deliberate rather than
- * unfinished. The tree shows the current lesson plus six, so 27–33 is what a
- * reviewer sees; lessons 1–26 and 34–42 fall back to "Lesson N" in the
- * component. The fallback IS the honesty mechanism — expanding "Completed 26 of
- * 42" or "Show all" makes the authored window obvious at a glance, where 42
- * invented titles would read as a real syllabus and be impossible to tell from
- * one.
+ * ⚠ ALL 42 NOW, AS OF 2026-09-23 — the direct ask, "title them all." It covered
+ * 27–33 for one day, which was the window a reviewer saw at 62%, and the note
+ * here argued the partial map WAS the honesty mechanism: the ordinal fallback
+ * made the authored window obvious at a glance.
+ *
+ * WHAT KILLED THAT ARGUMENT is that the window moves. The demo's PROGRESS
+ * control has a Not Started setting, and at 0% the tree shows lessons 1–7 —
+ * seven rows reading "Lesson 1" … "Lesson 7", every one of them a fallback,
+ * with nothing on screen saying so. The mechanism only looked honest from the
+ * one position it was authored for. From every other position it looked like a
+ * half-built feature.
+ *
+ * So the invention is total and the honesty moved into the NAME and this note,
+ * where it does not depend on which lesson the learner happens to be on.
+ *
+ * HOW THEY WERE BUILT, so a reader can judge them: the 42 are laid over
+ * {@link NY_LH_COURSE_CHAPTERS} in order, five to nine lessons per chapter,
+ * with lesson 27 landing on chapter index 4 because that is where
+ * {@link NY_LH_CURRENT_CHAPTER_INDEX} already put the learner. That alignment
+ * is a CONSEQUENCE of the existing fixtures rather than a new claim — but it is
+ * not a published mapping, and nothing outside this file should read the
+ * grouping as one. The topics are ordinary pre-licensing curriculum; the
+ * SEQUENCE, the split points and the wording are all invented.
  *
  * `_INVENTED` in the name for the same reason the other three carry it: someone
  * grepping for what this demo made up finds this with them. When a real outline
  * arrives it replaces this map and the component needs no change — the lookup
- * and the fallback already handle a partial map.
+ * and the fallback already handle a partial map, and the fallback stays for
+ * exactly that reason even though nothing reaches it today.
  */
 export const NY_LH_LESSON_TITLES_INVENTED: Record<number, string> = {
+  // Chapter 1 — Basic Principles of Life & Health Insurance
+  1: 'Course Orientation and Exam Overview',
+  2: 'What Insurance Is and How It Works',
+  3: 'The Principle of Indemnity and Insurable Risk',
+  4: 'The Business of Insurance: Insurers and Producers',
+  5: 'Types of Insurers and Marketing Systems',
+  // Chapter 2 — Nature of Insurance, Risk, Perils & Hazards
+  6: 'Risk: Pure, Speculative and Insurable',
+  7: 'Perils, Hazards and Loss Exposure',
+  8: 'Methods of Handling Risk',
+  9: 'The Law of Large Numbers and Adverse Selection',
+  10: 'Reinsurance and Risk Sharing',
+  // Chapter 3 — Legal Concepts of the Insurance Contract
+  11: 'Elements of a Legal Contract',
+  12: 'Offer, Acceptance and Consideration',
+  13: 'Contracts of Adhesion and Aleatory Contracts',
+  14: 'Utmost Good Faith: Representations and Warranties',
+  15: 'Concealment, Fraud and Material Misrepresentation',
+  16: 'Agency Law: Authority and Responsibilities',
+  17: 'Waiver, Estoppel and the Parol Evidence Rule',
+  // Chapter 4 — Life Insurance Policies: Provisions, Options & Riders
+  18: 'Term Life: Level, Decreasing and Increasing',
+  19: 'Whole Life: Straight, Limited-Pay and Single-Premium',
+  20: 'Universal Life and Variable Products',
+  21: 'Endowments and Modified Policies',
+  22: 'Standard Policy Provisions and the Entire Contract',
+  23: 'Incontestability, Grace Period and Reinstatement',
+  24: 'Nonforfeiture Options and Cash Value',
+  25: 'Dividend Options and Participating Policies',
+  26: 'Riders: Waiver of Premium, AD&D and Term Riders',
+  /* Chapter 5 — and the ONE REAL ENTRY. Lesson 27 reads
+     {@link NY_LH_CURRENT_CHAPTER}, REFERENCED rather than retyped, so the
+     player's contents tree and the Jump Back In card cannot drift into naming
+     the learner's position two different things. */
   27: NY_LH_CURRENT_CHAPTER,
   28: 'Beneficiary Designations and Settlement Options',
   29: 'Policy Loans, Withdrawals and Surrenders',
+  // Chapter 6 — Life Insurance Underwriting & Policy Issue
   30: 'Underwriting: Applications and Insurable Interest',
   31: 'Risk Classification and Substandard Ratings',
   32: 'Policy Issue, Delivery and Free Look',
+  // Chapter 7 — Group Life Insurance
   33: 'Group Life: Eligibility, Conversion and Portability',
+  // Chapter 8 — Annuities
+  34: 'Annuities: Structure, Parties and Purpose',
+  35: 'Fixed, Variable and Indexed Annuities',
+  36: 'Annuity Payout and Settlement Options',
+  37: 'Annuity Taxation and Suitability',
+  // Chapter 9 — Social Security
+  38: 'Social Security Benefits and the Blackout Period',
+  // Chapter 10 — Retirement Plans
+  39: 'Qualified Plans: 401(k), IRA and Roth',
+  40: 'Nonqualified Plans and Employer-Sponsored Benefits',
+  // Chapter 11 — Uses of Life Insurance
+  41: 'Business Uses: Buy-Sell, Key Person and Split-Dollar',
+  42: 'Personal Uses, Needs Analysis and Exam Review',
 }
 
 /**

@@ -10,7 +10,9 @@ import {
   ShoePrints,
   ArrowRight,
   CalendarDay,
+  ChevronDown,
   ChevronRight,
+  ChevronUp,
   Check,
   FileText,
   House,
@@ -516,16 +518,25 @@ const UPCOMING_PREVIEW = 6
  * carry called it "one honest gap"), and a contents tree that cannot agree with
  * "26 of 42" about how much there is cannot show a learner where they are.
  *
- * ⚠ THE COUNTS ARE SOURCED; THE TITLES ARE ORDINALS. `completedLessons` and
- * `totalLessons` are summed off `resolvePathCategories`, the same two figures
- * the card prints. What no source in this repo publishes is a lesson NAME —
- * there are 11 chapter names and 42 lessons, with no mapping between them. So
- * a row reads "Lesson 27" and nothing more. Inventing 42 titles to fill the
- * column is the move this version has refused everywhere else, and it would be
- * the most convincing invention on the screen.
+ * ⚠ THE COUNTS ARE SOURCED; THE TITLES ARE INVENTED, ALL 42 OF THEM.
+ * `completedLessons` and `totalLessons` are summed off `resolvePathCategories`,
+ * the same two figures the card prints. No source in this repo publishes a
+ * lesson NAME — there are 11 chapter names and 42 lessons, with no mapping
+ * between them — so every row's label comes from
+ * {@link NY_LH_LESSON_TITLES_INVENTED}, whose own note carries the warning and
+ * how the 42 were built.
  *
- * WHERE THE CHAPTER NAME WENT: the top bar states it, for the current lesson
- * only, which is the one place the pairing is already asserted.
+ * THIS IS THE MOST CONVINCING INVENTION ON THE SCREEN and is worth saying
+ * plainly, because an earlier version of this note refused it on exactly that
+ * ground. A full column of plausible titles reads as a real syllabus, and
+ * nothing in the UI distinguishes it from one. It was authored anyway, on the
+ * direct ask, after the partial map turned out to be worse: it only looked
+ * honest from the one scroll position it was written for, and rendered seven
+ * unlabelled "Lesson N" rows at 0%.
+ *
+ * THE ORDINAL FALLBACK STAYS in `LessonRow` even though nothing reaches it
+ * today — it is what lets a real outline arrive as a partial map without a
+ * component change.
  */
 function CompassContents({
   completedLessons,
@@ -577,7 +588,30 @@ function CompassContents({
               }}
             />
           </span>
-          Completed {done} of {totalLessons}
+          <span>
+            Completed {done} of {totalLessons}
+          </span>
+          {/* THE CHEVRON — 2026-09-23, the direct ask, "include a chevron icon
+              to the right of the completed line to indicate its expandable."
+
+              `aria-expanded` already said this, and said it ONLY to a screen
+              reader; sighted reviewers had a link that gave no sign 26 rows sat
+              behind it. The glyph is the visible half of the same statement.
+
+              DOWN WHEN CLOSED, UP WHEN OPEN, which is the convention the rest
+              of the product follows (the feature-flag panel's group sections,
+              built two days ago, do the same). Two glyphs rather than one
+              rotated by CSS: the registry publishes both, and a transform on an
+              SVG that already has its own width and height is the kind of
+              thing the Figma skill's rules warn about.
+
+              `aria-hidden` — it duplicates `aria-expanded`, and announcing it
+              twice is worse than not drawing it at all. */}
+          {showCompleted ? (
+            <ChevronUp size={12} aria-hidden />
+          ) : (
+            <ChevronDown size={12} aria-hidden />
+          )}
         </button>
       ) : null}
 

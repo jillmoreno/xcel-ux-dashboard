@@ -223,11 +223,36 @@ describe('the player states the course that was opened', () => {
       fireEvent.click(summary)
     })
     expect(summary).toHaveAttribute('aria-expanded', 'true')
-    expect(sidebar.textContent).toContain('Lesson 1')
+    /* BY TITLE, not by "Lesson 1" — every lesson is titled as of 2026-09-23, so
+       the ordinal string appears nowhere in the tree and the old assertion
+       would pass on an empty list. */
+    expect(sidebar.textContent).toContain(NY_LH_LESSON_TITLES_INVENTED[1])
     act(() => {
       fireEvent.click(summary)
     })
-    expect(sidebar.textContent).not.toContain('Lesson 1')
+    expect(sidebar.textContent).not.toContain(NY_LH_LESSON_TITLES_INVENTED[1])
+  })
+
+  it('shows a chevron on the completed line, and flips it when open', () => {
+    /* 2026-09-23, the direct ask. `aria-expanded` said this to a screen reader
+       and to nobody else — the glyph is the visible half of the same
+       statement, so it has to track the state rather than sit there. */
+    seed()
+    renderShell(TESTING_URL)
+    startCourse()
+    const sidebar = screen.getByLabelText('Course contents')
+    const summary = within(sidebar).getByRole('button', { name: /Completed \d+ of \d+/ })
+    const glyph = () => summary.querySelectorAll('svg')[1] as SVGElement | undefined
+    // Two glyphs on the row: the done-disc's check, then the chevron.
+    expect(glyph()).toBeTruthy()
+    const closed = glyph()!.innerHTML
+    act(() => {
+      fireEvent.click(summary)
+    })
+    expect(glyph()!.innerHTML).not.toBe(closed)
+    /* HIDDEN FROM THE ACCESSIBILITY TREE — it duplicates `aria-expanded`, and
+       announcing the state twice is worse than not drawing it. */
+    expect(glyph()!.getAttribute('aria-hidden')).toBe('true')
   })
 
   it('previews the upcoming lessons, with Show all for the rest', () => {
@@ -248,7 +273,7 @@ describe('the player states the course that was opened', () => {
     const after = sidebar.querySelectorAll('ol > li').length
     expect(after).toBeGreaterThan(before)
     // Every remaining lesson is now listed, ending at the last one.
-    expect(sidebar.textContent).toContain(`Lesson ${total}`)
+    expect(sidebar.textContent).toContain(NY_LH_LESSON_TITLES_INVENTED[total])
     expect(within(sidebar).queryByRole('button', { name: /Show all/ })).toBeNull()
   })
 })
@@ -616,21 +641,31 @@ describe('the top bar states where you are', () => {
 
 describe('the invented lesson titles', () => {
   /*
-   * ⚠ AUTHORED DATA. `NY_LH_LESSON_TITLES_INVENTED` covers the window a
-   * reviewer sees and nothing else, which is what keeps it legible AS
-   * invention — 42 plausible titles would be indistinguishable from a real
-   * syllabus. These pin the two properties that make the invention safe.
+   * ⚠ AUTHORED DATA — all 42 of them as of 2026-09-23. This block used to pin
+   * the OPPOSITE property: that the map covered only the visible window, on the
+   * argument that the ordinal fallback kept the invention legible as invention.
+   *
+   * That argument did not survive the demo's PROGRESS control. At 0% the tree
+   * shows lessons 1–7, all of them outside the authored window, so the screen
+   * was seven unlabelled rows with nothing saying why. The honesty lives in the
+   * constant's name and its note now, not in a gap on screen.
    */
   it('makes lesson 27 the SAME string the card names, by reference', () => {
-    // Not "equal to the same literal" — the map holds the constant itself, so
-    // moving the demo's chapter moves both surfaces at once.
+    /* Not "equal to the same literal" — the map holds the constant itself, so
+       moving the demo's chapter moves both surfaces at once. Load-bearing now
+       that 27 has 41 neighbours: a typed copy of the chapter name would pass
+       every rendering test and silently stop tracking the current chapter. */
     expect(NY_LH_LESSON_TITLES_INVENTED[27]).toBe(NY_LH_CURRENT_CHAPTER)
   })
 
-  it('falls back to the ordinal outside the authored window', () => {
-    /* The fallback is the honesty mechanism, not an edge case: expanding the
-       completed run drops straight back to "Lesson 12", so where the authoring
-       stops is visible at a glance. */
+  it('titles every lesson in the course, with no ordinal left on screen', () => {
+    /* ⚠ THE REGRESSION THIS REPLACES. The predecessor asserted the fallback
+       fired — "Lesson 1", "Lesson 12" — which was the intended behaviour then
+       and is a bug now: an untitled row means the map has a hole, and a hole
+       shows up as a bare ordinal sitting among real titles.
+
+       Walks the WHOLE tree, both expanders open, so a gap anywhere in 1–42 is
+       caught rather than just one at the ends. */
     seed()
     renderShell(TESTING_URL)
     startCourse()
@@ -638,19 +673,28 @@ describe('the invented lesson titles', () => {
     act(() => {
       fireEvent.click(within(sidebar).getByRole('button', { name: /Completed \d+ of \d+/ }))
     })
+    act(() => {
+      fireEvent.click(within(sidebar).getByRole('button', { name: /Show all \d+ lessons/ }))
+    })
     const rows = [...sidebar.querySelectorAll('ol > li')].map((li) => li.textContent?.trim())
-    expect(rows).toContain('Lesson 1')
-    expect(rows).toContain('Lesson 12')
-    // …and the authored ones still read as titles, in the same list.
-    expect(rows).toContain(NY_LH_LESSON_TITLES_INVENTED[27])
+    expect(rows).toHaveLength(42)
+    expect(rows.filter((r) => /^Lesson \d+$/.test(r ?? ''))).toEqual([])
+    for (let n = 1; n <= 42; n++) {
+      expect(rows).toContain(NY_LH_LESSON_TITLES_INVENTED[n])
+    }
+  })
+
+  it('has no duplicate titles — a repeat would read as a bug in the outline', () => {
+    const titles = Object.values(NY_LH_LESSON_TITLES_INVENTED)
+    expect(new Set(titles).size).toBe(titles.length)
   })
 
   it('authors no title for a lesson the tree cannot reach', () => {
     // A title past the course length would never render and would be a claim
-    // nobody could check — the map stops inside the course.
-    const keys = Object.keys(NY_LH_LESSON_TITLES_INVENTED).map(Number)
-    expect(Math.min(...keys)).toBeGreaterThan(0)
-    expect(Math.max(...keys)).toBeLessThanOrEqual(42)
+    // nobody could check — the map stops inside the course. Now also pins that
+    // it is exactly 42 keys, 1 through 42, with none missing or spare.
+    const keys = Object.keys(NY_LH_LESSON_TITLES_INVENTED).map(Number).sort((a, b) => a - b)
+    expect(keys).toEqual(Array.from({ length: 42 }, (_, i) => i + 1))
   })
 })
 
