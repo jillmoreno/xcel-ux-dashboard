@@ -138,9 +138,17 @@ const COMPASS_PAGES: {
  * column of equal blocks would say every band is the same weight, which is the
  * one thing a lo-fi layout is for showing it is not.
  */
-const OVERVIEW_SECTIONS: { eyebrow: string; height: number }[] = [
+const OVERVIEW_SECTIONS: { eyebrow: string; height: number; aside?: string }[] = [
   { eyebrow: 'Start here', height: 104 },
-  { eyebrow: 'Where you are', height: 196 },
+  /*
+   * THE RUBI PANEL RIDES ON THIS BAND rather than becoming a fifth one —
+   * 2026-09-23, "add this as a lo-fi", pointed at the bordered "RUBI SUGGESTS"
+   * card. In the screenshot it sits BESIDE the readiness ring inside Where you
+   * are, not under it, and that placement is the thing a lo-fi layout is for:
+   * it says the suggestion is a reading of where you are rather than a section
+   * of its own. Stacking it would have thrown that away and kept only the box.
+   */
+  { eyebrow: 'Where you are', height: 196, aside: 'Rubi suggests' },
   { eyebrow: 'Your assignments', height: 268 },
   { eyebrow: 'Rubi insights', height: 224 },
 ]
@@ -206,7 +214,31 @@ export function CompassCoursePlayer({
               {OVERVIEW_SECTIONS.map((section) => (
                 <section key={section.eyebrow} style={overviewSectionStyle}>
                   <p style={overviewEyebrowStyle}>{section.eyebrow}</p>
-                  <div aria-hidden style={{ ...overviewBlockStyle, height: section.height }} />
+                  {section.aside ? (
+                    <div style={overviewSplitStyle}>
+                      <div
+                        aria-hidden
+                        style={{ ...overviewBlockStyle, flex: 1, height: section.height }}
+                      />
+                      {/* THE LEFT RULE AND THE GLYPH ARE THE PANEL, at lo-fi.
+                          Both are structure rather than content — the rule is
+                          how the card is bounded in the reference and the mark
+                          is the one in `@/icons` the page rail already uses for
+                          Rubi Insights, so nothing here is drawn or invented.
+                          What is left out is everything the ask said to leave
+                          out: the serif heading, the three lines of copy and
+                          the Learn more button. */}
+                      <div style={overviewAsideStyle}>
+                        <p style={overviewAsideEyebrowStyle}>
+                          <RubiLogo size={11} aria-hidden />
+                          {section.aside}
+                        </p>
+                        <div aria-hidden style={{ ...overviewBlockStyle, flex: 1 }} />
+                      </div>
+                    </div>
+                  ) : (
+                    <div aria-hidden style={{ ...overviewBlockStyle, height: section.height }} />
+                  )}
                 </section>
               ))}
             </div>
@@ -1016,6 +1048,42 @@ const overviewBlockStyle: CSSProperties = {
   width: '100%',
   background: 'var(--compass-content)',
   borderRadius: 'var(--radius-md)',
+}
+
+/* The Where-you-are band's two columns. The aside is FIXED and the block
+   flexes, so the panel keeps a card's proportions while the ring beside it
+   takes whatever the window gives — the reverse would let the panel stretch
+   into a banner at width, which is the shape it is least like. */
+const overviewSplitStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'stretch',
+  gap: 24,
+  minWidth: 0,
+}
+
+/* `--color-cta-500` — the Brick, which is what the reference rules this panel
+   with and the colour this product already spends on Rubi. A 2px rule rather
+   than a border on all four sides: the reference draws an open card, and a full
+   box at lo-fi reads as a control. */
+const overviewAsideStyle: CSSProperties = {
+  flex: '0 0 250px',
+  minWidth: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 10,
+  paddingLeft: 16,
+  borderLeft: '2px solid var(--color-cta-500)',
+}
+
+/* The band eyebrows' treatment with the Brick substituted for the tertiary ink
+   — same size, weight and tracking, so the two read as one family with this one
+   marked. */
+const overviewAsideEyebrowStyle: CSSProperties = {
+  ...overviewEyebrowStyle,
+  display: 'flex',
+  alignItems: 'center',
+  gap: 6,
+  color: 'var(--color-cta-500)',
 }
 
 const overviewGroundStyle: CSSProperties = {

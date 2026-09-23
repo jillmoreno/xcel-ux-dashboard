@@ -765,19 +765,42 @@ describe('the Overview view', () => {
     openOverview()
     const region = screen.getByRole('region', { name: 'Overview page' })
     expect(region.textContent).toContain('Your learning journey')
-    for (const eyebrow of ['Start here', 'Where you are', 'Your assignments', 'Rubi insights']) {
+    for (const eyebrow of [
+      'Start here',
+      'Where you are',
+      'Your assignments',
+      'Rubi insights',
+      // 2026-09-23, "add this as a lo-fi" — the bordered panel BESIDE Where you
+      // are, not a fifth band. See `OVERVIEW_SECTIONS`.
+      'Rubi suggests',
+    ]) {
       expect(region.textContent).toContain(eyebrow)
     }
+    /* …and it keeps its place rather than just its box: the panel is INSIDE
+       the Where-you-are section, which is the claim the reference makes about
+       what a suggestion is. */
+    const whereYouAre = [...region.querySelectorAll('section')].find((sec) =>
+      sec.textContent?.includes('Where you are'),
+    )
+    expect(whereYouAre?.textContent).toContain('Rubi suggests')
     // Nothing from the screenshot but the headings.
-    expect(region.textContent).not.toMatch(/Jordan|Arizona|readiness|28%|Provisions/i)
-    // Four blocks, all `aria-hidden` — they are placeholders, not content, and
-    // a screen reader walking four empty divs learns nothing the eyebrows did
-    // not already say.
+    expect(region.textContent).not.toMatch(
+      /Jordan|Arizona|readiness|28%|Provisions|Meet Rubi|Learn more/i,
+    )
+    /* FIVE blocks — four bands plus the Rubi panel riding on Where you are.
+       All `aria-hidden`: they are placeholders, not content, and a screen
+       reader walking five empty divs learns nothing the eyebrows did not
+       already say. */
     const blocks = region.querySelectorAll('div[aria-hidden="true"]')
-    expect(blocks).toHaveLength(4)
-    /* THE HEIGHTS DIFFER, which is the point of a lo-fi layout: a column of
-       equal blocks says every band carries the same weight. */
-    const heights = [...blocks].map((b) => (b as HTMLElement).style.height)
+    expect(blocks).toHaveLength(5)
+    /* THE BAND HEIGHTS DIFFER, which is the point of a lo-fi layout: a column
+       of equal blocks says every band carries the same weight. The Rubi panel
+       is excluded — it STRETCHES to the band beside it rather than setting its
+       own height, which is the relationship being drawn. */
+    const heights = [...blocks]
+      .map((b) => (b as HTMLElement).style.height)
+      .filter(Boolean)
+    expect(heights).toHaveLength(4)
     expect(new Set(heights).size).toBe(4)
   })
 
