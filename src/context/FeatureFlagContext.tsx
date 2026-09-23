@@ -849,6 +849,35 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'study-pace-readout',
+    group: 'Widgets',
+    label: 'Study Pace readout',
+    description:
+      'What the Study Pace card shows UNDER the pace sentence and the week strip. `prose` (default) is the card as it stands — three sentences: the window and its end date, the finish date, and the note that the estimate moves. `stats` replaces the first two with a three-cell readout divided by hairlines — Course Access (the countdown, with the access end date beneath it), Estimated Completion Date, and Status (the PACE status: Relaxed / Recommended / Focused, plus heavy). The third sentence and Customize Study Plan survive in both. NOTE the Status cell carries the PACE axis rather than the compliance one: "At Risk" is a verdict about the learner and this card only speaks about the plan — see `PaceChip`’s own note on why the two must not share a badge.',
+    // Variant-only, like `dashboard-heading-font`: the enable toggle is on so
+    // the flag is live and the CHOICE is the variant.
+    defaultEnabled: true,
+    /* `stats` ON THE BRANCH, per the Contributing guide's rule — the branch
+       deploy is the review link, so it has to show the work. Whether it becomes
+       the `?demo=1` baseline is `/promote-to-prototype`'s call. */
+    defaultVariant: 'stats',
+    variants: [
+      {
+        value: 'prose',
+        label: 'Prose — three sentences',
+        description:
+          'No change. "You have 29 days left to finish the course material. (Access ends on Jun 10.)" / "At this pace, you will finish around Jun 5." / the estimate-moves note.',
+      },
+      {
+        value: 'stats',
+        label: 'Stats — three divided cells',
+        description:
+          'Course Access · Estimated Completion Date · Status, divided by hairlines, with the access end date as a second line under the countdown so nothing the prose said is lost. At the unreachable pace (At Risk, 3 days) the cells stay and the completion cell reads "Not achievable", with the won’t-fit sentence taking the estimate-moves line’s place — a readout that changes shape per state would be two cards behind one flag.',
+      },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'dashboard-text-tiers',
     group: 'Widgets',
     label: 'Text tiers',

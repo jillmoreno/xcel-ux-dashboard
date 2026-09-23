@@ -47,7 +47,18 @@ const QE_URL = `/dashboard-rebrand?version=${DISCOVERABILITY_DASHBOARD_VERSION_Q
 
 function seed(extra: Record<string, unknown> = {}) {
   window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
-  window.localStorage.setItem('cgp.featureFlags', JSON.stringify(extra))
+  /* ⚠ `study-pace-readout: prose` UNLESS A TEST SAYS OTHERWISE — 2026-09-23.
+     `stats` is the branch default, and it replaces the Study Pace card's two
+     fact SENTENCES with a three-cell readout. Several assertions here are about
+     what those sentences say (the ceiling the card used, the date it lands on),
+     and they are still the right assertions for the prose treatment. Pinned in
+     the shared seed rather than test by test so a new prose assertion does not
+     have to know the flag exists; `extra` still wins, which is how the stats
+     tests select it. */
+  window.localStorage.setItem(
+    'cgp.featureFlags',
+    JSON.stringify({ 'study-pace-readout': { enabled: true, variant: 'prose' }, ...extra }),
+  )
 }
 
 function renderShell(url: string) {
@@ -240,11 +251,42 @@ describe('the pacing treatment', () => {
     // Presets drops `pacingStatus` — it may do that only because it answers the
     // same question in words. A card carrying neither would say less than the
     // stub it replaced, which is what this has always been guarding.
+    seed()
     renderShell(TESTING_URL)
     const tile = paceTile()
     expect(within(tile).queryByText('On Track')).toBeNull()
     expect(tile.textContent).toMatch(/You have \d+ days left to finish/)
     expect(tile.textContent).toMatch(/you will finish around [A-Z][a-z]{2} \d+/)
+  })
+
+  it('answers the same question in CELLS on the stats readout', () => {
+    /* ⚠ THE SAME GUARD, FOR THE OTHER VARIANT — 2026-09-23, and the reason it
+       is a second test rather than a loosened first one. The claim above is
+       that this card may drop `pacingStatus` only because it answers the same
+       question in words. `study-pace-readout: stats` replaces those words with
+       three cells, so the claim has to be re-made against them or the variant
+       quietly removes the answer the rule depends on.
+
+       AND THE STATUS CELL IS THE PACE AXIS, not the compliance one. That was
+       asked and settled: "At Risk" is a verdict about the LEARNER and this card
+       only speaks about the plan — `PaceChip`'s own note records why the two
+       must not share a badge. So the cell says Recommended / Relaxed /
+       Focused, and "On Track" must still appear nowhere on this tile. */
+    seed({ 'study-pace-readout': { enabled: true, variant: 'stats' } })
+    renderShell(TESTING_URL)
+    const tile = paceTile()
+    expect(within(tile).queryByText('On Track')).toBeNull()
+    expect(within(tile).queryByText('At Risk')).toBeNull()
+    // The two facts the prose stated, now as cells.
+    expect(tile.textContent).toMatch(/Course access/i)
+    expect(tile.textContent).toMatch(/\d+ days/)
+    expect(tile.textContent).toMatch(/Estimated completion date/i)
+    // The access END date survives as the countdown's second line — the half
+    // the prose would otherwise have taken with it.
+    expect(tile.textContent).toMatch(/Ends [A-Z][a-z]{2} \d+/)
+    // …and the two things that survive BOTH variants.
+    expect(tile.textContent).toMatch(/Your estimated finish date will update/)
+    expect(within(tile).getByRole('button', { name: /Customize Study Plan/ })).toBeTruthy()
   })
 
   it('leaves the tile lo-fi on every OTHER version', () => {

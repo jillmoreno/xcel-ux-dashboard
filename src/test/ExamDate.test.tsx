@@ -55,6 +55,16 @@ function seedPacing() {
 beforeEach(() => {
   window.localStorage.clear()
   window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
+  /* ⚠ `study-pace-readout: prose` — 2026-09-23. `stats` is the branch default
+     and it replaces the Study Pace card's two fact SENTENCES with cells. The
+     cross-surface claims here are about those sentences naming the ceiling the
+     card priced against ("Your exam is on May 31"), which is exactly the silent
+     failure this file exists to catch, so they are pinned to the treatment that
+     still states it in words. */
+  window.localStorage.setItem(
+    'cgp.featureFlags',
+    JSON.stringify({ 'study-pace-readout': { enabled: true, variant: 'prose' } }),
+  )
   clearExamDate()
 })
 

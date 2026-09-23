@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useMemo, useState, type CSSProperties } from 'react'
 import { ChevronRight, Clock } from '@/icons'
 import { SquareTile } from '@/components/membership/v5/SquareTile'
 import { StudyPaceSheet, type PaceChoices } from './StudyPaceSheet'
@@ -19,6 +19,7 @@ import {
   activeDays,
   daysUntil,
 } from '@/lib/studyPace'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 
 /**
  * STUDY PACE — the live tile. "Testing 2" dashboard version only; QE Focused
@@ -555,6 +556,9 @@ function PaceCardBody({
      one day off from the date printed on the learner's receipt. */
   const ceilingIso = model.binding === 'exam' ? examDate : accessExpiresAt
   const examBinds = model.binding === 'exam'
+  /* UNCONDITIONALLY, above the `state: 'no'` early return — the rules-of-hooks
+     trap this file's own header records three times over. */
+  const readout = useFeatureFlag('study-pace-readout').variant ?? 'prose'
 
   if (preset.state === 'no') {
     return (
@@ -562,6 +566,24 @@ function PaceCardBody({
         <p style={cardHeadline}>
           The work left won’t fit before {examBinds ? 'your exam' : 'your access ends'}.
         </p>
+        {/* THE CELLS STAY, AND THE GAP IS NAMED — 2026-09-23, the chosen
+            answer. One layout in every state, so the readout is somewhere a
+            learner can rely on finding rather than something that appears when
+            the news is good. The completion cell reads "Not achievable" because
+            there is no date: a dash would look like data that failed to load,
+            and a date would be a promise the model has just refused to make.
+
+            The warning above it is unchanged and still leads — putting the
+            cells first would have made the card open with a countdown at the
+            one moment the countdown is not the point. */}
+        {readout === 'stats' ? (
+          <PaceStatsRow
+            preset={preset}
+            daysToCeiling={model.daysToCeiling}
+            ceilingIso={ceilingIso}
+            examBinds={examBinds}
+          />
+        ) : null}
         {/* TWO WAYS OUT, NAMED — 2026-09-21, the direct ask: "they will need to
             adjust their study pace drastically or consider extending the course
             to finish the content."
@@ -679,7 +701,32 @@ function PaceCardBody({
         </p>
       ) : null}
 
+      {/*
+        THE READOUT — `study-pace-readout: stats`, 2026-09-23.
+        
+        THREE CELLS INSTEAD OF TWO SENTENCES, and nothing the prose said is
+        lost: the access end date rides under the countdown as a second line,
+        which is where a learner checks it anyway. The third sentence (the
+        estimate moves) and Customize Study Plan survive in both variants — they
+        were never the part being restated.
+        
+        THE STATUS CELL IS THE PACE AXIS, not the compliance one. Relaxed /
+        Recommended / Focused, plus heavy — `PaceChip`'s own note records why
+        the two must not share a badge: a learner reading "At Risk" off a
+        statement that is only saying their evenings are long. This card speaks
+        about the plan; the band above it speaks about the learner.
+      */}
+      {readout === 'stats' ? (
+        <PaceStatsRow
+          preset={preset}
+          daysToCeiling={model.daysToCeiling}
+          ceilingIso={ceilingIso}
+          examBinds={examBinds}
+        />
+      ) : null}
       <div style={cardBody}>
+        {readout === 'stats' ? null : (
+        <>
         {/* LINE ONE — the window. Omitted entirely when nothing bounds it:
             with no access window and no exam date the model aims at a default
             horizon, and "you have 14 days left to finish the course material"
@@ -699,6 +746,8 @@ function PaceCardBody({
         <p style={{ margin: 0 }}>
           At this pace, you will finish around <b style={emphasis}>{formatPaceDate(preset.finishIso)}</b>.
         </p>
+        </>
+        )}
         {/* HELPER TEXT, NOT A THIRD FACT — 2026-09-23, the direct ask: "reduce
             the size of this font so it sits more as helper text."
 
@@ -863,6 +912,144 @@ function CustomizeLink({ onClick }: { onClick: () => void }) {
       <ChevronRight size={14} aria-hidden />
     </button>
   )
+}
+
+
+/**
+ * THE THREE-CELL READOUT — `study-pace-readout: stats`.
+ *
+ * 2026-09-23, the direct ask: Course Access, Estimated Completion Date and
+ * Status, "with small dividers in between them".
+ *
+ * A GRID, NOT A FLEX ROW, so the three columns are equal whatever their content
+ * is. Flexed, "Estimated Completion Date" is the longest label by a distance
+ * and would have taken width off the other two — the cells would be sized by
+ * their captions rather than by the reading, which is the thing being compared.
+ *
+ * THE DIVIDERS ARE BORDERS ON THE CELLS, not elements between them. Three
+ * spacers in a six-child grid is a row that breaks differently the moment a
+ * cell wraps; a `border-left` on all but the first cannot come apart from the
+ * cell it divides. `--color-border-subtle` is the same hairline the stat rows
+ * elsewhere in this band use.
+ *
+ * IT DOES NOT WRAP. At 511px of inner width each cell has ~159px, which holds
+ * the longest caption over two lines and every value on one. Below that the
+ * band has already stacked to the mobile arrangement, where this tile is
+ * full-width again.
+ */
+function PaceStatsRow({
+  preset,
+  daysToCeiling,
+  ceilingIso,
+  examBinds,
+}: {
+  preset: PacePreset
+  daysToCeiling: number
+  ceilingIso?: string
+  examBinds: boolean
+}) {
+  const noFit = preset.state === 'no'
+  return (
+    <div style={statsRowStyle}>
+      <div style={statsCellStyle}>
+        <p style={statsEyebrowStyle}>{examBinds ? 'Time to exam' : 'Course access'}</p>
+        {/* PLURALISED HERE, not by `unitCount` — that helper appends the unit
+            it is given and nothing more, so `unitCount(17, 'day')` printed
+            "17 day" in the first build. The same `n === 1` rule `timeRemaining`
+            uses, so the two surfaces say it the same way. */}
+        <p style={statsValueStyle}>
+          {Math.max(0, daysToCeiling)} {Math.max(0, daysToCeiling) === 1 ? 'day' : 'days'}
+        </p>
+        {/* THE END DATE UNDER THE COUNTDOWN — the chosen answer, and the half
+            the prose would otherwise have taken with it. "29 days" without it
+            is a number counting to nothing a learner can see. */}
+        {ceilingIso ? (
+          <p style={statsSubStyle}>
+            {examBinds ? 'Exam on ' : 'Ends '}
+            {formatPaceDate(ceilingIso)}
+          </p>
+        ) : null}
+      </div>
+      <div style={{ ...statsCellStyle, ...statsDividedStyle }}>
+        <p style={statsEyebrowStyle}>Estimated completion date</p>
+        <p style={noFit ? { ...statsValueStyle, ...statsValueMutedStyle } : statsValueStyle}>
+          {noFit ? 'Not achievable' : formatPaceDate(preset.finishIso)}
+        </p>
+      </div>
+      <div style={{ ...statsCellStyle, ...statsDividedStyle }}>
+        <p style={statsEyebrowStyle}>Status</p>
+        {/* THE PACE AXIS, via the card's own chip — same component, same tones,
+            so this cell and the other treatment's pill cannot drift into two
+            vocabularies for one fact. */}
+        <div style={{ marginTop: 2 }}>
+          <PaceChip
+            tone={noFit ? 'critical' : preset.state === 'heavy' ? 'warning' : 'neutral'}
+          >
+            {noFit ? 'Won\u2019t fit' : presetLabel(preset)}
+            {preset.state === 'heavy' ? ' \u00b7 heavy' : ''}
+          </PaceChip>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+const statsRowStyle: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
+  alignItems: 'start',
+}
+
+const statsCellStyle: CSSProperties = {
+  minWidth: 0,
+  padding: '0 14px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 3,
+}
+
+/** First cell has no rule; the other two carry their own left border. */
+const statsDividedStyle: CSSProperties = {
+  borderLeft: '1px solid var(--color-border-subtle)',
+}
+
+const statsEyebrowStyle: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 10,
+  fontWeight: 600,
+  letterSpacing: '0.14em',
+  textTransform: 'uppercase',
+  lineHeight: '14px',
+  color: 'var(--color-text-tertiary)',
+}
+
+/** The heading face, at the size the card's other figures take \u2014 see
+ *  `emphasis`. The serif reads smaller than the sans at a matched size. */
+const statsValueStyle: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-heading)',
+  fontSize: 16,
+  fontWeight: 700,
+  lineHeight: '22px',
+  color: 'var(--color-text-primary)',
+}
+
+/** "Not achievable" is a STATEMENT, not a reading — the figure weight would
+ *  make it look like one. */
+const statsValueMutedStyle: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  fontWeight: 600,
+  color: 'var(--color-text-tertiary)',
+}
+
+const statsSubStyle: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 11.5,
+  lineHeight: '16px',
+  color: 'var(--color-text-tertiary)',
 }
 
 /** `"1¾ hours"` → `["1¾", "hours"]`; `"45 min"` → `["45", "min"]`. A display

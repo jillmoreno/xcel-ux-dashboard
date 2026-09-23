@@ -11,7 +11,7 @@ import {
   defaultWeekdays,
   WEEKDAY_LABELS,
 } from '@/lib/studyPace'
-import { FEATURE_FLAGS } from '@/context/FeatureFlagContext'
+import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
 
 /**
@@ -32,9 +32,30 @@ import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
 
 const TODAY = new Date(2026, 8, 18) // Fri 18 Sep 2026
 
-function renderTile(props: Partial<React.ComponentProps<typeof StudyPaceTile>> = {}) {
+/**
+ * ⚠ `prose` BY DEFAULT HERE, and pinned rather than inherited — 2026-09-23,
+ * when `study-pace-readout` arrived and its `stats` variant became the BRANCH
+ * default. Every assertion below was written against the card's three
+ * sentences; without a provider `useFeatureFlag` hands back the catalog
+ * default, so ten of them started reading a card that no longer says those
+ * words.
+ *
+ * Pinning is the right fix rather than rewriting them: these tests are about
+ * what the card CLAIMS — the window, the ceiling it used, the date it lands on
+ * — and the prose variant is where those claims are still made in sentences.
+ * `readout: 'stats'` below covers the other treatment.
+ */
+function renderTile(
+  props: Partial<React.ComponentProps<typeof StudyPaceTile>> = {},
+  readout: 'prose' | 'stats' = 'prose',
+) {
+  window.localStorage.setItem(
+    'cgp.featureFlags',
+    JSON.stringify({ 'study-pace-readout': { enabled: true, variant: readout } }),
+  )
   return render(
     <MemoryRouter>
+      <FeatureFlagProvider>
       <StudyPaceTile
         today={TODAY}
         hoursRemaining={24}
@@ -43,6 +64,7 @@ function renderTile(props: Partial<React.ComponentProps<typeof StudyPaceTile>> =
         detailsTo="/dashboard-rebrand?section=study-plan"
         {...props}
       />
+      </FeatureFlagProvider>
     </MemoryRouter>,
   )
 }

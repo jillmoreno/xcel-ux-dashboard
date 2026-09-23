@@ -97,6 +97,9 @@ const REBRAND_FLAGS = [
   // and Gray) ⇄ Tiers (the sign-in prototype's warm ink / muted / faint).
   // Variant-only; light theme only. See the catalog entry.
   'dashboard-text-tiers',
+  // Study Pace card's lower half — Prose (three sentences) ⇄ Stats (three
+  // divided cells). Variant-only; see the catalog entry.
+  'study-pace-readout',
   // Recommended for You band — show/hide the whole section.
   'dashboard-recommended',
   // Recommended card blurb — show/hide the "what this is" line on the cards.
