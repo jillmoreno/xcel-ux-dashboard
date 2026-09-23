@@ -1,6 +1,4 @@
 import { useState, type ComponentType, type CSSProperties } from 'react'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
-import { CourseContentV2 } from './CourseContentV2'
 import {
   ArrowLeft,
   BookFull,
@@ -197,16 +195,14 @@ export function CompassCoursePlayer({
    */
   const [page, setPage] = useState<CompassPage>('course')
   /*
-   * WHICH COURSE BODY — `dashboard-navigation`, 2026-09-23.
-   *
-   * ⚠ READ HERE RATHER THAN BRANCHED AT THE LAUNCHER, which was the other
-   * obvious place. A second `<CompassCoursePlayerV2>` beside this one in
-   * `PlatformShell` would have forked the SHELL as well — sidebar, breadcrumb,
-   * Overview, the eight rail pages — and an A/B whose two arms differ in a
-   * dozen untracked places cannot attribute anything a participant says. Only
-   * the course body forks; everything around it is literally the same code.
+   * `dashboard-navigation` WAS READ HERE and moved to `PlatformShell` on
+   * 2026-09-23, when Option 2 became a full-screen page rather than a variant
+   * body. The note that lived here argued for branching inside this component
+   * so only the course body forked — right while the two arms shared a shell,
+   * and wrong once the ask was "the navigation is going to change
+   * drastically". Option 2 now draws its own header and no longer uses this
+   * player at all, so the branch belongs where the player is chosen.
    */
-  const navVariant = useFeatureFlag('dashboard-navigation').variant ?? 'option-1'
 
   const currentChapter =
     NY_LH_COURSE_CHAPTERS[NY_LH_CURRENT_CHAPTER_INDEX] ?? NY_LH_COURSE_CHAPTERS[0]
@@ -271,11 +267,6 @@ export function CompassCoursePlayer({
             role="region"
             aria-label={`${COMPASS_PAGES.find((p) => p.id === page)?.label ?? ''} page`}
           />
-        ) : navVariant === 'option-2' ? (
-          /* Option 2 owns this whole region — see `CourseContentV2`. It starts
-             as an exact copy of the branch below, so the two render
-             identically until someone edits that file on purpose. */
-          <CourseContentV2 chapterTitle={currentChapter} onBack={() => setPage('overview')} />
         ) : (
           <>
         <CompassTopBar

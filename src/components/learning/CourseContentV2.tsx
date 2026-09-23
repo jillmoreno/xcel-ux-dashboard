@@ -1,65 +1,166 @@
-import type { CSSProperties } from 'react'
-import { ArrowLeft, ArrowRight } from '@/icons'
-import { CompassTopBar, RubiAside } from './CompassCoursePlayer'
+import { useEffect, type CSSProperties } from 'react'
+import { ArrowLeft, ArrowRight, CalendarDay, FileText, Plus, RubiLogo, Sun, X } from '@/icons'
+import { Logo } from '@/components/brand/Logo'
+import { readExamDate } from '@/data/examDateStore'
+import { daysUntil, formatPaceDate } from '@/lib/studyPace'
+import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
+import { setCourseTakeover } from './courseTakeover'
+import { RubiAside } from './CompassCoursePlayer'
 
 /**
- * OPTION 2's COURSE CONTENT PAGE — `dashboard-navigation: option-2`,
- * 2026-09-23.
+ * OPTION 2's COURSE PAGE — `dashboard-navigation: option-2`, 2026-09-23.
  *
- * ⚠ THIS FILE IS THE VARIANT. Everything else about the player is shared with
- * Option 1 — the 260px contents sidebar, the Home / Overview breadcrumb, the
- * eight rail pages, the Overview page itself. Only the right-hand COURSE body
- * forks here, which is what makes the A/B readable: a participant's reaction
- * can be attributed to this body rather than to a second player that has
- * drifted in a dozen places nobody is tracking.
+ * ⚠ A FULL-SCREEN TAKEOVER, and that is a change of shape from this file's
+ * first build. It started as Option 2's course BODY only, sharing the player's
+ * shell — sidebar, breadcrumb, app header — on the argument that an A/B whose
+ * arms differ in a dozen untracked places cannot attribute anything a
+ * participant says. The direct ask overrode it: "the navigation is going to
+ * change drastically", and the new header carries the course and section
+ * naming that the breadcrumb and the app header were carrying.
  *
- * ⚠ IT STARTS AS AN EXACT COPY OF OPTION 1, on purpose. A variant that arrives
- * already different cannot be verified — there is no moment where the two are
- * known to match, so a later "did we mean to change that?" has no answer. Both
- * options render identically today and a test asserts it; the first real
- * difference is a deliberate edit to this file, against a known-equal baseline.
+ * SO OPTION 2 IS NOW A SEPARATE PAGE, not a variant body, and the comparison
+ * it supports changed with it: the two arms differ in their whole navigation,
+ * which is the thing being tested rather than a confound. `PlatformShell`
+ * branches between them at the launcher.
  *
- * ⚠ AND ITS STYLES ARE ITS OWN, deliberately duplicated rather than imported.
- * Option 2 exists to be changed freely, and shared style constants would mean
- * every edit here silently moved Option 1 too — the one failure that would
- * invalidate the comparison mid-test. The cost is that a change meant for BOTH
- * has to be made twice; that is the right way round for a variant with a short
- * life.
+ * ⚠ IT SUPPRESSES THE APP HEADER while mounted — `courseTakeover`. Without it
+ * there are two XCEL logos stacked, which reads as broken rather than as a
+ * variant.
  *
- * WHAT IS STILL SHARED, and why it is safe: `CompassTopBar` and `RubiAside`
- * are imported as components. Neither carries the layout this file is about —
- * the top bar is the chapter title and the ✕ up to Overview, the aside is the
- * Rubi panel — and both should stay identical across the two options unless
- * the ask says otherwise. Fork either one the moment it needs to differ.
+ * WHAT IS WIRED: ✕ (closes the course). Everything else in the header — the
+ * exam-date pill, + Demo, the brightness glyph, Notes, Rubi — renders and does
+ * nothing yet, awaiting the icon spec. They are deliberately NOT `<button>`s
+ * for that reason: this player's rule throughout is that a control which looks
+ * pressable and is not is what gets reported as broken.
+ *
+ * ⚠ THE NAMES ARE THE DEMO'S OWN, not the mock's. The design draws
+ * "Life & Health · Life insurance policy types"; this renders the course and
+ * chapter the rest of the session names — the sidebar in Option 1, the
+ * dashboard behind it, the Study Journey. A participant who meets two
+ * different course names in one sitting stops believing both.
  */
 export function CourseContentV2({
+  courseTitle,
   chapterTitle,
-  onBack,
+  percentComplete,
+  onClose,
 }: {
-  /** The current chapter, for the toolbar — the player's own `currentChapter`. */
+  /** The learner's course — the persona's own title, as the dashboard states it. */
+  courseTitle: string
+  /** The current chapter, named in the header and above the progress track. */
   chapterTitle: string
-  /** Up a level to the course Overview. Same handler Option 1 gives the ✕. */
-  onBack: () => void
+  /** 0–100, drawn as the section track and printed beside it. */
+  percentComplete: number
+  /** Leave the course. The ✕ — the one wired control in this header. */
+  onClose: () => void
 }) {
+  useEffect(() => {
+    setCourseTakeover(true)
+    return () => setCourseTakeover(false)
+  }, [])
+
+  /* THE EXAM DATE THE LEARNER ACTUALLY BOOKED, from the same store the
+     Schedule State Exam card writes. The mock draws "Aug 14, 2026 · 8 days
+     out"; hard-coding that would put a specific false date on screen, which is
+     the one thing this repo's fixtures are careful never to do. With no date
+     booked the pill says so — it is the honest half of the same control. */
+  const examIso = readExamDate()
+  const examOut = examIso ? daysUntil(examIso, FIXTURE_TODAY) : null
+
   return (
-    <>
-      <CompassTopBar chapterTitle={chapterTitle} onBack={onBack} backLabel="Overview" />
+    <div style={pageStyle}>
+      <header style={headerStyle}>
+        <div style={headerRowStyle}>
+          <div style={identityStyle}>
+            <Logo height={30} />
+            <span style={wordmarkStyle}>Compass</span>
+            <span aria-hidden style={dividerStyle} />
+            {/* COURSE THEN SECTION, weighted apart rather than separated only
+                by a dot: the section is where the learner is and the course is
+                the context for it, so the emphasis does the work the mock's
+                bolding does. */}
+            <p style={crumbStyle}>
+              <span style={crumbCourseStyle}>{courseTitle}</span>
+              <span aria-hidden style={crumbDotStyle}>
+                ·
+              </span>
+              <span style={crumbSectionStyle}>{chapterTitle}</span>
+            </p>
+          </div>
+
+          <div style={headerActionsStyle}>
+            <span style={datePillStyle}>
+              <CalendarDay size={14} aria-hidden />
+              {examIso ? (
+                <>
+                  {formatPaceDate(examIso)}
+                  {examOut != null ? (
+                    <span style={datePillMutedStyle}>· {examOut} days out</span>
+                  ) : null}
+                </>
+              ) : (
+                <span style={datePillMutedStyle}>No exam date yet</span>
+              )}
+            </span>
+            <span style={demoPillStyle}>
+              <Plus size={13} aria-hidden />
+              Demo
+            </span>
+            <span style={glyphStyle} aria-hidden>
+              <Sun size={15} />
+            </span>
+            <button type="button" onClick={onClose} aria-label="Close the course" style={closeStyle}>
+              <X size={15} aria-hidden />
+            </button>
+          </div>
+        </div>
+
+        {/* THE SECTION TRACK — read-only, by the ask. The handle marks where
+            the learner is; it does not drag. There is nothing for a dragged
+            position to mean while the body below is a placeholder block, and a
+            handle that moves without moving anything is the "looks pressable,
+            is not" failure the rest of this page avoids. */}
+        <div style={progressRowStyle}>
+          <div style={progressTrackWrapStyle}>
+            <p style={progressLabelStyle}>{chapterTitle}</p>
+            <div style={progressTrackStyle}>
+              <span
+                aria-hidden
+                style={{ ...progressHandleStyle, left: `${Math.min(100, Math.max(0, percentComplete))}%` }}
+              />
+              <span
+                aria-hidden
+                style={{ ...progressFillStyle, width: `${Math.min(100, Math.max(0, percentComplete))}%` }}
+              />
+            </div>
+            <p style={progressPctStyle}>{Math.round(percentComplete)}%</p>
+          </div>
+          <div style={progressActionsStyle}>
+            <span style={notesPillStyle}>
+              <FileText size={14} aria-hidden />
+              Notes
+              <span style={notesCountStyle}>0</span>
+            </span>
+            <span style={rubiPillStyle}>
+              <RubiLogo size={14} aria-hidden />
+              Rubi
+            </span>
+          </div>
+        </div>
+      </header>
+
       <div style={bodyStyle}>
         <div style={columnStyle}>
           <main style={mainStyle}>
-            {/* THE PLACEHOLDER IS THE DESIGN, not a stand-in for it — the same
-                position Option 1 takes. The courseware is Compass's, served
-                into this frame, and neither the mock nor this repo has it.
-                Drawing a fake lesson here would be the one thing the
-                surrounding chrome is honest about avoiding. */}
+            {/* THE PLACEHOLDER IS THE DESIGN, the same position Option 1 takes:
+                the courseware is Compass's, served into this frame, and neither
+                the mock nor this repo has it. */}
             <div style={cardStyle}>
               <p style={captionStyle}>Course Content</p>
               <div aria-hidden style={blockStyle} />
             </div>
           </main>
           <footer style={footerStyle}>
-            {/* Not `disabled` buttons — nothing in this footer is wired, and a
-                real disabled state would claim the rest is. */}
             <span style={prevStyle}>
               <ArrowLeft size={16} aria-hidden />
               Previous
@@ -72,13 +173,248 @@ export function CourseContentV2({
         </div>
         <RubiAside />
       </div>
-    </>
+    </div>
   )
 }
 
 /* ─── Option 2's own layout ────────────────────────────────────────────────
-   Copied from `CompassCoursePlayer`'s course branch and owned here. See the
-   header for why these are duplicated rather than imported. */
+   Owned here rather than imported: Option 2 exists to be changed freely, and
+   shared constants would mean every edit here silently moved Option 1 too —
+   the one failure that would invalidate the comparison mid-test. */
+
+const pageStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  minHeight: '100vh',
+  background: 'var(--color-surface-card)',
+}
+
+const headerStyle: CSSProperties = {
+  flexShrink: 0,
+  background: 'var(--color-surface-card)',
+  borderBottom: '1px solid var(--compass-rule)',
+}
+
+const headerRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 24,
+  height: 64,
+  padding: '0 24px',
+  borderBottom: '1px solid var(--compass-rule)',
+}
+
+const identityStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 12,
+  minWidth: 0,
+}
+
+const wordmarkStyle: CSSProperties = {
+  fontFamily: 'var(--font-heading)',
+  fontSize: 22,
+  fontWeight: 700,
+  letterSpacing: '-0.01em',
+  color: 'var(--color-text-primary)',
+  whiteSpace: 'nowrap',
+}
+
+const dividerStyle: CSSProperties = {
+  width: 1,
+  height: 26,
+  flexShrink: 0,
+  background: 'var(--compass-edge)',
+}
+
+const crumbStyle: CSSProperties = {
+  margin: 0,
+  display: 'flex',
+  alignItems: 'center',
+  gap: 7,
+  minWidth: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 15,
+  overflow: 'hidden',
+}
+
+const crumbCourseStyle: CSSProperties = {
+  color: 'var(--color-text-tertiary)',
+  whiteSpace: 'nowrap',
+}
+
+const crumbDotStyle: CSSProperties = { color: 'var(--color-text-tertiary)' }
+
+const crumbSectionStyle: CSSProperties = {
+  fontWeight: 700,
+  color: 'var(--color-text-primary)',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  whiteSpace: 'nowrap',
+}
+
+const headerActionsStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+  flexShrink: 0,
+}
+
+const pillBase: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 7,
+  height: 34,
+  padding: '0 14px',
+  borderRadius: 'var(--radius-pill)',
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  fontWeight: 600,
+  whiteSpace: 'nowrap',
+}
+
+const datePillStyle: CSSProperties = {
+  ...pillBase,
+  border: '1px solid var(--compass-edge)',
+  color: 'var(--color-text-primary)',
+}
+
+const datePillMutedStyle: CSSProperties = {
+  color: 'var(--color-text-tertiary)',
+  fontWeight: 500,
+}
+
+/* DASHED, as drawn — the mock's own way of saying this one adds something
+   rather than reporting it. */
+const demoPillStyle: CSSProperties = {
+  ...pillBase,
+  border: '1px dashed var(--compass-edge)',
+  color: 'var(--color-text-secondary)',
+}
+
+const glyphBase: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 34,
+  height: 34,
+  borderRadius: 'var(--radius-md)',
+  border: '1px solid var(--compass-edge)',
+  color: 'var(--color-text-primary)',
+}
+
+const glyphStyle: CSSProperties = glyphBase
+
+const closeStyle: CSSProperties = {
+  ...glyphBase,
+  background: 'transparent',
+  cursor: 'pointer',
+}
+
+const progressRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 24,
+  minHeight: 56,
+  padding: '8px 24px',
+}
+
+const progressTrackWrapStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 12,
+  flex: 1,
+  minWidth: 0,
+  justifyContent: 'center',
+}
+
+const progressLabelStyle: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 12,
+  fontWeight: 600,
+  color: 'var(--color-text-secondary)',
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+  maxWidth: 280,
+}
+
+const progressTrackStyle: CSSProperties = {
+  position: 'relative',
+  flex: 1,
+  maxWidth: 420,
+  height: 4,
+  borderRadius: 'var(--radius-pill)',
+  background: 'var(--compass-rule)',
+}
+
+const progressFillStyle: CSSProperties = {
+  position: 'absolute',
+  insetInlineStart: 0,
+  top: 0,
+  height: '100%',
+  borderRadius: 'var(--radius-pill)',
+  background: 'var(--compass-edge)',
+}
+
+const progressHandleStyle: CSSProperties = {
+  position: 'absolute',
+  top: '50%',
+  width: 12,
+  height: 12,
+  marginInlineStart: -6,
+  transform: 'translateY(-50%)',
+  borderRadius: '50%',
+  background: 'var(--color-surface-card)',
+  border: '1.5px solid var(--color-text-primary)',
+  zIndex: 1,
+}
+
+const progressPctStyle: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 12,
+  fontWeight: 600,
+  color: 'var(--color-text-secondary)',
+  whiteSpace: 'nowrap',
+}
+
+const progressActionsStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+  flexShrink: 0,
+}
+
+const notesPillStyle: CSSProperties = {
+  ...pillBase,
+  border: '1px solid var(--compass-edge)',
+  color: 'var(--color-text-primary)',
+}
+
+const notesCountStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  minWidth: 18,
+  height: 18,
+  padding: '0 5px',
+  borderRadius: 'var(--radius-pill)',
+  background: 'var(--compass-content)',
+  color: 'var(--color-text-secondary)',
+  fontSize: 11,
+  fontWeight: 700,
+}
+
+const rubiPillStyle: CSSProperties = {
+  ...pillBase,
+  border: '1px solid var(--compass-edge)',
+  background: 'var(--compass-current)',
+  color: 'var(--color-text-primary)',
+}
 
 const bodyStyle: CSSProperties = {
   display: 'flex',

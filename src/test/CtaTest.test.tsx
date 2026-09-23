@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { render, screen, fireEvent, act, cleanup } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
@@ -11,6 +11,12 @@ import { PlatformShell } from '@/components/layout/PlatformShell'
 import { PrototypeChrome } from '@/components/layout/PrototypeChrome'
 import { DemoControlsBar } from '@/components/prototype/DemoControlsBar'
 import { DashboardVersionsPanelProvider } from '@/components/dashboard/DashboardVersionsPanelContext'
+import { CourseContentV2 } from '@/components/learning/CourseContentV2'
+import { useCourseTakeover } from '@/components/learning/courseTakeover'
+import {
+  NY_LH_COURSE_CHAPTERS,
+  NY_LH_CURRENT_CHAPTER_INDEX,
+} from '@/data/nyProducerRequirements'
 import { MembershipVersionsPanelProvider } from '@/components/membership/MembershipVersionsPanelContext'
 import { FeatureFlagPanelProvider } from '@/components/account/FeatureFlagPanelContext'
 import { CtaTestProvider, parseDeadParam } from '@/context/CtaTestContext'
@@ -542,41 +548,92 @@ describe('dashboard-navigation — Option 1 / Option 2', () => {
     )
   })
 
-  it('opens the same shell either way, so only the body is the variable', () => {
-    /* ⚠ THE CLAIM THE WHOLE A/B RESTS ON. The fork is the course BODY; the
-       sidebar, the breadcrumb and the eight rail pages are literally the same
-       code. If a second player ever appears beside this one, an arm can drift
-       in a dozen untracked places and nothing a participant says can be
-       attributed. */
+  it('is a full-screen page — no sidebar, no breadcrumb, no app header', () => {
+    /* ⚠ THIS REPLACED TWO TESTS THAT ASSERTED THE OPPOSITE, and the swap is the
+       record of a decision rather than a test bending to code.
+
+       They pinned that the two arms shared a shell and rendered IDENTICALLY —
+       correct while Option 2 was a variant BODY, and written to fail the day
+       the variant was designed so the first real difference would be a
+       deliberate edit against a known-equal baseline. It was, and they did.
+       The ask that moved it: "the navigation is going to change drastically".
+
+       So the claim inverts. The two arms now share NO chrome, because the
+       navigation IS the variable rather than a confound around it. */
     seedNav('option-2')
+    openCourse()
+    expect(screen.queryByLabelText('Course contents')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Home' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Back to Overview' })).toBeNull()
+  })
+
+  it('names the demo’s real course and chapter, not the mock’s', () => {
+    /* The mock draws "Life & Health · Life insurance policy types". The header
+       states the course and chapter the rest of the session names — the
+       dashboard behind it, the Study Journey, Option 1's own sidebar. A
+       participant who meets two different course names in one sitting stops
+       believing both. */
+    seedNav('option-2')
+    openCourse()
+    const header = document.querySelector('header')!
+    expect(header.textContent).toContain('Compass')
+    expect(header.textContent).toContain(NY_LH_COURSE_CHAPTERS[NY_LH_CURRENT_CHAPTER_INDEX])
+    expect(header.textContent).not.toContain('Life insurance policy types')
+  })
+
+  it('wires ✕ and leaves the rest of the header inert', () => {
+    /* ⚠ THE INERT ONES ARE NOT BUTTONS, which is the assertion that matters.
+       This player's rule throughout is that a control looking pressable and
+       doing nothing is what gets reported as broken — so the exam pill,
+       + Demo, brightness, Notes and Rubi render as spans until their behaviour
+       is specified. Counting BUTTONS in the header is how that stays true. */
+    seedNav('option-2')
+    openCourse()
+    const header = document.querySelector('header')!
+    const buttons = [...header.querySelectorAll('button')]
+    expect(buttons.map((b) => b.getAttribute('aria-label'))).toEqual(['Close the course'])
+    act(() => {
+      fireEvent.click(buttons[0])
+    })
+    // …and it really leaves: the dashboard is back.
+    expect(screen.getByRole('button', { name: /Resume|Start course/ })).toBeTruthy()
+  })
+
+  it('suppresses the app header only while it is mounted', () => {
+    /* Two XCEL logos stacked is what this prevents. Asserted on the store
+       rather than on `<Header />`, which lives in `AppLayout` above this whole
+       tree — see `courseTakeover` for why there is no prop path between them.
+       The UNMOUNT half is the one that would strand a reviewer headerless. */
+    function Probe() {
+      return <span data-testid="takeover">{String(useCourseTakeover())}</span>
+    }
+    const { unmount } = render(
+      <MemoryRouter>
+        <Probe />
+        <CourseContentV2
+          courseTitle="X"
+          chapterTitle="Y"
+          percentComplete={0}
+          onClose={() => {}}
+        />
+      </MemoryRouter>,
+    )
+    expect(screen.getByTestId('takeover').textContent).toBe('true')
+    unmount()
+    render(
+      <MemoryRouter>
+        <Probe />
+      </MemoryRouter>,
+    )
+    expect(screen.getByTestId('takeover').textContent).toBe('false')
+  })
+
+  it('leaves Option 1 exactly as it was', () => {
+    /* The direction a variant most easily breaks: the control arm. */
+    seedNav('option-1')
     openCourse()
     expect(screen.getByLabelText('Course contents')).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Home' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Overview' })).toBeTruthy()
     expect(screen.getByRole('button', { name: 'Back to Overview' })).toBeTruthy()
-  })
-
-  it('renders identically to Option 1 until someone edits CourseContentV2', () => {
-    /*
-     * ⚠ THE BASELINE ASSERTION, and it is meant to FAIL the day the variant is
-     * designed — at which point it is replaced by assertions about whatever
-     * the difference turns out to be.
-     *
-     * A variant that arrives already different cannot be verified: there is no
-     * moment where the two are known to match, so a later "did we mean to
-     * change that?" has no answer. This pins the known-equal starting point so
-     * the first real difference is a deliberate edit against it.
-     */
-    seedNav('option-1')
-    const { container: one } = { container: document.body }
-    openCourse()
-    const optionOne = one.querySelector('[aria-label="Course contents"]')?.parentElement?.textContent
-    cleanup()
-    window.localStorage.clear()
-    seedNav('option-2')
-    openCourse()
-    const optionTwo = document.body.querySelector('[aria-label="Course contents"]')?.parentElement
-      ?.textContent
-    expect(optionTwo).toBe(optionOne)
   })
 })

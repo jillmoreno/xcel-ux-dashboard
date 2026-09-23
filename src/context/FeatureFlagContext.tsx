@@ -853,7 +853,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Widgets',
     label: 'Navigation',
     description:
-      'Which course-content surface Resume opens. `option-1` is the Compass player as it stands — the 260px contents sidebar, the toolbar and the reading column. `option-2` opens a second version of the COURSE CONTENT page only: same shell, same sidebar and breadcrumb, its own body. ⚠ THE TWO SHARE EVERYTHING EXCEPT THAT BODY — see `CourseContentV2`, which is the one file Option 2 owns and the only place to make them differ.',
+      'Which course page Resume opens. `option-1` is the Compass player as it stands — the 260px contents sidebar, the Home / Overview / Course breadcrumb, the toolbar and the reading column, under the app header. `option-2` is a FULL-SCREEN page with its own header (logo · Compass · course · section, plus the exam-date pill, + Demo, brightness and ✕) and a section progress track; it has no sidebar, no breadcrumb, and it suppresses the app header while open. ⚠ THE TWO SHARE NO CHROME — the navigation IS the variable. `CourseContentV2` is the file Option 2 owns.',
     // Variant-only, like `study-pace-chooser` below.
     defaultEnabled: true,
     /* ⚠ `option-1` ON THE BRANCH TOO, which breaks this repo's usual rule that
@@ -869,13 +869,13 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
         value: 'option-1',
         label: 'Option 1 — the current course page',
         description:
-          'Resume opens the Compass player unchanged: contents sidebar, toolbar, the reading column with Previous / Next, and the Rubi panel.',
+          'Resume opens the Compass player unchanged: app header, contents sidebar, Home / Overview / Course breadcrumb, the reading column with Previous / Next, and the Rubi panel.',
       },
       {
         value: 'option-2',
         label: 'Option 2 — the alternate course page',
         description:
-          'Resume opens the same player with a different COURSE CONTENT body (`CourseContentV2`). Everything outside that body — the sidebar, the breadcrumb, the Overview page and the other seven rail pages — is identical, so any difference a participant reports is the body.',
+          'Resume opens `CourseContentV2` — a full-screen course page whose own header carries the course and section naming, so there is no app header, no contents sidebar and no breadcrumb. Wired: ✕. Lo-fi for now: the exam-date pill (real date when one is booked), + Demo, brightness, Notes and Rubi.',
       },
     ],
     page: 'dashboard-rebrand',

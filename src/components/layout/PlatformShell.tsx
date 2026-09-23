@@ -50,6 +50,11 @@ import { ResourcesPanel } from '@/components/membership/ResourcesPanel'
 import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
 import { displayedProgressPct } from '@/components/learning/learningPathsHomeUtil'
 import { CompassCoursePlayer } from '@/components/learning/CompassCoursePlayer'
+import { CourseContentV2 } from '@/components/learning/CourseContentV2'
+import {
+  NY_LH_COURSE_CHAPTERS,
+  NY_LH_CURRENT_CHAPTER_INDEX,
+} from '@/data/nyProducerRequirements'
 import { ReadinessPanel } from '@/components/readiness/ReadinessPanel'
 import { resourcesCopyFor, resourcesFor } from '@/data/membership/resourcesFixtures'
 import { NonMemberUpsellHero } from '@/components/membership/NonMemberUpsellHero'
@@ -206,6 +211,11 @@ function PlatformShellBody() {
      conditional return is the `rules-of-hooks` trap three notes in
      `LearnerFocusedBand` already record. */
   const launcherStyle = useFeatureFlag('course-launcher-style').variant ?? 'lo-fi'
+  /* Which course page Resume opens — see the branch below. Named
+     `courseNavVariant` because `navVariant` is already this file's RAIL style;
+     two different navigations, and the shorter name was taken. Read with the
+     other flags, unconditionally, well above any early return. */
+  const courseNavVariant = useFeatureFlag('dashboard-navigation').variant ?? 'option-1'
   /*
    * WHAT THE PLAYER IS A PLAYER FOR comes from the OPENER, not from a lookup
    * here — `launcher.meta`, supplied by the card that called `open()`.
@@ -544,6 +554,30 @@ function PlatformShellBody() {
    * the dashboard it just covered.
    */
   if (launcherOpen && launcherStyle === 'compass') {
+    /*
+     * ⚠ TWO WHOLE PAGES, NOT TWO BODIES — `dashboard-navigation`, 2026-09-23.
+     *
+     * Option 2 draws its OWN header (logo · Compass · course · section, plus
+     * the controls top-right), which is the navigation the A/B is about. It
+     * shares no chrome with Option 1: no contents sidebar, no breadcrumb, and
+     * not even the app header — `CourseContentV2` suppresses that one while it
+     * is mounted, or there would be two XCEL logos stacked.
+     *
+     * THE BRANCH MOVED HERE from inside `CompassCoursePlayer`, where it lived
+     * while Option 2 was only a variant BODY. Keeping it there would have meant
+     * a page rendering a player it does not use in order to reach a branch that
+     * throws the player away.
+     */
+    if (courseNavVariant === 'option-2') {
+      return (
+        <CourseContentV2
+          courseTitle={launchedTitle}
+          chapterTitle={NY_LH_COURSE_CHAPTERS[NY_LH_CURRENT_CHAPTER_INDEX] ?? NY_LH_COURSE_CHAPTERS[0]}
+          percentComplete={launchedPercent}
+          onClose={launcher.close}
+        />
+      )
+    }
     return (
       <CompassCoursePlayer
         courseTitle={launchedTitle}

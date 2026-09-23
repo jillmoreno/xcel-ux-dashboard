@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ShoppingCart, Bars } from '@/icons'
 import { Logo } from '@/components/brand/Logo'
+import { useCourseTakeover } from '@/components/learning/courseTakeover'
 import { NavDropdown } from './NavDropdown'
 import { NavLink } from './NavLink'
 import { AccountMenu } from './AccountMenu'
@@ -81,6 +82,13 @@ export function Header() {
   // The slim header (logo cap + utility icons, no primary nav) renders only
   // on the rebranded dashboard shell route. Every other route keeps the
   // classic top nav.
+  /* ⚠ STANDS DOWN FOR A FULL-SCREEN COURSE PAGE — `dashboard-navigation:
+     option-2`, 2026-09-23. That page draws its own header (logo · Compass ·
+     course · section), so leaving this one up would stack two XCEL logos.
+     Read as a hook, unconditionally, and acted on after the rest of them —
+     rules-of-hooks, the trap `CompassCoursePlayer`'s header records three
+     times over. See `courseTakeover` for why it is a store and not a prop. */
+  const courseTakeover = useCourseTakeover()
   const platformNav = pathname === '/dashboard-rebrand'
   // Hide the primary top nav on the rebrand shell (wayfinding lives in the left
   // rail) AND on the Onboarding Flow — a required first-run wizard the learner
@@ -194,6 +202,9 @@ export function Header() {
       <AccountMenu />
     </div>
   )
+  /* AFTER EVERY HOOK, BEFORE ANY MARKUP — see `courseTakeover`. The full-screen
+     course page owns the header while it is open. */
+  if (courseTakeover) return null
   return (
     <>
     {/* The prototype utility bar + stakeholder Demo Controls banner now render
