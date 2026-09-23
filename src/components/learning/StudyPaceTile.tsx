@@ -926,5 +926,15 @@ const cardHelper = {
 const emphasis = {
   color: 'var(--color-text-primary)',
   fontFamily: 'var(--font-heading)',
+  /* A STEP LARGER THAN THE BODY — 14 against 12.5 (2026-09-23, "make a little
+     larger"). The serif reads smaller than the sans at a matched size, so
+     inheriting 12.5 made the figures look like a de-emphasis rather than the
+     opposite.
+
+     NO `lineHeight` OF ITS OWN, deliberately: these are inline `<b>`s inside
+     `cardBody`'s 20px lines, and a taller line-height on an inline child does
+     not push its own line down evenly — it nudges the paragraph and leaves the
+     three lines unevenly spaced. 14px has the room in a 20px line already. */
+  fontSize: 14,
   fontWeight: 700,
 } as const

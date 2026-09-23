@@ -23,6 +23,7 @@ import { unitCount } from '@/utils/unitLabel'
 import {
   NY_LH_COURSE_EXAM_ITEMS,
   NY_LH_EXAM_SIMULATORS,
+  NY_LH_PRELICENSING_LESSONS,
   NY_LH_PREP_REVIEW_LESSONS,
 } from '@/data/nyProducerRequirements'
 
@@ -202,7 +203,7 @@ export type JourneyStop = {
  *
  * and the five titles Jillienne specified from it:
  *
- *   1. Pre-Licensing Lessons   2. Course Exam (1)        3. Attestation & Affidavit
+ *   1. Pre-Licensing Lessons (42)   2. Course Exam (1)   3. Attestation & Affidavit
  *   4. Prep Review (23)        5. Simulated Exams (3)   6. Survey & Certificate
  *
  * WHAT CHANGED, and it is more than a rename. The journey had FOUR stops
@@ -413,7 +414,25 @@ export function journeyStopsFor(path: LearningPathSummary): JourneyStop[] {
   const lessonsPath = (path.unitLabel ?? 'hrs') === 'lessons'
   const namedCourseStops =
     lessonsPath && courseStops.length === 1
-      ? [{ ...courseStops[0], title: 'Pre-Licensing Lessons' }]
+      ? [
+          {
+            ...courseStops[0],
+            /* ⚠ THE 42 IS THE CARD'S, AND IT OVERLAPS STEP 2. This step counted
+               nothing for an hour ("Pre-Licensing Lessons"), after "(41)" was
+               dropped for sitting under a card printing "26 of 42 lessons".
+               2026-09-23 asks for (42) here — the card's own figure, so the two
+               now agree rather than differing by one.
+            
+               WHAT THAT COSTS: `NY_LH_PRELICENSING_LESSONS` is 42 because it
+               counts the 41 lessons AND the course exam that closes Part 1 —
+               see `NY_LH_PRELICENSING_LESSON_COUNT`. The exam is step 2 of this
+               same rail, so the rail now says 42 + 1 where the course has 42
+               things in it. Matching the card was the instruction and the card
+               is the more visible number; `NY_LH_PRELICENSING_LESSON_COUNT`
+               (41) is the swap if the double-count matters more. */
+            title: `Pre-Licensing Lessons (${NY_LH_PRELICENSING_LESSONS})`,
+          },
+        ]
       : courseStops
   /* The course exam and the attestation sit between the coursework and Part 2
      — the LMS's order, and the reason this is not just a rename. `blocked` on

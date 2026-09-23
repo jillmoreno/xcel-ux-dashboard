@@ -325,7 +325,7 @@ describe('the Study Journey replaces Today\'s Tasks', () => {
      * same course arguing is worse than one count stated once.
      */
     expect(stops.map((s) => s.title)).toEqual([
-      'Pre-Licensing Lessons',
+      'Pre-Licensing Lessons (42)',
       'Course Exam (1)',
       // ⚠ SPLIT OFF THE EXAM ROW 2026-09-23 ("after course exam, add another
       // line for attestation and affidavit"). It rode on the exam for an hour,
@@ -1268,7 +1268,7 @@ describe('every rail row is a hoverable, clickable target', () => {
     const linked = Array.from(list.querySelectorAll('.cre-stop-title'))
     // Exactly the one stop that is reachable — the rest are blocked.
     expect(linked).toHaveLength(1)
-    expect(linked[0].textContent).toBe('Pre-Licensing Lessons')
+    expect(linked[0].textContent).toBe('Pre-Licensing Lessons (42)')
     // NO inline colour, or the class would match, compute and do nothing —
     // the trap `.cre-uxlinks-title` and the PSI link both hit.
     expect((linked[0] as HTMLElement).style.color).toBe('')
@@ -2063,7 +2063,7 @@ describe('the Study Journey rail style flag', () => {
        them. The `<ol>` still carries the order for anyone not looking at it,
        which is why the node column was always `aria-hidden`. */
     const text = list.textContent ?? ''
-    expect(text).toContain('Pre-Licensing Lessons')
+    expect(text).toContain('Pre-Licensing Lessons (42)')
     expect(text).toContain('Course Exam (1)')
     expect(text).toContain('Attestation & Affidavit')
     // NO ordinal anywhere in the list — padded, bare, or trailing a full stop.
@@ -2169,7 +2169,7 @@ describe('the Study Journey rail style flag', () => {
      */
     const { container } = renderShell(QE_URL)
     const lists = Array.from(container.querySelectorAll<HTMLElement>('ol')).filter(
-      (o) => /Pre-Licensing Lessons|Schedule State Exam/.test(o.textContent ?? ''),
+      (o) => /Pre-Licensing Lessons \(|Schedule State Exam/.test(o.textContent ?? ''),
     )
     expect(lists).toHaveLength(2)
     for (const ol of lists) {
@@ -3441,8 +3441,12 @@ describe('milestones are marked by the NODE, not by red text', () => {
   it('still marks them — on the node, in the strong ink', () => {
     // The distinction has to survive losing the colour, or the change just
     // removed it. `--color-text-primary` against an ordinary stop's
-    // `--color-text-tertiary` ring: 11.37:1 vs 6.19:1 on the card (13.67 vs
-    // 6.18 dark), so it reads as a weight of ink rather than a hue.
+    /* `--color-text-tertiary` ring: 11.37:1 vs 4.74:1 on the card, so it reads
+       as a weight of ink rather than a hue. The tertiary figure was 6.19:1
+       until 2026-09-23, when the XCEL brand block stopped inheriting the base
+       stop — it had been DARKER than the Gray body ink beside it, running the
+       ladder backwards. The gap this assertion cares about got wider, not
+       narrower. */
     const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!
     const stops = journeyStopsFor(persona.path)
     /* TWO milestones as of 2026-09-23 — the course exam that closes Part 1

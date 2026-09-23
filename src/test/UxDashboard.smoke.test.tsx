@@ -38,8 +38,11 @@ function renderDashboard(initialPath = '/') {
   )
 }
 
-/** The nav order is load-bearing: open sections first, then the gated group,
- *  with the divider drawn where the first gated one starts. */
+/** The nav order is load-bearing: the ungated sections first (Prototypes ·
+ *  Refinement · Other Links · Research · Development · Done — Development and
+ *  Done were pulled out of the shared gate 2026-09-23, see `NAV_EYEBROWS` in
+ *  UxDashboardPage.tsx), then the still-gated group, with the divider drawn
+ *  where the first gated one starts. */
 const EXPECTED_SECTIONS = [
   'Prototypes',
   'Refinement',

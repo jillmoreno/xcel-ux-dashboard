@@ -44,8 +44,12 @@ function renderAt(Page: React.ComponentType, path: string) {
   )
 }
 
-const PUBLIC_SECTIONS = ['Prototypes', 'Refinement', 'Other Links', 'Research']
-const GATED_SECTIONS = ['Design', 'Exploration', 'Sandbox', 'Development', 'Done', 'Archive', 'QA Notes', 'To Do', 'Contributing']
+// Development and Done were pulled out of the `design-and-development` gate
+// 2026-09-23 (see `NAV_EYEBROWS` in UxDashboardPage.tsx) — they show here now,
+// under their own "Dev Handoff" eyebrow, alongside "Demo" and "Design &
+// Research" over the sections that were already public.
+const PUBLIC_SECTIONS = ['Prototypes', 'Refinement', 'Other Links', 'Research', 'Development', 'Done']
+const GATED_SECTIONS = ['Design', 'Exploration', 'Sandbox', 'Archive', 'QA Notes', 'To Do', 'Contributing']
 
 beforeEach(() => {
   sessionStorage.clear()
@@ -86,6 +90,11 @@ describe('public build — the nav', () => {
     expect(labels).toEqual(PUBLIC_SECTIONS)
     for (const s of GATED_SECTIONS) expect(screen.queryByText(s)).toBeNull()
     expect(screen.queryByText(/UX & Dev Access/i)).toBeNull()
+    // The three eyebrows over the sections that ARE public still draw here —
+    // only the gated group's own eyebrow is suppressed.
+    expect(within(nav).getByText('Demo')).toBeInTheDocument()
+    expect(within(nav).getByText('Design & Research')).toBeInTheDocument()
+    expect(within(nav).getByText('Dev Handoff')).toBeInTheDocument()
     // Refinement's board is read-only here: no composer whatever the store says.
     expect(screen.queryByRole('button', { name: /^Add link/ })).toBeNull()
     // No lock glyph either — nothing on this build is "locked", it is gone.
@@ -103,11 +112,19 @@ describe('public build — the nav', () => {
 
   it('never asks for a password, whatever the URL carries', async () => {
     const Page = await loadPublicPage()
-    for (const path of ['/?section=design', '/?section=dev', '/?section=dev&tab=archive', '/?section=todo']) {
+    // Still-gated targets (and the archive-tab pairing) fall back to
+    // Prototypes, the default. `dev` no longer does: Development was
+    // ungated 2026-09-23, so its legacy alias now resolves for real.
+    const cases: [string, string][] = [
+      ['/?section=design', 'Prototypes'],
+      ['/?section=dev', 'Development'],
+      ['/?section=dev&tab=archive', 'Prototypes'],
+      ['/?section=todo', 'Prototypes'],
+    ]
+    for (const [path, heading] of cases) {
       const { unmount } = renderAt(Page, path)
       expect(screen.queryByRole('dialog')).toBeNull()
-      // Landed on Prototypes, the default — its h1 is the section label.
-      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent('Prototypes')
+      expect(screen.getByRole('heading', { level: 1 })).toHaveTextContent(heading)
       unmount()
     }
   })

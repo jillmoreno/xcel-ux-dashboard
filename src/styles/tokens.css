@@ -693,6 +693,26 @@
   --color-text-primary: #3a3a3a; /* Charcoal */
   --color-text-secondary: #666666; /* Gray */
 
+  /* ⚠ TERTIARY HAD TO FOLLOW, and not following is the bug this fixes
+     (2026-09-23, from a contrast audit of the Testing home screen).
+
+     The block above re-pins only two stops, so `--color-text-tertiary` kept the
+     BASE value, `neutral-700` / #616161. On white that is 6.19:1 — DARKER than
+     the Gray body ink beside it at 5.74:1. So on this brand the ladder ran
+     backwards: helper text, captions and axis ticks were heavier than the body
+     they sit under, and nothing on the page read as subordinate. Both passed
+     AA the whole time, which is why no contrast check ever caught it.
+
+     #737373 is 4.74:1 — a clear step lighter than the body, with ~0.24 of
+     margin over the 4.5 floor for antialiasing at the 10-12px sizes this token
+     is mostly used at. Going to the true minimum (#767676, 4.54:1) buys one
+     more step of contrast between the greys and spends the whole margin.
+
+     ⚠ NOTE FOR ANYONE READING OLDER COMMENTS: several components state this
+     token as "6.19:1 light / 6.18:1 dark". Those were measured before this
+     line existed and are right about the BASE theme and wrong about XCEL. */
+  --color-text-tertiary: #737373;
+
   /* Brand alias + action recolor */
   --color-brand: var(--color-primary-500);
   --color-action: var(--color-cta-500);
