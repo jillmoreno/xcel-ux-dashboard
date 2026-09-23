@@ -41,15 +41,14 @@ function renderShell(url = TESTING_URL) {
   )
 }
 
-/** Pin ONE pacing treatment. Needed as of 2026-09-21: these are cross-surface
- *  claims about what the Study Pace tile says, and the tile now has five
- *  treatments that say it differently — so a test that leaves the choice to the
- *  flag's default is really asserting whichever treatment last won that vote. */
-function seedPacing(variant: string) {
-  window.localStorage.setItem(
-    'cgp.featureFlags',
-    JSON.stringify({ 'dashboard-pacing-style': { enabled: true, variant } }),
-  )
+/** Was `seedPacing(variant)`, pinning one of five treatments so a cross-surface
+ *  claim about the Study Pace tile could not silently re-aim at whichever
+ *  treatment last won the default. `dashboard-pacing-style` was retired on
+ *  2026-09-22 and `presets` is the only treatment, so there is nothing to pin —
+ *  the helper is kept as a no-op seam so the tests below still say which tile
+ *  they mean, and so restoring the flag is a one-function change. */
+function seedPacing() {
+  /* nothing to seed — the treatment is unconditional */
 }
 
 beforeEach(() => {
@@ -127,24 +126,28 @@ describe('the entered date moves the whole page, not just the card', () => {
     ).toMatch(/June 30, 2026/)
   })
 
-  it('re-points the countdown AND the pacing rate together', () => {
-    // The cross-surface half. The header's remaining-time cell and the Study
-    // Pace tile both derive from the same `weeksLeft`, so a date that moved one
-    // and not the other would be the disagreement `ProgressAgreement.test.tsx`
-    // exists to catch.
-    //
-    // SEEDS `runway` EXPLICITLY as of 2026-09-21. The claim is about a tile
-    // that states remaining time in the PATH's units, which is what `runway`
-    // does — it rode on the flag's default until that default moved to
-    // `presets`, a treatment that expresses the same fact as a DATE and so can
-    // never contain a week count. The test below carries the presets half.
+  it('re-points the countdown on the page', () => {
+    /* The cross-surface half, NARROWED 2026-09-22. It asserted the header's
+       remaining-time cell and the Study Pace tile carried the same week count,
+       by seeding `runway` — the one treatment that stated remaining time in the
+       path's own units. `runway` was retired with `dashboard-pacing-style`, and
+       `presets` expresses the same fact as a DATE, so there is no week count on
+       the tile left to agree with.
+
+       What survives is the header half, which is still the thing a typed date
+       must move, and it is asserted through the SHARED FORMATTER rather than a
+       string — which is what the second half was really protecting. The tile
+       printed raw days once, so past 30 days the two read "50 days to go" and
+       "7 wks" three inches apart; `timeRemainingText` is the fix, and calling
+       it here means a surface that re-implements the unit still fails.
+
+       The tile's own half of the claim is not lost either: the presets card
+       states the same fact as a DATE, pinned by 'reaches the PRESETS card too,
+       in its own idiom' below. */
     writeExamDate('2026-06-30')
-    seedPacing('runway')
+    seedPacing()
     renderShell()
-    const expected = timeRemainingText(50 / 7)
-    expect(document.body.textContent).toContain(expected)
-    const tile = screen.getByText('Study Pace').parentElement as HTMLElement
-    expect(tile.textContent).toContain(expected)
+    expect(document.body.textContent).toContain(timeRemainingText(50 / 7))
   })
 
   it('reaches the PRESETS card too, in its own idiom', () => {
@@ -162,7 +165,7 @@ describe('the entered date moves the whole page, not just the card', () => {
        Expressed as a date rather than a week count, because that is this
        treatment's whole argument: it states the outcome, not the quantity. */
     writeExamDate('2026-05-31')
-    seedPacing('presets')
+    seedPacing()
     renderShell()
     const tile = screen.getByText(/^(?:Recommended |Your )?Study Pace$/).parentElement as HTMLElement
     expect(tile.textContent).toMatch(/Your exam is on May 31/)
@@ -177,32 +180,13 @@ describe('the entered date moves the whole page, not just the card', () => {
        provenance clause already suppressed — both of which say the opposite of
        what just happened. It is compared to its SEED, not to null. */
     writeExamDate('2026-05-31')
-    seedPacing('presets')
+    seedPacing()
     renderShell()
     const tile = screen.getByText(/^(?:Recommended |Your )?Study Pace$/).parentElement as HTMLElement
     /* The eyebrow, which is where the 2026-09-21 redesign moved the
        provenance — the chip that carried it went, because it said the same
        word the eyebrow says. */
     expect(tile.textContent).toMatch(/^Recommended Study Pace/)
-  })
-
-  it('states the remaining time in ONE unit across both surfaces', () => {
-    /* The tile printed raw days while the header used the shared formatter, so
-       past 30 days they read "50 days to go" and "7 wks" three inches apart —
-       the same fact in two units. Asserted as agreement rather than as a
-       string, so either surface may reword.
-
-       `runway` BY NAME, for the reason the test above records: this is a claim
-       about the treatment that states remaining TIME, and it stopped being the
-       default on 2026-09-21. `presets` states a finish date instead, so it has
-       no unit to disagree in — which is not this test passing, it is this test
-       not applying. */
-    writeExamDate('2026-06-30')
-    seedPacing('runway')
-    renderShell()
-    const tile = screen.getByText('Study Pace').parentElement as HTMLElement
-    expect(tile.textContent).not.toMatch(/\d+ days to go/)
-    expect(tile.textContent).toMatch(/wks to go/)
   })
 
   it('falls back to the persona with nothing stored', () => {

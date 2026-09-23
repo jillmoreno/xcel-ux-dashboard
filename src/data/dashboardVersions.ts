@@ -170,7 +170,7 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED: DashboardVersion = {
 // **It is the second of two, and the pairing is the point.** "Testing"
 // (`discoverability-testing`, built on the same day on its own branch) asks what
 // the tile should SHOW — it drops Readiness, gives Study Pace the full width, and
-// offers four treatments behind `dashboard-pacing-style`. This one asks what the
+// gives its Study Pace tile the presets card. This one asks what the
 // learner should be able to DO: the tile keeps its square and shows one derived
 // pace with NO controls, and everything adjustable moves behind Adjust into a
 // sheet — the three finish dates, days a week, an exam date, and building a study
@@ -223,7 +223,7 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_TESTING: DashboardVersion = {
   createdAt: '2026-09-21',
   modifiedAt: '2026-09-21',
   description:
-    'QE Focused with the home screen\u2019s second row given over to the Pacing exploration. The Readiness tile \u2014 a lo-fi stub since 2026-09-17 \u2014 is dropped, and Study Pace takes the full width and stops being square. Which pacing treatment renders there is `dashboard-pacing-style`: Lo-fi (the stub, for comparison), Rate (a suggested hrs/day), Runway (work remaining laid against time remaining) or Balance (the two figures, no derived rate). Everything else matches QE Focused so the comparison is about the one tile.',
+    'QE Focused with the home screen\u2019s second row given over to pacing. The Readiness tile \u2014 a lo-fi stub since 2026-09-17 \u2014 is dropped, and Study Pace takes the full width and stops being square, rendering the presets card: a finish date, the room it leaves before access ends, and an Adjust sheet. It was an EXPLORATION of five treatments behind `dashboard-pacing-style` until 2026-09-22, when presets won and the rest were unwired (see `archivedItems.ts`). Everything else matches QE Focused so the difference is the one tile.',
 }
 
 /**
@@ -298,13 +298,12 @@ export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
  * rewritten to assert the new default rather than deleted, so the original
  * subject survives.
  *
- * ⚠ WHAT IT MOVES, and it is the whole point of the pin: the public link and
- * the `?demo=1` baseline now open on TESTING, whose Study Pace tile renders
- * `dashboard-pacing-style`'s committed default — `runway`. So the landing page
- * is now a pacing EXPLORATION rather than a settled design, and which treatment
- * a stakeholder sees is a flag default rather than a version decision. Changing
- * `defaultVariant` is how that is answered; it was deliberately left alone here
- * because it is a separate call.
+ * ⚠ WHAT IT MOVES: the public link and the `?demo=1` baseline open on TESTING.
+ * That was the open question this pin existed to force — the landing page was a
+ * pacing EXPLORATION rather than a settled design, and which of five treatments
+ * a stakeholder saw was a flag default rather than a decision. ANSWERED
+ * 2026-09-22: presets won, `dashboard-pacing-style` was retired, and the tile
+ * renders one treatment. The landing page now states a design.
  *
  * ⚠ TWO PLACES read a default and they must agree, or the picker marks one
  * layout "Default" while the page loads the other: `PlatformShell`'s

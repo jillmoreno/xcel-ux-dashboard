@@ -7,7 +7,7 @@ import { useCourseLauncher } from '@/components/layout/CourseLauncherContext'
 import { useDeviceFrame } from '@/components/layout/DeviceFrameContext'
 import type { CourseCardData } from '@/components/courses/CourseCard'
 import type { LearningPathSummary } from '@/data/learningFixtures'
-import { statusTreatment, displayedProgressPct, timeRemaining, timeRemainingText, resolveRenewal, type HomeStatus, CURRENT_LEARNING_EYEBROW } from '@/components/learning/learningPathsHomeUtil'
+import { statusTreatment, displayedProgressPct, timeRemaining, resolveRenewal, type HomeStatus, CURRENT_LEARNING_EYEBROW } from '@/components/learning/learningPathsHomeUtil'
 import { myCoursesFor, FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 import { ProgressDonut, CategoryBars } from '@/components/learning/progressGauge'
 import { ProgressBar } from '@/components/ui/ProgressBar'
@@ -553,17 +553,17 @@ export function LearnerFocusedBand({
   const clpStatsVariant = useFeatureFlag('dashboard-clp-stats').variant ?? 'default'
   const statCard = onPage && clpStatsVariant === 'stat-card'
   /*
-   * PACING TREATMENT — `dashboard-pacing-style`, read only by the `paceOnly`
-   * (Testing) arrangement, where the Study Pace tile has the whole row. On
-   * every other version the tile is still half of the square pair and stays the
-   * lo-fi stub, so this flag is inert there.
+   * PACING TREATMENT — no longer a flag. `dashboard-pacing-style` offered five
+   * answers on the Testing arrangement; `presets` won on 2026-09-22 and the
+   * other three explorations (`rate`, `runway`, `balance`) were unwired. See
+   * the `pacing-treatment-exploration` row in `archivedItems.ts` for what they
+   * were and how to bring one back.
    *
-   * Unconditional hook call again, then the arrangement check — the same
-   * `rules-of-hooks` trap `clpStatsVariant` above records, now for the third
-   * time in this file.
+   * `lo-fi` is NOT one of the retired three and must stay: it is what every
+   * NON-Testing version renders here, where the tile is still half of the
+   * square pair. The `paceOnly` branch is the whole remaining choice.
    */
-  const pacingVariant = useFeatureFlag('dashboard-pacing-style').variant ?? 'runway'
-  const pacingStyle = paceOnly ? pacingVariant : 'lo-fi'
+  const pacingStyle = paceOnly ? 'presets' : 'lo-fi'
   /*
    * TWO SQUARE TILES replace the KPI row + status strip — 2026-09-16, the
    * direct ask: "turn this into 2 square tiles, 1 about the Study Pace … 2nd
@@ -723,30 +723,6 @@ export function LearnerFocusedBand({
         completed: `${unitLong} of this course`,
       }
     : null
-  /* ── PACING (the Testing version) ────────────────────────────────────────
-     Every figure below is DERIVED from what the fixtures already carry — the
-     path's unit totals, the days to the target date, and the resume course's
-     own credit hours. Nothing here knows an OBSERVED rate, a schedule to be
-     ahead of, or a projected finish date, so no treatment states one. That is
-     the same line the `stat-card` sub-labels hold ("You are currently pacing 4
-     days ahead of schedule" was in the reference mock and is not in the app).
-
-     `unitsLeft` reads `totalRequired || path.hours` — the same fallback the
-     "26 of 42 lessons complete" line and the Completed KPI cell use, so the
-     three cannot disagree about the denominator. */
-  const unitsLeft = Math.max(0, (totalRequired || path.hours) - totalCompleted)
-  /* The rate that closes the gap, in the PATH's own unit rather than in hours:
-     `rate` already offers hrs/day, and the point of having both treatments is
-     that "put in 1.5 hours a night" and "clear 4 lessons a week" are different
-     instructions, not the same one twice. Rounded UP — a rounded-down rate
-     finishes late, which is the one direction a suggested pace must not err in.
-     Null at zero work left, where a required rate is meaningless rather than 0. */
-  const unitsPerWeek = unitsLeft > 0 ? Math.ceil(unitsLeft / (daysLeft / 7)) : null
-  /* Whole weeks remaining, for the runway strip. `daysLeft` is already floored
-     at 1, so this is at least 1 — an empty strip would read as a failed render
-     rather than as "no time left". */
-  const weeksLeftWhole = Math.max(1, Math.ceil(daysLeft / 7))
-
   /* The status pill and its message. IDENTICAL in every pacing treatment and
      therefore defined once — the comparison is meant to be about the pacing
      figure, and four hand-copied status clusters is how one of them ends up a
@@ -797,144 +773,27 @@ export function LearnerFocusedBand({
     </div>
   )
 
-  /* The pacing figure — one treatment of the tile's headline. `--font-heading`
-     rather than the body face because this is the tile's heading in everything
-     but markup, and it has to follow `dashboard-heading-font` like every other
-     one on the page (the serif variant re-points that token for the subtree, so
-     a body-face figure here would be the one number that stayed sans). */
-  const pacingFigureStyle: CSSProperties = {
-    margin: 0,
-    fontFamily: 'var(--font-heading)',
-    fontSize: 30,
-    lineHeight: '34px',
-    fontWeight: 700,
-    color: cText,
-  }
-  /* The unit, riding on the figure's baseline rather than under it: "1.5" and
-     "hrs/day" are one statement, and stacking them makes the unit read as a
-     caption for a number that could mean anything. */
-  const pacingUnitStyle: CSSProperties = {
-    fontFamily: 'var(--font-body)',
-    fontSize: 13,
-    fontWeight: 600,
-    color: cMuted,
-  }
-  const pacingNoteStyle: CSSProperties = {
-    margin: 0,
-    fontFamily: 'var(--font-body)',
-    fontSize: 12,
-    lineHeight: '17px',
-    color: cMuted,
-  }
+  /* ONE treatment, as of 2026-09-22. This used to introduce four — each a
+     WHOLE answer to "am I pacing to finish in time" rather than a restyle of
+     one answer: `rate` prescribed TIME (hours a day), `runway` prescribed WORK
+     (units a week) and showed the shape of what was left, `balance` prescribed
+     nothing and stated the two remaining figures. `presets` won on 2026-09-22
+     and the other three were unwired — `archivedItems.ts`, row
+     `pacing-treatment-exploration`, carries what each argued and how to restore
+     one.
 
-  /* RUNWAY's strip — one segment per remaining WEEK, the last one part-filled
-     by the days that do not make a whole week (27 days ⇒ four segments, the
-     last at 6/7). It is the only spatial element in any treatment, and it is
-     deliberately NOT a progress bar: the block directly above already runs a
-     full-width `ProgressBar` for this course with the percentage beside it, so
-     a second bar here would be the third saying of one number in one column —
-     the duplication that folded the Jump Back In card into this block.
-
-     `--color-text-tertiary` for the fill rather than a ramp stop, and that is
-     the load-bearing choice: it measures 6.19:1 light / 6.18:1 dark, which is
-     unusually symmetric, so the strip needs no theme swap. `--color-primary-500`
-     would have wanted one — on this recessed tile the primary and the
-     `--color-neutral-300` track are both navies in dark and the fill lands at
-     1.22:1, which is the exact failure `.cre-jbi-progress-fill` exists for.
-
-     `aria-hidden`: the note directly beneath states the same two facts in
-     words, so nothing is carried by the strip alone. */
-  const runwayStrip = (
-    <div aria-hidden style={{ display: 'flex', gap: 4 }}>
-      {Array.from({ length: weeksLeftWhole }, (_, i) => {
-        const remainder = daysLeft % 7
-        const isLast = i === weeksLeftWhole - 1
-        const fraction = isLast && remainder > 0 ? remainder / 7 : 1
-        return (
-          <span
-            key={i}
-            style={{
-              flex: 1,
-              height: 6,
-              borderRadius: 'var(--radius-pill)',
-              background: cRule,
-              overflow: 'hidden',
-            }}
-          >
-            <span
-              style={{
-                display: 'block',
-                height: '100%',
-                width: `${fraction * 100}%`,
-                borderRadius: 'var(--radius-pill)',
-                background: 'var(--color-text-tertiary)',
-              }}
-            />
-          </span>
-        )
-      })}
-    </div>
-  )
-
-  /* The four treatments. Each is a WHOLE answer to "am I pacing to finish in
-     time" rather than a restyle of one answer — see `dashboard-pacing-style`:
-     `rate` prescribes TIME (hours a day), `runway` prescribes WORK (units a
-     week) and shows the shape of what is left, `balance` prescribes nothing and
-     states the two remaining figures, and `lo-fi` is what ships today, kept so
-     the other three are judged against it and not only against each other.
-
-     `rate` is OMITTED, not guessed, when there is no resume course to read
-     credit hours from — the same rule `kpiSubLabels` follows. The status
-     cluster below still carries the state, so the tile is never empty. */
+     Every figure any of them stated was DERIVED from what the fixtures already
+     carry — the path's unit totals, the days to the target date, and the resume
+     course's own credit hours. Nothing here knows an OBSERVED rate, a schedule
+     to be ahead of, or a projected finish date, so no treatment stated one.
+     That is the same line the `stat-card` sub-labels hold ("You are currently
+     pacing 4 days ahead of schedule" was in the reference mock and is not in
+     the app). */
   const pacingBody =
-    pacingStyle === 'rate' ? (
-      hoursPerDay ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-          <p style={pacingFigureStyle}>
-            ~{hoursPerDay.toFixed(1)} <span style={pacingUnitStyle}>hrs/day</span>
-          </p>
-          <p style={pacingNoteStyle}>Suggested pace to finish by {deadline}.</p>
-        </div>
-      ) : null
-    ) : pacingStyle === 'runway' ? (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-        {unitsPerWeek ? (
-          <p style={pacingFigureStyle}>
-            ~{unitsPerWeek} <span style={pacingUnitStyle}>{unit} a week</span>
-          </p>
-        ) : null}
-        {runwayStrip}
-        <p style={pacingNoteStyle}>
-          {/* THE SHARED FORMATTER, not `unitCount(daysLeft, 'days')` — 2026-09-21.
-              It printed raw days, which agreed with the KPI cell only while the
-              deadline was inside 30 days (where `timeRemaining` also counts in
-              days). A learner-entered exam date further out put "50 days to go"
-              on this tile beside "7 wks" in the header, three inches apart: the
-              same fact in two units, which is the cross-surface disagreement
-              `ProgressAgreement.test.tsx` exists to catch. Weeks also pair
-              better with the rate above, which is per week. */}
-          {unitCount(unitsLeft, unit)} left · {timeRemainingText(weeksLeft)} to go
-        </p>
-      </div>
-    ) : pacingStyle === 'balance' ? (
-      /* Bare cells split by a vertical rule — the arrangement the KPI row above
-         already uses on this surface, and `cRule` is its rule. A second pair of
-         boxes inside a tile would be chrome around chrome, which is the call
-         that took the borders off those cells in the first place. */
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))' }}>
-        <div style={{ minWidth: 0 }}>
-          <p style={pacingFigureStyle}>{unitsLeft}</p>
-          <p style={{ ...pacingNoteStyle, marginTop: 2 }}>{unit} left</p>
-        </div>
-        <div style={{ minWidth: 0, borderLeft: `1px solid ${cRule}`, paddingLeft: 14 }}>
-          <p style={pacingFigureStyle}>{daysLeft}</p>
-          <p style={{ ...pacingNoteStyle, marginTop: 2 }}>days left</p>
-        </div>
-      </div>
-    ) : pacingStyle === 'presets' ? (
+    pacingStyle === 'presets' ? (
       /* PRESETS RENDERS THE WHOLE TILE, not a body — so this arm is
-         unreachable, and it is here anyway so the chain still lists all five
-         treatments and nobody reads the four above it as the complete set.
+         unreachable, and it is kept so the chain still names the treatment
+         rather than looking like presets has no case here at all.
          `paceTileEl` below is where it is actually built.
 
          WHY IT COULD NOT LIVE HERE. Everything in this chain renders INSIDE the
@@ -947,8 +806,7 @@ export function LearnerFocusedBand({
          state Testing 2's tile already owns and giving the two shapes two
          different ideas of what "adjusted" means.
 
-         IT ALSO DROPS `pacingStatus`, alone among the five. The reasoning, and
-         what it costs:
+         IT ALSO DROPS `pacingStatus`:
 
            - TWO PILLS IN TWO VOCABULARIES. `pacingStatus` is the six COMPLIANCE
              states ("On Track"); the card's own pill is the pace axis
@@ -956,27 +814,18 @@ export function LearnerFocusedBand({
              why those two must not share a badge — a learner reading "At Risk"
              off a statement that is only saying their evenings are long. Nine
              pixels apart is the same collision with a gap in it.
-           - THIS CARD ANSWERS THE STATUS QUESTION IN ITS BODY. The other four
-             state a QUANTITY (hrs/day, units a week, two figures) and need the
-             status pill to say whether that quantity is enough. This one states
-             the OUTCOME — "finishes by Apr 29, 5 days before access ends on
-             May 4" — which is the derivation "On Track" is a label for. Keeping
-             both would print the conclusion twice, once derived and once
-             asserted.
+           - THIS CARD ANSWERS THE STATUS QUESTION IN ITS BODY. It states the
+             OUTCOME — "finishes by Apr 29, 5 days before access ends on May 4"
+             — which is the derivation "On Track" is a label for. Keeping both
+             would print the conclusion twice, once derived and once asserted.
            - `pacingStatus` IS `marginTop: 'auto'`, so it lands on the tile's
              floor. On this card the floor is the two buttons, and the tile would
-             end on a pill and a sentence BELOW its own primary call to action.
-
-         WHAT IT COSTS, and a reviewer should know it: the five treatments are no
-         longer status-constant, so this one cannot be compared to the other four
-         on "does the state show" — it shows it as a sentence rather than as a
-         pill. `TestingVersion.test.tsx` pins the four and pins this one's
-         replacement separately, rather than quietly dropping the guarantee. */
+             end on a pill and a sentence BELOW its own primary call to action. */
       null
     ) : (
-      /* LO-FI — what ships on QE Focused today. Two rows rather than the
-         Readiness tile's three because this tile also carries the status pill
-         and its message, so it has less room to fill. */
+      /* LO-FI — what every non-Testing version renders. Two rows rather than
+         the Readiness tile's three because this tile also carries the status
+         pill and its message, so it has less room to fill. */
       <LoFiWidgetBody rows={2} ariaLabel="Study pace — placeholder" />
     )
 
@@ -1602,7 +1451,7 @@ export function LearnerFocusedBand({
                 to="/dashboard-rebrand?section=study-plan"
                 square={!paceOnly}
               >
-                {/* The treatment — `dashboard-pacing-style` on Testing, and the
+                {/* The treatment — the presets card on Testing, and the
                     lo-fi stub everywhere else. See `pacingBody`.
 
                     The stub has been what ships since 2026-09-17, the direct ask.

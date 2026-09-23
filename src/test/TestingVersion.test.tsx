@@ -183,139 +183,72 @@ describe('the Study Pace tile takes the row', () => {
   })
 })
 
-describe('the pacing treatments', () => {
-  /** The four that render a BODY inside the shared tile. */
-  const VARIANTS = ['lo-fi', 'rate', 'runway', 'balance'] as const
-  /** …and `presets`, which renders the whole tile. Sweeps that are about the
-   *  treatment's CLAIMS rather than its chrome run over all five. */
-  const ALL_VARIANTS = [...VARIANTS, 'presets'] as const
-
-  it.each(VARIANTS)('%s keeps the status pill and its message', (variant) => {
-    // The status half is what was carrying the meaning all along, and it is the
-    // same element in all four (`pacingStatus`). If a treatment could drop it,
-    // the comparison would be about whether the state is shown rather than
-    // about the pacing figure — and one of the four would win for the wrong
-    // reason.
-    //
-    // `presets` IS DELIBERATELY NOT IN THIS LIST, and the exemption is narrow
-    // enough to be worth stating rather than widening the sweep: that treatment
-    // states the conclusion the pill labels ("finishes by <date>, <n> days
-    // before access ends on <date>") as a derived SENTENCE, and carries its own
-    // pill on the pace axis. Two pills in two vocabularies, stacked, is the
-    // confusion the pace chip exists to avoid — see the `presets` arm of
-    // `pacingBody`. The guarantee is not dropped, it moves: the block below
-    // pins the sentence the way this pins the pill.
-    seed({ 'dashboard-pacing-style': { enabled: true, variant } })
-    renderShell(TESTING_URL)
-    const tile = paceTile()
-    expect(within(tile).getByText('On Track')).toBeTruthy()
-    expect(tile.textContent).toMatch(/on pace to finish/i)
-  })
-
-  it('presets states the compliance conclusion instead of the pill', () => {
-    // The other half of the exemption above: it may drop the pill only because
-    // it answers the same question in words. A `presets` card carrying neither
-    // would be the treatment that quietly says less than the four beside it.
-    seed({ 'dashboard-pacing-style': { enabled: true, variant: 'presets' } })
-    renderShell(TESTING_URL)
-    const tile = paceTile()
-    expect(within(tile).queryByText('On Track')).toBeNull()
-    // The conclusion in words: the window the learner has, and the date the
-    // derived pace lands on. Both are body lines of the 2026-09-21 Figma
-    // redesign, which replaced the pill and the timeline with this sentence.
-    expect(tile.textContent).toMatch(/You have \d+ days left to finish/)
-    expect(tile.textContent).toMatch(/you will finish around [A-Z][a-z]{2} \d+/)
-  })
-
-  it.each(ALL_VARIANTS)('%s invents no projection the fixtures cannot support', (variant) => {
+describe('the pacing treatment', () => {
+  /*
+   * ONE treatment as of 2026-09-22. This block swept five behind
+   * `dashboard-pacing-style` — `lo-fi` / `rate` / `runway` / `balance` /
+   * `presets` — and pinned what they had in common: every one kept the status
+   * pill (presets excepted, which states the conclusion in words), none
+   * invented a projection, none printed a percentage.
+   *
+   * Presets won and the flag was retired. The sweeps are gone with the
+   * variants they swept, but the two CLAIMS that were never about having a
+   * choice are kept below and re-aimed at the one surviving treatment — they
+   * were the point of the block, not the enumeration.
+   *
+   * `lo-fi` is NOT retired and is tested here still: it is what every
+   * NON-Testing version renders, which is the part of this that could break
+   * silently now that nothing on Testing can reach it.
+   */
+  it('invents no projection the fixtures cannot support', () => {
     // Nothing here knows an OBSERVED rate, a schedule to be ahead of, or a
     // projected finish date. The reference mock for this block carried "You are
     // currently pacing 4 days ahead of schedule"; authoring it is the move this
     // version has refused throughout.
-    seed({ 'dashboard-pacing-style': { enabled: true, variant } })
     renderShell(TESTING_URL)
     const text = paceTile().textContent ?? ''
     expect(text).not.toMatch(/ahead of schedule|behind schedule|projected|on track to finish on/i)
   })
 
-  it('rate states the derived hrs/day, not a literal', () => {
-    seed({ 'dashboard-pacing-style': { enabled: true, variant: 'rate' } })
-    renderShell(TESTING_URL)
-    // The same derivation `kpiSubLabels` feeds the `stat-card` variant with —
-    // the resume course's real credit hours over the days left.
-    expect(paceTile().textContent).toMatch(/~\d+(\.\d)? hrs\/day/)
-  })
-
-  it('runway’s work-left AGREES with the completed figure on the page', () => {
-    seed({ 'dashboard-pacing-style': { enabled: true, variant: 'runway' } })
-    renderShell(TESTING_URL)
-    const left = Number(/(\d+) lessons left/.exec(paceTile().textContent ?? '')?.[1])
-    // "26 of 42 lessons complete" — the block's own line, from the same totals.
-    const done = /(\d+) of (\d+) lessons/.exec(document.body.textContent ?? '')
-    expect(done).toBeTruthy()
-    const [, completed, total] = done as RegExpExecArray
-    // The relationship, not today's numbers: a tile claiming a different amount
-    // of work left from the line three inches above it is the cross-surface
-    // disagreement `ProgressAgreement.test.tsx` exists to catch.
-    expect(left).toBe(Number(total) - Number(completed))
-  })
-
-  it('runway draws one strip segment per remaining week, the last part-filled', () => {
-    seed({ 'dashboard-pacing-style': { enabled: true, variant: 'runway' } })
-    renderShell(TESTING_URL)
-    const tile = paceTile()
-    const fills = [...tile.querySelectorAll('span > span')].filter((s) =>
-      (s as HTMLElement).style.width.endsWith('%'),
-    ) as HTMLElement[]
-    const days = Number(/(\d+) days to go/.exec(tile.textContent ?? '')?.[1])
-    expect(fills.length).toBe(Math.max(1, Math.ceil(days / 7)))
-    // Every whole week is full; the days that do not make one are the remainder.
-    const remainder = days % 7
-    expect(fills.at(-1)?.style.width).toBe(
-      remainder === 0 ? '100%' : `${(remainder / 7) * 100}%`,
-    )
-  })
-
-  it('balance states the two figures and derives no rate', () => {
-    // Its whole position is that it prescribes nothing — if it grew a rate it
-    // would be `runway` with a rule down the middle, and the exploration would
-    // be comparing three versions of one idea.
-    seed({ 'dashboard-pacing-style': { enabled: true, variant: 'balance' } })
-    renderShell(TESTING_URL)
-    const text = paceTile().textContent ?? ''
-    expect(text).toMatch(/lessons left/)
-    expect(text).toMatch(/days left/)
-    expect(text).not.toMatch(/a week|hrs\/day/)
-  })
-
-  it.each(ALL_VARIANTS)('%s states no percentage', (variant) => {
+  it('states no percentage', () => {
     /* A `%` on this tile is a PROGRESS claim, and the block directly above it
-       already states progress — twice on some treatments. The rule lives here
-       rather than on the Get Licensed cards, where "70% to pass" is the state's
-       published pass mark and a sourced fact about the exam. */
-    seed({ 'dashboard-pacing-style': { enabled: true, variant } })
+       already states progress. The rule lives here rather than on the Get
+       Licensed cards, where "70% to pass" is the state's published pass mark
+       and a sourced fact about the exam. */
     renderShell(TESTING_URL)
     expect(paceTile().textContent).not.toMatch(/%/)
   })
 
-  it('leaves the tile lo-fi on every OTHER version, whatever the flag says', () => {
-    // The flag is inert off Testing: elsewhere Study Pace is still half of the
-    // square pair and the stub is what ships. A treatment leaking onto QE
-    // Focused would change what XCEL's DEFAULT shows.
-    seed({ 'dashboard-pacing-style': { enabled: true, variant: 'runway' } })
-    renderShell(QE_URL)
-    expect(paceTile().textContent).not.toMatch(/a week/)
+  it('states the compliance conclusion instead of the pill', () => {
+    // Presets drops `pacingStatus` — it may do that only because it answers the
+    // same question in words. A card carrying neither would say less than the
+    // stub it replaced, which is what this has always been guarding.
+    renderShell(TESTING_URL)
+    const tile = paceTile()
+    expect(within(tile).queryByText('On Track')).toBeNull()
+    expect(tile.textContent).toMatch(/You have \d+ days left to finish/)
+    expect(tile.textContent).toMatch(/you will finish around [A-Z][a-z]{2} \d+/)
   })
 
-  it('keeps presets off QE Focused too', () => {
-    // The same rule for the one treatment that renders a whole tile rather than
-    // a body — it reaches the render site by a different branch, so "the flag is
-    // inert elsewhere" has to be proved again rather than inherited.
-    seed({ 'dashboard-pacing-style': { enabled: true, variant: 'presets' } })
+  it('leaves the tile lo-fi on every OTHER version', () => {
+    // THE REASON `lo-fi` SURVIVED THE RETIREMENT. Off Testing, Study Pace is
+    // still half of the square pair and the stub is what ships. It used to be
+    // reachable as a variant, so this was one of five; now this test is the
+    // ONLY thing rendering that path, and a presets card leaking onto QE
+    // Focused would change what XCEL's DEFAULT shows.
     renderShell(QE_URL)
     const tile = paceTile()
     expect(tile.style.aspectRatio).toBe('1 / 1')
+    expect(tile.textContent).not.toMatch(/a week/)
     expect(within(tile).queryByRole('button', { name: 'Start studying' })).toBeNull()
+  })
+
+  it('has no flag left to pick a treatment with', () => {
+    // The retirement itself. A reviewer finding `dashboard-pacing-style` in the
+    // catalog again should find this failing rather than a picker offering one
+    // live answer and three dead ones.
+    expect(FEATURE_FLAGS.find((f) => f.key === 'dashboard-pacing-style')).toBeUndefined()
+    expect(flagScopeForPath('/dashboard-rebrand')).not.toContain('dashboard-pacing-style')
   })
 })
 
@@ -329,7 +262,11 @@ describe('the pacing treatments', () => {
  * anything about the treatment.
  */
 describe('the presets pacing card', () => {
-  const seedPresets = () => seed({ 'dashboard-pacing-style': { enabled: true, variant: 'presets' } })
+  /* Was `seed({ 'dashboard-pacing-style': … 'presets' })`. The flag is retired
+     and the treatment is unconditional on this version, so the seed is just the
+     account — kept as a named helper so every test below still reads as "given
+     the presets card". */
+  const seedPresets = () => seed()
 
   it('states an evening, a week and the date it lands on', () => {
     seedPresets()
@@ -949,41 +886,34 @@ describe('the collapse control', () => {
   })
 })
 
-describe('the pacing flag is wired where a reviewer will find it', () => {
-  it('is in the catalog as a variant-only flag with five treatments', () => {
-    const def = FEATURE_FLAGS.find((f) => f.key === 'dashboard-pacing-style')
-    expect(def).toBeTruthy()
-    expect(def?.defaultEnabled).toBe(true)
-    // `presets` was APPENDED (2026-09-21). Order is asserted as well as
-    // membership: the panel renders the variants in this order, and the four
-    // that were here first are the ones a reviewer has already looked at.
-    expect(def?.variants?.map((v) => v.value)).toEqual([
-      'lo-fi',
-      'rate',
-      'runway',
-      'balance',
-      'presets',
-    ])
+describe('the pacing treatment a review link lands on', () => {
+  /*
+   * This block used to pin the FLAG: that it was in the catalog with five
+   * variants in a fixed order, that `defaultVariant` was `presets`, and that it
+   * was inside the rebrand panel scope. All three were about one thing — which
+   * treatment a stakeholder sees on a review link — and the flag was how that
+   * was answered while five treatments existed.
+   *
+   * The flag is retired (2026-09-22). The question it answered has not gone
+   * away, so it is asked directly of the render instead: `?demo=1` renders the
+   * committed baseline and no URL parameter changes the treatment, so what this
+   * asserts IS the entirety of what a reviewer sees.
+   */
+  it('shows the presets card, with no flag seeded', () => {
+    // No `seed({...})` of any pacing key — that is the assertion. What renders
+    // is whatever the version renders, which is now the whole answer.
+    seed()
+    renderShell(TESTING_URL)
+    const tile = paceTile()
+    expect(tile.textContent).toMatch(/hours a night/)
+    expect(tile.textContent).toMatch(/You have \d+ days left to finish/)
   })
 
-  it('opens on `presets` — the treatment, not just a non-stub', () => {
-    /* It asserted `runway` until 2026-09-21, under a weaker claim: "the version
-       exists to look at pacing, so landing on `lo-fi` would make the whole
-       thing read as unchanged." Any real treatment satisfied that.
-
-       The claim is stronger now because this version became XCEL's DEFAULT the
-       same day. `?demo=1` renders the committed baseline and IGNORES stored
-       flags, and no URL parameter sets one — so this value is not where a
-       stakeholder starts, it is the entirety of what they see on a review link.
-       Which treatment sits here is therefore a design decision, and pinning the
-       specific one is the point rather than an over-tight assertion. */
-    const def = FEATURE_FLAGS.find((f) => f.key === 'dashboard-pacing-style')
-    expect(def?.defaultVariant).toBe('presets')
-  })
-
-  it('is in the rebrand panel scope', () => {
-    // A key in the catalog but outside the scope is SILENT — the panel filters
-    // the catalog BY the scope, so the control simply would not appear.
-    expect(flagScopeForPath('/dashboard-rebrand')).toContain('dashboard-pacing-style')
+  it('is not a stub, and cannot be switched back to one', () => {
+    // The weaker claim the original made ("landing on lo-fi would make the
+    // version read as unchanged") is now structural rather than a default: the
+    // Testing arrangement has no branch that reaches `LoFiWidgetBody`.
+    renderShell(TESTING_URL)
+    expect(paceTile().querySelector('[aria-label="Study pace — placeholder"]')).toBeNull()
   })
 })

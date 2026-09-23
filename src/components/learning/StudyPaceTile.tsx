@@ -81,7 +81,7 @@ export type StudyPaceTileProps = {
    */
   weekMinutes?: number[]
   /**
-   * WHICH SHAPE — added 2026-09-21 with `dashboard-pacing-style: presets`.
+   * WHICH SHAPE — added 2026-09-21 with the presets treatment.
    *
    *   - `'tile'` (default) is Testing 2's square: a pace chip, the evening, a
    *     hairline timeline and a finish date, with `Adjust` on the tile floor
@@ -466,8 +466,10 @@ function PaceTimeline({ model, preset }: { model: PaceModel; preset: PacePreset 
 
 /* ─── the CARD shape (`layout="card"`) ───────────────────────────────────
  *
- * `dashboard-pacing-style: presets` — the FIFTH treatment of the Testing
- * version's full-width Study Pace tile.
+ * THE treatment of the Testing version's full-width Study Pace tile. It was
+ * the fifth of five behind `dashboard-pacing-style` until 2026-09-22, when it
+ * won and the flag was retired — `archivedItems.ts`, row
+ * `pacing-treatment-exploration`, holds the other four.
  *
  * REDESIGNED 2026-09-21 from Figma (`JEY1UPqWJ165AVy40in1KQ`, node 733:62),
  * replacing the port of `xcel-pace-presets.html` §02. What the design changes,

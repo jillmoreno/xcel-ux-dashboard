@@ -56,6 +56,19 @@ export type ArchivedItem = {
 
 export const ARCHIVED_ITEMS: ArchivedItem[] = [
   {
+    id: 'pacing-treatment-exploration',
+    name: 'Study Pace treatments — Rate, Runway, Balance',
+    what: 'Three of the five answers the Testing version offered to "am I pacing to finish in time", each a WHOLE answer rather than a restyle of one. Rate stated a suggested ~hrs/day and the date it finished by. Runway stated ~units a week over a segmented strip — one segment per remaining WEEK, the last part-filled — with "N lessons left · N wks to go" beneath. Balance stated the two remaining figures (units left, days left) in bare cells split by a vertical rule and derived nothing from them.',
+    location:
+      'GIT HISTORY ONLY — these were arms of one conditional inside `src/components/membership/v5/LearnerFocusedBand.tsx`, not separate files, so there was no file to leave unreferenced (tsc fails on unused locals). They are whole in the commit that removed them; `git log -S "runwayStrip" -- src/components/membership/v5/LearnerFocusedBand.tsx` finds it. `lo-fi` is NOT archived — it is still the live rendering for every non-Testing version.',
+    flag: 'dashboard-pacing-style (retired)',
+    dateRemoved: '2026-09-22',
+    reason:
+      'Presets won. The exploration existed to compare five treatments on the Testing version, and with a winner chosen the flag was a picker between one live answer and three dead ones — plus a way for a stakeholder to land on a treatment nobody had chosen. The flag had been promoted to the committed baseline the day before (`presets`), which is what made keeping the alternatives cost rather than earn.',
+    restoreNote:
+      'Four coordinated steps. (1) Re-add the `dashboard-pacing-style` definition to `FEATURE_FLAGS` in `src/context/FeatureFlagContext.tsx` — group `Widgets`, page `dashboard-rebrand`, `defaultEnabled: true`, five variants (lo-fi / rate / runway / balance / presets); it sat between `dashboard-journey-complete` and `dashboard-progress-state`. (2) Re-add the key to the scope array in `src/components/account/FeatureFlagPanel.tsx` or the panel will not show it on /dashboard-rebrand. (3) In `LearnerFocusedBand.tsx` replace `const pacingStyle = paceOnly ? \'presets\' : \'lo-fi\'` with the flag read — `useFeatureFlag(\'dashboard-pacing-style\').variant ?? \'runway\'`, then `paceOnly ? pacingVariant : \'lo-fi\'` (the hook call must stay UNCONDITIONAL; three comments in that file record the rules-of-hooks trap). (4) Restore the `pacingBody` arms and the locals they alone used, ALL removed with them: `unitsLeft`, `unitsPerWeek`, `weeksLeftWhole`, `runwayStrip`, `pacingFigureStyle`, `pacingUnitStyle`, `pacingNoteStyle`, and the `timeRemainingText` import from `learningPathsHomeUtil`. NOT restored deliberately: the status-constancy guarantee. The four retired treatments all showed `pacingStatus`; presets replaces it with a sentence, so `TestingVersion.test.tsx` pinned the four together and presets separately — restoring the arms means restoring that pairing, not just the render.',
+  },
+  {
     id: 'learner-band-completed-celebration',
     name: 'Completed celebration band (100%)',
     what: 'The green "You’re all caught up!" card the Learner Focused band returned INSTEAD of itself at 100% — a success half with the completed stats and a View Certificate action, joined to a white panel offering Browse Catalog.',
