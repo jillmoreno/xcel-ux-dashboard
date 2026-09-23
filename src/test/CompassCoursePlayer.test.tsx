@@ -137,8 +137,13 @@ describe('the player states the course that was opened', () => {
       expect(within(sidebar).getByText(chapter)).toBeTruthy()
     }
     expect(sidebar.textContent).not.toMatch(/Florida/)
-    expect(within(sidebar).getByText('Now')).toBeTruthy()
-    expect(within(sidebar).getByText('Up next')).toBeTruthy()
+    /* NO STATE LABELS — 2026-09-22. This asserted "Now" and "Up next" were
+       present; the direct ask removed both as a fourth telling of what the
+       bullets already say. Inverted rather than deleted, so a reinstatement is
+       a decision rather than a drift back. The states themselves are pinned by
+       the bullet tests below, which is where they now live. */
+    expect(within(sidebar).queryByText('Now')).toBeNull()
+    expect(within(sidebar).queryByText('Up next')).toBeNull()
   })
 
   it('marks exactly the chapters before the current one as done', () => {

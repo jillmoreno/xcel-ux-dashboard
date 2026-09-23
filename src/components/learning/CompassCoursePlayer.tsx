@@ -217,7 +217,6 @@ function CompassSidebar({
         {NY_LH_COURSE_CHAPTERS.map((chapter, i) => {
           const done = i < NY_LH_CURRENT_CHAPTER_INDEX
           const now = i === NY_LH_CURRENT_CHAPTER_INDEX
-          const upNext = i === NY_LH_CURRENT_CHAPTER_INDEX + 1
           return (
             <li key={chapter} style={tocItemStyle}>
               {/* THE DASHED THREAD joining one bullet to the next. Drawn per
@@ -231,14 +230,26 @@ function CompassSidebar({
                 <span aria-hidden style={tocThreadLineStyle} />
               ) : null}
               <TocSectionTitle title={chapter} done={done} now={now} />
-              {/* The one-word state line under a section, as drawn. Only the
-                  finished section and the one after the current section carry
-                  it; the rest are unlabelled, which is what makes the two that
-                  are labelled read as positions rather than as decoration. */}
+              {/*
+                THE STATE LABELS ARE GONE — 2026-09-22, the direct ask, pointed
+                at "Now" and "Up next".
+
+                They were the Figma's, and they made sense there: the mock's
+                bullets are all the same open circle, so the words were the only
+                thing separating the current chapter from the eight untouched
+                ones. That stopped being true when the bullets became three
+                distinct states earlier the same day — a filled navy tick, a
+                navy ring, a grey ring. The current chapter is ALSO bold and
+                navy in its text. "Now" was a fourth telling of one fact, and
+                "Up next" labelled a chapter whose only claim was being adjacent
+                to it.
+
+                `Done` SURVIVES for now and is the odd one left — see the note
+                on `tocStateLineStyle`.
+              */}
               {done && i === NY_LH_CURRENT_CHAPTER_INDEX - 1 ? (
                 <p style={tocStateLineStyle}>Done</p>
               ) : null}
-              {upNext ? <p style={tocUpNextStyle}>Up next</p> : null}
             </li>
           )
         })}
@@ -307,7 +318,6 @@ function TocSectionTitle({
         <span aria-hidden style={now ? tocRingNowStyle : tocRingIdleStyle} />
       )}
       <span style={now ? tocSectionTextNowStyle : tocSectionTextStyle}>{title}</span>
-      {now ? <span style={tocNowBadgeStyle}>Now</span> : null}
     </span>
   )
 }
@@ -354,7 +364,6 @@ export function TocChildItem({
           <span aria-hidden style={now ? tocRingSmallStyle : tocRingSmallIdleStyle} />
         )}
         <span style={now ? tocChildTextNowStyle : tocChildTextStyle}>{label}</span>
-        {now ? <span style={tocNowBadgeStyle}>Now</span> : null}
       </span>
     </span>
   )
@@ -630,13 +639,18 @@ const sidebarHeadStyle: CSSProperties = {
   padding: '4px 8px 8px 0',
 }
 
+/* BLUE, and the EYEBROWS below went neutral in the same pass — 2026-09-22, the
+   direct ask. The two swapped inks: the title was the grey and the section
+   eyebrows were the blue, which had the accent on the labels and the neutral on
+   the thing being labelled. The course name is the subject of this sidebar, so
+   it takes the brand ink and the eyebrows step back to body black. */
 const sidebarTitleStyle: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-body)',
   fontSize: 14,
   fontWeight: 500,
   lineHeight: '21px',
-  color: 'var(--color-text-secondary)',
+  color: 'var(--color-primary-500)',
 }
 
 const percentChipStyle: CSSProperties = {
@@ -659,7 +673,9 @@ const sidebarEyebrowStyle: CSSProperties = {
   letterSpacing: '1.1px',
   textTransform: 'uppercase',
   lineHeight: '16.5px',
-  color: 'var(--color-primary-500)',
+  /* `--color-text-primary`, not `--color-neutral-950`: it IS the body ink and
+     it re-points on the dark theme, where a literal black would vanish. */
+  color: 'var(--color-text-primary)',
 }
 
 const tocListStyle: CSSProperties = {
@@ -783,6 +799,11 @@ const tocSectionTextNowStyle: CSSProperties = {
    thread when there was none; with the dashed connector running down the whole
    column it would be a SECOND vertical line in the same 6px, one solid and one
    dashed, two pixels apart. The indent alone places the label now. */
+/* `Done` IS THE LAST STATE LABEL STANDING. "Now" and "Up next" were removed on
+   2026-09-22 as a fourth telling of what the bullets already say; this one was
+   not named in that ask and is kept rather than swept up with them. It is the
+   same redundancy — a filled navy tick is not ambiguous — so it is a one-line
+   deletion whenever that is wanted. */
 const tocStateLineStyle: CSSProperties = {
   margin: '2px 0 0',
   display: 'flex',
@@ -795,20 +816,6 @@ const tocStateLineStyle: CSSProperties = {
   color: 'var(--color-text-tertiary)',
 }
 
-const tocUpNextStyle: CSSProperties = {
-  margin: '2px 0 0',
-  display: 'flex',
-  alignItems: 'center',
-  minHeight: 18,
-  paddingLeft: 21,
-  fontFamily: 'var(--font-body)',
-  fontSize: 12,
-  lineHeight: '17px',
-  /* Tertiary, like Done. These two are STATE LABELS on the row above them, not
-     entries in the tree — at the same weight and colour as a chapter they read
-     as a twelfth and thirteenth chapter called "Done" and "Up next". */
-  color: 'var(--color-text-tertiary)',
-}
 
 const tocChildRowStyle: CSSProperties = {
   display: 'flex',
@@ -857,13 +864,6 @@ const tocChildTextNowStyle: CSSProperties = {
   color: 'var(--color-primary-500)',
 }
 
-const tocNowBadgeStyle: CSSProperties = {
-  marginLeft: 'auto',
-  fontFamily: 'var(--font-body)',
-  fontSize: 12,
-  fontWeight: 600,
-  color: 'var(--color-primary-500)',
-}
 
 const sidebarItemStyle: CSSProperties = {
   margin: 0,
