@@ -40,6 +40,9 @@ import CircleSvg from './circle-dashed.svg?react'
 import CircleCheckSvg from './circle-check.svg?react'
 import CircleUserSvg from './circle-user.svg?react'
 import CircleInfoSvg from './circle-info.svg?react'
+import LoveseatSvg from './loveseat.svg?react'
+import MugHotSvg from './mug-hot.svg?react'
+import PersonRunningFastSvg from './person-running-fast.svg?react'
 import CircleQuestionSvg from './circle-question.svg?react'
 import ClockSvg from './clock.svg?react'
 import CreditCardSvg from './credit-card.svg?react'
@@ -203,7 +206,14 @@ export const ChevronRight = makeIcon(ChevronRightSvg)
 export const Circle = makeIcon(CircleSvg) // FA: circle-dashed (used for Not Started status)
 export const CircleCheck = makeIcon(CircleCheckSvg) // FA: circle-check
 export const CircleUser = makeIcon(CircleUserSvg) // FA: circle-user
-export const CircleInfo = makeIcon(CircleInfoSvg) // FA: circle-info
+export const CircleInfo = makeIcon(CircleInfoSvg)
+/* The three Study Pace plans' marks — Loveseat = Steady & Relaxed, MugHot =
+   Recommended, PersonRunningFast = Focused & Quick. Solid weights, unlike most
+   of this registry's Light set, because they read as SYMBOLS beside a label at
+   14px rather than as UI glyphs. */
+export const Loveseat = makeIcon(LoveseatSvg)
+export const MugHot = makeIcon(MugHotSvg)
+export const PersonRunningFast = makeIcon(PersonRunningFastSvg) // FA: circle-info
 export const Clock = makeIcon(ClockSvg)
 export const CreditCard = makeIcon(CreditCardSvg)
 export const Crown = makeIcon(CrownSvg)

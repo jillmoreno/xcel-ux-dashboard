@@ -1,5 +1,12 @@
-import { useMemo, useState, type CSSProperties } from 'react'
-import { ChevronRight, CircleInfo, Clock } from '@/icons'
+import { useMemo, useState, type ComponentType, type CSSProperties } from 'react'
+import {
+  ChevronRight,
+  CircleInfo,
+  Clock,
+  Loveseat,
+  MugHot,
+  PersonRunningFast,
+} from '@/icons'
 import { SquareTile } from '@/components/membership/v5/SquareTile'
 import { StudyPaceSheet, type PaceChoices } from './StudyPaceSheet'
 import {
@@ -582,6 +589,24 @@ export function StudyPaceTile({
  * printing the number is wrong: "no number is honest there, and the answer is
  * more time or fewer lessons, not a bigger figure."
  */
+/**
+ * A MARK PER PLAN — 2026-09-23, the direct ask: "Person Running = Focused, Mug
+ * = Recommended, loveseat = Relaxed."
+ *
+ * Keyed on `PresetId` rather than on the display name, so renaming the plans
+ * again (they have been renamed twice today) cannot silently orphan a glyph.
+ *
+ * They are SYMBOLS, not UI glyphs — a sofa says "unhurried" in a way no arrow
+ * does — which is why they are the solid weights rather than this registry's
+ * usual Light set, and why they are `aria-hidden`: the plan's name is right
+ * beside each one, and a screen reader hearing "loveseat" would be worse off.
+ */
+const PLAN_ICONS: Record<PresetId, ComponentType<{ size?: number }>> = {
+  relaxed: Loveseat,
+  recommended: MugHot,
+  focused: PersonRunningFast,
+}
+
 function PaceOptionPicker({
   options,
   active,
@@ -606,7 +631,20 @@ function PaceOptionPicker({
             onClick={() => onPick(o)}
             style={{ ...optionStyle, ...(on ? optionActiveStyle : null) }}
           >
-            <span style={optionNameStyle}>{o.name}</span>
+            {/* THE MARK AND THE NAME ON ONE LINE, so the glyph reads as part
+                of the label rather than as a decoration above it. 20% opacity
+                unselected and full primary when chosen — the direct ask, and it
+                gives the row a second signal for "chosen" beyond the tint,
+                which is what keeps the state off colour alone (1.4.1). */}
+            <span style={optionNameRowStyle}>
+              <span aria-hidden style={on ? planIconActiveStyle : planIconStyle}>
+                {(() => {
+                  const Mark = PLAN_ICONS[o.id]
+                  return <Mark size={14} />
+                })()}
+              </span>
+              <span style={optionNameStyle}>{o.name}</span>
+            </span>
             {/*
               TWO LINES, AND BOTH SAY "A WEEK" OR "A NIGHT" — 2026-09-23, the
               direct note: "this logic needs clarification of 3 nights/week, and
@@ -751,6 +789,34 @@ const optionPointerStyle: CSSProperties = {
   borderLeft: '6px solid transparent',
   borderRight: '6px solid transparent',
   borderTop: '6px solid var(--color-primary-500)',
+}
+
+const optionNameRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 6,
+  minWidth: 0,
+}
+
+/* `--color-primary-500` throughout; only the opacity moves. A lighter STOP for
+   the unselected state would be a second colour to keep in step, and a faded
+   version of the selected one is the same ink at a whisper — which is what "not
+   chosen yet" should look like beside a plan that is.
+
+   50%, up from 20% the same afternoon — 20 read as a disabled glyph rather than
+   an unchosen one, which is the wrong message on a row the learner is meant to
+   click. The marks are the thing that makes these three legible at a glance, so
+   they have to be visible on all three. */
+const planIconStyle: CSSProperties = {
+  display: 'inline-flex',
+  flexShrink: 0,
+  color: 'var(--color-primary-500)',
+  opacity: 0.5,
+}
+
+const planIconActiveStyle: CSSProperties = {
+  ...planIconStyle,
+  opacity: 1,
 }
 
 const optionNameStyle: CSSProperties = {
