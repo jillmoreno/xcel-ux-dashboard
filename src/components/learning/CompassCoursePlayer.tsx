@@ -282,7 +282,26 @@ function TocSectionTitle({
       */}
       {done ? (
         <span aria-hidden style={tocDoneDotStyle}>
-          <Check size={7} aria-hidden style={{ color: 'var(--color-text-inverse)' }} />
+          {/* 9 in a 14 disc — the ratio FA's own solid `circle-check` uses.
+              STROKED as well as sized, and the stroke is the half that fixes
+              it: the registry is Font Awesome Pro LIGHT, so `check` is a
+              hairline path drawn for 16px and up. Scaled to 9 it renders
+              sub-pixel and the disc reads as a plain dot, which is what "cant
+              see the checkmark" was. Painting the same `currentColor` as a
+              stroke thickens the glyph without a second asset or a heavier
+              weight the registry does not have. 38 of a 448-unit viewBox is
+              roughly a Regular-weight stem. */}
+          <Check
+            size={9}
+            aria-hidden
+            style={{
+              color: 'var(--color-text-inverse)',
+              stroke: 'currentColor',
+              strokeWidth: 38,
+              strokeLinecap: 'round',
+              strokeLinejoin: 'round',
+            }}
+          />
         </span>
       ) : (
         <span aria-hidden style={now ? tocRingNowStyle : tocRingIdleStyle} />
@@ -319,7 +338,17 @@ export function TocChildItem({
             as a different kind of completion. */}
         {done ? (
           <span aria-hidden style={tocDoneDotSmallStyle}>
-            <Check size={6} aria-hidden style={{ color: 'var(--color-text-inverse)' }} />
+            <Check
+              size={8}
+              aria-hidden
+              style={{
+                color: 'var(--color-text-inverse)',
+                stroke: 'currentColor',
+                strokeWidth: 38,
+                strokeLinecap: 'round',
+                strokeLinejoin: 'round',
+              }}
+            />
           </span>
         ) : (
           <span aria-hidden style={now ? tocRingSmallStyle : tocRingSmallIdleStyle} />
@@ -673,11 +702,21 @@ const tocSectionRowStyle: CSSProperties = {
    bullet) / 2 — rather than on the cap-line, where it reads high. All three
    share it so a state change can never move the text. */
 const tocBulletBase: CSSProperties = {
-  width: 12,
-  height: 12,
+  /* 14, UP FROM 12 — 2026-09-22: "this icon looks weird, cant see the
+     checkmark". The tick is Font Awesome PRO LIGHT, a hairline path, and at 7px
+     inside a 12px disc there was not enough room for the stroke to register as
+     a check rather than as a smudge. The disc is the constraint, so the disc
+     grew; the design's own done glyph is 15px, so this moves TOWARDS the mock
+     rather than away — the 12 came from the type-downsizing pass and took the
+     tick with it. All three states share the box, so none of them can shift
+     the text relative to the others. */
+  width: 14,
+  height: 14,
   flexShrink: 0,
   borderRadius: '50%',
-  marginTop: 2,
+  /* (17px line - 14px bullet) / 2 ≈ 1, so the first-line nudge shrinks with
+     the disc growing — without re-deriving it the bullet would sit low. */
+  marginTop: 1,
   /* ABOVE THE DASHED THREAD, which runs behind the column. Without this the
      line crosses the open rings and they read as struck through. */
   position: 'relative',
@@ -703,19 +742,20 @@ const tocDoneDotStyle: CSSProperties = {
   background: 'var(--color-primary-500)',
 }
 
-const tocRingSmallStyle: CSSProperties = { ...tocRingNowStyle, width: 11, height: 11 }
-const tocRingSmallIdleStyle: CSSProperties = { ...tocRingIdleStyle, width: 11, height: 11 }
-const tocDoneDotSmallStyle: CSSProperties = { ...tocDoneDotStyle, width: 11, height: 11 }
+const tocRingSmallStyle: CSSProperties = { ...tocRingNowStyle, width: 12, height: 12 }
+const tocRingSmallIdleStyle: CSSProperties = { ...tocRingIdleStyle, width: 12, height: 12 }
+const tocDoneDotSmallStyle: CSSProperties = { ...tocDoneDotStyle, width: 12, height: 12 }
 
 const tocItemStyle: CSSProperties = { position: 'relative' }
 
 const tocThreadLineStyle: CSSProperties = {
   position: 'absolute',
-  /* Centred under a 12px bullet at the row's left edge: 6 - half the 1px rule. */
-  left: 5.5,
-  /* Starts below the bullet (3px row padding + 2px nudge + 12px bullet + 2) and
-     runs past the item's own bottom to cross the list gap. */
-  top: 19,
+  /* Centred under a 14px bullet at the row's left edge: 7 - half the 1px rule. */
+  left: 6.5,
+  /* Starts below the bullet (3px row padding + 1px nudge + 14px bullet + 2) and
+     runs past the item's own bottom to cross the list gap. Re-derived when the
+     bullet grew to 14 — left stale it would start inside the disc. */
+  top: 20,
   bottom: -6,
   borderLeft: '1px dashed var(--color-neutral-300)',
 }
