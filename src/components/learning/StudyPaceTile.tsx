@@ -762,26 +762,41 @@ const optionActiveStyle: CSSProperties = {
    * emphasis rather than as a join, and the other three edges are still the
    * 1px the unselected options carry.
    */
-  borderBottomWidth: 3,
+  /*
+   * ⚠ AN INSET SHADOW, NOT A THICK BORDER — 2026-09-23, after the foot kept
+   * reading as cut off along its length and at the corners.
+   *
+   * It was `borderBottomWidth: 3`. Nothing was clipping it: measured, the
+   * card's bottom sits at y=790.875 — a FRACTIONAL pixel, because the rows
+   * above it resolve to fractions. A 3px border starting on a half-pixel
+   * renders as two solid rows and a faint third, and where it meets the 1px
+   * side borders the mitre turns that into a visible notch at each corner.
+   *
+   * An inset `box-shadow` paints inside the padding box as a flat band rather
+   * than as a mitred edge, so there is no corner join to break up and the
+   * rounding shows as at most a soft edge instead of a gap.
+   *
+   * IT ALSO REMOVES THE HEIGHT COMPENSATION. The border stays 1px on all four
+   * sides, so the selected card is exactly as tall as the other two and the
+   * `paddingBottom: 7` that used to give back the extra 2px is gone — one less
+   * number to keep in step.
+   */
+  boxShadow: 'inset 0 -3px 0 0 var(--color-primary-500)',
   borderBottomLeftRadius: 0,
   borderBottomRightRadius: 0,
-  /* The 2px the thicker border takes, given back — otherwise the selected
-     option is 2px taller than the two beside it and the grid stretches them to
-     match, so picking one nudges all three. */
-  paddingBottom: 7,
 }
 
 /* Sits ON the bottom border, pointing down. Centred on the option rather than
    on the card: it points at the row it belongs to.
 
-   ⚠ `calc(100% + 3px)`, NOT `100%`. A percentage `top` resolves against the
-   containing block's PADDING box, so plain `100%` put the triangle's apex
-   inside the 3px rule and only half of it showed — measured at -3px from the
-   button's outer edge. The offset is the border's own width, which is why it is
-   written as the sum rather than as 3: change the foot and this follows. */
+   ⚠ `calc(100% + 1px)`, NOT `100%`. A percentage `top` resolves against the
+   containing block's PADDING box, so plain `100%` puts the triangle's apex
+   inside the border. The offset is the border's own width — 1px since the foot
+   became an inset shadow rather than a 3px border (it was `+ 3px` while the
+   border carried the weight). Change the border and this follows. */
 const optionPointerStyle: CSSProperties = {
   position: 'absolute',
-  top: 'calc(100% + 3px)',
+  top: 'calc(100% + 1px)',
   left: '50%',
   transform: 'translateX(-50%)',
   width: 0,
@@ -1451,15 +1466,39 @@ function WeekStrip({
                  day read as partial rather than as a different colour. A
                  conic sweep would read as a timer; a level reads as an amount,
                  which is what minutes-against-a-target is. */
+              /*
+               * A SOLID DISC WITH LIGHT LETTERS when the night is planned —
+               * 2026-09-23, the direct ask. It was a pale `primary-100` fill
+               * with dark ink, which read as "tinted" rather than "on" beside
+               * the plan cards above it, and those now carry a solid selected
+               * treatment of their own.
+               *
+               * ⚠ SUGGESTION MODE ONLY. In ACTUAL mode the fill is a LEVEL —
+               * how much of the evening's target was studied — so a 30% disc
+               * would put light letters on 70% of white and lose them
+               * entirely. That mode keeps the pale fill and the dark ink, which
+               * is legible at any level. The gradient stays either way because
+               * it is what draws a partial day.
+               */
               background: on
-                ? `linear-gradient(to top, var(--color-primary-100) ${Math.round(
+                ? `linear-gradient(to top, ${
+                    actual ? 'var(--color-primary-100)' : 'var(--color-primary-500)'
+                  } ${Math.round((actual ? done : 1) * 100)}%, transparent ${Math.round(
                     (actual ? done : 1) * 100,
-                  )}%, transparent ${Math.round((actual ? done : 1) * 100)}%)`
+                  )}%)`
                 : 'transparent',
               boxShadow: `inset 0 0 0 1px ${
-                on ? 'var(--color-primary-400)' : 'var(--color-border-subtle)'
+                on
+                  ? actual
+                    ? 'var(--color-primary-400)'
+                    : 'var(--color-primary-500)'
+                  : 'var(--color-border-subtle)'
               }`,
-              color: on ? 'var(--color-primary-700)' : 'var(--color-text-tertiary)',
+              color: on
+                ? actual
+                  ? 'var(--color-primary-700)'
+                  : 'var(--color-primary-100)'
+                : 'var(--color-text-tertiary)',
         } satisfies CSSProperties
         if (!pickable) {
           return (

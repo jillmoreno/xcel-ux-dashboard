@@ -611,12 +611,18 @@ describe('the beginner week — 0%', () => {
       .filter((el) => /^[MTWFS]$/.test(el.textContent ?? ''))
       .slice(0, 7)
     expect(labels).toHaveLength(7)
-    /* A studied cell is filled with `--color-primary-100`; an unstudied one is
-       `transparent`. Every cell carries a `background`, so the presence of the
-       property says nothing — the FILL is what differs, along with the ring and
-       the ink, which all follow the same boolean. */
+    /* A planned cell is filled SOLID with `--color-primary-500`; an unplanned
+       one is `transparent`. Every cell carries a `background`, so the presence
+       of the property says nothing — the FILL is what differs, along with the
+       ring and the ink, which all follow the same boolean.
+
+       ⚠ `-500`, NOT `-100`, as of 2026-09-23. The pale `primary-100` fill was
+       the SUGGESTION treatment until the direct ask made planned nights solid
+       with light letters. `primary-100` is still the fill in ACTUAL mode, where
+       the gradient is a level rather than an on/off — which is why this asserts
+       the specific stop rather than "has a gradient". */
     const filled = labels.filter((el) =>
-      (el as HTMLElement).style.background.includes('--color-primary-100'),
+      (el as HTMLElement).style.background.includes('--color-primary-500'),
     )
     expect(filled).toHaveLength(NOT_STARTED_NIGHTS)
     expect(filled.map((el) => el.textContent)).toEqual(['M', 'T', 'W', 'T'])
