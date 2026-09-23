@@ -30,6 +30,7 @@ import {
 import {
   dashboardProgressPersonaFor,
   DASHBOARD_PROGRESS_PICKER,
+  type DashboardProgressVariant,
 } from '@/data/dashboardProgressFixtures'
 import { displayedProgressPct, timeRemainingText, longDate } from '@/components/learning/learningPathsHomeUtil'
 import {
@@ -113,6 +114,20 @@ function seedClassic(extra: Record<string, unknown> = {}) {
  * a specific version asks for it by name; `defaultDiscoverabilityVersionFor` is
  * tested on its own, once, below.
  */
+/**
+ * The countdown a persona actually carries, as the surfaces print it.
+ *
+ * ⚠ READ FROM THE FIXTURE, NEVER TYPED. These assertions were a literal "27
+ * days" until 2026-09-23 and every one of them had to be hand-edited the moment
+ * the demo's day counts were re-authored to 29 / 17 / 3 — a literal cannot
+ * catch a figure it was edited to match. What the tests below are actually
+ * about is that the surfaces AGREE with the fixture and with each other, which
+ * is true at any value.
+ */
+function personaCountdown(variant: DashboardProgressVariant = 'progress-on-track'): string {
+  return timeRemainingText(dashboardProgressPersonaFor('xcel', variant, 'qe')!.renewal!.weeksLeft)
+}
+
 const QE_URL = '/dashboard-rebrand?version=discoverability-qe-focused'
 
 function renderShell(url: string) {
@@ -1769,7 +1784,7 @@ describe('the course header band flag', () => {
       'To complete course',
       'Completed',
     ])
-    expect(stats[0].value).toBe('27 days')
+    expect(stats[0].value).toBe(personaCountdown())
     expect(stats[1].value).toBe('26 of 42 lessons')
     // …and the exam DATE is gone from the row rather than merely reordered.
     expect(stats.map((s) => s.caption)).not.toContain('Target exam date')
@@ -3163,7 +3178,7 @@ describe('Time Remaining is a day countdown, with no At Risk treatment', () => {
     )
   }
 
-  it('reads "27 days" rather than a number of weeks', () => {
+  it('reads the persona\'s countdown in DAYS rather than a number of weeks', () => {
     // The Time Remaining KPI cell was this assertion's home until 2026-09-17,
     // when the tiles took the row. The countdown is the course header band's
     // stat row now, so that is where it is read.
@@ -3173,7 +3188,10 @@ describe('Time Remaining is a day countdown, with no At Risk treatment', () => {
       (d) => d.style.justifyContent === 'space-between' && d.style.alignItems === 'center',
     )!
     expect(row.textContent).toMatch(/To complete course/i)
-    expect(row.textContent).toMatch(/27\s*days/i)
+    expect(row.textContent).toContain(personaCountdown())
+    // DAYS, never weeks — the unit is the claim, and it holds for every state
+    // inside the 30-day cap.
+    expect(personaCountdown()).toMatch(/days?$/)
     expect(row.textContent).not.toMatch(/wks/i)
   })
 
@@ -3206,12 +3224,12 @@ describe('Time Remaining is a day countdown, with no At Risk treatment', () => {
      * the absence as the flag being off.
      */
     const bare = renderShell(QE_URL)
-    expect(bare.container.textContent).not.toMatch(/27 days/)
+    expect(bare.container.textContent).not.toContain(personaCountdown())
     expect(bare.container.textContent).not.toMatch(/12\/15\/2026|December 15, 2026/)
     bare.unmount()
     seedCourseHeader()
     const withBand = renderShell(QE_URL)
-    expect(withBand.container.textContent).toMatch(/27 days/)
+    expect(withBand.container.textContent).toContain(personaCountdown())
     expect(withBand.container.textContent).not.toMatch(/December 15, 2026/)
   })
 
@@ -3240,14 +3258,18 @@ describe('Time Remaining is a day countdown, with no At Risk treatment', () => {
     }
   })
 
-  it('applies NO At Risk treatment at 27 days', () => {
+  it('applies NO At Risk treatment on the On Track persona', () => {
     // The explicit ask, and it holds because the status is not derived from
     // this number: `STATUS_BY_VARIANT` supplies a `statusOverride` that every
     // band and the detail sheet prefer over their `weeksLeft`-based
     // `derivedStatus`. Asserted through the RENDERED strip rather than the
     // fixture, since the override only matters if the surface honours it.
     const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!
-    expect(persona.renewal!.weeksLeft * 7).toBe(27)
+    /* 17 as of 2026-09-23 (was 27), and read off the fixture rather than typed
+       so the next re-authoring does not need this line edited. What the test is
+       about is that the STATUS ignores the number, which is true at any value
+       inside the cap. */
+    expect(timeRemainingText(persona.renewal!.weeksLeft)).toBe(personaCountdown())
     expect(persona.status).toBe('on-track')
     const { container } = renderShell(QE_URL)
     const band = container.querySelector<HTMLElement>('.cre-learner-focused-band')!
@@ -3275,8 +3297,12 @@ describe('Time Remaining is a day countdown, with no At Risk treatment', () => {
        across the whole picker rather than on the two rows that used to be
        interesting, because a cap is only a cap if nothing escapes it.
 
-       At Risk's 21 days survives unchanged, which is worth keeping visible: it
-       was the load-bearing one, and it was already inside the window. */
+       ⚠ AT RISK IS 3 DAYS as of 2026-09-23 (was 21) — the direct ask, and the
+       one value here with a consequence beyond the countdown: at ~15% of 42
+       lessons no pace fits inside three days, so the Study Pace card drops into
+       its `state: 'no'` branch. That was asked about and confirmed rather than
+       discovered afterwards. The cap still holds, which is what this test is
+       for. */
     for (const { variant } of DASHBOARD_PROGRESS_PICKER) {
       const p = dashboardProgressPersonaFor('xcel', variant, 'qe')!
       expect(p.renewal!.weeksLeft * 7, variant).toBeLessThanOrEqual(30)
@@ -3289,7 +3315,7 @@ describe('Time Remaining is a day countdown, with no At Risk treatment', () => {
       )
     }
     const at = dashboardProgressPersonaFor('xcel', 'progress-at-risk', 'qe')!
-    expect(timeRemainingText(at.renewal!.weeksLeft)).toBe('21 days')
+    expect(timeRemainingText(at.renewal!.weeksLeft)).toBe('3 days')
   })
 })
 

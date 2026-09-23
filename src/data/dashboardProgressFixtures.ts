@@ -480,7 +480,7 @@ const PROGRESS_RATIOS: Record<DashboardProgressVariant, { m: number; e: number }
  * So the table below authors DAYS and derives the deadline from
  * `FIXTURE_TODAY`. One number per state, and the pair can no longer disagree.
  */
-const ON_TRACK_DAYS_LEFT = 27
+const ON_TRACK_DAYS_LEFT = 17
 
 /**
  * The cap the ask sets — "demo data for now should never be more than 30 days
@@ -509,14 +509,70 @@ function deadlineIn(days: number): string {
   return `${mm}/${dd}/${d.getFullYear()}`
 }
 
+/**
+ * How long the pre-licensing course grants access, in days.
+ *
+ * THE WINDOW IS THE SAME FOR EVERYONE; what differs is when they enrolled —
+ * 2026-09-23, the chosen model. The fixture's own note refuses a window that
+ * varies by state ("an access window that changed with how far along the
+ * learner is would be the fixture contradicting itself"), and that still
+ * holds: one course sells one window. A persona further through it simply
+ * bought earlier.
+ */
+const COURSE_ACCESS_DAYS = 30
+
+/**
+ * The enrolment / expiry pair that makes the Study Pace card count to the SAME
+ * figure the header does.
+ *
+ * ⚠ THE `+ 1` IS LOAD-BEARING. `resolveCeiling` takes the access expiry and
+ * subtracts a day — "finishing on the day access dies is not finishing" — so a
+ * window that ends in N+1 days is what shows N usable ones. Derived here rather
+ * than authored per state because the two figures disagreed once already, on
+ * one persona, and nothing on screen said which was wrong.
+ */
+function accessWindowFor(daysLeft: number): { enrolledAt: string; expiresAt: string } {
+  const expires = new Date(FIXTURE_TODAY)
+  expires.setDate(expires.getDate() + daysLeft + 1)
+  const enrolled = new Date(expires)
+  enrolled.setDate(enrolled.getDate() - COURSE_ACCESS_DAYS)
+  const iso = (d: Date) =>
+    `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  return { enrolledAt: iso(enrolled), expiresAt: iso(expires) }
+}
+
+/**
+ * The states whose course window is aligned to their countdown.
+ *
+ * NOT ALL OF THEM, by instruction. `progress-off-track` authors its own short
+ * window on purpose (see the chain below — it is what makes the unreachable-pace
+ * branch reachable), `progress-expired` sits in the past, and the fresh-start
+ * states have nothing to reconcile. Aligning those would have rewritten stories
+ * nobody asked to change.
+ */
+const ALIGNED_WINDOW_VARIANTS = new Set<DashboardProgressVariant>([
+  'not-started',
+  'progress-on-track',
+  'progress-at-risk',
+])
+
 /** Days left per state — every one at or under {@link MAX_DEMO_DAYS_LEFT}. */
 const DAYS_LEFT_BY_VARIANT: Record<DashboardProgressVariant, number> = {
   // A fresh start has the whole window.
   'setup-complete-0': MAX_DEMO_DAYS_LEFT,
   'not-started': MAX_DEMO_DAYS_LEFT,
   'progress-on-track': ON_TRACK_DAYS_LEFT,
-  // At Risk = a short runway with the requirement barely begun.
-  'progress-at-risk': 21,
+  /* At Risk = a short runway with the requirement barely begun — 3 days as of
+     2026-09-23, the direct ask, down from 21.
+
+     ⚠ NO PACE FITS THERE, and that was asked about and confirmed rather than
+     discovered afterwards. At ~15% of 42 lessons roughly 36 remain; three days
+     puts `minsPerWeek` past `CEILING_MINS × 6` on every preset, so the Study
+     Pace card drops into its `state: 'no'` branch and says no honest number
+     exists. That is the intended reading — a learner who has genuinely run out
+     of runway — and it means this persona now exercises a branch only
+     `progress-off-track` reached before. */
+  'progress-at-risk': 3,
   // Off Track = less room than On Track and well behind the pace needed. It was
   // "~3 months of runway"; the 30-day cap makes that story unavailable, so what
   // distinguishes it now is the SHORTFALL rather than the horizon — which is
@@ -763,6 +819,19 @@ function personaFor(profile: BrandProgressProfile, variant: DashboardProgressVar
                  `resumeMid` at 100% progress — same course record, finished. */
               { ...profile.resumeMid, progress: 100, status: 'completed' as const }
             : undefined
+  /*
+   * THE WINDOW FOLLOWS THE COUNTDOWN, for the three states that name one.
+   *
+   * Applied HERE rather than on the three profile entries because the entries
+   * are shared: `resumeEarly` serves At Risk, Expired and Off Track, and each
+   * wants a different window (or, for two of them, the one it already has).
+   * Overriding at the point the variant picks its course is the only place that
+   * distinction exists.
+   */
+  const jumpBackInWindowed =
+    jumpBackIn && ALIGNED_WINDOW_VARIANTS.has(variant)
+      ? { ...jumpBackIn, ...accessWindowFor(DAYS_LEFT_BY_VARIANT[variant]) }
+      : jumpBackIn
   // Jump Back In slot mode — auto-derived from the variant. A not-started course
   // is "Up Next" (launch), a partial course is "Resume", and the discovery
   // states send the learner to the catalog.
@@ -776,7 +845,7 @@ function personaFor(profile: BrandProgressProfile, variant: DashboardProgressVar
   return {
     setupComplete: true,
     status: STATUS_BY_VARIANT[variant],
-    jumpBackInId: jumpBackIn?.id,
+    jumpBackInId: jumpBackInWindowed?.id,
     jumpBackInMode,
     discoveryTone,
     renewal: RENEWAL_BY_VARIANT[variant],
@@ -787,7 +856,7 @@ function personaFor(profile: BrandProgressProfile, variant: DashboardProgressVar
     // the same state-specific values (instead of the static LICENSE_TRACKER),
     // and agree with the dashboard band that opened the panel.
     path: {
-      ...buildPath(profile, mandatory, elective, jumpBackIn, categories),
+      ...buildPath(profile, mandatory, elective, jumpBackInWindowed, categories),
       weeksRemaining: RENEWAL_BY_VARIANT[variant].weeksLeft,
       licenseExpiresOn: RENEWAL_BY_VARIANT[variant].deadline,
       statusOverride: STATUS_BY_VARIANT[variant],

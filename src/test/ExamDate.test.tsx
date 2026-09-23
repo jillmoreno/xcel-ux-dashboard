@@ -8,6 +8,7 @@ import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelC
 import { PlatformShell } from '@/components/layout/PlatformShell'
 import { clearExamDate, examDateRenewal, readExamDate, writeExamDate } from '@/data/examDateStore'
 import { timeRemainingText } from '@/components/learning/learningPathsHomeUtil'
+import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
 import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 
 /**
@@ -195,11 +196,20 @@ describe('the entered date moves the whole page, not just the card', () => {
 
        Checked through the COUNTDOWN as of 2026-09-21, for the reason the test
        above records: the header no longer prints the date, so the persona's
-       own renewal shows as its week count. 27 days is December 15 measured
-       from the fixture clock — the same fact this always asserted, in the only
-       shape the page still states it. */
+       own renewal shows as its countdown — the same fact this always asserted,
+       in the only shape the page still states it.
+
+       ⚠ READ FROM THE FIXTURE as of 2026-09-23, not from a literal. It was
+       `timeRemainingText(27 / 7)`, which broke the moment the demo's day counts
+       were re-authored to 29 / 17 / 3. The claim here is that NOTHING STORED
+       leaves the persona's own figure showing — which is true at any value, and
+       a literal only ever pinned one of them. */
     renderShell()
-    expect(countdown()).toBe(timeRemainingText(27 / 7))
+    expect(countdown()).toBe(
+      timeRemainingText(
+        dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!.renewal!.weeksLeft,
+      ),
+    )
   })
 })
 
