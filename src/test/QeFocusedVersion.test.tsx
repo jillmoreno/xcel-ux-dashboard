@@ -326,9 +326,13 @@ describe('the Study Journey replaces Today\'s Tasks', () => {
      */
     expect(stops.map((s) => s.title)).toEqual([
       'Pre-Licensing Lessons',
-      'Course Exam (1) & Attestation',
+      'Course Exam (1)',
+      // ⚠ SPLIT OFF THE EXAM ROW 2026-09-23 ("after course exam, add another
+      // line for attestation and affidavit"). It rode on the exam for an hour,
+      // having been half of the closing stop before that.
+      'Attestation & Affidavit',
       'Prep Review (23)',
-      'Simulated Exams',
+      'Simulated Exams (3)',
       'Survey & Certificate',
     ])
     /* STILL EXACTLY ONE COUNTED STOP, which is the property the renaming must
@@ -339,9 +343,11 @@ describe('the Study Journey replaces Today\'s Tasks', () => {
     expect(counted).toHaveLength(1)
     expect(counted[0].hours).toBe(NY_LH_PRELICENSING_LESSONS)
     // Assessments are milestones; coursework is not. Two of them now.
+    /* The two ASSESSMENTS. Attestation is paperwork and gets no milestone node,
+       which is the distinction splitting it off the exam row made visible. */
     expect(stops.filter((s) => s.milestone).map((s) => s.title)).toEqual([
-      'Course Exam (1) & Attestation',
-      'Simulated Exams',
+      'Course Exam (1)',
+      'Simulated Exams (3)',
     ])
   })
 
@@ -363,13 +369,14 @@ describe('the Study Journey replaces Today\'s Tasks', () => {
     const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!
     const stops = journeyStopsFor(persona.path)
     expect(stops.find((s) => s.title === 'Prep Review (23)')?.blocked).toBe(true)
-    expect(stops.find((s) => s.title === 'Simulated Exams')?.blocked).toBe(true)
+    expect(stops.find((s) => s.title.startsWith('Simulated Exams'))?.blocked).toBe(true)
     /* AND THE COURSE EXAM, added 2026-09-23 — it sits between Part 1 and Part 2
        and follows the same rule for a plainer reason: you cannot sit the exam
        for a course you have not finished. */
-    expect(stops.find((s) => s.title.startsWith('Course Exam (1)'))?.blocked).toBe(true)
+    expect(stops.find((s) => s.title.startsWith('Course Exam'))?.blocked).toBe(true)
+    expect(stops.find((s) => s.title === 'Attestation & Affidavit')?.blocked).toBe(true)
     // …and they say what they are, including the published targets.
-    expect(stops.find((s) => s.title === 'Simulated Exams')?.group).toMatch(/3 simulators/)
+    expect(stops.find((s) => s.title.startsWith('Simulated Exams'))?.group).toMatch(/3 simulators/)
   })
 
   it('states every stop\'s status in WORDS, not colour alone', () => {
@@ -2057,7 +2064,8 @@ describe('the Study Journey rail style flag', () => {
        which is why the node column was always `aria-hidden`. */
     const text = list.textContent ?? ''
     expect(text).toContain('Pre-Licensing Lessons')
-    expect(text).toContain('Course Exam (1) & Attestation')
+    expect(text).toContain('Course Exam (1)')
+    expect(text).toContain('Attestation & Affidavit')
     // NO ordinal anywhere in the list — padded, bare, or trailing a full stop.
     expect(text).not.toMatch(/\d\s*\.?\s*Pre-Licensing/)
     expect(text).not.toMatch(/\d\s*\.?\s*Course Exam/)
@@ -2445,7 +2453,15 @@ describe('the Study Journey rail style flag', () => {
     seedJourney('syllabus')
     const { container } = renderShell(QE_URL)
     for (const title of before) expect(container.textContent).toContain(title)
+    /* ⚠ "affidavit" ALONE IS NO LONGER BANNED, and the narrowing is deliberate.
+       A journey stop reads "Attestation & Affidavit" as of 2026-09-23 — from
+       Jillienne, out of the product, the same channel that supplied the LMS
+       step strip this rail was rebuilt against. What stays banned is the
+       MOCKUP'S phrasing: "sworn affidavit of identity & contact hours", which
+       was read off a picture and sourced by nothing. The guard is about
+       provenance, not vocabulary, so it pins the phrase rather than the word. */
     expect(container.textContent).not.toMatch(/jurisprudence|sworn affidavit|NY-INS-/i)
+    expect(container.textContent).toContain('Attestation & Affidavit')
     // …and it did not split the merged completion stop back into two.
     expect(before).toContain('Survey & Certificate')
   })
@@ -3433,8 +3449,8 @@ describe('milestones are marked by the NODE, not by red text', () => {
        joined the simulators when the journey was matched to the LMS's own step
        strip. "Exam Cram" left with the hours model — no such product. */
     expect(stops.filter((st) => st.milestone).map((st) => st.title)).toEqual([
-      'Course Exam (1) & Attestation',
-      'Simulated Exams',
+      'Course Exam (1)',
+      'Simulated Exams (3)',
     ])
   })
 

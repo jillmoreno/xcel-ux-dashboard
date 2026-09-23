@@ -22,6 +22,7 @@ import { resolvePathCategories } from './progressGaugeUtil'
 import { unitCount } from '@/utils/unitLabel'
 import {
   NY_LH_COURSE_EXAM_ITEMS,
+  NY_LH_EXAM_SIMULATORS,
   NY_LH_PREP_REVIEW_LESSONS,
 } from '@/data/nyProducerRequirements'
 
@@ -201,8 +202,8 @@ export type JourneyStop = {
  *
  * and the five titles Jillienne specified from it:
  *
- *   1. Pre-Licensing Lessons   2. Course Exam (1) & Attestation   3. Prep Review (23)
- *   4. Simulated Exams         5. Survey & Certificate
+ *   1. Pre-Licensing Lessons   2. Course Exam (1)        3. Attestation & Affidavit
+ *   4. Prep Review (23)        5. Simulated Exams (3)   6. Survey & Certificate
  *
  * WHAT CHANGED, and it is more than a rename. The journey had FOUR stops
  * (Pre-licensing Course → Prep Review Course → Exam Simulators → Attestation &
@@ -223,21 +224,56 @@ export type JourneyStop = {
  * 05/06/07 to 06/07/08 with no edit. That is the payoff of the derivation the
  * widget's own note argued for.
  */
-const COURSE_EXAM_STOP: { id: string; title: string; group: string; milestone: boolean } = {
-  id: 'course-exam-and-attestation',
-  /* "Course Exam", not "Exam" — 2026-09-23, the direct ask. The strip this
-     was copied from says "Exam", and it can: it sits inside the course, where
-     there is only one exam to mean. This rail does not. Three steps below it
-     is Simulated Exams, and two CARDS below that are Schedule State Exam and
-     Pass State Exam — so a bare "Exam" on a column holding four of them names
-     the wrong one about as often as the right one. */
-  title: `Course Exam (${NY_LH_COURSE_EXAM_ITEMS}) & Attestation`,
-  // 70% is the storefront's recommended score for Part 1's course exams, which
-  // is the one published fact about this step.
-  group: 'Part 1 · aim for 70%',
-  // An assessment, so it draws with the milestone node the simulators use.
-  milestone: true,
-}
+const CLOSE_OUT_PART_ONE_STOPS: {
+  id: string
+  title: string
+  group: string
+  milestone: boolean
+}[] = [
+  {
+    id: 'course-exam-and-attestation',
+    /* "Course Exam", not "Exam" — 2026-09-23, the direct ask. The strip this
+       was copied from says "Exam", and it can: it sits inside the course, where
+       there is only one exam to mean. This rail does not. Two steps below it is
+       Simulated Exams, and two CARDS below that are Schedule State Exam and
+       Pass State Exam — so a bare "Exam" on a column holding four of them names
+       the wrong one about as often as the right one. */
+    title: `Course Exam (${NY_LH_COURSE_EXAM_ITEMS})`,
+    // 70% is the storefront's recommended score for Part 1's course exams,
+    // which is the one published fact about this step.
+    group: 'Part 1 · aim for 70%',
+    // An assessment, so it draws with the milestone node the simulators use.
+    milestone: true,
+  },
+  {
+    /*
+     * ⚠ AFFIDAVIT — A WORD THIS REPO HAS REFUSED BEFORE, and the refusal was
+     * right at the time. A test in `QeFocusedVersion` pins that no "sworn
+     * affidavit" copy reaches the screen: it came off a REFERENCE MOCKUP
+     * ("Mandatory sworn affidavit of identity & contact hours") alongside
+     * "Foundational jurisprudence" and a fabricated course code, none of which
+     * any fixture sourced. Authoring claims about New York practice off a
+     * picture is exactly what that guard exists to stop.
+     *
+     * WHAT IS DIFFERENT NOW is the source, not the word. This is Jillienne's,
+     * from the product — 2026-09-23, "after course exam, add another line for
+     * attestation and affidavit" — the same channel that supplied the LMS step
+     * strip this whole rail was rebuilt against. The guard still holds for the
+     * mockup's phrasing; it is the provenance that changed.
+     *
+     * IT SPLIT OFF THE EXAM ROW, which read "Course Exam (1) & Attestation" for
+     * an hour. Attestation got there in the first place because the closing
+     * stop used to own it ("Attestation & Certificate") and it had to go
+     * somewhere when the LMS order put the exam second. It is its own act, and
+     * now its own line.
+     */
+    id: 'attestation-and-affidavit',
+    title: 'Attestation & Affidavit',
+    group: 'Part 1 · course completion',
+    // Paperwork, not an assessment — no milestone node.
+    milestone: false,
+  },
+]
 
 const PROGRAM_PART_STOPS: { id: string; title: string; group: string; milestone: boolean }[] = [
   {
@@ -254,11 +290,16 @@ const PROGRAM_PART_STOPS: { id: string; title: string; group: string; milestone:
        — the storefront's. The id keeps the old spelling deliberately: nothing
        displays it, and changing it would churn every test that reaches for the
        stop by id for no gain. */
-    title: 'Simulated Exams',
-    // Three, each unlocked by the previous — the page's own words. An
-    // assessment, so it draws as a milestone the way the old simulators
-    // category did.
-    group: 'Part 3 · 3 simulators, aim for 85%',
+    /* THE COUNT IS PUBLISHED, unlike the other two on this rail — the
+       storefront says "three simulators, unlocked in sequence" in words, where
+       41 and 23 came off the LMS breadcrumb. Added to the label 2026-09-23 on
+       the direct ask; the group line below has carried the same figure since
+       this stop was written, and both now read one constant so they cannot
+       drift apart. */
+    title: `Simulated Exams (${NY_LH_EXAM_SIMULATORS})`,
+    // Each unlocked by the previous — the page's own words. An assessment, so
+    // it draws as a milestone the way the old simulators category did.
+    group: `Part 3 · ${NY_LH_EXAM_SIMULATORS} simulators, aim for 85%`,
     milestone: true,
   },
 ]
@@ -374,19 +415,18 @@ export function journeyStopsFor(path: LearningPathSummary): JourneyStop[] {
     lessonsPath && courseStops.length === 1
       ? [{ ...courseStops[0], title: 'Pre-Licensing Lessons' }]
       : courseStops
-  /* The course exam sits between the coursework and Part 2 — the LMS's order,
-     and the reason this is not just a rename. `blocked` on the same rule as
-     Parts 2 and 3: you cannot sit the exam for a course you have not finished,
-     and "Not started" would invite a click that cannot work. */
+  /* The course exam and the attestation sit between the coursework and Part 2
+     — the LMS's order, and the reason this is not just a rename. `blocked` on
+     the same rule as Parts 2 and 3: you cannot sit the exam for a course you
+     have not finished, nor attest to finishing it, and "Not started" would
+     invite a click that cannot work. */
   const examStops: JourneyStop[] = lessonsPath
-    ? [
-        {
-          ...COURSE_EXAM_STOP,
-          hours: null,
-          status: courseworkDone ? ('completed' as const) : ('not-started' as const),
-          blocked: !courseworkDone,
-        },
-      ]
+    ? CLOSE_OUT_PART_ONE_STOPS.map((stop) => ({
+        ...stop,
+        hours: null,
+        status: courseworkDone ? ('completed' as const) : ('not-started' as const),
+        blocked: !courseworkDone,
+      }))
     : []
   return [
     ...namedCourseStops,

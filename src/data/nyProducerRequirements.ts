@@ -124,6 +124,18 @@ export const NY_LH_COURSE_EXAM_ITEMS = 1
 export const NY_LH_PREP_REVIEW_LESSONS = 23
 
 /**
+ * Part 3's simulator count — three, each unlocked by the previous.
+ *
+ * ⚠ THE ONLY COUNT ON THE JOURNEY THAT WAS NEVER IN DOUBT. The storefront
+ * states it in words ("THREE simulators, unlocked in sequence, unlimited
+ * retakes"), which is why the journey step's `group` line has said "3
+ * simulators" since it was written. A constant as of 2026-09-23 only because
+ * the step's LABEL now carries it too, and the same figure typed in two places
+ * one line apart is how they end up disagreeing.
+ */
+export const NY_LH_EXAM_SIMULATORS = 3
+
+/**
  * The 7-day study plan XCEL links from the product page
  * (`https://prepare2pass.com/COURSES/study_guides/lh_ca_7days.pdf`, "Read our
  * recommended study plan"). Kept as a fact about the product even though the
