@@ -184,7 +184,7 @@ describe('the only wired control is Close', () => {
       (b) => b.getAttribute('aria-label') ?? b.textContent,
     )
     expect(names).toEqual([
-      'Back to the dashboard',
+      'Home',
       'Overview',
       expect.stringMatching(/Close course player/),
     ])
@@ -194,7 +194,7 @@ describe('the only wired control is Close', () => {
     // Both crumbs are "up", and up from the player is the dashboard. Asserted
     // for each rather than once, because they are two call sites of one intent
     // and wiring only the first is the easy miss.
-    for (const name of ['Back to the dashboard', 'Overview']) {
+    for (const name of ['Home', 'Overview']) {
       seed()
       const { container, unmount } = renderShell(TESTING_URL)
       startCourse()
@@ -216,7 +216,7 @@ describe('the only wired control is Close', () => {
     seed()
     renderShell(TESTING_URL)
     startCourse()
-    for (const name of ['Back to the dashboard', 'Overview']) {
+    for (const name of ['Home', 'Overview']) {
       const el = screen.getByRole('button', { name })
       expect(el.className).toContain('cre-link-action')
       expect(el.className).toContain('cre-cta-ink')

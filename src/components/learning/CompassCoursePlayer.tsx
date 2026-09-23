@@ -173,14 +173,20 @@ function CompassSidebar({
         breadcrumb's last crumb is not a link.
       */}
       <p style={breadcrumbStyle}>
+        {/* "Home" BESIDE THE GLYPH, and the `aria-label` went with it. With a
+            visible word the label has to match it (WCAG 2.5.3, Label in Name);
+            "Back to the dashboard" beside the word "Home" is exactly the
+            mismatch that rule exists for, so the visible text is the accessible
+            name now. It also fixes the 13x13 hit area the UX scan flagged —
+            the control is a word plus a glyph rather than a 13px icon. */}
         <button
           type="button"
           onClick={onLeave}
           className="cre-link-action cre-cta-ink"
-          aria-label="Back to the dashboard"
           style={crumbButtonStyle}
         >
           <House size={13} aria-hidden />
+          Home
         </button>
         <span aria-hidden style={crumbSlashStyle}>
           /
@@ -515,7 +521,9 @@ const sidebarStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: 8,
-  padding: '12px 20px 24px',
+  /* 11 on top, not 12 — it is the top bar's own padding, and the breadcrumb
+     row below depends on the two matching. See `breadcrumbStyle`. */
+  padding: '11px 20px 24px',
   overflowY: 'auto',
   background: 'var(--color-surface-card)',
   borderRight: '1px solid var(--color-border-subtle)',
@@ -542,6 +550,19 @@ const breadcrumbStyle: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 13,
   lineHeight: '19.5px',
+  /*
+   * 38px TALL AND CENTRED so the crumbs sit on the same line as the top bar's
+   * "Section:" pill — 2026-09-22, the direct ask.
+   *
+   * IT IS ARITHMETIC, not a nudge. The sidebar and the top bar are SIBLINGS
+   * starting at the same y, so aligning their contents means matching the box
+   * the text sits in: the bar is `11px padding + 38px pill + 11px`, putting the
+   * pill's centre at 30px. The sidebar's own top padding is 11 to match, and
+   * this row is the same 38 — so its centre lands at 30 too, and the two stay
+   * aligned if either one's type changes.
+   */
+  minHeight: 38,
+  flexShrink: 0,
 }
 
 const crumbSlashStyle: CSSProperties = {
