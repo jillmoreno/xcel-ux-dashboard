@@ -246,6 +246,16 @@ function CompassSidebar({
   onSelectPage: (page: CompassPage) => void
 }) {
   const activeLabel = COMPASS_PAGES.find((p) => p.id === page)?.label ?? ''
+  /*
+   * WHICH HALF OF THE SIDEBAR IS SHOWING, and the reason it is a named
+   * constant rather than an inline `page !== 'course'` at each of the two call
+   * sites: `aria-current` has to follow it. Exactly one element may claim to
+   * be the current page, and WHICH element that is changes with the mode — the
+   * rail row when the rail is up, the trailing crumb when it is not. Two
+   * separate conditions would have drifted into the "both" and "neither" bugs,
+   * and this player has already shipped the "both" one once.
+   */
+  const railShown = page !== 'course'
   return (
     <aside style={sidebarStyle} aria-label="Course contents">
       {/*
@@ -307,10 +317,14 @@ function CompassSidebar({
             On Overview itself the third crumb would just repeat the second, so
             Overview becomes the here-crumb and the trail is two long.
 
-            NO `aria-current` ON THE HERE-CRUMB, which is a correction rather
-            than an omission: for one build the trail and the active rail row
-            both carried it — two elements claiming to be the current page,
-            worse than neither. The rail keeps it; it is the real navigation. */}
+            `aria-current` ON THE HERE-CRUMB ONLY WHEN THE RAIL IS DOWN — see
+            `railShown`. For one build the trail and the active rail row BOTH
+            carried it, two elements claiming to be the current page, which is
+            worse than neither; the fix then was to strip it from the trail and
+            let the rail own it. That held until the rail stopped rendering on
+            the Course page, at which point stripping it left NOBODY marking the
+            current page. It moves with the mode now: rail row when there is a
+            rail, trailing crumb when there is not. Always exactly one. */}
         {page === 'overview' ? (
           <span style={crumbHereStyle}>Overview</span>
         ) : (
@@ -326,7 +340,9 @@ function CompassSidebar({
             <span aria-hidden style={crumbSlashStyle}>
               /
             </span>
-            <span style={crumbHereStyle}>{activeLabel}</span>
+            <span style={crumbHereStyle} aria-current={railShown ? undefined : 'page'}>
+              {activeLabel}
+            </span>
           </>
         )}
       </p>
@@ -361,42 +377,64 @@ function CompassSidebar({
         </div>
       </div>
 
-      {/* THE PAGE RAIL. Styled after the dashboard's own rows — icon, label, a
-          tinted active state with a solid left bar — because a learner arriving
-          from that rail should not have to learn a second way of reading "you
-          are here". The colours are the PRIMARY ramp rather than the
-          `--color-nav-*` tokens: those are tuned for the dark rail, and this
-          sidebar is `--color-surface-card`. */}
-      <nav aria-label="Course pages">
-        <ul style={pageNavListStyle}>
-          {COMPASS_PAGES.map((p) => (
-            <li key={p.id}>
-              <CompassNavRow
-                item={p}
-                active={p.id === page}
-                onSelect={() => onSelectPage(p.id)}
-              />
-            </li>
-          ))}
-        </ul>
-      </nav>
+      {/*
+        THE SIDEBAR HAS TWO MODES AND SHOWS ONE AT A TIME — 2026-09-23, the
+        direct ask on the page rail: "this doesn't show in the Course (only for
+        overview)."
 
-      {/* THE CONTENTS TREE BELONGS TO THE COURSE PAGE, and shows only there.
-          Eight nav rows plus a lesson list plus its two expanders is more than
-          a 220px column holds, and the tree answers "where am I in the
-          coursework" — a question the other seven pages are not asking. */}
-      {page === 'course' ? (
+        For one build it stacked BOTH: eight page rows, then the eyebrow, then
+        42 lessons behind two expanders. That read as one long list with a rule
+        through it, and it asked the Course page — the one place the learner is
+        actually working — to carry the navigation for seven pages they are not
+        on.
+
+        So the modes swap. On COURSE the sidebar is the table of contents,
+        because "where am I in the coursework" is the only question that view is
+        asking. EVERYWHERE ELSE it is the page rail.
+
+        WHICH MEANS THE BREADCRUMB IS NOW LOAD-BEARING RATHER THAN DECORATIVE: with the
+        rail gone, the Overview crumb restored above it is the ONLY way out of
+        the Course view that does not leave the player entirely. The two changes
+        landed an hour apart and the second is what makes this one safe.
+
+        THE RAIL SURVIVES ON THE OTHER SIX PAGES, not on Overview alone. Taken
+        literally the ask would strand a learner on Flashcards with no route to
+        Readiness except back through Overview; "not in the Course" is the part
+        that is about a real collision, and this is the smallest change that
+        honours it. One condition to flip if Overview-only is what you meant.
+      */}
+      {!railShown ? (
         <>
-      {/* "Course Content", not "Table of Contents" — 2026-09-23, the direct
-          ask. Note the reading column's placeholder caption says the same two
-          words; that one names the COURSEWARE that will render there, this one
-          names the list. They do not collide today (the placeholder only shows
-          on the Course view, beside this) but the two are one rename apart from
-          reading as the same thing. */}
-      <p style={sidebarEyebrowStyle}>Course Content</p>
-      <CompassContents completedLessons={completedLessons} totalLessons={totalLessons} />
+          {/* "Course Content", not "Table of Contents" — 2026-09-23, the direct
+              ask. Note the reading column's placeholder caption says the same
+              two words; that one names the COURSEWARE that will render there,
+              this one names the list. They do not collide today (the
+              placeholder only shows on the Course view, beside this) but the
+              two are one rename apart from reading as the same thing. */}
+          <p style={sidebarEyebrowStyle}>Course Content</p>
+          <CompassContents completedLessons={completedLessons} totalLessons={totalLessons} />
         </>
-      ) : null}
+      ) : (
+        /* Styled after the dashboard's own rows — icon, label, a tinted active
+           state with a solid left bar — because a learner arriving from that
+           rail should not have to learn a second way of reading "you are here".
+           The colours are the PRIMARY ramp rather than the `--color-nav-*`
+           tokens: those are tuned for the dark rail, and this sidebar is
+           `--color-surface-card`. */
+        <nav aria-label="Course pages">
+          <ul style={pageNavListStyle}>
+            {COMPASS_PAGES.map((p) => (
+              <li key={p.id}>
+                <CompassNavRow
+                  item={p}
+                  active={p.id === page}
+                  onSelect={() => onSelectPage(p.id)}
+                />
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
     </aside>
   )
 }

@@ -59,6 +59,33 @@ function startCourse() {
   })
 }
 
+/**
+ * Climb out of the Course view to Overview — THROUGH THE BREADCRUMB, which is
+ * the only route as of 2026-09-23.
+ *
+ * The page rail does not render on Course any more (the contents tree has the
+ * column), so a test that reaches for `getByRole('button', { name: 'Overview' })`
+ * straight after `startCourse()` finds nothing. Going through the crumb is also
+ * what a learner does, which is why this is a helper rather than six copies of
+ * a querySelector.
+ */
+function goOverview() {
+  const crumbs = screen.getByLabelText('Course contents').querySelector('p') as HTMLElement
+  act(() => {
+    fireEvent.click(within(crumbs).getByRole('button', { name: 'Overview' }))
+  })
+}
+
+/** Select a page from the rail — which means getting to a view that HAS the
+ *  rail first. */
+function goPage(name: string) {
+  if (screen.queryByRole('navigation', { name: 'Course pages' }) === null) goOverview()
+  const nav = screen.getByRole('navigation', { name: 'Course pages' })
+  act(() => {
+    fireEvent.click(within(nav).getByRole('button', { name }))
+  })
+}
+
 beforeEach(() => {
   window.localStorage.clear()
 })
@@ -251,18 +278,37 @@ describe('the only wired control is Close', () => {
     seed()
     renderShell(TESTING_URL)
     startCourse()
-    const names = screen.getAllByRole('button').map(
-      (b) => (b.getAttribute('aria-label') ?? b.textContent ?? '').trim(),
-    )
-    for (const p of ['Overview', 'Course', 'Flashcards', 'Exam Simulator', 'Progress', 'Resources', 'Readiness', 'Rubi Insights']) {
-      expect(names).toContain(p)
-    }
-    expect(names).toContain('Home')
-    expect(names.some((n) => /Completed \d+ of \d+/.test(n))).toBe(true)
-    expect(names.some((n) => /Close course player/.test(n))).toBe(true)
+    const names = () =>
+      screen
+        .getAllByRole('button')
+        .map((b) => (b.getAttribute('aria-label') ?? b.textContent ?? '').trim())
+
+    // ON COURSE: the crumbs, the contents expander and Close.
+    expect(names()).toContain('Home')
+    expect(names()).toContain('Overview')
+    expect(names().some((n) => /Completed \d+ of \d+/.test(n))).toBe(true)
+    expect(names().some((n) => /Close course player/.test(n))).toBe(true)
     // The four inert bits of chrome are NOT among them.
     for (const inert of ['Notes', 'Ask Rubi', 'Next', 'Previous']) {
-      expect(names).not.toContain(inert)
+      expect(names()).not.toContain(inert)
+    }
+
+    /* AND THE EIGHT PAGE ROWS, which moved rather than vanished — they are on
+       Overview now, not stacked under the contents tree on Course. Sweeping
+       only the Course view would have let this rule quietly stop covering
+       them. */
+    goOverview()
+    for (const p of [
+      'Overview',
+      'Course',
+      'Flashcards',
+      'Exam Simulator',
+      'Progress',
+      'Resources',
+      'Readiness',
+      'Rubi Insights',
+    ]) {
+      expect(names()).toContain(p)
     }
   })
 
@@ -316,15 +362,13 @@ describe('the only wired control is Close', () => {
     // The crumb naming the active page shares the size and differs in weight.
     const here = crumbRow.querySelector('span:last-child') as HTMLElement
     expect(here.style.fontWeight).toBe('500')
-    // …and the crumb you are ON is not a link. It names the ACTIVE PAGE now,
-    // so it reads "Course" only because Course is where the player opens.
-    /* The trail's own crumb is a plain span, not a link and not `aria-current`
-       — the rail below carries that. Found via the trail element rather than by
-       text, since "Course" now appears twice in the sidebar: once as the trail
-       and once as a rail row. */
-    const trail = screen.getByLabelText('Course contents').querySelector('p')!
-    expect(trail.querySelector('[aria-current="page"]')).toBeNull()
-    expect(trail.textContent).toContain('Course')
+    /* …and the crumb you are ON is a plain SPAN — you do not link to the page
+       you are on. It does carry `aria-current` here, because the Course view
+       has no rail to carry it; the handoff itself is pinned by "marks exactly
+       ONE element as the current page". This only checks it is not a link. */
+    expect(here.tagName).toBe('SPAN')
+    expect(within(crumbRow).queryByRole('button', { name: 'Course' })).toBeNull()
+    expect(crumbRow.textContent).toContain('Course')
   })
 })
 
@@ -620,13 +664,9 @@ describe('the Overview view', () => {
    * them; Overview is a page of this course, so it keeps the contents nav and
    * replaces only the right-hand side. Home still leaves.
    */
-  const openOverview = () => {
-    const sidebar = screen.getByLabelText('Course contents')
-    const nav = within(sidebar).getByRole('navigation', { name: 'Course pages' })
-    act(() => {
-      fireEvent.click(within(nav).getByRole('button', { name: 'Overview' }))
-    })
-  }
+  /* VIA THE BREADCRUMB since 2026-09-23 — the rail is not on the Course page
+     any more, so there is no Overview row to click from here. See `goOverview`. */
+  const openOverview = goOverview
 
   it('keeps the nav and blanks the right-hand side', () => {
     seed()
@@ -671,31 +711,47 @@ describe('the Overview view', () => {
     expect(screen.getByLabelText('Course contents')).toBeTruthy()
   })
 
-  it('marks exactly ONE element as the current page — the rail row', () => {
-    /* ⚠ A BUG THIS CAUGHT. For one build the breadcrumb's trailing span AND the
-       active rail row both carried `aria-current="page"` — two elements
-       claiming to be the current page, which is worse than neither. The RAIL
-       keeps it: it is the actual navigation, and the trail is derived from it.
+  it('marks exactly ONE element as the current page, whichever half is showing', () => {
+    /* ⚠ TWO BUGS THIS HAS CAUGHT, in opposite directions, which is why the
+       assertion is an exact array rather than a `toBeTruthy` on the rail row.
 
-       Also pins that the trail's LAST crumb follows the rail — the first two
-       are fixed (Home, then the course's Overview) and only the tail moves. */
+       BOTH: for one build the breadcrumb's trailing span AND the active rail
+       row carried `aria-current="page"` — two elements claiming to be the
+       current page, worse than neither. Fixed by stripping it from the trail
+       and letting the rail own it.
+
+       NEITHER: that fix held until the rail stopped rendering on the Course
+       page. With the rail gone and the trail stripped, nothing marked the
+       current page at all — and the "rail owns it" test still passed, because
+       it only ever looked at the rail.
+
+       So the mark MOVES WITH THE MODE: trailing crumb on Course (no rail),
+       rail row everywhere else. This walks both. */
     seed()
     renderShell(TESTING_URL)
     startCourse()
-    const sidebar = screen.getByLabelText('Course contents')
+    const sidebar = () => screen.getByLabelText('Course contents')
     const current = () =>
-      [...sidebar.querySelectorAll('[aria-current="page"]')].map((el) => el.textContent?.trim())
-    expect(current()).toEqual(['Course'])
-    expect(sidebar.querySelector('p')?.textContent).toContain('Course')
+      [...sidebar().querySelectorAll('[aria-current="page"]')].map((el) => el.textContent?.trim())
 
-    act(() => {
-      fireEvent.click(within(sidebar).getByRole('button', { name: 'Flashcards' }))
-    })
+    // ON COURSE the crumb carries it — there is no rail to carry it.
+    expect(current()).toEqual(['Course'])
+    expect(sidebar().querySelector('nav[aria-label="Course pages"]')).toBeNull()
+
+    // ON A RAIL PAGE the row carries it, and the crumb has given it up.
+    goPage('Flashcards')
     expect(current()).toEqual(['Flashcards'])
-    expect(sidebar.querySelector('p')?.textContent).toContain('Flashcards')
+    expect(sidebar().querySelector('p')?.textContent).toContain('Flashcards')
+    expect(
+      sidebar().querySelector('p')?.querySelector('[aria-current="page"]'),
+    ).toBeNull()
     // …and the right-hand side is the bare ground for it.
     expect(screen.getByRole('region', { name: 'Flashcards page' })).toBeTruthy()
     expect(screen.queryByLabelText('Chat with Rubi')).toBeNull()
+
+    // …and back on Course it hands off again.
+    goPage('Course')
+    expect(current()).toEqual(['Course'])
   })
 
   it('reads Home / Overview / <page>, and collapses to two crumbs ON Overview', () => {
@@ -724,34 +780,29 @@ describe('the Overview view', () => {
 
     expect(crumbs()).toEqual(['Home', 'Overview', 'Course'])
 
-    const sidebar = screen.getByLabelText('Course contents')
-    act(() => {
-      fireEvent.click(within(sidebar).getByRole('button', { name: 'Readiness' }))
-    })
+    goPage('Readiness')
     // The first two crumbs are FIXED; only the tail moved.
     expect(crumbs()).toEqual(['Home', 'Overview', 'Readiness'])
 
     // The Overview crumb is a real control — it selects the page, and does NOT
     // leave the player the way Home does.
-    const crumbRow = sidebar.querySelector('p') as HTMLElement
-    act(() => {
-      fireEvent.click(within(crumbRow).getByRole('button', { name: 'Overview' }))
-    })
+    goOverview()
     expect(screen.getByRole('region', { name: 'Overview page' })).toBeTruthy()
     expect(crumbs()).toEqual(['Home', 'Overview'])
     // …and on the page itself it is no longer pressable.
-    expect(
-      within(sidebar.querySelector('p') as HTMLElement).queryByRole('button', { name: 'Overview' }),
-    ).toBeNull()
+    const crumbRow = screen.getByLabelText('Course contents').querySelector('p') as HTMLElement
+    expect(within(crumbRow).queryByRole('button', { name: 'Overview' })).toBeNull()
   })
 
   it('gives all eight pages a row, and only Course is built', () => {
     seed()
     renderShell(TESTING_URL)
     startCourse()
-    const sidebar = screen.getByLabelText('Course contents')
-    const nav = within(sidebar).getByRole('navigation', { name: 'Course pages' })
-    const labels = [...nav.querySelectorAll('button')].map((b) => b.textContent?.trim())
+    /* THE RAIL LIVES ON OVERVIEW, not on Course — the contents tree has that
+       column. `goOverview` climbs out through the breadcrumb. */
+    goOverview()
+    const nav = () => screen.getByRole('navigation', { name: 'Course pages' })
+    const labels = [...nav().querySelectorAll('button')].map((b) => b.textContent?.trim())
     expect(labels).toEqual([
       'Overview',
       'Course',
@@ -762,13 +813,19 @@ describe('the Overview view', () => {
       'Readiness',
       'Rubi Insights',
     ])
-    // Course renders the player; every other page renders the ground.
+    /* Course renders the player; every other page renders the ground. Each hop
+       goes through `goPage`, which re-finds the rail — walking straight from
+       one page to the next only works because the rail persists on all seven,
+       and it is `goPage` that would fail loudly if that ever stopped being
+       true. */
     for (const label of labels.filter((l) => l !== 'Course')) {
-      act(() => {
-        fireEvent.click(within(nav).getByRole('button', { name: label! }))
-      })
+      goPage(label!)
       expect(screen.getByRole('region', { name: `${label} page` })).toBeTruthy()
       expect(screen.queryByRole('main')).toBeNull()
     }
+    // …and Course itself still renders the player rather than a ground.
+    goPage('Course')
+    expect(screen.queryByRole('region', { name: 'Course page' })).toBeNull()
+    expect(screen.getByLabelText('Chat with Rubi')).toBeTruthy()
   })
 })
