@@ -1372,12 +1372,33 @@ function PaceCardBody({
           <p style={{ ...cardBody, display: 'block', marginBottom: -4 }}>
             Based on your actual course progress and time spent studying
           </p>
+          {/*
+            ⚠ A DATE, NOT AN EVENING — 2026-09-23. It read "Averaging about 2¼
+            hours a night."; the ask moved it to "You're on schedule to finish
+            May 24".
+
+            IT CHANGES WHAT THE CARD LEADS WITH, from an input to an OUTCOME.
+            The evening is effort; the date is the thing the effort is for, and
+            it is the only figure here a learner can act on — an average of 2¼
+            hours tells them nothing they did not already know about their own
+            week. The hours are not lost: the activity band below states them
+            as a total, which is where a fact about the past belongs.
+
+            ⚠ AND IT BRANCHES, for the reason the nudge under it does. "On
+            schedule" is a CLAIM, and printing it to a learner the same card is
+            about to tell is "a little behind" would have the two sentences
+            contradicting each other in consecutive lines. Behind, it states
+            the same date without the claim.
+
+            THE DATE IS DERIVED, never typed: `preset.finishIso`, the same
+            value the Course completion cell reads. Two derivations is how a
+            headline comes to disagree with the cell three lines under it.
+          */}
           <p style={cardHeadline}>
-            Averaging about{' '}
+            {standing?.behind ? 'At this pace you’ll finish' : 'You’re on schedule to finish'}{' '}
             <span style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.015em' }}>
-              {splitFigure(formatEvening(observed.minsPerNight))[0]}
-            </span>{' '}
-            {splitFigure(formatEvening(observed.minsPerNight))[1]} a night.
+              {formatPaceDate(preset.finishIso)}
+            </span>
           </p>
         </>
       ) : (
@@ -1391,35 +1412,23 @@ function PaceCardBody({
       )}
 
       {/*
-        THE NUDGE — 2026-09-23, the direct ask, replacing the line that used to
-        restate the average ("You're averaging 1¾ hours a night") now that the
-        HEADLINE says that.
+        THE NUDGE STOOD HERE and was removed 2026-09-23. It read "A little
+        behind, but no worries — add some extra study time in this week and
+        you'll easily get back on pace." on a shortfall, and "Right on pace…"
+        otherwise.
 
-        ⚠ IT IS NOT A VERDICT DELIVERED TWICE. The card already had exactly one
-        line allowed to say a learner is behind — `standing.behind` below,
-        which quotes the shortfall in minutes and what closes it. Two lines
-        saying "behind" in two different arithmetics is how a card starts
-        contradicting itself, so this one takes over and that one is suppressed
-        while it shows. The minutes have not been lost: they are in the stats
-        row and in the week strip.
+        ⚠ THE HEADLINE TOOK OVER ITS JOB an hour earlier, which is what made it
+        removable: "You're on schedule to finish May 28" and "At this pace
+        you'll finish May 28" already branch on the same `standing.behind`. Two
+        sentences reporting one status in consecutive lines is the duplication
+        this card has been trimmed of twice now — first the arithmetic
+        shortfall line, then this.
 
-        ⚠ AND IT BRANCHES, because the asked-for copy says "a little behind".
-        Printing that to someone who is NOT behind would be the card inventing
-        a problem — the one thing this file's notes guard against hardest. So
-        `standing.behind` picks which sentence, and both are encouraging.
-
-        ⚠ AT THE DEMO CLOCK THE ON-PACE HALF IS WHAT SHOWS. `FIXTURE_TODAY` is
-        a Monday, so no study night has elapsed yet, no shortfall can exist and
-        `behind` is false. Advance the demo day (see `demoDay.ts`) to read the
-        behind copy — it is not missing.
+        ⚠ WHAT WENT WITH IT is the only encouraging copy on the card. If a
+        behind learner should be told what to DO rather than only when they
+        will finish, this block is where that sentence goes, and the
+        `standing.behind` branch is already computed for the headline.
       */}
-      {observed ? (
-        <p style={{ ...cardBody, display: 'block', marginTop: -4 }}>
-          {standing?.behind
-            ? 'A little behind, but no worries — add some extra study time in this week and you’ll easily get back on pace.'
-            : 'Right on pace. Keep the evenings you are giving it and you will finish with time to spare.'}
-        </p>
-      ) : null}
 
       {/* ONE SLOT, TWO JOBS — see `ActivitySummary`. At 0% the seven circles are
           a CONTROL (clicking one sets the nights) and there is no history to
@@ -1607,6 +1616,11 @@ function ActivitySummary({
   minsPerNight: number
 }) {
   const total = dailyMinutes.reduce((a, b) => a + (b || 0), 0)
+  /* ⚠ `observedPace`, NOT `total / dailyMinutes.length`. The average a learner
+     recognises is their EVENING — the mean of the nights they actually sat
+     down — not their effort diluted by rest days. That rule is the function's
+     own, and calling it is what stops this line drifting from it. */
+  const pace = observedPace({ dailyMinutes })
   /* The tallest bar is the busiest evening, floored at the nightly target so a
      week of light sessions does not redraw itself as a week of full ones. */
   const peak = Math.max(minsPerNight, ...dailyMinutes)
@@ -1631,6 +1645,12 @@ function ActivitySummary({
         In the last <b style={streakFigure}>{dailyMinutes.length}</b> days you’ve studied a total of{' '}
         <b style={streakFigure}>{formatEvening(total)}</b>.
       </p>
+      {/* THE EVENING, MOVED HERE — 2026-09-23. It was the card's HEADLINE
+          ("Averaging about 2¼ hours a night") until the headline became the
+          finish date; this is where a fact about the past belongs, under the
+          total it is the average of. The two numbers now sit together and are
+          derived from the same array, so they cannot disagree. */}
+      {pace ? <p style={streakSub}>About {formatEvening(pace.minsPerNight)} a night</p> : null}
       <div style={streakBars} role="img" aria-label={streakLabel(dailyMinutes)}>
         {dailyMinutes.map((m, i) => {
           const on = (m || 0) > 0
@@ -2193,6 +2213,13 @@ const streakFigure: CSSProperties = {
 /* `flex: 1` on every bar with a 3px gap — the row fills whatever width the
    card has, which is what keeps 30 bars legible in a column that is 490px on
    the dashboard and narrower in the sheet. */
+const streakSub: CSSProperties = {
+  margin: '-2px 0 2px',
+  fontFamily: 'var(--font-body)',
+  fontSize: 12.5,
+  color: 'var(--color-text-tertiary)',
+}
+
 const streakBars: CSSProperties = {
   display: 'flex',
   alignItems: 'flex-end',

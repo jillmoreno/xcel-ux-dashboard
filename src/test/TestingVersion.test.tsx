@@ -384,11 +384,12 @@ describe('the presets pacing card', () => {
     // The redesign's headline: a nightly figure and a weekly one, both out of
     // the same formatter. It said "N nights a week" before — the WEEK STRIP
     // now carries how many nights, and in which days.
-    /* ⚠ "AVERAGING ABOUT …", NOT "About … a night, … a week" — 2026-09-23.
-       The card changed SUBJECT for a started learner: at 0% the headline is a
-       plan, from the first studied evening it is a reading of what they are
-       actually doing. This persona is on-track, so it reports. */
-    expect(text).toMatch(/Averaging about .+ a night/)
+    /* ⚠ A FINISH DATE — 2026-09-23, third wording. The headline was the plan
+       ("About 2 hours a night, 6 days a week"), then the observed evening
+       ("Averaging about 2¼ hours a night"), and is now the OUTCOME. Each move
+       was a deliberate ask; the alternatives are recorded here so the sequence
+       stays legible. */
+    expect(text).toMatch(/(You’re on schedule to finish|At this pace you’ll finish)/)
     expect(text).toMatch(/you will finish around [A-Z][a-z]{2} \d+/)
   })
 
@@ -692,7 +693,7 @@ describe('the beginner week — 0%', () => {
        wrongly, a mid-course learner would get the beginner's card — the goal
        headline and the three plan options. Asserting the observed-pace card is
        a more direct test of that than either predecessor. */
-    expect(tile.textContent).toMatch(/Averaging about .+ a night/)
+    expect(tile.textContent).toMatch(/(You’re on schedule to finish|At this pace you’ll finish)/)
     expect(tile.textContent).not.toMatch(new RegExp(`${NOT_STARTED_NIGHTS} days a week`))
     /* ⚠ NOT 'Your Study Pace' HERE. That heading is the `options` chooser's;
        this suite lands on `strip`, which keeps naming the plan ("Steady &

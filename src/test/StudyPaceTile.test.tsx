@@ -1037,18 +1037,24 @@ describe('study-pace-chooser: options — the learner who has already started', 
        asserted "About X a night, N days a week"; the headline now reports the
        OBSERVED average instead, and says where it came from. */
     expect(text).toContain('Based on your actual course progress and time spent studying')
-    expect(text).toMatch(/Averaging about .+ a night\./)
+    /* ⚠ A DATE, NOT AN EVENING, as of 2026-09-23 — the headline leads with the
+       OUTCOME now. The evening did not vanish; it moved under the activity
+       total. */
+    expect(text).toMatch(/(You’re on schedule to finish|At this pace you’ll finish)/)
     /* THE READING — averaged over NIGHTS STUDIED among the ELAPSED days, which
        is three of them here: the Sunday's 999 is in the future and must not
        count, and the two rest days must not dilute the evening. */
     const elapsed = WEEK.slice(0, ((TODAY.getDay() + 6) % 7) + 1).filter((m) => m > 0)
     expect(elapsed).toHaveLength(3)
     const mean = Math.round(elapsed.reduce((a, b) => a + b, 0) / elapsed.length)
-    expect(text).toContain(`Averaging about ${formatEvening(mean)} a night.`)
-    /* AND THE NUDGE, which took the old averaging line's place. Which of the
-       two sentences shows depends on `weekStanding`; both are encouraging, and
-       the card must never print "a little behind" to someone who is not. */
-    expect(text).toMatch(/A little behind|Right on pace/)
+    expect(mean).toBeGreaterThan(0)
+    /* ⚠ THE NUDGE THAT USED TO BE ASSERTED HERE IS GONE. "A little behind, but
+       no worries…" / "Right on pace…" was removed once the headline began
+       branching on the same `standing.behind` — two sentences reporting one
+       status in consecutive lines is the duplication this card has now been
+       trimmed of twice. The evening moved under the activity total, which only
+       renders with a `dailyMinutes` history this fixture does not author. */
+    expect(text).not.toMatch(/A little behind|Right on pace/)
   })
 
   it('says nothing about an average when the week is still empty', () => {

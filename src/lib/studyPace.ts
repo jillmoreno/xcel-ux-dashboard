@@ -1006,10 +1006,11 @@ export type ObservedPace = {
  * judgement rather than a reading.
  */
 export function observedPace(input: {
-  /** Minutes studied per day, Monday-first, 7 entries. */
-  weekMinutes: number[]
-  /** Mon-first index of today, 0–6. */
-  todayIndex: number
+  /** Minutes studied per day, Monday-first, 7 entries. Optional when
+   *  `dailyMinutes` is given, which supersedes it. */
+  weekMinutes?: number[]
+  /** Mon-first index of today, 0–6. Only read alongside `weekMinutes`. */
+  todayIndex?: number
   /**
    * EVERY DAY SINCE ENROLMENT, oldest first, ending today — and when it is
    * here it WINS, because it is a better answer to the same question.
@@ -1028,7 +1029,7 @@ export function observedPace(input: {
   dailyMinutes?: number[]
 }): ObservedPace | null {
   const { weekMinutes, todayIndex, dailyMinutes } = input
-  const elapsed = dailyMinutes ?? weekMinutes.slice(0, todayIndex + 1)
+  const elapsed = dailyMinutes ?? (weekMinutes ?? []).slice(0, (todayIndex ?? 0) + 1)
   const studied = elapsed.filter((m) => (m || 0) > 0)
   if (studied.length === 0) return null
   const total = studied.reduce((a, b) => a + b, 0)
