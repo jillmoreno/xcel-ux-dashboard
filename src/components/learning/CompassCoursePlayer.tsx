@@ -1,4 +1,4 @@
-import { useState, type ComponentType, type CSSProperties } from 'react'
+import { useEffect, useState, type ComponentType, type CSSProperties } from 'react'
 import {
   ArrowLeft,
   BookFull,
@@ -28,6 +28,7 @@ import {
 } from '@/data/nyProducerRequirements'
 import { readExamDate } from '@/data/examDateStore'
 import { ProgressBar } from '@/components/ui/ProgressBar'
+import { setCourseChrome } from './courseTakeover'
 import { formatExamChip, LEFT_COLUMN_FIRST_ROW_HEIGHT } from './compassPlayerUtil'
 
 /**
@@ -194,6 +195,16 @@ export function CompassCoursePlayer({
    * a section), so a `?view=` would be a parameter on the page underneath.
    */
   const [page, setPage] = useState<CompassPage>('course')
+
+  /* TELLS THE APP HEADER IT IS INSIDE A COURSE, which is all this does — the
+     header stays, and takes a slightly thicker bottom stroke so the course
+     page reads as a different place from the dashboard. Option 2's page sets
+     `'takeover'` instead and the header stands down entirely; see
+     `courseTakeover`. */
+  useEffect(() => {
+    setCourseChrome('course')
+    return () => setCourseChrome('none')
+  }, [])
   /*
    * `dashboard-navigation` WAS READ HERE and moved to `PlatformShell` on
    * 2026-09-23, when Option 2 became a full-screen page rather than a variant

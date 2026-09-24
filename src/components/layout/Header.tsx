@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ShoppingCart, Bars } from '@/icons'
 import { Logo } from '@/components/brand/Logo'
-import { useCourseTakeover } from '@/components/learning/courseTakeover'
+import { useCourseChrome } from '@/components/learning/courseTakeover'
 import { NavDropdown } from './NavDropdown'
 import { NavLink } from './NavLink'
 import { AccountMenu } from './AccountMenu'
@@ -82,13 +82,14 @@ export function Header() {
   // The slim header (logo cap + utility icons, no primary nav) renders only
   // on the rebranded dashboard shell route. Every other route keeps the
   // classic top nav.
-  /* ⚠ STANDS DOWN FOR A FULL-SCREEN COURSE PAGE — `dashboard-navigation:
-     option-2`, 2026-09-23. That page draws its own header (logo · Compass ·
-     course · section), so leaving this one up would stack two XCEL logos.
-     Read as a hook, unconditionally, and acted on after the rest of them —
-     rules-of-hooks, the trap `CompassCoursePlayer`'s header records three
-     times over. See `courseTakeover` for why it is a store and not a prop. */
-  const courseTakeover = useCourseTakeover()
+  /* ⚠ THE HEADER BEHAVES DIFFERENTLY INSIDE A COURSE — 2026-09-23, and which
+     way depends on WHICH course page. Option 1 keeps the header and takes a
+     slightly thicker bottom stroke; Option 2 draws its own header, so this one
+     stands down or there are two XCEL logos stacked. Read as a hook,
+     unconditionally, and acted on after the rest of them — rules-of-hooks, the
+     trap `CompassCoursePlayer`'s header records three times over. See
+     `courseTakeover` for why it is a store and not a prop. */
+  const courseChrome = useCourseChrome()
   const platformNav = pathname === '/dashboard-rebrand'
   // Hide the primary top nav on the rebrand shell (wayfinding lives in the left
   // rail) AND on the Onboarding Flow — a required first-run wizard the learner
@@ -202,9 +203,9 @@ export function Header() {
       <AccountMenu />
     </div>
   )
-  /* AFTER EVERY HOOK, BEFORE ANY MARKUP — see `courseTakeover`. The full-screen
-     course page owns the header while it is open. */
-  if (courseTakeover) return null
+  /* AFTER EVERY HOOK, BEFORE ANY MARKUP — see `courseTakeover`. Option 2's
+     full-screen page owns the header while it is open. */
+  if (courseChrome === 'takeover') return null
   return (
     <>
     {/* The prototype utility bar + stakeholder Demo Controls banner now render
@@ -224,7 +225,13 @@ export function Header() {
         top: headerTop,
         zIndex: 50,
         background: 'var(--color-surface-card)',
-        borderBottom: '1px solid var(--color-border-subtle)',
+        /* 2px INSIDE A COURSE, 1px everywhere else — 2026-09-23, the direct
+           ask for "a slightly thicker bottom stroke" on the course content
+           page. The header itself is unchanged; the heavier rule is the whole
+           signal that this is a different place from the dashboard, which is
+           why it is a border weight and not a colour: a darker hairline would
+           read as a theme change rather than as a boundary. */
+        borderBottom: `${courseChrome === 'course' ? 2 : 1}px solid var(--color-border-subtle)`,
         // On the rebrand shell the white bar is capped at the 1440 rail+content
         // width and left-anchored, so on screens wider than 1440 the area to the
         // right shows the page background (matching the shell's right filler)

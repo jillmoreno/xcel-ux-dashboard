@@ -12,7 +12,7 @@ import { PrototypeChrome } from '@/components/layout/PrototypeChrome'
 import { DemoControlsBar } from '@/components/prototype/DemoControlsBar'
 import { DashboardVersionsPanelProvider } from '@/components/dashboard/DashboardVersionsPanelContext'
 import { CourseContentV2 } from '@/components/learning/CourseContentV2'
-import { useCourseTakeover } from '@/components/learning/courseTakeover'
+import { useCourseChrome } from '@/components/learning/courseTakeover'
 import {
   NY_LH_COURSE_CHAPTERS,
   NY_LH_CURRENT_CHAPTER_INDEX,
@@ -629,7 +629,7 @@ describe('dashboard-navigation — Option 1 / Option 2', () => {
        tree — see `courseTakeover` for why there is no prop path between them.
        The UNMOUNT half is the one that would strand a reviewer headerless. */
     function Probe() {
-      return <span data-testid="takeover">{String(useCourseTakeover())}</span>
+      return <span data-testid="takeover">{useCourseChrome()}</span>
     }
     const { unmount } = render(
       <MemoryRouter>
@@ -644,14 +644,14 @@ describe('dashboard-navigation — Option 1 / Option 2', () => {
         />
       </MemoryRouter>,
     )
-    expect(screen.getByTestId('takeover').textContent).toBe('true')
+    expect(screen.getByTestId('takeover').textContent).toBe('takeover')
     unmount()
     render(
       <MemoryRouter>
         <Probe />
       </MemoryRouter>,
     )
-    expect(screen.getByTestId('takeover').textContent).toBe('false')
+    expect(screen.getByTestId('takeover').textContent).toBe('none')
   })
 
   it('leaves Option 1 exactly as it was', () => {

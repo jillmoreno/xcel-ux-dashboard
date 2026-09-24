@@ -4,7 +4,7 @@ import { Logo } from '@/components/brand/Logo'
 import { readExamDate } from '@/data/examDateStore'
 import { daysUntil, formatPaceDate } from '@/lib/studyPace'
 import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
-import { setCourseTakeover } from './courseTakeover'
+import { setCourseChrome } from './courseTakeover'
 import { CompassContents, RubiAside } from './CompassCoursePlayer'
 
 /**
@@ -60,8 +60,8 @@ export function CourseContentV2({
   onClose: () => void
 }) {
   useEffect(() => {
-    setCourseTakeover(true)
-    return () => setCourseTakeover(false)
+    setCourseChrome('takeover')
+    return () => setCourseChrome('none')
   }, [])
 
   /* THE EXAM DATE THE LEARNER ACTUALLY BOOKED, from the same store the
@@ -266,16 +266,32 @@ const crumbStyle: CSSProperties = {
   overflow: 'hidden',
 }
 
+/*
+ * ⚠ THE EMPHASIS INVERTED — 2026-09-23. The COURSE is the serif, bold half and
+ * the SECTION is regular body text; it was the other way round, matching the
+ * mock's bolded section.
+ *
+ * The comment that stood here argued the old arrangement: "the section is
+ * where the learner is and the course is the context for it, so the emphasis
+ * does the work the mock's bolding does." The ask reversed it, and the reading
+ * that makes sense of the new order is the masthead one — the course is the
+ * PRODUCT's name in this header, sitting beside "Compass" as part of the
+ * identity, and the section is a location within it. The section still has the
+ * progress row directly beneath naming it a second time, so it is not lost by
+ * being set in plain body text.
+ */
 const crumbCourseStyle: CSSProperties = {
-  color: 'var(--color-text-tertiary)',
+  fontFamily: 'var(--font-heading)',
+  fontWeight: 700,
+  color: 'var(--color-text-primary)',
   whiteSpace: 'nowrap',
 }
 
 const crumbDotStyle: CSSProperties = { color: 'var(--color-text-tertiary)' }
 
 const crumbSectionStyle: CSSProperties = {
-  fontWeight: 700,
-  color: 'var(--color-text-primary)',
+  fontWeight: 400,
+  color: 'var(--color-text-secondary)',
   overflow: 'hidden',
   textOverflow: 'ellipsis',
   whiteSpace: 'nowrap',
