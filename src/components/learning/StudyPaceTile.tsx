@@ -425,7 +425,16 @@ export function StudyPaceTile({
               : chooserVariant === 'strip'
                 ? `${paceNameFor(daysToReview)} Study Pace`
                 : notStarted
-                  ? 'Set your Study Pace (optional)'
+                  ? /* ⚠ "SELECT YOUR PREFERRED", NOT "Set your … (optional)" —
+                       2026-09-23. The card now states its own provenance in a
+                       subtext line underneath (see `PaceCardBody`), and
+                       "(optional)" was doing a weaker version of that job: it
+                       said the learner owes us nothing, where the subtext says
+                       what happens to the number afterwards. "Preferred" is
+                       what carries the optionality now — a preference is a
+                       starting point, not a commitment, which is exactly what
+                       the subtext then promises. */
+                    'Select Your Preferred Study Pace'
                   : /* ⚠ "YOUR", NOT THE PLAN'S NAME — 2026-09-23. It read
                        "Recommended Study Pace" (or whichever plan was lit),
                        which is a claim about what the product SUGGESTS. From
@@ -1310,6 +1319,24 @@ function PaceCardBody({
         while leaving the link inert would have left this state with no way to
         change pace at all.
       */}
+      {/*
+        THE PROMISE UNDER THE CHOICE — 2026-09-23, the pair to the 63% card's
+        provenance line. That one says where a measured figure CAME FROM; this
+        one says what will happen to a chosen one, which is the same reassurance
+        pointed forward instead of back. Together they are why the card can
+        change subject between the two states without reading as two different
+        cards.
+
+        ⚠ ABOVE THE PICKER, not under the headline where the 63% subtext sits.
+        It qualifies the three plans, and a reassurance that arrives after the
+        decision has already been made is not reassurance.
+      */}
+      {notStarted ? (
+        <p style={{ ...cardBody, display: 'block', marginBottom: -2 }}>
+          Your actual pace will adjust based on your course progress and time spent studying —
+          we’ll help you track it.
+        </p>
+      ) : null}
       {options && onPickOption && notStarted ? (
         <PaceOptionPicker options={options} active={activeOption ?? null} onPick={onPickOption} />
       ) : null}

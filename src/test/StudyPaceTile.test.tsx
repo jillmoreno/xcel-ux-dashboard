@@ -858,10 +858,16 @@ describe('study-pace-chooser: options — three named plans', () => {
 
   it('invites rather than naming the current plan', () => {
     renderOptions()
-    /* "Set your Study Pace (optional)" as of 2026-09-23 — the heading's job on
-       this treatment is to say the three plans below are a CHOICE, and that the
-       card is useful without one. */
-    expect(screen.getByText('Set your Study Pace (optional)')).toBeTruthy()
+    /* ⚠ "SELECT YOUR PREFERRED STUDY PACE" as of 2026-09-23, replacing "Set
+       your Study Pace (optional)". The heading's job is unchanged — say the
+       three plans below are a CHOICE — but "(optional)" was carrying the "you
+       owe us nothing" half weakly, and a subtext now carries it properly by
+       saying what happens to the number afterwards. "Preferred" is what says
+       it is a starting point rather than a commitment. */
+    expect(screen.getByText('Select Your Preferred Study Pace')).toBeTruthy()
+    expect(
+      screen.getByText(/Your actual pace will adjust based on your course progress/),
+    ).toBeTruthy()
     // The `strip` treatment's heading named the plan; this one does not, because
     // the plan is named in the picker directly below it.
     expect(screen.queryByText(/Steady & Relaxed Study Pace|Recommended Study Pace/)).toBeNull()
