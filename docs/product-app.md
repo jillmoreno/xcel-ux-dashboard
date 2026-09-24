@@ -801,7 +801,8 @@ catalog says what each flag DOES; this says which way the baseline is set.
 | Flag | Baseline | What it puts on the page |
 |---|---|---|
 | `course-launcher-style` | `compass` | Start course / Resume opens the full Compass course player — the takeover with the contents tree, the eight-page rail and the Rubi aside — rather than the lo-fi placeholder |
-| `study-pace-chooser` | `options` | "Set your Study Pace (optional)" over three selectable plans (Steady & Relaxed / Recommended / Focused & Quick). ⚠ It also disables Customize Study Plan, so **Build my own is unreachable in the baseline** |
+| `study-pace-chooser` | `options` | Three selectable plans under "Select Your Preferred Study Pace" at 0%; past 0% the picker goes and the card REPORTS instead — "Your Study Pace", a finish date, and an activity band of one bar per day since enrolment. ⚠ It also disables the Study Plan link in BOTH states, so **Build my own is unreachable in the baseline** |
+| `dashboard-navigation` | `option-1` | **Nothing visible.** Option 1 is the Compass player as it stands; `option-2` is a second course-content page with its own header, and ships present-but-hidden as the variant arm of a user-test A/B (`?ff=dashboard-navigation:option-2`) |
 | `study-pace-readout` | `stats` | The card's lower half is three divided cells — Course Access, Course Completion, Days to Review — instead of three sentences |
 | `dashboard-text-tiers` | `neutral` | **Nothing.** The warm ink ramp ships OFF, reviewed and declined 2026-09-23; the flag is here so the comparison stays one URL away (`?ff=dashboard-text-tiers:tiers`) |
 | `study-pace-widget` | on | The Study Pace card exists at all |
@@ -809,6 +810,14 @@ catalog says what each flag DOES; this says which way the baseline is set.
 | `dashboard-journey-style` | `syllabus` | The numbered-node journey rail |
 | `dashboard-heading-font` | `serif` | ⚠ A SYSTEM serif standing in for Amasis MT, which is unlicensed to us — fine for an exploration, not for production |
 | `dashboard-course-header` | `band` | The course header band above the block |
+
+⚠ `dashboard-navigation` DEFAULTS TO ITS CONTROL ARM, WHICH BREAKS THIS REPO'S
+USUAL BRANCH RULE (2026-09-24). A designer's branch normally defaults its own
+work ON so the branch build shows it. Option 2 is one arm of an A/B a moderator
+assigns per participant, not a proposal replacing Option 1 — defaulting it on
+would make every other link, and this baseline, silently the variant, and the
+comparison would have no control. A test enforces the default so it cannot
+drift back.
 
 ⚠ `study-pace-preset` IS IN THE CATALOG AND WAS NOT PROMOTED (2026-09-23). Its
 default, `recommended`, seeds nothing, so it cannot move the baseline — it only
