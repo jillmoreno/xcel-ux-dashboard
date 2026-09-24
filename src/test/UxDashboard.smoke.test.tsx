@@ -223,7 +223,7 @@ describe('the restricted group is open on the full build', () => {
     // draws on the full build, so their presence proves the `gate` fields
     // survived the un-enforcement.
     renderDashboard()
-    expect(screen.getByText(/UX & Dev Access/i)).toBeInTheDocument()
+    expect(screen.getByText(/^Designers$/i)).toBeInTheDocument()
   })
 })
 

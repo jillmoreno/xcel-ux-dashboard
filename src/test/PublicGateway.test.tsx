@@ -89,7 +89,7 @@ describe('public build — the nav', () => {
       .map((b) => (b.textContent ?? '').replace(/\d+$/, '').trim())
     expect(labels).toEqual(PUBLIC_SECTIONS)
     for (const s of GATED_SECTIONS) expect(screen.queryByText(s)).toBeNull()
-    expect(screen.queryByText(/UX & Dev Access/i)).toBeNull()
+    expect(screen.queryByText(/^Designers$/i)).toBeNull()
     // The three eyebrows over the sections that ARE public still draw here —
     // only the gated group's own eyebrow is suppressed.
     expect(within(nav).getByText('Demo')).toBeInTheDocument()

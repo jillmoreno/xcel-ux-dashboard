@@ -366,7 +366,7 @@ const VISIBLE_SECTIONS: SectionDef[] = isPublicGateway()
 const DEFAULT_SECTION: UxSection = 'prototypes'
 
 /** Where the divider goes — the first restricted section. `-1` on the public
- *  build, so the divider and its "UX & Dev Access" eyebrow never draw. */
+ *  build, so the divider and its "Designers" eyebrow never draw. */
 const FIRST_RESTRICTED = VISIBLE_SECTIONS.findIndex((s) => s.gate)
 
 /**
@@ -379,7 +379,7 @@ const FIRST_RESTRICTED = VISIBLE_SECTIONS.findIndex((s) => s.gate)
  *   Design & Research → Refinement, Other Links, Research
  *   Dev Handoff      → Development, Done
  *
- * Deliberately separate from `FIRST_RESTRICTED` / "UX & Dev Access" below,
+ * Deliberately separate from `FIRST_RESTRICTED` / "Designers" below,
  * which is computed rather than authored here — that one has to keep finding
  * whichever section is first to still carry a `gate`, and stays untouched by
  * this table.
@@ -1485,7 +1485,13 @@ export function UxDashboardPage() {
                 {i === FIRST_RESTRICTED && (
                   <>
                     <hr style={{ ...dividerStyle, borderTopColor: nav.border }} />
-                    <p style={{ ...navEyebrowStyle, color: nav.eyebrow }}>UX &amp; Dev Access</p>
+                    {/* "Designers", not "UX & Dev Access" — 2026-09-24. The
+                        old label named the GATE (who can get in); this names
+                        the audience, like the three eyebrows above it — Demo,
+                        Design & Research, Dev Handoff all say who a group is
+                        for. It only ever draws on the full build, so it is the
+                        design dashboard's own word for its own sections. */}
+                    <p style={{ ...navEyebrowStyle, color: nav.eyebrow }}>Designers</p>
                   </>
                 )}
                 <button
