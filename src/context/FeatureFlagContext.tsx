@@ -11,6 +11,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { isTestingGateway } from '@/data/gatewayMode'
 
 /**
  * Platform-wide feature-flag system. Powers the "Feature Flag" panel
@@ -1799,12 +1800,52 @@ type PersistedFlagState = Partial<{
 type PersistedState = Record<string, PersistedFlagState>
 
 /** The catalog (factory) default for a single flag definition. */
+/**
+ * WHAT A PARTICIPANT LANDS ON — `VITE_GATEWAY_MODE=testing` only, 2026-09-23.
+ *
+ * A session has to open on a known state, and the committed baseline is not
+ * it: `dashboard-progress-state` defaults to On Track because that is the most
+ * useful state for a stakeholder walking the Prototypes link, and a user test
+ * of a learner starting a course needs 0%.
+ *
+ * ⚠ IT OVERRIDES THE DEFAULT, NOT THE FLAG. A moderator can still change
+ * Progress from the demo bar mid-session, `?ff=` still wins, and the Feature
+ * Flag panel still reaches everything. This only decides where a fresh page
+ * view starts — which is the one thing a participant-facing site cannot leave
+ * to whatever happens to be committed.
+ *
+ * ⚠ AND IT CHANGES NOTHING ON THE OTHER TWO SITES. `main` keeps whatever
+ * `/promote-to-prototype` put in the catalog; this is a third-site concern and
+ * lives behind the same env var the third site already sets.
+ *
+ * `dashboard-navigation` is listed even though the catalog already says
+ * `option-1`. It is the A/B's control arm and the one default a session must
+ * be able to rely on, so stating it here means a later change to the catalog
+ * cannot silently start participants on the variant.
+ */
+const TESTING_BASELINE: Record<string, Partial<FeatureFlagState>> = {
+  'dashboard-progress-state': { variant: 'not-started' },
+  'dashboard-navigation': { variant: 'option-1' },
+}
+
+export function defaultFlagState(def: FeatureFlagDefinition): FeatureFlagState {
+  return catalogDefault(def)
+}
+
 function catalogDefault(def: FeatureFlagDefinition): FeatureFlagState {
-  return {
+  const base: FeatureFlagState = {
     enabled: def.defaultEnabled,
     variant: def.defaultVariant,
     secondaryVariant: def.defaultSecondaryVariant,
   }
+  /* ⚠ APPLIED HERE RATHER THAN AT EITHER CALL SITE, because there are two and
+     they must agree: `loadInitial` builds the in-memory state, `baselineFrom`
+     builds what `?demo=1` renders. A participant link carries `demo=1`, so an
+     override that missed the second one would be invisible in exactly the case
+     it exists for. */
+  if (!isTestingGateway()) return base
+  const override = TESTING_BASELINE[def.key]
+  return override ? { ...base, ...override } : base
 }
 
 /** Load the saved custom-default baseline. Validates the same way as

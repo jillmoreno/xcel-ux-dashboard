@@ -120,3 +120,45 @@ describe('VITE_GATEWAY_MODE=testing — the participant chrome is the floor', ()
     })
   }
 })
+
+describe('VITE_GATEWAY_MODE=testing — the baseline a session opens on', () => {
+  /*
+   * 2026-09-23: a participant link has to land on a known state, and the
+   * committed baseline is not it. `dashboard-progress-state` defaults to On
+   * Track because that is the most useful state for a stakeholder walking the
+   * Prototypes link; a test of a learner starting a course needs 0%.
+   */
+  async function defaults(mode: string) {
+    vi.resetModules()
+    vi.stubEnv('VITE_GATEWAY_MODE', mode)
+    const { FEATURE_FLAGS, defaultFlagState } = await import('@/context/FeatureFlagContext')
+    return (key: string) => defaultFlagState(FEATURE_FLAGS.find((f) => f.key === key)!)
+  }
+
+  it('opens at 0% and Option 1', async () => {
+    const d = await defaults('testing')
+    expect(d('dashboard-progress-state').variant).toBe('not-started')
+    expect(d('dashboard-navigation').variant).toBe('option-1')
+  })
+
+  it('leaves the other two sites on the committed baseline', async () => {
+    /* ⚠ THE DIRECTION THAT MATTERS MORE. `main` is live on the public
+       Prototypes link; a testing-only default leaking there would change what
+       every stakeholder sees. */
+    const d = await defaults('full')
+    expect(d('dashboard-progress-state').variant).toBe('progress-on-track')
+    const p = await defaults('public')
+    expect(p('dashboard-progress-state').variant).toBe('progress-on-track')
+  })
+
+  it('overrides the DEFAULT, not the flag — the bar still switches it', async () => {
+    /* The moderator changes Progress mid-session from the demo bar, and `?ff=`
+       still wins. This only decides where a fresh page view starts. */
+    const d = await defaults('testing')
+    const def = (await import('@/context/FeatureFlagContext')).FEATURE_FLAGS.find(
+      (f) => f.key === 'dashboard-progress-state',
+    )!
+    expect(def.variants?.some((v) => v.value === 'progress-on-track')).toBe(true)
+    expect(d('dashboard-progress-state').enabled).toBe(true)
+  })
+})
