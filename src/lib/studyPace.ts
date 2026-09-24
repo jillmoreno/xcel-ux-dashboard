@@ -1057,6 +1057,17 @@ export type WeeksOnPace = {
 /**
  * The activity streak, counted in WEEKS KEPT rather than consecutive days.
  *
+ * ⚠ NOTHING RENDERS THIS AS OF 2026-09-23. The card's streak headline became a
+ * plain total ("In the last 13 days you've studied a total of 25¼ hours") after
+ * "1 week on pace" was asked about directly, and the last consumer — a
+ * "This week N of M nights" footer — was removed with it.
+ *
+ * KEPT RATHER THAN DELETED, and not out of sentiment: the argument below is
+ * the answer to a question that will be asked again the moment anyone proposes
+ * a streak, and it is the kind of reasoning that is expensive to rediscover and
+ * cheap to keep. It is fully tested, so it is correct today rather than
+ * correct-looking. To bring it back, read it in `ActivitySummary`.
+ *
  * 2026-09-23. The design reference is a daily streak — "22 days", a personal
  * best, a bar per day — and a daily count is the one thing this product must
  * not reward.

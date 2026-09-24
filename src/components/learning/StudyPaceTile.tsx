@@ -16,7 +16,6 @@ import {
   formatPaceDate,
   observedPace,
   weekStanding,
-  weeksOnPace,
   defaultWeekdays,
   NOT_STARTED_NIGHTS,
   MIN_STUDY_HOURS,
@@ -1426,12 +1425,7 @@ function PaceCardBody({
           a CONTROL (clicking one sets the nights) and there is no history to
           draw; past 0% there is history and nothing left to set. */}
       {dailyMinutes && !notStarted ? (
-        <ActivitySummary
-          dailyMinutes={dailyMinutes}
-          todayIndex={todayIndex}
-          nights={preset.nights}
-          minsPerNight={preset.minsPerNight}
-        />
+        <ActivitySummary dailyMinutes={dailyMinutes} minsPerNight={preset.minsPerNight} />
       ) : (
         <WeekStrip
           nights={nights}
@@ -1606,16 +1600,12 @@ function PaceCardBody({
  */
 function ActivitySummary({
   dailyMinutes,
-  todayIndex,
-  nights,
   minsPerNight,
 }: {
   dailyMinutes: number[]
-  todayIndex: number
-  nights: number
+  /** The plan's evening, used only to decide which bars draw dark. */
   minsPerNight: number
 }) {
-  const stand = weeksOnPace({ dailyMinutes, todayIndex, nights, minsPerNight })
   const total = dailyMinutes.reduce((a, b) => a + (b || 0), 0)
   /* The tallest bar is the busiest evening, floored at the nightly target so a
      week of light sessions does not redraw itself as a week of full ones. */
@@ -1665,13 +1655,11 @@ function ActivitySummary({
           )
         })}
       </div>
-      {/* THE ONLY FORWARD-LOOKING LINE LEFT. "Best run N weeks" went with the
-          streak — it was the same claim in the same words. This one is a
-          progress fact, not a verdict, and it is the half a learner can still
-          act on today. */}
-      <p style={streakFoot}>
-        This week <b style={emphasis}>{stand.thisWeekNights}</b> of {stand.targetNights} nights
-      </p>
+      {/* "THIS WEEK N OF M NIGHTS" STOOD HERE and was removed 2026-09-23. It
+          was the last of the week-shaped readouts, and it kept the card
+          counting two different things at once — a total above the bars and a
+          quota below them. At the demo clock it also opened at "1 of 6", which
+          reads as a shortfall on a Monday morning rather than as a start. */}
     </div>
   )
 }
@@ -2219,12 +2207,6 @@ const streakBar: CSSProperties = {
   display: 'block',
 }
 
-const streakFoot: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-body)',
-  fontSize: 12,
-  color: 'var(--color-text-tertiary)',
-}
 
 const cardBody = {
   display: 'flex',
