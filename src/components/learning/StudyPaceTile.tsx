@@ -2408,8 +2408,22 @@ const streakBars: CSSProperties = {
 }
 
 const streakBar: CSSProperties = {
-  flex: 1,
-  minWidth: 0,
+  /*
+   * ⚠ `flex: 'none'`, NOT `flex: 1` — and getting this wrong flattened the
+   * whole chart on 2026-09-23.
+   *
+   * The bars used to be the ROW's direct children, where `flex: 1` gave each
+   * one an equal share of the width. Adding weekday letters wrapped every bar
+   * in a COLUMN, and `flex: 1` in a column means grow along the COLUMN's axis
+   * — so every bar stretched to fill its column and rendered at the same
+   * height, silently overriding the `height` computed from the minutes. The
+   * inline style still said 18px, 35px, 24px; the computed height did not.
+   *
+   * The width share belongs to the column now (`streakCol`); the bar takes the
+   * full width of whatever column it is in and keeps the height it was given.
+   */
+  flex: 'none',
+  width: '100%',
   borderRadius: '2px 2px 0 0',
   display: 'block',
 }
