@@ -168,7 +168,16 @@ describe('public build — the edge rules', () => {
   })
 
   it('writes nothing on the full build', () => {
-    expect(script).toMatch(/mode !== 'public'[\s\S]*process\.exit\(0\)/)
+    /* ⚠ THE GUARD IS A SET NOW, not `mode !== 'public'` — 2026-09-23, when the
+       `testing` mode arrived and had to inherit the same edge block. The claim
+       is unchanged and is what this pins: the FULL build writes no
+       `_redirects`, so nothing is 404'd on the site the maintainers use.
+
+       Listed rather than inverted to `!== 'full'` in the script itself,
+       because that file writes a rule that DENIES access — a fourth mode
+       should opt in to that rather than inherit it by accident. */
+    expect(script).toMatch(/TRIMMED[\s\S]*has\(mode\)[\s\S]*process\.exit\(0\)/)
+    expect(script).toMatch(/new Set\(\['public', 'testing'\]\)/)
   })
 
   it('404s the designer guide and leaves the stakeholder guide and their shared stylesheet reachable', () => {

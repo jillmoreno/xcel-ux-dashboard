@@ -32,7 +32,15 @@ const root = join(dirname(fileURLToPath(import.meta.url)), '..')
 const dist = join(root, 'dist')
 const mode = (process.env.VITE_GATEWAY_MODE ?? '').trim().toLowerCase()
 
-if (mode !== 'public') {
+/* ⚠ `testing` GETS THE SAME BLOCK AS `public` — 2026-09-23. The user-test
+   build hides strictly more than the public one, so anything the public build
+   404s at the edge this one must too; `public/prototypes/` are static files
+   and no client-side gate can hide them. Listed rather than inverted to
+   `!== 'full'` because this writes a file that DENIES access, and a fourth
+   mode should have to opt in to that rather than inherit it by accident. */
+const TRIMMED = new Set(['public', 'testing'])
+
+if (!TRIMMED.has(mode)) {
   console.log('[public-redirects] full build — no _redirects written')
   process.exit(0)
 }

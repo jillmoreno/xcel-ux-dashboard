@@ -28,23 +28,59 @@
  * stub it with `vi.stubEnv('VITE_GATEWAY_MODE', 'public')`.
  */
 
-export type GatewayMode = 'public' | 'full'
+export type GatewayMode = 'public' | 'full' | 'testing'
 
 /** Parse a raw `VITE_GATEWAY_MODE` value. Anything that is not exactly
  *  `public` (case-insensitive, trimmed) is the full app — a typo must fail
  *  towards showing the maintainer everything, never towards hiding it. */
 export function parseGatewayMode(raw: unknown): GatewayMode {
   if (typeof raw !== 'string') return 'full'
-  return raw.trim().toLowerCase() === 'public' ? 'public' : 'full'
+  const v = raw.trim().toLowerCase()
+  if (v === 'public') return 'public'
+  if (v === 'testing') return 'testing'
+  return 'full'
 }
 
 export function gatewayMode(): GatewayMode {
   return parseGatewayMode(import.meta.env.VITE_GATEWAY_MODE)
 }
 
-/** True on the stakeholder build. */
+/**
+ * True where the gateway is TRIMMED — the stakeholder build and the moderated
+ * user-test build both.
+ *
+ * ⚠ `testing` IS INCLUDED DELIBERATELY. Everything `public` hides, `testing`
+ * must hide too; it then hides more (see `isTestingGateway`). Writing this as
+ * `!== 'full'` rather than listing modes means a fourth mode inherits the
+ * trim by default, which is the safe direction — a new mode that forgets to
+ * opt in shows a stakeholder the Design section.
+ */
 export function isPublicGateway(): boolean {
-  return gatewayMode() === 'public'
+  return gatewayMode() !== 'full'
+}
+
+/**
+ * True on the USER-TEST build — 2026-09-23.
+ *
+ * ⚠ THE DIFFERENCE FROM `public` IS THE GATEWAY ITSELF. The public build
+ * trims the project list to its ungated sections and still serves it at `/`;
+ * a stakeholder is meant to browse. A test participant is not: they are handed
+ * one link to one screen, and a project list — even a trimmed one, even
+ * behind a password they were given — tells them they are inside a prototype
+ * gallery belonging to a design team. That reframes everything they then say
+ * about the product.
+ *
+ * So on this build the gateway does not exist: `/` and every one of its routes
+ * redirect into the product, and `/prototypes/*` is 404'd at the edge exactly
+ * as it is on the public build.
+ *
+ * ⚠ IT HIDES THE DASHBOARD, NOT THE PRODUCT'S OWN ROUTES. All ~28 routes under
+ * `AppLayout` stay open — a participant who wanders from the course into My
+ * Courses should find it, because that is the product and the wandering is the
+ * data.
+ */
+export function isTestingGateway(): boolean {
+  return gatewayMode() === 'testing'
 }
 
 /**

@@ -33,7 +33,7 @@ import {
 } from '@/data/giftRecipientsFixtures'
 import { recCardEnvTarget, recCardTestPath } from '@/data/recCardTest'
 import { demoEnvTarget } from '@/data/demoPin'
-import { isPublicGateway, isPublicFeature } from '@/data/gatewayMode'
+import { isPublicGateway, isPublicFeature, isTestingGateway } from '@/data/gatewayMode'
 import { prototypeFeatureById } from '@/data/prototypeFeatures'
 
 /**
@@ -48,7 +48,21 @@ import { prototypeFeatureById } from '@/data/prototypeFeatures'
  * (`/dashboard-rebrand` and the ~28 under `AppLayout`) are untouched — the Demo
  * row opens the product, and the product links between its own routes.
  */
+/**
+ * THE USER-TEST BUILD HAS NO GATEWAY AT ALL — 2026-09-23. Every one of its
+ * routes lands in the product instead.
+ *
+ * ⚠ `replace`, so the gateway is not in the participant's history either. A
+ * Back button that walks them into a project list is the same disclosure as a
+ * link to one, arriving by a different door.
+ */
+function TestingGate({ children }: { children: ReactElement }) {
+  if (isTestingGateway()) return <Navigate to="/dashboard-rebrand" replace />
+  return children
+}
+
 function PublicGate({ featureId, children }: { featureId?: string; children: ReactElement }) {
+  if (isTestingGateway()) return <Navigate to="/dashboard-rebrand" replace />
   if (!isPublicGateway()) return children
   const feature = featureId ? prototypeFeatureById(featureId) : undefined
   return feature && isPublicFeature(feature) ? children : <Navigate to="/" replace />
@@ -137,7 +151,7 @@ export default function App() {
       {/* Prototype gateway also sits outside AppLayout so it reads as a
           distinct landing surface (no platform header). `/` is the front
           door; each guided feature gets its own curated page list. */}
-      <Route path="/" element={<UxDashboardPage />} />
+      <Route path="/" element={<TestingGate><UxDashboardPage /></TestingGate>} />
       <Route
         path="/prototype/:featureId"
         element={
@@ -148,8 +162,8 @@ export default function App() {
       />
       {/* The exploration's own route, kept so links already shared still work.
             It renders the same page as "/". */}
-        <Route path="/ux-dashboard" element={<UxDashboardPage />} />
-        <Route path="/research-rationale" element={<ResearchRationalePage />} />
+        <Route path="/ux-dashboard" element={<TestingGate><UxDashboardPage /></TestingGate>} />
+        <Route path="/research-rationale" element={<TestingGate><ResearchRationalePage /></TestingGate>} />
       {/* QA Notes is a section of the UX Dashboard shell, not a standalone page —
           this route just redirects to its canonical URL. */}
       <Route
@@ -162,7 +176,7 @@ export default function App() {
       />
       {/* Both redirect into the gateway shell, which owns the section chrome —
           see the note at the top of each page. */}
-      <Route path="/links" element={<LinksPage />} />
+      <Route path="/links" element={<TestingGate><LinksPage /></TestingGate>} />
       <Route
         path="/prototype/:featureId/handoff/:componentId"
         element={

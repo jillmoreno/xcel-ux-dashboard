@@ -382,6 +382,42 @@ combinations in the original. **If you add a palette, re-measure** — the note 
 the LMS `CLAUDE.md` about each palette's brightest colour being unusable as small
 text on a light page is the trap.
 
+### A third site — the user-test build (2026-09-23)
+
+`VITE_GATEWAY_MODE=testing`. A separate Netlify site, its own password, and one
+job: hand a participant a link to the product and nothing else.
+
+**It exists because `public` was not enough.** That build TRIMS the project
+list and still serves it at `/` — a stakeholder is meant to browse. A
+participant is not. They get one link to one screen, and a project list, even a
+trimmed one behind a password they were given, tells them they are inside a
+prototype gallery belonging to a design team. That reframes everything they
+then say about the product.
+
+So on this build the gateway does not exist: `/`, `/ux-dashboard`,
+`/research-rationale` and `/links` all redirect into `/dashboard-rebrand`
+(`replace`, so it is not in their history either), and `/prototypes/*` is 404'd
+at the edge exactly as on the public build. The product's own ~28 routes stay
+open — a participant who wanders from the course into My Courses should find
+it, because that is the product and the wandering is the data.
+
+**Setting up the site:** same repo, same `netlify.toml`, no build-command
+change. Set the production branch to a FROZEN test branch rather than a working
+one — a site tracking an active branch rebuilds mid-session — set
+`VITE_GATEWAY_MODE=testing`, turn branch deploys off, and set the password
+under Access & security. The site gets its own empty Blobs store, so QA Notes
+and Links hold nothing there; both sections are gone on this build anyway.
+
+`isPublicGateway()` is `!== 'full'`, so `testing` inherits every trim `public`
+has and then adds its own. A fourth mode would inherit the trim by default,
+which is the safe direction. `scripts/public-redirects.mjs` lists the trimmed
+modes explicitly instead, because it writes a rule that DENIES access — that
+one should be opted into, not inherited.
+
+Tests: `GatewayMode.test.ts` (parsing, the subset relation, the edge block) and
+`TestingGateway.test.tsx` (each gateway route lands in the product, and neither
+the full nor the public build moved).
+
 ### Two Netlify sites — the public build (2026-09-18)
 
 The repo deploys to TWO Netlify projects from one branch: the **existing site
