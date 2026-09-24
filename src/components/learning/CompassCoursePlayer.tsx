@@ -236,19 +236,8 @@ export function CompassCoursePlayer({
             placeholder with a caption: the lo-fi block says "something is
             coming here", and this is a page being designed rather than one
             standing in for courseware we do not have. */}
-        {page === 'overview' ? (
-          <div style={overviewGroundStyle} role="region" aria-label="Overview page">
-            <div style={overviewColumnStyle}>
-              <h2 style={overviewTitleStyle}>Your learning journey</h2>
-              <CompassOverviewSections />
-            </div>
-          </div>
-        ) : page !== 'course' ? (
-          <div
-            style={overviewGroundStyle}
-            role="region"
-            aria-label={`${COMPASS_PAGES.find((p) => p.id === page)?.label ?? ''} page`}
-          />
+        {page !== 'course' ? (
+          <CompassPageBody page={page} />
         ) : (
           <>
         <CompassTopBar
@@ -303,7 +292,7 @@ export function CompassCoursePlayer({
 
 /* ─── the 260px sidebar ────────────────────────────────────────────────── */
 
-function CompassSidebar({
+export function CompassSidebar({
   courseTitle,
   percentComplete,
   completedLessons,
@@ -961,6 +950,40 @@ export function CompassTopBar({
  * `OVERVIEW_SECTIONS`'s own note records what is deliberately left out and
  * why; nothing here is drawn or invented.
  */
+/**
+ * EVERYTHING THE PLAYER RENDERS THAT IS NOT THE COURSE — the Overview page's
+ * bands, and the blank ground the other seven rail pages show.
+ *
+ * ⚠ EXTRACTED SO OPTION 2 CAN RENDER IT — 2026-09-23. Its Overview was asked
+ * to carry "this content" (Option 1's) with Home's header and the page rail,
+ * which makes the two arms identical everywhere EXCEPT the course page. That
+ * is the A/B the ask started with, arrived at from the other direction: Option
+ * 2 grew into a full-screen takeover, and this pulls the non-course half back.
+ *
+ * Shared rather than copied, for the same reason `CompassContents` is: these
+ * are the course's own pages, and two arms showing different ones would be
+ * comparing two products rather than two navigations.
+ */
+export function CompassPageBody({ page }: { page: CompassPage }) {
+  if (page === 'overview') {
+    return (
+      <div style={overviewGroundStyle} role="region" aria-label="Overview page">
+        <div style={overviewColumnStyle}>
+          <h2 style={overviewTitleStyle}>Your learning journey</h2>
+          <CompassOverviewSections />
+        </div>
+      </div>
+    )
+  }
+  return (
+    <div
+      style={overviewGroundStyle}
+      role="region"
+      aria-label={`${COMPASS_PAGES.find((p) => p.id === page)?.label ?? ''} page`}
+    />
+  )
+}
+
 export function CompassOverviewSections() {
   return (
     <>

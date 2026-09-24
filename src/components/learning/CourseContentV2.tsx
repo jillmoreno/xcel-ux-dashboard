@@ -1,11 +1,17 @@
 import { useEffect, useState, type CSSProperties } from 'react'
-import { ArrowLeft, ArrowRight, CalendarDay, FileText, House, Plus, RubiLogo, Sun, X } from '@/icons'
+import { ArrowLeft, ArrowRight, CalendarDay, FileText, Plus, RubiLogo, Sun, X } from '@/icons'
 import { Logo } from '@/components/brand/Logo'
 import { readExamDate } from '@/data/examDateStore'
 import { daysUntil, formatPaceDate } from '@/lib/studyPace'
 import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 import { setCourseChrome } from './courseTakeover'
-import { CompassContents, CompassOverviewSections, RubiAside } from './CompassCoursePlayer'
+import {
+  CompassContents,
+  CompassPageBody,
+  CompassSidebar,
+  RubiAside,
+  type CompassPage,
+} from './CompassCoursePlayer'
 
 /**
  * OPTION 2's COURSE PAGE — `dashboard-navigation: option-2`, 2026-09-23.
@@ -75,12 +81,26 @@ export function CourseContentV2({
    * a section), so a `?view=` would be a parameter on the page underneath —
    * the same reasoning `CompassCoursePlayer` records for Option 1's pages.
    */
-  const [page, setPage] = useState<'course' | 'overview'>('course')
+  const [page, setPage] = useState<CompassPage>('course')
 
+  /*
+   * ⚠ THE TAKEOVER IS THE COURSE PAGE ONLY — 2026-09-23: Option 2's Overview
+   * "should have the same header as the Home page, and this should be in the
+   * left nav".
+   *
+   * It used to suppress the app header on both of its pages, because both drew
+   * the Compass header. They no longer do: only the COURSE page has that
+   * header, and everywhere else Option 2 wears Home's chrome and the page rail
+   * — which makes the two arms identical apart from the course page, and that
+   * is the comparison the A/B was for.
+   *
+   * `'course'` (header stays, with its heavier rule) rather than `'none'` on
+   * the other pages, because the learner is still inside a course.
+   */
   useEffect(() => {
-    setCourseChrome('takeover')
+    setCourseChrome(page === 'course' ? 'takeover' : 'course')
     return () => setCourseChrome('none')
-  }, [])
+  }, [page])
 
   /* THE EXAM DATE THE LEARNER ACTUALLY BOOKED, from the same store the
      Schedule State Exam card writes. The mock draws "Aug 14, 2026 · 8 days
@@ -90,30 +110,23 @@ export function CourseContentV2({
   const examIso = readExamDate()
   const examOut = examIso ? daysUntil(examIso, FIXTURE_TODAY) : null
 
-  if (page === 'overview') {
+  if (page !== 'course') {
     return (
-      <div style={pageStyle}>
-        {/* NO COMPASS HEADER HERE, by the design: that header is "technically
-            part of the course content page", so Overview opens on its own
-            breadcrumb instead. The app header is still suppressed — this is
-            one full-screen experience with two pages, and the home crumb is
-            the way out of both. */}
-        <div style={overviewPageStyle}>
-          <p style={overviewCrumbStyle}>
-            <button type="button" onClick={onClose} aria-label="Home" style={crumbHomeStyle}>
-              <House size={16} aria-hidden />
-            </button>
-            <span aria-hidden style={crumbSlashStyle}>
-              /
-            </span>
-            {/* The last crumb is the page you are on, so it is a span and
-                carries `aria-current` rather than being a second link. */}
-            <span aria-current="page" style={crumbHereStyle}>
-              Overview
-            </span>
-          </p>
-          <h1 style={overviewTitleStyle}>{courseTitle}</h1>
-          <CompassOverviewSections />
+      <div style={playerStyle}>
+        {/* THE SAME SIDEBAR OPTION 1 USES, not a copy — breadcrumb, course
+            title, progress and the eight-page rail. Copying it would have put
+            a second navigation into an A/B about navigation. */}
+        <CompassSidebar
+          courseTitle={courseTitle}
+          percentComplete={percentComplete}
+          completedLessons={completedLessons}
+          totalLessons={totalLessons}
+          onLeave={onClose}
+          page={page}
+          onSelectPage={setPage}
+        />
+        <div style={rightOfSidebarStyle}>
+          <CompassPageBody page={page} />
         </div>
       </div>
     )
@@ -265,6 +278,23 @@ export function CourseContentV2({
    Owned here rather than imported: Option 2 exists to be changed freely, and
    shared constants would mean every edit here silently moved Option 1 too —
    the one failure that would invalidate the comparison mid-test. */
+
+/* The two-column shell Option 1 uses for every page. Duplicated rather than
+   imported because it is three declarations and importing layout constants
+   across the two arms is how one of them silently moves the other — the rule
+   this file's header sets out. */
+const playerStyle: CSSProperties = {
+  display: 'flex',
+  minHeight: '100vh',
+  background: 'var(--color-surface-card)',
+}
+
+const rightOfSidebarStyle: CSSProperties = {
+  flex: 1,
+  minWidth: 0,
+  display: 'flex',
+  flexDirection: 'column',
+}
 
 const pageStyle: CSSProperties = {
   display: 'flex',
@@ -531,56 +561,6 @@ const rubiPillStyle: CSSProperties = {
   ...pillBase,
   border: '1px solid var(--compass-edge)',
   background: 'var(--compass-current)',
-  color: 'var(--color-text-primary)',
-}
-
-const overviewPageStyle: CSSProperties = {
-  flex: 1,
-  minHeight: 0,
-  overflowY: 'auto',
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 28,
-  width: '100%',
-  maxWidth: 900,
-  margin: '0 auto',
-  padding: '48px 48px 72px',
-}
-
-const overviewCrumbStyle: CSSProperties = {
-  margin: 0,
-  display: 'flex',
-  alignItems: 'center',
-  gap: 10,
-  fontFamily: 'var(--font-body)',
-  fontSize: 15,
-}
-
-const crumbHomeStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  background: 'transparent',
-  border: 0,
-  padding: 0,
-  cursor: 'pointer',
-  color: 'var(--color-primary-500)',
-}
-
-const crumbSlashStyle: CSSProperties = { color: 'var(--color-text-tertiary)' }
-
-const crumbHereStyle: CSSProperties = { color: 'var(--color-text-secondary)' }
-
-/* SERIF AND LARGE — the design's own weighting, and the same stack the header
-   crumb uses. `--font-heading` still resolves to the XCEL sans out here; see
-   `crumbCourseStyle` for why the dashboard's serif class never reaches these
-   pages. */
-const overviewTitleStyle: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-heading-serif)',
-  fontSize: 34,
-  fontWeight: 400,
-  lineHeight: 1.25,
-  letterSpacing: '-0.01em',
   color: 'var(--color-text-primary)',
 }
 
