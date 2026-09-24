@@ -357,6 +357,71 @@ describe('the demo site offers only the finished demo controls', () => {
   })
 })
 
+describe('the admin robot is design-site only', () => {
+  /*
+   * 2026-09-24, the direct ask: hide the robot on the demo site so nobody can
+   * click it there.
+   *
+   * ⚠ WHY IT MATTERS MORE THAN IT LOOKS. The robot opens the FULL Feature Flag
+   * sheet on `/dashboard-rebrand` — the whole catalog, `wip` flags included. So
+   * it routes straight around the maturity gate: trimming the demo bar to the
+   * finished axes buys nothing if a stakeholder is one click from the raw
+   * catalog. This suite and the maturity one above are guarding the same door.
+   *
+   * ⚠ AND IT WAS NEVER VISIBLE AT REST — `opacity: 0` with a hover/focus reveal.
+   * That is exactly why a "can you see it?" check is the wrong assertion and
+   * these look for the BUTTON, present or absent in the DOM.
+   */
+  async function bar(mode: string) {
+    vi.resetModules()
+    vi.stubEnv('VITE_GATEWAY_MODE', mode)
+    const { PrototypeChrome } = await import('@/components/layout/PrototypeChrome')
+    const { AccountProvider } = await import('@/context/AccountContext')
+    const { FeatureFlagProvider } = await import('@/context/FeatureFlagContext')
+    const { DashboardVersionsPanelProvider } = await import(
+      '@/components/dashboard/DashboardVersionsPanelContext'
+    )
+    const { MembershipVersionsPanelProvider } = await import(
+      '@/components/membership/MembershipVersionsPanelContext'
+    )
+    const { FeatureFlagPanelProvider } = await import('@/components/account/FeatureFlagPanelContext')
+    render(
+      <MemoryRouter initialEntries={['/dashboard-rebrand']}>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <DashboardVersionsPanelProvider>
+              <MembershipVersionsPanelProvider>
+                <FeatureFlagPanelProvider>
+                  <PrototypeChrome />
+                </FeatureFlagPanelProvider>
+              </MembershipVersionsPanelProvider>
+            </DashboardVersionsPanelProvider>
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+  }
+
+  /* ⚠ BOTH NAMES. The same button relabels itself by route — "Settings" on
+     `/dashboard-rebrand` (where it opens the flag sheet directly) and "Admin
+     tools" everywhere else (where it opens a dropdown). Matching only one
+     passes vacuously on the other route. */
+  const ROBOT = /^(Settings|Admin tools)$/i
+
+  it('is absent from the DOM on the demo site, not merely hidden', { timeout: 20_000 }, async () => {
+    await bar('public')
+    expect(screen.queryByRole('button', { name: ROBOT })).toBeNull()
+  })
+
+  it('is still there on the design site', { timeout: 20_000 }, async () => {
+    /* The direction that matters as much: this is a trim for one audience. The
+       people who need the flag catalog are the ones on the design site, and a
+       fix that took it from them too would be found the hard way. */
+    await bar('full')
+    expect(screen.getByRole('button', { name: ROBOT })).toBeTruthy()
+  })
+})
+
 describe('maturity fails closed', () => {
   /*
    * THE ONE PROPERTY WORTH A TEST OF ITS OWN — 2026-09-24.

@@ -100,7 +100,27 @@ export function PrototypeChrome() {
   return (
     <>
       <PrototypeBar
-        adminTools={<AdminToolsMenu />}
+        /*
+         * THE ROBOT IS DESIGN-SITE ONLY — 2026-09-24, the direct ask.
+         *
+         * It is the Admin Tools trigger, and on `/dashboard-rebrand` it opens
+         * the FULL Feature Flag sheet — every flag in the catalog, `wip` ones
+         * included. That is the exact leak the maturity work exists to close:
+         * trimming the demo bar to the finished axes means nothing while a
+         * stakeholder is one click from the raw catalog behind it.
+         *
+         * ⚠ IT IS HIDDEN AT REST, which made it easy to miss. `opacity: 0` with
+         * a hover/focus reveal in tokens.css is not a gate — it is discoverable
+         * by accident, reachable by Tab, and fully clickable the whole time.
+         *
+         * Undefined rather than hidden: the slot is optional, so not passing it
+         * means the button is never in the DOM at all. A `display: none` would
+         * still ship the panel's mount and leave it findable.
+         *
+         * Participant sessions (`?test=1`) already never reach here — that
+         * branch returns above with the demo bar alone and no PrototypeBar.
+         */
+        adminTools={isPublicGateway() ? undefined : <AdminToolsMenu />}
         deviceToggle={<DeviceFrameToggle />}
         demoToggle={
           showDemoToggle ? <DemoControlsToggle active={demoOpen} onToggle={toggleDemo} /> : undefined
