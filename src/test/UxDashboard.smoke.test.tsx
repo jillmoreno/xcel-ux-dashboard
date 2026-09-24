@@ -264,19 +264,55 @@ describe('prototype URLs — served from this repo', () => {
    * checks by quietly omitting `externalUrl`, which is how the guard would
    * otherwise be lost.
    */
-  const documentRows = PROTOTYPE_FEATURES.filter((f) => !f.to)
+  /*
+   * THREE ROW SHAPES, not two — corrected 2026-09-24 when the first `guided`
+   * feature landed.
+   *
+   *   • a DOCUMENT row   → `externalUrl`, a file under /prototypes/
+   *   • a ROUTE row      → `to`, an in-app path
+   *   • a GATEWAY row    → NEITHER, because a guided feature's row falls
+   *                        through to its own `/prototype/<id>` page
+   *
+   * ⚠ THE THIRD ONE MUST CARRY NEITHER FIELD. The home row's href is
+   * `externalUrl ?? to ?? '/prototype/<id>'`, so either field set on a guided
+   * feature HIJACKS the row and sends it somewhere that is not the handoff.
+   * That is not a style rule — it shipped broken for one commit exactly that
+   * way, and `a guided row opens its own gateway` below is what now catches it.
+   */
+  const gatewayRows = PROTOTYPE_FEATURES.filter((f) => f.kind === 'guided')
+  const documentRows = PROTOTYPE_FEATURES.filter((f) => !f.to && f.kind !== 'guided')
   const routeRows = PROTOTYPE_FEATURES.filter((f) => f.to)
 
-  it('every row is either a document or a route, never both and never neither', () => {
+  it('every non-guided row is either a document or a route, never both and never neither', () => {
     for (const f of PROTOTYPE_FEATURES) {
+      if (f.kind === 'guided') continue // → its own gateway; asserted below
       expect(
         Boolean(f.to) !== Boolean(f.externalUrl),
         `${f.id} needs exactly one of to / externalUrl`,
       ).toBe(true)
     }
-    // Both kinds exist, so neither filter above is vacuously empty.
+    // All three kinds exist, so none of the filters above is vacuously empty.
     expect(documentRows.length).toBeGreaterThan(0)
     expect(routeRows.length).toBeGreaterThan(0)
+    expect(gatewayRows.length).toBeGreaterThan(0)
+  })
+
+  it('a guided row opens its own gateway, not somewhere else', () => {
+    /* ⚠ THE REGRESSION THIS EXISTS FOR. `xcel-course-entry` shipped with a `to`
+       pointing at the dashboard — added only to satisfy the rule above, which
+       predated guided features — and the Development row then opened the
+       product instead of the handoff notes. The href resolution is
+       `externalUrl ?? to ?? '/prototype/<id>'`, so the ONLY way a guided row
+       reaches its gateway is by carrying neither field. */
+    for (const f of gatewayRows) {
+      expect(f.to, `${f.id} is guided, so a \`to\` would hijack its row`).toBeUndefined()
+      expect(
+        f.externalUrl,
+        `${f.id} is guided, so an \`externalUrl\` would hijack its row`,
+      ).toBeUndefined()
+      // …and it must have something for the gateway to actually show.
+      expect(f.devHandoff, `${f.id} is guided but has no devHandoff to render`).toBeTruthy()
+    }
   })
 
   it('every route row points into this app, not off it', () => {
@@ -394,14 +430,13 @@ describe('the Prototypes row opens the committed configuration', () => {
     // The document-shape guards are scoped to rows WITHOUT `to`; a document row
     // that accidentally grows one would slip past every one of them.
     //
-    // ⚠ WAS "is still the only row in the file with a `to`" until 2026-09-24,
-    // when `xcel-course-entry` — the repo's first dev handoff — landed as a
-    // legitimate second route row. The assertion is still the whole SET in both
-    // directions, which is what actually catches an accidental conversion; only
-    // the expected set grew. Loosening this to a count, or to "at least one",
-    // would give up the guard entirely.
+    // ⚠ BACK TO ONE. `xcel-course-entry` was briefly added here when it shipped
+    // with a `to` — which was the bug: a guided row must carry neither field or
+    // it never reaches its gateway. See `a guided row opens its own gateway`.
+    // The assertion stays the whole SET in both directions, which is what
+    // catches an accidental conversion; loosening it to a count would give up
+    // the guard entirely.
     expect(PROTOTYPE_FEATURES.filter((f) => f.to).map((f) => f.id).sort()).toEqual([
-      'xcel-course-entry',
       'xcel-dashboard',
     ])
   })

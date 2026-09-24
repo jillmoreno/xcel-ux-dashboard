@@ -1190,11 +1190,16 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
        it was written for. */
     devStatus: 'ready-for-dev',
     brands: ['xcel'],
-    /* A ROUTE row, not a document — these are React surfaces in `src/`, so the
-       tile navigates in-app rather than opening a file. The bare Testing route
-       is the canonical entry; `pages` below carries the per-state links, and
-       the gateway's Live Preview tab renders the first of them. */
-    to: '/dashboard-rebrand?version=discoverability-testing',
+    /* ⚠ NO `to`, AND NO `externalUrl` — DELIBERATELY. A guided feature's row
+       must fall through to its own gateway: the home row's href is
+       `externalUrl ?? to ?? '/prototype/<id>'` (UxDashboardPage), so EITHER
+       field set here hijacks the row and sends it somewhere that is not the
+       handoff. It shipped with a `to` for one commit and did exactly that —
+       clicking the row opened the dashboard instead of the notes.
+
+       `pages` below is what feeds the Live Preview tab and the row thumbnail
+       (`primaryPreviewSrc` reads `pages[0]` ahead of `to`), so nothing is lost
+       by leaving both off. */
     /* One link per progress state, because the whole point of this handoff is
        what changes BETWEEN them. `?chrome=off` so the page opens as a learner
        sees it — the demo bar sitting above a spec screenshot is noise. */
