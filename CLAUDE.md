@@ -64,6 +64,19 @@ guide**: `/contributing/` on the full site, or `public/contributing/index.html`.
 These are the dashboard's own machinery. A design change should not reach them,
 and a pull request that edits them is usually a sign something was misunderstood.
 
+**This is enforced now, not just advised (2026-09-24).** Asking Claude to edit
+one of these files is refused, with a message naming the file and what to do
+instead — `.claude/hooks/protect-framework.mjs`, wired in `.claude/settings.json`.
+Jillienne is exempt (it checks `git config user.email`), so nothing about her own
+work changes. `FrameworkProtection.test.ts` is the backstop for the edits a hook
+cannot see — a hand edit in an IDE, or `sed` through the shell — and it fails the
+suite you run before pushing, naming the files.
+
+⚠ It is a guardrail, not a lock: the email check is one command to change. It
+exists to stop someone wandering into the wrong file, not to defend the repo.
+The list of protected paths is THIS TABLE — a test reads it back out of this
+file, so the two cannot drift apart.
+
 | File | What it is |
 |---|---|
 | `src/pages/UxDashboardPage.tsx` | the gateway page — sections, nav, the rail |

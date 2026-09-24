@@ -31,3 +31,8 @@ deno.lock
 *.docx
 *.pdf.tmp
 pd-review-*.html
+
+# Personal Claude settings. `.claude/settings.json` IS committed (it wires the
+# framework-protection hook for everyone); this one is per-machine and must not
+# be, or one person's local tweaks become everyone's.
+.claude/settings.local.json
