@@ -148,12 +148,28 @@ export function StudyJourneyWidget({
   const collapseCoursework = courseworkDone && completeStyle === 'collapsed'
 
   if (splitSteps) {
+    /* THE ATLAS STUDY JOURNEY CARD, OUTLINED — the Atlas home, 2026-09-24, the
+       direct ask (tried on Schedule State Exam first, then moved here): no fill
+       and the Study Pace card's 1px `--color-atlas-nav-rule` border. The
+       padding gives up that 1px so its text still lines up with the cards
+       around it. */
+    const outlinedShell: CSSProperties = {
+      ...shell,
+      background: 'transparent',
+      border: '1px solid var(--color-atlas-nav-rule)',
+      ...(typeof shell.padding === 'number' ? { padding: shell.padding - 1 } : null),
+    }
+    // Fits its own content (2026-09-24, the direct ask) — it briefly matched
+    // the Study Pace card's depth and was set back the same day.
+    const courseworkShell = examFirst ? outlinedShell : shell
     const licensingSteps = GET_LICENSED_STEPS.map((step, i) => (
       <LicensingStepWidget
         key={step.id}
         step={step}
         number={examFirst ? (i === 0 ? 1 : stepStart + i) : stepStart + i}
-        shell={shell}
+        // Step 1 on the Atlas home is as deep as the course card beside it
+        // (`--cre-course-card-h`, published by LearnerFocusedBand).
+        shell={examFirst && i === 0 ? { ...shell, boxSizing: 'border-box', minHeight: 'var(--cre-course-card-h, auto)' } : shell}
         roundedRule={cardPadding != null}
         onOpenStep={onOpenStep}
         state={path.state}
@@ -199,14 +215,14 @@ export function StudyJourneyWidget({
             above them is a receipt rather than a next action. The full variant
             disagrees — see the flag's own description. */}
         {collapseCoursework ? (
-          <section aria-label="Study journey" style={shell}>
+          <section aria-label="Study journey" style={courseworkShell}>
             <p className="cre-eyebrow-ink" style={collapsedEyebrowStyle}>
               {`Step ${examFirst ? 2 : 1} · Atlas Study Journey`}
             </p>
             <p style={collapsedTitleStyle}>Coursework complete</p>
           </section>
         ) : (
-          <section aria-label="Study journey" style={shell}>
+          <section aria-label="Study journey" style={courseworkShell}>
             <StudyJourneyRail
               path={path}
               onOpenStop={onOpenStop}

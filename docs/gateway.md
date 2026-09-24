@@ -65,12 +65,17 @@ project list. Unchanged from the LMS original apart from three strings (the
 brand sub-line, the Research row label, `RESEARCH_DECISIONS`), so anything the
 LMS `CLAUDE.md` says about it holds here.
 
-**Sections.** Four open — **Prototypes · Refinement · Other Links · Research**
-— then a divider under a **UX & DEV ACCESS** eyebrow holding Design ·
-Exploration · Sandbox · Development · Done · Archive · QA Notes · To Do ·
-Contributing. Prototypes is first and is the landing section
-(`DEFAULT_SECTION`); a bare `/` opens it and selecting it drops `?section=`
-from the URL.
+**Sections.** Six open, under three eyebrows added 2026-09-23 for the public
+Demo build — **Demo** (Prototypes), **Design & Research** (Refinement · Other
+Links · Research), **Dev Handoff** (Development · Done) — then a divider
+under a **UX & DEV ACCESS** eyebrow holding Design · Exploration · Sandbox ·
+Archive · QA Notes · To Do · Contributing. Development and Done were pulled
+out of the `design-and-development` gate for this (see `NAV_EYEBROWS` and the
+comments on those two `SectionDef`s in `UxDashboardPage.tsx`) — they are no
+longer restricted and now show on the public build. Design, Exploration,
+Sandbox, Archive, QA Notes, To Do and Contributing keep the gate, unchanged.
+Prototypes is first and is the landing section (`DEFAULT_SECTION`); a bare `/`
+opens it and selecting it drops `?section=` from the URL.
 
 ### The two guides (2026-09-18)
 
@@ -82,6 +87,23 @@ in each file's header comment and in the README), sharing one stylesheet at
 |---|---|---|---|
 | `public/contributing/index.html` | designers | the gated **Contributing** section — an iframe of the page (`GuideFrame`) — and `/contributing/` directly | 404'd at the edge: `/contributing/*` is in `BLOCKED` |
 | `public/about/index.html` | stakeholders | the **"How to read this dashboard"** link at the foot of the rail, OUTSIDE the `<nav>`, on every build | reachable — it is the orientation a reviewer gets |
+
+### Review recaps (2026-09-22)
+
+`public/recaps/` holds the notes written after a review session —
+`pd-review-recap-0922.html` is the first. It sits under `public/` for one
+reason: so the team can open it on the **branch build**, the same way they open
+anything else there. It is not linked from the gateway and has no
+`PROTOTYPE_FEATURES` row.
+
+**`/recaps/*` is in `BLOCKED`**, and that is the whole point of the folder
+existing rather than the file sitting loose at the `public/` root. A recap names
+colleagues, records which parts we have no confidence to test yet, and says what
+engineering has not been shown — the public site's audience is the people it is
+written about. A file at `public/pd-review-recap-0922.html` would be served on
+BOTH sites with nothing in front of it. `PublicGateway.test.tsx` asserts both
+that `/recaps/*` is blocked and that the folder is non-empty, so the rule cannot
+quietly end up guarding nothing while the next recap lands at the root.
 
 **The Contributing guide assumes NO TERMINAL** (2026-09-21, at Jillienne's
 request — "someone who knows basically nothing about GitHub or Claude"). The
@@ -379,7 +401,9 @@ sentence and the form's hint each say the same thing — added on the page, team
 first, public on a flip — because the panel is where a designer learns the rule.
 
 **The in-app password is NOT enforced (2026-09-18)** — `ENFORCE_SECTION_GATE`
-in `UxDashboardPage` is `false`. The eight restricted sections still carry a
+in `UxDashboardPage` is `false`. The seven restricted sections (Design,
+Exploration, Sandbox, Archive, QA Notes, To Do, Contributing — Development and
+Done were pulled out 2026-09-23, see "Sections" above) still carry a
 `gate` and still share one gate id (`design-and-development`), but the field
 now means "not for stakeholders", which the PUBLIC build filters on, rather
 than "ask for a password". The reasoning is the two-site split below: on the
@@ -427,6 +451,54 @@ combinations in the original. **If you add a palette, re-measure** — the note 
 the LMS `CLAUDE.md` about each palette's brightest colour being unusable as small
 text on a light page is the trap.
 
+### A third site — the user-test build (2026-09-23)
+
+**`xcelusertesting.netlify.app`**, tracking **`test/session-1`**, with
+`VITE_GATEWAY_MODE=testing` and its own password. One job: hand a participant a
+link to the product and nothing else.
+
+⚠ **The branch is FROZEN, and that is the load-bearing part.** The site
+rebuilds on every push to its production branch, so one tracking a working
+branch would rebuild mid-session under the moderator. `promote-to-testing`
+force-pushes to it deliberately and tags each session; nothing reaches a
+participant in between.
+
+> **Rename pending:** `test/session-1` should be `test/live` — the site tracks
+> exactly one production branch, so a second session cannot get a second
+> branch, and the sessions are recorded as tags instead. Changing it means
+> editing the site's production branch at the same time.
+
+**It exists because `public` was not enough.** That build TRIMS the project
+list and still serves it at `/` — a stakeholder is meant to browse. A
+participant is not. They get one link to one screen, and a project list, even a
+trimmed one behind a password they were given, tells them they are inside a
+prototype gallery belonging to a design team. That reframes everything they
+then say about the product.
+
+So on this build the gateway does not exist: `/`, `/ux-dashboard`,
+`/research-rationale` and `/links` all redirect into `/dashboard-rebrand`
+(`replace`, so it is not in their history either), and `/prototypes/*` is 404'd
+at the edge exactly as on the public build. The product's own ~28 routes stay
+open — a participant who wanders from the course into My Courses should find
+it, because that is the product and the wandering is the data.
+
+**Setting up the site:** same repo, same `netlify.toml`, no build-command
+change. Set the production branch to a FROZEN test branch rather than a working
+one — a site tracking an active branch rebuilds mid-session — set
+`VITE_GATEWAY_MODE=testing`, turn branch deploys off, and set the password
+under Access & security. The site gets its own empty Blobs store, so QA Notes
+and Links hold nothing there; both sections are gone on this build anyway.
+
+`isPublicGateway()` is `!== 'full'`, so `testing` inherits every trim `public`
+has and then adds its own. A fourth mode would inherit the trim by default,
+which is the safe direction. `scripts/public-redirects.mjs` lists the trimmed
+modes explicitly instead, because it writes a rule that DENIES access — that
+one should be opted into, not inherited.
+
+Tests: `GatewayMode.test.ts` (parsing, the subset relation, the edge block) and
+`TestingGateway.test.tsx` (each gateway route lands in the product, and neither
+the full nor the public build moved).
+
 ### Two Netlify sites — the public build (2026-09-18)
 
 The repo deploys to TWO Netlify projects from one branch: the **existing site
@@ -467,7 +539,8 @@ the var is `public`. `_redirects` rather than `netlify.toml` because the toml is
 shared and has no per-project conditional, and because Netlify evaluates
 `_redirects` BEFORE the toml — which is what lets a 404 beat the toml's `/*` SPA
 fallback — and every rule is FORCED (`404!`): an unforced rule is skipped whenever a real file exists at the path, which here is every path, and the first deploy shipped that way with nothing hidden. Blocked: `/prototypes/*` (every document row), `/testing/*` and
-`/ngat-admin/*` (LMS leftovers), `/archive/*`, `/qa/*`. NOT blocked:
+`/ngat-admin/*` (LMS leftovers), `/archive/*`, `/qa/*`, `/contributing/*` (the
+designer guide) and, since 2026-09-22, `/recaps/*`. NOT blocked:
 `/prototype-thumbs/*` (a Demo row may grow one) and `/api/*` (Links is
 ungated). The target is `public/404.html`, which Netlify also serves for a
 mistyped address — a hidden prototype and a typo look the same, on purpose.
@@ -506,6 +579,56 @@ here rather than shipping reachable.
 `URL` and Node's `readFileSync` rejects it ("must be of scheme file") — the
 whole file failed to collect. It resolves a path now, like its two sibling
 reads.
+
+### Control maturity — what the design site lets the demo site show (2026-09-24)
+
+The demo site's controls bar carries a SUBSET of the design site's. Persona,
+Pacing and Education came off it because they are work in progress: a
+stakeholder who opens the demo link and finds a control that reshapes the page
+in ways nobody has agreed on has been handed a decision we did not mean to
+offer. The design site's audience *is* the people making those decisions, so
+nothing is taken from them.
+
+**Readiness is a property of the work, so it lives on the work.** Each flag in
+`FEATURE_FLAGS` may carry `maturity: 'wip' | 'ready'`, and
+[`src/data/demoControlMaturity.ts`](../src/data/demoControlMaturity.ts) resolves
+a control's readiness in three steps:
+
+1. an explicit `maturity` on its `DEMO_CONTROLS` row — for the controls that are
+   not flags at all (Persona, the Quick tier switch, Brand, the Reset block);
+2. otherwise the `maturity` of the flag it drives;
+3. otherwise **`wip`**.
+
+That third step is the whole design. **Forgetting `maturity` hides a control
+from stakeholders; it never reveals one.** Forgetting costs a conversation;
+the opposite default would cost the decision. Promoting is a deliberate act.
+
+Variants work the same way one level down — a `ready` flag can still carry a
+`wip` variant, which the demo site drops from the picker. Absent on a variant
+means *inherit the flag's*, not `wip`, or promoting a flag would empty its own
+picker.
+
+**To promote a control:** add `maturity: 'ready'` to its flag in
+`FEATURE_FLAGS` (or to its `DEMO_CONTROLS` row if it has no flag). That is the
+entire change — the bar, the tests and the demo build follow.
+
+**Two things the design site gains:**
+
+- an amber dot on every control a stakeholder will not get, so the bar does not
+  make every axis look equally agreed;
+- **View as demo** (`?as=demo`), which re-renders the bar the way the demo site
+  would. It is a *lens*, not a setting: URL-only, never persisted, and it
+  changes nothing about the page underneath. It answers "what does a stakeholder
+  actually get?" without a second deploy.
+
+⚠ A dropdown whose `id` has no `DEMO_CONTROLS` row resolves `wip` and silently
+vanishes from the demo site. Safe, but rarely intended — `PublicGateway.test.tsx`
+reads the ids back out of `DemoControlsBar.tsx` and fails when one is missing.
+
+⚠ Hidden text lands in the accessible name. The dot's screen-reader label says
+"(not on the demo site)" and *not* "work in progress", because that phrase
+contains "Progress" — the name of a control on the same bar — and broke two
+unrelated suites querying `/Progress/i`.
 
 ### Links — the section that is authored on the page (2026-09-10)
 

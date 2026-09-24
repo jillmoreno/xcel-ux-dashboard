@@ -87,3 +87,39 @@ says how each fixture gap was closed, and the two rules under it are the ones to
 follow when the next one appears. The short version: prefer moving a test down a
 layer over authoring data to satisfy it, and never author a fixture pointing at
 an asset that does not exist.
+
+## The dead-CTA mechanism — `CtaTest.test.tsx`, 2026-09-23
+
+The one suite here that guards a **research instrument** rather than a product
+surface. `?dead=home.resume,…` on a branch build makes named clickable elements
+inert for one moderated session, so a participant's reach for a control can be
+asked about instead of answered. `promote-to-testing` builds the link;
+`src/data/testableCtas.ts` is the catalog and `src/context/CtaTestContext.tsx`
+the interceptor.
+
+**It is not a feature flag, and the distinction is why it is a second
+mechanism.** A flag decides which design renders — committed, reviewed,
+eventually resolved. This decides whether one already-rendered control responds,
+for one session, and is never committed at all.
+
+Four things the suite pins, in the order they would break:
+
+1. **The capture phase.** Interception depends on a `document` capture listener
+   beating React's root listener. Moved to the bubble phase it looks identical
+   and does nothing — six tests fail on that change, which is the check to
+   re-run if the mechanism is ever refactored.
+2. **Both directions.** A dead CTA must not fire AND a live one must still
+   fire. The second is the failure that would break the product for everyone.
+3. **Catalog ↔ element agreement.** A catalog id with no element leaves the
+   control live and the moderator finds out mid-session; a tagged element with
+   no catalog row can never be killed. Both fail, via a source scan.
+   ⚠ That scan excludes `testableCtas.ts` and the tests — an early version
+   included them, so it matched every id against its own declaration and passed
+   on a deliberately mistyped id.
+4. **`sessionStorage`, not `localStorage`.** A run outlives a refresh and dies
+   with the tab. The assertion names the storage key, because a round-trip test
+   passes just as happily on the wrong one.
+
+The suite also pins that a dead CTA carries no `disabled`, no `aria-disabled`
+and no dimming — a deliberate accessibility trade, recorded in full in
+`CtaTestContext`'s header along with the one case where it does not apply.

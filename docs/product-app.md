@@ -783,6 +783,53 @@ copy is absent.
 
 ### Testing — the pacing exploration version (2026-09-21)
 
+> ⚠ **NO LONGER XCEL'S DEFAULT.** It was, from 2026-09-22, and this paragraph
+> used to say so. `defaultDiscoverabilityVersionFor('xcel')` returns
+> **Testing** (`discoverability-testing`) now, and QE Focused was archived from
+> the picker on 2026-09-22 — see `ARCHIVED_ITEMS`. Its `?version=` still
+> resolves and 163 tests still render it, which is why this section stays.
+>
+> What a fresh `/dashboard-rebrand?demo=1` lands on is the Testing version.
+> That is a data change in `dashboardVersions.ts`, not a flag — worth knowing,
+> because the flag catalog is the first place anyone looks for "what does
+> Prototypes render" and this line is not in it.
+
+**THE COMMITTED REBRAND DEMO DEFAULTS**, as of 2026-09-23 — what `?demo=1`
+renders with nothing stored. Kept here rather than in the catalog because the
+catalog says what each flag DOES; this says which way the baseline is set.
+
+| Flag | Baseline | What it puts on the page |
+|---|---|---|
+| `course-launcher-style` | `compass` | Start course / Resume opens the full Compass course player — the takeover with the contents tree, the eight-page rail and the Rubi aside — rather than the lo-fi placeholder |
+| `study-pace-chooser` | `options` | Three selectable plans under "Select Your Preferred Study Pace" at 0%; past 0% the picker goes and the card REPORTS instead — "Your Study Pace", a finish date, and an activity band of one bar per day since enrolment. ⚠ It also disables the Study Plan link in BOTH states, so **Build my own is unreachable in the baseline** |
+| `dashboard-navigation` | `option-1` | **Nothing visible.** Option 1 is the Compass player as it stands; `option-2` is a second course-content page with its own header, and ships present-but-hidden as the variant arm of a user-test A/B (`?ff=dashboard-navigation:option-2`) |
+| `study-pace-readout` | `stats` | The card's lower half is three divided cells — Course Access, Course Completion, Days to Review — instead of three sentences |
+| `dashboard-text-tiers` | `neutral` | **Nothing.** The warm ink ramp ships OFF, reviewed and declined 2026-09-23; the flag is here so the comparison stays one URL away (`?ff=dashboard-text-tiers:tiers`) |
+| `study-pace-widget` | on | The Study Pace card exists at all |
+| `dashboard-journey-complete` | `full` | Finished coursework stays as four stops rather than collapsing to one line |
+| `dashboard-journey-style` | `syllabus` | The numbered-node journey rail |
+| `dashboard-heading-font` | `serif` | ⚠ A SYSTEM serif standing in for Amasis MT, which is unlicensed to us — fine for an exploration, not for production |
+| `dashboard-course-header` | `band` | The course header band above the block |
+
+⚠ `dashboard-navigation` DEFAULTS TO ITS CONTROL ARM, WHICH BREAKS THIS REPO'S
+USUAL BRANCH RULE (2026-09-24). A designer's branch normally defaults its own
+work ON so the branch build shows it. Option 2 is one arm of an A/B a moderator
+assigns per participant, not a proposal replacing Option 1 — defaulting it on
+would make every other link, and this baseline, silently the variant, and the
+comparison would have no control. A test enforces the default so it cannot
+drift back.
+
+⚠ `study-pace-preset` IS IN THE CATALOG AND WAS NOT PROMOTED (2026-09-23). Its
+default, `recommended`, seeds nothing, so it cannot move the baseline — it only
+powers the Pacing control in the demo bar. It is listed here so nobody reads its
+absence from the table above as an oversight.
+
+**RETIRED ON THIS MERGE**, their winners hardcoded: `dashboard-pacing-style`
+(the presets card is now unconditional) and `dashboard-clp-stats` (the default
+stat treatment won). The `progress-off-track` variant of
+`dashboard-progress-state` was archived the same day — At Risk reaches the pace
+model's unreachable state on its own now.
+
 A fourth Discoverability version (`discoverability-testing`, labelled
 **Testing**), at Jillienne's request: *"a Home Version specifically for Testing
 — readiness removed, and explore the Pacing section UI."*
@@ -1175,7 +1222,8 @@ Support · Get Help.
 
 **NOT `NAV_SECTION_FLAGS`, and that is the decision.** Those flags are the
 committed DEMO BASELINE — one rail that `NavSectionFlags.test.tsx` asserts whole
-and in order — and QE Focused, XCEL's default, is what a stakeholder lands on.
+and in order — and the default version (QE Focused when this was written,
+Testing since 2026-09-22) is what a stakeholder lands on.
 Flipping four of them would have trimmed THAT rail too, which is not what "for
 this version" asked for. So the trim is a property of the LAYOUT
 (`TESTING_HIDDEN_RAIL_SECTIONS` in `PlatformShell`, threaded as the rail's
@@ -1398,8 +1446,9 @@ rather than merged so the picker carries both and neither branch has to win.
 
 **Why a version and not a flag on QE Focused.** A flag is global to the session,
 so flipping it changes every tab; the whole point is opening these **side by side
-in separate tabs**. QE Focused is also XCEL's default, so the thing most people
-open stays the reviewed one. `MembershipOverview` treats `testing-2` as
+in separate tabs**. QE Focused was also XCEL's default when this was written —
+Testing took that on 2026-09-22 — so the thing most people open stays the
+reviewed one either way. `MembershipOverview` treats `testing-2` as
 `qe-focused` for every other decision (`qeFocused = dashboardLayout ===
 'qe-focused' || testingVersion`), so the two cannot drift apart by accident; the
 single difference is the `livePace` prop threaded to `LearnerFocusedBand`.
@@ -2620,9 +2669,19 @@ land in.
 
 ### QE Focused — the new default dashboard version (2026-09-16)
 
+> **SUPERSEDED AS THE DEFAULT, 2026-09-22.** `defaultDiscoverabilityVersionFor('xcel')`
+> now returns **Testing** (see "Testing — the pacing exploration version"), so a
+> fresh `/dashboard-rebrand?demo=1` — which is the whole of the **Prototypes**
+> section — lands on the pacing work rather than here. Everything below still
+> describes QE Focused correctly and it is still one pick away in the version
+> picker; only the word "default" moved. Promoted with
+> `dashboard-pacing-style: presets`, `study-pace-widget` on and
+> `dashboard-journey-complete: full`, which are the three flags that give the
+> landing version something to render.
+
 A fourth Discoverability version (`discoverability-qe-focused`), and **XCEL's
-default**. Learner Focused and Marketing Focused stay in the picker so the three
-can be compared.
+default until 2026-09-22**. Learner Focused and Marketing Focused stay in the
+picker so the three can be compared.
 
 **It is the first version built for a candidate with no licence yet** — someone
 working a fixed curriculum towards a booked exam, where the useful questions are
@@ -3973,3 +4032,9 @@ unchanged.
 **The Compass Course page's content box** (Figma 49:3338, 2026-09-24) — `CompassCourseContent` replaces the "Course" heading (kept as a hidden <h1>): a #ece3d5-bordered, 12px-corner box with the "Course Content" placeholder, filling the column 56px in from every side. To make it fit the window, the player bar and Rubi rail now pin at `headerBottom` (not `railTop`), Rubi and the column leave out the Demo stage's 44px, and the grid's `100vh - 64px` floor is off on this page.
 
 **Rubi's ask box is pinned to the browser's bottom** (2026-09-24): the slot's height is measured on scroll/resize — its top to the viewport bottom (or its row's bottom at the end of the page) — so the chips + field never run below the window; the thread above scrolls.
+
+**The Atlas Study Journey card (Step 2) is OUTLINED on the Atlas Home** (2026-09-24; tried on Schedule State Exam first): no fill, the Study Pace card's 1px `--color-atlas-nav-rule` border, padding 31 so its text stays aligned with the cards around it.
+
+**Step 1 (Schedule State Exam) is as deep as the course card** (2026-09-24): LearnerFocusedBand measures the card with a ResizeObserver and publishes `--cre-course-card-h`; Step 1 takes it as min-height.
+
+(Step 2 briefly matched the Study Pace card's depth, 2026-09-24, then went back to fitting its content.)

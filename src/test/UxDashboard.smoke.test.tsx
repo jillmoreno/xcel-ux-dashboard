@@ -123,6 +123,8 @@ describe('section routing (sectionOf)', () => {
     'xcel-admin': 'exploration',
     'xcel-admin-tool': 'exploration',
     'xcel-exam-spec': 'exploration',
+    // The first handoff row (2026-09-24) — `devStatus: 'in-development'`.
+    'atlas-home-course-card': 'development',
   }
 
   it('accounts for every authored feature', () => {
@@ -252,11 +254,25 @@ describe('prototype URLs — served from this repo', () => {
    * checks by quietly omitting `externalUrl`, which is how the guard would
    * otherwise be lost.
    */
-  const documentRows = PROTOTYPE_FEATURES.filter((f) => !f.to)
+  /* A THIRD KIND since 2026-09-24: GUIDED rows (`kind: 'guided'`) open their
+     own handoff gateway at `/prototype/:id`, so they carry neither `to` nor
+     `externalUrl`. They are held to their own rule below — they must carry
+     `pages` for the Live Preview — rather than slipping past the checks. */
+  const guidedRows = PROTOTYPE_FEATURES.filter((f) => f.kind === 'guided')
+  const documentRows = PROTOTYPE_FEATURES.filter((f) => !f.to && f.kind !== 'guided')
   const routeRows = PROTOTYPE_FEATURES.filter((f) => f.to)
+
+  it('a guided row opens its gateway: no to / externalUrl, and pages to preview', () => {
+    for (const f of guidedRows) {
+      expect(f.to, `${f.id} is guided — its gateway is the route`).toBeUndefined()
+      expect(f.externalUrl, `${f.id} is guided — no external document`).toBeUndefined()
+      expect(f.pages?.length, `${f.id} needs pages for its Live Preview`).toBeGreaterThan(0)
+    }
+  })
 
   it('every row is either a document or a route, never both and never neither', () => {
     for (const f of PROTOTYPE_FEATURES) {
+      if (f.kind === 'guided') continue
       expect(
         Boolean(f.to) !== Boolean(f.externalUrl),
         `${f.id} needs exactly one of to / externalUrl`,

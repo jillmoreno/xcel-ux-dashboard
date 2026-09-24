@@ -350,6 +350,36 @@ Development. The tile grid it replaced is archived (`prototype-tile-landing`).
 | `kindLabel` | overrides the derived kind tag. Set `'Feature'` on an `explore` tile that opens ONE page rather than the whole platform. |
 | `thumbnail` | a real capture instead of the generated mark — see Thumbnails below. |
 
+### `devStatus` — Not Ready unless she says otherwise (2026-09-24)
+
+**THE STANDING RULE, from Jillienne: everything reaches developers as NOT READY
+unless she specifically says it is ready.** Never author `ready-for-dev` or
+`in-development` on a new handoff off your own judgement — that is her call, and
+only hers.
+
+`not-ready` is a Development status: the row sits on the Development board (so
+engineering can see what is coming) while saying plainly that nobody should
+start. It is not the same as `blocked`, which means something external is
+stopping the work, and it is the opposite of `ready-for-dev`.
+
+The code now fails closed in the same direction, so a forgotten field cannot
+misfire:
+
+- a `dev-handoff` feature with **no** `devStatus` resolves to `not-ready`
+  (`featureStatusKeyOf`), and
+- `sectionOf` puts a `dev-handoff` row in **Development** even unauthored, so it
+  cannot hide in Design where developers never look.
+
+⚠ **Why this exists.** Before it, an unauthored feature fell through to the
+`none` key, whose chip renders the word **"Ready"**. Forgetting to write
+`devStatus` therefore told engineering to start building. That is the most
+expensive direction for a default to fail in, and it is the same fail-closed
+reasoning as `maturity` on the demo controls: forgetting should cost a
+conversation, never a decision.
+
+Author the field anyway — an explicit `devStatus: 'not-ready'` reads better than
+a silent default — but the default is what catches the miss.
+
 ### Which section a new feature lands in
 
 `sectionOf()` in `UxDashboardPage.tsx` is the only rule, and it reads:

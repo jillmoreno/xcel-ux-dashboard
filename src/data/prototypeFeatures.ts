@@ -776,6 +776,192 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     livePreviewUrl: `${PROTOTYPE_BASE}/xcel-lms-exam-spec.html`,
     brands: ['xcel'],
   },
+  {
+    /*
+     * THE FIRST XCEL ROW WITH HANDOFF NOTES (2026-09-24, Eric via
+     * /dev-handoff-notes). One component, so it renders inline on the UI
+     * Components tab. `devStatus: 'in-development'` routes it to DEVELOPMENT —
+     * `sectionOf` checks devStatus before category.
+     *
+     * No `quickSummary` yet: the designer chose to leave it blank for now, so
+     * the detail shows its "add your notes here" box. Do not write one.
+     * No `userStory` either — none was agreed, and an invented one reads as a
+     * decision.
+     */
+    id: 'atlas-home-course-card',
+    title: 'Atlas/Compass — Home Course Card',
+    accent: 'blue',
+    icon: 'grid',
+    blurb:
+      'The Atlas/Compass home’s single course card, which replaces the Course Progress header and the Jump Back In card with one card that names the course, three facts and the next lesson.',
+    tileBlurb:
+      'One card for the current course on the Atlas home: title, exam date, time left, lessons done, the next lesson and one Begin Course action.',
+    kind: 'guided',
+    status: 'ready',
+    category: 'dev-handoff',
+    devStatus: 'in-development',
+    brands: ['xcel'],
+    // ONE route, on purpose: XCEL sells no membership (see `xcel-dashboard`),
+    // so there is no non-member view to add. `version=` opens the Atlas/Compass
+    // version, the only one that renders this card.
+    pages: [
+      {
+        label: 'Atlas/Compass home',
+        note: 'The card leads the left column. Use Demo Controls → Progress to move its figures.',
+        to: '/dashboard-rebrand?demo=1&version=discoverability-atlas-compass-nav',
+      },
+    ],
+    devHandoff: {
+      intro:
+        'One component on the Atlas/Compass Global Navigation version’s home. Every figure on it is already resolved by the home page; the card only lays them out.',
+      components: [],
+      uiComponents: [
+        {
+          id: 'compass-home-course-card',
+          name: 'Compass Home Course Card',
+          tabLabel: 'Home Course Card',
+          badge: 'NEW',
+          badgeDate: '2026-09-24',
+          location:
+            'src/components/compass/CompassHomeCourseCard.tsx — rendered by MembershipOverview (`atlasCourseCard`) as LearnerFocusedBand’s `headerSlot`',
+          summary:
+            'The current course on the Atlas home: cover, title, a Course Overview chip, three facts, then the next lesson and a Begin Course button. Replaces the Course Progress header and the Jump Back In card on that version only.',
+          variants: [
+            {
+              name: 'Not started',
+              when: '0 lessons complete',
+              detail: 'The Figma frame’s state — “0 of 42 lessons”, “Lesson 1”, Begin Course.',
+            },
+            {
+              name: 'In progress',
+              when: 'Some lessons complete, not all',
+              detail: 'Live figures (the demo’s “26 of 42”, “Lesson 27”). The button still reads Begin Course — the designer’s call.',
+            },
+            {
+              name: 'Exam date booked',
+              when: 'A date has been entered on the Schedule State Exam card',
+              detail: 'The date replaces “Needs Scheduled”.',
+            },
+            {
+              name: 'Complete',
+              when: 'Coursework is 100%',
+              detail: 'The lesson pill and estimate drop; the title reads “Coursework complete”; the button reads Review Course.',
+            },
+          ],
+          uxLogic: [
+            'Renders only on the Atlas/Compass version (`?version=discoverability-atlas-compass-nav`); every other version keeps the Course Progress header and Jump Back In.',
+            'Target exam date: the stored exam date, long-formatted, else “Needs Scheduled”.',
+            'Left to complete: the same remaining-time figure the old header’s “To complete course” showed.',
+            'Completed: lessons done of lessons required; the whole fact is omitted when the path has no breakdown (never “0 of 0”).',
+            'Lesson N = lessons completed + 1; the part (1 of 3), title and estimate are the Jump Back In card’s own.',
+            'Begin Course opens the Compass Course page (`section=course&coursePage=course`). Course Overview opens the Compass Overview (`coursePage=overview`).',
+            'An action with no handler renders disabled (the button) or as plain text (the chip) — never a live-looking control that does nothing.',
+          ],
+          uiUxLogic: {
+            why:
+              'The Course Progress header and the Jump Back In card stated the same course twice. One card carries the course, where the learner stands, and the one next step.',
+            actions: [
+              { name: 'Begin Course', detail: 'Opens the Compass Course page (the course player).' },
+              { name: 'Course Overview (chip)', detail: 'Opens the course’s Compass Overview page.' },
+            ],
+            edgeCases: [
+              'Long course title wraps to two lines at 750px; the cover stays a fixed 94px square.',
+              'Long lesson title wraps beside the button; the button never shrinks.',
+              'Facts row wraps onto a second line when the three facts plus the chip do not fit.',
+            ],
+            toasterLogic: ['No toasts — both actions navigate.'],
+          },
+          designSpec: {
+            tokens: [
+              { role: 'Card surface', token: '--color-compass-page-card' },
+              { role: 'Rule under the facts', token: '--color-compass-page-card-rule' },
+              { role: 'Chip + lesson pill border', token: '--color-compass-page-card-border' },
+              { role: '“Current course:” eyebrow', token: '--color-compass-page-eyebrow' },
+              { role: 'Course title', token: '--color-compass-page-heading · --font-heading-serif' },
+              { role: 'Fact labels', token: '--color-compass-page-muted' },
+              { role: 'Fact values + lesson title', token: '--color-text-primary · --font-body' },
+              { role: 'Button', token: '--color-compass-page-button · --color-compass-page-button-ink (.cre-compass-primary)' },
+            ],
+            states: [
+              'Button: hover brightens (.cre-compass-primary:hover); focus-visible ring in --color-compass-page-button.',
+              'Chip: transparent; hover tints with --color-compass-page-card-border; focus-visible ring.',
+            ],
+            responsive: [
+              'Card is 750px wide in the Atlas home’s left column (grid `minmax(0, 750px) minmax(0, 1fr)`); it narrows with the column on smaller windows.',
+              '32px inset on every side; no outer stroke; 14px corners (the Figma value).',
+              'The left column pins 50px below the header while the right column scrolls.',
+            ],
+            sources: [
+              'Figma hXiYWnaiZWIwWmaTk7pk3F — node 108:4579 (card), 108:4620 (facts row)',
+              'src/components/compass/CompassHomeCourseCard.tsx',
+              'src/styles/tokens.css — COMPASS COURSE OVERVIEW PAGE block',
+            ],
+          },
+          acceptanceCriteria: [
+            'Only the Atlas/Compass version renders the card; it replaces both the Course Progress header and the Jump Back In card there.',
+            'With no exam date, the first fact reads “Needs Scheduled”; with one, it shows that date.',
+            'The Completed fact matches the lessons done/required everywhere else on the page, and is absent when there is no breakdown.',
+            'The lesson number is lessons completed + 1.',
+            'The button reads Begin Course until coursework is complete, then Review Course.',
+            'Begin Course opens the Compass Course page; the Course Overview chip opens the Compass Overview.',
+            'The chip is exactly the cover’s width, so the facts start under the course title.',
+          ],
+          statesMatrix: [
+            { state: 'No cover image', behavior: 'The cover is omitted; title and facts take the row.' },
+            { state: 'No lesson breakdown', behavior: 'The Completed fact is omitted rather than reading “0 of 0”.' },
+            { state: 'Coursework complete', behavior: 'Lesson pill and estimate drop; Review Course replaces Begin Course.' },
+          ],
+          data: [
+            'Course title and cover — the active learning path / course.',
+            'Exam date — the learner’s stored exam date (today `examDateStore`).',
+            'Remaining time — the renewal/deadline model behind the old header’s countdown.',
+            'Lessons completed / required — the path’s category totals.',
+            'Next lesson’s part, part count, title and estimated minutes — per-lesson data the product does not yet have.',
+          ],
+          stubs: [
+            'Lesson title, part and minutes are fixtures in nyProducerRequirements.ts (NY_LH_CURRENT_CHAPTER, NY_LH_CURRENT_LESSON_PART, NY_LH_LESSON_MINUTES_INVENTED — the minutes are INVENTED). Replace with the real lesson record.',
+            'Begin Course opens the prototype’s Compass Course page, whose lesson area is a placeholder.',
+          ],
+          a11y: [
+            'The card is a <section aria-label="Current course">; the course title is its <h2>.',
+            'The cover is decorative (alt="", aria-hidden).',
+            'Both actions are real <button>s; without a handler the button is disabled and the chip renders as text.',
+          ],
+        },
+      ],
+      decisions: {
+        items: [
+          {
+            question: 'Why one card instead of the Course Progress header plus Jump Back In?',
+            decision: 'They named the same course twice. The Figma card (108:4579) carries the course, three facts and the next step in one place.',
+            status: 'Decided',
+          },
+          {
+            question: 'Should the button say Resume once lessons are done?',
+            decision: 'No — Begin Course at every point short of complete (the designer’s call, 2026-09-24); Review Course once complete.',
+            status: 'Decided',
+          },
+          {
+            question: 'Live figures, or the Figma’s not-started numbers?',
+            decision: 'Live. The design is drawn at 0%; the card reads the same figures the rest of the home uses so the demo controls move it, and the two cannot disagree.',
+            status: 'Decided',
+          },
+          {
+            question: 'What does the Course Overview chip do?',
+            decision: 'Opens the course’s Compass Overview page. It is 94px wide — the cover’s width — so the facts start under the title.',
+            status: 'Decided',
+          },
+          {
+            question: 'Outer stroke and inset?',
+            decision: 'No outer stroke (the fill carries the edge) and 32px inside on every side, matching every filled module on the Atlas home.',
+            status: 'Decided',
+          },
+        ],
+      },
+      flagsNote:
+        'No feature flag drives this card — it is gated by the dashboard VERSION (`?version=discoverability-atlas-compass-nav`). Its figures follow Demo Controls → Progress and the exam date entered on the Schedule State Exam card.',
+    },
+  },
 ]
 
 export function prototypeFeatureById(id: string): PrototypeFeature | undefined {
@@ -785,10 +971,8 @@ export function prototypeFeatureById(id: string): PrototypeFeature | undefined {
 /**
  * The preview URL for one handoff component, by id.
  *
- * No XCEL feature authors `devHandoff` notes yet, so this returns null for
- * everything today — kept because `ComponentLivePreview` calls it, and because
- * the moment a row grows a component breakdown the preview should resolve with
- * no code change.
+ * `atlas-home-course-card` is the first XCEL feature with `devHandoff` notes
+ * (2026-09-24); its component resolves to the feature's first `pages` route.
  *
  * Resolution order — the component's own `previewUrl`, else its parent
  * feature's canonical preview (first `pages` entry → `livePreviewUrl` → `to`).

@@ -421,17 +421,29 @@ assertions**, which sweeps every combination of the four demo axes and asserts
 relationships (Behind's head sentence agrees with where the projection lands; every
 state is reachable; quiz mode never lists an uncovered chapter) rather than strings.
 
-### Pace presets — the sixth page with no row
+### Pace presets — a row as of 2026-09-22 (it had none)
 
 [xcel-pace-presets.html](public/prototypes/xcel-pace-presets.html) (added
-2026-09-21) takes the **other reading** of the access window that §02 of the
+2026-09-21, tiled 2026-09-22) takes the **other reading** of the access window that §02 of the
 pace-and-readiness page refused: aim at *all* 30 days, and the Goal Tracker's
 Aggressive / Recommended / Relaxed presets become **three dates the learner already
 owns** — Relaxed is the day before access ends, Recommended is that minus
 `ACCESS_BUFFER_INVENTED`, Focused is the storefront's own claim ("pass in less than
 2 weeks", `FOCUSED_DAYS_CONFIRMED` = 14). Nobody chooses a number; they choose a
-date and the pace derives. Not a `PROTOTYPE_FEATURES` row; masthead-linked from
-every sibling and from §02 of the pace-and-readiness page. Row count is still six.
+date and the pace derives.
+
+**CORRECTED 2026-09-22 — it IS a `PROTOTYPE_FEATURES` row now** (`xcel-pace-presets`,
+Exploration), so the row count is **seven**. This paragraph used to read "not a
+`PROTOTYPE_FEATURES` row; masthead-linked from every sibling", on the rule that a
+second row into one body of work is what got `recommended-card-ab-demo` and the four
+testing tiles archived. What changed: the pacing work stopped being a companion to the
+study-plan exploration and became the thing two dashboard versions — Testing and
+Testing 2 — are built around, and the argument for both lives on this page. A reviewer
+sent to compare them needs it, and "open a sibling prototype and find the masthead link"
+is not a route anyone takes. The rule still holds for the four pages that remain
+row-less (`xcel-lms-brief-vs-existing`, `xcel-finserv-build-plan`, `xcel-study-plan`,
+`xcel-nav-collapse`) and for `xcel-study-pace-readiness` — each elaborates a row that
+exists. The masthead links stay; the tile is an additional door, not a replacement.
 
 **Three demo axes: Course (12 · 20 · 42 lessons) · How they study (Thorough /
 Average / Quick) · Day of access (1 · 8 · 15).** Course is the point of the page.

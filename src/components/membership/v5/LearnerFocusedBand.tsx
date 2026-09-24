@@ -1,4 +1,4 @@
-import { Fragment, type CSSProperties, type ReactNode } from 'react'
+import { Fragment, useLayoutEffect, useRef, type CSSProperties, type ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { ArrowRight, CalendarDay, CircleCheck, Clock, FileText, Gauge, Monitor, Podcast } from '@/icons'
 import { useAccount } from '@/context/AccountContext'
@@ -455,6 +455,29 @@ export function LearnerFocusedBand({
    * and an accent that has to be squinted at is worse than no accent.
    */
   const onPage = surface === 'page'
+  /* THE ATLAS HOME'S STEP 1 MATCHES THE COURSE CARD'S DEPTH (2026-09-24, the
+     direct ask). The two sit in different grid columns, so no shared row can
+     size them; the course card's height is measured and published on the band
+     as `--cre-course-card-h`, which Step 1 uses as its min-height. A
+     ResizeObserver keeps it right when the title wraps or the window resizes. */
+  const bandRef = useRef<HTMLElement>(null)
+  useLayoutEffect(() => {
+    const band = bandRef.current
+    if (!framedPace || !band || typeof ResizeObserver === 'undefined') return
+    const pairs: [HTMLElement | null, string][] = [
+      [band.querySelector<HTMLElement>('section[aria-label="Current course"]'), '--cre-course-card-h'],
+    ]
+    const ro = new ResizeObserver(() => {
+      for (const [el, prop] of pairs) {
+        if (el) band.style.setProperty(prop, `${el.getBoundingClientRect().height}px`)
+      }
+    })
+    for (const [el] of pairs) if (el) ro.observe(el)
+    return () => {
+      ro.disconnect()
+      for (const [, prop] of pairs) band.style.removeProperty(prop)
+    }
+  }, [framedPace])
   /*
    * IS MY GROUND DARK? — not "is the surface the navy card".
    *
@@ -922,6 +945,7 @@ export function LearnerFocusedBand({
 
   return (
     <section
+      ref={bandRef}
       aria-label="Your learning"
       className="cre-learner-focused-band"
       style={{
