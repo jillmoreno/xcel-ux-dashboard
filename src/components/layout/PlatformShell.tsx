@@ -574,6 +574,8 @@ function PlatformShellBody() {
           courseTitle={launchedTitle}
           chapterTitle={NY_LH_COURSE_CHAPTERS[NY_LH_CURRENT_CHAPTER_INDEX] ?? NY_LH_COURSE_CHAPTERS[0]}
           percentComplete={launchedPercent}
+          completedLessons={launcher.meta.completedLessons ?? 0}
+          totalLessons={launcher.meta.totalLessons ?? 0}
           onClose={launcher.close}
         />
       )

@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { render, screen, fireEvent, act } from '@testing-library/react'
+import { render, screen, fireEvent, act, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
@@ -548,7 +548,7 @@ describe('dashboard-navigation — Option 1 / Option 2', () => {
     )
   })
 
-  it('is a full-screen page — no sidebar, no breadcrumb, no app header', () => {
+  it('is a full-screen page — no breadcrumb, no page rail, no app header', () => {
     /* ⚠ THIS REPLACED TWO TESTS THAT ASSERTED THE OPPOSITE, and the swap is the
        record of a decision rather than a test bending to code.
 
@@ -562,9 +562,33 @@ describe('dashboard-navigation — Option 1 / Option 2', () => {
        navigation IS the variable rather than a confound around it. */
     seedNav('option-2')
     openCourse()
-    expect(screen.queryByLabelText('Course contents')).toBeNull()
     expect(screen.queryByRole('button', { name: 'Home' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Overview' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Back to Overview' })).toBeNull()
+  })
+
+  it('keeps a SIMPLIFIED left TOC — the lessons, not the header facts again', () => {
+    /* ⚠ THE TOC CAME BACK on 2026-09-23 ("we still need this to be part of
+       option 2 — a simplified left TOC"), which is why the test above no
+       longer claims there is no sidebar.
+
+       SIMPLIFIED IS A CLAIM ABOUT DUPLICATION, not about styling: the course
+       title, the progress track and the percentage are in this page's HEADER,
+       so the TOC must not state them a second time. What it keeps is the part
+       the header cannot carry — which lessons exist, which one is current, and
+       how many are done. Asserted in both directions, because a TOC that
+       quietly regrew its progress bar would still pass a presence check. */
+    seedNav('option-2')
+    openCourse()
+    const toc = screen.getByLabelText('Course contents')
+    expect(toc.textContent).toContain('Course Content')
+    expect(toc.textContent).toMatch(/Completed \d+ of \d+/)
+    expect(toc.textContent).toContain(NY_LH_COURSE_CHAPTERS[NY_LH_CURRENT_CHAPTER_INDEX])
+    // …and NOT the facts the header already states.
+    expect(toc.textContent).not.toContain('New York Life and Health Pre-licensing')
+    expect(toc.textContent).not.toMatch(/\d+%/)
+    // The eight-page rail is Option 1's; this page has no pages to switch.
+    expect(within(toc).queryByRole('button', { name: 'Flashcards' })).toBeNull()
   })
 
   it('names the demo’s real course and chapter, not the mock’s', () => {
@@ -614,6 +638,8 @@ describe('dashboard-navigation — Option 1 / Option 2', () => {
           courseTitle="X"
           chapterTitle="Y"
           percentComplete={0}
+          completedLessons={0}
+          totalLessons={42}
           onClose={() => {}}
         />
       </MemoryRouter>,

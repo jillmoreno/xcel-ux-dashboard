@@ -630,7 +630,16 @@ const UPCOMING_PREVIEW = 6
  * today — it is what lets a real outline arrive as a partial map without a
  * component change.
  */
-function CompassContents({
+/**
+ * THE LESSON LIST — shared with Option 2's simplified TOC as of 2026-09-23.
+ *
+ * ⚠ SHARED ON PURPOSE, unlike the layout around it. `CourseContentV2` keeps
+ * its own styles so Option 2 can be changed without moving Option 1, but the
+ * LESSONS are the course: both arms must list the same 42 in the same order,
+ * or the A/B is comparing two syllabuses rather than two navigations. Fork it
+ * only if the list itself is what needs to differ.
+ */
+export function CompassContents({
   completedLessons,
   totalLessons,
 }: {

@@ -5,7 +5,7 @@ import { readExamDate } from '@/data/examDateStore'
 import { daysUntil, formatPaceDate } from '@/lib/studyPace'
 import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 import { setCourseTakeover } from './courseTakeover'
-import { RubiAside } from './CompassCoursePlayer'
+import { CompassContents, RubiAside } from './CompassCoursePlayer'
 
 /**
  * OPTION 2's COURSE PAGE — `dashboard-navigation: option-2`, 2026-09-23.
@@ -43,6 +43,8 @@ export function CourseContentV2({
   courseTitle,
   chapterTitle,
   percentComplete,
+  completedLessons,
+  totalLessons,
   onClose,
 }: {
   /** The learner's course — the persona's own title, as the dashboard states it. */
@@ -51,6 +53,9 @@ export function CourseContentV2({
   chapterTitle: string
   /** 0–100, drawn as the section track and printed beside it. */
   percentComplete: number
+  /** The TOC's "Completed N of M", both halves. */
+  completedLessons: number
+  totalLessons: number
   /** Leave the course. The ✕ — the one wired control in this header. */
   onClose: () => void
 }) {
@@ -150,6 +155,28 @@ export function CourseContentV2({
       </header>
 
       <div style={bodyStyle}>
+        {/*
+          THE SIMPLIFIED TOC — 2026-09-23, the direct ask: "we still need this
+          to be part of option 2 — a simplified left TOC".
+
+          WHAT "SIMPLIFIED" MEANS HERE, and it is not a style choice: Option 1's
+          sidebar carries the course title, a progress bar, the percentage, the
+          Home / Overview / Course breadcrumb and the eight-page rail. Four of
+          those are now in this page's HEADER — the course, the section, the
+          track and the percent — so repeating them a few pixels below would be
+          the same facts twice, which is the thing a navigation redesign is
+          usually trying to fix. The rail and the breadcrumb go because this
+          page has neither.
+
+          WHAT IS LEFT is the part the header cannot carry: which lessons there
+          are, which one you are on, and how many are done. `CompassContents`
+          is shared rather than copied — see its own note: both arms must list
+          the same 42 lessons or the A/B compares two syllabuses.
+        */}
+        <aside style={tocStyle} aria-label="Course contents">
+          <p style={tocCaptionStyle}>Course Content</p>
+          <CompassContents completedLessons={completedLessons} totalLessons={totalLessons} />
+        </aside>
         <div style={columnStyle}>
           <main style={mainStyle}>
             {/* THE PLACEHOLDER IS THE DESIGN, the same position Option 1 takes:
@@ -420,6 +447,32 @@ const bodyStyle: CSSProperties = {
   display: 'flex',
   flex: 1,
   minHeight: 0,
+}
+
+/* 260px, matching Option 1 — the column width is not what the variant is
+   about, and changing it would put a second difference into the comparison for
+   no reason anyone could name afterwards. */
+const tocStyle: CSSProperties = {
+  width: 260,
+  flexShrink: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 8,
+  padding: '20px 20px 24px',
+  overflowY: 'auto',
+  background: 'var(--color-surface-card)',
+  borderInlineEnd: '1px solid var(--compass-rule)',
+}
+
+const tocCaptionStyle: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 11,
+  fontWeight: 700,
+  letterSpacing: 1.1,
+  textTransform: 'uppercase',
+  lineHeight: '16.5px',
+  color: 'var(--color-text-primary)',
 }
 
 const columnStyle: CSSProperties = {
