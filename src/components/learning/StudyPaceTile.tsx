@@ -426,7 +426,21 @@ export function StudyPaceTile({
                 ? `${paceNameFor(daysToReview)} Study Pace`
                 : notStarted
                   ? 'Set your Study Pace (optional)'
-                  : `${options.find((o) => o.id === activeOption)?.name ?? paceNameFor(daysToReview)} Study Pace`}
+                  : /* ⚠ "YOUR", NOT THE PLAN'S NAME — 2026-09-23. It read
+                       "Recommended Study Pace" (or whichever plan was lit),
+                       which is a claim about what the product SUGGESTS. From
+                       the first studied evening the card reports what the
+                       learner is actually doing, so the heading stops naming a
+                       recommendation and starts naming an owner. The card's
+                       own subtext says where the figure comes from.
+
+                       This is the provenance rule the file has carried since
+                       the prototype's §02 finding — "the product should not go
+                       on calling a figure the learner picked a
+                       recommendation" — applied one step earlier: not when
+                       they ADJUST it, but as soon as it is measured from them
+                       rather than proposed to them. */
+                    'Your Study Pace'}
             {/*
               THE PACE PILL, ON THE TILE'S TOP RIGHT — 2026-09-23, the direct
               ask when the Status cell became Days to review: "Don't lose the
@@ -1299,71 +1313,73 @@ function PaceCardBody({
       {options && onPickOption && notStarted ? (
         <PaceOptionPicker options={options} active={activeOption ?? null} onPick={onPickOption} />
       ) : null}
-      {/* THE HEADLINE. "About" and the trailing clause are the same weight and
-          size; only the figure steps up, which is what makes the sentence read
-          as a sentence with one number in it rather than as a stat with words
-          around it. */}
-      <p style={cardHeadline}>
-        About{' '}
-        <span style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.015em' }}>
-          {nightFigure}
-        </span>{' '}
-        {nightUnit} a night, {weekly} a week
-      </p>
-
       {/*
-        THE PACE THEY ARE KEEPING, UNDER THE PACE THEY ARE AIMING AT —
-        2026-09-23, the direct ask: show "the Study Pace Goal (2 hours/night,
-        6 days/week) and the Actual Users Average Pace".
+        ⚠ THE CARD CHANGES SUBJECT ONCE THE LEARNER IS UNDER WAY — 2026-09-23.
+        At 0% the headline is a PLAN ("About 2 hours a night, 6 days a week");
+        from the first studied evening it is a READING of what they are
+        actually doing ("Averaging about 1¾ hours a night."). The eyebrow moves
+        with it — "Set your Study Pace" → "Your Study Pace" — so the whole card
+        is either proposing or reporting, never half of each.
 
-        TWO LINES RATHER THAN ONE SENTENCE, because they are two different
-        kinds of statement. The headline is a PLAN and stays the card's biggest
-        thing; this is a READING, and a reading that competed with it would turn
-        the card into a scoreboard — which is the tone every note in this file
-        has been steering away from.
+        THE SUBTEXT IS THE PROVENANCE, and it is the reason the swap is safe to
+        make: a figure this personal has to say where it came from, or it reads
+        as another recommendation with a smaller number.
 
-        ⚠ IT IS NOT A VERDICT, and the wording is load-bearing. "You're
-        averaging" reports; "you're behind" judges, and there is already exactly
-        one line on this card allowed to do that — the `standing.behind` block
-        below, which fires on a measured shortfall and offers a number to close
-        it. Two places saying the learner is short, in different arithmetic,
-        is how a card starts contradicting itself.
-
-        ⚠ AND IT IS THE ELAPSED WEEK ONLY. At the demo clock that is a single
-        Monday, so the figure is one evening and the nights clause is suppressed
-        below — see `observedPace` for why reading the unelapsed days instead
-        would be the wrong fix, and `demoDay.ts` for the control that exists to
-        move the clock.
+        "About" and the trailing clause stay the same weight and size; only the
+        figure steps up, which is what makes either sentence read as a sentence
+        with one number in it rather than as a stat with words around it.
       */}
       {observed ? (
-        <p
-          style={{
-            ...cardBody,
-            /* ⚠ `block`, OVERRIDING `cardBody`'s COLUMN FLEX. That style is a
-               flex column with a 2px gap, which is right for the stacked
-               stat lines it was written for and wrong for a sentence: every
-               contiguous text run becomes its own anonymous flex item, so
-               "You're averaging / 1¾ hours / a night." came out on three
-               lines with the `<b>` stranded in the middle. Block display puts
-               the inline children back in normal flow and lets the figure sit
-               inside the sentence, which is the whole point of emphasising it
-               rather than pulling it out. */
-            display: 'block',
-            marginTop: -4,
-          }}
-        >
-          You’re averaging <b style={emphasis}>{formatEvening(observed.minsPerNight)}</b> a night
-          {/* THE NIGHTS CLAUSE NEEDS A WEEK TO BE ABOUT. With one or two days
-              elapsed, "1 day a week" is not the learner's habit — it is the
-              calendar's, and stating it beside a goal of six would read as a
-              gap they have not had the chance to open yet. */}
-          {observed.daysElapsed >= 3 ? (
-            <>
-              , <b style={emphasis}>{observed.nights}</b>{' '}
-              {observed.nights === 1 ? 'day' : 'days'} a week
-            </>
-          ) : null}
-          {'.'}
+        <>
+          <p style={{ ...cardBody, display: 'block', marginBottom: -4 }}>
+            Based on your actual course progress and time spent studying
+          </p>
+          <p style={cardHeadline}>
+            Averaging about{' '}
+            <span style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.015em' }}>
+              {splitFigure(formatEvening(observed.minsPerNight))[0]}
+            </span>{' '}
+            {splitFigure(formatEvening(observed.minsPerNight))[1]} a night.
+          </p>
+        </>
+      ) : (
+        <p style={cardHeadline}>
+          About{' '}
+          <span style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.015em' }}>
+            {nightFigure}
+          </span>{' '}
+          {nightUnit} a night, {weekly} a week
+        </p>
+      )}
+
+      {/*
+        THE NUDGE — 2026-09-23, the direct ask, replacing the line that used to
+        restate the average ("You're averaging 1¾ hours a night") now that the
+        HEADLINE says that.
+
+        ⚠ IT IS NOT A VERDICT DELIVERED TWICE. The card already had exactly one
+        line allowed to say a learner is behind — `standing.behind` below,
+        which quotes the shortfall in minutes and what closes it. Two lines
+        saying "behind" in two different arithmetics is how a card starts
+        contradicting itself, so this one takes over and that one is suppressed
+        while it shows. The minutes have not been lost: they are in the stats
+        row and in the week strip.
+
+        ⚠ AND IT BRANCHES, because the asked-for copy says "a little behind".
+        Printing that to someone who is NOT behind would be the card inventing
+        a problem — the one thing this file's notes guard against hardest. So
+        `standing.behind` picks which sentence, and both are encouraging.
+
+        ⚠ AT THE DEMO CLOCK THE ON-PACE HALF IS WHAT SHOWS. `FIXTURE_TODAY` is
+        a Monday, so no study night has elapsed yet, no shortfall can exist and
+        `behind` is false. Advance the demo day (see `demoDay.ts`) to read the
+        behind copy — it is not missing.
+      */}
+      {observed ? (
+        <p style={{ ...cardBody, display: 'block', marginTop: -4 }}>
+          {standing?.behind
+            ? 'A little behind, but no worries — add some extra study time in this week and you’ll easily get back on pace.'
+            : 'Right on pace. Keep the evenings you are giving it and you will finish with time to spare.'}
         </p>
       ) : null}
 
@@ -1389,7 +1405,9 @@ function PaceCardBody({
           "you are behind" with "7 hours a night" is technically true and
           practically nothing. Caught by reading the rendered card, not by a
           test: every assertion passed while it said exactly that. */}
-      {standing?.behind ? (
+      {/* ⚠ SUPPRESSED WHILE THE NUDGE ABOVE SHOWS — see its note. This is the
+          same news in different arithmetic, and the card must say it once. */}
+      {standing?.behind && !observed ? (
         <p style={{ ...cardBody, color: 'var(--color-warning-800)' }}>
           {standing.recoverable ? (
             <>

@@ -384,7 +384,11 @@ describe('the presets pacing card', () => {
     // The redesign's headline: a nightly figure and a weekly one, both out of
     // the same formatter. It said "N nights a week" before — the WEEK STRIP
     // now carries how many nights, and in which days.
-    expect(text).toMatch(/About .+ a night, .+ a week/)
+    /* ⚠ "AVERAGING ABOUT …", NOT "About … a night, … a week" — 2026-09-23.
+       The card changed SUBJECT for a started learner: at 0% the headline is a
+       plan, from the first studied evening it is a reading of what they are
+       actually doing. This persona is on-track, so it reports. */
+    expect(text).toMatch(/Averaging about .+ a night/)
     expect(text).toMatch(/you will finish around [A-Z][a-z]{2} \d+/)
   })
 
@@ -651,9 +655,23 @@ describe('the beginner week — 0%', () => {
     seed()
     renderShell(TESTING_URL)
     const tile = paceTile()
-    const stated = /,\s*(\d+) days a week/.exec(tile.textContent ?? '')
-    expect(stated, 'the card states a nights-a-week count').toBeTruthy()
-    expect(Number(stated![1])).not.toBe(NOT_STARTED_NIGHTS)
+    /* ⚠ READ A THIRD WAY ON 2026-09-23, and the claim is unchanged again.
+       It was a COPY test ("hours a week" vs "days a week"), then a NUMBER test
+       (the nights count is not the beginner's four). The headline now states
+       neither: for a started learner it reports the observed average instead
+       of the plan, so there is no nights count in it to read.
+
+       So it is read as WHICH CARD RENDERS, which is what the guard was always
+       protecting. `notStarted` comes from `resume.progress`; if it were passed
+       wrongly, a mid-course learner would get the beginner's card — the goal
+       headline and the three plan options. Asserting the observed-pace card is
+       a more direct test of that than either predecessor. */
+    expect(tile.textContent).toMatch(/Averaging about .+ a night/)
+    expect(tile.textContent).not.toMatch(new RegExp(`${NOT_STARTED_NIGHTS} days a week`))
+    /* ⚠ NOT 'Your Study Pace' HERE. That heading is the `options` chooser's;
+       this suite lands on `strip`, which keeps naming the plan ("Steady &
+       Relaxed Study Pace"). The HEADLINE change is in `PaceCardBody` and so is
+       shared by both, which is why the assertion above works either way. */
   })
 })
 

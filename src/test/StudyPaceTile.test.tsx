@@ -988,7 +988,15 @@ describe('study-pace-chooser: options — the learner who has already started', 
        the card opens on Recommended; deriving the heading from days-to-review
        would have it announce a plan the learner never chose, with the picker
        that would have shown the truth now hidden. */
-    expect(screen.getByText(/Recommended Study Pace/)).toBeTruthy()
+    /* ⚠ "YOUR", NOT THE PLAN'S NAME — 2026-09-23. It asserted
+       "Recommended Study Pace", which is a claim about what the product
+       SUGGESTS; from the first studied evening the card reports what the
+       learner is doing, so the heading names an owner instead. The note that
+       stood here explained why the name came from the SELECTED OPTION rather
+       than from the review gap — that reasoning is now moot for this state,
+       and still applies to the `strip` treatment, which has its own block. */
+    expect(screen.getByText('Your Study Pace')).toBeTruthy()
+    expect(screen.queryByText(/Recommended Study Pace/)).toBeNull()
   })
 
   it('gives the link back its purpose, and the right verb', () => {
@@ -1004,18 +1012,22 @@ describe('study-pace-chooser: options — the learner who has already started', 
   it('states the goal in nights, and the pace actually being kept', () => {
     renderStarted()
     const text = document.body.textContent ?? ''
-    /* THE GOAL — derived, so the sentence and the plan cannot drift. Days a
-       week rather than hours, because the picker that used to carry the week's
-       shape is gone. */
-    expect(text).toMatch(/About .+ a night, \d+ days a week/)
+    /* ⚠ THE GOAL LINE IS GONE for a started learner — 2026-09-23. This
+       asserted "About X a night, N days a week"; the headline now reports the
+       OBSERVED average instead, and says where it came from. */
+    expect(text).toContain('Based on your actual course progress and time spent studying')
+    expect(text).toMatch(/Averaging about .+ a night\./)
     /* THE READING — averaged over NIGHTS STUDIED among the ELAPSED days, which
        is three of them here: the Sunday's 999 is in the future and must not
        count, and the two rest days must not dilute the evening. */
     const elapsed = WEEK.slice(0, ((TODAY.getDay() + 6) % 7) + 1).filter((m) => m > 0)
     expect(elapsed).toHaveLength(3)
     const mean = Math.round(elapsed.reduce((a, b) => a + b, 0) / elapsed.length)
-    expect(text).toContain(`You’re averaging ${formatEvening(mean)} a night`)
-    expect(text).toContain(`${elapsed.length} days a week`)
+    expect(text).toContain(`Averaging about ${formatEvening(mean)} a night.`)
+    /* AND THE NUDGE, which took the old averaging line's place. Which of the
+       two sentences shows depends on `weekStanding`; both are encouraging, and
+       the card must never print "a little behind" to someone who is not. */
+    expect(text).toMatch(/A little behind|Right on pace/)
   })
 
   it('says nothing about an average when the week is still empty', () => {
