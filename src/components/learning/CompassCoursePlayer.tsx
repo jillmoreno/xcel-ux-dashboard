@@ -240,36 +240,7 @@ export function CompassCoursePlayer({
           <div style={overviewGroundStyle} role="region" aria-label="Overview page">
             <div style={overviewColumnStyle}>
               <h2 style={overviewTitleStyle}>Your learning journey</h2>
-              {OVERVIEW_SECTIONS.map((section) => (
-                <section key={section.eyebrow} style={overviewSectionStyle}>
-                  <p style={overviewEyebrowStyle}>{section.eyebrow}</p>
-                  {section.aside ? (
-                    <div style={overviewSplitStyle}>
-                      <div
-                        aria-hidden
-                        style={{ ...overviewBlockStyle, flex: 1, height: section.height }}
-                      />
-                      {/* THE LEFT RULE AND THE GLYPH ARE THE PANEL, at lo-fi.
-                          Both are structure rather than content — the rule is
-                          how the card is bounded in the reference and the mark
-                          is the one in `@/icons` the page rail already uses for
-                          Rubi Insights, so nothing here is drawn or invented.
-                          What is left out is everything the ask said to leave
-                          out: the serif heading, the three lines of copy and
-                          the Learn more button. */}
-                      <div style={overviewAsideStyle}>
-                        <p style={overviewAsideEyebrowStyle}>
-                          <RubiLogo size={11} aria-hidden />
-                          {section.aside}
-                        </p>
-                        <div aria-hidden style={{ ...overviewBlockStyle, flex: 1 }} />
-                      </div>
-                    </div>
-                  ) : (
-                    <div aria-hidden style={{ ...overviewBlockStyle, height: section.height }} />
-                  )}
-                </section>
-              ))}
+              <CompassOverviewSections />
             </div>
           </div>
         ) : page !== 'course' ? (
@@ -976,6 +947,49 @@ export function CompassTopBar({
 }
 
 /* ─── the Rubi aside ───────────────────────────────────────────────────── */
+
+/**
+ * THE OVERVIEW PAGE'S LO-FI BANDS — shared with Option 2 as of 2026-09-23.
+ *
+ * ⚠ SHARED LIKE `CompassContents`, and for the same reason: this is the
+ * course's own overview CONTENT, and both arms of the navigation A/B must show
+ * the same of it or the comparison is between two syllabuses rather than two
+ * navigations. What each arm wraps it in — Option 1's rail and breadcrumb,
+ * Option 2's home crumb and course title — is where they are allowed to
+ * differ.
+ *
+ * `OVERVIEW_SECTIONS`'s own note records what is deliberately left out and
+ * why; nothing here is drawn or invented.
+ */
+export function CompassOverviewSections() {
+  return (
+    <>
+      {OVERVIEW_SECTIONS.map((section) => (
+        <section key={section.eyebrow} style={overviewSectionStyle}>
+          <p style={overviewEyebrowStyle}>{section.eyebrow}</p>
+          {section.aside ? (
+            <div style={overviewSplitStyle}>
+              <div aria-hidden style={{ ...overviewBlockStyle, flex: 1, height: section.height }} />
+              {/* THE LEFT RULE AND THE GLYPH ARE THE PANEL, at lo-fi. Both are
+                  structure rather than content — the rule is how the card is
+                  bounded in the reference and the mark is the one `@/icons`
+                  already uses for Rubi Insights. */}
+              <div style={overviewAsideStyle}>
+                <p style={overviewAsideEyebrowStyle}>
+                  <RubiLogo size={11} aria-hidden />
+                  {section.aside}
+                </p>
+                <div aria-hidden style={{ ...overviewBlockStyle, flex: 1 }} />
+              </div>
+            </div>
+          ) : (
+            <div aria-hidden style={{ ...overviewBlockStyle, height: section.height }} />
+          )}
+        </section>
+      ))}
+    </>
+  )
+}
 
 export function RubiAside() {
   return (

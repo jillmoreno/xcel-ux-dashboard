@@ -562,9 +562,12 @@ describe('dashboard-navigation — Option 1 / Option 2', () => {
        navigation IS the variable rather than a confound around it. */
     seedNav('option-2')
     openCourse()
+    /* ⚠ NOT `'Back to Overview'` ANY MORE — that assertion was here and had to
+       go, because Option 2's own ✕ now carries exactly that label. What is
+       still absent is Option 1's BREADCRUMB: its Home and Overview crumbs are
+       separate buttons, and neither exists here. */
     expect(screen.queryByRole('button', { name: 'Home' })).toBeNull()
     expect(screen.queryByRole('button', { name: 'Overview' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Back to Overview' })).toBeNull()
   })
 
   it('keeps a SIMPLIFIED left TOC — the lessons, not the header facts again', () => {
@@ -614,12 +617,43 @@ describe('dashboard-navigation — Option 1 / Option 2', () => {
     seedNav('option-2')
     openCourse()
     const header = document.querySelector('header')!
-    const buttons = [...header.querySelectorAll('button')]
-    expect(buttons.map((b) => b.getAttribute('aria-label'))).toEqual(['Close the course'])
+    expect(
+      [...header.querySelectorAll('button')].map((b) => b.getAttribute('aria-label')),
+    ).toEqual(['Back to Overview'])
+  })
+
+  it('✕ goes UP to Overview — it is the only route there', () => {
+    /* ⚠ THIS INVERTS AN ASSERTION FROM EARLIER THE SAME DAY, when ✕ closed the
+       course to the dashboard. The ask: "this needs to bring user to the
+       overview page. it's the only way there right now."
+
+       IT IS LOAD-BEARING, not cosmetic: Option 2 has no rail and no
+       breadcrumb, so a ✕ that closed outward would leave the variant with no
+       route to its own Overview at all. Leaving is the OVERVIEW page's job. */
+    seedNav('option-2')
+    openCourse()
     act(() => {
-      fireEvent.click(buttons[0])
+      fireEvent.click(screen.getByRole('button', { name: 'Back to Overview' }))
     })
-    // …and it really leaves: the dashboard is back.
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(
+      'New York Life and Health Pre-licensing',
+    )
+    // …and it did NOT leave the course.
+    expect(screen.queryByRole('button', { name: /Resume|Start course/ })).toBeNull()
+  })
+
+  it('the Overview page’s home crumb is the way out', () => {
+    /* The other half of the ask — "from the overview page, user will be able to
+       get back to home" — and the assertion that stops the variant becoming a
+       room with no door once ✕ stopped being one. */
+    seedNav('option-2')
+    openCourse()
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: 'Back to Overview' }))
+    })
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: 'Home' }))
+    })
     expect(screen.getByRole('button', { name: /Resume|Start course/ })).toBeTruthy()
   })
 

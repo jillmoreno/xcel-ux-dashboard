@@ -1,11 +1,11 @@
-import { useEffect, type CSSProperties } from 'react'
-import { ArrowLeft, ArrowRight, CalendarDay, FileText, Plus, RubiLogo, Sun, X } from '@/icons'
+import { useEffect, useState, type CSSProperties } from 'react'
+import { ArrowLeft, ArrowRight, CalendarDay, FileText, House, Plus, RubiLogo, Sun, X } from '@/icons'
 import { Logo } from '@/components/brand/Logo'
 import { readExamDate } from '@/data/examDateStore'
 import { daysUntil, formatPaceDate } from '@/lib/studyPace'
 import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 import { setCourseChrome } from './courseTakeover'
-import { CompassContents, RubiAside } from './CompassCoursePlayer'
+import { CompassContents, CompassOverviewSections, RubiAside } from './CompassCoursePlayer'
 
 /**
  * OPTION 2's COURSE PAGE — `dashboard-navigation: option-2`, 2026-09-23.
@@ -59,6 +59,24 @@ export function CourseContentV2({
   /** Leave the course. The ✕ — the one wired control in this header. */
   onClose: () => void
 }) {
+  /*
+   * TWO PAGES, AND ✕ IS THE ONLY DOOR BETWEEN THEM — 2026-09-23, the direct
+   * ask: "this needs to bring user to the overview page. it's the only way
+   * there right now. and then from the overview page, user will be able to get
+   * back to home."
+   *
+   * ⚠ SO ✕ GOES UP, NOT OUT, which is the opposite of what it did an hour ago
+   * and worth knowing before anyone "fixes" it back. A ✕ that closes to the
+   * dashboard would leave Option 2 with no route to its own Overview at all —
+   * this page has no rail and no breadcrumb, so there is nowhere else to put
+   * one. Leaving the course is the OVERVIEW page's job, via its home crumb.
+   *
+   * Local state, not a route: the launcher has no URL of its own (it overlays
+   * a section), so a `?view=` would be a parameter on the page underneath —
+   * the same reasoning `CompassCoursePlayer` records for Option 1's pages.
+   */
+  const [page, setPage] = useState<'course' | 'overview'>('course')
+
   useEffect(() => {
     setCourseChrome('takeover')
     return () => setCourseChrome('none')
@@ -71,6 +89,35 @@ export function CourseContentV2({
      booked the pill says so — it is the honest half of the same control. */
   const examIso = readExamDate()
   const examOut = examIso ? daysUntil(examIso, FIXTURE_TODAY) : null
+
+  if (page === 'overview') {
+    return (
+      <div style={pageStyle}>
+        {/* NO COMPASS HEADER HERE, by the design: that header is "technically
+            part of the course content page", so Overview opens on its own
+            breadcrumb instead. The app header is still suppressed — this is
+            one full-screen experience with two pages, and the home crumb is
+            the way out of both. */}
+        <div style={overviewPageStyle}>
+          <p style={overviewCrumbStyle}>
+            <button type="button" onClick={onClose} aria-label="Home" style={crumbHomeStyle}>
+              <House size={16} aria-hidden />
+            </button>
+            <span aria-hidden style={crumbSlashStyle}>
+              /
+            </span>
+            {/* The last crumb is the page you are on, so it is a span and
+                carries `aria-current` rather than being a second link. */}
+            <span aria-current="page" style={crumbHereStyle}>
+              Overview
+            </span>
+          </p>
+          <h1 style={overviewTitleStyle}>{courseTitle}</h1>
+          <CompassOverviewSections />
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div style={pageStyle}>
@@ -114,7 +161,17 @@ export function CourseContentV2({
             <span style={glyphStyle} aria-hidden>
               <Sun size={15} />
             </span>
-            <button type="button" onClick={onClose} aria-label="Close the course" style={closeStyle}>
+            {/* UP TO OVERVIEW, not out of the course — see the `page` note.
+                The accessible name says where it goes, because the glyph
+                cannot: an ✕ that means "back to the course overview" is
+                exactly the case where a stale "close" label would go
+                unnoticed. */}
+            <button
+              type="button"
+              onClick={() => setPage('overview')}
+              aria-label="Back to Overview"
+              style={closeStyle}
+            >
               <X size={15} aria-hidden />
             </button>
           </div>
@@ -474,6 +531,56 @@ const rubiPillStyle: CSSProperties = {
   ...pillBase,
   border: '1px solid var(--compass-edge)',
   background: 'var(--compass-current)',
+  color: 'var(--color-text-primary)',
+}
+
+const overviewPageStyle: CSSProperties = {
+  flex: 1,
+  minHeight: 0,
+  overflowY: 'auto',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 28,
+  width: '100%',
+  maxWidth: 900,
+  margin: '0 auto',
+  padding: '48px 48px 72px',
+}
+
+const overviewCrumbStyle: CSSProperties = {
+  margin: 0,
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+  fontFamily: 'var(--font-body)',
+  fontSize: 15,
+}
+
+const crumbHomeStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  background: 'transparent',
+  border: 0,
+  padding: 0,
+  cursor: 'pointer',
+  color: 'var(--color-primary-500)',
+}
+
+const crumbSlashStyle: CSSProperties = { color: 'var(--color-text-tertiary)' }
+
+const crumbHereStyle: CSSProperties = { color: 'var(--color-text-secondary)' }
+
+/* SERIF AND LARGE — the design's own weighting, and the same stack the header
+   crumb uses. `--font-heading` still resolves to the XCEL sans out here; see
+   `crumbCourseStyle` for why the dashboard's serif class never reaches these
+   pages. */
+const overviewTitleStyle: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-heading-serif)',
+  fontSize: 34,
+  fontWeight: 400,
+  lineHeight: 1.25,
+  letterSpacing: '-0.01em',
   color: 'var(--color-text-primary)',
 }
 
