@@ -1248,6 +1248,7 @@ export function MembershipOverview({
       // — with nothing studied the pace card states the suggested week instead
       // of reading an empty one back as failure.
       weekMinutes={personaDrivesPath ? persona!.weekMinutes : undefined}
+      dailyMinutes={personaDrivesPath ? persona!.dailyMinutes : undefined}
       // TESTING 2 ONLY — the left square tile renders the real derived pace and
       // its Adjust sheet instead of the lo-fi placeholder. A SEPARATE prop from
       // `paceOnly` because the two versions ask different questions of this

@@ -241,6 +241,8 @@ type Props = {
    * not had a week.
    */
   weekMinutes?: number[]
+  /** The last 30 days, oldest first — the activity streak's history. */
+  dailyMinutes?: number[]
   /**
    * The page's course header band, rendered INSIDE this block's left column
    * instead of full-width above the whole grid.
@@ -324,6 +326,7 @@ export function LearnerFocusedBand({
   journeyCards = false,
   examDate,
   weekMinutes,
+  dailyMinutes,
   headerSlot,  onOpenStop,
   onOpenStep,
   path,
@@ -1445,6 +1448,7 @@ export function LearnerFocusedBand({
                 courseTitle={resume.title}
                 examDate={examDate}
                 weekMinutes={weekMinutes}
+                dailyMinutes={dailyMinutes}
                 /* 0% — the beginner's week. `resume.progress` is the same
                    figure the card above it counts lessons with, so the pace
                    tile and the "0 of 42 lessons" line cannot disagree about

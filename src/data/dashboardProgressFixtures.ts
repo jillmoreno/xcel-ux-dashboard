@@ -72,6 +72,9 @@ export type DashboardProgressPersona = {
   /** Minutes studied per day this week, Monday-first — see
    *  `STUDY_MINUTES_BY_VARIANT`. Absent when there is no progress to read. */
   weekMinutes?: number[]
+  /** The last 30 days, oldest first, ending TODAY — the activity streak's
+   *  history. Authored per variant; see `STUDY_ACTIVITY_BY_VARIANT`. */
+  dailyMinutes?: number[]
   /** Renewal-ready treatment (100% complete): swap the resume card for a
    *  "Requirements met" state + a View certificate / Start next cycle CTA. */
   renewalReady?: boolean
@@ -651,6 +654,70 @@ const STUDY_MINUTES_BY_VARIANT: Partial<Record<DashboardProgressVariant, number[
   'progress-expired': [0, 0, 0, 0, 0, 0, 0],
 }
 
+/**
+ * THE LAST 30 DAYS OF STUDY, oldest first, the final entry being TODAY —
+ * 2026-09-23, for the activity streak.
+ *
+ * ⚠ AUTHORED, NOT DERIVED, and the whole array is invented the way
+ * `NY_LH_LESSON_TITLES_INVENTED` is. Nothing in this repo records a learner's
+ * history: `STUDY_MINUTES_BY_VARIANT` above is one week, also authored, and
+ * there is no feed behind either. A streak needs a past, so a past had to be
+ * written — and writing it is the reason this note exists rather than a
+ * comment saying "study minutes".
+ *
+ * ⚠ THE LAST ENTRY AGREES WITH `STUDY_MINUTES_BY_VARIANT`'s MONDAY, on
+ * purpose. `FIXTURE_TODAY` is a Monday, so today is the only day these two
+ * arrays overlap — this one ends at today, that one describes the whole
+ * Mon–Sun week including days that have not happened. Where they touch they
+ * must agree, or the same evening reads two lengths on one card.
+ *
+ * HOW THE WEEKS FALL, with today at index 29 being a Monday: the four complete
+ * Mon–Sun weeks are 1–7, 8–14, 15–21 and 22–28; index 0 is the Sunday before
+ * them. `weeksOnPace` reads exactly those blocks, so the runs below are
+ * deliberate rather than emergent:
+ *
+ *   on track — the oldest week is missed, then three kept in a row. "3 weeks
+ *              on pace", best run 3, which is the state the design was drawn
+ *              against.
+ *   at risk  — nothing sustained. A streak of 0 is the state every other
+ *              concept needed designing for, and the one this persona exists
+ *              to show.
+ *   complete — four kept weeks; the finish is earned rather than sudden.
+ */
+const STUDY_ACTIVITY_BY_VARIANT: Partial<Record<DashboardProgressVariant, number[]>> = {
+  'progress-on-track': [
+    0,
+    // week 1 — missed: two short evenings
+    90, 0, 0, 85, 0, 0, 0,
+    // week 2 — kept
+    120, 115, 0, 120, 115, 125, 130,
+    // week 3 — kept
+    120, 110, 115, 0, 120, 130, 135,
+    // week 4 — kept
+    125, 115, 120, 110, 0, 130, 130,
+    // today (Monday) — the same 105 `STUDY_MINUTES_BY_VARIANT` opens its week with
+    105,
+  ],
+  'progress-at-risk': [
+    0,
+    0, 40, 0, 0, 0, 55, 0,
+    0, 0, 35, 0, 0, 0, 0,
+    45, 0, 0, 30, 0, 0, 0,
+    0, 0, 50, 0, 0, 0, 0,
+    // today — the same 25 the week array opens with
+    25,
+  ],
+  'complete-100': [
+    0,
+    110, 105, 0, 115, 120, 100, 0,
+    120, 115, 110, 0, 125, 120, 115,
+    115, 120, 0, 110, 125, 130, 120,
+    120, 110, 125, 115, 0, 120, 130,
+    // today — tapering, because there is nothing left to do
+    60,
+  ],
+}
+
 const STATUS_BY_VARIANT: Record<DashboardProgressVariant, HomeStatus> = {
   // The onboarding hand-off destination reads as On Track (a fresh, on-schedule
   // plan) — distinct from the picker's explicit Not Started state below.
@@ -850,6 +917,7 @@ function personaFor(profile: BrandProgressProfile, variant: DashboardProgressVar
     discoveryTone,
     renewal: RENEWAL_BY_VARIANT[variant],
     weekMinutes: STUDY_MINUTES_BY_VARIANT[variant],
+    dailyMinutes: STUDY_ACTIVITY_BY_VARIANT[variant],
     renewalReady: variant === 'complete-100',
     // Carry the state's time + deadline onto the path so the detail panel's
     // Time Remaining ("Xd" / "N wks" / "Y yr, N wks") AND License Expires read

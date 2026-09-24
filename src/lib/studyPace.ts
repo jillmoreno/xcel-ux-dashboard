@@ -1023,3 +1023,92 @@ export function observedPace(input: {
     daysElapsed: elapsed.length,
   }
 }
+
+/** How a streak of kept weeks stands — see {@link weeksOnPace}. */
+export type WeeksOnPace = {
+  /** Complete weeks kept, counting back from the last finished one. */
+  streak: number
+  /** The longest such run anywhere in the history given. */
+  best: number
+  /** Study nights done so far in the CURRENT, unfinished week. */
+  thisWeekNights: number
+  /** Nights the plan asks for in a week. */
+  targetNights: number
+  /** Minutes a week must reach to count as kept. */
+  weeklyTarget: number
+}
+
+/**
+ * The activity streak, counted in WEEKS KEPT rather than consecutive days.
+ *
+ * 2026-09-23. The design reference is a daily streak — "22 days", a personal
+ * best, a bar per day — and a daily count is the one thing this product must
+ * not reward.
+ *
+ * ⚠ BECAUSE A DAILY STREAK PUNISHES THE PLAN THE CARD JUST GAVE THEM. Every
+ * pace on the picker states itself in nights a week: Steady & Relaxed is
+ * seven, Recommended six, Focused & Quick four. A learner on Focused & Quick
+ * who follows it exactly breaks a consecutive-days streak TWICE EVERY WEEK.
+ * The product would be congratulating them on a plan and then penalising them
+ * for keeping it.
+ *
+ * SO THE UNIT IS THE WEEK, which is the unit every plan is already spoken in.
+ * Rest days cost nothing, and the streak breaks only when a learner misses
+ * what they themselves signed up for.
+ *
+ * ⚠ THE CURRENT WEEK IS NOT IN THE STREAK. It has not finished, so it cannot
+ * have been kept or missed — counting it would break every learner's streak
+ * every Monday morning and mend it again by Sunday. It is reported separately
+ * as progress (`thisWeekNights`), which is the encouraging half anyway.
+ *
+ * ⚠ KEPT IS MEASURED IN MINUTES, NOT NIGHTS, for the same reason
+ * `weekStanding` credits a rest-day session: studying on a day the plan did not
+ * ask for is still studying. A learner who does their six evenings across five
+ * longer ones has kept the week. The 10% tolerance is `weekStanding`'s, so
+ * finishing a few minutes short is not a broken streak — a metric that snaps on
+ * a rounding error stops being believed.
+ *
+ * `dailyMinutes` runs OLDEST FIRST and ends TODAY. `todayIndex` is today's
+ * Mon-first weekday, which is what locates the week boundaries in it.
+ */
+export function weeksOnPace(input: {
+  /** Minutes per day, oldest first, last entry = today. */
+  dailyMinutes: number[]
+  /** Mon-first index of today, 0–6. */
+  todayIndex: number
+  /** Nights a week the plan asks for. */
+  nights: number
+  minsPerNight: number
+}): WeeksOnPace {
+  const { dailyMinutes, todayIndex, nights, minsPerNight } = input
+  const weeklyTarget = nights * minsPerNight
+  /* The current week occupies the last `todayIndex + 1` entries — Monday
+     through today. Everything before it divides into whole Mon–Sun weeks. */
+  const currentWeek = dailyMinutes.slice(dailyMinutes.length - (todayIndex + 1))
+  const history = dailyMinutes.slice(0, dailyMinutes.length - (todayIndex + 1))
+
+  const weeks: number[] = []
+  // Walk backwards in sevens so the blocks align to the week boundary rather
+  // than to the start of the array, whose length need not be a multiple of 7.
+  for (let end = history.length; end - 7 >= 0; end -= 7) {
+    weeks.unshift(history.slice(end - 7, end).reduce((a, b) => a + (b || 0), 0))
+  }
+  const kept = weeks.map((total) => total >= weeklyTarget * 0.9)
+
+  let streak = 0
+  for (let i = kept.length - 1; i >= 0 && kept[i]; i--) streak += 1
+  let best = 0
+  let run = 0
+  for (const k of kept) {
+    run = k ? run + 1 : 0
+    if (run > best) best = run
+  }
+
+  return {
+    streak,
+    best,
+    thisWeekNights: currentWeek.filter((m) => (m || 0) > 0).length,
+    targetNights: nights,
+    weeklyTarget,
+  }
+}

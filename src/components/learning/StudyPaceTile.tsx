@@ -16,6 +16,8 @@ import {
   formatPaceDate,
   observedPace,
   weekStanding,
+  weeksOnPace,
+  type WeeksOnPace,
   defaultWeekdays,
   NOT_STARTED_NIGHTS,
   MIN_STUDY_HOURS,
@@ -98,6 +100,10 @@ export type StudyPaceTileProps = {
    * The demo personas author it (`STUDY_MINUTES_BY_VARIANT`).
    */
   weekMinutes?: number[]
+  /** The last 30 days, oldest first, ending today — the activity streak's
+   *  history. Authored per persona; see `STUDY_ACTIVITY_BY_VARIANT`. Absent ⇒
+   *  the week strip stays, which is also what 0% wants. */
+  dailyMinutes?: number[]
   /**
    * WHICH SHAPE — added 2026-09-21 with the presets treatment.
    *
@@ -140,6 +146,7 @@ export function StudyPaceTile({
   courseTitle,
   examDate,
   weekMinutes,
+  dailyMinutes,
   layout = 'tile',
   notStarted = false,
 }: StudyPaceTileProps) {
@@ -516,6 +523,7 @@ export function StudyPaceTile({
             accessExpiresAt={accessExpiresAt}
             examDate={choices.examDate ?? undefined}
             weekMinutes={weekMinutes}
+            dailyMinutes={dailyMinutes}
             today={today}
             onCustomize={() => setOpen(true)}
             options={chooserVariant === 'options' ? options : undefined}
@@ -1115,6 +1123,7 @@ function PaceCardBody({
   accessExpiresAt,
   examDate,
   weekMinutes,
+  dailyMinutes,
   today,
   onCustomize,
   onPickNights,
@@ -1135,6 +1144,9 @@ function PaceCardBody({
   accessExpiresAt?: string
   examDate?: string
   weekMinutes?: number[]
+  /** The last 30 days, oldest first, ending today — the activity streak's
+   *  history. Absent ⇒ the week strip stays. */
+  dailyMinutes?: number[]
   today: Date
   onCustomize: () => void
   /** Set the nights a week from the strip — see `WeekStrip`'s `onPick`. */
@@ -1410,13 +1422,25 @@ function PaceCardBody({
         </p>
       ) : null}
 
-      <WeekStrip
-        nights={nights}
-        weekMinutes={weekMinutes}
-        target={preset.minsPerNight}
-        todayIndex={todayIndex}
-        onPick={onPickNights}
-      />
+      {/* ONE SLOT, TWO JOBS — see `ActivityStreak`. At 0% the seven circles are
+          a CONTROL (clicking one sets the nights) and there is no history to
+          draw; past 0% there is history and nothing left to set. */}
+      {dailyMinutes && !notStarted ? (
+        <ActivityStreak
+          dailyMinutes={dailyMinutes}
+          todayIndex={todayIndex}
+          nights={preset.nights}
+          minsPerNight={preset.minsPerNight}
+        />
+      ) : (
+        <WeekStrip
+          nights={nights}
+          weekMinutes={weekMinutes}
+          target={preset.minsPerNight}
+          todayIndex={todayIndex}
+          onPick={onPickNights}
+        />
+      )}
 
       {/* PICK UP THE PACE, as a number they can act on — 2026-09-21.
           Shown only when there IS a shortfall and nights left to spend it on,
@@ -1558,6 +1582,89 @@ function PaceCardBody({
  * theme flip), and the unstudied cells take the same `--color-border-subtle`
  * hairline the rest of this surface uses.
  */
+/**
+ * THE ACTIVITY STREAK — 2026-09-23, replacing the week strip once the learner
+ * is past 0%.
+ *
+ * ⚠ IT COUNTS WEEKS, NOT DAYS, and that is the whole design. The reference is
+ * a daily streak; a daily count would break twice a week for anyone on Focused
+ * & Quick who follows the plan this very card recommended. `weeksOnPace`
+ * carries the argument in full.
+ *
+ * ⚠ THE STRIP STILL EXISTS AND IS STILL RIGHT AT 0%. Before the learner
+ * starts, the seven circles are a CONTROL — clicking one sets the nights — and
+ * there is no history to draw. After they start there is history and nothing
+ * to set, so the same slot becomes a reading. One slot, two jobs, chosen by
+ * the same `notStarted` every other part of this card branches on.
+ *
+ * ⚠ AND IT DRAWS NO MISSES. Every bar is either studied or empty; a day the
+ * plan never asked for looks exactly like a day they skipped. That is a
+ * deliberate loss — the alternative was colouring misses, and a learner with a
+ * hard fortnight opening their dashboard to a row of red is the wrong pairing
+ * for a card whose copy says "no worries". The shortfall is stated in words
+ * above instead.
+ */
+function ActivityStreak({
+  dailyMinutes,
+  todayIndex,
+  nights,
+  minsPerNight,
+}: {
+  dailyMinutes: number[]
+  todayIndex: number
+  nights: number
+  minsPerNight: number
+}) {
+  const stand = weeksOnPace({ dailyMinutes, todayIndex, nights, minsPerNight })
+  /* The tallest bar is the busiest evening, floored at the nightly target so a
+     week of light sessions does not redraw itself as a week of full ones. */
+  const peak = Math.max(minsPerNight, ...dailyMinutes)
+  return (
+    <div style={streakStack}>
+      <p style={streakHeadline}>
+        <b style={streakFigure}>{stand.streak}</b>{' '}
+        {stand.streak === 1 ? 'week' : 'weeks'} on pace
+      </p>
+      <div style={streakBars} role="img" aria-label={streakLabel(stand, dailyMinutes)}>
+        {dailyMinutes.map((m, i) => {
+          const on = (m || 0) > 0
+          const today = i === dailyMinutes.length - 1
+          return (
+            <span
+              key={i}
+              aria-hidden
+              style={{
+                ...streakBar,
+                height: on ? Math.max(4, Math.round(((m || 0) / peak) * 40)) : 3,
+                background: on
+                  ? m >= minsPerNight
+                    ? 'var(--color-primary-500)'
+                    : 'var(--color-primary-300)'
+                  : 'var(--color-border-subtle)',
+                /* TODAY IS RINGED, not recoloured — it is a position in the
+                   row, not a third level of effort. */
+                ...(today ? { outline: '2px solid var(--color-primary-700)', outlineOffset: 1 } : null),
+              }}
+            />
+          )
+        })}
+      </div>
+      <p style={streakFoot}>
+        {stand.best > stand.streak ? `Best run ${stand.best} weeks · ` : null}
+        This week <b style={emphasis}>{stand.thisWeekNights}</b> of {stand.targetNights} nights
+      </p>
+    </div>
+  )
+}
+
+/** One sentence for the bar row, which is a picture to everyone else. */
+function streakLabel(stand: WeeksOnPace, dailyMinutes: number[]): string {
+  const studied = dailyMinutes.filter((m) => (m || 0) > 0).length
+  return `Activity for the last ${dailyMinutes.length} days: studied on ${studied} of them. ${
+    stand.streak
+  } ${stand.streak === 1 ? 'week' : 'weeks'} on pace.`
+}
+
 function WeekStrip({
   nights,
   weekMinutes,
@@ -2048,6 +2155,55 @@ const cardHeadline = {
   fontWeight: 600,
   color: 'var(--color-text-primary)',
 } as const
+
+const streakStack: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 6,
+}
+
+const streakHeadline: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  fontWeight: 600,
+  color: 'var(--color-text-secondary)',
+  display: 'flex',
+  alignItems: 'baseline',
+  gap: 6,
+}
+
+const streakFigure: CSSProperties = {
+  fontFamily: 'var(--font-heading)',
+  fontSize: 24,
+  fontWeight: 700,
+  letterSpacing: '-0.015em',
+  color: 'var(--color-text-primary)',
+}
+
+/* `flex: 1` on every bar with a 3px gap — the row fills whatever width the
+   card has, which is what keeps 30 bars legible in a column that is 490px on
+   the dashboard and narrower in the sheet. */
+const streakBars: CSSProperties = {
+  display: 'flex',
+  alignItems: 'flex-end',
+  gap: 3,
+  height: 40,
+}
+
+const streakBar: CSSProperties = {
+  flex: 1,
+  minWidth: 0,
+  borderRadius: '2px 2px 0 0',
+  display: 'block',
+}
+
+const streakFoot: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 12,
+  color: 'var(--color-text-tertiary)',
+}
 
 const cardBody = {
   display: 'flex',

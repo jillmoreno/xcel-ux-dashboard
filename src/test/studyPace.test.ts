@@ -8,6 +8,7 @@ import {
   formatEvening,
   formatEveningSpoken,
   observedPace,
+  weeksOnPace,
   weekStanding,
   CEILING_MINS,
   formatPaceDate,
@@ -543,5 +544,57 @@ describe('observedPace', () => {
     const s = observedPace({ weekMinutes: [0, 0, 0, 0, 0, 45, 0], todayIndex: 6 })!
     expect(s.nights).toBe(1)
     expect(s.minsPerNight).toBe(45)
+  })
+})
+
+describe('weeksOnPace', () => {
+  /* The activity streak, counted in weeks kept — 2026-09-23. */
+  const base = { todayIndex: 0, nights: 6, minsPerNight: 120 } // 720/wk, 648 with tolerance
+
+  /** 4 whole weeks + a Sunday at the front + today, the fixture's own shape. */
+  const build = (weeks: number[][]) => [0, ...weeks.flat(), 100]
+
+  it('counts only COMPLETE weeks, never the one in progress', () => {
+    /* ⚠ THE CURRENT WEEK IS NOT IN THE STREAK. It has not finished, so it can
+       be neither kept nor missed — counting it would break every learner's
+       streak every Monday morning and mend it again by Sunday. */
+    const full = [120, 120, 120, 120, 120, 120, 0] // 720 — kept
+    const s = weeksOnPace({ ...base, dailyMinutes: build([full, full, full, full]) })
+    expect(s.streak).toBe(4)
+    expect(s.thisWeekNights).toBe(1) // today alone, and it is not in the streak
+  })
+
+  it('breaks on a missed week and keeps the best run', () => {
+    const full = [120, 120, 120, 120, 120, 120, 0]
+    const thin = [60, 0, 0, 0, 0, 0, 0]
+    const s = weeksOnPace({ ...base, dailyMinutes: build([full, full, thin, full]) })
+    expect(s.streak).toBe(1) // only the most recent week survives
+    expect(s.best).toBe(2) // …but the earlier pair is remembered
+  })
+
+  it('credits minutes, not nights — a rest day worked is still worked', () => {
+    /* The same rule `weekStanding` follows: a learner who does their six
+       evenings across five longer ones has kept the week. Counting NIGHTS
+       would call that a miss. */
+    const fiveLong = [145, 145, 145, 145, 145, 0, 0] // 725 over five nights
+    const s = weeksOnPace({ ...base, dailyMinutes: build([fiveLong, fiveLong, fiveLong, fiveLong]) })
+    expect(s.streak).toBe(4)
+  })
+
+  it('does not snap on a rounding error', () => {
+    /* 10% tolerance, `weekStanding`'s. A metric that breaks because a learner
+       finished four minutes short stops being believed. */
+    const nearly = [115, 115, 115, 115, 115, 115, 0] // 690 of 720 — 4% short
+    const s = weeksOnPace({ ...base, dailyMinutes: build([nearly, nearly, nearly, nearly]) })
+    expect(s.streak).toBe(4)
+  })
+
+  it('reports a zero streak without inventing one', () => {
+    /* The at-risk state. Every concept but "no streak at all" needed this
+       designed, and the model has to be able to say it. */
+    const empty = [0, 0, 0, 0, 0, 0, 0]
+    const s = weeksOnPace({ ...base, dailyMinutes: build([empty, empty, empty, empty]) })
+    expect(s.streak).toBe(0)
+    expect(s.best).toBe(0)
   })
 })

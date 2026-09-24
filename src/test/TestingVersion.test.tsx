@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { render, screen, within } from '@testing-library/react'
+import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -392,19 +392,40 @@ describe('the presets pacing card', () => {
     expect(text).toMatch(/you will finish around [A-Z][a-z]{2} \d+/)
   })
 
-  it('draws the week strip', () => {
-    // The redesign's biggest addition: the old card said "5 nights a week" and
-    // left the learner to picture it. Which DAYS is not invented here — the
-    // shared `defaultWeekdays` helper is what the sheet proposes too.
+  it('draws the week strip at 0%, and the activity streak once under way', () => {
+    /* ⚠ THE SLOT NOW HAS TWO OCCUPANTS — 2026-09-23. It asserted the seven
+       circles unconditionally; they are the 0% treatment only. Before the
+       learner starts, the strip is a CONTROL (clicking one sets the nights)
+       and there is no history to draw; past 0% there is history and nothing
+       left to set, so the same slot becomes the activity streak.
+
+       COUNTED, not searched for. `toContain('M')` against the whole tile is
+       satisfied by any sentence on it — an assertion that cannot fail is worse
+       than none. Seven dots, in order, is the claim at 0%.
+
+       Which DAYS is not invented: the shared `defaultWeekdays` helper is what
+       the sheet proposes too. */
+    seed({ 'dashboard-progress-state': { enabled: true, variant: 'not-started' } })
+    renderShell(TESTING_URL)
+    /* ⚠ `span, button`, AND NOT VIA `[aria-hidden]`. At 0% the strip's cells
+       are BUTTONS and the row drops `aria-hidden` because it is a control — a
+       span-only query under an aria-hidden ancestor finds nothing on the one
+       persona this half of the test seeds. The sibling test below the week
+       strip records the same trap. */
+    const cells = [...paceTile().querySelectorAll('span, button')]
+      .filter((el) => /^[MTWFS]$/.test(el.textContent ?? ''))
+      .slice(0, 7)
+      .map((c) => c.textContent)
+    expect(cells).toEqual(['M', 'T', 'W', 'T', 'F', 'S', 'S'])
+    cleanup()
+
+    // …and the started persona gets the streak instead, with no strip left.
     seedPresets()
     renderShell(TESTING_URL)
-    /* COUNTED, not searched for. The strip became circular indicators labelled
-       by INITIAL on 2026-09-21, and `toContain('M')` against the whole tile is
-       satisfied by any sentence on it — an assertion that cannot fail is worse
-       than none. Seven dots, in order, is the claim. */
-    const strip = paceTile().querySelector('[aria-hidden]')!
-    const cells = [...strip.querySelectorAll('span')].map((c) => c.textContent)
-    expect(cells).toEqual(['M', 'T', 'W', 'T', 'F', 'S', 'S'])
+    const tile = paceTile()
+    expect(tile.textContent).toMatch(/\d+ weeks? on pace/)
+    expect(tile.querySelector('[role="img"]')).toBeTruthy()
+    expect([...tile.querySelectorAll('span')].map((c) => c.textContent)).not.toContain('W')
   })
 
   it('the room it claims agrees with the access date it names', () => {
