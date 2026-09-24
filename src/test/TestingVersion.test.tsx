@@ -334,7 +334,7 @@ describe('the pacing treatment', () => {
     expect(caption.textContent).toBe(`${paceNameFor(gap)} Study Pace`)
 
     // …and the one thing that survives BOTH variants.
-    expect(within(tile).getByRole('button', { name: /Adjust Study Plan/ })).toBeTruthy()
+    expect(within(tile).getByRole('button', { name: /View Study Plan/ })).toBeTruthy()
   })
 
   it('leaves the tile lo-fi on every OTHER version', () => {
@@ -512,7 +512,7 @@ describe('the presets pacing card', () => {
     const before = /^(.*? Study Pace)/.exec(paceTile().textContent ?? '')?.[1] ?? ''
     expect(before).toMatch(/Study Pace$/)
 
-    await user.click(within(paceTile()).getByRole('button', { name: 'Adjust Study Plan' }))
+    await user.click(within(paceTile()).getByRole('button', { name: 'View Study Plan' }))
     const dialog = screen.getByRole('dialog')
     /* UPDATED 2026-09-22 with the sheet's new IA. It used to pick one of the
        three preset radio rows; the sheet is now a chooser of study STYLES, so
@@ -562,7 +562,7 @@ describe('the presets pacing card', () => {
     const names = within(tile)
       .getAllByRole('button')
       .map((b) => b.textContent?.trim())
-    expect(names).toEqual(['Adjust Study Plan'])
+    expect(names).toEqual(['View Study Plan'])
     expect(within(tile).queryByRole('link', { name: /Details/ })).toBeNull()
     expect(within(tile).queryByRole('radio')).toBeNull()
     /* ⚠ THE CARD NO LONGER NAMES THE COURSE, and that is the redesign's call
@@ -582,7 +582,7 @@ describe('the presets pacing card', () => {
     renderShell(TESTING_URL)
     expect(
       within(paceTile())
-        .getByRole('button', { name: 'Adjust Study Plan' })
+        .getByRole('button', { name: 'View Study Plan' })
         .getAttribute('aria-haspopup'),
     ).toBe('dialog')
   })

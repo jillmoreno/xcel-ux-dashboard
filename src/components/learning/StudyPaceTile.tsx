@@ -1249,7 +1249,7 @@ function PaceCardBody({
         <CustomizeLink
           onClick={onCustomize}
           disabled={customizeDisabled && notStarted}
-          label={notStarted ? undefined : 'Adjust Study Plan'}
+          label={notStarted ? undefined : 'View Study Plan'}
         />
       </div>
     )
@@ -1563,7 +1563,7 @@ function PaceCardBody({
       <CustomizeLink
         onClick={onCustomize}
         disabled={customizeDisabled && notStarted}
-        label={notStarted ? undefined : 'Adjust Study Plan'}
+        label={notStarted ? undefined : 'View Study Plan'}
       />
     </div>
   )
@@ -1863,14 +1863,20 @@ function CustomizeLink({
   onClick: () => void
   disabled?: boolean
   /**
-   * "Adjust Study Plan" once the learner is under way — 2026-09-23, the direct
-   * ask. CUSTOMIZE is what you do to something you are setting up; ADJUST is
-   * what you do to something already running, and by 63% the plan is running.
+   * "View Study Plan" once the learner is under way — 2026-09-23.
    *
-   * ⚠ THE 0% LABEL IS "CUSTOMIZE YOUR PACING", not "…Study Plan" — changed
-   * 2026-09-23 to name what the control actually opens. The started label was
-   * not part of that ask and still says "Study Plan"; if these should read as
-   * one pair, that is the other half.
+   * THE VERB TRACKS THE LEARNER'S SITUATION, and it has moved twice. It was
+   * "Customize Study Plan" everywhere, then "Adjust Study Plan" once under way
+   * (customise is what you do to something you are setting up; adjust is what
+   * you do to something already running), and is now VIEW.
+   *
+   * ⚠ VIEW IS THE WEAKER PROMISE, AND THAT IS THE POINT. At 63% the card has
+   * stopped proposing and started reporting — the heading says "Your Study
+   * Pace", the headline states a finish date. A link offering to ADJUST that
+   * invites a learner to change a plan the card has just told them is working;
+   * VIEW offers the detail behind the claim, which is what the sheet actually
+   * shows first. The 0% label stays "Customize Your Pacing", where changing it
+   * IS the job.
    * The sheet behind it is the same sheet either way, which is the point: the
    * verb tracks the learner's situation, not a second destination.
    */

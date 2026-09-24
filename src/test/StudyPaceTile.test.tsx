@@ -88,7 +88,7 @@ const sheet = () => screen.getByRole('dialog')
 /**
  * Open the sheet from whichever control the current shape offers — "Adjust" on
  * the square, and the card's own plan link since the 2026-09-21 redesign —
- * "Customize Your Pacing" at 0%, "Adjust Study Plan" once the learner has
+ * "Customize Your Pacing" at 0%, "View Study Plan" once the learner has
  * started (2026-09-23).
  *
  * MATCHED BY ROLE, not by label, precisely because the label differs and the
@@ -97,7 +97,14 @@ const sheet = () => screen.getByRole('dialog')
  * broken sheet.
  */
 const openSheet = async (user: ReturnType<typeof userEvent.setup>) => {
-  await user.click(screen.getByRole('button', { name: /Adjust|Customize Your Pacing/ }))
+  await user.click(screen.getByRole('button', {
+      /* Three shapes, three labels: the square tile's `Adjust`, the 0% card's
+         `Customize Your Pacing`, the started card's `View Study Plan`. Matched
+         by ROLE rather than pinned to one, because the CLAIM is that all three
+         open the same sheet — a helper tied to a single label would make a
+         rename read as a broken sheet. */
+      name: /Adjust|Customize Your Pacing|View Study Plan/,
+    }))
   return sheet()
 }
 
@@ -584,7 +591,7 @@ describe('StudyPaceTile — the presets card', () => {
        `notStarted`, so this is a learner already under way, and the link takes
        the verb for a plan that is already running. The 0% block below pins the
        other label. */
-    expect(buttons.map((b) => b.textContent?.trim())).toEqual(['Adjust Study Plan'])
+    expect(buttons.map((b) => b.textContent?.trim())).toEqual(['View Study Plan'])
     expect(buttons[0].getAttribute('aria-haspopup')).toBe('dialog')
     expect(screen.queryByRole('link')).toBeNull()
     expect(screen.queryByRole('radio')).toBeNull()
@@ -599,7 +606,7 @@ describe('StudyPaceTile — the presets card', () => {
        swap a hex cannot — so the assertion is the ABSENCE of an inline colour,
        which is what lets the class win. */
     renderCard()
-    const cta = screen.getByRole('button', { name: /Adjust Study Plan/ })
+    const cta = screen.getByRole('button', { name: /View Study Plan/ })
     expect(cta.className).toContain('cre-cta-ink')
     expect(cta.style.color).toBe('')
     expect(document.body.innerHTML).not.toMatch(/a24796/i)
@@ -778,7 +785,7 @@ describe('StudyPaceTile — the week that cannot be salvaged', () => {
     // No hours, no minutes, no nightly number — in any of the card's copy.
     expect(text).not.toMatch(/\d+\s*(hours?|minutes?|mins?)\s*a\s*night/i)
     // …and the one control the card ever offers is still there.
-    expect(screen.getByRole('button', { name: /Adjust Study Plan/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /View Study Plan/ })).toBeTruthy()
   })
 
   it('is reachable from the demo controls, not just from the model', () => {
@@ -1025,7 +1032,7 @@ describe('study-pace-chooser: options — the learner who has already started', 
        card. With them gone the link is the only way left to change pace, so an
        inert one would strand the state — the regression this pins. */
     renderStarted()
-    const cta = screen.getByRole('button', { name: /Adjust Study Plan/ })
+    const cta = screen.getByRole('button', { name: /View Study Plan/ })
     expect(cta.getAttribute('aria-haspopup')).toBe('dialog')
     expect(screen.queryByRole('button', { name: /Customize Your Pacing/ })).toBeNull()
   })
