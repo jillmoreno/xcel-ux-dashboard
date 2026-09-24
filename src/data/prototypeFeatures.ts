@@ -1181,7 +1181,14 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     kind: 'guided',
     status: 'ready',
     category: 'dev-handoff',
-    devStatus: 'in-design',
+    /* READY-FOR-DEV, so the row lands in DEVELOPMENT — `sectionOf()` reads
+       `devStatus` BEFORE `category`, and `dev-handoff` as a category falls
+       through to Design on its own. A handoff whose whole purpose is being
+       picked up by engineering belongs in Development even while two of its
+       questions are open; those are flagged in the decisions log, which is the
+       right place for them, not a section that hides the row from the people
+       it was written for. */
+    devStatus: 'ready-for-dev',
     brands: ['xcel'],
     /* A ROUTE row, not a document — these are React surfaces in `src/`, so the
        tile navigates in-app rather than opening a file. The bare Testing route

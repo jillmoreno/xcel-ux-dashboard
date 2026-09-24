@@ -132,8 +132,9 @@ describe('section routing (sectionOf)', () => {
     // Added 2026-09-24 — the repo's FIRST authored dev handoff. `devStatus:
     // 'in-design'` is what places it, and `sectionOf` reads that BEFORE
     // `category`, so changing the status moves the row between Design and
-    // Development. Update this map in the same commit if it moves.
-    'xcel-course-entry': 'design',
+    // Development. Update this map in the same commit if it moves. (It did,
+    // same day: it shipped `in-design` → Design, which was wrong for a handoff.)
+    'xcel-course-entry': 'development',
   }
 
   it('accounts for every authored feature', () => {
