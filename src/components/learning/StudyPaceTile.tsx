@@ -1551,16 +1551,26 @@ function PaceCardBody({
       </div>
 
       {/*
-        ⚠ `&& notStarted` — THE LINK COMES BACK TO LIFE ONCE THE PICKER GOES.
-        `customizeDisabled` is set on the `options` chooser because the three
-        plans are ON the card, so a link into a sheet offering the same three
-        would be one door too many. That reasoning expires exactly when the
-        plans do: at 63% the card shows no picker, so an inert link would leave
-        the state with no way to change pace at all.
+        ⚠ INERT IN BOTH STATES AGAIN — 2026-09-23, the direct ask: "should not
+        be clickable - break this link".
+        
+        IT WAS `customizeDisabled && notStarted` for a few hours, on the
+        argument that the link comes back to life once the picker goes: at 63%
+        the card shows no plan cards, so an inert link leaves that state with
+        no way to change pace at all. That reasoning was right and the ask
+        overrides it — which means the consequence is now deliberate rather
+        than overlooked.
+        
+        ⚠ SO 63% HAS NO ROUTE TO CHANGE PACE. The picker is hidden, the link
+        does nothing, and the sheet's own chooser was never wired past "Build
+        my own" on this variant. For a moderated session that is arguably the
+        point — whether a learner LOOKS for one is the finding — but it is a
+        dead end, and the fix when the time comes is to give the link somewhere
+        to go rather than to re-enable it onto an unfinished sheet.
       */}
       <CustomizeLink
         onClick={onCustomize}
-        disabled={customizeDisabled && notStarted}
+        disabled={customizeDisabled}
         label={notStarted ? undefined : 'View Study Plan'}
       />
     </div>

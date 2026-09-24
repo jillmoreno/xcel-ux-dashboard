@@ -1027,16 +1027,24 @@ describe('study-pace-chooser: options — the learner who has already started', 
     expect(screen.queryByText(/Recommended Study Pace/)).toBeNull()
   })
 
-  it('gives the link back its purpose, and the right verb', () => {
-    /* `customizeDisabled` is set on this chooser because the plans are ON the
-       card. With them gone the link is the only way left to change pace, so an
-       inert one would strand the state — the regression this pins. */
+  it('takes the started verb, and stays inert', () => {
+    /*
+     * ⚠ THIS ASSERTED THE OPPOSITE UNTIL 2026-09-23, and the swap records a
+     * reversal rather than a test bending to code. It pinned that the link
+     * came BACK TO LIFE once the picker went — `customizeDisabled &&
+     * notStarted` — on the argument that with no plan cards on the card, an
+     * inert link strands the state.
+     *
+     * The ask overrode it ("should not be clickable - break this link"), so
+     * the dead end is deliberate. `aria-haspopup` is the tell: it is only
+     * attached when the control actually opens something, so its ABSENCE is
+     * what proves the link is inert rather than merely styled to look calm.
+     */
     renderStarted()
     const cta = screen.getByRole('button', { name: /View Study Plan/ })
-    expect(cta.getAttribute('aria-haspopup')).toBe('dialog')
+    expect(cta.getAttribute('aria-haspopup')).toBeNull()
     expect(screen.queryByRole('button', { name: /Customize Your Pacing/ })).toBeNull()
   })
-
   it('states the goal in nights, and the pace actually being kept', () => {
     renderStarted()
     const text = document.body.textContent ?? ''
