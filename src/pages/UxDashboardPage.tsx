@@ -39,6 +39,7 @@ import {
   setFeatureRollupStatus,
   type DevStatus,
   type FeatureStatusKey,
+  isDevelopmentStatus,
 } from '@/components/prototype/devHandoffStatusUtil'
 import {
   getDoneOverrides,
@@ -70,8 +71,7 @@ import {
   Share2,
   Sliders,
   Sun,
-  X,
-} from '@/icons'
+  X, HourglassClock} from '@/icons'
 import { Toast } from '@/components/ui/Toast'
 import { PrototypePasswordModal } from '@/components/prototype/PrototypeLock'
 import { isPrototypeUnlocked, markPrototypeUnlocked } from '@/components/prototype/prototypeLockUtil'
@@ -1080,9 +1080,9 @@ function sectionOf(
   if (isDone ?? f.done) return 'done'
   const status = effective && effective !== 'mixed' ? effective : f.devStatus
   if (status) {
-    return status === 'ready-for-dev' || status === 'in-development' || status === 'blocked'
-      ? 'development'
-      : 'design'
+    // One resolver, in devHandoffStatusUtil beside the labels and colours — see
+    // `isDevelopmentStatus`, and the note there on why `not-ready` is in it.
+    return isDevelopmentStatus(status) ? 'development' : 'design'
   }
   // The product build. `demo` / `dashboard` are the LMS's names for the same
   // thing and route here too; nothing routes to the Demo SECTION, which is a
@@ -1795,6 +1795,10 @@ const STATUS_MENU_GLYPH: Record<DevStatus, typeof Lightbulb> = {
   'in-design': Lightbulb,
   'needs-discussion': MessageCircle,
   blocked: LockSolid,
+  /* An hourglass, not a second lock: `blocked` means something is stopping this
+     and `not-ready` means it is not finished yet. Paired against
+     `ready-for-dev`'s CircleCheck, the two read as the opposites they are. */
+  'not-ready': HourglassClock,
   'ready-for-dev': CircleCheck,
   'in-development': Bolt,
 }

@@ -15,6 +15,22 @@ export type DevStatus =
   | 'in-design'
   | 'needs-discussion'
   | 'blocked'
+  /**
+   * IN DEVELOPMENT, BUT HANDS OFF — 2026-09-24, the direct ask.
+   *
+   * The row belongs on the Development board (it is specified, it is what
+   * engineering will build) but nobody should start it yet. That is a different
+   * statement from all four of its neighbours, which is why it is a status
+   * rather than a note someone has to open the handoff to find:
+   *
+   *   • `in-design` / `needs-discussion` move the row OUT of Development
+   *     entirely, so a developer scanning the board never sees it — wrong when
+   *     the point is "this is coming, don't start".
+   *   • `blocked` says something EXTERNAL is stopping it. This says the work
+   *     itself is not finished being specified.
+   *   • `ready-for-dev` is the exact thing it must not be mistaken for.
+   */
+  | 'not-ready'
   | 'ready-for-dev'
   | 'in-development'
 
@@ -28,6 +44,15 @@ export const DEV_STATUS_STROKE: Record<DevStatus, string> = {
   'in-design': 'var(--color-info-800)',
   'needs-discussion': 'var(--color-error-600)',
   'blocked': 'var(--color-neutral-900)',
+  /* Burnt orange — the XCEL secondary. 5.83:1 bare, 4.93:1 once its own 12%
+     tint sits behind it, so it clears AA on the home page's status TAG.
+     ⚠ NOT a neutral, which is the obvious pick for "parked": `--color-text-
+     secondary` is #666666 and already carries the `none` chip, whose label is
+     the word "Ready". A grey "Not Ready" beside a grey "Ready" is the one
+     pairing on this board that must not be ambiguous.
+     ⚠ NOT tertiary either — tertiary-800 (#164a5a) and info-800 (#0c4b53) are
+     the same deep teal to the eye, and info is `in-design`. */
+  'not-ready': 'var(--color-secondary-700)',
   'ready-for-dev': 'var(--color-success-600)',
   'in-development': 'var(--color-warning-800)',
 }
@@ -37,6 +62,7 @@ export const DEV_STATUS_LABEL: Record<DevStatus, string> = {
   'in-design': 'In Design',
   'needs-discussion': 'Needs Discussion',
   'blocked': 'Blocked',
+  'not-ready': 'Not Ready',
   'ready-for-dev': 'Ready for Dev',
   'in-development': 'In Development',
 }
@@ -46,9 +72,35 @@ export const DEV_STATUS_SEQUENCE: DevStatus[] = [
   'in-design',
   'needs-discussion',
   'blocked',
+  /* Directly ABOVE `ready-for-dev`, because the two are each other's opposite
+     and the pair is the decision someone is actually making at this point in
+     the menu. */
+  'not-ready',
   'ready-for-dev',
   'in-development',
 ]
+
+/**
+ * Does this status put a row on the DEVELOPMENT board rather than Design?
+ *
+ * Lives here, beside the labels and colours, rather than as a chain of `===`
+ * inside `sectionOf` — same reason `featureStatusKeyOf` moved here: two copies
+ * of a status rule let a section disagree with the chip it renders. Adding a
+ * status is now one edit in this file plus its colour and label, and the
+ * `Record<DevStatus, …>` maps make the compiler demand those.
+ *
+ * ⚠ `not-ready` IS IN THIS SET, which reads wrong and is the whole point: it
+ * means "specified, on the board, but do not start yet". Sending it to Design
+ * would hide it from the only people the flag is addressed to.
+ */
+export function isDevelopmentStatus(status: DevStatus): boolean {
+  return (
+    status === 'ready-for-dev' ||
+    status === 'in-development' ||
+    status === 'blocked' ||
+    status === 'not-ready'
+  )
+}
 
 const DEV_STATUS_STORAGE_KEY = 'cgp.devHandoffStatus'
 
@@ -155,6 +207,9 @@ const DEV_STATUS_STROKE_DARK: Record<DevStatus, string> = {
   'in-design': 'var(--color-info-300)',
   'needs-discussion': 'var(--color-error-200)',
   'blocked': 'var(--color-neutral-900)',
+  /* 12.30:1 on the dark card. The secondary ramp re-pins per theme, so this
+     token is already the light amber there rather than the burnt orange. */
+  'not-ready': 'var(--color-secondary-300)',
   'ready-for-dev': 'var(--color-success-200)',
   'in-development': 'var(--color-warning-400)',
 }
