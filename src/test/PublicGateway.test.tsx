@@ -258,3 +258,66 @@ describe('shared Blobs store', () => {
     expect(helper).toMatch(/Boolean\(siteID\) !== Boolean\(token\)/)
   })
 })
+
+describe('the demo site offers only the finished demo controls', () => {
+  /*
+   * 2026-09-24, the direct ask: Persona, Pacing and Education come off the
+   * DEMO site and stay on the DESIGN one.
+   *
+   * ⚠ THE REASON IS MATURITY, NOT TIDINESS. Those three are work in progress; a
+   * stakeholder who opens the demo link and finds a control that reshapes the
+   * page in ways nobody has agreed on has been handed a decision we did not
+   * mean to offer.
+   */
+  async function bar(mode: string) {
+    vi.resetModules()
+    vi.stubEnv('VITE_GATEWAY_MODE', mode)
+    const { PrototypeChrome } = await import('@/components/layout/PrototypeChrome')
+    const { AccountProvider } = await import('@/context/AccountContext')
+    const { FeatureFlagProvider } = await import('@/context/FeatureFlagContext')
+    const { DashboardVersionsPanelProvider } = await import(
+      '@/components/dashboard/DashboardVersionsPanelContext'
+    )
+    const { MembershipVersionsPanelProvider } = await import(
+      '@/components/membership/MembershipVersionsPanelContext'
+    )
+    const { FeatureFlagPanelProvider } = await import('@/components/account/FeatureFlagPanelContext')
+    render(
+      <MemoryRouter initialEntries={['/dashboard-rebrand']}>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <DashboardVersionsPanelProvider>
+              <MembershipVersionsPanelProvider>
+                <FeatureFlagPanelProvider>
+                  <PrototypeChrome />
+                </FeatureFlagPanelProvider>
+              </MembershipVersionsPanelProvider>
+            </DashboardVersionsPanelProvider>
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+  }
+
+  const WIP = [/Persona/i, /Pacing/i, /Education/i]
+
+  it('hides the work-in-progress axes on the demo site', { timeout: 20_000 }, async () => {
+    await bar('public')
+    for (const gone of WIP) {
+      expect(screen.queryByRole('button', { name: gone }), String(gone)).toBeNull()
+    }
+    // …and keeps the finished ones, including Reset — the only way a
+    // stakeholder gets out of a state they wandered into.
+    expect(screen.getByRole('button', { name: /Progress/i })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /^Reset$/ })).toBeTruthy()
+  })
+
+  it('leaves the design site with all of them', { timeout: 20_000 }, async () => {
+    /* The direction that matters more: this is a trim for one audience, not a
+       removal. The people making these decisions still need the controls. */
+    await bar('full')
+    for (const there of WIP) {
+      expect(screen.getByRole('button', { name: there }), String(there)).toBeTruthy()
+    }
+  })
+})

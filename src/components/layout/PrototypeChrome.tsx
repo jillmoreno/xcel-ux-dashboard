@@ -1,5 +1,5 @@
 import { useLocation } from 'react-router-dom'
-import { isTestSession } from '@/data/gatewayMode'
+import { isPublicGateway, isTestSession } from '@/data/gatewayMode'
 import { PrototypeBar } from './PrototypeBar'
 import { AdminToolsMenu } from './AdminToolsMenu'
 import { DeviceFrameToggle, useDeviceFrame } from './DeviceFrameContext'
@@ -36,6 +36,32 @@ import { useDemoControlsVisibility } from '@/components/prototype/demoControlsVi
  * changes it between tasks ("now imagine you are two weeks in").
  */
 const TEST_VIEW_CONTROLS = ['progress', 'navigation'] as const
+
+/**
+ * What the DEMO site's controls bar offers — `VITE_GATEWAY_MODE=public`,
+ * 2026-09-24.
+ *
+ * ⚠ AN ALLOW-LIST OF WHAT IS FINISHED, not a hide-list of what is not. Persona,
+ * Pacing and Education came off because they are work in progress: a
+ * stakeholder who opens the demo link and finds a control that reshapes the
+ * page in ways nobody has agreed on has been handed a decision we did not mean
+ * to offer. They stay in full on the DESIGN site, where the audience is the
+ * people making those decisions.
+ *
+ * It fails CLOSED, which is the direction that matters: a control added to the
+ * bar tomorrow does not appear on the demo site until someone puts it here
+ * deliberately. The opposite default would leak every half-built axis to
+ * stakeholders the day it lands.
+ *
+ * ⚠ `actions` IS IN. Reset is what gets a stakeholder out of a state they
+ * wandered into; removing it would leave the only recovery a page reload they
+ * have no reason to think of.
+ *
+ * WHERE THIS SHOULD EVENTUALLY LIVE: on the flags themselves, not here. A
+ * control's readiness is a property of the work, and the catalog already
+ * carries every other fact about it. See `docs/gateway.md`.
+ */
+const DEMO_SITE_CONTROLS = ['quick', 'progress', 'readiness', 'navigation', 'actions'] as const
 
 export function PrototypeChrome() {
   const { pathname, search } = useLocation()
@@ -98,7 +124,13 @@ export function PrototypeChrome() {
         }
         fullBleed={framed}
       />
-      <DemoControlsBar open={demoOpen} fullBleed={framed} />
+      {/* The demo site gets the finished axes only — see `DEMO_SITE_CONTROLS`.
+          `undefined` on the design site, which is every control. */}
+      <DemoControlsBar
+        open={demoOpen}
+        fullBleed={framed}
+        only={isPublicGateway() ? DEMO_SITE_CONTROLS : undefined}
+      />
     </>
   )
 }
