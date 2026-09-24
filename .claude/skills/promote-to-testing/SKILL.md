@@ -1,9 +1,9 @@
 ---
 name: promote-to-testing
-description: Publish a moderated user-test session — freeze the current branch onto the test site's branch, tag the session with what it rigs, wait for the build, and hand back the participant link, the moderator link and a crib sheet. The link goes to a separate password-protected Netlify site with no UX Dashboard on it. Pairs with promote-to-refinement (team review) and promote-to-prototype (shipping the baseline). Trigger on "promote to testing", "create a test link", "make a testing link", "set up a user test", "freeze a branch for testing", "break some CTAs", "/promote-to-testing".
-version: 2.0.0
+description: Publish a moderated user-test session — freeze the current branch onto the test site's branch, tag the session with what it rigs, wait for the build, and hand back the participant link, the moderator link and a published session sheet — an HTML handoff document generated from the CTA catalog, carrying the frozen SHA and a live link builder. The link goes to a separate password-protected Netlify site with no UX Dashboard on it. Pairs with promote-to-refinement (team review) and promote-to-prototype (shipping the baseline). Trigger on "promote to testing", "create a test link", "make a testing link", "set up a user test", "freeze a branch for testing", "break some CTAs", "/promote-to-testing".
+version: 2.1.0
 author: UX Design — Colibri
-last_updated: 2026-09-23
+last_updated: 2026-09-24
 status: active
 ---
 
@@ -160,6 +160,38 @@ Close with the two operational facts:
 - **A run survives a reload but dies with the tab** (`sessionStorage`).
 - **`&dead=` with nothing after it clears the run** mid-session.
 
+### 7. Publish the session sheet
+
+```bash
+node scripts/session-sheet.mjs \
+  --out "$SCRATCH/session-sheet.html" \
+  --sha "$SHA" --branch "$TEST_BRANCH" --tag "$TAG" \
+  --persona progress-on-track --nav option-2 \
+  --dead nav.courses,home.exam-date-save
+```
+
+Then publish it with the **Artifact** tool and hand back the URL with the
+links. Omit any flag the session does not use; `--out` is the only required
+one.
+
+⚠ **GENERATED, NEVER HAND-WRITTEN.** The sheet reads `TESTABLE_CTAS` from
+source on every run, so it cannot describe a catalog that has moved. A page
+listing a control that no longer exists sends a colleague looking for a button
+that is not there — and a sheet is exactly the artefact someone trusts without
+checking.
+
+⚠ **IT IS THE HANDOFF DOCUMENT, not a prettier link.** It carries the SHA and
+the tag, so a second moderator opens it and knows which build they are running;
+it pre-ticks the session's own choices, so it reads as a record; and the
+builder stays live underneath, so they can re-tick mid-session and get a new
+link without coming back here. Two things it does that the links alone cannot:
+flags any dead end that is **already inert** in the chosen baseline, and warns
+past the five-dead-end ceiling.
+
+The script REFUSES rather than guesses — an unknown `--dead` id, or a catalog
+it cannot parse, is an error. `SessionSheet.test.ts` asserts the count from the
+other side, so a reformat of the catalog cannot quietly shorten the sheet.
+
 ## Guardrails
 
 - **Never commit a run.** No flag defaults, no fixtures, no `dead=` list in the
@@ -175,6 +207,9 @@ Close with the two operational facts:
 - **A control that is always inert leaves the catalog.** Two have already:
   `header.logo` and `home.study-pace-adjust`. Offering to kill something
   already dead manufactures findings.
+- **Never hand-write the sheet.** Generate it. A sheet is trusted without
+  checking, which is exactly why it must not be able to drift from the
+  catalog.
 
 ## Adding a CTA to the catalog
 
