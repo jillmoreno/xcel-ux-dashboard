@@ -281,7 +281,25 @@ const crumbStyle: CSSProperties = {
  * being set in plain body text.
  */
 const crumbCourseStyle: CSSProperties = {
-  fontFamily: 'var(--font-heading)',
+  /*
+   * ⚠ `--font-heading-serif` DIRECTLY, not `--font-heading`, and that is the
+   * difference between this reading as serif and reading as Lato.
+   *
+   * The dashboard's serif headings come from `.cre-dash-serif-headings`, a
+   * CONTAINER class `MembershipOverview` puts on its own subtree — and the
+   * course pages are a full-window takeover that `PlatformShell` returns
+   * BEFORE the shell grid, so they sit outside that subtree entirely and
+   * `--font-heading` still resolves to the XCEL sans here.
+   * `DashboardRebrandPage` records the same gap for the text ramp, which is
+   * why that one is written onto <html> instead.
+   *
+   * SO THIS IS PINNED TO SERIF rather than following `dashboard-heading-font`.
+   * That flag governs the dashboard and has never reached the player; wiring
+   * it through is a bigger change than "make this the serif font" asked for.
+   * If the player should follow the flag, the fix is to move the class up — at
+   * which point this line becomes `var(--font-heading)` again.
+   */
+  fontFamily: 'var(--font-heading-serif)',
   fontWeight: 700,
   color: 'var(--color-text-primary)',
   whiteSpace: 'nowrap',
