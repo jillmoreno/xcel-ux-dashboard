@@ -2347,6 +2347,12 @@ const streakBars: CSSProperties = {
   alignItems: 'flex-end',
   gap: 3,
   height: 40,
+  /* ⚠ ON THE BARS, NOT ON `cardStack`'s GAP. The row sits between the activity
+     figures it belongs to and the stats row it does not, and widening the
+     stack's gap would push the figures away from their own chart as well.
+     A bottom margin separates the activity block from what follows and leaves
+     it internally tight. */
+  marginBottom: 10,
 }
 
 const streakBar: CSSProperties = {
