@@ -1300,7 +1300,8 @@ function PaceCardBody({
   const weekly = `${preset.nights} days`
   /** What the learner is actually doing, against what the plan asks. Null at 0%
    *  and for a week with nothing on it yet — see `observedPace`. */
-  const observed = weekMinutes != null ? observedPace({ weekMinutes, todayIndex }) : null
+  const observed =
+    weekMinutes != null ? observedPace({ weekMinutes, todayIndex, dailyMinutes }) : null
 
   /* `nights` and `todayIndex` are derived above the `state: 'no'` return —
      which nights is the learner's plan when they have built one, otherwise the
@@ -1660,7 +1661,11 @@ function ActivityStreak({
 /** One sentence for the bar row, which is a picture to everyone else. */
 function streakLabel(stand: WeeksOnPace, dailyMinutes: number[]): string {
   const studied = dailyMinutes.filter((m) => (m || 0) > 0).length
-  return `Activity for the last ${dailyMinutes.length} days: studied on ${studied} of them. ${
+  /* ⚠ "SINCE YOU STARTED", NOT "the last 30 days". The array is exactly as
+     long as the learner has had the course — 13 days on the On Track persona,
+     27 on At Risk — so a fixed thirty would be the same false claim the chart
+     itself used to make. */
+  return `Activity since you started, ${dailyMinutes.length} days: studied on ${studied} of them. ${
     stand.streak
   } ${stand.streak === 1 ? 'week' : 'weeks'} on pace.`
 }

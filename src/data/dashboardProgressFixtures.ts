@@ -439,7 +439,9 @@ export const ELITE_SETUP_REQ_HOURS = setupReqHoursFor('xcel')
 // targets (0% · ~15% · ~63% · 100%) across every brand's hour split (integer
 // rounding keeps it within a couple points of the label). `progress-expired`
 // sits mid-way (~40%) with the requirement unmet.
-const PROGRESS_RATIOS: Record<DashboardProgressVariant, { m: number; e: number }> = {
+/** Exported for `ProgressArithmetic.test.ts`, which checks that the activity
+ *  history adds up to the progress these ratios put on the ring. */
+export const PROGRESS_RATIOS: Record<DashboardProgressVariant, { m: number; e: number }> = {
   'setup-complete-0': { m: 0, e: 0 },
   'not-started': { m: 0, e: 0 },
   'progress-on-track': { m: 0.63, e: 0.63 },
@@ -655,66 +657,67 @@ const STUDY_MINUTES_BY_VARIANT: Partial<Record<DashboardProgressVariant, number[
 }
 
 /**
- * THE LAST 30 DAYS OF STUDY, oldest first, the final entry being TODAY —
- * 2026-09-23, for the activity streak.
+ * EVERY DAY THE LEARNER HAS HAD THE COURSE, oldest first, the final entry being
+ * TODAY — 2026-09-23, for the activity streak.
  *
- * ⚠ AUTHORED, NOT DERIVED, and the whole array is invented the way
- * `NY_LH_LESSON_TITLES_INVENTED` is. Nothing in this repo records a learner's
- * history: `STUDY_MINUTES_BY_VARIANT` above is one week, also authored, and
- * there is no feed behind either. A streak needs a past, so a past had to be
- * written — and writing it is the reason this note exists rather than a
- * comment saying "study minutes".
+ * ⚠ ITS LENGTH IS NOT 30, AND THAT WAS THE BUG. A first build drew a flat
+ * thirty-day chart for every persona, which is impossible: access is
+ * `COURSE_ACCESS_DAYS` (30) and On Track has 17 days LEFT, so that learner has
+ * had the course for THIRTEEN days. The card was showing more history than the
+ * enrolment has existed, and claiming a three-week streak inside it.
  *
- * ⚠ THE LAST ENTRY AGREES WITH `STUDY_MINUTES_BY_VARIANT`'s MONDAY, on
- * purpose. `FIXTURE_TODAY` is a Monday, so today is the only day these two
- * arrays overlap — this one ends at today, that one describes the whole
- * Mon–Sun week including days that have not happened. Where they touch they
- * must agree, or the same evening reads two lengths on one card.
+ * SO EACH ARRAY IS `COURSE_ACCESS_DAYS - daysLeft` LONG, and
+ * `ProgressArithmetic.test.ts` asserts exactly that rather than trusting this
+ * note. It also checks the two other sums that have to hold:
  *
- * HOW THE WEEKS FALL, with today at index 29 being a Monday: the four complete
- * Mon–Sun weeks are 1–7, 8–14, 15–21 and 22–28; index 0 is the Sunday before
- * them. `weeksOnPace` reads exactly those blocks, so the runs below are
- * deliberate rather than emergent:
+ *   TOTAL MINUTES = the progress percentage × the course's own hours. A
+ *   learner 63% through a 40-hour course has studied 1,512 minutes, and the
+ *   bars have to add up to it — otherwise the chart and the progress ring are
+ *   describing two different people.
  *
- *   on track — the oldest week is missed, then three kept in a row. "3 weeks
- *              on pace", best run 3, which is the state the design was drawn
- *              against.
- *   at risk  — nothing sustained. A streak of 0 is the state every other
- *              concept needed designing for, and the one this persona exists
- *              to show.
- *   complete — four kept weeks; the finish is earned rather than sudden.
+ *   THE LAST ENTRY = `STUDY_MINUTES_BY_VARIANT`'s Monday. `FIXTURE_TODAY` is a
+ *   Monday, so today is the only day the two arrays overlap; where they touch
+ *   they must state the same number.
+ *
+ * ⚠ THE CONSEQUENCE IS A SHORT STREAK, and it is the honest one. Thirteen days
+ * contains exactly ONE complete Mon–Sun week, so On Track reads "1 week on
+ * pace" and cannot read more. A longer run needs a persona further into its
+ * window — which means fewer days left, which the header countdown states.
+ * The two cannot be tuned apart.
+ *
+ * ⚠ AND `complete-100` HAS NO ENTRY. It carries `MAX_DEMO_DAYS_LEFT` (29) with
+ * the course finished, which works out to one day of access — a 40-hour course
+ * completed the day it was opened. That is a pre-existing oddity in the
+ * persona, not something an activity chart can draw, so it shows no streak.
+ *
+ * AUTHORED, NOT DERIVED, the way `NY_LH_LESSON_TITLES_INVENTED` is. Nothing in
+ * this repo records a learner's history; a streak needs a past, so a past was
+ * written.
  */
 const STUDY_ACTIVITY_BY_VARIANT: Partial<Record<DashboardProgressVariant, number[]>> = {
+  /* ON TRACK — 13 days (30 − 17), 1,512 minutes (63% of 40 hours), 11 study
+     nights averaging just over 2¼ hours. Ahead of the plan's 1¾, which is what
+     "on track with 17 days left at 63%" actually means. The complete week sits
+     at indices 5–11 and is kept; today is index 12. */
   'progress-on-track': [
-    0,
-    // week 1 — missed: two short evenings
-    90, 0, 0, 85, 0, 0, 0,
-    // week 2 — kept
-    120, 115, 0, 120, 115, 125, 130,
-    // week 3 — kept
-    120, 110, 115, 0, 120, 130, 135,
-    // week 4 — kept
-    125, 115, 120, 110, 0, 130, 130,
-    // today (Monday) — the same 105 `STUDY_MINUTES_BY_VARIANT` opens its week with
+    // Wed–Sun, the tail of the week before
+    145, 140, 135, 0, 145,
+    // Mon–Sun, the one complete week
+    150, 140, 0, 145, 135, 140, 132,
+    // today (Monday) — the 105 `STUDY_MINUTES_BY_VARIANT` opens its week with
     105,
   ],
+  /* AT RISK — 27 days (30 − 3), 360 minutes (15% of 40 hours). Sparse on
+     purpose: this is the persona with three days left and 85% still to do, and
+     the streak it produces is 0. That zero is the state every concept but
+     "no streak at all" needed designing for. */
   'progress-at-risk': [
-    0,
-    0, 40, 0, 0, 0, 55, 0,
-    0, 0, 35, 0, 0, 0, 0,
-    45, 0, 0, 30, 0, 0, 0,
-    0, 0, 50, 0, 0, 0, 0,
-    // today — the same 25 the week array opens with
+    0, 0, 55, 0, 0, 0, 0,
+    0, 45, 0, 0, 0, 60, 0,
+    0, 0, 0, 50, 0, 0, 0,
+    0, 65, 0, 0, 60,
+    // today — the 25 the week array opens with
     25,
-  ],
-  'complete-100': [
-    0,
-    110, 105, 0, 115, 120, 100, 0,
-    120, 115, 110, 0, 125, 120, 115,
-    115, 120, 0, 110, 125, 130, 120,
-    120, 110, 125, 115, 0, 120, 130,
-    // today — tapering, because there is nothing left to do
-    60,
   ],
 }
 

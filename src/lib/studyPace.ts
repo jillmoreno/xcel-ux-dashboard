@@ -1010,9 +1010,25 @@ export function observedPace(input: {
   weekMinutes: number[]
   /** Mon-first index of today, 0–6. */
   todayIndex: number
+  /**
+   * EVERY DAY SINCE ENROLMENT, oldest first, ending today — and when it is
+   * here it WINS, because it is a better answer to the same question.
+   *
+   * ⚠ IT FIXES A REAL INCOHERENCE — 2026-09-23. Averaged over the current week
+   * alone, at the demo clock this reads one Monday: the card said "averaging
+   * about 1¾ hours a night" directly above an activity chart whose typical bar
+   * was two and a half. Two figures, one learner, both labelled "your pace".
+   *
+   * Every entry here is elapsed by construction — the array ends at today — so
+   * there is no partial-week gate to apply, and the average is over their
+   * whole run rather than over however much of one week has happened. That
+   * also retires the Monday-clock caveat this function carried: with a history
+   * it no longer matters which weekday the demo opens on.
+   */
+  dailyMinutes?: number[]
 }): ObservedPace | null {
-  const { weekMinutes, todayIndex } = input
-  const elapsed = weekMinutes.slice(0, todayIndex + 1)
+  const { weekMinutes, todayIndex, dailyMinutes } = input
+  const elapsed = dailyMinutes ?? weekMinutes.slice(0, todayIndex + 1)
   const studied = elapsed.filter((m) => (m || 0) > 0)
   if (studied.length === 0) return null
   const total = studied.reduce((a, b) => a + b, 0)
