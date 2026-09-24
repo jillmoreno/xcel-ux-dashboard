@@ -117,11 +117,16 @@ describe('the interceptor', () => {
 
        ASSERTED VIA `defaultPrevented` because jsdom does not navigate: the
        flag is the observable the browser would act on. */
+    /* ⚠ `home.resume` ON AN ANCHOR, which no production element is today —
+       `header.logo` was the one tagged `<a>` and it stopped being a link on
+       2026-09-23. The claim is kept anyway because the NEXT tagged anchor
+       would depend on it, and it would fail silently: every tagged button
+       would look correctly dead while every tagged link sailed through. */
     const hit = vi.fn()
-    window.history.replaceState({}, '', '/?dead=header.logo')
+    window.history.replaceState({}, '', '/?dead=home.resume')
     render(
       <CtaTestProvider>
-        <a href="/elsewhere" data-cta-id="header.logo" onClick={hit}>
+        <a href="/elsewhere" data-cta-id="home.resume" onClick={hit}>
           XCEL
         </a>
       </CtaTestProvider>,

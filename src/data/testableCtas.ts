@@ -86,12 +86,18 @@ export const TESTABLE_CTAS: TestableCta[] = [
   },
 
   /* ── Header ────────────────────────────────────────────────────────────── */
-  {
-    id: 'header.logo',
-    label: 'XCEL logo',
-    region: 'Header',
-    asks: 'Do they expect the logo to be Home?',
-  },
+  /*
+   * `header.logo` LIVED HERE — "Do they expect the logo to be Home?" — and was
+   * removed on 2026-09-23 when the logo stopped being a link at all ("clicking
+   * on the logo in the top left should NOT do anything, please kill that
+   * link").
+   *
+   * ⚠ A CONTROL THAT IS ALWAYS INERT IS NOT A TESTABLE CTA. Leaving the row
+   * would let a moderator "kill" something already dead and then read a
+   * participant's shrug as a finding about their session rather than about the
+   * product. If the logo is ever a link again, the row comes back with the
+   * attribute.
+   */
   {
     id: 'header.notifications',
     label: 'Notification bell',

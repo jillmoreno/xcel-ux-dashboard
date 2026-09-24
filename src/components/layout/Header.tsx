@@ -99,13 +99,12 @@ export function Header() {
   // (OFF by default) must be turned on to reveal it (see App's /dashboard
   // route guard, which redirects to the Learning Path page while hidden).
   const showDashboardTab = useFeatureFlag('dashboard-tab').enabled
-  // Logo target: on the rebrand shell it returns to the shell's Home (the
-  // Dashboard section) — `/dashboard-rebrand` with no `?section=` — preserving
-  // the chosen dashboard `?version=`; everywhere else it's the classic dashboard.
-  const rebrandVersion = new URLSearchParams(search).get('version')
-  const logoHref = platformNav
-    ? `/dashboard-rebrand${rebrandVersion ? `?version=${rebrandVersion}` : ''}`
-    : '/dashboard'
+  /* `logoHref` LIVED HERE and went on 2026-09-23 with the logo's link — see
+     the logo's own note. What it knew, for whoever needs it back: on the
+     rebrand shell the logo returned to `/dashboard-rebrand` with no
+     `?section=` but PRESERVING `?version=`, so it landed on the shell's Home
+     without silently switching dashboard version; everywhere else it was
+     `/dashboard`. */
   // On the rebrand shell at phone width the left rail is replaced by a
   // hamburger menu (the shell renders the drawer; this opens it).
   const device = useDeviceFrame().device
@@ -157,7 +156,16 @@ export function Header() {
   // header). Outside the Demo frame there's no strip, so the header keeps its
   // original offset.
   const present = new URLSearchParams(search).get('present') === '1'
-  const stageTop = chromeOff || present ? 0 : 40
+  /* ⚠ `test` BELONGS IN THIS SUM, and leaving it out was a real bug — the
+     header "did a weird static thing while the rest of the page scrolled".
+     `?test=1` (the moderated session view) hides the 40px prototype bar just
+     as `chrome=off` and `present=1` do, but this offset went on reserving its
+     height: the sticky stack pinned 40px below the top of the stage and page
+     content scrolled up through the gap. Any future param that hides the
+     prototype bar has to be added here too — the list of hiders lives in
+     `PrototypeChrome`, and these two have to agree. */
+  const test = new URLSearchParams(search).get('test') === '1'
+  const stageTop = chromeOff || present || test ? 0 : 40
   const headerTop = framed ? stageTop + BROWSER_CHROME_H : stageTop
   // Neutralize the header's navigation (logo → non-link, Cart / Account inert,
   // mobile hamburger dropped) in BOTH the locked kiosk view (?focus=1) AND the
@@ -225,13 +233,21 @@ export function Header() {
         top: headerTop,
         zIndex: 50,
         background: 'var(--color-surface-card)',
-        /* 2px INSIDE A COURSE, 1px everywhere else — 2026-09-23, the direct
-           ask for "a slightly thicker bottom stroke" on the course content
-           page. The header itself is unchanged; the heavier rule is the whole
-           signal that this is a different place from the dashboard, which is
-           why it is a border weight and not a colour: a darker hairline would
-           read as a theme change rather than as a boundary. */
-        borderBottom: `${courseChrome === 'course' ? 2 : 1}px solid var(--color-border-subtle)`,
+        /* 2px AND BLUE INSIDE A COURSE, a 1px hairline everywhere else —
+           2026-09-23, two asks an hour apart ("a slightly thicker bottom
+           stroke", then "make the bottom stroke be blue").
+
+           ⚠ THE NOTE HERE ARGUED AGAINST THE COLOUR, on the grounds that a
+           weight change reads as a boundary while a colour reads as a theme
+           change. The ask settled it, and the reasoning survives the reversal:
+           it is the BRAND primary rather than a darker neutral, so it reads as
+           an accent marking a place rather than as a hairline someone
+           darkened. Weight and colour move together — either alone is weaker
+           than the pair. */
+        borderBottom:
+          courseChrome === 'course'
+            ? '2px solid var(--color-primary-500)'
+            : '1px solid var(--color-border-subtle)',
         // On the rebrand shell the white bar is capped at the 1440 rail+content
         // width and left-anchored, so on screens wider than 1440 the area to the
         // right shows the page background (matching the shell's right filler)
@@ -280,20 +296,27 @@ export function Header() {
               Real Estate home", so a screen reader announced the wrong brand on
               five of the six — invisible on screen, which is why it survived.
               `brandFullName` is the same string the Switch Account panel shows. */}
-          {noHeaderNav ? (
-            <span aria-label={logoLabel} style={{ minWidth: 0 }}>
-              <Logo height={platformNav ? (mobile ? MOBILE_LOGO_HEIGHT : 52) : 40} />
-            </span>
-          ) : (
-            <Link
-              to={logoHref}
-              aria-label={logoLabel}
-              data-cta-id="header.logo"
-              style={{ minWidth: 0 }}
-            >
-              <Logo height={platformNav ? (mobile ? MOBILE_LOGO_HEIGHT : 52) : 40} />
-            </Link>
-          )}
+          {/*
+            ⚠ NEVER A LINK, AS OF 2026-09-23 — the direct ask: "clicking on the
+            logo in the top left should NOT do anything, please kill that
+            link."
+
+            It used to be a `<Link to={logoHref}>` everywhere except the locked
+            kiosk / Share Demo views, where it was already a span for a narrow
+            reason: navigating would have dropped `?focus=1` / `?present=1`.
+            That branch is now the only branch, so `noHeaderNav` no longer
+            decides it.
+
+            ⚠ A SPAN, NOT A DISABLED LINK OR A NO-OP HANDLER. There is nothing
+            to operate, so there should be nothing in the tab order and nothing
+            announcing itself as a link — which is this shell's rule for the
+            other inert chrome (the top bar's Notes and Ask Rubi are spans for
+            exactly this reason). `aria-label` stays: the logo is still the
+            brand's name to a screen reader, it just is not a destination.
+          */}
+          <span aria-label={logoLabel} style={{ minWidth: 0 }}>
+            <Logo height={platformNav ? (mobile ? MOBILE_LOGO_HEIGHT : 52) : 40} />
+          </span>
         </div>
 
         <div className="flex items-center" style={{ gap: 24 }}>
