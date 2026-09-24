@@ -1369,7 +1369,7 @@ function PaceCardBody({
       */}
       {observed ? (
         <>
-          <p style={{ ...cardBody, display: 'block', marginBottom: -4 }}>
+          <p style={eyebrowSubStyle}>
             Based on your actual course progress and time spent studying
           </p>
           {/*
@@ -2167,6 +2167,34 @@ const statsSubStyle: CSSProperties = {
 function splitFigure(s: string): [string, string] {
   const i = s.lastIndexOf(' ')
   return i < 0 ? [s, ''] : [s.slice(0, i), s.slice(i + 1)]
+}
+
+/**
+ * The line that hangs off the eyebrow — "Based on your actual course progress
+ * and time spent studying".
+ *
+ * ⚠ IT WEARS THE STATS ROW'S SUB-LINE, not the card body. 11.5/16 in the
+ * tertiary ink is exactly what "Ends May 29" is set in, which is the point:
+ * both are provenance for the thing above them, so they should be the same
+ * voice. At body size it read as the card's first SENTENCE instead of as a
+ * caption on the heading.
+ *
+ * ⚠ THE 19px INDENT IS THE EYEBROW'S ICON. `SquareTile`'s caption is a flex
+ * row of `<Clock size={13} />` and the text with a 6px gap, so its words start
+ * 19px in — and a sub-line flush to the card edge hangs off the ICON rather
+ * than the words it belongs to. Change the glyph or the gap and this follows:
+ * it is 13 + 6, not a number that happened to look right.
+ *
+ * `marginTop: -8` closes `cardStack`'s 14px gap to something that reads as
+ * attached to the heading rather than as the first item of the body.
+ */
+const eyebrowSubStyle: CSSProperties = {
+  margin: '-8px 0 -4px',
+  marginInlineStart: 19,
+  fontFamily: 'var(--font-body)',
+  fontSize: 11.5,
+  lineHeight: '16px',
+  color: 'var(--color-text-tertiary)',
 }
 
 const cardStack = { display: 'flex', flexDirection: 'column', gap: 14 } as const
