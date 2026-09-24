@@ -264,12 +264,13 @@ describe('the demo site offers only the finished demo controls', () => {
    * 2026-09-24, the direct ask: Persona, Pacing and Education come off the
    * DEMO site and stay on the DESIGN one.
    *
-   * ⚠ THE REASON IS MATURITY, NOT TIDINESS. Those three are work in progress; a
-   * stakeholder who opens the demo link and finds a control that reshapes the
-   * page in ways nobody has agreed on has been handed a decision we did not
-   * mean to offer.
+   * ⚠ THE REASON IS MATURITY, NOT TIDINESS, and as of the same day that reason
+   * is WRITTEN DOWN — `maturity` in the flag catalog, resolved by
+   * `demoControlMaturity`. This suite used to pin a hand-kept allow-list in
+   * `PrototypeChrome`; it now pins the behaviour that list produced, so the
+   * mechanism underneath can change again without these tests going quiet.
    */
-  async function bar(mode: string) {
+  async function bar(mode: string, entry = '/dashboard-rebrand') {
     vi.resetModules()
     vi.stubEnv('VITE_GATEWAY_MODE', mode)
     const { PrototypeChrome } = await import('@/components/layout/PrototypeChrome')
@@ -283,7 +284,7 @@ describe('the demo site offers only the finished demo controls', () => {
     )
     const { FeatureFlagPanelProvider } = await import('@/components/account/FeatureFlagPanelContext')
     render(
-      <MemoryRouter initialEntries={['/dashboard-rebrand']}>
+      <MemoryRouter initialEntries={[entry]}>
         <AccountProvider>
           <FeatureFlagProvider>
             <DashboardVersionsPanelProvider>
@@ -299,6 +300,9 @@ describe('the demo site offers only the finished demo controls', () => {
     )
   }
 
+  /* ⚠ SPELLED OUT, not derived from `demoSiteControls()`. A test that recomputes
+     the answer from the same function it is checking passes no matter what that
+     function returns — including nothing at all. These three names are the ask. */
   const WIP = [/Persona/i, /Pacing/i, /Education/i]
 
   it('hides the work-in-progress axes on the demo site', { timeout: 20_000 }, async () => {
@@ -312,12 +316,106 @@ describe('the demo site offers only the finished demo controls', () => {
     expect(screen.getByRole('button', { name: /^Reset$/ })).toBeTruthy()
   })
 
-  it('leaves the design site with all of them', { timeout: 20_000 }, async () => {
+  it('leaves the design site with all of them, marked', { timeout: 20_000 }, async () => {
     /* The direction that matters more: this is a trim for one audience, not a
-       removal. The people making these decisions still need the controls. */
+       removal. The people making these decisions still need the controls —
+       and need to know which ones the stakeholders will not get, which is what
+       the mark is for. The accessible name carries it, so a screen reader and
+       this assertion read the same thing the amber dot shows. */
     await bar('full')
     for (const there of WIP) {
-      expect(screen.getByRole('button', { name: there }), String(there)).toBeTruthy()
+      const btn = screen.getByRole('button', { name: there })
+      expect(btn.textContent, String(there)).toContain('not on the demo site')
     }
+    /* …and a READY control is NOT marked. Without this, a mark rendered
+       unconditionally would pass every assertion above. */
+    /* Anchored on the eyebrow. Not strictly required any more — the mark's
+       hidden text used to contain "work in progress" and made this ambiguous —
+       but naming the control exactly is the right assertion either way. */
+    expect(screen.getByRole('button', { name: /^Progress:/i }).textContent).not.toContain(
+      'not on the demo site',
+    )
+  })
+
+  it('previews the demo site from the design site with ?as=demo', { timeout: 20_000 }, async () => {
+    /* The lens. Same build, same flags — only the bar changes, which is the
+       whole claim it makes. */
+    await bar('full', '/dashboard-rebrand?as=demo')
+    for (const gone of WIP) {
+      expect(screen.queryByRole('button', { name: gone }), String(gone)).toBeNull()
+    }
+    expect(screen.getByRole('button', { name: /Progress/i })).toBeTruthy()
+    // It says it is a lens rather than just quietly dropping three controls.
+    expect(screen.getByRole('button', { name: /Viewing as demo/i })).toBeTruthy()
+  })
+
+  it('offers the lens only where it means something', { timeout: 20_000 }, async () => {
+    /* On the demo site the answer is already yes, so the toggle would be a
+       control that does nothing — worse than absent. */
+    await bar('public')
+    expect(screen.queryByRole('button', { name: /View as demo/i })).toBeNull()
+  })
+})
+
+describe('maturity fails closed', () => {
+  /*
+   * THE ONE PROPERTY WORTH A TEST OF ITS OWN — 2026-09-24.
+   *
+   * Everything else here is a preference; this is the safety rail. Forgetting
+   * `maturity` must hide a control from stakeholders, never reveal one. If this
+   * ever inverts, the failure is silent and lands in front of the exact audience
+   * we were protecting.
+   */
+  it('treats an unmarked flag as work in progress', async () => {
+    const { controlMaturity, DEMO_CONTROLS } = await import('@/data/demoControlMaturity')
+    const { FEATURE_FLAGS } = await import('@/context/FeatureFlagContext')
+    const unmarked = DEMO_CONTROLS.find(
+      (row) => row.flag && !FEATURE_FLAGS.find((f) => f.key === row.flag)?.maturity,
+    )
+    expect(unmarked, 'no unmarked flag-backed control left to check').toBeTruthy()
+    expect(controlMaturity(unmarked!.id)).toBe('wip')
+  })
+
+  it('treats a control nobody registered as work in progress', async () => {
+    /* A dropdown added to the bar with no row in `DEMO_CONTROLS`. It should
+       vanish from the demo site rather than ride along. */
+    const { controlMaturity } = await import('@/data/demoControlMaturity')
+    expect(controlMaturity('a-control-added-tomorrow')).toBe('wip')
+  })
+
+  it('keeps every dropdown on the bar accounted for', async () => {
+    /* ⚠ THE COUPLING THAT ROTS. The registry names controls by the `id` on their
+       `<DemoDropdown>`; nothing in the type system ties the two together. Add a
+       dropdown and forget the row, and it disappears from the demo site with no
+       error — safe, but not what anyone intended. Read the ids back out of the
+       component so the bar itself is the source. */
+    const src = await import('node:fs').then((fs) =>
+      fs.readFileSync('src/components/prototype/DemoControlsBar.tsx', 'utf8'),
+    )
+    const { DEMO_CONTROLS } = await import('@/data/demoControlMaturity')
+    const rendered = [...src.matchAll(/<DemoDropdown\s+id="([\w-]+)"/g)].map((m) => m[1])
+    expect(rendered.length, 'no dropdowns found — did the markup change shape?').toBeGreaterThan(5)
+    for (const id of rendered) {
+      expect(
+        DEMO_CONTROLS.some((row) => row.id === id),
+        `<DemoDropdown id="${id}"> has no row in DEMO_CONTROLS, so it is invisible on the demo site`,
+      ).toBe(true)
+    }
+  })
+
+  it('drops a work-in-progress variant from a ready flag', async () => {
+    /* The within-a-control half. A `ready` flag can still carry an unfinished
+       variant, and the demo site should not offer it. Absent means INHERIT, not
+       `wip` — otherwise promoting a flag would empty its own picker. */
+    const { variantsForDemo } = await import('@/data/demoControlMaturity')
+    const variants = [
+      { value: 'settled' },
+      { value: 'half-built', maturity: 'wip' as const },
+      { value: 'also-settled' },
+    ]
+    const shown = variantsForDemo(variants, 'dashboard-navigation').map((v) => v.value)
+    expect(shown).toEqual(['settled', 'also-settled'])
+    // …and every variant of a flag nobody promoted stays off the demo site.
+    expect(variantsForDemo(variants, 'study-pace-preset')).toEqual([])
   })
 })

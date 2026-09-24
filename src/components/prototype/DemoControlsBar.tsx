@@ -5,6 +5,8 @@ import { UserSlash, Share2, BrowserWindow, Check, ChevronDown } from '@/icons'
 import { ActionMenu } from '@/components/ui/ActionMenu'
 import { Toast } from '@/components/ui/Toast'
 import { DemoBar, DemoDropdown } from './DemoBar'
+import { isPublicGateway, isTestSession } from '@/data/gatewayMode'
+import { controlMaturity } from '@/data/demoControlMaturity'
 import { licensedProfessionsFor } from '@/data/licensedStatesFixtures'
 import { readDemoDayOffset, setDemoDayOffset } from '@/data/demoDay'
 import { useDemoMenus, DEMO_WHITE, DEMO_HOVER_FILL } from './demoBarUtil'
@@ -100,6 +102,7 @@ export function DemoControlsBar({
   open = true,
   fullBleed = false,
   only,
+  lens = false,
 }: {
   open?: boolean
   /** Full-bleed (Demo frame): span the whole screen width, skipping the 1440
@@ -119,10 +122,24 @@ export function DemoControlsBar({
    * Undefined ⇒ everything, which is every normal load.
    */
   only?: readonly string[]
+  /**
+   * THIS IS THE PREVIEW, NOT THE REAL THING — `?as=demo` on the design site.
+   *
+   * `only` already did the filtering; this exists so the bar can SAY so. A
+   * design-site bar that silently dropped three controls would look like a bug
+   * to the person who put them there, and the whole value of the lens is
+   * knowing you are looking through it.
+   */
+  lens?: boolean
 }) {
   /** Is this control in the session's whitelist? See `only`. */
   const show = (id: string) => only == null || only.includes(id)
-  const { pathname } = useLocation()
+  /* Mark the axes a stakeholder will not get — DESIGN SITE ONLY. On the demo
+     site (and inside the lens) those controls are already gone, so a mark would
+     have nothing to sit on; in a participant session the mark would be noise
+     about a decision they are not part of. */
+  const markWip = only == null && !isPublicGateway()
+  const { pathname, search } = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const { brand, membership, tier, setTier, setBrand } = useAccount()
   const { flags, definitions, setEnabled, setVariant, setSecondaryVariant, clearUrlOverrides } =
@@ -528,6 +545,7 @@ export function DemoControlsBar({
         <DemoDropdown
           id="brand"
           hidden={!show('brand')}
+          wip={markWip && controlMaturity('brand') === 'wip'}
           label={brandLabel}
           eyebrow="Brand"
           openId={openId}
@@ -564,6 +582,7 @@ export function DemoControlsBar({
         <DemoDropdown
           id="quick"
           hidden={!show('quick')}
+          wip={markWip && controlMaturity('quick') === 'wip'}
           label={activeQuickView ? activeQuickView.label : 'Quick views'}
           eyebrow={activeQuickView ? 'Quick view' : undefined}
           openId={openId}
@@ -599,6 +618,7 @@ export function DemoControlsBar({
         <DemoDropdown
           id="persona"
           hidden={!show('persona')}
+          wip={markWip && controlMaturity('persona') === 'wip'}
           label="Persona"
           eyebrow="Persona"
           openId={openId}
@@ -727,6 +747,7 @@ export function DemoControlsBar({
         <DemoDropdown
           id="progress"
           hidden={!show('progress')}
+          wip={markWip && controlMaturity('progress') === 'wip'}
           label={progressLabel}
           eyebrow="Progress"
           openId={openId}
@@ -810,6 +831,7 @@ export function DemoControlsBar({
         <DemoDropdown
           id="readiness"
           hidden={!show('readiness')}
+          wip={markWip && controlMaturity('readiness') === 'wip'}
           /* NOT the resolved state when there is no section: a greyed pill
              still reading "On Track" is the same false claim, just dimmer. */
           label={readinessReachable ? readinessLabel : 'Not on this version'}
@@ -859,6 +881,7 @@ export function DemoControlsBar({
         <DemoDropdown
           id="pacing"
           hidden={!show('pacing')}
+          wip={markWip && controlMaturity('pacing') === 'wip'}
           label={PACE_PRESET_PICKER.find((o) => o.value === (paceState.variant ?? 'recommended'))?.label ?? 'Recommended'}
           eyebrow="Pacing"
           openId={openId}
@@ -907,6 +930,7 @@ export function DemoControlsBar({
         <DemoDropdown
           id="navigation"
           hidden={!show('navigation')}
+          wip={markWip && controlMaturity('navigation') === 'wip'}
           label={
             NAVIGATION_PICKER.find((o) => o.value === (navState.variant ?? 'option-1'))?.label ??
             'Option 1'
@@ -946,6 +970,7 @@ export function DemoControlsBar({
           <DemoDropdown
             id="education"
             hidden={!show('education')}
+            wip={markWip && controlMaturity('education') === 'wip'}
             label={educationLabel}
             eyebrow="Education"
             openId={openId}
@@ -981,6 +1006,45 @@ export function DemoControlsBar({
 
         {/* Actions — Reset + the kebab. Gated like the dropdowns: a participant
             pressing Reset mid-session would silently re-baseline the demo. */}
+        {/*
+          VIEW AS DEMO — the design site's lens, 2026-09-24.
+
+          The question it answers is "what does a stakeholder actually get?",
+          which before this needed a second deploy to check. Clicking writes
+          `?as=demo`; `PrototypeChrome` reads it and hands this bar the demo
+          site's own control list. It is a LENS, not a setting: nothing is
+          persisted, nothing under the bar changes, and closing the tab ends it.
+
+          ⚠ ONLY ON THE DESIGN SITE. On the demo site the answer is already yes,
+          and in a participant session the control is one more thing a
+          participant could press.
+        */}
+        {!isPublicGateway() && !isTestSession(search) && (
+          <button
+            type="button"
+            className="cre-demo-controls-btn"
+            style={{
+              ...GHOST_BTN,
+              ...(lens
+                ? { background: 'var(--color-warning-400)', color: 'var(--color-neutral-900)' }
+                : null),
+            }}
+            aria-pressed={lens}
+            title={
+              lens
+                ? 'Showing only what the demo site carries. Click to see every control again.'
+                : 'Preview this bar as the demo site renders it — the work-in-progress controls drop out.'
+            }
+            onClick={() => {
+              const next = new URLSearchParams(searchParams)
+              if (lens) next.delete('as')
+              else next.set('as', 'demo')
+              setSearchParams(next, { replace: true })
+            }}
+          >
+            {lens ? 'Viewing as demo' : 'View as demo'}
+          </button>
+        )}
         {show('actions') && (
         <div style={ACTIONS}>
           <button

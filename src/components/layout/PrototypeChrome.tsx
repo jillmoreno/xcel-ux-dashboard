@@ -5,6 +5,7 @@ import { AdminToolsMenu } from './AdminToolsMenu'
 import { DeviceFrameToggle, useDeviceFrame } from './DeviceFrameContext'
 import { DemoControlsBar } from '@/components/prototype/DemoControlsBar'
 import { useDemoControlsVisibility } from '@/components/prototype/demoControlsVisibility'
+import { demoSiteControls } from '@/data/demoControlMaturity'
 
 /**
  * The prototype "chrome" — the dark PrototypeBar + the navy stakeholder Demo
@@ -37,31 +38,6 @@ import { useDemoControlsVisibility } from '@/components/prototype/demoControlsVi
  */
 const TEST_VIEW_CONTROLS = ['progress', 'navigation'] as const
 
-/**
- * What the DEMO site's controls bar offers — `VITE_GATEWAY_MODE=public`,
- * 2026-09-24.
- *
- * ⚠ AN ALLOW-LIST OF WHAT IS FINISHED, not a hide-list of what is not. Persona,
- * Pacing and Education came off because they are work in progress: a
- * stakeholder who opens the demo link and finds a control that reshapes the
- * page in ways nobody has agreed on has been handed a decision we did not mean
- * to offer. They stay in full on the DESIGN site, where the audience is the
- * people making those decisions.
- *
- * It fails CLOSED, which is the direction that matters: a control added to the
- * bar tomorrow does not appear on the demo site until someone puts it here
- * deliberately. The opposite default would leak every half-built axis to
- * stakeholders the day it lands.
- *
- * ⚠ `actions` IS IN. Reset is what gets a stakeholder out of a state they
- * wandered into; removing it would leave the only recovery a page reload they
- * have no reason to think of.
- *
- * WHERE THIS SHOULD EVENTUALLY LIVE: on the flags themselves, not here. A
- * control's readiness is a property of the work, and the catalog already
- * carries every other fact about it. See `docs/gateway.md`.
- */
-const DEMO_SITE_CONTROLS = ['quick', 'progress', 'readiness', 'navigation', 'actions'] as const
 
 export function PrototypeChrome() {
   const { pathname, search } = useLocation()
@@ -78,6 +54,13 @@ export function PrototypeChrome() {
   // the flag survives in-shell navigation on the shared link. (After all hooks —
   // rules-of-hooks.)
   const params = new URLSearchParams(search)
+  // `?as=demo` — THE DESIGN SITE'S PREVIEW LENS, 2026-09-24. Renders this build's
+  // controls bar the way the DEMO site would: the `wip` controls drop out, and
+  // the bar says so. It is a lens, not a setting — URL-only, never persisted, and
+  // it changes nothing about the page under the bar. The question it answers is
+  // the one that used to need a second deploy: "what does a stakeholder actually
+  // get?" (No effect on the demo site itself, where the answer is already yes.)
+  const asDemo = params.get('as') === 'demo'
   if (params.get('chrome') === 'off') return null
   // `?present=1` (the "Share Demo" link) — the shared presentation view: hide
   // the prototype bar + demo controls (like `chrome=off`) but keep the Demo
@@ -124,12 +107,15 @@ export function PrototypeChrome() {
         }
         fullBleed={framed}
       />
-      {/* The demo site gets the finished axes only — see `DEMO_SITE_CONTROLS`.
-          `undefined` on the design site, which is every control. */}
+      {/* The demo site gets the FINISHED axes only, derived from each control's
+          `maturity` — see `demoSiteControls()`. `undefined` on the design site,
+          which is every control, with the unfinished ones marked. `?as=demo`
+          borrows the demo site's answer without being the demo site. */}
       <DemoControlsBar
         open={demoOpen}
         fullBleed={framed}
-        only={isPublicGateway() ? DEMO_SITE_CONTROLS : undefined}
+        only={isPublicGateway() || asDemo ? demoSiteControls() : undefined}
+        lens={asDemo}
       />
     </>
   )

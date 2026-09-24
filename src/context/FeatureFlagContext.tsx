@@ -39,6 +39,23 @@ import { isTestingGateway } from '@/data/gatewayMode'
  *  a string-keyed variant list. The `variant` field is optional even
  *  when `variants` is provided — `undefined` means "use the default
  *  visual" at the consumer site. */
+/**
+ * HOW FINISHED A CONTROL IS — the demo site's only gate, added 2026-09-24.
+ *
+ * `ready` means a stakeholder can be handed it: the axis is agreed, the
+ * variants are real, and someone changing it is exploring a decision we meant
+ * to offer. `wip` means the opposite, and is THE DEFAULT WHEN THE FIELD IS
+ * ABSENT — omitting it hides the control from the demo site rather than
+ * exposing it.
+ *
+ * ⚠ THE DEFAULT IS THE WHOLE POINT. Forgetting to write `maturity` means a
+ * stakeholder sees LESS than they could, which costs a conversation. The
+ * opposite default would mean forgetting leaks a half-built axis to the people
+ * we are asking to approve it, which costs the decision. Promotion is a
+ * deliberate act; exposure is never an accident.
+ */
+export type Maturity = 'wip' | 'ready'
+
 export type FeatureFlagVariant = {
   /** Stable identifier stored to localStorage / passed to consumers. */
   value: string
@@ -47,6 +64,12 @@ export type FeatureFlagVariant = {
   /** Optional short description shown under the variant label when the
    *  variant is selected. Helps reviewers understand what changes. */
   description?: string
+  /** How finished THIS VARIANT is — the within-a-control half of the gate.
+   *  A `ready` flag can still carry a `wip` variant, which the demo site
+   *  drops from the picker while the design site keeps it. Absent means the
+   *  variant inherits the flag's own maturity (NOT `wip`) — otherwise every
+   *  existing variant of a promoted flag would vanish at once. */
+  maturity?: Maturity
 }
 
 export type FeatureFlagDefinition = {
@@ -57,6 +80,11 @@ export type FeatureFlagDefinition = {
   label: string
   /** Short helper text shown under the label. */
   description: string
+  /** How finished this flag is — see `Maturity`. Absent means `wip`, so a
+   *  flag reaches the DEMO site's controls bar only once someone writes
+   *  `maturity: 'ready'` here. Design-site behaviour is unaffected: the
+   *  design bar shows everything, marking the `wip` ones. */
+  maturity?: Maturity
   /** Default on/off state. */
   defaultEnabled: boolean
   /** Optional variant list. Omit for simple on/off flags. */
@@ -855,6 +883,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Navigation',
     description:
       'Which course page Resume opens. `option-1` is the Compass player as it stands — the 260px contents sidebar, the Home / Overview / Course breadcrumb, the toolbar and the reading column, under the app header. `option-2` is a FULL-SCREEN page with its own header (logo · Compass · course · section, plus the exam-date pill, + Demo, brightness and ✕) and a section progress track; it has no sidebar, no breadcrumb, and it suppresses the app header while open. ⚠ THE TWO SHARE NO CHROME — the navigation IS the variable. `CourseContentV2` is the file Option 2 owns.',
+    // READY: an A/B we are actively asking stakeholders to choose between —
+    // the one control on the demo site whose whole purpose is their opinion.
+    maturity: 'ready',
     // Variant-only, like `study-pace-chooser` below.
     defaultEnabled: true,
     /* ⚠ `option-1` ON THE BRANCH TOO, which breaks this repo's usual rule that
@@ -1324,6 +1355,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Progress state',
     description:
       "Which learning-progress + compliance state the member's Dashboard Rebrand renders — a populated Current Learning Path (gauge %, status band, deadline). Compliance status follows progress + time-to-deadline: Not Started (0%), On Track (progress + time remaining), At Risk (<30 days left & requirement <25% done), Expired (deadline passed, unmet), Completed (100% in time). Variant-only. Applies to every brand's Current Learning Path (each has its own renewal-cycle persona).",
+    // READY: the axis the demo exists to show — an empty dashboard vs. a
+    // populated one. Nothing about it is unsettled.
+    maturity: 'ready',
     defaultEnabled: true,
     // Project default: On Track (populated dashboard) — per demo baseline.
     defaultVariant: 'progress-on-track',
@@ -1449,6 +1483,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Readiness state',
     description:
       "Which readiness state the Exam Readiness section shows. Not Started is genuinely different from a low score — the learner has answered nothing, so the gauge shows no score and no status chip, the Chapter & Topic breakdown is empty, and there are no exam attempts. Off Track / At Risk / On Track vary the score, the course-progress figures, the number of simulator attempts, and shift the chapter and topic percentages together (relative strengths stay put; the level moves). Variant-only.",
+    // READY: four agreed states of a shipped widget.
+    maturity: 'ready',
     defaultEnabled: true,
     defaultVariant: 'on-track',
     variants: [

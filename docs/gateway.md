@@ -511,6 +511,56 @@ here rather than shipping reachable.
 whole file failed to collect. It resolves a path now, like its two sibling
 reads.
 
+### Control maturity — what the design site lets the demo site show (2026-09-24)
+
+The demo site's controls bar carries a SUBSET of the design site's. Persona,
+Pacing and Education came off it because they are work in progress: a
+stakeholder who opens the demo link and finds a control that reshapes the page
+in ways nobody has agreed on has been handed a decision we did not mean to
+offer. The design site's audience *is* the people making those decisions, so
+nothing is taken from them.
+
+**Readiness is a property of the work, so it lives on the work.** Each flag in
+`FEATURE_FLAGS` may carry `maturity: 'wip' | 'ready'`, and
+[`src/data/demoControlMaturity.ts`](../src/data/demoControlMaturity.ts) resolves
+a control's readiness in three steps:
+
+1. an explicit `maturity` on its `DEMO_CONTROLS` row — for the controls that are
+   not flags at all (Persona, the Quick tier switch, Brand, the Reset block);
+2. otherwise the `maturity` of the flag it drives;
+3. otherwise **`wip`**.
+
+That third step is the whole design. **Forgetting `maturity` hides a control
+from stakeholders; it never reveals one.** Forgetting costs a conversation;
+the opposite default would cost the decision. Promoting is a deliberate act.
+
+Variants work the same way one level down — a `ready` flag can still carry a
+`wip` variant, which the demo site drops from the picker. Absent on a variant
+means *inherit the flag's*, not `wip`, or promoting a flag would empty its own
+picker.
+
+**To promote a control:** add `maturity: 'ready'` to its flag in
+`FEATURE_FLAGS` (or to its `DEMO_CONTROLS` row if it has no flag). That is the
+entire change — the bar, the tests and the demo build follow.
+
+**Two things the design site gains:**
+
+- an amber dot on every control a stakeholder will not get, so the bar does not
+  make every axis look equally agreed;
+- **View as demo** (`?as=demo`), which re-renders the bar the way the demo site
+  would. It is a *lens*, not a setting: URL-only, never persisted, and it
+  changes nothing about the page underneath. It answers "what does a stakeholder
+  actually get?" without a second deploy.
+
+⚠ A dropdown whose `id` has no `DEMO_CONTROLS` row resolves `wip` and silently
+vanishes from the demo site. Safe, but rarely intended — `PublicGateway.test.tsx`
+reads the ids back out of `DemoControlsBar.tsx` and fails when one is missing.
+
+⚠ Hidden text lands in the accessible name. The dot's screen-reader label says
+"(not on the demo site)" and *not* "work in progress", because that phrase
+contains "Progress" — the name of a control on the same bar — and broke two
+unrelated suites querying `/Progress/i`.
+
 ### Links — the section that is authored on the page (2026-09-10)
 
 A nav section (`links`) directly under **Demo**, plus `/links` as a short address

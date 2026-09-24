@@ -139,3 +139,36 @@ export const DEMO_PANEL: CSSProperties = {
   // description wrapping, so the menu stays shorter without a sideways scroll.
   maxWidth: 'calc(100vw - 24px)',
 }
+
+/**
+ * The "work in progress" dot on a design-site dropdown — 2026-09-24.
+ *
+ * Amber, not the bar's teal or secondary: those two already mean "active" and
+ * "how many", and a third meaning on a familiar colour is worse than a new one.
+ * Sized to sit beside the chevron without moving it.
+ *
+ * ⚠ It carries NO meaning on its own — `DemoDropdown` pairs it with visually
+ * hidden words. See the note there.
+ */
+export const DEMO_WIP_DOT: CSSProperties = {
+  display: 'inline-block',
+  width: 6,
+  height: 6,
+  borderRadius: 999,
+  background: 'var(--color-warning-400)',
+  /* Sits tight to the label, clear of the chevron's own gap. */
+  marginInlineStart: -2,
+}
+
+/** Visually hidden, still announced. The bar's only screen-reader-only text. */
+export const SR_ONLY: CSSProperties = {
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  padding: 0,
+  margin: -1,
+  overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  whiteSpace: 'nowrap',
+  border: 0,
+}
