@@ -1343,7 +1343,7 @@ function PaceCardBody({
         decision has already been made is not reassurance.
       */}
       {notStarted ? (
-        <p style={{ ...cardBody, display: 'block', marginBottom: -2 }}>
+        <p style={eyebrowSubStyle}>
           Your actual pace will adjust based on your course progress and time spent studying —
           we’ll help you track it.
         </p>
@@ -1858,7 +1858,7 @@ function WeekStrip({
 function CustomizeLink({
   onClick,
   disabled,
-  label = 'Customize Study Plan',
+  label = 'Customize Your Pacing',
 }: {
   onClick: () => void
   disabled?: boolean
@@ -1866,6 +1866,11 @@ function CustomizeLink({
    * "Adjust Study Plan" once the learner is under way — 2026-09-23, the direct
    * ask. CUSTOMIZE is what you do to something you are setting up; ADJUST is
    * what you do to something already running, and by 63% the plan is running.
+   *
+   * ⚠ THE 0% LABEL IS "CUSTOMIZE YOUR PACING", not "…Study Plan" — changed
+   * 2026-09-23 to name what the control actually opens. The started label was
+   * not part of that ask and still says "Study Plan"; if these should read as
+   * one pair, that is the other half.
    * The sheet behind it is the same sheet either way, which is the point: the
    * verb tracks the learner's situation, not a second destination.
    */

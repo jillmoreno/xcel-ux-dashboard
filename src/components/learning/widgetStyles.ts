@@ -108,7 +108,13 @@ export const widgetCardRuledStyle: CSSProperties = {
   borderRight: '1px solid var(--color-primary-100)',
   borderBottom: '1px solid var(--color-primary-100)',
   borderLeft: '6px solid var(--color-primary-400)',
-  borderRadius: '0 var(--radius-lg) 0 var(--radius-lg)',
+  /* ⚠ 1px — ESSENTIALLY SQUARE, 2026-09-23, the direct ask ("update corner
+     radius to 1 for these components"). It was the notched treatment
+     `0 lg 0 lg`: square at top-left and bottom-right, rounded at the other
+     two, asked for on 2026-09-21. One declaration serves BOTH the Jump Back In
+     card and the Study Pace tile, which is why this is one edit rather than
+     two — see `SquareTile`'s `ruled` branch. */
+  borderRadius: 1,
   padding: 16,
   minWidth: 0,
 }

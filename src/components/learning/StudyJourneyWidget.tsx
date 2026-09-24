@@ -321,6 +321,34 @@ export function StudyJourneyWidget({
  * data — it describes the New York licence, and a research instrument has no
  * business in it. This is the seam between the two.
  */
+/**
+ * A STEP THAT CANNOT BE STARTED YET — no card, a 4px rule instead.
+ *
+ * ⚠ THE RULE IS DOING THE CARD'S JOB, which is why it is 4px and not a
+ * hairline: without a filled surface the only thing separating one step from
+ * the next is this edge, so it has to read as a boundary on its own. The
+ * pattern is the Overview page's Rubi panel — a vertical rule with the content
+ * hanging off it — in the brand blue rather than Rubi's red, because red on
+ * this page means an assessment.
+ *
+ * ⚠ `-300` IS A BORDER STOP. The XCEL ramp's note is explicit that `-400` and
+ * lighter are FILL/BORDER ONLY and never text; a rule is exactly that use, and
+ * anything darker would make a step that cannot be started the loudest thing
+ * in the column.
+ *
+ * 4 + 16 = the card's own 20px inset, so the text of a pending step lines up
+ * with the text of the one above it rather than shifting left by the width of
+ * the rule.
+ */
+const pendingStepStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  minWidth: 0,
+  background: 'transparent',
+  borderInlineStart: '4px solid var(--color-primary-300)',
+  padding: '4px 20px 4px 16px',
+}
+
 const LICENSING_STEP_CTA: Record<string, string | undefined> = {
   'schedule-exam': 'home.schedule-exam',
   'pass-exam': 'home.what-to-expect',
@@ -424,13 +452,31 @@ function LicensingStepWidget({
   const storedExam = useExamDate()
   const [editingExam, setEditingExam] = useState(false)
   const scheduled = hasCapture && Boolean(storedExam) && !editingExam
+  /*
+   * NOTHING HERE CAN BE DONE YET — 2026-09-23, the direct ask: these steps
+   * "cannot be done yet, so remove the white background".
+   *
+   * Pass State Exam and Get Licensed both wait on something outside the LMS —
+   * a sitting PSI has not scheduled, a licence the Department has not issued —
+   * so a white card gives them the same standing as Schedule State Exam, which
+   * has a date field in it and can be acted on this minute. Three equal cards
+   * read as three equal invitations.
+   *
+   * ⚠ `!hasCapture` IS A PROXY, and it is worth knowing it is one. What the
+   * rule means is "no action is available yet"; what it tests is "this step
+   * has no input on it", which is true of exactly these two today. If a step
+   * ever becomes actionable WITHOUT a capture — a link that actually books
+   * something — this needs a real field on `LicensingStep` rather than an
+   * inference from its shape.
+   */
+  const pending = !hasCapture
   return (
     /* The accessible name is the VISIBLE heading, not the step title, so the
        arrival card is not announced as "Apply for your License" while reading
        "Get Licensed in New York". A region whose name disagrees with its own
        heading is the same defect in miniature as the nav-collapse page's
        "Dash Dashboard". */
-    <section aria-label={heading ?? step.title} style={shell}>
+    <section aria-label={heading ?? step.title} style={pending ? pendingStepStyle : shell}>
       {/* THE NUMBER IS THE SEQUENCE. Four cards cannot draw a continuous
           spine, so "Step 05" is what still says these follow the coursework
           and each other. It rides in the eyebrow slot the journey card already

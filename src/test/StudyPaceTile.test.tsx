@@ -88,7 +88,7 @@ const sheet = () => screen.getByRole('dialog')
 /**
  * Open the sheet from whichever control the current shape offers — "Adjust" on
  * the square, and the card's own plan link since the 2026-09-21 redesign —
- * "Customize Study Plan" at 0%, "Adjust Study Plan" once the learner has
+ * "Customize Your Pacing" at 0%, "Adjust Study Plan" once the learner has
  * started (2026-09-23).
  *
  * MATCHED BY ROLE, not by label, precisely because the label differs and the
@@ -97,7 +97,7 @@ const sheet = () => screen.getByRole('dialog')
  * broken sheet.
  */
 const openSheet = async (user: ReturnType<typeof userEvent.setup>) => {
-  await user.click(screen.getByRole('button', { name: /Adjust|Customize Study Plan/ }))
+  await user.click(screen.getByRole('button', { name: /Adjust|Customize Your Pacing/ }))
   return sheet()
 }
 
@@ -1027,7 +1027,7 @@ describe('study-pace-chooser: options — the learner who has already started', 
     renderStarted()
     const cta = screen.getByRole('button', { name: /Adjust Study Plan/ })
     expect(cta.getAttribute('aria-haspopup')).toBe('dialog')
-    expect(screen.queryByRole('button', { name: /Customize Study Plan/ })).toBeNull()
+    expect(screen.queryByRole('button', { name: /Customize Your Pacing/ })).toBeNull()
   })
 
   it('states the goal in nights, and the pace actually being kept', () => {
