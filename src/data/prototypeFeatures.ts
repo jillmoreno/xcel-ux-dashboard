@@ -635,7 +635,7 @@ const COURSE_HEADER_HANDOFF: DevHandoffComponent = {
      (figure, rule, both stat pairs). The 0% state omits three of them, so it is
      the wrong frame to lead with even though it is the fixture's default. */
   previewUrl:
-    '/dashboard-rebrand?version=discoverability-testing&ff=dashboard-progress-state:progress-on-track&chrome=off',
+    '/dashboard-rebrand?version=discoverability-testing&ff=dashboard-progress-state:progress-on-track',
   order: 1,
   name: 'Course Progress Header',
   tabLabel: 'Course header',
@@ -803,7 +803,7 @@ const JUMP_BACK_IN_HANDOFF: DevHandoffComponent = {
      one whose copy was argued over most. The other two are a click away on the
      Live Preview tab. */
   previewUrl:
-    '/dashboard-rebrand?version=discoverability-testing&ff=dashboard-progress-state:not-started&chrome=off',
+    '/dashboard-rebrand?version=discoverability-testing&ff=dashboard-progress-state:not-started',
   order: 2,
   name: 'Jump Back In Card',
   tabLabel: 'Jump Back In',
@@ -1201,38 +1201,47 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
        (`primaryPreviewSrc` reads `pages[0]` ahead of `to`), so nothing is lost
        by leaving both off. */
     /* One link per progress state, because the whole point of this handoff is
-       what changes BETWEEN them. `?chrome=off` so the page opens as a learner
-       sees it — the demo bar sitting above a spec screenshot is noise. */
+       what changes BETWEEN them.
+
+       ⚠ NO `?chrome=off` — it was here for one commit and was wrong. It strips
+       ALL prototype chrome, the demo controls bar included, so "Open live
+       preview" landed on a page with no way to change anything. Whoever opens
+       one of these wants to move between the states, not look at one of them.
+
+       Leaving the chrome ON also means each site shows the bar it is supposed
+       to: the DEMO site renders only the `ready` controls and the DESIGN site
+       renders all of them, decided by `maturity` in `demoControlMaturity` —
+       so these links need no per-site variants to get that right. */
     pages: [
       {
         label: 'Not Started · 0%',
         note: 'No percentage figure, no progress bar. The card reads "Let’s get started".',
-        to: '/dashboard-rebrand?version=discoverability-testing&ff=dashboard-progress-state:not-started&chrome=off',
+        to: '/dashboard-rebrand?version=discoverability-testing&ff=dashboard-progress-state:not-started',
       },
       {
         label: 'On Track · ~63%',
         note: 'The figure leads the stat row. The card reads "Learning With Compass - Jump Back In".',
-        to: '/dashboard-rebrand?version=discoverability-testing&ff=dashboard-progress-state:progress-on-track&chrome=off',
+        to: '/dashboard-rebrand?version=discoverability-testing&ff=dashboard-progress-state:progress-on-track',
       },
       {
         label: 'At Risk · ~15%',
         note: 'Same two shapes as On Track — the tiles BELOW carry the warning, not these.',
-        to: '/dashboard-rebrand?version=discoverability-testing&ff=dashboard-progress-state:progress-at-risk&chrome=off',
+        to: '/dashboard-rebrand?version=discoverability-testing&ff=dashboard-progress-state:progress-at-risk',
       },
       {
         label: 'Completed · 100%',
         note: 'The card becomes a door back in: "Review Course Material" / "All coursework complete".',
-        to: '/dashboard-rebrand?version=discoverability-testing&ff=dashboard-progress-state:complete-100&chrome=off',
+        to: '/dashboard-rebrand?version=discoverability-testing&ff=dashboard-progress-state:complete-100',
       },
       {
         label: 'Completed · nothing queued ⚠',
         note: '⚠ THE DISAGREEMENT. Header says 100%; the card still says Resume. See the decisions log.',
-        to: '/dashboard-rebrand?version=discoverability-testing&ff=dashboard-progress-state:completed-empty&chrome=off',
+        to: '/dashboard-rebrand?version=discoverability-testing&ff=dashboard-progress-state:completed-empty',
       },
       {
         label: 'Expired',
         note: 'Neither component renders — a different surface takes the band entirely.',
-        to: '/dashboard-rebrand?version=discoverability-testing&ff=dashboard-progress-state:progress-expired&chrome=off',
+        to: '/dashboard-rebrand?version=discoverability-testing&ff=dashboard-progress-state:progress-expired',
       },
     ],
     devHandoff: {
