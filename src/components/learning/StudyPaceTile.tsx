@@ -1627,34 +1627,63 @@ function ActivitySummary({
   return (
     <div style={streakStack}>
       {/*
-        ⚠ A TOTAL, NOT A STREAK — 2026-09-23, and the headline it replaced was
-        "1 week on pace". That number was asked about directly — "what's this
-        mean?" — which is the finding: if the person who commissioned it has to
-        ask, a participant will.
-        
-        It had three problems and this fixes all of them. It was AMBIGUOUS
-        ("one week remaining"? "on pace for a week"?). Its number was WEAK —
-        "1" reads as barely started when it actually meant "kept every week you
-        have had". And it never said what "pace" was measured against.
-        
-        A total says one thing, needs no key, and cannot be misread. It is also
-        the only figure on this card a learner could check against their own
-        memory.
+        THREE FIGURES WITH RULES BETWEEN THEM — 2026-09-23, replacing the
+        sentence "In the last 13 days you've studied a total of 25¼ hours." and
+        the "About 2¼ hours a night" line under it. Both facts survive; they
+        are now countable at a glance instead of read.
+
+        ⚠ THE FIRST CELL COUNTS NIGHTS STUDIED, NOT DAYS ELAPSED, and that is a
+        correction to the asked-for copy. It read "13 Days of Studying · 25¼
+        Total Hours · About 2¼ Hours/Day", and those three do not multiply:
+        13 × 2¼ is 29¼, not 25¼. The 2¼ is the average of the nights the
+        learner actually sat down — eleven of the thirteen days — which is the
+        figure `observedPace` computes and the one that has been on this card
+        since the average arrived.
+
+        Eleven with "Days Studied" makes all three agree (11 × 2¼ ≈ 25¼) AND
+        makes the label literally true, which "Days of Studying" was not of a
+        window that includes two rest days. The alternative — keeping 13 and
+        printing "About 2 Hours/Day" — is equally consistent and answers a
+        different question (effort per day rather than length of an evening).
+
+        A row of three figures that do not reconcile is the exact defect this
+        card was picked apart for an hour ago, and a participant can check
+        these three against each other in their head.
       */}
-      <p style={streakHeadline}>
-        In the last <b style={streakFigure}>{dailyMinutes.length}</b> days you’ve studied a total of{' '}
-        <b style={streakFigure}>{formatEvening(total)}</b>.
-      </p>
-      {/* THE EVENING, MOVED HERE — 2026-09-23. It was the card's HEADLINE
-          ("Averaging about 2¼ hours a night") until the headline became the
-          finish date; this is where a fact about the past belongs, under the
-          total it is the average of. The two numbers now sit together and are
-          derived from the same array, so they cannot disagree. */}
-      {pace ? <p style={streakSub}>About {formatEvening(pace.minsPerNight)} a night</p> : null}
+      <div style={statRow}>
+        <p style={statCell}>
+          <b style={streakFigure}>{pace ? pace.nights : 0}</b> Days Studied
+        </p>
+        <span aria-hidden style={statRule} />
+        <p style={statCell}>
+          {/* ⚠ THE UNIT COMES OUT OF THE FORMATTER, not typed as "Hours". The
+              ask read "25¼ Total Hours", which is right for this persona and
+              wrong for one whose whole total is under an hour — `formatEvening`
+              answers "45 min" there, and "45 Total Hours" would be a lie the
+              layout could not see. Split figure from unit and the label stays
+              true at every size. */}
+          <b style={streakFigure}>{splitFigure(formatEvening(total))[0]}</b> Total{' '}
+          {splitFigure(formatEvening(total))[1]}
+        </p>
+        <span aria-hidden style={statRule} />
+        <p style={statCell}>
+          About{' '}
+          <b style={streakFigure}>
+            {pace ? splitFigure(formatEvening(pace.minsPerNight))[0] : '—'}
+          </b>{' '}
+          {pace ? splitFigure(formatEvening(pace.minsPerNight))[1] : ''}/day
+        </p>
+      </div>
       <div style={streakBars} role="img" aria-label={streakLabel(dailyMinutes)}>
+        {/*
+          ⚠ NO RING ON TODAY — 2026-09-23, the direct ask. It carried a
+          `primary-700` outline so the last bar read as "now"; the row is
+          chronological and the last bar is already the last bar, so the ring
+          was decoration that a reader had to decode. A day the learner has not
+          studied yet now looks like any other empty day, which is what it is.
+        */}
         {dailyMinutes.map((m, i) => {
           const on = (m || 0) > 0
-          const today = i === dailyMinutes.length - 1
           return (
             <span
               key={i}
@@ -1662,14 +1691,7 @@ function ActivitySummary({
               style={{
                 ...streakBar,
                 height: on ? Math.max(4, Math.round(((m || 0) / peak) * 40)) : 3,
-                background: on
-                  ? m >= minsPerNight
-                    ? 'var(--color-primary-500)'
-                    : 'var(--color-primary-300)'
-                  : 'var(--color-border-subtle)',
-                /* TODAY IS RINGED, not recoloured — it is a position in the
-                   row, not a third level of effort. */
-                ...(today ? { outline: '2px solid var(--color-primary-700)', outlineOffset: 1 } : null),
+                background: barTone(m || 0, pace ? pace.minsPerNight : minsPerNight),
               }}
             />
           )
@@ -1682,6 +1704,52 @@ function ActivitySummary({
           reads as a shortfall on a Monday morning rather than as a start. */}
     </div>
   )
+}
+
+/**
+ * How dark a day's bar is — 2026-09-23, the direct ask for "different shades
+ * of blue based on the amount of time spent each day".
+ *
+ * ⚠ FIVE STOPS, NOT TWO. It was a single threshold — at or over the nightly
+ * target drew `primary-500`, under it drew `primary-300` — which made a row of
+ * broadly similar evenings render as two flat blocks and told a reader almost
+ * nothing. Height already encodes the amount; the tone is what makes a heavy
+ * night legible at a glance without measuring bars against each other.
+ *
+ * ⚠ AGAINST THE LEARNER'S OWN AVERAGE EVENING, not the plan's, and not the
+ * tallest bar in the row.
+ *
+ * The plan's was the first attempt and it collapsed: this learner is doing
+ * roughly double what their plan asks, so ten of eleven nights landed in the
+ * top stop and the row rendered as one flat dark block — the very flatness the
+ * shading was added to fix. "Over target" stops being informative once someone
+ * is comfortably over it every day.
+ *
+ * The tallest bar was the other candidate and is worse: it repaints the whole
+ * month whenever one long session lands, so a steady week can darken because
+ * of a single Sunday.
+ *
+ * The MEAN is stable — it moves slowly and by definition sits in the middle of
+ * the data — so the row always has light and dark in it, and a bar's tone
+ * answers "was this a big night for me?" rather than "did I beat a number I am
+ * already beating". `minsPerNight` remains the fallback for a history with no
+ * studied nights in it at all.
+ *
+ * ⚠ AND AN UNSTUDIED DAY IS GREY, NOT A PALE BLUE. Blue at any weight reads as
+ * "some", and a rest day is not a small amount of studying. `-200` is the
+ * lightest blue in use, and it still means the learner sat down.
+ */
+function barTone(mins: number, reference: number): string {
+  if (mins <= 0) return 'var(--color-border-subtle)'
+  /* Tighter than they look: a ratio to the MEAN clusters near 1, so the stops
+     sit at ±15% and ±30% of it rather than at the half-and-double a
+     target-relative scale would want. */
+  const ratio = mins / Math.max(1, reference)
+  if (ratio < 0.6) return 'var(--color-primary-200)'
+  if (ratio < 0.85) return 'var(--color-primary-300)'
+  if (ratio < 1.05) return 'var(--color-primary-400)'
+  if (ratio < 1.3) return 'var(--color-primary-500)'
+  return 'var(--color-primary-700)'
 }
 
 /** One sentence for the bar row, which is a picture to everyone else. */
@@ -2230,16 +2298,6 @@ const streakStack: CSSProperties = {
   gap: 6,
 }
 
-const streakHeadline: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-body)',
-  fontSize: 13,
-  fontWeight: 600,
-  color: 'var(--color-text-secondary)',
-  display: 'flex',
-  alignItems: 'baseline',
-  gap: 6,
-}
 
 const streakFigure: CSSProperties = {
   fontFamily: 'var(--font-heading)',
@@ -2252,12 +2310,37 @@ const streakFigure: CSSProperties = {
 /* `flex: 1` on every bar with a 3px gap — the row fills whatever width the
    card has, which is what keeps 30 bars legible in a column that is 490px on
    the dashboard and narrower in the sheet. */
-const streakSub: CSSProperties = {
-  margin: '-2px 0 2px',
+/* THREE CELLS, TWO HAIRLINES. `baseline` rather than `center` so the big
+   figures sit on one line with the words beside them — centring makes the
+   24px numbers look as though they are floating above their own labels. */
+const statRow: CSSProperties = {
+  display: 'flex',
+  alignItems: 'baseline',
+  gap: 12,
+  flexWrap: 'wrap',
+}
+
+const statCell: CSSProperties = {
+  margin: 0,
+  display: 'flex',
+  alignItems: 'baseline',
+  gap: 6,
   fontFamily: 'var(--font-body)',
   fontSize: 12.5,
-  color: 'var(--color-text-tertiary)',
+  fontWeight: 600,
+  color: 'var(--color-text-secondary)',
+  whiteSpace: 'nowrap',
 }
+
+/* `alignSelf: stretch` would stretch to the flex line, which the wrapping
+   makes unpredictable; a fixed 18px rule sits with the figures instead. */
+const statRule: CSSProperties = {
+  width: 1,
+  height: 18,
+  flex: 'none',
+  background: 'var(--color-border-subtle)',
+}
+
 
 const streakBars: CSSProperties = {
   display: 'flex',

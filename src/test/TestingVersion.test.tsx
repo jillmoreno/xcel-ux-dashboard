@@ -429,7 +429,11 @@ describe('the presets pacing card', () => {
        about directly — "what's this mean?" — which is the finding rather than
        a copy preference. The GRAPH is unchanged; only the sentence above it
        moved. */
-    expect(tile.textContent).toMatch(/In the last \d+ days you’ve studied a total of/)
+    /* ⚠ THREE FIGURES, NOT A SENTENCE, as of 2026-09-23 — "11 Days Studied ·
+       25¼ Total · About 2¼/day", replacing "In the last 13 days you've studied
+       a total of 25¼ hours." Same two facts, countable rather than read. */
+    expect(tile.textContent).toMatch(/\d+ Days Studied/)
+    expect(tile.textContent).toMatch(/Total/)
     expect(tile.querySelector('[role="img"]')).toBeTruthy()
     expect([...tile.querySelectorAll('span')].map((c) => c.textContent)).not.toContain('W')
   })
@@ -1205,7 +1209,14 @@ describe('the pacing treatment a review link lands on', () => {
     seed()
     renderShell(TESTING_URL)
     const tile = paceTile()
-    expect(tile.textContent).toMatch(/hours a night/)
+    /* ⚠ NOT `/hours a night/` ANY MORE. That phrasing left the card on
+       2026-09-23: the headline became a finish date and the evening became the
+       third cell of the activity row, written "About 2¼ hours/day". What this
+       test is really about is that SOME pacing card renders with no flag
+       seeded, so it asserts the card's own heading rather than a sentence
+       inside it — a claim that survives the next copy pass. */
+    expect(tile.textContent).toMatch(/Study Pace/)
+    expect(tile.textContent).toMatch(/hours\/day|hours a night/)
     expect(tile.textContent).toMatch(/You have \d+ days left to finish/)
   })
 

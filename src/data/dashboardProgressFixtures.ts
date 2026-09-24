@@ -697,13 +697,22 @@ const STUDY_MINUTES_BY_VARIANT: Partial<Record<DashboardProgressVariant, number[
 const STUDY_ACTIVITY_BY_VARIANT: Partial<Record<DashboardProgressVariant, number[]>> = {
   /* ON TRACK — 13 days (30 − 17), 1,512 minutes (63% of 40 hours), 11 study
      nights averaging just over 2¼ hours. Ahead of the plan's 1¾, which is what
-     "on track with 17 days left at 63%" actually means. The complete week sits
-     at indices 5–11 and is kept; today is index 12. */
+     "on track with 17 days left at 63%" actually means.
+
+     ⚠ THE SPREAD IS DELIBERATE, widened 2026-09-23. These were all 132–150 —
+     every evening within a quarter-hour of every other — and the activity
+     chart rendered as a flat row whatever shading it was given, because there
+     was nothing for the shades to distinguish. Real study weeks are not
+     uniform. The range is now 85–200 against a 1¾-hour target, which exercises
+     four of `barTone`'s five stops and makes a heavy night legible.
+
+     The total and the night count are unchanged, so the card's three figures
+     still reconcile — `ProgressArithmetic.test.ts` holds that. */
   'progress-on-track': [
     // Wed–Sun, the tail of the week before
-    145, 140, 135, 0, 145,
+    90, 175, 120, 0, 160,
     // Mon–Sun, the one complete week
-    150, 140, 0, 145, 135, 140, 132,
+    200, 85, 0, 150, 110, 165, 152,
     // today (Monday) — the 105 `STUDY_MINUTES_BY_VARIANT` opens its week with
     105,
   ],
