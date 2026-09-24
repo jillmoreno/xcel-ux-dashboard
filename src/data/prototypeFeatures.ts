@@ -615,6 +615,359 @@ const PROTOTYPE_BASE = '/prototypes'
  *  inverse so that fails a test instead.
  * ───────────────────────────────────────────────────────────────────────── */
 
+/* ─── The Testing home screen's course-entry pair ──────────────────────────
+ *
+ * Declared ABOVE `PROTOTYPE_FEATURES` because they are referenced inside it and
+ * `const` is not hoisted for use at module-evaluation time — moving these below
+ * the array is a TDZ crash at import, not a lint nit.
+ *
+ * ⚠ `quickSummary` AND `userStory` ARE DELIBERATELY UNSET on both. The handoff
+ * skill's rule: the Quick Summary is the designer's own words and is ASKED FOR,
+ * never inferred from the code, and an invented user story reads as a decision
+ * nobody made. Un-authored, each renders its own "add your notes here" box —
+ * an honest gap. Filling them in from this file would be the one failure on the
+ * page nobody would think to check.
+ * ───────────────────────────────────────────────────────────────────────── */
+
+const COURSE_HEADER_HANDOFF: DevHandoffComponent = {
+  id: 'course-progress-header',
+  /* Opens on ON TRACK — the state that shows every part this component has
+     (figure, rule, both stat pairs). The 0% state omits three of them, so it is
+     the wrong frame to lead with even though it is the fixture's default. */
+  previewUrl:
+    '/dashboard-rebrand?version=discoverability-testing&ff=dashboard-progress-state:progress-on-track&chrome=off',
+  order: 1,
+  name: 'Course Progress Header',
+  tabLabel: 'Course header',
+  badge: 'NEW',
+  badgeDate: '2026-09-24',
+  location:
+    'src/components/membership/v5/MembershipOverview.tsx (the `narrowHeader` branch, ~line 689) + `.cre-course-header-narrow` in src/styles/tokens.css',
+  summary:
+    'The band at the top of the Testing home screen: cover art, the COURSE PROGRESS eyebrow, the course name, and a stat row carrying the completion figure and the remaining-time / lessons-completed pairs. It is the page’s statement of where the learner stands.',
+  variants: [
+    {
+      name: 'Not Started · 0%',
+      when: '`dashboard-progress-state: not-started` — `headerPct` resolves 0.',
+      detail:
+        'NO percentage figure and no left rule: `showHeaderPercent` is `headerPct > 0`, and the rule plus its 15px inset belong to the figure, so with nothing on its left the stat pairs start at the row’s edge. The text column also gains `HEADER_BAR_RESERVE` (10px) of top padding to hold the space the absent progress bar would occupy, so the title does not jump when progress begins.',
+    },
+    {
+      name: 'On Track · ~63%',
+      when: '`dashboard-progress-state: progress-on-track`.',
+      detail:
+        'The figure leads the stat row, separated from the pairs by a 1px `--color-neutral-300` rule. In the narrow column the pairs stack, so the rule spans both lines and reads as grouping them against the figure.',
+    },
+    {
+      name: 'At Risk · ~15%',
+      when: '`dashboard-progress-state: progress-at-risk`.',
+      detail:
+        '⚠ STRUCTURALLY IDENTICAL to On Track — same figure, same pairs, same rule. The header carries NO risk treatment: no colour change, no chip, no warning. The warning lives in the Study Pace tile below ("The work left won’t fit before your access ends."). Documented because "at risk" sounds like it should change this component and does not.',
+    },
+    {
+      name: 'Completed · 100%',
+      when: '`dashboard-progress-state: complete-100`.',
+      detail:
+        'Figure reads 100%, the lessons pair reads `42 of 42`. A completion band renders BELOW the header (target date / time remaining / completed count, plus a Completed chip) — that band is part of the band component, not this header.',
+    },
+    {
+      name: 'Completed · nothing queued ⚠',
+      when: '`dashboard-progress-state: completed-empty`.',
+      detail:
+        '⚠ NEEDS DESIGN. The header is correct here (100%, 42 of 42) but the card below it disagrees — see the decisions log. Also note the cover art does not render in this fixture, so the header falls to its text-only layout with no art column. Whether that is intended has not been decided.',
+    },
+    {
+      name: 'Expired',
+      when: '`dashboard-progress-state: progress-expired`.',
+      detail:
+        '⚠ THIS COMPONENT DOES NOT RENDER. The whole band is replaced by a dark "Current Progress" card (Expired chip, expiry date, progress-at-expiry, Begin New Cycle). Listed so the absence reads as a decision rather than a gap — see the decisions log.',
+    },
+  ],
+  uxLogic: [
+    'The figure is conditional, not merely zero: `showHeaderPercent = headerPct > 0`. At 0% the element is absent along with the rule and inset that belong to it — a "0%" would be a true statement that adds nothing and costs the row its left edge.',
+    'The lessons pair is conditional on `headerTotal > 0`. A path with no category breakdown has no honest numerator, and "0 of 0 lessons" reads as a load failure rather than a state.',
+    'The title WRAPS; the row does not. `flex-wrap` on the cluster sent the whole percentage group to its own line the moment the heading got long, which moved the number away from what it described. The title column is `flex: 1; min-width: 0` so it is the thing that gives way.',
+    'Cover art is a fixed 130px SQUARE by width, with height owned by the stylesheet in the narrow column (`align-self: stretch`) so the art’s foot lands on the stat row’s rule. It stretched to the column until 2026-09-17, which made the photograph’s aspect a function of how long the title wrapped.',
+    'The cover has an `onError` fallback to `getCourseImage(pathId)`, guarded against looping when the fallback is itself what failed.',
+    'Separators are layered by ROLE: the 1px rule divides the figure from the group; 3px round dots divide pairs from each other. In the narrow column the dots are suppressed entirely (`i > 0 && !narrowHeader`), because stacked pairs do not need a horizontal separator.',
+  ],
+  uiUxLogic: {
+    why:
+      'A learner arriving at the home screen needs one sentence’s worth of orientation before anything asks them to act: which course, how far in, how long left. The header is that sentence. Everything below it — the card, the pace tile, the journey — assumes the learner has already read it, which is why it carries the only unconditional statement of progress on the page.',
+    variants: [
+      {
+        name: 'Zero state',
+        when: 'No progress recorded.',
+        why: 'A percentage figure at 0% occupies the most prominent slot on the band to say nothing. Dropping it lets the course NAME lead, which is the useful fact before any work has been done.',
+        action: 'Details → (opens the course overview). No progress-specific control.',
+      },
+      {
+        name: 'In progress',
+        when: 'Any progress above 0 and below 100.',
+        why: 'The figure earns its slot the moment it is non-zero, and the rule beside it is what stops it reading as a fourth stat pair rather than the row’s headline.',
+        action: 'Details →',
+      },
+      {
+        name: 'Complete',
+        when: '100%.',
+        why: 'The same layout holding a finished number is the point — a learner should be able to see the shape they have been watching for weeks resolve, rather than be moved to a different component.',
+        action: 'Details →',
+      },
+    ],
+    edgeCases: [
+      'Long course titles wrap to two lines and push the stat row down; the row does not reflow and the figure stays with its pairs.',
+      'Missing cover art: `onError` swaps to the path’s default image once, then stops. A fixture with no cover at all (`completed-empty`) renders the text column with no art — undesigned.',
+      'A path with no category breakdown drops the lessons pair rather than showing a zero denominator.',
+      'Below 1100px the cover stacks ABOVE the text and the stretched height comes back off — the rule lives in the stylesheet precisely so the media query can undo it; an inline `alignSelf` would beat the query while looking correct in code.',
+    ],
+    toasterLogic: [
+      'No toasts. The header is read-only — its one control (Details →) navigates and nothing here can fail.',
+    ],
+  },
+  designSpec: {
+    tokens: [
+      { role: 'Course name', token: '--font-heading, --color-text-primary' },
+      { role: 'Eyebrow (COURSE PROGRESS)', token: '--font-body (via .cre-eyebrow-ink)' },
+      { role: 'Stat figure', token: '--font-heading, --color-text-primary' },
+      { role: 'Stat caption', token: '--font-body, --color-text-tertiary' },
+      {
+        role: 'Figure rule + pair dots',
+        token:
+          '--color-neutral-300 — the "line you can actually see". ⚠ NOT --color-border-subtle, documented in source as 1.29:1 light / 1.38:1 dark, i.e. a rule that vanishes in one theme.',
+      },
+      { role: 'Cover radius', token: '--radius-md (top-right and bottom-left only; the other two are 0)' },
+    ],
+    states: [
+      'Figure present / absent (`headerPct > 0`) — takes its left rule and 15px inset with it.',
+      'Lessons pair present / absent (`headerTotal > 0`).',
+      'Cover present / errored / absent.',
+      'Narrow (Testing) vs wide layout — a `narrowHeader` boolean, true only for `dashboardLayout === "testing"`.',
+    ],
+    responsive: [
+      '≤1100px: `.cre-course-header-narrow` flips `flex-direction` to column and the cover stacks above the text, left-aligned. The stretched cover height is removed at the same breakpoint.',
+      'Above 1100px: row, cover 130px wide with height stretched to the header’s content.',
+      '⚠ The breakpoint rule is scoped to `.cre-course-header-narrow`, so it applies to the Testing layout ONLY. The wide layout has no responsive rule of its own.',
+      'No motion.',
+    ],
+    sources: [
+      'src/components/membership/v5/MembershipOverview.tsx — `narrowHeader`, `headerStats`, `showHeaderPercent`, `COURSE_HEADER_COVER` (130), `COURSE_HEADER_COVER_GAP` (16), `HEADER_BAR_RESERVE` (10)',
+      'src/styles/tokens.css — `.cre-course-header-narrow` and its 1100px query',
+      'src/data/dashboardProgressFixtures.ts — every state’s numbers',
+    ],
+  },
+  acceptanceCriteria: [
+    'At 0% progress, no percentage figure renders, and neither does the vertical rule or its 15px left inset; the stat pairs begin at the row’s left edge.',
+    'At 0%, the text column reserves 10px of top padding so the title does not shift vertically when progress first becomes non-zero.',
+    'Above 0%, the figure renders to the LEFT of the stat pairs with a 1px --color-neutral-300 rule between it and them.',
+    'When the learning path has no category breakdown, the "N of M lessons" pair is omitted entirely — never rendered as "0 of 0".',
+    'The cover is always a square crop at 130px wide; a longer course title never changes the photograph’s aspect ratio.',
+    'The cover rounds exactly two diagonally-opposite corners: top-right and bottom-left.',
+    'A broken cover URL falls back to the path’s default image exactly once and does not loop if the fallback also fails.',
+    'At ≤1100px the cover stacks above the text, left-aligned, and its stretched height is removed.',
+    'In the At Risk state the header is visually identical to On Track apart from its numbers — no colour, chip or warning treatment.',
+    'The stat row never wraps its figure away from its pairs; a long title wraps instead.',
+  ],
+  statesMatrix: [
+    { state: 'Loading', behavior: '⚠ NOT DESIGNED. No skeleton or placeholder exists; the band renders once fixtures resolve. Needs a design before build.' },
+    { state: 'No cover art', behavior: '`onError` substitutes the path default. A fixture with no cover at all renders text-only — ⚠ NOT DESIGNED as an intentional state.' },
+    { state: 'No category breakdown', behavior: 'Lessons pair omitted; the time-remaining pair renders alone.' },
+    { state: 'Long course title', behavior: 'Wraps to two (or more) lines. The stat row moves down; the figure stays beside its pairs.' },
+    { state: '0% progress', behavior: 'Figure, rule and inset all absent. 10px top padding reserved in the text column.' },
+    { state: '100% + nothing queued', behavior: '⚠ NEEDS DESIGN. Header is correct; the card below contradicts it. See the decisions log.' },
+    { state: 'Expired', behavior: '⚠ COMPONENT DOES NOT RENDER — a different surface replaces the band. Decided, not a gap.' },
+    { state: 'Narrow viewport (≤1100px)', behavior: 'Column layout, cover above text, stretched height removed.' },
+  ],
+  data: [
+    '`activeProgressPath` — the learner’s current learning path: id, title, cover image, and the category breakdown the lessons pair counts.',
+    '`displayedProgressPct(path)` → the figure. A real build reads this from the learner’s completion record.',
+    '`headerRenewal.weeksLeft` → the "N days to complete course" value via `timeRemainingText()`. Derived from the same renewal resolution the Schedule State Exam card writes to, so a date entered there moves this row.',
+    '`headerDone` / `headerTotal` / `headerUnit` → the "N of M lessons" pair.',
+    'Cover image path, with `getCourseImage(pathId)` as the documented fallback.',
+  ],
+  stubs: [
+    'No loading state exists — the band renders only once fixtures resolve.',
+    '`Details →` navigates to the course overview; confirm the real destination before build.',
+    'The `completed-empty` fixture supplies no cover art, and whether that is an intended state has not been decided.',
+  ],
+  a11y: [
+    'The course name is an `<h2>`; the eyebrow above it is a `<p>`, not a heading — it labels the band, it is not a level in the document outline.',
+    'The cover carries `alt=""` and `aria-hidden` — it is decorative, and the course name directly beside it is the accessible content.',
+    'Separator dots and the figure rule are `aria-hidden`; they are punctuation, not content.',
+    '⚠ Stat captions are uppercased in CSS, not in source, so screen readers receive sentence case ("To complete course"). Keep it that way — an uppercased string in the DOM is read letter-by-letter by some screen readers.',
+  ],
+}
+
+const JUMP_BACK_IN_HANDOFF: DevHandoffComponent = {
+  id: 'jump-back-in-card',
+  /* Opens on NOT STARTED — the shape the card is least often seen in and the
+     one whose copy was argued over most. The other two are a click away on the
+     Live Preview tab. */
+  previewUrl:
+    '/dashboard-rebrand?version=discoverability-testing&ff=dashboard-progress-state:not-started&chrome=off',
+  order: 2,
+  name: 'Jump Back In Card',
+  tabLabel: 'Jump Back In',
+  badge: 'NEW',
+  badgeDate: '2026-09-24',
+  location: 'src/components/learning/JumpBackInWidget.tsx (rendered by LearnerFocusedBand.tsx:651)',
+  summary:
+    'The card directly under the course header that gets the learner into the work. Three shapes — not started, in progress, complete — each with its own eyebrow, body and CTA label. It is the primary action on the home screen.',
+  variants: [
+    {
+      name: 'Not started · "Let’s get started"',
+      when: '`course.progress` is 0 or absent, and `complete` is false.',
+      detail:
+        'Eyebrow "Let’s get started", CTA "Start course". The lesson line, chapter title and estimate all still render — the learner is being pointed at Lesson 1, Part 1 of 3. ⚠ The eyebrow, the CTA and the landmark name ALL change together: a card reading "Let’s get started" must not announce itself to a screen reader as "Jump back in".',
+    },
+    {
+      name: 'In progress · "Learning With Compass - Jump Back In"',
+      when: '`course.progress > 0` and `complete` is false.',
+      detail:
+        'CTA "Resume". Lesson number, part number, chapter title and the estimate all render. This is the shape At Risk uses too — the card carries no risk treatment.',
+    },
+    {
+      name: 'Complete · "Review Course Material"',
+      when: '`complete` is true (fed by the persona’s `renewalReady`).',
+      detail:
+        'CTA "Review course". The lesson line, chapter title and estimate are ALL dropped and replaced by a single line, "All coursework complete" — none of the three answers anything at 100%: there is no lesson you are on, and an estimate to finish something finished is a figure with nothing behind it.',
+    },
+    {
+      name: 'No course',
+      when: '`course` is undefined.',
+      detail:
+        'Renders `null`. The Study Journey below it stands on its own, so the column does not collapse.',
+    },
+    {
+      name: 'Complete · nothing queued ⚠',
+      when: '`dashboard-progress-state: completed-empty` — 100% progress but `renewalReady` false.',
+      detail:
+        '⚠ NEEDS DESIGN — and this is a defect, not just an undesigned state. The card takes its IN-PROGRESS branch at 100%, offering "Resume" and "Lesson 42 · Part 1 of 3" beside a header reading "42 of 42 lessons COMPLETED". Root cause is in the decisions log: `complete` is fed by a persona flag, not by progress.',
+    },
+  ],
+  uxLogic: [
+    '`started` is read off the COURSE (`(course.progress ?? 0) > 0`), not passed in. A `started` boolean threaded beside a `course` that already answers the question is a second source for one fact.',
+    '⚠ `complete` IS passed in, and from a different signal entirely — `renewalReady` on the persona. That asymmetry is the bug behind the `completed-empty` state.',
+    'The landmark `aria-label` follows the VISIBLE eyebrow through all three shapes. This repo’s own rule, from the Get Licensed card: a region announced as one thing while reading another is the "Dash Dashboard" defect in miniature.',
+    'The CTA carries `data-cta-id="home.resume"` — the attribute is the whole integration with the moderated-test CTA registry (`TESTABLE_CTAS`). Keep it on whichever element is actually clickable.',
+    'The CTA is `flexShrink: 0` at a fixed 44px height so the title column gives way first. The reverse would wrap "Resume" onto two lines, and that is the one thing here that must stay a single tap.',
+    'The eyebrow glyph is 13px `BookOpenThin` — the same size the Study Pace and Readiness tiles set theirs, because those sit in the same column and one eyebrow shape across the three is what makes them read as a set.',
+    'The card carries NO progress bar. The header above states the same percentage; a bar here was the third saying of one number in one column.',
+  ],
+  uiUxLogic: {
+    why:
+      'The home screen’s job is to get a learner back into the material in one click, without making them navigate a course list to find where they were. The card is that click. Its three shapes exist because the same button means three different things across a course’s life, and a single label for all of them would be wrong twice.',
+    variants: [
+      {
+        name: 'Not started',
+        when: 'No progress yet.',
+        why: '"Jump Back In", "Resume" and a hidden lesson line all assume there is a place to jump back TO. At 0% there is not — naming it as a return trip is the product describing a history the learner does not have.',
+        action: '"Start course" → opens Lesson 1, Part 1.',
+      },
+      {
+        name: 'In progress',
+        when: 'Some progress, not finished.',
+        why: 'The learner’s actual position is the single most useful thing the home screen knows. Naming the lesson and chapter is what makes the button a continuation rather than a gamble.',
+        action: '"Resume" → opens the current chapter.',
+      },
+      {
+        name: 'Complete',
+        when: 'Coursework finished.',
+        why: 'The card stops being a way forward and becomes a door back into material already covered — which is a real need before an exam, and a different one from resuming.',
+        action: '"Review course" → reopens the course material.',
+      },
+    ],
+    edgeCases: [
+      'No course at all → the component renders nothing rather than an empty card.',
+      'Long chapter titles wrap to two lines; the CTA tracks the title because the row is centre-aligned rather than pinned.',
+      'Chapter number absent → the lesson line is omitted; the title still renders.',
+      'Part number absent → the lesson line renders without the "Part N of 3" half and without its separator dot.',
+      '⚠ 100% with `renewalReady` false → the in-progress shape renders at 100%. Undesigned; see the decisions log.',
+    ],
+    toasterLogic: [
+      'No toasts. The single CTA navigates; there is nothing here that can fail in place.',
+    ],
+  },
+  designSpec: {
+    tokens: [
+      { role: 'Card surface', token: '--color-surface-card' },
+      { role: 'Card border', token: '--color-primary-100 (top / right / bottom, 1px)' },
+      { role: 'Left accent stroke', token: '--color-primary-400 (6px)' },
+      {
+        role: 'Eyebrow ink',
+        token:
+          '--color-text-secondary via .cre-eyebrow-ink. ⚠ NOT tertiary: tertiary is correct at 6.19:1 on the Study Journey’s white card, but this card is a tinted recess where it falls to 3.83:1 — under AA for 10px text. Secondary holds 4.6:1 on this fill.',
+      },
+      { role: 'Chapter title', token: '--font-body (⚠ NOT --font-heading — see the decisions log), --color-text-primary' },
+      { role: 'Lesson / part line', token: '--font-body, --color-text-secondary' },
+      { role: 'Estimate line', token: '--font-body, --color-text-secondary' },
+      { role: 'Separator dot', token: '--color-neutral-300 (3px round)' },
+      { role: 'CTA fill', token: 'linear-gradient(135deg, --color-primary-500, --color-primary-600)' },
+      { role: 'CTA radius', token: '--radius-md' },
+    ],
+    states: [
+      'Not started / in progress / complete — eyebrow, body and CTA label change together.',
+      'Absent course → renders null.',
+      'Chapter number and part number are independently optional.',
+    ],
+    responsive: [
+      'The content row is flex with the CTA at `flexShrink: 0`; the title column absorbs every width change.',
+      'CTA stays 44px tall — the minimum comfortable touch target — with 20px horizontal padding.',
+      '⚠ No breakpoint of its own. The card inherits whatever width its column gives it; it has not been designed below the 1100px point where the header above it restacks.',
+      'No motion.',
+    ],
+    sources: [
+      'src/components/learning/JumpBackInWidget.tsx',
+      'src/components/membership/v5/LearnerFocusedBand.tsx:651 — the call site and the `complete={renewalReady}` thread',
+      'src/data/dashboardProgressFixtures.ts:933 — `renewalReady: variant === "complete-100"`',
+      'src/components/learning/widgetStyles.ts — `widgetCardRuledStyle`, `widgetEyebrowStyle`',
+    ],
+  },
+  acceptanceCriteria: [
+    'With no progress the eyebrow reads "Let’s get started" and the CTA reads "Start course".',
+    'With progress above 0 and not complete, the eyebrow reads "Learning With Compass - Jump Back In" and the CTA reads "Resume".',
+    'When complete, the eyebrow reads "Review Course Material", the CTA reads "Review course", and the lesson line, chapter title and estimate are all replaced by the single line "All coursework complete".',
+    'The section’s accessible name matches the visible eyebrow in all three shapes — never "Jump back in" on a card reading "Let’s get started".',
+    'With no course supplied the component renders nothing at all; it must not render an empty card or a placeholder.',
+    'The CTA keeps `data-cta-id="home.resume"` on the clickable element.',
+    'The CTA never wraps to two lines: it holds 44px height, 20px horizontal padding and does not shrink; the title column wraps instead.',
+    'The card renders no progress bar and no percentage — those belong to the header above it.',
+    'The chapter title renders in the body face even when the `dashboard-heading-font` flag points --font-heading at a serif.',
+    'At 100% the card and the header agree — ⚠ CURRENTLY FAILS for `completed-empty`; see the decisions log.',
+  ],
+  statesMatrix: [
+    { state: 'Loading', behavior: '⚠ NOT DESIGNED. No skeleton exists. Needs a design before build.' },
+    { state: 'No course', behavior: 'Renders null. The Study Journey below stands on its own.' },
+    { state: 'No chapter number', behavior: 'Lesson line omitted; chapter title and estimate still render.' },
+    { state: 'No part number', behavior: 'Lesson line renders without "Part N of 3" and without its dot.' },
+    { state: 'Long chapter title', behavior: 'Wraps; the CTA stays centred against the column and tracks it.' },
+    { state: 'At Risk', behavior: 'Identical to the in-progress shape. The warning lives in the Study Pace tile, not here.' },
+    { state: '100% + nothing queued', behavior: '⚠ DEFECT / NEEDS DESIGN. Renders the in-progress shape ("Resume", "Lesson 42") at 100%. See the decisions log.' },
+    { state: 'Expired', behavior: '⚠ COMPONENT DOES NOT RENDER — a different surface replaces the band. Decided, not a gap.' },
+    { state: 'Resume target missing', behavior: '⚠ NOT DESIGNED. `onResume` is optional and silently no-ops when absent.' },
+  ],
+  data: [
+    '`course` — `CourseCardData`: id, title and `progress`. `progress` alone decides the not-started / in-progress split.',
+    '`complete` — ⚠ currently the persona’s `renewalReady`, NOT derived from progress. A real build almost certainly derives this from completion; see the decisions log.',
+    '`chapterNumber` / `chapterTitle` — the learner’s current position. Title comes from `NY_LH_GUIDE_CHAPTERS_PARTIAL`, a chapter XCEL’s own published study guide names.',
+    '`partNumber` — which part of XCEL’s published 3-Part Training Program; the denominator is `NY_LH_LESSON_PARTS`.',
+    '⚠ `NY_LH_LESSON_MINUTES_INVENTED` — the "About 18 minutes" estimate. INVENTED; nothing in the fixtures knows a lesson’s length. A real build needs a real per-lesson duration or drops the line.',
+    '`onResume(courseId)` — opens the course player.',
+  ],
+  stubs: [
+    '`onResume` is optional and no-ops when not supplied — no error, no feedback.',
+    'The time estimate reads from an explicitly-invented constant and needs a real source or removal.',
+    '`JUMP_BACK_IN_MARK` (`/brand/xcel-mark.svg`) is exported but has NO call site — the 44px icon well it dressed was removed on 2026-09-17. The artwork is still the thing to drop in if the mark is wanted back; re-adding it is one `<img>`.',
+    'No loading state.',
+  ],
+  a11y: [
+    '⚠ THE LANDMARK NAME TRACKS THE VISIBLE LABEL through all three shapes — this is the component’s most important a11y rule and the easiest to break when copy changes.',
+    'The chapter title is an `<h3>`, sitting under the header’s `<h2>` — the outline is real, not decorative.',
+    'The separator dot is `aria-hidden`.',
+    'The CTA is a real `<button>` with a 44px minimum target.',
+    'The eyebrow ink is `--color-text-secondary` specifically to clear AA on this card’s tinted ground at 10px — 4.6:1. Do not "unify" it with the tertiary the white-card tiles use; that reads 3.83:1 here.',
+  ],
+}
+
 export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
   {
     /*
@@ -815,6 +1168,130 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     externalUrl: `${PROTOTYPE_BASE}/xcel-pace-presets.html`,
     livePreviewUrl: `${PROTOTYPE_BASE}/xcel-pace-presets.html`,
     brands: ['xcel'],
+  },
+  {
+    id: 'xcel-course-entry',
+    title: 'Course Header & Jump Back In — Testing Version',
+    accent: 'blue',
+    icon: 'grid',
+    blurb:
+      'The two blocks a learner meets first on the Testing version of the home screen: the COURSE PROGRESS header (cover art, course name, the percentage figure and the stat pairs) and the card directly under it that gets them into the work. Both are driven by one flag — `dashboard-progress-state` — and neither is a fixed layout: the header drops its figure at 0%, and the card changes its eyebrow, its body and its CTA across three shapes. Documented together because a developer cannot build either one correctly without knowing what the other is saying at the same moment.',
+    tileBlurb:
+      'The COURSE PROGRESS header and the Jump Back In card on the Testing home screen — three shapes each, driven by one progress flag.',
+    kind: 'guided',
+    status: 'ready',
+    category: 'dev-handoff',
+    devStatus: 'in-design',
+    brands: ['xcel'],
+    /* A ROUTE row, not a document — these are React surfaces in `src/`, so the
+       tile navigates in-app rather than opening a file. The bare Testing route
+       is the canonical entry; `pages` below carries the per-state links, and
+       the gateway's Live Preview tab renders the first of them. */
+    to: '/dashboard-rebrand?version=discoverability-testing',
+    /* One link per progress state, because the whole point of this handoff is
+       what changes BETWEEN them. `?chrome=off` so the page opens as a learner
+       sees it — the demo bar sitting above a spec screenshot is noise. */
+    pages: [
+      {
+        label: 'Not Started · 0%',
+        note: 'No percentage figure, no progress bar. The card reads "Let’s get started".',
+        to: '/dashboard-rebrand?version=discoverability-testing&ff=dashboard-progress-state:not-started&chrome=off',
+      },
+      {
+        label: 'On Track · ~63%',
+        note: 'The figure leads the stat row. The card reads "Learning With Compass - Jump Back In".',
+        to: '/dashboard-rebrand?version=discoverability-testing&ff=dashboard-progress-state:progress-on-track&chrome=off',
+      },
+      {
+        label: 'At Risk · ~15%',
+        note: 'Same two shapes as On Track — the tiles BELOW carry the warning, not these.',
+        to: '/dashboard-rebrand?version=discoverability-testing&ff=dashboard-progress-state:progress-at-risk&chrome=off',
+      },
+      {
+        label: 'Completed · 100%',
+        note: 'The card becomes a door back in: "Review Course Material" / "All coursework complete".',
+        to: '/dashboard-rebrand?version=discoverability-testing&ff=dashboard-progress-state:complete-100&chrome=off',
+      },
+      {
+        label: 'Completed · nothing queued ⚠',
+        note: '⚠ THE DISAGREEMENT. Header says 100%; the card still says Resume. See the decisions log.',
+        to: '/dashboard-rebrand?version=discoverability-testing&ff=dashboard-progress-state:completed-empty&chrome=off',
+      },
+      {
+        label: 'Expired',
+        note: 'Neither component renders — a different surface takes the band entirely.',
+        to: '/dashboard-rebrand?version=discoverability-testing&ff=dashboard-progress-state:progress-expired&chrome=off',
+      },
+    ],
+    devHandoff: {
+      intro:
+        'Two components from the Testing version’s home screen (`discoverability-testing`, which is XCEL’s DEFAULT — the bare `/dashboard-rebrand` route lands here). They sit one above the other in the same column and are documented together because they narrate the same fact: how far through the course the learner is. The header states it; the card acts on it. Every variant below is reachable from the Live Preview tab.',
+      components: [],
+      uiComponents: [COURSE_HEADER_HANDOFF, JUMP_BACK_IN_HANDOFF],
+      decisions: {
+        intro:
+          'What was settled while building these, and the two things that are not settled. Questions are the headings, per the log’s own convention — the answer is the entry, not the title.',
+        items: [
+          {
+            question:
+              'At 100% with nothing queued, should the card say "Resume" or "Review course"?',
+            decision:
+              '⚠ UNRESOLVED, and it currently says Resume — which is almost certainly wrong. The card’s `complete` prop is fed by `renewalReady`, a PERSONA field set as `variant === "complete-100"` (dashboardProgressFixtures.ts:933). The `completed-empty` persona is 100% done but is NOT `renewalReady`, so the card falls to its `started` branch and offers "Resume" beside a header reading "42 of 42 lessons COMPLETED". Two independent sources for one fact — progress percentage and renewal readiness — and this is the state where they disagree. Fix is a product call, not a code call: either the card reads completion off progress like the header does, or "nothing queued" is genuinely a resume-able state and the header is the one that is wrong.',
+            status: 'Needs weigh-in',
+            owner: 'Product',
+          },
+          {
+            question: 'Should either component render in the Expired state?',
+            decision:
+              'Today neither does — the whole band is replaced by a dark "Current Progress" card with an Expired chip and a Begin New Cycle CTA. That is a deliberate different surface rather than a variant of these two, and it is why Expired has no row in either states matrix. Recorded here so nobody adds an Expired variant to these components thinking it was an oversight.',
+            status: 'Decided',
+          },
+          {
+            question: 'Why does the card not repeat the progress bar?',
+            decision:
+              'It had one until 2026-09-17. The header directly above runs a full-width bar for the same course with the percentage beside it, so the card was the third statement of one number in one column. Removed with `PROGRESS_BAR_HEIGHT`, `progressTrackStyle` and `progressFillStyle`. `.cre-jbi-progress-fill` survives in tokens.css with no call site — kept because re-adding a bar is what would want it back.',
+            status: 'Decided',
+          },
+          {
+            question: 'Why is the chapter title in the BODY face when it looks like a heading?',
+            decision:
+              '`--font-body`, deliberately. The `dashboard-heading-font` flag re-points `--font-heading` to a serif, and under that variant this card was the one block setting a chapter name in Georgia. The chapter name is a row label like the Study Journey’s stop titles, which moved to the body face on the same grounds: the serif belongs to things that are headings.',
+            status: 'Decided',
+          },
+          {
+            question: 'Where does the CTA sit relative to the title?',
+            decision:
+              'On the title’s line, centred against the text column (`align-items: center`). It has been under the block, beside the title, top-right and at the foot. What the current position buys is that the button TRACKS the title as it wraps, instead of pinning to a card edge and drifting from the thing it acts on.',
+            status: 'Decided',
+          },
+          {
+            question: 'Is the "About 18 minutes" estimate real?',
+            decision:
+              'No — INVENTED, and named as such in code (`NY_LH_LESSON_MINUTES_INVENTED`). Nothing in the fixtures knows a lesson’s length. It is on the card because it was asked for; it reads from a constant whose name says what it is; and the tests that used to forbid the copy now pin it to that constant. A real build needs a real per-lesson duration or the line comes out.',
+            status: 'Needs weigh-in',
+            owner: 'Business',
+          },
+        ],
+        openItems: [
+          'The 100%-with-nothing-queued disagreement between the header and the card — a product call on which signal wins.',
+          'Whether the "About N minutes" estimate ships at all, and if so where the number comes from.',
+        ],
+      },
+      flagsNote:
+        'One flag drives every variant in this handoff: `dashboard-progress-state` in `FEATURE_FLAGS`. Its six arms are `not-started`, `progress-on-track`, `progress-at-risk`, `progress-expired`, `complete-100` and `completed-empty`. It is prototype scaffolding — a real build reads progress from the learner’s record, and the flag exists so a reviewer can reach a state without one. The `?ff=` links on the Live Preview tab are read-only overrides and are never persisted.',
+      alsoConsider: [
+        {
+          name: 'Study Pace tile',
+          location: 'src/components/learning/StudyPaceTile.tsx',
+          note: 'Sits directly below these two in the same column and reads the same progress state, changing from a preset chooser at 0% to an activity chart once studying has begun. Shares the eyebrow shape — one eyebrow across the three is what makes them read as a set, so a change to one is a change to all three.',
+        },
+        {
+          name: 'Study Journey widget',
+          location: 'src/components/learning/StudyJourneyWidget.tsx',
+          note: 'The right-hand column beside both components. It counts the same coursework stops the card’s completion line counts, which is why that line counts the journey’s own stops rather than re-deriving a total — the two cannot disagree.',
+        },
+      ],
+    },
   },
 ]
 

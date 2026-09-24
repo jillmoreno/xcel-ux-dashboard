@@ -129,6 +129,11 @@ describe('section routing (sectionOf)', () => {
     // Added 2026-09-22 — see the row's own note in `prototypeFeatures.ts` for
     // why this page stopped being masthead-only and took a tile.
     'xcel-pace-presets': 'exploration',
+    // Added 2026-09-24 — the repo's FIRST authored dev handoff. `devStatus:
+    // 'in-design'` is what places it, and `sectionOf` reads that BEFORE
+    // `category`, so changing the status moves the row between Design and
+    // Development. Update this map in the same commit if it moves.
+    'xcel-course-entry': 'design',
   }
 
   it('accounts for every authored feature', () => {
@@ -384,10 +389,20 @@ describe('the Prototypes row opens the committed configuration', () => {
     expect(row.to).toBe('/dashboard-rebrand?demo=1')
   })
 
-  it('is still the only row in the file with a `to`', () => {
-    // The document-shape guards are scoped to rows WITHOUT `to`; adding the
-    // query param must not have turned another row into a route.
-    expect(PROTOTYPE_FEATURES.filter((f) => f.to).map((f) => f.id)).toEqual(['xcel-dashboard'])
+  it('holds the route rows and nothing else', () => {
+    // The document-shape guards are scoped to rows WITHOUT `to`; a document row
+    // that accidentally grows one would slip past every one of them.
+    //
+    // ⚠ WAS "is still the only row in the file with a `to`" until 2026-09-24,
+    // when `xcel-course-entry` — the repo's first dev handoff — landed as a
+    // legitimate second route row. The assertion is still the whole SET in both
+    // directions, which is what actually catches an accidental conversion; only
+    // the expected set grew. Loosening this to a count, or to "at least one",
+    // would give up the guard entirely.
+    expect(PROTOTYPE_FEATURES.filter((f) => f.to).map((f) => f.id).sort()).toEqual([
+      'xcel-course-entry',
+      'xcel-dashboard',
+    ])
   })
 })
 
