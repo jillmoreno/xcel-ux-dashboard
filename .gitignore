@@ -23,3 +23,11 @@ deno.lock
 
 # Claude Code agent worktrees (harness state)
 .claude/worktrees/
+
+# Working documents kept in the repo root — research scripts, review recaps,
+# session notes. They are Jillienne's, not the project's, and a `git add -A`
+# will otherwise sweep them into an unrelated commit (it did, 2026-09-24:
+# a usability-test .docx landed in the dev-handoff commit).
+*.docx
+*.pdf.tmp
+pd-review-*.html
