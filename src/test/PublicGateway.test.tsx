@@ -357,6 +357,41 @@ describe('the demo site offers only the finished demo controls', () => {
   })
 })
 
+describe('the row kebab is design-site only', () => {
+  /*
+   * 2026-09-24, the direct ask: only the DESIGN dashboard may change a row's
+   * dev-cycle status.
+   *
+   * ⚠ WHY IT IS NOT COSMETIC. Every kebab item WRITES, and the write persists
+   * (localStorage `cgp.devHandoffStatus` / `cgp.prototypeDone`) and BEATS the
+   * authored `devStatus`. So a stray click on the demo site silently moves a
+   * row between Design and Development for that viewer, permanently, with
+   * nothing on the page saying why — and the person it happened to is the one
+   * least equipped to undo it.
+   */
+  async function loadFull() {
+    vi.resetModules()
+    vi.stubEnv('VITE_GATEWAY_MODE', 'full')
+    const { UxDashboardPage } = await import('@/pages/UxDashboardPage')
+    return UxDashboardPage
+  }
+
+  it('is absent from every row on the demo site', async () => {
+    const Page = await loadPublicPage()
+    renderAt(Page, '/')
+    expect(screen.queryAllByRole('button', { name: /^Actions for / })).toHaveLength(0)
+  })
+
+  it('is on every row of the design site', async () => {
+    /* The direction that matters as much — this is the only surface that sets a
+       status, so losing it would take the feature away entirely rather than
+       just from stakeholders. */
+    const Page = await loadFull()
+    renderAt(Page, '/')
+    expect(screen.getAllByRole('button', { name: /^Actions for / }).length).toBeGreaterThan(0)
+  })
+})
+
 describe('the admin robot is design-site only', () => {
   /*
    * 2026-09-24, the direct ask: hide the robot on the demo site so nobody can

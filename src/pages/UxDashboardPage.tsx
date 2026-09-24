@@ -2021,9 +2021,26 @@ function ProjectRow({
           {inner}
         </Link>
       )}
-      <span style={{ flex: 'none' }}>
-        <ActionMenu label={`Actions for ${feature.title}`} items={items} />
-      </span>
+      {/*
+        THE ROW KEBAB IS DESIGN-SITE ONLY — 2026-09-24, the direct ask.
+
+        Every item behind it is a DESIGN action: the six dev-cycle statuses,
+        Clear status, Mark done, Copy link. A stakeholder on the demo site has
+        no reason to set "Ready for Dev" on anything, and every one of those
+        writes persists (localStorage `cgp.devHandoffStatus` /
+        `cgp.prototypeDone`) and OVERRIDES the authored `devStatus` — so a
+        stray click there silently moves a row between Design and Development
+        for that person, with nothing on the page explaining why.
+
+        ⚠ Not rendered at all, rather than disabled: a greyed kebab invites the
+        question "why can't I?", which is a conversation the demo is not for.
+        Same call as the admin robot.
+      */}
+      {!isPublicGateway() && (
+        <span style={{ flex: 'none' }}>
+          <ActionMenu label={`Actions for ${feature.title}`} items={items} />
+        </span>
+      )}
       <Toast open={copied} onClose={() => setCopied(false)} title="Link copied" tone="success">
         {external ? href : `${window.location.origin}${href}`}
       </Toast>
