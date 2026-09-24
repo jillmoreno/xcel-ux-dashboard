@@ -1369,36 +1369,30 @@ function PaceCardBody({
       */}
       {observed ? (
         <>
-          <p style={eyebrowSubStyle}>
-            Based on your actual course progress and time spent studying
-          </p>
           {/*
-            ⚠ A DATE, NOT AN EVENING — 2026-09-23. It read "Averaging about 2¼
-            hours a night."; the ask moved it to "You're on schedule to finish
-            May 24".
+            ⚠ THE FINISH DATE MOVED INTO THIS LINE — 2026-09-23: "this is too
+            large and in your face… we don't need it bold and extra since we
+            are stating it at the bottom of the widget too."
 
-            IT CHANGES WHAT THE CARD LEADS WITH, from an input to an OUTCOME.
-            The evening is effort; the date is the thing the effort is for, and
-            it is the only figure here a learner can act on — an average of 2¼
-            hours tells them nothing they did not already know about their own
-            week. The hours are not lost: the activity band below states them
-            as a total, which is where a fact about the past belongs.
+            It was the card's headline, at 28px. The Course completion cell in
+            the stats row states the same date, so the card was making its
+            loudest claim twice — and the heading's job here is provenance, not
+            prediction. Folding the date into the sentence that says where it
+            came from puts the claim and its basis in one breath.
 
-            ⚠ AND IT BRANCHES, for the reason the nudge under it does. "On
-            schedule" is a CLAIM, and printing it to a learner the same card is
-            about to tell is "a little behind" would have the two sentences
-            contradicting each other in consecutive lines. Behind, it states
-            the same date without the claim.
+            THE BRANCH SURVIVES THE DEMOTION. "On schedule" is a claim, so a
+            learner who is behind gets "at this pace you'll finish" — the same
+            date without it. That distinction is the reason this is not simply
+            a static string.
 
-            THE DATE IS DERIVED, never typed: `preset.finishIso`, the same
-            value the Course completion cell reads. Two derivations is how a
-            headline comes to disagree with the cell three lines under it.
+            The card now leads with the activity figures, which is the right
+            order for a card whose heading says "Your Study Pace": what you
+            have done, then what it adds up to.
           */}
-          <p style={cardHeadline}>
-            {standing?.behind ? 'At this pace you’ll finish' : 'You’re on schedule to finish'}{' '}
-            <span style={{ fontSize: 28, fontWeight: 700, letterSpacing: '-0.015em' }}>
-              {formatPaceDate(preset.finishIso)}
-            </span>
+          <p style={eyebrowSubStyle}>
+            Based on your actual course progress and time spent studying —{' '}
+            {standing?.behind ? 'at this pace you’ll finish' : 'you’re on schedule to finish'}{' '}
+            {formatPaceDate(preset.finishIso)}.
           </p>
         </>
       ) : (
@@ -1434,7 +1428,11 @@ function PaceCardBody({
           a CONTROL (clicking one sets the nights) and there is no history to
           draw; past 0% there is history and nothing left to set. */}
       {dailyMinutes && !notStarted ? (
-        <ActivitySummary dailyMinutes={dailyMinutes} minsPerNight={preset.minsPerNight} />
+        <ActivitySummary
+          dailyMinutes={dailyMinutes}
+          todayIndex={todayIndex}
+          minsPerNight={preset.minsPerNight}
+        />
       ) : (
         <WeekStrip
           nights={nights}
@@ -1609,10 +1607,15 @@ function PaceCardBody({
  */
 function ActivitySummary({
   dailyMinutes,
+  todayIndex,
   minsPerNight,
 }: {
   dailyMinutes: number[]
-  /** The plan's evening, used only to decide which bars draw dark. */
+  /** Mon-first index of today, 0–6 — what anchors the weekday letters. The
+   *  array ENDS at today, so every other day counts backwards from it. */
+  todayIndex: number
+  /** The plan's evening; the fallback reference when no night has been
+   *  studied. See `barTone`. */
   minsPerNight: number
 }) {
   const total = dailyMinutes.reduce((a, b) => a + (b || 0), 0)
@@ -1684,16 +1687,29 @@ function ActivitySummary({
         */}
         {dailyMinutes.map((m, i) => {
           const on = (m || 0) > 0
+          /* ⚠ COUNTED BACK FROM TODAY, not forward from the start. The array
+             ends at today and its length varies with the enrolment (13 days on
+             On Track, 27 on At Risk), so the first entry's weekday is whatever
+             falls that many days earlier — there is no fixed Monday to anchor
+             to. `+ 70` keeps the modulo positive for any length. */
+          const weekday = (todayIndex - (dailyMinutes.length - 1 - i) + 70) % 7
           return (
-            <span
-              key={i}
-              aria-hidden
-              style={{
-                ...streakBar,
-                height: on ? Math.max(4, Math.round(((m || 0) / peak) * 40)) : 3,
-                background: barTone(m || 0, pace ? pace.minsPerNight : minsPerNight),
-              }}
-            />
+            <div key={i} style={streakCol}>
+              <span
+                aria-hidden
+                style={{
+                  ...streakBar,
+                  height: on ? Math.max(4, Math.round(((m || 0) / peak) * 40)) : 3,
+                  background: barTone(m || 0, pace ? pace.minsPerNight : minsPerNight),
+                }}
+              />
+              {/* `aria-hidden` with the rest of the chart — the row's own
+                  sentence already says what span it covers, and thirteen
+                  letters read out one at a time would be noise. */}
+              <span aria-hidden style={streakDay}>
+                {DAY_INITIALS[weekday]}
+              </span>
+            </div>
           )
         })}
       </div>
@@ -2342,11 +2358,47 @@ const statRule: CSSProperties = {
 }
 
 
+/**
+ * Mon-first, matching `WEEKDAY_LABELS` and the week strip's own initials.
+ *
+ * ⚠ "TH" FOR THURSDAY, by the ask, and it is the one that earns two letters:
+ * Tuesday and Thursday both start with T, and in a row of thirteen with no
+ * other context a reader cannot tell them apart. Saturday and Sunday collide
+ * the same way and stay single — they sit together at the week's end, so the
+ * pair reads as the weekend even when neither letter is decisive.
+ */
+const DAY_INITIALS = ['M', 'T', 'W', 'TH', 'F', 'S', 'S'] as const
+
+/* ⚠ `stretch`, NOT `flex-end`, now that each bar has a letter under it. The
+   children are COLUMNS; stretching them to the row's height and packing each
+   one's contents to the bottom is what puts every bar on one baseline with
+   every letter on another. With `flex-end` the columns would size to their own
+   bar and the letters would stagger. 58 = the 40px chart, the 4px gap and the
+   14px line the letters sit on. */
+const streakCol: CSSProperties = {
+  flex: 1,
+  minWidth: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  justifyContent: 'flex-end',
+  gap: 4,
+}
+
+const streakDay: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 9.5,
+  lineHeight: '14px',
+  fontWeight: 600,
+  letterSpacing: '0.02em',
+  textAlign: 'center',
+  color: 'var(--color-text-tertiary)',
+}
+
 const streakBars: CSSProperties = {
   display: 'flex',
-  alignItems: 'flex-end',
+  alignItems: 'stretch',
   gap: 3,
-  height: 40,
+  height: 58,
   /* ⚠ ON THE BARS, NOT ON `cardStack`'s GAP. The row sits between the activity
      figures it belongs to and the stats row it does not, and widening the
      stack's gap would push the figures away from their own chart as well.

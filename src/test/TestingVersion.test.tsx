@@ -389,7 +389,7 @@ describe('the presets pacing card', () => {
        ("Averaging about 2¼ hours a night"), and is now the OUTCOME. Each move
        was a deliberate ask; the alternatives are recorded here so the sequence
        stays legible. */
-    expect(text).toMatch(/(You’re on schedule to finish|At this pace you’ll finish)/)
+    expect(text).toMatch(/(you’re on schedule to finish|at this pace you’ll finish)/i)
     expect(text).toMatch(/you will finish around [A-Z][a-z]{2} \d+/)
   })
 
@@ -434,8 +434,18 @@ describe('the presets pacing card', () => {
        a total of 25¼ hours." Same two facts, countable rather than read. */
     expect(tile.textContent).toMatch(/\d+ Days Studied/)
     expect(tile.textContent).toMatch(/Total/)
-    expect(tile.querySelector('[role="img"]')).toBeTruthy()
-    expect([...tile.querySelectorAll('span')].map((c) => c.textContent)).not.toContain('W')
+    const chart = tile.querySelector('[role="img"]')!
+    expect(chart).toBeTruthy()
+    /* ⚠ COUNTED, NOT DISTINGUISHED BY LETTERS. This asserted the started card
+       had no span reading "W", which told the two treatments apart while only
+       the 0% strip was labelled by weekday. The activity chart grew its own
+       day letters on 2026-09-23, so both have a W and the old check passed on
+       a coincidence rather than on a claim.
+
+       The real difference is LENGTH: the strip is always the seven days of a
+       week; the chart is one column per day since enrolment, which is 13 on
+       this persona and 27 on At Risk. */
+    expect(chart.children.length).toBe(13)
   })
 
   it('the room it claims agrees with the access date it names', () => {
@@ -697,7 +707,7 @@ describe('the beginner week — 0%', () => {
        wrongly, a mid-course learner would get the beginner's card — the goal
        headline and the three plan options. Asserting the observed-pace card is
        a more direct test of that than either predecessor. */
-    expect(tile.textContent).toMatch(/(You’re on schedule to finish|At this pace you’ll finish)/)
+    expect(tile.textContent).toMatch(/(you’re on schedule to finish|at this pace you’ll finish)/i)
     expect(tile.textContent).not.toMatch(new RegExp(`${NOT_STARTED_NIGHTS} days a week`))
     /* ⚠ NOT 'Your Study Pace' HERE. That heading is the `options` chooser's;
        this suite lands on `strip`, which keeps naming the plan ("Steady &

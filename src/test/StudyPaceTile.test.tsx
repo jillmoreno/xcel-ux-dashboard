@@ -1047,7 +1047,7 @@ describe('study-pace-chooser: options — the learner who has already started', 
     /* ⚠ A DATE, NOT AN EVENING, as of 2026-09-23 — the headline leads with the
        OUTCOME now. The evening did not vanish; it moved under the activity
        total. */
-    expect(text).toMatch(/(You’re on schedule to finish|At this pace you’ll finish)/)
+    expect(text).toMatch(/(you’re on schedule to finish|at this pace you’ll finish)/i)
     /* THE READING — averaged over NIGHTS STUDIED among the ELAPSED days, which
        is three of them here: the Sunday's 999 is in the future and must not
        count, and the two rest days must not dilute the evening. */
