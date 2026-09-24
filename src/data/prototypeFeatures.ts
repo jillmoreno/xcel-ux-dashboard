@@ -1188,7 +1188,12 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
        questions are open; those are flagged in the decisions log, which is the
        right place for them, not a section that hides the row from the people
        it was written for. */
-    devStatus: 'ready-for-dev',
+    /* ⚠ NOT READY, and that is the STANDING RULE, not a judgement about this
+       row: everything reaches developers as not ready unless someone says it is
+       ready (2026-09-24). Two questions in the decisions log are still open, so
+       it would be this anyway — but it would be this regardless. Change it to
+       `ready-for-dev` only when Jillienne says so. */
+    devStatus: 'not-ready',
     brands: ['xcel'],
     /* ⚠ NO `to`, AND NO `externalUrl` — DELIBERATELY. A guided feature's row
        must fall through to its own gateway: the home row's href is

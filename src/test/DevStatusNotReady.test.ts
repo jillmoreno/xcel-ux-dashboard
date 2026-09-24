@@ -1,9 +1,12 @@
 import { describe, expect, it } from 'vitest'
+import type { PrototypeFeature } from '@/data/prototypeFeatures'
+import { PROTOTYPE_FEATURES } from '@/data/prototypeFeatures'
 import {
   DEV_STATUS_LABEL,
   DEV_STATUS_SEQUENCE,
   devStatusStrokeFor,
   featureStatusChipFor,
+  featureStatusKeyOf,
   isDevelopmentStatus,
   type DevStatus,
 } from '@/components/prototype/devHandoffStatusUtil'
@@ -69,5 +72,61 @@ describe('the Not Ready status', () => {
     // …and the menu offers all of them, so a new status can't be added to the
     // type and silently never render.
     expect([...DEV_STATUS_SEQUENCE].sort()).toEqual(Object.keys(expected).sort())
+  })
+})
+
+describe('Not Ready is the DEFAULT for a dev handoff', () => {
+  /*
+   * THE STANDING RULE, 2026-09-24: everything reaches developers as not ready
+   * unless someone says it is ready.
+   *
+   * ⚠ WHAT THIS REPLACED IS THE POINT. A feature with no authored `devStatus`
+   * fell through to the `none` key, whose chip renders the word **"Ready"** —
+   * so forgetting to author a status on a handoff told engineering to start.
+   * That is the most expensive possible direction for a default to fail in.
+   */
+  const handoff = (over: Partial<PrototypeFeature> = {}) =>
+    ({ id: 'x', category: 'dev-handoff', status: 'ready', ...over }) as PrototypeFeature
+
+  it('reads Not Ready when nobody authored a status', () => {
+    expect(featureStatusKeyOf(handoff(), false, false, null)).toBe('not-ready')
+  })
+
+  it('never says the word "Ready" for an unauthored handoff', () => {
+    /* The assertion with teeth: it is the CHIP COPY that misleads, not the key.
+       "Ready" is a substring of "Ready for Dev", so this checks the exact
+       label a person reads. */
+    const key = featureStatusKeyOf(handoff(), false, false, null)
+    expect(featureStatusChipFor(key).label).toBe('Not Ready')
+  })
+
+  it('still lets an explicit status win — that is the "unless I say so" half', () => {
+    expect(featureStatusKeyOf(handoff({ devStatus: 'ready-for-dev' }), false, false, null)).toBe(
+      'ready-for-dev',
+    )
+    // …and a kebab override still beats both, as it always did.
+    expect(featureStatusKeyOf(handoff({ devStatus: 'ready-for-dev' }), false, false, 'blocked')).toBe(
+      'blocked',
+    )
+  })
+
+  it('leaves non-handoff rows alone', () => {
+    /* ⚠ SCOPE. An exploration is not in the development pipeline, so marking it
+       "Not Ready" would answer a question nobody asked of it. Those keep the
+       `none` key they had. */
+    const exploration = { id: 'y', category: 'exploration', status: 'ready' } as PrototypeFeature
+    expect(featureStatusKeyOf(exploration, false, false, null)).toBe('none')
+  })
+
+  it('applies to the handoffs actually in the catalog', () => {
+    /* Not a hypothetical: every dev-handoff row must read Not Ready unless it
+       carries an explicit status saying otherwise. */
+    const rows = PROTOTYPE_FEATURES.filter((f) => f.category === 'dev-handoff')
+    expect(rows.length, 'no dev-handoff rows to check').toBeGreaterThan(0)
+    for (const f of rows) {
+      const key = featureStatusKeyOf(f, false, false, null)
+      if (!f.devStatus) expect(key, f.id).toBe('not-ready')
+      expect(featureStatusChipFor(key).label, f.id).not.toBe('Ready')
+    }
   })
 })

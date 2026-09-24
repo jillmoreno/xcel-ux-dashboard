@@ -194,6 +194,23 @@ export function featureStatusKeyOf(
   if (rollup) return rollup
   if (feature.devStatus) return feature.devStatus
   if (isInDesign) return 'in-design'
+  /*
+   * ⚠ A DEV HANDOFF WITH NO AUTHORED STATUS IS "NOT READY" — 2026-09-24, the
+   * direct rule: everything reaches developers as not ready unless someone
+   * SAYS it is ready.
+   *
+   * This branch exists because the fallthrough below renders a chip reading
+   * the word "Ready", which is the most dangerous possible default for a
+   * handoff: forgetting to author `devStatus` would tell engineering to start.
+   * Now forgetting says "don't", and saying "go" takes a deliberate edit —
+   * the same fail-closed shape as `maturity` on the demo controls.
+   *
+   * Scoped to `dev-handoff` on purpose. The other categories (exploration, the
+   * product build) are not in the development pipeline at all, and marking a
+   * ported exploration "Not Ready" would be answering a question nobody asked
+   * of it.
+   */
+  if (feature.category === 'dev-handoff') return 'not-ready'
   return 'none'
 }
 

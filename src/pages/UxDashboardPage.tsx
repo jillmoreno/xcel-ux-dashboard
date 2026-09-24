@@ -1089,6 +1089,11 @@ function sectionOf(
   // panel authored on the page rather than a list of rows (2026-09-18).
   if (f.category === 'prototype' || f.category === 'demo' || f.category === 'dashboard') return 'prototypes'
   if (f.category === 'testing') return 'development'
+  /* A dev handoff belongs on the Development board even with no authored
+     status — paired with the `not-ready` default in `featureStatusKeyOf`, that
+     means forgetting to author one puts the row in front of engineering marked
+     "don't start", rather than hiding it in Design where they never look. */
+  if (f.category === 'dev-handoff') return 'development'
   // Ported outside products get their own section rather than sitting in Design
   // — they are a different kind of thing, and they carry their own gate.
   if (f.category === 'exploration') return 'exploration'
