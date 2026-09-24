@@ -423,7 +423,12 @@ describe('the presets pacing card', () => {
     seedPresets()
     renderShell(TESTING_URL)
     const tile = paceTile()
-    expect(tile.textContent).toMatch(/\d+ weeks? on pace/)
+    /* ⚠ A TOTAL, NOT A STREAK, as of 2026-09-23. This asserted
+       `/\d+ weeks? on pace/`; that headline was replaced after it was asked
+       about directly — "what's this mean?" — which is the finding rather than
+       a copy preference. The GRAPH is unchanged; only the sentence above it
+       moved. */
+    expect(tile.textContent).toMatch(/In the last \d+ days you’ve studied a total of/)
     expect(tile.querySelector('[role="img"]')).toBeTruthy()
     expect([...tile.querySelectorAll('span')].map((c) => c.textContent)).not.toContain('W')
   })

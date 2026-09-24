@@ -17,7 +17,6 @@ import {
   observedPace,
   weekStanding,
   weeksOnPace,
-  type WeeksOnPace,
   defaultWeekdays,
   NOT_STARTED_NIGHTS,
   MIN_STUDY_HOURS,
@@ -1423,11 +1422,11 @@ function PaceCardBody({
         </p>
       ) : null}
 
-      {/* ONE SLOT, TWO JOBS — see `ActivityStreak`. At 0% the seven circles are
+      {/* ONE SLOT, TWO JOBS — see `ActivitySummary`. At 0% the seven circles are
           a CONTROL (clicking one sets the nights) and there is no history to
           draw; past 0% there is history and nothing left to set. */}
       {dailyMinutes && !notStarted ? (
-        <ActivityStreak
+        <ActivitySummary
           dailyMinutes={dailyMinutes}
           todayIndex={todayIndex}
           nights={preset.nights}
@@ -1605,7 +1604,7 @@ function PaceCardBody({
  * for a card whose copy says "no worries". The shortfall is stated in words
  * above instead.
  */
-function ActivityStreak({
+function ActivitySummary({
   dailyMinutes,
   todayIndex,
   nights,
@@ -1617,16 +1616,32 @@ function ActivityStreak({
   minsPerNight: number
 }) {
   const stand = weeksOnPace({ dailyMinutes, todayIndex, nights, minsPerNight })
+  const total = dailyMinutes.reduce((a, b) => a + (b || 0), 0)
   /* The tallest bar is the busiest evening, floored at the nightly target so a
      week of light sessions does not redraw itself as a week of full ones. */
   const peak = Math.max(minsPerNight, ...dailyMinutes)
   return (
     <div style={streakStack}>
+      {/*
+        ⚠ A TOTAL, NOT A STREAK — 2026-09-23, and the headline it replaced was
+        "1 week on pace". That number was asked about directly — "what's this
+        mean?" — which is the finding: if the person who commissioned it has to
+        ask, a participant will.
+        
+        It had three problems and this fixes all of them. It was AMBIGUOUS
+        ("one week remaining"? "on pace for a week"?). Its number was WEAK —
+        "1" reads as barely started when it actually meant "kept every week you
+        have had". And it never said what "pace" was measured against.
+        
+        A total says one thing, needs no key, and cannot be misread. It is also
+        the only figure on this card a learner could check against their own
+        memory.
+      */}
       <p style={streakHeadline}>
-        <b style={streakFigure}>{stand.streak}</b>{' '}
-        {stand.streak === 1 ? 'week' : 'weeks'} on pace
+        In the last <b style={streakFigure}>{dailyMinutes.length}</b> days you’ve studied a total of{' '}
+        <b style={streakFigure}>{formatEvening(total)}</b>.
       </p>
-      <div style={streakBars} role="img" aria-label={streakLabel(stand, dailyMinutes)}>
+      <div style={streakBars} role="img" aria-label={streakLabel(dailyMinutes)}>
         {dailyMinutes.map((m, i) => {
           const on = (m || 0) > 0
           const today = i === dailyMinutes.length - 1
@@ -1650,8 +1665,11 @@ function ActivityStreak({
           )
         })}
       </div>
+      {/* THE ONLY FORWARD-LOOKING LINE LEFT. "Best run N weeks" went with the
+          streak — it was the same claim in the same words. This one is a
+          progress fact, not a verdict, and it is the half a learner can still
+          act on today. */}
       <p style={streakFoot}>
-        {stand.best > stand.streak ? `Best run ${stand.best} weeks · ` : null}
         This week <b style={emphasis}>{stand.thisWeekNights}</b> of {stand.targetNights} nights
       </p>
     </div>
@@ -1659,15 +1677,13 @@ function ActivityStreak({
 }
 
 /** One sentence for the bar row, which is a picture to everyone else. */
-function streakLabel(stand: WeeksOnPace, dailyMinutes: number[]): string {
+function streakLabel(dailyMinutes: number[]): string {
   const studied = dailyMinutes.filter((m) => (m || 0) > 0).length
   /* ⚠ "SINCE YOU STARTED", NOT "the last 30 days". The array is exactly as
      long as the learner has had the course — 13 days on the On Track persona,
      27 on At Risk — so a fixed thirty would be the same false claim the chart
      itself used to make. */
-  return `Activity since you started, ${dailyMinutes.length} days: studied on ${studied} of them. ${
-    stand.streak
-  } ${stand.streak === 1 ? 'week' : 'weeks'} on pace.`
+  return `Activity since you started, ${dailyMinutes.length} days: studied on ${studied} of them.`
 }
 
 function WeekStrip({
