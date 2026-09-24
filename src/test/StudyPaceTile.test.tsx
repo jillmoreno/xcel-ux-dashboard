@@ -13,7 +13,6 @@ import {
   WEEKDAY_LABELS,
   paceNameFor,
   paceOptionsFor,
-  priceFinish,
   NIGHT_OPTIONS,
 } from '@/lib/studyPace'
 import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext'
@@ -912,39 +911,55 @@ describe('study-pace-chooser: options — three named plans', () => {
     expect(byId.recommended.priced.days).toBeLessThanOrEqual(byId.relaxed.priced.days)
   })
 
-  it('reads the ask literally: seven nights, and the fewest that still fit', () => {
-    /* A ceiling 30 days past THIS file's `TODAY` — the NY fixture's own dates
-       are months behind it, which resolves to no window at all and makes every
-       option collapse to seven nights. */
+  it('makes each name true of the plan under it', () => {
+    /*
+     * ⚠ THIS TEST ASSERTED THE EXACT OPPOSITE UNTIL 2026-09-23, and the swap
+     * is the record of a real defect rather than a rename.
+     *
+     * It pinned the first reading of the ask — "Focused & Quick = studying 7
+     * days/week", "Steady & Relaxed = studying the least amount to still
+     * finish in time" — and those two definitions, both defensible alone,
+     * inverted the names together. Relaxed as "the FEWEST nights that still
+     * fits" minimises evenings given up and therefore MAXIMISES how long each
+     * one has to be: the card shipped "Steady & Relaxed — 3 days a week, 3¼
+     * hours a night" beside "Focused & Quick — 7 days a week, 2¾ hours a
+     * night". The relaxed plan was asking for the longest evenings on screen.
+     *
+     * So the assertions are now about what the NAMES promise, not about night
+     * counts: relaxed is the gentlest evening, focused is the soonest finish,
+     * recommended is between. Those hold whatever the search returns, which is
+     * what makes them worth pinning — the night counts are an implementation
+     * detail and were exactly what the old version over-specified.
+     *
+     * A ceiling 30 days past this file's `TODAY` — the NY fixture's own dates
+     * are months behind it, which resolves to no window at all and makes every
+     * option collapse to seven nights.
+     */
     const opts = paceOptionsFor({ today: TODAY, hoursRemaining: 42, accessExpiresAt: CEILING_30D })
     const byId = Object.fromEntries(opts.map((o) => [o.id, o]))
-    // "Focused & Quick = studying 7 days / week" — flat, by definition.
-    expect(byId.focused.nights).toBe(7)
-    /* "Steady & Relaxed = studying the least amount to still finish in time" —
-       a SEARCH, not a constant: the fewest nights the model will still price,
-       over the whole window.
+    for (const o of opts) expect(o.priced.state, o.id).not.toBe('no')
 
-       ⚠ "STILL FINISH" IS `state !== 'no'`, not a per-night ceiling, and that
-       distinction is the bug this pins. The model refuses on the WEEK
-       (`minsPerWeek > CEILING_MINS × 6`), so a first build testing
-       `minsPerNight <= CEILING_MINS` returned plans the model would not quote —
-       every one of the three came back `state: 'no'`. */
-    const input = { today: TODAY, hoursRemaining: 42, accessExpiresAt: CEILING_30D }
-    expect(byId.relaxed.nights).toBeLessThan(7)
-    expect(byId.relaxed.priced.state).not.toBe('no')
-    /* …and it is the FEWEST: one below breaches, or is under the floor. The
-       floor is `NIGHT_OPTIONS[0]`, because two nights a week is not a week the
-       Adjust sheet offers — a first build searched from one and produced a
-       two-night "Steady & Relaxed" the sheet would have refused to show. */
-    expect(byId.relaxed.nights).toBeGreaterThanOrEqual(NIGHT_OPTIONS[0])
-    if (byId.relaxed.nights > NIGHT_OPTIONS[0]) {
-      expect(
-        priceFinish(input, byId.relaxed.priced.days, byId.relaxed.nights - 1).state,
-      ).toBe('no')
-    }
-    // "Recommended = somewhere in between the 2 below."
-    expect(byId.recommended.nights).toBeGreaterThanOrEqual(byId.relaxed.nights)
-    expect(byId.recommended.nights).toBeLessThanOrEqual(byId.focused.nights)
+    // RELAXED is the gentlest evening on the card, and uses every night.
+    expect(byId.relaxed.nights).toBe(7)
+    expect(byId.relaxed.priced.minsPerNight).toBeLessThan(byId.focused.priced.minsPerNight)
+    expect(byId.relaxed.priced.minsPerNight).toBeLessThanOrEqual(
+      byId.recommended.priced.minsPerNight,
+    )
+
+    // FOCUSED finishes first — a guarantee, not a hope. A picker of three fixed
+    // names cannot drop one the way `studyPace` drops focused when it stops
+    // being faster, so it has to be fastest by construction.
+    expect(byId.focused.priced.days).toBeLessThan(byId.recommended.priced.days)
+    expect(byId.focused.priced.days).toBeLessThan(byId.relaxed.priced.days)
+    // …by CONCENTRATING: fewer evenings than the steady plan, each one longer.
+    expect(byId.focused.nights).toBeLessThan(byId.relaxed.nights)
+    expect(byId.focused.nights).toBeGreaterThanOrEqual(NIGHT_OPTIONS[0])
+
+    // RECOMMENDED is between, on the axis a learner actually feels.
+    expect(byId.recommended.priced.days).toBeLessThanOrEqual(byId.relaxed.priced.days)
+    expect(byId.recommended.priced.minsPerNight).toBeLessThanOrEqual(
+      byId.focused.priced.minsPerNight,
+    )
   })
 
   it('re-prices the whole card when a plan is picked', () => {

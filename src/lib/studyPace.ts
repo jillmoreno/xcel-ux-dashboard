@@ -478,42 +478,77 @@ export function paceOptionsFor(input: PaceInput): PaceOption[] {
    * the difference is what a first build got wrong on every single option. The
    * model's own refusal is about the WEEK — `minsPerWeek > CEILING_MINS × 6` —
    * so a plan of seven evenings at exactly 210 minutes passes a per-night test
-   * and is still one the model will not quote. Every option came back
-   * `state: 'no'`, which is to say the picker offered three plans and called
-   * all three impossible.
+   * and is still one the model will not quote.
    */
-  const relaxedNights = fewestThatFits(daysToCeiling) ?? ALL_NIGHTS
-  const recommendedNights = Math.max(
-    relaxedNights,
-    fewestUnderStrain(recommendedDays) ?? fewestThatFits(recommendedDays) ?? ALL_NIGHTS,
-  )
 
   /**
-   * The EARLIEST finish seven evenings can honestly reach.
+   * The earliest finish `n` nights a week can honestly reach.
    *
-   * ⚠ NOT `FOCUSED_DAYS`, and a first build used it and shipped a
-   * contradiction: `studyPace` clamps focused to `min(14, daysToCeiling)`, so
-   * against a 13-day window focused became 13 days while recommended (the
-   * window minus its buffer) was 9 — and the picker offered a "Focused & Quick"
-   * finishing FOUR DAYS LATER than the option above it. `studyPace` never shows
-   * that because it DROPS focused once it stops being faster; a picker of three
-   * fixed names cannot drop one, so it has to be fastest by construction.
-   *
-   * Defining it as "how soon can seven evenings get me there" is also the ask's
-   * own definition — Focused & Quick is seven days a week — rather than a
-   * fortnight that happens to be the usual answer.
+   * ⚠ BOTH TESTS, AND THE SECOND ONE IS NOT OPTIONAL. The model's own refusal
+   * is about the WEEK (`minsPerWeek > CEILING_MINS × 6`), which three very long
+   * evenings slip under: 3 × 6¾ hours is 20¼ hours a week, inside the weekly
+   * cap, and the picker duly offered "Focused & Quick — 3 days a week, 6¾
+   * hours a night". Nobody studies for six and three quarter hours in an
+   * evening. `CEILING_MINS` is the model's own "no number is honest above
+   * here" threshold and it has to be applied per NIGHT as well.
    */
-  const focusedDays = (() => {
+  const earliestFit = (n: number): number | null => {
     for (let d = 1; d <= daysToCeiling; d++) {
-      if (priceFinish(input, d, ALL_NIGHTS).state !== 'no') return d
+      const priced = priceFinish(input, d, n)
+      if (priced.state !== 'no' && priced.minsPerNight <= CEILING_MINS) return d
     }
-    return daysToCeiling
+    return null
+  }
+
+  const recommendedNights =
+    fewestUnderStrain(recommendedDays) ?? fewestThatFits(recommendedDays) ?? ALL_NIGHTS
+
+  /*
+   * ⚠ THE TWO OUTER PLANS WERE THE WRONG WAY ROUND UNTIL 2026-09-23, and the
+   * card said so out loud: "Steady & Relaxed — 3 days a week, 3¼ hours a
+   * night" sat beside "Focused & Quick — 7 days a week, 2¾ hours a night".
+   * The RELAXED plan was asking for the LONGEST evenings on the card.
+   *
+   * It followed from how each was defined. Relaxed was "the FEWEST nights that
+   * still fits in the window" — which minimises how many evenings you give up
+   * and therefore maximises how long each one has to be. Focused was "all seven
+   * nights". Both readings are defensible in isolation and together they
+   * inverted the names.
+   *
+   * THE DEFINITIONS NOW FOLLOW THE WORDS:
+   *
+   *   STEADY & RELAXED — every night, over the whole window. "Steady" is the
+   *   seven; "Relaxed" is what spreading the work across all of them does to
+   *   the evening. This is the SHORTEST nightly session the model can offer,
+   *   which is what makes it the gentle option.
+   *
+   *   FOCUSED & QUICK — the FEWEST nights that still finishes sooner than
+   *   Recommended. Concentrated evenings, fewer of them, done first. Searching
+   *   upward from the floor is what makes it "focused"; the `< recommended`
+   *   test is what keeps it "quick", and it is a guarantee rather than a hope —
+   *   a picker of three fixed names cannot drop one the way `studyPace` drops
+   *   focused when it stops being faster.
+   */
+  const relaxedNights = ALL_NIGHTS
+  const recommendedFinish = Math.max(earliestFit(recommendedNights) ?? 1, recommendedDays)
+  const focused = (() => {
+    for (let n = MIN_NIGHTS; n <= ALL_NIGHTS; n++) {
+      const d = earliestFit(n)
+      if (d != null && d < recommendedFinish) return { nights: n, days: d }
+    }
+    /* Nothing beats Recommended — a window so short that even seven evenings
+       cannot get ahead of it. Seven nights at the earliest they can manage is
+       still the most focused thing available, and `priceFinish` will mark it
+       `no` if it is not achievable at all. */
+    return { nights: ALL_NIGHTS, days: earliestFit(ALL_NIGHTS) ?? daysToCeiling }
   })()
 
   return [
     {
       id: 'relaxed',
       name: 'Steady & Relaxed',
+      /* Every night, all the way to the ceiling — the shortest evening the
+         model can offer, and the latest finish. */
       nights: relaxedNights,
       priced: priceFinish(input, daysToCeiling, relaxedNights),
     },
@@ -521,16 +556,16 @@ export function paceOptionsFor(input: PaceInput): PaceOption[] {
       id: 'recommended',
       name: 'Recommended',
       nights: recommendedNights,
-      /* NEVER SLOWER THAN RELAXED and never faster than Focused — the middle
-         option has to BE in the middle, which the day counts do not guarantee
-         on a short window where the buffer eats most of it. */
-      priced: priceFinish(input, Math.max(focusedDays, recommendedDays), recommendedNights),
+      /* NEVER FASTER THAN FOCUSED — the middle option has to BE in the middle,
+         which the day counts do not guarantee on a short window where the
+         buffer eats most of it. */
+      priced: priceFinish(input, Math.max(focused.days, recommendedFinish), recommendedNights),
     },
     {
       id: 'focused',
       name: 'Focused & Quick',
-      nights: ALL_NIGHTS,
-      priced: priceFinish(input, focusedDays, ALL_NIGHTS),
+      nights: focused.nights,
+      priced: priceFinish(input, focused.days, focused.nights),
     },
   ]
 }
