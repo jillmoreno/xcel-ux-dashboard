@@ -1,16 +1,19 @@
 import { readFileSync } from 'node:fs'
-import { render, screen, within } from '@testing-library/react'
+import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
 import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext'
+import { NOT_STARTED_NIGHTS, paceNameFor } from '@/lib/studyPace'
 import { flagScopeForPath } from '@/components/account/FeatureFlagPanel'
 import { LearningPathsPanelProvider } from '@/components/learning/LearningPathsPanelContext'
 import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelContext'
 import { PlatformShell } from '@/components/layout/PlatformShell'
 import { jurisdictionName } from '@/data/nyProducerRequirements'
 import { learningPathsFor } from '@/data/learningFixtures'
+import { journeyStopsFor } from '@/components/learning/studyJourneyUtil'
+import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
 import { XCEL_NY_PRODUCER_PATH_ID } from '@/data/studyCalendarFixtures'
 import {
   DISCOVERABILITY_DASHBOARD_VERSIONS,
@@ -44,7 +47,25 @@ const QE_URL = `/dashboard-rebrand?version=${DISCOVERABILITY_DASHBOARD_VERSION_Q
 
 function seed(extra: Record<string, unknown> = {}) {
   window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
-  window.localStorage.setItem('cgp.featureFlags', JSON.stringify(extra))
+  /* ⚠ `study-pace-readout: prose` UNLESS A TEST SAYS OTHERWISE — 2026-09-23.
+     `stats` is the branch default, and it replaces the Study Pace card's two
+     fact SENTENCES with a three-cell readout. Several assertions here are about
+     what those sentences say (the ceiling the card used, the date it lands on),
+     and they are still the right assertions for the prose treatment. Pinned in
+     the shared seed rather than test by test so a new prose assertion does not
+     have to know the flag exists; `extra` still wins, which is how the stats
+     tests select it. */
+  window.localStorage.setItem(
+    'cgp.featureFlags',
+    JSON.stringify({
+      'study-pace-readout': { enabled: true, variant: 'prose' },
+      /* `strip` unless a test says otherwise — `options` is the branch default
+         and puts three radio buttons above the card, which several assertions
+         here count. See the same note in `StudyPaceTile.test.tsx`. */
+      'study-pace-chooser': { enabled: true, variant: 'strip' },
+      ...extra,
+    }),
+  )
 }
 
 function renderShell(url: string) {
@@ -73,7 +94,18 @@ function renderShell(url: string) {
  * the bare "Study Pace".
  */
 function paceTile(): HTMLElement {
-  return screen.getByText(/^(?:Recommended |Your )?Study Pace$/).parentElement as HTMLElement
+  /* ⚠ THE PREFIX IS OPEN-ENDED as of 2026-09-23. It was `(?:Recommended |Your )?`
+     — the two names the eyebrow could carry. It is built from
+     `paceBadgeLabel` now and can say Recommended / Focused & Quick /
+     Steady & Relaxed / Custom, so the locator matches ANY prefix rather than
+     being edited every time that vocabulary grows. Still anchored on
+     "Study Pace" at the end, which is what makes it this tile. */
+  /* ⚠ NOT ANCHORED AT THE END any more. The `options` treatment's heading is
+     "Set your Study Pace (optional)" as of 2026-09-23, so a `$` anchor finds
+     nothing there; `strip` still ends with it. Matching the phrase wherever it
+     falls covers every treatment, including the bare tile's plain "Study
+     Pace". */
+  return screen.getByText(/Study Pace/).parentElement as HTMLElement
 }
 
 /**
@@ -125,7 +157,16 @@ describe('the Testing version is registered without displacing anything', () => 
     )
   })
 
-  it('leaves QE Focused leading the picker', () => {
+  it('sits second in this branch’s picker, behind QE Focused', () => {
+    /* THIS BRANCH'S PICKER, NOT MAIN'S — 2026-09-24. This file came over from
+       main with the home page's contents; main archived QE Focused and
+       Marketing Focused off the picker, but that archive was deliberately NOT
+       pulled onto feat/atlas-compass-global-nav (home contents only). So here
+       QE Focused still leads and Atlas sits after Testing 2. When this branch
+       merges into main, main's assertion is the one to keep. */
+    expect(DISCOVERABILITY_DASHBOARD_VERSIONS[1]).toBe(
+      DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
+    )
     expect(DISCOVERABILITY_DASHBOARD_VERSIONS[0]).toBe(
       DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
     )
@@ -183,139 +224,133 @@ describe('the Study Pace tile takes the row', () => {
   })
 })
 
-describe('the pacing treatments', () => {
-  /** The four that render a BODY inside the shared tile. */
-  const VARIANTS = ['lo-fi', 'rate', 'runway', 'balance'] as const
-  /** …and `presets`, which renders the whole tile. Sweeps that are about the
-   *  treatment's CLAIMS rather than its chrome run over all five. */
-  const ALL_VARIANTS = [...VARIANTS, 'presets'] as const
-
-  it.each(VARIANTS)('%s keeps the status pill and its message', (variant) => {
-    // The status half is what was carrying the meaning all along, and it is the
-    // same element in all four (`pacingStatus`). If a treatment could drop it,
-    // the comparison would be about whether the state is shown rather than
-    // about the pacing figure — and one of the four would win for the wrong
-    // reason.
-    //
-    // `presets` IS DELIBERATELY NOT IN THIS LIST, and the exemption is narrow
-    // enough to be worth stating rather than widening the sweep: that treatment
-    // states the conclusion the pill labels ("finishes by <date>, <n> days
-    // before access ends on <date>") as a derived SENTENCE, and carries its own
-    // pill on the pace axis. Two pills in two vocabularies, stacked, is the
-    // confusion the pace chip exists to avoid — see the `presets` arm of
-    // `pacingBody`. The guarantee is not dropped, it moves: the block below
-    // pins the sentence the way this pins the pill.
-    seed({ 'dashboard-pacing-style': { enabled: true, variant } })
-    renderShell(TESTING_URL)
-    const tile = paceTile()
-    expect(within(tile).getByText('On Track')).toBeTruthy()
-    expect(tile.textContent).toMatch(/on pace to finish/i)
-  })
-
-  it('presets states the compliance conclusion instead of the pill', () => {
-    // The other half of the exemption above: it may drop the pill only because
-    // it answers the same question in words. A `presets` card carrying neither
-    // would be the treatment that quietly says less than the four beside it.
-    seed({ 'dashboard-pacing-style': { enabled: true, variant: 'presets' } })
-    renderShell(TESTING_URL)
-    const tile = paceTile()
-    expect(within(tile).queryByText('On Track')).toBeNull()
-    // The conclusion in words: the window the learner has, and the date the
-    // derived pace lands on. Both are body lines of the 2026-09-21 Figma
-    // redesign, which replaced the pill and the timeline with this sentence.
-    expect(tile.textContent).toMatch(/You have \d+ days left to finish/)
-    expect(tile.textContent).toMatch(/you will finish around [A-Z][a-z]{2} \d+/)
-  })
-
-  it.each(ALL_VARIANTS)('%s invents no projection the fixtures cannot support', (variant) => {
+describe('the pacing treatment', () => {
+  /*
+   * ONE treatment as of 2026-09-22. This block swept five behind
+   * `dashboard-pacing-style` — `lo-fi` / `rate` / `runway` / `balance` /
+   * `presets` — and pinned what they had in common: every one kept the status
+   * pill (presets excepted, which states the conclusion in words), none
+   * invented a projection, none printed a percentage.
+   *
+   * Presets won and the flag was retired. The sweeps are gone with the
+   * variants they swept, but the two CLAIMS that were never about having a
+   * choice are kept below and re-aimed at the one surviving treatment — they
+   * were the point of the block, not the enumeration.
+   *
+   * `lo-fi` is NOT retired and is tested here still: it is what every
+   * NON-Testing version renders, which is the part of this that could break
+   * silently now that nothing on Testing can reach it.
+   */
+  it('invents no projection the fixtures cannot support', () => {
     // Nothing here knows an OBSERVED rate, a schedule to be ahead of, or a
     // projected finish date. The reference mock for this block carried "You are
     // currently pacing 4 days ahead of schedule"; authoring it is the move this
     // version has refused throughout.
-    seed({ 'dashboard-pacing-style': { enabled: true, variant } })
     renderShell(TESTING_URL)
     const text = paceTile().textContent ?? ''
     expect(text).not.toMatch(/ahead of schedule|behind schedule|projected|on track to finish on/i)
   })
 
-  it('rate states the derived hrs/day, not a literal', () => {
-    seed({ 'dashboard-pacing-style': { enabled: true, variant: 'rate' } })
-    renderShell(TESTING_URL)
-    // The same derivation `kpiSubLabels` feeds the `stat-card` variant with —
-    // the resume course's real credit hours over the days left.
-    expect(paceTile().textContent).toMatch(/~\d+(\.\d)? hrs\/day/)
-  })
-
-  it('runway’s work-left AGREES with the completed figure on the page', () => {
-    seed({ 'dashboard-pacing-style': { enabled: true, variant: 'runway' } })
-    renderShell(TESTING_URL)
-    const left = Number(/(\d+) lessons left/.exec(paceTile().textContent ?? '')?.[1])
-    // "26 of 42 lessons complete" — the block's own line, from the same totals.
-    const done = /(\d+) of (\d+) lessons/.exec(document.body.textContent ?? '')
-    expect(done).toBeTruthy()
-    const [, completed, total] = done as RegExpExecArray
-    // The relationship, not today's numbers: a tile claiming a different amount
-    // of work left from the line three inches above it is the cross-surface
-    // disagreement `ProgressAgreement.test.tsx` exists to catch.
-    expect(left).toBe(Number(total) - Number(completed))
-  })
-
-  it('runway draws one strip segment per remaining week, the last part-filled', () => {
-    seed({ 'dashboard-pacing-style': { enabled: true, variant: 'runway' } })
-    renderShell(TESTING_URL)
-    const tile = paceTile()
-    const fills = [...tile.querySelectorAll('span > span')].filter((s) =>
-      (s as HTMLElement).style.width.endsWith('%'),
-    ) as HTMLElement[]
-    const days = Number(/(\d+) days to go/.exec(tile.textContent ?? '')?.[1])
-    expect(fills.length).toBe(Math.max(1, Math.ceil(days / 7)))
-    // Every whole week is full; the days that do not make one are the remainder.
-    const remainder = days % 7
-    expect(fills.at(-1)?.style.width).toBe(
-      remainder === 0 ? '100%' : `${(remainder / 7) * 100}%`,
-    )
-  })
-
-  it('balance states the two figures and derives no rate', () => {
-    // Its whole position is that it prescribes nothing — if it grew a rate it
-    // would be `runway` with a rule down the middle, and the exploration would
-    // be comparing three versions of one idea.
-    seed({ 'dashboard-pacing-style': { enabled: true, variant: 'balance' } })
-    renderShell(TESTING_URL)
-    const text = paceTile().textContent ?? ''
-    expect(text).toMatch(/lessons left/)
-    expect(text).toMatch(/days left/)
-    expect(text).not.toMatch(/a week|hrs\/day/)
-  })
-
-  it.each(ALL_VARIANTS)('%s states no percentage', (variant) => {
+  it('states no percentage', () => {
     /* A `%` on this tile is a PROGRESS claim, and the block directly above it
-       already states progress — twice on some treatments. The rule lives here
-       rather than on the Get Licensed cards, where "70% to pass" is the state's
-       published pass mark and a sourced fact about the exam. */
-    seed({ 'dashboard-pacing-style': { enabled: true, variant } })
+       already states progress. The rule lives here rather than on the Get
+       Licensed cards, where "70% to pass" is the state's published pass mark
+       and a sourced fact about the exam. */
     renderShell(TESTING_URL)
     expect(paceTile().textContent).not.toMatch(/%/)
   })
 
-  it('leaves the tile lo-fi on every OTHER version, whatever the flag says', () => {
-    // The flag is inert off Testing: elsewhere Study Pace is still half of the
-    // square pair and the stub is what ships. A treatment leaking onto QE
-    // Focused would change what XCEL's DEFAULT shows.
-    seed({ 'dashboard-pacing-style': { enabled: true, variant: 'runway' } })
-    renderShell(QE_URL)
-    expect(paceTile().textContent).not.toMatch(/a week/)
+  it('states the compliance conclusion instead of the pill', () => {
+    // Presets drops `pacingStatus` — it may do that only because it answers the
+    // same question in words. A card carrying neither would say less than the
+    // stub it replaced, which is what this has always been guarding.
+    seed()
+    renderShell(TESTING_URL)
+    const tile = paceTile()
+    expect(within(tile).queryByText('On Track')).toBeNull()
+    expect(tile.textContent).toMatch(/You have \d+ days left to finish/)
+    expect(tile.textContent).toMatch(/you will finish around [A-Z][a-z]{2} \d+/)
   })
 
-  it('keeps presets off QE Focused too', () => {
-    // The same rule for the one treatment that renders a whole tile rather than
-    // a body — it reaches the render site by a different branch, so "the flag is
-    // inert elsewhere" has to be proved again rather than inherited.
-    seed({ 'dashboard-pacing-style': { enabled: true, variant: 'presets' } })
+  it('answers the same question in CELLS on the stats readout', () => {
+    /* ⚠ THE SAME GUARD, FOR THE OTHER VARIANT — 2026-09-23, and the reason it
+       is a second test rather than a loosened first one. The claim above is
+       that this card may drop `pacingStatus` only because it answers the same
+       question in words. `study-pace-readout: stats` replaces those words with
+       three cells, so the claim has to be re-made against them or the variant
+       quietly removes the answer the rule depends on.
+
+       AND THE STATUS CELL IS THE PACE AXIS, not the compliance one. That was
+       asked and settled: "At Risk" is a verdict about the LEARNER and this card
+       only speaks about the plan — `PaceChip`'s own note records why the two
+       must not share a badge. So the cell says Recommended / Relaxed /
+       Focused, and "On Track" must still appear nowhere on this tile. */
+    seed({ 'study-pace-readout': { enabled: true, variant: 'stats' } })
+    renderShell(TESTING_URL)
+    const tile = paceTile()
+    expect(within(tile).queryByText('On Track')).toBeNull()
+    expect(within(tile).queryByText('At Risk')).toBeNull()
+    // The two facts the prose stated, now as cells.
+    expect(tile.textContent).toMatch(/Course access/i)
+    expect(tile.textContent).toMatch(/\d+ days/)
+    expect(tile.textContent).toMatch(/Course completion/i)
+    /* The estimate is still LABELLED an estimate — the qualifier moved under
+       the date on 2026-09-23 so the caption could shorten, and a cell that
+       printed a bare date would be promising one. */
+    expect(tile.textContent).toMatch(/At your current pace/i)
+    // The access END date survives as the countdown's second line — the half
+    // the prose would otherwise have taken with it.
+    expect(tile.textContent).toMatch(/Ends [A-Z][a-z]{2} \d+/)
+    /* DAYS TO REVIEW replaced the Status cell the same day. It is the gap
+       between the plan's finish and the day access ends — the reason
+       `RECOMMENDED_BUFFER_DAYS` exists, printed for the first time. */
+    expect(tile.textContent).toMatch(/Days to review/i)
+    expect(tile.textContent).toMatch(/Extra prep time/i)
+
+    /* ⚠ THE FINISH-DATE NOTE IS NO LONGER ON THE CARD, and asserting its
+       absence is the point: it moved into a tip on the Course completion cell,
+       so a version that printed it BOTH places would pass a `toContain` and be
+       wrong. The trigger is what is on screen; the copy arrives on hover. */
+    expect(tile.textContent).not.toMatch(/Your estimated finish date will update/)
+    expect(within(tile).getByRole('button', { name: 'About this date' })).toBeTruthy()
+
+    /* THE PACE PILL MOVED TO THE TILE'S TOP RIGHT rather than being dropped —
+       the logic is unchanged, only the placement. It sits in the eyebrow row,
+       which is why this looks for it beside the caption. */
+    /* ⚠ THE BADGE IS GONE and the NAME is in the eyebrow — 2026-09-23, two
+       asks in a row. It said "Recommended" beside an eyebrow reading
+       RECOMMENDED STUDY PACE, which is the duplication the original pill was
+       removed for. The heading now carries the name, derived from the review
+       gap, so this pins the RELATIONSHIP rather than a literal: whatever the
+       cell says, the heading is that name. */
+    const caption = tile.querySelector('.cre-eyebrow-ink') as HTMLElement
+    const gap = Number(/(\d+)\s*days?\s*Extra prep time/i.exec(tile.textContent ?? '')?.[1])
+    expect(Number.isFinite(gap)).toBe(true)
+    expect(caption.textContent).toBe(`${paceNameFor(gap)} Study Pace`)
+
+    // …and the one thing that survives BOTH variants.
+    expect(within(tile).getByRole('button', { name: /View Study Plan/ })).toBeTruthy()
+  })
+
+  it('leaves the tile lo-fi on every OTHER version', () => {
+    // THE REASON `lo-fi` SURVIVED THE RETIREMENT. Off Testing, Study Pace is
+    // still half of the square pair and the stub is what ships. It used to be
+    // reachable as a variant, so this was one of five; now this test is the
+    // ONLY thing rendering that path, and a presets card leaking onto QE
+    // Focused would change what XCEL's DEFAULT shows.
     renderShell(QE_URL)
     const tile = paceTile()
     expect(tile.style.aspectRatio).toBe('1 / 1')
+    expect(tile.textContent).not.toMatch(/a week/)
     expect(within(tile).queryByRole('button', { name: 'Start studying' })).toBeNull()
+  })
+
+  it('has no flag left to pick a treatment with', () => {
+    // The retirement itself. A reviewer finding `dashboard-pacing-style` in the
+    // catalog again should find this failing rather than a picker offering one
+    // live answer and three dead ones.
+    expect(FEATURE_FLAGS.find((f) => f.key === 'dashboard-pacing-style')).toBeUndefined()
+    expect(flagScopeForPath('/dashboard-rebrand')).not.toContain('dashboard-pacing-style')
   })
 })
 
@@ -329,7 +364,13 @@ describe('the pacing treatments', () => {
  * anything about the treatment.
  */
 describe('the presets pacing card', () => {
-  const seedPresets = () => seed({ 'dashboard-pacing-style': { enabled: true, variant: 'presets' } })
+  /* Was `seed({ 'dashboard-pacing-style': … 'presets' })`. The flag is retired
+     and the treatment is unconditional on this version, so the seed is just the
+     account — kept as a named helper so every test below still reads as "given
+     the presets card". */
+  /** `extra` forwards to `seed`, so a test wanting the stats readout (where the
+   *  Days to review cell lives) can ask for it without a second helper. */
+  const seedPresets = (extra: Record<string, unknown> = {}) => seed(extra)
 
   it('states an evening, a week and the date it lands on', () => {
     seedPresets()
@@ -338,23 +379,68 @@ describe('the presets pacing card', () => {
     // The redesign's headline: a nightly figure and a weekly one, both out of
     // the same formatter. It said "N nights a week" before — the WEEK STRIP
     // now carries how many nights, and in which days.
-    expect(text).toMatch(/About .+ a night, .+ a week/)
+    /* ⚠ A FINISH DATE — 2026-09-23, third wording. The headline was the plan
+       ("About 2 hours a night, 6 days a week"), then the observed evening
+       ("Averaging about 2¼ hours a night"), and is now the OUTCOME. Each move
+       was a deliberate ask; the alternatives are recorded here so the sequence
+       stays legible. */
+    expect(text).toMatch(/(you’re on schedule to finish|at this pace you’ll finish)/i)
     expect(text).toMatch(/you will finish around [A-Z][a-z]{2} \d+/)
   })
 
-  it('draws the week strip', () => {
-    // The redesign's biggest addition: the old card said "5 nights a week" and
-    // left the learner to picture it. Which DAYS is not invented here — the
-    // shared `defaultWeekdays` helper is what the sheet proposes too.
+  it('draws the week strip at 0%, and the activity streak once under way', () => {
+    /* ⚠ THE SLOT NOW HAS TWO OCCUPANTS — 2026-09-23. It asserted the seven
+       circles unconditionally; they are the 0% treatment only. Before the
+       learner starts, the strip is a CONTROL (clicking one sets the nights)
+       and there is no history to draw; past 0% there is history and nothing
+       left to set, so the same slot becomes the activity streak.
+
+       COUNTED, not searched for. `toContain('M')` against the whole tile is
+       satisfied by any sentence on it — an assertion that cannot fail is worse
+       than none. Seven dots, in order, is the claim at 0%.
+
+       Which DAYS is not invented: the shared `defaultWeekdays` helper is what
+       the sheet proposes too. */
+    seed({ 'dashboard-progress-state': { enabled: true, variant: 'not-started' } })
+    renderShell(TESTING_URL)
+    /* ⚠ `span, button`, AND NOT VIA `[aria-hidden]`. At 0% the strip's cells
+       are BUTTONS and the row drops `aria-hidden` because it is a control — a
+       span-only query under an aria-hidden ancestor finds nothing on the one
+       persona this half of the test seeds. The sibling test below the week
+       strip records the same trap. */
+    const cells = [...paceTile().querySelectorAll('span, button')]
+      .filter((el) => /^[MTWFS]$/.test(el.textContent ?? ''))
+      .slice(0, 7)
+      .map((c) => c.textContent)
+    expect(cells).toEqual(['M', 'T', 'W', 'T', 'F', 'S', 'S'])
+    cleanup()
+
+    // …and the started persona gets the streak instead, with no strip left.
     seedPresets()
     renderShell(TESTING_URL)
-    /* COUNTED, not searched for. The strip became circular indicators labelled
-       by INITIAL on 2026-09-21, and `toContain('M')` against the whole tile is
-       satisfied by any sentence on it — an assertion that cannot fail is worse
-       than none. Seven dots, in order, is the claim. */
-    const strip = paceTile().querySelector('[aria-hidden]')!
-    const cells = [...strip.querySelectorAll('span')].map((c) => c.textContent)
-    expect(cells).toEqual(['M', 'T', 'W', 'T', 'F', 'S', 'S'])
+    const tile = paceTile()
+    /* ⚠ A TOTAL, NOT A STREAK, as of 2026-09-23. This asserted
+       `/\d+ weeks? on pace/`; that headline was replaced after it was asked
+       about directly — "what's this mean?" — which is the finding rather than
+       a copy preference. The GRAPH is unchanged; only the sentence above it
+       moved. */
+    /* ⚠ THREE FIGURES, NOT A SENTENCE, as of 2026-09-23 — "11 Days Studied ·
+       25¼ Total · About 2¼/day", replacing "In the last 13 days you've studied
+       a total of 25¼ hours." Same two facts, countable rather than read. */
+    expect(tile.textContent).toMatch(/\d+ Days Studied/)
+    expect(tile.textContent).toMatch(/Total/)
+    const chart = tile.querySelector('[role="img"]')!
+    expect(chart).toBeTruthy()
+    /* ⚠ COUNTED, NOT DISTINGUISHED BY LETTERS. This asserted the started card
+       had no span reading "W", which told the two treatments apart while only
+       the 0% strip was labelled by weekday. The activity chart grew its own
+       day letters on 2026-09-23, so both have a W and the old check passed on
+       a coincidence rather than on a claim.
+
+       The real difference is LENGTH: the strip is always the seven days of a
+       week; the chart is one column per day since enrolment, which is 13 on
+       this persona and 27 on At Risk. */
+    expect(chart.children.length).toBe(13)
   })
 
   it('the room it claims agrees with the access date it names', () => {
@@ -430,20 +516,51 @@ describe('the presets pacing card', () => {
        (The provenance CLAUSE follows the same boolean and is pinned in
        `StudyPaceTile.test.tsx`, where a course with a ceiling prints one.) */
     const user = userEvent.setup()
-    seedPresets()
+    seedPresets({ 'study-pace-readout': { enabled: true, variant: 'stats' } })
     renderShell(TESTING_URL)
-    expect(paceTile().textContent).toMatch(/^Recommended Study Pace/)
+    const before = /^(.*? Study Pace)/.exec(paceTile().textContent ?? '')?.[1] ?? ''
+    expect(before).toMatch(/Study Pace$/)
 
-    await user.click(within(paceTile()).getByRole('button', { name: 'Customize Study Plan' }))
+    await user.click(within(paceTile()).getByRole('button', { name: 'View Study Plan' }))
     const dialog = screen.getByRole('dialog')
-    await user.click(within(dialog).getByRole('radio', { name: /Full window|Relaxed/ }))
-    await user.click(within(dialog).getByRole('button', { name: 'Save pace' }))
+    /* UPDATED 2026-09-22 with the sheet's new IA. It used to pick one of the
+       three preset radio rows; the sheet is now a chooser of study STYLES, so
+       the equivalent gesture is opening one and saving the week it builds. The
+       CLAIM is unchanged, which is why this was edited rather than dropped. */
+    await user.click(dialog.querySelector('[data-shape="custom"]')!)
+    await user.click(within(dialog).getByRole('button', { name: /^Save pace/ }))
 
-    expect(paceTile().textContent).toMatch(/^Your Study Pace/)
+    /* ⚠ THE CLAIM NARROWED THE SAME DAY, and this records it rather than
+       asserting something that is no longer true. The eyebrow is derived from
+       DAYS TO REVIEW now, so it names the plan's shape rather than its author —
+       a learner-chosen plan landing in the 7-15 band IS called "Recommended"
+       again. `paceNameFor`'s note spells out the trade.
+
+       ⚠ AND IT DOES NOT SIMPLY FLIP. A first draft of this asserted the name
+       must CHANGE after saving, which failed: the evenings week happens to land
+       in the same review band as the model's own suggestion, so the heading is
+       correctly identical. A name derived from an outcome only moves when the
+       outcome crosses a threshold, and asserting otherwise would have been
+       pinning a coincidence.
+
+       So what this checks is the DERIVATION holding on both sides of the
+       gesture — the heading is `paceNameFor` of the gap the card is showing,
+       before and after. */
+    const nameAndGap = () => {
+      const t = paceTile().textContent ?? ''
+      return {
+        name: /^(.*?) Study Pace/.exec(t)?.[1] ?? '',
+        gap: Number(/(\d+)\s*days?\s*Extra prep time/i.exec(t)?.[1]),
+      }
+    }
+    const after = nameAndGap()
+    expect(Number.isFinite(after.gap)).toBe(true)
+    expect(after.name).toBe(paceNameFor(after.gap))
+    expect(before).toMatch(/Study Pace$/)
   })
 
   it('operates exactly one thing, and no more', () => {
-    /* The card operates Customize Study Plan and nothing else — the same claim
+    /* The card operates its one plan link and nothing else — the same claim
        `StudyPaceTile.test.tsx` counts on the square, and what keeps this a
        statement rather than a control panel. The 2026-09-21 redesign took the
        count from two (Start studying + Adjust) to one. No `Details →` link
@@ -454,7 +571,7 @@ describe('the presets pacing card', () => {
     const names = within(tile)
       .getAllByRole('button')
       .map((b) => b.textContent?.trim())
-    expect(names).toEqual(['Customize Study Plan'])
+    expect(names).toEqual(['View Study Plan'])
     expect(within(tile).queryByRole('link', { name: /Details/ })).toBeNull()
     expect(within(tile).queryByRole('radio')).toBeNull()
     /* ⚠ THE CARD NO LONGER NAMES THE COURSE, and that is the redesign's call
@@ -466,7 +583,7 @@ describe('the presets pacing card', () => {
     expect(tile.textContent).toMatch(/left to finish the course material/)
   })
 
-  it('Customize Study Plan opens the SHARED sheet, not a second one', () => {
+  it('the plan link opens the SHARED sheet, not a second one', () => {
     /* The reuse this whole variant rests on. A `presets` card that grew its own
        sheet would be a second copy of the four groups — and of the exam date and
        the study-plan calendar, both of which write. */
@@ -474,7 +591,7 @@ describe('the presets pacing card', () => {
     renderShell(TESTING_URL)
     expect(
       within(paceTile())
-        .getByRole('button', { name: 'Customize Study Plan' })
+        .getByRole('button', { name: 'View Study Plan' })
         .getAttribute('aria-haspopup'),
     ).toBe('dialog')
   })
@@ -483,6 +600,114 @@ describe('the presets pacing card', () => {
     seedPresets()
     renderShell(TESTING_URL)
     expect(paceTile().style.aspectRatio).toBe('')
+  })
+})
+
+describe('the beginner week — 0%', () => {
+  /*
+   * 2026-09-22, the direct ask: "at 0% this should default to about ## hours a
+   * night, 4 days a week, and the calendar should indicate a mon-thurs
+   * schedule."
+   *
+   * TWO THINGS, and only at 0%. The nights count stops being derived and
+   * becomes `NOT_STARTED_NIGHTS`, and the sentence's second clause states DAYS
+   * rather than HOURS a week. Both are starting positions: a learner who picks
+   * a nights count or builds a plan overrides them like any other default.
+   */
+  const seedNotStarted = () =>
+    seed({ 'dashboard-progress-state': { enabled: true, variant: 'not-started' } })
+
+  it('states days a week, not hours a week', () => {
+    seedNotStarted()
+    renderShell(TESTING_URL)
+    const tile = paceTile()
+    expect(tile.textContent).toMatch(new RegExp(`${NOT_STARTED_NIGHTS} days a week`))
+    // The hours-a-week clause is what it REPLACES, so its absence is the claim.
+    expect(tile.textContent).not.toMatch(/hours a week/)
+  })
+
+  it('still DERIVES the evening — the four nights change the maths, not the honesty', () => {
+    /* The point of the ask is the shape of the week, not a friendlier number.
+       The evening is whatever the course needs spread over four nights, so it
+       is still a figure the fixtures support. Asserted as "a figure is stated"
+       rather than as its value, which moves with the fixture. */
+    seedNotStarted()
+    renderShell(TESTING_URL)
+    expect(paceTile().textContent).toMatch(/About\s*\d+(½|¼|¾)?\s*hours? a night/)
+  })
+
+  it('shades Mon–Thu on the week strip', () => {
+    // `defaultWeekdays(4)` is Monday-first and returns [0,1,2,3], so the strip
+    // and the nights count cannot disagree about WHICH four days.
+    seedNotStarted()
+    renderShell(TESTING_URL)
+    /* ⚠ `span, button` AS OF 2026-09-23. The strip's cells became BUTTONS at
+       0% that day — the direct ask, "have these be clickable so the user can
+       see this change in real time... to set the goal" — so a `span`-only
+       query found nothing on the one persona this test seeds. The cell's
+       styling is unchanged either way, which is why the assertions below are
+       not. */
+    const labels = [...paceTile().querySelectorAll('span, button')]
+      .filter((el) => /^[MTWFS]$/.test(el.textContent ?? ''))
+      .slice(0, 7)
+    expect(labels).toHaveLength(7)
+    /* A planned cell is filled SOLID with `--color-primary-500`; an unplanned
+       one is `transparent`. Every cell carries a `background`, so the presence
+       of the property says nothing — the FILL is what differs, along with the
+       ring and the ink, which all follow the same boolean.
+
+       ⚠ `-500`, NOT `-100`, as of 2026-09-23. The pale `primary-100` fill was
+       the old treatment; the direct ask made an ON night a solid `primary-500`
+       disc with `primary-100` letters. It applied to the SUGGESTION strip
+       first and to the ACTUAL one within the hour ("the days of the week being
+       filled in will be solid like the update we did for 0%"), so both modes
+       now draw the same disc and `primary-100` survives only as the ink. */
+    const filled = labels.filter((el) =>
+      (el as HTMLElement).style.background.includes('--color-primary-500'),
+    )
+    expect(filled).toHaveLength(NOT_STARTED_NIGHTS)
+    expect(filled.map((el) => el.textContent)).toEqual(['M', 'T', 'W', 'T'])
+    // …and the other three are explicitly transparent, not merely different.
+    const empty = labels.filter((el) => (el as HTMLElement).style.background === 'transparent')
+    expect(empty.map((el) => el.textContent)).toEqual(['F', 'S', 'S'])
+  })
+
+  it('leaves a learner who HAS started on the derived week', () => {
+    /* The guard. `notStarted` is passed from `resume.progress`, so a mid-course
+       learner must keep the nights the model picked — handing the beginner's
+       default to someone at 62% would understate their week.
+
+       ⚠ HOW THE GUARD IS READ CHANGED ON 2026-09-23, and the claim did not.
+       It used to be a COPY test: the second clause said "hours a week" for a
+       started learner and "days a week" only at 0%, so the two states were
+       told apart by their wording. Both say days now — the started card lost
+       its picker, and with it the only other place the week's shape was stated,
+       so the sentence took it over.
+
+       So it is read as a NUMBER instead, which is what the guard was always
+       about: the count must be the model's, not the beginner's. That is a
+       stronger assertion than the one it replaces — the old wording would still
+       have passed if a started learner had been handed four nights. */
+    seed()
+    renderShell(TESTING_URL)
+    const tile = paceTile()
+    /* ⚠ READ A THIRD WAY ON 2026-09-23, and the claim is unchanged again.
+       It was a COPY test ("hours a week" vs "days a week"), then a NUMBER test
+       (the nights count is not the beginner's four). The headline now states
+       neither: for a started learner it reports the observed average instead
+       of the plan, so there is no nights count in it to read.
+
+       So it is read as WHICH CARD RENDERS, which is what the guard was always
+       protecting. `notStarted` comes from `resume.progress`; if it were passed
+       wrongly, a mid-course learner would get the beginner's card — the goal
+       headline and the three plan options. Asserting the observed-pace card is
+       a more direct test of that than either predecessor. */
+    expect(tile.textContent).toMatch(/(you’re on schedule to finish|at this pace you’ll finish)/i)
+    expect(tile.textContent).not.toMatch(new RegExp(`${NOT_STARTED_NIGHTS} days a week`))
+    /* ⚠ NOT 'Your Study Pace' HERE. That heading is the `options` chooser's;
+       this suite lands on `strip`, which keeps naming the plan ("Steady &
+       Relaxed Study Pace"). The HEADLINE change is in `PaceCardBody` and so is
+       shared by both, which is why the assertion above works either way. */
   })
 })
 
@@ -709,17 +934,21 @@ describe('the post-course steps are their own widgets', () => {
     ])
   })
 
-  it('carries the journey’s own range in its eyebrow, so the sequence starts at 01', () => {
-    /* Without it the column's four eyebrows read "Atlas Study Journey / Step
-       05 / Step 06 / Step 07" and the sequence appears to begin at 05. The
-       range is DERIVED from the real stop count — the same count the licensing
-       steps are offset by — so the two cannot disagree about where 04 ends. */
+  it('calls the whole coursework card Step 1 in its eyebrow', () => {
+    /* Without it the column's eyebrows read "Atlas Study Journey / Step 6 /
+       Step 7 / Step 8" and the sequence appears to begin at 6. The range is
+       DERIVED from the real stop count — the same count the licensing steps are
+       offset by — so the two cannot disagree about where the journey ends.
+
+       UNPADDED as of 2026-09-23, the direct ask ("make 01, 1, etc."). The regex
+       pins the ABSENCE of the leading zero, since that is the whole change and
+       a `\\d+` would pass either way. */
     seed()
     renderShell(TESTING_URL)
     const eyebrows = [...rightColumn().querySelectorAll('p.cre-eyebrow-ink')].map((p) =>
       p.textContent?.trim(),
     )
-    expect(eyebrows[0]).toMatch(/^Steps 01\u2013\d\d \u00b7 Atlas Study Journey$/)
+    expect(eyebrows[0]).toBe('Step 1 \u00b7 Atlas Study Journey')
   })
 
   it('leaves the single-card treatment’s eyebrow alone', () => {
@@ -733,15 +962,28 @@ describe('the post-course steps are their own widgets', () => {
     expect(first?.textContent?.trim()).toBe('Atlas Study Journey')
   })
 
-  it('numbers the steps 05-07, continuing the journey', () => {
-    // Derived from the journey's REAL stop count, not a literal — merging two
-    // completion stops into one already changed that offset once.
+  it('numbers the licensing cards 2, 3, 4 — after the coursework, not after its stops', () => {
+    /* ⚠ THE DERIVATION IS THE REGRESSION THIS NOW GUARDS, which inverts what
+       this test used to be for. It read the journey's stop count and offset the
+       cards past it — so five stops produced "Step 06/07/08" and the column
+       described an eight-step route to a licence.
+
+       There are FOUR steps: the coursework, then these three. The stops are
+       what step 1 is made of. Asserted as literals AND against a changing stop
+       count, so adding a sixth stop fails here instead of silently renumbering
+       three cards. */
     seed()
     renderShell(TESTING_URL)
     const steps = [...rightColumn().querySelectorAll('p')]
       .map((p) => p.textContent?.trim())
-      .filter((t) => /^Step \d\d$/.test(t ?? ''))
-    expect(steps).toEqual(['Step 05', 'Step 06', 'Step 07'])
+      .filter((t) => /^Step \d+$/.test(t ?? ''))
+    expect(steps).toEqual(['Step 2', 'Step 3', 'Step 4'])
+    // …and they do NOT follow the stop count, which is the thing that broke.
+    const stops = journeyStopsFor(
+      dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!.path,
+    )
+    expect(stops.length).toBeGreaterThan(1)
+    expect(steps[0]).not.toBe(`Step ${stops.length + 1}`)
   })
 
   it('names each card by its VISIBLE heading', () => {
@@ -779,30 +1021,38 @@ describe('the post-course steps are their own widgets', () => {
     expect(within(col).getByRole('button', { name: /How to apply/ })).toBeTruthy()
   })
 
-  it('shows the owner/fee line only where there is a FEE', () => {
-    /* Pass State Exam publishes no fee, so its meta was the bare word "PSI" —
-       a one-word row under a sentence, which reads as a label for something
-       missing. The rule is "needs a fee", not "except step 06", so a fourth
-       step sorts itself out.
-   
-       Asserted as the RULE across all three rather than as one absence: an
-       absence check alone would pass just as happily if every meta line
-       vanished. */
+  it('states the FEE on the meta line, and never the owner', () => {
+    /* 2026-09-22: the meta line is the fee alone. It was `owner · fee`, and
+       the owner came off both ends in two asks a day apart — Pass State Exam's
+       bare "PSI" first (it publishes no fee, so the pairing had nothing to
+       pair), then Schedule State Exam's "PSI · $40 exam fee".
+
+       ASSERTED AS THE RULE ACROSS ALL THREE, which is the shape this test has
+       always had and the reason it survived the change rather than being
+       deleted: the note it carried warned that "an absence check alone would
+       pass just as happily if every meta line vanished". So the fees are
+       pinned POSITIVELY and the owners negatively, and a regression in either
+       direction fails.
+
+       The owner is not gone from the product — `step.owner` / `ownerShort` are
+       untouched in the data, the Get Licensed RAIL still prints the full "NY
+       Dept. of Financial Services" (asserted in QeFocusedVersion.test.tsx), and
+       each step's sheet still names PSI and DFS. It is gone from these CARDS. */
     seed()
     renderShell(TESTING_URL)
     const cards = [...rightColumn().querySelectorAll(':scope > section')].slice(1)
     const [schedule, pass, apply] = cards.map((c) => c.textContent ?? '')
-    expect(schedule).toMatch(/PSI · \$40 exam fee/)
-    /* THE SHORT OWNER FORM on the card — "NY", not the 30-character
-       "NY Dept. of Financial Services", which wrapped its fee to a second line
-       in a ~300px column. The FULL name is untouched in the data and is what
-       the Get Licensed rail still prints on QE Focused; asserted there too, so
-       the abbreviation cannot quietly become the only name. */
-    expect(apply).toMatch(/NY · \$80 application fee/)
+    // The fees survive — the half of the line that was kept.
+    expect(schedule).toMatch(/\$40 exam fee/)
+    expect(apply).toMatch(/\$80 application fee/)
+    // …with no owner in front of either, in short or long form.
+    expect(schedule).not.toMatch(/PSI/)
+    expect(apply).not.toMatch(/NY · /)
     expect(apply).not.toMatch(/Dept\. of Financial Services/)
-    // The one with no fee carries no owner line — and nothing else on that card
-    // names PSI either, so this is a genuine absence rather than a moved word.
+    // Pass State Exam publishes no fee, so it has no meta line at all — the
+    // case that produced the rule, and still the one that proves it is a rule.
     expect(pass).not.toMatch(/PSI/)
+    expect(pass).not.toMatch(/fee/)
   })
 
   it('puts the requirements action BELOW the cards, not inside one', () => {
@@ -945,41 +1195,92 @@ describe('the collapse control', () => {
   })
 })
 
-describe('the pacing flag is wired where a reviewer will find it', () => {
-  it('is in the catalog as a variant-only flag with five treatments', () => {
-    const def = FEATURE_FLAGS.find((f) => f.key === 'dashboard-pacing-style')
-    expect(def).toBeTruthy()
-    expect(def?.defaultEnabled).toBe(true)
-    // `presets` was APPENDED (2026-09-21). Order is asserted as well as
-    // membership: the panel renders the variants in this order, and the four
-    // that were here first are the ones a reviewer has already looked at.
-    expect(def?.variants?.map((v) => v.value)).toEqual([
-      'lo-fi',
-      'rate',
-      'runway',
-      'balance',
-      'presets',
-    ])
+describe('the pacing treatment a review link lands on', () => {
+  /*
+   * This block used to pin the FLAG: that it was in the catalog with five
+   * variants in a fixed order, that `defaultVariant` was `presets`, and that it
+   * was inside the rebrand panel scope. All three were about one thing — which
+   * treatment a stakeholder sees on a review link — and the flag was how that
+   * was answered while five treatments existed.
+   *
+   * The flag is retired (2026-09-22). The question it answered has not gone
+   * away, so it is asked directly of the render instead: `?demo=1` renders the
+   * committed baseline and no URL parameter changes the treatment, so what this
+   * asserts IS the entirety of what a reviewer sees.
+   */
+  it('shows the presets card, with no flag seeded', () => {
+    // No `seed({...})` of any pacing key — that is the assertion. What renders
+    // is whatever the version renders, which is now the whole answer.
+    seed()
+    renderShell(TESTING_URL)
+    const tile = paceTile()
+    /* ⚠ NOT `/hours a night/` ANY MORE. That phrasing left the card on
+       2026-09-23: the headline became a finish date and the evening became the
+       third cell of the activity row, written "About 2¼ hours/day". What this
+       test is really about is that SOME pacing card renders with no flag
+       seeded, so it asserts the card's own heading rather than a sentence
+       inside it — a claim that survives the next copy pass. */
+    expect(tile.textContent).toMatch(/Study Pace/)
+    expect(tile.textContent).toMatch(/hours\/day|hours a night/)
+    expect(tile.textContent).toMatch(/You have \d+ days left to finish/)
   })
 
-  it('opens on `presets` — the treatment, not just a non-stub', () => {
-    /* It asserted `runway` until 2026-09-21, under a weaker claim: "the version
-       exists to look at pacing, so landing on `lo-fi` would make the whole
-       thing read as unchanged." Any real treatment satisfied that.
+  it('is not a stub, and cannot be switched back to one', () => {
+    // The weaker claim the original made ("landing on lo-fi would make the
+    // version read as unchanged") is now structural rather than a default: the
+    // Testing arrangement has no branch that reaches `LoFiWidgetBody`.
+    renderShell(TESTING_URL)
+    expect(paceTile().querySelector('[aria-label="Study pace — placeholder"]')).toBeNull()
+  })
+})
 
-       The claim is stronger now because this version became XCEL's DEFAULT the
-       same day. `?demo=1` renders the committed baseline and IGNORES stored
-       flags, and no URL parameter sets one — so this value is not where a
-       stakeholder starts, it is the entirety of what they see on a review link.
-       Which treatment sits here is therefore a design decision, and pinning the
-       specific one is the point rather than an over-tight assertion. */
-    const def = FEATURE_FLAGS.find((f) => f.key === 'dashboard-pacing-style')
-    expect(def?.defaultVariant).toBe('presets')
+
+describe('the course header bar at nought', () => {
+  /*
+   * 2026-09-23, the direct ask: "at 0% hide this bar and shift the title and
+   * eyebrow down."
+   *
+   * An empty groove is the one state where the bar costs more than it says.
+   * Everywhere else it reports a position; at 0 it reports that there is
+   * nothing to report, in the widest element of the band, directly above a stat
+   * row already printing "0 of 42 lessons COMPLETED" in words.
+   */
+  const headerBars = (container: HTMLElement) =>
+    [...container.querySelectorAll<HTMLElement>('div[aria-hidden="true"]')].filter(
+      (el) => el.style.borderRadius === 'var(--radius-pill)' && el.style.height === '8px',
+    )
+
+  it('hides the bar at 0% and keeps it above nought', () => {
+    seed({ 'dashboard-progress-state': { enabled: true, variant: 'not-started' } })
+    const { container, unmount } = renderShell(TESTING_URL)
+    expect(container.textContent).toMatch(/0 of \d+ lessons/i)
+    expect(headerBars(container)).toHaveLength(0)
+    unmount()
+
+    /* AND THE OTHER HALF, which is the assertion that would have been missed:
+       "hidden at 0" is trivially satisfiable by never rendering it. */
+    seed({ 'dashboard-progress-state': { enabled: true, variant: 'progress-on-track' } })
+    const onTrack = renderShell(TESTING_URL)
+    expect(headerBars(onTrack.container).length).toBeGreaterThan(0)
   })
 
-  it('is in the rebrand panel scope', () => {
-    // A key in the catalog but outside the scope is SILENT — the panel filters
-    // the catalog BY the scope, so the control simply would not appear.
-    expect(flagScopeForPath('/dashboard-rebrand')).toContain('dashboard-pacing-style')
+  it('reserves the space rather than letting the header collapse', () => {
+    /* ⚠ THE STRUCTURAL HALF, and the reason this is a test rather than a
+       comment. The cover art is `align-self: stretch` (see
+       `.cre-course-header-narrow > img` in tokens.css) and its foot is
+       deliberately aligned with the stat row's rule — "stretch vertically to
+       align with the bottom of the divider line", the 2026-09-21 ask. A header
+       that simply lost 10px at 0% would re-crop the photograph and break that
+       alignment to fix a bar, and nothing on screen would say why. */
+    seed({ 'dashboard-progress-state': { enabled: true, variant: 'not-started' } })
+    const { container } = renderShell(TESTING_URL)
+    const eyebrow = [...container.querySelectorAll<HTMLElement>('p.cre-eyebrow-ink')].find(
+      (el) => /course progress/i.test(el.textContent ?? ''),
+    )
+    expect(eyebrow).toBeTruthy()
+    // The padding lands on the column that holds the eyebrow and the title.
+    const column = eyebrow!.closest('div[style*="padding-top"]') as HTMLElement | null
+    expect(column).toBeTruthy()
+    expect(column!.style.paddingTop).toBe('10px')
   })
 })

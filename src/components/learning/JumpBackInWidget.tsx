@@ -2,7 +2,7 @@ import type { CSSProperties } from 'react'
 import { ArrowRight, BookOpenThin } from '@/icons'
 import type { CourseCardData } from '@/components/courses/CourseCard'
 import { widgetCardRuledStyle, widgetEyebrowStyle } from './widgetStyles'
-import { NY_LH_PROGRAM_PARTS, NY_LH_LESSON_MINUTES_INVENTED } from '@/data/nyProducerRequirements'
+import { NY_LH_LESSON_PARTS, NY_LH_LESSON_MINUTES_INVENTED } from '@/data/nyProducerRequirements'
 
 /**
  * JUMP BACK IN — the resume card, as its own widget (2026-09-16).
@@ -154,7 +154,7 @@ export function JumpBackInWidget({
                           its stat row use — one separator on this page, not a
                           third kind three inches from the other two. */}
                       <span aria-hidden style={dotStyle} />
-                      Part {partNumber} of {NY_LH_PROGRAM_PARTS}
+                      Part {partNumber} of {NY_LH_LESSON_PARTS}
                     </>
                   ) : null}
                 </p>
@@ -171,7 +171,7 @@ export function JumpBackInWidget({
                   a constant whose name says what it is, and the tests that used
                   to forbid the copy now pin it to that constant instead. */}
               <p style={estimateStyle}>
-                Estimated Time to Complete: {NY_LH_LESSON_MINUTES_INVENTED} minutes
+                About {NY_LH_LESSON_MINUTES_INVENTED} minutes
               </p>
             </>
           )}
@@ -179,7 +179,13 @@ export function JumpBackInWidget({
       {/* 44px stays 44px — the minimum comfortable touch target. `flexShrink: 0`
           so the title column gives way first; the reverse would break "Resume"
           onto two lines, which is the one thing here that must stay one tap. */}
-      <button type="button" onClick={() => onResume?.(course.id)} style={ctaStyle}>
+      <button
+        type="button"
+        /* See `TESTABLE_CTAS` — the attribute is the whole integration. */
+        data-cta-id="home.resume"
+        onClick={() => onResume?.(course.id)}
+        style={ctaStyle}
+      >
         {complete ? 'Review course' : started ? 'Resume' : 'Start course'} <ArrowRight size={16} />
       </button>
       </div>

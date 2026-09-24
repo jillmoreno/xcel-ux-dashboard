@@ -85,6 +85,57 @@
 export const NY_LH_PRELICENSING_LESSONS = 42
 
 /**
+ * HOW THE 42 SPLIT — 41 lessons plus 1 course exam, supplied 2026-09-23 from
+ * the LMS's own step breadcrumb: `Pre-Licensing (41) · Exam (1) · Prep Review ·
+ * Simulated Exams · Survey`.
+ *
+ * ⚠ THE SPLIT IS SOURCED; THE SUM IS AN INFERENCE, and it is the one thing to
+ * check before this goes anywhere load-bearing. 41 + 1 = 42 exactly, and 42 is
+ * what the course card has always printed, so the reading is that the card's
+ * "42 lessons" counts the 41 lessons AND the exam that closes Part 1. That
+ * arithmetic is the whole evidence. Nothing published states it in words, and
+ * the alternative — the course is 41 and the card has been off by one — fits
+ * the same two numbers.
+ *
+ * WHAT TURNS ON IT: {@link NY_LH_PRELICENSING_LESSONS} stays 42, so every
+ * surface counting "26 of 42" keeps counting the same thing and the Compass
+ * tree keeps 42 rows, with row 42 titled as the exam. If the inference is
+ * wrong, the fix is a one-line change here and the 42 becomes 41 everywhere it
+ * is read from — which is why these are constants rather than literals.
+ */
+export const NY_LH_PRELICENSING_LESSON_COUNT = 41
+export const NY_LH_COURSE_EXAM_ITEMS = 1
+
+/**
+ * Part 2's lesson count — 23, from the same LMS breadcrumb.
+ *
+ * ⚠ THIS IS NEW INFORMATION, and it retires a refusal rather than adding a
+ * number. `NY_LH_PRELICENSING_LESSONS`'s own note says Parts 2 and 3 "cannot be
+ * requirement categories without a number being invented for them, which is the
+ * move the hour figures taught us not to make" — because the storefront states
+ * no count. It still states none; the LMS does, and that is a source rather
+ * than an invention.
+ *
+ * IT IS STILL NOT A REQUIREMENT CATEGORY. The number rides on the journey
+ * step's LABEL only. Putting it in the gauge's denominator would grow the
+ * measure the dashboard reports progress against, which is the state's
+ * requirement, and 23 of XCEL's own prep lessons are not part of that.
+ */
+export const NY_LH_PREP_REVIEW_LESSONS = 23
+
+/**
+ * Part 3's simulator count — three, each unlocked by the previous.
+ *
+ * ⚠ THE ONLY COUNT ON THE JOURNEY THAT WAS NEVER IN DOUBT. The storefront
+ * states it in words ("THREE simulators, unlocked in sequence, unlimited
+ * retakes"), which is why the journey step's `group` line has said "3
+ * simulators" since it was written. A constant as of 2026-09-23 only because
+ * the step's LABEL now carries it too, and the same figure typed in two places
+ * one line apart is how they end up disagreeing.
+ */
+export const NY_LH_EXAM_SIMULATORS = 3
+
+/**
  * The 7-day study plan XCEL links from the product page
  * (`https://prepare2pass.com/COURSES/study_guides/lh_ca_7days.pdf`, "Read our
  * recommended study plan"). Kept as a fact about the product even though the
@@ -222,6 +273,50 @@ export const NY_LH_COURSE_CHAPTERS = [
 export const NY_LH_PROGRAM_PARTS = 3
 
 /**
+ * How many PARTS a lesson is split into — three, supplied by Jillienne on
+ * 2026-09-23: "Part 1 of 3 is actually part 1 of a 3-part section in lesson 27."
+ *
+ * ⚠ IT IS NOT {@link NY_LH_PROGRAM_PARTS}, AND THE CARD WAS USING THAT ONE.
+ * The Jump Back In card renders "Lesson 27 · Part 1 of 3", and until today both
+ * halves of that label were wrong about what they counted: the denominator was
+ * the programme's three parts (Pre-licensing / Prep Review / Exam Simulator)
+ * and the numerator was WHICH OF THOSE the learner had reached, derived from
+ * the ordered category list. The label means neither of those things — it is a
+ * position inside ONE LESSON.
+ *
+ * TWO COINCIDENCES HID IT, which is the only reason it survived review: both
+ * counts are three, and a learner in programme-part 1 is also on lesson-part 1,
+ * so the rendered string was right for entirely the wrong reason. It would have
+ * diverged the moment the demo advanced past the pre-licensing course — the
+ * card would have read "Part 2 of 3" because of where they were in the
+ * PROGRAMME, on a lesson they had just opened.
+ *
+ * SUPPLIED, NOT PUBLISHED, and separate from the `_INVENTED` constants for that
+ * reason — nobody made this number up to fill a card, but no source in this
+ * repo states it either. It is also the SAME FOR EVERY LESSON, which is a
+ * simplification rather than a fact: nothing here knows lesson 14 from lesson
+ * 27. A real per-lesson part count replaces this constant and nothing else.
+ */
+export const NY_LH_LESSON_PARTS = 3
+
+/**
+ * Which part of the current lesson the demo learner is on.
+ *
+ * ONE, and stated rather than derived, because NOTHING IN THE FIXTURES TRACKS
+ * IT. Progress is counted in whole lessons — "26 of 42 complete" — so the
+ * learner is at the START of lesson 27 by definition, and part 1 is what that
+ * means. Deriving it from anything available would be inventing a position
+ * inside a lesson the fixtures resolve only to its boundary.
+ *
+ * It is a constant so that real per-part progress replaces one value, and so a
+ * reader asking "why is this always 1" finds the answer instead of the maths
+ * that used to produce it.
+ */
+export const NY_LH_CURRENT_LESSON_PART = 1
+
+
+
+/**
  * Minutes to finish the current lesson — **INVENTED**, and the name says so for
  * the reason `NY_PRODUCER_HOURS_INVENTED` keeps its suffix: a figure that looks
  * like a measurement and is a guess must be impossible to mistake for one.
@@ -246,8 +341,142 @@ export const NY_LH_PROGRAM_PARTS = 3
 export const NY_LH_LESSON_MINUTES_INVENTED = 18
 
 export const NY_LH_CURRENT_CHAPTER_INDEX = 4
+/**
+ * The chapter the demo learner is on.
+ *
+ * ⚠ READS `NY_LH_COURSE_CHAPTERS` AS OF 2026-09-22. It read
+ * `NY_LH_GUIDE_CHAPTERS_PARTIAL` — the twelve decoded from the study guide PDF
+ * — which was defensible while ONE surface showed a chapter name: the Jump
+ * Back In card, where the choice of list was invisible.
+ *
+ * THE COMPASS COURSE PLAYER MADE IT VISIBLE AND WRONG. Its contents tree
+ * renders `NY_LH_COURSE_CHAPTERS` (the eleven Jillienne supplied, which the
+ * note on that list already calls the thing on screen), and marks index 4 as
+ * the current one. So the card said "Life Insurance Policy Provisions, Options
+ * and Riders" while the tree three inches away highlighted "Life Insurance
+ * Premiums, Proceeds & Beneficiaries" — and the card's chapter was not in the
+ * tree AT ALL, because the two lists differ by more than order. A learner
+ * clicking Resume was told they were somewhere the contents could not show
+ * them.
+ *
+ * One list, read by both surfaces, is the fix. `NY_LH_GUIDE_CHAPTERS_PARTIAL`
+ * stays exactly as its own note says — unrendered, the independent record of
+ * what the PDF says.
+ *
+ * WHAT THIS DOES NOT FIX, and it is the open question underneath: nothing
+ * published maps a LESSON number onto a chapter. The card counts 42 lessons
+ * and says "Lesson 27"; this list counts 11 chapters and says index 4. The two
+ * numbering systems still do not reconcile — they now at least name the same
+ * chapter.
+ */
 export const NY_LH_CURRENT_CHAPTER: string =
-  NY_LH_GUIDE_CHAPTERS_PARTIAL[NY_LH_CURRENT_CHAPTER_INDEX]
+  NY_LH_COURSE_CHAPTERS[NY_LH_CURRENT_CHAPTER_INDEX]
+
+/**
+ * ⚠ INVENTED LESSON TITLES — authored 2026-09-23 on the direct ask ("can we
+ * have lesson 27 title match what is demo, and then make up the others that
+ * are shown on the screen 28-33").
+ *
+ * WHAT IS REAL HERE IS EXACTLY ONE ENTRY. Lesson 27 reads
+ * {@link NY_LH_CURRENT_CHAPTER} — REFERENCED, not retyped, so the course
+ * player's contents tree and the Jump Back In card cannot drift into naming the
+ * learner's position two different things. Everything from 28 down is written
+ * to look like a New York Life & Health pre-licensing outline and is sourced
+ * from nobody.
+ *
+ * ⚠ ALL 42 NOW, AS OF 2026-09-23 — the direct ask, "title them all." It covered
+ * 27–33 for one day, which was the window a reviewer saw at 62%, and the note
+ * here argued the partial map WAS the honesty mechanism: the ordinal fallback
+ * made the authored window obvious at a glance.
+ *
+ * WHAT KILLED THAT ARGUMENT is that the window moves. The demo's PROGRESS
+ * control has a Not Started setting, and at 0% the tree shows lessons 1–7 —
+ * seven rows reading "Lesson 1" … "Lesson 7", every one of them a fallback,
+ * with nothing on screen saying so. The mechanism only looked honest from the
+ * one position it was authored for. From every other position it looked like a
+ * half-built feature.
+ *
+ * So the invention is total and the honesty moved into the NAME and this note,
+ * where it does not depend on which lesson the learner happens to be on.
+ *
+ * HOW THEY WERE BUILT, so a reader can judge them: the 42 are laid over
+ * {@link NY_LH_COURSE_CHAPTERS} in order, five to nine lessons per chapter,
+ * with lesson 27 landing on chapter index 4 because that is where
+ * {@link NY_LH_CURRENT_CHAPTER_INDEX} already put the learner. That alignment
+ * is a CONSEQUENCE of the existing fixtures rather than a new claim — but it is
+ * not a published mapping, and nothing outside this file should read the
+ * grouping as one. The topics are ordinary pre-licensing curriculum; the
+ * SEQUENCE, the split points and the wording are all invented.
+ *
+ * `_INVENTED` in the name for the same reason the other three carry it: someone
+ * grepping for what this demo made up finds this with them. When a real outline
+ * arrives it replaces this map and the component needs no change — the lookup
+ * and the fallback already handle a partial map, and the fallback stays for
+ * exactly that reason even though nothing reaches it today.
+ */
+export const NY_LH_LESSON_TITLES_INVENTED: Record<number, string> = {
+  // Chapter 1 — Basic Principles of Life & Health Insurance
+  1: 'Course Orientation and Exam Overview',
+  2: 'What Insurance Is and How It Works',
+  3: 'The Principle of Indemnity and Insurable Risk',
+  4: 'The Business of Insurance: Insurers and Producers',
+  5: 'Types of Insurers and Marketing Systems',
+  // Chapter 2 — Nature of Insurance, Risk, Perils & Hazards
+  6: 'Risk: Pure, Speculative and Insurable',
+  7: 'Perils, Hazards and Loss Exposure',
+  8: 'Methods of Handling Risk',
+  9: 'The Law of Large Numbers and Adverse Selection',
+  10: 'Reinsurance and Risk Sharing',
+  // Chapter 3 — Legal Concepts of the Insurance Contract
+  11: 'Elements of a Legal Contract',
+  12: 'Offer, Acceptance and Consideration',
+  13: 'Contracts of Adhesion and Aleatory Contracts',
+  14: 'Utmost Good Faith: Representations and Warranties',
+  15: 'Concealment, Fraud and Material Misrepresentation',
+  16: 'Agency Law: Authority and Responsibilities',
+  17: 'Waiver, Estoppel and the Parol Evidence Rule',
+  // Chapter 4 — Life Insurance Policies: Provisions, Options & Riders
+  18: 'Term Life: Level, Decreasing and Increasing',
+  19: 'Whole Life: Straight, Limited-Pay and Single-Premium',
+  20: 'Universal Life and Variable Products',
+  21: 'Endowments and Modified Policies',
+  22: 'Standard Policy Provisions and the Entire Contract',
+  23: 'Incontestability, Grace Period and Reinstatement',
+  24: 'Nonforfeiture Options and Cash Value',
+  25: 'Dividend Options and Participating Policies',
+  26: 'Riders: Waiver of Premium, AD&D and Term Riders',
+  /* Chapter 5 — and the ONE REAL ENTRY. Lesson 27 reads
+     {@link NY_LH_CURRENT_CHAPTER}, REFERENCED rather than retyped, so the
+     player's contents tree and the Jump Back In card cannot drift into naming
+     the learner's position two different things. */
+  27: NY_LH_CURRENT_CHAPTER,
+  28: 'Beneficiary Designations and Settlement Options',
+  29: 'Policy Loans, Withdrawals and Surrenders',
+  // Chapter 6 — Life Insurance Underwriting & Policy Issue
+  30: 'Underwriting: Applications and Insurable Interest',
+  31: 'Risk Classification and Substandard Ratings',
+  32: 'Policy Issue, Delivery and Free Look',
+  // Chapter 7 — Group Life Insurance
+  33: 'Group Life: Eligibility, Conversion and Portability',
+  // Chapter 8 — Annuities
+  34: 'Annuities: Structure, Parties and Purpose',
+  35: 'Fixed, Variable and Indexed Annuities',
+  36: 'Annuity Payout and Settlement Options',
+  37: 'Annuity Taxation and Suitability',
+  // Chapter 9 — Social Security
+  38: 'Social Security Benefits and the Blackout Period',
+  // Chapter 10 — Retirement Plans
+  39: 'Qualified Plans: 401(k), IRA and Roth',
+  40: 'Nonqualified Plans and Employer-Sponsored Benefits',
+  // Chapter 11 — Uses of Life Insurance
+  41: 'Uses of Life Insurance: Business and Personal',
+  /* THE 42ND ROW IS THE EXAM, not a lesson — see
+     {@link NY_LH_PRELICENSING_LESSON_COUNT}. It was "Personal Uses, Needs
+     Analysis and Exam Review" for an hour, which merged into 41 when the LMS
+     breadcrumb turned up and said Part 1 is 41 lessons plus one exam. The tree
+     and the journey's step 2 now name the same thing. */
+  42: 'Course Final Exam',
+}
 
 /**
  * Hour requirements — **superseded as the dashboard's MEASURE** (see the days

@@ -5,7 +5,6 @@ import {
   FileLinesRegular,
   GearRegular,
   MagnifyingGlassRegular,
-  PlusRegular,
   RubiLogo,
   XmarkRegular,
 } from '@/icons'
@@ -20,7 +19,8 @@ import {
  *
  *   - **Where you stand** (grows) — the exam-date pill (date · days out) and the
  *     section-progress pill (section name, a track with a knob, the percentage).
- *   - **Study tools** — Notes (with a count), "+ Demo", Rubi.
+ *   - **Study tools** — Notes (with a count) and Rubi. The design's dashed
+ *     "+ Demo" button was removed on 2026-09-24 at the designer's request.
  *   - **Player** — search, settings, close.
  *
  * Like the rail, it is CONFIG-DRIVEN and resolves nothing itself: a Compass page
@@ -45,7 +45,6 @@ export type CompassPlayerBarProps = {
   /** Pinned below the page header at this offset (px). */
   stickyTop: number
   onNotes?: () => void
-  onDemo?: () => void
   onRubi?: () => void
   /** Rubi toggles a panel: pass its state and the button reads as pressed
    *  (the design's filled Rubi button) while it is open. */
@@ -62,7 +61,6 @@ export function CompassPlayerBar({
   notesCount,
   stickyTop,
   onNotes,
-  onDemo,
   onRubi,
   rubiOpen,
   onSearch,
@@ -133,7 +131,6 @@ export function CompassPlayerBar({
             {notesCount}
           </span>
         </ToolButton>
-        <ToolButton label="Demo" onClick={onDemo} icon={PlusRegular} dashed />
         <button
           type="button"
           className="cre-compass-player-btn"
@@ -174,7 +171,6 @@ function ToolButton({
   ariaLabel,
   icon,
   onClick,
-  dashed = false,
   children,
 }: {
   label: string
@@ -182,7 +178,6 @@ function ToolButton({
   ariaLabel?: string
   icon: IconType
   onClick?: () => void
-  dashed?: boolean
   children?: ReactNode
 }) {
   return (
@@ -192,7 +187,7 @@ function ToolButton({
       onClick={onClick}
       disabled={!onClick}
       aria-label={ariaLabel}
-      style={{ ...BUTTON, borderStyle: dashed ? 'dashed' : 'solid' }}
+      style={BUTTON}
     >
       <Glyph icon={icon} />
       <span style={{ ...TEXT, fontWeight: 600 }}>{label}</span>

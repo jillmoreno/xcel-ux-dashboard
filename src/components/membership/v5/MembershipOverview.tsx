@@ -13,10 +13,17 @@ import { tierBadgeIcon } from '@/components/ui/membershipTierBadge'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { getCourseImage } from '@/utils/courseImage'
 import { ProgressBar } from '@/components/ui/ProgressBar'
-import { displayedProgressPct, resolveRenewal, timeRemainingText } from '@/components/learning/learningPathsHomeUtil'
+import { displayedProgressPct, longDate, resolveRenewal, timeRemainingText } from '@/components/learning/learningPathsHomeUtil'
 import { Sheet } from '@/components/ui/Sheet'
 import { GetLicensedStepPanel } from '@/components/learning/GetLicensedStepPanel'
-import { GET_LICENSED_STEPS } from '@/data/nyProducerRequirements'
+import {
+  GET_LICENSED_STEPS,
+  NY_LH_CURRENT_CHAPTER,
+  NY_LH_CURRENT_LESSON_PART,
+  NY_LH_LESSON_MINUTES_INVENTED,
+  NY_LH_LESSON_PARTS,
+} from '@/data/nyProducerRequirements'
+import { CompassHomeCourseCard } from '@/components/compass/CompassHomeCourseCard'
 import { examDateRenewal, useExamDate } from '@/data/examDateStore'
 import { resolvePathCategories } from '@/components/learning/progressGaugeUtil'
 import { Link, useSearchParams } from 'react-router-dom'
@@ -531,6 +538,18 @@ export function MembershipOverview({
      so the alignment is structural. */
   const COURSE_HEADER_COVER = 130
   const COURSE_HEADER_COVER_GAP = 16
+  /**
+   * What the header's progress bar occupies — its 8px height plus the 2px of
+   * rhythm between it and the stat row's own 14px margin.
+   *
+   * Spent as padding ABOVE the eyebrow when the bar is hidden at 0%, so the
+   * header keeps its height and the cluster moves down instead of the block
+   * collapsing. A named constant rather than a 10 at each end because the two
+   * uses must stay equal: if the bar's height ever changes and this does not,
+   * the header grows or shrinks at 0% only — a difference nobody would see
+   * until they flipped the demo's PROGRESS control.
+   */
+  const HEADER_BAR_RESERVE = 10
   // One resolver, shared with the band below — see the note at the bar.
   const headerPct = activeProgressPath ? displayedProgressPct(activeProgressPath) : 0
   /* The count under the bar, from the SAME category list the gauge sums —
@@ -744,7 +763,7 @@ export function MembershipOverview({
               }}
             />
           ) : null}
-        <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ flex: 1, minWidth: 0, paddingTop: headerPct > 0 ? 0 : HEADER_BAR_RESERVE }}>
         {/* THE TITLE WRAPS, NOT THE ROW — 2026-09-17, the direct ask.
             `flex-wrap` sent the whole percentage cluster to its own line the
             moment the heading got long, which moved the number away from the
@@ -876,12 +895,37 @@ export function MembershipOverview({
             `marginTop: 10`, not 18 — the figure sits on the title's line, so
             the bar belongs directly under the pair rather than a row away. */}
         <div style={{ marginTop: 10 }}>
-          <ProgressBar
-            pct={headerPct}
-            height={8}
-            fill="var(--color-primary-500)"
-            track="var(--color-neutral-300)"
-          />
+          {/* HIDDEN AT NOUGHT — 2026-09-23, the direct ask: "at 0% hide this bar
+              and shift the title and eyebrow down."
+
+              An empty groove is the one state where this bar costs more than it
+              says. Everywhere else it reports a position; at 0 it reports that
+              there is nothing to report, in the widest element of the band, and
+              the stat row directly beneath already prints "0 of 42 lessons
+              COMPLETED" in words. A full-width empty track also reads as a
+              failed load rather than as a starting point, which is the wrong
+              first impression on the one screen a learner sees before they
+              begin.
+
+              THE SPACE IS KEPT, which is the second half of the ask and the
+              less obvious half. `HEADER_BAR_RESERVE` goes back as padding above
+              the eyebrow, so the title and eyebrow shift DOWN by exactly what
+              the bar occupied and the header's overall height does not change.
+              That matters structurally rather than cosmetically: the cover art
+              is `align-self: stretch` (see `.cre-course-header-narrow > img` in
+              tokens.css), so a shorter header would re-crop the photograph, and
+              the art's foot is deliberately aligned with the stat row's rule —
+              "stretch vertically to align with the bottom of the divider line",
+              the 2026-09-21 ask. Letting the block collapse would have broken
+              that alignment to fix a bar. */}
+          {headerPct > 0 ? (
+            <ProgressBar
+              pct={headerPct}
+              height={8}
+              fill="var(--color-primary-500)"
+              track="var(--color-neutral-300)"
+            />
+          ) : null}
           {/* The count under the bar, RIGHT-ALIGNED to where the bar ends —
               which is what ties it to the bar rather than to the title. The
               percentage above says how far; this says how far out of what, and
@@ -1149,6 +1193,7 @@ export function MembershipOverview({
                   while looking right, which is the trap the PSI link hit. */}
               <button
                   type="button"
+                  data-cta-id="home.course-details"
                   onClick={() => openDetail('progress')}
                   className="cre-link-action cre-cta-ink"
                   style={{
@@ -1183,6 +1228,48 @@ export function MembershipOverview({
      The block is UNCHANGED, only relocated — its own dependencies
      (`activeCourse`, `activeProgressPath`, `personaRenewal`, `courseHeader`)
      all resolve well above here. */
+
+  /* THE ATLAS HOME'S COURSE CARD (Figma 108:4579, 2026-09-24) — replaces BOTH
+     the course header band and the Jump Back In card on the Atlas/Compass
+     version, the direct ask. Reads the same resolved figures the header band
+     did (`headerRenewal`, `headerDone` / `headerTotal`, the stored exam date),
+     so the demo controls move it exactly as they moved what it replaced; the
+     lesson line is the Jump Back In card's own (next lesson, its part, its
+     title, its invented estimate). Resume goes where Jump Back In's did — the
+     Compass Course page. */
+  const atlasCourseCard = resumeToCompass && activeProgressPath && (
+    // No margin of its own: the band's row below already opens the same gap
+    // the Jump Back In card had above Study Pace.
+    <div>
+      <CompassHomeCourseCard
+        courseTitle={activeProgressPath.title}
+        coverUrl={courseCover}
+        examDate={storedExamDate ? longDate(storedExamDate) : undefined}
+        leftToComplete={timeRemainingText(headerRenewal.weeksLeft)}
+        completed={headerDone}
+        total={headerTotal}
+        unit={headerUnit}
+        lessonNumber={headerDone + 1}
+        partNumber={NY_LH_CURRENT_LESSON_PART}
+        partCount={NY_LH_LESSON_PARTS}
+        lessonTitle={NY_LH_CURRENT_CHAPTER}
+        estimatedMinutes={NY_LH_LESSON_MINUTES_INVENTED}
+        complete={personaRenewalReady}
+        onBegin={resumeToCompass}
+        onOverview={() =>
+          setShellParams(
+            (prev) => {
+              const next = new URLSearchParams(prev)
+              next.set('section', 'course')
+              next.set('coursePage', 'overview')
+              return next
+            },
+            { replace: true },
+          )
+        }
+      />
+    </div>
+  )
 
   // The Learner Focused version's joined top-section card (navy CLP + white
   // Jump Back In). Replaces the Your-Learning row in the stacked layout.
@@ -1227,6 +1314,7 @@ export function MembershipOverview({
       // — with nothing studied the pace card states the suggested week instead
       // of reading an empty one back as failure.
       weekMinutes={personaDrivesPath ? persona!.weekMinutes : undefined}
+      dailyMinutes={personaDrivesPath ? persona!.dailyMinutes : undefined}
       // TESTING 2 ONLY — the left square tile renders the real derived pace and
       // its Adjust sheet instead of the lo-fi placeholder. A SEPARATE prop from
       // `paceOnly` because the two versions ask different questions of this
@@ -1238,7 +1326,12 @@ export function MembershipOverview({
       // the prop's own note: narrowing the header and lifting the Study Journey
       // are one change, because the header was the full-width block pushing the
       // grid down.
-      headerSlot={testing ? courseHeaderBand : undefined}
+      headerSlot={atlasCourseCard || (testing ? courseHeaderBand : undefined)}
+      // Atlas: the course card above already carries the next lesson and its
+      // action, so the Jump Back In card would say it twice.
+      hideResume={Boolean(atlasCourseCard)}
+      // …and the Study Pace card matches the framed modules beside it.
+      framedPace={Boolean(atlasCourseCard)}
       onOpenStop={openJourneyStop}
       // Get Licensed steps open the REQUIREMENTS SHEET — the only surface that
       // describes these three (XCEL's published page covers sitting the exam,

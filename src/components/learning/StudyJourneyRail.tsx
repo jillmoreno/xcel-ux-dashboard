@@ -74,6 +74,7 @@ export function StudyJourneyRail({
   onOpenStop,
   onViewAll,
   stepRange = false,
+  stepNumber = 1,
 }: {
   path: LearningPathSummary
   /** Open a stop. Omitted → the rows render as plain text rather than links. */
@@ -96,6 +97,9 @@ export function StudyJourneyRail({
    * line to change if the range is wanted everywhere.
    */
   stepRange?: boolean
+  /** Which step the coursework is, in the `stepRange` eyebrow. 1 by default;
+   *  2 on the Atlas home, where Schedule State Exam leads (2026-09-24). */
+  stepNumber?: number
 }) {
   /*
    * RAIL TREATMENT — `dashboard-journey-style`, variant-only (2026-09-16).
@@ -120,7 +124,7 @@ export function StudyJourneyRail({
      disagree about where 04 ends and 05 begins. */
   const eyebrowText =
     stepRange && stops.length > 0
-      ? `Steps 01\u2013${String(stops.length).padStart(2, '0')} \u00b7 ${STUDY_JOURNEY_EYEBROW}`
+      ? `Step ${stepNumber} \u00b7 ${STUDY_JOURNEY_EYEBROW}`
       : STUDY_JOURNEY_EYEBROW
   /*
    * LESS WORDS. `metaWords` prints group · count · status, which on this
@@ -373,23 +377,42 @@ export function StudyJourneyRail({
             </>
           )
           return (
-            <li key={stop.id} style={itemStyle}>
+            <li key={stop.id} style={syllabus ? syllabusItemStyle : itemStyle}>
               {/* The spine + node. `aria-hidden` throughout: the ordered list
                   already conveys sequence to a screen reader, and the status is
                   in the row's own text — never colour alone. */}
               <span aria-hidden style={syllabus ? syllabusRailColStyle : railColStyle}>
                 {syllabus ? (
-                  // NUMBERED nodes. The sequence is already an `<ol>`, so the
-                  // digits are decoration for sighted readers rather than the
-                  // only thing conveying order — which is why this whole column
-                  // stays `aria-hidden`.
+                  /* PLAIN CIRCLES, NO DIGITS — 2026-09-23, the direct ask:
+                     "change the UI for these numbers - just make circles. The
+                     steps are getting to be too much."
+                
+                     THE DIGITS WERE NUMBERING THE WRONG THING. Five numbered
+                     stops here plus three numbered cards below made an
+                     eight-step journey out of what is really four: the
+                     coursework is ONE step, and these five are what it is made
+                     of. Numbering them competed with the numbering that
+                     matters. The `<ol>` still carries the order for anyone not
+                     looking at it, which is why this column was always
+                     `aria-hidden` — the digits were decoration, and removing
+                     decoration costs nothing semantic.
+                
+                     SMALLER WITH THEM: 26px sized a two-digit label, and an
+                     empty 26px ring reads as a missing avatar. 14 is the size
+                     the compact rail's own node uses and the size the Compass
+                     player's contents bullets use, so the product has one
+                     circle. */
                   <span
                     style={{
-                      ...syllabusNodeStyle,
-                      ...(isCurrent ? syllabusNodeCurrentStyle : null),
+                      ...syllabusDotStyle,
+                      ...(stop.status === 'completed'
+                        ? syllabusDotDoneStyle
+                        : isCurrent
+                          ? syllabusDotCurrentStyle
+                          : null),
                     }}
                   >
-                    {String(i + 1).padStart(2, '0')}
+                    {stop.status === 'completed' && <CircleCheck size={11} aria-hidden />}
                   </span>
                 ) : (
                 <span
@@ -406,11 +429,36 @@ export function StudyJourneyRail({
                   {stop.status === 'completed' && <CircleCheck size={11} aria-hidden />}
                 </span>
                 )}
-                {!isLast && <span style={syllabus ? syllabusSpineStyle : spineStyle} />}
+                {/* THE CONNECTOR IS DASHED UNLESS THE STEP ABOVE IT IS DONE
+                    — 2026-09-23, the direct ask.
+
+                    It reads as ground covered vs ground ahead, and it is the
+                    SEGMENT BELOW a node that carries it: a solid length under
+                    step 1 says "you finished this and moved on", which is the
+                    thing the learner wants to see. The stop's own status is the
+                    only input, so the rail cannot disagree with the words on
+                    the row beside it.
+
+                    NOT COLOUR — the same `--color-border-subtle` throughout.
+                    The dash is a texture, so it survives the dark theme and
+                    does not become a third status hue on a rail that already
+                    says everything in words (2.1.4.1, not-by-colour-alone). */}
+                {!isLast && (
+                  <span
+                    style={
+                      syllabus
+                        ? stop.status === 'completed'
+                          ? syllabusSpineStyle
+                          : syllabusSpineDashedStyle
+                        : spineStyle
+                    }
+                  />
+                )}
               </span>
               {interactive ? (
                 <button
                   type="button"
+                  data-cta-id="home.journey-stop"
                   onClick={() => onOpenStop?.(stop.id)}
                   className="cre-journey-stop"
                   style={rowButtonStyle}
@@ -585,13 +633,18 @@ export function GetLicensedRail({
                 /* SOLID, not dashed — these steps are open, not locked. See
                    `syllabusNodeOpenStyle`. */
                 <span style={{ ...syllabusNodeStyle, ...syllabusNodeOpenStyle }}>
-                  {String(startNumber + i).padStart(2, '0')}
+                  {startNumber + i}
                 </span>
               ) : (
                 <span style={stepNumberStyle}>{i + 1}</span>
               )}
+              {/* THE OLD 18px SPINE, kept deliberately. The tightening asked
+                  for on 2026-09-23 was "the spacing between steps 1-5" — this
+                  is the Get Licensed list, and its rows are unchanged, so
+                  shortening only its connector would leave a stub between
+                  nodes that are still 55px apart. */}
               {i < GET_LICENSED_STEPS.length - 1 && (
-                <span style={syllabus ? syllabusSpineStyle : spineStyle} />
+                <span style={syllabus ? syllabusStepSpineStyle : spineStyle} />
               )}
             </span>
             {/* WHOLE-ROW TARGET, hover + chevron — 2026-09-16, matching the
@@ -888,11 +941,11 @@ const syllabusNodeOpenStyle: CSSProperties = {
   border: '1px solid var(--color-neutral-300)',
 }
 
-const syllabusNodeCurrentStyle: CSSProperties = {
-  border: '2px solid var(--color-primary-500)',
-  background: 'var(--color-primary-700)',
-  color: 'var(--color-text-inverse)',
-}
+/* `syllabusNodeCurrentStyle` — the 26px filled "you are here" disc — retired
+   2026-09-23 with the numbered nodes it styled. Its job moved to
+   `syllabusDotCurrentStyle`, at 14px and without a digit to hold.
+   `syllabusNodeStyle` itself is still live: the QE version's Get Licensed rail
+   draws numbered nodes, and those keep their numbers. */
 
 const headerRowStyle: CSSProperties = {
   display: 'flex',
@@ -1077,8 +1130,87 @@ const spineStyle: CSSProperties = {
   background: 'var(--color-border-subtle)',
 }
 
-/** The syllabus treatment's roomier spine — see the note at the list. */
-const syllabusSpineStyle: CSSProperties = { ...spineStyle, minHeight: 18 }
+/* THE SYLLABUS SPINE, TIGHTENED 2026-09-23 on the direct ask ("reduce the
+   spacing between steps 1-5"). 18 -> 14 here and 8 -> 3 on the item's
+   `paddingBottom` below: ~55px node-to-node becomes ~42px, so the steps read as
+   one block rather than a column you scan down.
+
+   BOTH NUMBERS MOVED TOGETHER because either alone would have done it badly.
+   Cutting only the spine leaves the ROWS as far apart and shortens the line
+   between them, which reads as a broken connector; cutting only the padding
+   crowds the titles while the spine still reserves its 18px.
+
+   ⚠ 14, NOT 8, AND THE FLOOR IS DOING REAL WORK. It was 8 for an hour and was
+   reported as "should be dashed, not solid" — which it already was. Every row
+   but the first carries a status sub-line ("After your coursework"), so every
+   spine but the first was 15px; the first was 9. A 2px dashed border draws
+   roughly a 4px dash and a 4px gap, so nine pixels is one dash and a stub, and
+   it reads as a short solid rule. The dash only says "not done yet" if the
+   segment is long enough to repeat.
+
+   So this floor is a LEGIBILITY MINIMUM rather than spacing: it must stay above
+   about two dash cycles. Anything that shortens the first row again — dropping
+   the sub-line from the others, say — has to be checked against it, because the
+   failure is silent and looks like a status bug rather than a sizing one. */
+const syllabusSpineStyle: CSSProperties = { ...spineStyle, minHeight: 14 }
+
+/** The same spine, dashed — every segment except one under a completed step.
+ *  `width: 0` with a left border, because a 2px dashed BACKGROUND is not a
+ *  thing CSS can draw; the border is what produces the dashes. */
+const syllabusSpineDashedStyle: CSSProperties = {
+  ...syllabusSpineStyle,
+  width: 0,
+  background: 'none',
+  borderLeft: '2px dashed var(--color-border-subtle)',
+}
+
+/** The syllabus list's tighter row gap — see the spine above; the two are one
+ *  measurement and must move together. */
+const syllabusItemStyle: CSSProperties = { ...itemStyle, paddingBottom: 3 }
+
+/*
+ * THE STOP DOT — the journey's node since 2026-09-23, when the digits came off.
+ *
+ * It is `nodeStyle`'s geometry with `syllabusNodeStyle`'s dashed ring: 14px,
+ * the size used by the compact rail and by the Compass player's contents
+ * bullets, and the dashed neutral ring this codebase already reads as "not
+ * started" (the detail panel's course rows use it too).
+ *
+ * NOT `nodeStyle` ITSELF, spread-and-overridden. That one is the dot rail's,
+ * and the two treatments have drifted apart twice already — this way a change
+ * to either cannot silently reach the other.
+ */
+const syllabusDotStyle: CSSProperties = {
+  flexShrink: 0,
+  width: 14,
+  height: 14,
+  marginTop: 3,
+  borderRadius: '50%',
+  border: '1px dashed var(--color-neutral-300)',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: 'var(--color-text-inverse)',
+  background: 'transparent',
+}
+
+/** Done — filled, with the check the dot rail's node uses at the same size. */
+const syllabusDotDoneStyle: CSSProperties = {
+  border: '1px solid var(--color-primary-700)',
+  background: 'var(--color-primary-700)',
+}
+
+/** The stop you are ON — filled and undashed, so "you are here" survives being
+ *  scanned. Same call `nodeCurrentStyle` makes on the dot rail. */
+const syllabusDotCurrentStyle: CSSProperties = {
+  border: '2px solid var(--color-primary-700)',
+  background: 'var(--color-primary-700)',
+}
+
+/** Get Licensed's spine, at the height the journey's used to be. See its call
+ *  site: that list keeps `itemStyle`'s 8px rows, so it keeps the spine to
+ *  match. */
+const syllabusStepSpineStyle: CSSProperties = { ...spineStyle, minHeight: 18 }
 
 // Split so a themed class can own the colour. See the note at the Get Licensed
 // link: spreading a style that carries `color` defeats the class that is there

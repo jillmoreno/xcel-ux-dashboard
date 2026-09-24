@@ -78,18 +78,21 @@ const REBRAND_FLAGS = [
   'dashboard-free-content-bands',
   // Full-width course header above the overview — off by default.
   'dashboard-course-header',
+  // The Study Pace card's three flags, pulled from main with the home page
+  // (2026-09-24). Variant-only; see the catalog entries.
+  'study-pace-readout',
+  'study-pace-preset',
+  'study-pace-chooser',
   // Study Journey rail treatment — compact rail / syllabus card.
   'dashboard-journey-style',
   // Current Course Progress stats treatment — bare cells / stat card. A
   // separate axis from the block style, so the two combine.
-  'dashboard-clp-stats',
   // Current Course Progress block treatment — light / big-number / navy card.
   // Variant-only; a treatment rather than a different set of facts.
   'dashboard-clp-style',
   // Pacing tile treatment on the Testing version — lo-fi / rate / runway /
   // balance. Variant-only, and inert on every other version, where the tile is
   // still half of the square pair.
-  'dashboard-pacing-style',
   // Heading font on the overview — Sans (brand) ⇄ Serif. Variant-only; see the
   // catalog entry for why the serif is a system stand-in rather than the face
   // on the live site.

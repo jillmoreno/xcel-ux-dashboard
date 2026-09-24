@@ -1620,8 +1620,9 @@ top of the content column, under the page header and right of the rail,
 - **Config-driven**, like the rail: exam date, days out, section, notes count
   and one optional handler per action. **An action with no handler renders
   disabled** — today only **Rubi** (→ the course's Rubi Insights page) and
-  **close** (→ the course Overview) have somewhere to go; Notes, "+ Demo",
-  search and settings are drawn as designed but inert.
+  **close** (→ the course Overview) have somewhere to go; Notes, search and
+  settings are drawn as designed but inert. The design's dashed "+ Demo"
+  button was removed (2026-09-24).
 - **The section pill is derived** — the TOC's current section, its percentage
   its lessons done ÷ total (1 of 7 → 14%), so it agrees with the rail's ticks.
   The design is drawn at 0%. The track fills to the knob in the section ink;
@@ -3910,3 +3911,65 @@ being one member means a stray brand literal is a compile error rather than a
 runtime surprise. Then `npx vitest run`, then `npm run smoke` — and remember
 `npm test` does NOT run the smoke suites.
 
+
+### Atlas — home contents pulled from main (2026-09-24)
+
+The Atlas branch took **main's home-page CONTENTS only**: the Study Pace card
+and sheet (`StudyPaceTile`, `StudyPaceSheet`, `lib/studyPace`), the Study
+Journey widget and rail, Jump Back In, the progress gauge and widget styles,
+the progress fixtures, `nyProducerRequirements`, three icons (`loveseat`,
+`mug-hot`, `person-running-fast`) and their tests. With them came what the card
+cannot run without: the `study-pace-chooser` / `-preset` / `-readout` flags (a
+flag missing from the catalog reads OFF), the retirement of
+`dashboard-pacing-style` and `dashboard-clp-stats`, main's `dashboard-progress-state`
+variant list (Off Track archived) and the matching removal of the `pace-wont-fit`
+persona.
+
+**Deliberately NOT pulled:** main's header, left rail and chrome; its Compass
+course player ("Option 2" — `CompassCoursePlayer`, `CourseContentV2`,
+`courseTakeover`), so Home's Resume still opens this branch's Compass Course page;
+main's picker archive (QE Focused and Marketing Focused stay in this branch's
+picker, and the three picker-order tests say so); `ARCHIVED_ITEMS`,
+`prototypeFeatures`, flag maturity, and the `course-launcher-style`,
+`dashboard-navigation` and `dashboard-text-tiers` flags.
+
+**The Atlas Home sits on `--color-compass-page`** (#f8f6f3), the course pages'
+warm page, set on the shell grid while `active === 'dashboard'`.
+
+**The Atlas Home takes the Overview's 56px margin** on every side (2026-09-24), in `SectionShell`, Atlas + Home only.
+
+**The Atlas Home's course card** (Figma 108:4579, 2026-09-24) —
+`CompassHomeCourseCard`, handed to the band as `headerSlot` with `hideResume`,
+replaces BOTH the Course Progress header and the Jump Back In card on
+Atlas/Compass only. Live figures, not the design's: the design is drawn at
+not-started ("0 of 42", "Lesson 1", "Begin Course"); past that the button
+reads "Resume Course", and a booked exam date replaces "Needs Scheduled". The
+button opens the Compass Course page. Study Pace and the right column are
+unchanged.
+
+**The Atlas Home's Study Pace card is FRAMED** (2026-09-24) — white, no stroke, `--radius-lg` (12px), the Study Journey / Get Licensed shell, via `framedPace` → `cardSurface` → `SquareTile surface="framed"`. Testing keeps the ruled hairline.
+
+**Every filled module on the Atlas Home has a 32px inset** (2026-09-24): the course card, Study Pace (`SquareTile surface="framed"`), and Study Journey Steps 1–2 (`StudyJourneyWidget cardPadding`). Steps 3–4 have no fill and are unchanged; Testing keeps its insets.
+
+**The Atlas demo window is 1608 wide** (2026-09-24), `.cre-demo-stage-window--atlas`; other versions keep 1440. The content column stays capped at 1180 — the extra lands in the warm right filler (Home and Course pages), and the header bar and its row run the full width, so the bell + profile sit 24px from the right edge like the logo from the left.
+
+**The Compass Course player fills the window** (2026-09-24): on `coursePage=course` the grid is `260px minmax(0, 1fr) 0px`, so the content, player bar, footer and Rubi rail span to the window edge. Home and Overview keep the 1180 cap.
+
+**Schedule State Exam leads on the Atlas Home** (2026-09-24): `examFirst` on `StudyJourneyWidget` renders it as Step 1 above the coursework (Step 2 · Atlas Study Journey, via the rail's `stepNumber`); Pass and Get Licensed stay 3 and 4. Testing keeps coursework first.
+
+**The Atlas Home's left column is 750 wide** (2026-09-24): the band grid is `minmax(0, 750px) minmax(0, 1fr)` on Atlas, and PlatformShell widens that Home column to 1278 (40px gap; 56 was tried and reverted, 2026-09-24) so the right column stays ~376.
+
+**The Atlas course card button always reads "Begin Course"** (2026-09-24), "Review Course" once complete — replacing the earlier "Resume Course" past 0%.
+
+**The Atlas Home's left column pins** (2026-09-24): sticky at 50px under the header (`--cre-shell-top`, the header's real bottom edge incl. the Demo frame's 38px browser strip, set on the shell grid); the right column scrolls on past it.
+
+**The Atlas left rail never scrolls** (2026-09-24): it pins at the header's real bottom edge (`navRailTop` = `headerBottom`, incl. the Demo frame's 38px browser strip) and, in the Demo frame, is 44px shorter so the stage's bottom padding cannot shove it up at the end of the scroll. Other versions keep `railTop`.
+
+**32px between every module on the Atlas Home** (2026-09-24): course card → Study Pace, and each right-column card and the Requirements button. Testing keeps 18 / 20.
+(Except Steps 3 → 4, back to 20 the same day.)
+
+**The Atlas Home's Study Pace card is OUTLINED** (2026-09-24, replacing framed): no fill, 1px `--color-atlas-nav-rule` border (the left rail's edge), `--radius-lg`, 32px inset — `SquareTile surface="outlined"`.
+
+**The Compass Course page's content box** (Figma 49:3338, 2026-09-24) — `CompassCourseContent` replaces the "Course" heading (kept as a hidden <h1>): a #ece3d5-bordered, 12px-corner box with the "Course Content" placeholder, filling the column 56px in from every side. To make it fit the window, the player bar and Rubi rail now pin at `headerBottom` (not `railTop`), Rubi and the column leave out the Demo stage's 44px, and the grid's `100vh - 64px` floor is off on this page.
+
+**Rubi's ask box is pinned to the browser's bottom** (2026-09-24): the slot's height is measured on scroll/resize — its top to the viewport bottom (or its row's bottom at the end of the page) — so the chips + field never run below the window; the thread above scrolls.

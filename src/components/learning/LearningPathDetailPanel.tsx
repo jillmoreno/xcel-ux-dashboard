@@ -29,10 +29,14 @@ import { unitCount } from '@/utils/unitLabel'
 import { NY_LH_COURSE_CHAPTERS } from '@/data/nyProducerRequirements'
 import { XCEL_NY_PRODUCER_PATH_ID } from '@/data/studyCalendarFixtures'
 import type { CourseCardData } from '@/components/courses/CourseCard'
-import { HOME_STATUS_META, STATUS_STRIP_BG, statusLabel, statusMessageFor, timeRemaining, type HomeStatus } from './learningPathsHomeUtil'
+import { HOME_STATUS_META, STATUS_STRIP_BG, statusLabel, statusMessageFor, type HomeStatus } from './learningPathsHomeUtil'
 import { DISCOVERY_COPY } from '@/components/membership/v5/JumpBackInDiscoveryEmpty'
-import { CategoryBars, ProgressDonut } from './progressGauge'
+import { CategoryBars, JourneyStepBars, ProgressDonut } from './progressGauge'
+import { journeyStepRows } from './studyJourneyUtil'
 import { resolvePathCategories } from './progressGaugeUtil'
+import { readExamDate } from '@/data/examDateStore'
+import { daysUntil, formatPaceDate } from '@/lib/studyPace'
+import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 
 /**
  * Synthesize per-category course rows for a multi-category (QE) path. Each
@@ -165,10 +169,47 @@ export function LearningPathDetailPanelContent({
   const totalCompleted = cats.reduce((s, c) => s + c.completed, 0)
   const percent = totalRequired > 0 ? Math.round((totalCompleted / totalRequired) * 100) : path.progressPct
   const hasBreakdown = cats.length >= 2
+  /*
+   * THE STEP 1 BREAKDOWN, for a path the journey covers — 2026-09-23, the
+   * direct ask: "for pre-licensing, this type of data should be appearing in
+   * the Details view, the lines and colors would be based on the items in the
+   * Step 1 container."
+   *
+   * WHY THIS PANEL HAD NOTHING. `resolvePathCategories` returns ONE category
+   * for pre-licensing (the 42 lessons), so `hasBreakdown` is false and the
+   * donut has rendered alone since the path was authored — while the CE path
+   * two clicks away shows a segmented gauge and three labelled bars. The data
+   * for a breakdown does exist; it just lives on the JOURNEY rather than in the
+   * requirement categories.
+   *
+   * ONLY WHEN THE CATEGORIES CANNOT ALREADY DO IT. A path with two or more
+   * requirement categories keeps `CategoryBars` — those rows DO sum to the
+   * donut, which is the stronger relationship, and showing both would put two
+   * breakdowns of one path under one gauge.
+   */
+  const stepRows = hasBreakdown ? [] : journeyStepRows(path)
+  const hasStepRows = stepRows.length > 1
   // Education-type-aware labels (CE defaults when the path omits them).
   const mandatoryLabel = path.mandatoryLabel ?? 'Mandatory'
   const electiveLabel = path.electiveLabel ?? 'Elective'
   const deadlineLabel = path.deadlineLabel ?? 'License Expires'
+  /*
+   * THE PACE CARD'S CEILING AND COUNTDOWN — so this sheet's KPI row states the
+   * same two facts the Study Pace widget does rather than the renewal figures
+   * it used to. See the row itself for what differed.
+   *
+   * `jumpBackIn.expiresAt` is the course's access window, the same field the
+   * band hands the tile. An entered exam date binds earlier when there is one,
+   * which is the model's own rule (`resolveCeiling`) and not a second one.
+   */
+  const paceCeilingIso = readExamDate() ?? path.jumpBackIn?.expiresAt
+  const paceDaysLeft = (() => {
+    const raw = daysUntil(paceCeilingIso, new Date(FIXTURE_TODAY))
+    /* MINUS ONE, the same day `resolveCeiling` takes off: finishing on the day
+       access dies is not finishing, and a row that printed the raw count would
+       be one ahead of the card it is meant to match. */
+    return raw == null ? null : Math.max(0, raw - 1)
+  })()
 
   const courses = mandatoryCoursesFor(brand, path.id)
   const mandatoryCoursesRaw = courses.filter((c) => c.badge === 'mandatory')
@@ -261,7 +302,10 @@ export function LearningPathDetailPanelContent({
   // `weeksRemaining`; other callers fall back to the global tracker. It formats
   // via `timeRemaining()` (year+weeks → weeks → a day countdown under 30 days).
   const weeksLeft = path.weeksRemaining ?? LICENSE_TRACKER.weeksLeft
-  const time = timeRemaining(weeksLeft)
+  /* `const time = timeRemaining(weeksLeft)` lost its consumer on 2026-09-23,
+     when the KPI row swapped the RENEWAL countdown for the pace ceiling's — see
+     the row. `weeksLeft` survives because `urgentStatus` below still reads it,
+     and `timeRemaining` is still the formatter every other surface uses. */
   // License Expires — the path's own deadline (parsed from mm/dd/yyyy) so it
   // agrees with the sub-line + the Time Remaining countdown; the static tracker
   // is the fallback for paths without a date.
@@ -320,7 +364,29 @@ export function LearningPathDetailPanelContent({
       : statusMessageFor(homeStatus, firstName),
   }
   // The status treatment, resolved once so both placements render identically.
-  const statusSection = <StatusSection style={statusStyle} status={status} homeStatus={homeStatus} />
+  /*
+   * THE STATUS SECTION IS HIDDEN IN THIS SHEET — 2026-09-23, the direct ask:
+   * "Hide the On Track section in the sheet."
+   *
+   * UNWIRED, NOT DELETED, and deliberately so: `StatusSection` and its three
+   * treatments (`strip`, `band`, `callout`) are all intact, `statusStyle` still
+   * resolves its flag, and `StatusStrip` has a SECOND live caller —
+   * `LearnerFocusedBand` renders it on the page surface, which is the whole
+   * reason it was exported. Deleting any of it here would take that with it.
+   *
+   * WHAT THE PAGE STILL SAYS: the band behind this sheet carries the same
+   * status a section above, and the Study Pace card names the plan in its own
+   * heading. The sheet was the third saying of it, on the surface with the
+   * least room.
+   *
+   * ⚠ `urgentTone` AND `urgentStatus` STILL LIVE, and are not orphans — they
+   * tint the KPI row's Access Ends tile, which is the one place a status still
+   * shows through in here. Removing them with the section would have taken the
+   * tint silently.
+   */
+  const statusSection = SHOW_STATUS_IN_SHEET ? (
+    <StatusSection style={statusStyle} status={status} homeStatus={homeStatus} />
+  ) : null
 
   return (
     <>
@@ -403,33 +469,68 @@ export function LearningPathDetailPanelContent({
               )}
             </div>
 
-            {/* KPI row — Deadline / Time Remaining / Completed (Figma 2:4655). */}
+            {/* STEP 1's OWN ITEMS, on a path whose requirement categories are a
+                single row. BELOW the donut rather than beside it, unlike
+                `CategoryBars`: there are six of these against the CE path's
+                three, and six rows in the ~180px left of a 104px gauge wraps
+                every label. Full width also stops them reading as a
+                decomposition of the arc they sit under, which they are not —
+                see `journeyStepRows`. */}
+            {hasStepRows && (
+              <div style={{ marginTop: 16 }}>
+                <p style={stepRowsEyebrowStyle}>Step 1 · Complete Coursework</p>
+                <JourneyStepBars rows={stepRows} />
+              </div>
+            )}
+
+            {/*
+              THE STUDY PACE WIDGET'S OWN THREE — 2026-09-23, the direct ask:
+              "update these to match the data points in the Study Pace widget."
+
+              It was Target Date / Time Remaining / Completed, and the first two
+              disagreed with the card on the page behind this sheet. Target Date
+              printed the RENEWAL deadline (May 28) while the card named the
+              access ceiling it priced against (May 29), and Time Remaining
+              counted to the first while Course Access counted to the second —
+              two dates and two countdowns for one course, a click apart.
+
+              They read the same source now. `paceCeilingIso` is the date the
+              pace model binds to, and `paceDaysLeft` is that countdown minus
+              the day `resolveCeiling` subtracts ("finishing on the day access
+              dies is not finishing"), so this row and the card cannot differ by
+              the one day they differed by before.
+
+              COMPLETED SURVIVES as the third, unchanged. The widget's third
+              cell is Days to review, which this panel has no plan to compute —
+              it shows a course, not a pace — and "26 / 42 lessons" is the fact
+              a Progress tab is for.
+            */}
             <div style={statRowStyle}>
-              <StatTile caption={deadlineLabel}>
-                <span style={statValueStyle}>
-                  {expiresMonth} {expires.day}
-                </span>
-                <span style={statSuffixStyle}> {expires.year}</span>
+              <StatTile caption="Course Access">
+                {paceDaysLeft == null ? (
+                  <span style={statValueStyle}>—</span>
+                ) : (
+                  <>
+                    <span style={statValueStyle}>{paceDaysLeft}</span>
+                    <span style={statSuffixStyle}> {paceDaysLeft === 1 ? 'day' : 'days'}</span>
+                  </>
+                )}
               </StatTile>
               <StatTile
-                caption="Time Remaining"
+                caption="Access Ends"
                 bg={urgentTone?.fill}
                 border={urgentTone ? `1px solid ${urgentTone.accent}` : undefined}
                 captionColor={urgentStatus ? status.color : undefined}
               >
-                {time.expired ? (
-                  <span style={statValueStyle}>Expired</span>
+                {paceCeilingIso ? (
+                  <span style={statValueStyle}>{formatPaceDate(paceCeilingIso)}</span>
                 ) : (
-                  time.segments.map((seg, i) => (
-                    <span key={seg.unit}>
-                      <span style={statValueStyle}>{seg.value}</span>
-                      <span style={statSuffixStyle}>
-                        {' '}
-                        {seg.unit}
-                        {i < time.segments.length - 1 ? ', ' : ''}
-                      </span>
+                  <>
+                    <span style={statValueStyle}>
+                      {expiresMonth} {expires.day}
                     </span>
-                  ))
+                    <span style={statSuffixStyle}> {expires.year}</span>
+                  </>
                 )}
               </StatTile>
               <StatTile caption="Completed">
@@ -591,6 +692,17 @@ function StatusSection({
   if (style === 'band') return <StatusBand status={status} />
   return <StatusStrip homeStatus={homeStatus} status={status} />
 }
+
+/**
+ * Whether the sheet shows its status section at all — `false` since 2026-09-23.
+ *
+ * A CONSTANT RATHER THAN DELETED MARKUP, which is this repo's archive
+ * convention applied in miniature: `StatusSection`, `statusStyle` and all three
+ * treatments stay wired to their call site, so restoring is one word and cannot
+ * be a rebuild. It also keeps them referenced, which is what stops a later
+ * "unused" sweep taking them out from under a live flag.
+ */
+const SHOW_STATUS_IN_SHEET = false
 
 /**
  * Status strip — the pill + message on a very light status-tinted background,
@@ -1073,6 +1185,19 @@ const tabsRowStyle: CSSProperties = {
   borderBottom: '1px solid var(--color-border-subtle)',
 }
 // KPI row — Deadline / Time Remaining / Completed (Figma 2:4655).
+/** The Step 1 rows' heading. The journey's own eyebrow words, so a reviewer
+ *  moving between the Details panel and the Study Journey card recognises the
+ *  same container rather than reading two lists of similar names. */
+const stepRowsEyebrowStyle: CSSProperties = {
+  margin: '0 0 10px',
+  fontFamily: 'var(--font-body)',
+  fontSize: 10,
+  fontWeight: 600,
+  letterSpacing: '0.16em',
+  textTransform: 'uppercase',
+  color: 'var(--color-text-tertiary)',
+}
+
 const statRowStyle: CSSProperties = {
   display: 'flex',
   gap: 12,

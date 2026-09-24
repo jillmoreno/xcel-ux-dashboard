@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import {
+  widgetCardFramedStyle,
   widgetCardRecessedStyle,
   widgetCardRuledStyle,
   widgetEyebrowStyle,
@@ -98,7 +99,7 @@ export function SquareTile({
    * A PROP, so the Readiness stub beside it and Testing 2's square are
    * untouched: they are the same component and must stay the same tile.
    */
-  surface?: 'recessed' | 'ruled'
+  surface?: 'recessed' | 'ruled' | 'framed' | 'outlined'
 }) {
   return (
     <div
@@ -135,6 +136,26 @@ export function SquareTile({
 
            A prop rather than a second component, for the reason `square` is
            one: the arrangements differ in exactly these declarations. */
+        /* FRAMED — the Study Journey / Get Licensed cards' shell: white, NO
+           stroke, `--radius-lg`. The Atlas home's Study Pace card takes it
+           (2026-09-24, the direct ask) so it matches the modules beside it. */
+        ...(surface === 'framed'
+          ? {
+              background: widgetCardFramedStyle.background,
+              border: 'none',
+              borderRadius: widgetCardFramedStyle.borderRadius,
+            }
+          : null),
+        /* OUTLINED — the framed shell with NO fill and a 1px border in the
+           Atlas rail's edge colour (`--color-atlas-nav-rule`). The Atlas home's
+           duplicate Study Pace card, 2026-09-24. */
+        ...(surface === 'outlined'
+          ? {
+              background: 'transparent',
+              border: '1px solid var(--color-atlas-nav-rule)',
+              borderRadius: widgetCardFramedStyle.borderRadius,
+            }
+          : null),
         ...(surface === 'ruled'
           ? {
               background: widgetCardRuledStyle.background,
@@ -159,11 +180,14 @@ export function SquareTile({
               borderLeft: widgetCardRuledStyle.borderTop,
               borderRadius: widgetCardRuledStyle.borderRadius,
             }
-          : {
-              background: widgetCardRecessedStyle.background,
-              borderRadius: 'var(--radius-lg)',
-            }),
-        padding: 16,
+          : surface === 'framed' || surface === 'outlined'
+            ? null
+            : {
+                background: widgetCardRecessedStyle.background,
+                borderRadius: 'var(--radius-lg)',
+              }),
+        // Framed (the Atlas home) takes the page's 32px module inset.
+        padding: surface === 'framed' || surface === 'outlined' ? 32 : 16,
         display: 'flex',
         flexDirection: 'column',
         gap: 10,

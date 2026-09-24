@@ -7,6 +7,8 @@ import {
   defaultPreset,
   formatEvening,
   formatEveningSpoken,
+  observedPace,
+  weeksOnPace,
   weekStanding,
   CEILING_MINS,
   formatPaceDate,
@@ -19,6 +21,11 @@ import {
   STRAIN_MINS,
   EASY_MINS,
   type PaceInput,
+  simulateSchedule,
+  scheduleStanding,
+  scheduleAdvice,
+  hoursPerDayWithin,
+  evenWeek,
 } from '@/lib/studyPace'
 
 /**
@@ -337,5 +344,257 @@ describe('weekStanding', () => {
     expect(s.expected).toBe(60)
     expect(s.shortfall).toBe(4)
     expect(s.behind).toBe(false)
+  })
+})
+
+describe('simulateSchedule — a week, walked', () => {
+  /* Thu 21 May 2026. A WEEKDAY THAT IS NOT MONDAY on purpose: the walk starts
+     from today's own weekday, and every off-by-one in the Mon-first shift
+     disappears if the fixture starts on a Monday. */
+  const TODAY = new Date(2026, 4, 21)
+
+  it('lands the finish on a day the schedule actually studies', () => {
+    const sim = simulateSchedule({
+      today: TODAY,
+      hoursRemaining: 10,
+      hoursByWeekday: evenWeek([0, 1, 2, 3, 4], 2), // Mon–Fri, 2h
+      hardEndIso: '2026-06-03',
+    })!
+    expect(sim.hoursPerWeek).toBe(10)
+    expect(sim.daysPerWeek).toBe(5)
+    // Thu + Fri = 4h, then Mon/Tue/Wed next week spend the last 6.
+    expect(sim.finishIso).toBe('2026-05-27')
+    expect(sim.studyDays).toEqual([0, 1, 4, 5, 6])
+  })
+
+  it('answers differently for the same week on a different day', () => {
+    /* THE WHOLE REASON IT IS A WALK. A division by 10 hours a week gives one
+       answer; these two learners have identical schedules and finish two days
+       apart because one starts on a Saturday with nothing scheduled. */
+    const args = {
+      hoursRemaining: 10,
+      hoursByWeekday: evenWeek([0, 1, 2, 3, 4], 2),
+      hardEndIso: '2026-06-03',
+    }
+    const thursday = simulateSchedule({ ...args, today: new Date(2026, 4, 21) })!
+    const saturday = simulateSchedule({ ...args, today: new Date(2026, 4, 23) })!
+    expect(thursday.finishIso).not.toBe(saturday.finishIso)
+    expect(saturday.studyDays[0]).toBe(2) // nothing until Monday
+  })
+
+  it('measures its buffer against the CEILING, not raw expiry', () => {
+    /* The one departure from the prototype. `hardEndIso` is expiry minus one
+       (or the exam minus its review buffer); a simulator holding its own idea
+       of the deadline is how the sheet comes to congratulate a plan the tile
+       above it calls late. */
+    const sim = simulateSchedule({
+      today: TODAY,
+      hoursRemaining: 4,
+      hoursByWeekday: evenWeek([0, 1, 2, 3, 4, 5, 6], 2),
+      hardEndIso: '2026-05-25',
+    })!
+    expect(sim.finishIso).toBe('2026-05-22')
+    expect(sim.bufferDays).toBe(3)
+  })
+
+  it('refuses to invent a date for a week that is not a plan', () => {
+    const empty = simulateSchedule({
+      today: TODAY,
+      hoursRemaining: 10,
+      hoursByWeekday: evenWeek([], 2),
+      hardEndIso: '2026-06-03',
+    })
+    expect(empty).toBeNull()
+    // …and for one that cannot land inside the horizon at all.
+    const hopeless = simulateSchedule({
+      today: TODAY,
+      hoursRemaining: 4000,
+      hoursByWeekday: evenWeek([0], 1),
+      hardEndIso: '2026-06-03',
+    })
+    expect(hopeless).toBeNull()
+  })
+})
+
+describe('scheduleStanding — what the buffer means', () => {
+  const TODAY = new Date(2026, 4, 21)
+  const sim = (hoursRemaining: number, hardEndIso: string) =>
+    simulateSchedule({
+      today: TODAY,
+      hoursRemaining,
+      hoursByWeekday: evenWeek([0, 1, 2, 3, 4, 5, 6], 2),
+      hardEndIso,
+    })
+
+  it('names the EXAM when the exam is what binds', () => {
+    /* Telling a learner bound by an exam that they have "run past access"
+       sends them to the wrong fix — extend the course, rather than move the
+       exam. The sentence has to name the thing that actually stops them. */
+    const late = scheduleStanding(sim(40, '2026-05-25'), 'exam')
+    expect(late.tone).toBe('bad')
+    expect(late.message).toContain('after you need to be ready')
+    expect(scheduleStanding(sim(40, '2026-05-25'), 'access').message).toContain(
+      'after your access ends',
+    )
+  })
+
+  it('separates comfortable from only-just', () => {
+    // Lands exactly on the last usable day.
+    expect(scheduleStanding(sim(4, '2026-05-22'), 'access').tone).toBe('warn')
+    // …one day of room is still "only just".
+    expect(scheduleStanding(sim(4, '2026-05-23'), 'access').tone).toBe('warn')
+    // …and past the tight threshold it is good.
+    expect(scheduleStanding(sim(4, '2026-05-30'), 'access').tone).toBe('good')
+  })
+
+  it('says what to do when there is no plan yet, rather than printing a date', () => {
+    const none = scheduleStanding(null, 'access')
+    expect(none.tone).toBe('bad')
+    expect(none.message).toBe('Pick at least one study day.')
+  })
+})
+
+describe('scheduleAdvice / hoursPerDayWithin', () => {
+  const TODAY = new Date(2026, 4, 21)
+
+  it('advises on long days without blocking them', () => {
+    const long = simulateSchedule({
+      today: TODAY,
+      hoursRemaining: 40,
+      hoursByWeekday: evenWeek([5, 6], 5),
+      hardEndIso: '2026-08-01',
+    })
+    expect(scheduleAdvice(long)).toContain('split')
+    const brutal = simulateSchedule({
+      today: TODAY,
+      hoursRemaining: 40,
+      hoursByWeekday: evenWeek([5, 6], 8),
+      hardEndIso: '2026-08-01',
+    })
+    expect(scheduleAdvice(brutal)).toContain('hard to keep up')
+    const fine = simulateSchedule({
+      today: TODAY,
+      hoursRemaining: 40,
+      hoursByWeekday: evenWeek([0, 1, 2, 3, 4], 2),
+      hardEndIso: '2026-08-01',
+    })
+    expect(scheduleAdvice(fine)).toBeNull()
+  })
+
+  it('counts the sessions inside the window, not the days', () => {
+    /* A 7-day window from a Thursday contains ONE Saturday, so 6 hours of work
+       on Saturdays only is a 6-hour day — not 6/7ths of one. */
+    expect(
+      hoursPerDayWithin({ today: TODAY, hoursRemaining: 6, weekdays: [5], windowDays: 7 }),
+    ).toBe(6)
+    // …and a window with no chosen day in it is 0, a real state rather than NaN.
+    expect(
+      hoursPerDayWithin({ today: TODAY, hoursRemaining: 6, weekdays: [0], windowDays: 3 }),
+    ).toBe(0)
+  })
+
+  it('rounds the day UP to the quarter hour', () => {
+    /* A fortnight from Thursday holds SIX Mon/Tue/Weds, so 10 hours is 1.67 a
+       day → 1¾, never 1½: rounding down quotes a pace that finishes late. */
+    expect(
+      hoursPerDayWithin({ today: TODAY, hoursRemaining: 10, weekdays: [0, 1, 2], windowDays: 14 }),
+    ).toBe(1.75)
+  })
+})
+
+describe('observedPace', () => {
+  /*
+   * The pace the learner is KEEPING, which the card prints under the one it is
+   * asking for — 2026-09-23, "the Study Pace Goal … and the Actual Users
+   * Average Pace".
+   */
+  it('averages over nights studied, not over days elapsed', () => {
+    /* THE DISTINCTION THE FUNCTION EXISTS FOR. Three evenings of 120, 60 and 90
+       across a Friday's worth of week: divided by the nights actually sat down
+       that is 90 minutes, and divided by the five elapsed days it would be 54 —
+       a figure describing nobody's evening, and one that cannot be compared to
+       the goal's own "2 hours a night". */
+    const s = observedPace({ weekMinutes: [120, 60, 0, 90, 0, 0, 0], todayIndex: 4 })!
+    expect(s.nights).toBe(3)
+    expect(s.minsPerNight).toBe(90)
+    expect(s.total).toBe(270)
+  })
+
+  it('will not count a day that has not happened', () => {
+    /* `weekStanding`'s rule, turned around: that one refuses to call an unlived
+       Friday a Friday they missed, this one refuses to call it one they
+       studied. Fixture weeks are authored whole, so without the gate a Monday
+       would report minutes from the end of the week. */
+    const s = observedPace({ weekMinutes: [100, 999, 999, 999, 999, 999, 999], todayIndex: 0 })!
+    expect(s.nights).toBe(1)
+    expect(s.minsPerNight).toBe(100)
+    expect(s.daysElapsed).toBe(1)
+  })
+
+  it('has no answer for a week with nothing in it', () => {
+    /* Null rather than a zero. "0 hours a night" is a judgement; the absence of
+       a reading is a reading. */
+    expect(observedPace({ weekMinutes: [0, 0, 0, 0, 0, 0, 0], todayIndex: 6 })).toBeNull()
+  })
+
+  it('credits a night the pace never asked for', () => {
+    /* Studying on a rest day is still studying — the same credit
+       `weekStanding` gives, and for the same reason: the function reads
+       minutes, not compliance with a calendar. */
+    const s = observedPace({ weekMinutes: [0, 0, 0, 0, 0, 45, 0], todayIndex: 6 })!
+    expect(s.nights).toBe(1)
+    expect(s.minsPerNight).toBe(45)
+  })
+})
+
+describe('weeksOnPace', () => {
+  /* The activity streak, counted in weeks kept — 2026-09-23. */
+  const base = { todayIndex: 0, nights: 6, minsPerNight: 120 } // 720/wk, 648 with tolerance
+
+  /** 4 whole weeks + a Sunday at the front + today, the fixture's own shape. */
+  const build = (weeks: number[][]) => [0, ...weeks.flat(), 100]
+
+  it('counts only COMPLETE weeks, never the one in progress', () => {
+    /* ⚠ THE CURRENT WEEK IS NOT IN THE STREAK. It has not finished, so it can
+       be neither kept nor missed — counting it would break every learner's
+       streak every Monday morning and mend it again by Sunday. */
+    const full = [120, 120, 120, 120, 120, 120, 0] // 720 — kept
+    const s = weeksOnPace({ ...base, dailyMinutes: build([full, full, full, full]) })
+    expect(s.streak).toBe(4)
+    expect(s.thisWeekNights).toBe(1) // today alone, and it is not in the streak
+  })
+
+  it('breaks on a missed week and keeps the best run', () => {
+    const full = [120, 120, 120, 120, 120, 120, 0]
+    const thin = [60, 0, 0, 0, 0, 0, 0]
+    const s = weeksOnPace({ ...base, dailyMinutes: build([full, full, thin, full]) })
+    expect(s.streak).toBe(1) // only the most recent week survives
+    expect(s.best).toBe(2) // …but the earlier pair is remembered
+  })
+
+  it('credits minutes, not nights — a rest day worked is still worked', () => {
+    /* The same rule `weekStanding` follows: a learner who does their six
+       evenings across five longer ones has kept the week. Counting NIGHTS
+       would call that a miss. */
+    const fiveLong = [145, 145, 145, 145, 145, 0, 0] // 725 over five nights
+    const s = weeksOnPace({ ...base, dailyMinutes: build([fiveLong, fiveLong, fiveLong, fiveLong]) })
+    expect(s.streak).toBe(4)
+  })
+
+  it('does not snap on a rounding error', () => {
+    /* 10% tolerance, `weekStanding`'s. A metric that breaks because a learner
+       finished four minutes short stops being believed. */
+    const nearly = [115, 115, 115, 115, 115, 115, 0] // 690 of 720 — 4% short
+    const s = weeksOnPace({ ...base, dailyMinutes: build([nearly, nearly, nearly, nearly]) })
+    expect(s.streak).toBe(4)
+  })
+
+  it('reports a zero streak without inventing one', () => {
+    /* The at-risk state. Every concept but "no streak at all" needed this
+       designed, and the model has to be able to say it. */
+    const empty = [0, 0, 0, 0, 0, 0, 0]
+    const s = weeksOnPace({ ...base, dailyMinutes: build([empty, empty, empty, empty]) })
+    expect(s.streak).toBe(0)
+    expect(s.best).toBe(0)
   })
 })

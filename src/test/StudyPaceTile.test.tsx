@@ -1,8 +1,9 @@
 import { describe, it, expect } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { render, screen, within, fireEvent } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { StudyPaceTile } from '@/components/learning/StudyPaceTile'
+import { StudyPaceSheet } from '@/components/learning/StudyPaceSheet'
 import {
   studyPace,
   defaultPreset,
@@ -10,8 +11,12 @@ import {
   formatPaceDate,
   defaultWeekdays,
   WEEKDAY_LABELS,
+  paceNameFor,
+  paceOptionsFor,
+  NIGHT_OPTIONS,
 } from '@/lib/studyPace'
-import { FEATURE_FLAGS } from '@/context/FeatureFlagContext'
+import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext'
+import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
 
 /**
  * The two claims this widget exists to keep, and which a refactor is most
@@ -31,9 +36,40 @@ import { FEATURE_FLAGS } from '@/context/FeatureFlagContext'
 
 const TODAY = new Date(2026, 8, 18) // Fri 18 Sep 2026
 
-function renderTile(props: Partial<React.ComponentProps<typeof StudyPaceTile>> = {}) {
+/**
+ * ⚠ `prose` BY DEFAULT HERE, and pinned rather than inherited — 2026-09-23,
+ * when `study-pace-readout` arrived and its `stats` variant became the BRANCH
+ * default. Every assertion below was written against the card's three
+ * sentences; without a provider `useFeatureFlag` hands back the catalog
+ * default, so ten of them started reading a card that no longer says those
+ * words.
+ *
+ * Pinning is the right fix rather than rewriting them: these tests are about
+ * what the card CLAIMS — the window, the ceiling it used, the date it lands on
+ * — and the prose variant is where those claims are still made in sentences.
+ * `readout: 'stats'` below covers the other treatment.
+ */
+function renderTile(
+  props: Partial<React.ComponentProps<typeof StudyPaceTile>> = {},
+  readout: 'prose' | 'stats' = 'prose',
+  chooser: 'strip' | 'options' = 'strip',
+) {
+  /* ⚠ `strip` BY DEFAULT, pinned for the same reason `prose` is — 2026-09-23,
+     when `study-pace-chooser` arrived and `options` became the BRANCH default.
+     The assertions in this file were written against the card that names its
+     plan in the heading and offers the week strip; `options` puts three
+     radio buttons above all of it, which changes both the heading and the
+     button count. The `options` treatment has its own block at the end. */
+  window.localStorage.setItem(
+    'cgp.featureFlags',
+    JSON.stringify({
+      'study-pace-readout': { enabled: true, variant: readout },
+      'study-pace-chooser': { enabled: true, variant: chooser },
+    }),
+  )
   return render(
     <MemoryRouter>
+      <FeatureFlagProvider>
       <StudyPaceTile
         today={TODAY}
         hoursRemaining={24}
@@ -42,6 +78,7 @@ function renderTile(props: Partial<React.ComponentProps<typeof StudyPaceTile>> =
         detailsTo="/dashboard-rebrand?section=study-plan"
         {...props}
       />
+      </FeatureFlagProvider>
     </MemoryRouter>,
   )
 }
@@ -50,7 +87,9 @@ function renderTile(props: Partial<React.ComponentProps<typeof StudyPaceTile>> =
 const sheet = () => screen.getByRole('dialog')
 /**
  * Open the sheet from whichever control the current shape offers — "Adjust" on
- * the square, "Customize Study Plan" on the card since the 2026-09-21 redesign.
+ * the square, and the card's own plan link since the 2026-09-21 redesign —
+ * "Customize Your Pacing" at 0%, "View Study Plan" once the learner has
+ * started (2026-09-23).
  *
  * MATCHED BY ROLE, not by label, precisely because the label differs and the
  * CLAIM does not: both shapes open the SAME sheet, which is the reuse the card
@@ -58,7 +97,14 @@ const sheet = () => screen.getByRole('dialog')
  * broken sheet.
  */
 const openSheet = async (user: ReturnType<typeof userEvent.setup>) => {
-  await user.click(screen.getByRole('button', { name: /Adjust|Customize Study Plan/ }))
+  await user.click(screen.getByRole('button', {
+      /* Three shapes, three labels: the square tile's `Adjust`, the 0% card's
+         `Customize Your Pacing`, the started card's `View Study Plan`. Matched
+         by ROLE rather than pinned to one, because the CLAIM is that all three
+         open the same sheet — a helper tied to a single label would make a
+         rename read as a broken sheet. */
+      name: /Adjust|Customize Your Pacing|View Study Plan/,
+    }))
   return sheet()
 }
 
@@ -83,15 +129,24 @@ describe('StudyPaceTile — the tile operates nothing', () => {
     expect(screen.getByText(/Finishes by/)).toBeInTheDocument()
   })
 
-  it('calls the number "Recommended" only while it is still ours', async () => {
-    const user = userEvent.setup()
+  it('names no pace at all on the TILE layout', () => {
+    /* ⚠ REWRITTEN 2026-09-23, and the rewrite is the record of a decision
+       rather than a test bending to the code. This asserted the tile printed
+       "Recommended" and stopped once the learner chose — the provenance rule.
+
+       The BADGE that carried it was removed the same day ("remove the badges
+       altogether in the widget because it's showing in the name of the card").
+       On the CARD layout the name moved into the eyebrow, and the test below
+       pins it there. The tile has no eyebrow of its own — its caption is a bare
+       "Study Pace" — so on this layout the name is simply gone.
+
+       That is a real reduction, and pinning the absence is what makes it a
+       decision someone can find: the tile no longer says which plan it is
+       showing, in either direction. `paceBadgeLabel` is exported for whenever
+       it should. */
     renderTile()
-    expect(screen.getByText('Recommended')).toBeInTheDocument()
-    const dialog = await openSheet(user)
-    await user.click(within(dialog).getByRole('radio', { name: /Full window|Relaxed/ }))
-    await user.click(within(dialog).getByRole('button', { name: 'Save pace' }))
-    // The tile now names the learner's own choice instead of claiming credit.
     expect(screen.queryByText('Recommended')).toBeNull()
+    expect(screen.queryByText(/Focused & Quick|Steady & Relaxed|Custom/)).toBeNull()
   })
 
   it('links Details at a real in-shell address', () => {
@@ -103,199 +158,326 @@ describe('StudyPaceTile — the tile operates nothing', () => {
   })
 })
 
-describe('StudyPaceSheet — the four groups', () => {
-  it('opens with the aims, days a week and the plan switch', async () => {
-    /* THREE GROUPS as of 2026-09-21, not four: the exam-date group was hidden
-       (the direct ask). The DATE is not gone — it is captured on the Schedule
-       State Exam card and reaches this model through `examDateStore`, which is
-       what the two-ceiling tests below now drive it with. Asserted as an
-       absence too, so the field coming back is a decision rather than a drift. */
+/**
+ * ─── THE SHEET, REBUILT AGAIN 2026-09-22 ────────────────────────────────
+ *
+ * These replace the suite that pinned the four-group sheet (aim rows, a
+ * days-a-week segment, an exam field, a plan switch). That IA is gone: the
+ * sheet is now a CHOOSER of study styles and one screen per style, ported from
+ * `adjust-your-pace-prototype.html`. The claims worth keeping survived the
+ * port and are re-pinned below — one tab stop per radio group, `aria-disabled`
+ * where a thing cannot be chosen, spoken durations beside glyph fractions, the
+ * draft-until-Save contract, and the two ceilings.
+ *
+ * The one genuinely NEW claim, and the one a refactor is most likely to break:
+ * **the footer's promise is a contract.** It states what the dashboard will
+ * show before the learner presses Save, so the card must then show exactly
+ * that. It did not, when this was first wired — the tile re-derived a pace from
+ * `nights` and ignored the week that had been built.
+ */
+
+/**
+ * Open the sheet ALREADY ON a style screen, the way a returning learner does.
+ *
+ * ⚠ THE CHOOSER'S THREE STYLE ROWS WENT ON 2026-09-23 — it offers the three
+ * NAMED PLANS and Build my own now, and the first three apply and close. The
+ * `sprint` / `evenings` / `blocks` screens are intact but no row opens them.
+ *
+ * THEY ARE STILL REACHABLE, though, and this is the real path rather than a
+ * test hack: `PaceSheetBody` seeds its screen from `choices.approach`, so a
+ * learner who built an evenings plan before today re-opens on it. Rendering
+ * the sheet directly with that approach set is exactly that state — which is
+ * also why these tests still earn their place: the screens are live code for
+ * anyone who has one saved.
+ *
+ * ⚠ IF THE ROWS COME BACK, these should go back through the chooser. A test
+ * that only ever enters by the back door stops noticing the front one is
+ * bricked.
+ */
+async function openSheetAt(approach: 'sprint' | 'evenings' | 'blocks' | 'custom') {
+  const view = render(
+    <MemoryRouter>
+      <StudyPaceSheet
+        open
+        onClose={() => {}}
+        today={TODAY}
+        hoursRemaining={24}
+        accessExpiresAt="2026-10-18"
+        courseTitle="Life & Health Pre-License Course"
+        choices={{
+          presetId: null,
+          nights: null,
+          examDate: null,
+          style: 'average',
+          approach,
+          schedule: null,
+          plan: null,
+        }}
+        onChange={() => {}}
+      />
+    </MemoryRouter>,
+  )
+  return { view, dialog: await screen.findByRole('dialog') }
+}
+
+describe('StudyPaceSheet — the chooser', () => {
+  it('offers the three named plans and Build my own, with Recommended checked', async () => {
+    /* ⚠ REWRITTEN 2026-09-23. It asserted the OLD shape: "Recommended is stated
+       as an ANSWER, not offered as a fifth option", in a block above four style
+       rows. The ask inverted exactly that — "Recommended will be selected by
+       default, but will still be part of the existing list" — so it is one row
+       of four now and the styles it used to sit above are gone.
+
+       The three plans apply and close; only Build my own opens a screen. */
     const user = userEvent.setup()
     renderTile()
     const dialog = await openSheet(user)
-    expect(within(dialog).getAllByRole('radio', { name: /a night|won’t fit/i }).length).toBeGreaterThanOrEqual(2)
-    expect(within(dialog).getByRole('radiogroup', { name: 'Days a week' })).toBeInTheDocument()
-    expect(within(dialog).getByRole('switch', { name: 'Create a study plan' })).toBeInTheDocument()
-    expect(within(dialog).queryByLabelText(/Exam date/)).toBeNull()
+    const group = within(dialog).getByRole('radiogroup', { name: 'Study pace' })
+    const rows = within(group).getAllByRole('radio')
+    expect(rows.map((r) => r.querySelector('.cre-pace-sheet__option-title')?.textContent)).toEqual([
+      'Steady & Relaxed',
+      'Recommended',
+      'Focused & Quick',
+    ])
+    // Recommended, by default — `presetId` is null until the learner chooses.
+    expect(rows.filter((r) => r.getAttribute('aria-checked') === 'true')).toHaveLength(1)
+    expect(rows[1].getAttribute('aria-checked')).toBe('true')
+    // …and Build my own is the one row that still leads somewhere.
+    expect(dialog.querySelector('[data-shape="custom"]')).toBeTruthy()
+    for (const gone of ['sprint', 'evenings', 'blocks']) {
+      expect(dialog.querySelector(`[data-shape="${gone}"]`)).toBeNull()
+    }
   })
 
-  it('starts on Recommended', async () => {
-    const user = userEvent.setup()
+  it('offers no Save until a style has been opened', () => {
+    /* There is nothing to save on the chooser: the learner has not built a
+       week. "Keep recommended" is a different promise and says so. */
     renderTile()
-    const dialog = await openSheet(user)
-    const checked = within(dialog).getAllByRole('radio').filter((r) => r.getAttribute('aria-checked') === 'true')
-    expect(checked.some((r) => r.getAttribute('data-preset') === 'recommended')).toBe(true)
+    return openSheet(userEvent.setup()).then((dialog) => {
+      expect(within(dialog).queryByRole('button', { name: /^Save pace/ })).toBeNull()
+    })
   })
 
-  it('re-prices the SHEET live, and the tile only on Save', async () => {
-    /* REWRITTEN 2026-09-21 with the draft save contract. It asserted the TILE
-       changing the instant a segment was clicked, which was true because
-       `set()` wrote straight through to the parent — the same write-through
-       that made "Save pace" describe one field in four and left a Cancel button
-       with nothing to restore.
-
-       The feedback the old behaviour gave is NOT gone, it moved inside the
-       panel: the sheet's own figures still re-price on every click. So this
-       asserts both halves — live in the sheet, committed on Save — which is the
-       contract itself rather than one visible consequence of it. */
+  it('goes back out of a style to the chooser', async () => {
+    /* Entered through `choices.approach` rather than a row — see `openSheetAt`.
+       The way OUT is unchanged and is what this pins: the back link returns to
+       the chooser, which is now the four-row list. */
     const user = userEvent.setup()
+    const { dialog } = await openSheetAt('evenings')
+    expect(within(dialog).getByRole('group', { name: 'Which weeknights?' })).toBeTruthy()
+    await user.click(within(dialog).getByRole('button', { name: /All pace styles/ }))
+    expect(within(dialog).getByRole('radiogroup', { name: 'Study pace' })).toBeTruthy()
+  })
+})
+
+describe('StudyPaceSheet — the footer states a contract', () => {
+  it('shows the card exactly what the footer promised', async () => {
+    /* THE CLAIM THIS WHOLE PORT RESTS ON, and the bug it shipped with. The
+       footer reads "Your dashboard will show: … finishing around <date>"; the
+       learner presses Save; the card has to agree. It did not, because the tile
+       re-derived a pace from `nights` and never looked at the week that was
+       built — so the sheet promised one date and the card printed another. */
+    const user = userEvent.setup()
+    /* THROUGH "BUILD MY OWN" as of 2026-09-23 — the chooser's style rows are
+       gone and this assertion needs the SHEET WIRED TO THE TILE (it checks the
+       card agrees with the footer after Save), which `openSheetAt` cannot give
+       it. Build my own is the one door left that still builds a week. */
     renderTile()
-    const before = screen.getByText(/a night · \d nights a week/).textContent
     const dialog = await openSheet(user)
-    const evening = () =>
-      within(dialog).getByRole('radio', { name: /Recommended/ }).textContent
-
-    const beforeInSheet = evening()
-    await user.click(within(dialog).getByRole('radio', { name: '6' }))
-    // The sheet moved…
-    expect(evening()).not.toBe(beforeInSheet)
-    // …and the tile has not, because nothing has been committed.
-    expect(screen.getByText(/a night · \d nights a week/).textContent).toBe(before)
-
-    await user.click(within(dialog).getByRole('button', { name: 'Save pace' }))
-    expect(screen.getByText(/a night · 6 nights a week/)).toBeInTheDocument()
+    await user.click(dialog.querySelector('[data-shape="custom"]')!)
+    const promised = dialog
+      .querySelector('.cre-pace-sheet__summary')!
+      .textContent!.match(/finishing around ([A-Z][a-z]+ \d+)/)![1]
+    await user.click(within(dialog).getByRole('button', { name: /^Save pace/ }))
+    expect(screen.queryByRole('dialog')).toBeNull()
+    expect(document.body.textContent).toContain(promised)
   })
 
   it('discards the draft on Cancel', async () => {
-    // The other half of the contract, and the reason Cancel could not exist
-    // before: with the old write-through there was nothing left to discard.
     const user = userEvent.setup()
     renderTile()
-    const before = screen.getByText(/a night · \d nights a week/).textContent
+    const before = document.body.textContent
     const dialog = await openSheet(user)
-    await user.click(within(dialog).getByRole('radio', { name: '6' }))
+    await user.click(dialog.querySelector('[data-shape="custom"]')!)
     await user.click(within(dialog).getByRole('button', { name: 'Cancel' }))
-    expect(screen.getByText(/a night · \d nights a week/).textContent).toBe(before)
-    // …and re-opening shows the SAVED state, not the abandoned draft.
-    const again = await openSheet(user)
-    expect(within(again).getByRole('radio', { name: '6' })).toHaveAttribute('aria-checked', 'false')
+    expect(document.body.textContent).toBe(before)
+  })
+
+  it('re-opens on the style the learner built, not on the chooser', async () => {
+    /* A plan you cannot get back to is a plan you rebuild. */
+    const user = userEvent.setup()
+    renderTile()
+    const first = await openSheet(user)
+    await user.click(first.querySelector('[data-shape="custom"]')!)
+    await user.click(within(first).getByRole('button', { name: /^Save pace/ }))
+    const second = await openSheet(user)
+    /* THE CUSTOM SCREEN as of 2026-09-23 — the evenings row is gone from the
+       chooser, so Build my own is the round trip available from the tile.
+
+       ASSERTED AS "NOT THE CHOOSER" rather than by naming a control on the
+       screen, which is the claim itself and is also what survives the screens
+       being re-arranged: the back link only exists on a screen, and the plan
+       radiogroup only exists on the chooser. A plan you cannot get back to is a
+       plan you rebuild. */
+    expect(within(second).getByRole('button', { name: /All pace styles/ })).toBeTruthy()
+    expect(within(second).queryByRole('radiogroup', { name: 'Study pace' })).toBeNull()
+    expect(within(second).queryByRole('button', { name: 'Keep recommended' })).toBeNull()
+  })
+})
+
+describe('StudyPaceSheet — the outcome reads the simulator', () => {
+  /* Entered through `choices.approach`, not a chooser row — those went on
+     2026-09-23. See `openSheetAt`, which explains why this is the real path
+     and not a test hack. */
+  const openStyle = async (shape: 'sprint' | 'evenings' | 'blocks' | 'custom') => {
+    const user = userEvent.setup()
+    const { dialog } = await openSheetAt(shape)
+    return { user, dialog }
+  }
+
+  it('states a week, a verdict and where it lands', async () => {
+    const { dialog } = await openStyle('evenings')
+    const outcome = dialog.querySelector('.cre-pace-sheet__outcome')!
+    expect(outcome.textContent).toMatch(/a week/)
+    // The badge's tone is reinforcement; the SENTENCE is the signal, so it must
+    // survive the colour being removed.
+    const badge = dialog.querySelector('.cre-pace-sheet__badge')!
+    expect(badge.getAttribute('data-tone')).toMatch(/good|warn|bad/)
+    expect(badge.textContent).toMatch(/Finishes|Pick at least/)
+  })
+
+  it('never doubles the unit', () => {
+    /* `formatHours` carries its own ("8½ hours", "45 minutes"), so a sentence
+       that adds one reads "10 hours hours a week" — which it did, until the
+       browser said it out loud. */
+    return openStyle('evenings').then(({ dialog }) => {
+      expect(dialog.textContent).not.toMatch(/hours hours/)
+    })
+  })
+
+  it('advises on a long day without refusing it', async () => {
+    const { user, dialog } = await openStyle('blocks')
+    const more = within(dialog).getByRole('button', { name: 'More time on Sat' })
+    for (let i = 0; i < 6; i++) await user.click(more)
+    expect(dialog.querySelector('.cre-pace-sheet__advice')!.textContent).toMatch(
+      /hard to keep up|split/,
+    )
+    // …and the plan is still saveable, because a free Saturday is the learner's
+    // to spend.
+    expect(within(dialog).getByRole('button', { name: /^Save pace/ })).not.toBeDisabled()
+  })
+
+  it('draws no calendar — the strip is switched off', () => {
+    /* HIDDEN 2026-09-22, the direct ask, on every style screen rather than on
+       one. Asserted as an ABSENCE so that switching `SHOW_PLAN_CALENDAR` back
+       on fails here and gets re-decided, rather than quietly reappearing in a
+       sheet someone has since redesigned around its absence. */
+    return openStyle('blocks').then(({ dialog }) => {
+      expect(dialog.querySelector('.cre-pace-sheet__cal')).toBeNull()
+      expect(within(dialog).queryByText('Your plan')).toBeNull()
+      // …and the outcome above it still states every fact the grid drew.
+      expect(dialog.querySelector('.cre-pace-sheet__outcome')!.textContent).toMatch(
+        /a week[\s\S]*Finishes/,
+      )
+    })
   })
 })
 
 describe('StudyPaceSheet — two ceilings', () => {
+  /* UNCHANGED CLAIM, new home. The exam field left the sheet in September; the
+     binding NOTE did not, and it is the part that matters — a pace that
+     switched ceilings silently is how a learner stops believing the number. */
+  const openWith = async (props: Parameters<typeof renderTile>[0]) => {
+    const user = userEvent.setup()
+    renderTile(props)
+    const dialog = await openSheet(user)
+    await user.click(dialog.querySelector('[data-shape="custom"]')!)
+    return dialog
+  }
+
   it('names the access window while there is no exam date', async () => {
-    const user = userEvent.setup()
-    renderTile()
-    const dialog = await openSheet(user)
-    expect(within(dialog).getByText(/These come from your course access/)).toBeInTheDocument()
+    const dialog = await openWith({})
+    expect(dialog.querySelector('[data-binding="access"]')!.textContent).toContain(
+      formatPaceDate('2026-10-18'),
+    )
   })
 
-  it('hands the ceiling to an exam date inside the window, and says so', async () => {
-    /* THE DATE ARRIVES AS A PROP now, not typed into this sheet — the field was
-       hidden on 2026-09-21 and the Schedule State Exam card is where a learner
-       enters one. The CLAIM is untouched: an exam inside the access window has
-       to take the ceiling AND be explained. Only the input moved. */
-    const user = userEvent.setup()
-    renderTile({ examDate: '2026-10-10' })
-    const dialog = await openSheet(user)
-    const note = dialog.querySelector('[data-binding]')
-    expect(note?.getAttribute('data-binding')).toBe('exam')
-    expect(note?.textContent).toMatch(/exam date is the one doing the work/i)
-    // …and it names the OTHER date, so the learner can see what it beat.
-    expect(note?.textContent).toMatch(/Oct 18/)
+  it('hands the ceiling to an exam inside the window, and says so', async () => {
+    const dialog = await openWith({ examDate: '2026-10-01' })
+    const note = dialog.querySelector('[data-binding="exam"]')!
+    expect(note.textContent).toContain('exam date is the one doing the work')
   })
 
-  it('leaves access binding when the exam sits past the window', async () => {
-    const user = userEvent.setup()
-    renderTile({ examDate: '2026-12-15' })
-    const dialog = await openSheet(user)
-    const note = dialog.querySelector('[data-binding]')
-    expect(note?.getAttribute('data-binding')).toBe('access')
-    expect(note?.textContent).toMatch(/access is still the one doing the work/i)
+  it('measures the plan against the EXAM once it binds', async () => {
+    /* The join between the two models. `simulateSchedule` takes
+       `model.hardEndIso`, so an exam that binds earlier moves the verdict here
+       exactly as it moves the presets — otherwise the sheet could congratulate
+       a plan that overruns the exam it is bound to. */
+    const dialog = await openWith({ examDate: '2026-09-25' })
+    expect(dialog.querySelector('.cre-pace-sheet__badge')!.textContent).toMatch(
+      /you need to be ready|Finishes/,
+    )
   })
 })
 
-describe('StudyPaceSheet — the study plan calendar', () => {
-  it('asks which days only once the calendar is switched on', async () => {
+describe('StudyPaceSheet — the shell, the keyboard and the ear', () => {
+  /* As above — `choices.approach`, not a chooser row. */
+  const openStyle = async (shape: 'sprint' | 'evenings' | 'blocks' | 'custom' = 'evenings') => {
     const user = userEvent.setup()
-    renderTile()
-    const dialog = await openSheet(user)
-    expect(within(dialog).queryByRole('group', { name: 'Study days' })).toBeNull()
-    await user.click(within(dialog).getByRole('switch', { name: 'Create a study plan' }))
-    expect(within(dialog).getByRole('group', { name: 'Study days' })).toBeInTheDocument()
-    expect(within(dialog).getByLabelText('Usual start time')).toBeInTheDocument()
+    const { dialog } = await openSheetAt(shape)
+    return { user, dialog }
+  }
+
+  it('is header / scroll body / footer, so the footer cannot be clipped', async () => {
+    /* The 2026-09-21 fix, still the reason the panel works: three flex children,
+       and `min-height: 0` on the middle one. A footer rendered INSIDE the scroll
+       body is how Save became unreachable with the plan open. */
+    const { dialog } = await openStyle()
+    const shell = dialog.querySelector('.cre-pace-sheet')!
+    expect(shell.children).toHaveLength(3)
+    expect(shell.querySelector('.cre-pace-sheet__footer')!.parentElement).toBe(shell)
   })
 
-  it('pre-ticks as many days as the chosen pace, and previews real dated sessions', async () => {
-    const user = userEvent.setup()
-    renderTile()
-    const dialog = await openSheet(user)
-    await user.click(within(dialog).getByRole('switch', { name: 'Create a study plan' }))
-    const pressed = within(dialog)
-      .getAllByRole('button', { pressed: true })
-      .filter((b) => b.hasAttribute('data-weekday'))
-    const nights = Number(screen.getByText(/a night · (\d) nights a week/).textContent!.match(/(\d) nights/)![1])
-    expect(pressed).toHaveLength(nights)
-    expect(dialog.querySelectorAll('[data-session]').length).toBeGreaterThan(0)
+  it('is ONE tab stop per radio group, with arrows moving selection', async () => {
+    const { user, dialog } = await openStyle()
+    const group = within(dialog).getByRole('radiogroup', { name: 'Hours on a weeknight' })
+    const radios = within(group).getAllByRole('radio')
+    expect(radios.filter((r) => r.tabIndex === 0)).toHaveLength(1)
+    const startIndex = radios.findIndex((r) => r.getAttribute('aria-checked') === 'true')
+    radios[startIndex].focus()
+    await user.keyboard('{ArrowRight}')
+    const after = within(group)
+      .getAllByRole('radio')
+      .findIndex((r) => r.getAttribute('aria-checked') === 'true')
+    expect(after).toBe(startIndex + 1)
   })
 
-  it('lets un-ticking a day re-price the pace rather than disagreeing with it', async () => {
-    const user = userEvent.setup()
-    renderTile()
-    const dialog = await openSheet(user)
-    await user.click(within(dialog).getByRole('switch', { name: 'Create a study plan' }))
-    const before = Number(screen.getByText(/a night · (\d) nights a week/).textContent!.match(/(\d) nights/)![1])
-    const firstTicked = within(dialog)
-      .getAllByRole('button', { pressed: true })
-      .find((b) => b.hasAttribute('data-weekday'))!
-    await user.click(firstTicked)
-    /* ASSERTED IN THE SHEET, then on the tile after Save — the draft contract.
-       The claim is unchanged: un-ticking a day re-prices the pace rather than
-       letting the count and the calendar disagree. */
-    expect(
-      within(dialog).getByRole('radio', { name: String(before - 1) }),
-    ).toHaveAttribute('aria-checked', 'true')
-    await user.click(within(dialog).getByRole('button', { name: /Save pace/ }))
-    expect(screen.getByText(new RegExp(`a night · ${before - 1} nights a week`))).toBeInTheDocument()
+  it('disables a stepper at its floor rather than letting it look live', async () => {
+    const { dialog } = await openStyle()
+    // Sunday starts at Off, so "less" has nowhere to go.
+    expect(within(dialog).getByRole('button', { name: 'Less time on Sunday' })).toBeDisabled()
+    expect(within(dialog).getByRole('button', { name: 'More time on Sunday' })).not.toBeDisabled()
   })
 
-  it('keeps the learner’s choices when the sheet is closed and reopened', async () => {
-    const user = userEvent.setup()
-    renderTile()
-    let dialog = await openSheet(user)
-    await user.click(within(dialog).getByRole('radio', { name: '6' }))
-    await user.click(within(dialog).getByRole('button', { name: 'Save pace' }))
-    dialog = await openSheet(user)
-    const six = within(dialog).getByRole('radio', { name: '6' })
-    expect(six).toHaveAttribute('aria-checked', 'true')
-  })
-
-  it('resets everything back to the recommendation', async () => {
-    const user = userEvent.setup()
-    renderTile()
-    const dialog = await openSheet(user)
-    await user.click(within(dialog).getByRole('radio', { name: '6' }))
-    await user.click(within(dialog).getByRole('switch', { name: 'Create a study plan' }))
-    await user.click(within(dialog).getByRole('button', { name: 'Reset to recommended' }))
-    expect(within(dialog).queryByRole('group', { name: 'Study days' })).toBeNull()
-    // The tile's pill is back to "Recommended". Scoped past the dialog, because
-    // the sheet's own Recommended chip is still on screen — a bare
-    // `getByText('Recommended')` matches both and throws.
-    await user.click(within(dialog).getByRole('button', { name: 'Save pace' }))
-    expect(screen.getByText('Recommended')).toBeInTheDocument()
-    expect(screen.getByText(/a night · 4 nights a week/)).toBeInTheDocument()
+  it('shows the fraction and speaks it in words', async () => {
+    /* A screen reader renders `¾` as "three quarters", "3/4" or nothing at all
+       depending on the engine — so the one figure this component exists to
+       communicate is the one a listener may not get. */
+    const { dialog } = await openStyle()
+    const value = dialog.querySelector('.cre-pace-sheet__step-value')!
+    expect(value.querySelector('.cre-sr-only')).toBeTruthy()
+    expect(value.getAttribute('aria-live')).toBe('polite')
   })
 })
-
-/**
- * THE CARD SHAPE — `layout="card"`, the Testing version's `presets` pacing
- * treatment (2026-09-21). Ported from `xcel-pace-presets.html` §02.
- *
- * These are here rather than in `TestingVersion.test.tsx` because the claims
- * are about AGREEMENT WITH THE MODEL, and that needs a ceiling to agree about.
- * The course the band paces on Testing carries no `expiresAt` at all, so the
- * integration suite can only pin the card's internal consistency and its
- * wiring; a ceiling is a prop here, so this is where the arithmetic lives.
- *
- * Nothing below asserts a literal date or a literal day count — every figure
- * comes back out of `studyPace` and is compared to what the card printed.
- */
 describe('StudyPaceTile — the presets card', () => {
   const model = () =>
     studyPace({ today: TODAY, hoursRemaining: 24, accessExpiresAt: '2026-10-18' })
 
-  const renderCard = (props: Partial<React.ComponentProps<typeof StudyPaceTile>> = {}) =>
-    renderTile({ layout: 'card', ...props })
+  const renderCard = (
+    props: Partial<React.ComponentProps<typeof StudyPaceTile>> = {},
+    readout: 'prose' | 'stats' = 'prose',
+    chooser: 'strip' | 'options' = 'strip',
+  ) => renderTile({ layout: 'card', ...props }, readout, chooser)
 
   it('states the evening and the week the model derives', () => {
     renderCard()
@@ -312,8 +494,15 @@ describe('StudyPaceTile — the presets card', () => {
        output rather than deriving the number again — a second rounding here is
        how "1¾ hours a night" and "8¾ hours a week" would stop being the same
        arithmetic. */
+    /* ⚠ DAYS A WEEK, NOT HOURS, as of 2026-09-23. The second clause used to be
+       `formatEvening(preset.minsPerWeek)` for a started learner; it is now the
+       night COUNT in both states, because the three plan cards that used to
+       state the week's shape are hidden once the learner is under way and the
+       observed-average line below needs something to sit against. The card's
+       own note carries the argument. Still derived from the preset, so the
+       figure and the sentence cannot drift. */
     expect(document.body.textContent).toContain(
-      `About ${formatEvening(preset.minsPerNight)} a night, ${formatEvening(preset.minsPerWeek)} a week`,
+      `About ${formatEvening(preset.minsPerNight)} a night, ${preset.nights} days a week`,
     )
   })
 
@@ -398,7 +587,11 @@ describe('StudyPaceTile — the presets card', () => {
        buttons ARE this card's floor. */
     renderCard()
     const buttons = screen.getAllByRole('button')
-    expect(buttons.map((b) => b.textContent?.trim())).toEqual(['Customize Study Plan'])
+    /* ⚠ "ADJUST", NOT "CUSTOMIZE" — 2026-09-23. `renderCard` passes no
+       `notStarted`, so this is a learner already under way, and the link takes
+       the verb for a plan that is already running. The 0% block below pins the
+       other label. */
+    expect(buttons.map((b) => b.textContent?.trim())).toEqual(['View Study Plan'])
     expect(buttons[0].getAttribute('aria-haspopup')).toBe('dialog')
     expect(screen.queryByRole('link')).toBeNull()
     expect(screen.queryByRole('radio')).toBeNull()
@@ -413,30 +606,44 @@ describe('StudyPaceTile — the presets card', () => {
        swap a hex cannot — so the assertion is the ABSENCE of an inline colour,
        which is what lets the class win. */
     renderCard()
-    const cta = screen.getByRole('button', { name: /Customize Study Plan/ })
+    const cta = screen.getByRole('button', { name: /View Study Plan/ })
     expect(cta.className).toContain('cre-cta-ink')
     expect(cta.style.color).toBe('')
     expect(document.body.innerHTML).not.toMatch(/a24796/i)
   })
 
-  it('carries the provenance in its eyebrow, and flips it on first touch', async () => {
-    /* The prototype's §02 finding, kept through the redesign: the product
-       should not go on calling a figure the learner picked a recommendation.
-       The chip that used to say it is gone — it was the same word the eyebrow
-       says — so the eyebrow is where it lives now. */
+  it('names itself from the review gap, not from who chose the plan', async () => {
+    /* ⚠ REWRITTEN 2026-09-23, and the rewrite records a rule being NARROWED
+       rather than a test bending. This asserted the prototype's §02 finding:
+       the card said "Recommended Study Pace" until the learner touched it and
+       "Your Study Pace" after, so the product never went on calling a figure
+       they picked a recommendation.
+
+       The eyebrow is derived from DAYS TO REVIEW now — the direct ask — so the
+       name describes the plan's shape rather than its author, and a
+       learner-chosen plan landing in the 7-15 band is called "Recommended"
+       again. `paceNameFor`'s own note spells out that trade at length.
+
+       WHAT IS STILL WORTH PINNING, and what this now checks: the heading and
+       the Days to review cell are ONE derivation. They were briefly two, which
+       is exactly how a card comes to print "Steady & Relaxed" over a readout
+       saying 16 days. */
     const user = userEvent.setup()
-    renderCard()
-    expect(screen.getByText('Recommended Study Pace')).toBeInTheDocument()
+    renderCard({}, 'stats')
+    const nameThenGap = () => {
+      const heading = screen.getByText(/Study Pace$/).textContent ?? ''
+      const gap = Number(/(\d+)\s*days?\s*Extra prep time/i.exec(document.body.textContent ?? '')?.[1])
+      return { heading, gap }
+    }
+    const before = nameThenGap()
+    expect(before.heading).toBe(`${paceNameFor(before.gap)} Study Pace`)
+
+    // …and it still MOVES, which is the half the old test proved by flipping.
     const dialog = await openSheet(user)
-    await user.click(within(dialog).getByRole('radio', { name: '6' }))
-    /* SAVE FIRST, as of the sheet's draft contract. The eyebrow follows
-       `choices`, and nothing reaches `choices` until Save — which is the point
-       of that change, not a wrinkle in this test: a card that re-titled itself
-       "Your Study Pace" while the learner was still deciding, and could still
-       press Cancel, would be claiming a choice they had not made. */
+    await user.click(dialog.querySelector('[data-shape="custom"]')!)
     await user.click(within(dialog).getByRole('button', { name: /Save pace/ }))
-    expect(screen.getByText('Your Study Pace')).toBeInTheDocument()
-    expect(screen.queryByText('Recommended Study Pace')).toBeNull()
+    const after = nameThenGap()
+    expect(after.heading).toBe(`${paceNameFor(after.gap)} Study Pace`)
   })
 
   it('keeps the square shape untouched in the default layout', () => {
@@ -456,176 +663,72 @@ describe('StudyPaceTile — the presets card', () => {
  * children, the middle one scrolling, the footer a SIBLING of it rather than
  * the last thing inside. Those are the conditions the fix rests on, and they
  * are what a later edit would undo by accident.
- */
-describe('StudyPaceSheet — the rebuilt shell', () => {
-  it('renders a scroll body with the footer OUTSIDE it', async () => {
-    const user = userEvent.setup()
-    renderTile()
-    const dialog = await openSheet(user)
-    const body = dialog.querySelector('.cre-pace-sheet__body')!
-    const footer = dialog.querySelector('.cre-pace-sheet__footer')!
-    expect(body).toBeTruthy()
-    expect(footer).toBeTruthy()
-    /* THE LOAD-BEARING ASSERTION. A footer INSIDE the scrolling region scrolls
-       away with the content, which is the bug wearing a different hat — Save
-       still unreachable, just for a new reason. Siblings, sharing one flex
-       parent. */
-    expect(body.contains(footer)).toBe(false)
-    expect(footer.parentElement).toBe(body.parentElement)
-    // …and the body is the element that scrolls, not the panel.
-    expect(dialog.querySelector('.cre-pace-sheet__header')!.parentElement).toBe(body.parentElement)
-  })
-
-  it('has a visible title and a Close button', async () => {
-    const user = userEvent.setup()
-    renderTile()
-    const dialog = await openSheet(user)
-    const heading = within(dialog).getByRole('heading', { name: '', hidden: true })
-    expect(heading.textContent).toBe('Adjust your pace')
-    /* `aria-hidden` ON PURPOSE: `Sheet` renders its own sr-only copy for
-       `aria-labelledby`, so an exposed second one gives the dialog a doubled
-       accessible name. The heading is for eyes; the sr-only one is the name. */
-    expect(heading).toHaveAttribute('aria-hidden')
-    expect(within(dialog).getByRole('button', { name: 'Close' })).toBeTruthy()
-  })
-})
-
-describe('StudyPaceSheet — keyboard', () => {
-  it('is ONE tab stop per radio group, with arrows moving selection', async () => {
-    /* Both groups were lists of tabbable `role="radio"` buttons: seven stops to
-       cross the sheet, and none of the arrow behaviour the role promises. A
-       custom radio group has to match the native one or it should not claim the
-       role. */
-    const user = userEvent.setup()
-    renderTile()
-    const dialog = await openSheet(user)
-    const nights = within(dialog).getByRole('radiogroup', { name: 'Days a week' })
-    const options = within(nights).getAllByRole('radio')
-    const tabbable = options.filter((o) => o.getAttribute('tabindex') === '0')
-    expect(tabbable).toHaveLength(1)
-    expect(tabbable[0]).toHaveAttribute('aria-checked', 'true')
-
-    tabbable[0].focus()
-    await user.keyboard('{ArrowRight}')
-    const after = within(nights)
-      .getAllByRole('radio')
-      .find((o) => o.getAttribute('aria-checked') === 'true')!
-    expect(after).not.toBe(tabbable[0])
-    // …and it MOVED as well as selected, which is the native behaviour.
-    expect(after).toHaveFocus()
-
-    await user.keyboard('{Home}')
-    expect(
-      within(nights).getAllByRole('radio')[0].getAttribute('aria-checked'),
-    ).toBe('true')
-  })
-
-  it('moves the aim rows with up/down, and keeps them one stop', async () => {
-    const user = userEvent.setup()
-    renderTile()
-    const dialog = await openSheet(user)
-    const aims = within(dialog).getByRole('radiogroup', { name: 'Finish date' })
-    const rows = within(aims).getAllByRole('radio')
-    expect(rows.filter((r) => r.getAttribute('tabindex') === '0')).toHaveLength(1)
-    const checked = rows.find((r) => r.getAttribute('aria-checked') === 'true')!
-    checked.focus()
-    await user.keyboard('{ArrowDown}')
-    const after = within(aims)
-      .getAllByRole('radio')
-      .find((r) => r.getAttribute('aria-checked') === 'true')!
-    expect(after).not.toBe(checked)
-  })
-})
-
-describe('StudyPaceSheet — the row that cannot be chosen', () => {
-  it('stays focusable and explains itself', async () => {
-    /* `aria-disabled`, NOT `disabled`. A disabled button drops out of the tab
-       order and out of most screen-reader element lists — so the one row that
-       most needs to say why it is unavailable becomes the one row a keyboard
-       user cannot reach. The hours are set high enough that no preset fits. */
-    const user = userEvent.setup()
-    renderTile({ hoursRemaining: 4000 })
-    const dialog = await openSheet(user)
-    const unfittable = within(dialog)
-      .getAllByRole('radio')
-      .filter((r) => r.getAttribute('aria-disabled') === 'true')
-    expect(unfittable.length).toBeGreaterThan(0)
-    for (const row of unfittable) {
-      // Focusable: not `disabled`, and carrying a real tabindex.
-      expect(row).not.toBeDisabled()
-      expect(row.getAttribute('tabindex')).not.toBeNull()
-      // …and it names a reason, wired by id rather than left to the label.
-      const describedBy = row.getAttribute('aria-describedby')
-      expect(describedBy).toBeTruthy()
-      expect(dialog.querySelector(`#${describedBy}`)?.textContent).toMatch(/not enough time/i)
-    }
-  })
-})
-
-describe('StudyPaceSheet — spoken durations', () => {
-  it('shows the fraction and speaks it in words', async () => {
-    /* `1¾ hours` is right to SHOW and wrong to HEAR — screen readers render the
-       vulgar fraction as "three quarters", "3/4" or nothing depending on the
-       engine, on the one figure this sheet exists to convey. Both come out of
-       the same rounding, so they can never disagree. */
-    const user = userEvent.setup()
-    renderTile()
-    const dialog = await openSheet(user)
-    const row = within(dialog).getByRole('radio', { name: /Recommended/ })
-    /* SCOPED TO THE EVENING CELL. The row's FIRST `[aria-hidden]` is the radio
-       dot, which is an empty span — a bare `querySelector('[aria-hidden]')`
-       finds it and asserts nothing about the figure. */
-    const cell = row.querySelector('.cre-pace-sheet__aim-evening')!
-    expect(cell.querySelector('.cre-sr-only')?.textContent).toMatch(/\d+ (hour|minute)/)
-    // The glyph is still there, hidden from the reader rather than replaced.
-    expect(cell.querySelector('[aria-hidden]')?.textContent).toMatch(/\d/)
-  })
-})
-
-/**
- * THE WEEK STRIP READING ACTUAL ACTIVITY — 2026-09-21.
- *
- * Two modes, and which one shows turns on whether there is anything to read,
- * not on how far along the learner is. The data is AUTHORED per demo persona
- * (`STUDY_MINUTES_BY_VARIANT`) rather than derived from a progress percentage:
- * a week inferred from a total is the "observed rate" this version refuses
- * everywhere else — it would look right and be fiction.
- */
-describe('StudyPaceTile — the week strip reads real minutes', () => {
+ */describe('StudyPaceTile — the week strip reads real minutes', () => {
   const model = () =>
     studyPace({ today: TODAY, hoursRemaining: 24, accessExpiresAt: '2026-10-18' })
-  const renderCard = (props: Partial<React.ComponentProps<typeof StudyPaceTile>> = {}) =>
-    renderTile({ layout: 'card', ...props })
+  const renderCard = (
+    props: Partial<React.ComponentProps<typeof StudyPaceTile>> = {},
+    readout: 'prose' | 'stats' = 'prose',
+    chooser: 'strip' | 'options' = 'strip',
+  ) => renderTile({ layout: 'card', ...props }, readout, chooser)
 
   /** The strip's cells, in order. */
   const cells = () =>
     [...document.querySelector('[aria-hidden]')!.querySelectorAll('span')] as HTMLElement[]
-  /** How full a cell is drawn, 0–100. The fill is a bottom-up gradient stop. */
-  const fillPct = (el: HTMLElement) =>
-    Number(/([\d.]+)%/.exec(el.style.background)?.[1] ?? 0)
+  /**
+   * Is the cell drawn as studied?
+   *
+   * ⚠ A BOOLEAN, NOT A PERCENTAGE, since 2026-09-23. This was `fillPct`, which
+   * read the stop off a bottom-up gradient, because ACTUAL mode filled each
+   * disc in proportion to how much of that evening's target was done. The ask
+   * made studied nights solid to match the 0% treatment, so there is no level
+   * left to measure — see the strip's own note for what that costs.
+   */
+  const isFilled = (el: HTMLElement) => el.style.background !== 'transparent'
 
   const TODAY_INDEX = (TODAY.getDay() + 6) % 7
 
-  it('fills each elapsed day by minutes against that day’s target', () => {
+  it('marks an elapsed day studied or not, and no longer by how much', () => {
+    /* ⚠ THIS TEST RECORDS A LOSS, and it is the reason to keep reading. It used
+       to assert a HALF day drew at 50% and a full one at 100% — the strip filled
+       each disc in proportion to minutes against that evening's target, which is
+       what made a light night visibly light.
+
+       2026-09-23 made studied nights solid, to match the treatment the 0% strip
+       had just been given ("the days of the week being filled in will be solid
+       like the update we did for 0%"). A solid disc has no level in it, so a
+       token 20 minutes and a full evening now render identically — asserted
+       here rather than merely allowed, so that restoring the level is a
+       deliberate reversal of a named decision and not a bug fix.
+
+       WHAT STILL CARRIES THE SHORTFALL: the `standing.behind` sentence under
+       the strip, and the observed-average line above it. Both are words. */
     const preset = defaultPreset(model())
     const target = preset.minsPerNight
-    // A full day, a half day, and a day with nothing — all in the past.
+    // A full day, a token one, and a day with nothing — all in the past.
     const week = [0, 0, 0, 0, 0, 0, 0]
     week[0] = target
-    week[1] = target / 2
+    week[1] = Math.round(target / 5)
     renderCard({ weekMinutes: week })
     const c = cells()
-    expect(fillPct(c[0])).toBe(100)
-    expect(fillPct(c[1])).toBe(50)
+    expect(isFilled(c[0])).toBe(true)
+    expect(isFilled(c[1])).toBe(true)
+    // …and they are drawn the SAME. This is the cost, pinned.
+    expect(c[1].style.background).toBe(c[0].style.background)
     // A day with nothing studied is an empty ring, not a filled grey one.
-    expect(c[2].style.background).toBe('transparent')
+    expect(isFilled(c[2])).toBe(false)
   })
 
-  it('clamps a day that ran long to full, rather than overflowing it', () => {
+  it('draws a studied night solid, with light letters on it', () => {
+    /* The pair that has to move together: a solid `primary-500` disc needs
+       `primary-100` ink, and a rule that changed one without the other would
+       leave dark letters on a dark fill. Asserted as the specific stops rather
+       than "not transparent", because the contrast claim IS the stops. */
     const preset = defaultPreset(model())
-    const week = [preset.minsPerNight * 3, 0, 0, 0, 0, 0, 0]
-    renderCard({ weekMinutes: week })
-    expect(fillPct(cells()[0])).toBe(100)
+    renderCard({ weekMinutes: [preset.minsPerNight, 0, 0, 0, 0, 0, 0] })
+    const cell = cells()[0]
+    expect(cell.style.background).toContain('--color-primary-500')
+    expect(cell.style.color).toContain('--color-primary-100')
   })
 
   it('leaves days that have not happened EMPTY, whatever the data says', () => {
@@ -646,10 +749,10 @@ describe('StudyPaceTile — the week strip reads real minutes', () => {
        nights the pace falls on instead, which is what it always did. */
     const preset = defaultPreset(model())
     renderCard()
-    const shaded = cells().filter((c) => c.style.background !== 'transparent')
+    const shaded = cells().filter(isFilled)
     expect(shaded).toHaveLength(preset.nights)
-    // …and every one of them is drawn FULL: a suggestion has no partial state.
-    for (const cell of shaded) expect(fillPct(cell)).toBe(100)
+    // …and every one of them is drawn solid: a suggestion has no partial state.
+    for (const cell of shaded) expect(cell.style.background).toContain('--color-primary-500')
   })
 })
 
@@ -682,7 +785,7 @@ describe('StudyPaceTile — the week that cannot be salvaged', () => {
     // No hours, no minutes, no nightly number — in any of the card's copy.
     expect(text).not.toMatch(/\d+\s*(hours?|minutes?|mins?)\s*a\s*night/i)
     // …and the one control the card ever offers is still there.
-    expect(screen.getByRole('button', { name: /Customize Study Plan/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /View Study Plan/ })).toBeTruthy()
   })
 
   it('is reachable from the demo controls, not just from the model', () => {
@@ -692,8 +795,288 @@ describe('StudyPaceTile — the week that cannot be salvaged', () => {
        flag — so the seed was ignored, the dashboard fell back to On Track, and
        the whole branch above was unreachable dead copy that still type-checked
        and still passed every test. Pinning the catalog is the only assertion
-       that would have caught it. */
+       that would have caught it.
+
+       ⚠ RE-AIMED 2026-09-23. `progress-off-track` was archived that day as
+       redundant (see `ARCHIVED_ITEMS`), so it is deliberately NOT in the
+       catalog any more and asserting that it is would fail. The CLAIM is
+       unchanged and is the reason this test exists: the branch above must have
+       a door in the demo. AT RISK is that door now — 3 days against ~36
+       remaining lessons — so this pins the door rather than the doorway it used
+       to be.
+
+       If Off Track is ever restored, put its assertion back ALONGSIDE this one
+       rather than instead of it. The failure mode is a branch with no way in,
+       and two ways in is not the problem. */
     const flag = FEATURE_FLAGS.find((f) => f.key === 'dashboard-progress-state')!
-    expect(flag.variants?.map((v) => v.value)).toContain('progress-off-track')
+    const values = flag.variants?.map((v) => v.value) ?? []
+    expect(values).toContain('progress-at-risk')
+    expect(values).not.toContain('progress-off-track')
+
+    /* AND THE STATE ITSELF, not just the catalog entry — which is the half the
+       original assertion could not make, and the half that would catch At Risk
+       drifting back to a runway where a pace fits. The figures are the
+       persona's own. */
+    const atRisk = dashboardProgressPersonaFor('xcel', 'progress-at-risk', 'qe')!
+    const course = atRisk.path.jumpBackIn
+    const remaining =
+      (atRisk.path.mandatory?.required ?? 0) - (atRisk.path.mandatory?.completed ?? 0)
+    expect(remaining).toBeGreaterThan(0)
+    expect(
+      defaultPreset(
+        studyPace({
+          today: TODAY,
+          hoursRemaining: remaining,
+          accessExpiresAt: course?.expiresAt,
+        }),
+      ).state,
+    ).toBe('no')
+  })
+})
+
+describe('study-pace-chooser: options — three named plans', () => {
+  /*
+   * 2026-09-23, the direct ask: "I want the recommended study pace title to be
+   * just Study Pace. And I want 3 selectable options below that title.
+   * Recommended = somewhere in between the 2 below. Focused & Quick = studying
+   * 7 days / week. Steady & Relaxed = studying the least amount to still finish
+   * in time."
+   *
+   * The `strip` treatment is unchanged and is what every other block in this
+   * file pins — "don't lose current logic, make it a flagged variant".
+   */
+  /*
+   * ⚠ `notStarted: true` BY DEFAULT — 2026-09-23. The picker is now shown only
+   * to a learner who has not started ("the 3 options will not be shown,
+   * assuming user already selected one"), so a render without it has no
+   * radiogroup at all and every assertion in this block fails as a missing
+   * element rather than as a changed one. The started state has its own block
+   * directly below.
+   */
+  const renderOptions = (props: Partial<React.ComponentProps<typeof StudyPaceTile>> = {}) =>
+    renderTile({ layout: 'card', notStarted: true, ...props }, 'stats', 'options')
+  /** 30 days past this file's `TODAY`, as ISO. */
+  const CEILING_30D = (() => {
+    const d = new Date(TODAY)
+    d.setDate(d.getDate() + 30)
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+  })()
+
+  it('invites rather than naming the current plan', () => {
+    renderOptions()
+    /* ⚠ "SELECT YOUR PREFERRED STUDY PACE" as of 2026-09-23, replacing "Set
+       your Study Pace (optional)". The heading's job is unchanged — say the
+       three plans below are a CHOICE — but "(optional)" was carrying the "you
+       owe us nothing" half weakly, and a subtext now carries it properly by
+       saying what happens to the number afterwards. "Preferred" is what says
+       it is a starting point rather than a commitment. */
+    expect(screen.getByText('Select Your Preferred Study Pace')).toBeTruthy()
+    expect(
+      screen.getByText(/Your actual pace will adjust based on your course progress/),
+    ).toBeTruthy()
+    // The `strip` treatment's heading named the plan; this one does not, because
+    // the plan is named in the picker directly below it.
+    expect(screen.queryByText(/Steady & Relaxed Study Pace|Recommended Study Pace/)).toBeNull()
+  })
+
+  it('offers exactly the three, as one radiogroup', () => {
+    /* A RADIOGROUP because they are one choice with three answers and exactly
+       one is always true. Three independent buttons would let a screen-reader
+       user press two and learn nothing about which is current. */
+    renderOptions()
+    const group = screen.getByRole('radiogroup', { name: 'Study pace' })
+    const radios = within(group).getAllByRole('radio')
+    /* The NAME is the option's first line — read off the element rather than
+       regexed out of `textContent`, which also carries the evening and the
+       date. */
+    expect(radios.map((r) => r.querySelector('span')?.textContent)).toEqual([
+      'Steady & Relaxed',
+      'Recommended',
+      'Focused & Quick',
+    ])
+    expect(radios.filter((r) => r.getAttribute('aria-checked') === 'true')).toHaveLength(1)
+  })
+
+  it('makes Focused & Quick genuinely the quickest', () => {
+    /* ⚠ A BUG THIS CAUGHT, and the reason this assertion is about ORDER rather
+       than about a date. The first build priced Focused at `FOCUSED_DAYS`
+       clamped to the window — so against a short window (an entered exam date)
+       Focused became 13 days while Recommended was 9, and the picker offered a
+       "Focused & Quick" finishing FOUR DAYS LATER than the option above it.
+
+       `studyPace` never shows that, because it DROPS focused once it stops
+       being faster. A picker of three fixed names cannot drop one, so it has to
+       be fastest by construction. */
+    const short = paceOptionsFor({
+      today: TODAY,
+      hoursRemaining: 24,
+      // A tight ceiling — the shape that produced the inversion.
+      accessExpiresAt: '2026-09-27',
+    })
+    const byId = Object.fromEntries(short.map((o) => [o.id, o]))
+    expect(byId.focused.priced.days).toBeLessThanOrEqual(byId.recommended.priced.days)
+    expect(byId.recommended.priced.days).toBeLessThanOrEqual(byId.relaxed.priced.days)
+  })
+
+  it('makes each name true of the plan under it', () => {
+    /*
+     * ⚠ THIS TEST ASSERTED THE EXACT OPPOSITE UNTIL 2026-09-23, and the swap
+     * is the record of a real defect rather than a rename.
+     *
+     * It pinned the first reading of the ask — "Focused & Quick = studying 7
+     * days/week", "Steady & Relaxed = studying the least amount to still
+     * finish in time" — and those two definitions, both defensible alone,
+     * inverted the names together. Relaxed as "the FEWEST nights that still
+     * fits" minimises evenings given up and therefore MAXIMISES how long each
+     * one has to be: the card shipped "Steady & Relaxed — 3 days a week, 3¼
+     * hours a night" beside "Focused & Quick — 7 days a week, 2¾ hours a
+     * night". The relaxed plan was asking for the longest evenings on screen.
+     *
+     * So the assertions are now about what the NAMES promise, not about night
+     * counts: relaxed is the gentlest evening, focused is the soonest finish,
+     * recommended is between. Those hold whatever the search returns, which is
+     * what makes them worth pinning — the night counts are an implementation
+     * detail and were exactly what the old version over-specified.
+     *
+     * A ceiling 30 days past this file's `TODAY` — the NY fixture's own dates
+     * are months behind it, which resolves to no window at all and makes every
+     * option collapse to seven nights.
+     */
+    const opts = paceOptionsFor({ today: TODAY, hoursRemaining: 42, accessExpiresAt: CEILING_30D })
+    const byId = Object.fromEntries(opts.map((o) => [o.id, o]))
+    for (const o of opts) expect(o.priced.state, o.id).not.toBe('no')
+
+    // RELAXED is the gentlest evening on the card, and uses every night.
+    expect(byId.relaxed.nights).toBe(7)
+    expect(byId.relaxed.priced.minsPerNight).toBeLessThan(byId.focused.priced.minsPerNight)
+    expect(byId.relaxed.priced.minsPerNight).toBeLessThanOrEqual(
+      byId.recommended.priced.minsPerNight,
+    )
+
+    // FOCUSED finishes first — a guarantee, not a hope. A picker of three fixed
+    // names cannot drop one the way `studyPace` drops focused when it stops
+    // being faster, so it has to be fastest by construction.
+    expect(byId.focused.priced.days).toBeLessThan(byId.recommended.priced.days)
+    expect(byId.focused.priced.days).toBeLessThan(byId.relaxed.priced.days)
+    // …by CONCENTRATING: fewer evenings than the steady plan, each one longer.
+    expect(byId.focused.nights).toBeLessThan(byId.relaxed.nights)
+    expect(byId.focused.nights).toBeGreaterThanOrEqual(NIGHT_OPTIONS[0])
+
+    // RECOMMENDED is between, on the axis a learner actually feels.
+    expect(byId.recommended.priced.days).toBeLessThanOrEqual(byId.relaxed.priced.days)
+    expect(byId.recommended.priced.minsPerNight).toBeLessThanOrEqual(
+      byId.focused.priced.minsPerNight,
+    )
+  })
+
+  it('re-prices the whole card when a plan is picked', () => {
+    renderOptions()
+    const group = screen.getByRole('radiogroup', { name: 'Study pace' })
+    const before = document.body.textContent ?? ''
+    fireEvent.click(within(group).getAllByRole('radio')[2])
+    const after = document.body.textContent ?? ''
+    expect(after).not.toBe(before)
+    // The picked one is the checked one, and it is still the only checked one.
+    const radios = within(group).getAllByRole('radio')
+    expect(radios[2].getAttribute('aria-checked')).toBe('true')
+    expect(radios.filter((r) => r.getAttribute('aria-checked') === 'true')).toHaveLength(1)
+  })
+})
+
+/**
+ * ─── THE SAME CHOOSER, ONCE THE LEARNER IS UNDER WAY ────────────────────────
+ *
+ * 2026-09-23, the direct ask, about the 63% state: the heading becomes the
+ * plan's name, "the 3 options will not be shown, assuming user already selected
+ * one", Customize becomes Adjust, the studied nights go solid, and the card
+ * states the goal beside the pace actually being kept.
+ *
+ * WHY IT IS A SEPARATE BLOCK rather than a flag on the one above: these are not
+ * the same card with a prop flipped, they are the two halves of one decision —
+ * the picker's disappearance is what forces the heading to stop saying "Set"
+ * and the link to stop being inert. Pinning them together is what stops one
+ * half being reverted on its own.
+ */
+describe('study-pace-chooser: options — the learner who has already started', () => {
+  const TARGET = 120
+  /** A week with three studied nights among the elapsed days, so the observed
+   *  average has something to average. `TODAY` is a Friday — index 4 — so
+   *  Mon/Tue/Thu are all in the past and Sunday is not. */
+  const WEEK = [TARGET, TARGET / 2, 0, TARGET, 0, 0, 999]
+  const renderStarted = () =>
+    renderTile({ layout: 'card', weekMinutes: WEEK }, 'stats', 'options')
+
+  it('puts the picker away and names the plan instead', () => {
+    renderStarted()
+    expect(screen.queryByRole('radiogroup', { name: 'Study pace' })).toBeNull()
+    expect(screen.queryByText('Set your Study Pace (optional)')).toBeNull()
+    /* ⚠ THE NAME COMES FROM THE SELECTED OPTION, NOT FROM THE REVIEW GAP, and
+       the two disagree in exactly this state — which is why the assertion is
+       "Recommended" rather than `paceNameFor(...)`. Nothing has been picked, so
+       the card opens on Recommended; deriving the heading from days-to-review
+       would have it announce a plan the learner never chose, with the picker
+       that would have shown the truth now hidden. */
+    /* ⚠ "YOUR", NOT THE PLAN'S NAME — 2026-09-23. It asserted
+       "Recommended Study Pace", which is a claim about what the product
+       SUGGESTS; from the first studied evening the card reports what the
+       learner is doing, so the heading names an owner instead. The note that
+       stood here explained why the name came from the SELECTED OPTION rather
+       than from the review gap — that reasoning is now moot for this state,
+       and still applies to the `strip` treatment, which has its own block. */
+    expect(screen.getByText('Your Study Pace')).toBeTruthy()
+    expect(screen.queryByText(/Recommended Study Pace/)).toBeNull()
+  })
+
+  it('takes the started verb, and stays inert', () => {
+    /*
+     * ⚠ THIS ASSERTED THE OPPOSITE UNTIL 2026-09-23, and the swap records a
+     * reversal rather than a test bending to code. It pinned that the link
+     * came BACK TO LIFE once the picker went — `customizeDisabled &&
+     * notStarted` — on the argument that with no plan cards on the card, an
+     * inert link strands the state.
+     *
+     * The ask overrode it ("should not be clickable - break this link"), so
+     * the dead end is deliberate. `aria-haspopup` is the tell: it is only
+     * attached when the control actually opens something, so its ABSENCE is
+     * what proves the link is inert rather than merely styled to look calm.
+     */
+    renderStarted()
+    const cta = screen.getByRole('button', { name: /View Study Plan/ })
+    expect(cta.getAttribute('aria-haspopup')).toBeNull()
+    expect(screen.queryByRole('button', { name: /Customize Your Pacing/ })).toBeNull()
+  })
+  it('states the goal in nights, and the pace actually being kept', () => {
+    renderStarted()
+    const text = document.body.textContent ?? ''
+    /* ⚠ THE GOAL LINE IS GONE for a started learner — 2026-09-23. This
+       asserted "About X a night, N days a week"; the headline now reports the
+       OBSERVED average instead, and says where it came from. */
+    expect(text).toContain('Based on your actual course progress and time spent studying')
+    /* ⚠ A DATE, NOT AN EVENING, as of 2026-09-23 — the headline leads with the
+       OUTCOME now. The evening did not vanish; it moved under the activity
+       total. */
+    expect(text).toMatch(/(you’re on schedule to finish|at this pace you’ll finish)/i)
+    /* THE READING — averaged over NIGHTS STUDIED among the ELAPSED days, which
+       is three of them here: the Sunday's 999 is in the future and must not
+       count, and the two rest days must not dilute the evening. */
+    const elapsed = WEEK.slice(0, ((TODAY.getDay() + 6) % 7) + 1).filter((m) => m > 0)
+    expect(elapsed).toHaveLength(3)
+    const mean = Math.round(elapsed.reduce((a, b) => a + b, 0) / elapsed.length)
+    expect(mean).toBeGreaterThan(0)
+    /* ⚠ THE NUDGE THAT USED TO BE ASSERTED HERE IS GONE. "A little behind, but
+       no worries…" / "Right on pace…" was removed once the headline began
+       branching on the same `standing.behind` — two sentences reporting one
+       status in consecutive lines is the duplication this card has now been
+       trimmed of twice. The evening moved under the activity total, which only
+       renders with a `dailyMinutes` history this fixture does not author. */
+    expect(text).not.toMatch(/A little behind|Right on pace/)
+  })
+
+  it('says nothing about an average when the week is still empty', () => {
+    /* A learner who has not studied this week has no average. "0 hours a night"
+       would be a judgement rather than a reading, and this card has exactly one
+       line allowed to judge. */
+    renderTile({ layout: 'card', weekMinutes: [0, 0, 0, 0, 0, 0, 0] }, 'stats', 'options')
+    expect(document.body.textContent).not.toContain('averaging')
   })
 })

@@ -20,6 +20,12 @@ import {
 import type { CourseCardData } from '@/components/courses/CourseCard'
 import { resolvePathCategories } from './progressGaugeUtil'
 import { unitCount } from '@/utils/unitLabel'
+import {
+  NY_LH_COURSE_EXAM_ITEMS,
+  NY_LH_EXAM_SIMULATORS,
+  NY_LH_PRELICENSING_LESSONS,
+  NY_LH_PREP_REVIEW_LESSONS,
+} from '@/data/nyProducerRequirements'
 
 /**
  * Synthesize a category's course rows from its hour requirement.
@@ -189,20 +195,112 @@ export type JourneyStop = {
  * `blocked` follows the real rule rather than being decoration: Parts 2 and 3
  * unlock "upon completion of Part 1", which the page states outright.
  */
+/**
+ * THE FIVE STEPS, 1:1 WITH THE LMS'S OWN BREADCRUMB — 2026-09-23, the direct
+ * ask, against a screenshot of the product's step strip:
+ *
+ *   `Pre-Licensing (41) · Exam (1) · Prep Review · Simulated Exams · Survey`
+ *
+ * and the five titles Jillienne specified from it:
+ *
+ *   1. Pre-Licensing Lessons (42)   2. Course Exam (1)   3. Attestation & Affidavit
+ *   4. Prep Review (23)        5. Simulated Exams (3)   6. Survey & Certificate
+ *
+ * WHAT CHANGED, and it is more than a rename. The journey had FOUR stops
+ * (Pre-licensing Course → Prep Review Course → Exam Simulators → Attestation &
+ * Certificate) built from what the public storefront publishes. The LMS shows a
+ * FIFTH act the storefront never mentions — the course exam that closes Part 1
+ * — and puts it SECOND, before Prep Review. The old order implied a learner
+ * takes the prep course before the exam it prepares nothing for; the real
+ * sequence is exam first, prep review after.
+ *
+ * ATTESTATION MOVED. It was half of the closing stop ("Attestation &
+ * Certificate"); it rides with the exam now, and the closing stop is the survey
+ * and the certificate. Both pairings are Jillienne's, from the product; neither
+ * is derivable from anything in this repo.
+ *
+ * THE NUMBERING FOLLOWS AUTOMATICALLY. `StudyJourneyWidget` prints
+ * `Steps 01–NN` off `stops.length` and starts the licensing cards at
+ * `stepStart`, so a fifth stop renumbers Schedule State Exam and the rest from
+ * 05/06/07 to 06/07/08 with no edit. That is the payoff of the derivation the
+ * widget's own note argued for.
+ */
+const CLOSE_OUT_PART_ONE_STOPS: {
+  id: string
+  title: string
+  group: string
+  milestone: boolean
+}[] = [
+  {
+    id: 'course-exam-and-attestation',
+    /* "Course Exam", not "Exam" — 2026-09-23, the direct ask. The strip this
+       was copied from says "Exam", and it can: it sits inside the course, where
+       there is only one exam to mean. This rail does not. Two steps below it is
+       Simulated Exams, and two CARDS below that are Schedule State Exam and
+       Pass State Exam — so a bare "Exam" on a column holding four of them names
+       the wrong one about as often as the right one. */
+    title: `Course Exam (${NY_LH_COURSE_EXAM_ITEMS})`,
+    // 70% is the storefront's recommended score for Part 1's course exams,
+    // which is the one published fact about this step.
+    group: 'Part 1 · aim for 70%',
+    // An assessment, so it draws with the milestone node the simulators use.
+    milestone: true,
+  },
+  {
+    /*
+     * ⚠ AFFIDAVIT — A WORD THIS REPO HAS REFUSED BEFORE, and the refusal was
+     * right at the time. A test in `QeFocusedVersion` pins that no "sworn
+     * affidavit" copy reaches the screen: it came off a REFERENCE MOCKUP
+     * ("Mandatory sworn affidavit of identity & contact hours") alongside
+     * "Foundational jurisprudence" and a fabricated course code, none of which
+     * any fixture sourced. Authoring claims about New York practice off a
+     * picture is exactly what that guard exists to stop.
+     *
+     * WHAT IS DIFFERENT NOW is the source, not the word. This is Jillienne's,
+     * from the product — 2026-09-23, "after course exam, add another line for
+     * attestation and affidavit" — the same channel that supplied the LMS step
+     * strip this whole rail was rebuilt against. The guard still holds for the
+     * mockup's phrasing; it is the provenance that changed.
+     *
+     * IT SPLIT OFF THE EXAM ROW, which read "Course Exam (1) & Attestation" for
+     * an hour. Attestation got there in the first place because the closing
+     * stop used to own it ("Attestation & Certificate") and it had to go
+     * somewhere when the LMS order put the exam second. It is its own act, and
+     * now its own line.
+     */
+    id: 'attestation-and-affidavit',
+    title: 'Attestation & Affidavit',
+    group: 'Part 1 · course completion',
+    // Paperwork, not an assessment — no milestone node.
+    milestone: false,
+  },
+]
+
 const PROGRAM_PART_STOPS: { id: string; title: string; group: string; milestone: boolean }[] = [
   {
     id: 'prep-review-course',
-    title: 'Prep Review Course',
+    // The count is the LMS's, not ours — see `NY_LH_PREP_REVIEW_LESSONS`. It
+    // rides on the LABEL and nowhere near the gauge's denominator.
+    title: `Prep Review (${NY_LH_PREP_REVIEW_LESSONS})`,
     group: 'Part 2 · aim for 80%',
     milestone: false,
   },
   {
     id: 'exam-simulators',
-    title: 'Exam Simulators',
-    // Three, each unlocked by the previous — the page's own words. An
-    // assessment, so it draws as a milestone the way the old simulators
-    // category did.
-    group: 'Part 3 · 3 simulators, aim for 85%',
+    /* "Simulated Exams", the LMS's own words, replacing "Exam Simulators"
+       — the storefront's. The id keeps the old spelling deliberately: nothing
+       displays it, and changing it would churn every test that reaches for the
+       stop by id for no gain. */
+    /* THE COUNT IS PUBLISHED, unlike the other two on this rail — the
+       storefront says "three simulators, unlocked in sequence" in words, where
+       41 and 23 came off the LMS breadcrumb. Added to the label 2026-09-23 on
+       the direct ask; the group line below has carried the same figure since
+       this stop was written, and both now read one constant so they cannot
+       drift apart. */
+    title: `Simulated Exams (${NY_LH_EXAM_SIMULATORS})`,
+    // Each unlocked by the previous — the page's own words. An assessment, so
+    // it draws as a milestone the way the old simulators category did.
+    group: `Part 3 · ${NY_LH_EXAM_SIMULATORS} simulators, aim for 85%`,
     milestone: true,
   },
 ]
@@ -225,7 +323,11 @@ const PROGRAM_PART_STOPS: { id: string; title: string; group: string; milestone:
 const COMPLETION_STOPS: { id: string; title: string; group: string }[] = [
   {
     id: 'attestation-and-certificate',
-    title: 'Attestation & Certificate',
+    /* "Survey & Certificate" as of 2026-09-23 — the attestation half moved up
+       to ride with the course exam (see `COURSE_EXAM_STOP`), and the LMS's own
+       strip ends on a Survey the storefront never mentions. The id is unchanged
+       for the reason the simulators' is: nothing displays it. */
+    title: 'Survey & Certificate',
     group: 'Course completion',
   },
 ]
@@ -288,8 +390,66 @@ export function journeyStopsFor(path: LearningPathSummary): JourneyStop[] {
           blocked: !courseworkDone,
         }))
       : []
+  /*
+   * STEP 1 AND STEP 2, on the lessons path only.
+   *
+   * The course stop's title is RETITLED HERE rather than at its source, and the
+   * distinction matters. Its source is the requirement category's `label`
+   * ("Pre-licensing Course") in `dashboardProgressFixtures`, which also names a
+   * SEGMENT OF THE PROGRESS GAUGE. "Pre-Licensing (41)" is a journey step's
+   * name; a gauge segment reading "(41)" beside a bar already showing 26/42
+   * would be two counts of different things touching. So the rename lands on
+   * the journey's copy of the title and nowhere else.
+   *
+   * ONLY WHEN THERE IS ONE COURSE STOP. An hours path splits into several, and
+   * retitling the first of those would name a New York step on a Florida path.
+   *
+   * NO COUNT IN THE LABEL as of 2026-09-23 ("Change to Pre-Licensing Lessons").
+   * It read "Pre-Licensing (41)" for an hour. The 41 is still recorded — see
+   * `NY_LH_PRELICENSING_LESSON_COUNT`, which the Compass tree's 42nd row
+   * depends on — it is just not on this label. The other two counts stay,
+   * because 23 and 1 appear nowhere else on the screen and 41 sits three inches
+   * under a card already printing "26 of 42 lessons".
+   */
+  const lessonsPath = (path.unitLabel ?? 'hrs') === 'lessons'
+  const namedCourseStops =
+    lessonsPath && courseStops.length === 1
+      ? [
+          {
+            ...courseStops[0],
+            /* ⚠ THE 42 IS THE CARD'S, AND IT OVERLAPS STEP 2. This step counted
+               nothing for an hour ("Pre-Licensing Lessons"), after "(41)" was
+               dropped for sitting under a card printing "26 of 42 lessons".
+               2026-09-23 asks for (42) here — the card's own figure, so the two
+               now agree rather than differing by one.
+            
+               WHAT THAT COSTS: `NY_LH_PRELICENSING_LESSONS` is 42 because it
+               counts the 41 lessons AND the course exam that closes Part 1 —
+               see `NY_LH_PRELICENSING_LESSON_COUNT`. The exam is step 2 of this
+               same rail, so the rail now says 42 + 1 where the course has 42
+               things in it. Matching the card was the instruction and the card
+               is the more visible number; `NY_LH_PRELICENSING_LESSON_COUNT`
+               (41) is the swap if the double-count matters more. */
+            title: `Pre-Licensing Lessons (${NY_LH_PRELICENSING_LESSONS})`,
+          },
+        ]
+      : courseStops
+  /* The course exam and the attestation sit between the coursework and Part 2
+     — the LMS's order, and the reason this is not just a rename. `blocked` on
+     the same rule as Parts 2 and 3: you cannot sit the exam for a course you
+     have not finished, nor attest to finishing it, and "Not started" would
+     invite a click that cannot work. */
+  const examStops: JourneyStop[] = lessonsPath
+    ? CLOSE_OUT_PART_ONE_STOPS.map((stop) => ({
+        ...stop,
+        hours: null,
+        status: courseworkDone ? ('completed' as const) : ('not-started' as const),
+        blocked: !courseworkDone,
+      }))
+    : []
   return [
-    ...courseStops,
+    ...namedCourseStops,
+    ...examStops,
     ...partStops,
     ...COMPLETION_STOPS.map((task) => ({
       ...task,
@@ -341,4 +501,117 @@ export function metaWords(stop: JourneyStop, unit = 'hrs'): string {
   return [stop.group, count, statusWords(stop)]
     .filter(Boolean)
     .join(' · ')
+}
+
+/**
+ * ONE STEP-1 ITEM AS A GAUGE ROW — what the Details panel draws under the donut
+ * for a lessons path.
+ *
+ * `count` is `null` for the two stops nobody publishes a number for
+ * (Attestation & Affidavit, Survey & Certificate). They are single ACTS rather
+ * than a quantity of anything, and inventing a "1" so every row could carry a
+ * fraction is the move `nyProducerRequirements` exists to stop — it would read
+ * as a sourced figure. Those rows print `status` instead.
+ */
+export type JourneyStepRow = {
+  key: string
+  label: string
+  /** Palette slot, assigned by position — see `journeyStepRows`. */
+  colorIndex: number
+  /** Published count for the step, or null when there is none. */
+  count: number | null
+  /**
+   * What that count counts. NOT the path's unit: only two of these six are in
+   * lessons. The first build printed "0 / 1 lesson" against the course exam and
+   * "0 / 3 lessons" against the simulators, because the row took
+   * `path.unitLabel` like `CategoryBars` does — right for a path measured in one
+   * thing, wrong for a container holding four different ones.
+   */
+  unit: string
+  /** How many of `count` are done. Always 0 or `count` today; see below. */
+  done: number
+  /** The words the journey rail prints for this stop. */
+  status: string
+  blocked: boolean
+}
+
+/**
+ * The Step 1 container as gauge rows — 2026-09-23, the direct ask: "for
+ * pre-licensing, this type of data should be appearing in the Details view, the
+ * lines and colors would be based on the items in the Step 1 container."
+ *
+ * ⚠ THESE ROWS DO NOT SUM TO THE DONUT, AND THAT IS THE DECISION RATHER THAN A
+ * DEFECT. The gauge's contract everywhere else is that the arcs add up to the
+ * centre number — on the CE path 8/8 + 6/6 + 0/8 is 14/22 is the 64% in the
+ * middle. Step 1's items total about 69 units (42 lessons + 1 exam + 23 prep +
+ * 3 simulators, plus two uncounted acts), so 26 done is ~38%, not the 62% the
+ * card that opened the panel prints.
+ *
+ * Asked which number wins, the answer was to keep 62%. So the donut stays a
+ * SINGLE ARC at the path's own percentage and these rows sit under it as a
+ * breakdown of what Step 1 contains — a legend, not a decomposition. Anything
+ * that later makes them sum has to move the headline percentage on the Details
+ * panel, the course-progress card, the band header and the Compass player
+ * sidebar together, which is why it was a question and not a default.
+ *
+ * ⚠ FOUR OF THE SIX ARE ALL-OR-NOTHING, which the bars will show honestly and
+ * bluntly: every stop after the lessons derives its status from `courseworkDone`
+ * (see `journeyStopsFor`), so their bars read empty until the coursework
+ * finishes and then fill at once. That is the model the product already
+ * committed to — "100% means the Attestation and certificate step is complete.
+ * Step 1-4 is part of the course" — not a gap in this function. A real per-part
+ * feed replaces `done` here and nothing else changes.
+ *
+ * COLOURS BY POSITION, into `CATEGORY_PALETTE`, so the rows speak the language
+ * the CE path's gauge already uses rather than inventing a second one. Six
+ * stops against seven slots, so no two share a hue.
+ */
+/**
+ * What each Step 1 stop's own count is counted in, by stop id.
+ *
+ * A MAP RATHER THAN THE PATH'S UNIT, because the container is not measured in
+ * one thing: 42 lessons, 1 exam, 23 lessons and 3 simulators. Keyed on the ids
+ * `COURSE_EXAM_STOP` / `PROGRAM_PART_STOPS` already declare, so a stop that
+ * gains a count later gets its unit here and nowhere else. Anything unlisted
+ * falls back to the path's unit, which is right for the course stop — the only
+ * one whose id is derived rather than authored.
+ */
+const STEP_UNITS: Record<string, string> = {
+  'course-exam-and-attestation': 'exam',
+  'prep-review-course': 'lessons',
+  'exam-simulators': 'simulators',
+}
+
+export function journeyStepRows(path: LearningPathSummary): JourneyStepRow[] {
+  const counts = /\s*\((\d+)\)\s*$/
+  const pathUnit = path.unitLabel ?? 'lessons'
+  return journeyStopsFor(path).map((stop, i) => {
+    /* The count is READ BACK OFF THE LABEL rather than threaded through
+       `JourneyStop`, because the label is where it was authored and the two
+       cannot then disagree — "Prep Review (23)" and a `required: 23` field are
+       one fact typed twice. `hours` is not it: only the first stop carries one,
+       and it is the whole 42 rather than the parenthetical. */
+    const fromLabel = counts.exec(stop.title)
+    const count = fromLabel ? Number(fromLabel[1]) : null
+    const done =
+      stop.status === 'completed'
+        ? (count ?? 0)
+        : stop.completed != null
+          ? stop.completed
+          : 0
+    return {
+      key: stop.id,
+      /* THE PARENTHETICAL COMES OFF, because the row prints the fraction on the
+         right: "Pre-Licensing Lessons (42) … 26 / 42 lessons" states 42 twice,
+         three inches apart. It stays on the journey RAIL, where there is no
+         second number and it is the only place the size of the step appears. */
+      label: stop.title.replace(counts, ''),
+      colorIndex: i,
+      count,
+      unit: STEP_UNITS[stop.id] ?? pathUnit,
+      done,
+      status: statusWords(stop),
+      blocked: Boolean(stop.blocked),
+    }
+  })
 }

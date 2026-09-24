@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef, useState, type CSSProperties, type FormEvent } from 'react'
+import { useEffect, useId, useLayoutEffect, useRef, useState, type CSSProperties, type FormEvent } from 'react'
 import { PaperPlaneTopSolid, RubiLogo, XmarkRegular } from '@/icons'
 
 /**
@@ -50,6 +50,7 @@ export type CompassRubiMessage = { id: number; from: 'rubi' | 'learner' | 'note'
 export function CompassRubiRail({
   open,
   stickyTop,
+  bottomInset = 0,
   greeting,
   suggestions,
   onClose,
@@ -58,6 +59,9 @@ export function CompassRubiRail({
   open: boolean
   /** Pinned at this offset — the bottom edge of the player controls bar. */
   stickyTop: number
+  /** Space to leave under the rail — the Demo stage's padding below the
+   *  window, so a full-height rail is not shoved up at the end of the scroll. */
+  bottomInset?: number
   greeting: string
   suggestions: readonly string[]
   onClose: () => void
@@ -69,6 +73,41 @@ export function CompassRubiRail({
   const inputId = useId()
   const inputRef = useRef<HTMLInputElement>(null)
   const threadRef = useRef<HTMLDivElement>(null)
+  const slotRef = useRef<HTMLDivElement>(null)
+
+  /* THE ASK BOX IS PINNED TO THE BROWSER'S BOTTOM — 2026-09-24, the direct ask.
+     A height fixed at `100vh - stickyTop` is only right once the rail is
+     PINNED; before that (the Demo controls still above the window) the rail
+     starts lower and ran past the viewport, taking the ask box with it. So the
+     slot is measured: from its own top to the viewport's bottom, or its row's
+     bottom if that comes first (the end of the page). The thread between the
+     header and the ask box scrolls (`THREAD`'s `overflowY`). */
+  const [fitHeight, setFitHeight] = useState<number | null>(null)
+  useLayoutEffect(() => {
+    const el = slotRef.current
+    if (!el || typeof window === 'undefined') return
+    let frame = 0
+    const measure = () => {
+      frame = 0
+      const row = el.parentElement?.getBoundingClientRect()
+      // No layout (jsdom measures everything as 0) → keep the calc fallback.
+      if (!row || row.height === 0) return
+      const top = el.getBoundingClientRect().top
+      const rowBottom = row.bottom
+      setFitHeight(Math.max(0, Math.min(window.innerHeight, rowBottom) - top))
+    }
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(measure)
+    }
+    measure()
+    window.addEventListener('scroll', schedule, { passive: true })
+    window.addEventListener('resize', schedule)
+    return () => {
+      window.removeEventListener('scroll', schedule)
+      window.removeEventListener('resize', schedule)
+      if (frame) cancelAnimationFrame(frame)
+    }
+  }, [])
 
   // Keep the newest message in view as the thread grows.
   useEffect(() => {
@@ -96,13 +135,16 @@ export function CompassRubiRail({
     /* The SLOT is the flex column that animates its width and pins; the
        panel inside it slides. `overflow: hidden` crops the panel as it moves. */
     <div
+      ref={slotRef}
       className="cre-compass-rubi-slot"
       aria-hidden={!open}
       inert={!open || undefined}
       style={{
         ...SLOT,
         top: stickyTop,
-        height: `calc(100vh - ${stickyTop}px)`,
+        // Measured (see `fitHeight`); the calc is the first paint and the
+        // no-layout fallback (jsdom).
+        height: fitHeight ?? `calc(100vh - ${stickyTop + bottomInset}px)`,
         width: open ? RAIL_WIDTH : 0,
         visibility: open ? 'visible' : 'hidden',
         transition: `width ${SLIDE_MS}ms ${SLIDE_EASE}, visibility 0s linear ${open ? 0 : SLIDE_MS}ms`,
@@ -229,7 +271,10 @@ const RAIL: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   background: 'var(--color-compass-rubi-surface)',
-  borderLeft: '1px solid var(--color-compass-rubi-edge)',
+  // The course TOC rail's own rule (`--color-compass-rail-rule`), so the two
+  // rails framing the lesson draw the same edge — 2026-09-24, the direct ask.
+  // `--color-compass-rubi-edge` stays on Rubi's chips and field.
+  borderLeft: '1px solid var(--color-compass-rail-rule)',
 }
 /* 78.25px, the design's, with the mark 16 in and close 16 from the right. */
 const HEADER: CSSProperties = {

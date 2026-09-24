@@ -76,6 +76,7 @@ import { AtlasCourseSideNav } from './AtlasCourseSideNav'
 import { AtlasCompassCourseRail } from './AtlasCompassCourseRail'
 import { AtlasCompassPlayerBar } from './AtlasCompassPlayerBar'
 import { AtlasCompassRubiRail } from './AtlasCompassRubiRail'
+import { CompassCourseContent } from '@/components/compass/CompassCourseContent'
 import { AtlasCompassCourseFooter } from './AtlasCompassCourseFooter'
 
 /* The Compass player controls bar's height — 11 + 38 + 11 padding and pills,
@@ -547,6 +548,21 @@ function PlatformShellBody() {
   // Compass player bar, the Rubi rail) reads this, so they move up together.
   const headerHeight = atlasNav ? 60 : 72
   const railTop = (chromeOff ? 0 : 40) + headerHeight
+  // The header's REAL bottom edge: in the Demo frame the header also sits under
+  // the 38px browser-chrome strip (`Header`'s BROWSER_CHROME_H), which
+  // `railTop` does not count.
+  const headerBottom = railTop + (device === 'desktop-framed' ? 38 : 0)
+  // Where the LEFT RAIL pins. On Atlas it is the header's real bottom edge
+  // (2026-09-24, "do not allow the left rail to scroll vertically"): pinned at
+  // `railTop` in the Demo frame it sat 38px too high and too tall, so it rode
+  // up under the header as the page scrolled.
+  const navRailTop = atlasNav ? headerBottom : railTop
+  // …and its height leaves out the Demo stage's 44px of dark padding under the
+  // window (`.cre-demo-stage`, tokens.css): a rail as tall as the viewport
+  // below the header outgrew its column there and was shoved up at the end
+  // of the scroll. The column's own white fills the 44px it gives up.
+  const stageBottom = atlasNav && device === 'desktop-framed' ? 44 : 0
+  const navRailHeight = `calc(100vh - ${navRailTop + stageBottom}px)`
   // `?focus=1` — the locked "kiosk" share view: collapse the left rail so the
   // page is a single content column with no way to navigate to other sections.
   // (The header's Cart / Account / hamburger + logo link are also neutralized —
@@ -561,6 +577,20 @@ function PlatformShellBody() {
       className="cre-platform-shell-grid"
       style={{
         ...navSurfaceStyle,
+        // The Atlas HOME sits on the Compass course pages' warm page
+        // (`--color-compass-page`, #f8f6f3), at the designer's request
+        // (2026-09-24), so Home and the course read as one surface. Set on the
+        // grid so the right filler matches on wide screens; the rail keeps
+        // its own white.
+        // …and the Course pages too (2026-09-24), which are already on it, so
+        // the width past 1440 in Atlas's 1608 window is not a grey stripe.
+        // Where pinned content inside the page can stop: the header's bottom
+        // edge, the same offset the rails pin at. Read by the Atlas home's
+        // sticky left column (`LearnerFocusedBand`).
+        ['--cre-shell-top' as string]: `${headerBottom}px`,
+        ...(atlasNav && (active === 'dashboard' || active === 'course')
+          ? { background: 'var(--color-compass-page)' }
+          : null),
         display: 'grid',
         /* Rail is a fixed column anchored flush to the viewport's LEFT edge at
            every width (no left filler), so the nav never floats inward on wide
@@ -584,12 +614,26 @@ function PlatformShellBody() {
            for the reason the note above gives. */
         /* The Atlas rail is 260 per its design; the content column gives up
            the 40 so the sum stays 1440. */
-        gridTemplateColumns: atlasNav
+        // The Compass COURSE PLAYER fills the window (2026-09-24, the direct
+        // ask): its content, player bar and footer take every pixel past the
+        // rail, so the 1180 cap and the right filler go (filler kept at 0 so
+        // the grid's children do not change).
+        gridTemplateColumns: compassCourseRail
+          ? '260px minmax(0, 1fr) 0px'
+          : atlasNav && active === 'dashboard'
+          ? // Atlas HOME: 1278, not 1180 — room for the 750px left column
+            // (2026-09-24), a 40px gap and a ~376px right one, inside the 56px
+            // gutters: 56 + 750 + 40 + 376 + 56.
+            '260px minmax(0, 1278px) 1fr'
+          : atlasNav
           ? '260px minmax(0, 1180px) 1fr'
           : railCollapsed
             ? '76px minmax(0, 1364px) 1fr'
             : '220px minmax(0, 1220px) 1fr',
-        minHeight: 'calc(100vh - 64px)',
+        // Not on the Compass course player, whose content column sizes itself
+        // to the window (below) — this floor made the page taller than the
+        // window, so the content box ran under the pinned footer.
+        minHeight: compassCourseRail ? undefined : 'calc(100vh - 64px)',
       }}
     >
       {/* Left nav rail — flush-left column. In the locked kiosk share view
@@ -622,8 +666,8 @@ function PlatformShellBody() {
           inert={focus || undefined}
           style={{
             position: 'sticky',
-            top: railTop,
-            height: `calc(100vh - ${railTop}px)`,
+            top: navRailTop,
+            height: navRailHeight,
             /* Gutters from `PlatformSideNav`, which owns them: the collapse
                toggle's negative margin cancels this exact value to sit flush on
                the rail's right edge, and the collapsed 8 is what leaves a 76px
@@ -725,7 +769,9 @@ function PlatformShellBody() {
             the course player; see `AtlasCompassPlayerBar`. */}
         {compassCourseRail ? (
           <AtlasCompassPlayerBar
-            stickyTop={railTop}
+            // The header's real bottom edge (see `headerBottom`) — pinned at
+            // `railTop` it slid 38px under the header in the Demo frame.
+            stickyTop={headerBottom}
             rubiOpen={rubiOpen}
             onRubi={() => setRubiOpen((open) => !open)}
             onClose={() => selectCoursePage('overview')}
@@ -759,23 +805,22 @@ function PlatformShellBody() {
                 minWidth: 0,
                 display: 'flex',
                 flexDirection: 'column',
-                minHeight: `calc(100vh - ${railTop + COMPASS_PLAYER_BAR_HEIGHT}px)`,
+                // From the header's REAL bottom edge, less the Demo stage's 44px
+                // (the left rail's arithmetic, `navRailHeight`), so the content
+                // box ends 56px above the footer instead of running under it.
+                minHeight: `calc(100vh - ${headerBottom + COMPASS_PLAYER_BAR_HEIGHT + stageBottom}px)`,
                 // The course content sits on the Compass Overview's warm page
                 // (`--color-compass-page`, #f8f6f3) — one surface for a
                 // course's pages (2026-09-24). The footer keeps its own white.
                 background: 'var(--color-compass-page)',
               }}
             >
-              <div style={{ flex: '1 1 auto' }}>
-                <SectionPanel
-                  active={active}
-                  isMember={isMember}
-                  onSelect={handleSelect}
-                  dashboardLayout={dashboardLayout}
-                  onOpenResource={resourceLauncher.open}
-                  onOpenLearningPathDetail={openLearningPathDetail}
-                />
-              </div>
+              {/* COMPASS COURSE CONTENT (Figma 49:3338, 2026-09-24) — replaces the
+                  page's "Course" heading: a box that fills the column between
+                  the player bar and the footer, 56px in on every side. */}
+              {/* The page keeps its <h1>, hidden — the visible heading went. */}
+              <h1 className="cre-visually-hidden">Course</h1>
+              <CompassCourseContent />
               {/* COMPASS COURSE NAVIGATION FOOTER (Figma 31:1221). */}
               <AtlasCompassCourseFooter />
             </div>
@@ -783,7 +828,8 @@ function PlatformShellBody() {
                 drives the motion. */}
             <AtlasCompassRubiRail
               open={rubiOpen}
-              stickyTop={railTop + COMPASS_PLAYER_BAR_HEIGHT}
+              stickyTop={headerBottom + COMPASS_PLAYER_BAR_HEIGHT}
+              bottomInset={stageBottom}
               onClose={() => setRubiOpen(false)}
             />
           </div>
@@ -1391,6 +1437,8 @@ function SectionShell({
   children: ReactNode
 }) {
   const [shellParams] = useSearchParams()
+  const atlasHome =
+    active === 'dashboard' && isAtlasCompassNavVersion(shellParams.get('version'))
   // Partner Offers for non-members gets its own marketing hero + locked cards
   // (Figma 63:16150) — NOT the generic LockedBenefitPage. Free Content is
   // OPEN TO ALL: non-members see the same page as members (free items keep their
@@ -1464,7 +1512,18 @@ function SectionShell({
     // MembershipSectionHero, the v5 joined bands, WhatsNewQuickFilter, …). Change
     // the 40 below and they all overshoot the rail by the difference. Account
     // sections are safe to differ because none of them render a full-bleed band.
-    <section style={{ padding: `24px ${isAccountSection(active) ? ACCOUNT_SECTION_GUTTER : 40}px 64px` }}>
+    <section
+      style={{
+        // The Atlas HOME takes the Compass Overview's 56px on every side
+        // (`CompassCourseOverview`'s PAGE), at the designer's request
+        // (2026-09-24), so Home and the course pages share one margin. Safe
+        // despite the note above: the Testing home Atlas renders has no
+        // full-bleed band cancelling a `-40px`.
+        padding: atlasHome
+          ? 56
+          : `24px ${isAccountSection(active) ? ACCOUNT_SECTION_GUTTER : 40}px 64px`,
+      }}
+    >
       {libraryHero ? (
         <LearningLibraryHero isMember={isMember} onUnlock={() => onSelect('membership')} />
       ) : benefitUpsell ? (

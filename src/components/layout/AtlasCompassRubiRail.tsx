@@ -13,16 +13,19 @@ const RUBI_SUGGESTIONS = ['Give an example', 'Explain simpler', 'Quiz me'] as co
 export function AtlasCompassRubiRail({
   open,
   stickyTop,
+  bottomInset,
   onClose,
 }: {
   open: boolean
   stickyTop: number
+  bottomInset?: number
   onClose: () => void
 }) {
   return (
     <CompassRubiRail
       open={open}
       stickyTop={stickyTop}
+      bottomInset={bottomInset}
       greeting={RUBI_GREETING}
       suggestions={RUBI_SUGGESTIONS}
       onClose={onClose}

@@ -3,6 +3,7 @@ import { GetLicensedRail, StudyJourneyRail } from './StudyJourneyRail'
 import { useState, type CSSProperties } from 'react'
 import { journeyStopsFor } from './studyJourneyUtil'
 import { clearExamDate, useExamDate, writeExamDate } from '@/data/examDateStore'
+import { dateFromIso } from '@/lib/studyPace'
 import { longDate } from './learningPathsHomeUtil'
 import {
   GET_LICENSED_STEPS,
@@ -61,6 +62,8 @@ export function StudyJourneyWidget({
   onOpenLearningPath,
   framed = false,
   splitSteps = false,
+  cardPadding,
+  examFirst = false,
 }: {
   path: LearningPathSummary
   onOpenStop?: (courseId: string) => void
@@ -95,14 +98,43 @@ export function StudyJourneyWidget({
    * reasonably want the frame without the split.
    */
   splitSteps?: boolean
+  /** Overrides the framed shell's inset — the Atlas home's 32px (2026-09-24).
+   *  Applies to the filled cards only; pending steps have no fill. */
+  cardPadding?: number
+  /**
+   * SCHEDULE STATE EXAM LEADS — the Atlas home, 2026-09-24, the direct ask
+   * ("vertically switch step 1 and step 2 changing the step numbers
+   * accordingly"). It becomes Step 1 above the coursework, which becomes
+   * Step 2; Pass and Get Licensed stay 3 and 4. Split layout only.
+   */
+  examFirst?: boolean
 }) {
   // On the `syllabus` treatment both halves are cards of their own, so the
   // hairline between them becomes a third divider between two edges. A gap
   // separates them instead.
   const syllabus = useFeatureFlag('dashboard-journey-style').variant === 'syllabus'
-  const shell = framed ? widgetCardFramedStyle : widgetCardStyle
+  const shell: CSSProperties = framed
+    ? cardPadding != null
+      ? { ...widgetCardFramedStyle, padding: cardPadding }
+      : widgetCardFramedStyle
+    : widgetCardStyle
   const stops = journeyStopsFor(path)
-  const stepStart = stops.length + 1
+  /*
+   * THE LICENSING CARDS START AT 2 — 2026-09-23, the direct ask: "This whole
+   * section will be Step 1 - Complete Coursework. Step 2 - Schedule State
+   * Exam....etc."
+   *
+   * ⚠ IT WAS DERIVED FROM `stops.length`, and that derivation was the right
+   * answer to the wrong question. It kept the cards numbering on from the
+   * journey's stops, so five stops meant the cards read 06/07/08 — an
+   * eight-step journey to a licence. There are FOUR steps. The coursework is
+   * one of them, and the five stops are what it is made of, not five steps in
+   * their own right. That is also why the stops lost their digits in the same
+   * change; see the rail.
+   *
+   * A CONSTANT NOW, deliberately: the number of stops must NOT move it again.
+   */
+  const stepStart = 2
   /* COLLAPSED — `dashboard-journey-complete`, and it only means anything at
      100%. Below that the two variants are identical, which is why the flag is
      read here and applied against `courseworkDone` rather than gating the
@@ -116,6 +148,29 @@ export function StudyJourneyWidget({
   const collapseCoursework = courseworkDone && completeStyle === 'collapsed'
 
   if (splitSteps) {
+    const licensingSteps = GET_LICENSED_STEPS.map((step, i) => (
+      <LicensingStepWidget
+        key={step.id}
+        step={step}
+        number={examFirst ? (i === 0 ? 1 : stepStart + i) : stepStart + i}
+        shell={shell}
+        roundedRule={cardPadding != null}
+        onOpenStep={onOpenStep}
+        state={path.state}
+        /* The arrival card is named for the DESTINATION rather than the
+           action, per the ask ("Get Licensed - Apply for your license"): the
+           heading says where the route ends and the lead line says what you
+           do to get there. The other two are named by their published step
+           title, which already reads as an action. */
+        heading={
+          i === GET_LICENSED_STEPS.length - 1
+            ? jurisdictionName(path.state)
+              ? `Get Licensed in ${jurisdictionName(path.state)}`
+              : 'Get Licensed'
+            : undefined
+        }
+      />
+    ))
     /* FOUR WIDGETS — the coursework, then one per post-course step.
    
        WHAT THE SPLIT BUYS: the three post-course steps were rows in a shared
@@ -132,7 +187,12 @@ export function StudyJourneyWidget({
        continuing the journey's own numbering from its real stop count. Lose the
        numbers and the four cards read as four unrelated things. */
     return (
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 20, minWidth: 0 }}>
+      // 32 between the cards on the Atlas home (2026-09-24, the direct ask),
+      // which is where `cardPadding` is set; 20 elsewhere.
+      <div style={{ display: 'flex', flexDirection: 'column', gap: cardPadding != null ? 32 : 20, minWidth: 0 }}>
+        {/* Coursework, then the licensing steps — or, with `examFirst`, the
+            exam step first. */}
+        {examFirst ? licensingSteps[0] : null}
         {/* THE FINISHED COURSEWORK AS ONE LINE, when the flag asks for it. The
             argument the variant exists to test: at 100% the only actionable
             things left are the licensing steps, and four stops of finished work
@@ -141,7 +201,7 @@ export function StudyJourneyWidget({
         {collapseCoursework ? (
           <section aria-label="Study journey" style={shell}>
             <p className="cre-eyebrow-ink" style={collapsedEyebrowStyle}>
-              {`Steps 01\u2013${String(stops.length).padStart(2, '0')} · Atlas Study Journey`}
+              {`Step ${examFirst ? 2 : 1} · Atlas Study Journey`}
             </p>
             <p style={collapsedTitleStyle}>Coursework complete</p>
           </section>
@@ -155,30 +215,20 @@ export function StudyJourneyWidget({
                  run 01-04, 05, 06, 07 down the column instead of the sequence
                  appearing to start at 05. Split only; see the prop's note. */
               stepRange
+              stepNumber={examFirst ? 2 : 1}
             />
           </section>
         )}
-        {GET_LICENSED_STEPS.map((step, i) => (
-          <LicensingStepWidget
-            key={step.id}
-            step={step}
-            number={stepStart + i}
-            shell={shell}
-            onOpenStep={onOpenStep}
-            /* The arrival card is named for the DESTINATION rather than the
-               action, per the ask ("Get Licensed - Apply for your license"): the
-               heading says where the route ends and the lead line says what you
-               do to get there. The other two are named by their published step
-               title, which already reads as an action. */
-            heading={
-              i === GET_LICENSED_STEPS.length - 1
-                ? jurisdictionName(path.state)
-                  ? `Get Licensed in ${jurisdictionName(path.state)}`
-                  : 'Get Licensed'
-                : undefined
-            }
-          />
-        ))}
+        {examFirst ? (
+          /* Steps 3 and 4 keep the original 20 between them (2026-09-24, the
+             direct ask) — the 32 applies between the filled cards and around
+             the pair, not inside it. */
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 20, minWidth: 0 }}>
+            {licensingSteps.slice(1)}
+          </div>
+        ) : (
+          licensingSteps
+        )}
         {/* THE REQUIREMENTS ACTION, OUT OF THE CARDS — 2026-09-21, the direct
             ask: "take this out of the widget and make it a secondary style
             button below — same width as the widget."
@@ -195,6 +245,7 @@ export function StudyJourneyWidget({
         {onOpenRequirements ? (
           <button
             type="button"
+            data-cta-id="home.state-requirements"
             onClick={onOpenRequirements}
             className="cre-cta-ink"
             style={{
@@ -296,12 +347,73 @@ export function StudyJourneyWidget({
  * now behave identically instead of one of them leaving the app without
  * warning.
  */
+/**
+ * Licensing step id → the catalog id a test run can kill.
+ *
+ * A MAP RATHER THAN A FIELD ON THE STEP, because `LicensingStep` is product
+ * data — it describes the New York licence, and a research instrument has no
+ * business in it. This is the seam between the two.
+ */
+/**
+ * A STEP THAT CANNOT BE STARTED YET — no card, a 4px rule instead.
+ *
+ * ⚠ THE RULE IS DOING THE CARD'S JOB, which is why it is 4px and not a
+ * hairline: without a filled surface the only thing separating one step from
+ * the next is this edge, so it has to read as a boundary on its own. The
+ * pattern is the Overview page's Rubi panel — a vertical rule with the content
+ * hanging off it — in the brand blue rather than Rubi's red, because red on
+ * this page means an assessment.
+ *
+ * ⚠ `-300` IS A BORDER STOP. The XCEL ramp's note is explicit that `-400` and
+ * lighter are FILL/BORDER ONLY and never text; a rule is exactly that use, and
+ * anything darker would make a step that cannot be started the loudest thing
+ * in the column.
+ *
+ * 4 + 16 = the card's own 20px inset, so the text of a pending step lines up
+ * with the text of the one above it rather than shifting left by the width of
+ * the rule.
+ */
+const pendingStepStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  minWidth: 0,
+  background: 'transparent',
+  borderInlineStart: '4px solid var(--color-primary-300)',
+  padding: '4px 20px 4px 16px',
+}
+
+/* The rounded variant of `pendingStepStyle`'s rule: same 4px, same
+   `--color-primary-300`, same place — only the ends are round. */
+const ROUNDED_RULE: CSSProperties = {
+  position: 'absolute',
+  insetInlineStart: 0,
+  top: 0,
+  bottom: 0,
+  width: 4,
+  borderRadius: 2,
+  background: 'var(--color-primary-300)',
+}
+
+/** The filled card's horizontal inset, which a pending step's rule + padding
+ *  must add up to. Falls back to the framed shell's 20. */
+function pendingInset(shell: CSSProperties): number {
+  return typeof shell.padding === 'number' ? shell.padding : 20
+}
+
+const LICENSING_STEP_CTA: Record<string, string | undefined> = {
+  'schedule-exam': 'home.schedule-exam',
+  'pass-exam': 'home.what-to-expect',
+  'apply-license': 'home.how-to-apply',
+}
+
 function LicensingStepWidget({
   step,
   number,
   shell,
   onOpenStep,
   heading,
+  state,
+  roundedRule = false,
 }: {
   step: LicensingStep
   /** Continues the journey's 01-04. See the note in `StudyJourneyWidget`. */
@@ -317,29 +429,48 @@ function LicensingStepWidget({
    * thing. This is a heading override and nothing else now.
    */
   heading?: string
+  /** The path's jurisdiction CODE ("NY"), for the scheduled heading. Passed
+   *  rather than derived: the widget has no path. */
+  state?: string
+  /** A pending step's rule drawn as a bar with ROUNDED ENDS (a border cannot
+   *  round its own ends) — the Atlas home, 2026-09-24, the direct ask. */
+  roundedRule?: boolean
 }) {
   /*
    * Owner and fee on one line, ASSEMBLED rather than interpolated — a trailing
    * "·" reads as a value that failed to load, which is the admin roster's
    * blank-cell rule and the same shape as the Links panel's row meta.
    *
-   * THE LINE NEEDS A FEE TO EXIST — 2026-09-21, the direct ask ("remove"),
-   * pointed at Pass State Exam's meta, which was the bare word "PSI".
+   * THE LINE IS THE FEE — 2026-09-22, the direct ask ("Remove the PSI, leave
+   * the fee"), pointed at Schedule State Exam's "PSI · $40 exam fee".
    *
-   * A RULE rather than a special case for that step: a meta line is a pairing,
-   * and with no fee to pair with, the owner was a one-word row under a sentence
-   * — chrome that reads as a label for something missing. Written as "only when
-   * there is a fee", so a fourth step with a fee gets the line and one without
-   * does not, and nobody has to remember which id was exempt.
+   * IT FINISHES A MOVE STARTED THE DAY BEFORE. That ask ("remove") was pointed
+   * at Pass State Exam's meta, which was the bare word "PSI", and it was
+   * written as a RULE rather than an exemption for one id — "a meta line is a
+   * pairing, and with no fee to pair with the owner is a one-word row under a
+   * sentence". The owner has now been removed from both ends of that pairing,
+   * so what is left is the rule it was always converging on: the meta line
+   * states the FEE, and nothing else.
+   *
+   * KEPT AS A RULE for the same reason as last time — a condition on
+   * `step.id` would mean remembering which step was exempt, and there are
+   * three of these plus whatever a second state adds.
+   *
+   * IT ALSO DROPS "NY" FROM APPLY FOR YOUR LICENSE, which the ask did not
+   * name. That card read "NY · $80 application fee" via `ownerShort`, and the
+   * card's own title is "Get Licensed in New York" — so the owner was saying
+   * the state twice. Pass State Exam is unchanged either way: it has no fee,
+   * so it had no meta line under the previous rule and has none under this one.
    *
    * WHAT IS LOST, and where it survives: the owner is the reason these steps
    * are separate from the coursework at all ("everything in the journey happens
-   * inside the LMS and nothing here does"), and on Pass State Exam that fact is
-   * now only in the step's own sheet, which the card's "What to expect" link
-   * opens. The other two cards still name their owner beside the fee. Delete
-   * the `step.fee` condition to put it back on all three.
+   * inside the LMS and nothing here does"). That fact is now in each step's own
+   * sheet rather than on any card — `GetLicensedStepPanel`, which the card's
+   * detail link opens, and which still names PSI, DFS and NIPR. `step.owner`
+   * and `step.ownerShort` are UNTOUCHED in the data and still read by
+   * `StudyJourneyRail`; restoring the pairing here is one line.
    */
-  const meta = step.fee ? [step.ownerShort ?? step.owner, step.fee].filter(Boolean).join(' · ') : ''
+  const meta = step.fee ?? ''
   /*
    * THIS CARD CARRIES THE EXAM-DATE CAPTURE — and therefore does NOT print the
    * step's detail line (2026-09-21, the direct ask: "remove", pointed at
@@ -358,19 +489,74 @@ function LicensingStepWidget({
    * than it should. This is a rendering rule for the widget, not a deletion.
    */
   const hasCapture = step.id === 'schedule-exam'
+  /*
+   * THE SCHEDULED STATE — 2026-09-23, the direct ask: "When saved: Header -
+   * change to NY State Exam Scheduled. Change the CTA link to Edit Exam Date."
+   *
+   * `editing` LIVES HERE rather than inside the capture, because the control
+   * that opens the editor is now the card's own footer link and the panel it
+   * opens is the capture's. Two components cannot own one disclosure; lifting
+   * it is what stops the link and the panel disagreeing about which state is
+   * showing.
+   *
+   * THE STATE CODE IS THE PATH'S, not a literal. "NY State Exam Scheduled" is
+   * what the ask names because New York is the demo, and typing NY here would
+   * put a wrong jurisdiction on every other path the moment one exists — the
+   * defect `jurisdictionName`'s own fallback was written for.
+   */
+  const storedExam = useExamDate()
+  const [editingExam, setEditingExam] = useState(false)
+  const scheduled = hasCapture && Boolean(storedExam) && !editingExam
+  /*
+   * NOTHING HERE CAN BE DONE YET — 2026-09-23, the direct ask: these steps
+   * "cannot be done yet, so remove the white background".
+   *
+   * Pass State Exam and Get Licensed both wait on something outside the LMS —
+   * a sitting PSI has not scheduled, a licence the Department has not issued —
+   * so a white card gives them the same standing as Schedule State Exam, which
+   * has a date field in it and can be acted on this minute. Three equal cards
+   * read as three equal invitations.
+   *
+   * ⚠ `!hasCapture` IS A PROXY, and it is worth knowing it is one. What the
+   * rule means is "no action is available yet"; what it tests is "this step
+   * has no input on it", which is true of exactly these two today. If a step
+   * ever becomes actionable WITHOUT a capture — a link that actually books
+   * something — this needs a real field on `LicensingStep` rather than an
+   * inference from its shape.
+   */
+  const pending = !hasCapture
   return (
     /* The accessible name is the VISIBLE heading, not the step title, so the
        arrival card is not announced as "Apply for your License" while reading
        "Get Licensed in New York". A region whose name disagrees with its own
        heading is the same defect in miniature as the nav-collapse page's
        "Dash Dashboard". */
-    <section aria-label={heading ?? step.title} style={shell}>
+    <section
+      aria-label={heading ?? step.title}
+      style={
+        pending
+          ? // Keep the rule + padding equal to the FILLED cards' inset, whatever
+            // it is — 20 by default, the Atlas home's 32 (2026-09-24, the direct
+            // ask) — so a pending step's text lines up with the cards above.
+            roundedRule
+            ? {
+                ...pendingStepStyle,
+                position: 'relative',
+                borderInlineStart: 'none',
+                paddingInlineStart: pendingInset(shell),
+                paddingInlineEnd: pendingInset(shell),
+              }
+            : { ...pendingStepStyle, paddingInlineStart: pendingInset(shell) - 4, paddingInlineEnd: pendingInset(shell) }
+          : shell
+      }
+    >
+      {pending && roundedRule ? <span aria-hidden style={ROUNDED_RULE} /> : null}
       {/* THE NUMBER IS THE SEQUENCE. Four cards cannot draw a continuous
           spine, so "Step 05" is what still says these follow the coursework
           and each other. It rides in the eyebrow slot the journey card already
           uses, so all four cards label themselves the same way. */}
       <p className="cre-eyebrow-ink" style={widgetEyebrowStyle}>
-        Step {String(number).padStart(2, '0')}
+        Step {number}
       </p>
       <p
         style={{
@@ -383,7 +569,7 @@ function LicensingStepWidget({
           color: 'var(--color-text-primary)',
         }}
       >
-        {heading ?? step.title}
+        {scheduled && state ? `${state} State Exam Scheduled` : (heading ?? step.title)}
       </p>
       {/* NO LEAD LINE — 2026-09-21, the direct ask ("remove"). The arrival card
           briefly carried its step title ("Apply for your License") under the
@@ -437,11 +623,23 @@ function LicensingStepWidget({
           the light stop under `[data-theme='dark']` and an inline value would
           beat it while looking correct. The trap `titleStyleNoColor` exists
           for, one file over. */}
-      {hasCapture ? <ExamDateCapture /> : null}
-      {onOpenStep ? (
+      {hasCapture ? (
+        <ExamDateCapture
+          stored={storedExam}
+          editing={editingExam}
+          onDone={() => setEditingExam(false)}
+        />
+      ) : null}
+      {onOpenStep || scheduled ? (
         <button
           type="button"
-          onClick={() => onOpenStep(step.id)}
+          /* ⚠ DERIVED FROM THE STEP — one element renders all three licensing
+             cards, so a literal would kill the wrong one. `LICENSING_STEP_CTA`
+             maps the step ids to the catalog's; an unmapped step gets no
+             attribute at all, which is the right failure (a control no run can
+             kill, rather than one that dies with its neighbour). */
+          data-cta-id={LICENSING_STEP_CTA[step.id]}
+          onClick={() => (scheduled ? setEditingExam(true) : onOpenStep?.(step.id))}
           className="cre-link-action cre-cta-ink"
           style={{
             marginTop: 12,
@@ -462,7 +660,7 @@ function LicensingStepWidget({
             textAlign: 'left',
           }}
         >
-          {step.detailLabel ?? 'What to expect'} →
+          {scheduled ? 'Edit Exam Date' : (step.detailLabel ?? 'What to expect')} →
         </button>
       ) : null}
     </section>
@@ -494,47 +692,47 @@ function LicensingStepWidget({
  * reversible — it is stored per browser and never committed, so a stale one
  * would otherwise be unexplainable from the repo.
  */
-function ExamDateCapture() {
-  const stored = useExamDate()
-  const [editing, setEditing] = useState(false)
+function ExamDateCapture({
+  stored,
+  editing,
+  onDone,
+}: {
+  stored: string | null
+  /** Owned by the CARD, not here — its "Edit Exam Date" link is what opens the
+   *  editor now, so the two cannot disagree about which state is showing. */
+  editing: boolean
+  onDone: () => void
+}) {
   const [draft, setDraft] = useState('')
   const open = editing || !stored
 
+  /*
+   * ⚠ THE SET STATE IS NOW THE FIGMA CALENDAR, and the state it replaces is
+   * worth recording because it was doing a job: "Your exam date · December 15,
+   * 2026 · Change · Clear" — a caption, the date in words, and two links.
+   *
+   * WHAT SURVIVES THE SWAP. The date is still visible and still reversible,
+   * which is the requirement the old note set ("a value that can silently
+   * override the page's headline figure has to be visible and reversible"). The
+   * calendar carries the date; CHANGE moved out to the card's own CTA as "Edit
+   * Exam Date", per the ask.
+   *
+   * ⚠ WHAT DOES NOT. `Clear` has no home in the new design and is not drawn in
+   * the Figma. It survives INSIDE the editor instead — open the editor and the
+   * field can be emptied and saved — so the value is still reversible without a
+   * link on the resting card. That is a real reduction in discoverability for a
+   * control that resets a demo figure, and it is flagged rather than quietly
+   * dropped: if a reviewer gets stuck with a stale date, this is why.
+   */
   if (!open) {
     return (
-      <div style={{ marginTop: 12, display: 'flex', flexDirection: 'column', gap: 4 }}>
-        <p style={{ ...captureHintStyle, margin: 0 }}>Your exam date</p>
-        <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, flexWrap: 'wrap' }}>
-          <span
-            style={{
-              fontFamily: 'var(--font-heading)',
-              fontSize: 14,
-              fontWeight: 700,
-              color: 'var(--color-text-primary)',
-            }}
-          >
-            {longDate(stored ? isoToSlashes(stored) : '')}
-          </span>
-          <button
-            type="button"
-            onClick={() => {
-              setDraft(stored ?? '')
-              setEditing(true)
-            }}
-            className="cre-link-action cre-cta-ink"
-            style={captureLinkStyle}
-          >
-            Change
-          </button>
-          <button
-            type="button"
-            onClick={() => clearExamDate()}
-            className="cre-link-action cre-cta-ink"
-            style={captureLinkStyle}
-          >
-            Clear
-          </button>
-        </div>
+      <div style={{ marginTop: 12 }}>
+        <ExamDateCalendar iso={stored} />
+        {/* The date in WORDS for the accessibility tree, since the calendar is
+            `aria-hidden` — three stacked fragments ("SEPTEMBER", "28", "2025")
+            do not read as a date, and the card's heading only says one is
+            scheduled. */}
+        <p style={srOnlyDateStyle}>Exam scheduled for {longDate(isoToSlashes(stored))}</p>
       </div>
     )
   }
@@ -576,10 +774,11 @@ function ExamDateCapture() {
         />
         <button
           type="button"
+          data-cta-id="home.exam-date-save"
           disabled={!draft}
           onClick={() => {
             writeExamDate(draft)
-            setEditing(false)
+            onDone()
           }}
           style={{
             flex: 'none',
@@ -597,9 +796,155 @@ function ExamDateCapture() {
         >
           Save
         </button>
+        {stored ? (
+          <button
+            type="button"
+            data-cta-id="home.exam-date-clear"
+            onClick={() => {
+              clearExamDate()
+              onDone()
+            }}
+            className="cre-link-action cre-cta-ink"
+            style={{ ...captureLinkStyle, alignSelf: 'center' }}
+          >
+            Clear
+          </button>
+        ) : null}
       </div>
     </div>
   )
+}
+
+/** Off-screen but in the accessibility tree — the pattern `StudyJourneyRail`'s
+ *  own `srOnlyStyle` uses. */
+const srOnlyDateStyle: CSSProperties = {
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  margin: 0,
+  overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  whiteSpace: 'nowrap',
+}
+
+
+/**
+ * THE EXAM-DATE CALENDAR — Figma `2.0 - Learning Path Page`, node 1195:16026
+ * (the tear-off inside `CalendarProgressAndGoalTracker`, 1195:8978).
+ *
+ * 2026-09-23, the direct ask: when a date is entered, this is what the Schedule
+ * State Exam card shows.
+ *
+ * WHAT WAS TAKEN AND WHAT WAS NOT. The node is a LICENSE TRACKER in its Expired
+ * state, on the MCK brand: an orange "Begin New Cycle" button, orange links,
+ * Open Sans throughout, and an "Expired" status word above the calendar. None
+ * of that is here. The calendar is the piece the ask points at; the chrome
+ * around it belongs to a different card on a different brand, and its status
+ * word is already this card's heading ("NY State Exam Scheduled"), so keeping
+ * it would print the state twice.
+ *
+ * ⚠ THE TWO RINGS ARE REDRAWN RATHER THAN DOWNLOADED, which is a deliberate
+ * departure from the design-to-code rule that assets are used as exported. They
+ * export as `Line 172` / `Line 173` — two zero-height strokes with round caps,
+ * i.e. geometry rather than artwork. Committing two SVG files to draw two
+ * straight lines cuts against this repo's asset conventions (one icon registry,
+ * `vite-plugin-svgr`, nothing loose in `public/`), and a stroke is the one kind
+ * of "asset" that survives being expressed as a border-radius. Said out loud
+ * here because a silent substitution is the thing that rule exists to stop.
+ *
+ * THE GEOMETRY IS THE DESIGN'S, in its own units: a 140x149 box, the body
+ * inset 9px from the top with a 12px radius and a 1px `#a2a2a2` rule — which is
+ * `--color-neutral-500` exactly, so the design's neutral ramp and ours already
+ * agree — a 19px grey cap, and rings at 27% and 64% of the width.
+ *
+ * THE TYPE IS OURS. The design sets all three lines in Open Sans SemiBold
+ * because that is MCK's only face. Here the DAY takes `--font-heading`, the
+ * token every other display figure on this page uses (the band's percentage,
+ * the pace card's "2¾"), so it follows `dashboard-heading-font` rather than
+ * being the one numeral that ignores the control. Month and year stay on
+ * `--font-body`: at 16px they are labels, not figures.
+ */
+function ExamDateCalendar({ iso }: { iso: string }) {
+  const d = dateFromIso(iso)
+  if (!d) return null
+  return (
+    <div style={calShellStyle} aria-hidden>
+      <div style={calRingStyle(38)} />
+      <div style={calRingStyle(89)} />
+      <div style={calBodyStyle}>
+        <div style={calCapStyle} />
+        <p style={calMonthStyle}>{d.toLocaleDateString('en-US', { month: 'long' }).toUpperCase()}</p>
+        <p style={calDayStyle}>{d.getDate()}</p>
+        <p style={calYearStyle}>{d.getFullYear()}</p>
+      </div>
+    </div>
+  )
+}
+
+const calShellStyle: CSSProperties = {
+  position: 'relative',
+  width: 140,
+  height: 149,
+  flex: 'none',
+}
+
+/* The two binder rings, at the design's 27.14% and 63.57% of 140. Round-capped
+   by a pill radius, which is what the exported strokes' `linecap` draws. */
+const calRingStyle = (left: number): CSSProperties => ({
+  position: 'absolute',
+  top: 0,
+  left,
+  width: 7,
+  height: 18,
+  borderRadius: 'var(--radius-pill)',
+  background: 'var(--color-text-primary)',
+})
+
+const calBodyStyle: CSSProperties = {
+  position: 'absolute',
+  top: 9,
+  left: 0,
+  right: 0,
+  bottom: 0,
+  borderRadius: 12,
+  border: '1px solid var(--color-neutral-500)',
+  background: 'var(--color-surface-card)',
+  overflow: 'hidden',
+  textAlign: 'center',
+}
+
+/** The grey cap the rings pass through. */
+const calCapStyle: CSSProperties = {
+  height: 19,
+  background: 'var(--color-neutral-500)',
+}
+
+const calMonthStyle: CSSProperties = {
+  margin: '10px 0 0',
+  fontFamily: 'var(--font-body)',
+  fontSize: 16,
+  fontWeight: 600,
+  lineHeight: '22px',
+  color: 'var(--color-text-primary)',
+}
+
+const calDayStyle: CSSProperties = {
+  margin: '2px 0 0',
+  fontFamily: 'var(--font-heading)',
+  fontSize: 50,
+  fontWeight: 600,
+  lineHeight: '58px',
+  color: 'var(--color-text-primary)',
+}
+
+const calYearStyle: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 16,
+  fontWeight: 600,
+  lineHeight: '28px',
+  color: 'var(--color-text-primary)',
 }
 
 /** `2026-12-15` → `12/15/2026`, the shape `longDate` parses in LOCAL time. See

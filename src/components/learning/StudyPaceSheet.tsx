@@ -1,23 +1,31 @@
 import { useMemo, useRef, useState, type ReactNode } from 'react'
 import { Sheet } from '@/components/ui/Sheet'
 import { Button } from '@/components/ui/Button'
-import { X } from '@/icons'
+import { X, Check } from '@/icons'
 import {
   studyPace,
   defaultPreset,
   formatEvening,
-  formatEveningSpoken,
   formatPaceDate,
-  presetLabel,
   isoFromDate,
   daysUntil,
-  NIGHT_OPTIONS,
   STYLE_FACTORS,
   WEEKDAY_LABELS,
   defaultWeekdays,
   type PacePreset,
   type PresetId,
   type StudyStyle,
+  simulateSchedule,
+  scheduleStanding,
+  scheduleAdvice,
+  hoursPerDayWithin,
+  evenWeek,
+  activeDays,
+  formatHours,
+  type ScheduleSim,
+  type ScheduleStanding,
+  paceOptionsFor,
+  type PaceOption,
 } from '@/lib/studyPace'
 
 /**
@@ -70,6 +78,8 @@ import {
  * makes possible.
  */
 
+export type PaceApproach = 'sprint' | 'evenings' | 'blocks' | 'custom'
+
 export type PaceChoices = {
   /** `null` ⇒ the learner has not chosen; the model's Recommended stands. */
   presetId: PresetId | null
@@ -77,6 +87,14 @@ export type PaceChoices = {
   /** ISO yyyy-mm-dd. */
   examDate: string | null
   style: StudyStyle
+  /** Which shaped answer the learner came through, or `null` for Recommended.
+   *  Kept so re-opening the sheet returns to the screen they built on rather
+   *  than to the chooser — a plan you cannot get back to is a plan you rebuild. */
+  approach: PaceApproach | null
+  /** Seven HOURS, Monday-first — the week the learner actually built, and the
+   *  input {@link simulateSchedule} walks. `null` ⇒ no schedule, the derived
+   *  pace stands. */
+  schedule: number[] | null
   /** Set once a study plan is built — weekdays are 0=Mon … 6=Sun. */
   plan: { weekdays: number[]; startTime: string } | null
 }
@@ -94,7 +112,44 @@ const RECOMMENDED: PaceChoices = {
   nights: null,
   examDate: null,
   style: 'average',
+  approach: null,
+  schedule: null,
   plan: null,
+}
+
+/** Weeknight evening lengths the Evenings screen offers, in hours. Stops at 3:
+ *  past that it is not an evening, it is the `blocks` screen. */
+const EVENING_CHOICES = [1, 1.5, 2, 2.5, 3] as const
+/** Sprint windows, in days. */
+const SPRINT_WINDOWS = [7, 10, 14] as const
+/** The most any single day may be set to. Eight hours is a working day, and a
+ *  learner who genuinely has more than that does not need this screen. */
+const MAX_DAY_HOURS = 8
+
+/**
+ * THE MONTH STRIP, SWITCHED OFF — 2026-09-22, the direct ask ("hide the
+ * calendar from the sheet view for all of them").
+ *
+ * A CONSTANT RATHER THAN A DELETION, which is a deliberate departure from how
+ * `AimRow` was removed an hour earlier. That was markup; this is 70 lines of
+ * offset arithmetic (which day is `studyDays[n]`, where the ceiling falls
+ * inside a four-week window) that took a browser session to get right, and
+ * "restoring it should be a re-wire, never a rebuild" is the repo's own rule.
+ * One word here brings it back.
+ *
+ * Typed `boolean` rather than left as a `false` literal so the ternary below is
+ * not a constant condition — the lint rule would otherwise flag the switch
+ * itself as the defect.
+ *
+ * ⚠ ITS CSS AND THE COMPONENT BOTH STAY, and nothing else reads either. That
+ * is the cost of the switch and it is the point of it.
+ */
+const SHOW_PLAN_CALENDAR: boolean = false
+
+/** Mon-first index of a `Date`'s weekday — `getDay()` is Sunday-first, and the
+ *  whole module is Monday-first. Written once and used everywhere here. */
+function weekdayOf(d: Date): number {
+  return (d.getDay() + 6) % 7
 }
 
 export function StudyPaceSheet(props: {
@@ -130,17 +185,14 @@ export function StudyPaceSheet(props: {
  * described one field in four, and a Cancel button would have had nothing to
  * restore.
  *
- * All four now live here and `onChange` fires ONCE, from Save. Cancel, Escape
- * and a scrim click are the same path — they unmount this component and the
- * draft goes with it, which is why discarding needs no handler of its own.
+ * Everything now lives here and `onChange` fires ONCE, from Save. Cancel,
+ * Escape and a scrim click are the same path — they unmount this component and
+ * the draft goes with it, which is why discarding needs no handler of its own.
  *
- * WHAT IT COSTS, and it is a real loss: the tile no longer re-prices live
- * behind the open sheet. The sheet's own figures still move on every keystroke
- * (the aim rows, the segments, the session preview all read `draft`), so the
- * feedback the live model gave is still there — it is just inside the panel the
- * learner is looking at. The sub-line's "everything below re-prices as you
- * change it" went with the change, because a Save button beside that sentence
- * is the product contradicting itself.
+ * ⚠ THE SCREEN IS PART OF THE DRAFT TOO. Moving between the chooser and a style
+ * screen changes nothing the learner has saved; `approach` only reaches the
+ * parent on Save, so backing out of "Finish fast" leaves the pace they arrived
+ * with rather than a half-built one.
  */
 function PaceSheetBody({
   onClose,
@@ -159,10 +211,16 @@ function PaceSheetBody({
   choices: PaceChoices
   onChange: (next: PaceChoices) => void
 }) {
-  const [draft, setDraft] = useState<PaceChoices>(choices)
-  const [planOn, setPlanOn] = useState(choices.plan != null)
-  const [weekdays, setWeekdays] = useState<number[] | null>(choices.plan?.weekdays ?? null)
+  /* RE-OPENS WHERE THEY LEFT OFF. A learner who built an evenings plan and
+     comes back to nudge Thursday should land on the evenings screen, not be
+     made to re-choose the style they already chose. */
+  const [screen, setScreen] = useState<PaceApproach | null>(choices.approach)
+  /** Read-only here: nothing on these screens edits the exam date or the
+   *  style, and Save spreads this to keep them. Kept as the draft rather than
+   *  read from `choices` so the save contract has one source. */
+  const [draft] = useState<PaceChoices>(choices)
   const [startTime, setStartTime] = useState(choices.plan?.startTime ?? DEFAULT_START_TIME)
+  const [addToCalendar, setAddToCalendar] = useState(choices.plan != null)
 
   const model = useMemo(
     () =>
@@ -176,29 +234,127 @@ function PaceSheetBody({
       }),
     [today, hoursRemaining, accessExpiresAt, draft.examDate, draft.nights, draft.style],
   )
-  const selected =
-    (draft.presetId && model.presets.find((p) => p.id === draft.presetId)) || defaultPreset(model)
-  const days = weekdays ?? defaultWeekdays(selected.nights)
-  const set = (patch: Partial<PaceChoices>) => setDraft((d) => ({ ...d, ...patch }))
+  const recommended = defaultPreset(model)
+  /* THE THREE NAMED PLANS, from the same function the card's picker uses — so
+     the sheet and the card cannot offer plans that differ in nights or in
+     wording. Read off the DRAFT's exam date and style, like `model` above. */
+  const plans = useMemo(
+    () =>
+      paceOptionsFor({
+        today,
+        hoursRemaining,
+        accessExpiresAt,
+        examDate: draft.examDate ?? undefined,
+        style: draft.style,
+      }),
+    [today, hoursRemaining, accessExpiresAt, draft.examDate, draft.style],
+  )
+  /* Recommended by default — `choices.presetId` is null until the learner has
+     chosen, which is exactly the state "Recommended" describes. */
+  const activePlan: PresetId = choices.presetId ?? 'recommended'
 
-  /* THE CONTROL REFLECTS WHAT IT SETS. `Segment` used to compare against
-     `selected.nights` — the MODEL's derived value — while setting
-     `draft.nights`. Until the learner picked one they differed, so the
-     highlighted segment was the model's suggestion and clicking it wrote a
-     value that had not been there before. It reads the draft first and falls
-     back to the suggestion only while there is nothing to read. */
-  const nightsShown = draft.nights ?? selected.nights
-  /** Ticking weekdays is authoritative once the calendar is on — so group 2 is
-   *  being driven from group 4, and says so rather than jumping silently. */
-  const nightsFromPlan = planOn && weekdays != null
+  /* THE FOUR SCREENS' OWN STATE, seeded from the saved schedule where it can be
+     read back and from sensible starts where it cannot. Held together rather
+     than per-screen so that flipping between two styles to compare them does
+     not wipe the one you just left. */
+  const seed = choices.schedule
+  const [sprint, setSprint] = useState({
+    windowDays: 10 as number,
+    weekdays: seed ? activeDays(seed) : [0, 1, 2, 3, 4, 5, 6],
+  })
+  const [evenings, setEvenings] = useState({
+    hours: 2,
+    weeknights: seed ? activeDays(seed).filter((d) => d <= 4) : [0, 1, 2, 3, 4],
+    sat: seed?.[5] ?? 0,
+    sun: seed?.[6] ?? 0,
+  })
+  const [blocks, setBlocks] = useState<number[]>(
+    seed ?? [0, 0, 0, 2, 0, 6, 6],
+  )
+  const [custom, setCustom] = useState({
+    mode: 'date' as 'date' | 'hours',
+    finishIso: recommended.finishIso,
+    weekdays: seed ? activeDays(seed) : defaultWeekdays(recommended.nights),
+    hours: 2,
+    perDay: false,
+    per: seed ?? [2, 2, 2, 2, 2, 3, 3],
+  })
+
+  /** The week the current screen describes — the ONE value every outcome, badge,
+   *  calendar and summary on this sheet reads. Each screen's job is to produce
+   *  it; nothing downstream knows which screen it came from. */
+  const week: number[] | null = useMemo(() => {
+    if (screen === 'sprint') {
+      const perDay = hoursPerDayWithin({
+        today,
+        hoursRemaining,
+        weekdays: sprint.weekdays,
+        windowDays: sprint.windowDays,
+      })
+      return perDay ? evenWeek(sprint.weekdays, perDay) : evenWeek(sprint.weekdays, 0)
+    }
+    if (screen === 'evenings') {
+      const w = evenWeek(evenings.weeknights, evenings.hours)
+      w[5] = evenings.sat
+      w[6] = evenings.sun
+      return w
+    }
+    if (screen === 'blocks') return blocks
+    if (screen === 'custom') {
+      if (custom.mode === 'date') {
+        const span = Math.max(1, daysUntil(custom.finishIso, today) ?? 1)
+        const perDay = hoursPerDayWithin({
+          today,
+          hoursRemaining,
+          weekdays: custom.weekdays,
+          windowDays: span + 1,
+        })
+        return evenWeek(custom.weekdays, perDay)
+      }
+      return custom.perDay
+        ? custom.per.map((h, i) => (custom.weekdays.includes(i) ? h : 0))
+        : evenWeek(custom.weekdays, custom.hours)
+    }
+    return null
+  }, [screen, today, hoursRemaining, sprint, evenings, blocks, custom])
+
+  const sim = useMemo(
+    () =>
+      week
+        ? simulateSchedule({ today, hoursRemaining, hoursByWeekday: week, hardEndIso: model.hardEndIso })
+        : null,
+    [week, today, hoursRemaining, model.hardEndIso],
+  )
+  const standing = scheduleStanding(sim, model.binding)
+  const advice = scheduleAdvice(sim)
+
+  /** What the dashboard will say if this is saved — shown in the footer BEFORE
+   *  the learner commits, which is the prototype's best idea: the consequence
+   *  of the button is written next to the button. */
+  const summary = sim
+    ? `${formatHours(sim.hoursPerWeek)} a week over ${sim.daysPerWeek} ${
+        sim.daysPerWeek === 1 ? 'day' : 'days'
+      }, finishing around ${formatPaceDate(sim.finishIso)}.`
+    : null
+
+  const save = () => {
+    const days = week ? activeDays(week) : []
+    onChange({
+      ...draft,
+      approach: screen,
+      schedule: week,
+      nights: days.length || null,
+      plan: addToCalendar && days.length ? { weekdays: days, startTime } : null,
+    })
+    onClose()
+  }
 
   return (
     <div className="cre-pace-sheet" style={sheetShell}>
-      {/* ── HEADER ───────────────────────────────────────────────────────
-          `aria-hidden` on the visible title: `Sheet` already renders an sr-only
-          one for its `aria-labelledby`, and two copies of the same string give
-          the dialog a doubled accessible name. */}
       <header className="cre-pace-sheet__header">
+        {/* `aria-hidden` on the visible title: `Sheet` already renders an
+            sr-only one for its `aria-labelledby`, and two copies of the same
+            string give the dialog a doubled accessible name. */}
         <h2 className="cre-pace-sheet__title" aria-hidden>
           Adjust your pace
         </h2>
@@ -213,202 +369,760 @@ function PaceSheetBody({
         </button>
       </header>
 
-      {/* ── SCROLL BODY ─────────────────────────────────────────────────── */}
       <div className="cre-pace-sheet__body">
         <p className="cre-pace-sheet__hint">
-          {Math.round(hoursRemaining)} hours left{courseTitle ? ` of ${courseTitle}` : ''}.
+          {Math.round(hoursRemaining)} hours left{courseTitle ? ` of ${courseTitle}` : ''}
+          {accessExpiresAt ? ` · access ends ${formatPaceDate(accessExpiresAt)}` : ''}.
         </p>
 
-        {/* 1 · AIM */}
-        <Group label="What are you aiming at?">
-          <RadioGroup
-            label="Finish date"
-            orientation="vertical"
-            className="cre-pace-sheet__aims"
-            count={model.presets.length}
-            activeIndex={Math.max(0, model.presets.findIndex((p) => p.id === selected.id))}
-            onMove={(i) => {
-              const next = model.presets[i]
-              if (next && next.state !== 'no') set({ presetId: next.id })
+        {screen == null ? (
+          <Chooser
+            recommended={recommended}
+            model={model}
+            onPick={setScreen}
+            plans={plans}
+            activePlan={activePlan}
+            /* APPLIES AND CLOSES, bypassing the draft deliberately — see the
+               Chooser's own note. There is nothing to fill in, so there is
+               nothing a Cancel could restore. `schedule: null` because a
+               hand-built week would otherwise beat the plan just chosen. */
+            onApplyPlan={(plan) => {
+              onChange({
+                ...draft,
+                presetId: plan.id,
+                nights: plan.nights,
+                schedule: null,
+                approach: null,
+              })
+              onClose()
             }}
-          >
-            {(itemProps) =>
-              model.presets.map((p, i) => (
-                <AimRow
-                  key={p.id}
-                  preset={p}
-                  checked={p.id === selected.id}
-                  recommended={p.id === 'recommended'}
-                  onSelect={() => set({ presetId: p.id })}
-                  {...itemProps(i)}
-                />
-              ))
-            }
-          </RadioGroup>
-          <BindingNote model={model} today={today} accessExpiresAt={accessExpiresAt} examDate={draft.examDate} />
-        </Group>
-
-        {/* 2 · DAYS A WEEK */}
-        <Group label="How many days a week?">
-          <RadioGroup
-            label="Days a week"
-            orientation="horizontal"
-            className="cre-pace-sheet__segments"
-            count={NIGHT_OPTIONS.length}
-            activeIndex={Math.max(0, NIGHT_OPTIONS.indexOf(nightsShown as (typeof NIGHT_OPTIONS)[number]))}
-            onMove={(i) => {
-              set({ nights: NIGHT_OPTIONS[i] })
-              setWeekdays(null)
-            }}
-          >
-            {(itemProps) =>
-              NIGHT_OPTIONS.map((n, i) => (
-                <Segment
-                  key={n}
-                  checked={n === nightsShown}
-                  onSelect={() => {
-                    set({ nights: n })
-                    setWeekdays(null)
-                  }}
-                  {...itemProps(i)}
-                >
-                  {n}
-                </Segment>
-              ))
-            }
-          </RadioGroup>
-          {/* THE JUMP, MADE VISIBLE. Ticking a weekday in group 4 rewrites this
-              group, correctly and — until now — silently. `aria-live` because
-              the change happens two groups away from where the learner is
-              looking. */}
-          <p className="cre-pace-sheet__hint" aria-live="polite">
-            {nightsFromPlan
-              ? 'Set by the days you picked below.'
-              : 'Fewer days means longer evenings, not less work.'}
-          </p>
-        </Group>
-
-        {/* 3 · EXAM DATE — HIDDEN 2026-09-21, the direct ask ("hide"), pointed
-            at this group.
-
-            ⚠ THE EXAM DATE IS NOT GONE, and that is the only reason hiding the
-            field is survivable. It has a SECOND and better home: the Schedule
-            State Exam card's own capture ("Already scheduled? Enter the exam
-            date and we'll use it to help you prep"), which writes
-            `examDateStore`. That store reaches this sheet — the band threads it
-            to `StudyPaceTile`, which seeds `choices.examDate` from it — so the
-            model still switches ceilings and `BindingNote` above still names
-            which one is doing the work and what it beat. This removed a SECOND
-            entry point for one fact, not the fact.
-
-            WHAT WENT WITH IT, and it is worth knowing rather than discovering:
-            the exam-BUFFER sentence ("coursework finishes 7 days before you
-            sit … whichever comes first sets your pace") lived in this group and
-            went too. `BindingNote`'s exam message still states the consequence
-            — "coursework has to be done by <date>" — but the RULE behind the
-            number is no longer written down anywhere on this surface. Putting
-            that one sentence under the binding note would restore it without
-            bringing the field back.
-
-            Deleted rather than commented out: the field, its Clear button and
-            the hint are all reconstructible from this note and from git, and a
-            block of dead JSX is the thing that rots. */}
-
-        {/* 4 · THE STUDY PLAN */}
-        <Group label="Put it on a calendar">
-          <SwitchRow
-            checked={planOn}
-            onToggle={() => {
-              const next = !planOn
-              setPlanOn(next)
-              if (next && !weekdays) setWeekdays(defaultWeekdays(selected.nights))
-              if (!next) {
-                setWeekdays(null)
-                set({ plan: null })
-              }
-            }}
-            title="Create a study plan"
-            body={
-              selected.state === 'no'
-                ? 'Once there is a pace that fits.'
-                : 'Puts each session on your Study Plan.'
-            }
           />
-          {planOn && selected.state !== 'no' ? (
-            <>
-              <span className="cre-pace-sheet__group-label">Which days, and when?</span>
-              <div role="group" aria-label="Study days" className="cre-pace-sheet__days">
-                {WEEKDAYS.map((d, i) => (
-                  <DayToggle
-                    key={d}
-                    label={d}
-                    pressed={days.includes(i)}
-                    onToggle={() => {
-                      const next = days.includes(i) ? days.filter((x) => x !== i) : [...days, i].sort((a, b) => a - b)
-                      if (!next.length) return
-                      setWeekdays(next)
-                      // Ticking a day is AUTHORITATIVE once the calendar is on —
-                      // the pace follows the days, rather than the two disagreeing.
-                      set({ nights: next.length })
-                    }}
+        ) : (
+          <>
+            <button
+              type="button"
+              onClick={() => setScreen(null)}
+              className="cre-pace-sheet__text-button cre-pace-sheet__back"
+            >
+              ‹ All pace styles
+            </button>
+
+            {screen === 'sprint' && (
+              <SprintScreen today={today} state={sprint} onChange={setSprint} />
+            )}
+            {screen === 'evenings' && <EveningsScreen state={evenings} onChange={setEvenings} />}
+            {screen === 'blocks' && <BlocksScreen hours={blocks} onChange={setBlocks} />}
+            {screen === 'custom' && (
+              <CustomScreen
+                today={today}
+                hardEndIso={model.hardEndIso}
+                state={custom}
+                onChange={setCustom}
+              />
+            )}
+
+            {/* ONE OUTCOME BOX, whichever screen produced the week. Four screens
+                each rendering their own verdict is four places for the rule to
+                drift, and the rule is the thing this sheet is for. */}
+            <Outcome sim={sim} standing={standing} advice={advice} />
+            <BindingNote
+              model={model}
+              today={today}
+              accessExpiresAt={accessExpiresAt}
+              examDate={draft.examDate}
+            />
+            {SHOW_PLAN_CALENDAR ? (
+              <PlanCalendar today={today} sim={sim} hardEndIso={model.hardEndIso} />
+            ) : null}
+
+            <Group label="Put it on a calendar">
+              <SwitchRow
+                checked={addToCalendar}
+                onToggle={() => setAddToCalendar((v) => !v)}
+                title="Add each session to my Study Plan"
+                body={
+                  sim
+                    ? 'Writes every session above onto your Study Plan.'
+                    : 'Once there is a pace that fits.'
+                }
+              />
+              {addToCalendar && sim ? (
+                <>
+                  <Field label="Usual start time" htmlFor="pace-time">
+                    <input
+                      id="pace-time"
+                      type="time"
+                      className="cre-pace-sheet__input"
+                      value={startTime}
+                      onChange={(e) => setStartTime(e.target.value || DEFAULT_START_TIME)}
+                    />
+                  </Field>
+                  <SessionPreview
+                    today={today}
+                    preset={recommended}
+                    weekdays={week ? activeDays(week) : []}
+                    startTime={startTime}
                   />
-                ))}
-              </div>
-              <Field label="Usual start time" htmlFor="pace-time">
-                <input
-                  id="pace-time"
-                  type="time"
-                  className="cre-pace-sheet__input"
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value || DEFAULT_START_TIME)}
-                />
-              </Field>
-              <SessionPreview today={today} preset={selected} weekdays={days} startTime={startTime} />
-            </>
-          ) : null}
-        </Group>
+                </>
+              ) : null}
+            </Group>
+          </>
+        )}
       </div>
 
-      {/* ── FOOTER ───────────────────────────────────────────────────────
-          A SIBLING of the scroll body, not the last thing inside it — which is
-          the whole point: pinned, always reachable, and the reason the panel
-          can no longer clip it. */}
+      {/* A SIBLING of the scroll body, not the last thing inside it — pinned,
+          always reachable, and the reason the panel can no longer clip it. */}
       <footer className="cre-pace-sheet__footer">
-        <Button
-          onClick={() => {
-            onChange({
-              ...draft,
-              plan: planOn && selected.state !== 'no' ? { weekdays: days, startTime } : null,
-            })
-            onClose()
-          }}
-        >
-          {/* "Save pace & plan", not "Save pace & build my plan". The long form
-              measured 210px of a 420px footer and pushed Reset onto a second
-              row — 44px of height in the panel whose height is the whole bug.
-              The short form keeps both nouns (the pace is saved, the plan is
-              built) and holds one row. The no-plan label stays EXACTLY
-              "Save pace"; tests pin that one. */}
-          {planOn ? 'Save pace & plan' : 'Save pace'}
-        </Button>
-        <button type="button" onClick={onClose} className="cre-pace-sheet__text-button">
-          Cancel
-        </button>
-        <button
-          type="button"
-          onClick={() => {
-            setDraft(RECOMMENDED)
-            setPlanOn(false)
-            setWeekdays(null)
-            setStartTime(DEFAULT_START_TIME)
-          }}
-          className="cre-pace-sheet__text-button cre-pace-sheet__reset"
-        >
-          Reset to recommended
-        </button>
+        {screen == null ? (
+          <>
+            <Button
+              onClick={() => {
+                onChange({ ...RECOMMENDED, examDate: draft.examDate })
+                onClose()
+              }}
+            >
+              Keep recommended
+            </Button>
+            <button type="button" onClick={onClose} className="cre-pace-sheet__text-button">
+              Cancel
+            </button>
+          </>
+        ) : (
+          <>
+            {/* THE CONSEQUENCE BESIDE THE BUTTON. A learner should not have to
+                press Save to learn what Save does to the card they came from. */}
+            <p className="cre-pace-sheet__summary" aria-live="polite">
+              {summary ? (
+                <>
+                  <b>Your dashboard will show:</b> {summary}
+                </>
+              ) : (
+                <>Add some study time to see what this changes.</>
+              )}
+            </p>
+            <Button onClick={save} disabled={!sim}>
+              {addToCalendar ? 'Save pace & plan' : 'Save pace'}
+            </Button>
+            <button type="button" onClick={onClose} className="cre-pace-sheet__text-button">
+              Cancel
+            </button>
+          </>
+        )}
       </footer>
     </div>
   )
+}
+
+/* ── SCREEN 0 · THE CHOOSER ──────────────────────────────────────────────── */
+
+/*
+ * ⚠ `sprint`, `evenings` AND `blocks` LEFT THIS LIST on 2026-09-23 — the direct
+ * ask: the chooser now offers the three NAMED PLANS the card offers, and
+ * "don't implement anything after Build My Own. If the user clicks on any of
+ * the other three, the sheet will close and the study pace widget will update."
+ *
+ * So the first three apply a plan and close; only `custom` still opens a screen.
+ *
+ * ⚠ THEIR SCREENS ARE INTACT AND UNREACHABLE, which is this repo's archive
+ * convention rather than an oversight: `SprintScreen`, `EveningsScreen` and
+ * `BlocksScreen` are all still here, still typed, still wired to `screen` —
+ * nothing was deleted, and restoring one is re-adding its row below. What
+ * WOULD be lost by deleting them is the only place a learner can express a
+ * week that is not "the first N days": Long sessions on free days in
+ * particular has no equivalent in the three named plans.
+ *
+ * `PaceApproach` keeps all four members for the same reason — `choices.approach`
+ * may already hold one from a plan a learner built before today.
+ */
+const APPROACHES: { id: PaceApproach; title: string; body: string }[] = [
+  {
+    id: 'custom',
+    title: 'Build my own',
+    body: 'None of these fit. I will set my own days, hours or finish date.',
+  },
+]
+
+/**
+ * Recommended first, then the four shapes.
+ *
+ * THE ORDER IS THE ARGUMENT, and it is the prototype's: most learners should
+ * take the recommendation, so it is stated as an answer rather than offered as
+ * an option — the footer's primary button accepts it. The four styles are for
+ * the learner whose week the recommendation does not fit, and they are phrased
+ * as LIVES ("my days are busy"), not as settings, because the learner knows
+ * their week and does not know our vocabulary for it.
+ */
+function Chooser({
+  recommended,
+  model,
+  onPick,
+  plans,
+  activePlan,
+  onApplyPlan,
+}: {
+  recommended: PacePreset
+  model: ReturnType<typeof studyPace>
+  onPick: (a: PaceApproach) => void
+  /** The three named plans — see `paceOptionsFor`. */
+  plans: PaceOption[]
+  activePlan: PresetId | null
+  /** Applies the plan and closes the sheet. No draft: there is nothing to
+   *  fill in, so there is nothing to discard. */
+  onApplyPlan: (plan: PaceOption) => void
+}) {
+  const fits = recommended.state !== 'no'
+  return (
+    <>
+      {/*
+        THE THREE NAMED PLANS, AS THE CHOICE — 2026-09-23, the direct ask.
+        
+        RECOMMENDED IS IN THE LIST, not above it. It used to sit in its own
+        highlighted block over a list of four "styles", which made it read as
+        the answer and the list as the escape hatch. The ask is explicit that it
+        is "selected by default, but will still be part of the existing list" —
+        so it is one row of four, pre-selected, and the other two are peers
+        rather than alternatives to it.
+        
+        A RADIOGROUP, because exactly one is true and the selection is the
+        point. `aria-checked` carries it; the tint and the tick are not doing
+        that job alone.
+        
+        PICKING ONE APPLIES AND CLOSES. There is no screen behind these three —
+        "if the user clicks on any of the other three, the sheet will close and
+        the study pace widget will update" — which is also why they are not
+        drafts: the sheet's save contract exists for the screens that build a
+        week, and a single-click choice with nothing to fill in has nothing to
+        discard.
+      */}
+      <Group label="Choose your pace">
+        <div role="radiogroup" aria-label="Study pace" className="cre-pace-sheet__plans">
+          {plans.map((o) => {
+            const on = o.id === activePlan
+            const planFits = o.priced.state !== 'no'
+            return (
+              <button
+                key={o.id}
+                type="button"
+                role="radio"
+                aria-checked={on}
+                tabIndex={on ? 0 : -1}
+                data-plan={o.id}
+                className="cre-pace-sheet__option"
+                onClick={() => onApplyPlan(o)}
+              >
+                <span style={{ flex: 1, minWidth: 0 }}>
+                  <span className="cre-pace-sheet__option-title">{o.name}</span>
+                  <span className="cre-pace-sheet__option-body">
+                    {planFits
+                      ? `${o.nights} ${o.nights === 1 ? 'day' : 'days'} a week · ${formatEvening(
+                          o.priced.minsPerNight,
+                        )} a night · finishing ${formatPaceDate(o.priced.finishIso)}`
+                      : 'The work left will not fit at this pace.'}
+                  </span>
+                </span>
+                {on ? (
+                  <span aria-hidden style={{ alignSelf: 'center' }}>
+                    <Check size={15} />
+                  </span>
+                ) : null}
+              </button>
+            )
+          })}
+        </div>
+      </Group>
+
+      {!fits ? (
+        /* NO FIGURE when nothing fits — the same rule the tile keeps. A pace
+           past the ceiling has no honest number, and the answer is more time or
+           fewer lessons rather than a bigger one. */
+        <p className="cre-pace-sheet__hint">
+          There is no pace we would recommend for the time left. Building your own week below will
+          show you what it would actually take.
+        </p>
+      ) : null}
+
+      <Group label="Or set it yourself">
+        {APPROACHES.map((a) => (
+          <button
+            key={a.id}
+            type="button"
+            data-shape={a.id}
+            className="cre-pace-sheet__option"
+            onClick={() => onPick(a.id)}
+          >
+            <span style={{ flex: 1, minWidth: 0 }}>
+              <span className="cre-pace-sheet__option-title">{a.title}</span>
+              <span className="cre-pace-sheet__option-body">{a.body}</span>
+            </span>
+            <span aria-hidden style={{ alignSelf: 'center', opacity: 0.6 }}>
+              ›
+            </span>
+          </button>
+        ))}
+      </Group>
+
+      <p className="cre-pace-sheet__hint" data-binding={model.binding}>
+        {model.binding === 'exam'
+          ? 'Whichever you pick is measured against your exam date, not just your access.'
+          : 'Whichever you pick is measured against the day your access ends.'}
+      </p>
+    </>
+  )
+}
+
+/* ── SCREEN 1 · FINISH FAST ──────────────────────────────────────────────── */
+
+function SprintScreen({
+  today,
+  state,
+  onChange,
+}: {
+  today: Date
+  state: { windowDays: number; weekdays: number[] }
+  onChange: (s: { windowDays: number; weekdays: number[] }) => void
+}) {
+  return (
+    <>
+      <Group label="When do you want to be done?">
+        <RadioGroup
+          label="Finish within"
+          orientation="horizontal"
+          className="cre-pace-sheet__segments"
+          count={SPRINT_WINDOWS.length}
+          activeIndex={Math.max(0, SPRINT_WINDOWS.indexOf(state.windowDays as 7))}
+          onMove={(i) => onChange({ ...state, windowDays: SPRINT_WINDOWS[i] })}
+        >
+          {(itemProps) =>
+            SPRINT_WINDOWS.map((n, i) => (
+              <Segment
+                key={n}
+                checked={n === state.windowDays}
+                onSelect={() => onChange({ ...state, windowDays: n })}
+                {...itemProps(i)}
+              >
+                {n} days
+              </Segment>
+            ))
+          }
+        </RadioGroup>
+        <p className="cre-pace-sheet__hint">
+          By {formatPaceDate(isoFromDate(addDays(today, state.windowDays - 1)))}.
+        </p>
+      </Group>
+      <WeekdayGroup
+        label="Which days can you study?"
+        selected={state.weekdays}
+        onChange={(weekdays) => onChange({ ...state, weekdays })}
+      />
+    </>
+  )
+}
+
+/* ── SCREEN 2 · EVENINGS ONLY ────────────────────────────────────────────── */
+
+function EveningsScreen({
+  state,
+  onChange,
+}: {
+  state: { hours: number; weeknights: number[]; sat: number; sun: number }
+  onChange: (s: { hours: number; weeknights: number[]; sat: number; sun: number }) => void
+}) {
+  return (
+    <>
+      <Group label="How much time do you have on a weeknight?">
+        <RadioGroup
+          label="Hours on a weeknight"
+          orientation="horizontal"
+          className="cre-pace-sheet__segments"
+          count={EVENING_CHOICES.length}
+          activeIndex={Math.max(0, EVENING_CHOICES.indexOf(state.hours as 1))}
+          onMove={(i) => onChange({ ...state, hours: EVENING_CHOICES[i] })}
+        >
+          {(itemProps) =>
+            EVENING_CHOICES.map((h, i) => (
+              <Segment
+                key={h}
+                checked={h === state.hours}
+                onSelect={() => onChange({ ...state, hours: h })}
+                {...itemProps(i)}
+              >
+                {formatHours(h)}
+              </Segment>
+            ))
+          }
+        </RadioGroup>
+      </Group>
+      <WeekdayGroup
+        label="Which weeknights?"
+        only={[0, 1, 2, 3, 4]}
+        selected={state.weeknights}
+        onChange={(weeknights) => onChange({ ...state, weeknights })}
+      />
+      <Group label="Add weekend time">
+        <p className="cre-pace-sheet__hint">
+          A little at the weekend means shorter weeknights — not a longer course.
+        </p>
+        <Stepper
+          label="Saturday"
+          hours={state.sat}
+          onChange={(sat) => onChange({ ...state, sat })}
+        />
+        <Stepper
+          label="Sunday"
+          hours={state.sun}
+          onChange={(sun) => onChange({ ...state, sun })}
+        />
+      </Group>
+    </>
+  )
+}
+
+/* ── SCREEN 3 · LONG SESSIONS ────────────────────────────────────────────── */
+
+function BlocksScreen({ hours, onChange }: { hours: number[]; onChange: (h: number[]) => void }) {
+  return (
+    <Group label="Hours for each day of a typical week">
+      <p className="cre-pace-sheet__hint">Leave a day at zero if you are busy.</p>
+      {WEEKDAYS.map((d, i) => (
+        <Stepper
+          key={d}
+          label={d}
+          hours={hours[i] ?? 0}
+          onChange={(h) => onChange(hours.map((x, j) => (j === i ? h : x)))}
+        />
+      ))}
+    </Group>
+  )
+}
+
+/* ── SCREEN 4 · BUILD MY OWN ─────────────────────────────────────────────── */
+
+type CustomState = {
+  mode: 'date' | 'hours'
+  finishIso: string
+  weekdays: number[]
+  hours: number
+  perDay: boolean
+  per: number[]
+}
+
+function CustomScreen({
+  today,
+  hardEndIso,
+  state,
+  onChange,
+}: {
+  today: Date
+  hardEndIso: string
+  state: CustomState
+  onChange: (s: CustomState) => void
+}) {
+  const MODES = [
+    { id: 'date' as const, label: 'Finish date' },
+    { id: 'hours' as const, label: 'Hours a day' },
+  ]
+  return (
+    <>
+      <Group label="What do you want to set?">
+        <RadioGroup
+          label="Set my plan by"
+          orientation="horizontal"
+          className="cre-pace-sheet__segments"
+          count={MODES.length}
+          activeIndex={MODES.findIndex((m) => m.id === state.mode)}
+          onMove={(i) => onChange({ ...state, mode: MODES[i].id })}
+        >
+          {(itemProps) =>
+            MODES.map((m, i) => (
+              <Segment
+                key={m.id}
+                checked={m.id === state.mode}
+                onSelect={() => onChange({ ...state, mode: m.id })}
+                {...itemProps(i)}
+              >
+                {m.label}
+              </Segment>
+            ))
+          }
+        </RadioGroup>
+      </Group>
+
+      {state.mode === 'date' ? (
+        <Field label="I want to finish by" htmlFor="pace-finish">
+          <input
+            id="pace-finish"
+            type="date"
+            className="cre-pace-sheet__input"
+            value={state.finishIso}
+            min={isoFromDate(addDays(today, 1))}
+            /* CAPPED AT THE CEILING, not at access expiry: an exam date that
+               binds earlier makes any later finish a date the sheet would have
+               to immediately call late. The control should not offer it. */
+            max={hardEndIso}
+            onChange={(e) => e.target.value && onChange({ ...state, finishIso: e.target.value })}
+          />
+        </Field>
+      ) : null}
+
+      <WeekdayGroup
+        label="Which days?"
+        selected={state.weekdays}
+        onChange={(weekdays) => onChange({ ...state, weekdays })}
+      />
+
+      {state.mode === 'hours' ? (
+        <Group label="Hours per study day">
+          <SwitchRow
+            checked={state.perDay}
+            onToggle={() => onChange({ ...state, perDay: !state.perDay })}
+            title="Different each day"
+            body="Set each study day on its own instead of one figure for all."
+          />
+          {state.perDay ? (
+            WEEKDAYS.map((d, i) =>
+              state.weekdays.includes(i) ? (
+                <Stepper
+                  key={d}
+                  label={d}
+                  hours={state.per[i] ?? 0}
+                  onChange={(h) =>
+                    onChange({ ...state, per: state.per.map((x, j) => (j === i ? h : x)) })
+                  }
+                />
+              ) : null,
+            )
+          ) : (
+            <Stepper
+              label="Every study day"
+              hours={state.hours}
+              min={0.5}
+              onChange={(hours) => onChange({ ...state, hours })}
+            />
+          )}
+        </Group>
+      ) : null}
+    </>
+  )
+}
+
+/* ── SHARED PIECES ───────────────────────────────────────────────────────── */
+
+/** The seven day toggles. One selected day is the floor — a week with nothing
+ *  in it is not a plan, and silently emptying it would make the whole screen
+ *  read as broken rather than as empty. */
+function WeekdayGroup({
+  label,
+  selected,
+  onChange,
+  only,
+}: {
+  label: string
+  selected: number[]
+  onChange: (next: number[]) => void
+  only?: number[]
+}) {
+  return (
+    <Group label={label}>
+      <div role="group" aria-label={label} className="cre-pace-sheet__days">
+        {WEEKDAYS.map((d, i) =>
+          only && !only.includes(i) ? null : (
+            <DayToggle
+              key={d}
+              label={d}
+              pressed={selected.includes(i)}
+              onToggle={() => {
+                const next = selected.includes(i)
+                  ? selected.filter((x) => x !== i)
+                  : [...selected, i].sort((a, b) => a - b)
+                if (!next.length) return
+                onChange(next)
+              }}
+            />
+          ),
+        )}
+      </div>
+    </Group>
+  )
+}
+
+/** A −/+ pair around an hours figure. Quarter-hour steps below two hours and
+ *  half-hour above: the difference between 45 minutes and an hour matters to a
+ *  weeknight, the difference between 6 and 6¼ hours does not. */
+function Stepper({
+  label,
+  hours,
+  onChange,
+  min = 0,
+}: {
+  label: string
+  hours: number
+  onChange: (h: number) => void
+  min?: number
+}) {
+  const step = hours < 2 ? 0.25 : 0.5
+  const clamp = (h: number) => Math.max(min, Math.min(MAX_DAY_HOURS, Math.round(h * 4) / 4))
+  return (
+    <div className="cre-pace-sheet__step">
+      <span className="cre-pace-sheet__step-label">{label}</span>
+      <button
+        type="button"
+        className="cre-pace-sheet__stepper"
+        disabled={hours <= min}
+        aria-label={`Less time on ${label}`}
+        onClick={() => onChange(clamp(hours - step))}
+      >
+        −
+      </button>
+      {/* `aria-live` on the VALUE, because pressing − and + does not move focus:
+          without it a screen-reader user hears nothing change. */}
+      <span className="cre-pace-sheet__step-value" data-off={hours === 0} aria-live="polite">
+        {hours > 0 ? formatHours(hours) : 'Off'}
+        <span className="cre-sr-only">{hours > 0 ? ` on ${label}` : ` — ${label} is off`}</span>
+      </span>
+      <button
+        type="button"
+        className="cre-pace-sheet__stepper"
+        disabled={hours >= MAX_DAY_HOURS}
+        aria-label={`More time on ${label}`}
+        onClick={() => onChange(clamp(hours + step))}
+      >
+        +
+      </button>
+    </div>
+  )
+}
+
+/**
+ * One pace, one verdict, one piece of advice.
+ *
+ * THE BADGE NEVER CARRIES THE MESSAGE ALONE. Its tone is a fill, and a fill is
+ * not readable to everyone — so `standing.message` is a sentence that works
+ * with the colour removed, which is also why the model returns prose rather
+ * than a severity for the UI to caption.
+ */
+function Outcome({
+  sim,
+  standing,
+  advice,
+}: {
+  sim: ScheduleSim | null
+  standing: ScheduleStanding
+  advice: string | null
+}) {
+  return (
+    <div className="cre-pace-sheet__outcome" aria-live="polite">
+      <span className="cre-pace-sheet__group-label">Your pace</span>
+      {sim ? (
+        <>
+          {/* `formatHours` CARRIES ITS OWN UNIT — "8½ hours", "45 minutes" — so
+              the sentence must not add one. It read "10 hours hours a week"
+              until the browser said so out loud. */}
+          <span className="cre-pace-sheet__outcome-figure">
+            {formatHours(sim.hoursPerWeek)} a week
+          </span>
+          <span className="cre-pace-sheet__hint">
+            Over {sim.daysPerWeek} {sim.daysPerWeek === 1 ? 'day' : 'days'} · longest day{' '}
+            {formatHours(sim.longestDayHours)}
+          </span>
+        </>
+      ) : null}
+      <span className="cre-pace-sheet__badge" data-tone={standing.tone}>
+        {standing.message}
+      </span>
+      {advice ? <p className="cre-pace-sheet__advice">{advice}</p> : null}
+    </div>
+  )
+}
+
+/**
+ * Four weeks from the Monday on or before today, with the study days, the
+ * finish and the deadline marked.
+ *
+ * `aria-hidden`, and deliberately: every fact it draws is stated in words by
+ * `Outcome` directly above it, and a screen-reader user walking 28 numbered
+ * cells to reconstruct "finishes May 27" learns nothing the sentence did not
+ * already tell them. The same call the tile's week strip makes.
+ */
+function PlanCalendar({
+  today,
+  sim,
+  hardEndIso,
+}: {
+  today: Date
+  sim: ScheduleSim | null
+  hardEndIso: string
+}) {
+  const first = addDays(today, -weekdayOf(today))
+  const studied = new Set(sim?.studyDays ?? [])
+  const cells = Array.from({ length: 28 }, (_, i) => {
+    const date = addDays(first, i)
+    const offset = Math.round((date.getTime() - startOfDay(today).getTime()) / 86_400_000)
+    const iso = isoFromDate(date)
+    return {
+      iso,
+      day: date.getDate(),
+      out: offset < 0 || iso > hardEndIso,
+      study: studied.has(offset),
+      finish: sim != null && iso === sim.finishIso,
+      end: iso === hardEndIso,
+    }
+  })
+  return (
+    <Group label="Your plan">
+      <div className="cre-pace-sheet__cal" aria-hidden>
+        {WEEKDAYS.map((d) => (
+          <span key={d} className="cre-pace-sheet__cal-head">
+            {d.slice(0, 1)}
+          </span>
+        ))}
+        {cells.map((c) => (
+          <span
+            key={c.iso}
+            className="cre-pace-sheet__cal-cell"
+            data-out={c.out}
+            data-study={c.study}
+            data-finish={c.finish}
+            data-end={c.end}
+          >
+            {c.day}
+          </span>
+        ))}
+      </div>
+      <div className="cre-pace-sheet__legend" aria-hidden>
+        <span>
+          <i
+            className="cre-pace-sheet__swatch"
+            style={{ background: 'var(--color-primary-100)', border: '1px solid var(--color-primary-300)' }}
+          />
+          Study day
+        </span>
+        <span>
+          <i className="cre-pace-sheet__swatch" style={{ background: 'var(--color-primary-500)' }} />
+          Finish
+        </span>
+        <span>
+          <i
+            className="cre-pace-sheet__swatch"
+            style={{ boxShadow: 'inset 0 -3px 0 var(--color-error-500)', border: '1px solid var(--color-border-subtle)' }}
+          />
+          Last usable day
+        </span>
+      </div>
+    </Group>
+  )
+}
+
+/** Midnight local, so day arithmetic cannot be thrown by the time of day. */
+function startOfDay(d: Date): Date {
+  return new Date(d.getFullYear(), d.getMonth(), d.getDate())
+}
+
+/** `d` + n whole days, built from local parts — never from an ISO string, per
+ *  `courseExpiry`'s UTC off-by-one rule. */
+function addDays(d: Date, n: number): Date {
+  const x = startOfDay(d)
+  x.setDate(x.getDate() + n)
+  return x
 }
 
 /* The shell fills the panel so its three children can divide it. Inline because
@@ -506,87 +1220,15 @@ function RadioGroup({
   )
 }
 
-function AimRow({
-  preset,
-  checked,
-  recommended,
-  onSelect,
-  tabIndex,
-  ref,
-}: {
-  preset: PacePreset
-  checked: boolean
-  recommended: boolean
-  onSelect: () => void
-  tabIndex: number
-  ref: (el: HTMLButtonElement | null) => void
-}) {
-  const unfittable = preset.state === 'no'
-  const reasonId = `pace-aim-${preset.id}-why`
-  return (
-    <button
-      ref={ref}
-      type="button"
-      role="radio"
-      aria-checked={checked}
-      /* `aria-disabled`, NOT `disabled` — see the class's own note. A disabled
-         button drops out of the tab order and out of most screen-reader element
-         lists, so the one row that most needs to explain itself would be the
-         one a keyboard user cannot reach. The click is refused in the handler
-         instead. */
-      aria-disabled={unfittable || undefined}
-      aria-describedby={unfittable ? reasonId : undefined}
-      tabIndex={tabIndex}
-      onClick={() => {
-        if (!unfittable) onSelect()
-      }}
-      data-preset={preset.id}
-      className="cre-pace-sheet__aim"
-    >
-      <span aria-hidden className="cre-pace-sheet__radio" />
-      <span style={{ minWidth: 0 }}>
-        <span className="cre-pace-sheet__aim-name">
-          {/* `presetLabel`, not the raw name: "Relaxed" is only kept while the
-              evening is genuinely light. On a long course the same date is
-              described as what it is. */}
-          {presetLabel(preset)}
-          {recommended ? <span className="cre-pace-sheet__chip">Recommended</span> : null}
-        </span>
-        <span className="cre-pace-sheet__hint" style={{ display: 'block' }}>
-          Finish by {formatPaceDate(preset.finishIso)}
-        </span>
-        {unfittable ? (
-          <span id={reasonId} className="cre-pace-sheet__hint" style={{ display: 'block' }}>
-            There is not enough time left for this pace.
-          </span>
-        ) : null}
-      </span>
-      <span style={{ textAlign: 'right' }}>
-        <span className="cre-pace-sheet__aim-evening" data-state={preset.state}>
-          {/* SHOWN as the glyph, SPOKEN as words. `formatEvening` returns `1¾
-              hours`, which a screen reader may render as "three quarters",
-              "3/4" or nothing — on the one figure this sheet exists to convey.
-              Both come from the same rounding; see `formatEveningSpoken`. */}
-          <span aria-hidden>{unfittable ? '—' : formatEvening(preset.minsPerNight)}</span>
-          {unfittable ? null : (
-            <span className="cre-sr-only">{formatEveningSpoken(preset.minsPerNight)}</span>
-          )}
-        </span>
-        <span className="cre-pace-sheet__hint" style={{ display: 'block' }}>
-          {unfittable ? 'won’t fit' : 'a night'}
-        </span>
-      </span>
-    </button>
-  )
-}
+/* REMOVED 2026-09-22 — `AimRow`, the three-preset radio row (Relaxed /
+   Recommended / Focused). The presets did not go: Recommended is stated on the
+   chooser and accepted by its primary button, and "pick a finish date" is now
+   the `custom` screen's date mode, which does the same job against a real
+   calendar instead of three fixed options. The row itself is reconstructible
+   from git; a block of dead JSX is the thing that rots. Its `.cre-pace-sheet__aim*`
+   CSS is left in `tokens.css` for the same reason the file keeps other unused
+   rules — it is the restore path, and it costs nothing at rest. */
 
-/**
- * Which ceiling is doing the work, in words.
- *
- * This is the half of the two-ceiling rule that makes it honest. The model
- * picks the sooner one silently; this says so, and names the other date, so the
- * learner can see why their pace moved when they typed an exam date in.
- */
 function BindingNote({
   model,
   today,

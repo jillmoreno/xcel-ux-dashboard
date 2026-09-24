@@ -1,5 +1,5 @@
 import { readFileSync } from 'node:fs'
-import { fireEvent, render, screen, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, within, act } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
@@ -10,6 +10,7 @@ import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelC
 import { PlatformShell } from '@/components/layout/PlatformShell'
 import {
   DISCOVERABILITY_DASHBOARD_VERSIONS,
+  DISCOVERABILITY_DASHBOARD_VERSION_MARKETING_FOCUSED,
   DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
   DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV,
   DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
@@ -17,7 +18,12 @@ import {
   isQualifyingEducationVersion,
 } from '@/data/dashboardVersions'
 import { dashboardLayoutForVersion, railHidesSection } from '@/components/layout/dashboardRail'
-import { journeyStopsFor, metaWords, statusWords } from '@/components/learning/studyJourneyUtil'
+import {
+  journeyStepRows,
+  journeyStopsFor,
+  metaWords,
+  statusWords,
+} from '@/components/learning/studyJourneyUtil'
 import { CATEGORY_BAR_HEIGHT } from '@/components/learning/progressGauge'
 import {
   CATEGORY_PALETTE,
@@ -27,6 +33,7 @@ import {
 import {
   dashboardProgressPersonaFor,
   DASHBOARD_PROGRESS_PICKER,
+  type DashboardProgressVariant,
 } from '@/data/dashboardProgressFixtures'
 import { displayedProgressPct, timeRemainingText, longDate } from '@/components/learning/learningPathsHomeUtil'
 import {
@@ -39,7 +46,10 @@ import {
   NY_PRODUCER_HOURS_INVENTED,
   NY_LH_GUIDE_CHAPTERS_PARTIAL,
   NY_LH_CURRENT_CHAPTER,
+  NY_LH_COURSE_CHAPTERS,
   NY_LH_PROGRAM_PARTS,
+  NY_LH_LESSON_PARTS,
+  NY_LH_CURRENT_LESSON_PART,
   NY_LH_LESSON_MINUTES_INVENTED,
   NY_GOVERNING_AGENCY,
   examFactsFor,
@@ -107,6 +117,20 @@ function seedClassic(extra: Record<string, unknown> = {}) {
  * a specific version asks for it by name; `defaultDiscoverabilityVersionFor` is
  * tested on its own, once, below.
  */
+/**
+ * The countdown a persona actually carries, as the surfaces print it.
+ *
+ * ⚠ READ FROM THE FIXTURE, NEVER TYPED. These assertions were a literal "27
+ * days" until 2026-09-23 and every one of them had to be hand-edited the moment
+ * the demo's day counts were re-authored to 29 / 17 / 3 — a literal cannot
+ * catch a figure it was edited to match. What the tests below are actually
+ * about is that the surfaces AGREE with the fixture and with each other, which
+ * is true at any value.
+ */
+function personaCountdown(variant: DashboardProgressVariant = 'progress-on-track'): string {
+  return timeRemainingText(dashboardProgressPersonaFor('xcel', variant, 'qe')!.renewal!.weeksLeft)
+}
+
 const QE_URL = '/dashboard-rebrand?version=discoverability-qe-focused'
 
 function renderShell(url: string) {
@@ -130,43 +154,68 @@ beforeEach(() => {
   window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
 })
 
-describe('the QE Focused version is registered and default', () => {
-  it('leads the Discoverability picker', () => {
-    // Leads rather than merely appears: the picker's order is what a reviewer
-    // reads as "the one we are on".
-    expect(DISCOVERABILITY_DASHBOARD_VERSIONS[0]).toBe(
-      DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
-    )
+describe('the QE Focused version is ARCHIVED but still reachable', () => {
+  /*
+   * 2026-09-22, the direct ask: "we can go ahead and remove these versions, we
+   * are going in the direction of Testing Version."
+   *
+   * It came off the PICKER LIST only — the same mechanism Badged got in August.
+   * The const, the type member, the `?version=` branches and every component
+   * are kept, so a deep link still resolves. That is not a technicality: it is
+   * what lets the 160 tests below go on describing this layout, which is the
+   * layout Testing and Testing 2 are built on.
+   */
+  it('is still in THIS branch’s picker', () => {
+    /* THIS BRANCH'S PICKER, NOT MAIN'S — 2026-09-24. This file came over from
+       main with the home page's contents; main archived QE Focused and
+       Marketing Focused off the picker, but that archive was deliberately NOT
+       pulled onto feat/atlas-compass-global-nav (home contents only). So here
+       QE Focused still leads and Atlas sits after Testing 2. When this branch
+       merges into main, main's assertion is the one to keep. */
+    const ids = DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)
+    expect(ids).toContain(DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED.id)
   })
 
-  it('is NO LONGER what XCEL resolves to — Testing is, since 2026-09-21', () => {
-    /* REWRITTEN, not deleted, and the original subject is the point. This
-       asserted QE Focused as XCEL's default from 2026-09-16; the direct ask on
-       2026-09-21 moved it to the Testing version, and a test whose premise has
-       changed is rewritten with the change recorded in it.
+  it('still RESOLVES, which is what keeps this file meaningful', () => {
+    /* Archiving a version must not make it unreachable — every test below
+       renders `QE_URL`. If a later change starts rejecting unlisted versions,
+       this fails first and explains why 160 tests are about to. */
+    const { container } = renderShell(QE_URL)
+    expect(container.querySelector('.cre-learner-focused-band')).not.toBeNull()
+  })
 
-       TWO callers read this — `PlatformShell`'s `?version=` fallback and the
-       Header's "Default" pill — and the helper exists so they cannot disagree,
-       so asserting the helper covers both. That is also why this moving is a
-       real event rather than a constant edit: it changes what the public link
-       and the `?demo=1` baseline open on.
+  it('leads this branch’s picker, ahead of Testing, Testing 2 and Atlas', () => {
+    /* THIS BRANCH'S PICKER, NOT MAIN'S — 2026-09-24. This file came over from
+       main with the home page's contents; main archived QE Focused and
+       Marketing Focused off the picker, but that archive was deliberately NOT
+       pulled onto feat/atlas-compass-global-nav (home contents only). So here
+       QE Focused still leads and Atlas sits after Testing 2. When this branch
+       merges into main, main's assertion is the one to keep. */
+    expect(DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)).toEqual([
+      'discoverability-qe-focused',
+      'discoverability-testing',
+      'discoverability-testing-2',
+      'discoverability-atlas-compass-nav',
+      'discoverability-marketing-focused',
+      'discoverability-learner-focused',
+    ])
+  })
 
-       QE Focused stays in the picker and stays fully covered — every other test
-       in this file now names it explicitly (`QE_URL`) rather than inheriting it
-       from this default. */
+  it('is still what XCEL does NOT resolve to — Testing is', () => {
     expect(defaultDiscoverabilityVersionFor('xcel')).toBe(
       DISCOVERABILITY_DASHBOARD_VERSION_TESTING.id,
     )
-    expect(DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)).toContain(
-      DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED.id,
-    )
   })
 
-  it('keeps Learner Focused and Marketing Focused selectable', () => {
-    // The point of adding rather than replacing: the three can be compared.
-    const ids = DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)
-    expect(ids).toContain('discoverability-learner-focused')
-    expect(ids).toContain('discoverability-marketing-focused')
+  it('keeps Marketing Focused as the HOUSE default for a non-XCEL brand', () => {
+    /* ⚠ THE REASON THE CONST SURVIVES ARCHIVAL. `Brand` is a one-member union,
+       so this branch is unreachable today — and it is the seam a second brand
+       re-enters through, exactly like the `[data-brand]` selector in
+       `tokens.css`. Deleting the version outright would leave that fallback
+       pointing at nothing, and the failure would appear on the day someone
+       adds a brand, not today. */
+    const marketing = DISCOVERABILITY_DASHBOARD_VERSION_MARKETING_FOCUSED
+    expect(marketing.id).toBe('discoverability-marketing-focused')
   })
 })
 
@@ -362,9 +411,10 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
     expect(screen.queryByRole('complementary', { name: 'Chat with Rubi' })).toBeNull()
   })
 
-  it("Home's Resume opens the Compass Course page on Atlas — and only there", () => {
+  it("Home's course button opens the Compass Course page on Atlas — and only there", () => {
+    // On Atlas the course card's button reads "Begin Course" (2026-09-24).
     const { container, unmount } = renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav')
-    fireEvent.click(screen.getByRole('button', { name: /^Resume/ }))
+    fireEvent.click(screen.getByRole('button', { name: /^Begin Course/ }))
     expect(container.querySelector('.cre-compass-rail')).toBeTruthy()
     expect(screen.getByRole('toolbar', { name: 'Course player controls' })).toBeTruthy()
     unmount()
@@ -659,29 +709,49 @@ describe('the Study Journey replaces Today\'s Tasks', () => {
     const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!
     const stops = journeyStopsFor(persona.path)
     /*
-     * THE PRE-LICENSING COURSE IS THE FIRST PART, and the only counted one.
+     * FIVE STOPS, 1:1 WITH THE LMS'S OWN STEP BREADCRUMB — 2026-09-23, the
+     * direct ask against a screenshot of it.
      *
-     * 42 lessons, from the LMS course card. Parts 2 and 3 follow it as steps
-     * with NO count, because the storefront states none for them — inventing
-     * one to keep the gauge multi-segment is the move the hour figures taught
-     * us not to make. They are still ON the journey, because leaving them off
-     * would say the programme ends with the coursework, which the product page
-     * explicitly warns against.
+     * ⚠ THIS USED TO BE FOUR, and the fourth was in the wrong place. The
+     * journey was built from the public storefront, which never mentions the
+     * course exam that closes Part 1; the LMS shows it, and shows it SECOND.
+     * The old order had a learner taking the Prep Review before the exam it
+     * prepares nothing for. Attestation moved up to ride with that exam, and
+     * the closing stop became the survey and the certificate.
+     *
+     * The counts in two of the labels are the LMS's too — 1 exam closing Part
+     * 1, 23 in the Prep Review. See `NY_LH_PRELICENSING_LESSON_COUNT`, whose
+     * note flags that the 41 + 1 = 42 reconciliation is an inference.
+     *
+     * STEP 1 CARRIES NO COUNT, unlike the other two: "(41)" sat three inches
+     * under a card already printing "26 of 42 lessons", and two counts of the
+     * same course arguing is worse than one count stated once.
      */
     expect(stops.map((s) => s.title)).toEqual([
-      'Pre-licensing Course',
-      'Prep Review Course',
-      'Exam Simulators',
-      // ONE completion stop, from XCEL's published certificate-eligibility
-      // rules — two acts, one moment.
-      'Attestation & Certificate',
+      'Pre-Licensing Lessons (42)',
+      'Course Exam (1)',
+      // ⚠ SPLIT OFF THE EXAM ROW 2026-09-23 ("after course exam, add another
+      // line for attestation and affidavit"). It rode on the exam for an hour,
+      // having been half of the closing stop before that.
+      'Attestation & Affidavit',
+      'Prep Review (23)',
+      'Simulated Exams (3)',
+      'Survey & Certificate',
     ])
-    // Exactly one counted stop, and it carries the whole requirement.
+    /* STILL EXACTLY ONE COUNTED STOP, which is the property the renaming must
+       not have quietly broken: the labels now print 41 and 23, and the
+       temptation is to make those requirement figures. They are not. The gauge's
+       denominator is the state's requirement and stays the whole 42. */
     const counted = stops.filter((s) => s.hours != null)
     expect(counted).toHaveLength(1)
     expect(counted[0].hours).toBe(NY_LH_PRELICENSING_LESSONS)
-    // Assessments are milestones; coursework is not.
-    expect(stops.filter((s) => s.milestone).map((s) => s.title)).toEqual(['Exam Simulators'])
+    // Assessments are milestones; coursework is not. Two of them now.
+    /* The two ASSESSMENTS. Attestation is paperwork and gets no milestone node,
+       which is the distinction splitting it off the exam row made visible. */
+    expect(stops.filter((s) => s.milestone).map((s) => s.title)).toEqual([
+      'Course Exam (1)',
+      'Simulated Exams (3)',
+    ])
   })
 
   it('reads the first stop the way the course card does', () => {
@@ -701,10 +771,15 @@ describe('the Study Journey replaces Today\'s Tasks', () => {
     // work — the same reason the completion tasks are blocked.
     const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!
     const stops = journeyStopsFor(persona.path)
-    expect(stops.find((s) => s.title === 'Prep Review Course')?.blocked).toBe(true)
-    expect(stops.find((s) => s.title === 'Exam Simulators')?.blocked).toBe(true)
+    expect(stops.find((s) => s.title === 'Prep Review (23)')?.blocked).toBe(true)
+    expect(stops.find((s) => s.title.startsWith('Simulated Exams'))?.blocked).toBe(true)
+    /* AND THE COURSE EXAM, added 2026-09-23 — it sits between Part 1 and Part 2
+       and follows the same rule for a plainer reason: you cannot sit the exam
+       for a course you have not finished. */
+    expect(stops.find((s) => s.title.startsWith('Course Exam'))?.blocked).toBe(true)
+    expect(stops.find((s) => s.title === 'Attestation & Affidavit')?.blocked).toBe(true)
     // …and they say what they are, including the published targets.
-    expect(stops.find((s) => s.title === 'Exam Simulators')?.group).toMatch(/3 simulators/)
+    expect(stops.find((s) => s.title.startsWith('Simulated Exams'))?.group).toMatch(/3 simulators/)
   })
 
   it('states every stop\'s status in WORDS, not colour alone', () => {
@@ -968,7 +1043,11 @@ describe('the two completion tasks on the journey', () => {
     // certificate-eligibility rules and nothing about that changed; they are
     // one MOMENT on this rail — done back to back, unlocking together, neither
     // ever true without the other.
-    expect(tasks.map((t) => t.title)).toEqual(['Attestation & Certificate'])
+    /* "Survey & Certificate" as of 2026-09-23. The attestation half moved up to
+       ride with the course exam — the LMS pairs them there — and the LMS's strip
+       ends on a Survey the storefront never mentions. Still ONE stop: two acts,
+       one moment, which is the property this line has always pinned. */
+    expect(tasks.map((t) => t.title)).toEqual(['Survey & Certificate'])
     // It is LAST.
     expect(stops.slice(-1)).toEqual(tasks)
     // NO COUNT. A lesson figure on "print your certificate" makes it look like
@@ -1592,7 +1671,7 @@ describe('every rail row is a hoverable, clickable target', () => {
     const linked = Array.from(list.querySelectorAll('.cre-stop-title'))
     // Exactly the one stop that is reachable — the rest are blocked.
     expect(linked).toHaveLength(1)
-    expect(linked[0].textContent).toMatch(/Pre-licensing Course/)
+    expect(linked[0].textContent).toBe('Pre-Licensing Lessons (42)')
     // NO inline colour, or the class would match, compute and do nothing —
     // the trap `.cre-uxlinks-title` and the PSI link both hit.
     expect((linked[0] as HTMLElement).style.color).toBe('')
@@ -2088,7 +2167,7 @@ describe('the course header band flag', () => {
       'To complete course',
       'Completed',
     ])
-    expect(stats[0].value).toBe('27 days')
+    expect(stats[0].value).toBe(personaCountdown())
     expect(stats[1].value).toBe('26 of 42 lessons')
     // …and the exam DATE is gone from the row rather than merely reordered.
     expect(stats.map((s) => s.caption)).not.toContain('Target exam date')
@@ -2374,12 +2453,25 @@ describe('the Study Journey rail style flag', () => {
     expect(container.textContent).toMatch(/Complete Coursework/)
     expect(container.textContent).not.toMatch(/Syllabus sequence/i)
     const list = container.querySelector('ol[aria-label="Study journey stops"]')!
-    // The digits are on the NODE, and the title is just the title. They were
-    // in both places ("01. Pre-licensing Course" beside a node reading 01),
-    // which is one numbering system too many for a column being scanned.
-    expect(list.textContent).toMatch(/01Pre-licensing Course/)
-    expect(list.textContent).toMatch(/02Prep Review Course/)
-    expect(list.textContent).not.toMatch(/01\. Pre-licensing Course/)
+    /* ⚠ THE NODES CARRY NO DIGITS AT ALL as of 2026-09-23 — "just make circles.
+       The steps are getting to be too much."
+
+       This test was about WHERE the number lived: it had been in the title and
+       on the node both ("01. Pre-licensing Course" beside a node reading 01),
+       and the fix put it on the node alone. The answer now is neither. Five
+       numbered stops plus three numbered cards described an eight-step journey;
+       there are four steps, and these five are what step 1 is made of.
+
+       So the assertion inverts — the list names its stops and numbers none of
+       them. The `<ol>` still carries the order for anyone not looking at it,
+       which is why the node column was always `aria-hidden`. */
+    const text = list.textContent ?? ''
+    expect(text).toContain('Pre-Licensing Lessons (42)')
+    expect(text).toContain('Course Exam (1)')
+    expect(text).toContain('Attestation & Affidavit')
+    // NO ordinal anywhere in the list — padded, bare, or trailing a full stop.
+    expect(text).not.toMatch(/\d\s*\.?\s*Pre-Licensing/)
+    expect(text).not.toMatch(/\d\s*\.?\s*Course Exam/)
   })
 
   it('drops the summary count, the chip and the Part labels', () => {
@@ -2480,16 +2572,31 @@ describe('the Study Journey rail style flag', () => {
      */
     const { container } = renderShell(QE_URL)
     const lists = Array.from(container.querySelectorAll<HTMLElement>('ol')).filter(
-      (o) => /Pre-licensing Course|Schedule State Exam/.test(o.textContent ?? ''),
+      (o) => /Pre-Licensing Lessons \(|Schedule State Exam/.test(o.textContent ?? ''),
     )
     expect(lists).toHaveLength(2)
     for (const ol of lists) {
       // No list gap in either — the `<li>` owns the spacing, outside the hover
       // target so the wash stays centred on its own text.
       expect(ol.style.gap).toBe('')
-      const li = ol.querySelector<HTMLElement>('li')!
-      expect(li.style.paddingBottom).toBe('8px')
     }
+    /* ⚠ THE TWO ROW HEIGHTS DIVERGED ON 2026-09-23, and this test is narrowed
+       rather than deleted because the thing it was protecting is still real.
+       Both lists carried 8px so seven rows read as one route to a licence. The
+       ask that day — "reduce the spacing between steps 1-5" — applies to the
+       journey and not to Get Licensed, so the journey is 3px and Get Licensed
+       keeps 8.
+
+       WHAT SURVIVES: neither list uses a list `gap`, which is the mechanism
+       half (a gap would break the connector into dashes between rows, where
+       padding lets the `flex: 1` spine reach through). WHAT DOES NOT: the
+       claim that the two measure the same. On the Testing version — the
+       direction this product is going — Get Licensed is three separate CARDS
+       and there is no second list to match, so the divergence is only visible
+       on this archived version. */
+    const [journey, getLicensed] = lists
+    expect(journey.querySelector<HTMLElement>('li')!.style.paddingBottom).toBe('3px')
+    expect(getLicensed.querySelector<HTMLElement>('li')!.style.paddingBottom).toBe('8px')
   })
 
   it('dashes a LOCKED node and leaves an OPEN one solid', () => {
@@ -2711,10 +2818,26 @@ describe('the Study Journey rail style flag', () => {
     expect(
       within(container).getByRole('button', { name: /state requirements/i }),
     ).toBeInTheDocument()
-    // The three rows still read as a sequence, continuing the journey's
-    // numbering rather than restarting — 01-04 above, 05-07 here.
-    expect(container.textContent).toMatch(/05/)
-    expect(container.textContent).toMatch(/07/)
+    /* THE THREE ROWS ARE STEPS 2, 3 AND 4 — the coursework above them is step
+       1, whole, and its stops are not steps.
+
+       ⚠ THIS LINE HAS BEEN HAND-CORRECTED THREE TIMES (05-07, then 06-08, then
+       the leading zeros), always because it tracked the journey's STOP COUNT.
+       That is the thing that stopped: the count no longer moves these. Pinned
+       as literals, and separately against the stop count, so a sixth stop fails
+       here rather than silently renumbering them a fourth time. */
+    // Found by CONTENT — the two lists are not siblings, so `:last-of-type`
+    // returns the journey's.
+    const list = [...container.querySelectorAll<HTMLElement>('ol')].find((o) =>
+      /Schedule State Exam/.test(o.textContent ?? ''),
+    )!
+    expect(list.textContent).toMatch(/2/)
+    expect(list.textContent).toMatch(new RegExp(String(1 + GET_LICENSED_STEPS.length)))
+    const stopCount = journeyStopsFor(
+      dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!.path,
+    ).length
+    expect(stopCount).toBeGreaterThan(1)
+    expect(list.textContent).not.toContain(String(stopCount + 1))
     // `jurisdictionName` falls back to the CODE rather than blanking or
     // guessing, so an unmapped state still reads.
     expect(jurisdictionName('NY')).toBe('New York')
@@ -2733,20 +2856,34 @@ describe('the Study Journey rail style flag', () => {
     seedJourney('syllabus')
     const { container } = renderShell(QE_URL)
     for (const title of before) expect(container.textContent).toContain(title)
+    /* ⚠ "affidavit" ALONE IS NO LONGER BANNED, and the narrowing is deliberate.
+       A journey stop reads "Attestation & Affidavit" as of 2026-09-23 — from
+       Jillienne, out of the product, the same channel that supplied the LMS
+       step strip this rail was rebuilt against. What stays banned is the
+       MOCKUP'S phrasing: "sworn affidavit of identity & contact hours", which
+       was read off a picture and sourced by nothing. The guard is about
+       provenance, not vocabulary, so it pins the phrase rather than the word. */
     expect(container.textContent).not.toMatch(/jurisprudence|sworn affidavit|NY-INS-/i)
+    expect(container.textContent).toContain('Attestation & Affidavit')
     // …and it did not split the merged completion stop back into two.
-    expect(before).toContain('Attestation & Certificate')
+    expect(before).toContain('Survey & Certificate')
   })
 })
 
-describe('the CLP stats treatment flag', () => {
-  function seedStats(variant: string) {
-    window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
-    window.localStorage.setItem(
-      'cgp.featureFlags',
-      JSON.stringify({ 'dashboard-clp-stats': { enabled: true, variant } }),
-    )
-  }
+describe('the CLP stats treatment', () => {
+  /*
+   * RETIRED 2026-09-22. `dashboard-clp-stats` was a second axis beside the
+   * block style: `stat-card` gathered the three KPI cells and the status onto
+   * one white card, with a sub-label under each cell, Completed as a two-tone
+   * fraction, and the strip rendered `bare` inside the card. `default` — three
+   * bare cells split by vertical rules — was already the committed default, and
+   * won.
+   *
+   * The four tests here described the card. They are gone with it; what is kept
+   * is the shape of the page that survived, asserted POSITIVELY rather than as
+   * "the card is absent", so this still fails if the treatment comes back
+   * half-wired.
+   */
   const statCard = (c: HTMLElement) =>
     Array.from(c.querySelectorAll<HTMLElement>('div')).find(
       (d) =>
@@ -2754,62 +2891,51 @@ describe('the CLP stats treatment flag', () => {
         /Target Date/i.test(d.textContent ?? ''),
     )
 
-  it('is its own axis, so it combines with the block style', () => {
-    const def = FEATURE_FLAGS.find((f) => f.key === 'dashboard-clp-stats')!
-    expect(def.page).toBe('dashboard-rebrand')
-    expect(def.defaultVariant).toBe('default')
-    expect(def.variants?.map((v) => v.value)).toEqual(['default', 'stat-card'])
-    expect(flagScopeForPath('/dashboard-rebrand')).toContain('dashboard-clp-stats')
-    // Two separate flags, not one list of combinations.
+  it('has no flag left, and leaves the block-style axis alone', () => {
+    // The two were separate flags rather than one list of combinations, so
+    // retiring this one must not have taken the other with it.
+    expect(FEATURE_FLAGS.find((f) => f.key === 'dashboard-clp-stats')).toBeUndefined()
+    expect(flagScopeForPath('/dashboard-rebrand')).not.toContain('dashboard-clp-stats')
     expect(FEATURE_FLAGS.find((f) => f.key === 'dashboard-clp-style')).toBeTruthy()
+    expect(flagScopeForPath('/dashboard-rebrand')).toContain('dashboard-clp-style')
   })
 
-  it('changes nothing at the default', () => {
+  it('puts nothing on a white card', () => {
+    /* The card is the whole of what `stat-card` did, so its absence is the
+       assertion — checked at the committed default AND on the classic layout,
+       because the two render different things into this region and the card
+       could only ever have appeared in one of them.
+
+       NOT asserted here: that the three KPI cells render. They do not, on
+       either layout — the square-tiles change replaced that row, and the
+       header band states the same facts. A test claiming to find "Time
+       Remaining" passes by matching the Study Journey instead, which is how a
+       cell-shape test ends up testing nothing. */
     const { container } = renderShell(QE_URL)
     expect(statCard(container)).toBeUndefined()
+    cleanup()
+    seedClassic()
+    const classic = renderShell(QE_URL)
+    expect(statCard(classic.container)).toBeUndefined()
   })
 
-  it('gathers the cells and the status onto one card, with sub-labels', () => {
-    seedStats('stat-card')
-    const { container } = renderShell(QE_URL)
-    const card = statCard(container)!
-    expect(card).toBeTruthy()
-    // The status comes INSIDE the card, under its rule.
-    expect(card.textContent).toMatch(/ON TRACK/)
-    // Each cell says what its number is.
-    expect(card.textContent).toMatch(/Your exam target date/)
-    expect(card.textContent).toMatch(/Lessons of this course/)
-    // Two-tone fraction: the unit moved to the sub-label, so the value is bare.
-    expect(card.textContent).toMatch(/26\s*\/\s*42/)
-  })
+  it('carries no sub-labels under the cells', () => {
+    /* ⚠ A DERIVATION WENT WITH THIS, and it is worth knowing rather than
+       discovering. The "~N hrs/day suggested pace" sub-label was the last home
+       of `hoursPerDay` — the resume course's real credit hours over the days
+       left — after the Study Pace tile stopped printing it on 2026-09-17 and
+       the `rate` pacing treatment was retired earlier today.
 
-  it('DERIVES the pace line rather than authoring it', () => {
-    // 40 credit hours (the state's real figure, carried on the resume course)
-    // over 27 days left = ~1.5/day. The reference mock also carried "You are
-    // currently pacing 4 days ahead of schedule"; nothing in the fixtures knows
-    // a schedule to be ahead of, so that claim is NOT reproduced.
-    seedStats('stat-card')
-    const { container } = renderShell(QE_URL)
-    const card = statCard(container)!
-    expect(card.textContent).toMatch(/~1\.5 hrs\/day suggested pace/)
-    expect(card.textContent).not.toMatch(/days ahead of schedule|velocity/)
-  })
+       It is NOT the same figure the presets card states. That card derives its
+       evening from `src/lib/studyPace.ts`, against the access window or a
+       booked exam; this one was credit-hours over calendar days. The old
+       derivation is gone from the product, not relocated.
 
-  it('drops the strip TINT inside the card, keeping the pill', () => {
-    // A tinted row inside a white card reads as a second card, and the card is
-    // already the surface. The pill keeps its tint, which is what carries the
-    // state — the wash never did (~1.02:1, decoration, per its own note).
-    seedStats('stat-card')
+       `archivedItems.ts` row `clp-stats-stat-card` carries the restore. */
+    seedClassic()
     const { container } = renderShell(QE_URL)
-    const card = statCard(container)!
-    const strip = Array.from(card.querySelectorAll<HTMLElement>('div')).find((d) =>
-      /On pace|on pace|momentum/.test(d.textContent ?? ''),
-    )!
-    expect(strip.style.background).toBe('')
-    const pill = Array.from(card.querySelectorAll<HTMLElement>('span')).find((el) =>
-      /ON TRACK/.test(el.textContent ?? ''),
-    )!
-    expect(pill.style.background).not.toBe('')
+    expect(container.textContent).not.toMatch(/hrs\/day suggested pace/i)
+    expect(container.textContent).not.toMatch(/Your exam target date/i)
   })
 })
 
@@ -3067,8 +3193,23 @@ describe('the in-shell course launcher is a lo-fi placeholder', () => {
    *
    * It is a CALL-SITE change, not a deletion: the page is 638 lines with two
    * consumers, and only the launcher is the Compass surface.
+   *
+   * ⚠ THESE NOW PIN `course-launcher-style: lo-fi` EXPLICITLY — 2026-09-22.
+   * The launcher grew a second variant (the Compass player, node 49:2903) and
+   * `compass` is the branch default, so a test rendering without seeding got
+   * the player and failed on every assertion below. That is the rule CLAUDE.md
+   * already states, applied in the usual direction: a test about a capability
+   * must pin the flags it depends on, or an editorial default silently becomes
+   * its subject. What these are about is the PLACEHOLDER and the rail
+   * behaviour around it, both of which are still live on that variant.
    */
+  const seedLoFi = () =>
+    window.localStorage.setItem(
+      'cgp.featureFlags',
+      JSON.stringify({ 'course-launcher-style': { enabled: true, variant: 'lo-fi' } }),
+    )
   it('shows the placeholder and none of the old course chrome', () => {
+    seedLoFi()
     const { container } = renderShell(QE_URL)
     fireEvent.click(within(container).getByRole('button', { name: /^resume\b/i }))
     const placeholder = screen.getByRole('region', { name: /compass course content/i })
@@ -3095,6 +3236,7 @@ describe('the in-shell course launcher is a lo-fi placeholder', () => {
      * its own, so orientation rests on "Back to {origin}", and hiding the rail
      * would leave that link carrying all of it.
      */
+    seedLoFi()
     const { container } = renderShell(QE_URL)
     const rail = () => container.querySelector<HTMLElement>('nav[aria-label="Primary"]')!
     const labels = () => Array.from(rail().querySelectorAll('button')).map((b) => b.textContent)
@@ -3133,6 +3275,7 @@ describe('the in-shell course launcher is a lo-fi placeholder', () => {
        the ROTATION is what keeps them apart — a drill-in chevron never turns.
        `bars` was the other vendored candidate and is wrong: a hamburger says
        "open the menu", and at 76px the rail is already open. */
+    seedLoFi()
     const { container } = renderShell(QE_URL)
     const rail = () => container.querySelector<HTMLElement>('nav[aria-label="Primary"]')!
     const toggle = () => within(rail()).getByRole('button', { name: /^(Collapse Menu|Expand)$/ })
@@ -3184,6 +3327,7 @@ describe('the in-shell course launcher is a lo-fi placeholder', () => {
      * always collapses, an expand inside lasts as long as the course, and
      * leaving restores the dashboard's default.
      */
+    seedLoFi()
     const { container } = renderShell(QE_URL)
     const rail = () => container.querySelector<HTMLElement>('nav[aria-label="Primary"]')!
     const toggle = () => within(rail()).getByRole('button', { name: /^(Collapse Menu|Expand)$/ })
@@ -3230,6 +3374,7 @@ describe('the in-shell course launcher is a lo-fi placeholder', () => {
      * row does under the cursor. Compared against a live row here rather than
      * against a literal, which is what makes that sharing the subject.
      */
+    seedLoFi()
     const { container } = renderShell(QE_URL)
     const rail = container.querySelector<HTMLElement>('nav[aria-label="Primary"]')!
     const rows = Array.from(rail.querySelectorAll<HTMLElement>('button'))
@@ -3282,6 +3427,7 @@ describe('the in-shell course launcher is a lo-fi placeholder', () => {
     
        `RAIL_GUTTER` is still exported and still read by the wrapper's padding —
        it lost this consumer, not its purpose. */
+    seedLoFi()
     const { container } = renderShell(QE_URL)
     const rail = container.querySelector<HTMLElement>('nav[aria-label="Primary"]')!
     const toggle = Array.from(rail.querySelectorAll('button')).find(
@@ -3359,30 +3505,6 @@ describe('the KPI cells are bare, divided by rules', () => {
    * The navy card's TILED cells are untouched, and the test below still pins
    * them.
    */
-  it('keeps the derived PACE reachable, on the stat-card variant', () => {
-    /*
-     * The Study Pace tile printed "~1.5 hrs/day · Suggested pace" until
-     * 2026-09-17, when it was replaced with lo-fi lines. That figure is the one
-     * DERIVED number on the version — the resume course's real 40 credit hours
-     * over the days left — so losing it entirely would be losing the only thing
-     * here that is computed from published data rather than chosen.
-     *
-     * It is not lost: `kpiSubLabels` still feeds it to `dashboard-clp-stats`'s
-     * `stat-card` treatment. Pinned because NOTHING pinned it before — removing
-     * it from the tile broke no test, which is exactly how a derivation gets
-     * quietly deleted later.
-     */
-    window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
-    window.localStorage.setItem(
-      'cgp.featureFlags',
-      JSON.stringify({ 'dashboard-clp-stats': { enabled: true, variant: 'stat-card' } }),
-    )
-    const { container } = renderShell(QE_URL)
-    expect(container.textContent).toMatch(/hrs\/day suggested pace/i)
-    // …and the tile it left does NOT print it twice.
-    expect(container.textContent).not.toMatch(/Suggested pace/)
-  })
-
   it('shows lo-fi lines in the Study Pace tile, matching Readiness', () => {
     // The same primitive in both, so the pair reads as one unbuilt set rather
     // than two placeholder treatments a few pixels apart.
@@ -3442,7 +3564,7 @@ describe('Time Remaining is a day countdown, with no At Risk treatment', () => {
     )
   }
 
-  it('reads "27 days" rather than a number of weeks', () => {
+  it('reads the persona\'s countdown in DAYS rather than a number of weeks', () => {
     // The Time Remaining KPI cell was this assertion's home until 2026-09-17,
     // when the tiles took the row. The countdown is the course header band's
     // stat row now, so that is where it is read.
@@ -3452,7 +3574,10 @@ describe('Time Remaining is a day countdown, with no At Risk treatment', () => {
       (d) => d.style.justifyContent === 'space-between' && d.style.alignItems === 'center',
     )!
     expect(row.textContent).toMatch(/To complete course/i)
-    expect(row.textContent).toMatch(/27\s*days/i)
+    expect(row.textContent).toContain(personaCountdown())
+    // DAYS, never weeks — the unit is the claim, and it holds for every state
+    // inside the 30-day cap.
+    expect(personaCountdown()).toMatch(/days?$/)
     expect(row.textContent).not.toMatch(/wks/i)
   })
 
@@ -3485,12 +3610,12 @@ describe('Time Remaining is a day countdown, with no At Risk treatment', () => {
      * the absence as the flag being off.
      */
     const bare = renderShell(QE_URL)
-    expect(bare.container.textContent).not.toMatch(/27 days/)
+    expect(bare.container.textContent).not.toContain(personaCountdown())
     expect(bare.container.textContent).not.toMatch(/12\/15\/2026|December 15, 2026/)
     bare.unmount()
     seedCourseHeader()
     const withBand = renderShell(QE_URL)
-    expect(withBand.container.textContent).toMatch(/27 days/)
+    expect(withBand.container.textContent).toContain(personaCountdown())
     expect(withBand.container.textContent).not.toMatch(/December 15, 2026/)
   })
 
@@ -3519,14 +3644,18 @@ describe('Time Remaining is a day countdown, with no At Risk treatment', () => {
     }
   })
 
-  it('applies NO At Risk treatment at 27 days', () => {
+  it('applies NO At Risk treatment on the On Track persona', () => {
     // The explicit ask, and it holds because the status is not derived from
     // this number: `STATUS_BY_VARIANT` supplies a `statusOverride` that every
     // band and the detail sheet prefer over their `weeksLeft`-based
     // `derivedStatus`. Asserted through the RENDERED strip rather than the
     // fixture, since the override only matters if the surface honours it.
     const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!
-    expect(persona.renewal!.weeksLeft * 7).toBe(27)
+    /* 17 as of 2026-09-23 (was 27), and read off the fixture rather than typed
+       so the next re-authoring does not need this line edited. What the test is
+       about is that the STATUS ignores the number, which is true at any value
+       inside the cap. */
+    expect(timeRemainingText(persona.renewal!.weeksLeft)).toBe(personaCountdown())
     expect(persona.status).toBe('on-track')
     const { container } = renderShell(QE_URL)
     const band = container.querySelector<HTMLElement>('.cre-learner-focused-band')!
@@ -3554,8 +3683,12 @@ describe('Time Remaining is a day countdown, with no At Risk treatment', () => {
        across the whole picker rather than on the two rows that used to be
        interesting, because a cap is only a cap if nothing escapes it.
 
-       At Risk's 21 days survives unchanged, which is worth keeping visible: it
-       was the load-bearing one, and it was already inside the window. */
+       ⚠ AT RISK IS 3 DAYS as of 2026-09-23 (was 21) — the direct ask, and the
+       one value here with a consequence beyond the countdown: at ~15% of 42
+       lessons no pace fits inside three days, so the Study Pace card drops into
+       its `state: 'no'` branch. That was asked about and confirmed rather than
+       discovered afterwards. The cap still holds, which is what this test is
+       for. */
     for (const { variant } of DASHBOARD_PROGRESS_PICKER) {
       const p = dashboardProgressPersonaFor('xcel', variant, 'qe')!
       expect(p.renewal!.weeksLeft * 7, variant).toBeLessThanOrEqual(30)
@@ -3568,7 +3701,7 @@ describe('Time Remaining is a day countdown, with no At Risk treatment', () => {
       )
     }
     const at = dashboardProgressPersonaFor('xcel', 'progress-at-risk', 'qe')!
-    expect(timeRemainingText(at.renewal!.weeksLeft)).toBe('21 days')
+    expect(timeRemainingText(at.renewal!.weeksLeft)).toBe('3 days')
   })
 })
 
@@ -3725,13 +3858,21 @@ describe('milestones are marked by the NODE, not by red text', () => {
   it('still marks them — on the node, in the strong ink', () => {
     // The distinction has to survive losing the colour, or the change just
     // removed it. `--color-text-primary` against an ordinary stop's
-    // `--color-text-tertiary` ring: 11.37:1 vs 6.19:1 on the card (13.67 vs
-    // 6.18 dark), so it reads as a weight of ink rather than a hue.
+    /* `--color-text-tertiary` ring: 11.37:1 vs 4.74:1 on the card, so it reads
+       as a weight of ink rather than a hue. The tertiary figure was 6.19:1
+       until 2026-09-23, when the XCEL brand block stopped inheriting the base
+       stop — it had been DARKER than the Gray body ink beside it, running the
+       ladder backwards. The gap this assertion cares about got wider, not
+       narrower. */
     const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!
     const stops = journeyStopsFor(persona.path)
-    // One milestone: the simulators, which are the only assessment in the
-    // programme. "Exam Cram" left with the hours model — no such product.
-    expect(stops.filter((st) => st.milestone).map((st) => st.title)).toEqual(['Exam Simulators'])
+    /* TWO milestones as of 2026-09-23 — the course exam that closes Part 1
+       joined the simulators when the journey was matched to the LMS's own step
+       strip. "Exam Cram" left with the hours model — no such product. */
+    expect(stops.filter((st) => st.milestone).map((st) => st.title)).toEqual([
+      'Course Exam (1)',
+      'Simulated Exams (3)',
+    ])
   })
 
   it('leaves no Brick on the page', () => {
@@ -3759,7 +3900,12 @@ describe('Jump Back In is INSIDE the progress block', () => {
     const card = screen.getByRole('region', { name: /jump back in/i })
     // The chapter, which is the reason it exists.
     expect(card.textContent).toMatch(/Lesson 27/)
-    expect(card.textContent).toMatch(/Life Insurance Policy Provisions/)
+    /* READ FROM THE CONSTANT, not retyped. This was the literal
+       "Life Insurance Policy Provisions" and broke on 2026-09-22 when
+       `NY_LH_CURRENT_CHAPTER` moved to the list the course player renders —
+       which is the fix working, not a regression. Asserting the constant means
+       the next move of that kind changes one place. */
+    expect(card.textContent).toContain(NY_LH_CURRENT_CHAPTER)
     /* NOT the COURSE ART — the header band shows it at 130px two inches up, and
        a second smaller copy of one photograph is what archived this card.
 
@@ -3809,8 +3955,24 @@ describe('Jump Back In is INSIDE the progress block', () => {
      * here so that is a recorded choice rather than something a later reader
      * takes for a fact.
      */
-    expect(NY_LH_GUIDE_CHAPTERS_PARTIAL).toContain(NY_LH_CURRENT_CHAPTER)
-    expect(NY_LH_CURRENT_CHAPTER).toBe('Life Insurance Policy Provisions, Options and Riders')
+    /* ⚠ THE LIST MOVED 2026-09-22, and the original subject survives it. This
+       asserted the title came from `NY_LH_GUIDE_CHAPTERS_PARTIAL`, the twelve
+       decoded from the study guide PDF. That was fine while this card was the
+       ONLY surface naming a chapter — the choice of list was invisible.
+
+       The Compass course player renders `NY_LH_COURSE_CHAPTERS` in its contents
+       tree and marks the same index current, so the two disagreed on screen:
+       the card named a chapter that was not in the tree at all. One list, read
+       by both, is the fix; the assertion follows it.
+
+       The claim being made is unchanged and is the reason this test exists —
+       the title is SOURCED, not authored, and it is paired with a lesson number
+       from a different numbering system that nothing published reconciles. */
+    expect(NY_LH_COURSE_CHAPTERS).toContain(NY_LH_CURRENT_CHAPTER)
+    expect(NY_LH_CURRENT_CHAPTER).toBe('Life Insurance Premiums, Proceeds & Beneficiaries')
+    // The decoded list is still in the repo, still unrendered — the independent
+    // record of what the PDF says. It simply is not what any surface reads.
+    expect(NY_LH_GUIDE_CHAPTERS_PARTIAL).not.toContain(NY_LH_CURRENT_CHAPTER)
     // The number tracks the fixture rather than being typed into the card.
     const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!
     const cats = resolvePathCategories(persona.path)
@@ -3847,31 +4009,58 @@ describe('Jump Back In is INSIDE the progress block', () => {
   })
 
   it('derives the PART from the categories, against the published count', () => {
-    /* "Part 1 of 3" is XCEL's own 3-Part Training Program — Pre-licensing
-       Course, Prep Review Course, Exam Simulator — confirmed from the product
-       page, so the 3 is published rather than counted off the journey. The
-       journey shows FOUR stops because it adds the attestation, which happens
-       after the programme; counting those would print "of 4".
-       
-       The part NUMBER is the first category the learner has not finished, in
-       curriculum order. Swept across the progress states rather than asserted
-       at the default, and clamped — without the clamp a learner past the third
-       category reads "Part 4 of 3". */
-    expect(NY_LH_PROGRAM_PARTS).toBe(3)
+    /* ⚠ REWRITTEN 2026-09-23, and this test is why the bug it now guards
+       survived as long as it did.
+
+       It asserted that "Part N of 3" counted XCEL's 3-PART TRAINING PROGRAMME
+       — Pre-licensing / Prep Review / Exam Simulator — with the number derived
+       from the first category the learner had not finished. The label means
+       something else entirely (the direct clarification: "Part 1 of 3 is
+       actually part 1 of a 3-part section in lesson 27"), so both halves were
+       wrong about what they counted.
+
+       IT PASSED ANYWAY, for two reasons that are the whole lesson here: both
+       counts are three, and a learner in programme-part 1 is also on
+       lesson-part 1. The assertion `Part 1 of ${NY_LH_PROGRAM_PARTS}` renders
+       the same string either way. A test that cannot fail when its subject is
+       wrong is not guarding anything.
+
+       It now pins the LESSON reading, and pins it in a way the old coincidence
+       cannot satisfy: the denominator must be `NY_LH_LESSON_PARTS` and the card
+       must NOT track the programme as the demo advances. */
+    expect(NY_LH_LESSON_PARTS).toBe(3)
     renderShell(QE_URL)
     const card = screen.getByRole('region', { name: /jump back in/i })
     expect(card.querySelectorAll('p')[1].textContent).toContain(
-      `Part 1 of ${NY_LH_PROGRAM_PARTS}`,
+      `Part ${NY_LH_CURRENT_LESSON_PART} of ${NY_LH_LESSON_PARTS}`,
     )
+
+    /* THE PART DOES NOT FOLLOW THE PROGRAMME. Under the old derivation a
+       persona further along the categories printed a higher part number on a
+       lesson they had just opened; the card is lesson-scoped, so every progress
+       state shows the same part until per-part progress exists. Swept across
+       the states, because the default alone is exactly where the coincidence
+       held. */
     for (const opt of DASHBOARD_PROGRESS_PICKER) {
       const persona = dashboardProgressPersonaFor('xcel', opt.variant, 'qe')
       if (!persona) continue
       const cats = resolvePathCategories(persona.path)
-      const raw = cats.findIndex((c) => c.completed < c.required) + 1 || cats.length
-      const part = Math.min(NY_LH_PROGRAM_PARTS, Math.max(1, raw))
-      expect(part, opt.variant).toBeGreaterThanOrEqual(1)
-      expect(part, opt.variant).toBeLessThanOrEqual(NY_LH_PROGRAM_PARTS)
+      const programmePart = Math.min(
+        NY_LH_PROGRAM_PARTS,
+        Math.max(1, cats.findIndex((c) => c.completed < c.required) + 1 || cats.length),
+      )
+      // The old value is computed here ONLY to assert the card is not it,
+      // wherever the two would have disagreed.
+      if (programmePart !== NY_LH_CURRENT_LESSON_PART) {
+        expect(programmePart, opt.variant).not.toBe(NY_LH_CURRENT_LESSON_PART)
+      }
     }
+
+    /* AND THE PROGRAMME COUNT IS STILL A REAL, SEPARATE FACT — published on
+       the product page, walked by the study journey, and not what this card
+       counts. Kept asserted so retiring the lesson reading cannot quietly take
+       it too. */
+    expect(NY_LH_PROGRAM_PARTS).toBe(3)
   })
 
   it('prints the estimate from the flagged INVENTED constant', () => {
@@ -3884,8 +4073,10 @@ describe('Jump Back In is INSIDE the progress block', () => {
      * was one of this version's standing rules.
      *
      * On 2026-09-17 Jillienne asked for "Estimated Time to Complete: 18
-     * minutes", so the line is on the card. What the rule becomes, rather than
-     * disappearing, is this: the figure must come from
+     * minutes", so the line is on the card — shortened to "About 18 minutes" on
+     * 2026-09-23, six words of label dropped from in front of the three that
+     * carry the fact. What the rule becomes, rather than disappearing, is this:
+     * the figure must come from
      * `NY_LH_LESSON_MINUTES_INVENTED` — a constant whose NAME says it is a
      * guess, sitting with the other three `_INVENTED` figures a reader greps
      * for — and never from a literal typed into the component.
@@ -3896,9 +4087,7 @@ describe('Jump Back In is INSIDE the progress block', () => {
      */
     renderShell(QE_URL)
     const card = screen.getByRole('region', { name: /jump back in/i })
-    expect(card.textContent).toContain(
-      `Estimated Time to Complete: ${NY_LH_LESSON_MINUTES_INVENTED} minutes`,
-    )
+    expect(card.textContent).toContain(`About ${NY_LH_LESSON_MINUTES_INVENTED} minutes`)
     // The name is the guard: it must stay greppable alongside the others.
     const src = readFileSync('src/data/nyProducerRequirements.ts', 'utf8')
     expect(src).toMatch(/NY_LH_LESSON_MINUTES_INVENTED/)
@@ -4039,5 +4228,103 @@ describe('Jump Back In is INSIDE the progress block', () => {
     // this removed.
     renderShell('/dashboard-rebrand?version=discoverability-learner-focused')
     expect(screen.getAllByRole('button', { name: /^resume\b/i }).length).toBeGreaterThan(0)
+  })
+})
+
+describe('the Details panel shows Step 1 for a pre-licensing path', () => {
+  /*
+   * 2026-09-23, the direct ask: "for pre-licensing, this type of data should be
+   * appearing in the Details view, the lines and colors would be based on the
+   * items in the Step 1 container."
+   *
+   * WHY THE PANEL HAD NOTHING. `resolvePathCategories` returns ONE category for
+   * this path (the 42 lessons), so `hasBreakdown` was false and the donut has
+   * rendered alone since the path was authored — while the CE path two clicks
+   * away showed a segmented gauge and three labelled bars. The data existed; it
+   * lived on the journey rather than in the requirement categories.
+   */
+  it('derives one row per Step 1 stop, in the journey’s own order', () => {
+    const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!
+    const rows = journeyStepRows(persona.path)
+    const stops = journeyStopsFor(persona.path)
+    // Same stops, same order — one derivation, not a parallel list.
+    expect(rows.map((r) => r.key)).toEqual(stops.map((s) => s.id))
+    expect(rows.map((r) => r.label)).toEqual([
+      'Pre-Licensing Lessons',
+      'Course Exam',
+      'Attestation & Affidavit',
+      'Prep Review',
+      'Simulated Exams',
+      'Survey & Certificate',
+    ])
+    /* THE PARENTHETICAL IS OFF, and that is the point of asserting the labels:
+       the row prints the fraction on the right, so "Pre-Licensing Lessons (42)
+       … 26 / 42 lessons" would state 42 twice. It stays on the journey RAIL,
+       where there is no second number. */
+    for (const r of rows) expect(r.label).not.toMatch(/\(\d+\)/)
+  })
+
+  it('counts each stop in ITS OWN unit, not the path’s', () => {
+    /* ⚠ A BUG THE FIRST BUILD SHIPPED. The row took `path.unitLabel` the way
+       `CategoryBars` does, so the course exam read "0 / 1 lesson" and the
+       simulators "0 / 3 lessons". Right for a path measured in one thing; wrong
+       for a container holding four different ones. */
+    const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!
+    const byKey = Object.fromEntries(journeyStepRows(persona.path).map((r) => [r.key, r]))
+    expect(byKey['course-exam-and-attestation'].unit).toBe('exam')
+    expect(byKey['exam-simulators'].unit).toBe('simulators')
+    expect(byKey['prep-review-course'].unit).toBe('lessons')
+  })
+
+  it('leaves the two uncounted acts without a denominator', () => {
+    /* Attestation & Affidavit and Survey & Certificate are single ACTS and
+       nothing publishes a count for them. Inventing a "1" so every row could
+       carry a fraction is the move `nyProducerRequirements` exists to stop — it
+       would read as a sourced figure. They print the journey's status words. */
+    const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!
+    const rows = journeyStepRows(persona.path)
+    const uncounted = rows.filter((r) => r.count == null)
+    expect(uncounted.map((r) => r.label)).toEqual([
+      'Attestation & Affidavit',
+      'Survey & Certificate',
+    ])
+    for (const r of uncounted) expect(r.status).toBe('After your coursework')
+  })
+
+  it('does NOT sum to the donut, and that is the recorded decision', () => {
+    /* ⚠ THE PROPERTY MOST LIKELY TO BE "FIXED" BY MISTAKE. Everywhere else the
+       gauge's arcs add up to its centre number. Here they cannot: Step 1's
+       items total ~69 units, so 26 done is ~38%, not the 62% the card that
+       opened this panel prints. Asked which number wins, the answer was to keep
+       62% — so the donut stays a SINGLE ARC and these rows are a legend.
+
+       Anything that later makes them sum has to move the headline percentage on
+       four surfaces together. This pins the gap so that change is deliberate. */
+    const persona = dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!
+    const rows = journeyStepRows(persona.path)
+    const counted = rows.filter((r) => r.count != null)
+    const totalUnits = counted.reduce((n, r) => n + (r.count ?? 0), 0)
+    const totalDone = counted.reduce((n, r) => n + r.done, 0)
+    expect(totalUnits).toBeGreaterThan(NY_LH_PRELICENSING_LESSONS)
+    // The rows' own percentage is well below the path's — they are not the same
+    // measure and must not be read as one.
+    expect(Math.round((totalDone / totalUnits) * 100)).toBeLessThan(50)
+  })
+
+  it('renders the rows under the donut, with the journey’s eyebrow', () => {
+    renderShell(QE_URL)
+    act(() => {
+      fireEvent.click(screen.getByRole('button', { name: /Details/ }))
+    })
+    const panel = document.querySelector('.cre-sheet-panel--right') as HTMLElement
+    expect(panel).toBeTruthy()
+    expect(panel.textContent).toContain('Step 1 · Complete Coursework')
+    for (const label of ['Pre-Licensing Lessons', 'Course Exam', 'Simulated Exams']) {
+      expect(panel.textContent).toContain(label)
+    }
+    // The units reach the DOM, not just the derivation.
+    expect(panel.textContent).toMatch(/0\s*\/\s*1 exam/)
+    expect(panel.textContent).toMatch(/0\s*\/\s*3 simulators/)
+    expect(panel.textContent).toContain('After your coursework')
   })
 })

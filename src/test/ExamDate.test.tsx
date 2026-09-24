@@ -8,6 +8,7 @@ import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelC
 import { PlatformShell } from '@/components/layout/PlatformShell'
 import { clearExamDate, examDateRenewal, readExamDate, writeExamDate } from '@/data/examDateStore'
 import { timeRemainingText } from '@/components/learning/learningPathsHomeUtil'
+import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
 import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 
 /**
@@ -41,20 +42,35 @@ function renderShell(url = TESTING_URL) {
   )
 }
 
-/** Pin ONE pacing treatment. Needed as of 2026-09-21: these are cross-surface
- *  claims about what the Study Pace tile says, and the tile now has five
- *  treatments that say it differently — so a test that leaves the choice to the
- *  flag's default is really asserting whichever treatment last won that vote. */
-function seedPacing(variant: string) {
-  window.localStorage.setItem(
-    'cgp.featureFlags',
-    JSON.stringify({ 'dashboard-pacing-style': { enabled: true, variant } }),
-  )
+/** Was `seedPacing(variant)`, pinning one of five treatments so a cross-surface
+ *  claim about the Study Pace tile could not silently re-aim at whichever
+ *  treatment last won the default. `dashboard-pacing-style` was retired on
+ *  2026-09-22 and `presets` is the only treatment, so there is nothing to pin —
+ *  the helper is kept as a no-op seam so the tests below still say which tile
+ *  they mean, and so restoring the flag is a one-function change. */
+function seedPacing() {
+  /* nothing to seed — the treatment is unconditional */
 }
 
 beforeEach(() => {
   window.localStorage.clear()
   window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
+  /* ⚠ `study-pace-readout: prose` — 2026-09-23. `stats` is the branch default
+     and it replaces the Study Pace card's two fact SENTENCES with cells. The
+     cross-surface claims here are about those sentences naming the ceiling the
+     card priced against ("Your exam is on May 31"), which is exactly the silent
+     failure this file exists to catch, so they are pinned to the treatment that
+     still states it in words. */
+  window.localStorage.setItem(
+    'cgp.featureFlags',
+    JSON.stringify({
+      'study-pace-readout': { enabled: true, variant: 'prose' },
+      /* And `strip`, for the same reason — `options` puts three named plans
+         above the card, so a heading assertion anchored with `^` reads the
+         picker instead. See the note in `StudyPaceTile.test.tsx`. */
+      'study-pace-chooser': { enabled: true, variant: 'strip' },
+    }),
+  )
   clearExamDate()
 })
 
@@ -127,24 +143,28 @@ describe('the entered date moves the whole page, not just the card', () => {
     ).toMatch(/June 30, 2026/)
   })
 
-  it('re-points the countdown AND the pacing rate together', () => {
-    // The cross-surface half. The header's remaining-time cell and the Study
-    // Pace tile both derive from the same `weeksLeft`, so a date that moved one
-    // and not the other would be the disagreement `ProgressAgreement.test.tsx`
-    // exists to catch.
-    //
-    // SEEDS `runway` EXPLICITLY as of 2026-09-21. The claim is about a tile
-    // that states remaining time in the PATH's units, which is what `runway`
-    // does — it rode on the flag's default until that default moved to
-    // `presets`, a treatment that expresses the same fact as a DATE and so can
-    // never contain a week count. The test below carries the presets half.
+  it('re-points the countdown on the page', () => {
+    /* The cross-surface half, NARROWED 2026-09-22. It asserted the header's
+       remaining-time cell and the Study Pace tile carried the same week count,
+       by seeding `runway` — the one treatment that stated remaining time in the
+       path's own units. `runway` was retired with `dashboard-pacing-style`, and
+       `presets` expresses the same fact as a DATE, so there is no week count on
+       the tile left to agree with.
+
+       What survives is the header half, which is still the thing a typed date
+       must move, and it is asserted through the SHARED FORMATTER rather than a
+       string — which is what the second half was really protecting. The tile
+       printed raw days once, so past 30 days the two read "50 days to go" and
+       "7 wks" three inches apart; `timeRemainingText` is the fix, and calling
+       it here means a surface that re-implements the unit still fails.
+
+       The tile's own half of the claim is not lost either: the presets card
+       states the same fact as a DATE, pinned by 'reaches the PRESETS card too,
+       in its own idiom' below. */
     writeExamDate('2026-06-30')
-    seedPacing('runway')
+    seedPacing()
     renderShell()
-    const expected = timeRemainingText(50 / 7)
-    expect(document.body.textContent).toContain(expected)
-    const tile = screen.getByText('Study Pace').parentElement as HTMLElement
-    expect(tile.textContent).toContain(expected)
+    expect(document.body.textContent).toContain(timeRemainingText(50 / 7))
   })
 
   it('reaches the PRESETS card too, in its own idiom', () => {
@@ -162,7 +182,7 @@ describe('the entered date moves the whole page, not just the card', () => {
        Expressed as a date rather than a week count, because that is this
        treatment's whole argument: it states the outcome, not the quantity. */
     writeExamDate('2026-05-31')
-    seedPacing('presets')
+    seedPacing()
     renderShell()
     const tile = screen.getByText(/^(?:Recommended |Your )?Study Pace$/).parentElement as HTMLElement
     expect(tile.textContent).toMatch(/Your exam is on May 31/)
@@ -177,7 +197,7 @@ describe('the entered date moves the whole page, not just the card', () => {
        provenance clause already suppressed — both of which say the opposite of
        what just happened. It is compared to its SEED, not to null. */
     writeExamDate('2026-05-31')
-    seedPacing('presets')
+    seedPacing()
     renderShell()
     const tile = screen.getByText(/^(?:Recommended |Your )?Study Pace$/).parentElement as HTMLElement
     /* The eyebrow, which is where the 2026-09-21 redesign moved the
@@ -186,36 +206,26 @@ describe('the entered date moves the whole page, not just the card', () => {
     expect(tile.textContent).toMatch(/^Recommended Study Pace/)
   })
 
-  it('states the remaining time in ONE unit across both surfaces', () => {
-    /* The tile printed raw days while the header used the shared formatter, so
-       past 30 days they read "50 days to go" and "7 wks" three inches apart —
-       the same fact in two units. Asserted as agreement rather than as a
-       string, so either surface may reword.
-
-       `runway` BY NAME, for the reason the test above records: this is a claim
-       about the treatment that states remaining TIME, and it stopped being the
-       default on 2026-09-21. `presets` states a finish date instead, so it has
-       no unit to disagree in — which is not this test passing, it is this test
-       not applying. */
-    writeExamDate('2026-06-30')
-    seedPacing('runway')
-    renderShell()
-    const tile = screen.getByText('Study Pace').parentElement as HTMLElement
-    expect(tile.textContent).not.toMatch(/\d+ days to go/)
-    expect(tile.textContent).toMatch(/wks to go/)
-  })
-
   it('falls back to the persona with nothing stored', () => {
     /* The demo is unchanged until someone types a date, and clearing restores
        it — which is what makes a per-browser override safe to ship.
 
        Checked through the COUNTDOWN as of 2026-09-21, for the reason the test
        above records: the header no longer prints the date, so the persona's
-       own renewal shows as its week count. 27 days is December 15 measured
-       from the fixture clock — the same fact this always asserted, in the only
-       shape the page still states it. */
+       own renewal shows as its countdown — the same fact this always asserted,
+       in the only shape the page still states it.
+
+       ⚠ READ FROM THE FIXTURE as of 2026-09-23, not from a literal. It was
+       `timeRemainingText(27 / 7)`, which broke the moment the demo's day counts
+       were re-authored to 29 / 17 / 3. The claim here is that NOTHING STORED
+       leaves the persona's own figure showing — which is true at any value, and
+       a literal only ever pinned one of them. */
     renderShell()
-    expect(countdown()).toBe(timeRemainingText(27 / 7))
+    expect(countdown()).toBe(
+      timeRemainingText(
+        dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!.renewal!.weeksLeft,
+      ),
+    )
   })
 })
 
@@ -228,17 +238,42 @@ describe('the capture on the Schedule State Exam card', () => {
     expect(within(card()).getByLabelText(/Already scheduled\?/i)).toBeTruthy()
   })
 
-  it('saves a typed date and shows it back, with a way out', () => {
+  it('saves a typed date and shows the Figma calendar, with a way back', () => {
+    /* ⚠ THE SET STATE CHANGED SHAPE 2026-09-23 — Figma node 1195:16026, the
+       direct ask. It was a caption, the date in words and two links ("Your exam
+       date · June 30, 2026 · Change · Clear"). It is the tear-off calendar now,
+       with the heading and the footer link carrying the state instead.
+
+       WHAT THIS STILL PINS is the requirement the old assertion existed for and
+       the new design must not quietly drop: the date is VISIBLE and the value is
+       REVERSIBLE. A stored date silently re-points the page's headline figure,
+       and it lives in localStorage rather than the repo, so a stale one nobody
+       can see or clear is unexplainable from the source. */
     renderShell()
     const input = within(card()).getByLabelText(/Already scheduled\?/i)
     fireEvent.change(input, { target: { value: '2026-06-30' } })
     fireEvent.click(within(card()).getByRole('button', { name: 'Save' }))
     expect(readExamDate()).toBe('2026-06-30')
-    // Shown back, spelled out — a value that silently overrides the page's
-    // headline figure has to be visible and reversible.
-    expect(within(card()).getByText('June 30, 2026')).toBeTruthy()
-    expect(within(card()).getByRole('button', { name: 'Change' })).toBeTruthy()
-    expect(within(card()).getByRole('button', { name: 'Clear' })).toBeTruthy()
+
+    // VISIBLE — the calendar's three fragments, and the date in words for the
+    // accessibility tree, since the calendar itself is `aria-hidden`.
+    expect(within(card()).getByText('JUNE')).toBeTruthy()
+    expect(within(card()).getByText('30')).toBeTruthy()
+    expect(within(card()).getByText('2026')).toBeTruthy()
+    expect(card().textContent).toContain('Exam scheduled for June 30, 2026')
+
+    // The heading and the footer link both moved. "NY", from the path — not a
+    // literal, or every other jurisdiction would read New York.
+    expect(within(card()).getByText('NY State Exam Scheduled')).toBeTruthy()
+    const edit = within(card()).getByRole('button', { name: /Edit Exam Date/ })
+
+    // REVERSIBLE — Edit reopens the editor, which is where Clear lives now.
+    fireEvent.click(edit)
+    expect(within(card()).getByLabelText(/Already scheduled\?/i)).toBeTruthy()
+    fireEvent.click(within(card()).getByRole('button', { name: 'Clear' }))
+    expect(readExamDate()).toBeNull()
+    // …and the card is back to asking.
+    expect(within(card()).queryByText('NY State Exam Scheduled')).toBeNull()
   })
 
   it('appears on the Schedule card ONLY', () => {

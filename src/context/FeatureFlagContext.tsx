@@ -737,26 +737,95 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },
+  /* The three Study Pace flags below were pulled from main with the home
+     page's contents (2026-09-24) — the card reads them, and a flag missing
+     from this catalog silently reads as OFF. `dashboard-pacing-style` and
+     `dashboard-clp-stats` were retired with them, as main retired them. */
   {
-    key: 'dashboard-clp-stats',
+    key: 'study-pace-chooser',
     group: 'Widgets',
-    label: 'Current Progress — stats treatment',
+    label: 'Study Pace chooser',
     description:
-      'How the Target Date / Time Remaining / Completed cells and the status strip below them are treated. Default is bare cells on the page grey, divided by vertical rules, with a status-tinted strip under them. "Stat card" gathers the three cells and the status onto one white card with a hairline border and a rule between them, gives each cell a sub-label under its value, and shows Completed as a two-tone fraction. A SEPARATE axis from `dashboard-clp-style`, so the header treatment and the stats treatment can be combined.',
+      'How the Study Pace card lets a learner pick a plan. `strip` is the card as it stands — the heading names the current plan ("Steady & Relaxed Study Pace") and the week strip is clickable at 0% to set the nights. `options` is the newer direction: the heading is a plain "Study Pace" and three named plans sit under it — Steady & Relaxed (the fewest evenings that still finish in time), Recommended (the model’s own suggestion, which lands between the other two), and Focused & Quick (all seven evenings). ⚠ THE THREE ARE NOT NEW PLANS: they are `studyPace`’s existing relaxed / recommended / focused presets with a nights count each, so the model still decides how long every plan takes — see `paceOptionsFor`.',
+    // Variant-only, like `dashboard-heading-font`.
     defaultEnabled: true,
-    defaultVariant: 'default',
+    /* `options` ON THE BRANCH, per the Contributing guide's rule. `strip` is
+       kept rather than replaced because the ask was explicit — "don't lose
+       current logic, make it a flagged variant" — and because the two answer
+       different questions: the strip asks which evenings, the options ask which
+       plan. */
+    defaultVariant: 'options',
     variants: [
       {
-        value: 'default',
-        label: 'Default — bare cells',
+        value: 'strip',
+        label: 'Strip — the heading names the plan',
         description:
-          'No change. Three bare cells divided by vertical rules, then the status-tinted strip.',
+          'The clickable week strip at 0%, with the heading derived from the review gap (>15 days Focused & Quick, ≥7 Recommended, else Steady & Relaxed). Picking a night count writes a week and the card re-prices live.',
       },
       {
-        value: 'stat-card',
-        label: 'Stat card',
+        value: 'options',
+        label: 'Options — three named plans',
         description:
-          'One white card holds the three cells and the status, with a hairline border and a rule between them. Each cell gains a sub-label under its value, the Completed figure reads as a two-tone fraction, and the status pill is uppercase on an untinted row.',
+          'A plain "Study Pace" heading with three selectable plans under it, each showing the evening it asks for and the date it lands on. The week strip stays below as a readout of the chosen plan rather than a control.',
+      },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'study-pace-preset',
+    group: 'Widgets',
+    label: 'Study pace preset',
+    description:
+      'Which of the model’s presets the Study Pace card opens on, so the three plans can be compared without going through the Adjust sheet — 2026-09-23, the direct ask for a Pacing demo control. `recommended` (default) is the card as a learner finds it. `focused` is the fastest plan the model will build and `relaxed` spends the whole window; the card names them "Focused & Quick Study Pace" and "Steady & Relaxed Study Pace" in its own heading. ⚠ IT SEEDS `choices.presetId`, the same field the sheet writes, so the card treats it as an ADJUSTMENT: picking anything but Recommended is indistinguishable from the learner having chosen it, which is what makes the comparison honest rather than a fourth rendering. A preset the model drops (Focused disappears once it is no longer faster than Recommended — see `studyPace`) falls back to the default, so the control cannot show a plan that does not exist.',
+    defaultEnabled: true,
+    defaultVariant: 'recommended',
+    variants: [
+      {
+        value: 'recommended',
+        label: 'Recommended',
+        description:
+          'No seed. The model’s own suggestion, finishing `RECOMMENDED_BUFFER_DAYS` short of the ceiling so there is review time at the end.',
+      },
+      {
+        value: 'focused',
+        label: 'Focused & Quick',
+        description:
+          'The fastest plan offered — up to a fortnight, or the ceiling if that is sooner. Heavier evenings, and the most days to review at the end.',
+      },
+      {
+        value: 'relaxed',
+        label: 'Steady & Relaxed',
+        description:
+          'The whole window spent. The lightest evenings the course allows, and one day to review.',
+      },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'study-pace-readout',
+    group: 'Widgets',
+    label: 'Study Pace readout',
+    description:
+      'What the Study Pace card shows UNDER the pace sentence and the week strip. `prose` (default) is the card as it stands — three sentences: the window and its end date, the finish date, and the note that the estimate moves. `stats` replaces the first two with a three-cell readout divided by hairlines — Course Access (the countdown, with the access end date beneath it), Estimated Completion Date, and Status (the PACE status: Relaxed / Recommended / Focused, plus heavy). The third sentence and Customize Study Plan survive in both. NOTE the Status cell carries the PACE axis rather than the compliance one: "At Risk" is a verdict about the learner and this card only speaks about the plan — see `PaceChip`’s own note on why the two must not share a badge.',
+    // Variant-only, like `dashboard-heading-font`: the enable toggle is on so
+    // the flag is live and the CHOICE is the variant.
+    defaultEnabled: true,
+    /* `stats` ON THE BRANCH, per the Contributing guide's rule — the branch
+       deploy is the review link, so it has to show the work. Whether it becomes
+       the `?demo=1` baseline is `/promote-to-prototype`'s call. */
+    defaultVariant: 'stats',
+    variants: [
+      {
+        value: 'prose',
+        label: 'Prose — three sentences',
+        description:
+          'No change. "You have 29 days left to finish the course material. (Access ends on Jun 10.)" / "At this pace, you will finish around Jun 5." / the estimate-moves note.',
+      },
+      {
+        value: 'stats',
+        label: 'Stats — three divided cells',
+        description:
+          'Course Access · Estimated Completion Date · Status, divided by hairlines, with the access end date as a second line under the countdown so nothing the prose said is lost. At the unreachable pace (At Risk, 3 days) the cells stay and the completion cell reads "Not achievable", with the won’t-fit sentence taking the estimate-moves line’s place — a readout that changes shape per state would be two cards behind one flag.',
       },
     ],
     page: 'dashboard-rebrand',
@@ -817,74 +886,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
         label: 'Collapsed — coursework as one line',
         description:
           'The four finished stops become a single "Coursework complete" line, so Schedule State Exam leads the column. Argues that finished work is a receipt and the licensing steps are the only actionable things left.',
-      },
-    ],
-    page: 'dashboard-rebrand',
-  },
-  {
-    key: 'dashboard-pacing-style',
-    group: 'Widgets',
-    label: 'Pacing tile — treatment',
-    description:
-      'Which treatment the Study Pace tile renders on the TESTING home version (`?version=discoverability-testing`), where it takes the whole row because the Readiness stub beside it is dropped. Five answers to "am I pacing to finish in time": Lo-fi is the current stub, kept so the others can be compared against what ships today. Rate states a suggested hrs/day. Runway lays the work remaining against the time remaining on one track. Balance states the two remaining figures and derives nothing. Presets states a finish DATE and the room left after it, and is the only one you can operate. EVERY figure in every treatment is derived from data the fixtures already carry — the resume course’s credit hours and access expiry, the path’s unit totals and the days to the target date. None of them invents an observed rate, a schedule to be ahead of, or a projected finish date, because nothing here knows any of those. The status pill and its message are the same in the first four, so the comparison there is about the pacing figure and not about whether the state is shown; Presets is the one exception and states the same fact as a sentence instead — see its own note.',
-    // Variant-only, like `dashboard-clp-style`: the enable toggle is on so the
-    // flag is live and the CHOICE is the variant. "Off" would have to mean
-    // "lo-fi", which the variant already says.
-    defaultEnabled: true,
-    /*
-     * `presets` as of 2026-09-21. It was `runway` — chosen when the only thing
-     * that mattered was not opening on the stub ("the version exists to look at
-     * pacing, so opening it on `lo-fi` would make the whole thing read as
-     * unchanged"). That reasoning expired the moment Testing became XCEL's
-     * DEFAULT VERSION on the same day.
-     *
-     * WHY THIS IS NOW A DESIGN DECISION AND NOT A STARTING POSITION. `?demo=1`
-     * renders the committed default baseline and IGNORES stored flags, and no
-     * URL parameter sets one — so on a review link this value is not where a
-     * stakeholder begins, it is the whole of what they see. Landing them on
-     * `runway` would have been picking a winner among five treatments by
-     * inheritance rather than by decision.
-     *
-     * `presets` is the one to state: the only treatment that derives every
-     * figure end to end, answers the pacing question with an OUTCOME rather
-     * than a quantity, and can be operated.
-     *
-     * Scoped as it always was — this flag is read only under the `paceOnly`
-     * arrangement, so the change cannot reach Testing 2 or QE Focused. The
-     * other four stay one click away in the panel, which is the direction the
-     * comparison should run.
-     */
-    defaultVariant: 'presets',
-    variants: [
-      {
-        value: 'lo-fi',
-        label: 'Lo-fi — the current stub',
-        description:
-          'What ships on QE Focused today: two grey placeholder rows above the status pill and its message. Here so the three real treatments can be judged against it rather than only against each other.',
-      },
-      {
-        value: 'rate',
-        label: 'Rate — a suggested pace',
-        description:
-          'PRESCRIPTIVE. One figure — the resume course’s credit hours over the days to the target date — read as "~1.5 hrs/day", with the target named underneath. This is the derivation the lo-fi stub replaced on 2026-09-17; it still feeds the `stat-card` variant of `dashboard-clp-stats`, so nothing new is invented to show it here. Omitted, not guessed, when there is no course to read hours from.',
-      },
-      {
-        value: 'runway',
-        label: 'Runway — work against time',
-        description:
-          'SPATIAL. One track carrying how much of the course is done, with the work left on one end and the days left on the other, and the rate that closes the gap stated beneath it ("about 4 lessons a week to finish on time"). It answers whether the remaining work fits the remaining time — which is the pacing question — without claiming a projected finish date, because no observed rate exists in the fixtures to project from.',
-      },
-      {
-        value: 'balance',
-        label: 'Balance — the two figures',
-        description:
-          'DESCRIPTIVE, and deliberately the one that derives nothing: the work left and the days left as two plain figures, side by side, with no rate and no verdict. It is here as the honest floor — if a learner can pace themselves from those two numbers, the derived versions above are chrome, and that is worth finding out before building one of them properly.',
-      },
-      {
-        value: 'presets',
-        label: 'Presets — a date, and the room after it',
-        description:
-          'CONCLUSIVE, and the only treatment you can OPERATE. The wide card from the `xcel-pace-presets` prototype, §02: an evening and a nights-a-week as a sentence, the finish date it lands on, how many days of room that leaves before the ceiling, a timeline from Today to a hard end-stop, and two real buttons — Start studying, and Adjust, which opens the same sheet the Testing 2 tile uses (the three finish dates, days a week, your exam date, and a study plan on the calendar). The other four state a QUANTITY and leave you to judge whether it is enough; this one states the OUTCOME and makes the quantity the subordinate clause. It reads `src/lib/studyPace.ts` — the same model Testing 2 renders, so a fix to the derivation reaches both versions at once — and the two ceilings it can be bound by, course access and an exam date, are named on the card rather than switched between silently. It is the ONE treatment without the shared status pill: the sentence already states the conclusion that pill labels, and two pills in two vocabularies stacked nine pixels apart is exactly the confusion the pace chip exists to avoid.',
       },
     ],
     page: 'dashboard-rebrand',
@@ -1205,12 +1206,15 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
         label: 'At Risk · ~15%',
         description: '~15% complete with under 30 days left (requirement <25% done) — the At Risk warning treatment.',
       },
-      {
-        value: 'progress-off-track',
-        label: 'Off Track · won\u2019t finish',
-        description:
-          "Partway in with far too little time left \u2014 the pace the course now demands is past what anyone studies in an evening, so the Study Pace card drops its nightly figure and names the two real options (extend access, or cut what is left). The only variant that reaches the pace model's `state: 'no'`; it does so with a SHORT WINDOW (11 days), not a long course. Set by the \"Pace \u2014 won't finish\" personas.",
-      },
+      /* `progress-off-track` ARCHIVED 2026-09-23 on main — its `ARCHIVED_ITEMS`
+         row lives there; this branch took the variant list with the home
+         page (2026-09-24) but not the row. Its
+         whole job was reaching the pace model's `state: 'no'`, which At Risk
+         now does at 3 days. ⚠ RE-DECLARING IT HERE IS HALF THE RESTORE: the
+         variant was once absent from this list while every fixture behind it
+         existed, so the seed was silently ignored and the branch was
+         unreachable dead copy that still type-checked and still passed. That is
+         why this is a comment rather than a quiet deletion. */
       {
         value: 'progress-expired',
         label: 'Expired',

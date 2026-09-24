@@ -946,6 +946,11 @@
   --color-compass-page-ring-3: #808b8c;
   --color-compass-page-ring-4: #5f7280;
   --color-compass-page-ring-5: #3d5a73;
+  /* The course player's content placeholder (Figma 49:3338, 2026-09-24): a
+     #ece3d5 edge and #cec0ac serif label. The label is ~1.7:1 — a
+     placeholder's watermark, standing in for content, not information. */
+  --color-compass-content-border: #ece3d5;
+  --color-compass-content-placeholder: #cec0ac;
 }
 [data-theme='dark'][data-brand='xcel'] {
   --color-compass-page: var(--color-surface-page);
@@ -961,6 +966,8 @@
   --color-compass-page-rubi: #e0906f;
   --color-compass-page-button: var(--color-primary-500);
   --color-compass-page-ring-face: var(--color-surface-card);
+  --color-compass-content-border: var(--color-border-subtle);
+  --color-compass-content-placeholder: var(--color-text-tertiary);
 }
 
 /* COMPASS COURSE PLAYER CONTROLS BAR — `CompassPlayerBar`, Figma 49:2963,
@@ -2009,6 +2016,16 @@ html,
      corners clip to the 14px radius (top rounds via the browser chrome, bottom
      via this clip). */
   overflow: clip;
+}
+/* THE ATLAS/COMPASS WINDOW IS 1608 WIDE — 2026-09-24, the direct ask ("make
+   the default viewport size for this prototype 1608px wide"). Atlas only, so
+   every other version keeps the 1440 its note above argues for. Narrower
+   screens still get `100% - 48px`. The content column stays capped at 1180 in
+   PlatformShell's grid; the extra width lands in the right filler, which the
+   Atlas home paints the same warm page. */
+.cre-demo-stage-window.cre-demo-stage-window--atlas {
+  width: min(1608px, 100% - 48px);
+  max-width: 1608px;
 }
 /* The browser chrome (traffic lights) is the window's top strip now — round its
    top corners to meet the window's rounded top. */
@@ -4558,4 +4575,18 @@ a.cre-library-card-title::after {
   font-family: var(--font-body);
   font-size: var(--text-body-sm);
   color: var(--color-text-secondary);
+}
+
+/* The Atlas home course card's "Course Overview" chip (Figma 108:4620) — its
+   fill, hover, focus and pointer live here, not inline, so hover can win. */
+.cre-compass-home-chip {
+  background: transparent;
+  cursor: pointer;
+}
+.cre-compass-home-chip:hover {
+  background: color-mix(in srgb, var(--color-compass-page-card-border) 45%, transparent);
+}
+.cre-compass-home-chip:focus-visible {
+  outline: 2px solid var(--color-compass-page-button);
+  outline-offset: 2px;
 }

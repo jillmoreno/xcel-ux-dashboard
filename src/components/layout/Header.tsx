@@ -233,7 +233,13 @@ export function Header() {
         // width and left-anchored, so on screens wider than 1440 the area to the
         // right shows the page background (matching the shell's right filler)
         // instead of a blank white void beside the utility icons.
-        ...(platformNav ? { maxWidth: 1440, alignSelf: 'flex-start', width: '100%' } : null),
+        // …EXCEPT on Atlas/Compass (2026-09-24): its window is 1608 wide and the
+        // right filler is the warm page, so a 1440 bar left a stub of page
+        // colour beside the header. The bar runs the full width, and so does
+        // the row inside it (see below).
+        ...(platformNav
+          ? { maxWidth: atlasSlimHeader ? 'none' : 1440, alignSelf: 'flex-start', width: '100%' }
+          : null),
       }}
     >
       {/* White header bar. Classic routes center the 1440 content rail
@@ -252,7 +258,10 @@ export function Header() {
         // the logo + utility icons collapse to the left in prod. Inline style is
         // build-safe.
         className={`flex items-center${platformNav ? '' : ' mx-auto'}${atlasSlimHeader ? ' cre-atlas-header' : ''}`}
-        style={{ height: headerHeight, maxWidth: 1440, padding: '0 24px', width: '100%', justifyContent: 'space-between' }}
+        // Atlas: the row is uncapped too (2026-09-24, the direct ask), so the
+        // bell + profile sit 24px from the window's right edge — the same 24
+        // the logo sits from its left.
+        style={{ height: headerHeight, maxWidth: atlasSlimHeader ? 'none' : 1440, padding: '0 24px', width: '100%', justifyContent: 'space-between' }}
       >
         <div className="flex items-center" style={{ gap: 8, minWidth: 0 }}>
           {/* Mobile rebrand: a hamburger opens the nav drawer (the shell owns
