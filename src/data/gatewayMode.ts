@@ -97,3 +97,30 @@ export function isPublicFeature(feature: { category: string }): boolean {
     feature.category === 'prototype' || feature.category === 'demo' || feature.category === 'dashboard'
   )
 }
+
+/**
+ * Is this page view a moderated user-test session?
+ *
+ * ⚠ TRUE BY DEFAULT ON THE `testing` BUILD — 2026-09-23, after the new site's
+ * bare root served the full demo chrome. `?test=1` was the only switch, so a
+ * participant who reached `/dashboard-rebrand` without it — from the root
+ * redirect, from a pasted link with the params trimmed, from anything that
+ * dropped a query string — got the prototype bar, the joke, the device
+ * toggles and all six demo dropdowns. On a site whose entire purpose is
+ * participant sessions, the stripped chrome has to be the FLOOR rather than
+ * something a URL opts into.
+ *
+ * ⚠ `?test=0` IS THE WAY OUT, and it has to exist. The moderator sets a
+ * session up on the same site, and they need the full bar to check a persona
+ * or a flag before handing the laptop over. An explicit opt-out is safer than
+ * an implicit opt-in here: forgetting the opt-out shows a colleague too much
+ * chrome, forgetting the opt-in showed a participant too much.
+ *
+ * On every other build this is exactly what it was: `?test=1` and nothing else.
+ */
+export function isTestSession(search: string): boolean {
+  const raw = new URLSearchParams(search).get('test')
+  if (raw === '1') return true
+  if (raw === '0') return false
+  return isTestingGateway()
+}

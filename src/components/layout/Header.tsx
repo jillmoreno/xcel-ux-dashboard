@@ -3,6 +3,7 @@ import { Link, useLocation, useNavigate } from 'react-router-dom'
 import { ShoppingCart, Bars } from '@/icons'
 import { Logo } from '@/components/brand/Logo'
 import { useCourseChrome } from '@/components/learning/courseTakeover'
+import { isTestSession } from '@/data/gatewayMode'
 import { NavDropdown } from './NavDropdown'
 import { NavLink } from './NavLink'
 import { AccountMenu } from './AccountMenu'
@@ -164,7 +165,7 @@ export function Header() {
      content scrolled up through the gap. Any future param that hides the
      prototype bar has to be added here too — the list of hiders lives in
      `PrototypeChrome`, and these two have to agree. */
-  const test = new URLSearchParams(search).get('test') === '1'
+  const test = isTestSession(search)
   const stageTop = chromeOff || present || test ? 0 : 40
   const headerTop = framed ? stageTop + BROWSER_CHROME_H : stageTop
   // Neutralize the header's navigation (logo → non-link, Cart / Account inert,

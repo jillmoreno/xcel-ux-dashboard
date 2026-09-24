@@ -36,6 +36,13 @@ async function renderAppAt(path: string, mode: string) {
   )
 }
 
+/** Load `gatewayMode` fresh under a stubbed build mode. */
+async function loadMode(mode: string) {
+  vi.resetModules()
+  vi.stubEnv('VITE_GATEWAY_MODE', mode)
+  return import('@/data/gatewayMode')
+}
+
 afterEach(() => {
   vi.unstubAllEnvs()
   vi.resetModules()
@@ -75,4 +82,41 @@ describe('VITE_GATEWAY_MODE=testing — every gateway route lands in the product
     await renderAppAt('/', 'public')
     expect(screen.getByTestId('at').textContent).toBe('/')
   })
+})
+
+describe('VITE_GATEWAY_MODE=testing — the participant chrome is the floor', () => {
+  /*
+   * ⚠ THE HOLE THIS CLOSES was found by opening the new site's bare root:
+   * `/` redirects to `/dashboard-rebrand` carrying no query string, and
+   * `?test=1` was the only thing that stripped the chrome — so the first thing
+   * on screen was the prototype bar, the joke, the device toggles and all six
+   * demo dropdowns. On a site whose entire purpose is participant sessions the
+   * stripped chrome has to be the default, not something a URL opts into.
+   */
+  it('treats a bare page view as a session on the testing build', async () => {
+    const { isTestSession } = await loadMode('testing')
+    expect(isTestSession('')).toBe(true)
+    expect(isTestSession('?demo=1')).toBe(true)
+  })
+
+  it('still honours an explicit ?test=0, so a moderator can set up', async () => {
+    /* The opt-out has to exist: the moderator checks a persona or a flag on
+       the same site before handing the laptop over. An explicit opt-OUT is the
+       safer default than an implicit opt-in — forgetting the opt-out shows a
+       colleague too much chrome, forgetting the opt-in showed a participant
+       too much. */
+    const { isTestSession } = await loadMode('testing')
+    expect(isTestSession('?test=0')).toBe(false)
+  })
+
+  for (const mode of ['full', 'public'] as const) {
+    it(`changes nothing on the ${mode} build`, async () => {
+      /* The direction that matters more: every other site must behave exactly
+         as it did, where `?test=1` is the only switch. */
+      const { isTestSession } = await loadMode(mode)
+      expect(isTestSession('')).toBe(false)
+      expect(isTestSession('?demo=1')).toBe(false)
+      expect(isTestSession('?test=1')).toBe(true)
+    })
+  }
 })

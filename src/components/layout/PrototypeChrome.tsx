@@ -1,4 +1,5 @@
 import { useLocation } from 'react-router-dom'
+import { isTestSession } from '@/data/gatewayMode'
 import { PrototypeBar } from './PrototypeBar'
 import { AdminToolsMenu } from './AdminToolsMenu'
 import { DeviceFrameToggle, useDeviceFrame } from './DeviceFrameContext'
@@ -82,7 +83,7 @@ export function PrototypeChrome() {
    * next dropdown added to that bar does NOT appear in test links by default,
    * which is the right direction for a control a participant must never meet.
    */
-  if (params.get('test') === '1') {
+  if (isTestSession(search)) {
     return <DemoControlsBar open fullBleed={framed} only={TEST_VIEW_CONTROLS} />
   }
   // Routes that carry a hide-able stakeholder demo banner (→ show the toggle).

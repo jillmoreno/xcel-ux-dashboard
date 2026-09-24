@@ -13,6 +13,7 @@ import {
 } from 'react'
 import { useLocation } from 'react-router-dom'
 import { BrowserWindow, MobileScreen, Monitor, TabletScreen } from '@/icons'
+import { isTestSession } from '@/data/gatewayMode'
 
 /**
  * Device-preview frame for the prototype. A toggle in the PrototypeBar
@@ -90,7 +91,7 @@ export function DeviceFrameProvider({ children }: { children: ReactNode }) {
      reason `present=1` does — the direct ask was to keep "the back background
      for the demo mode". It differs from `present` only in what it leaves on the
      bar: see `PrototypeChrome`. */
-  const test = params.get('test') === '1'
+  const test = isTestSession(search)
   const effectiveDevice: DeviceSize = present || test
     ? 'desktop-framed'
     : chromeOff
