@@ -823,6 +823,12 @@
   --color-atlas-nav-active-ink: #004d7c;
   --color-atlas-nav-active-fill: #dfe3eb;
   --color-atlas-nav-hover: var(--color-neutral-100);
+  /* The COURSE rail's breadcrumb (Figma 49:3536). The separator is the
+     design's #bcbcbc — decorative and aria-hidden. The current crumb is
+     #767676, not the design's #777: that is 4.48:1 on white, just under AA
+     for 11px text; #767676 is 4.54:1. */
+  --color-atlas-nav-crumb-separator: #bcbcbc;
+  --color-atlas-nav-crumb: #767676;
 }
 [data-theme='dark'][data-brand='xcel'] {
   --color-atlas-nav-rule: var(--color-border-subtle);
@@ -830,6 +836,399 @@
   --color-atlas-nav-ink: var(--color-text-secondary);
   --color-atlas-nav-active-ink: var(--color-primary-200);
   --color-atlas-nav-active-fill: rgb(157 179 194 / 0.16);
+  --color-atlas-nav-crumb-separator: var(--color-neutral-500);
+  --color-atlas-nav-crumb: var(--color-text-tertiary);
+}
+
+/* COMPASS LMS COURSE LEFT RAIL NAVIGATION — `CompassCourseRail`, Figma
+   49:2922, 2026-09-22. The rail for actual Compass LMS course pages; its own
+   token family so a future Compass surface can re-point it without touching
+   the Atlas rail's.
+
+   Light values are the design's. Two are on no XCEL ramp and are declared
+   rather than approximated: the not-started lesson spine (`#e2d9cd` in 49:2922,
+   `#cec0ac` since 13:38) and the current lesson's fill `#eceef0`. The
+   breadcrumb link is the Atlas active navy `#004d7c`; the current crumb is
+   #767676 rather than the design's #777, which is 4.48:1 on white and just
+   misses AA at 11px.
+
+   Measured, light: section/lesson text (#404040) 10.4:1 on white; current
+   lesson ink (#2d5872) 6.9:1 on its #eceef0 fill; pill text 9.9:1 on #f8f6f3.
+   DARK VALUES ARE NOT FROM THE DESIGN, which is light only. */
+[data-brand='xcel'] {
+  --color-compass-rail-rule: var(--color-border-subtle);
+  --color-compass-rail-ink: var(--color-primary-500);
+  --color-compass-rail-on-ink: var(--color-neutral-50);
+  --color-compass-rail-text: var(--color-neutral-800);
+  --color-compass-rail-caption: var(--color-primary-500);
+  --color-compass-rail-link: #004d7c;
+  --color-compass-rail-crumb: #767676;
+  --color-compass-rail-crumb-separator: #bcbcbc;
+  /* The "% Complete" pill — #f8f6f3, a warm off-white (2026-09-23, at the
+     designer's request; it was --color-neutral-75, #f5f5f5). Text on it
+     (#404040) is 9.9:1. The pill itself is ~1.06:1 against the white rail, so
+     it reads as a tint rather than an edge — the words carry it. */
+  --color-compass-rail-pill: #f8f6f3;
+  --color-compass-rail-spine: #cec0ac;
+  --color-compass-rail-current-fill: #eceef0;
+  --color-compass-rail-hover: var(--color-neutral-100);
+  /* Not-started text, sections and lessons alike: #818181 (Figma 13:22 /
+     13:38), 3.95:1 on white — under AA for text this size. Kept because the
+     muting is the design's "not reached yet", and every entry states its
+     status in words. Raise it here if it must pass. */
+  --color-compass-rail-upcoming-text: var(--color-neutral-600);
+  --color-compass-rail-upcoming-section-text: var(--color-neutral-600);
+  /* SECTION rows — Figma 13:22 ("TOC - Section Title"), 2026-09-23. The
+     section ink #3d5a73 is a touch lighter than the lessons' #2d5872 (Figma
+     49:2922); the two meet where the active row's line joins the spine, so
+     re-point one at the other if a single navy is wanted. Upcoming: a #cec0ac
+     dot and #818181 text — 3.95:1 on white, still under AA for 15px text,
+     kept as the design's "not reached yet". */
+  --color-compass-rail-section-ink: #3d5a73;
+  --color-compass-rail-upcoming-section-mark: #cec0ac;
+  /* LESSON rows — Figma 13:38 ("TOC - Child Item"), 2026-09-23. Marks, the
+     current label and "Now" take the section ink; the SPINE beside done and
+     current lessons stays --color-compass-rail-ink (#2d5872), as drawn. A
+     not-started lesson is a #baa78b ring, #818181 text (3.95:1 — under AA,
+     kept as drawn) and a #cec0ac spine; hover turns all three to the
+     completed treatment. */
+  --color-compass-rail-lesson-ink: var(--color-compass-rail-section-ink);
+  /* The active section dot's 5px ring (Figma 13:23) — #eceef0, the current
+     lesson's fill. Its own token, not a reference to that fill: in dark the
+     fill is translucent, and a translucent halo would let the line through. */
+  --color-compass-rail-active-halo: #eceef0;
+  --color-compass-rail-upcoming-lesson-mark: #baa78b;
+}
+[data-theme='dark'][data-brand='xcel'] {
+  --color-compass-rail-ink: var(--color-primary-200);
+  --color-compass-rail-on-ink: var(--color-primary-800);
+  --color-compass-rail-text: var(--color-text-secondary);
+  --color-compass-rail-caption: var(--color-primary-300);
+  --color-compass-rail-link: var(--color-primary-200);
+  --color-compass-rail-crumb: var(--color-text-tertiary);
+  --color-compass-rail-crumb-separator: var(--color-neutral-500);
+  --color-compass-rail-pill: var(--color-neutral-100);
+  --color-compass-rail-spine: var(--color-primary-700);
+  --color-compass-rail-current-fill: rgb(157 179 194 / 0.16);
+  --color-compass-rail-upcoming-text: var(--color-neutral-500);
+  --color-compass-rail-upcoming-section-text: var(--color-neutral-500);
+  --color-compass-rail-section-ink: var(--color-primary-200);
+  --color-compass-rail-upcoming-section-mark: var(--color-primary-700);
+  --color-compass-rail-upcoming-lesson-mark: var(--color-primary-500);
+  --color-compass-rail-active-halo: var(--color-primary-700);
+}
+
+/* COMPASS COURSE OVERVIEW PAGE — `CompassCourseOverview`, Figma 44:2211,
+   2026-09-23. The design's values, declared rather than approximated — most
+   sit on no XCEL ramp. Measured on the #f8f6f3 page: eyebrow/body #5b5560
+   6.7:1, muted #706b63 4.87:1, Rubi #b4552f 4.53:1 (just clears AA for the
+   11px eyebrow and the 13px button), heading #1f1d18 16:1; fact label #616161
+   5.3:1 on the #eceef0 card. DARK VALUES ARE NOT FROM THE DESIGN. */
+[data-brand='xcel'] {
+  --color-compass-page: #f8f6f3;
+  --color-compass-page-rule: #e0dbcd;
+  --color-compass-page-eyebrow: #5b5560;
+  --color-compass-page-muted: #706b63;
+  --color-compass-page-heading: #1f1d18;
+  --color-compass-page-card: #eceef0;
+  --color-compass-page-card-border: #d8dee4;
+  --color-compass-page-card-rule: #c0cdd5;
+  --color-compass-page-fact-label: var(--color-neutral-700);
+  --color-compass-page-pill-ink: #263d50;
+  --color-compass-page-aside-rule: #838383;
+  --color-compass-page-rubi: #b4552f;
+  --color-compass-page-button: #3d5a73;
+  --color-compass-page-button-ink: var(--color-neutral-50);
+  --color-compass-page-ring-face: var(--color-neutral-50);
+  /* The readiness ring's gradient, beige to the section navy. */
+  --color-compass-page-ring-1: #c3bba5;
+  --color-compass-page-ring-2: #a2a399;
+  --color-compass-page-ring-3: #808b8c;
+  --color-compass-page-ring-4: #5f7280;
+  --color-compass-page-ring-5: #3d5a73;
+}
+[data-theme='dark'][data-brand='xcel'] {
+  --color-compass-page: var(--color-surface-page);
+  --color-compass-page-rule: var(--color-border-subtle);
+  --color-compass-page-eyebrow: var(--color-text-secondary);
+  --color-compass-page-muted: var(--color-text-tertiary);
+  --color-compass-page-heading: var(--color-text-primary);
+  --color-compass-page-card: var(--color-surface-card);
+  --color-compass-page-card-border: var(--color-border-subtle);
+  --color-compass-page-card-rule: var(--color-border-subtle);
+  --color-compass-page-pill-ink: var(--color-primary-200);
+  --color-compass-page-aside-rule: var(--color-border-subtle);
+  --color-compass-page-rubi: #e0906f;
+  --color-compass-page-button: var(--color-primary-500);
+  --color-compass-page-ring-face: var(--color-surface-card);
+}
+
+/* COMPASS COURSE PLAYER CONTROLS BAR — `CompassPlayerBar`, Figma 49:2963,
+   2026-09-23. Text #404040 is 10.4:1 on the white pills; icons #818181 are
+   3.95:1 — decorative, every control carries its label or aria-label. The
+   bar's rule is the Atlas rail's #dfe3eb so the two edges meet as one line.
+   DARK VALUES ARE NOT FROM THE DESIGN. */
+[data-brand='xcel'] {
+  --color-compass-player-bar: var(--color-neutral-75);
+  --color-compass-player-rule: var(--color-atlas-nav-rule);
+  --color-compass-player-surface: var(--color-neutral-50);
+  --color-compass-player-border: var(--color-neutral-200);
+  --color-compass-player-text: var(--color-neutral-800);
+  --color-compass-player-icon: var(--color-neutral-600);
+  --color-compass-player-track: var(--color-neutral-300);
+  --color-compass-player-ink: #3d5a73;
+  --color-compass-player-on-ink: var(--color-neutral-50);
+  --color-compass-player-rubi: #eceef0;
+  --color-compass-player-rubi-border: #d8dee4;
+  --color-compass-player-hover: var(--color-neutral-100);
+}
+[data-theme='dark'][data-brand='xcel'] {
+  --color-compass-player-surface: var(--color-surface-card);
+  --color-compass-player-border: var(--color-border-subtle);
+  --color-compass-player-text: var(--color-text-primary);
+  --color-compass-player-icon: var(--color-text-tertiary);
+  --color-compass-player-ink: var(--color-primary-300);
+  --color-compass-player-on-ink: var(--color-primary-800);
+  --color-compass-player-rubi: var(--color-surface-card);
+  --color-compass-player-rubi-border: var(--color-border-subtle);
+}
+.cre-compass-player-btn {
+  background: var(--color-compass-player-surface);
+  border-color: var(--color-compass-player-border);
+}
+.cre-compass-player-btn:not(:disabled):hover {
+  background: var(--color-compass-player-hover);
+}
+.cre-compass-player-btn:focus-visible {
+  outline: 2px solid var(--color-compass-player-ink);
+  outline-offset: 2px;
+}
+/* An action with no handler yet — drawn as designed, not greyed, but inert
+   and without the pointer, so it does not promise a click. */
+.cre-compass-player-btn:disabled {
+  cursor: default;
+}
+
+/* COMPASS RUBI RIGHT RAIL — `CompassRubiRail`, Figma 49:3053, 2026-09-23.
+   Measured on white: Rubi red #c4122e 5.9:1 (the 15px title and the 10px
+   bold "RUBI"), text #1f1d18 16:1, muted #706b63 5.3:1, chip text #5b5560
+   7.4:1, placeholder #757575 4.6:1. The chip and field edge #c3bba5 is
+   1.8:1 — an edge, not information; the labels carry the controls.
+   DARK VALUES ARE NOT FROM THE DESIGN. */
+[data-brand='xcel'] {
+  --color-compass-rubi-surface: var(--color-neutral-50);
+  --color-compass-rubi-edge: #c3bba5;
+  --color-compass-rubi-rule: #e0dbcd;
+  --color-compass-rubi-brand: #c4122e;
+  --color-compass-rubi-text: #1f1d18;
+  --color-compass-rubi-muted: #706b63;
+  --color-compass-rubi-chip-ink: #5b5560;
+  --color-compass-rubi-placeholder: #757575;
+  --color-compass-rubi-bubble: #eceef0;
+  --color-compass-rubi-send: #3d5a73;
+  --color-compass-rubi-on-send: var(--color-neutral-50);
+  --color-compass-rubi-hover: var(--color-neutral-100);
+}
+[data-theme='dark'][data-brand='xcel'] {
+  --color-compass-rubi-surface: var(--color-surface-card);
+  --color-compass-rubi-edge: var(--color-border-subtle);
+  --color-compass-rubi-rule: var(--color-border-subtle);
+  --color-compass-rubi-brand: #f27a8b;
+  --color-compass-rubi-text: var(--color-text-primary);
+  --color-compass-rubi-muted: var(--color-text-tertiary);
+  --color-compass-rubi-chip-ink: var(--color-text-secondary);
+  --color-compass-rubi-placeholder: var(--color-text-tertiary);
+  --color-compass-rubi-bubble: var(--color-neutral-100);
+  --color-compass-rubi-send: var(--color-primary-500);
+}
+.cre-compass-rubi-close {
+  background: var(--color-compass-rubi-surface);
+  border-color: var(--color-compass-rubi-rule);
+  color: var(--color-compass-rubi-chip-ink);
+}
+.cre-compass-rubi-chip {
+  background: var(--color-compass-rubi-surface);
+  border-color: var(--color-compass-rubi-edge);
+  color: var(--color-compass-rubi-chip-ink);
+}
+.cre-compass-rubi-close:hover,
+.cre-compass-rubi-chip:hover {
+  background: var(--color-compass-rubi-hover);
+}
+.cre-compass-rubi-send {
+  background: var(--color-compass-rubi-send);
+  color: var(--color-compass-rubi-on-send);
+}
+.cre-compass-rubi-send:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.cre-compass-rubi-field input::placeholder {
+  color: var(--color-compass-rubi-placeholder);
+}
+/* The input draws no outline of its own, so the FIELD carries the focus ring —
+   the whole box is the target a learner sees. */
+.cre-compass-rubi-field:focus-within {
+  outline: 2px solid var(--color-compass-rubi-send);
+  outline-offset: 1px;
+}
+.cre-compass-rubi-close:focus-visible,
+.cre-compass-rubi-chip:focus-visible,
+.cre-compass-rubi-send:focus-visible {
+  outline: 2px solid var(--color-compass-rubi-send);
+  outline-offset: 2px;
+}
+/* The Rubi rail's slide (inline transitions in `CompassRubiRail`) is switched
+   off for anyone who asks the OS for less motion — it simply appears. */
+@media (prefers-reduced-motion: reduce) {
+  .cre-compass-rubi-slot,
+  .cre-compass-rubi-slot .cre-compass-rubi {
+    transition: none !important;
+  }
+}
+/* ATLAS/COMPASS HEADER — the bell's OPTICAL centre (2026-09-24, the direct ask
+   to align the bell, the avatar and the name). Every item's BOX is centred on
+   the header's middle already; FA's `bell` is not centred in its own box — the
+   clapper hangs below the body, so the body reads ~2px high beside the avatar
+   circle and the name. The glyph alone drops 2px; the button, its hit area and
+   the unread badge stay where they are. */
+.cre-atlas-header .cre-icon-pill[aria-label^='Notifications'] > svg {
+  transform: translateY(2px);
+}
+/* …and the WHOLE bell — glyph and unread count together — sits 2px lower
+   again (2026-09-24, the direct ask). On the button, so the badge moves with
+   it; the glyph's own 2px above still applies, putting it 4px down in all. */
+.cre-atlas-header .cre-icon-pill[aria-label^='Notifications'] {
+  transform: translateY(2px);
+}
+/* The LOGO sits 3px below the header's centre line (2026-09-24, the direct
+   ask — 2px, then 1px more). A transform, so the header's own layout — and the logo's hit area —
+   do not move. The logo is the first group's image; the utilities are the
+   second group. */
+.cre-atlas-header > div:first-child img {
+  transform: translateY(3px);
+}
+/* The player bar's Rubi button while the rail is open. */
+.cre-compass-player-btn[aria-pressed='true'] {
+  background: var(--color-compass-player-rubi);
+  border-color: var(--color-compass-player-rubi-border);
+}
+
+/* COMPASS COURSE NAVIGATION FOOTER — `CompassCourseFooter`, Figma 31:1221,
+   2026-09-23. Next is white on #1f1d18 (16:1); Previous is #1f1d18 on white
+   with a #c3bba5 edge. Disabled is the design's own treatment for Previous:
+   40% opacity, no pointer. DARK VALUES ARE NOT FROM THE DESIGN. */
+[data-brand='xcel'] {
+  --color-compass-footer-surface: var(--color-neutral-50);
+  --color-compass-footer-rule: #e0dbcd;
+  --color-compass-footer-ink: #1f1d18;
+  --color-compass-footer-on-ink: var(--color-neutral-50);
+  --color-compass-footer-edge: #c3bba5;
+}
+[data-theme='dark'][data-brand='xcel'] {
+  --color-compass-footer-surface: var(--color-surface-card);
+  --color-compass-footer-rule: var(--color-border-subtle);
+  --color-compass-footer-ink: var(--color-text-primary);
+  --color-compass-footer-on-ink: var(--color-surface-page);
+  --color-compass-footer-edge: var(--color-border-subtle);
+}
+.cre-compass-step {
+  cursor: pointer;
+}
+.cre-compass-step--previous {
+  background: var(--color-compass-footer-surface);
+  border-color: var(--color-compass-footer-edge);
+  color: var(--color-compass-footer-ink);
+}
+.cre-compass-step--next {
+  background: var(--color-compass-footer-ink);
+  border-color: var(--color-compass-footer-ink);
+  color: var(--color-compass-footer-on-ink);
+}
+.cre-compass-step:not(:disabled):hover {
+  filter: brightness(0.94);
+}
+.cre-compass-step--next:not(:disabled):hover {
+  filter: brightness(1.25);
+}
+.cre-compass-step:focus-visible {
+  outline: 2px solid var(--color-compass-page-button);
+  outline-offset: 2px;
+}
+.cre-compass-step:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+/* NEXT keeps its full #1f1d18 while it has nowhere to go (2026-09-24, at the
+   designer's request) — the design draws Next solid and only Previous faded.
+   It is still `disabled` (no handler, no pointer, skipped by keyboard); only
+   the fade is dropped. */
+.cre-compass-step--next:disabled {
+  opacity: 1;
+}
+
+/* The Overview's two buttons own their colours here so hover and focus need
+   no !important over an inline value. */
+.cre-compass-primary {
+  background: var(--color-compass-page-button);
+  color: var(--color-compass-page-button-ink);
+}
+.cre-compass-primary:hover {
+  filter: brightness(1.12);
+}
+.cre-compass-outline {
+  color: var(--color-compass-page-rubi);
+  border-color: var(--color-compass-page-rubi);
+}
+.cre-compass-outline:hover {
+  background: color-mix(in srgb, var(--color-compass-page-rubi) 8%, transparent);
+}
+.cre-compass-primary:focus-visible,
+.cre-compass-outline:focus-visible {
+  outline: 2px solid var(--color-compass-page-button);
+  outline-offset: 2px;
+}
+
+/* Breadcrumb links (the home icon and any middle step) own their colour here,
+   so hover and focus need no `!important` over an inline value. */
+.cre-compass-crumb-link {
+  color: var(--color-compass-rail-link);
+}
+.cre-compass-crumb-link:hover {
+  text-decoration: underline;
+}
+.cre-compass-crumb-link:focus-visible,
+.cre-compass-toc-row:focus-visible {
+  outline: 2px solid var(--color-compass-rail-link);
+  outline-offset: 2px;
+}
+/* NOT-STARTED LESSONS and their hover ("Icon Default" → "Icon Hover", Figma
+   13:38). Every colour here is the class's — the inline styles set none of
+   them — so :hover wins without !important. The hover is the completed
+   treatment: navy spine, section-ink ring, #404040 text. */
+.cre-compass-toc-child.is-upcoming .cre-compass-toc-spine {
+  background: var(--color-compass-rail-spine);
+}
+.cre-compass-toc-child.is-upcoming .cre-compass-toc-ring {
+  color: var(--color-compass-rail-upcoming-lesson-mark);
+}
+.cre-compass-toc-child.is-upcoming .cre-compass-toc-label {
+  color: var(--color-compass-rail-upcoming-text);
+}
+.cre-compass-toc-child.is-upcoming:hover .cre-compass-toc-spine {
+  background: var(--color-compass-rail-ink);
+}
+.cre-compass-toc-child.is-upcoming:hover .cre-compass-toc-ring {
+  color: var(--color-compass-rail-lesson-ink);
+}
+.cre-compass-toc-child.is-upcoming:hover .cre-compass-toc-label {
+  color: var(--color-compass-rail-text);
+}
+
+/* A TOC entry that opens something (`onSelect`). None does yet — the rows
+   render static — but a future Compass page's lessons will. */
+.cre-compass-toc-row:hover {
+  background: var(--color-compass-rail-hover);
 }
 
 /* The row owns its colour, background and border in EVERY state — none of
@@ -849,6 +1248,16 @@
 .cre-atlas-nav-row:focus-visible {
   outline: 2px solid var(--color-atlas-nav-active-ink);
   outline-offset: -2px;
+}
+.cre-atlas-crumb-home {
+  color: var(--color-atlas-nav-active-ink);
+}
+.cre-atlas-crumb-home:hover {
+  filter: brightness(1.25);
+}
+.cre-atlas-crumb-home:focus-visible {
+  outline: 2px solid var(--color-atlas-nav-active-ink);
+  outline-offset: 2px;
 }
 .cre-atlas-nav-row[aria-current='page'] {
   background: var(--color-atlas-nav-active-fill);

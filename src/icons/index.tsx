@@ -38,6 +38,33 @@ import ChevronUpSvg from './chevron-up.svg?react'
 import ChevronRightSvg from './chevron-right.svg?react'
 import CircleSvg from './circle-dashed.svg?react'
 import CircleCheckSvg from './circle-check.svg?react'
+// Solid + Regular weights, fetched from the Font Awesome API (7.3.1) on
+// 2026-09-23 for the Compass LMS course rail (Figma 13:22 / 13:38 / 49:2922),
+// which names these weights. The registry's default stays Light.
+import CircleSolidSvg from './circle-solid.svg?react'
+import CircleRegularSvg from './circle-regular.svg?react'
+import CircleCheckSolidSvg from './circle-check-solid.svg?react'
+import CircleCheckRegularSvg from './circle-check-regular.svg?react'
+import ClockRegularSvg from './clock-regular.svg?react'
+import HouseRegularSvg from './house-regular.svg?react'
+import SlashForwardSolidSvg from './slash-forward-solid.svg?react'
+// Compass course Overview (Figma 44:2211), fetched 2026-09-23 at 7.3.1.
+import ArrowRotateLeftSvg from './arrow-rotate-left.svg?react'
+import BullseyeSvg from './bullseye.svg?react'
+import ArrowRightSolidSvg from './arrow-right-solid.svg?react'
+// Compass Course Player controls bar (Figma 49:2963), fetched 2026-09-23 at
+// 7.3.1 — Regular, as the design names, beside the registry's Light copies.
+import CalendarRegularSvg from './calendar-regular.svg?react'
+import FileLinesRegularSvg from './file-lines-regular.svg?react'
+import PlusRegularSvg from './plus-regular.svg?react'
+import MagnifyingGlassRegularSvg from './magnifying-glass-regular.svg?react'
+import GearRegularSvg from './gear-regular.svg?react'
+import XmarkRegularSvg from './xmark-regular.svg?react'
+import DotSolidSvg from './dot-solid.svg?react'
+// Compass Rubi rail (Figma 49:3053), fetched 2026-09-23 at 7.3.1.
+import PaperPlaneTopSolidSvg from './paper-plane-top-solid.svg?react'
+// Compass course navigation footer (Figma 31:1221), fetched 2026-09-23 at 7.3.1.
+import ChevronLeftSvg from './chevron-left.svg?react'
 import CircleUserSvg from './circle-user.svg?react'
 import CircleInfoSvg from './circle-info.svg?react'
 import CircleQuestionSvg from './circle-question.svg?react'
@@ -200,8 +227,30 @@ export const Check = makeIcon(CheckSvg)
 export const ChevronDown = makeIcon(ChevronDownSvg)
 export const ChevronUp = makeIcon(ChevronUpSvg) // FA: chevron-up
 export const ChevronRight = makeIcon(ChevronRightSvg)
+export const ChevronLeft = makeIcon(ChevronLeftSvg) // FA: chevron-left
 export const Circle = makeIcon(CircleSvg) // FA: circle-dashed (used for Not Started status)
 export const CircleCheck = makeIcon(CircleCheckSvg) // FA: circle-check
+// Non-Light weights — the suffix names the weight (see `.font-awesome.md`).
+// NOTE `CircleSolid` / `CircleRegular` are FA's plain `circle`, unlike
+// `Circle` above, which is `circle-dashed`.
+export const CircleSolid = makeIcon(CircleSolidSvg) // FA: circle (solid)
+export const CircleRegular = makeIcon(CircleRegularSvg) // FA: circle (regular)
+export const CircleCheckSolid = makeIcon(CircleCheckSolidSvg) // FA: circle-check (solid)
+export const CircleCheckRegular = makeIcon(CircleCheckRegularSvg) // FA: circle-check (regular)
+export const ClockRegular = makeIcon(ClockRegularSvg) // FA: clock (regular)
+export const HouseRegular = makeIcon(HouseRegularSvg) // FA: house (regular)
+export const SlashForwardSolid = makeIcon(SlashForwardSolidSvg) // FA: slash-forward (solid)
+export const ArrowRotateLeft = makeIcon(ArrowRotateLeftSvg) // FA: arrow-rotate-left
+export const Bullseye = makeIcon(BullseyeSvg) // FA: bullseye
+export const ArrowRightSolid = makeIcon(ArrowRightSolidSvg) // FA: arrow-right (solid)
+export const CalendarRegular = makeIcon(CalendarRegularSvg) // FA: calendar (regular)
+export const FileLinesRegular = makeIcon(FileLinesRegularSvg) // FA: file-lines (regular)
+export const PlusRegular = makeIcon(PlusRegularSvg) // FA: plus (regular)
+export const MagnifyingGlassRegular = makeIcon(MagnifyingGlassRegularSvg) // FA: magnifying-glass (regular)
+export const GearRegular = makeIcon(GearRegularSvg) // FA: gear (regular)
+export const XmarkRegular = makeIcon(XmarkRegularSvg) // FA: xmark (regular)
+export const DotSolid = makeIcon(DotSolidSvg) // FA: dot (solid)
+export const PaperPlaneTopSolid = makeIcon(PaperPlaneTopSolidSvg) // FA: paper-plane-top (solid)
 export const CircleUser = makeIcon(CircleUserSvg) // FA: circle-user
 export const CircleInfo = makeIcon(CircleInfoSvg) // FA: circle-info
 export const Clock = makeIcon(ClockSvg)

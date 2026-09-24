@@ -20,6 +20,7 @@ import {
   writeDefaultDashboardVersion,
   DISCOVERABILITY_DASHBOARD_VERSIONS,
   defaultDiscoverabilityVersionFor,
+  isAtlasCompassNavVersion,
   type DashboardVersionId,
 } from '@/data/dashboardVersions'
 import {
@@ -47,6 +48,12 @@ const BROWSER_CHROME_H = 38
  * is a consequence of the artwork, not a layout preference.
  */
 const MOBILE_LOGO_HEIGHT = 35
+/** Atlas/Compass header depth and logo height — see `atlasSlimHeader`. */
+const ATLAS_HEADER_HEIGHT = 60
+// 52 → 44 → 40 → 36 (2026-09-24, three reductions: 15%, then 10%, then 10%).
+// 36px tall is ~98px wide — JUST clear of the brand guide's 95px minimum
+// width. The next step down (a further 10% → 32px, ~87 wide) would cross it.
+const ATLAS_LOGO_HEIGHT = 36
 
 export function Header() {
   const {
@@ -101,6 +108,14 @@ export function Header() {
   // hamburger menu (the shell renders the drawer; this opens it).
   const device = useDeviceFrame().device
   const mobile = device === 'mobile'
+  // Atlas/Compass Global Navigation's slimmer header (2026-09-24, the direct
+  // ask): 60px deep, not 72, and the logo smaller (52 → 44 → 40 → 36px tall,
+  // ~98px wide — just clear of the brand guide's 95px minimum width). Desktop only;
+  // every other version keeps 72 / 52. `PlatformShell` reads the same rule
+  // to pin its rails under it.
+  const atlasSlimHeader = platformNav && !mobile && isAtlasCompassNavVersion(rebrandVersion)
+  const headerHeight = atlasSlimHeader ? ATLAS_HEADER_HEIGHT : 72
+  const desktopLogoHeight = atlasSlimHeader ? ATLAS_LOGO_HEIGHT : 52
   // Demo frame: the shell renders inside a browser-style window (see
   // DeviceFrame). Inject the window chrome (traffic lights + URL) just above
   // the white app header so it reads as the top of the window.
@@ -236,8 +251,8 @@ export function Header() {
         // the utility is purged from the production CSS (dev JIT masks this) and
         // the logo + utility icons collapse to the left in prod. Inline style is
         // build-safe.
-        className={`flex items-center${platformNav ? '' : ' mx-auto'}`}
-        style={{ height: 72, maxWidth: 1440, padding: '0 24px', width: '100%', justifyContent: 'space-between' }}
+        className={`flex items-center${platformNav ? '' : ' mx-auto'}${atlasSlimHeader ? ' cre-atlas-header' : ''}`}
+        style={{ height: headerHeight, maxWidth: 1440, padding: '0 24px', width: '100%', justifyContent: 'space-between' }}
       >
         <div className="flex items-center" style={{ gap: 8, minWidth: 0 }}>
           {/* Mobile rebrand: a hamburger opens the nav drawer (the shell owns
@@ -264,11 +279,11 @@ export function Header() {
               `brandFullName` is the same string the Switch Account panel shows. */}
           {noHeaderNav ? (
             <span aria-label={logoLabel} style={{ minWidth: 0 }}>
-              <Logo height={platformNav ? (mobile ? MOBILE_LOGO_HEIGHT : 52) : 40} />
+              <Logo height={platformNav ? (mobile ? MOBILE_LOGO_HEIGHT : desktopLogoHeight) : 40} />
             </span>
           ) : (
             <Link to={logoHref} aria-label={logoLabel} style={{ minWidth: 0 }}>
-              <Logo height={platformNav ? (mobile ? MOBILE_LOGO_HEIGHT : 52) : 40} />
+              <Logo height={platformNav ? (mobile ? MOBILE_LOGO_HEIGHT : desktopLogoHeight) : 40} />
             </Link>
           )}
         </div>

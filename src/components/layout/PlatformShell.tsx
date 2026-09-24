@@ -72,6 +72,18 @@ import {
   type PlatformSection,
 } from './PlatformSideNav'
 import { AtlasCompassSideNav } from './AtlasCompassSideNav'
+import { AtlasCourseSideNav } from './AtlasCourseSideNav'
+import { AtlasCompassCourseRail } from './AtlasCompassCourseRail'
+import { AtlasCompassPlayerBar } from './AtlasCompassPlayerBar'
+import { AtlasCompassRubiRail } from './AtlasCompassRubiRail'
+import { AtlasCompassCourseFooter } from './AtlasCompassCourseFooter'
+
+/* The Compass player controls bar's height — 11 + 38 + 11 padding and pills,
+   plus its 1px rule (Figma 49:2963). The Rubi rail pins at this offset below
+   the rail top, so the two stack without a gap or an overlap. */
+const COMPASS_PLAYER_BAR_HEIGHT = 61
+import { useAtlasCourse } from './useAtlasCourse'
+import { CompassCourseOverview } from '@/components/compass/CompassCourseOverview'
 
 /**
  * Elite-only platform shell (the `platform-left-nav` flag). Renders on
@@ -100,7 +112,12 @@ const MEMBERSHIP_MAP: Record<string, string> = {
   'm-more': 'more',
 }
 
-import { dashboardLayoutForVersion, hiddenRailSectionsFor } from '@/components/layout/dashboardRail'
+import {
+  atlasCoursePageFor,
+  dashboardLayoutForVersion,
+  hiddenRailSectionsFor,
+  type AtlasCoursePageId,
+} from '@/components/layout/dashboardRail'
 
 const VALID_SECTIONS: PlatformSection[] = [
   'dashboard',
@@ -244,6 +261,10 @@ function PlatformShellBody() {
    * whether it is per-browser or per-account; this is session-local until
    * someone asks for that.
    */
+  // The Compass Rubi right rail (Figma 49:3053) — open by default on the
+  // Compass Course page, closed by its own × and toggled by the player bar's
+  // Rubi button. Session-local, like the rail collapse below.
+  const [rubiOpen, setRubiOpen] = useState(true)
   const [collapseOverride, setCollapseOverride] = useState<{
     /** The launcher's course id, or `null` for the dashboard. */
     scope: string | null
@@ -263,7 +284,9 @@ function PlatformShellBody() {
         ? collapseOverride.collapsed
         : launcherOpen
   const railActive: PlatformSection = launcherOpen ? 'profile' : active
-  const launcherBackLabel = SECTION_TITLES[active]
+  // Via `titleFor` so the Course section's back link names its sub-page
+  // ("Back to Overview"), matching the heading the learner just left.
+  const launcherBackLabel = titleFor(active, false, params.get('coursePage'))
   // Selecting a rail item closes any open launcher + writes the section to the
   // URL (Dashboard drops the param so the logo's `/dashboard-rebrand` reads as
   // Home). `replace` keeps history clean — the same in-place feel as before.
@@ -275,6 +298,29 @@ function PlatformShellBody() {
         const next = new URLSearchParams(prev)
         if (id === 'dashboard') next.delete('section')
         else next.set('section', id)
+        // The Course page's sub-page belongs to that page: leaving it drops the
+        // param, so the next visit lands on Overview rather than wherever the
+        // learner last was inside a course they have since left.
+        next.delete('coursePage')
+        return next
+      },
+      { replace: true },
+    )
+  }
+  // The Atlas COURSE rail's sub-pages (Figma 49:3536) — `?coursePage=` inside
+  // the `course` section. Overview drops the param, as Home drops `section`.
+  const coursePage = atlasCoursePageFor(params.get('coursePage')).id
+  // An actual Compass LMS course page — the course rail's "Course" row. It
+  // gets the Compass rail (Figma 49:2922) instead of the Atlas course rail.
+  const compassCourseRail = atlasNav && active === 'course' && coursePage === 'course'
+  const selectCoursePage = (id: AtlasCoursePageId) => {
+    launcher.close()
+    resourceLauncher.close()
+    setParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        if (id === 'overview') next.delete('coursePage')
+        else next.set('coursePage', id)
         return next
       },
       { replace: true },
@@ -496,7 +542,11 @@ function PlatformShellBody() {
   // (handled in Header) and the rail pins right under the 72px header (top:72)
   // instead of below bar+header (112) — no gap, header stays fixed to the top.
   const chromeOff = params.get('chrome') === 'off'
-  const railTop = chromeOff ? 72 : 112
+  // The header is 60px on Atlas/Compass (2026-09-24), 72 everywhere else —
+  // the same rule `Header` applies. Everything pinned under it (the rails, the
+  // Compass player bar, the Rubi rail) reads this, so they move up together.
+  const headerHeight = atlasNav ? 60 : 72
+  const railTop = (chromeOff ? 0 : 40) + headerHeight
   // `?focus=1` — the locked "kiosk" share view: collapse the left rail so the
   // page is a single content column with no way to navigate to other sections.
   // (The header's Cart / Account / hamburger + logo link are also neutralized —
@@ -552,7 +602,11 @@ function PlatformShellBody() {
           // Rail right border — transparent in every mode (the rail blends
           // into the content pane); kept as a token hook in case a separator
           // is wanted later.
-          borderRight: atlasNav
+          // The Compass rail's own rule is the design's #d9d9d9, a shade apart
+          // from the Atlas rail's #dfe3eb.
+          borderRight: compassCourseRail
+            ? '1px solid var(--color-compass-rail-rule)'
+            : atlasNav
             ? '1px solid var(--color-atlas-nav-rule)'
             : '1px solid var(--color-nav-border)',
         }}
@@ -601,7 +655,26 @@ function PlatformShellBody() {
               already blanks the rail's active state, so the two cannot get out
               of step: a rail that highlighted nothing AND stayed full width
               would be the worst of both. */}
-          {atlasNav ? (
+          {/* On Atlas, the COURSE page swaps the rail for the course's own
+              (Figma 49:3536); its breadcrumb's home icon is the way back. Keyed
+              on `active`, not `railActive`: the launcher opening over the
+              course blanks the rail's highlight, and must not swap the rail. */}
+          {/* COMPASS LMS COURSE LEFT RAIL NAVIGATION (Figma 49:2922) — on the
+              course's own "Course" page, i.e. an actual Compass course page.
+              The ONLY page using it today; see `AtlasCompassCourseRail`. */}
+          {compassCourseRail ? (
+            <AtlasCompassCourseRail
+              onHome={() => handleSelect('dashboard')}
+              onOverview={() => selectCoursePage('overview')}
+              onGetHelp={() => handleSelect('support')}
+            />
+          ) : atlasNav && active === 'course' ? (
+            <AtlasCourseSideNav
+              page={coursePage}
+              onSelectPage={selectCoursePage}
+              onHome={() => handleSelect('dashboard')}
+            />
+          ) : atlasNav ? (
             <AtlasCompassSideNav active={railActive} onSelect={handleSelect} />
           ) : (
             <PlatformSideNav
@@ -635,7 +708,29 @@ function PlatformShellBody() {
           wrapped in `SectionShell`, which owns the uniform 40px gutter + the
           rail-matched title. When a course launcher is open, it replaces the
           section in place (the rail stays). */}
-      <div style={{ minWidth: 0 }}>
+      {/* On the Compass Course page the column is a flex COLUMN, so the player
+          area below the bar can stretch to the grid row's full height — the
+          footer's container then reaches the page's base and the footer stays
+          pegged to it at the end of the scroll (it rode up 48px before). */}
+      <div
+        style={
+          compassCourseRail
+            ? { minWidth: 0, display: 'flex', flexDirection: 'column' }
+            : { minWidth: 0 }
+        }
+      >
+        {/* COMPASS COURSE PLAYER CONTROLS BAR (Figma 49:2963) — under the page
+            header, right of the rail, pinned at the rail's own top so the two
+            stay level as the lesson scrolls. Only on the Compass Course page,
+            the course player; see `AtlasCompassPlayerBar`. */}
+        {compassCourseRail ? (
+          <AtlasCompassPlayerBar
+            stickyTop={railTop}
+            rubiOpen={rubiOpen}
+            onRubi={() => setRubiOpen((open) => !open)}
+            onClose={() => selectCoursePage('overview')}
+          />
+        ) : null}
         {launcher.courseId ? (
           <CourseLauncherView
             courseId={launcher.courseId}
@@ -647,6 +742,51 @@ function PlatformShellBody() {
             resourceId={resourceLauncher.resourceId}
             onBack={resourceLauncher.close}
           />
+        ) : compassCourseRail ? (
+          /* The course content with the RUBI RIGHT RAIL beside it, both under
+             the player bar. The rail pins at the bar's bottom edge
+             (`COMPASS_PLAYER_BAR_HEIGHT`) and fills the rest of the viewport. */
+          /* `flex: 1` fills the column below the bar; `stretch` hands that
+             height to the content side (the Rubi slot keeps its own pinned
+             height via `alignSelf: flex-start`). */
+          <div style={{ display: 'flex', alignItems: 'stretch', flex: '1 1 auto' }}>
+            {/* At least the window's remaining height, as a column, so the
+                navigation footer sits at the bottom of the window even when
+                the lesson is short — and stays pinned there when it is long. */}
+            <div
+              style={{
+                flex: '1 1 0',
+                minWidth: 0,
+                display: 'flex',
+                flexDirection: 'column',
+                minHeight: `calc(100vh - ${railTop + COMPASS_PLAYER_BAR_HEIGHT}px)`,
+                // The course content sits on the Compass Overview's warm page
+                // (`--color-compass-page`, #f8f6f3) — one surface for a
+                // course's pages (2026-09-24). The footer keeps its own white.
+                background: 'var(--color-compass-page)',
+              }}
+            >
+              <div style={{ flex: '1 1 auto' }}>
+                <SectionPanel
+                  active={active}
+                  isMember={isMember}
+                  onSelect={handleSelect}
+                  dashboardLayout={dashboardLayout}
+                  onOpenResource={resourceLauncher.open}
+                  onOpenLearningPathDetail={openLearningPathDetail}
+                />
+              </div>
+              {/* COMPASS COURSE NAVIGATION FOOTER (Figma 31:1221). */}
+              <AtlasCompassCourseFooter />
+            </div>
+            {/* Always mounted here, so it can slide OUT as well as in; `open`
+                drives the motion. */}
+            <AtlasCompassRubiRail
+              open={rubiOpen}
+              stickyTop={railTop + COMPASS_PLAYER_BAR_HEIGHT}
+              onClose={() => setRubiOpen(false)}
+            />
+          </div>
         ) : (
           <SectionPanel
             active={active}
@@ -1135,8 +1275,17 @@ const ACCOUNT_SECTION_GUTTER = 24
 /** Section title, pluralizing "Learning Path" → "Learning Paths" only when the
  *  V2 multi-path landing is in play (matches the rail label). V1 (single path +
  *  Switch) always reads the singular. */
-function titleFor(active: PlatformSection, pluralLP: boolean): string {
+function titleFor(
+  active: PlatformSection,
+  pluralLP: boolean,
+  coursePageParam: string | null = null,
+): string {
   if (active === 'learning-path' && pluralLP) return 'Learning Paths'
+  // The Course section is titled by the SUB-PAGE you are on (2026-09-22) —
+  // "Overview" on landing, "Flashcards" after picking that row — so the page
+  // heading and the course rail's breadcrumb name the same place. "Course" is
+  // the section; nobody is ever on a page called that.
+  if (active === 'course') return atlasCoursePageFor(coursePageParam).label
   return SECTION_TITLES[active]
 }
 
@@ -1368,7 +1517,7 @@ function SectionShell({
             color: 'var(--color-text-primary)',
           }}
         >
-          {titleFor(active, pluralLP)}
+          {titleFor(active, pluralLP, shellParams.get('coursePage'))}
         </h1>
       )}
       {children}
@@ -1393,6 +1542,35 @@ function SectionPanel({
   /** Opens the Learning Path section drilled into a specific path's detail. */
   onOpenLearningPathDetail?: (pathId: string) => void
 }) {
+  const [panelParams, setPanelParams] = useSearchParams()
+  const atlasCourse = useAtlasCourse()
+  const { user } = useAccount()
+  // The Compass course OVERVIEW (Figma 44:2211) — full-bleed on its own warm
+  // page, so outside SectionShell like Membership below; it carries its own
+  // (visually hidden) "Overview" <h1>. Atlas/Compass version only.
+  if (
+    active === 'course' &&
+    isAtlasCompassNavVersion(panelParams.get('version') ?? '') &&
+    atlasCoursePageFor(panelParams.get('coursePage')).id === 'overview'
+  ) {
+    const openCoursePage = (page: AtlasCoursePageId) =>
+      setPanelParams(
+        (prev) => {
+          const next = new URLSearchParams(prev)
+          next.set('coursePage', page)
+          return next
+        },
+        { replace: true },
+      )
+    return (
+      <CompassCourseOverview
+        courseTitle={atlasCourse.title}
+        firstName={user.firstName}
+        onBegin={() => openCoursePage('course')}
+        onLearnMore={() => openCoursePage('rubi-insights')}
+      />
+    )
+  }
   // The ported "Membership" page owns its own full-bleed hero, so it renders
   // outside SectionShell (no 40px gutter, no shell title).
   if (active === 'membership') return <MembershipStandalonePage isMember={isMember} onOpenResource={onOpenResource} />

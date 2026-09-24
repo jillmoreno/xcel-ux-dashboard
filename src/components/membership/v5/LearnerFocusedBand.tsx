@@ -82,6 +82,12 @@ type Props = {
   onViewAll?: () => void
   /** Opens the Learning Path detail panel from "View Requirements". */
   onViewDetails?: () => void
+  /**
+   * Where the Jump Back In card's Resume goes. Omitted → the in-shell course
+   * launcher, as before. The Atlas/Compass version passes the Compass Course
+   * page (2026-09-23), the course player that version builds.
+   */
+  onResume?: () => void
   /** Opens the full Learning Path page for this path (in-shell section switch),
    *  from the clickable title. Falls back to `onViewDetails` when unset. */
   onOpenLearningPath?: (pathId: string) => void
@@ -332,6 +338,7 @@ export function LearnerFocusedBand({
   showViewAll = false,
   onViewAll,
   onViewDetails,
+  onResume,
   onOpenLearningPath,
   bleed = false,
   statusOverride,
@@ -675,7 +682,7 @@ export function LearnerFocusedBand({
           Math.max(1, cats.findIndex((c) => c.completed < c.required) + 1 || cats.length),
         )}
         chapterTitle={NY_LH_CURRENT_CHAPTER}
-        onResume={(id) => launcher.open(id)}
+        onResume={onResume ? () => onResume() : (id) => launcher.open(id)}
       />
     ) : null
   // Shared with the Learning Path detail sheet's "Time Remaining", so the band

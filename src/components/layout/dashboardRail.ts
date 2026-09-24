@@ -46,6 +46,36 @@ export const ATLAS_RAIL_GROUPS: readonly {
 ]
 
 /**
+ * The COURSE rail — what the Atlas/Compass version's left rail becomes while
+ * the Course page is open. Figma 49:3536, 2026-09-22.
+ *
+ * These are SUB-PAGES OF THE COURSE, addressed by `?coursePage=` inside the
+ * `course` section, not shell sections: "Study Plan" and "Rubi Insights" here
+ * mean this course's, and routing them to the global sections would swap the
+ * rail back out from under the learner mid-course. Every one is blank for now.
+ *
+ * The design labels one row "Resources??". The question marks are the
+ * designer's open question, not copy, so the row reads "Resources".
+ */
+export const ATLAS_COURSE_PAGES = [
+  { id: 'overview', label: 'Overview' },
+  { id: 'study-plan', label: 'Study Plan' },
+  { id: 'course', label: 'Course' },
+  { id: 'flashcards', label: 'Flashcards' },
+  { id: 'exam-simulator', label: 'Exam Simulator' },
+  { id: 'progress', label: 'Progress' },
+  { id: 'resources', label: 'Resources' },
+  { id: 'rubi-insights', label: 'Rubi Insights' },
+] as const
+
+export type AtlasCoursePageId = (typeof ATLAS_COURSE_PAGES)[number]['id']
+
+/** `?coursePage=` → a known page, else Overview (the design's landing page). */
+export function atlasCoursePageFor(param: string | null): (typeof ATLAS_COURSE_PAGES)[number] {
+  return ATLAS_COURSE_PAGES.find((p) => p.id === param) ?? ATLAS_COURSE_PAGES[0]
+}
+
+/**
  * Rail rows the TESTING dashboard version drops (2026-09-21). See the note at
  * `trimmedRailSections` for why this is a layout property rather than four
  * `NAV_SECTION_FLAGS` edits.

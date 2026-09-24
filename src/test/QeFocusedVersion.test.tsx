@@ -251,20 +251,289 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
     )
   })
 
-  it('Course opens a new, BLANK Course page', () => {
+  it('Course lands on the course Overview; the other sub-pages are still blank', () => {
     const { container } = renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav')
     fireEvent.click(screen.getByRole('button', { name: 'Course' }))
-    const nav = screen.getByRole('navigation', { name: 'Primary' })
-    expect(within(nav).getByRole('button', { name: 'Course' })).toHaveAttribute(
+    // Opening it swaps the rail for the course's own, landing on Overview.
+    expect(
+      within(screen.getByRole('navigation', { name: 'Course' })).getByRole('button', {
+        name: 'Overview',
+      }),
+    ).toHaveAttribute('aria-current', 'page')
+    // Titled by the sub-page it lands on, not by the section.
+    expect(screen.getByRole('heading', { level: 1, name: 'Overview' })).toBeTruthy()
+    // Overview is the Compass course Overview page now (Figma 44:2211)…
+    expect(container.querySelector('.cre-compass-overview')).toBeTruthy()
+    // It is not My Courses.
+    expect(container.textContent).not.toMatch(/My Courses/)
+    // …while every other sub-page is still its title and nothing else.
+    fireEvent.click(
+      within(screen.getByRole('navigation', { name: 'Course' })).getByRole('button', {
+        name: 'Flashcards',
+      }),
+    )
+    const h1 = screen.getByRole('heading', { level: 1, name: 'Flashcards' })
+    expect(h1.closest('section')!.children).toHaveLength(1)
+  })
+
+  it('the Overview page is the Compass course Overview (Figma 44:2211)', () => {
+    const { container } = renderShell(
+      '/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=course',
+    )
+    const page = container.querySelector<HTMLElement>('.cre-compass-overview')!
+    // Full-bleed on its own page, not inside the section frame's padding.
+    expect(page.closest('section')).toBeNull()
+    // The learner's real name and course.
+    expect(within(page).getByText(/Welcome, Alicia/)).toBeTruthy()
+    expect(
+      within(page).getByRole('heading', { level: 2, name: 'New York Life and Health Pre-licensing' }),
+    ).toBeTruthy()
+    // Its four blocks.
+    for (const name of ['Your course', 'Rubi suggests']) {
+      expect(within(page).getByLabelText(name)).toBeTruthy()
+    }
+    for (const name of ['Where you are', 'Your assignments', 'Rubi insights']) {
+      expect(within(page).getByRole('heading', { level: 2, name })).toBeTruthy()
+    }
+    // The assignments are a real table with column headers.
+    expect(within(page).getAllByRole('columnheader').map((th) => th.textContent)).toEqual([
+      'Assignment',
+      'Readiness',
+      'Suggested',
+    ])
+    expect(within(page).getAllByRole('row')).toHaveLength(3)
+    // Three learning tips.
+    expect(within(page).getAllByText(/Learning tip/)).toHaveLength(3)
+  })
+
+  it('Begin Course opens the Compass Course page; Learn more opens Rubi Insights', () => {
+    const { container } = renderShell(
+      '/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=course',
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Begin Course/ }))
+    expect(container.querySelector('.cre-compass-rail')).toBeTruthy()
+    fireEvent.click(
+      within(screen.getByRole('navigation', { name: 'Breadcrumb' })).getByRole('button', {
+        name: 'Overview',
+      }),
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Learn more' }))
+    expect(screen.getByRole('heading', { level: 1, name: 'Rubi Insights' })).toBeTruthy()
+  })
+
+  it('the Compass Course page carries the player controls bar — and only that page', () => {
+    const { unmount } = renderShell(
+      '/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=course&coursePage=course',
+    )
+    const bar = screen.getByRole('toolbar', { name: 'Course player controls' })
+    // The section is the rail's current one, its progress derived from its
+    // lessons (1 of 7 done), so the bar and the rail agree.
+    expect(within(bar).getByText('Chapter 1: Basic Principles of Life and Health Insurance')).toBeTruthy()
+    expect(within(bar).getByRole('progressbar')).toHaveAttribute('aria-valuenow', '14')
+    // Close returns to the course Overview.
+    fireEvent.click(within(bar).getByRole('button', { name: 'Close the course player' }))
+    expect(screen.queryByRole('toolbar', { name: 'Course player controls' })).toBeNull()
+    expect(screen.getByRole('heading', { level: 1, name: 'Overview' })).toBeTruthy()
+    unmount()
+    renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=course&coursePage=flashcards')
+    expect(screen.queryByRole('toolbar', { name: 'Course player controls' })).toBeNull()
+  })
+
+  it('the Compass Course page carries the Rubi right rail, toggled from the player bar', () => {
+    renderShell(
+      '/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=course&coursePage=course',
+    )
+    const bar = screen.getByRole('toolbar', { name: 'Course player controls' })
+    const rubiButton = within(bar).getByRole('button', { name: 'Rubi' })
+    // Open by default, and the bar says so.
+    expect(screen.getByRole('complementary', { name: 'Chat with Rubi' })).toBeTruthy()
+    expect(rubiButton).toHaveAttribute('aria-pressed', 'true')
+    // Its own close…
+    fireEvent.click(screen.getByRole('button', { name: 'Close Rubi' }))
+    expect(screen.queryByRole('complementary', { name: 'Chat with Rubi' })).toBeNull()
+    expect(rubiButton).toHaveAttribute('aria-pressed', 'false')
+    // …and the bar brings it back.
+    fireEvent.click(rubiButton)
+    expect(screen.getByRole('complementary', { name: 'Chat with Rubi' })).toBeTruthy()
+  })
+
+  it('the Rubi rail is only on the Compass Course page', () => {
+    renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=course')
+    expect(screen.queryByRole('complementary', { name: 'Chat with Rubi' })).toBeNull()
+  })
+
+  it("Home's Resume opens the Compass Course page on Atlas — and only there", () => {
+    const { container, unmount } = renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav')
+    fireEvent.click(screen.getByRole('button', { name: /^Resume/ }))
+    expect(container.querySelector('.cre-compass-rail')).toBeTruthy()
+    expect(screen.getByRole('toolbar', { name: 'Course player controls' })).toBeTruthy()
+    unmount()
+    // Testing shares the home layout but has no Compass course page: its
+    // Resume keeps the in-shell launcher.
+    const testing = renderShell('/dashboard-rebrand?version=discoverability-testing')
+    fireEvent.click(screen.getByRole('button', { name: /^Resume/ }))
+    expect(testing.container.querySelector('.cre-compass-rail')).toBeNull()
+  })
+
+  it('the Compass Course page ends in the navigation footer, its steps from the TOC', () => {
+    const { unmount } = renderShell(
+      '/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=course&coursePage=course',
+    )
+    const nav = screen.getByRole('navigation', { name: 'Course navigation' })
+    // Either side of the rail's current lesson (Nature of Insurance).
+    expect(within(nav).getByRole('button', { name: 'Previous: Exam: Basic Principles of Life and Health Insurance' })).toBeDisabled()
+    expect(within(nav).getByRole('button', { name: 'Next: Exam: Nature of Insurance' })).toBeDisabled()
+    unmount()
+    renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=course')
+    expect(screen.queryByRole('navigation', { name: 'Course navigation' })).toBeNull()
+  })
+
+  it("the rail's % Complete matches the player bar's section progress", () => {
+    renderShell(
+      '/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=course&coursePage=course',
+    )
+    const barPct = within(screen.getByRole('toolbar', { name: 'Course player controls' }))
+      .getByRole('progressbar')
+      .getAttribute('aria-valuenow')
+    expect(screen.getByText(`${barPct}% Complete`)).toBeTruthy()
+  })
+
+  it('the course content sits on the same warm page as the Overview', () => {
+    renderShell(
+      '/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=course&coursePage=course',
+    )
+    const column = screen.getByRole('navigation', { name: 'Course navigation' }).parentElement!
+    expect(column.style.background).toBe('var(--color-compass-page)')
+  })
+
+  it("Atlas/Compass pins its player bar under a 60px header (100 = 40 + 60)", () => {
+    // The header is 60px on this version and 72 elsewhere; the shell's pin
+    // offsets are derived from it, so the bar and the rails move with it.
+    renderShell(
+      '/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=course&coursePage=course',
+    )
+    expect(screen.getByRole('toolbar', { name: 'Course player controls' }).style.top).toBe('100px')
+  })
+
+  it('the Overview page appears only on the Atlas/Compass version', () => {
+    const { container } = renderShell('/dashboard-rebrand?version=discoverability-qe-focused&section=course')
+    expect(container.querySelector('.cre-compass-overview')).toBeNull()
+  })
+
+  it('the Course page swaps in the COURSE rail (Figma 49:3536)', () => {
+    renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=course')
+    // The Atlas rail is gone — its Primary nav and its captions.
+    expect(screen.queryByRole('navigation', { name: 'Primary' })).toBeNull()
+    expect(screen.queryByText('My Learning')).toBeNull()
+    const course = screen.getByRole('navigation', { name: 'Course' })
+    expect(within(course).getAllByRole('button').map((b) => b.textContent)).toEqual([
+      'Overview',
+      'Study Plan',
+      'Course',
+      'Flashcards',
+      'Exam Simulator',
+      'Progress',
+      'Resources',
+      'Rubi Insights',
+    ])
+    expect(within(course).getByRole('button', { name: 'Overview' })).toHaveAttribute(
       'aria-current',
       'page',
     )
-    const h1 = screen.getByRole('heading', { level: 1, name: 'Course' })
-    // The title and nothing else — the page is blank until it is designed.
-    const section = h1.closest('section')!
-    expect(section.children).toHaveLength(1)
-    // It is not My Courses.
-    expect(container.textContent).not.toMatch(/My Courses/)
+    // The learner's real course, not the design's placeholder title.
+    // In the rail as well as on the Overview's course card.
+    expect(within(course.parentElement!).getByText('New York Life and Health Pre-licensing')).toBeTruthy()
+    expect(screen.queryByText(/Longer Course Title/)).toBeNull()
+  })
+
+  it('the breadcrumb names the sub-page you are on', () => {
+    renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=course')
+    const crumbs = screen.getByRole('navigation', { name: 'Breadcrumb' })
+    expect(within(crumbs).getByText('Overview')).toHaveAttribute('aria-current', 'page')
+    fireEvent.click(
+      within(screen.getByRole('navigation', { name: 'Course' })).getByRole('button', {
+        name: 'Exam Simulator',
+      }),
+    )
+    expect(within(crumbs).getByText('Exam Simulator')).toHaveAttribute('aria-current', 'page')
+    // …and the page heading follows it, so the two always name one place.
+    expect(screen.getByRole('heading', { level: 1, name: 'Exam Simulator' })).toBeTruthy()
+    expect(screen.queryByRole('heading', { level: 1, name: 'Course' })).toBeNull()
+  })
+
+  it("the breadcrumb's home icon goes back to Home and the Atlas rail", () => {
+    renderShell(
+      '/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=course&coursePage=flashcards',
+    )
+    const crumbs = screen.getByRole('navigation', { name: 'Breadcrumb' })
+    fireEvent.click(within(crumbs).getByRole('button', { name: 'Home' }))
+    const nav = screen.getByRole('navigation', { name: 'Primary' })
+    expect(within(nav).getByRole('button', { name: 'Home' })).toHaveAttribute(
+      'aria-current',
+      'page',
+    )
+    expect(screen.queryByRole('navigation', { name: 'Breadcrumb' })).toBeNull()
+  })
+
+  it('the course\'s own Course page gets the COMPASS LMS rail (Figma 49:2922)', () => {
+    const { container } = renderShell(
+      '/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=course&coursePage=course',
+    )
+    expect(container.querySelector('.cre-compass-rail')).toBeTruthy()
+    // It replaces the Atlas course rail — the sub-page list is gone.
+    expect(screen.queryByRole('navigation', { name: 'Course' })).toBeNull()
+    expect(screen.getByRole('navigation', { name: 'Table of Contents' })).toBeTruthy()
+    const crumbs = screen.getByRole('navigation', { name: 'Breadcrumb' })
+    expect(within(crumbs).getByText('Course')).toHaveAttribute('aria-current', 'page')
+    // Real course, real progress — the same figure Home prints, not the
+    // design's "5% Complete".
+    expect(screen.getByText('New York Life and Health Pre-licensing')).toBeTruthy()
+    expect(screen.queryByText('5% Complete')).toBeNull()
+    expect(screen.getByText(/^\d+% Complete$/)).toBeTruthy()
+  })
+
+  it('is ONLY on that page — Overview and the other sub-pages keep the Atlas course rail', () => {
+    for (const page of ['', '&coursePage=flashcards']) {
+      const { container, unmount } = renderShell(
+        `/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=course${page}`,
+      )
+      expect(container.querySelector('.cre-compass-rail')).toBeNull()
+      unmount()
+    }
+  })
+
+  it('its breadcrumb: Overview goes back to the course Overview, Home goes Home', () => {
+    const { container } = renderShell(
+      '/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=course&coursePage=course',
+    )
+    fireEvent.click(
+      within(screen.getByRole('navigation', { name: 'Breadcrumb' })).getByRole('button', {
+        name: 'Overview',
+      }),
+    )
+    expect(container.querySelector('.cre-compass-rail')).toBeNull()
+    expect(screen.getByRole('heading', { level: 1, name: 'Overview' })).toBeTruthy()
+    fireEvent.click(
+      within(screen.getByRole('navigation', { name: 'Course' })).getByRole('button', {
+        name: 'Course',
+      }),
+    )
+    fireEvent.click(
+      within(screen.getByRole('navigation', { name: 'Breadcrumb' })).getByRole('button', {
+        name: 'Home',
+      }),
+    )
+    expect(
+      within(screen.getByRole('navigation', { name: 'Primary' })).getByRole('button', {
+        name: 'Home',
+      }),
+    ).toHaveAttribute('aria-current', 'page')
+  })
+
+  it('keeps the Atlas rail on every other Atlas page', () => {
+    renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=study-plan')
+    expect(screen.getByRole('navigation', { name: 'Primary' })).toBeTruthy()
+    expect(screen.queryByRole('navigation', { name: 'Breadcrumb' })).toBeNull()
   })
 
   it('leaves every other version on the shared rail', () => {

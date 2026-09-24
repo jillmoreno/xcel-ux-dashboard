@@ -1,4 +1,4 @@
-import type { DashboardLayout } from '@/data/dashboardVersions'
+import { isAtlasCompassNavVersion, type DashboardLayout } from '@/data/dashboardVersions'
 import {
   createContext,
   useContext,
@@ -388,7 +388,24 @@ export function MembershipOverview({
   // Browse Catalog (discovery empty state) → open the Course Catalog rail
   // section in place, preserving the shell's other params (per the "stay in the
   // rebrand shell" nav convention). Mirrors PlatformShell's handleSelect.
-  const [, setShellParams] = useSearchParams()
+  const [shellParams, setShellParams] = useSearchParams()
+  // On the Atlas/Compass version, Resume opens the COMPASS COURSE PAGE — the
+  // course player that version builds (2026-09-23) — instead of the in-shell
+  // launcher's placeholder. Keyed on the URL's version because the layout this
+  // component is handed (`testing`) is shared with the Testing version, which
+  // has no Compass course page.
+  const resumeToCompass = isAtlasCompassNavVersion(shellParams.get('version'))
+    ? () =>
+        setShellParams(
+          (prev) => {
+            const next = new URLSearchParams(prev)
+            next.set('section', 'course')
+            next.set('coursePage', 'course')
+            return next
+          },
+          { replace: true },
+        )
+    : undefined
   const browseCatalog = () => {
     setShellParams(
       (prev) => {
@@ -1236,6 +1253,9 @@ export function MembershipOverview({
       showViewAll={showViewAllPaths}
       onViewAll={openPathsPanel}
       onViewDetails={() => setDetailOpen(true)}
+      // Atlas/Compass only: Resume → the Compass Course page. Undefined
+      // elsewhere, so every other version keeps the in-shell launcher.
+      onResume={resumeToCompass}
       /*
        * NO `onOpenLearningPath` ON QE FOCUSED — removed 2026-09-16 at
        * Jillienne's request: **XCEL has no learning-path concept.** The band

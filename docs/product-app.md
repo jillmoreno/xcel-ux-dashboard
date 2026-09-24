@@ -1516,7 +1516,10 @@ that is how two copies of one home start to drift.
   Transcripts · Resources, then Support · Get Help. **Course** was added
   2026-09-22, after the Figma frame: a new `course` section (not `courses`,
   which is My Courses) whose page is deliberately BLANK — the shell's "Course"
-  title and an explicit `return null` body, until it is designed. Only the
+  title and an explicit `return null` body, until it is designed. The heading
+  is the SUB-PAGE's label, not "Course" (`titleFor`, 2026-09-22): "Overview" on
+  landing, and whatever row the course rail has selected after that — so the
+  heading, the breadcrumb and the launcher's "Back to …" link name one place. Only the
   Atlas rail links to it; it still resolves from `?section=course` anywhere. "Certificates & Transcripts" is the
   design's label for the existing `certificates` section, not a new one; the
   page's own heading still says "Certificates".
@@ -1537,6 +1540,265 @@ that is how two copies of one home start to drift.
   included — because an inline padding would beat the active row's
   `padding-left: 13px` (3px bar + 13 = the idle 16). **Dark values are not
   from the design**, which is light only.
+
+**On the Course page the rail is the COURSE's** (`AtlasCourseSideNav`, Figma
+49:3536, 2026-09-22) — it replaces the Atlas rail while `section=course`:
+
+- **A breadcrumb** — a home icon, "/", then the sub-page you are on. The home
+  icon is the only way out and goes to Home (clearing `coursePage` with it).
+  The last crumb is `aria-current` text, not a link to itself.
+- **The course title** — the learner's REAL path title, resolved as Home
+  resolves it (the Progress persona with a qualifying education type), not the
+  design's "…with a Longer Course Title" placeholder.
+- **Eight sub-pages** — Overview · Study Plan · Course · Flashcards · Exam
+  Simulator · Progress · Resources · Rubi Insights (`ATLAS_COURSE_PAGES` in
+  `dashboardRail.ts`), addressed by `?coursePage=` INSIDE the `course`
+  section. They are the course's own, so "Study Plan" and "Rubi Insights" do
+  NOT route to the global sections — that would swap the rail back out from
+  under the learner. **All eight are blank.** The design writes "Resources??";
+  the question marks are the designer's open question, so the row reads
+  "Resources".
+- **Two breadcrumb departures:** the current crumb is `#767676`, not `#777`
+  (4.48:1 on white misses AA at 11px; 4.54:1 does not), and it is Open Sans,
+  not the design's unloaded Source Sans 3. The separator is a text "/", because
+  FA's `slash-forward` is not vendored in `src/icons/`.
+
+**The course's Overview sub-page is the COMPASS COURSE OVERVIEW**
+(`CompassCourseOverview`, Figma 44:2211, 2026-09-23) — full-bleed on a warm
+`#f8f6f3` page, rendered by `SectionPanel` outside `SectionShell` the way
+Membership is, with its own visually hidden "Overview" `<h1>`. Atlas/Compass
+version only. Four blocks: a welcome line and the course card (three facts,
+the next lesson, **Begin Course** → the Compass Course page); **Where you are**
+(the readiness ring, drawn with the design's conic gradient, and a Rubi aside
+whose **Learn more** → the course's Rubi Insights page); **Your assignments**
+(a real `<table>`); and **Rubi insights** (three learning tips).
+
+- **IT IS THE DESIGN'S DAY-ONE STATE** (`COMPASS_OVERVIEW_DAY_ONE_FROM_DESIGN`
+  in `data/compassCourseOverviewFixtures.ts`): 0 of 42 lessons, "Day one",
+  "Not started", "After your check". Only the course title and the learner's
+  first name are real. **It does not follow the Progress control**, so beside
+  a rail reading "62% Complete" with Chapter 2 in progress, the body still says
+  day one — a known mismatch until the page has other states or a data source.
+  The "% of exam" weightings are the design's, not XCEL's published outline.
+- **Fonts map to what is loaded:** Inter → `--font-body` (Open Sans), Source
+  Serif → `--font-heading-serif` (the Georgia stack).
+- **Icons are the registry's:** FA Light `arrow-rotate-left` / `circle-question`
+  / `bullseye` for the tips, FA Solid `arrow-right` on the button (both new
+  files fetched at 7.3.1), and the product's `RubiLogo` for "Rubi suggests" in
+  place of the design's hexagon-and-star stand-in.
+- **Colours** are `--color-compass-page-*`. The Rubi orange `#b4552f` is 4.53:1
+  on the page — it clears AA, narrowly.
+
+**This version's header is 60px deep, not 72, and its logo smaller**
+(52 → 44 → 40 → 36px tall — 15%, then 10%, then 10% — ~98px wide, just clear
+of the brand's 95px minimum width; 2026-09-24), drawn 3px below the header's
+centre line (a transform, `.cre-atlas-header`). Desktop only, and ONLY on Atlas/Compass: `Header` checks the
+version, and `PlatformShell` derives `railTop` from the same 60/72 rule, so
+the rails, the Compass player bar (pinned at 100 = 40 + 60) and the Rubi rail
+(161) all move up together. Every other version keeps 72 / 52.
+Every header item's box is centred on its middle; the bell GLYPH is nudged
+down 2px (`.cre-atlas-header`) because FA's bell hangs its clapper below the
+body, which otherwise reads ~2px high beside the avatar and the name. The
+whole bell button (glyph AND unread count) then sits a further 2px low, at the
+designer's request — so the glyph is 4px down from its box in all.
+
+**Home's Resume opens the Compass Course page on this version** (2026-09-23).
+The Jump Back In card's Resume went to the in-shell course launcher (the
+"Compass Course content will live here" placeholder); `LearnerFocusedBand`
+takes an optional `onResume`, and `MembershipOverview` passes the Compass
+Course page (`section=course&coursePage=course`) when the URL's version is
+Atlas/Compass. Keyed on the version, not the layout, because the `testing`
+layout is shared with the Testing version, which has no Compass course page
+and keeps the launcher.
+
+**The Compass Course page carries the COMPASS COURSE PLAYER CONTROLS BAR**
+(`CompassPlayerBar`, Figma 49:2963, 2026-09-23) — a `role="toolbar"` at the
+top of the content column, under the page header and right of the rail,
+`position: sticky` at the rail's own top so the two stay level. Only on
+`section=course&coursePage=course`, via `layout/AtlasCompassPlayerBar`.
+
+- **Config-driven**, like the rail: exam date, days out, section, notes count
+  and one optional handler per action. **An action with no handler renders
+  disabled** — today only **Rubi** (→ the course's Rubi Insights page) and
+  **close** (→ the course Overview) have somewhere to go; Notes, "+ Demo",
+  search and settings are drawn as designed but inert.
+- **The section pill is derived** — the TOC's current section, its percentage
+  its lessons done ÷ total (1 of 7 → 14%), so it agrees with the rail's ticks.
+  The design is drawn at 0%. The track fills to the knob in the section ink;
+  unfilled above 0 it would read as a slider.
+- **The date pill states the Overview's facts** (December 15, 2026 · 27 Days
+  Out), not the design's "August 14 · 8 Days Out", so the course's pages agree.
+- **The TRACK gives way first, then the section NAME truncates** (2026-09-24).
+  The track shrinks from 260px to a 60px floor (`flex-shrink: 1000`); past that
+  the name ellipsizes, with the full name in a `title` and in the progressbar's
+  accessible name. "Chapter 1: Basic Principles of Life and Health Insurance"
+  needs both.
+- Icons: FA **Regular** `calendar`, `file-lines`, `plus`, `magnifying-glass`,
+  `gear`, `xmark` and **Solid** `dot`, fetched at 7.3.1 as `*-regular.svg` /
+  `dot-solid.svg` beside the registry's Light copies; Rubi is the product's
+  `RubiLogo`. Colours are `--color-compass-player-*`.
+
+**The Compass Course page's content sits on the Overview's warm page**
+(`--color-compass-page`, `#f8f6f3`, 2026-09-24) — one surface for a course's
+pages. The navigation footer keeps its own white.
+
+**The Compass Course page ends in the COURSE NAVIGATION FOOTER**
+(`CompassCourseFooter`, Figma 31:1221, 2026-09-23) — Previous left, "Next: …"
+right, on white under a `#e0dbcd` rule, `position: sticky; bottom: 0` at the
+foot of the course content column (left of the Rubi rail). The content
+column is a flex column with a `min-height` of the window's remaining height,
+so the footer sits at the window's bottom even on today's short page.
+
+- **Steps are derived from the TOC** (`layout/AtlasCompassCourseFooter`):
+  Previous is the lesson before the current one (Chapter 1), Next the lesson
+  after (Chapter 3) — or the next section at a section's end. The design's
+  "Next: Reading" names an activity TYPE the sample outline does not carry.
+- **Both are disabled** — no lesson has a page. A step with an `onSelect`
+  becomes live. Previous takes the design's disabled fade (40%); **Next stays
+  full `#1f1d18`** (2026-09-24, at the designer's request), matching the frame,
+  which draws Next solid — still `disabled`, with no pointer.
+- FA Light `chevron-left` (new, 7.3.1) and `chevron-right`. Colours are
+  `--color-compass-footer-*`.
+
+**The Compass Course page carries the RUBI RIGHT RAIL** ("Chat with Rubi",
+`CompassRubiRail`, Figma 49:3053, 2026-09-23) — a 380px `<aside>` right of the
+course content and below the player bar, `position: sticky` at the bar's
+bottom edge (`railTop + COMPASS_PLAYER_BAR_HEIGHT`, 61) and `calc(100vh -
+top)` tall, so the header and composer stay put and only the thread scrolls.
+Adapter: `layout/AtlasCompassRubiRail` (the design's copy).
+
+- **It slides in and out from the right** (2026-09-23): 320ms on an
+  ease-in-out cubic (`cubic-bezier(0.65, 0, 0.35, 1)`). It stays MOUNTED; a
+  sticky slot animates its width 380 ↔ 0 (so the course content widens and
+  narrows with it) while the panel inside slides `translateX` 0 ↔ 100%.
+  Closed it is `aria-hidden` + `inert`, and `visibility` flips hidden only
+  after the slide-out, so it neither takes focus off screen nor blinks out
+  early. Staying mounted keeps the conversation across close/reopen.
+  `prefers-reduced-motion` removes the motion.
+- **Open by default; its × closes it; the player bar's Rubi button toggles
+  it** (`aria-pressed`, and the design's filled Rubi button is that pressed
+  state). The Rubi button used to open the course's Rubi Insights page.
+- **No model is connected, and the rail says so.** A chip FILLS the input and
+  focuses it (it does not send — the learner decides what goes out); sending
+  appends the learner's message and a plain "Rubi isn't connected in this
+  prototype yet" note. Inventing Rubi's answers would put study advice on
+  screen that nobody wrote.
+- **Pinning needs content taller than the viewport.** With a real lesson it
+  pins at the bar's edge and fills to the window bottom (verified with a
+  2,500px stand-in). On today's BLANK page, inside the demo stage window, it
+  overruns the bottom and slides under the bar at the end of the scroll —
+  the same thing the left rail does there, since neither sticky height
+  counts the demo stage's chrome.
+- Icons: the product `RubiLogo` in the design red `#c4122e`, FA Regular `xmark`
+  for close (the design types "×"), FA Solid `paper-plane-top` for send
+  (fetched at 7.3.1). Colours are `--color-compass-rubi-*`.
+
+**On the course's own "Course" sub-page the rail is the COMPASS LMS COURSE
+LEFT RAIL NAVIGATION** (`CompassCourseRail`, Figma 49:2922, 2026-09-22) — the
+rail for ACTUAL Compass LMS course pages, i.e. the course player, as distinct
+from the Atlas dashboard's navigation.
+
+- **It is built for reuse, and used on one page.** `components/compass/`
+  holds the rail and its contract (`CompassCourseRail.types.ts`); it renders
+  only its `CompassCourseRailConfig` — breadcrumb, title, progress, table of
+  contents, resources — and resolves nothing. `layout/AtlasCompassCourseRail`
+  is the adapter that fills it for this page. A future Compass page writes its
+  own adapter and renders the same rail. **As of 2026-09-22 the only page that
+  uses it is `section=course&coursePage=course`.**
+- **Status drives everything status-shaped.** Each TOC entry is `done` /
+  `current` / `not-started`; the rail derives the icon, the weight, the
+  current-lesson fill, the collapsed "Done" note and the "Up next" note (first not-started
+  section after the current one) from that. Only the CURRENT section expands
+  onto the lesson spine. Every entry also states its status in words for
+  assistive tech; the current lesson is `aria-current="step"`.
+- **Restyled 2026-09-23 to the updated frame:** TOC labels in Medium (500);
+  the lesson SPINE carries progress (ink beside done and current lessons, beige
+  after); and not-started entries are MUTED — a beige ring or dot, lesson text
+  `#a2a2a2`, section text `#afb2b5`. **Those two greys miss AA** (2.56:1 and
+  2.16:1 on white) and are kept as the design's "not reached yet", with every
+  entry's status also stated in words. `--color-compass-rail-upcoming-*` is the
+  one place to raise them.
+- **Section rows follow the "TOC - Section Title" component** (Figma 13:22,
+  2026-09-23). Completed: 30px, solid check, Medium `#404040`. Active: 36px,
+  SemiBold with 16px leading, and it WRAPS (the design's 186px box — "Life
+  insurance policy types" takes two lines), with a 2px line running through
+  its dot so the "Done" bar above, this line and the lesson spine below are
+  one continuous line at one x. The active dot carries a **5px `#eceef0`
+  ring** (Figma 13:23 — measured off the design's 24px render, 5 + 14 + 5),
+  drawn as a box-shadow so it takes no layout room and paints over the line
+  where the line meets the dot; `--color-compass-rail-active-halo`. Not started: a `#cec0ac` dot and `#818181`
+  text (3.95:1 — better than before, still under AA). The section ink is
+  **`#3d5a73`** (`--color-compass-rail-section-ink`), a touch lighter than the
+  lessons' `#2d5872`; the two meet where the spine starts. Re-point one token at
+  the other for a single navy.
+- **Lesson rows follow the "TOC - Child Item" component** (Figma 13:38,
+  2026-09-23), with 15px marks. Current: a CLOCK (it was a ring) and the label
+  in the section ink `#3d5a73` on the `#eceef0` fill — Bold since 2026-09-24,
+  and **the design's "Now" marker was removed** the same day (the clock, the
+  weight and the fill carry it; assistive tech still hears "in progress"). Completed: the circle-check
+  in `#3d5a73`, Medium `#404040`. Not started ("Icon Default"): a `#baa78b`
+  ring, `#818181` text, a `#cec0ac` spine segment — and **the "Icon Hover"
+  state applies to every one of them**: the spine goes navy, the ring
+  `#3d5a73`, the text `#404040`. The spine beside done and current lessons
+  stays `#2d5872` as drawn.
+- **The not-started colours are CLASSES** (`.cre-compass-toc-child.is-upcoming`
+  and its spine / ring / label parts in `tokens.css` — the ring is the FA
+  Regular `circle`, so its class sets `color`), not inline styles —
+  `:hover` cannot be written inline, and an inline colour would beat the
+  hover rule while looking right. The test pins both the classes and the
+  absence of inline colour; jsdom has no `:hover`, so the rules themselves
+  are asserted at source.
+- **An entry without `onSelect` is text, not a button.** No lesson has a page
+  yet, so every TOC row is static today — a control that opens nothing is the
+  defect the rail avoids.
+- **The TOC is the DESIGN's sample** (`COMPASS_SAMPLE_TOC_FROM_DESIGN` in
+  `data/compassCourseFixtures.ts`): Course Introduction - Life and Health
+  Pre-licensing (renamed 2026-09-24 from the design's "Insurance Basics"; section
+  titles now WRAP, rows taking a min-height) · Chapter 1: Basic Principles of
+  Life and Health Insurance (renamed 2026-09-24 from "Life insurance policy
+  types"; its lessons are still the design's "Chapter 1…5". The active title
+  now sets on the same 20px line spacing and 5px row padding as the done one,
+  not the design's 16px; its seven lessons were renamed the same day — Exam:
+  Basic Principles of Life and Health Insurance · Nature of Insurance (current)
+  · Exam: Nature of Insurance · Legal Concepts of Insurance · Exam: Legal
+  Concepts of Insurance · Life Insurance Policy Types · Exam: Life Insurance
+  Policy Types — and lesson titles now WRAP too, the row taking a 32px
+  min-height and the spine stretching with it; lesson titles set on 16px
+  leading, not 20, at 12px, not 13, with 8px — not 10 — between icon and title) · Life insurance policy
+  types (Chapters 1–5, a Knowledge Check, a Recap) · Policy provisions &
+  Riders. **It is not this course's syllabus** — no outline of the 42 lessons
+  is in the repo. Replace the array when Compass supplies one.
+- **The title is real** — `useAtlasCourse`, shared with the Atlas course rail.
+- **"% Complete" is the CURRENT SECTION's progress** (2026-09-24, the direct
+  ask) — `currentSectionProgress`, the one derivation the player bar's
+  Section pill also reads, so the two always print the same number (14%, one
+  of seven lessons). It was the whole course's progress, Home's 62%, which put
+  two different percentages for one learner on one screen. Home still shows
+  course progress; this pill no longer does.
+- **Breadcrumb** Home / Overview / Course: Home → Atlas Home, Overview → the
+  course's Overview page, Course is `aria-current` text.
+- **Its own tokens**, `--color-compass-rail-*`, so a Compass surface can
+  re-point it without touching the Atlas rail. The design's rule is `#d9d9d9`
+  (`--color-border-subtle`), a shade off the Atlas rail's `#dfe3eb`, and the
+  shell switches it. Spine `#e2d9cd` and current-lesson fill `#eceef0` are on
+  no ramp and are declared. **Dark values are not from the design.**
+- **Every mark is Font Awesome in the design's weight** (2026-09-23): Solid
+  `circle` / `circle-check` for sections, Regular `circle` / `circle-check` /
+  `clock` for lessons, Regular `house` and Solid `slash-forward` in the
+  breadcrumb. They were CSS shapes and a text "/" until the seven files were
+  fetched from the Font Awesome API (7.3.1, via the `fa` CLI) into
+  `src/icons/` as `*-solid.svg` / `*-regular.svg` and registered as
+  `CircleSolid`, `CircleRegular`, `CircleCheckSolid`, `CircleCheckRegular`,
+  `ClockRegular`, `HouseRegular`, `SlashForwardSolid`. The registry's default
+  weight is still Light; see `.font-awesome.md`. Open Sans stands in for the
+  design's unloaded Source Sans 3, and the current crumb is `#767676` (AA) not
+  `#777`.
+
+`CompassCourseRail.test.tsx` pins the config contract without the shell;
+`QeFocusedVersion.test.tsx` pins where it appears and its two breadcrumb links.
+
+The swap is keyed on `active`, not `railActive`: the Compass launcher blanks
+the rail's highlight when it opens, and must not also swap the rail.
 
 **Desktop only.** The phone shell still draws the shared rail with the Testing
 trim; the Figma frame says nothing about a phone.
