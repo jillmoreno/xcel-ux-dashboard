@@ -378,7 +378,11 @@ describe('on the Home dashboard', () => {
        are covered by the source scan above. */
     for (const id of [
       'home.resume',
-      'home.study-pace-adjust',
+      /* ⚠ `home.study-pace-adjust` WAS HERE and left the catalog on
+         2026-09-23, when the Study Plan link became permanently inert. A
+         control that is always dead is not a testable CTA — worse, a run could
+         "kill" it and read a participant's shrug as a finding about the
+         session's rigging rather than about the product. */
       'home.schedule-exam',
       'home.what-to-expect',
       'home.how-to-apply',

@@ -1,7 +1,7 @@
 ---
 name: promote-to-testing
-description: Build a moderated user-test link from the branch you are on — pick the baseline the participant lands on (persona, progress state, flag variants), pick which CTAs are dead ends for this run, and hand back one standalone URL plus a moderator crib sheet. The link is given to you directly and is never added to the Refinement board. Pairs with promote-to-refinement (team review) and promote-to-prototype (shipping the baseline). Trigger on "promote to testing", "make a test link", "set up a user test", "break some CTAs", "moderated test", "/promote-to-testing".
-version: 1.0.0
+description: Publish a moderated user-test session — freeze the current branch onto the test site's branch, tag the session with what it rigs, wait for the build, and hand back the participant link, the moderator link and a crib sheet. The link goes to a separate password-protected Netlify site with no UX Dashboard on it. Pairs with promote-to-refinement (team review) and promote-to-prototype (shipping the baseline). Trigger on "promote to testing", "create a test link", "make a testing link", "set up a user test", "freeze a branch for testing", "break some CTAs", "/promote-to-testing".
+version: 2.0.0
 author: UX Design — Colibri
 last_updated: 2026-09-23
 status: active
@@ -9,153 +9,172 @@ status: active
 
 # Skill: Promote to Testing
 
-Turns the current branch into a **moderated user-test session**: one URL that
-pins what the participant sees and which controls go nowhere, so the moderator
-can ask *"what did you expect that to do?"* instead of watching the product
-answer.
+Publishes a **moderated user-test session**: one link, to one screen, on a site
+that has no project list on it, with named controls made into dead ends so the
+moderator can ask *"what did you expect that to do?"* instead of watching the
+product answer.
 
 ## The three promote skills, and which one this is
 
 | Skill | Audience | What it produces | Committed? |
 |---|---|---|---|
-| `promote-to-refinement` | the design team | a row on the Refinement board | no — a row |
+| `promote-to-refinement` | the design team | a row on the Refinement board | no |
 | `promote-to-prototype` | stakeholders | a flag baseline on `main` | **yes** |
-| **`promote-to-testing`** | **one participant, once** | **a standalone link, handed to you** | **no — nothing** |
+| **`promote-to-testing`** | **one participant, once** | **a frozen branch + a link** | **a branch move, no code** |
 
-**This one writes nothing anywhere.** No commit, no board row, no flag default.
-A run exists only in the URL you hand out, which is what lets two moderators run
-different cuts off one branch build and what stops a session's rigging leaking
-into anyone else's view of the product.
-
-## Config — set once per repo
+## Config
 
 ```yaml
-full_site: "https://ux-design-xceldashboard.netlify.app"
-branch_host: "ux-design-xceldashboard.netlify.app"   # branch builds live here
-surface: "/dashboard-rebrand"                        # the product app
+test_site:   "https://xcelusertesting.netlify.app"   # its own password, no gateway
+test_branch: "test/session-1"                        # the site's production branch
+surface:     "/dashboard-rebrand"
 ```
 
-## The two layers of a run
+⚠ **The test site is a THIRD Netlify site**, not a branch build. Branch builds
+sit behind the team's shared site password, which a participant cannot be
+given. Setup is recorded in `docs/gateway.md`; it is a one-time job and this
+skill assumes it is done.
 
-A session is a **baseline** plus a **CTA layer**, and they are chosen
-separately because they answer different questions.
+⚠ **`test_branch` is FROZEN on purpose.** The site rebuilds on every push to it,
+so a site tracking a working branch would rebuild mid-session, under the
+moderator. Nothing reaches a participant until this skill force-pushes.
 
-**The baseline** is who the participant is when they land — the persona, the
-progress state, and any flag variants under test. It rides in the query string:
+> **Rename pending.** `test/session-1` is a poor name — the site tracks exactly
+> one production branch, so a second session cannot get a second branch. It
+> should become `test/live`, with each session recorded as a TAG (step 4).
+> Changing it means editing the Netlify site's production branch too.
 
-| Param | Does |
-|---|---|
-| `?demo=1` | renders the **committed** defaults and ignores whatever is in this browser's localStorage. **Start every run with it** — otherwise the participant sees the last reviewer's sandbox. |
-| `&ff=key:variant` | pins a flag off-baseline. Read-only: `?ff=` is layered on reads and **never written to localStorage**, so it cannot contaminate the machine. |
-| `&ff=dashboard-progress-state:progress-on-track` | the usual persona control — `not-started`, `progress-on-track`, `progress-at-risk`, `complete-100`. |
+## What the test build already does for you
 
-**The CTA layer** is which clickable elements go nowhere: `&dead=id,id`. The
-catalog is [`src/data/testableCtas.ts`](../../../src/data/testableCtas.ts) — each
-row carries a `label` and an `asks`, and the `asks` is the thing to read aloud
-when choosing. A control with no question behind it should stay live.
+On `VITE_GATEWAY_MODE=testing`, which only that site sets:
 
-A dead CTA **renders, focuses and reads exactly like a live one.** That is the
-whole proposition, and `src/context/CtaTestContext.tsx` records the
-accessibility trade it costs — read that note before a run with an
-assistive-technology participant, because the answer there is *no dead CTAs*.
+- **No UX Dashboard.** `/`, `/ux-dashboard`, `/research-rationale` and `/links`
+  all redirect into the product; `/prototypes/*` is 404'd at the edge.
+- **Participant chrome is the default.** No `?test=1` needed — the prototype
+  bar is gone and the demo bar carries Progress and Navigation only. `?test=0`
+  brings the full bar back, which is the MODERATOR's link.
+- **The session baseline is 0% and Navigation Option 1**, regardless of what is
+  committed. See `TESTING_BASELINE` in `FeatureFlagContext`.
+
+So the link is short. `?demo=1` and `?test=1` are redundant there; do not add
+them.
 
 ## Steps
 
-### 1. Where are we?
+### 1. What is being frozen?
 
 ```bash
-BRANCH=$(git rev-parse --abbrev-ref HEAD)
-SLUG=$(printf '%s' "$BRANCH" | tr '[:upper:]' '[:lower:]' | sed -E 's/[^a-z0-9]+/-/g; s/^-+|-+$//g')
-echo "https://${SLUG}--ux-design-xceldashboard.netlify.app"
+git rev-parse --abbrev-ref HEAD
+git rev-parse --short HEAD
+git status --porcelain            # must be empty
+git log --oneline -3
 ```
 
-- On `main`: **allowed**, unlike the other two skills — testing the shipped
-  baseline is a legitimate run. Say which it is, so nobody mistakes a `main`
-  session for a test of their branch.
-- Detached HEAD: stop and say so.
+Uncommitted work is not in the build. Say so and stop — a session run against
+the wrong code produces findings about a product that does not exist.
 
-### 2. Is it pushed, and has it built?
+### 2. Choose the baseline
+
+Ask with **AskUserQuestion**: which progress state, and whether the session is
+testing Navigation Option 1 or Option 2.
+
+Only name what differs from the test build's own baseline (0%, Option 1). A
+link that restates the default is a link that stops working the day the default
+changes.
+
+| Param | For |
+|---|---|
+| `&ff=dashboard-progress-state:progress-on-track` | a learner already under way |
+| `&ff=dashboard-navigation:option-2` | the variant arm of the A/B |
+
+### 3. Choose the dead ends
+
+Read `src/data/testableCtas.ts` and present it **grouped by region**, using each
+row's `asks` as the option description. **AskUserQuestion, `multiSelect: true`.**
+Selecting nothing is valid and common — a first session is often fully live.
+
+⚠ **CHECK EACH CHOICE IS ACTUALLY LIVE IN THE CHOSEN BASELINE**, and say so
+when it is not. A control that is already inert cannot be killed, and a
+participant's shrug at one reads as a finding about the SESSION'S rigging when
+it is really about the product. Known cases:
+
+- `home.pace-option`, `home.week-strip` — **0% only**. Past 0% the picker is
+  hidden and the strip is replaced by the activity chart.
+- `home.exam-date-save`, `home.exam-date-clear` — only once the exam-date
+  editor is open; `clear` only when a date is already stored.
+
+⚠ **Three to five is the ceiling.** Every dead end costs trust, and a
+participant who has hit four walls stops exploring and starts performing. Say
+this once if more are wanted, then do as asked.
+
+### 4. Freeze, and tag the session
+
+Confirm the SHA and the branch aloud, then:
 
 ```bash
-git fetch origin --quiet
-git status -sb | head -1              # no [ahead N]
-curl -s -o /dev/null -w '%{http_code}\n' "$URL"
+git push -f origin "$BRANCH:$TEST_BRANCH"
+git tag -a "session-$(date +%F)-<slug>" "$SHA" -m "<the ff= and dead= of this run>"
+git push origin "session-$(date +%F)-<slug>"
 ```
 
-`200` or `401` means built. `404` means no deploy yet — poll every 20s for up
-to five minutes, saying so. **Offer** to push if the branch is ahead; never
-push without a yes, because a push is a deploy.
+⚠ **The tag is the session's record**, and it is the reason a force-push is
+safe: the branch moves, the tag does not. Months later the tag says which
+commit a finding came from AND what was rigged when it did. Put the actual
+params in the message.
 
-⚠ **Uncommitted changes are the trap here.** The branch build is what the
-participant gets, so anything not pushed is not in the test. Say so explicitly
-rather than listing files — a session run against the wrong build produces
-findings about a product that does not exist.
-
-### 3. Choose the baseline
-
-Ask with **AskUserQuestion**: which persona/progress state, and whether any
-flag is being tested. Default to `?demo=1` alone — the committed baseline —
-and only add `&ff=` for something the run is actually about.
-
-### 4. Choose the dead ends
-
-Read the catalog and present it **grouped by region**, using `asks` as each
-option's description. **AskUserQuestion, `multiSelect: true`.** Selecting
-nothing is valid and common: a first session is often fully live, to see where
-people go before anything is taken away.
-
-⚠ **Three to five is usually the ceiling.** Every dead end costs the
-participant trust, and a participant who has hit four walls stops exploring and
-starts performing — at which point the session is measuring compliance, not
-discovery. If more than five are wanted, say this once and then do as asked.
-
-### 5. Assemble the link
+### 5. Wait for the right build
 
 ```bash
-node -e '
-const [base,surface,ff,dead]=process.argv.slice(1);
-const q=new URLSearchParams({demo:"1"});
-if(ff) q.set("ff",ff);
-if(dead) q.set("dead",dead);
-console.log(`${base}${surface}?${q}`)' "$BASE" "$SURFACE" "$FF" "$DEAD"
+curl -s -o /dev/null -w '%{http_code}\n' "$TEST_SITE"
 ```
 
-Then **check every id against the catalog before handing it over.** An id that
-is not in `TESTABLE_CTA_IDS` leaves that control **live** — the app warns in
-the console, which nobody is watching mid-session.
+`401` means the site is up — it always does, so this proves nothing about
+WHICH commit is live. **Tell the moderator to confirm the SHA in Netlify →
+Deploys before sharing the link.** Handing out a link to the previous build is
+the most likely failure in this whole flow and the password makes it invisible
+from here.
 
-### 6. Hand it over
+### 6. Hand over
 
-Give the link, then a **moderator crib sheet** — a table of every dead id, its
-label as it appears on screen, and its `asks`. That table is the session's
-script: it is what turns "huh, nothing happened" into a question worth asking.
+Give **two** links and a crib sheet.
+
+**Participant** — what the tester opens:
+```
+<test_site><surface>?ff=…&dead=…
+```
+(Omit either param when empty. With no baseline change and no dead ends, the
+bare `<test_site>/` is a complete participant link.)
+
+**Moderator** — the same session with the full demo bar, for setting a persona
+or checking a flag before handing the laptop over:
+```
+<test_site><surface>?test=0&ff=…
+```
+
+**Crib sheet** — one row per dead id: the label as it appears on screen, and
+its `asks`. That table is the session's script; it is what turns "huh, nothing
+happened" into a question worth asking.
 
 Close with the two operational facts:
 
-- **The run survives a reload but dies with the tab** (`sessionStorage`). A
-  fresh tab is a clean product unless the link is used again.
-- **`&dead=` with nothing after it clears the run** mid-session, without
-  closing anything.
+- **A run survives a reload but dies with the tab** (`sessionStorage`).
+- **`&dead=` with nothing after it clears the run** mid-session.
 
 ## Guardrails
 
-- **Never commit a run.** No flag defaults, no fixtures, no `dead` list in the
-  repo. If a run needs a state the URL cannot express, that is a gap in the
-  baseline params — fix it there, not by committing a session.
-- **Never add the link to Refinement.** Refinement is the team's review inbox;
-  a rigged build with dead controls will be read as broken by anyone who did
-  not sit in the session. This link is handed to the moderator directly.
-- **Never use `localStorage` for a run.** `sessionStorage` is the decision —
-  see `CtaTestContext`. A machine quietly killing CTAs weeks later, with
-  nothing on screen to explain it, is this mechanism's worst failure.
-- **Never dress a dead CTA as disabled.** Not dimmed, not `aria-disabled`. The
-  moment a control announces itself dead the participant stops reaching, and
-  the reach is the data.
-- **Say which build.** Branch name and commit, every time. A finding traced to
-  the wrong build is worse than no finding.
-- **Add to the catalog, not to the page.** A control with no `TESTABLE_CTAS`
-  row cannot be killed — that is the correct failure, and the fix is two lines
-  (a row, plus `data-cta-id` on the element), never a special case here.
+- **Never commit a run.** No flag defaults, no fixtures, no `dead=` list in the
+  repo. If a run needs a state the params cannot express, that is a gap in the
+  baseline — fix it there, not by committing a session.
+- **Never point the test site at a working branch.** It rebuilds under the
+  moderator.
+- **Never share the branch-build URL** (`<slug>--ux-design-xceldashboard…`).
+  Same code, wrong password, and it still has the UX Dashboard on it.
+- **Never dress a dead CTA as disabled.** The moment a control announces itself
+  dead the participant stops reaching, and the reach is the data.
+- **Say which commit.** Branch and SHA, every time.
+- **A control that is always inert leaves the catalog.** Two have already:
+  `header.logo` and `home.study-pace-adjust`. Offering to kill something
+  already dead manufactures findings.
 
 ## Adding a CTA to the catalog
 
@@ -164,5 +183,5 @@ Two steps, and the second is one token:
 1. Add a row to `TESTABLE_CTAS` — `id`, `label`, `region`, `asks`.
 2. Put `data-cta-id="<id>"` on the element.
 
-`src/test/CtaTest.test.tsx` then holds both ends: a catalog id with no element
+`src/test/CtaTest.test.tsx` holds both ends: a catalog id with no element
 fails, and a tagged element with no catalog row fails. Neither is silent.

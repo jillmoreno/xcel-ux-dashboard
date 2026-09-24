@@ -384,8 +384,20 @@ text on a light page is the trap.
 
 ### A third site — the user-test build (2026-09-23)
 
-`VITE_GATEWAY_MODE=testing`. A separate Netlify site, its own password, and one
-job: hand a participant a link to the product and nothing else.
+**`xcelusertesting.netlify.app`**, tracking **`test/session-1`**, with
+`VITE_GATEWAY_MODE=testing` and its own password. One job: hand a participant a
+link to the product and nothing else.
+
+⚠ **The branch is FROZEN, and that is the load-bearing part.** The site
+rebuilds on every push to its production branch, so one tracking a working
+branch would rebuild mid-session under the moderator. `promote-to-testing`
+force-pushes to it deliberately and tags each session; nothing reaches a
+participant in between.
+
+> **Rename pending:** `test/session-1` should be `test/live` — the site tracks
+> exactly one production branch, so a second session cannot get a second
+> branch, and the sessions are recorded as tags instead. Changing it means
+> editing the site's production branch at the same time.
 
 **It exists because `public` was not enough.** That build TRIMS the project
 list and still serves it at `/` — a stakeholder is meant to browse. A

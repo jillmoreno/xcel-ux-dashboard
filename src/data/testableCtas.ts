@@ -140,12 +140,21 @@ export const TESTABLE_CTAS: TestableCta[] = [
     region: 'Study Pace',
     asks: 'Does anyone discover the circles are clickable without being told?',
   },
-  {
-    id: 'home.study-pace-adjust',
-    label: 'Adjust / Customize Study Plan',
-    region: 'Study Pace',
-    asks: 'Is the link the way they expect to change a pace, or do they hunt on the card?',
-  },
+  /*
+   * `home.study-pace-adjust` LIVED HERE — "Is the link the way they expect to
+   * change a pace?" — and was removed on 2026-09-23 when that link became
+   * permanently inert on the committed chooser, in BOTH progress states.
+   *
+   * ⚠ A CONTROL THAT IS ALWAYS DEAD IS NOT A TESTABLE CTA, and this one was
+   * actively misleading: a run could "kill" it, a participant would press it
+   * and shrug, and the shrug reads as a finding about the SESSION'S rigging
+   * when it is really about the product. The same reasoning retired
+   * `header.logo`.
+   *
+   * It comes back the day the link has somewhere to go — the row and the
+   * `data-cta-id` together, which `CtaTest.test.tsx` enforces in both
+   * directions.
+   */
   {
     id: 'home.study-pace-info',
     label: 'The completion-date info glyph',

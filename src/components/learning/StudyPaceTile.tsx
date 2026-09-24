@@ -1979,7 +1979,6 @@ function CustomizeLink({
   return (
     <button
       type="button"
-      data-cta-id="home.study-pace-adjust"
       onClick={disabled ? undefined : onClick}
       {...(disabled ? {} : { 'aria-haspopup': 'dialog' as const })}
       /*
