@@ -497,6 +497,8 @@ type NavPalette = {
   border: string
   fg: string
   muted: string
+  /** The appearance's own accent, in the polarity the RAIL needs. */
+  eyebrow: string
   activeBg: string
   activeFg: string
   countBg: string
@@ -510,6 +512,7 @@ const NAV: NavPalette = {
   border: 'var(--ux-nav-border)',
   fg: 'var(--ux-nav-fg)',
   muted: 'var(--ux-nav-muted)',
+  eyebrow: 'var(--ux-nav-eyebrow)',
   activeBg: 'var(--ux-nav-active)',
   activeFg: 'var(--ux-nav-active-fg)',
   countBg: 'var(--ux-nav-count)',
@@ -574,6 +577,7 @@ const MOSS_DARK_NAV: UxVars = {
   '--ux-nav-border': '#3D4842',
   '--ux-nav-fg': '#C8D7D2',
   '--ux-nav-muted': '#8D9F98',
+  '--ux-nav-eyebrow': '#A0AE7B',
   '--ux-nav-active': '#336361',
   /* Always-white, not a theme token: this rail is dark in every appearance. */
   '--ux-nav-active-fg': '#FFFFFF',
@@ -593,6 +597,7 @@ const MOSS_LIGHT_NAV: UxVars = {
   '--ux-nav-border': '#C1D3CC',
   '--ux-nav-fg': INK,
   '--ux-nav-muted': '#535955',
+  '--ux-nav-eyebrow': MOSS,
   '--ux-nav-active': '#336563',
   '--ux-nav-active-fg': '#FFFFFF',
   '--ux-nav-count': '#EAF0EE',
@@ -712,6 +717,7 @@ const EMBER_DARK_NAV: UxVars = {
   '--ux-nav-border': '#1E313E',
   '--ux-nav-fg': '#DDE4E5',
   '--ux-nav-muted': '#AABCBE',
+  '--ux-nav-eyebrow': '#DAA459',
   /* The full blue, not a mix: on a rail this deep it reads as a lit row. */
   '--ux-nav-active': BLUE,
   '--ux-nav-active-fg': '#FFFFFF',
@@ -726,6 +732,7 @@ const EMBER_LIGHT_NAV: UxVars = {
   '--ux-nav-border': '#B4C4C5',
   '--ux-nav-fg': '#071A2F',
   '--ux-nav-muted': '#3E4C5D',
+  '--ux-nav-eyebrow': BRICK,
   '--ux-nav-active': BLUE,
   '--ux-nav-active-fg': '#FFFFFF',
   '--ux-nav-count': '#E6EBEC',
@@ -828,6 +835,7 @@ const TIDE_DARK_NAV: UxVars = {
   '--ux-nav-border': '#22343D',
   '--ux-nav-fg': LINEN,
   '--ux-nav-muted': STEEL,
+  '--ux-nav-eyebrow': AQUA,
   '--ux-nav-active': '#2A607F',
   '--ux-nav-active-fg': '#FFFFFF',
   '--ux-nav-count': '#22343D',
@@ -841,6 +849,7 @@ const TIDE_LIGHT_NAV: UxVars = {
   '--ux-nav-border': '#B8D2DE',
   '--ux-nav-fg': TIDE_INK,
   '--ux-nav-muted': '#45555E',
+  '--ux-nav-eyebrow': '#415E5D',
   '--ux-nav-active': '#275A77',
   '--ux-nav-active-fg': '#FFFFFF',
   '--ux-nav-count': '#F3F2EF',
@@ -941,6 +950,7 @@ const FERN_DARK_NAV: UxVars = {
   '--ux-nav-border': '#2D303D',
   '--ux-nav-fg': PALEMINT,
   '--ux-nav-muted': '#B8D0CC',
+  '--ux-nav-eyebrow': LIME,
   '--ux-nav-active': '#43685F',
   '--ux-nav-active-fg': '#FFFFFF',
   '--ux-nav-count': '#2D303D',
@@ -954,6 +964,7 @@ const FERN_LIGHT_NAV: UxVars = {
   '--ux-nav-border': '#C3DED3',
   '--ux-nav-fg': '#2B3459',
   '--ux-nav-muted': '#4E5678',
+  '--ux-nav-eyebrow': '#3A5A52',
   '--ux-nav-active': INDIGO,
   '--ux-nav-active-fg': '#FFFFFF',
   '--ux-nav-count': '#EDF8F3',
@@ -1424,6 +1435,17 @@ export function UxDashboardPage() {
           <span style={brandTextStyle}>
             UX Dashboard
             <span style={{ ...brandSubStyle, color: nav.muted }}>XCEL LMS</span>
+            {/* WHICH DASHBOARD YOU ARE ON — 2026-09-24. The two builds are
+                otherwise told apart only by which sections are in the rail,
+                which you have to already know to read. `isPublicGateway()` is
+                the same switch that decides what is in it.
+
+                It takes the eyebrow accent rather than the muted grey, so the
+                lockup's third line reads as a LABEL for the rail beneath it
+                rather than as a quieter second sub-line. */}
+            <span style={{ ...brandSubStyle, color: nav.eyebrow, fontWeight: 700 }}>
+              {isPublicGateway() ? 'Demo' : 'Design'}
+            </span>
           </span>
         </div>
         {/* Same rule as the one above the restricted group, so the rail reads as
@@ -1454,7 +1476,7 @@ export function UxDashboardPage() {
                 {NAV_EYEBROWS[s.id] && (
                   <>
                     {i > 0 && <hr style={{ ...dividerStyle, borderTopColor: nav.border }} />}
-                    <p style={{ ...navEyebrowStyle, color: nav.muted }}>{NAV_EYEBROWS[s.id]}</p>
+                    <p style={{ ...navEyebrowStyle, color: nav.eyebrow }}>{NAV_EYEBROWS[s.id]}</p>
                   </>
                 )}
                 {/* The divider and its eyebrow are drawn ONCE, before the first
@@ -1463,7 +1485,7 @@ export function UxDashboardPage() {
                 {i === FIRST_RESTRICTED && (
                   <>
                     <hr style={{ ...dividerStyle, borderTopColor: nav.border }} />
-                    <p style={{ ...navEyebrowStyle, color: nav.muted }}>UX &amp; Dev Access</p>
+                    <p style={{ ...navEyebrowStyle, color: nav.eyebrow }}>UX &amp; Dev Access</p>
                   </>
                 )}
                 <button
