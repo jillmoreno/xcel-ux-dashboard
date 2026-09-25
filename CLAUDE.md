@@ -85,7 +85,7 @@ file, so the two cannot drift apart.
 | `src/data/gatewayMode.ts`, `src/data/deployContext.ts` | the per-site and per-context build switches |
 | `netlify.toml`, `scripts/public-redirects.mjs` | how the two sites and branch builds differ |
 | `netlify/functions/`, `netlify/lib/` | the Refinement / Links / QA Notes endpoints |
-| `.claude/skills/` | `promote-to-prototype`, `promote-to-refinement` and `promote-to-testing` — Jillienne's |
+| `.claude/skills/` | `ship-to-main`, `promote-to-prototype`, `promote-to-refinement`, `promote-to-testing` and `dev-handoff-notes` — Jillienne's. Run them; don't edit them. |
 | `public/contributing/`, `public/about/` | the two guides (regenerate the PDFs if you do edit them) |
 
 ## Stack

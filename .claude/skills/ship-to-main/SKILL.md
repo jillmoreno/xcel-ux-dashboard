@@ -75,10 +75,22 @@ say) is not a baseline change — only a changed default is.
 ### 3. Verify — all three, on this branch
 
 ```bash
-npx tsc -b --noEmit
+npm run build                                   # ⚠ THE ACTUAL DEPLOY GATE
 npx vitest run
 npx eslint <the files this branch changed>
 ```
+
+⚠ **`npm run build`, NOT `npx tsc -b --noEmit`.** Netlify runs
+`npm run build`, which is `tsc -b && vite build` — so a type error fails the
+deploy on BOTH sites. And `tsc -b` is *incremental*: it trusts its cached build
+info, so a run that passed ten minutes ago can pass again while the real build
+fails. `--force` defeats the cache; `npm run build` is what actually ships.
+
+This is not hypothetical. On 2026-09-24, commit `681599d` added a test importing
+a `.mjs` file with no type declarations. `vitest` passed (esbuild does not
+typecheck), `eslint` passed, `tsc` was never re-run — and **both site builds
+errored**. Nothing was live-broken, because Netlify keeps serving the last good
+build, but nothing deployed for hours and no one was told.
 
 ⚠ **`npm run lint` IS NOT A GATE and never will be.** It reports **1883
 problems on `main`** (1843 errors) as of 2026-09-24. Lint the CHANGED FILES
@@ -165,7 +177,9 @@ each:
 The user-testing site is **not** affected — it tracks the frozen `test/session-1`
 and moves only by a deliberate force-push. Say so if a session is running.
 
-Optional, if she asks whether it built:
+⚠ **Then check that it actually built.** A failed build does not take the site
+down — Netlify keeps serving the last good deploy — so the failure mode is a
+change that silently never arrives:
 
 ```bash
 netlify api listSiteDeploys --data '{"site_id":"ux-demo-xceldashboard.netlify.app"}'
@@ -180,5 +194,10 @@ netlify api listSiteDeploys --data '{"site_id":"ux-demo-xceldashboard.netlify.ap
 - **`--ff-only`.** A refusal means rebase, not `--no-ff`.
 - **Tree-identical before pushing `main`.** No exceptions — it is two live sites.
 - **Lint the diff, not the repo**, and never through a pipe.
+- **`npm run build` is the gate**, not `tsc --noEmit` — `tsc -b` caches, and the
+  deploy runs the build.
+- **A failed deploy is silent.** Netlify keeps serving the last good build, so
+  the site looks fine and the change simply never arrives. Check the deploy
+  state after pushing `main` (step 8) rather than assuming.
 - **Don't delete the branch** in the same breath. Ask; it is free to keep and
   occasionally useful to go back to.
