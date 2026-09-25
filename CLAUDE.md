@@ -44,6 +44,14 @@ scope — the product IS React here now, exactly as it is in the LMS.
    feature flag whose default is ON on your branch** — that is what makes your
    branch build show your work and what lets Jillienne decide, at merge, whether
    it ships. A hand-authored HTML exploration goes in `public/demos/`.
+
+   **Changing something that already exists?** Don't thread conditionals through
+   it. Copy it to a sibling — `StudyPaceTile.tsx` stays, `StudyPaceTileV2.tsx` is
+   yours — and let the flag choose between them at the call site.
+   `CourseContentV2.tsx` is the worked example. The original is never touched, so
+   you cannot conflict with whoever else is editing it. **Fork the layout, import
+   the data:** if both versions duplicate the content, the comparison is no longer
+   about your change. Say `/promote-component` and it will do this with you.
 3. **Check it** — *"Run the type check, the tests and lint."* Add *"and the smoke
    suites"* if you touched `public/prototypes/`.
 4. **Publish** — *"Commit everything and push it to `feat/your-thing`."* Netlify

@@ -62,14 +62,50 @@ Then wait for a yes.
 the demo site. A designer creating a flag must not be able to put half-built work
 in front of stakeholders by accident. Promoting it later is Jillienne's call.
 
-⚠ **A NEW COMPONENT AND A CHANGED ONE ARE NOT THE SAME JOB.**
+### Where the flag goes — three cases, and the middle one is the useful one
 
-- **New widget** → the flag wraps it. Clean, do it.
-- **Changed existing component** → the flag has to branch *inside* the component
-  between the old rendering and the new one. That can be genuinely invasive, and
-  on a component someone else is also editing it is a bad trade. **Say so and
-  offer `promote-to-refinement` (the whole-branch link) instead.** Do not perform
-  surgery on a component to satisfy this skill.
+**1. A new widget.** The flag wraps it at its call site. Clean; do it.
+
+**2. A small, contained change to an existing component** — one block, one
+value, one row. A single conditional inside the component is fine. Do not fork a
+400-line file to change a font.
+
+**3. A structural change to an existing component** — the layout differs, or the
+change lands in several places at once. **Fork it as a sibling variant**, which
+is this repo's existing pattern, not a new idea:
+
+```
+StudyPaceTile.tsx      ← untouched
+StudyPaceTileV2.tsx    ← the designer's version, their own file
+```
+
+…and the flag chooses between them at the **call site**, never inside either
+one. `CourseContentV2.tsx` is the worked example: Option 2's whole course page,
+a sibling of Option 1's, selected by `dashboard-navigation`.
+
+**Why a fork beats surgery here.** The original file is never touched, so a
+designer cannot conflict with whoever else is editing it; the flag lives in one
+place instead of scattered through a render; and the two arms can be read side
+by side, which is what the review page is for. Scattering conditionals through a
+shared component is the thing to refuse — not branching as such.
+
+⚠ **FORK THE PRESENTATION, SHARE THE DATA.** `CompassContents` is shared between
+both course arms on purpose, and the note there says why: *"both arms must list
+the same 42 in the same order, or the A/B is comparing two syllabuses rather
+than two navigations."* Copy the layout; import the content. A fork that
+duplicates the data is no longer a comparison of the thing being reviewed.
+
+⚠ **A FORK HAS TO END.** Two copies of a component drift — a fix lands in one
+and not the other — so say at the point of forking how it finishes:
+`promote-to-prototype` picks the winner at merge, and the loser is unwired and
+archived per CLAUDE.md's archive convention (keep the file, add an
+`ARCHIVED_ITEMS` row with a real `restoreNote`). A fork nobody resolves is two
+components forever, and that cost lands on whoever touches it next.
+
+**4. When even a fork is wrong** — the change is spread across surfaces, or it
+is a token/global change with no single call site — say so and offer
+`promote-to-refinement` (the whole-branch link) instead. Not everything is one
+component, and pretending otherwise produces a worse review, not a better one.
 
 `src/context/FeatureFlagContext.tsx` is deliberately NOT protected — flags are
 the designer's own lever. Adding one is their edit to make.
@@ -132,8 +168,12 @@ their attention on nothing, and it reads as a bug in the work.
 
 - **One component.** If the answer is "these three together", that is
   `promote-to-refinement` — the whole branch — not three rows.
-- **A flag, or an honest no.** Offer to create one; never create it silently,
-  never do surgery on an existing component to manufacture one.
+- **A flag, or an honest no.** Offer to create one; never create it silently.
+- **Fork the file, don't scatter conditionals.** A structural change to an
+  existing component becomes a sibling variant with the flag at the call site —
+  `CourseContentV2` is the pattern. Fork the presentation, share the data.
+- **Say how the fork ends** when you make it: winner at `promote-to-prototype`,
+  loser archived. Two copies forever is the failure mode.
 - **New flags are born `wip`.** No `maturity` field. Stakeholders cannot see it.
 - **Variants are chosen, not dumped.** Six frames nobody asked about is worse
   than two that are the question.
