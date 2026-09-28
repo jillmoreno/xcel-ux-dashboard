@@ -291,6 +291,8 @@ export function PlatformSideNav({
   // singular "Learning Path" regardless of how many paths the learner has.
   const multiplePaths = useLearningPathSummariesForBrand().length > 1
   const lpVersion = useFeatureFlag('learning-path-version').variant ?? 'v1'
+  /* Group captions — `nav-rail-captions`, 2026-09-28. On as shipped. */
+  const showCaptions = useFeatureFlag('nav-rail-captions').enabled
   const pluralLP = lpVersion === 'v2' && multiplePaths
   // Two groups: **My Learning** (the learner's own areas — which since
   // 2026-09-16 includes Resources and Rubi Insights, the two things a candidate
@@ -530,16 +532,20 @@ export function PlatformSideNav({
                     regression rather than a layout change. */}
                 {collapsed ? (
                   gi > 0 ? <div aria-hidden style={COLLAPSED_DIVIDER} /> : null
-                ) : (
+                ) : showCaptions ? (
                   <p
                     id={captionId}
                     style={gi === 0 ? FIRST_CAPTION : CAPTION}
                   >
                     {group.caption}
                   </p>
-                )}
+                ) : null}
+                {/* ⚠ THE NAME SURVIVES THE CAPTION, in both the collapsed case
+                    and the flagged-off one — see the note above. Hiding the
+                    heading is a layout change; dropping the group's accessible
+                    name would be an accessibility regression. */}
                 <ul
-                  {...(collapsed
+                  {...(collapsed || !showCaptions
                     ? { 'aria-label': group.caption }
                     : { 'aria-labelledby': captionId })}
                   style={{
@@ -692,6 +698,15 @@ function RailRow({
   // Selected rows swap to the filled/solid glyph when the item provides one;
   // idle/hover rows keep the outline icon.
   const Icon = active && item.iconActive ? item.iconActive : item.icon
+  /*
+   * RAIL ICONS — `nav-rail-icons`, 2026-09-28. `standard` (17) is what ships;
+   * `small` (14) lets the label lead; `none` drops the glyph, and because the
+   * row is a flex with a gap, the labels then simply left-align against the
+   * row's own padding — no separate alignment rule to keep in step.
+   */
+  const iconMode = useFeatureFlag('nav-rail-icons').variant ?? 'standard'
+  const hideIcon = !collapsed && iconMode === 'none'
+  const iconSize = collapsed ? 20 : iconMode === 'small' ? 14 : 17
   const [hovered, setHovered] = useState(false)
   const showHover = hovered && !active
   // Selected-state accent — always the brand PRIMARY color (tint fill + icon +
@@ -754,9 +769,15 @@ function RailRow({
       {/* Active icon: the brand PRIMARY accent, token-driven per rail (light
           primary on dark rails, dark primary on the light rail) for contrast.
           Idle/hover icons inherit the row label color. */}
-      <span style={{ display: 'inline-flex', color: active ? activeIconColor : 'inherit' }}>
-        <Icon size={collapsed ? 20 : 17} aria-hidden />
-      </span>
+      {/* ⚠ COLLAPSED IGNORES THE FLAG ENTIRELY. A collapsed row is a 20px glyph
+          over 10px text; drop the glyph and it is four near-identical stubs of
+          text, which is the mis-click failure the note below already guards
+          against from the other direction. */}
+      {!hideIcon && (
+        <span style={{ display: 'inline-flex', color: active ? activeIconColor : 'inherit' }}>
+          <Icon size={iconSize} aria-hidden />
+        </span>
+      )}
       {/* COLLAPSED shows the SHORT label under a larger glyph. The icon steps
           17 → 20 because it is carrying more of the row's meaning once the text
           is 10px — and the text stays, rather than the row becoming an icon

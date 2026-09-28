@@ -727,6 +727,32 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'nav-rail-icons',
+    group: 'Widgets',
+    label: 'Rail icons',
+    description:
+      'Whether the primary rail\u2019s items carry an icon, and how big. `standard` (default) is what ships \u2014 17px beside the label. `small` keeps them at 14px, so the label leads and the glyph reads as a marker rather than a peer. `none` drops them entirely and the labels left-align against the row padding, which is what a rail of four short words arguably wants. ⚠ THE COLLAPSED RAIL IS UNAFFECTED by all three: it steps its glyph to 20px and sets 10px text under it, and an unlabelled OR unglyphed collapsed rail is the thing every nav study finds people mis-click. Variant-only.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    defaultVariant: 'standard',
+    variants: [
+      { value: 'standard', label: 'Standard (17px)' },
+      { value: 'small', label: 'Small (14px)' },
+      { value: 'none', label: 'No icons (left-aligned)' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'nav-rail-captions',
+    group: 'Widgets',
+    label: 'Rail group captions',
+    description:
+      'Whether the primary rail shows its group captions \u2014 MY LEARNING, EXPLORE, SUPPORT. On by default, as shipped. Off removes the uppercase headings and lets the items run as one list, which suits a short rail where the captions are most of the ink. ⚠ THE GROUPS KEEP THEIR ACCESSIBLE NAMES either way: with the caption hidden the `<ul>` carries it as `aria-label`, so a screen reader still hears "My Learning" and "Support" as the groups they are. Hiding the name with the text would make this an accessibility regression rather than a layout change \u2014 the same rule the collapsed rail already follows.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'course-entry-details',
     group: 'Widgets',
     label: 'Course entry — Details link',
