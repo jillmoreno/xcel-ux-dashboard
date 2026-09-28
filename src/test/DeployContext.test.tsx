@@ -6,6 +6,7 @@ import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { PrototypeBar } from '@/components/layout/PrototypeBar'
 import { parseDeployContext } from '@/data/deployContext'
+import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
 
 /**
  * BRANCH DEPLOYS (2026-09-21). They build on the FULL site, so a branch URL
@@ -32,7 +33,24 @@ function renderBar(props: Parameters<typeof PrototypeBar>[0] = {}) {
 
 afterEach(() => {
   vi.unstubAllEnvs()
+  window.localStorage.removeItem('cgp.featureFlags')
 })
+
+/** The bar inside a flag provider with `prototype-bar-branch-home` switched
+ *  ON — what the designer does in their own browser (flags persist there). */
+function renderBarBranchHomeOn(props: Parameters<typeof PrototypeBar>[0] = {}) {
+  window.localStorage.setItem(
+    'cgp.featureFlags',
+    JSON.stringify({ 'prototype-bar-branch-home': { enabled: true } }),
+  )
+  return render(
+    <FeatureFlagProvider>
+      <MemoryRouter initialEntries={['/dashboard-rebrand']}>
+        <PrototypeBar {...props} />
+      </MemoryRouter>
+    </FeatureFlagProvider>,
+  )
+}
 
 describe('parseDeployContext', () => {
   it('recognises the branch-deploy value, trimmed and case-insensitive', () => {
@@ -73,10 +91,20 @@ describe('the prototype bar on a branch deploy', () => {
     expect(screen.getByLabelText('Prototype home')).toBeTruthy()
   })
 
-  it('drops the house icon on a branch deploy', () => {
+  // `prototype-bar-branch-home` is OFF by default, so every visitor who has
+  // not switched it on gets main's rule.
+  it('drops the house icon on a branch deploy by default', () => {
     vi.stubEnv('VITE_DEPLOY_CONTEXT', 'branch-deploy')
     renderBar()
     expect(screen.queryByLabelText('Prototype home')).toBeNull()
+  })
+
+  // The designer switches it on in their own browser to get from the branch
+  // build's product back to the branch's UX Dashboard.
+  it('keeps the house icon on a branch deploy once prototype-bar-branch-home is switched on', () => {
+    vi.stubEnv('VITE_DEPLOY_CONTEXT', 'branch-deploy')
+    renderBarBranchHomeOn()
+    expect(screen.getByLabelText('Prototype home')).toBeTruthy()
   })
 
   // The bar still has to WORK on a branch deploy — this asserts the removal is

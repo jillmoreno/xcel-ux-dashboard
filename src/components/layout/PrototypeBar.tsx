@@ -7,6 +7,7 @@ import {
 } from './prototypeWalkthrough'
 import { prototypeFeatureById } from '@/data/prototypeFeatures'
 import { isBranchDeploy } from '@/data/deployContext'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 
 // Guiding quotes shown on the right of the prototype bar. Kept as JS
 // strings (not inline JSX text) so the apostrophes / smart quotes don't
@@ -192,8 +193,9 @@ export function PrototypeBar({
   // a branch URL through a public Refinement row must not find a button to it.
   // An explicit `back` prop still wins: it is passed by gateway pages, where
   // the reviewer is already inside the gateway and removing Back would only
-  // strand them.
-  const gatewayLinks = showHomeLink && !isBranchDeploy()
+  // strand them. `prototype-bar-branch-home` puts both back on a branch build.
+  const branchHome = useFeatureFlag('prototype-bar-branch-home').enabled
+  const gatewayLinks = showHomeLink && (!isBranchDeploy() || branchHome)
   const backTarget: { to: string; label: string; title?: string } | null = back
     ? { to: back.to, label: back.label ?? 'Back', title: back.title }
     : gatewayLinks && walkthroughFeatureId && !onGatewayRoute

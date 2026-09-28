@@ -1287,6 +1287,23 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    // The prototype bar's house icon on a BRANCH build. `deployContext.ts`
+    // drops it there so a stakeholder arriving through a public Refinement row
+    // is not one click from the gateway; this flag puts it back for the
+    // designer reviewing a branch. OFF by default, deliberately — the site has
+    // no logins, so "only Eric" means Eric switches it on in his own browser
+    // (flags persist per browser in localStorage) and every other visitor,
+    // stakeholders included, keeps main's rule. No effect on production,
+    // where the icon always shows.
+    key: 'prototype-bar-branch-home',
+    group: 'Navigation',
+    label: 'Home Link on Branch Build',
+    description:
+      'Show the prototype bar\'s house icon (back to the UX Dashboard) on a Netlify branch build. OFF by default — main\'s rule: branch builds drop the icon so a stakeholder who opens a public Refinement row cannot click through to the project list. Switch it on in your own browser to keep the link; it stays on there and nowhere else. Production always shows it, whatever this says.',
+    defaultEnabled: false,
+    page: 'dashboard-rebrand',
+  },
+  {
     // The bell's demo axis. Variant-only, and about the UNREAD COUNT rather
     // than about content: the badge is the whole visual argument, so four
     // authored lists would demonstrate one control four times.

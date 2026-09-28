@@ -4038,3 +4038,5 @@ unchanged.
 **Step 1 (Schedule State Exam) is as deep as the course card** (2026-09-24): LearnerFocusedBand measures the card with a ResizeObserver and publishes `--cre-course-card-h`; Step 1 takes it as min-height.
 
 (Step 2 briefly matched the Study Pace card's depth, 2026-09-24, then went back to fitting its content.)
+
+**The prototype bar's house icon can come back on this branch's build, per browser** (2026-09-28): new flag `prototype-bar-branch-home` (Navigation, default OFF). Main drops the icon on branch builds (`deployContext.ts`) so a stakeholder arriving through a public Refinement row can't click through to the gateway. Switching the flag on in your own browser re-shows it (and the walkthrough Back pill) there only, since flags persist per browser; the site has no logins, so that is as close to "only me" as it gets. Production is unaffected.
