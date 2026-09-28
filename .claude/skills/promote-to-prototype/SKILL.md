@@ -27,6 +27,21 @@ was `promote-to-demo`. The logic is unchanged; the words are not. If you see
 "Demo" in older commit messages or CLAUDE.md notes about the baseline, read
 "Prototypes".
 
+## ⚠ There is only ever ONE prototype, and that is the point
+
+Prototypes answers one question — *what is the product right now?* — for
+developers and stakeholders. A second row destroys the answer, because everyone
+then has to ask which one is real.
+
+So **"I need more than one prototype" is always a Refinement job.** Refinement
+takes any number of rows, is authored in the browser with no code or deploy, and
+is visible to stakeholders too (it carries no `gate`). A row there can pin a
+configuration of `main` (`?demo=1&ff=…`), point at a branch build, or open a
+`/review` page of one component's variants.
+
+There is deliberately no "create a second prototype" skill. If someone asks for
+one, this is the answer. See CLAUDE.md, "Prototypes is the source of truth".
+
 ## Core principle — promotion is a flag-baseline change, not a tile move
 
 Every change starts invisible to Prototypes: behind a flag whose default on

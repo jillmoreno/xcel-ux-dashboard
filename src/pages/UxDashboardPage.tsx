@@ -198,7 +198,15 @@ const SECTIONS: SectionDef[] = [
     // expected set, in both directions.
     id: 'prototypes',
     label: 'Prototypes',
-    blurb: 'The live product build — where we have landed, at the committed baseline.',
+    /* ⚠ ONE ROW, AND THAT IS THE FEATURE (2026-09-28). Prototypes is the SOURCE
+       OF TRUTH for developers and stakeholders: what the product currently is.
+       A second row destroys the only question this section answers, because
+       everyone then has to ask which one is real. Several things to look at at
+       once belong in REFINEMENT, which takes any number of rows, is authored in
+       the browser, and is visible to stakeholders too (it carries no `gate`).
+       `UxDashboard.smoke.test.tsx` compares this section in both directions. */
+    blurb:
+      'The live product build — where we have landed, at the committed baseline. One row, on purpose: this is the current source of truth.',
   },
   {
     // The REVIEW INBOX, authored on the page (2026-09-18) — labelled
@@ -214,7 +222,10 @@ const SECTIONS: SectionDef[] = [
     // row is in Prototypes now.
     id: 'demo',
     label: 'Refinement',
-    blurb: 'Work in review — branches and explorations the team is discussing. Added on the page, not in code.',
+    /* The counterweight to Prototypes' single row: as many as you like, because
+       nothing here claims to be settled. */
+    blurb:
+      'Work in review — branches, components and explorations the team is discussing. As many as you like; nothing here is the source of truth. Added on the page, not in code.',
   },
   {
     // Directly under Refinement and UNGATED, which is the decision in this entry.

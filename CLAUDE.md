@@ -11,6 +11,39 @@ repo rather than two.
 asked a question. The detail now lives in `docs/`, one file per surface. Open the
 one you are touching; do not read all five.
 
+## Prototypes is the source of truth. Refinement is everything else.
+
+**Prototypes holds ONE row, deliberately, and that is not a limitation to route
+around (2026-09-28).** It answers one question — *what is the product right
+now?* — for developers and stakeholders. A second row destroys the answer,
+because from then on everyone has to ask which one is real.
+
+So when you want several things visible at once — two pacing treatments, a
+component's variants, a branch under discussion — **they go in Refinement**,
+which takes any number of rows, is authored in the browser (no code, no commit,
+no deploy), and is **visible to stakeholders too**: it carries no `gate`, so it
+renders on the public build as well as the full one.
+
+| Section | Means | Rows | Lives in |
+|---|---|---|---|
+| **Prototypes** | this IS the product | one, always | flag defaults on `main` |
+| **Refinement** | under discussion | as many as you like | Netlify Blobs, authored on the page |
+
+Two things that follow, and both have bitten:
+
+- **A Refinement row pinned with `?ff=` tracks `main`,** so it goes stale
+  silently when the component changes underneath — no error, it just quietly
+  becomes something else. When something must NOT move (a user test, a
+  sign-off), that is `promote-to-testing`'s frozen branch, not a Refinement row.
+- **Refinement rows are not in git,** so there is no record of what was shown
+  when. It is a working surface, not a decision log — the decisions log on a dev
+  handoff is where a decision gets recorded.
+
+The ways in are already built: `promote-to-refinement` (a branch),
+`promote-component` (one widget's variants), `promote-to-prototype` (moving
+something into the source of truth). There is deliberately no "create a second
+prototype" skill.
+
 ## Scope — read before adding a route
 
 **CHANGED 2026-09-08. This section used to say "gateway only, four routes".**
