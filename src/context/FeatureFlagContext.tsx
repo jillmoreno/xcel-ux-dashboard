@@ -1287,6 +1287,20 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    // The XCEL palette from the Atlas Development doc's Brand Guidelines tab
+    // (Figma "XCEL - Atlas Style Guide", 2026-09-28), applied to the Atlas/
+    // Compass version only. ON on feat/atlas-compass-global-nav, per the
+    // Contributing guide's rule; off shows the same pages in the product's
+    // standing XCEL ramps, for comparison.
+    key: 'atlas-xcel-palette',
+    group: 'Widgets',
+    label: 'Atlas XCEL palette',
+    description:
+      'Apply the XCEL Atlas Style Guide palette to the Atlas/Compass Global Navigation version: primary red #9A1B1E for buttons, text links and active items only; secondary tan (600, #7E6748) for eyebrow labels; tertiary blue for everything the navy did before; each at the guide\'s exact 100–900 steps. Off keeps the standing XCEL ramps (San Juan primary, Brick CTA, Beech tertiary). Other versions are unaffected either way. Rubi\'s orange is not in the guide and is unchanged.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     // The prototype bar's house icon on a BRANCH build. `deployContext.ts`
     // drops it there so a stakeholder arriving through a public Refinement row
     // is not one click from the gateway; this flag puts it back for the

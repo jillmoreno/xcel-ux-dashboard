@@ -149,7 +149,7 @@ const CARD: CSSProperties = {
   padding: 32,
   boxSizing: 'border-box',
   borderRadius: 14,
-  background: 'var(--color-compass-page-card)',
+  background: 'var(--color-compass-course-card)',
   // No outer stroke — 2026-09-24, the direct ask; the fill carries the edge.
 }
 const TOP: CSSProperties = {

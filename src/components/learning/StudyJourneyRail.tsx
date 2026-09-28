@@ -1203,8 +1203,10 @@ const syllabusDotDoneStyle: CSSProperties = {
 /** The stop you are ON — filled and undashed, so "you are here" survives being
  *  scanned. Same call `nodeCurrentStyle` makes on the dot rail. */
 const syllabusDotCurrentStyle: CSSProperties = {
-  border: '2px solid var(--color-primary-700)',
-  background: 'var(--color-primary-700)',
+  // `--color-atlas-active` is set only under the Atlas palette (tokens.css),
+  // where the current step is an active item and takes the CTA red.
+  border: '2px solid var(--color-atlas-active, var(--color-primary-700))',
+  background: 'var(--color-atlas-active, var(--color-primary-700))',
 }
 
 /** Get Licensed's spine, at the height the journey's used to be. See its call

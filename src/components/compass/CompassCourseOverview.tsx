@@ -261,10 +261,11 @@ const CARD: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: 20,
-  padding: '24px 27px',
+  // No outer stroke (2026-09-28, the designer's request, matching the Home
+  // course card); the padding takes the border's 1px so nothing inside moves.
+  padding: '25px 28px',
   borderRadius: 14,
-  background: 'var(--color-compass-page-card)',
-  border: '1px solid var(--color-compass-page-card-border)',
+  background: 'var(--color-compass-course-card)',
 }
 const CARD_HEAD: CSSProperties = {
   display: 'flex',
@@ -390,7 +391,7 @@ const WHERE_BODY: CSSProperties = {
   fontFamily: BODY,
   fontSize: 13.5,
   lineHeight: '21.6px',
-  color: 'var(--color-compass-page-eyebrow)',
+  color: 'var(--color-compass-page-body)',
 }
 
 const RUBI_ASIDE: CSSProperties = {
@@ -429,7 +430,7 @@ const RUBI_BODY: CSSProperties = {
   fontFamily: BODY,
   fontSize: 13.5,
   lineHeight: '20.25px',
-  color: 'var(--color-compass-page-eyebrow)',
+  color: 'var(--color-compass-page-body)',
 }
 /* Colours in `.cre-compass-outline`. */
 const OUTLINE: CSSProperties = {
@@ -512,7 +513,7 @@ const READINESS_TRACK: CSSProperties = {
 const SUGGESTED: CSSProperties = {
   fontFamily: BODY,
   fontSize: 13,
-  color: 'var(--color-compass-page-eyebrow)',
+  color: 'var(--color-compass-page-body)',
 }
 
 const TIP_LIST: CSSProperties = {
@@ -563,5 +564,5 @@ const TIP_BODY: CSSProperties = {
   fontFamily: BODY,
   fontSize: 13.5,
   lineHeight: '18px',
-  color: 'var(--color-compass-page-eyebrow)',
+  color: 'var(--color-compass-page-body)',
 }

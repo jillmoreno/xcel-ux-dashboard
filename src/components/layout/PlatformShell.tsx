@@ -1,4 +1,4 @@
-import { useState, type ReactNode, type CSSProperties } from 'react'
+import { useEffect, useState, type ReactNode, type CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAccount, supportsMembership, type Brand } from '@/context/AccountContext'
 import {
@@ -278,6 +278,19 @@ function PlatformShellBody() {
   const atlasNav = isAtlasCompassNavVersion(
     params.get('version') ?? defaultDiscoverabilityVersionFor(brand),
   )
+  // The Atlas Style Guide palette (`atlas-xcel-palette`) — an attribute on
+  // <html>, like `data-theme`, so the brand ramps it re-points resolve for
+  // everything on the page, portalled sheets included. See tokens.css,
+  // "ATLAS XCEL PALETTE".
+  const atlasPalette = useFeatureFlag('atlas-xcel-palette').enabled && atlasNav
+  useEffect(() => {
+    if (!atlasPalette) return
+    const root = document.documentElement
+    root.dataset.atlasPalette = 'xcel'
+    return () => {
+      delete root.dataset.atlasPalette
+    }
+  }, [atlasPalette])
   const railCollapsed =
     atlasNav
       ? false

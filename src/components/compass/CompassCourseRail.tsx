@@ -231,7 +231,7 @@ function SectionRow({ section }: { section: CompassTocSection }) {
       </span>
       <span
         style={
-          current ? SECTION_LABEL_CURRENT : upcoming ? SECTION_LABEL_UPCOMING : SECTION_LABEL
+          current ? SECTION_LABEL_CURRENT : upcoming ? SECTION_LABEL_UPCOMING : SECTION_LABEL_DONE
         }
       >
         {section.label}
@@ -396,7 +396,7 @@ function StatusIcon({ status, size }: { status: CompassTocStatus; size: 'section
   }
   if (status === 'current') {
     return (
-      <span aria-hidden style={{ ...MARK, color: 'var(--color-compass-rail-lesson-ink)' }}>
+      <span aria-hidden style={{ ...MARK, color: 'var(--color-compass-rail-current-ink)' }}>
         <ClockRegular size={15} aria-hidden />
       </span>
     )
@@ -619,7 +619,14 @@ const SECTION_LABEL_CURRENT: CSSProperties = {
   ...SECTION_LABEL,
   fontWeight: 600,
   whiteSpace: 'normal',
-  color: 'var(--color-compass-rail-section-ink)',
+  color: 'var(--color-compass-rail-section-current-text)',
+}
+/* A COMPLETED section's title. Its own token (2026-09-28) so the Atlas palette
+   can tint it without touching the lesson labels, which share
+   `--color-compass-rail-text`. */
+const SECTION_LABEL_DONE: CSSProperties = {
+  ...SECTION_LABEL,
+  color: 'var(--color-compass-rail-section-done-text)',
 }
 const SECTION_LABEL_UPCOMING: CSSProperties = {
   ...SECTION_LABEL,
@@ -686,7 +693,7 @@ const CHILD_LABEL_CURRENT: CSSProperties = {
   flex: 1,
   minWidth: 0,
   fontWeight: 700,
-  color: 'var(--color-compass-rail-lesson-ink)',
+  color: 'var(--color-compass-rail-current-ink)',
 }
 /* No colour — `.cre-compass-toc-label` owns it, so hover can change it. */
 const CHILD_LABEL_UPCOMING: CSSProperties = (() => {

@@ -893,6 +893,15 @@
      kept as drawn) and a #cec0ac spine; hover turns all three to the
      completed treatment. */
   --color-compass-rail-lesson-ink: var(--color-compass-rail-section-ink);
+  /* The CURRENT lesson's label and clock — the lesson ink, split out on
+     2026-09-28 so the Atlas palette can make the current lesson an active
+     (red) item while done ticks keep the lesson ink. */
+  --color-compass-rail-current-ink: var(--color-compass-rail-lesson-ink);
+  /* SECTION titles by state, split out on 2026-09-28 so the Atlas palette can
+     set each: done takes the row text, current the section ink. (Upcoming
+     already had its own, --color-compass-rail-upcoming-section-text.) */
+  --color-compass-rail-section-done-text: var(--color-compass-rail-text);
+  --color-compass-rail-section-current-text: var(--color-compass-rail-section-ink);
   /* The active section dot's 5px ring (Figma 13:23) — #eceef0, the current
      lesson's fill. Its own token, not a reference to that fill: in dark the
      fill is translucent, and a translucent halo would let the line through. */
@@ -928,9 +937,15 @@
   --color-compass-page: #f8f6f3;
   --color-compass-page-rule: #e0dbcd;
   --color-compass-page-eyebrow: #5b5560;
+  /* Body copy — the same #5b5560 the eyebrow had, split out on 2026-09-28 so
+     the Atlas palette can turn eyebrows tan without turning paragraphs tan. */
+  --color-compass-page-body: #5b5560;
   --color-compass-page-muted: #706b63;
   --color-compass-page-heading: #1f1d18;
   --color-compass-page-card: #eceef0;
+  /* The course card (Home + Overview) — the page card, split out on
+     2026-09-28 so the Atlas palette can tint it without the Day-one pill. */
+  --color-compass-course-card: var(--color-compass-page-card);
   --color-compass-page-card-border: #d8dee4;
   --color-compass-page-card-rule: #c0cdd5;
   --color-compass-page-fact-label: var(--color-neutral-700);
@@ -956,6 +971,7 @@
   --color-compass-page: var(--color-surface-page);
   --color-compass-page-rule: var(--color-border-subtle);
   --color-compass-page-eyebrow: var(--color-text-secondary);
+  --color-compass-page-body: var(--color-text-secondary);
   --color-compass-page-muted: var(--color-text-tertiary);
   --color-compass-page-heading: var(--color-text-primary);
   --color-compass-page-card: var(--color-surface-card);
@@ -4589,4 +4605,254 @@ a.cre-library-card-title::after {
 .cre-compass-home-chip:focus-visible {
   outline: 2px solid var(--color-compass-page-button);
   outline-offset: 2px;
+}
+
+/* ============================================================================
+   ATLAS XCEL PALETTE — `atlas-xcel-palette`, 2026-09-28
+   ----------------------------------------------------------------------------
+   The palette from the Atlas Development doc's Brand Guidelines tab (Figma
+   "XCEL - Atlas Style Guide", node 18:2007), applied to the Atlas/Compass
+   Global Navigation version only. `PlatformShell` sets `data-atlas-palette` on
+   <html> while that version is showing and the flag is on.
+
+   The guide's ROLES differ from the product's standing XCEL ramps, though the
+   base colours are the same three:
+     guide primary   red  #9A1B1E  →  the product's CTA ramp   (--color-cta-*)
+     guide secondary tan  #9D815A  →  the product's tertiary   (--color-tertiary-*)
+     guide tertiary  blue #2D5872  →  the product's primary    (--color-primary-*)
+   So each ramp keeps its product name and takes the guide's exact 100–900
+   steps. Saffron (--color-secondary-*) is not in the guide; nothing on these
+   pages uses it outside the demo chrome, so it is left alone.
+
+   The guide's usage rules are applied through the Atlas tokens below:
+     - CTA red ONLY for buttons, text links and active items (the current nav
+       row, the current journey step and its marker, the current lesson).
+     - Tan for eyebrow labels, at 600 (#7E6748) — 500 fails as small text.
+   Charts (the Study Pace bars, the readiness ring) take the tan and its
+   tints. Everything else the navy did (spines, marks, rules) stays blue, now
+   on the guide's exact steps.
+
+   Measured, light: cta-500 on white 8.24:1 · on cta-100 (#F5E8E9, the active
+   fill) 7.1:1 · white on cta-500 8.24:1 · tan-600 on white 5.4:1, on the
+   #F5F2EF page 5.0:1.
+   NOT CHANGED: Rubi's orange (#b4552f) — not in the guide; neutrals (Nectar).
+   DARK VALUES ARE NOT FROM THE GUIDE, which is light only. */
+[data-brand='xcel'][data-atlas-palette] {
+  --color-primary-100: #eaeef1;
+  --color-primary-200: #cbd5dc;
+  --color-primary-300: #96acb9;
+  --color-primary-400: #7792a3;
+  --color-primary-500: #2d5872;
+  --color-primary-600: #24465b;
+  --color-primary-700: #1b3544;
+  --color-primary-800: #12232e;
+  --color-primary-900: #091217;
+
+  --color-cta-100: #f5e8e9;
+  --color-cta-200: #e6c6c7;
+  --color-cta-300: #cd8d8f;
+  --color-cta-400: #bd6b6d;
+  --color-cta-500: #9a1b1e;
+  --color-cta-600: #7b1618;
+  --color-cta-700: #5c1012;
+  --color-cta-800: #3e0b0c;
+  --color-cta-900: #1f0506;
+
+  --color-tertiary-100: #f5f2ef;
+  --color-tertiary-200: #e7e0d6;
+  --color-tertiary-300: #cec0ad;
+  --color-tertiary-400: #bfad94;
+  --color-tertiary-500: #9d815a;
+  --color-tertiary-600: #7e6748;
+  --color-tertiary-700: #5e4d36;
+  --color-tertiary-800: #3f3424;
+  --color-tertiary-900: #1f1a12;
+
+  /* The two usage rules, as tokens components can reach for. */
+  --color-atlas-cta: var(--color-cta-500);
+  --color-atlas-active: var(--color-cta-500);
+  --color-atlas-active-fill: var(--color-cta-100);
+  --color-atlas-eyebrow: var(--color-tertiary-600);
+  --color-eyebrow-text: var(--color-atlas-eyebrow);
+
+  /* LEFT NAVIGATION (both rails) takes the SECONDARY tan, not the red
+     (2026-09-28, the designer's request): the active row is tan-700 ink and a
+     tan-700 bar on a tan-200 fill; a hovered row is tan-100. Wherever a row or
+     link has a hover, the TEXT turns CTA red and the tan background stays —
+     see the `:hover` rules at the end of this section. The caption is an
+     eyebrow. The right rule (#dfe3eb) is a neutral divider and stays.
+     Measured: tan-700 on tan-200 6.4:1 · cta-500 on tan-100 7.6:1, on
+     tan-200 6.3:1. */
+  --color-atlas-nav-caption: var(--color-atlas-eyebrow);
+  --color-atlas-nav-active-ink: var(--color-tertiary-700);
+  --color-atlas-nav-active-fill: var(--color-tertiary-200);
+  --color-atlas-nav-hover: var(--color-tertiary-100);
+  --color-atlas-nav-hover-ink: var(--color-cta-500);
+
+  /* Compass course rail — the current lesson (label, clock, fill) and the
+     crumb link are the left-navigation tan above (red on hover); the section marks, done ticks and the progress spine
+     are secondary 600 (below);
+     the tans snap to the guide's steps. */
+  --color-compass-rail-current-ink: var(--color-atlas-nav-active-ink);
+  --color-compass-rail-caption: var(--color-atlas-eyebrow);
+  --color-compass-rail-link: var(--color-atlas-nav-active-ink);
+  --color-compass-rail-current-fill: var(--color-atlas-nav-active-fill);
+  --color-compass-rail-active-halo: var(--color-atlas-nav-active-fill);
+  --color-compass-rail-hover: var(--color-atlas-nav-hover);
+  --color-compass-rail-pill: var(--color-tertiary-100);
+  --color-compass-rail-spine: var(--color-tertiary-300);
+  /* The rail's last blues — section dots and titles, done ticks, the progress
+     spine, the hover ring — are SECONDARY 600, #7E6748 (2026-09-28, the
+     designer's request). 5.4:1 on white, so it holds for the section titles. */
+  --color-compass-rail-section-ink: var(--color-tertiary-600);
+  --color-compass-rail-ink: var(--color-tertiary-600);
+  /* TOC section titles by state (2026-09-28, the designer's request; first
+     600 / 800 / 400): completed and active secondary 800 (the active one is
+     SemiBold), not started 600. 600 is 5.4:1 on white, 800 12:1. */
+  --color-compass-rail-section-done-text: var(--color-tertiary-800);
+  --color-compass-rail-section-current-text: var(--color-tertiary-800);
+  --color-compass-rail-upcoming-section-text: var(--color-tertiary-600);
+  /* Not-started LESSON titles: secondary 600 (2026-09-28, the designer's
+     request) — 5.4:1 on white, where the grey #818181 was 3.90:1 and failed
+     AA at 12px. Their ring marks stay tan-400 (2.18:1), as asked. */
+  --color-compass-rail-upcoming-text: var(--color-tertiary-600);
+  --color-compass-rail-upcoming-section-mark: var(--color-tertiary-300);
+  --color-compass-rail-upcoming-lesson-mark: var(--color-tertiary-400);
+
+  /* Compass pages (Home course card, Overview, player content box). */
+  /* The content area: secondary (tan) 100 at 50% on white, #F5F2EF → #FAF9F7
+     (2026-09-28, the designer's request), under the blue course card. */
+  --color-compass-page: #faf9f7;
+  --color-compass-page-rule: var(--color-tertiary-200);
+  --color-compass-page-eyebrow: var(--color-atlas-eyebrow);
+  --color-compass-page-card: var(--color-primary-100);
+  /* The course card on Home and the Overview: the guide's TERTIARY (blue)
+     100, #EAEEF1 — our `primary` ramp (2026-09-28; tan 200 and tan 100 were
+     tried first). */
+  --color-compass-course-card: var(--color-primary-100);
+  --color-compass-page-card-border: var(--color-primary-200);
+  --color-compass-page-card-rule: var(--color-primary-200);
+  --color-compass-page-pill-ink: var(--color-primary-600);
+  --color-compass-page-button: var(--color-atlas-cta);
+  /* Charts take the guide's secondary (tan) and its tints (2026-09-28, the
+     designer's request): the Study Pace week bars (`barTone`) and the
+     Overview's readiness ring. Fills, not text, so tan-500 is fine here. */
+  --color-atlas-chart-200: var(--color-tertiary-200);
+  --color-atlas-chart-300: var(--color-tertiary-300);
+  --color-atlas-chart-400: var(--color-tertiary-400);
+  --color-atlas-chart-500: var(--color-tertiary-500);
+  --color-atlas-chart-700: var(--color-tertiary-700);
+  --color-compass-page-ring-1: var(--color-tertiary-200);
+  --color-compass-page-ring-2: var(--color-tertiary-300);
+  --color-compass-page-ring-3: var(--color-tertiary-400);
+  --color-compass-page-ring-4: var(--color-tertiary-500);
+  --color-compass-page-ring-5: var(--color-tertiary-600);
+  --color-compass-content-border: var(--color-tertiary-200);
+  --color-compass-content-placeholder: var(--color-tertiary-300);
+
+  /* Compass player bar — its filled controls are buttons. */
+  --color-compass-player-ink: var(--color-atlas-cta);
+  --color-compass-player-rubi: var(--color-primary-100);
+  --color-compass-player-rubi-border: var(--color-primary-200);
+}
+[data-theme='dark'][data-brand='xcel'][data-atlas-palette] {
+  --color-atlas-cta: var(--color-cta-500);
+  --color-atlas-active: var(--color-cta-200);
+  --color-atlas-active-fill: rgb(154 27 30 / 0.28);
+  --color-atlas-eyebrow: var(--color-tertiary-300);
+  --color-atlas-nav-active-ink: var(--color-tertiary-300);
+  --color-atlas-nav-active-fill: rgb(157 129 90 / 0.24);
+  --color-atlas-nav-hover: rgb(157 129 90 / 0.12);
+  --color-atlas-nav-hover-ink: var(--color-cta-200);
+  --color-compass-rail-current-ink: var(--color-atlas-nav-active-ink);
+  --color-compass-rail-link: var(--color-atlas-nav-active-ink);
+  --color-compass-rail-current-fill: var(--color-atlas-nav-active-fill);
+  --color-compass-rail-hover: var(--color-atlas-nav-hover);
+  --color-compass-rail-active-halo: var(--color-primary-700);
+  --color-compass-rail-pill: var(--color-neutral-100);
+  --color-compass-rail-spine: var(--color-primary-700);
+  --color-compass-rail-section-ink: var(--color-tertiary-300);
+  --color-compass-rail-ink: var(--color-tertiary-300);
+  --color-compass-rail-section-done-text: var(--color-tertiary-300);
+  --color-compass-rail-section-current-text: var(--color-tertiary-200);
+  --color-compass-rail-upcoming-section-text: var(--color-tertiary-500);
+  --color-compass-rail-upcoming-text: var(--color-tertiary-500);
+  --color-compass-rail-upcoming-section-mark: var(--color-primary-700);
+  --color-compass-rail-upcoming-lesson-mark: var(--color-primary-500);
+  --color-compass-page: var(--color-surface-page);
+  --color-compass-page-rule: var(--color-border-subtle);
+  --color-compass-page-card: var(--color-surface-card);
+  --color-compass-course-card: var(--color-surface-card);
+  --color-compass-page-card-border: var(--color-border-subtle);
+  --color-compass-page-card-rule: var(--color-border-subtle);
+  --color-compass-page-pill-ink: var(--color-primary-200);
+  --color-compass-content-border: var(--color-border-subtle);
+  --color-compass-content-placeholder: var(--color-text-tertiary);
+  --color-compass-player-rubi: var(--color-surface-card);
+  --color-compass-player-rubi-border: var(--color-border-subtle);
+}
+
+/* The shared ink classes, re-pointed for the same two rules: text CTAs and
+   journey-stop links take the red; section labels take the tan. */
+[data-atlas-palette] .cre-cta-ink,
+[data-atlas-palette] .cre-stop-title {
+  color: var(--color-cta-500);
+}
+[data-atlas-palette] .cre-journey-stop:hover .cre-stop-title,
+[data-atlas-palette] .cre-journey-stop:focus-visible .cre-stop-title {
+  color: var(--color-cta-700);
+}
+[data-atlas-palette] .cre-cta-fill {
+  background: var(--color-cta-500);
+  color: var(--color-neutral-50);
+}
+[data-atlas-palette] .cre-eyebrow-ink {
+  color: var(--color-atlas-eyebrow);
+}
+[data-theme='dark'][data-atlas-palette] .cre-cta-ink,
+[data-theme='dark'][data-atlas-palette] .cre-stop-title {
+  color: var(--color-cta-200);
+}
+[data-theme='dark'][data-atlas-palette] .cre-journey-stop:hover .cre-stop-title,
+[data-theme='dark'][data-atlas-palette] .cre-journey-stop:focus-visible .cre-stop-title {
+  color: var(--color-cta-100);
+}
+
+/* The course player's Next button is the page's primary button — CTA red.
+   Previous stays the neutral outline: a secondary action, not a CTA. */
+[data-atlas-palette] .cre-compass-step--next {
+  background: var(--color-cta-500);
+  border-color: var(--color-cta-500);
+  color: var(--color-neutral-50);
+}
+
+/* Left navigation hovers: CTA-red TEXT, the tan background kept (idle rows
+   hover to tan-100; the active row keeps its tan-200). */
+[data-atlas-palette] .cre-atlas-nav-row:hover,
+[data-atlas-palette] .cre-atlas-nav-row[aria-current='page']:hover {
+  color: var(--color-atlas-nav-hover-ink);
+}
+[data-atlas-palette] .cre-atlas-nav-row[aria-current='page']:hover {
+  background: var(--color-atlas-nav-active-fill);
+}
+/* Breadcrumb links — the home icon and any middle step — are CTA red at rest
+   and on hover (2026-09-28, the designer's request), and a text crumb steps up
+   one weight on hover (Medium 500 → SemiBold 600). */
+[data-atlas-palette] .cre-atlas-crumb-home,
+[data-atlas-palette] .cre-compass-crumb-link,
+[data-atlas-palette] .cre-atlas-crumb-home:hover,
+[data-atlas-palette] .cre-compass-crumb-link:hover {
+  color: var(--color-atlas-cta);
+  filter: none;
+}
+[data-atlas-palette] .cre-compass-crumb-link:hover {
+  font-weight: 600;
+}
+[data-theme='dark'][data-atlas-palette] .cre-atlas-crumb-home,
+[data-theme='dark'][data-atlas-palette] .cre-compass-crumb-link {
+  color: var(--color-cta-200);
+}
+[data-atlas-palette] .cre-compass-toc-row:hover,
+[data-atlas-palette] .cre-compass-toc-child.is-upcoming:hover .cre-compass-toc-label {
+  color: var(--color-atlas-nav-hover-ink);
 }

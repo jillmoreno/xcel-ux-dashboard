@@ -803,7 +803,8 @@ function ExamDateCapture({
             border: 'none',
             cursor: draft ? 'pointer' : 'default',
             opacity: draft ? 1 : 0.5,
-            background: 'var(--color-primary-500)',
+            // The CTA red under the Atlas palette; the navy everywhere else.
+            background: 'var(--color-atlas-cta, var(--color-primary-500))',
             color: 'var(--color-text-inverse)',
             fontFamily: 'var(--font-body)',
             fontSize: 13,

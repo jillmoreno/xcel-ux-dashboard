@@ -172,7 +172,9 @@ describe('Compass LMS Course Left Rail Navigation', () => {
     const active = screen.getByText('Chapter 1: Basic Principles of Life and Health Insurance')
     expect(active.closest('li')!.style.minHeight).toBe('36px')
     expect(active.style.whiteSpace).toBe('normal')
-    expect(active.style.color).toBe('var(--color-compass-rail-section-ink)')
+    // Its own token, which defaults to the section ink (tokens.css) — split out
+    // on 2026-09-28 so the Atlas palette can set section titles by state.
+    expect(active.style.color).toBe('var(--color-compass-rail-section-current-text)')
     expect(screen.getByText('Course Introduction - Life and Health Pre-licensing').closest('li')!.style.minHeight).toBe('30px')
     // The line through the active dot is what joins "Done" to the spine…
     expect(active.closest('li')!.querySelector('span[style*="position: absolute"]')).toBeTruthy()

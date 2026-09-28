@@ -1776,11 +1776,14 @@ function barTone(mins: number, reference: number): string {
      sit at ±15% and ±30% of it rather than at the half-and-double a
      target-relative scale would want. */
   const ratio = mins / Math.max(1, reference)
-  if (ratio < 0.6) return 'var(--color-primary-200)'
-  if (ratio < 0.85) return 'var(--color-primary-300)'
-  if (ratio < 1.05) return 'var(--color-primary-400)'
-  if (ratio < 1.3) return 'var(--color-primary-500)'
-  return 'var(--color-primary-700)'
+  /* `--color-atlas-chart-*` is set only under the Atlas palette (tokens.css),
+     where charts take the guide's secondary tan; everywhere else the fallback
+     is the primary ramp, unchanged. */
+  if (ratio < 0.6) return 'var(--color-atlas-chart-200, var(--color-primary-200))'
+  if (ratio < 0.85) return 'var(--color-atlas-chart-300, var(--color-primary-300))'
+  if (ratio < 1.05) return 'var(--color-atlas-chart-400, var(--color-primary-400))'
+  if (ratio < 1.3) return 'var(--color-atlas-chart-500, var(--color-primary-500))'
+  return 'var(--color-atlas-chart-700, var(--color-primary-700))'
 }
 
 /** One sentence for the bar row, which is a picture to everyone else. */
