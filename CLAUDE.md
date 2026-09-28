@@ -126,7 +126,7 @@ file, so the two cannot drift apart.
 | `src/data/gatewayMode.ts`, `src/data/deployContext.ts` | the per-site and per-context build switches |
 | `netlify.toml`, `scripts/public-redirects.mjs` | how the two sites and branch builds differ |
 | `netlify/functions/`, `netlify/lib/` | the Refinement / Links / QA Notes endpoints |
-| `.claude/skills/` | `ship-to-main`, `promote-to-prototype`, `promote-to-refinement`, `promote-component`, `promote-to-testing` and `dev-handoff-notes` — Jillienne's. Run them; don't edit them. |
+| `.claude/skills/` | `ship-to-main`, `promote-to-prototype`, `promote-to-refinement`, `promote-component`, `promote-to-testing`, `archive-a-feature` and `dev-handoff-notes` — Jillienne's. Run them; don't edit them. |
 | `public/contributing/`, `public/about/` | the two guides (regenerate the PDFs if you do edit them) |
 
 ## Stack
@@ -161,6 +161,12 @@ with a `restoreNote` listing the actual re-wire steps. Bringing something back
 should be a re-wire, never a rebuild. `restoreNote` is the field most often
 written too thinly — name the files, the call sites, and anything deliberately
 *not* restored.
+
+Say **`/archive-a-feature`** and it walks the whole thing: finding every place
+the feature is wired (the flag catalog is the one people miss), deciding how far
+to unwire, and writing the row. `ArchiveConvention.test.ts` now enforces the
+thin bits — every `restoreNote` and `location` must name a place you can go to,
+not just describe an intention.
 
 
 ## Verifying a change
