@@ -1,5 +1,6 @@
 import type { LearningPathSummary } from '@/data/learningFixtures'
 import { GetLicensedRail, StudyJourneyRail } from './StudyJourneyRail'
+import { ExamDateCard } from './ExamDateCard'
 import { useState, type CSSProperties } from 'react'
 import { journeyStopsFor } from './studyJourneyUtil'
 import { clearExamDate, useExamDate, writeExamDate } from '@/data/examDateStore'
@@ -128,6 +129,11 @@ export function StudyJourneyWidget({
    * unrelated cards — the exact failure the note below is already about.
    */
   const examFirst = useFeatureFlag('journey-step-order').variant === 'exam-first'
+  /* The reworked exam-date card — `exam-step-style: date-first`. A SIBLING of
+     `LicensingStepWidget`'s treatment, picked here rather than branched inside
+     it: the two cards differ in heading, meta, control and set-state, which is
+     a fork rather than a conditional. */
+  const dateFirst = useFeatureFlag('exam-step-style').variant === 'date-first'
   /* Coursework is 1 and the licensing steps run 2-4; exam-first swaps the
      first two, so coursework becomes 2 and the remaining licensing steps
      keep 3 and 4. */
@@ -177,15 +183,18 @@ export function StudyJourneyWidget({
             Above the coursework card and numbered 1, because it is the thing a
             learner can do today and the date it produces is what the Study Pace
             tile plans against. */}
-        {promoted && (
-          <LicensingStepWidget
-            step={promoted}
-            number={1}
-            shell={shell}
-            onOpenStep={onOpenStep}
-            state={path.state}
-          />
-        )}
+        {promoted &&
+          (dateFirst && promoted.id === 'schedule-exam' ? (
+            <ExamDateCard number={1} shell={shell} onOpenStep={onOpenStep} stepId={promoted.id} />
+          ) : (
+            <LicensingStepWidget
+              step={promoted}
+              number={1}
+              shell={shell}
+              onOpenStep={onOpenStep}
+              state={path.state}
+            />
+          ))}
         {collapseCoursework ? (
           <section aria-label="Study journey" style={shell}>
             <p className="cre-eyebrow-ink" style={collapsedEyebrowStyle}>
@@ -207,11 +216,28 @@ export function StudyJourneyWidget({
             />
           </section>
         )}
-        {licensingAfter.map((step, i) => (
+        {licensingAfter.map((step, i) => {
+          const n = examFirst ? stepStart + 1 + i : stepStart + i
+          /* ⚠ BOTH CALL SITES BRANCH THE SAME WAY. `exam-first` lifts this step
+             into the promoted slot above, so a branch in only one of them would
+             give the reworked card under one order and the shipped one under
+             the other — an A/B measuring two things at once. */
+          if (dateFirst && step.id === 'schedule-exam') {
+            return (
+              <ExamDateCard
+                key={step.id}
+                number={n}
+                shell={shell}
+                onOpenStep={onOpenStep}
+                stepId={step.id}
+              />
+            )
+          }
+          return (
           <LicensingStepWidget
             key={step.id}
             step={step}
-            number={examFirst ? stepStart + 1 + i : stepStart + i}
+            number={n}
             shell={shell}
             onOpenStep={onOpenStep}
             state={path.state}
@@ -235,7 +261,8 @@ export function StudyJourneyWidget({
                 : undefined
             }
           />
-        ))}
+          )
+        })}
         {/* THE REQUIREMENTS ACTION, OUT OF THE CARDS — 2026-09-21, the direct
             ask: "take this out of the widget and make it a secondary style
             button below — same width as the widget."

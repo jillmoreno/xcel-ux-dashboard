@@ -727,6 +727,21 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'exam-step-style',
+    group: 'Widgets',
+    label: 'Exam date step',
+    description:
+      'How the Schedule State Exam card asks for the exam date. `inline` (default) is what ships \u2014 heading "Schedule State Exam", the $40 fee line, and an always-visible date field with Save. `date-first` is the reworked card (`ExamDateCard`): heading "Exam Date", no fee line, and a secondary CTA that opens a MONTH SELECTOR IN THE CARD; once a date is set the card quietens, with "Change date" at link weight beside "How to Schedule". ⚠ THE HEADING IS A LABEL, NOT AN INSTRUCTION, and that is the point of it \u2014 "Schedule" describes something already done once a date exists, where "Exam Date" stays true in both states. The fee moves to the step sheet and the state\u2019s own booking site, where the price is authoritative and current. Worked out on a copy bench before any code. Variant-only.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    defaultVariant: 'inline',
+    variants: [
+      { value: 'inline', label: 'Inline date field' },
+      { value: 'date-first', label: 'Exam Date + month picker' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'journey-step-order',
     group: 'Widgets',
     label: 'Journey step order',
