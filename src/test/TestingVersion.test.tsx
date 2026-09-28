@@ -1289,3 +1289,46 @@ describe('the course header bar at nought', () => {
     expect(column!.style.paddingTop).toBe('10px')
   })
 })
+
+describe('study-pace-hidden', () => {
+  /**
+   * A flag that removes the Study Pace tile — 2026-09-28, off by default.
+   *
+   * ⚠ NOT `study-pace-widget`, which swaps the live tile for the lo-fi
+   * placeholder. That one changes what the tile SHOWS; this removes it. Two
+   * flags whose labels both begin "Study Pace" is exactly the pair someone
+   * reaches for the wrong one of, so the difference is asserted, not assumed.
+   *
+   * ⚠ `?ff=` IS READ FROM `window.location.search`, NOT FROM THE ROUTER.
+   * `readUrlFlagOverrides()` goes straight to `window.location`, so an `&ff=`
+   * appended to a `MemoryRouter` entry does NOTHING — the flag never applies and
+   * the test passes or fails for reasons unrelated to it. These tests set the
+   * real location first. Worth knowing before writing the next one: the failure
+   * is silent in the direction that matters, since an unapplied "hide" flag
+   * leaves the thing on screen and the assertion looks merely wrong.
+   */
+  function withFlags(ff: string) {
+    window.history.replaceState({}, '', `/dashboard-rebrand?ff=${encodeURIComponent(ff)}`)
+  }
+
+  it('leaves the tile alone by default', () => {
+    expect(FEATURE_FLAGS.find((f) => f.key === 'study-pace-hidden')?.defaultEnabled).toBe(false)
+    renderShell(TESTING_URL)
+    expect(screen.getByText(/Study Pace/i)).toBeTruthy()
+  })
+
+  it('removes the tile when switched on', () => {
+    withFlags('study-pace-hidden:on')
+    renderShell(TESTING_URL)
+    expect(screen.queryByText(/Study Pace/i)).toBeNull()
+  })
+
+  it('is a different flag from the placeholder switch', () => {
+    /* `study-pace-widget: off` still renders a tile — the stub. If these two
+       ever converge, one of them is redundant and the panel is offering two
+       controls for one outcome. */
+    withFlags('study-pace-widget:off')
+    renderShell(TESTING_URL)
+    expect(screen.getByText(/Study Pace/i)).toBeTruthy()
+  })
+})

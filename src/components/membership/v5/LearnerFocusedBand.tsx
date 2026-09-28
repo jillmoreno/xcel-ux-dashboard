@@ -602,7 +602,23 @@ export function LearnerFocusedBand({
      `paceOnly` arrangement Readiness is already dropped, so the row would
      render as an empty 18px gap above the Jump Back In card. Both halves gone
      means no row. */
-  const paceTiles = onPage && !(renewalReady && paceOnly)
+  /*
+   * HIDE STUDY PACE — `study-pace-hidden`, 2026-09-28. Off by default.
+   *
+   * ⚠ IT REUSES THE `renewalReady` PATH rather than adding a second one. A
+   * completed course already removes this tile and already answers both layout
+   * questions it raises — on Testing the tile owns the row, so the row goes;
+   * on the pair, Readiness stays and takes the full width. Two code paths for
+   * one outcome is how the pair layout ends up disagreeing with itself.
+   */
+  /* ⚠ THE HOOK CALL IS ITS OWN LINE, not the right-hand side of a `||`. `||`
+     short-circuits, so `renewalReady || useFeatureFlag(...)` SKIPS the hook
+     whenever the course is complete — a conditional hook, and React's hook
+     order breaks the moment that value flips. Written that way for about a
+     minute; the rule is worth the extra line. */
+  const paceHiddenFlag = useFeatureFlag('study-pace-hidden').enabled
+  const paceGone = renewalReady || paceHiddenFlag
+  const paceTiles = onPage && !(paceGone && paceOnly)
   const clpBigNumber = onPage && barInHeader && clpStyle === 'big-number'
   const clpNavy = onPage && barInHeader && clpStyle === 'navy'
   // Ink for the navy card. The page values are near-black and would vanish on
@@ -1431,7 +1447,7 @@ export function LearnerFocusedBand({
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: paceOnly || renewalReady ? '1fr' : 'repeat(2, minmax(0, 1fr))',
+              gridTemplateColumns: paceOnly || paceGone ? '1fr' : 'repeat(2, minmax(0, 1fr))',
               gap: 14,
               marginTop: 18,
             }}
@@ -1450,7 +1466,7 @@ export function LearnerFocusedBand({
                 its access expiry. `FIXTURE_TODAY` is the anchored demo clock
                 every other prototype surface passes, so the states render the
                 same whenever the page is opened. */}
-            {renewalReady ? null : livePace && resume ? (
+            {paceGone ? null : livePace && resume ? (
               <StudyPaceTile
                 today={FIXTURE_TODAY}
                 hoursRemaining={resume.hours * (1 - (resume.progress ?? 0) / 100)}

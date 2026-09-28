@@ -727,6 +727,16 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'study-pace-hidden',
+    group: 'Widgets',
+    label: 'Study Pace — hide',
+    description:
+      'Removes the Study Pace tile from the home screen. OFF by default, so the shipped dashboard is unchanged; turn it on to see the page without it. ⚠ NOT THE SAME AS `study-pace-widget`, which swaps the live tile for the lo-fi PLACEHOLDER — that one changes what the tile shows, this one removes it. On the Testing version the tile owns the whole row, so the row goes with it; on every other version Readiness stays and takes the full width. Both behaviours are the ones a completed course already produces, reused rather than re-derived.',
+    maturity: 'wip',
+    defaultEnabled: false,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'nav-rail-icons',
     group: 'Widgets',
     label: 'Rail icons',
