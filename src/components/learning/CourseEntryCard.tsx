@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { ArrowRight, BookOpenThin } from '@/icons'
+import { ArrowRight } from '@/icons'
 import {
   NY_LH_CURRENT_CHAPTER,
   NY_LH_CURRENT_LESSON_PART,
@@ -44,6 +44,7 @@ export function CourseEntryCard({
   stats,
   lessonsCompleted,
   complete = false,
+  showDetails = false,
   onResume,
   onDetails,
 }: {
@@ -59,6 +60,19 @@ export function CourseEntryCard({
   /** Completed lesson count — the lesson number is this plus one. */
   lessonsCompleted: number
   complete?: boolean
+  /**
+   * Show the `Details →` link — `course-entry-details`, OFF by default
+   * (2026-09-28, the direct ask).
+   *
+   * ⚠ DEFAULTS TO FALSE HERE TOO, matching the flag rather than being the
+   * opposite of it. A component whose own default disagrees with its flag's is
+   * a bug waiting for the day someone renders it without the prop.
+   *
+   * The reason it is off: this card exists to get one press — Resume — and a
+   * second link on the same row competes for it. The flag is how to compare the
+   * two, not a setting to leave on absent-mindedly.
+   */
+  showDetails?: boolean
   onResume?: () => void
   onDetails?: () => void
 }) {
@@ -73,7 +87,7 @@ export function CourseEntryCard({
         {cover ? <img src={cover} alt="" aria-hidden style={coverStyle} /> : null}
         <div style={{ flex: 1, minWidth: 0 }}>
           <p className="cre-eyebrow-ink" style={eyebrow}>
-            Current course:
+            Current course
           </p>
           <h2 style={title}>{courseTitle}</h2>
 
@@ -98,10 +112,11 @@ export function CourseEntryCard({
                 ))}
               </div>
             </div>
-            {/* Kept, by the direct ask. The one way out of this card. */}
-            <button type="button" onClick={onDetails} style={detailsLink}>
-              Details <ArrowRight size={13} aria-hidden />
-            </button>
+            {showDetails && (
+              <button type="button" onClick={onDetails} style={detailsLink}>
+                Details <ArrowRight size={13} aria-hidden />
+              </button>
+            )}
           </div>
         </div>
       </div>
@@ -122,7 +137,9 @@ export function CourseEntryCard({
           ) : (
             <>
               <p style={lessonMeta}>
-                <BookOpenThin size={12} aria-hidden style={{ marginInlineEnd: 6 }} />
+                {/* The book glyph came off on 2026-09-28, the direct ask. The
+                    line is already a small-caps label; the icon was decorating
+                    a label rather than naming anything. */}
                 Lesson {lessonsCompleted + 1}
                 <span aria-hidden style={dot} />
                 Part {NY_LH_CURRENT_LESSON_PART} of {NY_LH_LESSON_PARTS}
@@ -152,8 +169,9 @@ const card: CSSProperties = {
   flexDirection: 'column',
   background: 'var(--color-surface-card)',
   border: '1px solid var(--color-primary-100)',
-  /* 2px, the radius this repo settled on for these blocks. */
-  borderRadius: 2,
+  /* 4 — `--radius-sm`, matching the Study Journey and Schedule State Exam
+     cards beside it (2026-09-28, the direct ask). The token, not a literal. */
+  borderRadius: 'var(--radius-sm)',
   padding: 20,
   minWidth: 0,
 }

@@ -2,7 +2,6 @@ import { useMemo, useState, type ComponentType, type CSSProperties } from 'react
 import {
   ChevronRight,
   CircleInfo,
-  Clock,
   Loveseat,
   MugHot,
   PersonRunningFast,
@@ -480,7 +479,6 @@ export function StudyPaceTile({
 
           </>
         }
-        icon={<Clock size={13} />}
         /* THE CARD HAS NO TILE FLOOR. Its one control sits in the body, so
            `to`/`action` would add a second and a third to a treatment whose
            whole argument is that it operates nothing but Customize. */

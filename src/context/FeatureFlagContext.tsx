@@ -727,6 +727,16 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'course-entry-details',
+    group: 'Widgets',
+    label: 'Course entry — Details link',
+    description:
+      'Whether the combined course entry card shows its `Details →` link, which opens the Current Learning Path detail panel. ⚠ OFF BY DEFAULT (2026-09-28, the direct ask): the card is the one place a learner is meant to press Resume, and a second link beside it competes for that press. Turning it on is how to compare the two, not a setting to leave on absent-mindedly. Applies to `combined` only — the split header has its own Details link, unaffected.',
+    maturity: 'wip',
+    defaultEnabled: false,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'course-entry-style',
     group: 'Widgets',
     label: 'Course entry',

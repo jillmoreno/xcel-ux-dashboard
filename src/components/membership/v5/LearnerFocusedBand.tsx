@@ -437,6 +437,8 @@ export function LearnerFocusedBand({
    * whole claim of this A/B is that only the LAYOUT differs.
    */
   const combinedEntry = useFeatureFlag('course-entry-style').variant === 'combined'
+  /* Off by default — see `showDetails` on the card for why. */
+  const entryDetails = useFeatureFlag('course-entry-details').enabled
   // Dashboard breakdown rule: the segmented gauge + bars render ONLY for
   // exactly two categories; more than two show the overall % here and the full
   // list in the detail panel.
@@ -683,6 +685,7 @@ export function LearnerFocusedBand({
         ]}
         lessonsCompleted={totalCompleted}
         complete={renewalReady}
+        showDetails={entryDetails}
         onDetails={onViewDetails}
         onResume={() =>
           launcher.open(resume.id, {

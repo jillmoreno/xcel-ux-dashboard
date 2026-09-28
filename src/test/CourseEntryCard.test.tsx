@@ -42,12 +42,26 @@ describe('the combined course entry card', () => {
     expect(screen.getByRole('button', { name: /resume/i })).toBeTruthy()
   })
 
-  it('keeps the progress figure and the Details link', () => {
-    /* Both were explicitly asked for, and neither is in the reference design
-       this card came from — so they are the parts most likely to be "tidied"
-       away by someone working from the picture. */
+  it('keeps the progress figure, which the reference design has not got', () => {
+    /* Explicitly asked for, and absent from the picture this card came from —
+       so it is the part most likely to be "tidied" away by someone working from
+       the image rather than the spec. */
     card()
     expect(screen.getByText('62')).toBeTruthy()
+  })
+
+  it('hides Details unless it is switched on', () => {
+    /*
+     * ⚠ OFF BY DEFAULT (2026-09-28, the direct ask) — `course-entry-details`.
+     * The card exists to get ONE press, Resume; a second link on the same row
+     * competes for it. It was on and unconditional for a few hours, so this
+     * pins the direction: absent unless asked for.
+     */
+    card()
+    expect(screen.queryByRole('button', { name: /details/i })).toBeNull()
+    // …and the component's own default matches the flag's, so rendering it
+    // without the prop can never disagree with the catalog.
+    card({ showDetails: true })
     expect(screen.getByRole('button', { name: /details/i })).toBeTruthy()
   })
 
@@ -98,8 +112,14 @@ describe('the combined course entry card', () => {
   })
 })
 
-describe('the course-entry-style flag', () => {
+describe('the course-entry flags', () => {
   const flag = FEATURE_FLAGS.find((f) => f.key === 'course-entry-style')
+  const details = FEATURE_FLAGS.find((f) => f.key === 'course-entry-details')
+
+  it('keeps the Details link off until someone turns it on', () => {
+    expect(details?.defaultEnabled).toBe(false)
+    expect(details?.maturity).toBe('wip')
+  })
 
   it('defaults to the shipped split layout', () => {
     /* ⚠ A new arm must not become the default by landing. `split` is what
