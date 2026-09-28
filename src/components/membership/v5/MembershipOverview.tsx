@@ -627,7 +627,18 @@ export function MembershipOverview({
       </span>
     </span>
   )
-  const courseHeaderBand = courseHeader && activeProgressPath && (
+  /*
+   * ⚠ THE SPLIT HEADER STANDS DOWN FOR THE COMBINED ARM — 2026-09-28. The
+   * combined card carries the course name, the art, the bar, the figure and the
+   * stat pairs itself, so leaving this rendered would print the course twice,
+   * one block above the other saying the same thing.
+   *
+   * Read here as well as in `LearnerFocusedBand` (which owns the card) because
+   * this is where the header is BUILT; the two reads are one flag, and a test
+   * pins that only one of the two renders.
+   */
+  const combinedEntry = (useFeatureFlag('course-entry-style').variant ?? 'split') === 'combined'
+  const courseHeaderBand = courseHeader && !combinedEntry && activeProgressPath && (
     <Wrap style={{ padding: 0, width: '100%' }}>
       {/* THE DASHED DIVIDER IS GONE — 2026-09-21, the direct ask ("remove the
           dashed divider line"). It arrived on 2026-09-17 to separate this

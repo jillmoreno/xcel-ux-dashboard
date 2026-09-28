@@ -7,7 +7,7 @@ import { useCourseLauncher } from '@/components/layout/CourseLauncherContext'
 import { useDeviceFrame } from '@/components/layout/DeviceFrameContext'
 import type { CourseCardData } from '@/components/courses/CourseCard'
 import type { LearningPathSummary } from '@/data/learningFixtures'
-import { statusTreatment, displayedProgressPct, timeRemaining, resolveRenewal, type HomeStatus, CURRENT_LEARNING_EYEBROW } from '@/components/learning/learningPathsHomeUtil'
+import { statusTreatment, displayedProgressPct, timeRemaining, resolveRenewal, type HomeStatus, CURRENT_LEARNING_EYEBROW, timeRemainingText} from '@/components/learning/learningPathsHomeUtil'
 import { myCoursesFor, FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 import { ProgressDonut, CategoryBars } from '@/components/learning/progressGauge'
 import { ProgressBar } from '@/components/ui/ProgressBar'
@@ -21,6 +21,7 @@ import { StudyJourneyWidget } from '@/components/learning/StudyJourneyWidget'
 import { StatusStrip } from '@/components/learning/LearningPathDetailPanel'
 import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
 import { JumpBackInWidget } from '@/components/learning/JumpBackInWidget'
+import { CourseEntryCard } from '@/components/learning/CourseEntryCard'
 import { StudyPaceTile } from '@/components/learning/StudyPaceTile'
 import { NY_LH_CURRENT_CHAPTER, NY_LH_CURRENT_LESSON_PART } from '@/data/nyProducerRequirements'
 import {
@@ -426,6 +427,16 @@ export function LearnerFocusedBand({
   // The band's own percentage, now shared — the Readiness page shows the same
   // figure and reading `path.progressPct` there put the two a point apart.
   const percent = displayedProgressPct(path)
+  /*
+   * COMBINED COURSE ENTRY — `course-entry-style: combined`, 2026-09-28.
+   *
+   * Read HERE rather than in `MembershipOverview` because everything the card
+   * needs already is here: the lesson number, the resume handler with the
+   * launcher context, the day count and the two lesson figures. Building it up
+   * there would mean a second derivation of "17 days" and "26 of 42", and the
+   * whole claim of this A/B is that only the LAYOUT differs.
+   */
+  const combinedEntry = useFeatureFlag('course-entry-style').variant === 'combined'
   // Dashboard breakdown rule: the segmented gauge + bars render ONLY for
   // exactly two categories; more than two show the overall % here and the full
   // list in the detail panel.
@@ -646,8 +657,44 @@ export function LearnerFocusedBand({
    * Still NOT invented: per-lesson timing. The reference reads "· 14 minutes
    * left" and nothing knows how long a lesson takes; a test forbids it.
    */
+  /* The combined arm swaps the card at the same slot, so everything that
+     decides WHETHER a resume card renders at all still decides it — the flag
+     only changes which one. */
   const resumeInline =
-    onPage && resume && !clpNavy ? (
+    onPage && resume && !clpNavy && combinedEntry ? (
+      <CourseEntryCard
+        courseTitle={path.title}
+        cover={resume.imageUrl ?? getCourseImage(resume.id)}
+        percent={percent}
+        /* The SAME figures the split header prints, built from the same values
+           a few lines up — not a second derivation. */
+        stats={[
+          { value: timeRemainingText(weeksLeft), caption: 'To complete course' },
+          ...(totalRequired > 0
+            ? [
+                {
+                  /* `unit` itself is declared further down, so this reads the same
+                     source it reads — one fallback, not two spellings of it. */
+                  value: `${totalCompleted} of ${totalRequired} ${path.unitLabel ?? 'hrs'}`,
+                  caption: 'Completed',
+                },
+              ]
+            : []),
+        ]}
+        lessonsCompleted={totalCompleted}
+        complete={renewalReady}
+        onDetails={onViewDetails}
+        onResume={() =>
+          launcher.open(resume.id, {
+            title: path.title,
+            percentComplete: percent,
+            lessonNumber: totalCompleted + 1,
+            completedLessons: totalCompleted,
+            totalLessons: totalRequired || path.hours,
+          })
+        }
+      />
+    ) : onPage && resume && !clpNavy ? (
       <JumpBackInWidget
         course={resume}
         /* ALWAYS THE NEXT LESSON, including the first — 2026-09-21, the direct

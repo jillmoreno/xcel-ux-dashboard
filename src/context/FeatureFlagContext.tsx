@@ -727,6 +727,21 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'course-entry-style',
+    group: 'Widgets',
+    label: 'Course entry',
+    description:
+      'Whether the course header and the Jump Back In card are two blocks or ONE. `split` (default) is what ships: a COURSE PROGRESS header — cover, name, bar, the percentage and the stat pairs — with a separate ruled card under it carrying the lesson and the Resume CTA. `combined` renders both halves inside a single bordered card (`CourseEntryCard`), eyebrow "Current course:", divided by a hairline. ⚠ IT IS A LAYOUT CHANGE ONLY: the same figures, the same three CTA shapes (Start course / Resume / Review course), the same `Details →`. Deliberately NOT carried over from the reference design it came from — the Target exam date cell (removed 2026-09-21 and still echoed on Schedule State Exam) and the Course Overview button. Variant-only.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    defaultVariant: 'split',
+    variants: [
+      { value: 'split', label: 'Split (two blocks)' },
+      { value: 'combined', label: 'Combined (one card)' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'dashboard-course-header',
     group: 'Widgets',
     label: 'Course header band',
