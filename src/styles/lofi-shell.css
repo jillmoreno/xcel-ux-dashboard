@@ -1,0 +1,117 @@
+/**
+ * Lo-fi shell — the wireframe veil for `/dashboard-rebrand`.
+ *
+ * WHY THIS IS CSS AND NOT COMPONENTS: the ask is "lo-fi everything except the
+ * navigation", and the content column is ~40 components deep with no stable
+ * card class to hook. Forking each one into a lo-fi sibling would be a large
+ * change to a lot of files to answer a question about the RAIL. A veil scoped
+ * to the content region gets there without touching a single section component,
+ * and turning it off is one flag.
+ *
+ * WHAT IT DELIBERATELY PRESERVES: layout, exactly. Nothing here changes a size,
+ * a margin, or a position — only colour, text and imagery. The page keeps its
+ * real heights and its scroll length, so the nav is judged beside a page of the
+ * right weight rather than a short one.
+ *
+ * `LoFiPlaceholders.tsx` is the per-component toolkit and is untouched; it
+ * stays the right answer when ONE widget should be lo-fi. This is the
+ * whole-surface case it was never wired for on this shell.
+ */
+
+/* THE NAV IS NEVER INSIDE THIS. The class goes on the content <section>, which
+   is a SIBLING of both the rail and the header, so scope alone keeps them at
+   full fidelity — there is no guard rule here because a guard would be a lie:
+   `all: revert-layer` does not reliably undo the `!important` declarations
+   below, so a rule that appeared to protect the nav would give false comfort.
+   If the class ever needs to move up the tree, the veil has to be re-scoped
+   rather than fenced off. */
+
+/* Flatten the surface: no depth, no brand colour, no dividing hairlines that
+   read as hierarchy. Borders survive as neutral so card EDGES still show. */
+/* Desaturate the whole column. This is what catches the things a selector
+   cannot reach: the progress-bar fill, the study-pace chart bars, status dots
+   — all EMPTY elements whose only content is a brand background, so the leaf
+   rule below (which needs `:not(:empty)`) skips them. One declaration beats
+   hunting each one, and it cannot miss a new one added later.
+   ⚠ `filter` makes this element a containing block for `position: fixed`
+   descendants. There are none in the content column today (checked across the
+   nav-reachable sections); if a section ever mounts a fixed overlay INSIDE the
+   column rather than in a portal, it will anchor here instead of the viewport.
+   That is the one thing to look at if a future overlay lands in the wrong
+   place while this flag is on. */
+.cre-lofi-shell {
+  filter: grayscale(1);
+}
+
+.cre-lofi-shell * {
+  box-shadow: none !important;
+  border-color: var(--color-neutral-200) !important;
+  text-shadow: none !important;
+  outline-color: var(--color-neutral-300) !important;
+  /* EVERY descendant, not just leaves. A node like `<p>About <b>2¼</b>
+     hours/day</p>` has element children, so it is not a leaf — but its own
+     loose text nodes still paint. CSS cannot select a text node, so the only
+     way to silence them is to make text invisible everywhere and let the leaf
+     rule paint the bars back. */
+  color: transparent !important;
+}
+
+/* Leaf elements are the ones that actually carry text. `:not(:has(*))` is what
+   makes this possible without a JS tree-walk — it selects only elements with no
+   element children, so a heading becomes ONE bar instead of the nested spans
+   inside it each painting their own. */
+.cre-lofi-shell *:not(:has(*)):not(:empty) {
+  color: transparent !important;
+  background: var(--color-neutral-200) !important;
+  border-radius: 6px !important;
+  /* Keeps a bar from collapsing to a hairline on empty-ish inline nodes while
+     leaving block heights alone. */
+  min-height: 0.7em;
+}
+
+/* Imagery goes, but keeps its box — `visibility` rather than `display`, so the
+   hole the photo left is still the right size. */
+.cre-lofi-shell :is(img, picture, video, canvas) {
+  visibility: hidden !important;
+}
+
+/* Icons are inline SVG here. They read as decoration at this fidelity, and a
+   greyed icon is noisier than none. */
+.cre-lofi-shell svg {
+  visibility: hidden !important;
+}
+
+/* Anything painting a photo or gradient through CSS instead of an <img>. */
+.cre-lofi-shell [style*='background-image'],
+.cre-lofi-shell [style*='backgroundImage'] {
+  background-image: none !important;
+  background-color: var(--color-neutral-200) !important;
+}
+
+/* Form controls: keep the affordance, drop the content. These are not :empty
+   and have no children, so the leaf rule would make the field invisible rather
+   than blank. */
+.cre-lofi-shell :is(input, textarea, select) {
+  color: transparent !important;
+  background: var(--color-neutral-100) !important;
+  border: 1px solid var(--color-neutral-200) !important;
+}
+.cre-lofi-shell :is(input, textarea)::placeholder {
+  color: transparent !important;
+}
+
+/* A standing marker, so nobody reviews this build thinking the dashboard
+   regressed. Sits at the top of the content column, never over the nav. */
+.cre-lofi-shell::before {
+  content: 'Lo-fi — navigation is the only surface at full fidelity';
+  display: block;
+  margin: 0 0 16px;
+  padding: 7px 11px;
+  border: 1px dashed var(--color-neutral-300);
+  border-radius: 6px;
+  font-family: var(--font-body, system-ui), sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.02em;
+  color: var(--color-neutral-500);
+  background: transparent;
+}

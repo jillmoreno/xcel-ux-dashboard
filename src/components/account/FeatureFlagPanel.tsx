@@ -66,6 +66,9 @@ function flagPageIdForPath(pathname: string): FeatureFlagPageId | null {
 // color/style, learning-path width/breakdown, learning-vibrant) + the dead
 // Featured Products flag were removed in the flag audit.
 const REBRAND_FLAGS = [
+  // Whole-surface lo-fi veil over the content column — the nav-focused view.
+  // Default ON on its branch; see the catalog entry.
+  'lofi-shell',
   // NOTE: `dashboard-progress-state` and `dashboard-education-type` were
   // intentionally dropped from this rebrand scope — the always-visible Demo
   // Controls bar (`DemoControlsBar`) exposes them as dedicated Progress /

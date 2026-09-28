@@ -216,6 +216,9 @@ function PlatformShellBody() {
      two different navigations, and the shorter name was taken. Read with the
      other flags, unconditionally, well above any early return. */
   const courseNavVariant = useFeatureFlag('dashboard-navigation').variant ?? 'option-1'
+  /* The lo-fi veil. Scoped to the content column below — NOT to the grid — so
+     the rail stays at full fidelity by structure rather than by exception. */
+  const loFiShell = useFeatureFlag('lofi-shell').enabled
   /*
    * WHAT THE PLAYER IS A PLAYER FOR comes from the OPENER, not from a lookup
    * here — `launcher.meta`, supplied by the card that called `open()`.
@@ -709,7 +712,7 @@ function PlatformShellBody() {
           wrapped in `SectionShell`, which owns the uniform 40px gutter + the
           rail-matched title. When a course launcher is open, it replaces the
           section in place (the rail stays). */}
-      <div style={{ minWidth: 0 }}>
+      <div className={loFiShell ? 'cre-lofi-shell' : undefined} style={{ minWidth: 0 }}>
         {launcher.courseId ? (
           <CourseLauncherView
             courseId={launcher.courseId}

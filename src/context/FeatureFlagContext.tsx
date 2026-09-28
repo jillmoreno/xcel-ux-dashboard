@@ -367,6 +367,36 @@ const NAV_SECTION_FLAG_DEFINITIONS: FeatureFlagDefinition[] = NAV_SECTION_FLAGS.
 
 export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
   ...NAV_SECTION_FLAG_DEFINITIONS,
+  /* Whole-surface lo-fi for the rebrand shell.
+   *
+   * NOT the same thing as the global Lo-Fi master switch (`LoFiContext` /
+   * `useLoFi`). That one is per-component: each widget renders its own
+   * placeholder from `LoFiPlaceholders.tsx` when it consumes the hook. The
+   * XCEL `PlatformShell` surface was built after that wiring and never took
+   * it, so flipping the master switch on `/dashboard-rebrand` changes nothing
+   * — which is the gap this flag fills.
+   *
+   * It veils the CONTENT COLUMN ONLY. The rail, the header and the Demo
+   * Controls bar stay at full fidelity on purpose: this exists to put the
+   * navigation on its own, against a page of the right weight and with
+   * nothing else competing for the reviewer's attention.
+   *
+   * DEFAULT ON, and deliberately so — this is a branch whose whole point is
+   * the lo-fi view, so the branch build has to open in it. It must go back to
+   * OFF before any merge to main; `promote-to-prototype` is where that
+   * decision gets made. */
+  {
+    key: 'lofi-shell',
+    group: 'Shell',
+    label: 'Lo-fi shell',
+    description:
+      "Greys the content column of /dashboard-rebrand to a wireframe so the left nav is the only thing at full fidelity. Layout, sizes and scroll length are untouched — only colour, text and imagery go — so the nav is judged beside a page of the right weight. The rail, the header and the Demo Controls bar stay normal so you can still navigate and toggle back. Distinct from the global Lo-Fi mode in the account menu, which is per-component and was never wired into this shell.",
+    defaultEnabled: true,
+    // The veil is scoped to the rebrand shell's content column, so it can only
+    // ever do anything on this page — even though every nav-reachable section
+    // renders inside that column.
+    page: 'dashboard-rebrand',
+  },
   // Per-tile toggles for the Jump Back In Quick Links grid — each tile
   // can be turned on/off independently. The Quick Links section hides
   // entirely when every tile is off.

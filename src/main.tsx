@@ -6,6 +6,7 @@ import { AccountProvider } from './context/AccountContext'
 import { CtaTestProvider } from './context/CtaTestContext'
 import { ThemeProvider } from './context/ThemeContext'
 import './styles/tokens.css'
+import './styles/lofi-shell.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
