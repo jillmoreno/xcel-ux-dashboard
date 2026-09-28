@@ -28,19 +28,49 @@
 
 /* Flatten the surface: no depth, no brand colour, no dividing hairlines that
    read as hierarchy. Borders survive as neutral so card EDGES still show. */
-/* Desaturate the whole column. This is what catches the things a selector
-   cannot reach: the progress-bar fill, the study-pace chart bars, status dots
-   — all EMPTY elements whose only content is a brand background, so the leaf
-   rule below (which needs `:not(:empty)`) skips them. One declaration beats
-   hunting each one, and it cannot miss a new one added later.
-   ⚠ `filter` makes this element a containing block for `position: fixed`
-   descendants. There are none in the content column today (checked across the
-   nav-reachable sections); if a section ever mounts a fixed overlay INSIDE the
-   column rather than in a portal, it will anchor here instead of the viewport.
-   That is the one thing to look at if a future overlay lands in the wrong
-   place while this flag is on. */
-.cre-lofi-shell {
+/* Desaturate the elements that carry colour and nothing else: the progress-bar
+   fill, the study-pace chart bars, the journey status dots. They are all EMPTY,
+   so the leaf rule below (which needs `:not(:empty)`) skips them, and no text
+   rule can reach them.
+
+   WHY `filter` AND NOT `background: neutral`: most empty elements in this tree
+   are layout spacers with no background at all. Painting them grey would
+   invent blocks that are not in the design. Greyscaling a transparent element
+   is a no-op, so this hits exactly the coloured ones and nothing else.
+
+   WHY IT IS NOT ON THE CONTAINER: it used to be, which was shorter — but
+   `filter` is destructive and applies to the whole subtree at paint, so no
+   child rule can opt back out of it. That made a full-fidelity CTA (below)
+   impossible to express. Scoping it here keeps that door open, and drops the
+   containing-block caveat that a container-level filter carried for any
+   `position: fixed` descendant. */
+.cre-lofi-shell *:empty {
   filter: grayscale(1);
+}
+
+/* THE PRIMARY CTA STAYS LIVE — 2026-09-28, the direct ask ("have this be a
+   normal CTA").
+
+   A wireframe still has to say where the main action is; greying the one
+   filled button on the page makes it read as another placeholder block, and
+   the question on the table is how a learner MOVES through this product.
+   Secondary CTAs are deliberately NOT exempt — "Details →", "What to expect →"
+   and the journey rows are text links and content rows, and bringing them back
+   would put most of the page's copy on screen again.
+
+   Keyed to the filled style rather than to `home.resume`, so it holds for any
+   section's primary CTA rather than this one button. It reads the inline
+   style because that is how these buttons are written here (a gradient from
+   `--color-primary-500`). A primary CTA painted with a SOLID fill instead
+   would need its pattern adding to this selector — that is the known gap. */
+.cre-lofi-shell [data-cta-id][style*='linear-gradient'],
+.cre-lofi-shell [data-cta-id][style*='linear-gradient'] * {
+  /* Explicit, because the universal rule above sets `color: transparent`
+     with `!important` and inline styles cannot outrank that. */
+  color: #fff !important;
+}
+.cre-lofi-shell [data-cta-id][style*='linear-gradient'] svg {
+  visibility: visible !important;
 }
 
 .cre-lofi-shell * {
@@ -83,7 +113,8 @@
 
 /* Anything painting a photo or gradient through CSS instead of an <img>. */
 .cre-lofi-shell [style*='background-image'],
-.cre-lofi-shell [style*='backgroundImage'] {
+.cre-lofi-shell [style*='backgroundImage'],
+.cre-lofi-shell [style*='linear-gradient']:not([data-cta-id]) {
   background-image: none !important;
   background-color: var(--color-neutral-200) !important;
 }

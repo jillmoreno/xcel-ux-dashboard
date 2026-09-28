@@ -124,6 +124,33 @@ describe('lo-fi shell — stylesheet', () => {
   })
 })
 
+describe('lo-fi shell — the live CTA', () => {
+  it('keeps the filled primary CTA at full fidelity', () => {
+    // A wireframe still has to say where the main action is. Asserted because
+    // this is an exception to an otherwise total rule, and exceptions are what
+    // a later tidy-up removes without knowing why they were there.
+    expect(CSS).toContain("[data-cta-id][style*='linear-gradient']")
+  })
+
+  it('exempts ONLY filled CTAs, never every data-cta-id', () => {
+    // `Details →`, `What to expect →` and the journey rows also carry a
+    // `data-cta-id`. Un-veiling those would put most of the page's copy back
+    // on screen and undo the point of the variant.
+    const bare = selectors(CSS).filter(
+      (sel) => /\[data-cta-id\]$/.test(sel) || /\[data-cta-id\] \*$/.test(sel),
+    )
+    expect(bare).toEqual([])
+  })
+
+  it('does not desaturate the column as a whole', () => {
+    // A container-level `filter` is destructive over the whole subtree, so the
+    // CTA exemption cannot exist alongside one — this is the rule that made it
+    // possible, and re-adding the shorter version silently greys the CTA.
+    const containerRule = selectors(CSS).some((sel) => sel === '.cre-lofi-shell')
+    expect(containerRule).toBe(false)
+  })
+})
+
 describe('lo-fi shell — call site', () => {
   it('applies the class only when the flag is on', () => {
     expect(SHELL).toContain("useFeatureFlag('lofi-shell').enabled")
