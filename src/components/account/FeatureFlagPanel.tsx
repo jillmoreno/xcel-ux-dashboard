@@ -103,6 +103,19 @@ const REBRAND_FLAGS = [
   // Which preset the Study Pace card opens on — the Pacing demo control's
   // flag. Variant-only; see the catalog entry.
   'study-pace-preset',
+  /* ⚠ ADDED 2026-09-28, AND THEY SHOULD HAVE BEEN HERE FROM THE START. Six
+     flags shipped with `page: 'dashboard-rebrand'` and were still invisible in
+     the panel on that route, because `page` drives the page CARD and its count
+     while THIS LIST drives what the panel renders. Setting one without the
+     other leaves a flag reachable only by hand-editing `?ff=` — which is how
+     all six were being demoed. */
+  'course-entry-style',
+  'course-entry-details',
+  'exam-step-style',
+  'journey-step-order',
+  'study-pace-hidden',
+  'nav-rail-icons',
+  'nav-rail-captions',
   // How the Study Pace card offers a choice — the clickable week Strip, or
   // three named Options. Variant-only; see the catalog entry.
   'study-pace-chooser',
