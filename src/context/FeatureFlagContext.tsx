@@ -727,6 +727,21 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'journey-step-order',
+    group: 'Widgets',
+    label: 'Journey step order',
+    description:
+      'Which step the right-hand journey column opens with. `coursework-first` (default) is what ships \u2014 Complete Coursework as Step 1, then Schedule State Exam, Pass State Exam and Get Licensed. `exam-first` promotes SCHEDULE STATE EXAM to Step 1 and drops Coursework to Step 2, on the argument that booking the exam is the thing a learner can do today and the one that dates everything else \u2014 the Study Pace tile already derives its plan from the exam date. ⚠ THE NUMBERS MOVE WITH THE CARDS: the eyebrows renumber so the column still reads 1-2-3-4 top to bottom. Four cards cannot draw a continuous spine, so the numbering IS the sequence; an order change that left the numbers behind would read as four unrelated things. Variant-only.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    defaultVariant: 'coursework-first',
+    variants: [
+      { value: 'coursework-first', label: 'Coursework first' },
+      { value: 'exam-first', label: 'Schedule exam first' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'study-pace-hidden',
     group: 'Widgets',
     label: 'Study Pace — hide',

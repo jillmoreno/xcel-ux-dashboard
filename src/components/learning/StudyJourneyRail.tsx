@@ -74,6 +74,7 @@ export function StudyJourneyRail({
   onOpenStop,
   onViewAll,
   stepRange = false,
+  stepNumber = 1,
 }: {
   path: LearningPathSummary
   /** Open a stop. Omitted → the rows render as plain text rather than links. */
@@ -96,6 +97,10 @@ export function StudyJourneyRail({
    * line to change if the range is wanted everywhere.
    */
   stepRange?: boolean
+  /** Which step this rail IS, for the eyebrow — 1 as shipped, 2 when
+   *  `journey-step-order: exam-first` puts Schedule State Exam above it. Only
+   *  read when `stepRange` is set. */
+  stepNumber?: number
 }) {
   /*
    * RAIL TREATMENT — `dashboard-journey-style`, variant-only (2026-09-16).
@@ -120,7 +125,7 @@ export function StudyJourneyRail({
      disagree about where 04 ends and 05 begins. */
   const eyebrowText =
     stepRange && stops.length > 0
-      ? `Step 1 \u00b7 ${STUDY_JOURNEY_EYEBROW}`
+      ? `Step ${stepNumber} \u00b7 ${STUDY_JOURNEY_EYEBROW}`
       : STUDY_JOURNEY_EYEBROW
   /*
    * LESS WORDS. `metaWords` prints group · count · status, which on this

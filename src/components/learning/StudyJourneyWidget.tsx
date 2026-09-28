@@ -118,7 +118,26 @@ export function StudyJourneyWidget({
    *
    * A CONSTANT NOW, deliberately: the number of stops must NOT move it again.
    */
+  /*
+   * STEP ORDER — `journey-step-order`, 2026-09-28.
+   *
+   * `exam-first` promotes Schedule State Exam above the coursework card. The
+   * NUMBERS move with the cards, which is the part that matters: four separate
+   * widgets cannot draw a continuous spine, so the eyebrow numbering IS the
+   * sequence. Reorder without renumbering and the column reads as four
+   * unrelated cards — the exact failure the note below is already about.
+   */
+  const examFirst = useFeatureFlag('journey-step-order').variant === 'exam-first'
+  /* Coursework is 1 and the licensing steps run 2-4; exam-first swaps the
+     first two, so coursework becomes 2 and the remaining licensing steps
+     keep 3 and 4. */
+  const courseworkStep = examFirst ? 2 : 1
   const stepStart = 2
+  /* Schedule State Exam is `GET_LICENSED_STEPS[0]`; exam-first lifts it above
+     the coursework card and the rest follow underneath. Sliced rather than
+     re-sorted so the published order stays the source of truth. */
+  const promoted = examFirst ? GET_LICENSED_STEPS[0] : null
+  const licensingAfter = examFirst ? GET_LICENSED_STEPS.slice(1) : GET_LICENSED_STEPS
   /* COLLAPSED — `dashboard-journey-complete`, and it only means anything at
      100%. Below that the two variants are identical, which is why the flag is
      read here and applied against `courseworkDone` rather than gating the
@@ -154,10 +173,23 @@ export function StudyJourneyWidget({
             things left are the licensing steps, and four stops of finished work
             above them is a receipt rather than a next action. The full variant
             disagrees — see the flag's own description. */}
+        {/* SCHEDULE STATE EXAM, PROMOTED — `journey-step-order: exam-first`.
+            Above the coursework card and numbered 1, because it is the thing a
+            learner can do today and the date it produces is what the Study Pace
+            tile plans against. */}
+        {promoted && (
+          <LicensingStepWidget
+            step={promoted}
+            number={1}
+            shell={shell}
+            onOpenStep={onOpenStep}
+            state={path.state}
+          />
+        )}
         {collapseCoursework ? (
           <section aria-label="Study journey" style={shell}>
             <p className="cre-eyebrow-ink" style={collapsedEyebrowStyle}>
-              {`Step 1 · Atlas Study Journey`}
+              {`Step ${courseworkStep} · Atlas Study Journey`}
             </p>
             <p style={collapsedTitleStyle}>Coursework complete</p>
           </section>
@@ -171,14 +203,15 @@ export function StudyJourneyWidget({
                  run 01-04, 05, 06, 07 down the column instead of the sequence
                  appearing to start at 05. Split only; see the prop's note. */
               stepRange
+              stepNumber={courseworkStep}
             />
           </section>
         )}
-        {GET_LICENSED_STEPS.map((step, i) => (
+        {licensingAfter.map((step, i) => (
           <LicensingStepWidget
             key={step.id}
             step={step}
-            number={stepStart + i}
+            number={examFirst ? stepStart + 1 + i : stepStart + i}
             shell={shell}
             onOpenStep={onOpenStep}
             state={path.state}
@@ -188,7 +221,14 @@ export function StudyJourneyWidget({
                do to get there. The other two are named by their published step
                title, which already reads as an action. */
             heading={
-              i === GET_LICENSED_STEPS.length - 1
+              /* ⚠ KEYED ON THE STEP, NOT THE INDEX. With `exam-first` this
+                 array is a SLICE of two, so the old `i === GET_LICENSED_STEPS
+                 .length - 1` (i.e. `i === 2`) matches nothing at all and the
+                 arrival card silently loses its "Get Licensed in <state>"
+                 heading. Not a hypothetical — re-introducing the index form
+                 fails `JourneyStepOrder.test.tsx`. The arrival card is the
+                 arrival card, whatever position it is in. */
+              step.id === GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 1].id
                 ? jurisdictionName(path.state)
                   ? `Get Licensed in ${jurisdictionName(path.state)}`
                   : 'Get Licensed'
