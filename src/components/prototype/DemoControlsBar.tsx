@@ -6,6 +6,7 @@ import {
   isQualifyingEducationVersion,
 } from '@/data/dashboardVersions'
 import { ATLAS_SKINS, ATLAS_SKIN_PARAM, atlasSkinFor, type AtlasSkin } from '@/components/layout/atlasBrandSkin'
+import { ATLAS_FONTS, ATLAS_FONT_PARAM, atlasFontFor, type AtlasFont } from '@/components/layout/atlasFontSets'
 import { UserSlash, Share2, BrowserWindow, Check, ChevronDown } from '@/icons'
 import { ActionMenu } from '@/components/ui/ActionMenu'
 import { Toast } from '@/components/ui/Toast'
@@ -287,6 +288,20 @@ export function DemoControlsBar({
     close()
   }
 
+  /* ATLAS HEADING FONTS (2026-09-29) — the Fonts dropdown, same scope as the
+     Brand control: it swaps the Atlas pages' heading face between the style
+     guide's DM Serif Display and the "Atlas Serif Trials" faces. See
+     atlasFontSets.ts. */
+  const atlasFont = atlasFontFor(searchParams.get(ATLAS_FONT_PARAM))
+  const atlasFontLabel = ATLAS_FONTS.find((f) => f.font === atlasFont)?.label ?? 'DM Serif Display'
+  const pickAtlasFont = (font: AtlasFont) => {
+    const next = new URLSearchParams(searchParams)
+    if (font === 'dm-serif-display') next.delete(ATLAS_FONT_PARAM)
+    else next.set(ATLAS_FONT_PARAM, font)
+    setSearchParams(next, { replace: true })
+    close()
+  }
+
   const readinessReachable = !railHidesSection(
     searchParams.get('version') ?? defaultDiscoverabilityVersionFor(brand),
     'readiness',
@@ -563,6 +578,38 @@ export function DemoControlsBar({
                 onClick={() => pickAtlasSkin(b.skin)}
               >
                 <span style={{ flex: 1 }}>{b.label}</span>
+                {active && <Check size={15} aria-hidden />}
+              </button>
+            )
+          })}
+        </DemoDropdown>
+        )}
+
+        {/* Fonts — the Atlas heading face; see `pickAtlasFont`. */}
+        {showAtlasSkin && (
+        <DemoDropdown
+          id="atlas-fonts"
+          label={atlasFontLabel}
+          eyebrow="Headings"
+          openId={openId}
+          onToggle={toggle}
+          panelRole="radiogroup"
+          panelLabel="Heading font"
+          panelMinWidth={260}
+        >
+          {ATLAS_FONTS.map((f) => {
+            const active = f.font === atlasFont
+            return (
+              <button
+                key={f.font}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                tabIndex={active ? 0 : -1}
+                className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
+                onClick={() => pickAtlasFont(f.font)}
+              >
+                <span style={{ flex: 1 }}>{f.label}</span>
                 {active && <Check size={15} aria-hidden />}
               </button>
             )
@@ -931,6 +978,7 @@ export function DemoControlsBar({
               next.delete('wn')
               next.delete('version')
               next.delete(ATLAS_SKIN_PARAM)
+              next.delete(ATLAS_FONT_PARAM)
               // Clear the read-only `?ff=` flag override too — otherwise a shared
               // link's pinned flags (e.g. membership-count:five) keep winning over
               // the flags Reset just restored, so Reset would appear to do nothing.

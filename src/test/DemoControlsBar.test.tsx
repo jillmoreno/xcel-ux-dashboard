@@ -91,6 +91,16 @@ describe('DemoControlsBar — Atlas brand skin', () => {
     renderBar()
     expect(screen.queryByRole('button', { name: /XCEL \(Insurance\)/ })).toBeNull()
   })
+
+  it('carries a Headings font dropdown that writes ?fonts=', () => {
+    renderBar(ATLAS)
+    fireEvent.click(screen.getByRole('button', { name: /DM Serif Display \(current\)/ }))
+    fireEvent.click(screen.getByRole('radio', { name: /Outfit/ }))
+    expect(url()).toContain('fonts=outfit')
+    fireEvent.click(screen.getByRole('button', { name: /Outfit/ }))
+    fireEvent.click(screen.getByRole('radio', { name: /DM Serif Display/ }))
+    expect(url()).not.toContain('fonts=')
+  })
 })
 
 describe('DemoControlsBar — Quick views tiers drive real state', () => {

@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode, type CSSProperties } from 'react'
 import { ATLAS_SKIN_PARAM, atlasSkinFor } from './atlasBrandSkin'
+import { ATLAS_FONT_PARAM, atlasFontFor, atlasFontHref } from './atlasFontSets'
 import { useSearchParams } from 'react-router-dom'
 import { useAccount, supportsMembership, type Brand } from '@/context/AccountContext'
 import {
@@ -305,6 +306,29 @@ function PlatformShellBody() {
       delete root.dataset.atlasBrand
     }
   }, [atlasPalette, atlasSkin])
+  // The Atlas HEADING FONT (`?fonts=`, the Demo Controls' Fonts dropdown) —
+  // mirrored onto <html data-atlas-font>, and the chosen face loaded from
+  // Google Fonts on demand so the other nine are never downloaded. See
+  // atlasFontSets.ts.
+  const atlasFont = atlasFontFor(params.get(ATLAS_FONT_PARAM))
+  useEffect(() => {
+    if (!atlasPalette) return
+    const root = document.documentElement
+    root.dataset.atlasFont = atlasFont
+    const href = atlasFontHref(atlasFont)
+    let link: HTMLLinkElement | null = null
+    if (href) {
+      link = document.createElement('link')
+      link.rel = 'stylesheet'
+      link.href = href
+      link.dataset.atlasFont = atlasFont
+      document.head.appendChild(link)
+    }
+    return () => {
+      delete root.dataset.atlasFont
+      link?.remove()
+    }
+  }, [atlasPalette, atlasFont])
   const railCollapsed =
     atlasNav
       ? false

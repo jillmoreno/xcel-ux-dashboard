@@ -4695,22 +4695,44 @@ a.cre-library-card-title::after {
      both course card titles (Home and Overview); H8 on the course rails' title, the
      Overview's "Where you are", Rubi and tip titles and the Home right rail's
      step titles (H7 until 2026-09-29). */
-  --type-atlas-h1-size: 64px;
-  --type-atlas-h1-line: 64px;
-  --type-atlas-h2-size: 48px;
-  --type-atlas-h2-line: 50px;
-  --type-atlas-h3-size: 44px;
-  --type-atlas-h3-line: 46px;
-  --type-atlas-h4-size: 38px;
-  --type-atlas-h4-line: 40px;
-  --type-atlas-h5-size: 32px;
-  --type-atlas-h5-line: 34px;
-  --type-atlas-h6-size: 28px;
-  --type-atlas-h6-line: 32px;
-  --type-atlas-h7-size: 24px;
-  --type-atlas-h7-line: 28px;
-  --type-atlas-h8-size: 20px;
-  --type-atlas-h8-line: 24px;
+  /* The Figma values live in the -BASE tokens (the weekly style-guide check
+     edits those); the tokens components read scale them by the Fonts
+     dropdown's per-face size and line factors (1 for the guide's own face).
+     See "ATLAS HEADING FONTS" at the end of this file. */
+  --atlas-font-size-scale: 1;
+  --atlas-font-line-scale: 1;
+  --type-atlas-h1-base-size: 64px;
+  --type-atlas-h1-base-line: 64px;
+  --type-atlas-h2-base-size: 48px;
+  --type-atlas-h2-base-line: 50px;
+  --type-atlas-h3-base-size: 44px;
+  --type-atlas-h3-base-line: 46px;
+  --type-atlas-h4-base-size: 38px;
+  --type-atlas-h4-base-line: 40px;
+  --type-atlas-h5-base-size: 32px;
+  --type-atlas-h5-base-line: 34px;
+  --type-atlas-h6-base-size: 28px;
+  --type-atlas-h6-base-line: 32px;
+  --type-atlas-h7-base-size: 24px;
+  --type-atlas-h7-base-line: 28px;
+  --type-atlas-h8-base-size: 20px;
+  --type-atlas-h8-base-line: 24px;
+  --type-atlas-h1-size: calc(var(--type-atlas-h1-base-size) * var(--atlas-font-size-scale));
+  --type-atlas-h1-line: calc(var(--type-atlas-h1-base-line) * var(--atlas-font-size-scale) * var(--atlas-font-line-scale));
+  --type-atlas-h2-size: calc(var(--type-atlas-h2-base-size) * var(--atlas-font-size-scale));
+  --type-atlas-h2-line: calc(var(--type-atlas-h2-base-line) * var(--atlas-font-size-scale) * var(--atlas-font-line-scale));
+  --type-atlas-h3-size: calc(var(--type-atlas-h3-base-size) * var(--atlas-font-size-scale));
+  --type-atlas-h3-line: calc(var(--type-atlas-h3-base-line) * var(--atlas-font-size-scale) * var(--atlas-font-line-scale));
+  --type-atlas-h4-size: calc(var(--type-atlas-h4-base-size) * var(--atlas-font-size-scale));
+  --type-atlas-h4-line: calc(var(--type-atlas-h4-base-line) * var(--atlas-font-size-scale) * var(--atlas-font-line-scale));
+  --type-atlas-h5-size: calc(var(--type-atlas-h5-base-size) * var(--atlas-font-size-scale));
+  --type-atlas-h5-line: calc(var(--type-atlas-h5-base-line) * var(--atlas-font-size-scale) * var(--atlas-font-line-scale));
+  --type-atlas-h6-size: calc(var(--type-atlas-h6-base-size) * var(--atlas-font-size-scale));
+  --type-atlas-h6-line: calc(var(--type-atlas-h6-base-line) * var(--atlas-font-size-scale) * var(--atlas-font-line-scale));
+  --type-atlas-h7-size: calc(var(--type-atlas-h7-base-size) * var(--atlas-font-size-scale));
+  --type-atlas-h7-line: calc(var(--type-atlas-h7-base-line) * var(--atlas-font-size-scale) * var(--atlas-font-line-scale));
+  --type-atlas-h8-size: calc(var(--type-atlas-h8-base-size) * var(--atlas-font-size-scale));
+  --type-atlas-h8-line: calc(var(--type-atlas-h8-base-line) * var(--atlas-font-size-scale) * var(--atlas-font-line-scale));
 
   /* The two usage rules, as tokens components can reach for. */
   --color-atlas-cta: var(--color-cta-500);
@@ -5071,4 +5093,35 @@ a.cre-library-card-title::after {
   --color-tertiary-800: #092348;
   --color-tertiary-900: #041124;
   --color-compass-page: color-mix(in srgb, var(--color-tertiary-100) 50%, #ffffff);
+}
+
+/* ============================================================================
+   ATLAS HEADING FONTS — the Demo Controls' Fonts dropdown, 2026-09-29
+   ----------------------------------------------------------------------------
+   `<html data-atlas-font>` (see atlasFontSets.ts) swaps the heading face on
+   the Atlas pages, for comparing the "Atlas Serif Trials" faces in place. Each
+   block sets the face and, where the trial did, its size / line factors.
+   Gloock, Yeseva One and Albert Sans were removed from the list on
+   2026-09-29. The face's single loaded weight is its trial weight (weight
+   synthesis is off here), so no weight is set. DM Serif Display, the guide's
+   face, needs no block. */
+[data-atlas-palette][data-atlas-font='playfair-2'] {
+  --font-heading-serif: 'Playfair', Georgia, serif;
+  --atlas-font-size-scale: 1.265;
+  --atlas-font-line-scale: 0.81;
+}
+[data-atlas-palette][data-atlas-font='source-serif-4'] {
+  --font-heading-serif: 'Source Serif 4', Georgia, serif;
+}
+[data-atlas-palette][data-atlas-font='figtree'] {
+  --font-heading-serif: 'Figtree', system-ui, sans-serif;
+}
+[data-atlas-palette][data-atlas-font='plus-jakarta-sans'] {
+  --font-heading-serif: 'Plus Jakarta Sans', system-ui, sans-serif;
+}
+[data-atlas-palette][data-atlas-font='outfit'] {
+  --font-heading-serif: 'Outfit', system-ui, sans-serif;
+}
+[data-atlas-palette][data-atlas-font='instrument-sans'] {
+  --font-heading-serif: 'Instrument Sans', system-ui, sans-serif;
 }
