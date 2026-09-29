@@ -1115,10 +1115,16 @@ describe('the Current Learning Progress block sits on the page, not a navy card'
     expect(half.style.background).toBe('transparent')
     expect(half.style.boxShadow).toBe('')
     expect(half.style.borderRadius).toBe('')
-    // The left/right padding goes with the card: a bare block lines up with the
-    // section headings below rather than staying inset by a gutter it no
-    // longer has.
-    expect(half.style.padding).toBe('4px 0px 0px')
+    /* ALL the padding goes with the card. Left/right so a bare block lines up
+       with the section headings below rather than staying inset by a gutter it
+       no longer has — and the TOP since 2026-09-29, which is what changed here.
+
+       ⚠ IT WAS `4px 0px 0px`, a nudge left over from when this column led with
+       a header of its own. That header is hidden on this surface, so the 4px
+       was pushing the Current Course card 4px BELOW the exam card in the
+       column beside it: two halves of one grid starting at the same y with
+       their first cards not quite level. */
+    expect(half.style.padding).toBe('0px')
   })
 
   it('keeps the navy card on the other versions', () => {

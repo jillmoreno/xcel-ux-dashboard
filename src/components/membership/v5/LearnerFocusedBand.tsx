@@ -1062,9 +1062,17 @@ export function LearnerFocusedBand({
           // padding goes with it on the left/right, since a bare block should
           // line up with the section headings below rather than being inset by
           // a card's gutter it no longer has.
+          //
+          // ⚠ AND THE TOP PADDING GOES TOO (2026-09-29). It was `4px 0 0`, a
+          // nudge left over from when this column led with a header of its own;
+          // that header is hidden on this surface now, so the 4px was pushing
+          // the Current Course card 4px BELOW the exam card beside it. Two
+          // columns of a grid that start at the same y and whose first cards do
+          // not is the kind of misalignment that reads as sloppiness without
+          // being obviously anything — measured, not guessed.
           background: onPage ? 'transparent' : 'var(--color-primary-700)',
           color: cText,
-          padding: onPage ? '4px 0 0' : '24px 26px',
+          padding: onPage ? 0 : '24px 26px',
           display: 'flex',
           flexDirection: 'column',
           // Split: the radius and shadow the section used to own move onto the
