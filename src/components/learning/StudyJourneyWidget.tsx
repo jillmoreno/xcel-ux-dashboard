@@ -1,6 +1,7 @@
 import type { LearningPathSummary } from '@/data/learningFixtures'
 import { GetLicensedRail, StudyJourneyRail } from './StudyJourneyRail'
 import { ExamDateCard } from './ExamDateCard'
+import { ExamScheduleWidget } from './ExamScheduleWidget'
 import { useState, type CSSProperties } from 'react'
 import { journeyStopsFor } from './studyJourneyUtil'
 import { clearExamDate, useExamDate, writeExamDate } from '@/data/examDateStore'
@@ -129,11 +130,18 @@ export function StudyJourneyWidget({
    * unrelated cards — the exact failure the note below is already about.
    */
   const examFirst = useFeatureFlag('journey-step-order').variant === 'exam-first'
-  /* The reworked exam-date card — `exam-step-style: date-first`. A SIBLING of
+  /* The reworked exam-date cards — `exam-step-style`. SIBLINGS of
      `LicensingStepWidget`'s treatment, picked here rather than branched inside
-     it: the two cards differ in heading, meta, control and set-state, which is
-     a fork rather than a conditional. */
-  const dateFirst = useFeatureFlag('exam-step-style').variant === 'date-first'
+     it: the cards differ in heading, meta, control and set-state, which is a
+     fork rather than a conditional.
+
+     THREE ARMS NOW (`ask-first` added 2026-09-29 and is the default): `inline`
+     leaves the shipped widget alone, while `date-first` (`ExamDateCard`) and
+     `ask-first` (`ExamScheduleWidget`) both REPLACE it. That is the only
+     distinction either call site below needs — which of the two replacements
+     to render is settled once, inside `ExamStepCard`. */
+  const examStyle = useFeatureFlag('exam-step-style').variant
+  const examReworked = examStyle === 'date-first' || examStyle === 'ask-first'
   /* Coursework is 1 and the licensing steps run 2-4; exam-first swaps the
      first two, so coursework becomes 2 and the remaining licensing steps
      keep 3 and 4. */
@@ -184,8 +192,15 @@ export function StudyJourneyWidget({
             learner can do today and the date it produces is what the Study Pace
             tile plans against. */}
         {promoted &&
-          (dateFirst && promoted.id === 'schedule-exam' ? (
-            <ExamDateCard number={1} shell={shell} onOpenStep={onOpenStep} stepId={promoted.id} />
+          (examReworked && promoted.id === 'schedule-exam' ? (
+            <ExamStepCard
+              style={examStyle}
+              number={1}
+              shell={shell}
+              onOpenStep={onOpenStep}
+              stepId={promoted.id}
+              stateName={jurisdictionName(path.state) || undefined}
+            />
           ) : (
             <LicensingStepWidget
               step={promoted}
@@ -222,14 +237,16 @@ export function StudyJourneyWidget({
              into the promoted slot above, so a branch in only one of them would
              give the reworked card under one order and the shipped one under
              the other — an A/B measuring two things at once. */
-          if (dateFirst && step.id === 'schedule-exam') {
+          if (examReworked && step.id === 'schedule-exam') {
             return (
-              <ExamDateCard
+              <ExamStepCard
                 key={step.id}
+                style={examStyle}
                 number={n}
                 shell={shell}
                 onOpenStep={onOpenStep}
                 stepId={step.id}
+                stateName={jurisdictionName(path.state) || undefined}
               />
             )
           }
@@ -420,6 +437,48 @@ const LICENSING_STEP_CTA: Record<string, string | undefined> = {
   'schedule-exam': 'home.schedule-exam',
   'pass-exam': 'home.what-to-expect',
   'apply-license': 'home.how-to-apply',
+}
+
+/**
+ * WHICH REWORKED EXAM CARD — `exam-step-style`, the two replacement arms.
+ *
+ * ⚠ THE THREE-WAY LIVES HERE AND NOWHERE ELSE. `journey-step-order: exam-first`
+ * renders Schedule State Exam from two different places in the column, and the
+ * note at the second of them already records what happens when the two disagree:
+ * one arm under one step order and another under the other, an A/B measuring two
+ * things at once. A boolean duplicated twice survived that; a three-way would
+ * not. The call sites ask only "is this step reworked at all" and this decides
+ * the rest.
+ */
+function ExamStepCard({
+  style,
+  number,
+  shell,
+  onOpenStep,
+  stepId,
+  stateName,
+}: {
+  /** The flag's variant — `date-first` or `ask-first`. */
+  style: string | undefined
+  number: number
+  shell: CSSProperties
+  onOpenStep?: (id: string) => void
+  stepId: string
+  /** The learner's jurisdiction, for `ask-first`'s saved title. Undefined
+   *  falls back to the widget's own demo state. */
+  stateName?: string
+}) {
+  return style === 'ask-first' ? (
+    <ExamScheduleWidget
+      number={number}
+      shell={shell}
+      onOpenStep={onOpenStep}
+      stepId={stepId}
+      stateName={stateName}
+    />
+  ) : (
+    <ExamDateCard number={number} shell={shell} onOpenStep={onOpenStep} stepId={stepId} />
+  )
 }
 
 function LicensingStepWidget({

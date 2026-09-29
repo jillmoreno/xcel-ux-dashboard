@@ -720,13 +720,14 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Widgets',
     label: 'Exam date step',
     description:
-      'How the Schedule State Exam card asks for the exam date. `inline` (default) is what ships \u2014 heading "Schedule State Exam", the $40 fee line, and an always-visible date field with Save. `date-first` is the reworked card (`ExamDateCard`): heading "Exam Date", no fee line, and a secondary CTA that opens a MONTH SELECTOR IN THE CARD; once a date is set the card quietens, with "Change date" at link weight beside "How to Schedule". ⚠ THE HEADING IS A LABEL, NOT AN INSTRUCTION, and that is the point of it \u2014 "Schedule" describes something already done once a date exists, where "Exam Date" stays true in both states. The fee moves to the step sheet and the state\u2019s own booking site, where the price is authoritative and current. Worked out on a copy bench before any code. Variant-only.',
+      'How the Schedule State Exam card asks for the exam date. `inline` is what ships today \u2014 heading "Schedule State Exam", the $40 fee line, and an always-visible date field with Save. `date-first` is the reworked card (`ExamDateCard`): heading "Exam Date", no fee line, and a secondary CTA that opens a MONTH SELECTOR IN THE CARD; once a date is set the card quietens, with "Change date" at link weight beside "How to Schedule". ⚠ THE HEADING IS A LABEL, NOT AN INSTRUCTION, and that is the point of it \u2014 "Schedule" describes something already done once a date exists, where "Exam Date" stays true in both states. The fee moves to the step sheet and the state\u2019s own booking site, where the price is authoritative and current. Worked out on a copy bench before any code. `ask-first` is the third arm and the CURRENT DEFAULT (`ExamScheduleWidget`, Figma node 765:3844): it leads with the QUESTION \u2014 \u201cHave you scheduled your state exam?\u201d \u2014 above a Yes / Not yet pair, then moves through three more states. Not yet SHRINKS THE CARD WITHOUT DISMISSING IT (a short note about booking through the state board, and one way back in); Yes expands the same in-card calendar `date-first` uses; saving re-titles the card \u201c{state} State exam\u201d and turns it into a readout \u2014 tear-off calendar, day countdown, Edit at link weight. \u26a0 THE DIFFERENCE IS WHAT IT ASSUMES. `date-first` leads with \u201cEnter exam date\u201d, which presumes the learner has one; this asks first, because for most learners arriving the answer is no and a no is worth capturing. All three arms write the SAME `examDateStore` date, so the Target Exam Date and the Study Pace tile move identically whichever is on \u2014 the comparison is the asking, not the data. Variant-only.',
     maturity: 'wip',
     defaultEnabled: true,
-    defaultVariant: 'date-first',
+    defaultVariant: 'ask-first',
     variants: [
       { value: 'inline', label: 'Inline date field' },
       { value: 'date-first', label: 'Exam Date + month picker' },
+      { value: 'ask-first', label: 'Ask first, then the calendar' },
     ],
     page: 'dashboard-rebrand',
   },

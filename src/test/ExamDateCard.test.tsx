@@ -16,6 +16,12 @@ import { DISCOVERABILITY_DASHBOARD_VERSION_TESTING } from '@/data/dashboardVersi
  * decision here was settled on a copy bench first, so what these pin is that
  * the built card matches what was agreed — and that the shipped card is
  * untouched beside it.
+ *
+ * THE FLAG HAS A THIRD ARM SINCE 2026-09-29 (`ask-first`, now the default) and
+ * `ExamScheduleWidget.test.tsx` covers it. This file stays the `date-first`
+ * file: every test below pins `exam-step-style:date-first` explicitly, which is
+ * why adding a new default broke exactly one assertion here — the one that is
+ * supposed to break.
  */
 
 const URL = `/dashboard-rebrand?version=${DISCOVERABILITY_DASHBOARD_VERSION_TESTING.id}`
@@ -52,17 +58,23 @@ function renderShell(ff?: string) {
 const card = () => screen.getByRole('region', { name: 'Exam Date' })
 
 describe('exam-step-style', () => {
-  it('ships the REWORKED card, and the inline one is now the opt-in', () => {
-    /* ⚠ PROMOTED 2026-09-28. This asserted the opposite — `inline` shipping and
-       `date-first` as the variant — and failed the moment the baseline moved,
-       which is the job it was written for: a new arm must not become the
-       default by accident, only on purpose. The two arms are simply the other
-       way round now. */
-    expect(FEATURE_FLAGS.find((f) => f.key === 'exam-step-style')?.defaultVariant).toBe(
-      'date-first',
-    )
+  it('ships `ask-first`; `date-first` and `inline` are both opt-ins now', () => {
+    /* ⚠ THIS ASSERTION HAS MOVED TWICE, and moving it is its whole job. It read
+       `inline` until 2026-09-28 and `date-first` until 2026-09-29; each time a
+       new arm became the baseline this test failed FIRST and someone had to
+       come here and say so on purpose. A default that can change without a
+       failing test is a default nobody decided. */
+    expect(FEATURE_FLAGS.find((f) => f.key === 'exam-step-style')?.defaultVariant).toBe('ask-first')
     renderShell()
-    expect(screen.getByRole('region', { name: 'Exam Date' })).toBeTruthy()
+    /* The three arms share one region name — this is the same journey step
+       whichever way it asks, and a landmark that renamed itself per design
+       variant would make the page read differently to a screen reader for
+       reasons that have nothing to do with the learner. The CONTENT is what
+       separates them. */
+    const c = card()
+    expect(within(c).getByText('Have you scheduled your state exam?')).toBeTruthy()
+    // …so neither of the other two arms is on the page.
+    expect(within(c).queryByRole('button', { name: 'Enter exam date' })).toBeNull()
     expect(screen.queryByRole('region', { name: 'Schedule State Exam' })).toBeNull()
     // …and the fee line is gone from the baseline with it.
     expect(screen.queryByText(/\$40 exam fee/)).toBeNull()
