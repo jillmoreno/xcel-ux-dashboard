@@ -47,7 +47,18 @@ export function CalendarTearOff({ date, width = 140, compact = false }: Props) {
   const yearLh = compact ? '18px' : '28px'
   const gap = compact ? 2 : 4
   return (
-    <div style={{ position: 'relative', width, paddingTop: 9, flexShrink: 0 }}>
+    /* ⚠ `paddingTop` IS THE RING OVERLAP, and it is the only thing setting it.
+       The rings are 14px tall at `top: 0`, so the card's own top edge lands at
+       `paddingTop + marginTop` (3 + 5 = 8) and the bottom 6px of each ring
+       passes OVER the navy header strip — which is what makes them read as
+       binder rings threaded through a page rather than two tabs balanced on
+       top of it. It was 9, which put the card at exactly 14 and left the rings
+       abutting the edge with no overlap at all.
+
+       Pulling the card UP rather than pushing the rings DOWN on purpose: the
+       rings are anchored to the top of the component, so moving them would
+       leave dead space above them and grow the whole block. */
+    <div style={{ position: 'relative', width, paddingTop: 3, flexShrink: 0 }}>
       <span
         aria-hidden
         style={{
@@ -76,7 +87,11 @@ export function CalendarTearOff({ date, width = 140, compact = false }: Props) {
         style={{
           marginTop: 5,
           border: '1px solid var(--color-primary-500)',
-          borderRadius: 'var(--radius-lg)',
+          /* `md` (8px), not `lg` (12px) — 2026-09-29. A desk calendar is a
+             squared-off object, and at the compact 84px width `lg` rounded
+             enough that the corners started reading as a rounded badge rather
+             than a page. Still a token, so it tracks the scale. */
+          borderRadius: 'var(--radius-md)',
           overflow: 'hidden',
           background: 'var(--color-surface-card)',
           boxShadow: 'var(--shadow-card)',

@@ -740,7 +740,14 @@ const scheduledBodyRowStyle: CSSProperties = {
 }
 
 const countdownPanelStyle: CSSProperties = {
-  flex: 1,
+  /* HUGS ITS CONTENT — 2026-09-29. It was `flex: 1`, which stretched the tinted
+     panel to the full width left over beside the tear-off, so the ground it
+     draws was sized by the card rather than by the thing it contains. The
+     countdown is three words; the panel should be three words wide.
+
+     No `flex` at all rather than `flex: '0 0 auto'`: the default `0 1 auto`
+     lets it SHRINK if the card ever gets narrow enough, which with `minWidth: 0`
+     below means the text wraps instead of overflowing the card. */
   minWidth: 0,
   display: 'flex',
   alignItems: 'center',
