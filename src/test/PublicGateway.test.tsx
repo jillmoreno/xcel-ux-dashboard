@@ -48,7 +48,7 @@ function renderAt(Page: React.ComponentType, path: string) {
 // 2026-09-23 (see `NAV_EYEBROWS` in UxDashboardPage.tsx) — they show here now,
 // under their own "Dev Handoff" eyebrow, alongside "Demo" and "Design &
 // Research" over the sections that were already public.
-const PUBLIC_SECTIONS = ['Prototypes', 'Refinement', 'Other Links', 'Research', 'Development', 'Done']
+const PUBLIC_SECTIONS = ['Prototypes', 'Refinement', 'Research', 'Other Links', 'Development', 'Done']
 const GATED_SECTIONS = ['Design', 'Exploration', 'Sandbox', 'Archive', 'QA Notes', 'To Do', 'Contributing']
 
 beforeEach(() => {
@@ -90,6 +90,13 @@ describe('public build — the nav', () => {
     expect(labels).toEqual(PUBLIC_SECTIONS)
     for (const s of GATED_SECTIONS) expect(screen.queryByText(s)).toBeNull()
     expect(screen.queryByText(/^Designers$/i)).toBeNull()
+    // The lockup's third line says WHICH BUILD you are on — the two sites are
+    // otherwise told apart only by which sections are in the rail, which you
+    // have to already know to read. It is OUTSIDE `nav`, in the brand block, so
+    // this is not the section eyebrow asserted just below.
+    expect(screen.getByText('Demo Link')).toBeInTheDocument()
+    expect(screen.queryByText('Design Link')).toBeNull()
+    expect(screen.getByText('UX Hub')).toBeInTheDocument()
     // The three eyebrows over the sections that ARE public still draw here —
     // only the gated group's own eyebrow is suppressed.
     expect(within(nav).getByText('Demo')).toBeInTheDocument()
@@ -101,12 +108,16 @@ describe('public build — the nav', () => {
     expect(screen.queryByText(/— locked/)).toBeNull()
   })
 
-  it('keeps the stakeholder guide link — the one piece of orientation a reviewer gets', async () => {
+  it('no longer links the stakeholder guide, on this build either', async () => {
+    // The rail link was removed on 2026-09-29 for BOTH builds — it is one
+    // element, not a per-site one. Worth knowing what that costs here: this was
+    // the only orientation a stakeholder was given, and the public site has no
+    // Contributing section to fall back on. The guide is still served at
+    // /about/ for anyone sent the URL directly.
     const Page = await loadPublicPage()
     renderAt(Page, '/')
-    const link = screen.getByRole('link', { name: /How to read this dashboard/ })
-    expect(link).toHaveAttribute('href', '/about/')
-    // And no trace of the designer guide's name anywhere on the page.
+    expect(screen.queryByRole('link', { name: /How to read this dashboard/ })).toBeNull()
+    // And still no trace of the designer guide's name anywhere on the page.
     expect(screen.queryByText(/Contributing/)).toBeNull()
   })
 

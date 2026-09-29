@@ -39,15 +39,15 @@ function renderDashboard(initialPath = '/') {
 }
 
 /** The nav order is load-bearing: the ungated sections first (Prototypes ·
- *  Refinement · Other Links · Research · Development · Done — Development and
+ *  Refinement · Research · Other Links · Development · Done — Development and
  *  Done were pulled out of the shared gate 2026-09-23, see `NAV_EYEBROWS` in
  *  UxDashboardPage.tsx), then the still-gated group, with the divider drawn
  *  where the first gated one starts. */
 const EXPECTED_SECTIONS = [
   'Prototypes',
   'Refinement',
-  'Other Links',
   'Research',
+  'Other Links',
   'Design',
   'Exploration',
   'Sandbox',
@@ -69,8 +69,12 @@ beforeEach(() => {
 describe('XCEL dashboard — mount and nav', () => {
   it('mounts and renders the brand lockup', () => {
     renderDashboard()
-    expect(screen.getByText('UX Dashboard')).toBeInTheDocument()
-    expect(screen.getByText('XCEL LMS')).toBeInTheDocument()
+    expect(screen.getByText('UX Hub')).toBeInTheDocument()
+    // Both products, because the hub is now explicitly about both — XCEL LMS
+    // alone read as the name of the only thing in here.
+    expect(screen.getByText('XCEL LMS & Compass Learning')).toBeInTheDocument()
+    // The third line says WHICH BUILD you are on. This is the full site.
+    expect(screen.getByText('Design Link')).toBeInTheDocument()
   })
 
   it('renders the full section set, in order', () => {
@@ -99,13 +103,13 @@ describe('XCEL dashboard — mount and nav', () => {
     expect(statSync(resolve(dir, 'contributing.pdf')).size).toBeGreaterThan(10_000)
   })
 
-  it('the foot of the rail links the stakeholder guide, outside the section nav', () => {
+  it('no longer links the stakeholder guide from the rail', () => {
+    // Removed 2026-09-29. The guide itself is UNCHANGED and still served at
+    // /about/ — this is the rail entry going, not the document. Pinned rather
+    // than deleted so that putting the link back is a deliberate act with a
+    // failing test behind it, not something that drifts back in.
     renderDashboard()
-    const link = screen.getByRole('link', { name: /How to read this dashboard/ })
-    expect(link).toHaveAttribute('href', '/about/')
-    // Not a section: it must not be inside the <nav>, or it becomes a
-    // thirteenth row and the order assertion above starts counting it.
-    expect(screen.getByRole('navigation')).not.toContainElement(link)
+    expect(screen.queryByRole('link', { name: /How to read this dashboard/ })).toBeNull()
   })
 })
 

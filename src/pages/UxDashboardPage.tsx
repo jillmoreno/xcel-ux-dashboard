@@ -50,7 +50,6 @@ import {
 import { ActionMenu } from '@/components/ui/ActionMenu'
 import {
   ArrowLeft,
-  ArrowUpRightFromSquare,
   Bolt,
   CalendarDay,
   Check,
@@ -228,7 +227,15 @@ const SECTIONS: SectionDef[] = [
       'Work in review — branches, components and explorations the team is discussing. As many as you like; nothing here is the source of truth. Added on the page, not in code.',
   },
   {
-    // Directly under Refinement and UNGATED, which is the decision in this entry.
+    id: 'research',
+    label: 'Research',
+    blurb: 'The reasoning behind the designs — one entry per decision.',
+    count: RESEARCH_DECISIONS,
+  },
+  {
+    // UNGATED, which is the decision in this entry. (It sat directly under
+    // Refinement until 2026-09-29; Research is between them now. The ordering
+    // was never the point — being ungated is.)
     // Prototypes is the passwordless front door and this sits beside it, so a
     // link added here is a link a stakeholder can reach unaccompanied — the
     // same consideration `UxDashboard.smoke.test.tsx` guards for Prototypes'
@@ -246,12 +253,6 @@ const SECTIONS: SectionDef[] = [
     id: 'links',
     label: 'Other Links',
     blurb: 'Everything that lives elsewhere — briefs, boards, builds and references. Added on the page, not in code.',
-  },
-  {
-    id: 'research',
-    label: 'Research',
-    blurb: 'The reasoning behind the designs — one entry per decision.',
-    count: RESEARCH_DECISIONS,
   },
   {
     id: 'design',
@@ -387,7 +388,7 @@ const FIRST_RESTRICTED = VISIBLE_SECTIONS.findIndex((s) => s.gate)
  * row. Each names the row it sits directly above:
  *
  *   Demo             → Prototypes
- *   Design & Research → Refinement, Other Links, Research
+ *   Design & Research → Refinement, Research, Other Links
  *   Dev Handoff      → Development, Done
  *
  * Deliberately separate from `FIRST_RESTRICTED` / "Designers" below,
@@ -1449,8 +1450,8 @@ export function UxDashboardPage() {
           {/* The mark stays a single tile beside a two-line lockup, rather than
               sitting above a sub-line indented past it. */}
           <span style={brandTextStyle}>
-            UX Dashboard
-            <span style={{ ...brandSubStyle, color: nav.muted }}>XCEL LMS</span>
+            UX Hub
+            <span style={{ ...brandSubStyle, color: nav.muted }}>XCEL LMS &amp; Compass Learning</span>
             {/* WHICH DASHBOARD YOU ARE ON — 2026-09-24. The two builds are
                 otherwise told apart only by which sections are in the rail,
                 which you have to already know to read. `isPublicGateway()` is
@@ -1460,7 +1461,7 @@ export function UxDashboardPage() {
                 lockup's third line reads as a LABEL for the rail beneath it
                 rather than as a quieter second sub-line. */}
             <span style={{ ...brandSubStyle, color: nav.eyebrow, fontWeight: 700 }}>
-              {isPublicGateway() ? 'Demo' : 'Design'}
+              {isPublicGateway() ? 'Demo Link' : 'Design Link'}
             </span>
           </span>
         </div>
@@ -1544,23 +1545,6 @@ export function UxDashboardPage() {
             )
           })}
         </nav>
-        {/* The stakeholder guide — `public/about/index.html`, "How to read
-            this dashboard". OUTSIDE the <nav> so it is not a section, and on
-            EVERY build: on the public site it is the orientation a reviewer
-            with the link gets, and on the full site it is how the team
-            previews what stakeholders are told. Its designer twin is the
-            gated Contributing section above. */}
-        <a
-          href="/about/"
-          target="_blank"
-          rel="noopener"
-          style={{ ...aboutLinkStyle, color: nav.muted }}
-          className="cre-uxnav-about"
-        >
-          <span style={{ minWidth: 0 }}>How to read this dashboard</span>
-          <ArrowUpRightFromSquare size={11} aria-hidden style={{ flex: 'none' }} />
-          <span className="cre-visually-hidden"> (opens in a new tab)</span>
-        </a>
         <div ref={themeRef} style={themeWrapStyle}>
           <button
             type="button"
@@ -1570,16 +1554,12 @@ export function UxDashboardPage() {
             style={{ ...themeBtnStyle, color: nav.muted, borderColor: nav.border }}
           >
             <Sliders size={14} aria-hidden style={{ flex: 'none' }} />
-            {/* Two values in a 232px rail: "Appearance  Moss · Hybrid" wrapped
-                mid-value and pushed the control taller, so the label sits above
-                the value rather than beside it. */}
-            <span style={themeBtnBodyStyle}>
-              <span style={themeBtnLabelStyle}>Appearance</span>
-              <span style={{ ...themeCurrentStyle, color: nav.fg }}>
-                {PALETTE_META.find((pal) => pal.id === palette)!.label} ·{' '}
-                {THEMES.find((t) => t.id === theme)!.label}
-              </span>
-            </span>
+            {/* The label alone since 2026-09-29. It used to show the current
+                value under it ("Fern · Hybrid"), which is the one fact a reader
+                can already SEE — the whole page is rendered in it. The menu
+                still marks which is active, so nothing is lost by not naming it
+                here, and the control drops from two lines to one. */}
+            <span style={themeBtnLabelStyle}>Appearance</span>
           </button>
           {themeOpen && (
             <div role="menu" aria-label="Appearance" style={themeMenuStyle}>
@@ -2302,26 +2282,17 @@ const navCountStyle: CSSProperties = {
   textAlign: 'center',
 }
 
-/** The "How to read this dashboard" link, sitting directly above Appearance at
- *  the foot of the rail. `marginTop: auto` is on THIS element now rather than
- *  on the Appearance wrap, so the two travel to the foot together. Same 12.5px
- *  and muted ink as the Appearance button so the foot reads as one quiet
- *  group of chrome under the sections. */
-const aboutLinkStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 6,
-  margin: 'auto 0 8px',
-  padding: '6px 12px',
-  fontSize: 12.5,
-  textDecoration: 'none',
-  borderRadius: 'var(--radius-md)',
-}
-
-/** Sits under the About link at the foot of the rail. It used to carry the
- *  `margin-top: auto` itself (and before that shared it with a footer
- *  paragraph); the About link above takes it now. */
-const themeWrapStyle: CSSProperties = { position: 'relative' }
+/**
+ * The foot of the rail, and the only thing left down there since the "How to
+ * read this dashboard" link was removed on 2026-09-29.
+ *
+ * `marginTop: auto` IS LOAD-BEARING and it has now moved three times: this
+ * element → a footer paragraph → the About link → back here. Whatever is last
+ * in the rail has to carry it, or the foot group stops being a foot group and
+ * rides up under the sections. Removing the About link without moving this back
+ * would have looked like a layout bug with no obvious cause.
+ */
+const themeWrapStyle: CSSProperties = { position: 'relative', marginTop: 'auto' }
 
 const themeBtnStyle: CSSProperties = {
   display: 'flex',
@@ -2337,28 +2308,16 @@ const themeBtnStyle: CSSProperties = {
   textAlign: 'left',
   cursor: 'pointer',
 }
-
-const themeBtnBodyStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 1,
-  minWidth: 0,
-}
-
+/** 10px uppercase at 75% opacity was right while this was an EYEBROW over the
+ *  current value — small and quiet so the value below it read first. With the
+ *  value gone it is the button's own label, and an eyebrow with nothing under
+ *  it just looks like faint text. It takes the button's size and weight now,
+ *  matching the rail rows above it. */
 const themeBtnLabelStyle: CSSProperties = {
-  fontSize: 10,
-  fontWeight: 700,
-  letterSpacing: '0.06em',
-  textTransform: 'uppercase',
-  opacity: 0.75,
+  fontWeight: 600,
+  letterSpacing: '0.01em',
 }
 
-const themeCurrentStyle: CSSProperties = {
-  fontWeight: 700,
-  whiteSpace: 'nowrap',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-}
 
 /** Opens upward — the trigger sits at the foot of the nav, so a downward menu
  *  would fall off the bottom of the viewport. */
