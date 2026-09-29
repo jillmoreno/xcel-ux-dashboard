@@ -111,10 +111,9 @@ const REBRAND_FLAGS = [
      all six were being demoed. */
   'course-entry-style',
   'course-entry-details',
-  'exam-step-style',
-  /* Added with the flag, 2026-09-29 — `FlagPanelScope.test.ts` catches the miss
-     that the note above records six of. It sits next to `exam-step-style`
-     because it only does anything on that flag's `ask-first` arm. */
+  /* `exam-step-style` was listed here until 2026-09-29; it was retired when its
+     `ask-first` arm became unconditional. These two are what remain of that
+     card's controls — both only do anything on the arm that won. */
   'exam-calendar-style',
   'exam-card-background',
   'journey-step-order',

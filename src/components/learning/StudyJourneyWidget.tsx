@@ -1,6 +1,5 @@
 import type { LearningPathSummary } from '@/data/learningFixtures'
 import { GetLicensedRail, StudyJourneyRail } from './StudyJourneyRail'
-import { ExamDateCard } from './ExamDateCard'
 import { ExamScheduleWidget } from './ExamScheduleWidget'
 import { useState, type CSSProperties } from 'react'
 import { journeyStopsFor } from './studyJourneyUtil'
@@ -130,18 +129,11 @@ export function StudyJourneyWidget({
    * unrelated cards — the exact failure the note below is already about.
    */
   const examFirst = useFeatureFlag('journey-step-order').variant === 'exam-first'
-  /* The reworked exam-date cards — `exam-step-style`. SIBLINGS of
-     `LicensingStepWidget`'s treatment, picked here rather than branched inside
-     it: the cards differ in heading, meta, control and set-state, which is a
-     fork rather than a conditional.
-
-     THREE ARMS NOW (`ask-first` added 2026-09-29 and is the default): `inline`
-     leaves the shipped widget alone, while `date-first` (`ExamDateCard`) and
-     `ask-first` (`ExamScheduleWidget`) both REPLACE it. That is the only
-     distinction either call site below needs — which of the two replacements
-     to render is settled once, inside `ExamStepCard`. */
-  const examStyle = useFeatureFlag('exam-step-style').variant
-  const examReworked = examStyle === 'date-first' || examStyle === 'ask-first'
+  /* THE EXAM-DATE CARD IS NO LONGER A CHOICE — `exam-step-style` retired
+     2026-09-29, its `ask-first` arm having won. `ExamScheduleWidget` renders in
+     the Schedule State Exam slot unconditionally now; `ExamDateCard` and the
+     inline treatment inside `LicensingStepWidget` are both intact but
+     unreachable. See `archivedItems.ts`, `exam-step-style-alternatives`. */
   /*
    * THE COLUMN'S NUMBERING, and `ask-first` changed its shape — 2026-09-29.
    *
@@ -158,8 +150,11 @@ export function StudyJourneyWidget({
    * it, which is why the licensing steps are numbered by a running count rather
    * than by their index.
    */
-  const askFirst = examStyle === 'ask-first'
-  const courseworkStep = examFirst && !askFirst ? 2 : 1
+  /* The exam card asks a question rather than naming a step, so it takes no
+     number and the three real steps close up behind it. Unconditional now that
+     it is the only treatment — this read `examFirst && !askFirst` while the
+     numbered arms still existed. */
+  const courseworkStep = 1
   /* The non-split rail below numbers its own rows from here; unchanged by the
      arm, because that layout does not render the exam card as a widget at all. */
   const stepStart = 2
@@ -213,14 +208,10 @@ export function StudyJourneyWidget({
             learner can do today and the date it produces is what the Study Pace
             tile plans against. */}
         {promoted &&
-          (examReworked && promoted.id === 'schedule-exam' ? (
-            <ExamStepCard
-              style={examStyle}
-              /* Read only by `date-first`; `ask-first` renders unnumbered. */
-              number={1}
+          (promoted.id === 'schedule-exam' ? (
+            <ExamScheduleWidget
               shell={shell}
               onOpenStep={onOpenStep}
-              stepId={promoted.id}
               stateName={jurisdictionName(path.state) || undefined}
             />
           ) : (
@@ -258,21 +249,18 @@ export function StudyJourneyWidget({
              takes no number, so an index-derived number would leave a hole
              exactly where it sits. `nextNumber` only advances for cards that
              actually show one. */
-          const unnumbered = askFirst && step.id === 'schedule-exam'
+          const unnumbered = step.id === 'schedule-exam'
           const n = unnumbered ? 0 : nextNumber++
           /* ⚠ BOTH CALL SITES BRANCH THE SAME WAY. `exam-first` lifts this step
              into the promoted slot above, so a branch in only one of them would
              give the reworked card under one order and the shipped one under
              the other — an A/B measuring two things at once. */
-          if (examReworked && step.id === 'schedule-exam') {
+          if (step.id === 'schedule-exam') {
             return (
-              <ExamStepCard
+              <ExamScheduleWidget
                 key={step.id}
-                style={examStyle}
-                number={n}
                 shell={shell}
                 onOpenStep={onOpenStep}
-                stepId={step.id}
                 stateName={jurisdictionName(path.state) || undefined}
               />
             )
@@ -466,45 +454,15 @@ const LICENSING_STEP_CTA: Record<string, string | undefined> = {
   'apply-license': 'home.how-to-apply',
 }
 
-/**
- * WHICH REWORKED EXAM CARD — `exam-step-style`, the two replacement arms.
- *
- * ⚠ THE THREE-WAY LIVES HERE AND NOWHERE ELSE. `journey-step-order: exam-first`
- * renders Schedule State Exam from two different places in the column, and the
- * note at the second of them already records what happens when the two disagree:
- * one arm under one step order and another under the other, an A/B measuring two
- * things at once. A boolean duplicated twice survived that; a three-way would
- * not. The call sites ask only "is this step reworked at all" and this decides
- * the rest.
- */
-function ExamStepCard({
-  style,
-  number,
-  shell,
-  onOpenStep,
-  stepId,
-  stateName,
-}: {
-  /** The flag's variant — `date-first` or `ask-first`. */
-  style: string | undefined
-  number: number
-  shell: CSSProperties
-  onOpenStep?: (id: string) => void
-  stepId: string
-  /** The learner's jurisdiction, for `ask-first`'s saved title. Undefined
-   *  falls back to the widget's own demo state. */
-  stateName?: string
-}) {
-  return style === 'ask-first' ? (
-    /* NO `number` — the ask-first card is not a journey step and wears "Quick
-       question" instead of an eyebrow number. `number` is still required here
-       because the OTHER arm is a numbered step; the caller skips a number for
-       this one rather than this component inventing one. */
-    <ExamScheduleWidget shell={shell} onOpenStep={onOpenStep} stateName={stateName} />
-  ) : (
-    <ExamDateCard number={number} shell={shell} onOpenStep={onOpenStep} stepId={stepId} />
-  )
-}
+/* ⚠ `ExamStepCard` WAS HERE. It existed only to choose between `date-first`
+   and `ask-first` at the two call sites `journey-step-order` creates, and went
+   with the flag on 2026-09-29 — with one treatment left there is nothing to
+   choose. Restoring the flag means restoring it too; `archivedItems.ts` says so.
+
+   ⚠ BOTH CALL SITES ABOVE STILL BRANCH ON `step.id === 'schedule-exam'`, and
+   they must keep agreeing: `exam-first` renders this step from the promoted
+   slot instead of the map, so a change to one and not the other brings back
+   the same split this component was written to close. */
 
 function LicensingStepWidget({
   step,

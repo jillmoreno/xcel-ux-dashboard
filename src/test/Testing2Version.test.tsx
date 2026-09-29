@@ -31,7 +31,10 @@ import {
 const PRE_PROMOTION_BASELINE = {
   'study-pace-hidden': { enabled: false },
   'course-entry-style': { enabled: true, variant: 'split' },
-  'exam-step-style': { enabled: true, variant: 'inline' },
+  /* `exam-step-style` was seeded here until 2026-09-29, when the flag was
+     retired — see `archivedItems.ts`. Removed rather than left as a dead key:
+     a seed for a flag that no longer exists reads as a pinned choice and is
+     silently ignored. */
   'journey-step-order': { enabled: true, variant: 'coursework-first' },
 }
 
@@ -183,9 +186,12 @@ describe('the Atlas Study Journey treatment (2026-09-21)', () => {
   it('renders the four cards, in route order', () => {
     seed()
     renderShell(T2_URL)
+    /* ⚠ 'Exam Date' since 2026-09-29 — the inline card carrying the
+       "Schedule State Exam" label was retired with `exam-step-style`, and the
+       slot is `ExamScheduleWidget` now. Four cards, same order. */
     expect(cardLabels()).toEqual([
       'Study journey',
-      'Schedule State Exam',
+      'Exam Date',
       'Pass State Exam',
       'Get Licensed in New York',
     ])

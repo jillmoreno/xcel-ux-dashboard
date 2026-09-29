@@ -41,7 +41,10 @@ import {
 const PRE_PROMOTION_BASELINE = {
   'study-pace-hidden': { enabled: false },
   'course-entry-style': { enabled: true, variant: 'split' },
-  'exam-step-style': { enabled: true, variant: 'inline' },
+  /* `exam-step-style` was seeded here until 2026-09-29, when the flag was
+     retired — see `archivedItems.ts`. Removed rather than left as a dead key:
+     a seed for a flag that no longer exists reads as a pinned choice and is
+     silently ignored. */
   'journey-step-order': { enabled: true, variant: 'coursework-first' },
 }
 
@@ -967,9 +970,13 @@ describe('the post-course steps are their own widgets', () => {
   it('renders four cards, in route order', () => {
     seed()
     renderShell(TESTING_URL)
+    /* ⚠ 'Exam Date', NOT 'Schedule State Exam' — 2026-09-29. The inline card
+       that carried that label was retired with `exam-step-style`; the slot is
+       `ExamScheduleWidget` now, whose region is "Exam Date". Still four cards
+       in the same order; only the second one's identity changed. */
     expect(cardLabels()).toEqual([
       'Study journey',
-      'Schedule State Exam',
+      'Exam Date',
       'Pass State Exam',
       'Get Licensed in New York',
     ])
@@ -1003,22 +1010,28 @@ describe('the post-course steps are their own widgets', () => {
     expect(first?.textContent?.trim()).toBe('Atlas Study Journey')
   })
 
-  it('numbers the licensing cards 2, 3, 4 — after the coursework, not after its stops', () => {
+  it('numbers the licensing cards 2, 3 — after the coursework, not after its stops', () => {
     /* ⚠ THE DERIVATION IS THE REGRESSION THIS NOW GUARDS, which inverts what
        this test used to be for. It read the journey's stop count and offset the
        cards past it — so five stops produced "Step 06/07/08" and the column
        described an eight-step route to a licence.
 
-       There are FOUR steps: the coursework, then these three. The stops are
-       what step 1 is made of. Asserted as literals AND against a changing stop
-       count, so adding a sixth stop fails here instead of silently renumbering
-       three cards. */
+       There are four CARDS and now THREE numbered steps: the coursework, then
+       Pass State Exam and Get Licensed. The stops are what step 1 is made of.
+
+       ⚠ THE EXAM CARD DROPPED OUT OF THE NUMBERING on 2026-09-29, when
+       `ask-first` became the only treatment: it asks a question rather than
+       naming a step, so it takes no number and the two below it close up. This
+       read `['Step 2', 'Step 3', 'Step 4']` while the numbered arms existed.
+
+       Asserted as literals AND against a changing stop count, so adding a sixth
+       stop fails here instead of silently renumbering the cards. */
     seed()
     renderShell(TESTING_URL)
     const steps = [...rightColumn().querySelectorAll('p')]
       .map((p) => p.textContent?.trim())
       .filter((t) => /^Step \d+$/.test(t ?? ''))
-    expect(steps).toEqual(['Step 2', 'Step 3', 'Step 4'])
+    expect(steps).toEqual(['Step 2', 'Step 3'])
     // …and they do NOT follow the stop count, which is the thing that broke.
     const stops = journeyStopsFor(
       dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!.path,
@@ -1052,12 +1065,13 @@ describe('the post-course steps are their own widgets', () => {
     seed()
     renderShell(TESTING_URL)
     const col = rightColumn()
-    /* "Schedule State Exam" as of 2026-09-21 (was "How to register"). Note it
-       now MATCHES ITS OWN CARD'S HEADING — asserted as a button specifically,
-       so this is the CTA and not the heading text being found twice. */
-    expect(
-      within(col).getByRole('button', { name: /^Schedule State Exam/ }),
-    ).toBeTruthy()
+    /* "Exam Details" as of 2026-09-29 (was "Schedule State Exam", and "How to
+       register" before that). The retired inline card's link went straight to
+       the one sheet; the card that replaced it opens a MENU of three, because
+       the learner who wants to rebook also wants what-to-expect and the FAQ.
+       Asserted as a button specifically, so this is the CTA rather than heading
+       text being found twice. */
+    expect(within(col).getByRole('button', { name: /Exam Details/ })).toBeTruthy()
     expect(within(col).getByRole('button', { name: /What to expect/ })).toBeTruthy()
     expect(within(col).getByRole('button', { name: /How to apply/ })).toBeTruthy()
   })
@@ -1083,8 +1097,15 @@ describe('the post-course steps are their own widgets', () => {
     renderShell(TESTING_URL)
     const cards = [...rightColumn().querySelectorAll(':scope > section')].slice(1)
     const [schedule, pass, apply] = cards.map((c) => c.textContent ?? '')
-    // The fees survive — the half of the line that was kept.
-    expect(schedule).toMatch(/\$40 exam fee/)
+    /* ⚠ THE EXAM CARD NO LONGER STATES A FEE AT ALL — 2026-09-29. The $40 line
+       went with the inline card `exam-step-style` retired; the argument that
+       won is `date-first`'s, inherited by `ask-first`: the fee is a fact about
+       BOOKING, booking happens on the state's own site, and the price is
+       authoritative and current there and never here. It is still in the step
+       sheet. Pinned as an ABSENCE here and positively on the sheet elsewhere,
+       so "the fee vanished everywhere" cannot pass this quietly. */
+    expect(schedule).not.toMatch(/\$40/)
+    // The application fee is untouched — that card did not change.
     expect(apply).toMatch(/\$80 application fee/)
     // …with no owner in front of either, in short or long form.
     expect(schedule).not.toMatch(/PSI/)

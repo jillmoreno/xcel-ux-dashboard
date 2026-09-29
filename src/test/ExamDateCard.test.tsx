@@ -1,5 +1,4 @@
-import { render, screen, within } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
+import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
@@ -10,34 +9,38 @@ import { PlatformShell } from '@/components/layout/PlatformShell'
 import { DISCOVERABILITY_DASHBOARD_VERSION_TESTING } from '@/data/dashboardVersions'
 
 /**
- * THE REWORKED EXAM-DATE CARD — `exam-step-style: date-first`, 2026-09-28.
+ * WHAT IS LEFT OF `exam-step-style` — retired 2026-09-29.
  *
- * A sibling of `LicensingStepWidget`'s Schedule State Exam treatment. Every
- * decision here was settled on a copy bench first, so what these pin is that
- * the built card matches what was agreed — and that the shipped card is
- * untouched beside it.
+ * ⚠ THIS FILE USED TO BE THE `date-first` SUITE, and inverting it rather than
+ * deleting it is deliberate. It held seven tests over the reworked `ExamDateCard`
+ * — the heading as a label, the dropped fee line, the month selector opening
+ * INSIDE the card, the card quietening once a date was set — plus the guard on
+ * which arm was the baseline, which fired twice as the default moved
+ * (`inline` → `date-first` → `ask-first`).
  *
- * THE FLAG HAS A THIRD ARM SINCE 2026-09-29 (`ask-first`, now the default) and
- * `ExamScheduleWidget.test.tsx` covers it. This file stays the `date-first`
- * file: every test below pins `exam-step-style:date-first` explicitly, which is
- * why adding a new default broke exactly one assertion here — the one that is
- * supposed to break.
+ * `ask-first` won and became unconditional, so the flag had one option left and
+ * a picker with one option is a label. `ExamDateCard.tsx` and the inline
+ * `ExamDateCapture` are both intact and unreachable; `archivedItems.ts`
+ * (`exam-step-style-alternatives`) carries the re-wire.
+ *
+ * WHAT THIS FILE PINS NOW is only the retirement — that the flag is gone and
+ * neither retired card renders. The surviving card's own behaviour lives in
+ * `ExamScheduleWidget.test.tsx`, which is where it always lived.
+ *
+ * ⚠ RESTORING THE FLAG MEANS RESTORING THE OLD TESTS FROM GIT, not rewriting
+ * them from this description. They are one `git show` away on the commit that
+ * removed them, and they encode decisions made on a copy bench that this file
+ * no longer records.
  */
 
 const URL = `/dashboard-rebrand?version=${DISCOVERABILITY_DASHBOARD_VERSION_TESTING.id}`
 
 beforeEach(() => {
   window.localStorage.clear()
-  /* ⚠ RESET THE URL TOO, not just storage. `?ff=` is read from
-     `window.location.search`, and any test that sets it with
-     `history.replaceState` leaves it there for every test that follows —
-     flags leaking forward and failing assertions in files nobody touched.
-     Clearing localStorage alone is not a clean slate. */
   window.history.replaceState({}, '', '/')
   window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
 })
 
-/** ⚠ `?ff=` is read from `window.location`, never from the router entry. */
 function renderShell(ff?: string) {
   window.history.replaceState({}, '', ff ? `/dashboard-rebrand?ff=${encodeURIComponent(ff)}` : '/')
   return render(
@@ -55,97 +58,36 @@ function renderShell(ff?: string) {
   )
 }
 
-const card = () => screen.getByRole('region', { name: 'Exam Date' })
+describe('exam-step-style — retired', () => {
+  it('is gone from the catalog entirely', () => {
+    /* ⚠ THE CATALOG ENTRY IS THE ONE THAT BITES, per the archive convention: a
+       variant pulled from the catalog while its fixtures stay wired type-checks,
+       passes, and silently falls back to the default. Asserting the key's
+       ABSENCE is what makes the retirement a fact rather than an intention. */
+    expect(FEATURE_FLAGS.find((f) => f.key === 'exam-step-style')).toBeUndefined()
+  })
 
-describe('exam-step-style', () => {
-  it('ships `ask-first`; `date-first` and `inline` are both opt-ins now', () => {
-    /* ⚠ THIS ASSERTION HAS MOVED TWICE, and moving it is its whole job. It read
-       `inline` until 2026-09-28 and `date-first` until 2026-09-29; each time a
-       new arm became the baseline this test failed FIRST and someone had to
-       come here and say so on purpose. A default that can change without a
-       failing test is a default nobody decided. */
-    expect(FEATURE_FLAGS.find((f) => f.key === 'exam-step-style')?.defaultVariant).toBe('ask-first')
+  it('renders the surviving card, and neither retired one', () => {
     renderShell()
-    /* The three arms share one region name — this is the same journey step
-       whichever way it asks, and a landmark that renamed itself per design
-       variant would make the page read differently to a screen reader for
-       reasons that have nothing to do with the learner. The CONTENT is what
-       separates them. */
-    const c = card()
-    expect(within(c).getByText('Have you scheduled your New York state exam?')).toBeTruthy()
-    // …so neither of the other two arms is on the page.
-    expect(within(c).queryByRole('button', { name: 'Enter exam date' })).toBeNull()
+    expect(screen.getByRole('region', { name: 'Exam Date' })).toBeTruthy()
+    // `inline` — the shipped card, by its own region name and its fee line.
     expect(screen.queryByRole('region', { name: 'Schedule State Exam' })).toBeNull()
-    // …and the fee line is gone from the baseline with it.
     expect(screen.queryByText(/\$40 exam fee/)).toBeNull()
+    // `date-first` — by the CTA only it had.
+    expect(screen.queryByRole('button', { name: 'Enter exam date' })).toBeNull()
   })
 
-  it('still renders the shipped inline card on `inline`', () => {
-    /* The old baseline, now reachable the way the reworked card used to be. */
+  it('cannot be brought back with a stored `?ff=` value', () => {
+    /* ⚠ THE CASE A CATALOG REMOVAL ALONE DOES NOT COVER, and the reason this
+       test exists rather than the one above standing alone. Reviewers' URLs and
+       `cgp.featureFlags` entries outlive the flag, so a stale `?ff=` is the
+       realistic way a retired arm would appear to come back. It resolves to
+       nothing now — the card does not branch on the variant at all. */
+    renderShell('exam-step-style:date-first')
+    expect(screen.getByRole('region', { name: 'Exam Date' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: 'Enter exam date' })).toBeNull()
+
     renderShell('exam-step-style:inline')
-    expect(screen.getByRole('region', { name: 'Schedule State Exam' })).toBeTruthy()
-    expect(screen.getByText(/\$40 exam fee/)).toBeTruthy()
-  })
-
-  it('renders the reworked card on `date-first`', () => {
-    renderShell('exam-step-style:date-first')
-    const c = card()
-    expect(within(c).getByText('Exam Date')).toBeTruthy()
-    expect(
-      within(c).getByText(/Already scheduled\? Enter it and we’ll use it to help you prep\./),
-    ).toBeTruthy()
-    expect(within(c).getByRole('button', { name: 'Enter exam date' })).toBeTruthy()
-    expect(within(c).getByRole('button', { name: /How to Schedule/ })).toBeTruthy()
-  })
-
-  it('drops the fee line — it belongs in the sheet and on the state’s site', () => {
-    /* The $40 is a fact about booking, and booking happens somewhere the price
-       is authoritative and current, which this card never will be. */
-    renderShell('exam-step-style:date-first')
-    expect(within(card()).queryByText(/\$40/)).toBeNull()
-  })
-
-  it('opens the month selector INSIDE the card, not over it', () => {
-    /* ⚠ SETTLED DELIBERATELY — in the card, not a sheet. Asserting the grid is
-       a DESCENDANT of the card is what makes this a real check: a portal would
-       still put it on the page and still pass a looser query. */
-    renderShell('exam-step-style:date-first')
-    const c = card()
-    expect(within(c).queryByRole('button', { name: /Previous month/ })).toBeNull()
-    c.querySelector<HTMLButtonElement>('button')
-    userEvent.setup()
-    return userEvent.click(within(c).getByRole('button', { name: 'Enter exam date' })).then(() => {
-      expect(within(card()).getByRole('button', { name: /Previous month/ })).toBeTruthy()
-      expect(within(card()).getByText(/June 2026/)).toBeTruthy()
-    })
-  })
-
-  it('records the date and quietens the card', async () => {
-    /* The whole point of the card. Once the date exists, Change date drops to
-       link weight beside How to Schedule — neither is the main event any more,
-       so neither wears a border. */
-    const user = userEvent.setup()
-    renderShell('exam-step-style:date-first')
-    await user.click(within(card()).getByRole('button', { name: 'Enter exam date' }))
-    await user.click(within(card()).getByRole('button', { name: /June 30, 2026/ }))
-
-    expect(window.localStorage.getItem('cgp.examDate')).toBe('2026-06-30')
-    const c = card()
-    expect(within(c).getByText(/Your exam date · June 30, 2026/)).toBeTruthy()
-    expect(within(c).getByRole('button', { name: 'Change date' })).toBeTruthy()
-    // …and the picker closes itself once a day is chosen
-    expect(within(c).queryByRole('button', { name: /Previous month/ })).toBeNull()
-    // the heading is a LABEL, so it survives the state change unaltered
-    expect(within(c).getByText('Exam Date')).toBeTruthy()
-  })
-
-  it('applies under both journey orders', async () => {
-    /* ⚠ TWO CALL SITES. `exam-first` lifts this step into the promoted slot, so
-       a branch in only one of them would give the reworked card under one order
-       and the shipped one under the other — an A/B measuring two things. */
-    renderShell('exam-step-style:date-first,journey-step-order:exam-first')
-    const c = card()
-    expect(within(c).getByText('Exam Date')).toBeTruthy()
-    expect(c.textContent).toContain('Step 1')
+    expect(screen.queryByRole('region', { name: 'Schedule State Exam' })).toBeNull()
   })
 })

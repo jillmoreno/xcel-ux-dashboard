@@ -511,6 +511,15 @@ function ScheduledState({
         </button>
       </div>
 
+      {/* ⚠ THE DATE, AS ONE SENTENCE, FOR SCREEN READERS — added 2026-09-29 when
+          `exam-step-style` was retired. The tear-off renders the date as three
+          separate fragments ("JUN", "30", "2026") with no relationship between
+          them, and the countdown beside it says "50 days" without ever naming
+          the day. The inline card this replaced carried exactly this line; it
+          would have gone with the retirement unnoticed, because everything is
+          visibly on screen and nothing looks missing. */}
+      <p style={srOnlyDateStyle}>Exam scheduled for {longDate(examDate)}</p>
+
       <div style={scheduledBodyRowStyle}>
         {/* 66, down from 84 — the compact tier abbreviates the month now, so the
             full "SEPTEMBER" is no longer setting the floor. */}
@@ -532,6 +541,19 @@ function ScheduledState({
 }
 
 /* ─── dates ────────────────────────────────────────────────────────────── */
+
+/** Visually hidden, still announced — the `clip` + `clipPath` pair is the
+ *  pattern `StudyJourneyWidget` uses for the same sentence. */
+const srOnlyDateStyle: CSSProperties = {
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  margin: 0,
+  overflow: 'hidden',
+  clip: 'rect(0 0 0 0)',
+  clipPath: 'inset(50%)',
+  whiteSpace: 'nowrap',
+}
 
 function longDate(iso: string): string {
   const [y, m, d] = iso.split('-').map(Number)

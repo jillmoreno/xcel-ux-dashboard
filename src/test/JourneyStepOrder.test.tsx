@@ -72,40 +72,34 @@ function stepOf(label: string): string {
 }
 
 describe('journey-step-order', () => {
-  it('ships EXAM-FIRST, renumbered 1-2-3-4', () => {
-    /* ⚠ PROMOTED 2026-09-28. This asserted `coursework-first` and failed the
-       moment the baseline moved — the job it exists for. The numbering half is
-       the part that matters and is unchanged in spirit: four separate widgets
-       cannot draw a continuous spine, so the eyebrows ARE the sequence, and
-       they still read 1-2-3-4 down the column in the new order. */
+  it('ships EXAM-FIRST — the exam card above the coursework', () => {
+    /* ⚠ THIS TEST LOST ITS NUMBERS ON 2026-09-29, and that is the record of a
+       retirement rather than a weakening. It asserted 1-2-3-4 down the column,
+       which needed a NUMBERED exam card; `exam-step-style` was retired that day
+       and the arm that won is not a step and wears no number. The numbering for
+       BOTH orders is asserted in the test below, which is where it belongs now.
+
+       What is left here is what the flag is actually about: which card is on
+       top. ⚠ ORDER, NOT NUMBERING — they were one assertion while the exam card
+       was numbered, and a test that checked only numbers would pass with the
+       cards in the wrong places. */
     const flag = FEATURE_FLAGS.find((f) => f.key === 'journey-step-order')
     expect(flag?.defaultVariant).toBe('exam-first')
-    /* ⚠ PINNED TO `date-first` since 2026-09-29, and the pin is the point: this
-       test is about the ORDER flag, and it needs a NUMBERED exam card to have
-       four numbers to check. The default arm is `ask-first`, whose card is not a
-       step and wears no number — that column is asserted separately below.
-       Without this pin the test measures two flags at once and fails on a change
-       to neither of them. */
-    renderShell('exam-step-style:date-first')
-    /* ⚠ 'Exam Date', NOT 'Schedule State Exam'. Two promotions landed together
-       and they interact: `exam-step-style: date-first` renamed this card, so a
-       locator using the old label finds nothing and the failure reads as a
-       missing STEP rather than a renamed card. */
-    expect(stepOf('Exam Date')).toBe('1')
-    expect(stepOf('Study journey')).toBe('2')
-    expect(stepOf('Pass State Exam')).toBe('3')
-    expect(stepOf('Get Licensed')).toBe('4')
+    renderShell()
+    const order = column()
+    expect(order.findIndex((n) => /Exam Date/i.test(n))).toBeLessThan(
+      order.findIndex((n) => /Study journey/i.test(n)),
+    )
   })
 
   it('still puts coursework first on `coursework-first`', () => {
-    /* The old baseline, now the opt-in arm — and renumbered back the other
-       way, which is the assertion that would catch a reorder that forgot the
-       numbers. */
-    renderShell('journey-step-order:coursework-first,exam-step-style:date-first')
-    expect(stepOf('Study journey')).toBe('1')
-    expect(stepOf('Exam Date')).toBe('2')
-    expect(stepOf('Pass State Exam')).toBe('3')
-    expect(stepOf('Get Licensed')).toBe('4')
+    /* The old baseline, now the opt-in arm. Same reduction as above: the order
+       is the claim, and the numbering is the test below. */
+    renderShell('journey-step-order:coursework-first')
+    const order = column()
+    expect(order.findIndex((n) => /Study journey/i.test(n))).toBeLessThan(
+      order.findIndex((n) => /Exam Date/i.test(n)),
+    )
   })
 
   it('closes the numbering up when `ask-first` takes the exam card out', () => {

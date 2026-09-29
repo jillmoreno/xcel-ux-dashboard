@@ -35,7 +35,10 @@ import { formatExamChip } from '@/components/learning/compassPlayerUtil'
 const PRE_PROMOTION_BASELINE = {
   'study-pace-hidden': { enabled: false },
   'course-entry-style': { enabled: true, variant: 'split' },
-  'exam-step-style': { enabled: true, variant: 'inline' },
+  /* `exam-step-style` was seeded here until 2026-09-29, when the flag was
+     retired — see `archivedItems.ts`. Removed rather than left as a dead key:
+     a seed for a flag that no longer exists reads as a pinned choice and is
+     silently ignored. */
   'journey-step-order': { enabled: true, variant: 'coursework-first' },
 }
 

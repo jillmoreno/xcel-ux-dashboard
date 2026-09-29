@@ -28,7 +28,10 @@ import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 const PRE_PROMOTION_BASELINE = {
   'study-pace-hidden': { enabled: false },
   'course-entry-style': { enabled: true, variant: 'split' },
-  'exam-step-style': { enabled: true, variant: 'inline' },
+  /* `exam-step-style` was seeded here until 2026-09-29, when the flag was
+     retired — see `archivedItems.ts`. Removed rather than left as a dead key:
+     a seed for a flag that no longer exists reads as a pinned choice and is
+     silently ignored. */
   'journey-step-order': { enabled: true, variant: 'coursework-first' },
 }
 
@@ -170,9 +173,14 @@ describe('the entered date moves the whole page, not just the card', () => {
     const header = screen.getByText(/To complete course/i).closest('div')!
       .parentElement!.parentElement!
     expect(header.textContent).not.toMatch(/June 30, 2026|December 15, 2026/)
-    expect(
-      document.querySelector('section[aria-label="Schedule State Exam"]')?.textContent,
-    ).toMatch(/June 30, 2026/)
+    /* ⚠ THE ECHO MOVED CARDS on 2026-09-29. It was the inline Schedule State
+       Exam card, retired with `exam-step-style`; the card that replaced it is
+       region "Exam Date". The CLAIM is unchanged and is the point — the card
+       that asked for the date still shows it back, which is the confirmation
+       the header's removed cell used to provide. */
+    expect(document.querySelector('section[aria-label="Exam Date"]')?.textContent).toMatch(
+      /June 30, 2026/,
+    )
   })
 
   it('re-points the countdown on the page', () => {
@@ -261,58 +269,56 @@ describe('the entered date moves the whole page, not just the card', () => {
   })
 })
 
-describe('the capture on the Schedule State Exam card', () => {
-  const card = () =>
-    document.querySelector('section[aria-label="Schedule State Exam"]') as HTMLElement
+describe('the capture, after `exam-step-style` was retired', () => {
+  /*
+   * ⚠ INVERTED 2026-09-29, and this block is the record of what that cost.
+   *
+   * It tested the INLINE capture — a labelled `<input type="date">` reading
+   * "Already scheduled?" with Save / Clear, on a card headed "Schedule State
+   * Exam". That card lost the fork: `ask-first` won and became unconditional,
+   * so the inline capture is unreachable. Its code is intact inside
+   * `LicensingStepWidget` (`ExamDateCapture`) behind a branch nothing takes —
+   * see `archivedItems.ts`, `exam-step-style-alternatives`.
+   *
+   * What the old tests were PROTECTING is not retired, and that is what these
+   * assert on the new card: the stored date is VISIBLE and REVERSIBLE. A date
+   * silently re-points the page's headline figure and lives in localStorage
+   * rather than the repo, so a stale one nobody can see or clear is
+   * unexplainable from the source. Restoring the flag means restoring the old
+   * assertions from git, not rewriting them from this description.
+   */
+  const card = () => document.querySelector('section[aria-label="Exam Date"]') as HTMLElement
 
-  it('offers the field with the ask’s own invitation', () => {
+  it('no longer renders the inline field anywhere', () => {
     renderShell()
-    expect(within(card()).getByLabelText(/Already scheduled\?/i)).toBeTruthy()
+    expect(screen.queryAllByLabelText(/Already scheduled\?/i)).toHaveLength(0)
+    expect(document.querySelector('section[aria-label="Schedule State Exam"]')).toBeNull()
   })
 
-  it('saves a typed date and shows the Figma calendar, with a way back', () => {
-    /* ⚠ THE SET STATE CHANGED SHAPE 2026-09-23 — Figma node 1195:16026, the
-       direct ask. It was a caption, the date in words and two links ("Your exam
-       date · June 30, 2026 · Change · Clear"). It is the tear-off calendar now,
-       with the heading and the footer link carrying the state instead.
-
-       WHAT THIS STILL PINS is the requirement the old assertion existed for and
-       the new design must not quietly drop: the date is VISIBLE and the value is
-       REVERSIBLE. A stored date silently re-points the page's headline figure,
-       and it lives in localStorage rather than the repo, so a stale one nobody
-       can see or clear is unexplainable from the source. */
+  it('still shows a stored date back — VISIBLE, including to a screen reader', () => {
+    /* ⚠ THE SR-ONLY SENTENCE IS THE HALF THAT NEARLY WENT. The tear-off renders
+       the date as three unrelated fragments and the countdown never names the
+       day, so without this line a screen-reader user hears everything about the
+       booking except when it is. The retired card carried the same sentence. */
+    writeExamDate('2026-06-30')
     renderShell()
-    const input = within(card()).getByLabelText(/Already scheduled\?/i)
-    fireEvent.change(input, { target: { value: '2026-06-30' } })
-    fireEvent.click(within(card()).getByRole('button', { name: 'Save' }))
-    expect(readExamDate()).toBe('2026-06-30')
-
-    // VISIBLE — the calendar's three fragments, and the date in words for the
-    // accessibility tree, since the calendar itself is `aria-hidden`.
-    expect(within(card()).getByText('JUNE')).toBeTruthy()
+    expect(within(card()).getByText('JUN')).toBeTruthy()
     expect(within(card()).getByText('30')).toBeTruthy()
     expect(within(card()).getByText('2026')).toBeTruthy()
-    expect(card().textContent).toContain('Exam scheduled for June 30, 2026')
-
-    // The heading and the footer link both moved. "NY", from the path — not a
-    // literal, or every other jurisdiction would read New York.
-    expect(within(card()).getByText('NY State Exam Scheduled')).toBeTruthy()
-    const edit = within(card()).getByRole('button', { name: /Edit Exam Date/ })
-
-    // REVERSIBLE — Edit reopens the editor, which is where Clear lives now.
-    fireEvent.click(edit)
-    expect(within(card()).getByLabelText(/Already scheduled\?/i)).toBeTruthy()
-    fireEvent.click(within(card()).getByRole('button', { name: 'Clear' }))
-    expect(readExamDate()).toBeNull()
-    // …and the card is back to asking.
-    expect(within(card()).queryByText('NY State Exam Scheduled')).toBeNull()
+    expect(card().textContent).toMatch(/Exam scheduled for .*June 30, 2026/)
   })
 
-  it('appears on the Schedule card ONLY', () => {
-    // It is that step's own affordance, not a page-level control — the other
-    // two cards describe things the learner does not book.
+  it('still lets the learner take it back — REVERSIBLE', () => {
+    /* Clear lives behind Edit now rather than beside the field, which is the
+       one real change in the affordance: it is a destructive control, and the
+       card only offers it where a date already exists. */
+    writeExamDate('2026-06-30')
     renderShell()
-    expect(screen.getAllByLabelText(/Already scheduled\?/i)).toHaveLength(1)
+    fireEvent.click(within(card()).getByRole('button', { name: /Edit/ }))
+    fireEvent.click(within(card()).getByRole('button', { name: 'Clear exam date' }))
+    expect(readExamDate()).toBeNull()
+    // …and the card is back to asking.
+    expect(within(card()).getByText(/Have you scheduled your .* state exam\?/)).toBeTruthy()
   })
 })
 

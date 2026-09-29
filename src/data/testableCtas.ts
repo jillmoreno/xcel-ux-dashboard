@@ -174,8 +174,11 @@ export const TESTABLE_CTAS: TestableCta[] = [
      but whitespace between them — a comment in the gap drops the row from the
      session sheet silently. Its own note says so; this is what tripped it.
 
-     Three labels because three arms of `exam-step-style` own this slot, and a
-     run needs to recognise the control it killed on whichever one is up. */
+     ⚠ THREE LABELS FOR ONE SURVIVING CONTROL, since 2026-09-29. `exam-step-style`
+     was retired and only `ask-first` renders, so what a run actually sees is
+     "Exam Details →". The other two are kept because a moderator reading a
+     session sheet from an older frozen build needs to recognise the control it
+     named there — `promote-to-testing` freezes a SHA, not this file. */
   {
     id: 'home.schedule-exam',
     label: 'Schedule State Exam / Edit Exam Date / Exam Details →',
