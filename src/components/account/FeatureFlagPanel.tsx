@@ -116,6 +116,15 @@ const REBRAND_FLAGS = [
   'study-pace-hidden',
   'nav-rail-icons',
   'nav-rail-captions',
+  /* ⚠ ADDED 2026-09-28 AFTER A REVIEW, and these are OLDER misses than the
+     seven above. Git history says none of the four was ever in this list — they
+     were never removed, just never added, going back to their own introducing
+     commits. Each drives something on the rebrand page and none has a control
+     anywhere else. */
+  'study-pace-widget',
+  'dashboard-journey-complete',
+  'header-notifications',
+  'notification-state',
   // How the Study Pace card offers a choice — the clickable week Strip, or
   // three named Options. Variant-only; see the catalog entry.
   'study-pace-chooser',

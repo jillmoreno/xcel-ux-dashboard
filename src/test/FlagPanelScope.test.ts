@@ -36,15 +36,14 @@ const INTENTIONALLY_OUT_OF_PANEL = new Set([
   'dashboard-navigation',
   'readiness-state',
 
-  /* ⚠ THESE FOUR PREDATE THIS TEST AND ARE UNREVIEWED. They are listed to pin
-     the CURRENT state, not to bless it — each is on the rebrand page, absent
-     from the panel, and has no demo-bar control that I could find. If one of
-     them turns out to be an oversight like the seven above, the fix is to add
-     it to `REBRAND_FLAGS` and delete the line here. */
-  'study-pace-widget',
-  'dashboard-journey-complete',
-  'header-notifications',
-  'notification-state',
+  /* ⚠ REVIEWED AND EMPTIED, 2026-09-28. Four flags sat here as "unreviewed"
+     for one commit — `study-pace-widget`, `dashboard-journey-complete`,
+     `header-notifications`, `notification-state`. Git history settled it: none
+     had ever been in `REBRAND_FLAGS`, so they were never deliberate exclusions,
+     just older instances of the same miss. All four are in the panel now.
+
+     The list is deliberately left holding ONLY the four with a real reason.
+     A long exemption list is how this test stops meaning anything. */
 ])
 
 describe('the rebrand flag panel', () => {
