@@ -535,14 +535,32 @@ const promptButtonRowStyle: CSSProperties = {
   marginTop: 12,
 }
 
+/* MATCHES THE RESUME BUTTON — `CourseEntryCard`'s `cta`, 2026-09-29. Same
+   height, padding, radius, gradient and type, because they are the same KIND of
+   control: the one press the card is asking for. Two primary buttons a column
+   apart that differed in height and corner would read as two different systems.
+
+   ⚠ ONE DELIBERATE DIFFERENCE from the button it copies: the white is
+   `--color-text-inverse`, not Resume's literal `rgb(255 255 255 / 1)`. The
+   token resolves to #ffffff in BOTH themes (light via `neutral-50`, dark pinned
+   directly), so it renders identically — and CLAUDE.md's rule is tokens, never
+   raw values. Copying the literal would have propagated the exception.
+
+   Also worn by Save exam date in the picker, which is the same primary act. */
 const yesButtonStyle: CSSProperties = {
-  padding: '8px 18px',
-  borderRadius: 'var(--radius-sm)',
-  border: '1px solid var(--color-primary-600)',
-  background: 'var(--color-primary-600)',
+  flexShrink: 0,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 8,
+  height: 44,
+  padding: '0 20px',
+  borderRadius: 'var(--radius-md)',
+  border: 0,
+  background: 'linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600))',
   color: 'var(--color-text-inverse)',
   fontFamily: 'var(--font-body)',
-  fontSize: 13,
+  fontSize: 14,
   fontWeight: 700,
   cursor: 'pointer',
 }
@@ -552,14 +570,25 @@ const saveDisabledStyle: CSSProperties = {
   cursor: 'not-allowed',
 }
 
+/* THE OUTLINE TWIN of the above — identical geometry and type, filled ground
+   swapped for a stroke. ⚠ NOT the same treatment as `Yes`, on purpose: matching
+   Resume's SHAPE is what was asked for, and making both buttons solid would
+   leave the pair with no hierarchy at all. Same height so they sit on one
+   baseline. */
 const notYetButtonStyle: CSSProperties = {
-  padding: '8px 15px',
-  borderRadius: 'var(--radius-sm)',
+  flexShrink: 0,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 8,
+  height: 44,
+  padding: '0 20px',
+  borderRadius: 'var(--radius-md)',
   border: '1px solid var(--color-primary-600)',
   background: 'transparent',
   color: 'var(--color-primary-600)',
   fontFamily: 'var(--font-body)',
-  fontSize: 13,
+  fontSize: 14,
   fontWeight: 700,
   cursor: 'pointer',
 }
