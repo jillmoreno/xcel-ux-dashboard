@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
@@ -80,7 +80,13 @@ describe('journey-step-order', () => {
        they still read 1-2-3-4 down the column in the new order. */
     const flag = FEATURE_FLAGS.find((f) => f.key === 'journey-step-order')
     expect(flag?.defaultVariant).toBe('exam-first')
-    renderShell()
+    /* ⚠ PINNED TO `date-first` since 2026-09-29, and the pin is the point: this
+       test is about the ORDER flag, and it needs a NUMBERED exam card to have
+       four numbers to check. The default arm is `ask-first`, whose card is not a
+       step and wears no number — that column is asserted separately below.
+       Without this pin the test measures two flags at once and fails on a change
+       to neither of them. */
+    renderShell('exam-step-style:date-first')
     /* ⚠ 'Exam Date', NOT 'Schedule State Exam'. Two promotions landed together
        and they interact: `exam-step-style: date-first` renamed this card, so a
        locator using the old label finds nothing and the failure reads as a
@@ -95,11 +101,37 @@ describe('journey-step-order', () => {
     /* The old baseline, now the opt-in arm — and renumbered back the other
        way, which is the assertion that would catch a reorder that forgot the
        numbers. */
-    renderShell('journey-step-order:coursework-first')
+    renderShell('journey-step-order:coursework-first,exam-step-style:date-first')
     expect(stepOf('Study journey')).toBe('1')
     expect(stepOf('Exam Date')).toBe('2')
     expect(stepOf('Pass State Exam')).toBe('3')
     expect(stepOf('Get Licensed')).toBe('4')
+  })
+
+  it('closes the numbering up when `ask-first` takes the exam card out', () => {
+    /*
+     * ⚠ THE DEFAULT COLUMN, and the reason the counter is a running count.
+     *
+     * `ask-first`'s card asks a question rather than naming a step, so it wears
+     * "Quick question" and no number. The three that remain have to close up
+     * behind it — leave them where they were and the column reads 2, 3, 4 with
+     * nothing numbered 1, which reads as a rendering bug rather than a design.
+     *
+     * Asserted on BOTH orders, because the exam card sits in a different slot in
+     * each and an index-derived number would leave the hole in a different place.
+     */
+    renderShell('journey-step-order:exam-first')
+    expect(stepOf('Exam Date')).toBe('')
+    expect(stepOf('Study journey')).toBe('1')
+    expect(stepOf('Pass State Exam')).toBe('2')
+    expect(stepOf('Get Licensed')).toBe('3')
+
+    cleanup()
+    renderShell('journey-step-order:coursework-first')
+    expect(stepOf('Exam Date')).toBe('')
+    expect(stepOf('Study journey')).toBe('1')
+    expect(stepOf('Pass State Exam')).toBe('2')
+    expect(stepOf('Get Licensed')).toBe('3')
   })
 
   it('renders Schedule State Exam above the coursework card, not just renumbered', () => {

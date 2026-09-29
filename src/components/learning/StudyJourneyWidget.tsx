@@ -142,11 +142,32 @@ export function StudyJourneyWidget({
      to render is settled once, inside `ExamStepCard`. */
   const examStyle = useFeatureFlag('exam-step-style').variant
   const examReworked = examStyle === 'date-first' || examStyle === 'ask-first'
-  /* Coursework is 1 and the licensing steps run 2-4; exam-first swaps the
-     first two, so coursework becomes 2 and the remaining licensing steps
-     keep 3 and 4. */
-  const courseworkStep = examFirst ? 2 : 1
+  /*
+   * THE COLUMN'S NUMBERING, and `ask-first` changed its shape — 2026-09-29.
+   *
+   * Coursework is 1 and the licensing steps run 2-4; exam-first swaps the first
+   * two, so coursework becomes 2 and the rest keep 3 and 4.
+   *
+   * ⚠ `ask-first` TAKES THE EXAM CARD OUT OF THE SEQUENCE ENTIRELY. It asks a
+   * question rather than naming a step, so it wears "Quick question" and no
+   * number — and everything after it has to close up behind it. Leave the other
+   * numbers where they were and the column reads 2, 3, 4 with nothing numbered
+   * 1, which looks like a rendering bug rather than a design.
+   *
+   * So the exam card CONSUMES NO NUMBER on this arm: the counter below skips
+   * it, which is why the licensing steps are numbered by a running count rather
+   * than by their index.
+   */
+  const askFirst = examStyle === 'ask-first'
+  const courseworkStep = examFirst && !askFirst ? 2 : 1
+  /* The non-split rail below numbers its own rows from here; unchanged by the
+     arm, because that layout does not render the exam card as a widget at all. */
   const stepStart = 2
+  /* Seeded to the number AFTER coursework, then advanced once per numbered card
+     by the map in the split branch. Declared in the render body, so it resets
+     every render — a module-level counter would drift under StrictMode's double
+     invoke. */
+  let nextNumber = courseworkStep + 1
   /* Schedule State Exam is `GET_LICENSED_STEPS[0]`; exam-first lifts it above
      the coursework card and the rest follow underneath. Sliced rather than
      re-sorted so the published order stays the source of truth. */
@@ -195,6 +216,7 @@ export function StudyJourneyWidget({
           (examReworked && promoted.id === 'schedule-exam' ? (
             <ExamStepCard
               style={examStyle}
+              /* Read only by `date-first`; `ask-first` renders unnumbered. */
               number={1}
               shell={shell}
               onOpenStep={onOpenStep}
@@ -231,8 +253,13 @@ export function StudyJourneyWidget({
             />
           </section>
         )}
-        {licensingAfter.map((step, i) => {
-          const n = examFirst ? stepStart + 1 + i : stepStart + i
+        {licensingAfter.map((step) => {
+          /* ⚠ A RUNNING COUNT, not `stepStart + i`. On `ask-first` the exam card
+             takes no number, so an index-derived number would leave a hole
+             exactly where it sits. `nextNumber` only advances for cards that
+             actually show one. */
+          const unnumbered = askFirst && step.id === 'schedule-exam'
+          const n = unnumbered ? 0 : nextNumber++
           /* ⚠ BOTH CALL SITES BRANCH THE SAME WAY. `exam-first` lifts this step
              into the promoted slot above, so a branch in only one of them would
              give the reworked card under one order and the shipped one under
@@ -469,12 +496,11 @@ function ExamStepCard({
   stateName?: string
 }) {
   return style === 'ask-first' ? (
-    <ExamScheduleWidget
-      number={number}
-      shell={shell}
-      onOpenStep={onOpenStep}
-      stateName={stateName}
-    />
+    /* NO `number` — the ask-first card is not a journey step and wears "Quick
+       question" instead of an eyebrow number. `number` is still required here
+       because the OTHER arm is a numbered step; the caller skips a number for
+       this one rather than this component inventing one. */
+    <ExamScheduleWidget shell={shell} onOpenStep={onOpenStep} stateName={stateName} />
   ) : (
     <ExamDateCard number={number} shell={shell} onOpenStep={onOpenStep} stepId={stepId} />
   )

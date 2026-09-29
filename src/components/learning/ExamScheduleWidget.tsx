@@ -65,14 +65,11 @@ type Phase = 'prompt' | 'not-yet' | 'picking' | 'scheduled'
 type ReturnPhase = 'prompt' | 'not-yet' | 'scheduled'
 
 export function ExamScheduleWidget({
-  number,
   shell,
   onOpenStep,
   stateName = 'New York',
   today = FIXTURE_TODAY,
 }: {
-  /** Continues the journey's numbering — see `StudyJourneyWidget`. */
-  number: number
   shell: CSSProperties
   /** Opens a sheet by id. This card only ever sends `EXAM_DETAILS_STEP_ID` —
    *  the menu it opens is what sends the real step ids back. */
@@ -91,6 +88,8 @@ export function ExamScheduleWidget({
   const [returnPhase, setReturnPhase] = useState<ReturnPhase>('prompt')
 
   const activePhase: Phase = phase ?? (stored ? 'scheduled' : 'prompt')
+  /* No stored date ⇒ the card is still asking ⇒ it wears the eyebrow. */
+  const hasEyebrow = !stored
 
   function openPicker(from: ReturnPhase) {
     setReturnPhase(from)
@@ -118,9 +117,26 @@ export function ExamScheduleWidget({
 
   return (
     <section aria-label="Exam Date" style={shell}>
-      <p className="cre-eyebrow-ink" style={widgetEyebrowStyle}>
-        Step {number}
-      </p>
+      {/* "QUICK QUESTION", not "Step N" — 2026-09-29, and it is the Figma's own
+          eyebrow restored.
+
+          ⚠ THIS CARD IS NOT A JOURNEY STEP, which is the correction. It was
+          numbered on the reasoning that four cards cannot draw a continuous
+          spine so the numbering IS the sequence — true of the three licensing
+          steps, and not true of this, which asks a question and gets out of the
+          way. `StudyJourneyWidget` renumbers the column around it rather than
+          leaving a gap where a "Step 1" used to be.
+
+          AND IT GOES WHEN A DATE EXISTS. The eyebrow frames an ask; once the
+          learner has answered there is no question, the card is a readout, and
+          an eyebrow still calling it a question would be describing the state
+          it just left. Keyed on the STORE, so edit mode has no eyebrow either —
+          a date exists there too. */}
+      {hasEyebrow && (
+        <p className="cre-eyebrow-ink" style={widgetEyebrowStyle}>
+          Quick question
+        </p>
+      )}
 
       {activePhase === 'prompt' && (
         <PromptState onNotYet={() => setPhase('not-yet')} onYes={() => openPicker('prompt')} />
@@ -315,7 +331,11 @@ function PickerState({
 
   return (
     <>
-      <p style={pickerLeadStyle}>{editing ? 'Edit your exam date' : 'When is your exam?'}</p>
+      {/* `editing` ⇔ a date exists ⇔ no eyebrow above, so the offset goes with
+          it. The only phase where this differs either way. */}
+      <p style={{ ...pickerLeadStyle, marginTop: editing ? 0 : 6 }}>
+        {editing ? 'Edit your exam date' : 'When is your exam?'}
+      </p>
 
       <div style={pickerFrameStyle}>
         <div style={monthNavRowStyle}>
@@ -466,6 +486,8 @@ function longDate(iso: string): string {
    which every other heading in this app uses. */
 
 const questionStyle: CSSProperties = {
+  /* 6px under the eyebrow. The question only ever renders WITH one — there is
+     no stored date in the prompt phase — so this offset is unconditional. */
   margin: '6px 0 0',
   fontFamily: 'var(--font-heading)',
   fontWeight: 700,
@@ -549,6 +571,9 @@ const linkStyle: CSSProperties = {
   cursor: 'pointer',
 }
 
+/* The picker renders in both cases — under the eyebrow when reached from an
+   answer, flush when reached from Edit — so its offset is the one that has to
+   be conditional. */
 const pickerLeadStyle: CSSProperties = {
   margin: '6px 0 0',
   fontFamily: 'var(--font-heading)',
@@ -646,7 +671,9 @@ const scheduledHeaderRowStyle: CSSProperties = {
   alignItems: 'baseline',
   justifyContent: 'space-between',
   gap: 12,
-  margin: '6px 0 0',
+  /* FLUSH TO THE TOP — the readout only renders when a date exists, which is
+     exactly when there is no eyebrow above it to sit under. */
+  margin: 0,
 }
 
 const scheduledTitleStyle: CSSProperties = {

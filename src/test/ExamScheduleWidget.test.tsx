@@ -202,7 +202,11 @@ describe('exam-step-style: ask-first', () => {
     renderShell('exam-step-style:ask-first,journey-step-order:exam-first')
     const c = card()
     expect(within(c).getByText('Have you scheduled your state exam?')).toBeTruthy()
-    expect(c.textContent).toContain('Step 1')
+    /* ⚠ NO STEP NUMBER — changed 2026-09-29. This asserted "Step 1" until the
+       card stopped being a step at all. `JourneyStepOrder.test.tsx` owns the
+       other half: that the three real steps close up to 1-2-3 behind it. */
+    expect(within(c).getByText('Quick question')).toBeTruthy()
+    expect(c.textContent).not.toMatch(/Step \d/)
   })
 
   it('keeps Exam Details reachable in every state except edit', async () => {
