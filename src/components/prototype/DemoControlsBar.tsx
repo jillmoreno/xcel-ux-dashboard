@@ -1072,8 +1072,8 @@ export function DemoControlsBar({
             hidden={!show('nav-layout')}
             wip={markWip && controlMaturity('nav-layout') === 'wip'}
             label={
-              NAV_LAYOUT_PICKER.find((o) => o.value === (navLayoutState.variant ?? 'top'))?.label ??
-              'Option 1 — Top nav'
+              NAV_LAYOUT_PICKER.find((o) => o.value === (navLayoutState.variant ?? 'hybrid'))
+                ?.label ?? 'Option 3 — Hybrid (rail)'
             }
             eyebrow="Nav layout"
             openId={openId}
@@ -1083,7 +1083,7 @@ export function DemoControlsBar({
             panelMinWidth={240}
           >
             {NAV_LAYOUT_PICKER.map((opt) => {
-              const active = opt.value === (navLayoutState.variant ?? 'top')
+              const active = opt.value === (navLayoutState.variant ?? 'hybrid')
               return (
                 <button
                   key={opt.value}
