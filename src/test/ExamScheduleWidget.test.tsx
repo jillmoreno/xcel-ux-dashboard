@@ -55,16 +55,20 @@ function renderShell(ff?: string) {
 const card = () => screen.getByRole('region', { name: 'Exam Date' })
 
 describe('exam-step-style: ask-first', () => {
-  it('names the STATE in every phase, so the card is never ambiguous', async () => {
-    /* ⚠ THE ONE GENUINELY AMBIGUOUS THING ON THE CARD, until 2026-09-29. A
-       learner holding licences in more than one jurisdiction — or working a
-       course for a state they do not live in — could not tell which exam "your
-       state exam" meant. The saved readout already titled itself "New York
-       State exam"; the three asking phases did not.
+  it('names the STATE while it is still ASKING, and the DATE once it knows', async () => {
+    /* ⚠ THE SPLIT IS THE POINT, and it moved once. A learner holding licences
+       in more than one jurisdiction could not tell which exam "your state exam"
+       meant, so the three asking phases name it.
 
-       Swept across all four rather than checked on the question alone, because
-       "every phase" is the assertion — a single-phase check would pass with the
-       state named once and missing from three. */
+       The readout deliberately does NOT (changed 2026-09-29, from "New York
+       State exam"). Before a date exists the ambiguous thing is WHICH exam;
+       once one exists the card is showing it — the tear-off and the countdown
+       are both the date — so the title says what the learner is looking at
+       rather than repeating the jurisdiction.
+
+       Swept across all four rather than checked on one, because the SPLIT is
+       the assertion: a single-phase check would pass with the rule applied
+       once and forgotten three times. */
     const user = userEvent.setup()
     renderShell('exam-step-style:ask-first')
     expect(card().textContent).toContain('New York')
@@ -77,7 +81,9 @@ describe('exam-step-style: ask-first', () => {
 
     await user.click(within(card()).getByRole('button', { name: /May 29, 2026/ }))
     await user.click(within(card()).getByRole('button', { name: 'Save exam date' }))
-    expect(within(card()).getByText('New York State exam')).toBeTruthy()
+    // …and HERE it stops naming the state and names the date instead.
+    expect(within(card()).getByText('Your exam date')).toBeTruthy()
+    expect(within(card()).queryByText(/New York State exam/)).toBeNull()
 
     // …and the edit lead names it too, the one phase with no heading above it.
     await user.click(within(card()).getByRole('button', { name: /Edit/ }))
@@ -172,7 +178,7 @@ describe('exam-step-style: ask-first', () => {
     const c = card()
     // The question is spent, so the card stops asking it.
     expect(within(c).queryByText('Have you scheduled your New York state exam?')).toBeNull()
-    expect(within(c).getByText(/State exam$/)).toBeTruthy()
+    expect(within(c).getByText('Your exam date')).toBeTruthy()
     expect(within(c).getByText('18 days')).toBeTruthy()
     expect(within(c).getByText('until your exam')).toBeTruthy()
     expect(within(c).getByRole('button', { name: /Edit/ })).toBeTruthy()

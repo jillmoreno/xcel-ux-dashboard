@@ -35,9 +35,14 @@ import { widgetEyebrowStyle } from './widgetStyles'
  *  • "YES" EXPANDS THE CALENDAR IN PLACE, the same settled-not-a-sheet decision
  *    `date-first` made, and for the same reason: the date belongs in the card
  *    that asked for it.
- *  • ONCE SAVED THE CARD RE-TITLES ITSELF "{state} State exam" and turns into a
+ *  • ONCE SAVED THE CARD RE-TITLES ITSELF "Your exam date" and turns into a
  *    readout — tear-off calendar, day countdown, Edit at link weight. The
  *    question is spent, so the card stops asking it.
+ *    ⚠ THIS PHASE NAMES THE DATE, NOT THE STATE (changed 2026-09-29). The
+ *    other three name the state, because before a date exists the ambiguous
+ *    thing is WHICH exam. Once one exists the card is showing it — the tear-off
+ *    and the countdown are both the date — so the title says what the learner
+ *    is looking at rather than repeating the jurisdiction above it.
  *  • EDIT IS THE ONLY ROUTE IN THAT CAN DESTROY SOMETHING, so it is the only
  *    one that offers to: the footer's "How to Schedule" becomes a red "Clear
  *    exam date" there. Someone editing a date they already hold is past
@@ -76,7 +81,8 @@ export function ExamScheduleWidget({
   /** Opens a sheet by id. This card only ever sends `EXAM_DETAILS_STEP_ID` —
    *  the menu it opens is what sends the real step ids back. */
   onOpenStep?: (id: string) => void
-  /** Learner's licensing state — drives the saved title, "{stateName} State exam". */
+  /** Learner's licensing state — named in the question, the "not yet" note and
+   *  the picker lead. NOT in the saved readout, which titles the date itself. */
   stateName?: string
   /** Clock override for the countdown and the picker's past-day greying. */
   today?: Date
@@ -165,7 +171,7 @@ export function ExamScheduleWidget({
 
       {activePhase === 'scheduled' && stored && (
         <ScheduledState
-          examLabel={`${stateName} State exam`}
+          examLabel="Your exam date"
           examDate={stored}
           today={today}
           onEdit={() => openPicker('scheduled')}
@@ -236,8 +242,8 @@ function PromptState({
           they do not live in, cannot tell which exam this card means from "your
           state exam". Naming it costs two words and removes the only genuinely
           ambiguous thing on the card. Lowercase "state exam" here because this
-          is a sentence; the saved readout titles it "New York State exam",
-          which is a label rather than prose. */}
+          is a sentence. The saved readout does not name the state at all — see
+          the note on `ScheduledState`. */}
       <p style={questionStyle}>Have you scheduled your {stateName} state exam?</p>
       {/* ⚠ "Not yet" FIRST IN THE DOM, so the affirmative sits on the right.
           Order here is also TAB order — rendering them visually swapped (with
