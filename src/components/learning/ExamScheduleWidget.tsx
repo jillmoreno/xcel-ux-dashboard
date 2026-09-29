@@ -66,6 +66,19 @@ import { widgetEyebrowStyle } from './widgetStyles'
  *     card disagree with the Study Plan beside it.
  */
 
+/* ⚠ THE SELECTED RAIL ITEM'S OWN EXPRESSION, token and all — `PlatformSideNav`
+   draws the active row with `var(--color-nav-icon-active-primary)` at 24%, and
+   quoting it here is what keeps "the same light blue as Home" true if that
+   colour is ever retuned. A copied hex would be the same colour today and a
+   silent divergence later.
+
+   ⚠ MIXED OVER `--color-surface-card`, NOT `transparent`. The rail mixes to
+   transparent because it sits on the rail's own white; this card sits on the
+   page's GREY, so mixing to transparent would let that through and land a
+   visibly different colour from the thing it is quoting. */
+const CARD_TINT =
+  'color-mix(in srgb, var(--color-nav-icon-active-primary) 24%, var(--color-surface-card))'
+
 type Phase = 'prompt' | 'not-yet' | 'picking' | 'scheduled'
 
 /** Where Cancel returns to — the phase the picker was opened from. */
@@ -96,6 +109,9 @@ export function ExamScheduleWidget({
   const [returnPhase, setReturnPhase] = useState<ReturnPhase>('prompt')
 
   const activePhase: Phase = phase ?? (stored ? 'scheduled' : 'prompt')
+  /* THE CARD'S GROUND — `exam-card-background`. See the flag for why the tint is
+     bound to the rail's token rather than copied. */
+  const tinted = useFeatureFlag('exam-card-background').variant === 'tint'
   /* No stored date ⇒ the card is still asking ⇒ it wears the eyebrow. */
   const hasEyebrow = !stored
 
@@ -124,7 +140,7 @@ export function ExamScheduleWidget({
   }
 
   return (
-    <section aria-label="Exam Date" style={shell}>
+    <section aria-label="Exam Date" style={tinted ? { ...shell, background: CARD_TINT } : shell}>
       {/* "QUICK QUESTION", not "Step N" — 2026-09-29, and it is the Figma's own
           eyebrow restored.
 

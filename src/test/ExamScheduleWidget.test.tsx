@@ -497,3 +497,29 @@ describe('exam-calendar-style — how the picker is drawn', () => {
     expect(monthRow().style.background).toBe('')
   })
 })
+
+describe('exam-card-background — the card\'s ground', () => {
+  it('defaults to white, i.e. the card sets no ground of its own', () => {
+    const flag = FEATURE_FLAGS.find((f) => f.key === 'exam-card-background')
+    expect(flag?.defaultVariant).toBe('white')
+    renderShell('exam-step-style:ask-first')
+    // The shell's own surface, untouched — not a colour this card chose.
+    expect(card().style.background).toBe('var(--color-surface-card)')
+  })
+
+  it('`tint` quotes the SELECTED RAIL ITEM rather than copying its colour', async () => {
+    /* ⚠ THE TOKEN IS THE ASSERTION. "The same light blue as Home" is only
+       durably true if both sides read `--color-nav-icon-active-primary`; a
+       hex that matches today diverges silently the day the rail is retuned.
+       So this pins the EXPRESSION, not the rendered colour. */
+    renderShell('exam-step-style:ask-first,exam-card-background:tint')
+    const bg = card().style.background
+    expect(bg).toContain('--color-nav-icon-active-primary')
+    expect(bg).toContain('24%')
+    /* ⚠ …and mixed over the CARD surface, not `transparent`. The rail mixes to
+       transparent because it sits on white; this card sits on the page's grey,
+       so transparent would land a different colour from the thing it quotes. */
+    expect(bg).toContain('var(--color-surface-card)')
+    expect(bg).not.toContain('transparent')
+  })
+})

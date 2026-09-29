@@ -116,6 +116,7 @@ const REBRAND_FLAGS = [
      that the note above records six of. It sits next to `exam-step-style`
      because it only does anything on that flag's `ask-first` arm. */
   'exam-calendar-style',
+  'exam-card-background',
   'journey-step-order',
   'study-pace-hidden',
   'nav-rail-icons',

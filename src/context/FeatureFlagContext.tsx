@@ -732,6 +732,21 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'exam-card-background',
+    group: 'Widgets',
+    label: 'Exam card — background',
+    description:
+      'The GROUND the `ask-first` exam card sits on. `white` is the default and is what ships \u2014 the card carries no background of its own, so it takes `--color-surface-card` like every other widget in the column. `tint` fills it with the same wash the SELECTED RAIL ITEM uses, which is what makes the pair worth comparing: that colour already means \u201cthis is where you are\u201d in this product, so putting it behind the exam card says the card is the live one rather than merely another widget. \u26a0 THE TINT IS BOUND TO THE RAIL\u2019S OWN TOKEN, not a copied hex \u2014 `color-mix(in srgb, var(--color-nav-icon-active-primary) 24%, \u2026)`, the same expression `PlatformSideNav` uses, so the two cannot drift apart if the rail\u2019s colour is ever retuned. It composites over `--color-surface-card` rather than `transparent` (which is what the rail does) because the card has its own white ground and the page behind it is grey \u2014 mixing to transparent would let that grey through and land a different colour from the rail it is quoting. Variant-only.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    defaultVariant: 'white',
+    variants: [
+      { value: 'white', label: 'White (no background)' },
+      { value: 'tint', label: 'Light blue — the selected-rail wash' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'exam-calendar-style',
     group: 'Widgets',
     label: 'Exam calendar — treatment',
