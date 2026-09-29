@@ -83,10 +83,14 @@ export type FeatureCategory =
   | 'exploration'
   /** Standalone full HTML files being actively worked on — the ones that live
    *  in `public/prototypes/` or `explorations/` and get manipulated directly
-   *  rather than built as React. Routes the row to the UX dashboard's Sandbox
-   *  section. Like `exploration`, this is a CATEGORY lever because an authored
-   *  `devStatus` can only route to Design or Development — so leave `devStatus`
-   *  off a sandbox row, or it will be pulled out of Sandbox. */
+   *  rather than built as React.
+   *
+   *  ⚠ THE SANDBOX SECTION WAS ARCHIVED 2026-09-29 and this category now routes
+   *  to DESIGN. It is kept in the union because this type block is verbatim from
+   *  the LMS, so a row ported carrying it has to compile — but setting it here
+   *  no longer sends a row anywhere of its own. `sectionOf` in
+   *  `UxDashboardPage.tsx` states the redirect explicitly rather than letting it
+   *  fall through; see the `sandbox-section` row in `archivedItems.ts`. */
   | 'sandbox'
 
 /** A feature flag (from the Admin tools → Feature Flag panel) that drives one

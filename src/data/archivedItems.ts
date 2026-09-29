@@ -56,6 +56,19 @@ export type ArchivedItem = {
 
 export const ARCHIVED_ITEMS: ArchivedItem[] = [
   {
+    id: 'sandbox-section',
+    name: 'Sandbox (gateway section)',
+    what: 'A gated section of the UX Dashboard rail for standalone HTML files in ACTIVE development \u2014 opened, edited and reloaded directly, outside the app build. Its empty state told you how to add one: a `PROTOTYPE_FEATURES` row with `category: sandbox`, an `externalUrl` pointing at the file, and no `devStatus`.',
+    location:
+      'NOTHING OF ITS CONTENT EXISTS TO KEEP \u2014 the section was empty, and no row in this repo has ever carried `category: sandbox` (checked across `PROTOTYPE_FEATURES`). What went from `src/pages/UxDashboardPage.tsx`: the `sandbox` member of the `UxSection` union, the `SectionDef`, the `sandbox: []` bucket, the section-specific empty state and its `codeStyle` const. The `sandbox` member of `FeatureCategory` in `src/data/prototypeFeatures.ts` was KEPT \u2014 that type block is verbatim from the LMS, so a row ported carrying it must still compile \u2014 and `sectionOf` now redirects it to Design in an explicit branch.',
+    flag: "category: 'sandbox' (still a valid value; now routes to Design)",
+    dateRemoved: '2026-09-29',
+    reason:
+      'Jillienne\u2019s call. Sandbox answered "I am editing a raw HTML file live, outside the build" \u2014 a single-designer workflow. The team now works on branches that Netlify builds, and shares them through Refinement, so the artifact under active work has a URL of its own and does not need a rail row pointing at a local file. It read 0 and had read 0 since it was built.',
+    restoreNote:
+      'Four edits in `src/pages/UxDashboardPage.tsx`: (1) add the `sandbox` member back to the `UxSection` union; (2) re-add the `SectionDef` at the marked spot, between Exploration and Development, with `gate: { id: DEV_GATE_ID, title: Sandbox }` copied from a sibling \u2014 it shared the group password; (3) add `sandbox: []` back to the `bySection` map, REQUIRED because that map is typed `Record<UxSection, PrototypeFeature[]>` and the build fails without it; (4) in `sectionOf`, change the explicit `if (f.category === sandbox) return design` back to `return sandbox`. \u26a0 THE TRAP IS (4), and it is why that branch was left in rather than deleted: with the branch gone the category falls through to the `return design` at the end of the function and lands in the same place, so a half-restore \u2014 section back, routing not \u2014 gives you an empty Sandbox section and rows quietly in Design, which type-checks and passes every test. The empty state that named the fields was removed with the section; it is not needed for a restore, but `codeStyle` in the same file has to come back if you want it. NOT restored, because it was never removed: `category: sandbox` in `FeatureCategory`, and the doc comment there which now records the redirect. Tests: `EXPECTED_SECTIONS` in `src/test/UxDashboard.smoke.test.tsx` and `GATED_SECTIONS` in `src/test/PublicGateway.test.tsx` both need Sandbox put back.',
+  },
+  {
     id: 'todo-section',
     name: 'To Do (gateway section)',
     what: 'A section of the UX Dashboard rail for upcoming projects and loose ends \u2014 paste an item in, tag it with a stage, drag to rank. Its nav count was the number of OPEN items, read live from the store rather than from the static `count` field, so it fell as items were ticked off.',

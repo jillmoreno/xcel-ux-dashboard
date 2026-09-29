@@ -118,18 +118,17 @@ type UxSection =
   | 'research'
   | 'design'
   | 'exploration'
-  | 'sandbox'
   | 'development'
   | 'done'
   | 'archive'
   | 'qa-notes'
 
 /**
- * ONE gate for every restricted section — Design, Exploration, Sandbox, Archive
- * and QA Notes all share this id, so a reviewer types the password once and the
- * whole group opens. (To Do and Contributing were in this list until they were
- * archived on 2026-09-29; they shared this id too, so restoring either is a
- * `gate` field copied from any sibling, not a new password.) (Exploration used to
+ * ONE gate for every restricted section — Design, Exploration, Archive and QA
+ * Notes all share this id, so a reviewer types the password once and the whole
+ * group opens. (Sandbox, To Do and Contributing were in this list until they
+ * were archived on 2026-09-29; they shared this id too, so restoring any of
+ * them is a `gate` field copied from a sibling, not a new password.) (Exploration used to
  * carry its own id and its own hardcoded password, which meant two prompts
  * for one body of work and, worse, a password the Admin tools override could
  * not reach.)
@@ -264,23 +263,17 @@ const SECTIONS: SectionDef[] = [
     blurb: 'Outside products and ideas rebuilt on our tokens, components and UX conventions.',
     gate: { id: DEV_GATE_ID, title: 'Exploration' },
   },
-  {
-    // Raw HTML being worked on directly, rather than anything in the React
-    // pipeline — which is why it sits beside Exploration rather than in the
-    // Design → Development → Done run.
-    id: 'sandbox',
-    label: 'Sandbox',
-    blurb:
-      'Standalone HTML files in active development — opened, edited and reloaded directly, outside the app build.',
-    gate: { id: DEV_GATE_ID, title: 'Sandbox' },
-  },
+  // ARCHIVED 2026-09-29 — Sandbox stood here, between Exploration and
+  // Development. Unwired, not deleted: see the `sandbox-section` row in
+  // `src/data/archivedItems.ts`.
   {
     // UNGATED since 2026-09-23, at Jillienne's request — Development and Done
     // moved out of the shared `design-and-development` gate and now sit under
     // their own "Dev Handoff" eyebrow (see `NAV_EYEBROWS` below), visible on
-    // the PUBLIC build for the first time. Design, Exploration and Sandbox
-    // keep their gate and stay exactly where they are — this only pulls
-    // Development and Done out of that group, nothing else in it moved.
+    // the PUBLIC build for the first time. Design and Exploration keep their
+    // gate and stay exactly where they are — this only pulls Development and
+    // Done out of that group, nothing else in it moved. (Sandbox was in that
+    // sentence too until it was archived on 2026-09-29.)
     id: 'development',
     label: 'Development',
     blurb: 'Specified and handed off, in build, or under test.',
@@ -1083,10 +1076,16 @@ function sectionOf(
   // Ported outside products get their own section rather than sitting in Design
   // — they are a different kind of thing, and they carry their own gate.
   if (f.category === 'exploration') return 'exploration'
-  // Standalone HTML being worked on directly. Checked here, AFTER `devStatus`,
-  // for the same reason exploration is: a status can only mean Design or
-  // Development, so authoring one on a sandbox row would drag it out of here.
-  if (f.category === 'sandbox') return 'sandbox'
+  // ARCHIVED 2026-09-29 — the Sandbox SECTION is gone, but `'sandbox'` stays in
+  // `FeatureCategory` because that union is verbatim from the LMS (CLAUDE.md,
+  // "Data files"), so a row ported carrying it must still compile.
+  //
+  // THIS BRANCH IS DELIBERATELY EXPLICIT RATHER THAN DELETED. Delete it and the
+  // category falls through to the `return 'design'` below, reaching the same
+  // place — which is the silent failure `archive-a-feature` warns about: it
+  // type-checks, it passes, and nobody can tell "routed here on purpose" from
+  // "routed here because the branch that caught it is gone". One line to say so.
+  if (f.category === 'sandbox') return 'design'
   return 'design'
 }
 
@@ -1348,7 +1347,6 @@ export function UxDashboardPage() {
       research: [],
       design: [],
       exploration: [],
-      sandbox: [],
       development: [],
       done: [],
       archive: [],
@@ -1678,23 +1676,7 @@ export function UxDashboardPage() {
 
             {rows.length === 0 ? (
               <p style={emptyStyle}>
-                {q ? (
-                  `Nothing matches “${query}”.`
-                ) : section === 'sandbox' ? (
-                  // Names the field rather than just reporting emptiness — same
-                  // convention as the feature gateway's empty tabs.
-                  <>
-                    Nothing here yet. Add a row to{' '}
-                    <code style={codeStyle}>PROTOTYPE_FEATURES</code> with{' '}
-                    <code style={codeStyle}>category: 'sandbox'</code> and an{' '}
-                    <code style={codeStyle}>externalUrl</code> pointing at the file (e.g.{' '}
-                    <code style={codeStyle}>/prototypes/my-file.html</code>). Leave{' '}
-                    <code style={codeStyle}>devStatus</code> off — it would move the row to Design or
-                    Development.
-                  </>
-                ) : (
-                  'Nothing in this section yet.'
-                )}
+                {q ? `Nothing matches “${query}”.` : 'Nothing in this section yet.'}
               </p>
             ) : (
               <div style={listStyle}>
@@ -2406,8 +2388,6 @@ const pillCountActiveStyle: CSSProperties = {
 const statusDotStyle: CSSProperties = { width: 7, height: 7, borderRadius: '50%', flex: 'none' }
 
 const countStyle: CSSProperties = { marginLeft: 'auto', fontSize: 12.5, color: 'var(--ux-text-2)' }
-
-const codeStyle: CSSProperties = { fontFamily: 'ui-monospace, monospace', fontSize: 12 }
 
 const listStyle: CSSProperties = {
   border: '1px solid var(--ux-border)',

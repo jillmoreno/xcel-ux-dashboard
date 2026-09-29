@@ -135,11 +135,16 @@ defaults now ship in Prototypes, and what stayed sandbox-only.
 
 ### 6. After the merge — retire the Refinement row
 
-The branch's Refinement row points at a branch URL that will go stale once the branch
-is deleted, and the work it showed is now in Prototypes (or the sandbox). Remind
-Jillienne, in one line, to open Refinement on the full site and either **remove** the
-row or **edit** it to point at the merged surface if discussion continues. The
-skill cannot do this — Refinement is authored on the page, not in code.
+The branch's Refinement row points at a branch URL that will go stale once the
+branch is deleted, and the work it showed is now in Prototypes (or the sandbox).
+
+**Run `retire-from-refinement`.** It is the skill for exactly this step: it reads
+the row, asks whether the branch (and therefore the build) is kept or deleted,
+writes the Archive row from what the reviewer wrote, and then removes the row —
+in that order, so a crash between the two cannot lose the record.
+
+If discussion is still live, leave the row and **edit** it to point at the merged
+surface instead. Retiring it is for when the conversation is over.
 
 ## Guardrails
 

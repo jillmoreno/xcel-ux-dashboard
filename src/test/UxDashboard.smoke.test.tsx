@@ -50,7 +50,6 @@ const EXPECTED_SECTIONS = [
   'Other Links',
   'Design',
   'Exploration',
-  'Sandbox',
   'Development',
   'Done',
   'Archive',

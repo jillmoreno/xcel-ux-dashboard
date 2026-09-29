@@ -44,6 +44,16 @@ The ways in are already built: `promote-to-refinement` (a branch),
 something into the source of truth). There is deliberately no "create a second
 prototype" skill.
 
+**The way OUT is `retire-from-refinement`** (2026-09-29), and it runs both when
+the work shipped and when it did not. It exists because of the second bullet
+above: a row's build lives on a Netlify BRANCH deploy, so deleting the branch
+deletes the only viewable copy of the work, and "we tried this and decided not
+to" otherwise leaves no trace anywhere. It reads the row, makes the
+keep-or-delete-the-branch call explicit, writes the Archive row from what the
+reviewer actually wrote, and only then removes the row. It does NOT move work
+into Exploration — that section is for documents authored to be kept, and the
+skill records why.
+
 ## Scope — read before adding a route
 
 **CHANGED 2026-09-08. This section used to say "gateway only, four routes".**
@@ -126,7 +136,7 @@ file, so the two cannot drift apart.
 | `src/data/gatewayMode.ts`, `src/data/deployContext.ts` | the per-site and per-context build switches |
 | `netlify.toml`, `scripts/public-redirects.mjs` | how the two sites and branch builds differ |
 | `netlify/functions/`, `netlify/lib/` | the Refinement / Links / QA Notes endpoints |
-| `.claude/skills/` | `ship-to-main`, `promote-to-prototype`, `promote-to-refinement`, `promote-component`, `promote-to-testing`, `archive-a-feature` and `dev-handoff-notes` — Jillienne's. Run them; don't edit them. |
+| `.claude/skills/` | `ship-to-main`, `promote-to-prototype`, `promote-to-refinement`, `promote-component`, `promote-to-testing`, `retire-from-refinement`, `archive-a-feature` and `dev-handoff-notes` — Jillienne's. Run them; don't edit them. |
 | `public/contributing/`, `public/about/` | the two guides (regenerate the PDFs if you do edit them) |
 
 ## Stack
