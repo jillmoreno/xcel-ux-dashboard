@@ -7,6 +7,8 @@ import { isTestSession } from '@/data/gatewayMode'
 import { NavDropdown } from './NavDropdown'
 import { NavLink } from './NavLink'
 import { AccountMenu } from './AccountMenu'
+import { PlatformTopNav } from './PlatformTopNav'
+import { showsTopNav, useNavPlacement } from './navPlacement'
 import { NotificationsMenu } from '@/components/notifications/NotificationsMenu'
 import { LearningPathsPanel } from '@/components/learning/LearningPathsPanel'
 import { useLearningPathsPanel } from '@/components/learning/LearningPathsPanelContext'
@@ -92,6 +94,11 @@ export function Header() {
      `courseTakeover` for why it is a store and not a prop. */
   const courseChrome = useCourseChrome()
   const platformNav = pathname === '/dashboard-rebrand'
+  /* WHICH NAVIGATION THE REBRAND SHELL IS SHOWING — `nav-placement`. The top
+     nav renders HERE, in the header, because that is where the design puts it
+     (Figma 765:3801); the shell drops its rail column to match. Read
+     unconditionally — rules of hooks — and acted on in the bar below. */
+  const navPlacement = useNavPlacement()
   // Hide the primary top nav on the rebrand shell (wayfinding lives in the left
   // rail) AND on the Onboarding Flow — a required first-run wizard the learner
   // shouldn't be able to navigate away from. Both keep the logo + utility icons.
@@ -115,6 +122,14 @@ export function Header() {
   // the white app header so it reads as the top of the window.
   const framed = device === 'desktop-framed'
   const showHamburger = platformNav && mobile
+  /* ⚠ DESKTOP ONLY, AND THE HAMBURGER IS WHY. At phone width the rebrand's
+     nav is already a drawer (`showHamburger` below, which opens the shell's
+     `MobileNavDrawer` — and that drawer renders the RAIL, under either
+     option). Three pills in a 375px header push the logo and the utility icons
+     off the bar entirely, so the top nav stands down and the designed mobile
+     path takes over. The Figma is a 1392px frame and says nothing about phone;
+     this is the shell's existing answer rather than a new one. */
+  const showTopNav = platformNav && showsTopNav(navPlacement) && !mobile
   const { setOpen: setMobileNavOpen } = useMobileNav()
   const paths = learningPathsFor(brand)
   const defaultPathId = activePathIdFor(brand)
@@ -321,6 +336,12 @@ export function Header() {
         </div>
 
         <div className="flex items-center" style={{ gap: 24 }}>
+          {/* The platform shell's own primary nav, when the shell is drawing
+              it up here instead of down the left side. It sits in this
+              right-hand cluster rather than beside the logo because the design
+              aligns it with the utility icons, and the cluster's 24px gap is
+              the separation the design draws between Help and the bell. */}
+          {showTopNav && <PlatformTopNav />}
           {!hidePrimaryNav && (
             <nav className="flex items-center" style={{ gap: 8 }}>
               {/* The Dashboard tab is gated behind the `dashboard-tab` flag

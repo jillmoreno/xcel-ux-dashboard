@@ -783,6 +783,38 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'nav-rail-surface',
+    group: 'Navigation',
+    label: 'Left nav background',
+    description:
+      'Whether the left rail paints its own surface ON HOME. `filled` (default) is what ships \u2014 the rail sits on `--color-nav-surface`, a panel beside the content. `none` drops that fill so the rail sits directly on the page, and the column reads as part of the page rather than as a docked panel. \u26a0 HOME ONLY, deliberately: it is the one screen where the rail stands beside a full layout rather than a single body, so it is where the panel edge is doing the least work. Every other section keeps the surface under both settings. \u26a0 THE RIGHT BORDER IS ALREADY TRANSPARENT in every mode (see the rail column in `PlatformShell`), so dropping the fill leaves no seam behind \u2014 nothing else has to change for this to read.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    defaultVariant: 'filled',
+    variants: [
+      { value: 'filled', label: 'Filled (as shipped)' },
+      { value: 'none', label: 'None \u2014 page background' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'nav-placement',
+    group: 'Navigation',
+    label: 'Nav placement',
+    description:
+      'WHERE THE PRIMARY NAVIGATION LIVES \u2014 the three options this branch exists to compare. **Option 1 `top`**: a row in the header (Home \u00b7 Compass Learning \u00b7 Help, Figma 765:3801); the shell drops the rail column and the content runs full width. **Option 2 `left`**: the rail, carrying the destinations, as it ships. **Option 3 `hybrid`**: the header row AND the rail \u2014 the header carries the three primary destinations, the rail everything else. **Option 4 `hybrid-tabs`**: the header row and NO rail, with a small underline tab strip over the content instead \u2014 Study Pace \u00b7 Courses \u00b7 Certificates (Figma 765:3801). \u26a0 THREE AND FOUR ARE THE SAME QUESTION WITH TWO ANSWERS: a three-item header leaves Study Pace, Courses and Certificates without a control, and the two hybrids differ only in what fills that gap \u2014 a rail, or a tab strip. \u26a0 THE TOP NAV IS DELIBERATELY SHORTER than the rail, which is the concept Option 1 tests rather than a gap in the port; every section still resolves from `?section=` under all three. Turning the flag OFF resolves to `left`, so switching it off returns the shipped product rather than a shell with no navigation.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    defaultVariant: 'top',
+    variants: [
+      { value: 'left', label: 'Option 2 — Left nav' },
+      { value: 'top', label: 'Option 1 — Top nav' },
+      { value: 'hybrid', label: 'Option 3 — Hybrid (rail)' },
+      { value: 'hybrid-tabs', label: 'Option 4 — Hybrid (tabs)' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'course-entry-details',
     group: 'Widgets',
     label: 'Course entry — Details link',
@@ -980,13 +1012,13 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     variants: [
       {
         value: 'option-1',
-        label: 'Option 1 — the current course page',
+        label: 'Below the header',
         description:
           'Resume opens the Compass player unchanged: app header, contents sidebar, Home / Overview / Course breadcrumb, the reading column with Previous / Next, and the Rubi panel.',
       },
       {
         value: 'option-2',
-        label: 'Option 2 — the alternate course page',
+        label: 'Full screen Compass experience',
         description:
           'Resume opens `CourseContentV2` — a full-screen course page whose own header carries the course and section naming, so there is no app header, no contents sidebar and no breadcrumb. Wired: ✕. Lo-fi for now: the exam-date pill (real date when one is booked), + Demo, brightness, Notes and Rubi.',
       },

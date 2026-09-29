@@ -1,3 +1,5 @@
+import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
+import { useLoFi } from '@/context/LoFiContext'
 import type { CSSProperties } from 'react'
 import { ArrowRight } from '@/icons'
 import {
@@ -81,6 +83,19 @@ export function CourseEntryCard({
      "0%". It takes its dividing rule with it, so the stats start at the edge. */
   const showPercent = pct > 0
 
+  /* LO-FI — the shell stays, the detail goes. `LoFiPlaceholders`' own rule:
+     "the outer shell of each component stays intact — same dimensions, same
+     position in the grid — so the page TEMPLATE remains visible while the
+     Hi-Fi DETAILS get stripped." That is what makes lo-fi a question about
+     LAYOUT rather than a broken page. */
+  const { loFi } = useLoFi()
+  if (loFi) {
+    return (
+      <section aria-label="Current course" style={card}>
+        <LoFiWidgetBody rows={4} showCta ariaLabel="Lo-fi current course card" />
+      </section>
+    )
+  }
   return (
     <section aria-label="Current course" style={card}>
       <div style={topRow}>

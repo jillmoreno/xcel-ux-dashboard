@@ -116,6 +116,12 @@ const REBRAND_FLAGS = [
   'study-pace-hidden',
   'nav-rail-icons',
   'nav-rail-captions',
+  /* Left rail ⇄ top nav — the nav-placement exploration. It leads the
+     Navigation group, which is where a control that decides whether the rail
+     exists at all belongs. */
+  'nav-placement',
+  /* Whether the rail paints its own surface on Home. */
+  'nav-rail-surface',
   /* ⚠ ADDED 2026-09-28 AFTER A REVIEW, and these are OLDER misses than the
      seven above. Git history says none of the four was ever in this list — they
      were never removed, just never added, going back to their own introducing

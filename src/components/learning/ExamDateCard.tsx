@@ -1,3 +1,5 @@
+import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
+import { useLoFi } from '@/context/LoFiContext'
 import { useMemo, useState, type CSSProperties } from 'react'
 import { useExamDate, writeExamDate } from '@/data/examDateStore'
 import { widgetEyebrowStyle } from './widgetStyles'
@@ -53,6 +55,19 @@ export function ExamDateCard({
     setOpen(false)
   }
 
+  /* LO-FI — the shell stays, the detail goes. `LoFiPlaceholders`' own rule:
+     "the outer shell of each component stays intact — same dimensions, same
+     position in the grid — so the page TEMPLATE remains visible while the
+     Hi-Fi DETAILS get stripped." That is what makes lo-fi a question about
+     LAYOUT rather than a broken page. */
+  const { loFi } = useLoFi()
+  if (loFi) {
+    return (
+      <section aria-label="Exam Date" style={shell}>
+        <LoFiWidgetBody rows={3} showCta ariaLabel="Lo-fi exam date card" />
+      </section>
+    )
+  }
   return (
     <section aria-label="Exam Date" style={shell}>
       <p className="cre-eyebrow-ink" style={widgetEyebrowStyle}>

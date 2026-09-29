@@ -22,6 +22,8 @@ import { StatusStrip } from '@/components/learning/LearningPathDetailPanel'
 import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
 import { JumpBackInWidget } from '@/components/learning/JumpBackInWidget'
 import { CourseEntryCard } from '@/components/learning/CourseEntryCard'
+import { HomeSectionTabs } from '@/components/layout/HomeSectionTabs'
+import { showsSectionTabs, useNavPlacement } from '@/components/layout/navPlacement'
 import { StudyPaceTile } from '@/components/learning/StudyPaceTile'
 import { NY_LH_CURRENT_CHAPTER, NY_LH_CURRENT_LESSON_PART } from '@/data/nyProducerRequirements'
 import {
@@ -678,8 +680,24 @@ export function LearnerFocusedBand({
   /* The combined arm swaps the card at the same slot, so everything that
      decides WHETHER a resume card renders at all still decides it — the flag
      only changes which one. */
+  /*
+   * OPTION 4's TAB STRIP — Figma 765:3801, and it hangs off the CARD rather
+   * than off a layout slot.
+   *
+   * ⚠ IT WAS APPENDED TO `topBand` IN `MembershipOverview` FIRST, which put it
+   * at the very foot of the page: the card is several levels inside the band,
+   * and the band's own slot renders after everything else in that column. "Under
+   * the current course card" is a fact about the CARD, so the only place it
+   * stays true is next to the card.
+   *
+   * ⚠ THE COMBINED ARM ONLY. `course-entry-style: split` draws a different
+   * entry point, and the frame this comes from shows the combined one. If the
+   * split arm ever needs the strip too, it is the same one-line append there.
+   */
+  const homeTabs = showsSectionTabs(useNavPlacement()) ? <HomeSectionTabs /> : null
   const resumeInline =
     onPage && resume && !clpNavy && combinedEntry ? (
+      <>
       <CourseEntryCard
         courseTitle={path.title}
         cover={resume.imageUrl ?? getCourseImage(resume.id)}
@@ -713,6 +731,8 @@ export function LearnerFocusedBand({
           })
         }
       />
+      {homeTabs}
+      </>
     ) : onPage && resume && !clpNavy ? (
       <JumpBackInWidget
         course={resume}

@@ -1,3 +1,4 @@
+import { pinLeftRail } from './pinNavPlacement'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { render, screen, fireEvent, act, within } from '@testing-library/react'
@@ -348,6 +349,13 @@ describe('on the Home dashboard', () => {
 
   const renderHome = (search = '') => {
     window.history.replaceState({}, '', `/${search}`)
+    /* ⚠ THIS HARNESS RENDERS THE SHELL WITHOUT A HEADER, so it can only ever
+       see a navigation the shell draws itself — and under `nav-placement: top`
+       the nav is in the header. The `nav.*` ids below are the RAIL's, so the
+       rail is what this pins. The top nav emits the same ids (see
+       PlatformTopNav); proving that needs a harness with a header in it, which
+       is NavPlacement's job, not this file's. */
+    pinLeftRail()
     return render(
       <MemoryRouter initialEntries={[TESTING_URL]}>
         <AccountProvider>
@@ -480,7 +488,11 @@ describe('?test=1 — the moderated session view', () => {
     /* The direction that matters more: this must be invisible to everyone not
        in a session. */
     renderChrome('')
-    for (const there of [/Progress/i, /Persona/i, /Pacing/i, /^Reset$/]) {
+    /* ⚠ NAMED FROM WHAT THIS BRANCH'S BAR DRAWS. It listed Persona and Pacing,
+       which `jill/navigation-exploration` trims (see `SHOW_CONTROL`); the claim
+       being tested is that a normal load is NOT whitelisted, so it needs
+       controls that are actually on the bar to make that claim about. */
+    for (const there of [/Progress/i, /Nav layout/i, /Navigation/i, /^Reset$/]) {
       expect(screen.getByRole('button', { name: there }), String(there)).toBeTruthy()
     }
   })
@@ -495,7 +507,11 @@ describe('?test=1 — the moderated session view', () => {
       <MemoryRouter initialEntries={['/dashboard-rebrand']}>
         <AccountProvider>
           <FeatureFlagProvider>
-            <DemoControlsBar open only={['persona']} />
+            {/* `controls` opts Persona back in — this branch's bar hides it, and
+                the whitelist claim needs a control that is not Progress to
+                whitelist. The `only` mechanism is what is under test, not the
+                branch trim. */}
+            <DemoControlsBar open only={['persona']} controls={{ persona: true }} />
           </FeatureFlagProvider>
         </AccountProvider>
       </MemoryRouter>,

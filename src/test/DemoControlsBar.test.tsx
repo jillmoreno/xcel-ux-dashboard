@@ -26,7 +26,14 @@ function renderBar(path = '/dashboard-rebrand') {
     <MemoryRouter initialEntries={[path]}>
       <AccountProvider>
         <FeatureFlagProvider>
-          <DemoControlsBar />
+          {/* ⚠ THE FOUR TRIMMED CONTROLS, OPTED BACK IN. This branch's bar
+              does not draw Persona / Readiness / Pacing / Education (see
+              `SHOW_CONTROL` in DemoControlsBar), but they are hidden, not
+              retired — so the suite that covers them keeps rendering them.
+              Take this prop out only when the controls themselves go. */}
+          <DemoControlsBar
+            controls={{ persona: true, readiness: true, pacing: true, education: true }}
+          />
           <UrlProbe />
         </FeatureFlagProvider>
       </AccountProvider>

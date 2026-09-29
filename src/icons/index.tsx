@@ -115,6 +115,7 @@ import PlusSvg from './plus.svg?react'
 import PrintSvg from './print.svg?react'
 import ReceiptSvg from './receipt.svg?react'
 import RobotSvg from './robot.svg?react'
+import CompassMarkSvg from './compass-mark.svg?react'
 import RubiLogoSvg from './rubi-logo.svg?react'
 import RubiMarkSvg from './rubi-mark.svg?react'
 import RubiWordmarkSvg from './rubi-wordmark.svg?react'
@@ -297,6 +298,7 @@ export const Plus = makeIcon(PlusSvg)
 export const Printer = makeIcon(PrintSvg) // FA: print
 export const Receipt = makeIcon(ReceiptSvg)
 export const Robot = makeIcon(RobotSvg)
+export const CompassMark = makeIcon(CompassMarkSvg) // Compass brand mark (monochrome / currentColor)
 export const RubiLogo = makeIcon(RubiLogoSvg) // Rubi logo mark (monochrome / currentColor)
 
 /**

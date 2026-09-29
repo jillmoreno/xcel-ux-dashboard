@@ -1,3 +1,4 @@
+import { pinLeftRail } from './pinNavPlacement'
 import { readFileSync } from 'node:fs'
 import { cleanup, fireEvent, render, screen, within, act } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
@@ -155,6 +156,9 @@ function personaCountdown(variant: DashboardProgressVariant = 'progress-on-track
 const QE_URL = '/dashboard-rebrand?version=discoverability-qe-focused'
 
 function renderShell(url: string) {
+  /* Option 1's tests — the rail is no longer the default navigation on
+     this branch, so they pin it rather than inheriting it. */
+  pinLeftRail()
   return render(
     <MemoryRouter initialEntries={[url]}>
       <AccountProvider>
