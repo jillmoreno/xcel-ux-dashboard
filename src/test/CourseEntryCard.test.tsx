@@ -124,7 +124,10 @@ describe('the course-entry flags', () => {
   it('defaults to the shipped split layout', () => {
     /* ⚠ A new arm must not become the default by landing. `split` is what
        ships; `combined` is the thing under review. */
-    expect(flag?.defaultVariant).toBe('split')
+    /* ⚠ PROMOTED 2026-09-28 — `combined` IS the baseline now. This asserted
+       `split` and failed the moment the promotion landed, which is exactly its
+       job: a new arm must not become the default by accident, only on purpose. */
+    expect(flag?.defaultVariant).toBe('combined')
     expect(flag?.variants?.map((v) => v.value)).toEqual(['split', 'combined'])
   })
 

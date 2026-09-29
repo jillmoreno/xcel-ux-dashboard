@@ -19,6 +19,29 @@ import {
 import { formatExamChip } from '@/components/learning/compassPlayerUtil'
 
 /**
+ * THE PRE-PROMOTION BASELINE — 2026-09-28.
+ *
+ * Five flags were promoted to the Prototypes baseline that day, so the
+ * product's DEFAULT render no longer shows the Study Pace tile, the separate
+ * Jump Back In card, the inline exam-date field, or coursework as Step 1.
+ *
+ * The tests in this file are about those COMPONENTS and that LAYOUT, not about
+ * whatever the baseline happens to be, so they pin the state they were written
+ * against. Spread into every seed here rather than repeated, because this file
+ * has six of them and a flag pinned in five is worse than one pinned in none.
+ *
+ * ⚠ A TEST THAT IS ABOUT THE BASELINE MUST NOT SPREAD THIS.
+ */
+const PRE_PROMOTION_BASELINE = {
+  'study-pace-hidden': { enabled: false },
+  'course-entry-style': { enabled: true, variant: 'split' },
+  'exam-step-style': { enabled: true, variant: 'inline' },
+  'journey-step-order': { enabled: true, variant: 'coursework-first' },
+}
+
+
+
+/**
  * THE COMPASS COURSE PLAYER — Figma node 49:2903, behind `course-launcher-style`.
  *
  * These pin the two things that are structural rather than cosmetic: that the
@@ -32,7 +55,14 @@ const TESTING_URL = '/dashboard-rebrand?version=discoverability-testing'
 
 function seed(extra: Record<string, unknown> = {}) {
   window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
-  window.localStorage.setItem('cgp.featureFlags', JSON.stringify(extra))
+  window.localStorage.setItem(
+    'cgp.featureFlags',
+    JSON.stringify({
+      ...PRE_PROMOTION_BASELINE,
+      ...PRE_PROMOTION_BASELINE,
+      ...extra,
+    }),
+  )
 }
 
 function renderShell(url: string) {

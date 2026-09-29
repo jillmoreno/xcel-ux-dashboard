@@ -40,20 +40,23 @@ function renderNav(search = '') {
 const icons = () => document.querySelectorAll('nav[aria-label="Primary"] svg')
 
 describe('nav-rail-icons', () => {
-  it('ships icons at 17, unchanged', () => {
-    /* A new flag must not move the shipped rail by landing. */
+  it('ships icons at 14 — promoted 2026-09-28', () => {
+    /* This asserted 17 and failed the moment the baseline moved, which is what
+       it was for: a new arm must not become the default by landing, only by
+       being promoted. */
     const flag = FEATURE_FLAGS.find((f) => f.key === 'nav-rail-icons')
-    expect(flag?.defaultVariant).toBe('standard')
+    expect(flag?.defaultVariant).toBe('small')
     renderNav()
-    expect(icons().length).toBeGreaterThan(0)
-    expect(icons()[0].getAttribute('width')).toBe('17')
-  })
-
-  it('shrinks them to 14 on `small`', () => {
-    renderNav('?ff=nav-rail-icons:small')
     expect(icons().length).toBeGreaterThan(0)
     expect(icons()[0].getAttribute('width')).toBe('14')
   })
+
+  it('still renders them at 17 on `standard`', () => {
+    /* The old baseline, now the opt-in arm. */
+    renderNav('?ff=nav-rail-icons:standard')
+    expect(icons()[0].getAttribute('width')).toBe('17')
+  })
+
 
   it('drops them entirely on `none`, and the labels stay', () => {
     /* ⚠ THE LABELS ARE THE POINT. An unlabelled glyph rail is the thing every

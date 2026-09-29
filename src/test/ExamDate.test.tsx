@@ -12,6 +12,29 @@ import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
 import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 
 /**
+ * THE PRE-PROMOTION BASELINE — 2026-09-28.
+ *
+ * Five flags were promoted to the Prototypes baseline that day, so the
+ * product's DEFAULT render no longer shows the Study Pace tile, the separate
+ * Jump Back In card, the inline exam-date field, or coursework as Step 1.
+ *
+ * The tests in this file are about those COMPONENTS and that LAYOUT, not about
+ * whatever the baseline happens to be, so they pin the state they were written
+ * against. Spread into every seed here rather than repeated, because this file
+ * has six of them and a flag pinned in five is worse than one pinned in none.
+ *
+ * ⚠ A TEST THAT IS ABOUT THE BASELINE MUST NOT SPREAD THIS.
+ */
+const PRE_PROMOTION_BASELINE = {
+  'study-pace-hidden': { enabled: false },
+  'course-entry-style': { enabled: true, variant: 'split' },
+  'exam-step-style': { enabled: true, variant: 'inline' },
+  'journey-step-order': { enabled: true, variant: 'coursework-first' },
+}
+
+
+
+/**
  * THE LEARNER'S BOOKED EXAM DATE — 2026-09-21, the direct ask on the Schedule
  * State Exam card: *"Already scheduled? Enter the exam date and we will use
  * that to help you prep!"*
@@ -55,7 +78,14 @@ function seedPacing() {
 beforeEach(() => {
   window.localStorage.clear()
   window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
-  /* ⚠ `study-pace-readout: prose` — 2026-09-23. `stats` is the branch default
+
+  window.localStorage.setItem(
+    'cgp.featureFlags',
+    JSON.stringify({
+      ...PRE_PROMOTION_BASELINE,
+      ...PRE_PROMOTION_BASELINE,
+    }),
+  )  /* ⚠ `study-pace-readout: prose` — 2026-09-23. `stats` is the branch default
      and it replaces the Study Pace card's two fact SENTENCES with cells. The
      cross-surface claims here are about those sentences naming the ceiling the
      card priced against ("Your exam is on May 31"), which is exactly the silent
@@ -64,6 +94,8 @@ beforeEach(() => {
   window.localStorage.setItem(
     'cgp.featureFlags',
     JSON.stringify({
+      ...PRE_PROMOTION_BASELINE,
+      ...PRE_PROMOTION_BASELINE,
       'study-pace-readout': { enabled: true, variant: 'prose' },
       /* And `strip`, for the same reason — `options` puts three named plans
          above the card, so a heading assertion anchored with `^` reads the

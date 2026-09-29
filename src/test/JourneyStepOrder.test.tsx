@@ -22,6 +22,12 @@ const URL = `/dashboard-rebrand?version=${DISCOVERABILITY_DASHBOARD_VERSION_TEST
 
 beforeEach(() => {
   window.localStorage.clear()
+  /* ⚠ RESET THE URL TOO, not just storage. `?ff=` is read from
+     `window.location.search`, and any test that sets it with
+     `history.replaceState` leaves it there for every test that follows —
+     flags leaking forward and failing assertions in files nobody touched.
+     Clearing localStorage alone is not a clean slate. */
+  window.history.replaceState({}, '', '/')
   window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
 })
 
@@ -47,7 +53,7 @@ function renderShell(ff?: string) {
 function column(): string[] {
   return [...document.querySelectorAll('section[aria-label]')]
     .map((el) => el.getAttribute('aria-label') ?? '')
-    .filter((n) => /Study journey|Schedule State Exam|Pass State Exam|Get Licensed/i.test(n))
+    .filter((n) => /Study journey|Exam Date|Pass State Exam|Get Licensed/i.test(n))
 }
 
 /**
@@ -66,19 +72,32 @@ function stepOf(label: string): string {
 }
 
 describe('journey-step-order', () => {
-  it('ships coursework first', () => {
+  it('ships EXAM-FIRST, renumbered 1-2-3-4', () => {
+    /* ⚠ PROMOTED 2026-09-28. This asserted `coursework-first` and failed the
+       moment the baseline moved — the job it exists for. The numbering half is
+       the part that matters and is unchanged in spirit: four separate widgets
+       cannot draw a continuous spine, so the eyebrows ARE the sequence, and
+       they still read 1-2-3-4 down the column in the new order. */
     const flag = FEATURE_FLAGS.find((f) => f.key === 'journey-step-order')
-    expect(flag?.defaultVariant).toBe('coursework-first')
+    expect(flag?.defaultVariant).toBe('exam-first')
     renderShell()
-    expect(stepOf('Study journey')).toBe('1')
-    expect(stepOf('Schedule State Exam')).toBe('2')
+    /* ⚠ 'Exam Date', NOT 'Schedule State Exam'. Two promotions landed together
+       and they interact: `exam-step-style: date-first` renamed this card, so a
+       locator using the old label finds nothing and the failure reads as a
+       missing STEP rather than a renamed card. */
+    expect(stepOf('Exam Date')).toBe('1')
+    expect(stepOf('Study journey')).toBe('2')
+    expect(stepOf('Pass State Exam')).toBe('3')
+    expect(stepOf('Get Licensed')).toBe('4')
   })
 
-  it('puts Schedule State Exam first on `exam-first`, renumbered', () => {
-    renderShell('journey-step-order:exam-first')
-    expect(stepOf('Schedule State Exam')).toBe('1')
-    expect(stepOf('Study journey')).toBe('2')
-    // …and the two below keep their places rather than sliding up.
+  it('still puts coursework first on `coursework-first`', () => {
+    /* The old baseline, now the opt-in arm — and renumbered back the other
+       way, which is the assertion that would catch a reorder that forgot the
+       numbers. */
+    renderShell('journey-step-order:coursework-first')
+    expect(stepOf('Study journey')).toBe('1')
+    expect(stepOf('Exam Date')).toBe('2')
     expect(stepOf('Pass State Exam')).toBe('3')
     expect(stepOf('Get Licensed')).toBe('4')
   })
@@ -88,7 +107,7 @@ describe('journey-step-order', () => {
        place — the column would read 2 · 1 · 3 · 4 down the page. */
     renderShell('journey-step-order:exam-first')
     const order = column()
-    expect(order.findIndex((n) => /Schedule State Exam/i.test(n))).toBeLessThan(
+    expect(order.findIndex((n) => /Exam Date/i.test(n))).toBeLessThan(
       order.findIndex((n) => /Study journey/i.test(n)),
     )
   })

@@ -794,7 +794,7 @@ copy is absent.
 > because the flag catalog is the first place anyone looks for "what does
 > Prototypes render" and this line is not in it.
 
-**THE COMMITTED REBRAND DEMO DEFAULTS**, as of 2026-09-23 — what `?demo=1`
+**THE COMMITTED REBRAND DEMO DEFAULTS**, as of 2026-09-28 — what `?demo=1`
 renders with nothing stored. Kept here rather than in the catalog because the
 catalog says what each flag DOES; this says which way the baseline is set.
 
@@ -810,6 +810,13 @@ catalog says what each flag DOES; this says which way the baseline is set.
 | `dashboard-journey-style` | `syllabus` | The numbered-node journey rail |
 | `dashboard-heading-font` | `serif` | ⚠ A SYSTEM serif standing in for Amasis MT, which is unlicensed to us — fine for an exploration, not for production |
 | `dashboard-course-header` | `band` | The course header band above the block |
+| `course-entry-style` | `combined` | **Promoted 2026-09-28.** The COURSE PROGRESS header and the Jump Back In card are ONE card — cover, course name, bar, the percentage, the stat pairs, a hairline, then the lesson line and Resume. ⚠ The split header stands down when this is on, or the course name prints twice |
+| `course-entry-details` | off | **Nothing.** The `Details →` link on that card ships OFF, reviewed and declined 2026-09-28: the card exists to get ONE press, and a second link on the same row competes for it (`?ff=course-entry-details:on`) |
+| `exam-step-style` | `date-first` | **Promoted 2026-09-28.** The Schedule State Exam card becomes "Exam Date" — no fee line, a secondary CTA opening a month selector IN the card, and "Change date" at link weight beside "How to Schedule" once a date is set |
+| `journey-step-order` | `exam-first` | **Promoted 2026-09-28.** The right-hand column opens with Schedule State Exam as Step 1 and Complete Coursework as Step 2; the eyebrows renumber so it still reads 1-2-3-4 |
+| `study-pace-hidden` | on | **Promoted 2026-09-28 — the Study Pace tile is GONE from the baseline.** ⚠ Worth knowing what that costs: the presets card, the activity band and the derived-pace readout were the most-worked surface of the week, and none of them is on the page any more. Everything behind it is intact and one flag away (`?ff=study-pace-hidden:off`) |
+| `nav-rail-icons` | `small` | **Promoted 2026-09-28.** Rail glyphs at 14px rather than 17, so the label leads. The COLLAPSED rail is unaffected — it keeps its 20px glyph, because an unlabelled, unglyphed collapsed rail is the mis-click failure |
+| `nav-rail-captions` | on | **Nothing.** MY LEARNING / SUPPORT stay, reviewed and kept 2026-09-28 (`?ff=nav-rail-captions:off`) |
 
 ⚠ `dashboard-navigation` DEFAULTS TO ITS CONTROL ARM, WHICH BREAKS THIS REPO'S
 USUAL BRANCH RULE (2026-09-24). A designer's branch normally defaults its own

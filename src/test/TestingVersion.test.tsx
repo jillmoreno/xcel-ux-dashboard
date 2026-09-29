@@ -16,12 +16,35 @@ import { journeyStopsFor } from '@/components/learning/studyJourneyUtil'
 import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
 import { XCEL_NY_PRODUCER_PATH_ID } from '@/data/studyCalendarFixtures'
 import {
+
   DISCOVERABILITY_DASHBOARD_VERSIONS,
   DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
   DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
   defaultDiscoverabilityVersionFor,
   isQualifyingEducationVersion,
 } from '@/data/dashboardVersions'
+
+/**
+ * THE PRE-PROMOTION BASELINE — 2026-09-28.
+ *
+ * Five flags were promoted to the Prototypes baseline that day, so the
+ * product's DEFAULT render no longer shows the Study Pace tile, the separate
+ * Jump Back In card, the inline exam-date field, or coursework as Step 1.
+ *
+ * The tests in this file are about those COMPONENTS and that LAYOUT, not about
+ * whatever the baseline happens to be, so they pin the state they were written
+ * against. Spread into every seed here rather than repeated, because this file
+ * has six of them and a flag pinned in five is worse than one pinned in none.
+ *
+ * ⚠ A TEST THAT IS ABOUT THE BASELINE MUST NOT SPREAD THIS.
+ */
+const PRE_PROMOTION_BASELINE = {
+  'study-pace-hidden': { enabled: false },
+  'course-entry-style': { enabled: true, variant: 'split' },
+  'exam-step-style': { enabled: true, variant: 'inline' },
+  'journey-step-order': { enabled: true, variant: 'coursework-first' },
+}
+
 
 /**
  * TESTING — the fourth Discoverability version (2026-09-21).
@@ -58,12 +81,13 @@ function seed(extra: Record<string, unknown> = {}) {
   window.localStorage.setItem(
     'cgp.featureFlags',
     JSON.stringify({
+      ...PRE_PROMOTION_BASELINE,
+      ...PRE_PROMOTION_BASELINE,
       'study-pace-readout': { enabled: true, variant: 'prose' },
       /* `strip` unless a test says otherwise — `options` is the branch default
          and puts three radio buttons above the card, which several assertions
          here count. See the same note in `StudyPaceTile.test.tsx`. */
-      'study-pace-chooser': { enabled: true, variant: 'strip' },
-      ...extra,
+      'study-pace-chooser': { enabled: true, variant: 'strip' },      ...extra,
     }),
   )
 }
@@ -126,8 +150,21 @@ function paceTile(): HTMLElement {
 
 beforeEach(() => {
   window.localStorage.clear()
+  /* ⚠ RESET THE URL TOO, not just storage. `?ff=` is read from
+     `window.location.search`, and any test that sets it with
+     `history.replaceState` leaves it there for every test that follows —
+     flags leaking forward and failing assertions in files nobody touched.
+     Clearing localStorage alone is not a clean slate. */
+  window.history.replaceState({}, '', '/')
   window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
-})
+
+  window.localStorage.setItem(
+    'cgp.featureFlags',
+    JSON.stringify({
+      ...PRE_PROMOTION_BASELINE,
+      ...PRE_PROMOTION_BASELINE,
+    }),
+  )})
 
 describe('the Testing version is registered without displacing anything', () => {
   it('is selectable in the Discoverability picker', () => {
@@ -1310,16 +1347,27 @@ describe('study-pace-hidden', () => {
     window.history.replaceState({}, '', `/dashboard-rebrand?ff=${encodeURIComponent(ff)}`)
   }
 
-  it('leaves the tile alone by default', () => {
-    expect(FEATURE_FLAGS.find((f) => f.key === 'study-pace-hidden')?.defaultEnabled).toBe(false)
-    renderShell(TESTING_URL)
-    expect(screen.getByText(/Study Pace/i)).toBeTruthy()
-  })
-
-  it('removes the tile when switched on', () => {
+  it('HIDES the tile by default — promoted 2026-09-28', () => {
+    /* ⚠ THE BASELINE NOW SHIPS WITHOUT STUDY PACE. This asserted the opposite
+       and failed the moment the promotion landed, which is the job it was
+       written for. Worth stating plainly because it is the largest single
+       change in that promotion: the presets card, the activity band and the
+       derived-pace readout are no longer on the page a stakeholder opens.
+       Everything behind them is intact and one flag away. */
+    expect(FEATURE_FLAGS.find((f) => f.key === 'study-pace-hidden')?.defaultEnabled).toBe(true)
     withFlags('study-pace-hidden:on')
     renderShell(TESTING_URL)
     expect(screen.queryByText(/Study Pace/i)).toBeNull()
+  })
+
+  it('brings the tile back when switched off', () => {
+    /* The old baseline, now the opt-in. ⚠ `seed()` in this file pins
+       `study-pace-hidden: false` for every other test here — they are about the
+       TILE, not the baseline — so this one is the only place the promoted
+       default is visible. */
+    withFlags('study-pace-hidden:off')
+    renderShell(TESTING_URL)
+    expect(screen.getByText(/Study Pace/i)).toBeTruthy()
   })
 
   it('is a different flag from the placeholder switch', () => {

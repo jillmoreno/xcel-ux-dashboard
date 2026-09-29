@@ -723,7 +723,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       'How the Schedule State Exam card asks for the exam date. `inline` (default) is what ships \u2014 heading "Schedule State Exam", the $40 fee line, and an always-visible date field with Save. `date-first` is the reworked card (`ExamDateCard`): heading "Exam Date", no fee line, and a secondary CTA that opens a MONTH SELECTOR IN THE CARD; once a date is set the card quietens, with "Change date" at link weight beside "How to Schedule". ⚠ THE HEADING IS A LABEL, NOT AN INSTRUCTION, and that is the point of it \u2014 "Schedule" describes something already done once a date exists, where "Exam Date" stays true in both states. The fee moves to the step sheet and the state\u2019s own booking site, where the price is authoritative and current. Worked out on a copy bench before any code. Variant-only.',
     maturity: 'wip',
     defaultEnabled: true,
-    defaultVariant: 'inline',
+    defaultVariant: 'date-first',
     variants: [
       { value: 'inline', label: 'Inline date field' },
       { value: 'date-first', label: 'Exam Date + month picker' },
@@ -738,7 +738,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       'Which step the right-hand journey column opens with. `coursework-first` (default) is what ships \u2014 Complete Coursework as Step 1, then Schedule State Exam, Pass State Exam and Get Licensed. `exam-first` promotes SCHEDULE STATE EXAM to Step 1 and drops Coursework to Step 2, on the argument that booking the exam is the thing a learner can do today and the one that dates everything else \u2014 the Study Pace tile already derives its plan from the exam date. ⚠ THE NUMBERS MOVE WITH THE CARDS: the eyebrows renumber so the column still reads 1-2-3-4 top to bottom. Four cards cannot draw a continuous spine, so the numbering IS the sequence; an order change that left the numbers behind would read as four unrelated things. Variant-only.',
     maturity: 'wip',
     defaultEnabled: true,
-    defaultVariant: 'coursework-first',
+    defaultVariant: 'exam-first',
     variants: [
       { value: 'coursework-first', label: 'Coursework first' },
       { value: 'exam-first', label: 'Schedule exam first' },
@@ -752,7 +752,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     description:
       'Removes the Study Pace tile from the home screen. OFF by default, so the shipped dashboard is unchanged; turn it on to see the page without it. ⚠ NOT THE SAME AS `study-pace-widget`, which swaps the live tile for the lo-fi PLACEHOLDER — that one changes what the tile shows, this one removes it. On the Testing version the tile owns the whole row, so the row goes with it; on every other version Readiness stays and takes the full width. Both behaviours are the ones a completed course already produces, reused rather than re-derived.',
     maturity: 'wip',
-    defaultEnabled: false,
+    defaultEnabled: true,
     page: 'dashboard-rebrand',
   },
   {
@@ -763,7 +763,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       'Whether the primary rail\u2019s items carry an icon, and how big. `standard` (default) is what ships \u2014 17px beside the label. `small` keeps them at 14px, so the label leads and the glyph reads as a marker rather than a peer. `none` drops them entirely and the labels left-align against the row padding, which is what a rail of four short words arguably wants. ⚠ THE COLLAPSED RAIL IS UNAFFECTED by all three: it steps its glyph to 20px and sets 10px text under it, and an unlabelled OR unglyphed collapsed rail is the thing every nav study finds people mis-click. Variant-only.',
     maturity: 'wip',
     defaultEnabled: true,
-    defaultVariant: 'standard',
+    defaultVariant: 'small',
     variants: [
       { value: 'standard', label: 'Standard (17px)' },
       { value: 'small', label: 'Small (14px)' },
@@ -799,7 +799,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       'Whether the course header and the Jump Back In card are two blocks or ONE. `split` (default) is what ships: a COURSE PROGRESS header — cover, name, bar, the percentage and the stat pairs — with a separate ruled card under it carrying the lesson and the Resume CTA. `combined` renders both halves inside a single bordered card (`CourseEntryCard`), eyebrow "Current course:", divided by a hairline. ⚠ IT IS A LAYOUT CHANGE ONLY: the same figures, the same three CTA shapes (Start course / Resume / Review course), the same `Details →`. Deliberately NOT carried over from the reference design it came from — the Target exam date cell (removed 2026-09-21 and still echoed on Schedule State Exam) and the Course Overview button. Variant-only.',
     maturity: 'wip',
     defaultEnabled: true,
-    defaultVariant: 'split',
+    defaultVariant: 'combined',
     variants: [
       { value: 'split', label: 'Split (two blocks)' },
       { value: 'combined', label: 'Combined (one card)' },

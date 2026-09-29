@@ -61,6 +61,29 @@ import { XCEL_NY_PRODUCER_PATH_ID } from '@/data/studyCalendarFixtures'
 import { CURRENT_LEARNING_EYEBROW } from '@/components/learning/learningPathsHomeUtil'
 
 /**
+ * THE PRE-PROMOTION BASELINE — 2026-09-28.
+ *
+ * Five flags were promoted to the Prototypes baseline that day, so the
+ * product's DEFAULT render no longer shows the Study Pace tile, the separate
+ * Jump Back In card, the inline exam-date field, or coursework as Step 1.
+ *
+ * The tests in this file are about those COMPONENTS and that LAYOUT, not about
+ * whatever the baseline happens to be, so they pin the state they were written
+ * against. Spread into every seed here rather than repeated, because this file
+ * has six of them and a flag pinned in five is worse than one pinned in none.
+ *
+ * ⚠ A TEST THAT IS ABOUT THE BASELINE MUST NOT SPREAD THIS.
+ */
+const PRE_PROMOTION_BASELINE = {
+  'study-pace-hidden': { enabled: false },
+  'course-entry-style': { enabled: true, variant: 'split' },
+  'exam-step-style': { enabled: true, variant: 'inline' },
+  'journey-step-order': { enabled: true, variant: 'coursework-first' },
+}
+
+
+
+/**
  * QE FOCUSED — the qualifying-education dashboard version (2026-09-16), and
  * XCEL's default.
  *
@@ -90,6 +113,7 @@ import { CURRENT_LEARNING_EYEBROW } from '@/components/learning/learningPathsHom
  * the block's header needs the block to have one.
  */
 const CLASSIC_FLAGS = {
+  ...PRE_PROMOTION_BASELINE,
   'dashboard-course-header': { enabled: true, variant: 'none' },
   'dashboard-journey-style': { enabled: true, variant: 'default' },
   'dashboard-heading-font': { enabled: true, variant: 'sans' },
@@ -149,7 +173,14 @@ function renderShell(url: string) {
 beforeEach(() => {
   window.localStorage.clear()
   window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
-})
+
+  window.localStorage.setItem(
+    'cgp.featureFlags',
+    JSON.stringify({
+      ...PRE_PROMOTION_BASELINE,
+      ...PRE_PROMOTION_BASELINE,
+    }),
+  )})
 
 describe('the QE Focused version is ARCHIVED but still reachable', () => {
   /*
@@ -755,6 +786,8 @@ describe('nothing on the page says "1 days"', () => {
     window.localStorage.setItem(
       'cgp.featureFlags',
       JSON.stringify({
+        ...PRE_PROMOTION_BASELINE,
+      ...PRE_PROMOTION_BASELINE,
         ...CLASSIC_FLAGS,
         'dashboard-course-header': { enabled: true, variant: 'band' },
       }),
@@ -1808,6 +1841,8 @@ describe('the course header band flag', () => {
     window.localStorage.setItem(
       'cgp.featureFlags',
       JSON.stringify({
+        ...PRE_PROMOTION_BASELINE,
+      ...PRE_PROMOTION_BASELINE,
         'dashboard-course-header': { enabled: true, variant: 'band' },
         'dashboard-progress-state': { enabled: true, variant: 'not-started' },
       }),
@@ -1964,7 +1999,10 @@ describe('the course header band flag', () => {
      * with it, and that is what this pins.
      */
     window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
-    window.localStorage.setItem('cgp.featureFlags', JSON.stringify({}))
+    window.localStorage.setItem(
+      'cgp.featureFlags',
+      JSON.stringify({ ...PRE_PROMOTION_BASELINE }),
+    )
     const navy = renderShell('/dashboard-rebrand?version=discoverability-learner-focused')
     const band = navy.container.querySelector<HTMLElement>('.cre-learner-focused-band')!
     expect(band.textContent).toMatch(/Target Date|Deadline/i)
