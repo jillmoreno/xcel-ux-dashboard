@@ -516,11 +516,20 @@ export function PlatformSideNav({
           WebkitMaskImage: scrollMask,
         }}
       >
-        <div ref={contentRef} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {/* ⚠ WITH THE CAPTIONS OFF, THE GROUP SPACING GOES TOO. The group gap
+            (8 here + 8 under each group) is what separates one CAPTIONED group
+            from the next; with no headings to separate, it is just a hole above
+            Get Help. The captions flag's own description already promises this
+            — "lets the items run as one list" — and 4 is the `<ul>`'s own row
+            gap, so the rows come out evenly spaced end to end. */}
+        <div
+          ref={contentRef}
+          style={{ display: 'flex', flexDirection: 'column', gap: showCaptions ? 8 : 4 }}
+        >
           {groups.map((group, gi) => {
             const captionId = `platform-rail-${group.id}`
             return (
-              <div key={group.id} style={{ marginBottom: 8 }}>
+              <div key={group.id} style={{ marginBottom: showCaptions ? 8 : 0 }}>
                 {/* COLLAPSED: a divider instead of the caption, and no divider
                     above the FIRST group — a rule at the top of a list fences
                     it off from the header rather than separating anything.
@@ -798,7 +807,11 @@ function RailRow({
         // When SELECTED, square the left corners so the accent bar reads as a
         // straight vertical bar. Idle/hover keep the full ROW radius (hover
         // logic unchanged) — only the active state overrides the left corners.
-        ...(active && { borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }),
+        /* ⚠ THE RAIL SQUARES ITS SELECTED ROW'S LEFT CORNERS so the accent
+           reads as a bar against the edge. Compass does not — its rows keep
+           `radius-md` all round, bar included — so under `compass` the squaring
+           is skipped. It is the last shape difference between the two. */
+        ...(active && !compass && { borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }),
       }}
     >
       {/* Active icon: the brand PRIMARY accent, token-driven per rail (light
@@ -808,8 +821,18 @@ function RailRow({
           over 10px text; drop the glyph and it is four near-identical stubs of
           text, which is the mis-click failure the note below already guards
           against from the other direction. */}
+      {/* ⚠ THE ICON INHERITS UNDER `compass`. The rail tints a selected glyph
+          with `--color-nav-icon-active-primary` — a separate token from the
+          label's, which on this surface drew the icon and the word in two
+          different colours. `CompassNavRow` passes `color: inherit`, so the
+          glyph and the label are one colour; this matches that. */}
       {!hideIcon && (
-        <span style={{ display: 'inline-flex', color: active ? activeIconColor : 'inherit' }}>
+        <span
+          style={{
+            display: 'inline-flex',
+            color: active && !compass ? activeIconColor : 'inherit',
+          }}
+        >
           <Icon size={iconSize} aria-hidden />
         </span>
       )}

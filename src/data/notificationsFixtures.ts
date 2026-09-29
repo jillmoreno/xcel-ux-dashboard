@@ -188,7 +188,7 @@ export type Notification = {
 }
 
 /**
- * XCEL's learner notifications — Alicia Navarro, Florida 2-15 Life & Health.
+ * XCEL's learner notifications — Jordan Navarro, Florida 2-15 Life & Health.
  *
  * The content is XCEL's own, not the Figma's. The design ships lorem ipsum
  * and a real-estate promo; what a notification centre is actually judged on

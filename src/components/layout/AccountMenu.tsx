@@ -67,7 +67,7 @@ export function AccountMenu({
    * "`Header` always passes the live values from `useAccount().user`". **It did
    * not.** `Header` rendered `<AccountMenu initials="SC" />` and nothing else,
    * so the defaults WERE the menu — and "SC" is not even this learner's
-   * initials (Alicia Navarro → AN). Invisible while the trigger was a generic
+   * initials (Jordan Navarro → JN). Invisible while the trigger was a generic
    * glyph; the moment it shows a face and a name, a second copy of the learner
    * is a second learner.
    *

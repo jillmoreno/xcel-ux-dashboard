@@ -335,7 +335,12 @@ export function Header() {
           </span>
         </div>
 
-        <div className="flex items-center" style={{ gap: 24 }}>
+        {/* 16 WHEN THE TOP NAV IS UP, 24 otherwise. The 24 is the classic
+            routes' spacing between a full primary nav and the utilities; with
+            the shell's short pill row it left a gap wider than the gaps inside
+            the row itself, which read as the bell drifting away from the nav.
+            Scoped rather than changed outright — every other route keeps 24. */}
+        <div className="flex items-center" style={{ gap: showTopNav ? 16 : 24 }}>
           {/* The platform shell's own primary nav, when the shell is drawing
               it up here instead of down the left side. It sits in this
               right-hand cluster rather than beside the logo because the design

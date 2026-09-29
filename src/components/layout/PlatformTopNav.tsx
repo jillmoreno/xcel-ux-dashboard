@@ -102,7 +102,13 @@ export function PlatformTopNav() {
   }
 
   return (
-    <nav aria-label="Primary" className="flex items-center" style={{ gap: 24 }}>
+    /* 8, DOWN FROM 24 — 2026-09-29, the direct ask. The pills carry 12px of
+       padding each side, so 8 between the boxes is 32 between the words: the
+       same rhythm the classic header nav uses (`gap: 8` in `Header`), and the
+       reason the two now read as one bar rather than two spacings. The Figma
+       draws its three items ~40 apart, which was where the 24 came from; at
+       three short labels that measured as air rather than separation. */
+    <nav aria-label="Primary" className="flex items-center" style={{ gap: 8 }}>
       {items.map((item) => {
         /* A section reached by deep link that is not on this list leaves NO
            item active, which is the honest state — falling back to Home would
