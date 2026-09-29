@@ -31,4 +31,5 @@ export default linkBoardHandler({
   segment: 'demos',
   types: null,
   publicFlag: true,
+  products: true,
 })

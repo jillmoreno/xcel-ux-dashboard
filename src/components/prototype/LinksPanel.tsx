@@ -48,16 +48,21 @@ import {
 } from '@/icons'
 import { Modal } from '@/components/ui/Modal'
 import {
+  DEFAULT_PRODUCT,
   LINKS_BOARD,
+  LINK_PRODUCTS,
   LINK_TYPES,
   LinkWriteError,
   draftProblems,
   hostOf,
+  linkProductLabel,
   linkTypeLabel,
+  matchesProduct,
   safeHref,
   toMarkdown,
   type LinkBoard,
   type LinkDraft,
+  type LinkProduct,
   type LinkType,
   type StoredLink,
 } from '@/data/linkStore'
@@ -90,6 +95,22 @@ export type LinkBoardPresentation = {
    * a tile derived from the URL would assert a kind it cannot actually read.
    */
   showThumb: boolean
+  /**
+   * Whether the Product control, its tag and the All / XCEL / Compass filter
+   * render. Refinement only — Other Links points at briefs and Figma files that
+   * are not "a product's branch" at all, so the question does not apply there.
+   */
+  showProduct: boolean
+  /**
+   * Whether the visibility, product and author facts render as BADGES under the
+   * title instead of as a chip above it and a clause in the meta line.
+   *
+   * Refinement only, and a flag rather than a rewrite because Other Links has
+   * one fact (its type) where Refinement has three — a badge row of one is just
+   * a chip that moved, and `Links.test.tsx` pins the meta line's exact shape
+   * including the missing-author case.
+   */
+  showBadges: boolean
   /** Whether the form carries the "Show on public site" toggle and rows show a
    *  Public / Team chip. Demo only. */
   showPublicToggle: boolean
@@ -309,6 +330,116 @@ const filterPillActiveStyle: CSSProperties = {
   color: 'var(--ux-on-accent)',
 }
 
+/* ── the switch ──
+   40x22 with an 18px knob: the track has to read as a track at a glance, and
+   below about 36px wide the two states differ by a few pixels of travel. */
+const switchStyle: CSSProperties = {
+  position: 'relative',
+  flex: 'none',
+  width: 40,
+  height: 22,
+  padding: 0,
+  borderRadius: 999,
+  border: '1px solid var(--ux-border)',
+  background: 'var(--ux-chip)',
+  cursor: 'pointer',
+  transition: 'background 120ms, border-color 120ms',
+}
+
+const switchOnStyle: CSSProperties = {
+  ...switchStyle,
+  background: 'var(--ux-accent)',
+  borderColor: 'var(--ux-accent)',
+}
+
+/* The knob is its own element so the travel can animate. `--ux-card` rather
+   than white: on the dark themes white would be the brightest thing on the
+   panel. */
+const switchKnobStyle: CSSProperties = {
+  position: 'absolute',
+  top: 1,
+  left: 1,
+  width: 18,
+  height: 18,
+  borderRadius: '50%',
+  background: 'var(--ux-card)',
+  border: '1px solid var(--ux-border)',
+  transition: 'transform 120ms',
+  transform: 'translateX(0)',
+}
+
+const switchKnobOnStyle: CSSProperties = {
+  ...switchKnobStyle,
+  borderColor: 'var(--ux-accent-strong)',
+  transform: 'translateX(18px)',
+}
+
+/* ── the segmented product control ── */
+const segmentRowStyle: CSSProperties = {
+  display: 'inline-flex',
+  border: '1px solid var(--ux-border)',
+  borderRadius: 8,
+  overflow: 'hidden',
+}
+
+const segmentStyle: CSSProperties = {
+  font: 'inherit',
+  fontSize: 13,
+  fontWeight: 600,
+  padding: '7px 15px',
+  border: 'none',
+  borderRight: '1px solid var(--ux-border)',
+  background: 'var(--ux-card)',
+  color: 'var(--ux-text-2)',
+  cursor: 'pointer',
+}
+
+const segmentActiveStyle: CSSProperties = {
+  ...segmentStyle,
+  background: 'var(--ux-accent)',
+  color: 'var(--ux-on-accent)',
+}
+
+/* ── the badge row under a title ──
+   One shape for all three badges, so the row reads as one band of metadata
+   rather than three unrelated marks. What varies is the fill, and only where
+   the fill MEANS something: Public is the accent because it is the one state
+   with a consequence outside the team. */
+const badgeRowStyle: CSSProperties = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  gap: 6,
+  margin: '5px 0 0',
+}
+
+const badgeStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 4,
+  padding: '2px 8px',
+  borderRadius: 999,
+  fontSize: 11,
+  fontWeight: 700,
+  letterSpacing: '0.03em',
+  textTransform: 'uppercase',
+  background: 'var(--ux-chip)',
+  color: 'var(--ux-text-2)',
+  whiteSpace: 'nowrap',
+}
+
+/* The author is a person, not a state — sentence case and no tracking, so it
+   does not read as another status next to "TEAM ONLY". */
+const authorBadgeStyle: CSSProperties = {
+  ...badgeStyle,
+  textTransform: 'none',
+  letterSpacing: 0,
+  fontWeight: 600,
+  background: 'transparent',
+  border: '1px solid var(--ux-border)',
+  color: 'var(--ux-text-3)',
+}
+
 const emptyStyle: CSSProperties = {
   border: '1px dashed var(--ux-border)',
   borderRadius: 12,
@@ -328,7 +459,15 @@ const toolbarStyle: CSSProperties = {
   flexWrap: 'wrap',
 }
 
-const EMPTY_DRAFT: LinkDraft = { title: '', url: '', note: '', addedBy: '', type: '', isPublic: false }
+const EMPTY_DRAFT: LinkDraft = {
+  title: '',
+  url: '',
+  note: '',
+  addedBy: '',
+  type: '',
+  isPublic: false,
+  product: DEFAULT_PRODUCT,
+}
 
 /** Below this the search field is a dead control — it costs a row of chrome to
  *  filter a list you can already see all of. Same reasoning as the status pills
@@ -458,22 +597,67 @@ function LinkFormModal({
           />
         </div>
 
+        {p.showProduct && (
+          <div style={fieldWrapStyle}>
+            <span style={labelStyle} id="link-product-label">
+              Product
+            </span>
+            {/* Three mutually exclusive values, all visible, none of them a
+                default the reader has to open a menu to discover — a select
+                would hide two of three and put "Both" behind a click, which is
+                the value most rows want. */}
+            <div style={segmentRowStyle} role="radiogroup" aria-labelledby="link-product-label">
+              {LINK_PRODUCTS.map((x, i) => {
+                const on = (draft.product ?? DEFAULT_PRODUCT) === x.id
+                const last = i === LINK_PRODUCTS.length - 1
+                return (
+                  <button
+                    key={x.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={on}
+                    onClick={() => onChange({ product: x.id })}
+                    // The divider belongs BETWEEN segments; on the last one it
+                    // doubles up with the group's own border.
+                    style={last ? { ...(on ? segmentActiveStyle : segmentStyle), borderRight: 'none' } : on ? segmentActiveStyle : segmentStyle}
+                  >
+                    {x.label}
+                  </button>
+                )
+              })}
+            </div>
+            <p style={{ ...optionalStyle, margin: '5px 0 0', fontSize: 12 }}>
+              Tags the row so the filters above the list can find it. Both is the default — plenty of
+              this work lands in both products.
+            </p>
+          </div>
+        )}
+
         {p.showPublicToggle && (
           <div style={fieldWrapStyle}>
-            {/* A checkbox, not a toggle switch or a select: it is one yes/no
-                fact with a real consequence, and the label says the
-                consequence in words. Off by default — a row is team-only until
-                someone decides otherwise, never the reverse. */}
-            <label style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={draft.isPublic === true}
-                onChange={(e) => onChange({ isPublic: e.target.checked })}
-                style={{ margin: 0, width: 15, height: 15, accentColor: 'var(--ux-accent)' }}
-              />
-              Show on public site
-            </label>
-            <p style={{ ...optionalStyle, margin: '4px 0 0 23px', fontSize: 12 }}>
+            {/* A switch, not a checkbox: this is a live state someone flips back
+                and forth as a row moves through review, not a form value
+                submitted once. `role="switch"` on a real button keeps Space,
+                Enter and the accessible name that a styled `<input>` would have
+                had. Off by default — a row is team-only until someone decides
+                otherwise, never the reverse. */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={draft.isPublic === true}
+                aria-label="Show on public site"
+                onClick={() => onChange({ isPublic: draft.isPublic !== true })}
+                style={draft.isPublic === true ? switchOnStyle : switchStyle}
+              >
+                <span
+                  aria-hidden
+                  style={draft.isPublic === true ? switchKnobOnStyle : switchKnobStyle}
+                />
+              </button>
+              <span style={{ ...labelStyle, marginBottom: 0 }}>Show on public site</span>
+            </div>
+            <p style={{ ...optionalStyle, margin: '5px 0 0', fontSize: 12 }}>
               Off: only the team sees this row. On: stakeholders with the public link see it too.
             </p>
           </div>
@@ -517,6 +701,8 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
   /** '' = All. Not a `LinkType`, because "no type" is itself a filterable
    *  value here and would collide with it. */
   const [typeFilter, setTypeFilter] = useState<string>('')
+  /* '' is All. A `both` row matches every pill — see `matchesProduct`. */
+  const [productFilter, setProductFilter] = useState<LinkProduct | ''>('')
 
   const q = query.trim().toLowerCase()
   const rows = useMemo(
@@ -524,6 +710,7 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
       index.links.filter(
         (l) =>
           (!typeFilter || l.type === typeFilter) &&
+          matchesProduct(l.product, productFilter) &&
           (!q ||
             l.title.toLowerCase().includes(q) ||
             l.url.toLowerCase().includes(q) ||
@@ -531,7 +718,7 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
             l.addedBy.toLowerCase().includes(q) ||
             linkTypeLabel(l.type).toLowerCase().includes(q)),
       ),
-    [index.links, q, typeFilter],
+    [index.links, q, typeFilter, productFilter],
   )
 
   /* Assigned across the WHOLE list, before any row draws — a per-row
@@ -607,6 +794,7 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
       addedBy: link.addedBy,
       type: link.type,
       isPublic: link.isPublic,
+      product: link.product,
     })
     setErrors([])
     setEditing(link)
@@ -693,6 +881,36 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
         </div>
       )}
 
+      {/* ── product filter ──
+          Always rendered when the board has products, unlike the type strip
+          below: `both` rows mean a pill can be empty and still be the right
+          thing to offer, and the three pills are the section's stated
+          vocabulary rather than a summary of what happens to be in the list
+          today. */}
+      {p.showProduct && (
+        <div style={filterRowStyle} role="group" aria-label="Filter by product">
+          <button
+            type="button"
+            onClick={() => setProductFilter('')}
+            aria-pressed={productFilter === ''}
+            style={productFilter === '' ? filterPillActiveStyle : filterPillStyle}
+          >
+            All
+          </button>
+          {LINK_PRODUCTS.filter((x) => x.id !== 'both').map((x) => (
+            <button
+              key={x.id}
+              type="button"
+              onClick={() => setProductFilter(productFilter === x.id ? '' : x.id)}
+              aria-pressed={productFilter === x.id}
+              style={productFilter === x.id ? filterPillActiveStyle : filterPillStyle}
+            >
+              {x.label}
+            </button>
+          ))}
+        </div>
+      )}
+
       {/* ── type filter ──
           Only when there is more than one type to choose between: a single
           pill filters nothing, and "All" beside one option is chrome. */}
@@ -756,7 +974,9 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
             const meta = [
               hostOf(link.url),
               link.addedDate && `added ${link.addedDate}`,
-              link.addedBy.trim() && `by ${link.addedBy.trim()}`,
+              // Not here when it is a badge instead — printing it twice would
+              // make the row look like two different facts about one person.
+              !p.showBadges && link.addedBy.trim() && `by ${link.addedBy.trim()}`,
               !href && 'not a linkable address',
             ].filter(Boolean)
             return (
@@ -795,11 +1015,13 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
                       {linkTypeLabel(link.type)}
                     </span>
                   )}
-                  {/* On the full site the chip says WHO can see the row — the
-                      one fact about a Demo row a reviewer needs before sending
-                      the link on. Not rendered when `publicOnly`: every row
-                      there is public, and a chip saying so on each is noise. */}
-                  {p.showPublicToggle && !p.publicOnly && (
+                  {/* The visibility chip above the title, for boards without a
+                      badge row. On the full site it says WHO can see the row —
+                      the one fact about a Refinement row a reviewer needs
+                      before sending the link on. Not rendered when
+                      `publicOnly`: every row there is public, and a chip saying
+                      so on each is noise. */}
+                  {!p.showBadges && p.showPublicToggle && !p.publicOnly && (
                     <span
                       style={{
                         ...chipStyle,
@@ -827,6 +1049,38 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
                       {link.title}
                       <span className="cre-visually-hidden"> — address cannot be opened</span>
                     </span>
+                  )}
+                  {/* UNDER the title, all three together: they answer "can I
+                      send this on", "is it mine to look at" and "who do I ask",
+                      which is one question asked three ways. Above the title
+                      they competed with it for the first line. */}
+                  {p.showBadges && (
+                    <div style={badgeRowStyle}>
+                      {p.showPublicToggle && !p.publicOnly && (
+                        <span
+                          style={
+                            link.isPublic
+                              ? {
+                                  ...badgeStyle,
+                                  background: 'var(--ux-accent)',
+                                  color: 'var(--ux-on-accent)',
+                                }
+                              : badgeStyle
+                          }
+                        >
+                          {link.isPublic ? 'Public' : 'Team only'}
+                        </span>
+                      )}
+                      {p.showProduct && (
+                        <span style={badgeStyle}>{linkProductLabel(link.product)}</span>
+                      )}
+                      {/* No badge at all when nobody signed it. An empty one
+                          reads as a name that failed to load — the same reason
+                          the meta line drops the separator. */}
+                      {link.addedBy.trim() && (
+                        <span style={authorBadgeStyle}>{link.addedBy.trim()}</span>
+                      )}
+                    </div>
                   )}
                   <p style={metaStyle}>{meta.join(' · ')}</p>
                   {link.note.trim() && <p style={noteTextStyle}>{link.note}</p>}
@@ -883,6 +1137,8 @@ const LINKS_PRESENTATION: LinkBoardPresentation = {
   nounPlural: 'links',
   showType: true,
   showThumb: false,
+  showProduct: false,
+  showBadges: false,
   showPublicToggle: false,
   publicOnly: false,
   readOnly: false,
@@ -920,6 +1176,8 @@ export function DemoPanel({
     nounPlural: 'links',
     showType: false,
     showThumb: true,
+    showProduct: true,
+    showBadges: true,
     showPublicToggle: true,
     publicOnly: pub,
     readOnly: pub,

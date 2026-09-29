@@ -47,6 +47,7 @@ const link = (over: Partial<StoredLink> = {}): StoredLink => ({
   note: '',
   addedBy: '',
   type: '',
+  product: 'both',
   isPublic: false,
   addedDate: '2026-09-10',
   ...over,

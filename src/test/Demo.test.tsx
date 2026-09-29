@@ -32,6 +32,7 @@ const demo = (over: Partial<StoredLink> = {}): StoredLink => ({
   note: 'Look at the card under Current Progress.',
   addedBy: 'Sam',
   type: '',
+  product: 'both',
   isPublic: false,
   addedDate: '2026-09-18',
   ...over,
