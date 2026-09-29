@@ -1,3 +1,4 @@
+import { pinLeftRail } from './pinNavPlacement'
 import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -79,6 +80,9 @@ function seed(extra: Record<string, unknown> = {}) {
 }
 
 function renderShell(url: string) {
+  /* Option 1's tests — the rail is no longer the default navigation on
+     this branch, so they pin it rather than inheriting it. */
+  pinLeftRail()
   return render(
     <MemoryRouter initialEntries={[url]}>
       <AccountProvider>

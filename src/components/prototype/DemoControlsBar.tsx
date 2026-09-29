@@ -7,6 +7,7 @@ import { Toast } from '@/components/ui/Toast'
 import { DemoBar, DemoDropdown } from './DemoBar'
 import { isPublicGateway, isTestSession } from '@/data/gatewayMode'
 import { controlMaturity } from '@/data/demoControlMaturity'
+import { useLoFi } from '@/context/LoFiContext'
 import { licensedProfessionsFor } from '@/data/licensedStatesFixtures'
 import { readDemoDayOffset, setDemoDayOffset } from '@/data/demoDay'
 import { useDemoMenus, DEMO_WHITE, DEMO_HOVER_FILL } from './demoBarUtil'
@@ -87,9 +88,71 @@ import {
 /** The Navigation A/B — which course-content body Resume opens. Labels are
  *  deliberately bare: a moderator reads them out and a participant must not be
  *  told which one is "the new one". */
+/**
+ * WHICH CONTROLS THE BAR DRAWS — trimmed on `jill/navigation-exploration`,
+ * 2026-09-29, the direct ask: "clean up the demo controls for this branch
+ * specifically. Remove the persona, readiness, pacing, and education."
+ *
+ * ⚠ A SWITCH, NOT A DELETION, and that is the whole point of doing it this
+ * way. This branch is a NAVIGATION exploration: Persona, Readiness, Pacing and
+ * Education drive the dashboard's CONTENT, and a reviewer asked to judge where
+ * the nav should live does not need four ways to change what is underneath it.
+ * None of them is retired — they are all still in the flag catalog, still
+ * reachable from the Feature Flag panel and still settable with `?ff=`, so
+ * nothing about the demo site or `main` changes. Flip a line here to get one
+ * back.
+ *
+ * ⚠ IT IS BRANCH-LOCAL BY INTENT. If this branch is ever promoted, this is a
+ * file to look at — shipping the trim would take four controls off the demo
+ * site for everyone, which is not what was asked for.
+ */
+type ControlKey =
+  | 'persona'
+  | 'progress'
+  | 'readiness'
+  | 'pacing'
+  | 'navigation'
+  | 'navLayout'
+  | 'fidelity'
+  | 'education'
+
+const SHOW_CONTROL: Record<ControlKey, boolean> = {
+  persona: false,
+  progress: true,
+  readiness: false,
+  pacing: false,
+  navigation: true,
+  /* The one this branch is actually about. */
+  navLayout: true,
+  fidelity: true,
+  education: false,
+}
+
+/**
+ * The three navigation options `jill/navigation-exploration` compares.
+ *
+ * ⚠ NOT THE SAME AXIS AS `NAVIGATION_PICKER` BELOW, and the two are easy to
+ * confuse because both say "Option 1". That one is `dashboard-navigation` —
+ * which COURSE PAGE the player opens. This is where the app's primary nav
+ * lives. They are labelled "Nav layout" and "Navigation" on the bar for that
+ * reason; if a reviewer ever reads one for the other, rename this rather than
+ * explaining it again.
+ */
+const NAV_LAYOUT_PICKER: { value: string; label: string }[] = [
+  { value: 'top', label: 'Option 1 — Top nav' },
+  { value: 'left', label: 'Option 2 — Left nav' },
+  /* Both hybrids answer the same gap — what reaches Study Pace / Courses /
+     Certificates when the header only carries three. Named for the answer. */
+  { value: 'hybrid', label: 'Option 3 — Hybrid (rail)' },
+  { value: 'hybrid-tabs', label: 'Option 4 — Hybrid (tabs)' },
+]
+
+/* Named for what each one IS, 2026-09-29, the direct ask. They were "Option 1"
+   and "Option 2", which said only that a choice existed — and sat two dropdowns
+   away from a Nav layout control whose rows are also numbered options. */
 const NAVIGATION_PICKER: { value: string; label: string }[] = [
-  { value: 'option-1', label: 'Option 1' },
-  { value: 'option-2', label: 'Option 2' },
+  { value: 'option-1', label: 'Below the header' },
+  { value: 'option-2', label: 'Full screen Compass experience' },
 ]
 
 const PACE_PRESET_PICKER: { value: string; label: string }[] = [
@@ -103,8 +166,20 @@ export function DemoControlsBar({
   fullBleed = false,
   only,
   lens = false,
+  controls,
 }: {
   open?: boolean
+  /**
+   * Override the branch trim above, per control.
+   *
+   * ⚠ IT EXISTS FOR THE SUITES, and that is a deliberate seam rather than a
+   * hole: the four controls this branch hides are not retired, so the tests
+   * that cover them must still be able to render them. A suite asserting
+   * "Persona offers these rows" is testing the control, not the branch's
+   * decision to draw it — the two questions are separated here so trimming the
+   * bar never quietly deletes coverage of what was trimmed.
+   */
+  controls?: Partial<Record<ControlKey, boolean>>
   /** Full-bleed (Demo frame): span the whole screen width, skipping the 1440
    *  cap — used when the chrome sits outside the centered device window. */
   fullBleed?: boolean
@@ -151,7 +226,10 @@ export function DemoControlsBar({
   // the two new dropdowns drive directly (they persist via FeatureFlagContext).
   const progressState = useFeatureFlag('dashboard-progress-state')
   const paceState = useFeatureFlag('study-pace-preset')
+  const showControl = { ...SHOW_CONTROL, ...controls }
   const navState = useFeatureFlag('dashboard-navigation')
+  const navLayoutState = useFeatureFlag('nav-placement')
+  const { loFi, setLoFi } = useLoFi()
   const educationTypeFlag = useFeatureFlag('dashboard-education-type')
   // Readiness state — the Exam Readiness section's own axis. Deliberately NOT
   // threaded into the share-link codec alongside prog/edu: those two are the
@@ -615,6 +693,7 @@ export function DemoControlsBar({
         {/* Persona — the learning/dashboard SCENARIO, layered on top of the
             membership tier set by Quick views (a persona does NOT change tier).
             Sits alongside Quick views; doesn't replace it. */}
+        {showControl.persona && (
         <DemoDropdown
           id="persona"
           hidden={!show('persona')}
@@ -736,6 +815,7 @@ export function DemoControlsBar({
             )
           })}
         </DemoDropdown>
+        )}
 
         {/* Professions + Memberships dropdowns were removed — the "Multiple
             learning paths" persona above sets `profession-count`, `state-count`,
@@ -828,6 +908,7 @@ export function DemoControlsBar({
             which is a different question (how far through the COURSE you are,
             not how ready for the exam). A learner can be 90% through and not
             ready, which is the whole reason the section exists. */}
+        {showControl.readiness && (
         <DemoDropdown
           id="readiness"
           hidden={!show('readiness')}
@@ -868,6 +949,7 @@ export function DemoControlsBar({
             )
           })}
         </DemoDropdown>
+        )}
 
         {/* PACING — which of the model's three presets the Study Pace card opens
             on. 2026-09-23, the direct ask: a control that shows "the differences
@@ -878,6 +960,7 @@ export function DemoControlsBar({
             are working to. The two combine — Focused & Quick at 3 days is still
             a plan that will not fit — and folding either into the other would
             lose half the grid a reviewer is here to walk. */}
+        {showControl.pacing && (
         <DemoDropdown
           id="pacing"
           hidden={!show('pacing')}
@@ -911,6 +994,7 @@ export function DemoControlsBar({
             )
           })}
         </DemoDropdown>
+        )}
 
         {/* NAVIGATION — which course-content page Resume opens. 2026-09-23.
 
@@ -927,13 +1011,106 @@ export function DemoControlsBar({
             it is in anyway — switching arms mid-session beats reloading and
             re-pasting the link — is recorded at `TEST_VIEW_CONTROLS` in
             `PrototypeChrome`. */}
+        {/* FIDELITY — lo-fi ⇄ hi-fi, 2026-09-29, the direct ask.
+            
+            ⚠ IT IS NOT A FLAG. Lo-fi is `LoFiContext` (persisted to
+            `cgp.loFi`), which is why this reads `useLoFi()` rather than the
+            catalog and why its `DEMO_CONTROLS` row has to state its own
+            maturity — there is no flag for it to inherit one from.
+
+            The control it duplicates is AccountMenu → UI/UX Demo Tools → Lo-Fi
+            mode, and duplicating it is the point: on a branch about navigation
+            chrome, "show me the wireframe of this" is a thing you do every few
+            minutes, and three menus deep is where that stops happening. Both
+            drive the same state, so they can never disagree. */}
+        {SHOW_CONTROL.fidelity && (
+          <DemoDropdown
+            id="fidelity"
+            hidden={!show('fidelity')}
+            wip={markWip && controlMaturity('fidelity') === 'wip'}
+            label={loFi ? 'Lo-fi' : 'Hi-fi'}
+            eyebrow="Fidelity"
+            openId={openId}
+            onToggle={toggle}
+            panelRole="radiogroup"
+            panelLabel="Fidelity"
+            panelMinWidth={200}
+          >
+            {[
+              { value: false, label: 'Hi-fi' },
+              { value: true, label: 'Lo-fi' },
+            ].map((opt) => {
+              const active = opt.value === loFi
+              return (
+                <button
+                  key={opt.label}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  tabIndex={active ? 0 : -1}
+                  className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
+                  onClick={() => {
+                    setLoFi(opt.value)
+                    close()
+                  }}
+                >
+                  <span style={{ flex: 1 }}>{opt.label}</span>
+                  {active && <Check size={15} aria-hidden />}
+                </button>
+              )
+            })}
+          </DemoDropdown>
+        )}
+        {/* NAV LAYOUT — the axis this branch exists to compare. On the bar
+            rather than in the flag panel because switching between the three is
+            the whole review task here, and sending a reviewer three menus deep
+            for the one control they came for is how a comparison stops getting
+            made. */}
+        {showControl.navLayout && (
+          <DemoDropdown
+            id="nav-layout"
+            hidden={!show('nav-layout')}
+            wip={markWip && controlMaturity('nav-layout') === 'wip'}
+            label={
+              NAV_LAYOUT_PICKER.find((o) => o.value === (navLayoutState.variant ?? 'top'))?.label ??
+              'Option 1 — Top nav'
+            }
+            eyebrow="Nav layout"
+            openId={openId}
+            onToggle={toggle}
+            panelRole="radiogroup"
+            panelLabel="Navigation layout"
+            panelMinWidth={240}
+          >
+            {NAV_LAYOUT_PICKER.map((opt) => {
+              const active = opt.value === (navLayoutState.variant ?? 'top')
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  tabIndex={active ? 0 : -1}
+                  className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
+                  onClick={() => {
+                    setVariant('nav-placement', opt.value)
+                    close()
+                  }}
+                >
+                  <span style={{ flex: 1 }}>{opt.label}</span>
+                  {active && <Check size={15} aria-hidden />}
+                </button>
+              )
+            })}
+          </DemoDropdown>
+        )}
         <DemoDropdown
           id="navigation"
           hidden={!show('navigation')}
           wip={markWip && controlMaturity('navigation') === 'wip'}
           label={
             NAVIGATION_PICKER.find((o) => o.value === (navState.variant ?? 'option-1'))?.label ??
-            'Option 1'
+            'Below the header'
           }
           eyebrow="Navigation"
           openId={openId}
@@ -966,7 +1143,7 @@ export function DemoControlsBar({
 
         {/* Education type (QE / CE) — single-select radiogroup, brands with a QE
             dashboard persona only */}
-        {showEducation && (
+        {showControl.education && showEducation && (
           <DemoDropdown
             id="education"
             hidden={!show('education')}

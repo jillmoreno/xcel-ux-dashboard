@@ -313,8 +313,17 @@ describe('the demo site offers only the finished demo controls', () => {
 
   /* ⚠ SPELLED OUT, not derived from `demoSiteControls()`. A test that recomputes
      the answer from the same function it is checking passes no matter what that
-     function returns — including nothing at all. These three names are the ask. */
-  const WIP = [/Persona/i, /Pacing/i, /Education/i]
+     function returns — including nothing at all.
+
+     ⚠ IT NAMED Persona / Pacing / Education until 2026-09-29, which was the
+     original ask. `jill/navigation-exploration` trims those three off the bar
+     entirely (see `SHOW_CONTROL` in DemoControlsBar), so they can no longer
+     carry this claim — a control that is absent on BOTH sites proves nothing
+     about the maturity gate. Nav layout replaces them: it is drawn on this
+     branch and its flag (`nav-placement`) is `wip`, which is exactly the shape
+     the gate is about. Put the other three back here if the trim is ever
+     reverted. */
+  const WIP = [/Nav layout/i]
 
   it('hides the work-in-progress axes on the demo site', { timeout: 20_000 }, async () => {
     await bar('public')

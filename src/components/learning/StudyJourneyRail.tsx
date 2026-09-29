@@ -1,3 +1,5 @@
+import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
+import { useLoFi } from '@/context/LoFiContext'
 import { type CSSProperties } from 'react'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { ChevronRight, CircleCheck } from '@/icons'
@@ -102,6 +104,12 @@ export function StudyJourneyRail({
    *  read when `stepRange` is set. */
   stepNumber?: number
 }) {
+  /* ⚠ TOP OF THE COMPONENT, ABOVE `if (stops.length === 0) return null`. It sat
+     beside the lo-fi branch further down at first, which put a hook after an
+     early return — the rail would have changed its hook order the moment a path
+     resolved to zero stops. Lint caught it; the render that would have proved it
+     is rare enough to have shipped. */
+  const { loFi } = useLoFi()
   /*
    * RAIL TREATMENT — `dashboard-journey-style`, variant-only (2026-09-16).
    *
@@ -168,6 +176,13 @@ export function StudyJourneyRail({
 
   if (stops.length === 0) return null
 
+  if (loFi) {
+    return (
+      <div style={syllabus ? syllabusWrapStyle : wrapStyle}>
+        <LoFiWidgetBody rows={5} ariaLabel="Lo-fi study journey" />
+      </div>
+    )
+  }
   return (
     <div style={syllabus ? syllabusWrapStyle : wrapStyle}>
       <div style={headerRowStyle}>

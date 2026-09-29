@@ -1,3 +1,5 @@
+import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
+import { useLoFi } from '@/context/LoFiContext'
 import type { LearningPathSummary } from '@/data/learningFixtures'
 import { GetLicensedRail, StudyJourneyRail } from './StudyJourneyRail'
 import { ExamScheduleWidget } from './ExamScheduleWidget'
@@ -185,6 +187,13 @@ export function StudyJourneyWidget({
   const courseworkDone = stops.length > 0 && stops.every((st) => st.status === 'completed')
   const collapseCoursework = courseworkDone && completeStyle === 'collapsed'
 
+  /* ⚠ NO LO-FI BRANCH HERE, DELIBERATELY. This widget is a COMPOSITION — the
+     promoted step, the coursework card and one card per licensing step, each
+     with its own `shell`. A branch at this level returned a single block of
+     bars and flattened four cards into one, which loses exactly the thing lo-fi
+     is supposed to keep: the template. The leaves own it instead —
+     `ExamDateCard`, `StudyJourneyRail` (inside the coursework card) and
+     `LicensingStepWidget` below. */
   if (splitSteps) {
     /* FOUR WIDGETS — the coursework, then one per post-course step.
    
@@ -628,6 +637,10 @@ function LicensingStepWidget({
    */
   const storedExam = useExamDate()
   const [editingExam, setEditingExam] = useState(false)
+  /* ⚠ WITH THE OTHER HOOKS, not beside the lo-fi branch further down — there
+     is a conditional return between here and there, so a `useLoFi()` at the
+     branch would be a hook after an early return. */
+  const { loFi } = useLoFi()
   const scheduled = hasCapture && Boolean(storedExam) && !editingExam
   /*
    * NOTHING HERE CAN BE DONE YET — 2026-09-23, the direct ask: these steps
@@ -647,6 +660,15 @@ function LicensingStepWidget({
    * inference from its shape.
    */
   const pending = !hasCapture
+  /* LO-FI — the card's own shell stays, its contents go. One of the leaves the
+     composition above delegates to. */
+  if (loFi) {
+    return (
+      <section aria-label={heading ?? step.title} style={pending ? pendingStepStyle : shell}>
+        <LoFiWidgetBody rows={3} ariaLabel="Lo-fi licensing step" />
+      </section>
+    )
+  }
   return (
     /* The accessible name is the VISIBLE heading, not the step title, so the
        arrival card is not announced as "Apply for your License" while reading

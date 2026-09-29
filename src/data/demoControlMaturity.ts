@@ -35,6 +35,15 @@ type DemoControlRow = {
 }
 
 export const DEMO_CONTROLS: readonly DemoControlRow[] = [
+  /* Fidelity (lo-fi ⇄ hi-fi) — `LoFiContext`, not a flag, so it states its own.
+     `wip`: lo-fi is a tool for the people DESIGNING the thing, and a
+     stakeholder handed a control that greys the product out has been given a
+     way to break their own demo with nothing to gain from it. */
+  { id: 'fidelity', maturity: 'wip' },
+  /* Nav layout — the three-option navigation comparison. Inherits
+     `nav-placement`, which is `wip`, so the demo site does not offer it while
+     the options are still being decided. */
+  { id: 'nav-layout', flag: 'nav-placement' },
   /* Brand picker — parked (the bar renders it only when a brand switch is
      enabled at all), so it states its own `wip` rather than inheriting one. */
   { id: 'brand', maturity: 'wip' },

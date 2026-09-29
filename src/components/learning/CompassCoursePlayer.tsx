@@ -300,6 +300,9 @@ export function CompassSidebar({
   onLeave,
   page,
   onSelectPage,
+  crumbAsHead = false,
+  cover,
+  timeRemaining,
 }: {
   courseTitle: string
   percentComplete: number
@@ -309,6 +312,36 @@ export function CompassSidebar({
   onLeave: () => void
   page: CompassPage
   onSelectPage: (page: CompassPage) => void
+  /**
+   * RULE THE TRAIL OFF AS THE SIDEBAR'S HEAD — 2026-09-29, for the HYBRID
+   * navigation option: "have this breadcrumb be part of the Home navigation
+   * section, so it truly feels like its part of the same component."
+   *
+   * ⚠ TREATMENT ONLY. It changes the crumb's own styling and NOTHING else —
+   * the trail stays exactly where it sits, the course heading and the page rows
+   * are untouched. An earlier pass moved the crumb into the page list and drew
+   * a box round the two; that answered the ask by changing two things nobody
+   * asked to change, and was reverted. The line under it is the whole idea: a
+   * ruled head belongs to the column beneath it, a floating line does not.
+   *
+   * ⚠ WHY ONLY THE HYBRID. Under Option 3 the header carries its own Home, so
+   * the sidebar's trail needs to read as this column's header rather than as a
+   * second one. Under Option 1 it is the only Home on the page, and the
+   * launcher has no header nav above it at all.
+   */
+  crumbAsHead?: boolean
+  /**
+   * Small cover thumbnail beside the course title — 2026-09-29, the direct ask.
+   *
+   * Optional, and absent means NO IMAGE rather than a grey box: the launcher
+   * path passes none, and a placeholder tile would be a worse answer than the
+   * title on its own. `aria-hidden` at the render site — the title beside it
+   * already names the course, so the art is decoration.
+   */
+  cover?: string
+  /** "17 days" — printed under the title as "… to complete". Absent means the
+   *  line is dropped rather than rendered empty. */
+  timeRemaining?: string
 }) {
   const activeLabel = COMPASS_PAGES.find((p) => p.id === page)?.label ?? ''
   /*
@@ -349,7 +382,7 @@ export function CompassSidebar({
         The LAST crumb stays a plain span — it is the page you are on, and a
         breadcrumb's last crumb is not a link.
       */}
-      <p style={breadcrumbStyle}>
+      <p style={crumbAsHead ? { ...breadcrumbStyle, ...crumbHeadStyle } : breadcrumbStyle}>
         {/* "Home" BESIDE THE GLYPH, and the `aria-label` went with it. With a
             visible word the label has to match it (WCAG 2.5.3, Label in Name);
             "Back to the dashboard" beside the word "Home" is exactly the
@@ -413,7 +446,17 @@ export function CompassSidebar({
       </p>
 
       <div style={sidebarHeadStyle}>
-        <h1 style={sidebarTitleStyle}>{courseTitle}</h1>
+        <div style={titleRowStyle}>
+          {cover ? <img src={cover} alt="" aria-hidden style={coverThumbStyle} /> : null}
+          <div style={{ minWidth: 0 }}>
+            <h1 style={sidebarTitleStyle}>{courseTitle}</h1>
+            {/* The same figure Home's card prints, resolved from the same pair
+                — see `useCompassCourseFigures`. */}
+            {timeRemaining ? (
+              <p style={timeRemainingStyle}>{timeRemaining} to complete</p>
+            ) : null}
+          </div>
+        </div>
         {/*
           THE HOME PAGE'S TREATMENT — 2026-09-23, the direct ask: "change the
           progress in the nav to better match the style used in the Home page."
@@ -1229,6 +1272,20 @@ const sidebarStyle: CSSProperties = {
  * The separators and the House glyph scale with it; "Course" takes the size but
  * not the weight, because it is the page you are on rather than an action.
  */
+/*
+ * The trail as the sidebar's HEAD — `crumbAsHead`, merged over `breadcrumbStyle`.
+ *
+ * A rule that spans the full column, which is the only thing separating a
+ * header from a line that happens to be first: the negative margins pull it out
+ * to the sidebar's own 20px gutter and the padding puts the text back where it
+ * was, so nothing shifts horizontally — the border simply reaches both edges.
+ */
+const crumbHeadStyle: CSSProperties = {
+  margin: '0 -20px',
+  padding: '0 20px 10px',
+  borderBottom: '1px solid var(--color-border-subtle)',
+}
+
 const breadcrumbStyle: CSSProperties = {
   margin: 0,
   display: 'flex',
@@ -1281,6 +1338,25 @@ const crumbHereStyle: CSSProperties = { color: 'var(--color-text-tertiary)', fon
 /* NB: `crumbHereStyle` sets no size — it inherits the 13 from `breadcrumbStyle`
    so the three crumbs sit on one baseline, and differs only in weight and ink. */
 
+/* Cover beside the title. `align-items: flex-start` so a two-line title keeps
+   the thumbnail pinned to its first line rather than floating to the middle. */
+const titleRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  gap: 10,
+  minWidth: 0,
+}
+/* 48px square, cropped — up from 40 once the title came down to 14/19, which is
+   the trade the ask names. Still a marker beside the name rather than the card
+   art it comes from. */
+const coverThumbStyle: CSSProperties = {
+  width: 48,
+  height: 48,
+  flexShrink: 0,
+  objectFit: 'cover',
+  borderRadius: 6,
+}
+
 const sidebarHeadStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
@@ -1308,13 +1384,28 @@ const sidebarHeadStyle: CSSProperties = {
  * what makes the two read as one product — matching the display size would put
  * a four-line headline in a sidebar.
  */
+/* 14/19, down from 16/22 — 2026-09-29, the direct ask, and it applies on every
+   option rather than being scoped to one. The title is a label for the column
+   it heads, not a page heading; at 16 it was competing with the page's own H1
+   two inches to the right. The smaller setting is also what buys the thumbnail
+   its extra 8px without the row growing. */
 const sidebarTitleStyle: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-heading-serif)',
-  fontSize: 16,
+  fontSize: 14,
   fontWeight: 600,
-  lineHeight: '22px',
+  lineHeight: '19px',
   color: 'var(--color-text-primary)',
+}
+
+/* Sits under the title, inside the same column as it, so it wraps against the
+   title rather than against the thumbnail. */
+const timeRemainingStyle: CSSProperties = {
+  margin: '3px 0 0',
+  fontFamily: 'var(--font-body)',
+  fontSize: 12,
+  lineHeight: '16px',
+  color: 'var(--color-text-tertiary)',
 }
 
 const progressRowStyle: CSSProperties = {
