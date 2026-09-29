@@ -62,14 +62,15 @@ function renderTopNav(search = '') {
 
 describe('nav-placement', () => {
   it('is in the catalog as a two-arm flag, defaulting to the top nav on this branch', () => {
-    /* ⚠ THIS ASSERTS THE BRANCH DEFAULT, NOT A SHIPPED ONE. `top` is the
-       default here so the branch build opens on the work under discussion —
-       CLAUDE.md's rule for a design branch. If `promote-to-prototype` ever
-       makes `left` the baseline again, this line is the one that says so out
-       loud rather than letting the change pass unremarked. */
+    /* ⚠ THIS ASSERTS THE BRANCH DEFAULT, NOT A SHIPPED ONE. It was `top` and
+       is `hybrid` as of 2026-09-29 — the arm nearly all the work has gone
+       into, so the branch build opens on it. CLAUDE.md's rule for a design
+       branch. If `promote-to-prototype` ever makes another arm the baseline,
+       this line is what says so out loud rather than letting it pass
+       unremarked. */
     const flag = FEATURE_FLAGS.find((f) => f.key === 'nav-placement')
     expect(flag).toBeTruthy()
-    expect(flag?.defaultVariant).toBe('top')
+    expect(flag?.defaultVariant).toBe('hybrid')
     expect(flag?.variants?.map((v) => v.value)).toEqual([
       'left',
       'top',

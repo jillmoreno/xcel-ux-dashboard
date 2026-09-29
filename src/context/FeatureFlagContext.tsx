@@ -806,7 +806,13 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       'WHERE THE PRIMARY NAVIGATION LIVES \u2014 the three options this branch exists to compare. **Option 1 `top`**: a row in the header (Home \u00b7 Compass Learning \u00b7 Help, Figma 765:3801); the shell drops the rail column and the content runs full width. **Option 2 `left`**: the rail, carrying the destinations, as it ships. **Option 3 `hybrid`**: the header row AND the rail \u2014 the header carries the three primary destinations, the rail everything else. **Option 4 `hybrid-tabs`**: the header row and NO rail, with a small underline tab strip over the content instead \u2014 Study Pace \u00b7 Courses \u00b7 Certificates (Figma 765:3801). \u26a0 THREE AND FOUR ARE THE SAME QUESTION WITH TWO ANSWERS: a three-item header leaves Study Pace, Courses and Certificates without a control, and the two hybrids differ only in what fills that gap \u2014 a rail, or a tab strip. \u26a0 THE TOP NAV IS DELIBERATELY SHORTER than the rail, which is the concept Option 1 tests rather than a gap in the port; every section still resolves from `?section=` under all three. Turning the flag OFF resolves to `left`, so switching it off returns the shipped product rather than a shell with no navigation.',
     maturity: 'wip',
     defaultEnabled: true,
-    defaultVariant: 'top',
+    /* ⚠ OPTION 3 IS THE BRANCH DEFAULT as of 2026-09-29 — it was `top`. Nearly
+       all the work since has gone into the hybrid (the Compass row treatment,
+       no group captions, the Home page header, the rail-surface variants), so
+       it is what the branch build should open on. The other three are one click
+       away on the bar. Still a BRANCH default: `promote-to-prototype` decides
+       what, if anything, becomes the baseline on main. */
+    defaultVariant: 'hybrid',
     variants: [
       { value: 'left', label: 'Option 2 — Left nav' },
       { value: 'top', label: 'Option 1 — Top nav' },
