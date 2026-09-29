@@ -515,7 +515,9 @@ describe('exam-card-background — the card\'s ground', () => {
     renderShell('exam-step-style:ask-first,exam-card-background:tint')
     const bg = card().style.background
     expect(bg).toContain('--color-nav-icon-active-primary')
-    expect(bg).toContain('24%')
+    /* The strength is tuned for a card and is NOT the rail's 24% — same hue,
+       less of it, because the two do the same job at very different sizes. */
+    expect(bg).toContain('12%')
     /* ⚠ …and mixed over the CARD surface, not `transparent`. The rail mixes to
        transparent because it sits on white; this card sits on the page's grey,
        so transparent would land a different colour from the thing it quotes. */

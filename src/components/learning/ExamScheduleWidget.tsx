@@ -66,18 +66,22 @@ import { widgetEyebrowStyle } from './widgetStyles'
  *     card disagree with the Study Plan beside it.
  */
 
-/* ⚠ THE SELECTED RAIL ITEM'S OWN EXPRESSION, token and all — `PlatformSideNav`
-   draws the active row with `var(--color-nav-icon-active-primary)` at 24%, and
-   quoting it here is what keeps "the same light blue as Home" true if that
-   colour is ever retuned. A copied hex would be the same colour today and a
-   silent divergence later.
+/* ⚠ THE SELECTED RAIL ITEM'S COLOUR, AT HALF ITS STRENGTH — 12%, reduced from
+   24% on 2026-09-29.
+
+   The TOKEN is still the rail's (`--color-nav-icon-active-primary`), which is
+   the part worth binding: a copied hex would match today and diverge silently
+   the day the rail is retuned. The PERCENTAGE is deliberately no longer the
+   rail's, because the two are doing different jobs at very different sizes —
+   24% reads as a selection on a 40px-tall nav row and as a coloured panel
+   across a whole card. Same hue, less of it.
 
    ⚠ MIXED OVER `--color-surface-card`, NOT `transparent`. The rail mixes to
    transparent because it sits on the rail's own white; this card sits on the
    page's GREY, so mixing to transparent would let that through and land a
    visibly different colour from the thing it is quoting. */
 const CARD_TINT =
-  'color-mix(in srgb, var(--color-nav-icon-active-primary) 24%, var(--color-surface-card))'
+  'color-mix(in srgb, var(--color-nav-icon-active-primary) 12%, var(--color-surface-card))'
 
 type Phase = 'prompt' | 'not-yet' | 'picking' | 'scheduled'
 
