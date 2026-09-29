@@ -69,7 +69,7 @@ export function CompassSessionPage({ onExit }: { onExit: () => void }) {
         onToggleRubi={() => setRailOpen((v) => !v)}
         railOpen={railOpen}
       />
-      <div style={{ ...bodyGridStyle, gridTemplateColumns: railOpen ? '240px minmax(0,1fr) 360px' : '240px minmax(0,1fr)' }}>
+      <div style={{ ...bodyGridStyle, gridTemplateColumns: railOpen ? '220px minmax(0,1fr) 360px' : '220px minmax(0,1fr)' }}>
         <Contents beats={beats} active={beatIndex} onSelect={setBeatIndex} onExit={onExit} />
         <main style={mainStyle}>
           <p style={segLabelStyle}>

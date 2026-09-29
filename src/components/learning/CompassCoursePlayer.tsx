@@ -42,7 +42,7 @@ import { formatExamChip, LEFT_COLUMN_FIRST_ROW_HEIGHT } from './compassPlayerUti
  *
  * A FULL-WINDOW TAKEOVER, which is the load-bearing structural decision and
  * the direct answer to a question asked before building. The design draws its
- * OWN 260px left sidebar — breadcrumb, course title, table of contents — in
+ * OWN 220px left sidebar — breadcrumb, course title, table of contents — in
  * the space the dashboard rail occupies, so the two cannot both be on screen.
  * `PlatformShell` therefore renders this INSTEAD of the rail + content column
  * rather than inside it, keeping only the global header above (which the design
@@ -290,7 +290,7 @@ export function CompassCoursePlayer({
   )
 }
 
-/* ─── the 260px sidebar ────────────────────────────────────────────────── */
+/* ─── the 220px sidebar ────────────────────────────────────────────────── */
 
 export function CompassSidebar({
   courseTitle,
@@ -300,8 +300,7 @@ export function CompassSidebar({
   onLeave,
   page,
   onSelectPage,
-  crumbAsHead = false,
-  cover,
+  hideCrumb = false,
   timeRemaining,
 }: {
   courseTitle: string
@@ -313,32 +312,19 @@ export function CompassSidebar({
   page: CompassPage
   onSelectPage: (page: CompassPage) => void
   /**
-   * RULE THE TRAIL OFF AS THE SIDEBAR'S HEAD — 2026-09-29, for the HYBRID
-   * navigation option: "have this breadcrumb be part of the Home navigation
-   * section, so it truly feels like its part of the same component."
+   * DROP THE BREADCRUMB ENTIRELY — 2026-09-29, for OPTION 3.
    *
-   * ⚠ TREATMENT ONLY. It changes the crumb's own styling and NOTHING else —
-   * the trail stays exactly where it sits, the course heading and the page rows
-   * are untouched. An earlier pass moved the crumb into the page list and drew
-   * a box round the two; that answered the ask by changing two things nobody
-   * asked to change, and was reverted. The line under it is the whole idea: a
-   * ruled head belongs to the column beneath it, a floating line does not.
+   * ⚠ THE THIRD HOME IS THE REASON. Under Option 3 the header carries a Home
+   * and the rail carries a Home; the sidebar's "Home / Overview" made three on
+   * one screen. The trail was first RESTYLED here (ruled off as the column's
+   * head) on the way to this answer — that treatment is gone with it.
    *
-   * ⚠ WHY ONLY THE HYBRID. Under Option 3 the header carries its own Home, so
-   * the sidebar's trail needs to read as this column's header rather than as a
-   * second one. Under Option 1 it is the only Home on the page, and the
-   * launcher has no header nav above it at all.
+   * ⚠ EVERY OTHER SURFACE KEEPS IT. Options 1 and 4 draw no rail, so the
+   * sidebar trail is the only Home in that column, and the launcher has no
+   * header nav above it at all. Option 2 never reaches this page with a header
+   * nav either. Default `false`, so nothing but Option 3 changes.
    */
-  crumbAsHead?: boolean
-  /**
-   * Small cover thumbnail beside the course title — 2026-09-29, the direct ask.
-   *
-   * Optional, and absent means NO IMAGE rather than a grey box: the launcher
-   * path passes none, and a placeholder tile would be a worse answer than the
-   * title on its own. `aria-hidden` at the render site — the title beside it
-   * already names the course, so the art is decoration.
-   */
-  cover?: string
+  hideCrumb?: boolean
   /** "17 days" — printed under the title as "… to complete". Absent means the
    *  line is dropped rather than rendered empty. */
   timeRemaining?: string
@@ -382,7 +368,12 @@ export function CompassSidebar({
         The LAST crumb stays a plain span — it is the page you are on, and a
         breadcrumb's last crumb is not a link.
       */}
-      <p style={crumbAsHead ? { ...breadcrumbStyle, ...crumbHeadStyle } : breadcrumbStyle}>
+      {/* ⚠ NOT RENDERED, rather than `hidden`. `breadcrumbStyle` sets
+          `display: flex` inline, which beats the UA stylesheet's
+          `[hidden] { display: none }` — so the attribute alone would have
+          depended on some other rule happening to enforce it. */}
+      {!hideCrumb && (
+        <p style={breadcrumbStyle}>
         {/* "Home" BESIDE THE GLYPH, and the `aria-label` went with it. With a
             visible word the label has to match it (WCAG 2.5.3, Label in Name);
             "Back to the dashboard" beside the word "Home" is exactly the
@@ -443,19 +434,15 @@ export function CompassSidebar({
             </span>
           </>
         )}
-      </p>
+        </p>
+      )}
 
       <div style={sidebarHeadStyle}>
-        <div style={titleRowStyle}>
-          {cover ? <img src={cover} alt="" aria-hidden style={coverThumbStyle} /> : null}
-          <div style={{ minWidth: 0 }}>
-            <h1 style={sidebarTitleStyle}>{courseTitle}</h1>
-            {/* The same figure Home's card prints, resolved from the same pair
-                — see `useCompassCourseFigures`. */}
-            {timeRemaining ? (
-              <p style={timeRemainingStyle}>{timeRemaining} to complete</p>
-            ) : null}
-          </div>
+        <div style={{ minWidth: 0 }}>
+          <h1 style={sidebarTitleStyle}>{courseTitle}</h1>
+          {/* The same figure Home's card prints, resolved from the same pair —
+              see `useCompassCourseFigures`. */}
+          {timeRemaining ? <p style={timeRemainingStyle}>{timeRemaining} to complete</p> : null}
         </div>
         {/*
           THE HOME PAGE'S TREATMENT — 2026-09-23, the direct ask: "change the
@@ -1245,8 +1232,42 @@ const playerBodyStyle: CSSProperties = {
 
 /* sidebar */
 
+/*
+ * ⚠ 220 IS THE SHARED LEFT-COLUMN WIDTH — audited 2026-09-29, the direct ask
+ * to get the three consistent and as small as they go. They were 260 (this
+ * sidebar), 240 (the session's Contents) and 220 (the dashboard rail), which on
+ * a walk between the three screens read as the column resizing itself.
+ *
+ * MEASURED, NOT PICKED. The floor of each is its widest unwrappable line:
+ *   - this sidebar   192 = 3 bar + 10 pad + 16 icon + 10 gap + 103 ("Exam
+ *                    Simulator") + 10 pad, + 20 gutter each side
+ *   - Contents       ~170 for its beat rows; its CHAPTER names want more (see
+ *                    the slack note below)
+ *   - the rail       ~150 at its four trimmed rows
+ *
+ * So 220 is the smallest that clears all three — and it is already the rail's,
+ * which matters more than the tidiness: `220 + 1220 = 1440` is the app's design
+ * width and what `tokens.css`'s `min(1440px, …)` cap is justified by. Widening
+ * the rail would have meant moving the content column to keep that sum.
+ *
+ * ⚠ ONE CHAPTER NAME WRAPS AT THIS WIDTH, knowingly. "Life insurance policy
+ * types" needs 225px to sit on one line — 173px of text at weight 700, plus the
+ * 12px mark, the 8px gap and 16px of gutter each side — so at 220 it takes two.
+ * The row is `align-items: center` and the beat rows under it are unaffected,
+ * so it degrades rather than breaks, and a contents list is the one place a
+ * long name wrapping reads as normal.
+ *
+ * ⚠ I FIRST MEASURED IT AT 163px AND CALLED IT A 3px FIT. That was the wrong
+ * font: the "here" chapter is the BOLD one, and the probe had taken its font
+ * from a sibling at weight 500. Re-measure against the heaviest row, not the
+ * first one.
+ *
+ * Going to 228 would keep it on one line, at the cost of moving the content
+ * column to 1212 to hold the 1440 sum. Smallest-consistent was the ask, so this
+ * is 220 — one line to change if the wrap turns out to matter more.
+ */
 const sidebarStyle: CSSProperties = {
-  width: 260,
+  width: 220,
   flexShrink: 0,
   display: 'flex',
   flexDirection: 'column',
@@ -1272,20 +1293,6 @@ const sidebarStyle: CSSProperties = {
  * The separators and the House glyph scale with it; "Course" takes the size but
  * not the weight, because it is the page you are on rather than an action.
  */
-/*
- * The trail as the sidebar's HEAD — `crumbAsHead`, merged over `breadcrumbStyle`.
- *
- * A rule that spans the full column, which is the only thing separating a
- * header from a line that happens to be first: the negative margins pull it out
- * to the sidebar's own 20px gutter and the padding puts the text back where it
- * was, so nothing shifts horizontally — the border simply reaches both edges.
- */
-const crumbHeadStyle: CSSProperties = {
-  margin: '0 -20px',
-  padding: '0 20px 10px',
-  borderBottom: '1px solid var(--color-border-subtle)',
-}
-
 const breadcrumbStyle: CSSProperties = {
   margin: 0,
   display: 'flex',
@@ -1337,25 +1344,6 @@ const crumbButtonStyle: CSSProperties = {
 const crumbHereStyle: CSSProperties = { color: 'var(--color-text-tertiary)', fontWeight: 500 }
 /* NB: `crumbHereStyle` sets no size — it inherits the 13 from `breadcrumbStyle`
    so the three crumbs sit on one baseline, and differs only in weight and ink. */
-
-/* Cover beside the title. `align-items: flex-start` so a two-line title keeps
-   the thumbnail pinned to its first line rather than floating to the middle. */
-const titleRowStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'flex-start',
-  gap: 10,
-  minWidth: 0,
-}
-/* 48px square, cropped — up from 40 once the title came down to 14/19, which is
-   the trade the ask names. Still a marker beside the name rather than the card
-   art it comes from. */
-const coverThumbStyle: CSSProperties = {
-  width: 48,
-  height: 48,
-  flexShrink: 0,
-  objectFit: 'cover',
-  borderRadius: 6,
-}
 
 const sidebarHeadStyle: CSSProperties = {
   display: 'flex',

@@ -787,13 +787,14 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Navigation',
     label: 'Left nav background',
     description:
-      'Whether the left rail paints its own surface ON HOME. `filled` (default) is what ships \u2014 the rail sits on `--color-nav-surface`, a panel beside the content. `none` drops that fill so the rail sits directly on the page, and the column reads as part of the page rather than as a docked panel. \u26a0 HOME ONLY, deliberately: it is the one screen where the rail stands beside a full layout rather than a single body, so it is where the panel edge is doing the least work. Every other section keeps the surface under both settings. \u26a0 THE RIGHT BORDER IS ALREADY TRANSPARENT in every mode (see the rail column in `PlatformShell`), so dropping the fill leaves no seam behind \u2014 nothing else has to change for this to read.',
+      'Whether the left rail paints its own surface ON HOME. `filled` (default) is what ships \u2014 the rail sits on `--color-nav-surface`, a panel beside the content. `none` drops that fill so the rail sits directly on the page, and the column reads as part of the page rather than as a docked panel. \u26a0 HOME ONLY, deliberately: it is the one screen where the rail stands beside a full layout rather than a single body, so it is where the panel edge is doing the least work. Every other section keeps the surface under both settings. `none-aligned` does the same and also drops the rows 16px, so the first nav item\u2019s top edge meets the top of the content\u2019s first card instead of floating above it \u2014 16 is the measured difference, not a nudge. \u26a0 THE RIGHT BORDER IS ALREADY TRANSPARENT in every mode (see the rail column in `PlatformShell`), so dropping the fill leaves no seam behind \u2014 nothing else has to change for this to read.',
     maturity: 'wip',
     defaultEnabled: true,
     defaultVariant: 'filled',
     variants: [
       { value: 'filled', label: 'Filled (as shipped)' },
       { value: 'none', label: 'None \u2014 page background' },
+      { value: 'none-aligned', label: 'None \u2014 dropped to the content' },
     ],
     page: 'dashboard-rebrand',
   },

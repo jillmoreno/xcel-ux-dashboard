@@ -297,9 +297,14 @@ const USERS_BY_BRAND: Record<Brand, DemoUser> = {
   // date — every surface that would label it "Member since" is suppressed by
   // `supportsMembership()`.
   xcel: {
-    firstName: 'Alicia',
+    /* JORDAN, not Alicia — 2026-09-29, the direct ask, and it is the name the
+       Figma frames use throughout ("Welcome to your Learning Experience,
+       Jordan"; "Jordan Navarro" in the account menu). The surname stays, so the
+       initials move AN → JN and every surface that builds a full name or a
+       greeting off these three follows on its own. */
+    firstName: 'Jordan',
     lastName: 'Navarro',
-    initials: 'AN',
+    initials: 'JN',
     avatarUrl: '/brand/sarah.jpg',
     motto: 'Ten days to licensed. One lesson at a time.',
     planName: 'Premier',

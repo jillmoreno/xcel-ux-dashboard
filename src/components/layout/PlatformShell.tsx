@@ -79,6 +79,7 @@ import {
 import { showsRail, useNavPlacement } from './navPlacement'
 import { CompassLearningPage } from '@/components/learning/CompassLearningPage'
 import { CompassSessionPage } from '@/components/learning/CompassSessionPage'
+import { HomePageHeader } from './HomePageHeader'
 import { useCompassCourseFigures } from '@/components/learning/compassCourseFigures'
 
 /**
@@ -316,10 +317,18 @@ function PlatformShellBody() {
      sits on the page instead of reading as a docked panel. Home only — see the
      flag's description for why that is the screen it applies to. */
   const railSurfaceFlag = useFeatureFlag('nav-rail-surface')
-  const plainRail =
-    railSurfaceFlag.enabled &&
-    railSurfaceFlag.variant === 'none' &&
-    active === 'dashboard'
+  const railSurface =
+    railSurfaceFlag.enabled && active === 'dashboard' ? railSurfaceFlag.variant : 'filled'
+  const plainRail = railSurface === 'none' || railSurface === 'none-aligned'
+  /* ⚠ 16 IS MEASURED, NOT A NUDGE. With the rail's own 12px top padding the
+     first nav row's top edge sits 16px above the top of the content column's
+     first card; +16 puts the two on the same line. Re-measure it if either the
+     rail's padding or the content column's first card moves. */
+  const loweredRail = railSurface === 'none-aligned'
+  /* Option 3 gives Home a page header — the greeting + title the Figma draws
+     (765:3801). Home is the one section with no `SectionShell` title of its
+     own, so there is nothing for this to collide with. */
+  const homeHeader = navPlacement === 'hybrid' && active === 'dashboard'
   const compassFigures = useCompassCourseFigures()
   const railActive: PlatformSection = launcherOpen ? 'profile' : active
   const launcherBackLabel = SECTION_TITLES[active]
@@ -587,7 +596,7 @@ function PlatformShellBody() {
    * THE COMPASS TAKEOVER — `course-launcher-style: compass`.
    *
    * Returned BEFORE the shell grid, not rendered inside it, and that is the
-   * whole structural point of the variant. The player draws its own 260px
+   * whole structural point of the variant. The player draws its own 220px
    * contents sidebar in the space the dashboard rail occupies, so the two
    * cannot share a screen; `lo-fi` keeps the rail and renders in the content
    * column exactly as it always has, a few lines below.
@@ -608,7 +617,7 @@ function PlatformShellBody() {
    * (Figma 765:3471).
    *
    * RETURNED BEFORE THE SHELL GRID, for the same structural reason the
-   * launcher's compass takeover below is: the page draws its own 260px
+   * launcher's compass takeover below is: the page draws its own 220px
    * sidebar, so it cannot also sit inside a grid that reserves a column for
    * one. The app header survives either way — `<Header />` is in `AppLayout`,
    * above this component — which is what keeps the top nav on screen with
@@ -662,7 +671,6 @@ function PlatformShellBody() {
         percentComplete={compassFigures.percentComplete}
         completedLessons={compassFigures.completedLessons}
         totalLessons={compassFigures.totalLessons}
-        cover={compassFigures.cover}
         timeRemaining={compassFigures.timeRemaining}
         onLeave={() => handleSelect('dashboard')}
       />
@@ -816,7 +824,9 @@ function PlatformShellBody() {
                  Home any more, 0 put the first row hard against the header's
                  bottom edge — so the padding is doing its original job again
                  rather than compounding a gap that has gone. */
-              padding: `12px ${railCollapsed ? RAIL_GUTTER_COLLAPSED : RAIL_GUTTER}px 40px`,
+              padding: `${loweredRail ? 28 : 12}px ${
+              railCollapsed ? RAIL_GUTTER_COLLAPSED : RAIL_GUTTER
+            }px 40px`,
               boxSizing: 'border-box',
               // A subtle cue that the nav is locked, without looking broken.
               opacity: focus ? 0.85 : undefined,
@@ -876,6 +886,7 @@ function PlatformShellBody() {
           ...(topNav ? { maxWidth: 1172, width: '100%', margin: '0 auto' } : null),
         }}
       >
+        {homeHeader && !launcher.courseId ? <HomePageHeader /> : null}
         {launcher.courseId ? (
           <CourseLauncherView
             courseId={launcher.courseId}
@@ -1482,6 +1493,13 @@ function SectionShell({
   children: ReactNode
 }) {
   const [shellParams] = useSearchParams()
+  /* ⚠ A PAGE HEADER ABOVE ME MEANS I ADD NO TOP GUTTER. Option 3 gives Home a
+     greeting + title (`HomePageHeader`), which already carries the 24px off the
+     top; leaving this section's own 24 in stacked the two and left a hole
+     between the title and the first card. Read here rather than threaded as a
+     prop — the condition is the same one the shell renders the header on, and
+     two places deciding it separately is how they come to disagree. */
+  const headerAbove = useNavPlacement() === 'hybrid' && active === 'dashboard'
   // Partner Offers for non-members gets its own marketing hero + locked cards
   // (Figma 63:16150) — NOT the generic LockedBenefitPage. Free Content is
   // OPEN TO ALL: non-members see the same page as members (free items keep their
@@ -1555,7 +1573,13 @@ function SectionShell({
     // MembershipSectionHero, the v5 joined bands, WhatsNewQuickFilter, …). Change
     // the 40 below and they all overshoot the rail by the difference. Account
     // sections are safe to differ because none of them render a full-bleed band.
-    <section style={{ padding: `24px ${isAccountSection(active) ? ACCOUNT_SECTION_GUTTER : 40}px 64px` }}>
+    <section
+      style={{
+        padding: `${headerAbove ? 0 : 24}px ${
+          isAccountSection(active) ? ACCOUNT_SECTION_GUTTER : 40
+        }px 64px`,
+      }}
+    >
       {libraryHero ? (
         <LearningLibraryHero isMember={isMember} onUnlock={() => onSelect('membership')} />
       ) : benefitUpsell ? (

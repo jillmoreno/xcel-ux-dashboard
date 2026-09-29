@@ -4,12 +4,6 @@ import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
 import { activePathIdFor, learningPathsFor } from '@/data/learningFixtures'
 import { displayedProgressPct, resolveRenewal, timeRemainingText } from './learningPathsHomeUtil'
 import { resolvePathCategories } from './progressGaugeUtil'
-import { myCoursesFor } from '@/data/myCoursesFixtures'
-import { getCourseImage } from '@/utils/courseImage'
-import { NY_LH_COURSE_IMAGE } from '@/data/nyProducerRequirements'
-
-/** The path whose course art is authored — see the cover note below. */
-const NY_PRELICENSING_PATH_ID = 'xcel-ny-producer-prelicensing'
 
 /**
  * The course the Compass chrome is ABOUT — title, percentage and lesson counts.
@@ -35,9 +29,6 @@ export function useCompassCourseFigures(): {
   percentComplete: number
   completedLessons: number
   totalLessons: number
-  /** Cover art for the sidebar's course. `undefined` when the brand has no
-   *  in-progress course to take one from. */
-  cover?: string
   /** "17 days" — the same figure Home's course card prints. */
   timeRemaining: string
 } {
@@ -89,51 +80,6 @@ export function useCompassCourseFigures(): {
   const timeRemaining = timeRemainingText(weeksLeft)
   if (!path)
     return { title: '', percentComplete: 0, completedLessons: 0, totalLessons: 0, timeRemaining }
-  /*
-   * ⚠ THE COVER COMES OFF THE SAME `path` THE TITLE DOES. Two earlier attempts
-   * pictured a different course from the one they named:
-   *
-   *   1. `myCoursesFor(brand)`'s in-progress record → a house photo.
-   *   2. `persona.path.jumpBackIn` → `8.webp`, because the persona follows the
-   *      Education control while the title follows the brand's ACTIVE path.
-   *
-   * Home shows `ny-life-health.webp`, which is the active path's own
-   * `jumpBackIn`. Taking both from `path` is what makes them agree by
-   * construction rather than by coincidence.
-   *
-   * The in-progress record stays as the fallback for a path with no
-   * jump-back-in course.
-   */
-  /*
-   * ⚠ THE COVER IS AUTHORED AGAINST THE COURSE, NOT THE PATH — and finding that
-   * out cost three wrong answers, so it is written down here.
-   *
-   * The title comes from the active PATH, and path fixtures carry no art at
-   * all: `xcel-ny-producer-prelicensing` has no `imageUrl` and no `jumpBackIn`.
-   * So every attempt to derive the cover from the path fell through to a
-   * fallback and pictured a different course from the one it named —
-   * `myCoursesFor`'s in-progress record (a house photo), then
-   * `persona.path.jumpBackIn` (`8.webp`, because the persona follows the
-   * Education control while the title follows the active path), then the path
-   * summaries (no `jumpBackIn` either).
-   *
-   * What Home renders is `NY_LH_COURSE_IMAGE`, which `dashboardProgressFixtures`
-   * puts on all three of the XCEL QE persona's jump-back-in slots. It is the
-   * image authored FOR this course, so naming it directly is the honest
-   * version of what the derivations were groping for.
-   *
-   * ⚠ KEYED ON THE PATH ID so it stays a statement about THIS course rather
-   * than a default. Any other path keeps the in-progress record's art, which is
-   * the generic stock pool — right until path fixtures carry covers of their
-   * own, at which point this whole branch should go.
-   */
-  const resume = myCoursesFor(brand).find((c) => c.myStatus === 'in-progress')
-  const cover =
-    path.id === NY_PRELICENSING_PATH_ID
-      ? NY_LH_COURSE_IMAGE
-      : resume
-        ? (resume.imageUrl ?? getCourseImage(resume.id))
-        : undefined
   const cats = resolvePathCategories(path)
   const completedLessons = cats.reduce((sum, c) => sum + c.completed, 0)
   const required = cats.reduce((sum, c) => sum + c.required, 0)
@@ -145,7 +91,6 @@ export function useCompassCourseFigures(): {
        categories still has to report a denominator, or the contents tree
        divides by zero. */
     totalLessons: required || path.hours,
-    cover,
     timeRemaining,
   }
 }

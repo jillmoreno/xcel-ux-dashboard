@@ -7,7 +7,7 @@ import { useNavPlacement } from '@/components/layout/navPlacement'
  * COMPASS LEARNING — the top nav's second destination (Figma 765:3471).
  *
  * The frame is the Compass course chrome reached from the HEADER rather than
- * by launching a course: the 260px sidebar on the left, and on the right a
+ * by launching a course: the 220px sidebar on the left, and on the right a
  * page header (eyebrow, title, the exam-date strip) over the populated
  * Overview body.
  *
@@ -34,7 +34,6 @@ export function CompassLearningPage({
   percentComplete,
   completedLessons,
   totalLessons,
-  cover,
   timeRemaining,
   onLeave,
   onStartSession,
@@ -43,8 +42,6 @@ export function CompassLearningPage({
   percentComplete: number
   completedLessons: number
   totalLessons: number
-  /** Cover art beside the sidebar's course title. */
-  cover?: string
   /** "17 days" — the subtext under the title. */
   timeRemaining?: string
   /** Home — the one crumb that leaves. */
@@ -53,9 +50,9 @@ export function CompassLearningPage({
   onStartSession?: () => void
 }) {
   const [page, setPage] = useState<CompassPage>('overview')
-  /* Option 3 only — the header carries its own Home there, so the sidebar's
-     trail is ruled off as this column's head. Treatment only; see the prop. */
-  const crumbAsHead = useNavPlacement() === 'hybrid'
+  /* Option 3 only — the header and the rail both carry a Home there, so the
+     sidebar's trail would be the third. See the prop. */
+  const hideCrumb = useNavPlacement() === 'hybrid'
   return (
     <div style={pageStyle}>
       <CompassSidebar
@@ -66,8 +63,7 @@ export function CompassLearningPage({
         onLeave={onLeave}
         page={page}
         onSelectPage={setPage}
-        crumbAsHead={crumbAsHead}
-        cover={cover}
+        hideCrumb={hideCrumb}
         timeRemaining={timeRemaining}
       />
       <div style={mainStyle}>

@@ -3075,9 +3075,16 @@ describe('the in-shell course launcher is a lo-fi placeholder', () => {
        The toggle moved to the foot, below Get Help. With nothing above Home,
        0 put the first row hard against the header's bottom edge, so the padding
        is doing its original job again. Verified in the browser: 12px above the
-       first item in both rail widths. */
+       first item in both rail widths.
+
+       ⚠ THE SPELLING MOVED ON 2026-09-29 and the value did not. The padding is
+       now a ternary — `nav-rail-surface: none-aligned` drops the rows to 28 so
+       the first one lines up with the content's first card — so this pins the
+       DEFAULT arm of that ternary rather than a fixed string. 12 is still what
+       every other state gets. */
     const shell = readFileSync('src/components/layout/PlatformShell.tsx', 'utf8')
-    expect(shell).toMatch(/padding: `12px \$\{railCollapsed \? RAIL_GUTTER_COLLAPSED : RAIL_GUTTER\}px 40px`/)
+    expect(shell).toMatch(/\$\{loweredRail \? 28 : 12\}px \$\{/)
+    expect(shell).toMatch(/railCollapsed \? RAIL_GUTTER_COLLAPSED : RAIL_GUTTER/)
   })
 
   it('no longer offsets the toggle against the rail gutter', () => {
