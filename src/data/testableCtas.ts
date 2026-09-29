@@ -169,9 +169,16 @@ export const TESTABLE_CTAS: TestableCta[] = [
     region: 'Study journey',
     asks: 'Do they treat the rail as a table of contents, or as a status readout?',
   },
+  /* ⚠ THE COMMENT SITS OUTSIDE THE OBJECT DELIBERATELY. `scripts/session-sheet.mjs`
+     reads this catalog by regex and requires `label` to follow `id` with nothing
+     but whitespace between them — a comment in the gap drops the row from the
+     session sheet silently. Its own note says so; this is what tripped it.
+
+     Three labels because three arms of `exam-step-style` own this slot, and a
+     run needs to recognise the control it killed on whichever one is up. */
   {
     id: 'home.schedule-exam',
-    label: 'Schedule State Exam / Edit Exam Date →',
+    label: 'Schedule State Exam / Edit Exam Date / Exam Details →',
     region: 'Study journey',
     asks: 'Do they go here to book, or look for it somewhere else first?',
   },

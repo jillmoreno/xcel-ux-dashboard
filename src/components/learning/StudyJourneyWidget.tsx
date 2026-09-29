@@ -473,7 +473,6 @@ function ExamStepCard({
       number={number}
       shell={shell}
       onOpenStep={onOpenStep}
-      stepId={stepId}
       stateName={stateName}
     />
   ) : (

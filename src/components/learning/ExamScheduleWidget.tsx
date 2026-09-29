@@ -1,8 +1,9 @@
 import { useMemo, useState, type CSSProperties } from 'react'
 import { CalendarTearOff } from '@/components/ui/CalendarTearOff'
 import { ArrowLeft, ArrowRight, CalendarExclamation, HourglassClock, PenToSquare } from '@/icons'
-import { useExamDate, writeExamDate } from '@/data/examDateStore'
+import { clearExamDate, useExamDate, writeExamDate } from '@/data/examDateStore'
 import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
+import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 import { daysUntilIso } from '@/data/courseExpiry'
 import { widgetEyebrowStyle } from './widgetStyles'
 
@@ -35,6 +36,11 @@ import { widgetEyebrowStyle } from './widgetStyles'
  *  • ONCE SAVED THE CARD RE-TITLES ITSELF "{state} State exam" and turns into a
  *    readout — tear-off calendar, day countdown, Edit at link weight. The
  *    question is spent, so the card stops asking it.
+ *  • EDIT IS THE ONLY ROUTE IN THAT CAN DESTROY SOMETHING, so it is the only
+ *    one that offers to: the footer's "How to Schedule" becomes a red "Clear
+ *    exam date" there. Someone editing a date they already hold is past
+ *    needing booking instructions, and is exactly who needs a way to undo a
+ *    wrong one.
  *
  * THREE ADAPTATIONS FROM THE STANDALONE EXPLORATION, each deliberate:
  *
@@ -62,15 +68,15 @@ export function ExamScheduleWidget({
   number,
   shell,
   onOpenStep,
-  stepId,
   stateName = 'New York',
   today = FIXTURE_TODAY,
 }: {
   /** Continues the journey's numbering — see `StudyJourneyWidget`. */
   number: number
   shell: CSSProperties
+  /** Opens a sheet by id. This card only ever sends `EXAM_DETAILS_STEP_ID` —
+   *  the menu it opens is what sends the real step ids back. */
   onOpenStep?: (id: string) => void
-  stepId: string
   /** Learner's licensing state — drives the saved title, "{stateName} State exam". */
   stateName?: string
   /** Clock override for the countdown and the picker's past-day greying. */
@@ -96,6 +102,20 @@ export function ExamScheduleWidget({
     setPhase('scheduled')
   }
 
+  /* EDIT MODE — the picker reached from the saved readout, as opposed to from
+     either answer to the question. It is the one route in where a date already
+     exists, which is what gives the footer something to destroy. */
+  const editing = activePhase === 'picking' && returnPhase === 'scheduled'
+
+  function handleClear() {
+    clearExamDate()
+    /* Back to null, NOT to `'prompt'` — the phase falls through to the store
+       again, so the card re-derives its opening state from the fact that there
+       is no longer a date. Pinning the phase here would be the same answer
+       today and the wrong one the moment a date arrived from somewhere else. */
+    setPhase(null)
+  }
+
   return (
     <section aria-label="Exam Date" style={shell}>
       <p className="cre-eyebrow-ink" style={widgetEyebrowStyle}>
@@ -112,7 +132,7 @@ export function ExamScheduleWidget({
         <PickerState
           initialDate={stored}
           today={today}
-          editing={returnPhase === 'scheduled'}
+          editing={editing}
           onCancel={() => setPhase(returnPhase)}
           onSave={handleSave}
         />
@@ -127,21 +147,48 @@ export function ExamScheduleWidget({
         />
       )}
 
-      {/* THE WAY INTO THE STEP SHEET, in every phase. It is the one control
-          here that is not about the learner's own date — it tells them how to
-          get one — so it sits below whatever the card is currently asking.
-          ⚠ Tagged `home.schedule-exam`: `CtaTest` asserts that id renders
-          unconditionally on the home surface, and this card is the default
-          arm, so losing the tag fails that suite rather than going unnoticed. */}
-      <button
-        type="button"
-        data-cta-id="home.schedule-exam"
-        className="cre-link-action cre-cta-ink"
-        style={howStyle}
-        onClick={() => onOpenStep?.(stepId)}
-      >
-        How to Schedule →
-      </button>
+      {/* THE FOOTER SLOT, and it carries ONE of two things.
+ 
+          Normally it is EXAM DETAILS — a menu of the three exam sheets, rather
+          than the direct link to Schedule State Exam it used to be. The learner
+          who wants to rebook also wants to know what the sitting is like and
+          what happens if they fail, and two of those were reachable only from
+          other cards in the column. ⚠ Still tagged `home.schedule-exam`: it is
+          the same slot and the same intent, `CtaTest` asserts that id renders
+          unconditionally on the home surface, and a fresh load opens on the
+          question, so that assertion is still met. The CTA catalog's label was
+          updated to match what the control now says.
+ 
+          IN EDIT MODE IT BECOMES CLEAR EXAM DATE, in red. Editing is the only
+          route into the picker where a date already exists, so it is the only
+          place where deleting one is a coherent offer — and the learner who
+          opened Edit to fix a wrong date is exactly who needs it. "How to
+          Schedule" would be the weaker of the two here: someone editing a date
+          they already hold is past needing booking instructions. Red because
+          this is the one control on the card that destroys something; the
+          token is theme-aware (`error-600` light, `error-200` dark) and
+          `tokenContrast.test.ts` already pins it to AA on a card surface. */}
+      {editing ? (
+        <button
+          type="button"
+          data-cta-id="home.exam-date-clear"
+          className="cre-link-action"
+          style={clearStyle}
+          onClick={handleClear}
+        >
+          Clear exam date
+        </button>
+      ) : (
+        <button
+          type="button"
+          data-cta-id="home.schedule-exam"
+          className="cre-link-action cre-cta-ink"
+          style={howStyle}
+          onClick={() => onOpenStep?.(EXAM_DETAILS_STEP_ID)}
+        >
+          Exam Details →
+        </button>
+      )}
     </section>
   )
 }
@@ -661,6 +708,24 @@ const countdownCaptionStyle: CSSProperties = {
   fontSize: 11.5,
   lineHeight: '16px',
   color: 'var(--color-text-secondary)',
+}
+
+/* ⚠ NO `.cre-cta-ink` on the element that uses this — that class IS the action
+   colour and would win over the inline value. `.cre-link-action` alone is
+   colour-free (its underline and hover both run on `currentColor`), so the red
+   below is the only colour in play and the hover darkens it rather than the
+   navy. */
+const clearStyle: CSSProperties = {
+  marginTop: 12,
+  alignSelf: 'flex-start',
+  background: 'none',
+  border: 0,
+  padding: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  fontWeight: 700,
+  color: 'var(--color-status-error-text)',
+  cursor: 'pointer',
 }
 
 const howStyle: CSSProperties = {

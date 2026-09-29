@@ -2365,15 +2365,25 @@ describe('the Study Journey rail style flag', () => {
     }
   })
 
-  it('closes ALL THREE sheets with the governing agency, under a rule', () => {
+  it('no longer closes the three step sheets with the governing agency', () => {
     /*
-     * DFS governs the LICENCE, not any one step, so the block is identical on
-     * each of the three — which step you happened to open must not decide
-     * whether you can find the phone number.
+     * ⚠ INVERTED 2026-09-29, and the inversion is the record of a design call.
      *
-     * Swept across all three rather than checked on one, because "identical on
-     * each" is the assertion; a single-sheet check would pass with the block on
-     * one and missing from two.
+     * This asserted the OPPOSITE — the block on all three sheets, identically,
+     * on the reasoning that DFS governs the LICENCE rather than any one step, so
+     * which step you opened must not decide whether you can find the phone
+     * number. Three copies was the price of that guarantee.
+     *
+     * Exam Details changed the shape of the problem: it is now the hub the three
+     * exam sheets hang off, so the block sits ONCE at its bottom and still
+     * belongs to no single step. `ExamScheduleWidget.test.tsx` owns the positive
+     * assertion now — that it is THERE, with its rule and its action links.
+     *
+     * ⚠ WHAT THIS COSTS, kept here because this is where it will be noticed:
+     * these three sheets are still reachable DIRECTLY from the Study Journey
+     * rows, and on those routes the contact block is one hop further away than
+     * it was. Restoring it is one `<GoverningAgencyBlock />` in
+     * `GetLicensedStepPanel` — the markup is a component now, not a third copy.
      */
     for (const step of GET_LICENSED_STEPS) {
       const view = renderShell(QE_URL)
@@ -2381,27 +2391,10 @@ describe('the Study Journey rail style flag', () => {
         within(view.container).getByRole('button', { name: new RegExp(step.title, 'i') }),
       )
       const dialog = screen.getByRole('dialog')
-      expect(dialog.textContent, step.id).toMatch(/Governing Agency/)
-      expect(dialog.textContent, step.id).toContain(NY_GOVERNING_AGENCY.name)
-      expect(dialog.textContent, step.id).toContain(NY_GOVERNING_AGENCY.phone)
-      expect(dialog.textContent, step.id).toContain(NY_GOVERNING_AGENCY.address)
-      // A hairline above it — the same `--color-border-subtle` seam the rest of
-      // this version uses, not a heavier line for one boundary.
-      const rule = Array.from(dialog.querySelectorAll<HTMLElement>('div')).find(
-        (d) => d.style.height === '1px',
-      )!
-      expect(rule, step.id).toBeTruthy()
-      expect(rule.style.background).toMatch(/border-subtle/)
-      // The phone and the email are ACTIONS, not text to retype; the website
-      // leaves XCEL so it opens in a new tab, and `tel:`/`mailto:` do not.
-      const agency = dialog.querySelector('section:last-of-type')!
-      const byHref = (pre: string) =>
-        Array.from(agency.querySelectorAll('a')).find((a) => a.getAttribute('href')?.startsWith(pre))
-      expect(byHref('tel:')).toBeTruthy()
-      expect(byHref('mailto:')).toBeTruthy()
-      const site = byHref('https://www.dfs.ny.gov/')!
-      expect(site.getAttribute('target')).toBe('_blank')
-      expect(byHref('tel:')!.getAttribute('target')).toBeNull()
+      expect(dialog.textContent, step.id).not.toMatch(/Governing Agency/)
+      expect(dialog.textContent, step.id).not.toContain(NY_GOVERNING_AGENCY.phone)
+      // …and the step's own published content is untouched by the removal.
+      expect(dialog.textContent, step.id).toContain(step.title)
       view.unmount()
     }
   })

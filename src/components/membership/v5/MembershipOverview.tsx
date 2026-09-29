@@ -16,6 +16,8 @@ import { ProgressBar } from '@/components/ui/ProgressBar'
 import { displayedProgressPct, resolveRenewal, timeRemainingText } from '@/components/learning/learningPathsHomeUtil'
 import { Sheet } from '@/components/ui/Sheet'
 import { GetLicensedStepPanel } from '@/components/learning/GetLicensedStepPanel'
+import { ExamDetailsPanel, ExamFaqPanel } from '@/components/learning/ExamDetailsPanel'
+import { EXAM_DETAILS_STEP_ID, EXAM_FAQ_STEP_ID } from '@/data/examDetails'
 import { GET_LICENSED_STEPS } from '@/data/nyProducerRequirements'
 import { examDateRenewal, useExamDate } from '@/data/examDateStore'
 import { resolvePathCategories } from '@/components/learning/progressGaugeUtil'
@@ -212,6 +214,24 @@ export function MembershipOverview({
    */
   const [openStepId, setOpenStepId] = useState<string | null>(null)
   const openStep = GET_LICENSED_STEPS.find((st) => st.id === openStepId) ?? null
+  /*
+   * EXAM DETAILS — the menu `ask-first`'s footer opens, 2026-09-29.
+   *
+   * A SEPARATE piece of state from `openStepId`, and it has to be: the menu
+   * stays open UNDERNEATH whatever it opens, so closing a detail returns you to
+   * the list you chose from rather than to the page. One id could not hold both
+   * at once.
+   *
+   * ⚠ `EXAM_DETAILS_STEP_ID` is NOT a `LicensingStep`. It arrives on the same
+   * `onOpenStep` channel as the real step ids, so it is peeled off BEFORE the
+   * lookup below — without that it would fall through to `openStep === null`
+   * and open an empty sheet, which is exactly how this failed the first time.
+   */
+  const [examDetailsOpen, setExamDetailsOpen] = useState(false)
+  const openStepById = (id: string) => {
+    if (id === EXAM_DETAILS_STEP_ID) setExamDetailsOpen(true)
+    else setOpenStepId(id)
+  }
   const openDetail = (view: 'progress' | 'requirements' = 'requirements') => {
     setDetailView(view)
     setDetailOpen(true)
@@ -1279,7 +1299,7 @@ export function MembershipOverview({
       // per-step destination and inventing one is the Resources-slugs defect;
       // the step that DOES have a real URL (PSI) keeps it and never reaches
       // this callback.
-      onOpenStep={(id: string) => setOpenStepId(id)}
+      onOpenStep={openStepById}
       path={activeProgressPath}
       course={activeCourse}
       pathsCount={pathsCount}
@@ -1468,13 +1488,33 @@ export function MembershipOverview({
       {/* One step's published detail. `open` is derived from the id rather than
           held as a second boolean, so the two cannot disagree about whether a
           sheet is showing. */}
+      {/* THE EXAM DETAILS MENU, and it renders BEFORE the step sheet below on
+          purpose. `Sheet` pins every instance to `zIndex: 100`, so DOM order is
+          what decides which of two open sheets is on top — the detail must come
+          after this one or it opens behind the menu that asked for it. */}
       <Sheet
-        open={Boolean(openStep)}
-        onClose={() => setOpenStepId(null)}
-        title={openStep?.title ?? ''}
+        open={examDetailsOpen}
+        onClose={() => setExamDetailsOpen(false)}
+        title="Exam Details"
         width={480}
       >
-        {openStep ? (
+        {examDetailsOpen ? (
+          <ExamDetailsPanel
+            state={activeProgressPath?.state}
+            onSelect={setOpenStepId}
+            onClose={() => setExamDetailsOpen(false)}
+          />
+        ) : null}
+      </Sheet>
+      <Sheet
+        open={Boolean(openStep) || openStepId === EXAM_FAQ_STEP_ID}
+        onClose={() => setOpenStepId(null)}
+        title={openStepId === EXAM_FAQ_STEP_ID ? 'Common questions' : (openStep?.title ?? '')}
+        width={480}
+      >
+        {openStepId === EXAM_FAQ_STEP_ID ? (
+          <ExamFaqPanel onClose={() => setOpenStepId(null)} />
+        ) : openStep ? (
           <GetLicensedStepPanel
             step={openStep}
             state={activeProgressPath?.state}
