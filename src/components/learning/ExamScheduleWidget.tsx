@@ -4,7 +4,9 @@ import { ArrowLeft, ArrowRight, CalendarExclamation, HourglassClock, PenToSquare
 import { clearExamDate, useExamDate, writeExamDate } from '@/data/examDateStore'
 import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
+import { examCalendarSkin } from './examCalendarSkins'
 import { daysUntilIso } from '@/data/courseExpiry'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { widgetEyebrowStyle } from './widgetStyles'
 
 /**
@@ -237,12 +239,16 @@ function PromptState({
           is a sentence; the saved readout titles it "New York State exam",
           which is a label rather than prose. */}
       <p style={questionStyle}>Have you scheduled your {stateName} state exam?</p>
+      {/* ⚠ "Not yet" FIRST IN THE DOM, so the affirmative sits on the right.
+          Order here is also TAB order — rendering them visually swapped (with
+          `order`) would leave a keyboard user reaching them right-to-left while
+          a mouse user reads left-to-right. */}
       <div style={promptButtonRowStyle}>
-        <button type="button" style={yesButtonStyle} onClick={onYes}>
-          Yes
-        </button>
         <button type="button" style={notYetButtonStyle} onClick={onNotYet}>
           Not yet
+        </button>
+        <button type="button" style={yesButtonStyle} onClick={onYes}>
+          Yes
         </button>
       </div>
     </>
@@ -352,6 +358,10 @@ function PickerState({
   const [selected, setSelected] = useState<string | null>(initialDate)
 
   const cells = useMemo(() => buildMonthCells(year, monthIdx), [year, monthIdx])
+  /* ⚠ SKIN ONLY. Every arm renders THIS grid, from these cells, with the same
+     disabled / today / selected logic below — the arms differ in drawing and
+     nothing else, or the comparison stops being about the drawing. */
+  const skin = examCalendarSkin(useFeatureFlag('exam-calendar-style').variant)
 
   function goToMonth(by: number) {
     const next = monthIdx + by
@@ -367,35 +377,38 @@ function PickerState({
         {editing ? `Edit your ${stateName} exam date` : `When is your ${stateName} state exam?`}
       </p>
 
-      <div style={pickerFrameStyle}>
-        <div style={monthNavRowStyle}>
+      <div style={skin.frame}>
+        <div style={skin.monthRow}>
           <button
             type="button"
             aria-label="Previous month"
-            style={navBtnStyle}
+            style={skin.nav}
             onClick={() => goToMonth(-1)}
           >
             <ArrowLeft size={11} aria-hidden />
           </button>
-          <span style={monthLabelStyle}>
+          <span style={skin.monthLabel}>
             {MONTH_LABELS[monthIdx]} {year}
           </span>
           <button
             type="button"
             aria-label="Next month"
-            style={navBtnStyle}
+            style={skin.nav}
             onClick={() => goToMonth(1)}
           >
             <ArrowRight size={11} aria-hidden />
           </button>
         </div>
 
-        <div style={dayGridStyle}>
+        {/* `branded` makes the month row a full-bleed bar, so the padding that
+            would normally sit on the frame moves in here, under it. */}
+        <div style={skin.body}>
+        <div style={skin.grid}>
           {/* ⚠ `aria-hidden`, the same call `ExamDateCard` made: seven single
               letters, three of them repeats, are noise to a screen reader — and
               every day button already carries its full date as its name. */}
           {DOW_LABELS.map((label, i) => (
-            <span key={i} aria-hidden style={dowLabelStyle}>
+            <span key={i} aria-hidden style={skin.dow}>
               {label}
             </span>
           ))}
@@ -415,16 +428,17 @@ function PickerState({
                 aria-label={longDate(cell.iso)}
                 onClick={() => setSelected(cell.iso)}
                 style={{
-                  ...dayStyle,
-                  ...(disabled ? dayDisabledStyle : null),
-                  ...(isToday && !isSelected ? dayTodayStyle : null),
-                  ...(isSelected ? daySelectedStyle : null),
+                  ...skin.day,
+                  ...(disabled ? skin.dayDisabled : null),
+                  ...(isToday && !isSelected ? skin.dayToday : null),
+                  ...(isSelected ? skin.daySelected : null),
                 }}
               >
                 {cell.day}
               </button>
             )
           })}
+        </div>
         </div>
       </div>
 
@@ -527,11 +541,28 @@ const questionStyle: CSSProperties = {
   color: 'var(--color-text-primary)',
 }
 
+/* EQUAL-WIDTH PAIR, sized to the WIDER of the two — 2026-09-29.
+ 
+   `inline-grid` + `grid-auto-columns: 1fr` is the idiomatic way to do this
+   without a magic number: the grid shrink-wraps to its content, and `1fr`
+   tracks under a max-content constraint all resolve to the LARGEST item's
+   width. So "Yes" grows to "Not yet" and the pair still sizes itself if the
+   copy changes.
+ 
+   ⚠ `alignSelf` IS LOAD-BEARING. The card's shell is a column flex container,
+   so its children stretch to full width by default — without this the grid
+   would span the card and each 1fr track would become half of it, which is far
+   wider than either button wants to be.
+ 
+   ⚠ NOT `flex: 1 1 0` on the children, which was the other obvious route: that
+   sizes both to the AVERAGE, so "Yes" grows but "Not yet" shrinks and its label
+   wraps. The point is to match the wider one, not to meet in the middle. */
 const promptButtonRowStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
+  display: 'inline-grid',
+  gridAutoFlow: 'column',
+  gridAutoColumns: '1fr',
+  alignSelf: 'flex-start',
   gap: 10,
-  flexWrap: 'wrap',
   marginTop: 12,
 }
 
@@ -630,9 +661,6 @@ const linkStyle: CSSProperties = {
   cursor: 'pointer',
 }
 
-/* The picker renders in both cases — under the eyebrow when reached from an
-   answer, flush when reached from Edit — so its offset is the one that has to
-   be conditional. */
 const pickerLeadStyle: CSSProperties = {
   margin: '6px 0 0',
   fontFamily: 'var(--font-heading)',
@@ -642,81 +670,15 @@ const pickerLeadStyle: CSSProperties = {
   color: 'var(--color-text-primary)',
 }
 
-const pickerFrameStyle: CSSProperties = {
-  marginTop: 10,
-  border: '1px solid var(--color-neutral-300)',
-  borderRadius: 'var(--radius-sm)',
-  padding: 10,
-  background: 'var(--color-surface-page)',
-}
 
-const monthNavRowStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  marginBottom: 8,
-  fontFamily: 'var(--font-body)',
-  color: 'var(--color-text-primary)',
-}
 
-const navBtnStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: 22,
-  height: 22,
-  border: '1px solid var(--color-neutral-300)',
-  borderRadius: 'var(--radius-sm)',
-  background: 'var(--color-surface-card)',
-  color: 'var(--color-text-secondary)',
-  cursor: 'pointer',
-}
 
-const monthLabelStyle: CSSProperties = {
-  fontWeight: 700,
-  fontSize: 12.5,
-}
 
-const dayGridStyle: CSSProperties = {
-  display: 'grid',
-  gridTemplateColumns: 'repeat(7, 1fr)',
-  gap: 2,
-}
 
-const dowLabelStyle: CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontSize: 9.5,
-  fontWeight: 700,
-  textAlign: 'center',
-  paddingBottom: 3,
-  color: 'var(--color-text-tertiary)',
-}
 
-const dayStyle: CSSProperties = {
-  border: 0,
-  background: 'transparent',
-  borderRadius: 'var(--radius-sm)',
-  padding: '4px 0',
-  fontFamily: 'var(--font-body)',
-  fontSize: 11.5,
-  color: 'var(--color-text-secondary)',
-  cursor: 'pointer',
-}
 
-const dayDisabledStyle: CSSProperties = {
-  color: 'var(--color-neutral-300)',
-  cursor: 'not-allowed',
-}
 
-const dayTodayStyle: CSSProperties = {
-  boxShadow: 'inset 0 0 0 1px var(--color-primary-600)',
-}
 
-const daySelectedStyle: CSSProperties = {
-  background: 'var(--color-primary-600)',
-  color: 'var(--color-text-inverse)',
-  fontWeight: 700,
-}
 
 const pickerFooterStyle: CSSProperties = {
   display: 'flex',

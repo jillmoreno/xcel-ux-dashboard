@@ -112,6 +112,10 @@ const REBRAND_FLAGS = [
   'course-entry-style',
   'course-entry-details',
   'exam-step-style',
+  /* Added with the flag, 2026-09-29 — `FlagPanelScope.test.ts` catches the miss
+     that the note above records six of. It sits next to `exam-step-style`
+     because it only does anything on that flag's `ask-first` arm. */
+  'exam-calendar-style',
   'journey-step-order',
   'study-pace-hidden',
   'nav-rail-icons',

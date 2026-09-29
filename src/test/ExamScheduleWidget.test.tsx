@@ -1,9 +1,9 @@
-import { render, screen, within } from '@testing-library/react'
+import { cleanup, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
-import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
+import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { LearningPathsPanelProvider } from '@/components/learning/LearningPathsPanelContext'
 import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelContext'
 import { PlatformShell } from '@/components/layout/PlatformShell'
@@ -335,9 +335,10 @@ describe('Exam Details — the menu the footer opens', () => {
     await openMenu(user)
     const d = sheet()
     expect(within(d).getByRole('heading', { name: 'Exam Details' })).toBeTruthy()
-    expect(
-      within(d).getByRole('button', { name: /How to schedule or reschedule your exam/ }),
-    ).toBeTruthy()
+    /* UNSCHEDULED wording — the learner has no date, so "reschedule" would be
+       describing something they cannot do. */
+    expect(within(d).getByRole('button', { name: /How to schedule your exam/ })).toBeTruthy()
+    expect(within(d).queryByRole('button', { name: /reschedule/i })).toBeNull()
     expect(within(d).getByRole('button', { name: /What to expect on your exam/ })).toBeTruthy()
     expect(within(d).getByRole('button', { name: /Common questions/ })).toBeTruthy()
   })
@@ -373,15 +374,31 @@ describe('Exam Details — the menu the footer opens', () => {
     expect(byHref('tel:')!.getAttribute('target')).toBeNull()
   })
 
+  it('says RESCHEDULE once a date is booked, and schedule before', async () => {
+    /* ⚠ ONE ROW, TWO NAMES. It read "How to schedule or reschedule your exam"
+       for everyone — the shape a label takes when it is covering a state it has
+       not checked, asking the learner to work out which half applies. Both
+       halves are wrong for half the readers. The destination is the same sheet
+       either way; only the naming was ambiguous. */
+    const user = userEvent.setup()
+    window.localStorage.setItem('cgp.examDate', '2026-05-29')
+    renderShell('exam-step-style:ask-first')
+    await user.click(within(card()).getByRole('button', { name: /Exam Details/ }))
+
+    const d = sheet()
+    expect(within(d).getByRole('button', { name: /How to reschedule your exam/ })).toBeTruthy()
+    expect(within(d).getByText(/Change a date you have already booked/)).toBeTruthy()
+    // …and the unscheduled wording is gone, not merely joined by the other.
+    expect(within(d).queryByRole('button', { name: /^How to schedule your exam/ })).toBeNull()
+  })
+
   it('opens the EXISTING step sheets for rows 1 and 2, not copies', async () => {
     /* They open `GetLicensedStepPanel` on the steps that already own that
        content — the same sheets the Study Journey rows open. A second copy of
        the schedule copy is exactly what this must not become. */
     const user = userEvent.setup()
     await openMenu(user)
-    await user.click(
-      within(sheet()).getByRole('button', { name: /How to schedule or reschedule your exam/ }),
-    )
+    await user.click(within(sheet()).getByRole('button', { name: /How to schedule your exam/ }))
     expect(screen.getByText('Post-course process')).toBeTruthy()
     expect(screen.getAllByRole('heading', { name: 'Schedule State Exam' }).length).toBeGreaterThan(0)
   })
@@ -411,5 +428,66 @@ describe('Exam Details — the menu the footer opens', () => {
     await user.click(within(faq).getByRole('button', { name: /Close/ }))
     const back = screen.getByRole('dialog')
     expect(within(back).getByRole('heading', { name: 'Exam Details' })).toBeTruthy()
+  })
+})
+
+describe('exam-calendar-style — how the picker is drawn', () => {
+  const openPicker = async (user: ReturnType<typeof userEvent.setup>, ff: string) => {
+    renderShell(ff)
+    await user.click(within(card()).getByRole('button', { name: 'Yes' }))
+  }
+  /** The row carrying the arrows and the month label. */
+  const monthRow = () => within(card()).getByText(/May 2026/).parentElement!
+
+  it('ships `framed` on this branch, with the control still reachable', () => {
+    const flag = FEATURE_FLAGS.find((f) => f.key === 'exam-calendar-style')
+    expect(flag?.defaultVariant).toBe('framed')
+    expect(flag?.variants?.map((v) => v.value)).toEqual(['minimal', 'framed', 'branded'])
+  })
+
+  it('draws the SAME month, with the same days bookable, on every arm', async () => {
+    /* ⚠ THE ASSERTION THAT KEEPS THIS AN EXPLORATION OF DRAWING. The arms are
+       skins over one `buildMonthCells` result; if they ever disagreed about
+       which days are selectable, the comparison would silently be about two
+       calendars rather than two treatments. */
+    for (const arm of ['minimal', 'framed', 'branded']) {
+      const user = userEvent.setup()
+      await openPicker(user, `exam-step-style:ask-first,exam-calendar-style:${arm}`)
+      const c = card()
+      expect(within(c).getByText(/May 2026/), arm).toBeTruthy()
+      // Before the anchored today — never bookable.
+      expect(within(c).getByRole('button', { name: /May 4, 2026/ }), arm).toHaveProperty(
+        'disabled',
+        true,
+      )
+      // After it — bookable.
+      expect(within(c).getByRole('button', { name: /May 29, 2026/ }), arm).toHaveProperty(
+        'disabled',
+        false,
+      )
+      cleanup()
+    }
+  })
+
+  it('`branded` caps the calendar with the navy bar', async () => {
+    /* The argument this arm makes: the saved readout is a navy-capped tear-off,
+       so the thing you pick from should look like the thing you end up with. */
+    const user = userEvent.setup()
+    await openPicker(user, 'exam-step-style:ask-first,exam-calendar-style:branded')
+    const row = monthRow()
+    expect(row.style.background).toBe('var(--color-primary-500)')
+    /* White on navy — and `--color-text-inverse` rather than a literal, because
+       the bar is navy in BOTH themes so the ink must not flip. */
+    expect(row.style.color).toBe('var(--color-text-inverse)')
+  })
+
+  it('`minimal` is still the hairline control it shipped as', async () => {
+    const user = userEvent.setup()
+    await openPicker(user, 'exam-step-style:ask-first,exam-calendar-style:minimal')
+    const frame = monthRow().parentElement!
+    expect(frame.style.border).toBe('1px solid var(--color-neutral-300)')
+    expect(frame.style.background).toBe('var(--color-surface-page)')
+    // …and no coloured bar.
+    expect(monthRow().style.background).toBe('')
   })
 })

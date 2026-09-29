@@ -732,6 +732,22 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'exam-calendar-style',
+    group: 'Widgets',
+    label: 'Exam calendar — treatment',
+    description:
+      'How the in-card month picker is DRAWN, on the `ask-first` exam card. Raised 2026-09-29 from a review note that the picker \u201cfeels a little muted and minimalistic-looking\u201d \u2014 a judgement about PRESENCE, which is not one dial, so the three arms each turn a different one up rather than being three steps along one slider. `minimal` is the control and is byte-for-byte what shipped: a hairline box on the page ground, 22px nav, 11.5px numerals, recessive because it is a field rather than a feature. `framed` gives the same calendar ROOM and a surface \u2014 a raised card, a rule under the month, square day cells about half again as large, a real hover \u2014 arguing the picker was thin rather than wrong. `branded` draws it as an OBJECT: a navy cap across the top carrying the month in white, round day cells, the selected day a filled navy disc. \u26a0 `branded` IS THE SAVED STATE\u2019S TEAR-OFF, EARLIER \u2014 the readout you get after saving is a navy-capped calendar, so this makes the thing you pick from and the thing you end up with visibly one object; the cost is that it becomes the loudest element on a card whose job is to ask a one-line question. \u26a0 SKINS ONLY: every arm renders the same grid from the same cells with the same disabled / today / selected logic, so the comparison is the drawing and nothing else. Only affects `exam-step-style: ask-first`; the other two arms have their own pickers. Variant-only.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    defaultVariant: 'framed',
+    variants: [
+      { value: 'minimal', label: 'Minimal (shipped)' },
+      { value: 'framed', label: 'Framed — room and a surface' },
+      { value: 'branded', label: 'Branded — navy cap, round days' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'journey-step-order',
     group: 'Widgets',
     label: 'Journey step order',

@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react'
 import { ChevronRight, X } from '@/icons'
 import { jurisdictionName } from '@/data/nyProducerRequirements'
+import { useExamDate } from '@/data/examDateStore'
 import { EXAM_FAQ, examDetailRows } from '@/data/examDetails'
 import { GoverningAgencyBlock } from './GoverningAgencyBlock'
 
@@ -45,6 +46,10 @@ export function ExamDetailsPanel({
   onClose: () => void
 }) {
   const where = jurisdictionName(state)
+  /* Read here rather than threaded from `MembershipOverview`: the store is the
+     one source for "is there a date", every other surface reads it the same
+     way, and a prop would be a second copy that can disagree. */
+  const hasExamDate = Boolean(useExamDate())
   return (
     <>
       {/* The step sheet's header, matched deliberately — this opens from the
@@ -62,7 +67,7 @@ export function ExamDetailsPanel({
 
       <div style={bodyStyle}>
         <ul style={rowListStyle}>
-          {examDetailRows().map((row) => (
+          {examDetailRows(hasExamDate).map((row) => (
             <li key={row.id}>
               <button type="button" style={rowStyle} onClick={() => onSelect(row.id)}>
                 <span style={{ minWidth: 0 }}>

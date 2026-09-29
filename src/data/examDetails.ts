@@ -28,16 +28,31 @@ function stepDetail(id: string, fallback: string): string {
   return GET_LICENSED_STEPS.find((s) => s.id === id)?.detail ?? fallback
 }
 
-export function examDetailRows(): Row[] {
+export function examDetailRows(hasExamDate: boolean): Row[] {
   return [
-    {
-      id: 'schedule-exam',
-      /* "or reschedule" is the half that earns the row. Booking is a one-time
-         act most learners have already done by the time they look; changing a
-         booking is the recurring one, and it was not named anywhere. */
-      label: 'How to schedule or reschedule your exam',
-      detail: stepDetail('schedule-exam', 'Schedule your exam when you’re ready.'),
-    },
+    /*
+     * ⚠ ROW 1 IS TWO ROWS, chosen by whether a date is stored.
+     *
+     * It read "How to schedule or reschedule your exam" for everyone, which is
+     * the shape a label takes when it is covering a state it has not checked:
+     * it asks the learner to work out which half applies to them. Both halves
+     * are always wrong for half the readers — someone who has booked does not
+     * need "schedule", and someone who has not cannot "reschedule".
+     *
+     * The destination is the same sheet either way. Only the naming changes,
+     * because only the naming was ambiguous.
+     */
+    hasExamDate
+      ? {
+          id: 'schedule-exam',
+          label: 'How to reschedule your exam',
+          detail: 'Change a date you have already booked, through PSI.',
+        }
+      : {
+          id: 'schedule-exam',
+          label: 'How to schedule your exam',
+          detail: stepDetail('schedule-exam', 'Schedule your exam when you’re ready.'),
+        },
     {
       id: 'pass-exam',
       label: 'What to expect on your exam',
