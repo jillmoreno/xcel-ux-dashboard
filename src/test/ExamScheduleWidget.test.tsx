@@ -55,10 +55,39 @@ function renderShell(ff?: string) {
 const card = () => screen.getByRole('region', { name: 'Exam Date' })
 
 describe('exam-step-style: ask-first', () => {
+  it('names the STATE in every phase, so the card is never ambiguous', async () => {
+    /* ⚠ THE ONE GENUINELY AMBIGUOUS THING ON THE CARD, until 2026-09-29. A
+       learner holding licences in more than one jurisdiction — or working a
+       course for a state they do not live in — could not tell which exam "your
+       state exam" meant. The saved readout already titled itself "New York
+       State exam"; the three asking phases did not.
+
+       Swept across all four rather than checked on the question alone, because
+       "every phase" is the assertion — a single-phase check would pass with the
+       state named once and missing from three. */
+    const user = userEvent.setup()
+    renderShell('exam-step-style:ask-first')
+    expect(card().textContent).toContain('New York')
+
+    await user.click(within(card()).getByRole('button', { name: 'Not yet' }))
+    expect(card().textContent).toContain('New York')
+
+    await user.click(within(card()).getByRole('button', { name: /I have my exam date/ }))
+    expect(within(card()).getByText('When is your New York state exam?')).toBeTruthy()
+
+    await user.click(within(card()).getByRole('button', { name: /May 29, 2026/ }))
+    await user.click(within(card()).getByRole('button', { name: 'Save exam date' }))
+    expect(within(card()).getByText('New York State exam')).toBeTruthy()
+
+    // …and the edit lead names it too, the one phase with no heading above it.
+    await user.click(within(card()).getByRole('button', { name: /Edit/ }))
+    expect(within(card()).getByText('Edit your New York exam date')).toBeTruthy()
+  })
+
   it('opens on the question, with both answers available', () => {
     renderShell('exam-step-style:ask-first')
     const c = card()
-    expect(within(c).getByText('Have you scheduled your state exam?')).toBeTruthy()
+    expect(within(c).getByText('Have you scheduled your New York state exam?')).toBeTruthy()
     expect(within(c).getByRole('button', { name: 'Yes' })).toBeTruthy()
     expect(within(c).getByRole('button', { name: 'Not yet' })).toBeTruthy()
     /* The way into the exam sheets is present from the start — it is the one
@@ -76,9 +105,9 @@ describe('exam-step-style: ask-first', () => {
     await user.click(within(card()).getByRole('button', { name: 'Not yet' }))
 
     const c = card()
-    expect(within(c).queryByText('Have you scheduled your state exam?')).toBeNull()
+    expect(within(c).queryByText('Have you scheduled your New York state exam?')).toBeNull()
     expect(within(c).getByText(/No exam date yet\? That’s okay\./)).toBeTruthy()
-    expect(within(c).getByText(/register through your state’s licensing board/)).toBeTruthy()
+    expect(within(c).getByText(/register for your New York exam through the state licensing board/)).toBeTruthy()
     expect(within(c).getByRole('button', { name: /I have my exam date/ })).toBeTruthy()
   })
 
@@ -95,7 +124,7 @@ describe('exam-step-style: ask-first', () => {
     // …and Cancel returns to the answer it was opened from, not to the question.
     await user.click(within(card()).getByRole('button', { name: 'Cancel' }))
     expect(within(card()).getByText(/No exam date yet\? That’s okay\./)).toBeTruthy()
-    expect(within(card()).queryByText('Have you scheduled your state exam?')).toBeNull()
+    expect(within(card()).queryByText('Have you scheduled your New York state exam?')).toBeNull()
   })
 
   it('“Yes” expands the calendar INSIDE the card, not over it', async () => {
@@ -142,7 +171,7 @@ describe('exam-step-style: ask-first', () => {
     expect(window.localStorage.getItem('cgp.examDate')).toBe('2026-05-29')
     const c = card()
     // The question is spent, so the card stops asking it.
-    expect(within(c).queryByText('Have you scheduled your state exam?')).toBeNull()
+    expect(within(c).queryByText('Have you scheduled your New York state exam?')).toBeNull()
     expect(within(c).getByText(/State exam$/)).toBeTruthy()
     expect(within(c).getByText('18 days')).toBeTruthy()
     expect(within(c).getByText('until your exam')).toBeTruthy()
@@ -168,7 +197,7 @@ describe('exam-step-style: ask-first', () => {
     await user.click(within(card()).getByRole('button', { name: /Edit/ }))
 
     const c = card()
-    expect(within(c).getByText('Edit your exam date')).toBeTruthy()
+    expect(within(c).getByText('Edit your New York exam date')).toBeTruthy()
     expect(within(c).getByRole('button', { name: /May 29, 2026/ })).toHaveProperty(
       'ariaPressed',
       'true',
@@ -185,12 +214,12 @@ describe('exam-step-style: ask-first', () => {
   it('never asks a learner who already has a date', () => {
     /* ⚠ THE STORE DECIDES THE OPENING STATE, not this component's own history.
        The date can be set on either sibling arm or the Study Plan, and a card
-       that opened on "Have you scheduled your state exam?" for someone who
+       that opened on "Have you scheduled your New York state exam?" for someone
        plainly has would read as the product not listening. */
     window.localStorage.setItem('cgp.examDate', '2026-05-29')
     renderShell('exam-step-style:ask-first')
     const c = card()
-    expect(within(c).queryByText('Have you scheduled your state exam?')).toBeNull()
+    expect(within(c).queryByText('Have you scheduled your New York state exam?')).toBeNull()
     expect(within(c).getByText('18 days')).toBeTruthy()
   })
 
@@ -201,7 +230,7 @@ describe('exam-step-style: ask-first', () => {
        and a different one under the other — an A/B measuring two things. */
     renderShell('exam-step-style:ask-first,journey-step-order:exam-first')
     const c = card()
-    expect(within(c).getByText('Have you scheduled your state exam?')).toBeTruthy()
+    expect(within(c).getByText('Have you scheduled your New York state exam?')).toBeTruthy()
     /* ⚠ NO STEP NUMBER — changed 2026-09-29. This asserted "Step 1" until the
        card stopped being a step at all. `JourneyStepOrder.test.tsx` owns the
        other half: that the three real steps close up to 1-2-3 behind it. */
@@ -283,7 +312,7 @@ describe('exam-step-style: ask-first', () => {
        date the rest of the page still plans against. */
     expect(window.localStorage.getItem('cgp.examDate')).toBeNull()
     const c = card()
-    expect(within(c).getByText('Have you scheduled your state exam?')).toBeTruthy()
+    expect(within(c).getByText('Have you scheduled your New York state exam?')).toBeTruthy()
     expect(within(c).queryByText('until your exam')).toBeNull()
     // …and the footer is the Exam Details menu again.
     expect(within(c).getByRole('button', { name: /Exam Details/ })).toBeTruthy()

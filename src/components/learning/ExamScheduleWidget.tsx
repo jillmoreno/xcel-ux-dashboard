@@ -24,7 +24,7 @@ import { widgetEyebrowStyle } from './widgetStyles'
  *
  *  • IT ASKS BEFORE IT OFFERS A CONTROL. `date-first` leads with "Enter exam
  *    date", which assumes the learner has one. This leads with the question
- *    itself — "Have you scheduled your state exam?" — because the honest answer
+ *    itself — "Have you scheduled your New York state exam?" — because the answer
  *    for most learners arriving is no, and a no is worth capturing.
  *  • "NOT YET" IS AN ANSWER, NOT A DISMISSAL. The card shrinks to a short note
  *    about booking through the state board and keeps one way back in ("I have
@@ -139,14 +139,21 @@ export function ExamScheduleWidget({
       )}
 
       {activePhase === 'prompt' && (
-        <PromptState onNotYet={() => setPhase('not-yet')} onYes={() => openPicker('prompt')} />
+        <PromptState
+          stateName={stateName}
+          onNotYet={() => setPhase('not-yet')}
+          onYes={() => openPicker('prompt')}
+        />
       )}
 
-      {activePhase === 'not-yet' && <NotYetState onSchedule={() => openPicker('not-yet')} />}
+      {activePhase === 'not-yet' && (
+        <NotYetState stateName={stateName} onSchedule={() => openPicker('not-yet')} />
+      )}
 
       {activePhase === 'picking' && (
         <PickerState
           initialDate={stored}
+          stateName={stateName}
           today={today}
           editing={editing}
           onCancel={() => setPhase(returnPhase)}
@@ -211,10 +218,25 @@ export function ExamScheduleWidget({
 
 /* ─── state 1 · the opening ask (the Figma frame) ──────────────────────── */
 
-function PromptState({ onNotYet, onYes }: { onNotYet: () => void; onYes: () => void }) {
+function PromptState({
+  stateName,
+  onNotYet,
+  onYes,
+}: {
+  stateName: string
+  onNotYet: () => void
+  onYes: () => void
+}) {
   return (
     <>
-      <p style={questionStyle}>Have you scheduled your state exam?</p>
+      {/* ⚠ THE STATE IS NAMED IN EVERY PHASE — 2026-09-29. A learner holding
+          licences in more than one jurisdiction, or working a course for a state
+          they do not live in, cannot tell which exam this card means from "your
+          state exam". Naming it costs two words and removes the only genuinely
+          ambiguous thing on the card. Lowercase "state exam" here because this
+          is a sentence; the saved readout titles it "New York State exam",
+          which is a label rather than prose. */}
+      <p style={questionStyle}>Have you scheduled your {stateName} state exam?</p>
       <div style={promptButtonRowStyle}>
         <button type="button" style={yesButtonStyle} onClick={onYes}>
           Yes
@@ -229,7 +251,13 @@ function PromptState({ onNotYet, onYes }: { onNotYet: () => void; onYes: () => v
 
 /* ─── state 2 · "Not yet" — shrinks, keeps the door open ────────────────── */
 
-function NotYetState({ onSchedule }: { onSchedule: () => void }) {
+function NotYetState({
+  stateName,
+  onSchedule,
+}: {
+  stateName: string
+  onSchedule: () => void
+}) {
   return (
     <>
       <div style={notYetHeadingRowStyle}>
@@ -241,8 +269,8 @@ function NotYetState({ onSchedule }: { onSchedule: () => void }) {
         <p style={notYetHeadingStyle}>No exam date yet? That’s okay.</p>
       </div>
       <p style={notYetBodyStyle}>
-        You can register through your state’s licensing board. Once you have a date, add it here
-        and we’ll count down to it for you.
+        You can register for your {stateName} exam through the state licensing board. Once you
+        have a date, add it here and we’ll count down to it for you.
       </p>
       <button type="button" style={linkStyle} onClick={onSchedule}>
         I have my exam date →
@@ -298,12 +326,14 @@ function buildMonthCells(year: number, monthIdx: number): DayCell[] {
 
 function PickerState({
   initialDate,
+  stateName,
   today,
   editing,
   onCancel,
   onSave,
 }: {
   initialDate: string | null
+  stateName: string
   today: Date
   editing: boolean
   onCancel: () => void
@@ -334,7 +364,7 @@ function PickerState({
       {/* `editing` ⇔ a date exists ⇔ no eyebrow above, so the offset goes with
           it. The only phase where this differs either way. */}
       <p style={{ ...pickerLeadStyle, marginTop: editing ? 0 : 6 }}>
-        {editing ? 'Edit your exam date' : 'When is your exam?'}
+        {editing ? `Edit your ${stateName} exam date` : `When is your ${stateName} state exam?`}
       </p>
 
       <div style={pickerFrameStyle}>

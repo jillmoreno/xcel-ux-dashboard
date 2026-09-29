@@ -72,7 +72,7 @@ describe('exam-step-style', () => {
        reasons that have nothing to do with the learner. The CONTENT is what
        separates them. */
     const c = card()
-    expect(within(c).getByText('Have you scheduled your state exam?')).toBeTruthy()
+    expect(within(c).getByText('Have you scheduled your New York state exam?')).toBeTruthy()
     // …so neither of the other two arms is on the page.
     expect(within(c).queryByRole('button', { name: 'Enter exam date' })).toBeNull()
     expect(screen.queryByRole('region', { name: 'Schedule State Exam' })).toBeNull()
