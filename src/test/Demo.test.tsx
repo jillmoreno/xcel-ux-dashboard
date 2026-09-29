@@ -15,7 +15,7 @@ import type { StoredLink } from '@/data/linkStore'
  * focus trap. What is pinned HERE is the one thing Demo adds: `isPublic`, and
  * the asymmetry that makes it a review gate —
  *
- *   full site   → every row, a Public / Team only chip, the toggle in the form
+ *   full site   → every row, a Public / UX Only badge, the toggle in the form
  *   public site → only public rows, no chip, no Add / Edit / Remove
  *
  * `isPublicGateway()` reads `import.meta.env` at call time, so the public-build
@@ -121,12 +121,12 @@ describe('DemoPanel on the full site', () => {
     render(<DemoPanel />)
 
     await waitFor(() => expect(screen.getByText('2 links')).toBeInTheDocument())
-    expect(screen.getByText('Team only')).toBeInTheDocument()
+    expect(screen.getByText('UX Only')).toBeInTheDocument()
     expect(screen.getByText('Public')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Add link' }))
     const toggle = await screen.findByLabelText('Show on public site')
-    // Off by default — a row is team-only until someone decides otherwise.
+    // Off by default — a row is UX-only until someone decides otherwise.
     expect(toggle).not.toBeChecked()
     // And no Type field: Demo rows are all one kind of thing.
     expect(screen.queryByLabelText(/^Type/)).not.toBeInTheDocument()
@@ -212,7 +212,7 @@ describe('DemoPanel on the public build', () => {
     expect(screen.getByText('1 link')).toBeInTheDocument()
     // No chip — every row here is public, and saying so on each is noise.
     expect(screen.queryByText('Public')).not.toBeInTheDocument()
-    expect(screen.queryByText('Team only')).not.toBeInTheDocument()
+    expect(screen.queryByText('UX Only')).not.toBeInTheDocument()
     // Read-only, whatever the endpoint said.
     expect(screen.queryByRole('button', { name: /^Add / })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /^Edit / })).not.toBeInTheDocument()

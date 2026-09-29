@@ -284,7 +284,7 @@ function normalise(v: StoredLink): StoredLink {
       ? (v.product as LinkProduct)
       : DEFAULT_PRODUCT,
     // Strictly `true`, so a record from a board without the field — or an
-    // older record from one with it — reads as team-only, never as public.
+    // older record from one with it — reads as UX-only, never as public.
     isPublic: v.isPublic === true,
     addedDate: typeof v.addedDate === 'string' ? v.addedDate : '',
   }

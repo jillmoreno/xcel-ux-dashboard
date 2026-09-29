@@ -428,8 +428,43 @@ const badgeStyle: CSSProperties = {
   whiteSpace: 'nowrap',
 }
 
+/* ── the visibility badge ──
+   A different colour from the product tag on purpose: those are two kinds of
+   fact, and a reader who cannot tell them apart has to read both to find the
+   one they wanted.
+
+     visibility  who can see it   a STATE    → accent, outlined then solid
+     product     which product    a CATEGORY → quiet filled chip
+     author      who put it here  a PERSON   → neutral outline, sentence case
+
+   OUTLINED rather than tinted, and that is the second attempt. The first mixed
+   `--ux-hue-blue` into the card, which separated fine in light and collapsed to
+   1.03:1 against `--ux-chip` in dark — measured. The cause is that the palette's
+   hues are not independent of each other: in the moss light palette
+   `--ux-hue-blue` and `--ux-accent` are the SAME hex, and `--ux-chip` is
+   accent-derived too, so any tint-vs-tint scheme is one palette away from
+   putting two near-identical pale pills side by side.
+
+   Fill-vs-no-fill cannot collapse that way whatever the tokens resolve to, and
+   it keeps Public as the loudest thing in the row — which it should be, being
+   the one state with a consequence outside the team. */
+const uxOnlyBadgeStyle: CSSProperties = {
+  ...badgeStyle,
+  background: 'transparent',
+  border: '1px solid var(--ux-accent)',
+  color: 'var(--ux-accent)',
+}
+
+/* Public keeps the accent, solid: it is the one state with a consequence
+   outside the team, and it should be the loudest thing in the row. */
+const publicBadgeStyle: CSSProperties = {
+  ...badgeStyle,
+  background: 'var(--ux-accent)',
+  color: 'var(--ux-on-accent)',
+}
+
 /* The author is a person, not a state — sentence case and no tracking, so it
-   does not read as another status next to "TEAM ONLY". */
+   does not read as another status next to "UX ONLY". */
 const authorBadgeStyle: CSSProperties = {
   ...badgeStyle,
   textTransform: 'none',
@@ -639,7 +674,7 @@ function LinkFormModal({
                 and forth as a row moves through review, not a form value
                 submitted once. `role="switch"` on a real button keeps Space,
                 Enter and the accessible name that a styled `<input>` would have
-                had. Off by default — a row is team-only until someone decides
+                had. Off by default — a row is UX-only until someone decides
                 otherwise, never the reverse. */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
               <button
@@ -1015,23 +1050,6 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
                       {linkTypeLabel(link.type)}
                     </span>
                   )}
-                  {/* The visibility chip above the title, for boards without a
-                      badge row. On the full site it says WHO can see the row —
-                      the one fact about a Refinement row a reviewer needs
-                      before sending the link on. Not rendered when
-                      `publicOnly`: every row there is public, and a chip saying
-                      so on each is noise. */}
-                  {!p.showBadges && p.showPublicToggle && !p.publicOnly && (
-                    <span
-                      style={{
-                        ...chipStyle,
-                        marginBottom: 4,
-                        ...(link.isPublic ? { background: 'var(--ux-accent)', color: 'var(--ux-on-accent)' } : {}),
-                      }}
-                    >
-                      {link.isPublic ? 'Public' : 'Team only'}
-                    </span>
-                  )}
                   {href ? (
                     <a
                       href={href}
@@ -1057,18 +1075,8 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
                   {p.showBadges && (
                     <div style={badgeRowStyle}>
                       {p.showPublicToggle && !p.publicOnly && (
-                        <span
-                          style={
-                            link.isPublic
-                              ? {
-                                  ...badgeStyle,
-                                  background: 'var(--ux-accent)',
-                                  color: 'var(--ux-on-accent)',
-                                }
-                              : badgeStyle
-                          }
-                        >
-                          {link.isPublic ? 'Public' : 'Team only'}
+                        <span style={link.isPublic ? publicBadgeStyle : uxOnlyBadgeStyle}>
+                          {link.isPublic ? 'Public' : 'UX Only'}
                         </span>
                       )}
                       {p.showProduct && (

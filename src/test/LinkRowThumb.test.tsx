@@ -232,9 +232,24 @@ describe('badges sit under the title', () => {
     // that the three strings exist somewhere on the page.
     const li = title.closest('li')!
     const text = li.textContent ?? ''
-    expect(text.indexOf('A branch')).toBeLessThan(text.indexOf('Team only'))
+    expect(text.indexOf('A branch')).toBeLessThan(text.indexOf('UX Only'))
     expect(text).toContain('Compass')
     expect(text).toContain('Anjani')
+  })
+
+  it('gives the visibility badge a different treatment from the product tag', async () => {
+    mockEndpoint([row({ title: 'A branch', product: 'compass' })])
+    render(<DemoPanel />)
+    const li = (await screen.findByText('A branch')).closest('li')!
+    const vis = within(li).getByText('UX Only')
+    const prod = within(li).getByText('Compass')
+    // The first attempt tinted both from the palette's hues and they collapsed
+    // to the same fill in the dark theme — `--ux-hue-blue` and `--ux-accent`
+    // are the same hex in one palette, and `--ux-chip` is accent-derived. This
+    // asserts the difference is fill-vs-no-fill, which no palette can undo.
+    expect(vis.style.background).not.toBe(prod.style.background)
+    expect(vis.style.background).toBe('transparent')
+    expect(prod.style.background).not.toBe('transparent')
   })
 
   it('renders no author badge when nobody signed it', async () => {
@@ -277,7 +292,7 @@ describe('the public toggle is a switch', () => {
     mockEndpoint([])
     render(<DemoPanel />)
     await user.click(await screen.findByRole('button', { name: /Add the first|Add link/ }))
-    // A row is team-only until someone decides otherwise, never the reverse.
+    // A row is UX-only until someone decides otherwise, never the reverse.
     expect(screen.getByRole('switch', { name: 'Show on public site' })).not.toBeChecked()
   })
 })

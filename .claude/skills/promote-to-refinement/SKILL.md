@@ -128,7 +128,7 @@ console.log(`${site}/?${q}`)' "$FULL_SITE" "$URL" "$TITLE" "$NOTE"
 app the sandbox cannot open their browser, so the link IS the hand-off. (In a
 terminal session `open "<address>"` / `xdg-open` is fine too.) Then say, in
 two lines: *click the link — the form opens on the full site with the fields
-filled; check the note and click **Add link**. The row is team-only until
+filled; check the note and click **Add link**. The row is UX Only until
 someone flips "Show on public site".*
 
 ## Guardrails
