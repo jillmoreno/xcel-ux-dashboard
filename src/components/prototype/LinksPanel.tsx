@@ -463,6 +463,45 @@ const publicBadgeStyle: CSSProperties = {
   color: 'var(--ux-on-accent)',
 }
 
+/* ── the product tags ──
+   One hue each, FIXED per product — which is what makes them readable beside
+   the row's tile, since that is tinted from the same four hues. The tile's hue
+   varies by branch and the badge's never does, so after two rows the eye has
+   them as two systems rather than one. A shared palette is unavoidable here:
+   these four hues are the whole palette.
+
+   `blue` is deliberately not among them. It is the same hex as `--ux-accent` in
+   at least one palette, and the accent is spoken for — Public fills with it and
+   UX Only outlines in it. A blue product tag would read as a third visibility
+   state.
+
+   `neutral` for Both is the one that carries meaning rather than just being
+   available: a grey tag is the honest look for "does not claim a side". */
+const PRODUCT_BADGE: Record<LinkProduct, { hue: string; fg: string; tint: number }> = {
+  xcel: { hue: '--ux-hue-teal', fg: '--ux-hue-teal-fg', tint: 24 },
+  compass: { hue: '--ux-hue-gold', fg: '--ux-hue-gold-fg', tint: 24 },
+  both: { hue: '--ux-hue-neutral', fg: '--ux-hue-neutral-fg', tint: 20 },
+}
+
+function productBadgeStyle(product: LinkProduct): CSSProperties {
+  const { hue, fg, tint } = PRODUCT_BADGE[product] ?? PRODUCT_BADGE.both
+  return {
+    ...badgeStyle,
+    background: `color-mix(in srgb, var(${hue}) ${tint}%, var(--ux-card))`,
+    // The border carries most of the hue, at 2.5x the fill.
+    //
+    // The fill cannot: `--ux-hue-*-fg` is DARK in the light themes and LIGHT in
+    // the dark ones, so the fill has to stay near the card in both directions or
+    // the label stops clearing 4.5:1. A 44% fill separated beautifully — and
+    // measured 3.67:1 on Compass in dark, which is a fail.
+    //
+    // A border has no text on it, so it can take as much hue as it likes, and it
+    // sits exactly where two pills touch and get compared.
+    border: `1px solid color-mix(in srgb, var(${hue}) ${Math.min(tint * 2.5, 85)}%, var(--ux-card))`,
+    color: `var(${fg})`,
+  }
+}
+
 /* The author is a person, not a state — sentence case and no tracking, so it
    does not read as another status next to "UX ONLY". */
 const authorBadgeStyle: CSSProperties = {
@@ -1080,7 +1119,9 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
                         </span>
                       )}
                       {p.showProduct && (
-                        <span style={badgeStyle}>{linkProductLabel(link.product)}</span>
+                        <span style={productBadgeStyle(link.product)}>
+                          {linkProductLabel(link.product)}
+                        </span>
                       )}
                       {/* No badge at all when nobody signed it. An empty one
                           reads as a name that failed to load — the same reason

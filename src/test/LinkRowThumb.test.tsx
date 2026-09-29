@@ -252,6 +252,33 @@ describe('badges sit under the title', () => {
     expect(prod.style.background).not.toBe('transparent')
   })
 
+  it('gives XCEL, Compass and Both three different colours', async () => {
+    mockEndpoint([
+      row({ id: 'demo-003', title: 'One', product: 'xcel' }),
+      row({ id: 'demo-002', title: 'Two', product: 'compass' }),
+      row({ id: 'demo-001', title: 'Three', product: 'both' }),
+    ])
+    render(<DemoPanel />)
+    await screen.findByText('One')
+    // Scoped to each ROW: the filter pills above the list carry the same words,
+    // and an unscoped query finds those instead.
+    const badge = (title: string, label: string) =>
+      within(screen.getByText(title).closest('li')!).getByText(label)
+    const pairs: [string, string][] = [
+      ['One', 'XCEL'],
+      ['Two', 'Compass'],
+      ['Three', 'Both'],
+    ]
+    const fills = pairs.map(([t, l]) => badge(t, l).style.background)
+    const borders = pairs.map(([t, l]) => badge(t, l).style.border)
+    // Three distinct hues, not one chip three times. Both halves matter: the
+    // fill has to stay pale for the label to clear 4.5:1 in BOTH themes, so the
+    // border is where most of the hue difference lives (measured: fill ΔE 6–19,
+    // border ΔE 15–42).
+    expect(new Set(fills).size).toBe(3)
+    expect(new Set(borders).size).toBe(3)
+  })
+
   it('renders no author badge when nobody signed it', async () => {
     mockEndpoint([row({ title: 'Unsigned', addedBy: '' })])
     render(<DemoPanel />)
