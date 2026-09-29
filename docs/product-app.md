@@ -812,11 +812,23 @@ catalog says what each flag DOES; this says which way the baseline is set.
 | `dashboard-course-header` | `band` | The course header band above the block |
 | `course-entry-style` | `combined` | **Promoted 2026-09-28.** The COURSE PROGRESS header and the Jump Back In card are ONE card — cover, course name, bar, the percentage, the stat pairs, a hairline, then the lesson line and Resume. ⚠ The split header stands down when this is on, or the course name prints twice |
 | `course-entry-details` | off | **Nothing.** The `Details →` link on that card ships OFF, reviewed and declined 2026-09-28: the card exists to get ONE press, and a second link on the same row competes for it (`?ff=course-entry-details:on`) |
-| `exam-step-style` | `date-first` | **Promoted 2026-09-28.** The Schedule State Exam card becomes "Exam Date" — no fee line, a secondary CTA opening a month selector IN the card, and "Change date" at link weight beside "How to Schedule" once a date is set |
-| `journey-step-order` | `exam-first` | **Promoted 2026-09-28.** The right-hand column opens with Schedule State Exam as Step 1 and Complete Coursework as Step 2; the eyebrows renumber so it still reads 1-2-3-4 |
+| `exam-step-style` | `ask-first` | **Promoted 2026-09-29, replacing `date-first` a day after it.** The exam card ASKS before it offers a control — "Have you scheduled your New York state exam?" over Yes / Not yet, under a "Quick question" eyebrow. Not yet shrinks the card without dismissing it; Yes opens the in-card calendar; saving turns it into a readout — "{state} State exam", tear-off calendar, day countdown, Edit, and a red **Clear exam date** in edit mode only. The footer is **Exam Details**, a menu of three sheets (schedule / reschedule, what to expect, common questions) each opening a second sheet over it. ⚠ NOT A JOURNEY STEP — it carries no number, and the three real steps close up behind it (see `journey-step-order`). `date-first` and `inline` are both one flag away |
+| `journey-step-order` | `exam-first` | **Promoted 2026-09-28; the numbering changed 2026-09-29.** The right-hand column opens with the exam card, then Complete Coursework. ⚠ IT NO LONGER READS 1-2-3-4. Under the `ask-first` baseline the exam card is a question rather than a step and takes no number, so the eyebrows read **1-2-3** — Coursework, Pass State Exam, Get Licensed. Switch `exam-step-style` back to `date-first` and the 1-2-3-4 numbering returns |
 | `study-pace-hidden` | on | **Promoted 2026-09-28 — the Study Pace tile is GONE from the baseline.** ⚠ Worth knowing what that costs: the presets card, the activity band and the derived-pace readout were the most-worked surface of the week, and none of them is on the page any more. Everything behind it is intact and one flag away (`?ff=study-pace-hidden:off`) |
 | `nav-rail-icons` | `small` | **Promoted 2026-09-28.** Rail glyphs at 14px rather than 17, so the label leads. The COLLAPSED rail is unaffected — it keeps its 20px glyph, because an unlabelled, unglyphed collapsed rail is the mis-click failure |
 | `nav-rail-captions` | on | **Nothing.** MY LEARNING / SUPPORT stay, reviewed and kept 2026-09-28 (`?ff=nav-rail-captions:off`) |
+
+⚠ ONE CHANGE ON THE 2026-09-29 MERGE IS NOT BEHIND ANY FLAG, and it is the one
+to know about because no `?ff=` will turn it off. **The Governing Agency contact
+block moved off the three Get Licensed step sheets** and now renders once, at the
+bottom of the new Exam Details menu (`GoverningAgencyBlock`). It reverses the
+2026-09-17 decision to repeat it on each sheet, whose reasoning was that DFS
+governs the LICENCE rather than any one step; Exam Details is the hub those
+sheets hang off, so one copy there still belongs to no single step. ⚠ The cost:
+those sheets are still reachable DIRECTLY from the Study Journey rows, and on
+that route the phone number is now one hop further away. Restoring it is one
+`<GoverningAgencyBlock />` in `GetLicensedStepPanel`.
+`QeFocusedVersion.test.tsx` carries the inverted assertion.
 
 ⚠ `dashboard-navigation` DEFAULTS TO ITS CONTROL ARM, WHICH BREAKS THIS REPO'S
 USUAL BRANCH RULE (2026-09-24). A designer's branch normally defaults its own
