@@ -1294,9 +1294,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     // standing XCEL ramps, for comparison.
     key: 'atlas-xcel-palette',
     group: 'Widgets',
-    label: 'Atlas XCEL palette',
+    label: 'Atlas XCEL palette + type',
     description:
-      'Apply the XCEL Atlas Style Guide palette to the Atlas/Compass Global Navigation version: primary red #9A1B1E for buttons, text links and active items only; secondary tan (600, #7E6748) for eyebrow labels; tertiary blue for everything the navy did before; each at the guide\'s exact 100–900 steps. Off keeps the standing XCEL ramps (San Juan primary, Brick CTA, Beech tertiary). Other versions are unaffected either way. Rubi\'s orange is not in the guide and is unchanged.',
+      'Apply the XCEL Atlas Style Guide palette to the Atlas/Compass Global Navigation version: primary red #9A1B1E for buttons, text links and active items only; secondary tan (600, #7E6748) for eyebrow labels; tertiary blue for everything the navy did before; each at the guide\'s exact 100–900 steps. Off keeps the standing XCEL ramps (San Juan primary, Brick CTA, Beech tertiary). Also sets headings in DM Serif Display, the guide\'s heading serif (400 only; body stays Open Sans). Other versions are unaffected either way. Rubi\'s orange is not in the guide and is unchanged.',
     defaultEnabled: true,
     page: 'dashboard-rebrand',
   },

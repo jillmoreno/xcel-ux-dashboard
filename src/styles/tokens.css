@@ -4668,6 +4668,36 @@ a.cre-library-card-title::after {
   --color-tertiary-800: #3f3424;
   --color-tertiary-900: #1f1a12;
 
+  /* TYPE (2026-09-28, the guide's update): headings are DM SERIF DISPLAY, a
+     display serif from the font exploration shortlist (Gloock earlier the same
+     day; Brandon Grotesque before that). The Figma font section and Heading
+     Styles table both say DM Serif Display now;
+     body stays Open Sans. It re-points --font-heading-serif (Georgia until
+     now), which is what every Atlas heading already uses. NOT --font-heading:
+     that one also reaches the demo chrome (the prototype bar), which must not
+     change with the brand. DM Serif Display ships in 400 only (+ italic),
+     so weight synthesis is off here: a heading set at 600/700 renders the
+     real Regular rather than a smeared faux bold. Open Sans and Lato have
+     real weights, so they are unaffected. Sizes are unchanged — the guide's
+     scale (H1 64px…) has not been mapped onto these pages. */
+  --font-heading-serif: 'DM Serif Display', Georgia, 'Times New Roman', serif;
+  font-synthesis-weight: none;
+  /* The guide's HEADING STYLES (Figma "Heading Styles", desktop), all DM
+     Serif Display Regular. Size / line height per step; the weekly style-guide
+     check keeps these ten values in step with Figma (five styles since
+     2026-09-28, when Figma added a 44/46 Heading 3 and renumbered below it). Applied so far: H3 on
+     the Home course card title. */
+  --type-atlas-h1-size: 64px;
+  --type-atlas-h1-line: 64px;
+  --type-atlas-h2-size: 48px;
+  --type-atlas-h2-line: 50px;
+  --type-atlas-h3-size: 44px;
+  --type-atlas-h3-line: 46px;
+  --type-atlas-h4-size: 32px;
+  --type-atlas-h4-line: 34px;
+  --type-atlas-h5-size: 28px;
+  --type-atlas-h5-line: 32px;
+
   /* The two usage rules, as tokens components can reach for. */
   --color-atlas-cta: var(--color-cta-500);
   --color-atlas-active: var(--color-cta-500);
