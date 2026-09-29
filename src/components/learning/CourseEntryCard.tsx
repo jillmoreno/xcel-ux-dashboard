@@ -2,8 +2,6 @@ import type { CSSProperties } from 'react'
 import { ArrowRight } from '@/icons'
 import {
   NY_LH_CURRENT_CHAPTER,
-  NY_LH_CURRENT_LESSON_PART,
-  NY_LH_LESSON_PARTS,
   NY_LH_LESSON_MINUTES_INVENTED,
 } from '@/data/nyProducerRequirements'
 
@@ -140,9 +138,14 @@ export function CourseEntryCard({
                 {/* The book glyph came off on 2026-09-28, the direct ask. The
                     line is already a small-caps label; the icon was decorating
                     a label rather than naming anything. */}
+                {/* "Part 1 of 3" came off on 2026-09-29, the direct ask. It
+                    named the learner's place in XCEL's 3-Part Training Programme
+                    — true, and a third coordinate on a line that already carries
+                    the lesson number and the estimate. The lesson number is the
+                    one a learner navigates by. ⚠ `JumpBackInWidget` still shows
+                    its own Part line and is pinned by `QeFocusedVersion`; this
+                    removal is scoped to the combined card. */}
                 Lesson {lessonsCompleted + 1}
-                <span aria-hidden style={dot} />
-                Part {NY_LH_CURRENT_LESSON_PART} of {NY_LH_LESSON_PARTS}
                 <span aria-hidden style={dot} />
                 {/* ⚠ INVENTED, and named as such at its source — nothing in the
                     fixtures knows how long a lesson takes. See

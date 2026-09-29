@@ -496,7 +496,9 @@ function ScheduledState({
       </div>
 
       <div style={scheduledBodyRowStyle}>
-        <CalendarTearOff date={examDate} width={84} compact />
+        {/* 66, down from 84 — the compact tier abbreviates the month now, so the
+            full "SEPTEMBER" is no longer setting the floor. */}
+        <CalendarTearOff date={examDate} width={66} compact />
         <div style={countdownPanelStyle}>
           <HourglassClock
             size={24}
