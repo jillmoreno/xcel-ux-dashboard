@@ -240,7 +240,6 @@ describe('the Testing 2 rail is trimmed to match', () => {
       'My Courses',
       'Certificates',
       'Resources',
-      'Rubi Insights',
     ])
   })
 })

@@ -781,7 +781,6 @@ describe('the Testing rail is trimmed', () => {
       'My Courses',
       'Certificates',
       'Resources',
-      'Rubi Insights',
     ])
   })
 

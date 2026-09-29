@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ComponentType } from 'react'
+import { useCallback, useEffect, useRef, useState, type ComponentType } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Award,
@@ -12,21 +12,10 @@ import {
   Gauge,
   Gem,
   GemSolid,
-  Grid,
-  GridSolid,
   House,
   HouseSolid,
   LifeRing,
   LifeRingSolid,
-  Library,
-  LibrarySolid,
-  Podcast,
-  PodcastSolid,
-  RubiLogo,
-  SignsPost,
-  SignsPostSolid,
-  Star,
-  StarSolid,
   UserSlash,
   ArrowRightToLineSolid,
 } from '@/icons'
@@ -47,8 +36,6 @@ import { supportsStudyPlan } from '@/data/studyCalendarFixtures'
 import { useMotivation } from '@/context/MotivationContext'
 import { useProfileAvatar } from '@/context/ProfileAvatarContext'
 import { MotivationalStatementPanel } from '@/components/membership/MotivationalStatementPanel'
-import { useLearningPathSummariesForBrand } from '@/data/learningPathsCountVariant'
-import { buildRecommendedShelves } from '@/data/recommendedCategoriesFixtures'
 import { LEFT_COLUMN_FIRST_ROW_HEIGHT } from '@/components/learning/compassPlayerUtil'
 
 /**
@@ -142,9 +129,10 @@ const MEMBERSHIP_ITEMS: RailItem[] = [
   // ARCHIVED 2026-08-25 — the "What's New" row was removed; the section it
   // opened is unwired and `?section=m-whats-new` now redirects to Membership.
   // See the `rail-whats-new` row in archivedItems.ts.
-  { id: 'm-learning-library', label: 'Resource Library', icon: Library, iconActive: LibrarySolid },
-  { id: 'm-exam-prep', label: 'Exam & Cert Prep', icon: Award, iconActive: AwardSolid },
-  { id: 'm-career-tools', label: 'Rubi Insights', icon: RubiLogo },
+  /* ARCHIVED 2026-09-28 — Resource Library, Exam & Cert Prep and Rubi Insights
+     came off the rail for good. Their sections still resolve from `?section=`;
+     only the rows and their nav flags went. See `rail-rows-2026-09-28` in
+     archivedItems.ts for the re-wire. */
   { id: 'm-more', label: 'Partner Offers', icon: Gem, iconActive: GemSolid },
 ]
 
@@ -241,13 +229,10 @@ export function PlatformSideNav({
   // to the dashboard for the same brand — BOTH gates are needed: with only one,
   // it looks like it works until you click.)
   const showMembershipPage = supportsMembership(brand)
-  // Defensive: only surface the Recommended for You rail item when there is
-  // content to recommend (buildRecommendedShelves yields at least one shelf).
-  // In practice the page always has content, so it always shows.
-  const hasRecommendations = useMemo(
-    () => buildRecommendedShelves(brand).length > 0,
-    [brand],
-  )
+  /* `hasRecommendations` went with the Recommended for You row on 2026-09-28 —
+     it gated that rail entry and nothing else. `buildRecommendedShelves` is
+     untouched in `recommendedCategoriesFixtures` and still feeds the page
+     itself — only this file's import of it went. */
   // RESTORED 2026-09-09 as "Resources" (see the `resources` rail item below).
   //
   // It was ARCHIVED 2026-08-26 as "Free Content": the outbound links (blog,
@@ -286,14 +271,14 @@ export function PlatformSideNav({
   // the first non-healthcare brand that keeps that section, which is why
   // `benefitRowsFor('xcel')` had to be authored rather than left empty.
   const hiddenBenefitSections: PlatformSection[] = brand === 'xcel' ? ['m-more'] : []
-  // Pluralize the Learning Path rail label only in V2 (the multi-path landing)
-  // with 2+ paths. V1 opens a single path directly, so it always reads the
-  // singular "Learning Path" regardless of how many paths the learner has.
-  const multiplePaths = useLearningPathSummariesForBrand().length > 1
-  const lpVersion = useFeatureFlag('learning-path-version').variant ?? 'v1'
   /* Group captions — `nav-rail-captions`, 2026-09-28. On as shipped. */
   const showCaptions = useFeatureFlag('nav-rail-captions').enabled
-  const pluralLP = lpVersion === 'v2' && multiplePaths
+  /* THE WHOLE PLURALIZATION CLUSTER WENT on 2026-09-28 with the Learning Path
+     row — `pluralLP`, and with it `multiplePaths` and the `learning-path-version`
+     read, which existed ONLY to choose "Learning Path" vs "Learning Paths" on
+     that label. The flag itself is untouched and still drives the page.
+     ⚠ I first wrote that those two were "still read below". They were not; tsc
+     said so immediately. */
   // Two groups: **My Learning** (the learner's own areas — which since
   // 2026-09-16 includes Resources and Rubi Insights, the two things a candidate
   // USES rather than browses) and a consolidated **Explore** group for
@@ -323,7 +308,6 @@ export function PlatformSideNav({
     // of a feature that has not been designed. Its nav flag is the only gate
     // until a real readiness fixture exists; wire a predicate then, next to it.
     { id: 'readiness', label: 'Readiness', icon: Gauge },
-    { id: 'learning-path', label: pluralLP ? 'Learning Paths' : 'Learning Path', icon: SignsPost, iconActive: SignsPostSolid },
     { id: 'courses', label: 'My Courses', shortLabel: 'Courses', icon: BookFull, iconActive: BookFullSolid },
     { id: 'certificates', label: 'Certificates', shortLabel: 'Certs', icon: Award, iconActive: AwardSolid },
     /* RESOURCES + RUBI MOVED INTO THIS GROUP — 2026-09-16, and this SETTLES a
@@ -348,17 +332,20 @@ export function PlatformSideNav({
        53:5290), so growing it would be editing a design rather than
        implementing one. */
     { id: 'resources', label: 'Resources', icon: FileText },
-    ...MEMBERSHIP_ITEMS.filter(
-      (i) => i.id === 'm-career-tools' && !hiddenBenefitSections.includes(i.id),
-    ).map((i) => ({ ...i, label: careerToolsLabelFor(brand), shortLabel: 'Rubi' })),
+    /* Rubi Insights was spread in here from MEMBERSHIP_ITEMS until 2026-09-28.
+       It is archived with the other two; `careerToolsLabelFor` is kept and is
+       what a restore re-reads. */
   ]
   const exploreItems: RailItem[] =
     variant === 'mvp'
       ? // MVP navigation (Figma 53:5290): a trimmed Explore group — just Course
         // Catalog, Resource Library, and Partner Offers.
         [
-          { id: 'catalog', label: 'Browse Catalog', icon: Grid, iconActive: GridSolid },
-          { id: 'm-learning-library', label: 'Resource Library', icon: Library, iconActive: LibrarySolid },
+          /* ⚠ THE MVP RAIL IS A FIGMA-SPECIFIED TRIM (node 53:5290), so this
+             list is implementing a design rather than expressing a preference.
+             Browse Catalog and Resource Library were removed from it on
+             2026-09-28 with the rest; if the MVP design is revisited, that node
+             is the source, not this file. */
           { id: 'm-more', label: 'Partner Offers', icon: Gem, iconActive: GemSolid },
         ]
       : [
@@ -374,7 +361,6 @@ export function PlatformSideNav({
              "your things end here, the shop starts", and a learner who has
              everything of their own above it should still see where buying
              happens. */
-          { id: 'catalog', label: 'Browse Catalog', icon: Grid, iconActive: GridSolid },
           // What's New is fully archived (2026-08-25): the rail row went on
           // 2026-08-17, and the section itself is now unwired — the CTAs that
           // reached it point at Membership and `?section=m-whats-new` redirects
@@ -386,18 +372,10 @@ export function PlatformSideNav({
           ...(showMembershipPage
             ? [{ id: 'membership' as const, label: 'Membership', icon: Crown, iconActive: Crown }]
             : []),
-          // Recommended for You hides entirely when there are no recommendations
-          // (decision #5) — no rail entry, so the user never lands on the page.
-          ...(hasRecommendations
-            ? [{ id: 'recommended' as const, label: 'Recommended for You', icon: Star, iconActive: StarSolid }]
-            : []),
-          // `m-career-tools` is excluded here — it is in MY LEARNING now (see
-          // the note there). Without this exclusion it renders twice, which a
-          // duplicate React key would warn about but the rail would still draw.
-          ...MEMBERSHIP_ITEMS.filter(
-            (i) => i.id !== 'm-career-tools' && !hiddenBenefitSections.includes(i.id),
-          ),
-          { id: 'podcasts', label: 'Podcasts', icon: Podcast, iconActive: PodcastSolid },
+          /* The `m-career-tools` exclusion that used to be here went with the
+             row itself on 2026-09-28 — MEMBERSHIP_ITEMS no longer holds it, so
+             there is nothing to exclude. */
+          ...MEMBERSHIP_ITEMS.filter((i) => !hiddenBenefitSections.includes(i.id)),
         ]
   // Note: the `profile` section is NOT in the rail — Profile is reachable only
   // from the top-right account dropdown (which routes into this shell). It still

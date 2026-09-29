@@ -309,35 +309,24 @@ export const NAV_SECTION_FLAGS: {
   /** Committed default. Omitted ⇒ true (shown). */
   defaultEnabled?: boolean
 }[] = [
+  /* ⚠ SEVEN ROWS ARCHIVED 2026-09-28 — Learning Path, Browse Catalog,
+     Recommended for You, Resource Library, Exam & Cert Prep, Rubi Insights and
+     Podcasts. Their flags went WITH their rail rows, which is the order that
+     matters: `useNavSectionVisible` returns TRUE for a section with no flag, so
+     deleting a flag on its own would have turned six hidden rows permanently
+     ON. See `rail-rows-2026-09-28` in archivedItems.ts.
+
+     This reverses the reasoning recorded at Browse Catalog — that they were
+     hidden via flag "rather than by deleting the row" so a reviewer could
+     restore one without a code change. Jillienne's call, 2026-09-28: not coming
+     back to these. The restore note carries what the flag used to buy. */
+
   // My Learning
   { section: 'study-plan', label: 'Study Plan' },
   { section: 'readiness', label: 'Readiness' },
-  // Off: Home's Current Learning Path band already IS this.
-  { section: 'learning-path', label: 'Learning Path', defaultEnabled: false },
   { section: 'courses', label: 'My Courses' },
   { section: 'certificates', label: 'Certificates' },
-  // Explore
-  //
-  // BROWSE CATALOG IS OFF as of 2026-09-16, which empties the Explore group and
-  // therefore drops the group and its caption from the rail (a group whose
-  // items are all hidden falls out whole — see `PlatformSideNav`). It was the
-  // only row left there once Resources and Rubi moved into My Learning.
-  //
-  // Editorial, not a capability cut, and done through the FLAG rather than by
-  // deleting the row for the reason this baseline exists: the section still
-  // resolves from `?section=catalog`, so a stakeholder who asks to see the
-  // catalogue gets it, and a reviewer can bring the row back from the flag
-  // panel without a code change. The QE Focused default is built for a
-  // candidate working one booked exam — the shop is the least relevant thing on
-  // that rail.
-  { section: 'catalog', label: 'Browse Catalog', defaultEnabled: false },
   { section: 'resources', label: 'Resources' },
-  { section: 'recommended', label: 'Recommended for You', defaultEnabled: false },
-  { section: 'm-learning-library', label: 'Resource Library', defaultEnabled: false },
-  { section: 'm-exam-prep', label: 'Exam & Cert Prep', defaultEnabled: false },
-  { section: 'm-career-tools', label: 'Rubi Insights' },
-  // Off: XCEL has no podcast product — the section is an EmptyState saying so.
-  { section: 'podcasts', label: 'Podcasts', defaultEnabled: false },
   // Support
   { section: 'support', label: 'Get Help' },
 ]

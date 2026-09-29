@@ -2879,7 +2879,19 @@ describe('the in-shell course launcher is a lo-fi placeholder', () => {
        accessibility regression. */
     const byName = within(rail())
     expect(byName.getByRole('button', { name: 'My Courses' })).toBeTruthy()
-    expect(byName.getByRole('button', { name: 'Rubi Insights' })).toBeTruthy()
+    /* `Rubi Insights` was asserted here until 2026-09-28, when the row was
+       archived (see `rail-rows-2026-09-28`). `Resources` carries the same point
+       — a row whose visible label is abbreviated keeps its full accessible
+       name — and is still in My Learning.
+
+       ⚠ WORTH KNOWING HOW THIS FAILED: the missing button made `getByRole`
+       throw, and testing-library's ERROR PATH clones the DOM to build its
+       message. That clone hit a jsdom bug parsing a `background` shorthand, so
+       the run reported `TypeError: Cannot set properties of undefined
+       (setting 'background-color')` from deep inside jsdom and never printed
+       the real reason. If a rail assertion ever fails that way again, the
+       element is missing — the CSS is a red herring. */
+    expect(byName.getByRole('button', { name: 'Resources' })).toBeTruthy()
     expect(byName.getByRole('list', { name: 'My Learning' })).toBeTruthy()
     expect(byName.getByRole('list', { name: 'Support' })).toBeTruthy()
   })
