@@ -35,7 +35,17 @@
  */
 
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react'
-import { ArrowUpRightFromSquare, ClipboardList, PenToSquare, Plus, Trash } from '@/icons'
+import {
+  ArrowUpRightFromSquare,
+  BrowserWindow,
+  ClipboardList,
+  FileText,
+  Grid,
+  Layout,
+  PenToSquare,
+  Plus,
+  Trash,
+} from '@/icons'
 import { Modal } from '@/components/ui/Modal'
 import {
   LINKS_BOARD,
@@ -52,6 +62,8 @@ import {
   type StoredLink,
 } from '@/data/linkStore'
 import { DEMO_BOARD } from '@/data/demoStore'
+import { GeneratedThumb, THUMB_W } from './GeneratedThumb'
+import { accentsByHost, hostKey, linkThumbKind } from './linkRowThumb'
 import { isPublicGateway } from '@/data/gatewayMode'
 
 /**
@@ -67,6 +79,17 @@ export type LinkBoardPresentation = {
   nounPlural: string
   /** Whether the Type field and its filter strip render. Links only. */
   showType: boolean
+  /**
+   * Whether each row carries the generated accent tile, Exploration-style.
+   * Refinement only (2026-09-29).
+   *
+   * A FLAG rather than "every board gets one", because the two boards are not
+   * the same kind of list. A Refinement row is a PLACE you go and look at —
+   * it earns a picture. Other Links is a bibliography: briefs, Figma files,
+   * reference docs, most of them on hosts this repo knows nothing about, where
+   * a tile derived from the URL would assert a kind it cannot actually read.
+   */
+  showThumb: boolean
   /** Whether the form carries the "Show on public site" toggle and rows show a
    *  Public / Team chip. Demo only. */
   showPublicToggle: boolean
@@ -97,9 +120,22 @@ export type LinkBoardPresentation = {
 
 export type LinkPrefill = { url: string; title: string; note: string }
 
+/** One glyph per `LinkThumbKind`. Kept HERE rather than in `linkRowThumb.ts`
+ *  so that module stays free of JSX and can be unit-tested as plain functions. */
+const THUMB_GLYPH = {
+  document: FileText,
+  gallery: Grid,
+  product: Layout,
+  other: BrowserWindow,
+} as const
+
 /* ── styles ───────────────────────────────────────────────────────────────── */
 
 const wrapStyle: CSSProperties = { maxWidth: 820 }
+
+/** 820 + the tile (160) + the gap (10), so the text column keeps exactly the
+ *  width it had before the picture was added rather than paying for it. */
+const wrapThumbStyle: CSSProperties = { maxWidth: 990 }
 
 const fieldStyle: CSSProperties = {
   width: '100%',
@@ -498,6 +534,11 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
     [index.links, q, typeFilter],
   )
 
+  /* Assigned across the WHOLE list, before any row draws — a per-row
+     derivation cannot know which hosts came before it. Recomputed when the
+     rows do, so filtering the list re-packs the hues onto what is visible. */
+  const thumbAccents = useMemo(() => accentsByHost(rows.map((r) => r.url)), [rows])
+
   /** The types actually PRESENT, in the authored order. A pill for a type
    *  nothing carries is a dead control — the same rule the project sections'
    *  status pills follow, which only render what the section actually holds. */
@@ -623,7 +664,7 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
   }
 
   return (
-    <div style={wrapStyle}>
+    <div style={p.showThumb ? wrapThumbStyle : wrapStyle}>
       {/* ── toolbar ── */}
       {index.links.length > 0 && (
         <div style={toolbarStyle}>
@@ -726,9 +767,28 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
                 className="cre-uxlinks-row"
                 style={{
                   ...itemStyle,
+                  // The tile is a real third column rather than a float, so the
+                  // text block wraps beside it instead of under it, and every
+                  // row's text starts at the same x whatever its note's length.
+                  ...(p.showThumb
+                    ? {
+                        gridTemplateColumns: `${THUMB_W}px minmax(0,1fr) auto`,
+                        alignItems: 'start',
+                        padding: '12px',
+                      }
+                    : null),
                   borderBottom: i === rows.length - 1 ? 'none' : itemStyle.borderBottom,
                 }}
               >
+                {p.showThumb && (
+                  <GeneratedThumb accent={thumbAccents[hostKey(link.url)]} boost={1.7}>
+                    {/* Sized to the tile, as on an Exploration row. */}
+                    {(() => {
+                      const Glyph = THUMB_GLYPH[linkThumbKind(link.url)]
+                      return <Glyph size={34} />
+                    })()}
+                  </GeneratedThumb>
+                )}
                 <div style={{ minWidth: 0 }}>
                   {p.showType && link.type && (
                     <span style={{ ...chipStyle, marginBottom: 4 }}>
@@ -822,6 +882,7 @@ const LINKS_PRESENTATION: LinkBoardPresentation = {
   noun: 'link',
   nounPlural: 'links',
   showType: true,
+  showThumb: false,
   showPublicToggle: false,
   publicOnly: false,
   readOnly: false,
@@ -858,6 +919,7 @@ export function DemoPanel({
     noun: 'link',
     nounPlural: 'links',
     showType: false,
+    showThumb: true,
     showPublicToggle: true,
     publicOnly: pub,
     readOnly: pub,

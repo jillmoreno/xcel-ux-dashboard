@@ -12,12 +12,12 @@ import { Link, useSearchParams } from 'react-router-dom'
 import {
   PROTOTYPE_FEATURES,
   prototypeFeatureById,
-  type FeatureAccent,
   type PrototypeFeature,
 } from '@/data/prototypeFeatures'
 import { ARCHIVED_ITEMS } from '@/data/archivedItems'
 import { PrototypeFeaturePage } from './PrototypeFeaturePage'
 import { FeaturePreviewThumb } from '@/components/prototype/FeaturePreviewThumb'
+import { GeneratedThumb, THUMB_W, THUMB_H } from '@/components/prototype/GeneratedThumb'
 import { primaryPreviewSrc } from '@/components/prototype/featurePreviewSrc'
 import { ArchiveTable } from '@/components/prototype/ArchiveTable'
 import { QaNotesPanel } from '@/components/prototype/QaNotesPanel'
@@ -1957,10 +1957,10 @@ function ProjectRow({
           style={{ flex: 'none' }}
         />
       ) : (
-        <span aria-hidden style={{ ...thumbStyle, ...ACCENT_THUMB[feature.accent] }}>
+        <GeneratedThumb accent={feature.accent}>
           {/* Scales with the tile — a 20px glyph swims in a 160x110 panel. */}
           <Icon size={34} />
-        </span>
+        </GeneratedThumb>
       )}
 
       <span style={bodyStyle}>
@@ -2087,9 +2087,9 @@ function ProjectRow({
  *
  *   <Link to="/research-rationale" style={{ ...rowStyle, background: 'var(--ux-card)',
  *     borderBottom: 'none', borderRadius: 'var(--radius-lg)' }}>
- *     <span aria-hidden style={{ ...thumbStyle, ...ACCENT_THUMB.teal }}>
+ *     <GeneratedThumb accent="teal">
  *       <Lightbulb size={34} />
- *     </span>
+ *     </GeneratedThumb>
  *     <span style={bodyStyle}>
  *       <span style={nameStyle}>XCEL</span>
  *       <span style={blurbStyle}>The UX research and reasoning behind these
@@ -2559,51 +2559,6 @@ const rowWrapStyle: CSSProperties = {
   padding: '14px 12px 14px 18px',
   borderBottom: '1px solid var(--ux-border)',
   transition: 'background 120ms',
-}
-
-/** 160x110 — a real preview rather than a marker. The aspect is kept at exactly
- *  64/44 so the crop a capture gets is unchanged; only the scale moved. This is
- *  what sets the row height now (the text block is ~62px), so the list runs
- *  taller: 14 rows go from roughly 1160px to 1930px. That is the trade for
- *  being able to recognise a project by its screenshot. */
-const THUMB_W = 160
-const THUMB_H = 110
-
-const thumbStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: THUMB_W,
-  height: THUMB_H,
-  flex: 'none',
-  borderRadius: 'var(--radius-md)',
-  border: '1px solid var(--ux-border)',
-}
-
-/** Accent → thumbnail fill + glyph. Tinted brand surfaces, so a row reads as
- *  belonging to a family without needing a real screenshot. */
-/* A feature's `accent` still picks its thumbnail, but the four hues are now the
-   palette's own rather than the brand ramps — a teal/gold/blue set inside a
-   moss-green page read as four foreign objects. The tint is mixed into the card
-   so it follows the appearance, and each hue carries a per-mode foreground
-   (`--ux-hue-*-fg`) picked to clear 3:1 on its own tint. */
-const ACCENT_THUMB: Record<FeatureAccent, CSSProperties> = {
-  teal: {
-    background: 'color-mix(in srgb, var(--ux-hue-teal) 20%, var(--ux-card))',
-    color: 'var(--ux-hue-teal-fg)',
-  },
-  gold: {
-    background: 'color-mix(in srgb, var(--ux-hue-gold) 20%, var(--ux-card))',
-    color: 'var(--ux-hue-gold-fg)',
-  },
-  blue: {
-    background: 'color-mix(in srgb, var(--ux-hue-blue) 20%, var(--ux-card))',
-    color: 'var(--ux-hue-blue-fg)',
-  },
-  neutral: {
-    background: 'color-mix(in srgb, var(--ux-hue-neutral) 26%, var(--ux-card))',
-    color: 'var(--ux-hue-neutral-fg)',
-  },
 }
 
 const bodyStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }
