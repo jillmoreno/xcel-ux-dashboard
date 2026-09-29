@@ -950,6 +950,11 @@
   --color-compass-page-card-rule: #c0cdd5;
   --color-compass-page-fact-label: var(--color-neutral-700);
   --color-compass-page-pill-ink: #263d50;
+  /* The Overview's "Day one" pill, split out on 2026-09-28 so the Atlas
+     palette can tint it on its own; defaults are the page card's. */
+  --color-compass-day-pill: var(--color-compass-page-card);
+  --color-compass-day-pill-border: var(--color-compass-page-card-border);
+  --color-compass-day-pill-ink: var(--color-compass-page-pill-ink);
   --color-compass-page-aside-rule: #838383;
   --color-compass-page-rubi: #b4552f;
   --color-compass-page-button: #3d5a73;
@@ -4684,19 +4689,27 @@ a.cre-library-card-title::after {
   font-synthesis-weight: none;
   /* The guide's HEADING STYLES (Figma "Heading Styles", desktop), all DM
      Serif Display Regular. Size / line height per step; the weekly style-guide
-     check keeps these ten values in step with Figma (five styles since
-     2026-09-28, when Figma added a 44/46 Heading 3 and renumbered below it). Applied so far: H3 on
-     the Home course card title. */
+     check keeps these values in step with Figma — eight SERIF styles since
+     2026-09-29 ("Desktop Serif - DM Serif Display"). Figma also defines a
+     separate Open Sans heading set, not mapped here. Applied so far: H3 on
+     the Home course card title; H4 on the Overview's course card title; H7 on the course rails' title, the
+     Overview's Rubi and tip titles and the Home right rail's step titles. */
   --type-atlas-h1-size: 64px;
   --type-atlas-h1-line: 64px;
   --type-atlas-h2-size: 48px;
   --type-atlas-h2-line: 50px;
   --type-atlas-h3-size: 44px;
   --type-atlas-h3-line: 46px;
-  --type-atlas-h4-size: 32px;
-  --type-atlas-h4-line: 34px;
-  --type-atlas-h5-size: 28px;
-  --type-atlas-h5-line: 32px;
+  --type-atlas-h4-size: 38px;
+  --type-atlas-h4-line: 40px;
+  --type-atlas-h5-size: 32px;
+  --type-atlas-h5-line: 34px;
+  --type-atlas-h6-size: 28px;
+  --type-atlas-h6-line: 32px;
+  --type-atlas-h7-size: 24px;
+  --type-atlas-h7-line: 28px;
+  --type-atlas-h8-size: 20px;
+  --type-atlas-h8-line: 24px;
 
   /* The two usage rules, as tokens components can reach for. */
   --color-atlas-cta: var(--color-cta-500);
@@ -4704,6 +4717,10 @@ a.cre-library-card-title::after {
   --color-atlas-active-fill: var(--color-cta-100);
   --color-atlas-eyebrow: var(--color-tertiary-600);
   --color-eyebrow-text: var(--color-atlas-eyebrow);
+  /* The side rules on Steps 3 and 4 (the pending licensing steps): secondary
+     300, the tan counterpart of the blue 300 they had (2026-09-29, the
+     designer's request). */
+  --color-atlas-step-rule: var(--color-tertiary-300);
 
   /* LEFT NAVIGATION (both rails) takes the SECONDARY tan, not the red
      (2026-09-28, the designer's request): the active row is tan-700 ink and a
@@ -4715,7 +4732,15 @@ a.cre-library-card-title::after {
      tan-200 6.3:1. */
   --color-atlas-nav-caption: var(--color-atlas-eyebrow);
   --color-atlas-nav-active-ink: var(--color-tertiary-700);
-  --color-atlas-nav-active-fill: var(--color-tertiary-200);
+  /* The parent-level active row's fill is secondary 100 (2026-09-29, the
+     designer's request; it was 200). The TOC's current lesson keeps 200 —
+     see --color-compass-rail-current-fill below. Idle rows also hover to 100,
+     so the active row is told apart by its bar, ink and weight. */
+  --color-atlas-nav-active-fill: var(--color-tertiary-100);
+  /* The active row's left stroke: secondary 500 (2026-09-29, the designer's
+     request; it was the row's tan-700 ink). A 3px bar, not text, so 500's
+     3.7:1 is fine. */
+  --color-atlas-nav-active-bar: var(--color-tertiary-500);
   --color-atlas-nav-hover: var(--color-tertiary-100);
   --color-atlas-nav-hover-ink: var(--color-cta-500);
 
@@ -4726,8 +4751,8 @@ a.cre-library-card-title::after {
   --color-compass-rail-current-ink: var(--color-atlas-nav-active-ink);
   --color-compass-rail-caption: var(--color-atlas-eyebrow);
   --color-compass-rail-link: var(--color-atlas-nav-active-ink);
-  --color-compass-rail-current-fill: var(--color-atlas-nav-active-fill);
-  --color-compass-rail-active-halo: var(--color-atlas-nav-active-fill);
+  --color-compass-rail-current-fill: var(--color-tertiary-200);
+  --color-compass-rail-active-halo: var(--color-tertiary-200);
   --color-compass-rail-hover: var(--color-atlas-nav-hover);
   --color-compass-rail-pill: var(--color-tertiary-100);
   --color-compass-rail-spine: var(--color-tertiary-300);
@@ -4763,6 +4788,11 @@ a.cre-library-card-title::after {
   --color-compass-page-card-border: var(--color-primary-200);
   --color-compass-page-card-rule: var(--color-primary-200);
   --color-compass-page-pill-ink: var(--color-primary-600);
+  /* The "Day one" pill in the secondary (tan) ramp (2026-09-29, the designer's
+     request; it was blue 100 / 200 / 600). Ink secondary 600 on 100 is 5.0:1. */
+  --color-compass-day-pill: var(--color-tertiary-100);
+  --color-compass-day-pill-border: var(--color-tertiary-200);
+  --color-compass-day-pill-ink: var(--color-tertiary-600);
   --color-compass-page-button: var(--color-atlas-cta);
   /* Charts take the guide's secondary (tan) and its tints (2026-09-28, the
      designer's request): the Study Pace week bars (`barTone`) and the
@@ -4791,6 +4821,7 @@ a.cre-library-card-title::after {
   --color-atlas-active-fill: rgb(154 27 30 / 0.28);
   --color-atlas-eyebrow: var(--color-tertiary-300);
   --color-atlas-nav-active-ink: var(--color-tertiary-300);
+  --color-atlas-nav-active-bar: var(--color-tertiary-400);
   --color-atlas-nav-active-fill: rgb(157 129 90 / 0.24);
   --color-atlas-nav-hover: rgb(157 129 90 / 0.12);
   --color-atlas-nav-hover-ink: var(--color-cta-200);
@@ -4816,6 +4847,9 @@ a.cre-library-card-title::after {
   --color-compass-page-card-border: var(--color-border-subtle);
   --color-compass-page-card-rule: var(--color-border-subtle);
   --color-compass-page-pill-ink: var(--color-primary-200);
+  --color-compass-day-pill: rgb(157 129 90 / 0.16);
+  --color-compass-day-pill-border: rgb(157 129 90 / 0.4);
+  --color-compass-day-pill-ink: var(--color-tertiary-300);
   --color-compass-content-border: var(--color-border-subtle);
   --color-compass-content-placeholder: var(--color-text-tertiary);
   --color-compass-player-rubi: var(--color-surface-card);
@@ -4856,13 +4890,14 @@ a.cre-library-card-title::after {
   color: var(--color-neutral-50);
 }
 
-/* Left navigation hovers: CTA-red TEXT, the tan background kept (idle rows
-   hover to tan-100; the active row keeps its tan-200). */
-[data-atlas-palette] .cre-atlas-nav-row:hover,
-[data-atlas-palette] .cre-atlas-nav-row[aria-current='page']:hover {
+/* Left navigation hovers: CTA-red TEXT on the tan hover background. The
+   ACTIVE row has no hover (2026-09-29, the designer's request — it is already
+   the page you are on): its text and fill stay exactly as at rest. */
+[data-atlas-palette] .cre-atlas-nav-row:hover {
   color: var(--color-atlas-nav-hover-ink);
 }
 [data-atlas-palette] .cre-atlas-nav-row[aria-current='page']:hover {
+  color: var(--color-atlas-nav-active-ink);
   background: var(--color-atlas-nav-active-fill);
 }
 /* Breadcrumb links — the home icon and any middle step — are CTA red at rest
@@ -4885,4 +4920,20 @@ a.cre-library-card-title::after {
 [data-atlas-palette] .cre-compass-toc-row:hover,
 [data-atlas-palette] .cre-compass-toc-child.is-upcoming:hover .cre-compass-toc-label {
   color: var(--color-atlas-nav-hover-ink);
+}
+
+/* The left-nav active row's stroke has its own token, so it can differ from
+   the row's text colour. */
+[data-atlas-palette] .cre-atlas-nav-row[aria-current='page'] {
+  border-left-color: var(--color-atlas-nav-active-bar);
+}
+
+/* Left-nav idle rows are the guide's P2-Regular (2026-09-29, the designer's
+   request; they were Medium 500). The active row keeps SemiBold 600, which is
+   P2-SemiBold at the rows' 13 / 17. */
+[data-atlas-palette] .cre-atlas-nav-row {
+  font-weight: 400;
+}
+[data-atlas-palette] .cre-atlas-nav-row[aria-current='page'] {
+  font-weight: 600;
 }

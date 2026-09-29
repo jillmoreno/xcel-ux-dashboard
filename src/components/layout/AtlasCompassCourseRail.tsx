@@ -41,7 +41,7 @@ export function AtlasCompassCourseRail({
     <CompassCourseRail
       breadcrumb={[
         { label: 'Home', onSelect: onHome },
-        { label: 'Overview', onSelect: onOverview },
+        { label: 'Course Overview', onSelect: onOverview },
         { label: 'Course' },
       ]}
       courseTitle={title}

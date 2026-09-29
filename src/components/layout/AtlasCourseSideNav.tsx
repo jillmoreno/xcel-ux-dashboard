@@ -149,13 +149,18 @@ const CURRENT_CRUMB: CSSProperties = {
 
 /* Open Sans Medium 14/21, 6px under it before the list (the design's frame
    padding). It WRAPS — the design's title is two lines on purpose. */
+/* Serif Heading 7, DM Serif Display 24 / 28 (2026-09-29, the designer's
+   request; it was Open Sans Medium 14 / 21, then 24 / 28, 20 / 24 and
+   Heading 8). `--font-heading-serif` is DM Serif Display under the
+   Atlas palette. Same on both course rails, so the title does not change
+   between the Overview and the player. */
 const COURSE_TITLE: CSSProperties = {
   margin: 0,
   paddingBottom: 6,
-  fontFamily: 'var(--font-body)',
-  fontSize: 14,
-  fontWeight: 500,
-  lineHeight: '21px',
+  fontFamily: 'var(--font-heading-serif)',
+  fontSize: 'var(--type-atlas-h7-size, 24px)',
+  fontWeight: 400,
+  lineHeight: 'var(--type-atlas-h7-line, 28px)',
   color: 'var(--color-text-primary)',
 }
 
@@ -165,6 +170,9 @@ const LIST: CSSProperties = {
   padding: 0,
   display: 'flex',
   flexDirection: 'column',
+  // 2px between rows (2026-09-29, the designer's request) — the same on both
+  // Atlas rails, so the rows line up as you move between Home and a course.
+  gap: 2,
 }
 
 /* Same as the Atlas rail's row: padding, colour and background belong to
@@ -179,7 +187,10 @@ const ROW: CSSProperties = {
   cursor: 'pointer',
   textAlign: 'left',
   fontFamily: 'var(--font-body)',
-  fontSize: 14,
-  lineHeight: '20px',
+  // The guide's P2, 13 / 17 (2026-09-29, the designer's request; it was
+  // 14 / 20). Idle rows are P2-Regular and the active row P2-SemiBold — the
+  // weights live in `.cre-atlas-nav-row` (tokens.css).
+  fontSize: 13,
+  lineHeight: '17px',
   whiteSpace: 'nowrap',
 }

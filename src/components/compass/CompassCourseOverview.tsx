@@ -59,7 +59,7 @@ export function CompassCourseOverview({
   const d = COMPASS_OVERVIEW_DAY_ONE_FROM_DESIGN
   return (
     <div className="cre-compass-overview" style={PAGE}>
-      <h1 className="cre-visually-hidden">Overview</h1>
+      <h1 className="cre-visually-hidden">Course Overview</h1>
 
       {/* ── 1 · Welcome + course card ─────────────────────────────── */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
@@ -274,12 +274,14 @@ const CARD_HEAD: CSSProperties = {
   paddingBottom: 16,
   borderBottom: '1px solid var(--color-compass-page-card-rule)',
 }
+/* Serif Heading 4 (2026-09-29, the designer's request; it was 34 / 39.1 at
+   weight 500). The --type-atlas-h4-* tokens follow Figma. */
 const COURSE_TITLE: CSSProperties = {
   margin: 0,
   fontFamily: SERIF,
-  fontWeight: 500,
-  fontSize: 34,
-  lineHeight: '39.1px',
+  fontWeight: 400,
+  fontSize: 'var(--type-atlas-h4-size, 38px)',
+  lineHeight: 'var(--type-atlas-h4-line, 40px)',
   letterSpacing: '-0.01em',
   color: 'var(--color-compass-page-heading)',
 }
@@ -303,12 +305,15 @@ const LESSON_ROW: CSSProperties = {
   justifyContent: 'space-between',
   gap: 20,
 }
+/* The guide's P1-bold, Open Sans Bold 16 / 20 (2026-09-29, the designer's
+   request; it was Regular 18 / 30 at -0.02em). Matches the Home course card's
+   lesson title. */
 const LESSON_TITLE: CSSProperties = {
   margin: 0,
   fontFamily: BODY,
-  fontSize: 18,
-  lineHeight: '30px',
-  letterSpacing: '-0.02em',
+  fontWeight: 700,
+  fontSize: 16,
+  lineHeight: '20px',
   color: 'var(--color-compass-page-heading)',
 }
 /* Colours in `.cre-compass-primary` so hover and focus need no !important. */
@@ -334,12 +339,12 @@ const STAGE_PILL: CSSProperties = {
   padding: '0 10px',
   borderRadius: 20,
   boxSizing: 'border-box',
-  background: 'var(--color-compass-page-card)',
-  border: '1px solid var(--color-compass-page-card-border)',
+  background: 'var(--color-compass-day-pill)',
+  border: '1px solid var(--color-compass-day-pill-border)',
   fontFamily: BODY,
   fontWeight: 600,
   fontSize: 12,
-  color: 'var(--color-compass-page-pill-ink)',
+  color: 'var(--color-compass-day-pill-ink)',
 }
 
 const WHERE_ROW: CSSProperties = {
@@ -377,12 +382,14 @@ const RING_FACE: CSSProperties = {
   lineHeight: '18px',
   color: 'var(--color-compass-page-heading)',
 }
+/* Serif Heading 7, 24 / 28 (2026-09-29, the designer's request; it was 20 / 28
+   at weight 500). The --type-atlas-h7-* tokens follow Figma. */
 const WHERE_TITLE: CSSProperties = {
   margin: 0,
   fontFamily: SERIF,
-  fontWeight: 500,
-  fontSize: 20,
-  lineHeight: '28px',
+  fontWeight: 400,
+  fontSize: 'var(--type-atlas-h7-size, 24px)',
+  lineHeight: 'var(--type-atlas-h7-line, 28px)',
   letterSpacing: '-0.005em',
   color: 'var(--color-compass-page-heading)',
 }
@@ -395,7 +402,9 @@ const WHERE_BODY: CSSProperties = {
 }
 
 const RUBI_ASIDE: CSSProperties = {
-  flex: '0 0 300px',
+  // 340, up from 300 (2026-09-29, the designer's request): "Meet Rubi, your
+  // learning guide" at Serif Heading 7 is 312px, plus the 21px inset.
+  flex: '0 0 340px',
   minHeight: 160,
   boxSizing: 'border-box',
   paddingLeft: 21,
@@ -419,9 +428,12 @@ const RUBI_EYEBROW: CSSProperties = {
 const RUBI_TITLE: CSSProperties = {
   margin: '8px 0 0',
   fontFamily: SERIF,
-  fontWeight: 500,
-  fontSize: 19,
-  lineHeight: '24.32px',
+  // Serif Heading 7, 24 / 28 (2026-09-29, the designer's request; it was
+  // 19px at weight 500, then Heading 8). The --type-atlas-h7-* tokens follow
+  // Figma.
+  fontWeight: 400,
+  fontSize: 'var(--type-atlas-h7-size, 24px)',
+  lineHeight: 'var(--type-atlas-h7-line, 28px)',
   letterSpacing: '-0.02em',
   color: 'var(--color-compass-page-heading)',
 }
@@ -553,9 +565,12 @@ const TIP_ICON: CSSProperties = {
 const TIP_TITLE: CSSProperties = {
   margin: 0,
   fontFamily: SERIF,
-  fontWeight: 500,
-  fontSize: 19,
-  lineHeight: '24px',
+  // Serif Heading 7, 24 / 28 (2026-09-29, the designer's request; it was
+  // 19px at weight 500, then Heading 8). The --type-atlas-h7-* tokens follow
+  // Figma.
+  fontWeight: 400,
+  fontSize: 'var(--type-atlas-h7-size, 24px)',
+  lineHeight: 'var(--type-atlas-h7-line, 28px)',
   letterSpacing: '-0.02em',
   color: 'var(--color-compass-page-heading)',
 }

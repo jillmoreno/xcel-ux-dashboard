@@ -306,11 +306,11 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
     // Opening it swaps the rail for the course's own, landing on Overview.
     expect(
       within(screen.getByRole('navigation', { name: 'Course' })).getByRole('button', {
-        name: 'Overview',
+        name: 'Course Overview',
       }),
     ).toHaveAttribute('aria-current', 'page')
     // Titled by the sub-page it lands on, not by the section.
-    expect(screen.getByRole('heading', { level: 1, name: 'Overview' })).toBeTruthy()
+    expect(screen.getByRole('heading', { level: 1, name: 'Course Overview' })).toBeTruthy()
     // Overview is the Compass course Overview page now (Figma 44:2211)…
     expect(container.querySelector('.cre-compass-overview')).toBeTruthy()
     // It is not My Courses.
@@ -363,7 +363,7 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
     expect(container.querySelector('.cre-compass-rail')).toBeTruthy()
     fireEvent.click(
       within(screen.getByRole('navigation', { name: 'Breadcrumb' })).getByRole('button', {
-        name: 'Overview',
+        name: 'Course Overview',
       }),
     )
     fireEvent.click(screen.getByRole('button', { name: 'Learn more' }))
@@ -382,7 +382,7 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
     // Close returns to the course Overview.
     fireEvent.click(within(bar).getByRole('button', { name: 'Close the course player' }))
     expect(screen.queryByRole('toolbar', { name: 'Course player controls' })).toBeNull()
-    expect(screen.getByRole('heading', { level: 1, name: 'Overview' })).toBeTruthy()
+    expect(screen.getByRole('heading', { level: 1, name: 'Course Overview' })).toBeTruthy()
     unmount()
     renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=course&coursePage=flashcards')
     expect(screen.queryByRole('toolbar', { name: 'Course player controls' })).toBeNull()
@@ -477,16 +477,16 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
     expect(screen.queryByText('My Learning')).toBeNull()
     const course = screen.getByRole('navigation', { name: 'Course' })
     expect(within(course).getAllByRole('button').map((b) => b.textContent)).toEqual([
-      'Overview',
-      'Study Plan',
+      'Course Overview',
       'Course',
+      'Study Plan',
       'Flashcards',
       'Exam Simulator',
       'Progress',
       'Resources',
       'Rubi Insights',
     ])
-    expect(within(course).getByRole('button', { name: 'Overview' })).toHaveAttribute(
+    expect(within(course).getByRole('button', { name: 'Course Overview' })).toHaveAttribute(
       'aria-current',
       'page',
     )
@@ -499,7 +499,7 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
   it('the breadcrumb names the sub-page you are on', () => {
     renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=course')
     const crumbs = screen.getByRole('navigation', { name: 'Breadcrumb' })
-    expect(within(crumbs).getByText('Overview')).toHaveAttribute('aria-current', 'page')
+    expect(within(crumbs).getByText('Course Overview')).toHaveAttribute('aria-current', 'page')
     fireEvent.click(
       within(screen.getByRole('navigation', { name: 'Course' })).getByRole('button', {
         name: 'Exam Simulator',
@@ -558,11 +558,11 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
     )
     fireEvent.click(
       within(screen.getByRole('navigation', { name: 'Breadcrumb' })).getByRole('button', {
-        name: 'Overview',
+        name: 'Course Overview',
       }),
     )
     expect(container.querySelector('.cre-compass-rail')).toBeNull()
-    expect(screen.getByRole('heading', { level: 1, name: 'Overview' })).toBeTruthy()
+    expect(screen.getByRole('heading', { level: 1, name: 'Course Overview' })).toBeTruthy()
     fireEvent.click(
       within(screen.getByRole('navigation', { name: 'Course' })).getByRole('button', {
         name: 'Course',

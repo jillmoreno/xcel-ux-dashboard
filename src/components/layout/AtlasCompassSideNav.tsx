@@ -116,6 +116,9 @@ const LIST: CSSProperties = {
   padding: 0,
   display: 'flex',
   flexDirection: 'column',
+  // 2px between rows (2026-09-29, the designer's request) — the same on both
+  // Atlas rails, so the rows line up as you move between Home and a course.
+  gap: 2,
 }
 
 /* 34px rows, 16 left / 8 right, radius 8. The active row's 3px left border
@@ -133,7 +136,10 @@ const ROW: CSSProperties = {
   cursor: 'pointer',
   textAlign: 'left',
   fontFamily: 'var(--font-body)',
-  fontSize: 14,
-  lineHeight: '20px',
+  // The guide's P2, 13 / 17 (2026-09-29, the designer's request; it was
+  // 14 / 20). Idle rows are P2-Regular and the active row P2-SemiBold — the
+  // weights live in `.cre-atlas-nav-row` (tokens.css).
+  fontSize: 13,
+  lineHeight: '17px',
   whiteSpace: 'nowrap',
 }

@@ -394,12 +394,14 @@ const pendingStepStyle: CSSProperties = {
   flexDirection: 'column',
   minWidth: 0,
   background: 'transparent',
-  borderInlineStart: '4px solid var(--color-primary-300)',
+  borderInlineStart: '4px solid var(--color-atlas-step-rule, var(--color-primary-300))',
   padding: '4px 20px 4px 16px',
 }
 
 /* The rounded variant of `pendingStepStyle`'s rule: same 4px, same
-   `--color-primary-300`, same place — only the ends are round. */
+   `--color-primary-300`, same place — only the ends are round.
+   `--color-atlas-step-rule` is set only under the Atlas palette (tokens.css),
+   where these rules are the secondary tan; elsewhere the blue stays. */
 const ROUNDED_RULE: CSSProperties = {
   position: 'absolute',
   insetInlineStart: 0,
@@ -407,7 +409,7 @@ const ROUNDED_RULE: CSSProperties = {
   bottom: 0,
   width: 4,
   borderRadius: 2,
-  background: 'var(--color-primary-300)',
+  background: 'var(--color-atlas-step-rule, var(--color-primary-300))',
 }
 
 /** The filled card's horizontal inset, which a pending step's rule + padding
@@ -579,8 +581,11 @@ function LicensingStepWidget({
           margin: '6px 0 0',
           fontFamily: 'var(--font-heading)',
           fontWeight: 700,
-          fontSize: 18,
-          lineHeight: '24px',
+          // Serif Heading 7 on the Atlas pages (2026-09-29, the designer's
+          // request): the --type-atlas-h7-* tokens exist only under the Atlas
+          // palette, so every other version keeps 18 / 24. (Heading 8 briefly, then 7.)
+          fontSize: 'var(--type-atlas-h7-size, 18px)',
+          lineHeight: 'var(--type-atlas-h7-line, 24px)',
           letterSpacing: '-0.01em',
           color: 'var(--color-text-primary)',
         }}
@@ -1003,8 +1008,9 @@ const collapsedTitleStyle: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-heading)',
   fontWeight: 700,
-  fontSize: 21,
-  lineHeight: '27px',
+  // Serif Heading 7 on the Atlas pages; 21 / 27 everywhere else.
+  fontSize: 'var(--type-atlas-h7-size, 21px)',
+  lineHeight: 'var(--type-atlas-h7-line, 27px)',
   letterSpacing: '-0.01em',
   color: 'var(--color-text-primary)',
 }

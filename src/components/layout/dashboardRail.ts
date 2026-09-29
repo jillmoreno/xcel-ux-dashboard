@@ -58,9 +58,12 @@ export const ATLAS_RAIL_GROUPS: readonly {
  * designer's open question, not copy, so the row reads "Resources".
  */
 export const ATLAS_COURSE_PAGES = [
-  { id: 'overview', label: 'Overview' },
-  { id: 'study-plan', label: 'Study Plan' },
+  // "Course Overview", not "Overview" (2026-09-29, the designer's request):
+  // the rail row, the breadcrumb and the page title all read from this label.
+  { id: 'overview', label: 'Course Overview' },
+  // Course above Study Plan (2026-09-29, the designer's request).
   { id: 'course', label: 'Course' },
+  { id: 'study-plan', label: 'Study Plan' },
   { id: 'flashcards', label: 'Flashcards' },
   { id: 'exam-simulator', label: 'Exam Simulator' },
   { id: 'progress', label: 'Progress' },

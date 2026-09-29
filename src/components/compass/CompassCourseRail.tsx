@@ -472,13 +472,18 @@ const TITLE_BLOCK: CSSProperties = {
   gap: 8,
   padding: '0 8px 8px 0',
 }
+/* Serif Heading 7, DM Serif Display 24 / 28 (2026-09-29, the designer's
+   request; it was Open Sans Medium 14 / 21, then 24 / 28, 20 / 24 and
+   Heading 8). `--font-heading-serif` is DM Serif Display under the
+   Atlas palette. Same on both course rails, so the title does not change
+   between the Overview and the player. */
 const COURSE_TITLE: CSSProperties = {
   margin: 0,
   paddingBottom: 6,
-  fontFamily: 'var(--font-body)',
-  fontSize: 14,
-  fontWeight: 500,
-  lineHeight: '21px',
+  fontFamily: 'var(--font-heading-serif)',
+  fontSize: 'var(--type-atlas-h7-size, 24px)',
+  fontWeight: 400,
+  lineHeight: 'var(--type-atlas-h7-line, 28px)',
   color: 'var(--color-text-primary)',
 }
 const PROGRESS_PILL: CSSProperties = {
