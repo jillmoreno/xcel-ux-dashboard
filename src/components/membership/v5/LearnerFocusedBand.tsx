@@ -1417,7 +1417,19 @@ export function LearnerFocusedBand({
         {/* `stat-card` gathers the three cells AND the status onto one white
             card with a hairline border and a rule between them. The default
             leaves them bare on the page grey, divided by vertical rules. */}
-        {paceTiles ? (
+        {/* ⚠ NOTHING HERE WHEN THE PACE TILE WAS DELIBERATELY HIDDEN — 2026-09-29.
+            The branch below is the FALLBACK for surfaces that never had the
+            tile row (`!onPage`), and it draws Target Date / Time Remaining /
+            Completed plus a status band. Hiding Study Pace therefore did not
+            leave a gap, it REVEALED that block — three facts the course header
+            already states a few lines above, under a status sentence nobody
+            asked for.
+
+            So `paceHiddenFlag` renders neither: not the tile, and not the
+            fallback that stood in for it. `paceTiles` alone cannot express this
+            — it is false for both reasons and the fallback is right for the
+            other one. */}
+        {paceHiddenFlag && paceOnly ? null : paceTiles ? (
           /* THE SQUARE-TILE ROW — Study Pace and Readiness. See `paceTiles`.
 
              TWO ARRANGEMENTS, and `paceOnly` picks between them:
