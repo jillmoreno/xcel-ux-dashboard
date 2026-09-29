@@ -49,7 +49,7 @@ function renderAt(Page: React.ComponentType, path: string) {
 // under their own "Dev Handoff" eyebrow, alongside "Demo" and "Design &
 // Research" over the sections that were already public.
 const PUBLIC_SECTIONS = ['Prototypes', 'Refinement', 'Research', 'Other Links', 'Development', 'Done']
-const GATED_SECTIONS = ['Design', 'Exploration', 'Sandbox', 'Archive', 'QA Notes', 'To Do', 'Contributing']
+const GATED_SECTIONS = ['Design', 'Exploration', 'Sandbox', 'Archive', 'QA Notes']
 
 beforeEach(() => {
   sessionStorage.clear()

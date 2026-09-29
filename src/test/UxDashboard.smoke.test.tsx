@@ -55,8 +55,6 @@ const EXPECTED_SECTIONS = [
   'Done',
   'Archive',
   'QA Notes',
-  'To Do',
-  'Contributing',
 ]
 
 beforeEach(() => {
@@ -90,13 +88,18 @@ describe('XCEL dashboard — mount and nav', () => {
     expect(positions).toEqual([...positions].sort((a, b) => a - b))
   })
 
-  it('Contributing renders the static designer guide in a frame — one document, not a JSX copy', () => {
+  it('the archived Contributing section no longer resolves, and its guide is untouched', () => {
+    // ARCHIVED 2026-09-29. This test used to assert the section rendered the
+    // guide in an iframe. Both halves still matter, in opposite directions:
+    //
+    //   the SECTION is gone — `?section=contributing` no longer resolves, so
+    //   the rail has no row and the URL falls back like any unknown section;
+    //   the DOCUMENT is not — `public/contributing/` is deliberately untouched
+    //   and still served at /contributing/, which is where CLAUDE.md sends
+    //   designers. Archiving the rail entry must never take the guide with it.
     renderDashboard('/?section=contributing')
-    const frame = screen.getByTitle('Contributing to the dashboard')
-    expect(frame.tagName).toBe('IFRAME')
-    expect(frame).toHaveAttribute('src', '/contributing/')
-    // …and that document exists, with its PDF beside it. The guide's own header
-    // comment says how the PDF is regenerated; this only proves neither is missing.
+    expect(screen.queryByTitle('Contributing to the dashboard')).toBeNull()
+
     const dir = resolve(dirname(fileURLToPath(import.meta.url)), '../../public/contributing')
     const html = readFileSync(resolve(dir, 'index.html'), 'utf8')
     expect(html).toContain('href="contributing.pdf"')

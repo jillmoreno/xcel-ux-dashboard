@@ -56,6 +56,32 @@ export type ArchivedItem = {
 
 export const ARCHIVED_ITEMS: ArchivedItem[] = [
   {
+    id: 'todo-section',
+    name: 'To Do (gateway section)',
+    what: 'A section of the UX Dashboard rail for upcoming projects and loose ends \u2014 paste an item in, tag it with a stage, drag to rank. Its nav count was the number of OPEN items, read live from the store rather than from the static `count` field, so it fell as items were ticked off.',
+    location:
+      'THE PANEL AND ITS STORE ARE FULLY INTACT and unreferenced: `src/components/prototype/TodoPanel.tsx` and `src/components/prototype/todoStore.ts`, neither edited. What went is six things in `src/pages/UxDashboardPage.tsx` \u2014 the `todo` member of the `UxSection` union, the `SectionDef` entry, the `todo: []` bucket in the `bySection` map, the `useTodoOpenCount()` call, its arm of the nav-count ternary, and the `section === todo` render branch \u2014 plus the two imports those fed. A comment marks where the two `SectionDef`s stood.',
+    flag: '?section=todo (NO LONGER RESOLVES \u2014 see the restore note)',
+    dateRemoved: '2026-09-29',
+    reason:
+      'Jillienne\u2019s call, trimming the rail. It read 0 \u2014 and the count is LIVE, so a standing 0 meant the list was genuinely empty, not that a static number had gone stale. A section whose whole purpose is holding items, holding none, is a row of chrome above the ones people use.',
+    restoreNote:
+      'Five edits, all in `src/pages/UxDashboardPage.tsx`: (1) add the `todo` member back to the `UxSection` union; (2) re-add the `SectionDef` at the marked spot, last in the restricted group, with `gate: { id: DEV_GATE_ID, title: To Do }` copied from any sibling \u2014 it shared the group password, so this is not a new gate; (3) add `todo: []` back to the `bySection` map, which is REQUIRED because the map is typed `Record<UxSection, PrototypeFeature[]>` and the build fails without it; (4) re-add `const todoOpen = useTodoOpenCount()` and its arm of the nav-count ternary; (5) re-add the render branch for `<TodoPanel />`. Then restore the two imports. \u26a0 THE TRAP IS (4): everything still compiles and the row still draws without it, showing a permanent 0 \u2014 which is exactly what the section looked like on the day it was archived, so a restore that skips it would look successful and be wrong. NOT restored, and not needed: `TodoPanel.tsx` and `todoStore.ts` were not touched at all. Items live in `localStorage` under `cgp.todo`, per browser, so anything typed before the archive is still in the browser that typed it and comes back with the section. No test asserted the panel itself; what changed is `EXPECTED_SECTIONS` in `src/test/UxDashboard.smoke.test.tsx` and `GATED_SECTIONS` in `src/test/PublicGateway.test.tsx`, which both need To Do put back.',
+  },
+  {
+    id: 'contributing-section',
+    name: 'Contributing (gateway section)',
+    what: 'The designer guide as a rail section \u2014 how a second designer gets work onto this dashboard: clone, branch, flag, push, Refinement, promote. It was `public/contributing/index.html` shown in an iframe, so the section, the standalone page and the PDF were one document and could not drift.',
+    location:
+      'THE GUIDE ITSELF IS UNTOUCHED. `public/contributing/index.html` and `contributing.pdf` are unedited and STILL SERVED at `/contributing/` on the full site \u2014 that URL works today, and it is where CLAUDE.md sends designers. `scripts/public-redirects.mjs` still lists `/contributing/*` in `BLOCKED`, deliberately, so the public build still 404s it at the edge. The iframe component moved OUT of `UxDashboardPage.tsx` into `src/components/prototype/GuideFrame.tsx`, exported and unreferenced. What went from the page: the `contributing` union member, the `SectionDef`, the `contributing: []` bucket and the render branch.',
+    flag: '?section=contributing (NO LONGER RESOLVES; /contributing/ still does)',
+    dateRemoved: '2026-09-29',
+    reason:
+      'Jillienne\u2019s call, trimming the rail. The guide is a document people read once when they arrive, not a place they navigate to, and it already has a URL and a PDF. Removing the row does not remove the guide \u2014 which is the whole reason this was safe to do.',
+    restoreNote:
+      'Four edits in `src/pages/UxDashboardPage.tsx`: (1) the `contributing` member back on the `UxSection` union; (2) the `SectionDef` at the marked spot, last, with `gate: { id: DEV_GATE_ID, title: Contributing }` copied from a sibling; (3) `contributing: []` back in the `bySection` map \u2014 required, the map is a `Record<UxSection, PrototypeFeature[]>`; (4) the render branch rendering GuideFrame with src /contributing/ and title "Contributing to the dashboard", IMPORTED from `@/components/prototype/GuideFrame` rather than re-declared in the page. \u26a0 THE TRAP: `GuideFrame` was moved out of the page precisely because an unused module-level function there trips `noUnusedLocals` and fails the build \u2014 so do NOT paste it back inline and leave the file behind; you end up with two copies and the one you edit may not be the one that renders. DELIBERATELY NOT RESTORED, because nothing was done to them: the guide, its PDF, and the `/contributing/*` block on the public build. That block must STAY whatever happens to the section \u2014 it is what keeps a static file unreadable on the stakeholder site, which no client-side gate can do. The test to change back is in `src/test/UxDashboard.smoke.test.tsx`: it was INVERTED, and now asserts the section does NOT resolve while still asserting the guide and its PDF exist. Keep the second half, flip the first. `GATED_SECTIONS` in `src/test/PublicGateway.test.tsx` and `EXPECTED_SECTIONS` in the smoke suite both need Contributing back.',
+  },
+  {
     id: 'discoverability-testing-2',
     name: 'Testing 2 (dashboard version)',
     what: 'QE Focused with a LIVE Study Pace tile in the square slot \u2014 one derived pace ("2 hours a night \u00b7 6 nights a week \u00b7 Finishes by May 24") and an ADJUST button opening a sheet with the three finish dates (Relaxed / Recommended / Focused), days a week, an optional exam date, and a switch turning the pace into sessions on the Study Plan. It asked what the tile should let you CHANGE; Testing asks what it should SHOW.',

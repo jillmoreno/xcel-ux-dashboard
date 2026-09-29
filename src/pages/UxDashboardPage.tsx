@@ -21,9 +21,7 @@ import { GeneratedThumb, THUMB_W, THUMB_H } from '@/components/prototype/Generat
 import { primaryPreviewSrc } from '@/components/prototype/featurePreviewSrc'
 import { ArchiveTable } from '@/components/prototype/ArchiveTable'
 import { QaNotesPanel } from '@/components/prototype/QaNotesPanel'
-import { TodoPanel } from '@/components/prototype/TodoPanel'
 import { DemoPanel, LinksPanel } from '@/components/prototype/LinksPanel'
-import { useTodoOpenCount } from '@/components/prototype/todoStore'
 import { useLinkCount } from '@/data/linkStore'
 import { useDemoCount } from '@/data/demoStore'
 import { useQaNoteCount } from '@/data/qaNoteStore'
@@ -118,7 +116,6 @@ type UxSection =
   | 'links'
   | 'prototypes'
   | 'research'
-  | 'todo'
   | 'design'
   | 'exploration'
   | 'sandbox'
@@ -126,12 +123,13 @@ type UxSection =
   | 'done'
   | 'archive'
   | 'qa-notes'
-  | 'contributing'
 
 /**
- * ONE gate for every restricted section — Design, Exploration, Sandbox,
- * Archive, QA Notes, To Do and Contributing all share this id, so a reviewer
- * types the password once and the whole group opens. (Exploration used to
+ * ONE gate for every restricted section — Design, Exploration, Sandbox, Archive
+ * and QA Notes all share this id, so a reviewer types the password once and the
+ * whole group opens. (To Do and Contributing were in this list until they were
+ * archived on 2026-09-29; they shared this id too, so restoring either is a
+ * `gate` field copied from any sibling, not a new password.) (Exploration used to
  * carry its own id and its own hardcoded password, which meant two prompts
  * for one body of work and, worse, a password the Admin tools override could
  * not reach.)
@@ -328,34 +326,10 @@ const SECTIONS: SectionDef[] = [
     // No `count` here: findings can be authored on the page, so a static number
     // is wrong as soon as one is added. Supplied live below, like To Do's.
   },
-  {
-    // Last in the restricted group, and gated with the same id as the rest, so
-    // it opens with the one password the group already shares rather than
-    // adding a second prompt. Its count is the number of OPEN items, supplied
-    // live by `useTodoOpenCount` — not the static `count` field, which cannot
-    // change as items are ticked off.
-    id: 'todo',
-    label: 'To Do',
-    blurb: 'Upcoming projects and loose ends — paste them in, tag a stage, drag to rank.',
-    gate: { id: DEV_GATE_ID, title: 'To Do' },
-  },
-  {
-    // The designer guide (2026-09-18) — how a second designer gets work onto
-    // this dashboard: clone, branch, flag, push, Refinement, promote. It is a
-    // static page (`public/contributing/index.html`, with a PDF beside it)
-    // shown here in an iframe, so the same document is the section, the
-    // standalone page and the download, and none of the three can drift.
-    //
-    // GATED, and last: it describes the team's working process, which is not
-    // for stakeholders — they get `/about/` from the link at the foot of this
-    // rail instead. The public build 404s `/contributing/*` at the edge too
-    // (`scripts/public-redirects.mjs`), because a client-side gate cannot hide
-    // a static file.
-    id: 'contributing',
-    label: 'Contributing',
-    blurb: 'How to get your work onto this dashboard — clone, branch, push, add to Refinement, promote.',
-    gate: { id: DEV_GATE_ID, title: 'Contributing' },
-  },
+  // ARCHIVED 2026-09-29 — the To Do and Contributing sections stood here, last
+  // in the restricted group. Both are unwired, not deleted: see the `todo-section`
+  // and `contributing-section` rows in `src/data/archivedItems.ts` for the
+  // re-wire, and note that neither of their documents/stores was touched.
 ]
 
 /**
@@ -1351,7 +1325,6 @@ export function UxDashboardPage() {
 
   /** Live open-item count for the To Do nav badge. Kept out of this component's
    *  state so the page does not have to own the list. */
-  const todoOpen = useTodoOpenCount()
   /** Live finding count for the QA Notes badge — the committed set plus whatever
    *  has been authored on the page. */
   const qaCount = useQaNoteCount()
@@ -1373,7 +1346,6 @@ export function UxDashboardPage() {
       // stays empty by design and the nav count comes from `useLinkCount`.
       links: [],
       research: [],
-      todo: [],
       design: [],
       exploration: [],
       sandbox: [],
@@ -1383,8 +1355,6 @@ export function UxDashboardPage() {
       // Not a list of features — the QA panel owns its own data, so this stays
       // empty by design and the nav count comes from the `count` field.
       'qa-notes': [],
-      // A static guide in an iframe; nothing to count.
-      contributing: [],
     }
     for (const f of PROTOTYPE_FEATURES) {
       out[sectionOf(f, rollupOf(f), done[f.id] ?? !!f.done)].push(f)
@@ -1471,17 +1441,13 @@ export function UxDashboardPage() {
         <nav style={navListStyle}>
           {VISIBLE_SECTIONS.map((s, i) => {
             const active = s.id === section
-            // To Do's count is the live number of OPEN items, not a feature
-            // tally — `bySection.todo` is always empty by design.
             const count =
-              s.id === 'todo'
-                ? todoOpen
-                : s.id === 'qa-notes'
-                  ? qaCount
-                  : s.id === 'links'
-                    ? linkCount
-                    : s.id === 'demo'
-                      ? demoCount
+              s.id === 'qa-notes'
+                ? qaCount
+                : s.id === 'links'
+                  ? linkCount
+                  : s.id === 'demo'
+                    ? demoCount
                       : (s.count ?? bySection[s.id].length)
             const locked = Boolean(s.gate) && !isOpen(s)
             return (
@@ -1663,10 +1629,6 @@ export function UxDashboardPage() {
           // `LinkBoardPanel`. Read-only and filtered to public rows on the
           // public build; that asymmetry is the review gate.
           <DemoPanel prefill={demoPrefill} onPrefillConsumed={consumeDemoPrefill} />
-        ) : section === 'todo' ? (
-          <TodoPanel />
-        ) : section === 'contributing' ? (
-          <GuideFrame src="/contributing/" title="Contributing to the dashboard" />
         ) : section === 'archive' ? (
           <div style={ARCHIVE_BRIDGE}>
             <ArchiveTable />
@@ -2101,39 +2063,6 @@ function ResearchPanel() {
         from it and restore the row documented above this component.
       </p>
     </div>
-  )
-}
-
-/**
- * A static guide rendered in place — the Contributing section. The document
- * is `public/contributing/index.html`, which is ALSO the standalone page and
- * the source the PDF beside it is rendered from, so showing it in an iframe
- * here rather than re-typing it as JSX is what keeps the three from drifting
- * (the `ComponentLivePreview` argument: the preview is data). The guide is
- * self-contained — system fonts, its own stylesheet, light/dark from the OS —
- * so it does not follow this page's palette, and that is accepted: it is a
- * document, and it prints.
- *
- * Height: the shell's main column scrolls, so the frame is sized to the
- * viewport minus the header above it rather than to its content — an iframe
- * cannot report its content height cross-document without a script, and a
- * fixed generous height would leave a long empty tail on short guides.
- */
-function GuideFrame({ src, title }: { src: string; title: string }) {
-  return (
-    <iframe
-      src={src}
-      title={title}
-      style={{
-        display: 'block',
-        width: '100%',
-        height: 'calc(100vh - 220px)',
-        minHeight: 480,
-        border: '1px solid var(--ux-border)',
-        borderRadius: 'var(--radius-lg)',
-        background: 'var(--ux-card)',
-      }}
-    />
   )
 }
 
