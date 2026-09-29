@@ -44,8 +44,11 @@ import {
   Layout,
   PenToSquare,
   Plus,
+  Share2,
   Trash,
+  User,
 } from '@/icons'
+import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu'
 import { Modal } from '@/components/ui/Modal'
 import {
   DEFAULT_PRODUCT,
@@ -428,6 +431,42 @@ const badgeStyle: CSSProperties = {
   whiteSpace: 'nowrap',
 }
 
+/* ── the right-hand column ──
+   Exploration's shape: the row's own facts on the left, everything ABOUT the
+   row banked down the right edge, so the eye can run straight down one column
+   for "whose is this" or "can I send it on" without re-reading titles. */
+const sideColStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-end',
+  gap: 7,
+  flex: 'none',
+}
+
+const sideTopStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 6,
+  /* The kebab is a 28px target and the name sits beside it; this keeps the two
+     on one baseline without the name's descenders pushing the row taller. */
+  minHeight: 26,
+}
+
+/* The author is no longer a badge — it is a person with a face, next to their
+   own name. A pill around a name reads as a status the person is IN. */
+const authorNameStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 5,
+  fontSize: 12,
+  fontWeight: 600,
+  color: 'var(--ux-text-2)',
+  whiteSpace: 'nowrap',
+  maxWidth: 160,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+}
+
 /* ── the visibility badge ──
    A different colour from the product tag on purpose: those are two kinds of
    fact, and a reader who cannot tell them apart has to read both to find the
@@ -500,18 +539,6 @@ function productBadgeStyle(product: LinkProduct): CSSProperties {
     border: `1px solid color-mix(in srgb, var(${hue}) ${Math.min(tint * 2.5, 85)}%, var(--ux-card))`,
     color: `var(${fg})`,
   }
-}
-
-/* The author is a person, not a state — sentence case and no tracking, so it
-   does not read as another status next to "UX ONLY". */
-const authorBadgeStyle: CSSProperties = {
-  ...badgeStyle,
-  textTransform: 'none',
-  letterSpacing: 0,
-  fontWeight: 600,
-  background: 'transparent',
-  border: '1px solid var(--ux-border)',
-  color: 'var(--ux-text-3)',
 }
 
 const emptyStyle: CSSProperties = {
@@ -771,6 +798,9 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
   const [errors, setErrors] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
   const [copied, setCopied] = useState(false)
+  /* Which row just had its link copied — a per-row confirmation, because a
+     menu closes on select and has no label left to change. */
+  const [shared, setShared] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   /** '' = All. Not a `LinkType`, because "no type" is itself a filterable
    *  value here and would collide with it. */
@@ -923,6 +953,61 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
     } catch {
       /* clipboard blocked — the list is unchanged, nothing to recover */
     }
+  }
+
+  /**
+   * Share Link copies the row's DESTINATION — the branch build a reviewer is
+   * being sent to look at — not a link to this dashboard section. The row is
+   * the pointer; the thing worth pasting into a message is what it points at.
+   *
+   * `safeHref` first, so a record with an address this build will not render as
+   * a link cannot be handed to someone as if it were one.
+   */
+  const share = async (link: StoredLink) => {
+    const href = safeHref(link.url)
+    if (!href) return
+    try {
+      await navigator.clipboard.writeText(href)
+      setShared(link.id)
+      window.setTimeout(() => setShared(null), 1800)
+    } catch {
+      /* clipboard blocked — nothing was changed, and no false confirmation */
+    }
+  }
+
+  /**
+   * The row's kebab. Share is offered to READERS too — the public build renders
+   * this panel read-only, and handing a stakeholder the link is the one thing
+   * they are there to do. Edit and Remove stay behind `canAuthor`.
+   */
+  const rowActions = (link: StoredLink): ActionMenuItem[] => {
+    const items: ActionMenuItem[] = []
+    if (canAuthor) {
+      items.push({
+        id: 'edit',
+        label: 'Edit',
+        icon: <PenToSquare size={13} aria-hidden />,
+        onSelect: () => beginEdit(link),
+      })
+    }
+    if (safeHref(link.url)) {
+      items.push({
+        id: 'share',
+        label: 'Share Link',
+        icon: <Share2 size={13} aria-hidden />,
+        onSelect: () => void share(link),
+      })
+    }
+    if (canAuthor) {
+      items.push({
+        id: 'remove',
+        label: 'Remove',
+        icon: <Trash size={13} aria-hidden />,
+        danger: true,
+        onSelect: () => void remove(link),
+      })
+    }
+    return items
   }
 
   return (
@@ -1107,11 +1192,27 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
                       <span className="cre-visually-hidden"> — address cannot be opened</span>
                     </span>
                   )}
-                  {/* UNDER the title, all three together: they answer "can I
-                      send this on", "is it mine to look at" and "who do I ask",
-                      which is one question asked three ways. Above the title
-                      they competed with it for the first line. */}
-                  {p.showBadges && (
+                  <p style={metaStyle}>{meta.join(' · ')}</p>
+                  {link.note.trim() && <p style={noteTextStyle}>{link.note}</p>}
+                </div>
+                {p.showBadges ? (
+                  <div style={sideColStyle}>
+                    <div style={sideTopStyle}>
+                      {link.addedBy.trim() && (
+                        <span style={authorNameStyle}>
+                          <User size={12} aria-hidden style={{ flex: 'none' }} />
+                          {link.addedBy.trim()}
+                        </span>
+                      )}
+                      {shared === link.id && (
+                        <span style={{ ...badgeStyle, textTransform: 'none', letterSpacing: 0 }}>
+                          Link copied
+                        </span>
+                      )}
+                      {rowActions(link).length > 0 && (
+                        <ActionMenu label={`Actions for ${link.title}`} items={rowActions(link)} />
+                      )}
+                    </div>
                     <div style={badgeRowStyle}>
                       {p.showPublicToggle && !p.publicOnly && (
                         <span style={link.isPublic ? publicBadgeStyle : uxOnlyBadgeStyle}>
@@ -1123,40 +1224,33 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
                           {linkProductLabel(link.product)}
                         </span>
                       )}
-                      {/* No badge at all when nobody signed it. An empty one
-                          reads as a name that failed to load — the same reason
-                          the meta line drops the separator. */}
-                      {link.addedBy.trim() && (
-                        <span style={authorBadgeStyle}>{link.addedBy.trim()}</span>
-                      )}
                     </div>
-                  )}
-                  <p style={metaStyle}>{meta.join(' · ')}</p>
-                  {link.note.trim() && <p style={noteTextStyle}>{link.note}</p>}
-                </div>
-                {canAuthor && (
-                  <div style={{ display: 'flex', gap: 6, flex: 'none' }}>
-                    <button
-                      type="button"
-                      onClick={() => beginEdit(link)}
-                      disabled={busy}
-                      className="cre-uxlinks-action"
-                      style={iconBtnStyle}
-                      aria-label={`Edit ${link.title}`}
-                    >
-                      <PenToSquare size={12} aria-hidden />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void remove(link)}
-                      disabled={busy}
-                      className="cre-uxlinks-action"
-                      style={iconBtnStyle}
-                      aria-label={`Remove ${link.title}`}
-                    >
-                      <Trash size={12} aria-hidden />
-                    </button>
                   </div>
+                ) : (
+                  canAuthor && (
+                    <div style={{ display: 'flex', gap: 6, flex: 'none' }}>
+                      <button
+                        type="button"
+                        onClick={() => beginEdit(link)}
+                        disabled={busy}
+                        className="cre-uxlinks-action"
+                        style={iconBtnStyle}
+                        aria-label={`Edit ${link.title}`}
+                      >
+                        <PenToSquare size={12} aria-hidden />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void remove(link)}
+                        disabled={busy}
+                        className="cre-uxlinks-action"
+                        style={iconBtnStyle}
+                        aria-label={`Remove ${link.title}`}
+                      >
+                        <Trash size={12} aria-hidden />
+                      </button>
+                    </div>
+                  )
                 )}
               </li>
             )

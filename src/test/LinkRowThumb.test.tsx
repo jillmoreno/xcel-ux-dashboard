@@ -323,3 +323,53 @@ describe('the public toggle is a switch', () => {
     expect(screen.getByRole('switch', { name: 'Show on public site' })).not.toBeChecked()
   })
 })
+
+/* ── the row kebab ────────────────────────────────────────────────────────── */
+
+describe('the row menu', () => {
+  it('offers Edit, Share Link and Remove', async () => {
+    const user = userEvent.setup()
+    mockEndpoint([row({ title: 'A branch' })])
+    render(<DemoPanel />)
+    await user.click(await screen.findByRole('button', { name: 'Actions for A branch' }))
+    expect(screen.getByRole('menuitem', { name: 'Edit' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Share Link' })).toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Remove' })).toBeInTheDocument()
+  })
+
+  it('Share Link copies the row destination, not the dashboard', async () => {
+    // Read back through user-event's OWN clipboard stub rather than installing
+    // one: `userEvent.setup()` replaces `navigator.clipboard` itself, so a stub
+    // installed here is silently overwritten and the assertion never fires.
+    const user = userEvent.setup()
+    const url = 'https://feat-a--ux-design-xceldashboard.netlify.app/dashboard-rebrand?demo=1'
+    mockEndpoint([row({ title: 'A branch', url })])
+    render(<DemoPanel />)
+    await user.click(await screen.findByRole('button', { name: 'Actions for A branch' }))
+    await user.click(screen.getByRole('menuitem', { name: 'Share Link' }))
+    // The row is the pointer; what is worth pasting is what it points at.
+    expect(await navigator.clipboard.readText()).toBe(url)
+    expect(await screen.findByText('Link copied')).toBeInTheDocument()
+  })
+
+  it('offers no Share Link for an address that cannot be linked', async () => {
+    const user = userEvent.setup()
+    // `safeHref` refuses it at render time; handing it over as a share would be
+    // passing on something this build already declined to make clickable.
+    mockEndpoint([row({ title: 'Bad address', url: 'javascript:alert(1)' })])
+    render(<DemoPanel />)
+    await user.click(await screen.findByRole('button', { name: 'Actions for Bad address' }))
+    expect(screen.queryByRole('menuitem', { name: 'Share Link' })).not.toBeInTheDocument()
+    expect(screen.getByRole('menuitem', { name: 'Edit' })).toBeInTheDocument()
+  })
+
+  it('puts the author beside the menu, with no pill around the name', async () => {
+    mockEndpoint([row({ title: 'A branch', addedBy: 'Anjani' })])
+    render(<DemoPanel />)
+    const li = (await screen.findByText('A branch')).closest('li')!
+    const name = within(li).getByText('Anjani')
+    // A pill around a name reads as a status the person is IN.
+    expect(name.style.borderRadius).toBe('')
+    expect(name.style.background).toBe('')
+  })
+})
