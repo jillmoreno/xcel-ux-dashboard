@@ -1,5 +1,6 @@
 import { useContext } from 'react'
 import { AccountContext, type Brand } from '@/context/AccountContext'
+import { useAtlasSkin, type AtlasSkin } from '@/components/layout/atlasBrandSkin'
 
 /**
  * Multi-brand logo. Reads the active brand from AccountContext (or accepts
@@ -94,6 +95,36 @@ const IMAGE_SOURCES: Partial<
 }
 
 /**
+ * The other Colibri brands' lockups, for the Atlas BRAND SKIN only (the Demo
+ * Controls' Brand control, 2026-09-29 — see atlasBrandSkin.ts). Restored
+ * verbatim from before 431ec3e: same files, same native sizes, same sizing
+ * rules. They are NOT `Brand` entries — the product is still XCEL's; only the
+ * Atlas pages change clothes.
+ */
+const SKIN_LOGOS: Record<Exclude<AtlasSkin, 'xcel'>, ImageSource> = {
+  cre: {
+    src: '/brand/colibri-real-estate.svg',
+    alt: 'Colibri Real Estate',
+    nativeWidth: 233.75,
+    nativeHeight: 40,
+  },
+  mckissock: {
+    src: '/brand/mckissock-learning.png',
+    alt: 'McKissock Learning',
+    nativeWidth: 1775,
+    nativeHeight: 586,
+  },
+  elite: {
+    src: '/brand/elite-learning.svg',
+    alt: 'Elite Learning',
+    nativeWidth: 229,
+    nativeHeight: 72,
+    sizeBy: 'height',
+    dark: { src: '/brand/elite-learning-white.svg', nativeWidth: 229, nativeHeight: 72 },
+  },
+}
+
+/**
  * Width-reference aspect ratio for `sizeBy: 'creWidth'`.
  *
  * The LMS sized width-matched lockups against CRE's own (233.75 × 40), so a
@@ -130,8 +161,14 @@ export function Logo({ variant = 'default', height = 40, className, brand: brand
   const account = useContext(AccountContext)
   const brand = brandProp ?? account?.brand ?? 'xcel'
 
+  // An Atlas brand skin swaps the default lockup only when no explicit brand
+  // was asked for (the Switch Account preview passes one).
+  const skin = useAtlasSkin()
   const imageSet = IMAGE_SOURCES[brand]
-  const entry = imageSet?.[variant]
+  const entry =
+    !brandProp && variant === 'default' && skin && skin !== 'xcel'
+      ? SKIN_LOGOS[skin]
+      : imageSet?.[variant]
   // A brand may ship the lockup and not the square mark (XCEL does). Falling
   // through to the text wordmark for the missing variant is deliberate — the
   // alternative, pointing `mark` at the lockup, would silently render a wide

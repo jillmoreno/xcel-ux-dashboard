@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { HouseRegular } from '@/icons'
+import { HouseRegular, SlashForwardSolid } from '@/icons'
 import { useAtlasCourse } from './useAtlasCourse'
 import { ATLAS_COURSE_PAGES, type AtlasCoursePageId } from './dashboardRail'
 
@@ -66,8 +66,12 @@ export function AtlasCourseSideNav({
             </button>
           </li>
           <li style={CRUMB_ITEM}>
+            {/* The FA slash-forward icon at 10px, as the course player's
+                breadcrumb draws it (2026-09-29, the designer's request: match
+                its size and spacing). A typed "/" was 3.7px wide, so the
+                current crumb sat 6px closer to the house than on the player. */}
             <span aria-hidden style={SEPARATOR}>
-              /
+              <SlashForwardSolid size={10} aria-hidden />
             </span>
             <span aria-current="page" style={CURRENT_CRUMB}>
               {current.label}
@@ -133,9 +137,9 @@ const HOME_BUTTON: CSSProperties = {
 }
 
 const SEPARATOR: CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontSize: 10,
-  lineHeight: '20px',
+  display: 'inline-flex',
+  alignItems: 'center',
+  height: 20,
   color: 'var(--color-atlas-nav-crumb-separator)',
 }
 
@@ -149,7 +153,7 @@ const CURRENT_CRUMB: CSSProperties = {
 
 /* Open Sans Medium 14/21, 6px under it before the list (the design's frame
    padding). It WRAPS — the design's title is two lines on purpose. */
-/* Serif Heading 7, DM Serif Display 24 / 28 (2026-09-29, the designer's
+/* Serif Heading 8, DM Serif Display 20 / 24 (2026-09-29, the designer's
    request; it was Open Sans Medium 14 / 21, then 24 / 28, 20 / 24 and
    Heading 8). `--font-heading-serif` is DM Serif Display under the
    Atlas palette. Same on both course rails, so the title does not change
@@ -158,9 +162,9 @@ const COURSE_TITLE: CSSProperties = {
   margin: 0,
   paddingBottom: 6,
   fontFamily: 'var(--font-heading-serif)',
-  fontSize: 'var(--type-atlas-h7-size, 24px)',
+  fontSize: 'var(--type-atlas-h8-size, 20px)',
   fontWeight: 400,
-  lineHeight: 'var(--type-atlas-h7-line, 28px)',
+  lineHeight: 'var(--type-atlas-h8-line, 24px)',
   color: 'var(--color-text-primary)',
 }
 

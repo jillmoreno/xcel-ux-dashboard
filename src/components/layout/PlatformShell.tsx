@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode, type CSSProperties } from 'react'
+import { ATLAS_SKIN_PARAM, atlasSkinFor } from './atlasBrandSkin'
 import { useSearchParams } from 'react-router-dom'
 import { useAccount, supportsMembership, type Brand } from '@/context/AccountContext'
 import {
@@ -291,6 +292,19 @@ function PlatformShellBody() {
       delete root.dataset.atlasPalette
     }
   }, [atlasPalette])
+  // The Atlas BRAND SKIN (`?skin=`, the Demo Controls' Brand control) — which
+  // Colibri brand's logo and colours the Atlas pages wear. Mirrored onto
+  // <html data-atlas-brand> only while the Atlas palette is on; see
+  // atlasBrandSkin.ts.
+  const atlasSkin = atlasSkinFor(params.get(ATLAS_SKIN_PARAM))
+  useEffect(() => {
+    if (!atlasPalette) return
+    const root = document.documentElement
+    root.dataset.atlasBrand = atlasSkin
+    return () => {
+      delete root.dataset.atlasBrand
+    }
+  }, [atlasPalette, atlasSkin])
   const railCollapsed =
     atlasNav
       ? false

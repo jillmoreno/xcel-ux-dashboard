@@ -837,11 +837,11 @@ const syllabusTitleStyle: CSSProperties = {
   margin: '6px 0 0',
   fontFamily: 'var(--font-heading)',
   fontWeight: 700,
-  // Serif Heading 7 on the Atlas pages (2026-09-29, the designer's request):
-  // the --type-atlas-h7-* tokens exist only under the Atlas palette, so every
+  // Serif Heading 8 on the Atlas pages (2026-09-29, the designer's request):
+  // the --type-atlas-h8-* tokens exist only under the Atlas palette, so every
   // other version keeps 21 / 27.
-  fontSize: 'var(--type-atlas-h7-size, 21px)',
-  lineHeight: 'var(--type-atlas-h7-line, 27px)',
+  fontSize: 'var(--type-atlas-h8-size, 21px)',
+  lineHeight: 'var(--type-atlas-h8-line, 27px)',
   letterSpacing: '-0.01em',
   color: 'var(--color-text-primary)',
 }

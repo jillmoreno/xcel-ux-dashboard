@@ -1,6 +1,11 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useLocation, useSearchParams } from 'react-router-dom'
-import { defaultDiscoverabilityVersionFor, isQualifyingEducationVersion } from '@/data/dashboardVersions'
+import {
+  defaultDiscoverabilityVersionFor,
+  isAtlasCompassNavVersion,
+  isQualifyingEducationVersion,
+} from '@/data/dashboardVersions'
+import { ATLAS_SKINS, ATLAS_SKIN_PARAM, atlasSkinFor, type AtlasSkin } from '@/components/layout/atlasBrandSkin'
 import { UserSlash, Share2, BrowserWindow, Check, ChevronDown } from '@/icons'
 import { ActionMenu } from '@/components/ui/ActionMenu'
 import { Toast } from '@/components/ui/Toast'
@@ -263,6 +268,25 @@ export function DemoControlsBar({
      disagreeing about what the page has on it. It stays LIVE on QE Focused,
      Learner Focused and Marketing Focused, where the section is a rail click
      away and the dropdown does exactly what it says. */
+  /* ATLAS BRAND SKIN (2026-09-29) — the Brand control for the Atlas/Compass
+     version only: it re-skins the Atlas pages as another Colibri brand (logo +
+     brand colours) while the product stays XCEL's. Shown only where it does
+     something — the Atlas version with its palette on. Not the retired
+     `BRAND_PICKER`, which switches the whole prototype's `Brand`. */
+  const atlasPaletteOn = useFeatureFlag('atlas-xcel-palette').enabled
+  const showAtlasSkin =
+    atlasPaletteOn &&
+    isAtlasCompassNavVersion(searchParams.get('version') ?? defaultDiscoverabilityVersionFor(brand))
+  const atlasSkin = atlasSkinFor(searchParams.get(ATLAS_SKIN_PARAM))
+  const atlasSkinLabel = ATLAS_SKINS.find((s) => s.skin === atlasSkin)?.label ?? 'XCEL'
+  const pickAtlasSkin = (skin: AtlasSkin) => {
+    const next = new URLSearchParams(searchParams)
+    if (skin === 'xcel') next.delete(ATLAS_SKIN_PARAM)
+    else next.set(ATLAS_SKIN_PARAM, skin)
+    setSearchParams(next, { replace: true })
+    close()
+  }
+
   const readinessReachable = !railHidesSection(
     searchParams.get('version') ?? defaultDiscoverabilityVersionFor(brand),
     'readiness',
@@ -505,6 +529,38 @@ export function DemoControlsBar({
                 tabIndex={active ? 0 : -1}
                 className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
                 onClick={() => pickBrand(b.brand)}
+              >
+                <span style={{ flex: 1 }}>{b.label}</span>
+                {active && <Check size={15} aria-hidden />}
+              </button>
+            )
+          })}
+        </DemoDropdown>
+        )}
+
+        {/* Brand — the Atlas brand skin; see `showAtlasSkin`. */}
+        {showAtlasSkin && (
+        <DemoDropdown
+          id="atlas-brand"
+          label={atlasSkinLabel}
+          eyebrow="Brand"
+          openId={openId}
+          onToggle={toggle}
+          panelRole="radiogroup"
+          panelLabel="Brand"
+          panelMinWidth={220}
+        >
+          {ATLAS_SKINS.map((b) => {
+            const active = b.skin === atlasSkin
+            return (
+              <button
+                key={b.skin}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                tabIndex={active ? 0 : -1}
+                className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
+                onClick={() => pickAtlasSkin(b.skin)}
               >
                 <span style={{ flex: 1 }}>{b.label}</span>
                 {active && <Check size={15} aria-hidden />}
@@ -874,6 +930,7 @@ export function DemoControlsBar({
               next.delete('edu')
               next.delete('wn')
               next.delete('version')
+              next.delete(ATLAS_SKIN_PARAM)
               // Clear the read-only `?ff=` flag override too — otherwise a shared
               // link's pinned flags (e.g. membership-count:five) keep winning over
               // the flags Reset just restored, so Reset would appear to do nothing.

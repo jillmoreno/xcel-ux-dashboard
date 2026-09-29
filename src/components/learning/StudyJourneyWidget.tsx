@@ -581,11 +581,11 @@ function LicensingStepWidget({
           margin: '6px 0 0',
           fontFamily: 'var(--font-heading)',
           fontWeight: 700,
-          // Serif Heading 7 on the Atlas pages (2026-09-29, the designer's
-          // request): the --type-atlas-h7-* tokens exist only under the Atlas
+          // Serif Heading 8 on the Atlas pages (2026-09-29, the designer's
+          // request): the --type-atlas-h8-* tokens exist only under the Atlas
           // palette, so every other version keeps 18 / 24. (Heading 8 briefly, then 7.)
-          fontSize: 'var(--type-atlas-h7-size, 18px)',
-          lineHeight: 'var(--type-atlas-h7-line, 24px)',
+          fontSize: 'var(--type-atlas-h8-size, 18px)',
+          lineHeight: 'var(--type-atlas-h8-line, 24px)',
           letterSpacing: '-0.01em',
           color: 'var(--color-text-primary)',
         }}
@@ -810,7 +810,7 @@ function ExamDateCapture({
             opacity: draft ? 1 : 0.5,
             // The CTA red under the Atlas palette; the navy everywhere else.
             background: 'var(--color-atlas-cta, var(--color-primary-500))',
-            color: 'var(--color-text-inverse)',
+            color: 'var(--color-atlas-on-cta, var(--color-text-inverse))',
             fontFamily: 'var(--font-body)',
             fontSize: 13,
             fontWeight: 700,
@@ -1008,9 +1008,9 @@ const collapsedTitleStyle: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-heading)',
   fontWeight: 700,
-  // Serif Heading 7 on the Atlas pages; 21 / 27 everywhere else.
-  fontSize: 'var(--type-atlas-h7-size, 21px)',
-  lineHeight: 'var(--type-atlas-h7-line, 27px)',
+  // Serif Heading 8 on the Atlas pages; 21 / 27 everywhere else.
+  fontSize: 'var(--type-atlas-h8-size, 21px)',
+  lineHeight: 'var(--type-atlas-h8-line, 27px)',
   letterSpacing: '-0.01em',
   color: 'var(--color-text-primary)',
 }

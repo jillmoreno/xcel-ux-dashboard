@@ -71,6 +71,28 @@ describe('DemoControlsBar — Brand dropdown', () => {
   })
 })
 
+describe('DemoControlsBar — Atlas brand skin', () => {
+  // The Atlas/Compass version gets its own Brand control (2026-09-29): it
+  // re-skins the Atlas pages as McKissock, CRE or Elite and writes ?skin=,
+  // while `Brand` stays XCEL. See atlasBrandSkin.ts.
+  const ATLAS = '/dashboard-rebrand?version=discoverability-atlas-compass-nav'
+
+  it('shows on the Atlas version and writes ?skin=', () => {
+    renderBar(ATLAS)
+    fireEvent.click(screen.getByRole('button', { name: /XCEL \(Insurance\)/ }))
+    fireEvent.click(screen.getByRole('radio', { name: /McKissock Learning/ }))
+    expect(url()).toContain('skin=mckissock')
+    fireEvent.click(screen.getByRole('button', { name: /McKissock Learning/ }))
+    fireEvent.click(screen.getByRole('radio', { name: /XCEL \(Insurance\)/ }))
+    expect(url()).not.toContain('skin=')
+  })
+
+  it('stays off every other version', () => {
+    renderBar()
+    expect(screen.queryByRole('button', { name: /XCEL \(Insurance\)/ })).toBeNull()
+  })
+})
+
 describe('DemoControlsBar — Quick views tiers drive real state', () => {
   it('offers no tier quick views for a brand with no membership', () => {
     // These tests drove Elite's ladder (Non-member · Passport Lite · Passport)

@@ -4691,9 +4691,10 @@ a.cre-library-card-title::after {
      Serif Display Regular. Size / line height per step; the weekly style-guide
      check keeps these values in step with Figma — eight SERIF styles since
      2026-09-29 ("Desktop Serif - DM Serif Display"). Figma also defines a
-     separate Open Sans heading set, not mapped here. Applied so far: H3 on
-     the Home course card title; H4 on the Overview's course card title; H7 on the course rails' title, the
-     Overview's Rubi and tip titles and the Home right rail's step titles. */
+     separate Open Sans heading set, not mapped here. Applied so far: H4 on
+     both course card titles (Home and Overview); H8 on the course rails' title, the
+     Overview's "Where you are", Rubi and tip titles and the Home right rail's
+     step titles (H7 until 2026-09-29). */
   --type-atlas-h1-size: 64px;
   --type-atlas-h1-line: 64px;
   --type-atlas-h2-size: 48px;
@@ -4714,6 +4715,14 @@ a.cre-library-card-title::after {
   /* The two usage rules, as tokens components can reach for. */
   --color-atlas-cta: var(--color-cta-500);
   --color-atlas-active: var(--color-cta-500);
+  /* CTA TEXT and TEXT-ON-CTA as their own roles (2026-09-29, for the brand
+     skins): XCEL's cta-500 red works as both a link colour and a fill under
+     white text, but McKissock's orange works as neither, so a skin can re-point
+     these two without touching the fill. */
+  --color-atlas-cta-ink: var(--color-cta-500);
+  --color-atlas-on-cta: var(--color-neutral-50);
+  --color-compass-page-button-ink: var(--color-atlas-on-cta);
+  --color-compass-player-on-ink: var(--color-atlas-on-cta);
   --color-atlas-active-fill: var(--color-cta-100);
   --color-atlas-eyebrow: var(--color-tertiary-600);
   --color-eyebrow-text: var(--color-atlas-eyebrow);
@@ -4742,7 +4751,7 @@ a.cre-library-card-title::after {
      3.7:1 is fine. */
   --color-atlas-nav-active-bar: var(--color-tertiary-500);
   --color-atlas-nav-hover: var(--color-tertiary-100);
-  --color-atlas-nav-hover-ink: var(--color-cta-500);
+  --color-atlas-nav-hover-ink: var(--color-atlas-cta-ink);
 
   /* Compass course rail — the current lesson (label, clock, fill) and the
      crumb link are the left-navigation tan above (red on hover); the section marks, done ticks and the progress spine
@@ -4781,10 +4790,10 @@ a.cre-library-card-title::after {
   --color-compass-page-rule: var(--color-tertiary-200);
   --color-compass-page-eyebrow: var(--color-atlas-eyebrow);
   --color-compass-page-card: var(--color-primary-100);
-  /* The course card on Home and the Overview: the guide's TERTIARY (blue)
-     100, #EAEEF1 — our `primary` ramp (2026-09-28; tan 200 and tan 100 were
-     tried first). */
-  --color-compass-course-card: var(--color-primary-100);
+  /* The course card on Home and the Overview is WHITE (2026-09-29, the
+     designer's request; it was the guide's tertiary blue 100, #eaeef1, and tan
+     100 / 200 before that) — the same for every brand skin. */
+  --color-compass-course-card: var(--color-neutral-50);
   --color-compass-page-card-border: var(--color-primary-200);
   --color-compass-page-card-rule: var(--color-primary-200);
   --color-compass-page-pill-ink: var(--color-primary-600);
@@ -4860,7 +4869,7 @@ a.cre-library-card-title::after {
    journey-stop links take the red; section labels take the tan. */
 [data-atlas-palette] .cre-cta-ink,
 [data-atlas-palette] .cre-stop-title {
-  color: var(--color-cta-500);
+  color: var(--color-atlas-cta-ink);
 }
 [data-atlas-palette] .cre-journey-stop:hover .cre-stop-title,
 [data-atlas-palette] .cre-journey-stop:focus-visible .cre-stop-title {
@@ -4868,7 +4877,7 @@ a.cre-library-card-title::after {
 }
 [data-atlas-palette] .cre-cta-fill {
   background: var(--color-cta-500);
-  color: var(--color-neutral-50);
+  color: var(--color-atlas-on-cta);
 }
 [data-atlas-palette] .cre-eyebrow-ink {
   color: var(--color-atlas-eyebrow);
@@ -4887,7 +4896,7 @@ a.cre-library-card-title::after {
 [data-atlas-palette] .cre-compass-step--next {
   background: var(--color-cta-500);
   border-color: var(--color-cta-500);
-  color: var(--color-neutral-50);
+  color: var(--color-atlas-on-cta);
 }
 
 /* Left navigation hovers: CTA-red TEXT on the tan hover background. The
@@ -4907,7 +4916,7 @@ a.cre-library-card-title::after {
 [data-atlas-palette] .cre-compass-crumb-link,
 [data-atlas-palette] .cre-atlas-crumb-home:hover,
 [data-atlas-palette] .cre-compass-crumb-link:hover {
-  color: var(--color-atlas-cta);
+  color: var(--color-atlas-cta-ink);
   filter: none;
 }
 [data-atlas-palette] .cre-compass-crumb-link:hover {
@@ -4936,4 +4945,130 @@ a.cre-library-card-title::after {
 }
 [data-atlas-palette] .cre-atlas-nav-row[aria-current='page'] {
   font-weight: 600;
+}
+
+/* ============================================================================
+   ATLAS BRAND SKINS — the Demo Controls' Brand control, 2026-09-29
+   ----------------------------------------------------------------------------
+   `<html data-atlas-brand>` (see atlasBrandSkin.ts) re-dresses the Atlas pages
+   as another Colibri brand. Only LOGO + BRAND COLOURS change, per the Atlas
+   Development doc's multi-brand table; neutrals, type and layout are platform.
+   The ramps are each brand's own from before 431ec3e (2026-09-08).
+
+   Role mapping, the same three slots the XCEL guide fills:
+     --color-cta-*       the brand's CTA ramp  (buttons, links, active items)
+     --color-tertiary-*  the brand's PRIMARY   (XCEL's tan slot: eyebrows, the
+                                                 left nav, charts, rules, pills)
+     --color-primary-*   the brand's PRIMARY   (XCEL's blue slot: cards, marks)
+   and the content area is the accent 100 at 50% on white, as XCEL's is.
+   XCEL itself needs no block: `data-atlas-brand='xcel'` falls through to the
+   palette above.
+
+   Measured, light (text on white unless noted):
+     CRE        cta-500 #02568f 7.5:1 · eyebrow teal-600 #027267 6.3:1
+     McKissock  orange #f59233 is 2.2:1 — so links use cta-700 #93571e (6.0:1)
+                and button text is near-black on the orange (8.4:1);
+                eyebrow olive-700 #526004 (7.2:1; 600 is 4.3:1)
+     Elite      cta-500 #a24796 5.8:1 · eyebrow blue-600 #124691 8.3:1
+   Rubi's orange is Atlas's, not a brand's, and stays.
+   DARK VALUES ARE NOT DESIGNED — the dark blocks above apply unchanged. */
+/* CRE's teal is Figma's "Primary 500" scale (XCEL - Atlas Style Guide, node
+   86:713, 2026-09-29); its CTA is that frame's CTA swatch fill, #02568f (the
+   swatch's LABEL still reads #9A1B1E — XCEL's, a copy leftover). The frame's
+   Secondary (orange #f49233) and Tertiary (light blue #39bae3) scales are not
+   used by the skin. */
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='cre'] {
+  --color-cta-100: #ccdde8;
+  --color-cta-200: #99bbd2;
+  --color-cta-300: #6799bb;
+  --color-cta-400: #3477a5;
+  --color-cta-500: #02568f;
+  --color-cta-600: #014472;
+  --color-cta-700: #013355;
+  --color-cta-800: #002239;
+  --color-cta-900: #00111c;
+  --color-primary-100: #e6f4f2;
+  --color-primary-200: #c0e3e0;
+  --color-primary-300: #81c7c0;
+  --color-primary-400: #5bb6ad;
+  --color-primary-500: #028f81;
+  --color-primary-600: #027267;
+  --color-primary-700: #01564d;
+  --color-primary-800: #013934;
+  --color-primary-900: #001d1a;
+  --color-tertiary-100: #e6f4f2;
+  --color-tertiary-200: #c0e3e0;
+  --color-tertiary-300: #81c7c0;
+  --color-tertiary-400: #5bb6ad;
+  --color-tertiary-500: #028f81;
+  --color-tertiary-600: #027267;
+  --color-tertiary-700: #01564d;
+  --color-tertiary-800: #013934;
+  --color-tertiary-900: #001d1a;
+  /* A solid #f2f9f9 (2026-09-29, the designer's request): 50% of the earlier
+     #e6f4f2 (teal-100 at 50% on white) on white again, i.e. teal-100 at 25%. */
+  --color-compass-page: #f2f9f9;
+}
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='mckissock'] {
+  --color-cta-100: #fde9d6;
+  --color-cta-200: #fbd3ad;
+  --color-cta-300: #f9bd84;
+  --color-cta-400: #f7a75b;
+  --color-cta-500: #f59233;
+  --color-cta-600: #c47428;
+  --color-cta-700: #93571e;
+  --color-cta-800: #613a14;
+  --color-cta-900: #301d0a;
+  --color-primary-100: #e7eccd;
+  --color-primary-200: #d0d99b;
+  --color-primary-300: #b8c66a;
+  --color-primary-400: #a1b338;
+  --color-primary-500: #8aa007;
+  --color-primary-600: #6e8005;
+  --color-primary-700: #526004;
+  --color-primary-800: #373f02;
+  --color-primary-900: #1b1f01;
+  --color-tertiary-100: #e7eccd;
+  --color-tertiary-200: #d0d99b;
+  --color-tertiary-300: #b8c66a;
+  --color-tertiary-400: #a1b338;
+  --color-tertiary-500: #8aa007;
+  --color-tertiary-600: #6e8005;
+  --color-tertiary-700: #526004;
+  --color-tertiary-800: #373f02;
+  --color-tertiary-900: #1b1f01;
+  --color-atlas-cta-ink: var(--color-cta-700);
+  --color-atlas-on-cta: var(--color-neutral-900);
+  --color-atlas-eyebrow: var(--color-tertiary-700);
+  --color-compass-page: color-mix(in srgb, var(--color-tertiary-100) 50%, #ffffff);
+}
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='elite'] {
+  --color-cta-100: #ecdaea;
+  --color-cta-200: #d9b5d5;
+  --color-cta-300: #c790c0;
+  --color-cta-400: #b46bab;
+  --color-cta-500: #a24796;
+  --color-cta-600: #813878;
+  --color-cta-700: #612a5a;
+  --color-cta-800: #401c3b;
+  --color-cta-900: #200e1d;
+  --color-primary-100: #d0ddf0;
+  --color-primary-200: #a2bce1;
+  --color-primary-300: #739ad3;
+  --color-primary-400: #4579c4;
+  --color-primary-500: #1758b6;
+  --color-primary-600: #124691;
+  --color-primary-700: #0d346d;
+  --color-primary-800: #092348;
+  --color-primary-900: #041124;
+  --color-tertiary-100: #d0ddf0;
+  --color-tertiary-200: #a2bce1;
+  --color-tertiary-300: #739ad3;
+  --color-tertiary-400: #4579c4;
+  --color-tertiary-500: #1758b6;
+  --color-tertiary-600: #124691;
+  --color-tertiary-700: #0d346d;
+  --color-tertiary-800: #092348;
+  --color-tertiary-900: #041124;
+  --color-compass-page: color-mix(in srgb, var(--color-tertiary-100) 50%, #ffffff);
 }

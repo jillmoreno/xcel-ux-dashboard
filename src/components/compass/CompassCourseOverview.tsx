@@ -382,14 +382,14 @@ const RING_FACE: CSSProperties = {
   lineHeight: '18px',
   color: 'var(--color-compass-page-heading)',
 }
-/* Serif Heading 7, 24 / 28 (2026-09-29, the designer's request; it was 20 / 28
-   at weight 500). The --type-atlas-h7-* tokens follow Figma. */
+/* Serif Heading 8, 20 / 24 (2026-09-29, the designer's request; it was 20 / 28
+   at weight 500). The --type-atlas-h8-* tokens follow Figma. */
 const WHERE_TITLE: CSSProperties = {
   margin: 0,
   fontFamily: SERIF,
   fontWeight: 400,
-  fontSize: 'var(--type-atlas-h7-size, 24px)',
-  lineHeight: 'var(--type-atlas-h7-line, 28px)',
+  fontSize: 'var(--type-atlas-h8-size, 20px)',
+  lineHeight: 'var(--type-atlas-h8-line, 24px)',
   letterSpacing: '-0.005em',
   color: 'var(--color-compass-page-heading)',
 }
@@ -403,7 +403,7 @@ const WHERE_BODY: CSSProperties = {
 
 const RUBI_ASIDE: CSSProperties = {
   // 340, up from 300 (2026-09-29, the designer's request): "Meet Rubi, your
-  // learning guide" at Serif Heading 7 is 312px, plus the 21px inset.
+  // learning guide" at Serif Heading 8 is 312px, plus the 21px inset.
   flex: '0 0 340px',
   minHeight: 160,
   boxSizing: 'border-box',
@@ -428,12 +428,12 @@ const RUBI_EYEBROW: CSSProperties = {
 const RUBI_TITLE: CSSProperties = {
   margin: '8px 0 0',
   fontFamily: SERIF,
-  // Serif Heading 7, 24 / 28 (2026-09-29, the designer's request; it was
-  // 19px at weight 500, then Heading 8). The --type-atlas-h7-* tokens follow
+  // Serif Heading 8, 20 / 24 (2026-09-29, the designer's request; it was
+  // 19px at weight 500, then Heading 8). The --type-atlas-h8-* tokens follow
   // Figma.
   fontWeight: 400,
-  fontSize: 'var(--type-atlas-h7-size, 24px)',
-  lineHeight: 'var(--type-atlas-h7-line, 28px)',
+  fontSize: 'var(--type-atlas-h8-size, 20px)',
+  lineHeight: 'var(--type-atlas-h8-line, 24px)',
   letterSpacing: '-0.02em',
   color: 'var(--color-compass-page-heading)',
 }
@@ -565,12 +565,12 @@ const TIP_ICON: CSSProperties = {
 const TIP_TITLE: CSSProperties = {
   margin: 0,
   fontFamily: SERIF,
-  // Serif Heading 7, 24 / 28 (2026-09-29, the designer's request; it was
-  // 19px at weight 500, then Heading 8). The --type-atlas-h7-* tokens follow
+  // Serif Heading 8, 20 / 24 (2026-09-29, the designer's request; it was
+  // 19px at weight 500, then Heading 8). The --type-atlas-h8-* tokens follow
   // Figma.
   fontWeight: 400,
-  fontSize: 'var(--type-atlas-h7-size, 24px)',
-  lineHeight: 'var(--type-atlas-h7-line, 28px)',
+  fontSize: 'var(--type-atlas-h8-size, 20px)',
+  lineHeight: 'var(--type-atlas-h8-line, 24px)',
   letterSpacing: '-0.02em',
   color: 'var(--color-compass-page-heading)',
 }

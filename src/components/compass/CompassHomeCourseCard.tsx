@@ -175,16 +175,17 @@ const EYEBROW: CSSProperties = {
   textTransform: 'uppercase',
   color: 'var(--color-compass-page-eyebrow)',
 }
-/* The XCEL Atlas Style Guide's HEADING 3 (2026-09-28, the designer's request;
-   it was 34 / 39 at weight 500, then briefly Heading 2). Its size and line
-   height are the `--type-atlas-h3-*` tokens, which follow Figma; the
-   fallbacks are Figma's values on the day. */
+/* The XCEL Atlas Style Guide's serif HEADING 4 (2026-09-29, the designer's
+   request; it was 34 / 39 at weight 500, then Heading 2 and Heading 3) — the
+   same step as the Overview's course title. Its size and line height are the
+   `--type-atlas-h4-*` tokens, which follow Figma; the fallbacks are Figma's
+   values on the day. */
 const TITLE: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-heading-serif)',
   fontWeight: 400,
-  fontSize: 'var(--type-atlas-h3-size, 44px)',
-  lineHeight: 'var(--type-atlas-h3-line, 46px)',
+  fontSize: 'var(--type-atlas-h4-size, 38px)',
+  lineHeight: 'var(--type-atlas-h4-line, 40px)',
   letterSpacing: '-0.01em',
   color: 'var(--color-compass-page-heading)',
 }
