@@ -292,7 +292,12 @@ export function isQualifyingEducationVersion(versionId: string): boolean {
  */
 export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
   DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
-  DISCOVERABILITY_DASHBOARD_VERSION_TESTING_2,
+  /* Testing 2 was archived 2026-09-28 — re-add
+     DISCOVERABILITY_DASHBOARD_VERSION_TESTING_2 here to restore it to the
+     picker. Same one-line shape as Badged, QE Focused and Marketing Focused
+     above; see `discoverability-testing-2` in archivedItems.ts.
+     ⚠ It is the ONLY route to the Study Pace ADJUST SHEET (`livePace`), which
+     is still fully built and still renders on `?version=discoverability-testing-2`. */
   DISCOVERABILITY_DASHBOARD_VERSION_LEARNER_FOCUSED,
 ]
 

@@ -177,14 +177,19 @@ describe('the QE Focused version is ARCHIVED but still reachable', () => {
     expect(container.querySelector('.cre-learner-focused-band')).not.toBeNull()
   })
 
-  it('leaves Testing leading the picker, with Testing 2 and Learner Focused', () => {
+  it('leaves Testing leading the picker, with Learner Focused behind it', () => {
     // Order is what a reviewer reads as "the one we are on".
     expect(DISCOVERABILITY_DASHBOARD_VERSIONS[0]).toBe(
       DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
     )
+    /* Testing 2 sat between these two until 2026-09-28, when it was archived
+       the same way QE Focused and Marketing Focused were — the picker entry
+       only. `?version=discoverability-testing-2` still resolves, and
+       `Testing2Version.test.tsx` still renders it on every test, which is the
+       whole point of archiving a version this way. See
+       `discoverability-testing-2` in archivedItems.ts. */
     expect(DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)).toEqual([
       'discoverability-testing',
-      'discoverability-testing-2',
       'discoverability-learner-focused',
     ])
   })

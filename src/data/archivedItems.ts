@@ -56,6 +56,19 @@ export type ArchivedItem = {
 
 export const ARCHIVED_ITEMS: ArchivedItem[] = [
   {
+    id: 'discoverability-testing-2',
+    name: 'Testing 2 (dashboard version)',
+    what: 'QE Focused with a LIVE Study Pace tile in the square slot \u2014 one derived pace ("2 hours a night \u00b7 6 nights a week \u00b7 Finishes by May 24") and an ADJUST button opening a sheet with the three finish dates (Relaxed / Recommended / Focused), days a week, an optional exam date, and a switch turning the pace into sessions on the Study Plan. It asked what the tile should let you CHANGE; Testing asks what it should SHOW.',
+    location:
+      'FULLY INTACT, exactly as QE Focused and Marketing Focused above \u2014 `DISCOVERABILITY_DASHBOARD_VERSION_TESTING_2` in `src/data/dashboardVersions.ts`, its `discoverability-testing-2` type member, the `testingVersion` / `livePace` branches in `MembershipOverview`, the live `StudyPaceTile` and its Adjust sheet. Only the entry in `DISCOVERABILITY_DASHBOARD_VERSIONS` was removed, so `?version=discoverability-testing-2` STILL RESOLVES \u2014 `Testing2Version.test.tsx` renders it on every test.',
+    flag: '?version=discoverability-testing-2 (still resolves)',
+    dateRemoved: '2026-09-28',
+    reason:
+      'Jillienne\u2019s call. The pacing question it was built to ask has been answered by Testing, which took the presets card, the activity history and the derived-pace readout; Testing 2\u2019s contribution was the ADJUST sheet, and nobody has asked to adjust a pace on the demo since. Two near-identical versions in a three-entry picker is one too many when only one of them is being shown.',
+    restoreNote:
+      'Re-add `DISCOVERABILITY_DASHBOARD_VERSION_TESTING_2` to `DISCOVERABILITY_DASHBOARD_VERSIONS` in `src/data/dashboardVersions.ts`. That is the whole restore \u2014 one line \u2014 and the picker order is the array order, so put it back between Testing and Learner Focused where it read. A comment marks the spot. \u26a0 WHAT IS ACTUALLY AT STAKE, and the reason to think before deleting more than the picker line: this version is the ONLY route to the Study Pace ADJUST SHEET. `livePace` is `testingVersion && studyPaceFlag` in `MembershipOverview`, and `testingVersion` is `dashboardLayout === \u2018testing-2\u2019` \u2014 no other version sets it. Unwire anything further and the sheet, the three finish-date presets and the two-ceiling logic behind them become unreachable dead code rather than one line from returning. NOT restored deliberately: nothing else was touched, so no test, fixture or component work is needed \u2014 `Testing2Version.test.tsx` still passes untouched because it addresses the version by `?version=` rather than through the picker.',
+  },
+  {
     id: 'rail-rows-2026-09-28',
     name: 'Seven left-nav rows (Learning Path, Browse Catalog, Recommended for You, Resource Library, Exam & Cert Prep, Rubi Insights, Podcasts)',
     what: 'Seven rail items and their per-item visibility flags. Six of the seven were already toggled OFF on the XCEL baseline and had been for weeks — only Rubi Insights was live, sitting at the foot of My Learning as the AI tutor a candidate uses session after session. Together they were most of the Navigation group in the flag panel: fifteen toggles for a rail that drew five rows.',
