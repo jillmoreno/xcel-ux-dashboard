@@ -62,11 +62,15 @@ function mockEndpoint(rows: StoredLink[]) {
   return { writes }
 }
 
-/** The tile is `aria-hidden` decoration with no text, so it cannot be found by
- *  role or name. Its fixed 160px width is what identifies it. */
+/** The icon box is `aria-hidden` decoration with no text, so it cannot be found
+ *  by role or name. Its fixed 44px square is what identifies it — Exploration's
+ *  tile is 160x110, and the difference is the point: a Refinement row can never
+ *  hold a picture, so it gets a marker instead of a picture-shaped hole. */
+const ICON_BOX = '44px'
+
 function tiles(): HTMLElement[] {
   return Array.from(document.querySelectorAll<HTMLElement>('li span[aria-hidden]')).filter(
-    (n) => n.style.width === '160px',
+    (n) => n.style.width === ICON_BOX && n.style.height === ICON_BOX,
   )
 }
 

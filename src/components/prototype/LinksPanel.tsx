@@ -70,7 +70,7 @@ import {
   type StoredLink,
 } from '@/data/linkStore'
 import { DEMO_BOARD } from '@/data/demoStore'
-import { GeneratedThumb, THUMB_W } from './GeneratedThumb'
+import { GeneratedThumb } from './GeneratedThumb'
 import { accentsByHost, hostKey, linkThumbKind } from './linkRowThumb'
 import { isPublicGateway } from '@/data/gatewayMode'
 
@@ -157,9 +157,9 @@ const THUMB_GLYPH = {
 
 const wrapStyle: CSSProperties = { maxWidth: 820 }
 
-/** 820 + the tile (160) + the gap (10), so the text column keeps exactly the
- *  width it had before the picture was added rather than paying for it. */
-const wrapThumbStyle: CSSProperties = { maxWidth: 990 }
+/** 820 + the icon box (44) + the gap (10), so the text column keeps exactly the
+ *  width it had before the marker was added rather than paying for it. */
+const wrapThumbStyle: CSSProperties = { maxWidth: 874 }
 
 const fieldStyle: CSSProperties = {
   width: '100%',
@@ -430,6 +430,20 @@ const badgeStyle: CSSProperties = {
   color: 'var(--ux-text-2)',
   whiteSpace: 'nowrap',
 }
+
+/* ── the row's icon box ──
+   44px, not the 160x110 an Exploration row gets.
+   
+   That size exists to be a PICTURE — it is the crop a real screenshot is taken
+   at, and Exploration rows can fill it with a live miniature of their own URL.
+   Refinement rows can never have one (see `GeneratedThumb`), so at 160x110 the
+   tile was a picture-shaped hole with a glyph floating in it, and every row
+   paid ~110px of height for the emptiness.
+
+   At 44 it stops claiming to be a picture and becomes what it actually is: a
+   marker. It still carries both facts — the glyph is the kind of destination,
+   the hue is the branch — and the rows get about a third shorter. */
+const ICON_BOX = 44
 
 /* ── the right-hand column ──
    Exploration's shape: the row's own facts on the left, everything ABOUT the
@@ -1151,7 +1165,7 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
                   // row's text starts at the same x whatever its note's length.
                   ...(p.showThumb
                     ? {
-                        gridTemplateColumns: `${THUMB_W}px minmax(0,1fr) auto`,
+                        gridTemplateColumns: `${ICON_BOX}px minmax(0,1fr) auto`,
                         alignItems: 'start',
                         padding: '12px',
                       }
@@ -1160,11 +1174,17 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
                 }}
               >
                 {p.showThumb && (
-                  <GeneratedThumb accent={thumbAccents[hostKey(link.url)]} boost={1.7}>
-                    {/* Sized to the tile, as on an Exploration row. */}
+                  <GeneratedThumb
+                    accent={thumbAccents[hostKey(link.url)]}
+                    boost={1.7}
+                    width={ICON_BOX}
+                    height={ICON_BOX}
+                  >
+                    {/* 20 in a 44 box. The 34 an Exploration tile uses swims
+                        here and, at this size, clips against the corners. */}
                     {(() => {
                       const Glyph = THUMB_GLYPH[linkThumbKind(link.url)]
-                      return <Glyph size={34} />
+                      return <Glyph size={20} />
                     })()}
                   </GeneratedThumb>
                 )}
