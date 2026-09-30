@@ -4814,10 +4814,20 @@ a.cre-library-card-title::after {
   --color-compass-page-rule: var(--color-tertiary-200);
   --color-compass-page-eyebrow: var(--color-atlas-eyebrow);
   --color-compass-page-card: var(--color-primary-100);
-  /* The course card on Home and the Overview is WHITE (2026-09-29, the
-     designer's request; it was the guide's tertiary blue 100, #eaeef1, and tan
-     100 / 200 before that) — the same for every brand skin. */
-  --color-compass-course-card: var(--color-neutral-50);
+  /* THE GLOBAL CARD TREATMENT ON EVERY SKIN (2026-09-30, the designer's
+     request), in each brand's own colours:
+       - the course card (Home + Overview): #FCFCFB with a 1px stroke in the
+         V2 right rail's colour (--color-atlas-nav-rule). It was white,
+         neutral-50, with no stroke, from 2026-09-29.
+       - the Study Pace card: filled with the brand's left-nav hover
+         (--color-atlas-nav-hover — XCEL #F3F0EA, CRE teal 100, McKissock
+         #EEF2DC, Elite #E8EEF8) with a 1px Primary 200 stroke in the
+         brand's own ramp (same day, CRE first — it had no stroke).
+     Dark mode keeps the old treatment (see the dark block). */
+  --color-compass-course-card: #fcfcfb;
+  --color-compass-course-card-stroke: var(--color-atlas-nav-rule);
+  --color-atlas-outlined-card: var(--color-atlas-nav-hover);
+  --color-atlas-outlined-card-border: var(--color-primary-200);
   --color-compass-page-card-border: var(--color-primary-200);
   --color-compass-page-card-rule: var(--color-primary-200);
   --color-compass-page-pill-ink: var(--color-primary-600);
@@ -4877,6 +4887,9 @@ a.cre-library-card-title::after {
   --color-compass-page-rule: var(--color-border-subtle);
   --color-compass-page-card: var(--color-surface-card);
   --color-compass-course-card: var(--color-surface-card);
+  --color-compass-course-card-stroke: transparent;
+  --color-atlas-outlined-card: transparent;
+  --color-atlas-outlined-card-border: var(--color-atlas-nav-rule);
   --color-compass-page-card-border: var(--color-border-subtle);
   --color-compass-page-card-rule: var(--color-border-subtle);
   --color-compass-page-pill-ink: var(--color-primary-200);
@@ -5001,6 +5014,16 @@ a.cre-library-card-title::after {
    swatch's LABEL still reads #9A1B1E — XCEL's, a copy leftover). The frame's
    Secondary (orange #f49233) and Tertiary (light blue #39bae3) scales are not
    used by the skin. */
+/* XCEL only: the left nav's active row at Secondary 200 at 50% on white, a
+   solid #F3F0EA (2026-09-30, the designer's request; Secondary 200 #E7E0D6
+   briefly). The hover takes the same fill (same day), which the course
+   page's left nav follows through --color-compass-rail-hover. Scoped to the
+   XCEL skin so CRE, which inherits the base nav tokens, keeps its own. */
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel'] {
+  --color-atlas-nav-active-fill: #f3f0ea;
+  --color-atlas-nav-hover: #f3f0ea;
+}
+
 [data-brand='xcel'][data-atlas-palette][data-atlas-brand='cre'] {
   --color-cta-100: #ccdde8;
   --color-cta-200: #99bbd2;
@@ -5029,17 +5052,30 @@ a.cre-library-card-title::after {
   --color-tertiary-700: #01564d;
   --color-tertiary-800: #013934;
   --color-tertiary-900: #001d1a;
+  /* The left nav's hover and active row, and so the Study Pace card (which
+     takes --color-atlas-nav-hover): teal 100 #E6F4F2 lightened 20% toward
+     white, a solid #EBF6F5 (2026-09-30, the designer's request). */
+  --color-atlas-nav-active-fill: #ebf6f5;
+  --color-atlas-nav-hover: #ebf6f5;
 }
 [data-brand='xcel'][data-atlas-palette][data-atlas-brand='mckissock'] {
-  --color-cta-100: #fde9d6;
-  --color-cta-200: #fbd3ad;
-  --color-cta-300: #f9bd84;
-  --color-cta-400: #f7a75b;
-  --color-cta-500: #f59233;
-  --color-cta-600: #c47428;
-  --color-cta-700: #93571e;
-  --color-cta-800: #613a14;
-  --color-cta-900: #301d0a;
+  /* CTAs take the PRIMARY (olive) palette, not McKissock's orange CTA ramp —
+     2026-09-30, the designer's request. The CTA ramp is pointed at the primary
+     one step for step, so everything CTA-coloured follows (buttons, hovers,
+     links via --color-atlas-cta-ink = 700). The orange it replaced:
+     100 #fde9d6 · 200 #fbd3ad · 300 #f9bd84 · 400 #f7a75b · 500 #f59233 ·
+     600 #c47428 · 700 #93571e · 800 #613a14 · 900 #301d0a.
+     Button text is WHITE (2026-09-30, the designer's request), on a
+     primary-600 fill (below). */
+  --color-cta-100: var(--color-primary-100);
+  --color-cta-200: var(--color-primary-200);
+  --color-cta-300: var(--color-primary-300);
+  --color-cta-400: var(--color-primary-400);
+  --color-cta-500: var(--color-primary-500);
+  --color-cta-600: var(--color-primary-600);
+  --color-cta-700: var(--color-primary-700);
+  --color-cta-800: var(--color-primary-800);
+  --color-cta-900: var(--color-primary-900);
   --color-primary-100: #e7eccd;
   --color-primary-200: #d0d99b;
   --color-primary-300: #b8c66a;
@@ -5059,8 +5095,17 @@ a.cre-library-card-title::after {
   --color-tertiary-800: #373f02;
   --color-tertiary-900: #1b1f01;
   --color-atlas-cta-ink: var(--color-cta-700);
-  --color-atlas-on-cta: var(--color-neutral-900);
+  /* Buttons at PRIMARY 600 (#6E8005) — 2026-09-30, the designer's request
+     (700 #526004 briefly, 6.9:1). White on 600 is about 4.4:1: just under AA
+     for normal text, passing for large text only. 500 was 2.95:1. */
+  --color-atlas-cta: var(--color-primary-600);
+  --color-atlas-on-cta: #ffffff;
   --color-atlas-eyebrow: var(--color-tertiary-700);
+  /* The left nav's active row AND hover: Primary 100 at 70% on white, a solid
+     #EEF2DC (2026-09-30, the designer's request). The course page's left nav
+     hover follows through --color-compass-rail-hover. */
+  --color-atlas-nav-active-fill: #eef2dc;
+  --color-atlas-nav-hover: #eef2dc;
 }
 [data-brand='xcel'][data-atlas-palette][data-atlas-brand='elite'] {
   --color-cta-100: #ecdaea;
@@ -5090,6 +5135,12 @@ a.cre-library-card-title::after {
   --color-tertiary-700: #0d346d;
   --color-tertiary-800: #092348;
   --color-tertiary-900: #041124;
+  /* The left nav's active row: Primary 100 at 50% on white, a solid #E8EEF8
+     (2026-09-30, the designer's request) — it was Primary 100, #D0DDF0.
+     The rows' hover takes the same fill (same day), which the course page's
+     left nav inherits through --color-compass-rail-hover. */
+  --color-atlas-nav-active-fill: #e8eef8;
+  --color-atlas-nav-hover: #e8eef8;
 }
 
 /* ============================================================================
@@ -5113,8 +5164,28 @@ a.cre-library-card-title::after {
 [data-atlas-palette][data-atlas-font='figtree'] {
   --font-heading-serif: 'Figtree', system-ui, sans-serif;
 }
-[data-atlas-palette][data-atlas-font='plus-jakarta-sans'] {
-  --font-heading-serif: 'Plus Jakarta Sans', system-ui, sans-serif;
+/* Open Sans replaced Plus Jakarta Sans (2026-09-30, the designer's request) —
+   the product's body face, at 500, as a heading option. */
+[data-atlas-palette][data-atlas-font='open-sans'] {
+  --font-heading-serif: 'Open Sans', system-ui, sans-serif;
+}
+/* Every heading at SemiBold (600) under Open Sans (2026-09-30, the designer's
+   request). The other faces get one weight by loading only that weight; Open
+   Sans can't, since it is also the body face and index.html loads its whole
+   range, so each heading would otherwise render at its own component weight
+   (400 on the course title). The heading face reaches elements through inline
+   styles, so this matches on them: the serif token directly, and
+   `--font-heading` inside `.cre-dash-serif-headings`, where it is re-pointed
+   to the serif. The prototype bar's `--font-heading` sits outside that, so
+   the demo chrome is untouched. */
+[data-atlas-palette][data-atlas-font='open-sans'] [style*='--font-heading-serif'],
+[data-atlas-palette][data-atlas-font='open-sans'] .cre-dash-serif-headings [style*='--font-heading)'] {
+  font-weight: 600 !important;
+}
+/* …except the Home course card's title, at Medium (500) — 2026-09-30, the
+   designer's request. The extra class outranks the rule above. */
+[data-atlas-palette][data-atlas-font='open-sans'] .cre-compass-course-title[style] {
+  font-weight: 500 !important;
 }
 [data-atlas-palette][data-atlas-font='outfit'] {
   --font-heading-serif: 'Outfit', system-ui, sans-serif;
@@ -5219,11 +5290,12 @@ a.cre-library-card-title::after {
   /* SWAPPED 2026-09-30 (the designer's request): the Home course card and the
      Study Pace card traded fills — the course card #FCFCFB, Study Pace
      #ECEEF0. Then (same day) Study Pace lost its stroke and the course card
-     took the V2 right rail's: 1px `--color-atlas-nav-rule`. */
+     took the V2 right rail's: 1px `--color-atlas-nav-rule`. Study Pace then
+     took a 1px Primary 200 (#D8DEE4) stroke, as every skin did. */
   --color-compass-course-card: #fcfcfb;
   --color-compass-course-card-stroke: var(--color-atlas-nav-rule);
   --color-atlas-outlined-card: #eceef0;
-  --color-atlas-outlined-card-border: transparent;
+  --color-atlas-outlined-card-border: var(--color-primary-200);
   /* Step 1 (Schedule State Exam) matches it, #FCFCFB (2026-09-30). */
   --color-atlas-step-card: #fcfcfb;
   --color-compass-page-card: #eceef0;

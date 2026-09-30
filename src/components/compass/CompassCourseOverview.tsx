@@ -1,5 +1,6 @@
 import type { ComponentType, CSSProperties } from 'react'
 import { ArrowRightSolid, ArrowRotateLeft, Bullseye, HelpCircle, RubiLogo } from '@/icons'
+import { COMPASS_BUTTON } from './compassButton'
 import {
   COMPASS_OVERVIEW_DAY_ONE_FROM_DESIGN,
   type CompassOverviewTip,
@@ -96,9 +97,9 @@ export function CompassCourseOverview({
               </p>
               <p style={LESSON_TITLE}>{d.nextLesson.title}</p>
             </div>
-            <button type="button" className="cre-compass-primary" onClick={onBegin} style={PRIMARY}>
+            <button type="button" className="cre-compass-primary cre-compass-btn-primary" onClick={onBegin} style={COMPASS_BUTTON}>
               {d.cta}
-              <ArrowRightSolid size={13.5} aria-hidden />
+              <ArrowRightSolid size={12} aria-hidden />
             </button>
           </div>
         </section>
@@ -316,21 +317,9 @@ const LESSON_TITLE: CSSProperties = {
   lineHeight: '20px',
   color: 'var(--color-compass-page-heading)',
 }
-/* Colours in `.cre-compass-primary` so hover and focus need no !important. */
-const PRIMARY: CSSProperties = {
-  flex: 'none',
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 7,
-  padding: '11px 17px',
-  border: 'none',
-  borderRadius: 9,
-  cursor: 'pointer',
-  fontFamily: SERIF,
-  fontWeight: 600,
-  fontSize: 16,
-  lineHeight: 'normal',
-}
+/* The begin button is the Home course card's, `COMPASS_BUTTON` — one size and
+   face (Open Sans) on every brand since 2026-09-30; colours per brand in
+   `.cre-compass-primary`. */
 
 const STAGE_PILL: CSSProperties = {
   display: 'inline-flex',

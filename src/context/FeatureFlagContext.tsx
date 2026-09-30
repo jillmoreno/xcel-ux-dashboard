@@ -1298,7 +1298,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     description:
       'How the Atlas home\'s right rail (the four licensing steps) is framed. V1: Step 1 and Step 2 are separate cards, Steps 3 and 4 sit below with rounded left rules, and the State Requirements button is its own full-width button under them. V2: all four steps share one frame with the Step 2 card\'s background and 1px stroke; the steps lose their own cards and rules and line up on the frame\'s padding, and the State Requirements button sits inside the frame at its full inner width. Variant-only. Atlas/Compass version only.',
     defaultEnabled: true,
-    defaultVariant: 'v1',
+    // V2 is the default since 2026-09-30 (the designer's request), on every
+    // brand skin; V1 stays selectable.
+    defaultVariant: 'v2',
     variants: [
       { value: 'v1', label: 'V1 · Separate cards', description: 'Step 1 and Step 2 as their own cards, Steps 3 and 4 with left rules, the requirements button below.' },
       { value: 'v2', label: 'V2 · One frame', description: 'All four steps and the requirements button inside one frame styled like the Step 2 card.' },

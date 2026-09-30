@@ -1,6 +1,6 @@
 import type { CSSProperties } from 'react'
 import { ArrowRightSolid } from '@/icons'
-import { useAtlasSkin } from '@/components/layout/atlasBrandSkin'
+import { COMPASS_BUTTON } from './compassButton'
 
 /**
  * COMPASS HOME COURSE CARD — Figma "Atlas-Compass-Global-Navigation", node
@@ -65,9 +65,6 @@ export function CompassHomeCourseCard({
   // "Begin Course" at every point short of complete — 2026-09-24, the direct
   // ask, reversing the "Resume Course" this card read once lessons were done.
   const cta = complete ? 'Review Course' : 'Begin Course'
-  // The Global brand takes the Compass Design System v5's own primary button
-  // (2026-09-30, the designer's request) in place of the serif one.
-  const compassButton = useAtlasSkin() === 'global'
   return (
     <section aria-label="Current course" style={CARD}>
       <div style={TOP}>
@@ -75,7 +72,9 @@ export function CompassHomeCourseCard({
           {coverUrl ? <img src={coverUrl} alt="" aria-hidden style={COVER} /> : null}
           <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
             <p style={EYEBROW}>Current course:</p>
-            <h2 style={TITLE}>{courseTitle}</h2>
+            <h2 className="cre-compass-course-title" style={TITLE}>
+              {courseTitle}
+            </h2>
           </div>
         </div>
         {/* THE FACTS ROW — Figma 108:4620 (2026-09-24): led by a "Course
@@ -115,13 +114,13 @@ export function CompassHomeCourseCard({
         </div>
         <button
           type="button"
-          className={compassButton ? 'cre-compass-primary cre-compass-btn-primary' : 'cre-compass-primary'}
+          className="cre-compass-primary cre-compass-btn-primary"
           onClick={onBegin}
           disabled={!onBegin}
-          style={compassButton ? COMPASS_CTA : CTA}
+          style={COMPASS_BUTTON}
         >
           {cta}
-          <ArrowRightSolid size={compassButton ? 12 : 14} aria-hidden />
+          <ArrowRightSolid size={12} aria-hidden />
         </button>
       </div>
     </section>
@@ -258,43 +257,4 @@ const LESSON_TITLE: CSSProperties = {
   fontSize: 16,
   lineHeight: '20px',
   color: 'var(--color-text-primary)',
-}
-/* Colours, hover and focus are the Overview's `.cre-compass-primary`
-   (tokens.css) — the design draws the same button. */
-const CTA: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  gap: 7,
-  flex: 'none',
-  padding: '11px 17px',
-  borderRadius: 9,
-  border: 'none',
-  cursor: 'pointer',
-  fontFamily: 'var(--font-heading-serif)',
-  fontWeight: 600,
-  fontSize: 16,
-  whiteSpace: 'nowrap',
-}
-/* The Compass Design System v5's `.btn.primary` (compassdesignsystemv5.html):
-   min-height 40, 11 / 18 padding, 13.5px at 600, radius 9, an 8px gap, a 1px
-   border in the fill's colour. The file's Inter is the product's body font here,
-   the same substitution the rest of the Compass pieces make. Colours and the
-   slate hover are `.cre-compass-btn-primary` in tokens.css. */
-const COMPASS_CTA: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: 8,
-  flex: 'none',
-  minHeight: 40,
-  boxSizing: 'border-box',
-  padding: '11px 18px',
-  borderRadius: 9,
-  border: '1px solid transparent',
-  cursor: 'pointer',
-  fontFamily: 'var(--font-body)',
-  fontWeight: 600,
-  fontSize: 13.5,
-  whiteSpace: 'nowrap',
-  transition: 'background-color .15s, color .15s, border-color .15s',
 }

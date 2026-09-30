@@ -4,7 +4,7 @@
  * Style Guide's current face (DM Serif Display) plus the faces on the "Atlas
  * Serif Trials" page (claude.ai/artifact/7RBHGa9AXBT3wieEZw1N8e) — less Gloock,
  * Yeseva One and Albert Sans, taken out on 2026-09-29 at the designer's
- * request — each with
+ * request, and Plus Jakarta Sans, replaced by Open Sans the next day — each with
  * the trial's own settings so it reads as it did there:
  *
  *   - `weight` is the ONLY weight loaded. Weight synthesis is off under the
@@ -26,7 +26,7 @@ export type AtlasFont =
   | 'playfair-2'
   | 'source-serif-4'
   | 'figtree'
-  | 'plus-jakarta-sans'
+  | 'open-sans'
   | 'outfit'
   | 'instrument-sans'
 
@@ -41,7 +41,7 @@ export const ATLAS_FONTS: readonly {
   { font: 'playfair-2', label: 'Playfair 2', google: 'Playfair:wght@700' },
   { font: 'source-serif-4', label: 'Source Serif 4', google: 'Source+Serif+4:wght@600' },
   { font: 'figtree', label: 'Proxima Nova stand-in (Figtree)', google: 'Figtree:wght@500' },
-  { font: 'plus-jakarta-sans', label: 'Plus Jakarta Sans', google: 'Plus+Jakarta+Sans:wght@500' },
+  { font: 'open-sans', label: 'Open Sans', google: 'Open+Sans:wght@500' },
   { font: 'outfit', label: 'Outfit', google: 'Outfit:wght@400' },
   { font: 'instrument-sans', label: 'Instrument Sans', google: 'Instrument+Sans:wght@500' },
 ]
