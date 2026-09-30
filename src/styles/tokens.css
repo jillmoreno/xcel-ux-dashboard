@@ -5141,6 +5141,12 @@ a.cre-library-card-title::after {
      left nav inherits through --color-compass-rail-hover. */
   --color-atlas-nav-active-fill: #e8eef8;
   --color-atlas-nav-hover: #e8eef8;
+  /* The Study Pace card's stroke one step lighter than every skin's Primary
+     200: Primary 100, #D0DDF0 (2026-09-30, the designer's request). */
+  --color-atlas-outlined-card-border: var(--color-primary-100);
+  /* The course card's rule (under the title block) one step lighter too:
+     Primary 100 (2026-09-30, the designer's request; it was 200). */
+  --color-compass-page-card-rule: var(--color-primary-100);
 }
 
 /* ============================================================================

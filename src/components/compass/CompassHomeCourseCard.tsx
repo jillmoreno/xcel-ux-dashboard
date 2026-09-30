@@ -225,13 +225,16 @@ const CHIP: CSSProperties = {
   whiteSpace: 'nowrap',
 }
 const FACT: CSSProperties = { fontFamily: 'var(--font-body)', fontSize: 11, lineHeight: '16px' }
+/* A PILL, filled with the Study Pace card's colour and no stroke (2026-09-30,
+   the designer's request) — it was a 4px-radius outlined box, which read as a
+   button. The fill follows each brand skin's `--color-atlas-outlined-card`. */
 const LESSON_PILL: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
   gap: 4,
-  padding: '4px 8px',
-  borderRadius: 4,
-  border: '1px solid var(--color-compass-page-card-border)',
+  padding: '5px 10px',
+  borderRadius: 999,
+  background: 'var(--color-atlas-outlined-card, var(--color-compass-page-card))',
   fontFamily: 'var(--font-body)',
   fontWeight: 700,
   fontSize: 10,
