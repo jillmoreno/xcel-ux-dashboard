@@ -1,6 +1,6 @@
 import { useMemo, useState, type CSSProperties } from 'react'
 import { CalendarTearOff } from '@/components/ui/CalendarTearOff'
-import { ArrowLeft, ArrowRight, CalendarExclamation, HourglassClock, PenToSquare } from '@/icons'
+import { ArrowLeft, ArrowRight, HourglassClock, PenToSquare } from '@/icons'
 import { clearExamDate, useExamDate, writeExamDate } from '@/data/examDateStore'
 import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
@@ -303,14 +303,12 @@ function PromptState({
 function NotYetState({ onSchedule }: { onSchedule: () => void }) {
   return (
     <>
-      <div style={notYetHeadingRowStyle}>
-        <CalendarExclamation
-          size={16}
-          aria-hidden
-          style={{ color: 'var(--color-text-secondary)', flexShrink: 0 }}
-        />
-        <p style={notYetHeadingStyle}>No exam date yet? That’s okay.</p>
-      </div>
+      {/* The calendar glyph came off on 2026-09-30, the direct ask — the same
+          call `CourseEntryCard`'s book icon got two days earlier, and for the
+          same reason: it decorated a line that already says what it is rather
+          than naming anything the words did not. The row wrapper went with it,
+          since there is nothing left to sit beside. */}
+      <p style={notYetHeadingStyle}>No exam date yet? That’s okay.</p>
       <p style={notYetBodyStyle}>
         You can register for your exam{' '}
         {/* ⚠ NEW TAB, and `rel` with it. This leaves XCEL for PSI, and a learner
@@ -331,7 +329,12 @@ function NotYetState({ onSchedule }: { onSchedule: () => void }) {
         >
           here
         </a>
-        . Once you have a date, add it here.
+        {/* The second "here" is this card, not a link — and it now says WHY
+            it wants the date. The invitation was bare ("add it here"), which
+            asked for a thing without naming what it buys; the date drives the
+            Study Pace plan and the countdown, so the sentence says so. */}
+        . Once you have a date, add it here so we can help you plan your study time and stay on
+        track.
       </p>
       <button type="button" style={linkStyle} onClick={onSchedule}>
         I have my exam date →
@@ -703,15 +706,11 @@ const notYetButtonStyle: CSSProperties = {
   cursor: 'pointer',
 }
 
-const notYetHeadingRowStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 8,
-  margin: '6px 0 0',
-}
 
 const notYetHeadingStyle: CSSProperties = {
-  margin: 0,
+  /* 6px under the eyebrow — it was 0 while the flex row above owned the
+     offset, and the row went with the icon. */
+  margin: '6px 0 0',
   fontFamily: 'var(--font-heading)',
   fontWeight: 700,
   fontSize: 15,
