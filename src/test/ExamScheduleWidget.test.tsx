@@ -81,8 +81,20 @@ describe('exam-step-style: ask-first', () => {
     renderShell('journey-quick-links:off')
     expect(card().textContent).toContain('New York')
 
+    /* ⚠ "NOT YET" NAMES IT ONLY BY DESTINATION, since 2026-09-30. Its copy was
+       rewritten to "You can register for your exam here", where `here` is a
+       link to PSI's NEW YORK registration page — so the jurisdiction is in
+       where the link goes rather than in the sentence. That is a real gap in
+       the sweep and it is recorded rather than papered over: a screen reader
+       announcing the link reads "here", not the state.
+
+       Kept as an assertion on the HREF so the claim is still checkable: if the
+       link ever stopped being NY's, this phase would name the state nowhere at
+       all and nothing else would notice. */
     await user.click(within(card()).getByRole('button', { name: 'Not yet' }))
-    expect(card().textContent).toContain('New York')
+    const psi = within(card()).getByRole('link', { name: 'here' })
+    expect(psi.getAttribute('href')).toBe('https://test-takers.psiexams.com/nyins')
+    expect(psi.getAttribute('target')).toBe('_blank')
 
     await user.click(within(card()).getByRole('button', { name: /I have my exam date/ }))
     expect(within(card()).getByText('When is your New York state exam?')).toBeTruthy()
@@ -121,7 +133,7 @@ describe('exam-step-style: ask-first', () => {
     const c = card()
     expect(within(c).queryByText('Have you scheduled your New York state exam?')).toBeNull()
     expect(within(c).getByText(/No exam date yet\? That’s okay\./)).toBeTruthy()
-    expect(within(c).getByText(/register for your New York exam through the state licensing board/)).toBeTruthy()
+    expect(within(c).getByText(/You can register for your exam/)).toBeTruthy()
     expect(within(c).getByRole('button', { name: /I have my exam date/ })).toBeTruthy()
   })
 

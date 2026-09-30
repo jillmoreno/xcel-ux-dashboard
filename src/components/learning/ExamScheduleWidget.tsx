@@ -4,6 +4,7 @@ import { ArrowLeft, ArrowRight, CalendarExclamation, HourglassClock, PenToSquare
 import { clearExamDate, useExamDate, writeExamDate } from '@/data/examDateStore'
 import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
+import { GET_LICENSED_STEPS } from '@/data/nyProducerRequirements'
 import { examCalendarSkin } from './examCalendarSkins'
 import { daysUntilIso } from '@/data/courseExpiry'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
@@ -65,6 +66,17 @@ import { widgetEyebrowStyle } from './widgetStyles'
  *     countdown against the real today would put it months out and make this
  *     card disagree with the Study Plan beside it.
  */
+
+/**
+ * Where PSI takes registrations — read off the published `schedule-exam` step
+ * rather than written out again, so this link and the step sheet that states
+ * the same URL cannot drift apart. ⚠ IT IS NEW YORK'S. The step data is the NY
+ * producer licence throughout; a second jurisdiction needs its own href here as
+ * much as it needs its own step.
+ */
+const PSI_REGISTRATION_HREF =
+  GET_LICENSED_STEPS.find((s) => s.id === 'schedule-exam')?.href ??
+  'https://test-takers.psiexams.com/nyins'
 
 /* ⚠ THE SELECTED RAIL ITEM'S COLOUR, AT HALF ITS STRENGTH — 12%, reduced from
    24% on 2026-09-29.
@@ -180,7 +192,7 @@ export function ExamScheduleWidget({
       )}
 
       {activePhase === 'not-yet' && (
-        <NotYetState stateName={stateName} onSchedule={() => openPicker('not-yet')} />
+        <NotYetState onSchedule={() => openPicker('not-yet')} />
       )}
 
       {activePhase === 'picking' && (
@@ -288,13 +300,7 @@ function PromptState({
 
 /* ─── state 2 · "Not yet" — shrinks, keeps the door open ────────────────── */
 
-function NotYetState({
-  stateName,
-  onSchedule,
-}: {
-  stateName: string
-  onSchedule: () => void
-}) {
+function NotYetState({ onSchedule }: { onSchedule: () => void }) {
   return (
     <>
       <div style={notYetHeadingRowStyle}>
@@ -306,8 +312,26 @@ function NotYetState({
         <p style={notYetHeadingStyle}>No exam date yet? That’s okay.</p>
       </div>
       <p style={notYetBodyStyle}>
-        You can register for your {stateName} exam through the state licensing board. Once you
-        have a date, add it here and we’ll count down to it for you.
+        You can register for your exam{' '}
+        {/* ⚠ NEW TAB, and `rel` with it. This leaves XCEL for PSI, and a learner
+            part-way through booking should not lose the dashboard they will
+            come back to with a date — the same call every other outbound link
+            in this journey makes.
+
+            `.cre-cta-ink` with NO inline colour: the CTA ramp is a FILL colour
+            on XCEL and reads 1.84:1 as text on the dark page, so the class
+            swaps to the light stop under `[data-theme='dark']` and an inline
+            value would beat it while looking correct. */}
+        <a
+          href={PSI_REGISTRATION_HREF}
+          target="_blank"
+          rel="noreferrer noopener"
+          className="cre-link-action cre-cta-ink"
+          style={{ fontWeight: 700 }}
+        >
+          here
+        </a>
+        . Once you have a date, add it here.
       </p>
       <button type="button" style={linkStyle} onClick={onSchedule}>
         I have my exam date →
