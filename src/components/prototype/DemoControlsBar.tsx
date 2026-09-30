@@ -866,11 +866,14 @@ export function DemoControlsBar({
             which is a different question (how far through the COURSE you are,
             not how ready for the exam). A learner can be 90% through and not
             ready, which is the whole reason the section exists.
-            HIDDEN on the Atlas/Compass version "for now" (2026-09-30, the
-            designer's request): it has no Readiness section, so the control
-            could only ever show disabled there. Every other version keeps the
-            disabled-pill behaviour below. */}
-        {!onAtlasVersion && (
+            HIDDEN wherever it would be empty (2026-09-30, the designer's
+            request — first on the Atlas/Compass version, then on every version
+            with no Readiness section: Testing, Testing 2). It used to show there
+            as a disabled "Not on this version" pill; an empty control is noise.
+            The disabled-pill props below are left in place but unreached
+            today; the rail rule decides, so a version that gains the section
+            shows the control again with no edit here. */}
+        {readinessReachable && !onAtlasVersion && (
         <DemoDropdown
           id="readiness"
           /* NOT the resolved state when there is no section: a greyed pill
