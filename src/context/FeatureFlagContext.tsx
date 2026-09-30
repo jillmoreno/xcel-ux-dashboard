@@ -721,6 +721,16 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
      and a picker with one option is a label. The two losing treatments are
      unwired, not deleted; the Archive row carries the re-wire. */
   {
+    key: 'journey-quick-links',
+    group: 'Widgets',
+    label: 'Journey — quick links',
+    description:
+      'Where the journey column\u2019s SHEET LINKS live. ON (the default) collects them into a Quick links card under the last step \u2014 Exam Information, How to Get Your License, State Requirements \u2014 and HIDES the per-card ones: \u201cExam Details\u201d on the exam card, \u201cWhat to expect\u201d on Pass State Exam, \u201cHow to apply\u201d on Get Licensed. Off puts each link back on the card it belongs to and removes the Quick links card. \u26a0 IT IS ONE DECISION, NOT TWO, which is why one flag drives both halves: the question is whether these sheets are read as part of the step you are on or looked up when you want them, and running both at once would put every destination on the page twice. \u26a0 THE SHEETS AND THEIR DESTINATIONS ARE IDENTICAL EITHER WAY \u2014 only the way in moves, so what is being compared is findability and nothing else. \u26a0 IT MOVES WHAT A USER TEST CAN RIG: on the default, `home.schedule-exam`, `home.what-to-expect` and `home.how-to-apply` do not render, and the three quick-link ids do. `CtaTest`\u2019s unconditional list follows the default, and `promote-to-testing` freezes a SHA, so a session sheet cut from an older build still names the controls that build had.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'exam-card-background',
     group: 'Widgets',
     label: 'Exam card — background',

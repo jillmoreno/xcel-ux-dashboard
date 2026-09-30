@@ -116,6 +116,7 @@ const REBRAND_FLAGS = [
      card's controls — both only do anything on the arm that won. */
   'exam-calendar-style',
   'exam-card-background',
+  'journey-quick-links',
   'journey-step-order',
   'study-pace-hidden',
   'nav-rail-icons',

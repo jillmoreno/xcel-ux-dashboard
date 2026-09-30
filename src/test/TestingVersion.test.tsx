@@ -1069,6 +1069,18 @@ describe('the post-course steps are their own widgets', () => {
     // differs, and "What to expect" on the application step would be the
     // generic label that tells a learner nothing.
     seed()
+    /* ⚠ PINNED TO `journey-quick-links:off` since 2026-09-30. These per-card
+       links are exactly what the default now HIDES — it collects them into one
+       Quick links card — so this test only has a subject on the off arm. That
+       is the right pin rather than a weakening: the claim is that each step's
+       link is LABELLED FROM ITS OWN DATA, and that is still true wherever the
+       links render. The collected-vs-per-card question is asserted in
+       `ExamScheduleWidget.test.tsx`. */
+    /* ⚠ ON `window.location`, NOT the router entry. `?ff=` is read from
+       `window.location.search`; a MemoryRouter entry carrying it reaches the
+       router and never the flag provider. The trap `ExamDateCard.test.tsx`
+       records. `beforeEach` resets the URL, so this does not leak forward. */
+    window.history.replaceState({}, '', `/?ff=${encodeURIComponent('journey-quick-links:off')}`)
     renderShell(TESTING_URL)
     const col = rightColumn()
     /* "Exam Details" as of 2026-09-29 (was "Schedule State Exam", and "How to

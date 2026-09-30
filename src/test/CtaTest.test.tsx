@@ -383,9 +383,19 @@ describe('on the Home dashboard', () => {
          control that is always dead is not a testable CTA — worse, a run could
          "kill" it and read a participant's shrug as a finding about the
          session's rigging rather than about the product. */
-      'home.schedule-exam',
-      'home.what-to-expect',
-      'home.how-to-apply',
+      /* ⚠ `home.schedule-exam`, `home.what-to-expect` and `home.how-to-apply`
+         WERE HERE and moved out on 2026-09-30 — not retired, HIDDEN BY THE
+         DEFAULT. `journey-quick-links` collects those three destinations into
+         one card, so on the default surface the per-card links do not render
+         and these three do instead. All three ids still exist, still have
+         literals, and still render with `?ff=journey-quick-links:off`.
+
+         ⚠ THIS LIST FOLLOWS THE DEFAULT, which is the only thing it can mean:
+         it asserts what a participant actually sees on a fresh load. A session
+         sheet cut from an older frozen build still names the old three, and
+         that is correct — `promote-to-testing` freezes a SHA. */
+      'home.quick-exam-info',
+      'home.quick-get-licensed',
       'home.state-requirements',
       'nav.dashboard',
     ]) {

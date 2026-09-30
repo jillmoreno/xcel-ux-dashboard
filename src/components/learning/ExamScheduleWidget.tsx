@@ -116,6 +116,11 @@ export function ExamScheduleWidget({
   /* THE CARD'S GROUND — `exam-card-background`. See the flag for why the tint is
      bound to the rail's token rather than copied. */
   const tinted = useFeatureFlag('exam-card-background').variant === 'tint'
+  /* ⚠ HIDES THE "EXAM DETAILS" LINK ONLY. When `journey-quick-links` is on, the
+     Quick links card below carries that destination, so keeping it here would
+     be the second copy. Clear exam date is NOT a way into a sheet — it is a
+     destructive control on this card's own data — so it survives the flag. */
+  const quickLinks = useFeatureFlag('journey-quick-links').enabled
   /* No stored date ⇒ the card is still asking ⇒ it wears the eyebrow. */
   const hasEyebrow = !stored
 
@@ -229,7 +234,7 @@ export function ExamScheduleWidget({
         >
           Clear exam date
         </button>
-      ) : (
+      ) : quickLinks ? null : (
         <button
           type="button"
           data-cta-id="home.schedule-exam"

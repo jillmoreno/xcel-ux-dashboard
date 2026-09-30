@@ -151,6 +151,10 @@ export function StudyJourneyWidget({
    * it, which is why the licensing steps are numbered by a running count rather
    * than by their index.
    */
+  /* ONE FLAG, BOTH HALVES — `journey-quick-links`. The Quick links card and the
+     per-card sheet links are the same decision seen from two sides, and running
+     both would put every destination on the page twice. */
+  const quickLinks = useFeatureFlag('journey-quick-links').enabled
   /* The exam card asks a question rather than naming a step, so it takes no
      number and the three real steps close up behind it. Unconditional now that
      it is the only treatment — this read `examFirst && !askFirst` while the
@@ -222,6 +226,7 @@ export function StudyJourneyWidget({
               shell={shell}
               onOpenStep={onOpenStep}
               state={path.state}
+              hideSheetLink={quickLinks}
             />
           ))}
         {collapseCoursework ? (
@@ -274,6 +279,7 @@ export function StudyJourneyWidget({
             shell={shell}
             onOpenStep={onOpenStep}
             state={path.state}
+            hideSheetLink={quickLinks}
             /* The arrival card is named for the DESTINATION rather than the
                action, per the ask ("Get Licensed - Apply for your license"): the
                heading says where the route ends and the lead line says what you
@@ -316,6 +322,7 @@ export function StudyJourneyWidget({
             and were all already reachable. This is a second, flatter way in for
             someone who knows what they want, which is what a quick-links block
             is for. */}
+        {quickLinks ? (
         <section aria-label="Quick links" style={shell}>
           <p className="cre-eyebrow-ink" style={widgetEyebrowStyle}>
             Quick links
@@ -357,6 +364,7 @@ export function StudyJourneyWidget({
             ) : null}
           </div>
         </section>
+        ) : null}
       </div>
     )
   }
@@ -525,6 +533,7 @@ function LicensingStepWidget({
   onOpenStep,
   heading,
   state,
+  hideSheetLink = false,
 }: {
   step: LicensingStep
   /** Continues the journey's 01-04. See the note in `StudyJourneyWidget`. */
@@ -540,6 +549,11 @@ function LicensingStepWidget({
    * thing. This is a heading override and nothing else now.
    */
   heading?: string
+  /** `journey-quick-links` collects these into one card, so the card's own
+   *  "What to expect" / "How to apply" would be the second copy. ⚠ Suppresses
+   *  the LINK only — the exam-date capture below it, where this card still has
+   *  one, is a control rather than a way into a sheet and stays. */
+  hideSheetLink?: boolean
   /** The path's jurisdiction CODE ("NY"), for the scheduled heading. Passed
    *  rather than derived: the widget has no path. */
   state?: string
@@ -719,7 +733,7 @@ function LicensingStepWidget({
           onDone={() => setEditingExam(false)}
         />
       ) : null}
-      {onOpenStep || scheduled ? (
+      {(onOpenStep || scheduled) && !hideSheetLink ? (
         <button
           type="button"
           /* ⚠ DERIVED FROM THE STEP — one element renders all three licensing

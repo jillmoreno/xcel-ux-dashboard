@@ -17,6 +17,14 @@ import { NY_GOVERNING_AGENCY } from '@/data/nyProducerRequirements'
  * is the sequence, because the sequence is the variant: the card ASKS, and each
  * of the two answers leads somewhere that is still the same card.
  *
+ * ⚠ MOST TESTS HERE PIN `journey-quick-links:off`, which is NOT the default.
+ * The card owns its "Exam Details" link only on that arm; with quick links ON
+ * the link moves to the Quick links card below and the footer is empty. These
+ * tests are about the CARD, so they pin the arm where the card has the link —
+ * the interaction between the two is asserted in its own block at the bottom.
+ * (They used to pin `exam-step-style:ask-first`, a flag retired 2026-09-29, so
+ * the string was doing nothing.)
+ *
  * ⚠ THE CLOCK IS `FIXTURE_TODAY` — 2026-05-11, with no demo-day offset because
  * `beforeEach` clears the storage that offset is read from. Every date below is
  * counted from there, which is why the picker opens on May 2026 and why the
@@ -70,7 +78,7 @@ describe('exam-step-style: ask-first', () => {
        the assertion: a single-phase check would pass with the rule applied
        once and forgotten three times. */
     const user = userEvent.setup()
-    renderShell('exam-step-style:ask-first')
+    renderShell('journey-quick-links:off')
     expect(card().textContent).toContain('New York')
 
     await user.click(within(card()).getByRole('button', { name: 'Not yet' }))
@@ -91,7 +99,7 @@ describe('exam-step-style: ask-first', () => {
   })
 
   it('opens on the question, with both answers available', () => {
-    renderShell('exam-step-style:ask-first')
+    renderShell('journey-quick-links:off')
     const c = card()
     expect(within(c).getByText('Have you scheduled your New York state exam?')).toBeTruthy()
     expect(within(c).getByRole('button', { name: 'Yes' })).toBeTruthy()
@@ -107,7 +115,7 @@ describe('exam-step-style: ask-first', () => {
        learner who books next week, and they must not have to hunt for the card
        when they do. So the question goes away and the way back in stays. */
     const user = userEvent.setup()
-    renderShell('exam-step-style:ask-first')
+    renderShell('journey-quick-links:off')
     await user.click(within(card()).getByRole('button', { name: 'Not yet' }))
 
     const c = card()
@@ -122,7 +130,7 @@ describe('exam-step-style: ask-first', () => {
        rather than a dead end, so it is worth pinning that they land in the same
        place. */
     const user = userEvent.setup()
-    renderShell('exam-step-style:ask-first')
+    renderShell('journey-quick-links:off')
     await user.click(within(card()).getByRole('button', { name: 'Not yet' }))
     await user.click(within(card()).getByRole('button', { name: /I have my exam date/ }))
     expect(within(card()).getByRole('button', { name: /Previous month/ })).toBeTruthy()
@@ -139,7 +147,7 @@ describe('exam-step-style: ask-first', () => {
        query. The same decision `date-first` made, kept deliberately so the two
        arms differ in the ASKING and nothing else. */
     const user = userEvent.setup()
-    renderShell('exam-step-style:ask-first')
+    renderShell('journey-quick-links:off')
     expect(within(card()).queryByRole('button', { name: /Previous month/ })).toBeNull()
 
     await user.click(within(card()).getByRole('button', { name: 'Yes' }))
@@ -154,7 +162,7 @@ describe('exam-step-style: ask-first', () => {
        design for — `examDateRenewal` already returns null for one, so a card
        that accepted it would show a countdown the rest of the page ignores. */
     const user = userEvent.setup()
-    renderShell('exam-step-style:ask-first')
+    renderShell('journey-quick-links:off')
     await user.click(within(card()).getByRole('button', { name: 'Yes' }))
     const c = card()
     expect(within(c).getByRole('button', { name: /May 4, 2026/ })).toHaveProperty('disabled', true)
@@ -169,7 +177,7 @@ describe('exam-step-style: ask-first', () => {
        what re-points the Target Exam Date and the Study Pace tile — a date this
        card kept to itself would be a control that does nothing. */
     const user = userEvent.setup()
-    renderShell('exam-step-style:ask-first')
+    renderShell('journey-quick-links:off')
     await user.click(within(card()).getByRole('button', { name: 'Yes' }))
     await user.click(within(card()).getByRole('button', { name: /May 29, 2026/ }))
     await user.click(within(card()).getByRole('button', { name: 'Save exam date' }))
@@ -186,7 +194,7 @@ describe('exam-step-style: ask-first', () => {
 
   it('Save stays inert until a day is actually chosen', async () => {
     const user = userEvent.setup()
-    renderShell('exam-step-style:ask-first')
+    renderShell('journey-quick-links:off')
     await user.click(within(card()).getByRole('button', { name: 'Yes' }))
     expect(within(card()).getByRole('button', { name: 'Save exam date' })).toHaveProperty(
       'disabled',
@@ -196,7 +204,7 @@ describe('exam-step-style: ask-first', () => {
 
   it('Edit reopens the picker on the saved date, and Cancel keeps it', async () => {
     const user = userEvent.setup()
-    renderShell('exam-step-style:ask-first')
+    renderShell('journey-quick-links:off')
     await user.click(within(card()).getByRole('button', { name: 'Yes' }))
     await user.click(within(card()).getByRole('button', { name: /May 29, 2026/ }))
     await user.click(within(card()).getByRole('button', { name: 'Save exam date' }))
@@ -223,7 +231,7 @@ describe('exam-step-style: ask-first', () => {
        that opened on "Have you scheduled your New York state exam?" for someone
        plainly has would read as the product not listening. */
     window.localStorage.setItem('cgp.examDate', '2026-05-29')
-    renderShell('exam-step-style:ask-first')
+    renderShell('journey-quick-links:off')
     const c = card()
     expect(within(c).queryByText('Have you scheduled your New York state exam?')).toBeNull()
     expect(within(c).getByText('18 days')).toBeTruthy()
@@ -234,7 +242,7 @@ describe('exam-step-style: ask-first', () => {
        lifts this step into the promoted slot above the coursework card, and a
        branch that handled only one of them would serve this arm under one order
        and a different one under the other — an A/B measuring two things. */
-    renderShell('exam-step-style:ask-first,journey-step-order:exam-first')
+    renderShell('journey-quick-links:off,journey-step-order:exam-first')
     const c = card()
     expect(within(c).getByText('Have you scheduled your New York state exam?')).toBeTruthy()
     /* ⚠ NO STEP NUMBER — changed 2026-09-29. This asserted "Step 1" until the
@@ -251,7 +259,7 @@ describe('exam-step-style: ask-first', () => {
        THE DELIBERATE EXCEPTION and is asserted separately below — a fresh load
        cannot start there, so `CtaTest` is still met. */
     const user = userEvent.setup()
-    renderShell('exam-step-style:ask-first')
+    renderShell('journey-quick-links:off')
     const tagged = () => card().querySelectorAll('[data-cta-id="home.schedule-exam"]').length
 
     expect(tagged()).toBe(1)
@@ -270,7 +278,7 @@ describe('exam-step-style: ask-first', () => {
        destructive control is only coherent for someone with one. */
     const user = userEvent.setup()
     window.localStorage.setItem('cgp.examDate', '2026-05-29')
-    renderShell('exam-step-style:ask-first')
+    renderShell('journey-quick-links:off')
 
     // The readout itself still points at the Exam Details menu.
     expect(within(card()).getByRole('button', { name: /Exam Details/ })).toBeTruthy()
@@ -295,7 +303,7 @@ describe('exam-step-style: ask-first', () => {
     /* Both of those routes belong to a learner who has no date yet, so there is
        nothing to clear and the Exam Details menu is the more useful offer. */
     const user = userEvent.setup()
-    renderShell('exam-step-style:ask-first')
+    renderShell('journey-quick-links:off')
     await user.click(within(card()).getByRole('button', { name: 'Yes' }))
     expect(within(card()).queryByRole('button', { name: 'Clear exam date' })).toBeNull()
     expect(within(card()).getByRole('button', { name: /Exam Details/ })).toBeTruthy()
@@ -309,7 +317,7 @@ describe('exam-step-style: ask-first', () => {
   it('Clear wipes the SHARED date and returns the card to the question', async () => {
     const user = userEvent.setup()
     window.localStorage.setItem('cgp.examDate', '2026-05-29')
-    renderShell('exam-step-style:ask-first')
+    renderShell('journey-quick-links:off')
     await user.click(within(card()).getByRole('button', { name: /Edit/ }))
     await user.click(within(card()).getByRole('button', { name: 'Clear exam date' }))
 
@@ -329,7 +337,7 @@ describe('exam-step-style: ask-first', () => {
 describe('Exam Details — the menu the footer opens', () => {
   const sheet = () => screen.getByRole('dialog')
   const openMenu = async (user: ReturnType<typeof userEvent.setup>) => {
-    renderShell('exam-step-style:ask-first')
+    renderShell('journey-quick-links:off')
     await user.click(within(card()).getByRole('button', { name: /Exam Details/ }))
   }
 
@@ -388,7 +396,7 @@ describe('Exam Details — the menu the footer opens', () => {
        either way; only the naming was ambiguous. */
     const user = userEvent.setup()
     window.localStorage.setItem('cgp.examDate', '2026-05-29')
-    renderShell('exam-step-style:ask-first')
+    renderShell('journey-quick-links:off')
     await user.click(within(card()).getByRole('button', { name: /Exam Details/ }))
 
     const d = sheet()
@@ -458,7 +466,7 @@ describe('exam-calendar-style — how the picker is drawn', () => {
        calendars rather than two treatments. */
     for (const arm of ['minimal', 'framed', 'branded']) {
       const user = userEvent.setup()
-      await openPicker(user, `exam-step-style:ask-first,exam-calendar-style:${arm}`)
+      await openPicker(user, `journey-quick-links:off,exam-calendar-style:${arm}`)
       const c = card()
       expect(within(c).getByText(/May 2026/), arm).toBeTruthy()
       // Before the anchored today — never bookable.
@@ -479,7 +487,7 @@ describe('exam-calendar-style — how the picker is drawn', () => {
     /* The argument this arm makes: the saved readout is a navy-capped tear-off,
        so the thing you pick from should look like the thing you end up with. */
     const user = userEvent.setup()
-    await openPicker(user, 'exam-step-style:ask-first,exam-calendar-style:branded')
+    await openPicker(user, 'journey-quick-links:off,exam-calendar-style:branded')
     const row = monthRow()
     expect(row.style.background).toBe('var(--color-primary-500)')
     /* White on navy — and `--color-text-inverse` rather than a literal, because
@@ -489,7 +497,7 @@ describe('exam-calendar-style — how the picker is drawn', () => {
 
   it('`minimal` is still the hairline control it shipped as', async () => {
     const user = userEvent.setup()
-    await openPicker(user, 'exam-step-style:ask-first,exam-calendar-style:minimal')
+    await openPicker(user, 'journey-quick-links:off,exam-calendar-style:minimal')
     const frame = monthRow().parentElement!
     expect(frame.style.border).toBe('1px solid var(--color-neutral-300)')
     expect(frame.style.background).toBe('var(--color-surface-page)')
@@ -502,7 +510,7 @@ describe('exam-card-background — the card\'s ground', () => {
   it('defaults to white, i.e. the card sets no ground of its own', () => {
     const flag = FEATURE_FLAGS.find((f) => f.key === 'exam-card-background')
     expect(flag?.defaultVariant).toBe('white')
-    renderShell('exam-step-style:ask-first')
+    renderShell('journey-quick-links:off')
     // The shell's own surface, untouched — not a colour this card chose.
     expect(card().style.background).toBe('var(--color-surface-card)')
   })
@@ -512,7 +520,7 @@ describe('exam-card-background — the card\'s ground', () => {
        durably true if both sides read `--color-nav-icon-active-primary`; a
        hex that matches today diverges silently the day the rail is retuned.
        So this pins the EXPRESSION, not the rendered colour. */
-    renderShell('exam-step-style:ask-first,exam-card-background:tint')
+    renderShell('journey-quick-links:off,exam-card-background:tint')
     const bg = card().style.background
     expect(bg).toContain('--color-nav-icon-active-primary')
     /* The strength is tuned for a card and is NOT the rail's 24% — same hue,
@@ -523,5 +531,58 @@ describe('exam-card-background — the card\'s ground', () => {
        so transparent would land a different colour from the thing it quotes. */
     expect(bg).toContain('var(--color-surface-card)')
     expect(bg).not.toContain('transparent')
+  })
+})
+
+describe('journey-quick-links — where the sheet links live', () => {
+  const quick = () => screen.getByRole('region', { name: 'Quick links' })
+
+  it('is ON by default, and the links are in ONE place not two', () => {
+    /* ⚠ THE WHOLE CLAIM OF THE FLAG. Running both halves would put every
+       destination on the page twice, which is why one flag drives both and why
+       this asserts the ABSENCES as hard as the presences. */
+    const flag = FEATURE_FLAGS.find((f) => f.key === 'journey-quick-links')
+    expect(flag?.defaultEnabled).toBe(true)
+    renderShell()
+
+    // Collected…
+    expect(within(quick()).getByRole('button', { name: 'Exam Information' })).toBeTruthy()
+    expect(within(quick()).getByRole('button', { name: 'How to Get Your License' })).toBeTruthy()
+    expect(within(quick()).getByRole('button', { name: 'State Requirements' })).toBeTruthy()
+
+    // …and gone from the cards they came off.
+    expect(screen.queryByRole('button', { name: /Exam Details/ })).toBeNull()
+    expect(screen.queryByRole('button', { name: /What to expect/ })).toBeNull()
+    expect(screen.queryByRole('button', { name: /How to apply/ })).toBeNull()
+  })
+
+  it('puts every link back on its own card when off', () => {
+    renderShell('journey-quick-links:off')
+    expect(screen.queryByRole('region', { name: 'Quick links' })).toBeNull()
+    expect(screen.getByRole('button', { name: /Exam Details/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /What to expect/ })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /How to apply/ })).toBeTruthy()
+  })
+
+  it('still offers Clear on the exam card, which is not a sheet link', async () => {
+    /* ⚠ THE DISTINCTION THE FOOTER GATE HAS TO MAKE. "Exam Details" is a way
+       into a sheet and moves to Quick links; "Clear exam date" is a destructive
+       control on this card's own data and has nowhere else to go. Hiding the
+       whole footer slot would have taken it with the link — silently, since it
+       only appears in edit mode. */
+    const user = userEvent.setup()
+    window.localStorage.setItem('cgp.examDate', '2026-05-29')
+    renderShell()
+    await user.click(within(card()).getByRole('button', { name: /Edit/ }))
+    expect(within(card()).getByRole('button', { name: 'Clear exam date' })).toBeTruthy()
+  })
+
+  it('reaches the same sheets from the Quick links card', async () => {
+    /* The destinations are identical either way — only the way in moves, which
+       is what makes the two arms comparable at all. */
+    const user = userEvent.setup()
+    renderShell()
+    await user.click(within(quick()).getByRole('button', { name: 'Exam Information' }))
+    expect(screen.getByRole('heading', { name: 'Exam Details' })).toBeTruthy()
   })
 })
