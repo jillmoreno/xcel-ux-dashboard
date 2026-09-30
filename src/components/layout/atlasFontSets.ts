@@ -36,12 +36,19 @@ export const ATLAS_FONTS: readonly {
   /** Google Fonts css2 `family=` value, one weight only. Absent for the face
    *  index.html already loads. */
   google?: string
+  /** Left out of the Demo Controls' dropdown, but still a valid `?fonts=`
+   *  value with its tokens intact — un-hiding is deleting this flag. */
+  hidden?: boolean
 }[] = [
   { font: 'dm-serif-display', label: 'DM Serif Display (current)' },
   { font: 'playfair-2', label: 'Playfair 2', google: 'Playfair:wght@700' },
-  { font: 'source-serif-4', label: 'Source Serif 4', google: 'Source+Serif+4:wght@600' },
+  // 500 is loaded too, for the Home course title alone (2026-09-30); every
+  // other heading is held at 600 by a rule in tokens.css.
+  { font: 'source-serif-4', label: 'Source Serif 4', google: 'Source+Serif+4:wght@500;600' },
   { font: 'figtree', label: 'Proxima Nova stand-in (Figtree)', google: 'Figtree:wght@500' },
-  { font: 'open-sans', label: 'Open Sans', google: 'Open+Sans:wght@500' },
+  // Hidden from the dropdown 2026-09-30 (the designer's request); the
+  // semi-bold / course-title-500 rules in tokens.css stay for it.
+  { font: 'open-sans', label: 'Open Sans', google: 'Open+Sans:wght@500', hidden: true },
   { font: 'outfit', label: 'Outfit', google: 'Outfit:wght@400' },
   { font: 'instrument-sans', label: 'Instrument Sans', google: 'Instrument+Sans:wght@500' },
 ]

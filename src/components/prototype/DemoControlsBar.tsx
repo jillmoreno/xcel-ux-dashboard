@@ -598,7 +598,7 @@ export function DemoControlsBar({
           panelLabel="Heading font"
           panelMinWidth={260}
         >
-          {ATLAS_FONTS.map((f) => {
+          {ATLAS_FONTS.filter((f) => !f.hidden).map((f) => {
             const active = f.font === atlasFont
             return (
               <button

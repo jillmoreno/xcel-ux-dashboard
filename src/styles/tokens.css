@@ -5161,6 +5161,18 @@ a.cre-library-card-title::after {
 [data-atlas-palette][data-atlas-font='source-serif-4'] {
   --font-heading-serif: 'Source Serif 4', Georgia, serif;
 }
+/* The Home course title one step lighter, Medium (500), under Source Serif 4
+   (2026-09-30, the designer's request). Loading 500 alongside 600 means a
+   heading that asks for 400 would now pick 500, so every other heading-face
+   element is pinned to the SemiBold it had — the same inline-style match as
+   the Open Sans rule below; the title's class outranks it. */
+[data-atlas-palette][data-atlas-font='source-serif-4'] [style*='--font-heading-serif'],
+[data-atlas-palette][data-atlas-font='source-serif-4'] .cre-dash-serif-headings [style*='--font-heading)'] {
+  font-weight: 600 !important;
+}
+[data-atlas-palette][data-atlas-font='source-serif-4'] .cre-compass-course-title[style] {
+  font-weight: 500 !important;
+}
 [data-atlas-palette][data-atlas-font='figtree'] {
   --font-heading-serif: 'Figtree', system-ui, sans-serif;
 }

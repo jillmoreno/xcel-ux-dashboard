@@ -197,8 +197,11 @@ const TITLE: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-heading-serif)',
   fontWeight: 400,
-  fontSize: 'var(--type-atlas-h4-size, 38px)',
-  lineHeight: 'var(--type-atlas-h4-line, 40px)',
+  // The TRUE H4 — the -base tokens, Figma's values unscaled — whichever face
+  // the Fonts dropdown picks (2026-09-30, the designer's request: Playfair 2's
+  // ~27% size lift made it 48px). Other headings keep the scaled tokens.
+  fontSize: 'var(--type-atlas-h4-base-size, 38px)',
+  lineHeight: 'var(--type-atlas-h4-base-line, 40px)',
   letterSpacing: '-0.01em',
   color: 'var(--color-compass-page-heading)',
 }
