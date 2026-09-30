@@ -5,8 +5,9 @@ import { accountSectionsFor, type AccountSectionId } from './accountSections'
 
 /**
  * Account sub-nav — the vertical section list beside every account page
- * (Profile · Notifications · Licenses · Transcripts · Payment Methods ·
- * Purchases, plus Gift Recipients where it applies).
+ * (Profile · Notifications · Transcripts · Purchases, plus Gift Recipients
+ * where it applies). Licenses and Payment Methods were rows here until
+ * 2026-09-30 — archived.
  *
  * Modeled on the McKissock account layout: the page `<h1>` on top, this rail on
  * the left, the page's cards to its right. It's the SECOND level of navigation —

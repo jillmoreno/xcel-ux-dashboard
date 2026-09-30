@@ -1867,6 +1867,17 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'learning-resources',
   },
 
+  /* ─── Account menu → Appearance ────────────────────────────────────── */
+  {
+    key: 'account-appearance-preferences',
+    group: 'Account Menu',
+    label: 'Preferences (appearance)',
+    description:
+      'The "Preferences" row in the top-right account dropdown, between the account destinations and Logout. ON adds the row, which opens a sheet whose Appearance sub-view swaps the shell between Light / Dim / Dark / System. OFF (default) hides the row and the sheet with it. ⚠ ALSO ROUTE-SCOPED, and the flag does not override that: the appearance treatment only applies inside the Dashboard Discoverability shell, so the row appears on /dashboard-rebrand only — turning this ON elsewhere shows nothing, because the sheet would change nothing there.',
+    defaultEnabled: false,
+    page: 'dashboard-rebrand',
+  },
+
   /* ─── Purchases → Gift Recipients (purchase for others) ───────────── */
   {
     key: 'gift-recipients',

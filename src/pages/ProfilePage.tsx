@@ -3,7 +3,6 @@ import { supportsMembership, useAccount } from '@/context/AccountContext'
 import { profileFor } from '@/data/accountProfileFixtures'
 import {
   AccountDetailsCard,
-  InterestsCard,
   MembershipPlanCard,
   PersonalInformationCard,
 } from '@/components/account/profile/ProfileCards'
@@ -18,8 +17,11 @@ import {
  * page renders just the two-column card layout (no top nav, no account sub-nav,
  * no standalone heading).
  *
- * Two columns: Account Details + Personal Information (left) and Interests
- * (right). Each card has an edit pencil, opening a stub panel.
+ * Two columns: Account Details + Personal Information (left) and Membership
+ * Plan (right). Each card has an edit pencil, opening a stub panel.
+ *
+ * ON XCEL THIS RENDERS AS ONE COLUMN, and that is the whole right column being
+ * absent rather than empty — see the `supportsMembership` guard below.
  *
  * TWO CARDS CAME OUT on 2026-09-10, for different reasons:
  *
@@ -41,18 +43,34 @@ export function ProfilePage() {
   const profile = useMemo(() => profileFor(brand, isMember), [brand, isMember])
 
   return (
-    <div style={{ width: '100%', paddingBottom: 64 }}>
+    /* `cre-profile-actions` re-points `--color-action` at the home page's blue
+       for everything on this surface — the card edit pencils and the Membership
+       Plan upsell link here, and the Save / Cancel / Forgot-password controls
+       inside the sheets (which portal out of this tree and so carry the class
+       themselves). See the class note in tokens.css. */
+    <div className="cre-profile-actions" style={{ width: '100%', paddingBottom: 64 }}>
       <div style={columnsStyle}>
         {/* Left column */}
         <div style={columnStyle}>
           <AccountDetailsCard data={profile.account} isMember={isMember} />
           <PersonalInformationCard data={profile.personal} />
         </div>
-        {/* Right column */}
-        <div style={columnStyle}>
-          {supportsMembership(brand) && <MembershipPlanCard data={profile.membershipPlan} />}
-          <InterestsCard data={profile.interests} />
-        </div>
+        {/* Right column — the GUARD MOVED OUT TO THE COLUMN, 2026-09-30.
+            It used to wrap only `MembershipPlanCard` inside a column that
+            always rendered, because `InterestsCard` was there to fill it.
+            With Interests archived the column's only child is brand-gated, so
+            on a brand with no membership it rendered as an empty `flex: 1 1
+            340px` sibling — half the page reserved for nothing. Guarding the
+            column instead collapses the layout to one column on XCEL and
+            restores two the moment a brand has a membership.
+            ⚠ `MembershipPlanCard` itself is UNCHANGED and still merely gated —
+            it is not archived, and must not acquire an ARCHIVED_ITEMS row.
+            `InterestsCard` went; see `profile-interests-card`. */}
+        {supportsMembership(brand) && (
+          <div style={columnStyle}>
+            <MembershipPlanCard data={profile.membershipPlan} />
+          </div>
+        )}
       </div>
     </div>
   )
@@ -72,7 +90,7 @@ const columnStyle: CSSProperties = {
   // 208px account sub-nav (+40px gap), so the body column is ~248px narrower
   // than the shell's content column. Two 460px bases plus the 32px gap need
   // 952px against ~928px available, which wrapped the right column (Motivational
-  // Statement / Membership Plan / Interests) underneath the left one. 340 keeps
+  // Statement / Membership Plan) underneath the left one. 340 keeps
   // both columns side by side down to a ~712px body and still lets each grow to
   // the 560 cap on wide screens — the wrap is then a real narrow-width fallback
   // rather than the default.

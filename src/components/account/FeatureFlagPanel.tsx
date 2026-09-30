@@ -66,6 +66,8 @@ function flagPageIdForPath(pathname: string): FeatureFlagPageId | null {
 // color/style, learning-path width/breakdown, learning-vibrant) + the dead
 // Featured Products flag were removed in the flag audit.
 const REBRAND_FLAGS = [
+  // Appearance Preferences row in the account dropdown — off by default.
+  'account-appearance-preferences',
   // NOTE: `dashboard-progress-state` and `dashboard-education-type` were
   // intentionally dropped from this rebrand scope — the always-visible Demo
   // Controls bar (`DemoControlsBar`) exposes them as dedicated Progress /

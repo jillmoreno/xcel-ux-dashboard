@@ -1,4 +1,4 @@
-import { Bell, CreditCard, FileText, Gift, IdCard, Receipt, User } from '@/icons'
+import { Bell, FileText, Gift, Receipt, User } from '@/icons'
 import { supportsGiftRecipients } from '@/data/giftRecipientsFixtures'
 import type { Brand } from '@/context/AccountContext'
 
@@ -18,12 +18,15 @@ import type { Brand } from '@/context/AccountContext'
  * the shell (`?section=<section>`), so there's exactly one address per section
  * and a shared link never lands on the top-nav layout.
  */
+/* ARCHIVED 2026-09-30 — `'licenses'` and `'payment-methods'` were members of
+ * this union and rows in `BASE_SECTIONS` below. Both are archived (see
+ * `account-licenses-section` / `account-payment-methods-section` in
+ * archivedItems.ts); removing them from the union is what makes the compiler
+ * find every other registry that has to agree. */
 export type AccountSectionId =
   | 'profile'
   | 'notifications'
-  | 'licenses'
   | 'transcripts'
-  | 'payment-methods'
   | 'purchases'
   | 'gift-recipients'
 
@@ -38,14 +41,10 @@ export type AccountSectionDef = {
 const BASE_SECTIONS: AccountSectionDef[] = [
   { id: 'profile', label: 'Profile', path: '/account/profile', icon: User },
   { id: 'notifications', label: 'Notifications', path: '/account/notifications', icon: Bell },
-  { id: 'licenses', label: 'Licenses', path: '/account/licenses', icon: IdCard },
+  /* `licenses` (IdCard, /account/licenses) sat here, between Notifications and
+     Transcripts; `payment-methods` (CreditCard, /account/payment-methods) sat
+     between Transcripts and Purchases. Both archived 2026-09-30. */
   { id: 'transcripts', label: 'Transcripts', path: '/account/transcripts', icon: FileText },
-  {
-    id: 'payment-methods',
-    label: 'Payment Methods',
-    path: '/account/payment-methods',
-    icon: CreditCard,
-  },
   { id: 'purchases', label: 'My Purchases', path: '/account/purchases', icon: Receipt },
 ]
 

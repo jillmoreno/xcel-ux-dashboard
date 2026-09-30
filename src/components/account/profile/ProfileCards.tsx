@@ -17,7 +17,11 @@ import { useMotivation } from '@/context/MotivationContext'
 import { MotivationalStatementPanel } from '@/components/membership/MotivationalStatementPanel'
 import type { AccountProfile } from '@/data/accountProfileFixtures'
 import { ProfileCard, ProfileField } from './ProfileCard'
+/* Still used by Membership Plan and Interests below — Account Details and
+   Personal Information graduated to real panels on 2026-09-30. */
 import { ProfileEditStubPanel } from './ProfileEditStubPanel'
+import { AccountDetailsEditPanel } from './AccountDetailsEditPanel'
+import { PersonalInformationEditPanel } from './PersonalInformationEditPanel'
 
 /* ─── Account Details ──────────────────────────────────────────────────── */
 
@@ -30,6 +34,16 @@ export function AccountDetailsCard({
 }) {
   const { user, brand } = useAccount()
   const [editOpen, setEditOpen] = useState(false)
+  /* Lifted so a saved email shows on the card immediately — the same
+     local-and-non-persistent pattern `InterestsCard` uses below. Re-seeded when
+     the fixture changes (a brand switch), or the card would keep showing the
+     previous brand's address. */
+  const [email, setEmail] = useState(data.email)
+  const [emailSeed, setEmailSeed] = useState(data.email)
+  if (emailSeed !== data.email) {
+    setEmailSeed(data.email)
+    setEmail(data.email)
+  }
   return (
     <>
       <ProfileCard title="Account Details" icon={CircleUser} onEdit={() => setEditOpen(true)}>
@@ -63,11 +77,18 @@ export function AccountDetailsCard({
 
         <div style={fieldGroupStyle}>
           <ProfileField label="Username" value={data.username} valueWeight="semibold" />
-          <ProfileField label="Email" value={data.email} />
+          <ProfileField label="Email" value={email} />
           <ProfileField label="Password" value={data.passwordMask} valueWeight="semibold" />
         </div>
       </ProfileCard>
-      <ProfileEditStubPanel open={editOpen} onClose={() => setEditOpen(false)} title="Edit Account Details" />
+      {/* Kept MOUNTED across open/close (the panel owns a Toast that has to
+          outlive the sheet). */}
+      <AccountDetailsEditPanel
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        currentEmail={email}
+        onEmailSaved={setEmail}
+      />
     </>
   )
 }
@@ -95,20 +116,29 @@ function MembershipStatusPill({ isMember }: { isMember: boolean }) {
 
 export function PersonalInformationCard({ data }: { data: AccountProfile['personal'] }) {
   const [editOpen, setEditOpen] = useState(false)
+  /* The whole record lifts, not field by field — the panel saves them together
+     and the card reads them together, so one piece of state keeps the two from
+     disagreeing mid-save. Non-persistent; gone on reload, like `InterestsCard`. */
+  const [personal, setPersonal] = useState(data)
+  const [personalSeed, setPersonalSeed] = useState(data)
+  if (personalSeed !== data) {
+    setPersonalSeed(data)
+    setPersonal(data)
+  }
   return (
     <>
       <ProfileCard title="Personal Information" icon={IdCard} onEdit={() => setEditOpen(true)}>
         <div style={fieldGroupStyle}>
-          <ProfileField label="Name" value={data.name} />
-          <ProfileField label="Date of Birth" value={data.dateOfBirth} />
-          <ProfileField label="Phone Number" value={data.phone} />
+          <ProfileField label="Name" value={personal.name} />
+          <ProfileField label="Date of Birth" value={personal.dateOfBirth} />
+          <ProfileField label="Phone Number" value={personal.phone} />
           <ProfileField
             label="Billing Address"
             value={
               <>
-                <div>{data.billing.line1}</div>
-                <div>{data.billing.cityState}</div>
-                <div>{data.billing.postal}</div>
+                <div>{personal.billing.line1}</div>
+                <div>{personal.billing.cityState}</div>
+                <div>{personal.billing.postal}</div>
               </>
             }
           />
@@ -116,15 +146,20 @@ export function PersonalInformationCard({ data }: { data: AccountProfile['person
             label="Shipping Address"
             value={
               <>
-                <div>{data.shipping.line1}</div>
-                <div>{data.shipping.cityState}</div>
-                <div>{data.shipping.postal}</div>
+                <div>{personal.shipping.line1}</div>
+                <div>{personal.shipping.cityState}</div>
+                <div>{personal.shipping.postal}</div>
               </>
             }
           />
         </div>
       </ProfileCard>
-      <ProfileEditStubPanel open={editOpen} onClose={() => setEditOpen(false)} title="Edit Personal Information" />
+      <PersonalInformationEditPanel
+        open={editOpen}
+        onClose={() => setEditOpen(false)}
+        data={personal}
+        onSaved={setPersonal}
+      />
     </>
   )
 }

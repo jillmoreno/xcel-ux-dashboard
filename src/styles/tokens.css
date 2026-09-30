@@ -3154,6 +3154,58 @@ a.cre-library-card-title::after {
   }
 }
 
+/* ── Profile surface: CTAs follow the HOME blue ─────────────────────────────
+   2026-09-30, Jillienne's call: every CTA on the account Profile page and its
+   edit sheets should match the blue the home page's Resume button uses, not the
+   app-wide `--color-action`. On XCEL those are very different colours —
+   `--color-action` resolves to `--color-cta-500` (#9a1b1e, brick) while home's
+   CTA is the primary navy ramp.
+
+   ⚠ THIS RE-POINTS A TOKEN RATHER THAN RESTYLING BUTTONS, and that is the
+   load-bearing part. `Button` resets `el.style.background = v.bg` on
+   mouseLeave, where `v.bg` is the literal string `var(--color-action)`. An
+   inline background (a gradient, a hex) passed through `style` therefore
+   survives until the first hover and is then silently replaced by the brick
+   fill. Overriding the custom property instead means that reset re-resolves to
+   the blue, so hover in and out is stable — and the secondary button's outline,
+   the card edit pencils and the text links come along for free, because they
+   all read the same token.
+
+   Scoped, never global: changing `--color-action` at `[data-brand='xcel']`
+   would repaint every CTA in the product.
+
+   NOTE: flat `primary-500` with a `primary-600` hover, where the home CTA is a
+   135° gradient between the same two stops. At button size the two read as the
+   same blue, and a gradient cannot be carried through this mechanism for the
+   reason above. If an exact gradient match is ever wanted, `Button` needs a
+   variant rather than a caller-side override. */
+.cre-profile-actions {
+  --color-action: var(--color-primary-500);
+  --color-action-hover: var(--color-primary-600);
+}
+
+/* ⚠ THE SHEET'S Close / Back LINK NEEDS ITS OWN RULE, and that is the one
+   exception worth knowing about. `.cre-sheet-close` reads `--color-cta-500`
+   DIRECTLY rather than going through `--color-action`, so it sails straight
+   past the override above — the footer buttons turned blue and this stayed
+   brick, which is exactly how a half-recoloured panel ships.
+
+   Overriding `--color-cta-500` on `.cre-profile-actions` would have fixed it in
+   one line, and was rejected: that is the brand's CTA ramp, and re-pointing a
+   whole ramp to catch one link changes anything else inside the panel that
+   reads it, now or later. A descendant rule only claims what it names.
+
+   ⚠ If another element on this surface ever looks stubbornly red, check whether
+   its class reads `--color-cta-*` directly — as of 2026-09-30 this is the only
+   one on the Profile surface that does. */
+.cre-profile-actions .cre-sheet-close {
+  color: var(--color-primary-500);
+}
+.cre-profile-actions .cre-sheet-close:hover {
+  color: var(--color-primary-600);
+  border-bottom-color: var(--color-primary-600);
+}
+
 /* Accessible label utility — visually hidden but read by screen readers. */
 .cre-sr-only {
   position: absolute;

@@ -13,7 +13,7 @@ import { useFeatureFlag } from '@/context/FeatureFlagContext'
  * Every account section renders through here, so the sub-nav can't be present
  * on one page and missing on the next — which is exactly what happened before
  * it existed: Profile and Gift Recipients each rendered bare, and the other
- * five sections weren't in the shell at all (they were top-nav placeholders).
+ * sections weren't in the shell at all (they were top-nav placeholders).
  *
  * The columns wrap on narrow widths (the nav stacks above the content) rather
  * than squeezing the content column.
@@ -36,8 +36,9 @@ export function AccountSectionLayout({
 }
 
 /**
- * The body for an account section that isn't built yet — Notifications,
- * Licenses, Transcripts, Payment Methods, Purchases.
+ * The body for an account section that isn't built yet — Transcripts and
+ * My Purchases. (Notifications graduated to `NotificationsPanel`; Licenses and
+ * Payment Methods were archived 2026-09-30 rather than built.)
  *
  * These are real, reachable sections rather than dead nav items: the sub-nav
  * would be a lie if half its rows went nowhere, and a placeholder inside the

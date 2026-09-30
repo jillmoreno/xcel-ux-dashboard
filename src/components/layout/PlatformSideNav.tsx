@@ -92,9 +92,8 @@ export type PlatformSection =
   // the canonical list both the dropdown and the sub-nav read.
   | 'profile'
   | 'notifications'
-  | 'licenses'
+  // 'licenses' and 'payment-methods' were members until 2026-09-30; archived.
   | 'transcripts'
-  | 'payment-methods'
   | 'purchases'
   | 'gift-recipients'
 

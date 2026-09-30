@@ -129,9 +129,10 @@ const VALID_SECTIONS: PlatformSection[] = [
   // sub-nav has somewhere real to point (they used to be top-nav
   // placeholders outside the shell).
   'notifications',
-  'licenses',
+  // 'licenses' and 'payment-methods' sat here (after Notifications, and after
+  // Transcripts) until 2026-09-30 — archived, so a `?section=licenses` deep
+  // link is no longer valid and falls back to the dashboard.
   'transcripts',
-  'payment-methods',
   'purchases',
   'gift-recipients',
 ]
@@ -1183,9 +1184,7 @@ const SECTION_TITLES: Record<PlatformSection, string> = {
   support: 'Help & Support',
   profile: 'Profile',
   notifications: 'Notifications',
-  licenses: 'Licenses',
   transcripts: 'Transcripts',
-  'payment-methods': 'Payment Methods',
   purchases: 'My Purchases',
   'gift-recipients': 'Purchased for Others',
 }
@@ -1667,8 +1666,8 @@ function renderBody(
   if (active === 'readiness') return <ReadinessPanel />
   if (active === 'learning-path') return <LearningPathSection />
   // ── Account area ──────────────────────────────────────────────────────
-  // Every account section (Profile · Notifications · Licenses · Transcripts ·
-  // Payment Methods · Purchases · Gift Recipients) renders inside the shell,
+  // Every account section (Profile · Notifications · Transcripts · Purchases ·
+  // Gift Recipients) renders inside the shell,
   // wrapped in `AccountSectionLayout` so they all carry the same account
   // sub-nav beside their content. The shell's rail + section `<h1>` stay the
   // outer chrome, so each page renders bare below the title.
@@ -1690,8 +1689,10 @@ function renderBody(
         // address rather than one of them being renamed.
         <NotificationsPanel />
       ) : (
-        // TODO(feature): the remaining four are placeholders — real pages
-        // drop in here, still wrapped by AccountSectionLayout.
+        // TODO(feature): the remaining two (Transcripts, My Purchases) are
+        // placeholders — real pages drop in here, still wrapped by
+        // AccountSectionLayout. It was four until 2026-09-30, when Licenses
+        // and Payment Methods were archived.
         <AccountSectionPlaceholder id={active} />
       )
     return (

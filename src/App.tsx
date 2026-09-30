@@ -232,17 +232,15 @@ export default function App() {
           path="/account/notifications"
           element={<Navigate to="/dashboard-rebrand?section=notifications" replace />}
         />
-        <Route
-          path="/account/licenses"
-          element={<Navigate to="/dashboard-rebrand?section=licenses" replace />}
-        />
+        {/* ARCHIVED 2026-09-30 — `/account/licenses` redirected to
+            `?section=licenses` here, and `/account/payment-methods` to
+            `?section=payment-methods` below Transcripts. Both sections are
+            archived; the routes went with them, so the paths now fall through
+            to the `*` Not Found route. See `account-licenses-section` /
+            `account-payment-methods-section` in archivedItems.ts. */}
         <Route
           path="/account/transcripts"
           element={<Navigate to="/dashboard-rebrand?section=transcripts" replace />}
-        />
-        <Route
-          path="/account/payment-methods"
-          element={<Navigate to="/dashboard-rebrand?section=payment-methods" replace />}
         />
         <Route
           path="/account/purchases"
