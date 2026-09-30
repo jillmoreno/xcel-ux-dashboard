@@ -197,6 +197,28 @@ export const TESTABLE_CTAS: TestableCta[] = [
     region: 'Study journey',
     asks: 'Can they undo a wrong date without help?',
   },
+  /* ⚠ THE COMMENT SITS OUTSIDE THE OBJECTS, and must. `scripts/session-sheet.mjs`
+     reads this catalog by regex and needs `label` to follow `id` with nothing but
+     whitespace between them — a comment in that gap drops the row from the
+     session sheet silently. Learned the hard way on `home.schedule-exam`.
+
+     The two below are the Quick Links block under Step 3 (2026-09-30). They are
+     a FLATTER WAY IN to sheets already reachable from the cards above, which is
+     what makes them worth their own ids: a run can kill the shortcut and still
+     leave the long way working, which is the only way to find out whether the
+     shortcut is what people actually use. */
+  {
+    id: 'home.quick-exam-info',
+    label: 'Exam Information (Quick links)',
+    region: 'Study journey',
+    asks: 'With the exam card right above it, do they use the shortcut or the card?',
+  },
+  {
+    id: 'home.quick-get-licensed',
+    label: 'How to Get Your License (Quick links)',
+    region: 'Study journey',
+    asks: 'Do they reach for this before finishing the coursework it comes after?',
+  },
   {
     id: 'home.what-to-expect',
     label: 'What to expect →',

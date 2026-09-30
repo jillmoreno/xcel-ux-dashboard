@@ -189,11 +189,14 @@ describe('the Atlas Study Journey treatment (2026-09-21)', () => {
     /* ⚠ 'Exam Date' since 2026-09-29 — the inline card carrying the
        "Schedule State Exam" label was retired with `exam-step-style`, and the
        slot is `ExamScheduleWidget` now. Four cards, same order. */
+    /* ⚠ A FIFTH SECTION SINCE 2026-09-30 — Quick links, which absorbed the
+       standalone requirements button. Last, and not a step. */
     expect(cardLabels()).toEqual([
       'Study journey',
       'Exam Date',
       'Pass State Exam',
       'Get Licensed in New York',
+      'Quick links',
     ])
   })
 

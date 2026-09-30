@@ -1,6 +1,7 @@
 import type { LearningPathSummary } from '@/data/learningFixtures'
 import { GetLicensedRail, StudyJourneyRail } from './StudyJourneyRail'
 import { ExamScheduleWidget } from './ExamScheduleWidget'
+import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 import { useState, type CSSProperties } from 'react'
 import { journeyStopsFor } from './studyJourneyUtil'
 import { clearExamDate, useExamDate, writeExamDate } from '@/data/examDateStore'
@@ -295,61 +296,67 @@ export function StudyJourneyWidget({
           />
           )
         })}
-        {/* THE REQUIREMENTS ACTION, OUT OF THE CARDS — 2026-09-21, the direct
-            ask: "take this out of the widget and make it a secondary style
-            button below — same width as the widget."
-
-            It was a text link at the foot of the arrival card, under a rule.
-            Out here it reads as what it is: the state's own rules, which
-            elaborate the whole post-course sequence rather than the last step
-            of it. It also stops the arrival card being the only one with two
-            affordances.
-
-            FULL WIDTH by inheritance, not by declaration — a flex column
-            stretches its children, so this matches the cards above it exactly
-            and cannot drift from them if the column's width ever changes. */}
-        {onOpenRequirements ? (
-          <button
-            type="button"
-            data-cta-id="home.state-requirements"
-            onClick={onOpenRequirements}
-            className="cre-cta-ink"
-            style={{
-              /* The shared `Button`'s SECONDARY shape — transparent fill, 1px
-                 stroke, 40px tall — but NOT that component, and the reason is
-                 this version's palette. `Button.secondary` draws its ink and
-                 border from `--color-action`, which on XCEL is the Brick red:
-                 it is a FILL colour that measures 2.05:1 as TEXT on the dark
-                 shell (the `.cre-alert-action` failure), and this version
-                 deliberately moved every CTA off that ramp onto the navy —
-                 "navy means do this; red means this is an assessment". A red
-                 outlined button here would be the only red control on the page.
-
-                 `borderColor: currentColor` so `.cre-cta-ink` owns BOTH the ink
-                 and the stroke from one declaration, including its dark-mode
-                 swap to the light stop. An explicit colour would need saying
-                 twice and would beat the class while looking correct. */
-              width: '100%',
-              height: 40,
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 6,
-              padding: '0 16px',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid currentColor',
-              background: 'transparent',
-              cursor: 'pointer',
-              fontFamily: 'var(--font-body)',
-              fontSize: 14,
-              fontWeight: 700,
-            }}
-          >
-            {jurisdictionName(path.state)
-              ? `${jurisdictionName(path.state)} State Requirements`
-              : 'State Requirements'}
-          </button>
-        ) : null}
+        {/* QUICK LINKS — 2026-09-30, the direct ask.
+ 
+            ⚠ THIS ABSORBS THE STANDALONE REQUIREMENTS BUTTON rather than
+            sitting beside it. That button was added on 2026-09-21 ("take this
+            out of the widget and make it a secondary style button below") and
+            State Requirements is one of the three links asked for here — two
+            controls, same destination, one under the other, would be the
+            duplicate the move was meant to avoid. Its `home.state-requirements`
+            tag comes with it: `CtaTest` asserts that id renders unconditionally
+            on this surface.
+ 
+            A CONTAINED CARD, unlike the bare button it replaces. One link below
+            the cards reads as a footnote to them; three need a container of
+            their own or they read as three more steps in the sequence.
+ 
+            NONE OF THE DESTINATIONS ARE NEW — the Exam Details menu, the
+            apply-license sheet and the requirements sheet all already existed
+            and were all already reachable. This is a second, flatter way in for
+            someone who knows what they want, which is what a quick-links block
+            is for. */}
+        <section aria-label="Quick links" style={shell}>
+          <p className="cre-eyebrow-ink" style={widgetEyebrowStyle}>
+            Quick links
+          </p>
+          <div style={quickLinksColumnStyle}>
+            <button
+              type="button"
+              data-cta-id="home.quick-exam-info"
+              onClick={() => onOpenStep?.(EXAM_DETAILS_STEP_ID)}
+              className="cre-cta-ink"
+              style={secondaryLinkStyle}
+            >
+              Exam Information
+            </button>
+            <button
+              type="button"
+              data-cta-id="home.quick-get-licensed"
+              onClick={() => onOpenStep?.(APPLY_LICENSE_STEP_ID)}
+              className="cre-cta-ink"
+              style={secondaryLinkStyle}
+            >
+              How to Get Your License
+            </button>
+            {onOpenRequirements ? (
+              <button
+                type="button"
+                data-cta-id="home.state-requirements"
+                onClick={onOpenRequirements}
+                className="cre-cta-ink"
+                style={secondaryLinkStyle}
+              >
+                {/* ⚠ NO JURISDICTION PREFIX, unlike the button this replaces
+                    ("New York State Requirements"). Asked for as "State
+                    Requirements", and in a list under a heading the prefix is
+                    the third naming of a state the column has already said
+                    twice. The sheet itself still names it. */}
+                State Requirements
+              </button>
+            ) : null}
+          </div>
+        </section>
       </div>
     )
   }
@@ -446,6 +453,53 @@ const pendingStepStyle: CSSProperties = {
   background: 'transparent',
   borderInlineStart: '4px solid var(--color-primary-300)',
   padding: '4px 20px 4px 16px',
+}
+
+/** The last Get Licensed step — the sheet "How to Get Your License" opens.
+ *  Read off the published list rather than written as a literal, so a reorder
+ *  of `GET_LICENSED_STEPS` cannot leave this pointing at the wrong sheet. */
+const APPLY_LICENSE_STEP_ID = GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 1].id
+
+const quickLinksColumnStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 8,
+  marginTop: 12,
+}
+
+/**
+ * The shared `Button`'s SECONDARY shape — transparent fill, 1px stroke, 40px
+ * tall — but NOT that component, and the reason is this version's palette.
+ * `Button.secondary` draws its ink and border from `--color-action`, which on
+ * XCEL is the Brick red: a FILL colour that measures 2.05:1 as TEXT on the dark
+ * shell (the `.cre-alert-action` failure). This version deliberately moved every
+ * CTA onto the navy — "navy means do this; red means this is an assessment" — so
+ * a red outlined button here would be the only red control on the page.
+ *
+ * ⚠ `borderColor: currentColor` so `.cre-cta-ink` owns BOTH the ink and the
+ * stroke from one declaration, including its dark-mode swap to the light stop.
+ * An explicit colour would need saying twice and would beat the class while
+ * looking correct.
+ *
+ * FULL WIDTH by declaration here rather than by inheritance: these sit in a
+ * gap'd column inside a card, not as direct children of the stretching flex
+ * column the standalone button used to live in.
+ */
+const secondaryLinkStyle: CSSProperties = {
+  width: '100%',
+  height: 40,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 6,
+  padding: '0 16px',
+  borderRadius: 'var(--radius-md)',
+  border: '1px solid currentColor',
+  background: 'transparent',
+  cursor: 'pointer',
+  fontFamily: 'var(--font-body)',
+  fontSize: 14,
+  fontWeight: 700,
 }
 
 const LICENSING_STEP_CTA: Record<string, string | undefined> = {

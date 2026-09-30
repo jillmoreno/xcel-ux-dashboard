@@ -967,18 +967,24 @@ describe('the post-course steps are their own widgets', () => {
       c.getAttribute('aria-label'),
     )
 
-  it('renders four cards, in route order', () => {
+  it('renders the four journey cards in route order, then Quick links', () => {
     seed()
     renderShell(TESTING_URL)
     /* ⚠ 'Exam Date', NOT 'Schedule State Exam' — 2026-09-29. The inline card
        that carried that label was retired with `exam-step-style`; the slot is
        `ExamScheduleWidget` now, whose region is "Exam Date". Still four cards
        in the same order; only the second one's identity changed. */
+    /* ⚠ A FIFTH SECTION SINCE 2026-09-30 — the Quick links card, which absorbed
+       the standalone requirements button. It is LAST and it is not a step: the
+       four above are the route, this is a flatter way into sheets they already
+       reach. Asserted in the same list rather than separately, because its
+       POSITION is the part that could regress. */
     expect(cardLabels()).toEqual([
       'Study journey',
       'Exam Date',
       'Pass State Exam',
       'Get Licensed in New York',
+      'Quick links',
     ])
   })
 
@@ -1117,38 +1123,49 @@ describe('the post-course steps are their own widgets', () => {
     expect(pass).not.toMatch(/fee/)
   })
 
-  it('puts the requirements action BELOW the cards, not inside one', () => {
+  it('keeps ONE requirements action, below the cards, now inside Quick links', () => {
     /* MOVED OUT 2026-09-21 ("take this out of the widget and make it a
        secondary style button below"). It was a text link at the foot of the
        arrival card; it is the column's last child now.
    
-       This assertion was about "the LAST card only" and is rewritten rather
-       than deleted — the subject is the same (there is exactly ONE of these,
-       and it belongs to the sequence rather than to a step), only its place
-       changed. */
+       ⚠ REWRITTEN TWICE, never deleted, because the SUBJECT has held both
+       times: there is exactly ONE of these and it belongs to the sequence
+       rather than to a step. 2026-09-21 moved it out of the arrival card; on
+       2026-09-30 it moved again, into the Quick links card, where it is one of
+       three. What would still be a defect is a second copy, or one back inside
+       a journey card — both are asserted below. */
     seed()
     renderShell(TESTING_URL)
     expect(screen.getAllByRole('button', { name: /State Requirements/ })).toHaveLength(1)
     const kids = [...rightColumn().children]
     const last = kids[kids.length - 1] as HTMLElement
-    expect(last.tagName).toBe('BUTTON')
+    expect(last.getAttribute('aria-label')).toBe('Quick links')
     expect(last.textContent).toMatch(/State Requirements/)
-    // …and no card carries it any more.
-    for (const card of rightColumn().querySelectorAll(':scope > section')) {
+    // …and no JOURNEY card carries it — the four that are steps.
+    const journeyCards = [...rightColumn().querySelectorAll(':scope > section')].filter(
+      (c) => c.getAttribute('aria-label') !== 'Quick links',
+    )
+    for (const card of journeyCards) {
       expect(card.textContent).not.toMatch(/State Requirements/)
     }
   })
 
-  it('draws it full width, by inheritance rather than a literal', () => {
-    // A flex column stretches its children, so the button matches the cards
-    // above it exactly and cannot drift from them if the column resizes. The
-    // assertion is the absence of a width, not a pixel figure — jsdom has no
-    // layout, and a measured number would be the drift it guards against.
+  it('draws the quick links full width', () => {
+    /* ⚠ THE REASON CHANGED ON 2026-09-30 even though the value did not. The
+       standalone button was full width BY INHERITANCE — a flex column stretches
+       its children. These sit in a gap'd column inside a card, so the width is
+       DECLARED. Still `100%` rather than a pixel figure: jsdom has no layout,
+       and a measured number would be the drift this guards against.
+
+       Asserted across ALL THREE, because they must agree with each other as
+       well as with the cards — one link a different width is the regression a
+       single-button check would miss. */
     seed()
     renderShell(TESTING_URL)
-    const kids = [...rightColumn().children]
-    const btn = kids[kids.length - 1] as HTMLElement
-    expect(btn.style.width).toBe('100%')
+    const quick = [...rightColumn().children].at(-1) as HTMLElement
+    const links = [...quick.querySelectorAll('button')]
+    expect(links).toHaveLength(3)
+    for (const b of links) expect((b as HTMLElement).style.width).toBe('100%')
   })
 
   it('takes its ink AND its stroke from one themed class', () => {
@@ -1161,8 +1178,7 @@ describe('the post-course steps are their own widgets', () => {
        stroke without a second declaration. */
     seed()
     renderShell(TESTING_URL)
-    const kids = [...rightColumn().children]
-    const btn = kids[kids.length - 1] as HTMLElement
+    const btn = within(rightColumn()).getByRole('button', { name: 'State Requirements' })
     expect(btn.className).toContain('cre-cta-ink')
     /* ASSERTED AS THE ABSENCE OF A COLOUR, not the presence of `currentColor`:
        jsdom normalises `border: 1px solid currentColor` down to "1px solid",
@@ -1175,21 +1191,28 @@ describe('the post-course steps are their own widgets', () => {
     expect(btn.style.borderColor).not.toMatch(/rgb|#|var\(/)
   })
 
-  it('names the requirements link for the path’s own jurisdiction', () => {
-    /* The card renders for whatever path is current, so a hardcoded "New York"
-       would be a wrong fact the moment a Florida path reached it. Asserted
-       against the SAME `jurisdictionName` the heading resolves, so the two
-       cannot disagree — a card headed "Get Licensed in New York" over a link
-       naming another state is the defect this guards. */
+  it('drops the jurisdiction from the link, keeping it on the card above', () => {
+    /* ⚠ INVERTED 2026-09-30. The link read "{state} State Requirements" and this
+       asserted the prefix, against the SAME `jurisdictionName` the heading
+       resolves — the defect being a card headed "Get Licensed in New York" over
+       a link naming another state.
+
+       Quick links drops the prefix, as asked. That defect is now impossible
+       rather than guarded: with no state in the label there is nothing to
+       disagree with. What still has to hold is that the jurisdiction is named
+       SOMEWHERE in this column — the arrival card's heading, one card up — or
+       the page stops saying which state any of it is about. So the second half
+       of this test is the half that survived, and it is the one that matters. */
     seed()
     renderShell(TESTING_URL)
     const where = jurisdictionName(
       learningPathsFor('xcel').find((p) => p.id === XCEL_NY_PRODUCER_PATH_ID)?.state,
     )
     expect(where).toBeTruthy()
-    // The button below the cards…
-    expect(screen.getByRole('button', { name: `${where} State Requirements` })).toBeTruthy()
-    // …and the arrival card's own heading, from the SAME resolution.
+    // The link is unprefixed…
+    expect(screen.getByRole('button', { name: 'State Requirements' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: `${where} State Requirements` })).toBeNull()
+    // …and the arrival card's own heading still names the state.
     const lastCard = rightColumn().querySelectorAll(':scope > section')[3] as HTMLElement
     expect(lastCard.getAttribute('aria-label')).toBe(`Get Licensed in ${where}`)
   })
