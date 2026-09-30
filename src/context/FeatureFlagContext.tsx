@@ -1867,6 +1867,44 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'learning-resources',
   },
 
+  /* ─── My Purchases ─────────────────────────────────────────────────── */
+  {
+    key: 'account-purchases-ledger',
+    group: 'My Purchases',
+    label: 'Purchases ledger',
+    description:
+      'What the My Purchases account section renders. ON (default on this branch) shows the order LEDGER — orders grouped by month with a per-month count, every group but the newest collapsed, and one card per order that expands into a full receipt (Billed To / Sold By, line items, subtotal, tax, discount, total, Download Receipt). OFF falls back to the "not built yet" placeholder the section shipped with. Ported from the reference design and retoned: its $0.00 membership-absorbed totals and per-state CE certificate lines do not apply to XCEL, which charges real money for packages.',
+    defaultEnabled: true,
+    // `account-purchases`, not `dashboard-rebrand`: the section has its own page
+    // card in the flag panel (the Gift Recipients flags already sit on it), and
+    // this belongs beside them rather than in the catch-all for the shell.
+    page: 'account-purchases',
+  },
+  {
+    key: 'purchases-layout',
+    group: 'My Purchases',
+    label: 'Layout (A/B)',
+    description:
+      'Which My Purchases layout renders. Variant-only — read the variant, ignore the toggle. Mirrors `gift-recipients-layout`, the same card-list-vs-table A/B one section over. No effect while `account-purchases-ledger` is off, which serves the not-built-yet placeholder instead of either arm.',
+    defaultEnabled: true,
+    defaultVariant: 'cards',
+    variants: [
+      {
+        value: 'cards',
+        label: 'Month-grouped cards',
+        description:
+          'The current shipped behaviour and the default. Orders bucketed under collapsible month headings, every group but the newest collapsed, each card expanding its receipt in place via Show Details.',
+      },
+      {
+        value: 'table',
+        label: 'Sortable ledger + sheet',
+        description:
+          'One flat table — Order Date · Order Number · Summary · Status · Total — with every header sortable and no month grouping. Clicking a row opens that receipt in a right-anchored sheet rather than expanding in place, so row height never varies and a long history stays scannable.',
+      },
+    ],
+    page: 'account-purchases',
+  },
+
   /* ─── Account menu → Appearance ────────────────────────────────────── */
   {
     key: 'account-appearance-preferences',

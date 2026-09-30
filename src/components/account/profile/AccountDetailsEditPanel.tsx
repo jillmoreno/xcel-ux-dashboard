@@ -87,7 +87,7 @@ export function AccountDetailsEditPanel({ open, onClose, currentEmail, onEmailSa
             divider, body and footer stay direct children as before. The class
             has to live in here rather than on the Profile page, because a Sheet
             portals to document.body and inherits nothing from that tree. */}
-        <div className="cre-profile-actions" style={{ display: 'contents' }}>
+        <div className="cre-account-actions" style={{ display: 'contents' }}>
         <header style={headerStyle}>
           <button
             type="button"

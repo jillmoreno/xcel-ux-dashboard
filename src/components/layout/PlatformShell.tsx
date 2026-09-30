@@ -33,6 +33,7 @@ import {
 import { isAccountSection } from '@/components/account/accountSections'
 import { NotificationsPanel } from '@/components/notifications/NotificationsPanel'
 import { GiftRecipientsPanel } from '@/components/account/purchases/GiftRecipientsPanel'
+import { PurchasesSection } from '@/components/account/purchases/PurchasesPanel'
 import { LibraryPanel } from '@/components/membership/LibraryPanel'
 import { LearningLibraryHero } from '@/components/membership/LearningLibraryHero'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -1681,6 +1682,12 @@ function renderBody(
         <ProfilePage />
       ) : active === 'gift-recipients' ? (
         <GiftRecipientsPanel />
+      ) : active === 'purchases' ? (
+        // The order ledger, or the original placeholder when
+        // `account-purchases-ledger` is off — `PurchasesSection` owns that
+        // choice, because this function is not a component and cannot read a
+        // flag itself.
+        <PurchasesSection />
       ) : active === 'notifications' ? (
         // The header bell's "View all" lands here. It was an
         // `AccountSectionPlaceholder` until the bell shipped, which made the

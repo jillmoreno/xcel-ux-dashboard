@@ -43,12 +43,12 @@ export function ProfilePage() {
   const profile = useMemo(() => profileFor(brand, isMember), [brand, isMember])
 
   return (
-    /* `cre-profile-actions` re-points `--color-action` at the home page's blue
+    /* `cre-account-actions` re-points `--color-action` at the home page's blue
        for everything on this surface — the card edit pencils and the Membership
        Plan upsell link here, and the Save / Cancel / Forgot-password controls
        inside the sheets (which portal out of this tree and so carry the class
        themselves). See the class note in tokens.css. */
-    <div className="cre-profile-actions" style={{ width: '100%', paddingBottom: 64 }}>
+    <div className="cre-account-actions" style={{ width: '100%', paddingBottom: 64 }}>
       <div style={columnsStyle}>
         {/* Left column */}
         <div style={columnStyle}>

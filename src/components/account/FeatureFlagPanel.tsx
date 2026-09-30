@@ -66,6 +66,10 @@ function flagPageIdForPath(pathname: string): FeatureFlagPageId | null {
 // color/style, learning-path width/breakdown, learning-vibrant) + the dead
 // Featured Products flag were removed in the flag audit.
 const REBRAND_FLAGS = [
+  // My Purchases — order ledger vs. the not-built-yet placeholder, and the
+  // cards-vs-table layout A/B on top of it.
+  'account-purchases-ledger',
+  'purchases-layout',
   // Appearance Preferences row in the account dropdown — off by default.
   'account-appearance-preferences',
   // NOTE: `dashboard-progress-state` and `dashboard-education-type` were
