@@ -7,6 +7,7 @@ import {
 } from '@/data/dashboardVersions'
 import { ATLAS_SKINS, ATLAS_SKIN_PARAM, atlasSkinFor, type AtlasSkin } from '@/components/layout/atlasBrandSkin'
 import { ATLAS_FONTS, ATLAS_FONT_PARAM, atlasFontFor, type AtlasFont } from '@/components/layout/atlasFontSets'
+import { ATLAS_NAV_PARAM, ATLAS_NAV_VERSIONS, atlasNavFor, type AtlasNavVersion } from '@/components/layout/atlasNavVersion'
 import { UserSlash, Share2, BrowserWindow, Check, ChevronDown } from '@/icons'
 import { ActionMenu } from '@/components/ui/ActionMenu'
 import { Toast } from '@/components/ui/Toast'
@@ -299,6 +300,18 @@ export function DemoControlsBar({
     const next = new URLSearchParams(searchParams)
     if (font === 'dm-serif-display') next.delete(ATLAS_FONT_PARAM)
     else next.set(ATLAS_FONT_PARAM, font)
+    setSearchParams(next, { replace: true })
+    close()
+  }
+
+  /* ATLAS NAV VERSION (2026-09-30) — Left Rail (default) or Top Nav, on the
+     Atlas version only. See atlasNavVersion.ts. */
+  const atlasNav = atlasNavFor(searchParams.get(ATLAS_NAV_PARAM))
+  const atlasNavLabel = ATLAS_NAV_VERSIONS.find((v) => v.nav === atlasNav)?.label ?? 'Left Rail'
+  const pickAtlasNav = (nav: AtlasNavVersion) => {
+    const next = new URLSearchParams(searchParams)
+    if (nav === 'left-rail') next.delete(ATLAS_NAV_PARAM)
+    else next.set(ATLAS_NAV_PARAM, nav)
     setSearchParams(next, { replace: true })
     close()
   }
@@ -611,6 +624,40 @@ export function DemoControlsBar({
                 onClick={() => pickAtlasFont(f.font)}
               >
                 <span style={{ flex: 1 }}>{f.label}</span>
+                {active && <Check size={15} aria-hidden />}
+              </button>
+            )
+          })}
+        </DemoDropdown>
+        )}
+
+        {/* Nav Version — Left Rail or Top Nav; see `pickAtlasNav`. Shown on the
+            Atlas version whatever the palette flag says: the Top Nav is layout,
+            not colour. */}
+        {onAtlasVersion && (
+        <DemoDropdown
+          id="atlas-nav"
+          label={atlasNavLabel}
+          eyebrow="Nav Version"
+          openId={openId}
+          onToggle={toggle}
+          panelRole="radiogroup"
+          panelLabel="Nav version"
+          panelMinWidth={200}
+        >
+          {ATLAS_NAV_VERSIONS.map((v) => {
+            const active = v.nav === atlasNav
+            return (
+              <button
+                key={v.nav}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                tabIndex={active ? 0 : -1}
+                className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
+                onClick={() => pickAtlasNav(v.nav)}
+              >
+                <span style={{ flex: 1 }}>{v.label}</span>
                 {active && <Check size={15} aria-hidden />}
               </button>
             )
@@ -989,6 +1036,7 @@ export function DemoControlsBar({
               next.delete('version')
               next.delete(ATLAS_SKIN_PARAM)
               next.delete(ATLAS_FONT_PARAM)
+              next.delete(ATLAS_NAV_PARAM)
               // Clear the read-only `?ff=` flag override too — otherwise a shared
               // link's pinned flags (e.g. membership-count:five) keep winning over
               // the flags Reset just restored, so Reset would appear to do nothing.

@@ -47,6 +47,8 @@ import CircleCheckSolidSvg from './circle-check-solid.svg?react'
 import CircleCheckRegularSvg from './circle-check-regular.svg?react'
 import ClockRegularSvg from './clock-regular.svg?react'
 import HouseRegularSvg from './house-regular.svg?react'
+// Atlas Top Nav (Figma 160:616), fetched 2026-09-30 at 7.3.1.
+import CircleLocationArrowRegularSvg from './circle-location-arrow-regular.svg?react'
 import SlashForwardSolidSvg from './slash-forward-solid.svg?react'
 // Compass course Overview (Figma 44:2211), fetched 2026-09-23 at 7.3.1.
 import ArrowRotateLeftSvg from './arrow-rotate-left.svg?react'
@@ -244,6 +246,7 @@ export const CircleCheckSolid = makeIcon(CircleCheckSolidSvg) // FA: circle-chec
 export const CircleCheckRegular = makeIcon(CircleCheckRegularSvg) // FA: circle-check (regular)
 export const ClockRegular = makeIcon(ClockRegularSvg) // FA: clock (regular)
 export const HouseRegular = makeIcon(HouseRegularSvg) // FA: house (regular)
+export const CircleLocationArrowRegular = makeIcon(CircleLocationArrowRegularSvg) // FA: circle-location-arrow (regular)
 export const SlashForwardSolid = makeIcon(SlashForwardSolidSvg) // FA: slash-forward (solid)
 export const ArrowRotateLeft = makeIcon(ArrowRotateLeftSvg) // FA: arrow-rotate-left
 export const Bullseye = makeIcon(BullseyeSvg) // FA: bullseye

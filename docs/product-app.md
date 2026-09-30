@@ -4054,3 +4054,16 @@ unchanged.
 **"Global" in the Brand dropdown** (2026-09-30): no brand — the Atlas pages in the Compass Design System v5's colours only (`compassdesignsystemv5.html`: steel #3D5A73 for CTA/nav/links/charts, slate #263D50 hover and focus, one white surface, emphasis fill #ECEEF0 for the course cards, hairline #E0DBCD, ink/muted/faint text, terracotta Rubi). The file's fonts and styles are not used. Logo: the file's compass mark (`public/brand/compass-mark.svg`) beside a "Compass" wordmark in the heading face. tokens.css "ATLAS BRAND SKIN — GLOBAL".
 
 **Right rail layout, V1 and V2** (2026-09-30): flag `atlas-right-rail-layout` (Feature Flags → "Right Rail Layout", default V1). V1 is the Atlas home's right rail as it stood: Step 1 and Step 2 as separate cards, Steps 3–4 with rounded left rules, the State Requirements button below. V2 puts all four steps and the button in ONE frame styled like the Step 2 card (its background, 1px stroke and padding); the steps inside are bare (no card, rule or inset of their own) so they share the frame's padding, and the button fills the frame's inner width. `StudyJourneyWidget` (`splitSteps` + `examFirst`); `?ff=atlas-right-rail-layout:v2` to preview.
+
+### Atlas Nav Version — Left Rail / Top Nav (2026-09-30)
+
+A Demo Controls dropdown, **Nav Version**, on the Atlas/Compass version only
+(`?nav=`, `src/components/layout/atlasNavVersion.ts`). **Left Rail** is the
+default and what the version always showed. **Top Nav** (Figma
+`hXiYWnaiZWIwWmaTk7pk3F` node 160:616) keeps the rail and adds two header
+buttons, `AtlasTopNav`: Home (current on the Home page) and Compass Learning
+(current on the course's Overview and Course pages). The group is placed by
+`Header` 40px right of the logo (it first sat on the rail's 260px edge),
+centred in the header's height. Colours are `--color-atlas-topnav-*`: Figma's #31485C /
+#ECEFF1 on Global, each brand's nav active ink and hover tint elsewhere.
+Reset clears `?nav=`.

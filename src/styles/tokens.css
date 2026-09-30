@@ -1270,6 +1270,27 @@
   font-weight: 500;
   transition: background-color 120ms ease;
 }
+/* Atlas Top Nav buttons (AtlasTopNav). Fallbacks are Figma's values, for the
+   Atlas version with its palette flag off. */
+.cre-atlas-topnav-btn {
+  background: var(--color-atlas-topnav-idle, #eceff1);
+  color: var(--color-atlas-topnav-idle-ink, #31485c);
+  transition: filter 120ms ease;
+}
+.cre-atlas-topnav-btn:hover {
+  filter: brightness(0.96);
+}
+.cre-atlas-topnav-btn.is-current {
+  background: var(--color-atlas-topnav-current, #31485c);
+  color: var(--color-atlas-topnav-current-ink, #ffffff);
+}
+.cre-atlas-topnav-btn.is-current:hover {
+  filter: none;
+}
+.cre-atlas-topnav-btn:focus-visible {
+  outline: 2px solid var(--color-atlas-topnav-current, #31485c);
+  outline-offset: 2px;
+}
 .cre-atlas-nav-row:hover {
   background: var(--color-atlas-nav-hover);
 }
@@ -4774,6 +4795,13 @@ a.cre-library-card-title::after {
   --color-atlas-nav-active-bar: var(--color-tertiary-500);
   --color-atlas-nav-hover: var(--color-tertiary-100);
   --color-atlas-nav-hover-ink: var(--color-atlas-cta-ink);
+  /* ATLAS TOP NAV (Nav Version → Top Nav, 2026-09-30; Figma 160:616): the
+     current button filled in the rail's active ink, the other in its hover
+     tint. The Global skin pins Figma's own #31485C / #ECEFF1 (below). */
+  --color-atlas-topnav-current: var(--color-atlas-nav-active-ink);
+  --color-atlas-topnav-current-ink: #ffffff;
+  --color-atlas-topnav-idle: var(--color-atlas-nav-hover);
+  --color-atlas-topnav-idle-ink: var(--color-atlas-nav-active-ink);
 
   /* Compass course rail — the current lesson (label, clock, fill) and the
      crumb link are the left-navigation tan above (red on hover); the section marks, done ticks and the progress spine
@@ -5310,6 +5338,10 @@ a.cre-library-card-title::after {
      #ECEEF0. Then (same day) Study Pace lost its stroke and the course card
      took the V2 right rail's: 1px `--color-atlas-nav-rule`. Study Pace then
      took a 1px Primary 200 (#D8DEE4) stroke, as every skin did. */
+  /* The Top Nav in Figma's own colours (160:616). */
+  --color-atlas-topnav-current: #31485c;
+  --color-atlas-topnav-idle: #eceff1;
+  --color-atlas-topnav-idle-ink: #31485c;
   --color-compass-course-card: #fcfcfb;
   --color-compass-course-card-stroke: var(--color-atlas-nav-rule);
   --color-atlas-outlined-card: #eceef0;

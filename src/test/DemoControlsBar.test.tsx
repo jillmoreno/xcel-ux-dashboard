@@ -106,6 +106,21 @@ describe('DemoControlsBar — Atlas brand skin', () => {
     fireEvent.click(screen.getByRole('radio', { name: /DM Serif Display/ }))
     expect(url()).not.toContain('fonts=')
   })
+
+  it('carries a Nav Version dropdown — Left Rail by default, Top Nav writes ?nav=', () => {
+    renderBar(ATLAS)
+    fireEvent.click(screen.getByRole('button', { name: /Left Rail/ }))
+    fireEvent.click(screen.getByRole('radio', { name: /Top Nav/ }))
+    expect(url()).toContain('nav=top-nav')
+    fireEvent.click(screen.getByRole('button', { name: /Top Nav/ }))
+    fireEvent.click(screen.getByRole('radio', { name: /Left Rail/ }))
+    expect(url()).not.toContain('nav=')
+  })
+
+  it('offers no Nav Version off the Atlas version', () => {
+    renderBar()
+    expect(screen.queryByRole('button', { name: /Left Rail/ })).toBeNull()
+  })
 })
 
 describe('DemoControlsBar — Quick views tiers drive real state', () => {

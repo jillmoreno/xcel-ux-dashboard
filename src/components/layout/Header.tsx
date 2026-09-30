@@ -33,6 +33,8 @@ import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { activePathIdFor, learningPathsFor } from '@/data/learningFixtures'
 import { useDeviceFrame } from './DeviceFrameContext'
 import { useMobileNav } from './MobileNavContext'
+import { AtlasTopNav } from './AtlasTopNav'
+import { ATLAS_NAV_PARAM, atlasNavFor } from './atlasNavVersion'
 
 /** Height of the Demo-frame browser-chrome strip (traffic lights). Shared by
  *  the strip itself + the header's sticky offset so they stay in sync. */
@@ -114,6 +116,10 @@ export function Header() {
   // every other version keeps 72 / 52. `PlatformShell` reads the same rule
   // to pin its rails under it.
   const atlasSlimHeader = platformNav && !mobile && isAtlasCompassNavVersion(rebrandVersion)
+  // Nav Version → Top Nav (2026-09-30): Home + Compass Learning in the header,
+  // their left edge on the Atlas rail's right edge. See `AtlasTopNav`.
+  const atlasTopNav =
+    atlasSlimHeader && atlasNavFor(new URLSearchParams(search).get(ATLAS_NAV_PARAM)) === 'top-nav'
   const headerHeight = atlasSlimHeader ? ATLAS_HEADER_HEIGHT : 72
   const desktopLogoHeight = atlasSlimHeader ? ATLAS_LOGO_HEIGHT : 52
   // Demo frame: the shell renders inside a browser-style window (see
@@ -294,6 +300,16 @@ export function Header() {
             <Link to={logoHref} aria-label={logoLabel} style={{ minWidth: 0 }}>
               <Logo height={platformNav ? (mobile ? MOBILE_LOGO_HEIGHT : desktopLogoHeight) : 40} />
             </Link>
+          )}
+          {/* TOP NAV — 40px right of the logo, whatever the logo's width
+              (2026-09-30, the designer's request; it first sat on the rail's
+              260px edge): the group's 8px gap + 32 margin. In the logo's own
+              group so the row centres it vertically. Inert in the locked focus
+              / Share Demo views, like the rest of the header's navigation. */}
+          {atlasTopNav && (
+            <div inert={noHeaderNav || undefined} style={{ marginLeft: 32, flexShrink: 0 }}>
+              <AtlasTopNav />
+            </div>
           )}
         </div>
 
