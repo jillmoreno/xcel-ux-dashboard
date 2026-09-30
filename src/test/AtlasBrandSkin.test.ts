@@ -3,8 +3,9 @@ import { ATLAS_SKINS, atlasSkinFor } from '@/components/layout/atlasBrandSkin'
 import { ATLAS_FONTS, atlasFontFor, atlasFontHref } from '@/components/layout/atlasFontSets'
 
 describe('atlasSkinFor', () => {
-  it('reads the four skins and falls back to XCEL for anything else', () => {
-    expect(ATLAS_SKINS.map((s) => s.skin)).toEqual(['xcel', 'cre', 'mckissock', 'elite'])
+  it('reads the five skins and falls back to XCEL for anything else', () => {
+    expect(ATLAS_SKINS.map((s) => s.skin)).toEqual(['global', 'xcel', 'cre', 'mckissock', 'elite'])
+    expect(atlasSkinFor('global')).toBe('global')
     expect(atlasSkinFor('cre')).toBe('cre')
     expect(atlasSkinFor('mckissock')).toBe('mckissock')
     expect(atlasSkinFor('elite')).toBe('elite')

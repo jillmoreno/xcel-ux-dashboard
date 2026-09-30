@@ -183,6 +183,12 @@ const REBRAND_FLAGS = [
   'gift-recipients',
   'gift-recipients-layout',
   'gift-recipients-reminder',
+  // The Atlas/Compass version's own flags (feat/atlas-compass-global-nav). They
+  // were added to the catalog without this scope on 2026-09-28/30, so the panel
+  // never showed them on /dashboard-rebrand — added 2026-09-30.
+  'atlas-xcel-palette',
+  'atlas-right-rail-layout',
+  'prototype-bar-branch-home',
 ]
 
 /**
@@ -714,6 +720,7 @@ const FLAG_GROUP_ORDER = [
   'Courses Card',
   'Membership Card',
   'Right Rail',
+  'Right Rail Layout',
   'Not MVP',
 ]
 

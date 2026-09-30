@@ -1,5 +1,6 @@
 import type { CSSProperties } from 'react'
 import { ArrowRightSolid } from '@/icons'
+import { useAtlasSkin } from '@/components/layout/atlasBrandSkin'
 
 /**
  * COMPASS HOME COURSE CARD — Figma "Atlas-Compass-Global-Navigation", node
@@ -64,6 +65,9 @@ export function CompassHomeCourseCard({
   // "Begin Course" at every point short of complete — 2026-09-24, the direct
   // ask, reversing the "Resume Course" this card read once lessons were done.
   const cta = complete ? 'Review Course' : 'Begin Course'
+  // The Global brand takes the Compass Design System v5's own primary button
+  // (2026-09-30, the designer's request) in place of the serif one.
+  const compassButton = useAtlasSkin() === 'global'
   return (
     <section aria-label="Current course" style={CARD}>
       <div style={TOP}>
@@ -109,9 +113,15 @@ export function CompassHomeCourseCard({
           )}
           <p style={LESSON_TITLE}>{complete ? 'Coursework complete' : lessonTitle}</p>
         </div>
-        <button type="button" className="cre-compass-primary" onClick={onBegin} disabled={!onBegin} style={CTA}>
+        <button
+          type="button"
+          className={compassButton ? 'cre-compass-primary cre-compass-btn-primary' : 'cre-compass-primary'}
+          onClick={onBegin}
+          disabled={!onBegin}
+          style={compassButton ? COMPASS_CTA : CTA}
+        >
           {cta}
-          <ArrowRightSolid size={14} aria-hidden />
+          <ArrowRightSolid size={compassButton ? 12 : 14} aria-hidden />
         </button>
       </div>
     </section>
@@ -150,6 +160,10 @@ const CARD: CSSProperties = {
   boxSizing: 'border-box',
   borderRadius: 14,
   background: 'var(--color-compass-course-card)',
+  // A 1px stroke drawn INSIDE the card (an inset shadow, so the card keeps its
+  // size). Only the Global brand sets the token (#D8DEE4, 2026-09-30); every
+  // other brand falls back to none.
+  boxShadow: 'inset 0 0 0 1px var(--color-compass-course-card-stroke, transparent)',
   // No outer stroke — 2026-09-24, the direct ask; the fill carries the edge.
 }
 const TOP: CSSProperties = {
@@ -260,4 +274,27 @@ const CTA: CSSProperties = {
   fontWeight: 600,
   fontSize: 16,
   whiteSpace: 'nowrap',
+}
+/* The Compass Design System v5's `.btn.primary` (compassdesignsystemv5.html):
+   min-height 40, 11 / 18 padding, 13.5px at 600, radius 9, an 8px gap, a 1px
+   border in the fill's colour. The file's Inter is the product's body font here,
+   the same substitution the rest of the Compass pieces make. Colours and the
+   slate hover are `.cre-compass-btn-primary` in tokens.css. */
+const COMPASS_CTA: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 8,
+  flex: 'none',
+  minHeight: 40,
+  boxSizing: 'border-box',
+  padding: '11px 18px',
+  borderRadius: 9,
+  border: '1px solid transparent',
+  cursor: 'pointer',
+  fontFamily: 'var(--font-body)',
+  fontWeight: 600,
+  fontSize: 13.5,
+  whiteSpace: 'nowrap',
+  transition: 'background-color .15s, color .15s, border-color .15s',
 }

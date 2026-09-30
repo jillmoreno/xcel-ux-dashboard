@@ -101,7 +101,7 @@ const IMAGE_SOURCES: Partial<
  * rules. They are NOT `Brand` entries — the product is still XCEL's; only the
  * Atlas pages change clothes.
  */
-const SKIN_LOGOS: Record<Exclude<AtlasSkin, 'xcel'>, ImageSource> = {
+const SKIN_LOGOS: Record<Exclude<AtlasSkin, 'xcel' | 'global'>, ImageSource> = {
   cre: {
     src: '/brand/colibri-real-estate.svg',
     alt: 'Colibri Real Estate',
@@ -164,9 +164,47 @@ export function Logo({ variant = 'default', height = 40, className, brand: brand
   // An Atlas brand skin swaps the default lockup only when no explicit brand
   // was asked for (the Switch Account preview passes one).
   const skin = useAtlasSkin()
+  // GLOBAL has no brand lockup: it shows the Compass Design System v5 mark
+  // (public/brand/compass-mark.svg, lifted verbatim from the file's `compass`
+  // symbol) beside a "Compass" wordmark, the way the file's own nav brands
+  // itself. The wordmark is set in the page's heading face and the steel
+  // token — the file's fonts are deliberately not used.
+  if (!brandProp && variant === 'default' && skin === 'global') {
+    const mark = Math.round(height * 0.62)
+    return (
+      <span
+        className={className}
+        role="img"
+        aria-label="Compass"
+        style={{ display: 'inline-flex', alignItems: 'center', gap: Math.round(height * 0.22), height }}
+      >
+        {/* Nudged up 3px (2026-09-30, the designer's request) so the mark sits
+            on the wordmark's optical centre rather than its box. */}
+        <img
+          src="/brand/compass-mark.svg"
+          alt=""
+          width={mark}
+          height={mark}
+          style={{ display: 'block', position: 'relative', top: -3 }}
+        />
+        <span
+          aria-hidden
+          style={{
+            fontFamily: 'var(--font-heading-serif)',
+            fontSize: Math.round(height * 0.5),
+            lineHeight: 1,
+            color: 'var(--color-atlas-cta, var(--color-brand))',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          Compass
+        </span>
+      </span>
+    )
+  }
   const imageSet = IMAGE_SOURCES[brand]
   const entry =
-    !brandProp && variant === 'default' && skin && skin !== 'xcel'
+    !brandProp && variant === 'default' && skin && skin !== 'xcel' && skin !== 'global'
       ? SKIN_LOGOS[skin]
       : imageSet?.[variant]
   // A brand may ship the lockup and not the square mark (XCEL does). Falling

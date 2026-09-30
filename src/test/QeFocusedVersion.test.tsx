@@ -237,6 +237,24 @@ describe('QE Focused resolves a QUALIFYING journey, never Continuing Ed', () => 
 })
 
 describe('Atlas/Compass Global Navigation — the Testing home under the Figma rail', () => {
+  // The right rail's two layouts (2026-09-30). V1: the steps as separate
+  // cards with the requirements button below them. V2: one frame holds all
+  // four steps AND the button.
+  it('right rail V1 keeps the requirements button outside the step cards; V2 puts it inside one frame', () => {
+    const v1 = renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav')
+    const btn1 = screen.getByRole('button', { name: /State Requirements/ })
+    const exam1 = screen.getByRole('region', { name: 'Schedule State Exam' })
+    expect(exam1.parentElement).toBe(btn1.parentElement)
+    expect(exam1.contains(btn1)).toBe(false)
+    v1.unmount()
+    renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav&ff=atlas-right-rail-layout:v2')
+    const btn2 = screen.getByRole('button', { name: /State Requirements/ })
+    const frame = btn2.parentElement as HTMLElement
+    for (const name of ['Schedule State Exam', 'Study journey', 'Pass State Exam']) {
+      expect(frame.contains(screen.getByRole('region', { name }))).toBe(true)
+    }
+  })
+
   it('sits after the two Testing versions in the picker', () => {
     const ids = DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)
     expect(ids.indexOf('discoverability-atlas-compass-nav')).toBe(

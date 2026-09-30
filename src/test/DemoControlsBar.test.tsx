@@ -87,6 +87,11 @@ describe('DemoControlsBar — Atlas brand skin', () => {
     expect(url()).not.toContain('skin=')
   })
 
+  it('hides the Readiness control on the Atlas version, which has no Readiness section', () => {
+    renderBar(ATLAS)
+    expect(screen.queryByRole('button', { name: /Readiness/ })).toBeNull()
+  })
+
   it('stays off every other version', () => {
     renderBar()
     expect(screen.queryByRole('button', { name: /XCEL \(Insurance\)/ })).toBeNull()

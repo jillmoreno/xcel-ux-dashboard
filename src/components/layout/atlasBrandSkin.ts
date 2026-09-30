@@ -21,9 +21,14 @@ import { useSyncExternalStore } from 'react'
  *
  * The palettes and logos are the brands' own from before 431ec3e.
  */
-export type AtlasSkin = 'xcel' | 'cre' | 'mckissock' | 'elite'
+export type AtlasSkin = 'global' | 'xcel' | 'cre' | 'mckissock' | 'elite'
 
 export const ATLAS_SKINS: readonly { skin: AtlasSkin; label: string }[] = [
+  // GLOBAL (2026-09-30) — no brand: the Atlas experience in the Compass Design
+  // System v5's own colours (steel, slate, terracotta, one white surface), for
+  // an instance that is not any Colibri brand. Colours only — the file's fonts
+  // and component styles are deliberately not taken. See tokens.css.
+  { skin: 'global', label: 'Global' },
   { skin: 'xcel', label: 'XCEL (Insurance)' },
   { skin: 'cre', label: 'Colibri Real Estate' },
   { skin: 'mckissock', label: 'McKissock Learning' },

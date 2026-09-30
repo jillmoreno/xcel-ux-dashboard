@@ -357,6 +357,15 @@ describe('FeatureFlagPanel — the 2026-09-16 XCEL flag audit', () => {
     }
   })
 
+  it('scopes the Atlas/Compass flags into the /dashboard-rebrand panel', () => {
+    // A catalog flag missing from `REBRAND_FLAGS` is invisible in the panel on
+    // /dashboard-rebrand — which is exactly how these three went unseen.
+    const scope = new Set(flagScopeForPath('/dashboard-rebrand') ?? [])
+    for (const key of ['atlas-xcel-palette', 'atlas-right-rail-layout', 'prototype-bar-branch-home']) {
+      expect(scope.has(key)).toBe(true)
+    }
+  })
+
   it('removed them from the /dashboard-rebrand panel scope too', () => {
     // A key left in `REBRAND_FLAGS` after leaving the catalog is silent — the
     // panel filters the catalog BY the scope, so the stale entry just matches

@@ -146,6 +146,10 @@ export function StudyJourneyWidget({
   const completeStyle = useFeatureFlag('dashboard-journey-complete').variant ?? 'full'
   const courseworkDone = stops.length > 0 && stops.every((st) => st.status === 'completed')
   const collapseCoursework = courseworkDone && completeStyle === 'collapsed'
+  /* RIGHT RAIL V2 — `atlas-right-rail-layout` (2026-09-30): the Atlas home's
+     four steps in ONE frame. Read unconditionally (rules of hooks); applied
+     only with `examFirst`, which is the Atlas home. */
+  const railV2 = useFeatureFlag('atlas-right-rail-layout').variant === 'v2'
 
   if (splitSteps) {
     /* THE ATLAS STUDY JOURNEY CARD, OUTLINED — the Atlas home, 2026-09-24, the
@@ -162,15 +166,41 @@ export function StudyJourneyWidget({
     // Fits its own content (2026-09-24, the direct ask) — it briefly matched
     // the Study Pace card's depth and was set back the same day.
     const courseworkShell = examFirst ? outlinedShell : shell
+    /* V2: the frame IS the Step 2 card (its background, stroke and padding),
+       and every step inside it is bare — no fill, border, rule or inset of its
+       own — so all four share the frame's padding and line up. */
+    const v2 = examFirst && railV2
+    const bareShell: CSSProperties = { display: 'flex', flexDirection: 'column', minWidth: 0 }
+    // V2's rule between steps (2026-09-30, the designer's request): 1px in the
+    // frame's own stroke colour, sitting in the frame's 24px gap on each side.
+    const railRule: CSSProperties = {
+      display: 'block',
+      height: 1,
+      background: 'var(--color-atlas-nav-rule)',
+    }
     const licensingSteps = GET_LICENSED_STEPS.map((step, i) => (
       <LicensingStepWidget
         key={step.id}
         step={step}
         number={examFirst ? (i === 0 ? 1 : stepStart + i) : stepStart + i}
         // Step 1 on the Atlas home is as deep as the course card beside it
-        // (`--cre-course-card-h`, published by LearnerFocusedBand).
-        shell={examFirst && i === 0 ? { ...shell, boxSizing: 'border-box', minHeight: 'var(--cre-course-card-h, auto)' } : shell}
+        // (`--cre-course-card-h`, published by LearnerFocusedBand). Its fill is
+        // `--color-atlas-step-card` where a brand sets one (Global: #FCFCFB,
+        // 2026-09-30), else the card surface.
+        shell={
+          v2
+            ? bareShell
+            : examFirst && i === 0
+            ? {
+                ...shell,
+                background: 'var(--color-atlas-step-card, var(--color-surface-card))',
+                boxSizing: 'border-box',
+                minHeight: 'var(--cre-course-card-h, auto)',
+              }
+            : shell
+        }
         roundedRule={cardPadding != null}
+        bare={v2}
         onOpenStep={onOpenStep}
         state={path.state}
         /* The arrival card is named for the DESTINATION rather than the
@@ -202,6 +232,52 @@ export function StudyJourneyWidget({
        NUMBERS carry it instead — each step's eyebrow is "Step 05/06/07",
        continuing the journey's own numbering from its real stop count. Lose the
        numbers and the four cards read as four unrelated things. */
+    const requirementsButton = onOpenRequirements ? (
+      <RequirementsButton onOpen={onOpenRequirements} state={path.state} />
+    ) : null
+    if (v2) {
+      return (
+        <div
+          style={{
+            ...outlinedShell,
+            display: 'flex',
+            flexDirection: 'column',
+            // 24 · rule · 24 between steps (2026-09-30, the designer's
+            // request; it was 32 · rule · 32).
+            gap: 24,
+            // The frame fits its steps (no Step 1 min-height in V2).
+            minHeight: undefined,
+          }}
+        >
+          {licensingSteps[0]}
+          <span aria-hidden style={railRule} />
+          {collapseCoursework ? (
+            <section aria-label="Study journey" style={bareShell}>
+              <p className="cre-eyebrow-ink" style={collapsedEyebrowStyle}>
+                <span style={{ fontWeight: 700 }}>Step 2</span> · Study Journey
+              </p>
+              <p style={collapsedTitleStyle}>Coursework complete</p>
+            </section>
+          ) : (
+            <section aria-label="Study journey" style={bareShell}>
+              <StudyJourneyRail
+                path={path}
+                onOpenStop={onOpenStop}
+                onViewAll={onOpenLearningPath ? () => onOpenLearningPath(path.id) : undefined}
+                stepRange
+                stepNumber={2}
+                atlasEyebrow
+              />
+            </section>
+          )}
+          <span aria-hidden style={railRule} />
+          {licensingSteps[1]}
+          <span aria-hidden style={railRule} />
+          {licensingSteps[2]}
+          {requirementsButton}
+        </div>
+      )
+    }
     return (
       // 32 between the cards on the Atlas home (2026-09-24, the direct ask),
       // which is where `cardPadding` is set; 20 elsewhere.
@@ -217,7 +293,13 @@ export function StudyJourneyWidget({
         {collapseCoursework ? (
           <section aria-label="Study journey" style={courseworkShell}>
             <p className="cre-eyebrow-ink" style={collapsedEyebrowStyle}>
-              {`Step ${examFirst ? 2 : 1} · Atlas Study Journey`}
+              {examFirst ? (
+                <>
+                  <span style={{ fontWeight: 700 }}>Step 2</span> · Study Journey
+                </>
+              ) : (
+                'Step 1 · Atlas Study Journey'
+              )}
             </p>
             <p style={collapsedTitleStyle}>Coursework complete</p>
           </section>
@@ -232,6 +314,7 @@ export function StudyJourneyWidget({
                  appearing to start at 05. Split only; see the prop's note. */
               stepRange
               stepNumber={examFirst ? 2 : 1}
+              atlasEyebrow={examFirst}
             />
           </section>
         )}
@@ -258,48 +341,7 @@ export function StudyJourneyWidget({
             FULL WIDTH by inheritance, not by declaration — a flex column
             stretches its children, so this matches the cards above it exactly
             and cannot drift from them if the column's width ever changes. */}
-        {onOpenRequirements ? (
-          <button
-            type="button"
-            data-cta-id="home.state-requirements"
-            onClick={onOpenRequirements}
-            className="cre-cta-ink"
-            style={{
-              /* The shared `Button`'s SECONDARY shape — transparent fill, 1px
-                 stroke, 40px tall — but NOT that component, and the reason is
-                 this version's palette. `Button.secondary` draws its ink and
-                 border from `--color-action`, which on XCEL is the Brick red:
-                 it is a FILL colour that measures 2.05:1 as TEXT on the dark
-                 shell (the `.cre-alert-action` failure), and this version
-                 deliberately moved every CTA off that ramp onto the navy —
-                 "navy means do this; red means this is an assessment". A red
-                 outlined button here would be the only red control on the page.
-
-                 `borderColor: currentColor` so `.cre-cta-ink` owns BOTH the ink
-                 and the stroke from one declaration, including its dark-mode
-                 swap to the light stop. An explicit colour would need saying
-                 twice and would beat the class while looking correct. */
-              width: '100%',
-              height: 40,
-              display: 'inline-flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              gap: 6,
-              padding: '0 16px',
-              borderRadius: 'var(--radius-md)',
-              border: '1px solid currentColor',
-              background: 'transparent',
-              cursor: 'pointer',
-              fontFamily: 'var(--font-body)',
-              fontSize: 14,
-              fontWeight: 700,
-            }}
-          >
-            {jurisdictionName(path.state)
-              ? `${jurisdictionName(path.state)} State Requirements`
-              : 'State Requirements'}
-          </button>
-        ) : null}
+        {requirementsButton}
       </div>
     )
   }
@@ -427,6 +469,7 @@ const LICENSING_STEP_CTA: Record<string, string | undefined> = {
 function LicensingStepWidget({
   step,
   number,
+  bare = false,
   shell,
   onOpenStep,
   heading,
@@ -453,6 +496,9 @@ function LicensingStepWidget({
   /** A pending step's rule drawn as a bar with ROUNDED ENDS (a border cannot
    *  round its own ends) — the Atlas home, 2026-09-24, the direct ask. */
   roundedRule?: boolean
+  /** Inside the right rail's V2 frame (2026-09-30): the step draws no card,
+   *  rule or inset of its own — `shell` is used as given, pending or not. */
+  bare?: boolean
 }) {
   /*
    * Owner and fee on one line, ASSEMBLED rather than interpolated — a trailing
@@ -552,7 +598,9 @@ function LicensingStepWidget({
     <section
       aria-label={heading ?? step.title}
       style={
-        pending
+        bare
+          ? shell
+          : pending
           ? // Keep the rule + padding equal to the FILLED cards' inset, whatever
             // it is — 20 by default, the Atlas home's 32 (2026-09-24, the direct
             // ask) — so a pending step's text lines up with the cards above.
@@ -568,12 +616,14 @@ function LicensingStepWidget({
           : shell
       }
     >
-      {pending && roundedRule ? <span aria-hidden style={ROUNDED_RULE} /> : null}
+      {pending && roundedRule && !bare ? <span aria-hidden style={ROUNDED_RULE} /> : null}
       {/* THE NUMBER IS THE SEQUENCE. Four cards cannot draw a continuous
           spine, so "Step 05" is what still says these follow the coursework
           and each other. It rides in the eyebrow slot the journey card already
           uses, so all four cards label themselves the same way. */}
-      <p className="cre-eyebrow-ink" style={widgetEyebrowStyle}>
+      {/* BOLD on the Atlas home (2026-09-30, the designer's request), where
+          `roundedRule` is set; the regular eyebrow weight elsewhere. */}
+      <p className="cre-eyebrow-ink" style={roundedRule ? { ...widgetEyebrowStyle, fontWeight: 700 } : widgetEyebrowStyle}>
         Step {number}
       </p>
       <p
@@ -1013,4 +1063,53 @@ const collapsedTitleStyle: CSSProperties = {
   lineHeight: 'var(--type-atlas-h8-line, 27px)',
   letterSpacing: '-0.01em',
   color: 'var(--color-text-primary)',
+}
+
+/** The State Requirements button — the shared `Button`'s secondary shape at
+ *  the full width of its column. One component so the right rail's V1 (below
+ *  the cards) and V2 (inside the frame) draw the same control; see the note at
+ *  its V1 call site on why it is not the shared `Button`. */
+function RequirementsButton({ onOpen, state }: { onOpen: () => void; state: LearningPathSummary['state'] }) {
+  return (
+    <button
+      type="button"
+      data-cta-id="home.state-requirements"
+      onClick={onOpen}
+      className="cre-cta-ink"
+      style={{
+        /* The shared `Button`'s SECONDARY shape — transparent fill, 1px
+           stroke, 40px tall — but NOT that component, and the reason is
+           this version's palette. `Button.secondary` draws its ink and
+           border from `--color-action`, which on XCEL is the Brick red:
+           it is a FILL colour that measures 2.05:1 as TEXT on the dark
+           shell (the `.cre-alert-action` failure), and this version
+           deliberately moved every CTA off that ramp onto the navy —
+           "navy means do this; red means this is an assessment". A red
+           outlined button here would be the only red control on the page.
+
+           `borderColor: currentColor` so `.cre-cta-ink` owns BOTH the ink
+           and the stroke from one declaration, including its dark-mode
+           swap to the light stop. An explicit colour would need saying
+           twice and would beat the class while looking correct. */
+        width: '100%',
+        height: 40,
+        display: 'inline-flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        gap: 6,
+        padding: '0 16px',
+        borderRadius: 'var(--radius-md)',
+        border: '1px solid currentColor',
+        background: 'transparent',
+        cursor: 'pointer',
+        fontFamily: 'var(--font-body)',
+        fontSize: 14,
+        fontWeight: 700,
+      }}
+    >
+      {jurisdictionName(state)
+        ? `${jurisdictionName(state)} State Requirements`
+        : 'State Requirements'}
+    </button>
+  )
 }

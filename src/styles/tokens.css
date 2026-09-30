@@ -5125,3 +5125,158 @@ a.cre-library-card-title::after {
 [data-atlas-palette][data-atlas-font='instrument-sans'] {
   --font-heading-serif: 'Instrument Sans', system-ui, sans-serif;
 }
+
+/* ============================================================================
+   ATLAS BRAND SKIN — GLOBAL (Compass Design System v5), 2026-09-30
+   ----------------------------------------------------------------------------
+   No brand: the Atlas pages in the Compass Design System v5's own colours
+   ("Steel, terracotta, and one surface" — compassdesignsystemv5.html). COLOURS
+   ONLY: the file's fonts (Source Serif 4 / Inter), radii, spacing and shadows
+   are deliberately not taken; type stays the Atlas heading scale and whatever
+   the Headings dropdown picks.
+
+   The file's roles, mapped onto the Atlas slots:
+     Steel   #3D5A73  primary CTA, nav, links, ring fill   → CTA, active items,
+                                                               charts
+     Slate   #263D50  hover / pressed / focus               → CTA hover, focus
+     Surface #FFFFFF  the ONE surface                       → cards (the page
+                                                             is #F5F5F5)
+     Emphasis fill #ECEEF0 + hairline #D8DEE4  "primary-this-moment" blocks
+                                                             → the course cards
+     Hairline #E0DBCD decorative dividers only              → rules, spines
+     Ink #1F1D18 · Muted #5B5560 · Faint #706B63 text tiers → headings, eyebrows
+                                                               and body, meta
+     Terracotta #B4552F  Rubi                               → Rubi (unchanged)
+     Ring track #C3BBA5                                     → readiness ring
+   Ramp steps the file does not name (steel 600 / 800 / 900, warm 500 / 800)
+   are interpolated so shared components that read a ramp still get a value;
+   every role the file DOES name uses the file's hex. Measured on white: steel
+   6.9:1, slate 10.7:1, muted 6.8:1, faint 5.0:1 (all the file's own ratios).
+   DARK MODE NOT DESIGNED. */
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='global'] {
+  --color-cta-100: #eceef0;
+  --color-cta-200: #d8dee4;
+  --color-cta-300: #c0cdd5;
+  --color-cta-400: #67727d;
+  --color-cta-500: #3d5a73;
+  --color-cta-600: #31495d;
+  --color-cta-700: #263d50;
+  --color-cta-800: #1b2c3a;
+  --color-cta-900: #111c25;
+  --color-primary-100: #eceef0;
+  --color-primary-200: #d8dee4;
+  --color-primary-300: #c0cdd5;
+  --color-primary-400: #67727d;
+  --color-primary-500: #3d5a73;
+  --color-primary-600: #31495d;
+  --color-primary-700: #263d50;
+  --color-primary-800: #1b2c3a;
+  --color-primary-900: #111c25;
+  /* The warm neutrals, the file's hairline → ink. */
+  --color-tertiary-100: #f8f6f3;
+  --color-tertiary-200: #e0dbcd;
+  --color-tertiary-300: #c3bba5;
+  --color-tertiary-400: #baa78b;
+  --color-tertiary-500: #948a76;
+  --color-tertiary-600: #706b63;
+  --color-tertiary-700: #5b5560;
+  --color-tertiary-800: #3a3631;
+  --color-tertiary-900: #1f1d18;
+
+  --color-atlas-cta: #3d5a73;
+  --color-atlas-cta-ink: #3d5a73;
+  --color-atlas-active: #3d5a73;
+  --color-atlas-active-fill: #eceef0;
+  --color-atlas-eyebrow: #5b5560;
+  --color-atlas-step-rule: #e0dbcd;
+
+  /* Left navigation — steel on the emphasis fill; hover text slate. */
+  --color-atlas-nav-active-ink: #3d5a73;
+  --color-atlas-nav-active-fill: #eceef0;
+  --color-atlas-nav-active-bar: #3d5a73;
+  --color-atlas-nav-hover: #eceef0;
+  --color-atlas-nav-hover-ink: #263d50;
+  --color-atlas-nav-rule: #e0dbcd;
+
+  /* Course rail (TOC). */
+  --color-compass-rail-section-ink: #3d5a73;
+  --color-compass-rail-ink: #3d5a73;
+  --color-compass-rail-current-ink: #263d50;
+  --color-compass-rail-current-fill: #eceef0;
+  --color-compass-rail-active-halo: #eceef0;
+  --color-compass-rail-link: #3d5a73;
+  --color-compass-rail-spine: #e0dbcd;
+  --color-compass-rail-upcoming-section-mark: #c3bba5;
+  --color-compass-rail-upcoming-lesson-mark: #c3bba5;
+  --color-compass-rail-section-done-text: #1f1d18;
+  --color-compass-rail-section-current-text: #1f1d18;
+  --color-compass-rail-upcoming-section-text: #706b63;
+  --color-compass-rail-upcoming-text: #706b63;
+  --color-compass-rail-pill: #eceef0;
+  --color-compass-rail-rule: #e0dbcd;
+
+  /* Pages. */
+  /* #F5F5F5, not the file's white surface (2026-09-30, the designer's
+     request), so the white cards read against the page. */
+  --color-compass-page: #f5f5f5;
+  /* SWAPPED 2026-09-30 (the designer's request): the Home course card and the
+     Study Pace card traded fills — the course card #FCFCFB, Study Pace
+     #ECEEF0. Then (same day) Study Pace lost its stroke and the course card
+     took the V2 right rail's: 1px `--color-atlas-nav-rule`. */
+  --color-compass-course-card: #fcfcfb;
+  --color-compass-course-card-stroke: var(--color-atlas-nav-rule);
+  --color-atlas-outlined-card: #eceef0;
+  --color-atlas-outlined-card-border: transparent;
+  /* Step 1 (Schedule State Exam) matches it, #FCFCFB (2026-09-30). */
+  --color-atlas-step-card: #fcfcfb;
+  --color-compass-page-card: #eceef0;
+  --color-compass-page-card-border: #d8dee4;
+  --color-compass-page-card-rule: #d8dee4;
+  --color-compass-page-rule: #e0dbcd;
+  --color-compass-page-heading: #1f1d18;
+  --color-compass-page-body: #5b5560;
+  --color-compass-page-muted: #706b63;
+  --color-compass-page-pill-ink: #263d50;
+  --color-compass-day-pill: #eceef0;
+  --color-compass-day-pill-border: #d8dee4;
+  --color-compass-day-pill-ink: #263d50;
+  --color-compass-page-rubi: #b4552f;
+  --color-compass-content-border: #e0dbcd;
+  --color-compass-content-placeholder: #c3bba5;
+  --color-compass-player-ink: #3d5a73;
+
+  /* Charts — steel on the ring track. */
+  --color-atlas-chart-200: #d8dee4;
+  --color-atlas-chart-300: #c3bba5;
+  --color-atlas-chart-400: #67727d;
+  --color-atlas-chart-500: #3d5a73;
+  --color-atlas-chart-700: #263d50;
+  --color-compass-page-ring-1: #c3bba5;
+  --color-compass-page-ring-2: #a2a399;
+  --color-compass-page-ring-3: #808b8c;
+  --color-compass-page-ring-4: #5f7280;
+  --color-compass-page-ring-5: #3d5a73;
+}
+/* Focus is slate, 2px, per the file. */
+[data-atlas-brand='global'] .cre-atlas-nav-row:focus-visible,
+[data-atlas-brand='global'] .cre-compass-crumb-link:focus-visible,
+/* The Compass v5 primary button on the Home course card: steel, slate on
+   hover — the file's own hover, not the brightness lift. */
+[data-atlas-brand='global'] .cre-compass-btn-primary {
+  background: #3d5a73;
+  border-color: #3d5a73;
+  color: #fff;
+}
+[data-atlas-brand='global'] .cre-compass-btn-primary:hover {
+  background: #263d50;
+  border-color: #263d50;
+  filter: none;
+}
+[data-atlas-brand='global'] .cre-compass-primary:focus-visible,
+[data-atlas-brand='global'] .cre-compass-step:focus-visible {
+  outline: 2px solid #263d50;
+}
+[data-atlas-palette][data-atlas-brand='global'] .cre-journey-stop:hover .cre-stop-title,
+[data-atlas-palette][data-atlas-brand='global'] .cre-journey-stop:focus-visible .cre-stop-title {
+  color: #263d50;
+}

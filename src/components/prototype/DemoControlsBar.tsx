@@ -275,9 +275,10 @@ export function DemoControlsBar({
      something — the Atlas version with its palette on. Not the retired
      `BRAND_PICKER`, which switches the whole prototype's `Brand`. */
   const atlasPaletteOn = useFeatureFlag('atlas-xcel-palette').enabled
-  const showAtlasSkin =
-    atlasPaletteOn &&
-    isAtlasCompassNavVersion(searchParams.get('version') ?? defaultDiscoverabilityVersionFor(brand))
+  const onAtlasVersion = isAtlasCompassNavVersion(
+    searchParams.get('version') ?? defaultDiscoverabilityVersionFor(brand),
+  )
+  const showAtlasSkin = atlasPaletteOn && onAtlasVersion
   const atlasSkin = atlasSkinFor(searchParams.get(ATLAS_SKIN_PARAM))
   const atlasSkinLabel = ATLAS_SKINS.find((s) => s.skin === atlasSkin)?.label ?? 'XCEL'
   const pickAtlasSkin = (skin: AtlasSkin) => {
@@ -864,7 +865,12 @@ export function DemoControlsBar({
             section only; it does not touch the dashboard's own progress axis,
             which is a different question (how far through the COURSE you are,
             not how ready for the exam). A learner can be 90% through and not
-            ready, which is the whole reason the section exists. */}
+            ready, which is the whole reason the section exists.
+            HIDDEN on the Atlas/Compass version "for now" (2026-09-30, the
+            designer's request): it has no Readiness section, so the control
+            could only ever show disabled there. Every other version keeps the
+            disabled-pill behaviour below. */}
+        {!onAtlasVersion && (
         <DemoDropdown
           id="readiness"
           /* NOT the resolved state when there is no section: a greyed pill
@@ -903,6 +909,7 @@ export function DemoControlsBar({
             )
           })}
         </DemoDropdown>
+        )}
 
         {/* Education type (QE / CE) — single-select radiogroup, brands with a QE
             dashboard persona only */}

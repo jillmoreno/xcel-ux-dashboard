@@ -1287,6 +1287,25 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    // THE ATLAS HOME'S RIGHT RAIL, two layouts (2026-09-30, the designer's
+    // request). V1 is the rail as it stood: Step 1 and Step 2 as their own
+    // cards, Steps 3 and 4 as ruled rows, the requirements button under them.
+    // V2 puts all four steps and the button in ONE frame with the Step 2
+    // card's background and stroke. Atlas/Compass version only.
+    key: 'atlas-right-rail-layout',
+    group: 'Right Rail Layout',
+    label: 'Right rail layout',
+    description:
+      'How the Atlas home\'s right rail (the four licensing steps) is framed. V1: Step 1 and Step 2 are separate cards, Steps 3 and 4 sit below with rounded left rules, and the State Requirements button is its own full-width button under them. V2: all four steps share one frame with the Step 2 card\'s background and 1px stroke; the steps lose their own cards and rules and line up on the frame\'s padding, and the State Requirements button sits inside the frame at its full inner width. Variant-only. Atlas/Compass version only.',
+    defaultEnabled: true,
+    defaultVariant: 'v1',
+    variants: [
+      { value: 'v1', label: 'V1 · Separate cards', description: 'Step 1 and Step 2 as their own cards, Steps 3 and 4 with left rules, the requirements button below.' },
+      { value: 'v2', label: 'V2 · One frame', description: 'All four steps and the requirements button inside one frame styled like the Step 2 card.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     // The XCEL palette from the Atlas Development doc's Brand Guidelines tab
     // (Figma "XCEL - Atlas Style Guide", 2026-09-28), applied to the Atlas/
     // Compass version only. ON on feat/atlas-compass-global-nav, per the

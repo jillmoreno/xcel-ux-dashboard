@@ -151,8 +151,12 @@ export function SquareTile({
            duplicate Study Pace card, 2026-09-24. */
         ...(surface === 'outlined'
           ? {
-              background: 'transparent',
-              border: '1px solid var(--color-atlas-nav-rule)',
+              // No fill by default; the Global brand sets
+              // --color-atlas-outlined-card to #F9F8F6 (2026-09-30).
+              background: 'var(--color-atlas-outlined-card, transparent)',
+              // Global makes the stroke transparent (2026-09-30); the 1px stays
+              // so the card keeps its size.
+              border: '1px solid var(--color-atlas-outlined-card-border, var(--color-atlas-nav-rule))',
               borderRadius: widgetCardFramedStyle.borderRadius,
             }
           : null),

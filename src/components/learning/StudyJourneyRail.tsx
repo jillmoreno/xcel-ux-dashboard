@@ -1,4 +1,4 @@
-import { type CSSProperties } from 'react'
+import { type CSSProperties, type ReactNode } from 'react'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { ChevronRight, CircleCheck } from '@/icons'
 import type { LearningPathSummary } from '@/data/learningFixtures'
@@ -75,6 +75,7 @@ export function StudyJourneyRail({
   onViewAll,
   stepRange = false,
   stepNumber = 1,
+  atlasEyebrow = false,
 }: {
   path: LearningPathSummary
   /** Open a stop. Omitted → the rows render as plain text rather than links. */
@@ -100,6 +101,10 @@ export function StudyJourneyRail({
   /** Which step the coursework is, in the `stepRange` eyebrow. 1 by default;
    *  2 on the Atlas home, where Schedule State Exam leads (2026-09-24). */
   stepNumber?: number
+  /** The Atlas home's eyebrow (2026-09-30, the designer's request): the step
+   *  number in BOLD and the label without "Atlas" — "**Step 2** · Study
+   *  Journey". Other versions keep "Step N · Atlas Study Journey". */
+  atlasEyebrow?: boolean
 }) {
   /*
    * RAIL TREATMENT — `dashboard-journey-style`, variant-only (2026-09-16).
@@ -122,9 +127,16 @@ export function StudyJourneyRail({
      stops into one already changed it once, and the same count is what
      `StudyJourneyWidget` offsets the licensing steps by. The two cannot
      disagree about where 04 ends and 05 begins. */
-  const eyebrowText =
+  const eyebrowText: ReactNode =
     stepRange && stops.length > 0
-      ? `Step ${stepNumber} \u00b7 ${STUDY_JOURNEY_EYEBROW}`
+      ? atlasEyebrow
+        ? (
+            <>
+              <span style={{ fontWeight: 700 }}>Step {stepNumber}</span>
+              {' \u00b7 Study Journey'}
+            </>
+          )
+        : `Step ${stepNumber} \u00b7 ${STUDY_JOURNEY_EYEBROW}`
       : STUDY_JOURNEY_EYEBROW
   /*
    * LESS WORDS. `metaWords` prints group · count · status, which on this
