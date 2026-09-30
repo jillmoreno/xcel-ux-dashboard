@@ -1887,19 +1887,23 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     description:
       'Which My Purchases layout renders. Variant-only — read the variant, ignore the toggle. Mirrors `gift-recipients-layout`, the same card-list-vs-table A/B one section over. No effect while `account-purchases-ledger` is off, which serves the not-built-yet placeholder instead of either arm.',
     defaultEnabled: true,
-    defaultVariant: 'cards',
+    // PROMOTED TO THE BASELINE 2026-09-30: `table` is the direction Jillienne
+    // picked. `cards` shipped first and stays a valid value so its
+    // implementation remains reachable via `?ff=purchases-layout:cards` — it is
+    // not archived, because the A/B has not been called, only defaulted.
+    defaultVariant: 'table',
     variants: [
       {
         value: 'cards',
         label: 'Month-grouped cards',
         description:
-          'The current shipped behaviour and the default. Orders bucketed under collapsible month headings, every group but the newest collapsed, each card expanding its receipt in place via Show Details.',
+          'Orders bucketed under collapsible month headings, every group but the newest collapsed, each card expanding its receipt in place via Show Details.',
       },
       {
         value: 'table',
         label: 'Sortable ledger + sheet',
         description:
-          'One flat table — Order Date · Order Number · Summary · Status · Total — with every header sortable and no month grouping. Clicking a row opens that receipt in a right-anchored sheet rather than expanding in place, so row height never varies and a long history stays scannable.',
+          'The default. One flat table — Order Date · Order Number · Summary · Status · Total — with every header sortable and no month grouping. Clicking a row opens that receipt in a right-anchored sheet rather than expanding in place, so row height never varies and a long history stays scannable.',
       },
     ],
     page: 'account-purchases',
