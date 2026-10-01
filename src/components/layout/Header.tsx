@@ -118,8 +118,9 @@ export function Header() {
   const atlasSlimHeader = platformNav && !mobile && isAtlasCompassNavVersion(rebrandVersion)
   // Nav Version → Top Nav (2026-09-30): Home + Compass Learning in the header,
   // their left edge on the Atlas rail's right edge. See `AtlasTopNav`.
-  const atlasTopNav =
-    atlasSlimHeader && atlasNavFor(new URLSearchParams(search).get(ATLAS_NAV_PARAM)) === 'top-nav'
+  // …and Expanding Top Nav (2026-10-01), the same buttons with slide-out links.
+  const atlasNavVersion = atlasNavFor(new URLSearchParams(search).get(ATLAS_NAV_PARAM))
+  const atlasTopNav = atlasSlimHeader && atlasNavVersion !== 'left-rail'
   const headerHeight = atlasSlimHeader ? ATLAS_HEADER_HEIGHT : 72
   const desktopLogoHeight = atlasSlimHeader ? ATLAS_LOGO_HEIGHT : 52
   // Demo frame: the shell renders inside a browser-style window (see
@@ -188,6 +189,13 @@ export function Header() {
   // `?section=…`, which is a shell address. On the classic routes those links
   // would leave the layout the learner is standing in.
   const showBell = useFeatureFlag('header-notifications').enabled && platformNav
+  // A shell address for one section, keeping every other param (the demo's).
+  const atlasSectionHref = (section: string) => {
+    const next = new URLSearchParams(search)
+    next.delete('coursePage')
+    next.set('section', section)
+    return `/dashboard-rebrand?${next}`
+  }
   const utilities = (
     <div className="flex items-center" style={{ gap: 12 }} inert={noHeaderNav || undefined}>
       {/* CART — UNWIRED 2026-09-21, the direct ask ("no cart"). See
@@ -207,6 +215,19 @@ export function Header() {
           The comment below about the cluster reading "one commerce control then
           two personal ones" is kept because it is the argument for where the
           BELL sits, which has not changed. */}
+      {/* RESOURCES · GET HELP — the Atlas header's text links, 40px left of
+          the bell (2026-10-01, the designer's request): the group's 12px gap
+          plus 28. They change only the section, so the demo's params survive. */}
+      {atlasSlimHeader && (
+        <nav aria-label="Help" style={{ display: 'flex', alignItems: 'center', gap: 24, marginRight: 28 }}>
+          <Link to={atlasSectionHref('resources')} className="cre-atlas-header-link">
+            Resources
+          </Link>
+          <Link to={atlasSectionHref('support')} className="cre-atlas-header-link">
+            Get Help
+          </Link>
+        </nav>
+      )}
       {showBell && <NotificationsMenu />}
       {/* No props — the menu resolves the learner from `useAccount()` and the
           profile-avatar override, the same two sources the rail's profile
@@ -308,7 +329,7 @@ export function Header() {
               / Share Demo views, like the rest of the header's navigation. */}
           {atlasTopNav && (
             <div inert={noHeaderNav || undefined} style={{ marginLeft: 32, flexShrink: 0 }}>
-              <AtlasTopNav />
+              <AtlasTopNav expanding={atlasNavVersion === 'expanding-top-nav'} />
             </div>
           )}
         </div>

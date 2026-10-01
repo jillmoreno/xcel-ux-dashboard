@@ -27,23 +27,26 @@ import { useAtlasCourse } from './useAtlasCourse'
  * same `CompassCourseRail`.
  */
 export function AtlasCompassCourseRail({
-  onHome,
-  onOverview,
+  // Unused while the breadcrumb is off (see below); kept for its restore.
+  onHome: _onHome,
+  onOverview: _onOverview,
   onGetHelp,
 }: {
   onHome: () => void
   onOverview: () => void
   onGetHelp: () => void
 }) {
+  void _onHome
+  void _onOverview
   const { title } = useAtlasCourse()
   const { pct } = currentSectionProgress(COMPASS_SAMPLE_TOC_FROM_DESIGN)
   return (
     <CompassCourseRail
-      breadcrumb={[
-        { label: 'Home', onSelect: onHome },
-        { label: 'Course Overview', onSelect: onOverview },
-        { label: 'Course' },
-      ]}
+      /* NO BREADCRUMB since 2026-10-01 (the designer's request). It was
+         Home / Course Overview / Course — to restore, pass
+         breadcrumb={[{ label: 'Home', onSelect: onHome },
+           { label: 'Course Overview', onSelect: onOverview }, { label: 'Course' }]}.
+         `onHome` and `onOverview` are kept as props for exactly that. */
       courseTitle={title}
       progressPct={pct}
       toc={COMPASS_SAMPLE_TOC_FROM_DESIGN}

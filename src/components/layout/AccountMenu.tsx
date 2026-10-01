@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { ArrowUpRightFromSquare, Blog, BookOpen, Megaphone, Facebook, LogOut, Podcast, Sliders } from '@/icons'
+import { ArrowUpRightFromSquare, Blog, BookOpen, CircleUserLight, Megaphone, Facebook, LogOut, Podcast, Sliders } from '@/icons'
+import { isAtlasCompassNavVersion } from '@/data/dashboardVersions'
 import { Avatar } from '@/components/ui/Avatar'
 import { MembershipBadge } from '@/components/ui/MembershipBadge'
 import { AppearancePreferencesSheet } from '@/components/account/AppearancePreferencesSheet'
@@ -41,7 +42,11 @@ export function AccountMenu({
   const [prefsOpen, setPrefsOpen] = useState(false)
   const ref = useRef<HTMLDivElement>(null)
   const id = useId()
-  const { pathname } = useLocation()
+  const { pathname, search } = useLocation()
+  // The Atlas/Compass header (see the glyph below).
+  const atlasHeader =
+    pathname === '/dashboard-rebrand' &&
+    isAtlasCompassNavVersion(new URLSearchParams(search).get('version'))
   // The appearance treatment is scoped to the Dashboard Discoverability shell,
   // so the Preferences entry only surfaces there — offering it elsewhere would
   // have no visible effect.
@@ -154,7 +159,17 @@ export function AccountMenu({
             proportionally heavier than it is at 48, too. `Avatar` falls back to
             the initials in a tinted circle when there is no image, so a learner
             with no photo still gets a person-shaped control rather than a gap. */}
-        <Avatar size={28} initials={initials} imageUrl={avatarUrl} alt={name} />
+        {/* ATLAS: Font Awesome's own `circle-user` in place of the photo — Light, 20px
+            (2026-10-01, the designer's request; Regular at 28 briefly) — the
+            Atlas/Compass header only; every other version keeps the learner's
+            own picture. */}
+        {atlasHeader ? (
+          <span aria-hidden style={{ display: 'inline-flex', color: 'var(--color-text-primary)' }}>
+            <CircleUserLight size={20} aria-hidden />
+          </span>
+        ) : (
+          <Avatar size={28} initials={initials} imageUrl={avatarUrl} alt={name} />
+        )}
         {/* Hidden under 900px by the class's own media query: at phone widths
             the header is a logo, a hamburger and this cluster, and a full name
             is the first thing that should go. The `aria-label` above still

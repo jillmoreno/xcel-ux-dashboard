@@ -56,6 +56,19 @@ export type ArchivedItem = {
 
 export const ARCHIVED_ITEMS: ArchivedItem[] = [
   {
+    id: 'compass-player-section-pill',
+    name: 'Course player bar — Section progress pill',
+    what:
+      'The pill in the Atlas course player controls bar reading "Section: <current section>" with a progress track, knob and percentage — the current table-of-contents section\'s lessons done ÷ total.',
+    location:
+      'src/components/compass/CompassPlayerBar.tsx (the pill, behind the `showSection` prop) · src/components/layout/AtlasCompassPlayerBar.tsx (passes `showSection={false}`)',
+    dateRemoved: '2026-10-01',
+    reason:
+      'The designer\'s request: remove the course progress bar from the player bar, but keep it for later. The left rail now carries the course progress as a track of the same style.',
+    restoreNote:
+      'Delete `showSection={false}` from the <CompassPlayerBar> in src/components/layout/AtlasCompassPlayerBar.tsx — the prop defaults to true, and the adapter still passes `section={{ label, pct }}` from `currentSectionProgress`, so the pill comes back centred between Close Course and the right-hand buttons (its wrapper\'s 24px left padding balances the gaps). Then restore the two QeFocusedVersion tests that read the bar\'s progressbar ("carries the player controls bar" and "the rail\'s % Complete matches the player bar\'s section progress") to assert on it again. Nothing else was changed; CompassPlayerBar\'s own tests still cover the pill.',
+  },
+  {
     id: 'learner-band-completed-celebration',
     name: 'Completed celebration band (100%)',
     what: 'The green "You’re all caught up!" card the Learner Focused band returned INSTEAD of itself at 100% — a success half with the completed stats and a View Certificate action, joined to a white panel offering Browse Catalog.',

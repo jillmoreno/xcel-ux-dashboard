@@ -5,8 +5,6 @@ import { CompassPlayerBar, type CompassPlayerBarProps } from '@/components/compa
 /** Config-driven, like the rail — so the tests build their own props. */
 function props(overrides: Partial<CompassPlayerBarProps> = {}): CompassPlayerBarProps {
   return {
-    examDate: 'December 15, 2026',
-    daysOut: '27 Days Out',
     section: { label: 'Life insurance policy types', pct: 14.3 },
     notesCount: 0,
     stickyTop: 112,
@@ -22,11 +20,21 @@ describe('Compass Course Player controls bar (Figma 49:2963)', () => {
     expect(bar.style.top).toBe('112px')
   })
 
-  it('states the exam date, the days out and the section, as given', () => {
+  it('states the section, as given — and no exam date since the 2026-10-01 rearrangement', () => {
     render(<CompassPlayerBar {...props()} />)
-    expect(screen.getByText('December 15, 2026')).toBeTruthy()
-    expect(screen.getByText('27 Days Out')).toBeTruthy()
     expect(screen.getByText('Life insurance policy types')).toBeTruthy()
+    expect(screen.queryByText(/Days Out/)).toBeNull()
+  })
+
+  it('leads with the tools, then Close Course, and shows Rubi only while its rail is closed', () => {
+    // Close Course and search / Notes / settings swapped sides 2026-10-01.
+    const { rerender } = render(<CompassPlayerBar {...props({ rubiOpen: false })} />)
+    const buttons = within(screen.getByRole('toolbar')).getAllByRole('button')
+    expect(buttons[0]).toHaveAccessibleName('Search this course')
+    expect(buttons[buttons.length - 2].textContent).toBe('Close Course')
+    expect(buttons[buttons.length - 1]).toHaveAccessibleName('Open Rubi')
+    rerender(<CompassPlayerBar {...props({ rubiOpen: true })} />)
+    expect(screen.queryByRole('button', { name: 'Open Rubi' })).toBeNull()
   })
 
   it('reports section progress as a real progressbar, rounded', () => {
@@ -51,8 +59,8 @@ describe('Compass Course Player controls bar (Figma 49:2963)', () => {
     const onRubi = vi.fn()
     const onClose = vi.fn()
     render(<CompassPlayerBar {...props({ onRubi, onClose })} />)
-    fireEvent.click(screen.getByRole('button', { name: 'Rubi' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Close the course player' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Open Rubi' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Close Course' }))
     expect(onRubi).toHaveBeenCalledOnce()
     expect(onClose).toHaveBeenCalledOnce()
     expect(screen.getByRole('button', { name: 'Search this course' })).toBeDisabled()

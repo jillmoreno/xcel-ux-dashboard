@@ -243,16 +243,65 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
   it('right rail V1 keeps the requirements button outside the step cards; V2 puts it inside one frame', () => {
     const v1 = renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav&ff=atlas-right-rail-layout:v1')
     const btn1 = screen.getByRole('button', { name: /State Requirements/ })
-    const exam1 = screen.getByRole('region', { name: 'Schedule State Exam' })
-    expect(exam1.parentElement).toBe(btn1.parentElement)
-    expect(exam1.contains(btn1)).toBe(false)
+    const journey1 = screen.getByRole('region', { name: 'Study journey' })
+    expect(journey1.parentElement).toBe(btn1.parentElement)
+    expect(journey1.contains(btn1)).toBe(false)
     v1.unmount()
     renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav')
     const btn2 = screen.getByRole('button', { name: /State Requirements/ })
     const frame = btn2.parentElement as HTMLElement
-    for (const name of ['Schedule State Exam', 'Study journey', 'Pass State Exam']) {
+    for (const name of ['Study journey', 'Pass State Exam']) {
       expect(frame.contains(screen.getByRole('region', { name }))).toBe(true)
     }
+  })
+
+  it('takes Schedule State Exam out of the rail into a banner, and renumbers the steps', () => {
+    // 2026-10-01: the banner sits between the course card and Study Pace; the
+    // rail runs Step 1 (coursework), 2 (Pass State Exam), 3 (Get Licensed).
+    renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav')
+    const banner = screen.getByRole('region', { name: 'Do you have your State Exam scheduled?' })
+    const frame = screen.getByRole('button', { name: /State Requirements/ }).parentElement as HTMLElement
+    expect(frame.contains(banner)).toBe(false)
+    expect(banner.textContent).not.toMatch(/Step \d/)
+    expect(screen.getByRole('region', { name: 'Pass State Exam' }).textContent).toMatch(/^Step 2/)
+    expect(screen.getByRole('region', { name: /Get Licensed/ }).textContent).toMatch(/^Step 3/)
+  })
+
+  it('drops the left rail on Expanding Top Nav, and on Top Nav\'s Home', () => {
+    // 2026-10-01: the header's slide-out links carry the navigation there.
+    const a = renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav&nav=expanding-top-nav')
+    expect(screen.queryByRole('navigation', { name: 'Primary' })).toBeNull()
+    a.unmount()
+    // Top Nav (the default since 2026-10-01): no rail on Home, the rail on
+    // every other page.
+    const b = renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav')
+    expect(screen.queryByRole('navigation', { name: 'Primary' })).toBeNull()
+    b.unmount()
+    const c = renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=study-plan')
+    expect(screen.getByRole('navigation', { name: 'Primary' })).toBeTruthy()
+    c.unmount()
+    renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav&nav=left-rail')
+    expect(screen.getByRole('navigation', { name: 'Primary' })).toBeTruthy()
+  })
+
+  it('collapses the left rail from its top-right button and expands it again (Figma 174:1562)', () => {
+    renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=course&coursePage=course')
+    const collapse = screen.getByRole('button', { name: 'Collapse sidebar' })
+    expect(collapse).toHaveAttribute('aria-expanded', 'true')
+    fireEvent.click(collapse)
+    const expand = screen.getByRole('button', { name: 'Expand sidebar' })
+    expect(expand).toHaveAttribute('aria-expanded', 'false')
+    expect(expand.className).toContain('is-closed')
+    // Closed, the rail's contents are out of reach.
+    expect(document.getElementById('cre-atlas-rail-body')).toHaveAttribute('inert')
+    fireEvent.click(expand)
+    expect(screen.getByRole('button', { name: 'Collapse sidebar' })).toBeTruthy()
+    expect(document.getElementById('cre-atlas-rail-body')).not.toHaveAttribute('inert')
+  })
+
+  it('has no collapse button where there is no rail (Top Nav Home)', () => {
+    renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav')
+    expect(screen.queryByRole('button', { name: /Collapse sidebar|Expand sidebar/ })).toBeNull()
   })
 
   it('sits after the two Testing versions in the picker', () => {
@@ -295,9 +344,10 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
   })
 
   it('draws the Figma rail (49:3365) — the whole rail, in order AND in its groups', () => {
+    // The Left Rail Nav Version — Top Nav (the default since 2026-10-01) has no rail on Home.
     // An order check alone is blind to grouping (the Resources/Rubi lesson),
     // so each group is read through its own `aria-labelledby` list.
-    renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav')
+    renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav&nav=left-rail')
     const nav = screen.getByRole('navigation', { name: 'Primary' })
     const names = (list: HTMLElement) =>
       within(list).getAllByRole('button').map((b) => b.textContent)
@@ -319,7 +369,8 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
   })
 
   it('Course lands on the course Overview; the other sub-pages are still blank', () => {
-    const { container } = renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav')
+    // The Left Rail Nav Version — Top Nav (the default since 2026-10-01) has no rail on Home.
+    const { container } = renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav&nav=left-rail')
     fireEvent.click(screen.getByRole('button', { name: 'Course' }))
     // Opening it swaps the rail for the course's own, landing on Overview.
     expect(
@@ -379,11 +430,8 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
     )
     fireEvent.click(screen.getByRole('button', { name: /Begin Course/ }))
     expect(container.querySelector('.cre-compass-rail')).toBeTruthy()
-    fireEvent.click(
-      within(screen.getByRole('navigation', { name: 'Breadcrumb' })).getByRole('button', {
-        name: 'Course Overview',
-      }),
-    )
+    // No breadcrumb since 2026-10-01: the player bar's Close Course goes back.
+    fireEvent.click(screen.getByRole('button', { name: 'Close Course' }))
     fireEvent.click(screen.getByRole('button', { name: 'Learn more' }))
     expect(screen.getByRole('heading', { level: 1, name: 'Rubi Insights' })).toBeTruthy()
   })
@@ -393,12 +441,13 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
       '/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=course&coursePage=course',
     )
     const bar = screen.getByRole('toolbar', { name: 'Course player controls' })
-    // The section is the rail's current one, its progress derived from its
-    // lessons (1 of 7 done), so the bar and the rail agree.
-    expect(within(bar).getByText('Chapter 1: Basic Principles of Life and Health Insurance')).toBeTruthy()
-    expect(within(bar).getByRole('progressbar')).toHaveAttribute('aria-valuenow', '14')
+    // The Section pill is ARCHIVED on this bar (2026-10-01) — see ARCHIVED_ITEMS
+    // `compass-player-section-pill`; restore these two assertions with it:
+    //   getByText('Chapter 1: Basic Principles of Life and Health Insurance')
+    //   getByRole('progressbar') → aria-valuenow '14'
+    expect(within(bar).queryByRole('progressbar')).toBeNull()
     // Close returns to the course Overview.
-    fireEvent.click(within(bar).getByRole('button', { name: 'Close the course player' }))
+    fireEvent.click(within(bar).getByRole('button', { name: 'Close Course' }))
     expect(screen.queryByRole('toolbar', { name: 'Course player controls' })).toBeNull()
     expect(screen.getByRole('heading', { level: 1, name: 'Course Overview' })).toBeTruthy()
     unmount()
@@ -406,22 +455,22 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
     expect(screen.queryByRole('toolbar', { name: 'Course player controls' })).toBeNull()
   })
 
-  it('the Compass Course page carries the Rubi right rail, toggled from the player bar', () => {
+  it('the Compass Course page carries the Rubi right rail, reopened from the player bar', () => {
+    // 2026-10-01 (Figma 170:1037 / 170:1331): open, the rail sits beside the
+    // bar and the bar has no Rubi button; closed, the button is back.
     renderShell(
       '/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=course&coursePage=course',
     )
     const bar = screen.getByRole('toolbar', { name: 'Course player controls' })
-    const rubiButton = within(bar).getByRole('button', { name: 'Rubi' })
-    // Open by default, and the bar says so.
     expect(screen.getByRole('complementary', { name: 'Chat with Rubi' })).toBeTruthy()
-    expect(rubiButton).toHaveAttribute('aria-pressed', 'true')
+    expect(within(bar).queryByRole('button', { name: 'Open Rubi' })).toBeNull()
     // Its own close…
     fireEvent.click(screen.getByRole('button', { name: 'Close Rubi' }))
     expect(screen.queryByRole('complementary', { name: 'Chat with Rubi' })).toBeNull()
-    expect(rubiButton).toHaveAttribute('aria-pressed', 'false')
-    // …and the bar brings it back.
-    fireEvent.click(rubiButton)
+    // …and the bar's Rubi button brings it back.
+    fireEvent.click(within(bar).getByRole('button', { name: 'Open Rubi' }))
     expect(screen.getByRole('complementary', { name: 'Chat with Rubi' })).toBeTruthy()
+    expect(within(bar).queryByRole('button', { name: 'Open Rubi' })).toBeNull()
   })
 
   it('the Rubi rail is only on the Compass Course page', () => {
@@ -456,14 +505,14 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
     expect(screen.queryByRole('navigation', { name: 'Course navigation' })).toBeNull()
   })
 
-  it("the rail's % Complete matches the player bar's section progress", () => {
+  it("the rail's % Complete is the current section's progress, on a track", () => {
+    // It matched the player bar's Section pill, which is archived since
+    // 2026-10-01; the figure is the same derivation (1 of 7 lessons → 14).
     renderShell(
       '/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=course&coursePage=course',
     )
-    const barPct = within(screen.getByRole('toolbar', { name: 'Course player controls' }))
-      .getByRole('progressbar')
-      .getAttribute('aria-valuenow')
-    expect(screen.getByText(`${barPct}% Complete`)).toBeTruthy()
+    expect(screen.getByRole('progressbar', { name: 'Course progress' })).toHaveAttribute('aria-valuenow', '14')
+    expect(screen.getByText('14% Complete')).toBeTruthy()
   })
 
   it('the course content sits on the same warm page as the Overview', () => {
@@ -514,33 +563,27 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
     expect(screen.queryByText(/Longer Course Title/)).toBeNull()
   })
 
-  it('the breadcrumb names the sub-page you are on', () => {
-    renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=course')
-    const crumbs = screen.getByRole('navigation', { name: 'Breadcrumb' })
-    expect(within(crumbs).getByText('Course Overview')).toHaveAttribute('aria-current', 'page')
+  it('the Overview and the other sub-pages draw no breadcrumb (2026-10-01); the heading names the page', () => {
+    renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav&nav=left-rail&section=course')
+    expect(screen.queryByRole('navigation', { name: 'Breadcrumb' })).toBeNull()
     fireEvent.click(
       within(screen.getByRole('navigation', { name: 'Course' })).getByRole('button', {
         name: 'Exam Simulator',
       }),
     )
-    expect(within(crumbs).getByText('Exam Simulator')).toHaveAttribute('aria-current', 'page')
-    // …and the page heading follows it, so the two always name one place.
+    expect(screen.queryByRole('navigation', { name: 'Breadcrumb' })).toBeNull()
     expect(screen.getByRole('heading', { level: 1, name: 'Exam Simulator' })).toBeTruthy()
     expect(screen.queryByRole('heading', { level: 1, name: 'Course' })).toBeNull()
   })
 
-  it("the breadcrumb's home icon goes back to Home and the Atlas rail", () => {
+  it('a sub-page with no breadcrumb still reaches the Overview from its rail', () => {
+    // No breadcrumb since 2026-10-01. Left Rail, where the course has a rail.
     renderShell(
-      '/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=course&coursePage=flashcards',
-    )
-    const crumbs = screen.getByRole('navigation', { name: 'Breadcrumb' })
-    fireEvent.click(within(crumbs).getByRole('button', { name: 'Home' }))
-    const nav = screen.getByRole('navigation', { name: 'Primary' })
-    expect(within(nav).getByRole('button', { name: 'Home' })).toHaveAttribute(
-      'aria-current',
-      'page',
+      '/dashboard-rebrand?version=discoverability-atlas-compass-nav&nav=left-rail&section=course&coursePage=flashcards',
     )
     expect(screen.queryByRole('navigation', { name: 'Breadcrumb' })).toBeNull()
+    fireEvent.click(within(screen.getByRole('navigation', { name: 'Course' })).getByRole('button', { name: 'Course Overview' }))
+    expect(screen.getByRole('heading', { level: 1, name: 'Course Overview' })).toBeTruthy()
   })
 
   it('the course\'s own Course page gets the COMPASS LMS rail (Figma 49:2922)', () => {
@@ -551,8 +594,8 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
     // It replaces the Atlas course rail — the sub-page list is gone.
     expect(screen.queryByRole('navigation', { name: 'Course' })).toBeNull()
     expect(screen.getByRole('navigation', { name: 'Table of Contents' })).toBeTruthy()
-    const crumbs = screen.getByRole('navigation', { name: 'Breadcrumb' })
-    expect(within(crumbs).getByText('Course')).toHaveAttribute('aria-current', 'page')
+    // No breadcrumb since 2026-10-01.
+    expect(screen.queryByRole('navigation', { name: 'Breadcrumb' })).toBeNull()
     // Real course, real progress — the same figure Home prints, not the
     // design's "5% Complete".
     expect(screen.getByText('New York Life and Health Pre-licensing')).toBeTruthy()
@@ -570,32 +613,14 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
     }
   })
 
-  it('its breadcrumb: Overview goes back to the course Overview, Home goes Home', () => {
+  it('the player has no breadcrumb (2026-10-01); Close Course goes back to the course Overview', () => {
     const { container } = renderShell(
-      '/dashboard-rebrand?version=discoverability-atlas-compass-nav&section=course&coursePage=course',
+      '/dashboard-rebrand?version=discoverability-atlas-compass-nav&nav=left-rail&section=course&coursePage=course',
     )
-    fireEvent.click(
-      within(screen.getByRole('navigation', { name: 'Breadcrumb' })).getByRole('button', {
-        name: 'Course Overview',
-      }),
-    )
+    expect(screen.queryByRole('navigation', { name: 'Breadcrumb' })).toBeNull()
+    fireEvent.click(screen.getByRole('button', { name: 'Close Course' }))
     expect(container.querySelector('.cre-compass-rail')).toBeNull()
     expect(screen.getByRole('heading', { level: 1, name: 'Course Overview' })).toBeTruthy()
-    fireEvent.click(
-      within(screen.getByRole('navigation', { name: 'Course' })).getByRole('button', {
-        name: 'Course',
-      }),
-    )
-    fireEvent.click(
-      within(screen.getByRole('navigation', { name: 'Breadcrumb' })).getByRole('button', {
-        name: 'Home',
-      }),
-    )
-    expect(
-      within(screen.getByRole('navigation', { name: 'Primary' })).getByRole('button', {
-        name: 'Home',
-      }),
-    ).toHaveAttribute('aria-current', 'page')
   })
 
   it('keeps the Atlas rail on every other Atlas page', () => {
@@ -612,9 +637,10 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
   })
 
   it('keeps the row states in the class, with nothing inline to beat them', () => {
+    // The Left Rail Nav Version — Top Nav (the default since 2026-10-01) has no rail on Home.
     // An inline padding / colour / background would win over
     // `[aria-current='page']` and the active row would look idle.
-    renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav')
+    renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav&nav=left-rail')
     const home = screen.getByRole('button', { name: 'Home' })
     expect(home.style.padding).toBe('')
     expect(home.style.paddingLeft).toBe('')

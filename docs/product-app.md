@@ -4067,3 +4067,60 @@ buttons, `AtlasTopNav`: Home (current on the Home page) and Compass Learning
 centred in the header's height. Colours are `--color-atlas-topnav-*`: Figma's #31485C /
 #ECEFF1 on Global, each brand's nav active ink and hover tint elsewhere.
 Reset clears `?nav=`.
+
+**Expanding Top Nav (2026-10-01).** A third Nav Version
+(`?nav=expanding-top-nav`, Figma 168:916): the Top Nav's buttons with
+`AtlasTopNav expanding`. The current button sits in a tinted tray and slides
+its links out to its right — Home: Course, Study Plan, Certificates,
+Resources;
+Compass Learning: Overview, Course, Flashcards, Exam Simulator — over 420ms on
+`cubic-bezier(0.65, 0, 0.35, 1)`, pushing the next button over in the same
+motion. The width animates as a grid track (0fr ↔ 1fr), so no width is
+measured or hard-coded. Home stays current on its own sections (Study Plan, Certificates,
+Resources); its Course link opens the course, so Compass Learning takes over.
+Reduced motion turns the slide off.
+The Expanding Top Nav has **no left rail** on any page (PlatformShell
+`atlasNoRail`): the rail's grid column stays, empty, so the grid's cells do
+not shift; Home and the course pages centre their usual width, and the course
+player fills the window. That includes the course's own lesson rail.
+
+### Schedule State Exam banner (2026-10-01)
+
+On the Atlas home, Schedule State Exam left the right rail. It is now
+`ScheduleExamBanner` (StudyJourneyWidget.tsx), `LicensingStepWidget` with
+`banner`, between the course card and Study Pace at the left column's width.
+Trimmed the same day to the question alone — "Do you have your State Exam
+scheduled?" — with no fee, link, hint or date capture (and so no scheduled
+state). The Home page no longer has a way to enter an exam date. The rail renumbers: Step 1 coursework, Step 2 Pass State
+Exam, Step 3 Get Licensed. Both rail layouts (V1/V2). Other versions unchanged.
+
+### Course player bar and Rubi rail, rearranged (2026-10-01)
+
+Figma 170:1037 / 170:1213 (Rubi open) and 170:1331 / 170:1362 (closed). The
+Rubi right rail runs the full height beside the player, pinned at the header's
+bottom edge, its header 61px so it is level with the controls bar; the bar now
+spans only the content column. The bar reads Close Course (a labelled button,
+first) · Section progress … search · Notes · settings, and — only while the
+rail is closed — a tinted Rubi button at its right end. Closing the rail slides
+it out right and the content column widens to fill the window; the bar's Rubi
+button slides it back. The exam-date pill is gone from the bar.
+
+**Top Nav tweaks (2026-10-01).** Top Nav is the default Nav Version
+(`ATLAS_NAV_DEFAULT`; `?nav=left-rail` for the old one). Its second button is
+"My Learning" with FA Regular `book-open` (it was "Compass Learning" with
+`circle-location-arrow`). The Atlas header gained Resources · Get Help text
+links 40px left of the bell, at the buttons' 10pt; the account name matches
+them on one baseline, and the account glyph is FA Light `circle-user` at 20px.
+Global shows the XCEL logo (the Compass lockup is switched off in Logo.tsx).
+
+### Left rail collapse (2026-10-01)
+
+Figma 174:1562. Every Atlas left rail (any page that draws one) has a
+collapse button — `AtlasRailToggle`, FA Regular `sidebar` at 11px in a 21 × 22
+frame — 16px down and 16px in from the rail's top-right corner. It slides the rail's
+grid track between 260 and 21 (360ms, `cubic-bezier(0.65, 0, 0.35, 1)`); the
+rail's contents slide out left and go inert, and only the frame stays, on the
+window's left edge: no stroke, square on the left, the Top Nav current fill,
+a white icon. The state is per visit, not stored. The breadcrumbs on the
+Overview and Course pages are gone (Overview's switched off in
+AtlasCourseSideNav, the player's no longer passed).

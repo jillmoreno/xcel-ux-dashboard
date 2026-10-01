@@ -3,6 +3,7 @@ import { GetLicensedRail, StudyJourneyRail } from './StudyJourneyRail'
 import { useState, type CSSProperties } from 'react'
 import { journeyStopsFor } from './studyJourneyUtil'
 import { clearExamDate, useExamDate, writeExamDate } from '@/data/examDateStore'
+import { COMPASS_BUTTON } from '@/components/compass/compassButton'
 import { dateFromIso } from '@/lib/studyPace'
 import { longDate } from './learningPathsHomeUtil'
 import {
@@ -182,7 +183,9 @@ export function StudyJourneyWidget({
       <LicensingStepWidget
         key={step.id}
         step={step}
-        number={examFirst ? (i === 0 ? 1 : stepStart + i) : stepStart + i}
+        // Atlas home: Schedule State Exam left the rail for its own banner
+        // (2026-10-01), so coursework is Step 1 and these follow as 2 and 3.
+        number={examFirst ? i + 1 : stepStart + i}
         // Step 1 on the Atlas home is as deep as the course card beside it
         // (`--cre-course-card-h`, published by LearnerFocusedBand). Its fill is
         // `--color-atlas-step-card` where a brand sets one (Global: #FCFCFB,
@@ -249,12 +252,12 @@ export function StudyJourneyWidget({
             minHeight: undefined,
           }}
         >
-          {licensingSteps[0]}
-          <span aria-hidden style={railRule} />
+          {/* No Schedule State Exam here since 2026-10-01 — it is the
+              banner under the course card (`ScheduleExamBanner`). */}
           {collapseCoursework ? (
             <section aria-label="Study journey" style={bareShell}>
               <p className="cre-eyebrow-ink" style={collapsedEyebrowStyle}>
-                <span style={{ fontWeight: 700 }}>Step 2</span> · Study Journey
+                <span style={{ fontWeight: 700 }}>Step 1</span> · Study Journey
               </p>
               <p style={collapsedTitleStyle}>Coursework complete</p>
             </section>
@@ -265,7 +268,7 @@ export function StudyJourneyWidget({
                 onOpenStop={onOpenStop}
                 onViewAll={onOpenLearningPath ? () => onOpenLearningPath(path.id) : undefined}
                 stepRange
-                stepNumber={2}
+                stepNumber={1}
                 atlasEyebrow
               />
             </section>
@@ -282,9 +285,9 @@ export function StudyJourneyWidget({
       // 32 between the cards on the Atlas home (2026-09-24, the direct ask),
       // which is where `cardPadding` is set; 20 elsewhere.
       <div style={{ display: 'flex', flexDirection: 'column', gap: cardPadding != null ? 32 : 20, minWidth: 0 }}>
-        {/* Coursework, then the licensing steps — or, with `examFirst`, the
-            exam step first. */}
-        {examFirst ? licensingSteps[0] : null}
+        {/* Coursework, then the licensing steps. With `examFirst` (the Atlas
+            home) the exam step is not here at all since 2026-10-01: it is the
+            banner under the course card (`ScheduleExamBanner`). */}
         {/* THE FINISHED COURSEWORK AS ONE LINE, when the flag asks for it. The
             argument the variant exists to test: at 100% the only actionable
             things left are the licensing steps, and four stops of finished work
@@ -295,7 +298,7 @@ export function StudyJourneyWidget({
             <p className="cre-eyebrow-ink" style={collapsedEyebrowStyle}>
               {examFirst ? (
                 <>
-                  <span style={{ fontWeight: 700 }}>Step 2</span> · Study Journey
+                  <span style={{ fontWeight: 700 }}>Step 1</span> · Study Journey
                 </>
               ) : (
                 'Step 1 · Atlas Study Journey'
@@ -313,7 +316,7 @@ export function StudyJourneyWidget({
                  run 01-04, 05, 06, 07 down the column instead of the sequence
                  appearing to start at 05. Split only; see the prop's note. */
               stepRange
-              stepNumber={examFirst ? 2 : 1}
+              stepNumber={1}
               atlasEyebrow={examFirst}
             />
           </section>
@@ -466,6 +469,61 @@ const LICENSING_STEP_CTA: Record<string, string | undefined> = {
   'apply-license': 'home.how-to-apply',
 }
 
+/**
+ * SCHEDULE STATE EXAM, AS A BANNER — the Atlas home, 2026-10-01, the
+ * designer's request: "Remove step 1… make a new module out of it in between
+ * the Course Card and the Study Pace card in more of a banner style… the same
+ * width as the ones above and below it."
+ *
+ * THE SAME CARD, not a copy: `LicensingStepWidget` with `banner`, so the exam
+ * date capture, the scheduled state ("NY State Exam Scheduled" / "Edit Exam
+ * Date") and the step's link all behave exactly as they did in the rail. Its
+ * width is the left column's, by inheritance — a flex column stretches it to
+ * match the course card and the Study Pace card.
+ *
+ * Surface: the step card's own fill (`--color-atlas-step-card`, #FCFCFB on
+ * Global) with the course card's 1px rule, at the page's 32px module inset
+ * across and 24 down.
+ */
+export function ScheduleExamBanner({
+  state,
+  onOpenStep,
+  style,
+}: {
+  state?: string
+  onOpenStep?: (id: string) => void
+  style?: CSSProperties
+}) {
+  const step = GET_LICENSED_STEPS.find((s) => s.id === 'schedule-exam')
+  if (!step) return null
+  return (
+    <LicensingStepWidget
+      step={step}
+      number={0}
+      banner
+      // Asked as a question on the banner (2026-10-01, the designer's
+      // request); once a date is saved it still reads "NY State Exam
+      // Scheduled".
+      heading="Do you have your State Exam scheduled?"
+      state={state}
+      onOpenStep={onOpenStep}
+      shell={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        flexWrap: 'wrap',
+        gap: '16px 32px',
+        padding: '24px 32px',
+        boxSizing: 'border-box',
+        borderRadius: 'var(--radius-lg)',
+        background: 'var(--color-atlas-step-card, var(--color-surface-card))',
+        border: '1px solid var(--color-compass-course-card-stroke, var(--color-atlas-nav-rule))',
+        ...style,
+      }}
+    />
+  )
+}
+
 function LicensingStepWidget({
   step,
   number,
@@ -475,6 +533,7 @@ function LicensingStepWidget({
   heading,
   state,
   roundedRule = false,
+  banner = false,
 }: {
   step: LicensingStep
   /** Continues the journey's 01-04. See the note in `StudyJourneyWidget`. */
@@ -499,6 +558,11 @@ function LicensingStepWidget({
   /** Inside the right rail's V2 frame (2026-09-30): the step draws no card,
    *  rule or inset of its own — `shell` is used as given, pending or not. */
   bare?: boolean
+  /** The Atlas home's SCHEDULE STATE EXAM BANNER (2026-10-01): the same card
+   *  laid out across — heading, fee and link on the left, the date capture on
+   *  the right — with no step number, as it is no longer a step in the rail.
+   *  `shell` is the banner's own surface. See `ScheduleExamBanner`. */
+  banner?: boolean
 }) {
   /*
    * Owner and fee on one line, ASSEMBLED rather than interpolated — a trailing
@@ -589,6 +653,45 @@ function LicensingStepWidget({
    * inference from its shape.
    */
   const pending = !hasCapture
+  if (banner) {
+    /* THE BANNER IS THE QUESTION AND A YES / NO — 2026-10-01, the designer's
+       requests, in order: no fee line, no "Schedule State Exam →" link, no
+       "Already scheduled?" hint, no date capture at all, then Yes and No. So it ignores a
+       stored date too: with no capture there is no "Edit Exam Date" to undo
+       one, and a heading that said "NY State Exam Scheduled" would have no way
+       back. A date saved earlier still drives the page's figures; it is
+       cleared from the browser's storage, not from here. */
+    return (
+      <section aria-label={heading ?? step.title} style={shell}>
+        <p
+          style={{
+            margin: 0,
+            fontFamily: 'var(--font-heading)',
+            fontWeight: 700,
+            fontSize: 'var(--type-atlas-h8-size, 18px)',
+            lineHeight: 'var(--type-atlas-h8-line, 24px)',
+            letterSpacing: '-0.01em',
+            color: 'var(--color-text-primary)',
+          }}
+        >
+          {heading ?? step.title}
+        </p>
+        {/* YES / NO — 2026-10-01, the designer's request, Yes as the active
+            (primary) button. The Course card's Begin Course button, so the two
+            read as one family: the shared Compass size, the brand's own fill;
+            No is its outline. NOT WIRED YET — neither answer leads anywhere
+            until one is designed. */}
+        <div style={{ display: 'flex', gap: 12, flex: 'none' }}>
+          <button type="button" className="cre-compass-primary cre-compass-btn-primary" style={COMPASS_BUTTON}>
+            Yes
+          </button>
+          <button type="button" className="cre-compass-secondary" style={COMPASS_BUTTON}>
+            No
+          </button>
+        </div>
+      </section>
+    )
+  }
   return (
     /* The accessible name is the VISIBLE heading, not the step title, so the
        arrival card is not announced as "Apply for your License" while reading

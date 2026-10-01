@@ -49,6 +49,15 @@ import ClockRegularSvg from './clock-regular.svg?react'
 import HouseRegularSvg from './house-regular.svg?react'
 // Atlas Top Nav (Figma 160:616), fetched 2026-09-30 at 7.3.1.
 import CircleLocationArrowRegularSvg from './circle-location-arrow-regular.svg?react'
+// The Atlas Top Nav's My Learning button, fetched 2026-10-01 at 7.3.1.
+import BookOpenRegularSvg from './book-open-regular.svg?react'
+// The Atlas left rail's collapse button (Figma 174:1562), fetched 2026-10-01 at 7.3.1.
+import SidebarRegularSvg from './sidebar-regular.svg?react'
+// The REAL Font Awesome Light `circle-user`, fetched 2026-10-01 at 7.3.1, for
+// the Atlas header. `circle-user.svg` (CircleUser) is a hand-drawn stand-in
+// from the original port — no FA licence header, simplified paths — and still
+// serves the profile pages; swapping it there is a separate call.
+import CircleUserLightSvg from './circle-user-light.svg?react'
 import SlashForwardSolidSvg from './slash-forward-solid.svg?react'
 // Compass course Overview (Figma 44:2211), fetched 2026-09-23 at 7.3.1.
 import ArrowRotateLeftSvg from './arrow-rotate-left.svg?react'
@@ -247,6 +256,9 @@ export const CircleCheckRegular = makeIcon(CircleCheckRegularSvg) // FA: circle-
 export const ClockRegular = makeIcon(ClockRegularSvg) // FA: clock (regular)
 export const HouseRegular = makeIcon(HouseRegularSvg) // FA: house (regular)
 export const CircleLocationArrowRegular = makeIcon(CircleLocationArrowRegularSvg) // FA: circle-location-arrow (regular)
+export const BookOpenRegular = makeIcon(BookOpenRegularSvg) // FA: book-open (regular)
+export const SidebarRegular = makeIcon(SidebarRegularSvg) // FA: sidebar (regular)
+export const CircleUserLight = makeIcon(CircleUserLightSvg) // FA: circle-user (light, genuine)
 export const SlashForwardSolid = makeIcon(SlashForwardSolidSvg) // FA: slash-forward (solid)
 export const ArrowRotateLeft = makeIcon(ArrowRotateLeftSvg) // FA: arrow-rotate-left
 export const Bullseye = makeIcon(BullseyeSvg) // FA: bullseye

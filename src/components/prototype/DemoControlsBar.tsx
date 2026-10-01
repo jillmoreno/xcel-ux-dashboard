@@ -7,7 +7,7 @@ import {
 } from '@/data/dashboardVersions'
 import { ATLAS_SKINS, ATLAS_SKIN_PARAM, atlasSkinFor, type AtlasSkin } from '@/components/layout/atlasBrandSkin'
 import { ATLAS_FONTS, ATLAS_FONT_PARAM, atlasFontFor, type AtlasFont } from '@/components/layout/atlasFontSets'
-import { ATLAS_NAV_PARAM, ATLAS_NAV_VERSIONS, atlasNavFor, type AtlasNavVersion } from '@/components/layout/atlasNavVersion'
+import { ATLAS_NAV_DEFAULT, ATLAS_NAV_PARAM, ATLAS_NAV_VERSIONS, atlasNavFor, type AtlasNavVersion } from '@/components/layout/atlasNavVersion'
 import { UserSlash, Share2, BrowserWindow, Check, ChevronDown } from '@/icons'
 import { ActionMenu } from '@/components/ui/ActionMenu'
 import { Toast } from '@/components/ui/Toast'
@@ -304,13 +304,15 @@ export function DemoControlsBar({
     close()
   }
 
-  /* ATLAS NAV VERSION (2026-09-30) — Left Rail (default) or Top Nav, on the
+  /* ATLAS NAV VERSION (2026-09-30) — Left Rail, Top Nav (the default since
+     2026-10-01) or Expanding Top Nav, on the
      Atlas version only. See atlasNavVersion.ts. */
   const atlasNav = atlasNavFor(searchParams.get(ATLAS_NAV_PARAM))
-  const atlasNavLabel = ATLAS_NAV_VERSIONS.find((v) => v.nav === atlasNav)?.label ?? 'Left Rail'
+  const atlasNavLabel = ATLAS_NAV_VERSIONS.find((v) => v.nav === atlasNav)?.label ?? 'Top Nav'
   const pickAtlasNav = (nav: AtlasNavVersion) => {
     const next = new URLSearchParams(searchParams)
-    if (nav === 'left-rail') next.delete(ATLAS_NAV_PARAM)
+    // The default needs no param, so a clean link shows it.
+    if (nav === ATLAS_NAV_DEFAULT) next.delete(ATLAS_NAV_PARAM)
     else next.set(ATLAS_NAV_PARAM, nav)
     setSearchParams(next, { replace: true })
     close()

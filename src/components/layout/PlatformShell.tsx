@@ -1,5 +1,6 @@
 import { useEffect, useState, type ReactNode, type CSSProperties } from 'react'
 import { ATLAS_SKIN_PARAM, atlasSkinFor } from './atlasBrandSkin'
+import { ATLAS_NAV_PARAM, atlasNavFor } from './atlasNavVersion'
 import { ATLAS_FONT_PARAM, atlasFontFor, atlasFontHref } from './atlasFontSets'
 import { useSearchParams } from 'react-router-dom'
 import { useAccount, supportsMembership, type Brand } from '@/context/AccountContext'
@@ -81,11 +82,16 @@ import { AtlasCompassRubiRail } from './AtlasCompassRubiRail'
 import { CompassCourseContent } from '@/components/compass/CompassCourseContent'
 import { AtlasCompassCourseFooter } from './AtlasCompassCourseFooter'
 
-/* The Compass player controls bar's height — 11 + 38 + 11 padding and pills,
-   plus its 1px rule (Figma 49:2963). The Rubi rail pins at this offset below
-   the rail top, so the two stack without a gap or an overlap. */
-const COMPASS_PLAYER_BAR_HEIGHT = 61
 import { useAtlasCourse } from './useAtlasCourse'
+import { AtlasRailToggle } from './AtlasRailToggle'
+
+/* THE ATLAS RAIL'S COLLAPSE (2026-10-01): 260 open, 61 closed (the closed
+   toggle's own frame, `AtlasRailToggle` — 21, then 36), over 360ms on an
+   ease-in-out curve. */
+const ATLAS_RAIL_W = 260
+const ATLAS_RAIL_TOGGLE_W = 61
+const ATLAS_RAIL_MS = 360
+const ATLAS_RAIL_SLIDE = `${ATLAS_RAIL_MS}ms cubic-bezier(0.65, 0, 0.35, 1)`
 import { CompassCourseOverview } from '@/components/compass/CompassCourseOverview'
 
 /**
@@ -268,6 +274,9 @@ function PlatformShellBody() {
   // Compass Course page, closed by its own × and toggled by the player bar's
   // Rubi button. Session-local, like the rail collapse below.
   const [rubiOpen, setRubiOpen] = useState(true)
+  // The Atlas left rail's COLLAPSE (2026-10-01, Figma 174:1562): the button
+  // at the rail's top right slides the rail closed to just its own frame.
+  const [atlasRailClosed, setAtlasRailClosed] = useState(false)
   const [collapseOverride, setCollapseOverride] = useState<{
     /** The launcher's course id, or `null` for the dashboard. */
     scope: string | null
@@ -280,6 +289,30 @@ function PlatformShellBody() {
   const atlasNav = isAtlasCompassNavVersion(
     params.get('version') ?? defaultDiscoverabilityVersionFor(brand),
   )
+  // Nav Version → Expanding Top Nav (2026-10-01, the designer's request): NO
+  // left rail on any page — the header's slide-out links carry the navigation.
+  // The rail's grid column stays (at 0 / a centring 1fr) so the grid's
+  // children do not change; only its contents go.
+  // …and on the Top Nav version's HOME page (2026-10-01, the designer's
+  // request): its header buttons are Home's way around; the other pages keep
+  // the rail.
+  const atlasNavVersion = atlasNav ? atlasNavFor(params.get(ATLAS_NAV_PARAM)) : null
+  const atlasNoRail =
+    atlasNavVersion === 'expanding-top-nav' || (atlasNavVersion === 'top-nav' && active === 'dashboard')
+  // Wherever an Atlas rail is drawn it can collapse; collapsed, its column is
+  // the toggle's own width, so only that frame stays at the left edge.
+  const atlasRailToggle = atlasNav && !atlasNoRail
+  const atlasRailClosedNow = atlasRailToggle && atlasRailClosed
+  const atlasRailW = atlasRailClosedNow ? ATLAS_RAIL_TOGGLE_W : ATLAS_RAIL_W
+  // The rail's TRACK. Collapsed on any page but the course player, the track
+  // grows to whatever centres the page's capped column in the window — half of
+  // what the column leaves — never under the toggle's own 61 (2026-10-01, the
+  // designer's request). A percentage of the grid, so it eases from 260 like
+  // a plain width. The player keeps 61: its content fills the window.
+  const atlasRailTrack = (cap: number) =>
+    atlasRailClosedNow && !compassCourseRail
+      ? `max(${ATLAS_RAIL_TOGGLE_W}px, calc((100% - ${cap}px) / 2))`
+      : `${atlasRailW}px`
   // The Atlas Style Guide palette (`atlas-xcel-palette`) — an attribute on
   // <html>, like `data-theme`, so the brand ramps it re-points resolve for
   // everything on the page, portalled sheets included. See tokens.css,
@@ -669,15 +702,21 @@ function PlatformShellBody() {
         // ask): its content, player bar and footer take every pixel past the
         // rail, so the 1180 cap and the right filler go (filler kept at 0 so
         // the grid's children do not change).
-        gridTemplateColumns: compassCourseRail
-          ? '260px minmax(0, 1fr) 0px'
+        gridTemplateColumns: atlasNoRail
+          ? // No rail: the course player still fills the window; every other
+            // page centres its usual width (1278 Home, 1180 elsewhere).
+            compassCourseRail
+            ? '0px minmax(0, 1fr) 0px'
+            : `minmax(0, 1fr) minmax(0, ${active === 'dashboard' ? 1278 : 1180}px) minmax(0, 1fr)`
+          : compassCourseRail
+          ? `${atlasRailW}px minmax(0, 1fr) 0px`
           : atlasNav && active === 'dashboard'
           ? // Atlas HOME: 1278, not 1180 — room for the 750px left column
             // (2026-09-24), a 40px gap and a ~376px right one, inside the 56px
             // gutters: 56 + 750 + 40 + 376 + 56.
-            '260px minmax(0, 1278px) 1fr'
+            `${atlasRailTrack(1278)} minmax(0, 1278px) 1fr`
           : atlasNav
-          ? '260px minmax(0, 1180px) 1fr'
+          ? `${atlasRailTrack(1180)} minmax(0, 1180px) 1fr`
           : railCollapsed
             ? '76px minmax(0, 1364px) 1fr'
             : '220px minmax(0, 1220px) 1fr',
@@ -685,6 +724,9 @@ function PlatformShellBody() {
         // to the window (below) — this floor made the page taller than the
         // window, so the content box ran under the pinned footer.
         minHeight: compassCourseRail ? undefined : 'calc(100vh - 64px)',
+        // The rail's collapse slides: the first track eases between its two
+        // widths, and the content column takes up what it gives (Atlas only).
+        transition: atlasRailToggle ? `grid-template-columns ${ATLAS_RAIL_SLIDE}` : undefined,
       }}
     >
       {/* Left nav rail — flush-left column. In the locked kiosk share view
@@ -692,14 +734,34 @@ function PlatformShellBody() {
           tester sees the full nav yet can't click into any other section. */}
       <div
         style={{
-          // Atlas: a white rail with a 1px rule (Figma 49:3365).
-          background: atlasNav ? 'var(--color-atlas-nav-surface)' : 'var(--color-nav-surface)',
+          // Atlas: a white rail with a 1px rule (Figma 49:3365). Expanding
+          // Top Nav: the column stays (so the grid's cells do not shift),
+          // empty and unpainted — see the rule and the contents below.
+          background: atlasNoRail || atlasRailClosedNow
+            ? 'transparent'
+            : atlasNav ? 'var(--color-atlas-nav-surface)' : 'var(--color-nav-surface)',
+          // Collapsing: the column CLIPS the 260px rail (`clip`, not `hidden`,
+          // which would make it the sticky rail's scroll box and unpin it),
+          // and its surface and rule fade with the slide.
+          ...(atlasRailToggle
+            ? {
+                overflowX: 'clip' as const,
+                transition: `background-color ${ATLAS_RAIL_SLIDE}, border-color ${ATLAS_RAIL_SLIDE}`,
+              }
+            : null),
           // Rail right border — transparent in every mode (the rail blends
           // into the content pane); kept as a token hook in case a separator
           // is wanted later.
           // The Compass rail's own rule is the design's #d9d9d9, a shade apart
           // from the Atlas rail's #dfe3eb.
-          borderRight: compassCourseRail
+          borderRight: atlasNoRail
+            ? 'none'
+            : atlasRailClosedNow
+            ? // No border at all closed: the column CLIPS at its inner edge,
+              // so even a transparent 1px border cut off the toggle's own right
+              // rule (its last pixel) — 2026-10-01.
+              'none'
+            : compassCourseRail
             ? '1px solid var(--color-compass-rail-rule)'
             : atlasNav
             ? '1px solid var(--color-atlas-nav-rule)'
@@ -713,6 +775,7 @@ function PlatformShellBody() {
             pinned rail on long pages; the rail's own overflow logic handles
             short viewports. `inert` in focus mode disables every rail control
             (mouse + keyboard) while keeping it visible + on-brand. */}
+        {atlasNoRail ? null : (
         <div
           inert={focus || undefined}
           style={{
@@ -743,8 +806,32 @@ function PlatformShellBody() {
             boxSizing: 'border-box',
             // A subtle cue that the nav is locked, without looking broken.
             opacity: focus ? 0.85 : undefined,
+            // Atlas: the rail's own width whatever its column is, so nothing
+            // reflows as it collapses — the column clips it instead.
+            ...(atlasRailToggle ? { width: ATLAS_RAIL_W } : null),
           }}
         >
+          {atlasRailToggle ? (
+            <AtlasRailToggle
+              closed={atlasRailClosed}
+              onToggle={() => setAtlasRailClosed((c) => !c)}
+              besideBar={compassCourseRail}
+            />
+          ) : null}
+          <div
+            id="cre-atlas-rail-body"
+            inert={atlasRailClosedNow || undefined}
+            className={atlasRailToggle ? 'cre-atlas-rail-slide' : undefined}
+            style={
+              atlasRailToggle
+                ? {
+                    transform: atlasRailClosedNow ? 'translateX(-100%)' : 'translateX(0)',
+                    visibility: atlasRailClosedNow ? 'hidden' : 'visible',
+                    transition: `transform ${ATLAS_RAIL_SLIDE}, visibility 0s linear ${atlasRailClosedNow ? ATLAS_RAIL_MS : 0}ms`,
+                  }
+                : undefined
+            }
+          >
           {/* AUTO-COLLAPSED while the Compass launcher is open — 2026-09-17,
               the direct ask. Driven by `launcherOpen`, the same flag that
               already blanks the rail's active state, so the two cannot get out
@@ -797,7 +884,9 @@ function PlatformShellBody() {
               }
             />
           )}
+          </div>
         </div>
+        )}
       </div>
       {/* Content column carries no padding of its own — every section is
           wrapped in `SectionShell`, which owns the uniform 40px gutter + the
@@ -814,20 +903,6 @@ function PlatformShellBody() {
             : { minWidth: 0 }
         }
       >
-        {/* COMPASS COURSE PLAYER CONTROLS BAR (Figma 49:2963) — under the page
-            header, right of the rail, pinned at the rail's own top so the two
-            stay level as the lesson scrolls. Only on the Compass Course page,
-            the course player; see `AtlasCompassPlayerBar`. */}
-        {compassCourseRail ? (
-          <AtlasCompassPlayerBar
-            // The header's real bottom edge (see `headerBottom`) — pinned at
-            // `railTop` it slid 38px under the header in the Demo frame.
-            stickyTop={headerBottom}
-            rubiOpen={rubiOpen}
-            onRubi={() => setRubiOpen((open) => !open)}
-            onClose={() => selectCoursePage('overview')}
-          />
-        ) : null}
         {launcher.courseId ? (
           <CourseLauncherView
             courseId={launcher.courseId}
@@ -840,12 +915,14 @@ function PlatformShellBody() {
             onBack={resourceLauncher.close}
           />
         ) : compassCourseRail ? (
-          /* The course content with the RUBI RIGHT RAIL beside it, both under
-             the player bar. The rail pins at the bar's bottom edge
-             (`COMPASS_PLAYER_BAR_HEIGHT`) and fills the rest of the viewport. */
-          /* `flex: 1` fills the column below the bar; `stretch` hands that
-             height to the content side (the Rubi slot keeps its own pinned
-             height via `alignSelf: flex-start`). */
+          /* THE PLAYER, REARRANGED — Figma 170:1037 / 170:1213 / 170:1331 /
+             170:1362, 2026-10-01, the designer's request. The RUBI RIGHT RAIL
+             now runs the full height beside the player — its header level with
+             the controls bar — and the bar spans only the content column. Open,
+             the bar has no Rubi button (the rail's own close is the way out);
+             closed, the rail slides out right, the column widens to fill the
+             window, and the bar's Rubi button comes back at its right end.
+             It was bar-over-both, with the rail pinned under the bar. */
           <div style={{ display: 'flex', alignItems: 'stretch', flex: '1 1 auto' }}>
             {/* At least the window's remaining height, as a column, so the
                 navigation footer sits at the bottom of the window even when
@@ -859,13 +936,23 @@ function PlatformShellBody() {
                 // From the header's REAL bottom edge, less the Demo stage's 44px
                 // (the left rail's arithmetic, `navRailHeight`), so the content
                 // box ends 56px above the footer instead of running under it.
-                minHeight: `calc(100vh - ${headerBottom + COMPASS_PLAYER_BAR_HEIGHT + stageBottom}px)`,
+                // The bar is inside this column now, so it is not subtracted.
+                minHeight: `calc(100vh - ${headerBottom + stageBottom}px)`,
                 // The course content sits on the Compass Overview's warm page
                 // (`--color-compass-page`, #f8f6f3) — one surface for a
                 // course's pages (2026-09-24). The footer keeps its own white.
                 background: 'var(--color-compass-page)',
               }}
             >
+              {/* COMPASS COURSE PLAYER CONTROLS BAR — pinned at the header's
+                  real bottom edge (`headerBottom`), the same line the rails
+                  pin at. See `AtlasCompassPlayerBar`. */}
+              <AtlasCompassPlayerBar
+                stickyTop={headerBottom}
+                rubiOpen={rubiOpen}
+                onRubi={() => setRubiOpen(true)}
+                onClose={() => selectCoursePage('overview')}
+              />
               {/* COMPASS COURSE CONTENT (Figma 49:3338, 2026-09-24) — replaces the
                   page's "Course" heading: a box that fills the column between
                   the player bar and the footer, 56px in on every side. */}
@@ -876,10 +963,11 @@ function PlatformShellBody() {
               <AtlasCompassCourseFooter />
             </div>
             {/* Always mounted here, so it can slide OUT as well as in; `open`
-                drives the motion. */}
+                drives the motion. Pinned at the header's bottom edge, beside
+                the bar rather than under it. */}
             <AtlasCompassRubiRail
               open={rubiOpen}
-              stickyTop={headerBottom + COMPASS_PLAYER_BAR_HEIGHT}
+              stickyTop={headerBottom}
               bottomInset={stageBottom}
               onClose={() => setRubiOpen(false)}
             />

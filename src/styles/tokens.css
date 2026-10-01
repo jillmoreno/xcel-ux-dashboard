@@ -1129,6 +1129,40 @@
 .cre-atlas-header .cre-icon-pill[aria-label^='Notifications'] {
   transform: translateY(2px);
 }
+/* The Atlas header's Resources · Get Help links (2026-10-01): the account
+   name's face and weight, the page's link ink on hover. Sized as the Top Nav
+   buttons are, 10pt (13.33px) on a 15px line (same day). */
+.cre-atlas-header-link {
+  font-family: var(--font-body);
+  font-size: 10pt;
+  font-weight: 600;
+  line-height: 15px;
+  color: var(--color-text-primary);
+  text-decoration: none;
+  white-space: nowrap;
+}
+.cre-atlas-header-link:hover {
+  color: var(--color-atlas-cta-ink, var(--color-action));
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.cre-atlas-header-link:focus-visible {
+  outline: 2px solid var(--color-atlas-cta-ink, var(--color-action));
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+/* The account glyph (Light `circle-user`, 20px) 6px from the name, not the
+   pill's 8 (2026-10-01, the designer's request) — Atlas header only. */
+.cre-atlas-header .cre-account-pill[class] {
+  gap: 6px;
+}
+/* The account name at the header links' size, 10pt on a 15px line
+   (2026-10-01, the designer's request), so it reads with Resources and
+   Get Help. */
+.cre-atlas-header .cre-account-pill__name {
+  font-size: 10pt;
+  line-height: 15px;
+}
 /* The LOGO sits 3px below the header's centre line (2026-09-24, the direct
    ask — 2px, then 1px more). A transform, so the header's own layout — and the logo's hit area —
    do not move. The logo is the first group's image; the utilities are the
@@ -1136,8 +1170,10 @@
 .cre-atlas-header > div:first-child img {
   transform: translateY(3px);
 }
-/* The player bar's Rubi button while the rail is open. */
-.cre-compass-player-btn[aria-pressed='true'] {
+/* The player bar's Rubi button (shown only while the rail is closed, since
+   2026-10-01): the tinted fill the open state used to wear — Figma 170:1518,
+   #ECEEF0 on a #D8DEE4 edge. */
+.cre-compass-player-btn.cre-compass-player-rubi {
   background: var(--color-compass-player-rubi);
   border-color: var(--color-compass-player-rubi-border);
 }
@@ -1203,6 +1239,21 @@
 }
 .cre-compass-primary:hover {
   filter: brightness(1.12);
+}
+/* The Compass SECONDARY button — the primary's outline: its fill colour as
+   a 1px border and the label, on no fill (the Atlas Schedule State Exam
+   banner's "No", 2026-10-01). */
+.cre-compass-secondary {
+  background: transparent;
+  color: var(--color-compass-page-button);
+  border-color: var(--color-compass-page-button) !important;
+}
+.cre-compass-secondary:hover {
+  background: color-mix(in srgb, var(--color-compass-page-button) 8%, transparent);
+}
+.cre-compass-secondary:focus-visible {
+  outline: 2px solid var(--color-compass-page-button);
+  outline-offset: 2px;
 }
 .cre-compass-outline {
   color: var(--color-compass-page-rubi);
@@ -1275,6 +1326,9 @@
 .cre-atlas-topnav-btn {
   background: var(--color-atlas-topnav-idle, #eceff1);
   color: var(--color-atlas-topnav-idle-ink, #31485c);
+  /* An INSIDE stroke (an inset shadow, so the button keeps its size); only
+     the Global skin sets one. */
+  box-shadow: inset 0 0 0 1px var(--color-atlas-topnav-idle-stroke, transparent);
   transition: filter 120ms ease;
 }
 .cre-atlas-topnav-btn:hover {
@@ -1282,14 +1336,90 @@
 }
 .cre-atlas-topnav-btn.is-current {
   background: var(--color-atlas-topnav-current, #31485c);
+  box-shadow: none;
   color: var(--color-atlas-topnav-current-ink, #ffffff);
 }
 .cre-atlas-topnav-btn.is-current:hover {
   filter: none;
 }
+/* EXPANDING TOP NAV (AtlasTopNav `expanding`). The slide eases in AND out —
+   cubic-bezier(0.65, 0, 0.35, 1), slow at both ends — over 420ms, on the
+   grid track that carries the links' width; the tray's fill fades with it.
+   The next button is in the same row, so it is pushed over in the same
+   motion. No motion for a reader who asks for none. */
+.cre-atlas-topnav-tray {
+  background: transparent;
+  transition: background-color 420ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+.cre-atlas-topnav-tray.is-open {
+  background: var(--color-atlas-topnav-tray, #eceef0);
+}
+.cre-atlas-topnav-slide {
+  transition: grid-template-columns 420ms cubic-bezier(0.65, 0, 0.35, 1);
+}
+.cre-atlas-topnav-link {
+  color: var(--color-atlas-topnav-link, #31485c);
+}
+.cre-atlas-topnav-link:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.cre-atlas-topnav-link[aria-current='page'] {
+  font-weight: 600 !important;
+}
+.cre-atlas-topnav-link:focus-visible {
+  outline: 2px solid var(--color-atlas-topnav-current, #31485c);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cre-atlas-topnav-tray,
+  .cre-atlas-topnav-slide {
+    transition: none;
+  }
+}
 .cre-atlas-topnav-btn:focus-visible {
   outline: 2px solid var(--color-atlas-topnav-current, #31485c);
   outline-offset: 2px;
+}
+/* The Atlas left rail's collapse button (AtlasRailToggle, Figma 174:1562).
+   Open: the design's outlined frame. Closed: see `.is-closed`. Its slide and
+   these changes share the rail's easing (the transition list is inline). */
+.cre-atlas-rail-toggle {
+  background: var(--color-surface-card);
+  border-color: var(--color-atlas-rail-toggle-border, #bbbbbb);
+  border-radius: 4px;
+  color: var(--color-atlas-rail-toggle-icon, #9b9b9b);
+}
+.cre-atlas-rail-toggle:hover {
+  border-color: var(--color-atlas-topnav-current, #31485c);
+  color: var(--color-atlas-topnav-current, #31485c);
+}
+.cre-atlas-rail-toggle.is-closed {
+  /* Closed: the player bar's left end (2026-10-01) — the bar's own fill,
+     square, rules on its right and bottom in the bar's rule colour, holding a
+     search-style button. It was briefly a filled, rounded tab, then white. */
+  background: var(--color-compass-player-bar);
+  border-color: var(--color-compass-player-rule, var(--color-atlas-nav-rule));
+  border-radius: 0;
+  color: var(--color-atlas-topnav-idle-ink, #3d5a73);
+}
+.cre-atlas-rail-toggle.is-closed:hover {
+  background: var(--color-compass-player-bar);
+}
+/* …the inner button takes the bar buttons' hover instead. */
+.cre-atlas-rail-toggle.is-closed:hover .cre-atlas-rail-toggle-inner {
+  background: var(--color-compass-player-hover);
+}
+.cre-atlas-rail-toggle:focus-visible {
+  outline: 2px solid var(--color-atlas-topnav-current, #31485c);
+  outline-offset: 2px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cre-atlas-rail-toggle,
+  .cre-atlas-rail-slide {
+    transition: none !important;
+  }
 }
 .cre-atlas-nav-row:hover {
   background: var(--color-atlas-nav-hover);
@@ -4802,6 +4932,11 @@ a.cre-library-card-title::after {
   --color-atlas-topnav-current-ink: #ffffff;
   --color-atlas-topnav-idle: var(--color-atlas-nav-hover);
   --color-atlas-topnav-idle-ink: var(--color-atlas-nav-active-ink);
+  /* Expanding Top Nav (Figma 168:916): the tray behind the current button and
+     its links, the links' ink and the rules between them. */
+  --color-atlas-topnav-tray: var(--color-atlas-nav-hover);
+  --color-atlas-topnav-link: var(--color-atlas-topnav-idle-ink);
+  --color-atlas-topnav-rule: color-mix(in srgb, var(--color-atlas-topnav-idle-ink) 55%, #ffffff);
 
   /* Compass course rail — the current lesson (label, clock, fill) and the
      crumb link are the left-navigation tan above (red on hover); the section marks, done ticks and the progress spine
@@ -5340,8 +5475,18 @@ a.cre-library-card-title::after {
      took a 1px Primary 200 (#D8DEE4) stroke, as every skin did. */
   /* The Top Nav in Figma's own colours (160:616). */
   --color-atlas-topnav-current: #31485c;
-  --color-atlas-topnav-idle: #eceff1;
-  --color-atlas-topnav-idle-ink: #31485c;
+  /* The idle (not current) button: white with a 1px inside stroke in
+     Compass Primary 200, #D8DEE4 (2026-10-01, the designer's request; Figma
+     fills it #ECEFF1 with no stroke). */
+  --color-atlas-topnav-idle: #ffffff;
+  --color-atlas-topnav-idle-stroke: var(--color-primary-200);
+  /* Its label (and icon) in Compass Primary 500, #3D5A73 (2026-10-01, the
+     designer's request; it was Figma's #31485C). */
+  --color-atlas-topnav-idle-ink: var(--color-primary-500);
+  /* Expanding Top Nav in Figma's own colours (168:916). */
+  --color-atlas-topnav-tray: #eceef0;
+  --color-atlas-topnav-link: #31485c;
+  --color-atlas-topnav-rule: #8194a4;
   --color-compass-course-card: #fcfcfb;
   --color-compass-course-card-stroke: var(--color-atlas-nav-rule);
   --color-atlas-outlined-card: #eceef0;

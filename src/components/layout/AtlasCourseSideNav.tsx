@@ -50,35 +50,39 @@ export function AtlasCourseSideNav({
 
   return (
     <div style={COLUMN}>
-      <nav aria-label="Breadcrumb">
-        <ol style={CRUMBS}>
-          <li style={CRUMB_ITEM}>
-            <button
-              type="button"
-              className="cre-atlas-crumb-home"
-              onClick={onHome}
-              aria-label="Home"
-              style={HOME_BUTTON}
-            >
-              {/* FA `house` REGULAR — the same icon the Compass course rail's
-                  breadcrumb uses, so the two course rails' home links match. */}
-              <HouseRegular size={11} aria-hidden />
-            </button>
-          </li>
-          <li style={CRUMB_ITEM}>
-            {/* The FA slash-forward icon at 10px, as the course player's
-                breadcrumb draws it (2026-09-29, the designer's request: match
-                its size and spacing). A typed "/" was 3.7px wide, so the
-                current crumb sat 6px closer to the house than on the player. */}
-            <span aria-hidden style={SEPARATOR}>
-              <SlashForwardSolid size={10} aria-hidden />
-            </span>
-            <span aria-current="page" style={CURRENT_CRUMB}>
-              {current.label}
-            </span>
-          </li>
-        </ol>
-      </nav>
+      {/* NO BREADCRUMB since 2026-10-01 (the designer's request) — switched
+          off, not deleted: `SHOW_BREADCRUMB` brings it back. */}
+      {SHOW_BREADCRUMB ? (
+        <nav aria-label="Breadcrumb">
+          <ol style={CRUMBS}>
+            <li style={CRUMB_ITEM}>
+              <button
+                type="button"
+                className="cre-atlas-crumb-home"
+                onClick={onHome}
+                aria-label="Home"
+                style={HOME_BUTTON}
+              >
+                {/* FA `house` REGULAR — the same icon the Compass course rail's
+                    breadcrumb uses, so the two course rails' home links match. */}
+                <HouseRegular size={11} aria-hidden />
+              </button>
+            </li>
+            <li style={CRUMB_ITEM}>
+              {/* The FA slash-forward icon at 10px, as the course player's
+                  breadcrumb draws it (2026-09-29, the designer's request: match
+                  its size and spacing). A typed "/" was 3.7px wide, so the
+                  current crumb sat 6px closer to the house than on the player. */}
+              <span aria-hidden style={SEPARATOR}>
+                <SlashForwardSolid size={10} aria-hidden />
+              </span>
+              <span aria-current="page" style={CURRENT_CRUMB}>
+                {current.label}
+              </span>
+            </li>
+          </ol>
+        </nav>
+      ) : null}
       <p style={COURSE_TITLE}>{courseTitle}</p>
       <nav aria-label="Course">
         <ul style={LIST}>
@@ -100,6 +104,9 @@ export function AtlasCourseSideNav({
     </div>
   )
 }
+
+/** The Home / Course Overview breadcrumb above the course title — off since 2026-10-01. */
+const SHOW_BREADCRUMB = false
 
 const COLUMN: CSSProperties = {
   display: 'flex',

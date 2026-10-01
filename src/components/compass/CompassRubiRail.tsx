@@ -6,8 +6,9 @@ import { PaperPlaneTopSolid, RubiLogo, XmarkRegular } from '@/icons'
  * "Atlas-Compass-Global-Navigation", node 49:3053, 2026-09-23.
  *
  * The AI study partner beside a Compass course player: right of the course
- * content, below the player controls bar, 380px wide and pinned for the height
- * of the viewport. Three parts:
+ * content and the player controls bar (beside the bar since 2026-10-01, Figma
+ * 170:1213; it sat under it), 380px wide and pinned for the height of the
+ * viewport. Three parts:
  *
  *   1. **Header** — the Rubi mark, "Rubi / here to help", and close.
  *   2. **Thread** — Rubi's opening line, then whatever the learner sends. It
@@ -57,7 +58,8 @@ export function CompassRubiRail({
 }: {
   /** Slides in when true, out when false — the rail stays mounted. */
   open: boolean
-  /** Pinned at this offset — the bottom edge of the player controls bar. */
+  /** Pinned at this offset — the page header's bottom edge, level with the
+   *  player controls bar beside it. */
   stickyTop: number
   /** Space to leave under the rail — the Demo stage's padding below the
    *  window, so a full-height rail is not shoved up at the end of the scroll. */
@@ -160,12 +162,22 @@ export function CompassRubiRail({
       }}
     >
       <header style={HEADER}>
-        <span aria-hidden style={MARK}>
-          <RubiLogo size={26} aria-hidden />
-        </span>
-        <span style={{ display: 'flex', flexDirection: 'column', flex: 1, minWidth: 0 }}>
-          <span style={TITLE}>Rubi</span>
-          <span style={SUBTITLE}>here to help</span>
+        {/* THE RUBI LOCKUP — the product's `RubiLogo` and "Rubi" as they were;
+            ", here to help" now follows "Rubi" on ONE line, set as Figma
+            170:1241 draws it (2026-10-01, the designer's request — the
+            design's hexagon mark was tried the same day and reverted). */}
+        {/* The mark 20% smaller (26 → 20.8) and 2px closer to "Rubi" (10 → 8),
+            2026-10-01, the designer's request. */}
+        <span style={{ display: 'flex', alignItems: 'center', gap: 8, flex: 1, minWidth: 0 }}>
+          <span aria-hidden style={MARK}>
+            <RubiLogo size={20.8} aria-hidden />
+          </span>
+          <span style={{ display: 'flex', alignItems: 'center', gap: 2, minWidth: 0 }}>
+            <span style={TITLE}>Rubi</span>
+            {/* Where the row sets it — 1px up was tried and undone once "Rubi"
+                grew 10% (2026-10-01, the designer's requests). */}
+            <span style={{ ...SUBTITLE, paddingTop: 2 }}>, here to help</span>
+          </span>
         </span>
         <button
           type="button"
@@ -276,10 +288,13 @@ const RAIL: CSSProperties = {
   // `--color-compass-rubi-edge` stays on Rubi's chips and field.
   borderLeft: '1px solid var(--color-compass-rail-rule)',
 }
-/* 78.25px, the design's, with the mark 16 in and close 16 from the right. */
+/* 61px — the player controls bar's height (11 + 38 + 11 and its 1px rule),
+   so the two read as one row now that the rail sits BESIDE the bar (Figma
+   170:1213, 2026-10-01; it was 78.25 under the bar). The mark 16 in and close
+   16 from the right. */
 const HEADER: CSSProperties = {
   flex: 'none',
-  height: 78.25,
+  height: 61,
   boxSizing: 'border-box',
   display: 'flex',
   alignItems: 'center',
@@ -288,19 +303,27 @@ const HEADER: CSSProperties = {
   borderBottom: '1px solid var(--color-compass-rubi-rule)',
 }
 const MARK: CSSProperties = { display: 'inline-flex', color: 'var(--color-compass-rubi-brand)' }
+/* "Rubi" as the player bar's closed-state Rubi button sets it — Open Sans
+   SemiBold 13 / 20 — in the Rubi red of the mark beside it (2026-10-01, the
+   designer's request; it was the heading serif, Bold 15) — then 10% up,
+   13 → 14.3, the line with it, 20 → 22 (same day). */
 const TITLE: CSSProperties = {
-  fontFamily: 'var(--font-heading-serif)',
-  fontWeight: 700,
-  fontSize: 15,
-  lineHeight: '22.5px',
-  letterSpacing: '0.04em',
+  fontFamily: BODY,
+  fontWeight: 600,
+  fontSize: 14.3,
+  lineHeight: '22px',
   color: 'var(--color-compass-rubi-brand)',
+  whiteSpace: 'nowrap',
 }
+/* Figma: Open Sans SemiBold Italic 11 / 15.75, warm grey. */
 const SUBTITLE: CSSProperties = {
   fontFamily: BODY,
-  fontSize: 10.5,
+  fontWeight: 600,
+  fontStyle: 'italic',
+  fontSize: 11,
   lineHeight: '15.75px',
   color: 'var(--color-compass-rubi-muted)',
+  whiteSpace: 'nowrap',
 }
 /* Colours in `.cre-compass-rubi-close`. */
 const CLOSE: CSSProperties = {

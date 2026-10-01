@@ -17,7 +17,7 @@ import { DELIVERY_LABEL } from '@/utils/courseDelivery'
 import { unitCount } from '@/utils/unitLabel'
 import { SquareTile } from './SquareTile'
 import { TaskRow } from '@/components/learning/study-calendar/TaskRow'
-import { StudyJourneyWidget } from '@/components/learning/StudyJourneyWidget'
+import { ScheduleExamBanner, StudyJourneyWidget } from '@/components/learning/StudyJourneyWidget'
 import { StatusStrip } from '@/components/learning/LearningPathDetailPanel'
 import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
 import { JumpBackInWidget } from '@/components/learning/JumpBackInWidget'
@@ -1394,6 +1394,12 @@ export function LearnerFocusedBand({
         {/* `stat-card` gathers the three cells AND the status onto one white
             card with a hairline border and a rule between them. The default
             leaves them bare on the page grey, divided by vertical rules. */}
+        {/* SCHEDULE STATE EXAM, between the course card and Study Pace — the
+            Atlas home, 2026-10-01, the designer's request. It left the right
+            rail (where it was Step 1); see `ScheduleExamBanner`. */}
+        {framedPace ? (
+          <ScheduleExamBanner state={path.state} onOpenStep={onOpenStep} style={{ marginTop: 32 }} />
+        ) : null}
         {paceTiles ? (
           /* THE SQUARE-TILE ROW — Study Pace and Readiness. See `paceTiles`.
 

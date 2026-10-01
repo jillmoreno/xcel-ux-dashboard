@@ -64,7 +64,9 @@ export type CompassResourceLink = {
 }
 
 export type CompassCourseRailConfig = {
-  breadcrumb: readonly CompassBreadcrumb[]
+  /** Optional since 2026-10-01: the Atlas Course page draws none. Empty or
+   *  absent → no breadcrumb row. */
+  breadcrumb?: readonly CompassBreadcrumb[]
   /** The course's own title. Wraps; the design's is two lines on purpose. */
   courseTitle: string
   /** 0–100. Printed as "N% Complete". Read it from the page's own resolver. */

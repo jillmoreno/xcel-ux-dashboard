@@ -153,6 +153,9 @@ const WORDMARK_LABEL: Record<Brand, string> = {
   xcel: 'XCEL',
 }
 
+/** The Global skin's Compass mark + wordmark — off since 2026-10-01; see Logo. */
+const GLOBAL_COMPASS_LOCKUP = false
+
 export function Logo({ variant = 'default', height = 40, className, brand: brandProp }: LogoProps) {
   // Logo is a leaf consumer rendered in many contexts (Header, modals,
   // cert viewer prints). Read context directly so isolated tests that
@@ -169,7 +172,10 @@ export function Logo({ variant = 'default', height = 40, className, brand: brand
   // symbol) beside a "Compass" wordmark, the way the file's own nav brands
   // itself. The wordmark is set in the page's heading face and the steel
   // token — the file's fonts are deliberately not used.
-  if (!brandProp && variant === 'default' && skin === 'global') {
+  // UNWIRED 2026-10-01 (the designer's request): Global shows the XCEL logo,
+  // at the size the XCEL pages show it, in place of this Compass lockup. The
+  // lockup is kept, switched off, so restoring it is flipping the constant.
+  if (GLOBAL_COMPASS_LOCKUP && !brandProp && variant === 'default' && skin === 'global') {
     const mark = Math.round(height * 0.62)
     return (
       <span

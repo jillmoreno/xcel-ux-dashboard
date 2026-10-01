@@ -1,7 +1,5 @@
 import type { ComponentType, CSSProperties, ReactNode } from 'react'
 import {
-  CalendarRegular,
-  DotSolid,
   FileLinesRegular,
   GearRegular,
   MagnifyingGlassRegular,
@@ -14,14 +12,18 @@ import {
  * node 49:2963, 2026-09-23.
  *
  * The toolbar of a Compass LMS course player: it sits under the page header,
- * to the right of the left rail, and stays pinned there as the lesson scrolls.
- * Three groups, 32px apart:
+ * over the course content, and stays pinned there as the lesson scrolls.
  *
- *   - **Where you stand** (grows) — the exam-date pill (date · days out) and the
- *     section-progress pill (section name, a track with a knob, the percentage).
- *   - **Study tools** — Notes (with a count) and Rubi. The design's dashed
- *     "+ Demo" button was removed on 2026-09-24 at the designer's request.
- *   - **Player** — search, settings, close.
+ * REARRANGED 2026-10-01 (Figma 170:1037 / 170:1331, the designer's request):
+ *
+ *   - **Left** (grows) — search, Notes (with a count), settings, then the
+ *     section-progress pill (archived on the Atlas player). The exam-date pill
+ *     is gone; the design no longer draws it.
+ *   - **Right** — "Close Course", a labelled button. (Close and the three tools
+ *     traded sides the same day, the designer's request.)
+ *   - **Rubi**, 32px further right, ONLY while the Rubi rail is closed: open,
+ *     the rail sits beside the bar and its own close is the way out (Figma
+ *     170:1037 has no Rubi button; 170:1331, closed, has it at the end).
  *
  * Like the rail, it is CONFIG-DRIVEN and resolves nothing itself: a Compass page
  * hands it the values and the handlers. **An action with no handler renders
@@ -36,33 +38,31 @@ import {
  * - **Rubi carries the product's `RubiLogo`**, not the design's placeholder mark.
  */
 export type CompassPlayerBarProps = {
-  /** Exam date, printed as given ("December 15, 2026"). */
-  examDate: string
-  /** Days to the exam, printed as given ("27 Days Out"). */
-  daysOut: string
   section: { label: string; pct: number }
   notesCount: number
   /** Pinned below the page header at this offset (px). */
   stickyTop: number
   onNotes?: () => void
   onRubi?: () => void
-  /** Rubi toggles a panel: pass its state and the button reads as pressed
-   *  (the design's filled Rubi button) while it is open. */
+  /** The Rubi panel's state: the Rubi button shows only while it is CLOSED. */
   rubiOpen?: boolean
+  /** The Section progress pill. ARCHIVED on the Atlas player 2026-10-01 (the
+   *  adapter passes false) — see ARCHIVED_ITEMS `compass-player-section-pill`.
+   *  Default true, so the component and its tests keep drawing it. */
+  showSection?: boolean
   onSearch?: () => void
   onSettings?: () => void
   onClose?: () => void
 }
 
 export function CompassPlayerBar({
-  examDate,
-  daysOut,
   section,
   notesCount,
   stickyTop,
   onNotes,
   onRubi,
   rubiOpen,
+  showSection = true,
   onSearch,
   onSettings,
   onClose,
@@ -75,52 +75,9 @@ export function CompassPlayerBar({
       className="cre-compass-player-bar"
       style={{ ...BAR, top: stickyTop }}
     >
-      {/* ── Where you stand ── */}
+      {/* ── Left: search, notes, settings, then where you stand ── */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, flex: '1 1 0', minWidth: 0 }}>
-        <span style={{ ...PILL, padding: '0 18px', gap: 5 }}>
-          <Glyph icon={CalendarRegular} />
-          <span style={{ ...TEXT, fontWeight: 600 }}>{examDate}</span>
-          <Glyph icon={DotSolid} />
-          <span style={TEXT}>{daysOut}</span>
-        </span>
-
-        <span style={{ ...PILL, padding: '0 16px', gap: 8, flex: '0 1 auto', minWidth: 0 }}>
-          {/* The TRACK gives way first (its huge flex-shrink), down to its 60px
-              floor: which section you are in is the content, the track's
-              length is not. Only then does the NAME truncate — with the full
-              name on hover (`title`) and in the progressbar's accessible name,
-              so nothing is lost. A long section title ("Chapter 1: Basic
-              Principles of Life and Health Insurance") needs this. */}
-          <span
-            title={section.label}
-            style={{ ...TEXT, display: 'flex', gap: 2, flex: '0 1 auto', minWidth: 0 }}
-          >
-            <strong style={{ fontWeight: 700, flex: 'none' }}>Section:</strong>
-            <span style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {section.label}
-            </span>
-          </span>
-          <span
-            role="progressbar"
-            aria-label={`${section.label} progress`}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-valuenow={pct}
-            style={TRACK_WRAP}
-          >
-            <span style={TRACK}>
-              <span style={{ ...TRACK_FILL, width: `${pct}%` }} />
-            </span>
-            {/* 13px knob, positioned so its CENTRE sits at the percentage and
-                it never overhangs either end. */}
-            <span style={{ ...KNOB, left: `calc(${pct}% - ${(13 * pct) / 100}px)` }} />
-          </span>
-          <span style={{ ...TEXT, fontWeight: 600, flex: 'none' }}>{pct}%</span>
-        </span>
-      </div>
-
-      {/* ── Study tools ── */}
-      <div style={GROUP}>
+        <IconButton label="Search this course" icon={MagnifyingGlassRegular} onClick={onSearch} />
         <ToolButton
           label="Notes"
           ariaLabel={`Notes (${notesCount})`}
@@ -131,27 +88,86 @@ export function CompassPlayerBar({
             {notesCount}
           </span>
         </ToolButton>
+        <IconButton label="Player settings" icon={GearRegular} onClick={onSettings} />
+        {/* CENTRED in the space between the tools and Close Course
+            (2026-10-01, the designer's request): this box takes that space and
+            the pill sits in its middle, still shrinking (track first, then the
+            name) when the space runs short. Padded 24 on the left so the gaps
+            either side match: Close Course's 8 + 24 against the bar's 32. */}
+        {showSection ? (
+          <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', justifyContent: 'center', paddingLeft: 24 }}>
+            <span style={{ ...PILL, padding: '0 16px', gap: 8, flex: '0 1 auto', minWidth: 0 }}>
+              {/* The TRACK gives way first (its huge flex-shrink), down to its 60px
+                  floor: which section you are in is the content, the track's
+                  length is not. Only then does the NAME truncate — with the full
+                  name on hover (`title`) and in the progressbar's accessible name,
+                  so nothing is lost. A long section title ("Chapter 1: Basic
+                  Principles of Life and Health Insurance") needs this. */}
+              <span
+                title={section.label}
+                style={{ ...TEXT, display: 'flex', gap: 2, flex: '0 1 auto', minWidth: 0 }}
+              >
+                <strong style={{ fontWeight: 700, flex: 'none' }}>Section:</strong>
+                <span style={{ fontWeight: 500, overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {section.label}
+                </span>
+              </span>
+              <span
+                role="progressbar"
+                aria-label={`${section.label} progress`}
+                aria-valuemin={0}
+                aria-valuemax={100}
+                aria-valuenow={pct}
+                style={TRACK_WRAP}
+              >
+                <span style={TRACK}>
+                  <span style={{ ...TRACK_FILL, width: `${pct}%` }} />
+                </span>
+                {/* 13px knob, positioned so its CENTRE sits at the percentage and
+                    it never overhangs either end. */}
+                <span style={{ ...KNOB, left: `calc(${pct}% - ${(13 * pct) / 100}px)` }} />
+              </span>
+              <span style={{ ...TEXT, fontWeight: 600, flex: 'none' }}>{pct}%</span>
+            </span>
+          </div>
+        ) : null}
+      </div>
+
+      {/* ── Right: Close Course (swapped with the tools, 2026-10-01, the
+          designer's request) ── */}
+      <div style={GROUP}>
         <button
           type="button"
           className="cre-compass-player-btn"
+          onClick={onClose}
+          disabled={!onClose}
+          style={{ ...BUTTON, gap: 6, flex: 'none' }}
+        >
+          {/* The ✕ 1px lower, on the label's optical centre (2026-10-01,
+              the designer's request). */}
+          <span style={{ display: 'inline-flex', position: 'relative', top: 1 }}>
+            <Glyph icon={XmarkRegular} />
+          </span>
+          <span style={{ ...TEXT, fontWeight: 600 }}>Close Course</span>
+        </button>
+      </div>
+
+      {/* ── Rubi, only while its rail is closed ── */}
+      {rubiOpen ? null : (
+        <button
+          type="button"
+          className="cre-compass-player-btn cre-compass-player-rubi"
           onClick={onRubi}
           disabled={!onRubi}
-          aria-pressed={rubiOpen === undefined ? undefined : rubiOpen}
+          aria-label="Open Rubi"
           style={{ ...BUTTON, ...RUBI }}
         >
-          <span aria-hidden style={{ display: 'inline-flex' }}>
+          <span aria-hidden style={{ display: 'inline-flex', color: 'var(--color-compass-rubi-brand)' }}>
             <RubiLogo size={16} aria-hidden />
           </span>
           <span style={{ ...TEXT, fontWeight: 600 }}>Rubi</span>
         </button>
-      </div>
-
-      {/* ── Player ── */}
-      <div style={GROUP}>
-        <IconButton label="Search this course" icon={MagnifyingGlassRegular} onClick={onSearch} />
-        <IconButton label="Player settings" icon={GearRegular} onClick={onSettings} />
-        <IconButton label="Close the course player" icon={XmarkRegular} onClick={onClose} />
-      </div>
+      )}
     </div>
   )
 }
@@ -298,12 +314,12 @@ const BUTTON: CSSProperties = {
   borderStyle: 'solid',
   cursor: 'pointer',
 }
-/* The design's filled Rubi button is its PRESSED state — the fill lives in
-   `.cre-compass-player-btn[aria-pressed='true']`, so closing the panel turns
-   the button back to the plain surface. */
+/* The Rubi button (Figma 170:1518): 79 wide, tinted — its fill and edge are
+   `.cre-compass-player-rubi` (tokens.css). */
 const RUBI: CSSProperties = {
   width: 79,
   gap: 6,
+  flex: 'none',
 }
 const BADGE: CSSProperties = {
   width: 21,
@@ -317,5 +333,10 @@ const BADGE: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 13,
   fontWeight: 600,
-  lineHeight: '20px',
+  // The DIGIT centred in the circle (2026-10-01, the designer's request):
+  // at the 20px line it sat 0.7px low (6.1 above, 5.4 below, measured); a
+  // line of 1 plus 0.3 on top puts 5.7 either side.
+  lineHeight: 1,
+  paddingTop: 0.3,
+  boxSizing: 'border-box',
 }

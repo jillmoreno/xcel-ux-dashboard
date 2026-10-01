@@ -107,19 +107,22 @@ describe('DemoControlsBar — Atlas brand skin', () => {
     expect(url()).not.toContain('fonts=')
   })
 
-  it('carries a Nav Version dropdown — Left Rail by default, Top Nav writes ?nav=', () => {
+  it('carries a Nav Version dropdown — Top Nav by default (2026-10-01), the others write ?nav=', () => {
     renderBar(ATLAS)
-    fireEvent.click(screen.getByRole('button', { name: /Left Rail/ }))
-    fireEvent.click(screen.getByRole('radio', { name: /Top Nav/ }))
-    expect(url()).toContain('nav=top-nav')
     fireEvent.click(screen.getByRole('button', { name: /Top Nav/ }))
     fireEvent.click(screen.getByRole('radio', { name: /Left Rail/ }))
+    expect(url()).toContain('nav=left-rail')
+    fireEvent.click(screen.getByRole('button', { name: /Left Rail/ }))
+    fireEvent.click(screen.getByRole('radio', { name: /Expanding Top Nav/ }))
+    expect(url()).toContain('nav=expanding-top-nav')
+    fireEvent.click(screen.getByRole('button', { name: /Expanding Top Nav/ }))
+    fireEvent.click(screen.getByRole('radio', { name: /^Top Nav/ }))
     expect(url()).not.toContain('nav=')
   })
 
   it('offers no Nav Version off the Atlas version', () => {
     renderBar()
-    expect(screen.queryByRole('button', { name: /Left Rail/ })).toBeNull()
+    expect(screen.queryByRole('button', { name: /Top Nav/ })).toBeNull()
   })
 })
 

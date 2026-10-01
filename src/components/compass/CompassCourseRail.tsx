@@ -85,12 +85,31 @@ export function CompassCourseRail({
 
   return (
     <div className="cre-compass-rail" style={COLUMN}>
-      <Breadcrumb crumbs={breadcrumb} />
+      {breadcrumb && breadcrumb.length > 0 ? <Breadcrumb crumbs={breadcrumb} /> : null}
 
       <div style={BODY}>
         <div style={TITLE_BLOCK}>
           <p style={COURSE_TITLE}>{courseTitle}</p>
-          <p style={PROGRESS_PILL}>{pct}% Complete</p>
+          {/* THE PLAYER BAR'S PROGRESS TRACK in place of the "N% Complete"
+              pill (2026-10-01, the designer's request): the same 4px track,
+              fill to the knob and 13px knob as the bar's Section pill, with
+              the figure beside it. */}
+          <div style={PROGRESS_ROW}>
+            <span
+              role="progressbar"
+              aria-label="Course progress"
+              aria-valuemin={0}
+              aria-valuemax={100}
+              aria-valuenow={pct}
+              style={TRACK_WRAP}
+            >
+              <span style={TRACK}>
+                <span style={{ ...TRACK_FILL, width: `${pct}%` }} />
+              </span>
+              <span style={{ ...KNOB, left: `calc(${pct}% - ${(13 * pct) / 100}px)` }} />
+            </span>
+            <span style={PROGRESS_TEXT}>{pct}% Complete</span>
+          </div>
         </div>
 
         <nav aria-labelledby="compass-rail-toc">
@@ -148,7 +167,7 @@ export function CompassCourseRail({
 
 /* ── Breadcrumb ─────────────────────────────────────────────────────────── */
 
-function Breadcrumb({ crumbs }: { crumbs: CompassCourseRailConfig['breadcrumb'] }) {
+function Breadcrumb({ crumbs }: { crumbs: NonNullable<CompassCourseRailConfig['breadcrumb']> }) {
   const last = crumbs.length - 1
   return (
     <nav aria-label="Breadcrumb">
@@ -486,15 +505,53 @@ const COURSE_TITLE: CSSProperties = {
   lineHeight: 'var(--type-atlas-h8-line, 24px)',
   color: 'var(--color-text-primary)',
 }
-const PROGRESS_PILL: CSSProperties = {
-  margin: 0,
-  padding: '0 8px',
-  borderRadius: 8,
-  background: 'var(--color-compass-rail-pill)',
+/* The player bar's section track (CompassPlayerBar's TRACK_WRAP / TRACK /
+   KNOB), here filling the rail's width ahead of the figure. */
+const PROGRESS_ROW: CSSProperties = { display: 'flex', alignItems: 'center', gap: 8 }
+const TRACK_WRAP: CSSProperties = {
+  position: 'relative',
+  display: 'block',
+  height: 13,
+  flex: '1 1 auto',
+  minWidth: 60,
+}
+const TRACK: CSSProperties = {
+  position: 'absolute',
+  left: 1,
+  right: 0,
+  top: 4.5,
+  height: 4,
+  borderRadius: 4,
+  overflow: 'hidden',
+  background: 'var(--color-compass-player-track)',
+}
+const TRACK_FILL: CSSProperties = {
+  display: 'block',
+  height: '100%',
+  background: 'var(--color-compass-player-ink)',
+}
+const KNOB: CSSProperties = {
+  position: 'absolute',
+  top: 0,
+  width: 13,
+  height: 13,
+  boxSizing: 'border-box',
+  borderRadius: '50%',
+  background: 'var(--color-compass-player-surface)',
+  border: '2px solid var(--color-compass-player-ink)',
+}
+/* The bar's figure: Open Sans SemiBold 13 / 20 — 2px above the row's centre
+   (2026-10-01, the designer's request, in two 1px steps). */
+const PROGRESS_TEXT: CSSProperties = {
+  flex: 'none',
+  position: 'relative',
+  top: -2,
   fontFamily: 'var(--font-body)',
   fontSize: 13,
+  fontWeight: 600,
   lineHeight: '20px',
-  color: 'var(--color-compass-rail-text)',
+  color: 'var(--color-compass-player-text)',
+  whiteSpace: 'nowrap',
 }
 
 /* Open Sans Bold 11 / 16.5, 0.1em, uppercase — the Atlas rail's caption. */
