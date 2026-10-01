@@ -615,7 +615,23 @@ const questionStyle: CSSProperties = {
   /* 6px under the eyebrow. The question only ever renders WITH one — there is
      no stored date in the prompt phase — so this offset is unconditional. */
   margin: '6px 0 0',
-  fontFamily: 'var(--font-heading)',
+  /* OPEN SANS, NOT BRANDON GROTESQUE — 2026-10-01, the direct ask.
+     `--font-body` IS Open Sans (see `tokens.css`), so this is the token swap
+     rather than a raw family; the repo forbids the latter and a literal
+     `'Open Sans'` here would also miss the system fallbacks the token carries.
+
+     ⚠ IT NOW DIFFERS FROM EVERY SIBLING CARD'S TITLE, which all sit on
+     `--font-heading` — including the three licensing cards this one used to
+     stand in a column with. That is less visible since the card moved out from
+     under them (`exam-card-placement: under-course`), but the two changes
+     arrived together and should be judged together: the question is whether
+     this card reads as a question rather than as another card heading.
+
+     ⚠ THE BRAND NOTE ABOVE IS NOW HALF-SPENT. It explains that the Figma's
+     "Georgia:Bold" was a missing-font placeholder and that `--font-heading` was
+     the honest resolution of it. That reasoning stands for the figure styles
+     below; it no longer describes this one. */
+  fontFamily: 'var(--font-body)',
   fontWeight: 700,
   fontSize: 18,
   lineHeight: '24px',

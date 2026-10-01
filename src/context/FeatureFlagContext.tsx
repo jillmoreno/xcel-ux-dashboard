@@ -865,6 +865,35 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'exam-card-placement',
+    group: 'Widgets',
+    label: 'Quick question \u2014 where the exam card sits',
+    description:
+      'WHICH COLUMN THE EXAM-DATE CARD LIVES IN. `under-course` (default) puts it in the LEFT column, directly below the Current course card and at that card\u2019s full width \u2014 the same slot Option 4\u2019s tab strip hangs off, which is the only place "under the current course card" stays true. `journey-column` is where it shipped: the first card of the right-hand Study Journey column, promoted above the coursework card by `journey-step-order: exam-first`. \u26a0 IT MOVES THE CARD, IT DOES NOT COPY IT \u2014 `StudyJourneyWidget` drops the card from BOTH of its own call sites (the promoted slot and the licensing list) when this is `under-course`, or the learner would be asked the same question twice on one screen. \u26a0 THE NUMBERING IS UNAFFECTED either way, because the card already consumed no step number: it asks a question rather than naming a step, so the three licensing cards are numbered by a running count that skips it. \u26a0 WHAT THE MOVE COSTS: in the journey column the card sat in a sequence that explained it \u2014 Step 1 coursework, Step 2 exam. Under the course card it stands alone, so the question has to carry itself. That is the thing to judge.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    /* ⚠ `under-course` IS THE BRANCH DEFAULT — 2026-10-01, the direct ask ("set
+       it as the default"). `journey-column` is the shipped arm and is one click
+       away on the flag panel; `promote-to-prototype` decides whether this
+       becomes the baseline on main. */
+    defaultVariant: 'under-course',
+    variants: [
+      {
+        value: 'under-course',
+        label: 'Under the Current course card',
+        description:
+          'Left column, directly beneath the course card and the same width as it. The Study Journey column loses its first card and starts on Complete Coursework.',
+      },
+      {
+        value: 'journey-column',
+        label: 'In the Study Journey column (as shipped)',
+        description:
+          'Right column, above the coursework card \u2014 where `journey-step-order: exam-first` promotes it.',
+      },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'course-entry-details',
     group: 'Widgets',
     label: 'Course entry — Details link',

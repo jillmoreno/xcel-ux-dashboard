@@ -1,0 +1,131 @@
+import { cleanup, render, screen, within } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
+import { afterEach, beforeEach, describe, expect, it } from 'vitest'
+import { AccountProvider } from '@/context/AccountContext'
+import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext'
+import { LearningPathsPanelProvider } from '@/components/learning/LearningPathsPanelContext'
+import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelContext'
+import { PlatformShell } from '@/components/layout/PlatformShell'
+
+/**
+ * WHERE THE EXAM-DATE CARD SITS — `exam-card-placement`, 2026-10-01.
+ *
+ * The ask was "move this widget to be below the Current course widget", and a
+ * MOVE is a harder thing to get right than an addition: the card has to leave
+ * one column and arrive in another, and the two halves are decided in different
+ * files. What this file pins is that it is exactly one card, exactly once,
+ * under every combination that can reach it.
+ *
+ * ⚠ THE FAILURE THIS GUARDS IS SILENT IN BOTH DIRECTIONS. Render it in both
+ * places and the learner is asked whether they have booked their exam twice on
+ * one screen. Suppress it in both and the question disappears from the product
+ * with nothing on screen to show it ever existed. Neither throws.
+ */
+
+const URL = '/dashboard-rebrand?demo=1'
+
+function renderShell(ff?: string) {
+  /* ⚠ `?ff=` is read from `window.location`, not from the router entry. */
+  window.history.replaceState({}, '', ff ? `/dashboard-rebrand?ff=${ff}` : '/dashboard-rebrand')
+  return render(
+    <MemoryRouter initialEntries={[URL]}>
+      <AccountProvider>
+        <FeatureFlagProvider>
+          <LearningPathsPanelProvider>
+            <JumpBackInPanelProvider>
+              <PlatformShell />
+            </JumpBackInPanelProvider>
+          </LearningPathsPanelProvider>
+        </FeatureFlagProvider>
+      </AccountProvider>
+    </MemoryRouter>,
+  )
+}
+
+const examCards = () => [...document.querySelectorAll('section[aria-label="Exam Date"]')]
+
+beforeEach(() => {
+  window.localStorage.clear()
+  window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
+})
+
+afterEach(() => {
+  cleanup()
+  window.history.replaceState({}, '', '/')
+})
+
+describe('exam-card-placement', () => {
+  it('is in the catalog and defaults to under-course on this branch', () => {
+    /* ⚠ THIS ASSERTS A BRANCH DEFAULT, NOT A SHIPPED ONE — 2026-10-01, the
+       direct ask ("set it as the default"). `journey-column` is where it ships.
+       If `promote-to-prototype` makes either one the baseline on main, this
+       line is what says so out loud rather than letting it pass unremarked. */
+    const flag = FEATURE_FLAGS.find((f) => f.key === 'exam-card-placement')
+    expect(flag).toBeTruthy()
+    expect(flag?.defaultVariant).toBe('under-course')
+    expect(flag?.variants?.map((v) => v.value)).toEqual(['under-course', 'journey-column'])
+    expect(flag?.page).toBe('dashboard-rebrand')
+  })
+
+  /* ⚠ BOTH ARMS OF `course-entry-style`, and that pairing is the point. The
+     left column draws a different card on each (`CourseEntryCard` vs
+     `JumpBackInWidget`), and the first cut of this feature hung the exam card
+     off the COMBINED arm only — which did not fail loudly, it just deleted the
+     card from every split-arm render, because the journey column had already
+     been told to drop it. */
+  for (const entry of ['combined', 'split']) {
+    it(`renders exactly one exam card under-course on the ${entry} course entry`, () => {
+      renderShell(`exam-card-placement:under-course,course-entry-style:${entry}`)
+      expect(examCards()).toHaveLength(1)
+    })
+
+    it(`renders exactly one exam card in the journey column on the ${entry} entry`, () => {
+      renderShell(`exam-card-placement:journey-column,course-entry-style:${entry}`)
+      expect(examCards()).toHaveLength(1)
+    })
+  }
+
+  /* ⚠ AND ON BOTH ARMS OF `journey-step-order`, which is the OTHER flag that
+     decides which of the column's two lists holds Schedule State Exam — the
+     promoted slot, or the licensing list. Suppressing only one of them leaves
+     the card rendering from the other, so the duplicate would appear in half
+     the combinations and not the half anyone looks at first. */
+  for (const order of ['exam-first', 'coursework-first']) {
+    it(`takes it out of the column exactly once on ${order}`, () => {
+      renderShell(`exam-card-placement:under-course,journey-step-order:${order}`)
+      expect(examCards()).toHaveLength(1)
+    })
+  }
+
+  it('puts it in the left column, as a sibling of the course card', () => {
+    /* THE WIDTH CLAIM, asserted structurally rather than in pixels — "the same
+       width as the Current course widget" is true because it is inside that
+       card's own container, not because a number was matched. A pixel
+       assertion would also pass in jsdom with no layout at all. */
+    renderShell('exam-card-placement:under-course')
+    const [card] = examCards()
+    const column = card.closest('[data-testid], div')
+    expect(column).toBeTruthy()
+    /* The course card and the exam card share a parent chain that the journey
+       column's cards do not: the Study Journey region is NOT an ancestor. */
+    expect(card.closest('section[aria-label="Study journey"]')).toBeNull()
+  })
+
+  it('leaves the Study Journey column starting on the coursework card', () => {
+    renderShell('exam-card-placement:under-course')
+    expect(screen.getByLabelText('Study journey')).toBeTruthy()
+    /* The column's own first card is the coursework one now — the exam card is
+       no longer above it. */
+    expect(within(screen.getByLabelText('Study journey')).queryByText(/Quick question/i)).toBeNull()
+  })
+
+  it('still asks the question — the eyebrow travels with the card', () => {
+    /* A move must not quietly become a demotion: "Quick question" is what makes
+       this a question rather than another card heading, and it is keyed on
+       there being no stored date, not on which column it is in. */
+    renderShell('exam-card-placement:under-course')
+    const [card] = examCards()
+    expect(within(card).getByText(/Quick question/i)).toBeTruthy()
+    expect(within(card).getByText(/Have you scheduled your .* state exam\?/)).toBeTruthy()
+  })
+})

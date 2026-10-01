@@ -23,10 +23,16 @@ import { StatusStrip } from '@/components/learning/LearningPathDetailPanel'
 import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
 import { JumpBackInWidget } from '@/components/learning/JumpBackInWidget'
 import { CourseEntryCard } from '@/components/learning/CourseEntryCard'
+import { ExamScheduleWidget } from '@/components/learning/ExamScheduleWidget'
+import { widgetCardFramedStyle, widgetCardStyle } from '@/components/learning/widgetStyles'
 import { HomeSectionTabs } from '@/components/layout/HomeSectionTabs'
 import { showsSectionTabs, useNavPlacement } from '@/components/layout/navPlacement'
 import { StudyPaceTile } from '@/components/learning/StudyPaceTile'
-import { NY_LH_CURRENT_CHAPTER, NY_LH_CURRENT_LESSON_PART } from '@/data/nyProducerRequirements'
+import {
+  NY_LH_CURRENT_CHAPTER,
+  NY_LH_CURRENT_LESSON_PART,
+  jurisdictionName,
+} from '@/data/nyProducerRequirements'
 import {
   hasStudyCalendarFor,
   XCEL_CE_PATH_ID,
@@ -696,6 +702,48 @@ export function LearnerFocusedBand({
    * split arm ever needs the strip too, it is the same one-line append there.
    */
   const homeTabs = showsSectionTabs(useNavPlacement()) ? <HomeSectionTabs /> : null
+  /*
+   * THE EXAM CARD, UNDER THE COURSE CARD — `exam-card-placement`, 2026-10-01,
+   * the direct ask ("move this widget to be below the Current course widget").
+   *
+   * ⚠ IT HANGS OFF THE CARD, NOT OFF A LAYOUT SLOT — the same reasoning the tab
+   * strip above it records, and the same trap. The band's own column slot
+   * renders after everything else in that column, so appending there would put
+   * this at the foot of the page. "Below the Current course widget" is a fact
+   * about the CARD, and `resumeInline` is the only place it stays true.
+   *
+   * ⚠ ITS WIDTH COMES FROM THE SLOT, which is the other half of the ask ("make
+   * this widget the same width as the Current course widget"). It is a sibling
+   * of `CourseEntryCard` inside that card's own container, so it is that card's
+   * width by construction rather than by a number that could drift when the
+   * grid's 660/380 split is next touched.
+   *
+   * ⚠ THE COLUMN IT LEFT IS TOLD, via `examElsewhere` on `StudyJourneyWidget`
+   * below. Without that the card renders in BOTH places.
+   */
+  const examPlacement = useFeatureFlag('exam-card-placement').variant ?? 'under-course'
+  /* ⚠ AND ONLY WHERE THERE IS A COURSE CARD TO SIT UNDER. `resumeInline` draws
+     nothing at all on `clpNavy` (the navy card carries its own CTA) or when the
+     learner has no resume point, and "below the Current course widget" cannot
+     mean anything on a page with no such widget. Without this the card would
+     silently vanish from those states — it is told to leave the journey column
+     by the SAME boolean, so an over-broad condition here does not duplicate the
+     card, it deletes it. This expression must stay identical to the one
+     `resumeInline` branches on. */
+  const hasCourseCard = Boolean(onPage && resume && !clpNavy)
+  const examUnderCourse = examPlacement === 'under-course' && hasCourseCard
+  const examCard = examUnderCourse ? (
+    <div style={{ marginTop: 20 }}>
+      <ExamScheduleWidget
+        /* THE SAME SHELL THE JOURNEY COLUMN GAVE IT, picked the same way, so
+           moving the card is a change of PLACE and not of appearance — the
+           comparison the flag is for would otherwise be measuring two things. */
+        shell={journeyCards ? widgetCardFramedStyle : widgetCardStyle}
+        onOpenStep={onOpenStep}
+        stateName={jurisdictionName(path.state) || undefined}
+      />
+    </div>
+  ) : null
   const resumeInline =
     onPage && resume && !clpNavy && combinedEntry ? (
       <>
@@ -733,8 +781,10 @@ export function LearnerFocusedBand({
         }
       />
       {homeTabs}
+      {examCard}
       </>
     ) : onPage && resume && !clpNavy ? (
+      <>
       <JumpBackInWidget
         course={resume}
         /* ALWAYS THE NEXT LESSON, including the first — 2026-09-21, the direct
@@ -788,6 +838,14 @@ export function LearnerFocusedBand({
           })
         }
       />
+      {/* ⚠ BOTH ARMS OF `resumeInline` CARRY IT, unlike the tab strip above,
+          which is combined-only by design. The strip is an ADDITION — the split
+          arm simply does not have it. This is a MOVE: the card has already been
+          taken out of the journey column by the time this renders, so an arm
+          that forgot it would lose the card entirely rather than show one
+          fewer. Same reason `hasCourseCard` exists. */}
+      {examCard}
+      </>
     ) : null
   // Shared with the Learning Path detail sheet's "Time Remaining", so the band
   // and the sheet that opens from it cannot disagree about the same number.
@@ -1876,6 +1934,10 @@ export function LearnerFocusedBand({
             // "Rename both if a version ever wants one without the other."
             // Testing 2 is that version — it wants this journey and keeps its
             // square tile PAIR, which is the whole thing `paceOnly` means.
+            /* The card moved to the left column, so this one must not draw it
+               too — see `examCard` above for why the band owns this decision
+               rather than the widget reading the flag itself. */
+            examElsewhere={examUnderCourse}
             framed={journeyCards}
             // …and the post-course steps become their own cards. Still a separate
             // prop from `framed` because they are different questions — one is

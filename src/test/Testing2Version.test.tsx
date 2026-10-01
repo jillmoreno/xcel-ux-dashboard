@@ -30,6 +30,13 @@ import {
  * ⚠ A TEST THAT IS ABOUT THE BASELINE MUST NOT SPREAD THIS.
  */
 const PRE_PROMOTION_BASELINE = {
+  /* ⚠ THE EXAM CARD'S COLUMN, pinned 2026-10-01. `exam-card-placement`
+     defaults to `under-course` on this branch, which moves the card out of the
+     Study Journey column and under the Current course card. These tests are
+     about the COLUMN's composition — four cards in route order — so they pin
+     the arm that still has four. The other arm is covered by
+     `ExamCardPlacement.test.tsx`. */
+  'exam-card-placement': { enabled: true, variant: 'journey-column' },
   'study-pace-hidden': { enabled: false },
   'course-entry-style': { enabled: true, variant: 'split' },
   /* `exam-step-style` was seeded here until 2026-09-29, when the flag was

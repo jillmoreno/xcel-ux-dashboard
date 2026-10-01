@@ -31,9 +31,26 @@ beforeEach(() => {
   window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
 })
 
-/** ⚠ `?ff=` is read from `window.location`, never from the router entry. */
+/**
+ * ⚠ `?ff=` is read from `window.location`, never from the router entry.
+ *
+ * ⚠ EVERY RENDER PINS THE EXAM CARD INTO THE COLUMN — `exam-card-placement`,
+ * 2026-10-01. The flag defaults to `under-course` on this branch, which takes
+ * the card out of the Study Journey column entirely; this whole suite is about
+ * that column's ORDER and numbering, so without the pin there is nothing to
+ * order.
+ *
+ * ⚠ AND IT WOULD HAVE FAILED SILENTLY, which is why the pin is here rather than
+ * per-test: the order assertions are `findIndex(a) < findIndex(b)`, and a card
+ * that is absent returns -1, which is less than everything. The suite went on
+ * passing with no exam card on screen at all. The ONE test that noticed is the
+ * `coursework-first` arm, where the absent card was on the other side of the
+ * comparison.
+ */
 function renderShell(ff?: string) {
-  window.history.replaceState({}, '', ff ? `/dashboard-rebrand?ff=${encodeURIComponent(ff)}` : '/')
+  const PIN = 'exam-card-placement:journey-column'
+  const all = ff ? `${PIN},${ff}` : PIN
+  window.history.replaceState({}, '', `/dashboard-rebrand?ff=${encodeURIComponent(all)}`)
   return render(
     <MemoryRouter initialEntries={[URL]}>
       <AccountProvider>

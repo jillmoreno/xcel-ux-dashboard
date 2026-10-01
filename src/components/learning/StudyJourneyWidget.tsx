@@ -66,6 +66,7 @@ export function StudyJourneyWidget({
   onOpenLearningPath,
   framed = false,
   splitSteps = false,
+  examElsewhere = false,
 }: {
   path: LearningPathSummary
   onOpenStop?: (courseId: string) => void
@@ -84,6 +85,18 @@ export function StudyJourneyWidget({
    * shell is not defined somewhere else.
    */
   framed?: boolean
+  /**
+   * The exam-date card is being rendered somewhere ELSE on this page, so this
+   * column must not draw it — `exam-card-placement: under-course`, 2026-10-01.
+   *
+   * A PROP, NOT A FLAG READ, for the same reason `framed` is one: where the
+   * card sits is a fact about the PAGE's layout, and the band is what knows
+   * both halves of it. Reading the flag here as well would be two components
+   * deciding the same thing separately, which is how they come to disagree —
+   * and the failure mode is the learner being asked the same question twice on
+   * one screen.
+   */
+  examElsewhere?: boolean
   /**
    * Render the post-course steps as THEIR OWN WIDGETS — one card each — instead
    * of as rows in a single Get Licensed rail below the journey. Testing only
@@ -173,8 +186,24 @@ export function StudyJourneyWidget({
   /* Schedule State Exam is `GET_LICENSED_STEPS[0]`; exam-first lifts it above
      the coursework card and the rest follow underneath. Sliced rather than
      re-sorted so the published order stays the source of truth. */
-  const promoted = examFirst ? GET_LICENSED_STEPS[0] : null
-  const licensingAfter = examFirst ? GET_LICENSED_STEPS.slice(1) : GET_LICENSED_STEPS
+  /* THE EXAM CARD MAY NOT BE THIS COLUMN'S AT ALL — `exam-card-placement`,
+     2026-10-01. On `under-course` the band renders it beneath the Current
+     course card instead, so this column must not draw it.
+
+     ⚠ IT HAS TO COME OUT OF BOTH LISTS, and that is the whole care needed here.
+     `examFirst` decides WHICH list holds Schedule State Exam — the promoted
+     slot, or the licensing list — so suppressing one of them leaves the card
+     rendering from the other depending on an unrelated flag's arm, which is a
+     duplicate question on screen that only appears in half the combinations.
+     The file's own note already warns that BOTH CALL SITES BRANCH THE SAME WAY.
+
+     ⚠ NO RENUMBERING FOLLOWS. The card consumes no step number on this arm
+     (see the note above), so removing it closes no gap and moves nothing. */
+  const examHere = !examElsewhere
+  const promoted = examFirst && examHere ? GET_LICENSED_STEPS[0] : null
+  const licensingAfter = (examFirst ? GET_LICENSED_STEPS.slice(1) : GET_LICENSED_STEPS).filter(
+    (step) => examHere || step.id !== 'schedule-exam',
+  )
   /* COLLAPSED — `dashboard-journey-complete`, and it only means anything at
      100%. Below that the two variants are identical, which is why the flag is
      read here and applied against `courseworkDone` rather than gating the
