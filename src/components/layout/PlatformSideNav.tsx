@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type ComponentType } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
+  CompassMark,
   Award,
   AwardSolid,
   CalendarDay,
@@ -60,11 +61,16 @@ import { LEFT_COLUMN_FIRST_ROW_HEIGHT } from '@/components/learning/compassPlaye
 export type PlatformSection =
   | 'dashboard'
   /* COMPASS LEARNING — the top nav's own destination (Figma 765:3471), added
-     with `nav-placement`. Deliberately NOT a rail row: it is the second item
-     of a THREE-item header nav, and adding it to the rail would quietly make
-     the two navigations offer different things, which is the one thing an A/B
-     between them must not do. It resolves from `?section=compass` either way,
-     the same rule every flag-hidden row follows. */
+     with `nav-placement`.
+
+     ⚠ IT IS A RAIL ROW NOW under the left-nav arm, behind `compassRow`
+     (2026-10-01). This note used to say the opposite — that adding it would
+     "quietly make the two navigations offer different things" — which was the
+     right call when the rail held seven rows and the header three. The
+     restructure makes both arms reach the SAME five places and differ only in
+     where the controls sit, so withholding it is now what makes them differ.
+     It resolves from `?section=compass` under every arm regardless, the same
+     rule every flag-hidden row follows. */
   | 'compass'
   // The Study Plan was a TAB on the Learning Path page until 2026-09-09; it is
   // its own rail section now, directly under Home. See LearningPathPage's
@@ -177,6 +183,7 @@ export function PlatformSideNav({
   collapsed = false,
   onToggleCollapse,
   hiddenSections,
+  compassRow = false,
   captions,
   compassRows = false,
 }: {
@@ -197,6 +204,22 @@ export function PlatformSideNav({
    * rule below — which is the behaviour this wants, not a special case.
    */
   hiddenSections?: readonly PlatformSection[]
+  /**
+   * Add a COMPASS LEARNING row directly under Home — `nav-placement: left`,
+   * 2026-10-01.
+   *
+   * ⚠ OPT-IN, AND IT MUST STAY THAT WAY. The shipped rail does not have this
+   * row and nothing outside the navigation exploration should grow one; the
+   * shell passes it only when the exploration's flag is on AND the arm is the
+   * rail (see the call site, which explains why those are two conditions and
+   * not one).
+   *
+   * WHY IT EXISTS: the top-nav arm carries Compass as its second pill. Without
+   * this the left-nav arm had no control for it anywhere, so the two arms were
+   * being compared on a different set of destinations — see the ⚠ on `compass`
+   * in `PlatformSection`, which this deliberately reverses.
+   */
+  compassRow?: boolean
   /**
    * ICON-OVER-SHORT-TEXT state, ~76px wide — 2026-09-17, the direct ask: the
    * rail auto-collapses when the Compass course launcher opens.
@@ -314,6 +337,13 @@ export function PlatformSideNav({
     // MVP navigation (Figma 53:5290) drops "Home" — the dashboard landing is a
     // later addition; the MVP rail leads straight into the learning areas.
     ...(variant === 'mvp' ? [] : [{ id: 'dashboard' as const, label: 'Home', icon: House, iconActive: HouseSolid }]),
+    /* COMPASS LEARNING — directly under Home, matching the top nav's own order
+       (Home, then Compass). Opt-in; see `compassRow`. NOT added to the MVP
+       rail, which is a Figma-specified trim (node 53:5290) and not this
+       exploration's to grow. */
+    ...(compassRow && variant !== 'mvp'
+      ? [{ id: 'compass' as const, label: 'Compass Learning', icon: CompassMark }]
+      : []),
     // Study Plan sits directly under Home — it is the pacing tool a learner
     // opens every visit, which is why it was the Learning Path page's DEFAULT
     // tab before it became a page. Gated on `supportsStudyPlan`, the same one

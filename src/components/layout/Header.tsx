@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { ShoppingCart, Bars } from '@/icons'
+import { ShoppingCart, Bars, HelpCircle } from '@/icons'
 import { Logo } from '@/components/brand/Logo'
 import { useCourseChrome } from '@/components/learning/courseTakeover'
 import { isTestSession } from '@/data/gatewayMode'
@@ -8,7 +8,8 @@ import { NavDropdown } from './NavDropdown'
 import { NavLink } from './NavLink'
 import { AccountMenu } from './AccountMenu'
 import { PlatformTopNav } from './PlatformTopNav'
-import { showsTopNav, useNavPlacement } from './navPlacement'
+import { showsHelpControl, showsTopNav, useHelpPlacement, useNavPlacement } from './navPlacement'
+import { HelpSheet } from '@/components/support/HelpSheet'
 import { NotificationsMenu } from '@/components/notifications/NotificationsMenu'
 import { LearningPathsPanel } from '@/components/learning/LearningPathsPanel'
 import { useLearningPathsPanel } from '@/components/learning/LearningPathsPanelContext'
@@ -130,6 +131,20 @@ export function Header() {
      path takes over. The Figma is a 1392px frame and says nothing about phone;
      this is the shell's existing answer rather than a new one. */
   const showTopNav = platformNav && showsTopNav(navPlacement) && !mobile
+  /* HELP'S OWN CONTROL — `nav-help`, 2026-10-01. Rendered only where the rail
+     is NOT (see `showsHelpControl`): with the rail up its Get Help row already
+     carries Help and a second control is a duplicate. `platformNav` scopes it
+     to the shell the same way `showTopNav` is scoped — the classic routes have
+     their own full nav and are not part of this comparison.
+
+     THE SHEET LIVES HERE, not in either trigger, because the two triggers are
+     in different components (this header and `AccountMenu` below it) and both
+     must open the SAME one. Header owns the state and hands the opener down as
+     a prop; a context for one boolean between a parent and its own child would
+     be ceremony. */
+  const helpPlacement = useHelpPlacement()
+  const showHelpControl = platformNav && showsHelpControl(navPlacement) && !mobile
+  const [helpOpen, setHelpOpen] = useState(false)
   const { setOpen: setMobileNavOpen } = useMobileNav()
   const paths = learningPathsFor(brand)
   const defaultPathId = activePathIdFor(brand)
@@ -219,12 +234,39 @@ export function Header() {
           The comment below about the cluster reading "one commerce control then
           two personal ones" is kept because it is the argument for where the
           BELL sits, which has not changed. */}
+      {/* HELP, AS A `?` — `nav-help: header-icon`. LEFT OF THE BELL, which is
+          where the Figma puts it (765:3801) and the reason the cluster's gap is
+          the separation it is. The alternative placement does not render here
+          at all; it is a row in the menu below. */}
+      {showHelpControl && helpPlacement === 'header-icon' && (
+        <button
+          type="button"
+          data-cta-id="nav.support"
+          onClick={() => setHelpOpen(true)}
+          aria-label="Help"
+          aria-haspopup="dialog"
+          className="cre-icon-pill"
+        >
+          <HelpCircle size={20} aria-hidden />
+        </button>
+      )}
       {showBell && <NotificationsMenu />}
       {/* No props — the menu resolves the learner from `useAccount()` and the
           profile-avatar override, the same two sources the rail's profile
           header reads. It used to be passed `initials="SC"`, which is not this
           learner's initials and was the only value it ever received. */}
-      <AccountMenu />
+      <AccountMenu
+        /* HELP, AS A MENU ROW — `nav-help: profile-menu`. Passed as an opener
+           rather than a boolean so the menu never has to know WHY it is showing
+           a Help row, only what pressing it does. Undefined under every other
+           setting, which is the same withheld-prop mechanism the rail uses for
+           its collapse toggle. */
+        onOpenHelp={
+          showHelpControl && helpPlacement === 'profile-menu'
+            ? () => setHelpOpen(true)
+            : undefined
+        }
+      />
     </div>
   )
   /* AFTER EVERY HOOK, BEFORE ANY MARKUP — see `courseTakeover`. Option 2's
@@ -469,6 +511,12 @@ export function Header() {
         />
       )}
       <JumpBackInPanel open={jumpBackInOpen} onClose={closeJumpBackInPanel} />
+      {/* HELP — ONE SHEET FOR BOTH TRIGGERS (`nav-help`). It renders here
+          rather than beside either control because the `?` icon and the account
+          menu's Help row are in different components and must open the same
+          thing. Mounted whenever the control is available and gated on `open`
+          inside `Sheet`, the same shape as the panels above it. */}
+      {showHelpControl && <HelpSheet open={helpOpen} onClose={() => setHelpOpen(false)} />}
       <MembershipVersionsPanel
         open={membershipVersionsOpen}
         onClose={closeMembershipVersionsPanel}

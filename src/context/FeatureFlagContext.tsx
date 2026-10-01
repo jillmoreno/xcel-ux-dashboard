@@ -833,21 +833,34 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Navigation',
     label: 'Nav placement',
     description:
-      'WHERE THE PRIMARY NAVIGATION LIVES \u2014 the four options this branch exists to compare. **Option 1 `top`**: a row in the header (Home \u00b7 Compass Learning \u00b7 Help, Figma 765:3801); the shell drops the rail column and the content runs full width. **Option 2 `left`**: the rail, carrying the destinations, as it ships. **Option 3 `hybrid`**: the header row AND the rail \u2014 the header carries the three primary destinations, the rail everything else. **Option 4 `hybrid-tabs`**: the header row and NO rail, with a small underline tab strip over the content instead \u2014 Study Pace \u00b7 Courses \u00b7 Certificates (Figma 765:3801). \u26a0 THREE AND FOUR ARE THE SAME QUESTION WITH TWO ANSWERS: a three-item header leaves Study Pace, Courses and Certificates without a control, and the two hybrids differ only in what fills that gap \u2014 a rail, or a tab strip. \u26a0 THE TOP NAV IS DELIBERATELY SHORTER than the rail, which is the concept Option 1 tests rather than a gap in the port; every section still resolves from `?section=` under all three. Turning the flag OFF resolves to `left`, so switching it off returns the shipped product rather than a shell with no navigation.',
+      'WHERE THE PRIMARY NAVIGATION LIVES \u2014 one axis, two answers. **`left`**: the rail carries the destinations, as it ships, plus a Compass Learning row so both arms offer the same places. **`top`**: a row in the header carries Home \u00b7 Compass Learning (Figma 765:3801), the shell drops the rail column and the content runs full width \u2014 and everything the rail used to hold is RE-HOMED rather than dropped: My Courses and Certificates become tile buttons above the Quick Question card on Home, and Help gets a control of its own (see `nav-help`). \u26a0 THE TWO ARE EXCLUSIVE as of 2026-10-01, and that is the restructure. The old `hybrid` drew the header AND the rail, so Home lit up in two navigations at once; if the header is the navigation there is no rail for it to disagree with. \u26a0 THE GREETING IS NOT PART OF THIS CHOICE any more \u2014 the Home page header (\u201cWelcome to your learning experience, Jordan\u201d + \u201cHome\u201d) renders under BOTH, so switching arms compares navigation and nothing else. \u26a0 `hybrid` AND `hybrid-tabs` ARE OFF THE PICKER, NOT GONE: both still resolve from `?ff=nav-placement:hybrid` so the new shape can be held against what it replaces while the decision is open. Nothing new is built on them. Turning the flag OFF resolves to `left` AND drops the exploration\u2019s own additions (the Compass row, the greeting), so off is the shipped product rather than a half-migrated one.',
     maturity: 'wip',
     defaultEnabled: true,
-    /* ⚠ OPTION 3 IS THE BRANCH DEFAULT as of 2026-09-29 — it was `top`. Nearly
-       all the work since has gone into the hybrid (the Compass row treatment,
-       no group captions, the Home page header, the rail-surface variants), so
-       it is what the branch build should open on. The other three are one click
-       away on the bar. Still a BRANCH default: `promote-to-prototype` decides
-       what, if anything, becomes the baseline on main. */
-    defaultVariant: 'hybrid',
+    /* ⚠ `top` IS THE BRANCH DEFAULT as of 2026-10-01 — it was `hybrid`, which is
+       no longer on the picker. The whole of this pass is the top-nav arm (the
+       tiles, the two Help placements, the sheet), so it is what the branch build
+       should open on; `left` is one click away on the bar and is the honest
+       control to compare it against. Still a BRANCH default:
+       `promote-to-prototype` decides what, if anything, becomes the baseline. */
+    defaultVariant: 'top',
     variants: [
-      { value: 'left', label: 'Option 2 — Left nav' },
-      { value: 'top', label: 'Option 1 — Top nav' },
-      { value: 'hybrid', label: 'Option 3 — Hybrid (rail)' },
-      { value: 'hybrid-tabs', label: 'Option 4 — Hybrid (tabs)' },
+      { value: 'left', label: 'Left nav' },
+      { value: 'top', label: 'Top nav' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'nav-help',
+    group: 'Navigation',
+    label: 'Help placement (top nav)',
+    description:
+      'WHERE HELP LIVES WHEN THE TOP NAV IS UP \u2014 2026-10-01. `header-icon` puts a `?` in the header utilities, immediately left of the notifications bell; `profile-menu` puts a Help row in the account dropdown, directly above Logout. \u26a0 BOTH OPEN THE SAME SHEET (`HelpSheet`, the Help & Support panel), which is the entire point of the pair \u2014 the question under test is DISCOVERABILITY versus a tidier header, not two different help experiences. Changing the variant moves one trigger; it never changes what Help is. \u26a0 NO EFFECT UNDER `nav-placement: left`, where the rail\u2019s own Get Help row carries it and a second control would be a duplicate \u2014 the predicate is the rail\u2019s absence, not the top nav\u2019s presence. \u26a0 THE RAIL\u2019S GET HELP STILL OPENS THE SECTION, not this sheet, so the two arms answer Help differently today. That is the ask as given (the sheet was scoped to the top nav) and it is the thing to look at second.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    defaultVariant: 'header-icon',
+    variants: [
+      { value: 'header-icon', label: 'Header \u2014 ? icon' },
+      { value: 'profile-menu', label: 'Profile dropdown \u2014 above Logout' },
     ],
     page: 'dashboard-rebrand',
   },

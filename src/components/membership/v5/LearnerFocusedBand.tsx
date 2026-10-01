@@ -18,6 +18,7 @@ import { unitCount } from '@/utils/unitLabel'
 import { SquareTile } from './SquareTile'
 import { TaskRow } from '@/components/learning/study-calendar/TaskRow'
 import { StudyJourneyWidget } from '@/components/learning/StudyJourneyWidget'
+import { HomeNavTileColumn } from '@/components/layout/HomeNavTiles'
 import { StatusStrip } from '@/components/learning/LearningPathDetailPanel'
 import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
 import { JumpBackInWidget } from '@/components/learning/JumpBackInWidget'
@@ -1846,30 +1847,42 @@ export function LearnerFocusedBand({
            Still its own card rather than the journey's old top third: the
            resume block answers a different question, and it was the only
            unlabelled block on the version. What changed is which column it
-           answers that question in. */
-        <StudyJourneyWidget
-          path={path}
-          onOpenStop={onOpenStop}
-          onOpenStep={onOpenStep}
-          // The same action "View Requirements" runs — the sheet is the state's
-          // own rules, and the Get Licensed card is where they apply.
-          onOpenRequirements={onViewDetails}
-          onOpenLearningPath={onOpenLearningPath}
-          // FRAMED — a white card with a hairline edge instead of sitting bare
-          // on the page grey.
-          //
-          // DRIVEN BY `journeyCards`, NOT `paceOnly`, as of 2026-09-21. It rode
-          // on `paceOnly` while Testing was the only version that wanted this
-          // treatment, and that prop's own note called the split in advance:
-          // "Rename both if a version ever wants one without the other."
-          // Testing 2 is that version — it wants this journey and keeps its
-          // square tile PAIR, which is the whole thing `paceOnly` means.
-          framed={journeyCards}
-          // …and the post-course steps become their own cards. Still a separate
-          // prop from `framed` because they are different questions — one is
-          // this widget's surface, the other is how many widgets there are.
-          splitSteps={journeyCards}
-        />
+           answers that question in.
+
+           ⚠ NOT QUITE ALONE ANY MORE under `nav-placement: top` (2026-10-01):
+           `HomeNavTileColumn` puts My Courses + Certificates as tile buttons
+           above the Quick Question card, which is what re-homes them when the
+           header nav carries only two items and there is no rail to hold them.
+           It is a FRAGMENT under every other placement, so the widget stays the
+           direct grid child it has always been and this cannot move the band's
+           layout anywhere else. The nav concern lives in `HomeNavTiles`, not in
+           this file — the band's one job here is to say WHERE the top of this
+           column is. */
+        <HomeNavTileColumn>
+          <StudyJourneyWidget
+            path={path}
+            onOpenStop={onOpenStop}
+            onOpenStep={onOpenStep}
+            // The same action "View Requirements" runs — the sheet is the state's
+            // own rules, and the Get Licensed card is where they apply.
+            onOpenRequirements={onViewDetails}
+            onOpenLearningPath={onOpenLearningPath}
+            // FRAMED — a white card with a hairline edge instead of sitting bare
+            // on the page grey.
+            //
+            // DRIVEN BY `journeyCards`, NOT `paceOnly`, as of 2026-09-21. It rode
+            // on `paceOnly` while Testing was the only version that wanted this
+            // treatment, and that prop's own note called the split in advance:
+            // "Rename both if a version ever wants one without the other."
+            // Testing 2 is that version — it wants this journey and keeps its
+            // square tile PAIR, which is the whole thing `paceOnly` means.
+            framed={journeyCards}
+            // …and the post-course steps become their own cards. Still a separate
+            // prop from `framed` because they are different questions — one is
+            // this widget's surface, the other is how many widgets there are.
+            splitSteps={journeyCards}
+          />
+        </HomeNavTileColumn>
       ) : (
       <div
         style={{

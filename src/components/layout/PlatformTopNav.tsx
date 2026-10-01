@@ -1,6 +1,5 @@
 import { useSearchParams } from 'react-router-dom'
 import { CompassMark, House, HouseSolid } from '@/icons'
-import { useNavPlacement } from './navPlacement'
 import type { PlatformSection } from './PlatformSideNav'
 
 /**
@@ -35,9 +34,10 @@ type TopNavItem = {
 }
 
 /**
- * TWO ITEMS, OR THREE ON OPTION 4 — and the short list is the design's claim,
- * not a porting shortcut. (Help joins them only where nothing else carries it;
- * see `HELP_ITEM`.)
+ * TWO ITEMS, ALWAYS — and the short list is the design's claim, not a porting
+ * shortcut. (Help is no longer one of them; it has its own control, chosen by
+ * `nav-help`. My Courses and Certificates are re-homed as tiles on Home, see
+ * `HomeNavTiles`.)
  *
  * The rail carries seven rows; the Figma draws Home, Compass Learning and
  * Help. A top nav has a header's width to work in rather than a column's
@@ -64,24 +64,22 @@ const TOP_NAV_ITEMS: readonly TopNavItem[] = [
 ]
 
 /**
- * HELP IS OPTION 4'S ALONE — 2026-09-29, the direct ask: "only have Help be in
- * the top nav when we are on option 4 because it doesn't live anywhere else.
- * Otherwise, remove it from the top nav."
+ * HELP IS NOT A PILL ANY MORE — 2026-10-01, the restructure.
  *
- * Under Option 3 the rail carries Get Help, so a second one in the header is a
- * duplicate. Option 4 has no rail and its tab strip is Study Pace / Courses /
- * Certificates, so the header is the only place left for it.
+ * It was `HELP_ITEM`, appended here under Option 4 alone because that arm had
+ * no rail and no other home for it. `nav-help` replaces that with two real
+ * placements — a `?` in the header utilities, or a row in the account dropdown
+ * above Logout — and both open the Help SHEET rather than navigating to the
+ * section. So a third pill would now be a third answer to a question that has
+ * exactly two, which is the thing the flag exists to compare.
  *
- * ⚠ OPTION 1 HAS NO RAIL EITHER, and now no Help anywhere — `?section=support`
- * still resolves, but nothing on screen points at it. That follows the ask as
- * given rather than contradicting it; it is the one arm worth a second look.
+ * `support` still resolves from `?section=support` and the rail still carries
+ * Get Help under the left-nav arm; only the pill went. See `showsHelpControl`
+ * for which placements get a control of their own.
  */
-const HELP_ITEM: TopNavItem = { id: 'support', label: 'Help' }
 
 export function PlatformTopNav() {
-  const placement = useNavPlacement()
-  const items =
-    placement === 'hybrid-tabs' ? [...TOP_NAV_ITEMS, HELP_ITEM] : TOP_NAV_ITEMS
+  const items = TOP_NAV_ITEMS
   const [params, setParams] = useSearchParams()
   /* The shell's own default: no `?section=` IS Home, because `handleSelect`
      deletes the param rather than writing `dashboard` into it. */

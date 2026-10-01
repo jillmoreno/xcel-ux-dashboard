@@ -40,10 +40,15 @@ export const DEMO_CONTROLS: readonly DemoControlRow[] = [
      stakeholder handed a control that greys the product out has been given a
      way to break their own demo with nothing to gain from it. */
   { id: 'fidelity', maturity: 'wip' },
-  /* Nav layout — the three-option navigation comparison. Inherits
+  /* Nav layout — the left-vs-top navigation comparison. Inherits
      `nav-placement`, which is `wip`, so the demo site does not offer it while
-     the options are still being decided. */
+     the arms are still being decided. */
   { id: 'nav-layout', flag: 'nav-placement' },
+  /* Help placement — the top-nav arm's sub-question (`?` icon vs. the profile
+     dropdown). Inherits `nav-help`, which is `wip` for the same reason its
+     parent is; the bar also hides it outright under the left nav, where the
+     rail's Get Help row means the question does not arise. */
+  { id: 'nav-help', flag: 'nav-help' },
   /* Brand picker — parked (the bar renders it only when a brand switch is
      enabled at all), so it states its own `wip` rather than inheriting one. */
   { id: 'brand', maturity: 'wip' },

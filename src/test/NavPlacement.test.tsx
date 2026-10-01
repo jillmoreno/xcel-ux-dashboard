@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { render, screen } from '@testing-library/react'
+import { cleanup, render, screen } from '@testing-library/react'
 import { MemoryRouter, useSearchParams } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 import { AccountProvider, useAccount, type Brand } from '@/context/AccountContext'
@@ -62,22 +62,30 @@ function renderTopNav(search = '') {
 
 describe('nav-placement', () => {
   it('is in the catalog as a two-arm flag, defaulting to the top nav on this branch', () => {
-    /* ⚠ THIS ASSERTS THE BRANCH DEFAULT, NOT A SHIPPED ONE. It was `top` and
-       is `hybrid` as of 2026-09-29 — the arm nearly all the work has gone
-       into, so the branch build opens on it. CLAUDE.md's rule for a design
-       branch. If `promote-to-prototype` ever makes another arm the baseline,
-       this line is what says so out loud rather than letting it pass
-       unremarked. */
+    /* ⚠ THIS ASSERTS THE BRANCH DEFAULT, NOT A SHIPPED ONE. It has been `top`,
+       then `hybrid`, and is `top` again as of 2026-10-01 — the restructure made
+       the flag ONE AXIS with two arms, and the top arm is where the whole of
+       that pass went (the Home tiles, the two Help placements, the sheet).
+       CLAUDE.md's rule for a design branch. If `promote-to-prototype` ever makes
+       the other arm the baseline, this line is what says so out loud rather than
+       letting it pass unremarked. */
     const flag = FEATURE_FLAGS.find((f) => f.key === 'nav-placement')
     expect(flag).toBeTruthy()
-    expect(flag?.defaultVariant).toBe('hybrid')
-    expect(flag?.variants?.map((v) => v.value)).toEqual([
-      'left',
-      'top',
-      'hybrid',
-      'hybrid-tabs',
-    ])
+    expect(flag?.defaultVariant).toBe('top')
+    /* TWO, NOT FOUR. `hybrid` and `hybrid-tabs` came off the PICKER and are
+       still resolvable by URL — the suite below still drives both — so this
+       asserts what a reviewer is offered, which is the thing the restructure
+       actually changed. */
+    expect(flag?.variants?.map((v) => v.value)).toEqual(['left', 'top'])
     expect(flag?.page).toBe('dashboard-rebrand')
+  })
+
+  it('still RESOLVES the two off-picker hybrids, so the old shape stays viewable', () => {
+    /* They are off the demo bar, not deleted — the new shape has to be held
+       against what it replaces while the decision is open. The day they are
+       deleted for good, this test and an ARCHIVED_ITEMS row go together. */
+    renderTopNav('?ff=nav-placement:hybrid')
+    expect(screen.getByTestId('placement').textContent).toBe('hybrid')
   })
 
   it('resolves to the shipped rail when the flag is switched OFF', () => {
@@ -145,12 +153,20 @@ describe('nav-placement', () => {
     expect(items()).toEqual(['Home', 'Compass Learning'])
   })
 
-  it('adds Help on Option 4, where no rail and no tab carries it', () => {
-    renderTopNav('?ff=nav-placement:hybrid-tabs')
-    const items = [
-      ...screen.getByRole('navigation', { name: 'Primary' }).querySelectorAll('button'),
-    ].map((b) => b.textContent)
-    expect(items).toEqual(['Home', 'Compass Learning', 'Help'])
+  it('carries NO Help pill under any arm — Help has its own control now', () => {
+    /* It was appended on Option 4 alone, which was the only arm with nothing
+       else to carry it. `nav-help` replaces that with two real placements (the
+       header `?` and the account-menu row), both opening the Help SHEET rather
+       than navigating to the section — so a third pill would be a third answer
+       to a question that has exactly two. */
+    for (const arm of ['top', 'hybrid', 'hybrid-tabs']) {
+      renderTopNav(`?ff=nav-placement:${arm}`)
+      const items = [
+        ...screen.getByRole('navigation', { name: 'Primary' }).querySelectorAll('button'),
+      ].map((b) => b.textContent)
+      expect(items).toEqual(['Home', 'Compass Learning'])
+      cleanup()
+    }
   })
 
   it('marks Home current when there is no `?section=` at all', () => {

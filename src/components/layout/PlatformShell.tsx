@@ -77,7 +77,7 @@ import {
   type PlatformNavVariant,
   type PlatformSection,
 } from './PlatformSideNav'
-import { showsRail, useNavPlacement } from './navPlacement'
+import { showsRail, useNavExploration, useNavPlacement } from './navPlacement'
 import { CompassLearningPage } from '@/components/learning/CompassLearningPage'
 import { CompassSessionPage } from '@/components/learning/CompassSessionPage'
 import { HomePageHeader } from './HomePageHeader'
@@ -327,10 +327,19 @@ function PlatformShellBody() {
      first card; +16 puts the two on the same line. Re-measure it if either the
      rail's padding or the content column's first card moves. */
   const loweredRail = railSurface === 'none-aligned'
-  /* Option 3 gives Home a page header — the greeting + title the Figma draws
-     (765:3801). Home is the one section with no `SectionShell` title of its
-     own, so there is nothing for this to collide with. */
-  const homeHeader = navPlacement === 'hybrid' && active === 'dashboard'
+  /* HOME'S PAGE HEADER — the greeting + title the Figma draws (765:3801).
+     Home is the one section with no `SectionShell` title of its own, so there
+     is nothing for this to collide with.
+
+     ⚠ EVERY ARM NOW, NOT JUST THE HYBRID — 2026-10-01, the direct ask ("ALL
+     options should include the greeting that we added to option 3"). It was
+     `navPlacement === 'hybrid'`, which meant switching arms changed the
+     navigation AND whether Home had a title: two variables moving at once, so a
+     reviewer reacting to one could not tell which. Keyed to the EXPLORATION
+     rather than to a placement, so the shipped dashboard — flag off — is
+     untouched and does not quietly grow a header. */
+  const navExploration = useNavExploration()
+  const homeHeader = navExploration && active === 'dashboard'
   const compassFigures = useCompassCourseFigures()
   const railActive: PlatformSection = launcherOpen ? 'profile' : active
   const launcherBackLabel = SECTION_TITLES[active]
@@ -850,6 +859,26 @@ function PlatformShellBody() {
               onSelect={handleSelect}
               variant={navVariant}
               hiddenSections={trimmedRailSections}
+              /* COMPASS LEARNING AS A RAIL ROW — 2026-10-01, and it closes the
+                 gap the left-nav arm shipped with: the top nav carries Compass
+                 as its second pill, and under the rail there was no control for
+                 it ANYWHERE, so the destination the whole branch was built
+                 around was reachable only by deep link on half the options.
+
+                 ⚠ THIS REVERSES THE NOTE ON `compass` IN `PlatformSideNav`,
+                 deliberately. That note kept it off the rail so the two
+                 navigations would not "offer different things" — written when
+                 the rail held seven rows and the header three. Under the
+                 restructure both arms are meant to reach the SAME five places
+                 (Home, Compass, My Courses, Certificates, Help) and differ only
+                 in where the controls sit, so the row is what makes them
+                 comparable rather than what breaks it.
+
+                 EXPLORATION ONLY. `navExploration`, not `navPlacement ===
+                 'left'` — those read the same under the flag but the second is
+                 also true with the flag OFF, which would put a Compass row in
+                 the shipped rail for everyone. */
+              compassRow={navExploration && navPlacement === 'left'}
               collapsed={railCollapsed}
               /*
                * NO TOGGLE ON TESTING — 2026-09-21, the direct ask ("hide the
@@ -1493,13 +1522,13 @@ function SectionShell({
   children: ReactNode
 }) {
   const [shellParams] = useSearchParams()
-  /* ⚠ A PAGE HEADER ABOVE ME MEANS I ADD NO TOP GUTTER. Option 3 gives Home a
-     greeting + title (`HomePageHeader`), which already carries the 24px off the
+  /* ⚠ A PAGE HEADER ABOVE ME MEANS I ADD NO TOP GUTTER. The exploration gives
+     Home a greeting + title (`HomePageHeader`), which already carries the 24px off the
      top; leaving this section's own 24 in stacked the two and left a hole
      between the title and the first card. Read here rather than threaded as a
      prop — the condition is the same one the shell renders the header on, and
      two places deciding it separately is how they come to disagree. */
-  const headerAbove = useNavPlacement() === 'hybrid' && active === 'dashboard'
+  const headerAbove = useNavExploration() && active === 'dashboard'
   // Partner Offers for non-members gets its own marketing hero + locked cards
   // (Figma 63:16150) — NOT the generic LockedBenefitPage. Free Content is
   // OPEN TO ALL: non-members see the same page as members (free items keep their

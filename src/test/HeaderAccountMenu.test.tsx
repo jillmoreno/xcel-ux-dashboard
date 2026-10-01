@@ -89,7 +89,13 @@ describe('the account trigger resolves the live learner', () => {
     // and a naive match reads its own tombstone as the bug.
     const header = stripComments(readFileSync('src/components/layout/Header.tsx', 'utf8'))
     expect(header).not.toMatch(/initials="SC"/)
-    expect(header).toMatch(/<AccountMenu \/>/)
+    /* `<AccountMenu`, not `<AccountMenu />` — loosened 2026-10-01 when the
+       header began passing `onOpenHelp` (the `nav-help` trigger). What this
+       line pins is that the header still RENDERS the menu; pinning the
+       self-closing spelling made it a test of the prop list, which is not what
+       it is for and which broke on an unrelated feature. The `initials="SC"`
+       assertion above is the one that pins the actual subject. */
+    expect(header).toMatch(/<AccountMenu[\s/>]/)
   })
 
   it('keeps the props as OVERRIDES for an isolated mount', () => {

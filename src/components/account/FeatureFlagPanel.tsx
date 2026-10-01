@@ -131,6 +131,7 @@ const REBRAND_FLAGS = [
      Navigation group, which is where a control that decides whether the rail
      exists at all belongs. */
   'nav-placement',
+  'nav-help',
   /* Whether the rail paints its own surface on Home. */
   'nav-rail-surface',
   /* ⚠ ADDED 2026-09-28 AFTER A REVIEW, and these are OLDER misses than the

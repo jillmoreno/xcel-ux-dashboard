@@ -113,6 +113,7 @@ type ControlKey =
   | 'pacing'
   | 'navigation'
   | 'navLayout'
+  | 'navHelp'
   | 'fidelity'
   | 'education'
 
@@ -122,29 +123,47 @@ const SHOW_CONTROL: Record<ControlKey, boolean> = {
   readiness: false,
   pacing: false,
   navigation: true,
-  /* The one this branch is actually about. */
+  /* The two this branch is actually about. */
   navLayout: true,
+  navHelp: true,
   fidelity: true,
   education: false,
 }
 
 /**
- * The three navigation options `jill/navigation-exploration` compares.
+ * The navigation AXIS `jill/navigation-exploration` compares — two arms as of
+ * 2026-10-01, the restructure ("Left Nav Options, or Top Nav Options").
  *
- * ⚠ NOT THE SAME AXIS AS `NAVIGATION_PICKER` BELOW, and the two are easy to
- * confuse because both say "Option 1". That one is `dashboard-navigation` —
- * which COURSE PAGE the player opens. This is where the app's primary nav
- * lives. They are labelled "Nav layout" and "Navigation" on the bar for that
- * reason; if a reviewer ever reads one for the other, rename this rather than
- * explaining it again.
+ * It was four numbered options. Two of them (`hybrid`, `hybrid-tabs`) drew the
+ * header AND something else, and the numbering was carrying the argument that
+ * these were four peers when they were really one axis with two answers and two
+ * experiments bolted on. They are still RESOLVABLE by URL
+ * (`?ff=nav-placement:hybrid`) while the decision is open; they are simply not
+ * offered here, because this bar is the review control and offering a reviewer
+ * a superseded option is how one gets chosen by accident.
+ *
+ * ⚠ NOT THE SAME AXIS AS `NAVIGATION_PICKER` BELOW, which is
+ * `dashboard-navigation` — where the Compass experience sits. Two dropdowns
+ * about navigation, two different questions; the labels are what keeps them
+ * apart now that neither says "Option N".
  */
 const NAV_LAYOUT_PICKER: { value: string; label: string }[] = [
-  { value: 'top', label: 'Option 1 — Top nav' },
-  { value: 'left', label: 'Option 2 — Left nav' },
-  /* Both hybrids answer the same gap — what reaches Study Pace / Courses /
-     Certificates when the header only carries three. Named for the answer. */
-  { value: 'hybrid', label: 'Option 3 — Hybrid (rail)' },
-  { value: 'hybrid-tabs', label: 'Option 4 — Hybrid (tabs)' },
+  { value: 'top', label: 'Top nav' },
+  { value: 'left', label: 'Left nav' },
+]
+
+/**
+ * WHERE HELP LIVES UNDER THE TOP NAV — `nav-help`.
+ *
+ * On the bar beside the layout rather than in the flag panel because it is a
+ * SUB-QUESTION of the layout: it only means anything while the top nav is up,
+ * and the two are reviewed in the same breath. The control hides itself under
+ * the left nav rather than going grey — see its `hidden` below — because a
+ * disabled dropdown invites a click that does nothing.
+ */
+const NAV_HELP_PICKER: { value: string; label: string }[] = [
+  { value: 'header-icon', label: 'Header — ? icon' },
+  { value: 'profile-menu', label: 'Profile dropdown — above Logout' },
 ]
 
 /* Named for what each one IS, 2026-09-29, the direct ask. They were "Option 1"
@@ -229,6 +248,7 @@ export function DemoControlsBar({
   const showControl = { ...SHOW_CONTROL, ...controls }
   const navState = useFeatureFlag('dashboard-navigation')
   const navLayoutState = useFeatureFlag('nav-placement')
+  const navHelpState = useFeatureFlag('nav-help')
   const { loFi, setLoFi } = useLoFi()
   const educationTypeFlag = useFeatureFlag('dashboard-education-type')
   // Readiness state — the Exam Readiness section's own axis. Deliberately NOT
@@ -1062,7 +1082,7 @@ export function DemoControlsBar({
           </DemoDropdown>
         )}
         {/* NAV LAYOUT — the axis this branch exists to compare. On the bar
-            rather than in the flag panel because switching between the three is
+            rather than in the flag panel because switching between the two is
             the whole review task here, and sending a reviewer three menus deep
             for the one control they came for is how a comparison stops getting
             made. */}
@@ -1072,8 +1092,8 @@ export function DemoControlsBar({
             hidden={!show('nav-layout')}
             wip={markWip && controlMaturity('nav-layout') === 'wip'}
             label={
-              NAV_LAYOUT_PICKER.find((o) => o.value === (navLayoutState.variant ?? 'hybrid'))
-                ?.label ?? 'Option 3 — Hybrid (rail)'
+              NAV_LAYOUT_PICKER.find((o) => o.value === (navLayoutState.variant ?? 'top'))
+                ?.label ?? 'Top nav'
             }
             eyebrow="Nav layout"
             openId={openId}
@@ -1083,7 +1103,7 @@ export function DemoControlsBar({
             panelMinWidth={240}
           >
             {NAV_LAYOUT_PICKER.map((opt) => {
-              const active = opt.value === (navLayoutState.variant ?? 'hybrid')
+              const active = opt.value === (navLayoutState.variant ?? 'top')
               return (
                 <button
                   key={opt.value}
@@ -1094,6 +1114,48 @@ export function DemoControlsBar({
                   className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
                   onClick={() => {
                     setVariant('nav-placement', opt.value)
+                    close()
+                  }}
+                >
+                  <span style={{ flex: 1 }}>{opt.label}</span>
+                  {active && <Check size={15} aria-hidden />}
+                </button>
+              )
+            })}
+          </DemoDropdown>
+        )}
+        {/* HELP PLACEMENT — only while the top nav is up. HIDDEN rather than
+            disabled under the left nav: the rail carries Get Help as a row
+            there, so the question genuinely does not exist, and a greyed
+            control would imply it does. */}
+        {showControl.navHelp && (navLayoutState.variant ?? 'top') === 'top' && (
+          <DemoDropdown
+            id="nav-help"
+            hidden={!show('nav-help')}
+            wip={markWip && controlMaturity('nav-help') === 'wip'}
+            label={
+              NAV_HELP_PICKER.find((o) => o.value === (navHelpState.variant ?? 'header-icon'))
+                ?.label ?? 'Header — ? icon'
+            }
+            eyebrow="Help"
+            openId={openId}
+            onToggle={toggle}
+            panelRole="radiogroup"
+            panelLabel="Help placement"
+            panelMinWidth={260}
+          >
+            {NAV_HELP_PICKER.map((opt) => {
+              const active = opt.value === (navHelpState.variant ?? 'header-icon')
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  tabIndex={active ? 0 : -1}
+                  className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
+                  onClick={() => {
+                    setVariant('nav-help', opt.value)
                     close()
                   }}
                 >

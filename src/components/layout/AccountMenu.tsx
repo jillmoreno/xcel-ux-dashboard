@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { LogOut, Sliders } from '@/icons'
+import { HelpCircle, LogOut, Sliders } from '@/icons'
 import { Avatar } from '@/components/ui/Avatar'
 import { MembershipBadge } from '@/components/ui/MembershipBadge'
 import { AppearancePreferencesSheet } from '@/components/account/AppearancePreferencesSheet'
@@ -22,6 +22,17 @@ type AccountMenuProps = {
   avatarUrl?: string
   /** Show the "Pro" pill below the email. */
   isPro?: boolean
+  /**
+   * HELP IN THE MENU — `nav-help: profile-menu`, 2026-10-01. Opens the shared
+   * `HelpSheet`; the header owns the sheet because the OTHER setting triggers
+   * it from a `?` icon up there, and both must open the same one.
+   *
+   * AN OPENER, NOT A BOOLEAN, deliberately: the menu does not need to know
+   * which flag it is serving or why, only what the row does. Undefined under
+   * every other setting and no row renders — the same withheld-prop mechanism
+   * the rail uses for its collapse toggle.
+   */
+  onOpenHelp?: () => void
 }
 
 export function AccountMenu({
@@ -34,6 +45,7 @@ export function AccountMenu({
   email = 'alicia.navarro@gmail.com',
   avatarUrl: avatarUrlProp,
   isPro = true,
+  onOpenHelp,
 }: AccountMenuProps = {}) {
   const [open, setOpen] = useState(false)
   const [prefsOpen, setPrefsOpen] = useState(false)
@@ -209,6 +221,29 @@ export function AccountMenu({
                 <Sliders size={18} aria-hidden />
               </span>
               Preferences
+            </button>
+          )}
+          {/* HELP — `nav-help: profile-menu`. DIRECTLY ABOVE LOGOUT, which is
+              the ask and is also where it belongs in this list's own grammar:
+              the bottom group is app-level actions rather than account
+              destinations, and Help is one of those. Closes the menu first so
+              the sheet owns focus, exactly as Preferences above it does. */}
+          {onOpenHelp && (
+            <button
+              type="button"
+              role="menuitem"
+              data-cta-id="nav.support"
+              aria-haspopup="dialog"
+              onClick={() => {
+                setOpen(false)
+                onOpenHelp()
+              }}
+              className="cre-menu-item"
+            >
+              <span className="cre-menu-item-icon" aria-hidden>
+                <HelpCircle size={18} aria-hidden />
+              </span>
+              Help
             </button>
           )}
           {/* Logout — final row of the production account menu. The
