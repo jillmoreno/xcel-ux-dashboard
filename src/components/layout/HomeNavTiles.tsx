@@ -88,9 +88,24 @@ export function HomeNavTiles() {
  * pixel. Only the `top` arm gets the extra flex column, and its 20px gap is the
  * one `StudyJourneyWidget` already uses between its own split cards.
  */
-export function HomeNavTileColumn({ children }: { children: ReactNode }) {
+export function HomeNavTileColumn({
+  children,
+  suppress = false,
+}: {
+  children: ReactNode
+  /**
+   * The tiles are being rendered somewhere ELSE on this page — Testing 3, which
+   * moves them under the combined course block (2026-10-01).
+   *
+   * ⚠ IT SUPPRESSES, IT DOES NOT RELOCATE. The host renders `HomeNavTiles`
+   * itself wherever it wants them; this only stops the column drawing a second
+   * copy. Same shape as `examElsewhere` on `StudyJourneyWidget` — the page's
+   * layout is the host's knowledge, not this wrapper's.
+   */
+  suppress?: boolean
+}) {
   const placement = useNavPlacement()
-  if (!showsHomeNavTiles(placement)) return <>{children}</>
+  if (suppress || !showsHomeNavTiles(placement)) return <>{children}</>
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 20, minWidth: 0 }}>
       <HomeNavTiles />

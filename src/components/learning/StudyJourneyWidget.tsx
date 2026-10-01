@@ -67,6 +67,7 @@ export function StudyJourneyWidget({
   framed = false,
   splitSteps = false,
   examElsewhere = false,
+  courseworkElsewhere = false,
 }: {
   path: LearningPathSummary
   onOpenStop?: (courseId: string) => void
@@ -97,6 +98,22 @@ export function StudyJourneyWidget({
    * one screen.
    */
   examElsewhere?: boolean
+  /**
+   * The COURSEWORK card is being rendered elsewhere — Testing 3 combines it
+   * with the Current course card in the left column (2026-10-01).
+   *
+   * ⚠ IT DROPS THE CARD, NOT THE NUMBERING IT ANCHORS. `courseworkStep` is
+   * still 1 and the licensing cards still count on from it, so the column reads
+   * Step 2 / Step 3 / Step 4 with Step 1 sitting in the other column rather
+   * than missing. Renumbering them 1-3 would say the journey has three steps,
+   * which is a different claim than the one this version is making — the
+   * coursework did not stop being step 1, it moved.
+   *
+   * A PROP for the same reason `examElsewhere` is one: the band knows where it
+   * put the block, and two components reading the same version separately is
+   * how they come to disagree.
+   */
+  courseworkElsewhere?: boolean
   /**
    * Render the post-course steps as THEIR OWN WIDGETS — one card each — instead
    * of as rows in a single Get Licensed rail below the journey. Testing only
@@ -267,7 +284,12 @@ export function StudyJourneyWidget({
               hideSheetLink={quickLinks}
             />
           ))}
-        {collapseCoursework ? (
+        {/* ⚠ THE COURSEWORK CARD MAY BE IN THE OTHER COLUMN — Testing 3's
+            combined block absorbs it. Checked BEFORE `collapseCoursework`,
+            because that branch draws its own card too and a page showing both
+            the combined block and a "Coursework complete" stub would be the
+            same subject twice in the shape this version exists to remove. */}
+        {courseworkElsewhere ? null : collapseCoursework ? (
           <section aria-label="Study journey" style={shell}>
             <p className="cre-eyebrow-ink" style={collapsedEyebrowStyle}>
               {`Step ${courseworkStep} · Atlas Study Journey`}

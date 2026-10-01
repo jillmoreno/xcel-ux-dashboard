@@ -18,11 +18,12 @@ import { unitCount } from '@/utils/unitLabel'
 import { SquareTile } from './SquareTile'
 import { TaskRow } from '@/components/learning/study-calendar/TaskRow'
 import { StudyJourneyWidget } from '@/components/learning/StudyJourneyWidget'
-import { HomeNavTileColumn } from '@/components/layout/HomeNavTiles'
+import { HomeNavTiles, HomeNavTileColumn } from '@/components/layout/HomeNavTiles'
 import { StatusStrip } from '@/components/learning/LearningPathDetailPanel'
 import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
 import { JumpBackInWidget } from '@/components/learning/JumpBackInWidget'
 import { CourseEntryCard } from '@/components/learning/CourseEntryCard'
+import { CombinedCourseCard } from '@/components/learning/CombinedCourseCard'
 import { ExamScheduleWidget } from '@/components/learning/ExamScheduleWidget'
 import { widgetCardFramedStyle, widgetCardStyle } from '@/components/learning/widgetStyles'
 import { HomeSectionTabs } from '@/components/layout/HomeSectionTabs'
@@ -231,6 +232,21 @@ type Props = {
    */
   journeyCards?: boolean
   /**
+   * THE COURSE AND ITS COURSEWORK AS ONE CARD — Testing 3, 2026-10-01.
+   *
+   * Swaps `CourseEntryCard` for `CombinedCourseCard` in the same slot, and
+   * tells the journey column to drop the coursework card it has absorbed. It
+   * also moves the My Courses / Certificates tiles out of the journey column
+   * and under the combined block.
+   *
+   * ⚠ ONE PROP FOR ALL THREE, deliberately, unlike `framed` / `splitSteps`
+   * above. Those are separable because a version could reasonably want one
+   * without the other. These three are a single arrangement: a combined block
+   * with the coursework still ALSO in the right column is the same list twice,
+   * which is the exact defect this version exists to remove.
+   */
+  combinedCoursework?: boolean
+  /**
    * ISO yyyy-mm-dd — the learner's BOOKED exam date (`examDateStore`), entered
    * on the Schedule State Exam card. Passed straight through to the Study Pace
    * tile, which prices against whichever ceiling binds.
@@ -334,6 +350,7 @@ export function LearnerFocusedBand({
   livePace = false,
   paceOnly = false,
   journeyCards = false,
+  combinedCoursework = false,
   examDate,
   weekMinutes,
   dailyMinutes,
@@ -754,6 +771,44 @@ export function LearnerFocusedBand({
   const resumeInline =
     onPage && resume && !clpNavy && combinedEntry ? (
       <>
+      {combinedCoursework ? (
+      <CombinedCourseCard
+        path={path}
+        onOpenStop={onOpenStop}
+        /* View All still leaves for the full Learning Path — the combined block
+           absorbs the coursework SUMMARY, not the page behind it. Withheld on
+           QE Focused the same way the journey column withholds it, so the two
+           keep agreeing about where this route exists. */
+        onViewAll={onOpenLearningPath ? () => onOpenLearningPath(path.id) : undefined}
+        courseTitle={path.title}
+        cover={resume.imageUrl ?? getCourseImage(resume.id)}
+        percent={percent}
+        stats={[
+          { value: timeRemainingText(weeksLeft), caption: 'To complete course' },
+          ...(totalRequired > 0
+            ? [
+                {
+                  value: `${totalCompleted} of ${totalRequired} ${path.unitLabel ?? 'hrs'}`,
+                  caption: 'Completed',
+                },
+              ]
+            : []),
+        ]}
+        lessonsCompleted={totalCompleted}
+        complete={renewalReady}
+        showDetails={entryDetails}
+        onDetails={onViewDetails}
+        onResume={() =>
+          launcher.open(resume.id, {
+            title: path.title,
+            percentComplete: percent,
+            lessonNumber: totalCompleted + 1,
+            completedLessons: totalCompleted,
+            totalLessons: totalRequired || path.hours,
+          })
+        }
+      />
+      ) : (
       <CourseEntryCard
         courseTitle={path.title}
         cover={resume.imageUrl ?? getCourseImage(resume.id)}
@@ -787,8 +842,24 @@ export function LearnerFocusedBand({
           })
         }
       />
+      )}
       {homeTabs}
       {examCard}
+      {/* THE QUICK BUTTONS, MOVED UNDER THE BLOCK — Testing 3, the direct ask.
+          They sit above the Quick question card on every other version (the
+          `nav-placement: top` arm's re-homing of two rail rows). With the
+          combined block taking the top of this column, the two destinations
+          that are NOT about this course belong after it.
+
+          ⚠ LAST, AFTER THE EXAM CARD. The order in this column is now: what the
+          learner is doing, the question about their exam, then the two ways
+          out. One line to reorder if the tiles should sit tighter to the block
+          — it is a first pass, not a settled sequence.
+
+          ⚠ STILL NOTHING UNDER THE LEFT-NAV ARM. `HomeNavTiles` returns null
+          unless the top nav is drawing the navigation, because the rail carries
+          both rows there. Moving them does not change who gets them. */}
+      {combinedCoursework ? <HomeNavTiles /> : null}
       </>
     ) : onPage && resume && !clpNavy ? (
       <>
@@ -1923,7 +1994,7 @@ export function LearnerFocusedBand({
            layout anywhere else. The nav concern lives in `HomeNavTiles`, not in
            this file — the band's one job here is to say WHERE the top of this
            column is. */
-        <HomeNavTileColumn>
+        <HomeNavTileColumn suppress={combinedCoursework}>
           <StudyJourneyWidget
             path={path}
             onOpenStop={onOpenStop}
@@ -1945,6 +2016,9 @@ export function LearnerFocusedBand({
                too — see `examCard` above for why the band owns this decision
                rather than the widget reading the flag itself. */
             examElsewhere={examUnderCourse}
+            /* The coursework card is in the left column's combined block now,
+               so this column must not draw it too — see `combinedCoursework`. */
+            courseworkElsewhere={combinedCoursework}
             framed={journeyCards}
             // …and the post-course steps become their own cards. Still a separate
             // prop from `framed` because they are different questions — one is

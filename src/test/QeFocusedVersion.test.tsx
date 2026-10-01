@@ -226,10 +226,22 @@ describe('the QE Focused version is ARCHIVED but still reachable', () => {
        `Testing2Version.test.tsx` still renders it on every test, which is the
        whole point of archiving a version this way. See
        `discoverability-testing-2` in archivedItems.ts. */
+    /* ⚠ TESTING 3 JOINED 2026-10-01, directly after its parent — Testing with
+       the course and its coursework as one block. It is listed next to Testing
+       because the picker is the only place the lineage is visible, and reading
+       them in order is what makes the one difference legible.
+
+       ⚠ IT IS NOT THE ARCHIVED "Testing 2". That id is still absent from this
+       list and still resolves on its own; the numbering carried on past it
+       rather than reusing it. */
     expect(DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)).toEqual([
       'discoverability-testing',
+      'discoverability-testing-3',
       'discoverability-learner-focused',
     ])
+    expect(DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)).not.toContain(
+      'discoverability-testing-2',
+    )
   })
 
   it('is still what XCEL does NOT resolve to — Testing is', () => {

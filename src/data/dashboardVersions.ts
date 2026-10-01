@@ -13,6 +13,7 @@ export type DashboardVersionId =
   | 'discoverability-qe-focused'
   | 'discoverability-testing'
   | 'discoverability-testing-2'
+  | 'discoverability-testing-3'
 /**
  * The rebrand overview's LAYOUT, resolved from `?version=` by `PlatformShell`
  * and threaded to `MembershipOverview`. One exported name because five files
@@ -28,6 +29,7 @@ export type DashboardLayout =
   | 'badged'
   | 'qe-focused'
   | 'testing'
+  | 'testing-3'
   | 'testing-2'
 export type DashboardVersion = {
   id: DashboardVersionId
@@ -194,6 +196,43 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_TESTING_2: DashboardVersion = {
     'QE Focused with a LIVE Study Pace tile in the square slot. The tile itself operates nothing — it states one derived pace and offers Adjust, which opens a sheet holding the three finish dates (Relaxed / Recommended / Focused, each a date rather than a weekly quota), how many days a week, an optional exam date, and a switch that turns the pace into sessions on the Study Plan. Two ceilings can bind — course access expiry, and the exam date minus a review buffer — and the sheet says which one is doing the work. Readiness is still a lo-fi stub. Compare with Testing, which asks what the tile should show rather than what it should let you change.',
 }
 
+// "Testing 3" — Testing, with the COURSE and its COURSEWORK as one block.
+// Added 2026-10-01.
+//
+// ⚠ IT IS TESTING'S CHILD, NOT QE FOCUSED'S, which is the one thing to hold on
+// to when reading the chain. It inherits Testing's whole arrangement — the
+// dropped Readiness tile, Study Pace across the full row, the split journey
+// cards, the course header band — and changes exactly one thing, so the
+// comparison is about that thing.
+//
+// THE ARGUMENT IT MAKES: the Current course card and the Complete coursework
+// card are the same subject in two columns. Both name the course, both state
+// how far through it the learner is, and the stops inside Complete Coursework
+// are what the course IS. A learner reading down the page meets the same
+// progress twice in two different shapes and has to work out that they agree.
+// So this version renders them as ONE card — the course identity, the figure
+// and Resume, then a hairline, then the stops that make it up.
+//
+// AND THE QUICK BUTTONS MOVE UNDER IT. My Courses and Certificates sit above
+// the Quick question card on Testing (they are the `nav-placement: top` arm's
+// re-homing of two rail rows). With the combined block taking the top of the
+// left column, the two destinations that are NOT about this course belong
+// after it rather than beside it.
+//
+// ⚠ "Testing 2" IS A DIFFERENT, OLDER VERSION and this is not it. That id
+// (`discoverability-testing-2`) is QE Focused with a live Study Pace tile; it
+// was archived from the picker on 2026-09-28 and STILL RESOLVES, and it is the
+// only route to the Study Pace Adjust sheet. Numbering carried on past it
+// rather than reusing it — see `archivedItems.ts`.
+export const DISCOVERABILITY_DASHBOARD_VERSION_TESTING_3: DashboardVersion = {
+  id: 'discoverability-testing-3',
+  label: 'Testing 3',
+  createdAt: '2026-10-01',
+  modifiedAt: '2026-10-01',
+  description:
+    'Testing, with the Current course card and the Complete coursework card combined into ONE block \u2014 the course identity, the progress figure and Resume, then a hairline, then the coursework stops that make the course up. The argument: the two cards are the same subject in two columns, and a learner meets the same progress twice in two shapes and has to work out that they agree. My Courses and Certificates move below the combined block rather than sitting above the Quick question card. Everything else is Testing\u2019s, so the difference is the one block. \u26a0 NOT related to "Testing 2", which is an older, archived version with a live Study Pace tile.',
+}
+
 // "Testing" — QE Focused with the home screen's second row opened up for the
 // PACING exploration. Added 2026-09-21, and it is a WORKING version rather than
 // a candidate: it exists so the pacing treatments can be compared on the real
@@ -251,6 +290,7 @@ export function isQualifyingEducationVersion(versionId: string): boolean {
   return (
     versionId === DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED.id ||
     versionId === DISCOVERABILITY_DASHBOARD_VERSION_TESTING.id ||
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_TESTING_3.id ||
     // Testing 2 is a QE clone too — without this the demo bar would offer
     // Continuing Ed on a page that resolves a pre-licensing path, which is
     // the exact defect the note above records.
@@ -292,6 +332,11 @@ export function isQualifyingEducationVersion(versionId: string): boolean {
  */
 export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
   DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
+  /* Testing 3 — Testing with the course and its coursework as one block. Listed
+     directly after its parent, because the picker is the only place the lineage
+     is visible and reading them in order is what makes the one difference
+     legible. */
+  DISCOVERABILITY_DASHBOARD_VERSION_TESTING_3,
   /* Testing 2 was archived 2026-09-28 — re-add
      DISCOVERABILITY_DASHBOARD_VERSION_TESTING_2 here to restore it to the
      picker. Same one-line shape as Badged, QE Focused and Marketing Focused
