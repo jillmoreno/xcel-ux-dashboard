@@ -5,7 +5,7 @@ import {
   isAtlasCompassNavVersion,
   isQualifyingEducationVersion,
 } from '@/data/dashboardVersions'
-import { ATLAS_SKINS, ATLAS_SKIN_PARAM, atlasSkinFor, type AtlasSkin } from '@/components/layout/atlasBrandSkin'
+import { ATLAS_SKINS, ATLAS_SKIN_DEFAULT, ATLAS_SKIN_PARAM, atlasSkinFor, type AtlasSkin } from '@/components/layout/atlasBrandSkin'
 import { ATLAS_FONTS, ATLAS_FONT_PARAM, atlasFontFor, type AtlasFont } from '@/components/layout/atlasFontSets'
 import { ATLAS_NAV_DEFAULT, ATLAS_NAV_PARAM, ATLAS_NAV_VERSIONS, atlasNavFor, type AtlasNavVersion } from '@/components/layout/atlasNavVersion'
 import { UserSlash, Share2, BrowserWindow, Check, ChevronDown } from '@/icons'
@@ -281,10 +281,11 @@ export function DemoControlsBar({
   )
   const showAtlasSkin = atlasPaletteOn && onAtlasVersion
   const atlasSkin = atlasSkinFor(searchParams.get(ATLAS_SKIN_PARAM))
-  const atlasSkinLabel = ATLAS_SKINS.find((s) => s.skin === atlasSkin)?.label ?? 'XCEL'
+  const atlasSkinLabel = ATLAS_SKINS.find((s) => s.skin === atlasSkin)?.label ?? 'Global'
   const pickAtlasSkin = (skin: AtlasSkin) => {
     const next = new URLSearchParams(searchParams)
-    if (skin === 'xcel') next.delete(ATLAS_SKIN_PARAM)
+    // The default needs no param, so a clean link shows it.
+    if (skin === ATLAS_SKIN_DEFAULT) next.delete(ATLAS_SKIN_PARAM)
     else next.set(ATLAS_SKIN_PARAM, skin)
     setSearchParams(next, { replace: true })
     close()

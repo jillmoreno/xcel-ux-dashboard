@@ -37,10 +37,14 @@ export const ATLAS_SKINS: readonly { skin: AtlasSkin; label: string }[] = [
 
 export const ATLAS_SKIN_PARAM = 'skin'
 
-/** `?skin=` → a known skin, else XCEL. Validated, not cast: a hand-edited link
- *  can name anything. */
+/** The skin a link with no `?skin=` shows: GLOBAL since 2026-10-01 (the
+ *  designer's request; it was XCEL). */
+export const ATLAS_SKIN_DEFAULT: AtlasSkin = 'global'
+
+/** `?skin=` → a known skin, else the default. Validated, not cast: a
+ *  hand-edited link can name anything. */
 export function atlasSkinFor(param: string | null): AtlasSkin {
-  return ATLAS_SKINS.some((s) => s.skin === param) ? (param as AtlasSkin) : 'xcel'
+  return ATLAS_SKINS.some((s) => s.skin === param) ? (param as AtlasSkin) : ATLAS_SKIN_DEFAULT
 }
 
 function readSkin(): AtlasSkin | null {

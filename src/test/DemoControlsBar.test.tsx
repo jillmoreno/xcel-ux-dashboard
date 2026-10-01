@@ -78,12 +78,16 @@ describe('DemoControlsBar — Atlas brand skin', () => {
   const ATLAS = '/dashboard-rebrand?version=discoverability-atlas-compass-nav'
 
   it('shows on the Atlas version and writes ?skin=', () => {
+    // Global is the default since 2026-10-01: it needs no ?skin=.
     renderBar(ATLAS)
-    fireEvent.click(screen.getByRole('button', { name: /XCEL \(Insurance\)/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Brand.*Global/ }))
     fireEvent.click(screen.getByRole('radio', { name: /McKissock Learning/ }))
     expect(url()).toContain('skin=mckissock')
     fireEvent.click(screen.getByRole('button', { name: /McKissock Learning/ }))
     fireEvent.click(screen.getByRole('radio', { name: /XCEL \(Insurance\)/ }))
+    expect(url()).toContain('skin=xcel')
+    fireEvent.click(screen.getByRole('button', { name: /XCEL \(Insurance\)/ }))
+    fireEvent.click(screen.getByRole('radio', { name: /^Global/ }))
     expect(url()).not.toContain('skin=')
   })
 
@@ -94,7 +98,7 @@ describe('DemoControlsBar — Atlas brand skin', () => {
 
   it('stays off every other version', () => {
     renderBar()
-    expect(screen.queryByRole('button', { name: /XCEL \(Insurance\)/ })).toBeNull()
+    expect(screen.queryByRole('button', { name: /Brand.*Global/ })).toBeNull()
   })
 
   it('carries a Headings font dropdown that writes ?fonts=', () => {

@@ -9,7 +9,9 @@ describe('atlasSkinFor', () => {
     expect(atlasSkinFor('cre')).toBe('cre')
     expect(atlasSkinFor('mckissock')).toBe('mckissock')
     expect(atlasSkinFor('elite')).toBe('elite')
-    for (const raw of [null, '', 'stc', 'CRE', 'fitzgerald']) expect(atlasSkinFor(raw)).toBe('xcel')
+    expect(atlasSkinFor('xcel')).toBe('xcel')
+    // Unknown or absent → Global, the default since 2026-10-01.
+    for (const raw of [null, '', 'stc', 'CRE', 'fitzgerald']) expect(atlasSkinFor(raw)).toBe('global')
   })
 })
 
