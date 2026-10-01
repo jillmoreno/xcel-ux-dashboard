@@ -359,20 +359,29 @@ describe('the demo site offers only the finished demo controls', () => {
 
   it('previews the demo site from the design site with ?as=demo', { timeout: 20_000 }, async () => {
     /* The lens. Same build, same flags — only the bar changes, which is the
-       whole claim it makes. */
+       whole claim it makes, and the claim is UNCHANGED by the button going.
+
+       ⚠ THE BUTTON WAS ARCHIVED 2026-10-01 and the lens was not — the filtering
+       has always come from `only`, which `PrototypeChrome` still computes from
+       this param. This test is now the only thing standing between `?as=demo`
+       and a silent rot, because nothing in the UI reaches it any more. */
     await bar('full', '/dashboard-rebrand?as=demo')
     for (const gone of WIP) {
       expect(screen.queryByRole('button', { name: gone }), String(gone)).toBeNull()
     }
     expect(screen.getByRole('button', { name: /Progress/i })).toBeTruthy()
-    // It says it is a lens rather than just quietly dropping three controls.
-    expect(screen.getByRole('button', { name: /Viewing as demo/i })).toBeTruthy()
   })
 
-  it('offers the lens only where it means something', { timeout: 20_000 }, async () => {
-    /* On the demo site the answer is already yes, so the toggle would be a
-       control that does nothing — worse than absent. */
+  it('no longer offers a View as demo toggle anywhere', { timeout: 20_000 }, async () => {
+    /* ⚠ THIS INVERTS AN ASSERTION. It pinned that the toggle was absent on the
+       DEMO site only ("there the answer is already yes, so it would be a
+       control that does nothing"). The button is gone from both sites now,
+       replaced by "Go to Demo Hub" in the kebab — the same question answered by
+       the real build rather than a preview of it. Restoring the button means
+       restoring the design-site-only scoping with it. */
     await bar('public')
+    expect(screen.queryByRole('button', { name: /View as demo/i })).toBeNull()
+    await bar('full')
     expect(screen.queryByRole('button', { name: /View as demo/i })).toBeNull()
   })
 })
@@ -533,7 +542,12 @@ describe('maturity fails closed', () => {
       { value: 'half-built', maturity: 'wip' as const },
       { value: 'also-settled' },
     ]
-    const shown = variantsForDemo(variants, 'dashboard-navigation').map((v) => v.value)
+    /* ⚠ ANY `ready` FLAG KEY DOES — this asserts the WITHIN-a-control rule, and
+       the key is only here to make the flag's own maturity `ready` so the
+       variant maturities are what decide. It was `dashboard-navigation` until
+       that flag was archived (2026-10-01); `dashboard-progress-state` is the
+       other control on the bar and is `ready` for the same reason. */
+    const shown = variantsForDemo(variants, 'dashboard-progress-state').map((v) => v.value)
     expect(shown).toEqual(['settled', 'also-settled'])
     // …and every variant of a flag nobody promoted stays off the demo site.
     expect(variantsForDemo(variants, 'study-pace-preset')).toEqual([])

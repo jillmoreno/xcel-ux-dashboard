@@ -1,11 +1,11 @@
 import { pinLeftRail } from './pinNavPlacement'
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
-import { render, screen, fireEvent, act, within } from '@testing-library/react'
+import { render, screen, fireEvent, act } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
-import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext'
+import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { LearningPathsPanelProvider } from '@/components/learning/LearningPathsPanelContext'
 import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelContext'
 import { PlatformShell } from '@/components/layout/PlatformShell'
@@ -14,10 +14,6 @@ import { DemoControlsBar } from '@/components/prototype/DemoControlsBar'
 import { DashboardVersionsPanelProvider } from '@/components/dashboard/DashboardVersionsPanelContext'
 import { CourseContentV2 } from '@/components/learning/CourseContentV2'
 import { useCourseChrome } from '@/components/learning/courseTakeover'
-import {
-  NY_LH_COURSE_CHAPTERS,
-  NY_LH_CURRENT_CHAPTER_INDEX,
-} from '@/data/nyProducerRequirements'
 import { MembershipVersionsPanelProvider } from '@/components/membership/MembershipVersionsPanelContext'
 import { FeatureFlagPanelProvider } from '@/components/account/FeatureFlagPanelContext'
 import { CtaTestProvider, parseDeadParam } from '@/context/CtaTestContext'
@@ -473,14 +469,16 @@ describe('?test=1 — the moderated session view', () => {
     )
 
   it('keeps the demo bar, showing only the controls a moderator uses live', () => {
-    /* ⚠ TWO SURVIVORS AS OF 2026-09-23, not one — `navigation` was added to
-       the whitelist by direct ask. It is the entry with a cost: a participant
-       who spots "Option 1 / Option 2" has been told a comparison exists.
-       `TEST_VIEW_CONTROLS` records why it is in anyway. */
+    /* ⚠ BACK TO ONE SURVIVOR, 2026-10-01. `navigation` was whitelisted
+       alongside Progress by direct ask (2026-09-23) and was the entry with a
+       cost — a participant who spotted "Option 1 / Option 2" had been told a
+       comparison existed. It went with the `dashboard-navigation` flag when
+       Option 1 won; see `archivedItems.ts`. `Navigation` is asserted ABSENT
+       below, which is what would catch the control coming back without the
+       whitelist decision being made again. */
     renderChrome('?test=1')
     expect(screen.getByRole('button', { name: /Progress/i })).toBeTruthy()
-    expect(screen.getByRole('button', { name: /Navigation/i })).toBeTruthy()
-    for (const gone of [/Persona/i, /Readiness/i, /Pacing/i, /Education/i, /^Reset$/, /Demo actions/i]) {
+    for (const gone of [/Persona/i, /Readiness/i, /Pacing/i, /Education/i, /Navigation/i, /^Reset$/, /Demo actions/i]) {
       expect(screen.queryByRole('button', { name: gone }), String(gone)).toBeNull()
     }
   })
@@ -502,7 +500,7 @@ describe('?test=1 — the moderated session view', () => {
        which `jill/navigation-exploration` trims (see `SHOW_CONTROL`); the claim
        being tested is that a normal load is NOT whitelisted, so it needs
        controls that are actually on the bar to make that claim about. */
-    for (const there of [/Progress/i, /Nav layout/i, /Navigation/i, /^Reset$/]) {
+    for (const there of [/Progress/i, /Nav layout/i, /Fidelity/i, /^Reset$/]) {
       expect(screen.getByRole('button', { name: there }), String(there)).toBeTruthy()
     }
   })
@@ -532,166 +530,25 @@ describe('?test=1 — the moderated session view', () => {
   })
 })
 
-/* ─── The Navigation A/B ──────────────────────────────────────────────────── */
+/* ─── Option 2's archived page ─────────────────────────────────────────────
+ *
+ * `dashboard-navigation` WAS AN A/B HERE — the Compass player under the app
+ * header against the full-screen `CourseContentV2`. Option 1 won on
+ * 2026-10-01, so the flag, the demo control and the shell branch all went and
+ * the player is unconditional. Six tests that drove Option 2 THROUGH the flag
+ * went with them; they asserted the full-screen page's chrome, its simplified
+ * TOC, its header naming, its inert controls and its ✕ route, and they cannot
+ * run without an arm to seed.
+ *
+ * ⚠ ONE SURVIVES, DELIBERATELY, and it is the one that never needed the flag:
+ * the takeover contract below mounts `CourseContentV2` DIRECTLY. Keeping it is
+ * what stops the archived component rotting silently — it still type-checks,
+ * still renders, and still releases the app header on unmount, which is the
+ * half that would strand a reviewer headerless on a restore. See the
+ * `dashboard-navigation-ab` row in `archivedItems.ts`.
+ */
 
-describe('dashboard-navigation — Option 1 / Option 2', () => {
-  /*
-   * 2026-09-23: a demo control that switches which course-content page Resume
-   * opens, so a moderator can put the two in front of different participants.
-   */
-  const seedNav = (variant?: string) => {
-    window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
-    if (variant) {
-      window.localStorage.setItem(
-        'cgp.featureFlags',
-        JSON.stringify({ 'dashboard-navigation': { enabled: true, variant } }),
-      )
-    }
-  }
-
-  const openCourse = () => {
-    render(
-      <MemoryRouter initialEntries={[TESTING_URL]}>
-        <AccountProvider>
-          <FeatureFlagProvider>
-            <CtaTestProvider>
-              <LearningPathsPanelProvider>
-                <JumpBackInPanelProvider>
-                  <PlatformShell />
-                </JumpBackInPanelProvider>
-              </LearningPathsPanelProvider>
-            </CtaTestProvider>
-          </FeatureFlagProvider>
-        </AccountProvider>
-      </MemoryRouter>,
-    )
-    act(() => {
-      fireEvent.click(screen.getByRole('button', { name: /Resume|Start course/ }))
-    })
-  }
-
-  it('defaults to Option 1, not to the new arm', () => {
-    /* ⚠ THIS BREAKS THIS REPO'S USUAL BRANCH RULE ON PURPOSE, and the test is
-       where that decision is enforced. A designer's branch normally defaults
-       its own work ON so the branch build shows it. Option 2 is one arm of an
-       A/B a moderator assigns per participant — defaulting it on would make
-       every other session link, and every reviewer's sandbox, silently the
-       variant, and the comparison would have no baseline. */
-    seedNav()
-    expect(FEATURE_FLAGS.find((f) => f.key === 'dashboard-navigation')?.defaultVariant).toBe(
-      'option-1',
-    )
-  })
-
-  it('is a full-screen page — no breadcrumb, no page rail, no app header', () => {
-    /* ⚠ THIS REPLACED TWO TESTS THAT ASSERTED THE OPPOSITE, and the swap is the
-       record of a decision rather than a test bending to code.
-
-       They pinned that the two arms shared a shell and rendered IDENTICALLY —
-       correct while Option 2 was a variant BODY, and written to fail the day
-       the variant was designed so the first real difference would be a
-       deliberate edit against a known-equal baseline. It was, and they did.
-       The ask that moved it: "the navigation is going to change drastically".
-
-       So the claim inverts. The two arms now share NO chrome, because the
-       navigation IS the variable rather than a confound around it. */
-    seedNav('option-2')
-    openCourse()
-    /* ⚠ NOT `'Back to Overview'` ANY MORE — that assertion was here and had to
-       go, because Option 2's own ✕ now carries exactly that label. What is
-       still absent is Option 1's BREADCRUMB: its Home and Overview crumbs are
-       separate buttons, and neither exists here. */
-    expect(screen.queryByRole('button', { name: 'Home' })).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Overview' })).toBeNull()
-  })
-
-  it('keeps a SIMPLIFIED left TOC — the lessons, not the header facts again', () => {
-    /* ⚠ THE TOC CAME BACK on 2026-09-23 ("we still need this to be part of
-       option 2 — a simplified left TOC"), which is why the test above no
-       longer claims there is no sidebar.
-
-       SIMPLIFIED IS A CLAIM ABOUT DUPLICATION, not about styling: the course
-       title, the progress track and the percentage are in this page's HEADER,
-       so the TOC must not state them a second time. What it keeps is the part
-       the header cannot carry — which lessons exist, which one is current, and
-       how many are done. Asserted in both directions, because a TOC that
-       quietly regrew its progress bar would still pass a presence check. */
-    seedNav('option-2')
-    openCourse()
-    const toc = screen.getByLabelText('Course contents')
-    expect(toc.textContent).toContain('Course Content')
-    expect(toc.textContent).toMatch(/Completed \d+ of \d+/)
-    expect(toc.textContent).toContain(NY_LH_COURSE_CHAPTERS[NY_LH_CURRENT_CHAPTER_INDEX])
-    // …and NOT the facts the header already states.
-    expect(toc.textContent).not.toContain('New York Life and Health Pre-licensing')
-    expect(toc.textContent).not.toMatch(/\d+%/)
-    // The eight-page rail is Option 1's; this page has no pages to switch.
-    expect(within(toc).queryByRole('button', { name: 'Flashcards' })).toBeNull()
-  })
-
-  it('names the demo’s real course and chapter, not the mock’s', () => {
-    /* The mock draws "Life & Health · Life insurance policy types". The header
-       states the course and chapter the rest of the session names — the
-       dashboard behind it, the Study Journey, Option 1's own sidebar. A
-       participant who meets two different course names in one sitting stops
-       believing both. */
-    seedNav('option-2')
-    openCourse()
-    const header = document.querySelector('header')!
-    expect(header.textContent).toContain('Compass')
-    expect(header.textContent).toContain(NY_LH_COURSE_CHAPTERS[NY_LH_CURRENT_CHAPTER_INDEX])
-    expect(header.textContent).not.toContain('Life insurance policy types')
-  })
-
-  it('wires ✕ and leaves the rest of the header inert', () => {
-    /* ⚠ THE INERT ONES ARE NOT BUTTONS, which is the assertion that matters.
-       This player's rule throughout is that a control looking pressable and
-       doing nothing is what gets reported as broken — so the exam pill,
-       + Demo, brightness, Notes and Rubi render as spans until their behaviour
-       is specified. Counting BUTTONS in the header is how that stays true. */
-    seedNav('option-2')
-    openCourse()
-    const header = document.querySelector('header')!
-    expect(
-      [...header.querySelectorAll('button')].map((b) => b.getAttribute('aria-label')),
-    ).toEqual(['Back to Overview'])
-  })
-
-  it('✕ goes UP to Overview — it is the only route there', () => {
-    /* ⚠ THIS INVERTS AN ASSERTION FROM EARLIER THE SAME DAY, when ✕ closed the
-       course to the dashboard. The ask: "this needs to bring user to the
-       overview page. it's the only way there right now."
-
-       IT IS LOAD-BEARING, not cosmetic: Option 2 has no rail and no
-       breadcrumb, so a ✕ that closed outward would leave the variant with no
-       route to its own Overview at all. Leaving is the OVERVIEW page's job. */
-    seedNav('option-2')
-    openCourse()
-    act(() => {
-      fireEvent.click(screen.getByRole('button', { name: 'Back to Overview' }))
-    })
-    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(
-      'New York Life and Health Pre-licensing',
-    )
-    // …and it did NOT leave the course.
-    expect(screen.queryByRole('button', { name: /Resume|Start course/ })).toBeNull()
-  })
-
-  it('the Overview page’s home crumb is the way out', () => {
-    /* The other half of the ask — "from the overview page, user will be able to
-       get back to home" — and the assertion that stops the variant becoming a
-       room with no door once ✕ stopped being one. */
-    seedNav('option-2')
-    openCourse()
-    act(() => {
-      fireEvent.click(screen.getByRole('button', { name: 'Back to Overview' }))
-    })
-    act(() => {
-      fireEvent.click(screen.getByRole('button', { name: 'Home' }))
-    })
-    expect(screen.getByRole('button', { name: /Resume|Start course/ })).toBeTruthy()
-  })
-
+describe('CourseContentV2 — kept unwired, still honest about the app header', () => {
   it('suppresses the app header only while it is mounted', () => {
     /* Two XCEL logos stacked is what this prevents. Asserted on the store
        rather than on `<Header />`, which lives in `AppLayout` above this whole
@@ -723,12 +580,4 @@ describe('dashboard-navigation — Option 1 / Option 2', () => {
     expect(screen.getByTestId('takeover').textContent).toBe('none')
   })
 
-  it('leaves Option 1 exactly as it was', () => {
-    /* The direction a variant most easily breaks: the control arm. */
-    seedNav('option-1')
-    openCourse()
-    expect(screen.getByLabelText('Course contents')).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Home' })).toBeTruthy()
-    expect(screen.getByRole('button', { name: 'Back to Overview' })).toBeTruthy()
-  })
 })

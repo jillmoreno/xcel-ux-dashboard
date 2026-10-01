@@ -62,7 +62,8 @@ export const DEMO_CONTROLS: readonly DemoControlRow[] = [
   { id: 'progress', flag: 'dashboard-progress-state' },
   { id: 'readiness', flag: 'readiness-state' },
   { id: 'pacing', flag: 'study-pace-preset' },
-  { id: 'navigation', flag: 'dashboard-navigation' },
+  /* `navigation` WAS HERE — the `dashboard-navigation` A/B's control, archived
+     2026-10-01 with the flag it inherited from. See `archivedItems.ts`. */
   { id: 'education', flag: 'dashboard-education-type' },
   /* Reset + the kebab. ⚠ READY, DELIBERATELY: Reset is what gets a stakeholder
      out of a state they wandered into. Hiding it would leave the only recovery

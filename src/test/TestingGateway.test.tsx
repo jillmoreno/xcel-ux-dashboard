@@ -135,10 +135,14 @@ describe('VITE_GATEWAY_MODE=testing — the baseline a session opens on', () => 
     return (key: string) => defaultFlagState(FEATURE_FLAGS.find((f) => f.key === key)!)
   }
 
-  it('opens at 0% and Option 1', async () => {
+  it('opens at 0%', async () => {
+    /* ⚠ IT ALSO PINNED `dashboard-navigation: option-1` — the A/B's control
+       arm, stated here so a later catalog change could not silently start
+       participants on the variant. The flag was archived 2026-10-01 and the
+       `TESTING_BASELINE` entry went with it; there is no variant left to be
+       started on. See `archivedItems.ts`. */
     const d = await defaults('testing')
     expect(d('dashboard-progress-state').variant).toBe('not-started')
-    expect(d('dashboard-navigation').variant).toBe('option-1')
   })
 
   it('leaves the other two sites on the committed baseline', async () => {

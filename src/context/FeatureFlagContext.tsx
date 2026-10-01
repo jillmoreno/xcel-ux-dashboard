@@ -1040,41 +1040,11 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     ],
     page: 'dashboard-rebrand',
   },
-  {
-    key: 'dashboard-navigation',
-    group: 'Widgets',
-    label: 'Navigation',
-    description:
-      'Which course page Resume opens. `option-1` is the Compass player as it stands — the 260px contents sidebar, the Home / Overview / Course breadcrumb, the toolbar and the reading column, under the app header. `option-2` is a FULL-SCREEN page with its own header (logo · Compass · course · section, plus the exam-date pill, + Demo, brightness and ✕) and a section progress track; it has no sidebar, no breadcrumb, and it suppresses the app header while open. ⚠ THE TWO SHARE NO CHROME — the navigation IS the variable. `CourseContentV2` is the file Option 2 owns.',
-    // READY: an A/B we are actively asking stakeholders to choose between —
-    // the one control on the demo site whose whole purpose is their opinion.
-    maturity: 'ready',
-    // Variant-only, like `study-pace-chooser` below.
-    defaultEnabled: true,
-    /* ⚠ `option-1` ON THE BRANCH TOO, which breaks this repo's usual rule that
-       a designer's branch defaults its own work ON. Option 2 is one half of an
-       A/B a moderator assigns PER PARTICIPANT from the session link
-       (`?ff=dashboard-navigation:option-2`), not a proposal replacing Option 1
-       — so defaulting it on would silently make every other link, and every
-       reviewer's sandbox, the variant. The control condition has to be the
-       default or the comparison has no baseline. */
-    defaultVariant: 'option-1',
-    variants: [
-      {
-        value: 'option-1',
-        label: 'Below the header',
-        description:
-          'Resume opens the Compass player unchanged: app header, contents sidebar, Home / Overview / Course breadcrumb, the reading column with Previous / Next, and the Rubi panel.',
-      },
-      {
-        value: 'option-2',
-        label: 'Full screen Compass experience',
-        description:
-          'Resume opens `CourseContentV2` — a full-screen course page whose own header carries the course and section naming, so there is no app header, no contents sidebar and no breadcrumb. Wired: ✕. Lo-fi for now: the exam-date pill (real date when one is booked), + Demo, brightness, Notes and Rubi.',
-      },
-    ],
-    page: 'dashboard-rebrand',
-  },
+  /* `dashboard-navigation` WAS HERE — ARCHIVED 2026-10-01. The A/B between the
+     Compass player under the app header (`option-1`) and the full-screen
+     `CourseContentV2` page (`option-2`). Option 1 won, so the player is
+     unconditional now and the flag had nothing left to choose. See the
+     `dashboard-navigation-ab` row in `archivedItems.ts` for the re-wire. */
   {
     key: 'study-pace-chooser',
     group: 'Widgets',
@@ -2070,14 +2040,13 @@ type PersistedState = Record<string, PersistedFlagState>
  * `/promote-to-prototype` put in the catalog; this is a third-site concern and
  * lives behind the same env var the third site already sets.
  *
- * `dashboard-navigation` is listed even though the catalog already says
- * `option-1`. It is the A/B's control arm and the one default a session must
- * be able to rely on, so stating it here means a later change to the catalog
- * cannot silently start participants on the variant.
+ * `dashboard-navigation` WAS LISTED HERE — pinning the A/B's control arm so a
+ * later catalog change could not silently start participants on the variant.
+ * It went with the flag on 2026-10-01; there is no variant left to be started
+ * on. See `archivedItems.ts`.
  */
 const TESTING_BASELINE: Record<string, Partial<FeatureFlagState>> = {
   'dashboard-progress-state': { variant: 'not-started' },
-  'dashboard-navigation': { variant: 'option-1' },
 }
 
 export function defaultFlagState(def: FeatureFlagDefinition): FeatureFlagState {

@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useLocation, useSearchParams } from 'react-router-dom'
 import { defaultDiscoverabilityVersionFor, isQualifyingEducationVersion } from '@/data/dashboardVersions'
-import { UserSlash, Share2, BrowserWindow, Check, ChevronDown } from '@/icons'
+import { UserSlash, Share2, BrowserWindow, ArrowUpRightFromSquare, Check, ChevronDown } from '@/icons'
 import { ActionMenu } from '@/components/ui/ActionMenu'
 import { Toast } from '@/components/ui/Toast'
 import { DemoBar, DemoDropdown } from './DemoBar'
-import { isPublicGateway, isTestSession } from '@/data/gatewayMode'
+import { isPublicGateway } from '@/data/gatewayMode'
 import { controlMaturity } from '@/data/demoControlMaturity'
 import { useLoFi } from '@/context/LoFiContext'
 import { licensedProfessionsFor } from '@/data/licensedStatesFixtures'
@@ -111,7 +111,6 @@ type ControlKey =
   | 'progress'
   | 'readiness'
   | 'pacing'
-  | 'navigation'
   | 'navLayout'
   | 'navHelp'
   | 'fidelity'
@@ -122,7 +121,6 @@ const SHOW_CONTROL: Record<ControlKey, boolean> = {
   progress: true,
   readiness: false,
   pacing: false,
-  navigation: true,
   /* The two this branch is actually about. */
   navLayout: true,
   navHelp: true,
@@ -147,6 +145,24 @@ const SHOW_CONTROL: Record<ControlKey, boolean> = {
  * about navigation, two different questions; the labels are what keeps them
  * apart now that neither says "Option N".
  */
+/**
+ * THE DEMO HUB — the public Netlify project's gateway, 2026-10-01.
+ *
+ * The link handed to stakeholders: `VITE_GATEWAY_MODE=public`, so it carries
+ * only the ungated sections (Demo · Links · Research) and builds `main` ONLY.
+ * Both of those matter to anyone pressing this from a branch build — the hub
+ * will not show the work they are standing in until it merges.
+ *
+ * ⚠ THIS IS THE **DEMO** HOST, NOT THE DESIGN ONE, and the two differ by one
+ * word. `ux-design-xceldashboard.netlify.app` is the full site that branch
+ * builds deploy to; `ux-demo-…` is this. Sending a stakeholder to the design
+ * host hands them a password prompt. `docs/gateway.md` is the source for both.
+ *
+ * Hard-coded rather than derived from `window.location`, because the whole
+ * point is to leave THIS origin — on localhost there is nothing to derive from.
+ */
+const DEMO_HUB_URL = 'https://ux-demo-xceldashboard.netlify.app/'
+
 const NAV_LAYOUT_PICKER: { value: string; label: string }[] = [
   { value: 'top', label: 'Top nav' },
   { value: 'left', label: 'Left nav' },
@@ -166,13 +182,9 @@ const NAV_HELP_PICKER: { value: string; label: string }[] = [
   { value: 'profile-menu', label: 'Profile dropdown — above Logout' },
 ]
 
-/* Named for what each one IS, 2026-09-29, the direct ask. They were "Option 1"
-   and "Option 2", which said only that a choice existed — and sat two dropdowns
-   away from a Nav layout control whose rows are also numbered options. */
-const NAVIGATION_PICKER: { value: string; label: string }[] = [
-  { value: 'option-1', label: 'Below the header' },
-  { value: 'option-2', label: 'Full screen Compass experience' },
-]
+/* `NAVIGATION_PICKER` WAS HERE — the `dashboard-navigation` A/B's two arms,
+   "Below the header" and "Full screen Compass experience". Archived with the
+   control on 2026-10-01; see `archivedItems.ts`. */
 
 const PACE_PRESET_PICKER: { value: string; label: string }[] = [
   { value: 'recommended', label: 'Recommended' },
@@ -184,7 +196,6 @@ export function DemoControlsBar({
   open = true,
   fullBleed = false,
   only,
-  lens = false,
   controls,
 }: {
   open?: boolean
@@ -216,15 +227,19 @@ export function DemoControlsBar({
    * Undefined ⇒ everything, which is every normal load.
    */
   only?: readonly string[]
-  /**
-   * THIS IS THE PREVIEW, NOT THE REAL THING — `?as=demo` on the design site.
-   *
-   * `only` already did the filtering; this exists so the bar can SAY so. A
-   * design-site bar that silently dropped three controls would look like a bug
-   * to the person who put them there, and the whole value of the lens is
-   * knowing you are looking through it.
-   */
-  lens?: boolean
+  /* `lens` WAS HERE — the `?as=demo` INDICATOR, removed 2026-10-01 with the
+     View as demo button that was its only reader.
+
+     ⚠ THE LENS ITSELF IS UNAFFECTED. The filtering has always come from `only`,
+     which `PrototypeChrome` still computes from `?as=demo`; this prop existed
+     purely so the bar could SAY it was being looked through.
+
+     ⚠ WHAT IS LOST, stated plainly: a bar in the lens now drops controls
+     SILENTLY. That was the prop's whole argument ("would look like a bug to the
+     person who put them there"), and it held while a button could toggle the
+     lens by accident. It is weaker now that `?as=demo` has to be typed by hand
+     — but it is not nothing, and it is the thing to put back first if the lens
+     is ever given a control again. See `archivedItems.ts`. */
 }) {
   /** Is this control in the session's whitelist? See `only`. */
   const show = (id: string) => only == null || only.includes(id)
@@ -233,7 +248,7 @@ export function DemoControlsBar({
      have nothing to sit on; in a participant session the mark would be noise
      about a decision they are not part of. */
   const markWip = only == null && !isPublicGateway()
-  const { pathname, search } = useLocation()
+  const { pathname } = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const { brand, membership, tier, setTier, setBrand } = useAccount()
   const { flags, definitions, setEnabled, setVariant, setSecondaryVariant, clearUrlOverrides } =
@@ -246,7 +261,6 @@ export function DemoControlsBar({
   const progressState = useFeatureFlag('dashboard-progress-state')
   const paceState = useFeatureFlag('study-pace-preset')
   const showControl = { ...SHOW_CONTROL, ...controls }
-  const navState = useFeatureFlag('dashboard-navigation')
   const navLayoutState = useFeatureFlag('nav-placement')
   const navHelpState = useFeatureFlag('nav-help')
   const { loFi, setLoFi } = useLoFi()
@@ -1016,21 +1030,6 @@ export function DemoControlsBar({
         </DemoDropdown>
         )}
 
-        {/* NAVIGATION — which course-content page Resume opens. 2026-09-23.
-
-            ⚠ IT IS AN A/B, NOT A TREATMENT PICKER, which is why it defaults to
-            Option 1 on this branch rather than to the newer arm: the control
-            condition has to be the default or the comparison has no baseline.
-            A moderator normally assigns it per participant from the session
-            link (`?ff=dashboard-navigation:option-2`) rather than switching it
-            here mid-task.
-
-            ⚠ IT IS IN `?test=1`'s WHITELIST, by direct ask, and it is the one
-            entry there with a cost: a participant who spots a control labelled
-            "Option 1 / Option 2" has been told a comparison exists. The reason
-            it is in anyway — switching arms mid-session beats reloading and
-            re-pasting the link — is recorded at `TEST_VIEW_CONTROLS` in
-            `PrototypeChrome`. */}
         {/* FIDELITY — lo-fi ⇄ hi-fi, 2026-09-29, the direct ask.
             
             ⚠ IT IS NOT A FLAG. Lo-fi is `LoFiContext` (persisted to
@@ -1166,42 +1165,16 @@ export function DemoControlsBar({
             })}
           </DemoDropdown>
         )}
-        <DemoDropdown
-          id="navigation"
-          hidden={!show('navigation')}
-          wip={markWip && controlMaturity('navigation') === 'wip'}
-          label={
-            NAVIGATION_PICKER.find((o) => o.value === (navState.variant ?? 'option-1'))?.label ??
-            'Below the header'
-          }
-          eyebrow="Navigation"
-          openId={openId}
-          onToggle={toggle}
-          panelRole="radiogroup"
-          panelLabel="Navigation version"
-          panelMinWidth={240}
-        >
-          {NAVIGATION_PICKER.map((opt) => {
-            const active = opt.value === (navState.variant ?? 'option-1')
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                role="radio"
-                aria-checked={active}
-                tabIndex={active ? 0 : -1}
-                className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
-                onClick={() => {
-                  setVariant('dashboard-navigation', opt.value)
-                  close()
-                }}
-              >
-                <span style={{ flex: 1 }}>{opt.label}</span>
-                {active && <Check size={15} aria-hidden />}
-              </button>
-            )
-          })}
-        </DemoDropdown>
+        {/* NAVIGATION WAS HERE — ARCHIVED 2026-10-01, the direct ask ("remove
+            this demo control as it's no longer needed").
+
+            It switched which course page Resume opened, so a moderator could
+            put the Compass player and the full-screen `CourseContentV2` in
+            front of different participants. Option 1 won; with one arm left the
+            control chose nothing, so the flag and this went together. It was
+            also the one entry in `?test=1`'s whitelist with a cost — a
+            participant who saw a control labelled "Option 1 / Option 2" had
+            been told a comparison existed. See `archivedItems.ts`. */}
 
         {/* Education type (QE / CE) — single-select radiogroup, brands with a QE
             dashboard persona only */}
@@ -1246,44 +1219,20 @@ export function DemoControlsBar({
         {/* Actions — Reset + the kebab. Gated like the dropdowns: a participant
             pressing Reset mid-session would silently re-baseline the demo. */}
         {/*
-          VIEW AS DEMO — the design site's lens, 2026-09-24.
+          VIEW AS DEMO WAS HERE — the design site's lens (2026-09-24), REPLACED
+          2026-10-01 by "Go to Demo Hub" in the kebab below, the direct ask.
 
-          The question it answers is "what does a stakeholder actually get?",
-          which before this needed a second deploy to check. Clicking writes
-          `?as=demo`; `PrototypeChrome` reads it and hands this bar the demo
-          site's own control list. It is a LENS, not a setting: nothing is
-          persisted, nothing under the bar changes, and closing the tab ends it.
+          It wrote `?as=demo` and re-rendered THIS bar with the demo site's own
+          control list, answering "what does a stakeholder actually get?"
+          without a second deploy. The hub link answers the same question by
+          going to the demo site itself, which is the stronger answer: it is the
+          real build rather than a preview of one, so it cannot drift from what
+          the lens believes.
 
-          ⚠ ONLY ON THE DESIGN SITE. On the demo site the answer is already yes,
-          and in a participant session the control is one more thing a
-          participant could press.
+          ⚠ THE LENS STILL WORKS — `?as=demo` is untouched and `PrototypeChrome`
+          still reads it; only the button went, so this is URL-only now. See the
+          `demo-lens-button` row in `archivedItems.ts`.
         */}
-        {!isPublicGateway() && !isTestSession(search) && (
-          <button
-            type="button"
-            className="cre-demo-controls-btn"
-            style={{
-              ...GHOST_BTN,
-              ...(lens
-                ? { background: 'var(--color-warning-400)', color: 'var(--color-neutral-900)' }
-                : null),
-            }}
-            aria-pressed={lens}
-            title={
-              lens
-                ? 'Showing only what the demo site carries. Click to see every control again.'
-                : 'Preview this bar as the demo site renders it — the work-in-progress controls drop out.'
-            }
-            onClick={() => {
-              const next = new URLSearchParams(searchParams)
-              if (lens) next.delete('as')
-              else next.set('as', 'demo')
-              setSearchParams(next, { replace: true })
-            }}
-          >
-            {lens ? 'Viewing as demo' : 'View as demo'}
-          </button>
-        )}
         {show('actions') && (
         <div style={ACTIONS}>
           <button
@@ -1349,6 +1298,22 @@ export function DemoControlsBar({
                 label: 'Share Demo',
                 icon: <BrowserWindow size={15} aria-hidden />,
                 onSelect: copyDemoLink,
+              },
+              /* GO TO DEMO HUB — the public Netlify project's gateway, the link
+                 handed to stakeholders (Demo · Links · Research; `main` only).
+                 It replaces the View as demo lens above: the same question,
+                 answered by the real build instead of a preview of it.
+
+                 ⚠ A NEW TAB, deliberately. This bar is normally pressed mid-
+                 review with flags, a progress persona and a nav arm set up in
+                 the URL; navigating in place would throw all of it away to
+                 answer a side question. `noopener,noreferrer` is the ordinary
+                 guard for an external target. */
+              {
+                id: 'demo-hub',
+                label: 'Go to Demo Hub',
+                icon: <ArrowUpRightFromSquare size={15} aria-hidden />,
+                onSelect: () => window.open(DEMO_HUB_URL, '_blank', 'noopener,noreferrer'),
               },
             ]}
           />
