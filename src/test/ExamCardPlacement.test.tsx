@@ -6,6 +6,7 @@ import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext
 import { LearningPathsPanelProvider } from '@/components/learning/LearningPathsPanelContext'
 import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelContext'
 import { PlatformShell } from '@/components/layout/PlatformShell'
+import { writeExamDate } from '@/data/examDateStore'
 
 /**
  * WHERE THE EXAM-DATE CARD SITS — `exam-card-placement`, 2026-10-01.
@@ -42,7 +43,7 @@ function renderShell(ff?: string) {
   )
 }
 
-const examCards = () => [...document.querySelectorAll('section[aria-label="Exam Date"]')]
+const examCards = () => [...document.querySelectorAll<HTMLElement>('section[aria-label="Exam Date"]')]
 
 beforeEach(() => {
   window.localStorage.clear()
@@ -117,6 +118,52 @@ describe('exam-card-placement', () => {
     /* The column's own first card is the coursework one now — the exam card is
        no longer above it. */
     expect(within(screen.getByLabelText('Study journey')).queryByText(/Quick question/i)).toBeNull()
+  })
+
+  describe('the compact saved readout', () => {
+    /* 2026-10-01, the direct ask: an "Exam Date" eyebrow over one line reading
+       `May 26, 2026 | 15 days until your exam`, in place of the tear-off
+       calendar and the hourglass panel the journey column draws. */
+    beforeEach(() => writeExamDate('2026-05-26'))
+
+    it('is an Exam Date eyebrow over one line, with no tear-off', () => {
+      renderShell('exam-card-placement:under-course')
+      const [card] = examCards()
+      expect(within(card).getByText('Exam Date')).toBeTruthy()
+      expect(card.textContent).toMatch(/May 26, 2026/)
+      expect(card.textContent).toMatch(/until your exam/)
+      /* The tear-off's three fragments are what this replaced. Asserted absent
+         rather than just asserting the line present — a readout that drew both
+         would pass every positive check in this file. */
+      expect(within(card).queryByText('MAY')).toBeNull()
+      expect(within(card).queryByText('26')).toBeNull()
+      /* …and the full readout's heading, which the eyebrow replaces. */
+      expect(within(card).queryByText('Your exam date')).toBeNull()
+    })
+
+    it('drops the weekday from the line but keeps it in the spoken sentence', () => {
+      renderShell('exam-card-placement:under-course')
+      const [card] = examCards()
+      expect(card.textContent).toMatch(/Exam scheduled for Tuesday, May 26, 2026/)
+    })
+
+    it('keeps Edit, which is the only route to the picker and to Clear', () => {
+      /* ⚠ NOT PART OF THE ASK, AND KEPT ANYWAY. The ask named the eyebrow and
+         the line. Dropping Edit would make the date unchangeable from the one
+         card that owns it, and would strand Clear exam date behind nothing. */
+      renderShell('exam-card-placement:under-course')
+      const [card] = examCards()
+      expect(within(card).getByRole('button', { name: /Edit/ })).toBeTruthy()
+    })
+
+    it('leaves the journey column\u2019s full readout alone', () => {
+      renderShell('exam-card-placement:journey-column')
+      const [card] = examCards()
+      expect(within(card).getByText('Your exam date')).toBeTruthy()
+      expect(within(card).getByText('MAY')).toBeTruthy()
+      /* The eyebrow is the compact arm's; the full readout has its heading. */
+      expect(within(card).queryByText('Exam Date')).toBeNull()
+    })
   })
 
   it('still asks the question — the eyebrow travels with the card', () => {

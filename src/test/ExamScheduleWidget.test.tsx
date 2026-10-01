@@ -43,8 +43,22 @@ beforeEach(() => {
   window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
 })
 
+/**
+ * ⚠ EVERY RENDER PINS THE JOURNEY-COLUMN PLACEMENT — `exam-card-placement`,
+ * 2026-10-01. The flag defaults to `under-course` on this branch, and that arm
+ * draws a DIFFERENT saved readout: an "Exam Date" eyebrow over one line
+ * (`May 26, 2026 | 15 days until your exam`) instead of the tear-off calendar
+ * and the hourglass panel this suite asserts.
+ *
+ * This file is about the FULL readout and the phase machine behind it, which
+ * `journey-column` still draws. The compact arm has its own coverage in
+ * `ExamCardPlacement.test.tsx`; what is shared — the store, the picker, the
+ * question itself — is unchanged by the arm and is asserted here.
+ */
 function renderShell(ff?: string) {
-  window.history.replaceState({}, '', ff ? `/dashboard-rebrand?ff=${encodeURIComponent(ff)}` : '/')
+  const PIN = 'exam-card-placement:journey-column'
+  const all = ff ? `${PIN},${ff}` : PIN
+  window.history.replaceState({}, '', `/dashboard-rebrand?ff=${encodeURIComponent(all)}`)
   return render(
     <MemoryRouter initialEntries={[URL]}>
       <AccountProvider>

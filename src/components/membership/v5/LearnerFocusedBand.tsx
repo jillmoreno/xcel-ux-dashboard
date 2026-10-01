@@ -741,6 +741,13 @@ export function LearnerFocusedBand({
         shell={journeyCards ? widgetCardFramedStyle : widgetCardStyle}
         onOpenStep={onOpenStep}
         stateName={jurisdictionName(path.state) || undefined}
+        /* THE SIMPLER SAVED READOUT — 2026-10-01, the direct ask, and it
+           belongs to this PLACEMENT rather than to the card. Under the course
+           card the date is a fact the learner glances at on the way past; in
+           the journey column it was the card's whole subject and earned the
+           tear-off. Passed from here for the same reason `examElsewhere` is:
+           the band is what knows which slot this is. */
+        compact
       />
     </div>
   ) : null

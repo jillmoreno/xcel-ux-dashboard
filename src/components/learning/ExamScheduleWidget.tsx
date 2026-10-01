@@ -105,8 +105,26 @@ export function ExamScheduleWidget({
   onOpenStep,
   stateName = 'New York',
   today = FIXTURE_TODAY,
+  compact = false,
 }: {
   shell: CSSProperties
+  /**
+   * The SIMPLER saved readout — `exam-card-placement: under-course`,
+   * 2026-10-01, the direct ask.
+   *
+   * Replaces the tear-off calendar + hourglass panel with an eyebrow reading
+   * "Exam Date" and one line under it: `May 26, 2026 | 15 days until your
+   * exam`. Edit survives, see `ScheduledState`.
+   *
+   * ⚠ THE SAVED STATE ONLY. The opening question is untouched under both
+   * placements — it is the thing the card exists to ask, and it is already as
+   * small as it gets.
+   *
+   * A PROP, NOT A FLAG READ, matching `examElsewhere` on `StudyJourneyWidget`:
+   * the band knows where it put this card, and two components reading the same
+   * flag separately is how they come to disagree.
+   */
+  compact?: boolean
   /** Opens a sheet by id. This card only ever sends `EXAM_DETAILS_STEP_ID` —
    *  the menu it opens is what sends the real step ids back. */
   onOpenStep?: (id: string) => void
@@ -135,6 +153,16 @@ export function ExamScheduleWidget({
   const quickLinks = useFeatureFlag('journey-quick-links').enabled
   /* No stored date ⇒ the card is still asking ⇒ it wears the eyebrow. */
   const hasEyebrow = !stored
+
+  /* ⚠ DERIVED FROM THE PHASE, NOT FROM `stored` ALONE. Edit mode has a stored
+     date too, and an "Exam Date" eyebrow over the picker would label the thing
+     the learner is in the middle of replacing. Only the settled readout takes
+     it. */
+  const eyebrow = hasEyebrow
+    ? 'Quick question'
+    : compact && activePhase === 'scheduled'
+      ? 'Exam Date'
+      : null
 
   function openPicker(from: ReturnPhase) {
     setReturnPhase(from)
@@ -177,9 +205,19 @@ export function ExamScheduleWidget({
           an eyebrow still calling it a question would be describing the state
           it just left. Keyed on the STORE, so edit mode has no eyebrow either —
           a date exists there too. */}
-      {hasEyebrow && (
+      {/* ⚠ THE COMPACT SAVED STATE WEARS AN EYEBROW TOO, and a DIFFERENT one —
+          "Exam Date", 2026-10-01, the direct ask. That is not a contradiction
+          of the rule above: the eyebrow is gone from the saved state because
+          "Quick question" would describe a question the learner has already
+          answered, and this one does not claim there is a question. It is also
+          what carries the card's identity now that the compact readout has no
+          "Your exam date" heading of its own.
+
+          ⚠ THE FULL SAVED STATE IS UNCHANGED — still no eyebrow, because it
+          keeps that heading. The two arms differ here deliberately. */}
+      {eyebrow && (
         <p className="cre-eyebrow-ink" style={widgetEyebrowStyle}>
-          Quick question
+          {eyebrow}
         </p>
       )}
 
@@ -211,6 +249,7 @@ export function ExamScheduleWidget({
           examLabel="Your exam date"
           examDate={stored}
           today={today}
+          compact={compact}
           onEdit={() => openPicker('scheduled')}
         />
       )}
@@ -524,16 +563,57 @@ function ScheduledState({
   examLabel,
   examDate,
   today,
+  compact = false,
   onEdit,
 }: {
   examLabel: string
   examDate: string
   today: Date
+  /** The one-line readout — see `compact` on `ExamScheduleWidget`. */
+  compact?: boolean
   onEdit: () => void
 }) {
   const days = daysUntilIso(examDate, today) ?? 0
   const countdown =
     days < 0 ? 'Date has passed' : days === 0 ? 'Today!' : days === 1 ? '1 day' : `${days} days`
+
+  if (compact) {
+    /* ⚠ "Today!" AND "Date has passed" STAND ALONE. The full readout below
+       prints the countdown over a separate "until your exam" caption that it
+       shows whenever `days >= 0` — so at zero it reads "Today! / until your
+       exam", which is wrong and is visible in the product today. One line
+       cannot hide that the way two stacked lines do, so this composes the
+       suffix only where it is true. */
+    const countdownLine = days > 0 ? `${countdown} until your exam` : countdown
+    return (
+      <div style={compactRowStyle}>
+        <p style={compactLineStyle}>
+          {/* ⚠ NO WEEKDAY — `mediumDate`, not `longDate`. The ask spells the
+              format out ("May 26, 2026"), and the weekday is what the sr-only
+              sentence below still carries for anyone who wants it. */}
+          <span style={compactDateStyle}>{mediumDate(examDate)}</span>
+          {/* The separator is DECORATION: a screen reader announcing "vertical
+              line" between two facts is noise, and the sr-only sentence states
+              the date properly regardless. */}
+          <span style={compactSepStyle} aria-hidden>
+            |
+          </span>
+          {countdownLine}
+        </p>
+        {/* EDIT SURVIVES THE SIMPLIFICATION, deliberately. The ask named the
+            eyebrow and the line and did not mention this — but it is the only
+            route into the picker once a date exists, and the only route to
+            Clear exam date beyond it, so dropping it would make the date
+            unchangeable from the one card that owns it. It is a 12px link and
+            costs the layout nothing. */}
+        <button type="button" style={editLinkStyle} onClick={onEdit}>
+          <PenToSquare size={12} aria-hidden />
+          Edit
+        </button>
+        <p style={srOnlyDateStyle}>Exam scheduled for {longDate(examDate)}</p>
+      </div>
+    )
+  }
 
   return (
     <>
@@ -591,6 +671,19 @@ const srOnlyDateStyle: CSSProperties = {
   whiteSpace: 'nowrap',
 }
 
+/** `May 26, 2026` — the compact readout's format. `longDate` below leads with
+ *  the weekday, which is right for the spoken sentence and too long for a line
+ *  that also carries a countdown. */
+function mediumDate(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  if (!y || !m || !d) return iso
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
 function longDate(iso: string): string {
   const [y, m, d] = iso.split('-').map(Number)
   if (!y || !m || !d) return iso
@@ -600,6 +693,44 @@ function longDate(iso: string): string {
     day: 'numeric',
     year: 'numeric',
   })
+}
+
+/* ─── the compact readout (`exam-card-placement: under-course`) ───────────── */
+
+/* The line and Edit on one row, Edit pinned right — the same shape
+   `scheduledHeaderRowStyle` gives the full readout, so the two arms put their
+   Edit control in the same place and switching between them does not move it. */
+const compactRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'baseline',
+  justifyContent: 'space-between',
+  gap: 12,
+  marginTop: 6,
+}
+
+const compactLineStyle: CSSProperties = {
+  margin: 0,
+  minWidth: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 15,
+  lineHeight: '22px',
+  /* The countdown is the quieter half. The DATE is the fact the learner came
+     for; "15 days until your exam" is the consequence of it, and giving both
+     the same weight on one line leaves nothing to land on first. */
+  fontWeight: 400,
+  color: 'var(--color-text-secondary)',
+}
+
+const compactDateStyle: CSSProperties = {
+  fontWeight: 700,
+  color: 'var(--color-text-primary)',
+}
+
+const compactSepStyle: CSSProperties = {
+  /* Padding rather than margin so the rule sits in its own space without the
+     line's own word spacing doubling up either side of it. */
+  padding: '0 8px',
+  color: 'var(--color-text-tertiary)',
 }
 
 /* ─── styles ───────────────────────────────────────────────────────────────
