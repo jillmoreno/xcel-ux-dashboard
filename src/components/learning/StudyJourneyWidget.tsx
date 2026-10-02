@@ -67,7 +67,7 @@ export function StudyJourneyWidget({
   framed = false,
   splitSteps = false,
   examElsewhere = false,
-  courseworkElsewhere = false,
+  journeyElsewhere = false,
 }: {
   path: LearningPathSummary
   onOpenStop?: (courseId: string) => void
@@ -99,21 +99,31 @@ export function StudyJourneyWidget({
    */
   examElsewhere?: boolean
   /**
-   * The COURSEWORK card is being rendered elsewhere — Testing 3 combines it
-   * with the Current course card in the left column (2026-10-01).
+   * The WHOLE JOURNEY is being rendered elsewhere — Testing 3 draws the
+   * coursework AND the licensing steps inside one card in the left column
+   * (2026-10-01).
    *
-   * ⚠ IT DROPS THE CARD, NOT THE NUMBERING IT ANCHORS. `courseworkStep` is
-   * still 1 and the licensing cards still count on from it, so the column reads
-   * Step 2 / Step 3 / Step 4 with Step 1 sitting in the other column rather
-   * than missing. Renumbering them 1-3 would say the journey has three steps,
-   * which is a different claim than the one this version is making — the
-   * coursework did not stop being step 1, it moved.
+   * ⚠ IT WAS `courseworkElsewhere` AND MEANT ONLY THE FIRST CARD. Renamed when
+   * steps 2 and 3 followed the coursework into the combined block, which is the
+   * honest name for what it now does — a boolean called `courseworkElsewhere`
+   * that also suppresses the licensing cards is the kind of drift that makes
+   * the next reader check the call site to find out what it means.
+   *
+   * ⚠ WHAT SURVIVES IN THIS COLUMN is the exam card (when `examElsewhere` is
+   * false — the two are independent) and the Quick links card. That is the
+   * arrangement, not a leftover: the question about the learner's exam date and
+   * a flat list of sheet shortcuts are not steps in the route, so they are the
+   * two things that do NOT belong in a card about the route.
+   *
+   * ⚠ IT DROPS CARDS, NOT THE NUMBERING THEY CARRY. The combined block still
+   * labels itself Step 1 and the licensing cards still render as 2 and 3 over
+   * there. Renumbering anything here would say the journey changed length.
    *
    * A PROP for the same reason `examElsewhere` is one: the band knows where it
    * put the block, and two components reading the same version separately is
    * how they come to disagree.
    */
-  courseworkElsewhere?: boolean
+  journeyElsewhere?: boolean
   /**
    * Render the post-course steps as THEIR OWN WIDGETS — one card each — instead
    * of as rows in a single Get Licensed rail below the journey. Testing only
@@ -289,7 +299,7 @@ export function StudyJourneyWidget({
             because that branch draws its own card too and a page showing both
             the combined block and a "Coursework complete" stub would be the
             same subject twice in the shape this version exists to remove. */}
-        {courseworkElsewhere ? null : collapseCoursework ? (
+        {journeyElsewhere ? null : collapseCoursework ? (
           <section aria-label="Study journey" style={shell}>
             <p className="cre-eyebrow-ink" style={collapsedEyebrowStyle}>
               {`Step ${courseworkStep} · Atlas Study Journey`}
@@ -310,7 +320,7 @@ export function StudyJourneyWidget({
             />
           </section>
         )}
-        {licensingAfter.map((step) => {
+        {(journeyElsewhere ? [] : licensingAfter).map((step) => {
           /* ⚠ A RUNNING COUNT, not `stepStart + i`. On `ask-first` the exam card
              takes no number, so an index-derived number would leave a hole
              exactly where it sits. `nextNumber` only advances for cards that
@@ -586,7 +596,13 @@ const LICENSING_STEP_CTA: Record<string, string | undefined> = {
    slot instead of the map, so a change to one and not the other brings back
    the same split this component was written to close. */
 
-function LicensingStepWidget({
+/**
+ * ⚠ EXPORTED SINCE 2026-10-01 so Testing 3's `CombinedCourseCard` can draw
+ * steps 2 and 3 inside its own card, as bands between hairlines rather than as
+ * separate cards down a column. It is given a BARE `shell` there — the prop was
+ * already the component's whole surface contract, so no fork was needed.
+ */
+export function LicensingStepWidget({
   step,
   number,
   shell,

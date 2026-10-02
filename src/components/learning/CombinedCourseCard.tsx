@@ -9,6 +9,8 @@ import {
 import type { LearningPathSummary } from '@/data/learningFixtures'
 import { StudyJourneyRail } from './StudyJourneyRail'
 import { journeyStopsFor } from './studyJourneyUtil'
+import { LicensingStepWidget } from './StudyJourneyWidget'
+import { GET_LICENSED_STEPS, jurisdictionName } from '@/data/nyProducerRequirements'
 
 /**
  * THE COURSE AND ITS COURSEWORK, AS ONE CARD — Testing 3, 2026-10-01.
@@ -61,6 +63,8 @@ export function CombinedCourseCard({
   onDetails,
   onOpenStop,
   onViewAll,
+  onOpenStep,
+  hideSheetLink = false,
 }: {
   courseTitle: string
   cover?: string | null
@@ -76,6 +80,12 @@ export function CombinedCourseCard({
   onDetails?: () => void
   onOpenStop?: (id: string) => void
   onViewAll?: () => void
+  /** Opens a licensing step's sheet — the same handler the journey column
+   *  passes its own step cards. */
+  onOpenStep?: (id: string) => void
+  /** `journey-quick-links` carries the per-step sheet links in its own card, so
+   *  the steps here must not render a second copy. Forwarded unchanged. */
+  hideSheetLink?: boolean
 }) {
   const pct = Math.max(0, Math.min(100, percent))
   const showPercent = pct > 0
@@ -262,9 +272,69 @@ export function CombinedCourseCard({
             : undefined
         }
       />
+
+      {/* ── STEPS 2 AND 3 ──────────────────────────────────────────────────
+          2026-10-01, the direct ask: "add a divider after step 1 and put the
+          step 2, then another divider and step 3".
+
+          THE CARD IS NOW THE WHOLE ROUTE. It began as the course plus its
+          coursework; with the licensing steps in it, it is XCEL's path to a
+          licence end to end, in one frame. What is left in the right column is
+          deliberately NOT part of that route — the question about the learner's
+          exam date, and a flat list of sheet shortcuts.
+
+          ⚠ A BARE SHELL, which is why no fork was needed.
+          `LicensingStepWidget` already took its surface as a prop, so passing
+          an empty object makes it a BAND between hairlines rather than a card
+          with its own border and padding. Cards inside a card is the thing the
+          dividers exist to avoid.
+
+          ⚠ NUMBERED 2 AND 3 BY THE SAME RULE THE COLUMN USES, not by index:
+          the exam step is filtered out and takes no number (it asks a question
+          rather than naming a step), and the arrival card is keyed by STEP ID
+          rather than by position — `GET_LICENSED_STEPS.length - 1` against a
+          filtered array matches nothing, which is the bug
+          `JourneyStepOrder.test.tsx` already catches in the column. */}
+      {LICENSING_STEPS.map((step, i) => (
+        <div key={step.id}>
+          <div aria-hidden style={divider} />
+          <LicensingStepWidget
+            step={step}
+            number={i + 2}
+            shell={bandShell}
+            onOpenStep={onOpenStep}
+            state={path.state}
+            hideSheetLink={hideSheetLink}
+            heading={
+              step.id === GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 1].id
+                ? jurisdictionName(path.state)
+                  ? `Get Licensed in ${jurisdictionName(path.state)}`
+                  : 'Get Licensed'
+                : undefined
+            }
+          />
+        </div>
+      ))}
     </section>
   )
 }
+
+/**
+ * The licensing steps this card draws — the published route EXCEPT scheduling
+ * the exam.
+ *
+ * ⚠ THE EXAM STEP IS FILTERED BY ID, not by slicing. `StudyJourneyWidget` drops
+ * it with `slice(1)` under `journey-step-order: exam-first` and by an id check
+ * otherwise; an index here would be right under one arm and silently wrong
+ * under the other. Testing 3 renders the exam question in the right-hand column
+ * under both orders, so this list is stable — which is the point.
+ */
+const LICENSING_STEPS = GET_LICENSED_STEPS.filter((st) => st.id !== 'schedule-exam')
+
+/** No surface at all — the step renders as a BAND inside this card rather than
+ *  as a card of its own. `LicensingStepWidget` takes its shell as a prop, which
+ *  is what makes that a pass-through rather than a fork. */
+const bandShell: CSSProperties = {}
 
 /* The nested lesson block — recessed by INDENT ALONE, so it reads as the inside
    of the step above it rather than as a sixth stop in the list.

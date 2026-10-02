@@ -6,6 +6,7 @@ import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { LearningPathsPanelProvider } from '@/components/learning/LearningPathsPanelContext'
 import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelContext'
 import { PlatformShell } from '@/components/layout/PlatformShell'
+import { writeExamDate } from '@/data/examDateStore'
 import {
   DISCOVERABILITY_DASHBOARD_VERSIONS,
   DISCOVERABILITY_DASHBOARD_VERSION_TESTING_3,
@@ -322,6 +323,85 @@ describe('the card’s own eyebrow', () => {
   })
 })
 
+describe('the whole route in one card', () => {
+  /* 2026-10-01, the direct ask: "add a divider after step 1 and put the step 2,
+     then another divider and step 3 - shift the Exam date back to the right." */
+
+  it('draws steps 1, 2 and 3 inside the card, in order', () => {
+    renderShell(T3)
+    const eyebrows = [...courseCard().querySelectorAll('p')]
+      .map((p) => p.textContent?.trim() ?? '')
+      .filter((t) => /^Step \d/.test(t))
+    expect(eyebrows).toEqual(['Step 1 · Atlas Study Journey', 'Step 2', 'Step 3'])
+  })
+
+  it('separates them with the card’s own hairline, not with card borders', () => {
+    /* ⚠ THE STEPS GET A BARE SHELL, which is the whole reason this reads as one
+       card. `LicensingStepWidget` takes its surface as a prop; passing it the
+       journey column's `shell` instead would nest bordered cards inside a
+       bordered card, and the dividers would be decorating a seam that is
+       already drawn. */
+    renderShell(T3)
+    const step2 = courseCard().querySelector('section[aria-label="Pass State Exam"]') as HTMLElement
+    expect(step2, 'step 2 is not inside the combined card').toBeTruthy()
+    /* ⚠ NOT `toBeFalsy()` ON THE BACKGROUND — the widget paints its own
+       `transparent`, so an emptiness check fails for a reason that has nothing
+       to do with the shell. What matters is that it is not wearing the CARD
+       surface and has no border of its own. */
+    expect(step2.style.background).not.toContain('--color-surface-card')
+    expect(step2.style.border).toBeFalsy()
+    expect(step2.style.borderRadius).toBeFalsy()
+    /* ⚠ PADDING IS THE WIDGET'S OWN, not the shell's — it indents the step's
+       text off its left rule and survives a bare shell. The shell's padding is
+       what would make this a card; the component's is its internal rhythm. */
+    expect(step2.style.padding).toBe('4px 20px 4px 16px')
+  })
+
+  it('leaves the column holding only what is NOT the route', () => {
+    /* The exam question asks whether a date is booked; Quick links is a flat
+       list of shortcuts. Neither is a step, which is why they are the two
+       things that stay out of a card about the route. */
+    renderShell(T3)
+    const card = courseCard()
+    const exam = document.querySelector('section[aria-label="Exam Date"]')!
+    const quick = document.querySelector('section[aria-label="Quick links"]')!
+    expect(card.contains(exam)).toBe(false)
+    expect(card.contains(quick)).toBe(false)
+  })
+
+  it('gives the exam card its FULL readout again, not the compact one', () => {
+    /* ⚠ A CONSEQUENCE WORTH PINNING. `compact` is passed at the under-course
+       slot only, so moving the card back to the column restores the tear-off
+       calendar — the two arms of `exam-card-placement` mean exactly that. A
+       compact readout floating in the journey column would be the under-course
+       treatment in a place that never asked for it. */
+    /* A DATE HAS TO EXIST for there to be a readout at all — without one the
+       card is still asking the question, and both arms ask it the same way. */
+    writeExamDate('2026-05-26')
+    renderShell(T3)
+    const exam = document.querySelector('section[aria-label="Exam Date"]') as HTMLElement
+    expect(within(exam).getByText('Your exam date')).toBeTruthy()
+    expect(within(exam).getByText('MAY')).toBeTruthy()
+  })
+
+  it('ignores exam-card-placement on this version', () => {
+    /* ⚠ THE FLAG IS OVERRIDDEN HERE, and a reviewer switching it sees nothing
+       happen. That is the deliberate trade: the alternative was a flag
+       combination that drops a question into the middle of a numbered route. */
+    renderShell(`${T3}&ff=exam-card-placement:under-course`)
+    expect(courseCard().querySelector('section[aria-label="Exam Date"]')).toBeNull()
+  })
+
+  it('leaves Testing’s steps as separate cards in the column', () => {
+    renderShell(T1)
+    const card = courseCard()
+    for (const label of ['Pass State Exam', 'Get Licensed in New York']) {
+      const step = document.querySelector(`section[aria-label="${label}"]`)!
+      expect(card.contains(step), label).toBe(false)
+    }
+  })
+})
+
 describe('the quick buttons', () => {
   it('move below the combined block, and appear exactly once', () => {
     /* ⚠ COUNTED, NOT JUST LOCATED. Moving them is a suppress-here/render-there
@@ -350,16 +430,16 @@ describe('everything else is Testing’s', () => {
      that Testing 3 inherits rather than re-declares; a later change that
      teaches `testing` something new and forgets `testing-3` shows up here and
      nowhere on screen. */
-  it('keeps the journey’s post-course steps as their own cards', () => {
+  it('still renders every journey step and the Quick links card', () => {
+    /* ⚠ THIS ONLY PINS EXISTENCE, deliberately — WHERE each one goes is the
+       subject of "the whole route in one card" below. It was the only
+       assertion here for one build, and that was too weak: both steps moved
+       into the combined card and it went on passing unchanged, which is
+       exactly the silence a clone test is supposed to break. */
     renderShell(T3)
-    expect(document.querySelector('section[aria-label="Pass State Exam"]')).toBeTruthy()
-    expect(document.querySelector('section[aria-label="Get Licensed in New York"]')).toBeTruthy()
-  })
-
-  it('keeps the exam card and the Quick links card', () => {
-    renderShell(T3)
-    expect(document.querySelector('section[aria-label="Exam Date"]')).toBeTruthy()
-    expect(document.querySelector('section[aria-label="Quick links"]')).toBeTruthy()
+    for (const label of ['Pass State Exam', 'Get Licensed in New York', 'Exam Date', 'Quick links']) {
+      expect(document.querySelector(`section[aria-label="${label}"]`), label).toBeTruthy()
+    }
   })
 
   it('drops Readiness from the rail, exactly as Testing does', () => {

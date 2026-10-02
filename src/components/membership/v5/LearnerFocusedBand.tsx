@@ -738,6 +738,10 @@ export function LearnerFocusedBand({
    * ⚠ THE COLUMN IT LEFT IS TOLD, via `examElsewhere` on `StudyJourneyWidget`
    * below. Without that the card renders in BOTH places.
    */
+  /* ONE FLAG, BOTH HALVES — the same read `StudyJourneyWidget` makes. The
+     Quick links card carries the per-step sheet links, so a step drawn inside
+     the combined block must not render its own copy either. */
+  const quickLinksOn = useFeatureFlag('journey-quick-links').enabled
   const examPlacement = useFeatureFlag('exam-card-placement').variant ?? 'under-course'
   /* ⚠ AND ONLY WHERE THERE IS A COURSE CARD TO SIT UNDER. `resumeInline` draws
      nothing at all on `clpNavy` (the navy card carries its own CTA) or when the
@@ -748,7 +752,24 @@ export function LearnerFocusedBand({
      card, it deletes it. This expression must stay identical to the one
      `resumeInline` branches on. */
   const hasCourseCard = Boolean(onPage && resume && !clpNavy)
-  const examUnderCourse = examPlacement === 'under-course' && hasCourseCard
+  /* ⚠ …AND NOT WHEN THE COURSE CARD IS THE WHOLE JOURNEY — 2026-10-01, the
+     direct ask ("shift the Exam date back to the right").
+  
+     Testing 3's combined block is now Step 1, Step 2 and Step 3 in one frame.
+     The exam question is not a step in that route — it asks whether the learner
+     has booked a date — so sitting it under the block would put a question
+     inside a sequence it is not part of, and would push the quick buttons
+     another card further down. On the right it has the column to itself with
+     Quick links, which is the same distinction: the route on the left,
+     everything that is not the route on the right.
+  
+     ⚠ IT OVERRIDES THE FLAG RATHER THAN BEING ONE. `exam-card-placement` still
+     chooses for every other version; this says the combined arm has nowhere
+     sensible to put it. A reviewer who switches that flag on Testing 3 sees no
+     change, which is worth knowing — the alternative was a flag combination
+     that renders a question mid-route. */
+  const examUnderCourse =
+    examPlacement === 'under-course' && hasCourseCard && !combinedCoursework
   const examCard = examUnderCourse ? (
     <div style={{ marginTop: 20 }}>
       <ExamScheduleWidget
@@ -775,6 +796,10 @@ export function LearnerFocusedBand({
       <CombinedCourseCard
         path={path}
         onOpenStop={onOpenStop}
+        /* The same two the journey column hands its own step cards, so the
+           steps behave identically wherever they are drawn. */
+        onOpenStep={onOpenStep}
+        hideSheetLink={quickLinksOn}
         /* View All still leaves for the full Learning Path — the combined block
            absorbs the coursework SUMMARY, not the page behind it. Withheld on
            QE Focused the same way the journey column withholds it, so the two
@@ -2016,9 +2041,11 @@ export function LearnerFocusedBand({
                too — see `examCard` above for why the band owns this decision
                rather than the widget reading the flag itself. */
             examElsewhere={examUnderCourse}
-            /* The coursework card is in the left column's combined block now,
-               so this column must not draw it too — see `combinedCoursework`. */
-            courseworkElsewhere={combinedCoursework}
+            /* The coursework AND the licensing steps are in the left column's
+               combined block now, so this column draws neither — what is left
+               here is the exam question and the Quick links card. See
+               `combinedCoursework`. */
+            journeyElsewhere={combinedCoursework}
             framed={journeyCards}
             // …and the post-course steps become their own cards. Still a separate
             // prop from `framed` because they are different questions — one is
