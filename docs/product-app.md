@@ -4154,3 +4154,16 @@ Version picker after Atlas/Compass while the `dashboard-version-eric-atlas-v1`
 flag is on (default ON on this branch; Feature Flags → Navigation). It is the
 same code as the Atlas/Compass version — `isAtlasCompassNavVersion` answers
 true for both — so it is a name, not a freeze: later Atlas changes reach it too.
+
+### Atlas Home V2 (2026-10-02)
+
+Figma 161:662, behind `atlas-home-layout` (Feature Flags → Home Page; V2
+default, V1 = the earlier Atlas home). `AtlasHomeV2`
+(src/components/compass/) is rendered by `LearnerFocusedBand` in place of its
+Atlas layout: one course card — cover, title, Course Overview chip; the
+expected completion / days to review / course access figures from the same
+pace model the Study Pace card uses; a progress dial and the study pace; the
+Study Journey with Begin Course on the current stop — beside "Do you know your
+state exam date?" (Yes / No, not wired) and "Other Information for Your
+Journey" (My Courses, My Certificates, Flashcards, Exam Simulator, Exam
+Information, Applying for a License, State Requirements).

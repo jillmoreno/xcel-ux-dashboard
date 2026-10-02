@@ -145,7 +145,11 @@ function TopNavItem({
     >
       {icon}
       {label}
-      {current ? <span aria-hidden style={links ? POINTER_RIGHT : POINTER} /> : null}
+      {/* The pointer under the current button is GONE from the plain Top Nav
+          (2026-10-02, the designer's request; `POINTER` is kept for a
+          restore). The Expanding Top Nav keeps its pointer, which points AT
+          the open tray and is part of how that reads. */}
+      {current && links ? <span aria-hidden style={POINTER_RIGHT} /> : null}
     </button>
   )
   if (!links) return button
@@ -227,6 +231,8 @@ const POINTER: CSSProperties = {
   background: 'inherit',
   clipPath: "path('M0 0 H18 L10.41 7.59 A2 2 0 0 1 7.59 7.59 Z')",
 }
+// Unused while the plain Top Nav draws no pointer (2026-10-02); kept for a restore.
+void POINTER
 /* EXPANDING TOP NAV — the pointer turns to face the tray (Figma 168:894, the
    design's pointer rotated 90°): the same rounded triangle, 9 deep and 18 tall,
    set 7px off the button's right edge. */

@@ -18,6 +18,7 @@ import { unitCount } from '@/utils/unitLabel'
 import { SquareTile } from './SquareTile'
 import { TaskRow } from '@/components/learning/study-calendar/TaskRow'
 import { ScheduleExamBanner, StudyJourneyWidget } from '@/components/learning/StudyJourneyWidget'
+import { AtlasHomeV2 } from '@/components/compass/AtlasHomeV2'
 import { StatusStrip } from '@/components/learning/LearningPathDetailPanel'
 import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
 import { JumpBackInWidget } from '@/components/learning/JumpBackInWidget'
@@ -89,6 +90,9 @@ type Props = {
    * page (2026-09-23), the course player that version builds.
    */
   onResume?: () => void
+  /** The Atlas home V2's "Course Overview" chip — opens the course's Compass
+   *  Overview page. See `AtlasHomeV2`. */
+  onOverview?: () => void
   /** Opens the full Learning Path page for this path (in-shell section switch),
    *  from the clickable title. Falls back to `onViewDetails` when unset. */
   onOpenLearningPath?: (pathId: string) => void
@@ -351,6 +355,7 @@ export function LearnerFocusedBand({
   onViewAll,
   onViewDetails,
   onResume,
+  onOverview,
   onOpenLearningPath,
   bleed = false,
   statusOverride,
@@ -655,6 +660,10 @@ export function LearnerFocusedBand({
      order breaks the moment that value flips. Written that way for about a
      minute; the rule is worth the extra line. */
   const paceHiddenFlag = useFeatureFlag('study-pace-hidden').enabled
+  /* THE ATLAS HOME'S LAYOUT — `atlas-home-layout` (2026-10-02). V2 renders
+     `AtlasHomeV2` in place of this band's Atlas layout; read unconditionally
+     (rules of hooks), applied only on the Atlas home (`framedPace`). */
+  const atlasHomeV2 = useFeatureFlag('atlas-home-layout').variant === 'v2'
   /* NOT ON THE ATLAS HOME (merged 2026-10-02): its Study Pace card is part of
      the Atlas design (the brand's hover fill, the Primary 200 stroke), so the
      baseline's hiding flag does not reach it. */
@@ -1029,6 +1038,30 @@ export function LearnerFocusedBand({
      `renewalReady` IS STILL A PROP and still means what it meant. It now feeds
      the completed treatments INSIDE the band (the Review Course card, the
      hidden pace tile) rather than replacing it. */
+
+  /* THE ATLAS HOME, V2 (Figma 161:662, 2026-10-02) — the whole layout, in place
+     of this band's Atlas arrangement, when `atlas-home-layout` is V2. Fed the
+     band's own figures and handlers, so it moves with the same demo controls. */
+  if (framedPace && atlasHomeV2 && resume) {
+    return (
+      <AtlasHomeV2
+        path={path}
+        courseTitle={path.title}
+        coverUrl={resume.imageUrl ?? getCourseImage(resume.id)}
+        percent={percent}
+        today={FIXTURE_TODAY}
+        hoursRemaining={resume.hours * (1 - (resume.progress ?? 0) / 100)}
+        accessExpiresAt={resume.expiresAt}
+        examDate={examDate}
+        notStarted={(resume.progress ?? 0) <= 0}
+        onBegin={onResume}
+        onOverview={onOverview}
+        onOpenStop={onOpenStop}
+        onOpenStep={onOpenStep}
+        onOpenRequirements={onViewDetails}
+      />
+    )
+  }
 
   return (
     <section

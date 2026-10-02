@@ -119,11 +119,16 @@ export function StudyJourneyWidget({
   // hairline between them becomes a third divider between two edges. A gap
   // separates them instead.
   const syllabus = useFeatureFlag('dashboard-journey-style').variant === 'syllabus'
-  const shell: CSSProperties = framed
+  const baseShell: CSSProperties = framed
     ? cardPadding != null
       ? { ...widgetCardFramedStyle, padding: cardPadding }
       : widgetCardFramedStyle
     : widgetCardStyle
+  /* The Atlas home's cards keep 12px corners (`--radius-lg`): main took the
+     shared framed radius to 4 on 2026-09-28 for the Testing home, and that
+     reached these through the merge (2026-10-02). A copy, never a write to the
+     shared style object. */
+  const shell: CSSProperties = atlasHome ? { ...baseShell, borderRadius: 'var(--radius-lg)' } : baseShell
   const stops = journeyStopsFor(path)
   /*
    * THE LICENSING CARDS START AT 2 — 2026-09-23, the direct ask: "This whole

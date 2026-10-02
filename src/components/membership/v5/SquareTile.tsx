@@ -157,7 +157,10 @@ export function SquareTile({
               // Global makes the stroke transparent (2026-09-30); the 1px stays
               // so the card keeps its size.
               border: '1px solid var(--color-atlas-outlined-card-border, var(--color-atlas-nav-rule))',
-              borderRadius: widgetCardFramedStyle.borderRadius,
+              // 12px, its own — not the shared framed radius, which main took
+              // to 4 on 2026-09-28 for the Testing home (merged 2026-10-02).
+              // This surface is the Atlas home's alone.
+              borderRadius: 'var(--radius-lg)',
             }
           : null),
         ...(surface === 'ruled'

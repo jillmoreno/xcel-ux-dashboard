@@ -231,6 +231,7 @@ const REBRAND_FLAGS = [
   'atlas-xcel-palette',
   'atlas-right-rail-layout',
   'dashboard-version-eric-atlas-v1',
+  'atlas-home-layout',
   'prototype-bar-branch-home',
 ]
 
@@ -763,6 +764,7 @@ const FLAG_GROUP_ORDER = [
   'Courses Card',
   'Membership Card',
   'Right Rail',
+  'Home Page',
   'Right Rail Layout',
   'Not MVP',
 ]

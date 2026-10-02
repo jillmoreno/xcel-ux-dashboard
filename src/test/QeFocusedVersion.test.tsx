@@ -160,6 +160,17 @@ function personaCountdown(variant: DashboardProgressVariant = 'progress-on-track
 
 const QE_URL = '/dashboard-rebrand?version=discoverability-qe-focused'
 
+/** The Atlas home's V1 layout (`atlas-home-layout`, V2 by default since
+ *  2026-10-02) — for the tests that describe V1's banner and right rail. Seeds
+ *  the stored flags before render, on top of whatever this file seeded. */
+function pinAtlasHomeV1() {
+  const stored = JSON.parse(window.localStorage.getItem('cgp.featureFlags') ?? '{}')
+  window.localStorage.setItem(
+    'cgp.featureFlags',
+    JSON.stringify({ ...stored, 'atlas-home-layout': { enabled: true, variant: 'v1' } }),
+  )
+}
+
 function renderShell(url: string) {
   return render(
     <MemoryRouter initialEntries={[url]}>
@@ -236,6 +247,7 @@ describe('the QE Focused version is ARCHIVED but still reachable', () => {
   })
 
   it('Eric/Atlas V1 renders the Atlas/Compass pages under its own version', () => {
+    pinAtlasHomeV1()
     // The shell's own Atlas pieces: the Compass course card and the Schedule
     // State Exam banner (the header, and its Top Nav, is not in this render).
     renderShell('/dashboard-rebrand?version=eric-atlas-v1')
@@ -283,6 +295,7 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
   // cards with the requirements button below them. V2: one frame holds all
   // four steps AND the button. V2 is the default since 2026-09-30.
   it('right rail V1 keeps the requirements button outside the step cards; V2 puts it inside one frame', () => {
+    pinAtlasHomeV1()
     const v1 = renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav&ff=atlas-right-rail-layout:v1')
     const btn1 = screen.getByRole('button', { name: /State Requirements/ })
     const journey1 = screen.getByRole('region', { name: 'Study journey' })
@@ -298,6 +311,7 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
   })
 
   it('takes Schedule State Exam out of the rail into a banner, and renumbers the steps', () => {
+    pinAtlasHomeV1()
     // 2026-10-01: the banner sits between the course card and Study Pace; the
     // rail runs Step 1 (coursework), 2 (Pass State Exam), 3 (Get Licensed).
     renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav')
@@ -344,6 +358,30 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
   it('has no collapse button where there is no rail (Top Nav Home)', () => {
     renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav')
     expect(screen.queryByRole('button', { name: /Collapse sidebar|Expand sidebar/ })).toBeNull()
+  })
+
+  it('Home V2 (Figma 161:662) is the default: one course card, the exam-date card and the links card', () => {
+    renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav')
+    const card = screen.getByRole('region', { name: 'Current course' })
+    expect(within(card).getByText('Expected completion date')).toBeTruthy()
+    expect(within(card).getByText('Days to review')).toBeTruthy()
+    expect(within(card).getByRole('img', { name: /Course progress \d+% complete/ })).toBeTruthy()
+    expect(within(card).getByRole('button', { name: 'Begin Course' })).toBeTruthy()
+    expect(within(card).getByRole('region', { name: 'Pass State Exam' })).toBeTruthy()
+    expect(screen.getByRole('region', { name: 'Do you know your state exam date?' })).toBeTruthy()
+    const links = screen.getByRole('navigation', { name: 'Other information for your journey' })
+    for (const name of ['My Courses', 'My Certificates', 'Flashcards', 'Exam Simulator', 'Exam Information', 'Applying for a License', 'State Requirements']) {
+      expect(within(links).getByRole('button', { name })).toBeTruthy()
+    }
+    // V1's pieces are gone.
+    expect(screen.queryByRole('region', { name: 'Do you have your State Exam scheduled?' })).toBeNull()
+  })
+
+  it('Home V1 is still one flag away', () => {
+    pinAtlasHomeV1()
+    renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav')
+    expect(screen.getByRole('region', { name: 'Do you have your State Exam scheduled?' })).toBeTruthy()
+    expect(screen.queryByRole('region', { name: 'Do you know your state exam date?' })).toBeNull()
   })
 
   it('sits right after Testing in the picker', () => {

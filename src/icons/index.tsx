@@ -53,6 +53,16 @@ import CircleLocationArrowRegularSvg from './circle-location-arrow-regular.svg?r
 import BookOpenRegularSvg from './book-open-regular.svg?react'
 // The Atlas left rail's collapse button (Figma 174:1562), fetched 2026-10-01 at 7.3.1.
 import SidebarRegularSvg from './sidebar-regular.svg?react'
+// The Atlas Home V2 (Figma 161:662), fetched 2026-10-02 at 7.3.1.
+import BookRegularSvg from './book-regular.svg?react'
+import FileCertificateRegularSvg from './file-certificate-regular.svg?react'
+import NotebookRegularSvg from './notebook-regular.svg?react'
+import BallotCheckRegularSvg from './ballot-check-regular.svg?react'
+import CircleInfoRegularSvg from './circle-info-regular.svg?react'
+import PenFieldRegularSvg from './pen-field-regular.svg?react'
+import ClipboardListCheckRegularSvg from './clipboard-list-check-regular.svg?react'
+import AngleRightRegularSvg from './angle-right-regular.svg?react'
+import GaugeThinSvg from './gauge-thin.svg?react'
 // The REAL Font Awesome Light `circle-user`, fetched 2026-10-01 at 7.3.1, for
 // the Atlas header. `circle-user.svg` (CircleUser) is a hand-drawn stand-in
 // from the original port — no FA licence header, simplified paths — and still
@@ -256,6 +266,15 @@ export const HouseRegular = makeIcon(HouseRegularSvg) // FA: house (regular)
 export const CircleLocationArrowRegular = makeIcon(CircleLocationArrowRegularSvg) // FA: circle-location-arrow (regular)
 export const BookOpenRegular = makeIcon(BookOpenRegularSvg) // FA: book-open (regular)
 export const SidebarRegular = makeIcon(SidebarRegularSvg) // FA: sidebar (regular)
+export const BookRegular = makeIcon(BookRegularSvg) // FA: book (regular)
+export const FileCertificateRegular = makeIcon(FileCertificateRegularSvg) // FA: file-certificate (regular)
+export const NotebookRegular = makeIcon(NotebookRegularSvg) // FA: notebook (regular)
+export const BallotCheckRegular = makeIcon(BallotCheckRegularSvg) // FA: ballot-check (regular)
+export const CircleInfoRegular = makeIcon(CircleInfoRegularSvg) // FA: circle-info (regular)
+export const PenFieldRegular = makeIcon(PenFieldRegularSvg) // FA: pen-field (regular)
+export const ClipboardListCheckRegular = makeIcon(ClipboardListCheckRegularSvg) // FA: clipboard-list-check (regular)
+export const AngleRightRegular = makeIcon(AngleRightRegularSvg) // FA: angle-right (regular)
+export const GaugeThin = makeIcon(GaugeThinSvg) // FA: gauge (thin)
 export const CircleUserLight = makeIcon(CircleUserLightSvg) // FA: circle-user (light, genuine)
 export const SlashForwardSolid = makeIcon(SlashForwardSolidSvg) // FA: slash-forward (solid)
 export const ArrowRotateLeft = makeIcon(ArrowRotateLeftSvg) // FA: arrow-rotate-left

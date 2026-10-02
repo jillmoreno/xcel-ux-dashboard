@@ -1980,6 +1980,24 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
   },
   /* ── feat/atlas-compass-global-nav (merged 2026-10-02) ── */
   {
+    // The Atlas home's LAYOUT (2026-10-02, the designer's request): V2 is
+    // Figma 161:662 — one course card holding the figures, progress dial,
+    // pace and the journey, beside an exam-date card and a links card. V1 is
+    // the earlier Atlas home, kept so it can be called back up.
+    key: 'atlas-home-layout',
+    group: 'Home Page',
+    label: 'Atlas home layout',
+    description:
+      'Which layout the Atlas/Compass Home renders. V1: the course card, the Schedule State Exam banner and the Study Pace card in the left column, the Study Journey rail on the right. V2 (Figma 161:662): one course card with the completion / review / access figures, a progress dial and the study pace beside the Study Journey, with "Do you know your state exam date?" and "Other Information for Your Journey" cards on the right. Variant-only. Atlas/Compass version only.',
+    defaultEnabled: true,
+    defaultVariant: 'v2',
+    variants: [
+      { value: 'v1', label: 'V1 · Course card, banner and rail', description: 'The Atlas home before 2026-10-02.' },
+      { value: 'v2', label: 'V2 · One course card + side cards', description: 'Figma 161:662.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     // The prototype bar's house icon on a BRANCH build. `deployContext.ts`
     // drops it there so a stakeholder arriving through a public Refinement row
     // is not one click from the gateway; this flag puts it back for the

@@ -1380,6 +1380,21 @@ export function MembershipOverview({
       // Atlas/Compass only: Resume → the Compass Course page. Undefined
       // elsewhere, so every other version keeps the in-shell launcher.
       onResume={resumeToCompass}
+      // Atlas Home V2's "Course Overview" chip — the course's Compass Overview.
+      onOverview={
+        atlasCourseCard
+          ? () =>
+              setShellParams(
+                (prev) => {
+                  const next = new URLSearchParams(prev)
+                  next.set('section', 'course')
+                  next.set('coursePage', 'overview')
+                  return next
+                },
+                { replace: true },
+              )
+          : undefined
+      }
       /*
        * NO `onOpenLearningPath` ON QE FOCUSED — removed 2026-09-16 at
        * Jillienne's request: **XCEL has no learning-path concept.** The band
