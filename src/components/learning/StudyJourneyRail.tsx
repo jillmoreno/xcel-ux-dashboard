@@ -143,11 +143,15 @@ export function StudyJourneyRail({
    * for, which are done or not — but the lesson stop is 26 of 42, and a fully
    * dashed segment under it says no ground covered when most of it is.
    *
-   * ⚠ IT DOES NOT ADD A THIRD COLOUR TO A RAIL THAT SAYS EVERYTHING IN WORDS.
-   * The filled part uses the SAME treatment a completed segment gets; what
-   * changes is how much of the segment is filled. So the rail still reads
-   * correctly without colour perception (2.1.4.1) — the row's own text carries
-   * the count, and this is reinforcement.
+   * ⚠ THE FILLED LENGTH IS BLUE (`--color-primary-700`, the node's own fill)
+   * as of 2026-10-01 — see `syllabusSpineDoneStyle`. Colour is REINFORCEMENT:
+   * the solid-vs-dashed texture still carries the whole distinction and the
+   * row's text still carries the count, so the rail reads correctly without
+   * colour perception (2.1.4.1).
+   *
+   * ⚠ IT ALSO BLUES A COMPLETED STOP'S WHOLE SEGMENT, not only the part-filled
+   * one — otherwise the rail would turn blue mid-step and back to grey on
+   * completion.
    *
    * ⚠ OPT-IN, so no other version's rail changes shape. The data it needs
    * (`stop.progress`) has always been there.
@@ -534,7 +538,7 @@ export function StudyJourneyRail({
                     if (pct !== null) {
                       return (
                         <span style={syllabusSpineSplitStyle}>
-                          <span style={{ flex: pct, width: 2, background: 'var(--color-border-subtle)' }} />
+                          <span style={{ ...syllabusSpineDoneStyle, flex: pct }} />
                           <span
                             style={{
                               flex: 100 - pct,
@@ -550,7 +554,15 @@ export function StudyJourneyRail({
                         style={
                           syllabus
                             ? stop.status === 'completed'
-                              ? syllabusSpineStyle
+                              ? /* ⚠ A FINISHED STOP'S WHOLE SEGMENT GOES BLUE TOO
+                                   under `progressSpine`, not just the part-filled
+                                   one. Ground covered is ground covered; leaving
+                                   this grey would mean the rail turned blue while
+                                   the learner was mid-step and back to grey the
+                                   moment they finished it. */
+                                progressSpine
+                                ? syllabusSpineDoneStyle
+                                : syllabusSpineStyle
                               : syllabusSpineDashedStyle
                             : spineStyle
                         }
@@ -1274,6 +1286,31 @@ const syllabusSpineStyle: CSSProperties = { ...spineStyle, minHeight: 14 }
 /** The same spine, dashed — every segment except one under a completed step.
  *  `width: 0` with a left border, because a 2px dashed BACKGROUND is not a
  *  thing CSS can draw; the border is what produces the dashes. */
+/**
+ * GROUND COVERED — the solid blue length, `progressSpine` only (2026-10-01, the
+ * direct ask: "the gray line we just adjusted in step 1 needs to be solid
+ * blue").
+ *
+ * ⚠ `--color-primary-700` BECAUSE THAT IS THE NODE'S OWN BLUE — both
+ * `syllabusDotDoneStyle` and `syllabusDotCurrentStyle` fill at 700. The line
+ * emanates from the node, so matching it is what makes the two read as one
+ * mark rather than as a dot with a differently-coloured tail. The progress
+ * bar's `--color-primary-500` was the other candidate and is a shade too light
+ * at 2px.
+ *
+ * ⚠ COLOUR IS REINFORCEMENT HERE, NOT THE SIGNAL. The solid-vs-dashed texture
+ * still carries the whole distinction, and the row's own text carries the
+ * count — so the rail keeps reading correctly without colour perception
+ * (2.1.4.1). An earlier note on this file said both halves must stay one
+ * colour; that was written when the only difference available was texture, and
+ * the rule it was protecting is satisfied either way.
+ */
+const syllabusSpineDoneStyle: CSSProperties = {
+  ...spineStyle,
+  minHeight: 14,
+  background: 'var(--color-primary-700)',
+}
+
 /** The container for a PART-FILLED segment — the same box `syllabusSpineStyle`
  *  occupies, turned into a column so the solid and dashed halves can share it
  *  by flex ratio. See the call site for why ratios rather than percentages. */

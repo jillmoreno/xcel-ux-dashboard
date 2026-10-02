@@ -320,8 +320,27 @@ const eyebrow: CSSProperties = {
 /* The card's own label, at the padding edge so it lines up with the rail's
    "Step 1 · Atlas Study Journey" below. 12 under it rather than the 6 it
    carried inside the text column: there it sat tight above the course name it
-   introduced, here it is introducing the whole block. */
-const leadEyebrow: CSSProperties = { ...eyebrow, margin: '0 0 12px' }
+   introduced, here it is introducing the whole block.
+
+   ⚠ AND IT NOW WEARS THE RAIL'S TYPE — 2026-10-01, the direct ask ("make the
+   eyebrow fonts match"). It was 11px/0.08em with no stated weight; the rail's
+   is 10px/0.18em at 600. Two eyebrows in one card, aligned to the same edge but
+   set differently, read as two components that happen to be adjacent. The
+   rail's is the one that was matched TO, since it is the shared treatment
+   (`cre-eyebrow-ink`'s partner across the journey cards) and this card is the
+   fork.
+
+   ⚠ DECLARED HERE, NOT BY EDITING `eyebrow`. That object is spread from
+   `CourseEntryCard`'s styles, which every other version renders — restyling it
+   would change the eyebrow on QE Focused, Testing and Learner Focused to match
+   a decision made about Testing 3's combined card. */
+const leadEyebrow: CSSProperties = {
+  ...eyebrow,
+  margin: '0 0 12px',
+  fontSize: 10,
+  fontWeight: 600,
+  letterSpacing: '0.18em',
+}
 
 const title: CSSProperties = {
   margin: 0,

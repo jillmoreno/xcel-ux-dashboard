@@ -222,15 +222,40 @@ describe('the coursework stop says how far in the learner is', () => {
     expect(Math.round((f / (f + r)) * 100)).toBe(62)
   })
 
-  it('says the same colour on both halves — the difference is the texture', () => {
-    /* The rail says everything in words and never in colour alone (2.1.4.1). A
-       filled half in a new accent hue would make this the one row that does. */
+  it('fills in the NODE’s blue, and leaves the rest the neutral dash', () => {
+    /* 2026-10-01, the direct ask ("the gray line ... needs to be solid blue").
+       ⚠ `--color-primary-700` SPECIFICALLY, because that is what both
+       `syllabusDotDoneStyle` and `syllabusDotCurrentStyle` fill the node with —
+       the line emanates from the node, and a tail in a different blue reads as
+       a second mark rather than as the node's own.
+
+       ⚠ THIS INVERTS AN ASSERTION FROM THE BUILD BEFORE, which pinned both
+       halves to ONE colour on the grounds that a rail saying everything in
+       words must not grow a status hue. The rule it protected still holds: the
+       solid-vs-dashed TEXTURE carries the distinction and the row's text
+       carries the count, so colour here is reinforcement and the rail reads
+       correctly without it (2.1.4.1). */
     renderShell(T3)
     const li = within(courseCard()).getByText(/Pre-Licensing Lessons/).closest('li')!
     const spine = li.querySelector('span[aria-hidden] > span:nth-child(2)') as HTMLElement
     const [filled, rest] = [...spine.children] as HTMLElement[]
-    expect(filled.style.background).toContain('--color-border-subtle')
+    expect(filled.style.background).toContain('--color-primary-700')
     expect(rest.style.borderLeft).toContain('--color-border-subtle')
+  })
+
+  it('leaves Testing’s connector grey — the blue is opt-in', () => {
+    /* `progressSpine` is a prop on a SHARED rail. A rail that turned blue for
+       everyone would be a product-wide restyle made on one version's ask. */
+    renderShell(T1)
+    const li = screen.getByText(/Pre-Licensing Lessons/).closest('li')!
+    /* ⚠ THE SPINE, NOT THE WHOLE ROW. The NODE on this row is filled
+       `--color-primary-700` under every version — it is the "you are here" dot
+       — so a check across the `li` matches the dot and fails for the wrong
+       reason. It did, first time. */
+    const spine = li.querySelector('span[aria-hidden] > span:nth-child(2)') as HTMLElement
+    expect(spine).toBeTruthy()
+    expect(spine.outerHTML).not.toContain('--color-primary-700')
+    expect(spine.children).toHaveLength(0)
   })
 
   it('leaves Testing’s stop label and connector alone', () => {
@@ -243,6 +268,32 @@ describe('the coursework stop says how far in the learner is', () => {
 })
 
 describe('the card’s own eyebrow', () => {
+  it('is set exactly like the rail’s eyebrow below it', () => {
+    /* 2026-10-01, the direct ask ("make the eyebrow fonts match"). Two eyebrows
+       in one card, aligned to the same edge but set differently, read as two
+       components that happen to be adjacent.
+
+       ⚠ ASSERTED ON THE INLINE STYLE, not on computed values — jsdom resolves
+       no cascade, and these are inline style objects either way. */
+    renderShell(T3)
+    const card = courseCard()
+    const lead = within(card).getByText('Current course') as HTMLElement
+    const step = within(card).getByText(/Step 1 · Atlas Study Journey/) as HTMLElement
+    expect(lead.style.fontSize).toBe(step.style.fontSize)
+    expect(lead.style.fontWeight).toBe(step.style.fontWeight)
+    expect(lead.style.letterSpacing).toBe(step.style.letterSpacing)
+  })
+
+  it('leaves CourseEntryCard’s eyebrow alone', () => {
+    /* ⚠ THE STYLE IS SPREAD FROM `CourseEntryCard`'s, which every other version
+       renders. Restyling that object rather than this one would push a decision
+       made about Testing 3's combined card onto QE Focused, Testing and Learner
+       Focused. */
+    renderShell(T1)
+    const lead = within(courseCard()).getByText('Current course') as HTMLElement
+    expect(lead.style.fontSize).toBe('11px')
+  })
+
   it('leads the card, above the cover image', () => {
     /* 2026-10-01, the direct ask. It sat inside the text column, right of the
        cover, which put it ~120px in while "Step 1 · Atlas Study Journey"
