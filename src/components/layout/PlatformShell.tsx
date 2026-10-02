@@ -72,10 +72,16 @@ import {
   type PlatformNavVariant,
   type PlatformSection,
 } from './PlatformSideNav'
-import { showsRail, useNavExploration, useNavPlacement } from './navPlacement'
+import {
+  showsRail,
+  useNavExploration,
+  useNavPlacement,
+  useSectionBreadcrumb,
+} from './navPlacement'
 import { CompassLearningPage } from '@/components/learning/CompassLearningPage'
 import { CompassSessionPage } from '@/components/learning/CompassSessionPage'
 import { HomePageHeader } from './HomePageHeader'
+import { SectionPageHeader } from './SectionPageHeader'
 import { useCompassCourseFigures } from '@/components/learning/compassCourseFigures'
 
 /**
@@ -334,6 +340,11 @@ function PlatformShellBody() {
      untouched and does not quietly grow a header. */
   const navExploration = useNavExploration()
   const homeHeader = navExploration && active === 'dashboard'
+  /* COURSES AND CERTIFICATES GET THE SAME HEADER, with a crumb where the
+     greeting is — 2026-10-02, the direct ask. `useSectionBreadcrumb` owns the
+     whole condition so this, `SectionShell`'s suppression of the title it
+     replaces, and each page's restacked controls cannot drift apart. */
+  const sectionHeader = useSectionBreadcrumb(active)
   const compassFigures = useCompassCourseFigures()
   const railActive: PlatformSection = launcherOpen ? 'profile' : active
   const launcherBackLabel = SECTION_TITLES[active]
@@ -897,6 +908,16 @@ function PlatformShellBody() {
         }}
       >
         {homeHeader && !launcher.courseId ? <HomePageHeader /> : null}
+        {/* Same slot as Home's header and for the same reason: it sits ABOVE
+            `SectionPanel` so the section keeps its own 40px gutter without the
+            header being nested inside the padded `<section>`. `SectionShell`
+            drops its top gutter in exchange — see `headerAbove` there. */}
+        {sectionHeader && !launcher.courseId ? (
+          <SectionPageHeader
+            title={SECTION_TITLES[active]}
+            onBack={() => handleSelect('dashboard')}
+          />
+        ) : null}
         {launcher.courseId ? (
           <CourseLauncherView
             courseId={launcher.courseId}
@@ -1501,13 +1522,20 @@ function SectionShell({
   children: ReactNode
 }) {
   const [shellParams] = useSearchParams()
+  /* ⚠ COURSES AND CERTIFICATES NO LONGER TITLE THEMSELVES FROM HERE.
+     `SectionPageHeader` draws their title (at Home's size) above this shell, so
+     both the hero and the `<h1>` below have to stand down — two titles is the
+     failure this suppresses, and it would look like a styling bug rather than a
+     missing branch. */
+  const breadcrumbHeader = useSectionBreadcrumb(active)
   /* ⚠ A PAGE HEADER ABOVE ME MEANS I ADD NO TOP GUTTER. The exploration gives
      Home a greeting + title (`HomePageHeader`), which already carries the 24px off the
      top; leaving this section's own 24 in stacked the two and left a hole
      between the title and the first card. Read here rather than threaded as a
      prop — the condition is the same one the shell renders the header on, and
      two places deciding it separately is how they come to disagree. */
-  const headerAbove = useNavExploration() && active === 'dashboard'
+  const headerAbove =
+    (useNavExploration() && active === 'dashboard') || breadcrumbHeader
   // Partner Offers for non-members gets its own marketing hero + locked cards
   // (Figma 63:16150) — NOT the generic LockedBenefitPage. Free Content is
   // OPEN TO ALL: non-members see the same page as members (free items keep their
@@ -1555,7 +1583,9 @@ function SectionShell({
   // Declared here rather than beside `libraryHero` above because `heroFor` is
   // brand-aware now and `brand` is not in scope until this line.
   const hero =
-    benefitUpsell || partnerNonMember || libraryHero ? null : heroFor(active, brand)
+    benefitUpsell || partnerNonMember || libraryHero || breadcrumbHeader
+      ? null
+      : heroFor(active, brand)
   const SEARCH_MIN_ITEMS = 12
   const heroSearchHidden =
     active === 'support' ||
@@ -1623,7 +1653,7 @@ function SectionShell({
               (active === 'm-learning-library' && libraryHeroCompact))
           }
         />
-      ) : learningPathHomeActive || active === 'courses' ? null : active ===
+      ) : learningPathHomeActive || active === 'courses' || breadcrumbHeader ? null : active ===
         'dashboard' ? (
         // Dashboard hides its page title visually — the content shifts up to the
         // top gutter — while keeping an `<h1>` in the document for a11y.

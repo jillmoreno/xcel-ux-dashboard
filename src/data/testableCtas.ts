@@ -109,6 +109,20 @@ export const TESTABLE_CTAS: TestableCta[] = [
     region: 'Left nav',
     asks: 'Is this the escape hatch they reach for when stuck?',
   },
+  /* ⚠ THE COMMENT SITS OUTSIDE THE BRACE, and must — see the note above
+     `nav.compass` for why (`scripts/session-sheet.mjs` reads this file by
+     regex).
+
+     Top nav only, and only on Courses + Certificates: it is the crumb that
+     replaces Home's greeting on the two screens the Home tiles lead to. Under
+     `nav-placement: left` it is not on the page at all, because the rail's own
+     Home row is already there. */
+  {
+    id: 'nav.back-home',
+    label: 'Back to Home',
+    region: 'Top nav',
+    asks: 'Do they look for the header\u2019s Home, or for the crumb above the title?',
+  },
 
   /* ── Header ────────────────────────────────────────────────────────────── */
   /*

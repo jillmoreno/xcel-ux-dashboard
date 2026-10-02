@@ -6,6 +6,7 @@ import { CourseDetailsPanel } from '@/components/courses/CourseDetailsPanel'
 import { MyCoursesTable } from '@/components/courses/MyCoursesTable'
 import { FilterAccordion } from '@/components/catalog/FilterAccordion'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { useSectionBreadcrumb } from '@/components/layout/navPlacement'
 import { Checkbox } from '@/components/ui/Checkbox'
 import { EmptyState } from '@/components/ui/EmptyState'
 import { PillTabs, type PillTabItem } from '@/components/ui/PillTabs'
@@ -72,6 +73,16 @@ export function MyCoursesPage({
   // section — the standalone /my-learning/courses page is untouched.
   const hideFiltersFlag = useFeatureFlag('courses-hide-filters').enabled
   const hideFilters = embedded && hideFiltersFlag
+  /* THE SHELL DREW MY TITLE — `SectionPageHeader`, under the top nav
+     (2026-10-02). So this header drops its `<h1>` and the search + view toggle
+     restack underneath it rather than sitting opposite a title that is no
+     longer here.
+
+     ⚠ `embedded` IS LOAD-BEARING. The standalone `/my-learning/courses` route
+     is outside the shell, so nothing draws a title for it — reading the hook
+     alone would leave that page headless. Read unconditionally (rules of
+     hooks) and ANDed after. */
+  const breadcrumbHeader = useSectionBreadcrumb('courses') && embedded
   const status = (params.get('status') ?? 'current') as StatusFilter
   const collection: Collection = params.get('collection') === 'archived' ? 'archived' : 'active'
   const inArchive = collection === 'archived'
@@ -185,6 +196,8 @@ export function MyCoursesPage({
     <div style={{ padding: embedded ? '0 0 64px' : '24px 64px 64px', width: '100%' }}>
       <PageHeader
         title="My Courses"
+        hideTitle={breadcrumbHeader}
+        stack={breadcrumbHeader}
         right={
           // Search + view toggle share the header's right side (toggle sits to
           // the right of the search). In the rebrand shell the section hero

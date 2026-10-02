@@ -136,3 +136,37 @@ export function showsHelpControl(p: NavPlacement): boolean {
 export function showsSectionTabs(p: NavPlacement): boolean {
   return p === 'hybrid-tabs'
 }
+
+/**
+ * WHICH SECTIONS SWAP THE SHELL'S TITLE FOR HOME'S HEADER — Courses and
+ * Certificates, 2026-10-02, the direct ask.
+ *
+ * ⚠ THESE TWO BECAUSE THEY ARE THE TILES' DESTINATIONS. Under `top` the Home
+ * tiles are the only way into them, so they are the two screens a learner
+ * arrives at having just left Home — which is what makes "Back to Home" the
+ * right crumb rather than a generic one. Flashcards also navigates (to Compass
+ * Learning) and deliberately does NOT get this: it was not asked for, and
+ * Compass is reachable from the header's own nav row, so it is not a screen
+ * you can only have come from Home.
+ */
+export const BREADCRUMB_SECTIONS: readonly string[] = ['courses', 'certificates']
+
+/**
+ * Does `active` draw the breadcrumb header — `< Back to Home` where Home's
+ * greeting sits, and Home's own title under it?
+ *
+ * ⚠ `top` ONLY, and `=== 'top'` is right here where it is wrong elsewhere.
+ * This is not "no rail" (which would take `hybrid-tabs` too) — it is the arm
+ * whose Home TILES are how you got here. Under `left` the rail already carries
+ * a Home row, so a crumb would be a second way back to a place you can already
+ * see; that was the choice, 2026-10-02.
+ *
+ * ⚠ ONE HOOK, THREE CALL SITES. `PlatformShell` renders the header,
+ * `SectionShell` drops the title it replaces, and each page restacks its own
+ * controls under it. Three separate `placement === 'top' && active === …`
+ * checks is how those three come to disagree — the Home-greeting header has a
+ * note recording exactly that risk.
+ */
+export function useSectionBreadcrumb(active: string): boolean {
+  return useNavPlacement() === 'top' && BREADCRUMB_SECTIONS.includes(active)
+}
