@@ -1779,18 +1779,27 @@ const gaugeKnobStyle: CSSProperties = {
     '0 0 0 3px var(--color-surface-card), 0 0 0 6px color-mix(in srgb, var(--color-success-500) 45%, transparent), 0 0 10px 3px color-mix(in srgb, var(--color-success-500) 35%, transparent)',
 }
 
+/* ⚠ THE CARD'S PERCENTAGE NOW LIVES HERE — 2026-10-02, the direct ask. It
+   replaces the figure the header used to carry, so it takes that figure's
+   voice: the heading face at a size that reads as a statement rather than as a
+   tick label. The 0 and 100 beside it stay 9px and regular; they are the ends
+   of the scale, this is the reading.
+   
+   ⚠ `--font-heading`, WHICH THE SERIF VARIANT RE-POINTS. On
+   `dashboard-heading-font: serif` this is DM Serif Display, which is the whole
+   reason the ask pairs "serif" with "larger" — and that face ships ONE weight,
+   so asking for 700 here would get a synthesised bold. 400 is the face's own. */
 const gaugeFigureStyle: CSSProperties = {
   position: 'absolute',
   right: '100%',
-  /* 10 clears the node's 14px circle, whose edge is 6px from the line. */
-  marginRight: 10,
+  marginRight: 12,
   transform: 'translateY(-50%)',
-  fontFamily: 'var(--font-body)',
-  fontSize: 9,
-  fontWeight: 700,
-  letterSpacing: '0.04em',
+  fontFamily: 'var(--font-heading)',
+  fontSize: 22,
+  fontWeight: 400,
+  lineHeight: 1,
   whiteSpace: 'nowrap',
-  color: 'var(--color-primary-700)',
+  color: 'var(--color-text-primary)',
 }
 
 /* ⚠ LEFT OF THE LINE, NOT ON IT — 2026-10-02, the direct ask. Centred on the

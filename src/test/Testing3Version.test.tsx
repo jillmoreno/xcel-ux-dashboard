@@ -789,9 +789,13 @@ describe('the percentage is the journey’s, not the course’s', () => {
      survey and certificate, adjust this 62% to better reflect where the user is
      in their journey." */
 
+  /* ⚠ THE FIGURE LIVES ON THE RAIL NOW — 2026-10-02, the direct ask: it
+     "will replace the percentage in the header section". So it is found as the
+     gauge's marker label, not as a 30px span in the header; the header has no
+     percentage at all any more, which the test below asserts directly. */
   const figure = () =>
-    [...courseCard().querySelectorAll('span')].find(
-      (el) => /^\d+$/.test(el.textContent ?? '') && el.style.fontSize === '30px',
+    [...courseCard().querySelectorAll('ol > span span')].find((el) =>
+      /^\d+%$/.test(el.textContent?.trim() ?? ''),
     )
 
   it('counts every stop’s work, not just the lessons', () => {
@@ -801,26 +805,39 @@ describe('the percentage is the journey’s, not the course’s', () => {
        alone gives 55, equal-weight stops give 10, and the lesson figure this
        replaced gives 62. Only the stated model gives 37. */
     renderShell(T3)
-    expect(figure()?.textContent).toBe('37')
+    expect(figure()?.textContent).toBe('37%')
+    /* …and the header states it nowhere. */
+    const header = courseCard().firstElementChild as HTMLElement
+    expect(header.textContent).not.toMatch(/\d+\s*%/)
   })
 
-  it('leaves the lesson figure on Testing’s card', () => {
+  it('leaves Testing’s card stating its own lesson figure in the header', () => {
     /* ⚠ DERIVED IN THE CARD, NOT PUSHED THROUGH `percent`. That prop still
        carries 62 — it is what the stats row prints as "26 of 42 lessons" and
        what every other version's card shows. Moving the derivation to the band
        would change the number on QE Focused and Testing too, where there is no
        journey under it to justify it. */
     renderShell(T1)
-    expect(figure()?.textContent).toBe('62')
+    const big = [...courseCard().querySelectorAll('span')].find(
+      (el) => /^\d+$/.test(el.textContent ?? '') && (el as HTMLElement).style.fontSize === '30px',
+    )
+    expect(big?.textContent).toBe('62')
   })
 
-  it('still prints the lesson count beside it, unchanged', () => {
-    /* ⚠ THE TWO NUMBERS NOW IMPLY DIFFERENT RATIOS on one row — 37% beside "26
-       of 42 lessons", which is 62%. That is the deliberate consequence of the
-       ask and the thing to look at: the figure measures the journey, the stat
-       measures the course, and nothing on the card says so yet. */
+  it('no longer prints the lesson count in the header', () => {
+    /* ⚠ THIS RESOLVES THE CLASH IT USED TO PIN. The header carried "26 of 42
+       lessons · Completed" beside a 37% figure — two numbers implying different
+       ratios on one row, which this test used to record as a known cost. Both
+       are gone from the header on 2026-10-02: the percentage to the rail, the
+       count to the Pre-Licensing stop directly below, where it is built from
+       the same two figures. One statement each, in one place each. */
     renderShell(T3)
-    expect(within(courseCard()).getByText('26 of 42 lessons')).toBeTruthy()
+    const header = courseCard().firstElementChild as HTMLElement
+    expect(header.textContent).not.toContain('26 of 42 lessons')
+    /* …and it is still on the stop. */
+    expect(
+      within(courseCard()).getByText('Pre-Licensing Lessons').parentElement?.textContent,
+    ).toMatch(/26 of 42 Completed/)
   })
 })
 
@@ -834,17 +851,26 @@ describe('the Are you ready stub', () => {
        in, without inventing a readout nobody has designed — so a later change
        that fills it with placeholder bars should fail here and be a decision. */
     renderShell(T3)
-    const stub = document.querySelector('section[aria-label="Are you ready"]') as HTMLElement
+    const stub = document.querySelector(
+      'section[aria-label="Your Study Pace / Exam Readiness"]',
+    ) as HTMLElement
     expect(stub).toBeTruthy()
-    expect(within(stub).getByText('Are you ready')).toBeTruthy()
-    /* Nothing else readable in it. */
-    expect(stub.textContent?.trim()).toBe('Are you ready')
+    expect(within(stub).getByText('Your Study Pace / Exam Readiness')).toBeTruthy()
+    /* ⚠ IT HAS A LO-FI DOUBLE RING NOW (2026-10-02) but still states NOTHING —
+       no text beyond the eyebrow, no control, and the arcs carry fixed
+       fractions in the lo-fi greys so no figure can be read off them. A
+       placeholder that looked live would be the product claiming a readiness
+       model it does not have. */
+    expect(stub.textContent?.trim()).toBe('Your Study Pace / Exam Readiness')
     expect(stub.querySelector('button, a, input')).toBeNull()
+    expect(stub.querySelectorAll('svg circle')).toHaveLength(4)
   })
 
   it('does not appear on Testing', () => {
     renderShell(T1)
-    expect(document.querySelector('section[aria-label="Are you ready"]')).toBeNull()
+    expect(
+      document.querySelector('section[aria-label="Your Study Pace / Exam Readiness"]'),
+    ).toBeNull()
   })
 })
 
@@ -1278,7 +1304,11 @@ describe('the quick buttons', () => {
        tiles. Order is the assertion: the ask placed it directly below the exam
        card, and a stub that drifted to the foot of the rail would still pass a
        presence check. */
-    expect(siblings).toEqual(['Exam Date', 'Are you ready', 'Learning areas'])
+    expect(siblings).toEqual([
+      'Exam Date',
+      'Your Study Pace / Exam Readiness',
+      'Learning areas',
+    ])
   })
 
   it('appear exactly once', () => {

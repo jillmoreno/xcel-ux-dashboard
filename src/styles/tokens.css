@@ -488,7 +488,17 @@
 
      Repointing it at a real licensed face — or at a Google family added to the
      existing `<link>` in index.html — is this one declaration. */
-  --font-heading-serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Times New Roman', serif;
+  /* DM SERIF DISPLAY as of 2026-10-02, the direct ask. It was a system stack —
+     Georgia first — which cost nothing to load but gave the serif variant a
+     different face on every platform, so no two reviewers were looking at the
+     same page. One webfont, loaded in `index.html` beside Open Sans.
+  
+     ⚠ THE STACK BEHIND IT IS KEPT, and that matters more than it looks: DM
+     Serif Display ships ONE weight (400). Anything asking for 700 on this token
+     gets a synthesised bold from the browser, and if the webfont fails the
+     whole variant falls back to Georgia rather than to a sans — which would
+     make a serif-variant page silently not a serif page. */
+  --font-heading-serif: 'DM Serif Display', Georgia, 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Times New Roman', serif;
 
   /* Radius — project defaults; replace once Nectar DS exposes them */
   --radius-sm: 4px;

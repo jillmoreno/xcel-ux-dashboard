@@ -138,7 +138,8 @@ export function CombinedCourseCard({
     journeyTotal > 0
       ? Math.max(0, Math.min(100, Math.round((journeyDone / journeyTotal) * 100)))
       : Math.max(0, Math.min(100, percent))
-  const showPercent = pct > 0
+  /* `showPercent` WAS HERE — the figure it gated moved to the rail (2026-10-02),
+     and `pct` now only feeds that rail's marker and the progress bar. */
 
   /*
    * WHERE THE LESSON LINE GOES — 2026-10-01, the direct ask: "move the lesson
@@ -269,15 +270,17 @@ export function CombinedCourseCard({
             <div style={{ ...fill, width: `${pct}%` }} />
           </div>
 
+          {/* ⚠ NO FIGURE HERE ANY MORE — 2026-10-02, the direct ask: the rail's
+              own 37% "will replace the percentage in the header section". The
+              card stated it twice, a few inches apart, and the one on the
+              timeline is the one that sits beside what it measures.
+  
+              ⚠ `showPercent` AND THE RULE GO WITH IT. The divider between the
+              figure and the stats existed to separate them; with no figure
+              there is nothing to divide, and the stats start at the edge. */}
           <div style={metaRow}>
             <div style={metaLeft}>
-              {showPercent && (
-                <span style={figureWrap}>
-                  <span style={figure}>{Math.round(pct)}</span>
-                  <span style={figureUnit}>%</span>
-                </span>
-              )}
-              <div style={{ ...statCluster, ...(showPercent ? withRule : null) }}>
+              <div style={statCluster}>
                 {stats.map((s) => (
                   <span key={s.caption} style={statPair}>
                     <span style={statValue}>{s.value}</span>
@@ -839,32 +842,19 @@ const metaRow: CSSProperties = {
 
 const metaLeft: CSSProperties = { display: 'flex', alignItems: 'center', gap: 15, minWidth: 0 }
 
-const figureWrap: CSSProperties = { display: 'flex', alignItems: 'baseline', gap: 2, flexShrink: 0 }
 
-const figure: CSSProperties = {
-  fontFamily: 'var(--font-heading)',
-  fontWeight: 700,
-  fontSize: 30,
-  lineHeight: 1,
-  color: 'var(--color-text-primary)',
-}
 
-const figureUnit: CSSProperties = { ...figure, fontSize: 16 }
 
+/* The stat pairs, now the whole of the meta row. ⚠ `figure`, `figureWrap`,
+   `figureUnit` and `withRule` were removed with the percentage on 2026-10-02 —
+   the rail states it instead. The rule was the divider between the figure and
+   these; with no figure there is nothing to divide. */
 const statCluster: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: 18,
   flexWrap: 'wrap',
   minWidth: 0,
-}
-
-/* ⚠ `--color-neutral-300`, NOT `--color-border-subtle`: the subtle token reads
-   1.29:1 light and 1.38:1 dark, i.e. a rule that disappears in one theme. The
-   split header's own note records the same decision. */
-const withRule: CSSProperties = {
-  borderLeft: '1px solid var(--color-neutral-300)',
-  paddingLeft: 15,
 }
 
 const statPair: CSSProperties = { display: 'flex', alignItems: 'baseline', gap: 6 }

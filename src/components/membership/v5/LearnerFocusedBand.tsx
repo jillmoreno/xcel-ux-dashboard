@@ -801,17 +801,12 @@ export function LearnerFocusedBand({
         courseTitle={path.title}
         cover={resume.imageUrl ?? getCourseImage(resume.id)}
         percent={percent}
-        stats={[
-          { value: timeRemainingText(weeksLeft), caption: 'To complete course' },
-          ...(totalRequired > 0
-            ? [
-                {
-                  value: `${totalCompleted} of ${totalRequired} ${path.unitLabel ?? 'hrs'}`,
-                  caption: 'Completed',
-                },
-              ]
-            : []),
-        ]}
+        /* ⚠ ONE STAT, NOT TWO — 2026-10-02, the direct ask. The "26 of 42
+           lessons · Completed" pair is stated directly below now, on the
+           Pre-Licensing Lessons stop, from the same two figures. Saying it
+           twice in one card was the thing the combined block exists to stop.
+           The split and QE arms keep both; this is the combined card's slot. */
+        stats={[{ value: timeRemainingText(weeksLeft), caption: 'To complete course' }]}
         lessonsCompleted={totalCompleted}
         complete={renewalReady}
         showDetails={entryDetails}
