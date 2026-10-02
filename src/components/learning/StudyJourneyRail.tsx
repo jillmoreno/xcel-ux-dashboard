@@ -540,6 +540,16 @@ export function StudyJourneyRail({
              learner is on. The least furniture of the four, and the only one
              that states a percentage without implying a scale it cannot keep.
              What it gives up is any sense of how much is LEFT. */
+          /* THE COUNT AS ITS OWN RUN, after a rule — `lessonProgressTitle`,
+             2026-10-02, the direct ask. ⚠ BUILT FROM THE STOP'S OWN FIGURES,
+             the same two `journeyStopsFor` used to interpolate into the title,
+             so the row and its meta line cannot state different numbers.
+             Rendered only where there IS a count: the completion tasks carry no
+             `hours`, and a rule followed by nothing reads as a broken row. */
+          const count =
+            lessonProgressTitle && typeof stop.completed === 'number' && stop.hours
+              ? `${stop.completed} of ${stop.hours} Completed`
+              : null
           const chip =
             scaleChip && isCurrent ? (
               <span style={scaleChipStyle}>{markerLabel}</span>
@@ -603,11 +613,23 @@ export function StudyJourneyRail({
                   }}
                 >
                   {stop.title}
+                  {count ? (
+                    <>
+                      <span aria-hidden style={titleRuleStyle} />
+                      <span style={titleCountStyle}>{count}</span>
+                    </>
+                  ) : null}
                   {chip}
                 </span>
               ) : (
                 <span style={titleStyle}>
                   {stop.title}
+                  {count ? (
+                    <>
+                      <span aria-hidden style={titleRuleStyle} />
+                      <span style={titleCountStyle}>{count}</span>
+                    </>
+                  ) : null}
                   {chip}
                 </span>
               )}
@@ -1631,6 +1653,27 @@ const syllabusSpineDoneStyle: CSSProperties = {
  * no triangle, and a glyph at this size would bring font metrics to fight with.
  * The colour is the node's and the filled spine's — one mark in three parts.
  */
+/* The rule between a stop's name and its count. A real 1px line rather than a
+   "|" glyph: the pipe sits on the text baseline and carries the font's own
+   weight, so it reads as a character in the title rather than as a divider
+   between two runs. `aria-hidden` because a screen reader announcing "vertical
+   line" between two facts is noise. */
+const titleRuleStyle: CSSProperties = {
+  display: 'inline-block',
+  width: 1,
+  height: '0.9em',
+  margin: '0 9px',
+  verticalAlign: '-0.1em',
+  background: 'var(--color-border-subtle)',
+}
+
+/* The count is the quieter half — the stop's NAME is what a reader scans for,
+   and the figures qualify it. Regular weight against the title's 600. */
+const titleCountStyle: CSSProperties = {
+  fontWeight: 400,
+  color: 'var(--color-text-secondary)',
+}
+
 /* ─── the four scale treatments (`journey-scale-style`) ─────────────────── */
 
 /* CHIP — the figure as a pill on the live stop's own title line. Inline, so it

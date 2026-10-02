@@ -234,6 +234,33 @@ describe('the lesson line, nested in the coursework', () => {
     expect(caret).toBeUndefined()
   })
 
+  it('carries a green rule, the same green as the gauge marker', () => {
+    /* 2026-10-02, the direct ask. ⚠ THE COLOUR IS THE ASSERTION. The knob's
+       glow and this edge are ONE signal in two places — the marker says where
+       on the scale, the rule says which block — and a second green would make
+       them two unrelated accents. Green is also the only hue on this card that
+       is not the brand navy, which is what makes it findable. */
+    renderShell(T3)
+    const li = within(courseCard()).getByText(/Pre-Licensing Lessons/).closest('li')!
+    const block = within(li as HTMLElement).getByText(/Life Insurance Premiums/).closest('div')!
+    expect((block as HTMLElement).style.borderLeft).toContain('--color-success-500')
+  })
+
+  it('keeps the lesson text aligned with the stop titles despite the rule', () => {
+    /* ⚠ THE BORDER EATS INTO THE INDENT. The 22px was pure padding; a 3px
+       border on the same box would push the text to 25 and step it out of line
+       with the stops above and below, which is the alignment the indent existed
+       to create. 19 + 3 keeps it exactly where it was — verified live at a
+       22px offset from the block's left edge. */
+    renderShell(T3)
+    const li = within(courseCard()).getByText(/Pre-Licensing Lessons/).closest('li')!
+    const block = within(li as HTMLElement)
+      .getByText(/Life Insurance Premiums/)
+      .closest('div') as HTMLElement
+    expect(block.style.paddingLeft).toBe('19px')
+    expect(block.style.borderLeft).toContain('3px')
+  })
+
   it('is itself a second way into the course', () => {
     /* 2026-10-01, the direct ask ("wrap in a container that will have a hover
        effect and take user to the course (in addition to the resume button)").
@@ -313,7 +340,13 @@ describe('the coursework stop says how far in the learner is', () => {
 
   it('titles the lesson stop with its progress, not just its total', () => {
     renderShell(T3)
-    expect(within(courseCard()).getByText(/Pre-Licensing Lessons \(26 of 42 Completed\)/)).toBeTruthy()
+    /* ⚠ TWO RUNS WITH A RULE BETWEEN THEM as of 2026-10-02, not one
+       parenthetical — so the name and the count are separate elements and a
+       single `getByText` across both cannot match. Asserted on the row's text,
+       which is what a reader actually reads. */
+    const title = within(courseCard()).getByText('Pre-Licensing Lessons')
+    expect(title.parentElement?.textContent).toMatch(/Pre-Licensing Lessons\s*26 of 42 Completed/)
+    expect(title.parentElement?.textContent).not.toContain('(')
   })
 
   it('part-fills the connector under it, in proportion to the progress', () => {

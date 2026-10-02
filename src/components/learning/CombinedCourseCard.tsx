@@ -664,12 +664,27 @@ const nestedLesson: CSSProperties = {
      `syllabusSpineCaretStyle` in `StudyJourneyRail`. A mark whose position is
      defined by the timeline belongs to the timeline. */
   margin: '2px 0 14px',
+  /* ⚠ THE GREEN RULE IS THE SAME GREEN AS THE GAUGE'S MARKER — 2026-10-02, the
+     direct ask. The knob's glow and this edge are one signal in two places: the
+     marker says where on the scale, the rule says which block. A second green
+     would make them two unrelated accents, and green is the only hue on this
+     card that is not the brand navy, which is what makes it findable at all.
+
+     ⚠ IT IS NOT THE ONLY THING SAYING THIS IS THE LIVE LESSON. The block is
+     nested under the live stop, the marker sits level with it, and the row text
+     names the lesson — so the rule is reinforcement and the card reads
+     correctly without colour perception (2.1.4.1). */
+  borderLeft: '3px solid var(--color-success-500)',
   /* ⚠ 22 ON THE LEFT, up from 0 — 2026-10-01, the direct ask ("indent this to
      the right a bit more"). It clears the stop titles above and below it, so
      the block reads as something INSIDE the step rather than as another row of
      the list. The button's own negative margin below cancels it for the hover
      fill only, so the fill still starts at the block's edge. */
-  padding: '8px 0 2px 22px',
+  /* ⚠ THE 22 NOW INCLUDES THE RULE. It was pure indent; with a 3px border on
+     the box the text would sit 25 in and step out of line with the stop titles
+     above and below it, which is the alignment the indent existed to create.
+     19 + 3 keeps the text exactly where it was. */
+  padding: '8px 0 2px 19px',
 }
 
 /* The lesson as a control. `cre-journey-stop` paints the hover and the

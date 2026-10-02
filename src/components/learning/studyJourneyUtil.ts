@@ -455,9 +455,18 @@ export function journeyStopsFor(
                the record of. Falls back to the total when there is no count
                yet, rather than rendering "0 of 42 Completed" at the start,
                which states a zero where the old title stated a size. */
+            /* ⚠ ON `lessonProgressTitle` THE TITLE CARRIES NO COUNT AT ALL —
+               2026-10-02, the direct ask ("add a divider line and then the 26
+               of 42 completed, not in parentheses"). The figures moved OUT of
+               this string so the rail can set them as their own run after a
+               rule; a parenthetical is one string and cannot be divided.
+  
+               The stop already carries `completed` and `hours`, so the rail
+               composes from the same two numbers this line used to interpolate
+               — there is no second source and the two cannot disagree. */
             title:
               opts.lessonProgressTitle && typeof courseStops[0].completed === 'number'
-                ? `Pre-Licensing Lessons (${courseStops[0].completed} of ${NY_LH_PRELICENSING_LESSONS} Completed)`
+                ? 'Pre-Licensing Lessons'
                 : `Pre-Licensing Lessons (${NY_LH_PRELICENSING_LESSONS})`,
           },
         ]
