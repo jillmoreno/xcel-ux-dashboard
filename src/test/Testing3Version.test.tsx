@@ -504,15 +504,29 @@ describe('the percentage is the journey’s, not the course’s', () => {
 })
 
 describe('the quick buttons', () => {
-  it('move below the combined block, and appear exactly once', () => {
-    /* ⚠ COUNTED, NOT JUST LOCATED. Moving them is a suppress-here/render-there
-       pair, and the failure is two copies rather than none. */
+  it('sit in the right rail, directly under the exam card', () => {
+    /* 2026-10-01, the direct ask. ⚠ ASSERTED AS SIBLING ORDER, not as document
+       order. They spent one build at the foot of the LEFT column, and a
+       `compareDocumentPosition` check against the course card passed in BOTH
+       arrangements — the right column follows the left in the DOM either way.
+       The only thing that distinguishes them is which parent the tiles hang
+       off and what sits beside them. */
     renderShell(T3)
     const tiles = screen.getAllByRole('navigation', { name: 'Learning areas' })
     expect(tiles).toHaveLength(1)
-    /* Below the course card: same column, later in document order. */
-    const card = courseCard()
-    expect(card.compareDocumentPosition(tiles[0]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(tiles[0].closest('section[aria-label="Current course"]')).toBeNull()
+    const siblings = [...tiles[0].parentElement!.children].map((el) =>
+      el.getAttribute('aria-label'),
+    )
+    expect(siblings).toEqual(['Exam Date', 'Learning areas', 'Quick links'])
+  })
+
+  it('appear exactly once', () => {
+    /* ⚠ COUNTED. Moving them is a suppress-here/render-there pair, and the
+       failure mode is two copies rather than none — `HomeNavTileColumn` still
+       draws them at the top of this column on every other version. */
+    renderShell(T3)
+    expect(screen.getAllByRole('navigation', { name: 'Learning areas' })).toHaveLength(1)
   })
 
   it('leaves them above the journey column on Testing', () => {

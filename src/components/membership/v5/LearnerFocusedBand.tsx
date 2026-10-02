@@ -862,21 +862,13 @@ export function LearnerFocusedBand({
       )}
       {homeTabs}
       {examCard}
-      {/* THE QUICK BUTTONS, MOVED UNDER THE BLOCK — Testing 3, the direct ask.
-          They sit above the Quick question card on every other version (the
-          `nav-placement: top` arm's re-homing of two rail rows). With the
-          combined block taking the top of this column, the two destinations
-          that are NOT about this course belong after it.
-
-          ⚠ LAST, AFTER THE EXAM CARD. The order in this column is now: what the
-          learner is doing, the question about their exam, then the two ways
-          out. One line to reorder if the tiles should sit tighter to the block
-          — it is a first pass, not a settled sequence.
-
-          ⚠ STILL NOTHING UNDER THE LEFT-NAV ARM. `HomeNavTiles` returns null
-          unless the top nav is drawing the navigation, because the rail carries
-          both rows there. Moving them does not change who gets them. */}
-      {combinedCoursework ? <HomeNavTiles /> : null}
+      {/* ⚠ THE QUICK BUTTONS ARE NOT HERE ANY MORE — moved to the RIGHT rail,
+          under the exam card, 2026-10-01 (the direct ask). They sat at the foot
+          of this column for one build, after the combined block and the exam
+          card; with the exam card gone to the right there was nothing left
+          between them and the whole route, so two destinations unrelated to
+          this course were closing a card about it. See `afterExam` on
+          `StudyJourneyWidget` below. */}
       </>
     ) : onPage && resume && !clpNavy ? (
       <>
@@ -2038,6 +2030,12 @@ export function LearnerFocusedBand({
                here is the exam question and the Quick links card. See
                `combinedCoursework`. */
             journeyElsewhere={combinedCoursework}
+            /* …and the quick buttons ride directly under the exam card here,
+               rather than at the foot of the left column. `HomeNavTiles` still
+               returns null unless the top nav is drawing the navigation — the
+               rail carries both rows on the left-nav arm — so moving them
+               changes where they are, never who gets them. */
+            afterExam={combinedCoursework ? <HomeNavTiles /> : undefined}
             framed={journeyCards}
             // …and the post-course steps become their own cards. Still a separate
             // prop from `framed` because they are different questions — one is

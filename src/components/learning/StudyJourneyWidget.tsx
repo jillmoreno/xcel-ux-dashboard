@@ -4,7 +4,7 @@ import type { LearningPathSummary } from '@/data/learningFixtures'
 import { GetLicensedRail, StudyJourneyRail } from './StudyJourneyRail'
 import { ExamScheduleWidget } from './ExamScheduleWidget'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
-import { useState, type CSSProperties } from 'react'
+import { useState, type CSSProperties, type ReactNode } from 'react'
 import { journeyStopsFor } from './studyJourneyUtil'
 import { clearExamDate, useExamDate, writeExamDate } from '@/data/examDateStore'
 import { dateFromIso } from '@/lib/studyPace'
@@ -68,6 +68,7 @@ export function StudyJourneyWidget({
   splitSteps = false,
   examElsewhere = false,
   journeyElsewhere = false,
+  afterExam,
 }: {
   path: LearningPathSummary
   onOpenStop?: (courseId: string) => void
@@ -124,6 +125,24 @@ export function StudyJourneyWidget({
    * how they come to disagree.
    */
   journeyElsewhere?: boolean
+  /**
+   * Extra content directly UNDER the exam card — Testing 3, 2026-10-01, the
+   * direct ask ("move my courses and certificates to the right rail under the
+   * exam date section").
+   *
+   * ⚠ A SLOT, NOT A VERSION BRANCH. This widget never learns what the tiles
+   * are; it learns that a caller may want something between the exam card and
+   * whatever follows. With the prop absent nothing renders and the column is
+   * byte-identical.
+   *
+   * ⚠ IT RENDERS WHETHER OR NOT THE EXAM CARD IS HERE, which is the honest
+   * behaviour rather than an oversight: `examElsewhere` can move that card to
+   * the left column, and content positioned "after the exam card" has to still
+   * appear when there is no exam card — otherwise two independent flags combine
+   * to delete it. Position is what the name promises; existence is not
+   * conditional on a sibling.
+   */
+  afterExam?: ReactNode
   /**
    * Render the post-course steps as THEIR OWN WIDGETS — one card each — instead
    * of as rows in a single Get Licensed rail below the journey. Testing only
@@ -294,6 +313,7 @@ export function StudyJourneyWidget({
               hideSheetLink={quickLinks}
             />
           ))}
+        {afterExam}
         {/* ⚠ THE COURSEWORK CARD MAY BE IN THE OTHER COLUMN — Testing 3's
             combined block absorbs it. Checked BEFORE `collapseCoursework`,
             because that branch draws its own card too and a page showing both
