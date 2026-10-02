@@ -865,6 +865,16 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'combined-progress-bar',
+    group: 'Widgets',
+    label: 'Combined course card \u2014 progress bar',
+    description:
+      'Whether Testing 3\u2019s combined course card draws the 8px progress bar under its title. ON as drawn. \u26a0 THE CARD STATES ITS PROGRESS TWICE \u2014 this bar, and the gauge running down the coursework timeline a few lines below it, which carries the figure and the \u201cyou are here\u201d marker. Turning the bar off is the question of whether the timeline has made it redundant; leaving it on is the question of whether a bar reads faster than a column. \u26a0 THE TWO DO NOT MEASURE THE SAME THING TODAY: the bar is filled from the card\u2019s `percent` prop, which is lesson progress (62%), while the gauge is weighted across the whole journey (37%). So the card currently shows two fills of different lengths for one course \u2014 the strongest argument for the OFF arm, and worth settling before either is called the default. No effect outside Testing 3.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'journey-stop-mark',
     group: 'Widgets',
     label: 'Coursework timeline \u2014 unreached stops',

@@ -125,6 +125,13 @@ export function CombinedCourseCard({
       | 'gauge'
       | 'chip'
       | 'header') ?? 'gauge'
+  /* THE BAR IS A TOGGLE — `combined-progress-bar`, 2026-10-02, the direct ask.
+     ⚠ IT ANSWERS A REAL DUPLICATION: the gauge down the timeline below already
+     carries a fill, a figure and a marker, so this bar is the card's second
+     statement of progress — and the two are not even the same number today
+     (the bar reads `percent`, the lesson figure; the gauge is weighted across
+     the journey). See the flag's own description. */
+  const showProgressBar = useFeatureFlag('combined-progress-bar').enabled
   const stopMark =
     (useFeatureFlag('journey-stop-mark').variant as 'circle' | 'dash') ?? 'dash'
   const stopsForPct = journeyStopsFor(path)
@@ -188,7 +195,11 @@ export function CombinedCourseCard({
      card reads: this course, resume it; and below, this is where you are. */
   const resumeButton = (
     <button type="button" data-cta-id="home.resume" onClick={onResume} style={cta}>
-      {complete ? 'Review course' : lessonsCompleted > 0 ? 'Resume' : 'Start course'}{' '}
+      {/* "Resume course", not "Resume" — 2026-10-02, the direct ask. It now
+          sits beside a stat line rather than under a course title, so the word
+          that named what it resumed is no longer directly above it. The other
+          two shapes already name the course. */}
+      {complete ? 'Review course' : lessonsCompleted > 0 ? 'Resume course' : 'Start course'}{' '}
       <ArrowRight size={16} aria-hidden />
     </button>
   )
@@ -261,14 +272,19 @@ export function CombinedCourseCard({
               and centring a 44px button against a wrapping heading walks it
               down the card as the title grows. Pinned to the top, the button
               stays level with the FIRST line whatever the title does. */}
-          <div style={titleRow}>
-            <h2 style={title}>{courseTitle}</h2>
-            {resumeButton}
-          </div>
+          {/* ⚠ RESUME LEFT THIS ROW on 2026-10-02 — it sits on the stats line
+              below now, level with "17 days". It was pinned here to the
+              title's first line while the title was the only thing on the row;
+              with the percentage and the lesson count gone from the header,
+              the stats line had room and the action reads better beside the
+              fact it acts on. */}
+          <h2 style={title}>{courseTitle}</h2>
 
-          <div aria-hidden style={track}>
-            <div style={{ ...fill, width: `${pct}%` }} />
-          </div>
+          {showProgressBar ? (
+            <div aria-hidden style={track}>
+              <div style={{ ...fill, width: `${pct}%` }} />
+            </div>
+          ) : null}
 
           {/* ⚠ NO FIGURE HERE ANY MORE — 2026-10-02, the direct ask: the rail's
               own 37% "will replace the percentage in the header section". The
@@ -294,6 +310,11 @@ export function CombinedCourseCard({
                 Details <ArrowRight size={13} aria-hidden />
               </button>
             )}
+            {/* ⚠ INSIDE `metaRow`, WHICH ALREADY SPACES ITS CHILDREN APART —
+                so the stats sit left and this sits right with no new layout.
+                `alignItems: center` on that row is what puts the 44px button on
+                the same line as the stat text rather than above it. */}
+            {resumeButton}
           </div>
         </div>
       </div>
@@ -790,16 +811,9 @@ const leadEyebrow: CSSProperties = {
   letterSpacing: '0.18em',
 }
 
-/* The title and the one action, on a line. The heading takes the room that is
-   left and wraps inside it; the button never shrinks, so the wrap happens where
-   the ask says it should. */
-const titleRow: CSSProperties = {
-  display: 'flex',
-  alignItems: 'flex-start',
-  justifyContent: 'space-between',
-  gap: 16,
-  minWidth: 0,
-}
+/* `titleRow` WAS HERE — the title and Resume on one line, with the button
+   pinned to `flex-start` so it held the first line as the title wrapped. Resume
+   moved to the stats row on 2026-10-02 and the title is a plain block again. */
 
 const title: CSSProperties = {
   margin: 0,

@@ -120,6 +120,7 @@ const REBRAND_FLAGS = [
   'home-tile-style',
   'journey-scale-style',
   'journey-stop-mark',
+  'combined-progress-bar',
   'course-entry-details',
   /* `exam-step-style` was listed here until 2026-09-29; it was retired when its
      `ask-first` arm became unconditional. These two are what remain of that

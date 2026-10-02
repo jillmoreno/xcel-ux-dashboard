@@ -338,19 +338,54 @@ describe('the lesson line, nested in the coursework', () => {
     expect(routes).toHaveLength(2)
     const beside = routes.find((el) => !el.closest('li'))!
     const inStop = routes.find((el) => el.closest('li'))!
-    const heading = within(card).getByRole('heading', { level: 2 })
-    expect(beside.parentElement).toBe(heading.parentElement)
+    /* ⚠ ON THE STATS ROW, NOT THE TITLE ROW, as of 2026-10-02 — it moved down
+       beside "17 days" once the percentage and the lesson count left the
+       header and made room. Located by its SIBLING rather than by a style, so
+       it survives the row being restyled. */
+    expect(beside.parentElement?.textContent).toMatch(/To complete course/i)
     expect(inStop.closest('li')?.textContent).toMatch(/Pre-Licensing Lessons/)
   })
 
-  it('pins Resume to the title’s first line, however the title wraps', () => {
-    /* ⚠ `flex-start`, NOT `center`. The title wraps to two or three lines at
-       this column's width — which the ask accepts — and centring a 44px button
-       against a growing heading walks it down the card. Asserted on the style
-       because jsdom does no layout, so the wrap itself cannot be measured. */
+  it('leaves the title a plain block, with nothing beside it', () => {
+    /* ⚠ THIS INVERTS AN ASSERTION. It pinned Resume to the title's first line
+       with `align-items: flex-start`, so the button would not walk down the
+       card as the title wrapped. Resume moved to the stats row on 2026-10-02
+       and the title is a plain block again — it has the column's full width,
+       which is why it now wraps to two lines instead of three. */
     renderShell(T3)
     const heading = within(courseCard()).getByRole('heading', { level: 2 })
-    expect((heading.parentElement as HTMLElement).style.alignItems).toBe('flex-start')
+    /* ⚠ SIBLINGS, NOT DESCENDANTS. The heading's parent is the whole text
+       column, which still CONTAINS Resume further down in the stats row — a
+       `querySelector('button')` there finds it and the test fails for the wrong
+       reason. What changed is that nothing sits beside the heading itself. */
+    const siblings = [...(heading.parentElement?.children ?? [])]
+    expect(siblings.some((el) => el.tagName === 'BUTTON')).toBe(false)
+  })
+
+  it('hides the progress bar behind `combined-progress-bar`', () => {
+    /* 2026-10-02, the direct ask. ⚠ WHAT THE OFF ARM IS ASKING: the gauge down
+       the timeline already carries a fill, a figure and a marker, so this bar
+       is the card's SECOND statement of progress — and the two are not the same
+       number today (the bar reads `percent`, 62%; the gauge is weighted across
+       the journey, 37%). Two fills of different lengths for one course. */
+    renderShell(T3)
+    const bar = () =>
+      [...courseCard().querySelectorAll('div[aria-hidden]')].find(
+        (d) => (d as HTMLElement).style.height === '8px',
+      )
+    expect(bar(), 'the bar is missing by default').toBeTruthy()
+    cleanup()
+    renderShell(`${T3}&ff=combined-progress-bar:off`)
+    expect(bar()).toBeUndefined()
+  })
+
+  it('says “Resume course”, not “Resume”', () => {
+    /* It sits beside a stat line now rather than under the course title, so the
+       word that named what it resumed is no longer directly above it. */
+    renderShell(T3)
+    expect(
+      within(courseCard()).getByRole('button', { name: /Resume course/ }),
+    ).toBeTruthy()
   })
 
   it('leaves the lesson line where it was on Testing', () => {

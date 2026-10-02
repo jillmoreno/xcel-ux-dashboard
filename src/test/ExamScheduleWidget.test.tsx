@@ -129,7 +129,11 @@ describe('exam-step-style: ask-first', () => {
     renderShell('journey-quick-links:off')
     const c = card()
     expect(within(c).getByText('Have you scheduled your New York state exam?')).toBeTruthy()
-    expect(within(c).getByRole('button', { name: 'Yes' })).toBeTruthy()
+    /* ⚠ `/^Yes,/`, NOT `'Yes'` — the affirmative reads "Yes, I know the date"
+       as of 2026-10-02. Matched on the prefix rather than the whole string so
+       the copy can be tuned without every click in this file needing an edit;
+       what the tests care about is WHICH of the two answers was pressed. */
+    expect(within(c).getByRole('button', { name: /^Yes,/ })).toBeTruthy()
     expect(within(c).getByRole('button', { name: 'Not yet' })).toBeTruthy()
     /* The way into the exam sheets is present from the start — it is the one
        control here that is not about the learner's own date. */
@@ -177,7 +181,7 @@ describe('exam-step-style: ask-first', () => {
     renderShell('journey-quick-links:off')
     expect(within(card()).queryByRole('button', { name: /Previous month/ })).toBeNull()
 
-    await user.click(within(card()).getByRole('button', { name: 'Yes' }))
+    await user.click(within(card()).getByRole('button', { name: /^Yes,/ }))
     const c = card()
     expect(within(c).getByRole('button', { name: /Previous month/ })).toBeTruthy()
     // Opens on the anchored today's month, because that is when the learner is.
@@ -190,7 +194,7 @@ describe('exam-step-style: ask-first', () => {
        that accepted it would show a countdown the rest of the page ignores. */
     const user = userEvent.setup()
     renderShell('journey-quick-links:off')
-    await user.click(within(card()).getByRole('button', { name: 'Yes' }))
+    await user.click(within(card()).getByRole('button', { name: /^Yes,/ }))
     const c = card()
     expect(within(c).getByRole('button', { name: /May 4, 2026/ })).toHaveProperty('disabled', true)
     expect(within(c).getByRole('button', { name: /May 29, 2026/ })).toHaveProperty(
@@ -205,7 +209,7 @@ describe('exam-step-style: ask-first', () => {
        card kept to itself would be a control that does nothing. */
     const user = userEvent.setup()
     renderShell('journey-quick-links:off')
-    await user.click(within(card()).getByRole('button', { name: 'Yes' }))
+    await user.click(within(card()).getByRole('button', { name: /^Yes,/ }))
     await user.click(within(card()).getByRole('button', { name: /May 29, 2026/ }))
     await user.click(within(card()).getByRole('button', { name: 'Save exam date' }))
 
@@ -222,7 +226,7 @@ describe('exam-step-style: ask-first', () => {
   it('Save stays inert until a day is actually chosen', async () => {
     const user = userEvent.setup()
     renderShell('journey-quick-links:off')
-    await user.click(within(card()).getByRole('button', { name: 'Yes' }))
+    await user.click(within(card()).getByRole('button', { name: /^Yes,/ }))
     expect(within(card()).getByRole('button', { name: 'Save exam date' })).toHaveProperty(
       'disabled',
       true,
@@ -232,7 +236,7 @@ describe('exam-step-style: ask-first', () => {
   it('Edit reopens the picker on the saved date, and Cancel keeps it', async () => {
     const user = userEvent.setup()
     renderShell('journey-quick-links:off')
-    await user.click(within(card()).getByRole('button', { name: 'Yes' }))
+    await user.click(within(card()).getByRole('button', { name: /^Yes,/ }))
     await user.click(within(card()).getByRole('button', { name: /May 29, 2026/ }))
     await user.click(within(card()).getByRole('button', { name: 'Save exam date' }))
     await user.click(within(card()).getByRole('button', { name: /Edit/ }))
@@ -338,7 +342,7 @@ describe('exam-step-style: ask-first', () => {
        nothing to clear and the Exam Details menu is the more useful offer. */
     const user = userEvent.setup()
     renderShell('journey-quick-links:off')
-    await user.click(within(card()).getByRole('button', { name: 'Yes' }))
+    await user.click(within(card()).getByRole('button', { name: /^Yes,/ }))
     expect(within(card()).queryByRole('button', { name: 'Clear exam date' })).toBeNull()
     expect(within(card()).getByRole('button', { name: /Exam Details/ })).toBeTruthy()
 
@@ -482,7 +486,7 @@ describe('Exam Details — the menu the footer opens', () => {
 describe('exam-calendar-style — how the picker is drawn', () => {
   const openPicker = async (user: ReturnType<typeof userEvent.setup>, ff: string) => {
     renderShell(ff)
-    await user.click(within(card()).getByRole('button', { name: 'Yes' }))
+    await user.click(within(card()).getByRole('button', { name: /^Yes,/ }))
   }
   /** The row carrying the arrows and the month label. */
   const monthRow = () => within(card()).getByText(/May 2026/).parentElement!
@@ -645,7 +649,7 @@ describe('the card keeps its label while it is asking', () => {
     renderShell()
     const card = document.querySelector('section[aria-label="Exam Date"]') as HTMLElement
     const question = within(card).getByText(/Have you scheduled/) as HTMLElement
-    fireEvent.click(within(card).getByRole('button', { name: 'Yes' }))
+    fireEvent.click(within(card).getByRole('button', { name: /^Yes,/ }))
     const lead = within(card).getByText(/When is your/) as HTMLElement
     expect(lead.style.fontSize).toBe(question.style.fontSize)
     expect(lead.style.fontWeight).toBe(question.style.fontWeight)

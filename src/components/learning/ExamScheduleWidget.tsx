@@ -351,7 +351,12 @@ function PromptState({
           Not yet
         </button>
         <button type="button" style={yesButtonStyle} onClick={onYes}>
-          Yes
+          {/* "Yes, I know the date" — 2026-10-02, the direct ask. A bare "Yes"
+              answers the question but says nothing about what pressing it DOES;
+              this names the thing the picker is about to ask for. Its partner
+              stays "Not yet", which is already specific enough to be its
+              opposite. */}
+          Yes, I know the date
         </button>
       </div>
     </>
@@ -816,26 +821,28 @@ const questionStyle: CSSProperties = {
   color: 'var(--color-text-primary)',
 }
 
-/* EQUAL-WIDTH PAIR, sized to the WIDER of the two — 2026-09-29.
- 
-   `inline-grid` + `grid-auto-columns: 1fr` is the idiomatic way to do this
-   without a magic number: the grid shrink-wraps to its content, and `1fr`
-   tracks under a max-content constraint all resolve to the LARGEST item's
-   width. So "Yes" grows to "Not yet" and the pair still sizes itself if the
-   copy changes.
- 
-   ⚠ `alignSelf` IS LOAD-BEARING. The card's shell is a column flex container,
-   so its children stretch to full width by default — without this the grid
-   would span the card and each 1fr track would become half of it, which is far
-   wider than either button wants to be.
- 
-   ⚠ NOT `flex: 1 1 0` on the children, which was the other obvious route: that
-   sizes both to the AVERAGE, so "Yes" grows but "Not yet" shrinks and its label
-   wraps. The point is to match the wider one, not to meet in the middle. */
+/* ⚠ THE EQUAL-WIDTH PAIR IS OVER — 2026-10-02, and the note it replaces is the
+   reason why. It read: "`1fr` tracks under a max-content constraint all resolve
+   to the LARGEST item's width. So 'Yes' grows to 'Not yet' and the pair still
+   sizes itself if the copy changes."
+  
+   That held while both labels were two words. "Yes, I know the date" is five,
+   so matching the wider one made BOTH about 190px — ~390px of buttons in a
+   ~340px column — and the labels wrapped inside a 36px box and overflowed it.
+   The rule sized itself right up until the copy it was meant to survive.
+  
+   Each button takes its own width now, and `nowrap` on the labels is what makes
+   that a promise rather than a hope: the row can overflow to a second LINE if
+   the column gets narrow, which is the right degrade, but neither label breaks
+   mid-phrase inside a fixed-height box.
+  
+   ⚠ `alignSelf` IS STILL LOAD-BEARING. The card's shell is a column flex
+   container, so its children stretch to full width by default; without this the
+   row would span the card and push the two apart. */
 const promptButtonRowStyle: CSSProperties = {
-  display: 'inline-grid',
-  gridAutoFlow: 'column',
-  gridAutoColumns: '1fr',
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'center',
   alignSelf: 'flex-start',
   gap: 10,
   marginTop: 12,
@@ -858,8 +865,15 @@ const yesButtonStyle: CSSProperties = {
   alignItems: 'center',
   justifyContent: 'center',
   gap: 8,
-  height: 44,
+  /* ⚠ 36, DOWN FROM 44 — 2026-10-02, the direct ask. 44 was the Resume
+     button's height, matched when this was the card's own primary and filled
+     like it; as an outline answer to a one-line question it was carrying more
+     weight than the question. ⚠ STILL A COMFORTABLE TARGET: 36 with 20px of
+     padding is well past the 24px minimum, and the label grew at the same time,
+     so the hit area is wider than it was. */
+  height: 36,
   padding: '0 20px',
+  whiteSpace: 'nowrap',
   borderRadius: 'var(--radius-md)',
   border: '1px solid var(--color-primary-600)',
   background: 'transparent',
@@ -893,8 +907,11 @@ const notYetButtonStyle: CSSProperties = {
   alignItems: 'center',
   justifyContent: 'center',
   gap: 8,
-  height: 44,
+  /* Matches `yesButtonStyle` — the two must sit on one baseline, and a link
+     that kept 44 while its partner dropped to 36 would float. */
+  height: 36,
   padding: '0 14px',
+  whiteSpace: 'nowrap',
   borderRadius: 'var(--radius-md)',
   border: 0,
   background: 'transparent',
