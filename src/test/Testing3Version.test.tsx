@@ -1497,3 +1497,38 @@ describe('Testing 3 — the sheet links at the foot of Steps 2 and 3', () => {
     expect(link.style.color).toBe('')
   })
 })
+
+/**
+ * THE RIGHT COLUMN'S STROKE — 2026-10-02, the direct ask: "stroke border on
+ * these containers should match the border of the current course".
+ *
+ * ⚠ "MATCH" IS THE ASSERTION, so the test reads the course card's own border
+ * and compares, rather than restating `1px solid var(--color-primary-100)`
+ * three times. Restyling the course card should move this test with it — a
+ * hard-coded literal would let the two drift apart while every line still
+ * passed, which is the whole failure the ask is correcting.
+ *
+ * ⚠ AND THE OTHER TWO VERSIONS KEEP THEIR STROKELESS FRAME. `journeyCards`
+ * turns on for Testing, Testing 2 and Testing 3 alike, so a border added to the
+ * SHARED shell would silently reverse their own 2026-09-21 "remove stroke" ask.
+ */
+describe('Testing 3 — the right column matches the course card’s edge', () => {
+  const borderOf = (label: string) =>
+    (document.querySelector(`section[aria-label="${label}"]`) as HTMLElement | null)?.style.border
+
+  it('gives the exam card and the readiness stub the course card’s border', () => {
+    renderShell(T3)
+    const course = borderOf('Current course')
+    expect(course).toBeTruthy()
+    expect(borderOf('Exam Date')).toBe(course)
+    expect(borderOf('Your Study Pace / Exam Readiness')).toBe(course)
+  })
+
+  it('leaves Testing’s frame strokeless', () => {
+    /* The 2026-09-21 ask on THAT version, which this change must not reverse on
+       its behalf — and nothing on Testing's screen would explain the stroke if
+       it did. */
+    renderShell(T1)
+    expect(borderOf('Exam Date')).toBeFalsy()
+  })
+})

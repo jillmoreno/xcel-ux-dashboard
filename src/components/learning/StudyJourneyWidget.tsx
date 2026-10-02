@@ -16,6 +16,7 @@ import {
 } from '@/data/nyProducerRequirements'
 import {
   widgetCardFramedStyle,
+  widgetCardOutlinedStyle,
   widgetCardStyle,
   widgetEyebrowStyle,
   widgetRuleStyle,
@@ -65,6 +66,7 @@ export function StudyJourneyWidget({
   onOpenRequirements,
   onOpenLearningPath,
   framed = false,
+  outlined = false,
   splitSteps = false,
   examElsewhere = false,
   journeyElsewhere = false,
@@ -87,6 +89,17 @@ export function StudyJourneyWidget({
    * shell is not defined somewhere else.
    */
   framed?: boolean
+  /**
+   * …and give that card the hairline edge the combined course card opposite it
+   * carries — Testing 3 only, 2026-10-02, the direct ask.
+   *
+   * ⚠ A SECOND BOOLEAN RATHER THAN A BORDER ON `framed`. Testing and Testing 2
+   * pass `framed` too and neither has a bordered neighbour to match; widening
+   * `framed` would reverse their own 2026-09-21 "remove stroke" ask on their
+   * behalf. `outlined` implies framed and is ignored without it — see the shell
+   * below.
+   */
+  outlined?: boolean
   /**
    * The exam-date card is being rendered somewhere ELSE on this page, so this
    * column must not draw it — `exam-card-placement: under-course`, 2026-10-01.
@@ -164,7 +177,15 @@ export function StudyJourneyWidget({
   // hairline between them becomes a third divider between two edges. A gap
   // separates them instead.
   const syllabus = useFeatureFlag('dashboard-journey-style').variant === 'syllabus'
-  const shell = framed ? widgetCardFramedStyle : widgetCardStyle
+  /* ⚠ `outlined` ONLY MEANS ANYTHING WITH `framed`. A border on a block that
+     sits bare on the page grey would be an outline round nothing — the exact
+     "chrome around chrome" the bare shell exists to avoid — so the order here
+     is the guard rather than a preference. */
+  const shell = framed
+    ? outlined
+      ? widgetCardOutlinedStyle
+      : widgetCardFramedStyle
+    : widgetCardStyle
   const stops = journeyStopsFor(path)
   /*
    * THE LICENSING CARDS START AT 2 — 2026-09-23, the direct ask: "This whole

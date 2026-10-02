@@ -27,7 +27,11 @@ import { JumpBackInWidget } from '@/components/learning/JumpBackInWidget'
 import { CourseEntryCard } from '@/components/learning/CourseEntryCard'
 import { CombinedCourseCard } from '@/components/learning/CombinedCourseCard'
 import { ExamScheduleWidget } from '@/components/learning/ExamScheduleWidget'
-import { widgetCardFramedStyle, widgetCardStyle } from '@/components/learning/widgetStyles'
+import {
+  widgetCardFramedStyle,
+  widgetCardOutlinedStyle,
+  widgetCardStyle,
+} from '@/components/learning/widgetStyles'
 import { HomeSectionTabs } from '@/components/layout/HomeSectionTabs'
 import { showsSectionTabs, useNavPlacement } from '@/components/layout/navPlacement'
 import { StudyPaceTile } from '@/components/learning/StudyPaceTile'
@@ -768,13 +772,31 @@ export function LearnerFocusedBand({
      that renders a question mid-route. */
   const examUnderCourse =
     examPlacement === 'under-course' && hasCourseCard && !combinedCoursework
+  /**
+   * THE RIGHT COLUMN'S CARD SURFACE — one expression, every card in it.
+   *
+   * ⚠ DERIVED ONCE RATHER THAN AT EACH `shell=`. There are three of these
+   * (the exam card in its `under-course` slot, the journey widget, the
+   * readiness stub) and the ask was that they match the course card's stroke.
+   * Three copies of a two-level ternary is how a column ends up half outlined
+   * — which looks like a rendering glitch rather than a missed branch.
+   *
+   * ⚠ `widgetCardStyle` IS NOT A CARD AT ALL. It is the bare block on the page
+   * grey, and a border has nothing to sit on there — see the note on
+   * `widgetCardOutlinedStyle`.
+   */
+  const columnCardShell = journeyCards
+    ? combinedCoursework
+      ? widgetCardOutlinedStyle
+      : widgetCardFramedStyle
+    : widgetCardStyle
   const examCard = examUnderCourse ? (
     <div style={{ marginTop: 20 }}>
       <ExamScheduleWidget
         /* THE SAME SHELL THE JOURNEY COLUMN GAVE IT, picked the same way, so
            moving the card is a change of PLACE and not of appearance — the
            comparison the flag is for would otherwise be measuring two things. */
-        shell={journeyCards ? widgetCardFramedStyle : widgetCardStyle}
+        shell={columnCardShell}
         onOpenStep={onOpenStep}
         stateName={jurisdictionName(path.state) || undefined}
         /* THE SIMPLER SAVED READOUT — 2026-10-01, the direct ask, and it
@@ -2057,11 +2079,22 @@ export function LearnerFocusedBand({
                     STUB — see the component; the slot is reserved, the body is
                     deliberately empty, and it takes the same shell as the cards
                     around it so the rail can be read with it in place. */}
-                <HomeReadinessStub shell={journeyCards ? widgetCardFramedStyle : widgetCardStyle} />
+                {/* ⚠ THE OUTLINED SHELL ON THIS ARM. The ask was that these
+                    cards' stroke match the combined course card's, and this
+                    stub is one of the two it pointed at — the other is the exam
+                    card, which `outlined` on the widget covers. Both read the
+                    same `combinedCoursework`, so the column cannot end up half
+                    outlined. */}
+                <HomeReadinessStub shell={columnCardShell} />
                 <HomeTileGrid onOpenStep={onOpenStep} onOpenRequirements={onViewDetails} />
               </>
             ) : undefined}
             framed={journeyCards}
+            /* The combined course card opposite carries a hairline, so the exam
+               card in this column takes the same one — 2026-10-02, the direct
+               ask. Testing and Testing 2 keep the strokeless frame; see
+               `widgetCardOutlinedStyle`. */
+            outlined={combinedCoursework}
             // …and the post-course steps become their own cards. Still a separate
             // prop from `framed` because they are different questions — one is
             // this widget's surface, the other is how many widgets there are.
