@@ -811,6 +811,13 @@ export function LearnerFocusedBand({
         complete={renewalReady}
         showDetails={entryDetails}
         onDetails={onViewDetails}
+        /* ⚠ THE SAME TWO HANDLERS `HomeTileGrid` IS GIVEN a few hundred lines
+           below, and that is the point: the step links at the foot of Steps 2
+           and 3 open the SAME sheets the right rail's tiles open. Passing a
+           second pair here would be two ways to open one sheet, which is how
+           they come to open different ones. */
+        onOpenStep={onOpenStep}
+        onOpenRequirements={onViewDetails}
         onResume={() =>
           launcher.open(resume.id, {
             title: path.title,

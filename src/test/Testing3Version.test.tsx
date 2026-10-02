@@ -700,10 +700,16 @@ describe('the whole route in one card', () => {
       'section[aria-label="Pass State Exam"]',
     ) as HTMLElement
     expect(step2.textContent).not.toContain('150 questions')
-    fireEvent.click(within(step2).getByRole('button'))
+    /* ⚠ `[0]`, NOT `getByRole('button')`. The open body now also holds the
+       Exam Information link (2026-10-02), so the step has two buttons once it
+       is expanded — the DISCLOSURE is the first and is what this test drives.
+       `getByRole` threw here the day that link landed, which is the honest
+       failure: the assumption "a step has one button" stopped being true. */
+    const toggle = () => within(step2).getAllByRole('button')[0]
+    fireEvent.click(toggle())
     expect(step2.textContent).toContain('150 questions in 150 minutes. 70% to pass.')
     /* …and it closes again. A disclosure that only opens is a reveal. */
-    fireEvent.click(within(step2).getByRole('button'))
+    fireEvent.click(toggle())
     expect(step2.textContent).not.toContain('150 questions')
   })
 
@@ -1390,5 +1396,104 @@ describe('everything else is Testing’s', () => {
   it('drops Readiness from the rail, exactly as Testing does', () => {
     renderShell(T3)
     expect(screen.queryByRole('button', { name: 'Readiness' })).toBeNull()
+  })
+})
+
+/**
+ * THE STEP LINKS — 2026-10-02, the direct ask: Exam Information at the foot of
+ * Pass State Exam; Applying for License and State Requirements at the foot of
+ * Get Licensed.
+ *
+ * ⚠ THE THING WORTH PINNING IS WHICH SHEET EACH ONE OPENS, not that a link
+ * exists. All three destinations are already on screen as tiles in the right
+ * rail, so a link wired to the wrong handler renders perfectly, reads
+ * perfectly, and opens the neighbour's sheet — and the only way to notice is
+ * to press it.
+ *
+ * ⚠ AND THAT THEY ARE INSIDE THE OPEN BODY. The disclosure is closed at rest;
+ * a link that escaped to the header row would be a second control competing
+ * with the one that opens the step.
+ */
+describe('Testing 3 — the sheet links at the foot of Steps 2 and 3', () => {
+  const stepSection = (name: RegExp) =>
+    screen.getByRole('region', { name }) as HTMLElement
+
+  /** Opens a disclosure and returns it. */
+  function openStep(name: RegExp) {
+    const section = stepSection(name)
+    fireEvent.click(within(section).getAllByRole('button')[0])
+    return section
+  }
+
+  it('hides them until the step is opened', () => {
+    /* Closed, the step is its number and its heading and nothing else — the
+       whole point of the disclosure. A link visible at rest would undo it. */
+    renderShell(T3)
+    const section = stepSection(/^Pass State Exam$/)
+    expect(within(section).queryByText('Exam Information')).toBeNull()
+  })
+
+  it('puts Exam Information under Pass State Exam, and nothing else', () => {
+    renderShell(T3)
+    const section = openStep(/^Pass State Exam$/)
+    const links = [...section.querySelectorAll('[data-cta-id]')].map((b) => b.textContent)
+    expect(links).toEqual(['Exam Information'])
+  })
+
+  it('puts BOTH licensing links under Get Licensed, in the asked order', () => {
+    /* The order is the ask's order. Applying for License is the step's own
+       subject; State Requirements is the state's rules behind it. */
+    renderShell(T3)
+    const section = openStep(/^Get Licensed/)
+    const links = [...section.querySelectorAll('[data-cta-id]')].map((b) => b.textContent)
+    expect(links).toEqual(['Applying for License', 'State Requirements'])
+  })
+
+  it('opens the EXAM sheet from Exam Information, not the licensing one', () => {
+    /* ⚠ THE ASSERTION THAT EARNS ITS KEEP. Both links are two lines apart in
+       `stepLinks` and both take `onOpenStep`; swapping the two ids is a
+       one-character change that nothing else would catch. */
+    renderShell(T3)
+    const section = openStep(/^Pass State Exam$/)
+    fireEvent.click(within(section).getByText('Exam Information'))
+    expect(screen.getByRole('dialog', { name: /Exam Details/i })).toBeTruthy()
+  })
+
+  it('opens the LICENSING sheet from Applying for License', () => {
+    renderShell(T3)
+    const section = openStep(/^Get Licensed/)
+    fireEvent.click(within(section).getByText('Applying for License'))
+    expect(screen.getByRole('dialog', { name: /Apply for your License/i })).toBeTruthy()
+  })
+
+  it('reuses the right rail’s CTA ids rather than minting new ones', () => {
+    /* ⚠ DELIBERATE DUPLICATION. "Do they find Exam Information" is ONE research
+       question; two ids would let a moderated run kill one copy and leave the
+       other live, and the participant would simply press the survivor. The cost
+       — a session cannot tell the two placements apart — is recorded on
+       `stepLinks`. */
+    renderShell(T3)
+    const exam = openStep(/^Pass State Exam$/)
+    expect(
+      exam.querySelector('[data-cta-id="home.quick-exam-info"]'),
+    ).toBeTruthy()
+    const licence = openStep(/^Get Licensed/)
+    expect(
+      licence.querySelector('[data-cta-id="home.quick-get-licensed"]'),
+    ).toBeTruthy()
+    expect(
+      licence.querySelector('[data-cta-id="home.state-requirements"]'),
+    ).toBeTruthy()
+  })
+
+  it('carries no inline colour, so the dark theme can re-point them', () => {
+    /* The trap `.cre-cta-ink`'s own note in `tokens.css` records: an inline
+       `color` beats the stylesheet and looks correct in light. */
+    renderShell(T3)
+    const section = openStep(/^Pass State Exam$/)
+    const link = within(section).getByText('Exam Information').closest('button')!
+    expect(link.className).toContain('cre-link-action')
+    expect(link.className).toContain('cre-cta-ink')
+    expect(link.style.color).toBe('')
   })
 })

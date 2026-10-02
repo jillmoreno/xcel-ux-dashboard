@@ -16,6 +16,7 @@ import {
   NY_LH_EXAM_SIMULATORS,
   NY_LH_PREP_REVIEW_LESSONS,
 } from '@/data/nyProducerRequirements'
+import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 
 /**
  * THE COURSE AND ITS COURSEWORK, AS ONE CARD — Testing 3, 2026-10-01.
@@ -67,6 +68,8 @@ export function CombinedCourseCard({
   onResume,
   onDetails,
   onViewAll,
+  onOpenStep,
+  onOpenRequirements,
 }: {
   courseTitle: string
   cover?: string | null
@@ -81,12 +84,26 @@ export function CombinedCourseCard({
   onResume?: () => void
   onDetails?: () => void
   onViewAll?: () => void
-  /* ⚠ NO `onOpenStep` / `hideSheetLink` — they went with the fork (2026-10-01).
-     The shared widget needed both to decide whether to draw a "What to expect"
-     link into a sheet; this card's steps carry their detail INLINE behind the
-     disclosure, and `journey-quick-links` already owns the sheet shortcuts in
-     its own card on the right. Re-adding a link here would be the second copy
-     that `hideSheetLink` existed to prevent. */
+  /*
+   * ⚠ `onOpenStep` CAME BACK ON 2026-10-02, and this note used to argue against
+   * it. The fork dropped it with `hideSheetLink` on the grounds that the steps
+   * carry their detail INLINE behind the disclosure and the right rail already
+   * owns the sheet shortcuts, so a link here would be "the second copy that
+   * `hideSheetLink` existed to prevent".
+   *
+   * The ask settles that trade the other way, and the reasoning is worth
+   * keeping rather than deleting: the duplication is REAL and now deliberate.
+   * Exam Information, Applying for License and State Requirements are each on
+   * screen twice — once as a tile in the right rail, once at the foot of the
+   * step they belong to. What changed is the reading: the rail is a flat list
+   * of places, and a learner who has just opened "Pass State Exam" is asking
+   * about THAT step, not scanning a list. The cost is that breaking one of
+   * these in a moderated run breaks both copies (they share CTA ids, on
+   * purpose), so the session cannot tell the two placements apart.
+   */
+  onOpenStep?: (id: string) => void
+  /** State Requirements — its own sheet rather than a step's. */
+  onOpenRequirements?: () => void
 }) {
   /*
    * THE FIGURE IS THE JOURNEY'S, NOT THE COURSE'S — 2026-10-01, the direct ask:
@@ -483,6 +500,7 @@ export function CombinedCourseCard({
             }
             fee={step.fee}
             detail={step.detail}
+            links={stepLinks(step.id, onOpenStep, onOpenRequirements)}
           />
         </div>
       ))}
@@ -557,14 +575,22 @@ function JourneyStepDisclosure({
   heading,
   fee,
   detail,
+  links = [],
 }: {
   number: number
   heading: string
   fee?: string | null
   detail?: string | null
+  /** Sheet shortcuts for THIS step, drawn at the foot of the open body —
+   *  2026-10-02, the direct ask. See `stepLinks`. */
+  links?: StepLink[]
 }) {
   const [open, setOpen] = useState(false)
-  const hasDetail = Boolean(fee || detail)
+  /* ⚠ LINKS COUNT AS DETAIL. `hasDetail` is what decides whether the row is a
+     button at all — a step whose only content was a link would otherwise be
+     inert, and the link unreachable, with nothing on screen to say so. Both
+     steps carry a detail line today, so this is a guard rather than a fix. */
+  const hasDetail = Boolean(fee || detail || links.length > 0)
   return (
     /* ⚠ STILL A NAMED REGION. The shared widget wraps each step in
        `<section aria-label={heading}>`, and the fork dropped it for one build —
@@ -609,6 +635,30 @@ function JourneyStepDisclosure({
         <div style={stepDetailStyle}>
           {fee ? <p style={stepFeeStyle}>{fee}</p> : null}
           {detail ? <p style={stepDetailTextStyle}>{detail}</p> : null}
+          {links.length > 0 && (
+            /* ⚠ AT THE FOOT OF THE OPEN BODY, not beside the heading. The ask
+               said "at bottom of" the step, and the placement is the argument:
+               a learner who has opened this step is asking about this step, so
+               the shortcut is the next thing to read rather than a second
+               control competing with the disclosure's own. */
+            <div style={stepLinkRowStyle}>
+              {links.map((link) => (
+                <button
+                  key={link.id + link.label}
+                  type="button"
+                  data-cta-id={link.id}
+                  onClick={link.onSelect}
+                  /* The house link CTA — no inline `color`, which
+                     `.cre-cta-ink` owns and re-points on the dark theme. */
+                  className="cre-link-action cre-cta-ink"
+                  style={stepLinkStyle}
+                >
+                  {link.label}
+                  <ChevronRight size={12} aria-hidden />
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       )}
     </section>
@@ -626,6 +676,71 @@ function JourneyStepDisclosure({
  * under both orders, so this list is stable — which is the point.
  */
 const LICENSING_STEPS = GET_LICENSED_STEPS.filter((st) => st.id !== 'schedule-exam')
+
+type StepLink = { id: string; label: string; onSelect?: () => void }
+
+/**
+ * WHICH SHEETS A STEP OFFERS — 2026-10-02, the direct ask: Exam Information at
+ * the foot of Pass State Exam; Applying for License and State Requirements at
+ * the foot of Get Licensed.
+ *
+ * ⚠ THE SAME CTA IDS THE RIGHT RAIL'S TILES CARRY, which the catalog explicitly
+ * allows ("an id may appear on several elements on purpose"). "Do they find
+ * Exam Information" is ONE research question, and giving the second placement
+ * its own id would let a moderated run kill one copy and leave the other live —
+ * the participant simply presses the survivor and the finding is lost. The
+ * cost is the inverse: a session cannot ask which of the two placements they
+ * reached for. That is the right way round for a catalog whose whole purpose is
+ * breaking a destination rather than a button.
+ *
+ * ⚠ "APPLYING FOR LICENSE" OPENS THE STEP IT SITS INSIDE, and that is not a
+ * mistake. The disclosure shows the step's fee and its one-line detail; the
+ * sheet is the full published text. Same relationship the right rail's tile has
+ * to the same step — it is a summary offering its source, not a link to itself.
+ *
+ * ⚠ KEYED BY ID, NOT BY POSITION. `LICENSING_STEPS` is a FILTERED array, so an
+ * index here would point at the wrong step the day the exam step stops being
+ * filtered — the exact bug `JourneyStepOrder.test.tsx` already catches in the
+ * journey column.
+ *
+ * A step with no entry gets none; returning an empty array rather than
+ * `undefined` keeps the disclosure's `links.length` check honest.
+ */
+function stepLinks(
+  stepId: string,
+  onOpenStep?: (id: string) => void,
+  onOpenRequirements?: () => void,
+): StepLink[] {
+  if (stepId === 'pass-exam') {
+    return [
+      {
+        id: 'home.quick-exam-info',
+        label: 'Exam Information',
+        onSelect: onOpenStep ? () => onOpenStep(EXAM_DETAILS_STEP_ID) : undefined,
+      },
+    ]
+  }
+  if (stepId === APPLY_LICENSE_STEP_ID) {
+    return [
+      {
+        id: 'home.quick-get-licensed',
+        label: 'Applying for License',
+        onSelect: onOpenStep ? () => onOpenStep(APPLY_LICENSE_STEP_ID) : undefined,
+      },
+      {
+        id: 'home.state-requirements',
+        label: 'State Requirements',
+        onSelect: onOpenRequirements,
+      },
+    ]
+  }
+  return []
+}
+
+/** The last published step — the one the card titles "Get Licensed in {state}".
+ *  Read from the data rather than written out, the same way `HomeTileGrid`
+ *  reads it, so the two cannot come to point at different steps. */
+const APPLY_LICENSE_STEP_ID = GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 1].id
 
 /* The disclosure's header row. Negative side margins so the hover fill reaches
    past the card's text column to the same width the stop rows' hover does,
@@ -667,6 +782,33 @@ const stepHeadingStyle: CSSProperties = {
 }
 
 const stepDetailStyle: CSSProperties = { padding: '2px 8px 6px' }
+
+/* Wraps rather than scrolls: two links fit on one line at the card's width
+   today, and the pair under Get Licensed is the widest case. */
+const stepLinkRowStyle: CSSProperties = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  gap: 18,
+  marginTop: 10,
+}
+
+/* Carries NO colour — `.cre-cta-ink` does. The chevron matches the right rail's
+   tiles, which are the same three destinations: one affordance for one kind of
+   thing, whichever placement a learner meets it in. */
+const stepLinkStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 4,
+  background: 'transparent',
+  border: 0,
+  padding: 0,
+  cursor: 'pointer',
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  lineHeight: '18px',
+  fontWeight: 600,
+}
 
 const stepFeeStyle: CSSProperties = {
   margin: 0,
