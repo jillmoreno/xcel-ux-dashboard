@@ -187,6 +187,90 @@ describe('the lesson line, nested in the coursework', () => {
   })
 })
 
+describe('the coursework stop says how far in the learner is', () => {
+  /* 2026-10-01, the direct ask: "because we are on lesson 27, some of this line
+     should be filled in. Also the Pre-licensing Lessons (26 of 42 Completed)". */
+
+  it('titles the lesson stop with its progress, not just its total', () => {
+    renderShell(T3)
+    expect(within(courseCard()).getByText(/Pre-Licensing Lessons \(26 of 42 Completed\)/)).toBeTruthy()
+  })
+
+  it('part-fills the connector under it, in proportion to the progress', () => {
+    /* ⚠ THE PROPORTION IS THE ASSERTION, not merely that two pieces exist. The
+       whole claim is that the filled share MATCHES how far in the learner is —
+       a split hard-coded at half would pass a structural check and would be
+       drawing a figure the page contradicts four lines above.
+
+       ⚠ ASSERTED ON FLEX RATIOS, NOT RENDERED HEIGHTS. jsdom does no layout, so
+       every `getBoundingClientRect` here is 0; the ratio lives in the style and
+       that is the thing a refactor to percentage heights would break (see the
+       note at the call site for why percentages collapse in some engines). */
+    renderShell(T3)
+    const li = within(courseCard()).getByText(/Pre-Licensing Lessons/).closest('li')!
+    const spine = li.querySelector('span[aria-hidden] > span:nth-child(2)') as HTMLElement
+    const [filled, rest] = [...spine.children] as HTMLElement[]
+    expect(filled, 'the connector is not split').toBeTruthy()
+    /* ⚠ READ THE SHORTHAND, NOT THE LONGHAND. `border-left` here carries a
+       `var()`, which the engine cannot decompose at parse time — so
+       `.style.borderLeftStyle` comes back EMPTY and an assertion on it passes
+       or fails for reasons that have nothing to do with the dash. */
+    expect(filled.style.borderLeft).not.toContain('dashed')
+    expect(rest.style.borderLeft).toContain('dashed')
+    const f = Number(filled.style.flexGrow)
+    const r = Number(rest.style.flexGrow)
+    expect(Math.round((f / (f + r)) * 100)).toBe(62)
+  })
+
+  it('says the same colour on both halves — the difference is the texture', () => {
+    /* The rail says everything in words and never in colour alone (2.1.4.1). A
+       filled half in a new accent hue would make this the one row that does. */
+    renderShell(T3)
+    const li = within(courseCard()).getByText(/Pre-Licensing Lessons/).closest('li')!
+    const spine = li.querySelector('span[aria-hidden] > span:nth-child(2)') as HTMLElement
+    const [filled, rest] = [...spine.children] as HTMLElement[]
+    expect(filled.style.background).toContain('--color-border-subtle')
+    expect(rest.style.borderLeft).toContain('--color-border-subtle')
+  })
+
+  it('leaves Testing’s stop label and connector alone', () => {
+    /* Both are opt-in props on a SHARED rail, so the way they break is by
+       reaching every version at once. */
+    renderShell(T1)
+    expect(screen.getByText(/Pre-Licensing Lessons \(42\)/)).toBeTruthy()
+    expect(screen.queryByText(/26 of 42 Completed/)).toBeNull()
+  })
+})
+
+describe('the card’s own eyebrow', () => {
+  it('leads the card, above the cover image', () => {
+    /* 2026-10-01, the direct ask. It sat inside the text column, right of the
+       cover, which put it ~120px in while "Step 1 · Atlas Study Journey"
+       started at the padding edge — two eyebrows in one card on two different
+       left margins. ⚠ Asserted as DOCUMENT ORDER rather than pixels: jsdom does
+       no layout, and the position follows from being a sibling of the image row
+       rather than a child of the column beside it. */
+    renderShell(T3)
+    const card = courseCard()
+    const eyebrow = within(card).getByText('Current course')
+    const cover = card.querySelector('img')
+    expect(cover).toBeTruthy()
+    expect(
+      eyebrow.compareDocumentPosition(cover!) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy()
+    /* …and it is a direct child of the card, which is what puts it on the
+       padding edge with the rail's eyebrow. */
+    expect(eyebrow.parentElement).toBe(card)
+  })
+
+  it('leaves the eyebrow inside the text column on Testing', () => {
+    renderShell(T1)
+    const card = courseCard()
+    const eyebrow = within(card).getByText('Current course')
+    expect(eyebrow.parentElement).not.toBe(card)
+  })
+})
+
 describe('the quick buttons', () => {
   it('move below the combined block, and appear exactly once', () => {
     /* ⚠ COUNTED, NOT JUST LOCATED. Moving them is a suppress-here/render-there

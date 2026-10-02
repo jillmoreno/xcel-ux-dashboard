@@ -78,6 +78,8 @@ export function StudyJourneyRail({
   stepRange = false,
   stepNumber = 1,
   stopDetail,
+  lessonProgressTitle = false,
+  progressSpine = false,
 }: {
   path: LearningPathSummary
   /** Open a stop. Omitted → the rows render as plain text rather than links. */
@@ -125,6 +127,32 @@ export function StudyJourneyRail({
    * ground covered, and a gap in it would read as a broken rail.
    */
   stopDetail?: (stopId: string, meta: { index: number; isCurrent: boolean }) => ReactNode
+  /**
+   * Title the counted lesson stop with its progress — "(26 of 42 Completed)"
+   * rather than "(42)". Testing 3, 2026-10-01. See `journeyStopsFor`, which
+   * owns the string; this only forwards the choice.
+   */
+  lessonProgressTitle?: boolean
+  /**
+   * PART-FILL THE CONNECTOR under a stop that is in progress — Testing 3,
+   * 2026-10-01, the direct ask ("because we are on lesson 27, some of this line
+   * should be filled in").
+   *
+   * The spine's default vocabulary is binary: solid under a completed stop,
+   * dashed under everything else. That is right for the stops it was written
+   * for, which are done or not — but the lesson stop is 26 of 42, and a fully
+   * dashed segment under it says no ground covered when most of it is.
+   *
+   * ⚠ IT DOES NOT ADD A THIRD COLOUR TO A RAIL THAT SAYS EVERYTHING IN WORDS.
+   * The filled part uses the SAME treatment a completed segment gets; what
+   * changes is how much of the segment is filled. So the rail still reads
+   * correctly without colour perception (2.1.4.1) — the row's own text carries
+   * the count, and this is reinforcement.
+   *
+   * ⚠ OPT-IN, so no other version's rail changes shape. The data it needs
+   * (`stop.progress`) has always been there.
+   */
+  progressSpine?: boolean
 }) {
   /* ⚠ TOP OF THE COMPONENT, ABOVE `if (stops.length === 0) return null`. It sat
      beside the lo-fi branch further down at first, which put a hook after an
@@ -148,7 +176,7 @@ export function StudyJourneyRail({
    * sources. What each row says here is what `metaWords` already knew.
    */
   const syllabus = useFeatureFlag('dashboard-journey-style').variant === 'syllabus'
-  const stops = journeyStopsFor(path)
+  const stops = journeyStopsFor(path, { lessonProgressTitle })
   /* DERIVED from the real stop count, never authored — merging two completion
      stops into one already changed it once, and the same count is what
      `StudyJourneyWidget` offsets the licensing steps by. The two cannot
@@ -481,17 +509,54 @@ export function StudyJourneyRail({
                     The dash is a texture, so it survives the dark theme and
                     does not become a third status hue on a rail that already
                     says everything in words (2.1.4.1, not-by-colour-alone). */}
-                {!isLast && (
-                  <span
-                    style={
-                      syllabus
-                        ? stop.status === 'completed'
-                          ? syllabusSpineStyle
-                          : syllabusSpineDashedStyle
-                        : spineStyle
+                {!isLast &&
+                  (() => {
+                    /* PART-FILLED — `progressSpine`, 2026-10-01. The segment
+                       under a stop that is partly done is solid for the share
+                       completed and dashed for the rest, instead of being
+                       wholly dashed as if none of it had happened.
+
+                       ⚠ FLEX RATIOS, NOT PERCENTAGE HEIGHTS. This span's own
+                       height comes from `flex: 1` against its siblings, so a
+                       `height: 62%` child would be resolving a percentage
+                       against a height the parent does not state — which works
+                       in some engines and collapses to zero in others. Two
+                       children at `flex: p` and `flex: 100 - p` need no
+                       definite height at all.
+
+                       ⚠ SAME COLOUR BOTH HALVES. The difference is solid vs
+                       dashed — a texture, not a third status hue on a rail that
+                       deliberately says everything in words. */
+                    const pct =
+                      progressSpine && syllabus && stop.status === 'in-progress'
+                        ? Math.max(0, Math.min(100, stop.progress ?? 0))
+                        : null
+                    if (pct !== null) {
+                      return (
+                        <span style={syllabusSpineSplitStyle}>
+                          <span style={{ flex: pct, width: 2, background: 'var(--color-border-subtle)' }} />
+                          <span
+                            style={{
+                              flex: 100 - pct,
+                              width: 0,
+                              borderLeft: '2px dashed var(--color-border-subtle)',
+                            }}
+                          />
+                        </span>
+                      )
                     }
-                  />
-                )}
+                    return (
+                      <span
+                        style={
+                          syllabus
+                            ? stop.status === 'completed'
+                              ? syllabusSpineStyle
+                              : syllabusSpineDashedStyle
+                            : spineStyle
+                        }
+                      />
+                    )
+                  })()}
               </span>
               {(() => {
                 const row = interactive ? (
@@ -1209,6 +1274,18 @@ const syllabusSpineStyle: CSSProperties = { ...spineStyle, minHeight: 14 }
 /** The same spine, dashed — every segment except one under a completed step.
  *  `width: 0` with a left border, because a 2px dashed BACKGROUND is not a
  *  thing CSS can draw; the border is what produces the dashes. */
+/** The container for a PART-FILLED segment — the same box `syllabusSpineStyle`
+ *  occupies, turned into a column so the solid and dashed halves can share it
+ *  by flex ratio. See the call site for why ratios rather than percentages. */
+const syllabusSpineSplitStyle: CSSProperties = {
+  flex: 1,
+  width: 2,
+  minHeight: 14,
+  marginTop: 2,
+  display: 'flex',
+  flexDirection: 'column',
+}
+
 const syllabusSpineDashedStyle: CSSProperties = {
   ...syllabusSpineStyle,
   width: 0,

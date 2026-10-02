@@ -148,12 +148,27 @@ export function CombinedCourseCard({
        renaming it would be a second change riding along with this one. What it
        CONTAINS has grown — the name for the thing has not. */
     <section aria-label="Current course" style={card}>
+      {/* THE EYEBROW LEADS THE CARD — 2026-10-01, the direct ask: "move current
+          course to the top left of the widget above the image so it aligns with
+          where the eyebrow is below."
+
+          It sat inside the text column, to the right of the cover, which put it
+          ~120px in from the card's edge while "Step 1 · Atlas Study Journey"
+          started at the padding edge. Two eyebrows in one card on two different
+          left margins read as two cards. At the top it is the card's own label
+          and the two line up.
+
+          ⚠ THE TWO STILL DIFFER IN TYPE — this one is 11px/0.08em, the rail's
+          is 10px/0.18em. Left alone deliberately: the ask was about ALIGNMENT,
+          and matching the faces as well is a second change that would also
+          reach `CourseEntryCard`'s eyebrow by way of the shared style. Worth
+          looking at once the positions are settled. */}
+      <p className="cre-eyebrow-ink" style={leadEyebrow}>
+        Current course
+      </p>
       <div style={topRow}>
         {cover ? <img src={cover} alt="" aria-hidden style={coverStyle} /> : null}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p className="cre-eyebrow-ink" style={eyebrow}>
-            Current course
-          </p>
           <h2 style={title}>{courseTitle}</h2>
 
           <div aria-hidden style={track}>
@@ -231,6 +246,16 @@ export function CombinedCourseCard({
            is what all four steps are about. */
         stepRange
         stepNumber={1}
+        /* "(26 of 42 Completed)" rather than "(42)" — 2026-10-01, the direct
+           ask. ⚠ IT ECHOES THE STAT FOUR LINES ABOVE, which is the thing to
+           judge: in this card the course's own "26 of 42 lessons COMPLETED"
+           sits in the meta row, so the stop either reinforces it or says it
+           twice depending on how the block settles. Opt-in on the rail, so no
+           other version's stop label moves. */
+        lessonProgressTitle
+        /* …and the connector under that stop fills to match. A wholly dashed
+           segment under a stop that is 26/42 done says no ground covered. */
+        progressSpine
         stopDetail={
           nestLesson
             ? (_id, { isCurrent }) => (isCurrent ? <div style={nestedLesson}>{lessonBlock}</div> : null)
@@ -291,6 +316,12 @@ const eyebrow: CSSProperties = {
   letterSpacing: '0.08em',
   textTransform: 'uppercase',
 }
+
+/* The card's own label, at the padding edge so it lines up with the rail's
+   "Step 1 · Atlas Study Journey" below. 12 under it rather than the 6 it
+   carried inside the text column: there it sat tight above the course name it
+   introduced, here it is introducing the whole block. */
+const leadEyebrow: CSSProperties = { ...eyebrow, margin: '0 0 12px' }
 
 const title: CSSProperties = {
   margin: 0,
