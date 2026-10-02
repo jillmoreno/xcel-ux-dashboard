@@ -901,7 +901,14 @@ const detailsLink: CSSProperties = {
 }
 
 const divider: CSSProperties = {
-  margin: '18px 0',
+  /* ⚠ 12, DOWN FROM 18 — 2026-10-02, the direct ask, and it applies to EVERY
+     hairline in this card, not only the two the ask pointed at. They are one
+     rule used four times (identity, the coursework rail, step 2, step 3), and
+     tightening two of them would leave the card with two different band
+     rhythms. The card has grown from two bands to five since the 18 was set;
+     at that count the spacing was doing more separating than the content
+     needed. */
+  margin: '12px 0',
   height: 1,
   background: 'var(--color-primary-100)',
 }

@@ -1297,15 +1297,15 @@ html,
    solid navy under the cursor reads as a selection rather than as a hover.
 
    ⚠ THE INK STAYS THE INK. The outlined arm flips its text to the surface
-   colour because the fill is solid; at 20% the fill is barely there and white
+   colour because the fill is solid; at 12% the fill is barely there and white
    text on it is invisible. So this overrides the `color` the shared hover rule sets
    and leaves the label and icon where they were — the TINT is the whole signal.
 
    ⚠ THE BORDER FOLLOWS THE TINT, not the full fill. The shared rule repaints
-   it to `--color-primary-500`, which against a 20% ground would draw a hard
+   it to `--color-primary-500`, which against a 12% ground would draw a hard
    edge round a very soft row.
 
-   ⚠ 20% INTO THE PAGE, NOT 20% ALPHA. Both spellings work; this is the form
+   ⚠ 12% INTO THE PAGE, NOT 12% ALPHA. Both spellings work; this is the form
    the repo already uses (`ExamScheduleWidget`'s card tint) and it keeps the
    result a solid colour. THE COST, stated because it is invisible until it
    bites: the page surface is baked into the mix, so these rows must sit on the
@@ -1327,13 +1327,13 @@ html,
    hover visible at all, and much less would stop reading as a state change. */
 .cre-tile-cta--bare:hover,
 .cre-tile-cta--bare:focus-visible {
-  background: color-mix(in srgb, var(--color-primary-500) 20%, var(--color-surface-page));
+  background: color-mix(in srgb, var(--color-primary-500) 12%, var(--color-surface-page));
   border-color: transparent;
   color: var(--color-primary-700);
 }
 [data-theme='dark'] .cre-tile-cta--bare:hover,
 [data-theme='dark'] .cre-tile-cta--bare:focus-visible {
-  background: color-mix(in srgb, var(--color-primary-300) 20%, var(--color-surface-page));
+  background: color-mix(in srgb, var(--color-primary-300) 12%, var(--color-surface-page));
   border-color: transparent;
   color: var(--color-primary-900);
 }
@@ -1375,7 +1375,13 @@ html,
 }
 .cre-lesson-cta:hover,
 .cre-lesson-cta:focus-visible {
-  background: color-mix(in srgb, var(--color-primary-500) 20%, var(--color-surface-page));
+  /* ⚠ 12%, DOWN FROM 20 — 2026-10-02, the direct ask. And mixed into the CARD,
+     not the page: this row sits inside the combined course card while the rail's
+     rows sit on the page, so mixing both into `--color-surface-page` made this
+     one composite a shade darker than the tint it is supposed to match. Same
+     percentage of the same navy over whatever is actually behind is what "the
+     same tint" means; the same literal colour is not. */
+  background: color-mix(in srgb, var(--color-primary-500) 12%, var(--color-surface-card));
 }
 .cre-lesson-cta:focus-visible {
   outline: 2px solid var(--color-primary-500);
@@ -1391,7 +1397,7 @@ html,
 }
 [data-theme='dark'] .cre-lesson-cta:hover,
 [data-theme='dark'] .cre-lesson-cta:focus-visible {
-  background: color-mix(in srgb, var(--color-primary-300) 20%, var(--color-surface-page));
+  background: color-mix(in srgb, var(--color-primary-300) 12%, var(--color-surface-card));
 }
 
 /* `.cre-eyebrow-ink` is SECTION-LABEL ink — the small tracked uppercase line
