@@ -1292,20 +1292,20 @@ html,
 .cre-tile-cta--bare {
   border-color: transparent;
 }
-/* …and its hover is a 40% TINT rather than the full reversal — 2026-10-01, the
-   direct ask. Without an outline the rows are a list, and a list row that goes
+/* …and its hover is a 20% TINT rather than the full reversal — 2026-10-01, the
+   direct ask (40% first, then 20%). Without an outline the rows are a list, and a list row that goes
    solid navy under the cursor reads as a selection rather than as a hover.
 
    ⚠ THE INK STAYS THE INK. The outlined arm flips its text to the surface
-   colour because the fill is solid; at 40% the fill is pale and white text on
-   it is unreadable. So this overrides the `color` the shared hover rule sets
+   colour because the fill is solid; at 20% the fill is barely there and white
+   text on it is invisible. So this overrides the `color` the shared hover rule sets
    and leaves the label and icon where they were — the TINT is the whole signal.
 
    ⚠ THE BORDER FOLLOWS THE TINT, not the full fill. The shared rule repaints
-   it to `--color-primary-500`, which against a 40% ground would draw a hard
-   edge round a soft row.
+   it to `--color-primary-500`, which against a 20% ground would draw a hard
+   edge round a very soft row.
 
-   ⚠ 40% INTO THE PAGE, NOT 40% ALPHA. Both spellings work; this is the form
+   ⚠ 20% INTO THE PAGE, NOT 20% ALPHA. Both spellings work; this is the form
    the repo already uses (`ExamScheduleWidget`'s card tint) and it keeps the
    result a solid colour. THE COST, stated because it is invisible until it
    bites: the page surface is baked into the mix, so these rows must sit on the
@@ -1320,17 +1320,20 @@ html,
    stranger's colour. Not introduced here and not specific to this rule; worth
    knowing before anyone trusts a `color-mix` fallback.
 
-   Measured on the rendered page: tint rgb(165, 182, 193), ink rgb(29, 56, 73),
-   5.88:1 — AA for normal text, which white-on-40% would not have been. */
+   Measured on the rendered page at 20%: tint rgb(205, 214, 219), ink
+   rgb(29, 56, 73), 8.31:1. It was 5.88:1 at 40% — a lighter tint RAISES the
+   contrast with dark ink, so the direction of travel here is safe. The limit at
+   the other end is the page itself: rgb(205) against rgb(245) is what makes the
+   hover visible at all, and much less would stop reading as a state change. */
 .cre-tile-cta--bare:hover,
 .cre-tile-cta--bare:focus-visible {
-  background: color-mix(in srgb, var(--color-primary-500) 40%, var(--color-surface-page));
+  background: color-mix(in srgb, var(--color-primary-500) 20%, var(--color-surface-page));
   border-color: transparent;
   color: var(--color-primary-700);
 }
 [data-theme='dark'] .cre-tile-cta--bare:hover,
 [data-theme='dark'] .cre-tile-cta--bare:focus-visible {
-  background: color-mix(in srgb, var(--color-primary-300) 40%, var(--color-surface-page));
+  background: color-mix(in srgb, var(--color-primary-300) 20%, var(--color-surface-page));
   border-color: transparent;
   color: var(--color-primary-900);
 }
