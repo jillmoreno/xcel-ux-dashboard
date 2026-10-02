@@ -104,7 +104,11 @@ describe('the combined block', () => {
     const card = within(courseCard())
     /* Both halves, one card: the course identity and action… */
     expect(card.getByText('Current course')).toBeTruthy()
-    expect(card.getByRole('button', { name: /Resume|Start course/ })).toBeTruthy()
+    /* ⚠ `getAll`, NOT `get` — there are TWO routes into the course as of
+       2026-10-01 (the title button and the lesson block), so a singular query
+       throws on ambiguity. Their identities are pinned below; here it is just
+       presence. */
+    expect(card.getAllByRole('button', { name: /Resume|Start course/ }).length).toBeGreaterThan(0)
     /* …and the coursework that the percentage is made of. */
     expect(card.getByText('Complete Coursework')).toBeTruthy()
     expect(card.getByText(/Pre-Licensing Lessons/)).toBeTruthy()
@@ -206,31 +210,50 @@ describe('the lesson line, nested in the coursework', () => {
     expect(caret).toBeUndefined()
   })
 
-  it('states where the learner is, and nothing to press', () => {
-    /* ⚠ RESUME LEFT THIS BLOCK on 2026-10-01 — it sits beside the course title
-       now. What is nested under the live stop is purely a statement of WHERE
-       the learner is: the lesson number, the estimate and the chapter name. A
-       control here would be a second call to action under the one at the top. */
+  it('is itself a second way into the course', () => {
+    /* 2026-10-01, the direct ask ("wrap in a container that will have a hover
+       effect and take user to the course (in addition to the resume button)").
+
+       ⚠ IT CARRIES `home.resume` TOO, and that is not an oversight. That CTA
+       asks "if it dies, where do they go instead?" — an untagged second path to
+       the same course would answer it wrongly, because a moderated run that
+       broke Resume would leave this working and the participant would simply
+       press it. Both controls do one thing, so both die together. */
     renderShell(T3)
     const li = within(courseCard()).getByText(/Pre-Licensing Lessons/).closest('li')!
+    const btn = li.querySelector('button[data-cta-id="home.resume"]') as HTMLElement
+    expect(btn, 'the lesson block is not a control').toBeTruthy()
+    expect(btn.className).toContain('cre-journey-stop')
+    expect(btn.getAttribute('aria-label')).toMatch(/^Resume /)
     expect(li.textContent).toMatch(/Lesson 27/)
-    expect(li.querySelector('button')).toBeNull()
   })
 
-  it('keeps exactly one Resume on the card, beside the title', () => {
-    /* ⚠ COUNTED. `home.resume` is a registered CTA a moderated run counts, and
-       the button is built once and PLACED — a refactor that copies it instead
-       would give the card two. */
+  it('keeps no paragraph or heading inside that button', () => {
+    /* ⚠ A BUTTON MAY ONLY CONTAIN PHRASING CONTENT. The lesson block was built
+       from `<p>` and `<h3>`; nested in a button that is invalid HTML and the
+       DOM re-parents it, which breaks the layout in a way no assertion about
+       text would catch. Same trap the step disclosures' eyebrows hit. */
+    renderShell(T3)
+    const btn = courseCard().querySelector(
+      'li button[data-cta-id="home.resume"]',
+    ) as HTMLElement
+    expect(btn.querySelector('p, h1, h2, h3, h4, h5, h6')).toBeNull()
+  })
+
+  it('has exactly two routes into the course, and they are the two intended', () => {
+    /* ⚠ COUNTED, AND LOCATED. Two is the design as of 2026-10-01 — the button
+       beside the title and the lesson block in the stop. Counting alone would
+       pass if a refactor duplicated one of them and lost the other, so each is
+       pinned to where it belongs. */
     renderShell(T3)
     const card = courseCard()
-    const resumes = within(card).getAllByRole('button', {
-      name: /Resume|Start course|Review course/,
-    })
-    expect(resumes).toHaveLength(1)
-    /* Beside the heading: same parent, and not down in the stops list. */
-    expect(resumes[0].closest('li')).toBeNull()
+    const routes = [...card.querySelectorAll('[data-cta-id="home.resume"]')]
+    expect(routes).toHaveLength(2)
+    const beside = routes.find((el) => !el.closest('li'))!
+    const inStop = routes.find((el) => el.closest('li'))!
     const heading = within(card).getByRole('heading', { level: 2 })
-    expect(resumes[0].parentElement).toBe(heading.parentElement)
+    expect(beside.parentElement).toBe(heading.parentElement)
+    expect(inStop.closest('li')?.textContent).toMatch(/Pre-Licensing Lessons/)
   })
 
   it('pins Resume to the title’s first line, however the title wraps', () => {
@@ -349,13 +372,21 @@ describe('the coursework stop says how far in the learner is', () => {
     renderShell(T3)
     const li = courseCard().querySelector('ol li') as HTMLElement
     expect(li.textContent).toContain('Pre-Licensing Lessons')
+    /* ⚠ SCOPED TO THE STOP TITLE, not to the row. The lesson block nested in
+       this same `li` IS a control and wears `cre-journey-stop` itself, so a
+       row-wide check for that class now matches the wrong element — it did,
+       first time. What this pins is that the TITLE is not inside a button. */
+    const stopTitle = within(li as HTMLElement).getByText(/Pre-Licensing Lessons/)
+    expect(stopTitle.closest('button')).toBeNull()
     expect(li.querySelector('button[data-cta-id="home.journey-stop"]')).toBeNull()
     expect(li.querySelector('.cre-stop-title')).toBeNull()
-    expect(li.querySelector('.cre-journey-stop')).toBeNull()
-    /* ⚠ AND NO BUTTON AT ALL IN THE ROW NOW. This asserted Resume was still
-       here until 2026-10-01, when it moved beside the course title — so the
-       whole stop, nested lesson included, is text. */
-    expect(li.querySelector('button')).toBeNull()
+    /* ⚠ THE STOP TITLE IS NOT A CONTROL — but the LESSON BLOCK under it is,
+       as of 2026-10-01. So this cannot assert "no buttons in the row": it has
+       to say that the button present is the lesson's, not the stop's. The two
+       are distinguished by the `home.journey-stop` id asserted above. */
+    const buttons = [...li.querySelectorAll('button')]
+    expect(buttons).toHaveLength(1)
+    expect(buttons[0].getAttribute('data-cta-id')).toBe('home.resume')
   })
 
   it('leaves the journey column’s stops openable on Testing', () => {

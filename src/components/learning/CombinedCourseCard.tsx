@@ -183,25 +183,32 @@ export function CombinedCourseCard({
     </button>
   )
 
+  /* ⚠ SPANS, NOT `<p>` AND `<h3>`. This whole block is the content of a
+     `<button>` below, and a button may only contain PHRASING content — a
+     paragraph or a heading inside one is invalid HTML that the DOM re-parents,
+     which is the same trap the step disclosures' eyebrows hit. The chapter name
+     stops being a heading as a result; that is consistent with the stop titles
+     around it, which are spans for the same reason, and the card still has its
+     `<h2>` for the course. */
   const lessonBlock = (
-    <div style={lessonRow}>
-      <div style={{ flex: 1, minWidth: 0 }}>
+    <span style={lessonRow}>
+      <span style={{ flex: 1, minWidth: 0 }}>
         {complete ? (
-          <p style={lessonTitle}>All coursework complete</p>
+          <span style={lessonTitle}>All coursework complete</span>
         ) : (
           <>
-            <p style={lessonMeta}>
+            <span style={lessonMeta}>
               Lesson {lessonsCompleted + 1}
               <span aria-hidden style={dot} />
               {/* ⚠ INVENTED, and named as such at its source. See
                   `NY_LH_LESSON_MINUTES_INVENTED`. */}
               <span style={estimate}>About {NY_LH_LESSON_MINUTES_INVENTED} minutes</span>
-            </p>
-            <h3 style={lessonTitle}>{NY_LH_CURRENT_CHAPTER}</h3>
+            </span>
+            <span style={lessonTitle}>{NY_LH_CURRENT_CHAPTER}</span>
           </>
         )}
-      </div>
-    </div>
+      </span>
+    </span>
   )
 
   return (
@@ -345,7 +352,32 @@ export function CombinedCourseCard({
             ? (_id, { isCurrent }) =>
                 isCurrent ? (
                   <div style={nestedLesson}>
-                    {lessonBlock}
+                    {/* THE LESSON IS A SECOND WAY INTO THE COURSE — 2026-10-01,
+                        the direct ask ("wrap in a container that will have a
+                        hover effect and take user to the course (in addition to
+                        the resume button)").
+
+                        ⚠ IT CARRIES `home.resume` TOO, deliberately. That CTA's
+                        research question is "if it dies, where do they go
+                        instead?" — and an untagged second path to the same
+                        course would answer it wrongly: a moderated run that
+                        breaks Resume would leave this working, and the
+                        participant would simply press it. Both controls do one
+                        thing, so both die together.
+
+                        ⚠ `cre-journey-stop` AGAIN rather than a new hover. It
+                        is what the rail's own rows use, and this block sits
+                        inside one of them. */}
+                    <button
+                      type="button"
+                      data-cta-id="home.resume"
+                      onClick={onResume}
+                      aria-label={`Resume ${NY_LH_CURRENT_CHAPTER}`}
+                      className="cre-journey-stop"
+                      style={lessonButton}
+                    >
+                      {lessonBlock}
+                    </button>
                   </div>
                 ) : null
             : undefined
@@ -606,7 +638,30 @@ const nestedLesson: CSSProperties = {
      `syllabusSpineCaretStyle` in `StudyJourneyRail`. A mark whose position is
      defined by the timeline belongs to the timeline. */
   margin: '2px 0 14px',
-  padding: '8px 0 2px',
+  /* ⚠ 22 ON THE LEFT, up from 0 — 2026-10-01, the direct ask ("indent this to
+     the right a bit more"). It clears the stop titles above and below it, so
+     the block reads as something INSIDE the step rather than as another row of
+     the list. The button's own negative margin below cancels it for the hover
+     fill only, so the fill still starts at the block's edge. */
+  padding: '8px 0 2px 22px',
+}
+
+/* The lesson as a control. `cre-journey-stop` paints the hover and the
+   focus-visible outline; this supplies the geometry.
+
+   ⚠ NEGATIVE SIDE MARGINS + MATCHING PADDING, the pattern the rail's own rows
+   use: the hover fill reaches a few pixels past the text on both sides without
+   the text itself moving, so a hovered block does not look like a label that
+   shifted. */
+const lessonButton: CSSProperties = {
+  display: 'block',
+  width: 'calc(100% + 16px)',
+  margin: '0 -8px',
+  padding: 8,
+  border: 0,
+  background: 'transparent',
+  textAlign: 'left',
+  cursor: 'pointer',
 }
 
 
@@ -818,6 +873,8 @@ const dot: CSSProperties = {
 const estimate: CSSProperties = { fontWeight: 400, letterSpacing: '0.04em', textTransform: 'none' }
 
 const lessonTitle: CSSProperties = {
+  /* `block` because these are spans now — see the note on `lessonBlock`. */
+  display: 'block',
   margin: 0,
   /* ⚠ BODY FACE, not `--font-heading`: the `dashboard-heading-font` variant
      re-points the heading token at a serif, and a chapter name is a row label
