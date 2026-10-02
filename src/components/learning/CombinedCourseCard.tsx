@@ -65,7 +65,6 @@ export function CombinedCourseCard({
   path,
   onResume,
   onDetails,
-  onOpenStop,
   onViewAll,
 }: {
   courseTitle: string
@@ -80,7 +79,6 @@ export function CombinedCourseCard({
   path: LearningPathSummary
   onResume?: () => void
   onDetails?: () => void
-  onOpenStop?: (id: string) => void
   onViewAll?: () => void
   /* ⚠ NO `onOpenStep` / `hideSheetLink` — they went with the fork (2026-10-01).
      The shared widget needed both to decide whether to draw a "What to expect"
@@ -280,7 +278,21 @@ export function CombinedCourseCard({
       <div aria-hidden style={divider} />
       <StudyJourneyRail
         path={path}
-        onOpenStop={onOpenStop}
+        /* ⚠ NO `onOpenStop` — 2026-10-01, the direct ask ("dont make this
+           hover/clickable"), and WITHHOLDING THE PROP is the whole mechanism.
+           The rail's `interactive` is `Boolean(onOpenStop) && !stop.blocked`,
+           and it gates three things at once: the hover fill, the chevron, and
+           `.cre-stop-title`'s blue link colour. So one omission turns the row
+           into plain text rather than leaving a blue, chevroned row that
+           happens not to respond — which is the worse half-state.
+
+           WHY IT IS RIGHT HERE: the live stop now carries the lesson line and
+           Resume nested directly under it. That is the way into the course, and
+           a second control on the row above it competes for the same press. The
+           other five stops are `blocked` and were never interactive.
+
+           ⚠ THE JOURNEY COLUMN IS UNCHANGED — it still passes a handler, so its
+           stops still open. This is a property of THIS card, not of the rail. */
         onViewAll={onViewAll}
         /* "Step 1 · Atlas Study Journey" — 2026-10-01, the direct ask, and it
            SETTLES the numbering seam this card opened.

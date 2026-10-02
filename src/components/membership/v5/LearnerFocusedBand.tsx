@@ -791,7 +791,6 @@ export function LearnerFocusedBand({
       {combinedCoursework ? (
       <CombinedCourseCard
         path={path}
-        onOpenStop={onOpenStop}
         /* View All still leaves for the full Learning Path — the combined block
            absorbs the coursework SUMMARY, not the page behind it. Withheld on
            QE Focused the same way the journey column withholds it, so the two

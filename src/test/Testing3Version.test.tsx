@@ -259,6 +259,34 @@ describe('the coursework stop says how far in the learner is', () => {
     expect(spine.children).toHaveLength(0)
   })
 
+  it('makes the stop row plain text — no hover, no chevron, no link colour', () => {
+    /* 2026-10-01, the direct ask ("dont make this hover/clickable"). The live
+       stop carries the lesson line and Resume nested under it; a second control
+       on the row above competes for the same press.
+
+       ⚠ ALL THREE ARE ASSERTED because the rail gates them on ONE condition
+       (`interactive`), and a change that restored any of them would restore all
+       three — a blue, chevroned row that happens not to respond is a worse
+       state than either extreme. */
+    renderShell(T3)
+    const li = courseCard().querySelector('ol li') as HTMLElement
+    expect(li.textContent).toContain('Pre-Licensing Lessons')
+    expect(li.querySelector('button[data-cta-id="home.journey-stop"]')).toBeNull()
+    expect(li.querySelector('.cre-stop-title')).toBeNull()
+    expect(li.querySelector('.cre-journey-stop')).toBeNull()
+    /* …and Resume, which is the way in now, is untouched. */
+    expect(li.querySelector('button[data-cta-id="home.resume"]')).toBeTruthy()
+  })
+
+  it('leaves the journey column’s stops openable on Testing', () => {
+    /* ⚠ A PROPERTY OF THIS CARD, NOT OF THE RAIL. `StudyJourneyRail` is shared;
+       withholding the handler here must not quietly make every version's stops
+       inert. */
+    renderShell(T1)
+    const li = document.querySelector('ol[aria-label="Study journey stops"] li') as HTMLElement
+    expect(li.querySelector('button[data-cta-id="home.journey-stop"]')).toBeTruthy()
+  })
+
   it('leaves Testing’s stop label and connector alone', () => {
     /* Both are opt-in props on a SHARED rail, so the way they break is by
        reaching every version at once. */
