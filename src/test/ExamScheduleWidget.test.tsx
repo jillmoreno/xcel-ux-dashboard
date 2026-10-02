@@ -1,4 +1,4 @@
-import { cleanup, render, screen, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -618,6 +618,49 @@ describe('journey-quick-links — where the sheet links live', () => {
     renderShell()
     await user.click(within(quick()).getByRole('button', { name: 'Exam Information' }))
     expect(screen.getByRole('heading', { name: 'Exam Details' })).toBeTruthy()
+  })
+})
+
+describe('the card keeps its label while it is asking', () => {
+  /* 2026-10-02, the direct ask ("update the edit mode to match"). */
+
+  it('wears the eyebrow in EDIT mode, where it used to have none', () => {
+    /* ⚠ THE OLD CONDITION WAS "no stored date", which stood in for "the card is
+       asking" and stopped being true of edit mode — a date exists there and the
+       card is asking again. So editing lost the eyebrow and the card's identity
+       with it. Keyed on the PHASE now. */
+    writeExamDate('2026-06-30')
+    renderShell()
+    const card = document.querySelector('section[aria-label="Exam Date"]') as HTMLElement
+    fireEvent.click(within(card).getByRole('button', { name: /Edit/ }))
+    expect(within(card).getByText('State Exam')).toBeTruthy()
+    expect(within(card).getByText(/Edit your .* exam date/)).toBeTruthy()
+  })
+
+  it('sets the picker’s lead exactly like the question it follows', () => {
+    /* Both lines are the card ASKING something — one whether a date exists, the
+       other what it is. The picker was `--font-heading` 15/700 while the
+       question moved to body 14/400, so the card changed voice the moment the
+       learner pressed Yes. */
+    renderShell()
+    const card = document.querySelector('section[aria-label="Exam Date"]') as HTMLElement
+    const question = within(card).getByText(/Have you scheduled/) as HTMLElement
+    fireEvent.click(within(card).getByRole('button', { name: 'Yes' }))
+    const lead = within(card).getByText(/When is your/) as HTMLElement
+    expect(lead.style.fontSize).toBe(question.style.fontSize)
+    expect(lead.style.fontWeight).toBe(question.style.fontWeight)
+    expect(lead.style.fontFamily).toBe(question.style.fontFamily)
+  })
+
+  it('still gives the full saved readout only ONE eyebrow', () => {
+    /* ⚠ `ScheduledState` draws its own ("Your exam date") in a row with Edit,
+       so the card-level one must stay away — two stacked is what the phase
+       condition exists to prevent. */
+    writeExamDate('2026-06-30')
+    renderShell()
+    const card = document.querySelector('section[aria-label="Exam Date"]') as HTMLElement
+    expect(within(card).queryByText('State Exam')).toBeNull()
+    expect(within(card).getByText('Your exam date')).toBeTruthy()
   })
 })
 

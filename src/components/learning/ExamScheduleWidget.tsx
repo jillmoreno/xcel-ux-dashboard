@@ -151,14 +151,25 @@ export function ExamScheduleWidget({
      be the second copy. Clear exam date is NOT a way into a sheet — it is a
      destructive control on this card's own data — so it survives the flag. */
   const quickLinks = useFeatureFlag('journey-quick-links').enabled
-  /* No stored date ⇒ the card is still asking ⇒ it wears the eyebrow. */
-  const hasEyebrow = !stored
+  /* `hasEyebrow` WAS HERE — "no stored date", which stood in for "the card is
+     still asking" until 2026-10-02. It stopped being true of EDIT MODE, where a
+     date exists and the card is asking again; `activePhase` below is the honest
+     test. */
 
   /* ⚠ DERIVED FROM THE PHASE, NOT FROM `stored` ALONE. Edit mode has a stored
      date too, and an "Exam Date" eyebrow over the picker would label the thing
      the learner is in the middle of replacing. Only the settled readout takes
      it. */
-  const eyebrow = hasEyebrow
+  /* ⚠ KEYED ON THE PHASE, NOT ON `hasEyebrow` — widened 2026-10-02 so EDIT
+     MODE keeps the label. `hasEyebrow` is "no stored date", which is true of
+     the question and the first-time picker and false of the picker reached from
+     a saved date — so editing lost the eyebrow and the card's identity with it,
+     which is the thing the ask noticed. Every asking phase now wears it.
+  
+     ⚠ THE FULL SAVED READOUT STILL GETS NONE. `ScheduledState` draws its own
+     ("Your exam date") in a row with Edit, and two eyebrows stacked is what
+     this condition exists to prevent. */
+  const eyebrow = activePhase !== 'scheduled'
     ? /* "State Exam", NOT "Quick question" — 2026-10-02, the direct ask.
   
          ⚠ IT GIVES UP WHAT THE OLD WORDING BOUGHT, and that is worth knowing
@@ -170,7 +181,7 @@ export function ExamScheduleWidget({
          That is more consistent and less self-describing; the card's lack of a
          number is now the only thing saying it is not a step. */
       'State Exam'
-    : compact && activePhase === 'scheduled'
+    : compact
       ? 'Exam Date'
       : null
 
@@ -929,13 +940,16 @@ const linkStyle: CSSProperties = {
   cursor: 'pointer',
 }
 
+/* ⚠ THE SAME SETTING AS `questionStyle` — 2026-10-02, the direct ask ("update
+   the edit mode to match"). Both lines are the card ASKING something; one asks
+   whether a date exists and the other asks what it is, and they are two phases
+   of one sentence. It was `--font-heading` at 15/700 while the question moved
+   to body 14/400, which left the card changing voice when the learner pressed
+   Yes. Declared from `questionStyle` rather than retyped, so the next change to
+   either reaches both. */
 const pickerLeadStyle: CSSProperties = {
+  ...questionStyle,
   margin: '6px 0 0',
-  fontFamily: 'var(--font-heading)',
-  fontWeight: 700,
-  fontSize: 15,
-  lineHeight: '20px',
-  color: 'var(--color-text-primary)',
 }
 
 
