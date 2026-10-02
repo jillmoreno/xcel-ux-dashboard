@@ -1,7 +1,7 @@
 import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
-import { afterEach, describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { LearningPathsPanelProvider } from '@/components/learning/LearningPathsPanelContext'
@@ -65,6 +65,15 @@ function renderShell(ff: string, section = '') {
 }
 
 const crumb = () => screen.queryByRole('button', { name: 'Back to Home' })
+
+/** First control carrying a given CTA id. The ids are what the Home tiles are
+ *  addressed by everywhere else in this repo, so a test that clicked by label
+ *  would stop finding them the day the copy changes. */
+function ctaButton(id: string): HTMLElement {
+  const el = document.querySelector<HTMLElement>(`[data-cta-id="${id}"]`)
+  if (!el) throw new Error(`no control carrying data-cta-id="${id}"`)
+  return el
+}
 
 afterEach(() => {
   cleanup()
@@ -207,5 +216,65 @@ describe('what the header displaced', () => {
   it('keeps the Courses search and view controls', () => {
     renderShell('nav-placement:top', '&section=courses')
     expect(screen.getByLabelText('Search courses')).toBeTruthy()
+  })
+})
+
+/**
+ * ARRIVING AT A NEW SECTION — 2026-10-02, raised on these tiles: "the screen
+ * should automatically scroll to the top of the page on the new pages".
+ *
+ * ⚠ IT LIVES HERE BECAUSE THE ASK DID, but the behaviour is the SHELL'S and
+ * applies to every section. If this file is ever split, the scroll reset goes
+ * with `PlatformShell`, not with the breadcrumb.
+ *
+ * ⚠ THE "DOES NOT FIRE ON MOUNT" CASE IS THE LOAD-BEARING ONE. Resetting on
+ * every render of `active` would also fire on a reload, undoing the browser's
+ * own scroll restoration — the user's position, not a navigation's. That is
+ * the half a naive `useEffect(..., [active])` gets wrong, and it is invisible
+ * unless something asserts it.
+ */
+describe('scroll position on a section change', () => {
+  /* jsdom implements `window.scrollTo` as a stub that logs "Not implemented",
+     so it is spied rather than called for real. The BROWSER is where the
+     actual scroll was verified (Home at 398 → My Courses at 0); this pins that
+     the shell asks for it, and when. */
+  function spyScroll() {
+    return vi.spyOn(window, 'scrollTo').mockImplementation(() => {})
+  }
+
+  afterEach(() => {
+    vi.restoreAllMocks()
+  })
+
+  it('does NOT scroll on first render', () => {
+    const scrollTo = spyScroll()
+    renderShell('nav-placement:top', '&section=courses')
+    expect(scrollTo).not.toHaveBeenCalled()
+  })
+
+  it('scrolls to the top when a tile opens My Courses', async () => {
+    renderShell('nav-placement:top')
+    const scrollTo = spyScroll()
+    await userEvent.click(ctaButton('nav.courses'))
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'auto' })
+  })
+
+  it('scrolls to the top when the crumb returns to Home', async () => {
+    renderShell('nav-placement:top', '&section=certificates')
+    const scrollTo = spyScroll()
+    await userEvent.click(crumb()!)
+    expect(scrollTo).toHaveBeenCalledWith({ top: 0, behavior: 'auto' })
+  })
+
+  it('asks for an INSTANT scroll, not a smooth one', async () => {
+    /* The repo's other `scrollTo` calls animate because they move within a page
+       the reader is looking at. This one lands on different content, and
+       sliding through a section that is being replaced as you go reads as a
+       glitch. */
+    renderShell('nav-placement:top')
+    const scrollTo = spyScroll()
+    await userEvent.click(ctaButton('nav.certificates'))
+    const arg = scrollTo.mock.calls[0]?.[0] as ScrollToOptions
+    expect(arg.behavior).toBe('auto')
   })
 })

@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type ReactNode, type CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { useAccount, supportsMembership, type Brand } from '@/context/AccountContext'
 import {
@@ -369,6 +369,39 @@ function PlatformShellBody() {
     // Section changes only — the two `close` identities are not the trigger.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [active, topNav])
+
+  /*
+   * A NEW SECTION STARTS AT THE TOP — 2026-10-02, the direct ask, raised on the
+   * Home tiles: "the screen should automatically scroll to the top of the page
+   * on the new pages".
+   *
+   * The shell swaps sections IN PLACE — `?section=` with `replace`, no route
+   * change — so the browser has no navigation to reset the scroll for. Click My
+   * Courses from the bottom of Home and you arrive at My Courses already
+   * scrolled past its own header, which reads as a half-loaded page.
+   *
+   * ⚠ EVERY SECTION, NOT JUST THE TWO THAT PROMPTED IT. The ask came from the
+   * tiles, but the defect is the shell's, and the alternative is worse: Courses
+   * resetting while Compass Learning keeps your scroll is the kind of
+   * inconsistency that gets filed as a bug against the one that resets.
+   *
+   * ⚠ NOT ON MOUNT. A reload mid-page restores the browser's own scroll
+   * position, and yanking that to the top would be undoing something the user
+   * did rather than something a navigation did. The ref is what tells the two
+   * apart — `active` is already set on the first render.
+   *
+   * ⚠ INSTANT, NOT SMOOTH. The repo's other `scrollTo` calls animate because
+   * they move WITHIN a page the reader is looking at; this one lands on
+   * different content, and sliding 600px through a section that is being
+   * replaced as you go reads as a glitch rather than as motion.
+   */
+  const lastSection = useRef<PlatformSection | null>(null)
+  useEffect(() => {
+    if (lastSection.current !== null && lastSection.current !== active) {
+      window.scrollTo({ top: 0, behavior: 'auto' })
+    }
+    lastSection.current = active
+  }, [active])
   // Selecting a rail item closes any open launcher + writes the section to the
   // URL (Dashboard drops the param so the logo's `/dashboard-rebrand` reads as
   // Home). `replace` keeps history clean — the same in-place feel as before.
