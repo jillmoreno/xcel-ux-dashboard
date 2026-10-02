@@ -250,7 +250,10 @@ export function AtlasHomeV2({
 
       {/* ── The side column ── */}
       <div style={{ width: 260, flex: 'none', display: 'flex', flexDirection: 'column', gap: 24 }}>
-        <section aria-label="Do you know your state exam date?" style={SIDE_CARD}>
+        {/* No stroke and the Compass medium shadow, with the course card's
+            fill so the card has a surface to lift (2026-10-02, the
+            designer's request). The links card below keeps the outline. */}
+        <section aria-label="Do you know your state exam date?" style={{ ...SIDE_CARD, ...SIDE_CARD_LIFTED }}>
           <p style={STEP_TITLE}>Do you know your state exam date?</p>
           {/* NOT WIRED YET — as on V1's banner, neither answer leads anywhere
               until one is designed. */}
@@ -443,7 +446,7 @@ const PAGE: CSSProperties = {
   alignItems: 'flex-start',
   justifyContent: 'center',
 }
-/* The Home course card's surface and stroke — 48 in, 14 radius (Figma). */
+/* The Home course card's surface — 48 in, 14 radius (Figma). */
 const CARD: CSSProperties = {
   flex: '0 1 711px',
   minWidth: 0,
@@ -454,7 +457,9 @@ const CARD: CSSProperties = {
   boxSizing: 'border-box',
   borderRadius: 14,
   background: 'var(--color-compass-course-card)',
-  boxShadow: 'inset 0 0 0 1px var(--color-compass-course-card-stroke, transparent)',
+  // No outer stroke (2026-10-02, the designer's request); the Compass MEDIUM
+  // shadow lifts it instead (the small one was tried the same day).
+  boxShadow: 'var(--shadow-compass-md)',
 }
 const COVER: CSSProperties = {
   width: 200,
@@ -516,6 +521,8 @@ const PACE_PANEL: CSSProperties = {
   padding: '24px 22px',
   borderRadius: 8,
   background: 'var(--color-atlas-outlined-card, var(--color-compass-page-card))',
+  // No shadow — tried 2026-10-02 (Compass small, then 2px at 10–20%) and
+  // removed the same day; the tint carries the panel.
 }
 const DIAL_TEXT: CSSProperties = {
   position: 'absolute',
@@ -644,6 +651,11 @@ const SIDE_CARD: CSSProperties = {
   boxSizing: 'border-box',
   borderRadius: 12,
   border: '1px solid var(--color-atlas-nav-rule)',
+}
+const SIDE_CARD_LIFTED: CSSProperties = {
+  border: 'none',
+  background: 'var(--color-compass-course-card)',
+  boxShadow: 'var(--shadow-compass-md)',
 }
 const SIDE_BUTTON: CSSProperties = {
   flex: '1 1 0',

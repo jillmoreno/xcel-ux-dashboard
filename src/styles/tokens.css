@@ -1452,6 +1452,15 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+:root {
+  /* The Compass Design System v5's MEDIUM shadow (compassdesignsystemv5.html,
+     `--shadow-md`: "lifts a callout") — the Atlas Home V2 course card,
+     2026-10-02. The large one is not taken. */
+  --shadow-compass-md: 0 1px 2px rgb(31 29 24 / 0.05), 0 8px 24px rgb(31 29 24 / 0.06);
+  /* …and its SMALL shadow (`--shadow-sm`: "the resting card"). Tried on the
+     V2 course card and pace panel the same day, kept on neither. Unused. */
+  --shadow-compass-sm: 0 1px 2px rgb(31 29 24 / 0.05);
+}
 /* Atlas Home V2's "Other Information" rows (AtlasHomeV2): the label turns
    the brand's dark blue — the icons' own colour — and one weight heavier on
    hover (2026-10-02). */
