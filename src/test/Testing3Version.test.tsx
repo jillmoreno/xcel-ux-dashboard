@@ -876,7 +876,7 @@ describe('journey-scale-style — four ways to show 0 / 37 / 100', () => {
        list's padding is 30 and the rail column 26 wide, so the centre is 43.
        Asserted as agreement rather than as a number, so a change to either one
        has to keep them together. */
-    renderShell(arm('gauge'))
+    renderShell(`${T3}&ff=journey-scale-style:gauge,journey-stop-mark:circle`)
     const ol = courseCard().querySelector('ol[aria-label="Study journey stops"]') as HTMLElement
     const track = [...ol.children].find((el) => el.tagName === 'SPAN') as HTMLElement
     expect(track.style.left).toBe('42px')
@@ -886,9 +886,55 @@ describe('journey-scale-style — four ways to show 0 / 37 / 100', () => {
 
     /* The live stop keeps its size; the ones nobody has reached shrink, so six
        equal circles stop reading as six equal claims. */
+    /* ⚠ PINS `journey-stop-mark: circle`. `dash` became the default on
+       2026-10-02, and it replaces the shrunk ring with a tick — so the SIZE
+       claim belongs to the arm that still draws rings. The tick arm is pinned
+       separately below. */
     const dots = [...ol.querySelectorAll('li > span[aria-hidden] > span:first-child')]
     expect((dots[0] as HTMLElement).style.width).toBe('14px')
     expect((dots[1] as HTMLElement).style.width).toBe('10px')
+  })
+
+  it('gauge: a dashed run joins the marker to the lesson’s rule', () => {
+    /* 2026-10-02, the direct ask. The knob, this run and the block's left edge
+       are one mark crossing the gutter — all three in the rule's light green,
+       so they do not read as two greens either side of a gap.
+
+       ⚠ ITS WIDTH IS GUTTER ARITHMETIC AND IT WAS WRONG BY 12 FIRST. The track
+       is positioned against the LIST's padding box while the rows sit inside
+       that padding, so a width built only from the column and the gaps
+       overshoots by exactly the list's 30px padding — it ran through the lesson
+       text. Verified after: connector right edge 160, rule left edge 160. */
+    renderShell(arm('gauge'))
+    const ol = courseCard().querySelector('ol[aria-label="Study journey stops"]') as HTMLElement
+    const track = [...ol.children].find((el) => el.tagName === 'SPAN') as HTMLElement
+    const knob = [...track.children].find((el) => (el as HTMLElement).style.boxShadow) as HTMLElement
+    const conn = knob.firstElementChild as HTMLElement
+    expect(conn, 'no run from the marker').toBeTruthy()
+    expect(conn.style.borderTop).toContain('dashed')
+    expect(conn.style.borderTop).toContain('--color-success-500')
+    /* 30 + 26 + 10 + 9 − 42 − 5 */
+    expect(conn.style.width).toBe('28px')
+  })
+
+  it('gauge: the end caps sit left of the line, in regular weight', () => {
+    /* 2026-10-02, the direct ask. Centred on the track they sat ON the spine —
+       0 reading as a label hung off the first node. In the left gutter they
+       line up under the 37% figure and the three read as one axis down one
+       edge. Regular weight because the ends of a scale are furniture; the
+       figure between them is the reading. Verified: all three right-aligned at
+       x=117. */
+    renderShell(arm('gauge'))
+    const ol = courseCard().querySelector('ol[aria-label="Study journey stops"]') as HTMLElement
+    const track = [...ol.children].find((el) => el.tagName === 'SPAN') as HTMLElement
+    const caps = [...track.children].filter((el) =>
+      /^(0|100)$/.test(el.textContent?.trim() ?? ''),
+    ) as HTMLElement[]
+    expect(caps).toHaveLength(2)
+    for (const cap of caps) {
+      expect(cap.style.right).toBe('100%')
+      expect(cap.style.fontWeight).toBe('400')
+    }
   })
 
   it('gauge: the marker carries a green glow, and it is the only green', () => {
@@ -918,7 +964,7 @@ describe('journey-scale-style — four ways to show 0 / 37 / 100', () => {
     /* ⚠ SCOPED. On the arms with per-row segments there are GAPS between the
        dots, and equal sizing is what makes them read as one sequence — shrinking
        them there would be solving a problem those arms do not have. */
-    renderShell(arm('axis'))
+    renderShell(`${T3}&ff=journey-scale-style:axis,journey-stop-mark:circle`)
     const dots = [
       ...courseCard().querySelectorAll('li > span[aria-hidden] > span:first-child'),
     ]
@@ -997,14 +1043,24 @@ describe('journey-scale-style — four ways to show 0 / 37 / 100', () => {
     }
   })
 
-  it('stop marks: `circle` is the default and keeps the ring', () => {
+  it('stop marks: `dash` is the default now, with `circle` the opt-in', () => {
+    /* ⚠ FLIPPED 2026-10-02, the direct ask ("make these current settings the
+       default"). A diff of the live store against the catalog found exactly ONE
+       setting moved — this one — so it is the whole of that change. */
     const flag = FEATURE_FLAGS.find((f) => f.key === 'journey-stop-mark')
-    expect(flag?.defaultVariant).toBe('circle')
+    expect(flag?.defaultVariant).toBe('dash')
     renderShell(arm('gauge'))
     const marks = [
       ...courseCard().querySelectorAll('li > span[aria-hidden] > span:first-child'),
     ] as HTMLElement[]
-    expect(marks[1].style.height).toBe('10px')
+    expect(marks[1].style.height).toBe('2px')
+    /* …and `circle` still reaches the shrunk ring. */
+    cleanup()
+    renderShell(`${T3}&ff=journey-scale-style:gauge,journey-stop-mark:circle`)
+    const rings = [
+      ...courseCard().querySelectorAll('li > span[aria-hidden] > span:first-child'),
+    ] as HTMLElement[]
+    expect(rings[1].style.height).toBe('10px')
   })
 
   it('chip: the figure rides the live stop, with no 0 or 100 anywhere', () => {

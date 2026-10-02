@@ -198,8 +198,8 @@ const JOURNEY_SCALE_PICKER: { value: string; label: string }[] = [
 ]
 
 const STOP_MARK_PICKER: { value: string; label: string }[] = [
-  { value: 'circle', label: 'Dashed ring' },
   { value: 'dash', label: 'Tick on the line' },
+  { value: 'circle', label: 'Dashed ring' },
 ]
 
 const NAV_HELP_PICKER: { value: string; label: string }[] = [
@@ -1239,8 +1239,8 @@ export function DemoControlsBar({
             hidden={!show('stop-mark')}
             wip={markWip && controlMaturity('stop-mark') === 'wip'}
             label={
-              STOP_MARK_PICKER.find((o) => o.value === (stopMarkState.variant ?? 'circle'))
-                ?.label ?? 'Dashed ring'
+              STOP_MARK_PICKER.find((o) => o.value === (stopMarkState.variant ?? 'dash'))
+                ?.label ?? 'Tick on the line'
             }
             eyebrow="Stop marks"
             openId={openId}
@@ -1250,7 +1250,7 @@ export function DemoControlsBar({
             panelMinWidth={220}
           >
             {STOP_MARK_PICKER.map((opt) => {
-              const active = opt.value === (stopMarkState.variant ?? 'circle')
+              const active = opt.value === (stopMarkState.variant ?? 'dash')
               return (
                 <button
                   key={opt.value}

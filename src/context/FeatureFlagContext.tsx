@@ -872,10 +872,15 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       'WHAT A STOP THE LEARNER HAS NOT REACHED LOOKS LIKE on Testing 3\u2019s timeline. `circle` (default) is the dashed ring the rail has always drawn, shrunk to 10px under the gauge. `dash` replaces it with a short horizontal tick across the line \u2014 a mark ON the timeline rather than a node hung off it. \u26a0 THE ARGUMENT: a ring is a PLACE, and six places read as six equal claims when five of them are not yet real. A tick reads as a graduation on a scale, which is what the gauge arm has made this \u2014 so the two flags are related, and `dash` is most legible with `journey-scale-style: gauge`. \u26a0 THE DONE AND CURRENT STOPS ARE UNAFFECTED under both: a completed tick and a \u201cyou are here\u201d tick would give up the one distinction the column cannot lose. No effect outside Testing 3.',
     maturity: 'wip',
     defaultEnabled: true,
-    defaultVariant: 'circle',
+    /* ⚠ `dash` IS THE DEFAULT as of 2026-10-02, the direct ask ("make these
+       current settings the default"). A diff of the live store against this
+       catalog found exactly ONE setting moved away from its default — this one
+       — so it is the whole of that change; everything else on Testing 3 was
+       already opening the way it was being reviewed. */
+    defaultVariant: 'dash',
     variants: [
-      { value: 'circle', label: 'Dashed ring (as drawn)' },
       { value: 'dash', label: 'Tick on the line' },
+      { value: 'circle', label: 'Dashed ring (as drawn)' },
     ],
     page: 'dashboard-rebrand',
   },

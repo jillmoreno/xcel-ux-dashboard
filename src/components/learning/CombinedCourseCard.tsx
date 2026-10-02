@@ -126,7 +126,7 @@ export function CombinedCourseCard({
       | 'chip'
       | 'header') ?? 'gauge'
   const stopMark =
-    (useFeatureFlag('journey-stop-mark').variant as 'circle' | 'dash') ?? 'circle'
+    (useFeatureFlag('journey-stop-mark').variant as 'circle' | 'dash') ?? 'dash'
   const stopsForPct = journeyStopsFor(path)
   const journeyTotal = stopsForPct.reduce((n, st) => n + stopWeight(st.id, st.hours), 0)
   const journeyDone = stopsForPct.reduce(

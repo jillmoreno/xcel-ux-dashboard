@@ -523,7 +523,19 @@ export function StudyJourneyRail({
                 height: markerTop == null ? `${markerPct}%` : markerTop,
               }}
             />
-            <span style={{ ...gaugeKnobStyle, ...markerOffset }} />
+            <span style={{ ...gaugeKnobStyle, ...markerOffset }}>
+              {/* ⚠ THE RUN FROM THE MARKER TO THE LESSON'S RULE — 2026-10-02,
+                  the direct ask. Dashed and in the rule's own light green, so
+                  the knob, this run and the block's left edge read as one mark
+                  crossing the gutter rather than two greens either side of it.
+              
+                  ⚠ ITS WIDTH IS THE GUTTER'S ARITHMETIC, and the first
+                  attempt got it wrong by 12 — it overshot into the lesson text
+                  because it forgot the LIST's own 30px padding, which the track
+                  is positioned inside but the rows are not. See
+                  `gaugeConnectorStyle` for the full derivation. */}
+              <span aria-hidden style={gaugeConnectorStyle} />
+            </span>
             <span style={{ ...gaugeFigureStyle, ...markerOffset }}>{markerLabel}</span>
             <span style={gaugeCapTopStyle}>0</span>
             <span style={gaugeCapBottomStyle}>100</span>
@@ -1781,20 +1793,35 @@ const gaugeFigureStyle: CSSProperties = {
   color: 'var(--color-primary-700)',
 }
 
+/* ⚠ LEFT OF THE LINE, NOT ON IT — 2026-10-02, the direct ask. Centred on the
+   track they sat ON the spine, so 0 read as a label hung off the first node and
+   100 as one hung off the last; in the left gutter they line up under the 37%
+   figure and the three read as one axis down the same edge.
+   
+   ⚠ AND REGULAR WEIGHT. At 700 they competed with the figure between them,
+   which is the only one of the three that changes. The ends of a scale are
+   furniture; the reading is not. */
 const gaugeCapBase: CSSProperties = {
   position: 'absolute',
-  left: '50%',
-  transform: 'translateX(-50%)',
+  right: '100%',
+  marginRight: 10,
   fontFamily: 'var(--font-body)',
   fontSize: 9,
-  fontWeight: 700,
+  fontWeight: 400,
   letterSpacing: '0.06em',
   whiteSpace: 'nowrap',
   color: 'var(--color-text-tertiary)',
 }
 
-const gaugeCapTopStyle: CSSProperties = { ...gaugeCapBase, bottom: '100%', marginBottom: 4 }
-const gaugeCapBottomStyle: CSSProperties = { ...gaugeCapBase, top: '100%', marginTop: 4 }
+/* `translateY` by half, so the digits straddle the track's end rather than
+   sitting a full line above or below it — they are the ends of the line, not
+   captions under it. */
+const gaugeCapTopStyle: CSSProperties = { ...gaugeCapBase, top: 0, transform: 'translateY(-50%)' }
+const gaugeCapBottomStyle: CSSProperties = {
+  ...gaugeCapBase,
+  bottom: 0,
+  transform: 'translateY(50%)',
+}
 
 /** The not-started dot under the gauge: smaller, so the live stop leads. The
  *  negative margins keep its CENTRE on the line — a 10px circle in a column
@@ -1823,6 +1850,31 @@ const gaugeDashMarkStyle: CSSProperties = {
   border: 0,
   borderRadius: 'var(--radius-pill)',
   background: 'var(--color-neutral-200)',
+}
+
+/** The dashed run from the marker across to the lesson's green rule. A border
+ *  rather than a background so the dashes are the browser's own, matching the
+ *  spine's unreached segments in texture while differing in hue. */
+const gaugeConnectorStyle: CSSProperties = {
+  position: 'absolute',
+  left: '100%',
+  top: '50%',
+  /* 28 = where the lesson's rule starts, less where the knob ends, both
+     measured from the list's border box:
+  
+       rule  = 30 (the list's own padding) + 26 (rail column) + 10 (row gap)
+             + 9 (the nested block's padding)   = 75
+       knob  = 42 (the track's offset)          + 5 (the knob's reach past it)
+                                                = 47
+  
+     ⚠ THE 30 IS THE ONE THAT WAS MISSED. The track is absolutely positioned
+     against the list's PADDING box and the rows sit inside that padding, so a
+     width built only from the column and the gaps overshoots by exactly it —
+     measured at 12px into the lesson text before this. Re-derive if the list's
+     padding, the 26px column or the block's 9 ever move; they are the same
+     numbers the lesson's 22px indent is built from. */
+  width: 30 + 26 + 10 + 9 - 42 - 5,
+  borderTop: '1px dashed color-mix(in srgb, var(--color-success-500) 45%, var(--color-surface-card))',
 }
 
 /** The per-row segment under the gauge: invisible, but still occupying its
