@@ -167,6 +167,22 @@ export function CombinedCourseCard({
     )
   }
 
+  /* RESUME SITS BESIDE THE COURSE TITLE — 2026-10-01, the direct ask ("move
+     this to the right of the course title. aligned horizontally. wrap title as
+     needed.").
+
+     ⚠ IT LEFT THE LESSON BLOCK, which is the part to notice. That block is now
+     purely a statement of WHERE the learner is — the lesson number, the
+     estimate and the chapter name, nested under the live stop — and the one
+     action on the card has moved to the top, beside the thing it acts on. The
+     card reads: this course, resume it; and below, this is where you are. */
+  const resumeButton = (
+    <button type="button" data-cta-id="home.resume" onClick={onResume} style={cta}>
+      {complete ? 'Review course' : lessonsCompleted > 0 ? 'Resume' : 'Start course'}{' '}
+      <ArrowRight size={16} aria-hidden />
+    </button>
+  )
+
   const lessonBlock = (
     <div style={lessonRow}>
       <div style={{ flex: 1, minWidth: 0 }}>
@@ -185,10 +201,6 @@ export function CombinedCourseCard({
           </>
         )}
       </div>
-      <button type="button" data-cta-id="home.resume" onClick={onResume} style={cta}>
-        {complete ? 'Review course' : lessonsCompleted > 0 ? 'Resume' : 'Start course'}{' '}
-        <ArrowRight size={16} aria-hidden />
-      </button>
     </div>
   )
 
@@ -219,7 +231,15 @@ export function CombinedCourseCard({
       <div style={topRow}>
         {cover ? <img src={cover} alt="" aria-hidden style={coverStyle} /> : null}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <h2 style={title}>{courseTitle}</h2>
+          {/* ⚠ `align-items: flex-start`, NOT `center`. The title wraps to two
+              or three lines at this column's width — which the ask accepts —
+              and centring a 44px button against a wrapping heading walks it
+              down the card as the title grows. Pinned to the top, the button
+              stays level with the FIRST line whatever the title does. */}
+          <div style={titleRow}>
+            <h2 style={title}>{courseTitle}</h2>
+            {resumeButton}
+          </div>
 
           <div aria-hidden style={track}>
             <div style={{ ...fill, width: `${pct}%` }} />
@@ -648,6 +668,17 @@ const leadEyebrow: CSSProperties = {
   fontSize: 10,
   fontWeight: 600,
   letterSpacing: '0.18em',
+}
+
+/* The title and the one action, on a line. The heading takes the room that is
+   left and wraps inside it; the button never shrinks, so the wrap happens where
+   the ask says it should. */
+const titleRow: CSSProperties = {
+  display: 'flex',
+  alignItems: 'flex-start',
+  justifyContent: 'space-between',
+  gap: 16,
+  minWidth: 0,
 }
 
 const title: CSSProperties = {

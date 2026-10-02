@@ -206,16 +206,41 @@ describe('the lesson line, nested in the coursework', () => {
     expect(caret).toBeUndefined()
   })
 
-  it('takes Resume with it — the card keeps exactly one', () => {
-    /* ⚠ COUNTED. The block is built once and PLACED, so a refactor that copies
-       it instead would give the card two Resume buttons, and `home.resume` is a
-       registered CTA that a moderated run counts. */
+  it('states where the learner is, and nothing to press', () => {
+    /* ⚠ RESUME LEFT THIS BLOCK on 2026-10-01 — it sits beside the course title
+       now. What is nested under the live stop is purely a statement of WHERE
+       the learner is: the lesson number, the estimate and the chapter name. A
+       control here would be a second call to action under the one at the top. */
     renderShell(T3)
-    const resumes = within(courseCard()).getAllByRole('button', {
+    const li = within(courseCard()).getByText(/Pre-Licensing Lessons/).closest('li')!
+    expect(li.textContent).toMatch(/Lesson 27/)
+    expect(li.querySelector('button')).toBeNull()
+  })
+
+  it('keeps exactly one Resume on the card, beside the title', () => {
+    /* ⚠ COUNTED. `home.resume` is a registered CTA a moderated run counts, and
+       the button is built once and PLACED — a refactor that copies it instead
+       would give the card two. */
+    renderShell(T3)
+    const card = courseCard()
+    const resumes = within(card).getAllByRole('button', {
       name: /Resume|Start course|Review course/,
     })
     expect(resumes).toHaveLength(1)
-    expect(resumes[0].closest('li')?.textContent).toMatch(/Pre-Licensing Lessons/)
+    /* Beside the heading: same parent, and not down in the stops list. */
+    expect(resumes[0].closest('li')).toBeNull()
+    const heading = within(card).getByRole('heading', { level: 2 })
+    expect(resumes[0].parentElement).toBe(heading.parentElement)
+  })
+
+  it('pins Resume to the title’s first line, however the title wraps', () => {
+    /* ⚠ `flex-start`, NOT `center`. The title wraps to two or three lines at
+       this column's width — which the ask accepts — and centring a 44px button
+       against a growing heading walks it down the card. Asserted on the style
+       because jsdom does no layout, so the wrap itself cannot be measured. */
+    renderShell(T3)
+    const heading = within(courseCard()).getByRole('heading', { level: 2 })
+    expect((heading.parentElement as HTMLElement).style.alignItems).toBe('flex-start')
   })
 
   it('leaves the lesson line where it was on Testing', () => {
@@ -327,8 +352,10 @@ describe('the coursework stop says how far in the learner is', () => {
     expect(li.querySelector('button[data-cta-id="home.journey-stop"]')).toBeNull()
     expect(li.querySelector('.cre-stop-title')).toBeNull()
     expect(li.querySelector('.cre-journey-stop')).toBeNull()
-    /* …and Resume, which is the way in now, is untouched. */
-    expect(li.querySelector('button[data-cta-id="home.resume"]')).toBeTruthy()
+    /* ⚠ AND NO BUTTON AT ALL IN THE ROW NOW. This asserted Resume was still
+       here until 2026-10-01, when it moved beside the course title — so the
+       whole stop, nested lesson included, is text. */
+    expect(li.querySelector('button')).toBeNull()
   })
 
   it('leaves the journey column’s stops openable on Testing', () => {
