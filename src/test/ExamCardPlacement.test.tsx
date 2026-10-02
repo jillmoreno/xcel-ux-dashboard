@@ -122,7 +122,7 @@ describe('exam-card-placement', () => {
     expect(screen.getByLabelText('Study journey')).toBeTruthy()
     /* The column's own first card is the coursework one now — the exam card is
        no longer above it. */
-    expect(within(screen.getByLabelText('Study journey')).queryByText(/Quick question/i)).toBeNull()
+    expect(within(screen.getByLabelText('Study journey')).queryByText('State Exam')).toBeNull()
   })
 
   describe('the compact saved readout', () => {
@@ -172,12 +172,16 @@ describe('exam-card-placement', () => {
   })
 
   it('still asks the question — the eyebrow travels with the card', () => {
-    /* A move must not quietly become a demotion: "Quick question" is what makes
-       this a question rather than another card heading, and it is keyed on
-       there being no stored date, not on which column it is in. */
+    /* A move must not quietly become a demotion: the eyebrow is what gives the
+       card its identity, and it is keyed on there being no stored date rather
+       than on which column the card is in. It reads "State Exam" as of
+       2026-10-02; the question under it is the thing being asked. */
     renderShell('exam-card-placement:under-course')
     const [card] = examCards()
-    expect(within(card).getByText(/Quick question/i)).toBeTruthy()
+    /* ⚠ EXACT, NOT `/State Exam/i`. The question under it reads "…your New
+       York state exam?", so a case-insensitive regex matches both and throws on
+       ambiguity. The eyebrow is the whole of its own element's text. */
+    expect(within(card).getByText('State Exam')).toBeTruthy()
     expect(within(card).getByText(/Have you scheduled your .* state exam\?/)).toBeTruthy()
   })
 })

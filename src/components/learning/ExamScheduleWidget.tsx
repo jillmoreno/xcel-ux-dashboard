@@ -159,7 +159,17 @@ export function ExamScheduleWidget({
      the learner is in the middle of replacing. Only the settled readout takes
      it. */
   const eyebrow = hasEyebrow
-    ? 'Quick question'
+    ? /* "State Exam", NOT "Quick question" — 2026-10-02, the direct ask.
+  
+         ⚠ IT GIVES UP WHAT THE OLD WORDING BOUGHT, and that is worth knowing
+         rather than discovering. "Quick question" was restored from the Figma
+         on 2026-09-29 to say this card is NOT a journey step — it asks
+         something and gets out of the way, which is why it carries no number
+         while the cards around it do. "State Exam" names the subject instead,
+         which reads as a section label like every other eyebrow on the page.
+         That is more consistent and less self-describing; the card's lack of a
+         number is now the only thing saying it is not a step. */
+      'State Exam'
     : compact && activePhase === 'scheduled'
       ? 'Exam Date'
       : null
@@ -784,10 +794,14 @@ const questionStyle: CSSProperties = {
      the honest resolution of it. That reasoning stands for the figure styles
      below; it no longer describes this one. */
   fontFamily: 'var(--font-body)',
-  fontWeight: 700,
-  fontSize: 18,
-  lineHeight: '24px',
-  letterSpacing: '-0.01em',
+  /* ⚠ BODY TEXT, NOT A HEADING — 2026-10-02, the direct ask ("smaller font,
+     body text style"). It was 18/700 at -0.01em, which is this file's heading
+     setting; at 14/20 regular it is a sentence under a label, which is what it
+     is. The eyebrow carries the card's identity now, so the question does not
+     have to shout to be found. */
+  fontWeight: 400,
+  fontSize: 14,
+  lineHeight: '20px',
   color: 'var(--color-text-primary)',
 }
 
@@ -816,47 +830,18 @@ const promptButtonRowStyle: CSSProperties = {
   marginTop: 12,
 }
 
-/* MATCHES THE RESUME BUTTON — `CourseEntryCard`'s `cta`, 2026-09-29. Same
-   height, padding, radius, gradient and type, because they are the same KIND of
-   control: the one press the card is asking for. Two primary buttons a column
-   apart that differed in height and corner would read as two different systems.
+/* YES IS AN OUTLINE BUTTON — 2026-10-02, the direct ask. It was the filled
+   gradient twin of `CourseEntryCard`'s Resume, matched to it on 2026-09-29
+   because both were "the one press the card is asking for".
 
-   ⚠ ONE DELIBERATE DIFFERENCE from the button it copies: the white is
-   `--color-text-inverse`, not Resume's literal `rgb(255 255 255 / 1)`. The
-   token resolves to #ffffff in BOTH themes (light via `neutral-50`, dark pinned
-   directly), so it renders identically — and CLAUDE.md's rule is tokens, never
-   raw values. Copying the literal would have propagated the exception.
-
-   Also worn by Save exam date in the picker, which is the same primary act. */
+   ⚠ THAT REASONING IS SPENT, which is why the note it replaces is gone rather
+   than kept alongside. Resume moved to the top of the combined card on
+   2026-10-01 and is the only filled control on this page now; a second gradient
+   down in the rail was competing with it for the same glance. An outline still
+   reads as the affirmative against a LINK, which is what "Not yet" became in
+   the same pass — the pair keeps its hierarchy, one step quieter.
+*/
 const yesButtonStyle: CSSProperties = {
-  flexShrink: 0,
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: 8,
-  height: 44,
-  padding: '0 20px',
-  borderRadius: 'var(--radius-md)',
-  border: 0,
-  background: 'linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600))',
-  color: 'var(--color-text-inverse)',
-  fontFamily: 'var(--font-body)',
-  fontSize: 14,
-  fontWeight: 700,
-  cursor: 'pointer',
-}
-
-const saveDisabledStyle: CSSProperties = {
-  opacity: 0.45,
-  cursor: 'not-allowed',
-}
-
-/* THE OUTLINE TWIN of the above — identical geometry and type, filled ground
-   swapped for a stroke. ⚠ NOT the same treatment as `Yes`, on purpose: matching
-   Resume's SHAPE is what was asked for, and making both buttons solid would
-   leave the pair with no hierarchy at all. Same height so they sit on one
-   baseline. */
-const notYetButtonStyle: CSSProperties = {
   flexShrink: 0,
   display: 'inline-flex',
   alignItems: 'center',
@@ -871,6 +856,43 @@ const notYetButtonStyle: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 14,
   fontWeight: 700,
+  cursor: 'pointer',
+}
+
+const saveDisabledStyle: CSSProperties = {
+  opacity: 0.45,
+  cursor: 'not-allowed',
+}
+
+/* NOT YET IS A LINK — 2026-10-02, the direct ask. It was the outline twin of
+   `Yes`; with `Yes` itself becoming an outline the pair needed a step between
+   them again, and the quieter answer is the one to demote. "Not yet" asks
+   nothing of the learner and leads to a note rather than to a picker.
+
+   ⚠ IT KEEPS THE 44px HEIGHT. No border and no fill, but the same box, so the
+   two still sit on one baseline and the row does not change height when the
+   treatment does. A link that collapsed to its text would drag `Yes` upward.
+
+   ⚠ AND IT KEEPS ITS PADDING, so the two have the same rhythm between them as
+   before. A hit area is not something to give up for a visual weight change —
+   this is still a button a thumb has to find. */
+const notYetButtonStyle: CSSProperties = {
+  flexShrink: 0,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 8,
+  height: 44,
+  padding: '0 14px',
+  borderRadius: 'var(--radius-md)',
+  border: 0,
+  background: 'transparent',
+  color: 'var(--color-primary-600)',
+  fontFamily: 'var(--font-body)',
+  fontSize: 14,
+  fontWeight: 700,
+  textDecoration: 'underline',
+  textUnderlineOffset: 3,
   cursor: 'pointer',
 }
 

@@ -275,7 +275,14 @@ describe('exam-step-style: ask-first', () => {
     /* ⚠ NO STEP NUMBER — changed 2026-09-29. This asserted "Step 1" until the
        card stopped being a step at all. `JourneyStepOrder.test.tsx` owns the
        other half: that the three real steps close up to 1-2-3 behind it. */
-    expect(within(c).getByText('Quick question')).toBeTruthy()
+    /* ⚠ "State Exam", NOT "Quick question" — 2026-10-02, the direct ask. The
+       old wording was itself a restored Figma decision whose job was to say
+       this card is NOT a journey step; the new one names the subject and reads
+       as a section label like every other eyebrow on the page. What the card
+       gives up is that self-description — its lack of a step NUMBER is now the
+       only thing saying it is not a step, which is why the numbering assertions
+       elsewhere matter more than they did. */
+    expect(within(c).getByText('State Exam')).toBeTruthy()
     expect(c.textContent).not.toMatch(/Step \d/)
   })
 
