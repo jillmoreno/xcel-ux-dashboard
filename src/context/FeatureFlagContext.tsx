@@ -865,6 +865,24 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'home-tile-style',
+    group: 'Widgets',
+    label: 'Right rail \u2014 tile shape',
+    description:
+      'HOW THE RIGHT RAIL\u2019S SIX DESTINATIONS ARE DRAWN on Testing 3. `square` (default) is the grid two across \u2014 icon over label, each tile a true square by `aspect-ratio`. `stacked` is one column of long horizontal buttons, icon left of the label. \u26a0 THE SAME SIX, THE SAME ORDER, THE SAME CTA IDS \u2014 only the shape changes, which is what makes the two comparable. \u26a0 THE TRADE IS HEIGHT AGAINST PRESENCE: six squares two-across is a tall block that gives each destination a face, where six rows read as a menu and take about half the room. \u26a0 Both arms wear `.cre-tile-cta`, so the outline-at-rest and fill-on-hover treatment is identical and the comparison is about layout alone. No effect outside Testing 3, which is the only version drawing this grid.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    /* ⚠ `square` IS THE DEFAULT because it is what the rail was built as and
+       what has been reviewed; `stacked` is the alternative asked for on
+       2026-10-01 ("keep the tiles as default, but add a variant"). */
+    defaultVariant: 'square',
+    variants: [
+      { value: 'square', label: 'Square tiles, two across' },
+      { value: 'stacked', label: 'Long buttons, stacked' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'exam-card-placement',
     group: 'Widgets',
     label: 'Quick question \u2014 where the exam card sits',

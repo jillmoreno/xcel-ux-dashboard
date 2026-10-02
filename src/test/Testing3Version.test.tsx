@@ -2,7 +2,7 @@ import { cleanup, fireEvent, render, screen, within } from '@testing-library/rea
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
-import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
+import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { LearningPathsPanelProvider } from '@/components/learning/LearningPathsPanelContext'
 import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelContext'
 import { PlatformShell } from '@/components/layout/PlatformShell'
@@ -43,6 +43,17 @@ const T3 = '/dashboard-rebrand?demo=1&version=discoverability-testing-3'
 const T1 = '/dashboard-rebrand?demo=1&version=discoverability-testing'
 
 function renderShell(url: string) {
+  /* ⚠ `?ff=` IS READ FROM `window.location`, NEVER FROM THE ROUTER ENTRY, and
+     this helper did not set it for several builds. Tests passing `&ff=…` in the
+     url string were rendering with the flag's DEFAULT and still passing —
+     because the thing they asserted happened to be true either way. Mirroring
+     the entry onto the location is what makes a pinned flag actually pin. */
+  const ff = new URLSearchParams(url.split('?')[1] ?? '').get('ff')
+  window.history.replaceState(
+    {},
+    '',
+    ff ? `/dashboard-rebrand?ff=${encodeURIComponent(ff)}` : '/dashboard-rebrand',
+  )
   return render(
     <MemoryRouter initialEntries={[url]}>
       <AccountProvider>
@@ -785,6 +796,40 @@ describe('the six-tile grid', () => {
       'home.quick-get-licensed',
       'home.state-requirements',
     ])
+  })
+
+  it('stacks into long rows on `home-tile-style: stacked`', () => {
+    /* 2026-10-01, the direct ask ("keep the tiles as default, but add a
+       variant"). ⚠ THE SAME SIX, THE SAME ORDER, THE SAME CTA IDS — only the
+       shape moves, which is the whole reason the two arms are comparable. A
+       variant that also re-ordered or re-tagged would be measuring two things. */
+    renderShell(`${T3}&ff=home-tile-style:stacked`)
+    const grid = screen.getByRole('navigation', { name: 'Learning areas' })
+    const buttons = [...grid.querySelectorAll('button')] as HTMLElement[]
+    expect(buttons.map((b) => b.getAttribute('data-cta-id'))).toEqual([
+      'nav.courses',
+      'nav.certificates',
+      'nav.compass',
+      'home.quick-exam-info',
+      'home.quick-get-licensed',
+      'home.state-requirements',
+    ])
+    /* One column, and no longer square. */
+    expect((grid as HTMLElement).style.gridTemplateColumns).toBe('minmax(0, 1fr)')
+    expect(buttons[0].style.aspectRatio).toBe('')
+    /* ⚠ STILL `.cre-tile-cta`. Both arms share the outline-at-rest /
+       fill-on-hover treatment, so the comparison is layout alone. */
+    expect(buttons[0].className).toContain('cre-tile-cta')
+  })
+
+  it('defaults to the square grid', () => {
+    /* The flag's default is `square` — what the rail was built as and what has
+       been reviewed. `stacked` is the alternative, not the new baseline. */
+    const flag = FEATURE_FLAGS.find((f) => f.key === 'home-tile-style')
+    expect(flag?.defaultVariant).toBe('square')
+    renderShell(T3)
+    const grid = screen.getByRole('navigation', { name: 'Learning areas' })
+    expect((grid as HTMLElement).style.gridTemplateColumns).toBe('repeat(2, minmax(0, 1fr))')
   })
 
   it('leaves Testing with the two-tile strip and its Quick links card', () => {

@@ -1,6 +1,7 @@
 import type { CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { Award, BookFull, CircleInfo, ClipboardList, FileText, Notebook } from '@/icons'
+import { Award, BookFull, ChevronRight, CircleInfo, ClipboardList, FileText, Notebook } from '@/icons'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 import { GET_LICENSED_STEPS } from '@/data/nyProducerRequirements'
 import type { PlatformSection } from './PlatformSideNav'
@@ -40,6 +41,11 @@ export function HomeTileGrid({
   onOpenRequirements?: () => void
 }) {
   const [, setParams] = useSearchParams()
+  /* SQUARE OR STACKED — `home-tile-style`, 2026-10-01, the direct ask ("keep
+     the tiles as default, but add a variant"). The SAME six in the same order
+     with the same CTA ids; only the shape changes, which is what makes the two
+     comparable. */
+  const stacked = useFeatureFlag('home-tile-style').variant === 'stacked'
 
   /* Mirrors `PlatformShell.handleSelect` — same param, same `replace`. None of
      these is Home, so the delete-on-Home branch has nothing to do here. */
@@ -90,7 +96,7 @@ export function HomeTileGrid({
   ]
 
   return (
-    <nav aria-label="Learning areas" style={gridStyle}>
+    <nav aria-label="Learning areas" style={stacked ? stackStyle : gridStyle}>
       {tiles.map(({ id, label, icon: Icon, onSelect }) => (
         <button
           key={id}
@@ -101,16 +107,24 @@ export function HomeTileGrid({
              `tokens.css`. A hover cannot be expressed as an inline style at
              all, and splitting the rest between the two would leave the rest
              state here and its reversal three files away. This object is
-             geometry only. */
+             geometry only.
+
+             ⚠ BOTH ARMS WEAR THE SAME CLASS, deliberately: the outline at rest
+             and the fill on hover are identical, so the variant is a comparison
+             of LAYOUT and nothing else. */
           className="cre-tile-cta"
-          style={tileStyle}
+          style={stacked ? rowStyle : tileStyle}
         >
-          {/* 28, up from 22 — 2026-10-01, the direct ask. These are square
-              tiles whose whole upper half is the glyph, so the icon is doing
-              the recognising and the 13px label underneath is confirming it.
-              At 22 it read as a list bullet that happened to be centred. */}
-          <Icon size={28} aria-hidden />
-          <span style={labelStyle}>{label}</span>
+          {/* 28 ON THE SQUARE, 20 STACKED. On a tile the glyph is the upper
+              half and does the recognising; in a row it sits beside a label
+              that is already doing that, and at 28 it would set the row's
+              height for no gain. */}
+          <Icon size={stacked ? 20 : 28} aria-hidden />
+          <span style={stacked ? rowLabelStyle : labelStyle}>{label}</span>
+          {/* THE CHEVRON IS THE ROW'S ONLY ADDITION. A full-width row with a
+              label hard left reads as a list item rather than as something that
+              goes somewhere; the square's shape says that on its own. */}
+          {stacked ? <ChevronRight size={14} aria-hidden style={{ flexShrink: 0 }} /> : null}
         </button>
       ))}
     </nav>
@@ -123,6 +137,37 @@ const gridStyle: CSSProperties = {
   display: 'grid',
   gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
   gap: 12,
+}
+
+/* The stacked arm: one column, full width. */
+const stackStyle: CSSProperties = {
+  display: 'grid',
+  gridTemplateColumns: 'minmax(0, 1fr)',
+  gap: 8,
+}
+
+const rowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 12,
+  minWidth: 0,
+  /* ⚠ `minHeight`, NOT `height`. "Applying for License" fits one line at this
+     width today, but a longer label or a larger text setting has to be able to
+     push the row taller rather than overflow it. */
+  minHeight: 48,
+  padding: '0 14px',
+  borderRadius: 'var(--radius-md)',
+  cursor: 'pointer',
+  textAlign: 'left',
+}
+
+const rowLabelStyle: CSSProperties = {
+  flex: 1,
+  minWidth: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 14,
+  fontWeight: 600,
+  lineHeight: '18px',
 }
 
 const tileStyle: CSSProperties = {
