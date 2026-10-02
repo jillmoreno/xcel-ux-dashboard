@@ -322,7 +322,24 @@ export function CombinedCourseCard({
         progressSpine
         stopDetail={
           nestLesson
-            ? (_id, { isCurrent }) => (isCurrent ? <div style={nestedLesson}>{lessonBlock}</div> : null)
+            ? (_id, { isCurrent }) =>
+                isCurrent ? (
+                  <div style={nestedLesson}>
+                    {/* ⚠ A SOLID TRIANGLE OFF THE SPINE — 2026-10-01, the direct
+                        ask ("so it feels like its part of the timeline"). It
+                        points RIGHT, into the lesson: the timeline is the
+                        spine, and this is the spine branching to say which
+                        lesson the learner is on rather than a decoration on the
+                        block's own edge.
+
+                        `aria-hidden`, like every other mark in this rail. The
+                        row's text already names the lesson; a triangle
+                        announced to a screen reader would be noise about a
+                        shape. */}
+                    <span aria-hidden style={nestedCaret} />
+                    {lessonBlock}
+                  </div>
+                ) : null
             : undefined
         }
       />
@@ -576,8 +593,38 @@ const stepDetailTextStyle: CSSProperties = {
    ⚠ The `marginBottom` is what keeps the next stop from crowding it; the
    spine's `flex: 1` stretches over the whole thing on its own. */
 const nestedLesson: CSSProperties = {
+  /* `relative` so the caret can hang off the left edge into the gap between
+     this block and the spine — the one place a mark can sit without pushing the
+     lesson text out of line with the stop titles above and below it. */
+  position: 'relative',
   margin: '2px 0 14px',
   padding: '8px 0 2px',
+}
+
+/* The caret. A BORDER TRIANGLE rather than an SVG: it is 6px of pure geometry,
+   the registry has no triangle, and a glyph at this size would carry its own
+   font metrics to fight with.
+
+   ⚠ THE COLOUR IS THE FILLED SPINE'S (`--color-primary-700`), which is also the
+   node's. All three are the same mark — dot, covered ground, and the branch
+   into the live lesson — so a fourth colour here would break a set that only
+   just became one.
+
+   ⚠ `left` IS MEASURED, NOT GUESSED, and FLUSH is the point. At -18 the base
+   sat 4px clear of the spine, which read as a floating bullet beside the line
+   rather than as part of it; -22 puts the base exactly on the spine's right
+   edge (measured: spine ends at x=99, caret then starts at 99) so the triangle
+   grows OUT of the timeline. Its point still clears the lesson text by 8px.
+   Re-measure if the rail's 26px gutter or the 10px row gap ever moves. */
+const nestedCaret: CSSProperties = {
+  position: 'absolute',
+  left: -22,
+  top: 17,
+  width: 0,
+  height: 0,
+  borderTop: '5px solid transparent',
+  borderBottom: '5px solid transparent',
+  borderLeft: '6px solid var(--color-primary-700)',
 }
 
 /* ─── styles ──────────────────────────────────────────────────────────── */

@@ -159,6 +159,41 @@ describe('the lesson line, nested in the coursework', () => {
     expect(li!.textContent).toMatch(/Pre-Licensing Lessons/)
   })
 
+  it('branches off the spine with a solid caret at the live lesson', () => {
+    /* 2026-10-01, the direct ask ("so it feels like its part of the timeline").
+
+       ⚠ THE COLOUR IS THE ASSERTION AS MUCH AS THE SHAPE. The node, the filled
+       spine and this caret are one mark in three parts; a caret in any other
+       blue would break a set that only just became one. */
+    renderShell(T3)
+    const li = within(courseCard()).getByText(/Pre-Licensing Lessons/).closest('li')!
+    const caret = [...li.querySelectorAll('span')].find((el) =>
+      (el as HTMLElement).style.borderLeft?.includes('solid'),
+    ) as HTMLElement
+    expect(caret, 'no caret beside the lesson block').toBeTruthy()
+    expect(caret.style.borderLeft).toContain('--color-primary-700')
+    /* A right-pointing border triangle: solid on the left, transparent above
+       and below, and no box of its own. */
+    expect(caret.style.borderTop).toContain('transparent')
+    expect(caret.style.borderBottom).toContain('transparent')
+    expect(caret.style.width).toBe('0px')
+    /* ⚠ `aria-hidden`, like every other mark in this rail — the row's text
+       already names the lesson, and a triangle announced to a screen reader is
+       noise about a shape. */
+    expect(caret.getAttribute('aria-hidden')).not.toBeNull()
+  })
+
+  it('draws no caret where there is no nested lesson', () => {
+    /* The caret belongs to the nested block, so it must not outlive it — the
+       journey column renders the same rail with no `stopDetail` at all. */
+    renderShell(T1)
+    const li = document.querySelector('ol[aria-label="Study journey stops"] li') as HTMLElement
+    const caret = [...li.querySelectorAll('span')].find((el) =>
+      (el as HTMLElement).style.borderLeft?.includes('solid'),
+    )
+    expect(caret).toBeUndefined()
+  })
+
   it('takes Resume with it — the card keeps exactly one', () => {
     /* ⚠ COUNTED. The block is built once and PLACED, so a refactor that copies
        it instead would give the card two Resume buttons, and `home.resume` is a
