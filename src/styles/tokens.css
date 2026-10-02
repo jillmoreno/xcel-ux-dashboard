@@ -1279,6 +1279,20 @@ html,
   border-color: var(--color-primary-500);
   color: var(--color-text-inverse);
 }
+/* `--bare` drops the outline at REST and keeps everything else — Testing 3's
+   stacked rows, 2026-10-01, the direct ask. Six full-width outlines one under
+   another read as six boxes; without them the rows read as a list and the hover
+   fill is what says "this is pressable".
+
+   ⚠ `transparent`, NOT `border: 0`. The 1px is still in the box, so the row's
+   height and its text's left edge are identical in both arms — dropping the
+   border outright would shift every label 1px and make the two variants
+   differ by more than the ask. The hover rule below repaints it to the fill
+   colour, so it merges there exactly as the outlined arm does. */
+.cre-tile-cta--bare {
+  border-color: transparent;
+}
+
 [data-theme='dark'] .cre-tile-cta {
   color: var(--color-primary-300);
 }

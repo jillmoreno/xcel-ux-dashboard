@@ -112,7 +112,11 @@ export function HomeTileGrid({
              ⚠ BOTH ARMS WEAR THE SAME CLASS, deliberately: the outline at rest
              and the fill on hover are identical, so the variant is a comparison
              of LAYOUT and nothing else. */
-          className="cre-tile-cta"
+          /* ⚠ `--bare` ON THE STACKED ARM ONLY. Six full-width outlines one
+             under another read as six boxes rather than a list; the squares
+             need theirs, because a square with no edge has no shape. Both keep
+             the ink and the hover fill, so the variant is still layout. */
+          className={stacked ? 'cre-tile-cta cre-tile-cta--bare' : 'cre-tile-cta'}
           style={stacked ? rowStyle : tileStyle}
         >
           {/* 28 ON THE SQUARE, 20 STACKED. On a tile the glyph is the upper

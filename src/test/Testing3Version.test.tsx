@@ -817,9 +817,18 @@ describe('the six-tile grid', () => {
     /* One column, and no longer square. */
     expect((grid as HTMLElement).style.gridTemplateColumns).toBe('minmax(0, 1fr)')
     expect(buttons[0].style.aspectRatio).toBe('')
-    /* ⚠ STILL `.cre-tile-cta`. Both arms share the outline-at-rest /
-       fill-on-hover treatment, so the comparison is layout alone. */
+    /* ⚠ STILL `.cre-tile-cta`, PLUS `--bare`. Both arms share the ink and the
+       fill-on-hover; the stacked one drops the outline at rest (2026-10-01, the
+       direct ask) because six full-width outlines one under another read as six
+       boxes rather than a list.
+
+       ⚠ `--bare` MAKES THE BORDER TRANSPARENT, it does not remove it. The 1px
+       stays in the box so the row height and the label's left edge are
+       identical in both arms — `border: 0` would shift every label a pixel and
+       make the variant differ by more than the ask. Verified in the browser:
+       1px wide, rgba(0,0,0,0). */
     expect(buttons[0].className).toContain('cre-tile-cta')
+    expect(buttons[0].className).toContain('cre-tile-cta--bare')
   })
 
   it('defaults to the square grid', () => {
@@ -830,6 +839,9 @@ describe('the six-tile grid', () => {
     renderShell(T3)
     const grid = screen.getByRole('navigation', { name: 'Learning areas' })
     expect((grid as HTMLElement).style.gridTemplateColumns).toBe('repeat(2, minmax(0, 1fr))')
+    /* ⚠ AND THE SQUARES KEEP THEIR OUTLINE. A square with no edge has no
+       shape — `--bare` belongs to the stacked arm alone. */
+    expect((grid.querySelector('button') as HTMLElement).className).not.toContain('--bare')
   })
 
   it('leaves Testing with the two-tile strip and its Quick links card', () => {
