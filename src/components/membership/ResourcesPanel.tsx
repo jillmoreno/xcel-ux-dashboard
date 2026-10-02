@@ -15,7 +15,13 @@ import { ResourceCard } from './ResourceCard'
  * Exclusive" pill on any resource without an `openToAll` flag, which locked
  * Fitzgerald's genuinely free NP podcasts away from non-members.)
  */
-export function ResourcesPanel() {
+export function ResourcesPanel({
+  compass = false,
+}: {
+  /** The Atlas/Compass version's treatment (2026-10-01) — the shell passes
+   *  it; see `ResourceCard`'s `compass`. */
+  compass?: boolean
+} = {}) {
   const { brand } = useAccount()
   const resources = resourcesFor(brand)
 
@@ -27,10 +33,10 @@ export function ResourcesPanel() {
       {resources.length === 0 ? (
         <p style={emptyStyle}>No resources published for this brand yet.</p>
       ) : (
-        <div role="list" style={gridStyle}>
+        <div role="list" style={compass ? { ...gridStyle, gap: 20 } : gridStyle}>
           {resources.map((resource) => (
             <div key={resource.id} role="listitem">
-              <ResourceCard data={resource} />
+              <ResourceCard data={resource} compass={compass} />
             </div>
           ))}
         </div>

@@ -672,7 +672,7 @@ function PlatformShellBody() {
         // edge, the same offset the rails pin at. Read by the Atlas home's
         // sticky left column (`LearnerFocusedBand`).
         ['--cre-shell-top' as string]: `${headerBottom}px`,
-        ...(atlasNav && (active === 'dashboard' || active === 'course')
+        ...(atlasNav && (active === 'dashboard' || active === 'course' || active === 'resources')
           ? { background: 'var(--color-compass-page)' }
           : null),
         display: 'grid',
@@ -1578,6 +1578,11 @@ function SectionShell({
   const [shellParams] = useSearchParams()
   const atlasHome =
     active === 'dashboard' && isAtlasCompassNavVersion(shellParams.get('version'))
+  // The Atlas RESOURCES page in the Compass treatment (2026-10-01, the
+  // designer's request): no brand band — a serif title and a plain lede on
+  // the Compass page, at the Overview's 56px margin. See `ResourcesPanel`.
+  const atlasResources =
+    active === 'resources' && isAtlasCompassNavVersion(shellParams.get('version'))
   // Partner Offers for non-members gets its own marketing hero + locked cards
   // (Figma 63:16150) — NOT the generic LockedBenefitPage. Free Content is
   // OPEN TO ALL: non-members see the same page as members (free items keep their
@@ -1625,7 +1630,7 @@ function SectionShell({
   // Declared here rather than beside `libraryHero` above because `heroFor` is
   // brand-aware now and `brand` is not in scope until this line.
   const hero =
-    benefitUpsell || partnerNonMember || libraryHero ? null : heroFor(active, brand)
+    benefitUpsell || partnerNonMember || libraryHero || atlasResources ? null : heroFor(active, brand)
   const SEARCH_MIN_ITEMS = 12
   const heroSearchHidden =
     active === 'support' ||
@@ -1658,7 +1663,7 @@ function SectionShell({
         // (2026-09-24), so Home and the course pages share one margin. Safe
         // despite the note above: the Testing home Atlas renders has no
         // full-bleed band cancelling a `-40px`.
-        padding: atlasHome
+        padding: atlasHome || atlasResources
           ? 56
           : `24px ${isAccountSection(active) ? ACCOUNT_SECTION_GUTTER : 40}px 64px`,
       }}
@@ -1698,6 +1703,37 @@ function SectionShell({
               (active === 'm-learning-library' && libraryHeroCompact))
           }
         />
+      ) : atlasResources ? (
+        <header style={{ margin: '0 0 32px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {/* DM Serif Display — the Atlas heading face (`--font-heading-serif`,
+              which the Headings dropdown can still swap) — at Serif H4, the
+              Course Overview's title step. */}
+          <h1
+            style={{
+              margin: 0,
+              fontFamily: 'var(--font-heading-serif)',
+              fontWeight: 400,
+              fontSize: 'var(--type-atlas-h4-base-size, 38px)',
+              lineHeight: 'var(--type-atlas-h4-base-line, 40px)',
+              letterSpacing: '-0.01em',
+              color: 'var(--color-compass-page-heading)',
+            }}
+          >
+            {SECTION_TITLES.resources}
+          </h1>
+          <p
+            style={{
+              margin: 0,
+              maxWidth: 640,
+              fontFamily: 'var(--font-body)',
+              fontSize: 14,
+              lineHeight: '21px',
+              color: 'var(--color-compass-page-muted)',
+            }}
+          >
+            {resourcesCopyFor(brand).heroDescription}
+          </p>
+        </header>
       ) : learningPathHomeActive || active === 'courses' ? null : active ===
         'dashboard' ? (
         // Dashboard hides its page title visually — the content shifts up to the
@@ -1932,6 +1968,13 @@ function LearningPathSection() {
   )
 }
 
+/** Resources, in the Compass treatment on the Atlas/Compass version
+ *  (2026-10-01) — read here, so `ResourcesPanel` stays router-free. */
+function ShellResourcesPanel() {
+  const [params] = useSearchParams()
+  return <ResourcesPanel compass={isAtlasCompassNavVersion(params.get('version'))} />
+}
+
 function renderBody(
   active: PlatformSection,
   isMember: boolean,
@@ -2041,7 +2084,7 @@ function renderBody(
   // Resources (the restored Free Content section) — an auto-fill grid of
   // outbound cards. Members and non-members see the IDENTICAL page; everything
   // on it is free, which is the section's whole premise. See ResourcesPanel.
-  if (active === 'resources') return <ResourcesPanel />
+  if (active === 'resources') return <ShellResourcesPanel />
   // Help & Support (Support group) — the 4-card grid + Customer Support form,
   // Live Chat widget, external FAQs, and Contact Us. Open to members AND
   // non-members (support isn't gated).

@@ -25,6 +25,10 @@ import { MAX_RESOURCE_DESCRIPTION_CHARS } from '@/data/membership/resourcesFixtu
  */
 type Props = {
   data: Resource
+  /** The Atlas/Compass treatment (2026-10-01, the designer's request): the Home
+   *  course card's surface and stroke, a tinted plate in the brand's button
+   *  colour, a serif title (Serif H8) and the CTA in the page's link ink. */
+  compass?: boolean
 }
 
 const ICONS: Record<ResourceIcon, typeof Blog> = {
@@ -47,7 +51,7 @@ function clampDescription(text: string): string {
   return `${(lastSpace > 0 ? slice.slice(0, lastSpace) : slice).trimEnd()}…`
 }
 
-export function ResourceCard({ data }: Props) {
+export function ResourceCard({ data, compass = false }: Props) {
   const { loFi } = useLoFi()
   // The CTA link color (`.cre-resource-cta` + inline accent-link) bakes to the
   // navy default in this subtree and fails on the dark surface. Dark mode only
@@ -64,28 +68,46 @@ export function ResourceCard({ data }: Props) {
   const Icon = ICONS[data.icon]
 
   return (
-    <Card className="cre-library-card" style={cardStyle}>
+    <Card
+      className={compass ? 'cre-library-card cre-compass-resource-card' : 'cre-library-card'}
+      style={compass ? { ...cardStyle, ...compassCardStyle } : cardStyle}
+    >
       <div style={plateAreaStyle}>
-        <span aria-hidden className="cre-resource-plate" style={iconPlateStyle}>
+        <span
+          aria-hidden
+          className={compass ? 'cre-resource-plate cre-compass-resource-plate' : 'cre-resource-plate'}
+          style={iconPlateStyle}
+        >
           <Icon size={26} />
         </span>
       </div>
 
       <div style={bodyStyle}>
-        <h3 style={nameStyle} className="cre-library-card-title">
+        <h3 style={compass ? compassNameStyle : nameStyle} className="cre-library-card-title">
           {data.title}
         </h3>
-        <p style={descriptionStyle}>{clampDescription(data.description)}</p>
+        <p style={compass ? { ...descriptionStyle, color: 'var(--color-compass-page-muted)' } : descriptionStyle}>
+          {clampDescription(data.description)}
+        </p>
 
         <div style={spacerStyle} />
-        <div aria-hidden style={dividerStyle} />
+        <div
+          aria-hidden
+          style={compass ? { ...dividerStyle, background: 'var(--color-compass-page-card-rule)' } : dividerStyle}
+        />
 
         <a
           href={data.href}
           target="_blank"
           rel="noopener noreferrer"
-          className="cre-resource-cta"
-          style={dark ? { ...ctaStyle, color: '#d9b5d5' } : ctaStyle}
+          className={compass ? 'cre-resource-cta cre-compass-resource-cta' : 'cre-resource-cta'}
+          style={
+            compass
+              ? { ...ctaStyle, color: 'var(--color-atlas-cta-ink, var(--color-accent-link))' }
+              : dark
+              ? { ...ctaStyle, color: '#d9b5d5' }
+              : ctaStyle
+          }
           aria-label={`${data.cta}: ${data.title} (opens in a new tab)`}
         >
           {data.cta}
@@ -182,4 +204,24 @@ const ctaStyle: CSSProperties = {
   fontWeight: 700,
   textDecoration: 'none',
   alignSelf: 'flex-start',
+}
+
+/* ─── the Atlas/Compass treatment (`compass`) ─────────────────────── */
+/* The Home course card's surface — `--color-compass-course-card` (#FCFCFB)
+   and its 1px inset stroke, radius 14, no shadow. Hover, the plate and the
+   title colour are `.cre-compass-resource-*` in tokens.css. */
+const compassCardStyle: CSSProperties = {
+  background: 'var(--color-compass-course-card)',
+  boxShadow: 'inset 0 0 0 1px var(--color-compass-course-card-stroke, var(--color-atlas-nav-rule))',
+  border: 'none',
+  borderRadius: 14,
+}
+/* Serif H8, as the Home rail's step titles. */
+const compassNameStyle: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-heading-serif)',
+  fontWeight: 400,
+  fontSize: 'var(--type-atlas-h8-size, 20px)',
+  lineHeight: 'var(--type-atlas-h8-line, 24px)',
+  color: 'var(--color-compass-page-heading)',
 }
