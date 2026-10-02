@@ -337,6 +337,12 @@ export function CombinedCourseCard({
            is what all four steps are about. */
         stepRange
         stepNumber={1}
+        /* …and JUST "Step 1" — 2026-10-01, the direct ask. It sits above bare
+           "Step 2" and "Step 3" eyebrows in this card, so carrying the
+           journey's name made the first of three read as a different kind of
+           thing. The journey column keeps the full form, where this card is the
+           only one naming the route. */
+        stepLabelOnly
         /* "(26 of 42 Completed)" rather than "(42)" — 2026-10-01, the direct
            ask. ⚠ IT ECHOES THE STAT FOUR LINES ABOVE, which is the thing to
            judge: in this card the course's own "26 of 42 lessons COMPLETED"

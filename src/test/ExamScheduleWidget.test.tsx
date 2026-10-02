@@ -7,6 +7,7 @@ import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext
 import { LearningPathsPanelProvider } from '@/components/learning/LearningPathsPanelContext'
 import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelContext'
 import { PlatformShell } from '@/components/layout/PlatformShell'
+import { writeExamDate } from '@/data/examDateStore'
 import { DISCOVERABILITY_DASHBOARD_VERSION_TESTING } from '@/data/dashboardVersions'
 import { NY_GOVERNING_AGENCY } from '@/data/nyProducerRequirements'
 
@@ -610,5 +611,31 @@ describe('journey-quick-links — where the sheet links live', () => {
     renderShell()
     await user.click(within(quick()).getByRole('button', { name: 'Exam Information' }))
     expect(screen.getByRole('heading', { name: 'Exam Details' })).toBeTruthy()
+  })
+})
+
+describe('the saved readout leads with an eyebrow', () => {
+  /* 2026-10-01, the direct ask ("change this to match the eyebrow text on the
+     other containers").
+
+     ⚠ THIS IS A GLOBAL CHANGE, NOT A VERSION'S, and the test lives here rather
+     than in `Testing3Version.test.tsx` for that reason. The card's PROMPT state
+     already led with `widgetEyebrowStyle` ("Quick question"), as do Quick links
+     and every licensing step beside it; the saved state was the only block in
+     the column opening on an 18px heading, so a flag would have preserved an
+     inconsistency rather than compared two ideas. */
+  it('sets the label as an eyebrow, not an 18px heading', () => {
+    writeExamDate('2026-06-30')
+    renderShell()
+    const card = document.querySelector('section[aria-label="Exam Date"]') as HTMLElement
+    const label = within(card).getByText('Your exam date') as HTMLElement
+    expect(label.style.fontSize).toBe('10px')
+    expect(label.style.letterSpacing).toBe('0.18em')
+    expect(label.style.textTransform).toBe('uppercase')
+    expect(label.className).toContain('cre-eyebrow-ink')
+    /* ⚠ `--font-body`, not `--font-heading`. `dashboard-heading-font` re-points
+       the heading token at a serif, and an eyebrow that followed it would stop
+       matching the eyebrows beside it on exactly that variant. */
+    expect(label.style.fontFamily).toContain('--font-body')
   })
 })

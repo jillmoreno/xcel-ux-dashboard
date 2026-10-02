@@ -77,6 +77,7 @@ export function StudyJourneyRail({
   onViewAll,
   stepRange = false,
   stepNumber = 1,
+  stepLabelOnly = false,
   stopDetail,
   lessonProgressTitle = false,
   progressSpine = false,
@@ -106,6 +107,25 @@ export function StudyJourneyRail({
    *  `journey-step-order: exam-first` puts Schedule State Exam above it. Only
    *  read when `stepRange` is set. */
   stepNumber?: number
+  /**
+   * Drop the journey's name from the eyebrow — just "Step 1" — Testing 3,
+   * 2026-10-01, the direct ask.
+   *
+   * ⚠ IT IS ABOUT THE COMPANY THE EYEBROW KEEPS. In the journey COLUMN this
+   * card is the only one carrying the journey's name, so "Step 1 · Atlas Study
+   * Journey" is what says which route the numbers belong to. Inside Testing 3's
+   * combined card it sits above "Step 2" and "Step 3" eyebrows that are bare,
+   * so the suffix made the first of three look like a different kind of thing.
+   *
+   * ⚠ WHAT IT COSTS: the name "Atlas Study Journey" then appears nowhere on
+   * that card. The route is still legible — three numbered steps under a course
+   * title — but it is no longer branded. Worth a second look if the name is
+   * meant to be learned.
+   *
+   * Requires `stepRange`; on its own it changes nothing, because without a step
+   * number there is no "Step N" to leave behind.
+   */
+  stepLabelOnly?: boolean
   /**
    * Extra content nested UNDER one stop's row — Testing 3, 2026-10-01, the
    * direct ask ("move the lesson section to be within the complete coursework,
@@ -187,7 +207,9 @@ export function StudyJourneyRail({
      disagree about where 04 ends and 05 begins. */
   const eyebrowText =
     stepRange && stops.length > 0
-      ? `Step ${stepNumber} \u00b7 ${STUDY_JOURNEY_EYEBROW}`
+      ? stepLabelOnly
+        ? `Step ${stepNumber}`
+        : `Step ${stepNumber} \u00b7 ${STUDY_JOURNEY_EYEBROW}`
       : STUDY_JOURNEY_EYEBROW
   /*
    * LESS WORDS. `metaWords` prints group · count · status, which on this

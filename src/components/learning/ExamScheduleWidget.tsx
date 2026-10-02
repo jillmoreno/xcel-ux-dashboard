@@ -618,7 +618,28 @@ function ScheduledState({
   return (
     <>
       <div style={scheduledHeaderRowStyle}>
-        <p style={scheduledTitleStyle}>{examLabel}</p>
+        {/* AN EYEBROW, NOT A HEADING — 2026-10-01, the direct ask ("change this
+            to match the eyebrow text on the other containers").
+
+            ⚠ IT BRINGS THE CARD INTO LINE WITH ITSELF, which is why this is not
+            scoped to one version. The PROMPT state of this same card already
+            leads with `widgetEyebrowStyle` ("Quick question"), and so do Quick
+            links and every licensing step beside it — the saved state was the
+            only block in the column opening on an 18px heading. The compact
+            readout added for `exam-card-placement: under-course` also wears an
+            eyebrow. This was the last holdout.
+
+            ⚠ SO IT CHANGES EVERY VERSION, deliberately: QE Focused, Testing and
+            Testing 2 all draw this card, and a flag here would be preserving an
+            inconsistency rather than comparing two ideas.
+
+            ⚠ THE WORDS ARE UNCHANGED — still `examLabel`, "Your exam date".
+            The compact arm's eyebrow says "Exam Date", so the two placements
+            now differ by one word in the same slot. The ask was about the
+            TREATMENT; unifying the copy is a separate call. */}
+        <p className="cre-eyebrow-ink" style={widgetEyebrowStyle}>
+          {examLabel}
+        </p>
         {/* Link weight, not a button — the same quietening `date-first` does
             once a date exists. Editing is no longer the main event. */}
         <button type="button" style={editLinkStyle} onClick={onEdit}>
@@ -922,16 +943,10 @@ const scheduledHeaderRowStyle: CSSProperties = {
   margin: 0,
 }
 
-const scheduledTitleStyle: CSSProperties = {
-  margin: 0,
-  minWidth: 0,
-  fontFamily: 'var(--font-heading)',
-  fontWeight: 700,
-  fontSize: 18,
-  lineHeight: '24px',
-  letterSpacing: '-0.01em',
-  color: 'var(--color-text-primary)',
-}
+/* `scheduledTitleStyle` WAS HERE — the saved readout's 18px heading, replaced
+   by `widgetEyebrowStyle` on 2026-10-01 (see the call site). Removed rather
+   than left unreferenced: it was four lines of ordinary type with no argument
+   attached, which is not what the archive convention is for. */
 
 const editLinkStyle: CSSProperties = {
   flexShrink: 0,

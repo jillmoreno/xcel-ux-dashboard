@@ -122,7 +122,10 @@ describe('the combined block', () => {
        three steps, which is a different claim about the product than the one
        this version makes. The coursework did not stop being step 1, it moved. */
     renderShell(T3)
-    expect(within(courseCard()).getByText(/Step 1 · Atlas Study Journey/)).toBeTruthy()
+    expect(within(courseCard()).getByText('Step 1')).toBeTruthy()
+    /* …and the journey's NAME is no longer on this card at all, which is the
+       cost of the trim. */
+    expect(within(courseCard()).queryByText(/Atlas Study Journey/)).toBeNull()
     const column = document.querySelector('section[aria-label="Pass State Exam"]') as HTMLElement
     expect(within(column).getByText(/Step 2/)).toBeTruthy()
   })
@@ -398,6 +401,14 @@ describe('the coursework stop says how far in the learner is', () => {
     expect(li.querySelector('button[data-cta-id="home.journey-stop"]')).toBeTruthy()
   })
 
+  it('keeps the full eyebrow in Testing’s journey column', () => {
+    /* ⚠ `stepLabelOnly` IS A PROP ON A SHARED RAIL. There the coursework card
+       is the only one carrying the route's name, so trimming it everywhere
+       would leave "Atlas Study Journey" unsaid on every version. */
+    renderShell(T1)
+    expect(screen.getByText(/Step 1 · Atlas Study Journey/)).toBeTruthy()
+  })
+
   it('leaves Testing’s stop label and connector alone', () => {
     /* Both are opt-in props on a SHARED rail, so the way they break is by
        reaching every version at once. */
@@ -418,7 +429,7 @@ describe('the card’s own eyebrow', () => {
     renderShell(T3)
     const card = courseCard()
     const lead = within(card).getByText('Current course') as HTMLElement
-    const step = within(card).getByText(/Step 1 · Atlas Study Journey/) as HTMLElement
+    const step = within(card).getByText('Step 1') as HTMLElement
     expect(lead.style.fontSize).toBe(step.style.fontSize)
     expect(lead.style.fontWeight).toBe(step.style.fontWeight)
     expect(lead.style.letterSpacing).toBe(step.style.letterSpacing)
@@ -475,7 +486,11 @@ describe('the whole route in one card', () => {
     const eyebrows = [...courseCard().querySelectorAll('p, span')]
       .map((el) => el.textContent?.trim() ?? '')
       .filter((t) => /^Step \d($| )/.test(t))
-    expect(eyebrows).toEqual(['Step 1 · Atlas Study Journey', 'Step 2', 'Step 3'])
+    /* ⚠ ALL THREE BARE as of 2026-10-01, the direct ask. Step 1 carried
+       "· Atlas Study Journey" and read as a different kind of thing above two
+       bare siblings. The journey COLUMN keeps the full form — asserted below —
+       because there the card is the only one naming the route. */
+    expect(eyebrows).toEqual(['Step 1', 'Step 2', 'Step 3'])
   })
 
   it('gives each step a named region, as the shared widget does', () => {
