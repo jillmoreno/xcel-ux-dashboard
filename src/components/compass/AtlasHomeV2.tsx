@@ -266,9 +266,9 @@ export function AtlasHomeV2({
         </section>
 
         <nav aria-label="Other information for your journey" style={SIDE_CARD}>
-          <p style={{ ...BODY_TEXT, margin: 0, fontSize: 16, lineHeight: '20px', fontWeight: 600, color: 'var(--color-text-primary)' }}>
-            Other Information for Your Journey
-          </p>
+          {/* The exam-date card's heading style — Serif H8 (2026-10-02, the
+              designer's request; the design sets it in Open Sans SemiBold 16). */}
+          <p style={STEP_TITLE}>Other Information for Your Journey</p>
           <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
             <SideLink icon={<BookRegular size={13} aria-hidden />} label="My Courses" onClick={() => go('courses')} />
             <SideLink icon={<FileCertificateRegular size={13} aria-hidden />} label="My Certificates" onClick={() => go('certificates')} />
@@ -603,10 +603,12 @@ const MARK: CSSProperties = {
   height: 12,
   boxSizing: 'border-box',
   borderRadius: '50%',
-  border: '2px dashed var(--color-border-subtle)',
+  // Solid, not the design's dashed (2026-10-02, the designer's request) —
+  // the rings and the spine both.
+  border: '2px solid var(--color-border-subtle)',
   flex: 'none',
 }
-const SPINE: CSSProperties = { flex: '1 1 0', minHeight: 1, width: 0, borderLeft: '2px dashed var(--color-border-subtle)' }
+const SPINE: CSSProperties = { flex: '1 1 0', minHeight: 1, width: 0, borderLeft: '2px solid var(--color-border-subtle)' }
 const BEGIN: CSSProperties = {
   ...COMPASS_BUTTON,
   minHeight: 0,
@@ -662,5 +664,5 @@ const SIDE_ROW: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 13,
   lineHeight: '18px',
-  color: 'var(--color-text-secondary)',
+  // Colour on `.cre-compass-v2-row` (tokens.css), so the hover can win.
 }

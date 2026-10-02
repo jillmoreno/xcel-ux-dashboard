@@ -1452,6 +1452,25 @@
   text-decoration: underline;
   text-underline-offset: 3px;
 }
+/* Atlas Home V2's "Other Information" rows (AtlasHomeV2): the label turns
+   the brand's dark blue — the icons' own colour — and one weight heavier on
+   hover (2026-10-02). */
+.cre-compass-v2-row {
+  color: var(--color-text-secondary);
+  transition: color 120ms ease;
+}
+.cre-compass-v2-row:not(:disabled):hover,
+.cre-compass-v2-row:focus-visible {
+  color: var(--color-compass-page-button);
+  /* …and one weight up, Regular 400 → Medium 500 (same day) — the step the
+     breadcrumb hover takes. */
+  font-weight: 500;
+}
+.cre-compass-v2-row:focus-visible {
+  outline: 2px solid var(--color-compass-page-button);
+  outline-offset: 2px;
+  border-radius: 2px;
+}
 /* The Atlas left rail's collapse button (AtlasRailToggle, Figma 174:1562).
    Open: the design's outlined frame. Closed: see `.is-closed`. Its slide and
    these changes share the rail's easing (the transition list is inline). */
