@@ -860,6 +860,40 @@ describe('journey-scale-style — four ways to show 0 / 37 / 100', () => {
     expect((dots[1] as HTMLElement).style.width).toBe('14px')
   })
 
+  it('gauge: the marker anchors to the lesson block, not to a percentage', () => {
+    /* 2026-10-02, the direct ask ("the 37% should line up horizontally with the
+       lesson"). The lesson's height is its CONTENT's — a chapter name that
+       wraps moves it — so no percentage expresses "level with it"; the rail
+       measures the block and positions the fill, knob and figure off that.
+
+       ⚠ JSDOM HAS NO LAYOUT, so the measurement always reads 0 here and the
+       component falls back to the proportional `top`. What IS assertable is
+       that the anchor EXISTS and wraps the detail — lose the wrapper and the
+       measurement has nothing to read, which is silent in a browser too until
+       someone looks. The alignment itself was verified live: knob centre 775,
+       lesson block centre 775, delta 0.
+
+       ⚠ AND IT CHANGES WHAT THE GAUGE CLAIMS. It was the arm that chose
+       PROPORTION over position; anchored, it chooses position like the others,
+       so 0 and 100 now bracket a line whose marker is not at its proportional
+       height. The figure is still the honest number. */
+    renderShell(arm('gauge'))
+    const li = within(courseCard()).getByText(/Pre-Licensing Lessons/).closest('li')!
+    const column = li.lastElementChild as HTMLElement
+    const anchor = column.lastElementChild as HTMLElement
+    expect(anchor, 'the detail has no anchor wrapper').toBeTruthy()
+    expect(anchor.textContent).toMatch(/Lesson 27/)
+    /* ⚠ ONLY THE CURRENT ROW carries it — a ref handed to every row would leave
+       the last one to write winning, and the marker would track the bottom
+       stop. */
+    const others = [
+      ...courseCard().querySelectorAll('ol > li'),
+    ].slice(1) as HTMLElement[]
+    for (const other of others) {
+      expect(other.textContent).not.toMatch(/Lesson 27/)
+    }
+  })
+
   it('gauge: ground not yet covered is thinner and lighter than the fill', () => {
     /* 2026-10-02, the direct ask. ⚠ IT IS ITS OWN ELEMENT NOW. It was the
        track's background, which forced ONE width on covered and uncovered

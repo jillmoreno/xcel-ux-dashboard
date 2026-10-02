@@ -1,6 +1,13 @@
 import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
 import { useLoFi } from '@/context/LoFiContext'
-import { type CSSProperties, type ReactNode } from 'react'
+import {
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { ChevronRight, CircleCheck } from '@/icons'
 import type { LearningPathSummary } from '@/data/learningFixtures'
@@ -305,6 +312,72 @@ export function StudyJourneyRail({
      that is not a percentage leaves them at 0 rather than throwing. */
   const markerPct = Math.max(0, Math.min(100, Number.parseFloat(markerLabel ?? '') || 0))
 
+  /*
+   * THE GAUGE'S MARKER LINES UP WITH THE LESSON — 2026-10-02, the direct ask
+   * ("the 37% should line up horizontally with the lesson shown here").
+   *
+   * ⚠ IT HAS TO BE MEASURED. The lesson block's height is its CONTENT's — a
+   * chapter name that wraps to two lines moves it — so there is no percentage
+   * or offset that expresses "level with it". The layout effect reads the
+   * block's centre relative to the list and the fill, knob and figure all use
+   * that pixel instead of `markerPct`.
+   *
+   * ⚠ AND THIS CHANGES WHAT THE GAUGE CLAIMS. It was the arm that chose
+   * PROPORTION — the marker at its true height, deliberately not level with the
+   * live node — while `axis` and `chip` chose position. Anchoring it here makes
+   * it choose position too, so the 0 and 100 now bracket a line whose marker is
+   * NOT at its proportional height. The figure is still the honest number; its
+   * placement is no longer a reading of the scale. That is the trade the ask
+   * accepts and the first thing to re-examine if the caps start to mislead.
+   *
+   * ⚠ RE-MEASURED ON RESIZE, because the wrap point moves with the column's
+   * width and a stale pixel would drift the marker off the lesson at exactly
+   * the sizes nobody tests.
+   */
+  const listRef = useRef<HTMLOListElement | null>(null)
+  const anchorRef = useRef<HTMLDivElement | null>(null)
+  const [markerTop, setMarkerTop] = useState<number | null>(null)
+
+  /* ⚠ THE SCALE CHECK LIVES IN HERE, not in the effect. A bare
+     `setMarkerTop(null)` in the effect body is a synchronous setState the lint
+     rule rejects (and rightly — it is the shape that cascades renders); folding
+     it into the measurement makes the effect a single call and keeps one place
+     that decides what the offset is. */
+  const measureMarker = useCallback(() => {
+    const list = listRef.current
+    const anchor = anchorRef.current
+    if (!scaleGauge || !list || !anchor) {
+      setMarkerTop(null)
+      return
+    }
+    const l = list.getBoundingClientRect()
+    /* ⚠ MEASURE THE BLOCK, NOT THE WRAPPER. The wrapper's rect includes the
+       detail's own margins — 2 above and 14 below on the lesson block — so its
+       centre sits 6px lower than the thing a reader sees, and the marker landed
+       6px under the lesson. Measured, not reasoned: knob 781 against block 775.
+       An element's own rect excludes its margins, so the child is the honest
+       box. */
+    const a = (anchor.firstElementChild ?? anchor).getBoundingClientRect()
+    /* The track is inset 10px top and bottom (`gaugeTrackStyle`), so the offset
+       is measured against ITS box rather than the list's — otherwise the marker
+       sits 10px low. */
+    setMarkerTop(a.top + a.height / 2 - (l.top + 10))
+  }, [scaleGauge])
+
+  useLayoutEffect(() => {
+    measureMarker()
+    const list = listRef.current
+    if (!list || typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(measureMarker)
+    ro.observe(list)
+    return () => ro.disconnect()
+  }, [measureMarker, markerLabel, stops.length])
+
+  /* Falls back to the proportional position until the measurement lands — and
+     permanently in jsdom, where there is no layout to read. */
+  const markerOffset: CSSProperties =
+    markerTop == null ? { top: `${markerPct}%` } : { top: markerTop }
+
   if (stops.length === 0) return null
 
   if (loFi) {
@@ -415,6 +488,7 @@ export function StudyJourneyRail({
           which broke its alignment with the card's own eyebrow and with steps 2
           and 3 below. Only the axis needs the gutter. */}
       <ol
+        ref={listRef}
         aria-label="Study journey stops"
         style={scaleAxis || scaleGauge ? axisListStyle : listStyle}
       >
@@ -441,9 +515,16 @@ export function StudyJourneyRail({
                 while the fill keeps its 2px weight, so the eye reads how far
                 along the learner is before it reads the scale. */}
             <span style={gaugeRemainderStyle} />
-            <span style={{ ...gaugeFillStyle, height: `${markerPct}%` }} />
-            <span style={{ ...gaugeKnobStyle, top: `${markerPct}%` }} />
-            <span style={{ ...gaugeFigureStyle, top: `${markerPct}%` }}>{markerLabel}</span>
+            <span
+              style={{
+                ...gaugeFillStyle,
+                /* The fill ends where the marker is, so the three agree by
+                   construction rather than by two numbers kept in step. */
+                height: markerTop == null ? `${markerPct}%` : markerTop,
+              }}
+            />
+            <span style={{ ...gaugeKnobStyle, ...markerOffset }} />
+            <span style={{ ...gaugeFigureStyle, ...markerOffset }}>{markerLabel}</span>
             <span style={gaugeCapTopStyle}>0</span>
             <span style={gaugeCapBottomStyle}>100</span>
           </span>
@@ -811,7 +892,11 @@ export function StudyJourneyRail({
                 return (
                   <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, flex: 1 }}>
                     {row}
-                    {detail}
+                    {/* ⚠ THE GAUGE'S MARKER ANCHORS HERE. Only the CURRENT row's
+                        detail is measured — it is the one the marker is meant to
+                        sit level with, and a ref handed to every row would leave
+                        the last one to write winning. */}
+                    <div ref={isCurrent ? anchorRef : undefined}>{detail}</div>
                   </div>
                 )
               })()}
