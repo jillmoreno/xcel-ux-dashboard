@@ -1348,6 +1348,52 @@ html,
   color: var(--color-primary-900);
 }
 
+/* `.cre-lesson-cta` is the LESSON BLOCK as a control — Testing 3, 2026-10-02,
+   the direct ask ("same color as used in the links on the right, round
+   corners, hover will also show a right chevron").
+
+   ⚠ THE SAME 20% TINT AS `.cre-tile-cta--bare:hover`, deliberately and not by
+   coincidence: both are "a row you can press" on this page, and two hovers a
+   column apart that differed would read as two systems. If that tint moves,
+   move this one — they are a pair, and the only reason this is not the same
+   RULE is that this row keeps its ink rather than reversing.
+
+   ⚠ THE CHEVRON LIVES IN THE DOM AT ALL TIMES and only its opacity changes.
+   Rendering it on hover alone would reflow the row's text the moment a cursor
+   crossed it; at `opacity: 0` it holds its width and nothing moves. It is
+   `aria-hidden` either way — the button already has an accessible name that
+   says what pressing it does.
+
+   ⚠ FOCUS-VISIBLE GETS BOTH. A keyboard user reaching this row needs the same
+   two signals a mouse user gets, and the outline alone would say "focused"
+   without saying "this goes somewhere". */
+.cre-lesson-cta {
+  border-radius: var(--radius-md);
+  transition:
+    background-color 120ms ease,
+    opacity 120ms ease;
+}
+.cre-lesson-cta:hover,
+.cre-lesson-cta:focus-visible {
+  background: color-mix(in srgb, var(--color-primary-500) 20%, var(--color-surface-page));
+}
+.cre-lesson-cta:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -2px;
+}
+.cre-lesson-chevron {
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+.cre-lesson-cta:hover .cre-lesson-chevron,
+.cre-lesson-cta:focus-visible .cre-lesson-chevron {
+  opacity: 1;
+}
+[data-theme='dark'] .cre-lesson-cta:hover,
+[data-theme='dark'] .cre-lesson-cta:focus-visible {
+  background: color-mix(in srgb, var(--color-primary-300) 20%, var(--color-surface-page));
+}
+
 /* `.cre-eyebrow-ink` is SECTION-LABEL ink — the small tracked uppercase line
    over a block's heading ("Atlas Study Journey", "Learning With Compass — Jump
    Back In"). Navy as of 2026-09-17, the direct ask, up from the neutral greys

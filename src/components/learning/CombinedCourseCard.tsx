@@ -1,7 +1,7 @@
 import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
 import { useLoFi } from '@/context/LoFiContext'
 import { useState, type CSSProperties } from 'react'
-import { ArrowRight, ChevronDown } from '@/icons'
+import { ArrowRight, ChevronDown, ChevronRight } from '@/icons'
 import {
   NY_LH_CURRENT_CHAPTER,
   NY_LH_LESSON_MINUTES_INVENTED,
@@ -217,6 +217,14 @@ export function CombinedCourseCard({
           </>
         )}
       </span>
+      {/* Appears on hover and on focus — see `.cre-lesson-chevron`. Always in
+          the DOM so its width never reflows the text beside it. */}
+      <ChevronRight
+        size={16}
+        aria-hidden
+        className="cre-lesson-chevron"
+        style={{ flexShrink: 0, color: 'var(--color-primary-600)' }}
+      />
     </span>
   )
 
@@ -399,7 +407,12 @@ export function CombinedCourseCard({
                       data-cta-id="home.resume"
                       onClick={onResume}
                       aria-label={`Resume ${NY_LH_CURRENT_CHAPTER}`}
-                      className="cre-journey-stop"
+                      /* ⚠ `cre-lesson-cta`, NOT `cre-journey-stop`. The stop
+                         rows' neutral hover is right for a list of stops; this
+                         row is a CONTROL into the course and takes the same
+                         tint the right rail's links do, so the two read as one
+                         system. See `tokens.css`. */
+                      className="cre-lesson-cta"
                       style={lessonButton}
                     >
                       {lessonBlock}
@@ -703,7 +716,12 @@ const lessonButton: CSSProperties = {
   margin: '0 -8px',
   padding: 8,
   border: 0,
-  background: 'transparent',
+  /* ⚠ NO `background` HERE — `.cre-lesson-cta` owns it, and an inline
+     `transparent` BEATS the class's `:hover` in the cascade, so the row kept
+     its chevron and lost its tint. Measured: chevron opacity 1, background
+     still rgba(0,0,0,0). Exactly the trap `tokens.css` records for
+     `.cre-tile-cta`, hit a second time — if a class owns a hover, it must own
+     the rest state too. */
   textAlign: 'left',
   cursor: 'pointer',
 }

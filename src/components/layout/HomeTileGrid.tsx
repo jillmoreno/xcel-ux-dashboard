@@ -45,7 +45,10 @@ export function HomeTileGrid({
      the tiles as default, but add a variant"). The SAME six in the same order
      with the same CTA ids; only the shape changes, which is what makes the two
      comparable. */
-  const stacked = useFeatureFlag('home-tile-style').variant === 'stacked'
+  /* ⚠ DEFAULTS TO STACKED, so the test is for the OPT-IN rather than the
+     opt-out — `=== 'square'` inverted would quietly make an unset flag square
+     again, which is what the catalog default is for. */
+  const stacked = useFeatureFlag('home-tile-style').variant !== 'square'
 
   /* Mirrors `PlatformShell.handleSelect` — same param, same `replace`. None of
      these is Home, so the delete-on-Home branch has nothing to do here. */

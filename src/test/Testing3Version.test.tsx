@@ -306,7 +306,11 @@ describe('the lesson line, nested in the coursework', () => {
     const li = within(courseCard()).getByText(/Pre-Licensing Lessons/).closest('li')!
     const btn = li.querySelector('button[data-cta-id="home.resume"]') as HTMLElement
     expect(btn, 'the lesson block is not a control').toBeTruthy()
-    expect(btn.className).toContain('cre-journey-stop')
+    /* ⚠ `cre-lesson-cta` SINCE 2026-10-02, not `cre-journey-stop`. The stop
+       rows' neutral hover is right for a list of stops; this row is a CONTROL
+       into the course and takes the right rail's tint so the two read as one
+       system. Its own test is below. */
+    expect(btn.className).toContain('cre-lesson-cta')
     expect(btn.getAttribute('aria-label')).toMatch(/^Resume /)
     expect(li.textContent).toMatch(/Lesson 27/)
   })
@@ -683,12 +687,35 @@ describe('the whole route in one card', () => {
     expect(step3.textContent).toContain('$80 application fee')
   })
 
-  it('carries the journey’s own hover/focus treatment, not a new one', () => {
-    /* ⚠ `cre-journey-stop` IS BORROWED DELIBERATELY. It is what the journey's
-       stop rows three inches above use — background on hover, a focus-visible
-       outline, 120ms ease — so a row in this card behaves like the rows beside
-       it. A bespoke hover here would be a second answer to a question this
-       product already answered, and it would drift. */
+  it('hovers like the rail’s links, with a chevron that never reflows', () => {
+    /* 2026-10-02, the direct ask. ⚠ THE TINT IS THE SAME EXPRESSION the right
+       rail's rows use — both are "a row you can press" on this page, and two
+       hovers a column apart that differed would read as two systems. Verified
+       live: both composite to the identical colour.
+
+       ⚠ AND THE CLASS OWNS THE BACKGROUND. An inline `background: transparent`
+       on the button BEAT the class's `:hover` and the row kept its chevron
+       while losing its tint — measured, chevron opacity 1 against
+       rgba(0,0,0,0). Second time that trap has bitten; if a class owns a hover
+       it must own the rest state too. So the style object must NOT set one. */
+    renderShell(T3)
+    const btn = courseCard().querySelector(
+      'li button[data-cta-id="home.resume"]',
+    ) as HTMLElement
+    expect(btn.className).toContain('cre-lesson-cta')
+    expect(btn.style.background).toBe('')
+    expect(btn.style.backgroundColor).toBe('')
+    /* ⚠ THE CHEVRON IS ALWAYS IN THE DOM, hidden by opacity. Rendering it on
+       hover alone would reflow the row's text the moment a cursor crossed it. */
+    expect(btn.querySelector('.cre-lesson-chevron')).toBeTruthy()
+  })
+
+  it('keeps the stop ROWS on the journey’s own hover treatment', () => {
+    /* ⚠ THE DISCLOSURES, NOT THE LESSON. Steps 2 and 3 borrow
+       `cre-journey-stop` — the journey's own row treatment — because they ARE
+       rows in this card's list. The lesson block moved to `cre-lesson-cta` on
+       2026-10-02 because it is a control into the course rather than a row;
+       see its own test above. */
     renderShell(T3)
     const step2 = courseCard().querySelector(
       'section[aria-label="Pass State Exam"]',
@@ -1106,7 +1133,11 @@ describe('the six-tile grid', () => {
      replacing the My Courses / Certificates pair AND the Quick links card. */
 
   it('draws the six, in order, as squares', () => {
-    renderShell(T3)
+    /* ⚠ PINS `square`. `stacked` became the default on 2026-10-02 — six
+       squares two-across pushed the exam card and the readiness slot well
+       below the fold, and these six are destinations rather than things to
+       dwell on. The shape claims below belong to the opt-in arm now. */
+    renderShell(`${T3}&ff=home-tile-style:square`)
     const grid = screen.getByRole('navigation', { name: 'Learning areas' })
     expect([...grid.querySelectorAll('button')].map((b) => b.textContent?.trim())).toEqual([
       'My Courses',
@@ -1196,16 +1227,22 @@ describe('the six-tile grid', () => {
     expect(buttons[0].className).toContain('cre-tile-cta--bare')
   })
 
-  it('defaults to the square grid', () => {
-    /* The flag's default is `square` — what the rail was built as and what has
-       been reviewed. `stacked` is the alternative, not the new baseline. */
+  it('defaults to the stacked rows now, with square the opt-in', () => {
+    /* ⚠ FLIPPED 2026-10-02, the direct ask. The rows let the whole right rail —
+       exam card, readiness slot and all six destinations — sit above the fold,
+       which six squares two-across did not. */
     const flag = FEATURE_FLAGS.find((f) => f.key === 'home-tile-style')
-    expect(flag?.defaultVariant).toBe('square')
+    expect(flag?.defaultVariant).toBe('stacked')
     renderShell(T3)
     const grid = screen.getByRole('navigation', { name: 'Learning areas' })
-    expect((grid as HTMLElement).style.gridTemplateColumns).toBe('repeat(2, minmax(0, 1fr))')
-    /* ⚠ AND THE SQUARES KEEP THEIR OUTLINE. A square with no edge has no
-       shape — `--bare` belongs to the stacked arm alone. */
+    expect((grid as HTMLElement).style.gridTemplateColumns).toBe('minmax(0, 1fr)')
+  })
+
+  it('keeps the outline on the squares, where the shape needs an edge', () => {
+    /* ⚠ `--bare` BELONGS TO THE STACKED ARM ALONE. A square with no edge has
+       no shape; six full-width outlines stacked read as six boxes. */
+    renderShell(`${T3}&ff=home-tile-style:square`)
+    const grid = screen.getByRole('navigation', { name: 'Learning areas' })
     expect((grid.querySelector('button') as HTMLElement).className).not.toContain('--bare')
   })
 
