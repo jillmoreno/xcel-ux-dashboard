@@ -110,6 +110,18 @@ describe('the combined block', () => {
     expect(card.getByText(/Survey & Certificate/)).toBeTruthy()
   })
 
+  it('numbers the block Step 1, and the column carries on at Step 2', () => {
+    /* 2026-10-01, the direct ask. ⚠ BOTH HALVES ARE THE ASSERTION. Numbering
+       the block only matters because the column continues from it — label this
+       1 and renumber the column 1-3 and the page would claim the journey has
+       three steps, which is a different claim about the product than the one
+       this version makes. The coursework did not stop being step 1, it moved. */
+    renderShell(T3)
+    expect(within(courseCard()).getByText(/Step 1 · Atlas Study Journey/)).toBeTruthy()
+    const column = document.querySelector('section[aria-label="Pass State Exam"]') as HTMLElement
+    expect(within(column).getByText(/Step 2/)).toBeTruthy()
+  })
+
   it('does NOT also leave a coursework card in the journey column', () => {
     /* ⚠ THE DEFECT THIS VERSION EXISTS TO REMOVE, reappearing as a bug. A
        combined block with the stops ALSO in the right column is the same list

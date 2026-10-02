@@ -33,20 +33,20 @@ import { journeyStopsFor } from './studyJourneyUtil'
  * to work out for themselves that they agree. This says it once: identity and
  * the action at the top, then the stops that the percentage is made of.
  *
- * ⚠ THE NUMBERING IS THE SEAM TO WATCH, and it is a real loose end rather than
- * a styling one. `stepRange` is NOT passed, so the rail writes a bare "Atlas
- * Study Journey" here instead of "Step 1 · …" — which is right inside a card
- * that opens on "Current course" and carries no number of its own. But the
- * journey column still numbers from 1, so what a learner now reads down the
- * page is: this block (unnumbered), then Step 2, Step 3, Step 4. Step 1 exists
- * and is in the other column, unlabelled.
+ * ⚠ THE NUMBERING IS SETTLED: THIS BLOCK IS STEP 1 (2026-10-01, the direct
+ * ask). The rail is given `stepRange` + `stepNumber={1}`, so its eyebrow reads
+ * "Step 1 · Atlas Study Journey" and the journey column carries on at Step 2.
  *
- * LEFT THAT WAY FOR THIS FIRST PASS, deliberately. The alternatives are to
- * number this block 1, or to renumber the column 1-3 — and the second says the
- * journey has three steps, which is a different claim about the product than
- * the one this version is making. The coursework did not stop being step 1, it
- * moved. Deciding which is a sequencing question, not a layout one, and it is
- * the first thing to settle on the next pass.
+ * It wrote a bare "Atlas Study Journey" for one build, which left the page
+ * running: block (unnumbered), Step 2, Step 3, Step 4 — step 1 existing but
+ * labelled nowhere. The other way out was renumbering the column 1-3, and that
+ * says the journey HAS three steps, which is a different claim about the
+ * product. The coursework did not stop being step 1; it moved.
+ *
+ * ⚠ SO THE NUMBERS NOW SPAN TWO COLUMNS, which is this version's real cost and
+ * the thing to judge: 1 is in the left column inside the combined block, and
+ * 2-4 are cards down the right. They read in order going down the page, but
+ * they are not in one line of sight.
  */
 export function CombinedCourseCard({
   courseTitle,
@@ -215,6 +215,22 @@ export function CombinedCourseCard({
         path={path}
         onOpenStop={onOpenStop}
         onViewAll={onViewAll}
+        /* "Step 1 · Atlas Study Journey" — 2026-10-01, the direct ask, and it
+           SETTLES the numbering seam this card opened.
+        
+           The combined block IS step 1. It read a bare "Atlas Study Journey"
+           for one build, which left the page running: block (unnumbered), Step
+           2, Step 3, Step 4 — step 1 existing but labelled nowhere. The other
+           way out was renumbering the column 1-3, and that says the journey HAS
+           three steps, which is a different claim about the product. The
+           coursework did not stop being step 1; it moved.
+        
+           ⚠ THE EYEBROW SITS INSIDE THE BLOCK, NOT ON IT, so the number lands
+           on the coursework half rather than on the card as a whole. That is
+           the honest placement: the course identity above it is not a step, it
+           is what all four steps are about. */
+        stepRange
+        stepNumber={1}
         stopDetail={
           nestLesson
             ? (_id, { isCurrent }) => (isCurrent ? <div style={nestedLesson}>{lessonBlock}</div> : null)
