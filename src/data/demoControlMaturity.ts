@@ -49,6 +49,10 @@ export const DEMO_CONTROLS: readonly DemoControlRow[] = [
      parent is; the bar also hides it outright under the left nav, where the
      rail's Get Help row means the question does not arise. */
   { id: 'nav-help', flag: 'nav-help' },
+  /* Testing 3's two timeline axes. Both inherit `wip` from their flags — they
+     are an open exploration, so the demo site does not offer them. */
+  { id: 'journey-scale', flag: 'journey-scale-style' },
+  { id: 'stop-mark', flag: 'journey-stop-mark' },
   /* Brand picker — parked (the bar renders it only when a brand switch is
      enabled at all), so it states its own `wip` rather than inheriting one. */
   { id: 'brand', maturity: 'wip' },

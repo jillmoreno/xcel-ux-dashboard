@@ -80,6 +80,7 @@ export function StudyJourneyRail({
   stepLabelOnly = false,
   markerLabel,
   scaleStyle = 'axis',
+  stopMark = 'circle',
   stopDetail,
   lessonProgressTitle = false,
   progressSpine = false,
@@ -157,6 +158,19 @@ export function StudyJourneyRail({
    * am I" — that is what makes them comparable.
    */
   scaleStyle?: 'axis' | 'gauge' | 'chip' | 'header'
+  /**
+   * What an UNREACHED stop looks like — `journey-stop-mark`, 2026-10-02.
+   *
+   * `circle` is the dashed ring this rail has always drawn. `dash` is a short
+   * tick across the line: a mark ON the timeline rather than a node hung off
+   * it. The argument is that a ring is a PLACE, and six places read as six
+   * equal claims when five of them are not yet real — a tick reads as a
+   * graduation on a scale, which is what the `gauge` arm has made this.
+   *
+   * ⚠ IT ONLY TOUCHES `not-started`. A completed tick and a "you are here" tick
+   * would give up the one distinction this column cannot lose.
+   */
+  stopMark?: 'circle' | 'dash'
   /**
    * Extra content nested UNDER one stop's row — Testing 3, 2026-10-01, the
    * direct ask ("move the lesson section to be within the complete coursework,
@@ -420,6 +434,13 @@ export function StudyJourneyRail({
              different facts. The arms that put the figure beside the node make
              the opposite trade. */
           <span aria-hidden style={gaugeTrackStyle}>
+            {/* ⚠ THE REMAINDER IS ITS OWN LINE — 2026-10-02, the direct ask
+                ("lighter/thinner below the active section"). It was the track
+                element's own background, which forced one width for covered and
+                uncovered ground alike. As a separate 1px line it can recede
+                while the fill keeps its 2px weight, so the eye reads how far
+                along the learner is before it reads the scale. */}
+            <span style={gaugeRemainderStyle} />
             <span style={{ ...gaugeFillStyle, height: `${markerPct}%` }} />
             <span style={{ ...gaugeKnobStyle, top: `${markerPct}%` }} />
             <span style={{ ...gaugeFigureStyle, top: `${markerPct}%` }}>{markerLabel}</span>
@@ -626,6 +647,14 @@ export function StudyJourneyRail({
                          sizing is what makes them read as one sequence. */
                       ...(scaleGauge && stop.status === 'not-started'
                         ? gaugeDotSmallStyle
+                        : null),
+                      /* ⚠ LAST IN THE SPREAD, so it overrides the dashed ring's
+                         border and the gauge's smaller circle rather than
+                         fighting them. A tick is not a small ring — it is a
+                         different mark, and layering it over the ring's border
+                         would leave a hairline box around it. */
+                      ...(stop.status === 'not-started' && stopMark === 'dash'
+                        ? gaugeDashMarkStyle
                         : null),
                     }}
                   >
@@ -1556,8 +1585,22 @@ const gaugeTrackStyle: CSSProperties = {
   top: 10,
   bottom: 10,
   width: 2,
+  /* NO BACKGROUND — this is the positioning context and the fill's 2px gauge;
+     the uncovered part is `gaugeRemainderStyle` below, which is thinner. */
+}
+
+/** Ground not yet covered: 1px rather than 2, and a stop lighter than the
+ *  border token. `left: 0.5` centres the 1px inside the 2px column, so the
+ *  remainder and the fill share one axis instead of stepping sideways at the
+ *  marker. */
+const gaugeRemainderStyle: CSSProperties = {
+  position: 'absolute',
+  left: 0.5,
+  top: 0,
+  bottom: 0,
+  width: 1,
   borderRadius: 'var(--radius-pill)',
-  background: 'var(--color-border-subtle)',
+  background: 'var(--color-neutral-100)',
 }
 
 const gaugeFillStyle: CSSProperties = {
@@ -1632,6 +1675,26 @@ const gaugeDotSmallStyle: CSSProperties = {
   width: 10,
   height: 10,
   margin: '5px 0 0',
+}
+
+/**
+ * An unreached stop as a TICK — `journey-stop-mark: dash`.
+ *
+ * ⚠ IT CLEARS THE BORDER AND THE RADIUS the ring left behind. Spread last over
+ * `syllabusDotStyle`, which sets a 1px dashed border and a 50% radius; without
+ * resetting both, the tick renders inside a faint rounded box.
+ *
+ * 12 wide against the line's 2 so it reads as a graduation crossing it, and
+ * `marginTop` keeps its centre where the ring's was — the rows are laid out
+ * against a 14px node, and a 2px-tall mark with no offset would ride high.
+ */
+const gaugeDashMarkStyle: CSSProperties = {
+  width: 12,
+  height: 2,
+  margin: '9px 0 0',
+  border: 0,
+  borderRadius: 'var(--radius-pill)',
+  background: 'var(--color-neutral-200)',
 }
 
 /** The per-row segment under the gauge: invisible, but still occupying its

@@ -125,6 +125,8 @@ export function CombinedCourseCard({
       | 'gauge'
       | 'chip'
       | 'header') ?? 'gauge'
+  const stopMark =
+    (useFeatureFlag('journey-stop-mark').variant as 'circle' | 'dash') ?? 'circle'
   const stopsForPct = journeyStopsFor(path)
   const journeyTotal = stopsForPct.reduce((n, st) => n + stopWeight(st.id, st.hours), 0)
   const journeyDone = stopsForPct.reduce(
@@ -368,6 +370,9 @@ export function CombinedCourseCard({
         /* HOW that figure is drawn — `journey-scale-style`, four arms under
            comparison. The card supplies the number; the rail owns the shapes. */
         scaleStyle={scaleStyle}
+        /* …and what an unreached stop looks like, a second axis of the same
+           exploration — `journey-stop-mark`. */
+        stopMark={stopMark}
         stopDetail={
           nestLesson
             ? (_id, { isCurrent }) =>

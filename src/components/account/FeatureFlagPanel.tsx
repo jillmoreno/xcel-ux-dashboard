@@ -119,6 +119,7 @@ const REBRAND_FLAGS = [
   'exam-card-placement',
   'home-tile-style',
   'journey-scale-style',
+  'journey-stop-mark',
   'course-entry-details',
   /* `exam-step-style` was listed here until 2026-09-29; it was retired when its
      `ask-first` arm became unconditional. These two are what remain of that

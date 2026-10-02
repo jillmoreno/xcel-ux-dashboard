@@ -113,6 +113,8 @@ type ControlKey =
   | 'pacing'
   | 'navLayout'
   | 'navHelp'
+  | 'journeyScale'
+  | 'stopMark'
   | 'fidelity'
   | 'education'
 
@@ -124,6 +126,13 @@ const SHOW_CONTROL: Record<ControlKey, boolean> = {
   /* The two this branch is actually about. */
   navLayout: true,
   navHelp: true,
+  /* ⚠ ON THE BAR RATHER THAN IN THE FLAG PANEL — 2026-10-02, the direct ask
+     ("make the variants available in a dropdown since there are too many for
+     the sheet view"). Testing 3's timeline now has two axes under comparison
+     with six arms between them; a reviewer switching between them is the whole
+     task, and a sheet two menus deep is where a comparison stops being made. */
+  journeyScale: true,
+  stopMark: true,
   fidelity: true,
   education: false,
 }
@@ -177,6 +186,22 @@ const NAV_LAYOUT_PICKER: { value: string; label: string }[] = [
  * the left nav rather than going grey — see its `hidden` below — because a
  * disabled dropdown invites a click that does nothing.
  */
+/* Testing 3's coursework timeline — four ways to show the figure, and two ways
+   to draw a stop nobody has reached. Separate dropdowns because they are
+   separate questions: one is about the SCALE, the other about the MARKS on it,
+   and a version could reasonably want one without the other. */
+const JOURNEY_SCALE_PICKER: { value: string; label: string }[] = [
+  { value: 'gauge', label: 'Gauge — the spine IS the scale' },
+  { value: 'axis', label: 'Axis — 0/100 bracketing the list' },
+  { value: 'chip', label: 'Chip — the figure on the live stop' },
+  { value: 'header', label: 'Header — a horizontal scale above' },
+]
+
+const STOP_MARK_PICKER: { value: string; label: string }[] = [
+  { value: 'circle', label: 'Dashed ring' },
+  { value: 'dash', label: 'Tick on the line' },
+]
+
 const NAV_HELP_PICKER: { value: string; label: string }[] = [
   { value: 'header-icon', label: 'Header — ? icon' },
   { value: 'profile-menu', label: 'Profile dropdown — above Logout' },
@@ -263,6 +288,8 @@ export function DemoControlsBar({
   const showControl = { ...SHOW_CONTROL, ...controls }
   const navLayoutState = useFeatureFlag('nav-placement')
   const navHelpState = useFeatureFlag('nav-help')
+  const journeyScaleState = useFeatureFlag('journey-scale-style')
+  const stopMarkState = useFeatureFlag('journey-stop-mark')
   const { loFi, setLoFi } = useLoFi()
   const educationTypeFlag = useFeatureFlag('dashboard-education-type')
   // Readiness state — the Exam Readiness section's own axis. Deliberately NOT
@@ -1155,6 +1182,85 @@ export function DemoControlsBar({
                   className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
                   onClick={() => {
                     setVariant('nav-help', opt.value)
+                    close()
+                  }}
+                >
+                  <span style={{ flex: 1 }}>{opt.label}</span>
+                  {active && <Check size={15} aria-hidden />}
+                </button>
+              )
+            })}
+          </DemoDropdown>
+        )}
+        {/* TIMELINE — Testing 3's coursework scale. Four arms, no winner. */}
+        {showControl.journeyScale && (
+          <DemoDropdown
+            id="journey-scale"
+            hidden={!show('journey-scale')}
+            wip={markWip && controlMaturity('journey-scale') === 'wip'}
+            label={
+              JOURNEY_SCALE_PICKER.find(
+                (o) => o.value === (journeyScaleState.variant ?? 'gauge'),
+              )?.label ?? 'Gauge — the spine IS the scale'
+            }
+            eyebrow="Timeline"
+            openId={openId}
+            onToggle={toggle}
+            panelRole="radiogroup"
+            panelLabel="Coursework timeline"
+            panelMinWidth={290}
+          >
+            {JOURNEY_SCALE_PICKER.map((opt) => {
+              const active = opt.value === (journeyScaleState.variant ?? 'gauge')
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  tabIndex={active ? 0 : -1}
+                  className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
+                  onClick={() => {
+                    setVariant('journey-scale-style', opt.value)
+                    close()
+                  }}
+                >
+                  <span style={{ flex: 1 }}>{opt.label}</span>
+                  {active && <Check size={15} aria-hidden />}
+                </button>
+              )
+            })}
+          </DemoDropdown>
+        )}
+        {/* STOP MARKS — the second axis of the same exploration. */}
+        {showControl.stopMark && (
+          <DemoDropdown
+            id="stop-mark"
+            hidden={!show('stop-mark')}
+            wip={markWip && controlMaturity('stop-mark') === 'wip'}
+            label={
+              STOP_MARK_PICKER.find((o) => o.value === (stopMarkState.variant ?? 'circle'))
+                ?.label ?? 'Dashed ring'
+            }
+            eyebrow="Stop marks"
+            openId={openId}
+            onToggle={toggle}
+            panelRole="radiogroup"
+            panelLabel="Unreached stops"
+            panelMinWidth={220}
+          >
+            {STOP_MARK_PICKER.map((opt) => {
+              const active = opt.value === (stopMarkState.variant ?? 'circle')
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  tabIndex={active ? 0 : -1}
+                  className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
+                  onClick={() => {
+                    setVariant('journey-stop-mark', opt.value)
                     close()
                   }}
                 >

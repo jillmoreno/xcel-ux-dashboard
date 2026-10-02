@@ -837,7 +837,14 @@ describe('journey-scale-style — four ways to show 0 / 37 / 100', () => {
     renderShell(arm('gauge'))
     const ol = courseCard().querySelector('ol[aria-label="Study journey stops"]') as HTMLElement
     const track = [...ol.children].find((el) => el.tagName === 'SPAN') as HTMLElement
-    const knob = track.children[1] as HTMLElement
+    /* ⚠ FOUND BY ITS SHADOW, NOT BY INDEX. `track.children[1]` was the knob
+       until the remainder line was split out ahead of it on 2026-10-02, and an
+       index-based grab then pointed at the wrong element. The knob is the one
+       thing in here that glows. */
+    const knob = [...track.children].find((el) =>
+      (el as HTMLElement).style.boxShadow,
+    ) as HTMLElement
+    expect(knob, 'no glowing marker').toBeTruthy()
     expect(knob.style.boxShadow).toContain('--color-success-500')
     expect(knob.style.border).toBeFalsy()
   })
@@ -851,6 +858,54 @@ describe('journey-scale-style — four ways to show 0 / 37 / 100', () => {
       ...courseCard().querySelectorAll('li > span[aria-hidden] > span:first-child'),
     ]
     expect((dots[1] as HTMLElement).style.width).toBe('14px')
+  })
+
+  it('gauge: ground not yet covered is thinner and lighter than the fill', () => {
+    /* 2026-10-02, the direct ask. ⚠ IT IS ITS OWN ELEMENT NOW. It was the
+       track's background, which forced ONE width on covered and uncovered
+       ground alike; split out, the remainder can recede while the fill keeps
+       its weight. Measured in the browser: 1px #ececec against 2px navy. */
+    renderShell(arm('gauge'))
+    const ol = courseCard().querySelector('ol[aria-label="Study journey stops"]') as HTMLElement
+    const track = [...ol.children].find((el) => el.tagName === 'SPAN') as HTMLElement
+    const [remainder, fill] = [...track.children] as HTMLElement[]
+    expect(remainder.style.width).toBe('1px')
+    expect(fill.style.width).toBe('2px')
+    expect(remainder.style.background).toContain('--color-neutral-100')
+    expect(fill.style.background).toContain('--color-primary-700')
+  })
+
+  it('stop marks: `dash` replaces the ring with a tick, done and live untouched', () => {
+    /* 2026-10-02, the direct ask, as its own flag. ⚠ THE RESET IS THE PART THAT
+       MATTERS: the tick is spread over `syllabusDotStyle`, which carries a 1px
+       dashed border and a 50% radius — without clearing both, a tick renders
+       inside a faint rounded box. */
+    /* ⚠ BOTH FLAGS IN ONE `ff`, comma-separated. `renderShell` lifts the whole
+       `ff` param off the url it is handed and mirrors it onto
+       `window.location`, so a second `?ff=` written by hand afterwards is just
+       overwritten by the next render. */
+    renderShell(`${T3}&ff=journey-scale-style:gauge,journey-stop-mark:dash`)
+    const marks = [
+      ...courseCard().querySelectorAll('li > span[aria-hidden] > span:first-child'),
+    ] as HTMLElement[]
+    /* The live stop keeps its 14px node… */
+    expect(marks[0].style.width).toBe('14px')
+    /* …and every unreached one is a 12x2 tick with no border left behind. */
+    for (const m of marks.slice(1)) {
+      expect(m.style.width).toBe('12px')
+      expect(m.style.height).toBe('2px')
+      expect(m.style.border).toBe('0px')
+    }
+  })
+
+  it('stop marks: `circle` is the default and keeps the ring', () => {
+    const flag = FEATURE_FLAGS.find((f) => f.key === 'journey-stop-mark')
+    expect(flag?.defaultVariant).toBe('circle')
+    renderShell(arm('gauge'))
+    const marks = [
+      ...courseCard().querySelectorAll('li > span[aria-hidden] > span:first-child'),
+    ] as HTMLElement[]
+    expect(marks[1].style.height).toBe('10px')
   })
 
   it('chip: the figure rides the live stop, with no 0 or 100 anywhere', () => {
