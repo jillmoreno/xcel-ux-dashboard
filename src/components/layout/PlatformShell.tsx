@@ -37,6 +37,7 @@ import {
 import { isAccountSection } from '@/components/account/accountSections'
 import { NotificationsPanel } from '@/components/notifications/NotificationsPanel'
 import { GiftRecipientsPanel } from '@/components/account/purchases/GiftRecipientsPanel'
+import { PurchasesSection } from '@/components/account/purchases/PurchasesPanel'
 import { LibraryPanel } from '@/components/membership/LibraryPanel'
 import { LearningLibraryHero } from '@/components/membership/LearningLibraryHero'
 import { EmptyState } from '@/components/ui/EmptyState'
@@ -53,6 +54,12 @@ import { partnerOfferingsFor } from '@/data/membership/partnerOfferingsFixtures'
 import { ResourcesPanel } from '@/components/membership/ResourcesPanel'
 import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
 import { displayedProgressPct } from '@/components/learning/learningPathsHomeUtil'
+import { CompassCoursePlayer } from '@/components/learning/CompassCoursePlayer'
+import { CourseContentV2 } from '@/components/learning/CourseContentV2'
+import {
+  NY_LH_COURSE_CHAPTERS,
+  NY_LH_CURRENT_CHAPTER_INDEX,
+} from '@/data/nyProducerRequirements'
 import { ReadinessPanel } from '@/components/readiness/ReadinessPanel'
 import { resourcesCopyFor, resourcesFor } from '@/data/membership/resourcesFixtures'
 import { NonMemberUpsellHero } from '@/components/membership/NonMemberUpsellHero'
@@ -152,9 +159,10 @@ const VALID_SECTIONS: PlatformSection[] = [
   // sub-nav has somewhere real to point (they used to be top-nav
   // placeholders outside the shell).
   'notifications',
-  'licenses',
+  // 'licenses' and 'payment-methods' sat here (after Notifications, and after
+  // Transcripts) until 2026-09-30 — archived, so a `?section=licenses` deep
+  // link is no longer valid and falls back to the dashboard.
   'transcripts',
-  'payment-methods',
   'purchases',
   'gift-recipients',
 ]
@@ -229,6 +237,42 @@ function PlatformShellBody() {
   // the origin is the section the launcher overlays (the URL-driven `active`,
   // which is left unchanged while the launcher is open).
   const launcherOpen = launcher.courseId != null
+  /* Which surface the launcher opens — see `course-launcher-style`. Read
+     UNCONDITIONALLY, above the early return below, because a hook after a
+     conditional return is the `rules-of-hooks` trap three notes in
+     `LearnerFocusedBand` already record. */
+  const launcherStyle = useFeatureFlag('course-launcher-style').variant ?? 'lo-fi'
+  /* Which course page Resume opens — see the branch below. Named
+     `courseNavVariant` because `navVariant` is already this file's RAIL style;
+     two different navigations, and the shorter name was taken. Read with the
+     other flags, unconditionally, well above any early return. */
+  const courseNavVariant = useFeatureFlag('dashboard-navigation').variant ?? 'option-1'
+  /*
+   * WHAT THE PLAYER IS A PLAYER FOR comes from the OPENER, not from a lookup
+   * here — `launcher.meta`, supplied by the card that called `open()`.
+   *
+   * FOUR DERIVATIONS WERE TRIED IN THIS SPOT FIRST and every one rendered
+   * something wrong, which is why the context grew a field instead:
+   *
+   *   - THE PERSONA'S PATH via `dashboard-education-type`. That flag's catalog
+   *     default is `ce` while the Testing version is qualifying education, so
+   *     the sidebar read "Florida Life & Health CE" beside a card naming the
+   *     New York pre-licensing course. The VERSION decides this, not the flag.
+   *   - `findLearningCourseById`, the standalone `CourseDetailPage`'s resolver.
+   *     It searches learning-path COURSE ids; the launcher passes a jumpBackIn
+   *     id. Null every time, falling through to the persona above — failing
+   *     SILENTLY, which is what made the first fix look like it worked.
+   *   - `myCoursesFor(brand)`, the list the card falls back to when no course
+   *     is passed. A persona-driven path supplies its own, so this missed too.
+   *   - `learningPathsFor(brand)` matched on `jumpBackIn.id`. The closest of
+   *     the four and still wrong: the path is a PERSONA OVERRIDE and is not in
+   *     that list at all.
+   *
+   * The common thread is that no registry the shell can reach holds the object
+   * the card is rendering. The card is holding it, so the card passes it.
+   */
+  const launchedTitle = launcher.meta.title ?? ''
+  const launchedPercent = launcher.meta.percentComplete ?? 0
   /*
    * MANUAL COLLAPSE, layered over the automatic one — 2026-09-17.
    *
@@ -652,6 +696,64 @@ function PlatformShellBody() {
   // (The header's Cart / Account / hamburger + logo link are also neutralized —
   // see Header — and `?chrome=off` hides the prototype tools.)
   const focus = params.get('focus') === '1'
+
+  /*
+   * THE COMPASS TAKEOVER — `course-launcher-style: compass`.
+   *
+   * Returned BEFORE the shell grid, not rendered inside it, and that is the
+   * whole structural point of the variant. The player draws its own 260px
+   * contents sidebar in the space the dashboard rail occupies, so the two
+   * cannot share a screen; `lo-fi` keeps the rail and renders in the content
+   * column exactly as it always has, a few lines below.
+   *
+   * THE GLOBAL HEADER SURVIVES THIS because it is not ours — `<Header />` sits
+   * in `AppLayout`, ABOVE this component, so an early return here drops the
+   * rail and the content column and leaves the header where the design draws
+   * it. Nothing had to be rebuilt or lifted.
+   *
+   * The title and the percentage are the persona's own — `displayedProgressPct`
+   * on the path Home renders — for the reason the Study Plan tile's note
+   * records: any other source reads the base fixture rather than the demo
+   * persona's override, and the player would state a different percentage from
+   * the dashboard it just covered.
+   */
+  if (launcherOpen && launcherStyle === 'compass') {
+    /*
+     * ⚠ TWO WHOLE PAGES, NOT TWO BODIES — `dashboard-navigation`, 2026-09-23.
+     *
+     * Option 2 draws its OWN header (logo · Compass · course · section, plus
+     * the controls top-right), which is the navigation the A/B is about. It
+     * shares no chrome with Option 1: no contents sidebar, no breadcrumb, and
+     * not even the app header — `CourseContentV2` suppresses that one while it
+     * is mounted, or there would be two XCEL logos stacked.
+     *
+     * THE BRANCH MOVED HERE from inside `CompassCoursePlayer`, where it lived
+     * while Option 2 was only a variant BODY. Keeping it there would have meant
+     * a page rendering a player it does not use in order to reach a branch that
+     * throws the player away.
+     */
+    if (courseNavVariant === 'option-2') {
+      return (
+        <CourseContentV2
+          courseTitle={launchedTitle}
+          chapterTitle={NY_LH_COURSE_CHAPTERS[NY_LH_CURRENT_CHAPTER_INDEX] ?? NY_LH_COURSE_CHAPTERS[0]}
+          percentComplete={launchedPercent}
+          completedLessons={launcher.meta.completedLessons ?? 0}
+          totalLessons={launcher.meta.totalLessons ?? 0}
+          onClose={launcher.close}
+        />
+      )
+    }
+    return (
+      <CompassCoursePlayer
+        courseTitle={launchedTitle}
+        percentComplete={launchedPercent}
+        completedLessons={launcher.meta.completedLessons ?? 0}
+        totalLessons={launcher.meta.totalLessons ?? 0}
+        onClose={launcher.close}
+      />
+    )
+  }
 
   return (
     <div
@@ -1435,9 +1537,7 @@ const SECTION_TITLES: Record<PlatformSection, string> = {
   support: 'Help & Support',
   profile: 'Profile',
   notifications: 'Notifications',
-  licenses: 'Licenses',
   transcripts: 'Transcripts',
-  'payment-methods': 'Payment Methods',
   purchases: 'My Purchases',
   'gift-recipients': 'Purchased for Others',
 }
@@ -2018,8 +2118,8 @@ function renderBody(
   if (active === 'readiness') return <ReadinessPanel />
   if (active === 'learning-path') return <LearningPathSection />
   // ── Account area ──────────────────────────────────────────────────────
-  // Every account section (Profile · Notifications · Licenses · Transcripts ·
-  // Payment Methods · Purchases · Gift Recipients) renders inside the shell,
+  // Every account section (Profile · Notifications · Transcripts · Purchases ·
+  // Gift Recipients) renders inside the shell,
   // wrapped in `AccountSectionLayout` so they all carry the same account
   // sub-nav beside their content. The shell's rail + section `<h1>` stay the
   // outer chrome, so each page renders bare below the title.
@@ -2033,6 +2133,12 @@ function renderBody(
         <ProfilePage />
       ) : active === 'gift-recipients' ? (
         <GiftRecipientsPanel />
+      ) : active === 'purchases' ? (
+        // The order ledger, or the original placeholder when
+        // `account-purchases-ledger` is off — `PurchasesSection` owns that
+        // choice, because this function is not a component and cannot read a
+        // flag itself.
+        <PurchasesSection />
       ) : active === 'notifications' ? (
         // The header bell's "View all" lands here. It was an
         // `AccountSectionPlaceholder` until the bell shipped, which made the
@@ -2041,8 +2147,10 @@ function renderBody(
         // address rather than one of them being renamed.
         <NotificationsPanel />
       ) : (
-        // TODO(feature): the remaining four are placeholders — real pages
-        // drop in here, still wrapped by AccountSectionLayout.
+        // TODO(feature): the remaining two (Transcripts, My Purchases) are
+        // placeholders — real pages drop in here, still wrapped by
+        // AccountSectionLayout. It was four until 2026-09-30, when Licenses
+        // and Payment Methods were archived.
         <AccountSectionPlaceholder id={active} />
       )
     return (

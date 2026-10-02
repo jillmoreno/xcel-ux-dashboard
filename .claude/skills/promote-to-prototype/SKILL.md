@@ -27,6 +27,21 @@ was `promote-to-demo`. The logic is unchanged; the words are not. If you see
 "Demo" in older commit messages or CLAUDE.md notes about the baseline, read
 "Prototypes".
 
+## ⚠ There is only ever ONE prototype, and that is the point
+
+Prototypes answers one question — *what is the product right now?* — for
+developers and stakeholders. A second row destroys the answer, because everyone
+then has to ask which one is real.
+
+So **"I need more than one prototype" is always a Refinement job.** Refinement
+takes any number of rows, is authored in the browser with no code or deploy, and
+is visible to stakeholders too (it carries no `gate`). A row there can pin a
+configuration of `main` (`?demo=1&ff=…`), point at a branch build, or open a
+`/review` page of one component's variants.
+
+There is deliberately no "create a second prototype" skill. If someone asks for
+one, this is the answer. See CLAUDE.md, "Prototypes is the source of truth".
+
 ## Core principle — promotion is a flag-baseline change, not a tile move
 
 Every change starts invisible to Prototypes: behind a flag whose default on
@@ -120,11 +135,16 @@ defaults now ship in Prototypes, and what stayed sandbox-only.
 
 ### 6. After the merge — retire the Refinement row
 
-The branch's Refinement row points at a branch URL that will go stale once the branch
-is deleted, and the work it showed is now in Prototypes (or the sandbox). Remind
-Jillienne, in one line, to open Refinement on the full site and either **remove** the
-row or **edit** it to point at the merged surface if discussion continues. The
-skill cannot do this — Refinement is authored on the page, not in code.
+The branch's Refinement row points at a branch URL that will go stale once the
+branch is deleted, and the work it showed is now in Prototypes (or the sandbox).
+
+**Run `retire-from-refinement`.** It is the skill for exactly this step: it reads
+the row, asks whether the branch (and therefore the build) is kept or deleted,
+writes the Archive row from what the reviewer wrote, and then removes the row —
+in that order, so a crash between the two cannot lose the record.
+
+If discussion is still live, leave the row and **edit** it to point at the merged
+surface instead. Retiring it is for when the conversation is over.
 
 ## Guardrails
 

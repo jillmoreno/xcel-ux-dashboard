@@ -7,11 +7,37 @@ import { LearningPathsPanelProvider } from '@/components/learning/LearningPathsP
 import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelContext'
 import { PlatformShell } from '@/components/layout/PlatformShell'
 import {
+
   DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
   DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
   DISCOVERABILITY_DASHBOARD_VERSION_TESTING_2,
   defaultDiscoverabilityVersionFor,
 } from '@/data/dashboardVersions'
+
+/**
+ * THE PRE-PROMOTION BASELINE — 2026-09-28.
+ *
+ * Five flags were promoted to the Prototypes baseline that day, so the
+ * product's DEFAULT render no longer shows the Study Pace tile, the separate
+ * Jump Back In card, the inline exam-date field, or coursework as Step 1.
+ *
+ * The tests in this file are about those COMPONENTS and that LAYOUT, not about
+ * whatever the baseline happens to be, so they pin the state they were written
+ * against. Spread into every seed here rather than repeated, because this file
+ * has six of them and a flag pinned in five is worse than one pinned in none.
+ *
+ * ⚠ A TEST THAT IS ABOUT THE BASELINE MUST NOT SPREAD THIS.
+ */
+const PRE_PROMOTION_BASELINE = {
+  'study-pace-hidden': { enabled: false },
+  'course-entry-style': { enabled: true, variant: 'split' },
+  /* `exam-step-style` was seeded here until 2026-09-29, when the flag was
+     retired — see `archivedItems.ts`. Removed rather than left as a dead key:
+     a seed for a flag that no longer exists reads as a pinned choice and is
+     silently ignored. */
+  'journey-step-order': { enabled: true, variant: 'coursework-first' },
+}
+
 
 /**
  * TESTING 2, after the two alignment asks of 2026-09-21.
@@ -46,7 +72,10 @@ const QE_URL = `/dashboard-rebrand?version=${DISCOVERABILITY_DASHBOARD_VERSION_Q
 
 function seed(extra: Record<string, unknown> = {}) {
   window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
-  window.localStorage.setItem('cgp.featureFlags', JSON.stringify(extra))
+  window.localStorage.setItem(
+    'cgp.featureFlags',
+    JSON.stringify({ ...PRE_PROMOTION_BASELINE, ...extra }),
+  )
 }
 
 function renderShell(url: string) {
@@ -82,7 +111,14 @@ const groupRows = (caption: string) =>
 beforeEach(() => {
   window.localStorage.clear()
   window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
-})
+
+  window.localStorage.setItem(
+    'cgp.featureFlags',
+    JSON.stringify({
+      ...PRE_PROMOTION_BASELINE,
+      ...PRE_PROMOTION_BASELINE,
+    }),
+  )})
 
 describe('Testing 2 is reached deliberately, not by default', () => {
   it('is NOT what a bare /dashboard-rebrand renders — Testing is', () => {
@@ -150,11 +186,17 @@ describe('the Atlas Study Journey treatment (2026-09-21)', () => {
   it('renders the four cards, in route order', () => {
     seed()
     renderShell(T2_URL)
+    /* ⚠ 'Exam Date' since 2026-09-29 — the inline card carrying the
+       "Schedule State Exam" label was retired with `exam-step-style`, and the
+       slot is `ExamScheduleWidget` now. Four cards, same order. */
+    /* ⚠ A FIFTH SECTION SINCE 2026-09-30 — Quick links, which absorbed the
+       standalone requirements button. Last, and not a step. */
     expect(cardLabels()).toEqual([
       'Study journey',
-      'Schedule State Exam',
+      'Exam Date',
       'Pass State Exam',
       'Get Licensed in New York',
+      'Quick links',
     ])
   })
 
@@ -240,7 +282,6 @@ describe('the Testing 2 rail is trimmed to match', () => {
       'My Courses',
       'Certificates',
       'Resources',
-      'Rubi Insights',
     ])
   })
 })

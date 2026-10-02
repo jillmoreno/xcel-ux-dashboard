@@ -72,11 +72,14 @@ describe('the Resources section', () => {
     // There is no Explore group left to be in: Browse Catalog was its last row
     // and went off in the baseline on 2026-09-16, so the group drops whole.
     expect(screen.queryByRole('list', { name: 'Explore' })).toBeNull()
-    // It moved WITH Rubi and kept its order relative to it.
+    /* It moved WITH Rubi and kept its order relative to it — until Rubi was
+       archived on 2026-09-28 (`rail-rows-2026-09-28`). Resources is now the
+       last row in the group, which is still the point: it sits at the END of
+       My Learning rather than above Home. */
     const mineRows = within(mine)
       .getAllByRole('button')
       .map((b) => b.textContent?.trim())
-    expect(mineRows.slice(-2)).toEqual(['Resources', 'Rubi Insights'])
+    expect(mineRows.at(-1)).toBe('Resources')
     // At the END of the group — "move up" meant up across the Explore divider,
     // not above Home, which is the rail's anchor.
     expect(mineRows[0]).toBe('Home')

@@ -7,6 +7,7 @@ import { PrototypeHandoffDetailPage } from '@/pages/PrototypeHandoffDetailPage'
 import { ResearchRationalePage } from '@/pages/ResearchRationalePage'
 import { QaNotesPage } from '@/pages/QaNotesPage'
 import { LinksPage } from '@/pages/LinksPage'
+import { ComponentReviewPage } from '@/pages/ComponentReviewPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { DashboardRebrandPage } from '@/pages/DashboardRebrandPage'
 import { RecommendedCardABComparePage } from '@/pages/RecommendedCardABComparePage'
@@ -33,7 +34,7 @@ import {
 } from '@/data/giftRecipientsFixtures'
 import { recCardEnvTarget, recCardTestPath } from '@/data/recCardTest'
 import { demoEnvTarget } from '@/data/demoPin'
-import { isPublicGateway, isPublicFeature } from '@/data/gatewayMode'
+import { isPublicGateway, isPublicFeature, isTestingGateway } from '@/data/gatewayMode'
 import { prototypeFeatureById } from '@/data/prototypeFeatures'
 
 /**
@@ -48,7 +49,21 @@ import { prototypeFeatureById } from '@/data/prototypeFeatures'
  * (`/dashboard-rebrand` and the ~28 under `AppLayout`) are untouched — the Demo
  * row opens the product, and the product links between its own routes.
  */
+/**
+ * THE USER-TEST BUILD HAS NO GATEWAY AT ALL — 2026-09-23. Every one of its
+ * routes lands in the product instead.
+ *
+ * ⚠ `replace`, so the gateway is not in the participant's history either. A
+ * Back button that walks them into a project list is the same disclosure as a
+ * link to one, arriving by a different door.
+ */
+function TestingGate({ children }: { children: ReactElement }) {
+  if (isTestingGateway()) return <Navigate to="/dashboard-rebrand" replace />
+  return children
+}
+
 function PublicGate({ featureId, children }: { featureId?: string; children: ReactElement }) {
+  if (isTestingGateway()) return <Navigate to="/dashboard-rebrand" replace />
   if (!isPublicGateway()) return children
   const feature = featureId ? prototypeFeatureById(featureId) : undefined
   return feature && isPublicFeature(feature) ? children : <Navigate to="/" replace />
@@ -137,7 +152,7 @@ export default function App() {
       {/* Prototype gateway also sits outside AppLayout so it reads as a
           distinct landing surface (no platform header). `/` is the front
           door; each guided feature gets its own curated page list. */}
-      <Route path="/" element={<UxDashboardPage />} />
+      <Route path="/" element={<TestingGate><UxDashboardPage /></TestingGate>} />
       <Route
         path="/prototype/:featureId"
         element={
@@ -148,8 +163,8 @@ export default function App() {
       />
       {/* The exploration's own route, kept so links already shared still work.
             It renders the same page as "/". */}
-        <Route path="/ux-dashboard" element={<UxDashboardPage />} />
-        <Route path="/research-rationale" element={<ResearchRationalePage />} />
+        <Route path="/ux-dashboard" element={<TestingGate><UxDashboardPage /></TestingGate>} />
+        <Route path="/research-rationale" element={<TestingGate><ResearchRationalePage /></TestingGate>} />
       {/* QA Notes is a section of the UX Dashboard shell, not a standalone page —
           this route just redirects to its canonical URL. */}
       <Route
@@ -162,7 +177,12 @@ export default function App() {
       />
       {/* Both redirect into the gateway shell, which owns the section chrome —
           see the note at the top of each page. */}
-      <Route path="/links" element={<LinksPage />} />
+      <Route path="/links" element={<TestingGate><LinksPage /></TestingGate>} />
+      {/* One component, every variant, stacked — the page a Refinement row
+          points at when a designer wants the team to review ONE widget rather
+          than their whole branch. Takes its entire definition from the URL, so
+          it needs no per-component code. See `ComponentReviewPage`. */}
+      <Route path="/review" element={<TestingGate><ComponentReviewPage /></TestingGate>} />
       <Route
         path="/prototype/:featureId/handoff/:componentId"
         element={
@@ -212,17 +232,15 @@ export default function App() {
           path="/account/notifications"
           element={<Navigate to="/dashboard-rebrand?section=notifications" replace />}
         />
-        <Route
-          path="/account/licenses"
-          element={<Navigate to="/dashboard-rebrand?section=licenses" replace />}
-        />
+        {/* ARCHIVED 2026-09-30 — `/account/licenses` redirected to
+            `?section=licenses` here, and `/account/payment-methods` to
+            `?section=payment-methods` below Transcripts. Both sections are
+            archived; the routes went with them, so the paths now fall through
+            to the `*` Not Found route. See `account-licenses-section` /
+            `account-payment-methods-section` in archivedItems.ts. */}
         <Route
           path="/account/transcripts"
           element={<Navigate to="/dashboard-rebrand?section=transcripts" replace />}
-        />
-        <Route
-          path="/account/payment-methods"
-          element={<Navigate to="/dashboard-rebrand?section=payment-methods" replace />}
         />
         <Route
           path="/account/purchases"

@@ -12,7 +12,18 @@ beforeEach(() => {
   window.localStorage.clear()
 })
 
-describe('Community row in the account dropdown', () => {
+/**
+ * INVERTED 2026-09-30. This file used to pin the dropdown's outbound group —
+ * that a non-member saw the free rows but not the member-gated community row.
+ * The whole group was archived (`account-menu-free-content`), so the old
+ * assertions describe a menu that no longer exists.
+ *
+ * Kept and turned around rather than deleted: the gating rule it encoded is the
+ * thing most likely to be lost, and a suite that simply disappears leaves no
+ * trace that the menu ever made that distinction. Restoring the group means
+ * restoring the two assertions named in the archive row's restore note.
+ */
+describe('the account dropdown no longer carries the outbound group', () => {
   const renderMenu = async (tier: string) => {
     const { AccountMenu } = await import('@/components/layout/AccountMenu')
     const { FeatureFlagProvider } = await import('@/context/FeatureFlagContext')
@@ -33,18 +44,27 @@ describe('Community row in the account dropdown', () => {
     return view
   }
 
-  it('hides the community from a NON-MEMBER', async () => {
-    // It is the one gated item in that menu group. A non-member sees the free rows
-    // only — not a link to a group they can't join. The Membership page is
-    // where they're sold it.
-    const { unmount } = await renderMenu('non-member')
-    expect(screen.queryByRole('menuitem', { name: /Facebook Community/i })).toBeNull()
-    // A free outbound row still shows. It asserted "Blog" when every brand
-    // shared McKissock's resource set; XCEL's own set leads with the Resource
-    // Center. The point is unchanged: the gated row goes, the free ones stay.
+  it('shows no free-content rows to a MEMBER', async () => {
+    /* A member is the case that used to render the MOST rows here — the four
+       free ones plus the gated community row — so it is the strongest check
+       that the group is gone rather than merely gated to nothing. */
+    const { unmount } = await renderMenu('high')
     expect(
-      screen.getByRole('menuitem', { name: /Resource Center.*opens in a new tab/i }),
-    ).toBeInTheDocument()
+      screen.queryByRole('menuitem', { name: /Resource Center.*opens in a new tab/i }),
+    ).toBeNull()
+    expect(screen.queryByRole('menuitem', { name: /Facebook Community/i })).toBeNull()
+    unmount()
+  })
+
+  it('shows no outbound rows at all, to anyone', async () => {
+    /* Role-based rather than name-based: the rows are gone, so naming them one
+       by one would only pin the four that happened to exist on XCEL. Every
+       remaining menu item is an in-app destination. */
+    const { unmount } = await renderMenu('non-member')
+    const outbound = screen
+      .getAllByRole('menuitem')
+      .filter((el) => el.getAttribute('target') === '_blank')
+    expect(outbound).toHaveLength(0)
     unmount()
   })
 })

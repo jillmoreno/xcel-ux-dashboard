@@ -23,9 +23,10 @@ type Props = {
   date: string
   /** Overall card width in px. Default 140. */
   width?: number
-  /** Compact variant — tighter padding + smaller day numeral so the
-   *  visual reads roughly square at narrower widths (used by the
-   *  Create Calendar panel's projected-completion section). */
+  /** Compact variant — three-letter month, tighter padding and a smaller day
+   *  numeral, so the visual stays roughly square at narrow widths. Its only
+   *  consumer is the `ask-first` exam card's saved readout; the Create Calendar
+   *  panel named here previously no longer uses it. */
   compact?: boolean
 }
 
@@ -38,16 +39,39 @@ type Props = {
  */
 export function CalendarTearOff({ date, width = 140, compact = false }: Props) {
   const { month, day, year } = parseISO(date)
-  const stripH = compact ? 14 : 20
-  const padY = compact ? '4px 12px 6px' : '8px 12px 14px'
-  const monthSize = compact ? 13 : 16
-  const monthLh = compact ? '16px' : '22px'
-  const daySize = compact ? 34 : 50
-  const yearSize = compact ? 13 : 16
-  const yearLh = compact ? '18px' : '28px'
-  const gap = compact ? 2 : 4
+  /*
+   * ⚠ COMPACT ABBREVIATES THE MONTH, and that is what lets the rest shrink —
+   * 2026-09-29.
+   *
+   * The full name was the thing pinning the width: SEPTEMBER measures 75px at
+   * the old 13px inside an 82px box, so 84px was already the floor and every
+   * other number was stuck above it. Three letters frees ~50px, which is where
+   * the width and the numerals below come from.
+   *
+   * Full size is untouched — it has 140px and no such problem.
+   */
+  const monthText = compact ? month.slice(0, 3) : month
+  const stripH = compact ? 12 : 20
+  const padY = compact ? '3px 8px 5px' : '8px 12px 14px'
+  const monthSize = compact ? 11 : 16
+  const monthLh = compact ? '14px' : '22px'
+  const daySize = compact ? 28 : 50
+  const yearSize = compact ? 11 : 16
+  const yearLh = compact ? '15px' : '28px'
+  const gap = compact ? 1 : 4
   return (
-    <div style={{ position: 'relative', width, paddingTop: 9, flexShrink: 0 }}>
+    /* ⚠ `paddingTop` IS THE RING OVERLAP, and it is the only thing setting it.
+       The rings are 14px tall at `top: 0`, so the card's own top edge lands at
+       `paddingTop + marginTop` (3 + 5 = 8) and the bottom 6px of each ring
+       passes OVER the navy header strip — which is what makes them read as
+       binder rings threaded through a page rather than two tabs balanced on
+       top of it. It was 9, which put the card at exactly 14 and left the rings
+       abutting the edge with no overlap at all.
+
+       Pulling the card UP rather than pushing the rings DOWN on purpose: the
+       rings are anchored to the top of the component, so moving them would
+       leave dead space above them and grow the whole block. */
+    <div style={{ position: 'relative', width, paddingTop: 3, flexShrink: 0 }}>
       <span
         aria-hidden
         style={{
@@ -76,7 +100,11 @@ export function CalendarTearOff({ date, width = 140, compact = false }: Props) {
         style={{
           marginTop: 5,
           border: '1px solid var(--color-primary-500)',
-          borderRadius: 'var(--radius-lg)',
+          /* `md` (8px), not `lg` (12px) — 2026-09-29. A desk calendar is a
+             squared-off object, and at the compact 84px width `lg` rounded
+             enough that the corners started reading as a rounded badge rather
+             than a page. Still a token, so it tracks the scale. */
+          borderRadius: 'var(--radius-md)',
           overflow: 'hidden',
           background: 'var(--color-surface-card)',
           boxShadow: 'var(--shadow-card)',
@@ -102,7 +130,7 @@ export function CalendarTearOff({ date, width = 140, compact = false }: Props) {
               color: 'var(--color-neutral-darkest)',
             }}
           >
-            {month}
+            {monthText}
           </div>
           <div
             style={{

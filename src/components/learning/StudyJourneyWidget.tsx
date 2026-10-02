@@ -1,9 +1,11 @@
 import type { LearningPathSummary } from '@/data/learningFixtures'
 import { GetLicensedRail, StudyJourneyRail } from './StudyJourneyRail'
+import { ExamScheduleWidget } from './ExamScheduleWidget'
+import { COMPASS_BUTTON } from '@/components/compass/compassButton'
+import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 import { useState, type CSSProperties } from 'react'
 import { journeyStopsFor } from './studyJourneyUtil'
 import { clearExamDate, useExamDate, writeExamDate } from '@/data/examDateStore'
-import { COMPASS_BUTTON } from '@/components/compass/compassButton'
 import { dateFromIso } from '@/lib/studyPace'
 import { longDate } from './learningPathsHomeUtil'
 import {
@@ -64,7 +66,9 @@ export function StudyJourneyWidget({
   framed = false,
   splitSteps = false,
   cardPadding,
-  examFirst = false,
+  // The prop keeps its name for callers; locally `atlasHome`, because main's
+  // `journey-step-order` reads into a local `examFirst` of its own.
+  examFirst: atlasHome = false,
 }: {
   path: LearningPathSummary
   onOpenStop?: (courseId: string) => void
@@ -103,10 +107,11 @@ export function StudyJourneyWidget({
    *  Applies to the filled cards only; pending steps have no fill. */
   cardPadding?: number
   /**
-   * SCHEDULE STATE EXAM LEADS — the Atlas home, 2026-09-24, the direct ask
-   * ("vertically switch step 1 and step 2 changing the step numbers
-   * accordingly"). It becomes Step 1 above the coursework, which becomes
-   * Step 2; Pass and Get Licensed stay 3 and 4. Split layout only.
+   * THE ATLAS HOME's right rail (feat/atlas-compass-global-nav): coursework
+   * as Step 1 in an outlined card (or the one-frame V2 rail), Pass and Get
+   * Licensed as 2 and 3 — Schedule State Exam is the banner in the left
+   * column (`ScheduleExamBanner`) since 2026-10-01. Split layout only. Named
+   * for its 2026-09-24 origin, when the exam step led.
    */
   examFirst?: boolean
 }) {
@@ -135,7 +140,59 @@ export function StudyJourneyWidget({
    *
    * A CONSTANT NOW, deliberately: the number of stops must NOT move it again.
    */
+  /*
+   * STEP ORDER — `journey-step-order`, 2026-09-28.
+   *
+   * `exam-first` promotes Schedule State Exam above the coursework card. The
+   * NUMBERS move with the cards, which is the part that matters: four separate
+   * widgets cannot draw a continuous spine, so the eyebrow numbering IS the
+   * sequence. Reorder without renumbering and the column reads as four
+   * unrelated cards — the exact failure the note below is already about.
+   */
+  const examFirst = useFeatureFlag('journey-step-order').variant === 'exam-first'
+  /* THE EXAM-DATE CARD IS NO LONGER A CHOICE — `exam-step-style` retired
+     2026-09-29, its `ask-first` arm having won. `ExamScheduleWidget` renders in
+     the Schedule State Exam slot unconditionally now; `ExamDateCard` and the
+     inline treatment inside `LicensingStepWidget` are both intact but
+     unreachable. See `archivedItems.ts`, `exam-step-style-alternatives`. */
+  /*
+   * THE COLUMN'S NUMBERING, and `ask-first` changed its shape — 2026-09-29.
+   *
+   * Coursework is 1 and the licensing steps run 2-4; exam-first swaps the first
+   * two, so coursework becomes 2 and the rest keep 3 and 4.
+   *
+   * ⚠ `ask-first` TAKES THE EXAM CARD OUT OF THE SEQUENCE ENTIRELY. It asks a
+   * question rather than naming a step, so it wears "Quick question" and no
+   * number — and everything after it has to close up behind it. Leave the other
+   * numbers where they were and the column reads 2, 3, 4 with nothing numbered
+   * 1, which looks like a rendering bug rather than a design.
+   *
+   * So the exam card CONSUMES NO NUMBER on this arm: the counter below skips
+   * it, which is why the licensing steps are numbered by a running count rather
+   * than by their index.
+   */
+  /* ONE FLAG, BOTH HALVES — `journey-quick-links`. The Quick links card and the
+     per-card sheet links are the same decision seen from two sides, and running
+     both would put every destination on the page twice. */
+  const quickLinks = useFeatureFlag('journey-quick-links').enabled
+  /* The exam card asks a question rather than naming a step, so it takes no
+     number and the three real steps close up behind it. Unconditional now that
+     it is the only treatment — this read `examFirst && !askFirst` while the
+     numbered arms still existed. */
+  const courseworkStep = 1
+  /* The non-split rail below numbers its own rows from here; unchanged by the
+     arm, because that layout does not render the exam card as a widget at all. */
   const stepStart = 2
+  /* Seeded to the number AFTER coursework, then advanced once per numbered card
+     by the map in the split branch. Declared in the render body, so it resets
+     every render — a module-level counter would drift under StrictMode's double
+     invoke. */
+  let nextNumber = courseworkStep + 1
+  /* Schedule State Exam is `GET_LICENSED_STEPS[0]`; exam-first lifts it above
+     the coursework card and the rest follow underneath. Sliced rather than
+     re-sorted so the published order stays the source of truth. */
+  const promoted = examFirst ? GET_LICENSED_STEPS[0] : null
+  const licensingAfter = examFirst ? GET_LICENSED_STEPS.slice(1) : GET_LICENSED_STEPS
   /* COLLAPSED — `dashboard-journey-complete`, and it only means anything at
      100%. Below that the two variants are identical, which is why the flag is
      read here and applied against `courseworkDone` rather than gating the
@@ -147,79 +204,213 @@ export function StudyJourneyWidget({
   const completeStyle = useFeatureFlag('dashboard-journey-complete').variant ?? 'full'
   const courseworkDone = stops.length > 0 && stops.every((st) => st.status === 'completed')
   const collapseCoursework = courseworkDone && completeStyle === 'collapsed'
+
   /* RIGHT RAIL V2 — `atlas-right-rail-layout` (2026-09-30): the Atlas home's
      four steps in ONE frame. Read unconditionally (rules of hooks); applied
      only with `examFirst`, which is the Atlas home. */
   const railV2 = useFeatureFlag('atlas-right-rail-layout').variant === 'v2'
 
   if (splitSteps) {
-    /* THE ATLAS STUDY JOURNEY CARD, OUTLINED — the Atlas home, 2026-09-24, the
-       direct ask (tried on Schedule State Exam first, then moved here): no fill
-       and the Study Pace card's 1px `--color-atlas-nav-rule` border. The
-       padding gives up that 1px so its text still lines up with the cards
-       around it. */
-    const outlinedShell: CSSProperties = {
-      ...shell,
-      background: 'transparent',
-      border: '1px solid var(--color-atlas-nav-rule)',
-      ...(typeof shell.padding === 'number' ? { padding: shell.padding - 1 } : null),
+    /* ── THE ATLAS HOME (feat/atlas-compass-global-nav) ──────────────────
+       Its own right rail, unchanged by the 2026-10-02 merge of main: the
+       outlined coursework card or the one-frame V2 rail, no exam card (it is
+       the left column's banner). Every other split column is main's, below. */
+    if (atlasHome) {
+      /* THE ATLAS STUDY JOURNEY CARD, OUTLINED — the Atlas home, 2026-09-24, the
+         direct ask (tried on Schedule State Exam first, then moved here): no fill
+         and the Study Pace card's 1px `--color-atlas-nav-rule` border. The
+         padding gives up that 1px so its text still lines up with the cards
+         around it. */
+      const outlinedShell: CSSProperties = {
+        ...shell,
+        background: 'transparent',
+        border: '1px solid var(--color-atlas-nav-rule)',
+        ...(typeof shell.padding === 'number' ? { padding: shell.padding - 1 } : null),
+      }
+      // Fits its own content (2026-09-24, the direct ask) — it briefly matched
+      // the Study Pace card's depth and was set back the same day.
+      const courseworkShell = atlasHome ? outlinedShell : shell
+      /* V2: the frame IS the Step 2 card (its background, stroke and padding),
+         and every step inside it is bare — no fill, border, rule or inset of its
+         own — so all four share the frame's padding and line up. */
+      const v2 = atlasHome && railV2
+      const bareShell: CSSProperties = { display: 'flex', flexDirection: 'column', minWidth: 0 }
+      // V2's rule between steps (2026-09-30, the designer's request): 1px in the
+      // frame's own stroke colour, sitting in the frame's 24px gap on each side.
+      const railRule: CSSProperties = {
+        display: 'block',
+        height: 1,
+        background: 'var(--color-atlas-nav-rule)',
+      }
+      const licensingSteps = GET_LICENSED_STEPS.map((step, i) => (
+        <LicensingStepWidget
+          key={step.id}
+          step={step}
+          // Atlas home: Schedule State Exam left the rail for its own banner
+          // (2026-10-01), so coursework is Step 1 and these follow as 2 and 3.
+          number={atlasHome ? i + 1 : stepStart + i}
+          // Step 1 on the Atlas home is as deep as the course card beside it
+          // (`--cre-course-card-h`, published by LearnerFocusedBand). Its fill is
+          // `--color-atlas-step-card` where a brand sets one (Global: #FCFCFB,
+          // 2026-09-30), else the card surface.
+          shell={
+            v2
+              ? bareShell
+              : atlasHome && i === 0
+              ? {
+                  ...shell,
+                  background: 'var(--color-atlas-step-card, var(--color-surface-card))',
+                  boxSizing: 'border-box',
+                  minHeight: 'var(--cre-course-card-h, auto)',
+                }
+              : shell
+          }
+          roundedRule={cardPadding != null}
+          bare={v2}
+          onOpenStep={onOpenStep}
+          state={path.state}
+          /* The arrival card is named for the DESTINATION rather than the
+             action, per the ask ("Get Licensed - Apply for your license"): the
+             heading says where the route ends and the lead line says what you
+             do to get there. The other two are named by their published step
+             title, which already reads as an action. */
+          heading={
+            i === GET_LICENSED_STEPS.length - 1
+              ? jurisdictionName(path.state)
+                ? `Get Licensed in ${jurisdictionName(path.state)}`
+                : 'Get Licensed'
+              : undefined
+          }
+        />
+      ))
+      /* FOUR WIDGETS — the coursework, then one per post-course step.
+     
+         WHAT THE SPLIT BUYS: the three post-course steps were rows in a shared
+         rail, which gave each of them a title, a detail line and a meta line in
+         ~250px. As widgets they get a heading, room for the published detail, and
+         their own way in — which is what "split those out in better steps" asks
+         for. It also lets the OWNER change be visible per card rather than stated
+         once in a lede, which is the distinction the two sections existed for in
+         the first place.
+     
+         WHAT IT COSTS, and it is the thing to watch: the 01→07 sequence was one
+         spine down one card, and four cards cannot draw a continuous line. The
+         NUMBERS carry it instead — each step's eyebrow is "Step 05/06/07",
+         continuing the journey's own numbering from its real stop count. Lose the
+         numbers and the four cards read as four unrelated things. */
+      const requirementsButton = onOpenRequirements ? (
+        <RequirementsButton onOpen={onOpenRequirements} state={path.state} />
+      ) : null
+      if (v2) {
+        return (
+          <div
+            style={{
+              ...outlinedShell,
+              display: 'flex',
+              flexDirection: 'column',
+              // 24 · rule · 24 between steps (2026-09-30, the designer's
+              // request; it was 32 · rule · 32).
+              gap: 24,
+              // The frame fits its steps (no Step 1 min-height in V2).
+              minHeight: undefined,
+            }}
+          >
+            {/* No Schedule State Exam here since 2026-10-01 — it is the
+                banner under the course card (`ScheduleExamBanner`). */}
+            {collapseCoursework ? (
+              <section aria-label="Study journey" style={bareShell}>
+                <p className="cre-eyebrow-ink" style={collapsedEyebrowStyle}>
+                  <span style={{ fontWeight: 700 }}>Step 1</span> · Study Journey
+                </p>
+                <p style={collapsedTitleStyle}>Coursework complete</p>
+              </section>
+            ) : (
+              <section aria-label="Study journey" style={bareShell}>
+                <StudyJourneyRail
+                  path={path}
+                  onOpenStop={onOpenStop}
+                  onViewAll={onOpenLearningPath ? () => onOpenLearningPath(path.id) : undefined}
+                  stepRange
+                  stepNumber={1}
+                  atlasEyebrow
+                />
+              </section>
+            )}
+            <span aria-hidden style={railRule} />
+            {licensingSteps[1]}
+            <span aria-hidden style={railRule} />
+            {licensingSteps[2]}
+            {requirementsButton}
+          </div>
+        )
+      }
+      return (
+        // 32 between the cards on the Atlas home (2026-09-24, the direct ask),
+        // which is where `cardPadding` is set; 20 elsewhere.
+        <div style={{ display: 'flex', flexDirection: 'column', gap: cardPadding != null ? 32 : 20, minWidth: 0 }}>
+          {/* Coursework, then the licensing steps. With `atlasHome` (the Atlas
+              home) the exam step is not here at all since 2026-10-01: it is the
+              banner under the course card (`ScheduleExamBanner`). */}
+          {/* THE FINISHED COURSEWORK AS ONE LINE, when the flag asks for it. The
+              argument the variant exists to test: at 100% the only actionable
+              things left are the licensing steps, and four stops of finished work
+              above them is a receipt rather than a next action. The full variant
+              disagrees — see the flag's own description. */}
+          {collapseCoursework ? (
+            <section aria-label="Study journey" style={courseworkShell}>
+              <p className="cre-eyebrow-ink" style={collapsedEyebrowStyle}>
+                {atlasHome ? (
+                  <>
+                    <span style={{ fontWeight: 700 }}>Step 1</span> · Study Journey
+                  </>
+                ) : (
+                  'Step 1 · Atlas Study Journey'
+                )}
+              </p>
+              <p style={collapsedTitleStyle}>Coursework complete</p>
+            </section>
+          ) : (
+            <section aria-label="Study journey" style={courseworkShell}>
+              <StudyJourneyRail
+                path={path}
+                onOpenStop={onOpenStop}
+                onViewAll={onOpenLearningPath ? () => onOpenLearningPath(path.id) : undefined}
+                /* "Steps 01–04 · Atlas Study Journey" — so the four cards' eyebrows
+                   run 01-04, 05, 06, 07 down the column instead of the sequence
+                   appearing to start at 05. Split only; see the prop's note. */
+                stepRange
+                stepNumber={1}
+                atlasEyebrow={atlasHome}
+              />
+            </section>
+          )}
+          {atlasHome ? (
+            /* Steps 3 and 4 keep the original 20 between them (2026-09-24, the
+               direct ask) — the 32 applies between the filled cards and around
+               the pair, not inside it. */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 20, minWidth: 0 }}>
+              {licensingSteps.slice(1)}
+            </div>
+          ) : (
+            licensingSteps
+          )}
+          {/* THE REQUIREMENTS ACTION, OUT OF THE CARDS — 2026-09-21, the direct
+              ask: "take this out of the widget and make it a secondary style
+              button below — same width as the widget."
+
+              It was a text link at the foot of the arrival card, under a rule.
+              Out here it reads as what it is: the state's own rules, which
+              elaborate the whole post-course sequence rather than the last step
+              of it. It also stops the arrival card being the only one with two
+              affordances.
+
+              FULL WIDTH by inheritance, not by declaration — a flex column
+              stretches its children, so this matches the cards above it exactly
+              and cannot drift from them if the column's width ever changes. */}
+          {requirementsButton}
+        </div>
+      )
     }
-    // Fits its own content (2026-09-24, the direct ask) — it briefly matched
-    // the Study Pace card's depth and was set back the same day.
-    const courseworkShell = examFirst ? outlinedShell : shell
-    /* V2: the frame IS the Step 2 card (its background, stroke and padding),
-       and every step inside it is bare — no fill, border, rule or inset of its
-       own — so all four share the frame's padding and line up. */
-    const v2 = examFirst && railV2
-    const bareShell: CSSProperties = { display: 'flex', flexDirection: 'column', minWidth: 0 }
-    // V2's rule between steps (2026-09-30, the designer's request): 1px in the
-    // frame's own stroke colour, sitting in the frame's 24px gap on each side.
-    const railRule: CSSProperties = {
-      display: 'block',
-      height: 1,
-      background: 'var(--color-atlas-nav-rule)',
-    }
-    const licensingSteps = GET_LICENSED_STEPS.map((step, i) => (
-      <LicensingStepWidget
-        key={step.id}
-        step={step}
-        // Atlas home: Schedule State Exam left the rail for its own banner
-        // (2026-10-01), so coursework is Step 1 and these follow as 2 and 3.
-        number={examFirst ? i + 1 : stepStart + i}
-        // Step 1 on the Atlas home is as deep as the course card beside it
-        // (`--cre-course-card-h`, published by LearnerFocusedBand). Its fill is
-        // `--color-atlas-step-card` where a brand sets one (Global: #FCFCFB,
-        // 2026-09-30), else the card surface.
-        shell={
-          v2
-            ? bareShell
-            : examFirst && i === 0
-            ? {
-                ...shell,
-                background: 'var(--color-atlas-step-card, var(--color-surface-card))',
-                boxSizing: 'border-box',
-                minHeight: 'var(--cre-course-card-h, auto)',
-              }
-            : shell
-        }
-        roundedRule={cardPadding != null}
-        bare={v2}
-        onOpenStep={onOpenStep}
-        state={path.state}
-        /* The arrival card is named for the DESTINATION rather than the
-           action, per the ask ("Get Licensed - Apply for your license"): the
-           heading says where the route ends and the lead line says what you
-           do to get there. The other two are named by their published step
-           title, which already reads as an action. */
-        heading={
-          i === GET_LICENSED_STEPS.length - 1
-            ? jurisdictionName(path.state)
-              ? `Get Licensed in ${jurisdictionName(path.state)}`
-              : 'Get Licensed'
-            : undefined
-        }
-      />
-    ))
     /* FOUR WIDGETS — the coursework, then one per post-course step.
    
        WHAT THE SPLIT BUYS: the three post-course steps were rows in a shared
@@ -235,79 +426,43 @@ export function StudyJourneyWidget({
        NUMBERS carry it instead — each step's eyebrow is "Step 05/06/07",
        continuing the journey's own numbering from its real stop count. Lose the
        numbers and the four cards read as four unrelated things. */
-    const requirementsButton = onOpenRequirements ? (
-      <RequirementsButton onOpen={onOpenRequirements} state={path.state} />
-    ) : null
-    if (v2) {
-      return (
-        <div
-          style={{
-            ...outlinedShell,
-            display: 'flex',
-            flexDirection: 'column',
-            // 24 · rule · 24 between steps (2026-09-30, the designer's
-            // request; it was 32 · rule · 32).
-            gap: 24,
-            // The frame fits its steps (no Step 1 min-height in V2).
-            minHeight: undefined,
-          }}
-        >
-          {/* No Schedule State Exam here since 2026-10-01 — it is the
-              banner under the course card (`ScheduleExamBanner`). */}
-          {collapseCoursework ? (
-            <section aria-label="Study journey" style={bareShell}>
-              <p className="cre-eyebrow-ink" style={collapsedEyebrowStyle}>
-                <span style={{ fontWeight: 700 }}>Step 1</span> · Study Journey
-              </p>
-              <p style={collapsedTitleStyle}>Coursework complete</p>
-            </section>
-          ) : (
-            <section aria-label="Study journey" style={bareShell}>
-              <StudyJourneyRail
-                path={path}
-                onOpenStop={onOpenStop}
-                onViewAll={onOpenLearningPath ? () => onOpenLearningPath(path.id) : undefined}
-                stepRange
-                stepNumber={1}
-                atlasEyebrow
-              />
-            </section>
-          )}
-          <span aria-hidden style={railRule} />
-          {licensingSteps[1]}
-          <span aria-hidden style={railRule} />
-          {licensingSteps[2]}
-          {requirementsButton}
-        </div>
-      )
-    }
     return (
-      // 32 between the cards on the Atlas home (2026-09-24, the direct ask),
-      // which is where `cardPadding` is set; 20 elsewhere.
-      <div style={{ display: 'flex', flexDirection: 'column', gap: cardPadding != null ? 32 : 20, minWidth: 0 }}>
-        {/* Coursework, then the licensing steps. With `examFirst` (the Atlas
-            home) the exam step is not here at all since 2026-10-01: it is the
-            banner under the course card (`ScheduleExamBanner`). */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 20, minWidth: 0 }}>
         {/* THE FINISHED COURSEWORK AS ONE LINE, when the flag asks for it. The
             argument the variant exists to test: at 100% the only actionable
             things left are the licensing steps, and four stops of finished work
             above them is a receipt rather than a next action. The full variant
             disagrees — see the flag's own description. */}
+        {/* SCHEDULE STATE EXAM, PROMOTED — `journey-step-order: exam-first`.
+            Above the coursework card and numbered 1, because it is the thing a
+            learner can do today and the date it produces is what the Study Pace
+            tile plans against. */}
+        {promoted &&
+          (promoted.id === 'schedule-exam' ? (
+            <ExamScheduleWidget
+              shell={shell}
+              onOpenStep={onOpenStep}
+              stateName={jurisdictionName(path.state) || undefined}
+            />
+          ) : (
+            <LicensingStepWidget
+              step={promoted}
+              number={1}
+              shell={shell}
+              onOpenStep={onOpenStep}
+              state={path.state}
+              hideSheetLink={quickLinks}
+            />
+          ))}
         {collapseCoursework ? (
-          <section aria-label="Study journey" style={courseworkShell}>
+          <section aria-label="Study journey" style={shell}>
             <p className="cre-eyebrow-ink" style={collapsedEyebrowStyle}>
-              {examFirst ? (
-                <>
-                  <span style={{ fontWeight: 700 }}>Step 1</span> · Study Journey
-                </>
-              ) : (
-                'Step 1 · Atlas Study Journey'
-              )}
+              {`Step ${courseworkStep} · Atlas Study Journey`}
             </p>
             <p style={collapsedTitleStyle}>Coursework complete</p>
           </section>
         ) : (
-          <section aria-label="Study journey" style={courseworkShell}>
+          <section aria-label="Study journey" style={shell}>
             <StudyJourneyRail
               path={path}
               onOpenStop={onOpenStop}
@@ -316,35 +471,125 @@ export function StudyJourneyWidget({
                  run 01-04, 05, 06, 07 down the column instead of the sequence
                  appearing to start at 05. Split only; see the prop's note. */
               stepRange
-              stepNumber={1}
-              atlasEyebrow={examFirst}
+              stepNumber={courseworkStep}
             />
           </section>
         )}
-        {examFirst ? (
-          /* Steps 3 and 4 keep the original 20 between them (2026-09-24, the
-             direct ask) — the 32 applies between the filled cards and around
-             the pair, not inside it. */
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 20, minWidth: 0 }}>
-            {licensingSteps.slice(1)}
+        {licensingAfter.map((step) => {
+          /* ⚠ A RUNNING COUNT, not `stepStart + i`. On `ask-first` the exam card
+             takes no number, so an index-derived number would leave a hole
+             exactly where it sits. `nextNumber` only advances for cards that
+             actually show one. */
+          const unnumbered = step.id === 'schedule-exam'
+          const n = unnumbered ? 0 : nextNumber++
+          /* ⚠ BOTH CALL SITES BRANCH THE SAME WAY. `exam-first` lifts this step
+             into the promoted slot above, so a branch in only one of them would
+             give the reworked card under one order and the shipped one under
+             the other — an A/B measuring two things at once. */
+          if (step.id === 'schedule-exam') {
+            return (
+              <ExamScheduleWidget
+                key={step.id}
+                shell={shell}
+                onOpenStep={onOpenStep}
+                stateName={jurisdictionName(path.state) || undefined}
+              />
+            )
+          }
+          return (
+          <LicensingStepWidget
+            key={step.id}
+            step={step}
+            number={n}
+            shell={shell}
+            onOpenStep={onOpenStep}
+            state={path.state}
+            hideSheetLink={quickLinks}
+            /* The arrival card is named for the DESTINATION rather than the
+               action, per the ask ("Get Licensed - Apply for your license"): the
+               heading says where the route ends and the lead line says what you
+               do to get there. The other two are named by their published step
+               title, which already reads as an action. */
+            heading={
+              /* ⚠ KEYED ON THE STEP, NOT THE INDEX. With `exam-first` this
+                 array is a SLICE of two, so the old `i === GET_LICENSED_STEPS
+                 .length - 1` (i.e. `i === 2`) matches nothing at all and the
+                 arrival card silently loses its "Get Licensed in <state>"
+                 heading. Not a hypothetical — re-introducing the index form
+                 fails `JourneyStepOrder.test.tsx`. The arrival card is the
+                 arrival card, whatever position it is in. */
+              step.id === GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 1].id
+                ? jurisdictionName(path.state)
+                  ? `Get Licensed in ${jurisdictionName(path.state)}`
+                  : 'Get Licensed'
+                : undefined
+            }
+          />
+          )
+        })}
+        {/* QUICK LINKS — 2026-09-30, the direct ask.
+ 
+            ⚠ THIS ABSORBS THE STANDALONE REQUIREMENTS BUTTON rather than
+            sitting beside it. That button was added on 2026-09-21 ("take this
+            out of the widget and make it a secondary style button below") and
+            State Requirements is one of the three links asked for here — two
+            controls, same destination, one under the other, would be the
+            duplicate the move was meant to avoid. Its `home.state-requirements`
+            tag comes with it: `CtaTest` asserts that id renders unconditionally
+            on this surface.
+ 
+            A CONTAINED CARD, unlike the bare button it replaces. One link below
+            the cards reads as a footnote to them; three need a container of
+            their own or they read as three more steps in the sequence.
+ 
+            NONE OF THE DESTINATIONS ARE NEW — the Exam Details menu, the
+            apply-license sheet and the requirements sheet all already existed
+            and were all already reachable. This is a second, flatter way in for
+            someone who knows what they want, which is what a quick-links block
+            is for. */}
+        {quickLinks ? (
+        <section aria-label="Quick links" style={shell}>
+          <p className="cre-eyebrow-ink" style={widgetEyebrowStyle}>
+            Quick links
+          </p>
+          <div style={quickLinksColumnStyle}>
+            <button
+              type="button"
+              data-cta-id="home.quick-exam-info"
+              onClick={() => onOpenStep?.(EXAM_DETAILS_STEP_ID)}
+              className="cre-cta-ink"
+              style={secondaryLinkStyle}
+            >
+              Exam Information
+            </button>
+            <button
+              type="button"
+              data-cta-id="home.quick-get-licensed"
+              onClick={() => onOpenStep?.(APPLY_LICENSE_STEP_ID)}
+              className="cre-cta-ink"
+              style={secondaryLinkStyle}
+            >
+              How to Get Your License
+            </button>
+            {onOpenRequirements ? (
+              <button
+                type="button"
+                data-cta-id="home.state-requirements"
+                onClick={onOpenRequirements}
+                className="cre-cta-ink"
+                style={secondaryLinkStyle}
+              >
+                {/* ⚠ NO JURISDICTION PREFIX, unlike the button this replaces
+                    ("New York State Requirements"). Asked for as "State
+                    Requirements", and in a list under a heading the prefix is
+                    the third naming of a state the column has already said
+                    twice. The sheet itself still names it. */}
+                State Requirements
+              </button>
+            ) : null}
           </div>
-        ) : (
-          licensingSteps
-        )}
-        {/* THE REQUIREMENTS ACTION, OUT OF THE CARDS — 2026-09-21, the direct
-            ask: "take this out of the widget and make it a secondary style
-            button below — same width as the widget."
-
-            It was a text link at the foot of the arrival card, under a rule.
-            Out here it reads as what it is: the state's own rules, which
-            elaborate the whole post-course sequence rather than the last step
-            of it. It also stops the arrival card being the only one with two
-            affordances.
-
-            FULL WIDTH by inheritance, not by declaration — a flex column
-            stretches its children, so this matches the cards above it exactly
-            and cannot drift from them if the column's width ever changes. */}
-        {requirementsButton}
+        </section>
+        ) : null}
       </div>
     )
   }
@@ -443,6 +688,53 @@ const pendingStepStyle: CSSProperties = {
   padding: '4px 20px 4px 16px',
 }
 
+/** The last Get Licensed step — the sheet "How to Get Your License" opens.
+ *  Read off the published list rather than written as a literal, so a reorder
+ *  of `GET_LICENSED_STEPS` cannot leave this pointing at the wrong sheet. */
+const APPLY_LICENSE_STEP_ID = GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 1].id
+
+const quickLinksColumnStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 8,
+  marginTop: 12,
+}
+
+/**
+ * The shared `Button`'s SECONDARY shape — transparent fill, 1px stroke, 40px
+ * tall — but NOT that component, and the reason is this version's palette.
+ * `Button.secondary` draws its ink and border from `--color-action`, which on
+ * XCEL is the Brick red: a FILL colour that measures 2.05:1 as TEXT on the dark
+ * shell (the `.cre-alert-action` failure). This version deliberately moved every
+ * CTA onto the navy — "navy means do this; red means this is an assessment" — so
+ * a red outlined button here would be the only red control on the page.
+ *
+ * ⚠ `borderColor: currentColor` so `.cre-cta-ink` owns BOTH the ink and the
+ * stroke from one declaration, including its dark-mode swap to the light stop.
+ * An explicit colour would need saying twice and would beat the class while
+ * looking correct.
+ *
+ * FULL WIDTH by declaration here rather than by inheritance: these sit in a
+ * gap'd column inside a card, not as direct children of the stretching flex
+ * column the standalone button used to live in.
+ */
+const secondaryLinkStyle: CSSProperties = {
+  width: '100%',
+  height: 40,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 6,
+  padding: '0 16px',
+  borderRadius: 'var(--radius-md)',
+  border: '1px solid currentColor',
+  background: 'transparent',
+  cursor: 'pointer',
+  fontFamily: 'var(--font-body)',
+  fontSize: 14,
+  fontWeight: 700,
+}
+
 /* The rounded variant of `pendingStepStyle`'s rule: same 4px, same
    `--color-primary-300`, same place — only the ends are round.
    `--color-atlas-step-rule` is set only under the Atlas palette (tokens.css),
@@ -468,6 +760,16 @@ const LICENSING_STEP_CTA: Record<string, string | undefined> = {
   'pass-exam': 'home.what-to-expect',
   'apply-license': 'home.how-to-apply',
 }
+
+/* ⚠ `ExamStepCard` WAS HERE. It existed only to choose between `date-first`
+   and `ask-first` at the two call sites `journey-step-order` creates, and went
+   with the flag on 2026-09-29 — with one treatment left there is nothing to
+   choose. Restoring the flag means restoring it too; `archivedItems.ts` says so.
+
+   ⚠ BOTH CALL SITES ABOVE STILL BRANCH ON `step.id === 'schedule-exam'`, and
+   they must keep agreeing: `exam-first` renders this step from the promoted
+   slot instead of the map, so a change to one and not the other brings back
+   the same split this component was written to close. */
 
 /**
  * SCHEDULE STATE EXAM, AS A BANNER — the Atlas home, 2026-10-01, the
@@ -527,13 +829,14 @@ export function ScheduleExamBanner({
 function LicensingStepWidget({
   step,
   number,
-  bare = false,
   shell,
   onOpenStep,
   heading,
   state,
+  hideSheetLink = false,
   roundedRule = false,
   banner = false,
+  bare = false,
 }: {
   step: LicensingStep
   /** Continues the journey's 01-04. See the note in `StudyJourneyWidget`. */
@@ -549,6 +852,11 @@ function LicensingStepWidget({
    * thing. This is a heading override and nothing else now.
    */
   heading?: string
+  /** `journey-quick-links` collects these into one card, so the card's own
+   *  "What to expect" / "How to apply" would be the second copy. ⚠ Suppresses
+   *  the LINK only — the exam-date capture below it, where this card still has
+   *  one, is a control rather than a way into a sheet and stays. */
+  hideSheetLink?: boolean
   /** The path's jurisdiction CODE ("NY"), for the scheduled heading. Passed
    *  rather than derived: the widget has no path. */
   state?: string
@@ -734,11 +1042,8 @@ function LicensingStepWidget({
           margin: '6px 0 0',
           fontFamily: 'var(--font-heading)',
           fontWeight: 700,
-          // Serif Heading 8 on the Atlas pages (2026-09-29, the designer's
-          // request): the --type-atlas-h8-* tokens exist only under the Atlas
-          // palette, so every other version keeps 18 / 24. (Heading 8 briefly, then 7.)
-          fontSize: 'var(--type-atlas-h8-size, 18px)',
-          lineHeight: 'var(--type-atlas-h8-line, 24px)',
+          fontSize: 18,
+          lineHeight: '24px',
           letterSpacing: '-0.01em',
           color: 'var(--color-text-primary)',
         }}
@@ -804,7 +1109,7 @@ function LicensingStepWidget({
           onDone={() => setEditingExam(false)}
         />
       ) : null}
-      {onOpenStep || scheduled ? (
+      {(onOpenStep || scheduled) && !hideSheetLink ? (
         <button
           type="button"
           /* ⚠ DERIVED FROM THE STEP — one element renders all three licensing
@@ -961,9 +1266,8 @@ function ExamDateCapture({
             border: 'none',
             cursor: draft ? 'pointer' : 'default',
             opacity: draft ? 1 : 0.5,
-            // The CTA red under the Atlas palette; the navy everywhere else.
-            background: 'var(--color-atlas-cta, var(--color-primary-500))',
-            color: 'var(--color-atlas-on-cta, var(--color-text-inverse))',
+            background: 'var(--color-primary-500)',
+            color: 'var(--color-text-inverse)',
             fontFamily: 'var(--font-body)',
             fontSize: 13,
             fontWeight: 700,
@@ -1161,9 +1465,8 @@ const collapsedTitleStyle: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-heading)',
   fontWeight: 700,
-  // Serif Heading 8 on the Atlas pages; 21 / 27 everywhere else.
-  fontSize: 'var(--type-atlas-h8-size, 21px)',
-  lineHeight: 'var(--type-atlas-h8-line, 27px)',
+  fontSize: 21,
+  lineHeight: '27px',
   letterSpacing: '-0.01em',
   color: 'var(--color-text-primary)',
 }

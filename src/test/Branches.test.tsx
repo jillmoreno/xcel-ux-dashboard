@@ -44,6 +44,8 @@ const row = (over: Partial<StoredLink> = {}): StoredLink => ({
   note: 'Look here.',
   addedBy: 'Sam',
   type: '',
+  // Required on main's StoredLink since the product control (merged 2026-10-02).
+  product: 'both',
   isPublic: false,
   addedDate: '2026-09-18',
   ...over,
@@ -242,7 +244,8 @@ describe('the Refinement branch strip', () => {
     render(<DemoPanel />)
     await user.click(await screen.findByRole('button', { name: /^Add$/ }))
     expect(await screen.findByLabelText(/Note/)).toHaveValue('')
-    expect(screen.getByRole('checkbox', { name: /public/i })).not.toBeChecked()
+    // A role="switch" on main's form since the 2026-10-02 merge, not a checkbox.
+    expect(screen.getByRole('switch', { name: /public/i })).toHaveAttribute('aria-checked', 'false')
   })
 
   /* A branch already up for review must not be offered again — and the strip

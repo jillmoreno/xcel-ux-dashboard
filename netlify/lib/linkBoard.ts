@@ -36,6 +36,19 @@ export const ALLOWED_PROTOCOLS = ['http:', 'https:']
  */
 export const ALLOWED_TYPES = ['brief', 'design', 'prototype', 'reference']
 
+/**
+ * The Refinement product tags, re-declared here for the same reason as
+ * `ALLOWED_TYPES` — this is a trust boundary, and `LINK_PRODUCTS` in
+ * `src/data/linkStore.ts` is a compile-time claim about code we wrote.
+ * `Demo.test.tsx` parses both files and asserts they agree.
+ *
+ * No `''` member: unlike `type`, this field has a real default. Anything not on
+ * this list becomes `both` rather than being rejected, because a tag the server
+ * cannot read is not a reason to refuse someone's link.
+ */
+export const ALLOWED_PRODUCTS = ['xcel', 'compass', 'both']
+const DEFAULT_PRODUCT = 'both'
+
 /** Per-field limits. Generous enough for a real title and a long tracking URL,
  *  small enough that the store cannot be used to park arbitrary data. */
 const MAX_TITLE = 200
@@ -56,6 +69,8 @@ export type BoardConfig = {
   /** Whether records carry `isPublic`. When false the field is dropped on the
    *  way in, so a Links record cannot quietly acquire a public flag. */
   publicFlag: boolean
+  /** Whether records carry `product`. Demo only, same rule as `publicFlag`. */
+  products: boolean
 }
 
 type Json = Record<string, unknown>
@@ -136,6 +151,15 @@ export function validateRecord(
     if (type && !cfg.types.includes(type)) {
       errors.push(`type must be one of: ${cfg.types.join(', ')}.`)
     } else out.type = type
+  }
+
+  // Which product the row is about. NORMALISED, not rejected: an unreadable tag
+  // is a display problem, and refusing the whole record over one would lose the
+  // link — which is the more expensive failure on a board whose job is to not
+  // lose work. The allow-list still means only a known value is ever stored.
+  if (cfg.products) {
+    const product = str(b.product)?.trim() ?? ''
+    out.product = ALLOWED_PRODUCTS.includes(product) ? product : DEFAULT_PRODUCT
   }
 
   // Whether the PUBLIC build shows this row. Strictly boolean `true`, so a

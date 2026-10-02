@@ -38,22 +38,22 @@ function renderDashboard(initialPath = '/') {
   )
 }
 
-/** The nav order is load-bearing: open sections first, then the gated group,
- *  with the divider drawn where the first gated one starts. */
+/** The nav order is load-bearing: the ungated sections first (Prototypes ·
+ *  Refinement · Research · Other Links · Development · Done — Development and
+ *  Done were pulled out of the shared gate 2026-09-23, see `NAV_EYEBROWS` in
+ *  UxDashboardPage.tsx), then the still-gated group, with the divider drawn
+ *  where the first gated one starts. */
 const EXPECTED_SECTIONS = [
   'Prototypes',
   'Refinement',
-  'Other Links',
   'Research',
+  'Other Links',
   'Design',
   'Exploration',
-  'Sandbox',
   'Development',
   'Done',
   'Archive',
   'QA Notes',
-  'To Do',
-  'Contributing',
 ]
 
 beforeEach(() => {
@@ -66,8 +66,12 @@ beforeEach(() => {
 describe('XCEL dashboard — mount and nav', () => {
   it('mounts and renders the brand lockup', () => {
     renderDashboard()
-    expect(screen.getByText('UX Dashboard')).toBeInTheDocument()
-    expect(screen.getByText('XCEL LMS')).toBeInTheDocument()
+    expect(screen.getByText('UX Hub')).toBeInTheDocument()
+    // Both products, because the hub is now explicitly about both — XCEL LMS
+    // alone read as the name of the only thing in here.
+    expect(screen.getByText('XCEL LMS & Compass Learning')).toBeInTheDocument()
+    // The third line says WHICH BUILD you are on. This is the full site.
+    expect(screen.getByText('Design Link')).toBeInTheDocument()
   })
 
   it('renders the full section set, in order', () => {
@@ -83,26 +87,31 @@ describe('XCEL dashboard — mount and nav', () => {
     expect(positions).toEqual([...positions].sort((a, b) => a - b))
   })
 
-  it('Contributing renders the static designer guide in a frame — one document, not a JSX copy', () => {
+  it('the archived Contributing section no longer resolves, and its guide is untouched', () => {
+    // ARCHIVED 2026-09-29. This test used to assert the section rendered the
+    // guide in an iframe. Both halves still matter, in opposite directions:
+    //
+    //   the SECTION is gone — `?section=contributing` no longer resolves, so
+    //   the rail has no row and the URL falls back like any unknown section;
+    //   the DOCUMENT is not — `public/contributing/` is deliberately untouched
+    //   and still served at /contributing/, which is where CLAUDE.md sends
+    //   designers. Archiving the rail entry must never take the guide with it.
     renderDashboard('/?section=contributing')
-    const frame = screen.getByTitle('Contributing to the dashboard')
-    expect(frame.tagName).toBe('IFRAME')
-    expect(frame).toHaveAttribute('src', '/contributing/')
-    // …and that document exists, with its PDF beside it. The guide's own header
-    // comment says how the PDF is regenerated; this only proves neither is missing.
+    expect(screen.queryByTitle('Contributing to the dashboard')).toBeNull()
+
     const dir = resolve(dirname(fileURLToPath(import.meta.url)), '../../public/contributing')
     const html = readFileSync(resolve(dir, 'index.html'), 'utf8')
     expect(html).toContain('href="contributing.pdf"')
     expect(statSync(resolve(dir, 'contributing.pdf')).size).toBeGreaterThan(10_000)
   })
 
-  it('the foot of the rail links the stakeholder guide, outside the section nav', () => {
+  it('no longer links the stakeholder guide from the rail', () => {
+    // Removed 2026-09-29. The guide itself is UNCHANGED and still served at
+    // /about/ — this is the rail entry going, not the document. Pinned rather
+    // than deleted so that putting the link back is a deliberate act with a
+    // failing test behind it, not something that drifts back in.
     renderDashboard()
-    const link = screen.getByRole('link', { name: /How to read this dashboard/ })
-    expect(link).toHaveAttribute('href', '/about/')
-    // Not a section: it must not be inside the <nav>, or it becomes a
-    // thirteenth row and the order assertion above starts counting it.
-    expect(screen.getByRole('navigation')).not.toContainElement(link)
+    expect(screen.queryByRole('link', { name: /How to read this dashboard/ })).toBeNull()
   })
 })
 
@@ -125,6 +134,15 @@ describe('section routing (sectionOf)', () => {
     'xcel-exam-spec': 'exploration',
     // The first handoff row (2026-09-24) — `devStatus: 'in-development'`.
     'atlas-home-course-card': 'development',
+    // Added 2026-09-22 — see the row's own note in `prototypeFeatures.ts` for
+    // why this page stopped being masthead-only and took a tile.
+    'xcel-pace-presets': 'exploration',
+    // Added 2026-09-24 — the repo's FIRST authored dev handoff. `devStatus:
+    // 'in-design'` is what places it, and `sectionOf` reads that BEFORE
+    // `category`, so changing the status moves the row between Design and
+    // Development. Update this map in the same commit if it moves. (It did,
+    // same day: it shipped `in-design` → Design, which was wrong for a handoff.)
+    'xcel-course-entry': 'development',
   }
 
   it('accounts for every authored feature', () => {
@@ -219,7 +237,7 @@ describe('the restricted group is open on the full build', () => {
     // draws on the full build, so their presence proves the `gate` fields
     // survived the un-enforcement.
     renderDashboard()
-    expect(screen.getByText(/UX & Dev Access/i)).toBeInTheDocument()
+    expect(screen.getByText(/^Designers$/i)).toBeInTheDocument()
   })
 })
 
@@ -254,33 +272,55 @@ describe('prototype URLs — served from this repo', () => {
    * checks by quietly omitting `externalUrl`, which is how the guard would
    * otherwise be lost.
    */
-  /* A THIRD KIND since 2026-09-24: GUIDED rows (`kind: 'guided'`) open their
-     own handoff gateway at `/prototype/:id`, so they carry neither `to` nor
-     `externalUrl`. They are held to their own rule below — they must carry
-     `pages` for the Live Preview — rather than slipping past the checks. */
-  const guidedRows = PROTOTYPE_FEATURES.filter((f) => f.kind === 'guided')
+  /*
+   * THREE ROW SHAPES, not two — corrected 2026-09-24 when the first `guided`
+   * feature landed.
+   *
+   *   • a DOCUMENT row   → `externalUrl`, a file under /prototypes/
+   *   • a ROUTE row      → `to`, an in-app path
+   *   • a GATEWAY row    → NEITHER, because a guided feature's row falls
+   *                        through to its own `/prototype/<id>` page
+   *
+   * ⚠ THE THIRD ONE MUST CARRY NEITHER FIELD. The home row's href is
+   * `externalUrl ?? to ?? '/prototype/<id>'`, so either field set on a guided
+   * feature HIJACKS the row and sends it somewhere that is not the handoff.
+   * That is not a style rule — it shipped broken for one commit exactly that
+   * way, and `a guided row opens its own gateway` below is what now catches it.
+   */
+  const gatewayRows = PROTOTYPE_FEATURES.filter((f) => f.kind === 'guided')
   const documentRows = PROTOTYPE_FEATURES.filter((f) => !f.to && f.kind !== 'guided')
   const routeRows = PROTOTYPE_FEATURES.filter((f) => f.to)
 
-  it('a guided row opens its gateway: no to / externalUrl, and pages to preview', () => {
-    for (const f of guidedRows) {
-      expect(f.to, `${f.id} is guided — its gateway is the route`).toBeUndefined()
-      expect(f.externalUrl, `${f.id} is guided — no external document`).toBeUndefined()
-      expect(f.pages?.length, `${f.id} needs pages for its Live Preview`).toBeGreaterThan(0)
-    }
-  })
-
-  it('every row is either a document or a route, never both and never neither', () => {
+  it('every non-guided row is either a document or a route, never both and never neither', () => {
     for (const f of PROTOTYPE_FEATURES) {
-      if (f.kind === 'guided') continue
+      if (f.kind === 'guided') continue // → its own gateway; asserted below
       expect(
         Boolean(f.to) !== Boolean(f.externalUrl),
         `${f.id} needs exactly one of to / externalUrl`,
       ).toBe(true)
     }
-    // Both kinds exist, so neither filter above is vacuously empty.
+    // All three kinds exist, so none of the filters above is vacuously empty.
     expect(documentRows.length).toBeGreaterThan(0)
     expect(routeRows.length).toBeGreaterThan(0)
+    expect(gatewayRows.length).toBeGreaterThan(0)
+  })
+
+  it('a guided row opens its own gateway, not somewhere else', () => {
+    /* ⚠ THE REGRESSION THIS EXISTS FOR. `xcel-course-entry` shipped with a `to`
+       pointing at the dashboard — added only to satisfy the rule above, which
+       predated guided features — and the Development row then opened the
+       product instead of the handoff notes. The href resolution is
+       `externalUrl ?? to ?? '/prototype/<id>'`, so the ONLY way a guided row
+       reaches its gateway is by carrying neither field. */
+    for (const f of gatewayRows) {
+      expect(f.to, `${f.id} is guided, so a \`to\` would hijack its row`).toBeUndefined()
+      expect(
+        f.externalUrl,
+        `${f.id} is guided, so an \`externalUrl\` would hijack its row`,
+      ).toBeUndefined()
+      // …and it must have something for the gateway to actually show.
+      expect(f.devHandoff, `${f.id} is guided but has no devHandoff to render`).toBeTruthy()
+    }
   })
 
   it('every route row points into this app, not off it', () => {
@@ -394,10 +434,19 @@ describe('the Prototypes row opens the committed configuration', () => {
     expect(row.to).toBe('/dashboard-rebrand?demo=1')
   })
 
-  it('is still the only row in the file with a `to`', () => {
-    // The document-shape guards are scoped to rows WITHOUT `to`; adding the
-    // query param must not have turned another row into a route.
-    expect(PROTOTYPE_FEATURES.filter((f) => f.to).map((f) => f.id)).toEqual(['xcel-dashboard'])
+  it('holds the route rows and nothing else', () => {
+    // The document-shape guards are scoped to rows WITHOUT `to`; a document row
+    // that accidentally grows one would slip past every one of them.
+    //
+    // ⚠ BACK TO ONE. `xcel-course-entry` was briefly added here when it shipped
+    // with a `to` — which was the bug: a guided row must carry neither field or
+    // it never reaches its gateway. See `a guided row opens its own gateway`.
+    // The assertion stays the whole SET in both directions, which is what
+    // catches an accidental conversion; loosening it to a count would give up
+    // the guard entirely.
+    expect(PROTOTYPE_FEATURES.filter((f) => f.to).map((f) => f.id).sort()).toEqual([
+      'xcel-dashboard',
+    ])
   })
 })
 

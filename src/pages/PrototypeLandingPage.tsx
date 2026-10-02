@@ -19,8 +19,7 @@ import {
   Share2,
   Table,
   X,
-  ArrowUpRightFromSquare,
-} from '@/icons'
+  ArrowUpRightFromSquare, HourglassClock} from '@/icons'
 import { PrototypeBar } from '@/components/layout/PrototypeBar'
 import { clearPrototypeWalkthrough, setPrototypeWalkthrough } from '@/components/layout/prototypeWalkthrough'
 import { PrototypePasswordModal } from '@/components/prototype/PrototypeLock'
@@ -1512,6 +1511,9 @@ const STATUS_MENU_ICON: Record<DevStatus, React.ReactNode> = {
     <MessageCircle size={15} aria-hidden style={{ color: 'var(--color-error-600)' }} />
   ),
   'blocked': <LockSolid size={15} aria-hidden style={{ color: 'var(--color-neutral-900)' }} />,
+  'not-ready': (
+    <HourglassClock size={15} aria-hidden style={{ color: 'var(--color-secondary-700)' }} />
+  ),
   'ready-for-dev': (
     <CircleCheck size={15} aria-hidden style={{ color: 'var(--color-success-500)' }} />
   ),

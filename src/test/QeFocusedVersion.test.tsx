@@ -64,6 +64,32 @@ import { XCEL_NY_PRODUCER_PATH_ID } from '@/data/studyCalendarFixtures'
 import { CURRENT_LEARNING_EYEBROW } from '@/components/learning/learningPathsHomeUtil'
 
 /**
+ * THE PRE-PROMOTION BASELINE — 2026-09-28.
+ *
+ * Five flags were promoted to the Prototypes baseline that day, so the
+ * product's DEFAULT render no longer shows the Study Pace tile, the separate
+ * Jump Back In card, the inline exam-date field, or coursework as Step 1.
+ *
+ * The tests in this file are about those COMPONENTS and that LAYOUT, not about
+ * whatever the baseline happens to be, so they pin the state they were written
+ * against. Spread into every seed here rather than repeated, because this file
+ * has six of them and a flag pinned in five is worse than one pinned in none.
+ *
+ * ⚠ A TEST THAT IS ABOUT THE BASELINE MUST NOT SPREAD THIS.
+ */
+const PRE_PROMOTION_BASELINE = {
+  'study-pace-hidden': { enabled: false },
+  'course-entry-style': { enabled: true, variant: 'split' },
+  /* `exam-step-style` was seeded here until 2026-09-29, when the flag was
+     retired — see `archivedItems.ts`. Removed rather than left as a dead key:
+     a seed for a flag that no longer exists reads as a pinned choice and is
+     silently ignored. */
+  'journey-step-order': { enabled: true, variant: 'coursework-first' },
+}
+
+
+
+/**
  * QE FOCUSED — the qualifying-education dashboard version (2026-09-16), and
  * XCEL's default.
  *
@@ -93,6 +119,7 @@ import { CURRENT_LEARNING_EYEBROW } from '@/components/learning/learningPathsHom
  * the block's header needs the block to have one.
  */
 const CLASSIC_FLAGS = {
+  ...PRE_PROMOTION_BASELINE,
   'dashboard-course-header': { enabled: true, variant: 'none' },
   'dashboard-journey-style': { enabled: true, variant: 'default' },
   'dashboard-heading-font': { enabled: true, variant: 'sans' },
@@ -152,7 +179,14 @@ function renderShell(url: string) {
 beforeEach(() => {
   window.localStorage.clear()
   window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
-})
+
+  window.localStorage.setItem(
+    'cgp.featureFlags',
+    JSON.stringify({
+      ...PRE_PROMOTION_BASELINE,
+      ...PRE_PROMOTION_BASELINE,
+    }),
+  )})
 
 describe('the QE Focused version is ARCHIVED but still reachable', () => {
   /*
@@ -165,15 +199,11 @@ describe('the QE Focused version is ARCHIVED but still reachable', () => {
    * what lets the 160 tests below go on describing this layout, which is the
    * layout Testing and Testing 2 are built on.
    */
-  it('is still in THIS branch’s picker', () => {
-    /* THIS BRANCH'S PICKER, NOT MAIN'S — 2026-09-24. This file came over from
-       main with the home page's contents; main archived QE Focused and
-       Marketing Focused off the picker, but that archive was deliberately NOT
-       pulled onto feat/atlas-compass-global-nav (home contents only). So here
-       QE Focused still leads and Atlas sits after Testing 2. When this branch
-       merges into main, main's assertion is the one to keep. */
+  it('is gone from the picker', () => {
     const ids = DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)
-    expect(ids).toContain(DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED.id)
+    expect(ids).not.toContain(DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED.id)
+    // Marketing Focused went in the same pass, for the same reason.
+    expect(ids).not.toContain('discoverability-marketing-focused')
   })
 
   it('still RESOLVES, which is what keeps this file meaningful', () => {
@@ -184,21 +214,23 @@ describe('the QE Focused version is ARCHIVED but still reachable', () => {
     expect(container.querySelector('.cre-learner-focused-band')).not.toBeNull()
   })
 
-  it('leads this branch’s picker, ahead of Testing, Testing 2 and Atlas', () => {
-    /* THIS BRANCH'S PICKER, NOT MAIN'S — 2026-09-24. This file came over from
-       main with the home page's contents; main archived QE Focused and
-       Marketing Focused off the picker, but that archive was deliberately NOT
-       pulled onto feat/atlas-compass-global-nav (home contents only). So here
-       QE Focused still leads and Atlas sits after Testing 2. When this branch
-       merges into main, main's assertion is the one to keep. */
+  it('leaves Testing leading the picker, with Learner Focused behind it', () => {
+    // Order is what a reviewer reads as "the one we are on".
+    expect(DISCOVERABILITY_DASHBOARD_VERSIONS[0]).toBe(
+      DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
+    )
+    /* Testing 2 sat between these two until 2026-09-28, when it was archived
+       the same way QE Focused and Marketing Focused were — the picker entry
+       only. `?version=discoverability-testing-2` still resolves, and
+       `Testing2Version.test.tsx` still renders it on every test, which is the
+       whole point of archiving a version this way. See
+       `discoverability-testing-2` in archivedItems.ts. */
     expect(DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)).toEqual([
-      'discoverability-qe-focused',
       'discoverability-testing',
-      'discoverability-testing-2',
+      // From feat/atlas-compass-global-nav: Atlas/Compass, and Eric/Atlas V1
+      // behind its flag (the Header filters it).
       'discoverability-atlas-compass-nav',
-      // Eric/Atlas V1 (2026-10-02), behind its flag — see Header.
       'eric-atlas-v1',
-      'discoverability-marketing-focused',
       'discoverability-learner-focused',
     ])
   })
@@ -314,10 +346,12 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
     expect(screen.queryByRole('button', { name: /Collapse sidebar|Expand sidebar/ })).toBeNull()
   })
 
-  it('sits after the two Testing versions in the picker', () => {
+  it('sits right after Testing in the picker', () => {
     const ids = DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)
+    // Right after Testing since main archived Testing 2 off the picker
+    // (2026-09-28, merged here 2026-10-02).
     expect(ids.indexOf('discoverability-atlas-compass-nav')).toBe(
-      ids.indexOf('discoverability-testing-2') + 1,
+      ids.indexOf('discoverability-testing') + 1,
     )
     expect(DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV.label).toBe(
       'Atlas/Compass Global Navigation',
@@ -1187,6 +1221,8 @@ describe('nothing on the page says "1 days"', () => {
     window.localStorage.setItem(
       'cgp.featureFlags',
       JSON.stringify({
+        ...PRE_PROMOTION_BASELINE,
+      ...PRE_PROMOTION_BASELINE,
         ...CLASSIC_FLAGS,
         'dashboard-course-header': { enabled: true, variant: 'band' },
       }),
@@ -1511,10 +1547,16 @@ describe('the Current Learning Progress block sits on the page, not a navy card'
     expect(half.style.background).toBe('transparent')
     expect(half.style.boxShadow).toBe('')
     expect(half.style.borderRadius).toBe('')
-    // The left/right padding goes with the card: a bare block lines up with the
-    // section headings below rather than staying inset by a gutter it no
-    // longer has.
-    expect(half.style.padding).toBe('4px 0px 0px')
+    /* ALL the padding goes with the card. Left/right so a bare block lines up
+       with the section headings below rather than staying inset by a gutter it
+       no longer has — and the TOP since 2026-09-29, which is what changed here.
+
+       ⚠ IT WAS `4px 0px 0px`, a nudge left over from when this column led with
+       a header of its own. That header is hidden on this surface, so the 4px
+       was pushing the Current Course card 4px BELOW the exam card in the
+       column beside it: two halves of one grid starting at the same y with
+       their first cards not quite level. */
+    expect(half.style.padding).toBe('0px')
   })
 
   it('keeps the navy card on the other versions', () => {
@@ -2240,6 +2282,8 @@ describe('the course header band flag', () => {
     window.localStorage.setItem(
       'cgp.featureFlags',
       JSON.stringify({
+        ...PRE_PROMOTION_BASELINE,
+      ...PRE_PROMOTION_BASELINE,
         'dashboard-course-header': { enabled: true, variant: 'band' },
         'dashboard-progress-state': { enabled: true, variant: 'not-started' },
       }),
@@ -2396,7 +2440,10 @@ describe('the course header band flag', () => {
      * with it, and that is what this pins.
      */
     window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
-    window.localStorage.setItem('cgp.featureFlags', JSON.stringify({}))
+    window.localStorage.setItem(
+      'cgp.featureFlags',
+      JSON.stringify({ ...PRE_PROMOTION_BASELINE }),
+    )
     const navy = renderShell('/dashboard-rebrand?version=discoverability-learner-focused')
     const band = navy.container.querySelector<HTMLElement>('.cre-learner-focused-band')!
     expect(band.textContent).toMatch(/Target Date|Deadline/i)
@@ -2759,15 +2806,25 @@ describe('the Study Journey rail style flag', () => {
     }
   })
 
-  it('closes ALL THREE sheets with the governing agency, under a rule', () => {
+  it('no longer closes the three step sheets with the governing agency', () => {
     /*
-     * DFS governs the LICENCE, not any one step, so the block is identical on
-     * each of the three — which step you happened to open must not decide
-     * whether you can find the phone number.
+     * ⚠ INVERTED 2026-09-29, and the inversion is the record of a design call.
      *
-     * Swept across all three rather than checked on one, because "identical on
-     * each" is the assertion; a single-sheet check would pass with the block on
-     * one and missing from two.
+     * This asserted the OPPOSITE — the block on all three sheets, identically,
+     * on the reasoning that DFS governs the LICENCE rather than any one step, so
+     * which step you opened must not decide whether you can find the phone
+     * number. Three copies was the price of that guarantee.
+     *
+     * Exam Details changed the shape of the problem: it is now the hub the three
+     * exam sheets hang off, so the block sits ONCE at its bottom and still
+     * belongs to no single step. `ExamScheduleWidget.test.tsx` owns the positive
+     * assertion now — that it is THERE, with its rule and its action links.
+     *
+     * ⚠ WHAT THIS COSTS, kept here because this is where it will be noticed:
+     * these three sheets are still reachable DIRECTLY from the Study Journey
+     * rows, and on those routes the contact block is one hop further away than
+     * it was. Restoring it is one `<GoverningAgencyBlock />` in
+     * `GetLicensedStepPanel` — the markup is a component now, not a third copy.
      */
     for (const step of GET_LICENSED_STEPS) {
       const view = renderShell(QE_URL)
@@ -2775,27 +2832,10 @@ describe('the Study Journey rail style flag', () => {
         within(view.container).getByRole('button', { name: new RegExp(step.title, 'i') }),
       )
       const dialog = screen.getByRole('dialog')
-      expect(dialog.textContent, step.id).toMatch(/Governing Agency/)
-      expect(dialog.textContent, step.id).toContain(NY_GOVERNING_AGENCY.name)
-      expect(dialog.textContent, step.id).toContain(NY_GOVERNING_AGENCY.phone)
-      expect(dialog.textContent, step.id).toContain(NY_GOVERNING_AGENCY.address)
-      // A hairline above it — the same `--color-border-subtle` seam the rest of
-      // this version uses, not a heavier line for one boundary.
-      const rule = Array.from(dialog.querySelectorAll<HTMLElement>('div')).find(
-        (d) => d.style.height === '1px',
-      )!
-      expect(rule, step.id).toBeTruthy()
-      expect(rule.style.background).toMatch(/border-subtle/)
-      // The phone and the email are ACTIONS, not text to retype; the website
-      // leaves XCEL so it opens in a new tab, and `tel:`/`mailto:` do not.
-      const agency = dialog.querySelector('section:last-of-type')!
-      const byHref = (pre: string) =>
-        Array.from(agency.querySelectorAll('a')).find((a) => a.getAttribute('href')?.startsWith(pre))
-      expect(byHref('tel:')).toBeTruthy()
-      expect(byHref('mailto:')).toBeTruthy()
-      const site = byHref('https://www.dfs.ny.gov/')!
-      expect(site.getAttribute('target')).toBe('_blank')
-      expect(byHref('tel:')!.getAttribute('target')).toBeNull()
+      expect(dialog.textContent, step.id).not.toMatch(/Governing Agency/)
+      expect(dialog.textContent, step.id).not.toContain(NY_GOVERNING_AGENCY.phone)
+      // …and the step's own published content is untouched by the removal.
+      expect(dialog.textContent, step.id).toContain(step.title)
       view.unmount()
     }
   })
@@ -3316,7 +3356,19 @@ describe('the in-shell course launcher is a lo-fi placeholder', () => {
        accessibility regression. */
     const byName = within(rail())
     expect(byName.getByRole('button', { name: 'My Courses' })).toBeTruthy()
-    expect(byName.getByRole('button', { name: 'Rubi Insights' })).toBeTruthy()
+    /* `Rubi Insights` was asserted here until 2026-09-28, when the row was
+       archived (see `rail-rows-2026-09-28`). `Resources` carries the same point
+       — a row whose visible label is abbreviated keeps its full accessible
+       name — and is still in My Learning.
+
+       ⚠ WORTH KNOWING HOW THIS FAILED: the missing button made `getByRole`
+       throw, and testing-library's ERROR PATH clones the DOM to build its
+       message. That clone hit a jsdom bug parsing a `background` shorthand, so
+       the run reported `TypeError: Cannot set properties of undefined
+       (setting 'background-color')` from deep inside jsdom and never printed
+       the real reason. If a rail assertion ever fails that way again, the
+       element is missing — the CSS is a red herring. */
+    expect(byName.getByRole('button', { name: 'Resources' })).toBeTruthy()
     expect(byName.getByRole('list', { name: 'My Learning' })).toBeTruthy()
     expect(byName.getByRole('list', { name: 'Support' })).toBeTruthy()
   })

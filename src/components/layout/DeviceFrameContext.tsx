@@ -14,6 +14,7 @@ import {
 import { useLocation } from 'react-router-dom'
 import { isAtlasCompassNavVersion } from '@/data/dashboardVersions'
 import { BrowserWindow, MobileScreen, Monitor, TabletScreen } from '@/icons'
+import { isTestSession } from '@/data/gatewayMode'
 
 /**
  * Device-preview frame for the prototype. A toggle in the PrototypeBar
@@ -87,7 +88,12 @@ export function DeviceFrameProvider({ children }: { children: ReactNode }) {
   // so a shared demo always opens as the presentation view (with the prototype
   // bar + demo controls hidden; see PrototypeChrome).
   const present = params.get('present') === '1'
-  const effectiveDevice: DeviceSize = present
+  /* `?test=1` (the moderated user-test link) forces the Demo frame for the same
+     reason `present=1` does — the direct ask was to keep "the back background
+     for the demo mode". It differs from `present` only in what it leaves on the
+     bar: see `PrototypeChrome`. */
+  const test = isTestSession(search)
+  const effectiveDevice: DeviceSize = present || test
     ? 'desktop-framed'
     : chromeOff
       ? 'desktop'

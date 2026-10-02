@@ -98,11 +98,12 @@ export function StudyJourneyRail({
    * line to change if the range is wanted everywhere.
    */
   stepRange?: boolean
-  /** Which step the coursework is, in the `stepRange` eyebrow. 1 by default;
-   *  2 on the Atlas home, where Schedule State Exam leads (2026-09-24). */
+  /** Which step this rail IS, for the eyebrow — 1 as shipped, 2 when
+   *  `journey-step-order: exam-first` puts Schedule State Exam above it. Only
+   *  read when `stepRange` is set. */
   stepNumber?: number
   /** The Atlas home's eyebrow (2026-09-30, the designer's request): the step
-   *  number in BOLD and the label without "Atlas" — "**Step 2** · Study
+   *  number in BOLD and the label without "Atlas" — "**Step 1** · Study
    *  Journey". Other versions keep "Step N · Atlas Study Journey". */
   atlasEyebrow?: boolean
 }) {

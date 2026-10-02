@@ -16,6 +16,8 @@ import { ProgressBar } from '@/components/ui/ProgressBar'
 import { displayedProgressPct, longDate, resolveRenewal, timeRemainingText } from '@/components/learning/learningPathsHomeUtil'
 import { Sheet } from '@/components/ui/Sheet'
 import { GetLicensedStepPanel } from '@/components/learning/GetLicensedStepPanel'
+import { ExamDetailsPanel, ExamFaqPanel } from '@/components/learning/ExamDetailsPanel'
+import { EXAM_DETAILS_STEP_ID, EXAM_FAQ_STEP_ID } from '@/data/examDetails'
 import {
   GET_LICENSED_STEPS,
   NY_LH_CURRENT_CHAPTER,
@@ -219,6 +221,24 @@ export function MembershipOverview({
    */
   const [openStepId, setOpenStepId] = useState<string | null>(null)
   const openStep = GET_LICENSED_STEPS.find((st) => st.id === openStepId) ?? null
+  /*
+   * EXAM DETAILS — the menu `ask-first`'s footer opens, 2026-09-29.
+   *
+   * A SEPARATE piece of state from `openStepId`, and it has to be: the menu
+   * stays open UNDERNEATH whatever it opens, so closing a detail returns you to
+   * the list you chose from rather than to the page. One id could not hold both
+   * at once.
+   *
+   * ⚠ `EXAM_DETAILS_STEP_ID` is NOT a `LicensingStep`. It arrives on the same
+   * `onOpenStep` channel as the real step ids, so it is peeled off BEFORE the
+   * lookup below — without that it would fall through to `openStep === null`
+   * and open an empty sheet, which is exactly how this failed the first time.
+   */
+  const [examDetailsOpen, setExamDetailsOpen] = useState(false)
+  const openStepById = (id: string) => {
+    if (id === EXAM_DETAILS_STEP_ID) setExamDetailsOpen(true)
+    else setOpenStepId(id)
+  }
   const openDetail = (view: 'progress' | 'requirements' = 'requirements') => {
     setDetailView(view)
     setDetailOpen(true)
@@ -651,7 +671,18 @@ export function MembershipOverview({
       </span>
     </span>
   )
-  const courseHeaderBand = courseHeader && activeProgressPath && (
+  /*
+   * ⚠ THE SPLIT HEADER STANDS DOWN FOR THE COMBINED ARM — 2026-09-28. The
+   * combined card carries the course name, the art, the bar, the figure and the
+   * stat pairs itself, so leaving this rendered would print the course twice,
+   * one block above the other saying the same thing.
+   *
+   * Read here as well as in `LearnerFocusedBand` (which owns the card) because
+   * this is where the header is BUILT; the two reads are one flag, and a test
+   * pins that only one of the two renders.
+   */
+  const combinedEntry = (useFeatureFlag('course-entry-style').variant ?? 'split') === 'combined'
+  const courseHeaderBand = courseHeader && !combinedEntry && activeProgressPath && (
     <Wrap style={{ padding: 0, width: '100%' }}>
       {/* THE DASHED DIVIDER IS GONE — 2026-09-21, the direct ask ("remove the
           dashed divider line"). It arrived on 2026-09-17 to separate this
@@ -1339,7 +1370,7 @@ export function MembershipOverview({
       // per-step destination and inventing one is the Resources-slugs defect;
       // the step that DOES have a real URL (PSI) keeps it and never reaches
       // this callback.
-      onOpenStep={(id: string) => setOpenStepId(id)}
+      onOpenStep={openStepById}
       path={activeProgressPath}
       course={activeCourse}
       pathsCount={pathsCount}
@@ -1531,13 +1562,33 @@ export function MembershipOverview({
       {/* One step's published detail. `open` is derived from the id rather than
           held as a second boolean, so the two cannot disagree about whether a
           sheet is showing. */}
+      {/* THE EXAM DETAILS MENU, and it renders BEFORE the step sheet below on
+          purpose. `Sheet` pins every instance to `zIndex: 100`, so DOM order is
+          what decides which of two open sheets is on top — the detail must come
+          after this one or it opens behind the menu that asked for it. */}
       <Sheet
-        open={Boolean(openStep)}
-        onClose={() => setOpenStepId(null)}
-        title={openStep?.title ?? ''}
+        open={examDetailsOpen}
+        onClose={() => setExamDetailsOpen(false)}
+        title="Exam Details"
         width={480}
       >
-        {openStep ? (
+        {examDetailsOpen ? (
+          <ExamDetailsPanel
+            state={activeProgressPath?.state}
+            onSelect={setOpenStepId}
+            onClose={() => setExamDetailsOpen(false)}
+          />
+        ) : null}
+      </Sheet>
+      <Sheet
+        open={Boolean(openStep) || openStepId === EXAM_FAQ_STEP_ID}
+        onClose={() => setOpenStepId(null)}
+        title={openStepId === EXAM_FAQ_STEP_ID ? 'Common questions' : (openStep?.title ?? '')}
+        width={480}
+      >
+        {openStepId === EXAM_FAQ_STEP_ID ? (
+          <ExamFaqPanel onClose={() => setOpenStepId(null)} />
+        ) : openStep ? (
           <GetLicensedStepPanel
             step={openStep}
             state={activeProgressPath?.state}

@@ -345,7 +345,7 @@ export const DEMO_PERSONAS: DemoPersona[] = [
     flags: [{ key: 'dashboard-progress-state', variant: 'progress-at-risk' }],
     dayOptions: PACE_DAY_OPTIONS,
   },
-  /* `pace-wont-fit` ARCHIVED 2026-09-23 on main (its `ARCHIVED_ITEMS` row is there)
+  /* `pace-wont-fit` ARCHIVED 2026-09-23 — see `ARCHIVED_ITEMS`
      (`progress-off-track`). It was the only door onto the pace model's
      `state: 'no'` branch; At Risk reaches it now that the demo's day counts are
      29 / 17 / 3, and two personas demonstrating one branch is one too many. The

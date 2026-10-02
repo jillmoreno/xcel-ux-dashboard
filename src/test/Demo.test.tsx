@@ -15,7 +15,7 @@ import type { StoredLink } from '@/data/linkStore'
  * focus trap. What is pinned HERE is the one thing Demo adds: `isPublic`, and
  * the asymmetry that makes it a review gate —
  *
- *   full site   → every row, a Public / Team only chip, the toggle in the form
+ *   full site   → every row, a Public / UX Only badge, the toggle in the form
  *   public site → only public rows, no chip, no Add / Edit / Remove
  *
  * `isPublicGateway()` reads `import.meta.env` at call time, so the public-build
@@ -32,6 +32,7 @@ const demo = (over: Partial<StoredLink> = {}): StoredLink => ({
   note: 'Look at the card under Current Progress.',
   addedBy: 'Sam',
   type: '',
+  product: 'both',
   isPublic: false,
   addedDate: '2026-09-18',
   ...over,
@@ -120,12 +121,12 @@ describe('DemoPanel on the full site', () => {
     render(<DemoPanel />)
 
     await waitFor(() => expect(screen.getByText('2 links')).toBeInTheDocument())
-    expect(screen.getByText('Team only')).toBeInTheDocument()
+    expect(screen.getByText('UX Only')).toBeInTheDocument()
     expect(screen.getByText('Public')).toBeInTheDocument()
 
     await user.click(screen.getByRole('button', { name: 'Add link' }))
     const toggle = await screen.findByLabelText('Show on public site')
-    // Off by default — a row is team-only until someone decides otherwise.
+    // Off by default — a row is UX-only until someone decides otherwise.
     expect(toggle).not.toBeChecked()
     // And no Type field: Demo rows are all one kind of thing.
     expect(screen.queryByLabelText(/^Type/)).not.toBeInTheDocument()
@@ -189,7 +190,10 @@ describe('DemoPanel on the full site', () => {
     const user = userEvent.setup()
     mockEndpoint([demo({ isPublic: true })])
     render(<DemoPanel />)
-    await user.click(await screen.findByRole('button', { name: /^Edit / }))
+    // Edit lives in the row's kebab since 2026-09-29, with Share Link and
+    // Remove. It is no longer a button of its own on the row.
+    await user.click(await screen.findByRole('button', { name: /^Actions for / }))
+    await user.click(await screen.findByRole('menuitem', { name: 'Edit' }))
     expect(await screen.findByLabelText('Show on public site')).toBeChecked()
   })
 })
@@ -211,11 +215,17 @@ describe('DemoPanel on the public build', () => {
     expect(screen.getByText('1 link')).toBeInTheDocument()
     // No chip — every row here is public, and saying so on each is noise.
     expect(screen.queryByText('Public')).not.toBeInTheDocument()
-    expect(screen.queryByText('Team only')).not.toBeInTheDocument()
-    // Read-only, whatever the endpoint said.
+    expect(screen.queryByText('UX Only')).not.toBeInTheDocument()
+    // Read-only, whatever the endpoint said. The row's kebab is still THERE —
+    // a stakeholder's whole job here is passing the link on — but it offers
+    // only Share Link. Asserted by opening it, because after the actions moved
+    // into a menu, querying for buttons named Edit / Remove would pass whether
+    // or not they were offered.
     expect(screen.queryByRole('button', { name: /^Add / })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /^Edit / })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /^Remove / })).not.toBeInTheDocument()
+    await userEvent.setup().click(screen.getByRole('button', { name: /^Actions for / }))
+    expect(await screen.findByRole('menuitem', { name: 'Share Link' })).toBeInTheDocument()
+    expect(screen.queryByRole('menuitem', { name: 'Edit' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('menuitem', { name: 'Remove' })).not.toBeInTheDocument()
   })
 
   it('an empty public list says so without offering to add', async () => {

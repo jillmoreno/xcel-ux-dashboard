@@ -114,7 +114,6 @@ describe('the Navigation flag group', () => {
       // grouping is asserted separately below, because this assertion cannot
       // see it. What it does see is Browse Catalog leaving.
       'Resources',
-      'Rubi Insights',
       'Get Help',
     ])
   })
@@ -140,7 +139,6 @@ describe('the Navigation flag group', () => {
       'My Courses',
       'Certificates',
       'Resources',
-      'Rubi Insights',
     ])
     // EXPLORE IS GONE — Browse Catalog was its last row and is now off, and a
     // group whose items are all hidden falls out caption and all. Asserted as

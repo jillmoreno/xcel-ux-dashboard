@@ -11,6 +11,49 @@ repo rather than two.
 asked a question. The detail now lives in `docs/`, one file per surface. Open the
 one you are touching; do not read all five.
 
+## Prototypes is the source of truth. Refinement is everything else.
+
+**Prototypes holds ONE row, deliberately, and that is not a limitation to route
+around (2026-09-28).** It answers one question — *what is the product right
+now?* — for developers and stakeholders. A second row destroys the answer,
+because from then on everyone has to ask which one is real.
+
+So when you want several things visible at once — two pacing treatments, a
+component's variants, a branch under discussion — **they go in Refinement**,
+which takes any number of rows, is authored in the browser (no code, no commit,
+no deploy), and is **visible to stakeholders too**: it carries no `gate`, so it
+renders on the public build as well as the full one.
+
+| Section | Means | Rows | Lives in |
+|---|---|---|---|
+| **Prototypes** | this IS the product | one, always | flag defaults on `main` |
+| **Refinement** | under discussion | as many as you like | Netlify Blobs, authored on the page |
+
+Two things that follow, and both have bitten:
+
+- **A Refinement row pinned with `?ff=` tracks `main`,** so it goes stale
+  silently when the component changes underneath — no error, it just quietly
+  becomes something else. When something must NOT move (a user test, a
+  sign-off), that is `promote-to-testing`'s frozen branch, not a Refinement row.
+- **Refinement rows are not in git,** so there is no record of what was shown
+  when. It is a working surface, not a decision log — the decisions log on a dev
+  handoff is where a decision gets recorded.
+
+The ways in are already built: `promote-to-refinement` (a branch),
+`promote-component` (one widget's variants), `promote-to-prototype` (moving
+something into the source of truth). There is deliberately no "create a second
+prototype" skill.
+
+**The way OUT is `retire-from-refinement`** (2026-09-29), and it runs both when
+the work shipped and when it did not. It exists because of the second bullet
+above: a row's build lives on a Netlify BRANCH deploy, so deleting the branch
+deletes the only viewable copy of the work, and "we tried this and decided not
+to" otherwise leaves no trace anywhere. It reads the row, makes the
+keep-or-delete-the-branch call explicit, writes the Archive row from what the
+reviewer actually wrote, and only then removes the row. It does NOT move work
+into Exploration — that section is for documents authored to be kept, and the
+skill records why.
+
 ## Scope — read before adding a route
 
 **CHANGED 2026-09-08. This section used to say "gateway only, four routes".**
@@ -44,6 +87,14 @@ scope — the product IS React here now, exactly as it is in the LMS.
    feature flag whose default is ON on your branch** — that is what makes your
    branch build show your work and what lets Jillienne decide, at merge, whether
    it ships. A hand-authored HTML exploration goes in `public/demos/`.
+
+   **Changing something that already exists?** Don't thread conditionals through
+   it. Copy it to a sibling — `StudyPaceTile.tsx` stays, `StudyPaceTileV2.tsx` is
+   yours — and let the flag choose between them at the call site.
+   `CourseContentV2.tsx` is the worked example. The original is never touched, so
+   you cannot conflict with whoever else is editing it. **Fork the layout, import
+   the data:** if both versions duplicate the content, the comparison is no longer
+   about your change. Say `/promote-component` and it will do this with you.
 3. **Check it** — *"Run the type check, the tests and lint."* Add *"and the smoke
    suites"* if you touched `public/prototypes/`.
 4. **Publish** — *"Commit everything and push it to `feat/your-thing`."* Netlify
@@ -64,6 +115,19 @@ guide**: `/contributing/` on the full site, or `public/contributing/index.html`.
 These are the dashboard's own machinery. A design change should not reach them,
 and a pull request that edits them is usually a sign something was misunderstood.
 
+**This is enforced now, not just advised (2026-09-24).** Asking Claude to edit
+one of these files is refused, with a message naming the file and what to do
+instead — `.claude/hooks/protect-framework.mjs`, wired in `.claude/settings.json`.
+Jillienne is exempt (it checks `git config user.email`), so nothing about her own
+work changes. `FrameworkProtection.test.ts` is the backstop for the edits a hook
+cannot see — a hand edit in an IDE, or `sed` through the shell — and it fails the
+suite you run before pushing, naming the files.
+
+⚠ It is a guardrail, not a lock: the email check is one command to change. It
+exists to stop someone wandering into the wrong file, not to defend the repo.
+The list of protected paths is THIS TABLE — a test reads it back out of this
+file, so the two cannot drift apart.
+
 | File | What it is |
 |---|---|
 | `src/pages/UxDashboardPage.tsx` | the gateway page — sections, nav, the rail |
@@ -72,7 +136,7 @@ and a pull request that edits them is usually a sign something was misunderstood
 | `src/data/gatewayMode.ts`, `src/data/deployContext.ts` | the per-site and per-context build switches |
 | `netlify.toml`, `scripts/public-redirects.mjs` | how the two sites and branch builds differ |
 | `netlify/functions/`, `netlify/lib/` | the Refinement / Links / QA Notes endpoints |
-| `.claude/skills/` | `promote-to-prototype`, `promote-to-refinement` and `promote-to-testing` — Jillienne's |
+| `.claude/skills/` | `ship-to-main`, `promote-to-prototype`, `promote-to-refinement`, `promote-component`, `promote-to-testing`, `retire-from-refinement`, `archive-a-feature` and `dev-handoff-notes` — Jillienne's. Run them; don't edit them. |
 | `public/contributing/`, `public/about/` | the two guides (regenerate the PDFs if you do edit them) |
 
 ## Stack
@@ -107,6 +171,12 @@ with a `restoreNote` listing the actual re-wire steps. Bringing something back
 should be a re-wire, never a rebuild. `restoreNote` is the field most often
 written too thinly — name the files, the call sites, and anything deliberately
 *not* restored.
+
+Say **`/archive-a-feature`** and it walks the whole thing: finding every place
+the feature is wired (the flag catalog is the one people miss), deciding how far
+to unwire, and writing the row. `ArchiveConvention.test.ts` now enforces the
+thin bits — every `restoreNote` and `location` must name a place you can go to,
+not just describe an intention.
 
 
 ## Verifying a change

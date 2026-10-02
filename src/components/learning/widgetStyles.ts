@@ -210,7 +210,11 @@ export const widgetCardFramedStyle: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   background: 'var(--color-surface-card)',
-  borderRadius: 'var(--radius-lg)',
+  /* 4 (2026-09-28, the direct ask on the Study Journey and Schedule State Exam
+     cards). `--radius-sm` IS 4px — the token, not a literal, so the scale stays
+     the source of truth. It was `--radius-lg` (12), which read soft beside the
+     2px blocks in the left column. */
+  borderRadius: 'var(--radius-sm)',
   padding: 20,
   minWidth: 0,
 }

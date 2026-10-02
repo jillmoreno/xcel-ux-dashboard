@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { ArrowUpRightFromSquare, Blog, BookOpen, CircleUserLight, Megaphone, Facebook, LogOut, Podcast, Sliders } from '@/icons'
+import { CircleUserLight, LogOut, Sliders } from '@/icons'
 import { isAtlasCompassNavVersion } from '@/data/dashboardVersions'
 import { Avatar } from '@/components/ui/Avatar'
 import { MembershipBadge } from '@/components/ui/MembershipBadge'
@@ -9,8 +9,6 @@ import { useAccount, type MembershipTierTone, type AvatarTierKey } from '@/conte
 import { useProfileAvatar } from '@/context/ProfileAvatarContext'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { accountSectionsFor } from '@/components/account/accountSections'
-import { resourcesFor, type ResourceIcon } from '@/data/membership/resourcesFixtures'
-import { communityFor } from '@/data/membership/communityFixtures'
 import { tierBadgeIcon } from '@/components/ui/membershipTierBadge'
 
 
@@ -47,10 +45,16 @@ export function AccountMenu({
   const atlasHeader =
     pathname === '/dashboard-rebrand' &&
     isAtlasCompassNavVersion(new URLSearchParams(search).get('version'))
-  // The appearance treatment is scoped to the Dashboard Discoverability shell,
-  // so the Preferences entry only surfaces there — offering it elsewhere would
-  // have no visible effect.
-  const showPreferences = pathname === '/dashboard-rebrand'
+  /*
+   * Preferences needs BOTH conditions, and they answer different questions.
+   * The route scope is a CORRECTNESS gate — the appearance treatment only
+   * applies inside the Dashboard Discoverability shell, so offering the entry
+   * elsewhere would open a sheet that changes nothing. The flag is the
+   * editorial one: whether the appearance control is part of the product at
+   * all. Default OFF (2026-09-30), so nothing renders until it is turned on.
+   */
+  const appearanceOn = useFeatureFlag('account-appearance-preferences').enabled
+  const showPreferences = appearanceOn && pathname === '/dashboard-rebrand'
   // On the Dashboard Rebrand shell the avatar ring + Pro gem adopt the Elite
   // teal so they match the "Passport Lite" membership badge; elsewhere the
   // avatar keeps its app-wide gold/cyan tertiary treatment.
@@ -58,7 +62,9 @@ export function AccountMenu({
   // Active membership-tier label / tone / avatar treatment for the header badge
   // on the rebrand shell; elsewhere the gold "Pro" pill + tertiary avatar are
   // used instead.
-  const { brand, membership, tierLabel, tierTone, avatarTier, user } = useAccount()
+  // `membership` was read here too, for the member-gated community row that
+  // left with the outbound group on 2026-09-30 — see `account-menu-free-content`.
+  const { brand, tierLabel, tierTone, avatarTier, user } = useAccount()
   /*
    * THE LEARNER COMES FROM CONTEXT — 2026-09-16.
    *
@@ -92,33 +98,13 @@ export function AccountMenu({
   // feature is off rather than leading to an empty section.
   const giftRecipientsOn = useFeatureFlag('gift-recipients').enabled
   const items = accountSectionsFor(brand, giftRecipientsOn)
-  // Free content (the blog, the podcast) lives HERE rather than in the left
-  // rail. These are the only outbound destinations in the menu, and they are
-  // open to everyone — no membership, no gate — so they sit in their own group
-  // below the account destinations rather than among them. Brand-keyed, so a
-  // brand with none (`[]`) shows no group and no stray divider.
-  const freeContent = resourcesFor(brand)
-  // The community group sits in the SAME menu group but comes from its own
-  // fixture and is **member-gated** — it is the one item here that membership
-  // actually buys. It deliberately does NOT live in `resourcesFor`: mixing a
-  // gated item into that list is what made the old External Resources page
-  // unreadable (two open links beside one locked card), and the fixture doc
-  // says so. Non-members don't see it at all rather than seeing a link they can't
-  // use — the Membership page is where they're sold it.
-  const community = membership === 'member' ? communityFor(brand) : null
-  const outboundRows = [
-    ...freeContent.map((r) => ({ id: r.id, label: r.title, href: r.href, icon: r.icon })),
-    ...(community
-      ? [
-          {
-            id: community.id,
-            label: community.shortName ?? community.name,
-            href: community.href,
-            icon: community.icon,
-          },
-        ]
-      : []),
-  ]
+  /*
+   * THE OUTBOUND GROUP LEFT ON 2026-09-30 — the four free-content rows
+   * (Resource Center · What's New · the two 2026 guides) and, with them, the
+   * member-gated community row that shared their group. Both sources are
+   * untouched and still feed the Membership surfaces; only this menu's copy is
+   * gone. See `account-menu-free-content` in archivedItems.ts.
+   */
 
   useEffect(() => {
     if (!open) return
@@ -140,6 +126,7 @@ export function AccountMenu({
     <div ref={ref} style={{ position: 'relative' }}>
       <button
         type="button"
+        data-cta-id="header.account"
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={id}
@@ -209,64 +196,35 @@ export function AccountMenu({
               {label}
             </NavLink>
           ))}
-          {/* Free content — outbound, open to everyone. Real anchors, not
-              NavLinks: the destination is another site, so they keep href,
-              middle-click and the "opens in a new tab" announcement. The
-              trailing glyph marks them as leaving the app, which is the one
-              thing a nav row otherwise promises it won't do. */}
-          {outboundRows.length > 0 && (
-            <>
-              <div style={{ height: 1, background: 'var(--color-border-subtle)', margin: '6px 4px' }} />
-              {outboundRows.map((row) => {
-                const RowGlyph = FREE_CONTENT_ICONS[row.icon]
-                return (
-                  <a
-                    key={row.id}
-                    role="menuitem"
-                    href={row.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={() => setOpen(false)}
-                    className="cre-menu-item"
-                    aria-label={`${row.label} (opens in a new tab)`}
-                  >
-                    <span className="cre-menu-item-icon" aria-hidden>
-                      <RowGlyph size={18} aria-hidden />
-                    </span>
-                    {row.label}
-                    <ArrowUpRightFromSquare
-                      size={12}
-                      aria-hidden
-                      style={{ marginLeft: 'auto', opacity: 0.55 }}
-                    />
-                  </a>
-                )
-              })}
-            </>
-          )}
-          {/* Preferences — only inside the Dashboard Discoverability feature,
-              where the appearance treatment actually applies. Opens a sheet
-              whose Appearance sub-view swaps between Light / Dim / Dark / System
-              (see AppearancePreferencesSheet). Closes the menu so the sheet owns
+          {/* ONE DIVIDER, ONE BOTTOM GROUP — restructured 2026-09-30 when the
+              outbound rows left. Preferences used to sit in its own band with a
+              rule BELOW it, which worked while a third group sat above; with
+              that group gone it left Preferences stranded between two rules,
+              and Logout alone under the second. Now a single rule separates the
+              account destinations from the two app-level actions, and the rule
+              belongs to the GROUP rather than to Preferences — so it still
+              renders when the flag is off and Logout is the only row below it. */}
+          <div style={{ height: 1, background: 'var(--color-border-subtle)', margin: '6px 4px' }} />
+          {/* Preferences — flag-gated (`account-appearance-preferences`, default
+              OFF) AND route-scoped. Opens a sheet whose Appearance sub-view
+              swaps between Light / Dim / Dark / System (see
+              AppearancePreferencesSheet). Closes the menu so the sheet owns
               focus; the change applies live behind the sheet. */}
           {showPreferences && (
-            <>
-              <button
-                type="button"
-                role="menuitem"
-                onClick={() => {
-                  setOpen(false)
-                  setPrefsOpen(true)
-                }}
-                className="cre-menu-item"
-              >
-                <span className="cre-menu-item-icon" aria-hidden>
-                  <Sliders size={18} aria-hidden />
-                </span>
-                Preferences
-              </button>
-              <div style={{ height: 1, background: 'var(--color-border-subtle)', margin: '6px 4px' }} />
-            </>
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false)
+                setPrefsOpen(true)
+              }}
+              className="cre-menu-item"
+            >
+              <span className="cre-menu-item-icon" aria-hidden>
+                <Sliders size={18} aria-hidden />
+              </span>
+              Preferences
+            </button>
           )}
           {/* Logout — final row of the production account menu. The
               UI/UX Demo Tools section that used to live below this
@@ -287,17 +245,6 @@ export function AccountMenu({
       )}
     </div>
   )
-}
-
-/** Same glyph map the resource cards use, so a row and its destination agree.
- *  Shared by the free rows and the member-only community row — both are
- *  outbound, so they read as one group even though their gating differs. */
-const FREE_CONTENT_ICONS: Record<ResourceIcon, typeof Blog> = {
-  blog: Blog,
-  book: BookOpen,
-  megaphone: Megaphone,
-  podcast: Podcast,
-  facebook: Facebook,
 }
 
 function ProfileHeader({

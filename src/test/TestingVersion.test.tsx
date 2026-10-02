@@ -16,12 +16,38 @@ import { journeyStopsFor } from '@/components/learning/studyJourneyUtil'
 import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
 import { XCEL_NY_PRODUCER_PATH_ID } from '@/data/studyCalendarFixtures'
 import {
+
   DISCOVERABILITY_DASHBOARD_VERSIONS,
   DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
   DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
   defaultDiscoverabilityVersionFor,
   isQualifyingEducationVersion,
 } from '@/data/dashboardVersions'
+
+/**
+ * THE PRE-PROMOTION BASELINE — 2026-09-28.
+ *
+ * Five flags were promoted to the Prototypes baseline that day, so the
+ * product's DEFAULT render no longer shows the Study Pace tile, the separate
+ * Jump Back In card, the inline exam-date field, or coursework as Step 1.
+ *
+ * The tests in this file are about those COMPONENTS and that LAYOUT, not about
+ * whatever the baseline happens to be, so they pin the state they were written
+ * against. Spread into every seed here rather than repeated, because this file
+ * has six of them and a flag pinned in five is worse than one pinned in none.
+ *
+ * ⚠ A TEST THAT IS ABOUT THE BASELINE MUST NOT SPREAD THIS.
+ */
+const PRE_PROMOTION_BASELINE = {
+  'study-pace-hidden': { enabled: false },
+  'course-entry-style': { enabled: true, variant: 'split' },
+  /* `exam-step-style` was seeded here until 2026-09-29, when the flag was
+     retired — see `archivedItems.ts`. Removed rather than left as a dead key:
+     a seed for a flag that no longer exists reads as a pinned choice and is
+     silently ignored. */
+  'journey-step-order': { enabled: true, variant: 'coursework-first' },
+}
+
 
 /**
  * TESTING — the fourth Discoverability version (2026-09-21).
@@ -58,12 +84,13 @@ function seed(extra: Record<string, unknown> = {}) {
   window.localStorage.setItem(
     'cgp.featureFlags',
     JSON.stringify({
+      ...PRE_PROMOTION_BASELINE,
+      ...PRE_PROMOTION_BASELINE,
       'study-pace-readout': { enabled: true, variant: 'prose' },
       /* `strip` unless a test says otherwise — `options` is the branch default
          and puts three radio buttons above the card, which several assertions
          here count. See the same note in `StudyPaceTile.test.tsx`. */
-      'study-pace-chooser': { enabled: true, variant: 'strip' },
-      ...extra,
+      'study-pace-chooser': { enabled: true, variant: 'strip' },      ...extra,
     }),
   )
 }
@@ -126,8 +153,21 @@ function paceTile(): HTMLElement {
 
 beforeEach(() => {
   window.localStorage.clear()
+  /* ⚠ RESET THE URL TOO, not just storage. `?ff=` is read from
+     `window.location.search`, and any test that sets it with
+     `history.replaceState` leaves it there for every test that follows —
+     flags leaking forward and failing assertions in files nobody touched.
+     Clearing localStorage alone is not a clean slate. */
+  window.history.replaceState({}, '', '/')
   window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
-})
+
+  window.localStorage.setItem(
+    'cgp.featureFlags',
+    JSON.stringify({
+      ...PRE_PROMOTION_BASELINE,
+      ...PRE_PROMOTION_BASELINE,
+    }),
+  )})
 
 describe('the Testing version is registered without displacing anything', () => {
   it('is selectable in the Discoverability picker', () => {
@@ -157,17 +197,22 @@ describe('the Testing version is registered without displacing anything', () => 
     )
   })
 
-  it('sits second in this branch’s picker, behind QE Focused', () => {
-    /* THIS BRANCH'S PICKER, NOT MAIN'S — 2026-09-24. This file came over from
-       main with the home page's contents; main archived QE Focused and
-       Marketing Focused off the picker, but that archive was deliberately NOT
-       pulled onto feat/atlas-compass-global-nav (home contents only). So here
-       QE Focused still leads and Atlas sits after Testing 2. When this branch
-       merges into main, main's assertion is the one to keep. */
-    expect(DISCOVERABILITY_DASHBOARD_VERSIONS[1]).toBe(
+  it('now LEADS the picker, which QE Focused used to', () => {
+    /* INVERTED 2026-09-22, and the original subject is why it survives rather
+       than being deleted. This file's whole premise was that Testing was added
+       "without displacing anything" — it sat third behind QE Focused, and this
+       test pinned that restraint.
+
+       The direct ask ended it: "we are going in the direction of Testing
+       Version", and QE Focused and Marketing Focused came off the picker. So
+       the claim inverts — Testing leads because there is nothing left in front
+       of it. QE Focused is ARCHIVED, not deleted: it still resolves by
+       `?version=`, which is what keeps `QeFocusedVersion.test.tsx` describing
+       the layout this version inherits. */
+    expect(DISCOVERABILITY_DASHBOARD_VERSIONS[0]).toBe(
       DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
     )
-    expect(DISCOVERABILITY_DASHBOARD_VERSIONS[0]).toBe(
+    expect(DISCOVERABILITY_DASHBOARD_VERSIONS).not.toContain(
       DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
     )
   })
@@ -776,7 +821,6 @@ describe('the Testing rail is trimmed', () => {
       'My Courses',
       'Certificates',
       'Resources',
-      'Rubi Insights',
     ])
   })
 
@@ -923,14 +967,24 @@ describe('the post-course steps are their own widgets', () => {
       c.getAttribute('aria-label'),
     )
 
-  it('renders four cards, in route order', () => {
+  it('renders the four journey cards in route order, then Quick links', () => {
     seed()
     renderShell(TESTING_URL)
+    /* ⚠ 'Exam Date', NOT 'Schedule State Exam' — 2026-09-29. The inline card
+       that carried that label was retired with `exam-step-style`; the slot is
+       `ExamScheduleWidget` now, whose region is "Exam Date". Still four cards
+       in the same order; only the second one's identity changed. */
+    /* ⚠ A FIFTH SECTION SINCE 2026-09-30 — the Quick links card, which absorbed
+       the standalone requirements button. It is LAST and it is not a step: the
+       four above are the route, this is a flatter way into sheets they already
+       reach. Asserted in the same list rather than separately, because its
+       POSITION is the part that could regress. */
     expect(cardLabels()).toEqual([
       'Study journey',
-      'Schedule State Exam',
+      'Exam Date',
       'Pass State Exam',
       'Get Licensed in New York',
+      'Quick links',
     ])
   })
 
@@ -962,22 +1016,28 @@ describe('the post-course steps are their own widgets', () => {
     expect(first?.textContent?.trim()).toBe('Atlas Study Journey')
   })
 
-  it('numbers the licensing cards 2, 3, 4 — after the coursework, not after its stops', () => {
+  it('numbers the licensing cards 2, 3 — after the coursework, not after its stops', () => {
     /* ⚠ THE DERIVATION IS THE REGRESSION THIS NOW GUARDS, which inverts what
        this test used to be for. It read the journey's stop count and offset the
        cards past it — so five stops produced "Step 06/07/08" and the column
        described an eight-step route to a licence.
 
-       There are FOUR steps: the coursework, then these three. The stops are
-       what step 1 is made of. Asserted as literals AND against a changing stop
-       count, so adding a sixth stop fails here instead of silently renumbering
-       three cards. */
+       There are four CARDS and now THREE numbered steps: the coursework, then
+       Pass State Exam and Get Licensed. The stops are what step 1 is made of.
+
+       ⚠ THE EXAM CARD DROPPED OUT OF THE NUMBERING on 2026-09-29, when
+       `ask-first` became the only treatment: it asks a question rather than
+       naming a step, so it takes no number and the two below it close up. This
+       read `['Step 2', 'Step 3', 'Step 4']` while the numbered arms existed.
+
+       Asserted as literals AND against a changing stop count, so adding a sixth
+       stop fails here instead of silently renumbering the cards. */
     seed()
     renderShell(TESTING_URL)
     const steps = [...rightColumn().querySelectorAll('p')]
       .map((p) => p.textContent?.trim())
       .filter((t) => /^Step \d+$/.test(t ?? ''))
-    expect(steps).toEqual(['Step 2', 'Step 3', 'Step 4'])
+    expect(steps).toEqual(['Step 2', 'Step 3'])
     // …and they do NOT follow the stop count, which is the thing that broke.
     const stops = journeyStopsFor(
       dashboardProgressPersonaFor('xcel', 'progress-on-track', 'qe')!.path,
@@ -1009,14 +1069,27 @@ describe('the post-course steps are their own widgets', () => {
     // differs, and "What to expect" on the application step would be the
     // generic label that tells a learner nothing.
     seed()
+    /* ⚠ PINNED TO `journey-quick-links:off` since 2026-09-30. These per-card
+       links are exactly what the default now HIDES — it collects them into one
+       Quick links card — so this test only has a subject on the off arm. That
+       is the right pin rather than a weakening: the claim is that each step's
+       link is LABELLED FROM ITS OWN DATA, and that is still true wherever the
+       links render. The collected-vs-per-card question is asserted in
+       `ExamScheduleWidget.test.tsx`. */
+    /* ⚠ ON `window.location`, NOT the router entry. `?ff=` is read from
+       `window.location.search`; a MemoryRouter entry carrying it reaches the
+       router and never the flag provider. The trap `ExamDateCard.test.tsx`
+       records. `beforeEach` resets the URL, so this does not leak forward. */
+    window.history.replaceState({}, '', `/?ff=${encodeURIComponent('journey-quick-links:off')}`)
     renderShell(TESTING_URL)
     const col = rightColumn()
-    /* "Schedule State Exam" as of 2026-09-21 (was "How to register"). Note it
-       now MATCHES ITS OWN CARD'S HEADING — asserted as a button specifically,
-       so this is the CTA and not the heading text being found twice. */
-    expect(
-      within(col).getByRole('button', { name: /^Schedule State Exam/ }),
-    ).toBeTruthy()
+    /* "Exam Details" as of 2026-09-29 (was "Schedule State Exam", and "How to
+       register" before that). The retired inline card's link went straight to
+       the one sheet; the card that replaced it opens a MENU of three, because
+       the learner who wants to rebook also wants what-to-expect and the FAQ.
+       Asserted as a button specifically, so this is the CTA rather than heading
+       text being found twice. */
+    expect(within(col).getByRole('button', { name: /Exam Details/ })).toBeTruthy()
     expect(within(col).getByRole('button', { name: /What to expect/ })).toBeTruthy()
     expect(within(col).getByRole('button', { name: /How to apply/ })).toBeTruthy()
   })
@@ -1042,8 +1115,15 @@ describe('the post-course steps are their own widgets', () => {
     renderShell(TESTING_URL)
     const cards = [...rightColumn().querySelectorAll(':scope > section')].slice(1)
     const [schedule, pass, apply] = cards.map((c) => c.textContent ?? '')
-    // The fees survive — the half of the line that was kept.
-    expect(schedule).toMatch(/\$40 exam fee/)
+    /* ⚠ THE EXAM CARD NO LONGER STATES A FEE AT ALL — 2026-09-29. The $40 line
+       went with the inline card `exam-step-style` retired; the argument that
+       won is `date-first`'s, inherited by `ask-first`: the fee is a fact about
+       BOOKING, booking happens on the state's own site, and the price is
+       authoritative and current there and never here. It is still in the step
+       sheet. Pinned as an ABSENCE here and positively on the sheet elsewhere,
+       so "the fee vanished everywhere" cannot pass this quietly. */
+    expect(schedule).not.toMatch(/\$40/)
+    // The application fee is untouched — that card did not change.
     expect(apply).toMatch(/\$80 application fee/)
     // …with no owner in front of either, in short or long form.
     expect(schedule).not.toMatch(/PSI/)
@@ -1055,38 +1135,49 @@ describe('the post-course steps are their own widgets', () => {
     expect(pass).not.toMatch(/fee/)
   })
 
-  it('puts the requirements action BELOW the cards, not inside one', () => {
+  it('keeps ONE requirements action, below the cards, now inside Quick links', () => {
     /* MOVED OUT 2026-09-21 ("take this out of the widget and make it a
        secondary style button below"). It was a text link at the foot of the
        arrival card; it is the column's last child now.
    
-       This assertion was about "the LAST card only" and is rewritten rather
-       than deleted — the subject is the same (there is exactly ONE of these,
-       and it belongs to the sequence rather than to a step), only its place
-       changed. */
+       ⚠ REWRITTEN TWICE, never deleted, because the SUBJECT has held both
+       times: there is exactly ONE of these and it belongs to the sequence
+       rather than to a step. 2026-09-21 moved it out of the arrival card; on
+       2026-09-30 it moved again, into the Quick links card, where it is one of
+       three. What would still be a defect is a second copy, or one back inside
+       a journey card — both are asserted below. */
     seed()
     renderShell(TESTING_URL)
     expect(screen.getAllByRole('button', { name: /State Requirements/ })).toHaveLength(1)
     const kids = [...rightColumn().children]
     const last = kids[kids.length - 1] as HTMLElement
-    expect(last.tagName).toBe('BUTTON')
+    expect(last.getAttribute('aria-label')).toBe('Quick links')
     expect(last.textContent).toMatch(/State Requirements/)
-    // …and no card carries it any more.
-    for (const card of rightColumn().querySelectorAll(':scope > section')) {
+    // …and no JOURNEY card carries it — the four that are steps.
+    const journeyCards = [...rightColumn().querySelectorAll(':scope > section')].filter(
+      (c) => c.getAttribute('aria-label') !== 'Quick links',
+    )
+    for (const card of journeyCards) {
       expect(card.textContent).not.toMatch(/State Requirements/)
     }
   })
 
-  it('draws it full width, by inheritance rather than a literal', () => {
-    // A flex column stretches its children, so the button matches the cards
-    // above it exactly and cannot drift from them if the column resizes. The
-    // assertion is the absence of a width, not a pixel figure — jsdom has no
-    // layout, and a measured number would be the drift it guards against.
+  it('draws the quick links full width', () => {
+    /* ⚠ THE REASON CHANGED ON 2026-09-30 even though the value did not. The
+       standalone button was full width BY INHERITANCE — a flex column stretches
+       its children. These sit in a gap'd column inside a card, so the width is
+       DECLARED. Still `100%` rather than a pixel figure: jsdom has no layout,
+       and a measured number would be the drift this guards against.
+
+       Asserted across ALL THREE, because they must agree with each other as
+       well as with the cards — one link a different width is the regression a
+       single-button check would miss. */
     seed()
     renderShell(TESTING_URL)
-    const kids = [...rightColumn().children]
-    const btn = kids[kids.length - 1] as HTMLElement
-    expect(btn.style.width).toBe('100%')
+    const quick = [...rightColumn().children].at(-1) as HTMLElement
+    const links = [...quick.querySelectorAll('button')]
+    expect(links).toHaveLength(3)
+    for (const b of links) expect((b as HTMLElement).style.width).toBe('100%')
   })
 
   it('takes its ink AND its stroke from one themed class', () => {
@@ -1099,8 +1190,7 @@ describe('the post-course steps are their own widgets', () => {
        stroke without a second declaration. */
     seed()
     renderShell(TESTING_URL)
-    const kids = [...rightColumn().children]
-    const btn = kids[kids.length - 1] as HTMLElement
+    const btn = within(rightColumn()).getByRole('button', { name: 'State Requirements' })
     expect(btn.className).toContain('cre-cta-ink')
     /* ASSERTED AS THE ABSENCE OF A COLOUR, not the presence of `currentColor`:
        jsdom normalises `border: 1px solid currentColor` down to "1px solid",
@@ -1113,21 +1203,28 @@ describe('the post-course steps are their own widgets', () => {
     expect(btn.style.borderColor).not.toMatch(/rgb|#|var\(/)
   })
 
-  it('names the requirements link for the path’s own jurisdiction', () => {
-    /* The card renders for whatever path is current, so a hardcoded "New York"
-       would be a wrong fact the moment a Florida path reached it. Asserted
-       against the SAME `jurisdictionName` the heading resolves, so the two
-       cannot disagree — a card headed "Get Licensed in New York" over a link
-       naming another state is the defect this guards. */
+  it('drops the jurisdiction from the link, keeping it on the card above', () => {
+    /* ⚠ INVERTED 2026-09-30. The link read "{state} State Requirements" and this
+       asserted the prefix, against the SAME `jurisdictionName` the heading
+       resolves — the defect being a card headed "Get Licensed in New York" over
+       a link naming another state.
+
+       Quick links drops the prefix, as asked. That defect is now impossible
+       rather than guarded: with no state in the label there is nothing to
+       disagree with. What still has to hold is that the jurisdiction is named
+       SOMEWHERE in this column — the arrival card's heading, one card up — or
+       the page stops saying which state any of it is about. So the second half
+       of this test is the half that survived, and it is the one that matters. */
     seed()
     renderShell(TESTING_URL)
     const where = jurisdictionName(
       learningPathsFor('xcel').find((p) => p.id === XCEL_NY_PRODUCER_PATH_ID)?.state,
     )
     expect(where).toBeTruthy()
-    // The button below the cards…
-    expect(screen.getByRole('button', { name: `${where} State Requirements` })).toBeTruthy()
-    // …and the arrival card's own heading, from the SAME resolution.
+    // The link is unprefixed…
+    expect(screen.getByRole('button', { name: 'State Requirements' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: `${where} State Requirements` })).toBeNull()
+    // …and the arrival card's own heading still names the state.
     const lastCard = rightColumn().querySelectorAll(':scope > section')[3] as HTMLElement
     expect(lastCard.getAttribute('aria-label')).toBe(`Get Licensed in ${where}`)
   })
@@ -1282,5 +1379,59 @@ describe('the course header bar at nought', () => {
     const column = eyebrow!.closest('div[style*="padding-top"]') as HTMLElement | null
     expect(column).toBeTruthy()
     expect(column!.style.paddingTop).toBe('10px')
+  })
+})
+
+describe('study-pace-hidden', () => {
+  /**
+   * A flag that removes the Study Pace tile — 2026-09-28, off by default.
+   *
+   * ⚠ NOT `study-pace-widget`, which swaps the live tile for the lo-fi
+   * placeholder. That one changes what the tile SHOWS; this removes it. Two
+   * flags whose labels both begin "Study Pace" is exactly the pair someone
+   * reaches for the wrong one of, so the difference is asserted, not assumed.
+   *
+   * ⚠ `?ff=` IS READ FROM `window.location.search`, NOT FROM THE ROUTER.
+   * `readUrlFlagOverrides()` goes straight to `window.location`, so an `&ff=`
+   * appended to a `MemoryRouter` entry does NOTHING — the flag never applies and
+   * the test passes or fails for reasons unrelated to it. These tests set the
+   * real location first. Worth knowing before writing the next one: the failure
+   * is silent in the direction that matters, since an unapplied "hide" flag
+   * leaves the thing on screen and the assertion looks merely wrong.
+   */
+  function withFlags(ff: string) {
+    window.history.replaceState({}, '', `/dashboard-rebrand?ff=${encodeURIComponent(ff)}`)
+  }
+
+  it('HIDES the tile by default — promoted 2026-09-28', () => {
+    /* ⚠ THE BASELINE NOW SHIPS WITHOUT STUDY PACE. This asserted the opposite
+       and failed the moment the promotion landed, which is the job it was
+       written for. Worth stating plainly because it is the largest single
+       change in that promotion: the presets card, the activity band and the
+       derived-pace readout are no longer on the page a stakeholder opens.
+       Everything behind them is intact and one flag away. */
+    expect(FEATURE_FLAGS.find((f) => f.key === 'study-pace-hidden')?.defaultEnabled).toBe(true)
+    withFlags('study-pace-hidden:on')
+    renderShell(TESTING_URL)
+    expect(screen.queryByText(/Study Pace/i)).toBeNull()
+  })
+
+  it('brings the tile back when switched off', () => {
+    /* The old baseline, now the opt-in. ⚠ `seed()` in this file pins
+       `study-pace-hidden: false` for every other test here — they are about the
+       TILE, not the baseline — so this one is the only place the promoted
+       default is visible. */
+    withFlags('study-pace-hidden:off')
+    renderShell(TESTING_URL)
+    expect(screen.getByText(/Study Pace/i)).toBeTruthy()
+  })
+
+  it('is a different flag from the placeholder switch', () => {
+    /* `study-pace-widget: off` still renders a tile — the stub. If these two
+       ever converge, one of them is redundant and the panel is offering two
+       controls for one outcome. */
+    withFlags('study-pace-widget:off')
+    renderShell(TESTING_URL)
+    expect(screen.getByText(/Study Pace/i)).toBeTruthy()
   })
 })

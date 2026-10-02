@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
 import { useLocation } from 'react-router-dom'
-import { ArrowLeft, ChevronRight, Flag, HelpCircle, Sliders, X } from '@/icons'
+import { ArrowLeft, ChevronDown, ChevronRight, Flag, HelpCircle, Sliders, X } from '@/icons'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { Select } from '@/components/ui/Select'
 import { acquireBodyScrollLock } from '@/utils/bodyScrollLock'
@@ -66,6 +66,12 @@ function flagPageIdForPath(pathname: string): FeatureFlagPageId | null {
 // color/style, learning-path width/breakdown, learning-vibrant) + the dead
 // Featured Products flag were removed in the flag audit.
 const REBRAND_FLAGS = [
+  // My Purchases — order ledger vs. the not-built-yet placeholder, and the
+  // cards-vs-table layout A/B on top of it.
+  'account-purchases-ledger',
+  'purchases-layout',
+  // Appearance Preferences row in the account dropdown — off by default.
+  'account-appearance-preferences',
   // NOTE: `dashboard-progress-state` and `dashboard-education-type` were
   // intentionally dropped from this rebrand scope — the always-visible Demo
   // Controls bar (`DemoControlsBar`) exposes them as dedicated Progress /
@@ -77,18 +83,14 @@ const REBRAND_FLAGS = [
   // Free Content promo bands (blog + podcast) under the upsell band.
   'dashboard-free-content-bands',
   // Full-width course header above the overview — off by default.
-  'dashboard-course-header',
-  // The Study Pace card's three flags, pulled from main with the home page
-  // (2026-09-24). Variant-only; see the catalog entries.
-  'study-pace-readout',
-  'study-pace-preset',
-  'study-pace-chooser',
   // Study Journey rail treatment — compact rail / syllabus card.
   'dashboard-journey-style',
   // Current Course Progress stats treatment — bare cells / stat card. A
   // separate axis from the block style, so the two combine.
   // Current Course Progress block treatment — light / big-number / navy card.
   // Variant-only; a treatment rather than a different set of facts.
+  'dashboard-course-header',
+  'course-launcher-style',
   'dashboard-clp-style',
   // Pacing tile treatment on the Testing version — lo-fi / rate / runway /
   // balance. Variant-only, and inert on every other version, where the tile is
@@ -97,6 +99,46 @@ const REBRAND_FLAGS = [
   // catalog entry for why the serif is a system stand-in rather than the face
   // on the live site.
   'dashboard-heading-font',
+  // Text ramp for the whole rebrand app — Neutral (the brand guide's Charcoal
+  // and Gray) ⇄ Tiers (the sign-in prototype's warm ink / muted / faint).
+  // Variant-only; light theme only. See the catalog entry.
+  'dashboard-text-tiers',
+  // Study Pace card's lower half — Prose (three sentences) ⇄ Stats (three
+  // divided cells). Variant-only; see the catalog entry.
+  'study-pace-readout',
+  // Which preset the Study Pace card opens on — the Pacing demo control's
+  // flag. Variant-only; see the catalog entry.
+  'study-pace-preset',
+  /* ⚠ ADDED 2026-09-28, AND THEY SHOULD HAVE BEEN HERE FROM THE START. Six
+     flags shipped with `page: 'dashboard-rebrand'` and were still invisible in
+     the panel on that route, because `page` drives the page CARD and its count
+     while THIS LIST drives what the panel renders. Setting one without the
+     other leaves a flag reachable only by hand-editing `?ff=` — which is how
+     all six were being demoed. */
+  'course-entry-style',
+  'course-entry-details',
+  /* `exam-step-style` was listed here until 2026-09-29; it was retired when its
+     `ask-first` arm became unconditional. These two are what remain of that
+     card's controls — both only do anything on the arm that won. */
+  'exam-calendar-style',
+  'exam-card-background',
+  'journey-quick-links',
+  'journey-step-order',
+  'study-pace-hidden',
+  'nav-rail-icons',
+  'nav-rail-captions',
+  /* ⚠ ADDED 2026-09-28 AFTER A REVIEW, and these are OLDER misses than the
+     seven above. Git history says none of the four was ever in this list — they
+     were never removed, just never added, going back to their own introducing
+     commits. Each drives something on the rebrand page and none has a control
+     anywhere else. */
+  'study-pace-widget',
+  'dashboard-journey-complete',
+  'header-notifications',
+  'notification-state',
+  // How the Study Pace card offers a choice — the clickable week Strip, or
+  // three named Options. Variant-only; see the catalog entry.
+  'study-pace-chooser',
   // Recommended for You band — show/hide the whole section.
   'dashboard-recommended',
   // Recommended card blurb — show/hide the "what this is" line on the cards.
@@ -740,15 +782,44 @@ function FlagListView({
   onVariantChange: (key: string, value: string) => void
   onSecondaryVariantChange: (key: string, value: string) => void
 }) {
+  // Collapsed groups, remembered per viewer. The panel is long — Navigation
+  // alone is ten rows — and a reviewer usually works inside one group at a
+  // time. Default is EXPANDED for every group, so someone who has never
+  // collapsed anything sees exactly what they saw before.
+  //
+  // localStorage rather than component state alone: the panel unmounts on
+  // close, and re-opening it to find every group expanded again is the thing
+  // that makes collapsing not worth doing. Reads and writes are wrapped —
+  // private mode and blocked site-data both throw on access, and a flag panel
+  // that cannot open is a worse failure than one that forgets.
+  const listId = useId()
+  const [collapsed, setCollapsed] = useState<Record<string, boolean>>(() => {
+    try {
+      const raw = window.localStorage.getItem(COLLAPSED_GROUPS_KEY)
+      const parsed = raw ? JSON.parse(raw) : null
+      return parsed && typeof parsed === 'object' ? parsed : {}
+    } catch {
+      return {}
+    }
+  })
+  const toggleGroup = (group: string) => {
+    setCollapsed((prev) => {
+      const next = { ...prev, [group]: !prev[group] }
+      try {
+        window.localStorage.setItem(COLLAPSED_GROUPS_KEY, JSON.stringify(next))
+      } catch {
+        // ignore — the session keeps the state in memory either way
+      }
+      return next
+    })
+  }
+
   // Group flags by their `group` so the panel mirrors the dashboard's
   // on-page sections. Ungrouped flags render first as a flat list; then
   // each group renders under a subhead, ordered by FLAG_GROUP_ORDER
   // (groups not listed there fall back to first-appearance order). A
   // flag's catalog order is preserved within its group, so the catalog
   // stays the source of truth for intra-group ordering.
-  type Item =
-    | { kind: 'group-header'; group: string }
-    | { kind: 'flag'; def: FeatureFlagDefinition }
   const ungrouped: FeatureFlagDefinition[] = []
   const byGroup = new Map<string, FeatureFlagDefinition[]>()
   const firstSeen: string[] = []
@@ -767,12 +838,6 @@ function FlagListView({
     ...FLAG_GROUP_ORDER.filter((g) => byGroup.has(g)),
     ...firstSeen.filter((g) => !FLAG_GROUP_ORDER.includes(g)),
   ]
-  const items: Item[] = []
-  for (const def of ungrouped) items.push({ kind: 'flag', def })
-  for (const group of orderedGroups) {
-    items.push({ kind: 'group-header', group })
-    for (const def of byGroup.get(group)!) items.push({ kind: 'flag', def })
-  }
 
   return (
     <>
@@ -785,32 +850,65 @@ function FlagListView({
         </p>
       ) : (
         <ul style={flagListStyle}>
-          {items.map((item) =>
-            item.kind === 'group-header' ? (
-              <li
-                key={`group:${item.group}`}
-                style={groupHeaderItemStyle}
-                aria-hidden
-              >
-                <span style={groupHeaderLabelStyle}>{item.group}</span>
-                <span aria-hidden style={groupHeaderRuleStyle} />
+          {ungrouped.map((def) => (
+            <li key={def.key}>
+              <FlagRow
+                def={def}
+                state={flags[def.key]}
+                onToggle={(enabled) => onToggle(def.key, enabled)}
+                onVariantChange={(value) => onVariantChange(def.key, value)}
+                onSecondaryVariantChange={(value) =>
+                  onSecondaryVariantChange(def.key, value)
+                }
+              />
+            </li>
+          ))}
+          {orderedGroups.map((group) => {
+            const defs = byGroup.get(group)!
+            const open = !collapsed[group]
+            const bodyId = `${listId}-group-${slugifyGroup(group)}`
+            return (
+              <li key={`group:${group}`}>
+                <button
+                  type="button"
+                  onClick={() => toggleGroup(group)}
+                  aria-expanded={open}
+                  aria-controls={bodyId}
+                  style={groupHeaderButtonStyle}
+                >
+                  <ChevronDown
+                    size={12}
+                    aria-hidden
+                    style={{
+                      flexShrink: 0,
+                      transition: 'transform 120ms ease',
+                      transform: open ? 'rotate(0deg)' : 'rotate(-90deg)',
+                    }}
+                  />
+                  <span style={groupHeaderLabelStyle}>{group}</span>
+                  <span aria-hidden style={groupHeaderRuleStyle} />
+                  <span style={groupHeaderCountStyle}>{defs.length}</span>
+                </button>
+                <ul id={bodyId} hidden={!open} style={groupBodyStyle}>
+                  {defs.map((def) => (
+                    <li key={def.key}>
+                      <FlagRow
+                        def={def}
+                        state={flags[def.key]}
+                        onToggle={(enabled) => onToggle(def.key, enabled)}
+                        onVariantChange={(value) =>
+                          onVariantChange(def.key, value)
+                        }
+                        onSecondaryVariantChange={(value) =>
+                          onSecondaryVariantChange(def.key, value)
+                        }
+                      />
+                    </li>
+                  ))}
+                </ul>
               </li>
-            ) : (
-              <li key={item.def.key}>
-                <FlagRow
-                  def={item.def}
-                  state={flags[item.def.key]}
-                  onToggle={(enabled) => onToggle(item.def.key, enabled)}
-                  onVariantChange={(value) =>
-                    onVariantChange(item.def.key, value)
-                  }
-                  onSecondaryVariantChange={(value) =>
-                    onSecondaryVariantChange(item.def.key, value)
-                  }
-                />
-              </li>
-            ),
-          )}
+            )
+          })}
         </ul>
       )}
     </>
@@ -1375,11 +1473,47 @@ const flagListStyle: CSSProperties = {
   gap: 12,
 }
 
-const groupHeaderItemStyle: CSSProperties = {
+/** Where a viewer's collapsed groups live. Group NAMES are the keys, so the
+ *  set is shared across flag pages — "Navigation" collapsed on one page is
+ *  collapsed on the next, which is what a reviewer scanning several pages
+ *  for one group actually wants. */
+const COLLAPSED_GROUPS_KEY = 'cgp.featureFlagPanel.collapsedGroups'
+
+/** Group name → a DOM-id-safe fragment for `aria-controls`. Group names carry
+ *  spaces ("Jump Back In Card") and the id has to be stable across renders. */
+function slugifyGroup(group: string): string {
+  return group.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')
+}
+
+const groupHeaderButtonStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   gap: 10,
   marginTop: 8,
+  width: '100%',
+  padding: '4px 0',
+  border: 'none',
+  background: 'none',
+  color: 'var(--color-primary-700)',
+  cursor: 'pointer',
+  textAlign: 'left',
+}
+
+const groupHeaderCountStyle: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 11,
+  fontWeight: 600,
+  color: 'var(--color-text-tertiary)',
+  flexShrink: 0,
+}
+
+const groupBodyStyle: CSSProperties = {
+  listStyle: 'none',
+  margin: 0,
+  padding: 0,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 12,
 }
 
 const groupHeaderLabelStyle: CSSProperties = {

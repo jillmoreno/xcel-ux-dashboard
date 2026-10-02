@@ -556,6 +556,36 @@
   --rubi-pill-text: #730d0d; /* rubi/primary/700 */
 }
 
+/* ----------------------------------------------------------------------------
+   Compass Course Player tokens.
+
+   The warm "reading" palette the course player sits on — Figma
+   `Atlas-Compass-Global-Navigation`, node 49:2903. Declared at the base rather
+   than in the brand block because Compass is the COURSE surface: the same
+   parchment ground whatever brand wraps it, exactly like the Rubi tokens above.
+
+   WHY NEW TOKENS AND NOT THE TERTIARY RAMP. XCEL's tertiary is Beech
+   (#9d815a), and its 100/200 stops (#f5f0e9 / #e6dccd) are close enough to
+   these to be tempting and wrong: they are a BRAND tint that moves if the brand
+   does, and this ground must not. `--color-surface-parchment` is likewise
+   already spoken for — it is the guides' cream (#faf4e1), a full shade warmer
+   and yellower than the player's near-white.
+
+   The two structural colours are NOT new: the design's #2d5872 is exactly
+   `--color-primary-500` under `[data-brand='xcel']`, and is referenced as that
+   token so the player follows the brand where it should. #3d5a73 — the button
+   and progress-dot navy — is within 2% of it and is treated as the same
+   intent rather than pinned as a fourth near-navy.
+   ---------------------------------------------------------------------------- */
+:root {
+  --compass-ground: #f8f6f3; /* the reading column's page */
+  --compass-content: #f0ece6; /* the Course Content placeholder block */
+  --compass-rule: #e0dbcd; /* hairlines: footer top, Rubi header/footer */
+  --compass-edge: #c3bba5; /* the stronger border — Rubi's left edge, buttons */
+  --compass-thread: #e2d9cd; /* the vertical line down the TOC's child items */
+  --compass-current: #eceef0; /* the fill behind the TOC's current child */
+}
+
 /* ============================================================================
    Brand override block
    `AccountProvider` sets `data-brand="xcel"` on <html>, and the variables
@@ -662,6 +692,26 @@
      neutral ramp so only type moves. */
   --color-text-primary: #3a3a3a; /* Charcoal */
   --color-text-secondary: #666666; /* Gray */
+
+  /* ⚠ TERTIARY HAD TO FOLLOW, and not following is the bug this fixes
+     (2026-09-23, from a contrast audit of the Testing home screen).
+
+     The block above re-pins only two stops, so `--color-text-tertiary` kept the
+     BASE value, `neutral-700` / #616161. On white that is 6.19:1 — DARKER than
+     the Gray body ink beside it at 5.74:1. So on this brand the ladder ran
+     backwards: helper text, captions and axis ticks were heavier than the body
+     they sit under, and nothing on the page read as subordinate. Both passed
+     AA the whole time, which is why no contrast check ever caught it.
+
+     #737373 is 4.74:1 — a clear step lighter than the body, with ~0.24 of
+     margin over the 4.5 floor for antialiasing at the 10-12px sizes this token
+     is mostly used at. Going to the true minimum (#767676, 4.54:1) buys one
+     more step of contrast between the greys and spends the whole margin.
+
+     ⚠ NOTE FOR ANYONE READING OLDER COMMENTS: several components state this
+     token as "6.19:1 light / 6.18:1 dark". Those were measured before this
+     line existed and are right about the BASE theme and wrong about XCEL. */
+  --color-text-tertiary: #737373;
 
   /* Brand alias + action recolor */
   --color-brand: var(--color-primary-500);
@@ -1913,6 +1963,52 @@ html,
 
    `:focus-visible` rather than `:focus` — these rows are a keyboard user's way
    through the sequence, and `:focus` would ring them on every mouse click. */
+/* ─────────────────────────────────────────────────────────────────────────
+   THE THREE-TIER TEXT RAMP — the `dashboard-text-tiers` flag's `tiers`
+   variant. `DashboardRebrandPage` writes `data-text-tiers` onto <html> while
+   it is mounted and clears it on unmount, the same scoping the dark theme uses
+   a few lines up in that file.
+
+   WHERE IT COMES FROM: `public/prototypes/xcel-signin.html`, which has carried
+   `--ink` / `--ink-2` / `--ink-3` since it was authored. The ramp had never
+   reached the React product — the answer to "have these tiers been considered
+   for all of these pages" was no — so this variant is what makes the comparison
+   possible rather than a rewrite that assumes the answer.
+
+   MEASURED ON OUR FILLS, not the prototype's. It publishes 16.0 / 6.8 / 5.0 on
+   its own off-white surface; on ours they are:
+
+       ink   #1f1d18   16.84 on white   15.44 on the page ground   AAA
+       muted #5b5560    7.21             6.61                      AA
+       faint #706b63    5.29             4.85                      AA
+
+   All six clear AA and the ladder descends, which is the property the ramp it
+   replaces did NOT have on this brand until 2026-09-23 — see the tertiary note
+   in the XCEL block above.
+
+   ⚠ THE REAL DIFFERENCE IS HUE, NOT CONTRAST. Both ramps pass; these are warm
+   greys (brown- and violet-tinted) where the guide's are true neutrals. That is
+   what a reviewer should be looking at, and it is why the neutral variant is
+   kept rather than deleted.
+
+   LIGHT ONLY. `[data-theme='dark']` re-pins these three to a blue-tinted set
+   chosen against a navy ground, and warm greys on navy is a second design
+   question. The `:not([data-theme='dark'])` guard is what keeps this variant
+   from silently answering it — the same guard pattern the dark blocks
+   elsewhere in this file use in the other direction.
+
+   ONE DECLARATION EACH, on the root, because custom properties cascade: every
+   component reading `--color-text-secondary` switches with no component knowing
+   the flag exists — including the Compass player, which is a full-window
+   takeover rendered outside the overview's subtree and would be missed by the
+   container-class approach `cre-dash-serif-headings` uses.
+   ───────────────────────────────────────────────────────────────────────── */
+:root[data-text-tiers='tiers']:not([data-theme='dark']) {
+  --color-text-primary: #1f1d18;   /* ink   — headings & body */
+  --color-text-secondary: #5b5560; /* muted — secondary text, captions, eyebrows */
+  --color-text-tertiary: #706b63;  /* faint — third-tier meta */
+}
+
 /* Serif dashboard headings — the `dashboard-heading-font` flag's `serif`
    variant. `MembershipOverview` puts this class on its root.
 
@@ -3738,6 +3834,63 @@ a.cre-library-card-title::after {
   }
 }
 
+/* ── Account area: CTAs follow the HOME blue ────────────────────────────────
+   2026-09-30, Jillienne's call: every CTA in the ACCOUNT AREA should match the
+   blue the home page's Resume button uses, not the app-wide `--color-action`.
+   It started on the Profile page and its edit sheets (hence the original name,
+   `cre-profile-actions`) and widened to My Purchases the same day — the class
+   was renamed rather than copied, so there is still one rule for one decision.
+   On XCEL the two colours are very different —
+   `--color-action` resolves to `--color-cta-500` (#9a1b1e, brick) while home's
+   CTA is the primary navy ramp.
+
+   ⚠ THIS RE-POINTS A TOKEN RATHER THAN RESTYLING BUTTONS, and that is the
+   load-bearing part. `Button` resets `el.style.background = v.bg` on
+   mouseLeave, where `v.bg` is the literal string `var(--color-action)`. An
+   inline background (a gradient, a hex) passed through `style` therefore
+   survives until the first hover and is then silently replaced by the brick
+   fill. Overriding the custom property instead means that reset re-resolves to
+   the blue, so hover in and out is stable — and the secondary button's outline,
+   the card edit pencils and the text links come along for free, because they
+   all read the same token.
+
+   Scoped, never global: changing `--color-action` at `[data-brand='xcel']`
+   would repaint every CTA in the product. Add the class to a surface to opt it
+   in — it is deliberately not on a shared account wrapper, because Notifications
+   and Transcripts have not been looked at yet and should not change by accident.
+
+   NOTE: flat `primary-500` with a `primary-600` hover, where the home CTA is a
+   135° gradient between the same two stops. At button size the two read as the
+   same blue, and a gradient cannot be carried through this mechanism for the
+   reason above. If an exact gradient match is ever wanted, `Button` needs a
+   variant rather than a caller-side override. */
+.cre-account-actions {
+  --color-action: var(--color-primary-500);
+  --color-action-hover: var(--color-primary-600);
+}
+
+/* ⚠ THE SHEET'S Close / Back LINK NEEDS ITS OWN RULE, and that is the one
+   exception worth knowing about. `.cre-sheet-close` reads `--color-cta-500`
+   DIRECTLY rather than going through `--color-action`, so it sails straight
+   past the override above — the footer buttons turned blue and this stayed
+   brick, which is exactly how a half-recoloured panel ships.
+
+   Overriding `--color-cta-500` on `.cre-account-actions` would have fixed it in
+   one line, and was rejected: that is the brand's CTA ramp, and re-pointing a
+   whole ramp to catch one link changes anything else inside the panel that
+   reads it, now or later. A descendant rule only claims what it names.
+
+   ⚠ If another element on this surface ever looks stubbornly red, check whether
+   its class reads `--color-cta-*` directly — as of 2026-09-30 this is the only
+   one on the Profile surface that does. */
+.cre-account-actions .cre-sheet-close {
+  color: var(--color-primary-500);
+}
+.cre-account-actions .cre-sheet-close:hover {
+  color: var(--color-primary-600);
+  border-bottom-color: var(--color-primary-600);
+}
+
 /* Accessible label utility — visually hidden but read by screen readers. */
 .cre-sr-only {
   position: absolute;
@@ -4266,20 +4419,6 @@ a.cre-library-card-title::after {
   outline-offset: 2px;
 }
 
-/* The "How to read this dashboard" link at the foot of the gateway rail
-   (UxDashboardPage, 2026-09-18). Same `--ux-bg` tint the rail rows and the
-   Links rows use for hover — one row hover per page — and the underline needs
-   `!important` for the reason `.cre-uxlinks-title` records: the anchor carries
-   an inline `text-decoration: none`. */
-.cre-uxnav-about {
-  transition: background-color 120ms ease;
-}
-.cre-uxnav-about:hover,
-.cre-uxnav-about:focus-visible {
-  background: var(--ux-bg);
-  text-decoration: underline !important;
-}
-
 /* THE COURSE HEADER IN THE BAND'S LEFT COLUMN (Testing, 2026-09-21).
 
    The header is ~633px there against ~1040 full-width, and it holds a 130px
@@ -4459,6 +4598,15 @@ a.cre-library-card-title::after {
 }
 
 /* ── group + rows ────────────────────────────────────────────────────── */
+/* The chooser's three named plans — a column, spaced like the option rows it
+   sits with. Added 2026-09-23 with the plan picker; the rows themselves reuse
+   `.cre-pace-sheet__option`, so only the wrapper is new. */
+.cre-pace-sheet__plans {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
 .cre-pace-sheet__group {
   display: flex;
   flex-direction: column;
@@ -5563,4 +5711,235 @@ a.cre-library-card-title::after {
 [data-atlas-palette][data-atlas-brand='global'] .cre-journey-stop:hover .cre-stop-title,
 [data-atlas-palette][data-atlas-brand='global'] .cre-journey-stop:focus-visible .cre-stop-title {
   color: #263d50;
+}
+
+/* ── THE ADJUST-YOUR-PACE FLOW — 2026-09-22 ──────────────────────────────
+   The sheet became two levels: a chooser of study STYLES, then one screen per
+   style. Ported from `adjust-your-pace-prototype.html`, whose argument is that
+   a learner does not think in "nights a week" — they think "I have Tuesday
+   evenings and most of Sunday", and the finish date is the answer.
+
+   Everything here reuses the `--pace-*` sizing vars the sheet already sets, so
+   the new screens cannot drift from the groups they sit beside. */
+.cre-pace-sheet__option {
+  display: flex;
+  gap: 14px;
+  align-items: flex-start;
+  text-align: left;
+  width: 100%;
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px;
+  background: var(--color-surface-card);
+  color: var(--color-text-primary);
+  cursor: pointer;
+  min-height: var(--pace-hit);
+}
+.cre-pace-sheet__option:hover {
+  border-color: var(--color-primary-300);
+}
+/* The escape hatch reads as one — a dashed edge says "not one of the shaped
+   answers" without needing a word to say it. */
+.cre-pace-sheet__option[data-shape='custom'] {
+  border-style: dashed;
+}
+.cre-pace-sheet__option-title {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  font-weight: 700;
+  display: block;
+}
+.cre-pace-sheet__option-body {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  color: var(--color-text-secondary);
+  display: block;
+}
+.cre-pace-sheet__recommend {
+  border: 2px solid var(--color-primary-500);
+  background: var(--color-primary-100);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+[data-theme='dark'] .cre-pace-sheet__recommend {
+  background: color-mix(in srgb, var(--color-primary-500) 18%, transparent);
+  border-color: var(--color-primary-300);
+}
+/* ── the outcome box: one pace, one verdict ──────────────────────────── */
+.cre-pace-sheet__outcome {
+  background: var(--color-surface-parchment);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-md);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.cre-pace-sheet__outcome-figure {
+  font-family: var(--font-heading-serif);
+  font-size: var(--text-h4-semibold);
+  line-height: 1.2;
+  font-weight: 700;
+  color: var(--color-text-primary);
+}
+.cre-pace-sheet__badge {
+  align-self: flex-start;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  font-weight: 600;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+}
+/* TONE CARRIES A WORD TOO, never colour alone — the message inside each badge
+   says what happened, so the fill is reinforcement rather than the signal. */
+.cre-pace-sheet__badge[data-tone='good'] {
+  background: var(--color-success-100);
+  color: var(--color-success-700);
+}
+.cre-pace-sheet__badge[data-tone='warn'] {
+  background: var(--color-warning-100);
+  color: var(--color-warning-700);
+}
+.cre-pace-sheet__badge[data-tone='bad'] {
+  background: var(--color-error-100);
+  color: var(--color-error-700);
+}
+.cre-pace-sheet__advice {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  border-radius: var(--radius-md);
+  padding: 10px 12px;
+  background: var(--color-warning-100);
+  color: var(--color-warning-700);
+}
+/* ── the day-hours steppers ──────────────────────────────────────────── */
+.cre-pace-sheet__step {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: var(--pace-hit);
+}
+.cre-pace-sheet__step-label {
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  min-width: 0;
+}
+.cre-pace-sheet__step-value {
+  width: 64px;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+.cre-pace-sheet__step-value[data-off='true'] {
+  color: var(--color-text-tertiary);
+  font-weight: 500;
+}
+.cre-pace-sheet__stepper {
+  width: var(--pace-hit);
+  height: var(--pace-hit);
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-card);
+  color: var(--color-primary-700);
+  font-size: var(--text-body);
+  font-weight: 700;
+  cursor: pointer;
+}
+.cre-pace-sheet__stepper:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+[data-theme='dark'] .cre-pace-sheet__stepper {
+  color: var(--color-primary-200);
+}
+/* ── the month strip ─────────────────────────────────────────────────── */
+.cre-pace-sheet__cal {
+  display: grid;
+  grid-template-columns: repeat(7, minmax(0, 1fr));
+  gap: 4px;
+}
+.cre-pace-sheet__cal-head {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-weight: 700;
+  color: var(--color-text-tertiary);
+  text-align: center;
+}
+.cre-pace-sheet__cal-cell {
+  min-height: 30px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--color-border-subtle);
+  background: var(--color-surface-card);
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  font-variant-numeric: tabular-nums;
+  color: var(--color-text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.cre-pace-sheet__cal-cell[data-out='true'] {
+  opacity: 0.35;
+}
+.cre-pace-sheet__cal-cell[data-study='true'] {
+  background: var(--color-primary-100);
+  border-color: var(--color-primary-300);
+  color: var(--color-primary-700);
+}
+.cre-pace-sheet__cal-cell[data-finish='true'] {
+  background: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+  color: var(--color-text-inverse);
+  font-weight: 700;
+}
+/* THE DEADLINE AS AN EDGE, not a fill: it can coincide with a study day or with
+   the finish, and a fill would have to win or lose against them. */
+.cre-pace-sheet__cal-cell[data-end='true'] {
+  box-shadow: inset 0 -3px 0 var(--color-error-500);
+}
+.cre-pace-sheet__legend {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  color: var(--color-text-secondary);
+}
+.cre-pace-sheet__legend > span {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.cre-pace-sheet__swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+  flex-shrink: 0;
+}
+/* ── the back link + the summary the dashboard will show ─────────────── */
+.cre-pace-sheet__back {
+  align-self: flex-start;
+}
+.cre-pace-sheet__summary {
+  font-family: var(--font-body);
+  font-size: var(--text-body-sm);
+  line-height: var(--text-body-sm--line-height);
+  color: var(--color-text-secondary);
+  width: 100%;
+}
+.cre-pace-sheet__summary b {
+  color: var(--color-text-primary);
 }

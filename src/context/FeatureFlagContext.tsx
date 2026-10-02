@@ -11,6 +11,7 @@ import {
   useState,
   type ReactNode,
 } from 'react'
+import { isTestingGateway } from '@/data/gatewayMode'
 
 /**
  * Platform-wide feature-flag system. Powers the "Feature Flag" panel
@@ -38,6 +39,23 @@ import {
  *  a string-keyed variant list. The `variant` field is optional even
  *  when `variants` is provided — `undefined` means "use the default
  *  visual" at the consumer site. */
+/**
+ * HOW FINISHED A CONTROL IS — the demo site's only gate, added 2026-09-24.
+ *
+ * `ready` means a stakeholder can be handed it: the axis is agreed, the
+ * variants are real, and someone changing it is exploring a decision we meant
+ * to offer. `wip` means the opposite, and is THE DEFAULT WHEN THE FIELD IS
+ * ABSENT — omitting it hides the control from the demo site rather than
+ * exposing it.
+ *
+ * ⚠ THE DEFAULT IS THE WHOLE POINT. Forgetting to write `maturity` means a
+ * stakeholder sees LESS than they could, which costs a conversation. The
+ * opposite default would mean forgetting leaks a half-built axis to the people
+ * we are asking to approve it, which costs the decision. Promotion is a
+ * deliberate act; exposure is never an accident.
+ */
+export type Maturity = 'wip' | 'ready'
+
 export type FeatureFlagVariant = {
   /** Stable identifier stored to localStorage / passed to consumers. */
   value: string
@@ -46,6 +64,12 @@ export type FeatureFlagVariant = {
   /** Optional short description shown under the variant label when the
    *  variant is selected. Helps reviewers understand what changes. */
   description?: string
+  /** How finished THIS VARIANT is — the within-a-control half of the gate.
+   *  A `ready` flag can still carry a `wip` variant, which the demo site
+   *  drops from the picker while the design site keeps it. Absent means the
+   *  variant inherits the flag's own maturity (NOT `wip`) — otherwise every
+   *  existing variant of a promoted flag would vanish at once. */
+  maturity?: Maturity
 }
 
 export type FeatureFlagDefinition = {
@@ -56,6 +80,11 @@ export type FeatureFlagDefinition = {
   label: string
   /** Short helper text shown under the label. */
   description: string
+  /** How finished this flag is — see `Maturity`. Absent means `wip`, so a
+   *  flag reaches the DEMO site's controls bar only once someone writes
+   *  `maturity: 'ready'` here. Design-site behaviour is unaffected: the
+   *  design bar shows everything, marking the `wip` ones. */
+  maturity?: Maturity
   /** Default on/off state. */
   defaultEnabled: boolean
   /** Optional variant list. Omit for simple on/off flags. */
@@ -280,35 +309,24 @@ export const NAV_SECTION_FLAGS: {
   /** Committed default. Omitted ⇒ true (shown). */
   defaultEnabled?: boolean
 }[] = [
+  /* ⚠ SEVEN ROWS ARCHIVED 2026-09-28 — Learning Path, Browse Catalog,
+     Recommended for You, Resource Library, Exam & Cert Prep, Rubi Insights and
+     Podcasts. Their flags went WITH their rail rows, which is the order that
+     matters: `useNavSectionVisible` returns TRUE for a section with no flag, so
+     deleting a flag on its own would have turned six hidden rows permanently
+     ON. See `rail-rows-2026-09-28` in archivedItems.ts.
+
+     This reverses the reasoning recorded at Browse Catalog — that they were
+     hidden via flag "rather than by deleting the row" so a reviewer could
+     restore one without a code change. Jillienne's call, 2026-09-28: not coming
+     back to these. The restore note carries what the flag used to buy. */
+
   // My Learning
   { section: 'study-plan', label: 'Study Plan' },
   { section: 'readiness', label: 'Readiness' },
-  // Off: Home's Current Learning Path band already IS this.
-  { section: 'learning-path', label: 'Learning Path', defaultEnabled: false },
   { section: 'courses', label: 'My Courses' },
   { section: 'certificates', label: 'Certificates' },
-  // Explore
-  //
-  // BROWSE CATALOG IS OFF as of 2026-09-16, which empties the Explore group and
-  // therefore drops the group and its caption from the rail (a group whose
-  // items are all hidden falls out whole — see `PlatformSideNav`). It was the
-  // only row left there once Resources and Rubi moved into My Learning.
-  //
-  // Editorial, not a capability cut, and done through the FLAG rather than by
-  // deleting the row for the reason this baseline exists: the section still
-  // resolves from `?section=catalog`, so a stakeholder who asks to see the
-  // catalogue gets it, and a reviewer can bring the row back from the flag
-  // panel without a code change. The QE Focused default is built for a
-  // candidate working one booked exam — the shop is the least relevant thing on
-  // that rail.
-  { section: 'catalog', label: 'Browse Catalog', defaultEnabled: false },
   { section: 'resources', label: 'Resources' },
-  { section: 'recommended', label: 'Recommended for You', defaultEnabled: false },
-  { section: 'm-learning-library', label: 'Resource Library', defaultEnabled: false },
-  { section: 'm-exam-prep', label: 'Exam & Cert Prep', defaultEnabled: false },
-  { section: 'm-career-tools', label: 'Rubi Insights' },
-  // Off: XCEL has no podcast product — the section is an EmptyState saying so.
-  { section: 'podcasts', label: 'Podcasts', defaultEnabled: false },
   // Support
   { section: 'support', label: 'Get Help' },
 ]
@@ -660,6 +678,166 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'learning-path',
   },
   {
+    key: 'dashboard-journey-style',
+    group: 'Widgets',
+    label: 'Study Journey — rail style',
+    description:
+      'How the Study Journey rail is drawn. Default is the compact rail: an uppercase eyebrow, a "0 / 4" count, dot nodes on a spine, and a meta line only on stops that are not blocked. "Syllabus" is a formal treatment — a bordered card, a serif heading under a "Syllabus sequence" eyebrow, NUMBERED nodes (01, 02 …), serif row titles, a percentage chip on the active stop, and a meta line on every row including the blocked ones. Same stops and same data in both: the variant does not split, merge or rename anything, and it invents no descriptive copy the fixtures cannot source.',
+    defaultEnabled: true,
+    /* `syllabus` IS THE DEFAULT as of 2026-09-17 (the direct ask). It is no
+       longer a restyle of the compact rail so much as the treatment the version
+       was built around — numbered nodes, "Complete Coursework", titles-only
+       rows, and Get Licensed continuing the same 01-07 sequence. `default`
+       stays in the picker as the comparison. */
+    defaultVariant: 'syllabus',
+    variants: [
+      {
+        value: 'default',
+        label: 'Default — compact rail',
+        description:
+          'Dot nodes, an uppercase eyebrow with the stop count, and no meta line on blocked stops.',
+      },
+      {
+        value: 'syllabus',
+        label: 'Syllabus sequence',
+        description:
+          'A bordered card with a serif heading, numbered nodes, serif titles, a percentage chip on the active stop, and a meta line on every row.',
+      },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'study-pace-widget',
+    group: 'Widgets',
+    label: 'Study Pace — live widget',
+    description:
+      'Replaces the lo-fi Study Pace placeholder with the real derived widget, in the "Testing 2" dashboard version only (QE Focused keeps its stub whatever this says). The tile itself carries NO controls — a pace, a timeline and two buttons — and Adjust opens a sheet holding the three finish dates (Relaxed / Recommended / Focused), days a week, an exam date, and building a study plan on the calendar. Every figure derives from the resume course\u2019s published credit hours and the two ceilings (course access expiry, and the exam date minus a review buffer); nothing is authored. Off ⇒ Testing 2 shows the same placeholder as QE Focused, which is what makes this switch worth having.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  /* ⚠ `exam-step-style` WAS HERE and was retired on 2026-09-29 — see the
+     `exam-step-style-alternatives` row in `archivedItems.ts`. Its `ask-first`
+     arm won and now renders unconditionally, so the flag had one option left
+     and a picker with one option is a label. The two losing treatments are
+     unwired, not deleted; the Archive row carries the re-wire. */
+  {
+    key: 'journey-quick-links',
+    group: 'Widgets',
+    label: 'Journey — quick links',
+    description:
+      'Where the journey column\u2019s SHEET LINKS live. ON (the default) collects them into a Quick links card under the last step \u2014 Exam Information, How to Get Your License, State Requirements \u2014 and HIDES the per-card ones: \u201cExam Details\u201d on the exam card, \u201cWhat to expect\u201d on Pass State Exam, \u201cHow to apply\u201d on Get Licensed. Off puts each link back on the card it belongs to and removes the Quick links card. \u26a0 IT IS ONE DECISION, NOT TWO, which is why one flag drives both halves: the question is whether these sheets are read as part of the step you are on or looked up when you want them, and running both at once would put every destination on the page twice. \u26a0 THE SHEETS AND THEIR DESTINATIONS ARE IDENTICAL EITHER WAY \u2014 only the way in moves, so what is being compared is findability and nothing else. \u26a0 IT MOVES WHAT A USER TEST CAN RIG: on the default, `home.schedule-exam`, `home.what-to-expect` and `home.how-to-apply` do not render, and the three quick-link ids do. `CtaTest`\u2019s unconditional list follows the default, and `promote-to-testing` freezes a SHA, so a session sheet cut from an older build still names the controls that build had.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'exam-card-background',
+    group: 'Widgets',
+    label: 'Exam card — background',
+    description:
+      'The GROUND the `ask-first` exam card sits on. `white` is the default and is what ships \u2014 the card carries no background of its own, so it takes `--color-surface-card` like every other widget in the column. `tint` fills it with the SELECTED RAIL ITEM\u2019s colour, which is what makes the pair worth comparing: that colour already means \u201cthis is where you are\u201d in this product, so putting it behind the exam card says the card is the live one rather than merely another widget. \u26a0 THE TINT IS BOUND TO THE RAIL\u2019S OWN TOKEN, not a copied hex \u2014 `color-mix(in srgb, var(--color-nav-icon-active-primary) 12%, \u2026)`, so the two cannot drift apart if the rail\u2019s colour is ever retuned. The STRENGTH is deliberately half the rail\u2019s 24%: the two do the same job at very different sizes, and what reads as a selection on a 40px nav row reads as a coloured panel across a whole card. It composites over `--color-surface-card` rather than `transparent` (which is what the rail does) because the card has its own white ground and the page behind it is grey \u2014 mixing to transparent would let that grey through and land a different colour from the rail it is quoting. Variant-only.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    defaultVariant: 'white',
+    variants: [
+      { value: 'white', label: 'White (no background)' },
+      { value: 'tint', label: 'Light blue — the selected-rail wash' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'exam-calendar-style',
+    group: 'Widgets',
+    label: 'Exam calendar — treatment',
+    description:
+      'How the in-card month picker is DRAWN, on the `ask-first` exam card. Raised 2026-09-29 from a review note that the picker \u201cfeels a little muted and minimalistic-looking\u201d \u2014 a judgement about PRESENCE, which is not one dial, so the three arms each turn a different one up rather than being three steps along one slider. `minimal` is the control and is byte-for-byte what shipped: a hairline box on the page ground, 22px nav, 11.5px numerals, recessive because it is a field rather than a feature. `framed` gives the same calendar ROOM and a surface \u2014 a raised card, a rule under the month, square day cells about half again as large, a real hover \u2014 arguing the picker was thin rather than wrong. `branded` draws it as an OBJECT: a navy cap across the top carrying the month in white, round day cells, the selected day a filled navy disc. \u26a0 `branded` IS THE SAVED STATE\u2019S TEAR-OFF, EARLIER \u2014 the readout you get after saving is a navy-capped calendar, so this makes the thing you pick from and the thing you end up with visibly one object; the cost is that it becomes the loudest element on a card whose job is to ask a one-line question. \u26a0 SKINS ONLY: every arm renders the same grid from the same cells with the same disabled / today / selected logic, so the comparison is the drawing and nothing else. Only affects `exam-step-style: ask-first`; the other two arms have their own pickers. Variant-only.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    defaultVariant: 'framed',
+    variants: [
+      { value: 'minimal', label: 'Minimal (shipped)' },
+      { value: 'framed', label: 'Framed — room and a surface' },
+      { value: 'branded', label: 'Branded — navy cap, round days' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'journey-step-order',
+    group: 'Widgets',
+    label: 'Journey step order',
+    description:
+      'Which step the right-hand journey column opens with. `coursework-first` (default) is what ships \u2014 Complete Coursework as Step 1, then Schedule State Exam, Pass State Exam and Get Licensed. `exam-first` promotes SCHEDULE STATE EXAM to Step 1 and drops Coursework to Step 2, on the argument that booking the exam is the thing a learner can do today and the one that dates everything else \u2014 the Study Pace tile already derives its plan from the exam date. ⚠ THE NUMBERS MOVE WITH THE CARDS: the eyebrows renumber so the column still reads 1-2-3-4 top to bottom. Four cards cannot draw a continuous spine, so the numbering IS the sequence; an order change that left the numbers behind would read as four unrelated things. Variant-only.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    defaultVariant: 'exam-first',
+    variants: [
+      { value: 'coursework-first', label: 'Coursework first' },
+      { value: 'exam-first', label: 'Schedule exam first' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'study-pace-hidden',
+    group: 'Widgets',
+    label: 'Study Pace — hide',
+    description:
+      'Removes the Study Pace tile from the home screen. OFF by default, so the shipped dashboard is unchanged; turn it on to see the page without it. ⚠ NOT THE SAME AS `study-pace-widget`, which swaps the live tile for the lo-fi PLACEHOLDER — that one changes what the tile shows, this one removes it. On the Testing version the tile owns the whole row, so the row goes with it; on every other version Readiness stays and takes the full width. Both behaviours are the ones a completed course already produces, reused rather than re-derived.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'nav-rail-icons',
+    group: 'Widgets',
+    label: 'Rail icons',
+    description:
+      'Whether the primary rail\u2019s items carry an icon, and how big. `standard` (default) is what ships \u2014 17px beside the label. `small` keeps them at 14px, so the label leads and the glyph reads as a marker rather than a peer. `none` drops them entirely and the labels left-align against the row padding, which is what a rail of four short words arguably wants. ⚠ THE COLLAPSED RAIL IS UNAFFECTED by all three: it steps its glyph to 20px and sets 10px text under it, and an unlabelled OR unglyphed collapsed rail is the thing every nav study finds people mis-click. Variant-only.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    defaultVariant: 'small',
+    variants: [
+      { value: 'standard', label: 'Standard (17px)' },
+      { value: 'small', label: 'Small (14px)' },
+      { value: 'none', label: 'No icons (left-aligned)' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'nav-rail-captions',
+    group: 'Widgets',
+    label: 'Rail group captions',
+    description:
+      'Whether the primary rail shows its group captions \u2014 MY LEARNING, EXPLORE, SUPPORT. On by default, as shipped. Off removes the uppercase headings and lets the items run as one list, which suits a short rail where the captions are most of the ink. ⚠ THE GROUPS KEEP THEIR ACCESSIBLE NAMES either way: with the caption hidden the `<ul>` carries it as `aria-label`, so a screen reader still hears "My Learning" and "Support" as the groups they are. Hiding the name with the text would make this an accessibility regression rather than a layout change \u2014 the same rule the collapsed rail already follows.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'course-entry-details',
+    group: 'Widgets',
+    label: 'Course entry — Details link',
+    description:
+      'Whether the combined course entry card shows its `Details →` link, which opens the Current Learning Path detail panel. ⚠ OFF BY DEFAULT (2026-09-28, the direct ask): the card is the one place a learner is meant to press Resume, and a second link beside it competes for that press. Turning it on is how to compare the two, not a setting to leave on absent-mindedly. Applies to `combined` only — the split header has its own Details link, unaffected.',
+    maturity: 'wip',
+    defaultEnabled: false,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'course-entry-style',
+    group: 'Widgets',
+    label: 'Course entry',
+    description:
+      'Whether the course header and the Jump Back In card are two blocks or ONE. `split` (default) is what ships: a COURSE PROGRESS header — cover, name, bar, the percentage and the stat pairs — with a separate ruled card under it carrying the lesson and the Resume CTA. `combined` renders both halves inside a single bordered card (`CourseEntryCard`), eyebrow "Current course:", divided by a hairline. ⚠ IT IS A LAYOUT CHANGE ONLY: the same figures, the same three CTA shapes (Start course / Resume / Review course), the same `Details →`. Deliberately NOT carried over from the reference design it came from — the Target exam date cell (removed 2026-09-21 and still echoed on Schedule State Exam) and the Course Overview button. Variant-only.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    defaultVariant: 'combined',
+    variants: [
+      { value: 'split', label: 'Split (two blocks)' },
+      { value: 'combined', label: 'Combined (one card)' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'dashboard-course-header',
     group: 'Widgets',
     label: 'Course header band',
@@ -700,47 +878,151 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
-    key: 'dashboard-journey-style',
+    /*
+     * COURSE LAUNCHER — which surface "Start course" / "Resume" opens into.
+     *
+     * The launcher has rendered a LO-FI PLACEHOLDER since 2026-09-17 (the
+     * direct ask: "a large lo-fi square with simple message, this is where
+     * Compass Course content will live"). `compass` is the built player from
+     * Figma `Atlas-Compass-Global-Navigation` node 49:2903 — the contents
+     * sidebar, the exam-date and section-progress bar, the reading column and
+     * the Rubi aside.
+     *
+     * VARIANT-ONLY, like `dashboard-clp-style`: the enable toggle stays on so
+     * the flag is live and the CHOICE is the variant. "Off" would have to mean
+     * "lo-fi", which the variant already says.
+     *
+     * DEFAULT `compass` ON THIS BRANCH, which is the Contributing guide's rule
+     * for a branch build — the branch deploy is the review link, so the work
+     * has to be what it opens on. It is NOT yet a baseline decision: whether
+     * this is what `?demo=1` renders on `main` is `/promote-to-prototype`'s
+     * call, and `lo-fi` is one click away in this panel for the comparison.
+     *
+     * ⚠ THE TWO VARIANTS DIFFER IN SHELL, not just in the panel they draw.
+     * `compass` is a FULL-WINDOW TAKEOVER: its own 260px contents sidebar sits
+     * where the dashboard rail is, so `PlatformShell` drops the rail and the
+     * content column for it and keeps only the global header. `lo-fi` stays
+     * inside the content column with the rail beside it, as it always has.
+     * A reviewer switching between them is switching layouts, not skins.
+     */
+    key: 'course-launcher-style',
     group: 'Widgets',
-    label: 'Study Journey — rail style',
+    label: 'Course launcher — what Start course opens',
     description:
-      'How the Study Journey rail is drawn. Default is the compact rail: an uppercase eyebrow, a "0 / 4" count, dot nodes on a spine, and a meta line only on stops that are not blocked. "Syllabus" is a formal treatment — a bordered card, a serif heading under a "Syllabus sequence" eyebrow, NUMBERED nodes (01, 02 …), serif row titles, a percentage chip on the active stop, and a meta line on every row including the blocked ones. Same stops and same data in both: the variant does not split, merge or rename anything, and it invents no descriptive copy the fixtures cannot source.',
+      'Which surface the Jump Back In card opens when a learner starts or resumes a course. Lo-fi is the placeholder that has stood there since 2026-09-17 — a large grey square reading "Compass Course content will live here" — kept so the new player can be compared against what ships today. Compass is the built course player: a contents sidebar with the chapter tree and its done / now / up next states, a bar carrying the learner\u2019s own exam date and the section progress, the reading column with its Previous and Next controls, and the Rubi aside. Compass is a FULL-WINDOW takeover — its contents sidebar occupies the space the dashboard rail does, so switching variants switches layout rather than styling. Everything in it is static except Close; the centre is deliberately still a "Course Content" placeholder, which is what the Figma itself draws, because the courseware is Compass\u2019s and neither the design nor this repo has it.',
     defaultEnabled: true,
-    /* `syllabus` IS THE DEFAULT as of 2026-09-17 (the direct ask). It is no
-       longer a restyle of the compact rail so much as the treatment the version
-       was built around — numbered nodes, "Complete Coursework", titles-only
-       rows, and Get Licensed continuing the same 01-07 sequence. `default`
-       stays in the picker as the comparison. */
-    defaultVariant: 'syllabus',
+    defaultVariant: 'compass',
     variants: [
       {
-        value: 'default',
-        label: 'Default — compact rail',
+        value: 'lo-fi',
+        label: 'Lo-fi — the placeholder',
         description:
-          'Dot nodes, an uppercase eyebrow with the stop count, and no meta line on blocked stops.',
+          'What ships today: a Back link and a large grey square saying Compass course content will live here. Kept for comparison, and still the honest state wherever the player is not the subject.',
       },
       {
-        value: 'syllabus',
-        label: 'Syllabus sequence',
+        value: 'compass',
+        label: 'Compass — the course player',
         description:
-          'A bordered card with a serif heading, numbered nodes, serif titles, a percentage chip on the active stop, and a meta line on every row.',
+          'The built player from Figma node 49:2903. Takes the full window: contents sidebar, exam-date and progress bar, reading column, Rubi aside. Static except Close.',
       },
     ],
     page: 'dashboard-rebrand',
   },
   {
-    key: 'study-pace-widget',
+    key: 'dashboard-clp-style',
     group: 'Widgets',
-    label: 'Study Pace — live widget',
+    label: 'Current Progress — block style',
     description:
-      'Replaces the lo-fi Study Pace placeholder with the real derived widget, in the "Testing 2" dashboard version only (QE Focused keeps its stub whatever this says). The tile itself carries NO controls — a pace, a timeline and two buttons — and Adjust opens a sheet holding the three finish dates (Relaxed / Recommended / Focused), days a week, an exam date, and building a study plan on the calendar. Every figure derives from the resume course\u2019s published credit hours and the two ceilings (course access expiry, and the exam date minus a review buffer); nothing is authored. Off ⇒ Testing 2 shows the same placeholder as QE Focused, which is what makes this switch worth having.',
+      'How the Current Progress block on the QE Focused overview is treated. Default is the light block on the page grey — art left, title, meta, a progress bar under it, then the KPI cells and the status strip. "Big number" keeps that light ground and moves the percentage out to its own column on the right, with the bar and the lesson count under it. "Navy card" puts the same cluster on a dark card with light type, a green bar and a white Resume button. All three read the SAME data — this is a treatment, not a different set of facts, and no variant invents lesson-level content the storefront does not publish.',
+    // Variant-only, like `dashboard-heading-font`: the enable toggle is on so
+    // the flag is live and the CHOICE is the variant. "Off" would have to mean
+    // "default", which the variant already says.
     defaultEnabled: true,
+    defaultVariant: 'default',
+    variants: [
+      {
+        value: 'default',
+        label: 'Default — light block',
+        description:
+          'No change. Art left, title and meta right, the progress bar under the meta with the percentage beside it.',
+      },
+      {
+        value: 'big-number',
+        label: 'Big number — light',
+        description:
+          'Same light ground, but the percentage becomes a large figure in its own right-hand column with the bar and "26 of 42 lessons complete" beneath it. The title and meta keep the left.',
+      },
+      {
+        value: 'navy',
+        label: 'Navy card',
+        description:
+          'The header cluster sits on a dark navy card: light type, a green progress bar, a large percentage on the right and a white Resume button. The KPI cells, status strip and View Requirements stay on the page grey below it.',
+      },
+    ],
     page: 'dashboard-rebrand',
   },
-  /* The three Study Pace flags below were pulled from main with the home
-     page's contents (2026-09-24) — the card reads them, and a flag missing
-     from this catalog silently reads as OFF. `dashboard-pacing-style` and
-     `dashboard-clp-stats` were retired with them, as main retired them. */
+  {
+    key: 'dashboard-journey-complete',
+    group: 'Widgets',
+    label: 'Study Journey — when the coursework is done',
+    description:
+      'What the Study Journey column does once the course is 100% complete. Only has an effect at 100%; below it the two variants are identical. Full keeps all four coursework stops on screen, each reading Completed, with the licensing steps (Schedule State Exam · Pass State Exam · Get Licensed) below them — so the column shows what was finished and what is still ahead. Collapsed shrinks the finished coursework card to a single "Coursework complete" summary so the licensing steps LEAD the column, on the argument that at 100% the only things left to do are the licensing ones and a four-stop list of finished work is a receipt rather than a next action. Both are honest about the same state; they disagree about whether a learner at 100% is still reading their coursework or has moved past it.',
+    defaultEnabled: true,
+    // `full` — the state the ask described first, and the one that changes
+    // least from what every other progress level shows. Collapsed is the
+    // exploration, one click away.
+    defaultVariant: 'full',
+    variants: [
+      {
+        value: 'full',
+        label: 'Full — every stop, all complete',
+        description:
+          'The coursework card keeps its four stops, each marked Completed, and the licensing steps follow. The column reads as a record of the whole journey with the remaining steps at the end.',
+      },
+      {
+        value: 'collapsed',
+        label: 'Collapsed — coursework as one line',
+        description:
+          'The four finished stops become a single "Coursework complete" line, so Schedule State Exam leads the column. Argues that finished work is a receipt and the licensing steps are the only actionable things left.',
+      },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'dashboard-navigation',
+    group: 'Widgets',
+    label: 'Navigation',
+    description:
+      'Which course page Resume opens. `option-1` is the Compass player as it stands — the 260px contents sidebar, the Home / Overview / Course breadcrumb, the toolbar and the reading column, under the app header. `option-2` is a FULL-SCREEN page with its own header (logo · Compass · course · section, plus the exam-date pill, + Demo, brightness and ✕) and a section progress track; it has no sidebar, no breadcrumb, and it suppresses the app header while open. ⚠ THE TWO SHARE NO CHROME — the navigation IS the variable. `CourseContentV2` is the file Option 2 owns.',
+    // READY: an A/B we are actively asking stakeholders to choose between —
+    // the one control on the demo site whose whole purpose is their opinion.
+    maturity: 'ready',
+    // Variant-only, like `study-pace-chooser` below.
+    defaultEnabled: true,
+    /* ⚠ `option-1` ON THE BRANCH TOO, which breaks this repo's usual rule that
+       a designer's branch defaults its own work ON. Option 2 is one half of an
+       A/B a moderator assigns PER PARTICIPANT from the session link
+       (`?ff=dashboard-navigation:option-2`), not a proposal replacing Option 1
+       — so defaulting it on would silently make every other link, and every
+       reviewer's sandbox, the variant. The control condition has to be the
+       default or the comparison has no baseline. */
+    defaultVariant: 'option-1',
+    variants: [
+      {
+        value: 'option-1',
+        label: 'Option 1 — the current course page',
+        description:
+          'Resume opens the Compass player unchanged: app header, contents sidebar, Home / Overview / Course breadcrumb, the reading column with Previous / Next, and the Rubi panel.',
+      },
+      {
+        value: 'option-2',
+        label: 'Option 2 — the alternate course page',
+        description:
+          'Resume opens `CourseContentV2` — a full-screen course page whose own header carries the course and section naming, so there is no app header, no contents sidebar and no breadcrumb. Wired: ✕. Lo-fi for now: the exam-date pill (real date when one is booked), + Demo, brightness, Notes and Rubi.',
+      },
+    ],
+    page: 'dashboard-rebrand',
+  },
   {
     key: 'study-pace-chooser',
     group: 'Widgets',
@@ -831,61 +1113,58 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
-    key: 'dashboard-clp-style',
+    key: 'dashboard-text-tiers',
     group: 'Widgets',
-    label: 'Current Progress — block style',
+    label: 'Text tiers',
     description:
-      'How the Current Progress block on the QE Focused overview is treated. Default is the light block on the page grey — art left, title, meta, a progress bar under it, then the KPI cells and the status strip. "Big number" keeps that light ground and moves the percentage out to its own column on the right, with the bar and the lesson count under it. "Navy card" puts the same cluster on a dark card with light type, a green bar and a white Resume button. All three read the SAME data — this is a treatment, not a different set of facts, and no variant invents lesson-level content the storefront does not publish.',
+      'The THREE-TIER text ramp from the sign-in prototype (`public/prototypes/xcel-signin.html`), applied to the whole Dashboard Rebrand app — ink #1f1d18 for headings and body, muted #5b5560 for secondary text, captions and eyebrows, faint #706b63 for third-tier meta (weights, timings, sub-labels). Measured on OUR two fills rather than the prototype’s: 16.84 / 7.21 / 5.29 on white, 15.44 / 6.61 / 4.85 on the page ground — AAA, AA, AA, and a correctly descending ladder. The `neutral` variant is the ramp as it stands (#3a3a3a / #666666 / #737373, the XCEL guide’s Charcoal and Gray plus a neutral third stop) and is kept for comparison. NOTE the two ramps differ in HUE as well as value: the tiers are warm — brown- and violet-tinted greys off an off-white surface — where the guide’s are true neutrals on white. That is the thing to look at, not the contrast; both ramps pass.',
     // Variant-only, like `dashboard-heading-font`: the enable toggle is on so
     // the flag is live and the CHOICE is the variant. "Off" would have to mean
-    // "default", which the variant already says.
+    // "neutral", which the variant already says.
     defaultEnabled: true,
-    defaultVariant: 'default',
+    /*
+     * ⚠ `neutral`, AND THE FLIP IS THE FINDING — 2026-09-23, after the
+     * side-by-side. The branch shipped `tiers` for an hour under the
+     * Contributing guide's rule (the branch deploy is the review link, so it
+     * should show the work). The review answered the question: "they look
+     * basically the same."
+     *
+     * THEY DO, AND THE MEASUREMENTS SAY WHY. Stop for stop the two ramps
+     * differ by dE 14.1 / 9.5 / 6.0, almost all of it LIGHTNESS on the top
+     * tier. The warm tint carries a chroma of only 3.8 / 7.3 / 5.2 — and it
+     * sits on a ground of chroma 0.0. Warmth is relational: the prototype
+     * pairs this ink with `--paper: #faf0e8` and `--line: #e0dbcd`, so the
+     * whole field is warm and the ink belongs to it. Dropped onto our neutral
+     * `#f5f5f5`, warm ink at chroma 5 is a grey with nothing to be warm
+     * against.
+     *
+     * So the variant as built asks for a hue the XCEL guide does not publish,
+     * in exchange for a contrast gain invisible at 12px. Leaving it on would
+     * have moved the committed baseline in a way no reviewer could perceive —
+     * the risk of a palette change with none of the benefit.
+     *
+     * THE FLAG STAYS for now, off by default, so the comparison is one URL
+     * away (`?ff=dashboard-text-tiers:tiers`). What is worth testing next is
+     * the SURFACES rather than the ink — see the variant description.
+     *
+     * NOTE the real defect this exploration surfaced was fixed independently
+     * and is not in this flag: `--color-text-tertiary` was DARKER than the
+     * body ink on the XCEL brand, running the ladder backwards. See the
+     * tertiary note in `tokens.css`.
+     */
+    defaultVariant: 'neutral',
     variants: [
       {
-        value: 'default',
-        label: 'Default — light block',
+        value: 'neutral',
+        label: 'Neutral — the ramp as it stands',
         description:
-          'No change. Art left, title and meta right, the progress bar under the meta with the percentage beside it.',
+          'No change. `--color-text-primary` / `-secondary` / `-tertiary` as the XCEL brand block sets them: Charcoal #3a3a3a and Gray #666666 from the brand guide, plus #737373 for the third tier (11.37 / 5.74 / 4.74 on white).',
       },
       {
-        value: 'big-number',
-        label: 'Big number — light',
+        value: 'tiers',
+        label: 'Tiers — ink / muted / faint (reviewed, not adopted)',
         description:
-          'Same light ground, but the percentage becomes a large figure in its own right-hand column with the bar and "26 of 42 lessons complete" beneath it. The title and meta keep the left.',
-      },
-      {
-        value: 'navy',
-        label: 'Navy card',
-        description:
-          'The header cluster sits on a dark navy card: light type, a green progress bar, a large percentage on the right and a white Resume button. The KPI cells, status strip and View Requirements stay on the page grey below it.',
-      },
-    ],
-    page: 'dashboard-rebrand',
-  },
-  {
-    key: 'dashboard-journey-complete',
-    group: 'Widgets',
-    label: 'Study Journey — when the coursework is done',
-    description:
-      'What the Study Journey column does once the course is 100% complete. Only has an effect at 100%; below it the two variants are identical. Full keeps all four coursework stops on screen, each reading Completed, with the licensing steps (Schedule State Exam · Pass State Exam · Get Licensed) below them — so the column shows what was finished and what is still ahead. Collapsed shrinks the finished coursework card to a single "Coursework complete" summary so the licensing steps LEAD the column, on the argument that at 100% the only things left to do are the licensing ones and a four-stop list of finished work is a receipt rather than a next action. Both are honest about the same state; they disagree about whether a learner at 100% is still reading their coursework or has moved past it.',
-    defaultEnabled: true,
-    // `full` — the state the ask described first, and the one that changes
-    // least from what every other progress level shows. Collapsed is the
-    // exploration, one click away.
-    defaultVariant: 'full',
-    variants: [
-      {
-        value: 'full',
-        label: 'Full — every stop, all complete',
-        description:
-          'The coursework card keeps its four stops, each marked Completed, and the licensing steps follow. The column reads as a record of the whole journey with the remaining steps at the end.',
-      },
-      {
-        value: 'collapsed',
-        label: 'Collapsed — coursework as one line',
-        description:
-          'The four finished stops become a single "Coursework complete" line, so Schedule State Exam leads the column. Argues that finished work is a receipt and the licensing steps are the only actionable things left.',
+          'Re-points the three text tokens to the prototype’s warm ramp for the Dashboard Rebrand routes only, so the gateway and the standalone prototypes are untouched. LIGHT THEME ONLY: dark mode re-pins these tokens to a blue-tinted set of its own. ⚠ REVIEWED 2026-09-23 AND NOT ADOPTED — side by side the two ramps are hard to tell apart, because this is a THIRD of the prototype’s system. There the ink is paired with `--paper: #faf0e8` and `--line: #e0dbcd`; here it lands on a neutral `#f5f5f5` ground, and warm ink at a chroma of 5 has nothing to be warm against. The thing worth testing next is the SURFACES with the ink, not the ink alone — and that one collides with the navy CTA, the dark rail and the whole `[data-theme=\'dark\']` block, so it is a piece of work rather than a token swap.',
       },
     ],
     page: 'dashboard-rebrand',
@@ -1187,6 +1466,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Progress state',
     description:
       "Which learning-progress + compliance state the member's Dashboard Rebrand renders — a populated Current Learning Path (gauge %, status band, deadline). Compliance status follows progress + time-to-deadline: Not Started (0%), On Track (progress + time remaining), At Risk (<30 days left & requirement <25% done), Expired (deadline passed, unmet), Completed (100% in time). Variant-only. Applies to every brand's Current Learning Path (each has its own renewal-cycle persona).",
+    // READY: the axis the demo exists to show — an empty dashboard vs. a
+    // populated one. Nothing about it is unsettled.
+    maturity: 'ready',
     defaultEnabled: true,
     // Project default: On Track (populated dashboard) — per demo baseline.
     defaultVariant: 'progress-on-track',
@@ -1206,9 +1488,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
         label: 'At Risk · ~15%',
         description: '~15% complete with under 30 days left (requirement <25% done) — the At Risk warning treatment.',
       },
-      /* `progress-off-track` ARCHIVED 2026-09-23 on main — its `ARCHIVED_ITEMS`
-         row lives there; this branch took the variant list with the home
-         page (2026-09-24) but not the row. Its
+      /* `progress-off-track` ARCHIVED 2026-09-23 — see `ARCHIVED_ITEMS`. Its
          whole job was reaching the pace model's `state: 'no'`, which At Risk
          now does at 3 days. ⚠ RE-DECLARING IT HERE IS HALF THE RESTORE: the
          variant was once absent from this list while every fixture behind it
@@ -1287,70 +1567,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
-    // "Eric/Atlas V1" as a Dashboard Version (2026-10-02, the designer's
-    // request). ON by default on this branch, so the branch build lists it;
-    // whether it ships is decided at merge (promote-to-prototype).
-    key: 'dashboard-version-eric-atlas-v1',
-    group: 'Navigation',
-    label: 'Eric/Atlas V1 dashboard version',
-    description:
-      'Lists "Eric/Atlas V1" in the Dashboard Version picker \u2014 the Atlas/Compass pages under their own name (`?version=eric-atlas-v1`). Off, the entry is hidden from the picker; a link that names it still opens it.',
-    defaultEnabled: true,
-    page: 'dashboard-rebrand',
-  },
-  {
-    // THE ATLAS HOME'S RIGHT RAIL, two layouts (2026-09-30, the designer's
-    // request). V1 is the rail as it stood: Step 1 and Step 2 as their own
-    // cards, Steps 3 and 4 as ruled rows, the requirements button under them.
-    // V2 puts all four steps and the button in ONE frame with the Step 2
-    // card's background and stroke. Atlas/Compass version only.
-    key: 'atlas-right-rail-layout',
-    group: 'Right Rail Layout',
-    label: 'Right rail layout',
-    description:
-      'How the Atlas home\'s right rail (the four licensing steps) is framed. V1: Step 1 and Step 2 are separate cards, Steps 3 and 4 sit below with rounded left rules, and the State Requirements button is its own full-width button under them. V2: all four steps share one frame with the Step 2 card\'s background and 1px stroke; the steps lose their own cards and rules and line up on the frame\'s padding, and the State Requirements button sits inside the frame at its full inner width. Variant-only. Atlas/Compass version only.',
-    defaultEnabled: true,
-    // V2 is the default since 2026-09-30 (the designer's request), on every
-    // brand skin; V1 stays selectable.
-    defaultVariant: 'v2',
-    variants: [
-      { value: 'v1', label: 'V1 · Separate cards', description: 'Step 1 and Step 2 as their own cards, Steps 3 and 4 with left rules, the requirements button below.' },
-      { value: 'v2', label: 'V2 · One frame', description: 'All four steps and the requirements button inside one frame styled like the Step 2 card.' },
-    ],
-    page: 'dashboard-rebrand',
-  },
-  {
-    // The XCEL palette from the Atlas Development doc's Brand Guidelines tab
-    // (Figma "XCEL - Atlas Style Guide", 2026-09-28), applied to the Atlas/
-    // Compass version only. ON on feat/atlas-compass-global-nav, per the
-    // Contributing guide's rule; off shows the same pages in the product's
-    // standing XCEL ramps, for comparison.
-    key: 'atlas-xcel-palette',
-    group: 'Widgets',
-    label: 'Atlas XCEL palette + type',
-    description:
-      'Apply the XCEL Atlas Style Guide palette to the Atlas/Compass Global Navigation version: primary red #9A1B1E for buttons, text links and active items only; secondary tan (600, #7E6748) for eyebrow labels; tertiary blue for everything the navy did before; each at the guide\'s exact 100–900 steps. Off keeps the standing XCEL ramps (San Juan primary, Brick CTA, Beech tertiary). Also sets headings in DM Serif Display, the guide\'s heading serif (400 only; body stays Open Sans). Other versions are unaffected either way. Rubi\'s orange is not in the guide and is unchanged.',
-    defaultEnabled: true,
-    page: 'dashboard-rebrand',
-  },
-  {
-    // The prototype bar's house icon on a BRANCH build. `deployContext.ts`
-    // drops it there so a stakeholder arriving through a public Refinement row
-    // is not one click from the gateway; this flag puts it back for the
-    // designer reviewing a branch. OFF by default, deliberately — the site has
-    // no logins, so "only Eric" means Eric switches it on in his own browser
-    // (flags persist per browser in localStorage) and every other visitor,
-    // stakeholders included, keeps main's rule. No effect on production,
-    // where the icon always shows.
-    key: 'prototype-bar-branch-home',
-    group: 'Navigation',
-    label: 'Home Link on Branch Build',
-    description:
-      'Show the prototype bar\'s house icon (back to the UX Dashboard) on a Netlify branch build. OFF by default — main\'s rule: branch builds drop the icon so a stakeholder who opens a public Refinement row cannot click through to the project list. Switch it on in your own browser to keep the link; it stays on there and nowhere else. Production always shows it, whatever this says.',
-    defaultEnabled: false,
-    page: 'dashboard-rebrand',
-  },
-  {
     // The bell's demo axis. Variant-only, and about the UNREAD COUNT rather
     // than about content: the badge is the whole visual argument, so four
     // authored lists would demonstrate one control four times.
@@ -1378,6 +1594,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     label: 'Readiness state',
     description:
       "Which readiness state the Exam Readiness section shows. Not Started is genuinely different from a low score — the learner has answered nothing, so the gauge shows no score and no status chip, the Chapter & Topic breakdown is empty, and there are no exam attempts. Off Track / At Risk / On Track vary the score, the course-progress figures, the number of simulator attempts, and shift the chapter and topic percentages together (relative strengths stay put; the level moves). Variant-only.",
+    // READY: four agreed states of a shipped widget.
+    maturity: 'ready',
     defaultEnabled: true,
     defaultVariant: 'on-track',
     variants: [
@@ -1649,6 +1867,59 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'learning-resources',
   },
 
+  /* ─── My Purchases ─────────────────────────────────────────────────── */
+  {
+    key: 'account-purchases-ledger',
+    group: 'My Purchases',
+    label: 'Purchases ledger',
+    description:
+      'What the My Purchases account section renders. ON (default on this branch) shows the order LEDGER — orders grouped by month with a per-month count, every group but the newest collapsed, and one card per order that expands into a full receipt (Billed To / Sold By, line items, subtotal, tax, discount, total, Download Receipt). OFF falls back to the "not built yet" placeholder the section shipped with. Ported from the reference design and retoned: its $0.00 membership-absorbed totals and per-state CE certificate lines do not apply to XCEL, which charges real money for packages.',
+    defaultEnabled: true,
+    // `account-purchases`, not `dashboard-rebrand`: the section has its own page
+    // card in the flag panel (the Gift Recipients flags already sit on it), and
+    // this belongs beside them rather than in the catch-all for the shell.
+    page: 'account-purchases',
+  },
+  {
+    key: 'purchases-layout',
+    group: 'My Purchases',
+    label: 'Layout (A/B)',
+    description:
+      'Which My Purchases layout renders. Variant-only — read the variant, ignore the toggle. Mirrors `gift-recipients-layout`, the same card-list-vs-table A/B one section over. No effect while `account-purchases-ledger` is off, which serves the not-built-yet placeholder instead of either arm.',
+    defaultEnabled: true,
+    // PROMOTED TO THE BASELINE 2026-09-30: `table` is the direction Jillienne
+    // picked. `cards` shipped first and stays a valid value so its
+    // implementation remains reachable via `?ff=purchases-layout:cards` — it is
+    // not archived, because the A/B has not been called, only defaulted.
+    defaultVariant: 'table',
+    variants: [
+      {
+        value: 'cards',
+        label: 'Month-grouped cards',
+        description:
+          'Orders bucketed under collapsible month headings, every group but the newest collapsed, each card expanding its receipt in place via Show Details.',
+      },
+      {
+        value: 'table',
+        label: 'Sortable ledger + sheet',
+        description:
+          'The default. One flat table — Order Date · Order Number · Summary · Status · Total — with every header sortable and no month grouping. Clicking a row opens that receipt in a right-anchored sheet rather than expanding in place, so row height never varies and a long history stays scannable.',
+      },
+    ],
+    page: 'account-purchases',
+  },
+
+  /* ─── Account menu → Appearance ────────────────────────────────────── */
+  {
+    key: 'account-appearance-preferences',
+    group: 'Account Menu',
+    label: 'Preferences (appearance)',
+    description:
+      'The "Preferences" row in the top-right account dropdown, between the account destinations and Logout. ON adds the row, which opens a sheet whose Appearance sub-view swaps the shell between Light / Dim / Dark / System. OFF (default) hides the row and the sheet with it. ⚠ ALSO ROUTE-SCOPED, and the flag does not override that: the appearance treatment only applies inside the Dashboard Discoverability shell, so the row appears on /dashboard-rebrand only — turning this ON elsewhere shows nothing, because the sheet would change nothing there.',
+    defaultEnabled: false,
+    page: 'dashboard-rebrand',
+  },
+
   /* ─── Purchases → Gift Recipients (purchase for others) ───────────── */
   {
     key: 'gift-recipients',
@@ -1707,6 +1978,71 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     ],
     page: 'account-purchases',
   },
+  /* ── feat/atlas-compass-global-nav (merged 2026-10-02) ── */
+  {
+    // The prototype bar's house icon on a BRANCH build. `deployContext.ts`
+    // drops it there so a stakeholder arriving through a public Refinement row
+    // is not one click from the gateway; this flag puts it back for the
+    // designer reviewing a branch. OFF by default, deliberately — the site has
+    // no logins, so "only Eric" means Eric switches it on in his own browser
+    // (flags persist per browser in localStorage) and every other visitor,
+    // stakeholders included, keeps main's rule. No effect on production,
+    // where the icon always shows.
+    key: 'prototype-bar-branch-home',
+    group: 'Navigation',
+    label: 'Home Link on Branch Build',
+    description:
+      'Show the prototype bar\'s house icon (back to the UX Dashboard) on a Netlify branch build. OFF by default — main\'s rule: branch builds drop the icon so a stakeholder who opens a public Refinement row cannot click through to the project list. Switch it on in your own browser to keep the link; it stays on there and nowhere else. Production always shows it, whatever this says.',
+    defaultEnabled: false,
+    page: 'dashboard-rebrand',
+  },
+  {
+    // The XCEL palette from the Atlas Development doc's Brand Guidelines tab
+    // (Figma "XCEL - Atlas Style Guide", 2026-09-28), applied to the Atlas/
+    // Compass version only. ON on feat/atlas-compass-global-nav, per the
+    // Contributing guide's rule; off shows the same pages in the product's
+    // standing XCEL ramps, for comparison.
+    key: 'atlas-xcel-palette',
+    group: 'Widgets',
+    label: 'Atlas XCEL palette + type',
+    description:
+      'Apply the XCEL Atlas Style Guide palette to the Atlas/Compass Global Navigation version: primary red #9A1B1E for buttons, text links and active items only; secondary tan (600, #7E6748) for eyebrow labels; tertiary blue for everything the navy did before; each at the guide\'s exact 100–900 steps. Off keeps the standing XCEL ramps (San Juan primary, Brick CTA, Beech tertiary). Also sets headings in DM Serif Display, the guide\'s heading serif (400 only; body stays Open Sans). Other versions are unaffected either way. Rubi\'s orange is not in the guide and is unchanged.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
+    // THE ATLAS HOME'S RIGHT RAIL, two layouts (2026-09-30, the designer's
+    // request). V1 is the rail as it stood: Step 1 and Step 2 as their own
+    // cards, Steps 3 and 4 as ruled rows, the requirements button under them.
+    // V2 puts all four steps and the button in ONE frame with the Step 2
+    // card's background and stroke. Atlas/Compass version only.
+    key: 'atlas-right-rail-layout',
+    group: 'Right Rail Layout',
+    label: 'Right rail layout',
+    description:
+      'How the Atlas home\'s right rail (the four licensing steps) is framed. V1: Step 1 and Step 2 are separate cards, Steps 3 and 4 sit below with rounded left rules, and the State Requirements button is its own full-width button under them. V2: all four steps share one frame with the Step 2 card\'s background and 1px stroke; the steps lose their own cards and rules and line up on the frame\'s padding, and the State Requirements button sits inside the frame at its full inner width. Variant-only. Atlas/Compass version only.',
+    defaultEnabled: true,
+    // V2 is the default since 2026-09-30 (the designer's request), on every
+    // brand skin; V1 stays selectable.
+    defaultVariant: 'v2',
+    variants: [
+      { value: 'v1', label: 'V1 · Separate cards', description: 'Step 1 and Step 2 as their own cards, Steps 3 and 4 with left rules, the requirements button below.' },
+      { value: 'v2', label: 'V2 · One frame', description: 'All four steps and the requirements button inside one frame styled like the Step 2 card.' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    // "Eric/Atlas V1" as a Dashboard Version (2026-10-02, the designer's
+    // request). ON by default on this branch, so the branch build lists it;
+    // whether it ships is decided at merge (promote-to-prototype).
+    key: 'dashboard-version-eric-atlas-v1',
+    group: 'Navigation',
+    label: 'Eric/Atlas V1 dashboard version',
+    description:
+      'Lists "Eric/Atlas V1" in the Dashboard Version picker \u2014 the Atlas/Compass pages under their own name (`?version=eric-atlas-v1`). Off, the entry is hidden from the picker; a link that names it still opens it.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
 ]
 
 /* ─── persistence ──────────────────────────────────────────────────── */
@@ -1729,12 +2065,52 @@ type PersistedFlagState = Partial<{
 type PersistedState = Record<string, PersistedFlagState>
 
 /** The catalog (factory) default for a single flag definition. */
+/**
+ * WHAT A PARTICIPANT LANDS ON — `VITE_GATEWAY_MODE=testing` only, 2026-09-23.
+ *
+ * A session has to open on a known state, and the committed baseline is not
+ * it: `dashboard-progress-state` defaults to On Track because that is the most
+ * useful state for a stakeholder walking the Prototypes link, and a user test
+ * of a learner starting a course needs 0%.
+ *
+ * ⚠ IT OVERRIDES THE DEFAULT, NOT THE FLAG. A moderator can still change
+ * Progress from the demo bar mid-session, `?ff=` still wins, and the Feature
+ * Flag panel still reaches everything. This only decides where a fresh page
+ * view starts — which is the one thing a participant-facing site cannot leave
+ * to whatever happens to be committed.
+ *
+ * ⚠ AND IT CHANGES NOTHING ON THE OTHER TWO SITES. `main` keeps whatever
+ * `/promote-to-prototype` put in the catalog; this is a third-site concern and
+ * lives behind the same env var the third site already sets.
+ *
+ * `dashboard-navigation` is listed even though the catalog already says
+ * `option-1`. It is the A/B's control arm and the one default a session must
+ * be able to rely on, so stating it here means a later change to the catalog
+ * cannot silently start participants on the variant.
+ */
+const TESTING_BASELINE: Record<string, Partial<FeatureFlagState>> = {
+  'dashboard-progress-state': { variant: 'not-started' },
+  'dashboard-navigation': { variant: 'option-1' },
+}
+
+export function defaultFlagState(def: FeatureFlagDefinition): FeatureFlagState {
+  return catalogDefault(def)
+}
+
 function catalogDefault(def: FeatureFlagDefinition): FeatureFlagState {
-  return {
+  const base: FeatureFlagState = {
     enabled: def.defaultEnabled,
     variant: def.defaultVariant,
     secondaryVariant: def.defaultSecondaryVariant,
   }
+  /* ⚠ APPLIED HERE RATHER THAN AT EITHER CALL SITE, because there are two and
+     they must agree: `loadInitial` builds the in-memory state, `baselineFrom`
+     builds what `?demo=1` renders. A participant link carries `demo=1`, so an
+     override that missed the second one would be invisible in exactly the case
+     it exists for. */
+  if (!isTestingGateway()) return base
+  const override = TESTING_BASELINE[def.key]
+  return override ? { ...base, ...override } : base
 }
 
 /** Load the saved custom-default baseline. Validates the same way as

@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState, type ComponentType } from 'react'
+import { useCallback, useEffect, useRef, useState, type ComponentType } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
   Award,
@@ -12,21 +12,10 @@ import {
   Gauge,
   Gem,
   GemSolid,
-  Grid,
-  GridSolid,
   House,
   HouseSolid,
   LifeRing,
   LifeRingSolid,
-  Library,
-  LibrarySolid,
-  Podcast,
-  PodcastSolid,
-  RubiLogo,
-  SignsPost,
-  SignsPostSolid,
-  Star,
-  StarSolid,
   UserSlash,
   ArrowRightToLineSolid,
 } from '@/icons'
@@ -47,8 +36,7 @@ import { supportsStudyPlan } from '@/data/studyCalendarFixtures'
 import { useMotivation } from '@/context/MotivationContext'
 import { useProfileAvatar } from '@/context/ProfileAvatarContext'
 import { MotivationalStatementPanel } from '@/components/membership/MotivationalStatementPanel'
-import { useLearningPathSummariesForBrand } from '@/data/learningPathsCountVariant'
-import { buildRecommendedShelves } from '@/data/recommendedCategoriesFixtures'
+import { LEFT_COLUMN_FIRST_ROW_HEIGHT } from '@/components/learning/compassPlayerUtil'
 
 /**
  * Platform left-nav rail — the Elite-only "Left-Nav Platform Shell"
@@ -109,9 +97,8 @@ export type PlatformSection =
   // the canonical list both the dropdown and the sub-nav read.
   | 'profile'
   | 'notifications'
-  | 'licenses'
+  // 'licenses' and 'payment-methods' were members until 2026-09-30; archived.
   | 'transcripts'
-  | 'payment-methods'
   | 'purchases'
   | 'gift-recipients'
 
@@ -146,9 +133,10 @@ const MEMBERSHIP_ITEMS: RailItem[] = [
   // ARCHIVED 2026-08-25 — the "What's New" row was removed; the section it
   // opened is unwired and `?section=m-whats-new` now redirects to Membership.
   // See the `rail-whats-new` row in archivedItems.ts.
-  { id: 'm-learning-library', label: 'Resource Library', icon: Library, iconActive: LibrarySolid },
-  { id: 'm-exam-prep', label: 'Exam & Cert Prep', icon: Award, iconActive: AwardSolid },
-  { id: 'm-career-tools', label: 'Rubi Insights', icon: RubiLogo },
+  /* ARCHIVED 2026-09-28 — Resource Library, Exam & Cert Prep and Rubi Insights
+     came off the rail for good. Their sections still resolve from `?section=`;
+     only the rows and their nav flags went. See `rail-rows-2026-09-28` in
+     archivedItems.ts for the re-wire. */
   { id: 'm-more', label: 'Partner Offers', icon: Gem, iconActive: GemSolid },
 ]
 
@@ -245,13 +233,10 @@ export function PlatformSideNav({
   // to the dashboard for the same brand — BOTH gates are needed: with only one,
   // it looks like it works until you click.)
   const showMembershipPage = supportsMembership(brand)
-  // Defensive: only surface the Recommended for You rail item when there is
-  // content to recommend (buildRecommendedShelves yields at least one shelf).
-  // In practice the page always has content, so it always shows.
-  const hasRecommendations = useMemo(
-    () => buildRecommendedShelves(brand).length > 0,
-    [brand],
-  )
+  /* `hasRecommendations` went with the Recommended for You row on 2026-09-28 —
+     it gated that rail entry and nothing else. `buildRecommendedShelves` is
+     untouched in `recommendedCategoriesFixtures` and still feeds the page
+     itself — only this file's import of it went. */
   // RESTORED 2026-09-09 as "Resources" (see the `resources` rail item below).
   //
   // It was ARCHIVED 2026-08-26 as "Free Content": the outbound links (blog,
@@ -290,12 +275,14 @@ export function PlatformSideNav({
   // the first non-healthcare brand that keeps that section, which is why
   // `benefitRowsFor('xcel')` had to be authored rather than left empty.
   const hiddenBenefitSections: PlatformSection[] = brand === 'xcel' ? ['m-more'] : []
-  // Pluralize the Learning Path rail label only in V2 (the multi-path landing)
-  // with 2+ paths. V1 opens a single path directly, so it always reads the
-  // singular "Learning Path" regardless of how many paths the learner has.
-  const multiplePaths = useLearningPathSummariesForBrand().length > 1
-  const lpVersion = useFeatureFlag('learning-path-version').variant ?? 'v1'
-  const pluralLP = lpVersion === 'v2' && multiplePaths
+  /* Group captions — `nav-rail-captions`, 2026-09-28. On as shipped. */
+  const showCaptions = useFeatureFlag('nav-rail-captions').enabled
+  /* THE WHOLE PLURALIZATION CLUSTER WENT on 2026-09-28 with the Learning Path
+     row — `pluralLP`, and with it `multiplePaths` and the `learning-path-version`
+     read, which existed ONLY to choose "Learning Path" vs "Learning Paths" on
+     that label. The flag itself is untouched and still drives the page.
+     ⚠ I first wrote that those two were "still read below". They were not; tsc
+     said so immediately. */
   // Two groups: **My Learning** (the learner's own areas — which since
   // 2026-09-16 includes Resources and Rubi Insights, the two things a candidate
   // USES rather than browses) and a consolidated **Explore** group for
@@ -325,7 +312,6 @@ export function PlatformSideNav({
     // of a feature that has not been designed. Its nav flag is the only gate
     // until a real readiness fixture exists; wire a predicate then, next to it.
     { id: 'readiness', label: 'Readiness', icon: Gauge },
-    { id: 'learning-path', label: pluralLP ? 'Learning Paths' : 'Learning Path', icon: SignsPost, iconActive: SignsPostSolid },
     { id: 'courses', label: 'My Courses', shortLabel: 'Courses', icon: BookFull, iconActive: BookFullSolid },
     { id: 'certificates', label: 'Certificates', shortLabel: 'Certs', icon: Award, iconActive: AwardSolid },
     /* RESOURCES + RUBI MOVED INTO THIS GROUP — 2026-09-16, and this SETTLES a
@@ -350,17 +336,20 @@ export function PlatformSideNav({
        53:5290), so growing it would be editing a design rather than
        implementing one. */
     { id: 'resources', label: 'Resources', icon: FileText },
-    ...MEMBERSHIP_ITEMS.filter(
-      (i) => i.id === 'm-career-tools' && !hiddenBenefitSections.includes(i.id),
-    ).map((i) => ({ ...i, label: careerToolsLabelFor(brand), shortLabel: 'Rubi' })),
+    /* Rubi Insights was spread in here from MEMBERSHIP_ITEMS until 2026-09-28.
+       It is archived with the other two; `careerToolsLabelFor` is kept and is
+       what a restore re-reads. */
   ]
   const exploreItems: RailItem[] =
     variant === 'mvp'
       ? // MVP navigation (Figma 53:5290): a trimmed Explore group — just Course
         // Catalog, Resource Library, and Partner Offers.
         [
-          { id: 'catalog', label: 'Browse Catalog', icon: Grid, iconActive: GridSolid },
-          { id: 'm-learning-library', label: 'Resource Library', icon: Library, iconActive: LibrarySolid },
+          /* ⚠ THE MVP RAIL IS A FIGMA-SPECIFIED TRIM (node 53:5290), so this
+             list is implementing a design rather than expressing a preference.
+             Browse Catalog and Resource Library were removed from it on
+             2026-09-28 with the rest; if the MVP design is revisited, that node
+             is the source, not this file. */
           { id: 'm-more', label: 'Partner Offers', icon: Gem, iconActive: GemSolid },
         ]
       : [
@@ -376,7 +365,6 @@ export function PlatformSideNav({
              "your things end here, the shop starts", and a learner who has
              everything of their own above it should still see where buying
              happens. */
-          { id: 'catalog', label: 'Browse Catalog', icon: Grid, iconActive: GridSolid },
           // What's New is fully archived (2026-08-25): the rail row went on
           // 2026-08-17, and the section itself is now unwired — the CTAs that
           // reached it point at Membership and `?section=m-whats-new` redirects
@@ -388,18 +376,10 @@ export function PlatformSideNav({
           ...(showMembershipPage
             ? [{ id: 'membership' as const, label: 'Membership', icon: Crown, iconActive: Crown }]
             : []),
-          // Recommended for You hides entirely when there are no recommendations
-          // (decision #5) — no rail entry, so the user never lands on the page.
-          ...(hasRecommendations
-            ? [{ id: 'recommended' as const, label: 'Recommended for You', icon: Star, iconActive: StarSolid }]
-            : []),
-          // `m-career-tools` is excluded here — it is in MY LEARNING now (see
-          // the note there). Without this exclusion it renders twice, which a
-          // duplicate React key would warn about but the rail would still draw.
-          ...MEMBERSHIP_ITEMS.filter(
-            (i) => i.id !== 'm-career-tools' && !hiddenBenefitSections.includes(i.id),
-          ),
-          { id: 'podcasts', label: 'Podcasts', icon: Podcast, iconActive: PodcastSolid },
+          /* The `m-career-tools` exclusion that used to be here went with the
+             row itself on 2026-09-28 — MEMBERSHIP_ITEMS no longer holds it, so
+             there is nothing to exclude. */
+          ...MEMBERSHIP_ITEMS.filter((i) => !hiddenBenefitSections.includes(i.id)),
         ]
   // Note: the `profile` section is NOT in the rail — Profile is reachable only
   // from the top-right account dropdown (which routes into this shell). It still
@@ -534,13 +514,20 @@ export function PlatformSideNav({
                     regression rather than a layout change. */}
                 {collapsed ? (
                   gi > 0 ? <div aria-hidden style={COLLAPSED_DIVIDER} /> : null
-                ) : (
-                  <p id={captionId} style={CAPTION}>
+                ) : showCaptions ? (
+                  <p
+                    id={captionId}
+                    style={gi === 0 ? FIRST_CAPTION : CAPTION}
+                  >
                     {group.caption}
                   </p>
-                )}
+                ) : null}
+                {/* ⚠ THE NAME SURVIVES THE CAPTION, in both the collapsed case
+                    and the flagged-off one — see the note above. Hiding the
+                    heading is a layout change; dropping the group's accessible
+                    name would be an accessibility regression. */}
                 <ul
-                  {...(collapsed
+                  {...(collapsed || !showCaptions
                     ? { 'aria-label': group.caption }
                     : { 'aria-labelledby': captionId })}
                   style={{
@@ -693,6 +680,15 @@ function RailRow({
   // Selected rows swap to the filled/solid glyph when the item provides one;
   // idle/hover rows keep the outline icon.
   const Icon = active && item.iconActive ? item.iconActive : item.icon
+  /*
+   * RAIL ICONS — `nav-rail-icons`, 2026-09-28. `standard` (17) is what ships;
+   * `small` (14) lets the label lead; `none` drops the glyph, and because the
+   * row is a flex with a gap, the labels then simply left-align against the
+   * row's own padding — no separate alignment rule to keep in step.
+   */
+  const iconMode = useFeatureFlag('nav-rail-icons').variant ?? 'standard'
+  const hideIcon = !collapsed && iconMode === 'none'
+  const iconSize = collapsed ? 20 : iconMode === 'small' ? 14 : 17
   const [hovered, setHovered] = useState(false)
   const showHover = hovered && !active
   // Selected-state accent — always the brand PRIMARY color (tint fill + icon +
@@ -708,6 +704,13 @@ function RailRow({
   return (
     <button
       type="button"
+      /* ⚠ DERIVED, NOT LITERAL — one element renders every rail row, so the id
+         has to come from the item. `TESTABLE_CTAS` registers the four that
+         survive the Testing layout (`nav.dashboard`, `nav.courses`,
+         `nav.certificates`, `nav.support`); the rest simply never match a
+         session's list, which is the right failure — an unregistered row is a
+         control no run can kill, not a crash. */
+      data-cta-id={`nav.${item.id}`}
       onClick={() => onSelect(item.id)}
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
@@ -748,9 +751,15 @@ function RailRow({
       {/* Active icon: the brand PRIMARY accent, token-driven per rail (light
           primary on dark rails, dark primary on the light rail) for contrast.
           Idle/hover icons inherit the row label color. */}
-      <span style={{ display: 'inline-flex', color: active ? activeIconColor : 'inherit' }}>
-        <Icon size={collapsed ? 20 : 17} aria-hidden />
-      </span>
+      {/* ⚠ COLLAPSED IGNORES THE FLAG ENTIRELY. A collapsed row is a 20px glyph
+          over 10px text; drop the glyph and it is four near-identical stubs of
+          text, which is the mis-click failure the note below already guards
+          against from the other direction. */}
+      {!hideIcon && (
+        <span style={{ display: 'inline-flex', color: active ? activeIconColor : 'inherit' }}>
+          <Icon size={iconSize} aria-hidden />
+        </span>
+      )}
       {/* COLLAPSED shows the SHORT label under a larger glyph. The icon steps
           17 → 20 because it is carrying more of the row's meaning once the text
           is 10px — and the text stays, rather than the row becoming an icon
@@ -1242,6 +1251,27 @@ const CAPTION: React.CSSProperties = {
   letterSpacing: '0.1em',
   textTransform: 'uppercase',
   color: 'var(--color-nav-caption)',
+}
+
+/**
+ * The FIRST caption reserves the same height as the Compass player's breadcrumb
+ * — see `LEFT_COLUMN_FIRST_ROW_HEIGHT`, which carries the reasoning.
+ *
+ * ONLY THE FIRST. The later captions ("SUPPORT") have nothing to line up with;
+ * growing them too would space the rail out to fix a seam that exists in one
+ * place. Centred rather than top-aligned, so the caption sits where the
+ * breadcrumb's own text sits inside the same 38px.
+ *
+ * The 8px bottom margin is INSIDE the box now (`box-sizing` is border-box
+ * project-wide, but a margin is not), so it is subtracted from the reserved
+ * height rather than added to it — otherwise the rail would overshoot by 8 and
+ * jump the other way.
+ */
+const FIRST_CAPTION: React.CSSProperties = {
+  ...CAPTION,
+  minHeight: LEFT_COLUMN_FIRST_ROW_HEIGHT - 8,
+  display: 'flex',
+  alignItems: 'center',
 }
 
 // Non-member status pill — the Figma "Membership Tiers / Non-Member" badge

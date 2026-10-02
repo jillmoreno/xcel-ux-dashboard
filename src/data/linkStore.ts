@@ -77,6 +77,42 @@ export function linkTypeLabel(type: LinkType): string {
   return LINK_TYPES.find((t) => t.id === type)?.label ?? ''
 }
 
+/**
+ * Which product a Refinement row is about (2026-09-29).
+ *
+ * Refinement collects branches from two products that share this dashboard, and
+ * the title alone does not say which — "Learner Home - Testing 1" could be
+ * either. This is the filter people actually want.
+ *
+ * `both` is the DEFAULT and it is a real answer, not "unset": a lot of this
+ * work (navigation, tokens, the shell) genuinely lands in both. That is why
+ * there is no `''` member here the way `LINK_TYPES` has one — every row has a
+ * product, and a record written before this field existed normalises to `both`,
+ * which is true of it: it predates the distinction, so it claims neither.
+ */
+export const LINK_PRODUCTS = [
+  { id: 'xcel', label: 'XCEL' },
+  { id: 'compass', label: 'Compass' },
+  { id: 'both', label: 'Both' },
+] as const
+
+export type LinkProduct = (typeof LINK_PRODUCTS)[number]['id']
+
+export const DEFAULT_PRODUCT: LinkProduct = 'both'
+
+export function linkProductLabel(product: LinkProduct): string {
+  return LINK_PRODUCTS.find((x) => x.id === product)?.label ?? ''
+}
+
+/** Whether a row belongs under a filter pill. `both` matches XCEL and Compass
+ *  alike — that is the whole point of the value, and the reason this is a
+ *  function rather than an `===` at the call site. */
+export function matchesProduct(row: LinkProduct, filter: LinkProduct | ''): boolean {
+  if (!filter) return true
+  if (row === 'both') return true
+  return row === filter
+}
+
 export type StoredLink = {
   /** `link-007`, allocated server-side. */
   id: string
@@ -92,6 +128,9 @@ export type StoredLink = {
   /** What kind of thing it points at. '' when unset — optional, so the records
    *  written before this field existed stay valid without a backfill. */
   type: LinkType
+  /** Which product this row is about. Only the Demo board's endpoint stores it
+   *  (Links drops the field); everywhere else it normalises to `both`. */
+  product: LinkProduct
   /** Whether the PUBLIC build shows this row. Only the Demo board's endpoint
    *  stores it (Links drops the field); everywhere else it normalises to
    *  `false`, so a consumer never has to ask which board a record came from. */
@@ -105,6 +144,9 @@ export type StoredLink = {
  *  optional on the way IN because only one board has the control for it. */
 export type LinkDraft = Pick<StoredLink, 'title' | 'url' | 'note' | 'addedBy' | 'type'> & {
   isPublic?: boolean
+  /** Optional on the way IN for the same reason as `isPublic`: only one board
+   *  has the control for it. */
+  product?: LinkProduct
 }
 
 export type LinkIndex = {
@@ -232,8 +274,17 @@ function normalise(v: StoredLink): StoredLink {
     // for a value this build has no label for — the same "normalise, do not
     // trust" rule the rest of this function follows.
     type: LINK_TYPES.some((t) => t.id === v.type) ? (v.type as LinkType) : '',
+    // Unrecognised or absent → `both`. Unlike `type`, there is no "unset" to
+    // fall back to, and `both` is the honest reading of a row that predates the
+    // field: it was written when the distinction did not exist, so it claims
+    // neither product. It also FAILS OPEN for the filter — a row lands under
+    // every pill rather than disappearing from all of them, which is the right
+    // direction for a list whose whole job is not losing work.
+    product: LINK_PRODUCTS.some((x) => x.id === v.product)
+      ? (v.product as LinkProduct)
+      : DEFAULT_PRODUCT,
     // Strictly `true`, so a record from a board without the field — or an
-    // older record from one with it — reads as team-only, never as public.
+    // older record from one with it — reads as UX-only, never as public.
     isPublic: v.isPublic === true,
     addedDate: typeof v.addedDate === 'string' ? v.addedDate : '',
   }

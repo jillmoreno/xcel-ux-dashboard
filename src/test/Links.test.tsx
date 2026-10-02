@@ -47,6 +47,7 @@ const link = (over: Partial<StoredLink> = {}): StoredLink => ({
   note: '',
   addedBy: '',
   type: '',
+  product: 'both',
   isPublic: false,
   addedDate: '2026-09-10',
   ...over,
@@ -591,15 +592,17 @@ describe('the Links section on the gateway', () => {
     expect(screen.queryByRole('dialog')).not.toBeInTheDocument()
     expect(await screen.findByRole('heading', { level: 1, name: 'Other Links' })).toBeInTheDocument()
 
-    // Position: Prototypes · Refinement · Other Links · Research, in that
-    // order (2026-09-18). Order carries the argument that this belongs with
-    // the open front door rather than with the gated pipeline sections.
+    // Position: Prototypes · Refinement · Research · Other Links, in that
+    // order (Research moved above Other Links 2026-09-29). What this assertion
+    // is actually FOR is unchanged by that: Other Links has to sit inside the
+    // open group, above the gated pipeline sections — the argument being that
+    // it belongs with the front door, not behind the password.
     const labels = screen
       .getAllByRole('button')
       .map((b) => b.textContent?.replace(/\d+$/, '').trim())
     const protoAt = labels.indexOf('Prototypes')
     expect(protoAt).toBeGreaterThanOrEqual(0)
-    expect(labels.slice(protoAt, protoAt + 4)).toEqual(['Prototypes', 'Refinement', 'Other Links', 'Research'])
+    expect(labels.slice(protoAt, protoAt + 4)).toEqual(['Prototypes', 'Refinement', 'Research', 'Other Links'])
   })
 
   it('a deep link into the section opens it', async () => {

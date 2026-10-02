@@ -74,15 +74,13 @@ import XmarkRegularSvg from './xmark-regular.svg?react'
 import DotSolidSvg from './dot-solid.svg?react'
 // Compass Rubi rail (Figma 49:3053), fetched 2026-09-23 at 7.3.1.
 import PaperPlaneTopSolidSvg from './paper-plane-top-solid.svg?react'
-// The Study Pace card's plan marks — pulled from main with the home page
-// (2026-09-24).
-import LoveseatSvg from './loveseat.svg?react'
-import MugHotSvg from './mug-hot.svg?react'
-import PersonRunningFastSvg from './person-running-fast.svg?react'
 // Compass course navigation footer (Figma 31:1221), fetched 2026-09-23 at 7.3.1.
 import ChevronLeftSvg from './chevron-left.svg?react'
 import CircleUserSvg from './circle-user.svg?react'
 import CircleInfoSvg from './circle-info.svg?react'
+import LoveseatSvg from './loveseat.svg?react'
+import MugHotSvg from './mug-hot.svg?react'
+import PersonRunningFastSvg from './person-running-fast.svg?react'
 import CircleQuestionSvg from './circle-question.svg?react'
 import ClockSvg from './clock.svg?react'
 import CreditCardSvg from './credit-card.svg?react'
@@ -271,13 +269,15 @@ export const GearRegular = makeIcon(GearRegularSvg) // FA: gear (regular)
 export const XmarkRegular = makeIcon(XmarkRegularSvg) // FA: xmark (regular)
 export const DotSolid = makeIcon(DotSolidSvg) // FA: dot (solid)
 export const PaperPlaneTopSolid = makeIcon(PaperPlaneTopSolidSvg) // FA: paper-plane-top (solid)
+export const CircleUser = makeIcon(CircleUserSvg) // FA: circle-user
+export const CircleInfo = makeIcon(CircleInfoSvg)
 /* The three Study Pace plans' marks — Loveseat = Steady & Relaxed, MugHot =
-   Recommended, PersonRunningFast = Focused & Quick (from main). */
+   Recommended, PersonRunningFast = Focused & Quick. Solid weights, unlike most
+   of this registry's Light set, because they read as SYMBOLS beside a label at
+   14px rather than as UI glyphs. */
 export const Loveseat = makeIcon(LoveseatSvg)
 export const MugHot = makeIcon(MugHotSvg)
-export const PersonRunningFast = makeIcon(PersonRunningFastSvg)
-export const CircleUser = makeIcon(CircleUserSvg) // FA: circle-user
-export const CircleInfo = makeIcon(CircleInfoSvg) // FA: circle-info
+export const PersonRunningFast = makeIcon(PersonRunningFastSvg) // FA: circle-info
 export const Clock = makeIcon(ClockSvg)
 export const CreditCard = makeIcon(CreditCardSvg)
 export const Crown = makeIcon(CrownSvg)

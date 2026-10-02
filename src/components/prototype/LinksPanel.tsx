@@ -35,23 +35,43 @@
  */
 
 import { useCallback, useEffect, useMemo, useState, type CSSProperties } from 'react'
-import { ArrowUpRightFromSquare, ClipboardList, PenToSquare, Plus, Trash } from '@/icons'
+import {
+  ArrowUpRightFromSquare,
+  BrowserWindow,
+  ClipboardList,
+  FileText,
+  Grid,
+  Layout,
+  PenToSquare,
+  Plus,
+  Share2,
+  Trash,
+  User,
+} from '@/icons'
+import { ActionMenu, type ActionMenuItem } from '@/components/ui/ActionMenu'
 import { Modal } from '@/components/ui/Modal'
 import {
+  DEFAULT_PRODUCT,
   LINKS_BOARD,
+  LINK_PRODUCTS,
   LINK_TYPES,
   LinkWriteError,
   draftProblems,
   hostOf,
+  linkProductLabel,
   linkTypeLabel,
+  matchesProduct,
   safeHref,
   toMarkdown,
   type LinkBoard,
   type LinkDraft,
+  type LinkProduct,
   type LinkType,
   type StoredLink,
 } from '@/data/linkStore'
 import { DEMO_BOARD } from '@/data/demoStore'
+import { GeneratedThumb } from './GeneratedThumb'
+import { accentsByHost, hostKey, linkThumbKind } from './linkRowThumb'
 import { isPublicGateway } from '@/data/gatewayMode'
 import {
   isBranchOnBoard,
@@ -74,6 +94,33 @@ export type LinkBoardPresentation = {
   nounPlural: string
   /** Whether the Type field and its filter strip render. Links only. */
   showType: boolean
+  /**
+   * Whether each row carries the generated accent tile, Exploration-style.
+   * Refinement only (2026-09-29).
+   *
+   * A FLAG rather than "every board gets one", because the two boards are not
+   * the same kind of list. A Refinement row is a PLACE you go and look at —
+   * it earns a picture. Other Links is a bibliography: briefs, Figma files,
+   * reference docs, most of them on hosts this repo knows nothing about, where
+   * a tile derived from the URL would assert a kind it cannot actually read.
+   */
+  showThumb: boolean
+  /**
+   * Whether the Product control, its tag and the All / XCEL / Compass filter
+   * render. Refinement only — Other Links points at briefs and Figma files that
+   * are not "a product's branch" at all, so the question does not apply there.
+   */
+  showProduct: boolean
+  /**
+   * Whether the visibility, product and author facts render as BADGES under the
+   * title instead of as a chip above it and a clause in the meta line.
+   *
+   * Refinement only, and a flag rather than a rewrite because Other Links has
+   * one fact (its type) where Refinement has three — a badge row of one is just
+   * a chip that moved, and `Links.test.tsx` pins the meta line's exact shape
+   * including the missing-author case.
+   */
+  showBadges: boolean
   /** Whether the form carries the "Show on public site" toggle and rows show a
    *  Public / Team chip. Demo only. */
   showPublicToggle: boolean
@@ -117,9 +164,22 @@ export type LinkBoardPresentation = {
 
 export type LinkPrefill = { url: string; title: string; note: string }
 
+/** One glyph per `LinkThumbKind`. Kept HERE rather than in `linkRowThumb.ts`
+ *  so that module stays free of JSX and can be unit-tested as plain functions. */
+const THUMB_GLYPH = {
+  document: FileText,
+  gallery: Grid,
+  product: Layout,
+  other: BrowserWindow,
+} as const
+
 /* ── styles ───────────────────────────────────────────────────────────────── */
 
 const wrapStyle: CSSProperties = { maxWidth: 820 }
+
+/** 820 + the icon box (44) + the gap (10), so the text column keeps exactly the
+ *  width it had before the marker was added rather than paying for it. */
+const wrapThumbStyle: CSSProperties = { maxWidth: 874 }
 
 const fieldStyle: CSSProperties = {
   width: '100%',
@@ -293,6 +353,228 @@ const filterPillActiveStyle: CSSProperties = {
   color: 'var(--ux-on-accent)',
 }
 
+/* ── the switch ──
+   40x22 with an 18px knob: the track has to read as a track at a glance, and
+   below about 36px wide the two states differ by a few pixels of travel. */
+const switchStyle: CSSProperties = {
+  position: 'relative',
+  flex: 'none',
+  width: 40,
+  height: 22,
+  padding: 0,
+  borderRadius: 999,
+  border: '1px solid var(--ux-border)',
+  background: 'var(--ux-chip)',
+  cursor: 'pointer',
+  transition: 'background 120ms, border-color 120ms',
+}
+
+const switchOnStyle: CSSProperties = {
+  ...switchStyle,
+  background: 'var(--ux-accent)',
+  borderColor: 'var(--ux-accent)',
+}
+
+/* The knob is its own element so the travel can animate. `--ux-card` rather
+   than white: on the dark themes white would be the brightest thing on the
+   panel. */
+const switchKnobStyle: CSSProperties = {
+  position: 'absolute',
+  top: 1,
+  left: 1,
+  width: 18,
+  height: 18,
+  borderRadius: '50%',
+  background: 'var(--ux-card)',
+  border: '1px solid var(--ux-border)',
+  transition: 'transform 120ms',
+  transform: 'translateX(0)',
+}
+
+const switchKnobOnStyle: CSSProperties = {
+  ...switchKnobStyle,
+  borderColor: 'var(--ux-accent-strong)',
+  transform: 'translateX(18px)',
+}
+
+/* ── the segmented product control ── */
+const segmentRowStyle: CSSProperties = {
+  display: 'inline-flex',
+  border: '1px solid var(--ux-border)',
+  borderRadius: 8,
+  overflow: 'hidden',
+}
+
+const segmentStyle: CSSProperties = {
+  font: 'inherit',
+  fontSize: 13,
+  fontWeight: 600,
+  padding: '7px 15px',
+  border: 'none',
+  borderRight: '1px solid var(--ux-border)',
+  background: 'var(--ux-card)',
+  color: 'var(--ux-text-2)',
+  cursor: 'pointer',
+}
+
+const segmentActiveStyle: CSSProperties = {
+  ...segmentStyle,
+  background: 'var(--ux-accent)',
+  color: 'var(--ux-on-accent)',
+}
+
+/* ── the badge row under a title ──
+   One shape for all three badges, so the row reads as one band of metadata
+   rather than three unrelated marks. What varies is the fill, and only where
+   the fill MEANS something: Public is the accent because it is the one state
+   with a consequence outside the team. */
+const badgeRowStyle: CSSProperties = {
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'center',
+  gap: 6,
+  margin: '5px 0 0',
+}
+
+const badgeStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 4,
+  padding: '2px 8px',
+  borderRadius: 999,
+  fontSize: 11,
+  fontWeight: 700,
+  letterSpacing: '0.03em',
+  textTransform: 'uppercase',
+  background: 'var(--ux-chip)',
+  color: 'var(--ux-text-2)',
+  whiteSpace: 'nowrap',
+}
+
+/* ── the row's icon box ──
+   44px, not the 160x110 an Exploration row gets.
+   
+   That size exists to be a PICTURE — it is the crop a real screenshot is taken
+   at, and Exploration rows can fill it with a live miniature of their own URL.
+   Refinement rows can never have one (see `GeneratedThumb`), so at 160x110 the
+   tile was a picture-shaped hole with a glyph floating in it, and every row
+   paid ~110px of height for the emptiness.
+
+   At 44 it stops claiming to be a picture and becomes what it actually is: a
+   marker. It still carries both facts — the glyph is the kind of destination,
+   the hue is the branch — and the rows get about a third shorter. */
+const ICON_BOX = 44
+
+/* ── the right-hand column ──
+   Exploration's shape: the row's own facts on the left, everything ABOUT the
+   row banked down the right edge, so the eye can run straight down one column
+   for "whose is this" or "can I send it on" without re-reading titles. */
+const sideColStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-end',
+  gap: 7,
+  flex: 'none',
+}
+
+const sideTopStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 6,
+  /* The kebab is a 28px target and the name sits beside it; this keeps the two
+     on one baseline without the name's descenders pushing the row taller. */
+  minHeight: 26,
+}
+
+/* The author is no longer a badge — it is a person with a face, next to their
+   own name. A pill around a name reads as a status the person is IN. */
+const authorNameStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 5,
+  fontSize: 12,
+  fontWeight: 600,
+  color: 'var(--ux-text-2)',
+  whiteSpace: 'nowrap',
+  maxWidth: 160,
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
+}
+
+/* ── the visibility badge ──
+   A different colour from the product tag on purpose: those are two kinds of
+   fact, and a reader who cannot tell them apart has to read both to find the
+   one they wanted.
+
+     visibility  who can see it   a STATE    → accent, outlined then solid
+     product     which product    a CATEGORY → quiet filled chip
+     author      who put it here  a PERSON   → neutral outline, sentence case
+
+   OUTLINED rather than tinted, and that is the second attempt. The first mixed
+   `--ux-hue-blue` into the card, which separated fine in light and collapsed to
+   1.03:1 against `--ux-chip` in dark — measured. The cause is that the palette's
+   hues are not independent of each other: in the moss light palette
+   `--ux-hue-blue` and `--ux-accent` are the SAME hex, and `--ux-chip` is
+   accent-derived too, so any tint-vs-tint scheme is one palette away from
+   putting two near-identical pale pills side by side.
+
+   Fill-vs-no-fill cannot collapse that way whatever the tokens resolve to, and
+   it keeps Public as the loudest thing in the row — which it should be, being
+   the one state with a consequence outside the team. */
+const uxOnlyBadgeStyle: CSSProperties = {
+  ...badgeStyle,
+  background: 'transparent',
+  border: '1px solid var(--ux-accent)',
+  color: 'var(--ux-accent)',
+}
+
+/* Public keeps the accent, solid: it is the one state with a consequence
+   outside the team, and it should be the loudest thing in the row. */
+const publicBadgeStyle: CSSProperties = {
+  ...badgeStyle,
+  background: 'var(--ux-accent)',
+  color: 'var(--ux-on-accent)',
+}
+
+/* ── the product tags ──
+   One hue each, FIXED per product — which is what makes them readable beside
+   the row's tile, since that is tinted from the same four hues. The tile's hue
+   varies by branch and the badge's never does, so after two rows the eye has
+   them as two systems rather than one. A shared palette is unavoidable here:
+   these four hues are the whole palette.
+
+   `blue` is deliberately not among them. It is the same hex as `--ux-accent` in
+   at least one palette, and the accent is spoken for — Public fills with it and
+   UX Only outlines in it. A blue product tag would read as a third visibility
+   state.
+
+   `neutral` for Both is the one that carries meaning rather than just being
+   available: a grey tag is the honest look for "does not claim a side". */
+const PRODUCT_BADGE: Record<LinkProduct, { hue: string; fg: string; tint: number }> = {
+  xcel: { hue: '--ux-hue-teal', fg: '--ux-hue-teal-fg', tint: 24 },
+  compass: { hue: '--ux-hue-gold', fg: '--ux-hue-gold-fg', tint: 24 },
+  both: { hue: '--ux-hue-neutral', fg: '--ux-hue-neutral-fg', tint: 20 },
+}
+
+function productBadgeStyle(product: LinkProduct): CSSProperties {
+  const { hue, fg, tint } = PRODUCT_BADGE[product] ?? PRODUCT_BADGE.both
+  return {
+    ...badgeStyle,
+    background: `color-mix(in srgb, var(${hue}) ${tint}%, var(--ux-card))`,
+    // The border carries most of the hue, at 2.5x the fill.
+    //
+    // The fill cannot: `--ux-hue-*-fg` is DARK in the light themes and LIGHT in
+    // the dark ones, so the fill has to stay near the card in both directions or
+    // the label stops clearing 4.5:1. A 44% fill separated beautifully — and
+    // measured 3.67:1 on Compass in dark, which is a fail.
+    //
+    // A border has no text on it, so it can take as much hue as it likes, and it
+    // sits exactly where two pills touch and get compared.
+    border: `1px solid color-mix(in srgb, var(${hue}) ${Math.min(tint * 2.5, 85)}%, var(--ux-card))`,
+    color: `var(${fg})`,
+  }
+}
+
 const emptyStyle: CSSProperties = {
   border: '1px dashed var(--ux-border)',
   borderRadius: 12,
@@ -312,7 +594,15 @@ const toolbarStyle: CSSProperties = {
   flexWrap: 'wrap',
 }
 
-const EMPTY_DRAFT: LinkDraft = { title: '', url: '', note: '', addedBy: '', type: '', isPublic: false }
+const EMPTY_DRAFT: LinkDraft = {
+  title: '',
+  url: '',
+  note: '',
+  addedBy: '',
+  type: '',
+  isPublic: false,
+  product: DEFAULT_PRODUCT,
+}
 
 /** Below this the search field is a dead control — it costs a row of chrome to
  *  filter a list you can already see all of. Same reasoning as the status pills
@@ -632,22 +922,67 @@ function LinkFormModal({
           />
         </div>
 
+        {p.showProduct && (
+          <div style={fieldWrapStyle}>
+            <span style={labelStyle} id="link-product-label">
+              Product
+            </span>
+            {/* Three mutually exclusive values, all visible, none of them a
+                default the reader has to open a menu to discover — a select
+                would hide two of three and put "Both" behind a click, which is
+                the value most rows want. */}
+            <div style={segmentRowStyle} role="radiogroup" aria-labelledby="link-product-label">
+              {LINK_PRODUCTS.map((x, i) => {
+                const on = (draft.product ?? DEFAULT_PRODUCT) === x.id
+                const last = i === LINK_PRODUCTS.length - 1
+                return (
+                  <button
+                    key={x.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={on}
+                    onClick={() => onChange({ product: x.id })}
+                    // The divider belongs BETWEEN segments; on the last one it
+                    // doubles up with the group's own border.
+                    style={last ? { ...(on ? segmentActiveStyle : segmentStyle), borderRight: 'none' } : on ? segmentActiveStyle : segmentStyle}
+                  >
+                    {x.label}
+                  </button>
+                )
+              })}
+            </div>
+            <p style={{ ...optionalStyle, margin: '5px 0 0', fontSize: 12 }}>
+              Tags the row so the filters above the list can find it. Both is the default — plenty of
+              this work lands in both products.
+            </p>
+          </div>
+        )}
+
         {p.showPublicToggle && (
           <div style={fieldWrapStyle}>
-            {/* A checkbox, not a toggle switch or a select: it is one yes/no
-                fact with a real consequence, and the label says the
-                consequence in words. Off by default — a row is team-only until
-                someone decides otherwise, never the reverse. */}
-            <label style={{ ...labelStyle, display: 'flex', alignItems: 'center', gap: 8, cursor: 'pointer' }}>
-              <input
-                type="checkbox"
-                checked={draft.isPublic === true}
-                onChange={(e) => onChange({ isPublic: e.target.checked })}
-                style={{ margin: 0, width: 15, height: 15, accentColor: 'var(--ux-accent)' }}
-              />
-              Show on public site
-            </label>
-            <p style={{ ...optionalStyle, margin: '4px 0 0 23px', fontSize: 12 }}>
+            {/* A switch, not a checkbox: this is a live state someone flips back
+                and forth as a row moves through review, not a form value
+                submitted once. `role="switch"` on a real button keeps Space,
+                Enter and the accessible name that a styled `<input>` would have
+                had. Off by default — a row is UX-only until someone decides
+                otherwise, never the reverse. */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+              <button
+                type="button"
+                role="switch"
+                aria-checked={draft.isPublic === true}
+                aria-label="Show on public site"
+                onClick={() => onChange({ isPublic: draft.isPublic !== true })}
+                style={draft.isPublic === true ? switchOnStyle : switchStyle}
+              >
+                <span
+                  aria-hidden
+                  style={draft.isPublic === true ? switchKnobOnStyle : switchKnobStyle}
+                />
+              </button>
+              <span style={{ ...labelStyle, marginBottom: 0 }}>Show on public site</span>
+            </div>
+            <p style={{ ...optionalStyle, margin: '5px 0 0', fontSize: 12 }}>
               Off: only the team sees this row. On: stakeholders with the public link see it too.
             </p>
           </div>
@@ -687,10 +1022,15 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
   const [errors, setErrors] = useState<string[]>([])
   const [busy, setBusy] = useState(false)
   const [copied, setCopied] = useState(false)
+  /* Which row just had its link copied — a per-row confirmation, because a
+     menu closes on select and has no label left to change. */
+  const [shared, setShared] = useState<string | null>(null)
   const [query, setQuery] = useState('')
   /** '' = All. Not a `LinkType`, because "no type" is itself a filterable
    *  value here and would collide with it. */
   const [typeFilter, setTypeFilter] = useState<string>('')
+  /* '' is All. A `both` row matches every pill — see `matchesProduct`. */
+  const [productFilter, setProductFilter] = useState<LinkProduct | ''>('')
 
   const q = query.trim().toLowerCase()
   const rows = useMemo(
@@ -698,6 +1038,7 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
       index.links.filter(
         (l) =>
           (!typeFilter || l.type === typeFilter) &&
+          matchesProduct(l.product, productFilter) &&
           (!q ||
             l.title.toLowerCase().includes(q) ||
             l.url.toLowerCase().includes(q) ||
@@ -705,8 +1046,13 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
             l.addedBy.toLowerCase().includes(q) ||
             linkTypeLabel(l.type).toLowerCase().includes(q)),
       ),
-    [index.links, q, typeFilter],
+    [index.links, q, typeFilter, productFilter],
   )
+
+  /* Assigned across the WHOLE list, before any row draws — a per-row
+     derivation cannot know which hosts came before it. Recomputed when the
+     rows do, so filtering the list re-packs the hues onto what is visible. */
+  const thumbAccents = useMemo(() => accentsByHost(rows.map((r) => r.url)), [rows])
 
   /** The types actually PRESENT, in the authored order. A pill for a type
    *  nothing carries is a dead control — the same rule the project sections'
@@ -807,6 +1153,7 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
       addedBy: link.addedBy,
       type: link.type,
       isPublic: link.isPublic,
+      product: link.product,
     })
     setErrors([])
     setEditing(link)
@@ -863,8 +1210,63 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
     }
   }
 
+  /**
+   * Share Link copies the row's DESTINATION — the branch build a reviewer is
+   * being sent to look at — not a link to this dashboard section. The row is
+   * the pointer; the thing worth pasting into a message is what it points at.
+   *
+   * `safeHref` first, so a record with an address this build will not render as
+   * a link cannot be handed to someone as if it were one.
+   */
+  const share = async (link: StoredLink) => {
+    const href = safeHref(link.url)
+    if (!href) return
+    try {
+      await navigator.clipboard.writeText(href)
+      setShared(link.id)
+      window.setTimeout(() => setShared(null), 1800)
+    } catch {
+      /* clipboard blocked — nothing was changed, and no false confirmation */
+    }
+  }
+
+  /**
+   * The row's kebab. Share is offered to READERS too — the public build renders
+   * this panel read-only, and handing a stakeholder the link is the one thing
+   * they are there to do. Edit and Remove stay behind `canAuthor`.
+   */
+  const rowActions = (link: StoredLink): ActionMenuItem[] => {
+    const items: ActionMenuItem[] = []
+    if (canAuthor) {
+      items.push({
+        id: 'edit',
+        label: 'Edit',
+        icon: <PenToSquare size={13} aria-hidden />,
+        onSelect: () => beginEdit(link),
+      })
+    }
+    if (safeHref(link.url)) {
+      items.push({
+        id: 'share',
+        label: 'Share Link',
+        icon: <Share2 size={13} aria-hidden />,
+        onSelect: () => void share(link),
+      })
+    }
+    if (canAuthor) {
+      items.push({
+        id: 'remove',
+        label: 'Remove',
+        icon: <Trash size={13} aria-hidden />,
+        danger: true,
+        onSelect: () => void remove(link),
+      })
+    }
+    return items
+  }
+
   return (
-    <div style={wrapStyle}>
+    <div style={p.showThumb ? wrapThumbStyle : wrapStyle}>
       {/* ── the automatic branch list ──
           Above the rows, and only where this panel can author: on the public
           build there is nothing to add with, and while the endpoint is down an
@@ -899,6 +1301,36 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
             <ClipboardList size={12} aria-hidden />
             {copied ? 'Copied' : 'Copy as markdown'}
           </button>
+        </div>
+      )}
+
+      {/* ── product filter ──
+          Always rendered when the board has products, unlike the type strip
+          below: `both` rows mean a pill can be empty and still be the right
+          thing to offer, and the three pills are the section's stated
+          vocabulary rather than a summary of what happens to be in the list
+          today. */}
+      {p.showProduct && (
+        <div style={filterRowStyle} role="group" aria-label="Filter by product">
+          <button
+            type="button"
+            onClick={() => setProductFilter('')}
+            aria-pressed={productFilter === ''}
+            style={productFilter === '' ? filterPillActiveStyle : filterPillStyle}
+          >
+            All
+          </button>
+          {LINK_PRODUCTS.filter((x) => x.id !== 'both').map((x) => (
+            <button
+              key={x.id}
+              type="button"
+              onClick={() => setProductFilter(productFilter === x.id ? '' : x.id)}
+              aria-pressed={productFilter === x.id}
+              style={productFilter === x.id ? filterPillActiveStyle : filterPillStyle}
+            >
+              {x.label}
+            </button>
+          ))}
         </div>
       )}
 
@@ -965,7 +1397,9 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
             const meta = [
               hostOf(link.url),
               link.addedDate && `added ${link.addedDate}`,
-              link.addedBy.trim() && `by ${link.addedBy.trim()}`,
+              // Not here when it is a badge instead — printing it twice would
+              // make the row look like two different facts about one person.
+              !p.showBadges && link.addedBy.trim() && `by ${link.addedBy.trim()}`,
               !href && 'not a linkable address',
             ].filter(Boolean)
             return (
@@ -976,28 +1410,38 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
                 className="cre-uxlinks-row"
                 style={{
                   ...itemStyle,
+                  // The tile is a real third column rather than a float, so the
+                  // text block wraps beside it instead of under it, and every
+                  // row's text starts at the same x whatever its note's length.
+                  ...(p.showThumb
+                    ? {
+                        gridTemplateColumns: `${ICON_BOX}px minmax(0,1fr) auto`,
+                        alignItems: 'start',
+                        padding: '12px',
+                      }
+                    : null),
                   borderBottom: i === rows.length - 1 ? 'none' : itemStyle.borderBottom,
                 }}
               >
+                {p.showThumb && (
+                  <GeneratedThumb
+                    accent={thumbAccents[hostKey(link.url)]}
+                    boost={1.7}
+                    width={ICON_BOX}
+                    height={ICON_BOX}
+                  >
+                    {/* 20 in a 44 box. The 34 an Exploration tile uses swims
+                        here and, at this size, clips against the corners. */}
+                    {(() => {
+                      const Glyph = THUMB_GLYPH[linkThumbKind(link.url)]
+                      return <Glyph size={20} />
+                    })()}
+                  </GeneratedThumb>
+                )}
                 <div style={{ minWidth: 0 }}>
                   {p.showType && link.type && (
                     <span style={{ ...chipStyle, marginBottom: 4 }}>
                       {linkTypeLabel(link.type)}
-                    </span>
-                  )}
-                  {/* On the full site the chip says WHO can see the row — the
-                      one fact about a Demo row a reviewer needs before sending
-                      the link on. Not rendered when `publicOnly`: every row
-                      there is public, and a chip saying so on each is noise. */}
-                  {p.showPublicToggle && !p.publicOnly && (
-                    <span
-                      style={{
-                        ...chipStyle,
-                        marginBottom: 4,
-                        ...(link.isPublic ? { background: 'var(--ux-accent)', color: 'var(--ux-on-accent)' } : {}),
-                      }}
-                    >
-                      {link.isPublic ? 'Public' : 'Team only'}
                     </span>
                   )}
                   {href ? (
@@ -1021,29 +1465,62 @@ export function LinkBoardPanel({ p }: { p: LinkBoardPresentation }) {
                   <p style={metaStyle}>{meta.join(' · ')}</p>
                   {link.note.trim() && <p style={noteTextStyle}>{link.note}</p>}
                 </div>
-                {canAuthor && (
-                  <div style={{ display: 'flex', gap: 6, flex: 'none' }}>
-                    <button
-                      type="button"
-                      onClick={() => beginEdit(link)}
-                      disabled={busy}
-                      className="cre-uxlinks-action"
-                      style={iconBtnStyle}
-                      aria-label={`Edit ${link.title}`}
-                    >
-                      <PenToSquare size={12} aria-hidden />
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => void remove(link)}
-                      disabled={busy}
-                      className="cre-uxlinks-action"
-                      style={iconBtnStyle}
-                      aria-label={`Remove ${link.title}`}
-                    >
-                      <Trash size={12} aria-hidden />
-                    </button>
+                {p.showBadges ? (
+                  <div style={sideColStyle}>
+                    <div style={sideTopStyle}>
+                      {link.addedBy.trim() && (
+                        <span style={authorNameStyle}>
+                          <User size={12} aria-hidden style={{ flex: 'none' }} />
+                          {link.addedBy.trim()}
+                        </span>
+                      )}
+                      {shared === link.id && (
+                        <span style={{ ...badgeStyle, textTransform: 'none', letterSpacing: 0 }}>
+                          Link copied
+                        </span>
+                      )}
+                      {rowActions(link).length > 0 && (
+                        <ActionMenu label={`Actions for ${link.title}`} items={rowActions(link)} />
+                      )}
+                    </div>
+                    <div style={badgeRowStyle}>
+                      {p.showPublicToggle && !p.publicOnly && (
+                        <span style={link.isPublic ? publicBadgeStyle : uxOnlyBadgeStyle}>
+                          {link.isPublic ? 'Public' : 'UX Only'}
+                        </span>
+                      )}
+                      {p.showProduct && (
+                        <span style={productBadgeStyle(link.product)}>
+                          {linkProductLabel(link.product)}
+                        </span>
+                      )}
+                    </div>
                   </div>
+                ) : (
+                  canAuthor && (
+                    <div style={{ display: 'flex', gap: 6, flex: 'none' }}>
+                      <button
+                        type="button"
+                        onClick={() => beginEdit(link)}
+                        disabled={busy}
+                        className="cre-uxlinks-action"
+                        style={iconBtnStyle}
+                        aria-label={`Edit ${link.title}`}
+                      >
+                        <PenToSquare size={12} aria-hidden />
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => void remove(link)}
+                        disabled={busy}
+                        className="cre-uxlinks-action"
+                        style={iconBtnStyle}
+                        aria-label={`Remove ${link.title}`}
+                      >
+                        <Trash size={12} aria-hidden />
+                      </button>
+                    </div>
+                  )
                 )}
               </li>
             )
@@ -1072,6 +1549,9 @@ const LINKS_PRESENTATION: LinkBoardPresentation = {
   noun: 'link',
   nounPlural: 'links',
   showType: true,
+  showThumb: false,
+  showProduct: false,
+  showBadges: false,
   showPublicToggle: false,
   publicOnly: false,
   readOnly: false,
@@ -1108,6 +1588,9 @@ export function DemoPanel({
     noun: 'link',
     nounPlural: 'links',
     showType: false,
+    showThumb: true,
+    showProduct: true,
+    showBadges: true,
     showPublicToggle: true,
     publicOnly: pub,
     readOnly: pub,

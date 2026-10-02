@@ -1,9 +1,11 @@
 import { useLocation } from 'react-router-dom'
+import { isPublicGateway, isTestSession } from '@/data/gatewayMode'
 import { PrototypeBar } from './PrototypeBar'
 import { AdminToolsMenu } from './AdminToolsMenu'
 import { DeviceFrameToggle, useDeviceFrame } from './DeviceFrameContext'
 import { DemoControlsBar } from '@/components/prototype/DemoControlsBar'
 import { useDemoControlsVisibility } from '@/components/prototype/demoControlsVisibility'
+import { demoSiteControls } from '@/data/demoControlMaturity'
 
 /**
  * The prototype "chrome" — the dark PrototypeBar + the navy stakeholder Demo
@@ -15,6 +17,28 @@ import { useDemoControlsVisibility } from '@/components/prototype/demoControlsVi
  * Self-contained — it only needs the route (for the Demo toggle gate) and the
  * shared Demo-controls visibility store; none of Header's heavy panel state.
  */
+/**
+ * The only demo controls a `?test=1` participant session shows.
+ *
+ * ⚠ `navigation` IS HERE BY DIRECT ASK — 2026-09-23 — and it is the entry to
+ * think twice about. The others on the bar are hidden because they re-baseline
+ * the demo or move a treatment the session is holding still. This one is
+ * different: it is the A/B's own independent variable, so putting it in front
+ * of a participant tells them a comparison exists, which is most of what a
+ * moderated session is trying not to say.
+ *
+ * IT IS IN ANYWAY because switching arms mid-session is worth more than that
+ * risk here: without it, showing someone both versions means reloading and
+ * re-pasting the session link, which breaks the task far more visibly than a
+ * control they were never invited to touch. Moderator discipline — not the
+ * code — is what keeps it unpressed.
+ *
+ * `progress` is the other survivor, for the plainer reason that a moderator
+ * changes it between tasks ("now imagine you are two weeks in").
+ */
+const TEST_VIEW_CONTROLS = ['progress', 'navigation'] as const
+
+
 export function PrototypeChrome() {
   const { pathname, search } = useLocation()
   const { open: demoOpen, toggle: toggleDemo } = useDemoControlsVisibility()
@@ -30,6 +54,13 @@ export function PrototypeChrome() {
   // the flag survives in-shell navigation on the shared link. (After all hooks —
   // rules-of-hooks.)
   const params = new URLSearchParams(search)
+  // `?as=demo` — THE DESIGN SITE'S PREVIEW LENS, 2026-09-24. Renders this build's
+  // controls bar the way the DEMO site would: the `wip` controls drop out, and
+  // the bar says so. It is a lens, not a setting — URL-only, never persisted, and
+  // it changes nothing about the page under the bar. The question it answers is
+  // the one that used to need a second deploy: "what does a stakeholder actually
+  // get?" (No effect on the demo site itself, where the answer is already yes.)
+  const asDemo = params.get('as') === 'demo'
   if (params.get('chrome') === 'off') return null
   // `?present=1` (the "Share Demo" link) — the shared presentation view: hide
   // the prototype bar + demo controls (like `chrome=off`) but keep the Demo
@@ -38,19 +69,74 @@ export function PrototypeChrome() {
   // deep-link init applies the captured demo state (`?tier=&prof=&mem=&prog=&edu=`)
   // even though no controls are shown.
   if (params.get('present') === '1') return <DemoControlsBar open={false} />
+  /*
+   * `?test=1` — THE MODERATED USER-TEST VIEW, 2026-09-23. The link
+   * `promote-to-testing` builds, and the third shape of this bar rather than a
+   * rename of either above it.
+   *
+   * WHAT IT KEEPS, and why it is not `chrome=off`: the dark demo STAGE and the
+   * browser-window frame stay (forced in `DeviceFrameContext`, like
+   * `present=1`), and so does the demo controls bar — carrying the PROGRESS
+   * dropdown and nothing else. The direct ask was to keep the bar and the
+   * background and hide the rest; `chrome=off` removes all three, which is why
+   * it is the wrong tool here even though it looks like the right one.
+   *
+   * WHAT SURVIVES: the two controls a moderator uses DURING a session —
+   * Progress ("now imagine you are two weeks in") and Navigation (switching
+   * the A/B's arms). Everything else either re-baselines the demo (Reset, the
+   * kebab), swaps the whole scenario (Persona, Education) or moves a treatment
+   * the session is holding still (Pacing, Readiness). See
+   * `TEST_VIEW_CONTROLS`, where Navigation's own trade-off is recorded.
+   *
+   * ⚠ A WHITELIST, so it fails CLOSED — see `DemoControlsBar`'s `only`. The
+   * next dropdown added to that bar does NOT appear in test links by default,
+   * which is the right direction for a control a participant must never meet.
+   */
+  if (isTestSession(search)) {
+    return <DemoControlsBar open fullBleed={framed} only={TEST_VIEW_CONTROLS} />
+  }
   // Routes that carry a hide-able stakeholder demo banner (→ show the toggle).
   const showDemoToggle = pathname === '/dashboard-rebrand' || pathname === '/onboarding-flow'
   return (
     <>
       <PrototypeBar
-        adminTools={<AdminToolsMenu />}
+        /*
+         * THE ROBOT IS DESIGN-SITE ONLY — 2026-09-24, the direct ask.
+         *
+         * It is the Admin Tools trigger, and on `/dashboard-rebrand` it opens
+         * the FULL Feature Flag sheet — every flag in the catalog, `wip` ones
+         * included. That is the exact leak the maturity work exists to close:
+         * trimming the demo bar to the finished axes means nothing while a
+         * stakeholder is one click from the raw catalog behind it.
+         *
+         * ⚠ IT IS HIDDEN AT REST, which made it easy to miss. `opacity: 0` with
+         * a hover/focus reveal in tokens.css is not a gate — it is discoverable
+         * by accident, reachable by Tab, and fully clickable the whole time.
+         *
+         * Undefined rather than hidden: the slot is optional, so not passing it
+         * means the button is never in the DOM at all. A `display: none` would
+         * still ship the panel's mount and leave it findable.
+         *
+         * Participant sessions (`?test=1`) already never reach here — that
+         * branch returns above with the demo bar alone and no PrototypeBar.
+         */
+        adminTools={isPublicGateway() ? undefined : <AdminToolsMenu />}
         deviceToggle={<DeviceFrameToggle />}
         demoToggle={
           showDemoToggle ? <DemoControlsToggle active={demoOpen} onToggle={toggleDemo} /> : undefined
         }
         fullBleed={framed}
       />
-      <DemoControlsBar open={demoOpen} fullBleed={framed} />
+      {/* The demo site gets the FINISHED axes only, derived from each control's
+          `maturity` — see `demoSiteControls()`. `undefined` on the design site,
+          which is every control, with the unfinished ones marked. `?as=demo`
+          borrows the demo site's answer without being the demo site. */}
+      <DemoControlsBar
+        open={demoOpen}
+        fullBleed={framed}
+        only={isPublicGateway() || asDemo ? demoSiteControls() : undefined}
+        lens={asDemo}
+      />
     </>
   )
 }

@@ -12,18 +12,16 @@ import { Link, useSearchParams } from 'react-router-dom'
 import {
   PROTOTYPE_FEATURES,
   prototypeFeatureById,
-  type FeatureAccent,
   type PrototypeFeature,
 } from '@/data/prototypeFeatures'
 import { ARCHIVED_ITEMS } from '@/data/archivedItems'
 import { PrototypeFeaturePage } from './PrototypeFeaturePage'
 import { FeaturePreviewThumb } from '@/components/prototype/FeaturePreviewThumb'
+import { GeneratedThumb, THUMB_W, THUMB_H } from '@/components/prototype/GeneratedThumb'
 import { primaryPreviewSrc } from '@/components/prototype/featurePreviewSrc'
 import { ArchiveTable } from '@/components/prototype/ArchiveTable'
 import { QaNotesPanel } from '@/components/prototype/QaNotesPanel'
-import { TodoPanel } from '@/components/prototype/TodoPanel'
 import { DemoPanel, LinksPanel } from '@/components/prototype/LinksPanel'
-import { useTodoOpenCount } from '@/components/prototype/todoStore'
 import { useLinkCount } from '@/data/linkStore'
 import { useDemoCount } from '@/data/demoStore'
 import { useQaNoteCount } from '@/data/qaNoteStore'
@@ -39,6 +37,7 @@ import {
   setFeatureRollupStatus,
   type DevStatus,
   type FeatureStatusKey,
+  isDevelopmentStatus,
 } from '@/components/prototype/devHandoffStatusUtil'
 import {
   getDoneOverrides,
@@ -49,7 +48,6 @@ import {
 import { ActionMenu } from '@/components/ui/ActionMenu'
 import {
   ArrowLeft,
-  ArrowUpRightFromSquare,
   Bolt,
   CalendarDay,
   Check,
@@ -70,8 +68,7 @@ import {
   Share2,
   Sliders,
   Sun,
-  X,
-} from '@/icons'
+  X, HourglassClock} from '@/icons'
 import { Toast } from '@/components/ui/Toast'
 import { PrototypePasswordModal } from '@/components/prototype/PrototypeLock'
 import { isPrototypeUnlocked, markPrototypeUnlocked } from '@/components/prototype/prototypeLockUtil'
@@ -119,22 +116,26 @@ type UxSection =
   | 'links'
   | 'prototypes'
   | 'research'
-  | 'todo'
   | 'design'
   | 'exploration'
-  | 'sandbox'
   | 'development'
   | 'done'
   | 'archive'
   | 'qa-notes'
-  | 'contributing'
 
 /**
- * ONE gate for every restricted section — Design, Exploration, Development,
- * Done and Archive all share this id, so a reviewer types the password once
- * and the whole group opens. (Exploration used to carry its own id and its own
- * hardcoded password, which meant two prompts for one body of work and, worse,
- * a password the Admin tools override could not reach.)
+ * ONE gate for every restricted section — Design, Exploration, Archive and QA
+ * Notes all share this id, so a reviewer types the password once and the whole
+ * group opens. (Sandbox, To Do and Contributing were in this list until they
+ * were archived on 2026-09-29; they shared this id too, so restoring any of
+ * them is a `gate` field copied from a sibling, not a new password.) (Exploration used to
+ * carry its own id and its own hardcoded password, which meant two prompts
+ * for one body of work and, worse, a password the Admin tools override could
+ * not reach.)
+ *
+ * Development and Done shared it too until 2026-09-23, when they were pulled
+ * out and ungated (see the comments on those two `SectionDef`s) so they could
+ * show on the public Demo build under their own "Dev Handoff" eyebrow.
  *
  * The id matches the one the archived tile landing uses, so unlocking on either
  * surface carries to the other. The password itself is not here: it comes from
@@ -193,7 +194,15 @@ const SECTIONS: SectionDef[] = [
     // expected set, in both directions.
     id: 'prototypes',
     label: 'Prototypes',
-    blurb: 'The live product build — where we have landed, at the committed baseline.',
+    /* ⚠ ONE ROW, AND THAT IS THE FEATURE (2026-09-28). Prototypes is the SOURCE
+       OF TRUTH for developers and stakeholders: what the product currently is.
+       A second row destroys the only question this section answers, because
+       everyone then has to ask which one is real. Several things to look at at
+       once belong in REFINEMENT, which takes any number of rows, is authored in
+       the browser, and is visible to stakeholders too (it carries no `gate`).
+       `UxDashboard.smoke.test.tsx` compares this section in both directions. */
+    blurb:
+      'The live product build — where we have landed, at the committed baseline. One row, on purpose: this is the current source of truth.',
   },
   {
     // The REVIEW INBOX, authored on the page (2026-09-18) — labelled
@@ -209,10 +218,21 @@ const SECTIONS: SectionDef[] = [
     // row is in Prototypes now.
     id: 'demo',
     label: 'Refinement',
-    blurb: 'Work in review — branches and explorations the team is discussing. Added on the page, not in code.',
+    /* The counterweight to Prototypes' single row: as many as you like, because
+       nothing here claims to be settled. */
+    blurb:
+      'Work in review — branches, components and explorations the team is discussing. As many as you like; nothing here is the source of truth. Added on the page, not in code.',
   },
   {
-    // Directly under Refinement and UNGATED, which is the decision in this entry.
+    id: 'research',
+    label: 'Research',
+    blurb: 'The reasoning behind the designs — one entry per decision.',
+    count: RESEARCH_DECISIONS,
+  },
+  {
+    // UNGATED, which is the decision in this entry. (It sat directly under
+    // Refinement until 2026-09-29; Research is between them now. The ordering
+    // was never the point — being ungated is.)
     // Prototypes is the passwordless front door and this sits beside it, so a
     // link added here is a link a stakeholder can reach unaccompanied — the
     // same consideration `UxDashboard.smoke.test.tsx` guards for Prototypes'
@@ -232,12 +252,6 @@ const SECTIONS: SectionDef[] = [
     blurb: 'Everything that lives elsewhere — briefs, boards, builds and references. Added on the page, not in code.',
   },
   {
-    id: 'research',
-    label: 'Research',
-    blurb: 'The reasoning behind the designs — one entry per decision.',
-    count: RESEARCH_DECISIONS,
-  },
-  {
     id: 'design',
     label: 'Design',
     blurb: 'In exploration or in design — decisions still open.',
@@ -249,31 +263,32 @@ const SECTIONS: SectionDef[] = [
     blurb: 'Outside products and ideas rebuilt on our tokens, components and UX conventions.',
     gate: { id: DEV_GATE_ID, title: 'Exploration' },
   },
+  // ARCHIVED 2026-09-29 — Sandbox stood here, between Exploration and
+  // Development. Unwired, not deleted: see the `sandbox-section` row in
+  // `src/data/archivedItems.ts`.
   {
-    // Raw HTML being worked on directly, rather than anything in the React
-    // pipeline — which is why it sits beside Exploration rather than in the
-    // Design → Development → Done run.
-    id: 'sandbox',
-    label: 'Sandbox',
-    blurb:
-      'Standalone HTML files in active development — opened, edited and reloaded directly, outside the app build.',
-    gate: { id: DEV_GATE_ID, title: 'Sandbox' },
-  },
-  {
+    // UNGATED since 2026-09-23, at Jillienne's request — Development and Done
+    // moved out of the shared `design-and-development` gate and now sit under
+    // their own "Dev Handoff" eyebrow (see `NAV_EYEBROWS` below), visible on
+    // the PUBLIC build for the first time. Design and Exploration keep their
+    // gate and stay exactly where they are — this only pulls Development and
+    // Done out of that group, nothing else in it moved. (Sandbox was in that
+    // sentence too until it was archived on 2026-09-29.)
     id: 'development',
     label: 'Development',
     blurb: 'Specified and handed off, in build, or under test.',
-    gate: { id: DEV_GATE_ID, title: 'Development' },
   },
   {
     // Finished work, pulled out of the pipeline sections so those show only
     // what is still moving. Done is a STATE, not a stage, which is why it
     // outranks everything else in `sectionOf` — a feature that is done is done
     // whatever its devStatus says.
+    //
+    // UNGATED alongside Development, same reasoning and same date — see the
+    // comment there.
     id: 'done',
     label: 'Done',
     blurb: 'Finished and signed off — kept for reference, not in flight.',
-    gate: { id: DEV_GATE_ID, title: 'Done' },
   },
   {
     // Last, and gated like the rest of the restricted group — the archive used
@@ -304,34 +319,10 @@ const SECTIONS: SectionDef[] = [
     // No `count` here: findings can be authored on the page, so a static number
     // is wrong as soon as one is added. Supplied live below, like To Do's.
   },
-  {
-    // Last in the restricted group, and gated with the same id as the rest, so
-    // it opens with the one password the group already shares rather than
-    // adding a second prompt. Its count is the number of OPEN items, supplied
-    // live by `useTodoOpenCount` — not the static `count` field, which cannot
-    // change as items are ticked off.
-    id: 'todo',
-    label: 'To Do',
-    blurb: 'Upcoming projects and loose ends — paste them in, tag a stage, drag to rank.',
-    gate: { id: DEV_GATE_ID, title: 'To Do' },
-  },
-  {
-    // The designer guide (2026-09-18) — how a second designer gets work onto
-    // this dashboard: clone, branch, flag, push, Refinement, promote. It is a
-    // static page (`public/contributing/index.html`, with a PDF beside it)
-    // shown here in an iframe, so the same document is the section, the
-    // standalone page and the download, and none of the three can drift.
-    //
-    // GATED, and last: it describes the team's working process, which is not
-    // for stakeholders — they get `/about/` from the link at the foot of this
-    // rail instead. The public build 404s `/contributing/*` at the edge too
-    // (`scripts/public-redirects.mjs`), because a client-side gate cannot hide
-    // a static file.
-    id: 'contributing',
-    label: 'Contributing',
-    blurb: 'How to get your work onto this dashboard — clone, branch, push, add to Refinement, promote.',
-    gate: { id: DEV_GATE_ID, title: 'Contributing' },
-  },
+  // ARCHIVED 2026-09-29 — the To Do and Contributing sections stood here, last
+  // in the restricted group. Both are unwired, not deleted: see the `todo-section`
+  // and `contributing-section` rows in `src/data/archivedItems.ts` for the
+  // re-wire, and note that neither of their documents/stores was touched.
 ]
 
 /**
@@ -354,8 +345,29 @@ const VISIBLE_SECTIONS: SectionDef[] = isPublicGateway()
 const DEFAULT_SECTION: UxSection = 'prototypes'
 
 /** Where the divider goes — the first restricted section. `-1` on the public
- *  build, so the divider and its "UX & Dev Access" eyebrow never draw. */
+ *  build, so the divider and its "Designers" eyebrow never draw. */
 const FIRST_RESTRICTED = VISIBLE_SECTIONS.findIndex((s) => s.gate)
+
+/**
+ * Eyebrow labels drawn above specific ungated rows in the nav rail, added
+ * 2026-09-23 for the public Demo build — keyed by section id rather than
+ * index, so reordering `SECTIONS` cannot silently leave a label on the wrong
+ * row. Each names the row it sits directly above:
+ *
+ *   Demo             → Prototypes
+ *   Design & Research → Refinement, Research, Other Links
+ *   Dev Handoff      → Development, Done
+ *
+ * Deliberately separate from `FIRST_RESTRICTED` / "Designers" below,
+ * which is computed rather than authored here — that one has to keep finding
+ * whichever section is first to still carry a `gate`, and stays untouched by
+ * this table.
+ */
+const NAV_EYEBROWS: Partial<Record<UxSection, string>> = {
+  prototypes: 'Demo',
+  demo: 'Design & Research',
+  development: 'Dev Handoff',
+}
 
 /** `?section=` values the OLD tile landing wrote, mapped onto the new sections.
  *  Feature gateways still link back with these ("← Back"), and links already
@@ -464,6 +476,8 @@ type NavPalette = {
   border: string
   fg: string
   muted: string
+  /** The appearance's own accent, in the polarity the RAIL needs. */
+  eyebrow: string
   activeBg: string
   activeFg: string
   countBg: string
@@ -477,6 +491,7 @@ const NAV: NavPalette = {
   border: 'var(--ux-nav-border)',
   fg: 'var(--ux-nav-fg)',
   muted: 'var(--ux-nav-muted)',
+  eyebrow: 'var(--ux-nav-eyebrow)',
   activeBg: 'var(--ux-nav-active)',
   activeFg: 'var(--ux-nav-active-fg)',
   countBg: 'var(--ux-nav-count)',
@@ -541,6 +556,7 @@ const MOSS_DARK_NAV: UxVars = {
   '--ux-nav-border': '#3D4842',
   '--ux-nav-fg': '#C8D7D2',
   '--ux-nav-muted': '#8D9F98',
+  '--ux-nav-eyebrow': '#A0AE7B',
   '--ux-nav-active': '#336361',
   /* Always-white, not a theme token: this rail is dark in every appearance. */
   '--ux-nav-active-fg': '#FFFFFF',
@@ -560,6 +576,7 @@ const MOSS_LIGHT_NAV: UxVars = {
   '--ux-nav-border': '#C1D3CC',
   '--ux-nav-fg': INK,
   '--ux-nav-muted': '#535955',
+  '--ux-nav-eyebrow': MOSS,
   '--ux-nav-active': '#336563',
   '--ux-nav-active-fg': '#FFFFFF',
   '--ux-nav-count': '#EAF0EE',
@@ -679,6 +696,7 @@ const EMBER_DARK_NAV: UxVars = {
   '--ux-nav-border': '#1E313E',
   '--ux-nav-fg': '#DDE4E5',
   '--ux-nav-muted': '#AABCBE',
+  '--ux-nav-eyebrow': '#DAA459',
   /* The full blue, not a mix: on a rail this deep it reads as a lit row. */
   '--ux-nav-active': BLUE,
   '--ux-nav-active-fg': '#FFFFFF',
@@ -693,6 +711,7 @@ const EMBER_LIGHT_NAV: UxVars = {
   '--ux-nav-border': '#B4C4C5',
   '--ux-nav-fg': '#071A2F',
   '--ux-nav-muted': '#3E4C5D',
+  '--ux-nav-eyebrow': BRICK,
   '--ux-nav-active': BLUE,
   '--ux-nav-active-fg': '#FFFFFF',
   '--ux-nav-count': '#E6EBEC',
@@ -795,6 +814,7 @@ const TIDE_DARK_NAV: UxVars = {
   '--ux-nav-border': '#22343D',
   '--ux-nav-fg': LINEN,
   '--ux-nav-muted': STEEL,
+  '--ux-nav-eyebrow': AQUA,
   '--ux-nav-active': '#2A607F',
   '--ux-nav-active-fg': '#FFFFFF',
   '--ux-nav-count': '#22343D',
@@ -808,6 +828,7 @@ const TIDE_LIGHT_NAV: UxVars = {
   '--ux-nav-border': '#B8D2DE',
   '--ux-nav-fg': TIDE_INK,
   '--ux-nav-muted': '#45555E',
+  '--ux-nav-eyebrow': '#415E5D',
   '--ux-nav-active': '#275A77',
   '--ux-nav-active-fg': '#FFFFFF',
   '--ux-nav-count': '#F3F2EF',
@@ -908,6 +929,7 @@ const FERN_DARK_NAV: UxVars = {
   '--ux-nav-border': '#2D303D',
   '--ux-nav-fg': PALEMINT,
   '--ux-nav-muted': '#B8D0CC',
+  '--ux-nav-eyebrow': LIME,
   '--ux-nav-active': '#43685F',
   '--ux-nav-active-fg': '#FFFFFF',
   '--ux-nav-count': '#2D303D',
@@ -921,6 +943,7 @@ const FERN_LIGHT_NAV: UxVars = {
   '--ux-nav-border': '#C3DED3',
   '--ux-nav-fg': '#2B3459',
   '--ux-nav-muted': '#4E5678',
+  '--ux-nav-eyebrow': '#3A5A52',
   '--ux-nav-active': INDIGO,
   '--ux-nav-active-fg': '#FFFFFF',
   '--ux-nav-count': '#EDF8F3',
@@ -1036,22 +1059,33 @@ function sectionOf(
   if (isDone ?? f.done) return 'done'
   const status = effective && effective !== 'mixed' ? effective : f.devStatus
   if (status) {
-    return status === 'ready-for-dev' || status === 'in-development' || status === 'blocked'
-      ? 'development'
-      : 'design'
+    // One resolver, in devHandoffStatusUtil beside the labels and colours — see
+    // `isDevelopmentStatus`, and the note there on why `not-ready` is in it.
+    return isDevelopmentStatus(status) ? 'development' : 'design'
   }
   // The product build. `demo` / `dashboard` are the LMS's names for the same
   // thing and route here too; nothing routes to the Demo SECTION, which is a
   // panel authored on the page rather than a list of rows (2026-09-18).
   if (f.category === 'prototype' || f.category === 'demo' || f.category === 'dashboard') return 'prototypes'
   if (f.category === 'testing') return 'development'
+  /* A dev handoff belongs on the Development board even with no authored
+     status — paired with the `not-ready` default in `featureStatusKeyOf`, that
+     means forgetting to author one puts the row in front of engineering marked
+     "don't start", rather than hiding it in Design where they never look. */
+  if (f.category === 'dev-handoff') return 'development'
   // Ported outside products get their own section rather than sitting in Design
   // — they are a different kind of thing, and they carry their own gate.
   if (f.category === 'exploration') return 'exploration'
-  // Standalone HTML being worked on directly. Checked here, AFTER `devStatus`,
-  // for the same reason exploration is: a status can only mean Design or
-  // Development, so authoring one on a sandbox row would drag it out of here.
-  if (f.category === 'sandbox') return 'sandbox'
+  // ARCHIVED 2026-09-29 — the Sandbox SECTION is gone, but `'sandbox'` stays in
+  // `FeatureCategory` because that union is verbatim from the LMS (CLAUDE.md,
+  // "Data files"), so a row ported carrying it must still compile.
+  //
+  // THIS BRANCH IS DELIBERATELY EXPLICIT RATHER THAN DELETED. Delete it and the
+  // category falls through to the `return 'design'` below, reaching the same
+  // place — which is the silent failure `archive-a-feature` warns about: it
+  // type-checks, it passes, and nobody can tell "routed here on purpose" from
+  // "routed here because the branch that caught it is gone". One line to say so.
+  if (f.category === 'sandbox') return 'design'
   return 'design'
 }
 
@@ -1290,7 +1324,6 @@ export function UxDashboardPage() {
 
   /** Live open-item count for the To Do nav badge. Kept out of this component's
    *  state so the page does not have to own the list. */
-  const todoOpen = useTodoOpenCount()
   /** Live finding count for the QA Notes badge — the committed set plus whatever
    *  has been authored on the page. */
   const qaCount = useQaNoteCount()
@@ -1312,18 +1345,14 @@ export function UxDashboardPage() {
       // stays empty by design and the nav count comes from `useLinkCount`.
       links: [],
       research: [],
-      todo: [],
       design: [],
       exploration: [],
-      sandbox: [],
       development: [],
       done: [],
       archive: [],
       // Not a list of features — the QA panel owns its own data, so this stays
       // empty by design and the nav count comes from the `count` field.
       'qa-notes': [],
-      // A static guide in an iframe; nothing to count.
-      contributing: [],
     }
     for (const f of PROTOTYPE_FEATURES) {
       out[sectionOf(f, rollupOf(f), done[f.id] ?? !!f.done)].push(f)
@@ -1389,8 +1418,19 @@ export function UxDashboardPage() {
           {/* The mark stays a single tile beside a two-line lockup, rather than
               sitting above a sub-line indented past it. */}
           <span style={brandTextStyle}>
-            UX Dashboard
-            <span style={{ ...brandSubStyle, color: nav.muted }}>XCEL LMS</span>
+            UX Hub
+            <span style={{ ...brandSubStyle, color: nav.muted }}>XCEL LMS &amp; Compass Learning</span>
+            {/* WHICH DASHBOARD YOU ARE ON — 2026-09-24. The two builds are
+                otherwise told apart only by which sections are in the rail,
+                which you have to already know to read. `isPublicGateway()` is
+                the same switch that decides what is in it.
+
+                It takes the eyebrow accent rather than the muted grey, so the
+                lockup's third line reads as a LABEL for the rail beneath it
+                rather than as a quieter second sub-line. */}
+            <span style={{ ...brandSubStyle, color: nav.eyebrow, fontWeight: 700 }}>
+              {isPublicGateway() ? 'Demo Link' : 'Design Link'}
+            </span>
           </span>
         </div>
         {/* Same rule as the one above the restricted group, so the rail reads as
@@ -1399,28 +1439,40 @@ export function UxDashboardPage() {
         <nav style={navListStyle}>
           {VISIBLE_SECTIONS.map((s, i) => {
             const active = s.id === section
-            // To Do's count is the live number of OPEN items, not a feature
-            // tally — `bySection.todo` is always empty by design.
             const count =
-              s.id === 'todo'
-                ? todoOpen
-                : s.id === 'qa-notes'
-                  ? qaCount
-                  : s.id === 'links'
-                    ? linkCount
-                    : s.id === 'demo'
-                      ? demoCount
+              s.id === 'qa-notes'
+                ? qaCount
+                : s.id === 'links'
+                  ? linkCount
+                  : s.id === 'demo'
+                    ? demoCount
                       : (s.count ?? bySection[s.id].length)
             const locked = Boolean(s.gate) && !isOpen(s)
             return (
               <div key={s.id}>
+                {/* NAV_EYEBROWS rows first — authored, by id, above specific
+                    ungated sections (Demo, Design & Research, Dev Handoff).
+                    The very first row (Prototypes) skips the rule: the brand
+                    divider above the <nav> already separates it. */}
+                {NAV_EYEBROWS[s.id] && (
+                  <>
+                    {i > 0 && <hr style={{ ...dividerStyle, borderTopColor: nav.border }} />}
+                    <p style={{ ...navEyebrowStyle, color: nav.eyebrow }}>{NAV_EYEBROWS[s.id]}</p>
+                  </>
+                )}
                 {/* The divider and its eyebrow are drawn ONCE, before the first
                     restricted section, so adding another restricted section
                     below needs no change here. */}
                 {i === FIRST_RESTRICTED && (
                   <>
                     <hr style={{ ...dividerStyle, borderTopColor: nav.border }} />
-                    <p style={{ ...navEyebrowStyle, color: nav.muted }}>UX &amp; Dev Access</p>
+                    {/* "Designers", not "UX & Dev Access" — 2026-09-24. The
+                        old label named the GATE (who can get in); this names
+                        the audience, like the three eyebrows above it — Demo,
+                        Design & Research, Dev Handoff all say who a group is
+                        for. It only ever draws on the full build, so it is the
+                        design dashboard's own word for its own sections. */}
+                    <p style={{ ...navEyebrowStyle, color: nav.eyebrow }}>Designers</p>
                   </>
                 )}
                 <button
@@ -1457,23 +1509,6 @@ export function UxDashboardPage() {
             )
           })}
         </nav>
-        {/* The stakeholder guide — `public/about/index.html`, "How to read
-            this dashboard". OUTSIDE the <nav> so it is not a section, and on
-            EVERY build: on the public site it is the orientation a reviewer
-            with the link gets, and on the full site it is how the team
-            previews what stakeholders are told. Its designer twin is the
-            gated Contributing section above. */}
-        <a
-          href="/about/"
-          target="_blank"
-          rel="noopener"
-          style={{ ...aboutLinkStyle, color: nav.muted }}
-          className="cre-uxnav-about"
-        >
-          <span style={{ minWidth: 0 }}>How to read this dashboard</span>
-          <ArrowUpRightFromSquare size={11} aria-hidden style={{ flex: 'none' }} />
-          <span className="cre-visually-hidden"> (opens in a new tab)</span>
-        </a>
         <div ref={themeRef} style={themeWrapStyle}>
           <button
             type="button"
@@ -1483,16 +1518,12 @@ export function UxDashboardPage() {
             style={{ ...themeBtnStyle, color: nav.muted, borderColor: nav.border }}
           >
             <Sliders size={14} aria-hidden style={{ flex: 'none' }} />
-            {/* Two values in a 232px rail: "Appearance  Moss · Hybrid" wrapped
-                mid-value and pushed the control taller, so the label sits above
-                the value rather than beside it. */}
-            <span style={themeBtnBodyStyle}>
-              <span style={themeBtnLabelStyle}>Appearance</span>
-              <span style={{ ...themeCurrentStyle, color: nav.fg }}>
-                {PALETTE_META.find((pal) => pal.id === palette)!.label} ·{' '}
-                {THEMES.find((t) => t.id === theme)!.label}
-              </span>
-            </span>
+            {/* The label alone since 2026-09-29. It used to show the current
+                value under it ("Fern · Hybrid"), which is the one fact a reader
+                can already SEE — the whole page is rendered in it. The menu
+                still marks which is active, so nothing is lost by not naming it
+                here, and the control drops from two lines to one. */}
+            <span style={themeBtnLabelStyle}>Appearance</span>
           </button>
           {themeOpen && (
             <div role="menu" aria-label="Appearance" style={themeMenuStyle}>
@@ -1596,10 +1627,6 @@ export function UxDashboardPage() {
           // `LinkBoardPanel`. Read-only and filtered to public rows on the
           // public build; that asymmetry is the review gate.
           <DemoPanel prefill={demoPrefill} onPrefillConsumed={consumeDemoPrefill} />
-        ) : section === 'todo' ? (
-          <TodoPanel />
-        ) : section === 'contributing' ? (
-          <GuideFrame src="/contributing/" title="Contributing to the dashboard" />
         ) : section === 'archive' ? (
           <div style={ARCHIVE_BRIDGE}>
             <ArchiveTable />
@@ -1649,23 +1676,7 @@ export function UxDashboardPage() {
 
             {rows.length === 0 ? (
               <p style={emptyStyle}>
-                {q ? (
-                  `Nothing matches “${query}”.`
-                ) : section === 'sandbox' ? (
-                  // Names the field rather than just reporting emptiness — same
-                  // convention as the feature gateway's empty tabs.
-                  <>
-                    Nothing here yet. Add a row to{' '}
-                    <code style={codeStyle}>PROTOTYPE_FEATURES</code> with{' '}
-                    <code style={codeStyle}>category: 'sandbox'</code> and an{' '}
-                    <code style={codeStyle}>externalUrl</code> pointing at the file (e.g.{' '}
-                    <code style={codeStyle}>/prototypes/my-file.html</code>). Leave{' '}
-                    <code style={codeStyle}>devStatus</code> off — it would move the row to Design or
-                    Development.
-                  </>
-                ) : (
-                  'Nothing in this section yet.'
-                )}
+                {q ? `Nothing matches “${query}”.` : 'Nothing in this section yet.'}
               </p>
             ) : (
               <div style={listStyle}>
@@ -1724,6 +1735,10 @@ const STATUS_MENU_GLYPH: Record<DevStatus, typeof Lightbulb> = {
   'in-design': Lightbulb,
   'needs-discussion': MessageCircle,
   blocked: LockSolid,
+  /* An hourglass, not a second lock: `blocked` means something is stopping this
+     and `not-ready` means it is not finished yet. Paired against
+     `ready-for-dev`'s CircleCheck, the two read as the opposites they are. */
+  'not-ready': HourglassClock,
   'ready-for-dev': CircleCheck,
   'in-development': Bolt,
 }
@@ -1866,10 +1881,10 @@ function ProjectRow({
           style={{ flex: 'none' }}
         />
       ) : (
-        <span aria-hidden style={{ ...thumbStyle, ...ACCENT_THUMB[feature.accent] }}>
+        <GeneratedThumb accent={feature.accent}>
           {/* Scales with the tile — a 20px glyph swims in a 160x110 panel. */}
           <Icon size={34} />
-        </span>
+        </GeneratedThumb>
       )}
 
       <span style={bodyStyle}>
@@ -1946,9 +1961,26 @@ function ProjectRow({
           {inner}
         </Link>
       )}
-      <span style={{ flex: 'none' }}>
-        <ActionMenu label={`Actions for ${feature.title}`} items={items} />
-      </span>
+      {/*
+        THE ROW KEBAB IS DESIGN-SITE ONLY — 2026-09-24, the direct ask.
+
+        Every item behind it is a DESIGN action: the six dev-cycle statuses,
+        Clear status, Mark done, Copy link. A stakeholder on the demo site has
+        no reason to set "Ready for Dev" on anything, and every one of those
+        writes persists (localStorage `cgp.devHandoffStatus` /
+        `cgp.prototypeDone`) and OVERRIDES the authored `devStatus` — so a
+        stray click there silently moves a row between Design and Development
+        for that person, with nothing on the page explaining why.
+
+        ⚠ Not rendered at all, rather than disabled: a greyed kebab invites the
+        question "why can't I?", which is a conversation the demo is not for.
+        Same call as the admin robot.
+      */}
+      {!isPublicGateway() && (
+        <span style={{ flex: 'none' }}>
+          <ActionMenu label={`Actions for ${feature.title}`} items={items} />
+        </span>
+      )}
       <Toast open={copied} onClose={() => setCopied(false)} title="Link copied" tone="success">
         {external ? href : `${window.location.origin}${href}`}
       </Toast>
@@ -1979,9 +2011,9 @@ function ProjectRow({
  *
  *   <Link to="/research-rationale" style={{ ...rowStyle, background: 'var(--ux-card)',
  *     borderBottom: 'none', borderRadius: 'var(--radius-lg)' }}>
- *     <span aria-hidden style={{ ...thumbStyle, ...ACCENT_THUMB.teal }}>
+ *     <GeneratedThumb accent="teal">
  *       <Lightbulb size={34} />
- *     </span>
+ *     </GeneratedThumb>
  *     <span style={bodyStyle}>
  *       <span style={nameStyle}>XCEL</span>
  *       <span style={blurbStyle}>The UX research and reasoning behind these
@@ -2013,39 +2045,6 @@ function ResearchPanel() {
         from it and restore the row documented above this component.
       </p>
     </div>
-  )
-}
-
-/**
- * A static guide rendered in place — the Contributing section. The document
- * is `public/contributing/index.html`, which is ALSO the standalone page and
- * the source the PDF beside it is rendered from, so showing it in an iframe
- * here rather than re-typing it as JSX is what keeps the three from drifting
- * (the `ComponentLivePreview` argument: the preview is data). The guide is
- * self-contained — system fonts, its own stylesheet, light/dark from the OS —
- * so it does not follow this page's palette, and that is accepted: it is a
- * document, and it prints.
- *
- * Height: the shell's main column scrolls, so the frame is sized to the
- * viewport minus the header above it rather than to its content — an iframe
- * cannot report its content height cross-document without a script, and a
- * fixed generous height would leave a long empty tail on short guides.
- */
-function GuideFrame({ src, title }: { src: string; title: string }) {
-  return (
-    <iframe
-      src={src}
-      title={title}
-      style={{
-        display: 'block',
-        width: '100%',
-        height: 'calc(100vh - 220px)',
-        minHeight: 480,
-        border: '1px solid var(--ux-border)',
-        borderRadius: 'var(--radius-lg)',
-        background: 'var(--ux-card)',
-      }}
-    />
   )
 }
 
@@ -2194,26 +2193,17 @@ const navCountStyle: CSSProperties = {
   textAlign: 'center',
 }
 
-/** The "How to read this dashboard" link, sitting directly above Appearance at
- *  the foot of the rail. `marginTop: auto` is on THIS element now rather than
- *  on the Appearance wrap, so the two travel to the foot together. Same 12.5px
- *  and muted ink as the Appearance button so the foot reads as one quiet
- *  group of chrome under the sections. */
-const aboutLinkStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 6,
-  margin: 'auto 0 8px',
-  padding: '6px 12px',
-  fontSize: 12.5,
-  textDecoration: 'none',
-  borderRadius: 'var(--radius-md)',
-}
-
-/** Sits under the About link at the foot of the rail. It used to carry the
- *  `margin-top: auto` itself (and before that shared it with a footer
- *  paragraph); the About link above takes it now. */
-const themeWrapStyle: CSSProperties = { position: 'relative' }
+/**
+ * The foot of the rail, and the only thing left down there since the "How to
+ * read this dashboard" link was removed on 2026-09-29.
+ *
+ * `marginTop: auto` IS LOAD-BEARING and it has now moved three times: this
+ * element → a footer paragraph → the About link → back here. Whatever is last
+ * in the rail has to carry it, or the foot group stops being a foot group and
+ * rides up under the sections. Removing the About link without moving this back
+ * would have looked like a layout bug with no obvious cause.
+ */
+const themeWrapStyle: CSSProperties = { position: 'relative', marginTop: 'auto' }
 
 const themeBtnStyle: CSSProperties = {
   display: 'flex',
@@ -2229,28 +2219,16 @@ const themeBtnStyle: CSSProperties = {
   textAlign: 'left',
   cursor: 'pointer',
 }
-
-const themeBtnBodyStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 1,
-  minWidth: 0,
-}
-
+/** 10px uppercase at 75% opacity was right while this was an EYEBROW over the
+ *  current value — small and quiet so the value below it read first. With the
+ *  value gone it is the button's own label, and an eyebrow with nothing under
+ *  it just looks like faint text. It takes the button's size and weight now,
+ *  matching the rail rows above it. */
 const themeBtnLabelStyle: CSSProperties = {
-  fontSize: 10,
-  fontWeight: 700,
-  letterSpacing: '0.06em',
-  textTransform: 'uppercase',
-  opacity: 0.75,
+  fontWeight: 600,
+  letterSpacing: '0.01em',
 }
 
-const themeCurrentStyle: CSSProperties = {
-  fontWeight: 700,
-  whiteSpace: 'nowrap',
-  overflow: 'hidden',
-  textOverflow: 'ellipsis',
-}
 
 /** Opens upward — the trigger sits at the foot of the nav, so a downward menu
  *  would fall off the bottom of the viewport. */
@@ -2411,8 +2389,6 @@ const statusDotStyle: CSSProperties = { width: 7, height: 7, borderRadius: '50%'
 
 const countStyle: CSSProperties = { marginLeft: 'auto', fontSize: 12.5, color: 'var(--ux-text-2)' }
 
-const codeStyle: CSSProperties = { fontFamily: 'ui-monospace, monospace', fontSize: 12 }
-
 const listStyle: CSSProperties = {
   border: '1px solid var(--ux-border)',
   borderRadius: 'var(--radius-lg)',
@@ -2451,51 +2427,6 @@ const rowWrapStyle: CSSProperties = {
   padding: '14px 12px 14px 18px',
   borderBottom: '1px solid var(--ux-border)',
   transition: 'background 120ms',
-}
-
-/** 160x110 — a real preview rather than a marker. The aspect is kept at exactly
- *  64/44 so the crop a capture gets is unchanged; only the scale moved. This is
- *  what sets the row height now (the text block is ~62px), so the list runs
- *  taller: 14 rows go from roughly 1160px to 1930px. That is the trade for
- *  being able to recognise a project by its screenshot. */
-const THUMB_W = 160
-const THUMB_H = 110
-
-const thumbStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: THUMB_W,
-  height: THUMB_H,
-  flex: 'none',
-  borderRadius: 'var(--radius-md)',
-  border: '1px solid var(--ux-border)',
-}
-
-/** Accent → thumbnail fill + glyph. Tinted brand surfaces, so a row reads as
- *  belonging to a family without needing a real screenshot. */
-/* A feature's `accent` still picks its thumbnail, but the four hues are now the
-   palette's own rather than the brand ramps — a teal/gold/blue set inside a
-   moss-green page read as four foreign objects. The tint is mixed into the card
-   so it follows the appearance, and each hue carries a per-mode foreground
-   (`--ux-hue-*-fg`) picked to clear 3:1 on its own tint. */
-const ACCENT_THUMB: Record<FeatureAccent, CSSProperties> = {
-  teal: {
-    background: 'color-mix(in srgb, var(--ux-hue-teal) 20%, var(--ux-card))',
-    color: 'var(--ux-hue-teal-fg)',
-  },
-  gold: {
-    background: 'color-mix(in srgb, var(--ux-hue-gold) 20%, var(--ux-card))',
-    color: 'var(--ux-hue-gold-fg)',
-  },
-  blue: {
-    background: 'color-mix(in srgb, var(--ux-hue-blue) 20%, var(--ux-card))',
-    color: 'var(--ux-hue-blue-fg)',
-  },
-  neutral: {
-    background: 'color-mix(in srgb, var(--ux-hue-neutral) 26%, var(--ux-card))',
-    color: 'var(--ux-hue-neutral-fg)',
-  },
 }
 
 const bodyStyle: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 3, minWidth: 0 }

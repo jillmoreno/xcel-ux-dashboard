@@ -7,7 +7,7 @@ import { useCourseLauncher } from '@/components/layout/CourseLauncherContext'
 import { useDeviceFrame } from '@/components/layout/DeviceFrameContext'
 import type { CourseCardData } from '@/components/courses/CourseCard'
 import type { LearningPathSummary } from '@/data/learningFixtures'
-import { statusTreatment, displayedProgressPct, timeRemaining, resolveRenewal, type HomeStatus, CURRENT_LEARNING_EYEBROW } from '@/components/learning/learningPathsHomeUtil'
+import { statusTreatment, displayedProgressPct, timeRemaining, resolveRenewal, type HomeStatus, CURRENT_LEARNING_EYEBROW, timeRemainingText} from '@/components/learning/learningPathsHomeUtil'
 import { myCoursesFor, FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 import { ProgressDonut, CategoryBars } from '@/components/learning/progressGauge'
 import { ProgressBar } from '@/components/ui/ProgressBar'
@@ -21,6 +21,7 @@ import { ScheduleExamBanner, StudyJourneyWidget } from '@/components/learning/St
 import { StatusStrip } from '@/components/learning/LearningPathDetailPanel'
 import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
 import { JumpBackInWidget } from '@/components/learning/JumpBackInWidget'
+import { CourseEntryCard } from '@/components/learning/CourseEntryCard'
 import { StudyPaceTile } from '@/components/learning/StudyPaceTile'
 import { NY_LH_CURRENT_CHAPTER, NY_LH_CURRENT_LESSON_PART } from '@/data/nyProducerRequirements'
 import {
@@ -441,6 +442,18 @@ export function LearnerFocusedBand({
   // The band's own percentage, now shared — the Readiness page shows the same
   // figure and reading `path.progressPct` there put the two a point apart.
   const percent = displayedProgressPct(path)
+  /*
+   * COMBINED COURSE ENTRY — `course-entry-style: combined`, 2026-09-28.
+   *
+   * Read HERE rather than in `MembershipOverview` because everything the card
+   * needs already is here: the lesson number, the resume handler with the
+   * launcher context, the day count and the two lesson figures. Building it up
+   * there would mean a second derivation of "17 days" and "26 of 42", and the
+   * whole claim of this A/B is that only the LAYOUT differs.
+   */
+  const combinedEntry = useFeatureFlag('course-entry-style').variant === 'combined'
+  /* Off by default — see `showDetails` on the card for why. */
+  const entryDetails = useFeatureFlag('course-entry-details').enabled
   // Dashboard breakdown rule: the segmented gauge + bars render ONLY for
   // exactly two categories; more than two show the overall % here and the full
   // list in the detail panel.
@@ -627,7 +640,27 @@ export function LearnerFocusedBand({
      `paceOnly` arrangement Readiness is already dropped, so the row would
      render as an empty 18px gap above the Jump Back In card. Both halves gone
      means no row. */
-  const paceTiles = onPage && !(renewalReady && paceOnly)
+  /*
+   * HIDE STUDY PACE — `study-pace-hidden`, 2026-09-28. Off by default.
+   *
+   * ⚠ IT REUSES THE `renewalReady` PATH rather than adding a second one. A
+   * completed course already removes this tile and already answers both layout
+   * questions it raises — on Testing the tile owns the row, so the row goes;
+   * on the pair, Readiness stays and takes the full width. Two code paths for
+   * one outcome is how the pair layout ends up disagreeing with itself.
+   */
+  /* ⚠ THE HOOK CALL IS ITS OWN LINE, not the right-hand side of a `||`. `||`
+     short-circuits, so `renewalReady || useFeatureFlag(...)` SKIPS the hook
+     whenever the course is complete — a conditional hook, and React's hook
+     order breaks the moment that value flips. Written that way for about a
+     minute; the rule is worth the extra line. */
+  const paceHiddenFlag = useFeatureFlag('study-pace-hidden').enabled
+  /* NOT ON THE ATLAS HOME (merged 2026-10-02): its Study Pace card is part of
+     the Atlas design (the brand's hover fill, the Primary 200 stroke), so the
+     baseline's hiding flag does not reach it. */
+  const paceHidden = paceHiddenFlag && !framedPace
+  const paceGone = renewalReady || paceHidden
+  const paceTiles = onPage && !(paceGone && paceOnly)
   const clpBigNumber = onPage && barInHeader && clpStyle === 'big-number'
   const clpNavy = onPage && barInHeader && clpStyle === 'navy'
   // Ink for the navy card. The page values are near-black and would vanish on
@@ -684,8 +717,45 @@ export function LearnerFocusedBand({
    * Still NOT invented: per-lesson timing. The reference reads "· 14 minutes
    * left" and nothing knows how long a lesson takes; a test forbids it.
    */
+  /* The combined arm swaps the card at the same slot, so everything that
+     decides WHETHER a resume card renders at all still decides it — the flag
+     only changes which one. */
   const resumeInline =
-    onPage && resume && !clpNavy && !hideResume ? (
+    onPage && resume && !clpNavy && !hideResume && combinedEntry ? (
+      <CourseEntryCard
+        courseTitle={path.title}
+        cover={resume.imageUrl ?? getCourseImage(resume.id)}
+        percent={percent}
+        /* The SAME figures the split header prints, built from the same values
+           a few lines up — not a second derivation. */
+        stats={[
+          { value: timeRemainingText(weeksLeft), caption: 'To complete course' },
+          ...(totalRequired > 0
+            ? [
+                {
+                  /* `unit` itself is declared further down, so this reads the same
+                     source it reads — one fallback, not two spellings of it. */
+                  value: `${totalCompleted} of ${totalRequired} ${path.unitLabel ?? 'hrs'}`,
+                  caption: 'Completed',
+                },
+              ]
+            : []),
+        ]}
+        lessonsCompleted={totalCompleted}
+        complete={renewalReady}
+        showDetails={entryDetails}
+        onDetails={onViewDetails}
+        onResume={() =>
+          launcher.open(resume.id, {
+            title: path.title,
+            percentComplete: percent,
+            lessonNumber: totalCompleted + 1,
+            completedLessons: totalCompleted,
+            totalLessons: totalRequired || path.hours,
+          })
+        }
+      />
+    ) : onPage && resume && !clpNavy && !hideResume ? (
       <JumpBackInWidget
         course={resume}
         /* ALWAYS THE NEXT LESSON, including the first — 2026-09-21, the direct
@@ -719,13 +789,30 @@ export function LearnerFocusedBand({
            is what that means. See the constant. */
         partNumber={NY_LH_CURRENT_LESSON_PART}
         chapterTitle={NY_LH_CURRENT_CHAPTER}
-        /* Resume keeps THIS branch's wiring (2026-09-24, when main's home-page
-           changes were pulled in). Main passes the course's title / progress /
-           lesson to `launcher.open` for ITS Compass course player ("Option
-           2"), which was deliberately not pulled — this branch's launcher takes
-           an id only. On Atlas/Compass, `onResume` opens this branch's Compass
-           Course page instead. */
-        onResume={onResume ? () => onResume() : (id) => launcher.open(id)}
+        /* THE OPENER SUPPLIES THE COURSE, because the shell cannot derive it:
+           `id` is this jumpBackIn card's, and the path carrying it is a persona
+           override that is not in `learningPathsFor(brand)`. The Compass player
+           states both of these in its sidebar; passing them here is what stops
+           it naming a different course from the card just clicked.
+           On Atlas/Compass `onResume` opens the branch's Compass Course page
+           instead (feat/atlas-compass-global-nav). */
+        onResume={
+          onResume
+            ? () => onResume()
+            : (id) =>
+                launcher.open(id, {
+                  title: path.title,
+                  percentComplete: percent,
+                  /* The SAME expression `chapterNumber` uses a few lines up, not a
+                     second derivation — the player's top bar and this card must not
+                     disagree about which lesson the learner is on. */
+                  lessonNumber: totalCompleted + 1,
+                  /* The SAME two figures the block above prints as "26 of 42
+                     lessons" — the contents tree counts what this card counts. */
+                  completedLessons: totalCompleted,
+                  totalLessons: totalRequired || path.hours,
+                })
+        }
       />
     ) : null
   // Shared with the Learning Path detail sheet's "Time Remaining", so the band
@@ -1029,12 +1116,17 @@ export function LearnerFocusedBand({
           // padding goes with it on the left/right, since a bare block should
           // line up with the section headings below rather than being inset by
           // a card's gutter it no longer has.
+          //
+          // ⚠ AND THE TOP PADDING GOES TOO (2026-09-29). It was `4px 0 0`, a
+          // nudge left over from when this column led with a header of its own;
+          // that header is hidden on this surface now, so the 4px was pushing
+          // the Current Course card 4px BELOW the exam card beside it. Two
+          // columns of a grid that start at the same y and whose first cards do
+          // not is the kind of misalignment that reads as sloppiness without
+          // being obviously anything — measured, not guessed.
           background: onPage ? 'transparent' : 'var(--color-primary-700)',
           color: cText,
-          // No 4px top on the Atlas home (2026-09-24, the direct ask): its
-          // course card is a filled box, so its top edge has to sit level with
-          // the Study Journey card beside it.
-          padding: onPage ? (hideResume ? 0 : '4px 0 0') : '24px 26px',
+          padding: onPage ? 0 : '24px 26px',
           // THE ATLAS HOME'S LEFT COLUMN PINS (2026-09-24, the direct ask): once
           // the course card's top is 50px under the header it stops, and the
           // right column scrolls on past it. `--cre-shell-top` is the header's
@@ -1400,7 +1492,19 @@ export function LearnerFocusedBand({
         {framedPace ? (
           <ScheduleExamBanner state={path.state} onOpenStep={onOpenStep} style={{ marginTop: 32 }} />
         ) : null}
-        {paceTiles ? (
+        {/* ⚠ NOTHING HERE WHEN THE PACE TILE WAS DELIBERATELY HIDDEN — 2026-09-29.
+            The branch below is the FALLBACK for surfaces that never had the
+            tile row (`!onPage`), and it draws Target Date / Time Remaining /
+            Completed plus a status band. Hiding Study Pace therefore did not
+            leave a gap, it REVEALED that block — three facts the course header
+            already states a few lines above, under a status sentence nobody
+            asked for.
+
+            So `paceHiddenFlag` renders neither: not the tile, and not the
+            fallback that stood in for it. `paceTiles` alone cannot express this
+            — it is false for both reasons and the fallback is right for the
+            other one. */}
+        {paceHidden && paceOnly ? null : paceTiles ? (
           /* THE SQUARE-TILE ROW — Study Pace and Readiness. See `paceTiles`.
 
              TWO ARRANGEMENTS, and `paceOnly` picks between them:
@@ -1430,7 +1534,7 @@ export function LearnerFocusedBand({
           <div
             style={{
               display: 'grid',
-              gridTemplateColumns: paceOnly || renewalReady ? '1fr' : 'repeat(2, minmax(0, 1fr))',
+              gridTemplateColumns: paceOnly || paceGone ? '1fr' : 'repeat(2, minmax(0, 1fr))',
               gap: 14,
               // Atlas home: 32 between every module (2026-09-24, the direct ask).
               marginTop: framedPace ? 32 : 18,
@@ -1450,7 +1554,7 @@ export function LearnerFocusedBand({
                 its access expiry. `FIXTURE_TODAY` is the anchored demo clock
                 every other prototype surface passes, so the states render the
                 same whenever the page is opened. */}
-            {renewalReady ? null : livePace && resume ? (
+            {paceGone ? null : livePace && resume ? (
               <StudyPaceTile
                 today={FIXTURE_TODAY}
                 hoursRemaining={resume.hours * (1 - (resume.progress ?? 0) / 100)}

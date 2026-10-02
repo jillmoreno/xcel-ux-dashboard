@@ -1,0 +1,1057 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light" data-palette="navy">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>XCEL LMS — Study Pace card, 21 variations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Lato:wght@400;700;900&family=Open+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+
+/* ============================================================
+   XCEL tokens — copied verbatim from xcel-pace-presets.html so this page and
+   the page whose argument it extends read as the same product. THE RED IS NOT
+   THE PRIMARY: --brand-* is identity plus the one licensing-exam semantic;
+   --primary-* is interactive and data.
+
+   NO RED ANYWHERE ON THIS PAGE. Every variation below is our own data — an
+   evening we derived, a date we derived — and the moment one of them borrows
+   the exam colour to look urgent, the timeline on the sibling page stops
+   meaning anything. Urgency here is carried by --warning-*.
+   ============================================================ */
+:root{
+  --font-heading:'Lato',system-ui,-apple-system,sans-serif;
+  --font-body:'Open Sans',system-ui,-apple-system,sans-serif;
+
+  --brand-100:#f8dee0; --brand-300:#dc858b; --brand-500:#a81c24;
+  --brand-600:#8c171e; --brand-700:#6f1218; --brand-900:#2f080a;
+  --on-primary:#ffffff;
+
+  --ink:#1f1f23; --ink-2:#4d4d55; --ink-3:#6d6d76;
+
+  --n-50:#ffffff; --n-75:#f5f5f6; --n-100:#ececee; --n-200:#d9d9dd;
+  --n-300:#c7c7cc; --n-600:#818188; --n-700:#616168;
+
+  --success-100:#cce7d7; --success-500:#018937; --success-700:#005221;
+  --warning-100:#fdf0d4; --warning-300:#fbd27e; --warning-500:#f9b428; --warning-800:#63470f;
+  --error-100:#f4cccc; --error-500:#cb0000; --error-700:#790000;
+  --info-100:#d2f1f6; --info-700:#12717e;
+
+  --page:#f4f4f6; --card:#ffffff; --line:#e4e4e8; --line-2:#d4d4da;
+  --radius:10px; --radius-sm:7px;
+  --shadow:0 1px 2px rgba(0,0,0,.05), 0 4px 14px rgba(0,0,0,.05);
+}
+:root[data-palette="navy"]{
+  --primary-100:#dde5f2; --primary-200:#b4c6e0; --primary-300:#7d9cc6;
+  --primary-400:#4a72a3; --primary-500:#1f4e88; --primary-600:#163d6e;
+  --primary-700:#102d53; --primary-800:#0a1f3b; --primary-900:#061225;
+}
+:root[data-palette="graphite"]{
+  --primary-100:#e7e8ec; --primary-200:#ccd0d8; --primary-300:#98a0ae;
+  --primary-400:#6a7385; --primary-500:#3f4753; --primary-600:#333944;
+  --primary-700:#252a33; --primary-800:#1a1e25; --primary-900:#101318;
+}
+:root[data-palette="teal"]{
+  --primary-100:#d3e7e7; --primary-200:#9fd0d0; --primary-300:#63b0b2;
+  --primary-400:#2b8a8d; --primary-500:#0f6e72; --primary-600:#0b585b;
+  --primary-700:#084346; --primary-800:#052e30; --primary-900:#031b1c;
+}
+:root[data-theme="dark"]{
+  --ink:#f2f2f4; --ink-2:#b6b6be; --ink-3:#8d8d96;
+  --page:#141417; --card:#1d1d21; --line:#2e2e35; --line-2:#3d3d45;
+  --n-50:#1d1d21; --n-75:#232329; --n-100:#2a2a31; --n-200:#3a3a42; --n-300:#4a4a53;
+  --brand-100:#3a1416; --brand-300:#8c272e; --brand-500:#e8737a;
+  --brand-600:#f09aa0; --brand-700:#f6c2c6;
+  --success-100:#16261f; --success-500:#57b585; --success-700:#8fd4b0;
+  --warning-100:#2a2318; --warning-300:#4a3d22; --warning-500:#e0b155; --warning-800:#f0d49a;
+  --error-100:#2b1414; --error-500:#f08a8a; --error-700:#f6b8b8;
+  --info-100:#122428; --info-700:#7fd0dd;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 4px 14px rgba(0,0,0,.3);
+}
+:root[data-theme="dark"][data-palette="navy"]{
+  --primary-100:#15223a; --primary-200:#1d3050; --primary-300:#35598f;
+  --primary-400:#5b86bd; --primary-500:#8fb4e0; --primary-600:#b3cded;
+  --primary-700:#d3e2f5; --on-primary:#0a1f3b;
+}
+:root[data-theme="dark"][data-palette="graphite"]{
+  --primary-100:#22252b; --primary-200:#2f343d; --primary-300:#4d5563;
+  --primary-400:#7b8494; --primary-500:#aab2c0; --primary-600:#c6ccd6;
+  --primary-700:#dfe3ea; --on-primary:#101318;
+}
+:root[data-theme="dark"][data-palette="teal"]{
+  --primary-100:#0f2426; --primary-200:#143537; --primary-300:#1f6165;
+  --primary-400:#2f9498; --primary-500:#5fc0c4; --primary-600:#8ed6d9;
+  --primary-700:#bae8ea; --on-primary:#052e30;
+}
+
+*{box-sizing:border-box}
+body{margin:0;background:var(--page);color:var(--ink);font:14px/1.55 var(--font-body);
+  -webkit-font-smoothing:antialiased}
+h1,h2,h3{margin:0;font-family:var(--font-heading);font-weight:900;letter-spacing:-.015em}
+h1{font-size:26px;line-height:1.18}
+h2{font-size:19px;line-height:1.25}
+h3{font-size:15px;font-weight:700;letter-spacing:-.005em}
+p{margin:0 0 10px}
+button{font:inherit}
+.tiny{font-size:11.5px;line-height:1.45;color:var(--ink-2)}
+.tiny b{color:var(--ink);font-weight:600}
+
+/* ---------- prototype bar (sibling convention: pbar / plink / tag / sp) --- */
+.pbar{background:#1a1a1d;color:rgba(255,255,255,.9);display:flex;align-items:center;gap:14px;
+  padding:0 18px;height:40px;font-size:12px;position:sticky;top:0;z-index:60;flex-wrap:wrap}
+.pbar .tag{font-size:10px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:rgba(255,255,255,.5)}
+.pbar .sp{margin-left:auto;display:flex;gap:8px;align-items:center}
+.pbtn{appearance:none;border:1px solid rgba(255,255,255,.2);background:transparent;
+  color:rgba(255,255,255,.85);font-size:11.5px;font-weight:600;padding:6px 10px;border-radius:6px;cursor:pointer}
+.pbtn:hover{background:rgba(255,255,255,.09)}
+.pbtn[aria-pressed="true"]{background:#fff;color:#1a1a1d;border-color:#fff}
+.pbtn:focus-visible{outline:2px solid var(--primary-300);outline-offset:2px}
+.plink{color:rgba(255,255,255,.72);font-size:12px;font-weight:600;text-decoration:none;
+  border-bottom:1px solid rgba(255,255,255,.25);padding-bottom:1px}
+.plink:hover{color:#fff;border-bottom-color:#fff}
+.palsw{display:flex;align-items:center;gap:4px;padding:3px;border-radius:8px;
+  background:rgba(255,255,255,.07);margin-right:4px}
+.pallb{font-size:9.5px;font-weight:700;letter-spacing:.09em;text-transform:uppercase;
+  color:rgba(255,255,255,.5);padding:0 5px 0 4px}
+.palbtn{appearance:none;border:0;background:transparent;color:rgba(255,255,255,.72);
+  font:600 11.5px var(--font-body);padding:4px 8px;border-radius:6px;cursor:pointer;
+  display:flex;align-items:center;gap:5px}
+.palbtn i{width:9px;height:9px;border-radius:50%;display:block;box-shadow:0 0 0 1px rgba(255,255,255,.35)}
+.palbtn:hover{background:rgba(255,255,255,.1);color:#fff}
+.palbtn[aria-checked="true"]{background:#fff;color:#1a1a1d}
+.palbtn[aria-checked="true"] i{box-shadow:0 0 0 1px rgba(0,0,0,.25)}
+.palbtn:focus-visible,.plink:focus-visible{outline:2px solid var(--primary-300);outline-offset:2px}
+
+/* ---------- demo controls ---------- */
+.demo{background:#26262b;border-bottom:2px solid var(--primary-300);
+  display:flex;align-items:center;gap:12px;padding:10px 18px;flex-wrap:wrap;
+  position:sticky;top:40px;z-index:59}
+.demo .lb{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;
+  color:rgba(255,255,255,.56)}
+.grp{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+.dchip{appearance:none;border:1px solid rgba(255,255,255,.13);background:transparent;
+  color:rgba(255,255,255,.82);font-size:11.5px;font-weight:600;padding:6px 11px;border-radius:14px;
+  cursor:pointer;white-space:nowrap}
+.dchip:hover{background:rgba(255,255,255,.08)}
+.dchip[aria-pressed="true"]{background:var(--primary-200);border-color:var(--primary-200);
+  color:var(--primary-700)}
+.dchip:focus-visible{outline:2px solid var(--primary-300);outline-offset:2px}
+.dnote{font-size:11.5px;color:rgba(255,255,255,.56);margin-left:auto;max-width:44ch;text-align:right}
+
+/* ---------- page furniture ---------- */
+.hero{background:var(--card);border-bottom:1px solid var(--line);padding:26px 40px 24px}
+.hero p{max-width:80ch;margin:9px 0 0;color:var(--ink-2);font-size:13.5px}
+.hero p b{color:var(--ink)}
+.body{padding:26px 40px 0;display:flex;flex-direction:column;gap:42px;max-width:1240px}
+.foot{padding:34px 40px 64px;font-size:12px;color:var(--ink-3);max-width:88ch}
+.foot b{color:var(--ink-2)}
+.sec{display:flex;flex-direction:column;gap:18px}
+.shead{display:flex;flex-direction:column;gap:6px}
+.shead .lbl{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.num{font:900 11px var(--font-body);letter-spacing:.09em;text-transform:uppercase;
+  background:var(--primary-100);color:var(--primary-700);border:1px solid var(--primary-200);
+  border-radius:5px;padding:3px 8px}
+.arg{max-width:82ch;color:var(--ink-2);font-size:13.5px;margin:2px 0 0}
+.arg b{color:var(--ink)}
+.note{border-left:3px solid var(--line-2);padding:2px 0 2px 14px;max-width:86ch;
+  font-size:12.5px;line-height:1.6;color:var(--ink-2)}
+.note b{color:var(--ink)}
+
+/* ---------- the variation grid ---------- */
+.vgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(258px,1fr));gap:26px 22px;max-width:1180px}
+.vgrid.two{grid-template-columns:repeat(auto-fill,minmax(330px,1fr))}
+.var{display:flex;flex-direction:column;gap:9px;min-width:0}
+.var .vh{display:flex;align-items:baseline;gap:8px;flex-wrap:wrap}
+.var .vh .vn{font:900 10.5px var(--font-body);letter-spacing:.09em;text-transform:uppercase;
+  color:var(--primary-700);background:var(--primary-100);border:1px solid var(--primary-200);
+  border-radius:5px;padding:2px 7px;flex:none}
+.var .vh h3{font-size:13.5px}
+.var .vt{font-size:11.5px;line-height:1.6;color:var(--ink-2);margin:0 0 2px}
+.var .vt b{color:var(--ink);font-weight:600}
+.var.now .vh .vn{background:var(--success-100);color:var(--success-700);border-color:var(--success-500)}
+
+/* ---------- the tile itself — SquareTile, redrawn ---------- */
+.tile{background:var(--n-75);border:1px solid var(--line);border-radius:12px;
+  padding:15px 15px 13px;display:flex;flex-direction:column;gap:10px;min-width:0;
+  min-height:232px;font-family:var(--font-body)}
+.tile.flat{min-height:0}
+.tile .eb{display:flex;align-items:center;gap:7px;font:700 10px var(--font-body);
+  letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.tile .eb svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:1.7;flex:none}
+.tile .ft{margin-top:auto;display:flex;align-items:center;gap:10px;padding-top:10px}
+.tile .ft .adj{appearance:none;background:transparent;border:0;padding:0;cursor:pointer;
+  font:700 13px var(--font-body);color:var(--primary-600);white-space:nowrap}
+.tile .ft .det{margin-left:auto;font:700 13px var(--font-body);color:var(--primary-600);
+  text-decoration:none;white-space:nowrap}
+.tile .ft .adj:hover,.tile .ft .det:hover{text-decoration:underline}
+.tile .ft .adj:focus-visible,.tile .ft .det:focus-visible{outline:2px solid var(--primary-400);outline-offset:2px}
+.tile .stk{display:flex;flex-direction:column;gap:9px}
+
+.cchip{align-self:flex-start;font:700 11px var(--font-body);letter-spacing:.02em;
+  padding:3px 9px;border-radius:999px;white-space:nowrap}
+.cchip.t-neutral{background:var(--n-100);color:var(--ink-2)}
+.cchip.t-positive{background:var(--success-100);color:var(--success-700)}
+.cchip.t-warning{background:var(--warning-100);color:var(--warning-800)}
+.cchip.t-critical{background:var(--error-100);color:var(--error-700)}
+
+.big{font:800 20px/24px var(--font-heading);letter-spacing:-.01em;color:var(--ink)}
+.big.xl{font-size:27px;line-height:30px}
+.big.sm{font-size:16px;line-height:20px}
+.sub{font:400 12px/17px var(--font-body);color:var(--ink-2);margin:2px 0 0}
+.sub b{color:var(--ink);font-weight:600}
+.sent{font:400 12px/17px var(--font-body);color:var(--ink-2);margin:0}
+.sent b{color:var(--ink);font-weight:600}
+
+.pb{position:relative;height:6px;border-radius:3px;background:var(--line-2)}
+.pb i{position:absolute;inset:0 auto 0 0;border-radius:3px;display:block}
+.pb i.ok{background:var(--primary-500)}
+.pb i.easy{background:var(--success-500)}
+.pb i.heavy{background:var(--warning-500)}
+
+/* ledger — key/value rows */
+.ldg{display:flex;flex-direction:column;gap:0}
+.ldg .r{display:flex;align-items:baseline;justify-content:space-between;gap:10px;
+  padding:6px 0;border-bottom:1px solid var(--line)}
+.ldg .r:last-child{border-bottom:0}
+.ldg .k{font:600 11px var(--font-body);letter-spacing:.04em;text-transform:uppercase;color:var(--ink-3)}
+.ldg .v{font:700 13px var(--font-body);color:var(--ink);font-variant-numeric:tabular-nums;text-align:right}
+
+/* split header */
+.split{display:flex;align-items:stretch;gap:12px}
+.split .h{flex:1;min-width:0}
+.split .dv{width:1px;background:var(--line-2);flex:none}
+.split .h .kk{font:600 10px var(--font-body);letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-3);margin-bottom:3px}
+
+/* ring */
+.ringwrap{display:flex;align-items:center;gap:13px}
+.ringwrap svg{flex:none}
+.ringwrap .rt{min-width:0}
+
+/* week dots / bars */
+.wdots{display:flex;gap:5px;align-items:center}
+.wdots .d{width:15px;height:15px;border-radius:50%;border:1.5px solid var(--line-2);flex:none;
+  display:flex;align-items:center;justify-content:center;font:700 8px var(--font-body);color:var(--ink-3)}
+.wdots .d.on{background:var(--primary-500);border-color:var(--primary-500);color:var(--on-primary)}
+.wdots .d.on.heavy{background:var(--warning-500);border-color:var(--warning-500);color:#3a2a06}
+.wbars{display:flex;gap:4px;align-items:flex-end;height:34px}
+.wbars .b{flex:1;border-radius:2px 2px 0 0;background:var(--primary-500);min-width:0}
+.wbars .b.off{background:var(--n-200)}
+.wbars .b.heavy{background:var(--warning-500)}
+.wlab{display:flex;gap:4px}
+.wlab span{flex:1;text-align:center;font:600 8.5px var(--font-body);letter-spacing:.05em;
+  text-transform:uppercase;color:var(--ink-3)}
+
+/* mini timeline */
+.mtl{position:relative;height:30px;margin:2px 1px 0}
+.mtl .trk{position:absolute;left:0;right:0;top:8px;height:3px;background:var(--n-200);border-radius:2px}
+.mtl .fill{position:absolute;left:0;top:8px;height:3px;border-radius:2px;background:var(--primary-500)}
+.mtl .fill.heavy{background:var(--warning-500)}
+.mtl .mk{position:absolute;top:4px;width:11px;height:11px;border-radius:50%;transform:translateX(-50%);
+  background:var(--primary-500);border:2px solid var(--n-75)}
+.mtl .end{position:absolute;top:3px;right:0;width:3px;height:13px;border-radius:2px;background:var(--ink-3)}
+.mtl .lab{position:absolute;top:19px;font:600 9px var(--font-body);letter-spacing:.03em;
+  color:var(--ink-3);transform:translateX(-50%);white-space:nowrap}
+.mtl .lab.l{transform:none;left:0}
+.mtl .lab.r{transform:none;right:0}
+.mtl .lab.on{color:var(--primary-600);font-weight:700}
+
+/* inline controls (§04) */
+.iseg{display:inline-flex;border:1px solid var(--line-2);border-radius:var(--radius-sm);
+  overflow:hidden;background:var(--card);width:100%}
+.iseg button{appearance:none;border:0;border-right:1px solid var(--line-2);background:transparent;
+  color:var(--ink-2);font:600 11px var(--font-body);padding:6px 4px;cursor:pointer;flex:1;min-width:0}
+.iseg button:last-child{border-right:0}
+.iseg button[aria-checked="true"]{background:var(--primary-500);color:var(--on-primary)}
+.iseg button:focus-visible{outline:2px solid var(--primary-400);outline-offset:-2px}
+.stepper{display:flex;align-items:center;gap:8px}
+.stepper button{appearance:none;width:26px;height:26px;border-radius:6px;border:1px solid var(--line-2);
+  background:var(--card);color:var(--ink);font:700 14px/1 var(--font-body);cursor:pointer;flex:none}
+.stepper button:disabled{opacity:.4;cursor:not-allowed}
+.stepper button:focus-visible{outline:2px solid var(--primary-400);outline-offset:2px}
+.stepper .sv{font:700 12px var(--font-body);color:var(--ink);min-width:0}
+.disc{appearance:none;width:100%;text-align:left;background:transparent;border:0;padding:0;cursor:pointer;
+  display:flex;align-items:center;gap:6px;font:700 11.5px var(--font-body);color:var(--primary-600)}
+.disc svg{width:10px;height:10px;stroke:currentColor;fill:none;stroke-width:2.4;transition:transform .15s}
+.disc[aria-expanded="true"] svg{transform:rotate(90deg)}
+.disc:focus-visible{outline:2px solid var(--primary-400);outline-offset:2px}
+.rng{width:100%;accent-color:var(--primary-500);margin:2px 0 0}
+.plist{display:flex;flex-direction:column;gap:5px;margin-top:2px}
+.pbtn2{appearance:none;text-align:left;border:1px solid var(--line-2);border-radius:var(--radius-sm);
+  background:var(--card);padding:7px 9px;cursor:pointer;font:inherit;color:inherit;
+  display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.pbtn2[aria-checked="true"]{border-color:var(--primary-500);box-shadow:inset 0 0 0 1px var(--primary-500);
+  background:var(--primary-100)}
+.pbtn2 .pn{font:700 11.5px var(--font-body);color:var(--ink)}
+.pbtn2 .pv{font:600 11px var(--font-body);color:var(--ink-2);font-variant-numeric:tabular-nums}
+.pbtn2:focus-visible{outline:2px solid var(--primary-400);outline-offset:2px}
+
+/* §05 real-width rail */
+.rail{display:flex;gap:14px;align-items:flex-start;overflow-x:auto;padding-bottom:8px}
+.railcell{flex:none;width:186px;display:flex;flex-direction:column;gap:7px}
+.railcell .rc{font:700 10px var(--font-body);letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+
+/* §06 scorecard */
+.score{width:100%;border-collapse:collapse;max-width:1060px;font-size:12.5px}
+.score th{text-align:left;font:700 10px var(--font-body);letter-spacing:.08em;text-transform:uppercase;
+  color:var(--ink-3);border-bottom:1px solid var(--line-2);padding:0 12px 7px 0}
+.score td{padding:9px 12px 9px 0;border-bottom:1px solid var(--line);vertical-align:top;color:var(--ink-2)}
+.score td b{color:var(--ink)}
+.score td.c{text-align:center;padding-right:0;width:74px}
+.score tr.pick td{background:var(--primary-100)}
+.score tr.pick td:first-child{border-left:3px solid var(--primary-500);padding-left:9px}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--n-300)}
+.dot.y{background:var(--success-500)}
+.dot.p{background:var(--warning-500)}
+</style>
+</head>
+<body>
+
+<div class="pbar">
+  <span class="tag">XCEL LMS</span>
+  <span>Study Pace card — variations</span>
+  <span style="opacity:.4">·</span>
+  <a class="plink" href="/prototypes/xcel-pace-presets.html#card">Pace presets</a>
+  <a class="plink" href="/prototypes/xcel-study-pace-readiness.html#rec">Pace &amp; Readiness</a>
+  <a class="plink" href="/prototypes/xcel-study-plan.html">Study plan &amp; goals</a>
+  <a class="plink" href="/prototypes/xcel-lms-desktop.html">Desktop platform</a>
+  <span class="sp">
+    <span class="palsw" role="radiogroup" aria-label="Colour palette (prototype only)">
+      <span class="pallb">Palette</span>
+      <button class="palbtn" role="radio" data-pal="navy"     aria-checked="true"><i style="background:#1f4e88"></i>Navy</button>
+      <button class="palbtn" role="radio" data-pal="graphite" aria-checked="false"><i style="background:#3f4753"></i>Graphite</button>
+      <button class="palbtn" role="radio" data-pal="teal"     aria-checked="false"><i style="background:#0f6e72"></i>Teal</button>
+    </span>
+    <button class="pbtn" id="themeBtn" aria-pressed="false">Dark</button>
+  </span>
+</div>
+
+<div class="demo">
+  <span class="lb">Work left</span>
+  <span class="grp" id="dHours" role="group" aria-label="Hours of work remaining"></span>
+  <span class="lb" style="margin-left:6px">How they study</span>
+  <span class="grp" id="dStyle" role="group" aria-label="Study style"></span>
+  <span class="lb" style="margin-left:6px">Access left</span>
+  <span class="grp" id="dAccess" role="group" aria-label="Days of access remaining"></span>
+  <span class="dnote" id="axNote"></span>
+</div>
+
+<div class="hero">
+  <h1>The Study Pace card — 21 ways to say the same four facts</h1>
+  <p>The shipped tile says four things: <b>how heavy an evening is</b>, <b>how many evenings a week</b>,
+  <b>how far through the window that lands you</b>, and <b>the date it finishes</b>. Every variation below
+  says exactly those four things — none of them invents a figure, and all 21 read the
+  <i>same</i> model as <a href="/prototypes/xcel-pace-presets.html#card" style="color:var(--primary-600)">Pace presets</a>
+  and the live <code>StudyPaceTile</code>. Change an axis in the bar and all 21 re-derive together, which is
+  the only honest way to compare them: a layout that reads beautifully at <i>1¾ hours</i> can fall apart at
+  <i>3 hours · won't fit</i>, and the second case is the one that decides.</p>
+  <p>Four questions, one per section. <b>01 — layout</b>: what shape holds four facts in a 186px tile.
+  <b>02 — emphasis</b>: which of the four gets the big type, which is a product decision about what the
+  learner came to find out. <b>03 — the graphic</b>: what, if anything, the bar should be. <b>04 —
+  interaction</b>: whether the tile stays a statement or becomes a control. Section 05 puts the finalists at
+  real width side by side, and 06 scores them.</p>
+</div>
+
+<div class="body">
+
+  <!-- 01 ─────────────────────────────────────────────────────────────── -->
+  <div class="sec" id="layout">
+    <div class="shead">
+      <span class="lbl"><span class="num">01</span><h2>Layout &amp; density</h2></span>
+      <p class="arg">Same four facts, same emphasis, six shapes. The constraint that kills most of these is
+      <b>186px</b> — the tile's real width in the four-up band — and the second is that the chip, the number
+      and the finish line all have a <i>long</i> state: "Full window · heavy", "1¾ hours", "Finishes by
+      Dec 30". Anything that only works at the short state is not a layout, it is a screenshot.</p>
+    </div>
+    <div class="vgrid" id="g1"></div>
+    <div class="note"><b>The compact row (B) is the one to argue about.</b> It drops the bar and the chip and
+    fits on one line — which is exactly right for a mobile list or a secondary rail, and exactly wrong as the
+    only place the learner ever sees their pace, because "1¾ hours a night" with no window behind it is a
+    demand rather than a plan. Treat B as a <i>second</i> rendering of the same component, not a replacement.</p>
+  </div>
+
+  <!-- 02 ─────────────────────────────────────────────────────────────── -->
+  <div class="sec" id="emphasis">
+    <div class="shead">
+      <span class="lbl"><span class="num">02</span><h2>Data emphasis — which fact gets the big type</h2></span>
+      <p class="arg">One layout, four different lead figures. This is the section with an actual product
+      decision in it, because the big number answers a different question in each: <b>A</b> answers "what does
+      tonight cost me", <b>B</b> "when am I done", <b>C</b> "how much runway is left", <b>D</b> "what am I
+      signing up for this week". They are not interchangeable — a learner who is behind wants C, a learner
+      deciding whether to start tonight wants A, and a learner who booked an exam wants B.</p>
+    </div>
+    <div class="vgrid" id="g2"></div>
+    <div class="note"><b>C is the only one that can be read as a threat.</b> "23 days left" is the same fact as
+    "finishes by May 29" with the reassurance stripped out, and on a card the learner did not ask for, the
+    countdown framing is what turns a plan into a nag. If C ships anywhere it should be <i>inside</i> the
+    at-risk state, not as the default rendering — which is an argument for keeping the emphasis a prop rather
+    than a variant.</p>
+  </div>
+
+  <!-- 03 ─────────────────────────────────────────────────────────────── -->
+  <div class="sec" id="visual">
+    <div class="shead">
+      <span class="lbl"><span class="num">03</span><h2>Visual treatment — what the graphic is for</h2></span>
+      <p class="arg">The shipped bar encodes <b>chosen finish ÷ days to the ceiling</b> — how much of the
+      window the plan uses. That is a real quantity and it belongs on the card. But a bar is not the only way
+      to draw it, and two of the options below encode a <i>different</i> quantity entirely: the week strip (C)
+      and the evening bars (F) draw the <i>shape of the week</i>, which is the thing a learner is actually
+      agreeing to. Every option here keeps the date printed in words, so nothing is carried by colour alone.</p>
+    </div>
+    <div class="vgrid" id="g3"></div>
+    <div class="note"><b>E — no graphic — is in this list seriously.</b> At 186px the bar is six pixels tall and
+    about ninety wide; it survives as texture rather than as a reading. If the number and the date carry the
+    whole message, the honest question is whether the bar is decoration that costs a row of vertical space the
+    finish sentence would rather have. The counter-argument is the <i>at-risk</i> case, where a nearly-full bar
+    is the fastest possible read — so this is a question about which state you optimise for.</p>
+  </div>
+
+  <!-- 04 ─────────────────────────────────────────────────────────────── -->
+  <div class="sec" id="interaction">
+    <div class="shead">
+      <span class="lbl"><span class="num">04</span><h2>Interaction model — statement, or control panel</h2></span>
+      <p class="arg">The shipped tile <b>operates nothing</b>: one button, Adjust, and every control lives in
+      the sheet behind it. That was a deliberate call, and these four are the cases against it. All of them are
+      live — change them and the tile re-derives from the same model, which is the point: the question is not
+      whether inline controls <i>work</i>, it is what they cost the dashboard around them.</p>
+    </div>
+    <div class="vgrid two" id="g4"></div>
+    <div class="note"><b>Count the controls, not the clicks.</b> B and C each save one tap, and each turns a
+    tile in a four-up band into something the learner has to <i>read and decide about</i> before they can start
+    studying — beside three other tiles doing the same, that is a dashboard nobody scans. D is the compromise
+    that survives scrutiny: the card is a statement until the learner asks it not to be, and the expanded state
+    is the sheet's content rendered in place. E is the one to be most careful with — dragging a finish date is
+    delightful once and unusable on a phone, and it has no keyboard story that isn't just a slider.</p>
+  </div>
+
+  <!-- 05 ─────────────────────────────────────────────────────────────── -->
+  <div class="sec" id="realwidth">
+    <div class="shead">
+      <span class="lbl"><span class="num">05</span><h2>The finalists at real width — 186px, four up</h2></span>
+      <p class="arg">Everything above is shown at ~258px, which flatters all of it. This is the width the tile
+      actually gets in the dashboard band. Scroll the rail: the failures here are text wrapping to three lines,
+      the chip colliding with the number, and the footer's two links stacking.</p>
+    </div>
+    <div class="rail" id="rail"></div>
+    <div class="note"><b>This rail is the test that matters</b> and it is worth re-running it on every axis —
+    particularly <i>Work left: 40 hours</i> with <i>Access left: 12 days</i>, which is the "won't fit" state,
+    and <i>9 hours / 60 days</i>, where the chip reads "Relaxed" and the evening drops to a figure so small the
+    big type looks silly.</p>
+  </div>
+
+  <!-- 06 ─────────────────────────────────────────────────────────────── -->
+  <div class="sec" id="score">
+    <div class="shead">
+      <span class="lbl"><span class="num">06</span><h2>What each one costs</h2></span>
+      <p class="arg">Scored against the four things that actually decide it: does it hold at <b>186px</b>, does
+      it survive the <b>won't-fit</b> state, does it stay a <b>statement</b> (nothing to operate), and does it
+      need <b>new data</b> the model does not already produce.</p>
+    </div>
+    <div style="overflow-x:auto"><table class="score" id="scoreTbl"><thead><tr>
+      <th>Variation</th><th class="c">186px</th><th class="c">Won't fit</th><th class="c">Statement</th>
+      <th class="c">No new data</th><th>What it buys</th>
+    </tr></thead><tbody></tbody></table></div>
+    <div class="note"><b>My read:</b> keep <b>01·A</b>'s shape, take <b>03·C</b>'s week dots in place of the
+    linear bar (same vertical cost, encodes the commitment rather than the ratio), and add <b>04·D</b>'s
+    disclosure so Adjust has a cheap in-place form for the one change learners make most — nights a week —
+    while the sheet keeps the exam date and the plan. That is one new sub-component, no new data, and the tile
+    is still a statement when nobody touches it.</p>
+  </div>
+
+</div>
+
+<div class="foot">
+  <p><b>Every figure on this page derives.</b> Hours of work remaining, the access window and the study-style
+  multiplier are the three demo axes; everything else — nights a week, minutes an evening, the finish date, the
+  chip, the fill percentage — comes out of the same functions the product uses (<code>src/lib/studyPace.ts</code>),
+  re-implemented here rather than imported because this is a standalone document. <b>The one authored thing is
+  the date</b>: "today" is pinned to 11 May 2026 so the finish dates in these variations do not drift as the
+  page ages, and so the default reproduces the card in the brief exactly — 1¾ hours, 5 nights, finishes by May 29.</p>
+  <p><b>What this page does not answer.</b> It does not touch the <i>Readiness</i> tile beside it, and the two
+  are related: several of these layouts would look wrong next to a Readiness tile drawn a different way, and
+  that pairing has to be settled as a band rather than a tile. It also shows only the recommended preset's
+  states — <code>easy</code>, <code>ok</code>, <code>heavy</code> and <code>no</code> — and not the
+  learner-adjusted labels, which the sibling page covers.</p>
+</div>
+
+<script>
+'use strict'
+/* ═══════════════════════════════════════════════════════════════════════
+   THE MODEL — a faithful re-implementation of src/lib/studyPace.ts.
+   Kept in the same order and with the same constant names so the two can be
+   diffed by eye. If the product's numbers change, they change HERE too or the
+   page starts arguing about a card that no longer exists.
+   ═══════════════════════════════════════════════════════════════════════ */
+var EXAM_BUFFER_DAYS = 7, RECOMMENDED_BUFFER_DAYS = 5, FOCUSED_DAYS = 14
+var STRAIN_MINS = 120, CEILING_MINS = 210, EASY_MINS = 45
+var NIGHT_OPTIONS = [3, 4, 5, 6]
+var STYLE_FACTORS = { thorough: 1.3, average: 1, quick: .75 }
+
+/* Pinned, not `new Date()` — see the footer. */
+var TODAY = new Date(2026, 4, 11)
+
+function isoPlusDays (today, n) {
+  var d = new Date(today.getFullYear(), today.getMonth(), today.getDate())
+  d.setDate(d.getDate() + n)
+  var mo = d.getMonth() + 1, day = d.getDate()
+  return d.getFullYear() + '-' + (mo < 10 ? '0' : '') + mo + '-' + (day < 10 ? '0' : '') + day
+}
+function dateFromIso (iso) {
+  var m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(iso).trim())
+  return m ? new Date(+m[1], +m[2] - 1, +m[3]) : null
+}
+function formatPaceDate (iso) {
+  var d = dateFromIso(iso)
+  return d ? d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : iso
+}
+/* Quarter-hour precision above an hour — rounding 68 and 89 both to "about an
+   hour" makes two different plans read as the same one. */
+function formatEvening (mins) {
+  if (!isFinite(mins)) return '—'
+  var m = Math.round(mins)
+  if (m < 60) return m + ' min'
+  var quarters = Math.round(m / 15) / 4
+  var whole = Math.floor(quarters), fraction = quarters - whole
+  var marks = { 0: '', 0.25: '¼', 0.5: '½', 0.75: '¾' }
+  var suffix = (whole === 1 && fraction === 0) ? ' hour' : ' hours'
+  return whole + (marks[fraction] || '') + suffix
+}
+/* A week, in the SAME vocabulary as an evening. Deliberately not `8.5 hours`
+   beside `1¾ hours` — the page's claim is that all 21 read one model, and two
+   number formats is the fastest way to make that look untrue. */
+function formatWeek (mins) {
+  if (!isFinite(mins)) return '—'
+  var quarters = Math.round(mins / 15) / 4
+  var whole = Math.floor(quarters), fraction = quarters - whole
+  var marks = { 0: '', 0.25: '¼', 0.5: '½', 0.75: '¾' }
+  var suffix = (whole === 1 && fraction === 0) ? ' hour' : ' hours'
+  return whole + (marks[fraction] || '') + suffix
+}
+
+function priceFinish (input, days, nights) {
+  var style = STYLE_FACTORS[input.style || 'average']
+  var minsTotal = Math.max(0, input.hoursRemaining) * 60 * style
+  if (days < 1) {
+    return { days: days, finishIso: isoPlusDays(input.today, Math.max(days, 0)),
+      minsPerNight: Infinity, minsPerWeek: Infinity, nights: nights || 6, state: 'no' }
+  }
+  var minsPerWeek = minsTotal / (days / 7)
+  var suggested = 6
+  for (var i = 0; i < NIGHT_OPTIONS.length; i++) {
+    if (minsPerWeek / NIGHT_OPTIONS[i] <= STRAIN_MINS) { suggested = NIGHT_OPTIONS[i]; break }
+  }
+  var n = nights || suggested
+  var minsPerNight = minsPerWeek / n
+  var state = minsPerWeek > CEILING_MINS * 6 ? 'no'
+    : minsPerNight > STRAIN_MINS ? 'heavy'
+    : minsPerNight <= EASY_MINS ? 'easy' : 'ok'
+  return { days: days, finishIso: isoPlusDays(input.today, days), minsPerNight: minsPerNight,
+    minsPerWeek: minsPerWeek, nights: n, state: state }
+}
+
+/** The whole model: ceiling, the shared nights count, and the three presets. */
+function studyPace (input) {
+  var daysToCeiling = input.accessLeft - 1
+  var recDays = Math.max(1, daysToCeiling - (RECOMMENDED_BUFFER_DAYS - 1))
+  var nights = input.nights || priceFinish({ today: input.today, hoursRemaining: input.hoursRemaining,
+    style: input.style }, recDays).nights
+  function build (id, days) {
+    var p = priceFinish(input, Math.min(days, daysToCeiling), nights)
+    p.id = id
+    return p
+  }
+  var relaxed = build('relaxed', daysToCeiling)
+  var recommended = build('recommended', recDays)
+  var focused = build('focused', Math.min(FOCUSED_DAYS, daysToCeiling))
+  var presets = [relaxed, recommended, focused].filter(function (p) {
+    return p.id !== 'focused' || p.days < recommended.days
+  })
+  return { daysToCeiling: daysToCeiling, nights: nights, presets: presets,
+    hardEndIso: isoPlusDays(input.today, daysToCeiling),
+    hoursRemaining: input.hoursRemaining }
+}
+/** Relaxed keeps its word only while the number deserves it. */
+function presetLabel (p) {
+  if (p.id === 'relaxed') return p.state === 'easy' ? 'Relaxed' : 'Full window'
+  return p.id === 'recommended' ? 'Recommended' : 'Focused'
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   DEMO AXES
+   ═══════════════════════════════════════════════════════════════════════ */
+var AX = {
+  hours:   [{ v: 9, l: '9 hours' }, { v: 22, l: '22 hours' }, { v: 40, l: '40 hours' }],
+  style:   [{ v: 'thorough', l: 'Thorough' }, { v: 'average', l: 'Average' }, { v: 'quick', l: 'Quick' }],
+  access:  [{ v: 60, l: '60 days' }, { v: 23, l: '23 days' }, { v: 12, l: '12 days' }]
+}
+var state = { hours: 22, style: 'average', accessLeft: 23 }
+/* Per-tile interaction state for §04. Deliberately NOT shared — each variation
+   is a separate argument and one of them changing must not move the others. */
+var ix = { b: 'recommended', c: null, d: false, e: null }
+
+function model () {
+  return studyPace({ today: TODAY, hoursRemaining: state.hours, style: state.style,
+    accessLeft: state.accessLeft })
+}
+function rec (m) {
+  for (var i = 0; i < m.presets.length; i++) if (m.presets[i].id === 'recommended') return m.presets[i]
+  return m.presets[0]
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   PIECES — every variation is assembled from these, so a change to the chip
+   or the footer lands in all 21 at once.
+   ═══════════════════════════════════════════════════════════════════════ */
+var CLOCK = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>'
+var CARET = '<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 5l7 7-7 7"/></svg>'
+
+function esc (s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;') }
+function eyebrow (sub) {
+  return '<div class="eb">' + CLOCK + '<span>Study Pace</span>' +
+    (sub ? '<span style="margin-left:auto;font-weight:600;letter-spacing:.04em;text-transform:none;font-size:10.5px">' + esc(sub) + '</span>' : '') +
+    '</div>'
+}
+function footer (adjustLabel) {
+  return '<div class="ft"><button type="button" class="adj">' + (adjustLabel || 'Adjust') +
+    '</button><a class="det" href="#interaction">Details →</a></div>'
+}
+function chipFor (p) {
+  var tone = p.state === 'no' ? 'critical' : p.state === 'heavy' ? 'warning' : 'neutral'
+  var text = p.state === 'no' ? 'Won’t fit' : 'Recommended' + (p.state === 'heavy' ? ' · heavy' : '')
+  return '<span class="cchip t-' + tone + '">' + text + '</span>'
+}
+function fillClass (p) { return p.state === 'heavy' ? 'heavy' : p.minsPerNight <= EASY_MINS ? 'easy' : 'ok' }
+function pct (m, p) { return Math.max(4, Math.min(100, (p.days / Math.max(m.daysToCeiling, 1)) * 100)) }
+function barFor (m, p) {
+  return '<div class="pb" role="img" aria-label="' + ariaBar(m, p) + '"><i class="' + fillClass(p) +
+    '" style="width:' + pct(m, p).toFixed(1) + '%"></i></div>'
+}
+function ariaBar (m, p) {
+  return 'Finishing ' + formatPaceDate(p.finishIso) + ', ' + (m.daysToCeiling - p.days) +
+    ' days before the end of your access.'
+}
+function finishLine (p) {
+  return '<p class="sent">Finishes by <b>' + formatPaceDate(p.finishIso) + '</b></p>'
+}
+/** The one shape every variation needs a version of: what to say when no pace
+ *  is honest. Kept in ONE place so a variation cannot quietly skip it. */
+function wontFit (extra) {
+  return '<span class="cchip t-critical">Won’t fit</span>' +
+    '<p class="sent" style="margin-top:8px">The work left won’t fit before your access ends, at any pace we would recommend.</p>' +
+    (extra || '')
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   §01 LAYOUT & DENSITY
+   ═══════════════════════════════════════════════════════════════════════ */
+var S1 = [
+  { n: 'A', t: 'Baseline — stacked', now: true,
+    d: 'What ships today. Chip, number, unit, bar, finish. <b>Five rows in a 232px tile</b>, and the vertical rhythm is what makes the number feel like a headline rather than a stat.',
+    r: function (m, p) {
+      if (p.state === 'no') return eyebrow() + '<div class="stk">' + wontFit() + '</div>' + footer()
+      return eyebrow() + '<div class="stk">' + chipFor(p) +
+        '<div><div class="big">' + formatEvening(p.minsPerNight) + '</div>' +
+        '<div class="sub">a night · ' + p.nights + ' nights a week</div></div>' +
+        barFor(m, p) + finishLine(p) + '</div>' + footer()
+    } },
+  { n: 'B', t: 'Compact row — one line',
+    d: 'No chip, no bar, no footer. The pace as a <b>list item</b>, for a mobile stack or a secondary rail where the tile is competing with six others. Loses the window entirely.',
+    flat: true,
+    r: function (m, p) {
+      if (p.state === 'no') return eyebrow() + '<div class="stk" style="margin-top:2px"><p class="sent"><b>Won’t fit</b> before your access ends.</p></div>'
+      return eyebrow() +
+        '<div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap;margin-top:2px">' +
+        '<span class="big sm">' + formatEvening(p.minsPerNight) + '</span>' +
+        '<span class="sent">a night, ' + p.nights + ' nights · to <b>' + formatPaceDate(p.finishIso) + '</b></span></div>'
+    } },
+  { n: 'C', t: 'Stat + ledger',
+    d: 'Number on top, then the other three facts as <b>labelled rows</b>. The most scannable and the least warm — this is a spec sheet, and it reads like one. Strongest when the tile sits beside other numeric tiles.',
+    r: function (m, p) {
+      if (p.state === 'no') return eyebrow() + '<div class="stk">' + wontFit() + '</div>' + footer()
+      return eyebrow() + '<div class="stk">' +
+        '<div><div class="big">' + formatEvening(p.minsPerNight) + '</div>' +
+        '<div class="sub">an evening</div></div>' +
+        '<div class="ldg">' +
+        '<div class="r"><span class="k">Nights</span><span class="v">' + p.nights + ' a week</span></div>' +
+        '<div class="r"><span class="k">Finishes</span><span class="v">' + formatPaceDate(p.finishIso) + '</span></div>' +
+        '<div class="r"><span class="k">Spare</span><span class="v">' + (m.daysToCeiling - p.days) + ' days</span></div>' +
+        '</div></div>' + footer()
+    } },
+  { n: 'D', t: 'Sentence-first',
+    d: 'No big type at all — the pace as <b>one sentence</b> with the figures bolded inside it. Warmest of the six and the only one that survives a screen reader without a single aria-label, because the reading order <i>is</i> the sentence.',
+    r: function (m, p) {
+      if (p.state === 'no') return eyebrow() + '<div class="stk">' + wontFit() + '</div>' + footer()
+      return eyebrow() + '<div class="stk">' + chipFor(p) +
+        '<p class="sent" style="font-size:13.5px;line-height:21px">Study <b>' + formatEvening(p.minsPerNight) +
+        '</b> a night, <b>' + p.nights + ' nights a week</b>, and you finish by <b>' +
+        formatPaceDate(p.finishIso) + '</b> — ' + (m.daysToCeiling - p.days) +
+        ' days before your access ends.</p>' + barFor(m, p) + '</div>' + footer()
+    } },
+  { n: 'E', t: 'Split header',
+    d: 'Cost and date given <b>equal billing</b>, side by side with a rule between. Honest about the fact that the card answers two questions, and the first layout here that reliably breaks at 186px — the two columns become ~78px each.',
+    r: function (m, p) {
+      if (p.state === 'no') return eyebrow() + '<div class="stk">' + wontFit() + '</div>' + footer()
+      return eyebrow() + '<div class="stk">' + chipFor(p) +
+        '<div class="split">' +
+        '<div class="h"><div class="kk">A night</div><div class="big sm">' + formatEvening(p.minsPerNight) + '</div>' +
+        '<div class="sub">' + p.nights + ' nights a week</div></div>' +
+        '<div class="dv"></div>' +
+        '<div class="h"><div class="kk">Finishes</div><div class="big sm">' + formatPaceDate(p.finishIso) + '</div>' +
+        '<div class="sub">' + (m.daysToCeiling - p.days) + ' days spare</div></div>' +
+        '</div>' + barFor(m, p) + '</div>' + footer()
+    } },
+  { n: 'F', t: 'Tall — with the week drawn',
+    d: 'The stacked baseline plus <b>the week itself</b> under the number. Costs ~40px of height, and buys the one thing none of the others show: <i>which</i> evenings, and that two of them are free.',
+    r: function (m, p) {
+      if (p.state === 'no') return eyebrow() + '<div class="stk">' + wontFit() + '</div>' + footer()
+      return eyebrow() + '<div class="stk">' + chipFor(p) +
+        '<div><div class="big">' + formatEvening(p.minsPerNight) + '</div>' +
+        '<div class="sub">a night · ' + p.nights + ' nights a week</div></div>' +
+        weekDots(p) + finishLine(p) + '</div>' + footer()
+    } }
+]
+
+/* ═══════════════════════════════════════════════════════════════════════
+   §02 DATA EMPHASIS — one layout, four lead figures
+   ═══════════════════════════════════════════════════════════════════════ */
+function emphasis (big, sub, rest) {
+  return function (m, p) {
+    if (p.state === 'no') return eyebrow() + '<div class="stk">' + wontFit() + '</div>' + footer()
+    return eyebrow() + '<div class="stk">' + chipFor(p) +
+      '<div><div class="big">' + big(m, p) + '</div><div class="sub">' + sub(m, p) + '</div></div>' +
+      barFor(m, p) + '<p class="sent">' + rest(m, p) + '</p></div>' + footer()
+  }
+}
+var S2 = [
+  { n: 'A', t: 'Evening cost leads', now: true,
+    d: 'Answers <b>"what does tonight cost me"</b>. The shipped choice, and the right default: it is the only one of the four the learner can act on before they close the tab.',
+    r: emphasis(
+      function (m, p) { return formatEvening(p.minsPerNight) },
+      function (m, p) { return 'a night · ' + p.nights + ' nights a week' },
+      function (m, p) { return 'Finishes by <b>' + formatPaceDate(p.finishIso) + '</b>' }) },
+  { n: 'B', t: 'Finish date leads',
+    d: 'Answers <b>"when am I done"</b>. Best for a learner with a booked exam, because the date is the thing they are comparing against. Weakest for one who has not started — a date with no cost attached is not a commitment.',
+    r: emphasis(
+      function (m, p) { return formatPaceDate(p.finishIso) },
+      function (m, p) { return 'your finish date' },
+      function (m, p) { return '<b>' + formatEvening(p.minsPerNight) + '</b> a night, ' + p.nights + ' nights a week' }) },
+  { n: 'C', t: 'Runway leads',
+    d: 'Answers <b>"how much time is left"</b>. The countdown framing — urgent, and the only one of the four that can read as a threat on a card nobody asked for. See the note below.',
+    r: emphasis(
+      function (m, p) { return m.daysToCeiling + ' days' },
+      function (m, p) { return 'of access left' },
+      function (m, p) { return '<b>' + formatEvening(p.minsPerNight) + '</b> a night finishes you by <b>' + formatPaceDate(p.finishIso) + '</b>' }) },
+  { n: 'D', t: 'Weekly budget leads',
+    d: 'Answers <b>"what am I signing up for"</b>. A week is the unit people actually plan in, and this is the figure that survives a learner who studies in one long Sunday instead of five evenings.',
+    r: emphasis(
+      function (m, p) { return formatWeek(p.minsPerWeek) },
+      function (m, p) { return 'a week · however you split it' },
+      function (m, p) { return 'About <b>' + formatEvening(p.minsPerNight) + '</b> across ' + p.nights + ' nights · to <b>' + formatPaceDate(p.finishIso) + '</b>' }) }
+]
+
+/* ═══════════════════════════════════════════════════════════════════════
+   §03 VISUAL TREATMENT
+   ═══════════════════════════════════════════════════════════════════════ */
+function weekDots (p) {
+  var days = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+  var on = p.nights, out = '<div class="wdots" role="img" aria-label="' + p.nights +
+    ' study evenings a week">'
+  for (var i = 0; i < 7; i++) {
+    out += '<span class="d' + (i < on ? ' on' + (p.state === 'heavy' ? ' heavy' : '') : '') + '">' + days[i] + '</span>'
+  }
+  return out + '</div>'
+}
+function ring (m, p) {
+  var r = 26, c = 2 * Math.PI * r, frac = pct(m, p) / 100
+  var col = p.state === 'heavy' ? 'var(--warning-500)' : p.minsPerNight <= EASY_MINS ? 'var(--success-500)' : 'var(--primary-500)'
+  return '<svg width="62" height="62" viewBox="0 0 62 62" role="img" aria-label="' + ariaBar(m, p) + '">' +
+    '<circle cx="31" cy="31" r="' + r + '" fill="none" stroke="var(--line-2)" stroke-width="5"/>' +
+    '<circle cx="31" cy="31" r="' + r + '" fill="none" stroke="' + col + '" stroke-width="5" stroke-linecap="round"' +
+    ' stroke-dasharray="' + c.toFixed(1) + '" stroke-dashoffset="' + (c * (1 - frac)).toFixed(1) + '"' +
+    ' transform="rotate(-90 31 31)"/></svg>'
+}
+function miniTimeline (m, p) {
+  var x = pct(m, p)
+  return '<div class="mtl" role="img" aria-label="' + ariaBar(m, p) + '">' +
+    '<div class="trk"></div><div class="fill' + (p.state === 'heavy' ? ' heavy' : '') + '" style="width:' + x.toFixed(1) + '%"></div>' +
+    '<div class="mk" style="left:' + x.toFixed(1) + '%"></div><div class="end"></div>' +
+    '<div class="lab l">Today</div>' +
+    '<div class="lab r">Access ends</div></div>'
+}
+function eveningBars (p) {
+  var days = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+  var h = Math.max(8, Math.min(34, (p.minsPerNight / 150) * 34))
+  var bars = '<div class="wbars" role="img" aria-label="' + formatEvening(p.minsPerNight) + ' on each of ' + p.nights + ' evenings">'
+  var labs = '<div class="wlab">'
+  for (var i = 0; i < 7; i++) {
+    var on = i < p.nights
+    bars += '<span class="b' + (on ? (p.state === 'heavy' ? ' heavy' : '') : ' off') + '" style="height:' +
+      (on ? h.toFixed(0) : 3) + 'px"></span>'
+    labs += '<span>' + days[i] + '</span>'
+  }
+  return bars + '</div>' + labs + '</div>'
+}
+var S3 = [
+  { n: 'A', t: 'Linear bar', now: true,
+    d: 'What ships. Encodes <b>window used</b>. Six pixels tall at real width — reads as texture, not as a quantity, which is either fine or the whole problem depending on the state.',
+    r: function (m, p) {
+      if (p.state === 'no') return eyebrow() + '<div class="stk">' + wontFit() + '</div>' + footer()
+      return eyebrow() + '<div class="stk">' + chipFor(p) + numBlock(p) + barFor(m, p) + finishLine(p) + '</div>' + footer()
+    } },
+  { n: 'B', t: 'Ring around the number',
+    d: 'Same quantity, drawn as an arc beside the figure. Buys <b>a row of vertical space</b> and reads as a quantity at any size — costs the number its full width, so the long states ("1¾ hours") crowd.',
+    r: function (m, p) {
+      if (p.state === 'no') return eyebrow() + '<div class="stk">' + wontFit() + '</div>' + footer()
+      return eyebrow() + '<div class="stk">' + chipFor(p) +
+        '<div class="ringwrap">' + ring(m, p) +
+        '<div class="rt"><div class="big sm">' + formatEvening(p.minsPerNight) + '</div>' +
+        '<div class="sub">a night · ' + p.nights + ' nights</div></div></div>' +
+        finishLine(p) + '</div>' + footer()
+    } },
+  { n: 'C', t: 'Week dots',
+    d: 'Encodes <b>something else entirely</b>: five filled circles and two empty ones are the commitment, not the ratio. The fastest read on the page, and the only graphic that tells a learner two evenings are theirs.',
+    r: function (m, p) {
+      if (p.state === 'no') return eyebrow() + '<div class="stk">' + wontFit() + '</div>' + footer()
+      return eyebrow() + '<div class="stk">' + chipFor(p) + numBlock(p) + weekDots(p) + finishLine(p) + '</div>' + footer()
+    } },
+  { n: 'D', t: 'Timeline with the ceiling',
+    d: 'The bar with its <b>ends labelled</b> — today, the finish marker, the end of access. The most informative and the most expensive: ~30px, two more strings, and at 186px the two labels touch.',
+    r: function (m, p) {
+      if (p.state === 'no') return eyebrow() + '<div class="stk">' + wontFit() + '</div>' + footer()
+      return eyebrow() + '<div class="stk">' + chipFor(p) + numBlock(p) + miniTimeline(m, p) + finishLine(p) + '</div>' + footer()
+    } },
+  { n: 'E', t: 'No graphic',
+    d: 'Typography only. Gives the reclaimed row to the <b>finish sentence</b>, which can then say what the spare days are for. Loses the at-risk glance — a nearly-full bar is faster than any sentence.',
+    r: function (m, p) {
+      if (p.state === 'no') return eyebrow() + '<div class="stk">' + wontFit() + '</div>' + footer()
+      return eyebrow() + '<div class="stk">' + chipFor(p) +
+        '<div><div class="big">' + formatEvening(p.minsPerNight) + '</div>' +
+        '<div class="sub">a night · ' + p.nights + ' nights a week</div></div>' +
+        '<p class="sent">Finishes by <b>' + formatPaceDate(p.finishIso) + '</b>, leaving <b>' +
+        (m.daysToCeiling - p.days) + ' days</b> before your access ends.</p></div>' + footer()
+    } },
+  { n: 'F', t: 'Evening heights',
+    d: 'Bar height is <b>how long each evening is</b>, so a heavy pace is literally taller. Encodes the number twice, which is redundant — but it is the only treatment where a change of pace is <i>felt</i> rather than read.',
+    r: function (m, p) {
+      if (p.state === 'no') return eyebrow() + '<div class="stk">' + wontFit() + '</div>' + footer()
+      return eyebrow() + '<div class="stk">' + chipFor(p) + numBlock(p) + eveningBars(p) + finishLine(p) + '</div>' + footer()
+    } }
+]
+function numBlock (p) {
+  return '<div><div class="big">' + formatEvening(p.minsPerNight) + '</div>' +
+    '<div class="sub">a night · ' + p.nights + ' nights a week</div></div>'
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   §04 INTERACTION — these are live, and each owns a slice of `ix`
+   ═══════════════════════════════════════════════════════════════════════ */
+var S4 = [
+  { n: 'A', t: 'Adjust opens a sheet', now: true,
+    d: 'What ships. <b>The tile operates nothing</b> — one button, and every control is in the sheet behind it. Zero decisions to make while scanning a band of four tiles.',
+    r: function (m, p) {
+      if (p.state === 'no') return eyebrow() + '<div class="stk">' + wontFit() + '</div>' + footer()
+      return eyebrow() + '<div class="stk">' + chipFor(p) + numBlock(p) + barFor(m, p) + finishLine(p) + '</div>' + footer()
+    } },
+  { n: 'B', t: 'Presets inline',
+    d: 'The three dates as a segmented control <b>on the card</b>. Saves a tap and asks the learner to weigh three options before they can read the number — the cost that is easy to miss until it sits beside three other tiles.',
+    r: function (m, p) {
+      var sel = pick(m, ix.b)
+      var segs = m.presets.map(function (q) {
+        return '<button type="button" role="radio" data-ix="b" data-v="' + q.id + '" aria-checked="' +
+          (q.id === sel.id) + '">' + presetLabel(q).split(' ')[0] + '</button>'
+      }).join('')
+      if (sel.state === 'no') return eyebrow() + '<div class="stk">' + wontFit(
+        '<div class="iseg" role="radiogroup" aria-label="Pace preset" style="margin-top:9px">' + segs + '</div>') + '</div>' + footer('Adjust more')
+      return eyebrow() + '<div class="stk">' +
+        '<div class="iseg" role="radiogroup" aria-label="Pace preset">' + segs + '</div>' +
+        numBlock(sel) + barFor(m, sel) + finishLine(sel) + '</div>' + footer('Adjust more')
+    } },
+  { n: 'C', t: 'Nights stepper inline',
+    d: 'One control for the one thing learners change most — <b>how many evenings a week</b>. Everything re-derives live. Small, legible, keyboard-fine, and it still makes the tile a thing you operate.',
+    r: function (m, p) {
+      var n = ix.c || m.nights
+      var q = priceFinish({ today: TODAY, hoursRemaining: state.hours, style: state.style },
+        Math.max(1, m.daysToCeiling - (RECOMMENDED_BUFFER_DAYS - 1)), n)
+      if (q.state === 'no') return eyebrow() + '<div class="stk">' + wontFit() + '</div>' + footer()
+      return eyebrow() + '<div class="stk">' + chipFor(q) +
+        '<div><div class="big">' + formatEvening(q.minsPerNight) + '</div>' +
+        '<div class="sub">a night</div></div>' +
+        '<div class="stepper"><button type="button" data-ix="c" data-v="-1" aria-label="Fewer nights a week"' +
+        (n <= 3 ? ' disabled' : '') + '>−</button>' +
+        '<span class="sv">' + n + ' nights a week</span>' +
+        '<button type="button" data-ix="c" data-v="1" aria-label="More nights a week"' +
+        (n >= 6 ? ' disabled' : '') + '>+</button></div>' +
+        barFor(m, q) + finishLine(q) + '</div>' + footer()
+    } },
+  { n: 'D', t: 'Disclosure — statement until asked',
+    d: 'Collapsed, it is variation A exactly. Expanded, the sheet\'s presets render <b>in place</b>. The compromise that holds: nothing to decide while scanning, and the common adjustment never leaves the card.',
+    r: function (m, p) {
+      var sel = pick(m, ix.b)
+      if (sel.state === 'no') return eyebrow() + '<div class="stk">' + wontFit() + '</div>' + footer()
+      var head = '<div class="stk">' + chipFor(sel) + numBlock(sel) + barFor(m, sel) + finishLine(sel) +
+        '<button type="button" class="disc" data-ix="d" aria-expanded="' + ix.d + '">' + CARET +
+        (ix.d ? 'Hide pace options' : 'Change pace') + '</button>'
+      if (!ix.d) return eyebrow() + head + '</div>' + footer()
+      var list = m.presets.map(function (q) {
+        return '<button type="button" class="pbtn2" role="radio" data-ix="b" data-v="' + q.id +
+          '" aria-checked="' + (q.id === sel.id) + '"><span class="pn">' + presetLabel(q) +
+          '</span><span class="pv">' + formatEvening(q.minsPerNight) + ' · ' + formatPaceDate(q.finishIso) + '</span></button>'
+      }).join('')
+      return eyebrow() + head + '<div class="plist" role="radiogroup" aria-label="Pace preset">' + list +
+        '</div></div>' + footer('More options')
+    } },
+  { n: 'E', t: 'Drag the finish date',
+    d: 'A slider over <b>every date in the window</b>, pace derived from wherever it lands. Direct, delightful once, and the hardest to defend: no discrete states to test, awkward on a phone, and its keyboard story is just a slider.',
+    r: function (m, p) {
+      var d = ix.e == null ? p.days : ix.e
+      d = Math.max(1, Math.min(m.daysToCeiling, d))
+      var q = priceFinish({ today: TODAY, hoursRemaining: state.hours, style: state.style }, d, m.nights)
+      if (q.state === 'no') return eyebrow() + '<div class="stk">' + wontFit(
+        '<input class="rng" type="range" min="1" max="' + m.daysToCeiling + '" value="' + d +
+        '" data-ix="e" aria-label="Finish date">') + '</div>' + footer()
+      return eyebrow() + '<div class="stk">' + chipFor(q) +
+        '<div><div class="big">' + formatEvening(q.minsPerNight) + '</div>' +
+        '<div class="sub">a night · ' + q.nights + ' nights a week</div></div>' +
+        '<input class="rng" type="range" min="1" max="' + m.daysToCeiling + '" value="' + d +
+        '" data-ix="e" aria-label="Finish date, ' + formatPaceDate(q.finishIso) + '">' +
+        '<p class="sent">Finish <b>' + formatPaceDate(q.finishIso) + '</b> · ' +
+        (m.daysToCeiling - d) + ' days spare</p></div>' + footer()
+    } }
+]
+function pick (m, id) {
+  for (var i = 0; i < m.presets.length; i++) if (m.presets[i].id === id) return m.presets[i]
+  return rec(m)
+}
+
+/* ═══════════════════════════════════════════════════════════════════════
+   §06 SCORECARD — authored judgements, not derived. Kept honest by being
+   labelled as such: these are arguments to disagree with in review.
+   ═══════════════════════════════════════════════════════════════════════ */
+var SCORE = [
+  { v: '01·A  Stacked baseline', s: [1, 1, 1, 1], w: 'Nothing. It is the control.', pick: false },
+  { v: '01·B  Compact row', s: [1, 1, 1, 1], w: 'A second rendering for mobile lists — not a replacement.' },
+  { v: '01·C  Stat + ledger', s: [1, 1, 1, 1], w: 'Scannability beside other numeric tiles; loses all warmth.' },
+  { v: '01·D  Sentence-first', s: [1, 1, 1, 1], w: 'The best screen-reader experience on the page, free.' },
+  { v: '01·E  Split header', s: [0, 1, 1, 1], w: 'Equal billing for cost and date — breaks at 186px.' },
+  { v: '01·F  Week drawn', s: [1, 1, 1, 1], w: 'Shows which evenings, and that two are free. +40px.' },
+  { v: '02·B  Date leads', s: [1, 1, 1, 1], w: 'Right for a learner with a booked exam.' },
+  { v: '02·C  Runway leads', s: [1, 1, 1, 1], w: 'Urgency — and reads as a nag outside the at-risk state.' },
+  { v: '02·D  Weekly budget', s: [1, 1, 1, 1], w: 'Survives the learner who studies one long Sunday.' },
+  { v: '03·B  Ring', s: [.5, 1, 1, 1], w: 'A row of height back; crowds the long number states.' },
+  { v: '03·C  Week dots', s: [1, 1, 1, 1], w: 'Encodes the commitment rather than the ratio. Same height.', pick: true },
+  { v: '03·D  Labelled timeline', s: [0, 1, 1, 1], w: 'Most informative graphic; labels collide at 186px.' },
+  { v: '03·E  No graphic', s: [1, .5, 1, 1], w: 'A row for a better finish sentence; loses the glance.' },
+  { v: '03·F  Evening heights', s: [1, 1, 1, 1], w: 'Pace is felt, not read. Encodes the number twice.' },
+  { v: '04·B  Presets inline', s: [0, .5, 0, 1], w: 'One tap saved, three decisions added to a scan.' },
+  { v: '04·C  Nights stepper', s: [1, 1, 0, 1], w: 'The one adjustment learners make most, in place.' },
+  { v: '04·D  Disclosure', s: [1, 1, 1, 1], w: 'Statement until asked. The compromise that holds.', pick: true },
+  { v: '04·E  Drag the date', s: [.5, .5, 0, 1], w: 'Delight once; no discrete states, weak on a phone.' }
+]
+
+/* ═══════════════════════════════════════════════════════════════════════
+   RENDER
+   ═══════════════════════════════════════════════════════════════════════ */
+function tileHtml (spec, m, p) {
+  return '<div class="tile' + (spec.flat ? ' flat' : '') + '">' + spec.r(m, p) + '</div>'
+}
+function renderGrid (el, specs, m, p) {
+  el.innerHTML = specs.map(function (s) {
+    return '<div class="var' + (s.now ? ' now' : '') + '">' +
+      '<div class="vh"><span class="vn">' + s.n + '</span><h3>' + s.t + '</h3></div>' +
+      '<p class="vt">' + s.d + (s.now ? ' <b>← ships today</b>' : '') + '</p>' +
+      tileHtml(s, m, p) + '</div>'
+  }).join('')
+}
+/** The rail — the finalists at the width the dashboard actually gives them. */
+var RAIL = [
+  { c: 'Ships today', s: S1[0] }, { c: 'Week dots', s: S3[2] }, { c: 'Disclosure', s: S4[3] },
+  { c: 'Sentence', s: S1[3] }, { c: 'Ledger', s: S1[2] }, { c: 'Ring', s: S3[1] },
+  { c: 'Timeline', s: S3[3] }, { c: 'Split', s: S1[4] }
+]
+function renderRail (m, p) {
+  document.getElementById('rail').innerHTML = RAIL.map(function (r) {
+    return '<div class="railcell"><div class="rc">' + r.c + '</div>' + tileHtml(r.s, m, p) + '</div>'
+  }).join('')
+}
+function renderScore () {
+  var dots = function (v) {
+    return '<span class="dot ' + (v === 1 ? 'y' : v === .5 ? 'p' : '') + '" role="img" aria-label="' +
+      (v === 1 ? 'holds' : v === .5 ? 'partly' : 'fails') + '"></span>'
+  }
+  document.querySelector('#scoreTbl tbody').innerHTML = SCORE.map(function (r) {
+    return '<tr' + (r.pick ? ' class="pick"' : '') + '><td><b>' + r.v + '</b></td>' +
+      r.s.map(function (v) { return '<td class="c">' + dots(v) + '</td>' }).join('') +
+      '<td>' + r.w + '</td></tr>'
+  }).join('')
+}
+function renderAll () {
+  var m = model(), p = rec(m)
+  renderGrid(document.getElementById('g1'), S1, m, p)
+  renderGrid(document.getElementById('g2'), S2, m, p)
+  renderGrid(document.getElementById('g3'), S3, m, p)
+  renderGrid(document.getElementById('g4'), S4, m, p)
+  renderRail(m, p)
+  var spare = m.daysToCeiling - p.days
+  document.getElementById('axNote').textContent = p.state === 'no'
+    ? 'No pace fits — every variation is showing its refusal state.'
+    : formatEvening(p.minsPerNight) + ' a night × ' + p.nights + ' nights → ' +
+      formatPaceDate(p.finishIso) + ', ' + spare + ' days spare of ' + m.daysToCeiling + '.'
+}
+
+/* ── axes ─────────────────────────────────────────────────────────────── */
+function buildAxis (elId, opts, key) {
+  var el = document.getElementById(elId)
+  el.innerHTML = opts.map(function (o) {
+    return '<button type="button" class="dchip" data-k="' + key + '" data-v="' + o.v +
+      '" aria-pressed="' + (state[key] === o.v) + '">' + o.l + '</button>'
+  }).join('')
+}
+function syncAxes () {
+  buildAxis('dHours', AX.hours, 'hours')
+  buildAxis('dStyle', AX.style, 'style')
+  buildAxis('dAccess', AX.access, 'accessLeft')
+}
+document.querySelector('.demo').addEventListener('click', function (e) {
+  var b = e.target.closest('.dchip'); if (!b) return
+  var k = b.dataset.k, v = b.dataset.v
+  state[k] = (k === 'style') ? v : +v
+  /* An axis change invalidates every per-tile choice — a nights count picked
+     against a 60-day window is not a choice about a 12-day one. */
+  ix = { b: 'recommended', c: null, d: ix.d, e: null }
+  syncAxes(); renderAll()
+})
+
+/* ── the live §04 controls ────────────────────────────────────────────── */
+document.getElementById('g4').addEventListener('click', function (e) {
+  var b = e.target.closest('[data-ix]'); if (!b || b.tagName === 'INPUT') return
+  var k = b.dataset.ix
+  if (k === 'b') ix.b = b.dataset.v
+  else if (k === 'c') ix.c = Math.max(3, Math.min(6, (ix.c || model().nights) + (+b.dataset.v)))
+  else if (k === 'd') ix.d = !ix.d
+  renderAll()
+})
+document.getElementById('g4').addEventListener('input', function (e) {
+  if (e.target.dataset.ix === 'e') { ix.e = +e.target.value; renderAll() }
+})
+
+/* ── chrome ───────────────────────────────────────────────────────────── */
+document.getElementById('themeBtn').addEventListener('click', function () {
+  var on = document.documentElement.getAttribute('data-theme') === 'dark'
+  document.documentElement.setAttribute('data-theme', on ? 'light' : 'dark')
+  this.setAttribute('aria-pressed', String(!on))
+  this.textContent = on ? 'Dark' : 'Light'
+})
+document.querySelector('.palsw').addEventListener('click', function (e) {
+  var b = e.target.closest('.palbtn'); if (!b) return
+  document.documentElement.setAttribute('data-palette', b.dataset.pal)
+  this.querySelectorAll('.palbtn').forEach(function (x) {
+    x.setAttribute('aria-checked', String(x === b))
+  })
+})
+
+syncAxes(); renderScore(); renderAll()
+</script>
+</body>
+</html>

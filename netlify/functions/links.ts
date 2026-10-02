@@ -29,4 +29,5 @@ export default linkBoardHandler({
   segment: 'links',
   types: ALLOWED_TYPES,
   publicFlag: false,
+  products: false,
 })

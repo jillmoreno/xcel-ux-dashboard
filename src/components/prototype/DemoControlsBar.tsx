@@ -12,6 +12,8 @@ import { UserSlash, Share2, BrowserWindow, Check, ChevronDown } from '@/icons'
 import { ActionMenu } from '@/components/ui/ActionMenu'
 import { Toast } from '@/components/ui/Toast'
 import { DemoBar, DemoDropdown } from './DemoBar'
+import { isPublicGateway, isTestSession } from '@/data/gatewayMode'
+import { controlMaturity } from '@/data/demoControlMaturity'
 import { licensedProfessionsFor } from '@/data/licensedStatesFixtures'
 import { readDemoDayOffset, setDemoDayOffset } from '@/data/demoDay'
 import { useDemoMenus, DEMO_WHITE, DEMO_HOVER_FILL } from './demoBarUtil'
@@ -81,16 +83,70 @@ import {
  *     single⇄multiple flag the rail already reads; the exact selection is the
  *     bar's own UI. TODO(demo): wire a subset override if the rail ever filters.
  */
+/**
+ * The Pacing control's rows.
+ *
+ * LABELS ARE THE CARD'S OWN, not the flag's variant values — a reviewer picks
+ * "Focused & Quick" here and reads "Focused & Quick Study Pace" on the card.
+ * They come from `paceBadgeLabel`'s vocabulary; if that renames again, this
+ * renames with it or the bar starts describing a heading nobody sees.
+ */
+/** The Navigation A/B — which course-content body Resume opens. Labels are
+ *  deliberately bare: a moderator reads them out and a participant must not be
+ *  told which one is "the new one". */
+const NAVIGATION_PICKER: { value: string; label: string }[] = [
+  { value: 'option-1', label: 'Option 1' },
+  { value: 'option-2', label: 'Option 2' },
+]
+
+const PACE_PRESET_PICKER: { value: string; label: string }[] = [
+  { value: 'recommended', label: 'Recommended' },
+  { value: 'focused', label: 'Focused & Quick' },
+  { value: 'relaxed', label: 'Steady & Relaxed' },
+]
+
 export function DemoControlsBar({
   open = true,
   fullBleed = false,
+  only,
+  lens = false,
 }: {
   open?: boolean
   /** Full-bleed (Demo frame): span the whole screen width, skipping the 1440
    *  cap — used when the chrome sits outside the centered device window. */
   fullBleed?: boolean
+  /**
+   * SHOW ONLY THESE CONTROLS — 2026-09-23, for the moderated user-test link
+   * (`?test=1`, see `PrototypeChrome`). Ids are the dropdowns' own
+   * (`persona`, `progress`, `readiness`, `pacing`, `education`, `quick`,
+   * `brand`) plus `actions` for the Reset + kebab block.
+   *
+   * ⚠ A WHITELIST, NOT A HIDE-LIST, deliberately. A participant must never see
+   * a control the session did not intend, and a hide-list fails OPEN: the next
+   * dropdown added to this bar would appear in every test link until someone
+   * remembered to add it. This fails closed.
+   *
+   * Undefined ⇒ everything, which is every normal load.
+   */
+  only?: readonly string[]
+  /**
+   * THIS IS THE PREVIEW, NOT THE REAL THING — `?as=demo` on the design site.
+   *
+   * `only` already did the filtering; this exists so the bar can SAY so. A
+   * design-site bar that silently dropped three controls would look like a bug
+   * to the person who put them there, and the whole value of the lens is
+   * knowing you are looking through it.
+   */
+  lens?: boolean
 }) {
-  const { pathname } = useLocation()
+  /** Is this control in the session's whitelist? See `only`. */
+  const show = (id: string) => only == null || only.includes(id)
+  /* Mark the axes a stakeholder will not get — DESIGN SITE ONLY. On the demo
+     site (and inside the lens) those controls are already gone, so a mark would
+     have nothing to sit on; in a participant session the mark would be noise
+     about a decision they are not part of. */
+  const markWip = only == null && !isPublicGateway()
+  const { pathname, search } = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const { brand, membership, tier, setTier, setBrand } = useAccount()
   const { flags, definitions, setEnabled, setVariant, setSecondaryVariant, clearUrlOverrides } =
@@ -101,6 +157,8 @@ export function DemoControlsBar({
   // Progress / compliance state + QE·CE education type — both variant-only flags
   // the two new dropdowns drive directly (they persist via FeatureFlagContext).
   const progressState = useFeatureFlag('dashboard-progress-state')
+  const paceState = useFeatureFlag('study-pace-preset')
+  const navState = useFeatureFlag('dashboard-navigation')
   const educationTypeFlag = useFeatureFlag('dashboard-education-type')
   // Readiness state — the Exam Readiness section's own axis. Deliberately NOT
   // threaded into the share-link codec alongside prog/edu: those two are the
@@ -542,6 +600,8 @@ export function DemoControlsBar({
         {BRAND_PICKER && (
         <DemoDropdown
           id="brand"
+          hidden={!show('brand')}
+          wip={markWip && controlMaturity('brand') === 'wip'}
           label={brandLabel}
           eyebrow="Brand"
           openId={openId}
@@ -675,6 +735,8 @@ export function DemoControlsBar({
         {showTierSwitch && (
         <DemoDropdown
           id="quick"
+          hidden={!show('quick')}
+          wip={markWip && controlMaturity('quick') === 'wip'}
           label={activeQuickView ? activeQuickView.label : 'Quick views'}
           eyebrow={activeQuickView ? 'Quick view' : undefined}
           openId={openId}
@@ -709,6 +771,8 @@ export function DemoControlsBar({
             Sits alongside Quick views; doesn't replace it. */}
         <DemoDropdown
           id="persona"
+          hidden={!show('persona')}
+          wip={markWip && controlMaturity('persona') === 'wip'}
           label="Persona"
           eyebrow="Persona"
           openId={openId}
@@ -836,6 +900,8 @@ export function DemoControlsBar({
         {/* Progress / compliance state — single-select radiogroup */}
         <DemoDropdown
           id="progress"
+          hidden={!show('progress')}
+          wip={markWip && controlMaturity('progress') === 'wip'}
           label={progressLabel}
           eyebrow="Progress"
           openId={openId}
@@ -926,6 +992,8 @@ export function DemoControlsBar({
         {readinessReachable && !onAtlasVersion && (
         <DemoDropdown
           id="readiness"
+          hidden={!show('readiness')}
+          wip={markWip && controlMaturity('readiness') === 'wip'}
           /* NOT the resolved state when there is no section: a greyed pill
              still reading "On Track" is the same false claim, just dimmer. */
           label={readinessReachable ? readinessLabel : 'Not on this version'}
@@ -964,11 +1032,108 @@ export function DemoControlsBar({
         </DemoDropdown>
         )}
 
+        {/* PACING — which of the model's three presets the Study Pace card opens
+            on. 2026-09-23, the direct ask: a control that shows "the differences
+            between the Recommended, Focused & Quick, and Steady & Relaxed".
+
+            ITS OWN AXIS, beside Progress rather than inside it. Progress says
+            how far through the course the learner is; this says which plan they
+            are working to. The two combine — Focused & Quick at 3 days is still
+            a plan that will not fit — and folding either into the other would
+            lose half the grid a reviewer is here to walk. */}
+        <DemoDropdown
+          id="pacing"
+          hidden={!show('pacing')}
+          wip={markWip && controlMaturity('pacing') === 'wip'}
+          label={PACE_PRESET_PICKER.find((o) => o.value === (paceState.variant ?? 'recommended'))?.label ?? 'Recommended'}
+          eyebrow="Pacing"
+          openId={openId}
+          onToggle={toggle}
+          panelRole="radiogroup"
+          panelLabel="Study pace preset"
+          panelMinWidth={240}
+        >
+          {PACE_PRESET_PICKER.map((opt) => {
+            const active = opt.value === (paceState.variant ?? 'recommended')
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                tabIndex={active ? 0 : -1}
+                className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
+                onClick={() => {
+                  setVariant('study-pace-preset', opt.value)
+                  close()
+                }}
+              >
+                <span style={{ flex: 1 }}>{opt.label}</span>
+                {active && <Check size={15} aria-hidden />}
+              </button>
+            )
+          })}
+        </DemoDropdown>
+
+        {/* NAVIGATION — which course-content page Resume opens. 2026-09-23.
+
+            ⚠ IT IS AN A/B, NOT A TREATMENT PICKER, which is why it defaults to
+            Option 1 on this branch rather than to the newer arm: the control
+            condition has to be the default or the comparison has no baseline.
+            A moderator normally assigns it per participant from the session
+            link (`?ff=dashboard-navigation:option-2`) rather than switching it
+            here mid-task.
+
+            ⚠ IT IS IN `?test=1`'s WHITELIST, by direct ask, and it is the one
+            entry there with a cost: a participant who spots a control labelled
+            "Option 1 / Option 2" has been told a comparison exists. The reason
+            it is in anyway — switching arms mid-session beats reloading and
+            re-pasting the link — is recorded at `TEST_VIEW_CONTROLS` in
+            `PrototypeChrome`. */}
+        <DemoDropdown
+          id="navigation"
+          hidden={!show('navigation')}
+          wip={markWip && controlMaturity('navigation') === 'wip'}
+          label={
+            NAVIGATION_PICKER.find((o) => o.value === (navState.variant ?? 'option-1'))?.label ??
+            'Option 1'
+          }
+          eyebrow="Navigation"
+          openId={openId}
+          onToggle={toggle}
+          panelRole="radiogroup"
+          panelLabel="Navigation version"
+          panelMinWidth={240}
+        >
+          {NAVIGATION_PICKER.map((opt) => {
+            const active = opt.value === (navState.variant ?? 'option-1')
+            return (
+              <button
+                key={opt.value}
+                type="button"
+                role="radio"
+                aria-checked={active}
+                tabIndex={active ? 0 : -1}
+                className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
+                onClick={() => {
+                  setVariant('dashboard-navigation', opt.value)
+                  close()
+                }}
+              >
+                <span style={{ flex: 1 }}>{opt.label}</span>
+                {active && <Check size={15} aria-hidden />}
+              </button>
+            )
+          })}
+        </DemoDropdown>
+
         {/* Education type (QE / CE) — single-select radiogroup, brands with a QE
             dashboard persona only */}
         {showEducation && (
           <DemoDropdown
             id="education"
+            hidden={!show('education')}
+            wip={markWip && controlMaturity('education') === 'wip'}
             label={educationLabel}
             eyebrow="Education"
             openId={openId}
@@ -1002,7 +1167,48 @@ export function DemoControlsBar({
           </DemoDropdown>
         )}
 
-        {/* Actions */}
+        {/* Actions — Reset + the kebab. Gated like the dropdowns: a participant
+            pressing Reset mid-session would silently re-baseline the demo. */}
+        {/*
+          VIEW AS DEMO — the design site's lens, 2026-09-24.
+
+          The question it answers is "what does a stakeholder actually get?",
+          which before this needed a second deploy to check. Clicking writes
+          `?as=demo`; `PrototypeChrome` reads it and hands this bar the demo
+          site's own control list. It is a LENS, not a setting: nothing is
+          persisted, nothing under the bar changes, and closing the tab ends it.
+
+          ⚠ ONLY ON THE DESIGN SITE. On the demo site the answer is already yes,
+          and in a participant session the control is one more thing a
+          participant could press.
+        */}
+        {!isPublicGateway() && !isTestSession(search) && (
+          <button
+            type="button"
+            className="cre-demo-controls-btn"
+            style={{
+              ...GHOST_BTN,
+              ...(lens
+                ? { background: 'var(--color-warning-400)', color: 'var(--color-neutral-900)' }
+                : null),
+            }}
+            aria-pressed={lens}
+            title={
+              lens
+                ? 'Showing only what the demo site carries. Click to see every control again.'
+                : 'Preview this bar as the demo site renders it — the work-in-progress controls drop out.'
+            }
+            onClick={() => {
+              const next = new URLSearchParams(searchParams)
+              if (lens) next.delete('as')
+              else next.set('as', 'demo')
+              setSearchParams(next, { replace: true })
+            }}
+          >
+            {lens ? 'Viewing as demo' : 'View as demo'}
+          </button>
+        )}
+        {show('actions') && (
         <div style={ACTIONS}>
           <button
             type="button"
@@ -1074,6 +1280,7 @@ export function DemoControlsBar({
             ]}
           />
         </div>
+        )}
       </DemoBar>
 
       <Toast

@@ -3,6 +3,8 @@ import { ChevronDown, Check } from '@/icons'
 import {
   DEMO_BAR,
   DEMO_COUNT_BADGE,
+  DEMO_WIP_DOT,
+  SR_ONLY,
   DEMO_DOT,
   DEMO_FAINT_FILL,
   DEMO_HOVER_FILL,
@@ -113,6 +115,8 @@ export function DemoDropdown({
   panelLabel,
   panelMinWidth = 220,
   disabledNote,
+  hidden = false,
+  wip = false,
   children,
 }: {
   id: string
@@ -126,8 +130,36 @@ export function DemoDropdown({
   panelMinWidth?: number
   /** Present = the control is INERT, and this says why. See the note below. */
   disabledNote?: string
+  /**
+   * GONE ENTIRELY, which is a different thing from `disabledNote` — 2026-09-23.
+   *
+   * `disabledNote` greys an axis that exists but has nowhere to land, and the
+   * note below argues hard for keeping it VISIBLE: a reviewer who came looking
+   * for it should find it with a reason rather than doubt their memory.
+   *
+   * This is for the other case, a MODERATED USER TEST, where the reviewer is a
+   * participant who was never told the bar exists. A greyed pill there is not
+   * reassurance, it is a question they will ask out loud in the middle of a
+   * task. `DemoControlsBar`'s `only` prop is the one caller.
+   */
+  hidden?: boolean
+  /**
+   * NOT FINISHED ENOUGH FOR THE DEMO SITE — 2026-09-24. The third state, and
+   * the design site is the only place it shows.
+   *
+   * `hidden` removes the control from an audience that must not meet it;
+   * `disabledNote` greys one that has nowhere to land. This one is fully LIVE —
+   * a designer can open it and use it normally — and merely says that the
+   * stakeholder build does not carry it. Without the mark, the design site's
+   * bar makes every axis look equally agreed, and the person deciding what to
+   * show stakeholders has to hold the answer in their head.
+   *
+   * Driven by `maturity` in the flag catalog — see `demoControlMaturity`.
+   */
+  wip?: boolean
   children: ReactNode
 }) {
+  if (hidden) return null
   /* AN AXIS WITH NOWHERE TO LAND — 2026-09-22. The bar offers one dropdown per
      demo axis, and a version that doesn't render the surface behind one leaves
      the pill stating a state the page cannot show: "READINESS: On Track" above
@@ -167,6 +199,22 @@ export function DemoDropdown({
         {eyebrow && <span style={DEMO_TRIGGER_EYEBROW}>{eyebrow}:</span>}
         {label}
         {count ? <span style={DEMO_COUNT_BADGE}>{count}</span> : null}
+        {/* ⚠ A DOT PLUS WORDS, never the dot alone: "not on the demo site" is
+            not a colour anyone can be expected to know, and the bar has no
+            legend. The text is visually hidden so the pill keeps its width.
+
+            ⚠ AND IT DOES NOT SAY "work in progress", which is what it said for
+            one commit. That phrase contains "Progress" — the name of a control
+            on this very bar — so it broke two unrelated suites that query
+            `/Progress/i` and started matching Persona, Pacing and Education
+            too. Hidden text still lands in the accessible name; word it as if
+            it were visible, because to a query it is. */}
+        {wip && (
+          <>
+            <span aria-hidden style={DEMO_WIP_DOT} />
+            <span style={SR_ONLY}> (not on the demo site)</span>
+          </>
+        )}
         <ChevronDown
           size={13}
           aria-hidden

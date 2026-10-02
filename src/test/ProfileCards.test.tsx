@@ -5,6 +5,8 @@ import { AccountProvider, supportsMembership } from '@/context/AccountContext'
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { MotivationProvider } from '@/context/MotivationContext'
 import { ProfilePage } from '@/pages/ProfilePage'
+import { profileFor } from '@/data/accountProfileFixtures'
+import { accountSectionsFor } from '@/components/account/accountSections'
 import { ARCHIVED_ITEMS } from '@/data/archivedItems'
 
 /**
@@ -60,11 +62,64 @@ describe('the Profile page', () => {
   })
 
   it('keeps the cards that stayed', () => {
-    // Guards the removal from over-reaching: three cards were meant to stay.
+    // Guards the removal from over-reaching: two cards were meant to stay.
+    // INVERTED 2026-09-30 — 'Interests' was in this list. Restoring the
+    // Interests card means putting it back here, not just in ProfilePage.
     renderProfile()
-    for (const title of ['Account Details', 'Personal Information', 'Interests']) {
+    for (const title of ['Account Details', 'Personal Information']) {
       expect(screen.getByRole('heading', { name: title })).toBeInTheDocument()
     }
+  })
+
+  it('shows no Interests card, and leaves its fixture intact', () => {
+    // ARCHIVED 2026-09-30, and the pairing is the point: the CARD is unwired
+    // from ProfilePage while `profileFor(...).interests` still resolves, so a
+    // restore is a call-site edit and never a data rebuild. Asserting the
+    // fixture here is what stops a later cleanup from "tidying away" the data
+    // and turning the archive row's promise into a lie.
+    renderProfile()
+    expect(screen.queryByRole('heading', { name: 'Interests' })).toBeNull()
+    expect(profileFor('xcel', true).interests.length).toBeGreaterThan(0)
+  })
+
+  it('renders ONE column on a brand with no membership', () => {
+    // The layout consequence of the Interests removal. Interests was the right
+    // column's only unguarded child, so without the column guard XCEL rendered
+    // an empty `flex: 1 1 340px` sibling — half the page reserved for nothing.
+    renderProfile()
+    const headings = screen
+      .getAllByRole('heading')
+      .map((h) => h.textContent)
+      .filter((t): t is string => Boolean(t))
+    expect(headings).toEqual(['Account Details', 'Personal Information'])
+  })
+
+  it('archives the three 2026-09-30 removals with real restore steps', () => {
+    // The account-area archive pass: the Interests card plus the two account
+    // SECTIONS that went with it. Each must name the file a restorer opens.
+    const byId = Object.fromEntries(ARCHIVED_ITEMS.map((a) => [a.id, a]))
+    for (const id of [
+      'profile-interests-card',
+      'account-licenses-section',
+      'account-payment-methods-section',
+    ]) {
+      expect(byId[id], `missing archive row: ${id}`).toBeTruthy()
+    }
+    expect(byId['profile-interests-card'].restoreNote).toMatch(/ProfilePage/)
+    expect(byId['profile-interests-card'].location).toMatch(/ProfileCards/)
+    // Both section rows must point at the canonical list — that is the file
+    // whose union drives every other registry.
+    expect(byId['account-licenses-section'].restoreNote).toMatch(/accountSections/)
+    expect(byId['account-payment-methods-section'].restoreNote).toMatch(/accountSections/)
+  })
+
+  it('leaves the archived sections out of the canonical list', () => {
+    // The dropdown and the sub-nav both read `accountSectionsFor`, so this one
+    // assertion covers both surfaces.
+    const ids = accountSectionsFor('xcel', true).map((s) => s.id)
+    expect(ids).not.toContain('licenses')
+    expect(ids).not.toContain('payment-methods')
+    expect(ids).toContain('profile')
   })
 
   it('archives the editorial removal, and only that one', () => {

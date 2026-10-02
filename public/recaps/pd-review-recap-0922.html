@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>P&D Review Recap — 09/22</title>
+<style>
+  :root {
+    --ink: #1c1f24;
+    --ink-soft: #4a5160;
+    --ink-faint: #7b8393;
+    --rule: #e3e6ec;
+    --bg: #ffffff;
+    --panel: #f6f7f9;
+    --accent: #2f5f8a;
+    --accent-soft: #eaf1f7;
+    --flag: #b5541a;
+    --flag-soft: #fbede2;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    line-height: 1.55;
+  }
+  .wrap {
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 56px 28px 100px;
+  }
+  .eyebrow {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--accent);
+    margin-bottom: 10px;
+  }
+  h1 {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0 0 8px;
+    letter-spacing: -0.01em;
+  }
+  .subhead {
+    color: var(--ink-soft);
+    font-size: 15px;
+    margin-bottom: 36px;
+  }
+  h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 44px 0 14px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--rule);
+  }
+  h2 .num {
+    color: var(--accent);
+    margin-right: 8px;
+  }
+  h3 {
+    font-size: 14.5px;
+    font-weight: 700;
+    margin: 20px 0 8px;
+    color: var(--ink);
+  }
+  p { margin: 0 0 12px; font-size: 15px; color: var(--ink); }
+  ul, ol { margin: 0 0 14px; padding-left: 22px; font-size: 15px; }
+  li { margin-bottom: 6px; }
+  li ul, li ol { margin-top: 6px; }
+  .callout {
+    background: var(--flag-soft);
+    border-left: 3px solid var(--flag);
+    border-radius: 4px;
+    padding: 14px 16px;
+    margin: 14px 0 20px;
+    font-size: 14.5px;
+  }
+  .callout .label {
+    font-weight: 700;
+    font-size: 11.5px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--flag);
+    margin-bottom: 4px;
+  }
+  .card {
+    background: var(--panel);
+    border-radius: 8px;
+    padding: 16px 18px;
+    margin: 14px 0;
+  }
+  .card h3 { margin-top: 0; }
+  .pill {
+    display: inline-block;
+    font-size: 11.5px;
+    font-weight: 600;
+    letter-spacing: 0.03em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-soft);
+    border-radius: 20px;
+    padding: 3px 10px;
+    margin-bottom: 10px;
+  }
+  .grid3 {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 10px;
+    margin: 14px 0 20px;
+  }
+  @media (min-width: 600px) {
+    .grid3 { grid-template-columns: repeat(3, 1fr); }
+  }
+  .bucket {
+    background: var(--panel);
+    border-radius: 8px;
+    padding: 14px 16px;
+    border-top: 3px solid var(--accent);
+  }
+  .bucket.testing { border-top-color: #b5891a; }
+  .bucket.hold { border-top-color: #8a2f2f; }
+  .bucket h4 {
+    margin: 0 0 8px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--ink-soft);
+  }
+  .bucket p { font-size: 13.5px; color: var(--ink-soft); margin: 0; }
+  .note {
+    font-size: 13.5px;
+    color: var(--ink-faint);
+    font-style: italic;
+    margin: 6px 0 12px;
+  }
+  a { color: var(--accent); }
+  .footer {
+    margin-top: 56px;
+    padding-top: 18px;
+    border-top: 1px solid var(--rule);
+    font-size: 12.5px;
+    color: var(--ink-faint);
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <div class="eyebrow">XCEL · Learner Home &amp; Compass</div>
+  <h1>Post P&amp;D Review Session Recap</h1>
+  <div class="subhead">September 22, 2026</div>
+
+  <div class="callout">
+    <div class="label">Action needed</div>
+    Amrita wants the <a href="https://mckissock.sharepoint.com/:x:/s/OnCourseConnect1/OCL-Product-Internal/IQBsk4Mt_d1oSZFG7qLn6ZpyAe-SaTeJpmVApLxHw-kxyBE?e=0FpQmO" target="_blank" rel="noopener">Design Open Questions Tracker</a> populated in the meantime, capturing:
+    <ul style="margin-top:8px; margin-bottom:0;">
+      <li>What parts of the interface we're comfortable testing and moving ahead with</li>
+      <li>What we're not comfortable testing and moving ahead with</li>
+    </ul>
+  </div>
+
+  <h2><span class="num">01</span>Why the urgency</h2>
+  <p>We haven't given engineering an overview of what this might look like. The longer we hold out, the more it either stalls build progress or leads to engineering building something inconsistent with our direction.</p>
+
+  <h2><span class="num">02</span>Friday 9/25 — Engineering alignment</h2>
+  <p>Need alignment with Brandon, Jaron, Jared, and the broader Learner Home engineering team on the WIP Learner Home UI, so they can begin planning and building. Split into three buckets:</p>
+
+  <div class="grid3">
+    <div class="bucket">
+      <h4>Macro</h4>
+      <p>What we're fine with today.</p>
+    </div>
+    <div class="bucket testing">
+      <h4>Testing</h4>
+      <p>Likely to revise and nail down post-research.</p>
+    </div>
+    <div class="bucket hold">
+      <h4>Not testing</h4>
+      <p>Not enough confidence to test at all yet.</p>
+    </div>
+  </div>
+
+  <h2><span class="num">03</span>Compass alignment workshop</h2>
+  <p>Once navigation study results are out and shared with Jeff and Anjani, Amrita wants Soley to schedule a broader alignment workshop with the Compass team.</p>
+  <div class="note">Heads up: there's a UX end-to-end alignment sync already scheduled this Friday where Soley wanted to raise this — but we most likely won't have full alignment by then. Amrita will let Soley know the workshop should be scheduled once user testing results are in.</div>
+
+  <h2><span class="num">04</span>Post-launch philosophy: less now, tune with data</h2>
+  <p>Once launched, Amrita wants to A/B test with quant data and funnel behavior, and adjust from there. That means fewer elements in front of the learner now — less surface area lets us test quantitatively, then refine and adjust afterward.</p>
+  <div class="card">
+    <span class="pill">Direction</span>
+    <p>Leaning toward a lightweight experience for now. She liked what we showed today. Within that scope, we should be clear on:</p>
+    <ul style="margin-bottom:0;">
+      <li>Things we're confident with</li>
+      <li>What we're testing</li>
+    </ul>
+  </div>
+
+  <h2><span class="num">05</span>Compass</h2>
+  <ul>
+    <li>Should definitely include basic breadcrumb navigation.</li>
+    <li>What Eric has currently built can be expanded to cover package contents.</li>
+  </ul>
+  <h3>Currently exploring</h3>
+  <ul>
+    <li>Full browser experience vs. a version with full header + standard navigation</li>
+    <li>Alignment of side navigation between Atlas Home and Compass</li>
+  </ul>
+
+  <h2><span class="num">06</span>Three main things</h2>
+  <ol>
+    <li><strong>Navigation</strong></li>
+    <li><strong>Onboarding</strong></li>
+    <li><strong>Dashboard</strong> — where and how information surfaces to the learner</li>
+  </ol>
+  <div class="note">Note: the Compass team may have a broader perspective here — other ecosystems may benefit from the current Compass UI more than we do. We can adjust based on what Atlas specifically needs (e.g., make it configurable to hide certain things for FinServ learners if they wouldn't benefit).</div>
+
+  <h2><span class="num">07</span>Completion time for courses</h2>
+  <p>Amrita wants this included in the prototype for testing. Two options on the table:</p>
+
+  <div class="card">
+    <h3>Option A — Instructional-design estimate</h3>
+    <p>Show the estimated time for each lesson, generated by Patrick's team, alongside each lesson.</p>
+    <ul style="margin-bottom:0;">
+      <li>Need to confirm with Patrick whether each lesson already has this captured in the content itself.</li>
+      <li>Context: estimates are set when content is created — the instructional-design version of time.</li>
+      <li>Open question: is that the same as how long it actually takes people in real life?</li>
+    </ul>
+  </div>
+
+  <div class="card">
+    <h3>Option B — Behavior-based estimate</h3>
+    <p>Provide something more accurate based on data we already have — actual learner behavior instead of how the content was designed.</p>
+    <ul style="margin-bottom:0;">
+      <li>Amrita will check whether we have enough historical data to approximate this.</li>
+    </ul>
+  </div>
+
+  <div class="footer">Recap compiled from notes on the 09/22 P&amp;D review session.</div>
+
+</div>
+</body>
+</html>

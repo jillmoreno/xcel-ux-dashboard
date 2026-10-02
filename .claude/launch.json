@@ -32,6 +32,29 @@
       "autoPort": true
     },
     {
+      "// xcel-dashboard-public": [
+        "The SAME app built as the PUBLIC gateway — VITE_GATEWAY_MODE=public.",
+        "",
+        "It needs its own server because that var is read at BUILD time: vite",
+        "inlines every VITE_* at transform, so one dev server cannot serve both",
+        "gateways and no URL parameter can switch between them. Without this",
+        "entry the public build is only reachable by deploying it, which makes",
+        "any change that differs between the two sites — nav sections, the",
+        "Demo/Design label in the lockup, the closed routes — unreviewable",
+        "locally.",
+        "",
+        "VITE_GATEWAY_MODE is set inside the command rather than beside it so it",
+        "survives the launcher's own PORT injection, the same shape the netlify",
+        "entry below uses. Run it alongside `xcel-dashboard` and the two gateways",
+        "sit in two tabs."
+      ],
+      "name": "xcel-dashboard-public",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "VITE_GATEWAY_MODE=public npm run dev"],
+      "port": 5202,
+      "autoPort": true
+    },
+    {
       "// xcel-dashboard-netlify": [
         "The SAME app, served through `netlify dev` so the Netlify functions and",
         "Blobs stores are reachable — `npm run dev` is plain vite, which serves no",

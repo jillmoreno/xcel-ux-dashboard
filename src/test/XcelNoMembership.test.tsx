@@ -108,19 +108,26 @@ describe('XCEL — a brand with no membership', () => {
     const rail = screen.getByRole('navigation', { name: 'Primary' })
     expect(within(rail).queryByRole('button', { name: 'Membership' })).toBeNull()
     expect(within(rail).queryByRole('button', { name: 'Partner Offers' })).toBeNull()
-    // Exam & Cert Prep is XCEL's CORE PRODUCT (the 3-Part Training Program) and
-    // Rubi is a headline feature — hiding them with the same boolean as Partner
-    // Offers is the shortcut this brand must not take.
-    expect(within(rail).getByRole('button', { name: 'Exam & Cert Prep' })).toBeInTheDocument()
-    // "Rubi Insights" since 2026-09-16 — "Rubi AI Tools" from 2026-09-10, and
-    // "AI Study Partner" (XCEL's own wording on its site) before that. Asserted
-    // against `careerToolsLabelFor` rather than the string, because WHICH
-    // XCEL-true name to use is an editorial call that has now moved TWICE; what
-    // must not change is that it is not Elite's.
-    expect(
-      within(rail).getByRole('button', { name: careerToolsLabelFor('xcel') }),
-    ).toBeInTheDocument()
-    // …and it must NOT read "Career Tools", which is Elite's framing of Rubi.
+    /*
+     * ⚠ THIS ASSERTED THE OPPOSITE UNTIL 2026-09-28, and the reason it gave is
+     * worth reading before anyone restores these rows:
+     *
+     *   "Exam & Cert Prep is XCEL's CORE PRODUCT (the 3-Part Training Program)
+     *    and Rubi is a headline feature — hiding them with the same boolean as
+     *    Partner Offers is the shortcut this brand must not take."
+     *
+     * Both rows were archived on Jillienne's direct instruction
+     * (`rail-rows-2026-09-28`). That argument was about not hiding them BY
+     * ACCIDENT, as collateral of the membership boolean — which is still the
+     * thing this file guards. Removing them deliberately is a different act,
+     * and the guard below is what remains true either way: whatever the rail
+     * drops, it must not be dropping it because XCEL sells no membership.
+     */
+    expect(within(rail).queryByRole('button', { name: 'Exam & Cert Prep' })).toBeNull()
+    expect(within(rail).queryByRole('button', { name: careerToolsLabelFor('xcel') })).toBeNull()
+    /* The naming rule outlives the row: `careerToolsLabelFor` is still exported
+       and still must not read "Career Tools", which is Elite's framing of Rubi.
+       A restore re-reads it. */
     expect(careerToolsLabelFor('xcel')).not.toBe('Career Tools')
     expect(within(rail).queryByRole('button', { name: 'Career Tools' })).toBeNull()
   })
