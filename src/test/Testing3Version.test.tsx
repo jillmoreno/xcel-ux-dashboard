@@ -463,6 +463,46 @@ describe('the whole route in one card', () => {
   })
 })
 
+describe('the percentage is the journey’s, not the course’s', () => {
+  /* 2026-10-01, the direct ask: "since 100% means the user has completed the
+     survey and certificate, adjust this 62% to better reflect where the user is
+     in their journey." */
+
+  const figure = () =>
+    [...courseCard().querySelectorAll('span')].find(
+      (el) => /^\d+$/.test(el.textContent ?? '') && el.style.fontSize === '30px',
+    )
+
+  it('counts every stop’s work, not just the lessons', () => {
+    /* 26 of 71: 42 lessons + 1 course exam + 23 prep review + 3 simulators +
+       1 each for the two completion tasks. ⚠ THE EXACT NUMBER IS THE
+       ASSERTION, because every wrong model still produces A number — `hours`
+       alone gives 55, equal-weight stops give 10, and the lesson figure this
+       replaced gives 62. Only the stated model gives 37. */
+    renderShell(T3)
+    expect(figure()?.textContent).toBe('37')
+  })
+
+  it('leaves the lesson figure on Testing’s card', () => {
+    /* ⚠ DERIVED IN THE CARD, NOT PUSHED THROUGH `percent`. That prop still
+       carries 62 — it is what the stats row prints as "26 of 42 lessons" and
+       what every other version's card shows. Moving the derivation to the band
+       would change the number on QE Focused and Testing too, where there is no
+       journey under it to justify it. */
+    renderShell(T1)
+    expect(figure()?.textContent).toBe('62')
+  })
+
+  it('still prints the lesson count beside it, unchanged', () => {
+    /* ⚠ THE TWO NUMBERS NOW IMPLY DIFFERENT RATIOS on one row — 37% beside "26
+       of 42 lessons", which is 62%. That is the deliberate consequence of the
+       ask and the thing to look at: the figure measures the journey, the stat
+       measures the course, and nothing on the card says so yet. */
+    renderShell(T3)
+    expect(within(courseCard()).getByText('26 of 42 lessons')).toBeTruthy()
+  })
+})
+
 describe('the quick buttons', () => {
   it('move below the combined block, and appear exactly once', () => {
     /* ⚠ COUNTED, NOT JUST LOCATED. Moving them is a suppress-here/render-there

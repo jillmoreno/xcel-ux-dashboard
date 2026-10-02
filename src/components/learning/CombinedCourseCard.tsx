@@ -9,7 +9,12 @@ import {
 import type { LearningPathSummary } from '@/data/learningFixtures'
 import { StudyJourneyRail } from './StudyJourneyRail'
 import { journeyStopsFor } from './studyJourneyUtil'
-import { GET_LICENSED_STEPS, jurisdictionName } from '@/data/nyProducerRequirements'
+import {
+  GET_LICENSED_STEPS,
+  jurisdictionName,
+  NY_LH_EXAM_SIMULATORS,
+  NY_LH_PREP_REVIEW_LESSONS,
+} from '@/data/nyProducerRequirements'
 
 /**
  * THE COURSE AND ITS COURSEWORK, AS ONE CARD — Testing 3, 2026-10-01.
@@ -84,7 +89,48 @@ export function CombinedCourseCard({
      its own card on the right. Re-adding a link here would be the second copy
      that `hideSheetLink` existed to prevent. */
 }) {
-  const pct = Math.max(0, Math.min(100, percent))
+  /*
+   * THE FIGURE IS THE JOURNEY'S, NOT THE COURSE'S — 2026-10-01, the direct ask:
+   * "since 100% means the user has completed the survey and certificate, adjust
+   * this 62% to better reflect where the user is in their journey".
+   *
+   * ⚠ THE 62 WAS NEVER WRONG, IT WAS ANSWERING A SMALLER QUESTION. `percent` is
+   * progress through the PRE-LICENSING LESSONS — 26 of 42 — which is exactly
+   * right on every version where this card sits beside a separate Complete
+   * Coursework card. In the combined block the six stops are visible directly
+   * under the figure, and five of them have not been started, so a 62% over a
+   * list that is one-sixth ticked reads as a contradiction rather than as two
+   * different measures.
+   *
+   * ⚠ WEIGHTED BY WORK, NOT BY STOP COUNT. Stop-count parity would make the
+   * one-item Course Exam worth as much as the 42 lessons, so finishing a single
+   * exam would jump the figure ~17 points — and a learner who had finished all
+   * 42 lessons would read 17%. Each stop contributes its own item count
+   * instead; see `stopWeight`.
+   *
+   * ⚠ THE TWO COMPLETION TASKS COUNT AS ONE UNIT EACH. Attestation & Affidavit
+   * and Survey & Certificate carry `hours: null` — they are steps rather than
+   * coursework. Excluding them from the denominator would mean the figure hit
+   * 100% while the Survey & Certificate stop sat unticked, which is precisely
+   * the reading the ask is correcting. One unit is the smallest honest weight.
+   *
+   * ⚠ IT IS DERIVED HERE, NOT PUSHED THROUGH `percent`. That prop still carries
+   * the lesson figure, which is what the stats row beside it prints ("26 of 42
+   * lessons") and what every other version's card shows. Changing it at the
+   * band would move the number on QE Focused and Testing too, where there is no
+   * journey under it to justify the change.
+   */
+  const stopsForPct = journeyStopsFor(path)
+  const journeyTotal = stopsForPct.reduce((n, st) => n + stopWeight(st.id, st.hours), 0)
+  const journeyDone = stopsForPct.reduce(
+    (n, st) =>
+      n + (st.status === 'completed' ? stopWeight(st.id, st.hours) : (st.completed ?? 0)),
+    0,
+  )
+  const pct =
+    journeyTotal > 0
+      ? Math.max(0, Math.min(100, Math.round((journeyDone / journeyTotal) * 100)))
+      : Math.max(0, Math.min(100, percent))
   const showPercent = pct > 0
 
   /*
@@ -107,8 +153,7 @@ export function CombinedCourseCard({
    * `findIndex` the rail uses, so the two cannot disagree about which stop is
    * live.
    */
-  const stops = journeyStopsFor(path)
-  const currentStopIndex = stops.findIndex((st) => st.status !== 'completed')
+  const currentStopIndex = stopsForPct.findIndex((st) => st.status !== 'completed')
   const nestLesson = !complete && currentStopIndex >= 0
 
   /* LO-FI — the shell stays, the detail goes, and the shell is now TALLER
@@ -311,6 +356,38 @@ export function CombinedCourseCard({
       ))}
     </section>
   )
+}
+
+/**
+ * How much of the journey one stop is worth.
+ *
+ * ⚠ `hours` IS NOT ENOUGH, and finding that out is what this function exists to
+ * record. Only two of the six stops carry one — Pre-Licensing Lessons (42) and
+ * Course Exam (1). Prep Review's 23 and Simulated Exams' 3 ride on the stop's
+ * LABEL and, in `studyJourneyUtil`'s own words, "nowhere near the gauge's
+ * denominator". A first cut weighted everything by `hours ?? 1` and measured
+ * 55% in the browser, because the 23-item Prep Review counted the same as a
+ * single attestation — and it would have read 89% with all five later stops
+ * untouched, which is the same overstatement the ask is correcting.
+ *
+ * ⚠ SO THIS DOES PULL THOSE TWO LABEL COUNTS INTO A DENOMINATOR, which that
+ * note cautions against. The caution is about the shared progress GAUGE, whose
+ * denominator comes from `dashboardProgressFixtures`; this is a figure local to
+ * Testing 3's combined card and it changes nothing the gauge reads. Worth
+ * knowing the tension exists — if those counts are ever found to be unreliable,
+ * this is a second place that trusted them.
+ *
+ * ⚠ THE TWO COMPLETION TASKS ARE WORTH 1. Attestation & Affidavit and Survey &
+ * Certificate are steps rather than coursework and have no count at all.
+ * Excluding them would let the figure reach 100% with Survey & Certificate
+ * unticked — exactly the reading the ask is correcting. One is the smallest
+ * honest weight.
+ */
+function stopWeight(id: string, hours: number | null): number {
+  if (hours != null) return hours
+  if (id === 'prep-review-course') return NY_LH_PREP_REVIEW_LESSONS
+  if (id === 'exam-simulators') return NY_LH_EXAM_SIMULATORS
+  return 1
 }
 
 /**
