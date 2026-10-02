@@ -539,6 +539,26 @@ export function StudyJourneyRail({
                       return (
                         <span style={syllabusSpineSplitStyle}>
                           <span style={{ ...syllabusSpineDoneStyle, flex: pct }} />
+                          {/* THE CARET IS A SEGMENT OF THE SPINE — 2026-10-01,
+                              the direct ask ("this line should not go past the
+                              bottom of the triangle").
+
+                              ⚠ IT IS IN FLOW, NOT FLOATING BESIDE IT, and that
+                              is the whole fix. It began life absolutely
+                              positioned off the lesson block, so its offset and
+                              the fill's 62% were two independent numbers that
+                              happened to land near each other — the blue ran
+                              past it because nothing said it should not. As a
+                              flex item between the two halves, the solid length
+                              ENDS where the triangle starts by construction,
+                              and it stays true at any percentage.
+
+                              ⚠ IT ALSO MOVED FILES, from `CombinedCourseCard`
+                              to here. A mark whose position is defined by the
+                              spine belongs to the spine; owning it there meant
+                              the card had to know this rail's gutter
+                              arithmetic. */}
+                          <span aria-hidden style={syllabusSpineCaretStyle} />
                           <span
                             style={{
                               flex: 100 - pct,
@@ -1309,6 +1329,34 @@ const syllabusSpineDoneStyle: CSSProperties = {
   ...spineStyle,
   minHeight: 14,
   background: 'var(--color-primary-700)',
+}
+
+/**
+ * The caret that marks the progress point, pointing right at the live lesson.
+ *
+ * ⚠ THE OFFSET IS MEASURED FROM THE LINE, NOT FROM THE RAIL COLUMN. This sits
+ * inside `syllabusSpineSplitStyle`, which is the 2px-wide spine itself — not
+ * the 26px column around it. Two wrong turns got here and both are worth the
+ * ink: `marginLeft: 4` under the column's `align-items: center` shifted the
+ * MARGIN BOX and moved the triangle by half what was written (measured x=101
+ * against a line ending at 99); `flex-start` + 14 then assumed the 26px column
+ * was the parent and threw it to x=111. The parent's left edge IS the line's
+ * left edge, so 2 is the line's width and puts the base exactly on its right
+ * edge. The 6px triangle overflows this 2px box deliberately — nothing clips.
+ *
+ * A border triangle rather than an SVG: 6px of pure geometry, the registry has
+ * no triangle, and a glyph at this size would bring font metrics to fight with.
+ * The colour is the node's and the filled spine's — one mark in three parts.
+ */
+const syllabusSpineCaretStyle: CSSProperties = {
+  flexShrink: 0,
+  alignSelf: 'flex-start',
+  marginLeft: 2,
+  width: 0,
+  height: 0,
+  borderTop: '5px solid transparent',
+  borderBottom: '5px solid transparent',
+  borderLeft: '6px solid var(--color-primary-700)',
 }
 
 /** The container for a PART-FILLED segment — the same box `syllabusSpineStyle`

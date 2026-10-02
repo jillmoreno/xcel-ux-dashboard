@@ -167,16 +167,28 @@ describe('the lesson line, nested in the coursework', () => {
        blue would break a set that only just became one. */
     renderShell(T3)
     const li = within(courseCard()).getByText(/Pre-Licensing Lessons/).closest('li')!
-    const caret = [...li.querySelectorAll('span')].find((el) =>
-      (el as HTMLElement).style.borderLeft?.includes('solid'),
-    ) as HTMLElement
-    expect(caret, 'no caret beside the lesson block').toBeTruthy()
+    /* ⚠ IT IS A SEGMENT OF THE SPINE, not a mark beside the lesson block — so
+       it is asserted as the split connector's MIDDLE CHILD. That ordering is
+       the fix for "the line should not go past the triangle": the solid half
+       ends where this starts, by construction rather than by two offsets
+       happening to agree. */
+    const split = li.querySelector('span[aria-hidden] > span:nth-child(2)') as HTMLElement
+    const [solid, caret, dashed] = [...split.children] as HTMLElement[]
+    expect(caret, 'no caret in the spine').toBeTruthy()
+    expect(solid.style.background).toContain('--color-primary-700')
+    expect(dashed.style.borderLeft).toContain('dashed')
     expect(caret.style.borderLeft).toContain('--color-primary-700')
     /* A right-pointing border triangle: solid on the left, transparent above
        and below, and no box of its own. */
     expect(caret.style.borderTop).toContain('transparent')
     expect(caret.style.borderBottom).toContain('transparent')
     expect(caret.style.width).toBe('0px')
+    /* ⚠ THE OFFSET IS AGAINST THE 2px SPINE, which is this element's parent —
+       NOT against the 26px rail column. Two wrong turns landed the triangle at
+       x=101 and x=111 before 2 put its base on the line; a refactor that
+       re-parents this needs to re-derive the number, not keep it. */
+    expect(caret.style.marginLeft).toBe('2px')
+    expect(caret.style.alignSelf).toBe('flex-start')
     /* ⚠ `aria-hidden`, like every other mark in this rail — the row's text
        already names the lesson, and a triangle announced to a screen reader is
        noise about a shape. */
@@ -245,7 +257,10 @@ describe('the coursework stop says how far in the learner is', () => {
     renderShell(T3)
     const li = within(courseCard()).getByText(/Pre-Licensing Lessons/).closest('li')!
     const spine = li.querySelector('span[aria-hidden] > span:nth-child(2)') as HTMLElement
-    const [filled, rest] = [...spine.children] as HTMLElement[]
+    /* ⚠ THREE CHILDREN, NOT TWO — the caret sits BETWEEN the halves as of
+       2026-10-01, which is what stops the blue running past it. A `[filled,
+       rest]` destructure put the caret in `rest` and failed on its colour. */
+    const [filled, , rest] = [...spine.children] as HTMLElement[]
     expect(filled, 'the connector is not split').toBeTruthy()
     /* ⚠ READ THE SHORTHAND, NOT THE LONGHAND. `border-left` here carries a
        `var()`, which the engine cannot decompose at parse time — so
@@ -274,7 +289,10 @@ describe('the coursework stop says how far in the learner is', () => {
     renderShell(T3)
     const li = within(courseCard()).getByText(/Pre-Licensing Lessons/).closest('li')!
     const spine = li.querySelector('span[aria-hidden] > span:nth-child(2)') as HTMLElement
-    const [filled, rest] = [...spine.children] as HTMLElement[]
+    /* ⚠ THREE CHILDREN, NOT TWO — the caret sits BETWEEN the halves as of
+       2026-10-01, which is what stops the blue running past it. A `[filled,
+       rest]` destructure put the caret in `rest` and failed on its colour. */
+    const [filled, , rest] = [...spine.children] as HTMLElement[]
     expect(filled.style.background).toContain('--color-primary-700')
     expect(rest.style.borderLeft).toContain('--color-border-subtle')
   })
