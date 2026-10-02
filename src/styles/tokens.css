@@ -1292,6 +1292,48 @@ html,
 .cre-tile-cta--bare {
   border-color: transparent;
 }
+/* …and its hover is a 40% TINT rather than the full reversal — 2026-10-01, the
+   direct ask. Without an outline the rows are a list, and a list row that goes
+   solid navy under the cursor reads as a selection rather than as a hover.
+
+   ⚠ THE INK STAYS THE INK. The outlined arm flips its text to the surface
+   colour because the fill is solid; at 40% the fill is pale and white text on
+   it is unreadable. So this overrides the `color` the shared hover rule sets
+   and leaves the label and icon where they were — the TINT is the whole signal.
+
+   ⚠ THE BORDER FOLLOWS THE TINT, not the full fill. The shared rule repaints
+   it to `--color-primary-500`, which against a 40% ground would draw a hard
+   edge round a soft row.
+
+   ⚠ 40% INTO THE PAGE, NOT 40% ALPHA. Both spellings work; this is the form
+   the repo already uses (`ExamScheduleWidget`'s card tint) and it keeps the
+   result a solid colour. THE COST, stated because it is invisible until it
+   bites: the page surface is baked into the mix, so these rows must sit on the
+   page. Drop them onto a card and the tint will be computed against the wrong
+   ground — `transparent` would composite over whatever is behind instead.
+
+   ⚠ EVERY `color-mix` IN THIS FILE GETS A LEGACY FALLBACK from the build, and
+   that fallback hard-codes a LITERAL — here `rgb(2, 143, 129)`, a teal that is
+   neither this brand's navy nor the dark theme's stop. The `@supports (color:
+   color-mix(in lab, …))` block beside it wins in every current browser, so it
+   is not a live defect, but a browser old enough to miss that query renders a
+   stranger's colour. Not introduced here and not specific to this rule; worth
+   knowing before anyone trusts a `color-mix` fallback.
+
+   Measured on the rendered page: tint rgb(165, 182, 193), ink rgb(29, 56, 73),
+   5.88:1 — AA for normal text, which white-on-40% would not have been. */
+.cre-tile-cta--bare:hover,
+.cre-tile-cta--bare:focus-visible {
+  background: color-mix(in srgb, var(--color-primary-500) 40%, var(--color-surface-page));
+  border-color: transparent;
+  color: var(--color-primary-700);
+}
+[data-theme='dark'] .cre-tile-cta--bare:hover,
+[data-theme='dark'] .cre-tile-cta--bare:focus-visible {
+  background: color-mix(in srgb, var(--color-primary-300) 40%, var(--color-surface-page));
+  border-color: transparent;
+  color: var(--color-primary-900);
+}
 
 [data-theme='dark'] .cre-tile-cta {
   color: var(--color-primary-300);
