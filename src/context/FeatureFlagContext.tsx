@@ -865,6 +865,27 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'journey-scale-style',
+    group: 'Widgets',
+    label: 'Coursework timeline \u2014 how 0/100 is shown',
+    description:
+      'FOUR WAYS TO PUT A PERCENTAGE ON Testing 3\u2019s vertical coursework timeline. **`gauge`** (default) turns the spine itself into one continuous track filled to the figure, with 0 at its top, 100 at its foot and the figure at the fill boundary; the stop nodes ride on it. **`axis`** is the first attempt: the per-stop spine kept, with 0 and 100 as digits bracketing the list and the figure beside the progress caret. **`chip`** drops 0 and 100 entirely and puts the figure as a small pill on the stop the learner is on. **`header`** lifts the whole scale out of the column into one horizontal track under \u201cComplete Coursework\u201d, leaving the timeline a plain list. \u26a0 THE TENSION THEY ANSWER DIFFERENTLY: the rows are spaced by their CONTENT\u2019s height, not by how much work each stop is \u2014 so a figure placed next to the current stop is in the right place but not at the right HEIGHT, and a figure placed at its true height sits beside a stop the learner has not reached. `axis` and `chip` choose position; `gauge` and `header` choose proportion. \u26a0 ALL FOUR STATE THE SAME NUMBER, and the nodes still say which stop is live under every one, so none of them loses \u201cwhere am I\u201d. No effect outside Testing 3.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    /* ⚠ `gauge` OPENS, not `axis`. The ask that started this was that the axis
+       "is not doing great" — so the arm that answers its actual defect
+       (a scale whose marks are not proportional) is the one to look at first.
+       The other three are one click away and nothing is decided. */
+    defaultVariant: 'gauge',
+    variants: [
+      { value: 'gauge', label: 'Gauge \u2014 the spine IS the scale' },
+      { value: 'axis', label: 'Axis \u2014 0/100 bracketing the list' },
+      { value: 'chip', label: 'Chip \u2014 the figure on the live stop' },
+      { value: 'header', label: 'Header \u2014 a horizontal scale above' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'home-tile-style',
     group: 'Widgets',
     label: 'Right rail \u2014 tile shape',

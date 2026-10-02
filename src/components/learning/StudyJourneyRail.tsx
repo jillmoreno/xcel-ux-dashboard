@@ -79,6 +79,7 @@ export function StudyJourneyRail({
   stepNumber = 1,
   stepLabelOnly = false,
   markerLabel,
+  scaleStyle = 'axis',
   stopDetail,
   lessonProgressTitle = false,
   progressSpine = false,
@@ -143,6 +144,19 @@ export function StudyJourneyRail({
    * only draws it.
    */
   markerLabel?: string
+  /**
+   * HOW `markerLabel` IS DRAWN — `journey-scale-style`, 2026-10-02. Four
+   * answers to one problem, none of them yet chosen.
+   *
+   * ⚠ THE PROBLEM IS THAT THESE ROWS ARE NOT A SCALE. They are spaced by their
+   * CONTENT's height, so a figure placed beside the current stop is in the
+   * right PLACE but not at the right HEIGHT, and a figure placed at its true
+   * height sits beside a stop the learner has not reached. `axis` and `chip`
+   * choose position; `gauge` and `header` choose proportion. Every arm still
+   * leans on the NODES to say which stop is live, so none of them loses "where
+   * am I" — that is what makes them comparable.
+   */
+  scaleStyle?: 'axis' | 'gauge' | 'chip' | 'header'
   /**
    * Extra content nested UNDER one stop's row — Testing 3, 2026-10-01, the
    * direct ask ("move the lesson section to be within the complete coursework,
@@ -266,6 +280,16 @@ export function StudyJourneyRail({
   // The stop the learner is ON — the first not-yet-finished one. Drives the
   // filled node, so "where am I" is answerable without reading every row.
   const currentIndex = stops.findIndex((s) => s.status !== 'completed')
+  /* ⚠ EVERY ARM IS GATED ON `markerLabel`, not on `scaleStyle` alone — the
+     style says HOW, the label says WHETHER. A caller that wants no figure at
+     all passes no label and gets the rail exactly as it was. */
+  const scaleAxis = Boolean(markerLabel) && scaleStyle === 'axis'
+  const scaleGauge = Boolean(markerLabel) && scaleStyle === 'gauge'
+  const scaleChip = Boolean(markerLabel) && scaleStyle === 'chip'
+  const scaleHeader = Boolean(markerLabel) && scaleStyle === 'header'
+  /* The figure as a number, for the arms that position by proportion. A label
+     that is not a percentage leaves them at 0 rather than throwing. */
+  const markerPct = Math.max(0, Math.min(100, Number.parseFloat(markerLabel ?? '') || 0))
 
   if (stops.length === 0) return null
 
@@ -349,7 +373,25 @@ export function StudyJourneyRail({
           reading "0" would be announced as a stop in an ordered list of stops,
           and `aria-hidden` on the column is what already keeps the spine out of
           the reading order — these belong to the same mark. */}
-      {markerLabel ? (
+      {scaleHeader ? (
+        /* ── HEADER ──────────────────────────────────────────────────────
+           The scale leaves the column entirely: one horizontal track under the
+           heading with 0 and 100 at its ends and the figure over the fill. The
+           timeline below is then a plain list of stops with nothing competing
+           down its left edge — which is the point of this arm. */
+        <div aria-hidden style={headerScaleWrapStyle}>
+          <div style={headerScaleRowStyle}>
+            <span style={headerScaleCapStyle}>0</span>
+            <span style={headerScaleTrackStyle}>
+              <span style={{ ...headerScaleFillStyle, width: `${markerPct}%` }} />
+              <span style={{ ...headerScaleKnobStyle, left: `${markerPct}%` }} />
+            </span>
+            <span style={headerScaleCapStyle}>100</span>
+          </div>
+          <p style={{ ...headerScaleFigureStyle, marginLeft: `${markerPct}%` }}>{markerLabel}</p>
+        </div>
+      ) : null}
+      {scaleAxis ? (
         <p aria-hidden style={axisCapStyle}>
           0
         </p>
@@ -358,13 +400,48 @@ export function StudyJourneyRail({
           wrapper shifted the "Step 1 / Complete Coursework" heading with it,
           which broke its alignment with the card's own eyebrow and with steps 2
           and 3 below. Only the axis needs the gutter. */}
-      <ol aria-label="Study journey stops" style={markerLabel ? axisListStyle : listStyle}>
+      <ol
+        aria-label="Study journey stops"
+        style={scaleAxis || scaleGauge ? axisListStyle : listStyle}
+      >
+        {scaleGauge ? (
+          /* ── GAUGE ──────────────────────────────────────────────────────
+             The spine IS the scale. One continuous track behind the nodes,
+             filled from the top to the figure, with 0 and 100 at its ends.
+
+             ⚠ ABSOLUTE, SO IT SPANS THE WHOLE LIST. The per-row segments are
+             drawn transparent under this arm (see the connector below) — a
+             track assembled out of them would be filled by ROW, which is the
+             very thing this arm exists to stop.
+
+             ⚠ ITS FILL WILL NOT LINE UP WITH THE LIVE NODE, and that is the
+             honest trade rather than a bug: the fill is at the figure's true
+             height, the node states say which stop is live, and the two are
+             different facts. The arms that put the figure beside the node make
+             the opposite trade. */
+          <span aria-hidden style={gaugeTrackStyle}>
+            <span style={{ ...gaugeFillStyle, height: `${markerPct}%` }} />
+            <span style={{ ...gaugeKnobStyle, top: `${markerPct}%` }} />
+            <span style={{ ...gaugeFigureStyle, top: `${markerPct}%` }}>{markerLabel}</span>
+            <span style={gaugeCapTopStyle}>0</span>
+            <span style={gaugeCapBottomStyle}>100</span>
+          </span>
+        ) : null}
         {stops.map((stop, i) => {
           const isCurrent = i === currentIndex
           const isLast = i === stops.length - 1
           // A blocked completion task is not a link. It has nothing to open
           // yet, and a chevron on it promises otherwise.
           const interactive = Boolean(onOpenStop) && !stop.blocked
+          /* ── CHIP ────────────────────────────────────────────────────────
+             No 0, no 100, no gutter: the figure is a pill on the stop the
+             learner is on. The least furniture of the four, and the only one
+             that states a percentage without implying a scale it cannot keep.
+             What it gives up is any sense of how much is LEFT. */
+          const chip =
+            scaleChip && isCurrent ? (
+              <span style={scaleChipStyle}>{markerLabel}</span>
+            ) : null
           const label = (
             <>
               {/* MILESTONE TITLES ARE NOT COLOURED (2026-09-16). They were
@@ -424,9 +501,13 @@ export function StudyJourneyRail({
                   }}
                 >
                   {stop.title}
+                  {chip}
                 </span>
               ) : (
-                <span style={titleStyle}>{stop.title}</span>
+                <span style={titleStyle}>
+                  {stop.title}
+                  {chip}
+                </span>
               )}
               {/* NEVER COLOUR ALONE. The node says the state in hue (green +
                   check / filled / hollow) and this says it in words — the rule
@@ -583,6 +664,14 @@ export function StudyJourneyRail({
                        ⚠ SAME COLOUR BOTH HALVES. The difference is solid vs
                        dashed — a texture, not a third status hue on a rail that
                        deliberately says everything in words. */
+                    /* ⚠ THE GAUGE DRAWS ITS OWN LINE, so these per-row
+                       segments go INVISIBLE under that arm rather than being
+                       skipped — they still have to occupy their height, or the
+                       nodes would collapse together and the absolute track
+                       would span a list that is no longer the right length. */
+                    if (scaleGauge) {
+                      return <span style={gaugeHiddenSegmentStyle} />
+                    }
                     const pct =
                       progressSpine && syllabus && stop.status === 'in-progress'
                         ? Math.max(0, Math.min(100, stop.progress ?? 0))
@@ -611,7 +700,11 @@ export function StudyJourneyRail({
                               the card had to know this rail's gutter
                               arithmetic. */}
                           <span aria-hidden style={syllabusSpineCaretWrapStyle}>
-                            {markerLabel ? (
+                            {/* The figure rides the caret on `axis` ONLY. On
+                                `chip` it is a pill on the row, on `gauge` it is
+                                on the track, and on `header` it has left the
+                                column altogether. */}
+                            {scaleAxis ? (
                               <span style={syllabusSpineMarkerStyle}>{markerLabel}</span>
                             ) : null}
                             <span style={syllabusSpineCaretStyle} />
@@ -683,7 +776,7 @@ export function StudyJourneyRail({
           )
         })}
       </ol>
-      {markerLabel ? (
+      {scaleAxis ? (
         <p aria-hidden style={axisCapStyle}>
           100
         </p>
@@ -1410,6 +1503,156 @@ const syllabusSpineDoneStyle: CSSProperties = {
  * no triangle, and a glyph at this size would bring font metrics to fight with.
  * The colour is the node's and the filled spine's — one mark in three parts.
  */
+/* ─── the four scale treatments (`journey-scale-style`) ─────────────────── */
+
+/* CHIP — the figure as a pill on the live stop's own title line. Inline, so it
+   follows the title's wrap rather than pinning to a corner the title may have
+   vacated. */
+const scaleChipStyle: CSSProperties = {
+  display: 'inline-block',
+  marginLeft: 8,
+  padding: '1px 7px',
+  borderRadius: 'var(--radius-pill)',
+  background: 'color-mix(in srgb, var(--color-primary-500) 20%, var(--color-surface-card))',
+  fontFamily: 'var(--font-body)',
+  fontSize: 10,
+  fontWeight: 700,
+  letterSpacing: '0.04em',
+  color: 'var(--color-primary-700)',
+  verticalAlign: 'middle',
+  whiteSpace: 'nowrap',
+}
+
+/* GAUGE — one continuous track behind the nodes, spanning the whole list.
+   Absolute, because a track built from the per-row segments would fill by ROW,
+   which is the thing this arm exists to stop. `left: 12` centres its 2px on the
+   26px rail column, the same place the segments sit. */
+const gaugeTrackStyle: CSSProperties = {
+  position: 'absolute',
+  left: 12,
+  top: 10,
+  bottom: 10,
+  width: 2,
+  borderRadius: 'var(--radius-pill)',
+  background: 'var(--color-border-subtle)',
+}
+
+const gaugeFillStyle: CSSProperties = {
+  position: 'absolute',
+  left: 0,
+  top: 0,
+  width: 2,
+  borderRadius: 'var(--radius-pill)',
+  background: 'var(--color-primary-700)',
+}
+
+/** The fill boundary, which is what a reader's eye lands on. Centred on the
+ *  track by half its own size. */
+const gaugeKnobStyle: CSSProperties = {
+  position: 'absolute',
+  left: -3,
+  width: 8,
+  height: 8,
+  marginTop: -4,
+  borderRadius: '50%',
+  background: 'var(--color-primary-700)',
+}
+
+const gaugeFigureStyle: CSSProperties = {
+  position: 'absolute',
+  right: '100%',
+  marginRight: 8,
+  transform: 'translateY(-50%)',
+  fontFamily: 'var(--font-body)',
+  fontSize: 9,
+  fontWeight: 700,
+  letterSpacing: '0.04em',
+  whiteSpace: 'nowrap',
+  color: 'var(--color-primary-700)',
+}
+
+const gaugeCapBase: CSSProperties = {
+  position: 'absolute',
+  left: '50%',
+  transform: 'translateX(-50%)',
+  fontFamily: 'var(--font-body)',
+  fontSize: 9,
+  fontWeight: 700,
+  letterSpacing: '0.06em',
+  whiteSpace: 'nowrap',
+  color: 'var(--color-text-tertiary)',
+}
+
+const gaugeCapTopStyle: CSSProperties = { ...gaugeCapBase, bottom: '100%', marginBottom: 4 }
+const gaugeCapBottomStyle: CSSProperties = { ...gaugeCapBase, top: '100%', marginTop: 4 }
+
+/** The per-row segment under the gauge: invisible, but still occupying its
+ *  height so the nodes keep their spacing and the track spans the right list. */
+const gaugeHiddenSegmentStyle: CSSProperties = {
+  flex: 1,
+  width: 2,
+  minHeight: 14,
+  marginTop: 2,
+}
+
+/* HEADER — the whole scale, horizontal, above the list. */
+const headerScaleWrapStyle: CSSProperties = { margin: '12px 0 2px' }
+
+const headerScaleRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+}
+
+const headerScaleCapStyle: CSSProperties = {
+  flexShrink: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 9,
+  fontWeight: 700,
+  letterSpacing: '0.06em',
+  color: 'var(--color-text-tertiary)',
+}
+
+const headerScaleTrackStyle: CSSProperties = {
+  position: 'relative',
+  flex: 1,
+  minWidth: 0,
+  height: 4,
+  borderRadius: 'var(--radius-pill)',
+  background: 'var(--color-border-subtle)',
+}
+
+const headerScaleFillStyle: CSSProperties = {
+  position: 'absolute',
+  left: 0,
+  top: 0,
+  height: 4,
+  borderRadius: 'var(--radius-pill)',
+  background: 'var(--color-primary-700)',
+}
+
+const headerScaleKnobStyle: CSSProperties = {
+  position: 'absolute',
+  top: -3,
+  width: 10,
+  height: 10,
+  marginLeft: -5,
+  borderRadius: '50%',
+  background: 'var(--color-primary-700)',
+}
+
+/** The figure under the knob. `marginLeft` as a percentage of the ROW puts it
+ *  near the knob without needing a second absolute context; it drifts by the
+ *  caps' width, which at these sizes is a few pixels. */
+const headerScaleFigureStyle: CSSProperties = {
+  margin: '6px 0 0',
+  fontFamily: 'var(--font-body)',
+  fontSize: 9,
+  fontWeight: 700,
+  letterSpacing: '0.04em',
+  color: 'var(--color-primary-700)',
+}
+
 /**
  * The axis end caps — "0" over the first node, "100" under the last.
  *
@@ -1432,7 +1675,7 @@ const axisCapStyle: CSSProperties = {
 /** The stops list, indented to leave room for the axis figures that hang left
  *  of the spine. 30 is the label's width plus its 6px standoff and a little
  *  air — "37%" measured 26px at 9px/700. */
-const axisListStyle: CSSProperties = { ...listStyle, paddingLeft: 30 }
+const axisListStyle: CSSProperties = { ...listStyle, position: 'relative', paddingLeft: 30 }
 
 /**
  * The caret plus its figure. `relative` so the label can hang to the LEFT of

@@ -9,6 +9,7 @@ import {
 import type { LearningPathSummary } from '@/data/learningFixtures'
 import { StudyJourneyRail } from './StudyJourneyRail'
 import { journeyStopsFor } from './studyJourneyUtil'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import {
   GET_LICENSED_STEPS,
   jurisdictionName,
@@ -118,6 +119,12 @@ export function CombinedCourseCard({
    * band would move the number on QE Focused and Testing too, where there is no
    * journey under it to justify the change.
    */
+  const scaleStyle =
+    (useFeatureFlag('journey-scale-style').variant as
+      | 'axis'
+      | 'gauge'
+      | 'chip'
+      | 'header') ?? 'gauge'
   const stopsForPct = journeyStopsFor(path)
   const journeyTotal = stopsForPct.reduce((n, st) => n + stopWeight(st.id, st.hours), 0)
   const journeyDone = stopsForPct.reduce(
@@ -358,6 +365,9 @@ export function CombinedCourseCard({
            says how far that is through the whole route, so the rail and the
            card's big number cannot disagree. 2026-10-01, the direct ask. */
         markerLabel={`${pct}%`}
+        /* HOW that figure is drawn — `journey-scale-style`, four arms under
+           comparison. The card supplies the number; the rail owns the shapes. */
+        scaleStyle={scaleStyle}
         stopDetail={
           nestLesson
             ? (_id, { isCurrent }) =>

@@ -183,7 +183,11 @@ describe('the lesson line, nested in the coursework', () => {
        ⚠ THE COLOUR IS THE ASSERTION AS MUCH AS THE SHAPE. The node, the filled
        spine and this caret are one mark in three parts; a caret in any other
        blue would break a set that only just became one. */
-    renderShell(T3)
+    /* ⚠ PINS THE `axis` ARM. `journey-scale-style` defaults to `gauge` as of
+       2026-10-02, which draws ONE continuous track instead of per-row segments
+       — so everything this asserts about the spine belongs to the arm that
+       still has one. The other arms have their own tests below. */
+    renderShell(`${T3}&ff=journey-scale-style:axis`)
     const li = within(courseCard()).getByText(/Pre-Licensing Lessons/).closest('li')!
     /* ⚠ IT IS A SEGMENT OF THE SPINE, not a mark beside the lesson block — so
        it is asserted as the split connector's MIDDLE CHILD. That ordering is
@@ -322,7 +326,11 @@ describe('the coursework stop says how far in the learner is', () => {
        every `getBoundingClientRect` here is 0; the ratio lives in the style and
        that is the thing a refactor to percentage heights would break (see the
        note at the call site for why percentages collapse in some engines). */
-    renderShell(T3)
+    /* ⚠ PINS THE `axis` ARM. `journey-scale-style` defaults to `gauge` as of
+       2026-10-02, which draws ONE continuous track instead of per-row segments
+       — so everything this asserts about the spine belongs to the arm that
+       still has one. The other arms have their own tests below. */
+    renderShell(`${T3}&ff=journey-scale-style:axis`)
     const li = within(courseCard()).getByText(/Pre-Licensing Lessons/).closest('li')!
     const spine = li.querySelector('span[aria-hidden] > span:nth-child(2)') as HTMLElement
     /* ⚠ THREE CHILDREN, NOT TWO — the caret sits BETWEEN the halves as of
@@ -349,7 +357,11 @@ describe('the coursework stop says how far in the learner is', () => {
        how far that is through the whole route. Two numbers for two questions,
        and the one on the rail has to match the one in the card's big figure or
        the page contradicts itself. */
-    renderShell(T3)
+    /* ⚠ PINS THE `axis` ARM. `journey-scale-style` defaults to `gauge` as of
+       2026-10-02, which draws ONE continuous track instead of per-row segments
+       — so everything this asserts about the spine belongs to the arm that
+       still has one. The other arms have their own tests below. */
+    renderShell(`${T3}&ff=journey-scale-style:axis`)
     const card = courseCard()
     const caps = [...card.querySelectorAll('p')]
       .map((el) => el.textContent?.trim())
@@ -363,7 +375,11 @@ describe('the coursework stop says how far in the learner is', () => {
     /* ⚠ THEY BRACKET THE `<ol>`, they are not `<li>`s. A list item reading "0"
        would be announced as a stop in an ordered list OF stops — the spine is
        `aria-hidden` for exactly that reason and these belong to the same mark. */
-    renderShell(T3)
+    /* ⚠ PINS THE `axis` ARM. `journey-scale-style` defaults to `gauge` as of
+       2026-10-02, which draws ONE continuous track instead of per-row segments
+       — so everything this asserts about the spine belongs to the arm that
+       still has one. The other arms have their own tests below. */
+    renderShell(`${T3}&ff=journey-scale-style:axis`)
     const ol = courseCard().querySelector('ol[aria-label="Study journey stops"]')!
     expect(ol.textContent).not.toMatch(/^0/)
     expect([...ol.querySelectorAll('li')].some((li) => li.textContent?.trim() === '100')).toBe(
@@ -392,7 +408,11 @@ describe('the coursework stop says how far in the learner is', () => {
        solid-vs-dashed TEXTURE carries the distinction and the row's text
        carries the count, so colour here is reinforcement and the rail reads
        correctly without it (2.1.4.1). */
-    renderShell(T3)
+    /* ⚠ PINS THE `axis` ARM. `journey-scale-style` defaults to `gauge` as of
+       2026-10-02, which draws ONE continuous track instead of per-row segments
+       — so everything this asserts about the spine belongs to the arm that
+       still has one. The other arms have their own tests below. */
+    renderShell(`${T3}&ff=journey-scale-style:axis`)
     const li = within(courseCard()).getByText(/Pre-Licensing Lessons/).closest('li')!
     const spine = li.querySelector('span[aria-hidden] > span:nth-child(2)') as HTMLElement
     /* ⚠ THREE CHILDREN, NOT TWO — the caret sits BETWEEN the halves as of
@@ -733,6 +753,91 @@ describe('the Are you ready stub', () => {
   it('does not appear on Testing', () => {
     renderShell(T1)
     expect(document.querySelector('section[aria-label="Are you ready"]')).toBeNull()
+  })
+})
+
+describe('journey-scale-style — four ways to show 0 / 37 / 100', () => {
+  /* 2026-10-02, the direct ask: the first attempt "is not doing great", so
+     explore. Nothing is chosen — these pin that all four exist, differ, and
+     state the same number.
+
+     ⚠ THE PROBLEM THEY SPLIT ON: these rows are spaced by their CONTENT's
+     height, not by how much work each stop is. So a figure beside the current
+     stop is in the right PLACE but the wrong HEIGHT, and a figure at its true
+     height sits beside a stop the learner has not reached. `axis` and `chip`
+     choose position; `gauge` and `header` choose proportion. */
+
+  const arm = (v: string) => `${T3}&ff=journey-scale-style:${v}`
+
+  it('is in the catalog with four arms, opening on the gauge', () => {
+    const flag = FEATURE_FLAGS.find((f) => f.key === 'journey-scale-style')
+    expect(flag?.variants?.map((v) => v.value)).toEqual(['gauge', 'axis', 'chip', 'header'])
+    /* ⚠ `gauge` OPENS, NOT `axis`. The arm that answers the stated defect is
+       the one to look at first; nothing is decided by that. */
+    expect(flag?.defaultVariant).toBe('gauge')
+  })
+
+  it('states the same figure under every arm', () => {
+    /* ⚠ THE ONE THING ALL FOUR MUST SHARE. A variant that drew a different
+       number would not be a presentation choice, it would be a second claim
+       about the learner's progress. */
+    for (const v of ['gauge', 'axis', 'chip', 'header']) {
+      renderShell(arm(v))
+      expect(courseCard().textContent, v).toContain('37%')
+      cleanup()
+    }
+  })
+
+  it('gauge: one continuous track, no per-row dashes', () => {
+    renderShell(arm('gauge'))
+    const ol = courseCard().querySelector('ol[aria-label="Study journey stops"]') as HTMLElement
+    /* The track is the ol's own child, not a row's — that is what lets it span
+       the list rather than being filled row by row. */
+    const track = [...ol.children].find((el) => el.tagName === 'SPAN') as HTMLElement
+    expect(track, 'no continuous track').toBeTruthy()
+    expect(track.style.position).toBe('absolute')
+    expect(track.textContent).toContain('0')
+    expect(track.textContent).toContain('100')
+    /* …and the segments inside the rows carry no dash any more. */
+    const li = within(courseCard()).getByText(/Pre-Licensing Lessons/).closest('li')!
+    expect(li.innerHTML).not.toContain('dashed')
+  })
+
+  it('chip: the figure rides the live stop, with no 0 or 100 anywhere', () => {
+    renderShell(arm('chip'))
+    const card = courseCard()
+    const li = within(card).getByText(/Pre-Licensing Lessons/).closest('li')!
+    expect(li.textContent).toContain('37%')
+    /* ⚠ NO SCALE AT ALL on this arm — it states a percentage without implying
+       a scale it cannot keep. What it gives up is any sense of how much is
+       LEFT, which is the trade to judge. */
+    const caps = [...card.querySelectorAll('p, span')]
+      .map((el) => el.textContent?.trim())
+      .filter((t) => t === '0' || t === '100')
+    expect(caps).toEqual([])
+  })
+
+  it('header: the scale leaves the column for a horizontal track', () => {
+    renderShell(arm('header'))
+    const card = courseCard()
+    const ol = card.querySelector('ol[aria-label="Study journey stops"]')!
+    const zero = [...card.querySelectorAll('span')].find((el) => el.textContent?.trim() === '0')!
+    expect(zero, 'no 0 cap').toBeTruthy()
+    /* ⚠ ABOVE THE LIST, NOT IN IT. The whole point of this arm is that the
+       timeline goes back to being a plain list with nothing down its edge. */
+    expect(ol.contains(zero)).toBe(false)
+    const li = within(card).getByText(/Pre-Licensing Lessons/).closest('li')!
+    expect(li.textContent).not.toContain('37%')
+  })
+
+  it('leaves Testing’s rail with no scale at all', () => {
+    /* `markerLabel` gates every arm, and Testing passes none — so the shared
+       rail is untouched whichever variant is selected. */
+    renderShell(T1)
+    const caps = [...document.querySelectorAll('ol[aria-label="Study journey stops"] span')]
+      .map((el) => el.textContent?.trim())
+      .filter((t) => t === '0' || t === '100' || t === '37%')
+    expect(caps).toEqual([])
   })
 })
 
