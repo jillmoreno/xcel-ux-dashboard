@@ -412,7 +412,12 @@ export function StudyJourneyWidget({
             and were all already reachable. This is a second, flatter way in for
             someone who knows what they want, which is what a quick-links block
             is for. */}
-        {quickLinks ? (
+        {/* ⚠ TESTING 3 DRAWS ITS OWN — `journeyElsewhere` suppresses this card
+            too as of 2026-10-01. That version replaced the Quick links stack
+            and the nav tiles above it with ONE six-tile grid
+            (`HomeTileGrid`), which carries these three destinations and the
+            same CTA ids. Leaving this would render them twice. */}
+        {quickLinks && !journeyElsewhere ? (
         <section aria-label="Quick links" style={shell}>
           <p className="cre-eyebrow-ink" style={widgetEyebrowStyle}>
             Quick links

@@ -18,7 +18,9 @@ import { unitCount } from '@/utils/unitLabel'
 import { SquareTile } from './SquareTile'
 import { TaskRow } from '@/components/learning/study-calendar/TaskRow'
 import { StudyJourneyWidget } from '@/components/learning/StudyJourneyWidget'
-import { HomeNavTiles, HomeNavTileColumn } from '@/components/layout/HomeNavTiles'
+import { HomeNavTileColumn } from '@/components/layout/HomeNavTiles'
+import { HomeTileGrid } from '@/components/layout/HomeTileGrid'
+import { HomeReadinessStub } from '@/components/layout/HomeReadinessStub'
 import { StatusStrip } from '@/components/learning/LearningPathDetailPanel'
 import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
 import { JumpBackInWidget } from '@/components/learning/JumpBackInWidget'
@@ -2034,7 +2036,29 @@ export function LearnerFocusedBand({
                returns null unless the top nav is drawing the navigation — the
                rail carries both rows on the left-nav arm — so moving them
                changes where they are, never who gets them. */
-            afterExam={combinedCoursework ? <HomeNavTiles /> : undefined}
+            /* ⚠ `HomeTileGrid`, NOT `HomeNavTiles`, on the combined arm — one
+               six-tile grid that absorbs BOTH the My Courses / Certificates
+               pair and the Quick links card below it (2026-10-01). The widget
+               is told to stop drawing Quick links by `journeyElsewhere`, or the
+               three sheet destinations would render twice.
+
+               ⚠ IT DOES NOT CHECK THE NAV PLACEMENT, unlike `HomeNavTiles`,
+               which returns null unless the top nav is drawing the navigation.
+               Four of these six are not rail rows at all — Flashcards and the
+               three sheets have no home in the left nav — so hiding the grid on
+               that arm would take them away from a learner who never had them
+               anywhere else. */
+            afterExam={combinedCoursework ? (
+              <>
+                {/* ⚠ BETWEEN THE EXAM CARD AND THE TILES, which is where the
+                    ask put it ("add another section below this"). It is a
+                    STUB — see the component; the slot is reserved, the body is
+                    deliberately empty, and it takes the same shell as the cards
+                    around it so the rail can be read with it in place. */}
+                <HomeReadinessStub shell={journeyCards ? widgetCardFramedStyle : widgetCardStyle} />
+                <HomeTileGrid onOpenStep={onOpenStep} onOpenRequirements={onViewDetails} />
+              </>
+            ) : undefined}
             framed={journeyCards}
             // …and the post-course steps become their own cards. Still a separate
             // prop from `framed` because they are different questions — one is

@@ -657,6 +657,81 @@ describe('the percentage is the journey’s, not the course’s', () => {
   })
 })
 
+describe('the Are you ready stub', () => {
+  it('reserves the slot and states nothing', () => {
+    /* 2026-10-01, the direct ask ("leave the rest of the widget blank").
+
+       ⚠ EMPTY IS THE ASSERTION, not an oversight. Readiness has been a lo-fi
+       placeholder since 2026-09-17 and Testing DROPPED its tile for that
+       reason. This reserves the slot so the rail's shape can be read with it
+       in, without inventing a readout nobody has designed — so a later change
+       that fills it with placeholder bars should fail here and be a decision. */
+    renderShell(T3)
+    const stub = document.querySelector('section[aria-label="Are you ready"]') as HTMLElement
+    expect(stub).toBeTruthy()
+    expect(within(stub).getByText('Are you ready')).toBeTruthy()
+    /* Nothing else readable in it. */
+    expect(stub.textContent?.trim()).toBe('Are you ready')
+    expect(stub.querySelector('button, a, input')).toBeNull()
+  })
+
+  it('does not appear on Testing', () => {
+    renderShell(T1)
+    expect(document.querySelector('section[aria-label="Are you ready"]')).toBeNull()
+  })
+})
+
+describe('the six-tile grid', () => {
+  /* 2026-10-01, the direct ask: one set of square tiles on the right rail,
+     replacing the My Courses / Certificates pair AND the Quick links card. */
+
+  it('draws the six, in order, as squares', () => {
+    renderShell(T3)
+    const grid = screen.getByRole('navigation', { name: 'Learning areas' })
+    expect([...grid.querySelectorAll('button')].map((b) => b.textContent?.trim())).toEqual([
+      'My Courses',
+      'My Certificates',
+      'Flashcards',
+      'Exam Information',
+      'Applying for License',
+      'State Requirements',
+    ])
+    /* ⚠ `aspect-ratio`, NOT A FIXED HEIGHT. The rail's width moves with the
+       viewport, so a hard-coded height would be square at exactly one window
+       size. jsdom does no layout, so the style is the only thing assertable. */
+    /* ⚠ `'1 / 1'`, NOT `'1'` — the CSSOM normalises the shorthand, so reading
+       back what was written fails. */
+    expect((grid.querySelector('button') as HTMLElement).style.aspectRatio).toBe('1 / 1')
+  })
+
+  it('keeps the CTA ids those controls already carried', () => {
+    /* ⚠ THE WHOLE POINT OF NOT RE-TAGGING. `nav.courses`, `home.quick-exam-info`
+       and the rest are named in sessions already scripted against them; a
+       moderated run that breaks one must break it here too. Flashcards is the
+       one new control and takes `nav.compass`, which is where it goes. */
+    renderShell(T3)
+    const grid = screen.getByRole('navigation', { name: 'Learning areas' })
+    expect([...grid.querySelectorAll('button')].map((b) => b.getAttribute('data-cta-id'))).toEqual([
+      'nav.courses',
+      'nav.certificates',
+      'nav.compass',
+      'home.quick-exam-info',
+      'home.quick-get-licensed',
+      'home.state-requirements',
+    ])
+  })
+
+  it('leaves Testing with the two-tile strip and its Quick links card', () => {
+    renderShell(T1)
+    const grid = screen.getByRole('navigation', { name: 'Learning areas' })
+    expect([...grid.querySelectorAll('button')].map((b) => b.textContent?.trim())).toEqual([
+      'My Courses',
+      'Certificates',
+    ])
+    expect(document.querySelector('section[aria-label="Quick links"]')).toBeTruthy()
+  })
+})
+
 describe('the quick buttons', () => {
   it('sit in the right rail, directly under the exam card', () => {
     /* 2026-10-01, the direct ask. ⚠ ASSERTED AS SIBLING ORDER, not as document
@@ -672,7 +747,13 @@ describe('the quick buttons', () => {
     const siblings = [...tiles[0].parentElement!.children].map((el) =>
       el.getAttribute('aria-label'),
     )
-    expect(siblings).toEqual(['Exam Date', 'Learning areas', 'Quick links'])
+    /* ⚠ NO "Quick links" ANY MORE — the six-tile grid absorbed it on
+       2026-10-01, so the rail is the exam card and the grid. */
+    /* ⚠ THE READINESS STUB JOINED on 2026-10-01, between the exam card and the
+       tiles. Order is the assertion: the ask placed it directly below the exam
+       card, and a stub that drifted to the foot of the rail would still pass a
+       presence check. */
+    expect(siblings).toEqual(['Exam Date', 'Are you ready', 'Learning areas'])
   })
 
   it('appear exactly once', () => {
@@ -706,9 +787,14 @@ describe('everything else is Testing’s', () => {
        into the combined card and it went on passing unchanged, which is
        exactly the silence a clone test is supposed to break. */
     renderShell(T3)
-    for (const label of ['Pass State Exam', 'Get Licensed in New York', 'Exam Date', 'Quick links']) {
+    for (const label of ['Pass State Exam', 'Get Licensed in New York', 'Exam Date']) {
       expect(document.querySelector(`section[aria-label="${label}"]`), label).toBeTruthy()
     }
+    /* ⚠ THE QUICK LINKS CARD IS GONE on this version, absorbed into the
+       six-tile grid (2026-10-01) — asserted ABSENT, because the three
+       destinations it carried are now tiles and rendering both would be every
+       sheet shortcut twice. Testing still has the card; pinned below. */
+    expect(document.querySelector('section[aria-label="Quick links"]')).toBeNull()
   })
 
   it('drops Readiness from the rail, exactly as Testing does', () => {
