@@ -596,13 +596,14 @@ const LICENSING_STEP_CTA: Record<string, string | undefined> = {
    slot instead of the map, so a change to one and not the other brings back
    the same split this component was written to close. */
 
-/**
- * ⚠ EXPORTED SINCE 2026-10-01 so Testing 3's `CombinedCourseCard` can draw
- * steps 2 and 3 inside its own card, as bands between hairlines rather than as
- * separate cards down a column. It is given a BARE `shell` there — the prop was
- * already the component's whole surface contract, so no fork was needed.
- */
-export function LicensingStepWidget({
+/* ⚠ IT WAS EXPORTED FOR ONE BUILD (2026-10-01) so Testing 3 could draw steps 2
+   and 3 inside its combined card with a bare shell. That turned out to need a
+   DISCLOSURE — collapsed to the heading, expanding to the fee and detail — and
+   threading one through here would have put an accordion on QE Focused, Testing
+   and Testing 2 for one version's ask. Testing 3 forks the markup and imports
+   the data instead (`JourneyStepDisclosure` in `CombinedCourseCard`), so this
+   is module-private again. */
+function LicensingStepWidget({
   step,
   number,
   shell,

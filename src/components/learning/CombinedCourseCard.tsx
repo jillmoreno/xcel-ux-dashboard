@@ -1,7 +1,7 @@
 import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
 import { useLoFi } from '@/context/LoFiContext'
-import type { CSSProperties } from 'react'
-import { ArrowRight } from '@/icons'
+import { useState, type CSSProperties } from 'react'
+import { ArrowRight, ChevronDown } from '@/icons'
 import {
   NY_LH_CURRENT_CHAPTER,
   NY_LH_LESSON_MINUTES_INVENTED,
@@ -9,7 +9,6 @@ import {
 import type { LearningPathSummary } from '@/data/learningFixtures'
 import { StudyJourneyRail } from './StudyJourneyRail'
 import { journeyStopsFor } from './studyJourneyUtil'
-import { LicensingStepWidget } from './StudyJourneyWidget'
 import { GET_LICENSED_STEPS, jurisdictionName } from '@/data/nyProducerRequirements'
 
 /**
@@ -63,8 +62,6 @@ export function CombinedCourseCard({
   onDetails,
   onOpenStop,
   onViewAll,
-  onOpenStep,
-  hideSheetLink = false,
 }: {
   courseTitle: string
   cover?: string | null
@@ -80,12 +77,12 @@ export function CombinedCourseCard({
   onDetails?: () => void
   onOpenStop?: (id: string) => void
   onViewAll?: () => void
-  /** Opens a licensing step's sheet — the same handler the journey column
-   *  passes its own step cards. */
-  onOpenStep?: (id: string) => void
-  /** `journey-quick-links` carries the per-step sheet links in its own card, so
-   *  the steps here must not render a second copy. Forwarded unchanged. */
-  hideSheetLink?: boolean
+  /* ⚠ NO `onOpenStep` / `hideSheetLink` — they went with the fork (2026-10-01).
+     The shared widget needed both to decide whether to draw a "What to expect"
+     link into a sheet; this card's steps carry their detail INLINE behind the
+     disclosure, and `journey-quick-links` already owns the sheet shortcuts in
+     its own card on the right. Re-adding a link here would be the second copy
+     that `hideSheetLink` existed to prevent. */
 }) {
   const pct = Math.max(0, Math.min(100, percent))
   const showPercent = pct > 0
@@ -298,23 +295,113 @@ export function CombinedCourseCard({
       {LICENSING_STEPS.map((step, i) => (
         <div key={step.id}>
           <div aria-hidden style={divider} />
-          <LicensingStepWidget
-            step={step}
+          <JourneyStepDisclosure
             number={i + 2}
-            shell={bandShell}
-            onOpenStep={onOpenStep}
-            state={path.state}
-            hideSheetLink={hideSheetLink}
             heading={
               step.id === GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 1].id
                 ? jurisdictionName(path.state)
                   ? `Get Licensed in ${jurisdictionName(path.state)}`
                   : 'Get Licensed'
-                : undefined
+                : step.title
             }
+            fee={step.fee}
+            detail={step.detail}
           />
         </div>
       ))}
+    </section>
+  )
+}
+
+/**
+ * A LICENSING STEP, COLLAPSED TO ITS NAME — Testing 3, 2026-10-01, the direct
+ * ask: "remove these - when user hovers over step 2 or step 3, there should be
+ * a hover effect, and clicking would expand vertically to show more details."
+ *
+ * Closed it is the number and the heading, nothing else. Open it adds the fee
+ * and the detail line — the two the ask pointed at. They are not deleted, they
+ * are what "more details" means.
+ *
+ * ⚠ A FORK OF `LicensingStepWidget`'S MARKUP, NOT A PROP ON IT. That component
+ * draws these steps on QE Focused, Testing and Testing 2, where they are
+ * separate cards that state everything at rest; a `collapsible` prop would
+ * thread a disclosure through all of them for one version's ask. CLAUDE.md's
+ * rule, and the same call the card itself is built on. The DATA is imported —
+ * `step.fee` and `step.detail` are the published fields both renderings read,
+ * so the two cannot come to state different fees.
+ *
+ * ⚠ IT BORROWS `cre-journey-stop` RATHER THAN INVENTING A HOVER. That class is
+ * what the journey's own stop rows use — background on hover, a focus-visible
+ * outline, and a 120ms ease — so a row in this card behaves like the rows three
+ * inches above it. A bespoke hover here would be a second answer to a question
+ * this product already answered.
+ *
+ * ⚠ CLOSED BY DEFAULT, BOTH OF THEM. The alternative — open the step the
+ * learner is "on" — needs a notion of which licensing step is current, and
+ * there is none: these three wait on PSI and the Department, and the product
+ * has no feed for any of them. That absence is deliberate and documented on
+ * `GetLicensedRail`; inventing a current step here to drive an accordion would
+ * be the product claiming to know an outcome it cannot observe.
+ */
+function JourneyStepDisclosure({
+  number,
+  heading,
+  fee,
+  detail,
+}: {
+  number: number
+  heading: string
+  fee?: string | null
+  detail?: string | null
+}) {
+  const [open, setOpen] = useState(false)
+  const hasDetail = Boolean(fee || detail)
+  return (
+    /* ⚠ STILL A NAMED REGION. The shared widget wraps each step in
+       `<section aria-label={heading}>`, and the fork dropped it for one build —
+       which costs a screen-reader user the ability to jump to "Get Licensed in
+       New York" at all, and is invisible on screen. The name is the VISIBLE
+       heading for the same reason it is there: a region announced as "Apply for
+       your License" while reading "Get Licensed in New York" is a landmark
+       disagreeing with its own content. */
+    <section aria-label={heading}>
+      <button
+        type="button"
+        /* ⚠ NOT A BUTTON AT ALL WHEN THERE IS NOTHING TO SHOW. A step with no
+           fee and no detail would otherwise be a control that opens an empty
+           box — the same broken promise as a chevron on a blocked stop, which
+           the journey rail already refuses to draw. */
+        onClick={hasDetail ? () => setOpen((v) => !v) : undefined}
+        aria-expanded={hasDetail ? open : undefined}
+        disabled={!hasDetail}
+        className={hasDetail ? 'cre-journey-stop' : undefined}
+        style={{ ...stepRowStyle, cursor: hasDetail ? 'pointer' : 'default' }}
+      >
+        <span style={{ minWidth: 0, textAlign: 'left' }}>
+          <span className="cre-eyebrow-ink" style={stepEyebrowStyle}>
+            Step {number}
+          </span>
+          <span style={stepHeadingStyle}>{heading}</span>
+        </span>
+        {hasDetail && (
+          <ChevronDown
+            size={16}
+            aria-hidden
+            style={{
+              flexShrink: 0,
+              color: 'var(--color-text-tertiary)',
+              transition: 'transform 150ms ease',
+              transform: open ? 'rotate(180deg)' : undefined,
+            }}
+          />
+        )}
+      </button>
+      {open && (
+        <div style={stepDetailStyle}>
+          {fee ? <p style={stepFeeStyle}>{fee}</p> : null}
+          {detail ? <p style={stepDetailTextStyle}>{detail}</p> : null}
+        </div>
+      )}
     </section>
   )
 }
@@ -331,10 +418,62 @@ export function CombinedCourseCard({
  */
 const LICENSING_STEPS = GET_LICENSED_STEPS.filter((st) => st.id !== 'schedule-exam')
 
-/** No surface at all — the step renders as a BAND inside this card rather than
- *  as a card of its own. `LicensingStepWidget` takes its shell as a prop, which
- *  is what makes that a pass-through rather than a fork. */
-const bandShell: CSSProperties = {}
+/* The disclosure's header row. Negative side margins so the hover fill reaches
+   past the card's text column to the same width the stop rows' hover does,
+   without the text itself moving — a hover band that stops short of the
+   padding reads as a misaligned button rather than as a row. */
+const stepRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 12,
+  width: 'calc(100% + 16px)',
+  margin: '0 -8px',
+  padding: '8px',
+  border: 0,
+  background: 'transparent',
+  textAlign: 'left',
+}
+
+/* `span`s rather than `p`s — this lot is inside a <button>, and a <p> there is
+   invalid HTML that React will render and the DOM will re-parent. */
+const stepEyebrowStyle: CSSProperties = {
+  display: 'block',
+  fontFamily: 'var(--font-body)',
+  fontSize: 10,
+  fontWeight: 600,
+  letterSpacing: '0.18em',
+  textTransform: 'uppercase',
+}
+
+const stepHeadingStyle: CSSProperties = {
+  display: 'block',
+  margin: '6px 0 0',
+  fontFamily: 'var(--font-heading)',
+  fontWeight: 700,
+  fontSize: 18,
+  lineHeight: '24px',
+  letterSpacing: '-0.01em',
+  color: 'var(--color-text-primary)',
+}
+
+const stepDetailStyle: CSSProperties = { padding: '2px 8px 6px' }
+
+const stepFeeStyle: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 11,
+  letterSpacing: '0.04em',
+  color: 'var(--color-text-tertiary)',
+}
+
+const stepDetailTextStyle: CSSProperties = {
+  margin: '6px 0 0',
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  lineHeight: '18px',
+  color: 'var(--color-text-secondary)',
+}
 
 /* The nested lesson block — recessed by INDENT ALONE, so it reads as the inside
    of the step above it rather than as a sixth stop in the list.

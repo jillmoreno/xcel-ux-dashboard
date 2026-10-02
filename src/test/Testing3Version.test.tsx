@@ -1,4 +1,4 @@
-import { cleanup, render, screen, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, beforeEach, describe, expect, it } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
@@ -328,33 +328,94 @@ describe('the whole route in one card', () => {
      then another divider and step 3 - shift the Exam date back to the right." */
 
   it('draws steps 1, 2 and 3 inside the card, in order', () => {
+    /* ⚠ `p` AND `span` BOTH — Step 1's eyebrow is a paragraph the rail writes,
+       Steps 2 and 3's are spans, because those live inside a <button> and a <p>
+       there is invalid HTML the DOM re-parents. Querying only `p` found one of
+       three and the test read as if the steps had vanished. */
     renderShell(T3)
-    const eyebrows = [...courseCard().querySelectorAll('p')]
-      .map((p) => p.textContent?.trim() ?? '')
-      .filter((t) => /^Step \d/.test(t))
+    const eyebrows = [...courseCard().querySelectorAll('p, span')]
+      .map((el) => el.textContent?.trim() ?? '')
+      .filter((t) => /^Step \d($| )/.test(t))
     expect(eyebrows).toEqual(['Step 1 · Atlas Study Journey', 'Step 2', 'Step 3'])
   })
 
-  it('separates them with the card’s own hairline, not with card borders', () => {
-    /* ⚠ THE STEPS GET A BARE SHELL, which is the whole reason this reads as one
-       card. `LicensingStepWidget` takes its surface as a prop; passing it the
-       journey column's `shell` instead would nest bordered cards inside a
-       bordered card, and the dividers would be decorating a seam that is
-       already drawn. */
+  it('gives each step a named region, as the shared widget does', () => {
+    /* ⚠ THE LANDMARK SURVIVED THE FORK, and this is what says so. The first cut
+       of `JourneyStepDisclosure` rendered a bare <div>, which costs a
+       screen-reader user the ability to reach "Get Licensed in New York" at all
+       and is completely invisible on screen. The name is the VISIBLE heading —
+       a region announced as "Apply for your License" while reading "Get
+       Licensed in New York" is a landmark disagreeing with its own content. */
     renderShell(T3)
-    const step2 = courseCard().querySelector('section[aria-label="Pass State Exam"]') as HTMLElement
-    expect(step2, 'step 2 is not inside the combined card').toBeTruthy()
-    /* ⚠ NOT `toBeFalsy()` ON THE BACKGROUND — the widget paints its own
-       `transparent`, so an emptiness check fails for a reason that has nothing
-       to do with the shell. What matters is that it is not wearing the CARD
-       surface and has no border of its own. */
-    expect(step2.style.background).not.toContain('--color-surface-card')
-    expect(step2.style.border).toBeFalsy()
-    expect(step2.style.borderRadius).toBeFalsy()
-    /* ⚠ PADDING IS THE WIDGET'S OWN, not the shell's — it indents the step's
-       text off its left rule and survives a bare shell. The shell's padding is
-       what would make this a card; the component's is its internal rhythm. */
-    expect(step2.style.padding).toBe('4px 20px 4px 16px')
+    const card = courseCard()
+    for (const label of ['Pass State Exam', 'Get Licensed in New York']) {
+      expect(card.querySelector(`section[aria-label="${label}"]`), label).toBeTruthy()
+    }
+  })
+
+  it('collapses each step to its name, with the detail behind a press', () => {
+    /* 2026-10-01, the direct ask: "remove these - when user hovers over step 2
+       or step 3, there should be a hover effect, and clicking would expand
+       vertically to show more details."
+
+       ⚠ REMOVED FROM THE REST STATE, NOT FROM THE PRODUCT. The fee and the
+       detail line are what "more details" means; a fork that actually deleted
+       them would pass a naive "the text is gone" check and would have quietly
+       dropped two published facts. Both halves are asserted. */
+    renderShell(T3)
+    const step2 = courseCard().querySelector(
+      'section[aria-label="Pass State Exam"]',
+    ) as HTMLElement
+    expect(step2.textContent).not.toContain('150 questions')
+    fireEvent.click(within(step2).getByRole('button'))
+    expect(step2.textContent).toContain('150 questions in 150 minutes. 70% to pass.')
+    /* …and it closes again. A disclosure that only opens is a reveal. */
+    fireEvent.click(within(step2).getByRole('button'))
+    expect(step2.textContent).not.toContain('150 questions')
+  })
+
+  it('expands each step independently', () => {
+    /* NOT an accordion. Nothing in the ask asked for one, and closing step 2 to
+       read step 3 would make the two compete for a reader who wants both. */
+    renderShell(T3)
+    const card = courseCard()
+    const step2 = card.querySelector('section[aria-label="Pass State Exam"]') as HTMLElement
+    const step3 = card.querySelector(
+      'section[aria-label="Get Licensed in New York"]',
+    ) as HTMLElement
+    fireEvent.click(within(step2).getByRole('button'))
+    fireEvent.click(within(step3).getByRole('button'))
+    expect(step2.textContent).toContain('150 questions')
+    expect(step3.textContent).toContain('$80 application fee')
+  })
+
+  it('carries the journey’s own hover/focus treatment, not a new one', () => {
+    /* ⚠ `cre-journey-stop` IS BORROWED DELIBERATELY. It is what the journey's
+       stop rows three inches above use — background on hover, a focus-visible
+       outline, 120ms ease — so a row in this card behaves like the rows beside
+       it. A bespoke hover here would be a second answer to a question this
+       product already answered, and it would drift. */
+    renderShell(T3)
+    const step2 = courseCard().querySelector(
+      'section[aria-label="Pass State Exam"]',
+    ) as HTMLElement
+    const btn = within(step2).getByRole('button')
+    expect(btn.className).toContain('cre-journey-stop')
+    expect(btn.getAttribute('aria-expanded')).toBe('false')
+    fireEvent.click(btn)
+    expect(btn.getAttribute('aria-expanded')).toBe('true')
+  })
+
+  it('leaves Testing’s steps stating everything at rest', () => {
+    /* The control arm, and the reason this is a FORK rather than a prop:
+       `LicensingStepWidget` still draws these on QE Focused, Testing and
+       Testing 2, where they are separate cards that say what they are without
+       being pressed. A `collapsible` prop would have put an accordion on all
+       three for one version's ask. */
+    renderShell(T1)
+    const step2 = document.querySelector('section[aria-label="Pass State Exam"]') as HTMLElement
+    expect(step2.textContent).toContain('150 questions in 150 minutes. 70% to pass.')
+    expect(within(step2).queryByRole('button', { expanded: false })).toBeNull()
   })
 
   it('leaves the column holding only what is NOT the route', () => {

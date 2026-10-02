@@ -738,10 +738,6 @@ export function LearnerFocusedBand({
    * ⚠ THE COLUMN IT LEFT IS TOLD, via `examElsewhere` on `StudyJourneyWidget`
    * below. Without that the card renders in BOTH places.
    */
-  /* ONE FLAG, BOTH HALVES — the same read `StudyJourneyWidget` makes. The
-     Quick links card carries the per-step sheet links, so a step drawn inside
-     the combined block must not render its own copy either. */
-  const quickLinksOn = useFeatureFlag('journey-quick-links').enabled
   const examPlacement = useFeatureFlag('exam-card-placement').variant ?? 'under-course'
   /* ⚠ AND ONLY WHERE THERE IS A COURSE CARD TO SIT UNDER. `resumeInline` draws
      nothing at all on `clpNavy` (the navy card carries its own CTA) or when the
@@ -796,10 +792,6 @@ export function LearnerFocusedBand({
       <CombinedCourseCard
         path={path}
         onOpenStop={onOpenStop}
-        /* The same two the journey column hands its own step cards, so the
-           steps behave identically wherever they are drawn. */
-        onOpenStep={onOpenStep}
-        hideSheetLink={quickLinksOn}
         /* View All still leaves for the full Learning Path — the combined block
            absorbs the coursework SUMMARY, not the page behind it. Withheld on
            QE Focused the same way the journey column withholds it, so the two
