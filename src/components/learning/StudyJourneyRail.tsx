@@ -78,6 +78,7 @@ export function StudyJourneyRail({
   stepRange = false,
   stepNumber = 1,
   stepLabelOnly = false,
+  markerLabel,
   stopDetail,
   lessonProgressTitle = false,
   progressSpine = false,
@@ -126,6 +127,22 @@ export function StudyJourneyRail({
    * number there is no "Step N" to leave behind.
    */
   stepLabelOnly?: boolean
+  /**
+   * Turn the spine into a SCALE — "0" above the first node, "100" below the
+   * last, and this label beside the progress caret. Testing 3, 2026-10-01, the
+   * direct ask. Requires `progressSpine`; without a caret there is nothing to
+   * label.
+   *
+   * ⚠ THE LABEL IS ACCURATE, THE POSITION IS NOT PROPORTIONAL, and that tension
+   * is the thing to judge rather than a bug. The rows of this list are spaced
+   * by their CONTENT's height, not by how much work each stop is — so "37%"
+   * sits where the current lesson is, which is partway through the first of six
+   * stops, and not 37% of the way down the column. A true axis would have to
+   * space the stops by weight, which would make the live stop a sliver and the
+   * two completion tasks nearly invisible. The caller passes the figure; this
+   * only draws it.
+   */
+  markerLabel?: string
   /**
    * Extra content nested UNDER one stop's row — Testing 3, 2026-10-01, the
    * direct ask ("move the lesson section to be within the complete coursework,
@@ -328,7 +345,20 @@ export function StudyJourneyRail({
           17px titles read as a dense block. The gap is on the SPINE's
           `minHeight` rather than on the list, so the connector still reaches
           between nodes instead of breaking into dashes. */}
-      <ol aria-label="Study journey stops" style={listStyle}>
+      {/* ⚠ THE END CAPS BRACKET THE LIST, they are not list items. A `<li>`
+          reading "0" would be announced as a stop in an ordered list of stops,
+          and `aria-hidden` on the column is what already keeps the spine out of
+          the reading order — these belong to the same mark. */}
+      {markerLabel ? (
+        <p aria-hidden style={axisCapStyle}>
+          0
+        </p>
+      ) : null}
+      {/* ⚠ THE INDENT IS ON THE LIST, NOT ON THE WRAPPER. Putting it on the
+          wrapper shifted the "Step 1 / Complete Coursework" heading with it,
+          which broke its alignment with the card's own eyebrow and with steps 2
+          and 3 below. Only the axis needs the gutter. */}
+      <ol aria-label="Study journey stops" style={markerLabel ? axisListStyle : listStyle}>
         {stops.map((stop, i) => {
           const isCurrent = i === currentIndex
           const isLast = i === stops.length - 1
@@ -580,7 +610,12 @@ export function StudyJourneyRail({
                               spine belongs to the spine; owning it there meant
                               the card had to know this rail's gutter
                               arithmetic. */}
-                          <span aria-hidden style={syllabusSpineCaretStyle} />
+                          <span aria-hidden style={syllabusSpineCaretWrapStyle}>
+                            {markerLabel ? (
+                              <span style={syllabusSpineMarkerStyle}>{markerLabel}</span>
+                            ) : null}
+                            <span style={syllabusSpineCaretStyle} />
+                          </span>
                           <span
                             style={{
                               flex: 100 - pct,
@@ -648,6 +683,11 @@ export function StudyJourneyRail({
           )
         })}
       </ol>
+      {markerLabel ? (
+        <p aria-hidden style={axisCapStyle}>
+          100
+        </p>
+      ) : null}
 
       {onViewAll && (
         <button type="button" onClick={onViewAll} className="cre-link-action cre-cta-ink" style={viewAllStyle}>
@@ -1370,10 +1410,70 @@ const syllabusSpineDoneStyle: CSSProperties = {
  * no triangle, and a glyph at this size would bring font metrics to fight with.
  * The colour is the node's and the filled spine's — one mark in three parts.
  */
-const syllabusSpineCaretStyle: CSSProperties = {
+/**
+ * The axis end caps — "0" over the first node, "100" under the last.
+ *
+ * ⚠ `width` MATCHES THE RAIL COLUMN'S so the digits centre on the spine. The
+ * column is 26px (`syllabusRailColStyle`) and these sit in the same left
+ * gutter, outside the `<ol>`; change one and change the other.
+ */
+const axisCapStyle: CSSProperties = {
+  /* 30 matches `axisListStyle`'s indent, so the digits centre on the spine. */
+  margin: '0 0 0 30px',
+  width: 26,
+  textAlign: 'center',
+  fontFamily: 'var(--font-body)',
+  fontSize: 9,
+  fontWeight: 700,
+  letterSpacing: '0.06em',
+  color: 'var(--color-text-tertiary)',
+}
+
+/** The stops list, indented to leave room for the axis figures that hang left
+ *  of the spine. 30 is the label's width plus its 6px standoff and a little
+ *  air — "37%" measured 26px at 9px/700. */
+const axisListStyle: CSSProperties = { ...listStyle, paddingLeft: 30 }
+
+/**
+ * The caret plus its figure. `relative` so the label can hang to the LEFT of
+ * the spine without taking part in the column's flow — the column is 2px wide,
+ * so anything laid out in it would push the triangle off the line.
+ *
+ * ⚠ THE WRAPPER CARRIES THE OFFSET NOW, not the triangle. `marginLeft: 2` is
+ * still measured against the 2px spine that is this element's parent; the
+ * triangle inside is flush at 0. Moving the margin to the triangle would offset
+ * the label with it.
+ */
+const syllabusSpineCaretWrapStyle: CSSProperties = {
+  position: 'relative',
   flexShrink: 0,
   alignSelf: 'flex-start',
   marginLeft: 2,
+  width: 0,
+  height: 10,
+}
+
+/** The figure, right-aligned to just left of the spine. `right: 100%` anchors
+ *  it to the wrapper's left edge, so it grows leftwards and never pushes the
+ *  triangle. */
+const syllabusSpineMarkerStyle: CSSProperties = {
+  position: 'absolute',
+  right: '100%',
+  top: '50%',
+  transform: 'translateY(-50%)',
+  marginRight: 6,
+  fontFamily: 'var(--font-body)',
+  fontSize: 9,
+  fontWeight: 700,
+  letterSpacing: '0.04em',
+  whiteSpace: 'nowrap',
+  color: 'var(--color-primary-700)',
+}
+
+const syllabusSpineCaretStyle: CSSProperties = {
+  position: 'absolute',
+  top: 0,
+  left: 0,
   width: 0,
   height: 0,
   borderTop: '5px solid transparent',

@@ -105,7 +105,11 @@ export function HomeTileGrid({
           className="cre-tile-cta"
           style={tileStyle}
         >
-          <Icon size={22} aria-hidden />
+          {/* 28, up from 22 — 2026-10-01, the direct ask. These are square
+              tiles whose whole upper half is the glyph, so the icon is doing
+              the recognising and the 13px label underneath is confirming it.
+              At 22 it read as a list bullet that happened to be centred. */}
+          <Icon size={28} aria-hidden />
           <span style={labelStyle}>{label}</span>
         </button>
       ))}

@@ -180,7 +180,12 @@ describe('the lesson line, nested in the coursework', () => {
        ends where this starts, by construction rather than by two offsets
        happening to agree. */
     const split = li.querySelector('span[aria-hidden] > span:nth-child(2)') as HTMLElement
-    const [solid, caret, dashed] = [...split.children] as HTMLElement[]
+    /* ⚠ THE MIDDLE CHILD IS A WRAPPER, not the triangle — it gained one on
+       2026-10-01 so the "37%" figure could hang to the left of the spine
+       without taking part in the 2px column's flow. The triangle is inside it
+       and carries the border; the wrapper carries the offset. */
+    const [solid, caretWrap, dashed] = [...split.children] as HTMLElement[]
+    const caret = caretWrap.lastElementChild as HTMLElement
     expect(caret, 'no caret in the spine').toBeTruthy()
     expect(solid.style.background).toContain('--color-primary-700')
     expect(dashed.style.borderLeft).toContain('dashed')
@@ -194,12 +199,13 @@ describe('the lesson line, nested in the coursework', () => {
        NOT against the 26px rail column. Two wrong turns landed the triangle at
        x=101 and x=111 before 2 put its base on the line; a refactor that
        re-parents this needs to re-derive the number, not keep it. */
-    expect(caret.style.marginLeft).toBe('2px')
-    expect(caret.style.alignSelf).toBe('flex-start')
+    /* The offset lives on the wrapper now; the triangle sits flush inside it. */
+    expect(caretWrap.style.marginLeft).toBe('2px')
+    expect(caretWrap.style.alignSelf).toBe('flex-start')
     /* ⚠ `aria-hidden`, like every other mark in this rail — the row's text
        already names the lesson, and a triangle announced to a screen reader is
        noise about a shape. */
-    expect(caret.getAttribute('aria-hidden')).not.toBeNull()
+    expect(caretWrap.getAttribute('aria-hidden')).not.toBeNull()
   })
 
   it('draws no caret where there is no nested lesson', () => {
@@ -322,6 +328,44 @@ describe('the coursework stop says how far in the learner is', () => {
     const f = Number(filled.style.flexGrow)
     const r = Number(rest.style.flexGrow)
     expect(Math.round((f / (f + r)) * 100)).toBe(62)
+  })
+
+  it('brackets the timeline with 0 and 100, and marks the journey figure', () => {
+    /* 2026-10-01, the direct ask.
+
+       ⚠ THE MARKER SAYS THE CARD'S OWN FIGURE, not the stop's. The caret sits
+       at 62% of the FIRST stop (26 of 42 lessons); the label says 37%, which is
+       how far that is through the whole route. Two numbers for two questions,
+       and the one on the rail has to match the one in the card's big figure or
+       the page contradicts itself. */
+    renderShell(T3)
+    const card = courseCard()
+    const caps = [...card.querySelectorAll('p')]
+      .map((el) => el.textContent?.trim())
+      .filter((t) => t === '0' || t === '100')
+    expect(caps).toEqual(['0', '100'])
+    const li = within(card).getByText(/Pre-Licensing Lessons/).closest('li')!
+    expect(li.textContent).toContain('37%')
+  })
+
+  it('keeps the end caps out of the stops list', () => {
+    /* ⚠ THEY BRACKET THE `<ol>`, they are not `<li>`s. A list item reading "0"
+       would be announced as a stop in an ordered list OF stops — the spine is
+       `aria-hidden` for exactly that reason and these belong to the same mark. */
+    renderShell(T3)
+    const ol = courseCard().querySelector('ol[aria-label="Study journey stops"]')!
+    expect(ol.textContent).not.toMatch(/^0/)
+    expect([...ol.querySelectorAll('li')].some((li) => li.textContent?.trim() === '100')).toBe(
+      false,
+    )
+  })
+
+  it('draws no axis on Testing', () => {
+    renderShell(T1)
+    const caps = [...document.querySelectorAll('p')]
+      .map((el) => el.textContent?.trim())
+      .filter((t) => t === '0' || t === '100')
+    expect(caps).toEqual([])
   })
 
   it('fills in the NODE’s blue, and leaves the rest the neutral dash', () => {

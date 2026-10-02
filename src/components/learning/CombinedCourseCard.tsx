@@ -353,6 +353,11 @@ export function CombinedCourseCard({
         /* …and the connector under that stop fills to match. A wholly dashed
            segment under a stop that is 26/42 done says no ground covered. */
         progressSpine
+        /* ⚠ THE JOURNEY FIGURE, THE SAME ONE THE CARD PRINTS ABOVE — `pct`, not
+           the stop's own 62%. The caret marks where the learner is and this
+           says how far that is through the whole route, so the rail and the
+           card's big number cannot disagree. 2026-10-01, the direct ask. */
+        markerLabel={`${pct}%`}
         stopDetail={
           nestLesson
             ? (_id, { isCurrent }) =>
