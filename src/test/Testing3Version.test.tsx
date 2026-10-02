@@ -129,6 +129,52 @@ describe('the combined block', () => {
   })
 })
 
+describe('the lesson line, nested in the coursework', () => {
+  /* 2026-10-01, the direct ask: "move the lesson section to be within the
+     complete coursework, under the pre-licensing lessons to better indicate
+     where the user is." */
+
+  it('sits inside the stops list, under the live stop', () => {
+    renderShell(T3)
+    const lesson = within(courseCard()).getByText(/Life Insurance Premiums/)
+    const li = lesson.closest('li')
+    expect(li, 'the lesson block is not inside a stop row').toBeTruthy()
+    /* ⚠ UNDER THE RIGHT STOP, not merely somewhere in the list. The `li` it
+       lands in must be the one naming the stop the learner is on — a block that
+       slid under Course Exam would still pass a "nested" check and would be
+       saying the learner is somewhere they are not. */
+    expect(li!.textContent).toMatch(/Pre-Licensing Lessons/)
+  })
+
+  it('takes Resume with it — the card keeps exactly one', () => {
+    /* ⚠ COUNTED. The block is built once and PLACED, so a refactor that copies
+       it instead would give the card two Resume buttons, and `home.resume` is a
+       registered CTA that a moderated run counts. */
+    renderShell(T3)
+    const resumes = within(courseCard()).getAllByRole('button', {
+      name: /Resume|Start course|Review course/,
+    })
+    expect(resumes).toHaveLength(1)
+    expect(resumes[0].closest('li')?.textContent).toMatch(/Pre-Licensing Lessons/)
+  })
+
+  it('leaves the lesson line where it was on Testing', () => {
+    /* The control arm: `stopDetail` is a slot on a SHARED rail, so the way this
+       breaks is the lesson appearing inside every version's journey. */
+    renderShell(T1)
+    const lesson = screen.getByText(/Life Insurance Premiums/)
+    expect(lesson.closest('li')).toBeNull()
+  })
+
+  it('leaves every other stop without a nested block', () => {
+    renderShell(T3)
+    const nested = [...courseCard().querySelectorAll('li')].filter((li) =>
+      /Life Insurance Premiums/.test(li.textContent ?? ''),
+    )
+    expect(nested).toHaveLength(1)
+  })
+})
+
 describe('the quick buttons', () => {
   it('move below the combined block, and appear exactly once', () => {
     /* ⚠ COUNTED, NOT JUST LOCATED. Moving them is a suppress-here/render-there

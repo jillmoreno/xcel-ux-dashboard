@@ -1,6 +1,6 @@
 import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
 import { useLoFi } from '@/context/LoFiContext'
-import { type CSSProperties } from 'react'
+import { type CSSProperties, type ReactNode } from 'react'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { ChevronRight, CircleCheck } from '@/icons'
 import type { LearningPathSummary } from '@/data/learningFixtures'
@@ -77,6 +77,7 @@ export function StudyJourneyRail({
   onViewAll,
   stepRange = false,
   stepNumber = 1,
+  stopDetail,
 }: {
   path: LearningPathSummary
   /** Open a stop. Omitted → the rows render as plain text rather than links. */
@@ -103,6 +104,27 @@ export function StudyJourneyRail({
    *  `journey-step-order: exam-first` puts Schedule State Exam above it. Only
    *  read when `stepRange` is set. */
   stepNumber?: number
+  /**
+   * Extra content nested UNDER one stop's row — Testing 3, 2026-10-01, the
+   * direct ask ("move the lesson section to be within the complete coursework,
+   * under the pre-licensing lessons to better indicate where the user is").
+   *
+   * Called once per stop with that stop's id; return `null` for the stops that
+   * get nothing. Testing 3 returns the lesson line and Resume under
+   * `pre-licensing-lessons`, so the card says where the learner is INSIDE the
+   * step they are on rather than above the list of steps.
+   *
+   * ⚠ A SLOT, NOT A VERSION BRANCH, which is why it is safe in a component this
+   * shared. The rail never learns what Testing 3 is; it learns that a caller
+   * may want to hang something off a stop. With the prop absent the markup is
+   * byte-identical — the wrapper below only appears when a detail exists.
+   *
+   * ⚠ THE SPINE STRETCHES TO COVER IT on its own (`flex: 1` on `spineStyle`),
+   * so a tall detail does not leave the connector hanging short of the next
+   * node. That is load-bearing: the dashed/solid connector is what reads as
+   * ground covered, and a gap in it would read as a broken rail.
+   */
+  stopDetail?: (stopId: string, meta: { index: number; isCurrent: boolean }) => ReactNode
 }) {
   /* ⚠ TOP OF THE COMPONENT, ABOVE `if (stops.length === 0) return null`. It sat
      beside the lo-fi branch further down at first, which put a hook after an
@@ -471,24 +493,38 @@ export function StudyJourneyRail({
                   />
                 )}
               </span>
-              {interactive ? (
-                <button
-                  type="button"
-                  data-cta-id="home.journey-stop"
-                  onClick={() => onOpenStop?.(stop.id)}
-                  className="cre-journey-stop"
-                  style={rowButtonStyle}
-                >
-                  <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+              {(() => {
+                const row = interactive ? (
+                  <button
+                    type="button"
+                    data-cta-id="home.journey-stop"
+                    onClick={() => onOpenStop?.(stop.id)}
+                    className="cre-journey-stop"
+                    style={rowButtonStyle}
+                  >
+                    <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                      {label}
+                    </span>
+                    <ChevronRight size={14} aria-hidden style={{ flexShrink: 0, opacity: 0.55 }} />
+                  </button>
+                ) : (
+                  <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0, padding: '2px 0 14px' }}>
                     {label}
                   </span>
-                  <ChevronRight size={14} aria-hidden style={{ flexShrink: 0, opacity: 0.55 }} />
-                </button>
-              ) : (
-                <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0, padding: '2px 0 14px' }}>
-                  {label}
-                </span>
-              )}
+                )
+                const detail = stopDetail?.(stop.id, { index: i, isCurrent })
+                /* ⚠ NO WRAPPER WHEN THERE IS NO DETAIL. The row stays the `li`'s
+                   direct flex child exactly as it always has, so every other
+                   caller of this rail renders the same markup it did before the
+                   slot existed. */
+                if (!detail) return row
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, flex: 1 }}>
+                    {row}
+                    {detail}
+                  </div>
+                )
+              })()}
             </li>
           )
         })}

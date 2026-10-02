@@ -8,6 +8,7 @@ import {
 } from '@/data/nyProducerRequirements'
 import type { LearningPathSummary } from '@/data/learningFixtures'
 import { StudyJourneyRail } from './StudyJourneyRail'
+import { journeyStopsFor } from './studyJourneyUtil'
 
 /**
  * THE COURSE AND ITS COURSEWORK, AS ONE CARD — Testing 3, 2026-10-01.
@@ -79,6 +80,30 @@ export function CombinedCourseCard({
   const pct = Math.max(0, Math.min(100, percent))
   const showPercent = pct > 0
 
+  /*
+   * WHERE THE LESSON LINE GOES — 2026-10-01, the direct ask: "move the lesson
+   * section to be within the complete coursework, under the pre-licensing
+   * lessons to better indicate where the user is".
+   *
+   * ⚠ UNDER THE CURRENT STOP, NOT UNDER A NAMED ONE. The ask says
+   * "pre-licensing lessons" because that is the stop the demo learner is on;
+   * what it asks FOR is "where the user is". Hard-coding the first stop's id
+   * would be right today and wrong the moment the learner finishes it — the
+   * lesson line would sit under a ticked step while the live one sat below it,
+   * which is the opposite of what this move is for. The stop id is not a stable
+   * literal anyway: it is spread from the requirement category.
+   *
+   * ⚠ AND IT FALLS BACK RATHER THAN DISAPPEARING. With the coursework finished
+   * there IS no current stop (`findIndex` returns -1), and Resume lives inside
+   * this block — so nesting unconditionally would delete the card's primary
+   * action on exactly the learner who has a course to review. The same
+   * `findIndex` the rail uses, so the two cannot disagree about which stop is
+   * live.
+   */
+  const stops = journeyStopsFor(path)
+  const currentStopIndex = stops.findIndex((st) => st.status !== 'completed')
+  const nestLesson = !complete && currentStopIndex >= 0
+
   /* LO-FI — the shell stays, the detail goes, and the shell is now TALLER
      because this card carries two halves. Six rows rather than four, so the
      placeholder still reads as this card's template rather than as the one it
@@ -91,6 +116,31 @@ export function CombinedCourseCard({
       </section>
     )
   }
+
+  const lessonBlock = (
+    <div style={lessonRow}>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        {complete ? (
+          <p style={lessonTitle}>All coursework complete</p>
+        ) : (
+          <>
+            <p style={lessonMeta}>
+              Lesson {lessonsCompleted + 1}
+              <span aria-hidden style={dot} />
+              {/* ⚠ INVENTED, and named as such at its source. See
+                  `NY_LH_LESSON_MINUTES_INVENTED`. */}
+              <span style={estimate}>About {NY_LH_LESSON_MINUTES_INVENTED} minutes</span>
+            </p>
+            <h3 style={lessonTitle}>{NY_LH_CURRENT_CHAPTER}</h3>
+          </>
+        )}
+      </div>
+      <button type="button" data-cta-id="home.resume" onClick={onResume} style={cta}>
+        {complete ? 'Review course' : lessonsCompleted > 0 ? 'Resume' : 'Start course'}{' '}
+        <ArrowRight size={16} aria-hidden />
+      </button>
+    </div>
+  )
 
   return (
     /* ⚠ STILL `aria-label="Current course"`. The combined block is reached by
@@ -136,45 +186,59 @@ export function CombinedCourseCard({
         </div>
       </div>
 
-      <div aria-hidden style={divider} />
-
-      <div style={lessonRow}>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          {complete ? (
-            <p style={lessonTitle}>All coursework complete</p>
-          ) : (
-            <>
-              <p style={lessonMeta}>
-                Lesson {lessonsCompleted + 1}
-                <span aria-hidden style={dot} />
-                {/* ⚠ INVENTED, and named as such at its source. See
-                    `NY_LH_LESSON_MINUTES_INVENTED`. */}
-                <span style={estimate}>About {NY_LH_LESSON_MINUTES_INVENTED} minutes</span>
-              </p>
-              <h3 style={lessonTitle}>{NY_LH_CURRENT_CHAPTER}</h3>
-            </>
-          )}
-        </div>
-        <button type="button" data-cta-id="home.resume" onClick={onResume} style={cta}>
-          {complete ? 'Review course' : lessonsCompleted > 0 ? 'Resume' : 'Start course'}{' '}
-          <ArrowRight size={16} aria-hidden />
-        </button>
-      </div>
+      {/* ⚠ THE LESSON BLOCK IS THE SAME MARKUP IN BOTH POSITIONS, built once
+          here and placed by `nestLesson`. Two copies — one for the band, one
+          for the slot — is how the nested one would quietly stop matching the
+          flat one. */}
+      {nestLesson ? null : (
+        <>
+          <div aria-hidden style={divider} />
+          {lessonBlock}
+        </>
+      )}
 
       {/* ── THE COURSEWORK HALF ────────────────────────────────────────────
-          A SECOND HAIRLINE, the same one the card already uses between its two
-          existing halves. Three bands inside one border is the point: identity,
-          the next action, and what the course is made of — each separated the
-          same way, so none of them reads as a card stapled to another.
+          A HAIRLINE, the same one the card already uses between its halves, so
+          none of the bands reads as a card stapled to another.
 
           ⚠ `onViewAll` IS PASSED THROUGH, so View All still leaves for the full
           Learning Path. The combined block absorbs the coursework SUMMARY, not
           the page behind it — dropping that route would quietly make this the
-          only view of the stops. */}
+          only view of the stops.
+
+          ⚠ `stopDetail` IS WHAT PUTS THE LEARNER IN THE LIST. It hangs the
+          lesson line and Resume under the stop that is actually live, so the
+          card says which step you are on AND where you are inside it, in one
+          place rather than as two facts the reader has to join up. */}
       <div aria-hidden style={divider} />
-      <StudyJourneyRail path={path} onOpenStop={onOpenStop} onViewAll={onViewAll} />
+      <StudyJourneyRail
+        path={path}
+        onOpenStop={onOpenStop}
+        onViewAll={onViewAll}
+        stopDetail={
+          nestLesson
+            ? (_id, { isCurrent }) => (isCurrent ? <div style={nestedLesson}>{lessonBlock}</div> : null)
+            : undefined
+        }
+      />
     </section>
   )
+}
+
+/* The nested lesson block — recessed by INDENT ALONE, so it reads as the inside
+   of the step above it rather than as a sixth stop in the list.
+
+   ⚠ IT CARRIED A LEFT RULE FOR ONE BUILD, and that was wrong on screen: the
+   rail's own spine runs down this column already, so the rule rendered as a
+   SECOND vertical line 24px to its right — two parallel rails saying one thing.
+   Measured, not guessed (spine at x=97, rule at x=121). The spine is what ties
+   this block to its step; indentation is all that is left to say.
+
+   ⚠ The `marginBottom` is what keeps the next stop from crowding it; the
+   spine's `flex: 1` stretches over the whole thing on its own. */
+const nestedLesson: CSSProperties = {
+  margin: '2px 0 14px',
+  padding: '8px 0 2px',
 }
 
 /* ─── styles ──────────────────────────────────────────────────────────── */
