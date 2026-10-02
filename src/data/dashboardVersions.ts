@@ -14,6 +14,7 @@ export type DashboardVersionId =
   | 'discoverability-testing'
   | 'discoverability-testing-2'
   | 'discoverability-atlas-compass-nav'
+  | 'eric-atlas-v1'
 
 /**
  * The rebrand overview's LAYOUT, resolved from `?version=` by `PlatformShell`
@@ -248,10 +249,30 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV: DashboardVersi
     'The Testing home under one global navigation spanning Atlas (the dashboard, Study Journey and readiness) and Compass (the course content): a text-only left rail from the Atlas/Compass Figma \u2014 Home, Study Plan, Course, Certificates & Transcripts, Resources, Get Help \u2014 that stays open while a course is open.',
 }
 
-/** True for the Atlas/Compass Global Navigation version. One helper so the
- *  shell and the demo bar cannot disagree about which version is on. */
+// "Eric/Atlas V1" — 2026-10-02, the designer's request: the Atlas/Compass
+// version as it stands, named as its own Dashboard Version and behind the
+// `dashboard-version-eric-atlas-v1` flag (the picker hides it when the flag is
+// off). IT IS THE SAME CODE, NOT A FROZEN COPY: `isAtlasCompassNavVersion`
+// answers true for it, so it renders exactly what Atlas/Compass renders —
+// including whatever later changes to the Atlas pages bring. A true freeze is
+// a deploy permalink, not a version entry.
+export const DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1: DashboardVersion = {
+  id: 'eric-atlas-v1',
+  label: 'Eric/Atlas V1',
+  createdAt: '2026-10-02',
+  modifiedAt: '2026-10-02',
+  description:
+    'Eric\u2019s Atlas/Compass work as of 2026-10-02: the Top Nav (Home \u00b7 My Learning) over the Global brand, no left rail on Home, the Schedule State Exam banner, the one-frame right rail, the collapsible left rail on the course pages, the course player with Rubi beside it, and the Compass Resources page. Shares the Atlas/Compass code. Feature-flagged.',
+}
+
+/** True for the Atlas/Compass Global Navigation version — and for Eric/Atlas
+ *  V1, which is the same pages under its own name. One helper so the shell and
+ *  the demo bar cannot disagree about which version is on. */
 export function isAtlasCompassNavVersion(versionId: string | null | undefined): boolean {
-  return versionId === DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV.id
+  return (
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV.id ||
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1.id
+  )
 }
 
 /**
@@ -283,8 +304,9 @@ export function isQualifyingEducationVersion(versionId: string): boolean {
     // Continuing Ed on a page that resolves a pre-licensing path, which is
     // the exact defect the note above records.
     versionId === DISCOVERABILITY_DASHBOARD_VERSION_TESTING_2.id ||
-    // Atlas/Compass Global Navigation renders the Testing home.
-    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV.id
+    // Atlas/Compass Global Navigation renders the Testing home — as does
+    // Eric/Atlas V1.
+    isAtlasCompassNavVersion(versionId)
   )
 }
 
@@ -302,6 +324,9 @@ export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
   DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
   DISCOVERABILITY_DASHBOARD_VERSION_TESTING_2,
   DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV,
+  // Behind `dashboard-version-eric-atlas-v1` — the Header filters it out of
+  // the picker when the flag is off.
+  DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1,
   DISCOVERABILITY_DASHBOARD_VERSION_MARKETING_FOCUSED,
   DISCOVERABILITY_DASHBOARD_VERSION_LEARNER_FOCUSED,
 ]

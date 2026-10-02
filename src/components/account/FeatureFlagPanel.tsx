@@ -188,6 +188,7 @@ const REBRAND_FLAGS = [
   // never showed them on /dashboard-rebrand — added 2026-09-30.
   'atlas-xcel-palette',
   'atlas-right-rail-layout',
+  'dashboard-version-eric-atlas-v1',
   'prototype-bar-branch-home',
 ]
 

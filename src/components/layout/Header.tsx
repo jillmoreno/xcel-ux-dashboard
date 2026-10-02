@@ -189,6 +189,7 @@ export function Header() {
   // `?section=…`, which is a shell address. On the classic routes those links
   // would leave the layout the learner is standing in.
   const showBell = useFeatureFlag('header-notifications').enabled && platformNav
+  const ericAtlasV1 = useFeatureFlag('dashboard-version-eric-atlas-v1').enabled
   // A shell address for one section, keeping every other param (the demo's).
   const atlasSectionHref = (section: string) => {
     const next = new URLSearchParams(search)
@@ -414,7 +415,12 @@ export function Header() {
         <DashboardVersionsPanel
           open={versionsOpen}
           onClose={closeVersionsPanel}
-          versions={DISCOVERABILITY_DASHBOARD_VERSIONS}
+          versions={
+            // Eric/Atlas V1 only while its flag is on (2026-10-02).
+            ericAtlasV1
+              ? DISCOVERABILITY_DASHBOARD_VERSIONS
+              : DISCOVERABILITY_DASHBOARD_VERSIONS.filter((v) => v.id !== 'eric-atlas-v1')
+          }
           activeVersionId={
             (new URLSearchParams(search).get('version') as DashboardVersionId | null) ??
             (discoverabilityDefault as DashboardVersionId)

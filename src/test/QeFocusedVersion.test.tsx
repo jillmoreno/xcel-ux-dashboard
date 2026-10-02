@@ -196,9 +196,19 @@ describe('the QE Focused version is ARCHIVED but still reachable', () => {
       'discoverability-testing',
       'discoverability-testing-2',
       'discoverability-atlas-compass-nav',
+      // Eric/Atlas V1 (2026-10-02), behind its flag — see Header.
+      'eric-atlas-v1',
       'discoverability-marketing-focused',
       'discoverability-learner-focused',
     ])
+  })
+
+  it('Eric/Atlas V1 renders the Atlas/Compass pages under its own version', () => {
+    // The shell's own Atlas pieces: the Compass course card and the Schedule
+    // State Exam banner (the header, and its Top Nav, is not in this render).
+    renderShell('/dashboard-rebrand?version=eric-atlas-v1')
+    expect(screen.getByRole('region', { name: 'Current course' })).toBeTruthy()
+    expect(screen.getByRole('region', { name: 'Do you have your State Exam scheduled?' })).toBeTruthy()
   })
 
   it('is still what XCEL does NOT resolve to — Testing is', () => {

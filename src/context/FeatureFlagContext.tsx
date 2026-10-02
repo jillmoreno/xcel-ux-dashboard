@@ -1287,6 +1287,18 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    // "Eric/Atlas V1" as a Dashboard Version (2026-10-02, the designer's
+    // request). ON by default on this branch, so the branch build lists it;
+    // whether it ships is decided at merge (promote-to-prototype).
+    key: 'dashboard-version-eric-atlas-v1',
+    group: 'Navigation',
+    label: 'Eric/Atlas V1 dashboard version',
+    description:
+      'Lists "Eric/Atlas V1" in the Dashboard Version picker \u2014 the Atlas/Compass pages under their own name (`?version=eric-atlas-v1`). Off, the entry is hidden from the picker; a link that names it still opens it.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     // THE ATLAS HOME'S RIGHT RAIL, two layouts (2026-09-30, the designer's
     // request). V1 is the rail as it stood: Step 1 and Step 2 as their own
     // cards, Steps 3 and 4 as ruled rows, the requirements button under them.

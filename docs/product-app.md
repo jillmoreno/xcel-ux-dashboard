@@ -4124,3 +4124,11 @@ window's left edge: no stroke, square on the left, the Top Nav current fill,
 a white icon. The state is per visit, not stored. The breadcrumbs on the
 Overview and Course pages are gone (Overview's switched off in
 AtlasCourseSideNav, the player's no longer passed).
+
+### Eric/Atlas V1 dashboard version (2026-10-02)
+
+`?version=eric-atlas-v1`, labelled "Eric/Atlas V1", listed in the Dashboard
+Version picker after Atlas/Compass while the `dashboard-version-eric-atlas-v1`
+flag is on (default ON on this branch; Feature Flags → Navigation). It is the
+same code as the Atlas/Compass version — `isAtlasCompassNavVersion` answers
+true for both — so it is a name, not a freeze: later Atlas changes reach it too.
