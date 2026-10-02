@@ -663,28 +663,31 @@ const nestedLesson: CSSProperties = {
      positioned caret, which has moved into the spine itself — see
      `syllabusSpineCaretStyle` in `StudyJourneyRail`. A mark whose position is
      defined by the timeline belongs to the timeline. */
-  margin: '2px 0 14px',
-  /* ⚠ THE GREEN RULE IS THE SAME GREEN AS THE GAUGE'S MARKER — 2026-10-02, the
-     direct ask. The knob's glow and this edge are one signal in two places: the
-     marker says where on the scale, the rule says which block. A second green
-     would make them two unrelated accents, and green is the only hue on this
-     card that is not the brand navy, which is what makes it findable at all.
-
-     ⚠ IT IS NOT THE ONLY THING SAYING THIS IS THE LIVE LESSON. The block is
-     nested under the live stop, the marker sits level with it, and the row text
-     names the lesson — so the rule is reinforcement and the card reads
-     correctly without colour perception (2.1.4.1). */
-  borderLeft: '3px solid var(--color-success-500)',
+  /* ⚠ SYMMETRIC VERTICAL PADDING, AND THE MARGIN ABSORBS IT. The gauge marker
+     anchors to THIS box's centre, and with 8px of padding above the text and
+     2px below, that centre sat 3px higher than the text itself — so the knob
+     lined up with the block but not with the words the green rule marks.
+     8/8 puts the two centres on the same line; the bottom margin drops 14 → 8
+     so the block's overall height, and the list's rhythm, are unchanged.
+     Measured: knob 486, padded block 486, rule box 489 before; all three after. */
+  margin: '2px 0 8px',
+  /* ⚠ THE GREEN RULE IS NOT HERE ANY MORE — moved to `lessonRow` on
+     2026-10-02, the direct ask ("only the height of the actual text"). On this
+     box it ran the full height of the block INCLUDING its own padding and the
+     button's, which made it ~26px taller than the words it was marking. On the
+     row it is the text's height by construction, because that row's height IS
+     the text's. */
   /* ⚠ 22 ON THE LEFT, up from 0 — 2026-10-01, the direct ask ("indent this to
      the right a bit more"). It clears the stop titles above and below it, so
      the block reads as something INSIDE the step rather than as another row of
      the list. The button's own negative margin below cancels it for the hover
      fill only, so the fill still starts at the block's edge. */
-  /* ⚠ THE 22 NOW INCLUDES THE RULE. It was pure indent; with a 3px border on
-     the box the text would sit 25 in and step out of line with the stop titles
-     above and below it, which is the alignment the indent existed to create.
-     19 + 3 keeps the text exactly where it was. */
-  padding: '8px 0 2px 19px',
+  /* ⚠ 9 HERE, 3 FOR THE RULE, 10 ON THE ROW = the same 22 the text has always
+     sat at. The indent is split across three boxes now because the rule moved
+     inward to hug the words; the sum is what keeps the lesson aligned with the
+     stop titles above and below it, which is the whole reason the indent
+     exists. Change any one of the three and re-derive the other two. */
+  padding: '8px 0 8px 9px',
 }
 
 /* The lesson as a control. `cre-journey-stop` paints the hover and the
@@ -885,7 +888,25 @@ const divider: CSSProperties = {
   background: 'var(--color-primary-100)',
 }
 
-const lessonRow: CSSProperties = { display: 'flex', alignItems: 'center', gap: 16, minWidth: 0 }
+/* The lesson's own row — and, since 2026-10-02, the green rule.
+   
+   ⚠ THE HEIGHT COMES FOR FREE. This row's height IS the text's, so a border on
+   it needs no measurement and stays correct when the chapter name wraps. On the
+   outer block it spanned that block's padding and the button's too.
+   
+   ⚠ THE GREEN IS THE MARKER'S RENDERED GREEN, not the raw token. The gauge
+   knob's ring is `--color-success-500` at 45% ALPHA, so what a reader sees
+   beside this is the mixed colour — matching the solid token instead would make
+   the rule visibly darker than the ring it is supposed to echo. Mixed into the
+   card for the same reason the ring sits on it. */
+const lessonRow: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 16,
+  minWidth: 0,
+  borderLeft: '3px solid color-mix(in srgb, var(--color-success-500) 45%, var(--color-surface-card))',
+  paddingLeft: 10,
+}
 
 const lessonMeta: CSSProperties = {
   margin: '0 0 4px',

@@ -242,8 +242,17 @@ describe('the lesson line, nested in the coursework', () => {
        is not the brand navy, which is what makes it findable. */
     renderShell(T3)
     const li = within(courseCard()).getByText(/Pre-Licensing Lessons/).closest('li')!
-    const block = within(li as HTMLElement).getByText(/Life Insurance Premiums/).closest('div')!
-    expect((block as HTMLElement).style.borderLeft).toContain('--color-success-500')
+    /* ⚠ THE RULE IS ON THE TEXT ROW, not on the padded block — moved 2026-10-02
+       so its height is the text's by construction. On the outer box it ran that
+       box's padding and the button's too, ~26px taller than the words. */
+    const row = within(li as HTMLElement)
+      .getByText(/Life Insurance Premiums/)
+      .parentElement!.parentElement as HTMLElement
+    /* ⚠ AND IT IS THE MARKER'S *RENDERED* GREEN, not the raw token. The knob's
+       ring is success-500 at 45% ALPHA, so matching the solid token would make
+       the rule visibly darker than the ring it echoes. */
+    expect(row.style.borderLeft).toContain('--color-success-500')
+    expect(row.style.borderLeft).toContain('45%')
   })
 
   it('keeps the lesson text aligned with the stop titles despite the rule', () => {
@@ -257,8 +266,31 @@ describe('the lesson line, nested in the coursework', () => {
     const block = within(li as HTMLElement)
       .getByText(/Life Insurance Premiums/)
       .closest('div') as HTMLElement
-    expect(block.style.paddingLeft).toBe('19px')
-    expect(block.style.borderLeft).toContain('3px')
+    const row = within(li as HTMLElement)
+      .getByText(/Life Insurance Premiums/)
+      .parentElement!.parentElement as HTMLElement
+    /* ⚠ 9 + 3 + 10 = THE 22 THE TEXT HAS ALWAYS SAT AT. The indent is split
+       across three boxes since the rule moved inward to hug the words; the SUM
+       is what keeps the lesson aligned with the stop titles above and below.
+       Change one and re-derive the other two. Verified live at 22px. */
+    expect(block.style.paddingLeft).toBe('9px')
+    expect(row.style.borderLeft).toContain('3px')
+    expect(row.style.paddingLeft).toBe('10px')
+  })
+
+  it('centres the block on its text, so the gauge marker lands on the rule', () => {
+    /* ⚠ THE MARKER ANCHORS TO THIS BOX'S CENTRE, so asymmetric vertical padding
+       moves the two apart: at 8px above the text and 2px below, the centre sat
+       3px high and the knob lined up with the block but not with the words the
+       green rule marks. Measured 486 against 489 before, 0 after. The bottom
+       margin absorbs the change so the block's height — and the list's rhythm —
+       is unaltered. */
+    renderShell(T3)
+    const block = within(courseCard())
+      .getByText(/Life Insurance Premiums/)
+      .closest('div') as HTMLElement
+    expect(block.style.paddingTop).toBe('8px')
+    expect(block.style.paddingBottom).toBe('8px')
   })
 
   it('is itself a second way into the course', () => {
