@@ -704,6 +704,28 @@ describe('the six-tile grid', () => {
     expect((grid.querySelector('button') as HTMLElement).style.aspectRatio).toBe('1 / 1')
   })
 
+  it('is an outline CTA that reverses on hover, styled by class not inline', () => {
+    /* 2026-10-01, the direct ask ("remove the white background ... on hover, it
+       will reverse").
+
+       ⚠ THE ASSERTION IS THAT THE COLOURS ARE *NOT* INLINE. A hover cannot be
+       expressed as an inline style, so the rest state has to live in the same
+       class as its reversal — and an inline `background` or `color` left behind
+       would BEAT the class in the cascade and silently kill the hover. That is
+       the trap `tokens.css` already records for `.cre-stop-title`. Verified in
+       the browser: transparent/navy at rest, navy fill with white text and icon
+       on hover. */
+    renderShell(T3)
+    const tile = screen
+      .getByRole('navigation', { name: 'Learning areas' })
+      .querySelector('button') as HTMLElement
+    expect(tile.className).toContain('cre-tile-cta')
+    expect(tile.style.background).toBe('')
+    expect(tile.style.backgroundColor).toBe('')
+    expect(tile.style.color).toBe('')
+    expect(tile.style.border).toBe('')
+  })
+
   it('keeps the CTA ids those controls already carried', () => {
     /* ⚠ THE WHOLE POINT OF NOT RE-TAGGING. `nav.courses`, `home.quick-exam-info`
        and the rest are named in sessions already scripted against them; a

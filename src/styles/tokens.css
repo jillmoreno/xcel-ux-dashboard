@@ -1242,6 +1242,53 @@ html,
   color: var(--color-primary-900);
 }
 
+/* `.cre-tile-cta` is `.cre-cta-ink`'s OUTLINE form, and its hover is the two
+   swapped — added 2026-10-01 for Testing 3's six-tile rail, the direct ask
+   ("remove the white background ... on hover, it will reverse").
+
+   At rest: no fill, and the border, the label and the icon all on the CTA ink.
+   The icon follows for free — `makeIcon` renders `fill: currentcolor`, so one
+   `color` drives all three and they cannot drift apart.
+
+   On hover and on FOCUS-VISIBLE: the fill becomes the ink and the ink becomes
+   the surface. Keyboard gets the same reversal as the mouse rather than a
+   separate outline, because the reversal IS the affordance here — a focus ring
+   around a tile that does not change otherwise says less.
+
+   ⚠ THE BORDER TAKES THE FILL'S COLOUR ON HOVER, not `currentColor`. Left on
+   currentColor it inverts with the text and draws a white ring inside a blue
+   tile. It has to merge into the fill.
+
+   ⚠ IT PAIRS WITH `.cre-cta-ink` / `.cre-cta-fill` ABOVE and re-pins the same
+   two stops in dark, for the reason those record: `--color-primary-500` is a
+   FILL whose contrast as text only holds on the light ground, so the dark theme
+   swaps to the -300/-900 pairing. Change one of the three and change all three.
+*/
+.cre-tile-cta {
+  background: transparent;
+  color: var(--color-primary-500);
+  border: 1px solid currentColor;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
+}
+.cre-tile-cta:hover,
+.cre-tile-cta:focus-visible {
+  background: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+  color: var(--color-text-inverse);
+}
+[data-theme='dark'] .cre-tile-cta {
+  color: var(--color-primary-300);
+}
+[data-theme='dark'] .cre-tile-cta:hover,
+[data-theme='dark'] .cre-tile-cta:focus-visible {
+  background: var(--color-primary-300);
+  border-color: var(--color-primary-300);
+  color: var(--color-primary-900);
+}
+
 /* `.cre-eyebrow-ink` is SECTION-LABEL ink — the small tracked uppercase line
    over a block's heading ("Atlas Study Journey", "Learning With Compass — Jump
    Back In"). Navy as of 2026-09-17, the direct ask, up from the neutral greys

@@ -92,7 +92,19 @@ export function HomeTileGrid({
   return (
     <nav aria-label="Learning areas" style={gridStyle}>
       {tiles.map(({ id, label, icon: Icon, onSelect }) => (
-        <button key={id} type="button" data-cta-id={id} onClick={onSelect} style={tileStyle}>
+        <button
+          key={id}
+          type="button"
+          data-cta-id={id}
+          onClick={onSelect}
+          /* ⚠ THE COLOURS LIVE IN THE CLASS, NOT HERE — `.cre-tile-cta` in
+             `tokens.css`. A hover cannot be expressed as an inline style at
+             all, and splitting the rest between the two would leave the rest
+             state here and its reversal three files away. This object is
+             geometry only. */
+          className="cre-tile-cta"
+          style={tileStyle}
+        >
           <Icon size={22} aria-hidden />
           <span style={labelStyle}>{label}</span>
         </button>
@@ -124,9 +136,11 @@ const tileStyle: CSSProperties = {
   minWidth: 0,
   padding: 12,
   borderRadius: 'var(--radius-md)',
-  border: '1px solid var(--color-border-subtle)',
-  background: 'var(--color-surface-card)',
-  color: 'var(--color-text-primary)',
+  /* ⚠ NO `border`, `background` OR `color` — `.cre-tile-cta` owns all three and
+     an inline value would beat the class in the cascade, which is the trap
+     `tokens.css` records for `.cre-stop-title`. The tiles sat on the card
+     surface with a neutral hairline until 2026-10-01; they are an outline CTA
+     now, filling on hover. */
   cursor: 'pointer',
   textAlign: 'center',
 }
