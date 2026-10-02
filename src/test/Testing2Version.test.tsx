@@ -132,8 +132,8 @@ beforeEach(() => {
   )})
 
 describe('Testing 2 is reached deliberately, not by default', () => {
-  it('is NOT what a bare /dashboard-rebrand renders — Testing is', () => {
-    /* The default moved twice on 2026-09-21 and landed on TESTING. Asserted
+  it('is NOT what a bare /dashboard-rebrand renders', () => {
+    /* The default has moved three times and now sits on TESTING 3. Asserted
        here as "not this one" rather than by naming the winner: which version IS
        the default lives in `TestingVersion.test.tsx`, beside the claim it
        inverted, and a second copy of it here is one more thing to forget when
@@ -148,7 +148,14 @@ describe('Testing 2 is reached deliberately, not by default', () => {
     )
     seed()
     renderShell('/dashboard-rebrand')
-    expect(document.querySelectorAll('[style*="aspect-ratio"]')).toHaveLength(0)
+    /* ⚠ IDENTIFIED BY THE STUDY PACE TILE, not by "any square on the page".
+       This read `[style*="aspect-ratio"]` and expected none — true while
+       Testing 2 was the only version with a square anywhere, and false from
+       2026-10-02, when Testing 3 became the default and brought a rail of six
+       square tiles that have nothing to do with Study Pace. The claim is and
+       always was "the LIVE PACE TILE is not here". */
+    expect(screen.queryByText('Study Pace')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Adjust' })).toBeNull()
   })
 })
 

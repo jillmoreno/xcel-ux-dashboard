@@ -21,6 +21,7 @@ import {
   DISCOVERABILITY_DASHBOARD_VERSIONS,
   DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
   DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
+  DISCOVERABILITY_DASHBOARD_VERSION_TESTING_3,
   defaultDiscoverabilityVersionFor,
   isQualifyingEducationVersion,
 } from '@/data/dashboardVersions'
@@ -187,7 +188,7 @@ describe('the Testing version is registered without displacing anything', () => 
     )
   })
 
-  it('IS XCEL’s default, as of 2026-09-21', () => {
+  it('was XCEL’s default, until Testing 3 took it on 2026-10-02', () => {
     /* INVERTED, and the inversion is the record worth keeping. This test read
        "does NOT become XCEL's default" from the day the version shipped, and
        its reasoning was: "a fourth picker entry that silently became the
@@ -202,8 +203,21 @@ describe('the Testing version is registered without displacing anything', () => 
        accident, the same day: the landing page is a pacing exploration, so
        which of the five treatments a stakeholder sees could not be left to
        inheritance. `dashboard-pacing-style`'s `defaultVariant` moved to
-       `presets`, pinned further down this file. */
+       `presets`, pinned further down this file.
+
+       ⚠ AND IT MOVED AGAIN on 2026-10-02, to TESTING 3 — the direct ask. Third
+       owner of this line (QE Focused, Testing, Testing 3), and each move has
+       been the deliberate promotion this pin exists to force rather than a test
+       bending to code. The subject is unchanged: XCEL resolves to ONE named
+       version, and whatever the picker marks "Default" must be it.
+
+       ⚠ TESTING IS NOT ARCHIVED by losing the default — it still leads the
+       picker and everything else in this file still describes it. What changed
+       is which version a bare `/dashboard-rebrand` opens. */
     expect(defaultDiscoverabilityVersionFor('xcel')).toBe(
+      DISCOVERABILITY_DASHBOARD_VERSION_TESTING_3.id,
+    )
+    expect(defaultDiscoverabilityVersionFor('xcel')).not.toBe(
       DISCOVERABILITY_DASHBOARD_VERSION_TESTING.id,
     )
   })

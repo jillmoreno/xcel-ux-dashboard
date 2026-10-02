@@ -803,6 +803,56 @@ describe('journey-scale-style — four ways to show 0 / 37 / 100', () => {
     expect(li.innerHTML).not.toContain('dashed')
   })
 
+  it('gauge: the nodes sit ON the line, and the unreached ones are smaller', () => {
+    /* 2026-10-02, the direct ask. ⚠ THE TRACK WAS MEASURED AGAINST THE WRONG
+       BOX first: `left: 12` is relative to the `<ol>`'s border box, which put
+       it in the 30px label gutter — a second vertical 31px left of the circles,
+       so the stops read as a list BESIDE a gauge instead of stops ON it. The
+       list's padding is 30 and the rail column 26 wide, so the centre is 43.
+       Asserted as agreement rather than as a number, so a change to either one
+       has to keep them together. */
+    renderShell(arm('gauge'))
+    const ol = courseCard().querySelector('ol[aria-label="Study journey stops"]') as HTMLElement
+    const track = [...ol.children].find((el) => el.tagName === 'SPAN') as HTMLElement
+    expect(track.style.left).toBe('42px')
+    /* ⚠ AND THE TRACK IS RENDERED BEFORE THE ROWS, which is what paints the
+       nodes over it. Reorder and the line would cut through every circle. */
+    expect([...ol.children].indexOf(track)).toBe(0)
+
+    /* The live stop keeps its size; the ones nobody has reached shrink, so six
+       equal circles stop reading as six equal claims. */
+    const dots = [...ol.querySelectorAll('li > span[aria-hidden] > span:first-child')]
+    expect((dots[0] as HTMLElement).style.width).toBe('14px')
+    expect((dots[1] as HTMLElement).style.width).toBe('10px')
+  })
+
+  it('gauge: the marker carries a green glow, and it is the only green', () => {
+    /* ⚠ A `box-shadow`, NOT A BORDER. A border grows the element and shifts the
+       dot off the line; shadows paint outward from a fixed box.
+
+       ⚠ GREEN IS REINFORCEMENT. The dot's POSITION says where the learner is
+       and the row text says which stop is live, so the rail reads correctly
+       without colour perception — the glow makes it findable, it does not carry
+       the meaning. */
+    renderShell(arm('gauge'))
+    const ol = courseCard().querySelector('ol[aria-label="Study journey stops"]') as HTMLElement
+    const track = [...ol.children].find((el) => el.tagName === 'SPAN') as HTMLElement
+    const knob = track.children[1] as HTMLElement
+    expect(knob.style.boxShadow).toContain('--color-success-500')
+    expect(knob.style.border).toBeFalsy()
+  })
+
+  it('gauge: the other arms keep full-size dots', () => {
+    /* ⚠ SCOPED. On the arms with per-row segments there are GAPS between the
+       dots, and equal sizing is what makes them read as one sequence — shrinking
+       them there would be solving a problem those arms do not have. */
+    renderShell(arm('axis'))
+    const dots = [
+      ...courseCard().querySelectorAll('li > span[aria-hidden] > span:first-child'),
+    ]
+    expect((dots[1] as HTMLElement).style.width).toBe('14px')
+  })
+
   it('chip: the figure rides the live stop, with no 0 or 100 anywhere', () => {
     renderShell(arm('chip'))
     const card = courseCard()

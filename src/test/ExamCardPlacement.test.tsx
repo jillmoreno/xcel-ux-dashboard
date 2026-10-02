@@ -23,7 +23,12 @@ import { writeExamDate } from '@/data/examDateStore'
  * with nothing on screen to show it ever existed. Neither throws.
  */
 
-const URL = '/dashboard-rebrand?demo=1'
+/* ⚠ PINNED TO `discoverability-testing`. XCEL's default moved to Testing 3 on
+   2026-10-02, and that version restructures both of the things this file is
+   about — it folds the exam card and the nav tiles into arrangements of its
+   own. This suite's subject is the behaviour on the version it was written
+   against; Testing 3's own is pinned in `Testing3Version.test.tsx`. */
+const URL = '/dashboard-rebrand?demo=1&version=discoverability-testing'
 
 function renderShell(ff?: string) {
   /* ⚠ `?ff=` is read from `window.location`, not from the router entry. */

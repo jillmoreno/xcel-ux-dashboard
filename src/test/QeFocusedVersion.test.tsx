@@ -244,9 +244,14 @@ describe('the QE Focused version is ARCHIVED but still reachable', () => {
     )
   })
 
-  it('is still what XCEL does NOT resolve to — Testing is', () => {
-    expect(defaultDiscoverabilityVersionFor('xcel')).toBe(
-      DISCOVERABILITY_DASHBOARD_VERSION_TESTING.id,
+  it('is still what XCEL does NOT resolve to', () => {
+    /* ⚠ ASSERTED AS "NOT THIS ONE" as of 2026-10-02. It named Testing, and the
+       default has now moved to Testing 3 — naming the winner here meant a
+       second copy of a fact that lives in `TestingVersion.test.tsx`, and one
+       more place to forget when it moves again. This file's subject is that QE
+       Focused is archived, not which version replaced it. */
+    expect(defaultDiscoverabilityVersionFor('xcel')).not.toBe(
+      DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED.id,
     )
   })
 

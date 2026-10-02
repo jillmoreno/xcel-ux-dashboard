@@ -613,6 +613,20 @@ export function StudyJourneyRail({
                         : isCurrent
                           ? syllabusDotCurrentStyle
                           : null),
+                      /* ⚠ THE NOT-STARTED DOTS SHRINK UNDER THE GAUGE —
+                         2026-10-02, the direct ask. With one continuous line
+                         running through them, six equal circles read as six
+                         equal claims; the ones nobody has reached should be
+                         quieter than the one they are on. 10 against 14, which
+                         is enough to tell apart at a glance without the dashed
+                         ring losing its shape.
+
+                         ⚠ SCOPED TO `gauge`. On the other arms the dots sit on
+                         per-row segments with gaps between them, where equal
+                         sizing is what makes them read as one sequence. */
+                      ...(scaleGauge && stop.status === 'not-started'
+                        ? gaugeDotSmallStyle
+                        : null),
                     }}
                   >
                     {stop.status === 'completed' && <CircleCheck size={11} aria-hidden />}
@@ -1523,13 +1537,22 @@ const scaleChipStyle: CSSProperties = {
   whiteSpace: 'nowrap',
 }
 
-/* GAUGE — one continuous track behind the nodes, spanning the whole list.
+/* GAUGE — one continuous track THROUGH the nodes, spanning the whole list.
    Absolute, because a track built from the per-row segments would fill by ROW,
-   which is the thing this arm exists to stop. `left: 12` centres its 2px on the
-   26px rail column, the same place the segments sit. */
+   which is the thing this arm exists to stop.
+
+   ⚠ 42 PUTS IT UNDER THE NODES, which is the 2026-10-02 correction. At 12 it
+   was measured against the `<ol>`'s border box and therefore sat in the 30px
+   label gutter — a second vertical line 31px to the left of the circles, so the
+   stops read as a list BESIDE a gauge rather than as stops ON it. The list's
+   own padding is 30 and the rail column is 26 wide, so its centre is 43 and a
+   2px line starts at 42.
+
+   ⚠ IT IS RENDERED BEFORE THE ROWS, so the nodes paint over it. That is what
+   makes the circles part of the line rather than holes in it. */
 const gaugeTrackStyle: CSSProperties = {
   position: 'absolute',
-  left: 12,
+  left: 42,
   top: 10,
   bottom: 10,
   width: 2,
@@ -1546,8 +1569,21 @@ const gaugeFillStyle: CSSProperties = {
   background: 'var(--color-primary-700)',
 }
 
-/** The fill boundary, which is what a reader's eye lands on. Centred on the
- *  track by half its own size. */
+/**
+ * The fill boundary — where the learner is on the scale. Centred on the track
+ * by half its own size.
+ *
+ * ⚠ THE GREEN GLOW IS THE 'YOU ARE HERE', 2026-10-02, the direct ask. Two
+ * concentric `box-shadow` rings rather than a border: a border would grow the
+ * element and shift the dot off the line, where shadows paint outward from a
+ * fixed box. The inner ring is a halo of the page so the green never touches
+ * the navy dot, and the outer is the green itself at low alpha.
+ *
+ * ⚠ GREEN IS REINFORCEMENT, NOT THE SIGNAL. The dot's POSITION already says
+ * where the learner is, and the row text says which stop is live — so the rail
+ * still reads correctly without colour perception (2.1.4.1). It is also the one
+ * green on this card, which is what makes it findable.
+ */
 const gaugeKnobStyle: CSSProperties = {
   position: 'absolute',
   left: -3,
@@ -1556,12 +1592,15 @@ const gaugeKnobStyle: CSSProperties = {
   marginTop: -4,
   borderRadius: '50%',
   background: 'var(--color-primary-700)',
+  boxShadow:
+    '0 0 0 3px var(--color-surface-card), 0 0 0 6px color-mix(in srgb, var(--color-success-500) 45%, transparent), 0 0 10px 3px color-mix(in srgb, var(--color-success-500) 35%, transparent)',
 }
 
 const gaugeFigureStyle: CSSProperties = {
   position: 'absolute',
   right: '100%',
-  marginRight: 8,
+  /* 10 clears the node's 14px circle, whose edge is 6px from the line. */
+  marginRight: 10,
   transform: 'translateY(-50%)',
   fontFamily: 'var(--font-body)',
   fontSize: 9,
@@ -1585,6 +1624,15 @@ const gaugeCapBase: CSSProperties = {
 
 const gaugeCapTopStyle: CSSProperties = { ...gaugeCapBase, bottom: '100%', marginBottom: 4 }
 const gaugeCapBottomStyle: CSSProperties = { ...gaugeCapBase, top: '100%', marginTop: 4 }
+
+/** The not-started dot under the gauge: smaller, so the live stop leads. The
+ *  negative margins keep its CENTRE on the line — a 10px circle in a column
+ *  that centres a 14px one would otherwise sit 2px high. */
+const gaugeDotSmallStyle: CSSProperties = {
+  width: 10,
+  height: 10,
+  margin: '5px 0 0',
+}
 
 /** The per-row segment under the gauge: invisible, but still occupying its
  *  height so the nodes keep their spacing and the track spans the right list. */

@@ -37,7 +37,18 @@ import { AccountMenu } from '@/components/layout/AccountMenu'
 
 function renderShell(ff: string, section = '') {
   return render(
-    <MemoryRouter initialEntries={[`/dashboard-rebrand?demo=1&ff=${ff}${section}`]}>
+    /* ⚠ PINNED TO `discoverability-testing` — XCEL's default moved to Testing 3
+       on 2026-10-02, and that version re-homes the nav tiles into its own
+       six-tile grid. This suite is about the nav ARMS, not that version.
+
+       ⚠ A PLAIN COMMENT, NOT `{/* … *\/}`. This is the first argument to
+       `render(`, which is an expression position — a JSX comment there is an
+       object literal and fails to parse. */
+    <MemoryRouter
+      initialEntries={[
+        `/dashboard-rebrand?demo=1&version=discoverability-testing&ff=${ff}${section}`,
+      ]}
+    >
       <AccountProvider>
         <FeatureFlagProvider>
           <LearningPathsPanelProvider>

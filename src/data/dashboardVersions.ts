@@ -349,8 +349,10 @@ export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
 /**
  * Which Discoverability layout a brand lands on with NO `?version=`.
  *
- * Marketing Focused is the house default. **XCEL defaults to TESTING**
- * (2026-09-21, the direct ask: "i actually wanted Testing 1 as the default").
+ * Marketing Focused is the house default. **XCEL defaults to TESTING 3**
+ * (2026-10-02, the direct ask: "lets change testing 3 to the new default
+ * view"). It was TESTING from 2026-09-21 ("i actually wanted Testing 1 as the
+ * default").
  *
  * THE LINEAGE, because each step carried the last one's argument forward rather
  * than reversing it. Learner Focused from 2026-09-04 — XCEL sells a licence,
@@ -360,7 +362,25 @@ export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
  * requirement breakdown plus what to study next. Testing now — QE Focused with
  * the Readiness stub dropped, the whole square row given to Study Pace, the
  * trimmed three-row rail and the journey split into four widgets. Both earlier
- * versions stay in the picker so the three can be compared.
+ * versions stay in the picker so the three can be compared. Testing 3 from
+ * 2026-10-02 — Testing with the course and its coursework as ONE block, the
+ * licensing steps folded in behind disclosures, and the right rail rebuilt as
+ * six destinations over an exam card and a readiness slot.
+ *
+ * ⚠ IT IS STILL A BRANCH DEFAULT, which is the whole of what this line does.
+ * `jill/navigation-exploration` is where Testing 3 lives; this makes the branch
+ * build and its `?demo=1` link open on the work under review, which is the
+ * Contributing guide's rule for a design branch. Whether it becomes the
+ * baseline on `main` is `/promote-to-prototype`'s call and nothing here decides
+ * it.
+ *
+ * ⚠ TESTING 3 IS NOT FINISHED, and that is the known cost of pointing the
+ * landing page at it. Two things on it are explicitly open: `Are you ready` is
+ * an empty reserved slot, and `journey-scale-style` is a FOUR-ARM exploration
+ * with no winner — so a stakeholder opening the link lands on a page with one
+ * blank card and one undecided treatment. That is the trade the ask accepts;
+ * the earlier promotion of Testing waited until its own exploration had
+ * resolved, and this one has not.
  *
  * ⚠ THIS REVERSES A DECISION THAT WAS PINNED, and the pin was right when it was
  * written. Testing shipped on 2026-09-21 explicitly NOT as the default, with a
@@ -388,7 +408,7 @@ export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
  */
 export function defaultDiscoverabilityVersionFor(brand: Brand): string {
   return brand === 'xcel'
-    ? DISCOVERABILITY_DASHBOARD_VERSION_TESTING.id
+    ? DISCOVERABILITY_DASHBOARD_VERSION_TESTING_3.id
     : DISCOVERABILITY_DASHBOARD_VERSION_MARKETING_FOCUSED.id
 }
 
