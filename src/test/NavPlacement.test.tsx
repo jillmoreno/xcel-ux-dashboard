@@ -60,8 +60,65 @@ function renderTopNav(search = '') {
   )
 }
 
+/**
+ * THE UNIFICATION — 2026-10-05.
+ *
+ * Until this date there were TWO axes answering "where is the navigation":
+ * `nav-placement` for the shipped versions and Eric's `?nav=` for the Atlas
+ * ones. They collided the day his branch merged — both resolved "top" and the
+ * header drew two pill rows — so `useNavPlacement` is now the single answer and
+ * his three spellings resolve through it.
+ *
+ * ⚠ WHAT IS PINNED HERE IS THE TWO THINGS THAT CAN SILENTLY REGRESS: that a
+ * pinned `?nav=` URL still means what it said, and that "flag off" gives each
+ * version family what it SHIPS rather than a blanket `left`.
+ */
+describe('nav-placement — the unified axis', () => {
+  const placement = () => screen.getByTestId('placement').textContent
+
+  it('resolves Eric’s three ?nav= spellings, so pinned Atlas links still work', () => {
+    renderTopNav('?nav=left-rail')
+    expect(placement()).toBe('left')
+    cleanup()
+    renderTopNav('?nav=top-nav')
+    expect(placement()).toBe('top')
+    cleanup()
+    renderTopNav('?nav=expanding-top-nav')
+    expect(placement()).toBe('expanding-top')
+  })
+
+  it('lets ?nav= win over the flag — an alias is still an override', () => {
+    renderTopNav('?nav=left-rail&ff=nav-placement:top')
+    expect(placement()).toBe('left')
+  })
+
+  it('ignores a ?nav= spelling that is not one of the three', () => {
+    /* ⚠ FALLS THROUGH TO THE FLAG rather than to Eric's old default. A typo in
+       a shared URL should land on the committed baseline, not on a third
+       behaviour nobody chose. */
+    renderTopNav('?nav=sideways')
+    expect(placement()).toBe('top')
+  })
+
+  it('OFF means `left` on the shipped versions…', () => {
+    renderTopNav('?ff=nav-placement:off')
+    expect(placement()).toBe('left')
+  })
+
+  it('…and `top` on the Atlas ones, because that is what THEY ship', () => {
+    /* ⚠ THE LINE THE UNIFICATION NEARLY LOST. Eric's own axis defaulted to
+       `top-nav`; folding the two together without this handed every Atlas
+       version a left rail the moment a suite pinned the flag off. */
+    renderTopNav('?ff=nav-placement:off&version=eric-atlas-v1')
+    expect(placement()).toBe('top')
+    cleanup()
+    renderTopNav('?ff=nav-placement:off&version=discoverability-atlas-compass-nav')
+    expect(placement()).toBe('top')
+  })
+})
+
 describe('nav-placement', () => {
-  it('is in the catalog as a two-arm flag, defaulting to the top nav on this branch', () => {
+  it('is in the catalog as a THREE-arm flag, defaulting to the top nav on this branch', () => {
     /* ⚠ THIS ASSERTS THE BRANCH DEFAULT, NOT A SHIPPED ONE. It has been `top`,
        then `hybrid`, and is `top` again as of 2026-10-01 — the restructure made
        the flag ONE AXIS with two arms, and the top arm is where the whole of
@@ -72,11 +129,15 @@ describe('nav-placement', () => {
     const flag = FEATURE_FLAGS.find((f) => f.key === 'nav-placement')
     expect(flag).toBeTruthy()
     expect(flag?.defaultVariant).toBe('top')
-    /* TWO, NOT FOUR. `hybrid` and `hybrid-tabs` came off the PICKER and are
-       still resolvable by URL — the suite below still drives both — so this
-       asserts what a reviewer is offered, which is the thing the restructure
-       actually changed. */
-    expect(flag?.variants?.map((v) => v.value)).toEqual(['left', 'top'])
+    /* THREE SINCE 2026-10-05, and the third is the unification rather than a
+       new idea: `expanding-top` is Eric's `?nav=expanding-top-nav`, which was a
+       SEPARATE AXIS with its own default until the two collided and the header
+       drew two navigations at once. One axis now — see `navPlacement.ts`.
+
+       ⚠ STILL NOT FOUR-PLUS. `hybrid` and `hybrid-tabs` remain off the PICKER
+       and resolvable by URL — the suite below still drives both — so this keeps
+       asserting what a reviewer is OFFERED, which is what the arm list is for. */
+    expect(flag?.variants?.map((v) => v.value)).toEqual(['left', 'top', 'expanding-top'])
     expect(flag?.page).toBe('dashboard-rebrand')
   })
 

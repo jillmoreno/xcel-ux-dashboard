@@ -1,4 +1,7 @@
+import { useSearchParams } from 'react-router-dom'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { ATLAS_NAV_PARAM, type AtlasNavVersion } from './atlasNavVersion'
+import { isAtlasCompassNavVersion } from '@/data/dashboardVersions'
 
 /**
  * Which navigation the rebrand shell draws, and what follows from it —
@@ -32,7 +35,40 @@ import { useFeatureFlag } from '@/context/FeatureFlagContext'
  * They are not offered on the demo bar and nothing new is built for them;
  * deleting them for good is a separate pass, with an ARCHIVED_ITEMS row.
  */
-export type NavPlacement = 'left' | 'top' | 'hybrid' | 'hybrid-tabs'
+export type NavPlacement = 'left' | 'top' | 'expanding-top' | 'hybrid' | 'hybrid-tabs'
+
+/**
+ * ⚠ `expanding-top` JOINED 2026-10-05, AND IT CAME FROM ERIC'S BRANCH — the
+ * unification the two navigations needed.
+ *
+ * Until then there were TWO axes answering one question. `nav-placement` chose
+ * between the rail and the header for the shipped versions; Eric's `?nav=`
+ * chose between Left Rail, Top Nav and Expanding Top Nav for the Atlas ones.
+ * Two controls, two defaults, two places to look — and on 2026-10-05 they
+ * collided outright: both resolved "top" at once and the header drew two pill
+ * rows (see `AtlasHeaderOneNav.test.tsx`).
+ *
+ * So there is ONE axis now, and the VERSION decides which component draws it:
+ *
+ *   `left`          — the rail. Atlas draws `AtlasCompassSideNav`, everything
+ *                     else draws `PlatformSideNav`.
+ *   `top`           — a row in the header. Atlas draws `AtlasTopNav`,
+ *                     everything else `PlatformTopNav`. ⚠ On Atlas the rail is
+ *                     dropped on HOME ONLY; the inner pages keep it.
+ *   `expanding-top` — Atlas's expanding header row, and NO rail on any page.
+ *
+ * ⚠ `expanding-top` IS ATLAS-ONLY IN APPEARANCE, NOT IN BEHAVIOUR. Off the
+ * Atlas versions it resolves exactly like `top` — `showsTopNav` true,
+ * `showsRail` false — so it is never a dead option that silently does nothing;
+ * it is simply indistinguishable there, which the control's label says.
+ */
+
+/** Eric's `?nav=` spellings, mapped onto the axis above. */
+const PLACEMENT_FOR_ATLAS_NAV: Record<AtlasNavVersion, NavPlacement> = {
+  'left-rail': 'left',
+  'top-nav': 'top',
+  'expanding-top-nav': 'expanding-top',
+}
 
 /**
  * Read the placement.
@@ -42,9 +78,34 @@ export type NavPlacement = 'left' | 'top' | 'hybrid' | 'hybrid-tabs'
  * shell with no navigation at all. Only an explicit `top` moves it.
  */
 export function useNavPlacement(): NavPlacement {
+  const [params] = useSearchParams()
   const flag = useFeatureFlag('nav-placement')
-  if (!flag.enabled) return 'left'
+  /* ⚠ `?nav=` WINS, AND IT IS AN ALIAS RATHER THAN A SECOND SOURCE — 2026-10-05.
+     Every Atlas link shared before the unification carries one of Eric's three
+     spellings, and a pinned URL that quietly stopped meaning what it said would
+     be the worst outcome of tidying this up. Read FIRST so those URLs keep
+     resolving, and translated into the axis above so there is still exactly one
+     value downstream. Writing the control writes the FLAG; this only reads. */
+  const alias = params.get(ATLAS_NAV_PARAM)
+  if (alias && alias in PLACEMENT_FOR_ATLAS_NAV) {
+    return PLACEMENT_FOR_ATLAS_NAV[alias as AtlasNavVersion]
+  }
+  /* ⚠ OFF MEANS `left` EVERYWHERE EXCEPT THE ATLAS VERSIONS, WHERE IT MEANS
+     `top` — and getting this wrong is what the unification nearly shipped.
+     "Flag off" means "the exploration is not in play, give me what this version
+     SHIPS", and what Eric's versions ship is the top nav (`ATLAS_NAV_DEFAULT`
+     was `top-nav` on his own axis). Folding the two axes together without this
+     line handed every Atlas version a left rail the moment a suite pinned the
+     flag off — which is exactly how `QeFocusedVersion.test.tsx` caught it.
+
+     ⚠ READS THE `?version=` PARAM ONLY, not the resolved default. With no
+     param the brand default applies, and that is Testing 3 — not an Atlas
+     version — so the param's absence is already the right answer and this
+     avoids pulling `AccountContext` into a navigation helper. */
+  const atlasVersion = isAtlasCompassNavVersion(params.get('version'))
+  if (!flag.enabled) return atlasVersion ? 'top' : 'left'
   if (flag.variant === 'top') return 'top'
+  if (flag.variant === 'expanding-top') return 'expanding-top'
   if (flag.variant === 'hybrid') return 'hybrid'
   if (flag.variant === 'hybrid-tabs') return 'hybrid-tabs'
   return 'left'
@@ -94,7 +155,7 @@ export function useHelpPlacement(): HelpPlacement {
  * prevents.
  */
 export function showsTopNav(p: NavPlacement): boolean {
-  return p === 'top' || p === 'hybrid' || p === 'hybrid-tabs'
+  return p === 'top' || p === 'expanding-top' || p === 'hybrid' || p === 'hybrid-tabs'
 }
 
 /** Does this placement draw the RAIL? */

@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode, type CSSProperties } from 'react'
 import { ATLAS_SKIN_PARAM, atlasSkinFor } from './atlasBrandSkin'
-import { ATLAS_NAV_PARAM, atlasNavFor } from './atlasNavVersion'
 import { ATLAS_FONT_PARAM, atlasFontFor, atlasFontHref } from './atlasFontSets'
 import { useSearchParams } from 'react-router-dom'
 import { useAccount, supportsMembership, type Brand } from '@/context/AccountContext'
@@ -349,9 +348,18 @@ function PlatformShellBody() {
   // …and on the Top Nav version's HOME page (2026-10-01, the designer's
   // request): its header buttons are Home's way around; the other pages keep
   // the rail.
-  const atlasNavVersion = atlasNav ? atlasNavFor(params.get(ATLAS_NAV_PARAM)) : null
+  /* ⚠ DECLARED HERE, ABOVE THE ATLAS DERIVATIONS — moved up 2026-10-05 when
+     `atlasNoRail` started reading it. It sat beside `topNav` a hundred lines
+     below; both still read this one value, which is the point of the
+     unification. Unconditional, so moving it changes no hook order. */
+  const navPlacement = useNavPlacement()
+  /* ⚠ THE UNIFIED AXIS — 2026-10-05, replacing a second read of `?nav=`.
+     `expanding-top` drops the rail on EVERY page; `top` drops it on Home only
+     and the inner pages keep it. That asymmetry is Eric's and is the whole
+     difference between his two top-nav arms, so it survives the unification
+     rather than being flattened into "top means no rail". */
   const atlasNoRail =
-    atlasNavVersion === 'expanding-top-nav' || (atlasNavVersion === 'top-nav' && active === 'dashboard')
+    atlasNav && (navPlacement === 'expanding-top' || (navPlacement === 'top' && active === 'dashboard'))
   // Wherever an Atlas rail is drawn it can collapse; collapsed, its column is
   // the toggle's own width, so only that frame stays at the left edge.
   const atlasRailToggle = atlasNav && !atlasNoRail
@@ -436,7 +444,6 @@ function PlatformShellBody() {
      the rail column; the header asks its own. Named for the layout it produces
      rather than for the arm that produces it, because `hybrid` answers yes to
      both questions and a `=== 'top'` here would have dropped the rail under it. */
-  const navPlacement = useNavPlacement()
   const topNav = !showsRail(navPlacement)
   /* `nav-rail-surface: none` drops the rail's own fill on Home, so the column
      sits on the page instead of reading as a docked panel. Home only — see the
@@ -973,9 +980,19 @@ function PlatformShellBody() {
            FIRST track. Under `nav-placement: top` the Atlas rail therefore
            does not draw at all — which is what "top nav" means, and the same
            answer `atlasNoRail` already gives on Eric's own no-rail pages. */
-        gridTemplateColumns: topNav
-          ? 'minmax(0, 1fr)'
-          : atlasNoRail
+        /* ⚠ CORRECTED 2026-10-05, AND THE EARLIER NOTE HERE WAS WRONG. The
+           merge tested `topNav` FIRST on the grounds that "top nav means no
+           rail". That is true for the shipped versions and FALSE for Eric's:
+           his `top` arm drops the rail on HOME ONLY and keeps it on every
+           inner page, which is the difference between his two top-nav arms.
+           Testing `topNav` first flattened that and took his rail off all of
+           them — caught by `QeFocusedVersion.test.tsx`, not by the merge.
+
+           So the Atlas versions answer with `atlasNoRail`, which already knows
+           about Home, and everything else answers with `topNav`. One question,
+           two authorities, and the version decides which one is asked. */
+        gridTemplateColumns: atlasNav
+          ? atlasNoRail
           ? // No rail: the course player still fills the window; every other
             // page centres its usual width (1278 Home, 1180 elsewhere).
             compassCourseRail
@@ -983,13 +1000,14 @@ function PlatformShellBody() {
             : `minmax(0, 1fr) minmax(0, ${active === 'dashboard' ? 1278 : 1180}px) minmax(0, 1fr)`
           : compassCourseRail
           ? `${atlasRailW}px minmax(0, 1fr) 0px`
-          : atlasNav && active === 'dashboard'
+          : active === 'dashboard'
           ? // Atlas HOME: 1278, not 1180 — room for the 750px left column
             // (2026-09-24), a 40px gap and a ~376px right one, inside the 56px
             // gutters: 56 + 750 + 40 + 376 + 56.
             `${atlasRailTrack(1278)} minmax(0, 1278px) 1fr`
-          : atlasNav
-          ? `${atlasRailTrack(1180)} minmax(0, 1180px) 1fr`
+          : `${atlasRailTrack(1180)} minmax(0, 1180px) 1fr`
+          : topNav
+          ? 'minmax(0, 1fr)'
           : railCollapsed
             ? '76px minmax(0, 1364px) 1fr'
             : '220px minmax(0, 1220px) 1fr',
@@ -1006,7 +1024,12 @@ function PlatformShellBody() {
           not hidden or collapsed — it does not render, and the grid above has
           no column for it, so the content is not sitting in a shell with an
           empty gutter where the nav used to be. */}
-      {!topNav && (
+      {/* ⚠ `atlasNav ||` — the Atlas versions ALWAYS render this column, even
+          with no rail in it. That is Eric's own arrangement (the column stays
+          so the grid's cells do not shift; `atlasNoRail` empties it below) and
+          the merge overrode it with main's `topNav`, which drops the column
+          outright. Both are right for their own versions. */}
+      {(atlasNav || !topNav) && (
         <>
         {/* Left nav rail — flush-left column. In the locked kiosk share view
             (`?focus=1`) the rail stays VISIBLE but is made `inert` (below), so a

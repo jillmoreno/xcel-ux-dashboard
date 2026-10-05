@@ -944,6 +944,12 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     variants: [
       { value: 'left', label: 'Left nav' },
       { value: 'top', label: 'Top nav' },
+      /* ⚠ ERIC'S THIRD ARM, FOLDED IN 2026-10-05. It was `?nav=expanding-top-nav`
+         on a parallel axis of its own; see `navPlacement.ts` for why there is
+         one axis now. The label names Atlas because that is where it LOOKS
+         different — off the Atlas versions it resolves like `top` rather than
+         doing nothing, so it is never a dead option. */
+      { value: 'expanding-top', label: 'Expanding top nav (Atlas)' },
     ],
     page: 'dashboard-rebrand',
   },

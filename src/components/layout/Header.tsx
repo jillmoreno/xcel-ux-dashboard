@@ -39,7 +39,6 @@ import { activePathIdFor, learningPathsFor } from '@/data/learningFixtures'
 import { useDeviceFrame } from './DeviceFrameContext'
 import { useMobileNav } from './MobileNavContext'
 import { AtlasTopNav } from './AtlasTopNav'
-import { ATLAS_NAV_PARAM, atlasNavFor } from './atlasNavVersion'
 
 /** Height of the Demo-frame browser-chrome strip (traffic lights). Shared by
  *  the strip itself + the header's sticky offset so they stay in sync. */
@@ -141,8 +140,11 @@ export function Header() {
   // Nav Version → Top Nav (2026-09-30): Home + Compass Learning in the header,
   // their left edge on the Atlas rail's right edge. See `AtlasTopNav`.
   // …and Expanding Top Nav (2026-10-01), the same buttons with slide-out links.
-  const atlasNavVersion = atlasNavFor(new URLSearchParams(search).get(ATLAS_NAV_PARAM))
-  const atlasTopNav = atlasSlimHeader && atlasNavVersion !== 'left-rail'
+  /* ⚠ READS THE UNIFIED AXIS, NOT `?nav=` — 2026-10-05. `useNavPlacement` now
+     resolves Eric's three spellings into `nav-placement`'s arms (and still
+     honours a pinned `?nav=` URL), so this asks the same question every other
+     navigation reader asks instead of a second one that could disagree. */
+  const atlasTopNav = atlasSlimHeader && showsTopNav(navPlacement)
   const headerHeight = atlasSlimHeader ? ATLAS_HEADER_HEIGHT : 72
   const desktopLogoHeight = atlasSlimHeader ? ATLAS_LOGO_HEIGHT : 52
   // Demo frame: the shell renders inside a browser-style window (see
@@ -463,7 +465,7 @@ export function Header() {
               / Share Demo views, like the rest of the header's navigation. */}
           {atlasTopNav && (
             <div inert={noHeaderNav || undefined} style={{ marginLeft: 32, flexShrink: 0 }}>
-              <AtlasTopNav expanding={atlasNavVersion === 'expanding-top-nav'} />
+              <AtlasTopNav expanding={navPlacement === 'expanding-top'} />
             </div>
           )}
         </div>

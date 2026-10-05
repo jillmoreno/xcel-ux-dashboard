@@ -28,7 +28,7 @@ import { ActionMenu } from '@/components/ui/ActionMenu'
 import { Toast } from '@/components/ui/Toast'
 import { DemoBar, DemoDropdown } from './DemoBar'
 import { isPublicGateway } from '@/data/gatewayMode'
-import { controlMaturity } from '@/data/demoControlMaturity'
+import { controlMaturity, variantsForDemo } from '@/data/demoControlMaturity'
 import { licensedProfessionsFor } from '@/data/licensedStatesFixtures'
 import { readDemoDayOffset, setDemoDayOffset } from '@/data/demoDay'
 import {
@@ -50,6 +50,7 @@ import { tierBadgeIcon } from '@/components/ui/membershipTierBadge'
 import {
   useFeatureFlag,
   useFeatureFlags,
+  FEATURE_FLAGS,
   type FeatureFlagDefinition,
   type FeatureFlagState,
 } from '@/context/FeatureFlagContext'
@@ -149,6 +150,14 @@ type ControlKey =
   | 'readiness'
   | 'education'
   | 'version'
+  /* ⚠ `navLayout` IS BACK, 2026-10-05 — it was removed earlier the same day
+     with four other flag-backed design variants. It returns for the opposite
+     reason to the one that took it: it is no longer a design variant among
+     several, it is the ONE axis that every navigation treatment now resolves
+     through (`navPlacement.ts`), including Eric's three Atlas spellings. "Show
+     all of the top navs in one control" is the ask it answers, and it cannot be
+     answered from the Feature Flag panel, which is design-site-only. */
+  | 'navLayout'
 
 const SHOW_CONTROL: Record<ControlKey, boolean> = {
   persona: false,
@@ -162,6 +171,9 @@ const SHOW_CONTROL: Record<ControlKey, boolean> = {
      the picker. A control nobody in the audience can find is not a control. */
   version: true,
   education: false,
+  /* ON — this bar's branch is the navigation exploration, and the axis is the
+     thing being explored. */
+  navLayout: true,
 }
 
 /**
@@ -303,6 +315,7 @@ export function DemoControlsBar({
   // this one belongs to one section. Add it to `readDemoParams` if a shared
   // link ever needs to open on a specific readiness state.
   const readinessState = useFeatureFlag('readiness-state')
+  const navLayoutState = useFeatureFlag('nav-placement')
   // The What's New / Featured toggle was removed 2026-09-16 with its flag (see
   // the note in the Persona dropdown below). `whatsNewOn` is pinned off so the
   // persona resolver and the `?wn=` codec keep working unchanged.
@@ -492,6 +505,18 @@ export function DemoControlsBar({
      encodes, asked of the one version that is not in the rail's trim list. */
   const onAtlasVersion = isAtlasCompassNavVersion(
     searchParams.get('version') ?? defaultDiscoverabilityVersionFor(brand),
+  )
+
+  /* ⚠ DERIVED FROM THE CATALOG, NOT A HARDCODED LIST — changed 2026-10-05 when
+     the control came back. Its first life carried its own `NAV_LAYOUT_PICKER`
+     const, which is one more place to edit every time an arm is added, and the
+     arm added that day (Eric's `expanding-top`) is exactly the kind that would
+     have been added in the catalog and forgotten here. `variantsForDemo` then
+     drops any arm marked `wip` on the demo site, the same gate every other
+     variant picker on this bar goes through. */
+  const navLayoutOptions = variantsForDemo(
+    FEATURE_FLAGS.find((f) => f.key === 'nav-placement')?.variants ?? [],
+    'nav-placement',
   )
 
   const readinessReachable = !railHidesSection(
@@ -1026,6 +1051,59 @@ export function DemoControlsBar({
            unreached today, so a version that gains the section shows the
            control again with no edit here. `DemoControlsBar.test.tsx` pins both
            halves — the rail rule and the Atlas version. */
+        {/* NAVIGATION — the one axis every nav treatment resolves through, and
+            the reason this control came back to the bar on 2026-10-05 ("how do
+            we show all of the top navs, merge them all in the demo controls").
+
+            ⚠ THREE ARMS SPANNING TWO IMPLEMENTATIONS. `left` and `top` draw
+            the Atlas components on Eric's versions and the Platform ones
+            everywhere else; `expanding-top` is Eric's, and off the Atlas
+            versions it resolves like `top` rather than doing nothing. The
+            VERSION decides which component; this decides where the nav is.
+
+            ⚠ ON THE BAR, NOT IN THE FLAG PANEL, deliberately — and that is a
+            reversal of the 2026-10-05 trim that removed it hours earlier. The
+            panel is design-site-only, so a control that lives there cannot
+            show a stakeholder anything, and showing stakeholders every nav
+            treatment side by side is the whole ask. */}
+        {showControl.navLayout && (
+          <DemoDropdown
+            id="nav-layout"
+            hidden={!show('nav-layout')}
+            wip={markWip && controlMaturity('nav-layout') === 'wip'}
+            label={
+              navLayoutOptions.find((o) => o.value === (navLayoutState.variant ?? 'top'))?.label ??
+              'Top nav'
+            }
+            eyebrow="Navigation"
+            openId={openId}
+            onToggle={toggle}
+            panelRole="radiogroup"
+            panelLabel="Navigation layout"
+            panelMinWidth={260}
+          >
+            {navLayoutOptions.map((opt) => {
+              const active = opt.value === (navLayoutState.variant ?? 'top')
+              return (
+                <button
+                  key={opt.value}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  tabIndex={active ? 0 : -1}
+                  className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
+                  onClick={() => {
+                    setVariant('nav-placement', opt.value)
+                    close()
+                  }}
+                >
+                  <span style={{ flex: 1 }}>{opt.label}</span>
+                  {active && <Check size={15} aria-hidden />}
+                </button>
+              )
+            })}
+          </DemoDropdown>
+        )}
         {showControl.readiness && readinessReachable && !onAtlasVersion && (
         <DemoDropdown
           id="readiness"

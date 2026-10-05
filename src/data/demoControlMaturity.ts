@@ -74,6 +74,20 @@ export const DEMO_CONTROLS: readonly DemoControlRow[] = [
      and education together. WIP because a persona reshapes the whole scenario,
      and several of the personas behind it are still being argued about. */
   { id: 'persona', maturity: 'wip' },
+  /* NAVIGATION — back on the bar 2026-10-05, hours after the trim removed it,
+     and READY rather than inheriting `nav-placement`'s `wip`.
+
+     ⚠ THE FLAG IS STILL `wip` AND THAT IS NOT A CONTRADICTION. `wip` on the
+     flag says the navigation exploration has not been decided; `ready` here
+     says the CONTROL is fit for a stakeholder to touch. Those come apart for
+     this one axis because showing stakeholders the nav treatments side by side
+     is the point of asking them at all — a control they cannot reach makes the
+     question unaskable, which is the opposite of what `wip` is protecting.
+
+     ⚠ STATED HERE, NOT BY PROMOTING THE FLAG. Marking `nav-placement` ready
+     would also promote it everywhere else that reads maturity, which is a
+     bigger claim than anyone has made about this exploration. */
+  { id: 'nav-layout', maturity: 'ready' },
   { id: 'progress', flag: 'dashboard-progress-state' },
   { id: 'readiness', flag: 'readiness-state' },
   /* `pacing` WAS HERE — `study-pace-preset`. Left the bar 2026-10-05 with the
