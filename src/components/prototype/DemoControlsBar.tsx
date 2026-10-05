@@ -14,6 +14,7 @@ import {
   Check,
   ChevronDown,
   Grid,
+  ArrowsRotate,
 } from '@/icons'
 import { ActionMenu } from '@/components/ui/ActionMenu'
 import { Toast } from '@/components/ui/Toast'
@@ -24,7 +25,6 @@ import { licensedProfessionsFor } from '@/data/licensedStatesFixtures'
 import { readDemoDayOffset, setDemoDayOffset } from '@/data/demoDay'
 import {
   useDemoMenus,
-  DEMO_WHITE,
   DEMO_HOVER_FILL,
 } from './demoBarUtil'
 import {
@@ -1129,10 +1129,27 @@ export function DemoControlsBar({
               `PublicGateway.test.tsx`, which had been using Lo-fi as its one
               remaining subject and now says the gate is untested rather than
               pretending otherwise. */}
+          {/* RESET — an icon since 2026-10-05, the direct ask ("circle arrow
+              style"), matching the two icon buttons beside it.
+
+              ⚠ ITS ACCESSIBLE NAME IS STILL EXACTLY "Reset". The word was
+              visible text and is now an `aria-label`, so nothing about what a
+              screen reader hears changed — and `PublicGateway.test.tsx` matches
+              it on `/^Reset$/`, because Reset is the control that gets a
+              stakeholder out of a state they wandered into and the suite checks
+              the demo site keeps it.
+
+              ⚠ IT IS THE ONLY DESTRUCTIVE CONTROL ON THIS BAR, and it just lost
+              its word. An icon-only control that re-baselines the whole demo is
+              a worse mis-click than an icon-only one that opens a sheet — worth
+              watching, and the reason the tooltip says what it does rather than
+              just naming it. */}
           <button
             type="button"
             className="cre-demo-controls-btn"
-            style={GHOST_BTN}
+            aria-label="Reset"
+            title="Reset the demo to its defaults"
+            style={resetIconStyle}
             onClick={() => {
               // Full reset in ONE URL write (avoids a second setSearchParams
               // clobbering the first from stale state): tier → the brand's default
@@ -1176,7 +1193,7 @@ export function DemoControlsBar({
             onMouseEnter={(e) => (e.currentTarget.style.background = DEMO_HOVER_FILL)}
             onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
           >
-            Reset
+            <ArrowsRotate size={16} aria-hidden />
           </button>
           {/* DASHBOARD VERSION — an icon button, right of Reset, opening the
               versions sheet (2026-10-05, the direct ask).
@@ -1420,6 +1437,24 @@ const TIER_CHIP: CSSProperties = {
    panel state, and this control has no panel of its own to open. If the two
    ever drift visibly, extracting the trigger is the fix — not giving this a
    dropdown it does not use. */
+/* Reset's icon button — the version trigger's geometry exactly. They sit next
+   to each other and are the same size and shape, which is what lets the row
+   read as a group of tools rather than three unrelated buttons. */
+const resetIconStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 38,
+  height: 38,
+  padding: 0,
+  background: 'transparent',
+  border: '1px solid rgba(255,255,255,0.3)',
+  borderRadius: 'var(--radius-md)',
+  color: 'var(--color-text-inverse)',
+  cursor: 'pointer',
+  transition: 'background .15s',
+}
+
 const versionTriggerStyle: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
@@ -1448,14 +1483,8 @@ const ACTIONS: CSSProperties = {
   gap: 8,
 }
 
-const GHOST_BTN: CSSProperties = {
-  padding: '8px 14px',
-  borderRadius: 'var(--radius-md)',
-  fontSize: 13,
-  fontWeight: 700,
-  cursor: 'pointer',
-  background: 'transparent',
-  border: '1px solid rgb(255 255 255 / 0.3)',
-  color: DEMO_WHITE,
-  transition: 'background .15s',
-}
+/* ⚠ `GHOST_BTN` WENT ON 2026-10-05 — it styled Reset and the Lo-fi switch, and
+   both became icon buttons (Lo-fi moved to the design bar, Reset took the
+   circle arrow). `noUnusedLocals` makes an unused const a tsc error and so a
+   failed deploy; `resetIconStyle` above is what replaced it. */
+
