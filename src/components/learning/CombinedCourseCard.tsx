@@ -753,7 +753,19 @@ const stepRowStyle: CSSProperties = {
   gap: 12,
   width: 'calc(100% + 16px)',
   margin: '0 -8px',
-  padding: '8px',
+  /* ⚠ NO VERTICAL PADDING — 2026-10-05, the direct ask ("remove top and bottom
+     padding here"). The 8px stays on the SIDES, and has to: it is what the
+     negative margin above is cancelling, so the hover band reaches past the
+     text column without the text itself moving. Zero it on all four and the
+     label shifts 8px left the moment this is touched again.
+
+     ⚠ THE HOVER BAND IS NOW THE TEXT'S OWN HEIGHT. `.cre-journey-stop` fills
+     this box, so the fill is tight to the eyebrow + heading rather than
+     standing 8px clear of them. That is the look that was asked for; it also
+     means the two dividers either side of a step are closer to its text than
+     to each other, which is the thing to look at if the group ever reads
+     cramped. */
+  padding: '0 8px',
   border: 0,
   background: 'transparent',
   textAlign: 'left',

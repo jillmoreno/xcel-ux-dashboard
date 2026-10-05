@@ -530,21 +530,30 @@ export function FeatureFlagPanel() {
         </header>
 
         <div style={bodyStyle}>
-          {/* Demo view notice. The robot became reachable under `?demo=1` on
-              2026-09-16 (see `AdminToolsMenu`), and on the rebrand it opens this
-              sheet DIRECTLY — skipping the dropdown that used to carry this
-              sentence. Without it a reviewer flips a flag here, leaves, comes
-              back and finds it reverted, with nothing on screen to say why.
-              Demo mode suspends flag persistence by design; this is that design
-              made visible rather than a warning about a defect. The footer's
-              "Set as default" / "Restore original defaults" are already dropped
-              under `demoMode`, so this explains an absence too. */}
-          {demoMode && (
-            <p style={demoNoticeStyle}>
-              <span style={demoNoticeDotStyle} aria-hidden />
-              Demo view — changes preview here only and reset when you leave.
-            </p>
-          )}
+          {/* ⚠ THE DEMO-VIEW NOTICE WAS HERE AND WAS REMOVED — 2026-10-05, the
+              direct ask ("remove this"). It read "Demo view — changes preview
+              here only and reset when you leave." and rendered under `demoMode`.
+
+              WHAT IT WAS DOING, so the cost is on the record rather than
+              rediscovered: demo mode suspends flag persistence BY DESIGN, and
+              the footer's "Set as default" / "Restore original defaults" are
+              dropped under `demoMode` too. This sentence explained both. Without
+              it a reviewer flips a flag here, leaves, comes back and finds it
+              reverted, with nothing on screen to say why — and the missing
+              footer buttons have no explanation either.
+
+              `AdminToolsMenu` still carries its own copy of the sentence for
+              the non-rebrand dropdown, so the wording is not lost.
+
+              ⚠ ITS TWO STYLE CONSTS WENT WITH IT, and had to —
+              `noUnusedLocals` is on, so an unused `demoNoticeStyle` is a tsc
+              error and therefore a FAILED DEPLOY, not a lint warning. The
+              repo's usual "unwire but keep the file" shape does not survive
+              that. Restoring is this block plus a flex row: 8px gap,
+              `0 0 14px` margin, `8px 12px` padding, `--radius-md`,
+              `--color-neutral-100` on a `--color-border-subtle` hairline,
+              `--font-body` 12/17 in `--color-text-secondary`, led by a 6px
+              `--color-text-tertiary` dot with `aria-hidden`. */}
           {/* Dashboard Version is a rebrand-only setting, surfaced here as the
               first option so the robot menu opens a single sheet holding every
               setting. The row drills into the DashboardVersionsPanel (rendered
@@ -1297,33 +1306,6 @@ const closeButtonStyle: CSSProperties = {
   border: 'none',
   color: 'var(--color-text-secondary)',
   cursor: 'pointer',
-}
-
-/* Demo-view notice at the top of the sheet body. Deliberately quiet — a tinted
-   rule rather than a warning banner, because nothing is wrong: it is stating the
-   demo's own contract. The dot carries no meaning colour alone does not, since
-   the sentence says it. */
-const demoNoticeStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 8,
-  margin: '0 0 14px',
-  padding: '8px 12px',
-  borderRadius: 'var(--radius-md)',
-  background: 'var(--color-neutral-100)',
-  border: '1px solid var(--color-border-subtle)',
-  fontFamily: 'var(--font-body)',
-  fontSize: 12,
-  lineHeight: '17px',
-  color: 'var(--color-text-secondary)',
-}
-
-const demoNoticeDotStyle: CSSProperties = {
-  flexShrink: 0,
-  width: 6,
-  height: 6,
-  borderRadius: '50%',
-  background: 'var(--color-text-tertiary)',
 }
 
 const bodyStyle: CSSProperties = {
