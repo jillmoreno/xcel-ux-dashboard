@@ -1,6 +1,6 @@
 ---
 name: promote-to-prototype
-description: At merge time, decide which of a branch's changes become the PROTOTYPES baseline — the live XCEL product build stakeholders see. Run it ON THE PR, BEFORE MERGING. Diffs the branch against main, surfaces every flag whose committed default the branch changed (including flags gating new components) AND any change to the default DASHBOARD VERSION, asks per candidate whether — and to which variant — it becomes the baseline, asks which `wip` versions stakeholders should be able to pick, applies the FEATURE_FLAGS / dashboardVersions edits plus the docs note, commits, and reminds you to retire the branch's Refinement row. Making a version PICKABLE by stakeholders (`maturity`) is open to anyone; setting the DEFAULT dashboard version is OWNER-ONLY. Never moves tiles. Formerly "promote-to-demo" — that name still works as an alias. Trigger on "promote to prototype", "promote to demo", "merge this branch", "which changes go in the prototype", "ready to merge", "include in the prototype", "/promote-to-prototype", "/promote-to-demo".
+description: At merge time, decide which of a branch's changes become the PROTOTYPES baseline — the live XCEL product build stakeholders see. Run it ON THE PR, BEFORE MERGING. Diffs the branch against main, surfaces every flag whose committed default the branch changed (including flags gating new components) AND any change to the default DASHBOARD VERSION, asks per candidate whether — and to which variant — it becomes the baseline, asks which `wip` versions stakeholders should be able to pick, lists `surface: 'design'` controls separately because they never reach Prototypes, applies the FEATURE_FLAGS / dashboardVersions edits plus the docs note, commits, and reminds you to retire the branch's Refinement row. Making a version PICKABLE by stakeholders (`maturity`) is open to anyone; setting the DEFAULT dashboard version is OWNER-ONLY. Never moves tiles. Formerly "promote-to-demo" — that name still works as an alias. Trigger on "promote to prototype", "promote to demo", "merge this branch", "which changes go in the prototype", "ready to merge", "include in the prototype", "/promote-to-prototype", "/promote-to-demo".
 version: 1.1.0
 author: UX Design — Colibri
 last_updated: 2026-10-05
@@ -104,6 +104,57 @@ deliberately NOT in CLAUDE.md's protected table, because adding a version — th
 reachable act above — is something any designer should be able to do. It is the
 one line that chooses between them that is hers.
 
+## ⚠ A DESIGN CONTROL IS NOT A BASELINE CANDIDATE
+
+Added 2026-10-05 with the Design controls bar, and this is the mistake the skill
+would otherwise make on the very next branch it sees.
+
+A flag marked **`surface: 'design'`** renders on the GREEN bar — design site
+only, scoped to one dashboard version. It never reaches Prototypes, under any
+default, so "should this become the baseline?" is a question with no meaning
+attached to it.
+
+⚠ **AND ANSWERING IT "NO" DOES HARM.** A reviewer declining a design control the
+way they decline a product flag sets `defaultEnabled: false` — which turns the
+control OFF on its author's own bar, for a reason that had nothing to do with
+their bar. The decline is not neutral here; it reaches into somebody else's
+workspace.
+
+So design flags are listed **separately** and asked a narrower question:
+
+> *What should this default to when someone opens <version>?*
+
+That is a statement about the author's own exploration. The usual answer is "as
+the branch has it" — they chose it while building — and the reason to differ is
+that the default is a bad STARTING POINT for a reviewer, not that it is wrong
+for Prototypes.
+
+### Moving a design control to the DEMO bar
+
+The one genuinely new decision the two bars created, and it has no other home.
+
+Sometimes a design axis turns out to be worth showing stakeholders — a font
+switch that becomes part of the pitch. That means moving it from the green bar
+to the amber one, which is:
+
+1. drop `surface: 'design'` from the flag;
+2. add a `DemoControlsBar` control and a `DEMO_CONTROLS` row for it;
+3. decide its `maturity`, as for any demo control.
+
+⚠ **OWNER ONLY.** Step 2 edits protected chrome — `DemoControlsBar.tsx` and
+`demoControlMaturity.ts` are in CLAUDE.md's table. If the caller is not
+Jillienne, do not ask: note it in the hand-off as hers, the way the default
+version is noted.
+
+⚠ **IT IS NOT DATA-ONLY**, unlike everything else this skill does. The bar has
+to draw the control, which is component code. Say so when you raise it — this is
+the one promotion that is a BUILD rather than an edit, and it should be a
+separate commit from the flag decisions around it.
+
+⚠ **ASK ONLY WHEN SOMEONE RAISES IT.** Do not offer this for every design flag
+on a branch; most design controls are design controls permanently. A design
+flag's presence is not a proposal.
+
 ## Core principle — promotion is a flag-baseline change, not a tile move
 
 Every change starts invisible to Prototypes: behind a flag whose default on
@@ -158,7 +209,12 @@ A new ENTRY in `DISCOVERABILITY_DASHBOARD_VERSIONS` is not itself a candidate �
 see the three acts above. It becomes one only through its `maturity`.
 
 Read the `FeatureFlagContext.tsx` diff closely — that is where the rest of the
-candidates are decided. Also scan `--stat` for **new components** and grep each for the flag
+candidates are decided.
+
+⚠ **SEPARATE THE `surface: 'design'` FLAGS OUT AS YOU READ.** They look like
+ordinary new flags in the diff and they are not candidates for the baseline at
+all — see the section above. Sorting them here is what stops them being asked
+the wrong question in step 3. Also scan `--stat` for **new components** and grep each for the flag
 key that gates it. New feature/dev-handoff tiles in `prototypeFeatures.ts` are
 not promotion candidates themselves, but their `featureFlags` list is your
 shortlist.
@@ -177,6 +233,11 @@ being **displaced**, and which of the flag candidates below it have no effect
 under any other version. That last part is what makes the list readable — a
 reviewer deciding four Testing 3 flags needs to know they stand or fall with
 the version above them.
+
+**Design controls go in their own short list**, named with the version they sit
+on: *"`atlas-fonts` — Eric's, on the Atlas/Compass bar. Branch default: DM
+Serif."* They are not baseline candidates and the list exists so a reviewer can
+see what arrived without being asked to rule on it.
 
 **Each `wip` version is its own candidate too**, written as what it actually
 asks: *should stakeholders be able to pick this?* Name who owns it and what it
@@ -201,6 +262,13 @@ and name it in the hand-off as hers.
 visibility rather than promotion: *"Which versions should stakeholders be able
 to pick?"*, with the current default named in the question so nobody reads a yes
 as a swap. Anyone may answer this one.
+
+**Design controls get asked only when a default looks like a bad starting
+point** — *"`atlas-fonts` opens on DM Serif; is that where a reviewer should
+start?"* If the branch's defaults look deliberate, say so and ask nothing. ⚠ DO
+NOT put them in the baseline multiSelect: an option sitting in a list of
+promotions reads as a promotion, and a reviewer declining one would turn off a
+control on its author's own bar.
 
 ⚠ **NEVER PUT THE TWO IN ONE QUESTION.** "Promote Eric's version" means
 `maturity` to one reader and the default to another, and the two answers are
@@ -244,6 +312,11 @@ skill said until 2026-10-05. Two things there, not one:
 And — if the branch added a `NAV_SECTION_FLAGS` entry or changed one's
 `defaultEnabled` — check `NavSectionFlags.test.tsx`, which asserts the whole
 demo rail in order and will need the new row added deliberately.
+
+**For a design control**: change `defaultVariant` / `defaultEnabled` only if the
+starting point was actually discussed. ⚠ LEAVING IT ALONE IS THE DEFAULT ACTION
+— unlike a declined product flag, which must be reverted. There is nothing to
+revert: it never reached Prototypes.
 
 ⚠ **SET `owner` ON ANYTHING NEW** (2026-10-05, with the designer tabs). A flag
 or version with no `owner` resolves to Jill, so a row authored by someone else
@@ -317,6 +390,11 @@ surface instead. Retiring it is for when the conversation is over.
 - **Anyone may answer the `maturity` one.** It is a readiness statement about a
   designer's own work; gating it would leave everyone waiting on Jillienne to
   show anyone anything.
+- **A `surface: 'design'` flag is NOT a baseline candidate.** It never reaches
+  Prototypes, and declining it the way you decline a product flag turns off a
+  control on its author's own bar.
+- **Moving a design control to the DEMO bar is owner-only and is a BUILD**, not
+  a data edit — and only ever when someone raises it.
 - **Ask, don't guess.** No flag default changes without an explicit yes; confirm
   variants.
 - **Declined means reverted.** A branch that set a default ON for review must
