@@ -1018,7 +1018,20 @@ const editLinkStyle: CSSProperties = {
 
 const scheduledBodyRowStyle: CSSProperties = {
   display: 'flex',
-  alignItems: 'center',
+  /* ⚠ `stretch`, NOT `center` — 2026-10-05, the direct ask ("have the
+     background stretch down to line up with the bottom of the calendar date").
+     The countdown panel draws a tinted ground, and a tinted ground that stops
+     short of the tear-off beside it reads as a misalignment rather than as two
+     sizes. Stretching makes the row's two halves one block.
+
+     ⚠ THE TEAR-OFF SETS THE HEIGHT, not the panel, and that is the direction
+     this depends on. `CalendarTearOff` is the taller of the two at every size
+     the card is drawn at today; if the countdown ever grew past it — a longer
+     string than "Date has passed", a second caption line — the stretch would
+     reverse and the CALENDAR would be the thing being pulled, which is not what
+     was asked for. The panel's own `alignItems: center` is what keeps its text
+     centred in whatever height it is given. */
+  alignItems: 'stretch',
   gap: 14,
   marginTop: 12,
 }
