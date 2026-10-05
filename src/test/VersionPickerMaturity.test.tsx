@@ -69,6 +69,62 @@ function renderPicker() {
 
 afterEach(cleanup)
 
+/**
+ * ⚠ THE REAL CATALOG, NOT A FIXTURE — added 2026-10-05, after the promotion
+ * shipped and Eric's tab still read "0 versions" on the build being looked at.
+ *
+ * Every other designer-tab test below builds its own `OWNED` fixture, and that
+ * is right for testing the FILTER: a synthetic Eric-owned row proves the tab
+ * shows what it is given. But it proves nothing about whether the live catalog
+ * actually gives it anything — those tests passed on every build where Eric
+ * owned nothing at all, which is precisely the state that looked broken.
+ *
+ * So this one renders `DISCOVERABILITY_DASHBOARD_VERSIONS` itself. It is the
+ * assertion that fails the day someone's `owner` is dropped in a merge, and the
+ * only one here that would have.
+ */
+describe('the designer tabs over the LIVE catalog', () => {
+  it('gives Eric his two Atlas versions, not an empty tab', () => {
+    render(
+      <DashboardVersionsPanel
+        open
+        onClose={() => {}}
+        activeVersionId="discoverability-testing-3"
+        defaultVersionId="discoverability-testing-3"
+        onSelectVersion={() => {}}
+        onSetDefault={() => {}}
+        versions={DISCOVERABILITY_DASHBOARD_VERSIONS}
+        designerTabs
+        hideSetDefault
+      />,
+    )
+    fireEvent.click(screen.getByRole('tab', { name: 'Eric' }))
+    expect(screen.getByText('Eric/Atlas V1')).toBeTruthy()
+    expect(screen.getByText('Atlas/Compass Global Navigation')).toBeTruthy()
+    /* The count beside the strip is read off the FILTERED list, so "0 versions"
+       on a populated tab is the exact symptom this pins. */
+    expect(screen.getByText(/2 versions/)).toBeTruthy()
+  })
+
+  it('still shows Jill hers, so the filter is filtering and not emptying', () => {
+    render(
+      <DashboardVersionsPanel
+        open
+        onClose={() => {}}
+        activeVersionId="discoverability-testing-3"
+        defaultVersionId="discoverability-testing-3"
+        onSelectVersion={() => {}}
+        onSetDefault={() => {}}
+        versions={DISCOVERABILITY_DASHBOARD_VERSIONS}
+        designerTabs
+        hideSetDefault
+      />,
+    )
+    expect(screen.getByText('Testing 3')).toBeTruthy()
+    expect(screen.queryByText('Eric/Atlas V1')).toBeNull()
+  })
+})
+
 describe('the design site’s picker', () => {
   it('lists every version, finished or not', () => {
     /* It is the designers' site; hiding work from them is the opposite of what
