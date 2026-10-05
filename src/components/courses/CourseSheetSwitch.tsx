@@ -1,5 +1,4 @@
 import { useAccount } from '@/context/AccountContext'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { resolveCommerceState } from '@/data/commerce/entitlement'
 import type { IndividualCourse } from '@/data/catalogFixtures'
 import { CourseSheet } from './CourseSheet'
@@ -32,7 +31,10 @@ export function CourseSheetSwitch({
   data: IndividualCourse | null
 }) {
   const { brand, tier } = useAccount()
-  const variant = useFeatureFlag('catalog-upsell-flow').variant
+  /* ⚠ `catalog-upsell-flow` WAS A FLAG, retired 2026-10-05. Pinned to its
+     committed default `'new'` — dropping the read would have resolved to
+     undefined and silently sent everyone down the OLD flow. */
+  const variant = 'new'
   const entitled = data ? resolveCommerceState(brand, tier, data).kind === 'included' : false
   const useNewFlow = variant === 'new' && !entitled
 

@@ -6,7 +6,6 @@ import { Toast } from '@/components/ui/Toast'
 import { STATE_ABBR, type IndividualCourse } from '@/data/catalogFixtures'
 import { useAccount } from '@/context/AccountContext'
 import { useCourseLauncher } from '@/components/layout/CourseLauncherContext'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { resolveCommerceState } from '@/data/commerce/entitlement'
 import { getCourseImage } from '@/utils/courseImage'
 import { EnrollmentConfirmationModal } from './EnrollmentConfirmationModal'
@@ -63,7 +62,11 @@ export function CourseSheet({ open, onClose, data }: Props) {
     title: '',
     body: null,
   })
-  const alreadyEnrolledFlag = useFeatureFlag('already-enrolled-modal')
+  /* ⚠ `already-enrolled-modal` WAS A FLAG, retired 2026-10-05 with the
+     Course Catalog flag page. PINNED TO ITS COMMITTED DEFAULT (`enabled: true`)
+     rather than deleted: a removed key resolves to `enabled: false`, so simply
+     dropping the read would have flipped this view off. See ARCHIVED_ITEMS. */
+  const alreadyEnrolledFlag = { enabled: true, variant: undefined, secondaryVariant: undefined }
 
   if (!data) return null
 

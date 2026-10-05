@@ -47,15 +47,14 @@ describe('ProductPriceSlot — panel, entitled member', () => {
     expect(screen.queryByText(/\$99\.99/)).toBeNull()
   })
 
-  it('flag ON: original price struck through beside the chip — still no "$0.00"', () => {
-    renderSlot(true)
-    expect(screen.getByText(/included/i)).toBeInTheDocument()
-    // The struck anchor renders the real price inside an <s> (line-through).
-    const anchor = screen.getByText(/\$99\.99/)
-    expect(anchor.closest('s')).not.toBeNull()
-    // Screen-reader "was " prefix disambiguates the strikethrough.
-    expect(screen.getByText(/^was$/i)).toBeInTheDocument()
-    // Never a zeroed price.
-    expect(screen.queryByText(/\$0(\.00)?/)).toBeNull()
-  })
+  /* ⚠ THE "flag ON" TEST WENT 2026-10-05, with `pricing-entitled-savings`.
+     The flag was retired with the Course Catalog flag page; its committed
+     default was OFF, so the arm this test drove is no longer reachable and the
+     surviving behaviour is the one asserted above.
+
+     ⚠ THE CODE IS STILL THERE. `ProductPriceSlot` keeps the `showSavings`
+     branch, now a `const showSavings = false`, so the struck-price treatment is
+     one edit from coming back — and this test is what to restore with it. What
+     it pinned: the real price inside an `<s>`, a screen-reader "was" prefix,
+     and never a zeroed "$0.00". See ARCHIVED_ITEMS. */
 })

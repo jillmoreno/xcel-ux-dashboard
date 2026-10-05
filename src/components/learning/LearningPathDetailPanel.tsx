@@ -329,7 +329,11 @@ export function LearningPathDetailPanelContent({
   //     "Status" title) | 'band' (older neutral band) | 'callout' (alert card)
   //   • placement: 'above-tabs' (default — above the CTA + tabs, on every tab) |
   //     'in-progress' (inside the Progress tab, below the KPI row).
-  const statusDisplay = useFeatureFlag('learning-path-status-display')
+  /* ⚠ `learning-path-status-display` WAS A FLAG, retired 2026-10-05. Pinned to
+     its committed defaults — variant `'strip'`, placement above the tabs (the
+     absence of `'in-progress'`). Both branches below are left standing so the
+     other treatments are one edit away. */
+  const statusDisplay = { enabled: true, variant: 'strip', secondaryVariant: undefined }
   const statusStyle: StatusStyle =
     statusDisplay.variant === 'band' || statusDisplay.variant === 'callout'
       ? statusDisplay.variant

@@ -81,7 +81,14 @@ function GatedPrototypeRoute({ children }: { children: ReactElement }) {
  * flag on (from the Learning Path Feature Flag panel) to reach the dashboard.
  */
 function DashboardRoute() {
-  const showDashboard = useFeatureFlag('dashboard-tab').enabled
+  /* ⚠ `dashboard-tab` WAS A FLAG, retired 2026-10-05 with the Learning Path
+     flag page. Its committed default was OFF, so this redirect is what the
+     product already did for everyone — retiring it makes today's behaviour
+     permanent rather than changing it.
+
+     ⚠ `DashboardPage` IS NOT DELETED, and the branch is kept as a constant so
+     restoring is one edit here plus one in `Header`. See ARCHIVED_ITEMS. */
+  const showDashboard = false
   return showDashboard ? <DashboardPage /> : <Navigate to="/my-learning/path" replace />
 }
 

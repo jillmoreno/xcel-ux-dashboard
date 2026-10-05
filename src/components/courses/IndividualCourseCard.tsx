@@ -11,7 +11,6 @@ import {
   type MembershipTier,
   type MembershipTierTone,
 } from '@/context/AccountContext'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { resolveCommerceState } from '@/data/commerce/entitlement'
 import { getCourseImage } from '@/utils/courseImage'
 import { CourseSheetSwitch } from './CourseSheetSwitch'
@@ -82,7 +81,9 @@ export function IndividualCourseCard({ data, membership, stateAbbr }: Props) {
   // so `effectiveTier` is always a member tier here — its tone + label give the
   // membership-tier color (e.g. blue for Passport Lite) + a screen-reader phrase.
   const showIncludedAccent =
-    useFeatureFlag('catalog-included-tier-line').enabled && commerceState.kind === 'included'
+    /* ⚠ `catalog-included-tier-line` WAS A FLAG, retired 2026-10-05, default
+       ON — so the condition keeps only its second half. */
+    commerceState.kind === 'included'
   const includedTierTone = tierToneFor(account.brand, effectiveTier)
   const includedTierLabel = tierLabelFor(account.brand, effectiveTier)
   const abbr = stateAbbr ?? {}

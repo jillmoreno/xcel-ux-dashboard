@@ -557,7 +557,12 @@ function MandatorySection({
   // Demo state for the Daily Tasks card — `today` derives from the real
   // calendar; other variants are canned previews (one vs. multiple tasks
   // at different completion levels).
-  const dailyTasksFlag = useFeatureFlag('learning-path-daily-tasks')
+  /* ⚠ `learning-path-daily-tasks` WAS A FLAG, retired 2026-10-05. Pinned to
+     its committed default `'today'` — the arm that derives from THIS path's
+     plan. The other variants were canned previews; they resolve to nothing now,
+     so `DAILY_TASKS_SCENARIOS` finds no preset and the `today` branch below
+     runs, which is exactly what the default did. */
+  const dailyTasksFlag = { enabled: true, variant: 'today', secondaryVariant: undefined }
   const dailyScenario = useMemo<DailyTasksScenario>(() => {
     const preset = DAILY_TASKS_SCENARIOS[dailyTasksFlag.variant ?? '']
     if (preset) return preset

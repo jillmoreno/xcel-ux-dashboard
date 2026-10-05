@@ -240,17 +240,12 @@ export function flagOwner(def: { owner?: DesignerId }): DesignerId {
 export type FeatureFlagPageId =
   | 'dashboard'
   | 'dashboard-rebrand'
-  | 'recommended-for-you'
   | 'onboarding-flow'
   | 'membership'
   | 'my-courses'
-  | 'course-catalog'
-  | 'learning-path'
-  | 'learning-library'
   | 'learning-resources'
   | 'my-podcasts'
   | 'certificates'
-  | 'account-purchases'
 
 export type FeatureFlagPage = {
   id: FeatureFlagPageId
@@ -271,11 +266,6 @@ export const FEATURE_FLAG_PAGES: FeatureFlagPage[] = [
     description: 'Section heroes, progress state, widgets, left-nav.',
   },
   {
-    id: 'recommended-for-you',
-    label: 'Recommended for You',
-    description: 'Recommended page — tier-aware hero + shelf / catalog cards.',
-  },
-  {
     id: 'onboarding-flow',
     label: 'Onboarding Flow',
     description: 'New-user setup wizard — education type, goal step, licenses & states.',
@@ -291,21 +281,6 @@ export const FEATURE_FLAG_PAGES: FeatureFlagPage[] = [
     description: 'Filter rail, status tabs, course grid.',
   },
   {
-    id: 'course-catalog',
-    label: 'Course Catalog',
-    description: 'Multi-brand catalog page sections.',
-  },
-  {
-    id: 'learning-path',
-    label: 'Learning Path',
-    description: 'Welcome row, mandatory carousel, certificates.',
-  },
-  {
-    id: 'learning-library',
-    label: 'Resource Library',
-    description: 'Profession filter, category chips, resource grid.',
-  },
-  {
     id: 'learning-resources',
     label: 'Learning Resources',
     description: 'Resource viewer — attachments block + suggested topics rail.',
@@ -319,11 +294,6 @@ export const FEATURE_FLAG_PAGES: FeatureFlagPage[] = [
     id: 'certificates',
     label: 'Certificates',
     description: 'Year / state filters, certificate viewer.',
-  },
-  {
-    id: 'account-purchases',
-    label: 'Purchases',
-    description: 'Gift Recipients — purchase-for-others history, claim status, reminders.',
   },
 ]
 
@@ -458,6 +428,17 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
   // can be turned on/off independently. The Quick Links section hides
   // entirely when every tile is off.
   {
+    /* ⚠ KEPT 2026-10-05 WHEN THE OTHER SEVEN WENT, and re-filed here from the
+       retired `learning-path` page. It was on the list to retire and should not
+       have been: its readers are `learningPathsCountVariant.ts`, which
+       `PlatformShell`, `MembershipOverview` and `LearnerOverviewPanel` all
+       import — so it reaches the live dashboard, not a standalone LMS page.
+
+       ⚠ AND IT IS THE WHOLE POINT OF A PERSONA. "Multiple learning paths" (#9
+       in `demoControlsUtil`) is an expander whose sub-menu picks this flag's
+       variant; retiring the flag would have left that menu rendering and doing
+       nothing. Retiring it properly means retiring the persona's
+       `pathCountOptions` with it — a product decision, not a cleanup. */
     key: 'learning-paths-count',
     group: 'Learning Path Card',
     label: 'Learning Paths Count',
@@ -494,7 +475,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     // Page-specific: governs the Learning Path card / sheet, so it lives under
     // the Learning Path page. Still in REBRAND_FLAGS so the rebrand-scoped panel
     // surfaces it under its own page card.
-    page: 'learning-path',
+    page: 'dashboard-rebrand',
   },
   {
     key: 'learning-path-version',
@@ -521,19 +502,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     // Page-specific: governs the Learning Path section, so it lives under the
     // Learning Path page. Still in REBRAND_FLAGS so the rebrand-scoped panel
     // surfaces it under its own page card.
-    page: 'learning-path',
-  },
-  {
-    key: 'dashboard-tab',
-    group: 'Navigation',
-    label: 'Dashboard Tab',
-    description:
-      'Show the Dashboard tab in the top navigation. OFF by default — the Dashboard tab is hidden and the learner lands on the Learning Path page (visiting /dashboard redirects here). Turn ON to reveal the Dashboard tab and open the dashboard. Lives on the Learning Path page because that is where the learner lands while the tab is hidden.',
-    // Default hidden — the learner must turn this on to view the dashboard.
-    defaultEnabled: false,
-    // Scoped to the Learning Path page: that's where the learner lands while
-    // the Dashboard tab is hidden, so it's the one place they can toggle it on.
-    page: 'learning-path',
+    page: 'dashboard-rebrand',
   },
   {
     key: 'courses-hide-filters',
@@ -564,7 +533,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     description:
       "Show the Grid / Table view toggle on the Learning Paths landing page. Off (default) → only the grid of tile cards shows and the toggle is hidden; on → the toggle appears and the sortable table view becomes available. Page-specific — grouped under the Learning Path page card.",
     defaultEnabled: false,
-    page: 'learning-path',
+    page: 'dashboard-rebrand',
   },
   {
     key: 'learning-paths-status-taxonomy',
@@ -586,59 +555,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
         description: 'In Progress · Expiring Soon · Not Started · Complete · Expired.',
       },
     ],
-    page: 'learning-path',
-  },
-  {
-    // Current Learning Path → Details sheet: how the compliance status renders
-    // + where it sits. Variant-only (read variant + secondaryVariant; ignore
-    // enabled). Defaults reproduce today's panel byte-for-byte (band, inside
-    // the Progress tab). Style `callout` is the color-coded alert card (Figma
-    // "2.0 — Learning Launcher" 3700:3756/3772/3787/3802) whose color follows
-    // the status. Placement `above-tabs` lifts it under the title so it shows
-    // on every tab.
-    key: 'learning-path-status-display',
-    group: 'Learning Path',
-    label: 'Status Display',
-    description:
-      "In the Current Learning Path → Details sheet, how the compliance status renders and where it sits. Style: Status strip (default) is the status pill + message on a very light status-tinted strip (no \"Status\" title) — and for the urgent states (At Risk / Off Track / Expired) it also tints the Time Remaining stat tile in the status color to reinforce the countdown; Band is the older caption + tinted pill + message in a neutral bordered row; Callout is the color-coded alert card (colored left border + tinted fill + status icon + title + message). All three take their color from the status — green On Track / Completed, teal Not Started, amber At Risk, red Off Track / Expired. Placement: Above CTA (default) puts it directly under the path title, above the Go to Learning Path button + the tabs, so it stays visible on both Progress and Requirements; In Progress tab keeps it below the gauge + KPI row inside the Progress tab.",
-    defaultEnabled: true,
-    defaultVariant: 'strip',
-    variants: [
-      {
-        value: 'strip',
-        label: 'Status strip',
-        description:
-          'Status pill + message on a very light status-tinted strip (no "Status" title). For At Risk / Off Track / Expired it also tints the Time Remaining stat tile in the status color.',
-      },
-      {
-        value: 'band',
-        label: 'Band',
-        description:
-          'Older treatment — "Status" caption + tinted status pill + supporting message in a neutral bordered band.',
-      },
-      {
-        value: 'callout',
-        label: 'Callout',
-        description:
-          'Color-coded alert card — colored left border + tinted fill + status icon + title + message. The color follows the status (green / teal / amber / red).',
-      },
-    ],
-    secondaryVariantLabel: 'Placement',
-    defaultSecondaryVariant: 'above-tabs',
-    secondaryVariants: [
-      {
-        value: 'above-tabs',
-        label: 'Above CTA',
-        description:
-          'Directly under the path title, above the Go to Learning Path button + the tabs — visible on both Progress and Requirements.',
-      },
-      {
-        value: 'in-progress',
-        label: 'In Progress tab',
-        description: 'Keep the status inside the Progress tab, below the gauge + KPI row.',
-      },
-    ],
-    page: 'learning-path',
+    page: 'dashboard-rebrand',
   },
   {
     key: 'state-count',
@@ -665,8 +582,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     // under the Learning Path page. Still in REBRAND_FLAGS so the rebrand-scoped
     // panel surfaces it; `extraPages` also lists it under the Recommended for You
     // page card (it drives that page's State filter too).
-    page: 'learning-path',
-    extraPages: ['recommended-for-you'],
+    page: 'dashboard-rebrand',
   },
   {
     key: 'study-calendar-state',
@@ -695,50 +611,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
           "Manager-locked. Edit panel renders the locked layout — Target Exam Date is the only editable field; everything else disables behind the lock pill.",
       },
     ],
-    page: 'learning-path',
-  },
-  {
-    key: 'learning-path-daily-tasks',
-    label: 'Daily Tasks card',
-    description:
-      'Demo states for the STC "Daily Tasks" promo card (shown on the Edit Calendar variant) — toggle between a single task vs. multiple tasks and different completion levels to preview the tracker + "up next" treatment.',
-    defaultEnabled: true,
-    defaultVariant: 'today',
-    variants: [
-      {
-        value: 'today',
-        label: "From calendar (today)",
-        description: "Derives from the study calendar's tasks due today — the realistic state.",
-      },
-      {
-        value: 'single',
-        label: 'Single task · 0 of 1',
-        description: 'One task due, none completed yet.',
-      },
-      {
-        value: 'multi-early',
-        label: 'Multiple · 1 of 4',
-        description: 'Several tasks due, just getting started.',
-      },
-      {
-        value: 'multi-late',
-        label: 'Multiple · 3 of 4 (self-marked PDF next)',
-        description:
-          'Several tasks due, almost done — next is a self-marked reading/PDF. "Start Task" opens the resource, then the CTA swaps to "Mark as complete".',
-      },
-      {
-        value: 'custom-task',
-        label: 'Multiple · custom task next',
-        description:
-          'Next task is a pure custom reminder/scheduled call — nothing to open, so the CTA is "Mark as complete" directly.',
-      },
-      {
-        value: 'all-done',
-        label: 'All complete',
-        description: "Every task done — the card shows the caught-up state with no CTA.",
-      },
-    ],
-    page: 'learning-path',
+    page: 'dashboard-rebrand',
   },
   {
     key: 'study-calendar-status',
@@ -773,7 +646,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
           'Marks only ~12% of past tasks completed and the rest as overdue. Pacing reads behind the expected proportion.',
       },
     ],
-    page: 'learning-path',
+    page: 'dashboard-rebrand',
   },
   {
     key: 'dashboard-journey-style',
@@ -1639,8 +1512,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     // Still in REBRAND_FLAGS so the rebrand-scoped panel surfaces it; `extraPages`
     // also lists it under the Recommended for You page card (it drives that
     // page's Profession filter too).
-    page: 'learning-library',
-    extraPages: ['recommended-for-you'],
+    page: 'dashboard-rebrand',
   },
   {
     key: 'learning-library-hero',
@@ -1662,7 +1534,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
         description: 'The standard smaller gradient section hero, matching Course Catalog.',
       },
     ],
-    page: 'learning-library',
+    page: 'dashboard-rebrand',
   },
   {
     key: 'learning-library-card-style',
@@ -1692,7 +1564,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
         description: 'White cards — image header + format chip + title + description + rating/tag.',
       },
     ],
-    page: 'learning-library',
+    page: 'dashboard-rebrand',
   },
   {
     // Merged 2026-08-17: the old `platform-nav-color` (6 shipped rails) flag was
@@ -2103,78 +1975,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     defaultEnabled: false,
     page: 'dashboard-rebrand',
   },
-  {
-    // Key kept stable (persisted in localStorage + referenced by the prototype
-    // tile) even though the experience moved from a modal to an in-panel view.
-    key: 'already-enrolled-modal',
-    group: 'Enrollment',
-    label: 'Manage Enrollment (owned course)',
-    description:
-      'How the Course Catalog handles the primary CTA on a course the member is ALREADY enrolled in. On → the "Manage Enrollment" CTA swaps the Course Details sheet body in place to the switch flows (change date/time · change format). Off → the CTA behaves as before (fresh enroll-confirmation). The owned-course treatment (Enrolled badge · "Course Details" title) is data-driven and shows regardless of this flag. Demo courses (McKissock): "Income Approach Case Studies" (sessions) + "Fair Housing & Bias in Appraisals" (formats).',
-    defaultEnabled: true,
-    page: 'course-catalog',
-  },
-  {
-    key: 'catalog-upsell-flow',
-    group: 'Course Catalog',
-    label: 'Course upsell flow (non-member)',
-    description:
-      'Which sheet opens when a shopper clicks a course card in the Course ' +
-      'Catalog. CURRENT (default) is today\u2019s single-screen Purchase Course ' +
-      'sheet \u2014 price, Add to Cart / Course Overview buttons, and the ' +
-      'Description \u00b7 Instructor \u00b7 Schedule tabs inline. NEW UPSELL is the ' +
-      'two-step sheet from Figma: step 1 "Choose how to enroll" (one-time ' +
-      'purchase vs. the membership that includes this course, pre-selected with ' +
-      'a BEST VALUE pill and benefit lines), step 2 "Complete purchase" with the ' +
-      'matching cart CTA \u2014 and Course Details moved behind a "View Course ' +
-      'Details" link that swaps the sheet body in place. Purchase-only: a member ' +
-      'already entitled to the course keeps the current sheet either way, since ' +
-      'the Enroll / Manage Enrollment paths are out of scope for this design.',
-    defaultEnabled: true,
-    variants: [
-      {
-        value: 'current',
-        label: 'Current',
-        description:
-          'Today\u2019s Purchase Course sheet. The control arm for the upsell test.',
-      },
-      {
-        value: 'new',
-        label: 'New upsell',
-        description:
-          'The two-step Choose-how-to-enroll \u2192 Complete-purchase sheet with the ' +
-          'membership option and Course Details behind a link.',
-      },
-    ],
-    // Demo baseline: the New Upsell flow is the committed default so the
-    // Dashboard Discoverability Demo opens the two-step upsell sheet for everyone.
-    defaultVariant: 'new',
-    page: 'course-catalog',
-  },
-  {
-    key: 'pricing-entitled-savings',
-    group: 'Course Catalog',
-    label: 'Show entitled savings',
-    description:
-      'On the Purchase Course sheet, when a member is already entitled to a product: ' +
-      'ON shows the original price struck through as a savings anchor beside the ' +
-      '"Included with Membership" chip; OFF (default) shows the chip alone. ' +
-      'Neither state ever shows "$0.00".',
-    defaultEnabled: false,
-    page: 'course-catalog',
-  },
-  {
-    key: 'catalog-included-tier-line',
-    group: 'Course Catalog',
-    label: 'Included-course tier accent',
-    description:
-      'On Course Catalog cards, mark a product already included in the member’s ' +
-      'current membership with a 6px accent line along the bottom of the card ' +
-      'image, colored to the membership tier (e.g. blue for Passport Lite). ' +
-      'ON (default) shows the accent; OFF shows no accent.',
-    defaultEnabled: true,
-    page: 'course-catalog',
-  },
 
   /* ─── Learning Resources Updates (resource viewer) ───────────────── */
   {
@@ -2225,7 +2025,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     // `account-purchases`, not `dashboard-rebrand`: the section has its own page
     // card in the flag panel (the Gift Recipients flags already sit on it), and
     // this belongs beside them rather than in the catch-all for the shell.
-    page: 'account-purchases',
+    page: 'dashboard-rebrand',
   },
   {
     key: 'purchases-layout',
@@ -2253,7 +2053,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
           'The default. One flat table — Order Date · Order Number · Summary · Status · Total — with every header sortable and no month grouping. Clicking a row opens that receipt in a right-anchored sheet rather than expanding in place, so row height never varies and a long history stays scannable.',
       },
     ],
-    page: 'account-purchases',
+    page: 'dashboard-rebrand',
   },
 
   /* ─── Account menu → Appearance ────────────────────────────────────── */
@@ -2275,7 +2075,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     description:
       'The "Purchase for Others" tracking section under Purchases — a history of everything bought on behalf of someone else, with each recipient\'s claim (redemption) status and a Send Reminder action. ON (default) adds the "Gift Recipients" row to the account sub-nav and serves /account/gift-recipients; OFF hides the row and redirects the route back to Purchases. Only appears for brands that sell purchase-for-others (STC today) — other brands show the section\'s empty state.',
     defaultEnabled: true,
-    page: 'account-purchases',
+    page: 'dashboard-rebrand',
   },
   {
     key: 'gift-recipients-layout',
@@ -2299,7 +2099,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
           'The reference UX, kept reachable for comparison: records bucketed under collapsible month headings as expandable cards. Archived — no dev-handoff tile points at it.',
       },
     ],
-    page: 'account-purchases',
+    page: 'dashboard-rebrand',
   },
   {
     key: 'gift-recipients-reminder',
@@ -2323,7 +2123,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
           'Reminder button sits on the collapsed row beside View Details, so a long unclaimed list can be worked without expanding each record. Better for bulk purchasers (100+ seats).',
       },
     ],
-    page: 'account-purchases',
+    page: 'dashboard-rebrand',
   },
   /* ── feat/atlas-compass-global-nav (merged 2026-10-02) ── */
   {

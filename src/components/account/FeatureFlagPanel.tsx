@@ -50,11 +50,14 @@ function flagPageIdForPath(pathname: string): FeatureFlagPageId | null {
   if (pathname.startsWith('/resource-updates')) return 'learning-resources'
   if (pathname.startsWith('/dashboard')) return 'dashboard'
   if (pathname.startsWith('/membership')) return 'membership'
-  if (pathname.startsWith('/my-learning/path')) return 'learning-path'
   if (pathname.startsWith('/my-learning/courses')) return 'my-courses'
   if (pathname.startsWith('/my-learning/podcasts')) return 'my-podcasts'
   if (pathname.startsWith('/my-learning/certificates')) return 'certificates'
-  if (pathname.startsWith('/catalog')) return 'course-catalog'
+  /* ⚠ `/my-learning/path` AND `/catalog` RETURN null SINCE 2026-10-05 — their
+     flag PAGES were retired, not their routes. Both routes still render, and
+     their surviving flags were re-filed to `dashboard-rebrand`, which is where
+     the components that read them actually draw. null means the panel opens on
+     the page selector rather than scoping to a page that no longer exists. */
   return null
 }
 
@@ -121,6 +124,12 @@ const REBRAND_FLAGS = [
      the page, the panel is where every flag is findable. */
   'atlas-heading-font',
   'atlas-brand-skin',
+  /* ⚠ RE-FILED TO THIS PAGE 2026-10-05 when the `learning-path` flag page was
+     retired. They draw inside the rebrand shell (`InlineStudyCalendar`, twice),
+     so this is where they belong — the old page was a standalone LMS surface
+     this platform does not have. */
+  'study-calendar-state',
+  'study-calendar-status',
   // Text ramp for the whole rebrand app — Neutral (the brand guide's Charcoal
   // and Gray) ⇄ Tiers (the sign-in prototype's warm ink / muted / faint).
   // Variant-only; light theme only. See the catalog entry.
@@ -234,7 +243,6 @@ const REBRAND_FLAGS = [
   'learning-paths-status-taxonomy',
   // Current Learning Path → Details sheet: status Style (band ⇄ color-coded
   // callout) + Placement (in Progress tab ⇄ above the tabs).
-  'learning-path-status-display',
   // Single ⇄ multiple states — drives the Learning Paths landing State filter row.
   'state-count',
   // Purchase Course upsell flow — which sheet opens when a shopper clicks a
@@ -243,14 +251,11 @@ const REBRAND_FLAGS = [
   // the dev-handoff route) so it's toggleable from the Dashboard Discoverability
   // panel — it also drives the dashboard Recommended band cards, which route
   // through CourseSheetSwitch.
-  'catalog-upsell-flow',
   // Purchase Course sheet price copy — when a member is already entitled, show
   // the original price struck through as a savings anchor beside the "Included
   // with Membership" chip (ON) or the chip alone (OFF, default). Never "$0.00".
-  'pricing-entitled-savings',
   // Course Catalog cards — a 6px tier-colored accent along the bottom of the
   // card image on products included in the member's current membership.
-  'catalog-included-tier-line',
   // Purchases → Gift Recipients (purchase-for-others tracking). The section
   // renders INSIDE this shell (`?section=gift-recipients`), so its flags have to
   // be in this scope to be reachable while a reviewer is looking at it. They

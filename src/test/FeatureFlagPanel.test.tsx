@@ -149,16 +149,17 @@ describe('FeatureFlagPanel — page selector', () => {
     // The Navigation group is the reason it moved; assert it is really in there
     // so this cannot pass by counting a page that lost its flags.
     expect(rebrandCount).toBeGreaterThanOrEqual(NAV_SECTION_FLAGS.length)
-    // Page-specific flags now live under their own pages.
-    expect(
-      screen.getByRole('button', { name: /recommended for you.*2 flags/i }),
-    ).toBeInTheDocument()
+    /* ⚠ FIVE PAGE CARDS WENT ON 2026-10-05 — Recommended for You, Course
+       Catalog, Learning Path, Resource Library and Purchases. They named
+       STANDALONE LMS pages this platform does not have; the flags that survived
+       were re-filed to Dashboard Rebrand, which is where the components that
+       read them actually draw. My Courses stays — its page is real here. */
     expect(
       screen.getByRole('button', { name: /my courses.*2 flags/i }),
     ).toBeInTheDocument()
-    expect(
-      screen.getByRole('button', { name: /resource library.*3 flags/i }),
-    ).toBeInTheDocument()
+    for (const gone of [/recommended for you/i, /course catalog/i, /resource library/i, /purchases/i]) {
+      expect(screen.queryByRole('button', { name: gone })).toBeNull()
+    }
   })
 
   it('navigates back to the page selector via the back button', () => {
@@ -197,6 +198,10 @@ describe('FeatureFlagPanel — per-feature scope', () => {
     act(() => {
       fireEvent.click(screen.getByRole('button', { name: 'open-panel' }))
     })
+    // ⚠ REWRITTEN 2026-10-05: this used to enumerate six page cards. Five were
+    // retired with the pages they named (see the note above); the counts below
+    // describe a shape that no longer exists and are kept only as the record of
+    // what moved where.
     // Scoped flags split across six page cards: 22 whole-rebrand flags under
     // Dashboard Rebrand (incl. the progress-state control + What's New Badging + Membership Eyebrow + the full-width CLP band + the CLP layout exploration + the Featured hero + the shared-navy left-nav color + the Recommended card A/B), plus the page-specific ones
     // under their own pages (Recommended for You: cards + the shared profession/state filters → 3; My Courses Table View → 2; Learning Path Page +
@@ -204,11 +209,9 @@ describe('FeatureFlagPanel — per-feature scope', () => {
     // Library Hero + Card Style → 3; Course Catalog: the entitled-savings pricing
     // toggle + the included-course tier accent → 2).
     expect(screen.getByRole('button', { name: rebrandScoped })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /recommended for you.*2 flags/i })).toBeInTheDocument()
+    /* ⚠ ONE PAGE CARD BESIDE THE REBRAND'S NOW, not five — see the note above. */
     expect(screen.getByRole('button', { name: /my courses.*2 flags/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /learning path.*6 flags/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /resource library.*3 flags/i })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /course catalog.*3 flags/i })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /learning path/i })).toBeNull()
     // The big Dashboard flag list isn't reachable here.
     expect(screen.queryByRole('switch', { name: /Toggle Rubi Tutor Widget/i })).toBeNull()
   })
@@ -221,7 +224,7 @@ describe('FeatureFlagPanel — per-feature scope', () => {
       fireEvent.click(screen.getByRole('button', { name: 'open-panel' }))
     })
     expect(screen.getByRole('button', { name: rebrandScoped })).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: /learning path.*6 flags/i })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /my courses.*2 flags/i })).toBeInTheDocument()
   })
 
   it('does not offer the removed / KPI-band flags in the Dashboard Rebrand scope', () => {

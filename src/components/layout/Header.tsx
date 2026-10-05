@@ -119,7 +119,10 @@ export function Header() {
   // The classic Dashboard tab is hidden by default — the `dashboard-tab` flag
   // (OFF by default) must be turned on to reveal it (see App's /dashboard
   // route guard, which redirects to the Learning Path page while hidden).
-  const showDashboardTab = useFeatureFlag('dashboard-tab').enabled
+  /* ⚠ `dashboard-tab` WAS A FLAG, retired 2026-10-05, default OFF — so this
+     tab was already hidden for everyone and stays hidden. The second half of
+     the pair in `App`'s `DashboardRoute`. */
+  const showDashboardTab = false
   /* `logoHref` LIVED HERE and went on 2026-09-23 with the logo's link — see
      the logo's own note. What it knew, for whoever needs it back: on the
      rebrand shell the logo returned to `/dashboard-rebrand` with no

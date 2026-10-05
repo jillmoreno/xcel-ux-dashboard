@@ -1,7 +1,6 @@
 import { useState, type CSSProperties } from 'react'
 import { Lock } from '@/icons'
 import { supportsMembership, useAccount, type MembershipTierTone } from '@/context/AccountContext'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { tierBadgeIcon } from '@/components/ui/membershipTierBadge'
 import type { CommerceState } from '@/data/commerce/entitlement'
 import { MembershipUpgradeModal } from '@/components/membership/MembershipUpgradeModal'
@@ -94,7 +93,11 @@ function PanelPriceSlot({
   // Stakeholder toggle: when a member is already entitled, ON adds the original
   // price struck through beside the "Included" chip; OFF (default) shows the
   // chip alone. Never a "$0.00" lead in either state.
-  const showSavings = useFeatureFlag('pricing-entitled-savings').enabled
+  /* ⚠ `pricing-entitled-savings` WAS A FLAG, retired 2026-10-05. Its committed
+     default was OFF, so this is the one retirement here that changes nothing —
+     written as a constant rather than deleted so the branch stays visible and
+     the saving line is one edit away. */
+  const showSavings = false
   const money = (n: number) =>
     new Intl.NumberFormat('en-US', { style: 'currency', currency }).format(n)
   // "Included │ Passport Lite Membership" — names the learner's actual tier
