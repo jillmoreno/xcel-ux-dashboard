@@ -874,6 +874,33 @@ paragraph above exists — no `?ff=` will turn them off.
    style (`widgetCardOutlinedStyle`) because Testing and Testing 2 share the
    frameless shell and neither has a bordered neighbour to match.
 
+⚠ **AND FIVE MORE ON THE SECOND 2026-10-05 MERGE** (`jill/flag-panel-owners`),
+for the same reason — nothing here is behind a flag, so no `?ff=` reverses it.
+That branch had **no promotion candidates at all**: no flag default moved, no
+new flag landed, the default version did not change and all three versions were
+already `ready`. These are what it changed anyway.
+
+1. **A fresh course reads "30 days to complete course"**, not 29.
+   `MAX_DEMO_DAYS_LEFT` went to 30 and `timeRemaining` now counts in days at
+   `days <= 30` rather than `< 30` — 30 used to render as "4 wks", which is why
+   the cap was 29. ⚠ `timeRemaining` IS SHARED, so this moves every surface that
+   prints a remaining time, not just the course card. ⚠ It shows only when NO
+   exam date is set; a stored date still overrides the figure entirely.
+2. **At 0%, Testing 3 hides its lesson block** and the journey figure moves to
+   the top of the list, level with Pre-Licensing Lessons. The block named
+   "LESSON 1" to a learner who had not begun; the gauge anchors to it, so the
+   marker now falls back to the stop's own row.
+3. **Testing 3's licensing steps lost their vertical padding**, so the hover
+   band is the height of the text rather than standing 8px clear of it.
+4. **The exam countdown panel stretches** to the calendar tear-off's height.
+   ⚠ The tear-off sets that height; a longer countdown string would reverse it.
+5. **The demo controls bar was restructured** — five design-variant dropdowns
+   moved into the Feature Flag panel, Fidelity became a Lo-fi switch, and the
+   Dashboard Version got its own control. See the bar's own notes; the rule it
+   now follows is *the bar says WHO the learner is, the panel says WHICH DESIGN
+   renders* — with the version as the deliberate exception, because the robot
+   does not render on the public site and stakeholders had no route to it.
+
 ⚠ `dashboard-navigation` IS GONE (archived 2026-10-05), and the paragraph that
 stood here is kept in outline because its REASONING is the reusable part. It
 defaulted to its CONTROL arm, breaking this repo's usual branch rule, because
