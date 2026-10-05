@@ -4,6 +4,7 @@ import { PrototypeBar } from './PrototypeBar'
 import { AdminToolsMenu } from './AdminToolsMenu'
 import { DeviceFrameToggle, useDeviceFrame } from './DeviceFrameContext'
 import { DemoControlsBar } from '@/components/prototype/DemoControlsBar'
+import { DesignControlsBar } from '@/components/prototype/DesignControlsBar'
 import { useDemoControlsVisibility } from '@/components/prototype/demoControlsVisibility'
 import { demoSiteControls } from '@/data/demoControlMaturity'
 
@@ -135,6 +136,18 @@ export function PrototypeChrome() {
         fullBleed={framed}
         only={isPublicGateway() || asDemo ? demoSiteControls() : undefined}
       />
+      {/* THE DESIGN BAR, under the demo one — 2026-10-05.
+          ⚠ DESIGN SITE ONLY. There is no per-control `maturity` gate here
+          because the whole SURFACE is the gate: a design decision worth showing
+          a stakeholder belongs on the demo bar instead. `isPublicGateway()` is
+          the same check that withholds the robot.
+          ⚠ IT RENDERS NOTHING when the current version has no design flags, so
+          this is invisible until somebody marks one — see the component.
+          ⚠ AND `asDemo` HIDES IT TOO. `?as=demo` is the lens a designer uses to
+          see what a stakeholder gets; a lens that left this bar on screen would
+          answer that question wrongly, which is the one thing the lens exists
+          not to do. The demo bar's `only` makes the same check one line up. */}
+      {isPublicGateway() || asDemo ? null : <DesignControlsBar fullBleed={framed} />}
     </>
   )
 }

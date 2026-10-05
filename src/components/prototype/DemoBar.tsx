@@ -41,6 +41,7 @@ export function DemoBar({
   children,
   align = 'center',
   fullBleed = false,
+  design = false,
 }: {
   barRef: RefObject<HTMLDivElement | null>
   className?: string
@@ -61,6 +62,21 @@ export function DemoBar({
    * device window (`device === 'desktop-framed'`). Overrides `align`.
    */
   fullBleed?: boolean
+  /**
+   * Draw the DESIGN bar's accent instead of the demo one — 2026-10-05, with
+   * `DesignControlsBar`.
+   *
+   * ⚠ A PROP ON THE SHARED CHROME, not a second bar component. The two bars are
+   * the same object with different contents and one different colour; forking
+   * the chrome would mean a spacing fix landing on one and being reported as a
+   * bug on the other.
+   *
+   * ⚠ THE COLOUR IS THE ONLY TELL, so it has to be unmistakable. Amber means
+   * "this is what a stakeholder sees and only Jillienne changes"; green means
+   * "this is yours". Anyone reading the two bars has to answer "may I touch
+   * this?" at a glance, because the answer is now enforced by a hook.
+   */
+  design?: boolean
 }) {
   return (
     <div
@@ -70,13 +86,14 @@ export function DemoBar({
       // area to the right shows the page background (matching the app header +
       // prototype bar) instead of the navy strip running to the viewport edge.
       // Full-bleed drops the cap so the bar spans the whole Demo-frame width.
-      style={
-        fullBleed
+      style={{
+        ...(fullBleed
           ? { ...DEMO_BAR, width: '100%' }
           : align === 'left'
             ? { ...DEMO_BAR, maxWidth: 1440, alignSelf: 'flex-start', width: '100%' }
-            : DEMO_BAR
-      }
+            : DEMO_BAR),
+        ...(design ? { borderBottom: '3px solid var(--color-success-600)' } : null),
+      }}
       role="region"
       aria-label={ariaLabel}
       ref={barRef}

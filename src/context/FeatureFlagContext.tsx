@@ -115,6 +115,36 @@ export type FeatureFlagDefinition = {
    *  `DesignerId`. Read it through `flagOwner()`, never directly, or the
    *  default lives in two places. */
   owner?: DesignerId
+  /**
+   * SURFACE IT ON THE DESIGN CONTROLS BAR — 2026-10-05, the direct ask for a
+   * second bar: "fonts, brand colors, and things specifically related to design
+   * decisions that have nothing to do with the stakeholders".
+   *
+   * ⚠ IT IS A PLACE, NOT A PERMISSION, and the distinction is the whole reason
+   * the two bars exist. The DEMO bar shows stakeholders how the product behaves
+   * for different learners — progress, tier, education. The DESIGN bar shows a
+   * designer the decisions still open in their own exploration. A flag with no
+   * `surface` is neither; it lives in the Feature Flag panel and nowhere else,
+   * which is where the great majority belong.
+   *
+   * ⚠ THIS IS THE SANCTIONED WAY TO GET A CONTROL ON A BAR. `DemoControlsBar`
+   * is protected precisely so nobody adds one by editing it; adding `surface`
+   * to a flag you already own does the same job without touching shared chrome.
+   */
+  surface?: 'design'
+  /**
+   * Which dashboard VERSIONS this design control belongs to.
+   *
+   * ⚠ ABSENT FALLS BACK TO THE OWNER, not to "everywhere". A design flag with
+   * no `versions` shows on every version its OWNER owns — which is right for
+   * the common case (one designer, one exploration) and keeps the field
+   * optional. Name versions explicitly when a designer has two and a control
+   * belongs to only one of them.
+   *
+   * ⚠ MEANINGLESS WITHOUT `surface: 'design'`. The Feature Flag panel scopes by
+   * the version's OWNER, not by this; only the Design bar reads it.
+   */
+  versions?: string[]
   /** Additional page cards this flag should ALSO surface under (it counts +
    *  renders on each). Use when one flag drives filters on more than one page —
    *  e.g. `profession-count` / `state-count` gate the filter rows on BOTH the
@@ -173,6 +203,36 @@ export const FLAG_DESIGNERS: { id: DesignerId; label: string }[] = [
 /** A flag's (or a version's) owner, resolving the absent case in ONE place so
  *  no call site repeats `?? 'jill'` — the shape that lets two readers of the
  *  same catalog disagree about who owns a row. */
+/**
+ * THE DESIGN CONTROLS FOR ONE DASHBOARD VERSION — what the Design bar draws.
+ *
+ * ⚠ VERSION-SCOPED, NOT DESIGNER-SCOPED, which was the explicit choice
+ * (2026-10-05). Switch to Eric's Atlas version and his font and brand controls
+ * appear; switch to Testing 3 and they are replaced by its own. The app has no
+ * notion of WHO is looking — there is no sign-in — so the version is the only
+ * honest handle, and it is also the thing a designer is actually working on.
+ *
+ * ⚠ THE `versions` FALLBACK IS THE OWNER, so a design flag that names no
+ * versions follows its author to every version they own. Without that default,
+ * every new design flag would need a version list before it rendered anywhere,
+ * and the first one a designer added would silently do nothing.
+ *
+ * ⚠ IT RETURNS FLAGS, NOT CONTROLS. The bar renders whatever shape each flag
+ * declares — a radiogroup for `variants`, a toggle otherwise — so adding a
+ * design control is adding a flag and nothing else. That is the point: the bar
+ * itself is protected chrome that nobody needs to edit.
+ */
+export function designControlsFor(
+  versionId: string,
+  versionOwner: DesignerId,
+): FeatureFlagDefinition[] {
+  return FEATURE_FLAGS.filter((def) => {
+    if (def.surface !== 'design') return false
+    if (def.versions && def.versions.length > 0) return def.versions.includes(versionId)
+    return flagOwner(def) === versionOwner
+  })
+}
+
 export function flagOwner(def: { owner?: DesignerId }): DesignerId {
   return def.owner ?? 'jill'
 }
@@ -1291,6 +1351,11 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
   },
   {
     key: 'dashboard-text-tiers',
+    /* ON THE DESIGN BAR — 2026-10-05.
+       The text ink ramp — the second thing the ask named. Reviewed and declined as
+       a baseline on 2026-09-23 and kept one URL away; the design bar is where
+       that comparison actually gets run. */
+    surface: 'design',
     group: 'Widgets',
     label: 'Text tiers',
     description:
@@ -1348,6 +1413,11 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
   },
   {
     key: 'dashboard-heading-font',
+    /* ON THE DESIGN BAR — 2026-10-05.
+       The heading typeface — a TYPOGRAPHY decision, which is the first thing the
+       ask named ("fonts, the brand colors"). Nothing about it tells a
+       stakeholder how the product behaves for a learner. */
+    surface: 'design',
     group: 'Widgets',
     label: 'Heading font',
     description:

@@ -54,6 +54,7 @@ export const PROTECTED = [
      records from 2026-09-28. Protecting the panel would make that permanent. */
   'src/components/prototype/DemoControlsBar.tsx',
   'src/components/prototype/DemoBar.tsx',
+  'src/components/prototype/DesignControlsBar.tsx',
   'src/components/prototype/demoBarUtil.ts',
   'src/data/demoControlMaturity.ts',
   'src/components/layout/AdminToolsMenu.tsx',
@@ -84,6 +85,8 @@ const INSTEAD = {
     'This says which demo-bar controls stakeholders are offered — a readiness statement about the product, not about your branch. Ask Jillienne.',
   'src/components/layout/AdminToolsMenu.tsx':
     'This is the robot — the UI/UX Demo Tools menu. Ask Jillienne.',
+  'src/components/prototype/DesignControlsBar.tsx':
+    'This is the DESIGN controls bar, and you do not need to edit it to get a control on it — that is the whole point of it. Mark your flag `surface: \'design\'` in the flag catalog and it appears, scoped to your dashboard version.',
 }
 
 function reasonFor(path) {

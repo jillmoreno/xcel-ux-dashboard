@@ -136,13 +136,27 @@ carries. Both changes were reasonable; the merge was not. The bar is SHARED
 CHROME — its control list says what the PRODUCT demos, not what one exploration
 is exploring.
 
-**If you want your work configurable, you have two sanctioned routes and
-neither needs the bar.** Put it behind a FEATURE FLAG — it appears in the
-Feature Flag panel, which is one press from the flag icon on the bar and filters
-to the dashboard VERSION you are on — or give it a dashboard VERSION of its own.
-`FeatureFlagPanel.tsx` is deliberately NOT protected for exactly this reason:
-adding your flag keys to `REBRAND_FLAGS` is something you must be able to do, or
-your flags are reachable only by hand-editing `?ff=`.
+### The two bars, and which one is yours
+
+| Bar | Rule | Shows | Who changes it |
+|---|---|---|---|
+| **Demo controls** | amber | how the product behaves for different LEARNERS — progress, tier, education | Jillienne only |
+| **Design controls** | green | the decisions open inside YOUR exploration — fonts, brand colour, layout axes | any designer |
+
+**To put a control on the DESIGN bar you do not edit the bar.** Mark your flag
+`surface: 'design'` in the flag catalog and it appears, scoped to the dashboard
+VERSION you are on — a radiogroup if it has `variants`, an on/off if it does
+not. Name `versions: [...]` too when you have more than one version and the
+control belongs to only one of them; leave it off and the control follows you to
+every version you own.
+
+⚠ **THE DESIGN BAR IS DESIGN-SITE-ONLY, as a whole surface.** There is no
+per-control readiness gate on it, because a design decision worth showing a
+stakeholder belongs on the DEMO bar instead — and that one is Jillienne's.
+
+`FeatureFlagPanel.tsx` is deliberately NOT protected either: adding your flag
+keys to `REBRAND_FLAGS` is something you must be able to do, or your flags are
+reachable only by hand-editing `?ff=`.
 The list of protected paths is THIS TABLE — a test reads it back out of this
 file, so the two cannot drift apart.
 
@@ -155,6 +169,7 @@ file, so the two cannot drift apart.
 | `netlify.toml`, `scripts/public-redirects.mjs` | how the two sites and branch builds differ |
 | `netlify/functions/`, `netlify/lib/` | the Refinement / Links / QA Notes endpoints |
 | `src/components/prototype/DemoControlsBar.tsx`, `src/components/prototype/DemoBar.tsx`, `src/components/prototype/demoBarUtil.ts` | the demo controls bar — which controls every reviewer sees |
+| `src/components/prototype/DesignControlsBar.tsx` | the design controls bar — you do not edit it to get a control on it (see below) |
 | `src/data/demoControlMaturity.ts` | which of those controls the DEMO site offers |
 | `src/components/layout/AdminToolsMenu.tsx` | the robot — the UI/UX Demo Tools menu |
 | `.claude/skills/` | `ship-to-main`, `promote-to-prototype`, `promote-to-refinement`, `promote-component`, `promote-to-testing`, `retire-from-refinement`, `archive-a-feature` and `dev-handoff-notes` — Jillienne's. Run them; don't edit them. |
