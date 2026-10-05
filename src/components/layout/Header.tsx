@@ -16,7 +16,6 @@ import { useLearningPathsPanel } from '@/components/learning/LearningPathsPanelC
 import { DashboardVersionsPanel } from '@/components/dashboard/DashboardVersionsPanel'
 import { isPublicGateway } from '@/data/gatewayMode'
 import { useDashboardVersionsPanel } from '@/components/dashboard/DashboardVersionsPanelContext'
-import { useFeatureFlagPanel } from '@/components/account/FeatureFlagPanelContext'
 import { MembershipVersionsPanel } from '@/components/membership/MembershipVersionsPanel'
 import { useMembershipVersionsPanel } from '@/components/membership/MembershipVersionsPanelContext'
 import { JumpBackInPanel } from '@/components/dashboard/JumpBackInPanel'
@@ -67,7 +66,11 @@ export function Header() {
     open: versionsOpen,
     closePanel: closeVersionsPanel,
   } = useDashboardVersionsPanel()
-  const { openPanel: openFeatureFlagPanel } = useFeatureFlagPanel()
+  /* ⚠ `openFeatureFlagPanel` WENT WITH THE VERSIONS SHEET'S BACK ARROW
+     (2026-10-05). It existed only to send a reviewer from that sheet back into
+     the Feature Flag panel, which stopped being where they came from when the
+     version got its own control on the demo bar. Nothing else in this header
+     opens the flag panel — the robot does, from `AdminToolsMenu`. */
   // ARCHIVED 2026-09-16 — the "Membership Versions" picker was unwired with the
   // `membership-page-version` flag it wrote (the XCEL flag audit). It configured
   // the standalone Membership page, which XCEL cannot reach:
@@ -493,20 +496,19 @@ export function Header() {
           defaultVersionId={discoverabilityDefault as DashboardVersionId}
           onSetDefault={() => {}}
           hideSetDefault
-          // Jump-off to the classic dashboard (the "Legacy Dashboard 2.0" tile
-          // link). It loads outside this shell, so it's a plain CTA under the
-          // version list rather than a selectable version card.
-          secondaryCta={{
-            label: 'Go to Legacy 2.0 Dashboard',
-            onClick: () => navigate('/dashboard'),
-          }}
-          // Opened from the Feature Flag sheet's "Dashboard Version" row, so the
-          // header control is a Back that returns there instead of a Close, and
-          // it slides from the right to match that now-right-anchored sheet.
-          onBack={() => {
-            closeVersionsPanel()
-            openFeatureFlagPanel()
-          }}
+          /* ⚠ "Go to Legacy 2.0 Dashboard" WAS HERE AND WENT — 2026-10-05, the
+             direct ask. It navigated to `/dashboard`, the classic shell, from
+             under the version list. The classic dashboard is unchanged and
+             still at that route; what went is this door to it. */
+          /* ⚠ AND THE BACK ARROW WENT WITH IT, as a BUG FIX rather than a
+             second ask. It read "opened from the Feature Flag sheet's Dashboard
+             Version row, so the header control is a Back that returns there" —
+             and that row was removed earlier today when the version got its own
+             control on the demo bar. The sheet is opened from the BAR now, so
+             Back was returning the reviewer to a sheet they had never been in.
+             No `onBack` means the header draws Close, which is where they
+             actually came from. Caught while removing the CTA above, not by a
+             test: nothing asserts where a back arrow goes. */
           side="right"
         />
         </>
