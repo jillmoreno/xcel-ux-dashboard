@@ -315,15 +315,20 @@ describe('the demo site offers only the finished demo controls', () => {
      the answer from the same function it is checking passes no matter what that
      function returns — including nothing at all.
 
-     ⚠ IT NAMED Persona / Pacing / Education until 2026-09-29, which was the
-     original ask. `jill/navigation-exploration` trims those three off the bar
-     entirely (see `SHOW_CONTROL` in DemoControlsBar), so they can no longer
-     carry this claim — a control that is absent on BOTH sites proves nothing
-     about the maturity gate. Nav layout replaces them: it is drawn on this
-     branch and its flag (`nav-placement`) is `wip`, which is exactly the shape
-     the gate is about. Put the other three back here if the trim is ever
-     reverted. */
-  const WIP = [/Nav layout/i]
+     ⚠ THIS EXEMPLAR HAS MOVED TWICE, and the reason is the same both times: it
+     has to be a control that is DRAWN on the design site and `wip`, or it
+     proves nothing about the gate. It named Persona / Pacing / Education until
+     2026-09-29, when `SHOW_CONTROL` trimmed those off the bar. It named Nav
+     layout until 2026-10-05, when the five design-variant dropdowns moved to
+     the Feature Flag panel.
+
+     ⚠ LO-FI IS THE LAST ONE LEFT, which is worth knowing: every other `wip`
+     row in `DEMO_CONTROLS` is either hidden by `SHOW_CONTROL` (persona,
+     readiness, education) or conditional on something this fixture does not
+     have (brand). If Lo-fi ever leaves the bar too, this test has no subject —
+     at which point the honest move is to delete it and say the gate is
+     unexercised, not to pick a control that is absent anyway. */
+  const WIP = [/Lo-fi/i]
 
   it('hides the work-in-progress axes on the demo site', { timeout: 20_000 }, async () => {
     await bar('public')

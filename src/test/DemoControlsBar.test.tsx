@@ -26,13 +26,19 @@ function renderBar(path = '/dashboard-rebrand') {
     <MemoryRouter initialEntries={[path]}>
       <AccountProvider>
         <FeatureFlagProvider>
-          {/* ⚠ THE FOUR TRIMMED CONTROLS, OPTED BACK IN. This branch's bar
-              does not draw Persona / Readiness / Pacing / Education (see
-              `SHOW_CONTROL` in DemoControlsBar), but they are hidden, not
-              retired — so the suite that covers them keeps rendering them.
-              Take this prop out only when the controls themselves go. */}
+          {/* ⚠ THE TRIMMED CONTROLS, OPTED BACK IN. This branch's bar does not
+              draw Persona / Readiness / Education (see `SHOW_CONTROL` in
+              DemoControlsBar), but they are hidden, not retired — so the suite
+              that covers them keeps rendering them. Take this prop out only
+              when the controls themselves go.
+
+              ⚠ `pacing` CAME OUT OF THIS LIST ON 2026-10-05 and could not stay:
+              it is no longer a `ControlKey` at all. The Pacing dropdown left
+              the bar for the Feature Flag panel, so there is nothing here to
+              opt back in — `study-pace-preset` is unchanged and still drives
+              the card, it is just configured somewhere else now. */}
           <DemoControlsBar
-            controls={{ persona: true, readiness: true, pacing: true, education: true }}
+            controls={{ persona: true, readiness: true, education: true }}
           />
           <UrlProbe />
         </FeatureFlagProvider>

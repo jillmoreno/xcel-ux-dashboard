@@ -40,19 +40,21 @@ export const DEMO_CONTROLS: readonly DemoControlRow[] = [
      stakeholder handed a control that greys the product out has been given a
      way to break their own demo with nothing to gain from it. */
   { id: 'fidelity', maturity: 'wip' },
-  /* Nav layout — the left-vs-top navigation comparison. Inherits
-     `nav-placement`, which is `wip`, so the demo site does not offer it while
-     the arms are still being decided. */
-  { id: 'nav-layout', flag: 'nav-placement' },
-  /* Help placement — the top-nav arm's sub-question (`?` icon vs. the profile
-     dropdown). Inherits `nav-help`, which is `wip` for the same reason its
-     parent is; the bar also hides it outright under the left nav, where the
-     rail's Get Help row means the question does not arise. */
-  { id: 'nav-help', flag: 'nav-help' },
-  /* Testing 3's two timeline axes. Both inherit `wip` from their flags — they
-     are an open exploration, so the demo site does not offer them. */
-  { id: 'journey-scale', flag: 'journey-scale-style' },
-  { id: 'stop-mark', flag: 'journey-stop-mark' },
+  /* ⚠ FOUR ROWS WENT ON 2026-10-05 — `nav-layout` (`nav-placement`),
+     `nav-help`, `journey-scale` (`journey-scale-style`) and `stop-mark`
+     (`journey-stop-mark`) — when their dropdowns left the bar for the Feature
+     Flag panel ("these things should live in the feature flags panel not in
+     the demo controls"). `pacing` went with them, below.
+
+     ⚠ THE FLAGS ARE UNTOUCHED. This file says which demo-bar CONTROLS the demo
+     site offers; it is not a flag registry, so removing a row removes nothing
+     from the product. All five flags are live and configurable in the panel.
+
+     ⚠ AND A ROW HERE FOR A CONTROL THAT NO LONGER RENDERS IS WORSE THAN NO
+     ROW: `controlMaturity` would keep answering for an id nothing draws, and
+     `demoSiteControls()` would list it — a readiness statement about something
+     that is not there. The `wip` fallback means a control that comes BACK
+     without its row is hidden rather than leaked, which is the safe direction. */
   /* Brand picker — parked (the bar renders it only when a brand switch is
      enabled at all), so it states its own `wip` rather than inheriting one. */
   { id: 'brand', maturity: 'wip' },
@@ -65,7 +67,8 @@ export const DEMO_CONTROLS: readonly DemoControlRow[] = [
   { id: 'persona', maturity: 'wip' },
   { id: 'progress', flag: 'dashboard-progress-state' },
   { id: 'readiness', flag: 'readiness-state' },
-  { id: 'pacing', flag: 'study-pace-preset' },
+  /* `pacing` WAS HERE — `study-pace-preset`. Left the bar 2026-10-05 with the
+     four above. */
   /* `navigation` WAS HERE — the `dashboard-navigation` A/B's control, archived
      2026-10-01 with the flag it inherited from. See `archivedItems.ts`. */
   { id: 'education', flag: 'dashboard-education-type' },

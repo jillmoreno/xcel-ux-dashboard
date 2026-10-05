@@ -10,7 +10,13 @@ import { controlMaturity } from '@/data/demoControlMaturity'
 import { useLoFi } from '@/context/LoFiContext'
 import { licensedProfessionsFor } from '@/data/licensedStatesFixtures'
 import { readDemoDayOffset, setDemoDayOffset } from '@/data/demoDay'
-import { useDemoMenus, DEMO_WHITE, DEMO_HOVER_FILL } from './demoBarUtil'
+import {
+  useDemoMenus,
+  DEMO_WHITE,
+  DEMO_HOVER_FILL,
+  DEMO_WIP_DOT,
+  SR_ONLY,
+} from './demoBarUtil'
 import {
   defaultMemberTier,
   membershipTierOptionsFor,
@@ -106,33 +112,28 @@ import {
  * file to look at — shipping the trim would take four controls off the demo
  * site for everyone, which is not what was asked for.
  */
-type ControlKey =
-  | 'persona'
-  | 'progress'
-  | 'readiness'
-  | 'pacing'
-  | 'navLayout'
-  | 'navHelp'
-  | 'journeyScale'
-  | 'stopMark'
-  | 'fidelity'
-  | 'education'
+/* ⚠ FIVE KEYS WENT ON 2026-10-05 — `pacing`, `navLayout`, `navHelp`,
+   `journeyScale` and `stopMark` — with the dropdowns they gated. The note at
+   their render site carries the reasoning; the short version is that all five
+   were flag-backed design variants the Feature Flag panel already offered, and
+   all five were `wip`, so the bar was showing them to designers only while
+   being the stakeholders' bar.
+
+   ⚠ ONE OF THOSE KEYS CARRIED AN ARGUMENT AGAINST THIS, and it is kept rather
+   than deleted because it may still be right: `journeyScale` / `stopMark` were
+   put here on 2026-10-02 precisely because "a sheet two menus deep is where a
+   comparison stops being made". The ask overrides it, and if the Testing 3
+   timeline comparison quietly stops happening, this is the change that did
+   it. */
+type ControlKey = 'persona' | 'progress' | 'readiness' | 'fidelity' | 'education'
 
 const SHOW_CONTROL: Record<ControlKey, boolean> = {
   persona: false,
   progress: true,
   readiness: false,
-  pacing: false,
-  /* The two this branch is actually about. */
-  navLayout: true,
-  navHelp: true,
-  /* ⚠ ON THE BAR RATHER THAN IN THE FLAG PANEL — 2026-10-02, the direct ask
-     ("make the variants available in a dropdown since there are too many for
-     the sheet view"). Testing 3's timeline now has two axes under comparison
-     with six arms between them; a reviewer switching between them is the whole
-     task, and a sheet two menus deep is where a comparison stops being made. */
-  journeyScale: true,
-  stopMark: true,
+  /* The one control here that is neither a scenario nor a design variant — it
+     changes how the page is DRAWN for a working session. It sits beside Reset
+     now rather than in the dropdown row; both act on the view. */
   fidelity: true,
   education: false,
 }
@@ -172,50 +173,22 @@ const SHOW_CONTROL: Record<ControlKey, boolean> = {
  */
 const DEMO_HUB_URL = 'https://ux-demo-xceldashboard.netlify.app/'
 
-const NAV_LAYOUT_PICKER: { value: string; label: string }[] = [
-  { value: 'top', label: 'Top nav' },
-  { value: 'left', label: 'Left nav' },
-]
+/* ⚠ FIVE PICKER CONSTANTS WERE HERE AND WENT WITH THEIR DROPDOWNS —
+   2026-10-05. `NAV_LAYOUT_PICKER`, `NAV_HELP_PICKER`, `JOURNEY_SCALE_PICKER`,
+   `STOP_MARK_PICKER` and `PACE_PRESET_PICKER`.
 
-/**
- * WHERE HELP LIVES UNDER THE TOP NAV — `nav-help`.
- *
- * On the bar beside the layout rather than in the flag panel because it is a
- * SUB-QUESTION of the layout: it only means anything while the top nav is up,
- * and the two are reviewed in the same breath. The control hides itself under
- * the left nav rather than going grey — see its `hidden` below — because a
- * disabled dropdown invites a click that does nothing.
- */
-/* Testing 3's coursework timeline — four ways to show the figure, and two ways
-   to draw a stop nobody has reached. Separate dropdowns because they are
-   separate questions: one is about the SCALE, the other about the MARKS on it,
-   and a version could reasonably want one without the other. */
-const JOURNEY_SCALE_PICKER: { value: string; label: string }[] = [
-  { value: 'gauge', label: 'Gauge — the spine IS the scale' },
-  { value: 'axis', label: 'Axis — 0/100 bracketing the list' },
-  { value: 'chip', label: 'Chip — the figure on the live stop' },
-  { value: 'header', label: 'Header — a horizontal scale above' },
-]
+   ⚠ THEY ARE NOT LOST, and that is why nothing was archived: every one of them
+   was a hand-written LABEL LIST for a flag whose own `variants` already carry
+   labels, and the Feature Flag panel renders from those. The bar duplicated the
+   catalog; deleting the duplicate leaves the original.
 
-const STOP_MARK_PICKER: { value: string; label: string }[] = [
-  { value: 'dash', label: 'Tick on the line' },
-  { value: 'circle', label: 'Dashed ring' },
-]
+   ⚠ THEY HAD TO GO rather than being left unreferenced. `noUnusedLocals` is on,
+   so an unused const is a tsc error and therefore a FAILED DEPLOY — the
+   "unwire but keep it" shape this repo prefers does not survive that.
 
-const NAV_HELP_PICKER: { value: string; label: string }[] = [
-  { value: 'header-icon', label: 'Header — ? icon' },
-  { value: 'profile-menu', label: 'Profile dropdown — above Logout' },
-]
-
-/* `NAVIGATION_PICKER` WAS HERE — the `dashboard-navigation` A/B's two arms,
-   "Below the header" and "Full screen Compass experience". Archived with the
-   control on 2026-10-01; see `archivedItems.ts`. */
-
-const PACE_PRESET_PICKER: { value: string; label: string }[] = [
-  { value: 'recommended', label: 'Recommended' },
-  { value: 'focused', label: 'Focused & Quick' },
-  { value: 'relaxed', label: 'Steady & Relaxed' },
-]
+   `NAVIGATION_PICKER` went the same way on 2026-10-01, with a flag that WAS
+   archived — see `archivedItems.ts`. The difference is the point: that one took
+   a design out of the product, these five took a control out of one menu. */
 
 export function DemoControlsBar({
   open = true,
@@ -284,12 +257,13 @@ export function DemoControlsBar({
   // Progress / compliance state + QE·CE education type — both variant-only flags
   // the two new dropdowns drive directly (they persist via FeatureFlagContext).
   const progressState = useFeatureFlag('dashboard-progress-state')
-  const paceState = useFeatureFlag('study-pace-preset')
   const showControl = { ...SHOW_CONTROL, ...controls }
-  const navLayoutState = useFeatureFlag('nav-placement')
-  const navHelpState = useFeatureFlag('nav-help')
-  const journeyScaleState = useFeatureFlag('journey-scale-style')
-  const stopMarkState = useFeatureFlag('journey-stop-mark')
+  /* ⚠ FOUR `useFeatureFlag` READS WENT WITH THE DROPDOWNS (2026-10-05):
+     `nav-placement`, `nav-help`, `journey-scale-style`, `journey-stop-mark`.
+     The bar no longer renders those controls, so it no longer needs to know
+     their state. They are still captured into `?ff=` by Share Link, which
+     loops the WHOLE catalog rather than these reads — so a shared link still
+     reproduces them exactly as before. */
   const { loFi, setLoFi } = useLoFi()
   const educationTypeFlag = useFeatureFlag('dashboard-education-type')
   // Readiness state — the Exam Readiness section's own axis. Deliberately NOT
@@ -1012,265 +986,39 @@ export function DemoControlsBar({
         </DemoDropdown>
         )}
 
-        {/* PACING — which of the model's three presets the Study Pace card opens
-            on. 2026-09-23, the direct ask: a control that shows "the differences
-            between the Recommended, Focused & Quick, and Steady & Relaxed".
+        {/* ⚠ FIVE DESIGN-VARIANT DROPDOWNS WERE HERE AND MOVED OUT — 2026-10-05,
+            the direct ask: "these things should live in the feature flags panel
+            not in the demo controls."
 
-            ITS OWN AXIS, beside Progress rather than inside it. Progress says
-            how far through the course the learner is; this says which plan they
-            are working to. The two combine — Focused & Quick at 3 days is still
-            a plan that will not fit — and folding either into the other would
-            lose half the grid a reviewer is here to walk. */}
-        {showControl.pacing && (
-        <DemoDropdown
-          id="pacing"
-          hidden={!show('pacing')}
-          wip={markWip && controlMaturity('pacing') === 'wip'}
-          label={PACE_PRESET_PICKER.find((o) => o.value === (paceState.variant ?? 'recommended'))?.label ?? 'Recommended'}
-          eyebrow="Pacing"
-          openId={openId}
-          onToggle={toggle}
-          panelRole="radiogroup"
-          panelLabel="Study pace preset"
-          panelMinWidth={240}
-        >
-          {PACE_PRESET_PICKER.map((opt) => {
-            const active = opt.value === (paceState.variant ?? 'recommended')
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                role="radio"
-                aria-checked={active}
-                tabIndex={active ? 0 : -1}
-                className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
-                onClick={() => {
-                  setVariant('study-pace-preset', opt.value)
-                  close()
-                }}
-              >
-                <span style={{ flex: 1 }}>{opt.label}</span>
-                {active && <Check size={15} aria-hidden />}
-              </button>
-            )
-          })}
-        </DemoDropdown>
-        )}
+            They were PACING, NAV LAYOUT, HELP, TIMELINE and STOP MARKS, and all
+            five were already in the Feature Flag panel, so the bar was a second
+            copy of controls that live somewhere else. Every one was also `wip`,
+            which means it rendered on the DESIGN site with an amber "(not on
+            the demo site)" mark and nowhere else — a control on a bar built for
+            stakeholders, hidden from stakeholders.
 
-        {/* FIDELITY — lo-fi ⇄ hi-fi, 2026-09-29, the direct ask.
-            
-            ⚠ IT IS NOT A FLAG. Lo-fi is `LoFiContext` (persisted to
-            `cgp.loFi`), which is why this reads `useLoFi()` rather than the
-            catalog and why its `DEMO_CONTROLS` row has to state its own
-            maturity — there is no flag for it to inherit one from.
+            ⚠ THE LINE IS SCENARIO vs DESIGN, and it is what makes this
+            repeatable rather than a tidy-up. The bar says WHO this learner is
+            and how the page is shown — progress, readiness, education, persona,
+            tier, fidelity, Reset. The panel says WHICH DESIGN renders. A
+            flag-backed control under comparison belongs in the panel until it
+            is promoted; one that seeds the scenario belongs here.
 
-            The control it duplicates is AccountMenu → UI/UX Demo Tools → Lo-Fi
-            mode, and duplicating it is the point: on a branch about navigation
-            chrome, "show me the wireframe of this" is a thing you do every few
-            minutes, and three menus deep is where that stops happening. Both
-            drive the same state, so they can never disagree. */}
-        {SHOW_CONTROL.fidelity && (
-          <DemoDropdown
-            id="fidelity"
-            hidden={!show('fidelity')}
-            wip={markWip && controlMaturity('fidelity') === 'wip'}
-            label={loFi ? 'Lo-fi' : 'Hi-fi'}
-            eyebrow="Fidelity"
-            openId={openId}
-            onToggle={toggle}
-            panelRole="radiogroup"
-            panelLabel="Fidelity"
-            panelMinWidth={200}
-          >
-            {[
-              { value: false, label: 'Hi-fi' },
-              { value: true, label: 'Lo-fi' },
-            ].map((opt) => {
-              const active = opt.value === loFi
-              return (
-                <button
-                  key={opt.label}
-                  type="button"
-                  role="radio"
-                  aria-checked={active}
-                  tabIndex={active ? 0 : -1}
-                  className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
-                  onClick={() => {
-                    setLoFi(opt.value)
-                    close()
-                  }}
-                >
-                  <span style={{ flex: 1 }}>{opt.label}</span>
-                  {active && <Check size={15} aria-hidden />}
-                </button>
-              )
-            })}
-          </DemoDropdown>
-        )}
-        {/* NAV LAYOUT — the axis this branch exists to compare. On the bar
-            rather than in the flag panel because switching between the two is
-            the whole review task here, and sending a reviewer three menus deep
-            for the one control they came for is how a comparison stops getting
-            made. */}
-        {showControl.navLayout && (
-          <DemoDropdown
-            id="nav-layout"
-            hidden={!show('nav-layout')}
-            wip={markWip && controlMaturity('nav-layout') === 'wip'}
-            label={
-              NAV_LAYOUT_PICKER.find((o) => o.value === (navLayoutState.variant ?? 'top'))
-                ?.label ?? 'Top nav'
-            }
-            eyebrow="Nav layout"
-            openId={openId}
-            onToggle={toggle}
-            panelRole="radiogroup"
-            panelLabel="Navigation layout"
-            panelMinWidth={240}
-          >
-            {NAV_LAYOUT_PICKER.map((opt) => {
-              const active = opt.value === (navLayoutState.variant ?? 'top')
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  role="radio"
-                  aria-checked={active}
-                  tabIndex={active ? 0 : -1}
-                  className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
-                  onClick={() => {
-                    setVariant('nav-placement', opt.value)
-                    close()
-                  }}
-                >
-                  <span style={{ flex: 1 }}>{opt.label}</span>
-                  {active && <Check size={15} aria-hidden />}
-                </button>
-              )
-            })}
-          </DemoDropdown>
-        )}
-        {/* HELP PLACEMENT — only while the top nav is up. HIDDEN rather than
-            disabled under the left nav: the rail carries Get Help as a row
-            there, so the question genuinely does not exist, and a greyed
-            control would imply it does. */}
-        {showControl.navHelp && (navLayoutState.variant ?? 'top') === 'top' && (
-          <DemoDropdown
-            id="nav-help"
-            hidden={!show('nav-help')}
-            wip={markWip && controlMaturity('nav-help') === 'wip'}
-            label={
-              NAV_HELP_PICKER.find((o) => o.value === (navHelpState.variant ?? 'header-icon'))
-                ?.label ?? 'Header — ? icon'
-            }
-            eyebrow="Help"
-            openId={openId}
-            onToggle={toggle}
-            panelRole="radiogroup"
-            panelLabel="Help placement"
-            panelMinWidth={260}
-          >
-            {NAV_HELP_PICKER.map((opt) => {
-              const active = opt.value === (navHelpState.variant ?? 'header-icon')
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  role="radio"
-                  aria-checked={active}
-                  tabIndex={active ? 0 : -1}
-                  className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
-                  onClick={() => {
-                    setVariant('nav-help', opt.value)
-                    close()
-                  }}
-                >
-                  <span style={{ flex: 1 }}>{opt.label}</span>
-                  {active && <Check size={15} aria-hidden />}
-                </button>
-              )
-            })}
-          </DemoDropdown>
-        )}
-        {/* TIMELINE — Testing 3's coursework scale. Four arms, no winner. */}
-        {showControl.journeyScale && (
-          <DemoDropdown
-            id="journey-scale"
-            hidden={!show('journey-scale')}
-            wip={markWip && controlMaturity('journey-scale') === 'wip'}
-            label={
-              JOURNEY_SCALE_PICKER.find(
-                (o) => o.value === (journeyScaleState.variant ?? 'gauge'),
-              )?.label ?? 'Gauge — the spine IS the scale'
-            }
-            eyebrow="Timeline"
-            openId={openId}
-            onToggle={toggle}
-            panelRole="radiogroup"
-            panelLabel="Coursework timeline"
-            panelMinWidth={290}
-          >
-            {JOURNEY_SCALE_PICKER.map((opt) => {
-              const active = opt.value === (journeyScaleState.variant ?? 'gauge')
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  role="radio"
-                  aria-checked={active}
-                  tabIndex={active ? 0 : -1}
-                  className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
-                  onClick={() => {
-                    setVariant('journey-scale-style', opt.value)
-                    close()
-                  }}
-                >
-                  <span style={{ flex: 1 }}>{opt.label}</span>
-                  {active && <Check size={15} aria-hidden />}
-                </button>
-              )
-            })}
-          </DemoDropdown>
-        )}
-        {/* STOP MARKS — the second axis of the same exploration. */}
-        {showControl.stopMark && (
-          <DemoDropdown
-            id="stop-mark"
-            hidden={!show('stop-mark')}
-            wip={markWip && controlMaturity('stop-mark') === 'wip'}
-            label={
-              STOP_MARK_PICKER.find((o) => o.value === (stopMarkState.variant ?? 'dash'))
-                ?.label ?? 'Tick on the line'
-            }
-            eyebrow="Stop marks"
-            openId={openId}
-            onToggle={toggle}
-            panelRole="radiogroup"
-            panelLabel="Unreached stops"
-            panelMinWidth={220}
-          >
-            {STOP_MARK_PICKER.map((opt) => {
-              const active = opt.value === (stopMarkState.variant ?? 'dash')
-              return (
-                <button
-                  key={opt.value}
-                  type="button"
-                  role="radio"
-                  aria-checked={active}
-                  tabIndex={active ? 0 : -1}
-                  className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
-                  onClick={() => {
-                    setVariant('journey-stop-mark', opt.value)
-                    close()
-                  }}
-                >
-                  <span style={{ flex: 1 }}>{opt.label}</span>
-                  {active && <Check size={15} aria-hidden />}
-                </button>
-              )
-            })}
-          </DemoDropdown>
-        )}
+            ⚠ WHAT THIS COSTS, because the notes that put two of them here said
+            it plainly: "switching between the two is the whole review task" and
+            "a sheet two menus deep is where a comparison stops being made".
+            That was true and is the trade accepted here — the robot icon is one
+            press from anywhere, but it is still further than a pill on the bar.
+            If a comparison stops happening, this is the change that did it.
+
+            Nothing was archived: all five flags are live, unchanged, and in the
+            panel. `DEMO_CONTROLS` lost their rows the same day. */}
+
+        {/* ⚠ FIDELITY MOVED DOWN TO THE ACTIONS BLOCK — 2026-10-05, the
+            direct ask ("leave it on the bar but make it a simple on/off switch
+            next to the reset button"). It is the one control here that is
+            neither a scenario nor a design variant, so it sits with Reset: both
+            act on the VIEW rather than on what is being shown. See below. */}
         {/* NAVIGATION WAS HERE — ARCHIVED 2026-10-01, the direct ask ("remove
             this demo control as it's no longer needed").
 
@@ -1341,6 +1089,60 @@ export function DemoControlsBar({
         */}
         {show('actions') && (
         <div style={ACTIONS}>
+          {/* LO-FI — a switch, not a dropdown (2026-10-05, the direct ask).
+              It was a two-option radiogroup, which is a menu asked to answer a
+              yes/no: two presses and a panel to decide something that has one
+              other state.
+
+              ⚠ `aria-pressed`, NOT a `role="switch"` or a checkbox. It is a
+              button that toggles a view, and `aria-pressed` is what says so
+              without claiming to be a form control — the label stays "Lo-fi"
+              in both states so the accessible name does not change underneath
+              a screen-reader user mid-press.
+
+              ⚠ IT KEEPS ITS OWN `show('fidelity')` GATE. The id is still in
+              `DEMO_CONTROLS` as `wip`, so the demo site drops it exactly as
+              before — moving a control must not quietly hand it to
+              stakeholders. */}
+          {SHOW_CONTROL.fidelity && show('fidelity') && (
+            <button
+              type="button"
+              className="cre-demo-controls-btn"
+              aria-pressed={loFi}
+              style={{
+                ...GHOST_BTN,
+                ...(loFi
+                  ? {
+                      background: DEMO_HOVER_FILL,
+                      borderColor: 'rgba(255,255,255,0.4)',
+                    }
+                  : null),
+              }}
+              onClick={() => setLoFi(!loFi)}
+              onMouseEnter={(e) => (e.currentTarget.style.background = DEMO_HOVER_FILL)}
+              onMouseLeave={(e) =>
+                (e.currentTarget.style.background = loFi ? DEMO_HOVER_FILL : 'transparent')
+              }
+            >
+              Lo-fi
+              {/* ⚠ THE WIP MARK HAD TO COME WITH IT. `DemoDropdown` renders
+                  this for every control it draws, so turning Fidelity into a
+                  plain button silently dropped the one thing that says it is
+                  design-site-only — the control still hid correctly on the demo
+                  site, but a designer looking at the bar had no way to know it
+                  would. A test caught it; it would not have been visible.
+
+                  ⚠ A DOT PLUS WORDS, never the dot alone, for the reason
+                  `DemoBar` records: "not on the demo site" is not a colour
+                  anyone can be expected to know, and the bar has no legend. */}
+              {markWip && controlMaturity('fidelity') === 'wip' && (
+                <>
+                  <span aria-hidden style={DEMO_WIP_DOT} />
+                  <span style={SR_ONLY}> (not on the demo site)</span>
+                </>
+              )}
+            </button>
+          )}
           <button
             type="button"
             className="cre-demo-controls-btn"

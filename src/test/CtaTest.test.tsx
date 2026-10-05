@@ -496,11 +496,14 @@ describe('?test=1 — the moderated session view', () => {
     /* The direction that matters more: this must be invisible to everyone not
        in a session. */
     renderChrome('')
-    /* ⚠ NAMED FROM WHAT THIS BRANCH'S BAR DRAWS. It listed Persona and Pacing,
-       which `jill/navigation-exploration` trims (see `SHOW_CONTROL`); the claim
-       being tested is that a normal load is NOT whitelisted, so it needs
-       controls that are actually on the bar to make that claim about. */
-    for (const there of [/Progress/i, /Nav layout/i, /Fidelity/i, /^Reset$/]) {
+    /* ⚠ NAMED FROM WHAT THE BAR ACTUALLY DRAWS, and that list keeps shrinking:
+       Persona and Pacing went to `SHOW_CONTROL`, Nav layout went to the Feature
+       Flag panel on 2026-10-05, and Fidelity is now the "Lo-fi" switch beside
+       Reset rather than a dropdown labelled "Fidelity". The claim under test is
+       that a normal load is NOT whitelisted, so every name here has to be a
+       control that is genuinely on screen — a false negative would read as the
+       whitelist working. */
+    for (const there of [/Progress/i, /Lo-fi/i, /^Reset$/]) {
       expect(screen.getByRole('button', { name: there }), String(there)).toBeTruthy()
     }
   })
