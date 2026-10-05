@@ -157,7 +157,25 @@ export function Header() {
      off the bar entirely, so the top nav stands down and the designed mobile
      path takes over. The Figma is a 1392px frame and says nothing about phone;
      this is the shell's existing answer rather than a new one. */
-  const showTopNav = platformNav && showsTopNav(navPlacement) && !mobile
+  /* ⚠ `!atlasSlimHeader` — ADDED 2026-10-05, FIXING A REGRESSION THE ATLAS
+     MERGE SHIPPED. Two top navs arrived on this header from two branches and
+     neither knew about the other: `AtlasTopNav` beside the logo (Eric's, drawn
+     whenever an Atlas version is on and `?nav=` is not `left-rail`) and
+     `PlatformTopNav` here in the utility cluster (`nav-placement`). That flag
+     defaults to `top`, so on Eric's versions BOTH were true and the header grew
+     a second pill row. Nothing failed — each nav was correct alone, and every
+     test of either one passed.
+
+     ⚠ KEYED ON THE VERSION, NOT ON `atlasTopNav`. An Atlas version on
+     `?nav=left-rail` draws no Atlas pills, and main's top nav must not fill the
+     gap — the whole point of that arm is Eric's RAIL. `AtlasHeaderOneNav.test.tsx`
+     pins that case specifically, because it is the one a narrower gate breaks.
+
+     ⚠ THIS IS THE HEADER HALF OF A PAIR. `PlatformShell` tests `topNav` before
+     every Atlas arm for the same collision on the RAIL side; see the note on
+     its `gridTemplateColumns`. The two together are what keep "which navigation
+     is on screen" a single answer. */
+  const showTopNav = platformNav && showsTopNav(navPlacement) && !mobile && !atlasSlimHeader
   /* HELP'S OWN CONTROL — `nav-help`, 2026-10-01. Rendered only where the rail
      is NOT (see `showsHelpControl`): with the rail up its Get Help row already
      carries Help and a second control is a duplicate. `platformNav` scopes it
