@@ -38,6 +38,25 @@ export const PROTECTED = [
   'scripts/public-redirects.mjs',
   'netlify/functions/',
   'netlify/lib/',
+  /* THE DEMO CONTROLS — added 2026-10-05, after two designers edited the bar in
+     the same week and collided. One was adding three controls for their own
+     dashboard version while the other was restructuring which controls the bar
+     carries at all; both changes were reasonable and the merge was not.
+
+     ⚠ THE BAR IS SHARED CHROME, which is what makes it the wrong place for a
+     designer to express anything. Its control list is a statement about what
+     the PRODUCT demos, not about one exploration — and every designer who adds
+     a control to it is editing the same twenty lines.
+
+     ⚠ `FeatureFlagPanel.tsx` IS DELIBERATELY NOT HERE. A designer must be able
+     to add their own flag keys to `REBRAND_FLAGS`, or their flags are reachable
+     only by hand-editing `?ff=` — the exact failure that list's own comment
+     records from 2026-09-28. Protecting the panel would make that permanent. */
+  'src/components/prototype/DemoControlsBar.tsx',
+  'src/components/prototype/DemoBar.tsx',
+  'src/components/prototype/demoBarUtil.ts',
+  'src/data/demoControlMaturity.ts',
+  'src/components/layout/AdminToolsMenu.tsx',
   '.claude/skills/',
   '.claude/hooks/',
   '.claude/settings.json',
@@ -59,6 +78,12 @@ const INSTEAD = {
     'This is server code behind Refinement, Links and QA Notes. Adding a Refinement link does not need a code change — open Refinement on the full site and use "Add link", or say "/promote-to-refinement".',
   '.claude/skills/':
     'These are Jillienne’s skills. Run them, don’t edit them.',
+  'src/components/prototype/DemoControlsBar.tsx':
+    'This is the shared demo controls bar — which controls every reviewer sees. It is one list that every designer edits, which is how two branches collide. Your own exploration belongs behind a FEATURE FLAG (it shows up in the Feature Flag panel, reachable from the flag icon on the bar) or behind a DASHBOARD VERSION of your own. If you genuinely need a control on the bar, ask Jillienne.',
+  'src/data/demoControlMaturity.ts':
+    'This says which demo-bar controls stakeholders are offered — a readiness statement about the product, not about your branch. Ask Jillienne.',
+  'src/components/layout/AdminToolsMenu.tsx':
+    'This is the robot — the UI/UX Demo Tools menu. Ask Jillienne.',
 }
 
 function reasonFor(path) {

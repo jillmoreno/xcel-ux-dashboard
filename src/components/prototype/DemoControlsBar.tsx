@@ -6,6 +6,7 @@ import {
   dashboardVersionLabel,
 } from '@/data/dashboardVersions'
 import { useDashboardVersionsPanel } from '@/components/dashboard/DashboardVersionsPanelContext'
+import { useFeatureFlagPanel } from '@/components/account/FeatureFlagPanelContext'
 import {
   UserSlash,
   Share2,
@@ -14,6 +15,7 @@ import {
   Check,
   ChevronDown,
   Sliders,
+  Flag,
 } from '@/icons'
 import { ActionMenu } from '@/components/ui/ActionMenu'
 import { Toast } from '@/components/ui/Toast'
@@ -139,6 +141,7 @@ import {
    timeline comparison quietly stops happening, this is the change that did
    it. */
 type ControlKey =
+  | 'flags'
   | 'persona'
   | 'progress'
   | 'readiness'
@@ -150,6 +153,9 @@ const SHOW_CONTROL: Record<ControlKey, boolean> = {
   persona: false,
   progress: true,
   readiness: false,
+  /* The Feature Flag sheet's own icon, beside the version. `wip` — the panel
+     is a designer tool and the public site withholds the robot already. */
+  flags: true,
   /* DASHBOARD VERSION — 2026-10-05, the direct ask. It is the one control here
      that chooses WHICH DASHBOARD renders rather than who the learner is, and it
      is on the bar for a reason the rest of that line does not cover: the robot
@@ -276,6 +282,7 @@ export function DemoControlsBar({
   const [searchParams, setSearchParams] = useSearchParams()
   const { brand, membership, tier, setTier, setBrand } = useAccount()
   const { openPanel: openVersionsPanel } = useDashboardVersionsPanel()
+  const { openPanel: openFeatureFlagPanel } = useFeatureFlagPanel()
   /* The version the picker would open on — the URL's if it has one, else the
      brand's committed default. The SAME resolution `PlatformShell` uses, so the
      pill cannot name a different version from the one on screen. */
@@ -1264,6 +1271,46 @@ export function DemoControlsBar({
               onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
               <Sliders size={16} aria-hidden />
+            </button>
+          )}
+          {/* FEATURE FLAGS — an icon beside the version, 2026-10-05, the direct
+              ask. It opens the same sheet the robot opens.
+
+              ⚠ IT SHOWS THE FLAGS FOR THE VERSION YOU ARE ON, and that needed
+              no new logic: the panel has filtered by the ACTIVE VERSION'S OWNER
+              since this morning. This is the route, not the rule — pairing the
+              two icons is what makes the relationship legible, because a
+              reviewer who has just switched versions now has the flags for it
+              one press to the right.
+
+              ⚠ `wip`, UNLIKE THE VERSION BESIDE IT, and the asymmetry is
+              deliberate. The version picker is `ready` because stakeholders had
+              no route to it and needed one; the flag panel is a DESIGNER tool —
+              `PrototypeChrome` already withholds the robot on the public site,
+              and a second door marked `ready` would hand stakeholders every
+              toggle in the catalog, which is what `maturity` exists to
+              prevent. */}
+          {showControl.flags && show('flags') && (
+            <button
+              type="button"
+              className="cre-demo-controls-btn"
+              aria-label="Feature flags"
+              title="Feature flags"
+              style={versionTriggerStyle}
+              onClick={() => {
+                openFeatureFlagPanel()
+                close()
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = DEMO_HOVER_FILL)}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+            >
+              <Flag size={16} aria-hidden />
+              {markWip && controlMaturity('flags') === 'wip' && (
+                <>
+                  <span aria-hidden style={DEMO_WIP_DOT} />
+                  <span style={SR_ONLY}> (not on the demo site)</span>
+                </>
+              )}
             </button>
           )}
           <ActionMenu

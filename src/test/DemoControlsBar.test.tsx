@@ -6,6 +6,7 @@ import { personasForBrand } from '@/components/prototype/demoControlsUtil'
 import { DASHBOARD_PROGRESS_PICKER } from '@/data/dashboardProgressFixtures'
 import { AccountProvider } from '@/context/AccountContext'
 import { DashboardVersionsPanelProvider } from '@/components/dashboard/DashboardVersionsPanelContext'
+import { FeatureFlagPanelProvider } from '@/components/account/FeatureFlagPanelContext'
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
 
 // The bar is Elite-scoped (the rebrand's seeded brand) — seed the account so
@@ -31,7 +32,12 @@ function renderBar(path = '/dashboard-rebrand') {
               calls `useDashboardVersionsPanel`, which throws without this —
               `AppLayout` provides it in the app, so the harness has to as
               well or it is testing a shell the product never renders. */}
-          <DashboardVersionsPanelProvider>
+                    {/* ⚠ AND `FeatureFlagPanelProvider` SINCE 2026-10-05 — the bar's
+              flag icon calls `useFeatureFlagPanel`, which throws without it.
+              Same shape as the versions provider above: `AppLayout` supplies
+              both in the app. */}
+          <FeatureFlagPanelProvider>
+<DashboardVersionsPanelProvider>
           {/* ⚠ THE TRIMMED CONTROLS, OPTED BACK IN. This branch's bar does not
               draw Persona / Readiness / Education (see `SHOW_CONTROL` in
               DemoControlsBar), but they are hidden, not retired — so the suite
@@ -48,6 +54,7 @@ function renderBar(path = '/dashboard-rebrand') {
           />
           <UrlProbe />
           </DashboardVersionsPanelProvider>
+</FeatureFlagPanelProvider>
         </FeatureFlagProvider>
       </AccountProvider>
     </MemoryRouter>,

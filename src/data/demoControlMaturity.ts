@@ -83,6 +83,12 @@ export const DEMO_CONTROLS: readonly DemoControlRow[] = [
      lists `ready` versions only on the demo site, so this control being ready
      does not mean every version it offers is. */
   { id: 'version', maturity: 'ready' },
+  /* The Feature Flag sheet's icon, beside the version. ⚠ `wip`, UNLIKE the
+     version beside it: that one is `ready` because stakeholders had no route to
+     the picker, while this opens a DESIGNER tool. `PrototypeChrome` already
+     withholds the robot on the public site, so marking this `ready` would hand
+     stakeholders every toggle in the catalog through a side door. */
+  { id: 'flags', maturity: 'wip' },
   /* Reset + the kebab. ⚠ READY, DELIBERATELY: Reset is what gets a stakeholder
      out of a state they wandered into. Hiding it would leave the only recovery
      a page reload they have no reason to think of. */

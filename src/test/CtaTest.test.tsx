@@ -523,11 +523,17 @@ describe('?test=1 — the moderated session view', () => {
                 `AppLayout` provides it in the app; a harness without it is
                 mounting a shell the product never renders. */}
             <DashboardVersionsPanelProvider>
-              {/* `controls` opts Persona back in — this branch's bar hides it,
-                  and the whitelist claim needs a control that is not Progress
-                  to whitelist. The `only` mechanism is what is under test, not
-                  the branch trim. */}
-              <DemoControlsBar open only={['persona']} controls={{ persona: true }} />
+              {/* ⚠ AND THE FLAG PANEL'S, since 2026-10-05 — the bar's flag icon
+                  calls `useFeatureFlagPanel`. This is the SECOND render site in
+                  this file; the first already had both, which is how a
+                  one-occurrence patch left this one throwing. */}
+              <FeatureFlagPanelProvider>
+                {/* `controls` opts Persona back in — this branch's bar hides
+                    it, and the whitelist claim needs a control that is not
+                    Progress to whitelist. The `only` mechanism is what is under
+                    test, not the branch trim. */}
+                <DemoControlsBar open only={['persona']} controls={{ persona: true }} />
+              </FeatureFlagPanelProvider>
             </DashboardVersionsPanelProvider>
           </FeatureFlagProvider>
         </AccountProvider>

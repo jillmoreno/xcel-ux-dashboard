@@ -125,6 +125,24 @@ suite you run before pushing, naming the files.
 
 ⚠ It is a guardrail, not a lock: the email check is one command to change. It
 exists to stop someone wandering into the wrong file, not to defend the repo.
+It also only intercepts **Claude's** edits — a hand edit in an IDE reaches the
+file, and `FrameworkProtection.test.ts` is what catches that, when the suite is
+run before pushing.
+
+⚠ **THE DEMO CONTROLS JOINED THE TABLE ON 2026-10-05**, after two designers
+edited the bar in the same week and collided: one adding three controls for
+their own dashboard version, the other restructuring which controls the bar
+carries. Both changes were reasonable; the merge was not. The bar is SHARED
+CHROME — its control list says what the PRODUCT demos, not what one exploration
+is exploring.
+
+**If you want your work configurable, you have two sanctioned routes and
+neither needs the bar.** Put it behind a FEATURE FLAG — it appears in the
+Feature Flag panel, which is one press from the flag icon on the bar and filters
+to the dashboard VERSION you are on — or give it a dashboard VERSION of its own.
+`FeatureFlagPanel.tsx` is deliberately NOT protected for exactly this reason:
+adding your flag keys to `REBRAND_FLAGS` is something you must be able to do, or
+your flags are reachable only by hand-editing `?ff=`.
 The list of protected paths is THIS TABLE — a test reads it back out of this
 file, so the two cannot drift apart.
 
@@ -136,6 +154,9 @@ file, so the two cannot drift apart.
 | `src/data/gatewayMode.ts`, `src/data/deployContext.ts` | the per-site and per-context build switches |
 | `netlify.toml`, `scripts/public-redirects.mjs` | how the two sites and branch builds differ |
 | `netlify/functions/`, `netlify/lib/` | the Refinement / Links / QA Notes endpoints |
+| `src/components/prototype/DemoControlsBar.tsx`, `src/components/prototype/DemoBar.tsx`, `src/components/prototype/demoBarUtil.ts` | the demo controls bar — which controls every reviewer sees |
+| `src/data/demoControlMaturity.ts` | which of those controls the DEMO site offers |
+| `src/components/layout/AdminToolsMenu.tsx` | the robot — the UI/UX Demo Tools menu |
 | `.claude/skills/` | `ship-to-main`, `promote-to-prototype`, `promote-to-refinement`, `promote-component`, `promote-to-testing`, `retire-from-refinement`, `archive-a-feature` and `dev-handoff-notes` — Jillienne's. Run them; don't edit them. |
 | `public/contributing/`, `public/about/` | the two guides (regenerate the PDFs if you do edit them) |
 
