@@ -221,7 +221,22 @@ export type TimeSegment = { value: number; unit: string }
 export function timeRemaining(weeksLeft: number): { segments: TimeSegment[]; expired: boolean } {
   if (weeksLeft <= 0) return { segments: [], expired: true }
   const days = Math.round(weeksLeft * 7)
-  if (days < 30) {
+  /* ⚠ `<= 30`, NOT `< 30` — 2026-10-05, the direct ask that a fresh course read
+     "30 days to complete course".
+
+     Thirty was the one value inside the demo's own 30-day access window that
+     fell out of this branch and rendered as "4 wks" — a whole course window
+     described in weeks while every state below it counted days.
+     `dashboardProgressFixtures` capped itself at 29 to avoid exactly that, and
+     its note called 29 "the largest value that both satisfies the ask and reads
+     as the ask intends". Moving the boundary is the other end of that fix: now
+     30 is sayable, so the cap is 30 and the window and the countdown agree.
+
+     ⚠ 31 STILL READS "4 wks", and that is the honest edge rather than an
+     oversight: a month-and-a-bit is a weeks-shaped quantity, and pushing the
+     boundary further just moves the seam. Thirty is where it belongs because
+     thirty is what the product SELLS. */
+  if (days <= 30) {
     return { segments: [{ value: days, unit: days === 1 ? 'day' : 'days' }], expired: false }
   }
   const years = Math.floor(weeksLeft / 52)
