@@ -141,7 +141,7 @@ is exploring.
 | Bar | Rule | Shows | Who changes it |
 |---|---|---|---|
 | **Demo controls** | amber | how the product behaves for different LEARNERS — progress, tier, education | Jillienne only |
-| **Design controls** | green | the decisions open inside YOUR exploration — fonts, brand colour, layout axes | any designer |
+| **Design controls** | light cyan | the decisions open inside YOUR exploration — fonts, brand colour, layout axes | any designer |
 
 **To put a control on the DESIGN bar you do not edit the bar.** Mark your flag
 `surface: 'design'` in the flag catalog and it appears, scoped to the dashboard
