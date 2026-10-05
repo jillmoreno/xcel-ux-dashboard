@@ -28,7 +28,6 @@ import {
   DEMO_WHITE,
   DEMO_HOVER_FILL,
   DEMO_WIP_DOT,
-  DEMO_TRIGGER_EYEBROW,
   SR_ONLY,
 } from './demoBarUtil'
 import {
@@ -758,45 +757,10 @@ export function DemoControlsBar({
         </DemoDropdown>
         )}
 
-        {/* DASHBOARD VERSION — its own control, 2026-10-05, the direct ask
-            ("I want the Dashboard version to have its OWN icon that lives in
-            the Demo controls bar and is accessible from demo and design hubs").
-
-            ⚠ READY, AND THAT IS THE POINT. Every other `wip` control here is
-            design-site-only; this one is for BOTH audiences, because the robot
-            — the only other way in — is not rendered on the public site at all
-            (`PrototypeChrome`). Stakeholders could not reach the version picker
-            by any route before this.
-
-            ⚠ IT STATES THE VERSION YOU ARE ON, not just an icon. The bar has no
-            legend and every other control shows its current value; an icon
-            alone would be something a stakeholder has to press to understand,
-            and they are the audience it was added for.
-
-            ⚠ IT OPENS THE EXISTING SHEET rather than listing versions inline.
-            Each version carries a description and a date, and those are most of
-            what tells a reviewer what they are choosing between — three labels
-            in a dropdown would drop them.
-
-            ⚠ A PLAIN BUTTON, NOT `DemoDropdown`. That component owns an open
-            PANEL; this opens a slide-over somebody else renders, so reusing it
-            would mean a dropdown that never drops. The pill styling is matched
-            by hand for that reason. */}
-        {showControl.version && show('version') && (
-          <button
-            type="button"
-            className="cre-demo-controls-btn"
-            style={versionTriggerStyle}
-            onClick={() => {
-              openVersionsPanel()
-              close()
-            }}
-          >
-            <Sliders size={14} aria-hidden />
-            <span style={DEMO_TRIGGER_EYEBROW}>Version:</span>
-            {dashboardVersionLabel(activeVersionId)}
-          </button>
-        )}
+        {/* ⚠ THE DASHBOARD VERSION CONTROL MOVED TO THE ACTIONS BLOCK, right of
+            Reset — 2026-10-05, the direct ask. It led this row as a labelled
+            pill for about an hour. See the note at its new home for what the
+            move costs. */}
 
         {/* Persona — the learning/dashboard SCENARIO, layered on top of the
             membership tier set by Quick views (a persona does NOT change tier).
@@ -1265,6 +1229,43 @@ export function DemoControlsBar({
           >
             Reset
           </button>
+          {/* DASHBOARD VERSION — an icon button, right of Reset, opening the
+              versions sheet (2026-10-05, the direct ask).
+
+              ⚠ IT SITS WITH RESET AND THE KEBAB because those are the bar's
+              TOOLS — things you do to the demo — rather than its scenario
+              controls. The version is the one of the three that changes what is
+              on screen, which is why it was a labelled pill leading the row
+              first; this places it by shape instead.
+
+              ⚠ ICON-ONLY COSTS THE READOUT, and that is the trade to know. The
+              pill said which version you were on without being pressed; this
+              does not, so the only way to read the current version from the bar
+              is to hover or open the sheet. `title` + `aria-label` carry it for
+              a pointer and for a screen reader — the one audience left with
+              nothing is a sighted stakeholder glancing at the bar, and they are
+              who the control was added for.
+
+              ⚠ BORDERED LIKE RESET, not bare like the kebab. It opens a sheet
+              that changes the product; the kebab opens a menu. Matching Reset
+              groups it with the control that also does something. */}
+          {showControl.version && show('version') && (
+            <button
+              type="button"
+              className="cre-demo-controls-btn"
+              aria-label={`Dashboard version: ${dashboardVersionLabel(activeVersionId)}`}
+              title={`Dashboard version: ${dashboardVersionLabel(activeVersionId)}`}
+              style={versionTriggerStyle}
+              onClick={() => {
+                openVersionsPanel()
+                close()
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = DEMO_HOVER_FILL)}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+            >
+              <Sliders size={16} aria-hidden />
+            </button>
+          )}
           <ActionMenu
             label="Demo actions"
             items={[
@@ -1461,17 +1462,24 @@ const TIER_CHIP: CSSProperties = {
    ever drift visibly, extracting the trigger is the fix — not giving this a
    dropdown it does not use. */
 const versionTriggerStyle: CSSProperties = {
-  border: '1px solid rgba(255,255,255,0.24)',
-  background: 'rgba(255,255,255,0.06)',
-  color: 'var(--color-text-inverse)',
-  padding: '7px 12px',
-  borderRadius: 999,
-  fontSize: 13,
-  fontWeight: 600,
-  cursor: 'pointer',
   display: 'inline-flex',
   alignItems: 'center',
-  gap: 7,
+  justifyContent: 'center',
+  /* 38 SQUARE, which is what Reset beside it MEASURES in the browser — not what
+     its padding suggests. I reasoned 34 from `8px 14px` on 13/1.2 text, shipped
+     it, and measured 38 against Reset's 38: the font's own line box is taller
+     than the ratio implies. The kebab's 32 would be shorter still. Measure
+     again rather than re-deriving if either button's padding changes. */
+  width: 38,
+  height: 38,
+  padding: 0,
+  background: 'transparent',
+  /* Reset's border exactly. These two are a pair; the kebab beside them is
+     deliberately bare. */
+  border: '1px solid rgba(255,255,255,0.3)',
+  borderRadius: 'var(--radius-md)',
+  color: 'var(--color-text-inverse)',
+  cursor: 'pointer',
   transition: 'background .15s',
 }
 

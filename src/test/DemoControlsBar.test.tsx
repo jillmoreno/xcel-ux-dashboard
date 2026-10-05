@@ -342,18 +342,29 @@ describe('DemoControlsBar — the Dashboard Version control', () => {
     expect(controlMaturity('version')).toBe('ready')
   })
 
-  it('names the version you are on rather than being a bare icon', () => {
-    /* The bar has no legend and every other control shows its current value. */
+  it('carries the version in its ACCESSIBLE NAME, having no visible one', () => {
+    /* ⚠ THIS ASSERTION CHANGED SHAPE ON 2026-10-05 and the reason is the point.
+       The control was a labelled pill leading the bar; it is now an icon button
+       beside Reset, so the version is no longer readable without hovering or
+       opening the sheet. `aria-label` and `title` are what is left carrying it
+       — which means a screen-reader user and a mouse user can still read the
+       current version, and a sighted stakeholder glancing at the bar cannot.
+       That is the known cost of the move, and this test is where it is
+       visible. */
     renderBar('/dashboard-rebrand?version=discoverability-testing')
-    expect(screen.getByRole('button', { name: /Version:\s*Testing/i })).toBeTruthy()
+    expect(
+      screen.getByRole('button', { name: /Dashboard version:\s*Testing/i }),
+    ).toBeTruthy()
   })
 
   it('falls back to the brand default when the url names no version', () => {
     /* ⚠ THE SAME RESOLUTION `PlatformShell` USES. Reading only `?version=`
-       would leave the pill blank on the landing screen — the common case — or
+       would leave the label blank on the landing screen — the common case — or
        worse, name a version other than the one rendering. */
     renderBar('/dashboard-rebrand')
-    expect(screen.getByRole('button', { name: /Version:\s*Testing 3/i })).toBeTruthy()
+    expect(
+      screen.getByRole('button', { name: /Dashboard version:\s*Testing 3/i }),
+    ).toBeTruthy()
   })
 })
 
