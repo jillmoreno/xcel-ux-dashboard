@@ -100,3 +100,51 @@ describe('the boundary between the two bars', () => {
     expect(isProtected('src/data/dashboardVersions.ts')).toBe(false)
   })
 })
+
+/**
+ * THE TWO VISIBILITY STORES — 2026-10-05, when the Design bar got its own
+ * toggle in the PrototypeBar beside the Demo one.
+ *
+ * ⚠ THE THING THAT WOULD BREAK SILENTLY IS THEM SHARING A KEY. Both stores are
+ * built from one factory, so a copy-paste of the key would make the Demo toggle
+ * hide the design bar and vice versa — and the symptom is "the toggle works,
+ * just not only on what it says", which reads as a layout quirk rather than a
+ * bug. Nothing on screen names the key.
+ */
+describe('the Demo and Design bars hide independently', () => {
+  it('uses two different localStorage keys', async () => {
+    const { useDemoControlsVisibility, useDesignControlsVisibility } = await import(
+      '@/components/prototype/demoControlsVisibility'
+    )
+    /* Driven through the exported toggles rather than by reading the module's
+       internals — the keys are private, and what matters is that flipping one
+       does not move the other. */
+    const { renderHook, act } = await import('@testing-library/react')
+    window.localStorage.clear()
+    const demo = renderHook(() => useDemoControlsVisibility())
+    const design = renderHook(() => useDesignControlsVisibility())
+    expect(demo.result.current.open).toBe(true)
+    expect(design.result.current.open).toBe(true)
+
+    act(() => design.result.current.toggle())
+    design.rerender()
+    demo.rerender()
+    expect(design.result.current.open, 'design should be hidden').toBe(false)
+    expect(demo.result.current.open, 'demo must be untouched').toBe(true)
+
+    act(() => demo.result.current.toggle())
+    demo.rerender()
+    design.rerender()
+    expect(demo.result.current.open).toBe(false)
+    expect(design.result.current.open).toBe(false)
+  })
+
+  it('defaults both to SHOWN', () => {
+    /* A bar that had to be found before it could be used would not be found —
+       and the Design bar is the one a designer is least likely to go looking
+       for, because it is new. */
+    window.localStorage.clear()
+    expect(window.localStorage.getItem('cgp.designControlsOpen')).toBeNull()
+    expect(window.localStorage.getItem('cgp.demoControlsOpen')).toBeNull()
+  })
+})

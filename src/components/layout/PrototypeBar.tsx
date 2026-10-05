@@ -147,6 +147,7 @@ export function PrototypeBar({
   showHomeLink = true,
   adminTools,
   demoToggle,
+  designToggle,
   deviceToggle,
   back,
   fullBleed = false,
@@ -158,6 +159,11 @@ export function PrototypeBar({
    *  Header injects it only on the Dashboard Discoverability shell (where the
    *  Demo Controls banner lives). */
   demoToggle?: ReactNode
+  /** DESIGN controls show/hide toggle, sitting immediately after the Demo one
+   *  — 2026-10-05. Injected only on the design site, and only when the current
+   *  dashboard version actually has design controls; a toggle that reveals an
+   *  empty bar is worse than no toggle. See `PrototypeChrome`. */
+  designToggle?: ReactNode
   /** Device-size preview toggle, sitting left of the "UI/UX Prototype" label
    *  (just after the Demo toggle). The in-app Header injects
    *  `<DeviceFrameToggle />` here; the gateway bar passes nothing (no
@@ -263,9 +269,14 @@ export function PrototypeBar({
         {/* "Demo" show/hide toggle (Discoverability shell only) + the
             device-size preview toggle — kept as ONE flex child with a tight
             inner gap, positioned to the LEFT of the "UI/UX Prototype" label. */}
-        {(demoToggle || deviceToggle) && (
+        {(demoToggle || designToggle || deviceToggle) && (
           <span style={{ flexShrink: 0, display: 'inline-flex', alignItems: 'center', gap: 8 }}>
             {demoToggle}
+            {/* ⚠ NEXT TO DEMO, NOT BESIDE THE DEVICE TOGGLE. The two bar
+                toggles are the same KIND of control — each hides a bar — and
+                the device toggle changes the viewport. Grouping by what they do
+                is what lets a reader see there are two bars at all. */}
+            {designToggle}
             {deviceToggle}
           </span>
         )}
