@@ -972,14 +972,6 @@ function PlatformShellBody() {
         // ask): its content, player bar and footer take every pixel past the
         // rail, so the 1180 cap and the right filler go (filler kept at 0 so
         // the grid's children do not change).
-        /* ⚠ `topNav` IS TESTED FIRST, MERGED 2026-10-05, AND IT HAS TO BE.
-           Main's top-nav arm renders ONE track and drops the rail child
-           entirely; every Atlas arm below it renders THREE and keeps the
-           column. The grid's tracks and its children are counted together, so
-           a three-track template with no rail child puts the content in the
-           FIRST track. Under `nav-placement: top` the Atlas rail therefore
-           does not draw at all — which is what "top nav" means, and the same
-           answer `atlasNoRail` already gives on Eric's own no-rail pages. */
         /* ⚠ CORRECTED 2026-10-05, AND THE EARLIER NOTE HERE WAS WRONG. The
            merge tested `topNav` FIRST on the grounds that "top nav means no
            rail". That is true for the shipped versions and FALSE for Eric's:

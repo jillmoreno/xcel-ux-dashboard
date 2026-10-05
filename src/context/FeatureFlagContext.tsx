@@ -941,15 +941,26 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        control to compare it against. Still a BRANCH default:
        `promote-to-prototype` decides what, if anything, becomes the baseline. */
     defaultVariant: 'top',
+    /* ⚠ EVERY ARM STATES `ready` ON ITSELF, 2026-10-05, AND IT HAS TO.
+       `variantsForDemo` drops any arm whose maturity resolves to `wip`, and an
+       absent one INHERITS THE FLAG'S — which is `wip` here, deliberately, so
+       the demo bar's Navigation control rendered with an empty picker: the
+       pill opened, the radiogroup was there, and it had nothing in it. Nothing
+       failed. No test opens the dropdown, so the suite was green and the
+       defect was visible only by clicking the control.
+
+       The flag staying `wip` while its arms are `ready` is the honest reading:
+       the EXPLORATION is undecided (that is the flag), but each treatment is
+       finished enough for a stakeholder to look at (that is the arms). */
     variants: [
-      { value: 'left', label: 'Left nav' },
-      { value: 'top', label: 'Top nav' },
+      { value: 'left', label: 'Left nav', maturity: 'ready' },
+      { value: 'top', label: 'Top nav', maturity: 'ready' },
       /* ⚠ ERIC'S THIRD ARM, FOLDED IN 2026-10-05. It was `?nav=expanding-top-nav`
          on a parallel axis of its own; see `navPlacement.ts` for why there is
          one axis now. The label names Atlas because that is where it LOOKS
          different — off the Atlas versions it resolves like `top` rather than
          doing nothing, so it is never a dead option. */
-      { value: 'expanding-top', label: 'Expanding top nav (Atlas)' },
+      { value: 'expanding-top', label: 'Expanding top nav (Atlas)', maturity: 'ready' },
     ],
     page: 'dashboard-rebrand',
   },

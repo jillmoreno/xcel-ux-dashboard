@@ -1045,12 +1045,18 @@ export function DemoControlsBar({
             which is a different question (how far through the COURSE you are,
             not how ready for the exam). A learner can be 90% through and not
             ready, which is the whole reason the section exists. */}
-        /* ⚠ THREE CONDITIONS, AND THE LAST TWO ARE ERIC'S — restored 2026-10-05
-           after the merge dropped them. An unreachable axis is HIDDEN, not
-           disabled: the disabled-pill props below are left in place but
-           unreached today, so a version that gains the section shows the
-           control again with no edit here. `DemoControlsBar.test.tsx` pins both
-           halves — the rail rule and the Atlas version. */
+        {/* ⚠ THREE CONDITIONS, AND THE LAST TWO ARE ERIC'S — restored 2026-10-05
+            after the merge dropped them. An unreachable axis is HIDDEN, not
+            disabled: the disabled-pill props below are left in place but
+            unreached today, so a version that gains the section shows the
+            control again with no edit here. `DemoControlsBar.test.tsx` pins both
+            halves — the rail rule and the Atlas version.
+
+            ⚠ THE BRACES ARE LOAD-BEARING. Written bare, this rendered as TEXT
+            across the demo bar on both live sites — a JS comment in JSX CHILDREN
+            position is a text node, not a comment. Nothing failed: it type-checks,
+            and every test here queries by role, so a paragraph of prose in the bar
+            was invisible to all of them. Caught by looking at the page. */}
         {/* NAVIGATION — the one axis every nav treatment resolves through, and
             the reason this control came back to the bar on 2026-10-05 ("how do
             we show all of the top navs, merge them all in the demo controls").

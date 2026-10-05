@@ -260,6 +260,53 @@ describe('DemoControlsBar — persona dropdown', () => {
   })
 })
 
+/**
+ * ⚠ EVERY VARIANT CONTROL IS OPENED HERE, NOT JUST ASSERTED TO EXIST.
+ *
+ * Written 2026-10-05 from a defect that shipped: the Navigation control's pill
+ * rendered, its radiogroup rendered, and the radiogroup was EMPTY —
+ * `variantsForDemo` drops any arm whose maturity resolves to `wip`, and an
+ * absent arm inherits the flag's, which was `wip`. Every test in this file
+ * queried the PILL, so the suite was green and the only way to see it was to
+ * click the control.
+ *
+ * So this walks the bar's variant pickers and asserts each one has options in
+ * it. The failure it catches is generic — any flag-backed control whose arms
+ * are filtered to nothing — which is why it is written against a list rather
+ * than one control.
+ */
+describe('DemoControlsBar — a picker with nothing in it', () => {
+  const PICKERS = [
+    { pill: /Navigation/, panel: 'Navigation layout', least: 3 },
+    { pill: /Progress/, panel: 'Progress / compliance state', least: 2 },
+  ]
+
+  for (const { pill, panel, least } of PICKERS) {
+    it(`${panel} offers its arms rather than an empty radiogroup`, () => {
+      renderBar()
+      fireEvent.click(screen.getByRole('button', { name: pill }))
+      const group = screen.getByRole('radiogroup', { name: panel })
+      /* `within(...).getAllByRole` throws on none, which is the assertion —
+         the count is the readable part. */
+      expect(within(group).getAllByRole('radio').length).toBeGreaterThanOrEqual(least)
+    })
+  }
+
+  it('lists all three navigation arms, Eric’s included', () => {
+    /* ⚠ THE ONE PLACE THE UNIFICATION IS VISIBLE TO A STAKEHOLDER. Three arms
+       spanning two implementations; if `expanding-top` ever stops appearing
+       here, the merge of the two axes has come apart. */
+    renderBar()
+    fireEvent.click(screen.getByRole('button', { name: /Navigation/ }))
+    const group = screen.getByRole('radiogroup', { name: 'Navigation layout' })
+    expect(within(group).getAllByRole('radio').map((r) => r.textContent)).toEqual([
+      'Left nav',
+      'Top nav',
+      'Expanding top nav (Atlas)',
+    ])
+  })
+})
+
 describe('DemoControlsBar — an axis with nowhere to land', () => {
   /* Both pacing versions drop the Readiness rail row, and Testing is the brand
      default — so the bar's DEFAULT state used to be a pill reading
