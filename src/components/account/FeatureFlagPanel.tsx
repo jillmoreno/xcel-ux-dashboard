@@ -1,11 +1,10 @@
 import { useEffect, useId, useRef, useState, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
 import { useLocation } from 'react-router-dom'
-import { ArrowLeft, ChevronDown, ChevronRight, Flag, HelpCircle, Sliders, X } from '@/icons'
+import { ArrowLeft, ChevronDown, ChevronRight, Flag, HelpCircle, X } from '@/icons'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { Select } from '@/components/ui/Select'
 import { acquireBodyScrollLock } from '@/utils/bodyScrollLock'
-import { useDashboardVersionsPanel } from '@/components/dashboard/DashboardVersionsPanelContext'
 import {
   FEATURE_FLAG_PAGES,
   useFeatureFlags,
@@ -368,7 +367,6 @@ export function flagScopeForPath(pathname: string): string[] | null {
  */
 export function FeatureFlagPanel() {
   const { open, closePanel } = useFeatureFlagPanel()
-  const { openPanel: openVersionsPanel } = useDashboardVersionsPanel()
   const {
     flags,
     definitions,
@@ -493,7 +491,6 @@ export function FeatureFlagPanel() {
 
   // Per-feature scope (route-based). `null` ⇒ show every flag; otherwise the
   // catalog is filtered to the in-scope keys.
-  const onRebrand = location.pathname.startsWith('/dashboard-rebrand')
   const scope = flagScopeForPath(location.pathname)
   const scopeDefinitions = scope
     ? definitions.filter((d) => scope.includes(d.key))
@@ -668,36 +665,27 @@ export function FeatureFlagPanel() {
               `--color-neutral-100` on a `--color-border-subtle` hairline,
               `--font-body` 12/17 in `--color-text-secondary`, led by a 6px
               `--color-text-tertiary` dot with `aria-hidden`. */}
-          {/* Dashboard Version is a rebrand-only setting, surfaced here as the
-              first option so the robot menu opens a single sheet holding every
-              setting. The row drills into the DashboardVersionsPanel (rendered
-              in Header with the version props); closing this sheet first avoids
-              two overlapping left slide-overs. */}
-          {/* ⚠ `ownedVersions.length > 0`, NOT just `onRebrand` — 2026-10-05.
-              The versions are per designer now, so a tab whose owner has none
-              must not offer a row that drills into an empty picker. Eric has
-              none on `main` today, which is exactly the case this guards. */}
-          {onRebrand && ownedVersions.length > 0 && (
-            <button
-              type="button"
-              onClick={() => {
-                closePanel()
-                openVersionsPanel()
-              }}
-              style={dashboardVersionRowStyle}
-            >
-              <span aria-hidden style={dashboardVersionIconStyle}>
-                <Sliders size={16} aria-hidden />
-              </span>
-              <span style={dashboardVersionTextStyle}>
-                <span style={dashboardVersionLabelStyle}>Dashboard Version</span>
-                <span style={dashboardVersionCaptionStyle}>
-                  Pick the dashboard layout
-                </span>
-              </span>
-              <ChevronRight size={18} aria-hidden style={{ flexShrink: 0 }} />
-            </button>
-          )}
+          {/* ⚠ THE DASHBOARD VERSION ROW WAS HERE AND WENT ON 2026-10-05, the
+              direct choice that the version gets ONE route rather than two.
+
+              It now has its own control on the DEMO CONTROLS BAR — an icon plus
+              the version you are on, opening the same `DashboardVersionsPanel`
+              this row opened. That move was about REACH: `PrototypeChrome` does
+              not render the robot on the public site, so a stakeholder had no
+              way to reach the picker at all, and adding the bar control while
+              keeping this row would have put the same destination in two places
+              — the duplication just removed from the bar, in the other
+              direction.
+
+              ⚠ WHAT IT COSTS, stated rather than discovered: this panel is
+              where a designer configures a version's FLAGS, and the version
+              switch is no longer on that screen. Changing which dashboard those
+              flags apply to now means leaving the sheet. If that turns out to
+              be the wrong trade, restoring is this block, the `Sliders` icon,
+              `useDashboardVersionsPanel`'s `openPanel`, the `onRebrand` check
+              and five style consts — all of which had to go with it, because
+              `noUnusedLocals` turns an unused import into a tsc error and
+              therefore a failed deploy. Git has them; this note is the pointer. */}
           {/* The "Membership Version" drill-in row was removed 2026-09-16 with the
               `membership-page-version` flag it wrote — see the note in `Header`.
               XCEL cannot reach the standalone Membership page it configured. */}
@@ -1534,52 +1522,6 @@ const bodyStyle: CSSProperties = {
   flexDirection: 'column',
   gap: 16,
   flex: 1,
-}
-
-const dashboardVersionRowStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 12,
-  width: '100%',
-  padding: '12px 14px',
-  background: 'var(--color-surface-muted)',
-  border: '1px solid var(--color-border-subtle)',
-  borderRadius: 'var(--radius-md)',
-  color: 'var(--color-text-primary)',
-  cursor: 'pointer',
-  textAlign: 'left',
-}
-
-const dashboardVersionIconStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: 32,
-  height: 32,
-  flexShrink: 0,
-  borderRadius: 'var(--radius-sm)',
-  background: 'var(--color-primary-100)',
-  color: 'var(--color-primary-600)',
-}
-
-const dashboardVersionTextStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 2,
-  flex: 1,
-  minWidth: 0,
-}
-
-const dashboardVersionLabelStyle: CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontSize: 14,
-  fontWeight: 700,
-}
-
-const dashboardVersionCaptionStyle: CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontSize: 12,
-  color: 'var(--color-text-secondary)',
 }
 
 const introCopyStyle: CSSProperties = {

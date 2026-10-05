@@ -72,6 +72,17 @@ export const DEMO_CONTROLS: readonly DemoControlRow[] = [
   /* `navigation` WAS HERE — the `dashboard-navigation` A/B's control, archived
      2026-10-01 with the flag it inherited from. See `archivedItems.ts`. */
   { id: 'education', flag: 'dashboard-education-type' },
+  /* DASHBOARD VERSION — 2026-10-05. ⚠ READY, and it is the first control here
+     that is `ready` without being a scenario seed. The reason is reach, not
+     readiness-in-the-usual-sense: `PrototypeChrome` does not render the robot
+     on the public site, so until this landed a stakeholder had NO route to the
+     version picker at all. Marking it `wip` would add a control for designers
+     who already had one and leave the gap exactly where it was.
+
+     ⚠ THE PICKER IS GATED SEPARATELY, per version. `dashboardVersionsForAudience`
+     lists `ready` versions only on the demo site, so this control being ready
+     does not mean every version it offers is. */
+  { id: 'version', maturity: 'ready' },
   /* Reset + the kebab. ⚠ READY, DELIBERATELY: Reset is what gets a stakeholder
      out of a state they wandered into. Hiding it would leave the only recovery
      a page reload they have no reason to think of. */

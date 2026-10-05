@@ -158,10 +158,15 @@ describe('the tab strip', () => {
     expect(tab('Eric').textContent).toBe('Eric')
   })
 
-  it('gives Jill the Dashboard Version row', () => {
+  it('no longer carries a Dashboard Version row at all', () => {
+    /* ⚠ THIS TEST READ THE OTHER WAY ROUND FOR A DAY. The row was Jill's and
+       this asserted she had it; on 2026-10-05 the version got its OWN control
+       on the demo controls bar, and keeping the row would have put one
+       destination in two places. Asserted as an ABSENCE rather than deleted,
+       so the removal is stated somewhere rather than just gone. */
     renderPanel()
     openPanel()
-    expect(screen.getByText('Dashboard Version')).toBeTruthy()
+    expect(screen.queryByText('Dashboard Version')).toBeNull()
   })
 })
 
@@ -179,10 +184,14 @@ describe('Eric’s empty tab', () => {
     expect(screen.queryByText('No flags apply to this feature')).toBeNull()
   })
 
-  it('drops the Dashboard Version row rather than opening an empty picker', () => {
+  it('shows no version row — nobody does now', () => {
+    /* It used to be the thing that proved an empty owner's tab drops its
+       version picker. The row left the panel entirely on 2026-10-05, so what
+       is left to assert is that Eric's tab is not quietly growing one. The
+       per-owner version filter it tested now lives on the BAR's picker; see
+       `dashboardVersionsForAudience`. */
     renderPanel()
     openPanel()
-    expect(screen.getByText('Dashboard Version')).toBeTruthy()
     act(() => fireEvent.click(tab('Eric')))
     expect(screen.queryByText('Dashboard Version')).toBeNull()
   })

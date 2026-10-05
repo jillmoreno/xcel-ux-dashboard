@@ -14,6 +14,7 @@ import { NotificationsMenu } from '@/components/notifications/NotificationsMenu'
 import { LearningPathsPanel } from '@/components/learning/LearningPathsPanel'
 import { useLearningPathsPanel } from '@/components/learning/LearningPathsPanelContext'
 import { DashboardVersionsPanel } from '@/components/dashboard/DashboardVersionsPanel'
+import { isPublicGateway } from '@/data/gatewayMode'
 import { useDashboardVersionsPanel } from '@/components/dashboard/DashboardVersionsPanelContext'
 import { useFeatureFlagPanel } from '@/components/account/FeatureFlagPanelContext'
 import { MembershipVersionsPanel } from '@/components/membership/MembershipVersionsPanel'
@@ -23,7 +24,7 @@ import { useJumpBackInPanel } from '@/components/dashboard/JumpBackInPanelContex
 import {
   readDefaultDashboardVersion,
   writeDefaultDashboardVersion,
-  DISCOVERABILITY_DASHBOARD_VERSIONS,
+  dashboardVersionsForAudience,
   defaultDiscoverabilityVersionFor,
   type DashboardVersionId,
 } from '@/data/dashboardVersions'
@@ -468,7 +469,21 @@ export function Header() {
         <DashboardVersionsPanel
           open={versionsOpen}
           onClose={closeVersionsPanel}
-          versions={DISCOVERABILITY_DASHBOARD_VERSIONS}
+          versions={
+            /* ⚠ FILTERED BY AUDIENCE as of 2026-10-05, when the picker became
+               reachable from the demo bar and therefore by stakeholders. The
+               demo site lists `ready` versions only; the design site lists all.
+               `?version=` still resolves any id on either site — unlisted, not
+               unreachable.
+
+               ⚠ A PLAIN COMMENT INSIDE THE BRACES. A JSX comment in an
+               ATTRIBUTE position is a syntax error, which is how this landed
+               broken the first time — and writing the JSX comment delimiters
+               out here to explain that closed this comment early, which is how
+               it landed broken the second. Neither failure is subtle once it
+               happens; both cost a build. */
+            dashboardVersionsForAudience(isPublicGateway())
+          }
           activeVersionId={
             (new URLSearchParams(search).get('version') as DashboardVersionId | null) ??
             (discoverabilityDefault as DashboardVersionId)

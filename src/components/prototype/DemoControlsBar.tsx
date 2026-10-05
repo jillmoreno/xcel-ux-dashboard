@@ -1,7 +1,20 @@
 import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useLocation, useSearchParams } from 'react-router-dom'
-import { defaultDiscoverabilityVersionFor, isQualifyingEducationVersion } from '@/data/dashboardVersions'
-import { UserSlash, Share2, BrowserWindow, ArrowUpRightFromSquare, Check, ChevronDown } from '@/icons'
+import {
+  defaultDiscoverabilityVersionFor,
+  isQualifyingEducationVersion,
+  dashboardVersionLabel,
+} from '@/data/dashboardVersions'
+import { useDashboardVersionsPanel } from '@/components/dashboard/DashboardVersionsPanelContext'
+import {
+  UserSlash,
+  Share2,
+  BrowserWindow,
+  ArrowUpRightFromSquare,
+  Check,
+  ChevronDown,
+  Sliders,
+} from '@/icons'
 import { ActionMenu } from '@/components/ui/ActionMenu'
 import { Toast } from '@/components/ui/Toast'
 import { DemoBar, DemoDropdown } from './DemoBar'
@@ -15,6 +28,7 @@ import {
   DEMO_WHITE,
   DEMO_HOVER_FILL,
   DEMO_WIP_DOT,
+  DEMO_TRIGGER_EYEBROW,
   SR_ONLY,
 } from './demoBarUtil'
 import {
@@ -125,12 +139,25 @@ import {
    comparison stops being made". The ask overrides it, and if the Testing 3
    timeline comparison quietly stops happening, this is the change that did
    it. */
-type ControlKey = 'persona' | 'progress' | 'readiness' | 'fidelity' | 'education'
+type ControlKey =
+  | 'persona'
+  | 'progress'
+  | 'readiness'
+  | 'fidelity'
+  | 'education'
+  | 'version'
 
 const SHOW_CONTROL: Record<ControlKey, boolean> = {
   persona: false,
   progress: true,
   readiness: false,
+  /* DASHBOARD VERSION — 2026-10-05, the direct ask. It is the one control here
+     that chooses WHICH DASHBOARD renders rather than who the learner is, and it
+     is on the bar for a reason the rest of that line does not cover: the robot
+     icon is the only other route to it and `PrototypeChrome` does not render
+     the robot on the PUBLIC site at all, so stakeholders had no way to reach
+     the picker. A control nobody in the audience can find is not a control. */
+  version: true,
   /* The one control here that is neither a scenario nor a design variant — it
      changes how the page is DRAWN for a working session. It sits beside Reset
      now rather than in the dropdown row; both act on the view. */
@@ -249,6 +276,12 @@ export function DemoControlsBar({
   const { pathname } = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const { brand, membership, tier, setTier, setBrand } = useAccount()
+  const { openPanel: openVersionsPanel } = useDashboardVersionsPanel()
+  /* The version the picker would open on — the URL's if it has one, else the
+     brand's committed default. The SAME resolution `PlatformShell` uses, so the
+     pill cannot name a different version from the one on screen. */
+  const activeVersionId =
+    searchParams.get('version') ?? defaultDiscoverabilityVersionFor(brand)
   const { flags, definitions, setEnabled, setVariant, setSecondaryVariant, clearUrlOverrides } =
     useFeatureFlags()
   // Read current count flags so the bar can reflect reality on open (without
@@ -723,6 +756,46 @@ export function DemoControlsBar({
             )
           })}
         </DemoDropdown>
+        )}
+
+        {/* DASHBOARD VERSION — its own control, 2026-10-05, the direct ask
+            ("I want the Dashboard version to have its OWN icon that lives in
+            the Demo controls bar and is accessible from demo and design hubs").
+
+            ⚠ READY, AND THAT IS THE POINT. Every other `wip` control here is
+            design-site-only; this one is for BOTH audiences, because the robot
+            — the only other way in — is not rendered on the public site at all
+            (`PrototypeChrome`). Stakeholders could not reach the version picker
+            by any route before this.
+
+            ⚠ IT STATES THE VERSION YOU ARE ON, not just an icon. The bar has no
+            legend and every other control shows its current value; an icon
+            alone would be something a stakeholder has to press to understand,
+            and they are the audience it was added for.
+
+            ⚠ IT OPENS THE EXISTING SHEET rather than listing versions inline.
+            Each version carries a description and a date, and those are most of
+            what tells a reviewer what they are choosing between — three labels
+            in a dropdown would drop them.
+
+            ⚠ A PLAIN BUTTON, NOT `DemoDropdown`. That component owns an open
+            PANEL; this opens a slide-over somebody else renders, so reusing it
+            would mean a dropdown that never drops. The pill styling is matched
+            by hand for that reason. */}
+        {showControl.version && show('version') && (
+          <button
+            type="button"
+            className="cre-demo-controls-btn"
+            style={versionTriggerStyle}
+            onClick={() => {
+              openVersionsPanel()
+              close()
+            }}
+          >
+            <Sliders size={14} aria-hidden />
+            <span style={DEMO_TRIGGER_EYEBROW}>Version:</span>
+            {dashboardVersionLabel(activeVersionId)}
+          </button>
         )}
 
         {/* Persona — the learning/dashboard SCENARIO, layered on top of the
@@ -1380,6 +1453,26 @@ const TIER_CHIP: CSSProperties = {
   alignItems: 'center',
   gap: 4,
   flexShrink: 0,
+}
+
+/* The Version pill. Matched BY HAND to `DemoDropdown`'s trigger rather than
+   shared with it: that component's styling is bound up with its open/closed
+   panel state, and this control has no panel of its own to open. If the two
+   ever drift visibly, extracting the trigger is the fix — not giving this a
+   dropdown it does not use. */
+const versionTriggerStyle: CSSProperties = {
+  border: '1px solid rgba(255,255,255,0.24)',
+  background: 'rgba(255,255,255,0.06)',
+  color: 'var(--color-text-inverse)',
+  padding: '7px 12px',
+  borderRadius: 999,
+  fontSize: 13,
+  fontWeight: 600,
+  cursor: 'pointer',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 7,
+  transition: 'background .15s',
 }
 
 const ACTIONS: CSSProperties = {

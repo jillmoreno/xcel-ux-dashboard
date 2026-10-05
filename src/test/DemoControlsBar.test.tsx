@@ -5,6 +5,7 @@ import { DemoControlsBar } from '@/components/prototype/DemoControlsBar'
 import { personasForBrand } from '@/components/prototype/demoControlsUtil'
 import { DASHBOARD_PROGRESS_PICKER } from '@/data/dashboardProgressFixtures'
 import { AccountProvider } from '@/context/AccountContext'
+import { DashboardVersionsPanelProvider } from '@/components/dashboard/DashboardVersionsPanelContext'
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
 
 // The bar is Elite-scoped (the rebrand's seeded brand) — seed the account so
@@ -26,6 +27,11 @@ function renderBar(path = '/dashboard-rebrand') {
     <MemoryRouter initialEntries={[path]}>
       <AccountProvider>
         <FeatureFlagProvider>
+          {/* ⚠ REQUIRED SINCE 2026-10-05. The bar's Dashboard Version control
+              calls `useDashboardVersionsPanel`, which throws without this —
+              `AppLayout` provides it in the app, so the harness has to as
+              well or it is testing a shell the product never renders. */}
+          <DashboardVersionsPanelProvider>
           {/* ⚠ THE TRIMMED CONTROLS, OPTED BACK IN. This branch's bar does not
               draw Persona / Readiness / Education (see `SHOW_CONTROL` in
               DemoControlsBar), but they are hidden, not retired — so the suite
@@ -41,6 +47,7 @@ function renderBar(path = '/dashboard-rebrand') {
             controls={{ persona: true, readiness: true, education: true }}
           />
           <UrlProbe />
+          </DashboardVersionsPanelProvider>
         </FeatureFlagProvider>
       </AccountProvider>
     </MemoryRouter>,
@@ -314,5 +321,74 @@ describe('DemoControlsBar — a state with no agreed design', () => {
       )
       if (applies) expect(persona.unavailable).toBeTruthy()
     }
+  })
+})
+
+/**
+ * THE DASHBOARD VERSION CONTROL — 2026-10-05, the direct ask: "I want the
+ * Dashboard version to have its OWN icon that lives in the Demo controls bar
+ * and is accessible from demo and design hubs."
+ *
+ * ⚠ THE REACH IS THE POINT, not the pill. `PrototypeChrome` renders the robot
+ * only when `!isPublicGateway()`, and the robot was the only route to the
+ * version picker — so a stakeholder had no way to change versions at all. The
+ * `ready` maturity below is what closes that, and it is the one assertion here
+ * that would fail silently: a `wip` row would simply drop the control on the
+ * demo site and leave the gap exactly where it was.
+ */
+describe('DemoControlsBar — the Dashboard Version control', () => {
+  it('is READY, so the demo site offers it', async () => {
+    const { controlMaturity } = await import('@/data/demoControlMaturity')
+    expect(controlMaturity('version')).toBe('ready')
+  })
+
+  it('names the version you are on rather than being a bare icon', () => {
+    /* The bar has no legend and every other control shows its current value. */
+    renderBar('/dashboard-rebrand?version=discoverability-testing')
+    expect(screen.getByRole('button', { name: /Version:\s*Testing/i })).toBeTruthy()
+  })
+
+  it('falls back to the brand default when the url names no version', () => {
+    /* ⚠ THE SAME RESOLUTION `PlatformShell` USES. Reading only `?version=`
+       would leave the pill blank on the landing screen — the common case — or
+       worse, name a version other than the one rendering. */
+    renderBar('/dashboard-rebrand')
+    expect(screen.getByRole('button', { name: /Version:\s*Testing 3/i })).toBeTruthy()
+  })
+})
+
+describe('which versions each audience is offered', () => {
+  /* ⚠ THE PICKER IS GATED SEPARATELY FROM THE CONTROL. The control being
+     `ready` does not mean every version it lists is — this is what keeps a
+     half-built dashboard off the demo site once someone adds one. */
+  it('gives the design site every version', async () => {
+    const { dashboardVersionsForAudience, DISCOVERABILITY_DASHBOARD_VERSIONS } = await import(
+      '@/data/dashboardVersions'
+    )
+    expect(dashboardVersionsForAudience(false)).toHaveLength(
+      DISCOVERABILITY_DASHBOARD_VERSIONS.length,
+    )
+  })
+
+  it('gives the demo site the READY ones only', async () => {
+    const { dashboardVersionsForAudience } = await import('@/data/dashboardVersions')
+    const demo = dashboardVersionsForAudience(true)
+    expect(demo.every((v) => v.maturity === 'ready')).toBe(true)
+    /* ⚠ ALL THREE ARE READY TODAY, so this filters nothing yet and the test
+       would pass against a broken filter that returned everything. The
+       assertion below is what makes it real — it fails the moment the two
+       lists stop agreeing for the right reason. */
+    const { DISCOVERABILITY_DASHBOARD_VERSIONS } = await import('@/data/dashboardVersions')
+    expect(demo).toHaveLength(
+      DISCOVERABILITY_DASHBOARD_VERSIONS.filter((v) => v.maturity === 'ready').length,
+    )
+  })
+
+  it('drops a version with no maturity, failing CLOSED', async () => {
+    /* The default that matters: a version added tomorrow with no `maturity` is
+       invisible to stakeholders rather than leaking an unfinished dashboard to
+       the people being asked to approve one. */
+    const { dashboardVersionsForAudience } = await import('@/data/dashboardVersions')
+    expect(dashboardVersionsForAudience(true).some((v) => v.maturity === undefined)).toBe(false)
   })
 })
