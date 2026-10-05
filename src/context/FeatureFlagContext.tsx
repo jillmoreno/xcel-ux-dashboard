@@ -1429,6 +1429,49 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-brand-skin',
+    /* ERIC'S BRAND SKIN, ON THE DESIGN BAR — 2026-10-05, converted the same way
+       as `atlas-heading-font` beside it and for the same reason: brand COLOURS
+       are a design decision, and the demo bar is the stakeholders' bar.
+
+       ⚠ A SKIN IS NOT A BRAND, and the distinction is load-bearing. `Brand` in
+       `AccountContext` stays `'xcel'` whichever skin is showing — the courses,
+       personas and fixtures are XCEL's throughout. What a skin changes is what
+       the Atlas Development doc says changes per brand: the LOGO and the BRAND
+       COLOURS. Neutrals, type scale, spacing and layout are platform and stay.
+       See `atlasBrandSkin.ts` for why re-widening `Brand` was refused.
+
+       ⚠ SCOPED BY `versions`, like the fonts: tokens.css only re-points the
+       ramps under the Atlas palette, so on any other version this would render
+       and change nothing.
+
+       ⚠ IT ALSO NEEDS `atlas-xcel-palette` ON, which a flag cannot express as a
+       dependency — `PlatformShell` mirrors `data-atlas-brand` only while the
+       palette is applied. That flag defaults ON, so the control works out of
+       the box; turn the palette off and this one renders but does nothing. The
+       same caveat applies to `atlas-heading-font` below. Worth a real
+       dependency if a third control ever joins them.
+
+       ⚠ `?skin=` STILL WINS WHEN PRESENT, as an alias. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-v1', 'discoverability-atlas-compass-nav'],
+    group: 'Widgets',
+    label: 'Brand',
+    description:
+      'Which Colibri brand the Atlas/Compass pages are dressed as — the LOGO and the BRAND COLOURS only. ⚠ IT IS A SKIN, NOT A BRAND: `Brand` in AccountContext stays XCEL, so the courses, personas and fixtures are XCEL’s whichever skin is showing; neutrals, type scale, spacing and layout are platform and do not move. Global (the default since 2026-10-01) is no brand at all — the Compass Design System v5’s own colours, for an instance that is not any Colibri brand. ⚠ REQUIRES the Atlas palette (`atlas-xcel-palette`, on by default): with it off, tokens.css never re-points the ramps and this control changes nothing.',
+    defaultEnabled: true,
+    defaultVariant: 'global',
+    variants: [
+      { value: 'global', label: 'Global' },
+      { value: 'xcel', label: 'XCEL (Insurance)' },
+      { value: 'cre', label: 'Colibri Real Estate' },
+      { value: 'mckissock', label: 'McKissock Learning' },
+      { value: 'elite', label: 'Elite Learning' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-heading-font',
     /* ERIC'S HEADING FACES, ON THE DESIGN BAR — 2026-10-05, the direct ask
        ("this should be part of the design controls for eric's stuff").

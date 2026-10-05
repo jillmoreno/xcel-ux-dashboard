@@ -120,6 +120,7 @@ const REBRAND_FLAGS = [
      are not alternatives: the bar is the fast route while you are looking at
      the page, the panel is where every flag is findable. */
   'atlas-heading-font',
+  'atlas-brand-skin',
   // Text ramp for the whole rebrand app — Neutral (the brand guide's Charcoal
   // and Gray) ⇄ Tiers (the sign-in prototype's warm ink / muted / faint).
   // Variant-only; light theme only. See the catalog entry.

@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type ReactNode, type CSSProperties } from 'react'
-import { ATLAS_SKIN_PARAM, atlasSkinFor } from './atlasBrandSkin'
+import { ATLAS_SKIN_PARAM, ATLAS_SKINS, atlasSkinFor } from './atlasBrandSkin'
 import { ATLAS_FONT_PARAM, ATLAS_FONTS, atlasFontFor, atlasFontHref } from './atlasFontSets'
 import { useSearchParams } from 'react-router-dom'
 import { useAccount, supportsMembership, type Brand } from '@/context/AccountContext'
@@ -387,11 +387,22 @@ function PlatformShellBody() {
       delete root.dataset.atlasPalette
     }
   }, [atlasPalette])
-  // The Atlas BRAND SKIN (`?skin=`, the Demo Controls' Brand control) — which
-  // Colibri brand's logo and colours the Atlas pages wear. Mirrored onto
-  // <html data-atlas-brand> only while the Atlas palette is on; see
-  // atlasBrandSkin.ts.
-  const atlasSkin = atlasSkinFor(params.get(ATLAS_SKIN_PARAM))
+  /* The Atlas BRAND SKIN — which Colibri brand's logo and colours the Atlas
+     pages wear. Mirrored onto <html data-atlas-brand> only while the Atlas
+     palette is on; see atlasBrandSkin.ts.
+
+     ⚠ THE FLAG IS THE CONTROL NOW (`atlas-brand-skin`, on the DESIGN bar,
+     2026-10-05) — it was the Demo Controls' Brand dropdown writing `?skin=`.
+     Same conversion as the heading font below, and `?skin=` stays as an ALIAS
+     so every Atlas link shared before today keeps working. `atlasSkinFor`
+     validates, so an unknown spelling falls through to the flag. */
+  const atlasSkinParam = params.get(ATLAS_SKIN_PARAM)
+  const atlasSkinFlag = useFeatureFlag('atlas-brand-skin')
+  const atlasSkin = atlasSkinFor(
+    atlasSkinParam && ATLAS_SKINS.some((s) => s.skin === atlasSkinParam)
+      ? atlasSkinParam
+      : (atlasSkinFlag.variant ?? null),
+  )
   useEffect(() => {
     if (!atlasPalette) return
     const root = document.documentElement
