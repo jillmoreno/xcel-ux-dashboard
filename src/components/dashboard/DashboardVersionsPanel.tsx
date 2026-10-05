@@ -11,6 +11,9 @@ export type VersionPickerItem = {
   createdAt: string
   modifiedAt: string
   description: string
+  /** `'ready'` when stakeholders can pick this version on the demo site.
+   *  Anything else (including absent) is design-site-only — see the badge. */
+  maturity?: 'wip' | 'ready'
 }
 
 type Props = {
@@ -329,6 +332,23 @@ function VersionRow({
       >
         {version.label}
         {isDefault && <span style={defaultBadgeStyle}>Default</span>}
+        {/* ⚠ ONLY THE DESIGN SITE EVER SEES THIS. The demo site's list is
+            already filtered to `ready` (`dashboardVersionsForAudience`), so a
+            row carrying this badge cannot reach a stakeholder — which is the
+            point: it tells a DESIGNER that the version they are looking at is
+            one stakeholders cannot pick.
+
+            ⚠ WORDS, NOT A COLOUR. The demo bar's `wip` mark is a dot plus
+            visually-hidden text because the bar has no legend and a dot means
+            nothing on its own; this list has room for the words, so it says
+            them. Same rule, fuller form.
+
+            ⚠ ABSENT COUNTS AS WIP, matching the field's own default — a version
+            added without a `maturity` is design-site-only, and this badge is
+            what makes that visible rather than a silent omission. */}
+        {version.maturity !== 'ready' && (
+          <span style={wipBadgeStyle}>Design site only</span>
+        )}
       </div>
       <div
         style={{
@@ -368,6 +388,23 @@ function VersionRow({
 }
 
 // Small "Default" pill next to the label of the default version.
+/* Quieter than `defaultBadgeStyle` on purpose: Default is a statement about
+   the product, this is a statement about readiness, and a reviewer scanning the
+   list should find the Default badge first. */
+const wipBadgeStyle = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  padding: '1px 8px',
+  borderRadius: 'var(--radius-pill)',
+  background: 'var(--color-neutral-100)',
+  color: 'var(--color-text-tertiary)',
+  fontFamily: 'var(--font-body)',
+  fontSize: 11,
+  fontWeight: 700,
+  letterSpacing: '0.04em',
+  textTransform: 'uppercase',
+} as const
+
 const defaultBadgeStyle = {
   display: 'inline-flex',
   alignItems: 'center',

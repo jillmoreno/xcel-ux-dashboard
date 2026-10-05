@@ -1,6 +1,6 @@
 ---
 name: promote-to-prototype
-description: At merge time, decide which of a branch's changes become the PROTOTYPES baseline — the live XCEL product build stakeholders see. Run it ON THE PR, BEFORE MERGING. Diffs the branch against main, surfaces every flag whose committed default the branch changed (including flags gating new components) AND any change to the default DASHBOARD VERSION, asks Jillienne per candidate whether — and to which variant — it becomes the baseline, applies the FEATURE_FLAGS / dashboardVersions edits plus the docs note, commits, and reminds you to retire the branch's Refinement row. Setting the default dashboard version is OWNER-ONLY. Never moves tiles. Formerly "promote-to-demo" — that name still works as an alias. Trigger on "promote to prototype", "promote to demo", "merge this branch", "which changes go in the prototype", "ready to merge", "include in the prototype", "/promote-to-prototype", "/promote-to-demo".
+description: At merge time, decide which of a branch's changes become the PROTOTYPES baseline — the live XCEL product build stakeholders see. Run it ON THE PR, BEFORE MERGING. Diffs the branch against main, surfaces every flag whose committed default the branch changed (including flags gating new components) AND any change to the default DASHBOARD VERSION, asks per candidate whether — and to which variant — it becomes the baseline, asks which `wip` versions stakeholders should be able to pick, applies the FEATURE_FLAGS / dashboardVersions edits plus the docs note, commits, and reminds you to retire the branch's Refinement row. Making a version PICKABLE by stakeholders (`maturity`) is open to anyone; setting the DEFAULT dashboard version is OWNER-ONLY. Never moves tiles. Formerly "promote-to-demo" — that name still works as an alias. Trigger on "promote to prototype", "promote to demo", "merge this branch", "which changes go in the prototype", "ready to merge", "include in the prototype", "/promote-to-prototype", "/promote-to-demo".
 version: 1.1.0
 author: UX Design — Colibri
 last_updated: 2026-10-05
@@ -57,16 +57,27 @@ the first place anyone looks for "what does Prototypes render" does not contain
 the answer. Every flag below it is read INSIDE whichever version is rendering —
 several have no effect at all under the others.
 
-**Two different acts get called "promoting a version". Separate them before
-asking anything:**
+**THREE different acts get called "promoting a version", and only the last two
+are this skill's. Separate them before asking anything:**
 
-- **Making a version REACHABLE** — a new entry in
-  `DISCOVERABILITY_DASHBOARD_VERSIONS`, usually carrying `owner` so it appears
-  in that designer's tab of the Feature Flag panel. This is **not a promotion**.
-  It changes nothing about Prototypes and rides in on the merge like any other
-  code. Do not ask about it.
-- **Making a version THE DEFAULT** — `defaultDiscoverabilityVersionFor` returns
-  it. That IS the baseline, and it is this skill's business.
+| Act | What changes | This skill? |
+|---|---|---|
+| **Reachable** | a new entry in `DISCOVERABILITY_DASHBOARD_VERSIONS`, carrying `owner` | **No** — rides in on the merge. Do not ask. |
+| **Pickable by stakeholders** | `maturity: 'ready'` on that entry | **Yes** — the usual case |
+| **The default** | `defaultDiscoverabilityVersionFor` returns it | **Yes** — owner only |
+
+- **Reachable** is just code merging. The version appears in the design site's
+  picker immediately (that list is unfiltered) and in its owner's tab. Nothing
+  about Prototypes moves. Do not raise it.
+- **Pickable** is `maturity`, added 2026-10-05 with the version control on the
+  demo bar. The demo site lists `ready` versions only
+  (`dashboardVersionsForAudience`); absent means `wip`, so it fails CLOSED and a
+  version nobody marked stays design-site-only. The design site badges those
+  rows "Design site only" so a designer can see which is which. **This is the
+  question most of Eric's work needs and the only version question anyone but
+  Jillienne may be asked.**
+- **The default** is `defaultDiscoverabilityVersionFor`. That IS the baseline,
+  and it is a SWAP — see below.
 
 ⚠ **ONLY ONE VERSION CAN BE THE DEFAULT, so promoting one DISPLACES another.**
 Say that out loud at the point of asking, naming the version being displaced.
@@ -77,9 +88,16 @@ Jill's" is how that gets decided by accident.
 ### ⚠ Owner action — the default version is Jillienne's alone
 
 `git config user.email` must be Jillienne's to change
-`defaultDiscoverabilityVersionFor`. If it is not, **stop at that candidate and
-say so**: the rest of the promotion (flag defaults) can proceed, the version
-line cannot. Note it in the hand-off so she can make that one call herself.
+`defaultDiscoverabilityVersionFor`. If it is not, **do not ask the question at
+all** — not "shall I?", not "she will need to": raising a decision somebody
+cannot make reads as an invitation. Promote what they can (flag defaults, and
+the `maturity` question above, which is open to anyone), and name the version
+line in the hand-off as hers.
+
+⚠ **`maturity` IS NOT OWNER-GATED and must not drift into being so.** Making
+Eric's version pickable by stakeholders is a readiness statement about his own
+work; replacing what the product IS is not. Conflating them would leave every
+designer waiting on Jillienne to show anyone anything.
 
 This is a skill-level boundary, not a hook: `dashboardVersions.ts` is
 deliberately NOT in CLAUDE.md's protected table, because adding a version — the
@@ -128,10 +146,16 @@ step surfaced nothing — the change was spotted by reading the file by hand. A
 diff that touches only the flag catalog will silently promote (or silently
 decline) a whole dashboard.
 
-In the `dashboardVersions.ts` diff, look for exactly one thing:
-**`defaultDiscoverabilityVersionFor` returning a different id.** New entries in
-`DISCOVERABILITY_DASHBOARD_VERSIONS` are NOT candidates — see the two acts
-above.
+In the `dashboardVersions.ts` diff, look for TWO things:
+
+1. **`defaultDiscoverabilityVersionFor` returning a different id** — the swap.
+2. **A version in the catalog whose `maturity` is not `ready`** — a candidate to
+   make pickable. Check the whole list, not just the diff: a version added on an
+   earlier branch and never marked is still sitting there design-site-only, and
+   it will not show up in THIS diff at all.
+
+A new ENTRY in `DISCOVERABILITY_DASHBOARD_VERSIONS` is not itself a candidate —
+see the three acts above. It becomes one only through its `maturity`.
 
 Read the `FeatureFlagContext.tsx` diff closely — that is where the rest of the
 candidates are decided. Also scan `--stat` for **new components** and grep each for the flag
@@ -154,6 +178,12 @@ under any other version. That last part is what makes the list readable — a
 reviewer deciding four Testing 3 flags needs to know they stand or fall with
 the version above them.
 
+**Each `wip` version is its own candidate too**, written as what it actually
+asks: *should stakeholders be able to pick this?* Name who owns it and what it
+is, and say plainly that the default does not move — the most common answer is
+"yes, pickable, and Testing 3 is still the baseline", and an ask that does not
+make that obvious invites a no out of caution.
+
 ### 3. Ask which to include (never assume)
 
 Present the candidates with **AskUserQuestion**, `multiSelect: true`, one
@@ -161,11 +191,21 @@ option per flag, each label naming the flag and the baseline it would set.
 Selecting nothing is a valid answer (everything lands sandbox-only). For a flag
 with variants, confirm WHICH variant unless the branch makes it obvious.
 
-**The version gets its OWN question, not a row in the multiSelect**, because it
-is not the same kind of choice: it displaces something, the flags do not. Phrase
-it as the swap it is — *"Prototypes renders X today; make it Y?"* — and if the
-caller is not Jillienne, do not ask it at all: say the version line is hers,
-promote the flags, and hand the one decision back.
+**The DEFAULT version gets its OWN question, not a row in the multiSelect**,
+because it is not the same kind of choice: it displaces something, the flags do
+not. Phrase it as the swap it is — *"Prototypes renders X today; make it Y?"* —
+and if the caller is not Jillienne, do not ask it at all: promote what they can
+and name it in the hand-off as hers.
+
+**`maturity` candidates go in a multiSelect of their own**, phrased as
+visibility rather than promotion: *"Which versions should stakeholders be able
+to pick?"*, with the current default named in the question so nobody reads a yes
+as a swap. Anyone may answer this one.
+
+⚠ **NEVER PUT THE TWO IN ONE QUESTION.** "Promote Eric's version" means
+`maturity` to one reader and the default to another, and the two answers are
+unrelated — one adds a choice, the other takes the choice away from everyone by
+making it unnecessary.
 
 ### 4. Apply the coordinated edits — on the branch
 
@@ -175,12 +215,21 @@ to the approved state in `FEATURE_FLAGS`.
 For each **declined** flag: set it back to the `main` value. The designer
 turned it on to see their work; that must not ride into `main` unreviewed.
 
-**If the version was approved** (owner only): leave
+**If the DEFAULT was approved** (owner only): leave
 `defaultDiscoverabilityVersionFor` returning the branch's id. **If it was
 declined**, set it back to `main`'s — a branch that made its own version the
 default must have that reverted, or merging promotes a whole dashboard by
 accident. This is the same rule as a declined flag and it is easier to miss,
 because nothing in the flag catalog shows it.
+
+**For each version made pickable**: set `maturity: 'ready'` on its entry. **For
+each declined**, leave the field ABSENT rather than writing `maturity: 'wip'` —
+absent is the default and says "not decided yet", while an explicit `wip` reads
+as "decided against", and the two want different conversations next time.
+
+⚠ **THE PICKER BADGES WHAT YOU LEAVE.** A version without `ready` shows "Design
+site only" in `DashboardVersionsPanel` on the design site, so a decline is
+visible to designers rather than silent. There is nothing to update by hand.
 
 Then update the **COMMITTED REBRAND DEMO DEFAULTS** table — it lives in
 [`docs/product-app.md`](../../docs/product-app.md), not in CLAUDE.md, which this
@@ -263,6 +312,11 @@ surface instead. Retiring it is for when the conversation is over.
   hand it back.
 - **Promoting a version displaces one.** Name the one being replaced when you
   ask, or the decision gets made by accident.
+- **`maturity` and the default are DIFFERENT QUESTIONS.** One adds a choice for
+  stakeholders; the other changes what the product is. Never one question.
+- **Anyone may answer the `maturity` one.** It is a readiness statement about a
+  designer's own work; gating it would leave everyone waiting on Jillienne to
+  show anyone anything.
 - **Ask, don't guess.** No flag default changes without an explicit yes; confirm
   variants.
 - **Declined means reverted.** A branch that set a default ON for review must
