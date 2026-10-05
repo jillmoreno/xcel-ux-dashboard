@@ -13,7 +13,7 @@ import {
   ArrowUpRightFromSquare,
   Check,
   ChevronDown,
-  Sliders,
+  Grid,
 } from '@/icons'
 import { ActionMenu } from '@/components/ui/ActionMenu'
 import { Toast } from '@/components/ui/Toast'
@@ -1197,7 +1197,12 @@ export function DemoControlsBar({
 
               ⚠ BORDERED LIKE RESET, not bare like the kebab. It opens a sheet
               that changes the product; the kebab opens a menu. Matching Reset
-              groups it with the control that also does something. */}
+              groups it with the control that also does something.
+
+              ⚠ THE GRID, swapped with Lo-fi's sliders on 2026-10-05. A grid of
+              panes is what a dashboard LAYOUT looks like, which is what this
+              picker chooses between — the sliders it had read as "settings",
+              which is every control on this bar. */}
           {showControl.version && show('version') && (
             <button
               type="button"
@@ -1212,7 +1217,7 @@ export function DemoControlsBar({
               onMouseEnter={(e) => (e.currentTarget.style.background = DEMO_HOVER_FILL)}
               onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
             >
-              <Sliders size={16} aria-hidden />
+              <Grid size={16} aria-hidden />
             </button>
           )}
           {/* ⚠ THE FLAG ICON MOVED TO THE DESIGN BAR, hours after landing here

@@ -1,5 +1,5 @@
 import { useSearchParams } from 'react-router-dom'
-import { Check, Flag, Grid, GridSolid } from '@/icons'
+import { Check, Flag, Sliders } from '@/icons'
 import { useAccount } from '@/context/AccountContext'
 import {
   designControlsFor,
@@ -100,14 +100,17 @@ export function DesignControlsBar({ fullBleed = false }: { fullBleed?: boolean }
             Its own note on that bar always said lo-fi is "a tool for the people
             DESIGNING the thing"; this is where that sentence finally points.
 
-            ⚠ THE GRID IS THE WIREFRAME, which is why it is this icon and not a
-            generic eye or toggle: a grid IS what lo-fi looks like, so the icon
-            says what the mode does rather than that it is a mode.
+            ⚠ THE SLIDERS, swapped with the version picker's grid on
+            2026-10-05. It drew a grid first, on the reading that a grid IS what
+            lo-fi looks like — but the grid describes a dashboard LAYOUT better,
+            and that is what the other button chooses between.
 
-            ⚠ SOLID WHEN ON — the fill AND the icon. `GridSolid` is the same
-            glyph filled, so the button changes in two ways at once rather than
-            relying on a background a reader has to compare against its
-            neighbour. `aria-pressed` carries it for anyone not seeing either. */}
+            ⚠ SOLID WHEN ON IS NOW THE FILL ALONE. The grid had a `GridSolid`
+            twin, so the glyph filled with the button; `Sliders` has no solid
+            variant, so the state rests on the cyan background and
+            `aria-pressed`. That is one cue fewer than it had — worth knowing if
+            the on-state ever reads as weak, because the fix is a solid sliders
+            glyph in the registry, not a different colour. */}
         <button
           type="button"
           className="cre-demo-controls-btn"
@@ -134,7 +137,7 @@ export function DesignControlsBar({ fullBleed = false }: { fullBleed?: boolean }
             if (!loFi) e.currentTarget.style.background = 'transparent'
           }}
         >
-          {loFi ? <GridSolid size={16} aria-hidden /> : <Grid size={16} aria-hidden />}
+          <Sliders size={16} aria-hidden />
         </button>
         {/* ⚠ THE FLAG ICON MOVED HERE FROM THE DEMO BAR (2026-10-05, the direct
             choice). It opens the Feature Flag sheet, which is a designer's tool
