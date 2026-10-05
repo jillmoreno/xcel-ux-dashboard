@@ -1,9 +1,9 @@
 ---
 name: promote-to-prototype
-description: At merge time, decide which of a branch's flag-driven changes become the PROTOTYPES baseline — the live XCEL product build stakeholders see. Run it ON THE PR, BEFORE MERGING. Diffs the branch against main, surfaces every flag whose committed default the branch changed (including flags gating new components), asks Jillienne per flag whether — and to which variant — it becomes the baseline, applies the FEATURE_FLAGS edits plus the CLAUDE.md note, commits, and reminds you to retire the branch's Refinement row. Never moves tiles. Formerly "promote-to-demo" — that name still works as an alias. Trigger on "promote to prototype", "promote to demo", "merge this branch", "which changes go in the prototype", "ready to merge", "include in the prototype", "/promote-to-prototype", "/promote-to-demo".
-version: 1.0.0
+description: At merge time, decide which of a branch's changes become the PROTOTYPES baseline — the live XCEL product build stakeholders see. Run it ON THE PR, BEFORE MERGING. Diffs the branch against main, surfaces every flag whose committed default the branch changed (including flags gating new components) AND any change to the default DASHBOARD VERSION, asks Jillienne per candidate whether — and to which variant — it becomes the baseline, applies the FEATURE_FLAGS / dashboardVersions edits plus the docs note, commits, and reminds you to retire the branch's Refinement row. Setting the default dashboard version is OWNER-ONLY. Never moves tiles. Formerly "promote-to-demo" — that name still works as an alias. Trigger on "promote to prototype", "promote to demo", "merge this branch", "which changes go in the prototype", "ready to merge", "include in the prototype", "/promote-to-prototype", "/promote-to-demo".
+version: 1.1.0
 author: UX Design — Colibri
-last_updated: 2026-09-18
+last_updated: 2026-10-05
 status: active
 ---
 
@@ -42,6 +42,50 @@ configuration of `main` (`?demo=1&ff=…`), point at a branch build, or open a
 There is deliberately no "create a second prototype" skill. If someone asks for
 one, this is the answer. See CLAUDE.md, "Prototypes is the source of truth".
 
+## ⚠ The baseline has TWO levers, and only one of them is a flag
+
+Added 2026-10-05, after a promotion where the skill surfaced none of this and
+the version change was caught by hand.
+
+| Lever | Lives in | What it decides |
+|---|---|---|
+| **Flag defaults** | `FEATURE_FLAGS` in `src/context/FeatureFlagContext.tsx` | how a surface is drawn |
+| **The default dashboard VERSION** | `defaultDiscoverabilityVersionFor()` in `src/data/dashboardVersions.ts` | **which dashboard renders at all** |
+
+The version is the bigger of the two and it is **not in the flag catalog**, so
+the first place anyone looks for "what does Prototypes render" does not contain
+the answer. Every flag below it is read INSIDE whichever version is rendering —
+several have no effect at all under the others.
+
+**Two different acts get called "promoting a version". Separate them before
+asking anything:**
+
+- **Making a version REACHABLE** — a new entry in
+  `DISCOVERABILITY_DASHBOARD_VERSIONS`, usually carrying `owner` so it appears
+  in that designer's tab of the Feature Flag panel. This is **not a promotion**.
+  It changes nothing about Prototypes and rides in on the merge like any other
+  code. Do not ask about it.
+- **Making a version THE DEFAULT** — `defaultDiscoverabilityVersionFor` returns
+  it. That IS the baseline, and it is this skill's business.
+
+⚠ **ONLY ONE VERSION CAN BE THE DEFAULT, so promoting one DISPLACES another.**
+Say that out loud at the point of asking, naming the version being displaced.
+The designer tabs let two designers each own versions; Prototypes still has
+exactly one answer, and an ask phrased as "add Eric's" when it means "replace
+Jill's" is how that gets decided by accident.
+
+### ⚠ Owner action — the default version is Jillienne's alone
+
+`git config user.email` must be Jillienne's to change
+`defaultDiscoverabilityVersionFor`. If it is not, **stop at that candidate and
+say so**: the rest of the promotion (flag defaults) can proceed, the version
+line cannot. Note it in the hand-off so she can make that one call herself.
+
+This is a skill-level boundary, not a hook: `dashboardVersions.ts` is
+deliberately NOT in CLAUDE.md's protected table, because adding a version — the
+reachable act above — is something any designer should be able to do. It is the
+one line that chooses between them that is hers.
+
 ## Core principle — promotion is a flag-baseline change, not a tile move
 
 Every change starts invisible to Prototypes: behind a flag whose default on
@@ -75,10 +119,22 @@ git fetch origin main --quiet
 git rev-parse --abbrev-ref HEAD                 # the designer's branch
 git diff --stat origin/main...HEAD              # what changed
 git diff origin/main...HEAD -- src/context/FeatureFlagContext.tsx
+git diff origin/main...HEAD -- src/data/dashboardVersions.ts
 ```
 
-Read the `FeatureFlagContext.tsx` diff closely — that is where candidates are
-decided. Also scan `--stat` for **new components** and grep each for the flag
+⚠ **BOTH FILES, and the second one is the one this skill used to miss.** On
+2026-10-02 a promotion moved XCEL's default from Testing to Testing 3 and this
+step surfaced nothing — the change was spotted by reading the file by hand. A
+diff that touches only the flag catalog will silently promote (or silently
+decline) a whole dashboard.
+
+In the `dashboardVersions.ts` diff, look for exactly one thing:
+**`defaultDiscoverabilityVersionFor` returning a different id.** New entries in
+`DISCOVERABILITY_DASHBOARD_VERSIONS` are NOT candidates — see the two acts
+above.
+
+Read the `FeatureFlagContext.tsx` diff closely — that is where the rest of the
+candidates are decided. Also scan `--stat` for **new components** and grep each for the flag
 key that gates it. New feature/dev-handoff tiles in `prototypeFeatures.ts` are
 not promotion candidates themselves, but their `featureFlags` list is your
 shortlist.
@@ -91,12 +147,25 @@ flag does*, *the `main` default*, *what the branch set it to*. Everything else
 — refactors, fixes, sandbox-only tweaks, handoff docs, tile questions — is
 no-promotion; note it and move on.
 
+**If the default VERSION moved, it is the first candidate on the list**, and
+write it differently from the flags: name the version arriving, the version
+being **displaced**, and which of the flag candidates below it have no effect
+under any other version. That last part is what makes the list readable — a
+reviewer deciding four Testing 3 flags needs to know they stand or fall with
+the version above them.
+
 ### 3. Ask which to include (never assume)
 
 Present the candidates with **AskUserQuestion**, `multiSelect: true`, one
 option per flag, each label naming the flag and the baseline it would set.
 Selecting nothing is a valid answer (everything lands sandbox-only). For a flag
 with variants, confirm WHICH variant unless the branch makes it obvious.
+
+**The version gets its OWN question, not a row in the multiSelect**, because it
+is not the same kind of choice: it displaces something, the flags do not. Phrase
+it as the swap it is — *"Prototypes renders X today; make it Y?"* — and if the
+caller is not Jillienne, do not ask it at all: say the version line is hers,
+promote the flags, and hand the one decision back.
 
 ### 4. Apply the coordinated edits — on the branch
 
@@ -106,11 +175,38 @@ to the approved state in `FEATURE_FLAGS`.
 For each **declined** flag: set it back to the `main` value. The designer
 turned it on to see their work; that must not ride into `main` unreviewed.
 
-Then update the **"Committed rebrand demo defaults"** paragraph in `CLAUDE.md`
-so the documented baseline stays true, and — if the branch added a
-`NAV_SECTION_FLAGS` entry or changed one's `defaultEnabled` — check
-`NavSectionFlags.test.tsx`, which asserts the whole demo rail in order and
-will need the new row added deliberately.
+**If the version was approved** (owner only): leave
+`defaultDiscoverabilityVersionFor` returning the branch's id. **If it was
+declined**, set it back to `main`'s — a branch that made its own version the
+default must have that reverted, or merging promotes a whole dashboard by
+accident. This is the same rule as a declined flag and it is easier to miss,
+because nothing in the flag catalog shows it.
+
+Then update the **COMMITTED REBRAND DEMO DEFAULTS** table — it lives in
+[`docs/product-app.md`](../../docs/product-app.md), not in CLAUDE.md, which this
+skill said until 2026-10-05. Two things there, not one:
+
+- the table's own rows, for each promoted or declined flag;
+- the paragraph ABOVE it that names which version a fresh `?demo=1` lands on.
+  ⚠ That note has now been wrong twice in the same way — it still said "Testing"
+  after the default had moved to Testing 3. It is the line readers trust most
+  and the one nothing tests.
+
+And — if the branch added a `NAV_SECTION_FLAGS` entry or changed one's
+`defaultEnabled` — check `NavSectionFlags.test.tsx`, which asserts the whole
+demo rail in order and will need the new row added deliberately.
+
+⚠ **SET `owner` ON ANYTHING NEW** (2026-10-05, with the designer tabs). A flag
+or version with no `owner` resolves to Jill, so a row authored by someone else
+lands in HER tab of the Feature Flag panel and is invisible in theirs. It is not
+a promotion decision — it is whose exploration the row belongs to — but this is
+the moment it gets noticed, because nothing on screen says a row is in the
+wrong tab.
+
+⚠ **TESTS THAT PIN A BRANCH DEFAULT WILL FAIL, AND THAT IS THE POINT.** This
+repo writes them on purpose, with a note saying this skill might flip them one
+day. Flip them deliberately, record the decision in the test's own comment, and
+keep driving the arm that lost — a declined arm is not a retired one.
 
 Data-only. If a change cannot be surfaced in Prototypes without touching
 component code, it is not ready; say so and stop.
@@ -118,17 +214,27 @@ component code, it is not ready; say so and stop.
 ### 5. Verify, then commit — to the branch
 
 ```bash
-npx tsc -b --noEmit && npm run lint && npx vitest run
+npm run build        # NOT `tsc --noEmit` — see ship-to-main for why
+npx vitest run
 ```
 
-All three must pass. Commit the promotion as its own step so it is reviewable
-and reversible:
+⚠ **`npm run lint` IS NOT A GATE** and this step used to say it was. It reports
+over a thousand pre-existing problems on `main`; a promotion that waited for it
+to pass would never ship. Lint the files you touched and compare any finding
+against `main`'s copy of the same file before calling it yours.
+
+Commit the promotion as its own step so it is reviewable and reversible:
 
 ```bash
-git add src/context/FeatureFlagContext.tsx CLAUDE.md src/test/NavSectionFlags.test.tsx
-git commit -m "prototype: promote <flags> to the Prototypes baseline"
+git add src/context/FeatureFlagContext.tsx src/data/dashboardVersions.ts \
+        docs/product-app.md src/test/NavSectionFlags.test.tsx
+git commit -m "prototype: promote <what> to the Prototypes baseline"
 git push
 ```
+
+The commit body is where the ARGUMENT goes — for each declined candidate, what
+was actually wrong with it. "Not promoted" is worthless in six months; the
+reason is what tells the next reader whether it still holds.
 
 Then tell Jillienne the branch is ready to merge, and summarise: which flag
 defaults now ship in Prototypes, and what stayed sandbox-only.
@@ -150,11 +256,18 @@ surface instead. Retiring it is for when the conversation is over.
 
 - **Never move tiles.** Promotion is a flag-baseline change, not a `category`
   edit. Prototypes has one row and a two-directional test.
+- **Diff `dashboardVersions.ts` too.** The default version is the biggest lever
+  on the baseline and is not in the flag catalog.
+- **The default version is Jillienne's alone.** Anyone may ADD a version;
+  only she chooses which one Prototypes renders. Stop at that candidate and
+  hand it back.
+- **Promoting a version displaces one.** Name the one being replaced when you
+  ask, or the decision gets made by accident.
 - **Ask, don't guess.** No flag default changes without an explicit yes; confirm
   variants.
 - **Declined means reverted.** A branch that set a default ON for review must
   have it set back before merge, or merging promotes by accident.
-- **Data-only.** `FEATURE_FLAGS`, the CLAUDE.md note, and the rail test if the
+- **Data-only.** `FEATURE_FLAGS`, `dashboardVersions.ts`, the `docs/product-app.md` note, and the rail test if the
   rail changed — nothing else.
 - **On the branch, before the merge.** Never on `main` after: `main` is live on
   two sites.
