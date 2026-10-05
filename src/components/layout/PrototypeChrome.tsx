@@ -5,16 +5,11 @@ import { AdminToolsMenu } from './AdminToolsMenu'
 import { DeviceFrameToggle, useDeviceFrame } from './DeviceFrameContext'
 import { DemoControlsBar } from '@/components/prototype/DemoControlsBar'
 import { DesignControlsBar } from '@/components/prototype/DesignControlsBar'
-import { designControlsFor, flagOwner } from '@/context/FeatureFlagContext'
-import {
-  DISCOVERABILITY_DASHBOARD_VERSIONS,
-  defaultDiscoverabilityVersionFor,
-} from '@/data/dashboardVersions'
+import { DESIGN_ACCENT } from '@/components/prototype/demoBarUtil'
 import {
   useDemoControlsVisibility,
   useDesignControlsVisibility,
 } from '@/components/prototype/demoControlsVisibility'
-import { useAccount } from '@/context/AccountContext'
 import { demoSiteControls } from '@/data/demoControlMaturity'
 
 /**
@@ -50,7 +45,6 @@ const TEST_VIEW_CONTROLS = ['progress'] as const
 
 export function PrototypeChrome() {
   const { pathname, search } = useLocation()
-  const { brand } = useAccount()
   const { open: demoOpen, toggle: toggleDemo } = useDemoControlsVisibility()
   const { open: designOpen, toggle: toggleDesign } = useDesignControlsVisibility()
   // In the Demo frame the bars run edge-to-edge (full screen width) instead of
@@ -72,21 +66,13 @@ export function PrototypeChrome() {
   // the one that used to need a second deploy: "what does a stakeholder actually
   // get?" (No effect on the demo site itself, where the answer is already yes.)
   const asDemo = params.get('as') === 'demo'
-  /* ⚠ THE DESIGN TOGGLE IS GATED ON THERE BEING SOMETHING TO SHOW. The design
-     bar renders nothing when the current version has no design controls, so an
-     always-present toggle would reveal an empty strip — a control that looks
-     broken rather than one that is off. Resolved here because the TOGGLE lives
-     in a different component from the bar it toggles, and only this file sees
-     both.
-
-     ⚠ IT MUST SIT BELOW `params`, which is declared after the hooks for the
-     rules-of-hooks reason the comment above records. Placing it with the other
-     `use*` calls read `params` before its declaration — a TDZ error that tsc
-     caught and a reader would not. */
-  const designVersionId = params.get('version') ?? defaultDiscoverabilityVersionFor(brand)
-  const designVersion = DISCOVERABILITY_DASHBOARD_VERSIONS.find((v) => v.id === designVersionId)
-  const hasDesignControls =
-    designControlsFor(designVersionId, flagOwner(designVersion ?? {})).length > 0
+  /* ⚠ THE DESIGN TOGGLE WAS GATED ON `hasDesignControls` AND NO LONGER IS
+     (2026-10-05). The gate existed because the bar returned null on a version
+     with no design flags, and a toggle revealing an empty strip reads as
+     broken. Lo-fi moving onto that bar removed the empty case entirely — it now
+     always carries Lo-fi and the flag icon — so the gate was protecting against
+     something that cannot happen, and `designControlsFor` / `flagOwner` /
+     `DISCOVERABILITY_DASHBOARD_VERSIONS` left this file with it. */
   if (params.get('chrome') === 'off') return null
   // `?present=1` (the "Share Demo" link) — the shared presentation view: hide
   // the prototype bar + demo controls (like `chrome=off`) but keep the Demo
@@ -155,7 +141,7 @@ export function PrototypeChrome() {
           /* Design site only, and only with controls to show — the same two
              conditions the bar itself renders under, so the toggle and the bar
              can never disagree about whether there is anything there. */
-          !isPublicGateway() && !asDemo && hasDesignControls ? (
+          !isPublicGateway() && !asDemo ? (
             <DesignControlsToggle active={designOpen} onToggle={toggleDesign} />
           ) : undefined
         }
@@ -202,9 +188,9 @@ export function PrototypeChrome() {
  * and the dot is what says which. Forking the shape would have made them read
  * as unrelated.
  *
- * ⚠ GREEN, matching its bar's rule, the way the demo pill's dot matches its
- * amber one. The colour is the only tell on either bar, so it has to be the
- * same tell in both places.
+ * ⚠ LIGHT CYAN, matching its bar's rule, the way the demo pill's dot matches
+ * its amber one. The colour is the only tell on either bar, so it has to be the
+ * same tell in both places — `DESIGN_ACCENT`, not a literal.
  *
  * ⚠ IT IS NEVER RENDERED WITHOUT CONTROLS BEHIND IT — see `hasDesignControls`
  * in `PrototypeChrome`. A toggle that reveals an empty strip reads as broken.
@@ -241,7 +227,7 @@ function DesignControlsToggle({ active, onToggle }: { active: boolean; onToggle:
           width: 7,
           height: 7,
           borderRadius: '50%',
-          background: active ? 'var(--color-success-400)' : 'rgb(255 255 255 / 0.4)',
+          background: active ? DESIGN_ACCENT : 'rgb(255 255 255 / 0.4)',
           boxShadow: active ? '0 0 0 3px rgb(255 255 255 / 0.14)' : 'none',
         }}
       />

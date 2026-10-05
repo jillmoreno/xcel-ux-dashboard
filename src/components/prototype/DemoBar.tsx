@@ -6,6 +6,8 @@ import {
   DEMO_WIP_DOT,
   SR_ONLY,
   DEMO_DOT,
+  DESIGN_ACCENT,
+  DESIGN_RULE,
   DEMO_FAINT_FILL,
   DEMO_HOVER_FILL,
   DEMO_INNER,
@@ -92,7 +94,7 @@ export function DemoBar({
           : align === 'left'
             ? { ...DEMO_BAR, maxWidth: 1440, alignSelf: 'flex-start', width: '100%' }
             : DEMO_BAR),
-        ...(design ? { borderBottom: '3px solid var(--color-success-600)' } : null),
+        ...(design ? { borderBottom: `3px solid ${DESIGN_RULE}` } : null),
       }}
       role="region"
       aria-label={ariaLabel}
@@ -110,7 +112,11 @@ export function DemoBar({
               : DEMO_INNER
         }
       >
-        <span aria-hidden style={DEMO_DOT} />
+        {/* ⚠ THE DOT FOLLOWS THE BAR, and did not until 2026-10-05: the design
+            bar drew the DEMO bar's amber dot above its own cyan rule, because
+            `DEMO_DOT` is a shared constant that knew nothing about `design`.
+            Two accents on one bar reads as a mistake, and it was. */}
+        <span aria-hidden style={design ? { ...DEMO_DOT, background: DESIGN_ACCENT } : DEMO_DOT} />
         <span style={DEMO_TAG_LABEL}>{label}</span>
         {children}
       </div>

@@ -35,11 +35,20 @@ type DemoControlRow = {
 }
 
 export const DEMO_CONTROLS: readonly DemoControlRow[] = [
-  /* Fidelity (lo-fi ⇄ hi-fi) — `LoFiContext`, not a flag, so it states its own.
-     `wip`: lo-fi is a tool for the people DESIGNING the thing, and a
-     stakeholder handed a control that greys the product out has been given a
-     way to break their own demo with nothing to gain from it. */
-  { id: 'fidelity', maturity: 'wip' },
+  /* `fidelity` WAS HERE — lo-fi ⇄ hi-fi. It moved to the DESIGN bar on
+     2026-10-05, which is design-site-only as a whole surface, so it needs no
+     readiness row: the surface is the gate.
+
+     ⚠ ITS NOTE WAS RIGHT ALL ALONG and is worth carrying over — "lo-fi is a
+     tool for the people DESIGNING the thing, and a stakeholder handed a control
+     that greys the product out has been given a way to break their own demo
+     with nothing to gain from it". That sentence described a control on the
+     wrong bar for weeks; `maturity: 'wip'` was the only lever available to act
+     on it at the time.
+
+     ⚠ AND IT WAS THIS BAR'S LAST `wip` CONTROL. Everything left here is
+     `ready`, so nothing that renders exercises the maturity gate any more —
+     `PublicGateway.test.tsx` says so rather than pretending otherwise. */
   /* ⚠ FOUR ROWS WENT ON 2026-10-05 — `nav-layout` (`nav-placement`),
      `nav-help`, `journey-scale` (`journey-scale-style`) and `stop-mark`
      (`journey-stop-mark`) — when their dropdowns left the bar for the Feature

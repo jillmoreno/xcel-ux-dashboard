@@ -328,32 +328,50 @@ describe('the demo site offers only the finished demo controls', () => {
      have (brand). If Lo-fi ever leaves the bar too, this test has no subject —
      at which point the honest move is to delete it and say the gate is
      unexercised, not to pick a control that is absent anyway. */
-  const WIP = [/Lo-fi/i]
+  /* ⚠ THERE IS NO `WIP` EXEMPLAR LEFT, AND THAT IS NOT A TEST BEING LAZY.
+     Lo-fi was the last `wip` control the demo bar drew; it moved to the DESIGN
+     bar on 2026-10-05 and every control still on the demo bar is `ready`. The
+     note above said what to do when this happened — "delete it and say the gate
+     is unexercised, not pick a control that is absent anyway" — so that is what
+     this is.
 
-  it('hides the work-in-progress axes on the demo site', { timeout: 20_000 }, async () => {
+     ⚠ WHAT IS NO LONGER COVERED, stated so nobody reads the shorter file as
+     "the gate is fine": `demoSiteControls()` dropping a `wip` control, and
+     `MaturityMark` rendering on the design site, are both UNTESTED through the
+     UI now. `demoControlMaturity`'s own unit coverage still pins the
+     resolution. The first `wip` control added back to the demo bar should
+     restore the two assertions below it.
+
+     The READY half still works and is kept — it is the half that says a trim
+     for one audience is not a removal. */
+
+  it('gives the demo site its finished controls, and no design bar', { timeout: 20_000 }, async () => {
+    /* ⚠ THIS TEST WAS DELETED BY ACCIDENT ON 2026-10-05 and restored the same
+       day. A slice meant to remove the dead `WIP` constant took the whole `it`
+       with it — and the half that mattered was never about `wip` at all: it
+       says the trim KEEPS the finished controls, including Reset, which is the
+       only way a stakeholder gets out of a state they wandered into.
+
+       ⚠ ITS ABSENCE CLAIM IS THE DESIGN BAR NOW. Every control left on the demo
+       bar is `ready`, so there is no longer a single control to assert gone —
+       but the design bar must never reach the demo site at all, which is a
+       larger claim than any one control was. */
     await bar('public')
-    for (const gone of WIP) {
-      expect(screen.queryByRole('button', { name: gone }), String(gone)).toBeNull()
-    }
-    // …and keeps the finished ones, including Reset — the only way a
-    // stakeholder gets out of a state they wandered into.
+    expect(screen.queryByRole('region', { name: 'Design controls' })).toBeNull()
     expect(screen.getByRole('button', { name: /Progress/i })).toBeTruthy()
     expect(screen.getByRole('button', { name: /^Reset$/ })).toBeTruthy()
   })
 
-  it('leaves the design site with all of them, marked', { timeout: 20_000 }, async () => {
+  it('leaves the design site with its controls, and marks none of them now', { timeout: 20_000 }, async () => {
     /* The direction that matters more: this is a trim for one audience, not a
-       removal. The people making these decisions still need the controls —
-       and need to know which ones the stakeholders will not get, which is what
-       the mark is for. The accessible name carries it, so a screen reader and
-       this assertion read the same thing the amber dot shows. */
+       removal. ⚠ With no `wip` control left on this bar there is nothing marked
+       to assert — so what is left is the inverse, which still catches a mark
+       rendered unconditionally. */
     await bar('full')
-    for (const there of WIP) {
-      const btn = screen.getByRole('button', { name: there })
-      expect(btn.textContent, String(there)).toContain('not on the demo site')
-    }
-    /* …and a READY control is NOT marked. Without this, a mark rendered
-       unconditionally would pass every assertion above. */
+    /* ⚠ THE POSITIVE HALF OF EVERY ABSENCE ABOVE. Without this, both "no design
+       bar" assertions would pass against a bar that never rendered anywhere —
+       an absence proves nothing unless the presence is proved somewhere. */
+    expect(screen.getByRole('region', { name: 'Design controls' })).toBeTruthy()
     /* Anchored on the eyebrow. Not strictly required any more — the mark's
        hidden text used to contain "work in progress" and made this ambiguous —
        but naming the control exactly is the right assertion either way. */
@@ -371,9 +389,15 @@ describe('the demo site offers only the finished demo controls', () => {
        this param. This test is now the only thing standing between `?as=demo`
        and a silent rot, because nothing in the UI reaches it any more. */
     await bar('full', '/dashboard-rebrand?as=demo')
-    for (const gone of WIP) {
-      expect(screen.queryByRole('button', { name: gone }), String(gone)).toBeNull()
-    }
+    /* ⚠ THE LENS HAS A NEW SUBJECT, and a better one. It used to assert that a
+       `wip` CONTROL dropped out; the demo bar has none left since Lo-fi moved
+       to the design bar (2026-10-05). What the lens hides now is the whole
+       DESIGN BAR — a bigger claim and an easier one to break, because that bar
+       is rendered by a different branch of `PrototypeChrome` from the `only`
+       list the lens was built around. If this regressed, a designer previewing
+       the stakeholder view would see their own controls and conclude
+       stakeholders have them. */
+    expect(screen.queryByRole('region', { name: 'Design controls' })).toBeNull()
     expect(screen.getByRole('button', { name: /Progress/i })).toBeTruthy()
   })
 

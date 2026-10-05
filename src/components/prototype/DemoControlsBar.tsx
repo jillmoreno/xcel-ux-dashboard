@@ -20,15 +20,12 @@ import { Toast } from '@/components/ui/Toast'
 import { DemoBar, DemoDropdown } from './DemoBar'
 import { isPublicGateway } from '@/data/gatewayMode'
 import { controlMaturity } from '@/data/demoControlMaturity'
-import { useLoFi } from '@/context/LoFiContext'
 import { licensedProfessionsFor } from '@/data/licensedStatesFixtures'
 import { readDemoDayOffset, setDemoDayOffset } from '@/data/demoDay'
 import {
   useDemoMenus,
   DEMO_WHITE,
   DEMO_HOVER_FILL,
-  DEMO_WIP_DOT,
-  SR_ONLY,
 } from './demoBarUtil'
 import {
   defaultMemberTier,
@@ -142,7 +139,6 @@ type ControlKey =
   | 'persona'
   | 'progress'
   | 'readiness'
-  | 'fidelity'
   | 'education'
   | 'version'
 
@@ -157,10 +153,6 @@ const SHOW_CONTROL: Record<ControlKey, boolean> = {
      the robot on the PUBLIC site at all, so stakeholders had no way to reach
      the picker. A control nobody in the audience can find is not a control. */
   version: true,
-  /* The one control here that is neither a scenario nor a design variant — it
-     changes how the page is DRAWN for a working session. It sits beside Reset
-     now rather than in the dropdown row; both act on the view. */
-  fidelity: true,
   education: false,
 }
 
@@ -296,7 +288,6 @@ export function DemoControlsBar({
      their state. They are still captured into `?ff=` by Share Link, which
      loops the WHOLE catalog rather than these reads — so a shared link still
      reproduces them exactly as before. */
-  const { loFi, setLoFi } = useLoFi()
   const educationTypeFlag = useFeatureFlag('dashboard-education-type')
   // Readiness state — the Exam Readiness section's own axis. Deliberately NOT
   // threaded into the share-link codec alongside prog/edu: those two are the
@@ -1126,60 +1117,18 @@ export function DemoControlsBar({
         */}
         {show('actions') && (
         <div style={ACTIONS}>
-          {/* LO-FI — a switch, not a dropdown (2026-10-05, the direct ask).
-              It was a two-option radiogroup, which is a menu asked to answer a
-              yes/no: two presses and a panel to decide something that has one
-              other state.
+          {/* ⚠ LO-FI MOVED TO THE DESIGN BAR — 2026-10-05, the direct ask. It was
+              a dropdown here, then a switch here, and it was never a
+              stakeholder control: its own note always said lo-fi is "a tool for
+              the people DESIGNING the thing". The design bar is where that
+              sentence finally has somewhere to point.
 
-              ⚠ `aria-pressed`, NOT a `role="switch"` or a checkbox. It is a
-              button that toggles a view, and `aria-pressed` is what says so
-              without claiming to be a form control — the label stays "Lo-fi"
-              in both states so the accessible name does not change underneath
-              a screen-reader user mid-press.
-
-              ⚠ IT KEEPS ITS OWN `show('fidelity')` GATE. The id is still in
-              `DEMO_CONTROLS` as `wip`, so the demo site drops it exactly as
-              before — moving a control must not quietly hand it to
-              stakeholders. */}
-          {SHOW_CONTROL.fidelity && show('fidelity') && (
-            <button
-              type="button"
-              className="cre-demo-controls-btn"
-              aria-pressed={loFi}
-              style={{
-                ...GHOST_BTN,
-                ...(loFi
-                  ? {
-                      background: DEMO_HOVER_FILL,
-                      borderColor: 'rgba(255,255,255,0.4)',
-                    }
-                  : null),
-              }}
-              onClick={() => setLoFi(!loFi)}
-              onMouseEnter={(e) => (e.currentTarget.style.background = DEMO_HOVER_FILL)}
-              onMouseLeave={(e) =>
-                (e.currentTarget.style.background = loFi ? DEMO_HOVER_FILL : 'transparent')
-              }
-            >
-              Lo-fi
-              {/* ⚠ THE WIP MARK HAD TO COME WITH IT. `DemoDropdown` renders
-                  this for every control it draws, so turning Fidelity into a
-                  plain button silently dropped the one thing that says it is
-                  design-site-only — the control still hid correctly on the demo
-                  site, but a designer looking at the bar had no way to know it
-                  would. A test caught it; it would not have been visible.
-
-                  ⚠ A DOT PLUS WORDS, never the dot alone, for the reason
-                  `DemoBar` records: "not on the demo site" is not a colour
-                  anyone can be expected to know, and the bar has no legend. */}
-              {markWip && controlMaturity('fidelity') === 'wip' && (
-                <>
-                  <span aria-hidden style={DEMO_WIP_DOT} />
-                  <span style={SR_ONLY}> (not on the demo site)</span>
-                </>
-              )}
-            </button>
-          )}
+              ⚠ IT TOOK THIS BAR'S LAST `wip` CONTROL WITH IT. Everything left
+              on the demo bar is `ready`, which means the maturity gate is no
+              longer EXERCISED by anything that renders — see the note in
+              `PublicGateway.test.tsx`, which had been using Lo-fi as its one
+              remaining subject and now says the gate is untested rather than
+              pretending otherwise. */}
           <button
             type="button"
             className="cre-demo-controls-btn"

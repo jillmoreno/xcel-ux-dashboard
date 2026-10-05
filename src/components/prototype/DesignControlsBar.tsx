@@ -1,5 +1,5 @@
 import { useSearchParams } from 'react-router-dom'
-import { Check, Flag } from '@/icons'
+import { Check, Flag, Grid, GridSolid } from '@/icons'
 import { useAccount } from '@/context/AccountContext'
 import {
   designControlsFor,
@@ -13,8 +13,9 @@ import {
   defaultDiscoverabilityVersionFor,
 } from '@/data/dashboardVersions'
 import { useFeatureFlagPanel } from '@/components/account/FeatureFlagPanelContext'
+import { useLoFi } from '@/context/LoFiContext'
 import { DemoBar, DemoDropdown } from './DemoBar'
-import { useDemoMenus, DEMO_HOVER_FILL } from './demoBarUtil'
+import { useDemoMenus, DEMO_HOVER_FILL, DESIGN_ACCENT } from './demoBarUtil'
 
 /**
  * THE DESIGN CONTROLS BAR — 2026-10-05, the direct ask.
@@ -40,16 +41,17 @@ import { useDemoMenus, DEMO_HOVER_FILL } from './demoBarUtil'
  * because the whole SURFACE is the gate. A design decision that is worth
  * showing stakeholders belongs on the demo bar instead.
  *
- * ⚠ IT RENDERS NOTHING WHEN THE VERSION HAS NO DESIGN FLAGS, rather than an
- * empty bar. Testing 3 has none today, so the bar is invisible until somebody
- * marks a flag — which means this change is a no-op on screen until it is used,
- * and that is the honest state to ship in.
+ * ⚠ IT ALWAYS RENDERS ON THE DESIGN SITE. It did return null on a version with
+ * no design flags, until Lo-fi moved here on 2026-10-05 — the bar now carries
+ * Lo-fi and the flag sheet's icon whatever version is up, so it is never empty.
+ * A designer on somebody else's version still wants both of those.
  */
 export function DesignControlsBar({ fullBleed = false }: { fullBleed?: boolean }) {
   const [params] = useSearchParams()
   const { brand } = useAccount()
   const { flags, setEnabled, setVariant } = useFeatureFlags()
   const { openPanel: openFeatureFlagPanel } = useFeatureFlagPanel()
+  const { loFi, setLoFi } = useLoFi()
   const { openId, toggle, close, barRef } = useDemoMenus()
 
   /* The SAME resolution the demo bar and the flag panel use — `?version=` else
@@ -59,7 +61,11 @@ export function DesignControlsBar({ fullBleed = false }: { fullBleed?: boolean }
   const version = DISCOVERABILITY_DASHBOARD_VERSIONS.find((v) => v.id === versionId)
   const controls = designControlsFor(versionId, flagOwner(version ?? {}))
 
-  if (controls.length === 0) return null
+  /* ⚠ IT NO LONGER RETURNS NULL WHEN THE VERSION HAS NO DESIGN FLAGS, and that
+     changed on 2026-10-05 when Lo-fi moved here. The bar always carries Lo-fi
+     and the flag sheet's icon now, so it is never empty — and a designer on a
+     version with no flags of its own still wants both of those. The old rule
+     existed to avoid an empty strip; there is no longer a way to get one. */
 
   return (
     <DemoBar
@@ -90,6 +96,46 @@ export function DesignControlsBar({ fullBleed = false }: { fullBleed?: boolean }
         />
       ))}
       <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+        {/* LO-FI — moved here from the demo bar, 2026-10-05, the direct ask.
+            Its own note on that bar always said lo-fi is "a tool for the people
+            DESIGNING the thing"; this is where that sentence finally points.
+
+            ⚠ THE GRID IS THE WIREFRAME, which is why it is this icon and not a
+            generic eye or toggle: a grid IS what lo-fi looks like, so the icon
+            says what the mode does rather than that it is a mode.
+
+            ⚠ SOLID WHEN ON — the fill AND the icon. `GridSolid` is the same
+            glyph filled, so the button changes in two ways at once rather than
+            relying on a background a reader has to compare against its
+            neighbour. `aria-pressed` carries it for anyone not seeing either. */}
+        <button
+          type="button"
+          className="cre-demo-controls-btn"
+          aria-pressed={loFi}
+          aria-label={loFi ? 'Lo-fi on' : 'Lo-fi off'}
+          title={loFi ? 'Lo-fi on' : 'Lo-fi off'}
+          style={{
+            ...iconBtnStyle,
+            ...(loFi
+              ? {
+                  background: DESIGN_ACCENT,
+                  borderColor: DESIGN_ACCENT,
+                  /* Dark ink on the solid cyan — the inverse token is white and
+                     would measure ~1.9:1 on this fill. */
+                  color: 'var(--color-primary-900)',
+                }
+              : null),
+          }}
+          onClick={() => setLoFi(!loFi)}
+          onMouseEnter={(e) => {
+            if (!loFi) e.currentTarget.style.background = DEMO_HOVER_FILL
+          }}
+          onMouseLeave={(e) => {
+            if (!loFi) e.currentTarget.style.background = 'transparent'
+          }}
+        >
+          {loFi ? <GridSolid size={16} aria-hidden /> : <Grid size={16} aria-hidden />}
+        </button>
         {/* ⚠ THE FLAG ICON MOVED HERE FROM THE DEMO BAR (2026-10-05, the direct
             choice). It opens the Feature Flag sheet, which is a designer's tool
             and shows this same version's flags — so it belongs beside the
