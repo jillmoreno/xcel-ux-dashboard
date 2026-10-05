@@ -627,6 +627,10 @@ const BEGIN: CSSProperties = {
   padding: '5px 8px',
   fontSize: 13.5,
   lineHeight: '20.25px',
+  // Centred on the stop title beside it (2026-10-05, the designer's request):
+  // the title's line centres 14px down the row (5 padding + 9), the 32.25px
+  // button's 16.1px — so it lifts the difference.
+  marginTop: -2.125,
 }
 const CHEVRON: CSSProperties = {
   display: 'inline-flex',
