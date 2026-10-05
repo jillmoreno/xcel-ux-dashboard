@@ -4274,3 +4274,16 @@ hidden scrollbar, edge fades, and a chevron on whichever side is clipped. The
 card's top padding drops 48 → 24 only while the strip shows. The demo's second
 course ("New York Property & Casualty") is invented and not wired; selecting a
 tab and All courses call `onSelectCourse` / `onAllCourses`, unset for now.
+
+### Atlas My Courses (2026-10-05)
+
+On the Atlas versions, My Courses (`section=courses`):
+- has **no left nav rail** on the Top Nav version (as Home);
+- replaces its filter column (result count, Sort By, filter accordions) with
+  Home V2's journey-links card — now `AtlasJourneyLinksCard`, shared by both pages,
+  passed through `MyCoursesPage`'s `aside` prop;
+- sets its title in the Compass serif (Serif H4, via `PageHeader`'s `titleStyle`).
+
+The card's three sheet links go Home with `?open=exam-details | step:<id> |
+requirements`, which `MembershipOverview` opens once and strips. Home's "All
+courses ›" (course tabs) opens My Courses.

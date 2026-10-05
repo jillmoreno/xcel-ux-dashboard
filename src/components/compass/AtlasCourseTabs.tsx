@@ -115,7 +115,7 @@ export function AtlasCourseTabs({ courses, activeId, onSelect, onAllCourses }: A
 
       <button type="button" className="cre-compass-v2-row" onClick={onAllCourses} style={ALL}>
         All courses
-        <AngleRightRegular size={13} aria-hidden />
+        <AngleRightRegular size={13} aria-hidden style={{ color: 'var(--color-atlas-home-icon, var(--color-compass-page-button))' }} />
       </button>
     </nav>
   )
@@ -186,7 +186,7 @@ const ARROW: CSSProperties = {
   border: 'none',
   borderRadius: 4,
   background: 'transparent',
-  color: 'var(--color-compass-page-button)',
+  color: 'var(--color-atlas-home-icon, var(--color-compass-page-button))',
   cursor: 'pointer',
 }
 const ALL: CSSProperties = {

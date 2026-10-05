@@ -1,21 +1,15 @@
-import { useMemo, useState, type CSSProperties, type ReactNode } from 'react'
+import { useMemo, useState, type CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   AngleRightRegular,
-  BallotCheckRegular,
-  BookRegular,
-  CircleInfoRegular,
-  ClipboardListCheckRegular,
-  FileCertificateRegular,
   GaugeThin,
-  NotebookRegular,
-  PenFieldRegular,
+  LockRegular,
 } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
 import { AtlasCourseTabs, type AtlasCourseTab } from './AtlasCourseTabs'
+import { AtlasJourneyLinksCard } from './AtlasJourneyLinksCard'
 import { journeyStopsFor, type JourneyStop } from '@/components/learning/studyJourneyUtil'
 import { GET_LICENSED_STEPS, jurisdictionName } from '@/data/nyProducerRequirements'
-import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 import { defaultPreset, formatPaceDate, studyPace, daysUntil, NOT_STARTED_NIGHTS } from '@/lib/studyPace'
 import type { LearningPathSummary } from '@/data/learningFixtures'
 
@@ -66,6 +60,8 @@ export type AtlasHomeV2Props = {
    *  invented second course (below). */
   courses?: AtlasCourseTab[]
   onSelectCourse?: (id: string) => void
+  /** "All courses ›" — defaults to the same destination as the side card's
+   *  My Courses link (`section=courses`). */
   onAllCourses?: () => void
 }
 
@@ -151,7 +147,7 @@ export function AtlasHomeV2({
       {/* ── The course card ── */}
       <section aria-label="Current course" style={tabs.length > 1 ? CARD : { ...CARD, paddingTop: 48 }}>
         {tabs.length > 1 ? (
-          <AtlasCourseTabs courses={tabs} activeId={activeTab?.id ?? path.id} onSelect={selectCourse} onAllCourses={onAllCourses} />
+          <AtlasCourseTabs courses={tabs} activeId={activeTab?.id ?? path.id} onSelect={selectCourse} onAllCourses={onAllCourses ?? (() => go('courses'))} />
         ) : null}
         <div style={{ display: 'flex', gap: 40, alignItems: 'stretch' }}>
           {shownCover ? <img src={shownCover} alt="" aria-hidden style={COVER} /> : null}
@@ -202,7 +198,7 @@ export function AtlasHomeV2({
               <ProgressDial percent={percent} />
               <div style={{ display: 'flex', flexDirection: 'column', gap: 11, alignSelf: 'stretch' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span aria-hidden style={{ display: 'inline-flex', color: 'var(--color-compass-page-button)' }}>
+                  <span aria-hidden style={{ display: 'inline-flex', color: 'var(--color-atlas-home-icon, var(--color-compass-page-button))' }}>
                     <GaugeThin size={33} aria-hidden />
                   </span>
                   <span style={{ ...BODY_TEXT, fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)' }}>
@@ -215,7 +211,7 @@ export function AtlasHomeV2({
                 </p>
                 <button type="button" className="cre-compass-v2-link" onClick={() => go('study-plan')} style={LINK}>
                   Customize Your Pace
-                  <AngleRightRegular size={13} aria-hidden />
+                  <AngleRightRegular size={13} aria-hidden style={{ color: 'var(--color-atlas-home-icon, var(--color-compass-page-button))' }} />
                 </button>
               </div>
             </div>
@@ -298,28 +294,7 @@ export function AtlasHomeV2({
           <p style={SMALL_TEXT}>If you know when your state exam is we can help you plan and pass your course easier.</p>
         </section>
 
-        <nav aria-label="Other information for your journey" style={SIDE_CARD}>
-          {/* The exam-date card's heading style — Serif H8 (2026-10-02, the
-              designer's request; the design sets it in Open Sans SemiBold 16). */}
-          <p style={STEP_TITLE}>Other Information for Your Journey</p>
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
-            <SideLink icon={<BookRegular size={13} aria-hidden />} label="My Courses" onClick={() => go('courses')} />
-            <SideLink icon={<FileCertificateRegular size={13} aria-hidden />} label="My Certificates" onClick={() => go('certificates')} />
-            <SideLink icon={<NotebookRegular size={13} aria-hidden />} label="Flashcards" onClick={() => go('course', 'flashcards')} />
-            <SideLink icon={<BallotCheckRegular size={13} aria-hidden />} label="Exam Simulator" onClick={() => go('course', 'exam-simulator')} />
-            <SideLink
-              icon={<CircleInfoRegular size={13} aria-hidden />}
-              label="Exam Information"
-              onClick={onOpenStep ? () => onOpenStep(EXAM_DETAILS_STEP_ID) : undefined}
-            />
-            <SideLink
-              icon={<PenFieldRegular size={13} aria-hidden />}
-              label="Applying for a License"
-              onClick={onOpenStep ? () => onOpenStep(apply.id) : undefined}
-            />
-            <SideLink icon={<ClipboardListCheckRegular size={13} aria-hidden />} label="State Requirements" onClick={onOpenRequirements} />
-          </ul>
-        </nav>
+        <AtlasJourneyLinksCard onOpenStep={onOpenStep} onOpenRequirements={onOpenRequirements} />
       </div>
     </div>
   )
@@ -349,13 +324,15 @@ function ProgressDial({ percent }: { percent: number }) {
   return (
     <div role="img" aria-label={`Course progress ${pct}% complete`} style={{ position: 'relative', width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden style={{ display: 'block' }}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" style={{ stroke: 'var(--color-atlas-nav-rule)' }} strokeWidth={3} />
+        <circle cx={size / 2} cy={size / 2} r={r} fill="none" style={{ stroke: 'var(--color-atlas-dial-track, var(--color-atlas-nav-rule))' }} strokeWidth={3} />
         <circle
           cx={size / 2}
           cy={size / 2}
           r={r}
           fill="none"
-          style={{ stroke: 'var(--color-compass-page-button)' }}
+          // The brand button colour over the nav rule; the XCEL skin re-points
+          // both through --color-atlas-dial-ring / -track (tokens.css).
+          style={{ stroke: 'var(--color-atlas-dial-ring, var(--color-compass-page-button))' }}
           strokeWidth={6}
           strokeLinecap="round"
           strokeDasharray={`${(c * pct) / 100} ${c}`}
@@ -403,7 +380,7 @@ function JourneyRow({
           lineHeight: '18px',
           paddingTop: current ? 5 : 0,
           fontWeight: current ? 600 : 400,
-          color: current ? 'var(--color-compass-page-button)' : 'var(--color-text-secondary)',
+          color: current ? 'var(--color-atlas-home-current-stop, var(--color-compass-page-button))' : 'var(--color-text-secondary)',
         }}
       >
         {stop.title}
@@ -412,9 +389,16 @@ function JourneyRow({
         <button type="button" className="cre-compass-primary cre-compass-btn-primary" onClick={onBegin} disabled={!onBegin} style={BEGIN}>
           Begin Course
         </button>
+      ) : stop.status === 'not-started' ? (
+        /* UPCOMING stops are LOCKED (2026-10-05, the designer's request): the FA
+           lock, Regular to match the chevrons, in place of the open chevron —
+           and not a button, since a locked stop does not open. */
+        <span role="img" aria-label={`${stop.title}, locked`} style={{ ...CHEVRON, cursor: 'default' }}>
+          <LockRegular size={13} aria-hidden style={{ color: 'var(--color-atlas-home-icon, var(--color-compass-page-button))' }} />
+        </span>
       ) : onOpen ? (
         <button type="button" className="cre-compass-v2-link" onClick={onOpen} aria-label={`Open ${stop.title}`} style={CHEVRON}>
-          <AngleRightRegular size={13} aria-hidden />
+          <AngleRightRegular size={13} aria-hidden style={{ color: 'var(--color-atlas-home-icon, var(--color-compass-page-button))' }} />
         </button>
       ) : null}
     </li>
@@ -447,22 +431,6 @@ function Step({
         </button>
       ) : null}
     </section>
-  )
-}
-
-function SideLink({ icon, label, onClick }: { icon: ReactNode; label: string; onClick?: () => void }) {
-  return (
-    <li>
-      <button type="button" className="cre-compass-v2-row" onClick={onClick} disabled={!onClick} style={SIDE_ROW}>
-        <span aria-hidden style={{ width: 18, flex: 'none', display: 'inline-flex', justifyContent: 'center', color: 'var(--color-compass-page-button)' }}>
-          {icon}
-        </span>
-        <span style={{ flex: '1 1 0', minWidth: 0, textAlign: 'left' }}>{label}</span>
-        <span aria-hidden style={{ display: 'inline-flex', color: 'var(--color-compass-page-button)' }}>
-          <AngleRightRegular size={13} aria-hidden />
-        </span>
-      </button>
-    </li>
   )
 }
 
@@ -637,8 +605,9 @@ const MARK_CURRENT: CSSProperties = {
   height: 14,
   boxSizing: 'border-box',
   borderRadius: '50%',
-  background: 'var(--color-compass-page-button)',
-  border: '2px solid var(--color-compass-page-button)',
+  // The current stop's title colour (XCEL: Secondary 600 brown).
+  background: 'var(--color-atlas-home-current-stop, var(--color-compass-page-button))',
+  border: '2px solid var(--color-atlas-home-current-stop, var(--color-compass-page-button))',
   flex: 'none',
 }
 const MARK: CSSProperties = {
@@ -699,18 +668,4 @@ const SIDE_BUTTON: CSSProperties = {
   padding: '5px 8px',
   fontSize: 13.5,
   lineHeight: '20.25px',
-}
-const SIDE_ROW: CSSProperties = {
-  width: '100%',
-  display: 'flex',
-  alignItems: 'center',
-  gap: 8,
-  padding: 0,
-  border: 'none',
-  background: 'none',
-  cursor: 'pointer',
-  fontFamily: 'var(--font-body)',
-  fontSize: 13,
-  lineHeight: '18px',
-  // Colour on `.cre-compass-v2-row` (tokens.css), so the hover can win.
 }

@@ -5596,6 +5596,22 @@ a.cre-library-card-title::after {
 [data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel'] {
   --color-atlas-nav-active-fill: #f3f0ea;
   --color-atlas-nav-hover: #f3f0ea;
+  /* Home V2's progress dial (2026-10-05, the designer's request): the ring in
+     the guide's SECONDARY 600, #7E6748, over SECONDARY 200, #E7E0D6 (Secondary
+     500 over Tertiary 100 earlier the same day).
+     ⚠ NAMES DIFFER FROM THE GUIDE (Atlas Style Guide, Figma 87:1127). Guide →
+     this file: Primary #9A1B1E → --color-cta-*; Secondary #9D815A (brown) →
+     --color-tertiary-*; Tertiary #2D5872 (steel blue) → --color-primary-*.
+     --color-secondary-* here is the older Saffron yellow, not the guide's. */
+  --color-atlas-dial-ring: var(--color-tertiary-600);
+  --color-atlas-dial-track: var(--color-tertiary-200);
+  /* Every icon on the Home V2 page (and the journey-links card it shares with
+     My Courses) in the guide's SECONDARY 500, #9D815A (2026-10-05, the
+     designer's request). Text links keep the button colour. */
+  --color-atlas-home-icon: var(--color-tertiary-500);
+  /* The journey's CURRENT stop — its title and its dot — in SECONDARY 600,
+     #7E6748 (same day). */
+  --color-atlas-home-current-stop: var(--color-tertiary-600);
 }
 
 [data-brand='xcel'][data-atlas-palette][data-atlas-brand='cre'] {
@@ -6204,3 +6220,4 @@ a.cre-library-card-title::after {
 .cre-compass-course-tab-arrow:hover {
   background: color-mix(in srgb, var(--color-compass-page-card-border) 45%, transparent) !important;
 }
+

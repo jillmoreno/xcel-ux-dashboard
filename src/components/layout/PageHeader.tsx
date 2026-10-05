@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import type { CSSProperties, ReactNode } from 'react'
 
 type Props = {
   title: string
@@ -20,6 +20,8 @@ type Props = {
    * flush-left title, which reads as two unrelated rows. Stacked means aligned.
    */
   stack?: boolean
+  /** Merged over the title's style — e.g. the Atlas serif heading. */
+  titleStyle?: CSSProperties
 }
 
 /**
@@ -33,6 +35,7 @@ export function PageHeader({
   right,
   hideTitle = false,
   stack = false,
+  titleStyle,
 }: Props) {
   // Nothing to render once the title is hidden and there's no sub-line or
   // right slot — skip the row entirely so it leaves no empty margin.
@@ -66,6 +69,7 @@ export function PageHeader({
               lineHeight: 'var(--text-heading-3xl--line-height)',
               margin: 0,
               color: 'var(--color-text-primary)',
+              ...titleStyle,
             }}
           >
             {title}

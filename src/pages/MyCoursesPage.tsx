@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { ArrowLeft } from '@/icons'
 import { CourseCard } from '@/components/courses/CourseCard'
@@ -59,7 +59,17 @@ const STATE_OPTIONS = ['Alabama', 'Florida', 'Georgia', 'North Carolina', 'South
 export function MyCoursesPage({
   embedded = false,
   hideSearch = false,
-}: { embedded?: boolean; hideSearch?: boolean } = {}) {
+  aside,
+  titleStyle,
+}: {
+  embedded?: boolean
+  hideSearch?: boolean
+  /** Replaces the left filter column — result count, Sort By and the filter
+   *  accordions all go — with this (the Atlas journey-links card, 2026-10-05). */
+  aside?: ReactNode
+  /** Merged over the "My Courses" title (Atlas: the serif heading). */
+  titleStyle?: CSSProperties
+} = {}) {
   const [params, setParams] = useSearchParams()
   const { brand } = useAccount()
   const courses = useMemo(() => myCoursesFor(brand), [brand])
@@ -198,6 +208,7 @@ export function MyCoursesPage({
         title="My Courses"
         hideTitle={breadcrumbHeader}
         stack={breadcrumbHeader}
+        titleStyle={titleStyle}
         right={
           // Search + view toggle share the header's right side (toggle sits to
           // the right of the search). In the rebrand shell the section hero
@@ -231,12 +242,13 @@ export function MyCoursesPage({
           // Narrower filter rail + tighter gap so the card grid keeps room in
           // the rebrand shell's constrained content column (was 240px / 32px,
           // which pushed cards off the right edge in the embedded/demo view).
-          gridTemplateColumns: hideFilters ? '1fr' : '200px minmax(0, 1fr)',
+          gridTemplateColumns: aside ? '280px minmax(0, 1fr)' : hideFilters ? '1fr' : '200px minmax(0, 1fr)',
+          alignItems: aside ? 'start' : undefined,
           gap: 24,
           marginTop: 24,
         }}
       >
-          {!hideFilters && (
+          {aside ?? (!hideFilters && (
           <aside aria-label="My Courses filters" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--color-text-secondary)' }}>
               {inArchive
@@ -292,7 +304,7 @@ export function MyCoursesPage({
               <FilterAccordion label="Enrollment Date" />
             </div>
           </aside>
-          )}
+          ))}
 
           <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             {/* Status tabs left, the collection link right. Two axes, two

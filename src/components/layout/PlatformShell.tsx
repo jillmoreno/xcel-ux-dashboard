@@ -15,6 +15,7 @@ import { CourseLauncherProvider, useCourseLauncher } from './CourseLauncherConte
 import { ResourceLauncherProvider, useResourceLauncher } from './ResourceLauncherContext'
 import { CatalogPage } from '@/pages/CatalogPage'
 import { MyCoursesPage } from '@/pages/MyCoursesPage'
+import { AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
 import { LearningPathPage } from '@/pages/LearningPathPage'
 import { LearningPathsHome } from '@/components/learning/LearningPathsHome'
 import { useLearningPathsPanel } from '@/components/learning/LearningPathsPanelContext'
@@ -347,7 +348,8 @@ function PlatformShellBody() {
   // children do not change; only its contents go.
   // …and on the Top Nav version's HOME page (2026-10-01, the designer's
   // request): its header buttons are Home's way around; the other pages keep
-  // the rail.
+  // the rail. MY COURSES joined it 2026-10-05 — its journey-links card is the
+  // way around there.
   /* ⚠ DECLARED HERE, ABOVE THE ATLAS DERIVATIONS — moved up 2026-10-05 when
      `atlasNoRail` started reading it. It sat beside `topNav` a hundred lines
      below; both still read this one value, which is the point of the
@@ -357,9 +359,12 @@ function PlatformShellBody() {
      `expanding-top` drops the rail on EVERY page; `top` drops it on Home only
      and the inner pages keep it. That asymmetry is Eric's and is the whole
      difference between his two top-nav arms, so it survives the unification
-     rather than being flattened into "top means no rail". */
+     rather than being flattened into "top means no rail". (My Courses is
+     exempt from the asymmetry: no rail under `top` either.) */
   const atlasNoRail =
-    atlasNav && (navPlacement === 'expanding-top' || (navPlacement === 'top' && active === 'dashboard'))
+    atlasNav &&
+    (navPlacement === 'expanding-top' ||
+      (navPlacement === 'top' && (active === 'dashboard' || active === 'courses')))
   // Wherever an Atlas rail is drawn it can collapse; collapsed, its column is
   // the toggle's own width, so only that frame stays at the left edge.
   const atlasRailToggle = atlasNav && !atlasNoRail
@@ -2404,6 +2409,30 @@ function ShellResourcesPanel() {
   return <ResourcesPanel compass={isAtlasCompassNavVersion(params.get('version'))} />
 }
 
+/* My Courses in the shell. On the Atlas versions the filter column gives way to
+   Home V2's journey-links card (2026-10-05, the designer's request). */
+function MyCoursesSection() {
+  const [params] = useSearchParams()
+  const { brand } = useAccount()
+  const atlas = isAtlasCompassNavVersion(params.get('version') ?? defaultDiscoverabilityVersionFor(brand))
+  return (
+    <MyCoursesPage
+      embedded
+      aside={atlas ? <AtlasJourneyLinksCard /> : undefined}
+      titleStyle={atlas ? ATLAS_PAGE_TITLE : undefined}
+    />
+  )
+}
+/* The Compass serif page title — Serif H4, as the Resources page's heading. */
+const ATLAS_PAGE_TITLE: CSSProperties = {
+  fontFamily: 'var(--font-heading-serif)',
+  fontWeight: 400,
+  fontSize: 'var(--type-atlas-h4-base-size, 38px)',
+  lineHeight: 'var(--type-atlas-h4-base-line, 40px)',
+  letterSpacing: '-0.01em',
+  color: 'var(--color-compass-page-heading)',
+}
+
 function renderBody(
   active: PlatformSection,
   isMember: boolean,
@@ -2494,7 +2523,9 @@ function renderBody(
   // (title + search). The hero owns the search, so the page hides its own.
   // Courses owns its own header (title + search + view toggle inline), like the
   // Learning Path homepage — the shell suppresses its title for this section.
-  if (active === 'courses') return <MyCoursesPage embedded />
+  // Atlas: the journey-links card from Home V2 in place of the filter column
+  // (2026-10-05, the designer's request).
+  if (active === 'courses') return <MyCoursesSection />
   if (active === 'certificates') return <CertificatesPage embedded hideSearch />
   // Recommended for You — the Netflix-style personalized recommendation shelves
   // (reused from the V1 Membership "Recommended for you" tab — For your license

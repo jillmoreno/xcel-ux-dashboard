@@ -153,6 +153,7 @@ import CrownThinSvg from './crown-thin.svg?react'
 import IdCardSvg from './id-card.svg?react'
 import LockSvg from './lock.svg?react'
 import LockSolidSvg from './lock-solid.svg?react'
+import LockRegularSvg from './lock-regular.svg?react'
 import MagnifyingGlassSvg from './magnifying-glass.svg?react'
 import MegaphoneSvg from './megaphone.svg?react'
 import MessageCircleSvg from './message-circle.svg?react'
@@ -359,6 +360,7 @@ export const Layout = makeIcon(TableCellsRowsSvg) // FA: table-cells-rows
 export const Table = makeIcon(TableListSvg) // FA: table-list
 export const Library = makeIcon(BooksSvg) // FA: books
 export const Lock = makeIcon(LockSvg)
+export const LockRegular = makeIcon(LockRegularSvg) // FA: lock (regular)
 export const LockSolid = makeIcon(LockSolidSvg)
 export const LogOut = makeIcon(ArrowRightFromBracketSvg) // FA: arrow-right-from-bracket
 export const MagnifyingGlass = makeIcon(MagnifyingGlassSvg) // FA: magnifying-glass

@@ -29,6 +29,7 @@ import { CompassHomeCourseCard } from '@/components/compass/CompassHomeCourseCar
 import { examDateRenewal, useExamDate } from '@/data/examDateStore'
 import { resolvePathCategories } from '@/components/learning/progressGaugeUtil'
 import { Link, useSearchParams } from 'react-router-dom'
+import { ATLAS_OPEN_PARAM } from '@/components/compass/AtlasJourneyLinksCard'
 import { useWidgetColor } from './widgetColorUtil'
 import { MembershipBadge } from '@/components/ui/MembershipBadge'
 import { CourseCard, type CourseCardData } from '@/components/courses/CourseCard'
@@ -426,6 +427,30 @@ export function MembershipOverview({
   // section in place, preserving the shell's other params (per the "stay in the
   // rebrand shell" nav convention). Mirrors PlatformShell's handleSelect.
   const [shellParams, setShellParams] = useSearchParams()
+  // `?open=` — a sheet requested from another page (the Atlas My Courses
+  // page's journey-links card, 2026-10-05): `exam-details`, `step:<id>` or
+  // `requirements`. Opened once, then stripped so a reload does not reopen it.
+  // Applied DURING RENDER (React's "adjust state on a prop change" pattern,
+  // which the lint rule asks for) and remembered, so it fires once per request.
+  const openRequest = shellParams.get(ATLAS_OPEN_PARAM)
+  const [handledOpen, setHandledOpen] = useState<string | null>(null)
+  if (openRequest !== handledOpen) {
+    setHandledOpen(openRequest)
+    if (openRequest === 'exam-details') setExamDetailsOpen(true)
+    else if (openRequest === 'requirements') openDetail('requirements')
+    else if (openRequest?.startsWith('step:')) setOpenStepId(openRequest.slice(5))
+  }
+  useEffect(() => {
+    if (!openRequest) return
+    setShellParams(
+      (prev) => {
+        const next = new URLSearchParams(prev)
+        next.delete(ATLAS_OPEN_PARAM)
+        return next
+      },
+      { replace: true },
+    )
+  }, [openRequest, setShellParams])
   // On the Atlas/Compass version, Resume opens the COMPASS COURSE PAGE — the
   // course player that version builds (2026-09-23) — instead of the in-shell
   // launcher's placeholder. Keyed on the URL's version because the layout this
