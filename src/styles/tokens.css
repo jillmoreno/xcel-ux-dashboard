@@ -1471,7 +1471,7 @@
      V2 course card and pace panel the same day, kept on neither. Unused. */
   --shadow-compass-sm: 0 1px 2px rgb(31 29 24 / 0.05);
 }
-/* Atlas Home V2's "Other Information" rows (AtlasHomeV2): the label turns
+/* Atlas Home V2's "More Information" rows (AtlasHomeV2): the label turns
    the brand's dark blue — the icons' own colour — and one weight heavier on
    hover (2026-10-02). */
 .cre-compass-v2-row {

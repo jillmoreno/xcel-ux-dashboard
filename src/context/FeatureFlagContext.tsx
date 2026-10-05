@@ -2140,7 +2140,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Home Page',
     label: 'Atlas home layout',
     description:
-      'Which layout the Atlas/Compass Home renders. V1: the course card, the Schedule State Exam banner and the Study Pace card in the left column, the Study Journey rail on the right. V2 (Figma 161:662): one course card with the completion / review / access figures, a progress dial and the study pace beside the Study Journey, with "Do you know your state exam date?" and "Other Information for Your Journey" cards on the right. Variant-only. Atlas/Compass version only.',
+      'Which layout the Atlas/Compass Home renders. V1: the course card, the Schedule State Exam banner and the Study Pace card in the left column, the Study Journey rail on the right. V2 (Figma 161:662): one course card with the completion / review / access figures, a progress dial and the study pace beside the Study Journey, with "Do you know your state exam date?" and "More Information for Your Journey" cards on the right. Variant-only. Atlas/Compass version only.',
     defaultEnabled: true,
     defaultVariant: 'v2',
     variants: [

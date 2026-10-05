@@ -14,7 +14,7 @@ import { GET_LICENSED_STEPS } from '@/data/nyProducerRequirements'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 
 /**
- * "OTHER INFORMATION FOR YOUR JOURNEY" — the link card from Home V2's right
+ * "MORE INFORMATION FOR YOUR JOURNEY" — the link card from Home V2's right
  * column (Figma 161:662), lifted into its own file on 2026-10-05 so the Atlas
  * My Courses page can carry it too, in place of its filter column.
  *
@@ -47,10 +47,10 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style }:
   const apply = GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 1]
 
   return (
-    <nav aria-label="Other information for your journey" style={{ ...SIDE_CARD, ...style }}>
+    <nav aria-label="More information for your journey" style={{ ...SIDE_CARD, ...style }}>
       {/* The exam-date card's heading style — Serif H8 (2026-10-02, the
           designer's request; the design sets it in Open Sans SemiBold 16). */}
-      <p style={TITLE}>Other Information for Your Journey</p>
+      <p style={TITLE}>More Information for Your Journey</p>
       <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
         <SideLink icon={<BookRegular size={13} aria-hidden />} label="My Courses" onClick={() => go('courses')} />
         <SideLink icon={<FileCertificateRegular size={13} aria-hidden />} label="My Certificates" onClick={() => go('certificates')} />
