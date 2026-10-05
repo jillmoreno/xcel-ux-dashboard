@@ -6186,3 +6186,21 @@ a.cre-library-card-title::after {
 .cre-pace-sheet__summary b {
   color: var(--color-text-primary);
 }
+
+/* Home V2 course tabs (AtlasCourseTabs, Figma 188:1006, 2026-10-05) — the
+   scroller hides its bar (it slides by trackpad, touch and the edge chevrons);
+   an inactive tab takes the active tab's tint at half strength on hover. */
+.cre-compass-course-tabs::-webkit-scrollbar {
+  display: none;
+}
+.cre-compass-course-tab:not(.is-active):hover {
+  background: color-mix(in srgb, var(--color-atlas-outlined-card, var(--color-compass-page-card)) 60%, transparent) !important;
+}
+.cre-compass-course-tab:focus-visible,
+.cre-compass-course-tab-arrow:focus-visible {
+  outline: 2px solid var(--color-compass-page-button);
+  outline-offset: -2px;
+}
+.cre-compass-course-tab-arrow:hover {
+  background: color-mix(in srgb, var(--color-compass-page-card-border) 45%, transparent) !important;
+}

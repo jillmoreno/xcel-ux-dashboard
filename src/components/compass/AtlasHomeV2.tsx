@@ -1,4 +1,4 @@
-import { useMemo, type CSSProperties, type ReactNode } from 'react'
+import { useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   AngleRightRegular,
@@ -12,6 +12,7 @@ import {
   PenFieldRegular,
 } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
+import { AtlasCourseTabs, type AtlasCourseTab } from './AtlasCourseTabs'
 import { journeyStopsFor, type JourneyStop } from '@/components/learning/studyJourneyUtil'
 import { GET_LICENSED_STEPS, jurisdictionName } from '@/data/nyProducerRequirements'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
@@ -60,7 +61,21 @@ export type AtlasHomeV2Props = {
   onOpenStop?: (courseId: string) => void
   onOpenStep?: (id: string) => void
   onOpenRequirements?: () => void
+  /** The learner's ACTIVE courses, for the tab strip above the title. Two or
+   *  more shows the strip; one hides it. Unset = this course plus the demo's
+   *  invented second course (below). */
+  courses?: AtlasCourseTab[]
+  onSelectCourse?: (id: string) => void
+  onAllCourses?: () => void
 }
+
+/* THE DEMO'S OTHER ACTIVE COURSE (Figma 188:1006). INVENTED — no fixture has a
+   New York P&C course. Choosing its tab swaps the title and cover image only;
+   everything below them (figures, pace, journey) is a DUPLICATE of the Life &
+   Health course's content (2026-10-05, the designer's request). */
+const DEMO_OTHER_COURSES: AtlasCourseTab[] = [
+  { id: 'demo-ny-pc', title: 'New York Property & Casualty', coverUrl: '/courses/ny-property-casualty.webp' },
+]
 
 export function AtlasHomeV2({
   path,
@@ -77,6 +92,9 @@ export function AtlasHomeV2({
   onOpenStop,
   onOpenStep,
   onOpenRequirements,
+  courses,
+  onSelectCourse,
+  onAllCourses,
 }: AtlasHomeV2Props) {
   const [, setParams] = useSearchParams()
   const go = (section: string, coursePage?: string) =>
@@ -118,18 +136,30 @@ export function AtlasHomeV2({
   const pass = GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 2]
   const apply = GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 1]
   const state = jurisdictionName(path.state)
+  const tabs = courses ?? [{ id: path.id, title: courseTitle, coverUrl }, ...DEMO_OTHER_COURSES]
+  const [activeTabId, setActiveTabId] = useState(path.id)
+  const activeTab = tabs.find((t) => t.id === activeTabId) ?? tabs[0]
+  const shownTitle = activeTab?.title ?? courseTitle
+  const shownCover = activeTab?.coverUrl ?? coverUrl
+  const selectCourse = (id: string) => {
+    setActiveTabId(id)
+    onSelectCourse?.(id)
+  }
 
   return (
     <div style={PAGE}>
       {/* ── The course card ── */}
-      <section aria-label="Current course" style={CARD}>
+      <section aria-label="Current course" style={tabs.length > 1 ? CARD : { ...CARD, paddingTop: 48 }}>
+        {tabs.length > 1 ? (
+          <AtlasCourseTabs courses={tabs} activeId={activeTab?.id ?? path.id} onSelect={selectCourse} onAllCourses={onAllCourses} />
+        ) : null}
         <div style={{ display: 'flex', gap: 40, alignItems: 'stretch' }}>
-          {coverUrl ? <img src={coverUrl} alt="" aria-hidden style={COVER} /> : null}
+          {shownCover ? <img src={shownCover} alt="" aria-hidden style={COVER} /> : null}
           <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 15, justifyContent: 'center' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <p style={EYEBROW}>Current course:</p>
               <h2 className="cre-compass-course-title" style={TITLE}>
-                {courseTitle}
+                {shownTitle}
               </h2>
             </div>
             {onOverview ? (
@@ -453,7 +483,8 @@ const CARD: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: 24,
-  padding: 48,
+  // 24 on top, not 48 — the course tabs sit above the title (Figma 188:1006).
+  padding: '24px 48px 48px',
   boxSizing: 'border-box',
   borderRadius: 14,
   background: 'var(--color-compass-course-card)',
@@ -461,9 +492,14 @@ const CARD: CSSProperties = {
   // shadow lifts it instead (the small one was tried the same day).
   boxShadow: 'var(--shadow-compass-md)',
 }
+/* Every cover takes the Life & Health image's proportions (1312 × 980 → 149px
+   at 200 wide), so switching course tabs never moves the page below it
+   (2026-10-05) — the P&C photo is wider and sat 7px shorter. `cover` crops. */
 const COVER: CSSProperties = {
   width: 200,
-  minHeight: 142,
+  height: 'auto',
+  aspectRatio: '1312 / 980',
+  alignSelf: 'flex-start',
   flex: 'none',
   objectFit: 'cover',
   borderRadius: 8,

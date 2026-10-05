@@ -4263,3 +4263,14 @@ Study Journey with Begin Course on the current stop — beside "Do you know your
 state exam date?" (Yes / No, not wired) and "Other Information for Your
 Journey" (My Courses, My Certificates, Flashcards, Exam Simulator, Exam
 Information, Applying for a License, State Requirements).
+
+### Home V2 — course tabs (2026-10-05, Figma 188:1006)
+
+`AtlasCourseTabs` (src/components/compass/) sits above the Home V2 course card's
+title when the learner has two or more active courses: "COURSES:", one tab per
+course (the current one a folder tab in the Study Pace tint, joined to the rule),
+and "All courses ›". The tabs slide horizontally for any number of courses —
+hidden scrollbar, edge fades, and a chevron on whichever side is clipped. The
+card's top padding drops 48 → 24 only while the strip shows. The demo's second
+course ("New York Property & Casualty") is invented and not wired; selecting a
+tab and All courses call `onSelectCourse` / `onAllCourses`, unset for now.
