@@ -1190,8 +1190,14 @@ export function DemoControlsBar({
               setSearchParams(next, { replace: true })
               close()
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = DEMO_HOVER_FILL)}
-            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = DEMO_HOVER_FILL
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.borderColor = 'transparent'
+            }}
           >
             <ArrowsRotate size={16} aria-hidden />
           </button>
@@ -1231,8 +1237,14 @@ export function DemoControlsBar({
                 openVersionsPanel()
                 close()
               }}
-              onMouseEnter={(e) => (e.currentTarget.style.background = DEMO_HOVER_FILL)}
-              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = DEMO_HOVER_FILL
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent'
+                e.currentTarget.style.borderColor = 'transparent'
+              }}
             >
               <Grid size={16} aria-hidden />
             </button>
@@ -1440,6 +1452,16 @@ const TIER_CHIP: CSSProperties = {
 /* Reset's icon button — the version trigger's geometry exactly. They sit next
    to each other and are the same size and shape, which is what lets the row
    read as a group of tools rather than three unrelated buttons. */
+/* ⚠ THE BORDER IS TRANSPARENT, NOT ABSENT — 2026-10-05, the direct ask
+   ("remove the outline, show it on hover only"). A button with no border at
+   rest and a 1px one on hover grows by 2px the moment a pointer touches it, and
+   the row of icons beside it shifts. Reserving the box and only colouring it is
+   what keeps the row still.
+
+   ⚠ KEYBOARD USERS LOSE NOTHING. `.cre-demo-controls-btn:focus-visible` in
+   `tokens.css` draws its own 1.5px outline, so focus never depended on this
+   edge — which is the thing that would otherwise make "outline on hover" an
+   accessibility regression rather than a style. */
 const resetIconStyle: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
@@ -1448,11 +1470,11 @@ const resetIconStyle: CSSProperties = {
   height: 38,
   padding: 0,
   background: 'transparent',
-  border: '1px solid rgba(255,255,255,0.3)',
+  border: '1px solid transparent',
   borderRadius: 'var(--radius-md)',
   color: 'var(--color-text-inverse)',
   cursor: 'pointer',
-  transition: 'background .15s',
+  transition: 'background .15s, border-color .15s',
 }
 
 const versionTriggerStyle: CSSProperties = {
@@ -1470,11 +1492,11 @@ const versionTriggerStyle: CSSProperties = {
   background: 'transparent',
   /* Reset's border exactly. These two are a pair; the kebab beside them is
      deliberately bare. */
-  border: '1px solid rgba(255,255,255,0.3)',
+  border: '1px solid transparent',
   borderRadius: 'var(--radius-md)',
   color: 'var(--color-text-inverse)',
   cursor: 'pointer',
-  transition: 'background .15s',
+  transition: 'background .15s, border-color .15s',
 }
 
 const ACTIONS: CSSProperties = {

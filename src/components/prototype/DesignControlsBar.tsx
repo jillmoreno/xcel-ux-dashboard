@@ -131,10 +131,14 @@ export function DesignControlsBar({ fullBleed = false }: { fullBleed?: boolean }
           }}
           onClick={() => setLoFi(!loFi)}
           onMouseEnter={(e) => {
-            if (!loFi) e.currentTarget.style.background = DEMO_HOVER_FILL
+            if (loFi) return
+            e.currentTarget.style.background = DEMO_HOVER_FILL
+            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
           }}
           onMouseLeave={(e) => {
-            if (!loFi) e.currentTarget.style.background = 'transparent'
+            if (loFi) return
+            e.currentTarget.style.background = 'transparent'
+            e.currentTarget.style.borderColor = 'transparent'
           }}
         >
           <Sliders size={16} aria-hidden />
@@ -153,8 +157,14 @@ export function DesignControlsBar({ fullBleed = false }: { fullBleed?: boolean }
             openFeatureFlagPanel()
             close()
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.background = DEMO_HOVER_FILL)}
-          onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.background = DEMO_HOVER_FILL
+            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.background = 'transparent'
+            e.currentTarget.style.borderColor = 'transparent'
+          }}
         >
           <Flag size={16} aria-hidden />
         </button>
@@ -236,6 +246,16 @@ const versionTagStyle = {
   color: 'rgba(255,255,255,0.55)',
 } as const
 
+/* ⚠ THE BORDER IS TRANSPARENT, NOT ABSENT — 2026-10-05, the direct ask
+   ("remove the outline, show it on hover only"). A button with no border at
+   rest and a 1px one on hover grows by 2px the moment a pointer touches it, and
+   the row of icons beside it shifts. Reserving the box and only colouring it is
+   what keeps the row still.
+
+   ⚠ KEYBOARD USERS LOSE NOTHING. `.cre-demo-controls-btn:focus-visible` in
+   `tokens.css` draws its own 1.5px outline, so focus never depended on this
+   edge — which is the thing that would otherwise make "outline on hover" an
+   accessibility regression rather than a style. */
 const iconBtnStyle = {
   display: 'inline-flex',
   alignItems: 'center',
@@ -244,9 +264,9 @@ const iconBtnStyle = {
   height: 34,
   padding: 0,
   background: 'transparent',
-  border: '1px solid rgba(255,255,255,0.3)',
+  border: '1px solid transparent',
   borderRadius: 'var(--radius-md)',
   color: 'var(--color-text-inverse)',
   cursor: 'pointer',
-  transition: 'background .15s',
+  transition: 'background .15s, border-color .15s',
 } as const
