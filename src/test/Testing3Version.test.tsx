@@ -362,21 +362,30 @@ describe('the lesson line, nested in the coursework', () => {
     expect(siblings.some((el) => el.tagName === 'BUTTON')).toBe(false)
   })
 
-  it('hides the progress bar behind `combined-progress-bar`', () => {
-    /* 2026-10-02, the direct ask. ⚠ WHAT THE OFF ARM IS ASKING: the gauge down
-       the timeline already carries a fill, a figure and a marker, so this bar
-       is the card's SECOND statement of progress — and the two are not the same
-       number today (the bar reads `percent`, 62%; the gauge is weighted across
-       the journey, 37%). Two fills of different lengths for one course. */
+  it('ships WITHOUT the progress bar, and `combined-progress-bar:on` restores it', () => {
+    /* ⚠ THIS TEST READ THE OTHER WAY ROUND UNTIL 2026-10-05, and the flip is the
+       decision rather than a fix. The flag landed 2026-10-02 defaulting ON so
+       the bar could be seen beside the gauge; `promote-to-prototype` declined
+       it, so OFF is now the reviewed baseline.
+
+       WHAT DECIDED IT: the gauge down the timeline already carries a fill, a
+       figure and a marker, so the bar was the card's SECOND statement of
+       progress — and the two were not the same number. The bar reads `percent`,
+       which is lesson progress (62%); the gauge is weighted across the whole
+       journey (37%). One course, two fills of visibly different lengths.
+
+       ⚠ THE BAR IS NOT RETIRED. If the two measures are ever reconciled this
+       becomes a live question again — does a bar read faster than a column? —
+       so the ON arm is still driven here rather than deleted. */
     renderShell(T3)
     const bar = () =>
       [...courseCard().querySelectorAll('div[aria-hidden]')].find(
         (d) => (d as HTMLElement).style.height === '8px',
       )
-    expect(bar(), 'the bar is missing by default').toBeTruthy()
+    expect(bar(), 'the bar should be absent on the baseline').toBeUndefined()
     cleanup()
-    renderShell(`${T3}&ff=combined-progress-bar:off`)
-    expect(bar()).toBeUndefined()
+    renderShell(`${T3}&ff=combined-progress-bar:on`)
+    expect(bar(), 'the ON arm should restore it').toBeTruthy()
   })
 
   it('says “Resume course”, not “Resume”', () => {

@@ -61,14 +61,23 @@ afterEach(() => {
 })
 
 describe('exam-card-placement', () => {
-  it('is in the catalog and defaults to under-course on this branch', () => {
-    /* ⚠ THIS ASSERTS A BRANCH DEFAULT, NOT A SHIPPED ONE — 2026-10-01, the
-       direct ask ("set it as the default"). `journey-column` is where it ships.
-       If `promote-to-prototype` makes either one the baseline on main, this
-       line is what says so out loud rather than letting it pass unremarked. */
+  it('is in the catalog and defaults to the SHIPPED journey column', () => {
+    /* ⚠ THIS LINE DID ITS JOB. It read `under-course` from 2026-10-01 — the
+       branch default, set by the direct ask "set it as the default" — above a
+       note saying that if `promote-to-prototype` moved the baseline, this is
+       what would say so out loud rather than letting it pass unremarked.
+
+       It has. REVIEWED AND DECLINED 2026-10-05: the baseline is `journey-column`,
+       the arm that ships. The argument is recorded on the flag — in the column
+       the card sits in a sequence that explains it (Step 1 coursework, Step 2
+       exam) and under the course card it stands alone, so the question has to
+       carry itself.
+
+       ⚠ THE OTHER ARM IS NOT GONE, and the suite below still drives it. What
+       changed is one default. */
     const flag = FEATURE_FLAGS.find((f) => f.key === 'exam-card-placement')
     expect(flag).toBeTruthy()
-    expect(flag?.defaultVariant).toBe('under-course')
+    expect(flag?.defaultVariant).toBe('journey-column')
     expect(flag?.variants?.map((v) => v.value)).toEqual(['under-course', 'journey-column'])
     expect(flag?.page).toBe('dashboard-rebrand')
   })

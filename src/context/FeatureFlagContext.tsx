@@ -869,9 +869,12 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Widgets',
     label: 'Combined course card \u2014 progress bar',
     description:
-      'Whether Testing 3\u2019s combined course card draws the 8px progress bar under its title. ON as drawn. \u26a0 THE CARD STATES ITS PROGRESS TWICE \u2014 this bar, and the gauge running down the coursework timeline a few lines below it, which carries the figure and the \u201cyou are here\u201d marker. Turning the bar off is the question of whether the timeline has made it redundant; leaving it on is the question of whether a bar reads faster than a column. \u26a0 THE TWO DO NOT MEASURE THE SAME THING TODAY: the bar is filled from the card\u2019s `percent` prop, which is lesson progress (62%), while the gauge is weighted across the whole journey (37%). So the card currently shows two fills of different lengths for one course \u2014 the strongest argument for the OFF arm, and worth settling before either is called the default. No effect outside Testing 3.',
+      'Whether Testing 3\u2019s combined course card draws the 8px progress bar under its title. \u26a0 REVIEWED AND DECLINED 2026-10-05 \u2014 it ships OFF, and the reason is the defect the ON arm carried: THE CARD STATED ITS PROGRESS TWICE, with two numbers that disagreed. The bar fills from the card\u2019s `percent` prop, which is lesson progress (62%); the gauge running down the coursework timeline a few lines below is weighted across the whole journey (37%). One course, two fills of visibly different lengths. The timeline carries the figure AND the \u201cyou are here\u201d marker, so it was the half that could stand alone. \u26a0 THE BAR IS NOT BROKEN AND IS ONE URL AWAY (`?ff=combined-progress-bar:on`) \u2014 if the two measures are ever reconciled, this becomes the live question again: does a bar read faster than a column? No effect outside Testing 3.',
     maturity: 'wip',
-    defaultEnabled: true,
+    /* ⚠ OFF IS THE REVIEWED BASELINE, not a flag nobody got to. It was `true`
+       on the branch so the bar could be seen beside the gauge; the comparison
+       happened and the gauge won. See the description for the argument. */
+    defaultEnabled: false,
     page: 'dashboard-rebrand',
   },
   {
@@ -945,11 +948,23 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       'WHICH COLUMN THE EXAM-DATE CARD LIVES IN. `under-course` (default) puts it in the LEFT column, directly below the Current course card and at that card\u2019s full width \u2014 the same slot Option 4\u2019s tab strip hangs off, which is the only place "under the current course card" stays true. `journey-column` is where it shipped: the first card of the right-hand Study Journey column, promoted above the coursework card by `journey-step-order: exam-first`. \u26a0 IT MOVES THE CARD, IT DOES NOT COPY IT \u2014 `StudyJourneyWidget` drops the card from BOTH of its own call sites (the promoted slot and the licensing list) when this is `under-course`, or the learner would be asked the same question twice on one screen. \u26a0 THE NUMBERING IS UNAFFECTED either way, because the card already consumed no step number: it asks a question rather than naming a step, so the three licensing cards are numbered by a running count that skips it. \u26a0 WHAT THE MOVE COSTS: in the journey column the card sat in a sequence that explained it \u2014 Step 1 coursework, Step 2 exam. Under the course card it stands alone, so the question has to carry itself. That is the thing to judge.',
     maturity: 'wip',
     defaultEnabled: true,
-    /* ⚠ `under-course` IS THE BRANCH DEFAULT — 2026-10-01, the direct ask ("set
-       it as the default"). `journey-column` is the shipped arm and is one click
-       away on the flag panel; `promote-to-prototype` decides whether this
-       becomes the baseline on main. */
-    defaultVariant: 'under-course',
+    /* ⚠ REVIEWED AND DECLINED, 2026-10-05 (`promote-to-prototype`). It was the
+       BRANCH default at `under-course` — 2026-10-01, the direct ask ("set it as
+       the default") — and that line used to say this skill would decide. It
+       has: the baseline goes back to `journey-column`, the arm that ships.
+
+       THE ARGUMENT, so a later reader can tell whether it still holds: in the
+       journey column the card sits in a sequence that explains it — Step 1
+       coursework, Step 2 exam — and under the course card it stands alone, so
+       the question has to carry itself. That cost was recorded when the flag
+       landed and it is what the decision turned on.
+
+       ⚠ IT WAS NEVER TESTING 3'S QUESTION. `LearnerFocusedBand` gates the move
+       on `!combinedCoursework`, so Testing 3 — the version this branch
+       promotes — overrides this flag entirely and renders the exam card in the
+       right-hand column either way. What changes here is Testing, Testing 2 and
+       QE Focused. `?ff=exam-card-placement:under-course` is the one URL. */
+    defaultVariant: 'journey-column',
     variants: [
       {
         value: 'under-course',
