@@ -1,4 +1,4 @@
-import { render, screen, cleanup } from '@testing-library/react'
+import { render, screen, cleanup, act, fireEvent } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import {
   DashboardVersionsPanel,
@@ -110,5 +110,82 @@ describe('the shipped versions', () => {
     expect(dashboardVersionsForAudience(true)).toHaveLength(
       DISCOVERABILITY_DASHBOARD_VERSIONS.length,
     )
+  })
+})
+
+/**
+ * THE DESIGNER TABS — moved here from the Feature Flag sheet on 2026-10-05,
+ * the direct ask. A VERSION is the thing a designer owns; the flags are read
+ * inside whichever version is rendering, so this is where the question belongs.
+ */
+const OWNED: VersionPickerItem[] = [
+  { ...ITEMS[0], id: 'jills', label: 'Jill’s Version' },
+  { ...ITEMS[0], id: 'erics', label: 'Eric’s Version', owner: 'eric' },
+  { ...ITEMS[0], id: 'unowned', label: 'Unowned Version' },
+]
+
+function renderOwned(designerTabs = true) {
+  return render(
+    <DashboardVersionsPanel
+      open
+      onClose={() => {}}
+      activeVersionId="jills"
+      defaultVersionId="jills"
+      onSelectVersion={() => {}}
+      onSetDefault={() => {}}
+      versions={OWNED}
+      hideSetDefault
+      designerTabs={designerTabs}
+    />,
+  )
+}
+
+describe('the designer tabs', () => {
+  it('open on Jill and show hers', () => {
+    renderOwned()
+    expect(screen.getByRole('tab', { name: 'Jill' }).getAttribute('aria-selected')).toBe('true')
+    expect(screen.getByText('Jill’s Version')).toBeTruthy()
+    expect(screen.queryByText('Eric’s Version')).toBeNull()
+  })
+
+  it('treat an UNOWNED version as Jill’s', () => {
+    /* ⚠ THE DEFAULT, AND THE ONE THAT MATTERS TODAY: every version in the real
+       catalog is unowned, so if this resolved any other way the live picker
+       would open empty. */
+    renderOwned()
+    expect(screen.getByText('Unowned Version')).toBeTruthy()
+  })
+
+  it('switch to Eric’s and show only his', () => {
+    renderOwned()
+    act(() => fireEvent.click(screen.getByRole('tab', { name: 'Eric' })))
+    expect(screen.getByText('Eric’s Version')).toBeTruthy()
+    expect(screen.queryByText('Jill’s Version')).toBeNull()
+    expect(screen.queryByText('Unowned Version')).toBeNull()
+  })
+
+  it('count beside the strip, never inside a pill', () => {
+    /* CLAUDE.md's rule for every segmented filter here. */
+    renderOwned()
+    expect(screen.getByText('2 versions')).toBeTruthy()
+    expect(screen.getByRole('tab', { name: 'Jill' }).textContent).toBe('Jill')
+  })
+
+  it('are OPT-IN — the other pickers this panel serves have no designers', () => {
+    /* ⚠ THE SAME COMPONENT draws the Explore Dashboard list and the Membership
+       page versions. Jill / Eric over a Membership version list would be two
+       people's names on something neither owns. */
+    renderOwned(false)
+    expect(screen.queryByRole('tab', { name: 'Jill' })).toBeNull()
+    expect(screen.getByText('Eric’s Version')).toBeTruthy()
+  })
+
+  it('keep the Default badge visible on a filtered tab', () => {
+    /* ⚠ COUNTED OFF THE WHOLE LIST, not the tab. The badge marks what the
+       product renders, and that does not stop being true because a filter is
+       on — hiding it on a one-version tab would make the default invisible
+       exactly where someone is deciding whether to replace it. */
+    renderOwned()
+    expect(screen.getByText('Default')).toBeTruthy()
   })
 })

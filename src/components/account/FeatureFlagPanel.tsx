@@ -1,6 +1,6 @@
 import { useEffect, useId, useRef, useState, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
-import { useLocation } from 'react-router-dom'
+import { useLocation, useSearchParams } from 'react-router-dom'
 import { ArrowLeft, ChevronDown, ChevronRight, Flag, HelpCircle, X } from '@/icons'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { Select } from '@/components/ui/Select'
@@ -19,47 +19,19 @@ import {
   flagOwner,
   type DesignerId,
 } from '@/context/FeatureFlagContext'
-import { PillTabs } from '@/components/ui/PillTabs'
 import {
   DISCOVERABILITY_DASHBOARD_VERSIONS,
+  defaultDiscoverabilityVersionFor,
   type DashboardVersion,
 } from '@/data/dashboardVersions'
 import { useFeatureFlagPanel } from './FeatureFlagPanelContext'
+import { useAccount } from '@/context/AccountContext'
 
-/**
- * THE SELECTED DESIGNER TAB, remembered per browser.
- *
- * ⚠ ITS OWN KEY, NOT PART OF `cgp.featureFlags`. That store holds flag STATE
- * and is what the Demo view deliberately suspends; which tab you were last
- * looking at is a view preference and should survive a demo session untouched.
- * Folding it in would also make an unknown designer id a parse failure for the
- * whole flag store.
- *
- * ⚠ VALIDATED ON READ against `FLAG_DESIGNERS`. A stored id for a designer who
- * has since been removed would otherwise select a tab that is not on screen,
- * and the panel would render as empty with no tab highlighted.
- */
-const OWNER_TAB_KEY = 'cgp.featureFlags.ownerTab'
-
-function readOwnerTab(): DesignerId {
-  const fallback = FLAG_DESIGNERS[0].id
-  if (typeof window === 'undefined') return fallback
-  try {
-    const raw = window.localStorage.getItem(OWNER_TAB_KEY)
-    return FLAG_DESIGNERS.some((d) => d.id === raw) ? (raw as DesignerId) : fallback
-  } catch {
-    return fallback
-  }
-}
-
-function writeOwnerTab(id: DesignerId) {
-  try {
-    window.localStorage.setItem(OWNER_TAB_KEY, id)
-  } catch {
-    /* Private browsing / blocked storage — the tab still works for this
-       session, it just will not be remembered. Not worth surfacing. */
-  }
-}
+/* ⚠ `readOwnerTab` / `writeOwnerTab` AND THEIR `cgp.featureFlags.ownerTab` KEY
+   WENT ON 2026-10-05, with the tab strip. Nothing persists a designer choice
+   here any more — the panel reads the owner off the ACTIVE VERSION, so there is
+   no choice of its own to remember. A stored key from the day it existed is
+   simply ignored. */
 
 /**
  * Map the current pathname to the FeatureFlagPageId that owns it, so
@@ -381,20 +353,32 @@ export function FeatureFlagPanel() {
   } = useFeatureFlags()
   // Transient "saved" confirmation after Set as default.
   const [justSavedDefault, setJustSavedDefault] = useState(false)
-  /* WHICH DESIGNER'S TAB IS OPEN. Remembered per browser, like everything else
-     this panel stores — a designer filtering to their own name should not have
-     to re-pick it every time the sheet opens. `FLAG_DESIGNERS[0]` is the
-     fallback, so reordering that list changes the default rather than this. */
-  const [owner, setOwnerState] = useState<DesignerId>(readOwnerTab)
-  const setOwner = (next: DesignerId) => {
-    setOwnerState(next)
-    writeOwnerTab(next)
-    /* ⚠ DROP BACK TO THE PAGE LIST ON A TAB CHANGE. The selected page is one
-       designer's; keeping it across the switch lands the other designer on a
-       page that is empty for them, which reads as a broken panel rather than
-       as a filter doing its job. */
-    setSelectedPageId(null)
-  }
+  /*
+   * WHOSE FLAGS ARE SHOWING — derived from the DASHBOARD VERSION you are on,
+   * 2026-10-05, replacing the tab strip that used to ask.
+   *
+   * ⚠ THE VERSION OWNS THE ANSWER. A flag is read inside whichever version is
+   * rendering, so "which flags matter here" is a question the version already
+   * answers — asking it again with a second tab strip was two controls for one
+   * fact.
+   *
+   * ⚠ WHAT THIS COSTS, and it is the thing to watch: a flag belongs to ONE
+   * designer, so selecting Eric's version hides every flag of Jill's — which
+   * today is all of them. It is invisible right now because every version and
+   * every flag is hers, and it will become very visible the day Eric has a
+   * version. The empty state below is what has to carry that; if it reads as a
+   * broken panel rather than a filter, this is the decision to revisit.
+   *
+   * ⚠ THE SAME RESOLUTION THE DEMO BAR USES — `?version=` else the brand
+   * default. Reading only the param would make the panel default to Jill on
+   * every fresh load regardless of which version is actually on screen.
+   */
+  const [params] = useSearchParams()
+  const { brand } = useAccount()
+  const activeVersionId = params.get('version') ?? defaultDiscoverabilityVersionFor(brand)
+  const owner = flagOwner(
+    DISCOVERABILITY_DASHBOARD_VERSIONS.find((v) => v.id === activeVersionId) ?? {},
+  )
   const location = useLocation()
   const dialogRef = useRef<HTMLDivElement | null>(null)
   const previouslyFocused = useRef<HTMLElement | null>(null)
@@ -462,11 +446,17 @@ export function FeatureFlagPanel() {
     // ⚠ THE `eslint-disable` / `eslint-enable` PAIR FOR
     // `react-hooks/set-state-in-effect` WAS HERE AND WENT ON 2026-10-05. The
     // rule stopped reporting on this effect once the designer tabs landed
-    // (`setOwner` calls `setSelectedPageId` outside any effect), and a
+    // (`setOwner` called `setSelectedPageId` outside any effect), and a
     // directive that suppresses nothing is itself a lint warning — so keeping
-    // it traded one warning for another. The reasoning above is why the
-    // pattern is deliberate; if the rule ever reports here again, put the pair
-    // back around this block rather than rewriting the effect.
+    // it traded one warning for another. That note said to put the pair back
+    // if the rule ever reported here again.
+    //
+    // ⚠ IT DID, SAME DAY. The tabs moved to the Dashboard Versions sheet, the
+    // out-of-effect `setSelectedPageId` went with them, and the rule resumed —
+    // so the pair is back, exactly as instructed. Worth knowing that this
+    // directive's presence tracks a call site in a DIFFERENT part of the
+    // component: it will come and go again.
+    /* eslint-disable react-hooks/set-state-in-effect */
     if (!open) {
       setSelectedPageId(null)
       return
@@ -478,6 +468,7 @@ export function FeatureFlagPanel() {
         ? null
         : flagPageIdForPath(location.pathname),
     )
+    /* eslint-enable react-hooks/set-state-in-effect */
   }, [open, location.pathname, location.search])
 
   // Auto-clear the "Default saved" confirmation a moment after it shows.
@@ -615,32 +606,19 @@ export function FeatureFlagPanel() {
         </header>
 
         <div style={bodyStyle}>
-          {/* TWO DESIGNERS, TWO TABS — 2026-10-05, the direct ask.
+          {/* ⚠ THE DESIGNER TAB STRIP WAS HERE FOR A DAY AND MOVED TO THE
+              DASHBOARD VERSIONS SHEET — 2026-10-05, the direct ask ("the jill
+              and eric tab should be in that Dashboard Versions and removed from
+              the feature flag side of things").
 
-              ⚠ `PillTabs`, AND NO PER-TAB COUNTS. CLAUDE.md's rule for every
-              segmented filter in this app: the shared strip, and the total
-              beside it rather than a number in each pill. The total is the
-              line under the strip here, because an owner with nothing needs a
-              sentence anyway and two readouts would disagree the moment one is
-              forgotten.
+              It is the better home: a VERSION is the thing a designer owns, and
+              the flags are read INSIDE whichever version is rendering. Two tab
+              strips asking the same question in two sheets was the duplication
+              that made it obvious.
 
-              ⚠ ABOVE THE DASHBOARD VERSION ROW, because the version row is now
-              one of the things it filters — each designer's tab offers their
-              own versions. A strip under it would read as filtering only the
-              pages. */}
-          <div style={ownerTabRowStyle}>
-            <PillTabs
-              items={FLAG_DESIGNERS}
-              active={owner}
-              onChange={setOwner}
-              label="Filter flags by designer"
-              size="compact"
-            />
-            <span style={ownerTotalStyle}>
-              {ownedDefinitions.length}{' '}
-              {ownedDefinitions.length === 1 ? 'flag' : 'flags'}
-            </span>
-          </div>
+              ⚠ THE FILTER DID NOT GO WITH IT — see `owner` below. This panel
+              still shows one designer's flags; it just no longer asks WHOSE.
+              The answer comes from the version you are on. */}
           {/* ⚠ THE DEMO-VIEW NOTICE WAS HERE AND WAS REMOVED — 2026-10-05, the
               direct ask ("remove this"). It read "Demo view — changes preview
               here only and reset when you leave." and rendered under `demoMode`.
@@ -873,24 +851,6 @@ const ownerEmptyCodeStyle: CSSProperties = {
   borderRadius: 'var(--radius-sm)',
   background: 'var(--color-neutral-100)',
   color: 'var(--color-text-primary)',
-}
-
-/* The designer tab strip + the total beside it. `space-between` so the count
-   sits at the right edge of the sheet rather than hard against the pills,
-   which would read as a count OF the selected pill. */
-const ownerTabRowStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  justifyContent: 'space-between',
-  gap: 12,
-  flexWrap: 'wrap',
-}
-
-const ownerTotalStyle: CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontSize: 12,
-  color: 'var(--color-text-tertiary)',
-  whiteSpace: 'nowrap',
 }
 
 /* ─── Step 1: Page selector ────────────────────────────────────────── */

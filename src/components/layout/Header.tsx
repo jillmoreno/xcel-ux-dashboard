@@ -484,6 +484,7 @@ export function Header() {
                happens; both cost a build. */
             dashboardVersionsForAudience(isPublicGateway())
           }
+          designerTabs
           activeVersionId={
             (new URLSearchParams(search).get('version') as DashboardVersionId | null) ??
             (discoverabilityDefault as DashboardVersionId)
