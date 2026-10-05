@@ -111,6 +111,10 @@ export type FeatureFlagDefinition = {
    *  selector at the top of `<FeatureFlagPanel>` — reviewers pick
    *  a page first, then see only the flags scoped to that page. */
   page: FeatureFlagPageId
+  /** Which designer's exploration this belongs to. Absent means Jill — see
+   *  `DesignerId`. Read it through `flagOwner()`, never directly, or the
+   *  default lives in two places. */
+  owner?: DesignerId
   /** Additional page cards this flag should ALSO surface under (it counts +
    *  renders on each). Use when one flag drives filters on more than one page —
    *  e.g. `profession-count` / `state-count` gate the filter rows on BOTH the
@@ -138,6 +142,40 @@ export type FeatureFlagDefinition = {
 // yet" so reviewers see the platform's flag-coverage at a glance.
 // Add a page here first, then tag new flag definitions with the
 // matching `page` key.
+
+/**
+ * WHOSE EXPLORATION A FLAG BELONGS TO — 2026-10-05, the direct ask: "there are
+ * 2 designers working in this project… 2 filter tabs at the top, Jill and Eric".
+ *
+ * ⚠ IT IS A PERSON, NOT A SUBJECT, and that is the distinction to hold. `group`
+ * already says WHERE a flag acts (Navigation, Widgets); two designers working
+ * the same surfaces would be split by subject and called people, which is why
+ * the owner is its own axis rather than being derived from the group.
+ *
+ * ⚠ ABSENT MEANS JILL, deliberately: every flag in the catalog today is hers,
+ * so this change touches NO existing row and Eric's tab is empty by
+ * construction rather than by a list someone has to maintain. The cost is that
+ * a new flag with no `owner` quietly becomes Jill's — right while she is the
+ * one authoring them, and the thing to revisit the day that stops being true.
+ *
+ * ⚠ IT IS A FILTER, NOT A PERMISSION. Both designers see both tabs and can flip
+ * anything in either. Nothing here gates who may change what.
+ */
+export type DesignerId = 'jill' | 'eric'
+
+/** The tab strip's order and labels. The FIRST entry is the default selection,
+ *  so reordering this changes which tab the panel opens on. */
+export const FLAG_DESIGNERS: { id: DesignerId; label: string }[] = [
+  { id: 'jill', label: 'Jill' },
+  { id: 'eric', label: 'Eric' },
+]
+
+/** A flag's (or a version's) owner, resolving the absent case in ONE place so
+ *  no call site repeats `?? 'jill'` — the shape that lets two readers of the
+ *  same catalog disagree about who owns a row. */
+export function flagOwner(def: { owner?: DesignerId }): DesignerId {
+  return def.owner ?? 'jill'
+}
 
 export type FeatureFlagPageId =
   | 'dashboard'

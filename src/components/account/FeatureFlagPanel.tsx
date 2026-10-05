@@ -16,8 +16,51 @@ import {
   type FeatureFlagPageId,
   type FeatureFlagState,
   type FeatureFlagVariant,
+  FLAG_DESIGNERS,
+  flagOwner,
+  type DesignerId,
 } from '@/context/FeatureFlagContext'
+import { PillTabs } from '@/components/ui/PillTabs'
+import {
+  DISCOVERABILITY_DASHBOARD_VERSIONS,
+  type DashboardVersion,
+} from '@/data/dashboardVersions'
 import { useFeatureFlagPanel } from './FeatureFlagPanelContext'
+
+/**
+ * THE SELECTED DESIGNER TAB, remembered per browser.
+ *
+ * ⚠ ITS OWN KEY, NOT PART OF `cgp.featureFlags`. That store holds flag STATE
+ * and is what the Demo view deliberately suspends; which tab you were last
+ * looking at is a view preference and should survive a demo session untouched.
+ * Folding it in would also make an unknown designer id a parse failure for the
+ * whole flag store.
+ *
+ * ⚠ VALIDATED ON READ against `FLAG_DESIGNERS`. A stored id for a designer who
+ * has since been removed would otherwise select a tab that is not on screen,
+ * and the panel would render as empty with no tab highlighted.
+ */
+const OWNER_TAB_KEY = 'cgp.featureFlags.ownerTab'
+
+function readOwnerTab(): DesignerId {
+  const fallback = FLAG_DESIGNERS[0].id
+  if (typeof window === 'undefined') return fallback
+  try {
+    const raw = window.localStorage.getItem(OWNER_TAB_KEY)
+    return FLAG_DESIGNERS.some((d) => d.id === raw) ? (raw as DesignerId) : fallback
+  } catch {
+    return fallback
+  }
+}
+
+function writeOwnerTab(id: DesignerId) {
+  try {
+    window.localStorage.setItem(OWNER_TAB_KEY, id)
+  } catch {
+    /* Private browsing / blocked storage — the tab still works for this
+       session, it just will not be remembered. Not worth surfacing. */
+  }
+}
 
 /**
  * Map the current pathname to the FeatureFlagPageId that owns it, so
@@ -340,6 +383,20 @@ export function FeatureFlagPanel() {
   } = useFeatureFlags()
   // Transient "saved" confirmation after Set as default.
   const [justSavedDefault, setJustSavedDefault] = useState(false)
+  /* WHICH DESIGNER'S TAB IS OPEN. Remembered per browser, like everything else
+     this panel stores — a designer filtering to their own name should not have
+     to re-pick it every time the sheet opens. `FLAG_DESIGNERS[0]` is the
+     fallback, so reordering that list changes the default rather than this. */
+  const [owner, setOwnerState] = useState<DesignerId>(readOwnerTab)
+  const setOwner = (next: DesignerId) => {
+    setOwnerState(next)
+    writeOwnerTab(next)
+    /* ⚠ DROP BACK TO THE PAGE LIST ON A TAB CHANGE. The selected page is one
+       designer's; keeping it across the switch lands the other designer on a
+       page that is empty for them, which reads as a broken panel rather than
+       as a filter doing its job. */
+    setSelectedPageId(null)
+  }
   const location = useLocation()
   const dialogRef = useRef<HTMLDivElement | null>(null)
   const previouslyFocused = useRef<HTMLElement | null>(null)
@@ -403,7 +460,15 @@ export function FeatureFlagPanel() {
     // Intentional: the page selection is seeded from the route on open and
     // reset on close — it can't be derived during render because the user
     // also mutates it by picking pages inside the panel.
-    /* eslint-disable react-hooks/set-state-in-effect */
+    //
+    // ⚠ THE `eslint-disable` / `eslint-enable` PAIR FOR
+    // `react-hooks/set-state-in-effect` WAS HERE AND WENT ON 2026-10-05. The
+    // rule stopped reporting on this effect once the designer tabs landed
+    // (`setOwner` calls `setSelectedPageId` outside any effect), and a
+    // directive that suppresses nothing is itself a lint warning — so keeping
+    // it traded one warning for another. The reasoning above is why the
+    // pattern is deliberate; if the rule ever reports here again, put the pair
+    // back around this block rather than rewriting the effect.
     if (!open) {
       setSelectedPageId(null)
       return
@@ -415,7 +480,6 @@ export function FeatureFlagPanel() {
         ? null
         : flagPageIdForPath(location.pathname),
     )
-    /* eslint-enable react-hooks/set-state-in-effect */
   }, [open, location.pathname, location.search])
 
   // Auto-clear the "Default saved" confirmation a moment after it shows.
@@ -431,12 +495,36 @@ export function FeatureFlagPanel() {
   // catalog is filtered to the in-scope keys.
   const onRebrand = location.pathname.startsWith('/dashboard-rebrand')
   const scope = flagScopeForPath(location.pathname)
-  const scopedDefinitions = scope
+  const scopeDefinitions = scope
     ? definitions.filter((d) => scope.includes(d.key))
     : definitions
+  /*
+   * WHOSE FLAGS ARE SHOWING — 2026-10-05, the direct ask for two designer tabs.
+   *
+   * ⚠ A SECOND FILTER OVER THE FIRST, not a replacement. `scope` already
+   * narrows the catalog to the feature being previewed; this narrows that to
+   * one designer. Collapsing them into one pass would make a scoped preview
+   * silently ignore the tab, which is the kind of thing that looks like the
+   * filter "not working" rather than like two rules meeting.
+   *
+   * ⚠ IT IS A FILTER, NOT A PERMISSION — both tabs are always offered, and
+   * `?ff=` still resolves every flag regardless of whose tab it is in.
+   */
+  const ownedDefinitions = scopeDefinitions.filter((d) => flagOwner(d) === owner)
+  const ownedVersions = DISCOVERABILITY_DASHBOARD_VERSIONS.filter(
+    (v: DashboardVersion) => flagOwner(v) === owner,
+  )
+  const scopedDefinitions = ownedDefinitions
   // A scoped feature with nothing in scope (e.g. Dashboard Rebrand) shows a
   // dedicated empty state instead of the page selector.
-  const scopedEmpty = scope != null && scopedDefinitions.length === 0
+  const scopedEmpty = scope != null && scopeDefinitions.length === 0
+  /* ⚠ THE OWNER'S EMPTY STATE IS NOT `scopedEmpty`, and the two must not be
+     merged. `scopedEmpty` means "this feature has no flags"; this means "this
+     designer has nothing yet", which is Eric's expected state on day one and
+     wants different words. A tab that rendered the scoped empty state would
+     tell him his FEATURE was empty. */
+  const ownerEmpty =
+    !scopedEmpty && ownedDefinitions.length === 0 && ownedVersions.length === 0
 
   const selectedPage = selectedPageId
     ? FEATURE_FLAG_PAGES.find((p) => p.id === selectedPageId) ?? null
@@ -530,6 +618,32 @@ export function FeatureFlagPanel() {
         </header>
 
         <div style={bodyStyle}>
+          {/* TWO DESIGNERS, TWO TABS — 2026-10-05, the direct ask.
+
+              ⚠ `PillTabs`, AND NO PER-TAB COUNTS. CLAUDE.md's rule for every
+              segmented filter in this app: the shared strip, and the total
+              beside it rather than a number in each pill. The total is the
+              line under the strip here, because an owner with nothing needs a
+              sentence anyway and two readouts would disagree the moment one is
+              forgotten.
+
+              ⚠ ABOVE THE DASHBOARD VERSION ROW, because the version row is now
+              one of the things it filters — each designer's tab offers their
+              own versions. A strip under it would read as filtering only the
+              pages. */}
+          <div style={ownerTabRowStyle}>
+            <PillTabs
+              items={FLAG_DESIGNERS}
+              active={owner}
+              onChange={setOwner}
+              label="Filter flags by designer"
+              size="compact"
+            />
+            <span style={ownerTotalStyle}>
+              {ownedDefinitions.length}{' '}
+              {ownedDefinitions.length === 1 ? 'flag' : 'flags'}
+            </span>
+          </div>
           {/* ⚠ THE DEMO-VIEW NOTICE WAS HERE AND WAS REMOVED — 2026-10-05, the
               direct ask ("remove this"). It read "Demo view — changes preview
               here only and reset when you leave." and rendered under `demoMode`.
@@ -559,7 +673,11 @@ export function FeatureFlagPanel() {
               setting. The row drills into the DashboardVersionsPanel (rendered
               in Header with the version props); closing this sheet first avoids
               two overlapping left slide-overs. */}
-          {onRebrand && (
+          {/* ⚠ `ownedVersions.length > 0`, NOT just `onRebrand` — 2026-10-05.
+              The versions are per designer now, so a tab whose owner has none
+              must not offer a row that drills into an empty picker. Eric has
+              none on `main` today, which is exactly the case this guards. */}
+          {onRebrand && ownedVersions.length > 0 && (
             <button
               type="button"
               onClick={() => {
@@ -585,6 +703,8 @@ export function FeatureFlagPanel() {
               XCEL cannot reach the standalone Membership page it configured. */}
           {scopedEmpty ? (
             <ScopedEmptyState />
+          ) : ownerEmpty ? (
+            <OwnerEmptyState owner={owner} />
           ) : selectedPage ? (
             <FlagListView
               page={selectedPage}
@@ -684,6 +804,105 @@ function ScopedEmptyState() {
       </p>
     </div>
   )
+}
+
+/**
+ * A DESIGNER WITH NOTHING YET — 2026-10-05, the direct ask ("Erics will be
+ * empty for now until I promote things into it").
+ *
+ * ⚠ IT IS NOT `ScopedEmptyState`, and that is the whole reason it is a second
+ * component rather than a prop. That one means "this FEATURE exposes no
+ * toggles" and tells the reader to open the panel from somewhere else. Here
+ * nothing is wrong and there is nowhere else to go: the tab is empty because
+ * nothing has been put in it, and the words have to say so or Eric reads a
+ * working panel as broken.
+ *
+ * ⚠ IT SAYS HOW THINGS GET HERE. An empty state that only reports emptiness
+ * makes the reader go and ask someone; naming `owner` means the next person to
+ * add a flag can act on it without this conversation.
+ */
+function OwnerEmptyState({ owner }: { owner: DesignerId }) {
+  const label = FLAG_DESIGNERS.find((d) => d.id === owner)?.label ?? owner
+  return (
+    <div style={ownerEmptyWrapStyle}>
+      <span aria-hidden style={ownerEmptyIconStyle}>
+        <Flag size={18} aria-hidden />
+      </span>
+      <p style={ownerEmptyTitleStyle}>Nothing in {label}’s tab yet</p>
+      <p style={ownerEmptyBodyStyle}>
+        Flags and dashboard versions appear here once they carry{' '}
+        <code style={ownerEmptyCodeStyle}>owner: &apos;{owner}&apos;</code>.
+        Everything else is under {FLAG_DESIGNERS.find((d) => d.id !== owner)?.label ?? 'the other tab'}.
+      </p>
+    </div>
+  )
+}
+
+const ownerEmptyWrapStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 10,
+  textAlign: 'center',
+  padding: '48px 24px',
+  color: 'var(--color-text-secondary)',
+}
+
+const ownerEmptyIconStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 44,
+  height: 44,
+  borderRadius: 'var(--radius-pill)',
+  background: 'var(--color-neutral-100)',
+  color: 'var(--color-text-tertiary)',
+}
+
+const ownerEmptyTitleStyle: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 15,
+  fontWeight: 600,
+  color: 'var(--color-text-primary)',
+}
+
+const ownerEmptyBodyStyle: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  lineHeight: '19px',
+  maxWidth: 300,
+}
+
+/* A code span rather than a token: this is a literal someone types into
+   `FEATURE_FLAGS`, and prose styling would hide that it is one. */
+const ownerEmptyCodeStyle: CSSProperties = {
+  fontFamily: 'var(--font-mono, ui-monospace, monospace)',
+  fontSize: 12,
+  padding: '1px 5px',
+  borderRadius: 'var(--radius-sm)',
+  background: 'var(--color-neutral-100)',
+  color: 'var(--color-text-primary)',
+}
+
+/* The designer tab strip + the total beside it. `space-between` so the count
+   sits at the right edge of the sheet rather than hard against the pills,
+   which would read as a count OF the selected pill. */
+const ownerTabRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 12,
+  flexWrap: 'wrap',
+}
+
+const ownerTotalStyle: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 12,
+  color: 'var(--color-text-tertiary)',
+  whiteSpace: 'nowrap',
 }
 
 /* ─── Step 1: Page selector ────────────────────────────────────────── */

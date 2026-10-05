@@ -1,3 +1,4 @@
+import type { DesignerId } from '@/context/FeatureFlagContext'
 import type { Brand } from '@/context/AccountContext'
 
 export type DashboardVersionId =
@@ -37,6 +38,18 @@ export type DashboardVersion = {
   createdAt: string
   modifiedAt: string
   description: string
+  /**
+   * Whose exploration this version is — 2026-10-05, with the Feature Flag
+   * panel's designer tabs. Absent means Jill, the same default `flagOwner`
+   * applies to flags, and for the same reason: every version on `main` today is
+   * hers, so nothing here needed editing.
+   *
+   * ⚠ IT GATES THE PICKER, NOT THE URL. `?version=` still resolves any id for
+   * anyone — these versions are a shared product surface and a designer filter
+   * must not make one unreachable. What the owner decides is whose TAB offers
+   * it.
+   */
+  owner?: DesignerId
 }
 
 // ARCHIVED 2026-09-16 — `mvp` ("Dashboard MVP") was unwired here and in
