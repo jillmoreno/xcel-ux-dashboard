@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type ReactNode, type CSSProperties } from 'react'
 import { ATLAS_SKIN_PARAM, atlasSkinFor } from './atlasBrandSkin'
 import { ATLAS_NAV_PARAM, atlasNavFor } from './atlasNavVersion'
 import { ATLAS_FONT_PARAM, atlasFontFor, atlasFontHref } from './atlasFontSets'
@@ -55,11 +55,6 @@ import { ResourcesPanel } from '@/components/membership/ResourcesPanel'
 import { dashboardProgressPersonaFor } from '@/data/dashboardProgressFixtures'
 import { displayedProgressPct } from '@/components/learning/learningPathsHomeUtil'
 import { CompassCoursePlayer } from '@/components/learning/CompassCoursePlayer'
-import { CourseContentV2 } from '@/components/learning/CourseContentV2'
-import {
-  NY_LH_COURSE_CHAPTERS,
-  NY_LH_CURRENT_CHAPTER_INDEX,
-} from '@/data/nyProducerRequirements'
 import { ReadinessPanel } from '@/components/readiness/ReadinessPanel'
 import { resourcesCopyFor, resourcesFor } from '@/data/membership/resourcesFixtures'
 import { NonMemberUpsellHero } from '@/components/membership/NonMemberUpsellHero'
@@ -100,6 +95,17 @@ const ATLAS_RAIL_TOGGLE_W = 61
 const ATLAS_RAIL_MS = 360
 const ATLAS_RAIL_SLIDE = `${ATLAS_RAIL_MS}ms cubic-bezier(0.65, 0, 0.35, 1)`
 import { CompassCourseOverview } from '@/components/compass/CompassCourseOverview'
+import {
+  showsRail,
+  useNavExploration,
+  useNavPlacement,
+  useSectionBreadcrumb,
+} from './navPlacement'
+import { CompassLearningPage } from '@/components/learning/CompassLearningPage'
+import { CompassSessionPage } from '@/components/learning/CompassSessionPage'
+import { HomePageHeader } from './HomePageHeader'
+import { SectionPageHeader } from './SectionPageHeader'
+import { useCompassCourseFigures } from '@/components/learning/compassCourseFigures'
 
 /**
  * Elite-only platform shell (the `platform-left-nav` flag). Renders on
@@ -137,6 +143,10 @@ import {
 
 const VALID_SECTIONS: PlatformSection[] = [
   'dashboard',
+  /* Compass Learning — reachable by deep link under EITHER navigation, not
+     only from the top nav that opens it. A section the rail cannot reach
+     still resolves; that is this list's whole rule. */
+  'compass',
   'study-plan',
   'course',
   'readiness',
@@ -246,7 +256,6 @@ function PlatformShellBody() {
      `courseNavVariant` because `navVariant` is already this file's RAIL style;
      two different navigations, and the shorter name was taken. Read with the
      other flags, unconditionally, well above any early return. */
-  const courseNavVariant = useFeatureFlag('dashboard-navigation').variant ?? 'option-1'
   /*
    * WHAT THE PLAYER IS A PLAYER FOR comes from the OPENER, not from a lookup
    * here — `launcher.meta`, supplied by the card that called `open()`.
@@ -407,15 +416,118 @@ function PlatformShellBody() {
     }
   }, [atlasPalette, atlasFont])
   const railCollapsed =
+    /* ⚠ THE ATLAS RAIL NEVER COLLAPSES ON LAUNCH — Eric's arm, kept through the
+       2026-10-05 merge. It has its own toggle (`AtlasRailToggle`) and its own
+       widths, so the shared "collapse while a course is open" rule would fight
+       a control the learner can see. False short-circuits before the override
+       is read, which is why it sits outside the ternary rather than inside it. */
     atlasNav
       ? false
       : collapseOverride && collapseOverride.scope === launcher.courseId
         ? collapseOverride.collapsed
         : launcherOpen
+  /* LEFT RAIL ⇄ TOP NAV — `nav-placement`, the navigation exploration. Under
+     `top` the header draws `PlatformTopNav` and this shell drops its rail
+     column entirely; under `left` (and whenever the flag is off) nothing below
+     changes at all, which is what keeps option 1 the shipped product rather
+     than a variant of it. */
+  /* ⚠ `topNav` MEANS "NO RAIL", NOT "TOP NAV IS SHOWING" — and under Option 3
+     those are different things. The shell's only question is whether it draws
+     the rail column; the header asks its own. Named for the layout it produces
+     rather than for the arm that produces it, because `hybrid` answers yes to
+     both questions and a `=== 'top'` here would have dropped the rail under it. */
+  const navPlacement = useNavPlacement()
+  const topNav = !showsRail(navPlacement)
+  /* `nav-rail-surface: none` drops the rail's own fill on Home, so the column
+     sits on the page instead of reading as a docked panel. Home only — see the
+     flag's description for why that is the screen it applies to. */
+  const railSurfaceFlag = useFeatureFlag('nav-rail-surface')
+  const railSurface =
+    railSurfaceFlag.enabled && active === 'dashboard' ? railSurfaceFlag.variant : 'filled'
+  const plainRail = railSurface === 'none' || railSurface === 'none-aligned'
+  /* ⚠ 16 IS MEASURED, NOT A NUDGE. With the rail's own 12px top padding the
+     first nav row's top edge sits 16px above the top of the content column's
+     first card; +16 puts the two on the same line. Re-measure it if either the
+     rail's padding or the content column's first card moves. */
+  const loweredRail = railSurface === 'none-aligned'
+  /* HOME'S PAGE HEADER — the greeting + title the Figma draws (765:3801).
+     Home is the one section with no `SectionShell` title of its own, so there
+     is nothing for this to collide with.
+
+     ⚠ EVERY ARM NOW, NOT JUST THE HYBRID — 2026-10-01, the direct ask ("ALL
+     options should include the greeting that we added to option 3"). It was
+     `navPlacement === 'hybrid'`, which meant switching arms changed the
+     navigation AND whether Home had a title: two variables moving at once, so a
+     reviewer reacting to one could not tell which. Keyed to the EXPLORATION
+     rather than to a placement, so the shipped dashboard — flag off — is
+     untouched and does not quietly grow a header. */
+  const navExploration = useNavExploration()
+  const homeHeader = navExploration && active === 'dashboard'
+  /* COURSES AND CERTIFICATES GET THE SAME HEADER, with a crumb where the
+     greeting is — 2026-10-02, the direct ask. `useSectionBreadcrumb` owns the
+     whole condition so this, `SectionShell`'s suppression of the title it
+     replaces, and each page's restacked controls cannot drift apart. */
+  const sectionHeader = useSectionBreadcrumb(active)
+  const compassFigures = useCompassCourseFigures()
   const railActive: PlatformSection = launcherOpen ? 'profile' : active
-  // Via `titleFor` so the Course section's back link names its sub-page
-  // ("Back to Overview"), matching the heading the learner just left.
+  /* Via `titleFor` so the Course section's back link names its sub-page
+     ("Back to Overview"), matching the heading the learner just left. Eric's
+     change — base and main both read `SECTION_TITLES[active]` here. */
   const launcherBackLabel = titleFor(active, false, params.get('coursePage'))
+  /*
+   * THE TOP NAV CANNOT CLOSE A LAUNCHER, SO THE SHELL DOES IT.
+   *
+   * `handleSelect` — the rail's path — closes both launchers before it writes
+   * the section, because a course player left open would cover whatever the
+   * learner just navigated to. `PlatformTopNav` writes the same param but
+   * renders in `Header`, which sits in `AppLayout` ABOVE these providers and
+   * therefore cannot reach `close()`.
+   *
+   * Reacting to `active` here closes the same two launchers for the same
+   * reason, and only under `top`: leaving option 1 to `handleSelect` keeps the
+   * shipped path byte-for-byte what it was. Opening a launcher does not change
+   * `active`, so this never fires on its own actions.
+   */
+  useEffect(() => {
+    if (!topNav) return
+    launcher.close()
+    resourceLauncher.close()
+    // Section changes only — the two `close` identities are not the trigger.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [active, topNav])
+
+  /*
+   * A NEW SECTION STARTS AT THE TOP — 2026-10-02, the direct ask, raised on the
+   * Home tiles: "the screen should automatically scroll to the top of the page
+   * on the new pages".
+   *
+   * The shell swaps sections IN PLACE — `?section=` with `replace`, no route
+   * change — so the browser has no navigation to reset the scroll for. Click My
+   * Courses from the bottom of Home and you arrive at My Courses already
+   * scrolled past its own header, which reads as a half-loaded page.
+   *
+   * ⚠ EVERY SECTION, NOT JUST THE TWO THAT PROMPTED IT. The ask came from the
+   * tiles, but the defect is the shell's, and the alternative is worse: Courses
+   * resetting while Compass Learning keeps your scroll is the kind of
+   * inconsistency that gets filed as a bug against the one that resets.
+   *
+   * ⚠ NOT ON MOUNT. A reload mid-page restores the browser's own scroll
+   * position, and yanking that to the top would be undoing something the user
+   * did rather than something a navigation did. The ref is what tells the two
+   * apart — `active` is already set on the first render.
+   *
+   * ⚠ INSTANT, NOT SMOOTH. The repo's other `scrollTo` calls animate because
+   * they move WITHIN a page the reader is looking at; this one lands on
+   * different content, and sliding 600px through a section that is being
+   * replaced as you go reads as a glitch rather than as motion.
+   */
+  const lastSection = useRef<PlatformSection | null>(null)
+  useEffect(() => {
+    if (lastSection.current !== null && lastSection.current !== active) {
+      window.scrollTo({ top: 0, behavior: 'auto' })
+    }
+    lastSection.current = active
+  }, [active])
   // Selecting a rail item closes any open launcher + writes the section to the
   // URL (Dashboard drops the param so the logo's `/dashboard-rebrand` reads as
   // Home). `replace` keeps history clean — the same in-place feel as before.
@@ -701,7 +813,7 @@ function PlatformShellBody() {
    * THE COMPASS TAKEOVER — `course-launcher-style: compass`.
    *
    * Returned BEFORE the shell grid, not rendered inside it, and that is the
-   * whole structural point of the variant. The player draws its own 260px
+   * whole structural point of the variant. The player draws its own 220px
    * contents sidebar in the space the dashboard rail occupies, so the two
    * cannot share a screen; `lo-fi` keeps the rail and renders in the content
    * column exactly as it always has, a few lines below.
@@ -717,33 +829,82 @@ function PlatformShellBody() {
    * persona's override, and the player would state a different percentage from
    * the dashboard it just covered.
    */
-  if (launcherOpen && launcherStyle === 'compass') {
+  /*
+   * COMPASS LEARNING — `?section=compass`, the top nav's second destination
+   * (Figma 765:3471).
+   *
+   * RETURNED BEFORE THE SHELL GRID, for the same structural reason the
+   * launcher's compass takeover below is: the page draws its own 220px
+   * sidebar, so it cannot also sit inside a grid that reserves a column for
+   * one. The app header survives either way — `<Header />` is in `AppLayout`,
+   * above this component — which is what keeps the top nav on screen with
+   * Compass Learning lit, exactly as the frame draws it.
+   *
+   * ⚠ ABOVE THE LAUNCHER BRANCH ON PURPOSE. If a launcher is somehow open when
+   * the section changes, the effect further up closes it — but ordering this
+   * first means the nav's own destination wins the frame rather than racing
+   * that effect for it.
+   */
+  if (active === 'compass') {
     /*
-     * ⚠ TWO WHOLE PAGES, NOT TWO BODIES — `dashboard-navigation`, 2026-09-23.
+     * THE SESSION IS A PARAM ON THIS SECTION, NOT A SECTION OF ITS OWN —
+     * `?section=compass&session=1`, what "Start session" opens.
      *
-     * Option 2 draws its OWN header (logo · Compass · course · section, plus
-     * the controls top-right), which is the navigation the A/B is about. It
-     * shares no chrome with Option 1: no contents sidebar, no breadcrumb, and
-     * not even the app header — `CourseContentV2` suppresses that one while it
-     * is mounted, or there would be two XCEL logos stacked.
-     *
-     * THE BRANCH MOVED HERE from inside `CompassCoursePlayer`, where it lived
-     * while Option 2 was only a variant BODY. Keeping it there would have meant
-     * a page rendering a player it does not use in order to reach a branch that
-     * throws the player away.
+     * A param rather than a new section because leaving the session must land
+     * back on Compass Learning, and a section would make Back a guess about
+     * where the learner came from. It is still a URL, so the session is
+     * deep-linkable and survives a refresh, which a `useState` on this page
+     * would not.
      */
-    if (courseNavVariant === 'option-2') {
+    if (params.get('session') === '1') {
       return (
-        <CourseContentV2
-          courseTitle={launchedTitle}
-          chapterTitle={NY_LH_COURSE_CHAPTERS[NY_LH_CURRENT_CHAPTER_INDEX] ?? NY_LH_COURSE_CHAPTERS[0]}
-          percentComplete={launchedPercent}
-          completedLessons={launcher.meta.completedLessons ?? 0}
-          totalLessons={launcher.meta.totalLessons ?? 0}
-          onClose={launcher.close}
+        <CompassSessionPage
+          onExit={() =>
+            setParams(
+              (prev) => {
+                const next = new URLSearchParams(prev)
+                next.delete('session')
+                return next
+              },
+              { replace: true },
+            )
+          }
         />
       )
     }
+    return (
+      <CompassLearningPage
+        onStartSession={() =>
+          setParams(
+            (prev) => {
+              const next = new URLSearchParams(prev)
+              next.set('session', '1')
+              return next
+            },
+            { replace: true },
+          )
+        }
+        courseTitle={compassFigures.title}
+        percentComplete={compassFigures.percentComplete}
+        completedLessons={compassFigures.completedLessons}
+        totalLessons={compassFigures.totalLessons}
+        timeRemaining={compassFigures.timeRemaining}
+        onLeave={() => handleSelect('dashboard')}
+      />
+    )
+  }
+  if (launcherOpen && launcherStyle === 'compass') {
+    /*
+     * ⚠ THE PLAYER IS UNCONDITIONAL AGAIN — `dashboard-navigation` ARCHIVED
+     * 2026-10-01.
+     *
+     * A branch stood HERE choosing between this and `CourseContentV2`, the
+     * full-screen course page with its own header and no breadcrumb. That was
+     * the A/B a moderator assigned per participant; Option 1 won, so the
+     * branch, the flag and the demo control all went together. The component
+     * is kept unreferenced — see the `dashboard-navigation-ab` row in
+     * `archivedItems.ts`, which names this spot as edit 2 of the re-wire.
+     */
     return (
       <CompassCoursePlayer
         courseTitle={launchedTitle}
@@ -804,7 +965,17 @@ function PlatformShellBody() {
         // ask): its content, player bar and footer take every pixel past the
         // rail, so the 1180 cap and the right filler go (filler kept at 0 so
         // the grid's children do not change).
-        gridTemplateColumns: atlasNoRail
+        /* ⚠ `topNav` IS TESTED FIRST, MERGED 2026-10-05, AND IT HAS TO BE.
+           Main's top-nav arm renders ONE track and drops the rail child
+           entirely; every Atlas arm below it renders THREE and keeps the
+           column. The grid's tracks and its children are counted together, so
+           a three-track template with no rail child puts the content in the
+           FIRST track. Under `nav-placement: top` the Atlas rail therefore
+           does not draw at all — which is what "top nav" means, and the same
+           answer `atlasNoRail` already gives on Eric's own no-rail pages. */
+        gridTemplateColumns: topNav
+          ? 'minmax(0, 1fr)'
+          : atlasNoRail
           ? // No rail: the course player still fills the window; every other
             // page centres its usual width (1278 Home, 1180 elsewhere).
             compassCourseRail
@@ -831,165 +1002,234 @@ function PlatformShellBody() {
         transition: atlasRailToggle ? `grid-template-columns ${ATLAS_RAIL_SLIDE}` : undefined,
       }}
     >
-      {/* Left nav rail — flush-left column. In the locked kiosk share view
-          (`?focus=1`) the rail stays VISIBLE but is made `inert` (below), so a
-          tester sees the full nav yet can't click into any other section. */}
-      <div
-        style={{
-          // Atlas: a white rail with a 1px rule (Figma 49:3365). Expanding
-          // Top Nav: the column stays (so the grid's cells do not shift),
-          // empty and unpainted — see the rule and the contents below.
-          background: atlasNoRail || atlasRailClosedNow
-            ? 'transparent'
-            : atlasNav ? 'var(--color-atlas-nav-surface)' : 'var(--color-nav-surface)',
-          // Collapsing: the column CLIPS the 260px rail (`clip`, not `hidden`,
-          // which would make it the sticky rail's scroll box and unpin it),
-          // and its surface and rule fade with the slide.
-          ...(atlasRailToggle
-            ? {
-                overflowX: 'clip' as const,
-                transition: `background-color ${ATLAS_RAIL_SLIDE}, border-color ${ATLAS_RAIL_SLIDE}`,
-              }
-            : null),
-          // Rail right border — transparent in every mode (the rail blends
-          // into the content pane); kept as a token hook in case a separator
-          // is wanted later.
-          // The Compass rail's own rule is the design's #d9d9d9, a shade apart
-          // from the Atlas rail's #dfe3eb.
-          borderRight: atlasNoRail
-            ? 'none'
-            : atlasRailClosedNow
-            ? // No border at all closed: the column CLIPS at its inner edge,
-              // so even a transparent 1px border cut off the toggle's own right
-              // rule (its last pixel) — 2026-10-01.
-              'none'
-            : compassCourseRail
-            ? '1px solid var(--color-compass-rail-rule)'
-            : atlasNav
-            ? '1px solid var(--color-atlas-nav-rule)'
-            : '1px solid var(--color-nav-border)',
-        }}
-      >
-        {/* Pin the rail: sticky within its column so it never scrolls away with
-            page content. Height = viewport minus the sticky chrome above (72px
-            header, +40px prototype bar when the bar is shown). The column
-            stretches to full content height, so its surface fills below the
-            pinned rail on long pages; the rail's own overflow logic handles
-            short viewports. `inert` in focus mode disables every rail control
-            (mouse + keyboard) while keeping it visible + on-brand. */}
-        {atlasNoRail ? null : (
+      {/* THE RAIL IS THE WHOLE OF OPTION 1. Under `nav-placement: top` it is
+          not hidden or collapsed — it does not render, and the grid above has
+          no column for it, so the content is not sitting in a shell with an
+          empty gutter where the nav used to be. */}
+      {!topNav && (
+        <>
+        {/* Left nav rail — flush-left column. In the locked kiosk share view
+            (`?focus=1`) the rail stays VISIBLE but is made `inert` (below), so a
+            tester sees the full nav yet can't click into any other section. */}
         <div
-          inert={focus || undefined}
           style={{
-            position: 'sticky',
-            top: navRailTop,
-            height: navRailHeight,
-            /* Gutters from `PlatformSideNav`, which owns them: the collapse
-               toggle's negative margin cancels this exact value to sit flush on
-               the rail's right edge, and the collapsed 8 is what leaves a 76px
-               column room for a 20px icon over its label. */
-            /* 12 ABOVE, RESTORED — 2026-09-17, the direct ask, and it reverses
-               a change made earlier the same day for a reason that no longer
-               holds.
-            
-               It went to 0 to "shift this up" while the collapse toggle sat at
-               the TOP of the rail: that gave the nav a 28px row above the
-               groups, so the 12 was pushing an already-lowered list further
-               down and the rail started 12px below the content column.
-            
-               The toggle moved to the foot, below Get Help. With nothing above
-               Home any more, 0 put the first row hard against the header's
-               bottom edge — so the padding is doing its original job again
-               rather than compounding a gap that has gone. */
-            // Atlas: the design's 12 / 20 / 24.
-            padding: atlasNav
-              ? `12px ${RAIL_GUTTER}px 24px`
-              : `12px ${railCollapsed ? RAIL_GUTTER_COLLAPSED : RAIL_GUTTER}px 40px`,
-            boxSizing: 'border-box',
-            // A subtle cue that the nav is locked, without looking broken.
-            opacity: focus ? 0.85 : undefined,
-            // Atlas: the rail's own width whatever its column is, so nothing
-            // reflows as it collapses — the column clips it instead.
-            ...(atlasRailToggle ? { width: ATLAS_RAIL_W } : null),
+            /* ⚠ THE TWO BRAND COLOURS, PINNED ON THE COLUMN — 2026-09-29.
+
+               Option 3 draws the rows in the Compass sidebar's treatment, which
+               reads `--color-text-secondary` and `--color-primary-500`. Inside
+               this column those resolved to the BASE ramp (#4f4f4f and the teal
+               #028f81) rather than XCEL's (#666666 / #2d5872) — measured on the
+               rendered rows, not guessed — so the same token name produced a
+               different colour here than on the Compass page.
+
+               The fix is the shape `lightRailStyle` already uses for the nav
+               tokens: capture the value ONCE here, where it resolves correctly,
+               under names of our own. These aliases are ordinary (unregistered)
+               custom properties, so they inherit down to the rows normally —
+               which is the half the originals were not doing.
+
+               ⚠ ALIASES, NOT LITERALS. They still point at the brand tokens, so
+               a brand switch still moves them; pinning `#666666` here would
+               have fixed XCEL and broken the other five. */
+            ['--color-rail-row-idle' as string]: 'var(--color-text-secondary)',
+            ['--color-rail-row-active' as string]: 'var(--color-primary-500)',
+            /* ⚠ FOUR SURFACES ON ONE PROPERTY, MERGED 2026-10-05 — Eric's two
+               (no rail, or mid-collapse, go transparent; Atlas takes its own
+               surface) and main's `plainRail`, which drops the fill on Home
+               under `nav-rail-surface: none`. Atlas is tested BEFORE
+               `plainRail` because both can be true at once and the Atlas
+               surface is the more specific statement of the two. */
+            background:
+              atlasNoRail || atlasRailClosedNow
+                ? 'transparent'
+                : atlasNav
+                ? 'var(--color-atlas-nav-surface)'
+                : plainRail
+                ? 'transparent'
+                : 'var(--color-nav-surface)',
+            // Collapsing: the column CLIPS the 260px rail (`clip`, not `hidden`,
+            // which would make it the sticky rail's scroll box and unpin it),
+            // and its surface and rule fade with the slide.
+            ...(atlasRailToggle
+              ? {
+                  overflowX: 'clip' as const,
+                  transition: `background-color ${ATLAS_RAIL_SLIDE}, border-color ${ATLAS_RAIL_SLIDE}`,
+                }
+              : null),
+            // Rail right border — transparent in every mode (the rail blends
+            // into the content pane); kept as a token hook in case a separator
+            // is wanted later.
+            // The Compass rail's own rule is the design's #d9d9d9, a shade apart
+            // from the Atlas rail's #dfe3eb.
+            borderRight: atlasNoRail
+              ? 'none'
+              : atlasRailClosedNow
+              ? // No border at all closed: the column CLIPS at its inner edge,
+                // so even a transparent 1px border cut off the toggle's own right
+                // rule (its last pixel) — 2026-10-01.
+                'none'
+              : compassCourseRail
+              ? '1px solid var(--color-compass-rail-rule)'
+              : atlasNav
+              ? '1px solid var(--color-atlas-nav-rule)'
+              : '1px solid var(--color-nav-border)',
           }}
         >
-          {atlasRailToggle ? (
-            <AtlasRailToggle
-              closed={atlasRailClosed}
-              onToggle={() => setAtlasRailClosed((c) => !c)}
-              besideBar={compassCourseRail}
-            />
-          ) : null}
+          {/* Pin the rail: sticky within its column so it never scrolls away with
+              page content. Height = viewport minus the sticky chrome above (72px
+              header, +40px prototype bar when the bar is shown). The column
+              stretches to full content height, so its surface fills below the
+              pinned rail on long pages; the rail's own overflow logic handles
+              short viewports. `inert` in focus mode disables every rail control
+              (mouse + keyboard) while keeping it visible + on-brand. */}
+          {atlasNoRail ? null : (
           <div
-            id="cre-atlas-rail-body"
-            inert={atlasRailClosedNow || undefined}
-            className={atlasRailToggle ? 'cre-atlas-rail-slide' : undefined}
-            style={
-              atlasRailToggle
-                ? {
-                    transform: atlasRailClosedNow ? 'translateX(-100%)' : 'translateX(0)',
-                    visibility: atlasRailClosedNow ? 'hidden' : 'visible',
-                    transition: `transform ${ATLAS_RAIL_SLIDE}, visibility 0s linear ${atlasRailClosedNow ? ATLAS_RAIL_MS : 0}ms`,
-                  }
-                : undefined
-            }
+            inert={focus || undefined}
+            style={{
+              position: 'sticky',
+              top: navRailTop,
+              height: navRailHeight,
+              /* Gutters from `PlatformSideNav`, which owns them: the collapse
+                 toggle's negative margin cancels this exact value to sit flush on
+                 the rail's right edge, and the collapsed 8 is what leaves a 76px
+                 column room for a 20px icon over its label. */
+              /* 12 ABOVE, RESTORED — 2026-09-17, the direct ask, and it reverses
+                 a change made earlier the same day for a reason that no longer
+                 holds.
+
+                 It went to 0 to "shift this up" while the collapse toggle sat at
+                 the TOP of the rail: that gave the nav a 28px row above the
+                 groups, so the 12 was pushing an already-lowered list further
+                 down and the rail started 12px below the content column.
+
+                 The toggle moved to the foot, below Get Help. With nothing above
+                 Home any more, 0 put the first row hard against the header's
+                 bottom edge — so the padding is doing its original job again
+                 rather than compounding a gap that has gone. */
+              /* ⚠ TWO ARMS, MERGED 2026-10-05. Atlas keeps its design's
+                 12 / 20 / 24; every other rail takes main's `loweredRail` — the
+                 MEASURED 28 that lines the first nav row up with the content
+                 column's first card under `nav-rail-surface: none-aligned`.
+                 Neither is a nudge; re-measure the 28 if either the rail's
+                 padding or that first card moves. */
+              padding: atlasNav
+                ? `12px ${RAIL_GUTTER}px 24px`
+                : `${loweredRail ? 28 : 12}px ${
+                    railCollapsed ? RAIL_GUTTER_COLLAPSED : RAIL_GUTTER
+                  }px 40px`,
+              boxSizing: 'border-box',
+              // A subtle cue that the nav is locked, without looking broken.
+              opacity: focus ? 0.85 : undefined,
+              // Atlas: the rail's own width whatever its column is, so nothing
+              // reflows as it collapses — the column clips it instead.
+              ...(atlasRailToggle ? { width: ATLAS_RAIL_W } : null),
+            }}
           >
-          {/* AUTO-COLLAPSED while the Compass launcher is open — 2026-09-17,
-              the direct ask. Driven by `launcherOpen`, the same flag that
-              already blanks the rail's active state, so the two cannot get out
-              of step: a rail that highlighted nothing AND stayed full width
-              would be the worst of both. */}
-          {/* On Atlas, the COURSE page swaps the rail for the course's own
-              (Figma 49:3536); its breadcrumb's home icon is the way back. Keyed
-              on `active`, not `railActive`: the launcher opening over the
-              course blanks the rail's highlight, and must not swap the rail. */}
-          {/* COMPASS LMS COURSE LEFT RAIL NAVIGATION (Figma 49:2922) — on the
-              course's own "Course" page, i.e. an actual Compass course page.
-              The ONLY page using it today; see `AtlasCompassCourseRail`. */}
-          {compassCourseRail ? (
-            <AtlasCompassCourseRail
-              onHome={() => handleSelect('dashboard')}
-              onOverview={() => selectCoursePage('overview')}
-              onGetHelp={() => handleSelect('support')}
-            />
-          ) : atlasNav && active === 'course' ? (
-            <AtlasCourseSideNav
-              page={coursePage}
-              onSelectPage={selectCoursePage}
-              onHome={() => handleSelect('dashboard')}
-            />
-          ) : atlasNav ? (
-            <AtlasCompassSideNav active={railActive} onSelect={handleSelect} />
-          ) : (
-            <PlatformSideNav
-              active={railActive}
-              onSelect={handleSelect}
-              variant={navVariant}
-              hiddenSections={trimmedRailSections}
-              collapsed={railCollapsed}
-              /*
-               * NO TOGGLE ON TESTING — 2026-09-21, the direct ask ("hide the
-               * collapse menu"). ONE WITHHELD PROP, which is the mechanism the
-               * rail already documents ("Omitted → no toggle renders, which is
-               * what the kiosk/menu embeds want") and the same shape as
-               * `onOpenLearningPath={qeFocused ? undefined : …}` on the band.
-               *
-               * `collapsed` is still PASSED, deliberately. The launcher
-               * auto-collapse is not the learner's control and must keep working:
-               * hiding the toggle removes the manual affordance, not the state.
-               */
-              onToggleCollapse={
-                testingLayout
-                  ? undefined
-                  : () =>
-                      setCollapseOverride({ scope: launcher.courseId, collapsed: !railCollapsed })
+            {atlasRailToggle ? (
+              <AtlasRailToggle
+                closed={atlasRailClosed}
+                onToggle={() => setAtlasRailClosed((c) => !c)}
+                besideBar={compassCourseRail}
+              />
+            ) : null}
+            <div
+              id="cre-atlas-rail-body"
+              inert={atlasRailClosedNow || undefined}
+              className={atlasRailToggle ? 'cre-atlas-rail-slide' : undefined}
+              style={
+                atlasRailToggle
+                  ? {
+                      transform: atlasRailClosedNow ? 'translateX(-100%)' : 'translateX(0)',
+                      visibility: atlasRailClosedNow ? 'hidden' : 'visible',
+                      transition: `transform ${ATLAS_RAIL_SLIDE}, visibility 0s linear ${atlasRailClosedNow ? ATLAS_RAIL_MS : 0}ms`,
+                    }
+                  : undefined
               }
-            />
-          )}
+            >
+            {/* AUTO-COLLAPSED while the Compass launcher is open — 2026-09-17,
+                the direct ask. Driven by `launcherOpen`, the same flag that
+                already blanks the rail's active state, so the two cannot get out
+                of step: a rail that highlighted nothing AND stayed full width
+                would be the worst of both. */}
+            {/* On Atlas, the COURSE page swaps the rail for the course's own
+                (Figma 49:3536); its breadcrumb's home icon is the way back. Keyed
+                on `active`, not `railActive`: the launcher opening over the
+                course blanks the rail's highlight, and must not swap the rail. */}
+            {/* COMPASS LMS COURSE LEFT RAIL NAVIGATION (Figma 49:2922) — on the
+                course's own "Course" page, i.e. an actual Compass course page.
+                The ONLY page using it today; see `AtlasCompassCourseRail`. */}
+            {compassCourseRail ? (
+              <AtlasCompassCourseRail
+                onHome={() => handleSelect('dashboard')}
+                onOverview={() => selectCoursePage('overview')}
+                onGetHelp={() => handleSelect('support')}
+              />
+            ) : atlasNav && active === 'course' ? (
+              <AtlasCourseSideNav
+                page={coursePage}
+                onSelectPage={selectCoursePage}
+                onHome={() => handleSelect('dashboard')}
+              />
+            ) : atlasNav ? (
+              <AtlasCompassSideNav active={railActive} onSelect={handleSelect} />
+            ) : (
+              <PlatformSideNav
+                /* OPTION 3's RAIL — no group captions, and rows drawn the way
+                   Compass Learning draws them, so the two columns read as one
+                   component. Both are Option 3 only: Option 2 is the shipped
+                   rail and has to stay the control condition. */
+                captions={navPlacement === 'hybrid' ? false : undefined}
+                compassRows={navPlacement === 'hybrid'}
+                active={railActive}
+                onSelect={handleSelect}
+                variant={navVariant}
+                hiddenSections={trimmedRailSections}
+                /* COMPASS LEARNING AS A RAIL ROW — 2026-10-01, and it closes the
+                   gap the left-nav arm shipped with: the top nav carries Compass
+                   as its second pill, and under the rail there was no control for
+                   it ANYWHERE, so the destination the whole branch was built
+                   around was reachable only by deep link on half the options.
+
+                   ⚠ THIS REVERSES THE NOTE ON `compass` IN `PlatformSideNav`,
+                   deliberately. That note kept it off the rail so the two
+                   navigations would not "offer different things" — written when
+                   the rail held seven rows and the header three. Under the
+                   restructure both arms are meant to reach the SAME five places
+                   (Home, Compass, My Courses, Certificates, Help) and differ only
+                   in where the controls sit, so the row is what makes them
+                   comparable rather than what breaks it.
+
+                   EXPLORATION ONLY. `navExploration`, not `navPlacement ===
+                   'left'` — those read the same under the flag but the second is
+                   also true with the flag OFF, which would put a Compass row in
+                   the shipped rail for everyone. */
+                compassRow={navExploration && navPlacement === 'left'}
+                collapsed={railCollapsed}
+                /*
+                 * NO TOGGLE ON TESTING — 2026-09-21, the direct ask ("hide the
+                 * collapse menu"). ONE WITHHELD PROP, which is the mechanism the
+                 * rail already documents ("Omitted → no toggle renders, which is
+                 * what the kiosk/menu embeds want") and the same shape as
+                 * `onOpenLearningPath={qeFocused ? undefined : …}` on the band.
+                 *
+                 * `collapsed` is still PASSED, deliberately. The launcher
+                 * auto-collapse is not the learner's control and must keep working:
+                 * hiding the toggle removes the manual affordance, not the state.
+                 */
+                onToggleCollapse={
+                  testingLayout
+                    ? undefined
+                    : () =>
+                        setCollapseOverride({ scope: launcher.courseId, collapsed: !railCollapsed })
+                }
+              />
+            )}
+            </div>
           </div>
+          )}
         </div>
-        )}
-      </div>
+        </>
+      )}
       {/* Content column carries no padding of its own — every section is
           wrapped in `SectionShell`, which owns the uniform 40px gutter + the
           rail-matched title. When a course launcher is open, it replaces the
@@ -999,12 +1239,28 @@ function PlatformShellBody() {
           footer's container then reaches the page's base and the footer stays
           pegged to it at the end of the scroll (it rode up 48px before). */}
       <div
-        style={
-          compassCourseRail
-            ? { minWidth: 0, display: 'flex', flexDirection: 'column' }
-            : { minWidth: 0 }
-        }
+        style={{
+          minWidth: 0,
+          ...(compassCourseRail ? { display: 'flex', flexDirection: 'column' as const } : null),
+          /* Under the top nav this column IS the page, so it carries the
+             centering the rail's flush-left grid used to make unnecessary.
+             1172 is the design's own content width — Figma 765:3801 insets it
+             110 either side of a 1392 frame — and `SectionShell`'s 40px gutter
+             lives inside it, unchanged. */
+          ...(topNav ? { maxWidth: 1172, width: '100%', margin: '0 auto' } : null),
+        }}
       >
+        {homeHeader && !launcher.courseId ? <HomePageHeader /> : null}
+        {/* Same slot as Home's header and for the same reason: it sits ABOVE
+            `SectionPanel` so the section keeps its own 40px gutter without the
+            header being nested inside the padded `<section>`. `SectionShell`
+            drops its top gutter in exchange — see `headerAbove` there. */}
+        {sectionHeader && !launcher.courseId ? (
+          <SectionPageHeader
+            title={SECTION_TITLES[active]}
+            onBack={() => handleSelect('dashboard')}
+          />
+        ) : null}
         {launcher.courseId ? (
           <CourseLauncherView
             courseId={launcher.courseId}
@@ -1518,6 +1774,7 @@ function MobileNavDrawer({
  *  single title; each embedded page hides its own (subtitles stay). */
 const SECTION_TITLES: Record<PlatformSection, string> = {
   dashboard: 'Home',
+  compass: 'Compass Learning',
   'study-plan': 'Study Plan',
   course: 'Course',
   readiness: 'Readiness',
@@ -1683,6 +1940,20 @@ function SectionShell({
   // the Compass page, at the Overview's 56px margin. See `ResourcesPanel`.
   const atlasResources =
     active === 'resources' && isAtlasCompassNavVersion(shellParams.get('version'))
+  /* ⚠ COURSES AND CERTIFICATES NO LONGER TITLE THEMSELVES FROM HERE.
+     `SectionPageHeader` draws their title (at Home's size) above this shell, so
+     both the hero and the `<h1>` below have to stand down — two titles is the
+     failure this suppresses, and it would look like a styling bug rather than a
+     missing branch. */
+  const breadcrumbHeader = useSectionBreadcrumb(active)
+  /* ⚠ A PAGE HEADER ABOVE ME MEANS I ADD NO TOP GUTTER. The exploration gives
+     Home a greeting + title (`HomePageHeader`), which already carries the 24px off the
+     top; leaving this section's own 24 in stacked the two and left a hole
+     between the title and the first card. Read here rather than threaded as a
+     prop — the condition is the same one the shell renders the header on, and
+     two places deciding it separately is how they come to disagree. */
+  const headerAbove =
+    (useNavExploration() && active === 'dashboard') || breadcrumbHeader
   // Partner Offers for non-members gets its own marketing hero + locked cards
   // (Figma 63:16150) — NOT the generic LockedBenefitPage. Free Content is
   // OPEN TO ALL: non-members see the same page as members (free items keep their
@@ -1730,7 +2001,13 @@ function SectionShell({
   // Declared here rather than beside `libraryHero` above because `heroFor` is
   // brand-aware now and `brand` is not in scope until this line.
   const hero =
-    benefitUpsell || partnerNonMember || libraryHero || atlasResources ? null : heroFor(active, brand)
+    /* ⚠ FIVE SUPPRESSORS, MERGED 2026-10-05. `atlasResources` and
+       `breadcrumbHeader` arrive from different branches and say the same
+       thing — something else is already drawing this page's title — so they
+       join the same list rather than competing for it. */
+    benefitUpsell || partnerNonMember || libraryHero || atlasResources || breadcrumbHeader
+      ? null
+      : heroFor(active, brand)
   const SEARCH_MIN_ITEMS = 12
   const heroSearchHidden =
     active === 'support' ||
@@ -1763,9 +2040,18 @@ function SectionShell({
         // (2026-09-24), so Home and the course pages share one margin. Safe
         // despite the note above: the Testing home Atlas renders has no
         // full-bleed band cancelling a `-40px`.
+        /* ⚠ THE ATLAS ARM KEEPS ITS FLAT 56, MERGED 2026-10-05 — `headerAbove`
+           only reaches the OTHER arm. The two are answering different
+           questions: 56 is a page margin Atlas sets on all four sides, while
+           `headerAbove ? 0 : 24` is the top gutter standing down because
+           `HomePageHeader` or `SectionPageHeader` already carried it. Atlas
+           draws neither of those headers, so folding it in would have taken
+           56px off the top of a page nothing was sitting above. */
         padding: atlasHome || atlasResources
           ? 56
-          : `24px ${isAccountSection(active) ? ACCOUNT_SECTION_GUTTER : 40}px 64px`,
+          : `${headerAbove ? 0 : 24}px ${
+              isAccountSection(active) ? ACCOUNT_SECTION_GUTTER : 40
+            }px 64px`,
       }}
     >
       {libraryHero ? (
@@ -1834,7 +2120,7 @@ function SectionShell({
             {resourcesCopyFor(brand).heroDescription}
           </p>
         </header>
-      ) : learningPathHomeActive || active === 'courses' ? null : active ===
+      ) : learningPathHomeActive || active === 'courses' || breadcrumbHeader ? null : active ===
         'dashboard' ? (
         // Dashboard hides its page title visually — the content shifts up to the
         // top gutter — while keeping an `<h1>` in the document for a11y.

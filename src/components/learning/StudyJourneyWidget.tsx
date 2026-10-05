@@ -1,9 +1,11 @@
+import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
+import { useLoFi } from '@/context/LoFiContext'
 import type { LearningPathSummary } from '@/data/learningFixtures'
 import { GetLicensedRail, StudyJourneyRail } from './StudyJourneyRail'
 import { ExamScheduleWidget } from './ExamScheduleWidget'
 import { COMPASS_BUTTON } from '@/components/compass/compassButton'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
-import { useState, type CSSProperties } from 'react'
+import { useState, type CSSProperties, type ReactNode } from 'react'
 import { journeyStopsFor } from './studyJourneyUtil'
 import { clearExamDate, useExamDate, writeExamDate } from '@/data/examDateStore'
 import { dateFromIso } from '@/lib/studyPace'
@@ -15,6 +17,7 @@ import {
 } from '@/data/nyProducerRequirements'
 import {
   widgetCardFramedStyle,
+  widgetCardOutlinedStyle,
   widgetCardStyle,
   widgetEyebrowStyle,
   widgetRuleStyle,
@@ -64,11 +67,15 @@ export function StudyJourneyWidget({
   onOpenRequirements,
   onOpenLearningPath,
   framed = false,
+  outlined = false,
   splitSteps = false,
   cardPadding,
   // The prop keeps its name for callers; locally `atlasHome`, because main's
   // `journey-step-order` reads into a local `examFirst` of its own.
   examFirst: atlasHome = false,
+  examElsewhere = false,
+  journeyElsewhere = false,
+  afterExam,
 }: {
   path: LearningPathSummary
   onOpenStop?: (courseId: string) => void
@@ -87,6 +94,73 @@ export function StudyJourneyWidget({
    * shell is not defined somewhere else.
    */
   framed?: boolean
+  /**
+   * …and give that card the hairline edge the combined course card opposite it
+   * carries — Testing 3 only, 2026-10-02, the direct ask.
+   *
+   * ⚠ A SECOND BOOLEAN RATHER THAN A BORDER ON `framed`. Testing and Testing 2
+   * pass `framed` too and neither has a bordered neighbour to match; widening
+   * `framed` would reverse their own 2026-09-21 "remove stroke" ask on their
+   * behalf. `outlined` implies framed and is ignored without it — see the shell
+   * below.
+   */
+  outlined?: boolean
+  /**
+   * The exam-date card is being rendered somewhere ELSE on this page, so this
+   * column must not draw it — `exam-card-placement: under-course`, 2026-10-01.
+   *
+   * A PROP, NOT A FLAG READ, for the same reason `framed` is one: where the
+   * card sits is a fact about the PAGE's layout, and the band is what knows
+   * both halves of it. Reading the flag here as well would be two components
+   * deciding the same thing separately, which is how they come to disagree —
+   * and the failure mode is the learner being asked the same question twice on
+   * one screen.
+   */
+  examElsewhere?: boolean
+  /**
+   * The WHOLE JOURNEY is being rendered elsewhere — Testing 3 draws the
+   * coursework AND the licensing steps inside one card in the left column
+   * (2026-10-01).
+   *
+   * ⚠ IT WAS `courseworkElsewhere` AND MEANT ONLY THE FIRST CARD. Renamed when
+   * steps 2 and 3 followed the coursework into the combined block, which is the
+   * honest name for what it now does — a boolean called `courseworkElsewhere`
+   * that also suppresses the licensing cards is the kind of drift that makes
+   * the next reader check the call site to find out what it means.
+   *
+   * ⚠ WHAT SURVIVES IN THIS COLUMN is the exam card (when `examElsewhere` is
+   * false — the two are independent) and the Quick links card. That is the
+   * arrangement, not a leftover: the question about the learner's exam date and
+   * a flat list of sheet shortcuts are not steps in the route, so they are the
+   * two things that do NOT belong in a card about the route.
+   *
+   * ⚠ IT DROPS CARDS, NOT THE NUMBERING THEY CARRY. The combined block still
+   * labels itself Step 1 and the licensing cards still render as 2 and 3 over
+   * there. Renumbering anything here would say the journey changed length.
+   *
+   * A PROP for the same reason `examElsewhere` is one: the band knows where it
+   * put the block, and two components reading the same version separately is
+   * how they come to disagree.
+   */
+  journeyElsewhere?: boolean
+  /**
+   * Extra content directly UNDER the exam card — Testing 3, 2026-10-01, the
+   * direct ask ("move my courses and certificates to the right rail under the
+   * exam date section").
+   *
+   * ⚠ A SLOT, NOT A VERSION BRANCH. This widget never learns what the tiles
+   * are; it learns that a caller may want something between the exam card and
+   * whatever follows. With the prop absent nothing renders and the column is
+   * byte-identical.
+   *
+   * ⚠ IT RENDERS WHETHER OR NOT THE EXAM CARD IS HERE, which is the honest
+   * behaviour rather than an oversight: `examElsewhere` can move that card to
+   * the left column, and content positioned "after the exam card" has to still
+   * appear when there is no exam card — otherwise two independent flags combine
+   * to delete it. Position is what the name promises; existence is not
+   * conditional on a sibling.
+   */
+  afterExam?: ReactNode
   /**
    * Render the post-course steps as THEIR OWN WIDGETS — one card each — instead
    * of as rows in a single Get Licensed rail below the journey. Testing only
@@ -119,16 +193,27 @@ export function StudyJourneyWidget({
   // hairline between them becomes a third divider between two edges. A gap
   // separates them instead.
   const syllabus = useFeatureFlag('dashboard-journey-style').variant === 'syllabus'
+  /* ⚠ `outlined` ONLY MEANS ANYTHING WITH `framed`. A border on a block that
+     sits bare on the page grey would be an outline round nothing — the exact
+     "chrome around chrome" the bare shell exists to avoid — so the order here
+     is the guard rather than a preference. */
   const baseShell: CSSProperties = framed
-    ? cardPadding != null
-      ? { ...widgetCardFramedStyle, padding: cardPadding }
+    ? outlined
+      ? widgetCardOutlinedStyle
       : widgetCardFramedStyle
     : widgetCardStyle
+  /* ⚠ THREE LAYERS, MERGED 2026-10-05 and applied in this order. The base is
+     main's framed/outlined/bare choice; `cardPadding` is the caller's override;
+     the Atlas radius is last because it is the narrowest. Each spreads a COPY —
+     never a write to the shared style object, which three versions read. */
+  const paddedShell: CSSProperties =
+    cardPadding != null ? { ...baseShell, padding: cardPadding } : baseShell
   /* The Atlas home's cards keep 12px corners (`--radius-lg`): main took the
      shared framed radius to 4 on 2026-09-28 for the Testing home, and that
-     reached these through the merge (2026-10-02). A copy, never a write to the
-     shared style object. */
-  const shell: CSSProperties = atlasHome ? { ...baseShell, borderRadius: 'var(--radius-lg)' } : baseShell
+     reached these through the merge (2026-10-02). */
+  const shell: CSSProperties = atlasHome
+    ? { ...paddedShell, borderRadius: 'var(--radius-lg)' }
+    : paddedShell
   const stops = journeyStopsFor(path)
   /*
    * THE LICENSING CARDS START AT 2 — 2026-09-23, the direct ask: "This whole
@@ -196,8 +281,24 @@ export function StudyJourneyWidget({
   /* Schedule State Exam is `GET_LICENSED_STEPS[0]`; exam-first lifts it above
      the coursework card and the rest follow underneath. Sliced rather than
      re-sorted so the published order stays the source of truth. */
-  const promoted = examFirst ? GET_LICENSED_STEPS[0] : null
-  const licensingAfter = examFirst ? GET_LICENSED_STEPS.slice(1) : GET_LICENSED_STEPS
+  /* THE EXAM CARD MAY NOT BE THIS COLUMN'S AT ALL — `exam-card-placement`,
+     2026-10-01. On `under-course` the band renders it beneath the Current
+     course card instead, so this column must not draw it.
+
+     ⚠ IT HAS TO COME OUT OF BOTH LISTS, and that is the whole care needed here.
+     `examFirst` decides WHICH list holds Schedule State Exam — the promoted
+     slot, or the licensing list — so suppressing one of them leaves the card
+     rendering from the other depending on an unrelated flag's arm, which is a
+     duplicate question on screen that only appears in half the combinations.
+     The file's own note already warns that BOTH CALL SITES BRANCH THE SAME WAY.
+
+     ⚠ NO RENUMBERING FOLLOWS. The card consumes no step number on this arm
+     (see the note above), so removing it closes no gap and moves nothing. */
+  const examHere = !examElsewhere
+  const promoted = examFirst && examHere ? GET_LICENSED_STEPS[0] : null
+  const licensingAfter = (examFirst ? GET_LICENSED_STEPS.slice(1) : GET_LICENSED_STEPS).filter(
+    (step) => examHere || step.id !== 'schedule-exam',
+  )
   /* COLLAPSED — `dashboard-journey-complete`, and it only means anything at
      100%. Below that the two variants are identical, which is why the flag is
      read here and applied against `courseworkDone` rather than gating the
@@ -215,6 +316,14 @@ export function StudyJourneyWidget({
      only with `examFirst`, which is the Atlas home. */
   const railV2 = useFeatureFlag('atlas-right-rail-layout').variant === 'v2'
 
+
+  /* ⚠ NO LO-FI BRANCH HERE, DELIBERATELY. This widget is a COMPOSITION — the
+     promoted step, the coursework card and one card per licensing step, each
+     with its own `shell`. A branch at this level returned a single block of
+     bars and flattened four cards into one, which loses exactly the thing lo-fi
+     is supposed to keep: the template. The leaves own it instead —
+     `ExamDateCard`, `StudyJourneyRail` (inside the coursework card) and
+     `LicensingStepWidget` below. */
   if (splitSteps) {
     /* ── THE ATLAS HOME (feat/atlas-compass-global-nav) ──────────────────
        Its own right rail, unchanged by the 2026-10-02 merge of main: the
@@ -459,7 +568,13 @@ export function StudyJourneyWidget({
               hideSheetLink={quickLinks}
             />
           ))}
-        {collapseCoursework ? (
+        {afterExam}
+        {/* ⚠ THE COURSEWORK CARD MAY BE IN THE OTHER COLUMN — Testing 3's
+            combined block absorbs it. Checked BEFORE `collapseCoursework`,
+            because that branch draws its own card too and a page showing both
+            the combined block and a "Coursework complete" stub would be the
+            same subject twice in the shape this version exists to remove. */}
+        {journeyElsewhere ? null : collapseCoursework ? (
           <section aria-label="Study journey" style={shell}>
             <p className="cre-eyebrow-ink" style={collapsedEyebrowStyle}>
               {`Step ${courseworkStep} · Atlas Study Journey`}
@@ -480,7 +595,7 @@ export function StudyJourneyWidget({
             />
           </section>
         )}
-        {licensingAfter.map((step) => {
+        {(journeyElsewhere ? [] : licensingAfter).map((step) => {
           /* ⚠ A RUNNING COUNT, not `stepStart + i`. On `ask-first` the exam card
              takes no number, so an index-derived number would leave a hole
              exactly where it sits. `nextNumber` only advances for cards that
@@ -552,7 +667,12 @@ export function StudyJourneyWidget({
             and were all already reachable. This is a second, flatter way in for
             someone who knows what they want, which is what a quick-links block
             is for. */}
-        {quickLinks ? (
+        {/* ⚠ TESTING 3 DRAWS ITS OWN — `journeyElsewhere` suppresses this card
+            too as of 2026-10-01. That version replaced the Quick links stack
+            and the nav tiles above it with ONE six-tile grid
+            (`HomeTileGrid`), which carries these three destinations and the
+            same CTA ids. Leaving this would render them twice. */}
+        {quickLinks && !journeyElsewhere ? (
         <section aria-label="Quick links" style={shell}>
           <p className="cre-eyebrow-ink" style={widgetEyebrowStyle}>
             Quick links
@@ -831,6 +951,13 @@ export function ScheduleExamBanner({
   )
 }
 
+/* ⚠ IT WAS EXPORTED FOR ONE BUILD (2026-10-01) so Testing 3 could draw steps 2
+   and 3 inside its combined card with a bare shell. That turned out to need a
+   DISCLOSURE — collapsed to the heading, expanding to the fee and detail — and
+   threading one through here would have put an accordion on QE Focused, Testing
+   and Testing 2 for one version's ask. Testing 3 forks the markup and imports
+   the data instead (`JourneyStepDisclosure` in `CombinedCourseCard`), so this
+   is module-private again. */
 function LicensingStepWidget({
   step,
   number,
@@ -947,6 +1074,10 @@ function LicensingStepWidget({
    */
   const storedExam = useExamDate()
   const [editingExam, setEditingExam] = useState(false)
+  /* ⚠ WITH THE OTHER HOOKS, not beside the lo-fi branch further down — there
+     is a conditional return between here and there, so a `useLoFi()` at the
+     branch would be a hook after an early return. */
+  const { loFi } = useLoFi()
   const scheduled = hasCapture && Boolean(storedExam) && !editingExam
   /*
    * NOTHING HERE CAN BE DONE YET — 2026-09-23, the direct ask: these steps
@@ -966,6 +1097,20 @@ function LicensingStepWidget({
    * inference from its shape.
    */
   const pending = !hasCapture
+  /* ⚠ TWO EARLY RETURNS, MERGED 2026-10-05, AND LO-FI GOES FIRST. Both can be
+     true at once — the Atlas banner is a layout, lo-fi is a view mode — and
+     lo-fi winning is the right way round: it renders the placeholder INSIDE
+     whatever shell applies, so the banner still reads as a banner in wireframe.
+     The other order would have shown a fully drawn banner in lo-fi mode. */
+  /* LO-FI — the card's own shell stays, its contents go. One of the leaves the
+     composition above delegates to. */
+  if (loFi) {
+    return (
+      <section aria-label={heading ?? step.title} style={pending ? pendingStepStyle : shell}>
+        <LoFiWidgetBody rows={3} ariaLabel="Lo-fi licensing step" />
+      </section>
+    )
+  }
   if (banner) {
     /* THE BANNER IS THE QUESTION AND A YES / NO — 2026-10-01, the designer's
        requests, in order: no fee line, no "Schedule State Exam →" link, no

@@ -783,26 +783,33 @@ copy is absent.
 
 ### Testing — the pacing exploration version (2026-09-21)
 
-> ⚠ **NO LONGER XCEL'S DEFAULT.** It was, from 2026-09-22, and this paragraph
-> used to say so. `defaultDiscoverabilityVersionFor('xcel')` returns
-> **Testing** (`discoverability-testing`) now, and QE Focused was archived from
-> the picker on 2026-09-22 — see `ARCHIVED_ITEMS`. Its `?version=` still
-> resolves and 163 tests still render it, which is why this section stays.
+> ⚠ **NO LONGER XCEL'S DEFAULT EITHER — it was displaced in turn, 2026-10-05.**
+> `defaultDiscoverabilityVersionFor('xcel')` returns **Testing 3**
+> (`discoverability-testing-3`). This paragraph has now been wrong twice in the
+> same way, which is why it keeps its history rather than being rewritten: QE
+> Focused was the default, then Testing, then this. All three still resolve by
+> `?version=` and all three are still tested, which is why their sections stay.
 >
-> What a fresh `/dashboard-rebrand?demo=1` lands on is the Testing version.
-> That is a data change in `dashboardVersions.ts`, not a flag — worth knowing,
+> What a fresh `/dashboard-rebrand?demo=1` lands on is **Testing 3** — the
+> version that says the course and its coursework ONCE, as a single card. That
+> is a data change in `dashboardVersions.ts`, **not a flag** — worth knowing,
 > because the flag catalog is the first place anyone looks for "what does
 > Prototypes render" and this line is not in it.
 
-**THE COMMITTED REBRAND DEMO DEFAULTS**, as of 2026-09-28 — what `?demo=1`
+**THE COMMITTED REBRAND DEMO DEFAULTS**, as of 2026-10-05 — what `?demo=1`
 renders with nothing stored. Kept here rather than in the catalog because the
 catalog says what each flag DOES; this says which way the baseline is set.
+
+⚠ **THE VERSION IS NOT IN THIS TABLE AND IS THE BIGGEST LINE OF ALL.** Every
+flag below is read INSIDE whichever dashboard version is rendering, and that
+version is `discoverability-testing-3`, set in `dashboardVersions.ts`. Four of
+the rows added on 2026-10-05 have no effect under any other version.
 
 | Flag | Baseline | What it puts on the page |
 |---|---|---|
 | `course-launcher-style` | `compass` | Start course / Resume opens the full Compass course player — the takeover with the contents tree, the eight-page rail and the Rubi aside — rather than the lo-fi placeholder |
 | `study-pace-chooser` | `options` | Three selectable plans under "Select Your Preferred Study Pace" at 0%; past 0% the picker goes and the card REPORTS instead — "Your Study Pace", a finish date, and an activity band of one bar per day since enrolment. ⚠ It also disables the Study Plan link in BOTH states, so **Build my own is unreachable in the baseline** |
-| `dashboard-navigation` | `option-1` | **Nothing visible.** Option 1 is the Compass player as it stands; `option-2` is a second course-content page with its own header, and ships present-but-hidden as the variant arm of a user-test A/B (`?ff=dashboard-navigation:option-2`) |
+| ~~`dashboard-navigation`~~ | — | **ARCHIVED 2026-10-05.** Option 1 won the Navigation A/B outright, so the flag had one arm left and the demo-bar control went with it. The Compass player is unchanged — this is the FLAG going, not the design. `CourseContentV2.tsx` (option 2) is unwired but intact; `archivedItems.ts` carries the re-wire |
 | `study-pace-readout` | `stats` | The card's lower half is three divided cells — Course Access, Course Completion, Days to Review — instead of three sentences |
 | `dashboard-text-tiers` | `neutral` | **Nothing.** The warm ink ramp ships OFF, reviewed and declined 2026-09-23; the flag is here so the comparison stays one URL away (`?ff=dashboard-text-tiers:tiers`) |
 | `study-pace-widget` | on | The Study Pace card exists at all |
@@ -820,6 +827,14 @@ catalog says what each flag DOES; this says which way the baseline is set.
 | `study-pace-hidden` | on | **Promoted 2026-09-28 — the Study Pace tile is GONE from the baseline.** ⚠ Worth knowing what that costs: the presets card, the activity band and the derived-pace readout were the most-worked surface of the week, and none of them is on the page any more. Everything behind it is intact and one flag away (`?ff=study-pace-hidden:off`) |
 | `nav-rail-icons` | `small` | **Promoted 2026-09-28.** Rail glyphs at 14px rather than 17, so the label leads. The COLLAPSED rail is unaffected — it keeps its 20px glyph, because an unlabelled, unglyphed collapsed rail is the mis-click failure |
 | `nav-rail-captions` | on | **Nothing.** MY LEARNING / SUPPORT stay, reviewed and kept 2026-09-28 (`?ff=nav-rail-captions:off`) |
+| `nav-placement` | `top` | **Promoted 2026-10-05 — the navigation moved into the header.** A row carrying Home · Compass Learning (Figma 765:3801); the shell drops the rail column and the content runs full width at 1172. Everything the rail held is RE-HOMED rather than dropped: My Courses + Certificates become tiles on Home, Help gets its own control (`nav-help`), and Courses/Certificates swap the shell's section title for Home's header with a `← Back to Home` crumb. ⚠ WHAT IT COSTS, stated rather than discovered: a two-item header carries Home and Compass only, so every other section — Purchases, Transcripts, Support, Profile — is reachable from Home or by deep link and from nowhere else once you leave Home. The crumb closes that for the two sections the tiles lead to and for no others. ⚠ `left` IS NOT THE SAME AS OFF: ON at `left` keeps the exploration's own additions (the Compass rail row, Home's greeting header) while restoring the rail; OFF drops both. `?ff=nav-placement:left` and `?ff=nav-placement:off` are different pages |
+| `nav-help` | `header-icon` | **Promoted 2026-10-05, and only meaningful because `nav-placement` was.** A `?` in the header utilities, left of the bell, opening the Help SHEET. `profile-menu` puts the same sheet on a row directly above Logout (`?ff=nav-help:profile-menu`) — discoverability versus a tidier header, one component, two triggers. ⚠ INERT UNDER `nav-placement: left`, where the rail's own Get Help row carries it and a second control would be a duplicate |
+| `nav-rail-surface` | `filled` | **Nothing.** The rail keeps its own fill, which is how it ships; `none` drops it on Home so the column sits on the page rather than reading as a docked panel (`?ff=nav-rail-surface:none`). Listed because the flag is new, not because the baseline moved |
+| `journey-scale-style` | `gauge` | **Promoted 2026-10-05. Testing 3 only.** The coursework timeline becomes a SCALE: 0 at the top, 100 at the bottom in regular weight down the left, a 1px remainder line, a 2px filled spine, and the 37% figure in DM Serif Display beside a knob with a green glow at the live lesson. ⚠ THE TENSION TO JUDGE, because it is not a bug and will not announce itself: this arm was chosen to show PROPORTION, but anchoring its marker to the current lesson made it choose POSITION — so 0 and 100 bracket a line whose marker is not at its proportional height. Three other arms are one URL away and the exploration is NOT closed |
+| `journey-stop-mark` | `dash` | **Promoted 2026-10-05. Testing 3 only.** An unreached stop is a 12×2 dash on the timeline rather than an empty circle, so the green active node is the only circle on the spine and reads as "you are here" without competing with five lookalikes. `circle` restores the matched set (`?ff=journey-stop-mark:circle`) |
+| `home-tile-style` | `stacked` | **Promoted 2026-10-05. Testing 3 only.** The six right-rail destinations — My Courses, My Certificates, Flashcards, Exam Information, Applying for License, State Requirements — are full-width stacked rows with no outline and a 20% tint on hover. `square` draws them as outlined square tiles instead (`?ff=home-tile-style:square`). ⚠ SAME SIX, SAME ORDER, SAME CTA IDS in both arms, so the variant compares LAYOUT and nothing else. ⚠ Three of the six open a SHEET and three move the page, drawn identically — a tile's appearance does not predict whether you leave Home |
+| `combined-progress-bar` | off | **Nothing, and that is the reviewed answer — declined 2026-10-05.** The 8px bar under Testing 3's course title. It shipped ON on the branch so it could be seen beside the gauge, and the comparison found the defect: the bar fills from `percent`, which is LESSON progress (62%), while the gauge a few lines below is weighted across the whole JOURNEY (37%) — one course, two fills of different lengths. The timeline carries the figure and the marker, so it was the half that could stand alone. One URL away (`?ff=combined-progress-bar:on`), and the live question again if the two measures are ever reconciled |
+| `exam-card-placement` | `journey-column` | **Nothing — declined 2026-10-05.** The shipped position: the exam-date card is the first card of the right-hand Study Journey column. `under-course` moves it below the Current course card at that card's full width (`?ff=exam-card-placement:under-course`). The argument that decided it: in the column the card sits in a sequence that explains it — Step 1 coursework, Step 2 exam — and under the course card it stands alone, so the question has to carry itself. ⚠ NOT TESTING 3'S QUESTION AT ALL: `LearnerFocusedBand` gates the move on `!combinedCoursework`, so the promoted version overrides this flag and renders the card in the column either way. This row is about Testing, Testing 2 and QE Focused |
 
 ⚠ ONE CHANGE ON THE 2026-09-29 MERGE IS NOT BEHIND ANY FLAG, and it is the one
 to know about because no `?ff=` will turn it off. **The Governing Agency contact
@@ -833,13 +848,67 @@ that route the phone number is now one hop further away. Restoring it is one
 `<GoverningAgencyBlock />` in `GetLicensedStepPanel`.
 `QeFocusedVersion.test.tsx` carries the inverted assertion.
 
-⚠ `dashboard-navigation` DEFAULTS TO ITS CONTROL ARM, WHICH BREAKS THIS REPO'S
-USUAL BRANCH RULE (2026-09-24). A designer's branch normally defaults its own
-work ON so the branch build shows it. Option 2 is one arm of an A/B a moderator
-assigns per participant, not a proposal replacing Option 1 — defaulting it on
-would make every other link, and this baseline, silently the variant, and the
-comparison would have no control. A test enforces the default so it cannot
-drift back.
+⚠ **THREE CHANGES ON THE 2026-10-05 MERGE ARE BEHIND NO FLAG**, same reason the
+paragraph above exists — no `?ff=` will turn them off.
+
+1. **A new section starts at the top.** The shell swaps sections in place
+   (`?section=` with `replace`, no route change), so the browser had no
+   navigation to reset the scroll for — click My Courses from the bottom of Home
+   and you arrived already scrolled past its header. `PlatformShell` now resets
+   on every section change. ⚠ NOT ON MOUNT, deliberately: a reload mid-page
+   restores the browser's own position, and yanking that to the top undoes
+   something the USER did rather than something a navigation did.
+2. **Steps 2 and 3 of Testing 3's card offer their own sheets** — Exam
+   Information at the foot of Pass State Exam; Applying for License and State
+   Requirements at the foot of Get Licensed. ⚠ All three destinations are now on
+   screen TWICE, once here and once as a right-rail tile, and that duplication is
+   deliberate: the rail is a flat list of places, and a learner who has just
+   opened a step is asking about that step. They share the rail's CTA ids, so a
+   moderated run that breaks one breaks both — which means a session cannot ask
+   which of the two placements they reached for.
+3. **Testing 3's right column takes the course card's hairline**
+   (`1px solid var(--color-primary-100)`). It re-adds what a 2026-09-21 ask
+   removed, and that note is kept rather than rewritten: the stroke went when
+   this column stood against a left column of bare blocks, where an outline was
+   the only one on screen. Testing 3 changed the other side. It is a SEPARATE
+   style (`widgetCardOutlinedStyle`) because Testing and Testing 2 share the
+   frameless shell and neither has a bordered neighbour to match.
+
+⚠ **AND FIVE MORE ON THE SECOND 2026-10-05 MERGE** (`jill/flag-panel-owners`),
+for the same reason — nothing here is behind a flag, so no `?ff=` reverses it.
+That branch had **no promotion candidates at all**: no flag default moved, no
+new flag landed, the default version did not change and all three versions were
+already `ready`. These are what it changed anyway.
+
+1. **A fresh course reads "30 days to complete course"**, not 29.
+   `MAX_DEMO_DAYS_LEFT` went to 30 and `timeRemaining` now counts in days at
+   `days <= 30` rather than `< 30` — 30 used to render as "4 wks", which is why
+   the cap was 29. ⚠ `timeRemaining` IS SHARED, so this moves every surface that
+   prints a remaining time, not just the course card. ⚠ It shows only when NO
+   exam date is set; a stored date still overrides the figure entirely.
+2. **At 0%, Testing 3 hides its lesson block** and the journey figure moves to
+   the top of the list, level with Pre-Licensing Lessons. The block named
+   "LESSON 1" to a learner who had not begun; the gauge anchors to it, so the
+   marker now falls back to the stop's own row.
+3. **Testing 3's licensing steps lost their vertical padding**, so the hover
+   band is the height of the text rather than standing 8px clear of it.
+4. **The exam countdown panel stretches** to the calendar tear-off's height.
+   ⚠ The tear-off sets that height; a longer countdown string would reverse it.
+5. **The demo controls bar was restructured** — five design-variant dropdowns
+   moved into the Feature Flag panel, Fidelity became a Lo-fi switch, and the
+   Dashboard Version got its own control. See the bar's own notes; the rule it
+   now follows is *the bar says WHO the learner is, the panel says WHICH DESIGN
+   renders* — with the version as the deliberate exception, because the robot
+   does not render on the public site and stakeholders had no route to it.
+
+⚠ `dashboard-navigation` IS GONE (archived 2026-10-05), and the paragraph that
+stood here is kept in outline because its REASONING is the reusable part. It
+defaulted to its CONTROL arm, breaking this repo's usual branch rule, because
+Option 2 was one arm of an A/B a moderator assigns per participant rather than a
+proposal replacing Option 1 — defaulting it on would have made every other link,
+and the baseline itself, silently the variant, leaving the comparison with no
+control. That rule still applies to the next A/B anyone builds. The flag itself
+ended when Option 1 won outright; `archivedItems.ts` carries the re-wire.
 
 ⚠ `study-pace-preset` IS IN THE CATALOG AND WAS NOT PROMOTED (2026-09-23). Its
 default, `recommended`, seeds nothing, so it cannot move the baseline — it only

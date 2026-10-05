@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type ComponentType } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
+  CompassMark,
   Award,
   AwardSolid,
   CalendarDay,
@@ -59,6 +60,18 @@ import { LEFT_COLUMN_FIRST_ROW_HEIGHT } from '@/components/learning/compassPlaye
 
 export type PlatformSection =
   | 'dashboard'
+  /* COMPASS LEARNING — the top nav's own destination (Figma 765:3471), added
+     with `nav-placement`.
+
+     ⚠ IT IS A RAIL ROW NOW under the left-nav arm, behind `compassRow`
+     (2026-10-01). This note used to say the opposite — that adding it would
+     "quietly make the two navigations offer different things" — which was the
+     right call when the rail held seven rows and the header three. The
+     restructure makes both arms reach the SAME five places and differ only in
+     where the controls sit, so withholding it is now what makes them differ.
+     It resolves from `?section=compass` under every arm regardless, the same
+     rule every flag-hidden row follows. */
+  | 'compass'
   // The Study Plan was a TAB on the Learning Path page until 2026-09-09; it is
   // its own rail section now, directly under Home. See LearningPathPage's
   // `studyPlanHasOwnPage`, which is the one fact both sides read.
@@ -175,6 +188,9 @@ export function PlatformSideNav({
   collapsed = false,
   onToggleCollapse,
   hiddenSections,
+  compassRow = false,
+  captions,
+  compassRows = false,
 }: {
   active: PlatformSection
   onSelect: (id: PlatformSection) => void
@@ -193,6 +209,22 @@ export function PlatformSideNav({
    * rule below — which is the behaviour this wants, not a special case.
    */
   hiddenSections?: readonly PlatformSection[]
+  /**
+   * Add a COMPASS LEARNING row directly under Home — `nav-placement: left`,
+   * 2026-10-01.
+   *
+   * ⚠ OPT-IN, AND IT MUST STAY THAT WAY. The shipped rail does not have this
+   * row and nothing outside the navigation exploration should grow one; the
+   * shell passes it only when the exploration's flag is on AND the arm is the
+   * rail (see the call site, which explains why those are two conditions and
+   * not one).
+   *
+   * WHY IT EXISTS: the top-nav arm carries Compass as its second pill. Without
+   * this the left-nav arm had no control for it anywhere, so the two arms were
+   * being compared on a different set of destinations — see the ⚠ on `compass`
+   * in `PlatformSection`, which this deliberately reverses.
+   */
+  compassRow?: boolean
   /**
    * ICON-OVER-SHORT-TEXT state, ~76px wide — 2026-09-17, the direct ask: the
    * rail auto-collapses when the Compass course launcher opens.
@@ -213,6 +245,18 @@ export function PlatformSideNav({
   /** Toggle the collapse. Omitted → no toggle renders, which is what the
    *  kiosk/menu embeds want. */
   onToggleCollapse?: () => void
+  captions?: boolean
+  /**
+   * Draw the rows the way the Compass Learning sidebar draws them — 2026-09-29,
+   * the direct ask to make the two match and to take the Compass page's style.
+   *
+   * ⚠ OPTION 3 ONLY, and that is the point rather than a limitation. Option 2
+   * IS the shipped rail; restyling its rows would change the control condition
+   * of the comparison. The rail's own treatment uses the `--color-nav-*` tokens
+   * (tuned for the DARK rail); Compass uses the text/primary ramp on white,
+   * which is the surface both of these sit on here.
+   */
+  compassRows?: boolean
 }) {
   const { brand } = useAccount()
   // `membership` / `isMember` are no longer read here: the only consumer was
@@ -276,7 +320,10 @@ export function PlatformSideNav({
   // `benefitRowsFor('xcel')` had to be authored rather than left empty.
   const hiddenBenefitSections: PlatformSection[] = brand === 'xcel' ? ['m-more'] : []
   /* Group captions — `nav-rail-captions`, 2026-09-28. On as shipped. */
-  const showCaptions = useFeatureFlag('nav-rail-captions').enabled
+  /* The flag is read unconditionally (rules of hooks); `captions` overrides the
+     answer when a caller has one. */
+  const captionFlag = useFeatureFlag('nav-rail-captions').enabled
+  const showCaptions = captions ?? captionFlag
   /* THE WHOLE PLURALIZATION CLUSTER WENT on 2026-09-28 with the Learning Path
      row — `pluralLP`, and with it `multiplePaths` and the `learning-path-version`
      read, which existed ONLY to choose "Learning Path" vs "Learning Paths" on
@@ -295,6 +342,13 @@ export function PlatformSideNav({
     // MVP navigation (Figma 53:5290) drops "Home" — the dashboard landing is a
     // later addition; the MVP rail leads straight into the learning areas.
     ...(variant === 'mvp' ? [] : [{ id: 'dashboard' as const, label: 'Home', icon: House, iconActive: HouseSolid }]),
+    /* COMPASS LEARNING — directly under Home, matching the top nav's own order
+       (Home, then Compass). Opt-in; see `compassRow`. NOT added to the MVP
+       rail, which is a Figma-specified trim (node 53:5290) and not this
+       exploration's to grow. */
+    ...(compassRow && variant !== 'mvp'
+      ? [{ id: 'compass' as const, label: 'Compass Learning', icon: CompassMark }]
+      : []),
     // Study Plan sits directly under Home — it is the pacing tool a learner
     // opens every visit, which is why it was the Learning Path page's DEFAULT
     // tab before it became a page. Gated on `supportsStudyPlan`, the same one
@@ -497,11 +551,20 @@ export function PlatformSideNav({
           WebkitMaskImage: scrollMask,
         }}
       >
-        <div ref={contentRef} style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+        {/* ⚠ WITH THE CAPTIONS OFF, THE GROUP SPACING GOES TOO. The group gap
+            (8 here + 8 under each group) is what separates one CAPTIONED group
+            from the next; with no headings to separate, it is just a hole above
+            Get Help. The captions flag's own description already promises this
+            — "lets the items run as one list" — and 4 is the `<ul>`'s own row
+            gap, so the rows come out evenly spaced end to end. */}
+        <div
+          ref={contentRef}
+          style={{ display: 'flex', flexDirection: 'column', gap: showCaptions ? 8 : 4 }}
+        >
           {groups.map((group, gi) => {
             const captionId = `platform-rail-${group.id}`
             return (
-              <div key={group.id} style={{ marginBottom: 8 }}>
+              <div key={group.id} style={{ marginBottom: showCaptions ? 8 : 0 }}>
                 {/* COLLAPSED: a divider instead of the caption, and no divider
                     above the FIRST group — a rule at the top of a list fences
                     it off from the header rather than separating anything.
@@ -546,6 +609,7 @@ export function PlatformSideNav({
                         active={active === item.id}
                         onSelect={onSelect}
                         collapsed={collapsed}
+                        compass={compassRows}
                       />
                     </li>
                   ))}
@@ -670,12 +734,15 @@ function RailRow({
   active,
   onSelect,
   collapsed = false,
+  compass = false,
 }: {
   item: RailItem
   active: boolean
   onSelect: (id: PlatformSection) => void
   /** Icon over short text, centred — see `PlatformSideNav`'s own note. */
   collapsed?: boolean
+  /** The Compass Learning sidebar's row treatment — see `compassRows`. */
+  compass?: boolean
 }) {
   // Selected rows swap to the filled/solid glyph when the item provides one;
   // idle/hover rows keep the outline icon.
@@ -730,8 +797,36 @@ function RailRow({
         // Non-color cues (fill + bold weight + aria-current + tinted icon) keep
         // it WCAG 1.4.1 compliant; the 3px left border is kept transparent so
         // rows stay aligned but no bar shows.
-        background: active ? activeBg : showHover ? HOVER_BG : 'transparent',
-        color: active || showHover ? 'var(--color-nav-fg)' : IDLE_COLOR,
+        /* ⚠ THE COMPASS TREATMENT IS A DIFFERENT RAMP, NOT A TWEAK. The rail's
+           own colours are the `--color-nav-*` tokens, which are tuned for the
+           DARK rail; the Compass sidebar sits on `--color-surface-card` and
+           uses the text/primary ramp. Mixing them is what made the two columns
+           read as different components on the same screen. `backgroundColor`
+           rather than the `background` shorthand for the same reason
+           `CompassNavRow` gives: jsdom's shorthand parser throws on
+           `color-mix()` while cloning the node. */
+        ...(compass
+          ? {
+              /* 13/1.2 and 8px/10px — `pageNavRowStyle`'s numbers, not the
+                 rail's 14 and 10px/12px. The ask was that the two match, and a
+                 row that shares the colours but not the type still reads as a
+                 different control one column over. */
+              fontSize: 13,
+              lineHeight: 1.2,
+              padding: '8px 10px',
+              backgroundColor: active
+                ? 'color-mix(in srgb, var(--color-rail-row-active) 10%, transparent)'
+                : showHover
+                  ? 'var(--color-neutral-75)'
+                  : 'transparent',
+              /* The column's aliases, not the brand tokens directly — see the
+                 note where they are pinned in `PlatformShell`. */
+              color: active ? 'var(--color-rail-row-active)' : 'var(--color-rail-row-idle)',
+            }
+          : {
+              background: active ? activeBg : showHover ? HOVER_BG : 'transparent',
+              color: active || showHover ? 'var(--color-nav-fg)' : IDLE_COLOR,
+            }),
         // Rail default is SemiBold (600); active is Bold (700). An emphasized
         // anchor item (Browse Catalog) renders Bold at rest too — one step
         // heavier than its siblings — without the active bg/color, so the
@@ -741,11 +836,17 @@ function RailRow({
         // (Option C — the secondary-tinted icon carries the cue on dark); the
         // light rail (V3) sets --color-nav-active-bar to secondary-700 so the
         // selection has a ≥3:1 indicator where the pale tint fill alone isn't.
-        borderLeft: `3px solid ${active ? activeBar : 'transparent'}`,
+        borderLeft: `3px solid ${
+          active ? (compass ? 'var(--color-rail-row-active)' : activeBar) : 'transparent'
+        }`,
         // When SELECTED, square the left corners so the accent bar reads as a
         // straight vertical bar. Idle/hover keep the full ROW radius (hover
         // logic unchanged) — only the active state overrides the left corners.
-        ...(active && { borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }),
+        /* ⚠ THE RAIL SQUARES ITS SELECTED ROW'S LEFT CORNERS so the accent
+           reads as a bar against the edge. Compass does not — its rows keep
+           `radius-md` all round, bar included — so under `compass` the squaring
+           is skipped. It is the last shape difference between the two. */
+        ...(active && !compass && { borderTopLeftRadius: 0, borderBottomLeftRadius: 0 }),
       }}
     >
       {/* Active icon: the brand PRIMARY accent, token-driven per rail (light
@@ -755,8 +856,18 @@ function RailRow({
           over 10px text; drop the glyph and it is four near-identical stubs of
           text, which is the mis-click failure the note below already guards
           against from the other direction. */}
+      {/* ⚠ THE ICON INHERITS UNDER `compass`. The rail tints a selected glyph
+          with `--color-nav-icon-active-primary` — a separate token from the
+          label's, which on this surface drew the icon and the word in two
+          different colours. `CompassNavRow` passes `color: inherit`, so the
+          glyph and the label are one colour; this matches that. */}
       {!hideIcon && (
-        <span style={{ display: 'inline-flex', color: active ? activeIconColor : 'inherit' }}>
+        <span
+          style={{
+            display: 'inline-flex',
+            color: active && !compass ? activeIconColor : 'inherit',
+          }}
+        >
           <Icon size={iconSize} aria-hidden />
         </span>
       )}

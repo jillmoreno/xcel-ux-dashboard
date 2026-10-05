@@ -39,7 +39,17 @@
 
 /** Which region of the page a control sits in — the grouping a moderator picks
  *  from when building a run, and the only thing `region` is for. */
-export type CtaRegion = 'Left nav' | 'Header' | 'Course header' | 'Jump back in' | 'Study Pace' | 'Study journey'
+export type CtaRegion =
+  | 'Left nav'
+  /* The header nav that `nav-placement: top` draws — a region of its own
+     rather than a sub-case of Header, because a moderator reading the
+     session sheet needs to know WHICH navigation the run is about. */
+  | 'Top nav'
+  | 'Header'
+  | 'Course header'
+  | 'Jump back in'
+  | 'Study Pace'
+  | 'Study journey'
 
 export type TestableCta = {
   /**
@@ -72,6 +82,21 @@ export const TESTABLE_CTAS: TestableCta[] = [
     region: 'Left nav',
     asks: 'Is the rail where they look for the rest of their courses?',
   },
+  /* ⚠ THE COMMENT SITS OUTSIDE THE BRACE, and must. `scripts/session-sheet.mjs`
+     reads this catalog by regex (`{ id: … label: … region: … asks: …`) because
+     it is a plain node script, so anything between the brace and `id:` drops
+     the row from the generated sheet — silently, and the row is then a control
+     no moderator can see.
+
+     Top nav only: there is no Compass Learning row on the rail, by the design's
+     own count of three items. Under `nav-placement: left` this control is not
+     on the page at all, which is the honest state rather than a miss. */
+  {
+    id: 'nav.compass',
+    label: 'Compass Learning',
+    region: 'Top nav',
+    asks: 'Do they read "Compass Learning" as the course, or as a catalogue?',
+  },
   {
     id: 'nav.certificates',
     label: 'Certificates',
@@ -83,6 +108,20 @@ export const TESTABLE_CTAS: TestableCta[] = [
     label: 'Get Help',
     region: 'Left nav',
     asks: 'Is this the escape hatch they reach for when stuck?',
+  },
+  /* ⚠ THE COMMENT SITS OUTSIDE THE BRACE, and must — see the note above
+     `nav.compass` for why (`scripts/session-sheet.mjs` reads this file by
+     regex).
+
+     Top nav only, and only on Courses + Certificates: it is the crumb that
+     replaces Home's greeting on the two screens the Home tiles lead to. Under
+     `nav-placement: left` it is not on the page at all, because the rail's own
+     Home row is already there. */
+  {
+    id: 'nav.back-home',
+    label: 'Back to Home',
+    region: 'Top nav',
+    asks: 'Do they look for the header\u2019s Home, or for the crumb above the title?',
   },
 
   /* ── Header ────────────────────────────────────────────────────────────── */

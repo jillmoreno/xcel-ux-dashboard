@@ -105,8 +105,26 @@ export function ExamScheduleWidget({
   onOpenStep,
   stateName = 'New York',
   today = FIXTURE_TODAY,
+  compact = false,
 }: {
   shell: CSSProperties
+  /**
+   * The SIMPLER saved readout — `exam-card-placement: under-course`,
+   * 2026-10-01, the direct ask.
+   *
+   * Replaces the tear-off calendar + hourglass panel with an eyebrow reading
+   * "Exam Date" and one line under it: `May 26, 2026 | 15 days until your
+   * exam`. Edit survives, see `ScheduledState`.
+   *
+   * ⚠ THE SAVED STATE ONLY. The opening question is untouched under both
+   * placements — it is the thing the card exists to ask, and it is already as
+   * small as it gets.
+   *
+   * A PROP, NOT A FLAG READ, matching `examElsewhere` on `StudyJourneyWidget`:
+   * the band knows where it put this card, and two components reading the same
+   * flag separately is how they come to disagree.
+   */
+  compact?: boolean
   /** Opens a sheet by id. This card only ever sends `EXAM_DETAILS_STEP_ID` —
    *  the menu it opens is what sends the real step ids back. */
   onOpenStep?: (id: string) => void
@@ -133,8 +151,39 @@ export function ExamScheduleWidget({
      be the second copy. Clear exam date is NOT a way into a sheet — it is a
      destructive control on this card's own data — so it survives the flag. */
   const quickLinks = useFeatureFlag('journey-quick-links').enabled
-  /* No stored date ⇒ the card is still asking ⇒ it wears the eyebrow. */
-  const hasEyebrow = !stored
+  /* `hasEyebrow` WAS HERE — "no stored date", which stood in for "the card is
+     still asking" until 2026-10-02. It stopped being true of EDIT MODE, where a
+     date exists and the card is asking again; `activePhase` below is the honest
+     test. */
+
+  /* ⚠ DERIVED FROM THE PHASE, NOT FROM `stored` ALONE. Edit mode has a stored
+     date too, and an "Exam Date" eyebrow over the picker would label the thing
+     the learner is in the middle of replacing. Only the settled readout takes
+     it. */
+  /* ⚠ KEYED ON THE PHASE, NOT ON `hasEyebrow` — widened 2026-10-02 so EDIT
+     MODE keeps the label. `hasEyebrow` is "no stored date", which is true of
+     the question and the first-time picker and false of the picker reached from
+     a saved date — so editing lost the eyebrow and the card's identity with it,
+     which is the thing the ask noticed. Every asking phase now wears it.
+  
+     ⚠ THE FULL SAVED READOUT STILL GETS NONE. `ScheduledState` draws its own
+     ("Your exam date") in a row with Edit, and two eyebrows stacked is what
+     this condition exists to prevent. */
+  const eyebrow = activePhase !== 'scheduled'
+    ? /* "State Exam", NOT "Quick question" — 2026-10-02, the direct ask.
+  
+         ⚠ IT GIVES UP WHAT THE OLD WORDING BOUGHT, and that is worth knowing
+         rather than discovering. "Quick question" was restored from the Figma
+         on 2026-09-29 to say this card is NOT a journey step — it asks
+         something and gets out of the way, which is why it carries no number
+         while the cards around it do. "State Exam" names the subject instead,
+         which reads as a section label like every other eyebrow on the page.
+         That is more consistent and less self-describing; the card's lack of a
+         number is now the only thing saying it is not a step. */
+      'State Exam'
+    : compact
+      ? 'Exam Date'
+      : null
 
   function openPicker(from: ReturnPhase) {
     setReturnPhase(from)
@@ -177,9 +226,19 @@ export function ExamScheduleWidget({
           an eyebrow still calling it a question would be describing the state
           it just left. Keyed on the STORE, so edit mode has no eyebrow either —
           a date exists there too. */}
-      {hasEyebrow && (
+      {/* ⚠ THE COMPACT SAVED STATE WEARS AN EYEBROW TOO, and a DIFFERENT one —
+          "Exam Date", 2026-10-01, the direct ask. That is not a contradiction
+          of the rule above: the eyebrow is gone from the saved state because
+          "Quick question" would describe a question the learner has already
+          answered, and this one does not claim there is a question. It is also
+          what carries the card's identity now that the compact readout has no
+          "Your exam date" heading of its own.
+
+          ⚠ THE FULL SAVED STATE IS UNCHANGED — still no eyebrow, because it
+          keeps that heading. The two arms differ here deliberately. */}
+      {eyebrow && (
         <p className="cre-eyebrow-ink" style={widgetEyebrowStyle}>
-          Quick question
+          {eyebrow}
         </p>
       )}
 
@@ -211,6 +270,7 @@ export function ExamScheduleWidget({
           examLabel="Your exam date"
           examDate={stored}
           today={today}
+          compact={compact}
           onEdit={() => openPicker('scheduled')}
         />
       )}
@@ -291,7 +351,12 @@ function PromptState({
           Not yet
         </button>
         <button type="button" style={yesButtonStyle} onClick={onYes}>
-          Yes
+          {/* "Yes, I know the date" — 2026-10-02, the direct ask. A bare "Yes"
+              answers the question but says nothing about what pressing it DOES;
+              this names the thing the picker is about to ask for. Its partner
+              stays "Not yet", which is already specific enough to be its
+              opposite. */}
+          Yes, I know the date
         </button>
       </div>
     </>
@@ -524,21 +589,83 @@ function ScheduledState({
   examLabel,
   examDate,
   today,
+  compact = false,
   onEdit,
 }: {
   examLabel: string
   examDate: string
   today: Date
+  /** The one-line readout — see `compact` on `ExamScheduleWidget`. */
+  compact?: boolean
   onEdit: () => void
 }) {
   const days = daysUntilIso(examDate, today) ?? 0
   const countdown =
     days < 0 ? 'Date has passed' : days === 0 ? 'Today!' : days === 1 ? '1 day' : `${days} days`
 
+  if (compact) {
+    /* ⚠ "Today!" AND "Date has passed" STAND ALONE. The full readout below
+       prints the countdown over a separate "until your exam" caption that it
+       shows whenever `days >= 0` — so at zero it reads "Today! / until your
+       exam", which is wrong and is visible in the product today. One line
+       cannot hide that the way two stacked lines do, so this composes the
+       suffix only where it is true. */
+    const countdownLine = days > 0 ? `${countdown} until your exam` : countdown
+    return (
+      <div style={compactRowStyle}>
+        <p style={compactLineStyle}>
+          {/* ⚠ NO WEEKDAY — `mediumDate`, not `longDate`. The ask spells the
+              format out ("May 26, 2026"), and the weekday is what the sr-only
+              sentence below still carries for anyone who wants it. */}
+          <span style={compactDateStyle}>{mediumDate(examDate)}</span>
+          {/* The separator is DECORATION: a screen reader announcing "vertical
+              line" between two facts is noise, and the sr-only sentence states
+              the date properly regardless. */}
+          <span style={compactSepStyle} aria-hidden>
+            |
+          </span>
+          {countdownLine}
+        </p>
+        {/* EDIT SURVIVES THE SIMPLIFICATION, deliberately. The ask named the
+            eyebrow and the line and did not mention this — but it is the only
+            route into the picker once a date exists, and the only route to
+            Clear exam date beyond it, so dropping it would make the date
+            unchangeable from the one card that owns it. It is a 12px link and
+            costs the layout nothing. */}
+        <button type="button" style={editLinkStyle} onClick={onEdit}>
+          <PenToSquare size={12} aria-hidden />
+          Edit
+        </button>
+        <p style={srOnlyDateStyle}>Exam scheduled for {longDate(examDate)}</p>
+      </div>
+    )
+  }
+
   return (
     <>
       <div style={scheduledHeaderRowStyle}>
-        <p style={scheduledTitleStyle}>{examLabel}</p>
+        {/* AN EYEBROW, NOT A HEADING — 2026-10-01, the direct ask ("change this
+            to match the eyebrow text on the other containers").
+
+            ⚠ IT BRINGS THE CARD INTO LINE WITH ITSELF, which is why this is not
+            scoped to one version. The PROMPT state of this same card already
+            leads with `widgetEyebrowStyle` ("Quick question"), and so do Quick
+            links and every licensing step beside it — the saved state was the
+            only block in the column opening on an 18px heading. The compact
+            readout added for `exam-card-placement: under-course` also wears an
+            eyebrow. This was the last holdout.
+
+            ⚠ SO IT CHANGES EVERY VERSION, deliberately: QE Focused, Testing and
+            Testing 2 all draw this card, and a flag here would be preserving an
+            inconsistency rather than comparing two ideas.
+
+            ⚠ THE WORDS ARE UNCHANGED — still `examLabel`, "Your exam date".
+            The compact arm's eyebrow says "Exam Date", so the two placements
+            now differ by one word in the same slot. The ask was about the
+            TREATMENT; unifying the copy is a separate call. */}
+        <p className="cre-eyebrow-ink" style={widgetEyebrowStyle}>
+          {examLabel}
+        </p>
         {/* Link weight, not a button — the same quietening `date-first` does
             once a date exists. Editing is no longer the main event. */}
         <button type="button" style={editLinkStyle} onClick={onEdit}>
@@ -591,6 +718,19 @@ const srOnlyDateStyle: CSSProperties = {
   whiteSpace: 'nowrap',
 }
 
+/** `May 26, 2026` — the compact readout's format. `longDate` below leads with
+ *  the weekday, which is right for the spoken sentence and too long for a line
+ *  that also carries a countdown. */
+function mediumDate(iso: string): string {
+  const [y, m, d] = iso.split('-').map(Number)
+  if (!y || !m || !d) return iso
+  return new Date(y, m - 1, d).toLocaleDateString('en-US', {
+    month: 'long',
+    day: 'numeric',
+    year: 'numeric',
+  })
+}
+
 function longDate(iso: string): string {
   const [y, m, d] = iso.split('-').map(Number)
   if (!y || !m || !d) return iso
@@ -600,6 +740,44 @@ function longDate(iso: string): string {
     day: 'numeric',
     year: 'numeric',
   })
+}
+
+/* ─── the compact readout (`exam-card-placement: under-course`) ───────────── */
+
+/* The line and Edit on one row, Edit pinned right — the same shape
+   `scheduledHeaderRowStyle` gives the full readout, so the two arms put their
+   Edit control in the same place and switching between them does not move it. */
+const compactRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'baseline',
+  justifyContent: 'space-between',
+  gap: 12,
+  marginTop: 6,
+}
+
+const compactLineStyle: CSSProperties = {
+  margin: 0,
+  minWidth: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 15,
+  lineHeight: '22px',
+  /* The countdown is the quieter half. The DATE is the fact the learner came
+     for; "15 days until your exam" is the consequence of it, and giving both
+     the same weight on one line leaves nothing to land on first. */
+  fontWeight: 400,
+  color: 'var(--color-text-secondary)',
+}
+
+const compactDateStyle: CSSProperties = {
+  fontWeight: 700,
+  color: 'var(--color-text-primary)',
+}
+
+const compactSepStyle: CSSProperties = {
+  /* Padding rather than margin so the rule sits in its own space without the
+     line's own word spacing doubling up either side of it. */
+  padding: '0 8px',
+  color: 'var(--color-text-tertiary)',
 }
 
 /* ─── styles ───────────────────────────────────────────────────────────────
@@ -615,63 +793,91 @@ const questionStyle: CSSProperties = {
   /* 6px under the eyebrow. The question only ever renders WITH one — there is
      no stored date in the prompt phase — so this offset is unconditional. */
   margin: '6px 0 0',
-  fontFamily: 'var(--font-heading)',
-  fontWeight: 700,
-  fontSize: 18,
-  lineHeight: '24px',
-  letterSpacing: '-0.01em',
+  /* OPEN SANS, NOT BRANDON GROTESQUE — 2026-10-01, the direct ask.
+     `--font-body` IS Open Sans (see `tokens.css`), so this is the token swap
+     rather than a raw family; the repo forbids the latter and a literal
+     `'Open Sans'` here would also miss the system fallbacks the token carries.
+
+     ⚠ IT NOW DIFFERS FROM EVERY SIBLING CARD'S TITLE, which all sit on
+     `--font-heading` — including the three licensing cards this one used to
+     stand in a column with. That is less visible since the card moved out from
+     under them (`exam-card-placement: under-course`), but the two changes
+     arrived together and should be judged together: the question is whether
+     this card reads as a question rather than as another card heading.
+
+     ⚠ THE BRAND NOTE ABOVE IS NOW HALF-SPENT. It explains that the Figma's
+     "Georgia:Bold" was a missing-font placeholder and that `--font-heading` was
+     the honest resolution of it. That reasoning stands for the figure styles
+     below; it no longer describes this one. */
+  fontFamily: 'var(--font-body)',
+  /* ⚠ BODY TEXT, NOT A HEADING — 2026-10-02, the direct ask ("smaller font,
+     body text style"). It was 18/700 at -0.01em, which is this file's heading
+     setting; at 14/20 regular it is a sentence under a label, which is what it
+     is. The eyebrow carries the card's identity now, so the question does not
+     have to shout to be found. */
+  fontWeight: 400,
+  fontSize: 14,
+  lineHeight: '20px',
   color: 'var(--color-text-primary)',
 }
 
-/* EQUAL-WIDTH PAIR, sized to the WIDER of the two — 2026-09-29.
- 
-   `inline-grid` + `grid-auto-columns: 1fr` is the idiomatic way to do this
-   without a magic number: the grid shrink-wraps to its content, and `1fr`
-   tracks under a max-content constraint all resolve to the LARGEST item's
-   width. So "Yes" grows to "Not yet" and the pair still sizes itself if the
-   copy changes.
- 
-   ⚠ `alignSelf` IS LOAD-BEARING. The card's shell is a column flex container,
-   so its children stretch to full width by default — without this the grid
-   would span the card and each 1fr track would become half of it, which is far
-   wider than either button wants to be.
- 
-   ⚠ NOT `flex: 1 1 0` on the children, which was the other obvious route: that
-   sizes both to the AVERAGE, so "Yes" grows but "Not yet" shrinks and its label
-   wraps. The point is to match the wider one, not to meet in the middle. */
+/* ⚠ THE EQUAL-WIDTH PAIR IS OVER — 2026-10-02, and the note it replaces is the
+   reason why. It read: "`1fr` tracks under a max-content constraint all resolve
+   to the LARGEST item's width. So 'Yes' grows to 'Not yet' and the pair still
+   sizes itself if the copy changes."
+  
+   That held while both labels were two words. "Yes, I know the date" is five,
+   so matching the wider one made BOTH about 190px — ~390px of buttons in a
+   ~340px column — and the labels wrapped inside a 36px box and overflowed it.
+   The rule sized itself right up until the copy it was meant to survive.
+  
+   Each button takes its own width now, and `nowrap` on the labels is what makes
+   that a promise rather than a hope: the row can overflow to a second LINE if
+   the column gets narrow, which is the right degrade, but neither label breaks
+   mid-phrase inside a fixed-height box.
+  
+   ⚠ `alignSelf` IS STILL LOAD-BEARING. The card's shell is a column flex
+   container, so its children stretch to full width by default; without this the
+   row would span the card and push the two apart. */
 const promptButtonRowStyle: CSSProperties = {
-  display: 'inline-grid',
-  gridAutoFlow: 'column',
-  gridAutoColumns: '1fr',
+  display: 'flex',
+  flexWrap: 'wrap',
+  alignItems: 'center',
   alignSelf: 'flex-start',
   gap: 10,
   marginTop: 12,
 }
 
-/* MATCHES THE RESUME BUTTON — `CourseEntryCard`'s `cta`, 2026-09-29. Same
-   height, padding, radius, gradient and type, because they are the same KIND of
-   control: the one press the card is asking for. Two primary buttons a column
-   apart that differed in height and corner would read as two different systems.
+/* YES IS AN OUTLINE BUTTON — 2026-10-02, the direct ask. It was the filled
+   gradient twin of `CourseEntryCard`'s Resume, matched to it on 2026-09-29
+   because both were "the one press the card is asking for".
 
-   ⚠ ONE DELIBERATE DIFFERENCE from the button it copies: the white is
-   `--color-text-inverse`, not Resume's literal `rgb(255 255 255 / 1)`. The
-   token resolves to #ffffff in BOTH themes (light via `neutral-50`, dark pinned
-   directly), so it renders identically — and CLAUDE.md's rule is tokens, never
-   raw values. Copying the literal would have propagated the exception.
-
-   Also worn by Save exam date in the picker, which is the same primary act. */
+   ⚠ THAT REASONING IS SPENT, which is why the note it replaces is gone rather
+   than kept alongside. Resume moved to the top of the combined card on
+   2026-10-01 and is the only filled control on this page now; a second gradient
+   down in the rail was competing with it for the same glance. An outline still
+   reads as the affirmative against a LINK, which is what "Not yet" became in
+   the same pass — the pair keeps its hierarchy, one step quieter.
+*/
 const yesButtonStyle: CSSProperties = {
   flexShrink: 0,
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
   gap: 8,
-  height: 44,
+  /* ⚠ 36, DOWN FROM 44 — 2026-10-02, the direct ask. 44 was the Resume
+     button's height, matched when this was the card's own primary and filled
+     like it; as an outline answer to a one-line question it was carrying more
+     weight than the question. ⚠ STILL A COMFORTABLE TARGET: 36 with 20px of
+     padding is well past the 24px minimum, and the label grew at the same time,
+     so the hit area is wider than it was. */
+  height: 36,
   padding: '0 20px',
+  whiteSpace: 'nowrap',
   borderRadius: 'var(--radius-md)',
-  border: 0,
-  background: 'linear-gradient(135deg, var(--color-primary-500), var(--color-primary-600))',
-  color: 'var(--color-text-inverse)',
+  border: '1px solid var(--color-primary-600)',
+  background: 'transparent',
+  color: 'var(--color-primary-600)',
   fontFamily: 'var(--font-body)',
   fontSize: 14,
   fontWeight: 700,
@@ -683,26 +889,38 @@ const saveDisabledStyle: CSSProperties = {
   cursor: 'not-allowed',
 }
 
-/* THE OUTLINE TWIN of the above — identical geometry and type, filled ground
-   swapped for a stroke. ⚠ NOT the same treatment as `Yes`, on purpose: matching
-   Resume's SHAPE is what was asked for, and making both buttons solid would
-   leave the pair with no hierarchy at all. Same height so they sit on one
-   baseline. */
+/* NOT YET IS A LINK — 2026-10-02, the direct ask. It was the outline twin of
+   `Yes`; with `Yes` itself becoming an outline the pair needed a step between
+   them again, and the quieter answer is the one to demote. "Not yet" asks
+   nothing of the learner and leads to a note rather than to a picker.
+
+   ⚠ IT KEEPS THE 44px HEIGHT. No border and no fill, but the same box, so the
+   two still sit on one baseline and the row does not change height when the
+   treatment does. A link that collapsed to its text would drag `Yes` upward.
+
+   ⚠ AND IT KEEPS ITS PADDING, so the two have the same rhythm between them as
+   before. A hit area is not something to give up for a visual weight change —
+   this is still a button a thumb has to find. */
 const notYetButtonStyle: CSSProperties = {
   flexShrink: 0,
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
   gap: 8,
-  height: 44,
-  padding: '0 20px',
+  /* Matches `yesButtonStyle` — the two must sit on one baseline, and a link
+     that kept 44 while its partner dropped to 36 would float. */
+  height: 36,
+  padding: '0 14px',
+  whiteSpace: 'nowrap',
   borderRadius: 'var(--radius-md)',
-  border: '1px solid var(--color-primary-600)',
+  border: 0,
   background: 'transparent',
   color: 'var(--color-primary-600)',
   fontFamily: 'var(--font-body)',
   fontSize: 14,
   fontWeight: 700,
+  textDecoration: 'underline',
+  textUnderlineOffset: 3,
   cursor: 'pointer',
 }
 
@@ -739,13 +957,16 @@ const linkStyle: CSSProperties = {
   cursor: 'pointer',
 }
 
+/* ⚠ THE SAME SETTING AS `questionStyle` — 2026-10-02, the direct ask ("update
+   the edit mode to match"). Both lines are the card ASKING something; one asks
+   whether a date exists and the other asks what it is, and they are two phases
+   of one sentence. It was `--font-heading` at 15/700 while the question moved
+   to body 14/400, which left the card changing voice when the learner pressed
+   Yes. Declared from `questionStyle` rather than retyped, so the next change to
+   either reaches both. */
 const pickerLeadStyle: CSSProperties = {
+  ...questionStyle,
   margin: '6px 0 0',
-  fontFamily: 'var(--font-heading)',
-  fontWeight: 700,
-  fontSize: 15,
-  lineHeight: '20px',
-  color: 'var(--color-text-primary)',
 }
 
 
@@ -775,16 +996,10 @@ const scheduledHeaderRowStyle: CSSProperties = {
   margin: 0,
 }
 
-const scheduledTitleStyle: CSSProperties = {
-  margin: 0,
-  minWidth: 0,
-  fontFamily: 'var(--font-heading)',
-  fontWeight: 700,
-  fontSize: 18,
-  lineHeight: '24px',
-  letterSpacing: '-0.01em',
-  color: 'var(--color-text-primary)',
-}
+/* `scheduledTitleStyle` WAS HERE — the saved readout's 18px heading, replaced
+   by `widgetEyebrowStyle` on 2026-10-01 (see the call site). Removed rather
+   than left unreferenced: it was four lines of ordinary type with no argument
+   attached, which is not what the archive convention is for. */
 
 const editLinkStyle: CSSProperties = {
   flexShrink: 0,
@@ -803,7 +1018,20 @@ const editLinkStyle: CSSProperties = {
 
 const scheduledBodyRowStyle: CSSProperties = {
   display: 'flex',
-  alignItems: 'center',
+  /* ⚠ `stretch`, NOT `center` — 2026-10-05, the direct ask ("have the
+     background stretch down to line up with the bottom of the calendar date").
+     The countdown panel draws a tinted ground, and a tinted ground that stops
+     short of the tear-off beside it reads as a misalignment rather than as two
+     sizes. Stretching makes the row's two halves one block.
+
+     ⚠ THE TEAR-OFF SETS THE HEIGHT, not the panel, and that is the direction
+     this depends on. `CalendarTearOff` is the taller of the two at every size
+     the card is drawn at today; if the countdown ever grew past it — a longer
+     string than "Date has passed", a second caption line — the stretch would
+     reverse and the CALENDAR would be the thing being pulled, which is not what
+     was asked for. The panel's own `alignItems: center` is what keeps its text
+     centred in whatever height it is given. */
+  alignItems: 'stretch',
   gap: 14,
   marginTop: 12,
 }

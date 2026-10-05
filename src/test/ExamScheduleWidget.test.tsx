@@ -1,4 +1,4 @@
-import { cleanup, render, screen, within } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -7,6 +7,7 @@ import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext
 import { LearningPathsPanelProvider } from '@/components/learning/LearningPathsPanelContext'
 import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelContext'
 import { PlatformShell } from '@/components/layout/PlatformShell'
+import { writeExamDate } from '@/data/examDateStore'
 import { DISCOVERABILITY_DASHBOARD_VERSION_TESTING } from '@/data/dashboardVersions'
 import { NY_GOVERNING_AGENCY } from '@/data/nyProducerRequirements'
 
@@ -43,8 +44,22 @@ beforeEach(() => {
   window.localStorage.setItem('cgp.account', JSON.stringify({ brand: 'xcel', tier: 'high' }))
 })
 
+/**
+ * ⚠ EVERY RENDER PINS THE JOURNEY-COLUMN PLACEMENT — `exam-card-placement`,
+ * 2026-10-01. The flag defaults to `under-course` on this branch, and that arm
+ * draws a DIFFERENT saved readout: an "Exam Date" eyebrow over one line
+ * (`May 26, 2026 | 15 days until your exam`) instead of the tear-off calendar
+ * and the hourglass panel this suite asserts.
+ *
+ * This file is about the FULL readout and the phase machine behind it, which
+ * `journey-column` still draws. The compact arm has its own coverage in
+ * `ExamCardPlacement.test.tsx`; what is shared — the store, the picker, the
+ * question itself — is unchanged by the arm and is asserted here.
+ */
 function renderShell(ff?: string) {
-  window.history.replaceState({}, '', ff ? `/dashboard-rebrand?ff=${encodeURIComponent(ff)}` : '/')
+  const PIN = 'exam-card-placement:journey-column'
+  const all = ff ? `${PIN},${ff}` : PIN
+  window.history.replaceState({}, '', `/dashboard-rebrand?ff=${encodeURIComponent(all)}`)
   return render(
     <MemoryRouter initialEntries={[URL]}>
       <AccountProvider>
@@ -114,7 +129,11 @@ describe('exam-step-style: ask-first', () => {
     renderShell('journey-quick-links:off')
     const c = card()
     expect(within(c).getByText('Have you scheduled your New York state exam?')).toBeTruthy()
-    expect(within(c).getByRole('button', { name: 'Yes' })).toBeTruthy()
+    /* ⚠ `/^Yes,/`, NOT `'Yes'` — the affirmative reads "Yes, I know the date"
+       as of 2026-10-02. Matched on the prefix rather than the whole string so
+       the copy can be tuned without every click in this file needing an edit;
+       what the tests care about is WHICH of the two answers was pressed. */
+    expect(within(c).getByRole('button', { name: /^Yes,/ })).toBeTruthy()
     expect(within(c).getByRole('button', { name: 'Not yet' })).toBeTruthy()
     /* The way into the exam sheets is present from the start — it is the one
        control here that is not about the learner's own date. */
@@ -162,7 +181,7 @@ describe('exam-step-style: ask-first', () => {
     renderShell('journey-quick-links:off')
     expect(within(card()).queryByRole('button', { name: /Previous month/ })).toBeNull()
 
-    await user.click(within(card()).getByRole('button', { name: 'Yes' }))
+    await user.click(within(card()).getByRole('button', { name: /^Yes,/ }))
     const c = card()
     expect(within(c).getByRole('button', { name: /Previous month/ })).toBeTruthy()
     // Opens on the anchored today's month, because that is when the learner is.
@@ -175,7 +194,7 @@ describe('exam-step-style: ask-first', () => {
        that accepted it would show a countdown the rest of the page ignores. */
     const user = userEvent.setup()
     renderShell('journey-quick-links:off')
-    await user.click(within(card()).getByRole('button', { name: 'Yes' }))
+    await user.click(within(card()).getByRole('button', { name: /^Yes,/ }))
     const c = card()
     expect(within(c).getByRole('button', { name: /May 4, 2026/ })).toHaveProperty('disabled', true)
     expect(within(c).getByRole('button', { name: /May 29, 2026/ })).toHaveProperty(
@@ -190,7 +209,7 @@ describe('exam-step-style: ask-first', () => {
        card kept to itself would be a control that does nothing. */
     const user = userEvent.setup()
     renderShell('journey-quick-links:off')
-    await user.click(within(card()).getByRole('button', { name: 'Yes' }))
+    await user.click(within(card()).getByRole('button', { name: /^Yes,/ }))
     await user.click(within(card()).getByRole('button', { name: /May 29, 2026/ }))
     await user.click(within(card()).getByRole('button', { name: 'Save exam date' }))
 
@@ -207,7 +226,7 @@ describe('exam-step-style: ask-first', () => {
   it('Save stays inert until a day is actually chosen', async () => {
     const user = userEvent.setup()
     renderShell('journey-quick-links:off')
-    await user.click(within(card()).getByRole('button', { name: 'Yes' }))
+    await user.click(within(card()).getByRole('button', { name: /^Yes,/ }))
     expect(within(card()).getByRole('button', { name: 'Save exam date' })).toHaveProperty(
       'disabled',
       true,
@@ -217,7 +236,7 @@ describe('exam-step-style: ask-first', () => {
   it('Edit reopens the picker on the saved date, and Cancel keeps it', async () => {
     const user = userEvent.setup()
     renderShell('journey-quick-links:off')
-    await user.click(within(card()).getByRole('button', { name: 'Yes' }))
+    await user.click(within(card()).getByRole('button', { name: /^Yes,/ }))
     await user.click(within(card()).getByRole('button', { name: /May 29, 2026/ }))
     await user.click(within(card()).getByRole('button', { name: 'Save exam date' }))
     await user.click(within(card()).getByRole('button', { name: /Edit/ }))
@@ -260,7 +279,14 @@ describe('exam-step-style: ask-first', () => {
     /* ⚠ NO STEP NUMBER — changed 2026-09-29. This asserted "Step 1" until the
        card stopped being a step at all. `JourneyStepOrder.test.tsx` owns the
        other half: that the three real steps close up to 1-2-3 behind it. */
-    expect(within(c).getByText('Quick question')).toBeTruthy()
+    /* ⚠ "State Exam", NOT "Quick question" — 2026-10-02, the direct ask. The
+       old wording was itself a restored Figma decision whose job was to say
+       this card is NOT a journey step; the new one names the subject and reads
+       as a section label like every other eyebrow on the page. What the card
+       gives up is that self-description — its lack of a step NUMBER is now the
+       only thing saying it is not a step, which is why the numbering assertions
+       elsewhere matter more than they did. */
+    expect(within(c).getByText('State Exam')).toBeTruthy()
     expect(c.textContent).not.toMatch(/Step \d/)
   })
 
@@ -316,7 +342,7 @@ describe('exam-step-style: ask-first', () => {
        nothing to clear and the Exam Details menu is the more useful offer. */
     const user = userEvent.setup()
     renderShell('journey-quick-links:off')
-    await user.click(within(card()).getByRole('button', { name: 'Yes' }))
+    await user.click(within(card()).getByRole('button', { name: /^Yes,/ }))
     expect(within(card()).queryByRole('button', { name: 'Clear exam date' })).toBeNull()
     expect(within(card()).getByRole('button', { name: /Exam Details/ })).toBeTruthy()
 
@@ -460,7 +486,7 @@ describe('Exam Details — the menu the footer opens', () => {
 describe('exam-calendar-style — how the picker is drawn', () => {
   const openPicker = async (user: ReturnType<typeof userEvent.setup>, ff: string) => {
     renderShell(ff)
-    await user.click(within(card()).getByRole('button', { name: 'Yes' }))
+    await user.click(within(card()).getByRole('button', { name: /^Yes,/ }))
   }
   /** The row carrying the arrows and the month label. */
   const monthRow = () => within(card()).getByText(/May 2026/).parentElement!
@@ -596,5 +622,74 @@ describe('journey-quick-links — where the sheet links live', () => {
     renderShell()
     await user.click(within(quick()).getByRole('button', { name: 'Exam Information' }))
     expect(screen.getByRole('heading', { name: 'Exam Details' })).toBeTruthy()
+  })
+})
+
+describe('the card keeps its label while it is asking', () => {
+  /* 2026-10-02, the direct ask ("update the edit mode to match"). */
+
+  it('wears the eyebrow in EDIT mode, where it used to have none', () => {
+    /* ⚠ THE OLD CONDITION WAS "no stored date", which stood in for "the card is
+       asking" and stopped being true of edit mode — a date exists there and the
+       card is asking again. So editing lost the eyebrow and the card's identity
+       with it. Keyed on the PHASE now. */
+    writeExamDate('2026-06-30')
+    renderShell()
+    const card = document.querySelector('section[aria-label="Exam Date"]') as HTMLElement
+    fireEvent.click(within(card).getByRole('button', { name: /Edit/ }))
+    expect(within(card).getByText('State Exam')).toBeTruthy()
+    expect(within(card).getByText(/Edit your .* exam date/)).toBeTruthy()
+  })
+
+  it('sets the picker’s lead exactly like the question it follows', () => {
+    /* Both lines are the card ASKING something — one whether a date exists, the
+       other what it is. The picker was `--font-heading` 15/700 while the
+       question moved to body 14/400, so the card changed voice the moment the
+       learner pressed Yes. */
+    renderShell()
+    const card = document.querySelector('section[aria-label="Exam Date"]') as HTMLElement
+    const question = within(card).getByText(/Have you scheduled/) as HTMLElement
+    fireEvent.click(within(card).getByRole('button', { name: /^Yes,/ }))
+    const lead = within(card).getByText(/When is your/) as HTMLElement
+    expect(lead.style.fontSize).toBe(question.style.fontSize)
+    expect(lead.style.fontWeight).toBe(question.style.fontWeight)
+    expect(lead.style.fontFamily).toBe(question.style.fontFamily)
+  })
+
+  it('still gives the full saved readout only ONE eyebrow', () => {
+    /* ⚠ `ScheduledState` draws its own ("Your exam date") in a row with Edit,
+       so the card-level one must stay away — two stacked is what the phase
+       condition exists to prevent. */
+    writeExamDate('2026-06-30')
+    renderShell()
+    const card = document.querySelector('section[aria-label="Exam Date"]') as HTMLElement
+    expect(within(card).queryByText('State Exam')).toBeNull()
+    expect(within(card).getByText('Your exam date')).toBeTruthy()
+  })
+})
+
+describe('the saved readout leads with an eyebrow', () => {
+  /* 2026-10-01, the direct ask ("change this to match the eyebrow text on the
+     other containers").
+
+     ⚠ THIS IS A GLOBAL CHANGE, NOT A VERSION'S, and the test lives here rather
+     than in `Testing3Version.test.tsx` for that reason. The card's PROMPT state
+     already led with `widgetEyebrowStyle` ("Quick question"), as do Quick links
+     and every licensing step beside it; the saved state was the only block in
+     the column opening on an 18px heading, so a flag would have preserved an
+     inconsistency rather than compared two ideas. */
+  it('sets the label as an eyebrow, not an 18px heading', () => {
+    writeExamDate('2026-06-30')
+    renderShell()
+    const card = document.querySelector('section[aria-label="Exam Date"]') as HTMLElement
+    const label = within(card).getByText('Your exam date') as HTMLElement
+    expect(label.style.fontSize).toBe('10px')
+    expect(label.style.letterSpacing).toBe('0.18em')
+    expect(label.style.textTransform).toBe('uppercase')
+    expect(label.className).toContain('cre-eyebrow-ink')
+    /* ⚠ `--font-body`, not `--font-heading`. `dashboard-heading-font` re-points
+       the heading token at a serif, and an eyebrow that followed it would stop
+       matching the eyebrows beside it on exactly that variant. */
+    expect(label.style.fontFamily).toContain('--font-body')
   })
 })

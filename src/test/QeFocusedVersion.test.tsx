@@ -1,3 +1,4 @@
+import { pinLeftRail } from './pinNavPlacement'
 import { readFileSync } from 'node:fs'
 import { cleanup, fireEvent, render, screen, within, act } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
@@ -172,6 +173,9 @@ function pinAtlasHomeV1() {
 }
 
 function renderShell(url: string) {
+  /* Option 1's tests — the rail is no longer the default navigation on
+     this branch, so they pin it rather than inheriting it. */
+  pinLeftRail()
   return render(
     <MemoryRouter initialEntries={[url]}>
       <AccountProvider>
@@ -236,14 +240,30 @@ describe('the QE Focused version is ARCHIVED but still reachable', () => {
        `Testing2Version.test.tsx` still renders it on every test, which is the
        whole point of archiving a version this way. See
        `discoverability-testing-2` in archivedItems.ts. */
+    /* ⚠ TESTING 3 JOINED 2026-10-01, directly after its parent — Testing with
+       the course and its coursework as one block. It is listed next to Testing
+       because the picker is the only place the lineage is visible, and reading
+       them in order is what makes the one difference legible.
+
+       ⚠ IT IS NOT THE ARCHIVED "Testing 2". That id is still absent from this
+       list and still resolves on its own; the numbering carried on past it
+       rather than reusing it. */
     expect(DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)).toEqual([
       'discoverability-testing',
+      /* ⚠ TESTING 3 KEEPS THE SLOT DIRECTLY AFTER ITS PARENT through the
+         2026-10-05 merge. The lineage rule above is why the picker is ordered
+         at all, so the two Atlas versions queue BEHIND it rather than being
+         appended next to Testing where the branch had them. */
+      'discoverability-testing-3',
       // From feat/atlas-compass-global-nav: Atlas/Compass, and Eric/Atlas V1
       // behind its flag (the Header filters it).
       'discoverability-atlas-compass-nav',
       'eric-atlas-v1',
       'discoverability-learner-focused',
     ])
+    expect(DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)).not.toContain(
+      'discoverability-testing-2',
+    )
   })
 
   it('Eric/Atlas V1 renders the Atlas/Compass pages under its own version', () => {
@@ -255,9 +275,14 @@ describe('the QE Focused version is ARCHIVED but still reachable', () => {
     expect(screen.getByRole('region', { name: 'Do you have your State Exam scheduled?' })).toBeTruthy()
   })
 
-  it('is still what XCEL does NOT resolve to — Testing is', () => {
-    expect(defaultDiscoverabilityVersionFor('xcel')).toBe(
-      DISCOVERABILITY_DASHBOARD_VERSION_TESTING.id,
+  it('is still what XCEL does NOT resolve to', () => {
+    /* ⚠ ASSERTED AS "NOT THIS ONE" as of 2026-10-02. It named Testing, and the
+       default has now moved to Testing 3 — naming the winner here meant a
+       second copy of a fact that lives in `TestingVersion.test.tsx`, and one
+       more place to forget when it moves again. This file's subject is that QE
+       Focused is archived, not which version replaced it. */
+    expect(defaultDiscoverabilityVersionFor('xcel')).not.toBe(
+      DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED.id,
     )
   })
 
@@ -386,10 +411,14 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
 
   it('sits right after Testing in the picker', () => {
     const ids = DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)
-    // Right after Testing since main archived Testing 2 off the picker
-    // (2026-09-28, merged here 2026-10-02).
+    /* ⚠ AFTER TESTING 3, NOT AFTER TESTING — changed 2026-10-05 at the merge.
+       It was "right after Testing" because main had archived Testing 2 off the
+       picker (2026-09-28) and left the slot empty; Testing 3 then took it, by
+       the lineage rule that says a version lists directly after its parent.
+       Anchored to Testing 3 rather than to a number so the next version added
+       between them moves this assertion rather than silently satisfying it. */
     expect(ids.indexOf('discoverability-atlas-compass-nav')).toBe(
-      ids.indexOf('discoverability-testing') + 1,
+      ids.indexOf('discoverability-testing-3') + 1,
     )
     expect(DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV.label).toBe(
       'Atlas/Compass Global Navigation',
@@ -483,8 +512,13 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
     const page = container.querySelector<HTMLElement>('.cre-compass-overview')!
     // Full-bleed on its own page, not inside the section frame's padding.
     expect(page.closest('section')).toBeNull()
-    // The learner's real name and course.
-    expect(within(page).getByText(/Welcome, Alicia/)).toBeTruthy()
+    /* ⚠ JORDAN, NOT ALICIA — updated at the 2026-10-05 merge, not a fix to
+       this page. Main renamed the XCEL demo learner on 2026-09-29 (the direct
+       ask; the Figma frames say "Jordan" throughout) and the surname stayed, so
+       every surface that builds a greeting off `AccountContext` followed on its
+       own — this one included. The assertion is still "the learner's REAL
+       name", which is the thing worth pinning; only the fixture moved. */
+    expect(within(page).getByText(/Welcome, Jordan/)).toBeTruthy()
     expect(
       within(page).getByRole('heading', { level: 2, name: 'New York Life and Health Pre-licensing' }),
     ).toBeTruthy()
@@ -3550,12 +3584,30 @@ describe('the in-shell course launcher is a lo-fi placeholder', () => {
        The toggle moved to the foot, below Get Help. With nothing above Home,
        0 put the first row hard against the header's bottom edge, so the padding
        is doing its original job again. Verified in the browser: 12px above the
-       first item in both rail widths. */
+       first item in both rail widths.
+
+       ⚠ THE SPELLING MOVED ON 2026-09-29 and the value did not. The padding is
+       now a ternary — `nav-rail-surface: none-aligned` drops the rows to 28 so
+       the first one lines up with the content's first card — so this pins the
+       DEFAULT arm of that ternary rather than a fixed string. 12 is still what
+       every other state gets. */
     const shell = readFileSync('src/components/layout/PlatformShell.tsx', 'utf8')
-    // Both rails keep it: the shared one, and the Atlas/Compass rail (whose
-    // design is 12 / 20 / 24).
-    expect(shell).toMatch(/`12px \$\{railCollapsed \? RAIL_GUTTER_COLLAPSED : RAIL_GUTTER\}px 40px`/)
+    /* ⚠ FOUR ASSERTIONS, MERGED 2026-10-05, AND ALL FOUR HOLD — `PlatformShell`
+       merged clean and carries BOTH rails, so neither side's pair was made
+       redundant by the other. Eric's two pin the Atlas/Compass rail (12 / 20 /
+       24); main's two pin the shared rail, including the lowered variant. */
+    /* ⚠ ERIC'S FIRST ASSERTION WENT AT THE 2026-10-05 MERGE, and it is worth
+       saying why rather than just dropping it. It pinned the literal
+       `12px ${railCollapsed ? …}px 40px`, and main replaced that leading 12
+       with `${loweredRail ? 28 : 12}px` — the measured inset that lines the
+       first nav row up with the content column's first card under
+       `nav-rail-surface: none-aligned`. The 12 is still the default; it is no
+       longer a literal, so the old regex could never match again.
+
+       The Atlas rail's own 12 / 20 / 24 is untouched and still pinned below. */
     expect(shell).toMatch(/`12px \$\{RAIL_GUTTER\}px 24px`/)
+    expect(shell).toMatch(/\$\{loweredRail \? 28 : 12\}px \$\{/)
+    expect(shell).toMatch(/railCollapsed \? RAIL_GUTTER_COLLAPSED : RAIL_GUTTER/)
   })
 
   it('no longer offsets the toggle against the rail gutter', () => {

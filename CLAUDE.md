@@ -125,6 +125,38 @@ suite you run before pushing, naming the files.
 
 ⚠ It is a guardrail, not a lock: the email check is one command to change. It
 exists to stop someone wandering into the wrong file, not to defend the repo.
+It also only intercepts **Claude's** edits — a hand edit in an IDE reaches the
+file, and `FrameworkProtection.test.ts` is what catches that, when the suite is
+run before pushing.
+
+⚠ **THE DEMO CONTROLS JOINED THE TABLE ON 2026-10-05**, after two designers
+edited the bar in the same week and collided: one adding three controls for
+their own dashboard version, the other restructuring which controls the bar
+carries. Both changes were reasonable; the merge was not. The bar is SHARED
+CHROME — its control list says what the PRODUCT demos, not what one exploration
+is exploring.
+
+### The two bars, and which one is yours
+
+| Bar | Rule | Shows | Who changes it |
+|---|---|---|---|
+| **Demo controls** | amber | how the product behaves for different LEARNERS — progress, tier, education | Jillienne only |
+| **Design controls** | green | the decisions open inside YOUR exploration — fonts, brand colour, layout axes | any designer |
+
+**To put a control on the DESIGN bar you do not edit the bar.** Mark your flag
+`surface: 'design'` in the flag catalog and it appears, scoped to the dashboard
+VERSION you are on — a radiogroup if it has `variants`, an on/off if it does
+not. Name `versions: [...]` too when you have more than one version and the
+control belongs to only one of them; leave it off and the control follows you to
+every version you own.
+
+⚠ **THE DESIGN BAR IS DESIGN-SITE-ONLY, as a whole surface.** There is no
+per-control readiness gate on it, because a design decision worth showing a
+stakeholder belongs on the DEMO bar instead — and that one is Jillienne's.
+
+`FeatureFlagPanel.tsx` is deliberately NOT protected either: adding your flag
+keys to `REBRAND_FLAGS` is something you must be able to do, or your flags are
+reachable only by hand-editing `?ff=`.
 The list of protected paths is THIS TABLE — a test reads it back out of this
 file, so the two cannot drift apart.
 
@@ -136,6 +168,10 @@ file, so the two cannot drift apart.
 | `src/data/gatewayMode.ts`, `src/data/deployContext.ts` | the per-site and per-context build switches |
 | `netlify.toml`, `scripts/public-redirects.mjs` | how the two sites and branch builds differ |
 | `netlify/functions/`, `netlify/lib/` | the Refinement / Links / QA Notes endpoints |
+| `src/components/prototype/DemoControlsBar.tsx`, `src/components/prototype/DemoBar.tsx`, `src/components/prototype/demoBarUtil.ts` | the demo controls bar — which controls every reviewer sees |
+| `src/components/prototype/DesignControlsBar.tsx` | the design controls bar — you do not edit it to get a control on it (see below) |
+| `src/data/demoControlMaturity.ts` | which of those controls the DEMO site offers |
+| `src/components/layout/AdminToolsMenu.tsx` | the robot — the UI/UX Demo Tools menu |
 | `.claude/skills/` | `ship-to-main`, `promote-to-prototype`, `promote-to-refinement`, `promote-component`, `promote-to-testing`, `retire-from-refinement`, `archive-a-feature` and `dev-handoff-notes` — Jillienne's. Run them; don't edit them. |
 | `public/contributing/`, `public/about/` | the two guides (regenerate the PDFs if you do edit them) |
 

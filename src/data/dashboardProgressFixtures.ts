@@ -491,17 +491,28 @@ const ON_TRACK_DAYS_LEFT = 17
  * The cap the ask sets — "demo data for now should never be more than 30 days
  * to complete course".
  *
- * ⚠ 29, NOT 30, and the off-by-one is the whole point rather than a rounding
- * habit. `timeRemaining` switches to a day countdown at `days < 30`, so 30 is
- * the one value inside the cap that still renders as "4 wks" — a state nominally
- * within the window and visibly outside it. 29 is the largest value that both
- * satisfies the ask and reads as the ask intends.
+ * ⚠ IT WAS 29 UNTIL 2026-10-05, and the reason is worth keeping because it was
+ * right at the time: `timeRemaining` switched to a day countdown at
+ * `days < 30`, so 30 was the one value inside the cap that still rendered as
+ * "4 wks" — a state nominally within the window and visibly outside it. 29 was
+ * then "the largest value that both satisfies the ask and reads as the ask
+ * intends".
+ *
+ * The ask that made this 30 ("the top should say 30 days to complete course")
+ * was answered at the OTHER end: `timeRemaining` now counts days at
+ * `days <= 30`, so thirty is sayable and the cap can be the number the product
+ * actually sells. The window and the countdown finally name the same figure.
+ *
+ * ⚠ IT ONLY SHOWS WHEN NO EXAM DATE IS SET. A stored exam date overrides the
+ * persona's renewal entirely (`examDateRenewal`, 2026-09-21) so the date, the
+ * countdown and the Pacing tile move together — so a learner with May 20 booked
+ * reads "9 days" here and should. This number is the no-date case.
  *
  * It also sits just inside the pre-licensing access window the course fixture
  * carries (30 days), so no state counts down longer than the access it is
  * counting inside — which is the thing that read as wrong to begin with.
  */
-const MAX_DEMO_DAYS_LEFT = 29
+const MAX_DEMO_DAYS_LEFT = 30
 
 /** `FIXTURE_TODAY` + n days, as the zero-padded `MM/DD/YYYY` every consumer of
  *  `deadline` already parses. Built from local parts, never from an ISO string

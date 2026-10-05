@@ -5,6 +5,8 @@ import { DemoControlsBar } from '@/components/prototype/DemoControlsBar'
 import { personasForBrand } from '@/components/prototype/demoControlsUtil'
 import { DASHBOARD_PROGRESS_PICKER } from '@/data/dashboardProgressFixtures'
 import { AccountProvider } from '@/context/AccountContext'
+import { DashboardVersionsPanelProvider } from '@/components/dashboard/DashboardVersionsPanelContext'
+import { FeatureFlagPanelProvider } from '@/components/account/FeatureFlagPanelContext'
 import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
 
 // The bar is Elite-scoped (the rebrand's seeded brand) — seed the account so
@@ -26,8 +28,33 @@ function renderBar(path = '/dashboard-rebrand') {
     <MemoryRouter initialEntries={[path]}>
       <AccountProvider>
         <FeatureFlagProvider>
-          <DemoControlsBar />
+          {/* ⚠ REQUIRED SINCE 2026-10-05. The bar's Dashboard Version control
+              calls `useDashboardVersionsPanel`, which throws without this —
+              `AppLayout` provides it in the app, so the harness has to as
+              well or it is testing a shell the product never renders. */}
+                    {/* ⚠ AND `FeatureFlagPanelProvider` SINCE 2026-10-05 — the bar's
+              flag icon calls `useFeatureFlagPanel`, which throws without it.
+              Same shape as the versions provider above: `AppLayout` supplies
+              both in the app. */}
+          <FeatureFlagPanelProvider>
+<DashboardVersionsPanelProvider>
+          {/* ⚠ THE TRIMMED CONTROLS, OPTED BACK IN. This branch's bar does not
+              draw Persona / Readiness / Education (see `SHOW_CONTROL` in
+              DemoControlsBar), but they are hidden, not retired — so the suite
+              that covers them keeps rendering them. Take this prop out only
+              when the controls themselves go.
+
+              ⚠ `pacing` CAME OUT OF THIS LIST ON 2026-10-05 and could not stay:
+              it is no longer a `ControlKey` at all. The Pacing dropdown left
+              the bar for the Feature Flag panel, so there is nothing here to
+              opt back in — `study-pace-preset` is unchanged and still drives
+              the card, it is just configured somewhere else now. */}
+          <DemoControlsBar
+            controls={{ persona: true, readiness: true, education: true }}
+          />
           <UrlProbe />
+          </DashboardVersionsPanelProvider>
+</FeatureFlagPanelProvider>
         </FeatureFlagProvider>
       </AccountProvider>
     </MemoryRouter>,
@@ -77,19 +104,23 @@ describe('DemoControlsBar — Atlas brand skin', () => {
   // while `Brand` stays XCEL. See atlasBrandSkin.ts.
   const ATLAS = '/dashboard-rebrand?version=discoverability-atlas-compass-nav'
 
-  it('shows on the Atlas version and writes ?skin=', () => {
-    // Global is the default since 2026-10-01: it needs no ?skin=.
-    renderBar(ATLAS)
-    fireEvent.click(screen.getByRole('button', { name: /Brand.*Global/ }))
-    fireEvent.click(screen.getByRole('radio', { name: /McKissock Learning/ }))
-    expect(url()).toContain('skin=mckissock')
-    fireEvent.click(screen.getByRole('button', { name: /McKissock Learning/ }))
-    fireEvent.click(screen.getByRole('radio', { name: /XCEL \(Insurance\)/ }))
-    expect(url()).toContain('skin=xcel')
-    fireEvent.click(screen.getByRole('button', { name: /XCEL \(Insurance\)/ }))
-    fireEvent.click(screen.getByRole('radio', { name: /^Global/ }))
-    expect(url()).not.toContain('skin=')
-  })
+  /* ⚠ THREE TESTS WENT FROM THIS BLOCK ON 2026-10-05 — the Brand skin, the
+     Headings font and the Nav Version dropdowns. They pinned three DESIGN
+     controls that were sitting on the DEMO bar, and the merge moved them off
+     it; a test asserting a dropdown nobody draws is not a regression guard, it
+     is a second place to forget.
+
+     ⚠ WHAT WENT IS THE DROPDOWN, NOT THE CAPABILITY. `?skin=`, `?fonts=` and
+     `?nav=` are still read by `atlasBrandSkin.ts`, `atlasFontSets.ts` and
+     `atlasNavVersion.ts`, Reset still clears all three, and a pinned URL still
+     renders. When they come back on `DesignControlsBar` as `surface: 'design'`
+     flags, these three tests are the specification to write them from — the
+     assertions are in git at the merge commit, and the default each one
+     restores to (Global, DM Serif Display, Top Nav) is the part worth copying.
+
+     THE TWO THAT STAYED are the negative ones below plus the Readiness hide:
+     they assert the bar does NOT grow Atlas controls on other versions, which
+     is still true and is the half that would fail silently. */
 
   it('hides the Readiness control on the Atlas version, which has no Readiness section', () => {
     renderBar(ATLAS)
@@ -99,29 +130,6 @@ describe('DemoControlsBar — Atlas brand skin', () => {
   it('stays off every other version', () => {
     renderBar()
     expect(screen.queryByRole('button', { name: /Brand.*Global/ })).toBeNull()
-  })
-
-  it('carries a Headings font dropdown that writes ?fonts=', () => {
-    renderBar(ATLAS)
-    fireEvent.click(screen.getByRole('button', { name: /DM Serif Display \(current\)/ }))
-    fireEvent.click(screen.getByRole('radio', { name: /Outfit/ }))
-    expect(url()).toContain('fonts=outfit')
-    fireEvent.click(screen.getByRole('button', { name: /Outfit/ }))
-    fireEvent.click(screen.getByRole('radio', { name: /DM Serif Display/ }))
-    expect(url()).not.toContain('fonts=')
-  })
-
-  it('carries a Nav Version dropdown — Top Nav by default (2026-10-01), the others write ?nav=', () => {
-    renderBar(ATLAS)
-    fireEvent.click(screen.getByRole('button', { name: /Top Nav/ }))
-    fireEvent.click(screen.getByRole('radio', { name: /Left Rail/ }))
-    expect(url()).toContain('nav=left-rail')
-    fireEvent.click(screen.getByRole('button', { name: /Left Rail/ }))
-    fireEvent.click(screen.getByRole('radio', { name: /Expanding Top Nav/ }))
-    expect(url()).toContain('nav=expanding-top-nav')
-    fireEvent.click(screen.getByRole('button', { name: /Expanding Top Nav/ }))
-    fireEvent.click(screen.getByRole('radio', { name: /^Top Nav/ }))
-    expect(url()).not.toContain('nav=')
   })
 
   it('offers no Nav Version off the Atlas version', () => {
@@ -354,5 +362,85 @@ describe('DemoControlsBar — a state with no agreed design', () => {
       )
       if (applies) expect(persona.unavailable).toBeTruthy()
     }
+  })
+})
+
+/**
+ * THE DASHBOARD VERSION CONTROL — 2026-10-05, the direct ask: "I want the
+ * Dashboard version to have its OWN icon that lives in the Demo controls bar
+ * and is accessible from demo and design hubs."
+ *
+ * ⚠ THE REACH IS THE POINT, not the pill. `PrototypeChrome` renders the robot
+ * only when `!isPublicGateway()`, and the robot was the only route to the
+ * version picker — so a stakeholder had no way to change versions at all. The
+ * `ready` maturity below is what closes that, and it is the one assertion here
+ * that would fail silently: a `wip` row would simply drop the control on the
+ * demo site and leave the gap exactly where it was.
+ */
+describe('DemoControlsBar — the Dashboard Version control', () => {
+  it('is READY, so the demo site offers it', async () => {
+    const { controlMaturity } = await import('@/data/demoControlMaturity')
+    expect(controlMaturity('version')).toBe('ready')
+  })
+
+  it('carries the version in its ACCESSIBLE NAME, having no visible one', () => {
+    /* ⚠ THIS ASSERTION CHANGED SHAPE ON 2026-10-05 and the reason is the point.
+       The control was a labelled pill leading the bar; it is now an icon button
+       beside Reset, so the version is no longer readable without hovering or
+       opening the sheet. `aria-label` and `title` are what is left carrying it
+       — which means a screen-reader user and a mouse user can still read the
+       current version, and a sighted stakeholder glancing at the bar cannot.
+       That is the known cost of the move, and this test is where it is
+       visible. */
+    renderBar('/dashboard-rebrand?version=discoverability-testing')
+    expect(
+      screen.getByRole('button', { name: /Dashboard version:\s*Testing/i }),
+    ).toBeTruthy()
+  })
+
+  it('falls back to the brand default when the url names no version', () => {
+    /* ⚠ THE SAME RESOLUTION `PlatformShell` USES. Reading only `?version=`
+       would leave the label blank on the landing screen — the common case — or
+       worse, name a version other than the one rendering. */
+    renderBar('/dashboard-rebrand')
+    expect(
+      screen.getByRole('button', { name: /Dashboard version:\s*Testing 3/i }),
+    ).toBeTruthy()
+  })
+})
+
+describe('which versions each audience is offered', () => {
+  /* ⚠ THE PICKER IS GATED SEPARATELY FROM THE CONTROL. The control being
+     `ready` does not mean every version it lists is — this is what keeps a
+     half-built dashboard off the demo site once someone adds one. */
+  it('gives the design site every version', async () => {
+    const { dashboardVersionsForAudience, DISCOVERABILITY_DASHBOARD_VERSIONS } = await import(
+      '@/data/dashboardVersions'
+    )
+    expect(dashboardVersionsForAudience(false)).toHaveLength(
+      DISCOVERABILITY_DASHBOARD_VERSIONS.length,
+    )
+  })
+
+  it('gives the demo site the READY ones only', async () => {
+    const { dashboardVersionsForAudience } = await import('@/data/dashboardVersions')
+    const demo = dashboardVersionsForAudience(true)
+    expect(demo.every((v) => v.maturity === 'ready')).toBe(true)
+    /* ⚠ ALL THREE ARE READY TODAY, so this filters nothing yet and the test
+       would pass against a broken filter that returned everything. The
+       assertion below is what makes it real — it fails the moment the two
+       lists stop agreeing for the right reason. */
+    const { DISCOVERABILITY_DASHBOARD_VERSIONS } = await import('@/data/dashboardVersions')
+    expect(demo).toHaveLength(
+      DISCOVERABILITY_DASHBOARD_VERSIONS.filter((v) => v.maturity === 'ready').length,
+    )
+  })
+
+  it('drops a version with no maturity, failing CLOSED', async () => {
+    /* The default that matters: a version added tomorrow with no `maturity` is
+       invisible to stakeholders rather than leaking an unfinished dashboard to
+       the people being asked to approve one. */
+    const { dashboardVersionsForAudience } = await import('@/data/dashboardVersions')
+    expect(dashboardVersionsForAudience(true).some((v) => v.maturity === undefined)).toBe(false)
   })
 })

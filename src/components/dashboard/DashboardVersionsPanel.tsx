@@ -1,5 +1,12 @@
+import { useState } from 'react'
 import { ArrowLeft, ArrowUpRightFromSquare, X } from '@/icons'
 import { Sheet } from '@/components/ui/Sheet'
+import { PillTabs } from '@/components/ui/PillTabs'
+import {
+  FLAG_DESIGNERS,
+  flagOwner,
+  type DesignerId,
+} from '@/context/FeatureFlagContext'
 import { DASHBOARD_VERSIONS } from '@/data/dashboardVersions'
 
 /** The minimal shape a version card needs. `DashboardVersion` and
@@ -11,6 +18,12 @@ export type VersionPickerItem = {
   createdAt: string
   modifiedAt: string
   description: string
+  /** `'ready'` when stakeholders can pick this version on the demo site.
+   *  Anything else (including absent) is design-site-only — see the badge. */
+  maturity?: 'wip' | 'ready'
+  /** Whose exploration this version is. Absent means Jill — resolved through
+   *  `flagOwner`, never read directly, so the default lives in one place. */
+  owner?: DesignerId
 }
 
 type Props = {
@@ -50,6 +63,17 @@ type Props = {
    *  `right` so it matches the right-anchored Feature Flag sheet it drills in
    *  from. */
   side?: 'left' | 'right'
+  /**
+   * Draw the designer tab strip over the list — 2026-10-05, the direct ask
+   * ("the jill and eric tab should be in that Dashboard Versions").
+   *
+   * ⚠ OPT-IN, NOT ALWAYS ON. This panel serves three pickers: the dashboard
+   * versions, the classic Explore Dashboard list and the Membership page
+   * versions. Only the first has designers — putting Jill / Eric over a
+   * Membership version list would be two people's names on something neither
+   * of them owns.
+   */
+  designerTabs?: boolean
 }
 
 const DATE_FORMATTER = new Intl.DateTimeFormat('en-US', {
@@ -76,12 +100,30 @@ export function DashboardVersionsPanel({
   onBack,
   side = 'left',
   title = 'Dashboard Versions',
+  designerTabs = false,
 }: Props) {
+  /* WHOSE VERSIONS ARE SHOWING. Local state, reset each time the sheet mounts
+     — unlike the flag panel's old tab, this one is not worth persisting: the
+     sheet is opened to pick a version, not to sit in, and reopening on
+     somebody else's empty tab would be a worse default than starting at the
+     top of the list. */
+  const [owner, setOwner] = useState<DesignerId>(FLAG_DESIGNERS[0].id)
+  /* ⚠ FILTERED ONLY WHEN THE TABS ARE DRAWN. Without them there is nothing on
+     screen to explain a missing row, so an unfiltered list is the honest
+     default for the pickers that do not opt in. */
+  const shown = designerTabs ? versions.filter((v) => flagOwner(v) === owner) : versions
   // A single-version feature has no "default" to pick; the Discoverability
   // feature is also URL-driven, so it suppresses the action controls via
   // `hideSetDefault`. The inline "Default" pill, though, shows whenever there's
   // more than one version to disambiguate (independent of `hideSetDefault`).
-  const showDefaultControls = versions.length > 1 && !hideSetDefault
+  /* ⚠ COUNTED OFF `shown`, NOT `versions` — otherwise a designer whose tab
+     holds a single version still gets the per-row default controls, which are
+     there to disambiguate between several. */
+  const showDefaultControls = shown.length > 1 && !hideSetDefault
+  /* ⚠ ...BUT THE BADGE COUNTS OFF THE WHOLE LIST. It marks which version the
+     product renders, and that fact does not stop being true because a tab is
+     filtered — hiding it on Eric's single-version tab would make the default
+     invisible exactly where someone is deciding whether to replace it. */
   const showDefaultBadge = versions.length > 1
   return (
     <Sheet open={open} onClose={onClose} title={title} width={460} side={side}>
@@ -171,6 +213,26 @@ export function DashboardVersionsPanel({
         </p>
       </header>
 
+      {/* THE DESIGNER TABS — 2026-10-05. They were in the Feature Flag sheet
+          for a day and belong here: a VERSION is the thing a designer owns, and
+          the flags are read inside whichever one is rendering.
+
+          ⚠ `PillTabs`, NO PER-TAB COUNTS — CLAUDE.md's rule for every segmented
+          filter in this app. The total sits beside the strip. */}
+      {designerTabs && (
+        <div style={designerTabRowStyle}>
+          <PillTabs
+            items={FLAG_DESIGNERS}
+            active={owner}
+            onChange={setOwner}
+            label="Filter versions by designer"
+            size="compact"
+          />
+          <span style={designerTotalStyle}>
+            {shown.length} {shown.length === 1 ? 'version' : 'versions'}
+          </span>
+        </div>
+      )}
       <ul
         style={{
           listStyle: 'none',
@@ -183,7 +245,7 @@ export function DashboardVersionsPanel({
           flex: 1,
         }}
       >
-        {versions.map((version) => {
+        {shown.map((version) => {
           const isDefault = version.id === defaultVersionId
           return (
             <li
@@ -329,6 +391,23 @@ function VersionRow({
       >
         {version.label}
         {isDefault && <span style={defaultBadgeStyle}>Default</span>}
+        {/* ⚠ ONLY THE DESIGN SITE EVER SEES THIS. The demo site's list is
+            already filtered to `ready` (`dashboardVersionsForAudience`), so a
+            row carrying this badge cannot reach a stakeholder — which is the
+            point: it tells a DESIGNER that the version they are looking at is
+            one stakeholders cannot pick.
+
+            ⚠ WORDS, NOT A COLOUR. The demo bar's `wip` mark is a dot plus
+            visually-hidden text because the bar has no legend and a dot means
+            nothing on its own; this list has room for the words, so it says
+            them. Same rule, fuller form.
+
+            ⚠ ABSENT COUNTS AS WIP, matching the field's own default — a version
+            added without a `maturity` is design-site-only, and this badge is
+            what makes that visible rather than a silent omission. */}
+        {version.maturity !== 'ready' && (
+          <span style={wipBadgeStyle}>Design site only</span>
+        )}
       </div>
       <div
         style={{
@@ -368,6 +447,42 @@ function VersionRow({
 }
 
 // Small "Default" pill next to the label of the default version.
+/* The designer strip + the total beside it. `space-between` so the count sits
+   at the sheet's right edge rather than against the pills, where it would read
+   as a count OF the selected tab. */
+const designerTabRowStyle = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 12,
+  flexWrap: 'wrap',
+  padding: '4px 24px 0',
+} as const
+
+const designerTotalStyle = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 12,
+  color: 'var(--color-text-tertiary)',
+  whiteSpace: 'nowrap',
+} as const
+
+/* Quieter than `defaultBadgeStyle` on purpose: Default is a statement about
+   the product, this is a statement about readiness, and a reviewer scanning the
+   list should find the Default badge first. */
+const wipBadgeStyle = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  padding: '1px 8px',
+  borderRadius: 'var(--radius-pill)',
+  background: 'var(--color-neutral-100)',
+  color: 'var(--color-text-tertiary)',
+  fontFamily: 'var(--font-body)',
+  fontSize: 11,
+  fontWeight: 700,
+  letterSpacing: '0.04em',
+  textTransform: 'uppercase',
+} as const
+
 const defaultBadgeStyle = {
   display: 'inline-flex',
   alignItems: 'center',

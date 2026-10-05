@@ -1,18 +1,21 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { ShoppingCart, Bars } from '@/icons'
+import { ShoppingCart, Bars, HelpCircle } from '@/icons'
 import { Logo } from '@/components/brand/Logo'
 import { useCourseChrome } from '@/components/learning/courseTakeover'
 import { isTestSession } from '@/data/gatewayMode'
 import { NavDropdown } from './NavDropdown'
 import { NavLink } from './NavLink'
 import { AccountMenu } from './AccountMenu'
+import { PlatformTopNav } from './PlatformTopNav'
+import { showsHelpControl, showsTopNav, useHelpPlacement, useNavPlacement } from './navPlacement'
+import { HelpSheet } from '@/components/support/HelpSheet'
 import { NotificationsMenu } from '@/components/notifications/NotificationsMenu'
 import { LearningPathsPanel } from '@/components/learning/LearningPathsPanel'
 import { useLearningPathsPanel } from '@/components/learning/LearningPathsPanelContext'
 import { DashboardVersionsPanel } from '@/components/dashboard/DashboardVersionsPanel'
+import { isPublicGateway } from '@/data/gatewayMode'
 import { useDashboardVersionsPanel } from '@/components/dashboard/DashboardVersionsPanelContext'
-import { useFeatureFlagPanel } from '@/components/account/FeatureFlagPanelContext'
 import { MembershipVersionsPanel } from '@/components/membership/MembershipVersionsPanel'
 import { useMembershipVersionsPanel } from '@/components/membership/MembershipVersionsPanelContext'
 import { JumpBackInPanel } from '@/components/dashboard/JumpBackInPanel'
@@ -20,7 +23,7 @@ import { useJumpBackInPanel } from '@/components/dashboard/JumpBackInPanelContex
 import {
   readDefaultDashboardVersion,
   writeDefaultDashboardVersion,
-  DISCOVERABILITY_DASHBOARD_VERSIONS,
+  dashboardVersionsForAudience,
   defaultDiscoverabilityVersionFor,
   isAtlasCompassNavVersion,
   type DashboardVersionId,
@@ -72,7 +75,11 @@ export function Header() {
     open: versionsOpen,
     closePanel: closeVersionsPanel,
   } = useDashboardVersionsPanel()
-  const { openPanel: openFeatureFlagPanel } = useFeatureFlagPanel()
+  /* ⚠ `openFeatureFlagPanel` WENT WITH THE VERSIONS SHEET'S BACK ARROW
+     (2026-10-05). It existed only to send a reviewer from that sheet back into
+     the Feature Flag panel, which stopped being where they came from when the
+     version got its own control on the demo bar. Nothing else in this header
+     opens the flag panel — the robot does, from `AdminToolsMenu`. */
   // ARCHIVED 2026-09-16 — the "Membership Versions" picker was unwired with the
   // `membership-page-version` flag it wrote (the XCEL flag audit). It configured
   // the standalone Membership page, which XCEL cannot reach:
@@ -101,6 +108,11 @@ export function Header() {
      `courseTakeover` for why it is a store and not a prop. */
   const courseChrome = useCourseChrome()
   const platformNav = pathname === '/dashboard-rebrand'
+  /* WHICH NAVIGATION THE REBRAND SHELL IS SHOWING — `nav-placement`. The top
+     nav renders HERE, in the header, because that is where the design puts it
+     (Figma 765:3801); the shell drops its rail column to match. Read
+     unconditionally — rules of hooks — and acted on in the bar below. */
+  const navPlacement = useNavPlacement()
   // Hide the primary top nav on the rebrand shell (wayfinding lives in the left
   // rail) AND on the Onboarding Flow — a required first-run wizard the learner
   // shouldn't be able to navigate away from. Both keep the logo + utility icons.
@@ -138,6 +150,28 @@ export function Header() {
   // the white app header so it reads as the top of the window.
   const framed = device === 'desktop-framed'
   const showHamburger = platformNav && mobile
+  /* ⚠ DESKTOP ONLY, AND THE HAMBURGER IS WHY. At phone width the rebrand's
+     nav is already a drawer (`showHamburger` below, which opens the shell's
+     `MobileNavDrawer` — and that drawer renders the RAIL, under either
+     option). Three pills in a 375px header push the logo and the utility icons
+     off the bar entirely, so the top nav stands down and the designed mobile
+     path takes over. The Figma is a 1392px frame and says nothing about phone;
+     this is the shell's existing answer rather than a new one. */
+  const showTopNav = platformNav && showsTopNav(navPlacement) && !mobile
+  /* HELP'S OWN CONTROL — `nav-help`, 2026-10-01. Rendered only where the rail
+     is NOT (see `showsHelpControl`): with the rail up its Get Help row already
+     carries Help and a second control is a duplicate. `platformNav` scopes it
+     to the shell the same way `showTopNav` is scoped — the classic routes have
+     their own full nav and are not part of this comparison.
+
+     THE SHEET LIVES HERE, not in either trigger, because the two triggers are
+     in different components (this header and `AccountMenu` below it) and both
+     must open the SAME one. Header owns the state and hands the opener down as
+     a prop; a context for one boolean between a parent and its own child would
+     be ceremony. */
+  const helpPlacement = useHelpPlacement()
+  const showHelpControl = platformNav && showsHelpControl(navPlacement) && !mobile
+  const [helpOpen, setHelpOpen] = useState(false)
   const { setOpen: setMobileNavOpen } = useMobileNav()
   const paths = learningPathsFor(brand)
   const defaultPathId = activePathIdFor(brand)
@@ -248,12 +282,45 @@ export function Header() {
           </Link>
         </nav>
       )}
+      {/* HELP, AS A `?` — `nav-help: header-icon`. LEFT OF THE BELL, which is
+          where the Figma puts it (765:3801) and the reason the cluster's gap is
+          the separation it is. The alternative placement does not render here
+          at all; it is a row in the menu below.
+
+          ⚠ `!atlasSlimHeader` ADDED IN THE 2026-10-05 MERGE. Both treatments
+          answer "where is Help", and on the Atlas version both conditions are
+          true — so without this the header would carry the `?` AND the text
+          links, two answers to one question. Atlas's own links win on its own
+          version; everywhere else this is unchanged. */}
+      {!atlasSlimHeader && showHelpControl && helpPlacement === 'header-icon' && (
+        <button
+          type="button"
+          data-cta-id="nav.support"
+          onClick={() => setHelpOpen(true)}
+          aria-label="Help"
+          aria-haspopup="dialog"
+          className="cre-icon-pill"
+        >
+          <HelpCircle size={20} aria-hidden />
+        </button>
+      )}
       {showBell && <NotificationsMenu />}
       {/* No props — the menu resolves the learner from `useAccount()` and the
           profile-avatar override, the same two sources the rail's profile
           header reads. It used to be passed `initials="SC"`, which is not this
           learner's initials and was the only value it ever received. */}
-      <AccountMenu />
+      <AccountMenu
+        /* HELP, AS A MENU ROW — `nav-help: profile-menu`. Passed as an opener
+           rather than a boolean so the menu never has to know WHY it is showing
+           a Help row, only what pressing it does. Undefined under every other
+           setting, which is the same withheld-prop mechanism the rail uses for
+           its collapse toggle. */
+        onOpenHelp={
+          showHelpControl && helpPlacement === 'profile-menu'
+            ? () => setHelpOpen(true)
+            : undefined
+        }
+      />
     </div>
   )
   /* AFTER EVERY HOOK, BEFORE ANY MARKUP — see `courseTakeover`. Option 2's
@@ -383,7 +450,18 @@ export function Header() {
           )}
         </div>
 
-        <div className="flex items-center" style={{ gap: 24 }}>
+        {/* 16 WHEN THE TOP NAV IS UP, 24 otherwise. The 24 is the classic
+            routes' spacing between a full primary nav and the utilities; with
+            the shell's short pill row it left a gap wider than the gaps inside
+            the row itself, which read as the bell drifting away from the nav.
+            Scoped rather than changed outright — every other route keeps 24. */}
+        <div className="flex items-center" style={{ gap: showTopNav ? 16 : 24 }}>
+          {/* The platform shell's own primary nav, when the shell is drawing
+              it up here instead of down the left side. It sits in this
+              right-hand cluster rather than beside the logo because the design
+              aligns it with the utility icons, and the cluster's 24px gap is
+              the separation the design draws between Help and the bell. */}
+          {showTopNav && <PlatformTopNav />}
           {!hidePrimaryNav && (
             <nav className="flex items-center" style={{ gap: 8 }}>
               {/* The Dashboard tab is gated behind the `dashboard-tab` flag
@@ -464,11 +542,25 @@ export function Header() {
           open={versionsOpen}
           onClose={closeVersionsPanel}
           versions={
-            // Eric/Atlas V1 only while its flag is on (2026-10-02).
+            /* ⚠ TWO FILTERS, BOTH KEPT (merged 2026-10-05). The AUDIENCE one
+               lists `ready` versions only on the demo site — the picker became
+               reachable by stakeholders when it moved to the demo bar. Eric's
+               V1 gate is narrower and older: that version is hidden from
+               everyone until its own flag is on. They stack; neither replaces
+               the other.
+
+               ⚠ A PLAIN COMMENT INSIDE THE BRACES. A JSX comment in an
+               ATTRIBUTE position is a syntax error, which is how this landed
+               broken the first time — and writing the JSX comment delimiters
+               out here to explain that closed this comment early, which is how
+               it landed broken the second. */
             ericAtlasV1
-              ? DISCOVERABILITY_DASHBOARD_VERSIONS
-              : DISCOVERABILITY_DASHBOARD_VERSIONS.filter((v) => v.id !== 'eric-atlas-v1')
+              ? dashboardVersionsForAudience(isPublicGateway())
+              : dashboardVersionsForAudience(isPublicGateway()).filter(
+                  (v) => v.id !== 'eric-atlas-v1',
+                )
           }
+          designerTabs
           activeVersionId={
             (new URLSearchParams(search).get('version') as DashboardVersionId | null) ??
             (discoverabilityDefault as DashboardVersionId)
@@ -477,20 +569,19 @@ export function Header() {
           defaultVersionId={discoverabilityDefault as DashboardVersionId}
           onSetDefault={() => {}}
           hideSetDefault
-          // Jump-off to the classic dashboard (the "Legacy Dashboard 2.0" tile
-          // link). It loads outside this shell, so it's a plain CTA under the
-          // version list rather than a selectable version card.
-          secondaryCta={{
-            label: 'Go to Legacy 2.0 Dashboard',
-            onClick: () => navigate('/dashboard'),
-          }}
-          // Opened from the Feature Flag sheet's "Dashboard Version" row, so the
-          // header control is a Back that returns there instead of a Close, and
-          // it slides from the right to match that now-right-anchored sheet.
-          onBack={() => {
-            closeVersionsPanel()
-            openFeatureFlagPanel()
-          }}
+          /* ⚠ "Go to Legacy 2.0 Dashboard" WAS HERE AND WENT — 2026-10-05, the
+             direct ask. It navigated to `/dashboard`, the classic shell, from
+             under the version list. The classic dashboard is unchanged and
+             still at that route; what went is this door to it. */
+          /* ⚠ AND THE BACK ARROW WENT WITH IT, as a BUG FIX rather than a
+             second ask. It read "opened from the Feature Flag sheet's Dashboard
+             Version row, so the header control is a Back that returns there" —
+             and that row was removed earlier today when the version got its own
+             control on the demo bar. The sheet is opened from the BAR now, so
+             Back was returning the reviewer to a sheet they had never been in.
+             No `onBack` means the header draws Close, which is where they
+             actually came from. Caught while removing the CTA above, not by a
+             test: nothing asserts where a back arrow goes. */
           side="right"
         />
         </>
@@ -511,6 +602,12 @@ export function Header() {
         />
       )}
       <JumpBackInPanel open={jumpBackInOpen} onClose={closeJumpBackInPanel} />
+      {/* HELP — ONE SHEET FOR BOTH TRIGGERS (`nav-help`). It renders here
+          rather than beside either control because the `?` icon and the account
+          menu's Help row are in different components and must open the same
+          thing. Mounted whenever the control is available and gated on `open`
+          inside `Sheet`, the same shape as the panels above it. */}
+      {showHelpControl && <HelpSheet open={helpOpen} onClose={() => setHelpOpen(false)} />}
       <MembershipVersionsPanel
         open={membershipVersionsOpen}
         onClose={closeMembershipVersionsPanel}

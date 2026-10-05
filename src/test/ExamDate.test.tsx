@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, within } from '@testing-library/react'
+import { cleanup, render, screen, fireEvent, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
@@ -295,17 +295,38 @@ describe('the capture, after `exam-step-style` was retired', () => {
     expect(document.querySelector('section[aria-label="Schedule State Exam"]')).toBeNull()
   })
 
-  it('still shows a stored date back — VISIBLE, including to a screen reader', () => {
-    /* ⚠ THE SR-ONLY SENTENCE IS THE HALF THAT NEARLY WENT. The tear-off renders
+  it('speaks the whole date back under BOTH placements', () => {
+    /* ⚠ THE SR-ONLY SENTENCE IS THE HALF THAT NEARLY WENT, and it is the half
+       that has to survive every redesign of this readout. The tear-off renders
        the date as three unrelated fragments and the countdown never names the
-       day, so without this line a screen-reader user hears everything about the
-       booking except when it is. The retired card carried the same sentence. */
+       day; the compact arm's visible line drops the weekday and hides its
+       separator from the accessibility tree. In both cases a screen-reader user
+       would hear everything about the booking except when it is.
+
+       ⚠ ASSERTED ON BOTH ARMS DELIBERATELY. It would be easy to keep this line
+       in whichever arm the suite happened to pin and lose it in the other —
+       nothing on screen would look missing, which is exactly how it nearly went
+       the first time. */
+    for (const arm of ['journey-column', 'under-course']) {
+      writeExamDate('2026-06-30')
+      window.history.replaceState({}, '', `/dashboard-rebrand?ff=exam-card-placement:${arm}`)
+      renderShell()
+      expect(card().textContent, arm).toMatch(/Exam scheduled for .*June 30, 2026/)
+      cleanup()
+    }
+  })
+
+  it('renders the tear-off calendar in the journey column', () => {
+    /* The full readout's own claim, split out of the test above when the
+       compact arm arrived: three fragments, which is precisely why the sentence
+       above exists. `under-course` draws one line instead — see
+       `ExamCardPlacement.test.tsx`. */
     writeExamDate('2026-06-30')
+    window.history.replaceState({}, '', '/dashboard-rebrand?ff=exam-card-placement:journey-column')
     renderShell()
     expect(within(card()).getByText('JUN')).toBeTruthy()
     expect(within(card()).getByText('30')).toBeTruthy()
     expect(within(card()).getByText('2026')).toBeTruthy()
-    expect(card().textContent).toMatch(/Exam scheduled for .*June 30, 2026/)
   })
 
   it('still lets the learner take it back — REVERSIBLE', () => {

@@ -111,6 +111,40 @@ export type FeatureFlagDefinition = {
    *  selector at the top of `<FeatureFlagPanel>` — reviewers pick
    *  a page first, then see only the flags scoped to that page. */
   page: FeatureFlagPageId
+  /** Which designer's exploration this belongs to. Absent means Jill — see
+   *  `DesignerId`. Read it through `flagOwner()`, never directly, or the
+   *  default lives in two places. */
+  owner?: DesignerId
+  /**
+   * SURFACE IT ON THE DESIGN CONTROLS BAR — 2026-10-05, the direct ask for a
+   * second bar: "fonts, brand colors, and things specifically related to design
+   * decisions that have nothing to do with the stakeholders".
+   *
+   * ⚠ IT IS A PLACE, NOT A PERMISSION, and the distinction is the whole reason
+   * the two bars exist. The DEMO bar shows stakeholders how the product behaves
+   * for different learners — progress, tier, education. The DESIGN bar shows a
+   * designer the decisions still open in their own exploration. A flag with no
+   * `surface` is neither; it lives in the Feature Flag panel and nowhere else,
+   * which is where the great majority belong.
+   *
+   * ⚠ THIS IS THE SANCTIONED WAY TO GET A CONTROL ON A BAR. `DemoControlsBar`
+   * is protected precisely so nobody adds one by editing it; adding `surface`
+   * to a flag you already own does the same job without touching shared chrome.
+   */
+  surface?: 'design'
+  /**
+   * Which dashboard VERSIONS this design control belongs to.
+   *
+   * ⚠ ABSENT FALLS BACK TO THE OWNER, not to "everywhere". A design flag with
+   * no `versions` shows on every version its OWNER owns — which is right for
+   * the common case (one designer, one exploration) and keeps the field
+   * optional. Name versions explicitly when a designer has two and a control
+   * belongs to only one of them.
+   *
+   * ⚠ MEANINGLESS WITHOUT `surface: 'design'`. The Feature Flag panel scopes by
+   * the version's OWNER, not by this; only the Design bar reads it.
+   */
+  versions?: string[]
   /** Additional page cards this flag should ALSO surface under (it counts +
    *  renders on each). Use when one flag drives filters on more than one page —
    *  e.g. `profession-count` / `state-count` gate the filter rows on BOTH the
@@ -138,6 +172,70 @@ export type FeatureFlagDefinition = {
 // yet" so reviewers see the platform's flag-coverage at a glance.
 // Add a page here first, then tag new flag definitions with the
 // matching `page` key.
+
+/**
+ * WHOSE EXPLORATION A FLAG BELONGS TO — 2026-10-05, the direct ask: "there are
+ * 2 designers working in this project… 2 filter tabs at the top, Jill and Eric".
+ *
+ * ⚠ IT IS A PERSON, NOT A SUBJECT, and that is the distinction to hold. `group`
+ * already says WHERE a flag acts (Navigation, Widgets); two designers working
+ * the same surfaces would be split by subject and called people, which is why
+ * the owner is its own axis rather than being derived from the group.
+ *
+ * ⚠ ABSENT MEANS JILL, deliberately: every flag in the catalog today is hers,
+ * so this change touches NO existing row and Eric's tab is empty by
+ * construction rather than by a list someone has to maintain. The cost is that
+ * a new flag with no `owner` quietly becomes Jill's — right while she is the
+ * one authoring them, and the thing to revisit the day that stops being true.
+ *
+ * ⚠ IT IS A FILTER, NOT A PERMISSION. Both designers see both tabs and can flip
+ * anything in either. Nothing here gates who may change what.
+ */
+export type DesignerId = 'jill' | 'eric'
+
+/** The tab strip's order and labels. The FIRST entry is the default selection,
+ *  so reordering this changes which tab the panel opens on. */
+export const FLAG_DESIGNERS: { id: DesignerId; label: string }[] = [
+  { id: 'jill', label: 'Jill' },
+  { id: 'eric', label: 'Eric' },
+]
+
+/** A flag's (or a version's) owner, resolving the absent case in ONE place so
+ *  no call site repeats `?? 'jill'` — the shape that lets two readers of the
+ *  same catalog disagree about who owns a row. */
+/**
+ * THE DESIGN CONTROLS FOR ONE DASHBOARD VERSION — what the Design bar draws.
+ *
+ * ⚠ VERSION-SCOPED, NOT DESIGNER-SCOPED, which was the explicit choice
+ * (2026-10-05). Switch to Eric's Atlas version and his font and brand controls
+ * appear; switch to Testing 3 and they are replaced by its own. The app has no
+ * notion of WHO is looking — there is no sign-in — so the version is the only
+ * honest handle, and it is also the thing a designer is actually working on.
+ *
+ * ⚠ THE `versions` FALLBACK IS THE OWNER, so a design flag that names no
+ * versions follows its author to every version they own. Without that default,
+ * every new design flag would need a version list before it rendered anywhere,
+ * and the first one a designer added would silently do nothing.
+ *
+ * ⚠ IT RETURNS FLAGS, NOT CONTROLS. The bar renders whatever shape each flag
+ * declares — a radiogroup for `variants`, a toggle otherwise — so adding a
+ * design control is adding a flag and nothing else. That is the point: the bar
+ * itself is protected chrome that nobody needs to edit.
+ */
+export function designControlsFor(
+  versionId: string,
+  versionOwner: DesignerId,
+): FeatureFlagDefinition[] {
+  return FEATURE_FLAGS.filter((def) => {
+    if (def.surface !== 'design') return false
+    if (def.versions && def.versions.length > 0) return def.versions.includes(versionId)
+    return flagOwner(def) === versionOwner
+  })
+}
+
+export function flagOwner(def: { owner?: DesignerId }): DesignerId {
+  return def.owner ?? 'jill'
+}
 
 export type FeatureFlagPageId =
   | 'dashboard'
@@ -813,6 +911,175 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'nav-rail-surface',
+    group: 'Navigation',
+    label: 'Left nav background',
+    description:
+      'Whether the left rail paints its own surface ON HOME. `filled` (default) is what ships \u2014 the rail sits on `--color-nav-surface`, a panel beside the content. `none` drops that fill so the rail sits directly on the page, and the column reads as part of the page rather than as a docked panel. \u26a0 HOME ONLY, deliberately: it is the one screen where the rail stands beside a full layout rather than a single body, so it is where the panel edge is doing the least work. Every other section keeps the surface under both settings. `none-aligned` does the same and also drops the rows 16px, so the first nav item\u2019s top edge meets the top of the content\u2019s first card instead of floating above it \u2014 16 is the measured difference, not a nudge. \u26a0 THE RIGHT BORDER IS ALREADY TRANSPARENT in every mode (see the rail column in `PlatformShell`), so dropping the fill leaves no seam behind \u2014 nothing else has to change for this to read.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    defaultVariant: 'filled',
+    variants: [
+      { value: 'filled', label: 'Filled (as shipped)' },
+      { value: 'none', label: 'None \u2014 page background' },
+      { value: 'none-aligned', label: 'None \u2014 dropped to the content' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'nav-placement',
+    group: 'Navigation',
+    label: 'Nav placement',
+    description:
+      'WHERE THE PRIMARY NAVIGATION LIVES \u2014 one axis, two answers. **`left`**: the rail carries the destinations, as it ships, plus a Compass Learning row so both arms offer the same places. **`top`**: a row in the header carries Home \u00b7 Compass Learning (Figma 765:3801), the shell drops the rail column and the content runs full width \u2014 and everything the rail used to hold is RE-HOMED rather than dropped: My Courses and Certificates become tile buttons above the Quick Question card on Home, and Help gets a control of its own (see `nav-help`). \u26a0 THE TWO ARE EXCLUSIVE as of 2026-10-01, and that is the restructure. The old `hybrid` drew the header AND the rail, so Home lit up in two navigations at once; if the header is the navigation there is no rail for it to disagree with. \u26a0 THE GREETING IS NOT PART OF THIS CHOICE any more \u2014 the Home page header (\u201cWelcome to your learning experience, Jordan\u201d + \u201cHome\u201d) renders under BOTH, so switching arms compares navigation and nothing else. \u26a0 `hybrid` AND `hybrid-tabs` ARE OFF THE PICKER, NOT GONE: both still resolve from `?ff=nav-placement:hybrid` so the new shape can be held against what it replaces while the decision is open. Nothing new is built on them. Turning the flag OFF resolves to `left` AND drops the exploration\u2019s own additions (the Compass row, the greeting), so off is the shipped product rather than a half-migrated one.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    /* ⚠ `top` IS THE BRANCH DEFAULT as of 2026-10-01 — it was `hybrid`, which is
+       no longer on the picker. The whole of this pass is the top-nav arm (the
+       tiles, the two Help placements, the sheet), so it is what the branch build
+       should open on; `left` is one click away on the bar and is the honest
+       control to compare it against. Still a BRANCH default:
+       `promote-to-prototype` decides what, if anything, becomes the baseline. */
+    defaultVariant: 'top',
+    variants: [
+      { value: 'left', label: 'Left nav' },
+      { value: 'top', label: 'Top nav' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'nav-help',
+    group: 'Navigation',
+    label: 'Help placement (top nav)',
+    description:
+      'WHERE HELP LIVES WHEN THE TOP NAV IS UP \u2014 2026-10-01. `header-icon` puts a `?` in the header utilities, immediately left of the notifications bell; `profile-menu` puts a Help row in the account dropdown, directly above Logout. \u26a0 BOTH OPEN THE SAME SHEET (`HelpSheet`, the Help & Support panel), which is the entire point of the pair \u2014 the question under test is DISCOVERABILITY versus a tidier header, not two different help experiences. Changing the variant moves one trigger; it never changes what Help is. \u26a0 NO EFFECT UNDER `nav-placement: left`, where the rail\u2019s own Get Help row carries it and a second control would be a duplicate \u2014 the predicate is the rail\u2019s absence, not the top nav\u2019s presence. \u26a0 THE RAIL\u2019S GET HELP STILL OPENS THE SECTION, not this sheet, so the two arms answer Help differently today. That is the ask as given (the sheet was scoped to the top nav) and it is the thing to look at second.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    defaultVariant: 'header-icon',
+    variants: [
+      { value: 'header-icon', label: 'Header \u2014 ? icon' },
+      { value: 'profile-menu', label: 'Profile dropdown \u2014 above Logout' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'combined-progress-bar',
+    group: 'Widgets',
+    label: 'Combined course card \u2014 progress bar',
+    description:
+      'Whether Testing 3\u2019s combined course card draws the 8px progress bar under its title. \u26a0 REVIEWED AND DECLINED 2026-10-05 \u2014 it ships OFF, and the reason is the defect the ON arm carried: THE CARD STATED ITS PROGRESS TWICE, with two numbers that disagreed. The bar fills from the card\u2019s `percent` prop, which is lesson progress (62%); the gauge running down the coursework timeline a few lines below is weighted across the whole journey (37%). One course, two fills of visibly different lengths. The timeline carries the figure AND the \u201cyou are here\u201d marker, so it was the half that could stand alone. \u26a0 THE BAR IS NOT BROKEN AND IS ONE URL AWAY (`?ff=combined-progress-bar:on`) \u2014 if the two measures are ever reconciled, this becomes the live question again: does a bar read faster than a column? No effect outside Testing 3.',
+    maturity: 'wip',
+    /* ⚠ OFF IS THE REVIEWED BASELINE, not a flag nobody got to. It was `true`
+       on the branch so the bar could be seen beside the gauge; the comparison
+       happened and the gauge won. See the description for the argument. */
+    defaultEnabled: false,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'journey-stop-mark',
+    group: 'Widgets',
+    label: 'Coursework timeline \u2014 unreached stops',
+    description:
+      'WHAT A STOP THE LEARNER HAS NOT REACHED LOOKS LIKE on Testing 3\u2019s timeline. `circle` (default) is the dashed ring the rail has always drawn, shrunk to 10px under the gauge. `dash` replaces it with a short horizontal tick across the line \u2014 a mark ON the timeline rather than a node hung off it. \u26a0 THE ARGUMENT: a ring is a PLACE, and six places read as six equal claims when five of them are not yet real. A tick reads as a graduation on a scale, which is what the gauge arm has made this \u2014 so the two flags are related, and `dash` is most legible with `journey-scale-style: gauge`. \u26a0 THE DONE AND CURRENT STOPS ARE UNAFFECTED under both: a completed tick and a \u201cyou are here\u201d tick would give up the one distinction the column cannot lose. No effect outside Testing 3.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    /* ⚠ `dash` IS THE DEFAULT as of 2026-10-02, the direct ask ("make these
+       current settings the default"). A diff of the live store against this
+       catalog found exactly ONE setting moved away from its default — this one
+       — so it is the whole of that change; everything else on Testing 3 was
+       already opening the way it was being reviewed. */
+    defaultVariant: 'dash',
+    variants: [
+      { value: 'dash', label: 'Tick on the line' },
+      { value: 'circle', label: 'Dashed ring (as drawn)' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'journey-scale-style',
+    group: 'Widgets',
+    label: 'Coursework timeline \u2014 how 0/100 is shown',
+    description:
+      'FOUR WAYS TO PUT A PERCENTAGE ON Testing 3\u2019s vertical coursework timeline. **`gauge`** (default) turns the spine itself into one continuous track filled to the figure, with 0 at its top, 100 at its foot and the figure at the fill boundary; the stop nodes ride on it. **`axis`** is the first attempt: the per-stop spine kept, with 0 and 100 as digits bracketing the list and the figure beside the progress caret. **`chip`** drops 0 and 100 entirely and puts the figure as a small pill on the stop the learner is on. **`header`** lifts the whole scale out of the column into one horizontal track under \u201cComplete Coursework\u201d, leaving the timeline a plain list. \u26a0 THE TENSION THEY ANSWER DIFFERENTLY: the rows are spaced by their CONTENT\u2019s height, not by how much work each stop is \u2014 so a figure placed next to the current stop is in the right place but not at the right HEIGHT, and a figure placed at its true height sits beside a stop the learner has not reached. `axis` and `chip` choose position; `gauge` and `header` choose proportion. \u26a0 ALL FOUR STATE THE SAME NUMBER, and the nodes still say which stop is live under every one, so none of them loses \u201cwhere am I\u201d. No effect outside Testing 3.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    /* ⚠ `gauge` OPENS, not `axis`. The ask that started this was that the axis
+       "is not doing great" — so the arm that answers its actual defect
+       (a scale whose marks are not proportional) is the one to look at first.
+       The other three are one click away and nothing is decided. */
+    defaultVariant: 'gauge',
+    variants: [
+      { value: 'gauge', label: 'Gauge \u2014 the spine IS the scale' },
+      { value: 'axis', label: 'Axis \u2014 0/100 bracketing the list' },
+      { value: 'chip', label: 'Chip \u2014 the figure on the live stop' },
+      { value: 'header', label: 'Header \u2014 a horizontal scale above' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'home-tile-style',
+    group: 'Widgets',
+    label: 'Right rail \u2014 tile shape',
+    description:
+      'HOW THE RIGHT RAIL\u2019S SIX DESTINATIONS ARE DRAWN on Testing 3. `square` (default) is the grid two across \u2014 icon over label, each tile a true square by `aspect-ratio`. `stacked` is one column of long horizontal buttons, icon left of the label. \u26a0 THE SAME SIX, THE SAME ORDER, THE SAME CTA IDS \u2014 only the shape changes, which is what makes the two comparable. \u26a0 THE TRADE IS HEIGHT AGAINST PRESENCE: six squares two-across is a tall block that gives each destination a face, where six rows read as a menu and take about half the room. \u26a0 Both arms wear `.cre-tile-cta`, so the outline-at-rest and fill-on-hover treatment is identical and the comparison is about layout alone. No effect outside Testing 3, which is the only version drawing this grid.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    /* ⚠ `stacked` IS THE DEFAULT as of 2026-10-02, the direct ask. It was
+       `square` for a day — the shape the rail was built as, kept while the
+       alternative was new ("keep the tiles as default, but add a variant",
+       2026-10-01). Having seen both in the rail, the rows win: six squares
+       two-across is a tall block that pushed the exam card and the readiness
+       slot well above the fold, and these six are destinations rather than
+       things to dwell on. `square` stays one click away on the bar. */
+    defaultVariant: 'stacked',
+    variants: [
+      { value: 'stacked', label: 'Long buttons, stacked' },
+      { value: 'square', label: 'Square tiles, two across' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'exam-card-placement',
+    group: 'Widgets',
+    label: 'Quick question \u2014 where the exam card sits',
+    description:
+      'WHICH COLUMN THE EXAM-DATE CARD LIVES IN. `under-course` (default) puts it in the LEFT column, directly below the Current course card and at that card\u2019s full width \u2014 the same slot Option 4\u2019s tab strip hangs off, which is the only place "under the current course card" stays true. `journey-column` is where it shipped: the first card of the right-hand Study Journey column, promoted above the coursework card by `journey-step-order: exam-first`. \u26a0 IT MOVES THE CARD, IT DOES NOT COPY IT \u2014 `StudyJourneyWidget` drops the card from BOTH of its own call sites (the promoted slot and the licensing list) when this is `under-course`, or the learner would be asked the same question twice on one screen. \u26a0 THE NUMBERING IS UNAFFECTED either way, because the card already consumed no step number: it asks a question rather than naming a step, so the three licensing cards are numbered by a running count that skips it. \u26a0 WHAT THE MOVE COSTS: in the journey column the card sat in a sequence that explained it \u2014 Step 1 coursework, Step 2 exam. Under the course card it stands alone, so the question has to carry itself. That is the thing to judge.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    /* ⚠ REVIEWED AND DECLINED, 2026-10-05 (`promote-to-prototype`). It was the
+       BRANCH default at `under-course` — 2026-10-01, the direct ask ("set it as
+       the default") — and that line used to say this skill would decide. It
+       has: the baseline goes back to `journey-column`, the arm that ships.
+
+       THE ARGUMENT, so a later reader can tell whether it still holds: in the
+       journey column the card sits in a sequence that explains it — Step 1
+       coursework, Step 2 exam — and under the course card it stands alone, so
+       the question has to carry itself. That cost was recorded when the flag
+       landed and it is what the decision turned on.
+
+       ⚠ IT WAS NEVER TESTING 3'S QUESTION. `LearnerFocusedBand` gates the move
+       on `!combinedCoursework`, so Testing 3 — the version this branch
+       promotes — overrides this flag entirely and renders the exam card in the
+       right-hand column either way. What changes here is Testing, Testing 2 and
+       QE Focused. `?ff=exam-card-placement:under-course` is the one URL. */
+    defaultVariant: 'journey-column',
+    variants: [
+      {
+        value: 'under-course',
+        label: 'Under the Current course card',
+        description:
+          'Left column, directly beneath the course card and the same width as it. The Study Journey column loses its first card and starts on Complete Coursework.',
+      },
+      {
+        value: 'journey-column',
+        label: 'In the Study Journey column (as shipped)',
+        description:
+          'Right column, above the coursework card \u2014 where `journey-step-order: exam-first` promotes it.',
+      },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'course-entry-details',
     group: 'Widgets',
     label: 'Course entry — Details link',
@@ -988,41 +1255,11 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     ],
     page: 'dashboard-rebrand',
   },
-  {
-    key: 'dashboard-navigation',
-    group: 'Widgets',
-    label: 'Navigation',
-    description:
-      'Which course page Resume opens. `option-1` is the Compass player as it stands — the 260px contents sidebar, the Home / Overview / Course breadcrumb, the toolbar and the reading column, under the app header. `option-2` is a FULL-SCREEN page with its own header (logo · Compass · course · section, plus the exam-date pill, + Demo, brightness and ✕) and a section progress track; it has no sidebar, no breadcrumb, and it suppresses the app header while open. ⚠ THE TWO SHARE NO CHROME — the navigation IS the variable. `CourseContentV2` is the file Option 2 owns.',
-    // READY: an A/B we are actively asking stakeholders to choose between —
-    // the one control on the demo site whose whole purpose is their opinion.
-    maturity: 'ready',
-    // Variant-only, like `study-pace-chooser` below.
-    defaultEnabled: true,
-    /* ⚠ `option-1` ON THE BRANCH TOO, which breaks this repo's usual rule that
-       a designer's branch defaults its own work ON. Option 2 is one half of an
-       A/B a moderator assigns PER PARTICIPANT from the session link
-       (`?ff=dashboard-navigation:option-2`), not a proposal replacing Option 1
-       — so defaulting it on would silently make every other link, and every
-       reviewer's sandbox, the variant. The control condition has to be the
-       default or the comparison has no baseline. */
-    defaultVariant: 'option-1',
-    variants: [
-      {
-        value: 'option-1',
-        label: 'Option 1 — the current course page',
-        description:
-          'Resume opens the Compass player unchanged: app header, contents sidebar, Home / Overview / Course breadcrumb, the reading column with Previous / Next, and the Rubi panel.',
-      },
-      {
-        value: 'option-2',
-        label: 'Option 2 — the alternate course page',
-        description:
-          'Resume opens `CourseContentV2` — a full-screen course page whose own header carries the course and section naming, so there is no app header, no contents sidebar and no breadcrumb. Wired: ✕. Lo-fi for now: the exam-date pill (real date when one is booked), + Demo, brightness, Notes and Rubi.',
-      },
-    ],
-    page: 'dashboard-rebrand',
-  },
+  /* `dashboard-navigation` WAS HERE — ARCHIVED 2026-10-01. The A/B between the
+     Compass player under the app header (`option-1`) and the full-screen
+     `CourseContentV2` page (`option-2`). Option 1 won, so the player is
+     unconditional now and the flag had nothing left to choose. See the
+     `dashboard-navigation-ab` row in `archivedItems.ts` for the re-wire. */
   {
     key: 'study-pace-chooser',
     group: 'Widgets',
@@ -1114,6 +1351,11 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
   },
   {
     key: 'dashboard-text-tiers',
+    /* ON THE DESIGN BAR — 2026-10-05.
+       The text ink ramp — the second thing the ask named. Reviewed and declined as
+       a baseline on 2026-09-23 and kept one URL away; the design bar is where
+       that comparison actually gets run. */
+    surface: 'design',
     group: 'Widgets',
     label: 'Text tiers',
     description:
@@ -1171,6 +1413,11 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
   },
   {
     key: 'dashboard-heading-font',
+    /* ON THE DESIGN BAR — 2026-10-05.
+       The heading typeface — a TYPOGRAPHY decision, which is the first thing the
+       ask named ("fonts, the brand colors"). Nothing about it tells a
+       stakeholder how the product behaves for a learner. */
+    surface: 'design',
     group: 'Widgets',
     label: 'Heading font',
     description:
@@ -2101,14 +2348,13 @@ type PersistedState = Record<string, PersistedFlagState>
  * `/promote-to-prototype` put in the catalog; this is a third-site concern and
  * lives behind the same env var the third site already sets.
  *
- * `dashboard-navigation` is listed even though the catalog already says
- * `option-1`. It is the A/B's control arm and the one default a session must
- * be able to rely on, so stating it here means a later change to the catalog
- * cannot silently start participants on the variant.
+ * `dashboard-navigation` WAS LISTED HERE — pinning the A/B's control arm so a
+ * later catalog change could not silently start participants on the variant.
+ * It went with the flag on 2026-10-01; there is no variant left to be started
+ * on. See `archivedItems.ts`.
  */
 const TESTING_BASELINE: Record<string, Partial<FeatureFlagState>> = {
   'dashboard-progress-state': { variant: 'not-started' },
-  'dashboard-navigation': { variant: 'option-1' },
 }
 
 export function defaultFlagState(def: FeatureFlagDefinition): FeatureFlagState {

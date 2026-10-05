@@ -100,7 +100,11 @@ describe('the header carries no cart', () => {
     // Guards the removal from over-reaching: the bell and the account menu are
     // the two controls that were meant to stay.
     expect(HEADER_SRC).toMatch(/<NotificationsMenu \/>/)
-    expect(HEADER_SRC).toMatch(/<AccountMenu \/>/)
+    /* `<AccountMenu`, not `<AccountMenu />` — the menu takes a prop now
+       (`onOpenHelp`, the `nav-help` trigger). This line guards that the cart's
+       removal did not take the account menu with it, so what it needs is the
+       element's PRESENCE; the exact prop list is another feature's business. */
+    expect(HEADER_SRC).toMatch(/<AccountMenu[\s/>]/)
   })
 })
 

@@ -2,6 +2,7 @@ import { useMemo, useState, type CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { CircleExclamation, Plus } from '@/icons'
 import { PageHeader } from '@/components/layout/PageHeader'
+import { useSectionBreadcrumb } from '@/components/layout/navPlacement'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { Select } from '@/components/ui/Select'
 import { Checkbox } from '@/components/ui/Checkbox'
@@ -37,6 +38,15 @@ export function CertificatesPage({
 
   const search = params.get('q') ?? ''
   const sort = params.get('sort') ?? 'recent'
+  /* THE SHELL DREW MY TITLE — `SectionPageHeader`, under the top nav
+     (2026-10-02). See the matching note in `MyCoursesPage`; `embedded` is
+     load-bearing for the same reason. */
+  const breadcrumbHeader = useSectionBreadcrumb('certificates') && embedded
+  /* ⚠ `hideSearch` IS OVERRIDDEN, NOT IGNORED. The shell passes it because the
+     plain section HERO carried the search — and the breadcrumb header replaces
+     that hero, so honouring the prop here would take the search off the page
+     entirely. It comes back on its own row under the title. */
+  const showSearch = breadcrumbHeader || !hideSearch
 
   const counts = useMemo(() => {
     const c: Record<Tab, number> = { 'action-required': 0, completed: 0, external: 0 }
@@ -101,10 +111,13 @@ export function CertificatesPage({
       <PageHeader
         title="Certificates"
         hideTitle={embedded}
+        stack={breadcrumbHeader}
         right={
           // In the rebrand shell the section hero carries the search, so the
-          // embedded page drops its own (mirrors the Resource Library panel).
-          hideSearch ? undefined : (
+          // embedded page drops its own (mirrors the Resource Library panel) —
+          // unless the breadcrumb header replaced that hero, in which case the
+          // search has nowhere else to be. See `showSearch`.
+          !showSearch ? undefined : (
             <SearchInput
               label="Search certificates"
               placeholder="Search certificates"

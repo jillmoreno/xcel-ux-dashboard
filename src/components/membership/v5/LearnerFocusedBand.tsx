@@ -19,12 +19,28 @@ import { SquareTile } from './SquareTile'
 import { TaskRow } from '@/components/learning/study-calendar/TaskRow'
 import { ScheduleExamBanner, StudyJourneyWidget } from '@/components/learning/StudyJourneyWidget'
 import { AtlasHomeV2 } from '@/components/compass/AtlasHomeV2'
+import { HomeNavTileColumn } from '@/components/layout/HomeNavTiles'
+import { HomeTileGrid } from '@/components/layout/HomeTileGrid'
+import { HomeReadinessStub } from '@/components/layout/HomeReadinessStub'
 import { StatusStrip } from '@/components/learning/LearningPathDetailPanel'
 import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
 import { JumpBackInWidget } from '@/components/learning/JumpBackInWidget'
 import { CourseEntryCard } from '@/components/learning/CourseEntryCard'
+import { CombinedCourseCard } from '@/components/learning/CombinedCourseCard'
+import { ExamScheduleWidget } from '@/components/learning/ExamScheduleWidget'
+import {
+  widgetCardFramedStyle,
+  widgetCardOutlinedStyle,
+  widgetCardStyle,
+} from '@/components/learning/widgetStyles'
+import { HomeSectionTabs } from '@/components/layout/HomeSectionTabs'
+import { showsSectionTabs, useNavPlacement } from '@/components/layout/navPlacement'
 import { StudyPaceTile } from '@/components/learning/StudyPaceTile'
-import { NY_LH_CURRENT_CHAPTER, NY_LH_CURRENT_LESSON_PART } from '@/data/nyProducerRequirements'
+import {
+  NY_LH_CURRENT_CHAPTER,
+  NY_LH_CURRENT_LESSON_PART,
+  jurisdictionName,
+} from '@/data/nyProducerRequirements'
 import {
   hasStudyCalendarFor,
   XCEL_CE_PATH_ID,
@@ -238,6 +254,21 @@ type Props = {
    */
   journeyCards?: boolean
   /**
+   * THE COURSE AND ITS COURSEWORK AS ONE CARD — Testing 3, 2026-10-01.
+   *
+   * Swaps `CourseEntryCard` for `CombinedCourseCard` in the same slot, and
+   * tells the journey column to drop the coursework card it has absorbed. It
+   * also moves the My Courses / Certificates tiles out of the journey column
+   * and under the combined block.
+   *
+   * ⚠ ONE PROP FOR ALL THREE, deliberately, unlike `framed` / `splitSteps`
+   * above. Those are separable because a version could reasonably want one
+   * without the other. These three are a single arrangement: a combined block
+   * with the coursework still ALSO in the right column is the same list twice,
+   * which is the exact defect this version exists to remove.
+   */
+  combinedCoursework?: boolean
+  /**
    * ISO yyyy-mm-dd — the learner's BOOKED exam date (`examDateStore`), entered
    * on the Schedule State Exam card. Passed straight through to the Study Pace
    * tile, which prices against whichever ceiling binds.
@@ -343,6 +374,7 @@ export function LearnerFocusedBand({
   livePace = false,
   paceOnly = false,
   journeyCards = false,
+  combinedCoursework = false,
   examDate,
   weekMinutes,
   dailyMinutes,
@@ -729,8 +761,152 @@ export function LearnerFocusedBand({
   /* The combined arm swaps the card at the same slot, so everything that
      decides WHETHER a resume card renders at all still decides it — the flag
      only changes which one. */
+  /*
+   * OPTION 4's TAB STRIP — Figma 765:3801, and it hangs off the CARD rather
+   * than off a layout slot.
+   *
+   * ⚠ IT WAS APPENDED TO `topBand` IN `MembershipOverview` FIRST, which put it
+   * at the very foot of the page: the card is several levels inside the band,
+   * and the band's own slot renders after everything else in that column. "Under
+   * the current course card" is a fact about the CARD, so the only place it
+   * stays true is next to the card.
+   *
+   * ⚠ THE COMBINED ARM ONLY. `course-entry-style: split` draws a different
+   * entry point, and the frame this comes from shows the combined one. If the
+   * split arm ever needs the strip too, it is the same one-line append there.
+   */
+  const homeTabs = showsSectionTabs(useNavPlacement()) ? <HomeSectionTabs /> : null
+  /*
+   * THE EXAM CARD, UNDER THE COURSE CARD — `exam-card-placement`, 2026-10-01,
+   * the direct ask ("move this widget to be below the Current course widget").
+   *
+   * ⚠ IT HANGS OFF THE CARD, NOT OFF A LAYOUT SLOT — the same reasoning the tab
+   * strip above it records, and the same trap. The band's own column slot
+   * renders after everything else in that column, so appending there would put
+   * this at the foot of the page. "Below the Current course widget" is a fact
+   * about the CARD, and `resumeInline` is the only place it stays true.
+   *
+   * ⚠ ITS WIDTH COMES FROM THE SLOT, which is the other half of the ask ("make
+   * this widget the same width as the Current course widget"). It is a sibling
+   * of `CourseEntryCard` inside that card's own container, so it is that card's
+   * width by construction rather than by a number that could drift when the
+   * grid's 660/380 split is next touched.
+   *
+   * ⚠ THE COLUMN IT LEFT IS TOLD, via `examElsewhere` on `StudyJourneyWidget`
+   * below. Without that the card renders in BOTH places.
+   */
+  const examPlacement = useFeatureFlag('exam-card-placement').variant ?? 'under-course'
+  /* ⚠ AND ONLY WHERE THERE IS A COURSE CARD TO SIT UNDER. `resumeInline` draws
+     nothing at all on `clpNavy` (the navy card carries its own CTA) or when the
+     learner has no resume point, and "below the Current course widget" cannot
+     mean anything on a page with no such widget. Without this the card would
+     silently vanish from those states — it is told to leave the journey column
+     by the SAME boolean, so an over-broad condition here does not duplicate the
+     card, it deletes it. This expression must stay identical to the one
+     `resumeInline` branches on. */
+  const hasCourseCard = Boolean(onPage && resume && !clpNavy)
+  /* ⚠ …AND NOT WHEN THE COURSE CARD IS THE WHOLE JOURNEY — 2026-10-01, the
+     direct ask ("shift the Exam date back to the right").
+  
+     Testing 3's combined block is now Step 1, Step 2 and Step 3 in one frame.
+     The exam question is not a step in that route — it asks whether the learner
+     has booked a date — so sitting it under the block would put a question
+     inside a sequence it is not part of, and would push the quick buttons
+     another card further down. On the right it has the column to itself with
+     Quick links, which is the same distinction: the route on the left,
+     everything that is not the route on the right.
+  
+     ⚠ IT OVERRIDES THE FLAG RATHER THAN BEING ONE. `exam-card-placement` still
+     chooses for every other version; this says the combined arm has nowhere
+     sensible to put it. A reviewer who switches that flag on Testing 3 sees no
+     change, which is worth knowing — the alternative was a flag combination
+     that renders a question mid-route. */
+  const examUnderCourse =
+    examPlacement === 'under-course' && hasCourseCard && !combinedCoursework
+  /**
+   * THE RIGHT COLUMN'S CARD SURFACE — one expression, every card in it.
+   *
+   * ⚠ DERIVED ONCE RATHER THAN AT EACH `shell=`. There are three of these
+   * (the exam card in its `under-course` slot, the journey widget, the
+   * readiness stub) and the ask was that they match the course card's stroke.
+   * Three copies of a two-level ternary is how a column ends up half outlined
+   * — which looks like a rendering glitch rather than a missed branch.
+   *
+   * ⚠ `widgetCardStyle` IS NOT A CARD AT ALL. It is the bare block on the page
+   * grey, and a border has nothing to sit on there — see the note on
+   * `widgetCardOutlinedStyle`.
+   */
+  const columnCardShell = journeyCards
+    ? combinedCoursework
+      ? widgetCardOutlinedStyle
+      : widgetCardFramedStyle
+    : widgetCardStyle
+  const examCard = examUnderCourse ? (
+    <div style={{ marginTop: 20 }}>
+      <ExamScheduleWidget
+        /* THE SAME SHELL THE JOURNEY COLUMN GAVE IT, picked the same way, so
+           moving the card is a change of PLACE and not of appearance — the
+           comparison the flag is for would otherwise be measuring two things. */
+        shell={columnCardShell}
+        onOpenStep={onOpenStep}
+        stateName={jurisdictionName(path.state) || undefined}
+        /* THE SIMPLER SAVED READOUT — 2026-10-01, the direct ask, and it
+           belongs to this PLACEMENT rather than to the card. Under the course
+           card the date is a fact the learner glances at on the way past; in
+           the journey column it was the card's whole subject and earned the
+           tear-off. Passed from here for the same reason `examElsewhere` is:
+           the band is what knows which slot this is. */
+        compact
+      />
+    </div>
+  ) : null
   const resumeInline =
+    /* ⚠ `!hideResume` RIDES ON EVERY ARM OF THIS CHAIN, merged 2026-10-05. It
+       is the Atlas band's way of saying "the course card above already resumes
+       this course"; main restructured the chain underneath it into the
+       combined / split / jump-back fork. Dropping it from one arm would make
+       the resume card reappear under Atlas in exactly one configuration. */
     onPage && resume && !clpNavy && !hideResume && combinedEntry ? (
+      <>
+      {combinedCoursework ? (
+      <CombinedCourseCard
+        path={path}
+        /* View All still leaves for the full Learning Path — the combined block
+           absorbs the coursework SUMMARY, not the page behind it. Withheld on
+           QE Focused the same way the journey column withholds it, so the two
+           keep agreeing about where this route exists. */
+        onViewAll={onOpenLearningPath ? () => onOpenLearningPath(path.id) : undefined}
+        courseTitle={path.title}
+        cover={resume.imageUrl ?? getCourseImage(resume.id)}
+        percent={percent}
+        /* ⚠ ONE STAT, NOT TWO — 2026-10-02, the direct ask. The "26 of 42
+           lessons · Completed" pair is stated directly below now, on the
+           Pre-Licensing Lessons stop, from the same two figures. Saying it
+           twice in one card was the thing the combined block exists to stop.
+           The split and QE arms keep both; this is the combined card's slot. */
+        stats={[{ value: timeRemainingText(weeksLeft), caption: 'To complete course' }]}
+        lessonsCompleted={totalCompleted}
+        complete={renewalReady}
+        showDetails={entryDetails}
+        onDetails={onViewDetails}
+        /* ⚠ THE SAME TWO HANDLERS `HomeTileGrid` IS GIVEN a few hundred lines
+           below, and that is the point: the step links at the foot of Steps 2
+           and 3 open the SAME sheets the right rail's tiles open. Passing a
+           second pair here would be two ways to open one sheet, which is how
+           they come to open different ones. */
+        onOpenStep={onOpenStep}
+        onOpenRequirements={onViewDetails}
+        onResume={() =>
+          launcher.open(resume.id, {
+            title: path.title,
+            percentComplete: percent,
+            lessonNumber: totalCompleted + 1,
+            completedLessons: totalCompleted,
+            totalLessons: totalRequired || path.hours,
+          })
+        }
+      />
+      ) : (
       <CourseEntryCard
         courseTitle={path.title}
         cover={resume.imageUrl ?? getCourseImage(resume.id)}
@@ -764,7 +940,19 @@ export function LearnerFocusedBand({
           })
         }
       />
+      )}
+      {homeTabs}
+      {examCard}
+      {/* ⚠ THE QUICK BUTTONS ARE NOT HERE ANY MORE — moved to the RIGHT rail,
+          under the exam card, 2026-10-01 (the direct ask). They sat at the foot
+          of this column for one build, after the combined block and the exam
+          card; with the exam card gone to the right there was nothing left
+          between them and the whole route, so two destinations unrelated to
+          this course were closing a card about it. See `afterExam` on
+          `StudyJourneyWidget` below. */}
+      </>
     ) : onPage && resume && !clpNavy && !hideResume ? (
+      <>
       <JumpBackInWidget
         course={resume}
         /* ALWAYS THE NEXT LESSON, including the first — 2026-09-21, the direct
@@ -823,6 +1011,14 @@ export function LearnerFocusedBand({
                 })
         }
       />
+      {/* ⚠ BOTH ARMS OF `resumeInline` CARRY IT, unlike the tab strip above,
+          which is combined-only by design. The strip is an ADDITION — the split
+          arm simply does not have it. This is a MOVE: the card has already been
+          taken out of the journey column by the time this renders, so an arm
+          that forgot it would lose the card entirely rather than show one
+          fewer. Same reason `hasCourseCard` exists. */}
+      {examCard}
+      </>
     ) : null
   // Shared with the Learning Path detail sheet's "Time Remaining", so the band
   // and the sheet that opens from it cannot disagree about the same number.
@@ -1931,34 +2127,99 @@ export function LearnerFocusedBand({
            Still its own card rather than the journey's old top third: the
            resume block answers a different question, and it was the only
            unlabelled block on the version. What changed is which column it
-           answers that question in. */
-        <StudyJourneyWidget
-          path={path}
-          onOpenStop={onOpenStop}
-          onOpenStep={onOpenStep}
-          // The same action "View Requirements" runs — the sheet is the state's
-          // own rules, and the Get Licensed card is where they apply.
-          onOpenRequirements={onViewDetails}
-          onOpenLearningPath={onOpenLearningPath}
-          // FRAMED — a white card with a hairline edge instead of sitting bare
-          // on the page grey.
-          //
-          // DRIVEN BY `journeyCards`, NOT `paceOnly`, as of 2026-09-21. It rode
-          // on `paceOnly` while Testing was the only version that wanted this
-          // treatment, and that prop's own note called the split in advance:
-          // "Rename both if a version ever wants one without the other."
-          // Testing 2 is that version — it wants this journey and keeps its
-          // square tile PAIR, which is the whole thing `paceOnly` means.
-          framed={journeyCards}
-          // …and the post-course steps become their own cards. Still a separate
-          // prop from `framed` because they are different questions — one is
-          // this widget's surface, the other is how many widgets there are.
-          splitSteps={journeyCards}
-          // Atlas home: the filled cards take the page's 32px module inset.
-          cardPadding={framedPace ? 32 : undefined}
-          // …and Schedule State Exam leads as Step 1.
-          examFirst={framedPace}
-        />
+           answers that question in.
+
+           ⚠ NOT QUITE ALONE ANY MORE under `nav-placement: top` (2026-10-01):
+           `HomeNavTileColumn` puts My Courses + Certificates as tile buttons
+           above the Quick Question card, which is what re-homes them when the
+           header nav carries only two items and there is no rail to hold them.
+           It is a FRAGMENT under every other placement, so the widget stays the
+           direct grid child it has always been and this cannot move the band's
+           layout anywhere else. The nav concern lives in `HomeNavTiles`, not in
+           this file — the band's one job here is to say WHERE the top of this
+           column is. */
+        <HomeNavTileColumn suppress={combinedCoursework}>
+          <StudyJourneyWidget
+            path={path}
+            onOpenStop={onOpenStop}
+            onOpenStep={onOpenStep}
+            // The same action "View Requirements" runs — the sheet is the state's
+            // own rules, and the Get Licensed card is where they apply.
+            onOpenRequirements={onViewDetails}
+            onOpenLearningPath={onOpenLearningPath}
+            // FRAMED — a white card with a hairline edge instead of sitting bare
+            // on the page grey.
+            //
+            // DRIVEN BY `journeyCards`, NOT `paceOnly`, as of 2026-09-21. It rode
+            // on `paceOnly` while Testing was the only version that wanted this
+            // treatment, and that prop's own note called the split in advance:
+            // "Rename both if a version ever wants one without the other."
+            // Testing 2 is that version — it wants this journey and keeps its
+            // square tile PAIR, which is the whole thing `paceOnly` means.
+            /* The card moved to the left column, so this one must not draw it
+               too — see `examCard` above for why the band owns this decision
+               rather than the widget reading the flag itself. */
+            examElsewhere={examUnderCourse}
+            /* The coursework AND the licensing steps are in the left column's
+               combined block now, so this column draws neither — what is left
+               here is the exam question and the Quick links card. See
+               `combinedCoursework`. */
+            journeyElsewhere={combinedCoursework}
+            /* …and the quick buttons ride directly under the exam card here,
+               rather than at the foot of the left column. `HomeNavTiles` still
+               returns null unless the top nav is drawing the navigation — the
+               rail carries both rows on the left-nav arm — so moving them
+               changes where they are, never who gets them. */
+            /* ⚠ `HomeTileGrid`, NOT `HomeNavTiles`, on the combined arm — one
+               six-tile grid that absorbs BOTH the My Courses / Certificates
+               pair and the Quick links card below it (2026-10-01). The widget
+               is told to stop drawing Quick links by `journeyElsewhere`, or the
+               three sheet destinations would render twice.
+
+               ⚠ IT DOES NOT CHECK THE NAV PLACEMENT, unlike `HomeNavTiles`,
+               which returns null unless the top nav is drawing the navigation.
+               Four of these six are not rail rows at all — Flashcards and the
+               three sheets have no home in the left nav — so hiding the grid on
+               that arm would take them away from a learner who never had them
+               anywhere else. */
+            afterExam={combinedCoursework ? (
+              <>
+                {/* ⚠ BETWEEN THE EXAM CARD AND THE TILES, which is where the
+                    ask put it ("add another section below this"). It is a
+                    STUB — see the component; the slot is reserved, the body is
+                    deliberately empty, and it takes the same shell as the cards
+                    around it so the rail can be read with it in place. */}
+                {/* ⚠ THE OUTLINED SHELL ON THIS ARM. The ask was that these
+                    cards' stroke match the combined course card's, and this
+                    stub is one of the two it pointed at — the other is the exam
+                    card, which `outlined` on the widget covers. Both read the
+                    same `combinedCoursework`, so the column cannot end up half
+                    outlined. */}
+                <HomeReadinessStub shell={columnCardShell} />
+                <HomeTileGrid onOpenStep={onOpenStep} onOpenRequirements={onViewDetails} />
+              </>
+            ) : undefined}
+            /* ⚠ ERIC'S TWO ATLAS PROPS, CARRIED ACROSS THE RESTRUCTURE
+               2026-10-05. Both read `framedPace`, which is false on every
+               version but his, so they are inert here and decisive there —
+               the reason they survive main's rewrite of this call rather
+               than being dropped with the rest of his version of it. */
+            // Atlas home: the filled cards take the page's 32px module inset.
+            cardPadding={framedPace ? 32 : undefined}
+            // …and Schedule State Exam leads as Step 1.
+            examFirst={framedPace}
+            framed={journeyCards}
+            /* The combined course card opposite carries a hairline, so the exam
+               card in this column takes the same one — 2026-10-02, the direct
+               ask. Testing and Testing 2 keep the strokeless frame; see
+               `widgetCardOutlinedStyle`. */
+            outlined={combinedCoursework}
+            // …and the post-course steps become their own cards. Still a separate
+            // prop from `framed` because they are different questions — one is
+            // this widget's surface, the other is how many widgets there are.
+            splitSteps={journeyCards}
+          />
+        </HomeNavTileColumn>
       ) : (
       <div
         style={{

@@ -69,6 +69,22 @@ export const DEMO_INNER: CSSProperties = {
   gap: 10,
 }
 
+/**
+ * THE DESIGN BAR'S ACCENT — light cyan, 2026-10-05, the direct ask.
+ *
+ * ⚠ ONE PAIR, FOUR PLACES. The rule under the bar, the bar's leading dot, the
+ * "Design" pill's dot in the prototype bar, and Lo-fi's on-state all have to be
+ * the same colour or the bar stops being identifiable by it — and the colour is
+ * the ONLY tell distinguishing the designer's bar from the locked stakeholder
+ * one. Named here so there is a single place to change it.
+ *
+ * ⚠ THE RULE IS A STOP DARKER THAN THE DOT, mirroring the demo bar's
+ * `secondary-600` / `secondary-500` pairing. A 3px rule at the dot's lightness
+ * glares against the navy; a dot at the rule's reads muddy.
+ */
+export const DESIGN_RULE = 'var(--color-info-500)'
+export const DESIGN_ACCENT = 'var(--color-info-400)'
+
 export const DEMO_DOT: CSSProperties = {
   width: 8,
   height: 8,

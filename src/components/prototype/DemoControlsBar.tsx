@@ -2,21 +2,39 @@ import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react'
 import { useLocation, useSearchParams } from 'react-router-dom'
 import {
   defaultDiscoverabilityVersionFor,
-  isAtlasCompassNavVersion,
   isQualifyingEducationVersion,
+  isAtlasCompassNavVersion,
+  dashboardVersionLabel,
 } from '@/data/dashboardVersions'
-import { ATLAS_SKINS, ATLAS_SKIN_DEFAULT, ATLAS_SKIN_PARAM, atlasSkinFor, type AtlasSkin } from '@/components/layout/atlasBrandSkin'
-import { ATLAS_FONTS, ATLAS_FONT_PARAM, atlasFontFor, type AtlasFont } from '@/components/layout/atlasFontSets'
-import { ATLAS_NAV_DEFAULT, ATLAS_NAV_PARAM, ATLAS_NAV_VERSIONS, atlasNavFor, type AtlasNavVersion } from '@/components/layout/atlasNavVersion'
-import { UserSlash, Share2, BrowserWindow, Check, ChevronDown } from '@/icons'
+import { useDashboardVersionsPanel } from '@/components/dashboard/DashboardVersionsPanelContext'
+/* ⚠ THE THREE PARAM CONSTANTS ONLY — not the pickers. Reset still clears the
+   Atlas axes, and they are still URL params until the conversion to
+   `surface: 'design'` flags lands. The dropdowns that used to set them are
+   gone from this bar; these three keep Reset honest in the meantime. */
+import { ATLAS_SKIN_PARAM } from '@/components/layout/atlasBrandSkin'
+import { ATLAS_FONT_PARAM } from '@/components/layout/atlasFontSets'
+import { ATLAS_NAV_PARAM } from '@/components/layout/atlasNavVersion'
+import {
+  UserSlash,
+  Share2,
+  BrowserWindow,
+  ArrowUpRightFromSquare,
+  Check,
+  ChevronDown,
+  Grid,
+  ArrowsRotate,
+} from '@/icons'
 import { ActionMenu } from '@/components/ui/ActionMenu'
 import { Toast } from '@/components/ui/Toast'
 import { DemoBar, DemoDropdown } from './DemoBar'
-import { isPublicGateway, isTestSession } from '@/data/gatewayMode'
+import { isPublicGateway } from '@/data/gatewayMode'
 import { controlMaturity } from '@/data/demoControlMaturity'
 import { licensedProfessionsFor } from '@/data/licensedStatesFixtures'
 import { readDemoDayOffset, setDemoDayOffset } from '@/data/demoDay'
-import { useDemoMenus, DEMO_WHITE, DEMO_HOVER_FILL } from './demoBarUtil'
+import {
+  useDemoMenus,
+  DEMO_HOVER_FILL,
+} from './demoBarUtil'
 import {
   defaultMemberTier,
   membershipTierOptionsFor,
@@ -94,24 +112,128 @@ import {
 /** The Navigation A/B — which course-content body Resume opens. Labels are
  *  deliberately bare: a moderator reads them out and a participant must not be
  *  told which one is "the new one". */
-const NAVIGATION_PICKER: { value: string; label: string }[] = [
-  { value: 'option-1', label: 'Option 1' },
-  { value: 'option-2', label: 'Option 2' },
-]
+/**
+ * WHICH CONTROLS THE BAR DRAWS — trimmed on `jill/navigation-exploration`,
+ * 2026-09-29, the direct ask: "clean up the demo controls for this branch
+ * specifically. Remove the persona, readiness, pacing, and education."
+ *
+ * ⚠ A SWITCH, NOT A DELETION, and that is the whole point of doing it this
+ * way. This branch is a NAVIGATION exploration: Persona, Readiness, Pacing and
+ * Education drive the dashboard's CONTENT, and a reviewer asked to judge where
+ * the nav should live does not need four ways to change what is underneath it.
+ * None of them is retired — they are all still in the flag catalog, still
+ * reachable from the Feature Flag panel and still settable with `?ff=`, so
+ * nothing about the demo site or `main` changes. Flip a line here to get one
+ * back.
+ *
+ * ⚠ IT IS BRANCH-LOCAL BY INTENT. If this branch is ever promoted, this is a
+ * file to look at — shipping the trim would take four controls off the demo
+ * site for everyone, which is not what was asked for.
+ */
+/* ⚠ FIVE KEYS WENT ON 2026-10-05 — `pacing`, `navLayout`, `navHelp`,
+   `journeyScale` and `stopMark` — with the dropdowns they gated. The note at
+   their render site carries the reasoning; the short version is that all five
+   were flag-backed design variants the Feature Flag panel already offered, and
+   all five were `wip`, so the bar was showing them to designers only while
+   being the stakeholders' bar.
 
-const PACE_PRESET_PICKER: { value: string; label: string }[] = [
-  { value: 'recommended', label: 'Recommended' },
-  { value: 'focused', label: 'Focused & Quick' },
-  { value: 'relaxed', label: 'Steady & Relaxed' },
-]
+   ⚠ ONE OF THOSE KEYS CARRIED AN ARGUMENT AGAINST THIS, and it is kept rather
+   than deleted because it may still be right: `journeyScale` / `stopMark` were
+   put here on 2026-10-02 precisely because "a sheet two menus deep is where a
+   comparison stops being made". The ask overrides it, and if the Testing 3
+   timeline comparison quietly stops happening, this is the change that did
+   it. */
+type ControlKey =
+  | 'persona'
+  | 'progress'
+  | 'readiness'
+  | 'education'
+  | 'version'
+
+const SHOW_CONTROL: Record<ControlKey, boolean> = {
+  persona: false,
+  progress: true,
+  readiness: false,
+  /* DASHBOARD VERSION — 2026-10-05, the direct ask. It is the one control here
+     that chooses WHICH DASHBOARD renders rather than who the learner is, and it
+     is on the bar for a reason the rest of that line does not cover: the robot
+     icon is the only other route to it and `PrototypeChrome` does not render
+     the robot on the PUBLIC site at all, so stakeholders had no way to reach
+     the picker. A control nobody in the audience can find is not a control. */
+  version: true,
+  education: false,
+}
+
+/**
+ * The navigation AXIS `jill/navigation-exploration` compares — two arms as of
+ * 2026-10-01, the restructure ("Left Nav Options, or Top Nav Options").
+ *
+ * It was four numbered options. Two of them (`hybrid`, `hybrid-tabs`) drew the
+ * header AND something else, and the numbering was carrying the argument that
+ * these were four peers when they were really one axis with two answers and two
+ * experiments bolted on. They are still RESOLVABLE by URL
+ * (`?ff=nav-placement:hybrid`) while the decision is open; they are simply not
+ * offered here, because this bar is the review control and offering a reviewer
+ * a superseded option is how one gets chosen by accident.
+ *
+ * ⚠ NOT THE SAME AXIS AS `NAVIGATION_PICKER` BELOW, which is
+ * `dashboard-navigation` — where the Compass experience sits. Two dropdowns
+ * about navigation, two different questions; the labels are what keeps them
+ * apart now that neither says "Option N".
+ */
+/**
+ * THE DEMO HUB — the public Netlify project's gateway, 2026-10-01.
+ *
+ * The link handed to stakeholders: `VITE_GATEWAY_MODE=public`, so it carries
+ * only the ungated sections (Demo · Links · Research) and builds `main` ONLY.
+ * Both of those matter to anyone pressing this from a branch build — the hub
+ * will not show the work they are standing in until it merges.
+ *
+ * ⚠ THIS IS THE **DEMO** HOST, NOT THE DESIGN ONE, and the two differ by one
+ * word. `ux-design-xceldashboard.netlify.app` is the full site that branch
+ * builds deploy to; `ux-demo-…` is this. Sending a stakeholder to the design
+ * host hands them a password prompt. `docs/gateway.md` is the source for both.
+ *
+ * Hard-coded rather than derived from `window.location`, because the whole
+ * point is to leave THIS origin — on localhost there is nothing to derive from.
+ */
+const DEMO_HUB_URL = 'https://ux-demo-xceldashboard.netlify.app/'
+
+/* ⚠ FIVE PICKER CONSTANTS WERE HERE AND WENT WITH THEIR DROPDOWNS —
+   2026-10-05. `NAV_LAYOUT_PICKER`, `NAV_HELP_PICKER`, `JOURNEY_SCALE_PICKER`,
+   `STOP_MARK_PICKER` and `PACE_PRESET_PICKER`.
+
+   ⚠ THEY ARE NOT LOST, and that is why nothing was archived: every one of them
+   was a hand-written LABEL LIST for a flag whose own `variants` already carry
+   labels, and the Feature Flag panel renders from those. The bar duplicated the
+   catalog; deleting the duplicate leaves the original.
+
+   ⚠ THEY HAD TO GO rather than being left unreferenced. `noUnusedLocals` is on,
+   so an unused const is a tsc error and therefore a FAILED DEPLOY — the
+   "unwire but keep it" shape this repo prefers does not survive that.
+
+   `NAVIGATION_PICKER` went the same way on 2026-10-01, with a flag that WAS
+   archived — see `archivedItems.ts`. The difference is the point: that one took
+   a design out of the product, these five took a control out of one menu. */
 
 export function DemoControlsBar({
   open = true,
   fullBleed = false,
   only,
-  lens = false,
+  controls,
 }: {
   open?: boolean
+  /**
+   * Override the branch trim above, per control.
+   *
+   * ⚠ IT EXISTS FOR THE SUITES, and that is a deliberate seam rather than a
+   * hole: the four controls this branch hides are not retired, so the tests
+   * that cover them must still be able to render them. A suite asserting
+   * "Persona offers these rows" is testing the control, not the branch's
+   * decision to draw it — the two questions are separated here so trimming the
+   * bar never quietly deletes coverage of what was trimmed.
+   */
+  controls?: Partial<Record<ControlKey, boolean>>
   /** Full-bleed (Demo frame): span the whole screen width, skipping the 1440
    *  cap — used when the chrome sits outside the centered device window. */
   fullBleed?: boolean
@@ -129,15 +251,19 @@ export function DemoControlsBar({
    * Undefined ⇒ everything, which is every normal load.
    */
   only?: readonly string[]
-  /**
-   * THIS IS THE PREVIEW, NOT THE REAL THING — `?as=demo` on the design site.
-   *
-   * `only` already did the filtering; this exists so the bar can SAY so. A
-   * design-site bar that silently dropped three controls would look like a bug
-   * to the person who put them there, and the whole value of the lens is
-   * knowing you are looking through it.
-   */
-  lens?: boolean
+  /* `lens` WAS HERE — the `?as=demo` INDICATOR, removed 2026-10-01 with the
+     View as demo button that was its only reader.
+
+     ⚠ THE LENS ITSELF IS UNAFFECTED. The filtering has always come from `only`,
+     which `PrototypeChrome` still computes from `?as=demo`; this prop existed
+     purely so the bar could SAY it was being looked through.
+
+     ⚠ WHAT IS LOST, stated plainly: a bar in the lens now drops controls
+     SILENTLY. That was the prop's whole argument ("would look like a bug to the
+     person who put them there"), and it held while a button could toggle the
+     lens by accident. It is weaker now that `?as=demo` has to be typed by hand
+     — but it is not nothing, and it is the thing to put back first if the lens
+     is ever given a control again. See `archivedItems.ts`. */
 }) {
   /** Is this control in the session's whitelist? See `only`. */
   const show = (id: string) => only == null || only.includes(id)
@@ -146,9 +272,15 @@ export function DemoControlsBar({
      have nothing to sit on; in a participant session the mark would be noise
      about a decision they are not part of. */
   const markWip = only == null && !isPublicGateway()
-  const { pathname, search } = useLocation()
+  const { pathname } = useLocation()
   const [searchParams, setSearchParams] = useSearchParams()
   const { brand, membership, tier, setTier, setBrand } = useAccount()
+  const { openPanel: openVersionsPanel } = useDashboardVersionsPanel()
+  /* The version the picker would open on — the URL's if it has one, else the
+     brand's committed default. The SAME resolution `PlatformShell` uses, so the
+     pill cannot name a different version from the one on screen. */
+  const activeVersionId =
+    searchParams.get('version') ?? defaultDiscoverabilityVersionFor(brand)
   const { flags, definitions, setEnabled, setVariant, setSecondaryVariant, clearUrlOverrides } =
     useFeatureFlags()
   // Read current count flags so the bar can reflect reality on open (without
@@ -157,8 +289,13 @@ export function DemoControlsBar({
   // Progress / compliance state + QE·CE education type — both variant-only flags
   // the two new dropdowns drive directly (they persist via FeatureFlagContext).
   const progressState = useFeatureFlag('dashboard-progress-state')
-  const paceState = useFeatureFlag('study-pace-preset')
-  const navState = useFeatureFlag('dashboard-navigation')
+  const showControl = { ...SHOW_CONTROL, ...controls }
+  /* ⚠ FOUR `useFeatureFlag` READS WENT WITH THE DROPDOWNS (2026-10-05):
+     `nav-placement`, `nav-help`, `journey-scale-style`, `journey-stop-mark`.
+     The bar no longer renders those controls, so it no longer needs to know
+     their state. They are still captured into `?ff=` by Share Link, which
+     loops the WHOLE catalog rather than these reads — so a shared link still
+     reproduces them exactly as before. */
   const educationTypeFlag = useFeatureFlag('dashboard-education-type')
   // Readiness state — the Exam Readiness section's own axis. Deliberately NOT
   // threaded into the share-link codec alongside prog/edu: those two are the
@@ -328,54 +465,34 @@ export function DemoControlsBar({
      disagreeing about what the page has on it. It stays LIVE on QE Focused,
      Learner Focused and Marketing Focused, where the section is a rail click
      away and the dropdown does exactly what it says. */
-  /* ATLAS BRAND SKIN (2026-09-29) — the Brand control for the Atlas/Compass
-     version only: it re-skins the Atlas pages as another Colibri brand (logo +
-     brand colours) while the product stays XCEL's. Shown only where it does
-     something — the Atlas version with its palette on. Not the retired
-     `BRAND_PICKER`, which switches the whole prototype's `Brand`. */
-  const atlasPaletteOn = useFeatureFlag('atlas-xcel-palette').enabled
+  /* ⚠ THREE ATLAS CONTROLS WERE HERE — Brand skin, Heading fonts and Nav
+     version (2026-09-29 / 09-30), removed from THIS BAR on 2026-10-05 when
+     Eric's branch merged.
+
+     They are designer controls — a brand skin, a heading face, a nav layout —
+     and this bar is the DEMO bar: stakeholder scenario controls, owner-only,
+     gated by `demoControlMaturity`. Three design controls on it was the
+     collision the two-bar split exists to answer, so they come back on the
+     DESIGN bar (`DesignControlsBar`) rather than here.
+
+     ⚠ NOT A THREE-LINE MOVE, and it is worth saying so because it looks like
+     one. Each is URL-param driven across six files — `atlasBrandSkin.ts`,
+     `atlasFontSets.ts`, `atlasNavVersion.ts`, their readers in
+     `PlatformShell`, and the Reset list below — so re-homing them is a
+     conversion to `surface: 'design'` flags, not a cut and paste.
+
+     ⚠ THE PARAMS STILL WORK. `ATLAS_SKIN_PARAM` / `ATLAS_FONT_PARAM` /
+     `ATLAS_NAV_PARAM` are still imported below so Reset keeps clearing them,
+     and a pinned `?atlasNav=` URL renders exactly as it did. What is gone is
+     the dropdown, not the capability. */
+
+  /* ⚠ KEPT FROM ERIC'S BRANCH THROUGH THE 2026-10-05 MERGE, and it is the one
+     piece of his demo-bar work that stayed on the DEMO bar. It is not a design
+     control — it is the same reachability rule `railHidesSection` already
+     encodes, asked of the one version that is not in the rail's trim list. */
   const onAtlasVersion = isAtlasCompassNavVersion(
     searchParams.get('version') ?? defaultDiscoverabilityVersionFor(brand),
   )
-  const showAtlasSkin = atlasPaletteOn && onAtlasVersion
-  const atlasSkin = atlasSkinFor(searchParams.get(ATLAS_SKIN_PARAM))
-  const atlasSkinLabel = ATLAS_SKINS.find((s) => s.skin === atlasSkin)?.label ?? 'Global'
-  const pickAtlasSkin = (skin: AtlasSkin) => {
-    const next = new URLSearchParams(searchParams)
-    // The default needs no param, so a clean link shows it.
-    if (skin === ATLAS_SKIN_DEFAULT) next.delete(ATLAS_SKIN_PARAM)
-    else next.set(ATLAS_SKIN_PARAM, skin)
-    setSearchParams(next, { replace: true })
-    close()
-  }
-
-  /* ATLAS HEADING FONTS (2026-09-29) — the Fonts dropdown, same scope as the
-     Brand control: it swaps the Atlas pages' heading face between the style
-     guide's DM Serif Display and the "Atlas Serif Trials" faces. See
-     atlasFontSets.ts. */
-  const atlasFont = atlasFontFor(searchParams.get(ATLAS_FONT_PARAM))
-  const atlasFontLabel = ATLAS_FONTS.find((f) => f.font === atlasFont)?.label ?? 'DM Serif Display'
-  const pickAtlasFont = (font: AtlasFont) => {
-    const next = new URLSearchParams(searchParams)
-    if (font === 'dm-serif-display') next.delete(ATLAS_FONT_PARAM)
-    else next.set(ATLAS_FONT_PARAM, font)
-    setSearchParams(next, { replace: true })
-    close()
-  }
-
-  /* ATLAS NAV VERSION (2026-09-30) — Left Rail, Top Nav (the default since
-     2026-10-01) or Expanding Top Nav, on the
-     Atlas version only. See atlasNavVersion.ts. */
-  const atlasNav = atlasNavFor(searchParams.get(ATLAS_NAV_PARAM))
-  const atlasNavLabel = ATLAS_NAV_VERSIONS.find((v) => v.nav === atlasNav)?.label ?? 'Top Nav'
-  const pickAtlasNav = (nav: AtlasNavVersion) => {
-    const next = new URLSearchParams(searchParams)
-    // The default needs no param, so a clean link shows it.
-    if (nav === ATLAS_NAV_DEFAULT) next.delete(ATLAS_NAV_PARAM)
-    else next.set(ATLAS_NAV_PARAM, nav)
-    setSearchParams(next, { replace: true })
-    close()
-  }
 
   const readinessReachable = !railHidesSection(
     searchParams.get('version') ?? defaultDiscoverabilityVersionFor(brand),
@@ -630,103 +747,17 @@ export function DemoControlsBar({
         </DemoDropdown>
         )}
 
-        {/* Brand — the Atlas brand skin; see `showAtlasSkin`. */}
-        {showAtlasSkin && (
-        <DemoDropdown
-          id="atlas-brand"
-          label={atlasSkinLabel}
-          eyebrow="Brand"
-          openId={openId}
-          onToggle={toggle}
-          panelRole="radiogroup"
-          panelLabel="Brand"
-          panelMinWidth={220}
-        >
-          {ATLAS_SKINS.map((b) => {
-            const active = b.skin === atlasSkin
-            return (
-              <button
-                key={b.skin}
-                type="button"
-                role="radio"
-                aria-checked={active}
-                tabIndex={active ? 0 : -1}
-                className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
-                onClick={() => pickAtlasSkin(b.skin)}
-              >
-                <span style={{ flex: 1 }}>{b.label}</span>
-                {active && <Check size={15} aria-hidden />}
-              </button>
-            )
-          })}
-        </DemoDropdown>
-        )}
+        {/* ⚠ THREE ATLAS CONTROLS WERE HERE — Brand, Headings and Nav Version.
+            They came off this bar in the 2026-10-05 merge with main, which made
+            it owner-only: a designer's own axes belong on the DESIGN bar now,
+            reached by marking their flag `surface: 'design'`.
 
-        {/* Fonts — the Atlas heading face; see `pickAtlasFont`. */}
-        {showAtlasSkin && (
-        <DemoDropdown
-          id="atlas-fonts"
-          label={atlasFontLabel}
-          eyebrow="Headings"
-          openId={openId}
-          onToggle={toggle}
-          panelRole="radiogroup"
-          panelLabel="Heading font"
-          panelMinWidth={260}
-        >
-          {ATLAS_FONTS.filter((f) => !f.hidden).map((f) => {
-            const active = f.font === atlasFont
-            return (
-              <button
-                key={f.font}
-                type="button"
-                role="radio"
-                aria-checked={active}
-                tabIndex={active ? 0 : -1}
-                className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
-                onClick={() => pickAtlasFont(f.font)}
-              >
-                <span style={{ flex: 1 }}>{f.label}</span>
-                {active && <Check size={15} aria-hidden />}
-              </button>
-            )
-          })}
-        </DemoDropdown>
-        )}
-
-        {/* Nav Version — Left Rail or Top Nav; see `pickAtlasNav`. Shown on the
-            Atlas version whatever the palette flag says: the Top Nav is layout,
-            not colour. */}
-        {onAtlasVersion && (
-        <DemoDropdown
-          id="atlas-nav"
-          label={atlasNavLabel}
-          eyebrow="Nav Version"
-          openId={openId}
-          onToggle={toggle}
-          panelRole="radiogroup"
-          panelLabel="Nav version"
-          panelMinWidth={200}
-        >
-          {ATLAS_NAV_VERSIONS.map((v) => {
-            const active = v.nav === atlasNav
-            return (
-              <button
-                key={v.nav}
-                type="button"
-                role="radio"
-                aria-checked={active}
-                tabIndex={active ? 0 : -1}
-                className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
-                onClick={() => pickAtlasNav(v.nav)}
-              >
-                <span style={{ flex: 1 }}>{v.label}</span>
-                {active && <Check size={15} aria-hidden />}
-              </button>
-            )
-          })}
-        </DemoDropdown>
-        )}
+            ⚠ THEY ARE NOT FLAGS YET. All three read URL params
+            (ATLAS_SKIN_PARAM / ATLAS_FONT_PARAM / ATLAS_NAV_PARAM) in
+            atlasBrandSkin.ts, atlasFontSets.ts and atlasNavVersion.ts, so
+            moving them is a conversion rather than a re-tag — see the handoff
+            note. Until that lands, the three axes are reachable only by their
+            `?atlasSkin=` / `?atlasFont=` / `?atlasNav=` params. */}
 
         {/* Quick views — the active brand's membership tiers (Non-Member + each
             member tier). The trigger shows the current tier so the closed pill
@@ -766,9 +797,15 @@ export function DemoControlsBar({
         </DemoDropdown>
         )}
 
+        {/* ⚠ THE DASHBOARD VERSION CONTROL MOVED TO THE ACTIONS BLOCK, right of
+            Reset — 2026-10-05, the direct ask. It led this row as a labelled
+            pill for about an hour. See the note at its new home for what the
+            move costs. */}
+
         {/* Persona — the learning/dashboard SCENARIO, layered on top of the
             membership tier set by Quick views (a persona does NOT change tier).
             Sits alongside Quick views; doesn't replace it. */}
+        {showControl.persona && (
         <DemoDropdown
           id="persona"
           hidden={!show('persona')}
@@ -890,6 +927,7 @@ export function DemoControlsBar({
             )
           })}
         </DemoDropdown>
+        )}
 
         {/* Professions + Memberships dropdowns were removed — the "Multiple
             learning paths" persona above sets `profession-count`, `state-count`,
@@ -981,15 +1019,14 @@ export function DemoControlsBar({
             section only; it does not touch the dashboard's own progress axis,
             which is a different question (how far through the COURSE you are,
             not how ready for the exam). A learner can be 90% through and not
-            ready, which is the whole reason the section exists.
-            HIDDEN wherever it would be empty (2026-09-30, the designer's
-            request — first on the Atlas/Compass version, then on every version
-            with no Readiness section: Testing, Testing 2). It used to show there
-            as a disabled "Not on this version" pill; an empty control is noise.
-            The disabled-pill props below are left in place but unreached
-            today; the rail rule decides, so a version that gains the section
-            shows the control again with no edit here. */}
-        {readinessReachable && !onAtlasVersion && (
+            ready, which is the whole reason the section exists. */}
+        /* ⚠ THREE CONDITIONS, AND THE LAST TWO ARE ERIC'S — restored 2026-10-05
+           after the merge dropped them. An unreachable axis is HIDDEN, not
+           disabled: the disabled-pill props below are left in place but
+           unreached today, so a version that gains the section shows the
+           control again with no edit here. `DemoControlsBar.test.tsx` pins both
+           halves — the rail rule and the Atlas version. */
+        {showControl.readiness && readinessReachable && !onAtlasVersion && (
         <DemoDropdown
           id="readiness"
           hidden={!show('readiness')}
@@ -1032,104 +1069,53 @@ export function DemoControlsBar({
         </DemoDropdown>
         )}
 
-        {/* PACING — which of the model's three presets the Study Pace card opens
-            on. 2026-09-23, the direct ask: a control that shows "the differences
-            between the Recommended, Focused & Quick, and Steady & Relaxed".
+        {/* ⚠ FIVE DESIGN-VARIANT DROPDOWNS WERE HERE AND MOVED OUT — 2026-10-05,
+            the direct ask: "these things should live in the feature flags panel
+            not in the demo controls."
 
-            ITS OWN AXIS, beside Progress rather than inside it. Progress says
-            how far through the course the learner is; this says which plan they
-            are working to. The two combine — Focused & Quick at 3 days is still
-            a plan that will not fit — and folding either into the other would
-            lose half the grid a reviewer is here to walk. */}
-        <DemoDropdown
-          id="pacing"
-          hidden={!show('pacing')}
-          wip={markWip && controlMaturity('pacing') === 'wip'}
-          label={PACE_PRESET_PICKER.find((o) => o.value === (paceState.variant ?? 'recommended'))?.label ?? 'Recommended'}
-          eyebrow="Pacing"
-          openId={openId}
-          onToggle={toggle}
-          panelRole="radiogroup"
-          panelLabel="Study pace preset"
-          panelMinWidth={240}
-        >
-          {PACE_PRESET_PICKER.map((opt) => {
-            const active = opt.value === (paceState.variant ?? 'recommended')
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                role="radio"
-                aria-checked={active}
-                tabIndex={active ? 0 : -1}
-                className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
-                onClick={() => {
-                  setVariant('study-pace-preset', opt.value)
-                  close()
-                }}
-              >
-                <span style={{ flex: 1 }}>{opt.label}</span>
-                {active && <Check size={15} aria-hidden />}
-              </button>
-            )
-          })}
-        </DemoDropdown>
+            They were PACING, NAV LAYOUT, HELP, TIMELINE and STOP MARKS, and all
+            five were already in the Feature Flag panel, so the bar was a second
+            copy of controls that live somewhere else. Every one was also `wip`,
+            which means it rendered on the DESIGN site with an amber "(not on
+            the demo site)" mark and nowhere else — a control on a bar built for
+            stakeholders, hidden from stakeholders.
 
-        {/* NAVIGATION — which course-content page Resume opens. 2026-09-23.
+            ⚠ THE LINE IS SCENARIO vs DESIGN, and it is what makes this
+            repeatable rather than a tidy-up. The bar says WHO this learner is
+            and how the page is shown — progress, readiness, education, persona,
+            tier, fidelity, Reset. The panel says WHICH DESIGN renders. A
+            flag-backed control under comparison belongs in the panel until it
+            is promoted; one that seeds the scenario belongs here.
 
-            ⚠ IT IS AN A/B, NOT A TREATMENT PICKER, which is why it defaults to
-            Option 1 on this branch rather than to the newer arm: the control
-            condition has to be the default or the comparison has no baseline.
-            A moderator normally assigns it per participant from the session
-            link (`?ff=dashboard-navigation:option-2`) rather than switching it
-            here mid-task.
+            ⚠ WHAT THIS COSTS, because the notes that put two of them here said
+            it plainly: "switching between the two is the whole review task" and
+            "a sheet two menus deep is where a comparison stops being made".
+            That was true and is the trade accepted here — the robot icon is one
+            press from anywhere, but it is still further than a pill on the bar.
+            If a comparison stops happening, this is the change that did it.
 
-            ⚠ IT IS IN `?test=1`'s WHITELIST, by direct ask, and it is the one
-            entry there with a cost: a participant who spots a control labelled
-            "Option 1 / Option 2" has been told a comparison exists. The reason
-            it is in anyway — switching arms mid-session beats reloading and
-            re-pasting the link — is recorded at `TEST_VIEW_CONTROLS` in
-            `PrototypeChrome`. */}
-        <DemoDropdown
-          id="navigation"
-          hidden={!show('navigation')}
-          wip={markWip && controlMaturity('navigation') === 'wip'}
-          label={
-            NAVIGATION_PICKER.find((o) => o.value === (navState.variant ?? 'option-1'))?.label ??
-            'Option 1'
-          }
-          eyebrow="Navigation"
-          openId={openId}
-          onToggle={toggle}
-          panelRole="radiogroup"
-          panelLabel="Navigation version"
-          panelMinWidth={240}
-        >
-          {NAVIGATION_PICKER.map((opt) => {
-            const active = opt.value === (navState.variant ?? 'option-1')
-            return (
-              <button
-                key={opt.value}
-                type="button"
-                role="radio"
-                aria-checked={active}
-                tabIndex={active ? 0 : -1}
-                className={`cre-menu-item cre-demo-controls-btn${active ? ' is-active' : ''}`}
-                onClick={() => {
-                  setVariant('dashboard-navigation', opt.value)
-                  close()
-                }}
-              >
-                <span style={{ flex: 1 }}>{opt.label}</span>
-                {active && <Check size={15} aria-hidden />}
-              </button>
-            )
-          })}
-        </DemoDropdown>
+            Nothing was archived: all five flags are live, unchanged, and in the
+            panel. `DEMO_CONTROLS` lost their rows the same day. */}
+
+        {/* ⚠ FIDELITY MOVED DOWN TO THE ACTIONS BLOCK — 2026-10-05, the
+            direct ask ("leave it on the bar but make it a simple on/off switch
+            next to the reset button"). It is the one control here that is
+            neither a scenario nor a design variant, so it sits with Reset: both
+            act on the VIEW rather than on what is being shown. See below. */}
+        {/* NAVIGATION WAS HERE — ARCHIVED 2026-10-01, the direct ask ("remove
+            this demo control as it's no longer needed").
+
+            It switched which course page Resume opened, so a moderator could
+            put the Compass player and the full-screen `CourseContentV2` in
+            front of different participants. Option 1 won; with one arm left the
+            control chose nothing, so the flag and this went together. It was
+            also the one entry in `?test=1`'s whitelist with a cost — a
+            participant who saw a control labelled "Option 1 / Option 2" had
+            been told a comparison existed. See `archivedItems.ts`. */}
 
         {/* Education type (QE / CE) — single-select radiogroup, brands with a QE
             dashboard persona only */}
-        {showEducation && (
+        {showControl.education && showEducation && (
           <DemoDropdown
             id="education"
             hidden={!show('education')}
@@ -1170,50 +1156,55 @@ export function DemoControlsBar({
         {/* Actions — Reset + the kebab. Gated like the dropdowns: a participant
             pressing Reset mid-session would silently re-baseline the demo. */}
         {/*
-          VIEW AS DEMO — the design site's lens, 2026-09-24.
+          VIEW AS DEMO WAS HERE — the design site's lens (2026-09-24), REPLACED
+          2026-10-01 by "Go to Demo Hub" in the kebab below, the direct ask.
 
-          The question it answers is "what does a stakeholder actually get?",
-          which before this needed a second deploy to check. Clicking writes
-          `?as=demo`; `PrototypeChrome` reads it and hands this bar the demo
-          site's own control list. It is a LENS, not a setting: nothing is
-          persisted, nothing under the bar changes, and closing the tab ends it.
+          It wrote `?as=demo` and re-rendered THIS bar with the demo site's own
+          control list, answering "what does a stakeholder actually get?"
+          without a second deploy. The hub link answers the same question by
+          going to the demo site itself, which is the stronger answer: it is the
+          real build rather than a preview of one, so it cannot drift from what
+          the lens believes.
 
-          ⚠ ONLY ON THE DESIGN SITE. On the demo site the answer is already yes,
-          and in a participant session the control is one more thing a
-          participant could press.
+          ⚠ THE LENS STILL WORKS — `?as=demo` is untouched and `PrototypeChrome`
+          still reads it; only the button went, so this is URL-only now. See the
+          `demo-lens-button` row in `archivedItems.ts`.
         */}
-        {!isPublicGateway() && !isTestSession(search) && (
-          <button
-            type="button"
-            className="cre-demo-controls-btn"
-            style={{
-              ...GHOST_BTN,
-              ...(lens
-                ? { background: 'var(--color-warning-400)', color: 'var(--color-neutral-900)' }
-                : null),
-            }}
-            aria-pressed={lens}
-            title={
-              lens
-                ? 'Showing only what the demo site carries. Click to see every control again.'
-                : 'Preview this bar as the demo site renders it — the work-in-progress controls drop out.'
-            }
-            onClick={() => {
-              const next = new URLSearchParams(searchParams)
-              if (lens) next.delete('as')
-              else next.set('as', 'demo')
-              setSearchParams(next, { replace: true })
-            }}
-          >
-            {lens ? 'Viewing as demo' : 'View as demo'}
-          </button>
-        )}
         {show('actions') && (
         <div style={ACTIONS}>
+          {/* ⚠ LO-FI MOVED TO THE DESIGN BAR — 2026-10-05, the direct ask. It was
+              a dropdown here, then a switch here, and it was never a
+              stakeholder control: its own note always said lo-fi is "a tool for
+              the people DESIGNING the thing". The design bar is where that
+              sentence finally has somewhere to point.
+
+              ⚠ IT TOOK THIS BAR'S LAST `wip` CONTROL WITH IT. Everything left
+              on the demo bar is `ready`, which means the maturity gate is no
+              longer EXERCISED by anything that renders — see the note in
+              `PublicGateway.test.tsx`, which had been using Lo-fi as its one
+              remaining subject and now says the gate is untested rather than
+              pretending otherwise. */}
+          {/* RESET — an icon since 2026-10-05, the direct ask ("circle arrow
+              style"), matching the two icon buttons beside it.
+
+              ⚠ ITS ACCESSIBLE NAME IS STILL EXACTLY "Reset". The word was
+              visible text and is now an `aria-label`, so nothing about what a
+              screen reader hears changed — and `PublicGateway.test.tsx` matches
+              it on `/^Reset$/`, because Reset is the control that gets a
+              stakeholder out of a state they wandered into and the suite checks
+              the demo site keeps it.
+
+              ⚠ IT IS THE ONLY DESTRUCTIVE CONTROL ON THIS BAR, and it just lost
+              its word. An icon-only control that re-baselines the whole demo is
+              a worse mis-click than an icon-only one that opens a sheet — worth
+              watching, and the reason the tooltip says what it does rather than
+              just naming it. */}
           <button
             type="button"
             className="cre-demo-controls-btn"
-            style={GHOST_BTN}
+            aria-label="Reset"
+            title="Reset the demo to its defaults"
+            style={resetIconStyle}
             onClick={() => {
               // Full reset in ONE URL write (avoids a second setSearchParams
               // clobbering the first from stale state): tier → the brand's default
@@ -1257,11 +1248,70 @@ export function DemoControlsBar({
               setSearchParams(next, { replace: true })
               close()
             }}
-            onMouseEnter={(e) => (e.currentTarget.style.background = DEMO_HOVER_FILL)}
-            onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = DEMO_HOVER_FILL
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.borderColor = 'transparent'
+            }}
           >
-            Reset
+            <ArrowsRotate size={16} aria-hidden />
           </button>
+          {/* DASHBOARD VERSION — an icon button, right of Reset, opening the
+              versions sheet (2026-10-05, the direct ask).
+
+              ⚠ IT SITS WITH RESET AND THE KEBAB because those are the bar's
+              TOOLS — things you do to the demo — rather than its scenario
+              controls. The version is the one of the three that changes what is
+              on screen, which is why it was a labelled pill leading the row
+              first; this places it by shape instead.
+
+              ⚠ ICON-ONLY COSTS THE READOUT, and that is the trade to know. The
+              pill said which version you were on without being pressed; this
+              does not, so the only way to read the current version from the bar
+              is to hover or open the sheet. `title` + `aria-label` carry it for
+              a pointer and for a screen reader — the one audience left with
+              nothing is a sighted stakeholder glancing at the bar, and they are
+              who the control was added for.
+
+              ⚠ BORDERED LIKE RESET, not bare like the kebab. It opens a sheet
+              that changes the product; the kebab opens a menu. Matching Reset
+              groups it with the control that also does something.
+
+              ⚠ THE GRID, swapped with Lo-fi's sliders on 2026-10-05. A grid of
+              panes is what a dashboard LAYOUT looks like, which is what this
+              picker chooses between — the sliders it had read as "settings",
+              which is every control on this bar. */}
+          {showControl.version && show('version') && (
+            <button
+              type="button"
+              className="cre-demo-controls-btn"
+              aria-label={`Dashboard version: ${dashboardVersionLabel(activeVersionId)}`}
+              title={`Dashboard version: ${dashboardVersionLabel(activeVersionId)}`}
+              style={versionTriggerStyle}
+              onClick={() => {
+                openVersionsPanel()
+                close()
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = DEMO_HOVER_FILL
+                e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent'
+                e.currentTarget.style.borderColor = 'transparent'
+              }}
+            >
+              <Grid size={16} aria-hidden />
+            </button>
+          )}
+          {/* ⚠ THE FLAG ICON MOVED TO THE DESIGN BAR, hours after landing here
+              (2026-10-05, the direct choice). It opens the Feature Flag sheet,
+              which is a DESIGNER's tool scoped to the current version — so it
+              belongs beside the design controls it is the long form of, not
+              beside the stakeholder ones. See `DesignControlsBar`. */}
           <ActionMenu
             label="Demo actions"
             items={[
@@ -1276,6 +1326,22 @@ export function DemoControlsBar({
                 label: 'Share Demo',
                 icon: <BrowserWindow size={15} aria-hidden />,
                 onSelect: copyDemoLink,
+              },
+              /* GO TO DEMO HUB — the public Netlify project's gateway, the link
+                 handed to stakeholders (Demo · Links · Research; `main` only).
+                 It replaces the View as demo lens above: the same question,
+                 answered by the real build instead of a preview of it.
+
+                 ⚠ A NEW TAB, deliberately. This bar is normally pressed mid-
+                 review with flags, a progress persona and a nav arm set up in
+                 the URL; navigating in place would throw all of it away to
+                 answer a side question. `noopener,noreferrer` is the ordinary
+                 guard for an external target. */
+              {
+                id: 'demo-hub',
+                label: 'Go to Demo Hub',
+                icon: <ArrowUpRightFromSquare size={15} aria-hidden />,
+                onSelect: () => window.open(DEMO_HUB_URL, '_blank', 'noopener,noreferrer'),
               },
             ]}
           />
@@ -1436,20 +1502,69 @@ const TIER_CHIP: CSSProperties = {
   flexShrink: 0,
 }
 
+/* The Version pill. Matched BY HAND to `DemoDropdown`'s trigger rather than
+   shared with it: that component's styling is bound up with its open/closed
+   panel state, and this control has no panel of its own to open. If the two
+   ever drift visibly, extracting the trigger is the fix — not giving this a
+   dropdown it does not use. */
+/* Reset's icon button — the version trigger's geometry exactly. They sit next
+   to each other and are the same size and shape, which is what lets the row
+   read as a group of tools rather than three unrelated buttons. */
+/* ⚠ THE BORDER IS TRANSPARENT, NOT ABSENT — 2026-10-05, the direct ask
+   ("remove the outline, show it on hover only"). A button with no border at
+   rest and a 1px one on hover grows by 2px the moment a pointer touches it, and
+   the row of icons beside it shifts. Reserving the box and only colouring it is
+   what keeps the row still.
+
+   ⚠ KEYBOARD USERS LOSE NOTHING. `.cre-demo-controls-btn:focus-visible` in
+   `tokens.css` draws its own 1.5px outline, so focus never depended on this
+   edge — which is the thing that would otherwise make "outline on hover" an
+   accessibility regression rather than a style. */
+const resetIconStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 38,
+  height: 38,
+  padding: 0,
+  background: 'transparent',
+  border: '1px solid transparent',
+  borderRadius: 'var(--radius-md)',
+  color: 'var(--color-text-inverse)',
+  cursor: 'pointer',
+  transition: 'background .15s, border-color .15s',
+}
+
+const versionTriggerStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  /* 38 SQUARE, which is what Reset beside it MEASURES in the browser — not what
+     its padding suggests. I reasoned 34 from `8px 14px` on 13/1.2 text, shipped
+     it, and measured 38 against Reset's 38: the font's own line box is taller
+     than the ratio implies. The kebab's 32 would be shorter still. Measure
+     again rather than re-deriving if either button's padding changes. */
+  width: 38,
+  height: 38,
+  padding: 0,
+  background: 'transparent',
+  /* Reset's border exactly. These two are a pair; the kebab beside them is
+     deliberately bare. */
+  border: '1px solid transparent',
+  borderRadius: 'var(--radius-md)',
+  color: 'var(--color-text-inverse)',
+  cursor: 'pointer',
+  transition: 'background .15s, border-color .15s',
+}
+
 const ACTIONS: CSSProperties = {
   marginLeft: 'auto',
   display: 'flex',
   gap: 8,
 }
 
-const GHOST_BTN: CSSProperties = {
-  padding: '8px 14px',
-  borderRadius: 'var(--radius-md)',
-  fontSize: 13,
-  fontWeight: 700,
-  cursor: 'pointer',
-  background: 'transparent',
-  border: '1px solid rgb(255 255 255 / 0.3)',
-  color: DEMO_WHITE,
-  transition: 'background .15s',
-}
+/* ⚠ `GHOST_BTN` WENT ON 2026-10-05 — it styled Reset and the Lo-fi switch, and
+   both became icon buttons (Lo-fi moved to the design bar, Reset took the
+   circle arrow). `noUnusedLocals` makes an unused const a tsc error and so a
+   failed deploy; `resetIconStyle` above is what replaced it. */
+

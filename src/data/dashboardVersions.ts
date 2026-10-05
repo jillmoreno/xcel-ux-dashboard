@@ -1,3 +1,4 @@
+import type { DesignerId, Maturity } from '@/context/FeatureFlagContext'
 import type { Brand } from '@/context/AccountContext'
 
 export type DashboardVersionId =
@@ -15,7 +16,7 @@ export type DashboardVersionId =
   | 'discoverability-testing-2'
   | 'discoverability-atlas-compass-nav'
   | 'eric-atlas-v1'
-
+  | 'discoverability-testing-3'
 /**
  * The rebrand overview's LAYOUT, resolved from `?version=` by `PlatformShell`
  * and threaded to `MembershipOverview`. One exported name because five files
@@ -31,6 +32,7 @@ export type DashboardLayout =
   | 'badged'
   | 'qe-focused'
   | 'testing'
+  | 'testing-3'
   | 'testing-2'
 export type DashboardVersion = {
   id: DashboardVersionId
@@ -38,6 +40,36 @@ export type DashboardVersion = {
   createdAt: string
   modifiedAt: string
   description: string
+  /**
+   * Whose exploration this version is — 2026-10-05, with the Feature Flag
+   * panel's designer tabs. Absent means Jill, the same default `flagOwner`
+   * applies to flags, and for the same reason: every version on `main` today is
+   * hers, so nothing here needed editing.
+   *
+   * ⚠ IT GATES THE PICKER, NOT THE URL. `?version=` still resolves any id for
+   * anyone — these versions are a shared product surface and a designer filter
+   * must not make one unreachable. What the owner decides is whose TAB offers
+   * it.
+   */
+  owner?: DesignerId
+  /**
+   * How finished this version is — the same gate `FEATURE_FLAGS` uses, added
+   * 2026-10-05 when the picker moved onto the demo controls bar and became
+   * reachable by STAKEHOLDERS for the first time.
+   *
+   * ⚠ IT GATES THE PICKER ON THE DEMO SITE ONLY. The design site lists every
+   * version and marks the unfinished ones; `?version=` still resolves any id
+   * for anyone, exactly as `maturity` works for flags. Nothing here is a
+   * permission.
+   *
+   * ⚠ ABSENT MEANS `wip`, and it fails CLOSED on purpose: a version added
+   * tomorrow with no `maturity` is invisible to stakeholders rather than
+   * leaking a half-built dashboard to the people being asked to approve one.
+   * That is the whole reason this field exists — all three versions in the
+   * picker today are finished and marked `ready`, so the gate filters nothing
+   * yet. It is armed for the next one.
+   */
+  maturity?: Maturity
 }
 
 // ARCHIVED 2026-09-16 — `mvp` ("Dashboard MVP") was unwired here and in
@@ -101,6 +133,9 @@ export const DASHBOARD_VERSIONS: DashboardVersion[] = [
 // retired — their layout paths + flags were removed in the flag audit.)
 export const DISCOVERABILITY_DASHBOARD_VERSION_LEARNER_FOCUSED: DashboardVersion = {
   id: 'discoverability-learner-focused',
+  /* READY — it has been a committed default and is complete. See `maturity`:
+     all three in the picker are, so the gate is armed rather than filtering. */
+  maturity: 'ready',
   label: 'Learner Focused',
   createdAt: '2026-06-24',
   modifiedAt: '2026-06-24',
@@ -197,6 +232,46 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_TESTING_2: DashboardVersion = {
     'QE Focused with a LIVE Study Pace tile in the square slot. The tile itself operates nothing — it states one derived pace and offers Adjust, which opens a sheet holding the three finish dates (Relaxed / Recommended / Focused, each a date rather than a weekly quota), how many days a week, an optional exam date, and a switch that turns the pace into sessions on the Study Plan. Two ceilings can bind — course access expiry, and the exam date minus a review buffer — and the sheet says which one is doing the work. Readiness is still a lo-fi stub. Compare with Testing, which asks what the tile should show rather than what it should let you change.',
 }
 
+// "Testing 3" — Testing, with the COURSE and its COURSEWORK as one block.
+// Added 2026-10-01.
+//
+// ⚠ IT IS TESTING'S CHILD, NOT QE FOCUSED'S, which is the one thing to hold on
+// to when reading the chain. It inherits Testing's whole arrangement — the
+// dropped Readiness tile, Study Pace across the full row, the split journey
+// cards, the course header band — and changes exactly one thing, so the
+// comparison is about that thing.
+//
+// THE ARGUMENT IT MAKES: the Current course card and the Complete coursework
+// card are the same subject in two columns. Both name the course, both state
+// how far through it the learner is, and the stops inside Complete Coursework
+// are what the course IS. A learner reading down the page meets the same
+// progress twice in two different shapes and has to work out that they agree.
+// So this version renders them as ONE card — the course identity, the figure
+// and Resume, then a hairline, then the stops that make it up.
+//
+// AND THE QUICK BUTTONS MOVE UNDER IT. My Courses and Certificates sit above
+// the Quick question card on Testing (they are the `nav-placement: top` arm's
+// re-homing of two rail rows). With the combined block taking the top of the
+// left column, the two destinations that are NOT about this course belong
+// after it rather than beside it.
+//
+// ⚠ "Testing 2" IS A DIFFERENT, OLDER VERSION and this is not it. That id
+// (`discoverability-testing-2`) is QE Focused with a live Study Pace tile; it
+// was archived from the picker on 2026-09-28 and STILL RESOLVES, and it is the
+// only route to the Study Pace Adjust sheet. Numbering carried on past it
+// rather than reusing it — see `archivedItems.ts`.
+export const DISCOVERABILITY_DASHBOARD_VERSION_TESTING_3: DashboardVersion = {
+  id: 'discoverability-testing-3',
+  /* READY — it has been a committed default and is complete. See `maturity`:
+     all three in the picker are, so the gate is armed rather than filtering. */
+  maturity: 'ready',
+  label: 'Testing 3',
+  createdAt: '2026-10-01',
+  modifiedAt: '2026-10-01',
+  description:
+    'Testing, with the Current course card and the Complete coursework card combined into ONE block \u2014 the course identity, the progress figure and Resume, then a hairline, then the coursework stops that make the course up. The argument: the two cards are the same subject in two columns, and a learner meets the same progress twice in two shapes and has to work out that they agree. My Courses and Certificates move below the combined block rather than sitting above the Quick question card. Everything else is Testing\u2019s, so the difference is the one block. \u26a0 NOT related to "Testing 2", which is an older, archived version with a live Study Pace tile.',
+}
+
 // "Testing" — QE Focused with the home screen's second row opened up for the
 // PACING exploration. Added 2026-09-21, and it is a WORKING version rather than
 // a candidate: it exists so the pacing treatments can be compared on the real
@@ -222,6 +297,9 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_TESTING_2: DashboardVersion = {
 // other difference would be noise in the comparison.
 export const DISCOVERABILITY_DASHBOARD_VERSION_TESTING: DashboardVersion = {
   id: 'discoverability-testing',
+  /* READY — it has been a committed default and is complete. See `maturity`:
+     all three in the picker are, so the gate is armed rather than filtering. */
+  maturity: 'ready',
   label: 'Testing',
   createdAt: '2026-09-21',
   modifiedAt: '2026-09-21',
@@ -300,6 +378,7 @@ export function isQualifyingEducationVersion(versionId: string): boolean {
   return (
     versionId === DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED.id ||
     versionId === DISCOVERABILITY_DASHBOARD_VERSION_TESTING.id ||
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_TESTING_3.id ||
     // Testing 2 is a QE clone too — without this the demo bar would offer
     // Continuing Ed on a page that resolves a pre-licensing path, which is
     // the exact defect the note above records.
@@ -345,6 +424,11 @@ export function isQualifyingEducationVersion(versionId: string): boolean {
  */
 export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
   DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
+  /* Testing 3 — Testing with the course and its coursework as one block. Listed
+     directly after its parent, because the picker is the only place the lineage
+     is visible and reading them in order is what makes the one difference
+     legible. */
+  DISCOVERABILITY_DASHBOARD_VERSION_TESTING_3,
   /* Testing 2 was archived 2026-09-28 — re-add
      DISCOVERABILITY_DASHBOARD_VERSION_TESTING_2 here to restore it to the
      picker. Same one-line shape as Badged, QE Focused and Marketing Focused
@@ -360,10 +444,35 @@ export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
 ]
 
 /**
+ * The versions a given audience's picker offers.
+ *
+ * ⚠ THE DEMO SITE GETS `ready` ONLY; the design site gets everything. Same
+ * split `variantsForDemo` makes for a flag's variants, and deliberately the
+ * same shape so there is one rule to learn rather than two.
+ *
+ * ⚠ IT FILTERS THE PICKER, NOT THE ROUTE. `?version=<id>` still resolves any
+ * version on either site — a `wip` version is unlisted, never unreachable, so
+ * a link to one in a Refinement row keeps working.
+ */
+export function dashboardVersionsForAudience(demoSite: boolean): DashboardVersion[] {
+  if (!demoSite) return DISCOVERABILITY_DASHBOARD_VERSIONS
+  return DISCOVERABILITY_DASHBOARD_VERSIONS.filter((v) => v.maturity === 'ready')
+}
+
+/** A version's label from its id, for the places that have the id and need the
+ *  words — the demo bar's trigger, mostly. Falls back to the id so an unknown
+ *  value is visible rather than blank. */
+export function dashboardVersionLabel(id: string): string {
+  return DISCOVERABILITY_DASHBOARD_VERSIONS.find((v) => v.id === id)?.label ?? id
+}
+
+/**
  * Which Discoverability layout a brand lands on with NO `?version=`.
  *
- * Marketing Focused is the house default. **XCEL defaults to TESTING**
- * (2026-09-21, the direct ask: "i actually wanted Testing 1 as the default").
+ * Marketing Focused is the house default. **XCEL defaults to TESTING 3**
+ * (2026-10-02, the direct ask: "lets change testing 3 to the new default
+ * view"). It was TESTING from 2026-09-21 ("i actually wanted Testing 1 as the
+ * default").
  *
  * THE LINEAGE, because each step carried the last one's argument forward rather
  * than reversing it. Learner Focused from 2026-09-04 — XCEL sells a licence,
@@ -373,7 +482,25 @@ export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
  * requirement breakdown plus what to study next. Testing now — QE Focused with
  * the Readiness stub dropped, the whole square row given to Study Pace, the
  * trimmed three-row rail and the journey split into four widgets. Both earlier
- * versions stay in the picker so the three can be compared.
+ * versions stay in the picker so the three can be compared. Testing 3 from
+ * 2026-10-02 — Testing with the course and its coursework as ONE block, the
+ * licensing steps folded in behind disclosures, and the right rail rebuilt as
+ * six destinations over an exam card and a readiness slot.
+ *
+ * ⚠ IT IS STILL A BRANCH DEFAULT, which is the whole of what this line does.
+ * `jill/navigation-exploration` is where Testing 3 lives; this makes the branch
+ * build and its `?demo=1` link open on the work under review, which is the
+ * Contributing guide's rule for a design branch. Whether it becomes the
+ * baseline on `main` is `/promote-to-prototype`'s call and nothing here decides
+ * it.
+ *
+ * ⚠ TESTING 3 IS NOT FINISHED, and that is the known cost of pointing the
+ * landing page at it. Two things on it are explicitly open: `Are you ready` is
+ * an empty reserved slot, and `journey-scale-style` is a FOUR-ARM exploration
+ * with no winner — so a stakeholder opening the link lands on a page with one
+ * blank card and one undecided treatment. That is the trade the ask accepts;
+ * the earlier promotion of Testing waited until its own exploration had
+ * resolved, and this one has not.
  *
  * ⚠ THIS REVERSES A DECISION THAT WAS PINNED, and the pin was right when it was
  * written. Testing shipped on 2026-09-21 explicitly NOT as the default, with a
@@ -401,7 +528,7 @@ export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
  */
 export function defaultDiscoverabilityVersionFor(brand: Brand): string {
   return brand === 'xcel'
-    ? DISCOVERABILITY_DASHBOARD_VERSION_TESTING.id
+    ? DISCOVERABILITY_DASHBOARD_VERSION_TESTING_3.id
     : DISCOVERABILITY_DASHBOARD_VERSION_MARKETING_FOCUSED.id
 }
 

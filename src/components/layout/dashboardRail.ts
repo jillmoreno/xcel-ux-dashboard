@@ -108,7 +108,10 @@ const TESTING_HIDDEN_RAIL_SECTIONS = [
 export function hiddenRailSectionsFor(
   layout: DashboardLayout,
 ): readonly PlatformSection[] | undefined {
-  return layout === 'testing' || layout === 'testing-2'
+  /* Testing 3 inherits Testing's trim, like everything else it inherits — the
+     version exists to compare ONE block, so a rail that differed as well would
+     be a second variable in the frame. */
+  return layout === 'testing' || layout === 'testing-2' || layout === 'testing-3'
     ? TESTING_HIDDEN_RAIL_SECTIONS
     : undefined
 }
@@ -141,6 +144,12 @@ export function dashboardLayoutForVersion(versionParam: string): DashboardLayout
       // other QE behaviour is inherited rather than re-listed.
       versionParam === 'discoverability-testing'
       ? 'testing'
+      : // "Testing 3" — Testing with the course and its coursework as one
+        // block. Its own layout value rather than a flag on `testing`, so the
+        // picker, the URL and the page all name the same thing; everything
+        // downstream treats it as Testing except the combined block.
+        versionParam === 'discoverability-testing-3'
+        ? 'testing-3'
       : versionParam === 'discoverability-learner-focused'
         ? 'learner-focused'
         : versionParam === 'discoverability-badged'

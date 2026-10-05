@@ -4,7 +4,12 @@ import { PrototypeBar } from './PrototypeBar'
 import { AdminToolsMenu } from './AdminToolsMenu'
 import { DeviceFrameToggle, useDeviceFrame } from './DeviceFrameContext'
 import { DemoControlsBar } from '@/components/prototype/DemoControlsBar'
-import { useDemoControlsVisibility } from '@/components/prototype/demoControlsVisibility'
+import { DesignControlsBar } from '@/components/prototype/DesignControlsBar'
+import { DESIGN_ACCENT } from '@/components/prototype/demoBarUtil'
+import {
+  useDemoControlsVisibility,
+  useDesignControlsVisibility,
+} from '@/components/prototype/demoControlsVisibility'
 import { demoSiteControls } from '@/data/demoControlMaturity'
 
 /**
@@ -20,28 +25,28 @@ import { demoSiteControls } from '@/data/demoControlMaturity'
 /**
  * The only demo controls a `?test=1` participant session shows.
  *
- * ⚠ `navigation` IS HERE BY DIRECT ASK — 2026-09-23 — and it is the entry to
- * think twice about. The others on the bar are hidden because they re-baseline
- * the demo or move a treatment the session is holding still. This one is
- * different: it is the A/B's own independent variable, so putting it in front
- * of a participant tells them a comparison exists, which is most of what a
- * moderated session is trying not to say.
+ * ⚠ `navigation` WAS HERE, by direct ask (2026-09-23), and was the entry to
+ * think twice about: it was the `dashboard-navigation` A/B's own independent
+ * variable, so putting it in front of a participant told them a comparison
+ * existed — most of what a moderated session is trying not to say. It was in
+ * anyway because switching arms mid-session beat reloading and re-pasting the
+ * session link. BOTH the control and the flag were archived on 2026-10-01 when
+ * Option 1 won, so the trade-off is moot; see `archivedItems.ts`.
  *
- * IT IS IN ANYWAY because switching arms mid-session is worth more than that
- * risk here: without it, showing someone both versions means reloading and
- * re-pasting the session link, which breaks the task far more visibly than a
- * control they were never invited to touch. Moderator discipline — not the
- * code — is what keeps it unpressed.
+ * `progress` is the survivor, for the plainer reason that a moderator changes
+ * it between tasks ("now imagine you are two weeks in").
  *
- * `progress` is the other survivor, for the plainer reason that a moderator
- * changes it between tasks ("now imagine you are two weeks in").
+ * ⚠ IT IS A ONE-ENTRY LIST NOW. Kept as a list rather than collapsed to a
+ * single value — the whitelist is the mechanism, and the next control a
+ * session needs should be an array entry, not a re-plumb.
  */
-const TEST_VIEW_CONTROLS = ['progress', 'navigation'] as const
+const TEST_VIEW_CONTROLS = ['progress'] as const
 
 
 export function PrototypeChrome() {
   const { pathname, search } = useLocation()
   const { open: demoOpen, toggle: toggleDemo } = useDemoControlsVisibility()
+  const { open: designOpen, toggle: toggleDesign } = useDesignControlsVisibility()
   // In the Demo frame the bars run edge-to-edge (full screen width) instead of
   // the rebrand's 1440-capped, left-anchored strip.
   const framed = useDeviceFrame().device === 'desktop-framed'
@@ -61,6 +66,13 @@ export function PrototypeChrome() {
   // the one that used to need a second deploy: "what does a stakeholder actually
   // get?" (No effect on the demo site itself, where the answer is already yes.)
   const asDemo = params.get('as') === 'demo'
+  /* ⚠ THE DESIGN TOGGLE WAS GATED ON `hasDesignControls` AND NO LONGER IS
+     (2026-10-05). The gate existed because the bar returned null on a version
+     with no design flags, and a toggle revealing an empty strip reads as
+     broken. Lo-fi moving onto that bar removed the empty case entirely — it now
+     always carries Lo-fi and the flag icon — so the gate was protecting against
+     something that cannot happen, and `designControlsFor` / `flagOwner` /
+     `DISCOVERABILITY_DASHBOARD_VERSIONS` left this file with it. */
   if (params.get('chrome') === 'off') return null
   // `?present=1` (the "Share Demo" link) — the shared presentation view: hide
   // the prototype bar + demo controls (like `chrome=off`) but keep the Demo
@@ -125,6 +137,14 @@ export function PrototypeChrome() {
         demoToggle={
           showDemoToggle ? <DemoControlsToggle active={demoOpen} onToggle={toggleDemo} /> : undefined
         }
+        designToggle={
+          /* Design site only, and only with controls to show — the same two
+             conditions the bar itself renders under, so the toggle and the bar
+             can never disagree about whether there is anything there. */
+          !isPublicGateway() && !asDemo ? (
+            <DesignControlsToggle active={designOpen} onToggle={toggleDesign} />
+          ) : undefined
+        }
         fullBleed={framed}
       />
       {/* The demo site gets the FINISHED axes only, derived from each control's
@@ -135,8 +155,21 @@ export function PrototypeChrome() {
         open={demoOpen}
         fullBleed={framed}
         only={isPublicGateway() || asDemo ? demoSiteControls() : undefined}
-        lens={asDemo}
       />
+      {/* THE DESIGN BAR, under the demo one — 2026-10-05.
+          ⚠ DESIGN SITE ONLY. There is no per-control `maturity` gate here
+          because the whole SURFACE is the gate: a design decision worth showing
+          a stakeholder belongs on the demo bar instead. `isPublicGateway()` is
+          the same check that withholds the robot.
+          ⚠ IT RENDERS NOTHING when the current version has no design flags, so
+          this is invisible until somebody marks one — see the component.
+          ⚠ AND `asDemo` HIDES IT TOO. `?as=demo` is the lens a designer uses to
+          see what a stakeholder gets; a lens that left this bar on screen would
+          answer that question wrongly, which is the one thing the lens exists
+          not to do. The demo bar's `only` makes the same check one line up. */}
+      {isPublicGateway() || asDemo || !designOpen ? null : (
+        <DesignControlsBar fullBleed={framed} />
+      )}
     </>
   )
 }
@@ -146,6 +179,63 @@ export function PrototypeChrome() {
  *  is shown, outlined + dim dot when hidden. `aria-pressed` + the dot signal
  *  state (never color alone). Colors stay on white overlays + the brand teal so
  *  they read on the theme-stable dark bar. */
+/**
+ * The DESIGN bar's show/hide toggle — 2026-10-05, the direct ask.
+ *
+ * ⚠ THE SAME PILL AS `DemoControlsToggle`, one word and one dot colour apart.
+ * They hide two different bars and a reader has to tell them apart instantly;
+ * making them LOOK the same is what says "these are the same kind of control",
+ * and the dot is what says which. Forking the shape would have made them read
+ * as unrelated.
+ *
+ * ⚠ LIGHT CYAN, matching its bar's rule, the way the demo pill's dot matches
+ * its amber one. The colour is the only tell on either bar, so it has to be the
+ * same tell in both places — `DESIGN_ACCENT`, not a literal.
+ *
+ * ⚠ IT IS NEVER RENDERED WITHOUT CONTROLS BEHIND IT — see `hasDesignControls`
+ * in `PrototypeChrome`. A toggle that reveals an empty strip reads as broken.
+ */
+function DesignControlsToggle({ active, onToggle }: { active: boolean; onToggle: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onToggle}
+      aria-pressed={active}
+      aria-label={active ? 'Hide design controls' : 'Show design controls'}
+      title={active ? 'Hide design controls' : 'Show design controls'}
+      style={{
+        display: 'inline-flex',
+        alignItems: 'center',
+        gap: 7,
+        height: 26,
+        padding: '0 12px',
+        borderRadius: 'var(--radius-pill)',
+        border: '1px solid rgb(255 255 255 / 0.28)',
+        background: active ? 'rgb(255 255 255 / 0.16)' : 'transparent',
+        color: 'var(--color-neutral-50)',
+        fontFamily: 'var(--font-body)',
+        fontSize: 12,
+        fontWeight: 700,
+        letterSpacing: '0.04em',
+        cursor: 'pointer',
+        whiteSpace: 'nowrap',
+      }}
+    >
+      <span
+        aria-hidden
+        style={{
+          width: 7,
+          height: 7,
+          borderRadius: '50%',
+          background: active ? DESIGN_ACCENT : 'rgb(255 255 255 / 0.4)',
+          boxShadow: active ? '0 0 0 3px rgb(255 255 255 / 0.14)' : 'none',
+        }}
+      />
+      Design
+    </button>
+  )
+}
+
 function DemoControlsToggle({ active, onToggle }: { active: boolean; onToggle: () => void }) {
   return (
     <button

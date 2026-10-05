@@ -1,3 +1,4 @@
+import { pinLeftRail } from './pinNavPlacement'
 import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { beforeEach, describe, expect, it } from 'vitest'
@@ -29,6 +30,13 @@ import {
  * ⚠ A TEST THAT IS ABOUT THE BASELINE MUST NOT SPREAD THIS.
  */
 const PRE_PROMOTION_BASELINE = {
+  /* ⚠ THE EXAM CARD'S COLUMN, pinned 2026-10-01. `exam-card-placement`
+     defaults to `under-course` on this branch, which moves the card out of the
+     Study Journey column and under the Current course card. These tests are
+     about the COLUMN's composition — four cards in route order — so they pin
+     the arm that still has four. The other arm is covered by
+     `ExamCardPlacement.test.tsx`. */
+  'exam-card-placement': { enabled: true, variant: 'journey-column' },
   'study-pace-hidden': { enabled: false },
   'course-entry-style': { enabled: true, variant: 'split' },
   /* `exam-step-style` was seeded here until 2026-09-29, when the flag was
@@ -79,6 +87,9 @@ function seed(extra: Record<string, unknown> = {}) {
 }
 
 function renderShell(url: string) {
+  /* Option 1's tests — the rail is no longer the default navigation on
+     this branch, so they pin it rather than inheriting it. */
+  pinLeftRail()
   return render(
     <MemoryRouter initialEntries={[url]}>
       <AccountProvider>
@@ -121,8 +132,8 @@ beforeEach(() => {
   )})
 
 describe('Testing 2 is reached deliberately, not by default', () => {
-  it('is NOT what a bare /dashboard-rebrand renders — Testing is', () => {
-    /* The default moved twice on 2026-09-21 and landed on TESTING. Asserted
+  it('is NOT what a bare /dashboard-rebrand renders', () => {
+    /* The default has moved three times and now sits on TESTING 3. Asserted
        here as "not this one" rather than by naming the winner: which version IS
        the default lives in `TestingVersion.test.tsx`, beside the claim it
        inverted, and a second copy of it here is one more thing to forget when
@@ -137,7 +148,14 @@ describe('Testing 2 is reached deliberately, not by default', () => {
     )
     seed()
     renderShell('/dashboard-rebrand')
-    expect(document.querySelectorAll('[style*="aspect-ratio"]')).toHaveLength(0)
+    /* ⚠ IDENTIFIED BY THE STUDY PACE TILE, not by "any square on the page".
+       This read `[style*="aspect-ratio"]` and expected none — true while
+       Testing 2 was the only version with a square anywhere, and false from
+       2026-10-02, when Testing 3 became the default and brought a rail of six
+       square tiles that have nothing to do with Study Pace. The claim is and
+       always was "the LIVE PACE TILE is not here". */
+    expect(screen.queryByText('Study Pace')).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Adjust' })).toBeNull()
   })
 })
 

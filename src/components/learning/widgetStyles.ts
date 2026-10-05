@@ -220,6 +220,36 @@ export const widgetCardFramedStyle: CSSProperties = {
 }
 
 /**
+ * FRAMED, PLUS THE HAIRLINE BACK — Testing 3's right column only, 2026-10-02,
+ * the direct ask: "stroke border on these containers should match the border of
+ * the current course".
+ *
+ * ⚠ IT RE-ADDS WHAT 2026-09-21 REMOVED, and the note above is kept rather than
+ * rewritten because its reasoning was sound FOR THE COLUMN IT DESCRIBED. The
+ * stroke went when this column stood against a left column of bare blocks on
+ * the page grey: an outline there was the only outline on screen. Testing 3
+ * changed the other side — the combined course card carries
+ * `1px solid var(--color-primary-100)` of its own — so the column opposite is
+ * now the odd one out for NOT having it. Same treatment, opposite answer,
+ * because the neighbour changed.
+ *
+ * ⚠ IT IS A SEPARATE STYLE, NOT A BORDER ADDED TO THE ONE ABOVE. Testing and
+ * Testing 2 share `widgetCardFramedStyle` and neither has a bordered card to
+ * match; editing it in place would reverse their 2026-09-21 ask on their behalf
+ * and nothing on their screens would explain why. `journeyCards` turns on for
+ * all three versions — the fork is what keeps this one's answer to itself.
+ *
+ * ⚠ THE SAME TOKEN THE COURSE CARD USES, read from the ask literally: it must
+ * MATCH, so `--color-primary-100` rather than `--color-border-subtle` (which is
+ * what the stroke removed in 2026-09-21 actually was). Two hairlines of
+ * different colours either side of a column is the thing this is fixing.
+ */
+export const widgetCardOutlinedStyle: CSSProperties = {
+  ...widgetCardFramedStyle,
+  border: '1px solid var(--color-primary-100)',
+}
+
+/**
  * Section label. Matched to the Current Learning Progress block's eyebrow and
  * to "Get Licensed", so every label on this version reads at one level of
  * hierarchy — the rule CLAUDE.md records for the three eyebrows on the Today's

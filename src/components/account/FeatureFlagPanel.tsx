@@ -1,11 +1,10 @@
 import { useEffect, useId, useRef, useState, type CSSProperties } from 'react'
 import { createPortal } from 'react-dom'
-import { useLocation } from 'react-router-dom'
-import { ArrowLeft, ChevronDown, ChevronRight, Flag, HelpCircle, Sliders, X } from '@/icons'
+import { useLocation, useSearchParams } from 'react-router-dom'
+import { ArrowLeft, ChevronDown, ChevronRight, Flag, HelpCircle, X } from '@/icons'
 import { Tooltip } from '@/components/ui/Tooltip'
 import { Select } from '@/components/ui/Select'
 import { acquireBodyScrollLock } from '@/utils/bodyScrollLock'
-import { useDashboardVersionsPanel } from '@/components/dashboard/DashboardVersionsPanelContext'
 import {
   FEATURE_FLAG_PAGES,
   useFeatureFlags,
@@ -16,8 +15,23 @@ import {
   type FeatureFlagPageId,
   type FeatureFlagState,
   type FeatureFlagVariant,
+  FLAG_DESIGNERS,
+  flagOwner,
+  type DesignerId,
 } from '@/context/FeatureFlagContext'
+import {
+  DISCOVERABILITY_DASHBOARD_VERSIONS,
+  defaultDiscoverabilityVersionFor,
+  type DashboardVersion,
+} from '@/data/dashboardVersions'
 import { useFeatureFlagPanel } from './FeatureFlagPanelContext'
+import { useAccount } from '@/context/AccountContext'
+
+/* ⚠ `readOwnerTab` / `writeOwnerTab` AND THEIR `cgp.featureFlags.ownerTab` KEY
+   WENT ON 2026-10-05, with the tab strip. Nothing persists a designer choice
+   here any more — the panel reads the owner off the ACTIVE VERSION, so there is
+   no choice of its own to remember. A stored key from the day it existed is
+   simply ignored. */
 
 /**
  * Map the current pathname to the FeatureFlagPageId that owns it, so
@@ -116,6 +130,11 @@ const REBRAND_FLAGS = [
      other leaves a flag reachable only by hand-editing `?ff=` — which is how
      all six were being demoed. */
   'course-entry-style',
+  'exam-card-placement',
+  'home-tile-style',
+  'journey-scale-style',
+  'journey-stop-mark',
+  'combined-progress-bar',
   'course-entry-details',
   /* `exam-step-style` was listed here until 2026-09-29; it was retired when its
      `ask-first` arm became unconditional. These two are what remain of that
@@ -127,6 +146,13 @@ const REBRAND_FLAGS = [
   'study-pace-hidden',
   'nav-rail-icons',
   'nav-rail-captions',
+  /* Left rail ⇄ top nav — the nav-placement exploration. It leads the
+     Navigation group, which is where a control that decides whether the rail
+     exists at all belongs. */
+  'nav-placement',
+  'nav-help',
+  /* Whether the rail paints its own surface on Home. */
+  'nav-rail-surface',
   /* ⚠ ADDED 2026-09-28 AFTER A REVIEW, and these are OLDER misses than the
      seven above. Git history says none of the four was ever in this list — they
      were never removed, just never added, going back to their own introducing
@@ -321,7 +347,6 @@ export function flagScopeForPath(pathname: string): string[] | null {
  */
 export function FeatureFlagPanel() {
   const { open, closePanel } = useFeatureFlagPanel()
-  const { openPanel: openVersionsPanel } = useDashboardVersionsPanel()
   const {
     flags,
     definitions,
@@ -336,6 +361,32 @@ export function FeatureFlagPanel() {
   } = useFeatureFlags()
   // Transient "saved" confirmation after Set as default.
   const [justSavedDefault, setJustSavedDefault] = useState(false)
+  /*
+   * WHOSE FLAGS ARE SHOWING — derived from the DASHBOARD VERSION you are on,
+   * 2026-10-05, replacing the tab strip that used to ask.
+   *
+   * ⚠ THE VERSION OWNS THE ANSWER. A flag is read inside whichever version is
+   * rendering, so "which flags matter here" is a question the version already
+   * answers — asking it again with a second tab strip was two controls for one
+   * fact.
+   *
+   * ⚠ WHAT THIS COSTS, and it is the thing to watch: a flag belongs to ONE
+   * designer, so selecting Eric's version hides every flag of Jill's — which
+   * today is all of them. It is invisible right now because every version and
+   * every flag is hers, and it will become very visible the day Eric has a
+   * version. The empty state below is what has to carry that; if it reads as a
+   * broken panel rather than a filter, this is the decision to revisit.
+   *
+   * ⚠ THE SAME RESOLUTION THE DEMO BAR USES — `?version=` else the brand
+   * default. Reading only the param would make the panel default to Jill on
+   * every fresh load regardless of which version is actually on screen.
+   */
+  const [params] = useSearchParams()
+  const { brand } = useAccount()
+  const activeVersionId = params.get('version') ?? defaultDiscoverabilityVersionFor(brand)
+  const owner = flagOwner(
+    DISCOVERABILITY_DASHBOARD_VERSIONS.find((v) => v.id === activeVersionId) ?? {},
+  )
   const location = useLocation()
   const dialogRef = useRef<HTMLDivElement | null>(null)
   const previouslyFocused = useRef<HTMLElement | null>(null)
@@ -399,6 +450,20 @@ export function FeatureFlagPanel() {
     // Intentional: the page selection is seeded from the route on open and
     // reset on close — it can't be derived during render because the user
     // also mutates it by picking pages inside the panel.
+    //
+    // ⚠ THE `eslint-disable` / `eslint-enable` PAIR FOR
+    // `react-hooks/set-state-in-effect` WAS HERE AND WENT ON 2026-10-05. The
+    // rule stopped reporting on this effect once the designer tabs landed
+    // (`setOwner` called `setSelectedPageId` outside any effect), and a
+    // directive that suppresses nothing is itself a lint warning — so keeping
+    // it traded one warning for another. That note said to put the pair back
+    // if the rule ever reported here again.
+    //
+    // ⚠ IT DID, SAME DAY. The tabs moved to the Dashboard Versions sheet, the
+    // out-of-effect `setSelectedPageId` went with them, and the rule resumed —
+    // so the pair is back, exactly as instructed. Worth knowing that this
+    // directive's presence tracks a call site in a DIFFERENT part of the
+    // component: it will come and go again.
     /* eslint-disable react-hooks/set-state-in-effect */
     if (!open) {
       setSelectedPageId(null)
@@ -425,14 +490,37 @@ export function FeatureFlagPanel() {
 
   // Per-feature scope (route-based). `null` ⇒ show every flag; otherwise the
   // catalog is filtered to the in-scope keys.
-  const onRebrand = location.pathname.startsWith('/dashboard-rebrand')
   const scope = flagScopeForPath(location.pathname)
-  const scopedDefinitions = scope
+  const scopeDefinitions = scope
     ? definitions.filter((d) => scope.includes(d.key))
     : definitions
+  /*
+   * WHOSE FLAGS ARE SHOWING — 2026-10-05, the direct ask for two designer tabs.
+   *
+   * ⚠ A SECOND FILTER OVER THE FIRST, not a replacement. `scope` already
+   * narrows the catalog to the feature being previewed; this narrows that to
+   * one designer. Collapsing them into one pass would make a scoped preview
+   * silently ignore the tab, which is the kind of thing that looks like the
+   * filter "not working" rather than like two rules meeting.
+   *
+   * ⚠ IT IS A FILTER, NOT A PERMISSION — both tabs are always offered, and
+   * `?ff=` still resolves every flag regardless of whose tab it is in.
+   */
+  const ownedDefinitions = scopeDefinitions.filter((d) => flagOwner(d) === owner)
+  const ownedVersions = DISCOVERABILITY_DASHBOARD_VERSIONS.filter(
+    (v: DashboardVersion) => flagOwner(v) === owner,
+  )
+  const scopedDefinitions = ownedDefinitions
   // A scoped feature with nothing in scope (e.g. Dashboard Rebrand) shows a
   // dedicated empty state instead of the page selector.
-  const scopedEmpty = scope != null && scopedDefinitions.length === 0
+  const scopedEmpty = scope != null && scopeDefinitions.length === 0
+  /* ⚠ THE OWNER'S EMPTY STATE IS NOT `scopedEmpty`, and the two must not be
+     merged. `scopedEmpty` means "this feature has no flags"; this means "this
+     designer has nothing yet", which is Eric's expected state on day one and
+     wants different words. A tab that rendered the scoped empty state would
+     tell him his FEATURE was empty. */
+  const ownerEmpty =
+    !scopedEmpty && ownedDefinitions.length === 0 && ownedVersions.length === 0
 
   const selectedPage = selectedPageId
     ? FEATURE_FLAG_PAGES.find((p) => p.id === selectedPageId) ?? null
@@ -526,52 +614,71 @@ export function FeatureFlagPanel() {
         </header>
 
         <div style={bodyStyle}>
-          {/* Demo view notice. The robot became reachable under `?demo=1` on
-              2026-09-16 (see `AdminToolsMenu`), and on the rebrand it opens this
-              sheet DIRECTLY — skipping the dropdown that used to carry this
-              sentence. Without it a reviewer flips a flag here, leaves, comes
-              back and finds it reverted, with nothing on screen to say why.
-              Demo mode suspends flag persistence by design; this is that design
-              made visible rather than a warning about a defect. The footer's
-              "Set as default" / "Restore original defaults" are already dropped
-              under `demoMode`, so this explains an absence too. */}
-          {demoMode && (
-            <p style={demoNoticeStyle}>
-              <span style={demoNoticeDotStyle} aria-hidden />
-              Demo view — changes preview here only and reset when you leave.
-            </p>
-          )}
-          {/* Dashboard Version is a rebrand-only setting, surfaced here as the
-              first option so the robot menu opens a single sheet holding every
-              setting. The row drills into the DashboardVersionsPanel (rendered
-              in Header with the version props); closing this sheet first avoids
-              two overlapping left slide-overs. */}
-          {onRebrand && (
-            <button
-              type="button"
-              onClick={() => {
-                closePanel()
-                openVersionsPanel()
-              }}
-              style={dashboardVersionRowStyle}
-            >
-              <span aria-hidden style={dashboardVersionIconStyle}>
-                <Sliders size={16} aria-hidden />
-              </span>
-              <span style={dashboardVersionTextStyle}>
-                <span style={dashboardVersionLabelStyle}>Dashboard Version</span>
-                <span style={dashboardVersionCaptionStyle}>
-                  Pick the dashboard layout
-                </span>
-              </span>
-              <ChevronRight size={18} aria-hidden style={{ flexShrink: 0 }} />
-            </button>
-          )}
+          {/* ⚠ THE DESIGNER TAB STRIP WAS HERE FOR A DAY AND MOVED TO THE
+              DASHBOARD VERSIONS SHEET — 2026-10-05, the direct ask ("the jill
+              and eric tab should be in that Dashboard Versions and removed from
+              the feature flag side of things").
+
+              It is the better home: a VERSION is the thing a designer owns, and
+              the flags are read INSIDE whichever version is rendering. Two tab
+              strips asking the same question in two sheets was the duplication
+              that made it obvious.
+
+              ⚠ THE FILTER DID NOT GO WITH IT — see `owner` below. This panel
+              still shows one designer's flags; it just no longer asks WHOSE.
+              The answer comes from the version you are on. */}
+          {/* ⚠ THE DEMO-VIEW NOTICE WAS HERE AND WAS REMOVED — 2026-10-05, the
+              direct ask ("remove this"). It read "Demo view — changes preview
+              here only and reset when you leave." and rendered under `demoMode`.
+
+              WHAT IT WAS DOING, so the cost is on the record rather than
+              rediscovered: demo mode suspends flag persistence BY DESIGN, and
+              the footer's "Set as default" / "Restore original defaults" are
+              dropped under `demoMode` too. This sentence explained both. Without
+              it a reviewer flips a flag here, leaves, comes back and finds it
+              reverted, with nothing on screen to say why — and the missing
+              footer buttons have no explanation either.
+
+              `AdminToolsMenu` still carries its own copy of the sentence for
+              the non-rebrand dropdown, so the wording is not lost.
+
+              ⚠ ITS TWO STYLE CONSTS WENT WITH IT, and had to —
+              `noUnusedLocals` is on, so an unused `demoNoticeStyle` is a tsc
+              error and therefore a FAILED DEPLOY, not a lint warning. The
+              repo's usual "unwire but keep the file" shape does not survive
+              that. Restoring is this block plus a flex row: 8px gap,
+              `0 0 14px` margin, `8px 12px` padding, `--radius-md`,
+              `--color-neutral-100` on a `--color-border-subtle` hairline,
+              `--font-body` 12/17 in `--color-text-secondary`, led by a 6px
+              `--color-text-tertiary` dot with `aria-hidden`. */}
+          {/* ⚠ THE DASHBOARD VERSION ROW WAS HERE AND WENT ON 2026-10-05, the
+              direct choice that the version gets ONE route rather than two.
+
+              It now has its own control on the DEMO CONTROLS BAR — an icon plus
+              the version you are on, opening the same `DashboardVersionsPanel`
+              this row opened. That move was about REACH: `PrototypeChrome` does
+              not render the robot on the public site, so a stakeholder had no
+              way to reach the picker at all, and adding the bar control while
+              keeping this row would have put the same destination in two places
+              — the duplication just removed from the bar, in the other
+              direction.
+
+              ⚠ WHAT IT COSTS, stated rather than discovered: this panel is
+              where a designer configures a version's FLAGS, and the version
+              switch is no longer on that screen. Changing which dashboard those
+              flags apply to now means leaving the sheet. If that turns out to
+              be the wrong trade, restoring is this block, the `Sliders` icon,
+              `useDashboardVersionsPanel`'s `openPanel`, the `onRebrand` check
+              and five style consts — all of which had to go with it, because
+              `noUnusedLocals` turns an unused import into a tsc error and
+              therefore a failed deploy. Git has them; this note is the pointer. */}
           {/* The "Membership Version" drill-in row was removed 2026-09-16 with the
               `membership-page-version` flag it wrote — see the note in `Header`.
               XCEL cannot reach the standalone Membership page it configured. */}
           {scopedEmpty ? (
             <ScopedEmptyState />
+          ) : ownerEmpty ? (
+            <OwnerEmptyState owner={owner} />
           ) : selectedPage ? (
             <FlagListView
               page={selectedPage}
@@ -671,6 +778,87 @@ function ScopedEmptyState() {
       </p>
     </div>
   )
+}
+
+/**
+ * A DESIGNER WITH NOTHING YET — 2026-10-05, the direct ask ("Erics will be
+ * empty for now until I promote things into it").
+ *
+ * ⚠ IT IS NOT `ScopedEmptyState`, and that is the whole reason it is a second
+ * component rather than a prop. That one means "this FEATURE exposes no
+ * toggles" and tells the reader to open the panel from somewhere else. Here
+ * nothing is wrong and there is nowhere else to go: the tab is empty because
+ * nothing has been put in it, and the words have to say so or Eric reads a
+ * working panel as broken.
+ *
+ * ⚠ IT SAYS HOW THINGS GET HERE. An empty state that only reports emptiness
+ * makes the reader go and ask someone; naming `owner` means the next person to
+ * add a flag can act on it without this conversation.
+ */
+function OwnerEmptyState({ owner }: { owner: DesignerId }) {
+  const label = FLAG_DESIGNERS.find((d) => d.id === owner)?.label ?? owner
+  return (
+    <div style={ownerEmptyWrapStyle}>
+      <span aria-hidden style={ownerEmptyIconStyle}>
+        <Flag size={18} aria-hidden />
+      </span>
+      <p style={ownerEmptyTitleStyle}>Nothing in {label}’s tab yet</p>
+      <p style={ownerEmptyBodyStyle}>
+        Flags and dashboard versions appear here once they carry{' '}
+        <code style={ownerEmptyCodeStyle}>owner: &apos;{owner}&apos;</code>.
+        Everything else is under {FLAG_DESIGNERS.find((d) => d.id !== owner)?.label ?? 'the other tab'}.
+      </p>
+    </div>
+  )
+}
+
+const ownerEmptyWrapStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 10,
+  textAlign: 'center',
+  padding: '48px 24px',
+  color: 'var(--color-text-secondary)',
+}
+
+const ownerEmptyIconStyle: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  width: 44,
+  height: 44,
+  borderRadius: 'var(--radius-pill)',
+  background: 'var(--color-neutral-100)',
+  color: 'var(--color-text-tertiary)',
+}
+
+const ownerEmptyTitleStyle: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 15,
+  fontWeight: 600,
+  color: 'var(--color-text-primary)',
+}
+
+const ownerEmptyBodyStyle: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 13,
+  lineHeight: '19px',
+  maxWidth: 300,
+}
+
+/* A code span rather than a token: this is a literal someone types into
+   `FEATURE_FLAGS`, and prose styling would hide that it is one. */
+const ownerEmptyCodeStyle: CSSProperties = {
+  fontFamily: 'var(--font-mono, ui-monospace, monospace)',
+  fontSize: 12,
+  padding: '1px 5px',
+  borderRadius: 'var(--radius-sm)',
+  background: 'var(--color-neutral-100)',
+  color: 'var(--color-text-primary)',
 }
 
 /* ─── Step 1: Page selector ────────────────────────────────────────── */
@@ -1297,33 +1485,6 @@ const closeButtonStyle: CSSProperties = {
   cursor: 'pointer',
 }
 
-/* Demo-view notice at the top of the sheet body. Deliberately quiet — a tinted
-   rule rather than a warning banner, because nothing is wrong: it is stating the
-   demo's own contract. The dot carries no meaning colour alone does not, since
-   the sentence says it. */
-const demoNoticeStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 8,
-  margin: '0 0 14px',
-  padding: '8px 12px',
-  borderRadius: 'var(--radius-md)',
-  background: 'var(--color-neutral-100)',
-  border: '1px solid var(--color-border-subtle)',
-  fontFamily: 'var(--font-body)',
-  fontSize: 12,
-  lineHeight: '17px',
-  color: 'var(--color-text-secondary)',
-}
-
-const demoNoticeDotStyle: CSSProperties = {
-  flexShrink: 0,
-  width: 6,
-  height: 6,
-  borderRadius: '50%',
-  background: 'var(--color-text-tertiary)',
-}
-
 const bodyStyle: CSSProperties = {
   padding: '16px 20px 24px',
   overflowY: 'auto',
@@ -1331,52 +1492,6 @@ const bodyStyle: CSSProperties = {
   flexDirection: 'column',
   gap: 16,
   flex: 1,
-}
-
-const dashboardVersionRowStyle: CSSProperties = {
-  display: 'flex',
-  alignItems: 'center',
-  gap: 12,
-  width: '100%',
-  padding: '12px 14px',
-  background: 'var(--color-surface-muted)',
-  border: '1px solid var(--color-border-subtle)',
-  borderRadius: 'var(--radius-md)',
-  color: 'var(--color-text-primary)',
-  cursor: 'pointer',
-  textAlign: 'left',
-}
-
-const dashboardVersionIconStyle: CSSProperties = {
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  width: 32,
-  height: 32,
-  flexShrink: 0,
-  borderRadius: 'var(--radius-sm)',
-  background: 'var(--color-primary-100)',
-  color: 'var(--color-primary-600)',
-}
-
-const dashboardVersionTextStyle: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  gap: 2,
-  flex: 1,
-  minWidth: 0,
-}
-
-const dashboardVersionLabelStyle: CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontSize: 14,
-  fontWeight: 700,
-}
-
-const dashboardVersionCaptionStyle: CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontSize: 12,
-  color: 'var(--color-text-secondary)',
 }
 
 const introCopyStyle: CSSProperties = {

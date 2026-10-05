@@ -30,10 +30,11 @@ const INTENTIONALLY_OUT_OF_PANEL = new Set([
   /* Exposed as dedicated dropdowns on the always-visible Demo Controls bar, so
      a panel row would be a redundant and worse copy of a control already on
      screen. `REBRAND_FLAGS` carries this reasoning for the first two in its own
-     comment; the other two are the same case. */
+     comment; the third is the same case. */
   'dashboard-progress-state',
   'dashboard-education-type',
-  'dashboard-navigation',
+  /* `dashboard-navigation` was the fourth. Archived 2026-10-01 with its
+     dropdown; a key that is not in the catalog cannot be out of the panel. */
   'readiness-state',
 
   /* ⚠ REVIEWED AND EMPTIED, 2026-09-28. Four flags sat here as "unreviewed"

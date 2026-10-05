@@ -25,3 +25,11 @@ if (typeof globalThis.matchMedia === 'undefined') {
     dispatchEvent: () => false,
   })
 }
+
+// jsdom has no layout, so `window.scrollTo` is a stub that logs "Not
+// implemented" and nothing else. `PlatformShell` calls it on every section
+// change (a new section starts at the top), which would print that line
+// through any suite that navigates. A no-op keeps the output readable and
+// stays spy-able — `SectionBreadcrumb.test.tsx` asserts the call, and the
+// real scrolling was verified in the browser.
+globalThis.scrollTo = () => {}

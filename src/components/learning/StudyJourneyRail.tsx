@@ -1,4 +1,13 @@
-import { type CSSProperties, type ReactNode } from 'react'
+import { LoFiWidgetBody } from '@/components/lo-fi/LoFiPlaceholders'
+import { useLoFi } from '@/context/LoFiContext'
+import {
+  useCallback,
+  useLayoutEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type ReactNode,
+} from 'react'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { ChevronRight, CircleCheck } from '@/icons'
 import type { LearningPathSummary } from '@/data/learningFixtures'
@@ -76,6 +85,13 @@ export function StudyJourneyRail({
   stepRange = false,
   stepNumber = 1,
   atlasEyebrow = false,
+  stepLabelOnly = false,
+  markerLabel,
+  scaleStyle = 'axis',
+  stopMark = 'circle',
+  stopDetail,
+  lessonProgressTitle = false,
+  progressSpine = false,
 }: {
   path: LearningPathSummary
   /** Open a stop. Omitted → the rows render as plain text rather than links. */
@@ -104,9 +120,132 @@ export function StudyJourneyRail({
   stepNumber?: number
   /** The Atlas home's eyebrow (2026-09-30, the designer's request): the step
    *  number in BOLD and the label without "Atlas" — "**Step 1** · Study
-   *  Journey". Other versions keep "Step N · Atlas Study Journey". */
+   *  Journey". Other versions keep "Step N · Atlas Study Journey".
+   *
+   *  ⚠ TAKES PRECEDENCE OVER `stepLabelOnly` where both are passed — see the
+   *  eyebrow expression. They are two versions' answers to the same question
+   *  and no call site passes both today; the order is there so a future one
+   *  gets a defined result rather than whichever branch happened to be first. */
   atlasEyebrow?: boolean
+  /**
+   * Drop the journey's name from the eyebrow — just "Step 1" — Testing 3,
+   * 2026-10-01, the direct ask.
+   *
+   * ⚠ IT IS ABOUT THE COMPANY THE EYEBROW KEEPS. In the journey COLUMN this
+   * card is the only one carrying the journey's name, so "Step 1 · Atlas Study
+   * Journey" is what says which route the numbers belong to. Inside Testing 3's
+   * combined card it sits above "Step 2" and "Step 3" eyebrows that are bare,
+   * so the suffix made the first of three look like a different kind of thing.
+   *
+   * ⚠ WHAT IT COSTS: the name "Atlas Study Journey" then appears nowhere on
+   * that card. The route is still legible — three numbered steps under a course
+   * title — but it is no longer branded. Worth a second look if the name is
+   * meant to be learned.
+   *
+   * Requires `stepRange`; on its own it changes nothing, because without a step
+   * number there is no "Step N" to leave behind.
+   */
+  stepLabelOnly?: boolean
+  /**
+   * Turn the spine into a SCALE — "0" above the first node, "100" below the
+   * last, and this label beside the progress caret. Testing 3, 2026-10-01, the
+   * direct ask. Requires `progressSpine`; without a caret there is nothing to
+   * label.
+   *
+   * ⚠ THE LABEL IS ACCURATE, THE POSITION IS NOT PROPORTIONAL, and that tension
+   * is the thing to judge rather than a bug. The rows of this list are spaced
+   * by their CONTENT's height, not by how much work each stop is — so "37%"
+   * sits where the current lesson is, which is partway through the first of six
+   * stops, and not 37% of the way down the column. A true axis would have to
+   * space the stops by weight, which would make the live stop a sliver and the
+   * two completion tasks nearly invisible. The caller passes the figure; this
+   * only draws it.
+   */
+  markerLabel?: string
+  /**
+   * HOW `markerLabel` IS DRAWN — `journey-scale-style`, 2026-10-02. Four
+   * answers to one problem, none of them yet chosen.
+   *
+   * ⚠ THE PROBLEM IS THAT THESE ROWS ARE NOT A SCALE. They are spaced by their
+   * CONTENT's height, so a figure placed beside the current stop is in the
+   * right PLACE but not at the right HEIGHT, and a figure placed at its true
+   * height sits beside a stop the learner has not reached. `axis` and `chip`
+   * choose position; `gauge` and `header` choose proportion. Every arm still
+   * leans on the NODES to say which stop is live, so none of them loses "where
+   * am I" — that is what makes them comparable.
+   */
+  scaleStyle?: 'axis' | 'gauge' | 'chip' | 'header'
+  /**
+   * What an UNREACHED stop looks like — `journey-stop-mark`, 2026-10-02.
+   *
+   * `circle` is the dashed ring this rail has always drawn. `dash` is a short
+   * tick across the line: a mark ON the timeline rather than a node hung off
+   * it. The argument is that a ring is a PLACE, and six places read as six
+   * equal claims when five of them are not yet real — a tick reads as a
+   * graduation on a scale, which is what the `gauge` arm has made this.
+   *
+   * ⚠ IT ONLY TOUCHES `not-started`. A completed tick and a "you are here" tick
+   * would give up the one distinction this column cannot lose.
+   */
+  stopMark?: 'circle' | 'dash'
+  /**
+   * Extra content nested UNDER one stop's row — Testing 3, 2026-10-01, the
+   * direct ask ("move the lesson section to be within the complete coursework,
+   * under the pre-licensing lessons to better indicate where the user is").
+   *
+   * Called once per stop with that stop's id; return `null` for the stops that
+   * get nothing. Testing 3 returns the lesson line and Resume under
+   * `pre-licensing-lessons`, so the card says where the learner is INSIDE the
+   * step they are on rather than above the list of steps.
+   *
+   * ⚠ A SLOT, NOT A VERSION BRANCH, which is why it is safe in a component this
+   * shared. The rail never learns what Testing 3 is; it learns that a caller
+   * may want to hang something off a stop. With the prop absent the markup is
+   * byte-identical — the wrapper below only appears when a detail exists.
+   *
+   * ⚠ THE SPINE STRETCHES TO COVER IT on its own (`flex: 1` on `spineStyle`),
+   * so a tall detail does not leave the connector hanging short of the next
+   * node. That is load-bearing: the dashed/solid connector is what reads as
+   * ground covered, and a gap in it would read as a broken rail.
+   */
+  stopDetail?: (stopId: string, meta: { index: number; isCurrent: boolean }) => ReactNode
+  /**
+   * Title the counted lesson stop with its progress — "(26 of 42 Completed)"
+   * rather than "(42)". Testing 3, 2026-10-01. See `journeyStopsFor`, which
+   * owns the string; this only forwards the choice.
+   */
+  lessonProgressTitle?: boolean
+  /**
+   * PART-FILL THE CONNECTOR under a stop that is in progress — Testing 3,
+   * 2026-10-01, the direct ask ("because we are on lesson 27, some of this line
+   * should be filled in").
+   *
+   * The spine's default vocabulary is binary: solid under a completed stop,
+   * dashed under everything else. That is right for the stops it was written
+   * for, which are done or not — but the lesson stop is 26 of 42, and a fully
+   * dashed segment under it says no ground covered when most of it is.
+   *
+   * ⚠ THE FILLED LENGTH IS BLUE (`--color-primary-700`, the node's own fill)
+   * as of 2026-10-01 — see `syllabusSpineDoneStyle`. Colour is REINFORCEMENT:
+   * the solid-vs-dashed texture still carries the whole distinction and the
+   * row's text still carries the count, so the rail reads correctly without
+   * colour perception (2.1.4.1).
+   *
+   * ⚠ IT ALSO BLUES A COMPLETED STOP'S WHOLE SEGMENT, not only the part-filled
+   * one — otherwise the rail would turn blue mid-step and back to grey on
+   * completion.
+   *
+   * ⚠ OPT-IN, so no other version's rail changes shape. The data it needs
+   * (`stop.progress`) has always been there.
+   */
+  progressSpine?: boolean
 }) {
+  /* ⚠ TOP OF THE COMPONENT, ABOVE `if (stops.length === 0) return null`. It sat
+     beside the lo-fi branch further down at first, which put a hook after an
+     early return — the rail would have changed its hook order the moment a path
+     resolved to zero stops. Lint caught it; the render that would have proved it
+     is rare enough to have shipped. */
+  const { loFi } = useLoFi()
   /*
    * RAIL TREATMENT — `dashboard-journey-style`, variant-only (2026-09-16).
    *
@@ -123,7 +262,7 @@ export function StudyJourneyRail({
    * sources. What each row says here is what `metaWords` already knew.
    */
   const syllabus = useFeatureFlag('dashboard-journey-style').variant === 'syllabus'
-  const stops = journeyStopsFor(path)
+  const stops = journeyStopsFor(path, { lessonProgressTitle })
   /* DERIVED from the real stop count, never authored — merging two completion
      stops into one already changed it once, and the same count is what
      `StudyJourneyWidget` offsets the licensing steps by. The two cannot
@@ -137,6 +276,8 @@ export function StudyJourneyRail({
               {' \u00b7 Study Journey'}
             </>
           )
+        : stepLabelOnly
+        ? `Step ${stepNumber}`
         : `Step ${stepNumber} \u00b7 ${STUDY_JOURNEY_EYEBROW}`
       : STUDY_JOURNEY_EYEBROW
   /*
@@ -177,9 +318,103 @@ export function StudyJourneyRail({
   // The stop the learner is ON — the first not-yet-finished one. Drives the
   // filled node, so "where am I" is answerable without reading every row.
   const currentIndex = stops.findIndex((s) => s.status !== 'completed')
+  /* ⚠ EVERY ARM IS GATED ON `markerLabel`, not on `scaleStyle` alone — the
+     style says HOW, the label says WHETHER. A caller that wants no figure at
+     all passes no label and gets the rail exactly as it was. */
+  const scaleAxis = Boolean(markerLabel) && scaleStyle === 'axis'
+  const scaleGauge = Boolean(markerLabel) && scaleStyle === 'gauge'
+  const scaleChip = Boolean(markerLabel) && scaleStyle === 'chip'
+  const scaleHeader = Boolean(markerLabel) && scaleStyle === 'header'
+  /* The figure as a number, for the arms that position by proportion. A label
+     that is not a percentage leaves them at 0 rather than throwing. */
+  const markerPct = Math.max(0, Math.min(100, Number.parseFloat(markerLabel ?? '') || 0))
+
+  /*
+   * THE GAUGE'S MARKER LINES UP WITH THE LESSON — 2026-10-02, the direct ask
+   * ("the 37% should line up horizontally with the lesson shown here").
+   *
+   * ⚠ IT HAS TO BE MEASURED. The lesson block's height is its CONTENT's — a
+   * chapter name that wraps to two lines moves it — so there is no percentage
+   * or offset that expresses "level with it". The layout effect reads the
+   * block's centre relative to the list and the fill, knob and figure all use
+   * that pixel instead of `markerPct`.
+   *
+   * ⚠ AND THIS CHANGES WHAT THE GAUGE CLAIMS. It was the arm that chose
+   * PROPORTION — the marker at its true height, deliberately not level with the
+   * live node — while `axis` and `chip` chose position. Anchoring it here makes
+   * it choose position too, so the 0 and 100 now bracket a line whose marker is
+   * NOT at its proportional height. The figure is still the honest number; its
+   * placement is no longer a reading of the scale. That is the trade the ask
+   * accepts and the first thing to re-examine if the caps start to mislead.
+   *
+   * ⚠ RE-MEASURED ON RESIZE, because the wrap point moves with the column's
+   * width and a stale pixel would drift the marker off the lesson at exactly
+   * the sizes nobody tests.
+   */
+  const listRef = useRef<HTMLOListElement | null>(null)
+  const anchorRef = useRef<HTMLDivElement | null>(null)
+  /* THE FALLBACK ANCHOR — the current stop's ROW, 2026-10-05.
+     At 0% there is no lesson block to sit level with (the card hides it: there
+     is no lesson in progress to name), so the detail anchor above is never set
+     and the marker had nothing to measure against. It fell to `null`, which
+     reads on screen as the figure stuck at its last position rather than as a
+     missing measurement — a 0% that renders beside Lesson 1. */
+  const rowAnchorRef = useRef<HTMLLIElement | null>(null)
+  const [markerTop, setMarkerTop] = useState<number | null>(null)
+
+  /* ⚠ THE SCALE CHECK LIVES IN HERE, not in the effect. A bare
+     `setMarkerTop(null)` in the effect body is a synchronous setState the lint
+     rule rejects (and rightly — it is the shape that cascades renders); folding
+     it into the measurement makes the effect a single call and keeps one place
+     that decides what the offset is. */
+  const measureMarker = useCallback(() => {
+    const list = listRef.current
+    /* ⚠ THE DETAIL WINS WHEN THERE IS ONE, and the order matters. With a lesson
+       block open the marker belongs level with the LESSON — that alignment was
+       measured to the pixel (see the note below) — and only when the block is
+       absent does the stop's own row become the thing to sit beside. */
+    const anchor: HTMLElement | null = anchorRef.current ?? rowAnchorRef.current
+    if (!scaleGauge || !list || !anchor) {
+      setMarkerTop(null)
+      return
+    }
+    const l = list.getBoundingClientRect()
+    /* ⚠ MEASURE THE BLOCK, NOT THE WRAPPER. The wrapper's rect includes the
+       detail's own margins — 2 above and 14 below on the lesson block — so its
+       centre sits 6px lower than the thing a reader sees, and the marker landed
+       6px under the lesson. Measured, not reasoned: knob 781 against block 775.
+       An element's own rect excludes its margins, so the child is the honest
+       box. */
+    const a = (anchor.firstElementChild ?? anchor).getBoundingClientRect()
+    /* The track is inset 10px top and bottom (`gaugeTrackStyle`), so the offset
+       is measured against ITS box rather than the list's — otherwise the marker
+       sits 10px low. */
+    setMarkerTop(a.top + a.height / 2 - (l.top + 10))
+  }, [scaleGauge])
+
+  useLayoutEffect(() => {
+    measureMarker()
+    const list = listRef.current
+    if (!list || typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(measureMarker)
+    ro.observe(list)
+    return () => ro.disconnect()
+  }, [measureMarker, markerLabel, stops.length])
+
+  /* Falls back to the proportional position until the measurement lands — and
+     permanently in jsdom, where there is no layout to read. */
+  const markerOffset: CSSProperties =
+    markerTop == null ? { top: `${markerPct}%` } : { top: markerTop }
 
   if (stops.length === 0) return null
 
+  if (loFi) {
+    return (
+      <div style={syllabus ? syllabusWrapStyle : wrapStyle}>
+        <LoFiWidgetBody rows={5} ariaLabel="Lo-fi study journey" />
+      </div>
+    )
+  }
   return (
     <div style={syllabus ? syllabusWrapStyle : wrapStyle}>
       <div style={headerRowStyle}>
@@ -249,13 +484,116 @@ export function StudyJourneyRail({
           17px titles read as a dense block. The gap is on the SPINE's
           `minHeight` rather than on the list, so the connector still reaches
           between nodes instead of breaking into dashes. */}
-      <ol aria-label="Study journey stops" style={listStyle}>
+      {/* ⚠ THE END CAPS BRACKET THE LIST, they are not list items. A `<li>`
+          reading "0" would be announced as a stop in an ordered list of stops,
+          and `aria-hidden` on the column is what already keeps the spine out of
+          the reading order — these belong to the same mark. */}
+      {scaleHeader ? (
+        /* ── HEADER ──────────────────────────────────────────────────────
+           The scale leaves the column entirely: one horizontal track under the
+           heading with 0 and 100 at its ends and the figure over the fill. The
+           timeline below is then a plain list of stops with nothing competing
+           down its left edge — which is the point of this arm. */
+        <div aria-hidden style={headerScaleWrapStyle}>
+          <div style={headerScaleRowStyle}>
+            <span style={headerScaleCapStyle}>0</span>
+            <span style={headerScaleTrackStyle}>
+              <span style={{ ...headerScaleFillStyle, width: `${markerPct}%` }} />
+              <span style={{ ...headerScaleKnobStyle, left: `${markerPct}%` }} />
+            </span>
+            <span style={headerScaleCapStyle}>100</span>
+          </div>
+          <p style={{ ...headerScaleFigureStyle, marginLeft: `${markerPct}%` }}>{markerLabel}</p>
+        </div>
+      ) : null}
+      {scaleAxis ? (
+        <p aria-hidden style={axisCapStyle}>
+          0
+        </p>
+      ) : null}
+      {/* ⚠ THE INDENT IS ON THE LIST, NOT ON THE WRAPPER. Putting it on the
+          wrapper shifted the "Step 1 / Complete Coursework" heading with it,
+          which broke its alignment with the card's own eyebrow and with steps 2
+          and 3 below. Only the axis needs the gutter. */}
+      <ol
+        ref={listRef}
+        aria-label="Study journey stops"
+        style={scaleAxis || scaleGauge ? axisListStyle : listStyle}
+      >
+        {scaleGauge ? (
+          /* ── GAUGE ──────────────────────────────────────────────────────
+             The spine IS the scale. One continuous track behind the nodes,
+             filled from the top to the figure, with 0 and 100 at its ends.
+
+             ⚠ ABSOLUTE, SO IT SPANS THE WHOLE LIST. The per-row segments are
+             drawn transparent under this arm (see the connector below) — a
+             track assembled out of them would be filled by ROW, which is the
+             very thing this arm exists to stop.
+
+             ⚠ ITS FILL WILL NOT LINE UP WITH THE LIVE NODE, and that is the
+             honest trade rather than a bug: the fill is at the figure's true
+             height, the node states say which stop is live, and the two are
+             different facts. The arms that put the figure beside the node make
+             the opposite trade. */
+          <span aria-hidden style={gaugeTrackStyle}>
+            {/* ⚠ THE REMAINDER IS ITS OWN LINE — 2026-10-02, the direct ask
+                ("lighter/thinner below the active section"). It was the track
+                element's own background, which forced one width for covered and
+                uncovered ground alike. As a separate 1px line it can recede
+                while the fill keeps its 2px weight, so the eye reads how far
+                along the learner is before it reads the scale. */}
+            <span style={gaugeRemainderStyle} />
+            <span
+              style={{
+                ...gaugeFillStyle,
+                /* The fill ends where the marker is, so the three agree by
+                   construction rather than by two numbers kept in step. */
+                height: markerTop == null ? `${markerPct}%` : markerTop,
+              }}
+            />
+            <span style={{ ...gaugeKnobStyle, ...markerOffset }}>
+              {/* ⚠ THE RUN FROM THE MARKER TO THE LESSON'S RULE — 2026-10-02,
+                  the direct ask. Dashed and in the rule's own light green, so
+                  the knob, this run and the block's left edge read as one mark
+                  crossing the gutter rather than two greens either side of it.
+              
+                  ⚠ ITS WIDTH IS THE GUTTER'S ARITHMETIC, and the first
+                  attempt got it wrong by 12 — it overshot into the lesson text
+                  because it forgot the LIST's own 30px padding, which the track
+                  is positioned inside but the rows are not. See
+                  `gaugeConnectorStyle` for the full derivation. */}
+              <span aria-hidden style={gaugeConnectorStyle} />
+            </span>
+            <span style={{ ...gaugeFigureStyle, ...markerOffset }}>{markerLabel}</span>
+            <span style={gaugeCapTopStyle}>0</span>
+            <span style={gaugeCapBottomStyle}>100</span>
+          </span>
+        ) : null}
         {stops.map((stop, i) => {
           const isCurrent = i === currentIndex
           const isLast = i === stops.length - 1
           // A blocked completion task is not a link. It has nothing to open
           // yet, and a chevron on it promises otherwise.
           const interactive = Boolean(onOpenStop) && !stop.blocked
+          /* ── CHIP ────────────────────────────────────────────────────────
+             No 0, no 100, no gutter: the figure is a pill on the stop the
+             learner is on. The least furniture of the four, and the only one
+             that states a percentage without implying a scale it cannot keep.
+             What it gives up is any sense of how much is LEFT. */
+          /* THE COUNT AS ITS OWN RUN, after a rule — `lessonProgressTitle`,
+             2026-10-02, the direct ask. ⚠ BUILT FROM THE STOP'S OWN FIGURES,
+             the same two `journeyStopsFor` used to interpolate into the title,
+             so the row and its meta line cannot state different numbers.
+             Rendered only where there IS a count: the completion tasks carry no
+             `hours`, and a rule followed by nothing reads as a broken row. */
+          const count =
+            lessonProgressTitle && typeof stop.completed === 'number' && stop.hours
+              ? `${stop.completed} of ${stop.hours} Completed`
+              : null
+          const chip =
+            scaleChip && isCurrent ? (
+              <span style={scaleChipStyle}>{markerLabel}</span>
+            ) : null
           const label = (
             <>
               {/* MILESTONE TITLES ARE NOT COLOURED (2026-09-16). They were
@@ -315,9 +653,25 @@ export function StudyJourneyRail({
                   }}
                 >
                   {stop.title}
+                  {count ? (
+                    <>
+                      <span aria-hidden style={titleRuleStyle} />
+                      <span style={titleCountStyle}>{count}</span>
+                    </>
+                  ) : null}
+                  {chip}
                 </span>
               ) : (
-                <span style={titleStyle}>{stop.title}</span>
+                <span style={titleStyle}>
+                  {stop.title}
+                  {count ? (
+                    <>
+                      <span aria-hidden style={titleRuleStyle} />
+                      <span style={titleCountStyle}>{count}</span>
+                    </>
+                  ) : null}
+                  {chip}
+                </span>
               )}
               {/* NEVER COLOUR ALONE. The node says the state in hue (green +
                   check / filled / hollow) and this says it in words — the rule
@@ -390,7 +744,14 @@ export function StudyJourneyRail({
             </>
           )
           return (
-            <li key={stop.id} style={syllabus ? syllabusItemStyle : itemStyle}>
+            <li
+              key={stop.id}
+              /* The fallback the gauge measures when this stop draws no detail
+                 — see `rowAnchorRef`. Harmless when it does: `anchorRef` is
+                 preferred and this is simply not read. */
+              ref={isCurrent ? rowAnchorRef : undefined}
+              style={syllabus ? syllabusItemStyle : itemStyle}
+            >
               {/* The spine + node. `aria-hidden` throughout: the ordered list
                   already conveys sequence to a screen reader, and the status is
                   in the row's own text — never colour alone. */}
@@ -423,6 +784,28 @@ export function StudyJourneyRail({
                         : isCurrent
                           ? syllabusDotCurrentStyle
                           : null),
+                      /* ⚠ THE NOT-STARTED DOTS SHRINK UNDER THE GAUGE —
+                         2026-10-02, the direct ask. With one continuous line
+                         running through them, six equal circles read as six
+                         equal claims; the ones nobody has reached should be
+                         quieter than the one they are on. 10 against 14, which
+                         is enough to tell apart at a glance without the dashed
+                         ring losing its shape.
+
+                         ⚠ SCOPED TO `gauge`. On the other arms the dots sit on
+                         per-row segments with gaps between them, where equal
+                         sizing is what makes them read as one sequence. */
+                      ...(scaleGauge && stop.status === 'not-started'
+                        ? gaugeDotSmallStyle
+                        : null),
+                      /* ⚠ LAST IN THE SPREAD, so it overrides the dashed ring's
+                         border and the gauge's smaller circle rather than
+                         fighting them. A tick is not a small ring — it is a
+                         different mark, and layering it over the ring's border
+                         would leave a hairline box around it. */
+                      ...(stop.status === 'not-started' && stopMark === 'dash'
+                        ? gaugeDashMarkStyle
+                        : null),
                     }}
                   >
                     {stop.status === 'completed' && <CircleCheck size={11} aria-hidden />}
@@ -456,40 +839,145 @@ export function StudyJourneyRail({
                     The dash is a texture, so it survives the dark theme and
                     does not become a third status hue on a rail that already
                     says everything in words (2.1.4.1, not-by-colour-alone). */}
-                {!isLast && (
-                  <span
-                    style={
-                      syllabus
-                        ? stop.status === 'completed'
-                          ? syllabusSpineStyle
-                          : syllabusSpineDashedStyle
-                        : spineStyle
+                {!isLast &&
+                  (() => {
+                    /* PART-FILLED — `progressSpine`, 2026-10-01. The segment
+                       under a stop that is partly done is solid for the share
+                       completed and dashed for the rest, instead of being
+                       wholly dashed as if none of it had happened.
+
+                       ⚠ FLEX RATIOS, NOT PERCENTAGE HEIGHTS. This span's own
+                       height comes from `flex: 1` against its siblings, so a
+                       `height: 62%` child would be resolving a percentage
+                       against a height the parent does not state — which works
+                       in some engines and collapses to zero in others. Two
+                       children at `flex: p` and `flex: 100 - p` need no
+                       definite height at all.
+
+                       ⚠ SAME COLOUR BOTH HALVES. The difference is solid vs
+                       dashed — a texture, not a third status hue on a rail that
+                       deliberately says everything in words. */
+                    /* ⚠ THE GAUGE DRAWS ITS OWN LINE, so these per-row
+                       segments go INVISIBLE under that arm rather than being
+                       skipped — they still have to occupy their height, or the
+                       nodes would collapse together and the absolute track
+                       would span a list that is no longer the right length. */
+                    if (scaleGauge) {
+                      return <span style={gaugeHiddenSegmentStyle} />
                     }
-                  />
-                )}
+                    const pct =
+                      progressSpine && syllabus && stop.status === 'in-progress'
+                        ? Math.max(0, Math.min(100, stop.progress ?? 0))
+                        : null
+                    if (pct !== null) {
+                      return (
+                        <span style={syllabusSpineSplitStyle}>
+                          <span style={{ ...syllabusSpineDoneStyle, flex: pct }} />
+                          {/* THE CARET IS A SEGMENT OF THE SPINE — 2026-10-01,
+                              the direct ask ("this line should not go past the
+                              bottom of the triangle").
+
+                              ⚠ IT IS IN FLOW, NOT FLOATING BESIDE IT, and that
+                              is the whole fix. It began life absolutely
+                              positioned off the lesson block, so its offset and
+                              the fill's 62% were two independent numbers that
+                              happened to land near each other — the blue ran
+                              past it because nothing said it should not. As a
+                              flex item between the two halves, the solid length
+                              ENDS where the triangle starts by construction,
+                              and it stays true at any percentage.
+
+                              ⚠ IT ALSO MOVED FILES, from `CombinedCourseCard`
+                              to here. A mark whose position is defined by the
+                              spine belongs to the spine; owning it there meant
+                              the card had to know this rail's gutter
+                              arithmetic. */}
+                          <span aria-hidden style={syllabusSpineCaretWrapStyle}>
+                            {/* The figure rides the caret on `axis` ONLY. On
+                                `chip` it is a pill on the row, on `gauge` it is
+                                on the track, and on `header` it has left the
+                                column altogether. */}
+                            {scaleAxis ? (
+                              <span style={syllabusSpineMarkerStyle}>{markerLabel}</span>
+                            ) : null}
+                            <span style={syllabusSpineCaretStyle} />
+                          </span>
+                          <span
+                            style={{
+                              flex: 100 - pct,
+                              width: 0,
+                              borderLeft: '2px dashed var(--color-border-subtle)',
+                            }}
+                          />
+                        </span>
+                      )
+                    }
+                    return (
+                      <span
+                        style={
+                          syllabus
+                            ? stop.status === 'completed'
+                              ? /* ⚠ A FINISHED STOP'S WHOLE SEGMENT GOES BLUE TOO
+                                   under `progressSpine`, not just the part-filled
+                                   one. Ground covered is ground covered; leaving
+                                   this grey would mean the rail turned blue while
+                                   the learner was mid-step and back to grey the
+                                   moment they finished it. */
+                                progressSpine
+                                ? syllabusSpineDoneStyle
+                                : syllabusSpineStyle
+                              : syllabusSpineDashedStyle
+                            : spineStyle
+                        }
+                      />
+                    )
+                  })()}
               </span>
-              {interactive ? (
-                <button
-                  type="button"
-                  data-cta-id="home.journey-stop"
-                  onClick={() => onOpenStop?.(stop.id)}
-                  className="cre-journey-stop"
-                  style={rowButtonStyle}
-                >
-                  <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+              {(() => {
+                const row = interactive ? (
+                  <button
+                    type="button"
+                    data-cta-id="home.journey-stop"
+                    onClick={() => onOpenStop?.(stop.id)}
+                    className="cre-journey-stop"
+                    style={rowButtonStyle}
+                  >
+                    <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                      {label}
+                    </span>
+                    <ChevronRight size={14} aria-hidden style={{ flexShrink: 0, opacity: 0.55 }} />
+                  </button>
+                ) : (
+                  <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0, padding: '2px 0 14px' }}>
                     {label}
                   </span>
-                  <ChevronRight size={14} aria-hidden style={{ flexShrink: 0, opacity: 0.55 }} />
-                </button>
-              ) : (
-                <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0, padding: '2px 0 14px' }}>
-                  {label}
-                </span>
-              )}
+                )
+                const detail = stopDetail?.(stop.id, { index: i, isCurrent })
+                /* ⚠ NO WRAPPER WHEN THERE IS NO DETAIL. The row stays the `li`'s
+                   direct flex child exactly as it always has, so every other
+                   caller of this rail renders the same markup it did before the
+                   slot existed. */
+                if (!detail) return row
+                return (
+                  <div style={{ display: 'flex', flexDirection: 'column', minWidth: 0, flex: 1 }}>
+                    {row}
+                    {/* ⚠ THE GAUGE'S MARKER ANCHORS HERE. Only the CURRENT row's
+                        detail is measured — it is the one the marker is meant to
+                        sit level with, and a ref handed to every row would leave
+                        the last one to write winning. */}
+                    <div ref={isCurrent ? anchorRef : undefined}>{detail}</div>
+                  </div>
+                )
+              })()}
             </li>
           )
         })}
       </ol>
+      {scaleAxis ? (
+        <p aria-hidden style={axisCapStyle}>
+          100
+        </p>
+      ) : null}
 
       {onViewAll && (
         <button type="button" onClick={onViewAll} className="cre-link-action cre-cta-ink" style={viewAllStyle}>
@@ -1173,6 +1661,419 @@ const syllabusSpineStyle: CSSProperties = { ...spineStyle, minHeight: 14 }
 /** The same spine, dashed — every segment except one under a completed step.
  *  `width: 0` with a left border, because a 2px dashed BACKGROUND is not a
  *  thing CSS can draw; the border is what produces the dashes. */
+/**
+ * GROUND COVERED — the solid blue length, `progressSpine` only (2026-10-01, the
+ * direct ask: "the gray line we just adjusted in step 1 needs to be solid
+ * blue").
+ *
+ * ⚠ `--color-primary-700` BECAUSE THAT IS THE NODE'S OWN BLUE — both
+ * `syllabusDotDoneStyle` and `syllabusDotCurrentStyle` fill at 700. The line
+ * emanates from the node, so matching it is what makes the two read as one
+ * mark rather than as a dot with a differently-coloured tail. The progress
+ * bar's `--color-primary-500` was the other candidate and is a shade too light
+ * at 2px.
+ *
+ * ⚠ COLOUR IS REINFORCEMENT HERE, NOT THE SIGNAL. The solid-vs-dashed texture
+ * still carries the whole distinction, and the row's own text carries the
+ * count — so the rail keeps reading correctly without colour perception
+ * (2.1.4.1). An earlier note on this file said both halves must stay one
+ * colour; that was written when the only difference available was texture, and
+ * the rule it was protecting is satisfied either way.
+ */
+const syllabusSpineDoneStyle: CSSProperties = {
+  ...spineStyle,
+  minHeight: 14,
+  background: 'var(--color-primary-700)',
+}
+
+/**
+ * The caret that marks the progress point, pointing right at the live lesson.
+ *
+ * ⚠ THE OFFSET IS MEASURED FROM THE LINE, NOT FROM THE RAIL COLUMN. This sits
+ * inside `syllabusSpineSplitStyle`, which is the 2px-wide spine itself — not
+ * the 26px column around it. Two wrong turns got here and both are worth the
+ * ink: `marginLeft: 4` under the column's `align-items: center` shifted the
+ * MARGIN BOX and moved the triangle by half what was written (measured x=101
+ * against a line ending at 99); `flex-start` + 14 then assumed the 26px column
+ * was the parent and threw it to x=111. The parent's left edge IS the line's
+ * left edge, so 2 is the line's width and puts the base exactly on its right
+ * edge. The 6px triangle overflows this 2px box deliberately — nothing clips.
+ *
+ * A border triangle rather than an SVG: 6px of pure geometry, the registry has
+ * no triangle, and a glyph at this size would bring font metrics to fight with.
+ * The colour is the node's and the filled spine's — one mark in three parts.
+ */
+/* The rule between a stop's name and its count. A real 1px line rather than a
+   "|" glyph: the pipe sits on the text baseline and carries the font's own
+   weight, so it reads as a character in the title rather than as a divider
+   between two runs. `aria-hidden` because a screen reader announcing "vertical
+   line" between two facts is noise. */
+const titleRuleStyle: CSSProperties = {
+  display: 'inline-block',
+  width: 1,
+  height: '0.9em',
+  margin: '0 9px',
+  verticalAlign: '-0.1em',
+  background: 'var(--color-border-subtle)',
+}
+
+/* The count is the quieter half — the stop's NAME is what a reader scans for,
+   and the figures qualify it. Regular weight against the title's 600. */
+const titleCountStyle: CSSProperties = {
+  fontWeight: 400,
+  color: 'var(--color-text-secondary)',
+}
+
+/* ─── the four scale treatments (`journey-scale-style`) ─────────────────── */
+
+/* CHIP — the figure as a pill on the live stop's own title line. Inline, so it
+   follows the title's wrap rather than pinning to a corner the title may have
+   vacated. */
+const scaleChipStyle: CSSProperties = {
+  display: 'inline-block',
+  marginLeft: 8,
+  padding: '1px 7px',
+  borderRadius: 'var(--radius-pill)',
+  background: 'color-mix(in srgb, var(--color-primary-500) 20%, var(--color-surface-card))',
+  fontFamily: 'var(--font-body)',
+  fontSize: 10,
+  fontWeight: 700,
+  letterSpacing: '0.04em',
+  color: 'var(--color-primary-700)',
+  verticalAlign: 'middle',
+  whiteSpace: 'nowrap',
+}
+
+/* GAUGE — one continuous track THROUGH the nodes, spanning the whole list.
+   Absolute, because a track built from the per-row segments would fill by ROW,
+   which is the thing this arm exists to stop.
+
+   ⚠ 42 PUTS IT UNDER THE NODES, which is the 2026-10-02 correction. At 12 it
+   was measured against the `<ol>`'s border box and therefore sat in the 30px
+   label gutter — a second vertical line 31px to the left of the circles, so the
+   stops read as a list BESIDE a gauge rather than as stops ON it. The list's
+   own padding is 30 and the rail column is 26 wide, so its centre is 43 and a
+   2px line starts at 42.
+
+   ⚠ IT IS RENDERED BEFORE THE ROWS, so the nodes paint over it. That is what
+   makes the circles part of the line rather than holes in it. */
+const gaugeTrackStyle: CSSProperties = {
+  position: 'absolute',
+  left: 42,
+  top: 10,
+  bottom: 10,
+  width: 2,
+  /* NO BACKGROUND — this is the positioning context and the fill's 2px gauge;
+     the uncovered part is `gaugeRemainderStyle` below, which is thinner. */
+}
+
+/** Ground not yet covered: 1px rather than 2, and a stop lighter than the
+ *  border token. `left: 0.5` centres the 1px inside the 2px column, so the
+ *  remainder and the fill share one axis instead of stepping sideways at the
+ *  marker. */
+const gaugeRemainderStyle: CSSProperties = {
+  position: 'absolute',
+  left: 0.5,
+  top: 0,
+  bottom: 0,
+  width: 1,
+  borderRadius: 'var(--radius-pill)',
+  background: 'var(--color-neutral-100)',
+}
+
+const gaugeFillStyle: CSSProperties = {
+  position: 'absolute',
+  left: 0,
+  top: 0,
+  width: 2,
+  borderRadius: 'var(--radius-pill)',
+  background: 'var(--color-primary-700)',
+}
+
+/**
+ * The fill boundary — where the learner is on the scale. Centred on the track
+ * by half its own size.
+ *
+ * ⚠ THE GREEN GLOW IS THE 'YOU ARE HERE', 2026-10-02, the direct ask. Two
+ * concentric `box-shadow` rings rather than a border: a border would grow the
+ * element and shift the dot off the line, where shadows paint outward from a
+ * fixed box. The inner ring is a halo of the page so the green never touches
+ * the navy dot, and the outer is the green itself at low alpha.
+ *
+ * ⚠ GREEN IS REINFORCEMENT, NOT THE SIGNAL. The dot's POSITION already says
+ * where the learner is, and the row text says which stop is live — so the rail
+ * still reads correctly without colour perception (2.1.4.1). It is also the one
+ * green on this card, which is what makes it findable.
+ */
+const gaugeKnobStyle: CSSProperties = {
+  position: 'absolute',
+  left: -3,
+  width: 8,
+  height: 8,
+  marginTop: -4,
+  borderRadius: '50%',
+  background: 'var(--color-primary-700)',
+  boxShadow:
+    '0 0 0 3px var(--color-surface-card), 0 0 0 6px color-mix(in srgb, var(--color-success-500) 45%, transparent), 0 0 10px 3px color-mix(in srgb, var(--color-success-500) 35%, transparent)',
+}
+
+/* ⚠ THE CARD'S PERCENTAGE NOW LIVES HERE — 2026-10-02, the direct ask. It
+   replaces the figure the header used to carry, so it takes that figure's
+   voice: the heading face at a size that reads as a statement rather than as a
+   tick label. The 0 and 100 beside it stay 9px and regular; they are the ends
+   of the scale, this is the reading.
+   
+   ⚠ `--font-heading`, WHICH THE SERIF VARIANT RE-POINTS. On
+   `dashboard-heading-font: serif` this is DM Serif Display, which is the whole
+   reason the ask pairs "serif" with "larger" — and that face ships ONE weight,
+   so asking for 700 here would get a synthesised bold. 400 is the face's own. */
+const gaugeFigureStyle: CSSProperties = {
+  position: 'absolute',
+  right: '100%',
+  marginRight: 12,
+  transform: 'translateY(-50%)',
+  fontFamily: 'var(--font-heading)',
+  fontSize: 22,
+  fontWeight: 400,
+  lineHeight: 1,
+  whiteSpace: 'nowrap',
+  color: 'var(--color-text-primary)',
+}
+
+/* ⚠ LEFT OF THE LINE, NOT ON IT — 2026-10-02, the direct ask. Centred on the
+   track they sat ON the spine, so 0 read as a label hung off the first node and
+   100 as one hung off the last; in the left gutter they line up under the 37%
+   figure and the three read as one axis down the same edge.
+   
+   ⚠ AND REGULAR WEIGHT. At 700 they competed with the figure between them,
+   which is the only one of the three that changes. The ends of a scale are
+   furniture; the reading is not. */
+const gaugeCapBase: CSSProperties = {
+  position: 'absolute',
+  right: '100%',
+  marginRight: 10,
+  fontFamily: 'var(--font-body)',
+  fontSize: 9,
+  fontWeight: 400,
+  letterSpacing: '0.06em',
+  whiteSpace: 'nowrap',
+  color: 'var(--color-text-tertiary)',
+}
+
+/* `translateY` by half, so the digits straddle the track's end rather than
+   sitting a full line above or below it — they are the ends of the line, not
+   captions under it. */
+const gaugeCapTopStyle: CSSProperties = { ...gaugeCapBase, top: 0, transform: 'translateY(-50%)' }
+const gaugeCapBottomStyle: CSSProperties = {
+  ...gaugeCapBase,
+  bottom: 0,
+  transform: 'translateY(50%)',
+}
+
+/** The not-started dot under the gauge: smaller, so the live stop leads. The
+ *  negative margins keep its CENTRE on the line — a 10px circle in a column
+ *  that centres a 14px one would otherwise sit 2px high. */
+const gaugeDotSmallStyle: CSSProperties = {
+  width: 10,
+  height: 10,
+  margin: '5px 0 0',
+}
+
+/**
+ * An unreached stop as a TICK — `journey-stop-mark: dash`.
+ *
+ * ⚠ IT CLEARS THE BORDER AND THE RADIUS the ring left behind. Spread last over
+ * `syllabusDotStyle`, which sets a 1px dashed border and a 50% radius; without
+ * resetting both, the tick renders inside a faint rounded box.
+ *
+ * 12 wide against the line's 2 so it reads as a graduation crossing it, and
+ * `marginTop` keeps its centre where the ring's was — the rows are laid out
+ * against a 14px node, and a 2px-tall mark with no offset would ride high.
+ */
+const gaugeDashMarkStyle: CSSProperties = {
+  width: 12,
+  height: 2,
+  margin: '9px 0 0',
+  border: 0,
+  borderRadius: 'var(--radius-pill)',
+  background: 'var(--color-neutral-200)',
+}
+
+/** The dashed run from the marker across to the lesson's green rule. A border
+ *  rather than a background so the dashes are the browser's own, matching the
+ *  spine's unreached segments in texture while differing in hue. */
+const gaugeConnectorStyle: CSSProperties = {
+  position: 'absolute',
+  left: '100%',
+  top: '50%',
+  /* 28 = where the lesson's rule starts, less where the knob ends, both
+     measured from the list's border box:
+  
+       rule  = 30 (the list's own padding) + 26 (rail column) + 10 (row gap)
+             + 9 (the nested block's padding)   = 75
+       knob  = 42 (the track's offset)          + 5 (the knob's reach past it)
+                                                = 47
+  
+     ⚠ THE 30 IS THE ONE THAT WAS MISSED. The track is absolutely positioned
+     against the list's PADDING box and the rows sit inside that padding, so a
+     width built only from the column and the gaps overshoots by exactly it —
+     measured at 12px into the lesson text before this. Re-derive if the list's
+     padding, the 26px column or the block's 9 ever move; they are the same
+     numbers the lesson's 22px indent is built from. */
+  width: 30 + 26 + 10 + 9 - 42 - 5,
+  borderTop: '1px dashed color-mix(in srgb, var(--color-success-500) 45%, var(--color-surface-card))',
+}
+
+/** The per-row segment under the gauge: invisible, but still occupying its
+ *  height so the nodes keep their spacing and the track spans the right list. */
+const gaugeHiddenSegmentStyle: CSSProperties = {
+  flex: 1,
+  width: 2,
+  minHeight: 14,
+  marginTop: 2,
+}
+
+/* HEADER — the whole scale, horizontal, above the list. */
+const headerScaleWrapStyle: CSSProperties = { margin: '12px 0 2px' }
+
+const headerScaleRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+}
+
+const headerScaleCapStyle: CSSProperties = {
+  flexShrink: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 9,
+  fontWeight: 700,
+  letterSpacing: '0.06em',
+  color: 'var(--color-text-tertiary)',
+}
+
+const headerScaleTrackStyle: CSSProperties = {
+  position: 'relative',
+  flex: 1,
+  minWidth: 0,
+  height: 4,
+  borderRadius: 'var(--radius-pill)',
+  background: 'var(--color-border-subtle)',
+}
+
+const headerScaleFillStyle: CSSProperties = {
+  position: 'absolute',
+  left: 0,
+  top: 0,
+  height: 4,
+  borderRadius: 'var(--radius-pill)',
+  background: 'var(--color-primary-700)',
+}
+
+const headerScaleKnobStyle: CSSProperties = {
+  position: 'absolute',
+  top: -3,
+  width: 10,
+  height: 10,
+  marginLeft: -5,
+  borderRadius: '50%',
+  background: 'var(--color-primary-700)',
+}
+
+/** The figure under the knob. `marginLeft` as a percentage of the ROW puts it
+ *  near the knob without needing a second absolute context; it drifts by the
+ *  caps' width, which at these sizes is a few pixels. */
+const headerScaleFigureStyle: CSSProperties = {
+  margin: '6px 0 0',
+  fontFamily: 'var(--font-body)',
+  fontSize: 9,
+  fontWeight: 700,
+  letterSpacing: '0.04em',
+  color: 'var(--color-primary-700)',
+}
+
+/**
+ * The axis end caps — "0" over the first node, "100" under the last.
+ *
+ * ⚠ `width` MATCHES THE RAIL COLUMN'S so the digits centre on the spine. The
+ * column is 26px (`syllabusRailColStyle`) and these sit in the same left
+ * gutter, outside the `<ol>`; change one and change the other.
+ */
+const axisCapStyle: CSSProperties = {
+  /* 30 matches `axisListStyle`'s indent, so the digits centre on the spine. */
+  margin: '0 0 0 30px',
+  width: 26,
+  textAlign: 'center',
+  fontFamily: 'var(--font-body)',
+  fontSize: 9,
+  fontWeight: 700,
+  letterSpacing: '0.06em',
+  color: 'var(--color-text-tertiary)',
+}
+
+/** The stops list, indented to leave room for the axis figures that hang left
+ *  of the spine. 30 is the label's width plus its 6px standoff and a little
+ *  air — "37%" measured 26px at 9px/700. */
+const axisListStyle: CSSProperties = { ...listStyle, position: 'relative', paddingLeft: 30 }
+
+/**
+ * The caret plus its figure. `relative` so the label can hang to the LEFT of
+ * the spine without taking part in the column's flow — the column is 2px wide,
+ * so anything laid out in it would push the triangle off the line.
+ *
+ * ⚠ THE WRAPPER CARRIES THE OFFSET NOW, not the triangle. `marginLeft: 2` is
+ * still measured against the 2px spine that is this element's parent; the
+ * triangle inside is flush at 0. Moving the margin to the triangle would offset
+ * the label with it.
+ */
+const syllabusSpineCaretWrapStyle: CSSProperties = {
+  position: 'relative',
+  flexShrink: 0,
+  alignSelf: 'flex-start',
+  marginLeft: 2,
+  width: 0,
+  height: 10,
+}
+
+/** The figure, right-aligned to just left of the spine. `right: 100%` anchors
+ *  it to the wrapper's left edge, so it grows leftwards and never pushes the
+ *  triangle. */
+const syllabusSpineMarkerStyle: CSSProperties = {
+  position: 'absolute',
+  right: '100%',
+  top: '50%',
+  transform: 'translateY(-50%)',
+  marginRight: 6,
+  fontFamily: 'var(--font-body)',
+  fontSize: 9,
+  fontWeight: 700,
+  letterSpacing: '0.04em',
+  whiteSpace: 'nowrap',
+  color: 'var(--color-primary-700)',
+}
+
+const syllabusSpineCaretStyle: CSSProperties = {
+  position: 'absolute',
+  top: 0,
+  left: 0,
+  width: 0,
+  height: 0,
+  borderTop: '5px solid transparent',
+  borderBottom: '5px solid transparent',
+  borderLeft: '6px solid var(--color-primary-700)',
+}
+
+/** The container for a PART-FILLED segment — the same box `syllabusSpineStyle`
+ *  occupies, turned into a column so the solid and dashed halves can share it
+ *  by flex ratio. See the call site for why ratios rather than percentages. */
+const syllabusSpineSplitStyle: CSSProperties = {
+  flex: 1,
+  width: 2,
+  minHeight: 14,
+  marginTop: 2,
+  display: 'flex',
+  flexDirection: 'column',
+}
+
 const syllabusSpineDashedStyle: CSSProperties = {
   ...syllabusSpineStyle,
   width: 0,

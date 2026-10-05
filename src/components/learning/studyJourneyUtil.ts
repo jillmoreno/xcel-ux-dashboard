@@ -343,7 +343,25 @@ const MILESTONE_KEYS = new Set(['simulators', 'exam-cram'])
  * reading as a lesson, and a `queryByText` on the title passes either way. The
  * same reason the Links panel tests its type degrade at the store.
  */
-export function journeyStopsFor(path: LearningPathSummary): JourneyStop[] {
+export function journeyStopsFor(
+  path: LearningPathSummary,
+  opts: {
+    /**
+     * Title the counted lesson stop with its PROGRESS rather than its total —
+     * "Pre-Licensing Lessons (26 of 42 Completed)" instead of "(42)".
+     * Testing 3, 2026-10-01, the direct ask.
+     *
+     * ⚠ OPT-IN, so every other version keeps "(42)". Off by default because the
+     * denominator-only title was itself a decision (2026-09-23) and because the
+     * combined card is the one place where this reads as an improvement rather
+     * than as a repeat: there the card's own "26 of 42 lessons COMPLETED" sits
+     * four lines above, and the stop saying the same figures is either a
+     * helpful echo or the same fact twice depending on the layout around it.
+     * One argument at a time.
+     */
+    lessonProgressTitle?: boolean
+  } = {},
+): JourneyStop[] {
   const cats = resolvePathCategories(path)
   const courseStops: JourneyStop[] = cats.flatMap((cat) => {
     const rows = synthCategoryCourses(cat, path.state, path.unitLabel ?? 'hrs')
@@ -430,7 +448,26 @@ export function journeyStopsFor(path: LearningPathSummary): JourneyStop[] {
                things in it. Matching the card was the instruction and the card
                is the more visible number; `NY_LH_PRELICENSING_LESSON_COUNT`
                (41) is the swap if the double-count matters more. */
-            title: `Pre-Licensing Lessons (${NY_LH_PRELICENSING_LESSONS})`,
+            /* ⚠ THE PARENTHETICAL IS BUILT FROM THE STOP'S OWN FIGURES on the
+               progress arm, not from a second source. `completed` is what the
+               row's meta line already prints, so the title and the meta cannot
+               disagree — which is the failure the "(41) vs 42" note above is
+               the record of. Falls back to the total when there is no count
+               yet, rather than rendering "0 of 42 Completed" at the start,
+               which states a zero where the old title stated a size. */
+            /* ⚠ ON `lessonProgressTitle` THE TITLE CARRIES NO COUNT AT ALL —
+               2026-10-02, the direct ask ("add a divider line and then the 26
+               of 42 completed, not in parentheses"). The figures moved OUT of
+               this string so the rail can set them as their own run after a
+               rule; a parenthetical is one string and cannot be divided.
+  
+               The stop already carries `completed` and `hours`, so the rail
+               composes from the same two numbers this line used to interpolate
+               — there is no second source and the two cannot disagree. */
+            title:
+              opts.lessonProgressTitle && typeof courseStops[0].completed === 'number'
+                ? 'Pre-Licensing Lessons'
+                : `Pre-Licensing Lessons (${NY_LH_PRELICENSING_LESSONS})`,
           },
         ]
       : courseStops

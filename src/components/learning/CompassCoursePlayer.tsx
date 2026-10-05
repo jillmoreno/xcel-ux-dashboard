@@ -42,7 +42,7 @@ import { formatExamChip, LEFT_COLUMN_FIRST_ROW_HEIGHT } from './compassPlayerUti
  *
  * A FULL-WINDOW TAKEOVER, which is the load-bearing structural decision and
  * the direct answer to a question asked before building. The design draws its
- * OWN 260px left sidebar — breadcrumb, course title, table of contents — in
+ * OWN 220px left sidebar — breadcrumb, course title, table of contents — in
  * the space the dashboard rail occupies, so the two cannot both be on screen.
  * `PlatformShell` therefore renders this INSTEAD of the rail + content column
  * rather than inside it, keeping only the global header above (which the design
@@ -290,7 +290,7 @@ export function CompassCoursePlayer({
   )
 }
 
-/* ─── the 260px sidebar ────────────────────────────────────────────────── */
+/* ─── the 220px sidebar ────────────────────────────────────────────────── */
 
 export function CompassSidebar({
   courseTitle,
@@ -300,6 +300,8 @@ export function CompassSidebar({
   onLeave,
   page,
   onSelectPage,
+  hideCrumb = false,
+  timeRemaining,
 }: {
   courseTitle: string
   percentComplete: number
@@ -309,6 +311,23 @@ export function CompassSidebar({
   onLeave: () => void
   page: CompassPage
   onSelectPage: (page: CompassPage) => void
+  /**
+   * DROP THE BREADCRUMB ENTIRELY — 2026-09-29, for OPTION 3.
+   *
+   * ⚠ THE THIRD HOME IS THE REASON. Under Option 3 the header carries a Home
+   * and the rail carries a Home; the sidebar's "Home / Overview" made three on
+   * one screen. The trail was first RESTYLED here (ruled off as the column's
+   * head) on the way to this answer — that treatment is gone with it.
+   *
+   * ⚠ EVERY OTHER SURFACE KEEPS IT. Options 1 and 4 draw no rail, so the
+   * sidebar trail is the only Home in that column, and the launcher has no
+   * header nav above it at all. Option 2 never reaches this page with a header
+   * nav either. Default `false`, so nothing but Option 3 changes.
+   */
+  hideCrumb?: boolean
+  /** "17 days" — printed under the title as "… to complete". Absent means the
+   *  line is dropped rather than rendered empty. */
+  timeRemaining?: string
 }) {
   const activeLabel = COMPASS_PAGES.find((p) => p.id === page)?.label ?? ''
   /*
@@ -349,7 +368,12 @@ export function CompassSidebar({
         The LAST crumb stays a plain span — it is the page you are on, and a
         breadcrumb's last crumb is not a link.
       */}
-      <p style={breadcrumbStyle}>
+      {/* ⚠ NOT RENDERED, rather than `hidden`. `breadcrumbStyle` sets
+          `display: flex` inline, which beats the UA stylesheet's
+          `[hidden] { display: none }` — so the attribute alone would have
+          depended on some other rule happening to enforce it. */}
+      {!hideCrumb && (
+        <p style={breadcrumbStyle}>
         {/* "Home" BESIDE THE GLYPH, and the `aria-label` went with it. With a
             visible word the label has to match it (WCAG 2.5.3, Label in Name);
             "Back to the dashboard" beside the word "Home" is exactly the
@@ -410,10 +434,16 @@ export function CompassSidebar({
             </span>
           </>
         )}
-      </p>
+        </p>
+      )}
 
       <div style={sidebarHeadStyle}>
-        <h1 style={sidebarTitleStyle}>{courseTitle}</h1>
+        <div style={{ minWidth: 0 }}>
+          <h1 style={sidebarTitleStyle}>{courseTitle}</h1>
+          {/* The same figure Home's card prints, resolved from the same pair —
+              see `useCompassCourseFigures`. */}
+          {timeRemaining ? <p style={timeRemainingStyle}>{timeRemaining} to complete</p> : null}
+        </div>
         {/*
           THE HOME PAGE'S TREATMENT — 2026-09-23, the direct ask: "change the
           progress in the nav to better match the style used in the Home page."
@@ -1202,8 +1232,42 @@ const playerBodyStyle: CSSProperties = {
 
 /* sidebar */
 
+/*
+ * ⚠ 220 IS THE SHARED LEFT-COLUMN WIDTH — audited 2026-09-29, the direct ask
+ * to get the three consistent and as small as they go. They were 260 (this
+ * sidebar), 240 (the session's Contents) and 220 (the dashboard rail), which on
+ * a walk between the three screens read as the column resizing itself.
+ *
+ * MEASURED, NOT PICKED. The floor of each is its widest unwrappable line:
+ *   - this sidebar   192 = 3 bar + 10 pad + 16 icon + 10 gap + 103 ("Exam
+ *                    Simulator") + 10 pad, + 20 gutter each side
+ *   - Contents       ~170 for its beat rows; its CHAPTER names want more (see
+ *                    the slack note below)
+ *   - the rail       ~150 at its four trimmed rows
+ *
+ * So 220 is the smallest that clears all three — and it is already the rail's,
+ * which matters more than the tidiness: `220 + 1220 = 1440` is the app's design
+ * width and what `tokens.css`'s `min(1440px, …)` cap is justified by. Widening
+ * the rail would have meant moving the content column to keep that sum.
+ *
+ * ⚠ ONE CHAPTER NAME WRAPS AT THIS WIDTH, knowingly. "Life insurance policy
+ * types" needs 225px to sit on one line — 173px of text at weight 700, plus the
+ * 12px mark, the 8px gap and 16px of gutter each side — so at 220 it takes two.
+ * The row is `align-items: center` and the beat rows under it are unaffected,
+ * so it degrades rather than breaks, and a contents list is the one place a
+ * long name wrapping reads as normal.
+ *
+ * ⚠ I FIRST MEASURED IT AT 163px AND CALLED IT A 3px FIT. That was the wrong
+ * font: the "here" chapter is the BOLD one, and the probe had taken its font
+ * from a sibling at weight 500. Re-measure against the heaviest row, not the
+ * first one.
+ *
+ * Going to 228 would keep it on one line, at the cost of moving the content
+ * column to 1212 to hold the 1440 sum. Smallest-consistent was the ask, so this
+ * is 220 — one line to change if the wrap turns out to matter more.
+ */
 const sidebarStyle: CSSProperties = {
-  width: 260,
+  width: 220,
   flexShrink: 0,
   display: 'flex',
   flexDirection: 'column',
@@ -1308,13 +1372,28 @@ const sidebarHeadStyle: CSSProperties = {
  * what makes the two read as one product — matching the display size would put
  * a four-line headline in a sidebar.
  */
+/* 14/19, down from 16/22 — 2026-09-29, the direct ask, and it applies on every
+   option rather than being scoped to one. The title is a label for the column
+   it heads, not a page heading; at 16 it was competing with the page's own H1
+   two inches to the right. The smaller setting is also what buys the thumbnail
+   its extra 8px without the row growing. */
 const sidebarTitleStyle: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-heading-serif)',
-  fontSize: 16,
+  fontSize: 14,
   fontWeight: 600,
-  lineHeight: '22px',
+  lineHeight: '19px',
   color: 'var(--color-text-primary)',
+}
+
+/* Sits under the title, inside the same column as it, so it wraps against the
+   title rather than against the thumbnail. */
+const timeRemainingStyle: CSSProperties = {
+  margin: '3px 0 0',
+  fontFamily: 'var(--font-body)',
+  fontSize: 12,
+  lineHeight: '16px',
+  color: 'var(--color-text-tertiary)',
 }
 
 const progressRowStyle: CSSProperties = {

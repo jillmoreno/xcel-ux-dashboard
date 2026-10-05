@@ -35,6 +35,35 @@ type DemoControlRow = {
 }
 
 export const DEMO_CONTROLS: readonly DemoControlRow[] = [
+  /* `fidelity` WAS HERE — lo-fi ⇄ hi-fi. It moved to the DESIGN bar on
+     2026-10-05, which is design-site-only as a whole surface, so it needs no
+     readiness row: the surface is the gate.
+
+     ⚠ ITS NOTE WAS RIGHT ALL ALONG and is worth carrying over — "lo-fi is a
+     tool for the people DESIGNING the thing, and a stakeholder handed a control
+     that greys the product out has been given a way to break their own demo
+     with nothing to gain from it". That sentence described a control on the
+     wrong bar for weeks; `maturity: 'wip'` was the only lever available to act
+     on it at the time.
+
+     ⚠ AND IT WAS THIS BAR'S LAST `wip` CONTROL. Everything left here is
+     `ready`, so nothing that renders exercises the maturity gate any more —
+     `PublicGateway.test.tsx` says so rather than pretending otherwise. */
+  /* ⚠ FOUR ROWS WENT ON 2026-10-05 — `nav-layout` (`nav-placement`),
+     `nav-help`, `journey-scale` (`journey-scale-style`) and `stop-mark`
+     (`journey-stop-mark`) — when their dropdowns left the bar for the Feature
+     Flag panel ("these things should live in the feature flags panel not in
+     the demo controls"). `pacing` went with them, below.
+
+     ⚠ THE FLAGS ARE UNTOUCHED. This file says which demo-bar CONTROLS the demo
+     site offers; it is not a flag registry, so removing a row removes nothing
+     from the product. All five flags are live and configurable in the panel.
+
+     ⚠ AND A ROW HERE FOR A CONTROL THAT NO LONGER RENDERS IS WORSE THAN NO
+     ROW: `controlMaturity` would keep answering for an id nothing draws, and
+     `demoSiteControls()` would list it — a readiness statement about something
+     that is not there. The `wip` fallback means a control that comes BACK
+     without its row is hidden rather than leaked, which is the safe direction. */
   /* Brand picker — parked (the bar renders it only when a brand switch is
      enabled at all), so it states its own `wip` rather than inheriting one. */
   { id: 'brand', maturity: 'wip' },
@@ -47,15 +76,25 @@ export const DEMO_CONTROLS: readonly DemoControlRow[] = [
   { id: 'persona', maturity: 'wip' },
   { id: 'progress', flag: 'dashboard-progress-state' },
   { id: 'readiness', flag: 'readiness-state' },
-  { id: 'pacing', flag: 'study-pace-preset' },
-  { id: 'navigation', flag: 'dashboard-navigation' },
+  /* `pacing` WAS HERE — `study-pace-preset`. Left the bar 2026-10-05 with the
+     four above. */
+  /* `navigation` WAS HERE — the `dashboard-navigation` A/B's control, archived
+     2026-10-01 with the flag it inherited from. See `archivedItems.ts`. */
   { id: 'education', flag: 'dashboard-education-type' },
-  /* The Atlas/Compass version's own controls (feat/atlas-compass-global-nav):
-     Brand skin, Headings font and Nav Version. WIP — design explorations, shown
-     on the full site and its branch builds, not on the public demo. */
-  { id: 'atlas-brand', maturity: 'wip' },
-  { id: 'atlas-fonts', maturity: 'wip' },
-  { id: 'atlas-nav', maturity: 'wip' },
+  /* DASHBOARD VERSION — 2026-10-05. ⚠ READY, and it is the first control here
+     that is `ready` without being a scenario seed. The reason is reach, not
+     readiness-in-the-usual-sense: `PrototypeChrome` does not render the robot
+     on the public site, so until this landed a stakeholder had NO route to the
+     version picker at all. Marking it `wip` would add a control for designers
+     who already had one and leave the gap exactly where it was.
+
+     ⚠ THE PICKER IS GATED SEPARATELY, per version. `dashboardVersionsForAudience`
+     lists `ready` versions only on the demo site, so this control being ready
+     does not mean every version it offers is. */
+  { id: 'version', maturity: 'ready' },
+  /* `flags` WAS HERE for a few hours on 2026-10-05 — the Feature Flag sheet's
+     icon. It moved to the DESIGN bar, which is design-site-only as a whole, so
+     it needs no readiness row at all: the surface is the gate. */
   /* Reset + the kebab. ⚠ READY, DELIBERATELY: Reset is what gets a stakeholder
      out of a state they wandered into. Hiding it would leave the only recovery
      a page reload they have no reason to think of. */

@@ -150,7 +150,17 @@ export function MembershipOverview({
   // `qeFocused` for the same reason Testing does; the one place it diverges is
   // `livePace`, threaded to the band.
   const testingVersion = dashboardLayout === 'testing-2'
-  const qeFocused = dashboardLayout === 'qe-focused' || testing || testingVersion
+  /* "Testing 3" — Testing with the course and its coursework as ONE block, and
+     the My Courses / Certificates tiles moved under it (2026-10-01).
+
+     ⚠ IT INHERITS TESTING, NOT QE FOCUSED, which is why `testing3` feeds every
+     `testing` read below rather than standing beside it. The version exists to
+     compare ONE block; a second difference anywhere else would be noise in that
+     comparison, and re-listing Testing's decisions here is how the two would
+     drift apart. `combinedCoursework` on the band is the whole divergence. */
+  const testing3 = dashboardLayout === 'testing-3'
+  const qeFocused =
+    dashboardLayout === 'qe-focused' || testing || testingVersion || testing3
   // Variant-only flag: the choice IS the variant, so only `.variant` is read.
   // An `enabled` check here would make "off" a third state meaning "sans",
   // which the variant already says.
@@ -516,7 +526,7 @@ export function MembershipOverview({
    * ~1040, and two of this block's layout decisions were made against the wide
    * measurement and invert at this one. Both are below, each at its own site.
    */
-  const narrowHeader = testing
+  const narrowHeader = testing || testing3
   /*
    * COURSE HEADER BAND — `dashboard-course-header`, off by default.
    *
@@ -1326,7 +1336,7 @@ export function MembershipOverview({
       // + "widen pace") because they are not separable: a lone square tile in a
       // ~506px column is a 506px box holding two lines, so removing one tile
       // and reshaping the other are the same decision.
-      paceOnly={testing}
+      paceOnly={testing || testing3}
       // THE ATLAS STUDY JOURNEY TREATMENT — framed card + the post-course steps
       // as four widgets. On BOTH pacing versions as of 2026-09-21, the direct
       // ask ("update testing 2 view to have the newer Atlas Study Journey UI").
@@ -1335,7 +1345,7 @@ export function MembershipOverview({
       // change: it rode on `paceOnly` while Testing was the only version that
       // wanted it, and Testing 2's whole identity is the square tile PAIR that
       // `paceOnly` removes. See the prop's note on the band.
-      journeyCards={testing || testingVersion}
+      journeyCards={testing || testingVersion || testing3}
       // The learner's booked exam date, so the Study Pace tile prices against
       // the SAME date the header's Target Exam Date and countdown moved to.
       // Threaded 2026-09-21, when `presets` became the default view's treatment
@@ -1357,12 +1367,18 @@ export function MembershipOverview({
       // the prop's own note: narrowing the header and lifting the Study Journey
       // are one change, because the header was the full-width block pushing the
       // grid down.
-      headerSlot={atlasCourseCard || (testing ? courseHeaderBand : undefined)}
+      /* ⚠ MERGED 2026-10-05: Atlas's card wins where it exists, and the
+         Testing/Testing 3 band is the fallback — the two never apply to the
+         same version, so this is a union rather than a choice. */
+      headerSlot={atlasCourseCard || (testing || testing3 ? courseHeaderBand : undefined)}
       // Atlas: the course card above already carries the next lesson and its
       // action, so the Jump Back In card would say it twice.
       hideResume={Boolean(atlasCourseCard)}
       // …and the Study Pace card matches the framed modules beside it.
       framedPace={Boolean(atlasCourseCard)}
+      /* THE ONE DIVERGENCE FROM TESTING. Everything above this line is
+         inherited; this is the version. */
+      combinedCoursework={testing3}
       onOpenStop={openJourneyStop}
       // Get Licensed steps open the REQUIREMENTS SHEET — the only surface that
       // describes these three (XCEL's published page covers sitting the exam,
@@ -1556,7 +1572,7 @@ export function MembershipOverview({
           this to the band as `headerSlot` so it sits in the left column and the
           Study Journey can start at the top beside it. Rendered in ONE place or
           the other, never both. */}
-      {testing ? null : courseHeaderBand}
+      {testing || testing3 ? null : courseHeaderBand}
       {activeProgressPath && (
         <LearningPathDetailPanel
           open={detailOpen}

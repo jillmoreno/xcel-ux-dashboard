@@ -488,7 +488,17 @@
 
      Repointing it at a real licensed face — or at a Google family added to the
      existing `<link>` in index.html — is this one declaration. */
-  --font-heading-serif: Georgia, 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Times New Roman', serif;
+  /* DM SERIF DISPLAY as of 2026-10-02, the direct ask. It was a system stack —
+     Georgia first — which cost nothing to load but gave the serif variant a
+     different face on every platform, so no two reviewers were looking at the
+     same page. One webfont, loaded in `index.html` beside Open Sans.
+  
+     ⚠ THE STACK BEHIND IT IS KEPT, and that matters more than it looks: DM
+     Serif Display ships ONE weight (400). Anything asking for 700 on this token
+     gets a synthesised bold from the browser, and if the webfont fails the
+     whole variant falls back to Georgia rather than to a sans — which would
+     make a serif-variant page silently not a serif page. */
+  --font-heading-serif: 'DM Serif Display', Georgia, 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Times New Roman', serif;
 
   /* Radius — project defaults; replace once Nectar DS exposes them */
   --radius-sm: 4px;
@@ -1755,6 +1765,53 @@ html,
   color: var(--color-text-primary);
 }
 
+/* ── Platform shell TOP NAV — the `nav-placement: top` option ──────────────
+   A MODIFIER ON `.cre-nav-pill`, not a second pill. The header already has a
+   pill with the right shape, hover and radius; this changes only what the
+   design (Figma 765:3801) changes — a taller-padded box, the icon gap, and the
+   selected treatment.
+
+   The selected fill is `primary-300 at 50%`, which IS the design's
+   rgba(157,179,194,0.5): 157/179/194 is `--color-primary-300` (#9db3c2) on the
+   XCEL ramp exactly, so this is the token the design was drawn from rather
+   than a match to it.
+
+   ⚠ THE IDLE LABEL IS DELIBERATELY DARKER THAN THE MOCK. The design draws it
+   #818181, which is `--color-neutral-600` — and this repo has already ruled
+   that stop out for text: it reads 3.9:1 on white and audit finding #6 moved
+   captions to `-700` for exactly this. An idle nav item is interactive text,
+   so it takes `--color-text-tertiary` (#616161, 5.9:1). Changing it back would
+   fail AA on the primary navigation. */
+.cre-topnav-pill {
+  gap: 10px;
+  height: auto;
+  padding: 10px 12px;
+  line-height: 1.2;
+  color: var(--color-text-tertiary);
+}
+.cre-topnav-pill.is-active,
+.cre-topnav-pill.is-active:hover {
+  background: color-mix(in srgb, var(--color-primary-300) 50%, transparent);
+  color: var(--color-primary-800);
+  /* Bold against the siblings' 600 — the design's own weight step, and the
+     non-color half of the selected cue (the rail's rows work the same way). */
+  font-weight: 700;
+}
+
+/* ── Compass session — the authored inline terms ───────────────────────────
+   `term-inline` comes from Anjani's lesson copy, where a key word carries its
+   plain-language definition in `title`. The markup is rendered as authored
+   (see `Para` in CompassSessionPage), so the affordance has to be styled here
+   or the definitions exist and nothing says so.
+
+   A dotted underline rather than a colour: these sit mid-sentence several to a
+   paragraph, and colouring them would read as a page full of links to nowhere.
+   `help` is the cursor that matches a definition-on-hover. */
+.term-inline {
+  border-bottom: 1px dotted var(--color-primary-400);
+  cursor: help;
+}
+
 /* Resource Library filter chip — the Profession + Category pill rows. Color +
    border + hover live here so `:hover` works (the component sets layout-only
    inline styles). Inactive: outlined, primary-800 text; hover fills a light
@@ -1891,6 +1948,164 @@ html,
 [data-theme='dark'] .cre-cta-fill {
   background: var(--color-primary-300);
   color: var(--color-primary-900);
+}
+
+/* `.cre-tile-cta` is `.cre-cta-ink`'s OUTLINE form, and its hover is the two
+   swapped — added 2026-10-01 for Testing 3's six-tile rail, the direct ask
+   ("remove the white background ... on hover, it will reverse").
+
+   At rest: no fill, and the border, the label and the icon all on the CTA ink.
+   The icon follows for free — `makeIcon` renders `fill: currentcolor`, so one
+   `color` drives all three and they cannot drift apart.
+
+   On hover and on FOCUS-VISIBLE: the fill becomes the ink and the ink becomes
+   the surface. Keyboard gets the same reversal as the mouse rather than a
+   separate outline, because the reversal IS the affordance here — a focus ring
+   around a tile that does not change otherwise says less.
+
+   ⚠ THE BORDER TAKES THE FILL'S COLOUR ON HOVER, not `currentColor`. Left on
+   currentColor it inverts with the text and draws a white ring inside a blue
+   tile. It has to merge into the fill.
+
+   ⚠ IT PAIRS WITH `.cre-cta-ink` / `.cre-cta-fill` ABOVE and re-pins the same
+   two stops in dark, for the reason those record: `--color-primary-500` is a
+   FILL whose contrast as text only holds on the light ground, so the dark theme
+   swaps to the -300/-900 pairing. Change one of the three and change all three.
+*/
+.cre-tile-cta {
+  background: transparent;
+  color: var(--color-primary-500);
+  border: 1px solid currentColor;
+  transition:
+    background-color 120ms ease,
+    border-color 120ms ease,
+    color 120ms ease;
+}
+.cre-tile-cta:hover,
+.cre-tile-cta:focus-visible {
+  background: var(--color-primary-500);
+  border-color: var(--color-primary-500);
+  color: var(--color-text-inverse);
+}
+/* `--bare` drops the outline at REST and keeps everything else — Testing 3's
+   stacked rows, 2026-10-01, the direct ask. Six full-width outlines one under
+   another read as six boxes; without them the rows read as a list and the hover
+   fill is what says "this is pressable".
+
+   ⚠ `transparent`, NOT `border: 0`. The 1px is still in the box, so the row's
+   height and its text's left edge are identical in both arms — dropping the
+   border outright would shift every label 1px and make the two variants
+   differ by more than the ask. The hover rule below repaints it to the fill
+   colour, so it merges there exactly as the outlined arm does. */
+.cre-tile-cta--bare {
+  border-color: transparent;
+}
+/* …and its hover is a 20% TINT rather than the full reversal — 2026-10-01, the
+   direct ask (40% first, then 20%). Without an outline the rows are a list, and a list row that goes
+   solid navy under the cursor reads as a selection rather than as a hover.
+
+   ⚠ THE INK STAYS THE INK. The outlined arm flips its text to the surface
+   colour because the fill is solid; at 12% the fill is barely there and white
+   text on it is invisible. So this overrides the `color` the shared hover rule sets
+   and leaves the label and icon where they were — the TINT is the whole signal.
+
+   ⚠ THE BORDER FOLLOWS THE TINT, not the full fill. The shared rule repaints
+   it to `--color-primary-500`, which against a 12% ground would draw a hard
+   edge round a very soft row.
+
+   ⚠ 12% INTO THE PAGE, NOT 12% ALPHA. Both spellings work; this is the form
+   the repo already uses (`ExamScheduleWidget`'s card tint) and it keeps the
+   result a solid colour. THE COST, stated because it is invisible until it
+   bites: the page surface is baked into the mix, so these rows must sit on the
+   page. Drop them onto a card and the tint will be computed against the wrong
+   ground — `transparent` would composite over whatever is behind instead.
+
+   ⚠ EVERY `color-mix` IN THIS FILE GETS A LEGACY FALLBACK from the build, and
+   that fallback hard-codes a LITERAL — here `rgb(2, 143, 129)`, a teal that is
+   neither this brand's navy nor the dark theme's stop. The `@supports (color:
+   color-mix(in lab, …))` block beside it wins in every current browser, so it
+   is not a live defect, but a browser old enough to miss that query renders a
+   stranger's colour. Not introduced here and not specific to this rule; worth
+   knowing before anyone trusts a `color-mix` fallback.
+
+   Measured on the rendered page at 20%: tint rgb(205, 214, 219), ink
+   rgb(29, 56, 73), 8.31:1. It was 5.88:1 at 40% — a lighter tint RAISES the
+   contrast with dark ink, so the direction of travel here is safe. The limit at
+   the other end is the page itself: rgb(205) against rgb(245) is what makes the
+   hover visible at all, and much less would stop reading as a state change. */
+.cre-tile-cta--bare:hover,
+.cre-tile-cta--bare:focus-visible {
+  background: color-mix(in srgb, var(--color-primary-500) 12%, var(--color-surface-page));
+  border-color: transparent;
+  color: var(--color-primary-700);
+}
+[data-theme='dark'] .cre-tile-cta--bare:hover,
+[data-theme='dark'] .cre-tile-cta--bare:focus-visible {
+  background: color-mix(in srgb, var(--color-primary-300) 12%, var(--color-surface-page));
+  border-color: transparent;
+  color: var(--color-primary-900);
+}
+
+[data-theme='dark'] .cre-tile-cta {
+  color: var(--color-primary-300);
+}
+[data-theme='dark'] .cre-tile-cta:hover,
+[data-theme='dark'] .cre-tile-cta:focus-visible {
+  background: var(--color-primary-300);
+  border-color: var(--color-primary-300);
+  color: var(--color-primary-900);
+}
+
+/* `.cre-lesson-cta` is the LESSON BLOCK as a control — Testing 3, 2026-10-02,
+   the direct ask ("same color as used in the links on the right, round
+   corners, hover will also show a right chevron").
+
+   ⚠ THE SAME 20% TINT AS `.cre-tile-cta--bare:hover`, deliberately and not by
+   coincidence: both are "a row you can press" on this page, and two hovers a
+   column apart that differed would read as two systems. If that tint moves,
+   move this one — they are a pair, and the only reason this is not the same
+   RULE is that this row keeps its ink rather than reversing.
+
+   ⚠ THE CHEVRON LIVES IN THE DOM AT ALL TIMES and only its opacity changes.
+   Rendering it on hover alone would reflow the row's text the moment a cursor
+   crossed it; at `opacity: 0` it holds its width and nothing moves. It is
+   `aria-hidden` either way — the button already has an accessible name that
+   says what pressing it does.
+
+   ⚠ FOCUS-VISIBLE GETS BOTH. A keyboard user reaching this row needs the same
+   two signals a mouse user gets, and the outline alone would say "focused"
+   without saying "this goes somewhere". */
+.cre-lesson-cta {
+  border-radius: var(--radius-md);
+  transition:
+    background-color 120ms ease,
+    opacity 120ms ease;
+}
+.cre-lesson-cta:hover,
+.cre-lesson-cta:focus-visible {
+  /* ⚠ 12%, DOWN FROM 20 — 2026-10-02, the direct ask. And mixed into the CARD,
+     not the page: this row sits inside the combined course card while the rail's
+     rows sit on the page, so mixing both into `--color-surface-page` made this
+     one composite a shade darker than the tint it is supposed to match. Same
+     percentage of the same navy over whatever is actually behind is what "the
+     same tint" means; the same literal colour is not. */
+  background: color-mix(in srgb, var(--color-primary-500) 12%, var(--color-surface-card));
+}
+.cre-lesson-cta:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: -2px;
+}
+.cre-lesson-chevron {
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+.cre-lesson-cta:hover .cre-lesson-chevron,
+.cre-lesson-cta:focus-visible .cre-lesson-chevron {
+  opacity: 1;
+}
+[data-theme='dark'] .cre-lesson-cta:hover,
+[data-theme='dark'] .cre-lesson-cta:focus-visible {
+  background: color-mix(in srgb, var(--color-primary-300) 12%, var(--color-surface-card));
 }
 
 /* `.cre-eyebrow-ink` is SECTION-LABEL ink — the small tracked uppercase line
