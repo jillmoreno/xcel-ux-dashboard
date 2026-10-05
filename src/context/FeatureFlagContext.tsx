@@ -2232,6 +2232,11 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     // pace and the journey, beside an exam-date card and a links card. V1 is
     // the earlier Atlas home, kept so it can be called back up.
     key: 'atlas-home-layout',
+    /* ⚠ ERIC'S — 2026-10-05, promote-to-prototype. A flag with no `owner`
+       resolves to Jill (`flagOwner`), so without this it sits in HER tab of
+       the Feature Flag panel and is invisible in his. `prototype-bar-branch-home`
+       is deliberately NOT marked: it is prototype-bar chrome, not Atlas work. */
+    owner: 'eric',
     group: 'Home Page',
     label: 'Atlas home layout',
     description:
@@ -2268,6 +2273,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     // Contributing guide's rule; off shows the same pages in the product's
     // standing XCEL ramps, for comparison.
     key: 'atlas-xcel-palette',
+    owner: 'eric',
     group: 'Widgets',
     label: 'Atlas XCEL palette + type',
     description:
@@ -2282,6 +2288,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     // V2 puts all four steps and the button in ONE frame with the Step 2
     // card's background and stroke. Atlas/Compass version only.
     key: 'atlas-right-rail-layout',
+    owner: 'eric',
     group: 'Right Rail Layout',
     label: 'Right rail layout',
     description:
@@ -2301,6 +2308,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     // request). ON by default on this branch, so the branch build lists it;
     // whether it ships is decided at merge (promote-to-prototype).
     key: 'dashboard-version-eric-atlas-v1',
+    owner: 'eric',
     group: 'Navigation',
     label: 'Eric/Atlas V1 dashboard version',
     description:

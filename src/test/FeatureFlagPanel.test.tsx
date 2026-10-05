@@ -6,6 +6,8 @@ import {
   FeatureFlagProvider,
   FEATURE_FLAGS,
   NAV_SECTION_FLAGS,
+  flagOwner,
+  type DesignerId,
 } from '@/context/FeatureFlagContext'
 import { flagScopeForPath } from '@/components/account/FeatureFlagPanel'
 
@@ -18,10 +20,20 @@ import { flagScopeForPath } from '@/components/account/FeatureFlagPanel'
  * what any of them was about. What they test is that the panel honours the
  * route scope; the count is just how that becomes observable.
  */
+/* ⚠ OWNED BY JILL TOO, ADDED 2026-10-05. The panel reads the owner off the
+   ACTIVE VERSION and lists only that designer's flags (`ownedDefinitions`), and
+   these tests render with no `?version=` — so they land on the default, Testing
+   3, which is Jill's. Counting the whole catalog here counted Eric's four Atlas
+   flags as well, and every count assertion went out by four the moment they
+   were marked his. Derived rather than literal for the same reason the scope
+   filter is: the number is how the behaviour becomes observable, never the
+   subject. */
+const ownedByJill = (f: { owner?: DesignerId }) => flagOwner(f) === 'jill'
 const REBRAND_SCOPED_COUNT = (() => {
   const scope = new Set(flagScopeForPath('/dashboard-rebrand') ?? [])
   return FEATURE_FLAGS.filter(
     (f) =>
+      ownedByJill(f) &&
       scope.has(f.key) &&
       (f.page === 'dashboard-rebrand' || f.extraPages?.includes('dashboard-rebrand')),
   ).length
@@ -121,8 +133,13 @@ describe('FeatureFlagPanel — page selector', () => {
     // the SELECTOR REPORTING THE CATALOG ACCURATELY is. Every other count here
     // is still literal on purpose: they are small and stable, and a wrong one
     // should be visible in the diff.
+    /* `ownedByJill` for the same reason as `REBRAND_SCOPED_COUNT` above — the
+       panel lists the ACTIVE VERSION's owner's flags, and no `?version=` means
+       Testing 3, which is hers. */
     const rebrandCount = FEATURE_FLAGS.filter(
-      (f) => f.page === 'dashboard-rebrand' || f.extraPages?.includes('dashboard-rebrand'),
+      (f) =>
+        ownedByJill(f) &&
+        (f.page === 'dashboard-rebrand' || f.extraPages?.includes('dashboard-rebrand')),
     ).length
     expect(
       screen.getByRole('button', {

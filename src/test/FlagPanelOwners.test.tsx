@@ -93,12 +93,31 @@ describe('the owner axis', () => {
     expect(flagOwner({ owner: 'eric' })).toBe('eric')
   })
 
-  it('leaves every flag AND every version with Jill, so Eric starts empty', () => {
-    /* ⚠ THIS IS THE SPEC, NOT A SNAPSHOT. The day either list gains an
-       Eric-owned row, this fails and SHOULD — that is the moment the choice
-       gets made on purpose rather than noticed later. */
-    expect(FEATURE_FLAGS.filter((f) => flagOwner(f) === 'eric')).toEqual([])
-    expect(DISCOVERABILITY_DASHBOARD_VERSIONS.filter((v) => flagOwner(v) === 'eric')).toEqual([])
+  it('gives Eric his two Atlas versions and the four flags that configure them', () => {
+    /* ⚠ THIS WAS "so Eric starts empty" UNTIL 2026-10-05, AND IT FIRED EXACTLY
+       AS WRITTEN. Its note said the day either list gains an Eric-owned row it
+       should fail, "the moment the choice gets made on purpose rather than
+       noticed later". The Atlas merge was that day and this is that choice.
+
+       Still the SPEC rather than a snapshot — it names the rows rather than
+       counting them, so a sixth flag quietly acquiring `owner: 'eric'` fails
+       here and gets decided too. */
+    expect(FEATURE_FLAGS.filter((f) => flagOwner(f) === 'eric').map((f) => f.key)).toEqual([
+      'atlas-home-layout',
+      'atlas-xcel-palette',
+      'atlas-right-rail-layout',
+      'dashboard-version-eric-atlas-v1',
+    ])
+    /* ⚠ `prototype-bar-branch-home` IS NOT HIS, deliberately — it arrived on
+       the same branch and is prototype-bar chrome rather than Atlas work, so it
+       resolves to Jill like every other unowned row. Asserted as an absence
+       because nothing on screen would show it drifting into his tab. */
+    expect(FEATURE_FLAGS.filter((f) => flagOwner(f) === 'eric').map((f) => f.key)).not.toContain(
+      'prototype-bar-branch-home',
+    )
+    expect(
+      DISCOVERABILITY_DASHBOARD_VERSIONS.filter((v) => flagOwner(v) === 'eric').map((v) => v.id),
+    ).toEqual(['discoverability-atlas-compass-nav', 'eric-atlas-v1'])
   })
 
   it('puts Jill first, which is what makes her the default tab', () => {

@@ -120,18 +120,31 @@ describe('the shipped versions', () => {
      on the promotion, deliberately, by a person. If the answer comes back yes,
      this test flips to assert they are ready — and the one BELOW it is what
      keeps the two halves honest in the meantime. */
-  it('are ready except the two that arrived unmarked from the Atlas merge', () => {
+  it('are ready except the Atlas PARENT, which is deliberately not pickable', () => {
     const unmarked = DISCOVERABILITY_DASHBOARD_VERSIONS.filter((v) => v.maturity !== 'ready')
-    expect(unmarked.map((v) => v.id)).toEqual([
-      'discoverability-atlas-compass-nav',
-      'eric-atlas-v1',
-    ])
+    /* ⚠ ONE, NOT TWO, SINCE 2026-10-05 — promote-to-prototype made Eric/Atlas
+       V1 pickable and left the parent alone. They render the same pages today
+       (`isAtlasCompassNavVersion` answers true for both), so listing both would
+       have given stakeholders two identical-looking Atlas rows; V1 is the one
+       carrying a name and a date.
+
+       ⚠ THE PARENT'S ABSENCE IS A DECISION, NOT AN OVERSIGHT, and it is the
+       half worth pinning: a later branch adding `maturity: 'ready'` to it
+       should have to come through here and say why. */
+    expect(unmarked.map((v) => v.id)).toEqual(['discoverability-atlas-compass-nav'])
     /* The gate is now FILTERING, not merely armed — the demo site is short by
        exactly those two, and nothing else moved. */
     expect(dashboardVersionsForAudience(true)).toHaveLength(
       DISCOVERABILITY_DASHBOARD_VERSIONS.length - unmarked.length,
     )
-    expect(dashboardVersionsForAudience(true).map((v) => v.id)).not.toContain('eric-atlas-v1')
+    /* ⚠ FLIPPED 2026-10-05 WITH THE PROMOTION. It asserted V1 was absent from
+       the stakeholder picker; V1 is now the Atlas row stakeholders get, and the
+       PARENT is the one held back. Both directions are pinned so neither can
+       drift without a failure. */
+    expect(dashboardVersionsForAudience(true).map((v) => v.id)).toContain('eric-atlas-v1')
+    expect(dashboardVersionsForAudience(true).map((v) => v.id)).not.toContain(
+      'discoverability-atlas-compass-nav',
+    )
   })
 })
 

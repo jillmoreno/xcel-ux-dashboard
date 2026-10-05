@@ -320,6 +320,22 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_TESTING: DashboardVersion = {
 // `AtlasCompassSideNav`, from Figma 49:3365, keyed on `isAtlasCompassNavVersion`.
 export const DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV: DashboardVersion = {
   id: 'discoverability-atlas-compass-nav',
+  /* ⚠ ERIC'S, like the entry below — 2026-10-05. Without `owner` a version
+     resolves to Jill (see `flagOwner`), so both Atlas rows sat in HER tab of
+     the Dashboard Versions panel and were invisible in his. Nothing on screen
+     says a row is in the wrong tab, which is why this is easy to miss. */
+  owner: 'eric',
+  /* ⚠ NO `maturity` HERE, DELIBERATELY — 2026-10-05, the promotion decision.
+     This is the PARENT entry the code is keyed on (`isAtlasCompassNavVersion`
+     answers true for it and for V1, and they render the same pages today), so
+     making both pickable would have put two identical-looking Atlas rows in
+     the stakeholder picker. V1 is the one with a name and a date on it, so V1
+     is the one stakeholders get.
+
+     ABSENT, NOT `wip`: absent says "not decided yet" and is the right state
+     for the day these two diverge. The design site badges it "Design site
+     only" meanwhile, so the decline is visible to designers rather than
+     silent. */
   label: 'Atlas/Compass Global Navigation',
   createdAt: '2026-09-22',
   modifiedAt: '2026-09-22',
@@ -336,6 +352,18 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV: DashboardVersi
 // a deploy permalink, not a version entry.
 export const DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1: DashboardVersion = {
   id: 'eric-atlas-v1',
+  owner: 'eric',
+  /* ⚠ PICKABLE BY STAKEHOLDERS — 2026-10-05, promote-to-prototype. This says
+     the demo site lists it (`dashboardVersionsForAudience`); it does NOT make
+     it the baseline. Prototypes still renders Testing 3, and a fresh `?demo=1`
+     still lands there — `defaultDiscoverabilityVersionFor` is untouched by
+     this promotion.
+
+     Chosen over the parent entry above because it is the one that carries a
+     name and a date, so a stakeholder picking it knows whose work and as of
+     when. The two render identically today; the day they stop, the parent is
+     the one to reconsider. */
+  maturity: 'ready',
   label: 'Eric/Atlas V1',
   createdAt: '2026-10-02',
   modifiedAt: '2026-10-02',

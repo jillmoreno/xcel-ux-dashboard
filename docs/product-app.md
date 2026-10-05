@@ -796,6 +796,33 @@ copy is absent.
 > because the flag catalog is the first place anyone looks for "what does
 > Prototypes render" and this line is not in it.
 
+### Eric's Atlas versions — reachable, and one of them pickable (2026-10-05)
+
+The `feat/atlas-compass-global-nav` merge brought two version entries:
+**Atlas/Compass Global Navigation** (the parent, 2026-09-22) and **Eric/Atlas
+V1** (2026-10-02). Both carry `owner: 'eric'`, so they sit under his tab of the
+Dashboard Versions panel rather than Jill's — a version with no `owner` resolves
+to Jill, and nothing on screen says a row is in the wrong tab.
+
+`promote-to-prototype` made **Eric/Atlas V1 pickable by stakeholders**
+(`maturity: 'ready'`) and deliberately left the parent alone. The two render the
+same pages today — `isAtlasCompassNavVersion` answers true for both — so marking
+both would have put two identical-looking Atlas rows in the demo site's picker.
+V1 is the one carrying a name and a date, so it is the one a stakeholder gets;
+the parent shows "Design site only" on the design site until they diverge.
+
+⚠ **THE BASELINE DID NOT MOVE.** Prototypes still renders Testing 3 and a fresh
+`?demo=1` still lands there. Making a version pickable adds a choice; it does
+not change what the product is. Those are different questions and the skill asks
+them separately.
+
+⚠ **THE THREE `atlas-*` FLAGS ARE NOT IN THE TABLE BELOW, deliberately.**
+`atlas-home-layout`, `atlas-xcel-palette` and `atlas-right-rail-layout` are each
+AND-gated by an Atlas condition at their use site (`framedPace`, `atlasNav`,
+`atlasHome`), so they are inert under Testing 3 — they configure Eric's version,
+they are not demo defaults. A table of "what `?demo=1` renders" that listed them
+would be claiming an effect they do not have.
+
 **THE COMMITTED REBRAND DEMO DEFAULTS**, as of 2026-10-05 — what `?demo=1`
 renders with nothing stored. Kept here rather than in the catalog because the
 catalog says what each flag DOES; this says which way the baseline is set.
