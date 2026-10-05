@@ -53,14 +53,20 @@ export function AtlasRailToggle({
           <SidebarRegular size={15} aria-hidden />
         </span>
       ) : (
-        <SidebarRegular size={11} aria-hidden />
+        // 17.6 — the design's 11 doubled to 22, then 20% off (2026-10-05, the
+        // designer's requests).
+        <SidebarRegular size={OPEN_ICON} aria-hidden />
       )}
     </button>
   )
 }
 
-/** The open frame's width. */
-const TOGGLE_W = 21
+/** The open icon's size (2026-10-05): 11 → 22 → 17.6. */
+const OPEN_ICON = 17.6
+/** The open frame is the icon's own width since it lost its border
+ *  (2026-10-05), so the icon keeps the 16px inset from the rail's edge. It
+ *  was 21 × 22 around an 11px icon. */
+const TOGGLE_W = OPEN_ICON
 /** CLOSED (2026-10-01, the designer's request): as tall as the course player
  *  controls bar (61, its 1px rule included) and flush with the rail's top, so
  *  it reads as the bar's left end. It holds a 38px search-style frame with
@@ -105,8 +111,10 @@ const TOGGLE: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  padding: '0 4px 1px',
-  borderWidth: 1,
+  // OPEN: no border and no inset (2026-10-05, the designer's request — the
+  // design's #BBB 1px frame is gone). `CLOSED` sets its own rules and padding.
+  padding: 0,
+  borderWidth: 0,
   borderStyle: 'solid',
   cursor: 'pointer',
   // Its size, place and colours all ease with the rail's slide. (Inline, so
