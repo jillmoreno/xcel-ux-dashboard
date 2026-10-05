@@ -1429,6 +1429,46 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-heading-font',
+    /* ERIC'S HEADING FACES, ON THE DESIGN BAR — 2026-10-05, the direct ask
+       ("this should be part of the design controls for eric's stuff").
+
+       It was a Demo Controls dropdown driven by `?fonts=` until the Atlas merge
+       took it off that bar: a typeface comparison is a DESIGN decision, and the
+       demo bar is the stakeholders' bar. This is the sanctioned route back —
+       CLAUDE.md's rule is that you do not edit `DesignControlsBar` to get a
+       control on it, you mark the flag.
+
+       ⚠ `versions`, NOT `owner`, IS WHAT SCOPES IT. Owner alone would put it on
+       every version Eric owns; these faces are wired to the Atlas pages
+       specifically (tokens.css "ATLAS HEADING FONTS", and `PlatformShell` only
+       mirrors `data-atlas-font` under `atlasNav`). On any other version the
+       control would render and change nothing.
+
+       ⚠ `?fonts=` STILL RESOLVES, as an alias — see `PlatformShell`. Every
+       Atlas font link shared before today keeps working. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-v1', 'discoverability-atlas-compass-nav'],
+    group: 'Widgets',
+    label: 'Headings',
+    description:
+      'The heading typeface on the Atlas/Compass pages — the XCEL Atlas Style Guide’s own DM Serif Display plus the faces from the “Atlas Serif Trials” page, each carrying the trial’s own weight and size settings so it reads as it did there (see `atlasFontSets.ts`). ⚠ ONE WEIGHT PER FACE IS LOADED and weight synthesis is off under the Atlas palette, so every heading renders at the trial weight whatever its component asks for. ⚠ Open Sans is a valid `?fonts=open-sans` value with its tokens intact but is deliberately absent from this list (2026-09-30, the designer’s request).',
+    // Variant-only, the same shape as `dashboard-heading-font` below: the
+    // enable toggle is on so the flag is live, and the CHOICE is the variant.
+    defaultEnabled: true,
+    defaultVariant: 'dm-serif-display',
+    variants: [
+      { value: 'dm-serif-display', label: 'DM Serif Display (current)' },
+      { value: 'playfair-2', label: 'Playfair 2' },
+      { value: 'source-serif-4', label: 'Source Serif 4' },
+      { value: 'figtree', label: 'Proxima Nova stand-in (Figtree)' },
+      { value: 'outfit', label: 'Outfit' },
+      { value: 'instrument-sans', label: 'Instrument Sans' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'dashboard-heading-font',
     /* ON THE DESIGN BAR — 2026-10-05.
        The heading typeface — a TYPOGRAPHY decision, which is the first thing the

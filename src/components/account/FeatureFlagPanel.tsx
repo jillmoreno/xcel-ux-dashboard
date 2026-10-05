@@ -113,6 +113,13 @@ const REBRAND_FLAGS = [
   // catalog entry for why the serif is a system stand-in rather than the face
   // on the live site.
   'dashboard-heading-font',
+  /* ⚠ ON THE DESIGN BAR *AND* HERE — 2026-10-05. `atlas-heading-font` is
+     `surface: 'design'`, so its control lives on the Design bar; this list is
+     what makes it reachable in the PANEL as well, and `FlagPanelScope.test.ts`
+     fails any flag claiming the rebrand page that is missing from it. The two
+     are not alternatives: the bar is the fast route while you are looking at
+     the page, the panel is where every flag is findable. */
+  'atlas-heading-font',
   // Text ramp for the whole rebrand app — Neutral (the brand guide's Charcoal
   // and Gray) ⇄ Tiers (the sign-in prototype's warm ink / muted / faint).
   // Variant-only; light theme only. See the catalog entry.

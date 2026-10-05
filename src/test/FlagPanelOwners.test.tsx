@@ -93,7 +93,7 @@ describe('the owner axis', () => {
     expect(flagOwner({ owner: 'eric' })).toBe('eric')
   })
 
-  it('gives Eric his two Atlas versions and the four flags that configure them', () => {
+  it('gives Eric his two Atlas versions and the five flags that configure them', () => {
     /* ⚠ THIS WAS "so Eric starts empty" UNTIL 2026-10-05, AND IT FIRED EXACTLY
        AS WRITTEN. Its note said the day either list gains an Eric-owned row it
        should fail, "the moment the choice gets made on purpose rather than
@@ -102,7 +102,16 @@ describe('the owner axis', () => {
        Still the SPEC rather than a snapshot — it names the rows rather than
        counting them, so a sixth flag quietly acquiring `owner: 'eric'` fails
        here and gets decided too. */
+    /* ⚠ CATALOG ORDER, not an order anyone chose — `atlas-heading-font` leads
+       because it sits beside its sibling `dashboard-heading-font` in the file,
+       which is where a reader looks for it. Asserted as a list rather than a
+       set so a flag silently acquiring `owner: 'eric'` still fails here. */
     expect(FEATURE_FLAGS.filter((f) => flagOwner(f) === 'eric').map((f) => f.key)).toEqual([
+      /* ⚠ JOINED 2026-10-05 — his Fonts dropdown, converted from `?fonts=` into
+         a `surface: 'design'` flag and re-homed on the Design bar. The first of
+         his three removed controls to come back; the brand skin and the nav
+         version are still to convert. */
+      'atlas-heading-font',
       'atlas-home-layout',
       'atlas-xcel-palette',
       'atlas-right-rail-layout',

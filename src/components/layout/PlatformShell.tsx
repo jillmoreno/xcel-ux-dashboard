@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode, type CSSProperties } from 'react'
 import { ATLAS_SKIN_PARAM, atlasSkinFor } from './atlasBrandSkin'
-import { ATLAS_FONT_PARAM, atlasFontFor, atlasFontHref } from './atlasFontSets'
+import { ATLAS_FONT_PARAM, ATLAS_FONTS, atlasFontFor, atlasFontHref } from './atlasFontSets'
 import { useSearchParams } from 'react-router-dom'
 import { useAccount, supportsMembership, type Brand } from '@/context/AccountContext'
 import {
@@ -400,11 +400,28 @@ function PlatformShellBody() {
       delete root.dataset.atlasBrand
     }
   }, [atlasPalette, atlasSkin])
-  // The Atlas HEADING FONT (`?fonts=`, the Demo Controls' Fonts dropdown) —
-  // mirrored onto <html data-atlas-font>, and the chosen face loaded from
-  // Google Fonts on demand so the other nine are never downloaded. See
-  // atlasFontSets.ts.
-  const atlasFont = atlasFontFor(params.get(ATLAS_FONT_PARAM))
+  /* The Atlas HEADING FONT — mirrored onto <html data-atlas-font>, with the
+     chosen face loaded from Google Fonts on demand so the other faces are never
+     downloaded. See atlasFontSets.ts.
+
+     ⚠ THE FLAG IS THE CONTROL NOW (`atlas-heading-font`, on the DESIGN bar,
+     2026-10-05) — it was the Demo Controls' Fonts dropdown writing `?fonts=`.
+     A typeface comparison is a design decision, and the demo bar is the
+     stakeholders' bar.
+
+     ⚠ `?fonts=` STILL WINS WHEN PRESENT, as an alias rather than a second
+     source — the same shape `useNavPlacement` uses for `?nav=`. Every Atlas
+     font link shared before today carries one of these spellings, and a pinned
+     URL that quietly stopped meaning what it said would be the worst outcome of
+     moving the control. `atlasFontFor` validates, so an unknown spelling falls
+     through to the flag rather than to a third behaviour. */
+  const atlasFontParam = params.get(ATLAS_FONT_PARAM)
+  const atlasFontFlag = useFeatureFlag('atlas-heading-font')
+  const atlasFont = atlasFontFor(
+    atlasFontParam && ATLAS_FONTS.some((f) => f.font === atlasFontParam)
+      ? atlasFontParam
+      : (atlasFontFlag.variant ?? null),
+  )
   useEffect(() => {
     if (!atlasPalette) return
     const root = document.documentElement
