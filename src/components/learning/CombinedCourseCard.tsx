@@ -186,7 +186,28 @@ export function CombinedCourseCard({
    * live.
    */
   const currentStopIndex = stopsForPct.findIndex((st) => st.status !== 'completed')
-  const nestLesson = !complete && currentStopIndex >= 0
+  /*
+   * NOTHING STARTED — 2026-10-05, the direct ask ("the Lesson 1 section will be
+   * hidden" at 0%).
+   *
+   * ⚠ THE BLOCK NAMES A LESSON IN PROGRESS, and at zero there is not one. It
+   * read "LESSON 1 · About 18 minutes" over a chapter title, which is a claim
+   * about where the learner left off made to a learner who has not begun — and
+   * the green rule and active node beside it say "you are here" about a lesson
+   * nobody has opened.
+   *
+   * ⚠ IT ALSO MOVES THE GAUGE'S MARKER, which is the half that is easy to miss.
+   * The marker anchors to this block; with it gone the rail falls back to the
+   * stop's own ROW (`rowAnchorRef`), so 0% lands level with "Pre-Licensing
+   * Lessons" — the top of the list, which is where zero belongs.
+   *
+   * ⚠ RESUME IS NOT LOST WITH IT. The block carried a second `home.resume`
+   * control, and the card's own button in the stats row is untouched — so the
+   * action survives at every state and only the duplicate goes. Worth checking
+   * if this condition ever widens.
+   */
+  const notStarted = lessonsCompleted <= 0
+  const nestLesson = !complete && !notStarted && currentStopIndex >= 0
 
   /* LO-FI — the shell stays, the detail goes, and the shell is now TALLER
      because this card carries two halves. Six rows rather than four, so the
@@ -340,7 +361,13 @@ export function CombinedCourseCard({
           here and placed by `nestLesson`. Two copies — one for the band, one
           for the slot — is how the nested one would quietly stop matching the
           flat one. */}
-      {nestLesson ? null : (
+      {/* ⚠ `notStarted` HIDES IT OUTRIGHT, it does not fall through to here.
+          `nestLesson` has always meant "nested or flat", never "shown or not",
+          so turning it off at 0% MOVED the block up here instead of removing
+          it — the lesson appeared above Step 1 as its own band, which is the
+          opposite of the ask and looked deliberate. Both placements have to be
+          gated, which is what this condition is. */}
+      {nestLesson || notStarted ? null : (
         <>
           <div aria-hidden style={divider} />
           {lessonBlock}

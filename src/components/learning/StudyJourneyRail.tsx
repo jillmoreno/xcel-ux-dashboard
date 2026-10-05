@@ -336,6 +336,13 @@ export function StudyJourneyRail({
    */
   const listRef = useRef<HTMLOListElement | null>(null)
   const anchorRef = useRef<HTMLDivElement | null>(null)
+  /* THE FALLBACK ANCHOR — the current stop's ROW, 2026-10-05.
+     At 0% there is no lesson block to sit level with (the card hides it: there
+     is no lesson in progress to name), so the detail anchor above is never set
+     and the marker had nothing to measure against. It fell to `null`, which
+     reads on screen as the figure stuck at its last position rather than as a
+     missing measurement — a 0% that renders beside Lesson 1. */
+  const rowAnchorRef = useRef<HTMLLIElement | null>(null)
   const [markerTop, setMarkerTop] = useState<number | null>(null)
 
   /* ⚠ THE SCALE CHECK LIVES IN HERE, not in the effect. A bare
@@ -345,7 +352,11 @@ export function StudyJourneyRail({
      that decides what the offset is. */
   const measureMarker = useCallback(() => {
     const list = listRef.current
-    const anchor = anchorRef.current
+    /* ⚠ THE DETAIL WINS WHEN THERE IS ONE, and the order matters. With a lesson
+       block open the marker belongs level with the LESSON — that alignment was
+       measured to the pixel (see the note below) — and only when the block is
+       absent does the stop's own row become the thing to sit beside. */
+    const anchor: HTMLElement | null = anchorRef.current ?? rowAnchorRef.current
     if (!scaleGauge || !list || !anchor) {
       setMarkerTop(null)
       return
@@ -716,7 +727,14 @@ export function StudyJourneyRail({
             </>
           )
           return (
-            <li key={stop.id} style={syllabus ? syllabusItemStyle : itemStyle}>
+            <li
+              key={stop.id}
+              /* The fallback the gauge measures when this stop draws no detail
+                 — see `rowAnchorRef`. Harmless when it does: `anchorRef` is
+                 preferred and this is simply not read. */
+              ref={isCurrent ? rowAnchorRef : undefined}
+              style={syllabus ? syllabusItemStyle : itemStyle}
+            >
               {/* The spine + node. `aria-hidden` throughout: the ordered list
                   already conveys sequence to a screen reader, and the status is
                   in the row's own text — never colour alone. */}
