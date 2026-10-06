@@ -2,6 +2,7 @@ import { useMemo, useState, type CSSProperties } from 'react'
 import { CalendarTearOff } from '@/components/ui/CalendarTearOff'
 import { ArrowLeft, ArrowRight, HourglassClock, PenToSquare } from '@/icons'
 import { clearExamDate, useExamDate, writeExamDate } from '@/data/examDateStore'
+import { FlipCountdown } from '@/components/ui/FlipCountdown'
 import { FIXTURE_TODAY } from '@/data/myCoursesFixtures'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 import { GET_LICENSED_STEPS } from '@/data/nyProducerRequirements'
@@ -106,6 +107,7 @@ export function ExamScheduleWidget({
   stateName = 'New York',
   today = FIXTURE_TODAY,
   compact = false,
+  countdown = 'text',
 }: {
   shell: CSSProperties
   /**
@@ -125,6 +127,18 @@ export function ExamScheduleWidget({
    * flag separately is how they come to disagree.
    */
   compact?: boolean
+  /**
+   * How the days-until-exam figure is DRAWN in the saved state — 2026-10-05.
+   *
+   * `text` (default) is the one-line readout every version has had.
+   * `flip` draws a split-flap board, the old flip-clock treatment.
+   *
+   * ⚠ OPT-IN, AND IT MUST STAY THAT WAY. This card renders on QE Focused,
+   * Testing, Testing 2 and Testing 3 as well as Hybrid V1; defaulting to the
+   * board would re-style four versions to suit one. Hybrid V1 asks for it, the
+   * rest are untouched — the same shape `compact` uses.
+   */
+  countdown?: 'text' | 'flip'
   /** Opens a sheet by id. This card only ever sends `EXAM_DETAILS_STEP_ID` —
    *  the menu it opens is what sends the real step ids back. */
   onOpenStep?: (id: string) => void
@@ -271,6 +285,7 @@ export function ExamScheduleWidget({
           examDate={stored}
           today={today}
           compact={compact}
+          countdown={countdown}
           onEdit={() => openPicker('scheduled')}
         />
       )}
@@ -590,6 +605,7 @@ function ScheduledState({
   examDate,
   today,
   compact = false,
+  countdown: countdownStyle = 'text',
   onEdit,
 }: {
   examLabel: string
@@ -597,6 +613,9 @@ function ScheduledState({
   today: Date
   /** The one-line readout — see `compact` on `ExamScheduleWidget`. */
   compact?: boolean
+  /** `flip` draws the split-flap board instead of the text figure — see
+   *  `countdown` on `ExamScheduleWidget`. */
+  countdown?: 'text' | 'flip'
   onEdit: () => void
 }) {
   const days = daysUntilIso(examDate, today) ?? 0
@@ -611,6 +630,37 @@ function ScheduledState({
        cannot hide that the way two stacked lines do, so this composes the
        suffix only where it is true. */
     const countdownLine = days > 0 ? `${countdown} until your exam` : countdown
+    /* ⚠ THE BOARD REPLACES THE COUNTDOWN, NOT THE DATE, and it moves to its own
+       line. The text form fits "May 30, 2026 | 19 days until your exam" on one
+       line because it is all 15px text; 34px-tall cards on that line would push
+       the date out of a 260px column. The date stays the headline, the board
+       sits under it. */
+    if (countdownStyle === 'flip' && days > 0) {
+      return (
+        /* ⚠ A COLUMN, NOT `compactRowStyle`. That style is
+           `space-between` across one baseline — right for three pieces of text,
+           wrong the moment one of them is a 34px board: the date and the caption
+           get squeezed into narrow columns and wrap a word per line. The date
+           keeps its own row with Edit; the board takes the row beneath. */
+        <div style={compactFlipColumnStyle}>
+          <div style={compactRowStyle}>
+            <p style={compactLineStyle}>
+              <span style={compactDateStyle}>{mediumDate(examDate)}</span>
+            </p>
+            <button type="button" style={editLinkStyle} onClick={onEdit}>
+              <PenToSquare size={12} aria-hidden />
+              Edit
+            </button>
+          </div>
+          <FlipCountdown
+            value={days}
+            label={days === 1 ? 'day until your exam' : 'days until your exam'}
+            ariaLabel={countdownLine}
+          />
+          <p style={srOnlyDateStyle}>Exam scheduled for {longDate(examDate)}</p>
+        </div>
+      )
+    }
     return (
       <div style={compactRowStyle}>
         <p style={compactLineStyle}>
@@ -747,6 +797,14 @@ function longDate(iso: string): string {
 /* The line and Edit on one row, Edit pinned right — the same shape
    `scheduledHeaderRowStyle` gives the full readout, so the two arms put their
    Edit control in the same place and switching between them does not move it. */
+/** The flip variant's outer stack — see the note at its render site. */
+const compactFlipColumnStyle: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 10,
+  marginTop: 6,
+}
+
 const compactRowStyle: CSSProperties = {
   display: 'flex',
   alignItems: 'baseline',

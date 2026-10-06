@@ -340,6 +340,9 @@ export function HybridHomeV1({
           onOpenStep={onOpenStep}
           stateName={state || undefined}
           compact
+          /* ⚠ HYBRID #6 — THE SPLIT-FLAP COUNTDOWN. Opt-in, so the four other
+             versions that draw this card keep the text figure. */
+          countdown="flip"
         />
 
         <nav aria-label="Other information for your journey" style={SIDE_CARD}>

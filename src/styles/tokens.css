@@ -4577,6 +4577,37 @@ a.cre-library-card-title::after {
    gradient, so this animates the stroke COLOR rather than a background
    position. Suppressed under reduced motion, where the arc holds the base
    neutral. */
+/* ── SPLIT-FLAP COUNTDOWN (2026-10-05) ────────────────────────────────────
+   The old airport/flip-clock board, for the days-until-exam readout on Hybrid
+   V1. Two halves per digit: the OLD top folds down to -90°, then the NEW
+   bottom unfolds from 90°. Each runs half the total so they meet edge-on at
+   the midpoint, which is what sells it as one card turning rather than two
+   rectangles moving.
+
+   ⚠ THE HINGE IS THE SHARED EDGE — `transform-origin` is the BOTTOM of the top
+   half and the TOP of the bottom half. Get this wrong and the card pivots about
+   its own centre and reads as a spin.
+
+   ⚠ `backface-visibility: hidden` matters: past 90° the folding half would
+   otherwise show its own mirrored face through the card. */
+@keyframes cre-flip-fold-down {
+  from { transform: rotateX(0deg); }
+  to { transform: rotateX(-90deg); }
+}
+@keyframes cre-flip-unfold {
+  from { transform: rotateX(90deg); }
+  to { transform: rotateX(0deg); }
+}
+
+/* ⚠ NO MOTION, NO FLIP — the digit still changes, it just arrives. A counter
+   that folds is decoration; the number is the information. */
+@media (prefers-reduced-motion: reduce) {
+  .cre-flip-fold-down,
+  .cre-flip-unfold {
+    animation: none !important;
+  }
+}
+
 @keyframes cre-readiness-shimmer {
   0%,
   100% {
