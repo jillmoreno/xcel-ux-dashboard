@@ -4,6 +4,7 @@ import {
   AngleRightRegular,
   ArrowRight,
   BallotCheckRegular,
+  BookOpenRegular,
   BookRegular,
   CircleInfoRegular,
   ClipboardListCheckRegular,
@@ -158,6 +159,11 @@ export function HybridHomeV1({
   const quickLinks: { icon: ReactNode; label: string; onClick?: () => void }[] = [
     { icon: <BookRegular size={13} aria-hidden />, label: 'My Courses', onClick: () => go('courses') },
     { icon: <FileCertificateRegular size={13} aria-hidden />, label: 'My Certificates', onClick: () => go('certificates') },
+    /* ⚠ MOVED OUT OF THE HEADER — 2026-10-06, the direct ask, and `Header.tsx`
+       drops its Resources link on this version so the destination is in one
+       place rather than two. Directly under My Certificates, which is where the
+       ask put it. */
+    { icon: <BookOpenRegular size={13} aria-hidden />, label: 'Resources', onClick: () => go('resources') },
     { icon: <NotebookRegular size={13} aria-hidden />, label: 'Flashcards', onClick: () => go('course', 'flashcards') },
     { icon: <BallotCheckRegular size={13} aria-hidden />, label: 'Exam Simulator', onClick: () => go('course', 'exam-simulator') },
     {
@@ -781,14 +787,18 @@ const PAGE: CSSProperties = {
      cap and margin — moves with it. */
   justifyContent: 'flex-start',
 }
-/* The Home course card's surface — 48 in, 14 radius (Figma). */
+/* The Home course card's surface — 14 radius (Figma).
+   ⚠ 40 IN, NOT THE FIGMA'S 48 — 2026-10-06, the direct ask. The card carries
+   more than Eric's does now (the button pair under the title, the figures
+   column, the journey and two collapsible steps), and 48 on all four sides was
+   pushing the content in far enough that the right column ran short beside it. */
 const CARD: CSSProperties = {
   flex: '0 1 711px',
   minWidth: 0,
   display: 'flex',
   flexDirection: 'column',
   gap: 24,
-  padding: 48,
+  padding: 40,
   boxSizing: 'border-box',
   borderRadius: 14,
   background: 'var(--color-compass-course-card)',

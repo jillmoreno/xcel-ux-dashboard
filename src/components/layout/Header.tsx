@@ -26,6 +26,7 @@ import {
   dashboardVersionsForAudience,
   defaultDiscoverabilityVersionFor,
   isAtlasCompassNavVersion,
+  isHybridV1Version,
   type DashboardVersionId,
 } from '@/data/dashboardVersions'
 import {
@@ -140,6 +141,10 @@ export function Header() {
   // to pin its rails under it.
   const rebrandVersion = new URLSearchParams(search).get('version')
   const atlasSlimHeader = platformNav && !mobile && isAtlasCompassNavVersion(rebrandVersion)
+  /* Hybrid V1 only — it answers true to `isAtlasCompassNavVersion` as well (it
+     takes the Atlas chrome), so anything that must differ between the two asks
+     this instead. */
+  const hybridVersion = isHybridV1Version(rebrandVersion)
   // Nav Version → Top Nav (2026-09-30): Home + Compass Learning in the header,
   // their left edge on the Atlas rail's right edge. See `AtlasTopNav`.
   // …and Expanding Top Nav (2026-10-01), the same buttons with slide-out links.
@@ -295,13 +300,28 @@ export function Header() {
       {/* RESOURCES · GET HELP — the Atlas header's text links, 40px left of
           the bell (2026-10-01, the designer's request): the group's 12px gap
           plus 28. They change only the section, so the demo's params survive. */}
+      {/* ⚠ HYBRID V1 DIFFERS TWICE HERE — 2026-10-06, both direct asks, both
+          scoped to that version so Eric's header is untouched.
+
+            • RESOURCES IS NOT IN THE HEADER. It moved into the Quick Links
+              card, under My Certificates (`HybridHomeV1`), where the rest of
+              the destinations already live. Two places to reach Resources was
+              the thing to remove, not the header link per se.
+            • "HELP", NOT "GET HELP". The same destination; the shorter label
+              is the ask, and it sits better alone than a two-word link did
+              beside a sibling.
+
+          The `<nav aria-label="Help">` stays either way — it is the landmark
+          for this cluster, and on Hybrid it just holds one link. */}
       {atlasSlimHeader && (
         <nav aria-label="Help" style={{ display: 'flex', alignItems: 'center', gap: 24, marginRight: 28 }}>
-          <Link to={atlasSectionHref('resources')} className="cre-atlas-header-link">
-            Resources
-          </Link>
+          {hybridVersion ? null : (
+            <Link to={atlasSectionHref('resources')} className="cre-atlas-header-link">
+              Resources
+            </Link>
+          )}
           <Link to={atlasSectionHref('support')} className="cre-atlas-header-link">
-            Get Help
+            {hybridVersion ? 'Help' : 'Get Help'}
           </Link>
         </nav>
       )}
@@ -467,7 +487,25 @@ export function Header() {
               group so the row centres it vertically. Inert in the locked focus
               / Share Demo views, like the rest of the header's navigation. */}
           {atlasTopNav && (
-            <div inert={noHeaderNav || undefined} style={{ marginLeft: 32, flexShrink: 0 }}>
+            <div
+              inert={noHeaderNav || undefined}
+              style={{
+                /* ⚠ 12 ON HYBRID V1, 32 EVERYWHERE ELSE — 2026-10-06, the
+                   direct ask to shift the pills left. Eric's 32 is measured off
+                   the Atlas rail's edge (see the note above); Hybrid has no
+                   rail on Home, so the gap was holding the pills off nothing. */
+                marginLeft: hybridVersion ? 12 : 32,
+                flexShrink: 0,
+                /* ⚠ THE IDLE PILL LOSES ITS STROKE on Hybrid, by neutralising
+                   the TOKEN here rather than editing `.cre-atlas-topnav-btn` —
+                   that class is Eric's too, and only the Global skin sets a
+                   stroke at all. An inline custom property on this wrapper
+                   cascades to the buttons inside it and to nothing else. */
+                ...(hybridVersion
+                  ? { ['--color-atlas-topnav-idle-stroke' as string]: 'transparent' }
+                  : null),
+              }}
+            >
               <AtlasTopNav expanding={navPlacement === 'expanding-top'} />
             </div>
           )}
