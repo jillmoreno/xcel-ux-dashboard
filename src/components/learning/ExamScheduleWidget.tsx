@@ -250,10 +250,30 @@ export function ExamScheduleWidget({
 
           ⚠ THE FULL SAVED STATE IS UNCHANGED — still no eyebrow, because it
           keeps that heading. The two arms differ here deliberately. */}
+      {/* ⚠ EDIT RIDES THE EYEBROW IN THE FLIP VARIANT — 2026-10-05, the direct
+          ask ("move up to be horizontally aligned with the exam date in top
+          right"). It sat beside the DATE, one row down, which was right while
+          the date and the countdown shared a line; with the board on its own
+          row the date line is short and Edit floated in the middle of the card
+          with nothing to align to.
+
+          ⚠ RENDERED HERE, NOT IN `ScheduledState`, because the eyebrow is this
+          component's — the saved state never sees it. `openPicker` is already
+          in scope, which is the same handler the card was passing down. Only
+          the flip arm does this; every other version keeps Edit on the date
+          row where it still has a long line to sit against. */}
       {eyebrow && (
-        <p className="cre-eyebrow-ink" style={widgetEyebrowStyle}>
-          {eyebrow}
-        </p>
+        <div style={eyebrowActionRowStyle}>
+          <p className="cre-eyebrow-ink" style={{ ...widgetEyebrowStyle, margin: 0 }}>
+            {eyebrow}
+          </p>
+          {countdown === 'flip' && activePhase === 'scheduled' && stored ? (
+            <button type="button" style={editLinkStyle} onClick={() => openPicker('scheduled')}>
+              <PenToSquare size={12} aria-hidden />
+              Edit
+            </button>
+          ) : null}
+        </div>
       )}
 
       {activePhase === 'prompt' && (
@@ -643,15 +663,12 @@ function ScheduledState({
            get squeezed into narrow columns and wrap a word per line. The date
            keeps its own row with Edit; the board takes the row beneath. */
         <div style={compactFlipColumnStyle}>
-          <div style={compactRowStyle}>
-            <p style={compactLineStyle}>
-              <span style={compactDateStyle}>{mediumDate(examDate)}</span>
-            </p>
-            <button type="button" style={editLinkStyle} onClick={onEdit}>
-              <PenToSquare size={12} aria-hidden />
-              Edit
-            </button>
-          </div>
+          {/* ⚠ NO EDIT HERE — it moved up onto the eyebrow row (see the note
+              at the eyebrow in `ExamScheduleWidget`). `onEdit` is still a
+              required prop and still used by the text arm below. */}
+          <p style={compactLineStyle}>
+            <span style={compactDateStyle}>{mediumDate(examDate)}</span>
+          </p>
           <FlipCountdown
             value={days}
             label={days === 1 ? 'day until your exam' : 'days until your exam'}
@@ -797,6 +814,14 @@ function longDate(iso: string): string {
 /* The line and Edit on one row, Edit pinned right — the same shape
    `scheduledHeaderRowStyle` gives the full readout, so the two arms put their
    Edit control in the same place and switching between them does not move it. */
+/** The eyebrow and its trailing action, baseline-aligned across the card. */
+const eyebrowActionRowStyle: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'space-between',
+  gap: 12,
+}
+
 /** The flip variant's outer stack — see the note at its render site. */
 const compactFlipColumnStyle: CSSProperties = {
   display: 'flex',

@@ -57,7 +57,7 @@ export function FlipCountdown({
   const digits = String(safe).split('')
   return (
     <span style={ROW} aria-label={ariaLabel} role={ariaLabel ? 'img' : undefined}>
-      <span style={{ display: 'inline-flex', gap: 3 }} aria-hidden={ariaLabel ? true : undefined}>
+      <span style={{ display: 'inline-flex', gap: 4 }} aria-hidden={ariaLabel ? true : undefined}>
         {digits.map((d, i) => {
           // Counted from the RIGHT — see the note above. Used as the React key
           // AND as this column's slot in `lastShown`.
@@ -185,7 +185,7 @@ function Half({
           height: CARD_H,
           lineHeight: `${CARD_H}px`,
           fontFamily: 'var(--font-heading)',
-          fontSize: 22,
+          fontSize: 32,
           fontWeight: 700,
           fontVariantNumeric: 'tabular-nums',
           /* The bottom half pulls its glyph up by half a card to show the
@@ -199,8 +199,17 @@ function Half({
   )
 }
 
-const CARD_H = 34
-const CARD_W = 25
+/* ⚠ SIZED UP 2026-10-05, the direct ask — was 34 × 25 with a 22px glyph. The
+   board is the one thing on this card a learner is meant to notice, and at the
+   old size it read as a pair of chips beside the date rather than as a
+   countdown. Two digits at 50 tall still clear the 260px side column with room
+   for the caption beside them.
+
+   ⚠ THE THREE NUMBERS MOVE TOGETHER. The glyph is drawn at full CARD_H inside
+   a half-height window, so the font has to stay in proportion or the digit
+   stops meeting its own seam — roughly 0.64 × CARD_H. */
+const CARD_H = 50
+const CARD_W = 36
 /** Each half runs this long; the fold and the unfold are sequential, so the
  *  whole turn is twice it. */
 const HALF_MS = 190
@@ -228,7 +237,7 @@ const ROW: CSSProperties = {
 const LABEL: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 13,
-  lineHeight: '18px',
+  lineHeight: '17px',
   color: 'var(--color-text-secondary)',
   minWidth: 0,
 }

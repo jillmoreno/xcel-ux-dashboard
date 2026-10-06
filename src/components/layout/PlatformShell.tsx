@@ -6,6 +6,7 @@ import { useAccount, supportsMembership, type Brand } from '@/context/AccountCon
 import {
   defaultDiscoverabilityVersionFor,
   isAtlasCompassNavVersion,
+  isHybridV1Version,
   type DashboardLayout,
 } from '@/data/dashboardVersions'
 import { SectionContent } from '@/components/membership/v7/MembershipV7'
@@ -1978,6 +1979,9 @@ function SectionShell({
   const [shellParams] = useSearchParams()
   const atlasHome =
     active === 'dashboard' && isAtlasCompassNavVersion(shellParams.get('version'))
+  /* Hybrid V1's Home only — it answers true to `atlasHome` as well (it takes
+     the Atlas chrome), so this is tested FIRST at the padding below. */
+  const hybridHome = active === 'dashboard' && isHybridV1Version(shellParams.get('version'))
   // The Atlas RESOURCES page in the Compass treatment (2026-10-01, the
   // designer's request): no brand band — a serif title and a plain lede on
   // the Compass page, at the Overview's 56px margin. See `ResourcesPanel`.
@@ -2090,7 +2094,14 @@ function SectionShell({
            `HomePageHeader` or `SectionPageHeader` already carried it. Atlas
            draws neither of those headers, so folding it in would have taken
            56px off the top of a page nothing was sitting above. */
-        padding: atlasHome || atlasResources
+        /* ⚠ HYBRID V1 DROPS THE TOP 56 — 2026-10-05, the direct ask, and it is
+           scoped to that version on purpose. The 56 is Eric's page margin on
+           all four sides and his home is built against it; changing the Atlas
+           arm outright would move his screen to suit a fork of it. Sides and
+           bottom are unchanged, so the card still sits on the same gutter. */
+        padding: hybridHome
+          ? '0 56px 56px'
+          : atlasHome || atlasResources
           ? 56
           : `${headerAbove ? 0 : 24}px ${
               isAccountSection(active) ? ACCOUNT_SECTION_GUTTER : 40
