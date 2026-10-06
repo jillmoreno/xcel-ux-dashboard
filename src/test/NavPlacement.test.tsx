@@ -116,6 +116,21 @@ describe('nav-placement — the unified axis', () => {
     expect(placement()).toBe('left')
   })
 
+  it('…and OFF on a bare URL follows the DEFAULT version, whatever it is', () => {
+    /* ⚠ THE REGRESSION THIS WHOLE PASS EXISTS FOR, pinned from the nav side.
+       With no `?version=` the placement must match what the brand default
+       ships — `top`, because that default is Hybrid V1. Before 2026-10-06
+       `useNavPlacement` read the raw param and answered `left` here, which put
+       a left rail under an Atlas top nav on every bare `?demo=1`.
+
+       ⚠ NOT ASSERTED AGAINST `defaultDiscoverabilityVersionFor`, deliberately:
+       a test that recomputes the answer from the function under test passes
+       whatever that function returns. When the default moves to a non-Atlas
+       version this flips to `left` and the move is what says so. */
+    renderTopNav('?ff=nav-placement:off')
+    expect(placement()).toBe('top')
+  })
+
   it('…and `top` on the Atlas ones, because that is what THEY ship', () => {
     /* ⚠ THE LINE THE UNIFICATION NEARLY LOST. Eric's own axis defaulted to
        `top-nav`; folding the two together without this handed every Atlas

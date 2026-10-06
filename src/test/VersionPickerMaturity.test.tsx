@@ -176,7 +176,7 @@ describe('the shipped versions', () => {
      on the promotion, deliberately, by a person. If the answer comes back yes,
      this test flips to assert they are ready — and the one BELOW it is what
      keeps the two halves honest in the meantime. */
-  it('are ready except the Atlas parent and the in-progress Hybrid V1', () => {
+  it('are ready except the Atlas parent', () => {
     const unmarked = DISCOVERABILITY_DASHBOARD_VERSIONS.filter((v) => v.maturity !== 'ready')
     /* ⚠ ONE, NOT TWO, SINCE 2026-10-05 — promote-to-prototype made Eric/Atlas
        V1 pickable and left the parent alone. They render the same pages today
@@ -187,16 +187,19 @@ describe('the shipped versions', () => {
        ⚠ THE PARENT'S ABSENCE IS A DECISION, NOT AN OVERSIGHT, and it is the
        half worth pinning: a later branch adding `maturity: 'ready'` to it
        should have to come through here and say why. */
-    /* ⚠ TWO SINCE 2026-10-05 — Hybrid V1 is being built, so it is reachable on
-       the design site and deliberately not offered to stakeholders. It leaves
-       this list by going through `promote-to-prototype`, not by being marked
-       here. */
-    expect(unmarked.map((v) => v.id)).toEqual([
-      'discoverability-atlas-compass-nav',
-      'hybrid-v1',
-    ])
-    /* The gate is now FILTERING, not merely armed — the demo site is short by
-       exactly those two, and nothing else moved. */
+    /* ⚠ BACK TO ONE, 2026-10-06. Hybrid V1 joined this list on 2026-10-05 while
+       it was being built and left it the way the note above said it would —
+       through `promote-to-prototype`, not by being marked here. It is `ready`
+       now, AND it is the default, which are two separate acts: `maturity` says
+       a stakeholder may pick it, `defaultDiscoverabilityVersionFor` says what
+       they land on. This test only knows about the first.
+
+       ⚠ THE ATLAS PARENT IS THE WHOLE LIST AGAIN, which is the state this
+       started in, so the note above it is the one that still matters: a later
+       branch marking it `ready` should have to come through here and say why. */
+    expect(unmarked.map((v) => v.id)).toEqual(['discoverability-atlas-compass-nav'])
+    /* The gate is still FILTERING, not merely armed — the demo site is short by
+       exactly that one, and nothing else moved. */
     expect(dashboardVersionsForAudience(true)).toHaveLength(
       DISCOVERABILITY_DASHBOARD_VERSIONS.length - unmarked.length,
     )

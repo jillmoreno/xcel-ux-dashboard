@@ -21,7 +21,7 @@ import {
   DISCOVERABILITY_DASHBOARD_VERSIONS,
   DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
   DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
-  DISCOVERABILITY_DASHBOARD_VERSION_TESTING_3,
+  DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_V1,
   defaultDiscoverabilityVersionFor,
   isQualifyingEducationVersion,
 } from '@/data/dashboardVersions'
@@ -211,11 +211,19 @@ describe('the Testing version is registered without displacing anything', () => 
        bending to code. The subject is unchanged: XCEL resolves to ONE named
        version, and whatever the picker marks "Default" must be it.
 
+       ⚠ FOURTH OWNER, 2026-10-06: HYBRID V1, via `promote-to-prototype`. Same
+       pin, same reason it keeps firing — the line moved because someone decided
+       it should, and this test is what made them say so. Testing 3 is DISPLACED,
+       not retired: it keeps `maturity: 'ready'`, so it stays in the demo site's
+       picker and the swap is reversible by a URL rather than a deploy. The
+       `not.toBe` below still names Testing, because this file is Testing's and
+       the claim it has always made is that Testing is not the landing page.
+
        ⚠ TESTING IS NOT ARCHIVED by losing the default — it still leads the
        picker and everything else in this file still describes it. What changed
        is which version a bare `/dashboard-rebrand` opens. */
     expect(defaultDiscoverabilityVersionFor('xcel')).toBe(
-      DISCOVERABILITY_DASHBOARD_VERSION_TESTING_3.id,
+      DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_V1.id,
     )
     expect(defaultDiscoverabilityVersionFor('xcel')).not.toBe(
       DISCOVERABILITY_DASHBOARD_VERSION_TESTING.id,

@@ -783,18 +783,19 @@ copy is absent.
 
 ### Testing — the pacing exploration version (2026-09-21)
 
-> ⚠ **NO LONGER XCEL'S DEFAULT EITHER — it was displaced in turn, 2026-10-05.**
-> `defaultDiscoverabilityVersionFor('xcel')` returns **Testing 3**
-> (`discoverability-testing-3`). This paragraph has now been wrong twice in the
-> same way, which is why it keeps its history rather than being rewritten: QE
-> Focused was the default, then Testing, then this. All three still resolve by
-> `?version=` and all three are still tested, which is why their sections stay.
+> ⚠ **NO LONGER XCEL'S DEFAULT EITHER — and neither is what displaced it.**
+> `defaultDiscoverabilityVersionFor('xcel')` returns **Hybrid V1**
+> (`hybrid-v1`) as of 2026-10-06. This paragraph has now been wrong three times
+> in the same way, which is why it keeps its history rather than being
+> rewritten: QE Focused was the default, then Testing, then Testing 3, now
+> Hybrid V1. All of them still resolve by `?version=` and all of them are still
+> tested, which is why their sections stay.
 >
-> What a fresh `/dashboard-rebrand?demo=1` lands on is **Testing 3** — the
-> version that says the course and its coursework ONCE, as a single card. That
-> is a data change in `dashboardVersions.ts`, **not a flag** — worth knowing,
-> because the flag catalog is the first place anyone looks for "what does
-> Prototypes render" and this line is not in it.
+> What a fresh `/dashboard-rebrand?demo=1` lands on is **Hybrid V1** — Eric's
+> Atlas home carrying Testing 3's coursework treatment. That is a data change in
+> `dashboardVersions.ts`, **not a flag** — worth knowing, because the flag
+> catalog is the first place anyone looks for "what does Prototypes render" and
+> this line is not in it.
 
 ### Eric's Atlas versions — reachable, and one of them pickable (2026-10-05)
 
@@ -811,10 +812,14 @@ both would have put two identical-looking Atlas rows in the demo site's picker.
 V1 is the one carrying a name and a date, so it is the one a stakeholder gets;
 the parent shows "Design site only" on the design site until they diverge.
 
-⚠ **THE BASELINE DID NOT MOVE.** Prototypes still renders Testing 3 and a fresh
-`?demo=1` still lands there. Making a version pickable adds a choice; it does
-not change what the product is. Those are different questions and the skill asks
-them separately.
+⚠ **THE BASELINE DID NOT MOVE** — on that promotion. Prototypes still rendered
+Testing 3 afterwards and a fresh `?demo=1` still landed there. Making a version
+pickable adds a choice; it does not change what the product is. Those are
+different questions and the skill asks them separately. ⚠ **The baseline DID
+move the next day** — see the Hybrid V1 section below. This paragraph is kept in
+the present tense of 2026-10-05 because it is the record of what that promotion
+decided, and the distinction it draws is the one that made the second one
+legible.
 
 ⚠ **THE THREE `atlas-*` FLAGS ARE NOT IN THE TABLE BELOW, deliberately.**
 `atlas-home-layout`, `atlas-xcel-palette` and `atlas-right-rail-layout` are each
@@ -823,14 +828,64 @@ AND-gated by an Atlas condition at their use site (`framedPace`, `atlasNav`,
 they are not demo defaults. A table of "what `?demo=1` renders" that listed them
 would be claiming an effect they do not have.
 
-**THE COMMITTED REBRAND DEMO DEFAULTS**, as of 2026-10-05 — what `?demo=1`
+### Hybrid V1 — the baseline (2026-10-06)
+
+`promote-to-prototype`, the owner's call, and it moved **both** version levers
+at once — which is unusual enough to be worth separating:
+
+| Lever | Lives in | Set to |
+|---|---|---|
+| Pickable by stakeholders | `maturity` on the entry | `ready` |
+| **The baseline** | `defaultDiscoverabilityVersionFor('xcel')` | `hybrid-v1`, **displacing Testing 3** |
+
+⚠ **BOTH WERE NEEDED, AND THE SECOND WITHOUT THE FIRST WOULD HAVE STRANDED
+PEOPLE.** The demo site's picker lists `ready` versions only
+(`dashboardVersionsForAudience`). Making Hybrid the default while leaving it
+unmarked would have rendered it for every stakeholder while keeping it out of
+its own picker — so anyone who switched to another version could not switch
+back. The two fields answer different questions and this is what happens when
+only one of them is answered.
+
+⚠ **TESTING 3 IS DISPLACED, NOT RETIRED.** It keeps `maturity: 'ready'`, so it
+stays in the demo site's picker and the swap is reversible by a URL rather than
+a deploy. Its four promoted flags are inert on a fresh load and live again the
+moment it is picked — see the note above the table.
+
+**What the version is**: Eric's Atlas home — the layout, the figures column, the
+step list, the Atlas chrome — carrying Testing 3's answers to the questions that
+version had already settled. `HybridHomeV1.tsx` is a FORK of `AtlasHomeV2.tsx`
+rather than a flag through it (CLAUDE.md: copy it, do not thread conditionals
+through the original), so Eric's version cannot move when this one does. The
+cost is the usual one and the note in each file says so.
+
+⚠ **NO FLAG DEFAULTS CHANGED ON THIS PROMOTION, and that is not an omission.**
+The branch added exactly one flag, `hybrid-quick-links-style`, and it is
+`surface: 'design'` — it renders on the green bar, scoped to this version, and
+never reaches Prototypes under any default. It is not a baseline candidate, so
+it was not asked about; its `rows` default is the shape the version ships with.
+
+⚠ **ONE CHANGE ON THIS BRANCH IS BEHIND NO FLAG AND CHANGES WHAT STAKEHOLDERS
+SEE**: the Design controls bar now renders on the Demo Hub, hidden by default
+behind the robot's dropdown. The robot came back to the demo site to carry it,
+withholding the Feature Flag sheet — see `AdminToolsMenu`'s `stakeholder` prop
+and `PublicGateway.test.tsx`, which pins that the dropdown has exactly one row.
+
+**THE COMMITTED REBRAND DEMO DEFAULTS**, as of 2026-10-06 — what `?demo=1`
 renders with nothing stored. Kept here rather than in the catalog because the
 catalog says what each flag DOES; this says which way the baseline is set.
 
 ⚠ **THE VERSION IS NOT IN THIS TABLE AND IS THE BIGGEST LINE OF ALL.** Every
 flag below is read INSIDE whichever dashboard version is rendering, and that
-version is `discoverability-testing-3`, set in `dashboardVersions.ts`. Four of
-the rows added on 2026-10-05 have no effect under any other version.
+version is **`hybrid-v1`** since 2026-10-06, set in `dashboardVersions.ts`.
+
+⚠ **SO FOUR ROWS BELOW ARE NOW INERT ON A FRESH LOAD, and they are kept
+anyway.** `journey-scale-style`, `journey-stop-mark`, `home-tile-style` and
+`combined-progress-bar` were promoted on 2026-10-05 and are read only by Testing
+3's `CombinedCourseCard` — which Hybrid V1 does not render. They are still live
+and still configure Testing 3 when it is picked (it keeps `maturity: 'ready'`),
+so deleting the rows would lose the record of four reviewed decisions over a
+version a stakeholder can still reach in one click. Their "Testing 3 only" notes
+now carry the whole meaning rather than a caveat.
 
 | Flag | Baseline | What it puts on the page |
 |---|---|---|

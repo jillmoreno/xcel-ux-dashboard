@@ -389,9 +389,15 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1: DashboardVersion =
 export const DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_V1: DashboardVersion = {
   id: 'hybrid-v1',
   owner: 'jill',
-  /* ⚠ NO `maturity` YET — reachable on the design site, not offered to
-     stakeholders. It is being built; `promote-to-prototype` is where that
-     changes. */
+  /* `ready` — 2026-10-06, `promote-to-prototype`. Offered to stakeholders on
+     the demo site, where the picker lists `ready` versions only.
+     ⚠ IT IS ALSO THE DEFAULT NOW, which is a SECOND and larger act — see
+     `defaultDiscoverabilityVersionFor`. This field only decides whether a
+     stakeholder can PICK it; that function decides what they land on. Marking
+     this without the other would have left the demo site rendering Hybrid with
+     Hybrid absent from its own picker — a stakeholder who switched away could
+     not switch back. */
+  maturity: 'ready',
   label: 'Hybrid V1',
   createdAt: '2026-10-05',
   modifiedAt: '2026-10-06',
@@ -600,8 +606,24 @@ export function dashboardVersionLabel(id: string): string {
  * default" (`hideSetDefault`), so this IS the default, per brand.
  */
 export function defaultDiscoverabilityVersionFor(brand: Brand): string {
+  /* ⚠ HYBRID V1 SINCE 2026-10-06, DISPLACING TESTING 3 — `promote-to-prototype`,
+     the owner's call. This one line IS the Prototypes baseline: it decides which
+     dashboard renders at all, and every flag below it is read INSIDE whichever
+     version this returns.
+
+     ⚠ TESTING 3 IS NOT RETIRED, it is displaced. It keeps `maturity: 'ready'`,
+     so it stays in the demo site's picker and a stakeholder can still reach it
+     — which is what makes the swap reversible by a URL rather than a deploy.
+     The four flags promoted for it on 2026-10-05 (`journey-scale-style`,
+     `journey-stop-mark`, `home-tile-style`, and `combined-progress-bar` off)
+     are Testing-3-only and are now inert on a fresh `?demo=1`; they still
+     configure that version when it is picked.
+
+     ⚠ AND THE QUESTIONS ARE SEPARATE. This is the swap; `maturity` on each
+     entry is "may a stakeholder pick it". Conflating them is how a version gets
+     promoted by accident — see the skill. */
   return brand === 'xcel'
-    ? DISCOVERABILITY_DASHBOARD_VERSION_TESTING_3.id
+    ? DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_V1.id
     : DISCOVERABILITY_DASHBOARD_VERSION_MARKETING_FOCUSED.id
 }
 
