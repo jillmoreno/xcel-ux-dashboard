@@ -394,9 +394,15 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_V1: DashboardVersion = {
      changes. */
   label: 'Hybrid V1',
   createdAt: '2026-10-05',
-  modifiedAt: '2026-10-05',
+  modifiedAt: '2026-10-06',
+  /* ⚠ IT SAID "carries the percentage and the current-lesson marker" FROM THE
+     DAY THE VERSION WAS CREATED, describing work that had not been built yet —
+     and when it was built (2026-10-06) the percentage was deliberately left
+     out, because the dial two columns left already draws it. A description is
+     what a stakeholder reads in the version picker, so it states what the page
+     DOES, never what it is going to do. */
   description:
-    'Eric\u2019s Atlas home combined with Testing 3\u2019s coursework treatment. The figures column leads with Course Access and drops Days to Review; Begin Course sits in the title area; Steps 2 and 3 (Pass State Exam, Get Licensed) are collapsed by default to keep the first screen to one task; and Complete Coursework carries the percentage and the current-lesson marker.',
+    'Eric\u2019s Atlas home combined with Testing 3\u2019s coursework treatment. The figures column leads with Course Access and drops Days to Review; Begin Course sits in the title area; Steps 2 and 3 (Pass State Exam, Get Licensed) are collapsed by default to keep the first screen to one task; and Complete Coursework expands the lessons stop with a completion count and the lesson in progress.',
 }
 
 /** True for Hybrid V1 — the one version that renders `HybridHomeV1` instead of

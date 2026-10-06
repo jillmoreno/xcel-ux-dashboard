@@ -18,7 +18,12 @@ import { COMPASS_BUTTON } from './compassButton'
 import { journeyStopsFor, type JourneyStop } from '@/components/learning/studyJourneyUtil'
 import { widgetEyebrowStyle } from '@/components/learning/widgetStyles'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
-import { GET_LICENSED_STEPS, jurisdictionName } from '@/data/nyProducerRequirements'
+import {
+  GET_LICENSED_STEPS,
+  jurisdictionName,
+  NY_LH_CURRENT_CHAPTER,
+  NY_LH_LESSON_MINUTES_INVENTED,
+} from '@/data/nyProducerRequirements'
 import { ExamScheduleWidget } from '@/components/learning/ExamScheduleWidget'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 import { defaultPreset, formatPaceDate, studyPace, daysUntil, NOT_STARTED_NIGHTS } from '@/lib/studyPace'
@@ -43,8 +48,13 @@ import type { LearningPathSummary } from '@/data/learningFixtures'
  *   2. Begin Course sits in the TITLE area, not on the first journey row.
  *   3. Steps 2 and 3 (Pass State Exam, Get Licensed) are collapsible and
  *      collapsed by default — the cognitive-load ask.
- *   4. Complete Coursework carries Testing 3's percentage and current-lesson
- *      marker rather than a plain list of stops.
+ *   4. Complete Coursework expands the counted stop: the title takes a rule
+ *      and "26 of 42 Completed", and the lesson in progress hangs under it on
+ *      the spine. ⚠ WITHOUT Testing 3's percentage — 2026-10-06, the direct
+ *      ask. That rail prints the figure beside the caret because it is the
+ *      only place the number appears; here the dial two columns left draws the
+ *      same percentage at 20× the size, so a second copy is the same fact
+ *      twice. The MARKER stays — it says where you are, which the dial cannot.
  *
  * The original note follows, because everything it describes still applies to
  * the parts that were not changed.
@@ -140,11 +150,38 @@ export function HybridHomeV1({
      again: `Math.max(1, Math.round(preset.days / 7))`. */
   const weeks: number = 3
 
-  const stops = journeyStopsFor(path)
+  /* ⚠ HYBRID #4 — `lessonProgressTitle` MOVES THE FIGURES OUT OF THE TITLE.
+     Without it the stop reads "Pre-Licensing Lessons (42)"; with it the title is
+     the name alone and the stop keeps `completed` / `hours` for the row to set
+     as its own run after a rule. The parenthetical cannot be divided, which is
+     why this is a flag on the data rather than a format in the view. Same
+     numbers, one source — see `journeyStopsFor`. */
+  const stops = journeyStopsFor(path, { lessonProgressTitle: true })
   const currentIdx = Math.max(
     0,
     stops.findIndex((s) => s.status === 'in-progress'),
   )
+  /* ⚠ HYBRID #4 — THE LESSON IN PROGRESS, and every condition here is a way it
+     would otherwise lie. The block names a lesson the learner is part-way
+     through, so it is withheld when there is no such lesson: before the first
+     one (`notStarted`, or a zero count — "Lesson 1 · About 18 minutes" over a
+     chapter nobody has opened is a claim about work not begun), on a stop that
+     counts nothing (the completion tasks carry no `hours`), and once the count
+     reaches the total, where the next lesson is in a different step.
+
+     ⚠ THE NUMBER IS `completed + 1`, FROM THE STOP ITSELF. The row above prints
+     "26 of 42 Completed" from the same two fields, so the summary and the
+     lesson cannot disagree about where the learner is — which is the failure
+     `journeyStopsFor`'s own "(41) vs 42" note is the record of. */
+  const lessonStop = stops[currentIdx]
+  const lessonsDone = lessonStop?.completed
+  const showLesson =
+    !notStarted &&
+    typeof lessonsDone === 'number' &&
+    lessonsDone > 0 &&
+    !!lessonStop?.hours &&
+    lessonsDone < lessonStop.hours
+
   const pass = GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 2]
   const apply = GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 1]
   const state = jurisdictionName(path.state)
@@ -337,6 +374,10 @@ export function HybridHomeV1({
                        why. `not-started` only — the completed stops keep theirs,
                        since looking back at finished work is always allowed. */
                     onOpen={onOpenStop && stop.status !== 'not-started' ? () => onOpenStop(stop.id) : undefined}
+                    /* ⚠ HYBRID #4 — ONLY THE CURRENT STOP CARRIES IT, and
+                       `showLesson` is computed from that stop, so a row can
+                       never be handed a lesson that belongs to another one. */
+                    lesson={showLesson && i === currentIdx ? (lessonsDone ?? 0) + 1 : undefined}
                   />
                 ))}
               </ol>
@@ -534,11 +575,19 @@ function JourneyRow({
   current,
   last,
   onOpen,
+  lesson,
 }: {
   stop: JourneyStop
   current: boolean
   last: boolean
   onOpen?: () => void
+  /** ⚠ HYBRID #4 — the lesson NUMBER, not a node. The row owns the gutter, so
+   *  it has to draw the marker and the connector itself; handing it rendered
+   *  content would have put the spine in one component and the thing it runs
+   *  through in another. The chapter name is a constant, so the number is the
+   *  only thing that varies. Absent means no lesson in progress — see the
+   *  conditions where it is computed. */
+  lesson?: number
 }) {
   /* The current stop is never locked even if its status says `not-started` —
      it is the one the learner is being sent to. */
@@ -557,48 +606,113 @@ function JourneyRow({
      weight and the filled dot, and letting it breathe is what makes it findable
      at a glance. */
   return (
-    <li style={{ display: 'flex', gap: 8, alignItems: 'flex-start', minHeight: current ? 40 : 34 }}>
-      <span aria-hidden style={{ width: 14, flex: 'none', alignSelf: 'stretch', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, paddingTop: current ? 7 : 3 }}>
-        {/* ⚠ HYBRID #7 — NOT-STARTED STOPS WEAR A LOCK, not an empty ring. The
-            ring said "not yet" and so does everything else about a dim row; the
-            lock says WHY, which is the thing the list could not express. The
-            current stop keeps its filled dot and the completed ones their ring,
-            so the column still reads top-to-bottom as done → here → locked. */}
-        {current ? (
-          <span style={MARK_CURRENT} />
-        ) : locked ? (
-          <span style={MARK_LOCK}>
-            <Lock size={11} aria-hidden />
+    /* ⚠ HYBRID #4 — THE ROW IS A COLUMN OF TWO ROWS NOW, each with its own
+       gutter, and that is what keeps the spine continuous through the lesson.
+       The alternative — absolutely positioning the marker over one tall gutter
+       — needs the lesson block's height to place it, which nothing here knows.
+       Two gutters means two flex columns that each stretch to their own row, so
+       the line is drawn by the same rule in both and cannot step sideways. */
+    <li style={{ display: 'flex', flexDirection: 'column' }}>
+      <div style={{ display: 'flex', gap: 8, alignItems: 'flex-start', minHeight: current ? 40 : 34 }}>
+        <span aria-hidden style={{ width: 14, flex: 'none', alignSelf: 'stretch', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, paddingTop: current ? 7 : 3 }}>
+          {/* ⚠ HYBRID #7 — NOT-STARTED STOPS WEAR A LOCK, not an empty ring. The
+              ring said "not yet" and so does everything else about a dim row; the
+              lock says WHY, which is the thing the list could not express. The
+              current stop keeps its filled dot and the completed ones their ring,
+              so the column still reads top-to-bottom as done → here → locked. */}
+          {current ? (
+            <span style={MARK_CURRENT} />
+          ) : locked ? (
+            <span style={MARK_LOCK}>
+              <Lock size={11} aria-hidden />
+            </span>
+          ) : (
+            <span style={MARK} />
+          )}
+          {last ? null : <span style={SPINE} />}
+        </span>
+        <span
+          style={{
+            ...BODY_TEXT,
+            flex: '1 1 0',
+            minWidth: 0,
+            fontSize: 13,
+            lineHeight: '18px',
+            paddingTop: current ? 5 : 0,
+            fontWeight: current ? 600 : 400,
+            color: current ? 'var(--color-compass-page-button)' : 'var(--color-text-secondary)',
+          }}
+        >
+          {stop.title}
+          {/* ⚠ HYBRID #4 — THE COUNT AS ITS OWN RUN AFTER A RULE, not a
+              parenthetical. Built from the stop's own two fields, the same pair
+              the lesson number below comes from. Rendered only where there IS a
+              count: the completion tasks carry no `hours`, and a rule followed by
+              nothing reads as a broken row. */}
+          {typeof stop.completed === 'number' && stop.hours ? (
+            <>
+              <span aria-hidden style={COUNT_RULE} />
+              <span style={COUNT}>
+                {stop.completed} of {stop.hours} Completed
+              </span>
+            </>
+          ) : null}
+        </span>
+        {/* ⚠ HYBRID #2 (the other half) — the current row's Begin Course button
+            moved to the title area, so every row takes the chevron now and the
+            list reads as one kind of thing. The `onBegin` prop went with it
+            (`noUnusedLocals`); `AtlasHomeV2.tsx` still has both the prop and the
+            branch if this is ever reversed. */}
+        {onOpen ? (
+          <button type="button" className="cre-compass-v2-link" onClick={onOpen} aria-label={`Open ${stop.title}`} style={CHEVRON}>
+            <AngleRightRegular size={13} aria-hidden />
+          </button>
+        ) : null}
+      </div>
+      {lesson === undefined ? null : (
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '0 0 6px' }}>
+          <span
+            aria-hidden
+            style={{
+              width: 14,
+              flex: 'none',
+              alignSelf: 'stretch',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}
+          >
+            <span style={SPINE} />
+            {/* ⚠ A TARGET, NOT A FILLED DOT. The stop above already wears the
+                filled dot for "this is the step you are on"; this mark answers a
+                narrower question — WHERE in that step — so it has to read as a
+                different kind of thing while staying on the same axis. */}
+            <span style={MARK_LESSON}>
+              <span style={MARK_LESSON_PIP} />
+            </span>
+            {last ? <span style={{ flex: '1 1 0' }} /> : <span style={SPINE} />}
           </span>
-        ) : (
-          <span style={MARK} />
-        )}
-        {last ? null : <span style={SPINE} />}
-      </span>
-      <span
-        style={{
-          ...BODY_TEXT,
-          flex: '1 1 0',
-          minWidth: 0,
-          fontSize: 13,
-          lineHeight: '18px',
-          paddingTop: current ? 5 : 0,
-          fontWeight: current ? 600 : 400,
-          color: current ? 'var(--color-compass-page-button)' : 'var(--color-text-secondary)',
-        }}
-      >
-        {stop.title}
-      </span>
-      {/* ⚠ HYBRID #2 (the other half) — the current row's Begin Course button
-          moved to the title area, so every row takes the chevron now and the
-          list reads as one kind of thing. The `onBegin` prop went with it
-          (`noUnusedLocals`); `AtlasHomeV2.tsx` still has both the prop and the
-          branch if this is ever reversed. */}
-      {onOpen ? (
-        <button type="button" className="cre-compass-v2-link" onClick={onOpen} aria-label={`Open ${stop.title}`} style={CHEVRON}>
-          <AngleRightRegular size={13} aria-hidden />
-        </button>
-      ) : null}
+          {/* DASHED, where the spine is solid: it crosses OUT of the timeline
+              to the block rather than continuing along it. */}
+          <span aria-hidden style={LESSON_CONNECTOR} />
+          <span style={LESSON_BLOCK}>
+            <span style={LESSON_META}>
+              Lesson {lesson}
+              <span aria-hidden style={LESSON_DOT} />
+              {/* ⚠ INVENTED, and named as such at its source — see
+                  `NY_LH_LESSON_MINUTES_INVENTED`. */}
+              <span style={LESSON_ESTIMATE}>About {NY_LH_LESSON_MINUTES_INVENTED} minutes</span>
+            </span>
+            {/* ⚠ SPANS, AND BODY FACE. Spans because `<p>`/`<h3>` inside a list
+                row sitting beside phrasing content is the trap the step
+                disclosures hit; body face because `atlas-heading-font` re-points
+                the heading token at a serif and a chapter name is a row label,
+                not a heading. `CombinedCourseCard` makes both calls the same
+                way. */}
+            <span style={LESSON_TITLE}>{NY_LH_CURRENT_CHAPTER}</span>
+          </span>
+        </div>
+      )}
     </li>
   )
 }
@@ -974,6 +1088,111 @@ const MARK_LOCK: CSSProperties = {
    rather than a filled 1px box, so the line lands on the device's own hairline
    and stays crisp at any DPR. */
 const SPINE: CSSProperties = { flex: '1 1 0', minHeight: 1, width: 0, borderLeft: '1px solid var(--color-border-subtle)' }
+
+/* ── ⚠ HYBRID #4, THE COUNTED STOP AND ITS LESSON ───────────────────────────
+   2026-10-06, the direct ask: expand Pre-Licensing Lessons to a one-line
+   summary of what is done, and hang the current lesson under it.
+
+   ⚠ NO PERCENTAGE, which is the one place this departs from the Testing 3
+   treatment it is modelled on. That rail prints the figure beside the caret
+   because it is the only place the number appears; here the dial two columns
+   left draws the same percentage at 20× the size. The MARKER is what carries
+   over — it says where you are, which the dial cannot.
+
+   ⚠ THE VALUES ARE `StudyJourneyRail`'s AND `CombinedCourseCard`'s, copied
+   rather than imported. Those live on a rail this version does not use, and
+   lifting them into a shared module would make a Testing 3 tweak reach this
+   fork silently — which is the whole reason the home was forked. If the two
+   ever need to move together, that is a merge, not an import. */
+const COUNT_RULE: CSSProperties = {
+  display: 'inline-block',
+  width: 1,
+  height: '0.9em',
+  margin: '0 9px',
+  verticalAlign: '-0.1em',
+  background: 'var(--color-border-subtle)',
+}
+/* ⚠ WEIGHT 400 EVEN ON THE CURRENT ROW, which renders its title at 600. The
+   name is the row; the count annotates it, and matching the title's weight
+   would make a six-word figure compete with the thing it describes. */
+const COUNT: CSSProperties = { fontWeight: 400, color: 'var(--color-text-secondary)' }
+
+const MARK_LESSON: CSSProperties = {
+  width: 14,
+  height: 14,
+  boxSizing: 'border-box',
+  borderRadius: '50%',
+  flex: 'none',
+  border: '2px solid var(--color-compass-page-button)',
+  /* The card's own ground, not `transparent`: the spine runs behind this mark
+     and would otherwise show through the gap between ring and pip. */
+  background: 'var(--color-surface-card)',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+}
+const MARK_LESSON_PIP: CSSProperties = {
+  width: 6,
+  height: 6,
+  borderRadius: '50%',
+  background: 'var(--color-compass-page-button)',
+}
+const LESSON_CONNECTOR: CSSProperties = {
+  width: 10,
+  height: 0,
+  flex: 'none',
+  borderTop: '1px dashed var(--color-border-subtle)',
+}
+/* ⚠ 14 + 8 + 10 + 8 = 40, against the stop titles' 22. The 18px of extra
+   indent is what makes the lesson read as something INSIDE the stop rather
+   than as another row of the list — and it is split across the gutter, two
+   gaps and the connector, so changing any one of them moves it. */
+const LESSON_BLOCK: CSSProperties = {
+  flex: '1 1 0',
+  minWidth: 0,
+  /* ⚠ THE GREEN RULE IS THE TEXT'S OWN HEIGHT, by construction — it is on this
+     box and this box is the two lines. On any ancestor it would run the full
+     height of the padded row and stand ~12px taller than the words it marks,
+     which is the correction `CombinedCourseCard` records at `lessonRow`. */
+  borderLeft: '3px solid color-mix(in srgb, var(--color-success-500) 45%, var(--color-surface-card))',
+  paddingLeft: 10,
+}
+const LESSON_META: CSSProperties = {
+  ...BODY_TEXT,
+  display: 'flex',
+  alignItems: 'center',
+  flexWrap: 'wrap',
+  margin: '0 0 3px',
+  fontSize: 10,
+  fontWeight: 700,
+  letterSpacing: '0.1em',
+  textTransform: 'uppercase',
+  color: 'var(--color-text-secondary)',
+}
+const LESSON_DOT: CSSProperties = {
+  display: 'inline-block',
+  width: 3,
+  height: 3,
+  borderRadius: '50%',
+  margin: '0 8px',
+  background: 'var(--color-neutral-300)',
+}
+/* The estimate is a sentence, not a label — it drops the tracking and the
+   uppercasing the lesson number carries and keeps only the size. */
+const LESSON_ESTIMATE: CSSProperties = {
+  fontWeight: 400,
+  letterSpacing: '0.04em',
+  textTransform: 'none',
+}
+const LESSON_TITLE: CSSProperties = {
+  ...BODY_TEXT,
+  display: 'block',
+  margin: 0,
+  fontWeight: 700,
+  fontSize: 15,
+  lineHeight: '20px',
+  color: 'var(--color-text-primary)',
+}
 const BEGIN: CSSProperties = {
   ...COMPASS_BUTTON,
   minHeight: 0,
