@@ -5612,6 +5612,13 @@ a.cre-library-card-title::after {
   /* The journey's CURRENT stop — its title and its dot — in SECONDARY 600,
      #7E6748 (same day). */
   --color-atlas-home-current-stop: var(--color-tertiary-600);
+  /* Home's Course Overview outline button in the browns (2026-10-06, the
+     designer's request): SECONDARY 600 ink and border, #7E6748 — 5.2:1 on the
+     course card, where 500 would fail AA for its 13.5px label. */
+  --color-atlas-home-secondary-ink: var(--color-tertiary-600);
+  /* …its STROKE one step lighter, SECONDARY 500 #9D815A (same day). A border
+     is a non-text edge: 3.6:1 on the card, over the 3:1 it needs. */
+  --color-atlas-home-secondary-border: var(--color-tertiary-500);
   /* The Course progress panel's eyebrows in SECONDARY 600, #7E6748 — 4.71:1 on
      the panel's #F3F0EA, passing AA for the 11px caps. The design's Secondary
      500 (Figma 217:3793) is 3.23:1 there and fails; swapped 2026-10-06 after a
@@ -6240,4 +6247,22 @@ a.cre-library-card-title::after {
 [data-brand='xcel'][data-atlas-palette][data-atlas-brand='cre'],
 [data-brand='xcel'][data-atlas-palette][data-atlas-brand='mckissock'] {
   --color-atlas-dial-track: var(--color-primary-200);
+}
+
+/* Home V2's Course Overview button: the outline button, re-inked by
+   --color-atlas-home-secondary-ink where a skin sets it (XCEL: Secondary 600
+   brown), the brand button colour elsewhere. Two classes, to outrank
+   `.cre-compass-secondary`. */
+.cre-compass-secondary.cre-atlas-home-secondary {
+  color: var(--color-atlas-home-secondary-ink, var(--color-compass-page-button));
+  border-color: var(
+    --color-atlas-home-secondary-border,
+    var(--color-atlas-home-secondary-ink, var(--color-compass-page-button))
+  ) !important;
+}
+.cre-compass-secondary.cre-atlas-home-secondary:hover {
+  background: color-mix(in srgb, var(--color-atlas-home-secondary-ink, var(--color-compass-page-button)) 8%, transparent);
+}
+.cre-compass-secondary.cre-atlas-home-secondary:focus-visible {
+  outline-color: var(--color-atlas-home-secondary-ink, var(--color-compass-page-button));
 }

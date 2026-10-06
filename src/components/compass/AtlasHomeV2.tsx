@@ -2,7 +2,6 @@ import { useMemo, useState, type CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   AngleRightRegular,
-  LockRegular,
 } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
 import { AtlasCourseTabs, type AtlasCourseTab } from './AtlasCourseTabs'
@@ -150,11 +149,32 @@ export function AtlasHomeV2({
                 {shownTitle}
               </h2>
             </div>
-            {onOverview ? (
-              <button type="button" className="cre-compass-home-chip" onClick={onOverview} style={CHIP}>
-                Course Overview
+            {/* The card's two actions, at the main buttons' size (2026-10-06,
+                the designer's request): Course Overview — was a 10px chip —
+                as the outline button, and Begin Course, MOVED here from the
+                Study Journey's current stop. */}
+            <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap' }}>
+              {onOverview ? (
+                <button
+                  type="button"
+                  className="cre-compass-secondary cre-atlas-home-secondary"
+                  onClick={onOverview}
+                  // Two weights under the buttons' Bold, Medium 500 (2026-10-06).
+                  style={{ ...HEADER_BUTTON, fontWeight: 500 }}
+                >
+                  Course Overview
+                </button>
+              ) : null}
+              <button
+                type="button"
+                className="cre-compass-primary cre-compass-btn-primary"
+                onClick={onBegin}
+                disabled={!onBegin}
+                style={HEADER_BUTTON}
+              >
+                Begin Course
               </button>
-            ) : null}
+            </div>
           </div>
         </div>
 
@@ -213,7 +233,6 @@ export function AtlasHomeV2({
                     stop={stop}
                     current={i === currentIdx}
                     last={i === stops.length - 1}
-                    onBegin={onBegin}
                     onOpen={onOpenStop ? () => onOpenStop(stop.id) : undefined}
                   />
                 ))}
@@ -346,13 +365,11 @@ function JourneyRow({
   stop,
   current,
   last,
-  onBegin,
   onOpen,
 }: {
   stop: JourneyStop
   current: boolean
   last: boolean
-  onBegin?: () => void
   onOpen?: () => void
 }) {
   return (
@@ -375,18 +392,13 @@ function JourneyRow({
       >
         {stop.title}
       </span>
-      {current ? (
-        <button type="button" className="cre-compass-primary cre-compass-btn-primary" onClick={onBegin} disabled={!onBegin} style={BEGIN}>
-          Begin Course
-        </button>
-      ) : stop.status === 'not-started' ? (
-        /* UPCOMING stops are LOCKED (2026-10-05, the designer's request): the FA
-           lock, Regular to match the chevrons, in place of the open chevron —
-           and not a button, since a locked stop does not open. */
-        <span role="img" aria-label={`${stop.title}, locked`} style={{ ...CHEVRON, cursor: 'default' }}>
-          <LockRegular size={13} aria-hidden style={{ color: 'var(--color-atlas-home-icon, var(--color-compass-page-button))' }} />
-        </span>
-      ) : onOpen ? (
+      {/* The current stop carries no button — Begin Course moved up beside
+          the course title (2026-10-06). */}
+      {/* UPCOMING stops show NOTHING on the right (2026-10-06, the designer's
+          request: the lock icons removed). They were locked from 2026-10-05 —
+          the FA lock (`LockRegular`, still in the icon registry), not a button;
+          before that, the open chevron. Still not openable. */}
+      {current ? null : stop.status === 'not-started' ? null : onOpen ? (
         <button type="button" className="cre-compass-v2-link" onClick={onOpen} aria-label={`Open ${stop.title}`} style={CHEVRON}>
           <AngleRightRegular size={13} aria-hidden style={{ color: 'var(--color-atlas-home-icon, var(--color-compass-page-button))' }} />
         </button>
@@ -482,18 +494,6 @@ const TITLE: CSSProperties = {
   letterSpacing: '-0.01em',
   color: 'var(--color-compass-page-heading)',
 }
-const CHIP: CSSProperties = {
-  alignSelf: 'flex-start',
-  padding: '2px 8px 4px',
-  borderRadius: 4,
-  border: '1px solid var(--color-compass-page-card-border)',
-  fontFamily: 'var(--font-body)',
-  fontWeight: 600,
-  fontSize: 10,
-  lineHeight: '13px',
-  color: 'var(--color-neutral-600)',
-  whiteSpace: 'nowrap',
-}
 const RULE: CSSProperties = { display: 'block', height: 1, background: 'var(--color-atlas-nav-rule)' }
 /* The Course progress panel (Figma 217:3793): the Study Pace panel's tint,
    24 in, 8 radius, no shadow (tried on the old pace panel 2026-10-02 and
@@ -564,8 +564,6 @@ const LINK: CSSProperties = {
   alignSelf: 'flex-start',
   display: 'inline-flex',
   alignItems: 'center',
-  // 8, not the design's 10, so "Customize Your Pace ›" holds one line in the
-  // pace panel.
   gap: 8,
   whiteSpace: 'nowrap',
   textAlign: 'left',
@@ -574,7 +572,9 @@ const LINK: CSSProperties = {
   background: 'none',
   cursor: 'pointer',
   fontFamily: 'var(--font-body)',
-  fontWeight: 700,
+  // SemiBold 600, one weight under Bold (2026-10-06, the designer's request) —
+  // the "→" is part of the label, so it thins with it.
+  fontWeight: 600,
   fontSize: 13,
   lineHeight: '19.5px',
   color: 'var(--color-compass-page-button)',
@@ -619,16 +619,14 @@ const MARK: CSSProperties = {
   flex: 'none',
 }
 const SPINE: CSSProperties = { flex: '1 1 0', minHeight: 1, width: 0, borderLeft: '2px solid var(--color-border-subtle)' }
-const BEGIN: CSSProperties = {
+/* The course card's actions — the page's main button size (the Begin Course
+   button's, 13.5 / 20.25 with 5×8 padding), side by side. */
+const HEADER_BUTTON: CSSProperties = {
   ...COMPASS_BUTTON,
   minHeight: 0,
   padding: '5px 8px',
   fontSize: 13.5,
   lineHeight: '20.25px',
-  // Centred on the stop title beside it (2026-10-05, the designer's request):
-  // the title's line centres 14px down the row (5 padding + 9), the 32.25px
-  // button's 16.1px — so it lifts the difference.
-  marginTop: -2.125,
 }
 const CHEVRON: CSSProperties = {
   display: 'inline-flex',
