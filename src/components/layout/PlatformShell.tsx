@@ -367,8 +367,33 @@ function PlatformShellBody() {
      and the inner pages keep it. That asymmetry is Eric's and is the whole
      difference between his two top-nav arms, so it survives the unification
      rather than being flattened into "top means no rail". */
+  // Which page of the `course` section is showing. Overview drops the param, as
+  // Home drops `section`. Declared here rather than beside the rest of the
+  // course logic because `atlasNoRail` below has to read it.
+  const coursePage = atlasCoursePageFor(params.get('coursePage')).id
+  // An actual Compass LMS course page — the course rail's "Course" row. It
+  // gets the Compass rail (Figma 49:2922) instead of the Atlas course rail.
+  const compassCourseRail = atlasNav && active === 'course' && coursePage === 'course'
+  /* ⚠ HYBRID V1 HAS NO SECTION RAIL AT ALL — 2026-10-06, the direct ask: "when
+     clicking into courses or certificates, i do NOT want this left rail to show
+     up, i just want the back to home link at the top left."
+
+     ⚠ EXCEPT THE COMPASS COURSE PLAYER, which is the one thing this must not
+     take with it. `atlasNoRail` empties the whole rail COLUMN, and the player's
+     contents tree is drawn inside it — so a flat `hybridVersion` here would
+     have left the course player with no way to move between its pages. The ask
+     was about the section pages; the player's rail is its own surface.
+
+     ⚠ AND IT ALSO RETIRES THE COLLAPSE TRAP that prompted this. `atlasRailToggle`
+     is `!atlasNoRail`, so Hybrid never renders the toggle and `atlasRailClosed`
+     can never be set — which is what used to survive a trip through Home and
+     leave Courses looking empty until a reload. */
+  const hybridNoSectionRail = hybridVersion && !compassCourseRail
   const atlasNoRail =
-    atlasNav && (navPlacement === 'expanding-top' || (navPlacement === 'top' && active === 'dashboard'))
+    atlasNav &&
+    (hybridNoSectionRail ||
+      navPlacement === 'expanding-top' ||
+      (navPlacement === 'top' && active === 'dashboard'))
   // Wherever an Atlas rail is drawn it can collapse; collapsed, its column is
   // the toggle's own width, so only that frame stays at the left edge.
   const atlasRailToggle = atlasNav && !atlasNoRail
@@ -594,10 +619,10 @@ function PlatformShellBody() {
   }
   // The Atlas COURSE rail's sub-pages (Figma 49:3536) — `?coursePage=` inside
   // the `course` section. Overview drops the param, as Home drops `section`.
-  const coursePage = atlasCoursePageFor(params.get('coursePage')).id
-  // An actual Compass LMS course page — the course rail's "Course" row. It
-  // gets the Compass rail (Figma 49:2922) instead of the Atlas course rail.
-  const compassCourseRail = atlasNav && active === 'course' && coursePage === 'course'
+  /* ⚠ `coursePage` AND `compassCourseRail` ARE DECLARED FURTHER UP, beside
+     `atlasNoRail` — 2026-10-06. That predicate has to know whether the Compass
+     course rail is in play, and a second copy of the expression here would be
+     the drift this file keeps paying for. */
   const selectCoursePage = (id: AtlasCoursePageId) => {
     launcher.close()
     resourceLauncher.close()
