@@ -339,6 +339,10 @@ function PlatformShellBody() {
   // which has no collapse control — so it never collapses, not even for the
   // Compass launcher. A collapsed column with no way to re-open it would strand
   // the learner in a 76px strip.
+  /* Hybrid V1 specifically — it answers true to `isAtlasCompassNavVersion` too
+     (it takes the Atlas chrome), so anything that must differ between the two
+     asks this instead. */
+  const hybridVersion = isHybridV1Version(params.get('version'))
   const atlasNav = isAtlasCompassNavVersion(
     params.get('version') ?? defaultDiscoverabilityVersionFor(brand),
   )
@@ -1294,7 +1298,13 @@ function PlatformShellBody() {
           ...(topNav ? { maxWidth: 1172, width: '100%', margin: '0 auto' } : null),
         }}
       >
-        {homeHeader && !launcher.courseId ? <HomePageHeader /> : null}
+        {/* ⚠ 56 ON HYBRID V1, matching the gutter its section below takes (see
+            the `padding` on that `<section>`). Everything else keeps the shared
+            40 — the greeting lines up with the card it heads either way, which
+            is the thing that has to stay true. */}
+        {homeHeader && !launcher.courseId ? (
+          <HomePageHeader align={hybridVersion ? { inset: 56, maxWidth: 1200 } : undefined} />
+        ) : null}
         {/* Same slot as Home's header and for the same reason: it sits ABOVE
             `SectionPanel` so the section keeps its own 40px gutter without the
             header being nested inside the padded `<section>`. `SectionShell`

@@ -2,6 +2,7 @@ import { useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   AngleRightRegular,
+  ArrowRight,
   BallotCheckRegular,
   BookRegular,
   CircleInfoRegular,
@@ -226,7 +227,13 @@ export function HybridHomeV1({
                 disabled={!onBegin}
                 style={BEGIN}
               >
+                {/* ⚠ THE SAME `ArrowRight` AT 16 Testing 3's combined card uses
+                    on its Resume button — 2026-10-06, the direct ask.
+                    `aria-hidden`, because the label already says what it does;
+                    an arrow announced after "Resume Course" is noise. `BEGIN`
+                    already sets `gap: 8` for exactly this. */}
                 {notStarted ? 'Begin Course' : 'Resume Course'}
+                <ArrowRight size={16} aria-hidden />
               </button>
             </div>
           </div>
@@ -666,7 +673,15 @@ function Step({
                  open. Rotating from -90° to 90° is one continuous turn through
                  the right-pointing rest position, which is why it reads as the
                  same arrow moving rather than two icons swapping. */
-              color: open ? 'var(--color-compass-page-button)' : 'var(--color-text-tertiary)',
+              /* ⚠ `--color-border-subtle` WHEN CLOSED, lighter than the
+                 `--color-text-tertiary` it was — 2026-10-06, the direct ask.
+                 Safe to go below text contrast because the glyph is
+                 `aria-hidden` decoration: the button's own name carries the
+                 step, and `aria-expanded` carries the state, so nothing here is
+                 the only way to read anything. It is now the same weight as the
+                 journey spine and the ring markers in this column, which are
+                 the other quiet marks on the page. */
+              color: open ? 'var(--color-compass-page-button)' : 'var(--color-border-subtle)',
               transform: open ? 'rotate(90deg)' : 'rotate(-90deg)',
               transition: 'transform 160ms ease, color 160ms ease',
             }}
@@ -751,7 +766,16 @@ const PAGE: CSSProperties = {
   display: 'flex',
   gap: 40,
   alignItems: 'flex-start',
-  justifyContent: 'center',
+  /* ⚠ `flex-start`, NOT `center` — 2026-10-06, so the card lines up with the
+     page header above it. The row is 711 + 40 + 260 = 1011 inside a container
+     capped at 1200, and centring it pushed the card ~25px right of the "Home"
+     title and its greeting, which sit on the section's own gutter. No inset on
+     the header could have fixed that: a fixed gutter cannot track a centred
+     row, since the offset changes with the viewport.
+     ⚠ THE CONTAINER STILL CENTRES (max-width 1200, margin auto), so past that
+     width the whole block moves as one and the header — which takes the same
+     cap and margin — moves with it. */
+  justifyContent: 'flex-start',
 }
 /* The Home course card's surface — 48 in, 14 radius (Figma). */
 const CARD: CSSProperties = {
@@ -922,7 +946,12 @@ const MARK_LOCK: CSSProperties = {
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  color: 'var(--color-text-tertiary)',
+  /* ⚠ `--color-border-subtle`, lighter than the `--color-text-tertiary` it was
+     — 2026-10-06, the direct ask, and the same move the closed Step chevron
+     took. The lock is `aria-hidden` decoration beside a label that is already
+     dimmed, so it is free of text-contrast rules and should not outweigh the
+     words it annotates. It now matches the spine it hangs on. */
+  color: 'var(--color-border-subtle)',
 }
 
 /* ⚠ 1px, DOWN FROM 2 — 2026-10-05, the direct ask. The spine is a connector
