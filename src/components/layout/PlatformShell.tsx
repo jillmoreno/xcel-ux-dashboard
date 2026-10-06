@@ -104,6 +104,7 @@ import {
 import { CompassLearningPage } from '@/components/learning/CompassLearningPage'
 import { CompassSessionPage } from '@/components/learning/CompassSessionPage'
 import { HomePageHeader } from './HomePageHeader'
+import { AtlasSectionPageHeader } from './AtlasSectionPageHeader'
 import { SectionPageHeader } from './SectionPageHeader'
 import { useCompassCourseFigures } from '@/components/learning/compassCourseFigures'
 
@@ -502,7 +503,9 @@ function PlatformShellBody() {
      rather than to a placement, so the shipped dashboard — flag off — is
      untouched and does not quietly grow a header. */
   const navExploration = useNavExploration()
-  const homeHeader = navExploration && active === 'dashboard'
+  /* …but NOT on the Atlas versions (2026-10-06, Eric's request: "remove this
+     from the home page") — Atlas Home V2 opens on its course card. */
+  const homeHeader = navExploration && active === 'dashboard' && !atlasNav
   /* COURSES AND CERTIFICATES GET THE SAME HEADER, with a crumb where the
      greeting is — 2026-10-02, the direct ask. `useSectionBreadcrumb` owns the
      whole condition so this, `SectionShell`'s suppression of the title it
@@ -1304,10 +1307,15 @@ function PlatformShellBody() {
             header being nested inside the padded `<section>`. `SectionShell`
             drops its top gutter in exchange — see `headerAbove` there. */}
         {sectionHeader && !launcher.courseId ? (
+          // Atlas: its own copy — Serif H1 title, FA angle-left crumb (2026-10-06).
+          atlasNav ? (
+            <AtlasSectionPageHeader title={SECTION_TITLES[active]} onBack={() => handleSelect('dashboard')} />
+          ) : (
           <SectionPageHeader
             title={SECTION_TITLES[active]}
             onBack={() => handleSelect('dashboard')}
           />
+          )
         ) : null}
         {launcher.courseId ? (
           <CourseLauncherView

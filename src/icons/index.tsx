@@ -62,6 +62,7 @@ import CircleInfoRegularSvg from './circle-info-regular.svg?react'
 import PenFieldRegularSvg from './pen-field-regular.svg?react'
 import ClipboardListCheckRegularSvg from './clipboard-list-check-regular.svg?react'
 import AngleRightRegularSvg from './angle-right-regular.svg?react'
+import AngleLeftRegularSvg from './angle-left-regular.svg?react'
 import GaugeThinSvg from './gauge-thin.svg?react'
 // The REAL Font Awesome Light `circle-user`, fetched 2026-10-01 at 7.3.1, for
 // the Atlas header. `circle-user.svg` (CircleUser) is a hand-drawn stand-in
@@ -276,6 +277,7 @@ export const CircleInfoRegular = makeIcon(CircleInfoRegularSvg) // FA: circle-in
 export const PenFieldRegular = makeIcon(PenFieldRegularSvg) // FA: pen-field (regular)
 export const ClipboardListCheckRegular = makeIcon(ClipboardListCheckRegularSvg) // FA: clipboard-list-check (regular)
 export const AngleRightRegular = makeIcon(AngleRightRegularSvg) // FA: angle-right (regular)
+export const AngleLeftRegular = makeIcon(AngleLeftRegularSvg) // FA: angle-left (regular)
 export const GaugeThin = makeIcon(GaugeThinSvg) // FA: gauge (thin)
 export const CircleUserLight = makeIcon(CircleUserLightSvg) // FA: circle-user (light, genuine)
 export const SlashForwardSolid = makeIcon(SlashForwardSolidSvg) // FA: slash-forward (solid)
