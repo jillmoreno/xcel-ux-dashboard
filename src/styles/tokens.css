@@ -1474,6 +1474,55 @@
 /* Atlas Home V2's "Other Information" rows (AtlasHomeV2): the label turns
    the brand's dark blue — the icons' own colour — and one weight heavier on
    hover (2026-10-02). */
+/* ── HYBRID V1'S QUICK LINKS ROWS (2026-10-05) ────────────────────────────
+   A filled, rounded hover across the whole row, and a chevron that only
+   appears on it.
+
+   ⚠ `:focus-visible` CARRIES EVERY RULE THAT `:hover` DOES. A chevron revealed
+   by the mouse alone is an affordance a keyboard user never learns exists, and
+   the row would tab to something that looks inert. Both selectors, every time.
+
+   ⚠ THE CHEVRON IS HIDDEN WITH `opacity`, NOT `display`. It keeps its space in
+   the row, so nothing shifts sideways when it appears — a 13px icon popping in
+   and out of the layout would nudge the label on every pass of the mouse.
+
+   ⚠ IT EXTENDS BEYOND THE CARD'S TEXT COLUMN by its own padding, which is why
+   the negative margin is here: the fill should read as the ROW being picked
+   out, and a highlight inset from the label looks like a mistake. */
+/* ⚠ PADDING AND MARGIN ARE ON THE INLINE `SIDE_ROW`, NOT HERE. The row's
+   inline style sets `padding: 0`, and an inline style beats a class — written
+   here first, the fill rendered as a hairline strip behind the text. Only the
+   properties the inline style does not set can live in this block. */
+.cre-quick-link-row {
+  background: transparent;
+  transition: background 120ms ease;
+}
+.cre-quick-link-row:not(:disabled):hover,
+.cre-quick-link-row:focus-visible {
+  /* The RAIL'S OWN ACTIVE FILL (#dfe3eb), not a new grey — these rows are
+     navigation and should pick out the same way the left rail's rows do.
+     ⚠ `--color-atlas-nav-active` DOES NOT EXIST; the token is
+     `…-active-fill`, and the earlier spelling silently fell through to a
+     barely-visible 5% black. */
+  background: var(--color-atlas-nav-active-fill);
+}
+.cre-quick-link-chevron {
+  opacity: 0;
+  transition: opacity 120ms ease;
+}
+.cre-quick-link-row:not(:disabled):hover .cre-quick-link-chevron,
+.cre-quick-link-row:focus-visible .cre-quick-link-chevron {
+  opacity: 1;
+}
+
+/* No hover reveal where there is no hover — the chevron is simply always
+   there, so a touch user is never short an affordance. */
+@media (hover: none) {
+  .cre-quick-link-chevron {
+    opacity: 1;
+  }
+}
+
 .cre-compass-v2-row {
   color: var(--color-text-secondary);
   transition: color 120ms ease;

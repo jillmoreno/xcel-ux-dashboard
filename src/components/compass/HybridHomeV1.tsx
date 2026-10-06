@@ -373,7 +373,12 @@ export function HybridHomeV1({
           <p className="cre-eyebrow-ink" style={widgetEyebrowStyle}>
             Quick Links
           </p>
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
+          {/* ⚠ 4, NOT 16 — the rows carry 7px of their own padding now, so the
+              old gap stacked on top of it and the hover fills sat far apart
+              with the list looking twice as tall. The rhythm between labels is
+              unchanged; it is just made of padding instead of gap, which is
+              what lets the highlights meet. */}
+          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
             <SideLink icon={<BookRegular size={13} aria-hidden />} label="My Courses" onClick={() => go('courses')} />
             <SideLink icon={<FileCertificateRegular size={13} aria-hidden />} label="My Certificates" onClick={() => go('certificates')} />
             <SideLink icon={<NotebookRegular size={13} aria-hidden />} label="Flashcards" onClick={() => go('course', 'flashcards')} />
@@ -613,12 +618,28 @@ function Step({
 function SideLink({ icon, label, onClick }: { icon: ReactNode; label: string; onClick?: () => void }) {
   return (
     <li>
-      <button type="button" className="cre-compass-v2-row" onClick={onClick} disabled={!onClick} style={SIDE_ROW}>
+      {/* ⚠ HYBRID #9 — `cre-quick-link-row` ADDS THE FILLED HOVER and hides the
+          chevron until the row is hovered or FOCUSED. See tokens.css for why
+          both states, why `opacity` rather than `display`, and why the fill
+          runs wider than the label. The class is additive: the colour and
+          weight shift still come from `cre-compass-v2-row`, which Eric's home
+          shares — his rows are untouched. */}
+      <button
+        type="button"
+        className="cre-compass-v2-row cre-quick-link-row"
+        onClick={onClick}
+        disabled={!onClick}
+        style={SIDE_ROW}
+      >
         <span aria-hidden style={{ width: 18, flex: 'none', display: 'inline-flex', justifyContent: 'center', color: 'var(--color-compass-page-button)' }}>
           {icon}
         </span>
         <span style={{ flex: '1 1 0', minWidth: 0, textAlign: 'left' }}>{label}</span>
-        <span aria-hidden style={{ display: 'inline-flex', color: 'var(--color-compass-page-button)' }}>
+        <span
+          aria-hidden
+          className="cre-quick-link-chevron"
+          style={{ display: 'inline-flex', color: 'var(--color-compass-page-button)' }}
+        >
           <AngleRightRegular size={13} aria-hidden />
         </span>
       </button>
@@ -852,7 +873,10 @@ const SIDE_CARD: CSSProperties = {
   padding: '24px 32px 32px',
   boxSizing: 'border-box',
   borderRadius: 12,
-  border: '1px solid var(--color-atlas-nav-rule)',
+  /* ⚠ NO BORDER — 2026-10-05, the direct ask. The exam card above already
+     overrode this to `none` (see `SIDE_CARD_LIFTED`), so the outline was the
+     only thing making the two side cards differ. Removed from the base rather
+     than from the one call site, because there is nothing left that wants it. */
 }
 const SIDE_CARD_LIFTED: CSSProperties = {
   border: 'none',
@@ -863,13 +887,30 @@ const SIDE_CARD_LIFTED: CSSProperties = {
    question, and `ExamScheduleWidget` brings its own controls. Removed rather
    than parked (`noUnusedLocals`); `AtlasHomeV2.tsx` still has it. */
 const SIDE_ROW: CSSProperties = {
-  width: '100%',
+  /* ⚠ `100% + 20px`, MATCHING THE NEGATIVE MARGIN BELOW. `width: 100%` with
+     `border-box` sizing means the new 10px side padding eats the TEXT column
+     rather than widening the row — "Applying for a License" wrapped to two
+     lines the moment the hover box was added. The margin shifts the row out;
+     this is what actually makes it wider, so the label keeps every pixel it
+     had before the highlight existed. Change one and change the other. */
+  width: 'calc(100% + 20px)',
   display: 'flex',
   alignItems: 'center',
   gap: 8,
-  padding: 0,
+  /* ⚠ THE HOVER FILL'S BOX LIVES HERE, NOT IN THE CLASS — 2026-10-05. It was
+     `padding: 0`, and an INLINE style beats `.cre-quick-link-row`, so the fill
+     rendered as a hairline strip behind the text. The negative margin pulls the
+     highlight back out to the card's text edge, so a picked-out row reads as
+     the ROW and not as an inset panel. */
+  padding: '7px 10px',
+  margin: '0 -10px',
+  borderRadius: 'var(--radius-md)',
   border: 'none',
-  background: 'none',
+  /* ⚠ NO `background` HERE — it is `.cre-quick-link-row`'s, and an inline value
+     would beat the hover rule exactly the way `padding: 0` beat the box above.
+     That one was visible immediately; this one was not, because the chevron
+     reveal (a DESCENDANT rule, nothing inline to fight) kept working while the
+     fill silently never appeared. The class sets `transparent` at rest. */
   cursor: 'pointer',
   fontFamily: 'var(--font-body)',
   fontSize: 13,
