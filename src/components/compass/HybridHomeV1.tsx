@@ -15,6 +15,7 @@ import {
 import { COMPASS_BUTTON } from './compassButton'
 import { journeyStopsFor, type JourneyStop } from '@/components/learning/studyJourneyUtil'
 import { widgetEyebrowStyle } from '@/components/learning/widgetStyles'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { GET_LICENSED_STEPS, jurisdictionName } from '@/data/nyProducerRequirements'
 import { ExamScheduleWidget } from '@/components/learning/ExamScheduleWidget'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
@@ -145,6 +146,31 @@ export function HybridHomeV1({
   const pass = GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 2]
   const apply = GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 1]
   const state = jurisdictionName(path.state)
+  /* ⚠ `=== 'tiles'` IS THE OPT-IN. An unset flag renders rows, the shape this
+     version ships with — the inverted test would make "no decision" look like
+     a decision. */
+  const tiles = useFeatureFlag('hybrid-quick-links-style').variant === 'tiles'
+
+  /* ⚠ THE QUICK LINKS, DEFINED ONCE. Both shapes render from this — see the
+     note at the list. Four of the seven have no other home on this screen, so
+     the set is the same either way and only the drawing changes. */
+  const quickLinks: { icon: ReactNode; label: string; onClick?: () => void }[] = [
+    { icon: <BookRegular size={13} aria-hidden />, label: 'My Courses', onClick: () => go('courses') },
+    { icon: <FileCertificateRegular size={13} aria-hidden />, label: 'My Certificates', onClick: () => go('certificates') },
+    { icon: <NotebookRegular size={13} aria-hidden />, label: 'Flashcards', onClick: () => go('course', 'flashcards') },
+    { icon: <BallotCheckRegular size={13} aria-hidden />, label: 'Exam Simulator', onClick: () => go('course', 'exam-simulator') },
+    {
+      icon: <CircleInfoRegular size={13} aria-hidden />,
+      label: 'Exam Information',
+      onClick: onOpenStep ? () => onOpenStep(EXAM_DETAILS_STEP_ID) : undefined,
+    },
+    {
+      icon: <PenFieldRegular size={13} aria-hidden />,
+      label: 'Applying for a License',
+      onClick: onOpenStep ? () => onOpenStep(apply.id) : undefined,
+    },
+    { icon: <ClipboardListCheckRegular size={13} aria-hidden />, label: 'State Requirements', onClick: onOpenRequirements },
+  ]
 
   return (
     <div style={PAGE}>
@@ -169,16 +195,13 @@ export function HybridHomeV1({
                 ⚠ `JourneyRow` NO LONGER DRAWS IT (see its note) — the current
                 stop takes the chevron like every other row. Two Begin Course
                 buttons on one screen was the thing to avoid. */}
+            {/* ⚠ HYBRID #13 — COURSE OVERVIEW FIRST, RESUME ON THE RIGHT.
+                2026-10-05, the direct ask. ⚠ SWAPPED IN THE DOM, NOT WITH
+                `row-reverse`: reversing visually would leave the tab order
+                running right-to-left, so a keyboard user would reach the
+                primary action first while a sighted one reads it last. Source
+                order and visual order stay the same thing. */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, flexWrap: 'wrap' }}>
-              <button
-                type="button"
-                className="cre-compass-primary cre-compass-btn-primary"
-                onClick={onBegin}
-                disabled={!onBegin}
-                style={BEGIN}
-              >
-                {notStarted ? 'Begin Course' : 'Resume Course'}
-              </button>
               {/* ⚠ HYBRID #12 — A TRUE SECONDARY BUTTON, not the chip. 2026-10-05,
                   the direct ask. `cre-compass-home-chip` is a 10px label in a
                   4px-radius outline — a METADATA tag, which is what it looks
@@ -196,6 +219,15 @@ export function HybridHomeV1({
                   Course Overview
                 </button>
               ) : null}
+              <button
+                type="button"
+                className="cre-compass-primary cre-compass-btn-primary"
+                onClick={onBegin}
+                disabled={!onBegin}
+                style={BEGIN}
+              >
+                {notStarted ? 'Begin Course' : 'Resume Course'}
+              </button>
             </div>
           </div>
         </div>
@@ -412,22 +444,21 @@ export function HybridHomeV1({
               hover fills — not the space between two labels, which is the gap
               plus the padding on both sides. Push this much past 8 and the
               highlights start to look like separate cards. */}
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <SideLink icon={<BookRegular size={13} aria-hidden />} label="My Courses" onClick={() => go('courses')} />
-            <SideLink icon={<FileCertificateRegular size={13} aria-hidden />} label="My Certificates" onClick={() => go('certificates')} />
-            <SideLink icon={<NotebookRegular size={13} aria-hidden />} label="Flashcards" onClick={() => go('course', 'flashcards')} />
-            <SideLink icon={<BallotCheckRegular size={13} aria-hidden />} label="Exam Simulator" onClick={() => go('course', 'exam-simulator')} />
-            <SideLink
-              icon={<CircleInfoRegular size={13} aria-hidden />}
-              label="Exam Information"
-              onClick={onOpenStep ? () => onOpenStep(EXAM_DETAILS_STEP_ID) : undefined}
-            />
-            <SideLink
-              icon={<PenFieldRegular size={13} aria-hidden />}
-              label="Applying for a License"
-              onClick={onOpenStep ? () => onOpenStep(apply.id) : undefined}
-            />
-            <SideLink icon={<ClipboardListCheckRegular size={13} aria-hidden />} label="State Requirements" onClick={onOpenRequirements} />
+          {/* ⚠ HYBRID #14 — ONE LIST, TWO SHAPES (`hybrid-quick-links-style`).
+              The destinations, their order, their icons and their handlers are
+              defined ONCE in `quickLinks` above and rendered by whichever
+              component the flag picks. That is what makes the two arms
+              comparable: a reviewer switching shape cannot also be changing
+              which seven things are in the card, which is exactly what two
+              hand-maintained lists would eventually do. */}
+          <ul style={tiles ? TILE_GRID : { listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {quickLinks.map((link) =>
+              tiles ? (
+                <QuickTile key={link.label} icon={link.icon} label={link.label} onClick={link.onClick} />
+              ) : (
+                <SideLink key={link.label} icon={link.icon} label={link.label} onClick={link.onClick} />
+              ),
+            )}
           </ul>
         </nav>
       </div>
@@ -655,6 +686,28 @@ function Step({
         </div>
       ) : null}
     </section>
+  )
+}
+
+/**
+ * The TILE shape — `hybrid-quick-links-style: tiles`.
+ *
+ * ⚠ SQUARE BY RATIO, not by a fixed height, for the reason `HomeTileGrid`
+ * records: the card's width moves with the grid, so a hard-coded height is
+ * square at exactly one window size.
+ *
+ * ⚠ NO `border`, `background` OR `color` INLINE — `.cre-tile-cta` owns all
+ * three, and an inline value beats the class in the cascade. That is the same
+ * trap the hover fill on `SideLink` fell into twice.
+ */
+function QuickTile({ icon, label, onClick }: { icon: ReactNode; label: string; onClick?: () => void }) {
+  return (
+    <li style={{ minWidth: 0 }}>
+      <button type="button" className="cre-tile-cta" onClick={onClick} disabled={!onClick} style={TILE}>
+        <span aria-hidden style={{ display: 'inline-flex' }}>{icon}</span>
+        <span style={{ minWidth: 0, textAlign: 'center' }}>{label}</span>
+      </button>
+    </li>
   )
 }
 
@@ -918,6 +971,34 @@ const SIDE_CARD_LIFTED: CSSProperties = {
 /* ⚠ `SIDE_BUTTON` WENT 2026-10-05 — it sized the Yes / No pair on Eric's exam
    question, and `ExamScheduleWidget` brings its own controls. Removed rather
    than parked (`noUnusedLocals`); `AtlasHomeV2.tsx` still has it. */
+const TILE_GRID: CSSProperties = {
+  listStyle: 'none',
+  margin: 0,
+  padding: 0,
+  display: 'grid',
+  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
+  gap: 8,
+}
+
+const TILE: CSSProperties = {
+  width: '100%',
+  aspectRatio: '1',
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 8,
+  minWidth: 0,
+  padding: 10,
+  borderRadius: 'var(--radius-md)',
+  cursor: 'pointer',
+  textAlign: 'center',
+  fontFamily: 'var(--font-body)',
+  fontSize: 12,
+  lineHeight: '16px',
+  fontWeight: 600,
+}
+
 const SIDE_ROW: CSSProperties = {
   /* ⚠ `100% + 20px`, MATCHING THE NEGATIVE MARGIN BELOW. `width: 100%` with
      `border-box` sizing means the new 10px side padding eats the TEXT column

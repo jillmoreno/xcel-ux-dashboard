@@ -1302,6 +1302,36 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'hybrid-quick-links-style',
+    /* HYBRID V1'S QUICK LINKS SHAPE — 2026-10-05, the direct ask: bring back
+       the tile treatment and put both within reach.
+
+       ⚠ ITS OWN FLAG, NOT `home-tile-style`. That one drives Testing 3's
+       `HomeTileGrid`, and a flag is GLOBAL STATE however the bar scopes the
+       control — flipping it here to look at Hybrid would have silently
+       reshaped Testing 3's rail too. Two versions asking the same question is
+       not a reason to share the answer.
+
+       ⚠ `rows` IS THE DEFAULT so an unset flag is the shape the version ships
+       with; `=== 'tiles'` is the opt-in, the same direction `home-tile-style`
+       chose and for the same reason — an inverted test makes "no decision"
+       render as a decision. */
+    surface: 'design',
+    owner: 'jill',
+    versions: ['hybrid-v1'],
+    group: 'Widgets',
+    label: 'Quick Links shape',
+    description:
+      'How Hybrid V1\u2019s Quick Links card draws its seven destinations. `Rows` (default) is the stacked list with an icon, a label and a hover-revealed chevron. `Tiles` is the square, outlined treatment \u2014 two across, icon over label, filling on hover. ⚠ THE SAME SEVEN IN THE SAME ORDER WITH THE SAME HANDLERS either way; only the shape changes, which is what makes the two comparable. ⚠ Six squares two-across is a TALL block, so the thing to judge is what it does to the length of the right column, not the tiles themselves.',
+    defaultEnabled: true,
+    defaultVariant: 'rows',
+    variants: [
+      { value: 'rows', label: 'Rows — stacked list', maturity: 'ready' },
+      { value: 'tiles', label: 'Tiles — square, outlined', maturity: 'ready' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-brand-skin',
     /* ERIC'S BRAND SKIN, ON THE DESIGN BAR — 2026-10-05, converted the same way
        as `atlas-heading-font` beside it and for the same reason: brand COLOURS
