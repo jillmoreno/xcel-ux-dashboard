@@ -16,6 +16,7 @@ export type DashboardVersionId =
   | 'discoverability-testing-2'
   | 'discoverability-atlas-compass-nav'
   | 'eric-atlas-v1'
+  | 'hybrid-v1'
   | 'discoverability-testing-3'
 /**
  * The rebrand overview's LAYOUT, resolved from `?version=` by `PlatformShell`
@@ -371,13 +372,50 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1: DashboardVersion =
     'Eric\u2019s Atlas/Compass work as of 2026-10-02: the Top Nav (Home \u00b7 My Learning) over the Global brand, no left rail on Home, the Schedule State Exam banner, the one-frame right rail, the collapsible left rail on the course pages, the course player with Rubi beside it, and the Compass Resources page. Shares the Atlas/Compass code. Feature-flagged.',
 }
 
+// "Hybrid V1" — 2026-10-05, Jillienne's. Eric's Atlas home (the layout, the
+// figures column, the step list) carrying Testing 3's answers to the questions
+// that version had already settled: the coursework timeline with its percentage
+// and current-lesson marker, and the licensing steps folded away by default.
+//
+// ⚠ IT IS A FORK OF THE HOME, NOT A FLAG THROUGH IT. `HybridHomeV1.tsx` is a
+// sibling of `AtlasHomeV2.tsx` (CLAUDE.md: copy it, do not thread conditionals
+// through the original) so Eric's version cannot move when this one does, and
+// neither of us is editing the other's screen. The cost is the usual one — a
+// fix in one does not reach the other — and the note in each file says so.
+//
+// ⚠ IT TAKES THE ATLAS CHROME. `isAtlasCompassNavVersion` answers true for it,
+// so the rail, the slim header and the palette are Eric's; what is forked is
+// the HOME CONTENT only.
+export const DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_V1: DashboardVersion = {
+  id: 'hybrid-v1',
+  owner: 'jill',
+  /* ⚠ NO `maturity` YET — reachable on the design site, not offered to
+     stakeholders. It is being built; `promote-to-prototype` is where that
+     changes. */
+  label: 'Hybrid V1',
+  createdAt: '2026-10-05',
+  modifiedAt: '2026-10-05',
+  description:
+    'Eric\u2019s Atlas home combined with Testing 3\u2019s coursework treatment. The figures column leads with Course Access and drops Days to Review; Begin Course sits in the title area; Steps 2 and 3 (Pass State Exam, Get Licensed) are collapsed by default to keep the first screen to one task; and Complete Coursework carries the percentage and the current-lesson marker.',
+}
+
+/** True for Hybrid V1 — the one version that renders `HybridHomeV1` instead of
+ *  `AtlasHomeV2`. A helper rather than a literal at the call site so the id
+ *  lives in one place, the same shape `isAtlasCompassNavVersion` uses. */
+export function isHybridV1Version(versionId: string | null | undefined): boolean {
+  return versionId === DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_V1.id
+}
+
 /** True for the Atlas/Compass Global Navigation version — and for Eric/Atlas
  *  V1, which is the same pages under its own name. One helper so the shell and
  *  the demo bar cannot disagree about which version is on. */
 export function isAtlasCompassNavVersion(versionId: string | null | undefined): boolean {
   return (
     versionId === DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV.id ||
-    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1.id
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1.id ||
+    /* Hybrid V1 takes the Atlas CHROME (rail, slim header, palette) and forks
+       only the home content — see its entry above. */
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_V1.id
   )
 }
 
@@ -468,6 +506,7 @@ export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
   // feat/atlas-compass-global-nav.
   DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV,
   DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1,
+  DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_V1,
   DISCOVERABILITY_DASHBOARD_VERSION_LEARNER_FOCUSED,
 ]
 

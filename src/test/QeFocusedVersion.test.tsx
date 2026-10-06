@@ -259,6 +259,10 @@ describe('the QE Focused version is ARCHIVED but still reachable', () => {
       // behind its flag (the Header filters it).
       'discoverability-atlas-compass-nav',
       'eric-atlas-v1',
+      /* ⚠ HYBRID V1 JOINED 2026-10-05 — Jill's, and it sits after the two Atlas
+         entries because it is built FROM them: it takes the Atlas chrome and
+         forks only the home. Reading the picker top to bottom is the lineage. */
+      'hybrid-v1',
       'discoverability-learner-focused',
     ])
     expect(DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)).not.toContain(

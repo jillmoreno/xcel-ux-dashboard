@@ -19,6 +19,9 @@ import { SquareTile } from './SquareTile'
 import { TaskRow } from '@/components/learning/study-calendar/TaskRow'
 import { ScheduleExamBanner, StudyJourneyWidget } from '@/components/learning/StudyJourneyWidget'
 import { AtlasHomeV2 } from '@/components/compass/AtlasHomeV2'
+import { HybridHomeV1 } from '@/components/compass/HybridHomeV1'
+import { useSearchParams } from 'react-router-dom'
+import { isHybridV1Version } from '@/data/dashboardVersions'
 import { HomeNavTileColumn } from '@/components/layout/HomeNavTiles'
 import { HomeTileGrid } from '@/components/layout/HomeTileGrid'
 import { HomeReadinessStub } from '@/components/layout/HomeReadinessStub'
@@ -695,7 +698,12 @@ export function LearnerFocusedBand({
   /* THE ATLAS HOME'S LAYOUT — `atlas-home-layout` (2026-10-02). V2 renders
      `AtlasHomeV2` in place of this band's Atlas layout; read unconditionally
      (rules of hooks), applied only on the Atlas home (`framedPace`). */
+  const [hybridVersionParams] = useSearchParams()
   const atlasHomeV2 = useFeatureFlag('atlas-home-layout').variant === 'v2'
+  /* Which of the two forked homes this version wants. Read from `?version=`
+     rather than a flag: the fork IS the version, so a flag would be a second
+     switch that could disagree with the picker. */
+  const hybridV1 = isHybridV1Version(hybridVersionParams.get('version'))
   /* NOT ON THE ATLAS HOME (merged 2026-10-02): its Study Pace card is part of
      the Atlas design (the brand's hover fill, the Primary 200 stroke), so the
      baseline's hiding flag does not reach it. */
@@ -1238,6 +1246,30 @@ export function LearnerFocusedBand({
   /* THE ATLAS HOME, V2 (Figma 161:662, 2026-10-02) — the whole layout, in place
      of this band's Atlas arrangement, when `atlas-home-layout` is V2. Fed the
      band's own figures and handlers, so it moves with the same demo controls. */
+  /* ⚠ HYBRID V1 TAKES ITS OWN HOME — 2026-10-05. Same props, same figures, same
+     handlers; a forked layout. Checked BEFORE the Atlas arm because Hybrid also
+     answers true to `isAtlasCompassNavVersion` (it wants Eric's chrome), so the
+     order is what keeps it on its own screen rather than his. */
+  if (framedPace && atlasHomeV2 && resume && hybridV1) {
+    return (
+      <HybridHomeV1
+        path={path}
+        courseTitle={path.title}
+        coverUrl={resume.imageUrl ?? getCourseImage(resume.id)}
+        percent={percent}
+        today={FIXTURE_TODAY}
+        hoursRemaining={resume.hours * (1 - (resume.progress ?? 0) / 100)}
+        accessExpiresAt={resume.expiresAt}
+        examDate={examDate}
+        notStarted={(resume.progress ?? 0) <= 0}
+        onBegin={onResume}
+        onOverview={onOverview}
+        onOpenStop={onOpenStop}
+        onOpenStep={onOpenStep}
+        onOpenRequirements={onViewDetails}
+      />
+    )
+  }
   if (framedPace && atlasHomeV2 && resume) {
     return (
       <AtlasHomeV2
