@@ -12,7 +12,8 @@ import {
   type ReactNode,
 } from 'react'
 import { useLocation } from 'react-router-dom'
-import { isAtlasCompassNavVersion } from '@/data/dashboardVersions'
+import { isAtlasCompassNavVersion, resolveDashboardVersion } from '@/data/dashboardVersions'
+import { useAccount } from '@/context/AccountContext'
 import { BrowserWindow, MobileScreen, Monitor, TabletScreen } from '@/icons'
 import { isTestSession } from '@/data/gatewayMode'
 
@@ -124,7 +125,13 @@ export function DeviceFrame({ chrome, children }: { chrome?: ReactNode; children
   const { device } = useDeviceFrame()
   // The Atlas/Compass version's window opens at 1608 wide, not 1440
   // (2026-09-24, the direct ask). See `.cre-demo-stage-window--atlas`.
-  const atlas = isAtlasCompassNavVersion(new URLSearchParams(useLocation().search).get('version'))
+  /* ⚠ RESOLVED, NOT RAW (2026-10-06) — the demo stage opened at 1440 instead of
+     the Atlas 1608 on a bare `?demo=1` once an Atlas version became the
+     default. See `resolveDashboardVersion`. */
+  const { brand } = useAccount()
+  const atlas = isAtlasCompassNavVersion(
+    resolveDashboardVersion(new URLSearchParams(useLocation().search).get('version'), brand),
+  )
   if (device === 'desktop')
     return (
       <>

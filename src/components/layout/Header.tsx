@@ -25,6 +25,7 @@ import {
   writeDefaultDashboardVersion,
   dashboardVersionsForAudience,
   defaultDiscoverabilityVersionFor,
+  resolveDashboardVersion,
   isAtlasCompassNavVersion,
   isHybridV1Version,
   type DashboardVersionId,
@@ -139,7 +140,11 @@ export function Header() {
   // ~98px wide — just clear of the brand guide's 95px minimum width). Desktop only;
   // every other version keeps 72 / 52. `PlatformShell` reads the same rule
   // to pin its rails under it.
-  const rebrandVersion = new URLSearchParams(search).get('version')
+  /* ⚠ RESOLVED, NOT RAW — 2026-10-06. With the raw param this answered false on
+     a bare `?demo=1`, so the slim Atlas header went missing the day an Atlas
+     version became the default while the body rendered as one. See
+     `resolveDashboardVersion`. */
+  const rebrandVersion = resolveDashboardVersion(new URLSearchParams(search).get('version'), brand)
   const atlasSlimHeader = platformNav && !mobile && isAtlasCompassNavVersion(rebrandVersion)
   /* Hybrid V1 only — it answers true to `isAtlasCompassNavVersion` as well (it
      takes the Atlas chrome), so anything that must differ between the two asks

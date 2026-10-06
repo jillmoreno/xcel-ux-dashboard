@@ -5,6 +5,7 @@ import { useSearchParams } from 'react-router-dom'
 import { useAccount, supportsMembership, type Brand } from '@/context/AccountContext'
 import {
   defaultDiscoverabilityVersionFor,
+  resolveDashboardVersion,
   isAtlasCompassNavVersion,
   isHybridV1Version,
   type DashboardLayout,
@@ -342,10 +343,13 @@ function PlatformShellBody() {
   /* Hybrid V1 specifically — it answers true to `isAtlasCompassNavVersion` too
      (it takes the Atlas chrome), so anything that must differ between the two
      asks this instead. */
-  const hybridVersion = isHybridV1Version(params.get('version'))
-  const atlasNav = isAtlasCompassNavVersion(
-    params.get('version') ?? defaultDiscoverabilityVersionFor(brand),
-  )
+  /* ⚠ RESOLVED, NOT RAW — 2026-10-06. `atlasNav` below already did this and
+     `hybridVersion` did not, which is the split that drew the Atlas top nav
+     over Testing 3's course card on the day Hybrid V1 became the default. One
+     spelling now, in `resolveDashboardVersion`, which carries the full note. */
+  const shellVersion = resolveDashboardVersion(params.get('version'), brand)
+  const hybridVersion = isHybridV1Version(shellVersion)
+  const atlasNav = isAtlasCompassNavVersion(shellVersion)
   // Nav Version → Expanding Top Nav (2026-10-01, the designer's request): NO
   // left rail on any page — the header's slide-out links carry the navigation.
   // The rail's grid column stays (at 0 / a centring 1fr) so the grid's
@@ -1987,16 +1991,19 @@ function SectionShell({
   children: ReactNode
 }) {
   const [shellParams] = useSearchParams()
-  const atlasHome =
-    active === 'dashboard' && isAtlasCompassNavVersion(shellParams.get('version'))
+  /* ⚠ HOISTED ABOVE THE VERSION READS — it used to be declared ~60 lines down,
+     beside `hasMembership`, and the three predicates below need it now that
+     they resolve the default rather than reading the raw param. */
+  const { brand } = useAccount()
+  const sectionVersion = resolveDashboardVersion(shellParams.get('version'), brand)
+  const atlasHome = active === 'dashboard' && isAtlasCompassNavVersion(sectionVersion)
   /* Hybrid V1's Home only — it answers true to `atlasHome` as well (it takes
      the Atlas chrome), so this is tested FIRST at the padding below. */
-  const hybridHome = active === 'dashboard' && isHybridV1Version(shellParams.get('version'))
+  const hybridHome = active === 'dashboard' && isHybridV1Version(sectionVersion)
   // The Atlas RESOURCES page in the Compass treatment (2026-10-01, the
   // designer's request): no brand band — a serif title and a plain lede on
   // the Compass page, at the Overview's 56px margin. See `ResourcesPanel`.
-  const atlasResources =
-    active === 'resources' && isAtlasCompassNavVersion(shellParams.get('version'))
+  const atlasResources = active === 'resources' && isAtlasCompassNavVersion(sectionVersion)
   /* ⚠ COURSES AND CERTIFICATES NO LONGER TITLE THEMSELVES FROM HERE.
      `SectionPageHeader` draws their title (at Home's size) above this shell, so
      both the hero and the `<h1>` below have to stand down — two titles is the
@@ -2053,7 +2060,6 @@ function SectionShell({
     active === 'learning-path' && isHomeActive(lpCount, lpVersion, lpSelected)
   // Partner Offers + Free Content only show the hero search once the list
   // is long enough to be worth filtering (> 12 items); short lists drop it.
-  const { brand } = useAccount()
   const hasMembership = supportsMembership(brand)
   // Declared here rather than beside `libraryHero` above because `heroFor` is
   // brand-aware now and `brand` is not in scope until this line.
@@ -2228,13 +2234,13 @@ function SectionPanel({
 }) {
   const [panelParams, setPanelParams] = useSearchParams()
   const atlasCourse = useAtlasCourse()
-  const { user } = useAccount()
+  const { user, brand } = useAccount()
   // The Compass course OVERVIEW (Figma 44:2211) — full-bleed on its own warm
   // page, so outside SectionShell like Membership below; it carries its own
   // (visually hidden) "Overview" <h1>. Atlas/Compass version only.
   if (
     active === 'course' &&
-    isAtlasCompassNavVersion(panelParams.get('version') ?? '') &&
+    isAtlasCompassNavVersion(resolveDashboardVersion(panelParams.get('version'), brand)) &&
     atlasCoursePageFor(panelParams.get('coursePage')).id === 'overview'
   ) {
     const openCoursePage = (page: AtlasCoursePageId) =>
@@ -2422,7 +2428,12 @@ function LearningPathSection() {
  *  (2026-10-01) — read here, so `ResourcesPanel` stays router-free. */
 function ShellResourcesPanel() {
   const [params] = useSearchParams()
-  return <ResourcesPanel compass={isAtlasCompassNavVersion(params.get('version'))} />
+  const { brand } = useAccount()
+  return (
+    <ResourcesPanel
+      compass={isAtlasCompassNavVersion(resolveDashboardVersion(params.get('version'), brand))}
+    />
+  )
 }
 
 function renderBody(

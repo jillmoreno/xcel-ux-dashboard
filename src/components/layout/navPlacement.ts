@@ -1,7 +1,8 @@
 import { useSearchParams } from 'react-router-dom'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { ATLAS_NAV_PARAM, type AtlasNavVersion } from './atlasNavVersion'
-import { isAtlasCompassNavVersion } from '@/data/dashboardVersions'
+import { isAtlasCompassNavVersion, resolveDashboardVersion } from '@/data/dashboardVersions'
+import { useAccount } from '@/context/AccountContext'
 
 /**
  * Which navigation the rebrand shell draws, and what follows from it —
@@ -80,6 +81,15 @@ const PLACEMENT_FOR_ATLAS_NAV: Record<AtlasNavVersion, NavPlacement> = {
 export function useNavPlacement(): NavPlacement {
   const [params] = useSearchParams()
   const flag = useFeatureFlag('nav-placement')
+  /* ⚠ ALL THREE HOOKS BEFORE THE `?nav=` EARLY RETURN BELOW. `useAccount` went
+     in beside its first use on 2026-10-06 and eslint caught it immediately: a
+     hook after a conditional return is called on some renders and not others,
+     so a pinned `?nav=` URL and a bare one would run different hook sequences
+     and React would throw on the transition between them. ⚠ The full suite was
+     GREEN with it there — no test navigates from a `?nav=` URL to one without,
+     which is the only way to see it. `npm run lint` on the changed files is
+     what found it. */
+  const { brand } = useAccount()
   /* ⚠ `?nav=` WINS, AND IT IS AN ALIAS RATHER THAN A SECOND SOURCE — 2026-10-05.
      Every Atlas link shared before the unification carries one of Eric's three
      spellings, and a pinned URL that quietly stopped meaning what it said would
@@ -98,11 +108,19 @@ export function useNavPlacement(): NavPlacement {
      line handed every Atlas version a left rail the moment a suite pinned the
      flag off — which is exactly how `QeFocusedVersion.test.tsx` caught it.
 
-     ⚠ READS THE `?version=` PARAM ONLY, not the resolved default. With no
-     param the brand default applies, and that is Testing 3 — not an Atlas
-     version — so the param's absence is already the right answer and this
-     avoids pulling `AccountContext` into a navigation helper. */
-  const atlasVersion = isAtlasCompassNavVersion(params.get('version'))
+     ⚠ IT READ THE `?version=` PARAM ONLY UNTIL 2026-10-06, and the reasoning
+     written here was: "with no param the brand default applies, and that is
+     Testing 3 — not an Atlas version — so the param's absence is already the
+     right answer, and this avoids pulling `AccountContext` into a navigation
+     helper." Both halves were true and the conclusion expired the moment HYBRID
+     V1 became the default: an Atlas-family version with no `?version=` on the
+     URL, which this answered `false` for. The result was a left rail under an
+     Atlas top nav. The `AccountContext` cost is now paid — it is one hook in a
+     function that is already a hook, read at the top with the other two. See
+     `resolveDashboardVersion`. */
+  const atlasVersion = isAtlasCompassNavVersion(
+    resolveDashboardVersion(params.get('version'), brand),
+  )
   if (!flag.enabled) return atlasVersion ? 'top' : 'left'
   if (flag.variant === 'top') return 'top'
   if (flag.variant === 'expanding-top') return 'expanding-top'

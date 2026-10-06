@@ -1,4 +1,8 @@
-import { isAtlasCompassNavVersion, type DashboardLayout } from '@/data/dashboardVersions'
+import {
+  isAtlasCompassNavVersion,
+  resolveDashboardVersion,
+  type DashboardLayout,
+} from '@/data/dashboardVersions'
 import {
   createContext,
   useContext,
@@ -431,7 +435,12 @@ export function MembershipOverview({
   // launcher's placeholder. Keyed on the URL's version because the layout this
   // component is handed (`testing`) is shared with the Testing version, which
   // has no Compass course page.
-  const resumeToCompass = isAtlasCompassNavVersion(shellParams.get('version'))
+  /* ⚠ RESOLVED, NOT RAW (2026-10-06) — otherwise Resume falls back to the
+     in-shell launcher on a bare `?demo=1` under an Atlas default, which is the
+     one placeholder this branch exists to avoid. */
+  const resumeToCompass = isAtlasCompassNavVersion(
+    resolveDashboardVersion(shellParams.get('version'), brand),
+  )
     ? () =>
         setShellParams(
           (prev) => {

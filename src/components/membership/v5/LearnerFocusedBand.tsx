@@ -21,7 +21,7 @@ import { ScheduleExamBanner, StudyJourneyWidget } from '@/components/learning/St
 import { AtlasHomeV2 } from '@/components/compass/AtlasHomeV2'
 import { HybridHomeV1 } from '@/components/compass/HybridHomeV1'
 import { useSearchParams } from 'react-router-dom'
-import { isHybridV1Version } from '@/data/dashboardVersions'
+import { isHybridV1Version, resolveDashboardVersion } from '@/data/dashboardVersions'
 import { HomeNavTileColumn } from '@/components/layout/HomeNavTiles'
 import { HomeTileGrid } from '@/components/layout/HomeTileGrid'
 import { HomeReadinessStub } from '@/components/layout/HomeReadinessStub'
@@ -703,7 +703,11 @@ export function LearnerFocusedBand({
   /* Which of the two forked homes this version wants. Read from `?version=`
      rather than a flag: the fork IS the version, so a flag would be a second
      switch that could disagree with the picker. */
-  const hybridV1 = isHybridV1Version(hybridVersionParams.get('version'))
+  /* ⚠ RESOLVED, NOT RAW — 2026-10-06, and this is the read whose absence was
+     VISIBLE: on a bare `?demo=1` it answered false while the shell's chrome
+     answered true, so the page drew Atlas navigation over Testing 3's combined
+     course card. One screen, two versions. See `resolveDashboardVersion`. */
+  const hybridV1 = isHybridV1Version(resolveDashboardVersion(hybridVersionParams.get('version'), brand))
   /* NOT ON THE ATLAS HOME (merged 2026-10-02): its Study Pace card is part of
      the Atlas design (the brand's hover fill, the Primary 200 stroke), so the
      baseline's hiding flag does not reach it. */

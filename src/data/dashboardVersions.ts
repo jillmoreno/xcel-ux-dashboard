@@ -605,6 +605,36 @@ export function defaultDiscoverabilityVersionFor(brand: Brand): string {
     : DISCOVERABILITY_DASHBOARD_VERSION_MARKETING_FOCUSED.id
 }
 
+/**
+ * THE VERSION THE APP IS ACTUALLY ON — `?version=` when the URL names one, else
+ * the brand's default. 2026-10-06.
+ *
+ * ⚠ IT EXISTS BECAUSE TWELVE CALL SITES READ THE RAW PARAM AND ONE DID NOT, and
+ * the day that mattered was the day a version in the ATLAS FAMILY became the
+ * default. Until then every default (QE Focused, Testing, Testing 3) was
+ * outside that family, so `isAtlasCompassNavVersion(null)` and
+ * `isAtlasCompassNavVersion(theDefault)` both answered false and the raw reads
+ * were right BY COINCIDENCE. Hybrid V1 broke all of them at once: a bare
+ * `?demo=1` drew the Atlas top nav (the one resolved read) over Testing 3's
+ * course card (every raw one) — one screen made of two versions.
+ *
+ * ⚠ SO `null` IS NOT A VERSION, it is a question. Any predicate asking "which
+ * version is this?" has to be handed the ANSWER, which is what this returns.
+ * `params.get('version')` on its own is only ever "did the URL say so".
+ *
+ * ⚠ AND THE BRAND ARGUMENT IS NOT DECORATION, even though `Brand` is a
+ * one-member union and this always returns the XCEL answer today. It is the
+ * same seam `archivedItems.ts` keeps `DISCOVERABILITY_DASHBOARD_VERSION_MARKETING_FOCUSED`
+ * alive for — a second brand resolves to a different default, and a hard-coded
+ * `'xcel'` here would fail on the day one is added rather than at the edit.
+ */
+export function resolveDashboardVersion(
+  param: string | null | undefined,
+  brand: Brand,
+): string {
+  return param ?? defaultDiscoverabilityVersionFor(brand)
+}
+
 // Built-in baseline default — the version a fresh visitor lands on when
 // they haven't set their own default. V3 is the current working
 // iteration, so new sessions start there.

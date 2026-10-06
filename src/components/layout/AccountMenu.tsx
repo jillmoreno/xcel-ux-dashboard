@@ -1,7 +1,7 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { CircleUserLight, HelpCircle, LogOut, Sliders } from '@/icons'
-import { isAtlasCompassNavVersion } from '@/data/dashboardVersions'
+import { isAtlasCompassNavVersion, resolveDashboardVersion } from '@/data/dashboardVersions'
 import { Avatar } from '@/components/ui/Avatar'
 import { MembershipBadge } from '@/components/ui/MembershipBadge'
 import { AppearancePreferencesSheet } from '@/components/account/AppearancePreferencesSheet'
@@ -53,10 +53,17 @@ export function AccountMenu({
   const ref = useRef<HTMLDivElement>(null)
   const id = useId()
   const { pathname, search } = useLocation()
+  /* ⚠ HOISTED ABOVE `atlasHeader` — it was declared further down, and the read
+     below needs `brand` now that it resolves the default rather than reading
+     the raw param. */
+  const { brand, tierLabel, tierTone, avatarTier, user } = useAccount()
   // The Atlas/Compass header (see the glyph below).
+  /* ⚠ RESOLVED, NOT RAW (2026-10-06) — see `resolveDashboardVersion`. With the
+     raw param the account glyph reverted to its non-Atlas treatment on a bare
+     `?demo=1` under an Atlas default, beside a header that was Atlas. */
   const atlasHeader =
     pathname === '/dashboard-rebrand' &&
-    isAtlasCompassNavVersion(new URLSearchParams(search).get('version'))
+    isAtlasCompassNavVersion(resolveDashboardVersion(new URLSearchParams(search).get('version'), brand))
   /*
    * Preferences needs BOTH conditions, and they answer different questions.
    * The route scope is a CORRECTNESS gate — the appearance treatment only
@@ -76,7 +83,6 @@ export function AccountMenu({
   // used instead.
   // `membership` was read here too, for the member-gated community row that
   // left with the outbound group on 2026-09-30 — see `account-menu-free-content`.
-  const { brand, tierLabel, tierTone, avatarTier, user } = useAccount()
   /*
    * THE LEARNER COMES FROM CONTEXT — 2026-09-16.
    *
