@@ -388,8 +388,11 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
   it('Home V2 (Figma 161:662) is the default: one course card, the exam-date card and the links card', () => {
     renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav')
     const card = screen.getByRole('region', { name: 'Current course' })
-    expect(within(card).getByText('Expected completion date')).toBeTruthy()
-    expect(within(card).getByText('Days to review')).toBeTruthy()
+    // One Course progress panel since 2026-10-06 (Figma 217:3793): Expected
+    // completion + Course access; Days to review and the pace goal are gone.
+    const progress = within(card).getByRole('region', { name: 'Course progress' })
+    expect(within(progress).getByText('Expected completion')).toBeTruthy()
+    expect(within(card).queryByText('Days to review')).toBeNull()
     expect(within(card).getByRole('img', { name: /Course progress \d+% complete/ })).toBeTruthy()
     expect(within(card).getByRole('button', { name: 'Begin Course' })).toBeTruthy()
     expect(within(card).getByRole('region', { name: 'Pass State Exam' })).toBeTruthy()
@@ -763,7 +766,9 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
     expect(home.style.color).toBe('')
     expect(home.style.background).toBe('')
     const css = readFileSync('src/styles/tokens.css', 'utf8')
-    expect(css).toMatch(/\.cre-atlas-nav-row\[aria-current='page'\]\s*\{[^}]*border-left: 3px solid/)
+    // The active row is its fill and ink — no left rule since 2026-10-06.
+    expect(css).toMatch(/\.cre-atlas-nav-row\[aria-current='page'\]\s*\{[^}]*background: var\(--color-atlas-nav-active-fill\)/)
+    expect(css).not.toMatch(/\.cre-atlas-nav-row\[aria-current='page'\]\s*\{[^}]*border-left:/)
   })
 })
 

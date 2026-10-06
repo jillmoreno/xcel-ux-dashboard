@@ -1297,8 +1297,12 @@ function PlatformShellBody() {
              centering the rail's flush-left grid used to make unnecessary.
              1172 is the design's own content width — Figma 765:3801 insets it
              110 either side of a 1392 frame — and `SectionShell`'s 40px gutter
-             lives inside it, unchanged. */
-          ...(topNav ? { maxWidth: 1172, width: '100%', margin: '0 auto' } : null),
+             lives inside it, unchanged.
+             ⚠ NOT on the Compass COURSE PLAYER (2026-10-06, Eric's request): its
+             content, player bar and footer fill whatever the rails leave, at
+             every rail state — the 1172 cap (arriving with the 2026-10-05
+             merge) boxed them into the middle with gaps either side. */
+          ...(topNav && !compassCourseRail ? { maxWidth: 1172, width: '100%', margin: '0 auto' } : null),
         }}
       >
         {homeHeader && !launcher.courseId ? <HomePageHeader /> : null}

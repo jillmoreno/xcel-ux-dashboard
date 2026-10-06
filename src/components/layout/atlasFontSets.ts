@@ -40,11 +40,12 @@ export const ATLAS_FONTS: readonly {
    *  value with its tokens intact — un-hiding is deleting this flag. */
   hidden?: boolean
 }[] = [
-  { font: 'dm-serif-display', label: 'DM Serif Display (current)' },
+  { font: 'dm-serif-display', label: 'DM Serif Display (style guide)' },
   { font: 'playfair-2', label: 'Playfair 2', google: 'Playfair:wght@700' },
-  // 500 is loaded too, for the Home course title alone (2026-09-30); every
-  // other heading is held at 600 by a rule in tokens.css.
-  { font: 'source-serif-4', label: 'Source Serif 4', google: 'Source+Serif+4:wght@500;600' },
+  // Two weights: 400 for the Home course title alone, 500 for every other
+  // heading (held there by a rule in tokens.css). Both one step lighter on
+  // 2026-10-06 (the designer's request) — they were 500 and 600.
+  { font: 'source-serif-4', label: 'Source Serif 4 (default)', google: 'Source+Serif+4:wght@400;500' },
   { font: 'figtree', label: 'Proxima Nova stand-in (Figtree)', google: 'Figtree:wght@500' },
   // Hidden from the dropdown 2026-09-30 (the designer's request); the
   // semi-bold / course-title-500 rules in tokens.css stay for it.
@@ -55,9 +56,11 @@ export const ATLAS_FONTS: readonly {
 
 export const ATLAS_FONT_PARAM = 'fonts'
 
-/** `?fonts=` → a known face, else the current one. Validated, not cast. */
+/** `?fonts=` → a known face, else the default — Source Serif 4 since
+ *  2026-10-06 (was DM Serif Display). Validated, not cast. */
+export const ATLAS_FONT_DEFAULT: AtlasFont = 'source-serif-4'
 export function atlasFontFor(param: string | null): AtlasFont {
-  return ATLAS_FONTS.some((f) => f.font === param) ? (param as AtlasFont) : 'dm-serif-display'
+  return ATLAS_FONTS.some((f) => f.font === param) ? (param as AtlasFont) : ATLAS_FONT_DEFAULT
 }
 
 /** The Google Fonts stylesheet for a face, or null when index.html has it. */

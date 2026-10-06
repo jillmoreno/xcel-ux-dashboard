@@ -1547,9 +1547,11 @@
   outline-offset: 2px;
 }
 .cre-atlas-nav-row[aria-current='page'] {
+  /* NO LEFT RULE (2026-10-06, Eric's request) — the fill and the ink carry the
+     active state. It was a 3px bar in --color-atlas-nav-active-bar with the
+     padding cut to 13 to pay for it; the padding is back at the idle row's 16
+     so the label does not move. */
   background: var(--color-atlas-nav-active-fill);
-  border-left: 3px solid var(--color-atlas-nav-active-ink);
-  padding-left: 13px;
   color: var(--color-atlas-nav-active-ink);
   font-weight: 600;
 }
@@ -5542,11 +5544,9 @@ a.cre-library-card-title::after {
   color: var(--color-atlas-nav-hover-ink);
 }
 
-/* The left-nav active row's stroke has its own token, so it can differ from
-   the row's text colour. */
-[data-atlas-palette] .cre-atlas-nav-row[aria-current='page'] {
-  border-left-color: var(--color-atlas-nav-active-bar);
-}
+/* (The left-nav active row's stroke — `border-left-color:
+   var(--color-atlas-nav-active-bar)` — went with the stroke itself on
+   2026-10-06; the token stays for anything else that reads it.) */
 
 /* Left-nav idle rows are the guide's P2-Regular (2026-09-29, the designer's
    request; they were Medium 500). The active row keeps SemiBold 600, which is
@@ -5612,6 +5612,11 @@ a.cre-library-card-title::after {
   /* The journey's CURRENT stop — its title and its dot — in SECONDARY 600,
      #7E6748 (same day). */
   --color-atlas-home-current-stop: var(--color-tertiary-600);
+  /* The Course progress panel's eyebrows in SECONDARY 600, #7E6748 — 4.71:1 on
+     the panel's #F3F0EA, passing AA for the 11px caps. The design's Secondary
+     500 (Figma 217:3793) is 3.23:1 there and fails; swapped 2026-10-06 after a
+     contrast check, at the designer's request. */
+  --color-atlas-home-eyebrow: var(--color-tertiary-600);
 }
 
 [data-brand='xcel'][data-atlas-palette][data-atlas-brand='cre'] {
@@ -5757,17 +5762,21 @@ a.cre-library-card-title::after {
 [data-atlas-palette][data-atlas-font='source-serif-4'] {
   --font-heading-serif: 'Source Serif 4', Georgia, serif;
 }
-/* The Home course title one step lighter, Medium (500), under Source Serif 4
-   (2026-09-30, the designer's request). Loading 500 alongside 600 means a
-   heading that asks for 400 would now pick 500, so every other heading-face
-   element is pinned to the SemiBold it had — the same inline-style match as
-   the Open Sans rule below; the title's class outranks it. */
+/* Under Source Serif 4 the Home course title sits one step lighter than every
+   other heading (2026-09-30, the designer's request) — Regular 400 against
+   Medium 500 since 2026-10-06, when both dropped a step (they were 500 and
+   600). Two weights are loaded, so a heading asking for any other weight would
+   snap to the nearer one; every heading-face element is pinned with the same
+   inline-style match as the Open Sans rule below, and the title's class
+   outranks it. */
 [data-atlas-palette][data-atlas-font='source-serif-4'] [style*='--font-heading-serif'],
 [data-atlas-palette][data-atlas-font='source-serif-4'] .cre-dash-serif-headings [style*='--font-heading)'] {
-  font-weight: 600 !important;
+  /* One step lighter on 2026-10-06 (the designer's request): Medium, was 600. */
+  font-weight: 500 !important;
 }
 [data-atlas-palette][data-atlas-font='source-serif-4'] .cre-compass-course-title[style] {
-  font-weight: 500 !important;
+  /* Regular, was 500 — the same one-step drop. */
+  font-weight: 400 !important;
 }
 [data-atlas-palette][data-atlas-font='figtree'] {
   --font-heading-serif: 'Figtree', system-ui, sans-serif;
@@ -6221,3 +6230,14 @@ a.cre-library-card-title::after {
   background: color-mix(in srgb, var(--color-compass-page-card-border) 45%, transparent) !important;
 }
 
+
+/* Home V2's progress-dial TRACK at Primary 200 for CRE, McKissock and Global
+   (2026-10-06, the designer's request): their Primary 100 nearly matches the
+   panel behind it, so the track disappeared. Elite takes Primary 100 (the
+   fallback in AtlasHomeV2's ProgressDial); XCEL sets its own. The panel's
+   dividers share this token, so they follow. */
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='global'],
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='cre'],
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='mckissock'] {
+  --color-atlas-dial-track: var(--color-primary-200);
+}

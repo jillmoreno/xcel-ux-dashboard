@@ -1332,12 +1332,14 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Widgets',
     label: 'Brand',
     description:
-      'Which Colibri brand the Atlas/Compass pages are dressed as — the LOGO and the BRAND COLOURS only. ⚠ IT IS A SKIN, NOT A BRAND: `Brand` in AccountContext stays XCEL, so the courses, personas and fixtures are XCEL’s whichever skin is showing; neutrals, type scale, spacing and layout are platform and do not move. Global (the default since 2026-10-01) is no brand at all — the Compass Design System v5’s own colours, for an instance that is not any Colibri brand. ⚠ REQUIRES the Atlas palette (`atlas-xcel-palette`, on by default): with it off, tokens.css never re-points the ramps and this control changes nothing.',
+      'Which Colibri brand the Atlas/Compass pages are dressed as — the LOGO and the BRAND COLOURS only. ⚠ IT IS A SKIN, NOT A BRAND: `Brand` in AccountContext stays XCEL, so the courses, personas and fixtures are XCEL’s whichever skin is showing; neutrals, type scale, spacing and layout are platform and do not move. XCEL is the default (again since 2026-10-06; Global was from 2026-10-01). Global is no brand at all — the Compass Design System v5’s own colours, for an instance that is not any Colibri brand. ⚠ REQUIRES the Atlas palette (`atlas-xcel-palette`, on by default): with it off, tokens.css never re-points the ramps and this control changes nothing.',
     defaultEnabled: true,
-    defaultVariant: 'global',
+    // XCEL loads first and leads the list (2026-10-06, Eric's request); Global
+    // keeps its colours and sits second.
+    defaultVariant: 'xcel',
     variants: [
-      { value: 'global', label: 'Global' },
       { value: 'xcel', label: 'XCEL (Insurance)' },
+      { value: 'global', label: 'Global' },
       { value: 'cre', label: 'Colibri Real Estate' },
       { value: 'mckissock', label: 'McKissock Learning' },
       { value: 'elite', label: 'Elite Learning' },
@@ -1373,11 +1375,13 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     // Variant-only, the same shape as `dashboard-heading-font` below: the
     // enable toggle is on so the flag is live, and the CHOICE is the variant.
     defaultEnabled: true,
-    defaultVariant: 'dm-serif-display',
+    // Source Serif 4 is the face a fresh demo loads (2026-10-06, Eric's
+    // request); it was DM Serif Display, the style guide's own face.
+    defaultVariant: 'source-serif-4',
     variants: [
-      { value: 'dm-serif-display', label: 'DM Serif Display (current)' },
+      { value: 'dm-serif-display', label: 'DM Serif Display (style guide)' },
       { value: 'playfair-2', label: 'Playfair 2' },
-      { value: 'source-serif-4', label: 'Source Serif 4' },
+      { value: 'source-serif-4', label: 'Source Serif 4 (default)' },
       { value: 'figtree', label: 'Proxima Nova stand-in (Figtree)' },
       { value: 'outfit', label: 'Outfit' },
       { value: 'instrument-sans', label: 'Instrument Sans' },

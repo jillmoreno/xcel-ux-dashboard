@@ -24,12 +24,13 @@ import { useSyncExternalStore } from 'react'
 export type AtlasSkin = 'global' | 'xcel' | 'cre' | 'mckissock' | 'elite'
 
 export const ATLAS_SKINS: readonly { skin: AtlasSkin; label: string }[] = [
+  // XCEL first, and the default (2026-10-06, Eric's request); Global second.
+  { skin: 'xcel', label: 'XCEL (Insurance)' },
   // GLOBAL (2026-09-30) — no brand: the Atlas experience in the Compass Design
   // System v5's own colours (steel, slate, terracotta, one white surface), for
   // an instance that is not any Colibri brand. Colours only — the file's fonts
   // and component styles are deliberately not taken. See tokens.css.
   { skin: 'global', label: 'Global' },
-  { skin: 'xcel', label: 'XCEL (Insurance)' },
   { skin: 'cre', label: 'Colibri Real Estate' },
   { skin: 'mckissock', label: 'McKissock Learning' },
   { skin: 'elite', label: 'Elite Learning' },
@@ -37,9 +38,9 @@ export const ATLAS_SKINS: readonly { skin: AtlasSkin; label: string }[] = [
 
 export const ATLAS_SKIN_PARAM = 'skin'
 
-/** The skin a link with no `?skin=` shows: GLOBAL since 2026-10-01 (the
- *  designer's request; it was XCEL). */
-export const ATLAS_SKIN_DEFAULT: AtlasSkin = 'global'
+/** The skin a link with no `?skin=` shows: XCEL again since 2026-10-06 (the
+ *  designer's request); it was Global from 2026-10-01. */
+export const ATLAS_SKIN_DEFAULT: AtlasSkin = 'xcel'
 
 /** `?skin=` → a known skin, else the default. Validated, not cast: a
  *  hand-edited link can name anything. */

@@ -2,7 +2,6 @@ import { useMemo, useState, type CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   AngleRightRegular,
-  GaugeThin,
   LockRegular,
 } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
@@ -115,14 +114,7 @@ export function AtlasHomeV2({
     [today, hoursRemaining, accessExpiresAt, examDate, notStarted],
   )
   const preset = defaultPreset(model)
-  const reviewDays = Math.max(0, model.daysToCeiling - preset.days)
   const accessDays = accessExpiresAt ? Math.max(0, daysUntil(accessExpiresAt, today) ?? 0) : null
-  /* THE WEEK GOAL IS THE DESIGN'S 3 (2026-10-02, the designer's request), not
-     derived. ⚠ It was `preset.days / 7` rounded, which read "2 Week Goal" for
-     the 13 days the model gives this demo — so the goal and the Expected
-     completion date above it no longer come from one figure. To derive it
-     again: `Math.max(1, Math.round(preset.days / 7))`. */
-  const weeks: number = 3
 
   const stops = journeyStopsFor(path)
   const currentIdx = Math.max(
@@ -169,19 +161,28 @@ export function AtlasHomeV2({
         <span aria-hidden style={RULE} />
 
         <div style={{ display: 'flex', gap: 40, alignItems: 'stretch' }}>
-          {/* Left: the figures, then progress and pace. */}
-          <div style={{ width: 200, flex: 'none', display: 'flex', flexDirection: 'column', gap: 20 }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: 8 }}>
+          {/* Left: ONE "Course progress" panel — the dial, then the figures
+              (Figma 217:3793, 2026-10-06, the designer's request: the figures
+              list and the Study Pace panel reworked into one module). The
+              design drops three things the two had: DAYS TO REVIEW, the
+              "N Week Goal" with its gauge and copy, and CUSTOMIZE YOUR PACE.
+              To bring them back, lift them from commit 0d637ef. */}
+          <section aria-label="Course progress" style={{ ...PROGRESS_PANEL, width: 200, flex: 'none', alignSelf: 'flex-start' }}>
+            {/* Centred over the dial (2026-10-06, the designer's request). */}
+            <p style={{ ...PANEL_EYEBROW, alignSelf: 'stretch', textAlign: 'center' }}>Course progress</p>
+            <div style={{ paddingTop: 4, alignSelf: 'center' }}>
+              <ProgressDial percent={percent} />
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignSelf: 'stretch' }}>
+              <span aria-hidden style={PANEL_RULE} />
               <Figure
-                label="Expected completion date"
+                label="Expected completion"
                 value={preset.state === 'no' ? 'Not achievable' : formatPaceDate(preset.finishIso)}
                 note="At current pace"
               />
-              <span aria-hidden style={RULE} />
-              <Figure label="Days to review" value={`${reviewDays} ${reviewDays === 1 ? 'Day' : 'Days'}`} note="Extra Prep Time" />
               {accessDays != null && accessExpiresAt ? (
                 <>
-                  <span aria-hidden style={RULE} />
+                  <span aria-hidden style={PANEL_RULE} />
                   <Figure
                     label="Course access"
                     value={`${accessDays} ${accessDays === 1 ? 'Day' : 'Days'}`}
@@ -189,33 +190,9 @@ export function AtlasHomeV2({
                   />
                 </>
               ) : null}
+              <span aria-hidden style={PANEL_RULE} />
             </div>
-
-            <div style={PACE_PANEL}>
-              {/* The eyebrow heads the whole panel, above the dial (2026-10-02,
-                  the designer's request; the design sets it under it). */}
-              <p style={{ ...EYEBROW, alignSelf: 'stretch' }}>Your study pace</p>
-              <ProgressDial percent={percent} />
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 11, alignSelf: 'stretch' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span aria-hidden style={{ display: 'inline-flex', color: 'var(--color-atlas-home-icon, var(--color-compass-page-button))' }}>
-                    <GaugeThin size={33} aria-hidden />
-                  </span>
-                  <span style={{ ...BODY_TEXT, fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)' }}>
-                    {weeks} Week Goal
-                  </span>
-                </div>
-                <p style={SMALL_TEXT}>
-                  Your default pace is set for you to complete your course in {weeks}{' '}
-                  {weeks === 1 ? 'week' : 'weeks'}. You can change your pace below.
-                </p>
-                <button type="button" className="cre-compass-v2-link" onClick={() => go('study-plan')} style={LINK}>
-                  Customize Your Pace
-                  <AngleRightRegular size={13} aria-hidden style={{ color: 'var(--color-atlas-home-icon, var(--color-compass-page-button))' }} />
-                </button>
-              </div>
-            </div>
-          </div>
+          </section>
 
           <span aria-hidden style={{ width: 1, flex: 'none', background: 'var(--color-atlas-nav-rule)' }} />
 
@@ -276,10 +253,12 @@ export function AtlasHomeV2({
 
       {/* ── The side column ── */}
       <div style={{ width: 260, flex: 'none', display: 'flex', flexDirection: 'column', gap: 24 }}>
-        {/* No stroke and the Compass medium shadow, with the course card's
-            fill so the card has a surface to lift (2026-10-02, the
-            designer's request). The links card below keeps the outline. */}
-        <section aria-label="Do you know your state exam date?" style={{ ...SIDE_CARD, ...SIDE_CARD_LIFTED }}>
+        {/* The links card's treatment — no fill, no shadow, the nav-rule
+            outline — on every brand (2026-10-06, the designer's request). It
+            was lifted from 2026-10-02: no stroke, the course card's fill and
+            the Compass medium shadow (`--color-compass-course-card` +
+            `--shadow-compass-md`), to put back if asked. */}
+        <section aria-label="Do you know your state exam date?" style={SIDE_CARD}>
           <p style={STEP_TITLE}>Do you know your state exam date?</p>
           {/* NOT WIRED YET — as on V1's banner, neither answer leads anywhere
               until one is designed. */}
@@ -300,14 +279,16 @@ export function AtlasHomeV2({
   )
 }
 
+/* One figure in the Course progress panel (Figma 217:3832): an 11px brand
+   eyebrow over a 13px line — the value Bold, a Light dash, the note Regular. */
 function Figure({ label, value, note }: { label: string; value: string; note: string }) {
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <p style={FIGURE_LABEL}>{label}</p>
-      <p style={{ margin: 0, lineHeight: '20px', color: 'var(--color-text-primary)', whiteSpace: 'nowrap' }}>
-        <span style={{ fontFamily: 'var(--font-heading-serif)', fontSize: 16 }}>{value}</span>
-        <span style={{ ...BODY_TEXT, fontSize: 16, fontWeight: 300 }}> - </span>
-        <span style={{ ...BODY_TEXT, fontSize: 12 }}>{note}</span>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <p style={{ ...PANEL_EYEBROW, letterSpacing: '0.1em' }}>{label}</p>
+      <p style={{ ...BODY_TEXT, margin: 0, fontSize: 13, lineHeight: '20px', color: 'var(--color-text-primary)', whiteSpace: 'nowrap' }}>
+        <span style={{ fontWeight: 700 }}>{value}</span>
+        <span style={{ fontWeight: 300 }}> - </span>
+        <span style={{ fontWeight: 400 }}>{note}</span>
       </p>
     </div>
   )
@@ -324,7 +305,17 @@ function ProgressDial({ percent }: { percent: number }) {
   return (
     <div role="img" aria-label={`Course progress ${pct}% complete`} style={{ position: 'relative', width: size, height: size }}>
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden style={{ display: 'block' }}>
-        <circle cx={size / 2} cy={size / 2} r={r} fill="none" style={{ stroke: 'var(--color-atlas-dial-track, var(--color-atlas-nav-rule))' }} strokeWidth={3} />
+        {/* The track: each brand's Primary 100 (2026-10-06, the designer's
+            request; it was the nav rule). XCEL keeps its own through
+            --color-atlas-dial-track (tokens.css). */}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={r}
+          fill="none"
+          style={{ stroke: 'var(--color-atlas-dial-track, var(--color-primary-100))' }}
+          strokeWidth={3}
+        />
         <circle
           cx={size / 2}
           cy={size / 2}
@@ -333,18 +324,17 @@ function ProgressDial({ percent }: { percent: number }) {
           // The brand button colour over the nav rule; the XCEL skin re-points
           // both through --color-atlas-dial-ring / -track (tokens.css).
           style={{ stroke: 'var(--color-atlas-dial-ring, var(--color-compass-page-button))' }}
-          strokeWidth={6}
+          // 8, was 6 (2026-10-06, the designer's request). Same radius as the
+          // track, so it stays centred on it; 70 + 4 fits the 149 box's 74.5.
+          strokeWidth={8}
           strokeLinecap="round"
           strokeDasharray={`${(c * pct) / 100} ${c}`}
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </svg>
+      {/* The figure and "Complete" only — the panel's eyebrow now says
+          "Course progress" (Figma 217:3799). */}
       <div aria-hidden style={DIAL_TEXT}>
-        <span style={DIAL_CAPTION}>
-          Course
-          <br />
-          Progress
-        </span>
         <span style={DIAL_FIGURE}>{pct}%</span>
         <span style={DIAL_CAPTION}>Complete</span>
       </div>
@@ -505,28 +495,36 @@ const CHIP: CSSProperties = {
   whiteSpace: 'nowrap',
 }
 const RULE: CSSProperties = { display: 'block', height: 1, background: 'var(--color-atlas-nav-rule)' }
-const FIGURE_LABEL: CSSProperties = {
+/* The Course progress panel (Figma 217:3793): the Study Pace panel's tint,
+   24 in, 8 radius, no shadow (tried on the old pace panel 2026-10-02 and
+   removed the same day — the tint carries it). */
+const PROGRESS_PANEL: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'flex-start',
+  gap: 16,
+  padding: 24,
+  boxSizing: 'border-box',
+  borderRadius: 8,
+  background: 'var(--color-atlas-outlined-card, var(--color-compass-page-card))',
+}
+/* The panel's eyebrows — 11px SemiBold caps in the guide's Secondary 500 on
+   XCEL (--color-atlas-home-eyebrow, tokens.css), the page eyebrow elsewhere. */
+const PANEL_EYEBROW: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-body)',
   fontWeight: 600,
-  fontSize: 10,
+  fontSize: 11,
   lineHeight: '14px',
-  letterSpacing: '0.14em',
+  letterSpacing: '0.16em',
   textTransform: 'uppercase',
-  color: 'var(--color-text-secondary)',
+  color: 'var(--color-atlas-home-eyebrow, var(--color-compass-page-eyebrow))',
 }
-/* The pale panel — the brand's Study Pace tint (`--color-atlas-outlined-card`). */
-const PACE_PANEL: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  gap: 16,
-  // 22 across, not 24, so "Customize Your Pace ›" fits one line (156 > 152).
-  padding: '24px 22px',
-  borderRadius: 8,
-  background: 'var(--color-atlas-outlined-card, var(--color-compass-page-card))',
-  // No shadow — tried 2026-10-02 (Compass small, then 2px at 10–20%) and
-  // removed the same day; the tint carries the panel.
+/* The panel's rules take the dial track's colour — Secondary 200 on XCEL. */
+const PANEL_RULE: CSSProperties = {
+  display: 'block',
+  height: 1,
+  background: 'var(--color-atlas-dial-track, var(--color-atlas-nav-rule))',
 }
 const DIAL_TEXT: CSSProperties = {
   position: 'absolute',
@@ -660,11 +658,6 @@ const SIDE_CARD: CSSProperties = {
   boxSizing: 'border-box',
   borderRadius: 12,
   border: '1px solid var(--color-atlas-nav-rule)',
-}
-const SIDE_CARD_LIFTED: CSSProperties = {
-  border: 'none',
-  background: 'var(--color-compass-course-card)',
-  boxShadow: 'var(--shadow-compass-md)',
 }
 const SIDE_BUTTON: CSSProperties = {
   flex: '1 1 0',
