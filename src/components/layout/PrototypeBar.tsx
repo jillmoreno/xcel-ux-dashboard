@@ -6,6 +6,7 @@ import {
   readPrototypeWalkthrough,
 } from './prototypeWalkthrough'
 import { prototypeFeatureById } from '@/data/prototypeFeatures'
+import { isPublicGateway } from '@/data/gatewayMode'
 import { isBranchDeploy } from '@/data/deployContext'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 
@@ -85,37 +86,6 @@ const ACTIVE_QUOTE = (() => {
   }
 })()
 
-/**
- * Which prototype SECTION the current route belongs to — surfaced as a chip in
- * the bar next to the "UI/UX Prototype" label:
- *   • Demo          — `?section=demo`, a `?demo=1` experience, or a
- *                     demo-category feature.
- *   • Research      — the `/research-rationale` route.
- *   • Design & Dev  — `?section=dev`, a dev feature gateway, or any other
- *                     in-app working-set route.
- * Null on the section chooser (`/`), where nothing is chosen yet.
- */
-function prototypeSectionLabel(
-  pathname: string,
-  search: string,
-  walkthroughFeatureId: string | null,
-): string | null {
-  if (pathname.startsWith('/research-rationale')) return 'Research'
-  const params = new URLSearchParams(search)
-  const section = params.get('section')
-  if (section === 'demo') return 'Demo'
-  if (section === 'dev') return 'Design & Dev'
-  if (params.get('demo') === '1') return 'Demo'
-  const featureId = pathname.match(/^\/prototype\/([^/]+)/)?.[1] ?? walkthroughFeatureId
-  if (featureId) {
-    const feature = prototypeFeatureById(featureId)
-    if (feature) return feature.category === 'demo' ? 'Demo' : 'Design & Dev'
-  }
-  // The bare gateway home is the chooser (no section); a feature gateway with an
-  // unknown id resolves to nothing too. Everything else in-app is the working set.
-  if (pathname === '/' || pathname.startsWith('/prototype')) return null
-  return 'Design & Dev'
-}
 
 /**
  * Dark (neutral-800) ~40px utility bar pinned to the very top of the
@@ -179,12 +149,11 @@ export function PrototypeBar({
    *  whole viewport above the centered browser window. */
   fullBleed?: boolean
 }) {
-  const { pathname, search } = useLocation()
+  /* `search` WENT WITH THE SECTION CHIP, 2026-10-05 — it was read only to
+     resolve `?section=` / `?demo=1` into the chip's label. The Hub label that
+     replaced it asks the SITE, not the URL. */
+  const { pathname } = useLocation()
   const walkthroughFeatureId = readPrototypeWalkthrough()
-  // The prototype SECTION the reviewer is currently in — shown as a chip right
-  // of the "UI/UX Prototype" label. Null on the section chooser (`/`), where no
-  // section is active yet.
-  const sectionLabel = prototypeSectionLabel(pathname, search, walkthroughFeatureId)
   // On the gateway itself (home or a feature page) there's nothing to go
   // "back" to — the session-walkthrough Back pill only shows on platform
   // screens. An explicit `back` prop wins and shows anywhere.
@@ -246,7 +215,21 @@ export function PrototypeBar({
           gap: 16,
         }}
       >
-        {gatewayLinks && <PrototypeHomeIcon />}
+        {gatewayLinks && (
+          <span style={{ display: 'inline-flex', alignItems: 'center', gap: 8, flexShrink: 0 }}>
+            <PrototypeHomeIcon />
+            {/* WHICH HUB YOU ARE ON — 2026-10-05, the direct ask, replacing the
+                per-route section chip that sat by the "UI/UX Prototype" label.
+
+                ⚠ IT NAMES THE SITE, NOT THE ROUTE, and that is the change. The
+                chip it replaces read Demo / Research / Design & Dev depending on
+                where you had clicked to; this answers the question a reviewer
+                opening a shared link actually has — which of the two builds am I
+                looking at. Beside the home icon because that is the control that
+                takes you back to the hub it names. */}
+            <span style={hubLabelStyle}>{isPublicGateway() ? 'Demo Hub' : 'Design Hub'}</span>
+          </span>
+        )}
         {/* The "← Back" pill — from an explicit `back` prop (shows regardless of
             route, e.g. the landing's section → overview) or the session
             walkthrough (feature gateways). */}
@@ -295,29 +278,15 @@ export function PrototypeBar({
         >
           UI/UX Prototype
         </span>
-        {/* Current-section chip (Demo / Research / Design & Dev) — reflects which
-            prototype section the reviewer is in. Hidden on the chooser. */}
-        {sectionLabel && (
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              padding: '3px 9px',
-              borderRadius: 'var(--radius-pill)',
-              background: 'rgba(255, 255, 255, 0.14)',
-              fontFamily: 'var(--font-heading)',
-              fontSize: 11,
-              fontWeight: 700,
-              letterSpacing: '0.04em',
-              textTransform: 'uppercase',
-              whiteSpace: 'nowrap',
-              flexShrink: 0,
-              color: 'var(--color-neutral-50)',
-            }}
-          >
-            {sectionLabel}
-          </span>
-        )}
+        {/* ⚠ THE SECTION CHIP WAS HERE AND WENT — 2026-10-05. It read Demo /
+            Research / Design & Dev off the current route
+            (`prototypeSectionLabel`, removed with it — `noUnusedLocals` will
+            not keep an unreferenced local, so the function is in git at this
+            commit rather than parked here).
+            The Hub label beside the home icon replaced it: a reviewer opening a
+            shared link wants to know which BUILD they are on, and the chip
+            answered a question about navigation they had just performed
+            themselves. */}
         {/* Quote — pushed to the right so it sits just left of the far-right
             admin-tools (robot) menu; truncates first when space is tight. */}
         <span
@@ -354,6 +323,21 @@ export function PrototypeBar({
  * strip with a subtle hover tint. Clears any active walkthrough so the
  * reviewer lands home with a clean slate.
  */
+/* The Hub label beside the home icon. Deliberately NOT the chip's pill: the
+   chip was a status badge about where you had navigated, this is a name for the
+   place, so it reads as a wordmark next to the control that goes there. Same
+   13px uppercase heading as "UI/UX Prototype" for that reason. */
+const hubLabelStyle = {
+  fontFamily: 'var(--font-heading)',
+  fontSize: 13,
+  fontWeight: 700,
+  letterSpacing: '0.04em',
+  textTransform: 'uppercase' as const,
+  whiteSpace: 'nowrap' as const,
+  flexShrink: 0,
+  color: 'var(--color-neutral-50)',
+}
+
 function PrototypeHomeIcon() {
   return (
     <Link
