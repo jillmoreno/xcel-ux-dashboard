@@ -1,5 +1,5 @@
 import { MoreVertical } from '@/icons'
-import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 
 export type ActionMenuItem = {
   id: string
@@ -25,9 +25,27 @@ type Props = {
    * announced the same either way and the visible word is additive.
    */
   triggerLabel?: string
+  /**
+   * Override the icon-only trigger's box, for a kebab that has to sit in a
+   * cluster of other icon buttons rather than on the row it acts on.
+   *
+   * ⚠ OPT-IN, AND IT MUST STAY THAT WAY. This component is the kebab for task
+   * rows, calendar events and cards as well as the demo bar; changing the
+   * default here to suit one cluster would move every one of them. Merged in
+   * from the caller, so anything not named keeps the shared value.
+   */
+  triggerStyle?: CSSProperties
+  /**
+   * Hover treatment for that overridden trigger — applied on enter and undone
+   * on leave. Paired with `triggerStyle` rather than folded into it because the
+   * bar's other icon buttons do their hover the same way (inline handlers, not
+   * CSS), and a kebab that hovered differently from its two neighbours is the
+   * thing this exists to stop.
+   */
+  triggerHover?: { background?: string; borderColor?: string }
 }
 
-export function ActionMenu({ label, items, triggerLabel }: Props) {
+export function ActionMenu({ label, items, triggerLabel, triggerStyle, triggerHover }: Props) {
   const [open, setOpen] = useState(false)
   const [activeIndex, setActiveIndex] = useState<number>(-1)
   const triggerRef = useRef<HTMLButtonElement | null>(null)
@@ -130,7 +148,28 @@ export function ActionMenu({ label, items, triggerLabel }: Props) {
           fontWeight: 600,
           lineHeight: 1,
           cursor: 'pointer',
+          // Caller's overrides last, so a named property wins and everything
+          // else keeps the shared value above.
+          ...triggerStyle,
         }}
+        onMouseEnter={
+          triggerHover
+            ? (e) => {
+                if (triggerHover.background) e.currentTarget.style.background = triggerHover.background
+                if (triggerHover.borderColor) e.currentTarget.style.borderColor = triggerHover.borderColor
+              }
+            : undefined
+        }
+        onMouseLeave={
+          triggerHover
+            ? (e) => {
+                /* Back to what the MERGED style says, not to a hardcoded
+                   transparent — the override may have set either of these. */
+                e.currentTarget.style.background = String(triggerStyle?.background ?? 'transparent')
+                e.currentTarget.style.borderColor = 'transparent'
+              }
+            : undefined
+        }
       >
         <MoreVertical size={16} aria-hidden />
         {triggerLabel}

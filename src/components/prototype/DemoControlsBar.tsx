@@ -1397,6 +1397,19 @@ export function DemoControlsBar({
               belongs beside the design controls it is the long form of, not
               beside the stakeholder ones. See `DesignControlsBar`. */}
           <ActionMenu
+            /* ⚠ MATCHES RESET AND THE VERSION BUTTON — 2026-10-05, the direct
+               ask. It was the shared kebab's own 32px pill in
+               `--color-secondary-500` with no hover at all, sitting between two
+               38px icon buttons that take a hover fill and a stroke. Three
+               icons in one cluster, one of them a different size, a different
+               colour and inert on hover.
+
+               ⚠ OVERRIDDEN HERE RATHER THAN CHANGED IN `ActionMenu`, which is
+               also the kebab on task rows, calendar events and cards. The
+               defaults there are right for a menu sitting ON the thing it acts
+               on; this one sits in a toolbar, which is the different case. */
+            triggerStyle={versionTriggerStyle}
+            triggerHover={{ background: DEMO_HOVER_FILL, borderColor: 'rgba(255,255,255,0.3)' }}
             label="Demo actions"
             items={[
               {
@@ -1632,8 +1645,11 @@ const versionTriggerStyle: CSSProperties = {
   height: 38,
   padding: 0,
   background: 'transparent',
-  /* Reset's border exactly. These two are a pair; the kebab beside them is
-     deliberately bare. */
+  /* Reset's border exactly. ⚠ ALL THREE SHARE THIS NOW — the kebab joined on
+     2026-10-05 (it was "deliberately bare", which read as an oversight next to
+     two buttons that take a hover fill and a stroke). The kebab passes this
+     whole object as `triggerStyle`, so its 38px box, its `--color-text-inverse`
+     and its radius all come from here and the cluster cannot drift apart. */
   border: '1px solid transparent',
   borderRadius: 'var(--radius-md)',
   color: 'var(--color-text-inverse)',
