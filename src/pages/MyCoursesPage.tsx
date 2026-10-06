@@ -66,6 +66,9 @@ export function MyCoursesPage({
   hideSearch = false,
   aside,
   titleStyle,
+  cards,
+  hideListControls = false,
+  contentWidth,
 }: {
   embedded?: boolean
   hideSearch?: boolean
@@ -74,6 +77,15 @@ export function MyCoursesPage({
   aside?: ReactNode
   /** Merged over the "My Courses" title (Atlas: the serif heading). */
   titleStyle?: CSSProperties
+  /** Replaces the course list — grid, table and empty state — with these
+   *  (the Atlas course cards, 2026-10-06). The filter bar stays. */
+  cards?: ReactNode
+  /** Hides the search, the status filter bar and the View Archived link —
+   *  kept in the code, not removed (Atlas, 2026-10-06: "remove … but save them
+   *  for later"). To bring them back, stop passing this. */
+  hideListControls?: boolean
+  /** Caps the page at this width and centres it (Atlas, 2026-10-06). */
+  contentWidth?: number
 } = {}) {
   const [params, setParams] = useSearchParams()
   const { brand } = useAccount()
@@ -208,7 +220,13 @@ export function MyCoursesPage({
   ]
 
   return (
-    <div style={{ padding: embedded ? '0 0 64px' : '24px 64px 64px', width: '100%' }}>
+    <div
+      style={{
+        padding: embedded ? '0 0 64px' : '24px 64px 64px',
+        width: '100%',
+        ...(contentWidth != null ? { maxWidth: contentWidth, margin: '0 auto' } : null),
+      }}
+    >
       <PageHeader
         title="My Courses"
         hideTitle={breadcrumbHeader}
@@ -260,7 +278,7 @@ export function MyCoursesPage({
                ASIDE_ROW_H (the pills' 36; the search box is sized to it) and both
                columns use the same 24 gap, which is what keeps them level. */
             <div style={{ display: 'flex', flexDirection: 'column', gap: 24, minWidth: 0 }}>
-              {!hideSearch && (
+              {!hideSearch && !hideListControls && (
                 <div style={{ minHeight: ASIDE_ROW_H, display: 'flex', alignItems: 'center' }}>
                   <SearchInput
                     label="Search courses"
@@ -339,6 +357,7 @@ export function MyCoursesPage({
                 collection. The page header has no room for it (a 360px search
                 plus the view toggle), so it lives here, pushed right the way
                 Gift Recipients pins its Download link. */}
+            {hideListControls ? null : (
             <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', minHeight: aside ? ASIDE_ROW_H : undefined }}>
               <PillTabs
                 label="Filter by status"
@@ -385,7 +404,10 @@ export function MyCoursesPage({
                 </button>
               )}
             </div>
-            {filtered.length === 0 ? (
+            )}
+            {cards ? (
+              cards
+            ) : filtered.length === 0 ? (
               <EmptyState
                 title="No courses match your filters"
                 description="Try clearing some filters, or browse the catalog to enroll in something new."

@@ -6266,3 +6266,75 @@ a.cre-library-card-title::after {
 .cre-compass-secondary.cre-atlas-home-secondary:focus-visible {
   outline-color: var(--color-atlas-home-secondary-ink, var(--color-compass-page-button));
 }
+
+/* XCEL's LEFT SIDEBAR IN THE COMPASS PALETTE (2026-10-06, Eric's request) —
+   the Global skin's steel / slate / warm-neutral roles, scoped to the Atlas
+   rail column (`data-atlas-rail`, PlatformShell) so the rest of the XCEL page
+   keeps its own. Values copied from the Global block above; ramps included
+   because the rail's rows, progress track and toggle read them directly (the
+   column's own `--color-rail-row-active` alias resolves here, so it follows). */
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel'] [data-atlas-rail] {
+  --color-cta-100: #eceef0;
+  --color-cta-200: #d8dee4;
+  --color-cta-300: #c0cdd5;
+  --color-cta-400: #67727d;
+  --color-cta-500: #3d5a73;
+  --color-cta-600: #31495d;
+  --color-cta-700: #263d50;
+  --color-cta-800: #1b2c3a;
+  --color-cta-900: #111c25;
+  --color-primary-100: #eceef0;
+  --color-primary-200: #d8dee4;
+  --color-primary-300: #c0cdd5;
+  --color-primary-400: #67727d;
+  --color-primary-500: #3d5a73;
+  --color-primary-600: #31495d;
+  --color-primary-700: #263d50;
+  --color-primary-800: #1b2c3a;
+  --color-primary-900: #111c25;
+  --color-tertiary-100: #f8f6f3;
+  --color-tertiary-200: #e0dbcd;
+  --color-tertiary-300: #c3bba5;
+  --color-tertiary-400: #baa78b;
+  --color-tertiary-500: #948a76;
+  --color-tertiary-600: #706b63;
+  --color-tertiary-700: #5b5560;
+  --color-tertiary-800: #3a3631;
+  --color-tertiary-900: #1f1d18;
+  --color-atlas-cta: #3d5a73;
+  --color-atlas-cta-ink: #3d5a73;
+  --color-atlas-active: #3d5a73;
+  --color-atlas-active-fill: #eceef0;
+  --color-atlas-eyebrow: #5b5560;
+  --color-atlas-nav-active-ink: #3d5a73;
+  --color-atlas-nav-active-fill: #eceef0;
+  --color-atlas-nav-active-bar: #3d5a73;
+  --color-atlas-nav-hover: #eceef0;
+  --color-atlas-nav-hover-ink: #263d50;
+  --color-atlas-nav-rule: #e0dbcd;
+  --color-compass-rail-section-ink: #3d5a73;
+  --color-compass-rail-ink: #3d5a73;
+  --color-compass-rail-current-ink: #263d50;
+  --color-compass-rail-current-fill: #eceef0;
+  --color-compass-rail-active-halo: #eceef0;
+  --color-compass-rail-link: #3d5a73;
+  --color-compass-rail-spine: #e0dbcd;
+  --color-compass-rail-upcoming-section-mark: #c3bba5;
+  --color-compass-rail-upcoming-lesson-mark: #c3bba5;
+  --color-compass-rail-section-done-text: #1f1d18;
+  --color-compass-rail-section-current-text: #1f1d18;
+  --color-compass-rail-upcoming-section-text: #706b63;
+  --color-compass-rail-upcoming-text: #706b63;
+  --color-compass-rail-pill: #eceef0;
+  --color-compass-rail-rule: #e0dbcd;
+  --color-compass-page-button: #3d5a73;
+  /* The rail's progress track reads the player's ink. */
+  --color-compass-player-ink: #3d5a73;
+}
+
+/* The Atlas course card's outline button (Start Course): a WHITE fill under the
+   outline button's red border and label (2026-10-06). A class, not an inline
+   style, so `.cre-compass-secondary:hover` still tints it. */
+.cre-atlas-card-secondary {
+  background: var(--color-surface-card);
+}

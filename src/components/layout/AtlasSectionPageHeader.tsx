@@ -10,14 +10,33 @@ import { pageHeaderWrapStyle } from './pageHeaderStyles'
  * `PlatformShell` under `atlasNav`; the shipped versions keep the original.
  *
  * Same box, crumb row and behaviour as the original — only the title (Serif
- * H4: `--font-heading-serif` at the Atlas H4 step, so the Headings control
+ * H5: `--font-heading-serif` at the Atlas H5 step, so the Headings control
  * still swaps it) and the back icon (FA angle-left, Regular) differ.
  */
-export function AtlasSectionPageHeader({ title, onBack }: { title: string; onBack: () => void }) {
+export function AtlasSectionPageHeader({
+  title,
+  onBack,
+  contentWidth,
+}: {
+  title: string
+  onBack: () => void
+  /** The page's centred content width — given, the header takes the same
+   *  width and centres with it, so the title sits on the content's left edge
+   *  (My Courses, 2026-10-06). Omitted, it spans the column as before. */
+  contentWidth?: number
+}) {
   return (
     // No bottom padding (2026-10-06, Eric's request) — main's header style is 16;
     // the page's own 24 above its first row is the only gap left.
-    <header style={{ ...pageHeaderWrapStyle, paddingBottom: 0 }}>
+    <header
+      style={{
+        ...pageHeaderWrapStyle,
+        paddingBottom: 0,
+        ...(contentWidth != null
+          ? { maxWidth: contentWidth + 80, margin: '0 auto', boxSizing: 'border-box' as const }
+          : null),
+      }}
+    >
       <p style={CRUMB_ROW}>
         <button
           type="button"
@@ -62,16 +81,16 @@ const CRUMB_BUTTON: CSSProperties = {
   lineHeight: 'inherit',
   fontWeight: 600,
 }
-/* Serif H4, 38/40 — the Course Overview and Resources titles' step (2026-10-06:
-   H1 64/64 first, then H3 44/46, then "one level down" to this), scaled
+/* Serif H5, 32/34 (2026-10-06: H1 64/64 first, then H3 44/46, then H4 38/40,
+   then one more level down to this), scaled
    with the Headings control's face. Still an <h1> element: it is the page's
    title, whatever step of the type scale it is drawn at. */
 const TITLE: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-heading-serif)',
   fontWeight: 400,
-  fontSize: 'var(--type-atlas-h4-size, 38px)',
-  lineHeight: 'var(--type-atlas-h4-line, 40px)',
+  fontSize: 'var(--type-atlas-h5-size, 32px)',
+  lineHeight: 'var(--type-atlas-h5-line, 34px)',
   letterSpacing: '-0.01em',
   color: 'var(--color-compass-page-heading)',
 }

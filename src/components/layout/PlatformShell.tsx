@@ -16,6 +16,8 @@ import { ResourceLauncherProvider, useResourceLauncher } from './ResourceLaunche
 import { CatalogPage } from '@/pages/CatalogPage'
 import { MyCoursesPage } from '@/pages/MyCoursesPage'
 import { AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
+import { AtlasCourseCard } from '@/components/compass/AtlasCourseCard'
+import { ATLAS_COURSE_CARD_W, ATLAS_MY_COURSES, ATLAS_MY_COURSES_WIDTH } from '@/data/atlasCourseCards'
 import { LearningPathPage } from '@/pages/LearningPathPage'
 import { LearningPathsHome } from '@/components/learning/LearningPathsHome'
 import { useLearningPathsPanel } from '@/components/learning/LearningPathsPanelContext'
@@ -1063,6 +1065,9 @@ function PlatformShellBody() {
             (`?focus=1`) the rail stays VISIBLE but is made `inert` (below), so a
             tester sees the full nav yet can't click into any other section. */}
         <div
+          // Marks the Atlas rail so a skin can re-palette it alone (XCEL's rail
+          // takes the Compass colours — tokens.css, 2026-10-06).
+          data-atlas-rail={atlasNav ? '' : undefined}
           style={{
             /* ⚠ THE TWO BRAND COLOURS, PINNED ON THE COLUMN — 2026-09-29.
 
@@ -1313,7 +1318,12 @@ function PlatformShellBody() {
         {sectionHeader && !launcher.courseId ? (
           // Atlas: its own copy — Serif H1 title, FA angle-left crumb (2026-10-06).
           atlasNav ? (
-            <AtlasSectionPageHeader title={SECTION_TITLES[active]} onBack={() => handleSelect('dashboard')} />
+            <AtlasSectionPageHeader
+              title={SECTION_TITLES[active]}
+              onBack={() => handleSelect('dashboard')}
+              // My Courses centres its content; the header follows it.
+              contentWidth={active === 'courses' ? ATLAS_MY_COURSES_WIDTH : undefined}
+            />
           ) : (
           <SectionPageHeader
             title={SECTION_TITLES[active]}
@@ -2424,14 +2434,37 @@ function ShellResourcesPanel() {
 /* My Courses in the shell. On the Atlas versions the filter column gives way to
    Home V2's journey-links card (2026-10-05, the designer's request). */
 function MyCoursesSection() {
-  const [params] = useSearchParams()
+  const [params, setParams] = useSearchParams()
   const { brand } = useAccount()
   const atlas = isAtlasCompassNavVersion(params.get('version') ?? defaultDiscoverabilityVersionFor(brand))
+  /* The Home course's card opens the Compass course page; the P&C card is the
+     demo's invented course, so it is not wired. */
+  const openCourse = () =>
+    setParams((prev) => {
+      const next = new URLSearchParams(prev)
+      next.set('section', 'course')
+      next.set('coursePage', 'course')
+      return next
+    })
   return (
     <MyCoursesPage
       embedded
       aside={atlas ? <AtlasJourneyLinksCard /> : undefined}
       titleStyle={atlas ? ATLAS_PAGE_TITLE : undefined}
+      // Atlas: search, the status filter bar and View Archived are hidden — kept
+      // for later, not removed (2026-10-06, Eric's request).
+      hideListControls={atlas}
+      contentWidth={atlas ? ATLAS_MY_COURSES_WIDTH : undefined}
+      // Atlas: the Figma course cards (213:3619) in place of the shared grid.
+      cards={
+        atlas ? (
+          <div style={{ display: 'grid', gridTemplateColumns: `repeat(auto-fill, ${ATLAS_COURSE_CARD_W}px)`, gap: 16 }}>
+            {ATLAS_MY_COURSES.map((c, i) => (
+              <AtlasCourseCard key={c.id} data={c} onAction={i === 0 ? openCourse : undefined} />
+            ))}
+          </div>
+        ) : undefined
+      }
     />
   )
 }

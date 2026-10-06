@@ -33,7 +33,12 @@ export type AtlasJourneyLinksCardProps = {
 }
 
 export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style }: AtlasJourneyLinksCardProps) {
-  const [, setParams] = useSearchParams()
+  const [params, setParams] = useSearchParams()
+  /* Which link is the page you are on — the four that are pages; the three
+     sheet links never are. */
+  const section = params.get('section')
+  const coursePage = params.get('coursePage')
+  const here = (s: string, page?: string) => section === s && (page ? coursePage === page : true)
   const go = (section: string | null, extra?: Record<string, string>) =>
     setParams((prev) => {
       const next = new URLSearchParams(prev)
@@ -52,10 +57,10 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style }:
           designer's request; the design sets it in Open Sans SemiBold 16). */}
       <p style={TITLE}>More Information for Your Journey</p>
       <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <SideLink icon={<BookRegular size={13} aria-hidden />} label="My Courses" onClick={() => go('courses')} />
-        <SideLink icon={<FileCertificateRegular size={13} aria-hidden />} label="My Certificates" onClick={() => go('certificates')} />
-        <SideLink icon={<NotebookRegular size={13} aria-hidden />} label="Flashcards" onClick={() => go('course', { coursePage: 'flashcards' })} />
-        <SideLink icon={<BallotCheckRegular size={13} aria-hidden />} label="Exam Simulator" onClick={() => go('course', { coursePage: 'exam-simulator' })} />
+        <SideLink icon={<BookRegular size={13} aria-hidden />} label="My Courses" active={here('courses')} onClick={() => go('courses')} />
+        <SideLink icon={<FileCertificateRegular size={13} aria-hidden />} label="My Certificates" active={here('certificates')} onClick={() => go('certificates')} />
+        <SideLink icon={<NotebookRegular size={13} aria-hidden />} label="Flashcards" active={here('course', 'flashcards')} onClick={() => go('course', { coursePage: 'flashcards' })} />
+        <SideLink icon={<BallotCheckRegular size={13} aria-hidden />} label="Exam Simulator" active={here('course', 'exam-simulator')} onClick={() => go('course', { coursePage: 'exam-simulator' })} />
         <SideLink
           icon={<CircleInfoRegular size={13} aria-hidden />}
           label="Exam Information"
@@ -76,10 +81,28 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style }:
   )
 }
 
-function SideLink({ icon, label, onClick }: { icon: ReactNode; label: string; onClick?: () => void }) {
+function SideLink({
+  icon,
+  label,
+  active = false,
+  onClick,
+}: {
+  icon: ReactNode
+  label: string
+  /** The page you are on — a white capsule behind the row. */
+  active?: boolean
+  onClick?: () => void
+}) {
   return (
     <li>
-      <button type="button" className="cre-compass-v2-row" onClick={onClick} disabled={!onClick} style={SIDE_ROW}>
+      <button
+        type="button"
+        className="cre-compass-v2-row"
+        aria-current={active ? 'page' : undefined}
+        onClick={onClick}
+        disabled={!onClick}
+        style={active ? { ...SIDE_ROW, ...SIDE_ROW_ACTIVE } : SIDE_ROW}
+      >
         <span aria-hidden style={{ width: 18, flex: 'none', display: 'inline-flex', justifyContent: 'center', color: 'var(--color-atlas-home-icon, var(--color-compass-page-button))' }}>
           {icon}
         </span>
@@ -110,6 +133,17 @@ const TITLE: CSSProperties = {
   lineHeight: 'var(--type-atlas-h8-base-line, 24px)',
   letterSpacing: '-0.01em',
   color: 'var(--color-text-primary)',
+}
+/* THE ACTIVE ROW (2026-10-06, Eric's request): a white capsule — fully round
+   ends — with 8px each end for the rounding and 4px top and bottom. The
+   NEGATIVE margins hand that space back, so the icon, label and chevron stay
+   exactly where every other row has them and the list does not grow. */
+const SIDE_ROW_ACTIVE: CSSProperties = {
+  width: 'calc(100% + 16px)',
+  margin: '-4px -8px',
+  padding: '4px 8px',
+  borderRadius: 999,
+  background: 'var(--color-surface-card)',
 }
 const SIDE_ROW: CSSProperties = {
   width: '100%',
