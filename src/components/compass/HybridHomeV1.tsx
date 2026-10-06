@@ -14,6 +14,7 @@ import {
 import { COMPASS_BUTTON } from './compassButton'
 import { journeyStopsFor, type JourneyStop } from '@/components/learning/studyJourneyUtil'
 import { GET_LICENSED_STEPS, jurisdictionName } from '@/data/nyProducerRequirements'
+import { ExamScheduleWidget } from '@/components/learning/ExamScheduleWidget'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 import { defaultPreset, formatPaceDate, studyPace, daysUntil, NOT_STARTED_NIGHTS } from '@/lib/studyPace'
 import type { LearningPathSummary } from '@/data/learningFixtures'
@@ -313,20 +314,33 @@ export function HybridHomeV1({
         {/* No stroke and the Compass medium shadow, with the course card's
             fill so the card has a surface to lift (2026-10-02, the
             designer's request). The links card below keeps the outline. */}
-        <section aria-label="Do you know your state exam date?" style={{ ...SIDE_CARD, ...SIDE_CARD_LIFTED }}>
-          <p style={STEP_TITLE}>Do you know your state exam date?</p>
-          {/* NOT WIRED YET — as on V1's banner, neither answer leads anywhere
-              until one is designed. */}
-          <div style={{ display: 'flex', gap: 10 }}>
-            <button type="button" className="cre-compass-secondary" style={{ ...COMPASS_BUTTON, ...SIDE_BUTTON }}>
-              No
-            </button>
-            <button type="button" className="cre-compass-primary cre-compass-btn-primary" style={{ ...COMPASS_BUTTON, ...SIDE_BUTTON }}>
-              Yes
-            </button>
-          </div>
-          <p style={SMALL_TEXT}>If you know when your state exam is we can help you plan and pass your course easier.</p>
-        </section>
+        {/* ⚠ HYBRID #5 — TESTING 3'S EXAM CARD, IN PLACE OF ERIC'S QUESTION.
+            His was a Yes / No pair under "Do you know your state exam date?"
+            with a note saying, in the file, "NOT WIRED YET — neither answer
+            leads anywhere until one is designed". It asks the right question
+            and then cannot take the answer.
+
+            `ExamScheduleWidget` is that design: it asks the same thing, takes
+            the date, writes it to `examDateStore`, and from then on shows the
+            saved readout with an Edit. The store is what every other surface
+            already reads — the Study Plan, the pace model's Target Exam Date,
+            the course player — so a date entered here reaches all of them, and
+            a learner who entered one elsewhere is never asked again.
+
+            ⚠ `compact`, MATCHING TESTING 3'S UNDER-COURSE PLACEMENT. This is
+            the side column, not the journey column: the date is a fact glanced
+            at on the way past rather than the card's whole subject, which is
+            the distinction that prop exists to make.
+
+            ⚠ THE LIFTED SHELL IS ERIC'S AND STAYS — the card is Jill's, the
+            surface it sits on is this layout's. Passing `shell` is how the
+            widget was built to allow exactly that. */}
+        <ExamScheduleWidget
+          shell={{ ...SIDE_CARD, ...SIDE_CARD_LIFTED }}
+          onOpenStep={onOpenStep}
+          stateName={state || undefined}
+          compact
+        />
 
         <nav aria-label="Other information for your journey" style={SIDE_CARD}>
           {/* The exam-date card's heading style — Serif H8 (2026-10-02, the
@@ -782,13 +796,9 @@ const SIDE_CARD_LIFTED: CSSProperties = {
   background: 'var(--color-compass-course-card)',
   boxShadow: 'var(--shadow-compass-md)',
 }
-const SIDE_BUTTON: CSSProperties = {
-  flex: '1 1 0',
-  minHeight: 0,
-  padding: '5px 8px',
-  fontSize: 13.5,
-  lineHeight: '20.25px',
-}
+/* ⚠ `SIDE_BUTTON` WENT 2026-10-05 — it sized the Yes / No pair on Eric's exam
+   question, and `ExamScheduleWidget` brings its own controls. Removed rather
+   than parked (`noUnusedLocals`); `AtlasHomeV2.tsx` still has it. */
 const SIDE_ROW: CSSProperties = {
   width: '100%',
   display: 'flex',
