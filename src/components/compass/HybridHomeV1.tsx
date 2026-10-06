@@ -179,8 +179,20 @@ export function HybridHomeV1({
               >
                 {notStarted ? 'Begin Course' : 'Resume Course'}
               </button>
+              {/* ⚠ HYBRID #12 — A TRUE SECONDARY BUTTON, not the chip. 2026-10-05,
+                  the direct ask. `cre-compass-home-chip` is a 10px label in a
+                  4px-radius outline — a METADATA tag, which is what it looks
+                  like sitting beside a 13.5px primary. Course Overview is a
+                  destination, and the pair under the title is the two things
+                  you can do with this course, so it takes the same `BEGIN` box
+                  as Resume Course and `cre-compass-secondary` for the outlined
+                  treatment the page already defines (transparent fill, the
+                  button colour on the border and the label, an 8% tint on
+                  hover). Same height, same radius, same type — the only
+                  difference between the two is fill, which is what primary and
+                  secondary are supposed to mean. */}
               {onOverview ? (
-                <button type="button" className="cre-compass-home-chip" onClick={onOverview} style={CHIP}>
+                <button type="button" className="cre-compass-secondary" onClick={onOverview} style={BEGIN}>
                   Course Overview
                 </button>
               ) : null}
@@ -285,33 +297,50 @@ export function HybridHomeV1({
               </ol>
             </section>
 
-            <span aria-hidden style={RULE} />
-            <Step
-              number={2}
-              title={pass.title}
-              detail={pass.detail}
-              link={pass.detailLabel ?? 'What to expect'}
-              onLink={onOpenStep ? () => onOpenStep(pass.id) : undefined}
-            />
-            <span aria-hidden style={RULE} />
-            <Step
-              number={3}
-              title={state ? `Get Licensed in ${state}` : 'Get Licensed'}
-              detail={apply.detail}
-              link={apply.detailLabel ?? 'How to apply'}
-              onLink={onOpenStep ? () => onOpenStep(apply.id) : undefined}
-            />
-            {onOpenRequirements ? (
-              <button
-                type="button"
-                data-cta-id="home.state-requirements"
-                className="cre-compass-secondary"
-                onClick={onOpenRequirements}
-                style={REQUIREMENTS}
-              >
-                {state ? `${state} State Requirements` : 'State Requirements'}
-              </button>
-            ) : null}
+            {/* ⚠ HYBRID #10 — THE TWO COLLAPSED STEPS SIT TIGHTER THAN THE
+                COLUMN'S OWN RHYTHM. 2026-10-05, the direct ask.
+
+                The column gaps its children by 24, which is right while a step
+                is a paragraph and a link. Collapsed, a step is two lines of
+                type — so 24 above the rule and 24 below it put ~48px of air
+                around a 39px block, and the two steps read as far apart as the
+                whole coursework section above them.
+
+                A NESTED COLUMN rather than margins on the steps: the 24 still
+                separates this block from the journey above and the button
+                below, and only the space BETWEEN the steps and their rules
+                tightens. Margins would have had to cancel the parent's gap and
+                would fight it again the moment either number changes. */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <span aria-hidden style={RULE} />
+              <Step
+                number={2}
+                title={pass.title}
+                detail={pass.detail}
+                link={pass.detailLabel ?? 'What to expect'}
+                onLink={onOpenStep ? () => onOpenStep(pass.id) : undefined}
+              />
+              <span aria-hidden style={RULE} />
+              <Step
+                number={3}
+                title={state ? `Get Licensed in ${state}` : 'Get Licensed'}
+                detail={apply.detail}
+                link={apply.detailLabel ?? 'How to apply'}
+                onLink={onOpenStep ? () => onOpenStep(apply.id) : undefined}
+              />
+            </div>
+            {/* ⚠ HYBRID #11 — THE "<State> State Requirements" BUTTON WENT,
+                2026-10-05, the direct ask. It was a full-width secondary button
+                closing the journey column, and the Quick Links card beside it
+                already carries a "State Requirements" row to the same sheet
+                (`onOpenRequirements`, still passed — see `SideLink` below). Two
+                controls, one destination, and the button was the louder of the
+                two for a reference page nobody opens mid-lesson.
+
+                ⚠ THE `data-cta-id` WENT WITH IT: `home.state-requirements` now
+                reports from the Quick Links row alone on this version, so a
+                funnel comparing it against Eric's home is counting one control
+                where his counts two. */}
           </div>
         </div>
       </section>
@@ -373,12 +402,17 @@ export function HybridHomeV1({
           <p className="cre-eyebrow-ink" style={widgetEyebrowStyle}>
             Quick Links
           </p>
-          {/* ⚠ 4, NOT 16 — the rows carry 7px of their own padding now, so the
-              old gap stacked on top of it and the hover fills sat far apart
-              with the list looking twice as tall. The rhythm between labels is
-              unchanged; it is just made of padding instead of gap, which is
-              what lets the highlights meet. */}
-          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 4 }}>
+          {/* ⚠ 8, AND IT IS A BALANCE BETWEEN TWO THINGS. It was 16 before the
+              rows carried any padding of their own; 4 once they did, which read
+              as a stack of touching highlights; 8 is the ask ("a little more
+              padding between these options").
+
+              The useful way to think about it: each row is 18px of label + 14px
+              of its own padding, so the GAP is only the space between two
+              hover fills — not the space between two labels, which is the gap
+              plus the padding on both sides. Push this much past 8 and the
+              highlights start to look like separate cards. */}
+          <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 8 }}>
             <SideLink icon={<BookRegular size={13} aria-hidden />} label="My Courses" onClick={() => go('courses')} />
             <SideLink icon={<FileCertificateRegular size={13} aria-hidden />} label="My Certificates" onClick={() => go('certificates')} />
             <SideLink icon={<NotebookRegular size={13} aria-hidden />} label="Flashcards" onClick={() => go('course', 'flashcards')} />
@@ -465,8 +499,17 @@ function JourneyRow({
   /* The current stop is never locked even if its status says `not-started` —
      it is the one the learner is being sent to. */
   const locked = !current && stop.status === 'not-started'
+  /* ⚠ 34 / 28, DOWN FROM 42 / 36 — 2026-10-05, the direct ask. The label is an
+     18px line, so 36 was spending half the row on air and six stops read as a
+     much longer list than they are. The CURRENT row keeps its extra 6 over the
+     others: it carries a heavier weight and the filled dot, and letting it
+     breathe is what makes it findable at a glance.
+
+     ⚠ THE SPINE STRETCHES TO WHATEVER THIS IS (`flex: 1 1 0` inside a stretched
+     gutter), so the connector follows the height rather than needing its own
+     number. */
   return (
-    <li style={{ display: 'flex', gap: 8, alignItems: 'flex-start', minHeight: current ? 42 : 36 }}>
+    <li style={{ display: 'flex', gap: 8, alignItems: 'flex-start', minHeight: current ? 34 : 28 }}>
       <span aria-hidden style={{ width: 14, flex: 'none', alignSelf: 'stretch', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, paddingTop: current ? 7 : 3 }}>
         {/* ⚠ HYBRID #7 — NOT-STARTED STOPS WEAR A LOCK, not an empty ring. The
             ring said "not yet" and so does everything else about a dim row; the
@@ -699,18 +742,9 @@ const TITLE: CSSProperties = {
   letterSpacing: '-0.01em',
   color: 'var(--color-compass-page-heading)',
 }
-const CHIP: CSSProperties = {
-  alignSelf: 'flex-start',
-  padding: '2px 8px 4px',
-  borderRadius: 4,
-  border: '1px solid var(--color-compass-page-card-border)',
-  fontFamily: 'var(--font-body)',
-  fontWeight: 600,
-  fontSize: 10,
-  lineHeight: '13px',
-  color: 'var(--color-neutral-600)',
-  whiteSpace: 'nowrap',
-}
+/* ⚠ `CHIP` WENT WITH IT — Course Overview was its only user here, and
+   `noUnusedLocals` will not keep an unread style. `AtlasHomeV2.tsx` still has
+   both the chip and the style if the tag treatment is ever wanted back. */
 const RULE: CSSProperties = { display: 'block', height: 1, background: 'var(--color-atlas-nav-rule)' }
 const FIGURE_LABEL: CSSProperties = {
   margin: 0,
@@ -838,7 +872,12 @@ const MARK_LOCK: CSSProperties = {
   color: 'var(--color-text-tertiary)',
 }
 
-const SPINE: CSSProperties = { flex: '1 1 0', minHeight: 1, width: 0, borderLeft: '2px solid var(--color-border-subtle)' }
+/* ⚠ 1px, DOWN FROM 2 — 2026-10-05, the direct ask. The spine is a connector
+   between stops, not a progress track, and at 2 it carried about the same
+   weight as the lock glyphs it runs between. `width: 0` with a left border
+   rather than a filled 1px box, so the line lands on the device's own hairline
+   and stays crisp at any DPR. */
+const SPINE: CSSProperties = { flex: '1 1 0', minHeight: 1, width: 0, borderLeft: '1px solid var(--color-border-subtle)' }
 const BEGIN: CSSProperties = {
   ...COMPASS_BUTTON,
   minHeight: 0,
@@ -856,15 +895,8 @@ const CHEVRON: CSSProperties = {
   cursor: 'pointer',
   color: 'var(--color-compass-page-button)',
 }
-const REQUIREMENTS: CSSProperties = {
-  height: 40,
-  borderRadius: 8,
-  border: '1px solid',
-  cursor: 'pointer',
-  fontFamily: 'var(--font-body)',
-  fontWeight: 700,
-  fontSize: 14,
-}
+/* ⚠ `REQUIREMENTS` WENT WITH ITS BUTTON, 2026-10-05 — `noUnusedLocals` will
+   not keep an unread style. `AtlasHomeV2.tsx` still has both. */
 /* The side cards: the Atlas rail's 1px rule, 12 radius, 24 / 32 / 32. */
 const SIDE_CARD: CSSProperties = {
   display: 'flex',
