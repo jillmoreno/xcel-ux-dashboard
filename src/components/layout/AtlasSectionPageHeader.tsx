@@ -30,7 +30,11 @@ export function AtlasSectionPageHeader({ title, onBack }: { title: string; onBac
           Back to Home
         </button>
       </p>
-      <h1 style={TITLE}>{title}</h1>
+      {/* The course titles' class: one weight under the other headings
+          (2026-10-06, Eric's request) — 400 under Source Serif 4. */}
+      <h1 className="cre-compass-course-title" style={TITLE}>
+        {title}
+      </h1>
     </header>
   )
 }
