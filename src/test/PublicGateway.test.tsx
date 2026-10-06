@@ -345,19 +345,31 @@ describe('the demo site offers only the finished demo controls', () => {
      The READY half still works and is kept — it is the half that says a trim
      for one audience is not a removal. */
 
-  it('gives the demo site its finished controls, and no design bar', { timeout: 20_000 }, async () => {
+  it('gives the demo site its finished controls, and the design bar WITHOUT its tools', { timeout: 20_000 }, async () => {
     /* ⚠ THIS TEST WAS DELETED BY ACCIDENT ON 2026-10-05 and restored the same
        day. A slice meant to remove the dead `WIP` constant took the whole `it`
        with it — and the half that mattered was never about `wip` at all: it
        says the trim KEEPS the finished controls, including Reset, which is the
        only way a stakeholder gets out of a state they wandered into.
 
-       ⚠ ITS ABSENCE CLAIM IS THE DESIGN BAR NOW. Every control left on the demo
-       bar is `ready`, so there is no longer a single control to assert gone —
-       but the design bar must never reach the demo site at all, which is a
-       larger claim than any one control was. */
+       ⚠ ITS ABSENCE CLAIM INVERTED ON 2026-10-06, the direct ask: the design
+       bar DOES reach the demo site now. The reasoning that replaced
+       "design-site-only" is that the gate sits a level up — the demo site lists
+       `maturity: 'ready'` versions only, and every design control is scoped to
+       the version on screen — so hiding the bar was gating the same decision
+       twice. Restoring the old rule means putting `isPublicGateway()` back in
+       `PrototypeChrome` and dropping `stakeholder` from `DesignControlsBar`.
+
+       ⚠ THE CLAIM THAT MATTERS IS NOW THE TOOLS, and it is the stronger half.
+       Lo-fi and the Feature Flag sheet do NOT cross, and the sheet is the
+       reason: it opens the full catalog, `wip` rows included, which is exactly
+       what the robot's gate two describes below exists to close. If this
+       regresses, that gate has been undone through a second door and nothing
+       else in the suite would say so. */
     await bar('public')
-    expect(screen.queryByRole('region', { name: 'Design controls' })).toBeNull()
+    expect(screen.getByRole('region', { name: 'Design controls' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /Feature flags/i })).toBeNull()
+    expect(screen.queryByRole('button', { name: /^Lo-fi (on|off)$/ })).toBeNull()
     expect(screen.getByRole('button', { name: /Progress/i })).toBeTruthy()
     expect(screen.getByRole('button', { name: /^Reset$/ })).toBeTruthy()
   })
@@ -368,10 +380,13 @@ describe('the demo site offers only the finished demo controls', () => {
        to assert — so what is left is the inverse, which still catches a mark
        rendered unconditionally. */
     await bar('full')
-    /* ⚠ THE POSITIVE HALF OF EVERY ABSENCE ABOVE. Without this, both "no design
-       bar" assertions would pass against a bar that never rendered anywhere —
-       an absence proves nothing unless the presence is proved somewhere. */
+    /* ⚠ THE POSITIVE HALF OF THE TWO ABSENCES ABOVE, and since 2026-10-06 it
+       is the TOOLS it proves, not the bar — the bar is on both sites now, so
+       asserting it here proves nothing the demo-site test does not already. A
+       designer gets Lo-fi and the flag sheet; a stakeholder gets neither. */
     expect(screen.getByRole('region', { name: 'Design controls' })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /Feature flags/i })).toBeTruthy()
+    expect(screen.getByRole('button', { name: /^Lo-fi (on|off)$/ })).toBeTruthy()
     /* Anchored on the eyebrow. Not strictly required any more — the mark's
        hidden text used to contain "work in progress" and made this ambiguous —
        but naming the control exactly is the right assertion either way. */
@@ -389,15 +404,16 @@ describe('the demo site offers only the finished demo controls', () => {
        this param. This test is now the only thing standing between `?as=demo`
        and a silent rot, because nothing in the UI reaches it any more. */
     await bar('full', '/dashboard-rebrand?as=demo')
-    /* ⚠ THE LENS HAS A NEW SUBJECT, and a better one. It used to assert that a
-       `wip` CONTROL dropped out; the demo bar has none left since Lo-fi moved
-       to the design bar (2026-10-05). What the lens hides now is the whole
-       DESIGN BAR — a bigger claim and an easier one to break, because that bar
-       is rendered by a different branch of `PrototypeChrome` from the `only`
-       list the lens was built around. If this regressed, a designer previewing
-       the stakeholder view would see their own controls and conclude
-       stakeholders have them. */
-    expect(screen.queryByRole('region', { name: 'Design controls' })).toBeNull()
+    /* ⚠ THE LENS'S SUBJECT CHANGED TWICE. It used to assert a `wip` CONTROL
+       dropped out; that became "the whole design bar is hidden" on 2026-10-05
+       when Lo-fi left the demo bar; and on 2026-10-06 the design bar started
+       reaching the demo site, so hiding it here would make the lens LIE — which
+       is the one thing the lens exists not to do. What it must now match is the
+       test above: the bar present, both designer tools gone. A lens is only
+       worth having while it agrees with the build it previews. */
+    expect(screen.getByRole('region', { name: 'Design controls' })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /Feature flags/i })).toBeNull()
+    expect(screen.queryByRole('button', { name: /^Lo-fi (on|off)$/ })).toBeNull()
     expect(screen.getByRole('button', { name: /Progress/i })).toBeTruthy()
   })
 

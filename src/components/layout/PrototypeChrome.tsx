@@ -144,12 +144,12 @@ export function PrototypeChrome() {
           showDemoToggle ? <DemoControlsToggle active={demoOpen} onToggle={toggleDemo} /> : undefined
         }
         designToggle={
-          /* Design site only, and only with controls to show — the same two
-             conditions the bar itself renders under, so the toggle and the bar
-             can never disagree about whether there is anything there. */
-          !isPublicGateway() && !asDemo ? (
-            <DesignControlsToggle active={designOpen} onToggle={toggleDesign} />
-          ) : undefined
+          /* ⚠ NO LONGER DESIGN-SITE-ONLY (2026-10-06, the direct ask) — the
+             Demo Hub gets the design controls too. The toggle follows the bar
+             wherever the bar renders, which is the one invariant worth keeping
+             from the gate it replaces: the two can never disagree about whether
+             there is anything to show. */
+          <DesignControlsToggle active={designOpen} onToggle={toggleDesign} />
         }
         fullBleed={framed}
       />
@@ -163,19 +163,28 @@ export function PrototypeChrome() {
         only={isPublicGateway() || asDemo ? demoSiteControls() : undefined}
       />
       {/* THE DESIGN BAR, under the demo one — 2026-10-05.
-          ⚠ DESIGN SITE ONLY. There is no per-control `maturity` gate here
-          because the whole SURFACE is the gate: a design decision worth showing
-          a stakeholder belongs on the demo bar instead. `isPublicGateway()` is
-          the same check that withholds the robot.
-          ⚠ IT RENDERS NOTHING when the current version has no design flags, so
-          this is invisible until somebody marks one — see the component.
-          ⚠ AND `asDemo` HIDES IT TOO. `?as=demo` is the lens a designer uses to
-          see what a stakeholder gets; a lens that left this bar on screen would
-          answer that question wrongly, which is the one thing the lens exists
-          not to do. The demo bar's `only` makes the same check one line up. */}
-      {isPublicGateway() || asDemo || !designOpen ? null : (
-        <DesignControlsBar fullBleed={framed} />
-      )}
+
+          ⚠ IT REACHES THE DEMO HUB NOW (2026-10-06, the direct ask), and the
+          design-site-only rule this comment used to carry is gone. What
+          replaces it sits a level up rather than here: the demo site lists
+          `maturity: 'ready'` VERSIONS only, and `designControlsFor` scopes
+          every control to the version on screen. Choosing what a stakeholder
+          may touch is still a deliberate act — it is promoting a version, not
+          hiding a bar.
+
+          ⚠ WHAT DOES NOT CROSS IS THE TWO TOOLS — Lo-fi and the Feature Flag
+          sheet — withheld by `stakeholder`. The sheet opens the FULL catalog,
+          `wip` rows included, which is the exact leak the robot's
+          `isPublicGateway()` gate above exists to close; re-opening it through
+          this bar would have undone that silently. See `DesignControlsBar` for
+          Lo-fi's half of the reasoning.
+
+          ⚠ AND `?as=demo` NOW SHOWS IT, for precisely the reason it used to
+          hide it. The lens answers "what does a stakeholder get", so it is
+          wrong in whichever direction it disagrees with the demo build. */}
+      {designOpen ? (
+        <DesignControlsBar fullBleed={framed} stakeholder={isPublicGateway() || asDemo} />
+      ) : null}
     </DemoShareProvider>
   )
 }

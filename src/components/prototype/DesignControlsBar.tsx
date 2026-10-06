@@ -36,17 +36,38 @@ import { useDemoMenus, DEMO_HOVER_FILL, DESIGN_ACCENT } from './demoBarUtil'
  * place: three Atlas/Compass controls added to the shared bar while it was
  * being restructured underneath them.
  *
- * ⚠ DESIGN SITE ONLY, never stakeholders. `PrototypeChrome` does not render it
- * on the public build at all — there is no `maturity` gate per control here,
- * because the whole SURFACE is the gate. A design decision that is worth
- * showing stakeholders belongs on the demo bar instead.
+ * ⚠ IT IS NO LONGER DESIGN-SITE-ONLY (2026-10-06, the direct ask). It renders
+ * on the Demo Hub too, and the sentence this replaces — "the whole SURFACE is
+ * the gate" — has stopped being true. The gate moved a level up: the demo site
+ * lists `maturity: 'ready'` VERSIONS only, and `designControlsFor` scopes every
+ * control to the version on screen. So what a stakeholder may touch is still
+ * chosen deliberately; it is chosen by promoting a version.
  *
- * ⚠ IT ALWAYS RENDERS ON THE DESIGN SITE. It did return null on a version with
- * no design flags, until Lo-fi moved here on 2026-10-05 — the bar now carries
- * Lo-fi and the flag sheet's icon whatever version is up, so it is never empty.
- * A designer on somebody else's version still wants both of those.
+ * ⚠ `stakeholder` WITHHOLDS THE TWO TOOLS, and only those. Lo-fi and the
+ * Feature Flag sheet are a designer's instruments rather than design decisions,
+ * and each has its own reason for not crossing:
+ *
+ *   - the sheet opens the FULL catalog, `wip` rows included. That is the exact
+ *     leak the robot's `isPublicGateway()` gate exists to close, and letting it
+ *     back in through this bar would have undone that without anyone noticing.
+ *   - Lo-fi's note from the demo bar still holds word for word: a stakeholder
+ *     handed a control that greys the product out has been given a way to break
+ *     their own demo with nothing to gain from it.
+ *
+ * ⚠ AND `stakeholder` BRINGS THE EMPTY CASE BACK, so the null return below is
+ * back with it. "It is never empty" rested entirely on those two buttons —
+ * withhold them and a version with no design flags leaves a cyan rule carrying
+ * one version name and nothing else. A designer still always has both, and so
+ * still never sees one.
  */
-export function DesignControlsBar({ fullBleed = false }: { fullBleed?: boolean }) {
+export function DesignControlsBar({
+  fullBleed = false,
+  stakeholder = false,
+}: {
+  fullBleed?: boolean
+  /** The stakeholder's copy — the Demo Hub, and `?as=demo` previewing it. */
+  stakeholder?: boolean
+}) {
   const [params] = useSearchParams()
   const { brand } = useAccount()
   const { flags, setEnabled, setVariant } = useFeatureFlags()
@@ -61,11 +82,13 @@ export function DesignControlsBar({ fullBleed = false }: { fullBleed?: boolean }
   const version = DISCOVERABILITY_DASHBOARD_VERSIONS.find((v) => v.id === versionId)
   const controls = designControlsFor(versionId, flagOwner(version ?? {}))
 
-  /* ⚠ IT NO LONGER RETURNS NULL WHEN THE VERSION HAS NO DESIGN FLAGS, and that
-     changed on 2026-10-05 when Lo-fi moved here. The bar always carries Lo-fi
-     and the flag sheet's icon now, so it is never empty — and a designer on a
-     version with no flags of its own still wants both of those. The old rule
-     existed to avoid an empty strip; there is no longer a way to get one. */
+  /* ⚠ THE NULL RETURN IS BACK FOR THE STAKEHOLDER COPY ONLY (2026-10-06). It
+     went on 2026-10-05, when Lo-fi moved here and made the bar impossible to
+     empty; `stakeholder` withholds Lo-fi and the flag sheet, so the empty case
+     exists again — but only on the Demo Hub, where an empty cyan strip naming a
+     version would be the whole feature as a stakeholder sees it. On the design
+     site the two tools are still there and the bar still always renders. */
+  if (stakeholder && controls.length === 0) return null
 
   return (
     <DemoBar
@@ -95,80 +118,87 @@ export function DesignControlsBar({ fullBleed = false }: { fullBleed?: boolean }
           }}
         />
       ))}
-      <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
-        {/* LO-FI — moved here from the demo bar, 2026-10-05, the direct ask.
-            Its own note on that bar always said lo-fi is "a tool for the people
-            DESIGNING the thing"; this is where that sentence finally points.
+      {/* THE TWO TOOLS — DESIGN SITE ONLY, which the BAR no longer is
+          (2026-10-06). Lo-fi and the flag sheet are a designer's
+          instruments, not design decisions; the header note carries the
+          reason each one stops here. ⚠ Withholding them is also what makes
+          the empty case above possible again — the two are one change. */}
+      {stakeholder ? null : (
+        <div style={{ marginLeft: 'auto', display: 'flex', gap: 8 }}>
+          {/* LO-FI — moved here from the demo bar, 2026-10-05, the direct ask.
+              Its own note on that bar always said lo-fi is "a tool for the people
+              DESIGNING the thing"; this is where that sentence finally points.
 
-            ⚠ THE SLIDERS, swapped with the version picker's grid on
-            2026-10-05. It drew a grid first, on the reading that a grid IS what
-            lo-fi looks like — but the grid describes a dashboard LAYOUT better,
-            and that is what the other button chooses between.
+              ⚠ THE SLIDERS, swapped with the version picker's grid on
+              2026-10-05. It drew a grid first, on the reading that a grid IS what
+              lo-fi looks like — but the grid describes a dashboard LAYOUT better,
+              and that is what the other button chooses between.
 
-            ⚠ SOLID WHEN ON IS NOW THE FILL ALONE. The grid had a `GridSolid`
-            twin, so the glyph filled with the button; `Sliders` has no solid
-            variant, so the state rests on the cyan background and
-            `aria-pressed`. That is one cue fewer than it had — worth knowing if
-            the on-state ever reads as weak, because the fix is a solid sliders
-            glyph in the registry, not a different colour. */}
-        <button
-          type="button"
-          className="cre-demo-controls-btn"
-          aria-pressed={loFi}
-          aria-label={loFi ? 'Lo-fi on' : 'Lo-fi off'}
-          title={loFi ? 'Lo-fi on' : 'Lo-fi off'}
-          style={{
-            ...iconBtnStyle,
-            ...(loFi
-              ? {
-                  background: DESIGN_ACCENT,
-                  borderColor: DESIGN_ACCENT,
-                  /* Dark ink on the solid cyan — the inverse token is white and
-                     would measure ~1.9:1 on this fill. */
-                  color: 'var(--color-primary-900)',
-                }
-              : null),
-          }}
-          onClick={() => setLoFi(!loFi)}
-          onMouseEnter={(e) => {
-            if (loFi) return
-            e.currentTarget.style.background = DEMO_HOVER_FILL
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
-          }}
-          onMouseLeave={(e) => {
-            if (loFi) return
-            e.currentTarget.style.background = 'transparent'
-            e.currentTarget.style.borderColor = 'transparent'
-          }}
-        >
-          <Sliders size={16} aria-hidden />
-        </button>
-        {/* ⚠ THE FLAG ICON MOVED HERE FROM THE DEMO BAR (2026-10-05, the direct
-            choice). It opens the Feature Flag sheet, which is a designer's tool
-            and shows this same version's flags — so it belongs beside the
-            controls it is the long form of, not beside the stakeholder ones. */}
-        <button
-          type="button"
-          className="cre-demo-controls-btn"
-          aria-label="Feature flags"
-          title="Feature flags"
-          style={iconBtnStyle}
-          onClick={() => {
-            openFeatureFlagPanel()
-            close()
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.background = DEMO_HOVER_FILL
-            e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.background = 'transparent'
-            e.currentTarget.style.borderColor = 'transparent'
-          }}
-        >
-          <Flag size={16} aria-hidden />
-        </button>
-      </div>
+              ⚠ SOLID WHEN ON IS NOW THE FILL ALONE. The grid had a `GridSolid`
+              twin, so the glyph filled with the button; `Sliders` has no solid
+              variant, so the state rests on the cyan background and
+              `aria-pressed`. That is one cue fewer than it had — worth knowing if
+              the on-state ever reads as weak, because the fix is a solid sliders
+              glyph in the registry, not a different colour. */}
+          <button
+            type="button"
+            className="cre-demo-controls-btn"
+            aria-pressed={loFi}
+            aria-label={loFi ? 'Lo-fi on' : 'Lo-fi off'}
+            title={loFi ? 'Lo-fi on' : 'Lo-fi off'}
+            style={{
+              ...iconBtnStyle,
+              ...(loFi
+                ? {
+                    background: DESIGN_ACCENT,
+                    borderColor: DESIGN_ACCENT,
+                    /* Dark ink on the solid cyan — the inverse token is white and
+                       would measure ~1.9:1 on this fill. */
+                    color: 'var(--color-primary-900)',
+                  }
+                : null),
+            }}
+            onClick={() => setLoFi(!loFi)}
+            onMouseEnter={(e) => {
+              if (loFi) return
+              e.currentTarget.style.background = DEMO_HOVER_FILL
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
+            }}
+            onMouseLeave={(e) => {
+              if (loFi) return
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.borderColor = 'transparent'
+            }}
+          >
+            <Sliders size={16} aria-hidden />
+          </button>
+          {/* ⚠ THE FLAG ICON MOVED HERE FROM THE DEMO BAR (2026-10-05, the direct
+              choice). It opens the Feature Flag sheet, which is a designer's tool
+              and shows this same version's flags — so it belongs beside the
+              controls it is the long form of, not beside the stakeholder ones. */}
+          <button
+            type="button"
+            className="cre-demo-controls-btn"
+            aria-label="Feature flags"
+            title="Feature flags"
+            style={iconBtnStyle}
+            onClick={() => {
+              openFeatureFlagPanel()
+              close()
+            }}
+            onMouseEnter={(e) => {
+              e.currentTarget.style.background = DEMO_HOVER_FILL
+              e.currentTarget.style.borderColor = 'rgba(255,255,255,0.3)'
+            }}
+            onMouseLeave={(e) => {
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.borderColor = 'transparent'
+            }}
+          >
+            <Flag size={16} aria-hidden />
+          </button>
+        </div>
+      )}
     </DemoBar>
   )
 }
