@@ -8,6 +8,7 @@ import {
   ClipboardListCheckRegular,
   FileCertificateRegular,
   GaugeThin,
+  Lock,
   NotebookRegular,
   PenFieldRegular,
 } from '@/icons'
@@ -272,7 +273,12 @@ export function HybridHomeV1({
                     stop={stop}
                     current={i === currentIdx}
                     last={i === stops.length - 1}
-                    onOpen={onOpenStop ? () => onOpenStop(stop.id) : undefined}
+                    /* ⚠ HYBRID #7 — A LOCKED STOP HAS NO WAY IN. Withheld
+                       rather than disabled: a chevron that does nothing is a
+                       promise the row cannot keep, and the lock already says
+                       why. `not-started` only — the completed stops keep theirs,
+                       since looking back at finished work is always allowed. */
+                    onOpen={onOpenStop && stop.status !== 'not-started' ? () => onOpenStop(stop.id) : undefined}
                   />
                 ))}
               </ol>
@@ -433,10 +439,26 @@ function JourneyRow({
   last: boolean
   onOpen?: () => void
 }) {
+  /* The current stop is never locked even if its status says `not-started` —
+     it is the one the learner is being sent to. */
+  const locked = !current && stop.status === 'not-started'
   return (
     <li style={{ display: 'flex', gap: 8, alignItems: 'flex-start', minHeight: current ? 42 : 36 }}>
       <span aria-hidden style={{ width: 14, flex: 'none', alignSelf: 'stretch', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, paddingTop: current ? 7 : 3 }}>
-        {current ? <span style={MARK_CURRENT} /> : <span style={MARK} />}
+        {/* ⚠ HYBRID #7 — NOT-STARTED STOPS WEAR A LOCK, not an empty ring. The
+            ring said "not yet" and so does everything else about a dim row; the
+            lock says WHY, which is the thing the list could not express. The
+            current stop keeps its filled dot and the completed ones their ring,
+            so the column still reads top-to-bottom as done → here → locked. */}
+        {current ? (
+          <span style={MARK_CURRENT} />
+        ) : locked ? (
+          <span style={MARK_LOCK}>
+            <Lock size={11} aria-hidden />
+          </span>
+        ) : (
+          <span style={MARK} />
+        )}
         {last ? null : <span style={SPINE} />}
       </span>
       <span
@@ -537,11 +559,19 @@ function Step({
               display: 'inline-flex',
               flex: 'none',
               marginTop: 4,
-              color: 'var(--color-compass-page-button)',
-              /* The chevron points right when closed and down when open — the
-                 same 90° the rest of the product's disclosures use. */
-              transform: open ? 'rotate(90deg)' : 'none',
-              transition: 'transform 160ms ease',
+              /* ⚠ THE CHEVRON CARRIES BOTH SIGNALS — 2026-10-05, the direct
+                 ask: UP and grey when closed, DOWN and blue when open.
+
+                 Direction and colour say the same thing twice on purpose. The
+                 steps start collapsed and stay that way for most of the course,
+                 so the closed state is the one a learner sees constantly and it
+                 should recede; the blue is reserved for the step they chose to
+                 open. Rotating from -90° to 90° is one continuous turn through
+                 the right-pointing rest position, which is why it reads as the
+                 same arrow moving rather than two icons swapping. */
+              color: open ? 'var(--color-compass-page-button)' : 'var(--color-text-tertiary)',
+              transform: open ? 'rotate(90deg)' : 'rotate(-90deg)',
+              transition: 'transform 160ms ease, color 160ms ease',
             }}
           >
             <AngleRightRegular size={14} aria-hidden />
@@ -757,6 +787,18 @@ const MARK: CSSProperties = {
   border: '2px solid var(--color-border-subtle)',
   flex: 'none',
 }
+/** The lock sits in the same 14px gutter the rings use, so the spine below it
+ *  stays on one axis down the whole column. */
+const MARK_LOCK: CSSProperties = {
+  width: 12,
+  height: 12,
+  flex: 'none',
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  color: 'var(--color-text-tertiary)',
+}
+
 const SPINE: CSSProperties = { flex: '1 1 0', minHeight: 1, width: 0, borderLeft: '2px solid var(--color-border-subtle)' }
 const BEGIN: CSSProperties = {
   ...COMPASS_BUTTON,
