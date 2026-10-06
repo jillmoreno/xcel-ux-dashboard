@@ -378,6 +378,12 @@ export function HybridHomeV1({
                        `showLesson` is computed from that stop, so a row can
                        never be handed a lesson that belongs to another one. */
                     lesson={showLesson && i === currentIdx ? (lessonsDone ?? 0) + 1 : undefined}
+                    /* ⚠ THE SAME HANDLER THE TITLE AREA'S RESUME BUTTON TAKES —
+                       2026-10-06, the direct ask for "another way for the user
+                       to jump right back into the lesson". Two controls, one
+                       action: a second handler would be a second thing to keep
+                       in step, and they are the same door. */
+                    onLesson={onBegin}
                   />
                 ))}
               </ol>
@@ -575,12 +581,16 @@ function JourneyRow({
   current,
   last,
   onOpen,
+  onLesson,
   lesson,
 }: {
   stop: JourneyStop
   current: boolean
   last: boolean
   onOpen?: () => void
+  /** ⚠ HYBRID #4 — what the lesson block does when pressed. The same `onBegin`
+   *  the title area's Resume button takes. */
+  onLesson?: () => void
   /** ⚠ HYBRID #4 — the lesson NUMBER, not a node. The row owns the gutter, so
    *  it has to draw the marker and the connector itself; handing it rendered
    *  content would have put the spine in one component and the thing it runs
@@ -663,14 +673,26 @@ function JourneyRow({
             list reads as one kind of thing. The `onBegin` prop went with it
             (`noUnusedLocals`); `AtlasHomeV2.tsx` still has both the prop and the
             branch if this is ever reversed. */}
-        {onOpen ? (
+        {/* ⚠ HYBRID #4 — NO CHEVRON ON A ROW THAT CARRIES A LESSON (2026-10-06,
+            the direct ask). The lesson block below is this stop's way in, and
+            it is a better one: it NAMES the chapter you would land on, where
+            the chevron only pointed at the stop. Two controls one line apart,
+            going to the same place, with only one of them saying where.
+            ⚠ COMPLETED STOPS KEEP THEIRS — they carry no lesson block, so
+            removing it there would leave finished work with no way back in. */}
+        {onOpen && lesson === undefined ? (
           <button type="button" className="cre-compass-v2-link" onClick={onOpen} aria-label={`Open ${stop.title}`} style={CHEVRON}>
             <AngleRightRegular size={13} aria-hidden />
           </button>
         ) : null}
       </div>
       {lesson === undefined ? null : (
-        <div style={{ display: 'flex', gap: 8, alignItems: 'center', padding: '0 0 6px' }}>
+        /* ⚠ NO PADDING ON THIS ROW, and that is load-bearing. The gutter is
+           `alignSelf: stretch`, so it stretches to the row's CONTENT box —
+           padding here shortened the spine by exactly that much and left a
+           break in the line before the next stop (measured: 6px, 8 with the
+           list's own gap). Air around the block goes ON the block. */
+        <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
           <span
             aria-hidden
             style={{
@@ -695,22 +717,61 @@ function JourneyRow({
           {/* DASHED, where the spine is solid: it crosses OUT of the timeline
               to the block rather than continuing along it. */}
           <span aria-hidden style={LESSON_CONNECTOR} />
-          <span style={LESSON_BLOCK}>
-            <span style={LESSON_META}>
-              Lesson {lesson}
-              <span aria-hidden style={LESSON_DOT} />
-              {/* ⚠ INVENTED, and named as such at its source — see
-                  `NY_LH_LESSON_MINUTES_INVENTED`. */}
-              <span style={LESSON_ESTIMATE}>About {NY_LH_LESSON_MINUTES_INVENTED} minutes</span>
+          {/* ⚠ A BUTTON AROUND THE BLOCK — 2026-10-06, the direct ask: a second
+              way into the lesson beside the title area's Resume.
+              `cre-lesson-cta` is the hover Testing 3's combined card gives the
+              same block, so the one pressable row in this list behaves the same
+              in both versions.
+
+              ⚠ IT CARRIES NO `data-cta-id`, because neither does this version's
+              Resume button. On Testing 3 both carry `home.resume` DELIBERATELY:
+              a moderated run that kills that CTA has to kill both paths, or
+              this one keeps working and answers the research question wrongly.
+              If Hybrid's Resume is ever tagged, tag this with it.
+
+              ⚠ THE PADDING IS HERE, NOT ON `LESSON_BLOCK`. The hover fill is
+              this box, so the air above and below the text has to be inside it
+              — on the inner box the fill would hug the words and read as a
+              highlight rather than as a row. And no LEFT padding, so the fill
+              starts exactly where the green rule does. */}
+          <button
+            type="button"
+            className="cre-lesson-cta"
+            onClick={onLesson}
+            disabled={!onLesson}
+            aria-label={`Resume ${NY_LH_CURRENT_CHAPTER}`}
+            style={LESSON_CTA}
+          >
+            <span style={LESSON_BLOCK}>
+              <span style={LESSON_META}>
+                Lesson {lesson}
+                <span aria-hidden style={LESSON_DOT} />
+                {/* ⚠ INVENTED, and named as such at its source — see
+                    `NY_LH_LESSON_MINUTES_INVENTED`. */}
+                <span style={LESSON_ESTIMATE}>About {NY_LH_LESSON_MINUTES_INVENTED} minutes</span>
+              </span>
+              {/* ⚠ SPANS, AND BODY FACE. Spans because a `<p>`/`<h3>` inside a
+                  `<button>` is invalid — a button may contain only phrasing
+                  content, and the DOM re-parents the rest; body face because
+                  `atlas-heading-font` re-points the heading token at a serif and
+                  a chapter name is a row label, not a heading.
+                  `CombinedCourseCard` makes both calls the same way. */}
+              <span style={LESSON_ROW}>
+                <span style={LESSON_TITLE}>{NY_LH_CURRENT_CHAPTER}</span>
+                {/* ⚠ ALWAYS IN THE DOM, only its opacity moves — rendering it
+                    on hover alone would reflow the title the moment a cursor
+                    crossed the row. The same rule the Quick Links take, and the
+                    reason the stop's own chevron could go: this one appears
+                    where the pointer already is. */}
+                <AngleRightRegular
+                  size={13}
+                  aria-hidden
+                  className="cre-lesson-chevron"
+                  style={{ flex: 'none', color: 'var(--color-compass-page-button)' }}
+                />
+              </span>
             </span>
-            {/* ⚠ SPANS, AND BODY FACE. Spans because `<p>`/`<h3>` inside a list
-                row sitting beside phrasing content is the trap the step
-                disclosures hit; body face because `atlas-heading-font` re-points
-                the heading token at a serif and a chapter name is a row label,
-                not a heading. `CombinedCourseCard` makes both calls the same
-                way. */}
-            <span style={LESSON_TITLE}>{NY_LH_CURRENT_CHAPTER}</span>
-          </span>
+          </button>
         </div>
       )}
     </li>
@@ -1147,8 +1208,35 @@ const LESSON_CONNECTOR: CSSProperties = {
    indent is what makes the lesson read as something INSIDE the stop rather
    than as another row of the list — and it is split across the gutter, two
    gaps and the connector, so changing any one of them moves it. */
-const LESSON_BLOCK: CSSProperties = {
+/* ⚠ THE PRESSABLE BOX, and the air above and below the lesson lives here —
+   2026-10-06, the direct ask for more padding. It has to be on the box the
+   hover fills: on the inner one the fill would hug the two lines and read as a
+   highlight rather than as a row you can press.
+
+   ⚠ NO LEFT PADDING, so the fill's left edge lands exactly on the green rule.
+   `CombinedCourseCard` reaches the same place with a negative margin because
+   its block is indented from inside; here the indent is already spent on the
+   gutter and the connector, so there is nothing to cancel. */
+const LESSON_CTA: CSSProperties = {
   flex: '1 1 0',
+  minWidth: 0,
+  display: 'block',
+  textAlign: 'left',
+  /* ⚠ NO `background` HERE — `.cre-lesson-cta` owns it, and an inline
+     `transparent` BEATS the class's `:hover` in the cascade, so the row keeps
+     its chevron and loses its tint. Measured on this component before the fix:
+     chevron opacity 1, background still rgba(0,0,0,0) — the identical reading
+     `CombinedCourseCard`'s `lessonButton` records, which is the THIRD time this
+     repo has hit it. If a class owns a hover, it must own the rest state too.
+     Buttons are transparent at rest via Tailwind's preflight, so there is
+     nothing to declare. */
+  border: 'none',
+  cursor: 'pointer',
+  margin: '2px 0 4px',
+  padding: '8px 10px 8px 0',
+}
+const LESSON_BLOCK: CSSProperties = {
+  display: 'block',
   minWidth: 0,
   /* ⚠ THE GREEN RULE IS THE TEXT'S OWN HEIGHT, by construction — it is on this
      box and this box is the two lines. On any ancestor it would run the full
@@ -1184,13 +1272,28 @@ const LESSON_ESTIMATE: CSSProperties = {
   letterSpacing: '0.04em',
   textTransform: 'none',
 }
+/* Holds the title and the hover chevron on one line, with the chevron pinned
+   right so it never sits against a short last word. */
+const LESSON_ROW: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 10,
+  minWidth: 0,
+}
 const LESSON_TITLE: CSSProperties = {
   ...BODY_TEXT,
   display: 'block',
+  flex: '1 1 0',
+  minWidth: 0,
   margin: 0,
   fontWeight: 700,
-  fontSize: 15,
-  lineHeight: '20px',
+  /* ⚠ 14/19, DOWN FROM `CombinedCourseCard`'s 15/20 — 2026-10-06, the direct
+     ask. That card prints this line on a wider column with no stop titles
+     beside it; here it sits one indent in from 13px stop labels, and at 15 it
+     out-sized the step it belongs to. 14 keeps it the heaviest line in the list
+     — it is still the only 700 — without making the nested thing the biggest. */
+  fontSize: 14,
+  lineHeight: '19px',
   color: 'var(--color-text-primary)',
 }
 const BEGIN: CSSProperties = {
