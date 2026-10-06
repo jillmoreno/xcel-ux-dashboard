@@ -1,11 +1,12 @@
 import { useEffect, useId, useRef, useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { Crown, Flag, Monitor, Robot, Users } from '@/icons'
+import { Crown, Flag, Monitor, Robot, Sliders, Users } from '@/icons'
 import { SwitchAccountPanel } from '@/components/account/SwitchAccountPanel'
 import { useDashboardVersionsPanel } from '@/components/dashboard/DashboardVersionsPanelContext'
 import { useMembershipVersionsPanel } from '@/components/membership/MembershipVersionsPanelContext'
 import { useFeatureFlagPanel } from '@/components/account/FeatureFlagPanelContext'
 import { useFeatureFlags } from '@/context/FeatureFlagContext'
+import { useDesignControlsVisibility } from '@/components/prototype/demoControlsVisibility'
 
 /**
  * Hidden admin / UI-UX demo tools menu.
@@ -24,8 +25,29 @@ import { useFeatureFlags } from '@/context/FeatureFlagContext'
  * doesn't carry any reviewer-only scaffolding. The behaviour of each
  * row is unchanged — they open the same SwitchAccountPanel /
  * DashboardVersionsPanel / FeatureFlagPanel slide-overs.
+ *
+ * ⚠ THE ROBOT IS BACK ON THE DEMO HUB (2026-10-06), after being withheld there
+ * since 2026-09-24 — and `stakeholder` is what makes that a narrowing rather
+ * than a reversal. The old gate was never about the robot: its words were "the
+ * robot opens the FULL Feature Flag sheet, so it routes straight around the
+ * maturity gate". That door stays shut; a different one opens.
+ *
+ *   - the stakeholder dropdown carries ONE row, "Design controls", which shows
+ *     and hides the design bar. That bar starts hidden on the Demo Hub, so this
+ *     is the only way to it — the direct ask: available, not on display.
+ *   - every other row is withheld, the Feature Flag sheet first among them. On
+ *     the rebrand the robot normally opens that sheet with no dropdown at all;
+ *     under `stakeholder` it takes the dropdown branch instead, so there is no
+ *     path at all from this button to the catalog.
+ *
+ * ⚠ IT FAILS THE WRONG WAY IF SOMEONE ADDS A ROW WITHOUT A GUARD. The rows
+ * below are allow-by-default and `stakeholder` subtracts from them — the
+ * opposite of `DemoControlsBar`'s `only`, which fails closed. A new row needs
+ * `!stakeholder` written on it deliberately, so `PublicGateway.test.tsx` asserts
+ * the Demo Hub dropdown has exactly ONE row: an omission fails there rather
+ * than shipping behind a button that is invisible at rest.
  */
-export function AdminToolsMenu() {
+export function AdminToolsMenu({ stakeholder = false }: { stakeholder?: boolean }) {
   const [open, setOpen] = useState(false)
   const [switchOpen, setSwitchOpen] = useState(false)
   const { demoMode } = useFeatureFlags()
@@ -37,6 +59,12 @@ export function AdminToolsMenu() {
   // this hidden menu drops those two duplicates there (see the guards below).
   const { pathname } = useLocation()
   const onRebrand = pathname === '/dashboard-rebrand'
+  const { open: designOpen, toggle: toggleDesign } = useDesignControlsVisibility()
+  /* ⚠ THE DIRECT-OPEN SHORTCUT IS DESIGN-SITE-ONLY NOW. On the rebrand the robot
+     opens the flag sheet with no dropdown in between — which under `stakeholder`
+     would be the catalog, one click, no menu to guard. So the stakeholder copy
+     always takes the dropdown branch, and the aria below follows it. */
+  const openSheetDirectly = onRebrand && !stakeholder
   // THE DEMO VIEW KEEPS THE ROBOT (2026-09-16, at Jillienne's request). It used
   // to `return null` under `?demo=1` unless a `?tools=1` back door was set, on
   // the reasoning that a stakeholder should see a clean demo. Two things make
@@ -93,16 +121,16 @@ export function AdminToolsMenu() {
     >
       <button
         type="button"
-        aria-haspopup={onRebrand ? 'dialog' : 'menu'}
-        aria-expanded={onRebrand ? undefined : open}
-        aria-controls={onRebrand ? undefined : id}
-        aria-label={onRebrand ? 'Settings' : 'Admin tools'}
+        aria-haspopup={openSheetDirectly ? 'dialog' : 'menu'}
+        aria-expanded={openSheetDirectly ? undefined : open}
+        aria-controls={openSheetDirectly ? undefined : id}
+        aria-label={openSheetDirectly ? 'Settings' : 'Admin tools'}
         // On the rebrand every setting lives in the single Feature Flag sheet
         // (Dashboard Version is its first row), so the robot opens that sheet
         // directly — no intermediate dropdown. Every other route keeps the
         // multi-row dropdown.
         onClick={() => {
-          if (onRebrand) openFeatureFlagPanel()
+          if (openSheetDirectly) openFeatureFlagPanel()
           else setOpen((v) => !v)
         }}
         className="cre-admin-tools-trigger"
@@ -176,6 +204,42 @@ export function AdminToolsMenu() {
               Demo view — changes preview here only and reset on exit.
             </span>
           )}
+          {/* THE DEMO HUB'S ONLY ROW — 2026-10-06, the direct ask: the design
+              controls are available to a stakeholder but not on display, so the
+              bar starts hidden there and this is the way to it.
+
+              ⚠ IT TOGGLES, IT DOES NOT OPEN A PANEL, which is why it carries a
+              state word where every other row here carries none. The rows below
+              are all one-way doors into a slide-over; a reader who assumed this
+              was one too would click it twice and put the bar back. */}
+          {stakeholder && (
+            <button
+              type="button"
+              role="menuitemcheckbox"
+              aria-checked={designOpen}
+              onClick={() => {
+                setOpen(false)
+                toggleDesign()
+              }}
+              className="cre-menu-item"
+            >
+              <span className="cre-menu-item-icon" aria-hidden>
+                <Sliders size={18} aria-hidden />
+              </span>
+              Design controls
+              <span
+                aria-hidden
+                style={{
+                  marginLeft: 'auto',
+                  fontSize: 12,
+                  fontWeight: 600,
+                  color: 'var(--color-text-tertiary)',
+                }}
+              >
+                {designOpen ? 'Shown' : 'Hidden'}
+              </span>
+            </button>
+          )}
           {/* Membership-tier switch removed here on the rebrand — the always-
               visible Demo Controls bar owns the Non-Member ⇄ tier flip (Quick
               views presets) on `/dashboard-rebrand`, so a second tier control in
@@ -188,7 +252,7 @@ export function AdminToolsMenu() {
               Demo view to keep it pure, and dropped on the rebrand where the
               Demo Controls bar's Brand dropdown covers switching brand live
               (SwitchAccountPanel is still reachable from the account menu). */}
-          {!onRebrand && !demoMode && (
+          {!onRebrand && !demoMode && !stakeholder && (
             <button
               type="button"
               role="menuitem"
@@ -207,7 +271,7 @@ export function AdminToolsMenu() {
           {/* Dashboard Version — on the rebrand this moved into the Feature
               Flag sheet as its first row (the robot opens that sheet directly,
               so this dropdown never shows there). Every other route keeps it. */}
-          {!onRebrand && (
+          {!onRebrand && !stakeholder && (
             <button
               type="button"
               role="menuitem"
@@ -227,7 +291,7 @@ export function AdminToolsMenu() {
               single membership surface, no versions to switch, so this row is
               hidden there. Every other route (the Explore Dashboard feature)
               keeps it. */}
-          {!onRebrand && (
+          {!onRebrand && !stakeholder && (
             <button
               type="button"
               role="menuitem"
@@ -243,20 +307,28 @@ export function AdminToolsMenu() {
               Membership Version
             </button>
           )}
-          <button
-            type="button"
-            role="menuitem"
-            onClick={() => {
-              setOpen(false)
-              openFeatureFlagPanel()
-            }}
-            className="cre-menu-item"
-          >
-            <span className="cre-menu-item-icon" aria-hidden>
-              <Flag size={18} aria-hidden />
-            </span>
-            Feature Flag
-          </button>
+          {/* ⚠ THE ROW THE DEMO HUB MUST NOT HAVE. It opens the full flag
+              catalog, `wip` rows included — the single reason the robot was
+              withheld from the demo site in the first place (2026-09-24).
+              Bringing the robot back without this guard would undo that gate
+              exactly, from a button that is invisible at rest, so nothing on
+              screen would say so. */}
+          {!stakeholder && (
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false)
+                openFeatureFlagPanel()
+              }}
+              className="cre-menu-item"
+            >
+              <span className="cre-menu-item-icon" aria-hidden>
+                <Flag size={18} aria-hidden />
+              </span>
+              Feature Flag
+            </button>
+          )}
           {/* "Prototype Password" row was removed — change the gate password
               directly in code (DEFAULT_PROTOTYPE_PASSWORD / localStorage) when
               needed instead of from this menu. */}

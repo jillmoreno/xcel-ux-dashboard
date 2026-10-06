@@ -67,6 +67,12 @@ export function PrototypeChrome() {
   // the one that used to need a second deploy: "what does a stakeholder actually
   // get?" (No effect on the demo site itself, where the answer is already yes.)
   const asDemo = params.get('as') === 'demo'
+  /* THE STAKEHOLDER VIEW — the Demo Hub, and `?as=demo` previewing it from the
+     design site. Derived once and handed to both the robot and the design bar,
+     because those two now have to agree: the robot's dropdown is the only way to
+     a bar that starts hidden, so a build where one read the lens and the other
+     did not would leave the controls unreachable. */
+  const stakeholderView = isPublicGateway() || asDemo
   /* ⚠ THE DESIGN TOGGLE WAS GATED ON `hasDesignControls` AND NO LONGER IS
      (2026-10-05). The gate existed because the bar returned null on a version
      with no design flags, and a toggle revealing an empty strip reads as
@@ -138,18 +144,27 @@ export function PrototypeChrome() {
          * Participant sessions (`?test=1`) already never reach here — that
          * branch returns above with the demo bar alone and no PrototypeBar.
          */
-        adminTools={isPublicGateway() ? undefined : <AdminToolsMenu />}
+        /* ⚠ THE ROBOT IS NO LONGER WITHHELD HERE (2026-10-06) — it carries a
+           different payload instead, which is what the 2026-09-24 gate was
+           actually for. Its words were "the robot opens the FULL Feature Flag
+           sheet, so it routes straight around the maturity gate"; `stakeholder`
+           shuts that door and opens one row onto the design bar. See
+           `AdminToolsMenu`, where the subtraction is spelled out row by row. */
+        adminTools={<AdminToolsMenu stakeholder={stakeholderView} />}
         deviceToggle={<DeviceFrameToggle />}
         demoToggle={
           showDemoToggle ? <DemoControlsToggle active={demoOpen} onToggle={toggleDemo} /> : undefined
         }
         designToggle={
-          /* ⚠ NO LONGER DESIGN-SITE-ONLY (2026-10-06, the direct ask) — the
-             Demo Hub gets the design controls too. The toggle follows the bar
-             wherever the bar renders, which is the one invariant worth keeping
-             from the gate it replaces: the two can never disagree about whether
-             there is anything to show. */
-          <DesignControlsToggle active={designOpen} onToggle={toggleDesign} />
+          /* ⚠ THE PILL IS DESIGN-SITE-ONLY AND THE BAR IS NOT (2026-10-06),
+             which looks inconsistent and IS the ask. The controls are available
+             to a stakeholder; they are not ON DISPLAY. A pill sitting on the
+             prototype bar is display; the robot's dropdown, invisible until
+             hovered, is not. So the two surfaces own the same toggle on their
+             own sites, and the state behind both is one store either way. */
+          stakeholderView ? undefined : (
+            <DesignControlsToggle active={designOpen} onToggle={toggleDesign} />
+          )
         }
         fullBleed={framed}
       />
@@ -172,18 +187,27 @@ export function PrototypeChrome() {
           may touch is still a deliberate act — it is promoting a version, not
           hiding a bar.
 
-          ⚠ WHAT DOES NOT CROSS IS THE TWO TOOLS — Lo-fi and the Feature Flag
-          sheet — withheld by `stakeholder`. The sheet opens the FULL catalog,
-          `wip` rows included, which is the exact leak the robot's
-          `isPublicGateway()` gate above exists to close; re-opening it through
-          this bar would have undone that silently. See `DesignControlsBar` for
-          Lo-fi's half of the reasoning.
+          ⚠ BUT IT STARTS HIDDEN THERE, and the robot's dropdown is the only
+          way to it — see `demoControlsVisibility`, where the default is now
+          per-site, and `AdminToolsMenu`, which is back on the Demo Hub carrying
+          that one row. Available, not on display.
+
+          ⚠ WHAT DOES NOT CROSS IS THE FEATURE FLAG SHEET, withheld by
+          `stakeholder` on this bar and on the robot both. It opens the FULL
+          catalog, `wip` rows included — the exact leak the robot's old
+          demo-site gate existed to close. Lo-fi DOES cross: its objection was
+          that a stakeholder should not be HANDED a control that greys the
+          product out, and behind a hidden menu and a hidden bar nobody is
+          handed it.
 
           ⚠ AND `?as=demo` NOW SHOWS IT, for precisely the reason it used to
           hide it. The lens answers "what does a stakeholder get", so it is
-          wrong in whichever direction it disagrees with the demo build. */}
+          wrong in whichever direction it disagrees with the demo build. ⚠ The
+          one thing it cannot borrow is the hidden-by-default start: the toggle
+          persists per browser, so a designer previewing sees their own stored
+          choice. Reachability is what the lens answers for. */}
       {designOpen ? (
-        <DesignControlsBar fullBleed={framed} stakeholder={isPublicGateway() || asDemo} />
+        <DesignControlsBar fullBleed={framed} stakeholder={stakeholderView} />
       ) : null}
     </DemoShareProvider>
   )
