@@ -537,17 +537,21 @@ function JourneyRow({
   /* The current stop is never locked even if its status says `not-started` —
      it is the one the learner is being sent to. */
   const locked = !current && stop.status === 'not-started'
-  /* ⚠ 34 / 28, DOWN FROM 42 / 36 — 2026-10-05, the direct ask. The label is an
-     18px line, so 36 was spending half the row on air and six stops read as a
-     much longer list than they are. The CURRENT row keeps its extra 6 over the
-     others: it carries a heavier weight and the filled dot, and letting it
-     breathe is what makes it findable at a glance.
+  /* ⚠ 40 / 34 — came down from 42 / 36 on 2026-10-05 and back up on 2026-10-06,
+     both on direct asks. The settled reading: 36 was too airy for an 18px label
+     and 28 was too tight once the locks went in beside it.
 
-     ⚠ THE SPINE STRETCHES TO WHATEVER THIS IS (`flex: 1 1 0` inside a stretched
-     gutter), so the connector follows the height rather than needing its own
-     number. */
+     ⚠ THE HEIGHT IS THE LEVER HERE, NOT THE LIST'S `gap`, and that is the thing
+     worth knowing. Each row owns its own segment of the spine (`flex: 1 1 0` in
+     a stretched gutter), so the connector grows WITH the row — while raising
+     the gap would push the segments apart and turn one continuous line into a
+     dashed one. The gap stays at 2 for that reason.
+
+     ⚠ THE CURRENT ROW KEEPS ITS EXTRA 6 over the others: it carries the heavier
+     weight and the filled dot, and letting it breathe is what makes it findable
+     at a glance. */
   return (
-    <li style={{ display: 'flex', gap: 8, alignItems: 'flex-start', minHeight: current ? 34 : 28 }}>
+    <li style={{ display: 'flex', gap: 8, alignItems: 'flex-start', minHeight: current ? 40 : 34 }}>
       <span aria-hidden style={{ width: 14, flex: 'none', alignSelf: 'stretch', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, paddingTop: current ? 7 : 3 }}>
         {/* ⚠ HYBRID #7 — NOT-STARTED STOPS WEAR A LOCK, not an empty ring. The
             ring said "not yet" and so does everything else about a dim row; the
