@@ -1287,13 +1287,18 @@ const LESSON_TITLE: CSSProperties = {
   minWidth: 0,
   margin: 0,
   fontWeight: 700,
-  /* ⚠ 14/19, DOWN FROM `CombinedCourseCard`'s 15/20 — 2026-10-06, the direct
-     ask. That card prints this line on a wider column with no stop titles
-     beside it; here it sits one indent in from 13px stop labels, and at 15 it
-     out-sized the step it belongs to. 14 keeps it the heaviest line in the list
-     — it is still the only 700 — without making the nested thing the biggest. */
-  fontSize: 14,
-  lineHeight: '19px',
+  /* ⚠ 13/18, DOWN FROM `CombinedCourseCard`'s 15/20 IN TWO STEPS — 2026-10-06,
+     both direct asks. That card prints this line on a wider column with no stop
+     titles beside it; here it sits one indent in from 13px stop labels, and at
+     15 the nested thing out-sized the step it belongs to.
+
+     ⚠ 13/18 IS THE STOP LABELS' OWN TYPE, which is the reason to stop here
+     rather than keep going. The lesson now differs from the rows around it by
+     WEIGHT alone — it is the only 700 in the list — so it still reads as the
+     thing you are on while sitting in the list's rhythm instead of above it.
+     Smaller than this and it is quieter than the stops it belongs to. */
+  fontSize: 13,
+  lineHeight: '18px',
   color: 'var(--color-text-primary)',
 }
 const BEGIN: CSSProperties = {
