@@ -15,6 +15,9 @@ type Props<T extends string> = {
    * content area). Default keeps the roomy Figma spacing.
    */
   size?: 'default' | 'compact'
+  /** Extra px on each tab's left AND right, over the size's own padding.
+   *  The Atlas My Courses filter bar adds 4 (2026-10-06). */
+  extraPaddingX?: number
 }
 
 /**
@@ -38,7 +41,7 @@ type Props<T extends string> = {
  * RecommendedFilters) are individually-outlined pills at ~25px tall, where a
  * 16px radius reads as a mistake. They stay `--radius-pill`.
  */
-export function PillTabs<T extends string>({ items, active, onChange, label, size = 'default' }: Props<T>) {
+export function PillTabs<T extends string>({ items, active, onChange, label, size = 'default', extraPaddingX = 0 }: Props<T>) {
   const compact = size === 'compact'
   return (
     <div
@@ -64,7 +67,7 @@ export function PillTabs<T extends string>({ items, active, onChange, label, siz
               display: 'inline-flex',
               alignItems: 'center',
               justifyContent: 'center',
-              padding: compact ? '8px 14px' : '10px 24px',
+              padding: compact ? `8px ${14 + extraPaddingX}px` : `10px ${24 + extraPaddingX}px`,
               borderRadius: 'var(--radius-xl)',
               background: isActive ? 'var(--color-tab-active)' : 'transparent',
               // Active pill text stays white on the colored CTA fill via

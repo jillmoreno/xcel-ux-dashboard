@@ -54,6 +54,11 @@ const PROFESSION_OPTIONS = [
   { value: 'real-estate-post', label: 'Real Estate Post-Licensing' },
 ]
 
+/** The search / filter-bar row's height when an `aside` is shown — the filter
+ *  bar's own 36 (2026-10-06; it was the search box's 40), so the two columns'
+ *  rows stay level (see the aside branch). */
+const ASIDE_ROW_H = 36
+
 const STATE_OPTIONS = ['Alabama', 'Florida', 'Georgia', 'North Carolina', 'South Carolina', 'Tennessee', 'Virginia']
 
 export function MyCoursesPage({
@@ -214,9 +219,9 @@ export function MyCoursesPage({
           // the right of the search). In the rebrand shell the section hero
           // carries the search, so the embedded page drops its own — the toggle
           // still shows, top-right under the hero search.
-          !hideSearch || (!forceCardView && tableViewEnabled) ? (
+          (!hideSearch && !aside) || (!forceCardView && tableViewEnabled) ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-              {!hideSearch && (
+              {!hideSearch && !aside && (
                 <SearchInput
                   label="Search courses"
                   placeholder="Search Courses"
@@ -248,7 +253,29 @@ export function MyCoursesPage({
           marginTop: 24,
         }}
       >
-          {aside ?? (!hideFilters && (
+          {aside ? (
+            /* WITH AN ASIDE (Atlas, 2026-10-06): search heads the left column
+               at the aside's width, on the filter bar's row, and the aside
+               starts level with the first row of cards. Both rows are held at
+               ASIDE_ROW_H (the pills' 36; the search box is sized to it) and both
+               columns use the same 24 gap, which is what keeps them level. */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24, minWidth: 0 }}>
+              {!hideSearch && (
+                <div style={{ minHeight: ASIDE_ROW_H, display: 'flex', alignItems: 'center' }}>
+                  <SearchInput
+                    label="Search courses"
+                    placeholder="Search Courses"
+                    value={search}
+                    onChange={(e) => setParam('q', e.target.value)}
+                    // 12, the radius of the card under it and the course cards;
+                    // the filter bar's height (2026-10-06).
+                    style={{ width: '100%', height: ASIDE_ROW_H, borderRadius: 'var(--radius-lg)' }}
+                  />
+                </div>
+              )}
+              {aside}
+            </div>
+          ) : (!hideFilters && (
           <aside aria-label="My Courses filters" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--color-text-secondary)' }}>
               {inArchive
@@ -312,13 +339,14 @@ export function MyCoursesPage({
                 collection. The page header has no room for it (a 360px search
                 plus the view toggle), so it lives here, pushed right the way
                 Gift Recipients pins its Download link. */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap', minHeight: aside ? ASIDE_ROW_H : undefined }}>
               <PillTabs
                 label="Filter by status"
                 items={statusTabs}
                 active={status}
                 onChange={(v) => setParam('status', v === 'current' ? null : v)}
                 size="compact"
+                extraPaddingX={aside ? 4 : 0}
               />
               {/* Hidden at zero — a link into an empty room is worse than no
                   link, and its absence is also why the archived collection
