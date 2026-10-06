@@ -14,6 +14,7 @@ import {
 } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
 import { journeyStopsFor, type JourneyStop } from '@/components/learning/studyJourneyUtil'
+import { widgetEyebrowStyle } from '@/components/learning/widgetStyles'
 import { GET_LICENSED_STEPS, jurisdictionName } from '@/data/nyProducerRequirements'
 import { ExamScheduleWidget } from '@/components/learning/ExamScheduleWidget'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
@@ -351,10 +352,27 @@ export function HybridHomeV1({
           countdown="flip"
         />
 
-        <nav aria-label="Other information for your journey" style={SIDE_CARD}>
-          {/* The exam-date card's heading style — Serif H8 (2026-10-02, the
-              designer's request; the design sets it in Open Sans SemiBold 16). */}
-          <p style={STEP_TITLE}>Other Information for Your Journey</p>
+        {/* ⚠ HYBRID #8 — "QUICK LINKS", WITH TESTING 3'S EYEBROW. 2026-10-05,
+            the direct ask. Eric's card was "Other Information for Your Journey"
+            over a Serif H8, which is the same type the STEP titles beside it
+            use — so a list of shortcuts carried the same weight as the three
+            things the learner actually has to do.
+
+            `widgetEyebrowStyle` + `cre-eyebrow-ink` is what Testing 3's Quick
+            links card wears, and what every other section label on this page
+            wears. The name follows the style: "Quick Links" says what the block
+            is for, where "Other Information" says only that it is not the rest.
+
+            ⚠ THE SEVEN ROWS AND THEIR ICONS ARE UNTOUCHED. Testing 3's card
+            holds three TEXT links; this one holds seven icon rows, four of
+            which (Flashcards, Exam Simulator, and the two sheets) have no other
+            home on this screen. Matching that card's row treatment too would
+            mean deciding which four destinations to drop, which is a different
+            question from what to call the block. */}
+        <nav aria-label="Quick links" style={SIDE_CARD}>
+          <p className="cre-eyebrow-ink" style={widgetEyebrowStyle}>
+            Quick Links
+          </p>
           <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
             <SideLink icon={<BookRegular size={13} aria-hidden />} label="My Courses" onClick={() => go('courses')} />
             <SideLink icon={<FileCertificateRegular size={13} aria-hidden />} label="My Certificates" onClick={() => go('certificates')} />
