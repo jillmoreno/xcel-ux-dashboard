@@ -17,7 +17,12 @@ import { CatalogPage } from '@/pages/CatalogPage'
 import { MyCoursesPage } from '@/pages/MyCoursesPage'
 import { AtlasJourneyLinksCard } from '@/components/compass/AtlasJourneyLinksCard'
 import { AtlasCourseCard } from '@/components/compass/AtlasCourseCard'
-import { ATLAS_COURSE_CARD_W, ATLAS_MY_COURSES, ATLAS_MY_COURSES_WIDTH } from '@/data/atlasCourseCards'
+import {
+  ATLAS_COURSE_CARD_W,
+  ATLAS_MY_COURSES,
+  ATLAS_MY_COURSES_ASIDE_W,
+  ATLAS_MY_COURSES_WIDTH,
+} from '@/data/atlasCourseCards'
 import { LearningPathPage } from '@/pages/LearningPathPage'
 import { LearningPathsHome } from '@/components/learning/LearningPathsHome'
 import { useLearningPathsPanel } from '@/components/learning/LearningPathsPanelContext'
@@ -2455,6 +2460,7 @@ function MyCoursesSection() {
       // for later, not removed (2026-10-06, Eric's request).
       hideListControls={atlas}
       contentWidth={atlas ? ATLAS_MY_COURSES_WIDTH : undefined}
+      asideWidth={ATLAS_MY_COURSES_ASIDE_W}
       // Atlas: the Figma course cards (213:3619) in place of the shared grid.
       cards={
         atlas ? (

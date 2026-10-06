@@ -69,6 +69,7 @@ export function MyCoursesPage({
   cards,
   hideListControls = false,
   contentWidth,
+  asideWidth = 280,
 }: {
   embedded?: boolean
   hideSearch?: boolean
@@ -86,6 +87,8 @@ export function MyCoursesPage({
   hideListControls?: boolean
   /** Caps the page at this width and centres it (Atlas, 2026-10-06). */
   contentWidth?: number
+  /** The aside column's width (Atlas passes the Home side column's 260). */
+  asideWidth?: number
 } = {}) {
   const [params, setParams] = useSearchParams()
   const { brand } = useAccount()
@@ -265,7 +268,7 @@ export function MyCoursesPage({
           // Narrower filter rail + tighter gap so the card grid keeps room in
           // the rebrand shell's constrained content column (was 240px / 32px,
           // which pushed cards off the right edge in the embedded/demo view).
-          gridTemplateColumns: aside ? '280px minmax(0, 1fr)' : hideFilters ? '1fr' : '200px minmax(0, 1fr)',
+          gridTemplateColumns: aside ? `${asideWidth}px minmax(0, 1fr)` : hideFilters ? '1fr' : '200px minmax(0, 1fr)',
           alignItems: aside ? 'start' : undefined,
           gap: 24,
           marginTop: 24,

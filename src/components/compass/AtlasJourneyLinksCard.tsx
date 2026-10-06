@@ -144,6 +144,9 @@ const SIDE_ROW_ACTIVE: CSSProperties = {
   padding: '4px 8px',
   borderRadius: 999,
   background: 'var(--color-surface-card)',
+  // SemiBold — a step past the rows' Medium hover, so "here" never reads as a
+  // hover (2026-10-06).
+  fontWeight: 600,
 }
 const SIDE_ROW: CSSProperties = {
   width: '100%',

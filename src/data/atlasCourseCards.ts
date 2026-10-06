@@ -48,13 +48,15 @@ export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
   },
 ]
 
-/** One Atlas course card's width: 250, five under the Figma card's 255, so
- *  THREE fit in one row beside the links card inside the shell's 1092px
- *  content box (280 + 24 + 3 × 250 + 2 × 16 = 1086; at 255 it is 1101 and the
- *  third card wrapped) — 2026-10-06, when the third card arrived. */
-export const ATLAS_COURSE_CARD_W = 250
-/** My Courses' centred content: the 280 links card, a 24 gap, then the cards in
- *  one row with 16 between (2026-10-06, Eric's request: "center all of the page
+/** The links card's column — 260, the Home page's side column (2026-10-06,
+ *  Eric's request; it was 280). */
+export const ATLAS_MY_COURSES_ASIDE_W = 260
+/** One Atlas course card's width: the Figma card's 255. Three fit in one row
+ *  beside the 260 links card inside the shell's 1092px content box (260 + 24 +
+ *  3 × 255 + 2 × 16 = 1081). It was 250 while the links card was 280. */
+export const ATLAS_COURSE_CARD_W = 255
+/** My Courses' centred content: the links card, a 24 gap, then the cards in one
+ *  row with 16 between (2026-10-06, Eric's request: "center all of the page
  *  content"). The header takes the same width so the title lines up with it. */
 export const ATLAS_MY_COURSES_WIDTH =
-  280 + 24 + ATLAS_MY_COURSES.length * ATLAS_COURSE_CARD_W + (ATLAS_MY_COURSES.length - 1) * 16
+  ATLAS_MY_COURSES_ASIDE_W + 24 + ATLAS_MY_COURSES.length * ATLAS_COURSE_CARD_W + (ATLAS_MY_COURSES.length - 1) * 16
