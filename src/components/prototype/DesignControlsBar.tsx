@@ -260,8 +260,16 @@ const iconBtnStyle = {
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  width: 34,
-  height: 34,
+  /* ⚠ 38, MATCHING THE DEMO BAR'S CLUSTER — raised from 34 on 2026-10-05. The
+     two bars' icon buttons are the same control in every other respect (same
+     class, same transparent-until-hover edge, same `--color-text-inverse`) and
+     sat four pixels apart, which is close enough to read as a mistake rather
+     than a distinction. 38 is the measured height of Reset over there — see
+     `versionTriggerStyle` in `DemoControlsBar` for why it is measured and not
+     derived — so this is the design bar joining the established size, not a new
+     one. Change both or neither. */
+  width: 38,
+  height: 38,
   padding: 0,
   background: 'transparent',
   border: '1px solid transparent',

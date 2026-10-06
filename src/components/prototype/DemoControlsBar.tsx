@@ -16,16 +16,12 @@ import { ATLAS_FONT_PARAM } from '@/components/layout/atlasFontSets'
 import { ATLAS_NAV_PARAM } from '@/components/layout/atlasNavVersion'
 import {
   UserSlash,
-  Share2,
-  BrowserWindow,
-  ArrowUpRightFromSquare,
   Check,
   ChevronDown,
   Grid,
   ArrowsRotate,
 } from '@/icons'
-import { ActionMenu } from '@/components/ui/ActionMenu'
-import { Toast } from '@/components/ui/Toast'
+import { useDemoShareRegistry } from './demoShareActions'
 import { DemoBar, DemoDropdown } from './DemoBar'
 import { isPublicGateway } from '@/data/gatewayMode'
 import { controlMaturity, variantsForDemo } from '@/data/demoControlMaturity'
@@ -193,23 +189,6 @@ const SHOW_CONTROL: Record<ControlKey, boolean> = {
  * about navigation, two different questions; the labels are what keeps them
  * apart now that neither says "Option N".
  */
-/**
- * THE DEMO HUB — the public Netlify project's gateway, 2026-10-01.
- *
- * The link handed to stakeholders: `VITE_GATEWAY_MODE=public`, so it carries
- * only the ungated sections (Demo · Links · Research) and builds `main` ONLY.
- * Both of those matter to anyone pressing this from a branch build — the hub
- * will not show the work they are standing in until it merges.
- *
- * ⚠ THIS IS THE **DEMO** HOST, NOT THE DESIGN ONE, and the two differ by one
- * word. `ux-design-xceldashboard.netlify.app` is the full site that branch
- * builds deploy to; `ux-demo-…` is this. Sending a stakeholder to the design
- * host hands them a password prompt. `docs/gateway.md` is the source for both.
- *
- * Hard-coded rather than derived from `window.location`, because the whole
- * point is to leave THIS origin — on localhost there is nothing to derive from.
- */
-const DEMO_HUB_URL = 'https://ux-demo-xceldashboard.netlify.app/'
 
 /* ⚠ FIVE PICKER CONSTANTS WERE HERE AND WENT WITH THEIR DROPDOWNS —
    2026-10-05. `NAV_LAYOUT_PICKER`, `NAV_HELP_PICKER`, `JOURNEY_SCALE_PICKER`,
@@ -358,7 +337,6 @@ export function DemoControlsBar({
   // drive the count flags, so their exact subset is the bar's own state.
   const [profs, setProfs] = useState<string[]>([])
   const [mems, setMems] = useState<string[]>([])
-  const [copied, setCopied] = useState(false)
   // Which persona row (if any) has its nested count sub-list expanded. The
   // "Multiple learning paths" and "Multiple memberships" persona rows use this;
   // reset whenever the persona dropdown isn't the open one (see the effect below).
@@ -706,10 +684,16 @@ export function DemoControlsBar({
     return p
   }
 
+  /* ⚠ PUBLISHED TO THE PROTOTYPE BAR — 2026-10-05, when the kebab moved up
+     beside the device toggle. Assigned on EVERY render and ABOVE the early
+     return below, so the menu's callbacks are never stale and still work while
+     this bar is toggled off. See `demoShareActions.tsx`. */
+  const shareRegistry = useDemoShareRegistry()
+
   const copyLink = () => {
     const url = `${PROTOTYPE_SHARE_ORIGIN}${window.location.pathname}?${shareParams().toString()}`
     copyToClipboard(url)
-      .then(() => setCopied(true))
+      .then(() => shareRegistry?.notifyCopied())
       .catch(() => window.prompt('Copy this link:', url))
     close()
   }
@@ -725,10 +709,12 @@ export function DemoControlsBar({
     params.set('present', '1')
     const url = `${PROTOTYPE_SHARE_ORIGIN}${window.location.pathname}?${params.toString()}`
     copyToClipboard(url)
-      .then(() => setCopied(true))
+      .then(() => shareRegistry?.notifyCopied())
       .catch(() => window.prompt('Copy this link:', url))
     close()
   }
+
+  if (shareRegistry) shareRegistry.ref.current = onRebrand ? { copyLink, copyDemoLink } : null
 
   // Off-state: render nothing on any other route, or when the PrototypeBar's
   // "Demo" toggle has hidden the banner (all hooks above have run).
@@ -1396,65 +1382,25 @@ export function DemoControlsBar({
               which is a DESIGNER's tool scoped to the current version — so it
               belongs beside the design controls it is the long form of, not
               beside the stakeholder ones. See `DesignControlsBar`. */}
-          <ActionMenu
-            /* ⚠ MATCHES RESET AND THE VERSION BUTTON — 2026-10-05, the direct
-               ask. It was the shared kebab's own 32px pill in
-               `--color-secondary-500` with no hover at all, sitting between two
-               38px icon buttons that take a hover fill and a stroke. Three
-               icons in one cluster, one of them a different size, a different
-               colour and inert on hover.
+          {/* ⚠ THE KEBAB WAS HERE AND MOVED UP — 2026-10-05, the direct ask:
+              it now sits in the PrototypeBar to the right of the device
+              toggle. Its three actions are about the PROTOTYPE (copy a link to
+              this view, copy a presentation link, open the Demo Hub), not about
+              the learner's scenario, which is what every other control on this
+              bar sets.
 
-               ⚠ OVERRIDDEN HERE RATHER THAN CHANGED IN `ActionMenu`, which is
-               also the kebab on task rows, calendar events and cards. The
-               defaults there are right for a menu sitting ON the thing it acts
-               on; this one sits in a toolbar, which is the different case. */
-            triggerStyle={versionTriggerStyle}
-            triggerHover={{ background: DEMO_HOVER_FILL, borderColor: 'rgba(255,255,255,0.3)' }}
-            label="Demo actions"
-            items={[
-              {
-                id: 'share',
-                label: 'Share Link',
-                icon: <Share2 size={15} aria-hidden />,
-                onSelect: copyLink,
-              },
-              {
-                id: 'share-demo',
-                label: 'Share Demo',
-                icon: <BrowserWindow size={15} aria-hidden />,
-                onSelect: copyDemoLink,
-              },
-              /* GO TO DEMO HUB — the public Netlify project's gateway, the link
-                 handed to stakeholders (Demo · Links · Research; `main` only).
-                 It replaces the View as demo lens above: the same question,
-                 answered by the real build instead of a preview of it.
-
-                 ⚠ A NEW TAB, deliberately. This bar is normally pressed mid-
-                 review with flags, a progress persona and a nav arm set up in
-                 the URL; navigating in place would throw all of it away to
-                 answer a side question. `noopener,noreferrer` is the ordinary
-                 guard for an external target. */
-              {
-                id: 'demo-hub',
-                label: 'Go to Demo Hub',
-                icon: <ArrowUpRightFromSquare size={15} aria-hidden />,
-                onSelect: () => window.open(DEMO_HUB_URL, '_blank', 'noopener,noreferrer'),
-              },
-            ]}
-          />
+              ⚠ THE HANDLERS DID NOT MOVE WITH IT. `copyLink` / `copyDemoLink`
+              bake this bar's whole captured state into the URL, so they stay
+              here and are published through `demoShareActions.tsx`. */}
         </div>
         )}
       </DemoBar>
 
-      <Toast
-        open={copied}
-        onClose={() => setCopied(false)}
-        tone="success"
-        title="Link copied"
-        duration={1900}
-      >
-        Send it to show this exact view.
-      </Toast>
+      {/* ⚠ THE "Link copied" TOAST MOVED to `DemoShareProvider` — 2026-10-05,
+          with the kebab. It has to live above this bar now: the bar returns
+          null when the demo toggle is off, and the kebab that triggers the copy
+          is one bar up and still visible, so a toast rendered here would
+          silently not appear in exactly the case the move created. */}
     </>
   )
 }

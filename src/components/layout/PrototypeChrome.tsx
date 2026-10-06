@@ -6,6 +6,7 @@ import { DeviceFrameToggle, useDeviceFrame } from './DeviceFrameContext'
 import { DemoControlsBar } from '@/components/prototype/DemoControlsBar'
 import { DesignControlsBar } from '@/components/prototype/DesignControlsBar'
 import { DESIGN_ACCENT } from '@/components/prototype/demoBarUtil'
+import { DemoShareProvider } from '@/components/prototype/demoShareActions'
 import {
   useDemoControlsVisibility,
   useDesignControlsVisibility,
@@ -110,7 +111,12 @@ export function PrototypeChrome() {
   // Routes that carry a hide-able stakeholder demo banner (→ show the toggle).
   const showDemoToggle = pathname === '/dashboard-rebrand' || pathname === '/onboarding-flow'
   return (
-    <>
+    /* ⚠ WRAPS BOTH BARS, and it has to: the kebab renders in the PrototypeBar
+       while its handlers are owned by the DemoControlsBar below — see
+       `demoShareActions.tsx` for why they could not move together. It also owns
+       the "Link copied" toast, so copying still confirms while the demo bar is
+       toggled off. */
+    <DemoShareProvider>
       <PrototypeBar
         /*
          * THE ROBOT IS DESIGN-SITE ONLY — 2026-09-24, the direct ask.
@@ -170,7 +176,7 @@ export function PrototypeChrome() {
       {isPublicGateway() || asDemo || !designOpen ? null : (
         <DesignControlsBar fullBleed={framed} />
       )}
-    </>
+    </DemoShareProvider>
   )
 }
 

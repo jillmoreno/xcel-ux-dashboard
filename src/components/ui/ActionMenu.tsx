@@ -7,6 +7,16 @@ export type ActionMenuItem = {
   icon?: ReactNode
   onSelect: () => void
   danger?: boolean
+  /**
+   * A second line under the label, for a menu whose items are near-synonyms.
+   *
+   * Opt-in: most menus are verbs on an obvious subject ("Delete", "Duplicate")
+   * and a description under those is noise. It earns its place where two rows
+   * would otherwise differ by one word — "Share Link" and "Share Demo" sat
+   * together for weeks and the difference between them was discoverable only by
+   * sending one and seeing what the recipient got.
+   */
+  description?: string
 }
 
 type Props = {
@@ -184,7 +194,14 @@ export function ActionMenu({ label, items, triggerLabel, triggerStyle, triggerHo
             position: 'absolute',
             right: 0,
             top: 'calc(100% + 6px)',
-            minWidth: 180,
+            /* ⚠ THE FLOOR MOVES, NOT THE CAP, and that was the fix. A
+               `maxWidth` alone does nothing here: with `whiteSpace: normal` the
+               descriptions simply WRAP to the 180 floor rather than widening
+               the menu, which is how the share rows first rendered as a column
+               of two-word lines. A menu carrying descriptions needs a wider
+               floor; one of plain verbs still sizes to 180. */
+            minWidth: items.some((it) => it.description) ? 272 : 180,
+            maxWidth: 340,
             background: 'var(--color-surface-card)',
             border: '1px solid var(--color-border-subtle)',
             borderRadius: 'var(--radius-md)',
@@ -207,10 +224,14 @@ export function ActionMenu({ label, items, triggerLabel, triggerStyle, triggerHo
               onMouseEnter={() => setActiveIndex(i)}
               style={{
                 display: 'flex',
-                alignItems: 'center',
+                /* ⚠ TOP, NOT CENTRE, WHEN A ROW HAS TWO LINES — the icon has to
+                   sit against the LABEL, not float halfway down beside the
+                   description. Centre is still right for the single-line rows
+                   that share the menu, which is why it switches per item. */
+                alignItems: item.description ? 'flex-start' : 'center',
                 gap: 10,
                 width: '100%',
-                padding: '8px 10px',
+                padding: item.description ? '9px 10px' : '8px 10px',
                 background: i === activeIndex ? 'var(--color-neutral-100)' : 'transparent',
                 color: item.danger ? 'var(--color-secondary-700)' : 'var(--color-text-primary)',
                 border: 'none',
@@ -222,8 +243,31 @@ export function ActionMenu({ label, items, triggerLabel, triggerStyle, triggerHo
                 textAlign: 'left',
               }}
             >
-              {item.icon}
-              {item.label}
+              {/* The glyph's own box is 15px on a 14/1.4 line, so nudging it by
+                  1 puts its optical centre on the label's x-height rather than
+                  1px proud of it. Only on the two-line rows — the single-line
+                  ones are centred as a whole. */}
+              <span style={{ display: 'inline-flex', flexShrink: 0, marginTop: item.description ? 1 : 0 }}>
+                {item.icon}
+              </span>
+              {item.description ? (
+                <span style={{ display: 'flex', flexDirection: 'column', gap: 2, minWidth: 0 }}>
+                  <span style={{ lineHeight: 1.3 }}>{item.label}</span>
+                  <span
+                    style={{
+                      fontSize: 12,
+                      fontWeight: 400,
+                      lineHeight: 1.35,
+                      color: 'var(--color-text-secondary)',
+                      whiteSpace: 'normal',
+                    }}
+                  >
+                    {item.description}
+                  </span>
+                </span>
+              ) : (
+                item.label
+              )}
             </button>
           ))}
         </div>

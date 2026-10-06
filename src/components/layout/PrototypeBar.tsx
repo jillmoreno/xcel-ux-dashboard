@@ -7,6 +7,9 @@ import {
 } from './prototypeWalkthrough'
 import { prototypeFeatureById } from '@/data/prototypeFeatures'
 import { isPublicGateway } from '@/data/gatewayMode'
+import { ActionMenu } from '@/components/ui/ActionMenu'
+import { useDemoShareActions } from '@/components/prototype/demoShareActions'
+import { Share2, BrowserWindow, ArrowUpRightFromSquare } from '@/icons'
 import { isBranchDeploy } from '@/data/deployContext'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 
@@ -263,6 +266,8 @@ export function PrototypeBar({
                 is what lets a reader see there are two bars at all. */}
             {designToggle}
             {deviceToggle}
+            {/* RIGHT OF THE VIEWS — 2026-10-05, the direct ask. */}
+            <PrototypeActionsMenu />
           </span>
         )}
         {/* ⚠ THE "UI/UX PROTOTYPE" LABEL WAS HERE AND WENT — 2026-10-05, the
@@ -322,6 +327,92 @@ export function PrototypeBar({
  * strip with a subtle hover tint. Clears any active walkthrough so the
  * reviewer lands home with a clean slate.
  */
+/**
+ * THE DEMO HUB — the public Netlify project's gateway, 2026-10-01.
+ *
+ * The link handed to stakeholders: `VITE_GATEWAY_MODE=public`, so it carries
+ * only the ungated sections (Demo · Links · Research) and builds `main` ONLY.
+ * Both of those matter to anyone pressing this from a branch build — the hub
+ * will not show the work they are standing in until it merges.
+ *
+ * ⚠ THIS IS THE **DEMO** HOST, NOT THE DESIGN ONE, and the two differ by one
+ * word. `ux-design-xceldashboard.netlify.app` is the full site that branch
+ * builds deploy to; `ux-demo-…` is this. Sending a stakeholder to the design
+ * host hands them a password prompt. `docs/gateway.md` is the source for both.
+ *
+ * Hard-coded rather than derived from `window.location`, because the whole
+ * point is to leave THIS origin — on localhost there is nothing to derive from.
+ */
+const DEMO_HUB_URL = 'https://ux-demo-xceldashboard.netlify.app/'
+
+/**
+ * The prototype's own actions — moved here from the demo bar on 2026-10-05 and
+ * sat to the RIGHT OF THE DEVICE TOGGLE, which is the ask and also the right
+ * grouping: these three are about the PROTOTYPE (copy a link to this view, copy
+ * a presentation link, open the Demo Hub), where every control on the bars
+ * below sets the learner's scenario.
+ *
+ * ⚠ RENDERS NOTHING UNTIL THE DEMO BAR PUBLISHES. `useDemoShareActions` is null
+ * off the rebrand, so the kebab is simply absent on routes where there is no
+ * captured state to share rather than being present and inert.
+ */
+function PrototypeActionsMenu() {
+  const actions = useDemoShareActions()
+  if (!actions) return null
+  return (
+    <ActionMenu
+      label="Prototype actions"
+      triggerStyle={barIconBtnStyle}
+      triggerHover={{ background: 'rgba(255, 255, 255, 0.12)' }}
+      items={[
+        {
+          id: 'share',
+          label: 'Share Link',
+          icon: <Share2 size={15} aria-hidden />,
+          /* ⚠ THE TWO SHARE ROWS DIFFER BY ONE WORD AND BY A WHOLE AUDIENCE,
+             which is why they now carry descriptions. This one keeps the
+             prototype chrome: the recipient lands on the same view with the
+             bars still there and can keep changing things. */
+          description: 'This exact view, with the prototype bars. They can keep exploring.',
+          onSelect: actions.copyLink,
+        },
+        {
+          id: 'share-demo',
+          label: 'Share Demo',
+          icon: <BrowserWindow size={15} aria-hidden />,
+          /* `?present=1` — the frame, no bars. Written as what the RECIPIENT
+             sees rather than as the param, because the person choosing between
+             these two rows is choosing an audience, not a URL. */
+          description: 'The same view full-screen, no bars. For showing, not exploring.',
+          onSelect: actions.copyDemoLink,
+        },
+        {
+          id: 'demo-hub',
+          label: 'Go to Demo Hub',
+          icon: <ArrowUpRightFromSquare size={15} aria-hidden />,
+          description: 'The stakeholders\u2019 site, in a new tab. Your settings don\u2019t carry over.',
+          onSelect: () => window.open(DEMO_HUB_URL, '_blank', 'noopener,noreferrer'),
+        },
+      ]}
+    />
+  )
+}
+
+/* The bar's own icon-button box — 32, matching the home icon and the device
+   toggle's buttons beside it rather than the 38 the DEMO bar's cluster uses.
+   Two different bars, two different scales; what matters is that each cluster
+   is internally consistent. */
+const barIconBtnStyle = {
+  width: 32,
+  height: 32,
+  padding: 0,
+  borderRadius: 'var(--radius-pill)',
+  background: 'transparent',
+  border: 'none',
+  color: 'var(--color-neutral-50)',
+  transition: 'background 120ms ease',
+} as const
+
 /* The Hub label beside the home icon. Deliberately NOT the chip's pill: the
    chip was a status badge about where you had navigated, this is a name for the
    place, so it reads as a wordmark next to the control that goes there. Same
