@@ -265,19 +265,18 @@ export function PrototypeBar({
             {deviceToggle}
           </span>
         )}
-        <span
-          style={{
-            fontFamily: 'var(--font-heading)',
-            fontSize: 13,
-            fontWeight: 700,
-            letterSpacing: '0.04em',
-            textTransform: 'uppercase',
-            whiteSpace: 'nowrap',
-            flexShrink: 0,
-          }}
-        >
-          UI/UX Prototype
-        </span>
+        {/* ⚠ THE "UI/UX PROTOTYPE" LABEL WAS HERE AND WENT — 2026-10-05, the
+            direct ask, and it goes for the same reason as the section chip
+            above it: the Hub label beside the home icon already names what this
+            is, and more usefully, because it says WHICH hub. Two headings in
+            one 40px strip, one of them constant on every route, was the bar
+            spending its width telling a reviewer something they could see.
+
+            ⚠ THE SURROUNDING NOTES STILL SAY "left of the UI/UX Prototype
+            label" — several props and comments position themselves against it
+            (the demo/design toggles, the device toggle). They are left as
+            written because the ORDER they describe is unchanged; read it as
+            "left of where that label was", which is still left of the quote. */}
         {/* ⚠ THE SECTION CHIP WAS HERE AND WENT — 2026-10-05. It read Demo /
             Research / Design & Dev off the current route
             (`prototypeSectionLabel`, removed with it — `noUnusedLocals` will

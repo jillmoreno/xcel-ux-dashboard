@@ -111,8 +111,15 @@ describe('the prototype bar on a branch deploy', () => {
   // the one link and not the whole left cluster.
   it('still renders the bar itself', () => {
     vi.stubEnv('VITE_DEPLOY_CONTEXT', 'branch-deploy')
-    renderBar()
-    expect(screen.getByText(/UI\/UX Prototype/i)).toBeTruthy()
+    /* ⚠ ANCHORED ON THE BAR ELEMENT, NOT ON ITS TEXT — changed 2026-10-05.
+       This asserted `getByText(/UI\/UX Prototype/i)`, and that label was
+       removed from the bar the same day, so the test failed on a change that
+       had nothing to do with what it is about. The subject is that a branch
+       deploy drops the HOME LINK and not the whole left cluster; the bar's own
+       container is the thing that says the bar rendered, and it survives any
+       later edit to what the bar says. */
+    const { container } = renderBar()
+    expect(container.querySelector('.cre-prototype-bar')).toBeTruthy()
   })
 
   // An explicit `back` prop is passed by the GATEWAY pages, where the reviewer
