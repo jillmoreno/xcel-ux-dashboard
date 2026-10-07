@@ -372,14 +372,20 @@ export function HybridPacingHome({
                     value={`${accessDays} ${accessDays === 1 ? 'Day' : 'Days'}`}
                     note={`Ends ${formatPaceDate(accessExpiresAt)}`}
                   />
-                  <span aria-hidden style={RULE} />
                 </>
               ) : null}
-              <Figure
-                label="Estimated completion date"
-                value={preset.state === 'no' ? 'Not achievable' : formatPaceDate(preset.finishIso)}
-                note="At current pace"
-              />
+              {/* ⚠ PACING — ESTIMATED COMPLETION DATE LEFT THIS COLUMN,
+                  2026-10-07, the direct ask: it "feels like it should be part
+                  of the set your study pace section". It is the CONSEQUENCE of
+                  the pace, not a fact about the course the way Course Access
+                  is, and sitting up here it read as the latter — a date with no
+                  stated cause, two inches above the thing that causes it. It
+                  now closes the pace panel below, in both states.
+
+                  ⚠ THE RULE WENT WITH IT. Course Access was followed by a
+                  hairline SEPARATING the two figures; with one figure left
+                  there is nothing to separate, and a trailing rule under a
+                  lone figure reads as a missing row. */}
             </div>
 
             <div style={PACE_PANEL}>
@@ -425,6 +431,17 @@ export function HybridPacingHome({
                     )
                   })}
                   <p style={PACE_FOOTNOTE}>You can always adjust your pace at a later time.</p>
+                  {/* ⚠ IT TRACKS THE SELECTION, which is what makes moving it
+                      here worth doing rather than merely tidier: at 0% the date
+                      is not a report, it is what the option you are hovering
+                      over would COST you, and it changes as you choose.
+                      ⚠ IT ALSO REPEATS THE SELECTED ROW'S OWN DATE — see the
+                      hand-off note; the per-option dates were a separate ask
+                      and the two now say the same thing on one of three rows. */}
+                  <PaceEstimate
+                    value={formatPaceDate(isoPlusDays(today, paceWeeks * 7))}
+                    note={`At ${paceWeeks} ${paceWeeks === 1 ? 'week' : 'weeks'}`}
+                  />
                 </div>
               ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 11, alignSelf: 'stretch' }}>
@@ -452,6 +469,10 @@ export function HybridPacingHome({
                   Customize Your Pace
                   <AngleRightRegular size={13} aria-hidden />
                 </button>
+                <PaceEstimate
+                  value={preset.state === 'no' ? 'Not achievable' : formatPaceDate(preset.finishIso)}
+                  note="At current pace"
+                />
               </div>
               )}
             </div>
@@ -630,6 +651,33 @@ export function HybridPacingHome({
           </ul>
         </nav>
       </div>
+    </div>
+  )
+}
+
+/**
+ * ⚠ PACING — THE PACE PANEL'S OWN ESTIMATE, 2026-10-07. The same three parts as
+ * `Figure` and deliberately NOT that component.
+ *
+ * `Figure` sets `whiteSpace: 'nowrap'` on its value, which is right in a
+ * 200px-wide figures column where every value is short ("18 Days", "Jun 6") and
+ * wrong here: this one can read "Not achievable - At current pace", which at
+ * this width would run out of the card rather than wrap. Reusing `Figure` and
+ * overriding the nowrap would have left the original carrying a rule it no
+ * longer needs for anyone.
+ *
+ * ⚠ IT SITS UNDER A HAIRLINE, like the binding note, because it answers a
+ * different question from the plan above it — not how fast, but when that
+ * finishes.
+ */
+function PaceEstimate({ value, note }: { value: string; note: string }) {
+  return (
+    <div style={PACE_ESTIMATE}>
+      <p style={{ ...FIGURE_LABEL, marginBottom: 5 }}>Estimated completion date</p>
+      <p style={{ ...BODY_TEXT, margin: 0, lineHeight: '18px', color: 'var(--color-text-primary)' }}>
+        <span style={{ fontFamily: 'var(--font-heading-serif)', fontSize: 15 }}>{value}</span>
+        <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}> · {note}</span>
+      </p>
     </div>
   )
 }
@@ -1435,6 +1483,11 @@ const CHEVRON: CSSProperties = {
 /* ⚠ PACING E — ONE LINE PER OPTION, which is what the 200px column allows:
    icon, duration, date. A second line for the date would make three rows into
    six and push Begin Course below the fold on the one screen that needs it. */
+const PACE_ESTIMATE: CSSProperties = {
+  alignSelf: 'stretch',
+  paddingTop: 9,
+  borderTop: '1px solid var(--color-atlas-nav-rule)',
+}
 const PACE_OPT: CSSProperties = {
   ...BODY_TEXT,
   display: 'flex',
