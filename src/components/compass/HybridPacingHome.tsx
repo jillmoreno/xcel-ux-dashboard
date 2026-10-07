@@ -416,16 +416,16 @@ export function HybridPacingHome({
                         <span aria-hidden style={{ display: 'inline-flex', flex: 'none', color: 'var(--color-compass-page-button)' }}>
                           {opt.icon}
                         </span>
+                        {/* ⚠ NO DATE ON THE ROW — 2026-10-07, the direct ask,
+                            and it reverses the "each selection should have an
+                            Estimated Completion Date" from earlier the same
+                            day. Both were right in turn: the date belonged in
+                            this section, and once the section CLOSES with it,
+                            putting it on the rows too made one of three rows
+                            repeat the summary underneath them. The row is the
+                            choice; the line below is its consequence. */}
                         <span style={{ flex: '1 1 0', minWidth: 0, fontWeight: on ? 600 : 400 }}>
                           {opt.label}
-                        </span>
-                        {/* ⚠ TODAY + N WEEKS, not a model finish date. The option
-                            IS the duration, so its date has to be exactly what
-                            the label promises — pricing it through `priceFinish`
-                            would let the two disagree, which is the failure the
-                            binding line above exists to fix. */}
-                        <span style={{ flex: 'none', color: 'var(--color-text-secondary)' }}>
-                          {formatPaceDate(isoPlusDays(today, opt.weeks * 7))}
                         </span>
                       </button>
                     )
@@ -1480,9 +1480,11 @@ const CHEVRON: CSSProperties = {
 /* ⚠ PACING A — a hairline above it, not a fill. The panel already carries a
    dial and a goal; a tinted box here would make the constraint louder than the
    plan it constrains. */
-/* ⚠ PACING E — ONE LINE PER OPTION, which is what the 200px column allows:
-   icon, duration, date. A second line for the date would make three rows into
-   six and push Begin Course below the fold on the one screen that needs it. */
+/* ⚠ PACING E — ICON AND DURATION, NOTHING ELSE. The rows carried their own
+   completion dates until 2026-10-07, when the panel gained a single estimate
+   that tracks the selection and the per-row copy became a duplicate of it on
+   whichever row was chosen. What is left is the smallest thing a choice can be,
+   which is also what the 200px column wants. */
 const PACE_ESTIMATE: CSSProperties = {
   alignSelf: 'stretch',
   paddingTop: 9,
