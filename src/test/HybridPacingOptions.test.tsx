@@ -106,9 +106,23 @@ describe('which paces the exam date leaves on offer', () => {
 })
 
 describe('what the panel says about it', () => {
-  it('asks the plain question when nothing is constrained', () => {
+  it('gives the plain invitation when nothing is constrained', () => {
+    /* ⚠ THE COPY HAS MOVED TWICE AND THIS TEST CAUGHT IT LATE. It asserted
+       "How quickly would you like to complete this course?" — a question —
+       which became "Set your preferred pace to get started…" and then the line
+       below, both on 2026-10-07. The failure sat unseen for an hour because
+       another session was editing the same working tree and several unrelated
+       suites were failing, so the suite's number had stopped meaning anything.
+
+       ⚠ SO THE ASSERTION IS NARROWER NOW, deliberately: it matches the one
+       phrase the line exists to carry — that the choice is not final — rather
+       than a sentence that has changed three times. Copy churn should fail this
+       test only when the MEANING goes, not when the wording moves. */
     renderPacing()
-    expect(screen.getByText(/How quickly would you like to complete this course/i)).toBeTruthy()
+    expect(screen.getByText(/always adjust your goal/i)).toBeTruthy()
+    /* And it is not the restricted message, which is the thing this arm is
+       distinguishing itself from. */
+    expect(screen.queryByText(/only pace that finishes in time/i)).toBeNull()
   })
 
   it('names the exam and the distance when only one pace is left', () => {

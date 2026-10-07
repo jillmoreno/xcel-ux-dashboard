@@ -33,6 +33,7 @@ import {
 } from '@/data/nyProducerRequirements'
 import { ExamScheduleWidget } from '@/components/learning/ExamScheduleWidget'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
+import { clearExamDate, readExamDate } from '@/data/examDateStore'
 import {
   dateFromIso,
   daysUntil,
@@ -194,6 +195,34 @@ export function HybridPacingHome({
         : expiry === 'expired'
           ? 'var(--color-neutral-800)'
           : 'var(--color-text-secondary)'
+
+  /* ⚠ 0% CLEARS THE BOOKED EXAM DATE — 2026-10-07, the direct ask. The date
+     is per-browser reviewer input (`cgp.examDate`) and survives the Progress
+     control, so switching to Not Started otherwise showed a learner who has not
+     begun the course already holding an exam booking — and the countdown
+     counting down to it.
+
+     ⚠ IT FIRES ON ENTERING 0%, NOT CONTINUOUSLY. The dependency is `notStarted`
+     alone, so a date entered WHILE at 0% stays: the reset is about arriving in
+     the scenario, and re-clearing on every render would make the widget
+     impossible to use at all.
+
+     ⚠ AND IT INTERACTS WITH `hybrid-course-expiry`'s SIBLING, the exam-narrows-
+     the-options rule. The pace chooser only exists at 0%, and the date that
+     restricts it is now cleared on the way in — so to see one option you must
+     set the exam date AFTER switching to Not Started. In that order it works;
+     in the other it looks like the restriction is broken.
+
+     ⚠ THE STORE IS GLOBAL, so this reaches every version, not just this fork. A
+     date set on Hybrid V1 is gone once anyone visits this version at 0%. That
+     is acceptable because the date is a reviewer's own input rather than
+     product data — `clearExamDate()` is the documented way back and the card
+     offers it — but it is a side effect outside this version and is the one
+     thing here that would be wrong to discover by accident. */
+  useEffect(() => {
+    if (!notStarted) return
+    if (readExamDate()) clearExamDate()
+  }, [notStarted])
 
   /* ⚠ THE GREYSCALE IS A ROOT ATTRIBUTE, NOT A STYLE ON THIS SUBTREE, because
      the ask was for the whole screen and this component owns only the home.
