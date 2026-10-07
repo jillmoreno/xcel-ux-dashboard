@@ -1302,6 +1302,34 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'hybrid-title-lesson',
+    /* THE CURRENT LESSON AS A LINE UNDER THE COURSE TITLE — 2026-10-07, the
+       direct ask, and the counterpart to `hybrid-lesson-block` beside it.
+
+       ⚠ THE TWO ARE THE SAME FACT IN TWO PLACES, which is the comparison they
+       exist to make. The journey block names the lesson where the learner is
+       in the LIST; this names it beside Resume Course, where the action is. Off
+       in the journey and on here is the pairing this version ships with, so the
+       lesson is stated once and next to the button that opens it.
+
+       ⚠ BOTH ON IS A VALID STATE AND IS NOT A DEFECT — it is what you set to
+       see whether the repetition reads as reinforcement or as noise. Both off
+       is valid too: the stop keeps "26 of 42 Completed" either way, so the
+       screen still says where the learner is, just not which lesson.
+
+       ⚠ IN PROGRESS ONLY. At 0% there is no lesson in progress to name, and the
+       title area carries Begin Course rather than Resume — see `showLesson`. */
+    surface: 'design',
+    owner: 'jill',
+    versions: ['hybrid-pacing'],
+    group: 'Widgets',
+    label: 'Lesson line under title',
+    description:
+      'Whether Hybrid \u2014 Pacing Exploration names the lesson in progress on one line under the course title, above Course Overview and Resume Course. ON by default as of 2026-10-07, as the replacement for the journey\u2019s lesson block (`hybrid-lesson-block`, off). \u26a0 THE TWO CAN BOTH BE ON \u2014 that is the comparison, not a bug. \u26a0 In-progress only: at 0% there is no lesson to name and the button beside it reads Begin Course.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'hybrid-lesson-block',
     /* THE CURRENT LESSON UNDER THE COUNTED STOP — 2026-10-07, the direct ask:
        "is showing this here triggered by a feature flag? if not - i want to put

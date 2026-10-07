@@ -321,6 +321,12 @@ export function HybridPacingHome({
      See `hybrid-lesson-block`: scoped to this version, so Hybrid V1 keeps the
      block whatever this is set to. */
   const lessonBlock = useFeatureFlag('hybrid-lesson-block').enabled
+  /* ⚠ THE SAME FACT, THE OTHER PLACE — 2026-10-07, the direct ask. The journey
+     block names the lesson where the learner is in the LIST; this names it
+     beside Resume Course, where the action is. On by default, with the block
+     off, so the lesson is stated once and next to the button that opens it.
+     See `hybrid-title-lesson`. */
+  const titleLesson = useFeatureFlag('hybrid-title-lesson').enabled
 
   /* ⚠ THE QUICK LINKS, DEFINED ONCE. Both shapes render from this — see the
      note at the list. Four of the seven have no other home on this screen, so
@@ -373,9 +379,29 @@ export function HybridPacingHome({
                 to pair the eyebrow with the title; with one child left the
                 parent's own `gap: 15` is what separates the title from the
                 buttons, which is what it already did for the pair. */}
-            <h2 className="cre-compass-course-title" style={TITLE}>
-              {courseTitle}
-            </h2>
+            {/* ⚠ TITLE AND LESSON ARE ONE BLOCK, at a tighter gap than the
+                column's own 15. The line is a subtitle on the course, not a
+                third sibling between the heading and its buttons — at 15 it
+                floated equidistant between the two and belonged to neither. */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+              <h2 className="cre-compass-course-title" style={TITLE}>
+                {courseTitle}
+              </h2>
+              {/* ⚠ THE SAME `showLesson` THE JOURNEY BLOCK USES, so the two
+                  cannot disagree about whether there IS a lesson in progress —
+                  only about where to say it. `notStarted` is already inside
+                  that guard; the button beside this reads Begin Course there,
+                  and a lesson line over it would name work not begun. */}
+              {titleLesson && showLesson ? (
+                <p style={TITLE_LESSON}>
+                  <span style={{ fontWeight: 600 }}>Lesson {(lessonsDone ?? 0) + 1}</span>
+                  <span aria-hidden style={{ margin: '0 7px', color: 'var(--color-neutral-300)' }}>
+                    ·
+                  </span>
+                  {NY_LH_CURRENT_CHAPTER}
+                </p>
+              ) : null}
+            </div>
             {/* ⚠ HYBRID #2 — BEGIN COURSE SITS WITH THE TITLE. On Eric's home
                 it rides the current journey row, which puts the screen's one
                 primary action halfway down the right column and makes it a
@@ -1304,6 +1330,29 @@ const ACCESS_NOTE: CSSProperties = {
   lineHeight: '16.5px',
   fontWeight: 300,
   color: 'var(--color-text-secondary)',
+}
+/* One line under the course title. Body face, not the heading serif: it is a
+   label on the heading rather than a second heading — the same call the lesson
+   block's chapter name makes, and for the same reason (`atlas-heading-font`
+   re-points the heading token at a serif). */
+const TITLE_LESSON: CSSProperties = {
+  ...BODY_TEXT,
+  margin: 0,
+  fontSize: 13,
+  lineHeight: '18px',
+  color: 'var(--color-text-secondary)',
+  /* ⚠ ONE LINE, ENFORCED — the ask was for "a one-line", and left to wrap this
+     one is right on the edge: measured, the full string needs 377px in a column
+     that is 377px, so it sits on one line at this card width and breaks to two
+     the moment the card is narrower. A rule that holds only at one viewport is
+     not a rule. The chapter name truncates instead; the lesson NUMBER, which is
+     what the line is for, is first and never truncates.
+     ⚠ If the ellipsis reads badly, the alternative is to drop the chapter for
+     the estimate — "Lesson 27 · About 18 minutes" measures 178px and always
+     fits — rather than to let it wrap. */
+  whiteSpace: 'nowrap',
+  overflow: 'hidden',
+  textOverflow: 'ellipsis',
 }
 const TITLE: CSSProperties = {
   margin: 0,
