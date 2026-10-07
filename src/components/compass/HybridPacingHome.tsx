@@ -30,6 +30,7 @@ import {
   dateFromIso,
   daysUntil,
   defaultPreset,
+  formatHours,
   formatPaceDate,
   isoPlusDays,
   studyPace,
@@ -278,6 +279,51 @@ export function HybridPacingHome({
      window, and `.find` would have returned undefined and rendered nothing
      where an icon belongs. Anything past the longest option takes the longest
      option's icon, which is the honest reading: slower than the slowest. */
+  /* ⚠ THE STANDING IS FORCED BY A DEMO CONTROL — 2026-10-07, the direct ask.
+     `studyPace` has the real machinery (`weekStanding`, `observedPace`) and
+     both need `weekMinutes`, a seven-day fixture this home is never handed.
+     Wiring that is a separate job; what the copy needs first is every message
+     visible side by side. See `hybrid-pace-standing`. */
+  const standing = useFeatureFlag('hybrid-pace-standing').variant ?? 'on-track'
+
+  /* The GOAL in hours a week — the model's own figure for the chosen pace, so
+     the sentence and the "{weeks} Weeks" row above it cannot disagree. */
+  const goalHoursPerWeek = Number.isFinite(preset.minsPerWeek) ? preset.minsPerWeek / 60 : 0
+  /* ⚠ SCENARIO DATA, NOT A MEASUREMENT. The average is the goal scaled by the
+     arm, so the two numbers in the sentence always agree with each other and
+     with the pace above — but it is not a reading of what anyone did. The
+     moment `weekMinutes` reaches this component, this whole block is replaced
+     by `observedPace` and the arm becomes a preview of a real state. */
+  const OBSERVED_FACTOR: Record<string, number> = {
+    ahead: 1.3,
+    'on-track': 1.0,
+    behind: 0.7,
+    'off-track': 0.4,
+  }
+  const observedHours = goalHoursPerWeek * (OBSERVED_FACTOR[standing] ?? 1)
+  const averaging = `You’re averaging ${formatHours(observedHours)} a week.`
+  /* ⚠ ADJECTIVAL, NOT PLURAL — every use below is "your … goal", where the
+     plural form reads "your 2 weeks goal". Hyphenated and singular is what that
+     slot takes; the plural noun is not needed anywhere here. */
+  const goalWeeks = `${weeks}-week`
+
+  /* ⚠ FIVE MESSAGES, NOT THREE, and the split that matters is BEHIND vs OFF
+     TRACK. Behind is a gap the learner can still close inside the goal they
+     chose, so the message is a nudge. Off track says the goal no longer fits —
+     the only state with an action attached, and the ask was explicit that it
+     sends them to the Study Plan. Collapsing the two lost that action, which is
+     the whole reason the state is worth reporting at all. */
+  const standingMessage =
+    standing === 'no-data'
+      ? `No study time logged yet this week. Your ${goalWeeks} goal asks for about ${formatHours(goalHoursPerWeek)} a week.`
+      : standing === 'ahead'
+        ? `${averaging} That is ahead of your ${goalWeeks} goal — keep this up and you will finish early.`
+        : standing === 'behind'
+          ? `${averaging} That is a little under your ${goalWeeks} goal. A short extra session this week closes the gap.`
+          : standing === 'off-track'
+            ? `${averaging} At this rate you will not finish by ${formatPaceDate(preset.finishIso)}. Open your Study Plan to adjust your goal.`
+            : `${averaging} Based on your study goal, you are right on track.`
+
   const paceIcon = (PACE_WEEKS.find((o) => o.weeks === weeks) ?? PACE_WEEKS[PACE_WEEKS.length - 1]).icon
 
   const lessonStop = stops[currentIdx]
@@ -618,10 +664,13 @@ export function HybridPacingHome({
                     style={{ flex: 'none', color: 'var(--color-compass-page-button-ink)' }}
                   />
                 </div>
-                <p style={SMALL_TEXT}>
-                  Your default pace is set for you to complete your course in {weeks}{' '}
-                  {weeks === 1 ? 'week' : 'weeks'}. You can change your pace below.
-                </p>
+                {/* ⚠ IT REPORTS, IT NO LONGER RESTATES. The line read "Your
+                    default pace is set for you to complete your course in 2
+                    weeks. You can change your pace below." — the first half
+                    repeated the row directly above it, and the second described
+                    a link. Neither told the learner how they were doing, which
+                    is the one thing the panel could say and did not. */}
+                <p style={SMALL_TEXT}>{standingMessage}</p>
                 {/* ⚠ THE BINDING NOTE WAS HERE AND IS GONE — 2026-10-07, the
                     direct ask, and it had been overtaken. It read "Set by your
                     access — ends May 29" and earned its place while the access

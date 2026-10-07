@@ -1302,6 +1302,49 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'hybrid-pace-standing',
+    /* HOW THE LEARNER IS DOING AGAINST THEIR GOAL — 2026-10-07, the direct ask
+       for "a demo tool that shows Pacing goals and include On Track, Off Track
+       and all the other possible messaging we need to give the users".
+
+       ⚠ IT FORCES A STATE, IT DOES NOT MEASURE ONE, and that is deliberate
+       rather than a shortcut. `studyPace` already has the real machinery —
+       `weekStanding` and `observedPace` — and both need `weekMinutes`, a
+       seven-day fixture of what was actually studied, which this home is never
+       handed. Wiring that through is a separate and much larger job; what a
+       copy exploration needs first is every message on screen side by side, and
+       a forced state is the only way to see the ones a fixture does not reach.
+
+       ⚠ SO THE HOURS FIGURE IS SCENARIO DATA, derived from the chosen arm
+       against the goal's own `minsPerWeek` rather than from anything observed.
+       It moves with the pace the learner picked, so the two numbers in the
+       sentence are always consistent with each other — but it is NOT a reading
+       of behaviour and must not be presented to a stakeholder as one.
+
+       ⚠ THE ARMS ARE THE MESSAGES, which is why there are five and not three.
+       "Behind" and "off track" are different things to say — one is a nudge the
+       learner can act on this week, the other is an admission the goal no
+       longer fits and sends them to the Study Plan. Collapsing them was the
+       first draft and it lost the only message that has an action attached. */
+    surface: 'design',
+    owner: 'jill',
+    versions: ['hybrid-pacing'],
+    group: 'Widgets',
+    label: 'Pacing standing',
+    description:
+      'Which standing Hybrid \u2014 Pacing Exploration reports against the study goal, and therefore which message the pace panel shows. `On track` (default) is the shipped case. `Ahead` finishes early. `Behind` is a gap the learner can still close this week. `Off track` says the goal no longer fits and sends them to the Study Plan \u2014 the only arm with an action attached. `No data yet` is the first week, before there is an average to report. \u26a0 FORCED, NOT MEASURED: the hours figure is derived from the arm against the goal\u2019s own weekly minutes, so the two numbers agree \u2014 it is not a reading of behaviour. In-progress only; at 0% the panel asks for a pace instead.',
+    defaultEnabled: true,
+    defaultVariant: 'on-track',
+    variants: [
+      { value: 'on-track', label: 'On track', maturity: 'ready' },
+      { value: 'ahead', label: 'Ahead of goal', maturity: 'ready' },
+      { value: 'behind', label: 'Behind — recoverable', maturity: 'ready' },
+      { value: 'off-track', label: 'Off track — adjust the goal', maturity: 'ready' },
+      { value: 'no-data', label: 'No data yet', maturity: 'ready' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'hybrid-title-lesson',
     /* THE CURRENT LESSON AS A LINE UNDER THE COURSE TITLE — 2026-10-07, the
        direct ask, and the counterpart to `hybrid-lesson-block` beside it.
