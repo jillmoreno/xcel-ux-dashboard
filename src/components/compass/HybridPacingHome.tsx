@@ -326,7 +326,7 @@ export function HybridPacingHome({
       : null
   const pacePrompt =
     paceChoices.length === PACE_WEEKS.length || !examWhen
-      ? 'How quickly would you like to complete this course? Don’t worry, you can always adjust your goal at a later time.'
+      ? 'Set your preferred pace to get started. You’ll have the opportunity to fine-tune your study goal and build a personalized study plan once you enter the course.'
       : paceChoices.length === 1
         ? `Your exam is ${examWhen}, so one week is the only pace that finishes in time. Change your exam date and this will adjust.`
         : `Your exam is ${examWhen}, so the longer paces would finish after it. Change your exam date and this will adjust.`
@@ -628,12 +628,23 @@ export function HybridPacingHome({
                    as if they were. */
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignSelf: 'stretch' }}>
                   {/* ⚠ ABOVE THE OPTIONS, NOT UNDER THEM — 2026-10-07, the
-                      direct ask, and the copy grew a question with it. Under
-                      the group it was a reassurance about a choice already
-                      made; over it, it ASKS the question the rows answer —
-                      which they otherwise leave implicit, since "1 Week /
-                      2 Weeks / 3 Weeks" alone never says a week of WHAT. The
-                      reassurance keeps its job as the second half. */}
+                      direct ask. Under the group it was a reassurance about a
+                      choice already made; over it, it introduces the rows,
+                      which they need since "1 Week / 2 Weeks / 3 Weeks" alone
+                      never says a week of WHAT.
+
+                      ⚠ THE COPY STOPPED BEING A QUESTION later the same day.
+                      "How quickly would you like to complete this course?" put
+                      the whole weight of the decision here, on a screen where
+                      the learner has seen nothing of the course yet. The
+                      replacement says what the choice IS (a starting pace) and
+                      what it is NOT (final) — the study plan is where it gets
+                      tuned. Lower stakes, and truer to what the three rows do.
+
+                      ⚠ IT IS ONLY THE UNRESTRICTED COPY. When the exam date
+                      narrows the options, `pacePrompt` says so instead — that
+                      message has to explain an absence and cannot be replaced
+                      by an invitation. */}
                   <p style={PACE_PROMPT}>{pacePrompt}</p>
                   <div
                     role="radiogroup"
