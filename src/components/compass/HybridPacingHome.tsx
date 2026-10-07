@@ -14,6 +14,7 @@ import {
   NotebookRegular,
   PenFieldRegular,
 } from '@/icons'
+import { Loveseat, MugHot, PersonRunningFast } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
 import { journeyStopsFor, type JourneyStop } from '@/components/learning/studyJourneyUtil'
 import { widgetEyebrowStyle } from '@/components/learning/widgetStyles'
@@ -26,7 +27,14 @@ import {
 } from '@/data/nyProducerRequirements'
 import { ExamScheduleWidget } from '@/components/learning/ExamScheduleWidget'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
-import { defaultPreset, formatPaceDate, studyPace, daysUntil, NOT_STARTED_NIGHTS } from '@/lib/studyPace'
+import {
+  defaultPreset,
+  formatPaceDate,
+  isoPlusDays,
+  studyPace,
+  daysUntil,
+  NOT_STARTED_NIGHTS,
+} from '@/lib/studyPace'
 /* ⚠ THE PROP CONTRACT IS SHARED ON PURPOSE — see the note below. Both homes are
    handed the same figures by `LearnerFocusedBand`, which is what makes them
    comparable; only the layout is forked. */
@@ -101,6 +109,9 @@ export function HybridPacingHome({
   onOpenRequirements,
 }: AtlasHomeV2Props) {
   const [, setParams] = useSearchParams()
+  /* ⚠ PACING E — the chosen duration at 0%. Local because it is display-only;
+     see the note at `PACE_WEEKS`. */
+  const [paceWeeks, setPaceWeeks] = useState(2)
   const go = (section: string, coursePage?: string) =>
     setParams((prev) => {
       const next = new URLSearchParams(prev)
@@ -193,6 +204,34 @@ export function HybridPacingHome({
      "26 of 42 Completed" from the same two fields, so the summary and the
      lesson cannot disagree about where the learner is — which is the failure
      `journeyStopsFor`'s own "(41) vs 42" note is the record of. */
+  /* ⚠ PACING E — THE 0% PANEL ASKS INSTEAD OF TELLING, 2026-10-07, the direct
+     ask. At Not Started the dial showed 0% — a ring with nothing in it, over a
+     goal the learner never chose — on the one screen where the pace is actually
+     being decided. The dial goes and three durations take its place.
+
+     ⚠ WEEKS, NOT THE MODEL'S PRESETS. `studyPace` prices Relaxed / Recommended
+     / Focused in NIGHTS and MINUTES, which is the right vocabulary once someone
+     is studying and the wrong one before they have started: "6 days a week,
+     1¾ hours a night" is a commitment you cannot evaluate on day zero. "How
+     long do you want this to take" is. The presets are still one click away
+     under Customize Your Pace.
+
+     ⚠ THE DEFAULT IS THE MIDDLE ONE, which is a choice and not a derivation —
+     the old chooser opened on Recommended, the middle of its three, and this
+     keeps that shape. Deriving it from the model would land on 3 weeks here
+     (the ceiling is 29 days), which would default every learner to the slowest
+     option on offer.
+
+     ⚠ AND SELECTING IS DISPLAY-ONLY IN THIS FORK. Nothing is written to the
+     pace store and Begin Course does not carry the choice — this is an
+     exploration of the SHAPE. Wiring it is `study-pace-preset` and a decision
+     about what the three weeks mean to the model. */
+  const PACE_WEEKS = [
+    { weeks: 1, label: '1 Week', icon: <PersonRunningFast size={14} aria-hidden /> },
+    { weeks: 2, label: '2 Weeks', icon: <MugHot size={14} aria-hidden /> },
+    { weeks: 3, label: '3 Weeks', icon: <Loveseat size={14} aria-hidden /> },
+  ] as const
+
   const lessonStop = stops[currentIdx]
   const lessonsDone = lessonStop?.completed
   const showLesson =
@@ -346,8 +385,48 @@ export function HybridPacingHome({
             <div style={PACE_PANEL}>
               {/* The eyebrow heads the whole panel, above the dial (2026-10-02,
                   the designer's request; the design sets it under it). */}
-              <p style={{ ...EYEBROW, alignSelf: 'stretch' }}>Your study pace</p>
-              <ProgressDial percent={percent} />
+              <p style={{ ...EYEBROW, alignSelf: 'stretch' }}>
+                {notStarted ? 'Set Your Study Pace' : 'Your study pace'}
+              </p>
+              {notStarted ? null : <ProgressDial percent={percent} />}
+              {notStarted ? (
+                <div
+                  role="radiogroup"
+                  aria-label="Set your study pace"
+                  style={{ display: 'flex', flexDirection: 'column', gap: 6, alignSelf: 'stretch' }}
+                >
+                  {PACE_WEEKS.map((opt) => {
+                    const on = paceWeeks === opt.weeks
+                    return (
+                      <button
+                        key={opt.weeks}
+                        type="button"
+                        role="radio"
+                        aria-checked={on}
+                        tabIndex={on ? 0 : -1}
+                        onClick={() => setPaceWeeks(opt.weeks)}
+                        style={{ ...PACE_OPT, ...(on ? PACE_OPT_ON : null) }}
+                      >
+                        <span aria-hidden style={{ display: 'inline-flex', flex: 'none', color: 'var(--color-compass-page-button)' }}>
+                          {opt.icon}
+                        </span>
+                        <span style={{ flex: '1 1 0', minWidth: 0, fontWeight: on ? 600 : 400 }}>
+                          {opt.label}
+                        </span>
+                        {/* ⚠ TODAY + N WEEKS, not a model finish date. The option
+                            IS the duration, so its date has to be exactly what
+                            the label promises — pricing it through `priceFinish`
+                            would let the two disagree, which is the failure the
+                            binding line above exists to fix. */}
+                        <span style={{ flex: 'none', color: 'var(--color-text-secondary)' }}>
+                          {formatPaceDate(isoPlusDays(today, opt.weeks * 7))}
+                        </span>
+                      </button>
+                    )
+                  })}
+                  <p style={PACE_FOOTNOTE}>You can always adjust your pace at a later time.</p>
+                </div>
+              ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 11, alignSelf: 'stretch' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span aria-hidden style={{ display: 'inline-flex', color: 'var(--color-compass-page-button)' }}>
@@ -374,6 +453,7 @@ export function HybridPacingHome({
                   <AngleRightRegular size={13} aria-hidden />
                 </button>
               </div>
+              )}
             </div>
           </div>
 
@@ -1352,6 +1432,39 @@ const CHEVRON: CSSProperties = {
 /* ⚠ PACING A — a hairline above it, not a fill. The panel already carries a
    dial and a goal; a tinted box here would make the constraint louder than the
    plan it constrains. */
+/* ⚠ PACING E — ONE LINE PER OPTION, which is what the 200px column allows:
+   icon, duration, date. A second line for the date would make three rows into
+   six and push Begin Course below the fold on the one screen that needs it. */
+const PACE_OPT: CSSProperties = {
+  ...BODY_TEXT,
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  width: '100%',
+  padding: '7px 9px',
+  textAlign: 'left',
+  cursor: 'pointer',
+  borderRadius: 'var(--radius-md)',
+  border: '1px solid var(--color-atlas-nav-rule)',
+  background: 'var(--color-surface-card)',
+  fontSize: 12,
+  lineHeight: '16px',
+  color: 'var(--color-text-primary)',
+}
+/* The selected row takes the palette's own tint and a darker stroke — the same
+   two cues the journey's current stop uses, so "this is the one" reads the same
+   way in both halves of the card. */
+const PACE_OPT_ON: CSSProperties = {
+  borderColor: 'var(--color-compass-page-button)',
+  background: 'var(--color-atlas-nav-active-fill)',
+}
+const PACE_FOOTNOTE: CSSProperties = {
+  ...BODY_TEXT,
+  margin: '2px 0 0',
+  fontSize: 11,
+  lineHeight: '15px',
+  color: 'var(--color-text-tertiary)',
+}
 const BINDING_NOTE: CSSProperties = {
   ...BODY_TEXT,
   margin: 0,
