@@ -263,6 +263,12 @@ describe('the QE Focused version is ARCHIVED but still reachable', () => {
          entries because it is built FROM them: it takes the Atlas chrome and
          forks only the home. Reading the picker top to bottom is the lineage. */
       'hybrid-v1',
+      /* ⚠ AND ITS COPY, 2026-10-07 — "Hybrid - Pacing Exploration", directly
+         behind the version it was forked from, for the same lineage reason
+         Testing 3 sits behind Testing. It is identical to `hybrid-v1` today
+         apart from which home component it draws; the fork exists so pacing
+         ideas cannot reach the baseline. */
+      'hybrid-pacing',
       'discoverability-learner-focused',
     ])
     expect(DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)).not.toContain(

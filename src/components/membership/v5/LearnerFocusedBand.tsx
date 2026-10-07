@@ -20,8 +20,13 @@ import { TaskRow } from '@/components/learning/study-calendar/TaskRow'
 import { ScheduleExamBanner, StudyJourneyWidget } from '@/components/learning/StudyJourneyWidget'
 import { AtlasHomeV2 } from '@/components/compass/AtlasHomeV2'
 import { HybridHomeV1 } from '@/components/compass/HybridHomeV1'
+import { HybridPacingHome } from '@/components/compass/HybridPacingHome'
 import { useSearchParams } from 'react-router-dom'
-import { isHybridV1Version, resolveDashboardVersion } from '@/data/dashboardVersions'
+import {
+  isHybridPacingVersion,
+  isHybridV1Version,
+  resolveDashboardVersion,
+} from '@/data/dashboardVersions'
 import { HomeNavTileColumn } from '@/components/layout/HomeNavTiles'
 import { HomeTileGrid } from '@/components/layout/HomeTileGrid'
 import { HomeReadinessStub } from '@/components/layout/HomeReadinessStub'
@@ -707,7 +712,12 @@ export function LearnerFocusedBand({
      VISIBLE: on a bare `?demo=1` it answered false while the shell's chrome
      answered true, so the page drew Atlas navigation over Testing 3's combined
      course card. One screen, two versions. See `resolveDashboardVersion`. */
-  const hybridV1 = isHybridV1Version(resolveDashboardVersion(hybridVersionParams.get('version'), brand))
+  const hybridVersionId = resolveDashboardVersion(hybridVersionParams.get('version'), brand)
+  const hybridV1 = isHybridV1Version(hybridVersionId)
+  /* ⚠ THE ONE PLACE THAT ASKS WHICH HYBRID — 2026-10-07. Everything else asks
+     `isHybridVersion` (the family) because the chrome is shared; this picks
+     between two forked HOMES, which is the only thing that differs. */
+  const hybridPacing = isHybridPacingVersion(hybridVersionId)
   /* NOT ON THE ATLAS HOME (merged 2026-10-02): its Study Pace card is part of
      the Atlas design (the brand's hover fill, the Primary 200 stroke), so the
      baseline's hiding flag does not reach it. */
@@ -1254,6 +1264,31 @@ export function LearnerFocusedBand({
      handlers; a forked layout. Checked BEFORE the Atlas arm because Hybrid also
      answers true to `isAtlasCompassNavVersion` (it wants Eric's chrome), so the
      order is what keeps it on its own screen rather than his. */
+  /* ⚠ THE PACING FORK IS ITS OWN ARM, and it is tested first for the same
+     reason the Hybrid arm is tested before Eric's: it answers `isHybridVersion`
+     too, so a later arm would never be reached. Two identical screens today —
+     the point of the arm is that they can stop being identical without this
+     line moving. */
+  if (framedPace && atlasHomeV2 && resume && hybridPacing) {
+    return (
+      <HybridPacingHome
+        path={path}
+        courseTitle={path.title}
+        coverUrl={resume.imageUrl ?? getCourseImage(resume.id)}
+        percent={percent}
+        today={FIXTURE_TODAY}
+        hoursRemaining={resume.hours * (1 - (resume.progress ?? 0) / 100)}
+        accessExpiresAt={resume.expiresAt}
+        examDate={examDate}
+        notStarted={(resume.progress ?? 0) <= 0}
+        onBegin={onResume}
+        onOverview={onOverview}
+        onOpenStop={onOpenStop}
+        onOpenStep={onOpenStep}
+        onOpenRequirements={onViewDetails}
+      />
+    )
+  }
   if (framedPace && atlasHomeV2 && resume && hybridV1) {
     return (
       <HybridHomeV1

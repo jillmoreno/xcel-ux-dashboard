@@ -27,7 +27,7 @@ import {
   defaultDiscoverabilityVersionFor,
   resolveDashboardVersion,
   isAtlasCompassNavVersion,
-  isHybridV1Version,
+  isHybridVersion,
   type DashboardVersionId,
 } from '@/data/dashboardVersions'
 import {
@@ -149,7 +149,8 @@ export function Header() {
   /* Hybrid V1 only — it answers true to `isAtlasCompassNavVersion` as well (it
      takes the Atlas chrome), so anything that must differ between the two asks
      this instead. */
-  const hybridVersion = isHybridV1Version(rebrandVersion)
+  /* ⚠ THE FAMILY, NOT THE ID — the pacing fork takes Hybrid's header too. */
+  const hybridVersion = isHybridVersion(rebrandVersion)
   // Nav Version → Top Nav (2026-09-30): Home + Compass Learning in the header,
   // their left edge on the Atlas rail's right edge. See `AtlasTopNav`.
   // …and Expanding Top Nav (2026-10-01), the same buttons with slide-out links.
