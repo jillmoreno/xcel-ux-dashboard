@@ -108,6 +108,8 @@ export function ExamScheduleWidget({
   today = FIXTURE_TODAY,
   compact = false,
   countdown = 'text',
+  unsetEyebrow = true,
+  promptHeading = false,
 }: {
   shell: CSSProperties
   /**
@@ -139,6 +141,38 @@ export function ExamScheduleWidget({
    * rest are untouched — the same shape `compact` uses.
    */
   countdown?: 'text' | 'flip'
+  /**
+   * Whether the UNSET phases carry the "State Exam" eyebrow — 2026-10-07, the
+   * direct ask from Hybrid - Pacing Exploration.
+   *
+   * ⚠ OPT-OUT, NOT A CHANGE IN PLACE. This widget is rendered by four callers —
+   * `StudyJourneyWidget`, `LearnerFocusedBand`, `HybridHomeV1` and
+   * `HybridPacingHome` — so dropping the eyebrow outright would silently take
+   * it from Testing 3, Eric's version and the shipped Hybrid V1 baseline. The
+   * default keeps every existing caller exactly as it is.
+   *
+   * ⚠ IT ONLY REACHES THE UNSET PHASES. A saved date already decides its own
+   * eyebrow ("Exam Date" when `compact`, none otherwise) and this does not
+   * touch that — see the `eyebrow` derivation.
+   */
+  unsetEyebrow?: boolean
+  /**
+   * Draw the unanswered question in the page's heading face rather than body —
+   * 2026-10-07, the direct ask from Hybrid - Pacing Exploration: "have the
+   * question match the same font used for these other headers."
+   *
+   * ⚠ OPT-IN, for the same reason as `unsetEyebrow` beside it. Four callers
+   * render this widget, including the shipped Hybrid V1 baseline; the default
+   * leaves every one of them exactly as it is.
+   *
+   * ⚠ IT PAIRS WITH `unsetEyebrow: false` RATHER THAN STANDING ALONE. Dropping
+   * the eyebrow leaves the question as the card's first line, and a 14px body
+   * sentence is a weak thing to open a card with — the heading face is what
+   * replaces the label that went. Setting this WITHOUT dropping the eyebrow
+   * gives a heading under a heading, which is the shape the eyebrow rule a few
+   * lines up already exists to prevent.
+   */
+  promptHeading?: boolean
   /** Opens a sheet by id. This card only ever sends `EXAM_DETAILS_STEP_ID` —
    *  the menu it opens is what sends the real step ids back. */
   onOpenStep?: (id: string) => void
@@ -183,8 +217,12 @@ export function ExamScheduleWidget({
      ⚠ THE FULL SAVED READOUT STILL GETS NONE. `ScheduledState` draws its own
      ("Your exam date") in a row with Edit, and two eyebrows stacked is what
      this condition exists to prevent. */
+  /* ⚠ `unsetEyebrow` GATES ONLY THIS ARM — the unset phases. The saved arm
+     below keeps its own rule; see the prop's note. */
   const eyebrow = activePhase !== 'scheduled'
-    ? /* "State Exam", NOT "Quick question" — 2026-10-02, the direct ask.
+    ? !unsetEyebrow
+      ? null
+      : /* "State Exam", NOT "Quick question" — 2026-10-02, the direct ask.
   
          ⚠ IT GIVES UP WHAT THE OLD WORDING BOUGHT, and that is worth knowing
          rather than discovering. "Quick question" was restored from the Figma
@@ -194,7 +232,7 @@ export function ExamScheduleWidget({
          which reads as a section label like every other eyebrow on the page.
          That is more consistent and less self-describing; the card's lack of a
          number is now the only thing saying it is not a step. */
-      'State Exam'
+        'State Exam'
     : compact
       ? 'Exam Date'
       : null
@@ -278,6 +316,7 @@ export function ExamScheduleWidget({
 
       {activePhase === 'prompt' && (
         <PromptState
+          heading={promptHeading}
           stateName={stateName}
           onNotYet={() => setPhase('not-yet')}
           onYes={() => openPicker('prompt')}
@@ -362,10 +401,12 @@ function PromptState({
   stateName,
   onNotYet,
   onYes,
+  heading = false,
 }: {
   stateName: string
   onNotYet: () => void
   onYes: () => void
+  heading?: boolean
 }) {
   return (
     <>
@@ -376,7 +417,14 @@ function PromptState({
           ambiguous thing on the card. Lowercase "state exam" here because this
           is a sentence. The saved readout does not name the state at all — see
           the note on `ScheduledState`. */}
-      <p style={questionStyle}>Have you scheduled your {stateName} state exam?</p>
+      {/* ⚠ THE HEADING ARM RESTATES THE ATLAS h8 TYPE rather than importing it.
+          `STEP_TITLE` lives in the compass homes and this component sits in
+          `learning/`; the tokens are the shared thing (`--type-atlas-h8-*`),
+          and depending on a home's private style object would couple a widget
+          four callers share to one of them. The fallbacks match that object. */}
+      <p style={heading ? questionHeadingStyle : questionStyle}>
+        Have you scheduled your {stateName} state exam?
+      </p>
       {/* ⚠ "Not yet" FIRST IN THE DOM, so the affirmative sits on the right.
           Order here is also TAB order — rendering them visually swapped (with
           `order`) would leave a keyboard user reaching them right-to-left while
@@ -872,6 +920,15 @@ const compactSepStyle: CSSProperties = {
    — this project has no Georgia anywhere — so it renders on `--font-heading`,
    which every other heading in this app uses. */
 
+const questionHeadingStyle: CSSProperties = {
+  margin: '6px 0 0',
+  fontFamily: 'var(--font-heading-serif)',
+  fontWeight: 400,
+  fontSize: 'var(--type-atlas-h8-base-size, 20px)',
+  lineHeight: 'var(--type-atlas-h8-base-line, 24px)',
+  letterSpacing: '-0.01em',
+  color: 'var(--color-text-primary)',
+}
 const questionStyle: CSSProperties = {
   /* 6px under the eyebrow. The question only ever renders WITH one — there is
      no stored date in the prompt phase — so this offset is unconditional. */
