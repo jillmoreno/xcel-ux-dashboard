@@ -401,6 +401,17 @@ export function HybridPacingHome({
                   aria-label="Set your study pace"
                   style={{ display: 'flex', flexDirection: 'column', gap: 6, alignSelf: 'stretch' }}
                 >
+                  {/* ⚠ ABOVE THE OPTIONS, NOT UNDER THEM — 2026-10-07, the
+                      direct ask, and the copy grew a question with it. Under
+                      the group it was a reassurance about a choice already
+                      made; over it, it ASKS the question the three rows answer
+                      — which is what the rows otherwise leave implicit, since
+                      "1 Week / 2 Weeks / 3 Weeks" alone never says a week of
+                      WHAT. The reassurance keeps its job as the second half. */}
+                  <p style={PACE_PROMPT}>
+                    How quickly would you like to complete this course? Don’t worry, you can always
+                    adjust your goal at a later time.
+                  </p>
                   {PACE_WEEKS.map((opt) => {
                     const on = paceWeeks === opt.weeks
                     return (
@@ -430,7 +441,6 @@ export function HybridPacingHome({
                       </button>
                     )
                   })}
-                  <p style={PACE_FOOTNOTE}>You can always adjust your pace at a later time.</p>
                   {/* ⚠ IT TRACKS THE SELECTION, which is what makes moving it
                       here worth doing rather than merely tidier: at 0% the date
                       is not a report, it is what the option you are hovering
@@ -673,7 +683,10 @@ export function HybridPacingHome({
 function PaceEstimate({ value, note }: { value: string; note: string }) {
   return (
     <div style={PACE_ESTIMATE}>
-      <p style={{ ...FIGURE_LABEL, marginBottom: 5 }}>Estimated completion date</p>
+      {/* ⚠ "Estimated completion", not "...date" — 2026-10-07, the direct ask.
+          The value under it IS a date, so the word was the label describing its
+          own format. Applies in both states, since both render this. */}
+      <p style={{ ...FIGURE_LABEL, marginBottom: 5 }}>Estimated completion</p>
       <p style={{ ...BODY_TEXT, margin: 0, lineHeight: '18px', color: 'var(--color-text-primary)' }}>
         <span style={{ fontFamily: 'var(--font-heading-serif)', fontSize: 15 }}>{value}</span>
         <span style={{ fontSize: 12, color: 'var(--color-text-secondary)' }}> · {note}</span>
@@ -1513,12 +1526,16 @@ const PACE_OPT_ON: CSSProperties = {
   borderColor: 'var(--color-compass-page-button)',
   background: 'var(--color-atlas-nav-active-fill)',
 }
-const PACE_FOOTNOTE: CSSProperties = {
+/* ⚠ IT LEADS THE GROUP NOW, so it takes the gap below rather than above and
+   `--color-text-secondary` rather than tertiary: it is the section's question,
+   not a caption under it, and tertiary read as fine print above the control it
+   introduces. Still 11px — the panel is 200px wide and this is two sentences. */
+const PACE_PROMPT: CSSProperties = {
   ...BODY_TEXT,
-  margin: '2px 0 0',
+  margin: '0 0 2px',
   fontSize: 11,
   lineHeight: '15px',
-  color: 'var(--color-text-tertiary)',
+  color: 'var(--color-text-secondary)',
 }
 const BINDING_NOTE: CSSProperties = {
   ...BODY_TEXT,
