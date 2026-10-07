@@ -124,12 +124,51 @@ export function HybridPacingHome({
   )
   const preset = defaultPreset(model)
   const accessDays = accessExpiresAt ? Math.max(0, daysUntil(accessExpiresAt, today) ?? 0) : null
-  /* THE WEEK GOAL IS THE DESIGN'S 3 (2026-10-02, the designer's request), not
-     derived. ⚠ It was `preset.days / 7` rounded, which read "2 Week Goal" for
-     the 13 days the model gives this demo — so the goal and the Expected
-     completion date above it no longer come from one figure. To derive it
-     again: `Math.max(1, Math.round(preset.days / 7))`. */
-  const weeks: number = 3
+  /* ⚠ PACING A — DERIVED AGAIN, 2026-10-07, AND THIS REVERSES A DECISION.
+     The literal 3 was the designer's request on 2026-10-02, and the note it
+     replaces said plainly what that cost: deriving reads "2 Week Goal" for the
+     13 days this demo's model gives, so the goal and the Estimated Completion
+     Date above it stopped coming from one figure.
+
+     That contradiction is the whole subject of this fork, so the figure comes
+     from the model here and the card can say only one thing. ⚠ THE NUMBER ON
+     SCREEN CHANGES — 3 becomes 2 in the shipped demo state — which is the
+     visible cost of the fix and the thing to judge. Hybrid V1 keeps the 3.
+
+     ⚠ IF 3 IS THE RIGHT ANSWER, the lever is the SCENARIO, not the label:
+     `hoursRemaining` and the access date are what make the model say 13 days.
+     Changing those makes the model genuinely yield three weeks; changing the
+     label only hid the disagreement. */
+  const weeks: number = Math.max(1, Math.round(preset.days / 7))
+
+  /* ⚠ PACING A — WHICH DEADLINE IS ACTUALLY SQUEEZING YOU. `studyPace` has
+     always resolved this (`resolveCeiling` → `binding`) and nothing has ever
+     rendered it, so the panel showed a pace with no account of what set it.
+
+     ⚠ `exam` DOES NOT MEAN THE EXAM DATE. Under that arm `hardEndIso` is the
+     exam MINUS `EXAM_BUFFER_DAYS` (7), so a line reading "ends <hardEnd>" would
+     name a date the learner has never seen. It names the buffer instead.
+
+     ⚠ `none` RENDERS NOTHING, deliberately. With neither date set the model
+     falls back to a flat 14 days — an invented ceiling, and a sentence calling
+     it a deadline would be the product inventing one.
+
+     ⚠ AND IT NAMES `accessExpiresAt`, NOT `model.hardEndIso` — the correction
+     that proves the point of this whole option. `hardEndIso` under the access
+     arm is the expiry MINUS ONE (`resolveCeiling`: `accessDays - 1`), the last
+     day you could still be working. Printing it read "ends May 28" two rows
+     under a figure reading "Ends May 29" — a fresh contradiction introduced by
+     the fix meant to remove one, caught by looking at the page. The learner's
+     date is the expiry; the model's ceiling is an internal quantity and belongs
+     on no screen. */
+  const bindingNote =
+    model.binding === 'access' && accessExpiresAt
+      ? `Set by your access — ends ${formatPaceDate(accessExpiresAt)}`
+      : model.binding === 'exam'
+        ? 'Set by your exam — finishing a week before it'
+        : model.binding === 'both' && accessExpiresAt
+          ? `Set by your access and exam — ${formatPaceDate(accessExpiresAt)}`
+          : null
 
   /* ⚠ HYBRID #4 — `lessonProgressTitle` MOVES THE FIGURES OUT OF THE TITLE.
      Without it the stop reads "Pre-Licensing Lessons (42)"; with it the title is
@@ -322,6 +361,14 @@ export function HybridPacingHome({
                   Your default pace is set for you to complete your course in {weeks}{' '}
                   {weeks === 1 ? 'week' : 'weeks'}. You can change your pace below.
                 </p>
+                {/* ⚠ PACING A — above the link, below the sentence, so it reads
+                    as a condition on the goal rather than as another fact about
+                    the course. It sits on its own rule because it answers a
+                    different question from everything over it: not how long,
+                    but why that long. */}
+                {bindingNote ? (
+                  <p style={BINDING_NOTE}>{bindingNote}</p>
+                ) : null}
                 <button type="button" className="cre-compass-v2-link" onClick={() => go('study-plan')} style={LINK}>
                   Customize Your Pace
                   <AngleRightRegular size={13} aria-hidden />
@@ -1302,6 +1349,18 @@ const CHEVRON: CSSProperties = {
 /* ⚠ `REQUIREMENTS` WENT WITH ITS BUTTON, 2026-10-05 — `noUnusedLocals` will
    not keep an unread style. `AtlasHomeV2.tsx` still has both. */
 /* The side cards: the Atlas rail's 1px rule, 12 radius, 24 / 32 / 32. */
+/* ⚠ PACING A — a hairline above it, not a fill. The panel already carries a
+   dial and a goal; a tinted box here would make the constraint louder than the
+   plan it constrains. */
+const BINDING_NOTE: CSSProperties = {
+  ...BODY_TEXT,
+  margin: 0,
+  paddingTop: 9,
+  borderTop: '1px solid var(--color-atlas-nav-rule)',
+  fontSize: 11,
+  lineHeight: '15px',
+  color: 'var(--color-text-secondary)',
+}
 const SIDE_CARD: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
