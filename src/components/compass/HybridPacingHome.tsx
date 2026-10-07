@@ -326,7 +326,7 @@ export function HybridPacingHome({
       : null
   const pacePrompt =
     paceChoices.length === PACE_WEEKS.length || !examWhen
-      ? 'Set your preferred pace to get started. You’ll have the opportunity to fine-tune your study goal and build a personalized study plan once you enter the course.'
+      ? 'Pick the pace that feels right for you. You can always adjust your goal and customize your study plan once you’re in the course.'
       : paceChoices.length === 1
         ? `Your exam is ${examWhen}, so one week is the only pace that finishes in time. Change your exam date and this will adjust.`
         : `Your exam is ${examWhen}, so the longer paces would finish after it. Change your exam date and this will adjust.`
@@ -636,10 +636,10 @@ export function HybridPacingHome({
                       ⚠ THE COPY STOPPED BEING A QUESTION later the same day.
                       "How quickly would you like to complete this course?" put
                       the whole weight of the decision here, on a screen where
-                      the learner has seen nothing of the course yet. The
-                      replacement says what the choice IS (a starting pace) and
-                      what it is NOT (final) — the study plan is where it gets
-                      tuned. Lower stakes, and truer to what the three rows do.
+                      the learner has seen nothing of the course yet. What
+                      replaced it says what the choice IS and what it is NOT
+                      (final) — the study plan is where it gets tuned. Lower
+                      stakes, and truer to what the three rows do.
 
                       ⚠ IT IS ONLY THE UNRESTRICTED COPY. When the exam date
                       narrows the options, `pacePrompt` says so instead — that
