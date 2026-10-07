@@ -465,10 +465,22 @@ export function HybridPacingHome({
             <div style={PACE_PANEL}>
               {/* The eyebrow heads the whole panel, above the dial (2026-10-02,
                   the designer's request; the design sets it under it). */}
+              {/* ⚠ TWO EYEBROWS IN PROGRESS, ONE AT 0% — 2026-10-07, the direct
+                  ask: "move this below the graph and then add an additional
+                  eyebrow - Course Progress". The panel holds two subjects once
+                  the dial is in it — what you have DONE and what you PLAN — and
+                  one heading over both made the plan look like a caption on the
+                  dial. Each now names the thing under it.
+
+                  At 0% there is no dial and no second subject, so the single
+                  heading stays and is the question instead. */}
+              {notStarted ? null : (
+                <p style={{ ...EYEBROW, alignSelf: 'stretch' }}>Course progress</p>
+              )}
+              {notStarted ? null : <ProgressDial percent={percent} />}
               <p style={{ ...EYEBROW, alignSelf: 'stretch' }}>
                 {notStarted ? 'Set Your Study Pace' : 'Your study pace'}
               </p>
-              {notStarted ? null : <ProgressDial percent={percent} />}
               {notStarted ? (
                 /* ⚠ SPACING RAISED THROUGHOUT — 2026-10-07, the direct ask, and
                    the restructure is what made it ONE number to raise rather
@@ -823,12 +835,15 @@ function ProgressDial({ percent }: { percent: number }) {
           transform={`rotate(-90 ${size / 2} ${size / 2})`}
         />
       </svg>
+      {/* ⚠ "Course Progress" LEFT THE RING on 2026-10-07, when the eyebrow
+          above the dial took those exact words — the two together read
+          "COURSE PROGRESS / Course Progress / 62% / Complete". The figure and
+          its unit are what the ring is for; the label is what the eyebrow is
+          for. ⚠ The `aria-label` on the wrapper still says "Course progress N%
+          complete", so nothing was lost for a screen reader — this block is
+          `aria-hidden` and always was. To restore it, put the two-line span
+          back above the figure. */}
       <div aria-hidden style={DIAL_TEXT}>
-        <span style={DIAL_CAPTION}>
-          Course
-          <br />
-          Progress
-        </span>
         <span style={DIAL_FIGURE}>{pct}%</span>
         <span style={DIAL_CAPTION}>Complete</span>
       </div>
