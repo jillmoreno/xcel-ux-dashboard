@@ -760,7 +760,9 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
     // An inline padding / colour / background would win over
     // `[aria-current='page']` and the active row would look idle.
     renderShell('/dashboard-rebrand?version=discoverability-atlas-compass-nav&nav=left-rail')
-    const home = screen.getByRole('button', { name: 'Home' })
+    // The RAIL's Home row — the journey-links card has its own "Home" link
+    // since 2026-10-07, so the name alone is no longer unique.
+    const home = screen.getAllByRole('button', { name: 'Home' }).find((b) => b.classList.contains('cre-atlas-nav-row'))!
     expect(home.style.padding).toBe('')
     expect(home.style.paddingLeft).toBe('')
     expect(home.style.color).toBe('')

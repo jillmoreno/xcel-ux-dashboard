@@ -1,5 +1,5 @@
 import type { CSSProperties } from 'react'
-import { CalendarRegular } from '@/icons'
+import { CalendarRegular, CircleCheckRegular } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
 
 /**
@@ -27,11 +27,17 @@ export type AtlasCourseCardData = {
   /** `secondary`: the outline button — white fill, brand-red border and label
    *  (2026-10-06, for the Begin Course cards). Default `primary`. */
   actionStyle?: 'primary' | 'secondary'
+  /** A COMPLETED course (2026-10-06): the date line reads "Completed:" with
+   *  the FA circle-check (regular), `availableDate` is the completion date, and
+   *  the button is an inactive "Completed" — disabled, in neutral greys. */
+  completed?: boolean
 }
 
 export function AtlasCourseCard({ data, onAction }: { data: AtlasCourseCardData; onAction?: () => void }) {
   return (
-    <article aria-label={data.title} style={CARD}>
+    // A completed card has NO FILL, only its outline (2026-10-06) — it steps
+    // back from the courses still in play.
+    <article aria-label={data.title} style={data.completed ? { ...CARD, background: 'transparent' } : CARD}>
       {/* The badge rides the image's top-left corner, 6px up and left of its
           frame — into the card's padding, which is left as it is (2026-10-06,
           Eric's request; it sat above the title). */}
@@ -52,27 +58,33 @@ export function AtlasCourseCard({ data, onAction }: { data: AtlasCourseCardData;
         {/* The icon flush left with the date under it (it sat centred in a
             16px box), and both lines 1px larger — 12 and 11 (2026-10-06). */}
         <span style={{ display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'var(--font-body)', fontSize: 12, lineHeight: '18px' }}>
-          <CalendarRegular size={12} aria-hidden />
-          Available until:
+          {data.completed ? <CircleCheckRegular size={12} aria-hidden /> : <CalendarRegular size={12} aria-hidden />}
+          {data.completed ? 'Completed:' : 'Available until:'}
         </span>
         <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, lineHeight: '18px', whiteSpace: 'nowrap' }}>
           <strong style={{ fontWeight: 700 }}>{data.availableDate}</strong>
           {data.availableTime ? ` ${data.availableTime}` : null}
         </span>
       </div>
-      <button
-        type="button"
-        className={
-          data.actionStyle === 'secondary'
-            ? 'cre-compass-secondary cre-atlas-card-secondary'
-            : 'cre-compass-primary cre-compass-btn-primary'
-        }
-        onClick={onAction}
-        disabled={!onAction}
-        style={BUTTON}
-      >
-        {data.actionLabel}
-      </button>
+      {data.completed ? (
+        <button type="button" disabled style={{ ...BUTTON, ...BUTTON_DONE }}>
+          Completed
+        </button>
+      ) : (
+        <button
+          type="button"
+          className={
+            data.actionStyle === 'secondary'
+              ? 'cre-compass-secondary cre-atlas-card-secondary'
+              : 'cre-compass-primary cre-compass-btn-primary'
+          }
+          onClick={onAction}
+          disabled={!onAction}
+          style={BUTTON}
+        >
+          {data.actionLabel}
+        </button>
+      )}
     </article>
   )
 }
@@ -150,4 +162,14 @@ const BUTTON: CSSProperties = {
   padding: '5px 8px',
   fontSize: 13.5,
   lineHeight: '20.25px',
+}
+/* The completed card's button: INACTIVE — disabled, no brand colour, neutral
+   fill and border with the secondary text (#666666, about 4.8:1 on the
+   #ECECEC fill; the tertiary grey was 4.0:1). No class, so no hover or press
+   state reaches it. */
+const BUTTON_DONE: CSSProperties = {
+  background: 'var(--color-neutral-100)',
+  border: '1px solid var(--color-neutral-200)',
+  color: 'var(--color-text-secondary)',
+  cursor: 'default',
 }

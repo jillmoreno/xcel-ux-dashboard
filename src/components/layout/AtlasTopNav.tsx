@@ -95,7 +95,9 @@ export function AtlasTopNav({ expanding = false }: { expanding?: boolean }) {
         // "My Learning" with FA's `book-open` (Regular, the weight of Home's
         // house) — 2026-10-01, the designer's request; it was "Compass
         // Learning" with `circle-location-arrow`.
-        label="My Learning"
+        // Reads "Course Overview" since 2026-10-07 (Eric's request; it was
+        // "My Learning") — it opens the course's Overview page.
+        label="Course Overview"
         // 13px — 2026-10-01, the designer's request; it was 14.
         icon={<BookOpenRegular size={13} aria-hidden />}
         current={current === 'compass'}

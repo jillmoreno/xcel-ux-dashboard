@@ -141,11 +141,15 @@ export function AtlasHomeV2({
           <AtlasCourseTabs courses={tabs} activeId={activeTab?.id ?? path.id} onSelect={selectCourse} onAllCourses={onAllCourses ?? (() => go('courses'))} />
         ) : null}
         <div style={{ display: 'flex', gap: 40, alignItems: 'stretch' }}>
-          {shownCover ? <img src={shownCover} alt="" aria-hidden style={COVER} /> : null}
+          {shownCover ? (
+            <span aria-hidden style={COVER_FRAME}>
+              <img src={shownCover} alt="" style={COVER} />
+            </span>
+          ) : null}
           <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 15, justifyContent: 'center' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
               <p style={EYEBROW}>Current course:</p>
-              <h2 className="cre-compass-course-title" style={TITLE}>
+              <h2 className="cre-compass-course-title cre-atlas-home-course-title" style={TITLE}>
                 {shownTitle}
               </h2>
             </div>
@@ -462,17 +466,26 @@ const CARD: CSSProperties = {
   // shadow lifts it instead (the small one was tried the same day).
   boxShadow: 'var(--shadow-compass-md)',
 }
-/* Every cover takes the Life & Health image's proportions (1312 × 980 → 149px
-   at 200 wide), so switching course tabs never moves the page below it
-   (2026-10-05) — the P&C photo is wider and sat 7px shorter. `cover` crops. */
-const COVER: CSSProperties = {
+/* The cover FILLS THE ROW'S HEIGHT — the eyebrow, title and buttons beside it
+   (2026-10-06, Eric's request). A frame stretched by the row, the image
+   absolutely inside it, so the photo's own proportions cannot set the row's
+   height; `cover` crops. Switching course tabs no longer depends on the
+   photos' proportions either (they set it from 2026-10-05 to 2026-10-06, at
+   the L&H photo's 1312 × 980). */
+const COVER_FRAME: CSSProperties = {
+  position: 'relative',
   width: 200,
-  height: 'auto',
-  aspectRatio: '1312 / 980',
-  alignSelf: 'flex-start',
   flex: 'none',
-  objectFit: 'cover',
+  alignSelf: 'stretch',
   borderRadius: 8,
+  overflow: 'hidden',
+}
+const COVER: CSSProperties = {
+  position: 'absolute',
+  inset: 0,
+  width: '100%',
+  height: '100%',
+  objectFit: 'cover',
   display: 'block',
 }
 const EYEBROW: CSSProperties = {

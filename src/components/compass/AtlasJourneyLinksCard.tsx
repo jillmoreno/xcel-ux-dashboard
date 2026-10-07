@@ -7,6 +7,7 @@ import {
   CircleInfoRegular,
   ClipboardListCheckRegular,
   FileCertificateRegular,
+  HouseBlankRegular,
   NotebookRegular,
   PenFieldRegular,
 } from '@/icons'
@@ -57,6 +58,9 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style }:
           designer's request; the design sets it in Open Sans SemiBold 16). */}
       <p style={TITLE}>More Information for Your Journey</p>
       <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
+        {/* Home, first (2026-10-07, Eric's request) — FA house-blank (regular);
+            current on the Home page, which has no `section`. */}
+        <SideLink icon={<HouseBlankRegular size={13} aria-hidden />} label="Home" active={section == null} onClick={() => go(null)} />
         <SideLink icon={<BookRegular size={13} aria-hidden />} label="My Courses" active={here('courses')} onClick={() => go('courses')} />
         <SideLink icon={<FileCertificateRegular size={13} aria-hidden />} label="My Certificates" active={here('certificates')} onClick={() => go('certificates')} />
         <SideLink icon={<NotebookRegular size={13} aria-hidden />} label="Flashcards" active={here('course', 'flashcards')} onClick={() => go('course', { coursePage: 'flashcards' })} />

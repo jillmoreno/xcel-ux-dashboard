@@ -41,7 +41,12 @@ export const ATLAS_FONTS: readonly {
   hidden?: boolean
 }[] = [
   { font: 'dm-serif-display', label: 'DM Serif Display (style guide)' },
-  { font: 'playfair-2', label: 'Playfair 2', google: 'Playfair:wght@700' },
+  // EVERY WEIGHT, 300–900 — Playfair is one variable font on Google Fonts, so
+  // the range is one file (2026-10-07, Eric's request: "include all weights of
+  // Playfair for use"). It loaded 700 alone until then. Headings stay at that
+  // 700 through a rule in tokens.css, so the look is unchanged; a heading can
+  // now be given another weight with a rule of its own.
+  { font: 'playfair-2', label: 'Playfair 2', google: 'Playfair:wght@300..900' },
   // Two weights: 400 for the Home course title alone, 500 for every other
   // heading (held there by a rule in tokens.css). Both one step lighter on
   // 2026-10-06 (the designer's request) — they were 500 and 600.

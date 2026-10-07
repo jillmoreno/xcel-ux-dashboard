@@ -26,9 +26,9 @@ describe('Atlas Top Nav', () => {
     expect(current()).toEqual(['Home'])
   })
 
-  it('marks My Learning current on the Overview and Course pages', () => {
+  it('marks Course Overview (was My Learning) current on the Overview and Course pages', () => {
     renderNav('?section=course&coursePage=overview')
-    expect(current()).toEqual(['My Learning'])
+    expect(current()).toEqual(['Course Overview'])
   })
 
   it('marks neither on another section', () => {
@@ -38,7 +38,7 @@ describe('Atlas Top Nav', () => {
 
   it('navigates by section only, keeping the demo params', () => {
     renderNav('?demo=1&skin=global&nav=top-nav')
-    fireEvent.click(screen.getByRole('button', { name: /My Learning/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Course Overview/ }))
     const search = screen.getByTestId('search').textContent ?? ''
     expect(search).toContain('section=course')
     expect(search).toContain('coursePage=overview')
@@ -81,7 +81,7 @@ describe('Atlas Expanding Top Nav', () => {
     const search = screen.getByTestId('search').textContent ?? ''
     expect(search).toContain('section=course')
     expect(search).toContain('coursePage=flashcards')
-    expect(current()).toEqual(['My Learning', 'Flashcards'])
+    expect(current()).toEqual(['Course Overview', 'Flashcards'])
     fireEvent.click(screen.getByRole('button', { name: 'Certificates' }))
     expect(screen.getByTestId('search').textContent).toContain('section=certificates')
     expect(current()).toEqual(['Home', 'Certificates'])
@@ -93,7 +93,7 @@ describe('Atlas Expanding Top Nav', () => {
     const search = screen.getByTestId('search').textContent ?? ''
     expect(search).toContain('section=course')
     expect(search).toContain('coursePage=course')
-    expect(current()).toEqual(['My Learning', 'Course'])
+    expect(current()).toEqual(['Course Overview', 'Course'])
     fireEvent.click(screen.getByRole('button', { name: 'Study Plan' }))
     expect(screen.getByTestId('search').textContent).toContain('section=study-plan')
     expect(current()).toEqual(['Home', 'Study Plan'])

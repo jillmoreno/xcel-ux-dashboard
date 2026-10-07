@@ -5765,6 +5765,48 @@ a.cre-library-card-title::after {
   --font-heading-serif: 'Playfair', Georgia, serif;
   --atlas-font-size-scale: 1.265;
   --atlas-font-line-scale: 0.81;
+  /* EVERY HEADING ONE STEP UP the Atlas scale under Playfair 2 only
+     (2026-10-07, Eric's request: "increase the serif headings 1 level only on
+     the Playfair 2 version" — size): each step's base takes the next step
+     up's — H8 reads H7's 24/28, … H2 reads H1's 64/64. H1 has no step above
+     it and stays. Moving the BASE tokens moves both kinds of heading: those
+     on the scaled `-size` tokens (still × the 1.265 above) and those reading
+     `-base-size` directly. */
+  --type-atlas-h2-base-size: 64px;
+  --type-atlas-h2-base-line: 64px;
+  --type-atlas-h3-base-size: 48px;
+  --type-atlas-h3-base-line: 50px;
+  --type-atlas-h4-base-size: 44px;
+  --type-atlas-h4-base-line: 46px;
+  --type-atlas-h5-base-size: 38px;
+  --type-atlas-h5-base-line: 40px;
+  --type-atlas-h6-base-size: 32px;
+  --type-atlas-h6-base-line: 34px;
+  --type-atlas-h7-base-size: 28px;
+  --type-atlas-h7-base-line: 32px;
+  --type-atlas-h8-base-size: 24px;
+  --type-atlas-h8-base-line: 28px;
+}
+/* …except the HOME course title, at 42 / 44 under Playfair 2 (2026-10-07, Eric's
+   request; 40 / 42 first) — between the H4 38 / 40 it reads elsewhere and the
+   44 / 46 the step-up gives it. Its own class, so the Overview and page titles
+   that share `.cre-compass-course-title` keep the step. */
+[data-atlas-palette][data-atlas-font='playfair-2'] .cre-atlas-home-course-title[style] {
+  font-size: 42px !important;
+  line-height: 44px !important;
+  /* -2% of the size (2026-10-07; -4% first), one point tighter than the
+     title's -1% elsewhere. */
+  letter-spacing: -0.02em !important;
+}
+/* Playfair now loads EVERY weight (300–900, 2026-10-07), so a heading would
+   render at whatever weight its component asks for (mostly 400) instead of
+   the trial's Bold. Every heading-face element is held at 700 — the weight it
+   rendered at when 700 was the only one loaded — with the same inline-style
+   match as the Source Serif 4 and Open Sans rules below. Give an element a
+   class rule of its own to set another weight. */
+[data-atlas-palette][data-atlas-font='playfair-2'] [style*='--font-heading-serif'],
+[data-atlas-palette][data-atlas-font='playfair-2'] .cre-dash-serif-headings [style*='--font-heading)'] {
+  font-weight: 700 !important;
 }
 [data-atlas-palette][data-atlas-font='source-serif-4'] {
   --font-heading-serif: 'Source Serif 4', Georgia, serif;

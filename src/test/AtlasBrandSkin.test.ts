@@ -26,6 +26,6 @@ describe('atlasFontFor', () => {
   // render at that weight whatever weight a heading asks for.
   it('loads the guide face from index.html and each trial face on demand', () => {
     expect(atlasFontHref('dm-serif-display')).toBeNull()
-    expect(atlasFontHref('playfair-2')).toBe('https://fonts.googleapis.com/css2?family=Playfair:wght@700&display=swap')
+    expect(atlasFontHref('playfair-2')).toBe('https://fonts.googleapis.com/css2?family=Playfair:wght@300..900&display=swap')
   })
 })

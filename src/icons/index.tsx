@@ -47,6 +47,7 @@ import CircleCheckSolidSvg from './circle-check-solid.svg?react'
 import CircleCheckRegularSvg from './circle-check-regular.svg?react'
 import ClockRegularSvg from './clock-regular.svg?react'
 import HouseRegularSvg from './house-regular.svg?react'
+import HouseBlankRegularSvg from './house-blank-regular.svg?react'
 // Atlas Top Nav (Figma 160:616), fetched 2026-09-30 at 7.3.1.
 import CircleLocationArrowRegularSvg from './circle-location-arrow-regular.svg?react'
 // The Atlas Top Nav's My Learning button, fetched 2026-10-01 at 7.3.1.
@@ -266,6 +267,7 @@ export const CircleCheckSolid = makeIcon(CircleCheckSolidSvg) // FA: circle-chec
 export const CircleCheckRegular = makeIcon(CircleCheckRegularSvg) // FA: circle-check (regular)
 export const ClockRegular = makeIcon(ClockRegularSvg) // FA: clock (regular)
 export const HouseRegular = makeIcon(HouseRegularSvg) // FA: house (regular)
+export const HouseBlankRegular = makeIcon(HouseBlankRegularSvg) // FA: house-blank (regular)
 export const CircleLocationArrowRegular = makeIcon(CircleLocationArrowRegularSvg) // FA: circle-location-arrow (regular)
 export const BookOpenRegular = makeIcon(BookOpenRegularSvg) // FA: book-open (regular)
 export const SidebarRegular = makeIcon(SidebarRegularSvg) // FA: sidebar (regular)

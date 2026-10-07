@@ -41,10 +41,12 @@ export const ATLAS_MY_COURSES: readonly AtlasCourseCardData[] = [
     id: 'demo-ny-preferred-business-practices',
     title: 'NY Preferred Business Practices for the Insurance Producer',
     imageUrl: '/courses/ny-preferred-business-practices.jpg',
-    availableDate: 'January 31, 2027',
-    availableTime: '11:59 PM CST',
-    actionLabel: 'Begin Course',
-    actionStyle: 'secondary',
+    // COMPLETED (2026-10-06, Eric's request) — an invented past completion
+    // date; it was "Available until January 31, 2027" with Begin Course.
+    completed: true,
+    availableDate: 'September 18, 2026',
+    availableTime: '3:12 PM CDT',
+    actionLabel: 'Completed',
   },
 ]
 
