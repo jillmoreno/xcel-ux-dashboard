@@ -28,11 +28,11 @@ import {
 import { ExamScheduleWidget } from '@/components/learning/ExamScheduleWidget'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 import {
+  dateFromIso,
   defaultPreset,
   formatPaceDate,
   isoPlusDays,
   studyPace,
-  daysUntil,
   NOT_STARTED_NIGHTS,
 } from '@/lib/studyPace'
 /* ⚠ THE PROP CONTRACT IS SHARED ON PURPOSE — see the note below. Both homes are
@@ -134,7 +134,21 @@ export function HybridPacingHome({
     [today, hoursRemaining, accessExpiresAt, examDate, notStarted],
   )
   const preset = defaultPreset(model)
-  const accessDays = accessExpiresAt ? Math.max(0, daysUntil(accessExpiresAt, today) ?? 0) : null
+  /* ⚠ PACING — THE DAY COUNT IS GONE, 2026-10-07, the direct ask: "we will
+     incorporate the countdown of days at a later time with the notifications
+     logic etc." `accessDays` went with it rather than sitting unread —
+     `noUnusedLocals` would not have kept it, and a dead local is a worse
+     placeholder than this note. To bring it back:
+     `Math.max(0, daysUntil(accessExpiresAt, today) ?? 0)`.
+
+     ⚠ LONG MONTH, NOT `formatPaceDate`. That helper is `{month:'short'}` —
+     "Jun 11" — and this line was specified as "Access ends June 11". It is the
+     card's one date and it is read once, where the figures it replaces were
+     scanned in a column; the short form is for the column. */
+  const accessEnd = accessExpiresAt ? dateFromIso(accessExpiresAt) : null
+  const accessEndsLabel = accessEnd
+    ? `Access ends ${accessEnd.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}`
+    : null
   /* ⚠ PACING A — DERIVED AGAIN, 2026-10-07, AND THIS REVERSES A DECISION.
      The literal 3 was the designer's request on 2026-10-02, and the note it
      replaces said plainly what that cost: deriving reads "2 Week Goal" for the
@@ -279,15 +293,30 @@ export function HybridPacingHome({
     <div style={PAGE}>
       {/* ── The course card ── */}
       <section aria-label="Current course" style={CARD}>
+        {/* ⚠ PACING — THE CARD'S TOP LINE, 2026-10-07, the direct ask. The
+            eyebrow was inside the text column beside the cover, which started
+            it ~190px in from the card's edge and made it a label on the TITLE.
+            At the top it labels the CARD, and the right end of the same line is
+            where the one fact that constrains everything below it belongs.
+
+            ⚠ THE TWO HALVES ARE NOT THE SAME TYPE, deliberately. Left is the
+            eyebrow — uppercase, tracked, the card's name. Right is sentence
+            case at a lighter weight: a date is not a label, and matching them
+            would have made the deadline read as a second heading. */}
+        <div style={CARD_TOPLINE}>
+          <p style={EYEBROW}>Current course</p>
+          {accessEndsLabel ? <p style={ACCESS_NOTE}>{accessEndsLabel}</p> : null}
+        </div>
         <div style={{ display: 'flex', gap: 40, alignItems: 'stretch' }}>
           {coverUrl ? <img src={coverUrl} alt="" aria-hidden style={COVER} /> : null}
           <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 15, justifyContent: 'center' }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              <p style={EYEBROW}>Current course:</p>
-              <h2 className="cre-compass-course-title" style={TITLE}>
-                {courseTitle}
-              </h2>
-            </div>
+            {/* ⚠ ITS EYEBROW WRAPPER WENT WITH IT. The `gap: 8` column existed
+                to pair the eyebrow with the title; with one child left the
+                parent's own `gap: 15` is what separates the title from the
+                buttons, which is what it already did for the pair. */}
+            <h2 className="cre-compass-course-title" style={TITLE}>
+              {courseTitle}
+            </h2>
             {/* ⚠ HYBRID #2 — BEGIN COURSE SITS WITH THE TITLE. On Eric's home
                 it rides the current journey row, which puts the screen's one
                 primary action halfway down the right column and makes it a
@@ -364,30 +393,23 @@ export function HybridPacingHome({
                 unread local. To restore the row, take the one-line derivation
                 and the `<Figure>` from `AtlasHomeV2.tsx`, which is unchanged
                 and is the better reference anyway. */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, paddingBottom: 8 }}>
-              {accessDays != null && accessExpiresAt ? (
-                <>
-                  <Figure
-                    label="Course access"
-                    value={`${accessDays} ${accessDays === 1 ? 'Day' : 'Days'}`}
-                    note={`Ends ${formatPaceDate(accessExpiresAt)}`}
-                  />
-                </>
-              ) : null}
-              {/* ⚠ PACING — ESTIMATED COMPLETION DATE LEFT THIS COLUMN,
-                  2026-10-07, the direct ask: it "feels like it should be part
-                  of the set your study pace section". It is the CONSEQUENCE of
-                  the pace, not a fact about the course the way Course Access
-                  is, and sitting up here it read as the latter — a date with no
-                  stated cause, two inches above the thing that causes it. It
-                  now closes the pace panel below, in both states.
+            {/* ⚠ PACING — THE FIGURES COLUMN IS GONE, and it emptied in two
+                steps rather than being removed as a block. ESTIMATED COMPLETION
+                DATE left on 2026-10-07 for the pace panel, because it is a
+                consequence of the pace rather than a fact about the course.
+                COURSE ACCESS left hours later for the card's top line, because
+                it is a fact about the course rather than one about the pace —
+                and its day count went with it, deferred to the notifications
+                work.
 
-                  ⚠ THE RULE WENT WITH IT. Course Access was followed by a
-                  hairline SEPARATING the two figures; with one figure left
-                  there is nothing to separate, and a trailing rule under a
-                  lone figure reads as a missing row. */}
-            </div>
-
+                With both gone the wrapper held nothing, so it went too — and
+                so did the `<Figure>` component itself, which nothing in this
+                file called any more and `noUnusedLocals` would not have kept.
+                ⚠ TAKE IT FROM `AtlasHomeV2.tsx` to restore a row: that file is
+                unchanged, still draws all three figures, and is the better
+                reference than a copy left here would have been. Eric's home and
+                Hybrid V1 both still have them; this is the only version
+                without. */}
             <div style={PACE_PANEL}>
               {/* The eyebrow heads the whole panel, above the dial (2026-10-02,
                   the designer's request; the design sets it under it). */}
@@ -695,18 +717,6 @@ function PaceEstimate({ value, note }: { value: string; note: string }) {
   )
 }
 
-function Figure({ label, value, note }: { label: string; value: string; note: string }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-      <p style={FIGURE_LABEL}>{label}</p>
-      <p style={{ margin: 0, lineHeight: '20px', color: 'var(--color-text-primary)', whiteSpace: 'nowrap' }}>
-        <span style={{ fontFamily: 'var(--font-heading-serif)', fontSize: 16 }}>{value}</span>
-        <span style={{ ...BODY_TEXT, fontSize: 16, fontWeight: 300 }}> - </span>
-        <span style={{ ...BODY_TEXT, fontSize: 12 }}>{note}</span>
-      </p>
-    </div>
-  )
-}
 
 /* The progress dial (Figma "Complete Dial"): a 149px ring in the rule colour,
    the done share drawn over it in the brand's button colour from 12 o'clock,
@@ -1168,6 +1178,25 @@ const EYEBROW: CSSProperties = {
   color: 'var(--color-compass-page-eyebrow)',
 }
 /* Serif H4, as the V1 course card's title (38 / 40). */
+/* ⚠ PACING — the card's first row: name on the left, constraint on the right,
+   baseline-aligned so the two type sizes sit on one line rather than centring
+   against each other. `margin-bottom` rather than the card's gap, because the
+   card is not a flex column — the cover/title block below is its own row. */
+const CARD_TOPLINE: CSSProperties = {
+  display: 'flex',
+  alignItems: 'baseline',
+  justifyContent: 'space-between',
+  gap: 16,
+  marginBottom: 24,
+}
+const ACCESS_NOTE: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 12,
+  lineHeight: '16.5px',
+  fontWeight: 300,
+  color: 'var(--color-text-secondary)',
+}
 const TITLE: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-heading-serif)',
