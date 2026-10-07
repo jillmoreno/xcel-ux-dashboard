@@ -947,13 +947,14 @@ function ProgressDial({ percent }: { percent: number }) {
           cy={size / 2}
           r={r}
           fill="none"
-          /* ⚠ THE HIGHLIGHT GREEN, NOT THE SLATE — 2026-10-07, the direct ask
-             for "the same green used to highlight the Pre-licensing section".
-             It is literally the same value, via `HIGHLIGHT_GREEN`, so the arc,
-             the ring on the current stop and the lesson block's rule are one
-             colour saying one thing: this is where you are. The unfilled track
-             behind it keeps `--color-atlas-nav-rule`. */
-          style={{ stroke: HIGHLIGHT_GREEN }}
+          /* ⚠ THE SLATE, AND IT WENT GREEN FOR ONE COMMIT — 2026-10-07. The
+             arc took `HIGHLIGHT_GREEN` to match the current stop's ring, and
+             changed straight back on sight. Worth the line: the green marks a
+             POSITION — the stop you are on, the lesson you are in — and the
+             arc is a QUANTITY. Lending it the same colour said the two were
+             the same kind of fact, and at 6px across a 149px ring the light
+             mix also sat much weaker against the track than the slate does. */
+          style={{ stroke: 'var(--color-compass-page-button)' }}
           strokeWidth={6}
           strokeLinecap="round"
           strokeDasharray={`${(c * pct) / 100} ${c}`}
