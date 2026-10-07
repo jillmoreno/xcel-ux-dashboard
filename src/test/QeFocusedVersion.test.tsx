@@ -259,6 +259,9 @@ describe('the QE Focused version is ARCHIVED but still reachable', () => {
       // behind its flag (the Header filters it).
       'discoverability-atlas-compass-nav',
       'eric-atlas-v1',
+      // Eric/Atlas V2 (2026-10-07) — V1 with its own copy of the Home page.
+      'eric-atlas-v2',
+      'eric-atlas-v3',
       'discoverability-learner-focused',
     ])
     expect(DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)).not.toContain(
@@ -397,7 +400,7 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
     expect(within(card).getByRole('button', { name: 'Begin Course' })).toBeTruthy()
     expect(within(card).getByRole('region', { name: 'Pass State Exam' })).toBeTruthy()
     expect(screen.getByRole('region', { name: 'Do you know your state exam date?' })).toBeTruthy()
-    const links = screen.getByRole('navigation', { name: 'More information for your journey' })
+    const links = screen.getByRole('navigation', { name: 'Quick links' })
     for (const name of ['My Courses', 'My Certificates', 'Flashcards', 'Exam Simulator', 'Exam Information', 'Applying for a License', 'State Requirements']) {
       expect(within(links).getByRole('button', { name })).toBeTruthy()
     }

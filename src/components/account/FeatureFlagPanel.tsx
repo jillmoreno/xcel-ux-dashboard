@@ -123,6 +123,7 @@ const REBRAND_FLAGS = [
      are not alternatives: the bar is the fast route while you are looking at
      the page, the panel is where every flag is findable. */
   'atlas-heading-font',
+  'atlas-home-long-title',
   'atlas-brand-skin',
   /* ⚠ RE-FILED TO THIS PAGE 2026-10-05 when the `learning-path` flag page was
      retired. They draw inside the rebrand shell (`InlineStudyCalendar`, twice),

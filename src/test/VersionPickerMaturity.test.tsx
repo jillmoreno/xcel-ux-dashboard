@@ -84,7 +84,7 @@ afterEach(cleanup)
  * only one here that would have.
  */
 describe('the designer tabs over the LIVE catalog', () => {
-  it('gives Eric his two Atlas versions, not an empty tab', () => {
+  it('gives Eric his four Atlas versions, not an empty tab', () => {
     render(
       <DashboardVersionsPanel
         open
@@ -100,10 +100,13 @@ describe('the designer tabs over the LIVE catalog', () => {
     )
     fireEvent.click(screen.getByRole('tab', { name: 'Eric' }))
     expect(screen.getByText('Eric/Atlas V1')).toBeTruthy()
+    expect(screen.getByText('Eric/Atlas V2')).toBeTruthy()
+    expect(screen.getByText('Eric/Atlas V3')).toBeTruthy()
     expect(screen.getByText('Atlas/Compass Global Navigation')).toBeTruthy()
     /* The count beside the strip is read off the FILTERED list, so "0 versions"
-       on a populated tab is the exact symptom this pins. */
-    expect(screen.getByText(/2 versions/)).toBeTruthy()
+       on a populated tab is the exact symptom this pins. Four since
+       2026-10-07, when Eric/Atlas V2 and V3 joined. */
+    expect(screen.getByText(/4 versions/)).toBeTruthy()
   })
 
   it('still shows Jill hers, so the filter is filtering and not emptying', () => {
@@ -187,7 +190,9 @@ describe('the shipped versions', () => {
        ⚠ THE PARENT'S ABSENCE IS A DECISION, NOT AN OVERSIGHT, and it is the
        half worth pinning: a later branch adding `maturity: 'ready'` to it
        should have to come through here and say why. */
-    expect(unmarked.map((v) => v.id)).toEqual(['discoverability-atlas-compass-nav'])
+    /* ⚠ AND ERIC/ATLAS V2 since 2026-10-07 — new, so not decided yet; it is
+       design-site only until a promotion says otherwise. */
+    expect(unmarked.map((v) => v.id)).toEqual(['discoverability-atlas-compass-nav', 'eric-atlas-v2', 'eric-atlas-v3'])
     /* The gate is now FILTERING, not merely armed — the demo site is short by
        exactly those two, and nothing else moved. */
     expect(dashboardVersionsForAudience(true)).toHaveLength(

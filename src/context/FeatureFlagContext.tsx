@@ -1328,7 +1328,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        ⚠ `?skin=` STILL WINS WHEN PRESENT, as an alias. */
     surface: 'design',
     owner: 'eric',
-    versions: ['eric-atlas-v1', 'discoverability-atlas-compass-nav'],
+    versions: ['eric-atlas-v1', 'eric-atlas-v2', 'eric-atlas-v3', 'discoverability-atlas-compass-nav'],
     group: 'Widgets',
     label: 'Brand',
     description:
@@ -1367,7 +1367,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        Atlas font link shared before today keeps working. */
     surface: 'design',
     owner: 'eric',
-    versions: ['eric-atlas-v1', 'discoverability-atlas-compass-nav'],
+    versions: ['eric-atlas-v1', 'eric-atlas-v2', 'eric-atlas-v3', 'discoverability-atlas-compass-nav'],
     group: 'Widgets',
     label: 'Headings',
     description:
@@ -1375,17 +1375,37 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     // Variant-only, the same shape as `dashboard-heading-font` below: the
     // enable toggle is on so the flag is live, and the CHOICE is the variant.
     defaultEnabled: true,
-    // Source Serif 4 is the face a fresh demo loads (2026-10-06, Eric's
-    // request); it was DM Serif Display, the style guide's own face.
-    defaultVariant: 'source-serif-4',
+    // Playfair 2 is the face a fresh demo loads (2026-10-07, Eric's request);
+    // Source Serif 4 was from 2026-10-06, DM Serif Display before that.
+    defaultVariant: 'playfair-2',
+    // Playfair 2 heads the list and is the default (2026-10-07, Eric's
+    // request); every other face stays in the dropdown.
     variants: [
+      { value: 'playfair-2', label: 'Playfair 2 (default)' },
       { value: 'dm-serif-display', label: 'DM Serif Display (style guide)' },
-      { value: 'playfair-2', label: 'Playfair 2' },
-      { value: 'source-serif-4', label: 'Source Serif 4 (default)' },
+      { value: 'source-serif-4', label: 'Source Serif 4' },
       { value: 'figtree', label: 'Proxima Nova stand-in (Figtree)' },
       { value: 'outfit', label: 'Outfit' },
       { value: 'instrument-sans', label: 'Instrument Sans' },
     ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-home-long-title',
+    /* A REFERENCE TOGGLE beside Headings on the Design bar (2026-10-07, Eric's
+       request: "add another toggle … to show this long title for reference").
+       On, Eric/Atlas V2's Home shows a deliberately LONG course title — the
+       worst case a heading face has to wrap — in place of the fixture's. Off
+       (default), the real title. V2 only: the long title lives in
+       `AtlasHomeEricV2`, so on any other version this would change nothing. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-v2', 'eric-atlas-v3'],
+    group: 'Widgets',
+    label: 'Long title',
+    description:
+      'Shows a deliberately long course title on Eric/Atlas V2\u2019s Home (\u201cNew York Property and Casualty Conversion Course Pre-licensing and Live Review Class\u201d) so a heading face can be judged at its worst wrap. Off: the course\u2019s real title. Display only \u2014 the course behind it is unchanged.',
+    defaultEnabled: false,
     page: 'dashboard-rebrand',
   },
   {
@@ -2144,7 +2164,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Home Page',
     label: 'Atlas home layout',
     description:
-      'Which layout the Atlas/Compass Home renders. V1: the course card, the Schedule State Exam banner and the Study Pace card in the left column, the Study Journey rail on the right. V2 (Figma 161:662): one course card with the completion / review / access figures, a progress dial and the study pace beside the Study Journey, with "Do you know your state exam date?" and "More Information for Your Journey" cards on the right. Variant-only. Atlas/Compass version only.',
+      'Which layout the Atlas/Compass Home renders. V1: the course card, the Schedule State Exam banner and the Study Pace card in the left column, the Study Journey rail on the right. V2 (Figma 161:662): one course card with the completion / review / access figures, a progress dial and the study pace beside the Study Journey, with "Do you know your state exam date?" and "Quick Links" cards on the right. Variant-only. Atlas/Compass version only.',
     defaultEnabled: true,
     defaultVariant: 'v2',
     variants: [

@@ -16,11 +16,11 @@ describe('atlasSkinFor', () => {
 })
 
 describe('atlasFontFor', () => {
-  it('lists the guide face plus six trial faces, and falls back to the default, Source Serif 4', () => {
+  it('lists the guide face plus six trial faces, and falls back to the default, Playfair 2', () => {
     expect(ATLAS_FONTS).toHaveLength(7)
     expect(ATLAS_FONTS[0].font).toBe('dm-serif-display')
     expect(atlasFontFor('outfit')).toBe('outfit')
-    for (const raw of [null, '', 'comic-sans', 'gloock', 'yeseva-one', 'albert-sans']) expect(atlasFontFor(raw)).toBe('source-serif-4')
+    for (const raw of [null, '', 'comic-sans', 'gloock', 'yeseva-one', 'albert-sans']) expect(atlasFontFor(raw)).toBe('playfair-2')
   })
   // Each trial face loads ONE weight — the trial's — which is what makes it
   // render at that weight whatever weight a heading asks for.

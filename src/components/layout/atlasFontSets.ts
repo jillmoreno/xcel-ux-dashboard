@@ -46,11 +46,11 @@ export const ATLAS_FONTS: readonly {
   // Playfair for use"). It loaded 700 alone until then. Headings stay at that
   // 700 through a rule in tokens.css, so the look is unchanged; a heading can
   // now be given another weight with a rule of its own.
-  { font: 'playfair-2', label: 'Playfair 2', google: 'Playfair:wght@300..900' },
+  { font: 'playfair-2', label: 'Playfair 2 (default)', google: 'Playfair:wght@300..900' },
   // Two weights: 400 for the Home course title alone, 500 for every other
   // heading (held there by a rule in tokens.css). Both one step lighter on
   // 2026-10-06 (the designer's request) — they were 500 and 600.
-  { font: 'source-serif-4', label: 'Source Serif 4 (default)', google: 'Source+Serif+4:wght@400;500' },
+  { font: 'source-serif-4', label: 'Source Serif 4', google: 'Source+Serif+4:wght@400;500' },
   { font: 'figtree', label: 'Proxima Nova stand-in (Figtree)', google: 'Figtree:wght@500' },
   // Hidden from the dropdown 2026-09-30 (the designer's request); the
   // semi-bold / course-title-500 rules in tokens.css stay for it.
@@ -61,9 +61,10 @@ export const ATLAS_FONTS: readonly {
 
 export const ATLAS_FONT_PARAM = 'fonts'
 
-/** `?fonts=` → a known face, else the default — Source Serif 4 since
- *  2026-10-06 (was DM Serif Display). Validated, not cast. */
-export const ATLAS_FONT_DEFAULT: AtlasFont = 'source-serif-4'
+/** `?fonts=` → a known face, else the default — Playfair 2 since 2026-10-07
+ *  (Source Serif 4 from 2026-10-06, DM Serif Display before). Validated, not
+ *  cast. */
+export const ATLAS_FONT_DEFAULT: AtlasFont = 'playfair-2'
 export function atlasFontFor(param: string | null): AtlasFont {
   return ATLAS_FONTS.some((f) => f.font === param) ? (param as AtlasFont) : ATLAS_FONT_DEFAULT
 }

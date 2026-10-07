@@ -115,6 +115,8 @@ describe('the owner axis', () => {
          `dashboard-heading-font` where a reader looks for them. */
       'atlas-brand-skin',
       'atlas-heading-font',
+      // Joined 2026-10-07 — V2's long-title reference toggle, beside Headings.
+      'atlas-home-long-title',
       'atlas-home-layout',
       'atlas-xcel-palette',
       'atlas-right-rail-layout',
@@ -129,7 +131,8 @@ describe('the owner axis', () => {
     )
     expect(
       DISCOVERABILITY_DASHBOARD_VERSIONS.filter((v) => flagOwner(v) === 'eric').map((v) => v.id),
-    ).toEqual(['discoverability-atlas-compass-nav', 'eric-atlas-v1'])
+      // Eric/Atlas V2 joined 2026-10-07 — V1 with its own copy of the Home page.
+    ).toEqual(['discoverability-atlas-compass-nav', 'eric-atlas-v1', 'eric-atlas-v2', 'eric-atlas-v3'])
   })
 
   it('puts Jill first, which is what makes her the default tab', () => {

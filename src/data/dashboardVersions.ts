@@ -16,6 +16,8 @@ export type DashboardVersionId =
   | 'discoverability-testing-2'
   | 'discoverability-atlas-compass-nav'
   | 'eric-atlas-v1'
+  | 'eric-atlas-v2'
+  | 'eric-atlas-v3'
   | 'discoverability-testing-3'
 /**
  * The rebrand overview's LAYOUT, resolved from `?version=` by `PlatformShell`
@@ -371,13 +373,45 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1: DashboardVersion =
     'Eric\u2019s Atlas/Compass work as of 2026-10-02: the Top Nav (Home \u00b7 My Learning) over the Global brand, no left rail on Home, the Schedule State Exam banner, the one-frame right rail, the collapsible left rail on the course pages, the course player with Rubi beside it, and the Compass Resources page. Shares the Atlas/Compass code. Feature-flagged.',
 }
 
+// "Eric/Atlas V2" — 2026-10-07, the designer's request: "duplicate this home
+// page as V2 and add it to my dashboard versions". The Atlas/Compass pages again
+// (`isAtlasCompassNavVersion` answers true), with ONE difference: Home renders
+// `AtlasHomeEricV2`, a copy made that day, so V2's Home can move on while V1's
+// stays put. Design site only (no `maturity`) until it is promoted.
+export const DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V2: DashboardVersion = {
+  id: 'eric-atlas-v2',
+  owner: 'eric',
+  label: 'Eric/Atlas V2',
+  createdAt: '2026-10-07',
+  modifiedAt: '2026-10-07',
+  description:
+    'Eric\u2019s Atlas/Compass work from 2026-10-07 on: the same pages as Eric/Atlas V1, with its own copy of the Home page (AtlasHomeEricV2) so Home can change here without changing V1.',
+}
+
+// "Eric/Atlas V3" — 2026-10-07, the designer's request: Home duplicated again,
+// as its own Dashboard Version (it was a third variant of `atlas-home-layout`
+// briefly first). The Atlas/Compass pages with Home rendered by
+// `AtlasHomeEricV3`, a copy of V2's Home that day. Design site only.
+export const DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V3: DashboardVersion = {
+  id: 'eric-atlas-v3',
+  owner: 'eric',
+  label: 'Eric/Atlas V3',
+  createdAt: '2026-10-07',
+  modifiedAt: '2026-10-07',
+  description:
+    'Eric\u2019s Atlas/Compass work from 2026-10-07 on: the same pages as Eric/Atlas V2, with its own copy of the Home page (AtlasHomeEricV3), so Home can change here without changing V2 or V1.',
+}
+
 /** True for the Atlas/Compass Global Navigation version — and for Eric/Atlas
- *  V1, which is the same pages under its own name. One helper so the shell and
+ *  V1, V2 and V3, which are the same pages under their own names (V2's and
+ *  V3's Home are their own copies). One helper so the shell and
  *  the demo bar cannot disagree about which version is on. */
 export function isAtlasCompassNavVersion(versionId: string | null | undefined): boolean {
   return (
     versionId === DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV.id ||
-    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1.id
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1.id ||
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V2.id ||
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V3.id
   )
 }
 
@@ -468,6 +502,8 @@ export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
   // feat/atlas-compass-global-nav.
   DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV,
   DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1,
+  DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V2,
+  DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V3,
   DISCOVERABILITY_DASHBOARD_VERSION_LEARNER_FOCUSED,
 ]
 

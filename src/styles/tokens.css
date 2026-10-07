@@ -5798,6 +5798,12 @@ a.cre-library-card-title::after {
      title's -1% elsewhere. */
   letter-spacing: -0.02em !important;
 }
+/* …and on ERIC/ATLAS V2's Home, 40 / 42 (2026-10-07, Eric's request) — its
+   own class, so V1's Home keeps 42 / 44. */
+[data-atlas-palette][data-atlas-font='playfair-2'] .cre-atlas-home-v2-course-title[style] {
+  font-size: 40px !important;
+  line-height: 42px !important;
+}
 /* Playfair now loads EVERY weight (300–900, 2026-10-07), so a heading would
    render at whatever weight its component asks for (mostly 400) instead of
    the trial's Bold. Every heading-face element is held at 700 — the weight it
@@ -6379,4 +6385,37 @@ a.cre-library-card-title::after {
    style, so `.cre-compass-secondary:hover` still tints it. */
 .cre-atlas-card-secondary {
   background: var(--color-surface-card);
+}
+
+/* The exam-date card's calendar (AtlasExamDateCard, Figma 224:4118). A
+   pickable day tints on hover; the month steppers dim when disabled (no
+   stepping back before today's month). */
+.cre-atlas-cal-day:not([aria-selected='true']):hover {
+  background: color-mix(in srgb, var(--color-atlas-cal-ink, var(--color-compass-page-button)) 10%, transparent) !important;
+}
+.cre-atlas-cal-day:focus-visible,
+.cre-atlas-cal-step:focus-visible {
+  outline: 2px solid var(--color-atlas-cal-ink, var(--color-compass-page-button));
+  outline-offset: 1px;
+}
+.cre-atlas-cal-step:disabled {
+  opacity: 0.4;
+  cursor: default !important;
+}
+
+/* THE COMPASS PALETTE ON ONE ELEMENT (2026-10-07, Eric's request: the exam-date
+   card's contents in the Compass colours, "except for the button and text
+   links" — those keep the brand's button colour). The Global skin's roles,
+   set on the element itself so they win over any brand skin on <html> and
+   reach only its contents. Values from the Global block and the card's Figma
+   (224:4118): steel #3D5A73 for the calendar's days and letters, the warm
+   #F2F1F0 and cool #E6EAEC tiles, the warm #E0DBCD hairline and #C3BBA5 for
+   days that cannot be picked. */
+.cre-atlas-compass-palette {
+  --color-atlas-cal-ink: #3d5a73;
+  --color-atlas-outlined-card: #f2f1f0;
+  --color-compass-page-card: #f2f1f0;
+  --color-primary-100: #e6eaec;
+  --color-atlas-nav-rule: #e0dbcd;
+  --color-neutral-500: #c3bba5;
 }

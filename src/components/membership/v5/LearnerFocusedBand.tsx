@@ -19,6 +19,8 @@ import { SquareTile } from './SquareTile'
 import { TaskRow } from '@/components/learning/study-calendar/TaskRow'
 import { ScheduleExamBanner, StudyJourneyWidget } from '@/components/learning/StudyJourneyWidget'
 import { AtlasHomeV2 } from '@/components/compass/AtlasHomeV2'
+import { AtlasHomeEricV2 } from '@/components/compass/AtlasHomeEricV2'
+import { AtlasHomeEricV3 } from '@/components/compass/AtlasHomeEricV3'
 import { HomeNavTileColumn } from '@/components/layout/HomeNavTiles'
 import { HomeTileGrid } from '@/components/layout/HomeTileGrid'
 import { HomeReadinessStub } from '@/components/layout/HomeReadinessStub'
@@ -51,6 +53,7 @@ import {
   type StudyTask,
 } from '@/data/studyCalendarFixtures'
 import { useCeStudyPlanEnabled, useFeatureFlag } from '@/context/FeatureFlagContext'
+import { useSearchParams } from 'react-router-dom'
 
 /**
  * How many of today's tasks the card shows before deferring to the Study Plan.
@@ -696,6 +699,11 @@ export function LearnerFocusedBand({
      `AtlasHomeV2` in place of this band's Atlas layout; read unconditionally
      (rules of hooks), applied only on the Atlas home (`framedPace`). */
   const atlasHomeV2 = useFeatureFlag('atlas-home-layout').variant === 'v2'
+  // Eric/Atlas V2 renders its own copy of the Atlas Home (2026-10-07).
+  const [bandParams] = useSearchParams()
+  const ericAtlasV2 = bandParams.get('version') === 'eric-atlas-v2'
+  // …and Eric/Atlas V3 its own, a copy of V2's (2026-10-07).
+  const ericAtlasV3 = bandParams.get('version') === 'eric-atlas-v3'
   /* NOT ON THE ATLAS HOME (merged 2026-10-02): its Study Pace card is part of
      the Atlas design (the brand's hover fill, the Primary 200 stroke), so the
      baseline's hiding flag does not reach it. */
@@ -1239,8 +1247,9 @@ export function LearnerFocusedBand({
      of this band's Atlas arrangement, when `atlas-home-layout` is V2. Fed the
      band's own figures and handlers, so it moves with the same demo controls. */
   if (framedPace && atlasHomeV2 && resume) {
+    const Home = ericAtlasV3 ? AtlasHomeEricV3 : ericAtlasV2 ? AtlasHomeEricV2 : AtlasHomeV2
     return (
-      <AtlasHomeV2
+      <Home
         path={path}
         courseTitle={path.title}
         coverUrl={resume.imageUrl ?? getCourseImage(resume.id)}

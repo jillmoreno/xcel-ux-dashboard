@@ -63,6 +63,10 @@ import CircleInfoRegularSvg from './circle-info-regular.svg?react'
 import PenFieldRegularSvg from './pen-field-regular.svg?react'
 import ClipboardListCheckRegularSvg from './clipboard-list-check-regular.svg?react'
 import AngleRightRegularSvg from './angle-right-regular.svg?react'
+import AngleRightSolidSvg from './angle-right-solid.svg?react'
+import CalendarThinSvg from './calendar-thin.svg?react'
+import HourglassClockThinSvg from './hourglass-clock-thin.svg?react'
+import PenToSquareSolidSvg from './pen-to-square-solid.svg?react'
 import AngleLeftRegularSvg from './angle-left-regular.svg?react'
 import GaugeThinSvg from './gauge-thin.svg?react'
 // The REAL Font Awesome Light `circle-user`, fetched 2026-10-01 at 7.3.1, for
@@ -279,6 +283,10 @@ export const CircleInfoRegular = makeIcon(CircleInfoRegularSvg) // FA: circle-in
 export const PenFieldRegular = makeIcon(PenFieldRegularSvg) // FA: pen-field (regular)
 export const ClipboardListCheckRegular = makeIcon(ClipboardListCheckRegularSvg) // FA: clipboard-list-check (regular)
 export const AngleRightRegular = makeIcon(AngleRightRegularSvg) // FA: angle-right (regular)
+export const AngleRightSolid = makeIcon(AngleRightSolidSvg) // FA: angle-right (solid)
+export const CalendarThin = makeIcon(CalendarThinSvg) // FA: calendar (thin)
+export const HourglassClockThin = makeIcon(HourglassClockThinSvg) // FA: hourglass-clock (thin)
+export const PenToSquareSolid = makeIcon(PenToSquareSolidSvg) // FA: pen-to-square (solid)
 export const AngleLeftRegular = makeIcon(AngleLeftRegularSvg) // FA: angle-left (regular)
 export const GaugeThin = makeIcon(GaugeThinSvg) // FA: gauge (thin)
 export const CircleUserLight = makeIcon(CircleUserLightSvg) // FA: circle-user (light, genuine)
