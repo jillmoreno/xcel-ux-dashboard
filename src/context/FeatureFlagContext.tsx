@@ -1302,6 +1302,45 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'hybrid-course-expiry',
+    /* HOW CLOSE THE ACCESS DEADLINE IS — 2026-10-07, the direct ask for a demo
+       control showing the course expiring, nearly expired, and expired.
+
+       ⚠ IT OVERRIDES THE DATE, NOT JUST THE COLOUR, and it has to. "Access ends
+       June 11" over an amber warning icon is a contradiction: the whole claim
+       of the amber state is that the date is CLOSE. Each arm restates the date
+       from `today`, so the wording, the colour and the icon agree.
+
+       ⚠ `expired` IS THE ONLY ARM THAT LEAVES THE LINE. It greys the product
+       and makes it unclickable — see `[data-course-expired]` in tokens.css. The
+       greyscale lands on `.min-h-screen`, the app root INSIDE the prototype
+       chrome, deliberately: greying the whole document would also grey the
+       design bar this control lives on, and making THAT unclickable would trap
+       a designer in the state with no way out.
+
+       ⚠ NOTHING IS CLICKABLE IN `expired` "for now" — the ask's own words. It
+       is `pointer-events: none`, which stops the mouse and NOT the keyboard; a
+       tab-through still reaches every control. Real expiry handling is a
+       product decision — what CAN you still do, renew, view certificates? — and
+       this arm exists to ask that question rather than to answer it. */
+    surface: 'design',
+    owner: 'jill',
+    versions: ['hybrid-pacing'],
+    group: 'Widgets',
+    label: 'Course expiration',
+    description:
+      'The access deadline\u2019s urgency on Hybrid \u2014 Pacing Exploration, and the state of the screen under it. `Normal` (default) is the real date in grey. `Ending soon` is inside seven days \u2014 amber with a warning triangle. `Ends in 2 days` is amber\u2019s next step \u2014 red with a calendar-exclamation. `Expired` turns the line charcoal and puts the whole product into greyscale with nothing clickable. \u26a0 EACH ARM RESTATES THE DATE from today, because a colour saying "close" over a date two months out is a contradiction. \u26a0 The greyscale covers the APP, not the prototype bars \u2014 otherwise the control that sets this would be greyed and unclickable too.',
+    defaultEnabled: true,
+    defaultVariant: 'normal',
+    variants: [
+      { value: 'normal', label: 'Normal', maturity: 'ready' },
+      { value: 'soon', label: 'Ending soon (under 7 days)', maturity: 'ready' },
+      { value: 'urgent', label: 'Ends in 2 days', maturity: 'ready' },
+      { value: 'expired', label: 'Expired', maturity: 'ready' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'hybrid-pace-standing',
     /* HOW THE LEARNER IS DOING AGAINST THEIR GOAL — 2026-10-07, the direct ask
        for "a demo tool that shows Pacing goals and include On Track, Off Track

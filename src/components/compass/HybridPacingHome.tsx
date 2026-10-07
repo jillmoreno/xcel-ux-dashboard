@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   AngleRightRegular,
@@ -13,7 +13,14 @@ import {
   NotebookRegular,
   PenFieldRegular,
 } from '@/icons'
-import { Check, Loveseat, MugHot, PersonRunningFast } from '@/icons'
+import {
+  CalendarExclamation,
+  Check,
+  Loveseat,
+  MugHot,
+  PersonRunningFast,
+  TriangleExclamation,
+} from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
 import { journeyStopsFor, type JourneyStop } from '@/components/learning/studyJourneyUtil'
 import { widgetEyebrowStyle } from '@/components/learning/widgetStyles'
@@ -146,10 +153,61 @@ export function HybridPacingHome({
      "Jun 11" — and this line was specified as "Access ends June 11". It is the
      card's one date and it is read once, where the figures it replaces were
      scanned in a column; the short form is for the column. */
-  const accessEnd = accessExpiresAt ? dateFromIso(accessExpiresAt) : null
-  const accessEndsLabel = accessEnd
-    ? `Access ends ${accessEnd.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })}`
+  /* ⚠ THE EXPIRY STATE IS FORCED BY A DEMO CONTROL — 2026-10-07, the direct
+     ask. ⚠ AND IT OVERRIDES THE DATE, not only the colour: "Access ends June
+     11" under an amber warning is a contradiction, because the claim the amber
+     makes is that the date is CLOSE. Each arm restates it from `today` so the
+     wording, the colour and the icon agree. See `hybrid-course-expiry`. */
+  const expiry = useFeatureFlag('hybrid-course-expiry').variant ?? 'normal'
+  const expiryDays: Record<string, number> = { soon: 5, urgent: 2, expired: -3 }
+  const accessEnd =
+    expiry in expiryDays
+      ? dateFromIso(isoPlusDays(today, expiryDays[expiry]))
+      : accessExpiresAt
+        ? dateFromIso(accessExpiresAt)
+        : null
+  const accessLong = accessEnd
+    ? accessEnd.toLocaleDateString('en-US', { month: 'long', day: 'numeric' })
     : null
+  const accessEndsLabel = !accessLong
+    ? null
+    : expiry === 'expired'
+      ? `Access expired ${accessLong}`
+      : expiry === 'urgent'
+        ? `Access ends in 2 days — ${accessLong}`
+        : expiry === 'soon'
+          ? `Access ends in 5 days — ${accessLong}`
+          : `Access ends ${accessLong}`
+  /* ⚠ THE ICON IS PART OF THE STATE, NOT DECORATION — it is the cue that
+     survives a greyscale screen, where colour alone says nothing at all. */
+  const accessIcon =
+    expiry === 'soon' ? (
+      <TriangleExclamation size={13} aria-hidden />
+    ) : expiry === 'urgent' || expiry === 'expired' ? (
+      <CalendarExclamation size={13} aria-hidden />
+    ) : null
+  const accessTone =
+    expiry === 'soon'
+      ? 'var(--color-warning-700)'
+      : expiry === 'urgent'
+        ? 'var(--color-error-600)'
+        : expiry === 'expired'
+          ? 'var(--color-neutral-800)'
+          : 'var(--color-text-secondary)'
+
+  /* ⚠ THE GREYSCALE IS A ROOT ATTRIBUTE, NOT A STYLE ON THIS SUBTREE, because
+     the ask was for the whole screen and this component owns only the home.
+     `tokens.css` holds everything visual; here it is one flag on `<html>`.
+     ⚠ THE CLEANUP IS LOAD-BEARING: without it, switching the arm back — or
+     navigating away — would leave the product grey and unclickable with no
+     control on screen still able to undo it. */
+  useEffect(() => {
+    if (expiry !== 'expired') return
+    document.documentElement.dataset.courseExpired = ''
+    return () => {
+      delete document.documentElement.dataset.courseExpired
+    }
+  }, [expiry])
   /* ⚠ PACING A — DERIVED AGAIN, 2026-10-07, AND THIS REVERSES A DECISION.
      The literal 3 was the designer's request on 2026-10-02, and the note it
      replaces said plainly what that cost: deriving reads "2 Week Goal" for the
@@ -398,7 +456,16 @@ export function HybridPacingHome({
             would have made the deadline read as a second heading. */}
         <div style={CARD_TOPLINE}>
           <p style={EYEBROW}>Current course</p>
-          {accessEndsLabel ? <p style={ACCESS_NOTE}>{accessEndsLabel}</p> : null}
+          {accessEndsLabel ? (
+            <p style={{ ...ACCESS_NOTE, color: accessTone, fontWeight: expiry === 'normal' ? 300 : 500 }}>
+              {accessIcon ? (
+                <span aria-hidden style={{ display: 'inline-flex', verticalAlign: '-2px', marginRight: 6 }}>
+                  {accessIcon}
+                </span>
+              ) : null}
+              {accessEndsLabel}
+            </p>
+          ) : null}
         </div>
         <div style={{ display: 'flex', gap: 40, alignItems: 'stretch' }}>
           {coverUrl ? <img src={coverUrl} alt="" aria-hidden style={COVER} /> : null}

@@ -2105,6 +2105,31 @@ html,
   color: var(--color-primary-900);
 }
 
+/* THE EXPIRED COURSE — 2026-10-07, Hybrid - Pacing Exploration's
+   `hybrid-course-expiry: expired` arm. The component sets the attribute on
+   `<html>` and clears it on unmount; everything visual is here.
+
+   ⚠ IT TARGETS `.min-h-screen`, THE APP ROOT, NOT THE DOCUMENT. Greying the
+   whole page would also grey the design controls bar that sets this arm, and
+   `pointer-events: none` there would trap a designer in the state with no way
+   back out. The product greys; the prototype chrome around it does not.
+
+   ⚠ `filter` ON AN ANCESTOR CREATES A CONTAINING BLOCK for fixed descendants.
+   Checked on the page before shipping: the three sticky elements here — the
+   prototype bar, the browser chrome and the app header — all hold their offsets
+   under it, because sticky resolves against the scroll container rather than
+   the containing block. A FIXED element inside the app would move, and there is
+   not one today.
+
+   ⚠ POINTER-EVENTS ONLY, SO THE KEYBOARD STILL REACHES EVERYTHING. That is a
+   limitation and not an oversight: the ask was "nothing is clickable in expired
+   state for now", and a real expired state needs a product decision about what
+   a learner CAN still do — `inert` would be the tool once that is answered. */
+[data-course-expired] .min-h-screen {
+  filter: grayscale(1);
+  pointer-events: none;
+}
+
 /* `.cre-lesson-cta` is the LESSON BLOCK as a control — Testing 3, 2026-10-02,
    the direct ask ("same color as used in the links on the right, round
    corners, hover will also show a right chevron").
