@@ -539,8 +539,15 @@ export function HybridPacingHome({
                 <p style={{ ...EYEBROW, alignSelf: 'stretch' }}>Course progress</p>
               )}
               {notStarted ? null : <ProgressDial percent={percent} />}
+              {/* ⚠ "GOAL" IN PROGRESS, "PACE" AT 0% — 2026-10-07, the direct
+                  ask, and the two words are doing different jobs. At 0% the
+                  learner is SETTING a pace, which is the act. Once running, what
+                  the panel reports is the GOAL that pace was chosen to meet —
+                  the same word the messages under it use ("your 2-week goal",
+                  "adjust your goal"), so the heading and the copy finally name
+                  one thing. */}
               <p style={{ ...EYEBROW, alignSelf: 'stretch' }}>
-                {notStarted ? 'Set Your Study Pace' : 'Your study pace'}
+                {notStarted ? 'Set Your Study Pace' : 'Your study goal'}
               </p>
               {notStarted ? (
                 /* ⚠ SPACING RAISED THROUGHOUT — 2026-10-07, the direct ask, and
@@ -631,38 +638,34 @@ export function HybridPacingHome({
                 </div>
               ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 11, alignSelf: 'stretch' }}>
-                {/* ⚠ THE GOAL IS DRAWN AS THE ROW THE LEARNER CHOSE — 2026-10-07,
-                    the direct ask: "this UI should match what the user selected
-                    at the 0%". It was a 33px gauge beside "2 Week Goal", which
-                    is a different object entirely from the thing that was
-                    picked. Now it is the SAME row — same styles, same icon, same
-                    tick — so the screen a learner sets their pace on and the
-                    screen that reports it are visibly the same decision.
+                {/* ⚠ NOT THE SELECTED ROW — 2026-10-07, the direct ask, and this
+                    reverses "match what the user selected at the 0%" from
+                    earlier the same day. Both readings were right about
+                    something. The 0% row is a CONTROL in its chosen state: a
+                    fill, a border and a tick all say "this one, of several".
+                    In progress there is nothing to choose between — the pace is
+                    settled — so the same drawing promised an interaction the
+                    panel does not offer, and a tick marked a selection out of a
+                    set of one.
 
-                    ⚠ IT IS A `div`, NOT A RADIO. The 0% rows are a choice; this
-                    is a statement of one already made, and Customize Your Pace
-                    below is how it changes. Giving it `role="radio"` would
-                    promise an interaction that is not there — the look is what
-                    carries over, not the behaviour.
+                    What carries over is the ICON, which is the part that
+                    identifies the pace; the chrome around it is what said
+                    "pick me". `View Study Plan` below is still how it changes.
 
-                    ⚠ NO `aria-checked` EITHER, and nothing is lost: the sentence
-                    directly beneath states the pace in words, so the row is
-                    decoration over copy that already says it. */}
-                <div style={{ ...PACE_OPT, ...PACE_OPT_ON, cursor: 'default' }}>
+                    ⚠ "Complete in 2 Weeks", not "2 Weeks". Stripped of the row,
+                    the bare duration had no verb and no subject — on a control
+                    the label is the option's name, on a statement it has to be
+                    a statement. */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span
                     aria-hidden
-                    style={{ display: 'inline-flex', flex: 'none', color: 'var(--color-compass-page-button-ink)' }}
+                    style={{ display: 'inline-flex', flex: 'none', color: 'var(--color-compass-page-button)' }}
                   >
                     {paceIcon}
                   </span>
-                  <span style={{ flex: '1 1 0', minWidth: 0, fontWeight: 600 }}>
-                    {weeks} {weeks === 1 ? 'Week' : 'Weeks'}
+                  <span style={{ ...BODY_TEXT, fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)' }}>
+                    Complete in {weeks} {weeks === 1 ? 'Week' : 'Weeks'}
                   </span>
-                  <Check
-                    size={13}
-                    aria-hidden
-                    style={{ flex: 'none', color: 'var(--color-compass-page-button-ink)' }}
-                  />
                 </div>
                 {/* ⚠ IT REPORTS, IT NO LONGER RESTATES. The line read "Your
                     default pace is set for you to complete your course in 2
@@ -944,7 +947,13 @@ function ProgressDial({ percent }: { percent: number }) {
           cy={size / 2}
           r={r}
           fill="none"
-          style={{ stroke: 'var(--color-compass-page-button)' }}
+          /* ⚠ THE HIGHLIGHT GREEN, NOT THE SLATE — 2026-10-07, the direct ask
+             for "the same green used to highlight the Pre-licensing section".
+             It is literally the same value, via `HIGHLIGHT_GREEN`, so the arc,
+             the ring on the current stop and the lesson block's rule are one
+             colour saying one thing: this is where you are. The unfilled track
+             behind it keeps `--color-atlas-nav-rule`. */
+          style={{ stroke: HIGHLIGHT_GREEN }}
           strokeWidth={6}
           strokeLinecap="round"
           strokeDasharray={`${(c * pct) / 100} ${c}`}
@@ -1338,6 +1347,18 @@ function SideLink({ icon, label, onClick }: { icon: ReactNode; label: string; on
 
 const BODY_TEXT: CSSProperties = { fontFamily: 'var(--font-body)' }
 
+/* ⚠ THE HIGHLIGHT GREEN, SPELLED ONCE — 2026-10-07, when the progress arc
+   became the third user of it. It marks "this is where you are": the rule down
+   the lesson block, the ring around the current stop, and now the dial's filled
+   arc. Three copies of the same `color-mix` is three chances for one of them to
+   drift, and the whole value of the colour is that the three agree.
+
+   ⚠ MIXED AGAINST `--color-surface-card`, NOT THE SURFACE EACH ONE SITS ON. The
+   dial is on the grey pace panel and the others are on the card, so mixing per
+   context would give three different greens — which is exactly what this exists
+   to prevent. The mix is a recipe for ONE colour, not a blend with the backdrop. */
+const HIGHLIGHT_GREEN = 'color-mix(in srgb, var(--color-success-500) 45%, var(--color-surface-card))'
+
 const PAGE: CSSProperties = {
   display: 'flex',
   gap: 40,
@@ -1572,7 +1593,7 @@ const MARK_CURRENT: CSSProperties = {
      (#fcfcfb), not `--color-surface-card` — a pure white gap on an off-white
      card is a ring of a third colour, visible once you look for it. */
   boxShadow:
-    '0 0 0 3px var(--color-compass-course-card), 0 0 0 6px color-mix(in srgb, var(--color-success-500) 45%, var(--color-surface-card))',
+    `0 0 0 3px var(--color-compass-course-card), 0 0 0 6px ${HIGHLIGHT_GREEN}`,
   flex: 'none',
 }
 const MARK: CSSProperties = {
@@ -1701,7 +1722,7 @@ const LESSON_BLOCK: CSSProperties = {
      box and this box is the two lines. On any ancestor it would run the full
      height of the padded row and stand ~12px taller than the words it marks,
      which is the correction `CombinedCourseCard` records at `lessonRow`. */
-  borderLeft: '3px solid color-mix(in srgb, var(--color-success-500) 45%, var(--color-surface-card))',
+  borderLeft: `3px solid ${HIGHLIGHT_GREEN}`,
   paddingLeft: 10,
 }
 const LESSON_META: CSSProperties = {
