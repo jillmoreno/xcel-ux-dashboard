@@ -1487,7 +1487,15 @@ const PACE_PANEL: CSSProperties = {
   alignItems: 'center',
   gap: 16,
   // 22 across, not 24, so "Customize Your Pace ›" fits one line (156 > 152).
-  padding: '24px 22px',
+  /* ⚠ 16 ACROSS, DOWN FROM 22 — 2026-10-07, the direct ask, and the margin it
+     was missing was ONE PIXEL. Measured: "Complete in 2 Weeks" needs 135px of
+     type plus the 14px icon and the 8px gap = 157, in a content box that was
+     156. At 16 the box is 168 and the line has 11px to spare, which also holds
+     for a two-digit goal ("Complete in 10 Weeks").
+     ⚠ THE DIAL IS THE OTHER CONSTRAINT and is unaffected: it is 149 wide, so
+     the padding could come in further still before it bound. Vertical stays
+     24 — nothing up there was tight. */
+  padding: '24px 16px',
   borderRadius: 8,
   background: 'var(--color-atlas-outlined-card, var(--color-compass-page-card))',
   // No shadow — tried 2026-10-02 (Compass small, then 2px at 10–20%) and
