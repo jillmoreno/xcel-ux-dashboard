@@ -176,7 +176,7 @@ describe('the shipped versions', () => {
      on the promotion, deliberately, by a person. If the answer comes back yes,
      this test flips to assert they are ready — and the one BELOW it is what
      keeps the two halves honest in the meantime. */
-  it('are ready except the Atlas parent', () => {
+  it('are ready except the Atlas parent and the pacing exploration', () => {
     const unmarked = DISCOVERABILITY_DASHBOARD_VERSIONS.filter((v) => v.maturity !== 'ready')
     /* ⚠ ONE, NOT TWO, SINCE 2026-10-05 — promote-to-prototype made Eric/Atlas
        V1 pickable and left the parent alone. They render the same pages today
@@ -197,9 +197,17 @@ describe('the shipped versions', () => {
        ⚠ THE ATLAS PARENT IS THE WHOLE LIST AGAIN, which is the state this
        started in, so the note above it is the one that still matters: a later
        branch marking it `ready` should have to come through here and say why. */
-    expect(unmarked.map((v) => v.id)).toEqual(['discoverability-atlas-compass-nav'])
+    /* ⚠ TWO AGAIN SINCE 2026-10-07 — the pacing fork arrives unmarked, which is
+       the field working rather than an omission: it is an exploration, so the
+       demo site filters it out and the design site badges it "Design site
+       only". It leaves this list the way Hybrid V1 did, through
+       `promote-to-prototype`, not by being marked here. */
+    expect(unmarked.map((v) => v.id)).toEqual([
+      'discoverability-atlas-compass-nav',
+      'hybrid-pacing',
+    ])
     /* The gate is still FILTERING, not merely armed — the demo site is short by
-       exactly that one, and nothing else moved. */
+       exactly those, and nothing else moved. */
     expect(dashboardVersionsForAudience(true)).toHaveLength(
       DISCOVERABILITY_DASHBOARD_VERSIONS.length - unmarked.length,
     )

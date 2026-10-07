@@ -7,7 +7,7 @@ import {
   defaultDiscoverabilityVersionFor,
   resolveDashboardVersion,
   isAtlasCompassNavVersion,
-  isHybridV1Version,
+  isHybridVersion,
   type DashboardLayout,
 } from '@/data/dashboardVersions'
 import { SectionContent } from '@/components/membership/v7/MembershipV7'
@@ -348,7 +348,10 @@ function PlatformShellBody() {
      over Testing 3's course card on the day Hybrid V1 became the default. One
      spelling now, in `resolveDashboardVersion`, which carries the full note. */
   const shellVersion = resolveDashboardVersion(params.get('version'), brand)
-  const hybridVersion = isHybridV1Version(shellVersion)
+  /* ⚠ THE FAMILY, NOT THE ID — 2026-10-07. The pacing fork is a copy of
+     Hybrid V1 and must wear the same chrome; asking for V1's id here would
+     have given it Eric's header and his section rail instead. */
+  const hybridVersion = isHybridVersion(shellVersion)
   const atlasNav = isAtlasCompassNavVersion(shellVersion)
   // Nav Version → Expanding Top Nav (2026-10-01, the designer's request): NO
   // left rail on any page — the header's slide-out links carry the navigation.
@@ -2024,7 +2027,7 @@ function SectionShell({
   const atlasHome = active === 'dashboard' && isAtlasCompassNavVersion(sectionVersion)
   /* Hybrid V1's Home only — it answers true to `atlasHome` as well (it takes
      the Atlas chrome), so this is tested FIRST at the padding below. */
-  const hybridHome = active === 'dashboard' && isHybridV1Version(sectionVersion)
+  const hybridHome = active === 'dashboard' && isHybridVersion(sectionVersion)
   // The Atlas RESOURCES page in the Compass treatment (2026-10-01, the
   // designer's request): no brand band — a serif title and a plain lede on
   // the Compass page, at the Overview's 56px margin. See `ResourcesPanel`.

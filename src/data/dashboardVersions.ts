@@ -17,6 +17,7 @@ export type DashboardVersionId =
   | 'discoverability-atlas-compass-nav'
   | 'eric-atlas-v1'
   | 'hybrid-v1'
+  | 'hybrid-pacing'
   | 'discoverability-testing-3'
 /**
  * The rebrand overview's LAYOUT, resolved from `?version=` by `PlatformShell`
@@ -411,6 +412,45 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_V1: DashboardVersion = {
     'Eric\u2019s Atlas home combined with Testing 3\u2019s coursework treatment. The figures column leads with Course Access and drops Days to Review; Begin Course sits in the title area; Steps 2 and 3 (Pass State Exam, Get Licensed) are collapsed by default to keep the first screen to one task; and Complete Coursework expands the lessons stop with a completion count and the lesson in progress.',
 }
 
+// "Hybrid — Pacing Exploration" — 2026-10-07, Jillienne's. A copy of Hybrid V1
+// whose subject is the STUDY PACE widget: what that logic should look like in
+// the layout Hybrid introduced.
+//
+// ⚠ IT EXISTS SO HYBRID V1 CANNOT MOVE. V1 became the Prototypes baseline on
+// 2026-10-06 — it is what a stakeholder lands on — so pacing ideas needed
+// somewhere that is not the product. `HybridPacingHome.tsx` is the fork;
+// everything else about this version is V1's, deliberately, so a comparison
+// between the two is about pacing and nothing else.
+export const DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_PACING: DashboardVersion = {
+  id: 'hybrid-pacing',
+  owner: 'jill',
+  /* ⚠ NO `maturity` — design site only. It is an exploration, not a candidate;
+     `promote-to-prototype` is where that would change. */
+  label: 'Hybrid - Pacing Exploration',
+  createdAt: '2026-10-07',
+  modifiedAt: '2026-10-07',
+  description:
+    'Hybrid V1 with the study pace widget as its subject. Identical to the baseline today \u2014 the fork exists so pacing ideas can be tried without touching the version stakeholders land on.',
+}
+
+/** True for either Hybrid — the two that render a Hybrid home and take Hybrid's
+ *  chrome (the trimmed header, the shifted nav pills, no section rail).
+ *
+ *  ⚠ THE CHROME QUESTION AND THE HOME QUESTION ARE DIFFERENT ONES, which is why
+ *  this exists alongside the two id checks below. Everything that asks "does
+ *  this version look like Hybrid" asks THIS; only `LearnerFocusedBand`, picking
+ *  which forked home to draw, asks which one. Collapsing them would mean the
+ *  pacing fork silently inherited Eric's header. */
+export function isHybridVersion(versionId: string | null | undefined): boolean {
+  return isHybridV1Version(versionId) || isHybridPacingVersion(versionId)
+}
+
+/** True for the pacing exploration — the version that renders
+ *  `HybridPacingHome`. */
+export function isHybridPacingVersion(versionId: string | null | undefined): boolean {
+  return versionId === DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_PACING.id
+}
+
 /** True for Hybrid V1 — the one version that renders `HybridHomeV1` instead of
  *  `AtlasHomeV2`. A helper rather than a literal at the call site so the id
  *  lives in one place, the same shape `isAtlasCompassNavVersion` uses. */
@@ -425,9 +465,9 @@ export function isAtlasCompassNavVersion(versionId: string | null | undefined): 
   return (
     versionId === DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV.id ||
     versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1.id ||
-    /* Hybrid V1 takes the Atlas CHROME (rail, slim header, palette) and forks
-       only the home content — see its entry above. */
-    versionId === DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_V1.id
+    /* Both Hybrids take the Atlas CHROME (rail, slim header, palette) and fork
+       only the home content — see their entries above. */
+    isHybridVersion(versionId)
   )
 }
 
@@ -519,6 +559,7 @@ export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
   DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV,
   DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1,
   DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_V1,
+  DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_PACING,
   DISCOVERABILITY_DASHBOARD_VERSION_LEARNER_FOCUSED,
 ]
 
