@@ -470,55 +470,66 @@ export function HybridPacingHome({
               </p>
               {notStarted ? null : <ProgressDial percent={percent} />}
               {notStarted ? (
-                <div
-                  role="radiogroup"
-                  aria-label="Set your study pace"
-                  style={{ display: 'flex', flexDirection: 'column', gap: 6, alignSelf: 'stretch' }}
-                >
+                /* ⚠ SPACING RAISED THROUGHOUT — 2026-10-07, the direct ask, and
+                   the restructure is what made it ONE number to raise rather
+                   than four. The prompt and the estimate used to sit INSIDE the
+                   radiogroup, so a single `gap: 6` was doing three unrelated
+                   jobs: question-to-options, option-to-option, and
+                   options-to-estimate. ⚠ A radiogroup should also hold radios
+                   and nothing else — the prompt and the estimate are not
+                   choices, and a screen reader walking the group announced them
+                   as if they were. */
+                <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignSelf: 'stretch' }}>
                   {/* ⚠ ABOVE THE OPTIONS, NOT UNDER THEM — 2026-10-07, the
                       direct ask, and the copy grew a question with it. Under
                       the group it was a reassurance about a choice already
-                      made; over it, it ASKS the question the three rows answer
-                      — which is what the rows otherwise leave implicit, since
-                      "1 Week / 2 Weeks / 3 Weeks" alone never says a week of
-                      WHAT. The reassurance keeps its job as the second half. */}
+                      made; over it, it ASKS the question the rows answer —
+                      which they otherwise leave implicit, since "1 Week /
+                      2 Weeks / 3 Weeks" alone never says a week of WHAT. The
+                      reassurance keeps its job as the second half. */}
                   <p style={PACE_PROMPT}>{pacePrompt}</p>
-                  {paceChoices.map((opt) => {
-                    const on = selectedWeeks === opt.weeks
-                    return (
-                      <button
-                        key={opt.weeks}
-                        type="button"
-                        role="radio"
-                        aria-checked={on}
-                        tabIndex={on ? 0 : -1}
-                        onClick={() => setPaceWeeks(opt.weeks)}
-                        style={{ ...PACE_OPT, ...(on ? PACE_OPT_ON : null) }}
-                      >
-                        <span aria-hidden style={{ display: 'inline-flex', flex: 'none', color: 'var(--color-compass-page-button)' }}>
-                          {opt.icon}
-                        </span>
-                        {/* ⚠ NO DATE ON THE ROW — 2026-10-07, the direct ask,
-                            and it reverses the "each selection should have an
-                            Estimated Completion Date" from earlier the same
-                            day. Both were right in turn: the date belonged in
-                            this section, and once the section CLOSES with it,
-                            putting it on the rows too made one of three rows
-                            repeat the summary underneath them. The row is the
-                            choice; the line below is its consequence. */}
-                        <span style={{ flex: '1 1 0', minWidth: 0, fontWeight: on ? 600 : 400 }}>
-                          {opt.label}
-                        </span>
-                      </button>
-                    )
-                  })}
+                  <div
+                    role="radiogroup"
+                    aria-label="Set your study pace"
+                    style={{ display: 'flex', flexDirection: 'column', gap: 8 }}
+                  >
+                    {paceChoices.map((opt) => {
+                      const on = selectedWeeks === opt.weeks
+                      return (
+                        <button
+                          key={opt.weeks}
+                          type="button"
+                          role="radio"
+                          aria-checked={on}
+                          tabIndex={on ? 0 : -1}
+                          onClick={() => setPaceWeeks(opt.weeks)}
+                          style={{ ...PACE_OPT, ...(on ? PACE_OPT_ON : null) }}
+                        >
+                          <span
+                            aria-hidden
+                            style={{ display: 'inline-flex', flex: 'none', color: 'var(--color-compass-page-button)' }}
+                          >
+                            {opt.icon}
+                          </span>
+                          {/* ⚠ NO DATE ON THE ROW — 2026-10-07, the direct ask,
+                              reversing "each selection should have an Estimated
+                              Completion Date" from earlier the same day. Both
+                              were right in turn: the date belonged in this
+                              section, and once the section CLOSES with it,
+                              putting it on the rows made one of three rows
+                              repeat the summary underneath. The row is the
+                              choice; the line below is its consequence. */}
+                          <span style={{ flex: '1 1 0', minWidth: 0, fontWeight: on ? 600 : 400 }}>
+                            {opt.label}
+                          </span>
+                        </button>
+                      )
+                    })}
+                  </div>
                   {/* ⚠ IT TRACKS THE SELECTION, which is what makes moving it
                       here worth doing rather than merely tidier: at 0% the date
-                      is not a report, it is what the option you are hovering
-                      over would COST you, and it changes as you choose.
-                      ⚠ IT ALSO REPEATS THE SELECTED ROW'S OWN DATE — see the
-                      hand-off note; the per-option dates were a separate ask
-                      and the two now say the same thing on one of three rows. */}
+                      is not a report, it is what the option you are about to
+                      pick would COST you, and it changes as you choose. */}
                   <PaceEstimate
                     value={formatPaceDate(isoPlusDays(today, selectedWeeks * 7))}
                     note={`At ${selectedWeeks} ${selectedWeeks === 1 ? 'week' : 'weeks'}`}
@@ -1236,7 +1247,10 @@ const CARD_TOPLINE: CSSProperties = {
   alignItems: 'baseline',
   justifyContent: 'space-between',
   gap: 16,
-  marginBottom: 24,
+  /* ⚠ NO SPACE BELOW IT — 2026-10-07, the direct ask. It had 24, which put the
+     line a third of the way into the card's own 40px of top padding and made it
+     read as a separate band rather than as the card's first line. Flush against
+     the cover/title row, the card reads as one block with a label on it. */
 }
 const ACCESS_NOTE: CSSProperties = {
   margin: 0,
@@ -1578,7 +1592,9 @@ const CHEVRON: CSSProperties = {
    which is also what the 200px column wants. */
 const PACE_ESTIMATE: CSSProperties = {
   alignSelf: 'stretch',
-  paddingTop: 9,
+  /* Its own padding ON TOP of the column's gap, because the hairline needs to
+     sit clear of the last option rather than hard against it. */
+  paddingTop: 12,
   borderTop: '1px solid var(--color-atlas-nav-rule)',
 }
 const PACE_OPT: CSSProperties = {
@@ -1610,7 +1626,10 @@ const PACE_OPT_ON: CSSProperties = {
    introduces. Still 11px — the panel is 200px wide and this is two sentences. */
 const PACE_PROMPT: CSSProperties = {
   ...BODY_TEXT,
-  margin: '0 0 2px',
+  /* ⚠ NO MARGIN — the column's `gap` owns every space in this section now
+     (2026-10-07). A margin here would add to it and put this one gap out of
+     step with the others for no reason a reader could see. */
+  margin: 0,
   fontSize: 11,
   lineHeight: '15px',
   color: 'var(--color-text-secondary)',
