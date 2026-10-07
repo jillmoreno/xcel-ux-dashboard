@@ -56,6 +56,20 @@ export type ArchivedItem = {
 
 export const ARCHIVED_ITEMS: ArchivedItem[] = [
   {
+    id: 'research-rationale-iframe',
+    name: 'Research & Rationale — the iframed decisions log',
+    what:
+      'The `/research-rationale` route rendering what was `public/research-rationale/index.html` — the Learner Platform UX Research & Rationale hub carried over from the LMS dashboard — inside the prototype frame with a Back to the overview, plus the Research section’s authored empty state ("No decisions log yet") and the hand-maintained `RESEARCH_DECISIONS` count.',
+    location:
+      'public/archive/research-rationale-index.html (intact, unreferenced; MOVED from public/research-rationale/index.html because a folder with an index page under public/ is served by vite and by Netlify BEFORE the SPA fallback, so it shadowed the route it was meant to redirect) · src/pages/ResearchRationalePage.tsx (now a redirect into `/?section=research`, the same shape as LinksPage.tsx; the iframe version is in git at this date) · src/pages/UxDashboardPage.tsx (the local `ResearchPanel` and `RESEARCH_DECISIONS` are gone; the section now renders `ResearchPanel` from src/components/prototype/LinksPanel.tsx)',
+    flag: 'none — the `/research-rationale` route, which still exists and redirects',
+    dateRemoved: '2026-10-07',
+    reason:
+      'Jillienne’s request: make Research work like Resources, with links attached on the page. The iframe pointed at an LMS document that was never XCEL’s, and the section beneath it had sat on an authored empty state since the port waiting for a generated decisions log that never came. A board the team fills in the browser is the honest replacement.',
+    restoreNote:
+      '1. In src/pages/ResearchRationalePage.tsx replace the `<Navigate>` with the iframe version from git at this date (a `PrototypeBar` with `back={{ to: \'/\' }}` over an `<iframe src={`${import.meta.env.BASE_URL}research-rationale/index.html`}>`) — then `git mv public/archive/research-rationale-index.html public/research-rationale/index.html`, or point the iframe at the archive path instead; it has to be reachable as a file either way, and if it goes back under `public/research-rationale/` it will again be served ahead of the React route (which is fine for an iframe target, and was the state before 2026-10-07). 2. In src/pages/UxDashboardPage.tsx: give the `research` section a `count` again (it was `RESEARCH_DECISIONS`, authored by hand, 0 for XCEL), take `s.id === \'research\'` out of the nav-badge chain, and swap the `<ResearchPanel />` in the section switch for a local one rendering a row `<Link to="/research-rationale">` — the row markup was in a comment above the old panel, also in git at this date. 3. DELIBERATELY NOT RESTORED by those steps: the research BOARD. `netlify/functions/research.ts`, `src/data/researchStore.ts`, the `/api/research` redirects in netlify.toml and `ResearchPanel` in LinksPanel.tsx all stay, because the `research` Blobs store holds whatever the team attached and deleting the endpoint would strand it — retire the board with its own row if that is the decision. 4. `Research.test.tsx` pins the board and the redirect; the redirect case and the gateway case change back with step 1 and 2.',
+  },
+  {
     id: 'lms-flag-pages',
     name: 'Five flag-panel pages — Recommended for You, Course Catalog, Learning Path, Resource Library, Purchases',
     what:

@@ -49,11 +49,11 @@ afterEach(() => {
 })
 
 describe('VITE_GATEWAY_MODE=testing — every gateway route lands in the product', () => {
-  /* The four doors into the UX Dashboard. A participant handed one link must
+  /* The five doors into the UX Dashboard. A participant handed one link must
      not find a project list behind any of them — not even the trimmed one the
      public build serves, which still says "this is a prototype gallery
      belonging to a design team" and reframes everything they then say. */
-  for (const path of ['/', '/ux-dashboard', '/research-rationale', '/links']) {
+  for (const path of ['/', '/ux-dashboard', '/research-rationale', '/links', '/prds']) {
     /* ⚠ A LONG TIMEOUT, and it is the module registry rather than the
        assertion. `vi.resetModules()` per case means each one re-imports `App`
        and, after the redirect, the whole dashboard behind it — the first case

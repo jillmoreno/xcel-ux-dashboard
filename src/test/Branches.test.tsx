@@ -299,8 +299,8 @@ describe('the Refinement branch strip', () => {
     expect(screen.queryByText('feat/streak')).not.toBeInTheDocument()
   })
 
-  /* Other Links is not about branches. */
-  it('does not render on Other Links', async () => {
+  /* Resources is not about branches. */
+  it('does not render on Resources', async () => {
     mockEndpoints({ branches: ok })
     render(<LinksPanel />)
     await waitFor(() => expect(screen.queryByText('Branch builds')).not.toBeInTheDocument())

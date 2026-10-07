@@ -20,7 +20,7 @@ const here = dirname(fileURLToPath(import.meta.url))
  *
  * Two things are pinned here, and they are the two that would break silently:
  *
- *  1. The tile is on Refinement and NOT on Other Links. Both boards are the
+ *  1. The tile is on Refinement and NOT on Resources. Both boards are the
  *     same component, so the only thing keeping them apart is one flag.
  *  2. The hue GROUPS BY HOST. That is a claim the UI makes to a reader — "these
  *     two rows are the same branch" — and a claim that quietly stops being true
@@ -90,7 +90,7 @@ describe('the tile is Refinement-only', () => {
     expect(tiles()).toHaveLength(2)
   })
 
-  it('draws none on Other Links', async () => {
+  it('draws none on Resources', async () => {
     // Same component, same endpoint shape. If this ever starts passing tiles,
     // it is because someone made the flag unconditional — which would put a
     // kind-glyph on a Figma link whose kind this code cannot read.
@@ -292,7 +292,7 @@ describe('badges sit under the title', () => {
     expect(within(li).queryByText('by')).not.toBeInTheDocument()
   })
 
-  it('leaves Other Links on its meta line', async () => {
+  it('leaves Resources on its meta line', async () => {
     // Links has one fact where Refinement has three, and its suite pins the
     // meta line's exact shape — including the no-author case.
     mockEndpoint([row({ id: 'link-001', title: 'A brief', addedBy: 'Jill', addedDate: '2026-09-10' })])

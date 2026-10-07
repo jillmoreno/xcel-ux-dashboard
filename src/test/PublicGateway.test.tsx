@@ -48,7 +48,7 @@ function renderAt(Page: React.ComponentType, path: string) {
 // 2026-09-23 (see `NAV_EYEBROWS` in UxDashboardPage.tsx) — they show here now,
 // under their own "Dev Handoff" eyebrow, alongside "Demo" and "Design &
 // Research" over the sections that were already public.
-const PUBLIC_SECTIONS = ['Prototypes', 'Refinement', 'Research', 'Other Links', 'Development', 'Done']
+const PUBLIC_SECTIONS = ['Prototypes', 'Refinement', 'Research', 'Resources', 'PRDs', 'Development', 'Done']
 const GATED_SECTIONS = ['Design', 'Exploration', 'Archive', 'QA Notes']
 
 beforeEach(() => {
@@ -255,7 +255,7 @@ describe('shared Blobs store', () => {
       expect(src).toContain("from '../lib/store'")
       expect(src).not.toMatch(/\bgetStore\(/)
     }
-    for (const fn of ['links', 'demos']) {
+    for (const fn of ['links', 'demos', 'research', 'prds']) {
       const src = readFileSync(resolve(here, `../../netlify/functions/${fn}.ts`), 'utf8')
       expect(src).toContain("from '../lib/linkBoard'")
       expect(src).not.toMatch(/\bgetStore\(/)

@@ -7,6 +7,7 @@ import { PrototypeHandoffDetailPage } from '@/pages/PrototypeHandoffDetailPage'
 import { ResearchRationalePage } from '@/pages/ResearchRationalePage'
 import { QaNotesPage } from '@/pages/QaNotesPage'
 import { LinksPage } from '@/pages/LinksPage'
+import { PrdsPage } from '@/pages/PrdsPage'
 import { ComponentReviewPage } from '@/pages/ComponentReviewPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { DashboardRebrandPage } from '@/pages/DashboardRebrandPage'
@@ -185,6 +186,7 @@ export default function App() {
       {/* Both redirect into the gateway shell, which owns the section chrome —
           see the note at the top of each page. */}
       <Route path="/links" element={<TestingGate><LinksPage /></TestingGate>} />
+      <Route path="/prds" element={<TestingGate><PrdsPage /></TestingGate>} />
       {/* One component, every variant, stacked — the page a Refinement row
           points at when a designer wants the team to review ONE widget rather
           than their whole branch. Takes its entire definition from the URL, so

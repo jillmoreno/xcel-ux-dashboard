@@ -67,6 +67,26 @@
   to = "/.netlify/functions/demos"
   status = 200
 
+[[redirects]]
+  from = "/api/research/*"
+  to = "/.netlify/functions/research/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api/research"
+  to = "/.netlify/functions/research"
+  status = 200
+
+[[redirects]]
+  from = "/api/prds/*"
+  to = "/.netlify/functions/prds/:splat"
+  status = 200
+
+[[redirects]]
+  from = "/api/prds"
+  to = "/.netlify/functions/prds"
+  status = 200
+
 # The automatic branch list behind the Refinement strip. Read-only, and it
 # refuses outright on the public build (see netlify/functions/branches.ts).
 [[redirects]]

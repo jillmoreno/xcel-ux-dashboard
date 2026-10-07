@@ -46,7 +46,7 @@ The same `main` branch deploys to **two** Netlify projects. One push builds both
 
 | Site | Who it is for | Shows | Build env vars |
 |---|---|---|---|
-| **Public** — the existing site, the URL stakeholders already have | designers and stakeholders, with the link — demos and training | Prototypes · Refinement · Other Links · Research **only**. The gated sections are absent, not locked: no nav rows, no password prompt, deep links land on Prototypes, and `/prototypes/*` 404s. Refinement is read-only here and shows only rows flipped public | `VITE_GATEWAY_MODE = public` |
+| **Public** — the existing site, the URL stakeholders already have | designers and stakeholders, with the link — demos and training | Prototypes · Refinement · Resources · Research **only**. The gated sections are absent, not locked: no nav rows, no password prompt, deep links land on Prototypes, and `/prototypes/*` 404s. Refinement is read-only here and shows only rows flipped public | `VITE_GATEWAY_MODE = public` |
 | **Full** — a new site | designers and developers — refinement and hand-offs | everything, locked and unlocked, exactly as before | `BLOBS_SITE_ID` + `BLOBS_TOKEN` (see below) |
 
 Nothing is configured per site in the repo — `netlify.toml` and the code are
@@ -63,7 +63,7 @@ time, so the ONLY per-site difference is what each project sets in
    whole point of the arrangement is that both sites build from a push.
 2. **On the existing (public) site**, add the env var `VITE_GATEWAY_MODE` =
    `public` (scope: Builds). Trigger a deploy. The site now shows only
-   Prototypes, Refinement, Other Links and Research. Note its **Project ID** (*Project configuration →
+   Prototypes, Refinement, Resources and Research. Note its **Project ID** (*Project configuration →
    General → Project information*) for step 4.
 3. **Create the full site**: *Add new project → Import an existing project →
    GitHub → this repo*, branch `main`. Netlify reads `netlify.toml`, so build
@@ -255,7 +255,7 @@ a row's title, blurb or status has to be made in both files.
 
 ## Sections
 
-Four open — **Prototypes · Refinement · Other Links · Research** — then the
+Four open — **Prototypes · Refinement · Resources · Research** — then the
 **UX & DEV ACCESS** group: Design · Exploration · Sandbox · Development · Done ·
 Archive · QA Notes · To Do · Contributing. (As of 2026-09-18 the in-app password
 is not enforced — the Netlify site password on the full site is the lock, and
