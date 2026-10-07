@@ -1473,13 +1473,25 @@ const STEP_TITLE: CSSProperties = {
    mixes `--color-success-500` to 45% — so the two marks of "here" agree rather
    than introducing a second green. */
 const MARK_CURRENT: CSSProperties = {
-  width: 14,
-  height: 14,
+  /* ⚠ 8, DOWN FROM 14 — 2026-10-07, the direct ask for space between the dot
+     and its ring. The ring did not move outward; the DOT came in, so the mark's
+     overall footprint is unchanged and the stops below it keep their axis. */
+  width: 8,
+  height: 8,
   boxSizing: 'border-box',
   borderRadius: '50%',
   background: 'var(--color-compass-page-button)',
-  border: '2px solid var(--color-compass-page-button)',
-  boxShadow: '0 0 0 3px color-mix(in srgb, var(--color-success-500) 45%, var(--color-surface-card))',
+  /* ⚠ TWO SHADOWS, AND THE FIRST ONE IS THE GAP. A spread shadow in the card's
+     own colour paints the ring of empty space; the green one sits outside it.
+     Drawn with shadows rather than a border and a wrapper for the same reason
+     as before — neither affects layout, so the 14px gutter and the spine the
+     stops are drawn to do not move. ⚠ ORDER MATTERS: the first shadow is on
+     top, so the gap must be listed before the green or the green fills it.
+     ⚠ `--color-compass-course-card` is the surface this actually sits on
+     (#fcfcfb), not `--color-surface-card` — a pure white gap on an off-white
+     card is a ring of a third colour, visible once you look for it. */
+  boxShadow:
+    '0 0 0 3px var(--color-compass-course-card), 0 0 0 6px color-mix(in srgb, var(--color-success-500) 45%, var(--color-surface-card))',
   flex: 'none',
 }
 const MARK: CSSProperties = {
