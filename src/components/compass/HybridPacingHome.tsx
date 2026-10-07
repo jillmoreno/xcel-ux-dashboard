@@ -314,6 +314,13 @@ export function HybridPacingHome({
      version ships with — the inverted test would make "no decision" look like
      a decision. */
   const tiles = useFeatureFlag('hybrid-quick-links-style').variant === 'tiles'
+  /* ⚠ THE LESSON BLOCK IS BEHIND A FLAG AND OFF — 2026-10-07, the direct ask.
+     `showLesson` below answers "is there a lesson to name"; this answers
+     "should we name it", and they are different questions — the first is data,
+     the second is a design decision that had never been made explicitly.
+     See `hybrid-lesson-block`: scoped to this version, so Hybrid V1 keeps the
+     block whatever this is set to. */
+  const lessonBlock = useFeatureFlag('hybrid-lesson-block').enabled
 
   /* ⚠ THE QUICK LINKS, DEFINED ONCE. Both shapes render from this — see the
      note at the list. Four of the seven have no other home on this screen, so
@@ -631,7 +638,9 @@ export function HybridPacingHome({
                     /* ⚠ HYBRID #4 — ONLY THE CURRENT STOP CARRIES IT, and
                        `showLesson` is computed from that stop, so a row can
                        never be handed a lesson that belongs to another one. */
-                    lesson={showLesson && i === currentIdx ? (lessonsDone ?? 0) + 1 : undefined}
+                    lesson={
+                      lessonBlock && showLesson && i === currentIdx ? (lessonsDone ?? 0) + 1 : undefined
+                    }
                     /* ⚠ THE SAME HANDLER THE TITLE AREA'S RESUME BUTTON TAKES —
                        2026-10-06, the direct ask for "another way for the user
                        to jump right back into the lesson". Two controls, one
@@ -1404,6 +1413,16 @@ const STEP_TITLE: CSSProperties = {
   letterSpacing: '-0.01em',
   color: 'var(--color-text-primary)',
 }
+/* ⚠ A SOLID DOT INSIDE A LIGHT-GREEN RING — 2026-10-07, the direct ask.
+   ⚠ THE RING IS A `box-shadow`, NOT A BORDER, and that is the load-bearing
+   choice: a border grows the box, and this mark sits in a 14px gutter whose
+   centre the spine above and below it is drawn to. A 3px border would push the
+   dot off that axis and bend the line; a spread shadow paints outside the box
+   and changes no layout at all.
+
+   The green is the one already on this card — the lesson block's left rule
+   mixes `--color-success-500` to 45% — so the two marks of "here" agree rather
+   than introducing a second green. */
 const MARK_CURRENT: CSSProperties = {
   width: 14,
   height: 14,
@@ -1411,6 +1430,7 @@ const MARK_CURRENT: CSSProperties = {
   borderRadius: '50%',
   background: 'var(--color-compass-page-button)',
   border: '2px solid var(--color-compass-page-button)',
+  boxShadow: '0 0 0 3px color-mix(in srgb, var(--color-success-500) 45%, var(--color-surface-card))',
   flex: 'none',
 }
 const MARK: CSSProperties = {

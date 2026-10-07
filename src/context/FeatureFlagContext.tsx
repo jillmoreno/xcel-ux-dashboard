@@ -1302,6 +1302,40 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'hybrid-lesson-block',
+    /* THE CURRENT LESSON UNDER THE COUNTED STOP — 2026-10-07, the direct ask:
+       "is showing this here triggered by a feature flag? if not - i want to put
+       it behind a feature flag and hide it."
+
+       It was not. The block was gated on DATA alone (`showLesson` — started, a
+       count above zero, a count below the total), which is right for "is there
+       a lesson to name" and says nothing about "should we name it". This is the
+       second question, and it now has a switch.
+
+       ⚠ OFF BY DEFAULT, WHICH IS THE ASK AND IS ALSO THE INVERTED DIRECTION
+       this catalog normally avoids — `hybrid-quick-links-style` next door
+       argues that an unset flag should render what the version ships. The
+       difference is that here "hidden" IS what the version ships from today;
+       the flag exists to bring the block BACK for comparison, not to take it
+       away. If the block is ever restored as the default, flip
+       `defaultEnabled` and the test below rather than inverting the read.
+
+       ⚠ SCOPED TO THE PACING FORK, and deliberately not to Hybrid V1. V1 is
+       the Prototypes baseline as of 2026-10-06 — what a stakeholder lands on —
+       and `HybridHomeV1.tsx` does not read this flag at all, so no default
+       here can reach it. Hiding the block there is a separate decision about
+       the product. */
+    surface: 'design',
+    owner: 'jill',
+    versions: ['hybrid-pacing'],
+    group: 'Widgets',
+    label: 'Current lesson block',
+    description:
+      'Whether Hybrid \u2014 Pacing Exploration names the lesson in progress under the Pre-Licensing Lessons stop \u2014 the eyebrow ("Lesson 27 \u00b7 About 18 minutes"), the chapter title, and the hover row that resumes the course. OFF by default as of 2026-10-07. \u26a0 THE STOP\u2019S OWN COUNT IS NOT AFFECTED: "26 of 42 Completed" stays either way, so what this hides is the NAMING of the current lesson and the second way into the course, not the progress. \u26a0 It has no effect where there is no lesson to name \u2014 before the first one, or once the count reaches the total.',
+    defaultEnabled: false,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'hybrid-quick-links-style',
     /* HYBRID V1'S QUICK LINKS SHAPE — 2026-10-05, the direct ask: bring back
        the tile treatment and put both within reach.
