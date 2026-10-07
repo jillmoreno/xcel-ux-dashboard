@@ -424,13 +424,33 @@ export function HybridPacingHome({
      ask said "/ day" and that is also the only honest denominator at this
      point.
 
-     ⚠ `formatHours` DOES THE ROUNDING so this agrees with every other hours
-     figure on the page; only the unit is shortened, because "about 5¾ hours /
-     day" does not fit a 168px column and "5¾ hrs/day" does. */
+     ⚠ DECIMAL AND ROUNDED UP, NOT `formatHours` — 2026-10-07, the direct ask.
+     That helper renders quarter-hour FRACTIONS ("5¾ hours"), which is right for
+     a figure you read once and wrong for three you are comparing: ¾ against ½
+     against ¼ is arithmetic the reader has to do to rank the options. Halves
+     and decimals rank at a glance.
+
+     ⚠ UP, NEVER TO NEAREST, and that is the honest direction for a commitment.
+     `Math.ceil(h * 2) / 2` means the number on screen is a load the learner
+     will not be asked to exceed; rounding 2.9 down to 2.5 would understate what
+     they are agreeing to on the one screen where they agree to it.
+
+     ⚠ NO TRAILING ".0" — "3 hrs/day", not "3.0 hrs/day". The decimal appears
+     only when it is carrying a half.
+
+     ⚠ THE COST IS MIXED NOTATION ON ONE CARD: the standing message above still
+     says "11¾ hours a week" via `formatHours`. Deliberate for now — the ask was
+     about these rows — and the resolution is to move that line to decimals too,
+     not to put fractions back here. */
   const perDayFor = (w: number) => {
     const hours = hoursRemaining / (w * 7)
     if (!Number.isFinite(hours) || hours <= 0) return null
-    return `about ${formatHours(hours).replace(/\bhours\b/, 'hrs').replace(/\bhour\b/, 'hr')}/day`
+    const half = Math.ceil(hours * 2) / 2
+    /* ⚠ SINGULAR ONLY AT EXACTLY 1. A sweep across plausible `hoursRemaining`
+       turned up "about 1 hrs/day" — 10 hours over two weeks — which no other
+       value reaches. 0.5 takes the plural, as it should. */
+    const unit = half === 1 ? 'hr' : 'hrs'
+    return `about ${Number.isInteger(half) ? half : half.toFixed(1)} ${unit}/day`
   }
 
   const paceIcon = (PACE_WEEKS.find((o) => o.weeks === weeks) ?? PACE_WEEKS[PACE_WEEKS.length - 1]).icon
@@ -1003,7 +1023,18 @@ export function HybridPacingHome({
           /* ⚠ HYBRID #6 — THE SPLIT-FLAP COUNTDOWN. Opt-in, so the four other
              versions that draw this card keep the text figure. */
           countdown="flip"
-        />
+          /* ⚠ NO EYEBROW BEFORE A DATE EXISTS — 2026-10-07, the direct ask. The
+          unset card is a QUESTION ("Have you scheduled your New York state
+          exam?"), and a section label over a question labels the answer the
+          learner has not given yet. Opt-out, so the three other callers keep
+          theirs. */
+        unsetEyebrow={false}
+        /* ⚠ AND THE QUESTION TAKES THE HEADING FACE — 2026-10-07, the direct
+           ask. It pairs with the line above: with the eyebrow gone the question
+           IS the card's first line, and the heading face is what replaces the
+           label, matching "Complete Coursework" and the step titles beside it. */
+        promptHeading
+      />
 
         {/* ⚠ HYBRID #8 — "QUICK LINKS", WITH TESTING 3'S EYEBROW. 2026-10-05,
             the direct ask. Eric's card was "Other Information for Your Journey"
