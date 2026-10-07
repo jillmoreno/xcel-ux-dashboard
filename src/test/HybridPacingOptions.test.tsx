@@ -61,9 +61,18 @@ const options = () =>
     .getByRole('radiogroup', { name: 'Set your study pace' })
     .querySelectorAll('[role="radio"]')
 
-const labels = () => [...options()].map((o) => (o.textContent ?? '').trim())
+/* ⚠ READS `data-pace-label`, NOT THE ROW. The rows gained a per-day sub-line on
+   2026-10-07 ("1 Week / about 5¾ hrs/day") and every list assertion below broke
+   at once, because they were matching the whole `textContent`. These tests are
+   about WHICH OPTIONS are offered; the copy inside a row is a separate
+   question, and reading the label element keeps the two from failing together. */
+const labels = () =>
+  [...options()].map((o) => (o.querySelector('[data-pace-label]')?.textContent ?? '').trim())
 const checked = () =>
-  [...options()].find((o) => o.getAttribute('aria-checked') === 'true')?.textContent?.trim()
+  [...options()]
+    .find((o) => o.getAttribute('aria-checked') === 'true')
+    ?.querySelector('[data-pace-label]')
+    ?.textContent?.trim()
 
 afterEach(cleanup)
 
@@ -159,7 +168,11 @@ describe('the selection survives the list shrinking', () => {
        Asserted via two renders rather than by moving a date mid-render, because
        the prop is what the shell would change. */
     renderPacing()
-    fireEvent.click([...options()].find((o) => o.textContent?.trim() === '3 Weeks')!)
+    /* Same reason as `labels()` above — the row's own text now carries the
+       sub-line, so the option is found by its label element. */
+    fireEvent.click(
+      [...options()].find((o) => o.querySelector('[data-pace-label]')?.textContent?.trim() === '3 Weeks')!,
+    )
     expect(checked()).toBe('3 Weeks')
     cleanup()
 

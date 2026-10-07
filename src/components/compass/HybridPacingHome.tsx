@@ -411,6 +411,28 @@ export function HybridPacingHome({
             ? `${averaging} At this rate you will not finish by ${formatPaceDate(preset.finishIso)}. Open your Study Plan to adjust your goal.`
             : `${averaging} Based on your study goal, you are right on track.`
 
+  /* ⚠ THE DAILY LOAD EACH OPTION ASKS FOR — 2026-10-07, the direct ask for "a
+     sub line that gives an appx — about 3 hrs / day". It is what makes the
+     three rows comparable: "1 Week" and "3 Weeks" are durations, and a learner
+     cannot weigh them without knowing what each one costs an evening.
+
+     ⚠ PER DAY, NOT PER STUDY NIGHT, and the two are different numbers. The pace
+     model divides by nights STUDIED — `observedPace` argues at length that
+     dividing by elapsed days gives "a figure they will never recognise". That
+     argument holds once a learner has a schedule; here they have not chosen one
+     yet, so there are no nights to divide by and every day is a candidate. The
+     ask said "/ day" and that is also the only honest denominator at this
+     point.
+
+     ⚠ `formatHours` DOES THE ROUNDING so this agrees with every other hours
+     figure on the page; only the unit is shortened, because "about 5¾ hours /
+     day" does not fit a 168px column and "5¾ hrs/day" does. */
+  const perDayFor = (w: number) => {
+    const hours = hoursRemaining / (w * 7)
+    if (!Number.isFinite(hours) || hours <= 0) return null
+    return `about ${formatHours(hours).replace(/\bhours\b/, 'hrs').replace(/\bhour\b/, 'hr')}/day`
+  }
+
   const paceIcon = (PACE_WEEKS.find((o) => o.weeks === weeks) ?? PACE_WEEKS[PACE_WEEKS.length - 1]).icon
 
   const lessonStop = stops[currentIdx]
@@ -715,8 +737,38 @@ export function HybridPacingHome({
                               putting it on the rows made one of three rows
                               repeat the summary underneath. The row is the
                               choice; the line below is its consequence. */}
-                          <span style={{ flex: '1 1 0', minWidth: 0, fontWeight: on ? 600 : 400 }}>
-                            {opt.label}
+                          {/* ⚠ TWO LINES IN ONE COLUMN, so the icon and the tick
+                              stay centred against the pair rather than against
+                              the first line. */}
+                          <span style={{ flex: '1 1 0', minWidth: 0 }}>
+                            {/* ⚠ `data-pace-label` IS FOR THE TESTS, deliberately.
+                                They asserted the option list by reading the
+                                row's whole `textContent`, which broke the moment
+                                the sub-line arrived — the row now says "1 Week
+                                about 5¾ hrs/day". An explicit hook means the
+                                list assertions pin the OPTIONS and copy changes
+                                under them are free. */}
+                            <span data-pace-label style={{ display: 'block', fontWeight: on ? 600 : 400 }}>
+                              {opt.label}
+                            </span>
+                            {/* ⚠ THE SUB-LINE TAKES THE ROW'S OWN INK WHEN
+                                SELECTED. On the slate fill a secondary grey is
+                                near-invisible, and dimming white with opacity
+                                is what the token system exists to avoid — so it
+                                inherits and relies on size for hierarchy. */}
+                            {perDayFor(opt.weeks) ? (
+                              <span
+                                style={{
+                                  display: 'block',
+                                  marginTop: 1,
+                                  fontSize: 10,
+                                  lineHeight: '14px',
+                                  color: on ? 'inherit' : 'var(--color-text-secondary)',
+                                }}
+                              >
+                                {perDayFor(opt.weeks)}
+                              </span>
+                            ) : null}
                           </span>
                           {/* ⚠ `aria-hidden` — `aria-checked` on the row already
                               says this, and a tick announced after the label
