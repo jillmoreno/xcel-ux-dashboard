@@ -9,7 +9,6 @@ import {
   CircleInfoRegular,
   ClipboardListCheckRegular,
   FileCertificateRegular,
-  GaugeThin,
   Lock,
   NotebookRegular,
   PenFieldRegular,
@@ -272,6 +271,14 @@ export function HybridPacingHome({
       : paceChoices.length === 1
         ? `Your exam is ${examWhen}, so one week is the only pace that finishes in time. Change your exam date and this will adjust.`
         : `Your exam is ${examWhen}, so the longer paces would finish after it. Change your exam date and this will adjust.`
+
+  /* ⚠ THE SAME ICON THE 0% ROW WOULD HAVE SHOWN. ⚠ AND A FALLBACK, because
+     `weeks` is DERIVED from the model and is not confined to the three on
+     offer — `Math.round(preset.days / 7)` returns 4 or more on a long access
+     window, and `.find` would have returned undefined and rendered nothing
+     where an icon belongs. Anything past the longest option takes the longest
+     option's icon, which is the honest reading: slower than the slowest. */
+  const paceIcon = (PACE_WEEKS.find((o) => o.weeks === weeks) ?? PACE_WEEKS[PACE_WEEKS.length - 1]).icon
 
   const lessonStop = stops[currentIdx]
   const lessonsDone = lessonStop?.completed
@@ -578,13 +585,38 @@ export function HybridPacingHome({
                 </div>
               ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 11, alignSelf: 'stretch' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span aria-hidden style={{ display: 'inline-flex', color: 'var(--color-compass-page-button)' }}>
-                    <GaugeThin size={33} aria-hidden />
+                {/* ⚠ THE GOAL IS DRAWN AS THE ROW THE LEARNER CHOSE — 2026-10-07,
+                    the direct ask: "this UI should match what the user selected
+                    at the 0%". It was a 33px gauge beside "2 Week Goal", which
+                    is a different object entirely from the thing that was
+                    picked. Now it is the SAME row — same styles, same icon, same
+                    tick — so the screen a learner sets their pace on and the
+                    screen that reports it are visibly the same decision.
+
+                    ⚠ IT IS A `div`, NOT A RADIO. The 0% rows are a choice; this
+                    is a statement of one already made, and Customize Your Pace
+                    below is how it changes. Giving it `role="radio"` would
+                    promise an interaction that is not there — the look is what
+                    carries over, not the behaviour.
+
+                    ⚠ NO `aria-checked` EITHER, and nothing is lost: the sentence
+                    directly beneath states the pace in words, so the row is
+                    decoration over copy that already says it. */}
+                <div style={{ ...PACE_OPT, ...PACE_OPT_ON, cursor: 'default' }}>
+                  <span
+                    aria-hidden
+                    style={{ display: 'inline-flex', flex: 'none', color: 'var(--color-compass-page-button-ink)' }}
+                  >
+                    {paceIcon}
                   </span>
-                  <span style={{ ...BODY_TEXT, fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)' }}>
-                    {weeks} Week Goal
+                  <span style={{ flex: '1 1 0', minWidth: 0, fontWeight: 600 }}>
+                    {weeks} {weeks === 1 ? 'Week' : 'Weeks'}
                   </span>
+                  <Check
+                    size={13}
+                    aria-hidden
+                    style={{ flex: 'none', color: 'var(--color-compass-page-button-ink)' }}
+                  />
                 </div>
                 <p style={SMALL_TEXT}>
                   Your default pace is set for you to complete your course in {weeks}{' '}
@@ -606,14 +638,31 @@ export function HybridPacingHome({
                     rather than `model.hardEndIso` — the ceiling is the expiry
                     MINUS ONE, and printing it disagreed with the figure by a
                     day, which is the bug that fix already cost once. */}
-                <button type="button" className="cre-compass-v2-link" onClick={() => go('study-plan')} style={LINK}>
-                  Customize Your Pace
-                  <AngleRightRegular size={13} aria-hidden />
-                </button>
                 <PaceEstimate
                   value={preset.state === 'no' ? 'Not achievable' : formatPaceDate(preset.finishIso)}
                   note="At current pace"
                 />
+                {/* ⚠ THE LINK MOVED BELOW THE ESTIMATE AND TOOK A RULE WITH IT —
+                    2026-10-07, the direct ask. Between the sentence and the
+                    estimate it interrupted the panel's one line of reasoning:
+                    this is your pace, here is when it finishes. A way OUT of
+                    the panel belongs after the panel has finished speaking.
+
+                    ⚠ RENAMED "View Study Plan", which is also more honest about
+                    where it goes — `go('study-plan')` has always opened the
+                    Study Plan, and "Customize Your Pace" promised an edit the
+                    link itself does not perform.
+
+                    ⚠ ITS OWN RULE, NOT `RULE`. That style is a full-width 1px
+                    block used between the card's sections; this is the same
+                    hairline `PaceEstimate` carries above itself, so the two
+                    dividers that bracket the estimate are the same object. */}
+                <div style={PACE_LINK_ROW}>
+                  <button type="button" className="cre-compass-v2-link" onClick={() => go('study-plan')} style={LINK}>
+                    View Study Plan
+                    <AngleRightRegular size={13} aria-hidden />
+                  </button>
+                </div>
               </div>
               )}
             </div>
@@ -1690,6 +1739,13 @@ const CHEVRON: CSSProperties = {
    that tracks the selection and the per-row copy became a duplicate of it on
    whichever row was chosen. What is left is the smallest thing a choice can be,
    which is also what the 200px column wants. */
+/* The rule that closes the panel, matching the one `PaceEstimate` opens with so
+   the estimate reads as bracketed rather than merely preceded. */
+const PACE_LINK_ROW: CSSProperties = {
+  alignSelf: 'stretch',
+  paddingTop: 12,
+  borderTop: '1px solid var(--color-atlas-nav-rule)',
+}
 const PACE_ESTIMATE: CSSProperties = {
   alignSelf: 'stretch',
   /* Its own padding ON TOP of the column's gap, because the hairline needs to
