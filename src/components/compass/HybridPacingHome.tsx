@@ -14,7 +14,7 @@ import {
   NotebookRegular,
   PenFieldRegular,
 } from '@/icons'
-import { Loveseat, MugHot, PersonRunningFast } from '@/icons'
+import { Check, Loveseat, MugHot, PersonRunningFast } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
 import { journeyStopsFor, type JourneyStop } from '@/components/learning/studyJourneyUtil'
 import { widgetEyebrowStyle } from '@/components/learning/widgetStyles'
@@ -505,9 +505,18 @@ export function HybridPacingHome({
                           onClick={() => setPaceWeeks(opt.weeks)}
                           style={{ ...PACE_OPT, ...(on ? PACE_OPT_ON : null) }}
                         >
+                          {/* ⚠ THE ICON FLIPS WITH THE ROW. At slate-on-slate it
+                              would be invisible — the glyph took the same token
+                              the fill now uses. */}
                           <span
                             aria-hidden
-                            style={{ display: 'inline-flex', flex: 'none', color: 'var(--color-compass-page-button)' }}
+                            style={{
+                              display: 'inline-flex',
+                              flex: 'none',
+                              color: on
+                                ? 'var(--color-compass-page-button-ink)'
+                                : 'var(--color-compass-page-button)',
+                            }}
                           >
                             {opt.icon}
                           </span>
@@ -522,6 +531,18 @@ export function HybridPacingHome({
                           <span style={{ flex: '1 1 0', minWidth: 0, fontWeight: on ? 600 : 400 }}>
                             {opt.label}
                           </span>
+                          {/* ⚠ `aria-hidden` — `aria-checked` on the row already
+                              says this, and a tick announced after the label
+                              would read as part of the option's name. It is
+                              rendered only when on: the label is `flex: 1 1 0`
+                              and left-aligned, so nothing shifts as it appears. */}
+                          {on ? (
+                            <Check
+                              size={13}
+                              aria-hidden
+                              style={{ flex: 'none', color: 'var(--color-compass-page-button-ink)' }}
+                            />
+                          ) : null}
                         </button>
                       )
                     })}
@@ -1607,18 +1628,42 @@ const PACE_OPT: CSSProperties = {
   textAlign: 'left',
   cursor: 'pointer',
   borderRadius: 'var(--radius-md)',
-  border: '1px solid var(--color-atlas-nav-rule)',
+  /* ⚠ LONGHANDS, NOT THE `border` SHORTHAND — 2026-10-07, and this is a bug fix
+     rather than a preference. It was `border: '1px solid …'` here with
+     `borderColor` in the selected object, and React cannot diff a shorthand
+     against a longhand: deselecting a row removed `borderColor` without
+     restoring the shorthand, so the row kept `border-style`/`width` from the
+     shorthand and fell back to the UA's border colour. Measured on the page —
+     a deselected row read `rgb(58, 58, 58)`, near-black, where the rule is
+     `rgb(224, 219, 205)`. Both objects set the same three longhands now, so
+     every property that one sets the other overwrites. */
+  borderWidth: 1,
+  borderStyle: 'solid',
+  borderColor: 'var(--color-atlas-nav-rule)',
   background: 'var(--color-surface-card)',
   fontSize: 12,
   lineHeight: '16px',
   color: 'var(--color-text-primary)',
 }
-/* The selected row takes the palette's own tint and a darker stroke — the same
-   two cues the journey's current stop uses, so "this is the one" reads the same
-   way in both halves of the card. */
+/* ⚠ FILLED SLATE, NOT A TINT — 2026-10-07, after "the selected version of this
+   blends in too much". It took `--color-atlas-nav-active-fill`, which under the
+   shipped skin resolves to #eceef0 — THE SAME VALUE as the panel's own
+   `--color-atlas-outlined-card`. So the chosen row was the one row painted the
+   colour of the surface behind it: the unselected rows were white and looked
+   raised, and the selection read as a hole. Measured, not guessed — panel and
+   selected row both `rgb(236, 238, 240)`.
+
+   The fill is now `--color-compass-page-button`, which is what Begin Course
+   uses, so "the one I chose" is drawn in the same ink as "the one that acts"
+   and the two readings reinforce rather than compete. Its paired ink token
+   comes with it; a hard white here would break under a dark theme.
+
+   ⚠ AND THE STATE NO LONGER RESTS ON COLOUR ALONE — the row takes a tick. Fill
+   plus weight is two cues that both fail for the same reader; a glyph does not. */
 const PACE_OPT_ON: CSSProperties = {
   borderColor: 'var(--color-compass-page-button)',
-  background: 'var(--color-atlas-nav-active-fill)',
+  background: 'var(--color-compass-page-button)',
+  color: 'var(--color-compass-page-button-ink)',
 }
 /* ⚠ IT LEADS THE GROUP NOW, so it takes the gap below rather than above and
    `--color-text-secondary` rather than tertiary: it is the section's question,
