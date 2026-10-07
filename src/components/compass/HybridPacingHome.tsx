@@ -1034,6 +1034,10 @@ export function HybridPacingHome({
            IS the card's first line, and the heading face is what replaces the
            label, matching "Complete Coursework" and the step titles beside it. */
         promptHeading
+        /* ⚠ "Yes, I know the date" LEADS — 2026-10-07, the direct ask. A DOM
+           swap, not a CSS one, so tab order follows reading order; see the
+           prop. */
+        affirmativeFirst
       />
 
         {/* ⚠ HYBRID #8 — "QUICK LINKS", WITH TESTING 3'S EYEBROW. 2026-10-05,

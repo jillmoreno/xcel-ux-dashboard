@@ -110,6 +110,7 @@ export function ExamScheduleWidget({
   countdown = 'text',
   unsetEyebrow = true,
   promptHeading = false,
+  affirmativeFirst = false,
 }: {
   shell: CSSProperties
   /**
@@ -173,6 +174,19 @@ export function ExamScheduleWidget({
    * lines up already exists to prevent.
    */
   promptHeading?: boolean
+  /**
+   * Put "Yes, I know the date" before "Not yet" — 2026-10-07, the direct ask
+   * from Hybrid - Pacing Exploration.
+   *
+   * ⚠ OPT-IN, the third on this widget and for the same reason as the other
+   * two: four callers render it, one of them the shipped Hybrid V1 baseline.
+   *
+   * ⚠ IT SWAPS THE DOM, NOT A CSS `order`, which is what the note at the
+   * buttons has always said: the order here IS tab order, and a visual swap
+   * would leave a keyboard user reaching them right-to-left while a mouse user
+   * reads left-to-right. Both orders keep reading order and tab order the same.
+   */
+  affirmativeFirst?: boolean
   /** Opens a sheet by id. This card only ever sends `EXAM_DETAILS_STEP_ID` —
    *  the menu it opens is what sends the real step ids back. */
   onOpenStep?: (id: string) => void
@@ -317,6 +331,7 @@ export function ExamScheduleWidget({
       {activePhase === 'prompt' && (
         <PromptState
           heading={promptHeading}
+          affirmativeFirst={affirmativeFirst}
           stateName={stateName}
           onNotYet={() => setPhase('not-yet')}
           onYes={() => openPicker('prompt')}
@@ -402,11 +417,13 @@ function PromptState({
   onNotYet,
   onYes,
   heading = false,
+  affirmativeFirst = false,
 }: {
   stateName: string
   onNotYet: () => void
   onYes: () => void
   heading?: boolean
+  affirmativeFirst?: boolean
 }) {
   return (
     <>
@@ -425,22 +442,40 @@ function PromptState({
       <p style={heading ? questionHeadingStyle : questionStyle}>
         Have you scheduled your {stateName} state exam?
       </p>
-      {/* ⚠ "Not yet" FIRST IN THE DOM, so the affirmative sits on the right.
-          Order here is also TAB order — rendering them visually swapped (with
-          `order`) would leave a keyboard user reaching them right-to-left while
-          a mouse user reads left-to-right. */}
+      {/* ⚠ ORDER HERE IS TAB ORDER, which is why both arrangements are DOM
+          order and neither uses CSS `order`. A visual swap would leave a
+          keyboard user reaching the two right-to-left while a mouse user reads
+          them left-to-right.
+
+          "Not yet" leads by default, putting the affirmative on the right where
+          a primary action usually sits. `affirmativeFirst` leads with "Yes, I
+          know the date" instead — 2026-10-07 — on the reading that the card is
+          a QUESTION and the likelier answer should be the first thing under it. */}
       <div style={promptButtonRowStyle}>
-        <button type="button" style={notYetButtonStyle} onClick={onNotYet}>
-          Not yet
-        </button>
-        <button type="button" style={yesButtonStyle} onClick={onYes}>
-          {/* "Yes, I know the date" — 2026-10-02, the direct ask. A bare "Yes"
-              answers the question but says nothing about what pressing it DOES;
-              this names the thing the picker is about to ask for. Its partner
-              stays "Not yet", which is already specific enough to be its
-              opposite. */}
-          Yes, I know the date
-        </button>
+        {/* "Yes, I know the date" — 2026-10-02, the direct ask. A bare "Yes"
+            answers the question but says nothing about what pressing it DOES;
+            this names the thing the picker is about to ask for. Its partner
+            stays "Not yet", which is already specific enough to be its
+            opposite. */}
+        {affirmativeFirst ? (
+          <>
+            <button type="button" style={yesButtonStyle} onClick={onYes}>
+              Yes, I know the date
+            </button>
+            <button type="button" style={notYetButtonStyle} onClick={onNotYet}>
+              Not yet
+            </button>
+          </>
+        ) : (
+          <>
+            <button type="button" style={notYetButtonStyle} onClick={onNotYet}>
+              Not yet
+            </button>
+            <button type="button" style={yesButtonStyle} onClick={onYes}>
+              Yes, I know the date
+            </button>
+          </>
+        )}
       </div>
     </>
   )
