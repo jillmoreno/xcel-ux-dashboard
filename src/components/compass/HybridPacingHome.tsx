@@ -29,6 +29,7 @@ import { ExamScheduleWidget } from '@/components/learning/ExamScheduleWidget'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 import {
   dateFromIso,
+  daysUntil,
   defaultPreset,
   formatPaceDate,
   isoPlusDays,
@@ -246,6 +247,57 @@ export function HybridPacingHome({
     { weeks: 3, label: '3 Weeks', icon: <Loveseat size={14} aria-hidden /> },
   ] as const
 
+  /* ⚠ PACING — THE EXAM DATE NARROWS THE OPTIONS, 2026-10-07, the direct ask:
+     "if the user sets an exam date, the available pacing will adjust. If date
+     is less than 14 days, the 1 week option will be the only available."
+
+     THE RULE, generalised from that sentence: an N-week option is offered only
+     if the exam is at least N×7 days away. An exam 8 days out leaves 1 Week
+     alone; 16 days leaves 1 and 2; 21 or more leaves all three. At exactly 14
+     the 2-week option returns, which is what "less than 14" asks for.
+
+     ⚠ IT DISAGREES WITH THE MODEL, AND DELIBERATELY SO — this is the one thing
+     to decide before the idea goes further. `resolveCeiling` puts the usable
+     deadline at the exam MINUS `EXAM_BUFFER_DAYS` (7), so that a learner has a
+     week to revise; by that rule an exam 8 days out leaves ONE usable day and
+     no pace at all would be offered. This rule lets a one-week plan finish the
+     day before the exam with no revision time. The spec is the spec; the
+     tension is real and the resolution is either a shorter buffer here or an
+     option that says "1 week — no time to revise".
+
+     ⚠ ACCESS IS NOT IN THIS RULE EITHER, though logically it bounds the same
+     thing: nothing should finish after access ends. It does not bite in any
+     demo state (31 days at 0%), and the ask named the exam. */
+  const examDaysAway = examDate ? daysUntil(examDate, today) : null
+  const paceOptions = PACE_WEEKS.filter(
+    (o) => examDaysAway == null || examDaysAway >= o.weeks * 7,
+  )
+  /* ⚠ NEVER AN EMPTY GROUP. An exam today or in the past filters everything
+     out, and a "Set Your Study Pace" heading over no choices is worse than an
+     unachievable one — the learner would have no way to begin. */
+  const paceChoices = paceOptions.length > 0 ? paceOptions : [PACE_WEEKS[0]]
+  /* ⚠ THE SELECTION IS CLAMPED HERE RATHER THAN SYNCED IN AN EFFECT. The state
+     can hold 3 while only 1 is on offer — set the date after choosing — and an
+     effect correcting it would render one frame with nothing checked and write
+     state during paint. Deriving it cannot. */
+  const selectedWeeks = paceChoices.some((o) => o.weeks === paceWeeks)
+    ? paceWeeks
+    : paceChoices[paceChoices.length - 1].weeks
+
+  /* ⚠ THE PROMPT EXPLAINS THE ABSENCE, which is the half of the ask that is
+     not arithmetic: three options becoming one is a loss the learner can see
+     and cannot account for, and an unexplained constraint reads as a bug. */
+  const examWhen =
+    examDate && examDaysAway != null
+      ? `${formatPaceDate(examDate)}, ${examDaysAway} ${examDaysAway === 1 ? 'day' : 'days'} away`
+      : null
+  const pacePrompt =
+    paceChoices.length === PACE_WEEKS.length || !examWhen
+      ? 'How quickly would you like to complete this course? Don’t worry, you can always adjust your goal at a later time.'
+      : paceChoices.length === 1
+        ? `Your exam is ${examWhen}, so one week is the only pace that finishes in time. Change your exam date and this will adjust.`
+        : `Your exam is ${examWhen}, so the longer paces would finish after it. Change your exam date and this will adjust.`
+
   const lessonStop = stops[currentIdx]
   const lessonsDone = lessonStop?.completed
   const showLesson =
@@ -430,12 +482,9 @@ export function HybridPacingHome({
                       — which is what the rows otherwise leave implicit, since
                       "1 Week / 2 Weeks / 3 Weeks" alone never says a week of
                       WHAT. The reassurance keeps its job as the second half. */}
-                  <p style={PACE_PROMPT}>
-                    How quickly would you like to complete this course? Don’t worry, you can always
-                    adjust your goal at a later time.
-                  </p>
-                  {PACE_WEEKS.map((opt) => {
-                    const on = paceWeeks === opt.weeks
+                  <p style={PACE_PROMPT}>{pacePrompt}</p>
+                  {paceChoices.map((opt) => {
+                    const on = selectedWeeks === opt.weeks
                     return (
                       <button
                         key={opt.weeks}
@@ -471,8 +520,8 @@ export function HybridPacingHome({
                       hand-off note; the per-option dates were a separate ask
                       and the two now say the same thing on one of three rows. */}
                   <PaceEstimate
-                    value={formatPaceDate(isoPlusDays(today, paceWeeks * 7))}
-                    note={`At ${paceWeeks} ${paceWeeks === 1 ? 'week' : 'weeks'}`}
+                    value={formatPaceDate(isoPlusDays(today, selectedWeeks * 7))}
+                    note={`At ${selectedWeeks} ${selectedWeeks === 1 ? 'week' : 'weeks'}`}
                   />
                 </div>
               ) : (
