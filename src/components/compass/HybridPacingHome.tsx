@@ -1660,9 +1660,30 @@ const PACE_OPT: CSSProperties = {
 
    ⚠ AND THE STATE NO LONGER RESTS ON COLOUR ALONE — the row takes a tick. Fill
    plus weight is two cues that both fail for the same reader; a glyph does not. */
+/* ⚠ A DARKER SHADE OF THE CTA, DERIVED RATHER THAN NAMED — 2026-10-07, the
+   direct ask for "a different shade from the cta color, maybe a darker shade".
+
+   It is mixed from the CTA itself, which is the whole reason this is a
+   `color-mix` and not a token: the row then sits a fixed step below whatever
+   the CTA is, under every brand skin, instead of being a second colour that has
+   to be kept in step by hand. Related to the button by construction, distinct
+   from it by 22%.
+
+   ⚠ AND IT IS WHY NO EXISTING TOKEN WAS USED. `--color-atlas-topnav-current`
+   (#31485c) is the semantically perfect name — the CURRENT item's fill — and is
+   defined PER SKIN, resolving to something else entirely outside the Global
+   one. That is the same shape as the two bugs already fixed today; a fill-based
+   state cannot rest on a token that moves.
+
+   ⚠ MIXED TOWARD `--color-primary-900`, not black or a neutral.
+   `--color-neutral-900` INVERTS under the dark theme (#202020 → #f1f3f7), so
+   mixing toward it would LIGHTEN the row in dark mode — the opposite of the
+   ask. Every `--color-primary-900` in the file is a dark navy, so this darkens
+   in both themes. Resolves to about #33 4c 62 against the CTA's #3d5a73, and
+   white ink gains contrast rather than losing it. */
 const PACE_OPT_ON: CSSProperties = {
-  borderColor: 'var(--color-compass-page-button)',
-  background: 'var(--color-compass-page-button)',
+  borderColor: 'color-mix(in srgb, var(--color-compass-page-button) 78%, var(--color-primary-900))',
+  background: 'color-mix(in srgb, var(--color-compass-page-button) 78%, var(--color-primary-900))',
   color: 'var(--color-compass-page-button-ink)',
 }
 /* ⚠ IT LEADS THE GROUP NOW, so it takes the gap below rather than above and
