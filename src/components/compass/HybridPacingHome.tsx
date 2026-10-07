@@ -167,34 +167,9 @@ export function HybridPacingHome({
      label only hid the disagreement. */
   const weeks: number = Math.max(1, Math.round(preset.days / 7))
 
-  /* ⚠ PACING A — WHICH DEADLINE IS ACTUALLY SQUEEZING YOU. `studyPace` has
-     always resolved this (`resolveCeiling` → `binding`) and nothing has ever
-     rendered it, so the panel showed a pace with no account of what set it.
-
-     ⚠ `exam` DOES NOT MEAN THE EXAM DATE. Under that arm `hardEndIso` is the
-     exam MINUS `EXAM_BUFFER_DAYS` (7), so a line reading "ends <hardEnd>" would
-     name a date the learner has never seen. It names the buffer instead.
-
-     ⚠ `none` RENDERS NOTHING, deliberately. With neither date set the model
-     falls back to a flat 14 days — an invented ceiling, and a sentence calling
-     it a deadline would be the product inventing one.
-
-     ⚠ AND IT NAMES `accessExpiresAt`, NOT `model.hardEndIso` — the correction
-     that proves the point of this whole option. `hardEndIso` under the access
-     arm is the expiry MINUS ONE (`resolveCeiling`: `accessDays - 1`), the last
-     day you could still be working. Printing it read "ends May 28" two rows
-     under a figure reading "Ends May 29" — a fresh contradiction introduced by
-     the fix meant to remove one, caught by looking at the page. The learner's
-     date is the expiry; the model's ceiling is an internal quantity and belongs
-     on no screen. */
-  const bindingNote =
-    model.binding === 'access' && accessExpiresAt
-      ? `Set by your access — ends ${formatPaceDate(accessExpiresAt)}`
-      : model.binding === 'exam'
-        ? 'Set by your exam — finishing a week before it'
-        : model.binding === 'both' && accessExpiresAt
-          ? `Set by your access and exam — ${formatPaceDate(accessExpiresAt)}`
-          : null
+  /* ⚠ `binding` IS RESOLVED AND UNREAD. `studyPace` still works out which
+     deadline squeezes the learner; nothing renders it since 2026-10-07 — see
+     the note at its old call site in the pace panel. */
 
   /* ⚠ HYBRID #4 — `lessonProgressTitle` MOVES THE FIGURES OUT OF THE TITLE.
      Without it the stop reads "Pre-Licensing Lessons (42)"; with it the title is
@@ -615,14 +590,22 @@ export function HybridPacingHome({
                   Your default pace is set for you to complete your course in {weeks}{' '}
                   {weeks === 1 ? 'week' : 'weeks'}. You can change your pace below.
                 </p>
-                {/* ⚠ PACING A — above the link, below the sentence, so it reads
-                    as a condition on the goal rather than as another fact about
-                    the course. It sits on its own rule because it answers a
-                    different question from everything over it: not how long,
-                    but why that long. */}
-                {bindingNote ? (
-                  <p style={BINDING_NOTE}>{bindingNote}</p>
-                ) : null}
+                {/* ⚠ THE BINDING NOTE WAS HERE AND IS GONE — 2026-10-07, the
+                    direct ask, and it had been overtaken. It read "Set by your
+                    access — ends May 29" and earned its place while the access
+                    date lived in the figures column beside the pace; once that
+                    date moved to the CARD'S TOP LINE — "Access ends May 29",
+                    the same words — the note became the second place on one
+                    screen saying it.
+
+                    ⚠ WHAT IT ALONE CARRIED WAS THE CAUSAL CLAIM, that the
+                    deadline is what SET this pace, where the top line states it
+                    as a bare fact. `studyPace` still resolves `binding` in
+                    `resolveCeiling` and nothing renders it now. To restore:
+                    derive from `model.binding`, and name `accessExpiresAt`
+                    rather than `model.hardEndIso` — the ceiling is the expiry
+                    MINUS ONE, and printing it disagreed with the figure by a
+                    day, which is the bug that fix already cost once. */}
                 <button type="button" className="cre-compass-v2-link" onClick={() => go('study-plan')} style={LINK}>
                   Customize Your Pace
                   <AngleRightRegular size={13} aria-hidden />
@@ -1792,15 +1775,6 @@ const PACE_PROMPT: CSSProperties = {
      (2026-10-07). A margin here would add to it and put this one gap out of
      step with the others for no reason a reader could see. */
   margin: 0,
-  fontSize: 11,
-  lineHeight: '15px',
-  color: 'var(--color-text-secondary)',
-}
-const BINDING_NOTE: CSSProperties = {
-  ...BODY_TEXT,
-  margin: 0,
-  paddingTop: 9,
-  borderTop: '1px solid var(--color-atlas-nav-rule)',
   fontSize: 11,
   lineHeight: '15px',
   color: 'var(--color-text-secondary)',
