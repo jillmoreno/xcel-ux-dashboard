@@ -116,17 +116,20 @@ describe('which paces the exam date leaves on offer', () => {
 
 describe('what the panel says about it', () => {
   it('gives the plain invitation when nothing is constrained', () => {
-    /* ⚠ THE COPY HAS MOVED TWICE AND THIS TEST CAUGHT IT LATE. It asserted
-       "How quickly would you like to complete this course?" — a question —
-       which became "Set your preferred pace to get started…" and then the line
-       below, both on 2026-10-07. The failure sat unseen for an hour because
-       another session was editing the same working tree and several unrelated
-       suites were failing, so the suite's number had stopped meaning anything.
+    /* ⚠ THE COPY MOVED FOUR TIMES IN ONE DAY AND THIS TEST CAUGHT IT LATE. It
+       asserted "How quickly would you like to complete this course?", which
+       became "Set your preferred pace to get started…", then "Pick the pace
+       that feels right for you…", then the question again — all on 2026-10-07.
+       The failure sat unseen for an hour because another session was editing
+       the same working tree and several unrelated suites were failing, so the
+       suite's number had stopped meaning anything.
 
        ⚠ SO THE ASSERTION IS NARROWER NOW, deliberately: it matches the one
        phrase the line exists to carry — that the choice is not final — rather
-       than a sentence that has changed three times. Copy churn should fail this
-       test only when the MEANING goes, not when the wording moves. */
+       than a sentence that has changed four times. Copy churn should fail this
+       test only when the MEANING goes, not when the wording moves. (The sibling
+       test below does pin the question's wording, but only to tell the two
+       paragraphs apart — it is about their ORDER.) */
     renderPacing()
     expect(screen.getByText(/always adjust your goal/i)).toBeTruthy()
     /* And it is not the restricted message, which is the thing this arm is
@@ -139,14 +142,14 @@ describe('what the panel says about it', () => {
        copy, move to the bottom of the options to split up this text more."
 
        ⚠ TWO PARAGRAPHS, NOT ONE, AND IN THIS ORDER. They do different jobs —
-       "Pick the pace" INTRODUCES rows that otherwise never say a week of what,
-       and "you can always adjust" reassures about a choice, which only means
+       the lead ASKS what the rows answer (they otherwise never say a week of
+       WHAT), and "you can always adjust" reassures about a choice, which only means
        anything once there is one to have made. A later tidy that rejoins them
        loses that, and rejoining them reads as formatting rather than as a
        reversal, so the ORDER is what this pins rather than the wording. */
     renderPacing()
     const group = screen.getByRole('radiogroup', { name: /Set your study pace/i })
-    const lead = screen.getByText(/Pick the pace that feels right/i)
+    const lead = screen.getByText(/How quickly would you like to complete/i)
     const note = screen.getByText(/always adjust your goal/i)
     expect(lead).not.toBe(note)
     /* `compareDocumentPosition` rather than reading the parent's children:
