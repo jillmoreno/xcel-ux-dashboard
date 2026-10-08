@@ -231,3 +231,50 @@ describe('the estimate follows the clamped selection, not the stored one', () =>
     expect(screen.getByText('May 18')).toBeTruthy()
   })
 })
+
+describe('each option names the kind of plan it is', () => {
+  /* 2026-10-07, the direct ask: "1 Week = Fast Track, 2 Weeks = Steady,
+     3 Week = Relaxed."
+
+     ⚠ THE PAIRING IS THE TEST, not the presence of three words. "1 Week" and
+     "about 6 hrs/day" are both measurements; the tag is the only line saying
+     what KIND of plan is being agreed to, and a tag that drifts onto the wrong
+     row is a copy bug nothing else would fail on — the panel would look
+     entirely reasonable calling three weeks a fast track. */
+  it.each([
+    ['1 Week', 'Fast Track'],
+    ['2 Weeks', 'Steady'],
+    ['3 Weeks', 'Relaxed'],
+  ])('calls %s "%s"', (label, tag) => {
+    renderPacing()
+    const row = [...options()].find(
+      (o) => o.querySelector('[data-pace-label]')?.textContent?.trim() === label,
+    )
+    expect(row?.textContent).toMatch(new RegExp(tag, 'i'))
+  })
+
+  it('⚠ keeps the tag off the in-progress panel', () => {
+    /* At 0% the rows are CONTROLS and the tag helps rank them. In progress
+       there is nothing to rank — the pace is settled, and the panel says
+       "Complete in 2 Weeks" with the icon and no chrome (see the note there).
+       A tag trailing into that line would re-introduce exactly the "this is one
+       of several" reading that treatment was changed to remove. */
+    render(
+      <MemoryRouter initialEntries={['/dashboard-rebrand?demo=1&version=hybrid-pacing']}>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <HybridPacingHome
+              path={PATH}
+              courseTitle="New York Life and Health Pre-licensing"
+              percent={62}
+              today={TODAY}
+              hoursRemaining={40}
+              accessExpiresAt="2026-06-11"
+            />
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+    expect(screen.queryByText(/Fast Track|Steady|Relaxed/i)).toBeNull()
+  })
+})

@@ -301,10 +301,22 @@ export function HybridPacingHome({
      pace store and Begin Course does not carry the choice — this is an
      exploration of the SHAPE. Wiring it is `study-pace-preset` and a decision
      about what the three weeks mean to the model. */
+  /* ⚠ `tag` NAMES THE PACE — 2026-10-07, the direct ask ("1 Week = Fast Track,
+     2 Weeks = Steady, 3 Week = Relaxed"). It is the row's third line and the
+     only one that is not a measurement: "1 Week" is a duration and "about 6
+     hrs/day" is its cost, and neither says what KIND of plan the learner is
+     agreeing to. It is also what makes the middle option legible as the
+     default — "Steady" reads as the unremarkable choice in a way that
+     "2 Weeks" alone cannot.
+
+     ⚠ THE ICONS WERE ALREADY SAYING THIS, silently: a running figure, a mug, a
+     loveseat. The tag is the same scale written down, which is why it is a
+     column of this table rather than a lookup somewhere else — an icon swapped
+     without its word is how the two come to disagree. */
   const PACE_WEEKS = [
-    { weeks: 1, label: '1 Week', icon: <PersonRunningFast size={14} aria-hidden /> },
-    { weeks: 2, label: '2 Weeks', icon: <MugHot size={14} aria-hidden /> },
-    { weeks: 3, label: '3 Weeks', icon: <Loveseat size={14} aria-hidden /> },
+    { weeks: 1, label: '1 Week', tag: 'Fast Track', icon: <PersonRunningFast size={14} aria-hidden /> },
+    { weeks: 2, label: '2 Weeks', tag: 'Steady', icon: <MugHot size={14} aria-hidden /> },
+    { weeks: 3, label: '3 Weeks', tag: 'Relaxed', icon: <Loveseat size={14} aria-hidden /> },
   ] as const
 
   /* ⚠ PACING — THE EXAM DATE NARROWS THE OPTIONS, 2026-10-07, the direct ask:
@@ -807,6 +819,35 @@ export function HybridPacingHome({
                                 }}
                               >
                                 {perDayFor(opt.weeks)}
+                              </span>
+                            ) : null}
+                            {/* ⚠ THE THIRD LINE IS A DIFFERENT REGISTER, not a
+                                third grey sentence — 2026-10-07. Two 10px
+                                secondary lines under the label would have read
+                                as one wrapped paragraph, which is the failure
+                                a third line invites. Uppercase and tracked is
+                                the eyebrow idiom this panel already speaks
+                                ("SET YOUR STUDY PACE", "ESTIMATED COMPLETION"),
+                                so it separates without introducing a treatment
+                                the card has never used.
+
+                                ⚠ AND IT INHERITS WHEN SELECTED, for the same
+                                reason the hours line does: a secondary grey
+                                disappears on the slate fill. */}
+                            {opt.tag ? (
+                              <span
+                                style={{
+                                  display: 'block',
+                                  marginTop: 2,
+                                  fontSize: 9,
+                                  lineHeight: '12px',
+                                  fontWeight: 600,
+                                  letterSpacing: '0.07em',
+                                  textTransform: 'uppercase',
+                                  color: on ? 'inherit' : 'var(--color-text-secondary)',
+                                }}
+                              >
+                                {opt.tag}
                               </span>
                             ) : null}
                           </span>
