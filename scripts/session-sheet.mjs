@@ -25,7 +25,7 @@
  * Usage:
  *   node scripts/session-sheet.mjs --out sheet.html \
  *     --sha 731a293 --branch test/session-1 --tag session-2026-09-24-pace \
- *     --persona progress-on-track --nav option-2 \
+ *     --version hybrid-pacing --persona progress-on-track --nav option-2 \
  *     --dead nav.courses,home.exam-date-save
  *
  * Only `--out` is required. Everything else describes the session; omitted, the
@@ -77,6 +77,16 @@ const session = {
   persona: opts.persona ?? '',
   nav: opts.nav ?? '',
   dead: (opts.dead ?? '').split(',').map((s) => s.trim()).filter(Boolean),
+  /* ⚠ `--version` ADDED 2026-10-07, AND THE SHEET WAS WRONG WITHOUT IT. Every
+     link this script built pointed at `/dashboard-rebrand` bare, which renders
+     whichever version `defaultDiscoverabilityVersionFor` returns — fine while
+     the only thing ever tested WAS the default, and silently wrong the first
+     time a session tested a fork. A sheet is trusted without checking, so this
+     is exactly the kind of error it exists to prevent rather than commit.
+
+     Omitted, the links stay as they were: no `version=`, the site's own
+     default. Nothing about an existing session moves. */
+  version: opts.version ?? '',
 }
 
 // ─── the catalog, read from source ──────────────────────────────────────────
@@ -119,7 +129,14 @@ const ff = [
   session.nav && `dashboard-navigation:${session.nav}`,
 ].filter(Boolean).join(',')
 
-const query = [ff && `ff=${ff}`, session.dead.length && `dead=${session.dead.join(',')}`]
+/* ⚠ `version` LEADS. It is not a session RIGGING the way `ff=` and `dead=` are
+   — it chooses which product is on screen — and a moderator scanning a long
+   link should see that first. */
+const query = [
+  session.version && `version=${session.version}`,
+  ff && `ff=${ff}`,
+  session.dead.length && `dead=${session.dead.join(',')}`,
+]
   .filter(Boolean)
   .join('&')
 
@@ -371,6 +388,10 @@ git push origin session-$(date +%F)-slug</pre>
 
 <script>
   var BASE = ${JSON.stringify(SITE + SURFACE)};
+  /* The session's version, fixed for this sheet — the builder below re-ticks
+     personas and dead ends, but the VERSION is what the sheet is about and is
+     not something to flip mid-session. */
+  var VERSION = ${JSON.stringify(session.version)};
   var CAT = ${catalogJson};
 
   function render() {
@@ -391,6 +412,7 @@ git push origin session-$(date +%F)-slug</pre>
 
     var ff = [persona, nav].filter(Boolean).join(',');
     var parts = [];
+    if (VERSION) parts.push('version=' + VERSION);
     if (ff) parts.push('ff=' + ff);
     if (dead.length) parts.push('dead=' + dead.join(','));
 
