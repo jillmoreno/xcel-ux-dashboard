@@ -1,6 +1,8 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { BookOpenRegular, HouseRegular } from '@/icons'
+import { useAccount } from '@/context/AccountContext'
+import { isHybridVersion, resolveDashboardVersion } from '@/data/dashboardVersions'
 
 /**
  * ATLAS TOP NAV (Figma "Atlas-Compass-Global-Navigation" 160:616, 2026-09-30)
@@ -56,6 +58,13 @@ export function AtlasTopNav({ expanding = false }: { expanding?: boolean }) {
   const [params, setParams] = useSearchParams()
   const section = params.get('section')
   const coursePage = params.get('coursePage')
+  /* ⚠ HYBRID'S SECOND PILL IS A DIFFERENT CONTROL — 2026-10-08, two direct
+     asks. It is LABELLED "Course Overview" rather than "My Learning", and it
+     goes to COMPASS LEARNING rather than to the Atlas course overview.
+     Scoped to the Hybrid family so Eric's versions keep both the word and the
+     destination they have. */
+  const { brand } = useAccount()
+  const hybrid = isHybridVersion(resolveDashboardVersion(params.get('version'), brand))
   // Home's own sections (Study Plan, Certificates, Resources) keep Home
   // current, so its tray stays open on them. Not its Course link: that is a
   // page of the course, which is Compass Learning's.
@@ -64,7 +73,7 @@ export function AtlasTopNav({ expanding = false }: { expanding?: boolean }) {
     section === 'dashboard' ||
     HOME_LINKS.some((l) => !l.coursePage && l.section === section)
       ? 'home'
-      : section === 'course'
+      : section === 'course' || section === 'compass'
       ? 'compass'
       : null
 
@@ -95,8 +104,8 @@ export function AtlasTopNav({ expanding = false }: { expanding?: boolean }) {
         // "My Learning" with FA's `book-open` (Regular, the weight of Home's
         // house) — 2026-10-01, the designer's request; it was "Compass
         // Learning" with `circle-location-arrow`.
-        label="My Learning"
-        /* ⚠ THE ID STAYS `nav.compass` THOUGH THE PILL READS "My Learning".
+        label={hybrid ? 'Course Overview' : 'My Learning'}
+        /* ⚠ THE ID STAYS `nav.compass` WHATEVER THE PILL READS.
            `TESTABLE_CTAS` forbids renaming an id once a session has used it —
            a link already handed out would silently revive the control. The
            catalog's LABEL is what moved to match the screen. */
@@ -104,7 +113,14 @@ export function AtlasTopNav({ expanding = false }: { expanding?: boolean }) {
         // 13px — 2026-10-01, the designer's request; it was 14.
         icon={<BookOpenRegular size={13} aria-hidden />}
         current={current === 'compass'}
-        onClick={() => navigate('course', 'overview')}
+        /* ⚠ HYBRID GOES TO COMPASS LEARNING, not the Atlas course overview —
+           2026-10-08, the direct ask that both "Course Overview" controls land
+           on Anjani's dashboard. That screen IS Compass Learning: her
+           `screen-dashboard` and `CompassLearningOverview` render the same four
+           bands from the same transcribed content (see
+           `compassLearningFixtures`). Pointing at an existing route rather than
+           forking a third overview is what keeps one dashboard, one source. */
+        onClick={() => (hybrid ? navigate('compass', null) : navigate('course', 'overview'))}
         links={expanding ? COMPASS_LINKS : null}
         isCurrentLink={isCurrentLink}
         onLink={(l) => navigate(l.section, l.coursePage ?? null)}

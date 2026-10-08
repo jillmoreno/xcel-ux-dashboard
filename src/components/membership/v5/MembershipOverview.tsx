@@ -1306,12 +1306,19 @@ export function MembershipOverview({
         estimatedMinutes={NY_LH_LESSON_MINUTES_INVENTED}
         complete={personaRenewalReady}
         onBegin={resumeToCompass}
+        /* ⚠ COMPASS LEARNING, NOT THE ATLAS COURSE OVERVIEW — 2026-10-08, the
+           direct ask: both "Course Overview" controls land on Anjani's
+           dashboard, and that screen IS Compass Learning (her
+           `screen-dashboard` and `CompassLearningOverview` render the same four
+           bands from the same transcribed content — see
+           `compassLearningFixtures`). The header pill above goes to the same
+           place; `coursePage` is cleared so a stale one cannot ride along. */
         onOverview={() =>
           setShellParams(
             (prev) => {
               const next = new URLSearchParams(prev)
-              next.set('section', 'course')
-              next.set('coursePage', 'overview')
+              next.set('section', 'compass')
+              next.delete('coursePage')
               return next
             },
             { replace: true },

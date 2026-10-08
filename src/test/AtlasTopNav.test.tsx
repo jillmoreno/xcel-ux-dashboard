@@ -3,17 +3,34 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { MemoryRouter, useLocation } from 'react-router-dom'
 import { AtlasTopNav } from '@/components/layout/AtlasTopNav'
 import { atlasNavFor } from '@/components/layout/atlasNavVersion'
+import { AccountProvider } from '@/context/AccountContext'
 
 /* The Nav Version control's Top Nav (Figma 160:616, 2026-09-30): Home is
-   current on the Home page, My Learning on the course's pages. */
+   current on the Home page, My Learning on the course's pages.
+
+   ⚠ EVERY CASE BELOW PINS `version=eric-atlas-v1` — 2026-10-08. Two things
+   made that necessary on the same day. The nav now reads the VERSION (Hybrid
+   labels its second pill "Course Overview" and sends it to Compass Learning),
+   and `hybrid-pacing` became the brand default — so a bare URL, which is what
+   these used, stopped describing the nav this file is about. Pinning Eric's
+   version keeps the subject fixed; Hybrid's arm has its own block at the end.
+
+   ⚠ AND THE `AccountProvider` IS REQUIRED NOW, for the same reason: resolving
+   the default version needs the brand. A bare mount threw
+   "useAccount must be used within an AccountProvider" — the mount was
+   incomplete rather than the component wrong, since every real mount has one. */
 function Search() {
   return <span data-testid="search">{useLocation().search}</span>
 }
 function renderNav(search: string, expanding = false) {
+  const sep = search.startsWith('?') ? '&' : '?'
+  const url = `/dashboard-rebrand${search}${sep}version=eric-atlas-v1`
   render(
-    <MemoryRouter initialEntries={[`/dashboard-rebrand${search}`]}>
-      <AtlasTopNav expanding={expanding} />
-      <Search />
+    <MemoryRouter initialEntries={[url]}>
+      <AccountProvider>
+        <AtlasTopNav expanding={expanding} />
+        <Search />
+      </AccountProvider>
     </MemoryRouter>,
   )
 }
@@ -97,5 +114,55 @@ describe('Atlas Expanding Top Nav', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Study Plan' }))
     expect(screen.getByTestId('search').textContent).toContain('section=study-plan')
     expect(current()).toEqual(['Home', 'Study Plan'])
+  })
+})
+
+describe('Hybrid’s second pill is a different control', () => {
+  /* 2026-10-08, two direct asks: "rename the header pill to Course Overview",
+     and both Course Overview controls land on Anjani's dashboard.
+
+     ⚠ THE DESTINATION IS THE HALF THAT MATTERS. Anjani's `screen-dashboard` and
+     `CompassLearningOverview` render the same four bands from the same
+     transcribed content (`compassLearningFixtures`), so her dashboard IS
+     Compass Learning — `?section=compass`. Pointing an existing pill at an
+     existing route is what keeps that one screen rather than forking a third
+     overview, and it is the thing a later tidy would most plausibly "simplify"
+     back to the Atlas course overview. */
+  function renderHybrid(search = '') {
+    render(
+      <MemoryRouter initialEntries={[`/dashboard-rebrand?version=hybrid-pacing${search}`]}>
+        <AccountProvider>
+          <AtlasTopNav />
+          <Search />
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+  }
+
+  it('reads “Course Overview” and goes to Compass Learning', () => {
+    renderHybrid()
+    const pill = screen.getByRole('button', { name: /Course Overview/ })
+    fireEvent.click(pill)
+    const search = screen.getByTestId('search').textContent ?? ''
+    expect(search).toContain('section=compass')
+    /* ⚠ AND NO `coursePage` RIDES ALONG — a stale one from the course player
+       would survive the navigation and put the shell on a page nobody asked
+       for. */
+    expect(search).not.toContain('coursePage')
+  })
+
+  it('marks itself current once there', () => {
+    /* `section=compass` had no case in the `current` test before this change —
+       the pill navigated somewhere it could not then recognise, which reads as
+       a dead nav. */
+    renderHybrid('&section=compass')
+    expect(current()).toEqual(['Course Overview'])
+  })
+
+  it('⚠ and Eric’s keeps the word and the destination', () => {
+    /* The standing instruction, pinned beside the change it constrains. */
+    renderNav('?section=course&coursePage=overview')
+    expect(screen.getByRole('button', { name: /My Learning/ })).toBeTruthy()
+    expect(screen.queryByRole('button', { name: /Course Overview/ })).toBeNull()
   })
 })
