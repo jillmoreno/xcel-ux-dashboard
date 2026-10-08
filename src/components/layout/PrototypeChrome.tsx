@@ -100,18 +100,43 @@ export function PrototypeChrome() {
    * background and hide the rest; `chrome=off` removes all three, which is why
    * it is the wrong tool here even though it looks like the right one.
    *
-   * WHAT SURVIVES: the two controls a moderator uses DURING a session —
-   * Progress ("now imagine you are two weeks in") and Navigation (switching
-   * the A/B's arms). Everything else either re-baselines the demo (Reset, the
-   * kebab), swaps the whole scenario (Persona, Education) or moves a treatment
-   * the session is holding still (Pacing, Readiness). See
-   * `TEST_VIEW_CONTROLS`, where Navigation's own trade-off is recorded.
+   * WHAT SURVIVES: the control a moderator uses DURING a session — Progress
+   * ("now imagine you are two weeks in"). Everything else either re-baselines
+   * the demo (Reset, the kebab), swaps the whole scenario (Persona, Education)
+   * or moves a treatment the session is holding still (Pacing, Readiness).
+   * ⚠ Navigation was the second survivor until `dashboard-navigation` was
+   * archived; `TEST_VIEW_CONTROLS` is the list, and it is down to one.
    *
    * ⚠ A WHITELIST, so it fails CLOSED — see `DemoControlsBar`'s `only`. The
    * next dropdown added to that bar does NOT appear in test links by default,
    * which is the right direction for a control a participant must never meet.
    */
   if (isTestSession(search)) {
+    /*
+     * `?controls=off` — 2026-10-07, the direct ask: "the demo controls should
+     * be completely hidden for this link."
+     *
+     * ⚠ NOT `chrome=off`, WHICH IS THE OBVIOUS WRONG TOOL and the note above
+     * already says why: that also takes the dark stage and the browser-window
+     * frame, and a participant session wants those. This removes the BAR and
+     * nothing else.
+     *
+     * ⚠ NOR `present=1`, which draws exactly the chrome this wants — it also
+     * sets `noHeaderNav` in `Header`, inerting the logo and the account menu.
+     * That is right for a presentation nobody clicks and fatal for a session
+     * whose whole subject is where people click.
+     *
+     * ⚠ MOUNTED, NOT ABSENT (`open={false}` renders null) — the same shape
+     * `present=1` uses, and for the same reason: the bar carries the one-time
+     * deep-link init that applies `?prog=` and friends. Returning `null` here
+     * would silently drop any demo state a session link carried.
+     *
+     * OPT-IN, so no existing session link changes. The moderator's `?test=0`
+     * link is unaffected either way — it takes the branch below and gets the
+     * full bar, which is where Progress is set before the laptop is handed
+     * over.
+     */
+    if (params.get('controls') === 'off') return <DemoControlsBar open={false} />
     return <DemoControlsBar open fullBleed={framed} only={TEST_VIEW_CONTROLS} />
   }
   // Routes that carry a hide-able stakeholder demo banner (→ show the toggle).
