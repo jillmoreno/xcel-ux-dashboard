@@ -4,6 +4,8 @@ import { MemoryRouter, useLocation } from 'react-router-dom'
 import { AtlasTopNav } from '@/components/layout/AtlasTopNav'
 import { atlasNavFor } from '@/components/layout/atlasNavVersion'
 import { AccountProvider } from '@/context/AccountContext'
+import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
+import { CompassLearningPage } from '@/components/learning/CompassLearningPage'
 
 /* The Nav Version control's Top Nav (Figma 160:616, 2026-09-30): Home is
    current on the Home page, My Learning on the course's pages.
@@ -164,5 +166,58 @@ describe('Hybrid’s second pill is a different control', () => {
     renderNav('?section=course&coursePage=overview')
     expect(screen.getByRole('button', { name: /My Learning/ })).toBeTruthy()
     expect(screen.queryByRole('button', { name: /Course Overview/ })).toBeNull()
+  })
+})
+
+describe('the Compass rail is Anjani’s on Hybrid', () => {
+  /* 2026-10-08, the direct ask: "left rail needs to match what is in anjanis
+     prototype."
+
+     ⚠ TWO LISTS, NOT AN EDIT, and that is what these pin. `COMPASS_PAGES` is
+     Eric's and his versions draw all eight rows — `CompassLearningPage`'s own
+     note says it "carries exactly the eight rows the design draws". Taking
+     three off it to settle a question about Hybrid's rail would reach into his
+     design, which is the failure every scoped change today is avoiding. */
+  const railOf = () =>
+    [...document.querySelectorAll('nav[aria-label="Course pages"] li')].map((li) =>
+      (li.textContent ?? '').trim(),
+    )
+
+  function renderRail(version: string) {
+    render(
+      <MemoryRouter initialEntries={[`/dashboard-rebrand?version=${version}&section=compass`]}>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <CompassLearningPage
+              courseTitle="New York Life and Health Pre-licensing"
+              percentComplete={62}
+              completedLessons={26}
+              totalLessons={42}
+              onStartSession={() => {}}
+              onLeave={() => {}}
+            />
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+  }
+
+  it('draws her six rows, in her order', () => {
+    renderRail('hybrid-pacing')
+    expect(railOf()).toEqual([
+      'Dashboard',
+      'Course',
+      'Study planner',
+      'Flashcards',
+      'Exam Simulator',
+      'Progress',
+    ])
+  })
+
+  it('⚠ and Eric’s keeps all eight', () => {
+    renderRail('eric-atlas-v1')
+    expect(railOf()).toHaveLength(8)
+    expect(railOf()).toContain('Rubi Insights')
+    expect(railOf()).toContain('Overview')
   })
 })

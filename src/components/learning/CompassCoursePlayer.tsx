@@ -19,7 +19,11 @@ import {
   MagnifyingGlass,
   Sliders,
   X,
+  CalendarRegular,
 } from '@/icons'
+import { useSearchParams } from 'react-router-dom'
+import { useAccount } from '@/context/AccountContext'
+import { isHybridVersion, resolveDashboardVersion } from '@/data/dashboardVersions'
 import {
   NY_LH_COURSE_CHAPTERS,
   NY_LH_CURRENT_CHAPTER_INDEX,
@@ -94,6 +98,7 @@ import { formatExamChip, LEFT_COLUMN_FIRST_ROW_HEIGHT } from './compassPlayerUti
 export type CompassPage =
   | 'overview'
   | 'course'
+  | 'study-planner'
   | 'flashcards'
   | 'exam-simulator'
   | 'progress'
@@ -114,6 +119,39 @@ const COMPASS_PAGES: {
   { id: 'resources', label: 'Resources', icon: FileText },
   { id: 'readiness', label: 'Readiness', icon: Gauge },
   { id: 'rubi-insights', label: 'Rubi Insights', icon: RubiLogo },
+]
+
+/**
+ * ⚠ HYBRID'S RAIL IS ANJANI'S — 2026-10-08, the direct ask: "left rail needs to
+ * match what is in anjanis prototype."
+ *
+ * Her `screen-dashboard` draws six rows, not eight: Dashboard, Course, Study
+ * planner, Flashcards, Exam simulator, Progress. So three of the product's go
+ * (Resources, Readiness, Rubi Insights), one arrives (Study planner), and
+ * Overview is called Dashboard.
+ *
+ * ⚠ A SECOND LIST RATHER THAN AN EDIT, because `COMPASS_PAGES` above is Eric's
+ * and his versions draw all eight — the note at `CompassLearningPage` says it
+ * "carries exactly the eight rows the design draws". Editing it in place would
+ * take three rows off his rail to settle a question about hers.
+ *
+ * ⚠ `study-planner` RENDERS AN EMPTY GROUND, exactly as Resources, Readiness
+ * and Rubi Insights already do — `CompassPageBody` gives every page but
+ * Overview a blank region. That is the existing honest placeholder rather than
+ * a new dead end, and it is what her Planner screen would fill.
+ *
+ * ⚠ THE SHARED LABELS KEEP THE PRODUCT'S CASING ("Exam Simulator", not her
+ * "Exam simulator"). Her file is sentence case throughout; matching that is a
+ * one-word change per row if it turns out to be the design rather than her
+ * prototype's own styling.
+ */
+const HYBRID_COMPASS_PAGES: typeof COMPASS_PAGES = [
+  { id: 'overview', label: 'Dashboard', icon: Layout },
+  { id: 'course', label: 'Course', icon: BookFull },
+  { id: 'study-planner', label: 'Study planner', icon: CalendarRegular },
+  { id: 'flashcards', label: 'Flashcards', icon: Notebook },
+  { id: 'exam-simulator', label: 'Exam Simulator', icon: ClipboardList },
+  { id: 'progress', label: 'Progress', icon: ShoePrints },
 ]
 
 /**
@@ -329,7 +367,15 @@ export function CompassSidebar({
    *  line is dropped rather than rendered empty. */
   timeRemaining?: string
 }) {
-  const activeLabel = COMPASS_PAGES.find((p) => p.id === page)?.label ?? ''
+  /* ⚠ THE RAIL IS PER VERSION — 2026-10-08. Hybrid draws Anjani's six rows;
+     every other version draws the eight the Atlas design has. See
+     `HYBRID_COMPASS_PAGES`. */
+  const { brand: railBrand } = useAccount()
+  const [railParams] = useSearchParams()
+  const pages = isHybridVersion(resolveDashboardVersion(railParams.get('version'), railBrand))
+    ? HYBRID_COMPASS_PAGES
+    : COMPASS_PAGES
+  const activeLabel = pages.find((p) => p.id === page)?.label ?? ''
   /*
    * WHICH HALF OF THE SIDEBAR IS SHOWING, and the reason it is a named
    * constant rather than an inline `page !== 'course'` at each of the two call
@@ -518,7 +564,7 @@ export function CompassSidebar({
            `--color-surface-card`. */
         <nav aria-label="Course pages">
           <ul style={pageNavListStyle}>
-            {COMPASS_PAGES.map((p) => (
+            {pages.map((p) => (
               <li key={p.id}>
                 <CompassNavRow
                   item={p}
