@@ -3,14 +3,12 @@ import { useSearchParams } from 'react-router-dom'
 import {
   AngleRightRegular,
   ArrowRight,
-  BallotCheckRegular,
   BookOpenRegular,
   BookRegular,
   CircleInfoRegular,
   ClipboardListCheckRegular,
   FileCertificateRegular,
   Lock,
-  NotebookRegular,
   PenFieldRegular,
 } from '@/icons'
 import {
@@ -496,8 +494,12 @@ export function HybridPacingHome({
        place rather than two. Directly under My Certificates, which is where the
        ask put it. */
     { icon: <BookOpenRegular size={13} aria-hidden />, label: 'Resources', onClick: () => go('resources') },
-    { icon: <NotebookRegular size={13} aria-hidden />, label: 'Flashcards', onClick: () => go('course', 'flashcards') },
-    { icon: <BallotCheckRegular size={13} aria-hidden />, label: 'Exam Simulator', onClick: () => go('course', 'exam-simulator') },
+    /* ⚠ FLASHCARDS AND EXAM SIMULATOR WERE HERE — removed 2026-10-07, the
+       direct ask. Both opened course pages (`go('course', 'flashcards')` and
+       `'exam-simulator'`), so unlike the sheets below them they had another way
+       in: the course itself. ⚠ THIS LIST WAS THE ONLY ROUTE TO THEM FROM HOME,
+       though — restoring is the two lines in git plus their icons, which went
+       with them because `noUnusedLocals` will not keep an unused import. */
     {
       icon: <CircleInfoRegular size={13} aria-hidden />,
       label: 'Exam Information',
@@ -1023,21 +1025,14 @@ export function HybridPacingHome({
           /* ⚠ HYBRID #6 — THE SPLIT-FLAP COUNTDOWN. Opt-in, so the four other
              versions that draw this card keep the text figure. */
           countdown="flip"
-          /* ⚠ NO EYEBROW BEFORE A DATE EXISTS — 2026-10-07, the direct ask. The
-          unset card is a QUESTION ("Have you scheduled your New York state
-          exam?"), and a section label over a question labels the answer the
-          learner has not given yet. Opt-out, so the three other callers keep
-          theirs. */
-        unsetEyebrow={false}
-        /* ⚠ AND THE QUESTION TAKES THE HEADING FACE — 2026-10-07, the direct
-           ask. It pairs with the line above: with the eyebrow gone the question
-           IS the card's first line, and the heading face is what replaces the
-           label, matching "Complete Coursework" and the step titles beside it. */
-        promptHeading
-        /* ⚠ "Yes, I know the date" LEADS — 2026-10-07, the direct ask. A DOM
-           swap, not a CSS one, so tab order follows reading order; see the
-           prop. */
-        affirmativeFirst
+          /* ⚠ ONE PROP FOR THE WHOLE TREATMENT — 2026-10-07. It was four
+           booleans (`unsetEyebrow`, `promptHeading`, `affirmativeFirst`, and a
+           fifth for the saved card's spacing), each added as its own ask, and
+           by the fourth nothing in the signature said they describe ONE look or
+           that three of them only make sense together. `pacing` is: no eyebrow
+           before a date exists, the question in the heading face, the
+           affirmative first, and the saved date pulled up under its eyebrow. */
+        treatment="pacing"
       />
 
         {/* ⚠ HYBRID #8 — "QUICK LINKS", WITH TESTING 3'S EYEBROW. 2026-10-05,
@@ -1053,7 +1048,7 @@ export function HybridPacingHome({
 
             ⚠ THE SEVEN ROWS AND THEIR ICONS ARE UNTOUCHED. Testing 3's card
             holds three TEXT links; this one holds seven icon rows, four of
-            which (Flashcards, Exam Simulator, and the two sheets) have no other
+            which (the two sheets and the two course pages) had no other
             home on this screen. Matching that card's row treatment too would
             mean deciding which four destinations to drop, which is a different
             question from what to call the block. */}

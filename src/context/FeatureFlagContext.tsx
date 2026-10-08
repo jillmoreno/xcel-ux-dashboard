@@ -706,13 +706,22 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     group: 'Widgets',
     label: 'Exam card — background',
     description:
-      'The GROUND the `ask-first` exam card sits on. `white` is the default and is what ships \u2014 the card carries no background of its own, so it takes `--color-surface-card` like every other widget in the column. `tint` fills it with the SELECTED RAIL ITEM\u2019s colour, which is what makes the pair worth comparing: that colour already means \u201cthis is where you are\u201d in this product, so putting it behind the exam card says the card is the live one rather than merely another widget. \u26a0 THE TINT IS BOUND TO THE RAIL\u2019S OWN TOKEN, not a copied hex \u2014 `color-mix(in srgb, var(--color-nav-icon-active-primary) 12%, \u2026)`, so the two cannot drift apart if the rail\u2019s colour is ever retuned. The STRENGTH is deliberately half the rail\u2019s 24%: the two do the same job at very different sizes, and what reads as a selection on a 40px nav row reads as a coloured panel across a whole card. It composites over `--color-surface-card` rather than `transparent` (which is what the rail does) because the card has its own white ground and the page behind it is grey \u2014 mixing to transparent would let that grey through and land a different colour from the rail it is quoting. Variant-only.',
+      'The GROUND the `ask-first` exam card sits on. `white` is the default and is what ships \u2014 the card carries no background of its own, so it takes `--color-surface-card` like every other widget in the column. `tint` fills it with the SELECTED RAIL ITEM\u2019s colour, which is what makes the pair worth comparing: that colour already means \u201cthis is where you are\u201d in this product, so putting it behind the exam card says the card is the live one rather than merely another widget. `outline` is the third answer and the only one that is not a fill \u2014 no ground, a hairline border, and NO SHADOW, because an elevation under a transparent card is a shadow cast by nothing. \u26a0 THE TINT IS BOUND TO THE RAIL\u2019S OWN TOKEN, not a copied hex \u2014 `color-mix(in srgb, var(--color-nav-icon-active-primary) 12%, \u2026)`, so the two cannot drift apart if the rail\u2019s colour is ever retuned. The STRENGTH is deliberately half the rail\u2019s 24%: the two do the same job at very different sizes, and what reads as a selection on a 40px nav row reads as a coloured panel across a whole card. It composites over `--color-surface-card` rather than `transparent` (which is what the rail does) because the card has its own white ground and the page behind it is grey \u2014 mixing to transparent would let that grey through and land a different colour from the rail it is quoting. Variant-only.',
     maturity: 'wip',
     defaultEnabled: true,
     defaultVariant: 'white',
     variants: [
       { value: 'white', label: 'White (no background)' },
       { value: 'tint', label: 'Light blue — the selected-rail wash' },
+      /* ⚠ `outline` ADDED 2026-10-07, the direct ask. The third answer to the
+         same question and the only one that is not a FILL: no ground at all, a
+         hairline instead, so the card reads as an outlined region of the page
+         rather than a panel sitting on it. ⚠ IT ALSO DROPS THE SHADOW, which
+         is not decoration — an elevation under a transparent card is a shadow
+         cast by nothing, and it is the giveaway that makes an outline-only
+         treatment look broken. Additive: `white` is still the default, so no
+         version moves until someone picks this. */
+      { value: 'outline', label: 'Outline only — no fill' },
     ],
     page: 'dashboard-rebrand',
   },
