@@ -114,7 +114,12 @@ const railStyle: CSSProperties = {
   boxSizing: 'border-box',
   display: 'flex',
   flexDirection: 'column',
-  gap: 22,
+  /* ⚠ 30, MEASURED OFF HERS — 2026-10-08. This was 22 on a guess, and the
+     guess read as "close but not it": her lockup sits 30px off the first nav
+     row, not 22. Everything else matched on the first pass (220 wide, 26/18
+     padding, 32px rows on a 33px pitch, 8/11 row padding), so this one number
+     was the whole difference. */
+  gap: 30,
   padding: '26px 18px',
   borderRight: '1px solid var(--color-border-subtle)',
 }
