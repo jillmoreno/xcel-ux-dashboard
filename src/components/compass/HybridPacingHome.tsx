@@ -353,16 +353,16 @@ export function HybridPacingHome({
       : null
   const unrestricted = paceChoices.length === PACE_WEEKS.length || !examWhen
   const pacePrompt = unrestricted
-    ? 'Pick the pace that feels right for you.'
+    ? 'How quickly would you like to complete this course?'
     : paceChoices.length === 1
       ? `Your exam is ${examWhen}, so one week is the only pace that finishes in time. Change your exam date and this will adjust.`
       : `Your exam is ${examWhen}, so the longer paces would finish after it. Change your exam date and this will adjust.`
   /* ⚠ THE SECOND HALF SITS UNDER THE OPTIONS — 2026-10-07, the direct ask, and
      it is a split rather than a move: the two sentences do different jobs and
-     were doing them in one 11px paragraph. "Pick the pace that feels right for
-     you" INTRODUCES the rows and has to precede them. "You can always
-     adjust…" is a reassurance about the choice just made, which only means
-     anything once there is one — so it reads after.
+     were doing them in one 11px paragraph. The lead ASKS THE QUESTION the rows
+     answer — they otherwise never say a week of what — so it has to precede
+     them. "You can always adjust…" is a reassurance about the choice just
+     made, which only means anything once there is one, so it reads after.
 
      ⚠ ONLY IN THE UNRESTRICTED CASE. The two narrowed messages already end on
      their own escape hatch ("Change your exam date and this will adjust"), and
@@ -720,13 +720,17 @@ export function HybridPacingHome({
                       which they need since "1 Week / 2 Weeks / 3 Weeks" alone
                       never says a week of WHAT.
 
-                      ⚠ THE COPY STOPPED BEING A QUESTION later the same day.
-                      "How quickly would you like to complete this course?" put
-                      the whole weight of the decision here, on a screen where
-                      the learner has seen nothing of the course yet. What
-                      replaced it says what the choice IS and what it is NOT
-                      (final) — the study plan is where it gets tuned. Lower
-                      stakes, and truer to what the three rows do.
+                      ⚠ IT IS A QUESTION AGAIN — asked for twice, and the round
+                      trip is the record worth keeping. It left briefly on
+                      2026-10-07 for a statement ("Pick the pace that feels
+                      right for you…") on the argument that a question put the
+                      whole weight of the decision here, on a screen where the
+                      learner has seen nothing of the course yet. What actually
+                      answered that was the SPLIT below, not the mood: the "you
+                      can always adjust" half now sits under the options and
+                      carries the not-final part on its own, which leaves the
+                      lead free to do the one job a heading over three
+                      durations has to do — say what they are durations OF.
 
                       ⚠ IT IS ONLY THE UNRESTRICTED COPY. When the exam date
                       narrows the options, `pacePrompt` says so instead — that
