@@ -96,6 +96,11 @@ export function AtlasTopNav({ expanding = false }: { expanding?: boolean }) {
         // house) — 2026-10-01, the designer's request; it was "Compass
         // Learning" with `circle-location-arrow`.
         label="My Learning"
+        /* ⚠ THE ID STAYS `nav.compass` THOUGH THE PILL READS "My Learning".
+           `TESTABLE_CTAS` forbids renaming an id once a session has used it —
+           a link already handed out would silently revive the control. The
+           catalog's LABEL is what moved to match the screen. */
+        ctaId="nav.compass"
         // 13px — 2026-10-01, the designer's request; it was 14.
         icon={<BookOpenRegular size={13} aria-hidden />}
         current={current === 'compass'}
@@ -113,6 +118,7 @@ function TopNavItem({
   icon,
   current,
   onClick,
+  ctaId,
   links,
   isCurrentLink,
   onLink,
@@ -121,6 +127,14 @@ function TopNavItem({
   icon: ReactNode
   current: boolean
   onClick: () => void
+  /** A `TESTABLE_CTAS` id, when this pill is one a user test may kill.
+   *
+   *  ⚠ ON THE BUTTON, NOT THE TRAY. `CtaTestContext` intercepts on the closest
+   *  `[data-cta-id]` ancestor of the click, so putting it on the wrapper would
+   *  also swallow the Expanding arm's TRAY LINKS — different destinations,
+   *  different questions, and killing them by accident would read as the pill
+   *  being broken rather than as the run's own rigging. */
+  ctaId?: string
   /** Present on the Expanding Top Nav: the tray's links. */
   links: readonly TopNavLink[] | null
   isCurrentLink: (l: TopNavLink) => boolean
@@ -141,6 +155,7 @@ function TopNavItem({
       aria-current={current ? 'page' : undefined}
       className={current ? 'cre-atlas-topnav-btn is-current' : 'cre-atlas-topnav-btn'}
       onClick={onClick}
+      data-cta-id={ctaId}
       style={BUTTON}
     >
       {icon}

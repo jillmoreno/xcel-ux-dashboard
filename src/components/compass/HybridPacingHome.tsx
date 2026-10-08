@@ -633,7 +633,22 @@ export function HybridPacingHome({
                   difference between the two is fill, which is what primary and
                   secondary are supposed to mean. */}
               {onOverview ? (
-                <button type="button" className="cre-compass-secondary" onClick={onOverview} style={BEGIN}>
+                <button
+                  type="button"
+                  className="cre-compass-secondary"
+                  onClick={onOverview}
+                  /* ⚠ THIS VERSION'S FIRST `data-cta-id`s — 2026-10-07, for the
+                     user-testing session. `HybridPacingHome` carried NONE,
+                     which meant every home control on this fork was
+                     un-killable: the dead-end instrument's catalog is tagged on
+                     Testing 3's widgets (`StudyPaceTile`, `StudyJourneyWidget`,
+                     `JumpBackInWidget`), and this version renders none of them.
+                     Only the three the session asked for are tagged; the rest
+                     stay live, which is the honest state rather than a
+                     half-instrumented page. */
+                  data-cta-id="home.course-overview"
+                  style={BEGIN}
+                >
                   Course Overview
                 </button>
               ) : null}
@@ -642,6 +657,11 @@ export function HybridPacingHome({
                 className="cre-compass-primary cre-compass-btn-primary"
                 onClick={onBegin}
                 disabled={!onBegin}
+                /* ⚠ ONE ID FOR BOTH LABELS. The button reads Begin Course at 0%
+                   and Resume Course after — one control in two states, and
+                   "do they reach for it" is one question. Splitting it would
+                   make a run depend on the progress state it was built at. */
+                data-cta-id="home.begin-course"
                 style={BEGIN}
               >
                 {/* ⚠ THE SAME `ArrowRight` AT 16 Testing 3's combined card uses

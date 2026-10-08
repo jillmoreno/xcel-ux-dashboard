@@ -88,14 +88,52 @@ export const TESTABLE_CTAS: TestableCta[] = [
      the row from the generated sheet — silently, and the row is then a control
      no moderator can see.
 
-     Top nav only: there is no Compass Learning row on the rail, by the design's
-     own count of three items. Under `nav-placement: left` this control is not
-     on the page at all, which is the honest state rather than a miss. */
+     Top nav only: there is no My Learning row on the rail, by the design's own
+     count of three items. Under `nav-placement: left` this control is not on
+     the page at all, which is the honest state rather than a miss.
+
+     ⚠ THE LABEL MOVED, THE ID DID NOT — 2026-10-07. The pill was renamed to
+     "My Learning" on 2026-10-01 and this row kept printing "Compass Learning",
+     so the crib sheet sent a moderator looking for words that are not on
+     screen. Renaming the ID is forbidden (see the note on `id`): a link
+     already handed out would silently revive the control.
+
+     ⚠ AND THE NOTE HAD TO COME OUT HERE rather than sitting inside the brace,
+     which is where it was written first. The warning above is stricter than it
+     reads: the generator's regex wants the four fields CONSECUTIVE, so a
+     comment between `id` and `label` drops the row as surely as one before
+     `id`. `SessionSheet.test.ts` caught it. */
   {
     id: 'nav.compass',
-    label: 'Compass Learning',
+    label: 'My Learning',
     region: 'Top nav',
-    asks: 'Do they read "Compass Learning" as the course, or as a catalogue?',
+    asks: 'Do they read "My Learning" as this course, or as a list of courses?',
+  },
+  /* ⚠ THE COMMENT SITS OUTSIDE THE BRACE — see the note above `nav.compass`
+     (`scripts/session-sheet.mjs` reads this file by regex).
+
+     THE COURSE CARD'S PAIR, added 2026-10-07 for the Hybrid Pacing session.
+     They sit together under the course title and are the two things you can do
+     with the course, so a run that kills one and not the other is asking a real
+     question: does the learner want INTO the course, or ABOUT it first?
+
+     ⚠ HYBRID ONLY TODAY. `HybridPacingHome` is the one home that tags them;
+     Testing 3's equivalent is `home.resume` on the Jump Back In widget, which
+     is a different control in a different region. Two rows rather than reusing
+     that id, because the crib sheet groups by REGION — a moderator hunting for
+     "Resume / Start course" under "Jump back in" on a version with no Jump
+     Back In widget is the failure that avoids. */
+  {
+    id: 'home.begin-course',
+    label: 'Begin Course / Resume Course',
+    region: 'Course header',
+    asks: 'Is the primary button the first thing they reach for, or do they read the card first?',
+  },
+  {
+    id: 'home.course-overview',
+    label: 'Course Overview',
+    region: 'Course header',
+    asks: 'Do they want to look the course over before starting, or go straight in?',
   },
   {
     id: 'nav.certificates',
