@@ -1,4 +1,9 @@
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
+import { AccountProvider } from '@/context/AccountContext'
+import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
+import { HelpSupportPanel } from '@/components/support/HelpSupportPanel'
+import { supportConfigFor } from '@/data/support/supportFixtures'
 import { afterEach, describe, expect, it } from 'vitest'
 import { GetLicensedStepPanel } from '@/components/learning/GetLicensedStepPanel'
 import { splitLead } from '@/components/learning/sheetProseStyles'
@@ -102,5 +107,54 @@ describe('the Get Licensed step sheet', () => {
       [...document.querySelectorAll('dd')].map((d) => getComputedStyle(d).fontSize),
     )
     expect(sizes.size).toBe(1)
+  })
+})
+
+describe('Help & Support — Contact Us leaves the product', () => {
+  /* 2026-10-07, the direct ask: Contact Us should link to
+     www.xcelsolutions.com/contact-us.
+
+     ⚠ THE CARD USED TO OPEN A SHEET OF PHONE NUMBERS, and XCEL — the only brand
+     in the union — has `phoneLines: []`, with a TODO in the fixture saying the
+     number is unknown and deliberately not invented. So the slide-over was
+     empty for every learner who pressed it. See ARCHIVED_ITEMS
+     `support-contact-us-sheet`. */
+  it('opens the brand’s contact page in a new tab', () => {
+    const opened: unknown[][] = []
+    const real = window.open
+    window.open = ((...args: unknown[]) => {
+      opened.push(args)
+      return null
+    }) as typeof window.open
+    try {
+      render(
+        <MemoryRouter>
+          <AccountProvider>
+            <FeatureFlagProvider>
+              <HelpSupportPanel />
+            </FeatureFlagProvider>
+          </AccountProvider>
+        </MemoryRouter>,
+      )
+      fireEvent.click(screen.getByRole('button', { name: /Open contact page/i }))
+    } finally {
+      window.open = real
+    }
+    expect(opened).toHaveLength(1)
+    expect(opened[0][0]).toBe('https://www.xcelsolutions.com/contact-us')
+    /* ⚠ `noopener` IS NOT COSMETIC on a `window.open` to another origin — the
+       opened page gets a live `window.opener` handle back without it. The FAQ
+       card beside this one has carried it since it was written. */
+    expect(String(opened[0][2])).toContain('noopener')
+  })
+
+  it('⚠ and it is a different destination from FAQs', () => {
+    /* The fixture's own note warned that the two cards led to the same page
+       while Contact Us had no URL of its own — "if the card reads redundant in
+       review, the fix is to drop the FAQ card, not to invent a URL". A real
+       contact URL arrived instead, so this pins that they have diverged rather
+       than leaving that note true and unread. */
+    const cfg = supportConfigFor('xcel')
+    expect(cfg.contactUrl).not.toBe(cfg.faqUrl)
   })
 })

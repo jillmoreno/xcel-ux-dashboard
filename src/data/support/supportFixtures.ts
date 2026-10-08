@@ -22,6 +22,14 @@ export type SupportConfig = {
   chatName: string
   /** External FAQ page — "Open FAQs" opens this in a new tab. */
   faqUrl: string
+  /** External Contact page — "Contact Us" opens this in a new tab.
+   *
+   *  ⚠ IT REPLACED A SHEET, 2026-10-07 (the direct ask). The card used to open
+   *  `ContactUsSheet`, which lists `phoneLines` — and XCEL's is EMPTY, with a
+   *  TODO below saying the number is unknown and deliberately not invented. So
+   *  the only brand in the union was opening a slide-over with nothing in it.
+   *  The site's own contact page has the real routes. */
+  contactUrl: string
   /** Customer Support form — the "What kind of issue…" dropdown options. */
   issueTypes: string[]
   /** Live Chat — the "What would you like to chat about?" radio options. */
@@ -57,14 +65,18 @@ const SUPPORT_BY_BRAND: Record<Brand, SupportConfig> = {
     // to Customer Support, so this points at the destination directly rather
     // than depending on a redirect the site is free to drop.
     //
-    // Consequence worth knowing: the FAQ card and Contact Us now lead to the
-    // same page. That is the site's own information architecture, not a
-    // mistake here — but if the card reads redundant in review, the fix is to
-    // drop the FAQ card for XCEL, not to invent a URL for it.
+    // ⚠ THIS NOTE SAID "the FAQ card and Contact Us now lead to the same
+    // page" — true while Contact Us opened a sheet of phone numbers and the
+    // closest public page was Customer Support. Contact Us has its own URL as
+    // of 2026-10-07 (`contactUrl`), so the two cards are two destinations
+    // again and the redundancy the note warned about is gone.
     //
     // TODO(data): the support phone number is still unknown — it is not in the
     // brand file, and the line is deliberately omitted rather than invented.
     faqUrl: 'https://www.xcelsolutions.com/customer-support',
+    // SUPPLIED 2026-10-07, the direct ask — not guessed from the sibling
+    // brands' URL shape the way the FAQ path was before it was checked.
+    contactUrl: 'https://www.xcelsolutions.com/contact-us',
     issueTypes: DEFAULT_ISSUE_TYPES,
     chatTopics: DEFAULT_CHAT_TOPICS,
     phoneLines: [],
