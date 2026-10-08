@@ -108,9 +108,7 @@ export function ExamScheduleWidget({
   today = FIXTURE_TODAY,
   compact = false,
   countdown = 'text',
-  unsetEyebrow = true,
-  promptHeading = false,
-  affirmativeFirst = false,
+  treatment = 'default',
 }: {
   shell: CSSProperties
   /**
@@ -143,50 +141,29 @@ export function ExamScheduleWidget({
    */
   countdown?: 'text' | 'flip'
   /**
-   * Whether the UNSET phases carry the "State Exam" eyebrow — 2026-10-07, the
-   * direct ask from Hybrid - Pacing Exploration.
+   * WHICH CARD TREATMENT TO DRAW — 2026-10-07.
    *
-   * ⚠ OPT-OUT, NOT A CHANGE IN PLACE. This widget is rendered by four callers —
-   * `StudyJourneyWidget`, `LearnerFocusedBand`, `HybridHomeV1` and
-   * `HybridPacingHome` — so dropping the eyebrow outright would silently take
-   * it from Testing 3, Eric's version and the shipped Hybrid V1 baseline. The
-   * default keeps every existing caller exactly as it is.
+   * ⚠ IT REPLACED FOUR BOOLEANS, and the reason is worth keeping. Hybrid —
+   * Pacing Exploration asked for its unset card to drop the eyebrow, ask in the
+   * heading face, lead with the affirmative, and sit its saved date closer to
+   * the eyebrow. Each arrived separately and each became its own opt-in, which
+   * by the fourth was four independent flags describing ONE look — and nothing
+   * in the signature said they belonged together or that three of them only
+   * make sense set as a group (`promptHeading` without the eyebrow dropped is a
+   * heading under a heading).
    *
-   * ⚠ IT ONLY REACHES THE UNSET PHASES. A saved date already decides its own
-   * eyebrow ("Exam Date" when `compact`, none otherwise) and this does not
-   * touch that — see the `eyebrow` derivation.
+   * ⚠ OPT-IN STILL, which is the part that must not change. This widget has
+   * four callers — `StudyJourneyWidget`, `LearnerFocusedBand`, `HybridHomeV1`
+   * and `HybridPacingHome` — and one of them is the shipped Hybrid V1 baseline.
+   * `default` is every existing caller, byte for byte.
+   *
+   * ⚠ AND IF A FIFTH DIFFERENCE ARRIVES, FORK THE WIDGET. One named treatment
+   * is a reasonable amount of branching for a shared component; a second one,
+   * or a treatment that needs its own sub-options, is the point where copying
+   * it costs less than threading it — the same call CLAUDE.md makes about
+   * components generally, and the one already made for the home itself.
    */
-  unsetEyebrow?: boolean
-  /**
-   * Draw the unanswered question in the page's heading face rather than body —
-   * 2026-10-07, the direct ask from Hybrid - Pacing Exploration: "have the
-   * question match the same font used for these other headers."
-   *
-   * ⚠ OPT-IN, for the same reason as `unsetEyebrow` beside it. Four callers
-   * render this widget, including the shipped Hybrid V1 baseline; the default
-   * leaves every one of them exactly as it is.
-   *
-   * ⚠ IT PAIRS WITH `unsetEyebrow: false` RATHER THAN STANDING ALONE. Dropping
-   * the eyebrow leaves the question as the card's first line, and a 14px body
-   * sentence is a weak thing to open a card with — the heading face is what
-   * replaces the label that went. Setting this WITHOUT dropping the eyebrow
-   * gives a heading under a heading, which is the shape the eyebrow rule a few
-   * lines up already exists to prevent.
-   */
-  promptHeading?: boolean
-  /**
-   * Put "Yes, I know the date" before "Not yet" — 2026-10-07, the direct ask
-   * from Hybrid - Pacing Exploration.
-   *
-   * ⚠ OPT-IN, the third on this widget and for the same reason as the other
-   * two: four callers render it, one of them the shipped Hybrid V1 baseline.
-   *
-   * ⚠ IT SWAPS THE DOM, NOT A CSS `order`, which is what the note at the
-   * buttons has always said: the order here IS tab order, and a visual swap
-   * would leave a keyboard user reaching them right-to-left while a mouse user
-   * reads left-to-right. Both orders keep reading order and tab order the same.
-   */
-  affirmativeFirst?: boolean
+  treatment?: 'default' | 'pacing'
   /** Opens a sheet by id. This card only ever sends `EXAM_DETAILS_STEP_ID` —
    *  the menu it opens is what sends the real step ids back. */
   onOpenStep?: (id: string) => void
@@ -207,7 +184,7 @@ export function ExamScheduleWidget({
   const activePhase: Phase = phase ?? (stored ? 'scheduled' : 'prompt')
   /* THE CARD'S GROUND — `exam-card-background`. See the flag for why the tint is
      bound to the rail's token rather than copied. */
-  const tinted = useFeatureFlag('exam-card-background').variant === 'tint'
+  const ground = useFeatureFlag('exam-card-background').variant
   /* ⚠ HIDES THE "EXAM DETAILS" LINK ONLY. When `journey-quick-links` is on, the
      Quick links card below carries that destination, so keeping it here would
      be the second copy. Clear exam date is NOT a way into a sheet — it is a
@@ -233,8 +210,9 @@ export function ExamScheduleWidget({
      this condition exists to prevent. */
   /* ⚠ `unsetEyebrow` GATES ONLY THIS ARM — the unset phases. The saved arm
      below keeps its own rule; see the prop's note. */
+  const pacing = treatment === 'pacing'
   const eyebrow = activePhase !== 'scheduled'
-    ? !unsetEyebrow
+    ? pacing
       ? null
       : /* "State Exam", NOT "Quick question" — 2026-10-02, the direct ask.
   
@@ -276,7 +254,25 @@ export function ExamScheduleWidget({
   }
 
   return (
-    <section aria-label="Exam Date" style={tinted ? { ...shell, background: CARD_TINT } : shell}>
+    <section
+      aria-label="Exam Date"
+      style={
+        ground === 'tint'
+          ? { ...shell, background: CARD_TINT }
+          : ground === 'outline'
+            ? /* ⚠ THE SHADOW GOES WITH THE FILL. `shell` carries both, and an
+                 elevation under a transparent card is a shadow cast by nothing
+                 — the thing that makes an outline treatment look like a bug
+                 rather than a choice. */
+              {
+                ...shell,
+                background: 'transparent',
+                boxShadow: 'none',
+                border: '1px solid var(--color-border-subtle)',
+              }
+            : shell
+      }
+    >
       {/* "QUICK QUESTION", not "Step N" — 2026-09-29, and it is the Figma's own
           eyebrow restored.
 
@@ -330,8 +326,8 @@ export function ExamScheduleWidget({
 
       {activePhase === 'prompt' && (
         <PromptState
-          heading={promptHeading}
-          affirmativeFirst={affirmativeFirst}
+          heading={pacing}
+          affirmativeFirst={pacing}
           stateName={stateName}
           onNotYet={() => setPhase('not-yet')}
           onYes={() => openPicker('prompt')}
@@ -360,6 +356,7 @@ export function ExamScheduleWidget({
           today={today}
           compact={compact}
           countdown={countdown}
+          tight={pacing}
           onEdit={() => openPicker('scheduled')}
         />
       )}
@@ -709,6 +706,7 @@ function ScheduledState({
   today,
   compact = false,
   countdown: countdownStyle = 'text',
+  tight = false,
   onEdit,
 }: {
   examLabel: string
@@ -719,6 +717,8 @@ function ScheduledState({
   /** `flip` draws the split-flap board instead of the text figure — see
    *  `countdown` on `ExamScheduleWidget`. */
   countdown?: 'text' | 'flip'
+  /** Pull the date block up under the eyebrow — `treatment: 'pacing'`. */
+  tight?: boolean
   onEdit: () => void
 }) {
   const days = daysUntilIso(examDate, today) ?? 0
@@ -745,7 +745,7 @@ function ScheduledState({
            wrong the moment one of them is a 34px board: the date and the caption
            get squeezed into narrow columns and wrap a word per line. The date
            keeps its own row with Edit; the board takes the row beneath. */
-        <div style={compactFlipColumnStyle}>
+        <div style={tight ? compactFlipColumnTightStyle : compactFlipColumnStyle}>
           {/* ⚠ NO EDIT HERE — it moved up onto the eyebrow row (see the note
               at the eyebrow in `ExamScheduleWidget`). `onEdit` is still a
               required prop and still used by the text arm below. */}
@@ -911,6 +911,17 @@ const compactFlipColumnStyle: CSSProperties = {
   flexDirection: 'column',
   gap: 10,
   marginTop: 6,
+}
+/* ⚠ THE SAME STACK, PULLED UP UNDER `treatment: 'pacing'` — 2026-10-07, the
+   direct ask to reduce the space between the eyebrow and the date. The gap was
+   22px: the section's own `gap: 16` plus this block's `marginTop: 6`. A
+   negative margin is what reaches it, because the 16 belongs to the section and
+   every other row in the card wants it. -6 nets 10px.
+   ⚠ IT IS NOT A CHANGE TO THE STACK ABOVE, deliberately: Hybrid V1 draws the
+   same flip arm and is the shipped baseline. */
+const compactFlipColumnTightStyle: CSSProperties = {
+  ...compactFlipColumnStyle,
+  marginTop: -6,
 }
 
 const compactRowStyle: CSSProperties = {
