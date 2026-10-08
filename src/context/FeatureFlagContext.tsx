@@ -1543,6 +1543,16 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'cre', label: 'Colibri Real Estate' },
       { value: 'mckissock', label: 'McKissock Learning' },
       { value: 'elite', label: 'Elite Learning' },
+      /* ⚠ PALETTES, NOT BRANDS — 2026-10-08, the direct ask. The five above are
+         Colibri companies and swap the LOGO as well as the colours; these four
+         are colour palettes with no company behind them, so the page keeps
+         whichever logo it had. `AtlasPaletteSkin` in `atlasBrandSkin.ts` marks
+         the split, and `Logo` asks `SKIN_LOGOS` whether a skin has artwork
+         rather than listing the ones that do not. */
+      { value: 'grasslands', label: 'Grasslands' },
+      { value: 'everglade', label: 'Everglade' },
+      { value: 'harbor', label: 'Harbor' },
+      { value: 'marigold', label: 'Marigold' },
     ],
     page: 'dashboard-rebrand',
   },

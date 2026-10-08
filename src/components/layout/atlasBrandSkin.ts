@@ -21,7 +21,22 @@ import { useSyncExternalStore } from 'react'
  *
  * The palettes and logos are the brands' own from before 431ec3e.
  */
-export type AtlasSkin = 'global' | 'xcel' | 'cre' | 'mckissock' | 'elite'
+/**
+ * ⚠ TWO KINDS OF SKIN SINCE 2026-10-08, and the distinction is load-bearing.
+ *
+ * A BRAND skin is a Colibri company: it re-points the ramps AND swaps the logo,
+ * and `SKIN_LOGOS` in `Logo.tsx` is keyed by exactly these.
+ *
+ * A PALETTE skin is colours only — four of them arrived with no company behind
+ * them, from palettes the designer supplied. There is no lockup to show, so the
+ * page keeps whichever logo it had. Splitting the union rather than growing an
+ * `Exclude<…>` list in `Logo.tsx` is what keeps that honest: a new brand skin
+ * fails to compile until its logo is supplied, and a new palette one never
+ * pretends to need one.
+ */
+export type AtlasBrandSkin = 'cre' | 'mckissock' | 'elite'
+export type AtlasPaletteSkin = 'grasslands' | 'everglade' | 'harbor' | 'marigold'
+export type AtlasSkin = 'global' | 'xcel' | AtlasBrandSkin | AtlasPaletteSkin
 
 export const ATLAS_SKINS: readonly { skin: AtlasSkin; label: string }[] = [
   // GLOBAL (2026-09-30) — no brand: the Atlas experience in the Compass Design
@@ -33,6 +48,16 @@ export const ATLAS_SKINS: readonly { skin: AtlasSkin; label: string }[] = [
   { skin: 'cre', label: 'Colibri Real Estate' },
   { skin: 'mckissock', label: 'McKissock Learning' },
   { skin: 'elite', label: 'Elite Learning' },
+  /* THE PALETTE THEMES (2026-10-08, the direct ask: "add 4 additional brand
+     themes using the colors from these screenshots"). Colours only — see
+     `AtlasPaletteSkin` above and tokens.css, "FOUR PALETTE THEMES".
+     Named for what each palette IS, since none of them is a company: the
+     source named Grasslands and Everglade itself, Harbor and Marigold are
+     ours. */
+  { skin: 'grasslands', label: 'Grasslands' },
+  { skin: 'everglade', label: 'Everglade' },
+  { skin: 'harbor', label: 'Harbor' },
+  { skin: 'marigold', label: 'Marigold' },
 ]
 
 export const ATLAS_SKIN_PARAM = 'skin'
