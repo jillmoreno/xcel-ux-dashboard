@@ -185,10 +185,27 @@ export function HybridPacingHome({
      ⚠ COUNTED FROM `accessExpiresAt`, NOT FROM `accessEnd`. The two differ on
      the forced arms — `accessEnd` is restated from `today` so the wording and
      the colour agree — and this only renders on the arm where they are the same
-     thing. Reading the prop keeps it honest if that ever stops being true. */
+     thing. Reading the prop keeps it honest if that ever stops being true.
+
+     ⚠ MINUS ONE, AND IT IS NOT A FUDGE — 2026-10-07, the direct ask ("should be
+     30 days" against a bare `daysUntil` of 31). `resolveCeiling` in
+     `src/lib/studyPace.ts` already settles what the expiry date MEANS for this
+     product: "Access gives its LAST USABLE DAY (expiry minus one) — finishing
+     on the day access dies is not finishing." June 11 is the day it dies, so
+     from May 11 there are 30 days left to study in, not 31.
+
+     ⚠ AND THE WHOLE PANEL BELOW ALREADY COUNTS THAT WAY. The presets divide the
+     remaining hours by `daysToCeiling`, which is this same `accessDays - 1`, so
+     a top line saying 31 sat above an estimate built on 30 — two numbers from
+     one date, disagreeing by a day, with nothing on screen to explain it.
+
+     ⚠ `Math.max(0, …)` MATTERS MORE NOW: on the last day the subtraction
+     reaches 0, and a day further it would go negative. Zero is the honest
+     reading — no days left to study — and the expired arm is what actually
+     renders past that point. */
   const accessDays =
     expiry === 'normal' && accessExpiresAt
-      ? Math.max(0, daysUntil(accessExpiresAt, today) ?? 0)
+      ? Math.max(0, (daysUntil(accessExpiresAt, today) ?? 0) - 1)
       : null
   /* ⚠ THE ICON IS PART OF THE STATE, NOT DECORATION — it is the cue that
      survives a greyscale screen, where colour alone says nothing at all. */
@@ -592,7 +609,17 @@ export function HybridPacingHome({
                   without it. */}
               {accessDays != null ? (
                 <>
+                  {/* ⚠ THE SPACES AROUND THE RULE ARE FOR THE TEXT STREAM, not
+                      for the layout. The rule is `aria-hidden` and empty, so
+                      without them the paragraph reads "Access ends June 1130
+                      days" — a date running into a number, which is how a
+                      screen reader and anything else reading `textContent`
+                      hears it. They cost nothing on screen: a whitespace-only
+                      text node in a flex container is not rendered, and the
+                      rule's own margins own the gap. */}
+                  {' '}
                   <span aria-hidden style={ACCESS_RULE} />
+                  {' '}
                   {accessDays} {accessDays === 1 ? 'day' : 'days'}
                 </>
               ) : null}

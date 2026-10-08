@@ -364,3 +364,51 @@ describe('the journey eyebrow names whose journey it is', () => {
     expect(eyebrow?.textContent).toBe('Step 1 · XCEL Study Journey')
   })
 })
+
+describe('the access countdown counts study days, not calendar days', () => {
+  /* 2026-10-07, the direct ask: a bare `daysUntil` printed 31 against a June 11
+     expiry on May 11, and the answer is 30.
+
+     ⚠ IT IS NOT AN OFF-BY-ONE FUDGE. `resolveCeiling` already settles what the
+     expiry date MEANS here: "Access gives its LAST USABLE DAY (expiry minus
+     one) — finishing on the day access dies is not finishing." The pace presets
+     below divide the remaining hours by that same figure, so a top line saying
+     31 sat above an estimate built on 30 — two numbers from one date,
+     disagreeing by a day, with nothing on screen to explain it. This pins the
+     two to one reading. */
+  const accessLine = () =>
+    [...document.querySelectorAll('p')]
+      .find((p) => /Access ends/.test(p.textContent ?? ''))
+      ?.textContent?.replace(/\s+/g, ' ')
+      .trim()
+
+  it('says 30 days for a June 11 expiry on May 11', () => {
+    renderPacing()
+    expect(accessLine()).toBe('Access ends June 11 30 days')
+  })
+
+  it('⚠ floors at zero rather than going negative', () => {
+    /* The subtraction reaches 0 on the last usable day and would go negative
+       the day after. Zero is the honest reading — no days left to study in —
+       and the expired arm is what actually renders past that point. */
+    render(
+      <MemoryRouter initialEntries={['/dashboard-rebrand?demo=1&version=hybrid-pacing']}>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <HybridPacingHome
+              path={PATH}
+              courseTitle="New York Life and Health Pre-licensing"
+              percent={0}
+              today={TODAY}
+              hoursRemaining={40}
+              /* TODAY itself: `daysUntil` is 0, so the study count is -1. */
+              accessExpiresAt="2026-05-11"
+              notStarted
+            />
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+    expect(accessLine()).toBe('Access ends May 11 0 days')
+  })
+})
