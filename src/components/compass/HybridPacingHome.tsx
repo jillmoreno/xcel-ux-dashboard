@@ -313,10 +313,17 @@ export function HybridPacingHome({
      loveseat. The tag is the same scale written down, which is why it is a
      column of this table rather than a lookup somewhere else — an icon swapped
      without its word is how the two come to disagree. */
+  /* ⚠ THE COMPONENT, NOT A BUILT ELEMENT — changed 2026-10-07 when the icons
+     were asked to grow. These were `icon: <MugHot size={14} …/>`, which fixed
+     the size in the TABLE and so in both places that read it: the chooser rows,
+     where the glyph now sits beside three lines and 14 was lost against them,
+     and the in-progress line, where it sits beside one and 14 is right.
+     Holding the component lets each call site choose, instead of one number
+     being wrong somewhere. */
   const PACE_WEEKS = [
-    { weeks: 1, label: '1 Week', tag: 'Fast Track', icon: <PersonRunningFast size={14} aria-hidden /> },
-    { weeks: 2, label: '2 Weeks', tag: 'Steady', icon: <MugHot size={14} aria-hidden /> },
-    { weeks: 3, label: '3 Weeks', tag: 'Relaxed', icon: <Loveseat size={14} aria-hidden /> },
+    { weeks: 1, label: '1 Week', tag: 'Fast Track', Icon: PersonRunningFast },
+    { weeks: 2, label: '2 Weeks', tag: 'Steady', Icon: MugHot },
+    { weeks: 3, label: '3 Weeks', tag: 'Relaxed', Icon: Loveseat },
   ] as const
 
   /* ⚠ PACING — THE EXAM DATE NARROWS THE OPTIONS, 2026-10-07, the direct ask:
@@ -373,15 +380,15 @@ export function HybridPacingHome({
      it is a split rather than a move: the two sentences do different jobs and
      were doing them in one 11px paragraph. The lead ASKS THE QUESTION the rows
      answer — they otherwise never say a week of what — so it has to precede
-     them. "You can always adjust…" is a reassurance about the choice just
-     made, which only means anything once there is one, so it reads after.
+     them. The note is a reassurance about the choice just made, which only
+     means anything once there is one, so it reads after.
 
      ⚠ ONLY IN THE UNRESTRICTED CASE. The two narrowed messages already end on
      their own escape hatch ("Change your exam date and this will adjust"), and
      a second, more relaxed promise under the options would undercut the
      constraint the paragraph above just explained. */
   const paceNote = unrestricted
-    ? 'You can always adjust your goal and customize your study plan once you’re in the course.'
+    ? 'This is a suggested starting point. Once you begin the course, you can adjust your goal and customize your study plan to better fit your schedule.'
     : null
 
   /* ⚠ THE SAME ICON THE 0% ROW WOULD HAVE SHOWN. ⚠ AND A FALLBACK, because
@@ -477,7 +484,7 @@ export function HybridPacingHome({
     return `about ${Number.isInteger(half) ? half : half.toFixed(1)} ${unit}/day`
   }
 
-  const paceIcon = (PACE_WEEKS.find((o) => o.weeks === weeks) ?? PACE_WEEKS[PACE_WEEKS.length - 1]).icon
+  const PaceIcon = (PACE_WEEKS.find((o) => o.weeks === weeks) ?? PACE_WEEKS[PACE_WEEKS.length - 1]).Icon
 
   const lessonStop = stops[currentIdx]
   const lessonsDone = lessonStop?.completed
@@ -738,8 +745,8 @@ export function HybridPacingHome({
                       right for you…") on the argument that a question put the
                       whole weight of the decision here, on a screen where the
                       learner has seen nothing of the course yet. What actually
-                      answered that was the SPLIT below, not the mood: the "you
-                      can always adjust" half now sits under the options and
+                      answered that was the SPLIT below, not the mood: the
+                      adjustable half now sits under the options and
                       carries the not-final part on its own, which leaves the
                       lead free to do the one job a heading over three
                       durations has to do — say what they are durations OF.
@@ -779,7 +786,14 @@ export function HybridPacingHome({
                                 : 'var(--color-compass-page-button)',
                             }}
                           >
-                            {opt.icon}
+                            {/* ⚠ 18, NOT THE 14 IT SHIPPED AT — 2026-10-07, the
+                                direct ask. The rows grew a third line the same
+                                day and the glyph did not: a 14px mark against
+                                44px of stacked text reads as a bullet rather
+                                than as the pace's own sign, which is the one
+                                job it has here. The in-progress line below
+                                keeps 14, where it sits beside a single line. */}
+                            <opt.Icon size={18} aria-hidden />
                           </span>
                           {/* ⚠ NO DATE ON THE ROW — 2026-10-07, the direct ask,
                               reversing "each selection should have an Estimated
@@ -905,7 +919,7 @@ export function HybridPacingHome({
                     aria-hidden
                     style={{ display: 'inline-flex', flex: 'none', color: 'var(--color-compass-page-button)' }}
                   >
-                    {paceIcon}
+                    <PaceIcon size={14} aria-hidden />
                   </span>
                   <span style={{ ...BODY_TEXT, fontSize: 13, fontWeight: 700, color: 'var(--color-text-primary)' }}>
                     Complete in {weeks} {weeks === 1 ? 'Week' : 'Weeks'}

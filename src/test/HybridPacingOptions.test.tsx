@@ -131,7 +131,7 @@ describe('what the panel says about it', () => {
        test below does pin the question's wording, but only to tell the two
        paragraphs apart — it is about their ORDER.) */
     renderPacing()
-    expect(screen.getByText(/always adjust your goal/i)).toBeTruthy()
+    expect(screen.getByText(/adjust your goal/i)).toBeTruthy()
     /* And it is not the restricted message, which is the thing this arm is
        distinguishing itself from. */
     expect(screen.queryByText(/only pace that finishes in time/i)).toBeNull()
@@ -143,14 +143,14 @@ describe('what the panel says about it', () => {
 
        ⚠ TWO PARAGRAPHS, NOT ONE, AND IN THIS ORDER. They do different jobs —
        the lead ASKS what the rows answer (they otherwise never say a week of
-       WHAT), and "you can always adjust" reassures about a choice, which only means
-       anything once there is one to have made. A later tidy that rejoins them
+       WHAT), and the note reassures about a choice, which only means anything
+       once there is one to have made. A later tidy that rejoins them
        loses that, and rejoining them reads as formatting rather than as a
        reversal, so the ORDER is what this pins rather than the wording. */
     renderPacing()
     const group = screen.getByRole('radiogroup', { name: /Set your study pace/i })
     const lead = screen.getByText(/How quickly would you like to complete/i)
-    const note = screen.getByText(/always adjust your goal/i)
+    const note = screen.getByText(/adjust your goal/i)
     expect(lead).not.toBe(note)
     /* `compareDocumentPosition` rather than reading the parent's children:
        it says "earlier in the document" without pinning how deep either sits,
@@ -164,7 +164,7 @@ describe('what the panel says about it', () => {
        exam date and this will adjust"), so a second, more relaxed promise
        under the options would undercut the constraint just explained. */
     renderPacing(inDays(8))
-    expect(screen.queryByText(/always adjust your goal/i)).toBeNull()
+    expect(screen.queryByText(/adjust your goal/i)).toBeNull()
   })
 
   it('names the exam and the distance when only one pace is left', () => {
