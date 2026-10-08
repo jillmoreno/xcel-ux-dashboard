@@ -21,10 +21,16 @@ import { LiveChatWidget } from './LiveChatWidget'
  * card now behaves like FAQs: a brand-keyed URL, a new tab. `ContactUsSheet`
  * is kept, unreferenced — see ARCHIVED_ITEMS `support-contact-us-sheet`.
  *
+ * ⚠ `compact` IS THE SHEET'S SHAPE — 2026-10-07, the direct ask ("these cards
+ * are too big. when in the sheet view, remove the Get help link, etc."). It is
+ * threaded rather than detected (no "am I in a sheet?" check) because the panel
+ * cannot know what it is inside, and a component that guesses at its own
+ * container is the thing that breaks the day it gains a third home.
+ *
  * Open to members AND non-members — support isn't gated. The section hero
  * ("Help & Support" + description) is owned by the shell's SectionShell.
  */
-export function HelpSupportPanel() {
+export function HelpSupportPanel({ compact }: { compact?: boolean } = {}) {
   const { brand } = useAccount()
   const { faqUrl, contactUrl } = supportConfigFor(brand)
   const [customerOpen, setCustomerOpen] = useState(false)
@@ -32,8 +38,9 @@ export function HelpSupportPanel() {
 
   return (
     <div>
-      <div style={gridStyle}>
+      <div style={compact ? { ...gridStyle, gap: 10 } : gridStyle}>
         <SupportCard
+          compact={compact}
           icon={LifeRing}
           title="Customer Support"
           description="Get help and answers to common questions."
@@ -41,6 +48,7 @@ export function HelpSupportPanel() {
           onSelect={() => setCustomerOpen(true)}
         />
         <SupportCard
+          compact={compact}
           icon={MessageCircle}
           title="Live Chat"
           description="Talk via chat with a support representative."
@@ -48,6 +56,7 @@ export function HelpSupportPanel() {
           onSelect={() => setChatOpen(true)}
         />
         <SupportCard
+          compact={compact}
           icon={HelpCircle}
           title="FAQs"
           description="Browse answers to frequently asked questions."
@@ -55,6 +64,7 @@ export function HelpSupportPanel() {
           onSelect={() => window.open(faqUrl, '_blank', 'noopener,noreferrer')}
         />
         <SupportCard
+          compact={compact}
           icon={Phone}
           title="Contact Us"
           /* ⚠ "BY PHONE" WENT WITH THE SHEET. It described what the slide-over

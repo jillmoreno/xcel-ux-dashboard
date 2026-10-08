@@ -158,3 +158,44 @@ describe('Help & Support — Contact Us leaves the product', () => {
     expect(cfg.contactUrl).not.toBe(cfg.faqUrl)
   })
 })
+
+describe('the Help sheet’s compact support cards', () => {
+  /* 2026-10-07, the direct ask: "these cards are too big. when in the sheet
+     view, remove the Get help link, etc."
+
+     ⚠ THE ACTION ROW IS AN ECHO, which is why it is the right thing to lose
+     first: the whole card is the `<button>`, so the row carries no destination
+     the card does not. `action` stays REQUIRED in both shapes — it is what the
+     card promises ("Open FAQs" says this one leaves the product) — so the two
+     surfaces cannot drift into describing the control differently. */
+  function renderPanel(compact?: boolean) {
+    return render(
+      <MemoryRouter>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <HelpSupportPanel compact={compact} />
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+  }
+
+  it('drops the action row in the sheet and keeps it in the section', () => {
+    const { unmount } = renderPanel(true)
+    expect(screen.queryByText('Open FAQs')).toBeNull()
+    expect(screen.getByText('FAQs')).toBeTruthy()
+    unmount()
+    renderPanel()
+    expect(screen.getByText('Open FAQs')).toBeTruthy()
+  })
+
+  it('⚠ keeps every card clickable either way', () => {
+    /* The row was the only thing that LOOKED like the control. Losing it must
+       not lose the control — this is the assertion that fails if the compact
+       branch ever drops the button rather than its echo. */
+    renderPanel(true)
+    const cards = document.querySelectorAll('button.cre-support-card')
+    expect(cards).toHaveLength(4)
+    for (const c of cards) expect(c.className).toContain('cre-support-card--compact')
+  })
+})

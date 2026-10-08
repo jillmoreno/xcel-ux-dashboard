@@ -141,12 +141,11 @@ export function HybridPacingHome({
     [today, hoursRemaining, accessExpiresAt, examDate, notStarted],
   )
   const preset = defaultPreset(model)
-  /* ⚠ PACING — THE DAY COUNT IS GONE, 2026-10-07, the direct ask: "we will
-     incorporate the countdown of days at a later time with the notifications
-     logic etc." `accessDays` went with it rather than sitting unread —
-     `noUnusedLocals` would not have kept it, and a dead local is a worse
-     placeholder than this note. To bring it back:
-     `Math.max(0, daysUntil(accessExpiresAt, today) ?? 0)`.
+  /* ⚠ PACING — THE DAY COUNT IS BACK, 2026-10-07 ("add a divider line and then
+     30 days"), and this note used to record its removal earlier the same day:
+     "we will incorporate the countdown of days at a later time with the
+     notifications logic etc." This is that later time, and it arrives as the
+     second half of the card's top line rather than as a notification.
 
      ⚠ LONG MONTH, NOT `formatPaceDate`. That helper is `{month:'short'}` —
      "Jun 11" — and this line was specified as "Access ends June 11". It is the
@@ -177,6 +176,20 @@ export function HybridPacingHome({
         : expiry === 'soon'
           ? `Access ends in 5 days — ${accessLong}`
           : `Access ends ${accessLong}`
+  /* ⚠ THE NORMAL ARM ONLY, and that is the whole rule. The three expiry arms
+     already LEAD with their day count ("Access ends in 2 days — May 13"),
+     because at that range the number is the message; a second "2 days" after a
+     rule would say it twice in one line. Normal has no urgency to lead with, so
+     the count follows the date as a quiet second fact.
+
+     ⚠ COUNTED FROM `accessExpiresAt`, NOT FROM `accessEnd`. The two differ on
+     the forced arms — `accessEnd` is restated from `today` so the wording and
+     the colour agree — and this only renders on the arm where they are the same
+     thing. Reading the prop keeps it honest if that ever stops being true. */
+  const accessDays =
+    expiry === 'normal' && accessExpiresAt
+      ? Math.max(0, daysUntil(accessExpiresAt, today) ?? 0)
+      : null
   /* ⚠ THE ICON IS PART OF THE STATE, NOT DECORATION — it is the cue that
      survives a greyscale screen, where colour alone says nothing at all. */
   const accessIcon =
@@ -570,6 +583,19 @@ export function HybridPacingHome({
                 </span>
               ) : null}
               {accessEndsLabel}
+              {/* ⚠ A RULE, NOT A MIDDOT — 2026-10-07, the direct ask ("add a
+                  divider line and then 30 days"). It is the separator this
+                  page already uses between a thing and its count: the journey
+                  header reads "Pre-Licensing Lessons │ 26 of 42 Completed".
+                  `aria-hidden`, because a rule is not punctuation a screen
+                  reader should voice — the two facts read as one sentence
+                  without it. */}
+              {accessDays != null ? (
+                <>
+                  <span aria-hidden style={ACCESS_RULE} />
+                  {accessDays} {accessDays === 1 ? 'day' : 'days'}
+                </>
+              ) : null}
             </p>
           ) : null}
         </div>
@@ -1761,11 +1787,31 @@ const CARD_TOPLINE: CSSProperties = {
 }
 const ACCESS_NOTE: CSSProperties = {
   margin: 0,
+  /* `inline-flex` since the line gained a rule (2026-10-07) — it centres the
+     rule against the text's box rather than its baseline, which is what a 1px
+     vertical mark needs. */
+  display: 'inline-flex',
+  alignItems: 'center',
   fontFamily: 'var(--font-body)',
   fontSize: 12,
   lineHeight: '16.5px',
   fontWeight: 300,
   color: 'var(--color-text-secondary)',
+}
+/* ⚠ SHORTER THAN THE LINE, not full height — 10px against a 16.5px line. A
+   rule that matches the text box reads as a table border; this one reads as a
+   separator. The margins are the gap on both sides, so the two facts sit
+   evenly either side of it. */
+const ACCESS_RULE: CSSProperties = {
+  width: 1,
+  height: 10,
+  flex: 'none',
+  margin: '0 8px',
+  /* ⚠ ITS OWN TOKEN, NOT `currentColor`. The expiry arms recolour this line —
+     amber, red, charcoal — and a rule that followed the ink would turn into a
+     second warning mark. It never renders on those arms today, which is
+     exactly why it must not be able to start. */
+  background: 'var(--color-border-subtle)',
 }
 /* One line under the course title. Body face, not the heading serif: it is a
    label on the heading rather than a second heading — the same call the lesson
