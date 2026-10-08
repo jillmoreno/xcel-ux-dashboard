@@ -986,7 +986,14 @@ export function HybridPacingHome({
               <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
                 <p style={STEP_EYEBROW}>
                   <span style={{ fontWeight: 700 }}>Step 1</span>
-                  <span style={{ fontWeight: 600 }}> · Study Journey</span>
+                  {/* ⚠ "XCEL Study Journey" — 2026-10-07, the direct ask. The
+                      brand is doing work here, not decoration: steps 2 and 3 of
+                      this list are the STATE's process (pass the exam, apply
+                      for the licence), so naming step 1 as XCEL's is what says
+                      where the product's responsibility ends. The "·" is kept
+                      as the separator — the ask wrote a hyphen inline, but
+                      every eyebrow on this page uses the middot. */}
+                  <span style={{ fontWeight: 600 }}> · XCEL Study Journey</span>
                 </p>
                 <p style={STEP_TITLE}>Complete Coursework</p>
               </div>
@@ -1050,20 +1057,36 @@ export function HybridPacingHome({
                 detail={apply.detail}
                 link={apply.detailLabel ?? 'How to apply'}
                 onLink={onOpenStep ? () => onOpenStep(apply.id) : undefined}
+                /* ⚠ THE SAME SHEET THE QUICK LINKS ROW OPENS — 2026-10-07, the
+                   direct ask, and deliberately the SAME `onOpenRequirements`
+                   rather than a second route to the same content. */
+                extra={
+                  onOpenRequirements
+                    ? { label: 'State Requirements', onClick: onOpenRequirements }
+                    : undefined
+                }
               />
             </div>
             {/* ⚠ HYBRID #11 — THE "<State> State Requirements" BUTTON WENT,
                 2026-10-05, the direct ask. It was a full-width secondary button
                 closing the journey column, and the Quick Links card beside it
                 already carries a "State Requirements" row to the same sheet
-                (`onOpenRequirements`, still passed — see `SideLink` below). Two
-                controls, one destination, and the button was the louder of the
-                two for a reference page nobody opens mid-lesson.
+                (`onOpenRequirements`, still passed — see `SideLink` below). The
+                argument was about VOLUME, not about count: the button was the
+                louder of the two controls for a reference page nobody opens
+                mid-lesson.
 
-                ⚠ THE `data-cta-id` WENT WITH IT: `home.state-requirements` now
-                reports from the Quick Links row alone on this version, so a
-                funnel comparing it against Eric's home is counting one control
-                where his counts two. */}
+                ⚠ AND THAT IS WHY STEP 3 CAN CARRY IT AGAIN (2026-10-07, the
+                direct ask) WITHOUT REVERSING THIS. The link sits inside a step
+                the learner has to expand, under "How to apply", where applying
+                is the thing the requirements are a requirement OF. It is in
+                context and quiet; the button was neither.
+
+                ⚠ THE `data-cta-id` DID NOT COME BACK. Neither the Quick Links
+                row nor the step links carry one on this version (see the note
+                at `SideLink`), so `home.state-requirements` still reports from
+                nowhere here — a funnel comparing this home against Eric's is
+                counting zero controls where his counts two. */}
           </div>
         </div>
       </section>
@@ -1473,16 +1496,26 @@ function Step({
   detail,
   link,
   onLink,
+  extra,
 }: {
   number: number
   title: string
   detail?: string
   link: string
   onLink?: () => void
+  /** A SECOND link under the first — 2026-10-07, the direct ask, for Step 3's
+   *  "State Requirements".
+   *
+   *  ⚠ ONE OBJECT RATHER THAN A `link2` / `onLink2` PAIR. The existing pair can
+   *  legally half-exist (`link` with no `onLink` renders nothing), which is
+   *  fine for the one it describes and would be a silent no-op here — a label
+   *  set without its handler draws no link at all and nothing complains.
+   *  Bundled, the two cannot come apart. */
+  extra?: { label: string; onClick: () => void }
 }) {
   const [open, setOpen] = useState(false)
   const bodyId = `hybrid-step-${number}-body`
-  const hasBody = Boolean(detail || onLink)
+  const hasBody = Boolean(detail || onLink || extra)
   return (
     <section aria-label={title} style={{ display: 'flex', flexDirection: 'column', gap: open ? 14 : 0 }}>
       <button
@@ -1545,10 +1578,24 @@ function Step({
       {open && hasBody ? (
         <div id={bodyId} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
           {detail ? <p style={{ ...BODY_TEXT, margin: 0, fontSize: 13, lineHeight: '18px', color: 'var(--color-text-secondary)' }}>{detail}</p> : null}
-          {onLink ? (
-            <button type="button" className="cre-compass-v2-link" onClick={onLink} style={LINK}>
-              {link} →
-            </button>
+          {/* ⚠ A NESTED COLUMN AT 8, not the body's 14 — the technique the
+              journey block above uses for the same reason. The 14 separates the
+              PROSE from the links; two links 14 apart read as two unrelated
+              controls rather than a short list, and raising the body gap to
+              suit them would loosen the paragraph too. */}
+          {onLink || extra ? (
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8 }}>
+              {onLink ? (
+                <button type="button" className="cre-compass-v2-link" onClick={onLink} style={LINK}>
+                  {link} →
+                </button>
+              ) : null}
+              {extra ? (
+                <button type="button" className="cre-compass-v2-link" onClick={extra.onClick} style={LINK}>
+                  {extra.label} →
+                </button>
+              ) : null}
+            </div>
           ) : null}
         </div>
       ) : null}
