@@ -209,7 +209,7 @@ describe('the Compass rail is Anjani’s on Hybrid', () => {
       'Course',
       'Study planner',
       'Flashcards',
-      'Exam Simulator',
+      'Exam simulator',
       'Progress',
     ])
   })
@@ -219,6 +219,44 @@ describe('the Compass rail is Anjani’s on Hybrid', () => {
     expect(railOf()).toHaveLength(8)
     expect(railOf()).toContain('Rubi Insights')
     expect(railOf()).toContain('Overview')
+  })
+
+  it('⚠ is a DIFFERENT rail, not the shared one relabelled', () => {
+    /* THE CORRECTION THIS PINS. The first pass swapped only the row LIST inside
+       `CompassSidebar` and was rejected — "i still need anjanis rails that
+       exist in her design. not these." Hers is a different object: the XCEL
+       lockup where the shared one has a crumb and a 62% bar, no row icons, and
+       a footer the shared one does not have at all. Asserting the rows alone
+       would pass against exactly the version that was wrong. */
+    renderRail('hybrid-pacing')
+    const rail = document.querySelector('aside')!
+    const text = (rail.textContent ?? '').replace(/\s+/g, ' ')
+
+    /* The footer — course hours, the exam and its state, the learner. */
+    expect(text).toContain('Course hours')
+    expect(text).toContain('28 of 40 · to take the exam')
+    expect(text).toContain('not booked')
+    expect(text).toContain('Jordan R.')
+
+    /* ⚠ AND WHAT IT MUST NOT CARRY. The shared sidebar names the course and
+       draws its progress; hers does not, and the global header's Home pill is
+       why dropping the crumb is safe here. */
+    expect(text).not.toContain('New York Life and Health Pre-licensing')
+    expect(text).not.toContain('to complete')
+
+    /* Rows are label-only — an icon in a row would be the shared sidebar's
+       treatment leaking back in. */
+    const rows = [...rail.querySelectorAll('nav[aria-label="Course pages"] button')]
+    expect(rows).toHaveLength(6)
+    for (const r of rows) expect(r.querySelector('svg')).toBeNull()
+  })
+
+  it('⚠ the shared sidebar still names its course', () => {
+    /* The other half: nothing about hers reached Eric's. */
+    renderRail('eric-atlas-v1')
+    const rail = document.querySelector('aside')!
+    expect(rail.textContent).toContain('New York Life and Health Pre-licensing')
+    expect(rail.textContent).not.toContain('Course hours')
   })
 })
 

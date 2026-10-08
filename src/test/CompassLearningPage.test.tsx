@@ -16,9 +16,15 @@ import { COMPASS_ASSIGNMENTS } from '@/data/compassLearningFixtures'
  * states apart.
  */
 
+/* ⚠ PINS ERIC'S VERSION — 2026-10-08. This file is about the SHARED
+   `CompassSidebar` and the Overview body it opens on. Hybrid draws a different
+   rail entirely (`CompassRail` — the XCEL lockup, no course title, no progress
+   bar) and became the brand DEFAULT the same day, so a bare URL had quietly
+   stopped describing the page this file tests. Hybrid's own rail is pinned in
+   `AtlasTopNav.test.tsx`. */
 function renderPage() {
   return render(
-    <MemoryRouter>
+    <MemoryRouter initialEntries={['/dashboard-rebrand?version=eric-atlas-v1']}>
       <AccountProvider>
         <FeatureFlagProvider>
           <CompassLearningPage

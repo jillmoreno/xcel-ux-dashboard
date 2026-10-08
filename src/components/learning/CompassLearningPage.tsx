@@ -1,5 +1,7 @@
 import { useState, type CSSProperties } from 'react'
 import { CompassSidebar, CompassPageBody, type CompassPage } from './CompassCoursePlayer'
+import { HYBRID_COMPASS_PAGES } from './compassPages'
+import { CompassRail } from './CompassRail'
 import { CompassLearningOverview } from './CompassLearningOverview'
 import { CompassCourseLanding } from './CompassCourseLanding'
 import { useAccount } from '@/context/AccountContext'
@@ -65,6 +67,14 @@ export function CompassLearningPage({
   const hideCrumb = useNavPlacement() === 'hybrid'
   return (
     <div style={pageStyle}>
+      {/* ⚠ HER RAIL IS A DIFFERENT OBJECT, not the shared one relabelled — see
+          `CompassRail`. The first pass swapped only the row list inside
+          `CompassSidebar` and was rejected: hers has the XCEL lockup where that
+          one has a crumb and a progress bar, no row icons, and a footer of
+          course hours / exam date / the learner. */}
+      {hybrid ? (
+        <CompassRail page={page} onSelectPage={setPage} pages={HYBRID_COMPASS_PAGES} />
+      ) : (
       <CompassSidebar
         courseTitle={courseTitle}
         percentComplete={percentComplete}
@@ -76,6 +86,7 @@ export function CompassLearningPage({
         hideCrumb={hideCrumb}
         timeRemaining={timeRemaining}
       />
+      )}
       <div style={mainStyle}>
         {page === 'overview' ? (
           <>

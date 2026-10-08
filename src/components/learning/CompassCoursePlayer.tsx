@@ -19,11 +19,11 @@ import {
   MagnifyingGlass,
   Sliders,
   X,
-  CalendarRegular,
 } from '@/icons'
 import { useSearchParams } from 'react-router-dom'
 import { useAccount } from '@/context/AccountContext'
 import { isHybridVersion, resolveDashboardVersion } from '@/data/dashboardVersions'
+import { HYBRID_COMPASS_PAGES } from './compassPages'
 import {
   NY_LH_COURSE_CHAPTERS,
   NY_LH_CURRENT_CHAPTER_INDEX,
@@ -121,38 +121,6 @@ const COMPASS_PAGES: {
   { id: 'rubi-insights', label: 'Rubi Insights', icon: RubiLogo },
 ]
 
-/**
- * ⚠ HYBRID'S RAIL IS ANJANI'S — 2026-10-08, the direct ask: "left rail needs to
- * match what is in anjanis prototype."
- *
- * Her `screen-dashboard` draws six rows, not eight: Dashboard, Course, Study
- * planner, Flashcards, Exam simulator, Progress. So three of the product's go
- * (Resources, Readiness, Rubi Insights), one arrives (Study planner), and
- * Overview is called Dashboard.
- *
- * ⚠ A SECOND LIST RATHER THAN AN EDIT, because `COMPASS_PAGES` above is Eric's
- * and his versions draw all eight — the note at `CompassLearningPage` says it
- * "carries exactly the eight rows the design draws". Editing it in place would
- * take three rows off his rail to settle a question about hers.
- *
- * ⚠ `study-planner` RENDERS AN EMPTY GROUND, exactly as Resources, Readiness
- * and Rubi Insights already do — `CompassPageBody` gives every page but
- * Overview a blank region. That is the existing honest placeholder rather than
- * a new dead end, and it is what her Planner screen would fill.
- *
- * ⚠ THE SHARED LABELS KEEP THE PRODUCT'S CASING ("Exam Simulator", not her
- * "Exam simulator"). Her file is sentence case throughout; matching that is a
- * one-word change per row if it turns out to be the design rather than her
- * prototype's own styling.
- */
-const HYBRID_COMPASS_PAGES: typeof COMPASS_PAGES = [
-  { id: 'overview', label: 'Dashboard', icon: Layout },
-  { id: 'course', label: 'Course', icon: BookFull },
-  { id: 'study-planner', label: 'Study planner', icon: CalendarRegular },
-  { id: 'flashcards', label: 'Flashcards', icon: Notebook },
-  { id: 'exam-simulator', label: 'Exam Simulator', icon: ClipboardList },
-  { id: 'progress', label: 'Progress', icon: ShoePrints },
-]
 
 /**
  * THE OVERVIEW PAGE'S LO-FI SECTIONS — 2026-09-23, the direct ask: "add some
