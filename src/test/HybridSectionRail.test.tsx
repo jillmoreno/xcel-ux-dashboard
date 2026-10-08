@@ -131,3 +131,39 @@ describe('no other version moved', () => {
     expect(screen.getByRole('button', { name: /Collapse sidebar/i })).toBeTruthy()
   })
 })
+
+describe('Resources takes the crumb without taking the header', () => {
+  /* 2026-10-07, the direct ask: "resources page needs a back to Home link in
+     top left (same as my courses)."
+
+     ⚠ IT IS NOT A `BREADCRUMB_SECTIONS` ENTRY, and that is what these pin. That
+     list swaps the page's title for Home's 28/700 one; the Atlas/Compass
+     Resources page draws its own serif title and lede, so joining the list
+     would have meant either losing that header or stacking two. The ask was for
+     the LINK. See `SectionBackCrumb`. */
+  it.each([
+    ['Hybrid V1', 'hybrid-v1'],
+    ['the pacing fork', 'hybrid-pacing'],
+  ])('gives %s the Back to Home crumb on Resources', (_label, version) => {
+    renderShell(`/dashboard-rebrand?demo=1&version=${version}&section=resources`)
+    expect(screen.getByRole('button', { name: /Back to Home/i })).toBeTruthy()
+  })
+
+  it('keeps the serif title and lede that page owns', () => {
+    /* The crumb sits ABOVE this, not instead of it. A regression here looks
+       like a missing title, not a missing link. */
+    renderShell('/dashboard-rebrand?demo=1&version=hybrid-v1&section=resources')
+    expect(screen.getByRole('heading', { level: 1, name: /Resources/i })).toBeTruthy()
+  })
+
+  it('⚠ and no other version gains it', () => {
+    /* The same standing instruction as the rail above, and the same reasoning
+       that excludes the left-nav arm from `useSectionBreadcrumb`: Eric's Atlas
+       versions KEEP the rail on their inner pages, so Home is already on
+       screen there and a crumb would be a second way to a place you can see.
+       Hybrid drops that rail, which is what leaves Resources with no Home
+       control at all — that absence is what this link fills. */
+    renderShell('/dashboard-rebrand?demo=1&version=eric-atlas-v1&section=resources')
+    expect(screen.queryByRole('button', { name: /Back to Home/i })).toBeNull()
+  })
+})

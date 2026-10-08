@@ -134,6 +134,36 @@ describe('what the panel says about it', () => {
     expect(screen.queryByText(/only pace that finishes in time/i)).toBeNull()
   })
 
+  it('splits that invitation around the options', () => {
+    /* 2026-10-07, the direct ask: "the You can always adjust… part of this
+       copy, move to the bottom of the options to split up this text more."
+
+       ⚠ TWO PARAGRAPHS, NOT ONE, AND IN THIS ORDER. They do different jobs —
+       "Pick the pace" INTRODUCES rows that otherwise never say a week of what,
+       and "you can always adjust" reassures about a choice, which only means
+       anything once there is one to have made. A later tidy that rejoins them
+       loses that, and rejoining them reads as formatting rather than as a
+       reversal, so the ORDER is what this pins rather than the wording. */
+    renderPacing()
+    const group = screen.getByRole('radiogroup', { name: /Set your study pace/i })
+    const lead = screen.getByText(/Pick the pace that feels right/i)
+    const note = screen.getByText(/always adjust your goal/i)
+    expect(lead).not.toBe(note)
+    /* `compareDocumentPosition` rather than reading the parent's children:
+       it says "earlier in the document" without pinning how deep either sits,
+       which is the part that is allowed to change. */
+    expect(lead.compareDocumentPosition(group) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+    expect(group.compareDocumentPosition(note) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy()
+  })
+
+  it('drops the reassurance when the exam date narrows the list', () => {
+    /* ⚠ THE RESTRICTED MESSAGES END ON THEIR OWN ESCAPE HATCH ("change your
+       exam date and this will adjust"), so a second, more relaxed promise
+       under the options would undercut the constraint just explained. */
+    renderPacing(inDays(8))
+    expect(screen.queryByText(/always adjust your goal/i)).toBeNull()
+  })
+
   it('names the exam and the distance when only one pace is left', () => {
     /* ⚠ THE HALF OF THE ASK THAT IS NOT ARITHMETIC — "the text will need to
        update to explain why they only have the 1 option". Three options
