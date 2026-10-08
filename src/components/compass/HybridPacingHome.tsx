@@ -2234,10 +2234,20 @@ const SIDE_CARD: CSSProperties = {
   padding: '24px 32px 32px',
   boxSizing: 'border-box',
   borderRadius: 12,
-  /* ⚠ NO BORDER — 2026-10-05, the direct ask. The exam card above already
-     overrode this to `none` (see `SIDE_CARD_LIFTED`), so the outline was the
-     only thing making the two side cards differ. Removed from the base rather
-     than from the one call site, because there is nothing left that wants it. */
+  /* ⚠ THE OUTLINE IS BACK ON THE BASE — 2026-10-07, the direct ask, reversing
+     "NO BORDER" from 2026-10-05. That removal was correct for what the column
+     held AT THE TIME: the exam card overrode the border to `none` (see
+     `SIDE_CARD_LIFTED`), so the outline was the only thing making the two side
+     cards differ, and a lone bordered card under a lifted one read as an
+     oversight.
+
+     What changed is the card above. `exam-card-background` gained an `outline`
+     arm earlier today and the column now runs on it — so the border is no
+     longer the odd one out, it is what the two cards have in common. Restoring
+     it on the BASE rather than at the Quick Links call site keeps that true:
+     `SIDE_CARD_LIFTED` still wins for the filled and tinted arms, so switching
+     the exam card back takes the outline off it alone. */
+  border: '1px solid var(--color-border-subtle)',
 }
 const SIDE_CARD_LIFTED: CSSProperties = {
   border: 'none',
