@@ -396,33 +396,45 @@ export function HybridPacingHome({
   /* ⚠ THE PROMPT EXPLAINS THE ABSENCE, which is the half of the ask that is
      not arithmetic: three options becoming one is a loss the learner can see
      and cannot account for, and an unexplained constraint reads as a bug. */
-  const examWhen =
-    examDate && examDaysAway != null
-      ? `${formatPaceDate(examDate)}, ${examDaysAway} ${examDaysAway === 1 ? 'day' : 'days'} away`
-      : null
-  /* ⚠ THE DATE ALONE, for the one-option message — see there. `examWhen` keeps
-     the distance because the two-option message still argues from it.
+  const examShort = examDate && examDaysAway != null ? formatPaceDate(examDate) : null
 
-     ⚠ `examWhen`'S SINGULAR GUARD IS NOW UNREACHABLE and is kept anyway. "1 day
-     away" could only ever render in the ONE-option message, which no longer
-     prints a distance; two options require the exam to be 14 days out or more.
-     Removing it would be correct today and wrong the moment either message
-     changes its mind, and it costs one ternary. */
-  const examShort = examDate ? formatPaceDate(examDate) : null
-  const unrestricted = paceChoices.length === PACE_WEEKS.length || !examWhen
+  /* ⚠ ONE SENTENCE FOR BOTH NARROWED CASES — 2026-10-07, the direct ask ("yes
+     update the 2 option one to match"). They were two strings in two voices:
+     the one-option line had been rewritten minutes earlier to lead with its
+     recommendation, and its sibling still argued from the distance ("Your exam
+     is May 26, 16 days away, so the longer paces would finish after it").
+
+     ⚠ SO THE FIX IS ONE TEMPLATE, NOT TWO MATCHING ONES. The pair had already
+     drifted once; written as a single sentence over a derived list they cannot
+     drift again, and the only thing that varies is the part that is actually
+     different — which paces survived.
+
+     ⚠ THE LIST IS DERIVED FROM `paceChoices`, not from the count. If the rule
+     that filters them ever changes, the sentence follows it; a hardcoded
+     "1- or 2-week" would keep claiming two long after the filter offered
+     something else. */
+  const weekList = (() => {
+    const weeks = paceChoices.map((o) => o.weeks)
+    if (weeks.length === 1) return `${weeks[0]}`
+    /* The SUSPENDED HYPHEN is why this is built rather than `join`ed: "a 1- or
+       2-week pace" hangs the first hyphen on nothing, which is correct English
+       and looks like a typo to anyone tidying it. The `-week` that completes it
+       is on the sentence below. */
+    const head = weeks.slice(0, -1).map((w) => `${w}-`).join(', ')
+    return `${head} or ${weeks[weeks.length - 1]}`
+  })()
+
+  const unrestricted = paceChoices.length === PACE_WEEKS.length || !examShort
   const pacePrompt = unrestricted
     ? 'How quickly would you like to complete this course?'
-    : paceChoices.length === 1
-      ? /* ⚠ THE DATE WITHOUT THE DAY COUNT — 2026-10-07, the direct ask, which
-           supplied this sentence whole. The previous line led with the distance
-           ("Your exam is May 20, 9 days away, so…"), which argued the
-           constraint before naming the recommendation; this leads with the
-           choice it is making FOR the learner and treats the date as its
-           reason. The day count is not lost to them — the rows below carry the
-           per-day load, which is the number that actually costs them
-           something. */
-        `Based on your ${examShort} exam date, a 1-week pace will help you finish in time. Change your exam date to see how your recommended pace changes.`
-      : `Your exam is ${examWhen}, so the longer paces would finish after it. Change your exam date and this will adjust.`
+    : /* ⚠ THE DATE WITHOUT THE DAY COUNT. The sentence the ask supplied leads
+         with the recommendation and treats the date as its reason; the previous
+         pair led with the distance, which argued the constraint before naming
+         anything the learner could act on. The day count is not lost to them —
+         the rows below carry the per-day load, which is the number that
+         actually costs them something, and saying both would state the same
+         constraint twice in one sentence. */
+      `Based on your ${examShort} exam date, a ${weekList}-week pace will help you finish in time. Change your exam date to see how your recommended pace changes.`
   /* ⚠ THE SECOND HALF SITS UNDER THE OPTIONS — 2026-10-07, the direct ask, and
      it is a split rather than a move: the two sentences do different jobs and
      were doing them in one 11px paragraph. The lead ASKS THE QUESTION the rows

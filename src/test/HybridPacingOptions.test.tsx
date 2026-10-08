@@ -191,12 +191,35 @@ describe('what the panel says about it', () => {
     expect(p.textContent).not.toMatch(/days away/)
   })
 
-  it('uses the plural wording when two are left', () => {
-    /* A different sentence, not the same one with a number swapped: "one week
-       is the only pace" is false at two options and would be the kind of copy
-       bug nothing fails on. */
+  it('names both surviving paces when two are left', () => {
+    /* ⚠ ONE TEMPLATE SERVES BOTH NARROWED CASES since 2026-10-07 ("yes update
+       the 2 option one to match"), so what varies is the LIST and nothing else.
+       That is the thing worth pinning: "a 1-week pace" is false at two options
+       and is exactly the copy bug nothing else would fail on.
+
+       ⚠ THE SUSPENDED HYPHEN IS PART OF THE ASSERTION — "a 1- or 2-week pace".
+       It is correct English and reads as a typo, so it is the first thing a
+       later tidy would "fix" into "a 1 or 2-week pace". */
     renderPacing(inDays(16))
-    expect(screen.getByText(/longer paces would finish after it/i)).toBeTruthy()
+    const p = screen.getByText(/will help you finish in time/i)
+    expect(p.textContent).toMatch(/a 1- or 2-week pace/)
+    expect(p.textContent).toMatch(/May 27/)
+  })
+
+  it('⚠ keeps the two narrowed cases in one voice', () => {
+    /* THE DRIFT THIS EXISTS FOR, and it already happened once: the one-option
+       line was rewritten and its sibling was left arguing from the distance
+       ("so the longer paces would finish after it"), so two states a day apart
+       read as two different products. They are one sentence now; this fails if
+       anyone splits them again. */
+    const { unmount } = renderPacing(inDays(8))
+    const one = screen.getByText(/will help you finish in time/i).textContent!
+    unmount()
+    renderPacing(inDays(16))
+    const two = screen.getByText(/will help you finish in time/i).textContent!
+    /* Same sentence either side of the pace list. */
+    const shape = (t: string) => t.replace(/May \d+/, '<date>').replace(/a [\d\-, or]+-week/, '<paces>')
+    expect(shape(one)).toBe(shape(two))
   })
 
   it('⚠ no longer prints a distance at all, singular or otherwise', () => {
