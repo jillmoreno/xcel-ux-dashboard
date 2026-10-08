@@ -31,6 +31,11 @@ describe('Atlas Top Nav', () => {
     expect(current()).toEqual(['Course Overview'])
   })
 
+  it('leaves Course Overview in its default state on the Course page (plain Top Nav)', () => {
+    renderNav('?section=course&coursePage=course')
+    expect(current()).toEqual([])
+  })
+
   it('marks neither on another section', () => {
     renderNav('?section=support')
     expect(current()).toEqual([])

@@ -56,6 +56,10 @@ export function AtlasTopNav({ expanding = false }: { expanding?: boolean }) {
   const [params, setParams] = useSearchParams()
   const section = params.get('section')
   const coursePage = params.get('coursePage')
+  // On the COURSE page (the player) the Top Nav's Course Overview button sits
+  // in its default state, not current (2026-10-08, Eric's request) — it names
+  // the Overview, which is not where you are. The Expanding Top Nav keeps it
+  // current there, because its tray marks the Course link inside it.
   // Home's own sections (Study Plan, Certificates, Resources) keep Home
   // current, so its tray stays open on them. Not its Course link: that is a
   // page of the course, which is Compass Learning's.
@@ -64,7 +68,7 @@ export function AtlasTopNav({ expanding = false }: { expanding?: boolean }) {
     section === 'dashboard' ||
     HOME_LINKS.some((l) => !l.coursePage && l.section === section)
       ? 'home'
-      : section === 'course'
+      : section === 'course' && !(coursePage === 'course' && !expanding)
       ? 'compass'
       : null
 

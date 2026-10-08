@@ -65,6 +65,9 @@ import type { LearningPathSummary } from '@/data/learningFixtures'
    (figures, journey, cover, Begin Course) is still the fixture (`path`). */
 const V2_LONG_TITLE = 'New York Property and Casualty Conversion Course Pre-licensing and Live Review Class'
 
+/** V3's course tabs — off since 2026-10-08 (see the card). */
+const SHOW_COURSE_TABS: boolean = false
+
 export type AtlasHomeEricV3Props = {
   path: LearningPathSummary
   courseTitle: string
@@ -167,8 +170,12 @@ export function AtlasHomeEricV3({
   return (
     <div style={PAGE}>
       {/* ── The course card ── */}
-      <section aria-label="Current course" style={tabs.length > 1 ? CARD : { ...CARD, paddingTop: 48 }}>
-        {tabs.length > 1 ? (
+      {/* NO COURSE TABS on V3 (2026-10-08, Eric's request: "remove from v3"),
+          so the card takes its full 48 on top. The tabs' data stays — the
+          title and cover still read the first course — so to bring the strip
+          back, set SHOW_COURSE_TABS. */}
+      <section aria-label="Current course" style={SHOW_COURSE_TABS && tabs.length > 1 ? CARD : { ...CARD, paddingTop: 48 }}>
+        {SHOW_COURSE_TABS && tabs.length > 1 ? (
           <AtlasCourseTabs courses={tabs} activeId={activeTab?.id ?? path.id} onSelect={selectCourse} onAllCourses={onAllCourses ?? (() => go('courses'))} />
         ) : null}
         <div style={{ display: 'flex', gap: 40, alignItems: 'stretch' }}>
