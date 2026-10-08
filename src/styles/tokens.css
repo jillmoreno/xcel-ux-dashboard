@@ -6291,3 +6291,61 @@ a.cre-library-card-title::after {
 .cre-pace-sheet__summary b {
   color: var(--color-text-primary);
 }
+
+/* ── Help & Support entry cards ─────────────────────────────────────────
+   2026-10-07, the direct ask ("add some hover effect on the card itself").
+
+   ⚠ THE CLASS HAD NO RULES AT ALL until now, which is the actual finding.
+   `SupportCard` has carried `transition: box-shadow 120ms, transform 120ms`
+   inline since it was written — transitioning nothing, because nothing ever
+   changed either property. The cards have been inert under a pointer the whole
+   time, and the transition made it look deliberate.
+
+   ⚠ TWO SHAPES, TWO HOVERS, because they rest differently. The full card sits
+   on `--shadow-card`, so it can LIFT. The sheet's compact card is flat by
+   design (no shadow, tighter radius); a 1px rise under a shadowless card reads
+   as a jitter rather than an affordance, so that one fills instead.
+
+   ⚠ `--color-neutral-300`, NOT `--color-border-strong`. That name DOES NOT
+   EXIST — the note at `.cre-journey-stop` above says so in as many words ("a
+   name that looks wired and is not"), and two live rules in this file still
+   reference it and get nothing. An undefined custom property with no fallback
+   is invalid at computed-value time, so the declaration is dropped silently:
+   the rule matches, the inspector shows it, and the border never moves. One
+   step down the neutral ramp from `--color-border-subtle` (#d9d9d9 → #c7c7c7)
+   is the change this wanted, and it is a token that resolves. */
+.cre-support-card {
+  background: var(--color-surface-card);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-card, 0 1px 2px rgb(0 0 0 / 0.06));
+}
+.cre-support-card--compact {
+  border-radius: var(--radius-md);
+  box-shadow: none;
+}
+.cre-support-card:hover {
+  border-color: var(--color-neutral-300);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+/* Pressed: back to the resting plane, so the click has somewhere to go. */
+.cre-support-card:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-card);
+}
+/* ⚠ KEYBOARD GETS THE SAME NEWS. The card is a `<button>` and the hover is its
+   only affordance; without this, a Tab user has the border alone. */
+.cre-support-card:focus-visible {
+  outline: 2px solid var(--color-action);
+  outline-offset: 2px;
+}
+.cre-support-card--compact:hover {
+  transform: none;
+  box-shadow: none;
+  background: var(--color-neutral-75);
+  border-color: var(--color-neutral-300);
+}
+.cre-support-card--compact:active {
+  box-shadow: none;
+}
