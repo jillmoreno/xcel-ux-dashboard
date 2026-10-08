@@ -606,45 +606,59 @@ export function LearningPathDetailPanelContent({
           </>
         ) : requirements ? (
           <>
-            <div style={reqBoxStyle}>
-              <dl style={reqGridStyle}>
-                {/* Each fact renders only when the entry states it. A
-                    pre-licensing licence has no renewal cycle and no
-                    Mandatory / Elective split, and a `0` in either slot reads
-                    as a stated requirement of zero rather than as "n/a" — the
-                    blank-Seat-cell rule from the admin roster. */}
-                <ReqFact label="Total hours required" value={String(requirements.totalHours)} />
-                {requirements.mandatoryHours != null && (
-                  <ReqFact label={`${mandatoryLabel} hours`} value={String(requirements.mandatoryHours)} />
-                )}
-                {requirements.electiveHours != null && (
-                  <ReqFact label={`${electiveLabel} hours`} value={String(requirements.electiveHours)} />
-                )}
-                {(requirements.renewalCycleYears ?? 0) > 0 && (
-                  <ReqFact label="Renewal cycle" value={`${requirements.renewalCycleYears} years`} />
-                )}
-                {path.licenseExpiresOn && <ReqFact label={deadlineLabel} value={path.licenseExpiresOn} />}
-              </dl>
-            </div>
-            <p style={reqHeadStyle}>{requirements.heading}</p>
-            <ul style={reqListStyle}>
-              {requirements.items.map((item) => (
-                <li key={item} style={reqItemStyle}>
-                  {item}
-                </li>
-              ))}
-            </ul>
+            {/* ⚠ A ROW OF FACTS, NOT A TWO-COLUMN `dl` — 2026-10-07, the
+                direct ask ("the layout for this sheet is bland"). The old
+                shape put the label and its number on one line inside a grey
+                box, so five facts read as five more sentences on a page that
+                is already a wall of them. As cells with the label above the
+                number, the facts are the one thing on the page you can take in
+                without reading — which is what the top of a reference sheet is
+                for.
+
+                ⚠ `auto-fit` BECAUSE THE COUNT VARIES FROM TWO TO FIVE. A
+                pre-licensing path states hours and a target date; a CE path
+                adds the Mandatory/Elective split and a renewal cycle. Fixed
+                columns would have left either a gap or a cramped row depending
+                on which path opened the sheet. */}
+            <dl style={reqFactsStyle}>
+              {/* Each fact renders only when the entry states it. A
+                  pre-licensing licence has no renewal cycle and no
+                  Mandatory / Elective split, and a `0` in either slot reads
+                  as a stated requirement of zero rather than as "n/a" — the
+                  blank-Seat-cell rule from the admin roster. */}
+              <ReqFact label="Total hours required" value={String(requirements.totalHours)} />
+              {requirements.mandatoryHours != null && (
+                <ReqFact label={`${mandatoryLabel} hours`} value={String(requirements.mandatoryHours)} />
+              )}
+              {requirements.electiveHours != null && (
+                <ReqFact label={`${electiveLabel} hours`} value={String(requirements.electiveHours)} />
+              )}
+              {(requirements.renewalCycleYears ?? 0) > 0 && (
+                <ReqFact label="Renewal cycle" value={`${requirements.renewalCycleYears} years`} />
+              )}
+              {path.licenseExpiresOn && <ReqFact label={deadlineLabel} value={path.licenseExpiresOn} />}
+            </dl>
+            {/* ⚠ THE AUTHORITY BECOMES AN EYEBROW. Every `heading` in the
+                fixtures is "<who sets this> — <what it is>:" ("New York
+                Department of Financial Services — what the state requires…",
+                "Florida Board of Nursing — biennial CE requirements:"), which
+                is two facts in one long bold line. Split, the WHO sits above
+                in the eyebrow idiom and the WHAT is a title the same size as
+                the sections below it, so the page has one heading scale
+                instead of two. ⚠ And it degrades: a heading with no dash, or
+                with a long one, renders whole as the title — see `splitLead`. */}
+            <ReqHeading text={requirements.heading} />
+            <ReqList items={requirements.items} />
             {requirements.sections?.map((section) => (
+              /* ⚠ A HAIRLINE ABOVE EACH SECTION. Six sections of identical
+                 bold-title-then-list had no rhythm — the ask's "chaos" is
+                 mostly this: nothing on the page said where one topic ended.
+                 A rule costs no vertical space the margin was not already
+                 spending. */
               <div key={section.title} style={reqSectionStyle}>
                 <p style={reqSectionTitleStyle}>{section.title}</p>
                 {section.intro && <p style={reqSectionIntroStyle}>{section.intro}</p>}
-                <ul style={reqListStyle}>
-                  {section.items.map((item) => (
-                    <li key={item} style={reqItemStyle}>
-                      {item}
-                    </li>
-                  ))}
-                </ul>
+                <ReqList items={section.items} />
               </div>
             ))}
             {requirements.note && (
@@ -1114,12 +1128,98 @@ function StatTile({
 
 /* ─── Requirements fact ──────────────────────────────────────────────── */
 
+/* ⚠ A `<div>` INSIDE THE `<dl>`, which HTML5 allows and which is the only way
+   to group a term with its description as ONE grid cell — bare `dt`/`dd` pairs
+   would each take a cell of their own and the row would read label, label,
+   value, value. */
 function ReqFact({ label, value }: { label: string; value: string }) {
   return (
-    <>
-      <dt style={{ color: 'var(--color-text-secondary)' }}>{label}</dt>
-      <dd style={{ margin: 0, fontWeight: 700, textAlign: 'right' }}>{value}</dd>
-    </>
+    <div style={reqFactCellStyle}>
+      <dt style={reqFactLabelStyle}>{label}</dt>
+      <dd style={reqFactValueStyle}>{value}</dd>
+    </div>
+  )
+}
+
+/**
+ * Split "Label — rest of the sentence" into its two halves, or `null`.
+ *
+ * ⚠ THE LENGTH GUARD IS THE WHOLE FUNCTION. An em dash in these fixtures means
+ * one of two things — a short LABEL introducing its detail ("State exam — 150
+ * scored questions…"), or an ordinary mid-sentence dash ("Register online with
+ * PSI at test-takers.psiexams.com/nyins — exam fee $40"). Emphasising the first
+ * half of the second kind would bold a URL and read as a mistake, so anything
+ * longer than a label is left alone. 44 was measured against every fixture
+ * entry: the longest real label is "Pre-licensing education" and the shortest
+ * false positive is the PSI line at 54.
+ *
+ * ⚠ IT IS PRESENTATION ONLY. Nothing downstream depends on a fixture carrying
+ * a dash, and an entry written without one simply renders flat — which is what
+ * makes it safe to apply to every path's data rather than only the ones written
+ * in this shape.
+ */
+const REQ_LABEL_MAX = 44
+function splitLead(text: string): { lead: string; rest: string } | null {
+  const i = text.indexOf(' — ')
+  if (i < 0 || i > REQ_LABEL_MAX) return null
+  const rest = text.slice(i + 3).trim()
+  return rest ? { lead: text.slice(0, i).trim(), rest } : null
+}
+
+/** The requirements list — a real bullet and a hanging indent.
+ *
+ *  ⚠ THIS REVERSES "No bullets — the board's rules read as plain lines (Figma
+ *  node 312:518)", 2026-10-07, the direct ask ("can we add some bullet
+ *  points"). That call was made for a SHORT list on the compliance board; this
+ *  sheet runs to six sections and thirty-odd entries, where unmarked lines with
+ *  no hanging indent make a wrapped item indistinguishable from the next one.
+ *  The old rule still holds where it was made — it is the length that changed,
+ *  not the taste.
+ *
+ *  ⚠ A FLEX ROW RATHER THAN `list-style`, so a wrapped second line starts under
+ *  the TEXT instead of under the dot. That alignment is most of what a bullet
+ *  is actually buying here. */
+function ReqList({ items }: { items: readonly string[] }) {
+  return (
+    <ul style={reqListStyle}>
+      {items.map((item) => {
+        const split = splitLead(item)
+        return (
+          <li key={item} style={reqItemStyle}>
+            <span aria-hidden style={reqMarkerStyle} />
+            <span>
+              {split ? (
+                <>
+                  <strong style={reqLeadStyle}>{split.lead}</strong>
+                  {` — ${split.rest}`}
+                </>
+              ) : (
+                item
+              )}
+            </span>
+          </li>
+        )
+      })}
+    </ul>
+  )
+}
+
+/** The authority above, what it requires below — see the note at the call site. */
+function ReqHeading({ text }: { text: string }) {
+  const split = splitLead(text)
+  /* ⚠ TWO FIXES THE SPLIT CREATES, both from the same cause: the second half
+     was written to continue a sentence, not to start one. It ends in a colon
+     that now introduces nothing, and it begins lower-case ("…— what the state
+     requires…"). Mending both here rather than rewriting the fixtures keeps
+     every entry readable as a flat sentence for anything that still renders it
+     whole, this component's own `splitLead` miss included. */
+  const raw = (split?.rest ?? text).replace(/:\s*$/, '')
+  const title = raw.charAt(0).toUpperCase() + raw.slice(1)
+  return (
+    <div style={reqHeadWrapStyle}>
+      {split ? <p style={reqHeadEyebrowStyle}>{split.lead}</p> : null}
+      <p style={reqHeadStyle}>{title}</p>
+    </div>
   )
 }
 
@@ -1420,42 +1520,102 @@ const certLinkStyle: CSSProperties = {
   color: 'var(--color-action)',
   textDecoration: 'none',
 }
-const reqBoxStyle: CSSProperties = {
-  background: 'var(--color-neutral-75)',
-  borderRadius: 'var(--radius-md)',
-  padding: '14px 16px',
-  fontFamily: 'var(--font-body)',
-  fontSize: 13,
-  lineHeight: '20px',
-}
-const reqGridStyle: CSSProperties = {
+/* The fact row. ⚠ THE HAIRLINES ARE THE GRID'S OWN `gap` SHOWING THROUGH —
+   a 1px gap over a border-coloured ground, with each cell painting the card
+   fill back. One rule per boundary however the row wraps, which is what a
+   border on each cell cannot give you (doubled rules, and a stray edge where
+   the row breaks). */
+const reqFactsStyle: CSSProperties = {
   display: 'grid',
-  gridTemplateColumns: '1fr auto',
-  gap: '6px 12px',
+  gridTemplateColumns: 'repeat(auto-fit, minmax(130px, 1fr))',
+  gap: 1,
   margin: 0,
+  background: 'var(--color-border-subtle)',
+  border: '1px solid var(--color-border-subtle)',
+  borderRadius: 'var(--radius-md)',
+  overflow: 'hidden',
+}
+const reqFactCellStyle: CSSProperties = {
+  background: 'var(--color-surface-card)',
+  padding: '11px 14px 12px',
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 3,
+}
+const reqFactLabelStyle: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 10,
+  lineHeight: '14px',
+  fontWeight: 600,
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  color: 'var(--color-text-secondary)',
+}
+const reqFactValueStyle: CSSProperties = {
+  margin: 0,
+  fontFamily: 'var(--font-body)',
+  fontSize: 16,
+  lineHeight: '20px',
+  fontWeight: 700,
+  color: 'var(--color-text-primary)',
+}
+const reqHeadWrapStyle: CSSProperties = { margin: '22px 0 10px' }
+const reqHeadEyebrowStyle: CSSProperties = {
+  margin: '0 0 3px',
+  fontFamily: 'var(--font-body)',
+  fontSize: 10,
+  lineHeight: '14px',
+  fontWeight: 600,
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  color: 'var(--color-text-secondary)',
 }
 const reqHeadStyle: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontWeight: 700,
-  margin: '16px 0 8px',
+  fontSize: 14,
+  lineHeight: '19px',
+  margin: 0,
   color: 'var(--color-text-primary)',
 }
-// No bullets — the board's rules read as plain lines (Figma node 312:518).
+/* ⚠ BULLETS SINCE 2026-10-07 — this said "No bullets — the board's rules read
+   as plain lines (Figma node 312:518)". See the note at `ReqList` for why the
+   sheet left that rule behind and the board keeps it. */
 const reqListStyle: CSSProperties = { listStyle: 'none', margin: 0, padding: 0 }
 const reqItemStyle: CSSProperties = {
-  marginBottom: 8,
+  display: 'flex',
+  gap: 9,
+  marginBottom: 7,
   fontFamily: 'var(--font-body)',
   fontSize: 13,
   lineHeight: '19px',
   color: 'var(--color-text-primary)',
 }
+/* Centred on the first line's box: (19 − 5) / 2 = 7. `flex: none` so a long
+   item cannot squeeze the dot into an oval. */
+const reqMarkerStyle: CSSProperties = {
+  flex: 'none',
+  width: 5,
+  height: 5,
+  marginTop: 7,
+  borderRadius: '50%',
+  background: 'var(--color-text-tertiary)',
+}
+/* ⚠ WEIGHT ONLY, NO COLOUR. The lead is a scanning aid inside a sentence that
+   continues through it — recolouring would make it look like a link, which is
+   the one thing these are not. */
+const reqLeadStyle: CSSProperties = { fontWeight: 600 }
 // Titled sub-section (e.g. "First renewal — salesperson") below the summary.
-const reqSectionStyle: CSSProperties = { marginTop: 18 }
+const reqSectionStyle: CSSProperties = {
+  marginTop: 20,
+  paddingTop: 16,
+  borderTop: '1px solid var(--color-border-subtle)',
+}
 const reqSectionTitleStyle: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontWeight: 700,
   fontSize: 14,
-  margin: '0 0 4px',
+  margin: '0 0 6px',
   color: 'var(--color-text-primary)',
 }
 const reqSectionIntroStyle: CSSProperties = {
