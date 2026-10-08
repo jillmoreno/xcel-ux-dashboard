@@ -105,7 +105,7 @@ import {
 import { CompassLearningPage } from '@/components/learning/CompassLearningPage'
 import { CompassSessionPage } from '@/components/learning/CompassSessionPage'
 import { HomePageHeader } from './HomePageHeader'
-import { SectionPageHeader } from './SectionPageHeader'
+import { SectionBackCrumb, SectionPageHeader } from './SectionPageHeader'
 import { useCompassCourseFigures } from '@/components/learning/compassCourseFigures'
 
 /**
@@ -2189,6 +2189,22 @@ function SectionShell({
         />
       ) : atlasResources ? (
         <header style={{ margin: '0 0 32px', display: 'flex', flexDirection: 'column', gap: 8 }}>
+          {/* ⚠ HYBRID ONLY, 2026-10-07 — the direct ask, and the same standing
+              instruction that shaped the section rail: nothing changes for any
+              other version. It is not an arbitrary scope. Hybrid is the family
+              that drops the rail on its section pages
+              (`hybridNoSectionRail`), so Resources there has no Home control
+              on screen at all; Eric's Atlas versions keep the rail on inner
+              pages, where a crumb would be a second way back to a place the
+              learner can already see — the argument `useSectionBreadcrumb`
+              makes for excluding the left-nav arm, applied here.
+
+              ⚠ NOT ROUTED THROUGH `BREADCRUMB_SECTIONS`. That list swaps the
+              page's title for Home's, which this page must not do — it owns a
+              serif title and a lede. See `SectionBackCrumb`. */}
+          {isHybridVersion(sectionVersion) ? (
+            <SectionBackCrumb onBack={() => onSelect('dashboard')} />
+          ) : null}
           {/* DM Serif Display — the Atlas heading face (`--font-heading-serif`,
               which the Headings dropdown can still swap) — at Serif H4, the
               Course Overview's title step. */}

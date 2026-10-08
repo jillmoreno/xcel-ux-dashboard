@@ -351,12 +351,26 @@ export function HybridPacingHome({
     examDate && examDaysAway != null
       ? `${formatPaceDate(examDate)}, ${examDaysAway} ${examDaysAway === 1 ? 'day' : 'days'} away`
       : null
-  const pacePrompt =
-    paceChoices.length === PACE_WEEKS.length || !examWhen
-      ? 'Pick the pace that feels right for you. You can always adjust your goal and customize your study plan once you’re in the course.'
-      : paceChoices.length === 1
-        ? `Your exam is ${examWhen}, so one week is the only pace that finishes in time. Change your exam date and this will adjust.`
-        : `Your exam is ${examWhen}, so the longer paces would finish after it. Change your exam date and this will adjust.`
+  const unrestricted = paceChoices.length === PACE_WEEKS.length || !examWhen
+  const pacePrompt = unrestricted
+    ? 'Pick the pace that feels right for you.'
+    : paceChoices.length === 1
+      ? `Your exam is ${examWhen}, so one week is the only pace that finishes in time. Change your exam date and this will adjust.`
+      : `Your exam is ${examWhen}, so the longer paces would finish after it. Change your exam date and this will adjust.`
+  /* ⚠ THE SECOND HALF SITS UNDER THE OPTIONS — 2026-10-07, the direct ask, and
+     it is a split rather than a move: the two sentences do different jobs and
+     were doing them in one 11px paragraph. "Pick the pace that feels right for
+     you" INTRODUCES the rows and has to precede them. "You can always
+     adjust…" is a reassurance about the choice just made, which only means
+     anything once there is one — so it reads after.
+
+     ⚠ ONLY IN THE UNRESTRICTED CASE. The two narrowed messages already end on
+     their own escape hatch ("Change your exam date and this will adjust"), and
+     a second, more relaxed promise under the options would undercut the
+     constraint the paragraph above just explained. */
+  const paceNote = unrestricted
+    ? 'You can always adjust your goal and customize your study plan once you’re in the course.'
+    : null
 
   /* ⚠ THE SAME ICON THE 0% ROW WOULD HAVE SHOWN. ⚠ AND A FALLBACK, because
      `weeks` is DERIVED from the model and is not confined to the three on
@@ -808,6 +822,10 @@ export function HybridPacingHome({
                       )
                     })}
                   </div>
+                  {/* ⚠ OUTSIDE THE RADIOGROUP, like the prompt above it. It is
+                      not a choice, and inside the group a screen reader walks
+                      it as though it were one. */}
+                  {paceNote ? <p style={PACE_PROMPT}>{paceNote}</p> : null}
                   {/* ⚠ IT TRACKS THE SELECTION, which is what makes moving it
                       here worth doing rather than merely tidier: at 0% the date
                       is not a report, it is what the option you are about to
