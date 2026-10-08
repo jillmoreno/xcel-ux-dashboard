@@ -6038,6 +6038,170 @@ a.cre-library-card-title::after {
   --color-compass-page-ring-5: #3d5a73;
 }
 /* Focus is slate, 2px, per the file. */
+/* ── FOUR PALETTE THEMES (2026-10-08, the direct ask) ────────────────────────
+   Four more values on the same skin control, built from palettes the designer
+   supplied as screenshots.
+
+   ⚠ THEY ARE PALETTES, NOT BRANDS, and that is the one thing to know before
+   reading them. The five above are Colibri brands: each re-points the ramps AND
+   swaps the logo. These re-point the ramps ONLY — there is no company behind
+   them and no lockup to show, so the page keeps whichever logo it had. See
+   `ATLAS_SKINS` in atlasBrandSkin.ts, where the two kinds are marked.
+
+   ⚠ EVERY RAMP IS GENERATED THE WAY THE BRAND RAMPS WERE, not picked by eye:
+   100-400 mix the 500 toward white at 80/60/40/20%, 600-900 scale it by
+   80/60/40/20%, floored. The method was derived from the shipped `cre` block
+   and reproduces it exactly, so these sit on the same curve as Eric's.
+
+   ⚠ `cta-500` IS THE BUTTON FILL (`--color-compass-page-button` resolves to it),
+   so each one is chosen to clear 4.5:1 on white and carry white label text.
+   The bright swatch in each palette is TERTIARY for the same reason — gold at
+   2.4:1 and marigold at 1.7:1 are accents, not actions. */
+/* GRASSLANDS — Sage, pine and midnight navy. The navy carries the actions, the pine is the
+     identity colour and the sage is the accent — the lightest two swatches on the
+     source palette are a background family and are deliberately not a ramp. */
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='grasslands'] {
+  --color-cta-100: #d2d4db;
+  --color-cta-200: #a5a9b7;
+  --color-cta-300: #787f94;
+  --color-cta-400: #4b5470;
+  --color-cta-500: #1f2a4d;
+  --color-cta-600: #18213d;
+  --color-cta-700: #12192e;
+  --color-cta-800: #0c101e;
+  --color-cta-900: #06080f;
+  --color-primary-100: #d8e1e1;
+  --color-primary-200: #b2c3c3;
+  --color-primary-300: #8ba6a6;
+  --color-primary-400: #658888;
+  --color-primary-500: #3f6b6b;
+  --color-primary-600: #325555;
+  --color-primary-700: #254040;
+  --color-primary-800: #192a2a;
+  --color-primary-900: #0c1515;
+  --color-tertiary-100: #e8efe2;
+  --color-tertiary-200: #d1dfc6;
+  --color-tertiary-300: #bacfa9;
+  --color-tertiary-400: #a3bf8d;
+  --color-tertiary-500: #8cb071;
+  --color-tertiary-600: #708c5a;
+  --color-tertiary-700: #546943;
+  --color-tertiary-800: #37462d;
+  --color-tertiary-900: #1b2316;
+  /* The rail's hover and active row, and so the Study Pace card: primary 100
+     lightened 20% toward white, the same derivation the brand skins use. */
+  --color-atlas-nav-active-fill: #e0e7e7;
+  --color-atlas-nav-hover: #e0e7e7;
+}
+/* EVERGLADE — Everglade, Whirlpool and Cornfield, by the source's own swatch names. The gold
+     is TERTIARY and never a button: at 2.4:1 on white it cannot carry label text,
+     which is the whole reason the three slots are not interchangeable. */
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='everglade'] {
+  --color-cta-100: #d2dbdb;
+  --color-cta-200: #a5b7b7;
+  --color-cta-300: #789494;
+  --color-cta-400: #4b7070;
+  --color-cta-500: #1e4d4d;
+  --color-cta-600: #183d3d;
+  --color-cta-700: #122e2e;
+  --color-cta-800: #0b1e1e;
+  --color-cta-900: #050f0f;
+  --color-primary-100: #d8dfe5;
+  --color-primary-200: #b1bfcb;
+  --color-primary-300: #8b9fb1;
+  --color-primary-400: #647f97;
+  --color-primary-500: #3e5f7e;
+  --color-primary-600: #314c64;
+  --color-primary-700: #25394b;
+  --color-primary-800: #182532;
+  --color-primary-900: #0c1219;
+  --color-tertiary-100: #f6ecd4;
+  --color-tertiary-200: #edd9a9;
+  --color-tertiary-300: #e5c67f;
+  --color-tertiary-400: #dcb354;
+  --color-tertiary-500: #d4a02a;
+  --color-tertiary-600: #a98021;
+  --color-tertiary-700: #7f6019;
+  --color-tertiary-800: #543f10;
+  --color-tertiary-900: #2a1f08;
+  /* The rail's hover and active row, and so the Study Pace card: primary 100
+     lightened 20% toward white, the same derivation the brand skins use. */
+  --color-atlas-nav-active-fill: #e0e5ea;
+  --color-atlas-nav-hover: #e0e5ea;
+}
+/* HARBOR — One blue–teal family, deepest to lightest. The only monochrome palette of the
+     four, so the three ramps sit closer together than a brand's normally would —
+     which is the point of including it. */
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='harbor'] {
+  --color-cta-100: #d4e1ea;
+  --color-cta-200: #a9c3d5;
+  --color-cta-300: #7fa5c0;
+  --color-cta-400: #5487ab;
+  --color-cta-500: #2a6a96;
+  --color-cta-600: #215478;
+  --color-cta-700: #193f5a;
+  --color-cta-800: #102a3b;
+  --color-cta-900: #08151d;
+  --color-primary-100: #d5e4e8;
+  --color-primary-200: #abc9d1;
+  --color-primary-300: #82afba;
+  --color-primary-400: #5894a3;
+  --color-primary-500: #2f7a8c;
+  --color-primary-600: #256170;
+  --color-primary-700: #1c4954;
+  --color-primary-800: #123037;
+  --color-primary-900: #09181b;
+  --color-tertiary-100: #daedf0;
+  --color-tertiary-200: #b6dbe1;
+  --color-tertiary-300: #91c9d2;
+  --color-tertiary-400: #6db7c3;
+  --color-tertiary-500: #49a6b4;
+  --color-tertiary-600: #3a8490;
+  --color-tertiary-700: #2b636c;
+  --color-tertiary-800: #1d4247;
+  --color-tertiary-900: #0e2123;
+  /* The rail's hover and active row, and so the Study Pace card: primary 100
+     lightened 20% toward white, the same derivation the brand skins use. */
+  --color-atlas-nav-active-fill: #dde9ed;
+  --color-atlas-nav-hover: #dde9ed;
+}
+/* MARIGOLD — Aubergine, burnt sienna and marigold — the only palette here that supplies its
+     own hex codes, so these are exact. The near-whites (#F8F5EE, #F2EBDC) are
+     page grounds, which skins do not re-point: neutrals are platform. */
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='marigold'] {
+  --color-cta-100: #d6d2dc;
+  --color-cta-200: #aea6ba;
+  --color-cta-300: #857a98;
+  --color-cta-400: #5d4e76;
+  --color-cta-500: #352254;
+  --color-cta-600: #2a1b43;
+  --color-cta-700: #1f1432;
+  --color-cta-800: #150d21;
+  --color-cta-900: #0a0610;
+  --color-primary-100: #e7ded4;
+  --color-primary-200: #d0bdaa;
+  --color-primary-300: #b89c7f;
+  --color-primary-400: #a17b55;
+  --color-primary-500: #8a5a2b;
+  --color-primary-600: #6e4822;
+  --color-primary-700: #523619;
+  --color-primary-800: #372311;
+  --color-primary-900: #1b1108;
+  --color-tertiary-100: #faf3e0;
+  --color-tertiary-200: #f5e8c1;
+  --color-tertiary-300: #f0dda3;
+  --color-tertiary-400: #ebd284;
+  --color-tertiary-500: #e7c766;
+  --color-tertiary-600: #b89f51;
+  --color-tertiary-700: #8a773d;
+  --color-tertiary-800: #5c4f28;
+  --color-tertiary-900: #2e2714;
+  /* The rail's hover and active row, and so the Study Pace card: primary 100
+     lightened 20% toward white, the same derivation the brand skins use. */
+  --color-atlas-nav-active-fill: #ece5dd;
+  --color-atlas-nav-hover: #ece5dd;
+}
+
 [data-atlas-brand='global'] .cre-atlas-nav-row:focus-visible,
 [data-atlas-brand='global'] .cre-compass-crumb-link:focus-visible,
 /* The Compass v5 primary button on the Home course card: steel, slate on
