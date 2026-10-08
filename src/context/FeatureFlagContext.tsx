@@ -1508,10 +1508,29 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        same caveat applies to `atlas-heading-font` below. Worth a real
        dependency if a third control ever joins them.
 
-       ⚠ `?skin=` STILL WINS WHEN PRESENT, as an alias. */
+       ⚠ `?skin=` STILL WINS WHEN PRESENT, as an alias.
+
+       ⚠ `hybrid-pacing` JOINED THE SCOPE 2026-10-08, the direct ask ("I want to
+       bring in the brand colour concept Eric was using"). Nothing about the
+       MECHANISM changed, and that is the point: Hybrid answers
+       `isAtlasCompassNavVersion`, so `PlatformShell` was already mirroring
+       `data-atlas-palette` and `data-atlas-brand` on it, and the Hybrid home's
+       own `--color-compass-page-button` already resolves through the brand
+       ramps these skins re-point. Checked in the browser before the edit:
+       `?skin=cre` on `hybrid-pacing` re-dressed the logo, the CTAs and the nav
+       pills with no code at all. The `versions` list was the only thing holding
+       the CONTROL off that bar.
+
+       ⚠ SHARED, NOT FORKED. A second flag of Jill's own would be two controls
+       writing one `data-atlas-brand`, and the skins would drift apart the first
+       time Eric retuned a ramp. `owner` stays `eric` — it is his control and
+       his palette; the `versions` list is what decides whose BAR it appears on,
+       which is exactly the split the note at `atlas-heading-font` below
+       records. The default (`global`) is what Hybrid already rendered, so
+       nothing moves until someone picks another. */
     surface: 'design',
     owner: 'eric',
-    versions: ['eric-atlas-v1', 'discoverability-atlas-compass-nav'],
+    versions: ['eric-atlas-v1', 'discoverability-atlas-compass-nav', 'hybrid-pacing'],
     group: 'Widgets',
     label: 'Brand',
     description:
