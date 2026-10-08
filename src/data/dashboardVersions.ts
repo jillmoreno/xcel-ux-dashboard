@@ -424,8 +424,16 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_V1: DashboardVersion = {
 export const DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_PACING: DashboardVersion = {
   id: 'hybrid-pacing',
   owner: 'jill',
-  /* ⚠ NO `maturity` — design site only. It is an exploration, not a candidate;
-     `promote-to-prototype` is where that would change. */
+  /* ⚠ `ready` SINCE 2026-10-08 — `promote-to-prototype`, and the note it
+     replaced said exactly where this would change: "NO `maturity` — design site
+     only. It is an exploration, not a candidate; `promote-to-prototype` is
+     where that would change."
+
+     It is both pickable AND the default now (see
+     `defaultDiscoverabilityVersionFor`), which are still two separate facts:
+     this line says a stakeholder may select it, that one says they land on it
+     without selecting anything. */
+  maturity: 'ready',
   label: 'Hybrid - Pacing Exploration',
   createdAt: '2026-10-07',
   modifiedAt: '2026-10-07',
@@ -647,24 +655,34 @@ export function dashboardVersionLabel(id: string): string {
  * default" (`hideSetDefault`), so this IS the default, per brand.
  */
 export function defaultDiscoverabilityVersionFor(brand: Brand): string {
-  /* ⚠ HYBRID V1 SINCE 2026-10-06, DISPLACING TESTING 3 — `promote-to-prototype`,
-     the owner's call. This one line IS the Prototypes baseline: it decides which
-     dashboard renders at all, and every flag below it is read INSIDE whichever
-     version this returns.
+  /* ⚠ HYBRID - PACING EXPLORATION SINCE 2026-10-08, DISPLACING HYBRID V1 —
+     `promote-to-prototype`, the owner's call. This one line IS the Prototypes
+     baseline: it decides which dashboard renders at all, and every flag below
+     it is read INSIDE whichever version this returns.
 
-     ⚠ TESTING 3 IS NOT RETIRED, it is displaced. It keeps `maturity: 'ready'`,
-     so it stays in the demo site's picker and a stakeholder can still reach it
-     — which is what makes the swap reversible by a URL rather than a deploy.
-     The four flags promoted for it on 2026-10-05 (`journey-scale-style`,
-     `journey-stop-mark`, `home-tile-style`, and `combined-progress-bar` off)
-     are Testing-3-only and are now inert on a fresh `?demo=1`; they still
-     configure that version when it is picked.
+     ⚠ THE DISPLACED VERSION IS NOT RETIRED, which is now true twice over.
+     Hybrid V1 keeps `maturity: 'ready'`, exactly as Testing 3 did when Hybrid
+     V1 displaced it on 2026-10-06 — both stay in the demo site's picker, so the
+     swap is reversible by a URL rather than a deploy, and a stakeholder can put
+     the three side by side.
+
+     ⚠ WHAT THE PACING FORK ADDS over V1 is the study-pace panel: a chooser at
+     0% (three named paces with their daily load), the standing messaging in
+     progress, and the course-expiry states. Everything else is V1's —
+     `HybridPacingHome.tsx` is a sibling of `HybridHomeV1.tsx`, so the two
+     differ by the pace work and nothing else.
+
+     ⚠ FOUR DESIGN CONTROLS RIDE WITH IT and none of them reaches here.
+     `hybrid-lesson-block`, `hybrid-title-lesson`, `hybrid-pace-standing` and
+     `hybrid-course-expiry` are all `surface: 'design'`, so they render on the
+     design site's green bar and never on a stakeholder's `?demo=1`. They
+     configure the exploration, not the product.
 
      ⚠ AND THE QUESTIONS ARE SEPARATE. This is the swap; `maturity` on each
      entry is "may a stakeholder pick it". Conflating them is how a version gets
      promoted by accident — see the skill. */
   return brand === 'xcel'
-    ? DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_V1.id
+    ? DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_PACING.id
     : DISCOVERABILITY_DASHBOARD_VERSION_MARKETING_FOCUSED.id
 }
 

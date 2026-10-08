@@ -197,15 +197,19 @@ describe('the shipped versions', () => {
        ⚠ THE ATLAS PARENT IS THE WHOLE LIST AGAIN, which is the state this
        started in, so the note above it is the one that still matters: a later
        branch marking it `ready` should have to come through here and say why. */
-    /* ⚠ TWO AGAIN SINCE 2026-10-07 — the pacing fork arrives unmarked, which is
-       the field working rather than an omission: it is an exploration, so the
-       demo site filters it out and the design site badges it "Design site
-       only". It leaves this list the way Hybrid V1 did, through
-       `promote-to-prototype`, not by being marked here. */
-    expect(unmarked.map((v) => v.id)).toEqual([
-      'discoverability-atlas-compass-nav',
-      'hybrid-pacing',
-    ])
+    /* ⚠ AND BACK TO ONE ON 2026-10-08 — the pacing fork left this list exactly
+       as the note above predicted, through `promote-to-prototype` rather than by
+       being marked here. It was unmarked for a single day.
+
+       It is `ready` now AND it is the default, which are still two separate
+       acts: `maturity` says a stakeholder may pick it,
+       `defaultDiscoverabilityVersionFor` says what they land on with no pick at
+       all. This test only knows about the first.
+
+       ⚠ THE ATLAS PARENT IS THE WHOLE LIST ONCE MORE, which is the state this
+       started in — so the note above it is again the one that matters: a later
+       branch marking it `ready` should have to come through here and say why. */
+    expect(unmarked.map((v) => v.id)).toEqual(['discoverability-atlas-compass-nav'])
     /* The gate is still FILTERING, not merely armed — the demo site is short by
        exactly those, and nothing else moved. */
     expect(dashboardVersionsForAudience(true)).toHaveLength(

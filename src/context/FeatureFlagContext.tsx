@@ -709,6 +709,20 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       'The GROUND the `ask-first` exam card sits on. `white` is the default and is what ships \u2014 the card carries no background of its own, so it takes `--color-surface-card` like every other widget in the column. `tint` fills it with the SELECTED RAIL ITEM\u2019s colour, which is what makes the pair worth comparing: that colour already means \u201cthis is where you are\u201d in this product, so putting it behind the exam card says the card is the live one rather than merely another widget. `outline` is the third answer and the only one that is not a fill \u2014 no ground, a hairline border, and NO SHADOW, because an elevation under a transparent card is a shadow cast by nothing. \u26a0 THE TINT IS BOUND TO THE RAIL\u2019S OWN TOKEN, not a copied hex \u2014 `color-mix(in srgb, var(--color-nav-icon-active-primary) 12%, \u2026)`, so the two cannot drift apart if the rail\u2019s colour is ever retuned. The STRENGTH is deliberately half the rail\u2019s 24%: the two do the same job at very different sizes, and what reads as a selection on a 40px nav row reads as a coloured panel across a whole card. It composites over `--color-surface-card` rather than `transparent` (which is what the rail does) because the card has its own white ground and the page behind it is grey \u2014 mixing to transparent would let that grey through and land a different colour from the rail it is quoting. Variant-only.',
     maturity: 'wip',
     defaultEnabled: true,
+    /* ⚠ STAYS `white`, AND THE ATTEMPT TO PROMOTE `outline` IS THE NOTE.
+       2026-10-08: the pacing fork became the baseline and its side column is
+       drawn as outlined cards, so `outline` looked like the obvious promotion.
+       It is not — this flag has NO `versions` scope, so flipping its default
+       gives EVERY version a bordered exam card, and `Testing3Version.test.tsx`
+       says exactly what that costs: "a border added to the SHARED shell would
+       silently reverse their own 2026-09-21 'remove stroke' ask" for Testing,
+       Testing 2 and Testing 3.
+
+       So the pacing version gets its outline BY CONSTRUCTION instead — it hands
+       `ExamScheduleWidget` its own `SIDE_CARD` shell without the lifted
+       override, the same bordered-and-unfilled shell its Quick Links card uses.
+       The version's own column decides how the version's own column looks; the
+       flag stays what it was, the axis for comparing a ground across versions. */
     defaultVariant: 'white',
     variants: [
       { value: 'white', label: 'White (no background)' },

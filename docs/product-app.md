@@ -783,19 +783,21 @@ copy is absent.
 
 ### Testing — the pacing exploration version (2026-09-21)
 
-> ⚠ **NO LONGER XCEL'S DEFAULT EITHER — and neither is what displaced it.**
-> `defaultDiscoverabilityVersionFor('xcel')` returns **Hybrid V1**
-> (`hybrid-v1`) as of 2026-10-06. This paragraph has now been wrong three times
-> in the same way, which is why it keeps its history rather than being
-> rewritten: QE Focused was the default, then Testing, then Testing 3, now
-> Hybrid V1. All of them still resolve by `?version=` and all of them are still
-> tested, which is why their sections stay.
+> ⚠ **NO LONGER XCEL'S DEFAULT EITHER — and neither is what displaced it, nor
+> what displaced THAT.** `defaultDiscoverabilityVersionFor('xcel')` returns
+> **Hybrid - Pacing Exploration** (`hybrid-pacing`) as of 2026-10-08. This
+> paragraph has now been wrong four times in the same way, which is why it keeps
+> its history rather than being rewritten: QE Focused was the default, then
+> Testing, then Testing 3, then Hybrid V1, now the pacing fork. All of them
+> still resolve by `?version=` and all of them are still tested, which is why
+> their sections stay.
 >
-> What a fresh `/dashboard-rebrand?demo=1` lands on is **Hybrid V1** — Eric's
-> Atlas home carrying Testing 3's coursework treatment. That is a data change in
-> `dashboardVersions.ts`, **not a flag** — worth knowing, because the flag
-> catalog is the first place anyone looks for "what does Prototypes render" and
-> this line is not in it.
+> What a fresh `/dashboard-rebrand?demo=1` lands on is **Hybrid - Pacing
+> Exploration** — Hybrid V1 plus the study-pace panel (a chooser at 0%, the
+> standing messaging in progress, the course-expiry states). That is a data
+> change in `dashboardVersions.ts`, **not a flag** — worth knowing, because the
+> flag catalog is the first place anyone looks for "what does Prototypes render"
+> and this line is not in it.
 
 ### Eric's Atlas versions — reachable, and one of them pickable (2026-10-05)
 
@@ -870,13 +872,22 @@ behind the robot's dropdown. The robot came back to the demo site to carry it,
 withholding the Feature Flag sheet — see `AdminToolsMenu`'s `stakeholder` prop
 and `PublicGateway.test.tsx`, which pins that the dropdown has exactly one row.
 
-**THE COMMITTED REBRAND DEMO DEFAULTS**, as of 2026-10-06 — what `?demo=1`
+**THE COMMITTED REBRAND DEMO DEFAULTS**, as of 2026-10-08 — what `?demo=1`
 renders with nothing stored. Kept here rather than in the catalog because the
 catalog says what each flag DOES; this says which way the baseline is set.
 
 ⚠ **THE VERSION IS NOT IN THIS TABLE AND IS THE BIGGEST LINE OF ALL.** Every
 flag below is read INSIDE whichever dashboard version is rendering, and that
-version is **`hybrid-v1`** since 2026-10-06, set in `dashboardVersions.ts`.
+version is **`hybrid-pacing`** since 2026-10-08, set in `dashboardVersions.ts`.
+Hybrid V1 kept `maturity: 'ready'` when it was displaced, exactly as Testing 3
+did before it, so all three stay in the demo site's picker.
+
+⚠ **AND FOUR DESIGN CONTROLS ARRIVED WITH IT THAT ARE NOT IN THIS TABLE EITHER,
+on purpose.** `hybrid-lesson-block`, `hybrid-title-lesson`,
+`hybrid-pace-standing` and `hybrid-course-expiry` are `surface: 'design'`: they
+render on the design site's green bar, scoped to that version, and never on a
+stakeholder's `?demo=1`. This table is the stakeholder baseline, so a design
+control has no row here however its default is set.
 
 ⚠ **SO FOUR ROWS BELOW ARE NOW INERT ON A FRESH LOAD, and they are kept
 anyway.** `journey-scale-style`, `journey-stop-mark`, `home-tile-style` and
@@ -904,7 +915,7 @@ now carry the whole meaning rather than a caveat.
 | ~~`exam-step-style`~~ | — | **RETIRED 2026-09-29.** Its `ask-first` arm won outright and renders unconditionally, so the flag had one option left. The card is unchanged from the 09-29 promotion — this is the flag going, not the design. `inline` and `date-first` are unwired but intact; `archivedItems.ts` (`exam-step-style-alternatives`) carries the re-wire, the two traps, and the five test files that were inverted |
 | `exam-calendar-style` | `framed` | **Promoted 2026-09-29.** How the exam card's in-card month picker is DRAWN. `framed` gives it room and a surface — raised card, rule under the month, square day cells half again as large, a real hover. `minimal` (what shipped before this) and `branded` (a navy cap, round days, the saved state's tear-off earlier) are both one flag away. ⚠ SKINS ONLY — every arm renders the same grid from the same cells with the same disabled / today / selected logic, pinned by a test |
 | `journey-quick-links` | on | **Promoted 2026-09-30.** The journey column's sheet links are COLLECTED into a Quick links card under the last step — Exam Information, How to Get Your License, State Requirements — and the per-card ones are hidden: "Exam Details" on the exam card, "What to expect" on Pass State Exam, "How to apply" on Get Licensed. Off puts each back on its own card and removes the Quick links card. ⚠ ONE DECISION, NOT TWO, which is why one flag drives both halves — running both would put every destination on the page twice. The sheets and their destinations are identical either way; only the way in moves. ⚠ IT MOVES WHAT A USER TEST CAN RIG: on this baseline `home.schedule-exam`, `home.what-to-expect` and `home.how-to-apply` do not render and the three quick-link ids do. None is retired — all three return on `?ff=journey-quick-links:off` |
-| `exam-card-background` | `white` | **Nothing.** The exam card keeps the shell's surface like every other widget, reviewed 2026-09-29. `tint` fills it with the selected rail item's colour at half strength (`?ff=exam-card-background:tint`) — bound to `--color-nav-icon-active-primary`, so it tracks the rail rather than copying a hex |
+| `exam-card-background` | `white` | **Nothing.** The exam card keeps the shell's surface like every other widget, reviewed 2026-09-29. `tint` fills it with the selected rail item's colour at half strength (`?ff=exam-card-background:tint`) — bound to `--color-nav-icon-active-primary`, so it tracks the rail rather than copying a hex. ⚠ IT WAS NEARLY PROMOTED TO `outline` ON 2026-10-08 and was not, which is worth knowing before anyone tries again: this flag has no `versions` scope, so its default reaches every version, and a bordered exam card on Testing / Testing 2 / Testing 3 reverses their own 2026-09-21 "remove stroke" ask. The pacing fork — the baseline since that day — gets its outlined exam card from its own `SIDE_CARD` shell instead, which is a decision about one version's column rather than about every version's card |
 | `journey-step-order` | `exam-first` | **Promoted 2026-09-28; the numbering changed 2026-09-29.** The right-hand column opens with the exam card, then Complete Coursework. ⚠ IT NO LONGER READS 1-2-3-4. Under the `ask-first` baseline the exam card is a question rather than a step and takes no number, so the eyebrows read **1-2-3** — Coursework, Pass State Exam, Get Licensed. Switch `exam-step-style` back to `date-first` and the 1-2-3-4 numbering returns |
 | `study-pace-hidden` | on | **Promoted 2026-09-28 — the Study Pace tile is GONE from the baseline.** ⚠ Worth knowing what that costs: the presets card, the activity band and the derived-pace readout were the most-worked surface of the week, and none of them is on the page any more. Everything behind it is intact and one flag away (`?ff=study-pace-hidden:off`) |
 | `nav-rail-icons` | `small` | **Promoted 2026-09-28.** Rail glyphs at 14px rather than 17, so the label leads. The COLLAPSED rail is unaffected — it keeps its 20px glyph, because an unlabelled, unglyphed collapsed rail is the mis-click failure |

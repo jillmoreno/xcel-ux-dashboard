@@ -1220,7 +1220,21 @@ export function HybridPacingHome({
             surface it sits on is this layout's. Passing `shell` is how the
             widget was built to allow exactly that. */}
         <ExamScheduleWidget
-          shell={{ ...SIDE_CARD, ...SIDE_CARD_LIFTED }}
+          /* ⚠ `SIDE_CARD` ALONE — the lifted override dropped 2026-10-08. This
+             version's side column is two OUTLINED cards: `SIDE_CARD` carries
+             the border (added 2026-10-07 when Quick Links was asked for one),
+             and `SIDE_CARD_LIFTED` would paint a fill and a shadow back over
+             it, splitting the pair again.
+
+             ⚠ IT IS DELIBERATELY NOT `exam-card-background: outline`, which
+             renders the same thing and was the first attempt. That flag has no
+             `versions` scope, so promoting its default would have given Testing,
+             Testing 2 and Testing 3 a bordered exam card too — reversing their
+             own 2026-09-21 "remove stroke" ask, which `Testing3Version.test.tsx`
+             pins. The flag still works here and still wins when someone picks an
+             arm; what changed is what this version looks like with nothing
+             picked. */
+          shell={SIDE_CARD}
           onOpenStep={onOpenStep}
           stateName={state || undefined}
           compact
@@ -2371,11 +2385,14 @@ const SIDE_CARD: CSSProperties = {
      the exam card back takes the outline off it alone. */
   border: '1px solid var(--color-border-subtle)',
 }
-const SIDE_CARD_LIFTED: CSSProperties = {
-  border: 'none',
-  background: 'var(--color-compass-course-card)',
-  boxShadow: 'var(--shadow-compass-md)',
-}
+/* ⚠ `SIDE_CARD_LIFTED` WENT 2026-10-08 — the fill-and-shadow treatment the exam
+   card used to take. This version's side column is two outlined cards now, so
+   nothing read it, and `noUnusedLocals` does not keep a style object around for
+   sentiment. To bring the lifted card back: `{ border: 'none', background:
+   'var(--color-compass-course-card)', boxShadow: 'var(--shadow-compass-md)' }`
+   spread over `SIDE_CARD` at the `ExamScheduleWidget` call site. ⚠ Bring Quick
+   Links' border back off with it, or the pair splits again — which is the thing
+   the 2026-10-07 ask was fixing. */
 /* ⚠ `SIDE_BUTTON` WENT 2026-10-05 — it sized the Yes / No pair on Eric's exam
    question, and `ExamScheduleWidget` brings its own controls. Removed rather
    than parked (`noUnusedLocals`); `AtlasHomeV2.tsx` still has it. */

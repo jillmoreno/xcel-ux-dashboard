@@ -21,7 +21,7 @@ import {
   DISCOVERABILITY_DASHBOARD_VERSIONS,
   DISCOVERABILITY_DASHBOARD_VERSION_QE_FOCUSED,
   DISCOVERABILITY_DASHBOARD_VERSION_TESTING,
-  DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_V1,
+  DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_PACING,
   defaultDiscoverabilityVersionFor,
   isQualifyingEducationVersion,
 } from '@/data/dashboardVersions'
@@ -219,11 +219,18 @@ describe('the Testing version is registered without displacing anything', () => 
        `not.toBe` below still names Testing, because this file is Testing's and
        the claim it has always made is that Testing is not the landing page.
 
+       ⚠ FIFTH OWNER, 2026-10-08: HYBRID - PACING EXPLORATION, via
+       `promote-to-prototype` again. Hybrid V1 held the line for two days and is
+       DISPLACED, not retired — it keeps `maturity: 'ready'` exactly as Testing 3
+       did, so three versions now sit in the demo site's picker and the swap
+       stays reversible by a URL. The pin keeps firing because the line keeps
+       moving by decision, which is the whole reason it is written this way.
+
        ⚠ TESTING IS NOT ARCHIVED by losing the default — it still leads the
        picker and everything else in this file still describes it. What changed
        is which version a bare `/dashboard-rebrand` opens. */
     expect(defaultDiscoverabilityVersionFor('xcel')).toBe(
-      DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_V1.id,
+      DISCOVERABILITY_DASHBOARD_VERSION_HYBRID_PACING.id,
     )
     expect(defaultDiscoverabilityVersionFor('xcel')).not.toBe(
       DISCOVERABILITY_DASHBOARD_VERSION_TESTING.id,
