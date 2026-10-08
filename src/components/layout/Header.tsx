@@ -313,22 +313,59 @@ export function Header() {
               card, under My Certificates (`HybridHomeV1`), where the rest of
               the destinations already live. Two places to reach Resources was
               the thing to remove, not the header link per se.
-            • "HELP", NOT "GET HELP". The same destination; the shorter label
-              is the ask, and it sits better alone than a two-word link did
-              beside a sibling.
+            • HELP IS AN ICON — 2026-10-07, the direct ask, replacing the
+              "Help" label this note previously recorded ("HELP", NOT "GET
+              HELP", 2026-10-06). Once Resources moved out, the word was a lone
+              piece of text sitting 28px off a run of icons, which is what made
+              it read as left over rather than as part of the cluster. As a
+              glyph it joins the bell and the avatar — and those three ARE one
+              group: utilities about you and your account.
 
           The `<nav aria-label="Help">` stays either way — it is the landmark
-          for this cluster, and on Hybrid it just holds one link. */}
+          for this cluster, and on Hybrid it just holds one control. */}
       {atlasSlimHeader && (
-        <nav aria-label="Help" style={{ display: 'flex', alignItems: 'center', gap: 24, marginRight: 28 }}>
+        <nav
+          aria-label="Help"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 24,
+            /* ⚠ NO EXTRA MARGIN ONCE IT IS A GLYPH. The 28 (plus the group's
+               own 12) held TEXT off the icon run so the two did not read as
+               one row of controls. An icon is meant to join that run, and
+               keeping the 28 would leave a 40px hole between Help and the bell
+               while the bell and the avatar sit 12 apart. */
+            marginRight: hybridVersion ? 0 : 28,
+          }}
+        >
           {hybridVersion ? null : (
             <Link to={atlasSectionHref('resources')} className="cre-atlas-header-link">
               Resources
             </Link>
           )}
-          <Link to={atlasSectionHref('support')} className="cre-atlas-header-link">
-            {hybridVersion ? 'Help' : 'Get Help'}
-          </Link>
+          {hybridVersion ? (
+            /* ⚠ STILL A `<Link>` TO THE SUPPORT SECTION, not the `?` button
+               below. That one opens `HelpSheet` and belongs to `nav-help`, a
+               different question on a different arm; this is the Atlas header's
+               own link, and the ask was to change how it is DRAWN. Same
+               destination, same params, one fewer word.
+
+               ⚠ `aria-label` DOES THE WORK THE TEXT USED TO. `cre-icon-pill`
+               is the bell's and the avatar's own treatment, so this matches
+               their size, hover and focus ring without restating any of it. */
+            <Link
+              to={atlasSectionHref('support')}
+              aria-label="Help"
+              data-cta-id="nav.support"
+              className="cre-icon-pill"
+            >
+              <HelpCircle size={20} aria-hidden />
+            </Link>
+          ) : (
+            <Link to={atlasSectionHref('support')} className="cre-atlas-header-link">
+              Get Help
+            </Link>
+          )}
         </nav>
       )}
       {/* HELP, AS A `?` — `nav-help: header-icon`. LEFT OF THE BELL, which is

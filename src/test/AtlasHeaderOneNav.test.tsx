@@ -95,3 +95,41 @@ describe('the Atlas header draws ONE top nav', () => {
     expect(globalNav()).toBeNull()
   })
 })
+
+describe('the Atlas header’s Help control', () => {
+  /* 2026-10-07, the direct ask: "switch this to the help icon for this Hybrid
+     version."
+
+     ⚠ THE DESTINATION IS THE HALF THAT MUST NOT MOVE. The Atlas header's Help
+     is a LINK to `?section=support`; the `?` button in the same cluster opens
+     `HelpSheet` and belongs to `nav-help`, a different arm answering the same
+     question. Drawn as a glyph the two now LOOK identical, so a later tidy
+     that "unifies" them would silently change where Hybrid's Help goes — this
+     is what fails if it does. */
+  const help = () => screen.getByRole('navigation', { name: 'Help' })
+
+  it.each([
+    ['Hybrid V1', 'hybrid-v1'],
+    ['the pacing fork', 'hybrid-pacing'],
+  ])('draws %s’s as an icon that still links to Support', (_label, version) => {
+    renderHeader(`?demo=1&version=${version}`)
+    const link = help().querySelector('a')!
+    expect(link.getAttribute('href')).toContain('section=support')
+    /* The name moved from the text node to `aria-label`; the control is still
+       called "Help" either way, which is what a screen reader hears. */
+    expect(link.getAttribute('aria-label')).toBe('Help')
+    expect(link.textContent).toBe('')
+    expect(link.querySelector('svg')).toBeTruthy()
+  })
+
+  it('⚠ and Eric’s keeps its two text links', () => {
+    /* The standing instruction, pinned: no other version moves. Resources is
+       in his header and not in Hybrid's — that split is from 2026-10-06, and
+       asserting the pair here is what stops the icon change taking it along. */
+    renderHeader('?demo=1&version=eric-atlas-v1')
+    expect([...help().querySelectorAll('a')].map((a) => a.textContent)).toEqual([
+      'Resources',
+      'Get Help',
+    ])
+  })
+})
