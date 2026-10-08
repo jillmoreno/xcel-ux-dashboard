@@ -15,6 +15,7 @@ import {
   RubiLogo,
 } from '@/icons'
 import { setCourseChrome } from './courseTakeover'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import {
   SESSION_COURSE,
   SESSION_LESSON,
@@ -32,11 +33,26 @@ import {
  * terms, Infographic, Knowledge check, Worked example, Recap — all reachable
  * from Contents; the body changes, the chrome does not.
  *
- * ⚠ IT TAKES THE WHOLE FRAME. `setCourseChrome('takeover')` stands the app
- * header down, because this page draws its own bar — the same call
- * `CourseContentV2` makes and for the same reason: two headers stacked reads
- * as broken rather than as a variant. The demo controls bar survives, which is
- * what a moderated run needs.
+ * ⚠ IT TAKES THE WHOLE FRAME BY DEFAULT, AND THAT IS NOW A CHOICE —
+ * `compass-session-chrome`, 2026-10-08, the direct ask for "2 versions of the
+ * course content, one that takes over the whole screen, and another one that
+ * actually is below the global header".
+ *
+ * `full-screen` is what shipped and still ships: `setCourseChrome('takeover')`
+ * stands the app header down, because this page draws its own bar — the same
+ * call `CourseContentV2` makes and for the same reason. `in-shell` uses
+ * `courseTakeover`'s OTHER arm (`course`), which keeps the header and thickens
+ * its bottom stroke, so the learner stays inside the product's navigation.
+ * The demo controls bar survives either way, which is what a moderated run
+ * needs.
+ *
+ * ⚠ THE OLD NOTE SAID "two headers stacked reads as broken rather than as a
+ * variant", AND THAT CLAIM NEEDS QUALIFYING NOW. It was written against
+ * `CourseContentV2`'s full-screen page, which draws its own LOGO lockup — two
+ * XCEL logos is the broken case. `SessionBar` below carries no logo, so
+ * `in-shell` stacks a 53px bar under the header rather than a second header.
+ * It is still ~114px of chrome before any lesson content, and the fix for that
+ * is deliberately deferred (2026-10-08, the direct ask: "leave it for now").
  *
  * ⚠ THE CONTENT IS ANJANI'S, PORTED VERBATIM — see `compassSessionFixtures`
  * for where from and for the second-home warning that comes with it.
@@ -55,10 +71,14 @@ export function CompassSessionPage({ onExit }: { onExit: () => void }) {
   const beat = beats[beatIndex]
   const total = beats.length
 
+  /* ⚠ READ AS A VARIANT, NOT A BOOLEAN. An unset or unknown value falls to the
+     shipped arm, so a stale stored flag cannot leave a reviewer in a shape
+     nobody chose. */
+  const inShell = useFeatureFlag('compass-session-chrome').variant === 'in-shell'
   useEffect(() => {
-    setCourseChrome('takeover')
+    setCourseChrome(inShell ? 'course' : 'takeover')
     return () => setCourseChrome('none')
-  }, [])
+  }, [inShell])
 
   return (
     <div style={pageStyle}>

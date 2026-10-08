@@ -126,6 +126,7 @@ const REBRAND_FLAGS = [
   'atlas-brand-skin',
   'hybrid-lesson-block',
   'hybrid-course-expiry',
+  'compass-session-chrome',
   'hybrid-pace-standing',
   'hybrid-title-lesson',
   'hybrid-quick-links-style',

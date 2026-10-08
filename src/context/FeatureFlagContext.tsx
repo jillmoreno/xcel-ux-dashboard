@@ -1325,6 +1325,55 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'compass-session-chrome',
+    /* THE COURSE CONTENT'S TWO VERSIONS — 2026-10-08, the direct ask: "we will
+       need to incorporate 2 versions of the course content, one that takes over
+       the whole screen, and another one that actually is below the global
+       header."
+
+       ⚠ THE MACHINERY WAS ALREADY THERE AND HALF-UNUSED. `courseTakeover.ts`
+       has carried three answers since 2026-09-23 — `none`, `course` (header
+       STAYS, with a thicker bottom stroke) and `takeover` (header GOES). The
+       session hardcoded `takeover`; this makes the existing `course` arm
+       reachable. No new chrome state, no new store.
+
+       ⚠ THE TWO BARS STACK ON THE `in-shell` ARM, AND THAT IS THE AGREED STATE
+       RATHER THAN AN OVERSIGHT — 2026-10-08, the direct ask ("leave it for now.
+       decision to fix will be made later"). The session draws its own 53px
+       `SessionBar` (lesson position, chapter, progress, Notes, Rubi), so under
+       the global header there is ~114px of chrome above the lesson. ⚠ It is NOT
+       the "two XCEL logos stacked" case the takeover note warns about — the
+       session bar carries no logo — which is why this arm is viable at all.
+       The three ways out (leave it, slim the bar to progress only, drop it and
+       re-home Notes + Rubi) are a decision deferred, not missed. Slimming is
+       the one to think hardest about: the chapter title is the only thing on
+       screen naming what the learner is studying, and the global header does
+       not replace it.
+
+       ⚠ `full-screen` IS THE DEFAULT because it is what ships, so the flag
+       changes nothing until someone picks. The arm is the question; the
+       baseline is not. */
+    surface: 'design',
+    owner: 'jill',
+    /* Scoped to the version the ask came from. ⚠ The EFFECT is not scoped — any
+       version that opens the session reads this flag — which is the same split
+       `atlas-brand-skin` has: `versions` decides whose BAR carries the control,
+       not where the arm applies. */
+    versions: ['hybrid-pacing'],
+    group: 'Widgets',
+    label: 'Course content',
+    description:
+      'Whether the Compass SESSION takes the whole screen or sits under the global header. `full-screen` is what ships: the page calls `setCourseChrome(\'takeover\')`, the app header stands down, and the session\u2019s own bar is the only chrome. `in-shell` uses `courseTakeover`\u2019s other arm (`course`), which keeps the header and gives it a thicker bottom stroke \u2014 so the learner stays inside the product\u2019s navigation while studying. \u26a0 ON `in-shell` THE TWO BARS STACK: the session draws its own 53px bar (lesson position, chapter, progress, Notes, Rubi) under the global header, ~114px of chrome before any lesson content. That is the agreed state while the fix is decided \u2014 it is not the two-logos case, because the session bar carries no lockup. Variant-only.',
+    maturity: 'wip',
+    defaultEnabled: true,
+    defaultVariant: 'full-screen',
+    variants: [
+      { value: 'full-screen', label: 'Full screen (as it ships)' },
+      { value: 'in-shell', label: 'Under the global header' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'hybrid-course-expiry',
     /* HOW CLOSE THE ACCESS DEADLINE IS — 2026-10-07, the direct ask for a demo
        control showing the course expiring, nearly expired, and expired.
