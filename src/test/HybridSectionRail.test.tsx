@@ -2,7 +2,7 @@ import { cleanup, render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, expect, it } from 'vitest'
 import { AccountProvider } from '@/context/AccountContext'
-import { FeatureFlagProvider } from '@/context/FeatureFlagContext'
+import { FEATURE_FLAGS, FeatureFlagProvider } from '@/context/FeatureFlagContext'
 import { LearningPathsPanelProvider } from '@/components/learning/LearningPathsPanelContext'
 import { JumpBackInPanelProvider } from '@/components/dashboard/JumpBackInPanelContext'
 import { PlatformShell } from '@/components/layout/PlatformShell'
@@ -165,5 +165,41 @@ describe('Resources takes the crumb without taking the header', () => {
        control at all — that absence is what this link fills. */
     renderShell('/dashboard-rebrand?demo=1&version=eric-atlas-v1&section=resources')
     expect(screen.queryByRole('button', { name: /Back to Home/i })).toBeNull()
+  })
+})
+
+describe('the brand skin reaches Hybrid Pacing', () => {
+  /* 2026-10-08, the direct ask: "I want to bring in the brand colour concept
+     Eric was using in the design demo bar. I need to see my version in
+     different colors."
+
+     ⚠ NOTHING ABOUT THE MECHANISM MOVED, which is what these pin. Hybrid
+     answers `isAtlasCompassNavVersion`, so `PlatformShell` was already
+     mirroring `data-atlas-palette` and `data-atlas-brand` on it long before the
+     control appeared — the `versions` list on the flag was the only thing
+     holding the CONTROL off that bar. If someone later "tidies" the palette to
+     Eric's versions alone, the bar keeps its dropdown and the page stops
+     repainting, which is the silent half of that change. */
+  it.each([
+    ['Hybrid V1', 'hybrid-v1'],
+    ['the pacing fork', 'hybrid-pacing'],
+  ])('mirrors the skin attributes on %s', (_label, version) => {
+    renderShell(`/dashboard-rebrand?demo=1&version=${version}&skin=cre`)
+    expect(document.documentElement.dataset.atlasPalette).toBe('xcel')
+    expect(document.documentElement.dataset.atlasBrand).toBe('cre')
+  })
+
+  it('⚠ and the control is scoped to the pacing fork, not to every Hybrid', () => {
+    /* Only the version the ask named is on the flag's `versions` list. Hybrid
+       V1 still RENDERS a skin (the attributes above are version-agnostic); what
+       it does not get is the dropdown. The two are different questions and this
+       is the one a reader will assume wrongly. */
+    const skin = FEATURE_FLAGS.find((f) => f.key === 'atlas-brand-skin')!
+    expect(skin.versions).toContain('hybrid-pacing')
+    expect(skin.versions).not.toContain('hybrid-v1')
+    /* Still Eric's control, shared rather than forked — a second flag would be
+       two dropdowns writing one `data-atlas-brand`, and the skins would drift
+       the first time he retuned a ramp. */
+    expect(skin.owner).toBe('eric')
   })
 })
