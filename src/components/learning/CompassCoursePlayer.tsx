@@ -372,9 +372,8 @@ export function CompassSidebar({
      `HYBRID_COMPASS_PAGES`. */
   const { brand: railBrand } = useAccount()
   const [railParams] = useSearchParams()
-  const pages = isHybridVersion(resolveDashboardVersion(railParams.get('version'), railBrand))
-    ? HYBRID_COMPASS_PAGES
-    : COMPASS_PAGES
+  const hybridRail = isHybridVersion(resolveDashboardVersion(railParams.get('version'), railBrand))
+  const pages = hybridRail ? HYBRID_COMPASS_PAGES : COMPASS_PAGES
   const activeLabel = pages.find((p) => p.id === page)?.label ?? ''
   /*
    * WHICH HALF OF THE SIDEBAR IS SHOWING, and the reason it is a named
@@ -385,7 +384,12 @@ export function CompassSidebar({
    * separate conditions would have drifted into the "both" and "neither" bugs,
    * and this player has already shipped the "both" one once.
    */
-  const railShown = page !== 'course'
+  /* ⚠ HYBRID NEVER SWAPS THE RAIL — 2026-10-08, the direct ask. In Anjani's
+     prototype the six rows are CONSTANT: her Course screen keeps them and puts
+     the module list in the body, where the product put a table of contents in
+     the rail and left the body blank. `CompassCourseLanding` is that body; see
+     its note for why the player's own rail is untouched by this. */
+  const railShown = page !== 'course' || hybridRail
   return (
     <aside style={sidebarStyle} aria-label="Course contents">
       {/*

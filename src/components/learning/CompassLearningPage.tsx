@@ -1,6 +1,10 @@
 import { useState, type CSSProperties } from 'react'
 import { CompassSidebar, CompassPageBody, type CompassPage } from './CompassCoursePlayer'
 import { CompassLearningOverview } from './CompassLearningOverview'
+import { CompassCourseLanding } from './CompassCourseLanding'
+import { useAccount } from '@/context/AccountContext'
+import { isHybridVersion, resolveDashboardVersion } from '@/data/dashboardVersions'
+import { useSearchParams } from 'react-router-dom'
 import { useNavPlacement } from '@/components/layout/navPlacement'
 
 /**
@@ -50,6 +54,12 @@ export function CompassLearningPage({
   onStartSession?: () => void
 }) {
   const [page, setPage] = useState<CompassPage>('overview')
+  /* ⚠ HYBRID'S COURSE ROW OPENS A PAGE, NOT A BLANK — 2026-10-08. Everywhere
+     else `course` falls through to `CompassPageBody`'s empty ground, which is
+     what it has always drawn here; on Hybrid it is Anjani's course landing. */
+  const { brand } = useAccount()
+  const [compassParams] = useSearchParams()
+  const hybrid = isHybridVersion(resolveDashboardVersion(compassParams.get('version'), brand))
   /* Option 3 only — the header and the rail both carry a Home there, so the
      sidebar's trail would be the third. See the prop. */
   const hideCrumb = useNavPlacement() === 'hybrid'
@@ -78,6 +88,8 @@ export function CompassLearningPage({
             </header>
             <CompassLearningOverview onStartSession={onStartSession} />
           </>
+        ) : hybrid && page === 'course' ? (
+          <CompassCourseLanding />
         ) : (
           /* Every other page is the player's own, so it stays the player's —
              including the deliberate blank grounds. */

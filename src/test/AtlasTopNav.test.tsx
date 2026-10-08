@@ -221,3 +221,67 @@ describe('the Compass rail is Anjani’s on Hybrid', () => {
     expect(railOf()).toContain('Overview')
   })
 })
+
+describe('Hybrid’s Course row opens Anjani’s course landing', () => {
+  /* 2026-10-08, the direct ask: "the left rail of the course content page also
+     needs to match what is in anjanis", answered by building her page.
+
+     ⚠ THE RAIL NOT SWAPPING IS THE ASSERTION. In her prototype the six rows are
+     constant; the product swapped them for a table of contents and left the
+     body blank. Both halves are pinned here because either one alone would pass
+     against a half-done change — a rail that stays over an empty page, or a
+     page under the wrong rail. */
+  const railOf = () =>
+    [...document.querySelectorAll('nav[aria-label="Course pages"] li')].map((li) =>
+      (li.textContent ?? '').trim(),
+    )
+
+  function openCourse(version: string) {
+    render(
+      <MemoryRouter initialEntries={[`/dashboard-rebrand?version=${version}&section=compass`]}>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <CompassLearningPage
+              courseTitle="New York Life and Health Pre-licensing"
+              percentComplete={62}
+              completedLessons={26}
+              totalLessons={42}
+              onStartSession={() => {}}
+              onLeave={() => {}}
+            />
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+    const row = screen
+      .getAllByRole('button')
+      .find((b) => (b.textContent ?? '').trim() === 'Course')!
+    fireEvent.click(row)
+  }
+
+  it('keeps the six rows and renders her modules', () => {
+    openCourse('hybrid-pacing')
+    expect(railOf()).toHaveLength(6)
+    expect(screen.getByRole('region', { name: 'Course page' })).toBeTruthy()
+    const modules = [...document.querySelectorAll('[aria-label="All modules"] li')]
+    expect(modules).toHaveLength(5)
+    /* ⚠ "Not proven" IS THE ONE WORTH PINNING. It is not "incomplete" — the
+       learner finished and the scored check disagreed — and it is the
+       distinction the whole readiness idea rests on. A tidy that collapsed the
+       four states into done/not-done would take it first. */
+    expect(modules[1].textContent).toContain('Not proven')
+  })
+
+  it('⚠ and Eric’s still swaps to the table of contents', () => {
+    /* His course page IS the player, and its rail is how a learner moves
+       between lessons. The alternative reading of the ask would have deleted
+       it; this is what says we did not. */
+    openCourse('eric-atlas-v1')
+    expect(document.querySelector('nav[aria-label="Course pages"]')).toBeNull()
+    /* ⚠ NOT `queryByRole('region', {name: 'Course page'})` — `CompassPageBody`
+       labels its BLANK ground the same way, so that matches on both arms and
+       asserts nothing. The landing's own content is what tells them apart. */
+    expect(screen.queryByText('Your course')).toBeNull()
+    expect(document.querySelector('[aria-label="All modules"]')).toBeNull()
+  })
+})
