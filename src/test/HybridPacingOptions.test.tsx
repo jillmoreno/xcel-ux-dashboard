@@ -278,3 +278,89 @@ describe('each option names the kind of plan it is', () => {
     expect(screen.queryByText(/Fast Track|Steady|Relaxed/i)).toBeNull()
   })
 })
+
+describe('Step 3 offers State Requirements beside How to apply', () => {
+  /* 2026-10-07, the direct ask: "add another link below this that is State
+     Requirements (will open the same link as the one on the right rail)."
+
+     ⚠ THE SAME HANDLER IS THE POINT, not a second route to the same content.
+     `onOpenRequirements` is one prop and both controls call it, so a change to
+     where requirements open cannot reach one and miss the other. */
+  function renderWithRequirements(onOpenRequirements: () => void) {
+    return render(
+      <MemoryRouter initialEntries={['/dashboard-rebrand?demo=1&version=hybrid-pacing']}>
+        <AccountProvider>
+          <FeatureFlagProvider>
+            <HybridPacingHome
+              path={PATH}
+              courseTitle="New York Life and Health Pre-licensing"
+              percent={0}
+              today={TODAY}
+              hoursRemaining={40}
+              accessExpiresAt="2026-06-11"
+              onOpenRequirements={onOpenRequirements}
+              /* ⚠ PASSED, because "How to apply" hangs on it and the subject
+                 here is the PAIR. Without it the step renders one link and the
+                 ordering assertion would pass against a list of one. */
+              onOpenStep={() => {}}
+              notStarted
+            />
+          </FeatureFlagProvider>
+        </AccountProvider>
+      </MemoryRouter>,
+    )
+  }
+
+  const step3 = () =>
+    document.querySelector('section[aria-label^="Get Licensed"]') as HTMLElement
+
+  it('shows it under How to apply once the step is expanded', () => {
+    /* ⚠ EXPANDED FIRST. The body is unmounted while the step is closed, so a
+       test that forgot the click would pass its absence assertion for the
+       wrong reason. */
+    renderWithRequirements(() => {})
+    const section = step3()
+    expect(section.textContent).not.toMatch(/State Requirements/i)
+    fireEvent.click(section.querySelector('button[aria-expanded]') as HTMLElement)
+    const links = [...section.querySelectorAll('button')]
+      .map((b) => b.textContent?.trim() ?? '')
+      .filter((t) => /→$/.test(t))
+    expect(links).toEqual(['How to apply →', 'State Requirements →'])
+  })
+
+  it('calls the same handler the Quick Links row does', () => {
+    let calls = 0
+    renderWithRequirements(() => {
+      calls += 1
+    })
+    const section = step3()
+    fireEvent.click(section.querySelector('button[aria-expanded]') as HTMLElement)
+    const link = [...section.querySelectorAll('button')].find((b) =>
+      /State Requirements/i.test(b.textContent ?? ''),
+    )
+    fireEvent.click(link as HTMLElement)
+    expect(calls).toBe(1)
+  })
+
+  it('⚠ renders no second link when there is nowhere to send it', () => {
+    /* `onOpenRequirements` is optional on this component. A label rendered
+       without its handler would be a dead control, which is the failure the
+       bundled `extra` prop exists to make impossible — this pins the call
+       site honouring it. */
+    renderPacing()
+    const section = step3()
+    fireEvent.click(section.querySelector('button[aria-expanded]') as HTMLElement)
+    expect(section.textContent).not.toMatch(/State Requirements/i)
+  })
+})
+
+describe('the journey eyebrow names whose journey it is', () => {
+  it('reads "Step 1 · XCEL Study Journey"', () => {
+    /* 2026-10-07, the direct ask. ⚠ THE BRAND IS LOAD-BEARING: steps 2 and 3
+       are the STATE's process (pass the exam, apply for the licence), so
+       naming step 1 as XCEL's is what marks where the product's part ends. */
+    renderPacing()
+    const eyebrow = screen.getByText(/Study Journey/i).closest('p')
+    expect(eyebrow?.textContent).toBe('Step 1 · XCEL Study Journey')
+  })
+})
