@@ -133,8 +133,11 @@ describe('what the panel says about it', () => {
     renderPacing()
     expect(screen.getByText(/adjust your goal/i)).toBeTruthy()
     /* And it is not the restricted message, which is the thing this arm is
-       distinguishing itself from. */
-    expect(screen.queryByText(/only pace that finishes in time/i)).toBeNull()
+       distinguishing itself from. ⚠ Matched on the new phrasing — the
+       one-option line became "Based on your <date> exam date, a 1-week pace
+       will help you finish in time" on 2026-10-07, and the old matcher would
+       have gone on passing against a sentence nothing renders. */
+    expect(screen.queryByText(/a 1-week pace will help you finish/i)).toBeNull()
   })
 
   it('splits that invitation around the options', () => {
@@ -167,15 +170,25 @@ describe('what the panel says about it', () => {
     expect(screen.queryByText(/adjust your goal/i)).toBeNull()
   })
 
-  it('names the exam and the distance when only one pace is left', () => {
+  it('names the exam date and the pace it recommends when only one is left', () => {
     /* ⚠ THE HALF OF THE ASK THAT IS NOT ARITHMETIC — "the text will need to
        update to explain why they only have the 1 option". Three options
        becoming one is a loss the learner can see and cannot account for, and an
-       unexplained constraint reads as a defect rather than a deadline. */
+       unexplained constraint reads as a defect rather than a deadline.
+
+       ⚠ THE LINE LEADS WITH THE RECOMMENDATION NOW, not the constraint —
+       2026-10-07, the direct ask, which supplied the sentence whole. It was
+       "Your exam is May 19, 8 days away, so one week is the only pace that
+       finishes in time." The DATE is still named, because it is the reason;
+       the distance is not, because the rows below carry the per-day load, which
+       is the number that costs the learner something. */
     renderPacing(inDays(8))
-    const p = screen.getByText(/only pace that finishes in time/i)
-    expect(p.textContent).toMatch(/8 days away/)
+    const p = screen.getByText(/a 1-week pace will help you finish in time/i)
     expect(p.textContent).toMatch(/May 19/)
+    expect(p.textContent).toMatch(/Change your exam date to see how your recommended pace changes/)
+    /* ⚠ AND NO DISTANCE. Keeping both would have said the same constraint
+       twice in one sentence. */
+    expect(p.textContent).not.toMatch(/days away/)
   })
 
   it('uses the plural wording when two are left', () => {
@@ -186,9 +199,19 @@ describe('what the panel says about it', () => {
     expect(screen.getByText(/longer paces would finish after it/i)).toBeTruthy()
   })
 
-  it('says "1 day" rather than "1 days"', () => {
+  it('⚠ no longer prints a distance at all, singular or otherwise', () => {
+    /* THIS TEST USED TO PIN `"1 day" rather than "1 days"`, which was a real
+       guard while the one-option message read "…, 1 day away, so…". That
+       message stopped printing a distance on 2026-10-07.
+
+       ⚠ THE SINGULAR GUARD IS NOW UNREACHABLE rather than removed, and it is
+       kept in `examWhen` deliberately: "1 day away" could only ever render in
+       the ONE-option message, and two options require the exam to be 14 days
+       out or more. Inverted rather than deleted so the day this changes back,
+       something fails and the guard gets re-tested instead of being trusted. */
     renderPacing(inDays(1))
-    expect(screen.getByText(/1 day away/)).toBeTruthy()
+    const p = screen.getByText(/a 1-week pace will help you finish in time/i)
+    expect(p.textContent).not.toMatch(/day away|days away/)
   })
 })
 

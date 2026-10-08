@@ -400,11 +400,28 @@ export function HybridPacingHome({
     examDate && examDaysAway != null
       ? `${formatPaceDate(examDate)}, ${examDaysAway} ${examDaysAway === 1 ? 'day' : 'days'} away`
       : null
+  /* ⚠ THE DATE ALONE, for the one-option message — see there. `examWhen` keeps
+     the distance because the two-option message still argues from it.
+
+     ⚠ `examWhen`'S SINGULAR GUARD IS NOW UNREACHABLE and is kept anyway. "1 day
+     away" could only ever render in the ONE-option message, which no longer
+     prints a distance; two options require the exam to be 14 days out or more.
+     Removing it would be correct today and wrong the moment either message
+     changes its mind, and it costs one ternary. */
+  const examShort = examDate ? formatPaceDate(examDate) : null
   const unrestricted = paceChoices.length === PACE_WEEKS.length || !examWhen
   const pacePrompt = unrestricted
     ? 'How quickly would you like to complete this course?'
     : paceChoices.length === 1
-      ? `Your exam is ${examWhen}, so one week is the only pace that finishes in time. Change your exam date and this will adjust.`
+      ? /* ⚠ THE DATE WITHOUT THE DAY COUNT — 2026-10-07, the direct ask, which
+           supplied this sentence whole. The previous line led with the distance
+           ("Your exam is May 20, 9 days away, so…"), which argued the
+           constraint before naming the recommendation; this leads with the
+           choice it is making FOR the learner and treats the date as its
+           reason. The day count is not lost to them — the rows below carry the
+           per-day load, which is the number that actually costs them
+           something. */
+        `Based on your ${examShort} exam date, a 1-week pace will help you finish in time. Change your exam date to see how your recommended pace changes.`
       : `Your exam is ${examWhen}, so the longer paces would finish after it. Change your exam date and this will adjust.`
   /* ⚠ THE SECOND HALF SITS UNDER THE OPTIONS — 2026-10-07, the direct ask, and
      it is a split rather than a move: the two sentences do different jobs and
