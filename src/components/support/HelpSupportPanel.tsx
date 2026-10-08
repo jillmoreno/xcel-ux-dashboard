@@ -4,7 +4,6 @@ import { useAccount } from '@/context/AccountContext'
 import { supportConfigFor } from '@/data/support/supportFixtures'
 import { SupportCard } from './SupportCard'
 import { CustomerSupportSheet } from './CustomerSupportSheet'
-import { ContactUsSheet } from './ContactUsSheet'
 import { LiveChatWidget } from './LiveChatWidget'
 
 /**
@@ -13,16 +12,22 @@ import { LiveChatWidget } from './LiveChatWidget'
  *   - Customer Support → the CustomerSupportSheet slide-over (issue form).
  *   - Live Chat        → the floating LiveChatWidget (topics → chat → end).
  *   - FAQs             → opens the brand's external FAQ page in a new tab.
- *   - Contact Us       → the ContactUsSheet slide-over (phone lines).
+ *   - Contact Us       → opens the brand's external contact page in a new tab.
+ *
+ * ⚠ CONTACT US STOPPED BEING A SHEET on 2026-10-07 (the direct ask). It opened
+ * `ContactUsSheet`, which lists `phoneLines` — and XCEL's is EMPTY, the fixture
+ * carrying a TODO saying the number is unknown and deliberately not invented.
+ * So the only brand in the union opened a slide-over with nothing in it. The
+ * card now behaves like FAQs: a brand-keyed URL, a new tab. `ContactUsSheet`
+ * is kept, unreferenced — see ARCHIVED_ITEMS `support-contact-us-sheet`.
  *
  * Open to members AND non-members — support isn't gated. The section hero
  * ("Help & Support" + description) is owned by the shell's SectionShell.
  */
 export function HelpSupportPanel() {
   const { brand } = useAccount()
-  const { faqUrl } = supportConfigFor(brand)
+  const { faqUrl, contactUrl } = supportConfigFor(brand)
   const [customerOpen, setCustomerOpen] = useState(false)
-  const [contactOpen, setContactOpen] = useState(false)
   const [chatOpen, setChatOpen] = useState(false)
 
   return (
@@ -52,9 +57,14 @@ export function HelpSupportPanel() {
         <SupportCard
           icon={Phone}
           title="Contact Us"
-          description="Reach our support team by phone."
-          action="Get help"
-          onSelect={() => setContactOpen(true)}
+          /* ⚠ "BY PHONE" WENT WITH THE SHEET. It described what the slide-over
+             listed; the contact page carries whatever routes the site offers,
+             and promising a phone line is the one thing the fixture's TODO says
+             nobody has confirmed. The action mirrors "Open FAQs" — the other
+             card that leaves the product. */
+          description="Reach our support team."
+          action="Open contact page"
+          onSelect={() => window.open(contactUrl, '_blank', 'noopener,noreferrer')}
         />
       </div>
 
@@ -62,7 +72,6 @@ export function HelpSupportPanel() {
           close. The chat widget mounts only while open — no toast to preserve,
           and a fresh mount resets its state cleanly. */}
       <CustomerSupportSheet open={customerOpen} onClose={() => setCustomerOpen(false)} />
-      <ContactUsSheet open={contactOpen} onClose={() => setContactOpen(false)} />
       {chatOpen && <LiveChatWidget onClose={() => setChatOpen(false)} />}
     </div>
   )

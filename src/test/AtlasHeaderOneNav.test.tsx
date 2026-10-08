@@ -1,4 +1,5 @@
 import { render, screen, cleanup } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { afterEach, describe, it, expect } from 'vitest'
 import { Header } from '@/components/layout/Header'
@@ -97,35 +98,48 @@ describe('the Atlas header draws ONE top nav', () => {
 })
 
 describe('the Atlas header’s Help control', () => {
-  /* 2026-10-07, the direct ask: "switch this to the help icon for this Hybrid
-     version."
+  /* 2026-10-07, two direct asks a few minutes apart: "switch this to the help
+     icon for this Hybrid version", then "when icon is clicked, show the sheet
+     view version".
 
-     ⚠ THE DESTINATION IS THE HALF THAT MUST NOT MOVE. The Atlas header's Help
-     is a LINK to `?section=support`; the `?` button in the same cluster opens
-     `HelpSheet` and belongs to `nav-help`, a different arm answering the same
-     question. Drawn as a glyph the two now LOOK identical, so a later tidy
-     that "unifies" them would silently change where Hybrid's Help goes — this
-     is what fails if it does. */
+     ⚠ THIS BLOCK PINNED THE `href` BETWEEN THE TWO, on the argument that the
+     glyph made Hybrid's Help look like the `?` button beside it and a later
+     tidy might "unify" them. The second ask IS that unification, asked for
+     deliberately — so the assertion moves to the behaviour rather than being
+     deleted: the control opens the sheet and goes nowhere. What has not
+     changed is that Eric's header must not move with it. */
   const help = () => screen.getByRole('navigation', { name: 'Help' })
 
   it.each([
     ['Hybrid V1', 'hybrid-v1'],
     ['the pacing fork', 'hybrid-pacing'],
-  ])('draws %s’s as an icon that still links to Support', (_label, version) => {
+  ])('opens the Help sheet from %s’s icon, and navigates nowhere', async (_label, version) => {
+    const user = userEvent.setup()
     renderHeader(`?demo=1&version=${version}`)
-    const link = help().querySelector('a')!
-    expect(link.getAttribute('href')).toContain('section=support')
-    /* The name moved from the text node to `aria-label`; the control is still
-       called "Help" either way, which is what a screen reader hears. */
-    expect(link.getAttribute('aria-label')).toBe('Help')
-    expect(link.textContent).toBe('')
-    expect(link.querySelector('svg')).toBeTruthy()
+    const trigger = help().querySelector('button')!
+    /* ⚠ A BUTTON, NOT A LINK, and that is the assertion rather than an
+       implementation detail: an `<a>` here would navigate on click and on
+       middle-click and would offer "open in new tab" for a sheet that cannot
+       exist in one. */
+    expect(help().querySelector('a')).toBeNull()
+    expect(trigger.getAttribute('aria-haspopup')).toBe('dialog')
+    /* The name moved from the text node to `aria-label` when it became a
+       glyph; the control is still called "Help", which is what a screen
+       reader hears. */
+    expect(trigger.getAttribute('aria-label')).toBe('Help')
+    expect(trigger.textContent).toBe('')
+    expect(trigger.querySelector('svg')).toBeTruthy()
+
+    expect(screen.queryByRole('dialog', { name: 'Help' })).toBeNull()
+    await user.click(trigger)
+    expect(screen.getByRole('dialog', { name: 'Help' })).toBeTruthy()
   })
 
   it('⚠ and Eric’s keeps its two text links', () => {
     /* The standing instruction, pinned: no other version moves. Resources is
        in his header and not in Hybrid's — that split is from 2026-10-06, and
-       asserting the pair here is what stops the icon change taking it along. */
+       asserting the pair here is what stops these two changes taking it
+       along. */
     renderHeader('?demo=1&version=eric-atlas-v1')
     expect([...help().querySelectorAll('a')].map((a) => a.textContent)).toEqual([
       'Resources',
