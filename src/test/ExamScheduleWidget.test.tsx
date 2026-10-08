@@ -140,6 +140,18 @@ describe('exam-step-style: ask-first', () => {
     expect(within(c).getByRole('button', { name: /Exam Details/ })).toBeTruthy()
   })
 
+/* ⚠ READS THE WHOLE HEADING, not a text node — 2026-10-07. The line is one
+   `<p>` holding two sentences, and the second became a block span so the card
+   breaks between them rather than mid-phrase ("No exam date yet? That's /
+   okay."). A plain `getByText` matches a single text node and started failing
+   on the split. Matching the ELEMENT's normalised text keeps these assertions
+   about the copy the learner reads, which is what they are for, and leaves the
+   markup free to change under them. */
+const notYetHeading = (scope: HTMLElement) =>
+  [...scope.querySelectorAll('p')].find(
+    (p) => p.textContent?.replace(/\s+/g, ' ').trim() === 'No exam date yet? That’s okay.',
+  )
+
   it('“Not yet” shrinks the card but does NOT dismiss it', async () => {
     /* THE DISTINCTION THE ARM EXISTS FOR. A dismissal would be the easy build
        and the wrong one: the learner who answers "not yet" today is exactly the
@@ -151,7 +163,7 @@ describe('exam-step-style: ask-first', () => {
 
     const c = card()
     expect(within(c).queryByText('Have you scheduled your New York state exam?')).toBeNull()
-    expect(within(c).getByText(/No exam date yet\? That’s okay\./)).toBeTruthy()
+    expect(notYetHeading(c)).toBeTruthy()
     expect(within(c).getByText(/You can register for your exam/)).toBeTruthy()
     expect(within(c).getByRole('button', { name: /I have my exam date/ })).toBeTruthy()
   })
@@ -168,7 +180,7 @@ describe('exam-step-style: ask-first', () => {
 
     // …and Cancel returns to the answer it was opened from, not to the question.
     await user.click(within(card()).getByRole('button', { name: 'Cancel' }))
-    expect(within(card()).getByText(/No exam date yet\? That’s okay\./)).toBeTruthy()
+    expect(notYetHeading(card())).toBeTruthy()
     expect(within(card()).queryByText('Have you scheduled your New York state exam?')).toBeNull()
   })
 

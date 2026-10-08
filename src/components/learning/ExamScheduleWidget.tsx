@@ -488,7 +488,27 @@ function NotYetState({ onSchedule }: { onSchedule: () => void }) {
           same reason: it decorated a line that already says what it is rather
           than naming anything the words did not. The row wrapper went with it,
           since there is nothing left to sit beside. */}
-      <p style={notYetHeadingStyle}>No exam date yet? That’s okay.</p>
+      {/* ⚠ THE BREAK IS BETWEEN THE SENTENCES — 2026-10-07, the direct ask
+          ("wrap that's ok to the 2nd line"). At the side column's width the
+          heading wraps on its own, and where it chose to break was mid-phrase:
+          "No exam date yet? That's / okay." — which splits the reassurance in
+          half and leaves one orphaned word under it.
+
+          ⚠ A BLOCK SPAN RATHER THAN `<br>`. The break is a consequence of the
+          two sentences being two thoughts, not a line of markup inside a
+          sentence — so a wider column still gets the same two lines, and
+          nothing has to be re-measured if the copy changes. It also stays one
+          `<p>`, which is what a screen reader should hear.
+
+          ⚠ AND THE SPACE BEFORE THE SPAN IS NOT OPTIONAL. Without it the
+          paragraph's `textContent` is "No exam date yet?That’s okay." — the
+          break is visual only, so a screen reader runs the two sentences
+          together and so does anything else reading the text. It costs nothing
+          on screen: trailing whitespace at the end of a line collapses, and the
+          span is a block, so the line ends there either way. */}
+      <p style={notYetHeadingStyle}>
+        No exam date yet? <span style={{ display: 'block' }}>That’s okay.</span>
+      </p>
       <p style={notYetBodyStyle}>
         You can register for your exam{' '}
         {/* ⚠ NEW TAB, and `rel` with it. This leaves XCEL for PSI, and a learner
