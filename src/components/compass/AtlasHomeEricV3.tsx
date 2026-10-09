@@ -260,7 +260,7 @@ export function AtlasHomeEricV3({
                 view (2026-10-09). */}
             {completedView ? null : (
             <AtlasCourseProgressStates
-              key={progressPick}
+              key={`progress-${progressPick}`}
               initialStage={progress.stage}
               onAdvance={advanceProgress}
               percent={progress.percent ?? percent}
@@ -281,9 +281,13 @@ export function AtlasHomeEricV3({
             {/* On the Completed view it opens on Proficient (2026-10-09, Eric). */}
             {/* Clicking it at Exam Ready takes the page back to Not Started 0%
                 (2026-10-09, Eric). */}
+            {/* …and it follows the Progress stage (2026-10-09, Eric: "the
+                readiness module is not changing when the progress changes"). */}
+            {/* Its own key prefix: the two cards are siblings, and a SHARED key
+                left orphaned copies of the progress card on screen. */}
             <AtlasReadinessCard
-              key={completedView ? 'completed' : 'default'}
-              initialLevel={completedView ? 3 : 0}
+              key={`readiness-${progressPick}`}
+              initialLevel={V3_READINESS_FOR[progressPick] ?? 0}
               onPastLast={() => setVariant('atlas-v3-progress', 'not-started')}
             />
             {/* The link tiles at the BOTTOM of the column (2026-10-09, Eric's
@@ -719,6 +723,15 @@ const REQUIREMENTS: CSSProperties = {
 }
 
 /* The Design bar's Progress control → the module's opening state and figure. */
+/* The Readiness level each Progress stage opens on (0 Novice … 4 Exam Ready).
+   Expired has no obvious level, so it starts over at Novice. */
+const V3_READINESS_FOR: Record<string, number> = {
+  'not-started': 0,
+  'on-track': 1,
+  milestone: 2,
+  completed: 3,
+  expired: 0,
+}
 const V3_PROGRESS_ORDER = ['not-started', 'on-track', 'milestone', 'completed', 'expired']
 const V3_PROGRESS: Record<string, { stage: ProgressStage; percent?: number }> = {
   // Opens on Study pace (0% IS that screen); clicking on reaches the 14% ring.
