@@ -2125,7 +2125,11 @@ function SectionShell({
            `HomePageHeader` or `SectionPageHeader` already carried it. Atlas
            draws neither of those headers, so folding it in would have taken
            56px off the top of a page nothing was sitting above. */
-        padding: atlasHome || atlasResources
+        /* Eric/Atlas V3's Home sits 24px closer to the header — 32 on top, 56
+           on the other sides (2026-10-09, Eric's request). */
+        padding: atlasHome && shellParams.get('version') === 'eric-atlas-v3'
+          ? '32px 56px 56px'
+          : atlasHome || atlasResources
           ? 56
           : `${headerAbove ? 0 : 24}px ${
               isAccountSection(active) ? ACCOUNT_SECTION_GUTTER : 40
