@@ -27,8 +27,10 @@ const LEVELS: Level[] = [
   { name: 'Exam Ready', lines: ['Exam', 'Ready'], fill: 100 },
 ]
 
-export function AtlasReadinessCard() {
-  const [i, setI] = useState(0)
+/** `initialLevel` (0–4) picks the level it opens on — V3's Completed view opens
+ *  on Proficient (2026-10-09); remount with a `key` to apply a new one. */
+export function AtlasReadinessCard({ initialLevel = 0 }: { initialLevel?: number }) {
+  const [i, setI] = useState(initialLevel)
   const level = LEVELS[i]
   const next = () => setI((n) => (n + 1) % LEVELS.length)
   const onKey = (e: KeyboardEvent<HTMLElement>) => {

@@ -170,6 +170,9 @@ export function AtlasHomeEricV3({
   // The Design bar's Link tiles (V3 only, 2026-10-09) — Stacked (default) or Inline.
   const stackedTiles = (useFeatureFlag('atlas-v3-link-tiles').variant ?? 'stacked') !== 'inline'
   const progress = V3_PROGRESS[progressPick] ?? V3_PROGRESS['not-started']
+  // COMPLETED (Design bar's Progress = Completed 100%, 2026-10-09, Eric): no
+  // Course progress card, and Step 1 becomes the Congratulations block.
+  const completedView = progressPick === 'completed'
   const currentTitle = longTitle ? V2_LONG_TITLE : courseTitle
   const tabs = courses ?? [{ id: path.id, title: currentTitle, coverUrl }, ...DEMO_OTHER_COURSES]
   const [activeTabId, setActiveTabId] = useState(path.id)
@@ -287,7 +290,9 @@ export function AtlasHomeEricV3({
 
             {/* THE COURSE PROGRESS MODULE — Figma 267:8267's five states, in
                 place of the Course progress panel (2026-10-08, Eric's
-                request). Click it to flip the states. */}
+                request). Click it to flip the states. Hidden on the Completed
+                view (2026-10-09). */}
+            {completedView ? null : (
             <AtlasCourseProgressStates
               key={progressPick}
               initialStage={progress.stage}
@@ -304,14 +309,32 @@ export function AtlasHomeEricV3({
                   : null
               }
             />
+            )}
             {/* The READINESS card, under the module (Figma 254:8012, 2026-10-08). */}
-            <AtlasReadinessCard />
+            {/* On the Completed view it opens on Proficient (2026-10-09, Eric). */}
+            <AtlasReadinessCard key={completedView ? 'completed' : 'default'} initialLevel={completedView ? 3 : 0} />
           </div>
 
           <span aria-hidden style={{ width: 1, flex: 'none', background: 'var(--color-primary-100)' }} />
 
           {/* Right: the journey. */}
           <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 24 }}>
+            {completedView ? (
+              /* STEP 1 ON THE COMPLETED VIEW — Figma 297:247 (2026-10-09,
+                 Eric's request): the eyebrow, "Congratulations!" and a line in
+                 place of the journey's stops. */
+              <section aria-label="Study journey" style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
+                <p style={STEP_EYEBROW}>
+                  <span style={{ fontWeight: 700 }}>Step 1</span>
+                  <span style={{ fontWeight: 600 }}> · Study Journey</span>
+                </p>
+                <p style={STEP_TITLE}>Congratulations!</p>
+                <p style={{ ...BODY_TEXT, margin: 0, fontSize: 13, lineHeight: '18px', color: 'var(--color-text-secondary)' }}>
+                  You’ve completed your course and passed your course exams.{' '}
+                  <span style={{ fontWeight: 600 }}>Time to get ready for your state exam!</span>
+                </p>
+              </section>
+            ) : (
             <section aria-label="Study journey" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
                 <p style={STEP_EYEBROW}>
@@ -332,6 +355,7 @@ export function AtlasHomeEricV3({
                 ))}
               </ol>
             </section>
+            )}
 
             <span aria-hidden style={RULE} />
             <Step
