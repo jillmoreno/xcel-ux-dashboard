@@ -1,5 +1,5 @@
 import { useState, type CSSProperties, type KeyboardEvent } from 'react'
-import { GaugeThin, HourglassClockThin, PenToSquareSolid } from '@/icons'
+import { GaugeSolid, HourglassClockLight, PenToSquareSolid } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
 
 /**
@@ -83,7 +83,7 @@ export function AtlasCourseProgressStates({
               then the link, left-aligned. */}
           <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 12, paddingBottom: 2, alignSelf: 'stretch' }}>
             <span style={PACE_CARD}>
-              <GaugeThin size={48} aria-hidden />
+              <GaugeSolid size={38} aria-hidden style={{ color: 'var(--color-primary-100)' }} />
               <span style={{ display: 'flex', flexDirection: 'column' }}>
                 <span style={PACE_LEVEL}>Moderate</span>
                 <span style={PACE_NOUN}>Study Pace</span>
@@ -95,7 +95,7 @@ export function AtlasCourseProgressStates({
             </div>
           </div>
           <span style={LINK}>
-            Set a different study pace
+            Edit My Study Pace
             <PenToSquareSolid size={11} aria-hidden />
           </span>
         </>
@@ -150,13 +150,23 @@ export function AtlasCourseProgressStates({
         </>
       ) : null}
 
+      {/* States 2–4 end on the Study pace screen's link, reading "Edit My
+          Study Pace" (2026-10-09, Eric's request). Left-aligned like the original. */}
+      {stage === 'current' || stage === 'milestone' || stage === 'complete' ? (
+        <span style={LINK}>
+          Edit My Study Pace
+          <PenToSquareSolid size={11} aria-hidden />
+        </span>
+      ) : null}
+
       {stage === 'expired' ? (
         <>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8, paddingBottom: 8, alignSelf: 'stretch' }}>
-            <span aria-hidden style={RULE} />
+            {/* 8px more under the rule (2026-10-09, Eric) — 16 to the icon row. */}
+            <span aria-hidden style={{ ...RULE, marginBottom: 8 }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
               <span aria-hidden style={{ display: 'inline-flex', color: 'var(--color-text-secondary)' }}>
-                <HourglassClockThin size={30} aria-hidden />
+                <HourglassClockLight size={30} aria-hidden />
               </span>
               <p style={{ ...BODY, fontWeight: 700, flex: '1 1 0' }}>We’re sorry but your course has expired</p>
             </div>
@@ -274,16 +284,21 @@ const CAPTION: CSSProperties = {
   textTransform: 'uppercase',
   color: 'var(--color-text-secondary)',
 }
-/* The zero state's pace card (Figma 286:10260): white, 16 radius, 8 / 16. */
+/* The zero state's pace pill (Figma 286:10260, replaced 2026-10-09): a
+   Primary 200 capsule (62 radius, 5 / 16 / 6 / 6) hugging its content, the
+   SOLID gauge at 38 in Primary 100, the words in Primary 600. Gauge 48 → 38
+   and left padding 8 → 6 when the design was revised the same day. */
 const PACE_CARD: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  gap: 8,
+  gap: 12,
+  // Fills the module's width (2026-10-09, Eric) — it hugged its content.
   alignSelf: 'stretch',
-  padding: '8px 16px',
-  borderRadius: 16,
-  background: 'var(--color-fixed-light)',
-  color: 'var(--color-primary-500)',
+  padding: '5px 16px 6px 6px',
+  borderRadius: 62,
+  border: '1px solid var(--color-primary-200)',
+  background: 'var(--color-primary-200)',
+  color: 'var(--color-primary-600)',
   whiteSpace: 'nowrap',
 }
 const PACE_LEVEL: CSSProperties = {
@@ -298,6 +313,7 @@ const PACE_NOUN: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 12,
   lineHeight: '14px',
+  letterSpacing: '-0.065px',
 }
 const LINK: CSSProperties = {
   display: 'inline-flex',

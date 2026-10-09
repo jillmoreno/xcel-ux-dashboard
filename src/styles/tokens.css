@@ -5597,8 +5597,13 @@ a.cre-library-card-title::after {
    briefly). The hover takes the same fill (same day), which the course
    page's left nav follows through --color-compass-rail-hover. Scoped to the
    XCEL skin so CRE, which inherits the base nav tokens, keeps its own. */
-[data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel'],
-[data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel-blue-cta'] {
+/* ⚠ UNWIRED 2026-10-09 — XCEL (Insurance) became the Atlas skin with red
+   buttons (see "XCEL (INSURANCE) = ATLAS + RED BUTTONS"). These were XCEL's
+   own browns; the selector names `xcel-own`, a value no skin sets, so they
+   are kept but match nothing. Restore: change `xcel-own` back to `xcel` here
+   and on the [data-atlas-rail] rule below, and take `xcel` out of the Atlas
+   selector lists. */
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel-own'] {
   --color-atlas-nav-active-fill: #f3f0ea;
   --color-atlas-nav-hover: #f3f0ea;
   /* Home V2's progress dial (2026-10-05, the designer's request): the ring in
@@ -5631,24 +5636,11 @@ a.cre-library-card-title::after {
   --color-atlas-home-eyebrow: var(--color-tertiary-600);
 }
 
-/* XCEL BLUE CTA (2026-10-09, Eric: "change its buttons and text links to the
-   XCEL tertiary 500 color") — the XCEL skin with its CTA ramp re-pointed at
-   the guide's TERTIARY, the steel blue #2D5872 (this file's --color-primary-*,
-   see the naming note above). Every other XCEL rule is shared with it by
-   selector list. Ramp for ramp, so hovers and tints follow. */
-[data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel-blue-cta'] {
-  --color-cta-100: var(--color-primary-100);
-  --color-cta-200: var(--color-primary-200);
-  --color-cta-300: var(--color-primary-300);
-  --color-cta-400: var(--color-primary-400);
-  --color-cta-500: var(--color-primary-500);
-  --color-cta-600: var(--color-primary-600);
-  --color-cta-700: var(--color-primary-700);
-  --color-cta-800: var(--color-primary-800);
-  --color-cta-900: var(--color-primary-900);
-}
-
-[data-brand='xcel'][data-atlas-palette][data-atlas-brand='cre'] {
+/* ⚠ UNWIRED 2026-10-09 — Colibri Real Estate became the Atlas skin with its own
+   button colour (see "BRAND SKINS = ATLAS + THEIR BUTTONS"). Kept, matching
+   nothing (`cre-own`); restore by renaming it back to `cre` and taking `cre`
+   out of the Atlas selector lists. */
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='cre-own'] {
   --color-cta-100: #ccdde8;
   --color-cta-200: #99bbd2;
   --color-cta-300: #6799bb;
@@ -5682,7 +5674,11 @@ a.cre-library-card-title::after {
   --color-atlas-nav-active-fill: #ebf6f5;
   --color-atlas-nav-hover: #ebf6f5;
 }
-[data-brand='xcel'][data-atlas-palette][data-atlas-brand='mckissock'] {
+/* ⚠ UNWIRED 2026-10-09 — McKissock Learning became the Atlas skin with its own
+   button colour (see "BRAND SKINS = ATLAS + THEIR BUTTONS"). Kept, matching
+   nothing (`mckissock-own`); restore by renaming it back to `mckissock` and taking `mckissock`
+   out of the Atlas selector lists. */
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='mckissock-own'] {
   /* CTAs take the PRIMARY (olive) palette, not McKissock's orange CTA ramp —
      2026-09-30, the designer's request. The CTA ramp is pointed at the primary
      one step for step, so everything CTA-coloured follows (buttons, hovers,
@@ -5731,7 +5727,11 @@ a.cre-library-card-title::after {
   --color-atlas-nav-active-fill: #eef2dc;
   --color-atlas-nav-hover: #eef2dc;
 }
-[data-brand='xcel'][data-atlas-palette][data-atlas-brand='elite'] {
+/* ⚠ UNWIRED 2026-10-09 — Elite Learning became the Atlas skin with its own
+   button colour (see "BRAND SKINS = ATLAS + THEIR BUTTONS"). Kept, matching
+   nothing (`elite-own`); restore by renaming it back to `elite` and taking `elite`
+   out of the Atlas selector lists. */
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='elite-own'] {
   --color-cta-100: #ecdaea;
   --color-cta-200: #d9b5d5;
   --color-cta-300: #c790c0;
@@ -5850,7 +5850,12 @@ a.cre-library-card-title::after {
    Coursework", the exam-date card) Heading 4. The Playfair trial's 1.265 /
    0.81 factors and its one-step-up are off here: the guide's px ARE the sizes.
    Only under the Atlas skin with Playfair 2; every other skin is untouched. */
-[data-atlas-palette][data-atlas-brand='global'][data-atlas-font='playfair-2'] {
+[data-atlas-palette][data-atlas-brand='global'][data-atlas-font='playfair-2'],
+[data-atlas-palette][data-atlas-brand='cre'][data-atlas-font='playfair-2'],
+[data-atlas-palette][data-atlas-brand='mckissock'][data-atlas-font='playfair-2'],
+[data-atlas-palette][data-atlas-brand='elite'][data-atlas-font='playfair-2'],
+[data-atlas-palette][data-atlas-brand='xcel'][data-atlas-font='playfair-2'],
+[data-atlas-palette][data-atlas-brand='xcel-blue-cta'][data-atlas-font='playfair-2'] {
   --atlas-font-size-scale: 1;
   --atlas-font-line-scale: 1;
   --type-atlas-h1-base-size: 40px;
@@ -5874,10 +5879,20 @@ a.cre-library-card-title::after {
    section heads ("Complete Coursework", the exam-date card), but not the
    dials' big <span> figures, which keep their own tracking — and the Home
    title's 42 / 44 and 40 / 42 overrides give way to Heading 1. */
-[data-atlas-palette][data-atlas-brand='global'][data-atlas-font='playfair-2'] :is(h1, h2, h3, h4, h5, h6, p)[style*='--font-heading-serif'] {
+[data-atlas-palette][data-atlas-brand='global'][data-atlas-font='playfair-2'] :is(h1, h2, h3, h4, h5, h6, p)[style*='--font-heading-serif'],
+[data-atlas-palette][data-atlas-brand='cre'][data-atlas-font='playfair-2'] :is(h1, h2, h3, h4, h5, h6, p)[style*='--font-heading-serif'],
+[data-atlas-palette][data-atlas-brand='mckissock'][data-atlas-font='playfair-2'] :is(h1, h2, h3, h4, h5, h6, p)[style*='--font-heading-serif'],
+[data-atlas-palette][data-atlas-brand='elite'][data-atlas-font='playfair-2'] :is(h1, h2, h3, h4, h5, h6, p)[style*='--font-heading-serif'],
+[data-atlas-palette][data-atlas-brand='xcel'][data-atlas-font='playfair-2'] :is(h1, h2, h3, h4, h5, h6, p)[style*='--font-heading-serif'],
+[data-atlas-palette][data-atlas-brand='xcel-blue-cta'][data-atlas-font='playfair-2'] :is(h1, h2, h3, h4, h5, h6, p)[style*='--font-heading-serif'] {
   letter-spacing: -0.03em !important;
 }
-[data-atlas-palette][data-atlas-brand='global'][data-atlas-font='playfair-2'] .cre-atlas-home-course-title[style] {
+[data-atlas-palette][data-atlas-brand='global'][data-atlas-font='playfair-2'] .cre-atlas-home-course-title[style],
+[data-atlas-palette][data-atlas-brand='cre'][data-atlas-font='playfair-2'] .cre-atlas-home-course-title[style],
+[data-atlas-palette][data-atlas-brand='mckissock'][data-atlas-font='playfair-2'] .cre-atlas-home-course-title[style],
+[data-atlas-palette][data-atlas-brand='elite'][data-atlas-font='playfair-2'] .cre-atlas-home-course-title[style],
+[data-atlas-palette][data-atlas-brand='xcel'][data-atlas-font='playfair-2'] .cre-atlas-home-course-title[style],
+[data-atlas-palette][data-atlas-brand='xcel-blue-cta'][data-atlas-font='playfair-2'] .cre-atlas-home-course-title[style] {
   font-size: 40px !important;
   line-height: 42px !important;
   letter-spacing: -0.03em !important;
@@ -5961,7 +5976,12 @@ a.cre-library-card-title::after {
    every role the file DOES name uses the file's hex. Measured on white: steel
    6.9:1, slate 10.7:1, muted 6.8:1, faint 5.0:1 (all the file's own ratios).
    DARK MODE NOT DESIGNED. */
-[data-brand='xcel'][data-atlas-palette][data-atlas-brand='global'] {
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='global'],
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='cre'],
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='mckissock'],
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='elite'],
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel'],
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel-blue-cta'] {
   /* THE ATLAS STYLE GUIDE'S RAMPS (Figma Q9hUhVNzoqIQwV6J5c7xR1, node 168:2312,
      "Atlas/Compass colors"; 2026-10-09, Eric's request) — replacing the ramps
      interpolated from the Compass v5 file. The guide's names map straight onto
@@ -6055,7 +6075,11 @@ a.cre-library-card-title::after {
      Compass Primary 200, #D8DEE4 (2026-10-01, the designer's request; Figma
      fills it #ECEFF1 with no stroke). */
   --color-atlas-topnav-idle: #ffffff;
-  --color-atlas-topnav-idle-stroke: var(--color-primary-200);
+  /* …its stroke now the same as its label (2026-10-09, Eric: "make the
+     Course Overview button stroke in all brand version headers match their
+     text color") — it was Primary 200. Reads the idle ink, so each brand's
+     own ink (red, teal, olive, plum) carries through. */
+  --color-atlas-topnav-idle-stroke: var(--color-atlas-topnav-idle-ink);
   /* Its label (and icon) in Compass Primary 500, #3D5A73 (2026-10-01, the
      designer's request; it was Figma's #31485C). */
   --color-atlas-topnav-idle-ink: var(--color-primary-500);
@@ -6099,27 +6123,255 @@ a.cre-library-card-title::after {
 }
 /* Focus is slate, 2px, per the file. */
 [data-atlas-brand='global'] .cre-atlas-nav-row:focus-visible,
+[data-atlas-brand='cre'] .cre-atlas-nav-row:focus-visible,
+[data-atlas-brand='mckissock'] .cre-atlas-nav-row:focus-visible,
+[data-atlas-brand='elite'] .cre-atlas-nav-row:focus-visible,
+[data-atlas-brand='xcel'] .cre-atlas-nav-row:focus-visible,
+[data-atlas-brand='xcel-blue-cta'] .cre-atlas-nav-row:focus-visible,
 [data-atlas-brand='global'] .cre-compass-crumb-link:focus-visible,
+[data-atlas-brand='cre'] .cre-compass-crumb-link:focus-visible,
+[data-atlas-brand='mckissock'] .cre-compass-crumb-link:focus-visible,
+[data-atlas-brand='elite'] .cre-compass-crumb-link:focus-visible,
+[data-atlas-brand='xcel'] .cre-compass-crumb-link:focus-visible,
+[data-atlas-brand='xcel-blue-cta'] .cre-compass-crumb-link:focus-visible,
 /* The Compass v5 primary button on the Home course card: steel, slate on
    hover — the file's own hover, not the brightness lift. */
-[data-atlas-brand='global'] .cre-compass-btn-primary {
+[data-atlas-brand='global'] .cre-compass-btn-primary,
+[data-atlas-brand='cre'] .cre-compass-btn-primary,
+[data-atlas-brand='mckissock'] .cre-compass-btn-primary,
+[data-atlas-brand='elite'] .cre-compass-btn-primary,
+[data-atlas-brand='xcel'] .cre-compass-btn-primary,
+[data-atlas-brand='xcel-blue-cta'] .cre-compass-btn-primary {
   background: #3d5a73;
   border-color: #3d5a73;
   color: #fff;
 }
-[data-atlas-brand='global'] .cre-compass-btn-primary:hover {
+[data-atlas-brand='global'] .cre-compass-btn-primary:hover,
+[data-atlas-brand='cre'] .cre-compass-btn-primary:hover,
+[data-atlas-brand='mckissock'] .cre-compass-btn-primary:hover,
+[data-atlas-brand='elite'] .cre-compass-btn-primary:hover,
+[data-atlas-brand='xcel'] .cre-compass-btn-primary:hover,
+[data-atlas-brand='xcel-blue-cta'] .cre-compass-btn-primary:hover {
   background: #263d50;
   border-color: #263d50;
   filter: none;
 }
 [data-atlas-brand='global'] .cre-compass-primary:focus-visible,
-[data-atlas-brand='global'] .cre-compass-step:focus-visible {
+[data-atlas-brand='cre'] .cre-compass-primary:focus-visible,
+[data-atlas-brand='mckissock'] .cre-compass-primary:focus-visible,
+[data-atlas-brand='elite'] .cre-compass-primary:focus-visible,
+[data-atlas-brand='xcel'] .cre-compass-primary:focus-visible,
+[data-atlas-brand='xcel-blue-cta'] .cre-compass-primary:focus-visible,
+[data-atlas-brand='global'] .cre-compass-step:focus-visible,
+[data-atlas-brand='cre'] .cre-compass-step:focus-visible,
+[data-atlas-brand='mckissock'] .cre-compass-step:focus-visible,
+[data-atlas-brand='elite'] .cre-compass-step:focus-visible,
+[data-atlas-brand='xcel'] .cre-compass-step:focus-visible,
+[data-atlas-brand='xcel-blue-cta'] .cre-compass-step:focus-visible {
   outline: 2px solid #263d50;
 }
 [data-atlas-palette][data-atlas-brand='global'] .cre-journey-stop:hover .cre-stop-title,
-[data-atlas-palette][data-atlas-brand='global'] .cre-journey-stop:focus-visible .cre-stop-title {
+[data-atlas-palette][data-atlas-brand='cre'] .cre-journey-stop:hover .cre-stop-title,
+[data-atlas-palette][data-atlas-brand='mckissock'] .cre-journey-stop:hover .cre-stop-title,
+[data-atlas-palette][data-atlas-brand='elite'] .cre-journey-stop:hover .cre-stop-title,
+[data-atlas-palette][data-atlas-brand='xcel'] .cre-journey-stop:hover .cre-stop-title,
+[data-atlas-palette][data-atlas-brand='xcel-blue-cta'] .cre-journey-stop:hover .cre-stop-title,
+[data-atlas-palette][data-atlas-brand='global'] .cre-journey-stop:focus-visible .cre-stop-title,
+[data-atlas-palette][data-atlas-brand='cre'] .cre-journey-stop:focus-visible .cre-stop-title,
+[data-atlas-palette][data-atlas-brand='mckissock'] .cre-journey-stop:focus-visible .cre-stop-title,
+[data-atlas-palette][data-atlas-brand='elite'] .cre-journey-stop:focus-visible .cre-stop-title,
+[data-atlas-palette][data-atlas-brand='xcel'] .cre-journey-stop:focus-visible .cre-stop-title,
+[data-atlas-palette][data-atlas-brand='xcel-blue-cta'] .cre-journey-stop:focus-visible .cre-stop-title {
   color: #263d50;
 }
+
+/* XCEL BLUE CTA (2026-10-09, Eric: "the only color that should change on this
+   brand version compared to the Atlas brand … is the CTA color which should
+   be #2D5872") — the Atlas skin in full (every Atlas selector above names it
+   too), with ONLY the CTA re-pointed: buttons and text links on XCEL's steel
+   ramp, #2D5872 at 500 (hover 600 #24465B). Nav, active items, charts and
+   everything else stay Atlas's. */
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel-blue-cta'] {
+  --color-cta-100: #eaeef1;
+  --color-cta-200: #cbd5dc;
+  --color-cta-300: #96acb9;
+  --color-cta-400: #7792a3;
+  --color-cta-500: #2d5872;
+  --color-cta-600: #24465b;
+  --color-cta-700: #1b3544;
+  --color-cta-800: #12232e;
+  --color-cta-900: #091217;
+  --color-atlas-cta: #2d5872;
+  --color-atlas-cta-ink: #2d5872;
+}
+[data-atlas-brand='xcel-blue-cta'] .cre-compass-btn-primary {
+  background: #2d5872;
+  border-color: #2d5872;
+}
+[data-atlas-brand='xcel-blue-cta'] .cre-compass-btn-primary:hover {
+  background: #24465b;
+  border-color: #24465b;
+}
+
+/* XCEL (INSURANCE) = ATLAS + RED BUTTONS (2026-10-09, Eric: "duplicate the
+   Atlas Brand version and change only the buttons to the XCEL Primary red
+   500, leave the text links as they are on Atlas"). Every Atlas selector
+   above names `xcel` too; these re-ink only the BUTTONS — filled and outline,
+   Course Overview included — in the guide's Primary 500 #9A1B1E, hover 600
+   #7B1618. Text links, the badge and the current stop read the CTA token,
+   which stays Atlas steel, so they do not move. XCEL's logo is unchanged. */
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel'] {
+  --color-atlas-home-secondary-ink: #9a1b1e;
+  --color-atlas-home-secondary-border: #9a1b1e;
+  /* The header's Top Nav buttons in the red too (same day, Eric's request):
+     the current button's fill, the idle button's label and icon. */
+  --color-atlas-topnav-current: #9a1b1e;
+  --color-atlas-topnav-idle-ink: #9a1b1e;
+}
+/* …and the bell's notification count — its fill is inline --color-cta-500,
+   which the text links also read, so the count is overridden directly. */
+[data-atlas-palette][data-atlas-brand='xcel'] header .cre-icon-pill > span {
+  background: #9a1b1e !important;
+}
+[data-atlas-brand='xcel'] .cre-compass-primary,
+[data-atlas-brand='xcel'] .cre-compass-btn-primary {
+  background: #9a1b1e;
+  border-color: #9a1b1e;
+  color: #fff;
+}
+[data-atlas-brand='xcel'] .cre-compass-primary:hover,
+[data-atlas-brand='xcel'] .cre-compass-btn-primary:hover {
+  background: #7b1618;
+  border-color: #7b1618;
+  filter: none;
+}
+[data-atlas-brand='xcel'] .cre-compass-secondary:not(.cre-atlas-home-secondary) {
+  color: #9a1b1e;
+  border-color: #9a1b1e !important;
+}
+[data-atlas-brand='xcel'] .cre-compass-secondary:hover {
+  background: color-mix(in srgb, #9a1b1e 8%, transparent);
+}
+[data-atlas-brand='xcel'] :is(.cre-compass-primary, .cre-compass-secondary):focus-visible {
+  outline-color: #9a1b1e;
+}
+
+/* BRAND SKINS = ATLAS + THEIR BUTTONS (2026-10-09, Eric: "now do the same for
+   the McKissock, CRE and Elite brands using their CTA color for the buttons")
+   — as XCEL above: every Atlas selector names these skins too, and only the
+   buttons take the brand's CTA. Each keeps its own logo (Logo.tsx).
+     CRE        teal #028F81, hover #027267 (its Primary; see below)
+     McKissock  #6E8005, hover #526004 — the olive its buttons already used
+                (2026-09-30), not the orange; white on it is ~4.4:1
+     Elite      #A24796, hover #813878 */
+/* CRE's buttons in its PRIMARY, teal 500 #028F81 (hover 600 #027267) —
+   2026-10-09, Eric's request; they were its CTA blue #02568F. */
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='cre'] {
+  --color-atlas-home-secondary-ink: #028f81;
+  --color-atlas-home-secondary-border: #028f81;
+  /* …and the header's Top Nav buttons (same day, Eric: "change it in the
+     header as well"): the current button's fill and the idle button's label
+     and icon in the teal. The idle button's hairline stays Atlas's. */
+  --color-atlas-topnav-current: #028f81;
+  --color-atlas-topnav-idle-ink: #028f81;
+}
+/* …and the bell's notification count (same day). Its fill is inline
+   `--color-cta-500`, which the text links also read, so this overrides the
+   count itself rather than the token. */
+[data-atlas-palette][data-atlas-brand='cre'] header .cre-icon-pill > span {
+  background: #028f81 !important;
+}
+[data-atlas-brand='cre'] .cre-compass-primary,
+[data-atlas-brand='cre'] .cre-compass-btn-primary {
+  background: #028f81;
+  border-color: #028f81;
+  color: #fff;
+}
+[data-atlas-brand='cre'] .cre-compass-primary:hover,
+[data-atlas-brand='cre'] .cre-compass-btn-primary:hover {
+  background: #027267;
+  border-color: #027267;
+  filter: none;
+}
+[data-atlas-brand='cre'] .cre-compass-secondary:not(.cre-atlas-home-secondary) {
+  color: #028f81;
+  border-color: #028f81 !important;
+}
+[data-atlas-brand='cre'] .cre-compass-secondary:hover {
+  background: color-mix(in srgb, #028f81 8%, transparent);
+}
+[data-atlas-brand='cre'] :is(.cre-compass-primary, .cre-compass-secondary):focus-visible {
+  outline-color: #028f81;
+}
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='mckissock'] {
+  --color-atlas-home-secondary-ink: #6e8005;
+  --color-atlas-home-secondary-border: #6e8005;
+  /* The header's Top Nav buttons in McKissock's Primary 600, #6E8005, too
+     (same day, Eric's request): current fill, idle label and icon. */
+  --color-atlas-topnav-current: #6e8005;
+  --color-atlas-topnav-idle-ink: #6e8005;
+}
+/* …and the bell's notification count (see XCEL's note on why directly). */
+[data-atlas-palette][data-atlas-brand='mckissock'] header .cre-icon-pill > span {
+  background: #6e8005 !important;
+}
+[data-atlas-brand='mckissock'] .cre-compass-primary,
+[data-atlas-brand='mckissock'] .cre-compass-btn-primary {
+  background: #6e8005;
+  border-color: #6e8005;
+  color: #fff;
+}
+[data-atlas-brand='mckissock'] .cre-compass-primary:hover,
+[data-atlas-brand='mckissock'] .cre-compass-btn-primary:hover {
+  background: #526004;
+  border-color: #526004;
+  filter: none;
+}
+[data-atlas-brand='mckissock'] .cre-compass-secondary:not(.cre-atlas-home-secondary) {
+  color: #6e8005;
+  border-color: #6e8005 !important;
+}
+[data-atlas-brand='mckissock'] .cre-compass-secondary:hover {
+  background: color-mix(in srgb, #6e8005 8%, transparent);
+}
+[data-atlas-brand='mckissock'] :is(.cre-compass-primary, .cre-compass-secondary):focus-visible {
+  outline-color: #6e8005;
+}
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='elite'] {
+  --color-atlas-home-secondary-ink: #a24796;
+  --color-atlas-home-secondary-border: #a24796;
+  /* The header's Top Nav buttons in its button plum, #A24796, too (same day,
+     Eric's request): current fill, idle label and icon. */
+  --color-atlas-topnav-current: #a24796;
+  --color-atlas-topnav-idle-ink: #a24796;
+}
+/* …and the bell's notification count (see XCEL's note on why directly). */
+[data-atlas-palette][data-atlas-brand='elite'] header .cre-icon-pill > span {
+  background: #a24796 !important;
+}
+[data-atlas-brand='elite'] .cre-compass-primary,
+[data-atlas-brand='elite'] .cre-compass-btn-primary {
+  background: #a24796;
+  border-color: #a24796;
+  color: #fff;
+}
+[data-atlas-brand='elite'] .cre-compass-primary:hover,
+[data-atlas-brand='elite'] .cre-compass-btn-primary:hover {
+  background: #813878;
+  border-color: #813878;
+  filter: none;
+}
+[data-atlas-brand='elite'] .cre-compass-secondary:not(.cre-atlas-home-secondary) {
+  color: #a24796;
+  border-color: #a24796 !important;
+}
+[data-atlas-brand='elite'] .cre-compass-secondary:hover {
+  background: color-mix(in srgb, #a24796 8%, transparent);
+}
+[data-atlas-brand='elite'] :is(.cre-compass-primary, .cre-compass-secondary):focus-visible {
+  outline-color: #a24796;
+}
+
 
 /* ── THE ADJUST-YOUR-PACE FLOW — 2026-09-22 ──────────────────────────────
    The sheet became two levels: a chooser of study STYLES, then one screen per
@@ -6378,7 +6630,10 @@ a.cre-library-card-title::after {
    dividers share this token, so they follow. */
 [data-brand='xcel'][data-atlas-palette][data-atlas-brand='global'],
 [data-brand='xcel'][data-atlas-palette][data-atlas-brand='cre'],
-[data-brand='xcel'][data-atlas-palette][data-atlas-brand='mckissock'] {
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='mckissock'],
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='elite'],
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel'],
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel-blue-cta'] {
   --color-atlas-dial-track: var(--color-primary-200);
 }
 
@@ -6406,8 +6661,8 @@ a.cre-library-card-title::after {
    keeps its own. Values copied from the Global block above; ramps included
    because the rail's rows, progress track and toggle read them directly (the
    column's own `--color-rail-row-active` alias resolves here, so it follows). */
-[data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel'] [data-atlas-rail],
-[data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel-blue-cta'] [data-atlas-rail] {
+/* ⚠ UNWIRED 2026-10-09 with the block above — see its note. */
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel-own'] [data-atlas-rail] {
   --color-cta-100: #eceef0;
   --color-cta-200: #d8dee4;
   --color-cta-300: #c0cdd5;

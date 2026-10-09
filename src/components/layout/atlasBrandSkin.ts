@@ -26,9 +26,9 @@ export type AtlasSkin = 'global' | 'xcel' | 'xcel-blue-cta' | 'cre' | 'mckissock
 export const ATLAS_SKINS: readonly { skin: AtlasSkin; label: string }[] = [
   // XCEL first, and the default (2026-10-06, Eric's request); Global second.
   { skin: 'xcel', label: 'XCEL (Insurance)' },
-  // XCEL BLUE CTA (2026-10-09, Eric) — XCEL in every respect but one: its
-  // buttons and text links in the guide's TERTIARY 500, the steel blue
-  // (code --color-primary-*), instead of the red. See tokens.css.
+  // XCEL BLUE CTA (2026-10-09, Eric) — the ATLAS skin in every respect but
+  // one: its buttons and text links in XCEL's steel blue, #2D5872. See
+  // tokens.css ("XCEL BLUE CTA").
   { skin: 'xcel-blue-cta', label: 'XCEL Blue CTA' },
   // GLOBAL (2026-09-30) — no brand: the Atlas experience in the Compass Design
   // System v5's own colours (steel, slate, terracotta, one white surface), for

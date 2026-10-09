@@ -75,7 +75,8 @@ const EYEBROW: CSSProperties = {
   whiteSpace: 'nowrap',
   color: 'var(--color-primary-500)',
 }
-const RULE: CSSProperties = { display: 'block', height: 1, background: 'var(--color-primary-100)' }
+// Primary 200 (2026-10-09, Eric; it was 100 and vanished on the warm fill).
+const RULE: CSSProperties = { display: 'block', height: 1, background: 'var(--color-primary-200)' }
 const QUESTION: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-body)',

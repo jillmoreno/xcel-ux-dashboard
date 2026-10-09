@@ -53,6 +53,11 @@ type ImageSource = {
    */
   sizeBy?: 'creWidth' | 'height'
   /**
+   * Multiplies the rendered size (2026-10-09). For a very wide lockup that,
+   * at the shared height, reads much bigger than its neighbours — CRE's.
+   */
+  scale?: number
+  /**
    * Optional white/light lockup for dark surfaces. When present, the Logo
    * renders BOTH this and the default mark and CSS swaps them on the applied
    * `[data-theme='dark']` (set only by the Dashboard Rebrand shell), so the
@@ -102,17 +107,28 @@ const IMAGE_SOURCES: Partial<
  * Atlas pages change clothes.
  */
 const SKIN_LOGOS: Record<Exclude<AtlasSkin, 'xcel' | 'xcel-blue-cta' | 'global'>, ImageSource> = {
+  // Reduced to sit with McKissock (132 × 36) and Elite (115 × 36) in the
+  // header (2026-10-09, Eric's request): it rendered 210 × 36 — a 5.8:1
+  // lockup at their height reads far larger. 23px tall → 134 wide.
   cre: {
     src: '/brand/colibri-real-estate.svg',
     alt: 'Colibri Real Estate',
     nativeWidth: 233.75,
     nativeHeight: 40,
+    sizeBy: 'height',
+    scale: 23 / 36,
   },
+  // The teal "McKissock Learning by Colibri" lockup from MCK Phase 1 (Figma
+  // jEfY9UYbFYEvchHgwNaIf0, node 9695:6443) since 2026-10-09 (Eric's request),
+  // sized by HEIGHT like Elite so it sits in the header at the other logos'
+  // 36px — the PNG it replaced, width-matched to CRE, ran 69px tall and
+  // overflowed. The PNG stays in public/brand/, unreferenced.
   mckissock: {
-    src: '/brand/mckissock-learning.png',
+    src: '/brand/mckissock-learning-teal.svg',
     alt: 'McKissock Learning',
-    nativeWidth: 1775,
-    nativeHeight: 586,
+    nativeWidth: 247,
+    nativeHeight: 67.1667,
+    sizeBy: 'height',
   },
   elite: {
     src: '/brand/elite-learning.svg',
@@ -218,15 +234,16 @@ export function Logo({ variant = 'default', height = 40, className, brand: brand
   // alternative, pointing `mark` at the lockup, would silently render a wide
   // horizontal logo everywhere a square one was asked for.
   if (entry) {
-    const { src, alt, sizeBy = 'creWidth', dark } = entry
+    const { src, alt, sizeBy = 'creWidth', dark, scale = 1 } = entry
     // Rendered px for a given native size, honoring `sizeBy`:
     //  - 'height' → honor `height` literally (compact lockups like STC/Elite);
     //  - 'creWidth' → match CRE's rendered width so taller-aspect marks
     //    (McKissock) don't shrink next to CRE in the same surface.
     const dims = (nw: number, nh: number) => {
       const aspect = nw / nh
-      if (sizeBy === 'height') return { w: Math.round(aspect * height), h: height }
-      const w = Math.round(REFERENCE_LOCKUP_ASPECT * height)
+      const h0 = height * scale
+      if (sizeBy === 'height') return { w: Math.round(aspect * h0), h: Math.round(h0) }
+      const w = Math.round(REFERENCE_LOCKUP_ASPECT * h0)
       return { w, h: Math.round(w / aspect) }
     }
     const light = dims(entry.nativeWidth, entry.nativeHeight)
