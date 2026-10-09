@@ -41,6 +41,7 @@ export function AtlasCourseProgressStates({
   access,
   initialStage = 'zero',
   milestonePercent = 68,
+  onAdvance,
 }: {
   percent: number
   expected: ProgressFigure
@@ -50,6 +51,10 @@ export function AtlasCourseProgressStates({
   initialStage?: Stage
   /** The milestone state's figure (the design's 68 by default). */
   milestonePercent?: number
+  /** When given, a click (or Enter / Space) calls this INSTEAD of stepping
+   *  the module's own state — V3 uses it to step the Design bar's Progress,
+   *  so the whole page follows (2026-10-09). */
+  onAdvance?: () => void
 }) {
   // Opens on the FIRST state, so clicks walk the design's order 1 → 5 → 1.
   const [picked, setStage] = useState<Stage>(initialStage)
@@ -59,7 +64,7 @@ export function AtlasCourseProgressStates({
   // the "current" state is skipped when stepping through.
   const order = percent <= 0 ? ORDER.filter((x) => x !== 'current') : ORDER
   const next = () =>
-    setStage((s) => {
+    onAdvance ? onAdvance() : setStage((s) => {
       const i = order.indexOf(s)
       return order[(i < 0 ? 0 : i + 1) % order.length]
     })
@@ -258,7 +263,9 @@ const CARD: CSSProperties = {
   padding: 24,
   boxSizing: 'border-box',
   borderRadius: 20,
-  background: 'var(--color-atlas-progress-fill)',
+  // The brand's own Primary 100 (2026-10-09, Eric) — it was the pinned
+  // --color-atlas-progress-fill (#ECEEF0), the same under every brand.
+  background: 'var(--color-primary-100)',
   cursor: 'pointer',
   userSelect: 'none',
 }

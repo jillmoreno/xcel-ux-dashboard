@@ -10,7 +10,7 @@ import { COMPASS_BUTTON } from './compassButton'
 import { AtlasExamDateCard } from './AtlasExamDateCard'
 import { AtlasCourseProgressStates, type ProgressStage } from './AtlasCourseProgressStates'
 import { AtlasReadinessCard } from './AtlasReadinessCard'
-import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { useFeatureFlag, useFeatureFlags } from '@/context/FeatureFlagContext'
 import { AtlasCourseTabs, type AtlasCourseTab } from './AtlasCourseTabs'
 import { journeyStopsFor, type JourneyStop } from '@/components/learning/studyJourneyUtil'
 import { GET_LICENSED_STEPS, jurisdictionName } from '@/data/nyProducerRequirements'
@@ -156,7 +156,9 @@ export function AtlasHomeEricV3({
   const preset = defaultPreset(model)
   const accessDays = accessExpiresAt ? Math.max(0, daysUntil(accessExpiresAt, today) ?? 0) : null
 
-  const stops = journeyStopsFor(path)
+  // V3 drops the Attestation & Affidavit stop on every progress stage
+  // (2026-10-09, Eric's request). The stop still exists in the shared journey.
+  const stops = journeyStopsFor(path).filter((s) => s.id !== 'attestation-and-affidavit')
   const currentIdx = Math.max(
     0,
     stops.findIndex((s) => s.status === 'in-progress'),
@@ -173,6 +175,13 @@ export function AtlasHomeEricV3({
   // COMPLETED (Design bar's Progress = Completed 100%, 2026-10-09, Eric): no
   // Course progress card, and Step 1 becomes the Congratulations block.
   const completedView = progressPick === 'completed'
+  // Clicking the Course progress card steps the Design bar's Progress itself
+  // (2026-10-09, Eric: "trigger the same corresponding screens that the
+  // progress dropdown tool does"), so Step 1, Readiness and the Completed view
+  // all follow. NB the card is hidden on Completed — the dropdown leaves it.
+  const { setVariant } = useFeatureFlags()
+  const advanceProgress = () =>
+    setVariant('atlas-v3-progress', V3_PROGRESS_ORDER[(V3_PROGRESS_ORDER.indexOf(progressPick) + 1) % V3_PROGRESS_ORDER.length])
   const currentTitle = longTitle ? V2_LONG_TITLE : courseTitle
   const tabs = courses ?? [{ id: path.id, title: currentTitle, coverUrl }, ...DEMO_OTHER_COURSES]
   const [activeTabId, setActiveTabId] = useState(path.id)
@@ -245,6 +254,40 @@ export function AtlasHomeEricV3({
               link tiles (certificates, courses), the Course progress panel
               restyled, and a READINESS card with a half-dial. */}
           <div style={{ width: V3_LEFT_W, flex: 'none', alignSelf: 'flex-start', display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {/* THE COURSE PROGRESS MODULE — Figma 267:8267's five states, in
+                place of the Course progress panel (2026-10-08, Eric's
+                request). Click it to flip the states. Hidden on the Completed
+                view (2026-10-09). */}
+            {completedView ? null : (
+            <AtlasCourseProgressStates
+              key={progressPick}
+              initialStage={progress.stage}
+              onAdvance={advanceProgress}
+              percent={progress.percent ?? percent}
+              milestonePercent={75}
+              expected={{
+                // "Nov. 5" where the pace model has no finish date — a DEMO date.
+                value: preset.state === 'no' ? 'Nov. 5' : formatPaceDate(preset.finishIso),
+                note: 'At current pace',
+              }}
+              access={
+                accessDays != null && accessExpiresAt
+                  ? { value: `${accessDays} ${accessDays === 1 ? 'Day' : 'Days'}`, note: `Ends ${formatPaceDate(accessExpiresAt)}` }
+                  : null
+              }
+            />
+            )}
+            {/* The READINESS card, under the module (Figma 254:8012, 2026-10-08). */}
+            {/* On the Completed view it opens on Proficient (2026-10-09, Eric). */}
+            {/* Clicking it at Exam Ready takes the page back to Not Started 0%
+                (2026-10-09, Eric). */}
+            <AtlasReadinessCard
+              key={completedView ? 'completed' : 'default'}
+              initialLevel={completedView ? 3 : 0}
+              onPastLast={() => setVariant('atlas-v3-progress', 'not-started')}
+            />
+            {/* The link tiles at the BOTTOM of the column (2026-10-09, Eric's
+                request; they led it). */}
             {stackedTiles ? (
               /* STACKED (Figma 269:8778, the default since 2026-10-09). DEMO
                  COUNTS as below. */
@@ -287,32 +330,6 @@ export function AtlasHomeEricV3({
               />
             </div>
             )}
-
-            {/* THE COURSE PROGRESS MODULE — Figma 267:8267's five states, in
-                place of the Course progress panel (2026-10-08, Eric's
-                request). Click it to flip the states. Hidden on the Completed
-                view (2026-10-09). */}
-            {completedView ? null : (
-            <AtlasCourseProgressStates
-              key={progressPick}
-              initialStage={progress.stage}
-              percent={progress.percent ?? percent}
-              milestonePercent={75}
-              expected={{
-                // "Nov. 5" where the pace model has no finish date — a DEMO date.
-                value: preset.state === 'no' ? 'Nov. 5' : formatPaceDate(preset.finishIso),
-                note: 'At current pace',
-              }}
-              access={
-                accessDays != null && accessExpiresAt
-                  ? { value: `${accessDays} ${accessDays === 1 ? 'Day' : 'Days'}`, note: `Ends ${formatPaceDate(accessExpiresAt)}` }
-                  : null
-              }
-            />
-            )}
-            {/* The READINESS card, under the module (Figma 254:8012, 2026-10-08). */}
-            {/* On the Completed view it opens on Proficient (2026-10-09, Eric). */}
-            <AtlasReadinessCard key={completedView ? 'completed' : 'default'} initialLevel={completedView ? 3 : 0} />
           </div>
 
           <span aria-hidden style={{ width: 1, flex: 'none', background: 'var(--color-primary-100)' }} />
@@ -335,7 +352,10 @@ export function AtlasHomeEricV3({
                 </p>
               </section>
             ) : (
-            <section aria-label="Study journey" style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+            /* 16px less under the last stop (2026-10-09, Eric: -24, then 8
+               back) — its 36px row floor plus the list padding left 45 to the
+               rule; now 29. */
+            <section aria-label="Study journey" style={{ display: 'flex', flexDirection: 'column', gap: 14, marginBottom: -16 }}>
               <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
                 <p style={STEP_EYEBROW}>
                   <span style={{ fontWeight: 700 }}>Step 1</span>
@@ -351,6 +371,22 @@ export function AtlasHomeEricV3({
                     current={i === currentIdx}
                     last={i === stops.length - 1}
                     onOpen={onOpenStop ? () => onOpenStop(stop.id) : undefined}
+                    // On Track 14% only (2026-10-09, Eric): the current stop
+                    // shows how far through it is and what is next (Figma
+                    // 265:8145). DEMO figures and chapter, the design's own.
+                    // Not Started and Milestone get the Next line alone (same
+                    // day); the chapters are Eric's, per stage.
+                    progressDetail={
+                      i !== currentIdx
+                        ? undefined
+                        : progressPick === 'on-track'
+                          ? { done: 4, total: 13, nextLabel: 'Chapter 4', nextName: 'Legal Concepts of Insurance' }
+                          : progressPick === 'not-started'
+                            ? { done: 1, total: 13, nextLabel: 'Chapter 1', nextName: 'Basic Principles of Life and Health Insurance' }
+                            : progressPick === 'milestone'
+                              ? { done: 9, total: 13, nextLabel: 'Chapter 9', nextName: 'Annuities' }
+                              : undefined
+                    }
                   />
                 ))}
               </ol>
@@ -409,12 +445,49 @@ function JourneyRow({
   current,
   last,
   onOpen,
+  progressDetail,
 }: {
   stop: JourneyStop
   current: boolean
   last: boolean
   onOpen?: () => void
+  progressDetail?: { done?: number; total?: number; nextLabel: string; nextName: string }
 }) {
+  if (current && progressDetail) {
+    // "Pre-Licensing Lessons (42)" → the name, and 42 as the total.
+    // With no `done`, the title stays whole ("Pre-Licensing Lessons (42)").
+    const m = progressDetail.done == null ? null : stop.title.match(/^(.*?)\s*\((\d+)\)$/)
+    const name = m ? m[1] : stop.title
+    // The count is of CHAPTERS ("4 of 13", 2026-10-09), not the 42 lessons.
+    const total = progressDetail.total ?? (m ? m[2] : null)
+    return (
+      <li style={{ display: 'flex', gap: 8, alignItems: 'flex-start' }}>
+        <span aria-hidden style={{ width: 14, flex: 'none', alignSelf: 'stretch', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, paddingTop: 7 }}>
+          <span style={MARK_CURRENT} />
+          {last ? null : <span style={SPINE} />}
+        </span>
+        <span style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 2 }}>
+          <span style={{ ...BODY_TEXT, padding: '5px 0 3px', fontSize: 13, lineHeight: '18px', fontWeight: 600, color: 'var(--color-atlas-home-current-stop, var(--color-compass-page-button))' }}>
+            {name}
+            {total ? (
+              <span style={{ fontSize: 11, fontWeight: 400, color: 'var(--color-primary-900)' }}>
+                {'  ('}
+                <strong style={{ fontWeight: 600 }}>{progressDetail.done}</strong> of <strong style={{ fontWeight: 600 }}>{total}</strong> completed)
+              </span>
+            ) : null}
+          </span>
+          <span style={{ display: 'flex', alignItems: 'flex-start', gap: 4, paddingBottom: 6, minWidth: 0 }}>
+            <span style={NEXT_PILL}>Next</span>
+            {/* Wraps (a long chapter title ran out of room at one line). */}
+            <span style={{ ...BODY_TEXT, fontSize: 11, lineHeight: '14px', paddingTop: 2, color: 'var(--color-primary-900)', minWidth: 0 }}>
+              {progressDetail.nextLabel} - {/* the chapter's NAME in SemiBold, its label not (2026-10-09, Eric) */}
+              <span style={{ fontWeight: 600 }}>{progressDetail.nextName}</span>
+            </span>
+          </span>
+        </span>
+      </li>
+    )
+  }
   return (
     <li style={{ display: 'flex', gap: 8, alignItems: 'flex-start', minHeight: current ? 42 : 36 }}>
       <span aria-hidden style={{ width: 14, flex: 'none', alignSelf: 'stretch', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 3, paddingTop: current ? 7 : 3 }}>
@@ -646,6 +719,7 @@ const REQUIREMENTS: CSSProperties = {
 }
 
 /* The Design bar's Progress control → the module's opening state and figure. */
+const V3_PROGRESS_ORDER = ['not-started', 'on-track', 'milestone', 'completed', 'expired']
 const V3_PROGRESS: Record<string, { stage: ProgressStage; percent?: number }> = {
   // Opens on Study pace (0% IS that screen); clicking on reaches the 14% ring.
   'not-started': { stage: 'zero', percent: 14 },
@@ -733,6 +807,21 @@ function LinkTile({
 
 
 
+/* The current stop's "Next" pill (Figma 265:8145): Primary 100 capsule, 2 / 6,
+   SemiBold 11 / 14 in Primary 500. */
+const NEXT_PILL: CSSProperties = {
+  flex: 'none',
+  padding: '2px 6px',
+  borderRadius: 20,
+  background: 'var(--color-primary-100)',
+  fontFamily: 'var(--font-body)',
+  fontWeight: 600,
+  fontSize: 11,
+  lineHeight: '14px',
+  color: 'var(--color-primary-500)',
+  whiteSpace: 'nowrap',
+}
+
 const V3_STACKED_TILE: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
@@ -744,7 +833,7 @@ const V3_STACKED_TILE: CSSProperties = {
   boxSizing: 'border-box',
   borderRadius: 20,
   border: 'none',
-  background: 'var(--color-tertiary-200)',
+  background: 'var(--color-primary-100)', // Primary 100 (2026-10-09, Eric; was Tertiary 200)
   // The design's drop shadow shows on HOVER only (tokens.css, Eric 2026-10-09).
   transition: 'filter 150ms',
   cursor: 'pointer',
@@ -758,7 +847,7 @@ const V3_TILE: CSSProperties = {
   padding: '12px 8px',
   boxSizing: 'border-box',
   borderRadius: 8,
-  background: 'var(--color-tertiary-200)',
+  background: 'var(--color-primary-100)', // Primary 100 (2026-10-09, Eric; was Tertiary 200)
 }
 const V3_VIEW: CSSProperties = {
   display: 'inline-flex',
