@@ -497,7 +497,7 @@ const COVER_FRAME: CSSProperties = {
   width: V3_LEFT_W,
   flex: 'none',
   alignSelf: 'stretch',
-  borderRadius: 8,
+  borderRadius: 20, // the cards' 20 (2026-10-09, Eric; it was 8)
   overflow: 'hidden',
 }
 const COVER: CSSProperties = {
