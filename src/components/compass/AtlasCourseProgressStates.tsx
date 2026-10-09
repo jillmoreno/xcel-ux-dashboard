@@ -146,7 +146,7 @@ export function AtlasCourseProgressStates({
             <p style={BODY}>
               {stage === 'complete' ? (
                 <>
-                  You’ve completed all of your course work and passed your course exam. Take advantage of your course’s
+                  You’ve completed your course and passed your course exam. Take advantage of your course’s
                   flashcards and Exam Simulator to get prepared for your state exam. <strong style={{ fontWeight: 700 }}>Good Luck!</strong>
                 </>
               ) : (
@@ -167,9 +167,10 @@ export function AtlasCourseProgressStates({
         </>
       ) : null}
 
-      {/* States 2–4 end on the Study pace screen's link, reading "Edit My
+      {/* States 2–3 end on the Study pace screen's link, reading "Edit My
           Study Pace" (2026-10-09, Eric's request). Left-aligned like the original. */}
-      {stage === 'current' || stage === 'milestone' || stage === 'complete' ? (
+      {/* …but not on Completed — nothing left to pace (2026-10-09, Eric). */}
+      {stage === 'current' || stage === 'milestone' ? (
         <span style={LINK}>
           Edit My Study Pace
           <PenToSquareSolid size={11} aria-hidden />
