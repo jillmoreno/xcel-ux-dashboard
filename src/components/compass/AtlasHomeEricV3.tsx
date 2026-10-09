@@ -167,6 +167,8 @@ export function AtlasHomeEricV3({
   const longTitle = useFeatureFlag('atlas-home-long-title').enabled
   // The Design bar's Progress (V3 only, 2026-10-09) — which module state and figure.
   const progressPick = useFeatureFlag('atlas-v3-progress').variant ?? 'not-started'
+  // The Design bar's Link tiles (V3 only, 2026-10-09) — Stacked (default) or Inline.
+  const stackedTiles = (useFeatureFlag('atlas-v3-link-tiles').variant ?? 'stacked') !== 'inline'
   const progress = V3_PROGRESS[progressPick] ?? V3_PROGRESS['not-started']
   const currentTitle = longTitle ? V2_LONG_TITLE : courseTitle
   const tabs = courses ?? [{ id: path.id, title: currentTitle, coverUrl }, ...DEMO_OTHER_COURSES]
@@ -240,8 +242,32 @@ export function AtlasHomeEricV3({
               link tiles (certificates, courses), the Course progress panel
               restyled, and a READINESS card with a half-dial. */}
           <div style={{ width: V3_LEFT_W, flex: 'none', alignSelf: 'flex-start', display: 'flex', flexDirection: 'column', gap: 16 }}>
+            {stackedTiles ? (
+              /* STACKED (Figma 269:8778, the default since 2026-10-09). DEMO
+                 COUNTS as below. */
+              <div style={{ display: 'flex', gap: 8 }}>
+                <StackedTile
+                  icon={<FileCertificateLight size={30} style={{ width: 34 }} aria-hidden />}
+                  count={3}
+                  noun="Certificates"
+                  second="available"
+                  label="View certificates"
+                  onView={() => go('certificates')}
+                  width={114}
+                />
+                <StackedTile
+                  icon={<BookOpen size={30} aria-hidden />}
+                  count={tabs.length}
+                  noun="Active"
+                  second={tabs.length === 1 ? 'course' : 'courses'}
+                  label="View courses"
+                  onView={() => go('courses')}
+                />
+              </div>
+            ) : (
             <div style={{ display: 'flex', gap: 8 }}>
-              {/* DEMO COUNTS — "3 Certificates" is the design's figure, not a
+              {/* INLINE — the 2026-10-08 tiles, now the alternative.
+                  DEMO COUNTS — "3 Certificates" is the design's figure, not a
                   fixture's; "2 Courses" is the course tabs' count. */}
               <LinkTile
                 icon={<FileCertificateLight size={26} style={{ width: 29 }} aria-hidden />}
@@ -257,6 +283,7 @@ export function AtlasHomeEricV3({
                 grow
               />
             </div>
+            )}
 
             {/* THE COURSE PROGRESS MODULE — Figma 267:8267's five states, in
                 place of the Course progress panel (2026-10-08, Eric's
@@ -507,7 +534,7 @@ const LINK: CSSProperties = {
   alignSelf: 'flex-start',
   display: 'inline-flex',
   alignItems: 'center',
-  gap: 8,
+  gap: 4,
   whiteSpace: 'nowrap',
   textAlign: 'left',
   padding: 0,
@@ -515,11 +542,11 @@ const LINK: CSSProperties = {
   background: 'none',
   cursor: 'pointer',
   fontFamily: 'var(--font-body)',
-  // SemiBold 600, one weight under Bold (2026-10-06, the designer's request) —
-  // the "→" is part of the label, so it thins with it.
-  fontWeight: 600,
-  fontSize: 13,
-  lineHeight: '19.5px',
+  // The left cards' links ("Edit My Study Pace", "Help me get ready →"): Bold
+  // 11 / 13 (2026-10-09, Eric's request; SemiBold 13 / 19.5 since 2026-10-06).
+  fontWeight: 700,
+  fontSize: 11,
+  lineHeight: '13px',
   color: 'var(--color-compass-page-button)',
 }
 const STEP_EYEBROW: CSSProperties = {
@@ -608,6 +635,47 @@ const V3_PROGRESS: Record<string, { stage: ProgressStage; percent?: number }> = 
 
 
 /* A link tile: a thin FA icon, a count over its noun, and "View ›". */
+/* A STACKED link tile (Figma 269:8778): the thin icon at 38 over a centred
+   two-line label, the whole tile the button. Tertiary 200, 8 radius, 12 / 16 /
+   16; the design's soft 2px drop shadow on hover only. Fixed width when given, else it fills. */
+function StackedTile({
+  icon,
+  count,
+  noun,
+  second,
+  label,
+  onView,
+  width,
+}: {
+  icon: ReactNode
+  count: number
+  noun: string
+  second: string
+  label: string
+  onView: () => void
+  width?: number
+}) {
+  return (
+    <button
+      type="button"
+      className="cre-atlas-link-tile"
+      onClick={onView}
+      aria-label={label}
+      style={{ ...V3_STACKED_TILE, ...(width ? { width, flex: 'none' } : { flex: '1 1 0', minWidth: 0 }) }}
+    >
+      {/* Icons 20% under the design's 38 → 30 (2026-10-09, Eric); the line box with them. */}
+      <span aria-hidden style={{ display: 'inline-flex', height: 35, alignItems: 'center', color: 'var(--color-primary-500)' }}>
+        {icon}
+      </span>
+      <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, lineHeight: '14px', textAlign: 'center', color: 'var(--color-text-primary)', whiteSpace: 'nowrap' }}>
+        <strong style={{ fontWeight: 700 }}>{count}</strong> {noun}
+        <br />
+        {second}
+      </span>
+    </button>
+  )
+}
+
 function LinkTile({
   icon,
   count,
@@ -640,6 +708,23 @@ function LinkTile({
 }
 
 
+
+const V3_STACKED_TILE: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  gap: 8,
+  // 12px under the label (16 in Figma) and the cards' 20 radius (8 in Figma)
+  // — 2026-10-09, Eric's request.
+  padding: '12px 16px 12px',
+  boxSizing: 'border-box',
+  borderRadius: 20,
+  border: 'none',
+  background: 'var(--color-tertiary-200)',
+  // The design's drop shadow shows on HOVER only (tokens.css, Eric 2026-10-09).
+  transition: 'filter 150ms',
+  cursor: 'pointer',
+}
 
 const V3_TILE: CSSProperties = {
   display: 'flex',

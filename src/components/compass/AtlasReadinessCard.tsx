@@ -53,6 +53,12 @@ export function AtlasReadinessCard() {
         <p style={QUESTION}>How Ready are you for your State Exam?</p>
       </div>
       <HalfDial level={level} />
+      {/* A link on every level, styled as the Study pace tile's (2026-10-09,
+          Eric's request). A span, not a button: the card is
+          itself the button for now, and buttons cannot nest. Not wired. */}
+      {/* A divider above it, the card's own Tertiary 300 rule (2026-10-09, Eric). */}
+      <span aria-hidden style={{ ...RULE, alignSelf: 'stretch' }} />
+      <span style={LINK}>Help me get ready →</span>
     </section>
   )
 }
@@ -65,7 +71,8 @@ function HalfDial({ level }: { level: Level }) {
   const half = Math.PI * r
   const d = `M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`
   return (
-    <div style={{ position: 'relative', alignSelf: 'center', width: w, height: 109 }}>
+    // 8px closer to the question above (-8 off the card's 16 gap; 2026-10-09, Eric).
+    <div style={{ position: 'relative', alignSelf: 'center', width: w, height: 109, marginTop: -8 }}>
       <svg width={w} height={80} viewBox={`0 0 ${w} 80`} aria-hidden style={{ display: 'block' }}>
         <path d={d} fill="none" style={{ stroke: 'var(--color-tertiary-500)' }} strokeWidth={3} />
         <path
@@ -96,7 +103,8 @@ const CARD: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
   gap: 16,
-  padding: '24px 24px 32px',
+  // 24 at the bottom (2026-10-09, Eric; the design's 32 before the link joined).
+  padding: '24px 24px 24px',
   boxSizing: 'border-box',
   borderRadius: 20,
   background: 'var(--color-tertiary-200)',
@@ -120,9 +128,12 @@ const RULE: CSSProperties = { display: 'block', height: 1, background: 'var(--co
 const QUESTION: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-body)',
-  fontSize: 13,
-  lineHeight: '20px',
-  color: 'var(--color-primary-800)',
+  // As the Study pace card's body heading ("We've set up a moderate study
+  // plan for you."): Bold 11 / 16 in the text colour (2026-10-09, Eric).
+  fontWeight: 700,
+  fontSize: 11,
+  lineHeight: '16px',
+  color: 'var(--color-text-primary)',
 }
 const LEVEL_NAME: CSSProperties = {
   fontFamily: 'var(--font-heading-serif)',
@@ -148,4 +159,20 @@ const CAPTION: CSSProperties = {
   textAlign: 'center',
   whiteSpace: 'nowrap',
   color: 'var(--color-primary-500)',
+}
+// The Study pace tile's link ("Edit My Study Pace") — Bold 11 / 13 in the
+// button colour (2026-10-09, Eric: "make it match the link in the study pace
+// tile"; it was the Study Journey's SemiBold 13).
+const LINK: CSSProperties = {
+  // Centred in the card (2026-10-09, Eric).
+  alignSelf: 'center',
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 4,
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize: 11,
+  lineHeight: '13px',
+  whiteSpace: 'nowrap',
+  color: 'var(--color-compass-page-button)',
 }

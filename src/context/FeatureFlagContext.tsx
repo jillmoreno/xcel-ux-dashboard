@@ -1440,6 +1440,29 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-v3-link-tiles',
+    /* ERIC/ATLAS V3'S LINK TILES, ON THE DESIGN BAR (2026-10-09, Eric:
+       "replace these with the attached version but save the current ones as
+       possible versions"). Stacked — Figma 269:8778, the default: a big thin
+       icon over "3 Certificates available" / "2 Active courses", the whole
+       tile the link. Inline — the 2026-10-08 tiles (icon beside the count and
+       a View link), kept as the alternative. V3 only. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-v3'],
+    group: 'Widgets',
+    label: 'Link tiles',
+    description:
+      'The Certificates / Courses tiles at the top of Eric/Atlas V3’s left column. Stacked (default, Figma 269:8778): the icon over the words, the whole tile a link. Inline: the earlier tiles, icon beside the count with a View link.',
+    defaultEnabled: true,
+    defaultVariant: 'stacked',
+    variants: [
+      { value: 'stacked', label: 'Stacked' },
+      { value: 'inline', label: 'Inline' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-v3-progress',
     /* ERIC/ATLAS V3'S PROGRESS, ON THE DESIGN BAR (2026-10-09, Eric's request:
        "a Progress dropdown … that overrides the Demo Progress dropdown", just

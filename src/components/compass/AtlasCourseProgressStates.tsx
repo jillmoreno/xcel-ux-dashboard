@@ -111,7 +111,8 @@ export function AtlasCourseProgressStates({
               <p style={BODY}>This study pace will have you prepared to pass your course exam in 3 weeks time.</p>
             </div>
           </div>
-          <span style={LINK}>
+          <span aria-hidden style={RULE} />
+          <span style={EDIT_LINK}>
             Edit My Study Pace
             <PenToSquareSolid size={11} aria-hidden />
           </span>
@@ -171,10 +172,13 @@ export function AtlasCourseProgressStates({
           Study Pace" (2026-10-09, Eric's request). Left-aligned like the original. */}
       {/* …but not on Completed — nothing left to pace (2026-10-09, Eric). */}
       {stage === 'current' || stage === 'milestone' ? (
-        <span style={LINK}>
-          Edit My Study Pace
-          <PenToSquareSolid size={11} aria-hidden />
-        </span>
+        <>
+          <span aria-hidden style={RULE} />
+          <span style={EDIT_LINK}>
+            Edit My Study Pace
+            <PenToSquareSolid size={11} aria-hidden />
+          </span>
+        </>
       ) : null}
 
       {stage === 'expired' ? (
@@ -271,11 +275,12 @@ const EYEBROW: CSSProperties = {
 }
 const LABEL: CSSProperties = { ...EYEBROW, letterSpacing: '0.1em' }
 const RULE: CSSProperties = { display: 'block', height: 1, alignSelf: 'stretch', background: 'var(--color-primary-200)' }
+// 11 / 16 (2026-10-09, Eric's request; it was 13 / 18).
 const BODY: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-body)',
-  fontSize: 13,
-  lineHeight: '18px',
+  fontSize: 11,
+  lineHeight: '16px',
   color: 'var(--color-text-primary)',
 }
 const CHEER: CSSProperties = {
@@ -344,6 +349,9 @@ const LINK: CSSProperties = {
   color: 'var(--color-compass-page-button)',
   whiteSpace: 'nowrap',
 }
+/* "Edit My Study Pace": a rule above it and centred, as the Readiness card's
+   link (2026-10-09, Eric's request). */
+const EDIT_LINK: CSSProperties = { ...LINK, alignSelf: 'center' }
 const EXTEND: CSSProperties = {
   ...COMPASS_BUTTON,
   alignSelf: 'stretch',

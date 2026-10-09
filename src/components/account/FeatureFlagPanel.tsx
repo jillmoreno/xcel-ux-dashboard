@@ -125,6 +125,7 @@ const REBRAND_FLAGS = [
   'atlas-heading-font',
   'atlas-home-long-title',
   'atlas-v3-progress',
+  'atlas-v3-link-tiles',
   'atlas-brand-skin',
   'atlas-brand-skin-v3',
   /* ⚠ RE-FILED TO THIS PAGE 2026-10-05 when the `learning-path` flag page was
