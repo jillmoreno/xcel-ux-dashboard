@@ -932,6 +932,13 @@
   --color-compass-rail-spine: #cec0ac;
   --color-compass-rail-current-fill: #eceef0;
   --color-compass-rail-hover: var(--color-neutral-100);
+  /* The five-state Course progress module's fill (2026-10-08, Eric: "all 5
+     state background colors to the Compass primary 100") — the Global skin's
+     primary-100, pinned so it holds under every brand skin. */
+  --color-atlas-progress-fill: #eceef0;
+  /* …and its 1px border, the Global skin's primary-200 (same day: "a single
+     pix border", first Compass tertiary 200, then "change that to primary 200"). */
+  --color-atlas-progress-border: #d8dee4;
   /* Not-started text, sections and lessons alike: #818181 (Figma 13:22 /
      13:38), 3.95:1 on white — under AA for text this size. Kept because the
      muting is the design's "not reached yet", and every entry states its
@@ -6418,4 +6425,11 @@ a.cre-library-card-title::after {
   --color-primary-100: #e6eaec;
   --color-atlas-nav-rule: #e0dbcd;
   --color-neutral-500: #c3bba5;
+}
+
+/* The five-state Course progress module (AtlasCourseProgressStates) is a
+   click-to-flip review device for now — a keyboard focus ring for it. */
+.cre-atlas-progress-states:focus-visible {
+  outline: 2px solid var(--color-primary-500);
+  outline-offset: 2px;
 }

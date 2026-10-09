@@ -1,10 +1,15 @@
-import { useMemo, useState, type CSSProperties } from 'react'
+import { useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   AngleRightRegular,
+  AngleRightSolid,
+  BookOpen,
+  FileCertificateLight,
 } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
 import { AtlasExamDateCard } from './AtlasExamDateCard'
+import { AtlasCourseProgressStates } from './AtlasCourseProgressStates'
+import { AtlasReadinessCard } from './AtlasReadinessCard'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { AtlasCourseTabs, type AtlasCourseTab } from './AtlasCourseTabs'
 import { journeyStopsFor, type JourneyStop } from '@/components/learning/studyJourneyUtil'
@@ -65,8 +70,12 @@ import type { LearningPathSummary } from '@/data/learningFixtures'
    (figures, journey, cover, Begin Course) is still the fixture (`path`). */
 const V2_LONG_TITLE = 'New York Property and Casualty Conversion Course Pre-licensing and Live Review Class'
 
-/** V3's course tabs — off since 2026-10-08 (see the card). */
-const SHOW_COURSE_TABS: boolean = false
+/** The cover and the column under it share this width (2026-10-08). */
+const V3_LEFT_W = 235
+
+/** V3's course tabs — off on 2026-10-08, back on the same day (Eric's
+ *  request: "add the course tabs back to the top"). */
+const SHOW_COURSE_TABS: boolean = true
 
 export type AtlasHomeEricV3Props = {
   path: LearningPathSummary
@@ -223,41 +232,48 @@ export function AtlasHomeEricV3({
         <span aria-hidden style={RULE} />
 
         <div style={{ display: 'flex', gap: 40, alignItems: 'stretch' }}>
-          {/* Left: ONE "Course progress" panel — the dial, then the figures
-              (Figma 217:3793, 2026-10-06, the designer's request: the figures
-              list and the Study Pace panel reworked into one module). The
-              design drops three things the two had: DAYS TO REVIEW, the
-              "N Week Goal" with its gauge and copy, and CUSTOMIZE YOUR PACE.
-              To bring them back, lift them from commit 0d637ef. */}
-          <section aria-label="Course progress" style={{ ...PROGRESS_PANEL, width: 200, flex: 'none', alignSelf: 'flex-start' }}>
-            {/* Centred over the dial (2026-10-06, the designer's request). */}
-            <p style={{ ...PANEL_EYEBROW, alignSelf: 'stretch', textAlign: 'center' }}>Course progress</p>
-            <div style={{ paddingTop: 4, alignSelf: 'center' }}>
-              <ProgressDial percent={percent} />
-            </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignSelf: 'stretch' }}>
-              <span aria-hidden style={PANEL_RULE} />
-              <Figure
-                label="Expected completion"
-                // "Nov. 5" where the pace model has no finish date (2026-10-07,
-                // Eric's request; it read "Not achievable") — a DEMO date, not
-                // computed. A real finish date still shows when there is one.
-                value={preset.state === 'no' ? 'Nov. 5' : formatPaceDate(preset.finishIso)}
-                note="At current pace"
+          {/* Left: V3's COLUMN, 235 wide — Figma 254:7973 (2026-10-08, Eric's
+              request; it was the 200-wide Course progress panel alone). Two
+              link tiles (certificates, courses), the Course progress panel
+              restyled, and a READINESS card with a half-dial. */}
+          <div style={{ width: V3_LEFT_W, flex: 'none', alignSelf: 'flex-start', display: 'flex', flexDirection: 'column', gap: 16 }}>
+            <div style={{ display: 'flex', gap: 8 }}>
+              {/* DEMO COUNTS — "3 Certificates" is the design's figure, not a
+                  fixture's; "2 Courses" is the course tabs' count. */}
+              <LinkTile
+                icon={<FileCertificateLight size={26} style={{ width: 29 }} aria-hidden />}
+                count={3}
+                noun="Certificates"
+                onView={() => go('certificates')}
               />
-              {accessDays != null && accessExpiresAt ? (
-                <>
-                  <span aria-hidden style={PANEL_RULE} />
-                  <Figure
-                    label="Course access"
-                    value={`${accessDays} ${accessDays === 1 ? 'Day' : 'Days'}`}
-                    note={`Ends ${formatPaceDate(accessExpiresAt)}`}
-                  />
-                </>
-              ) : null}
-              <span aria-hidden style={PANEL_RULE} />
+              <LinkTile
+                icon={<BookOpen size={26} aria-hidden />}
+                count={tabs.length}
+                noun={tabs.length === 1 ? 'Course' : 'Courses'}
+                onView={() => go('courses')}
+                grow
+              />
             </div>
-          </section>
+
+            {/* THE COURSE PROGRESS MODULE — Figma 267:8267's five states, in
+                place of the Course progress panel (2026-10-08, Eric's
+                request). Click it to flip the states. */}
+            <AtlasCourseProgressStates
+              percent={percent}
+              expected={{
+                // "Nov. 5" where the pace model has no finish date — a DEMO date.
+                value: preset.state === 'no' ? 'Nov. 5' : formatPaceDate(preset.finishIso),
+                note: 'At current pace',
+              }}
+              access={
+                accessDays != null && accessExpiresAt
+                  ? { value: `${accessDays} ${accessDays === 1 ? 'Day' : 'Days'}`, note: `Ends ${formatPaceDate(accessExpiresAt)}` }
+                  : null
+              }
+            />
+            {/* The READINESS card, under the module (Figma 254:8012, 2026-10-08). */}
+            <AtlasReadinessCard />
+          </div>
 
           <span aria-hidden style={{ width: 1, flex: 'none', background: 'var(--color-atlas-nav-rule)' }} />
 
@@ -329,68 +345,7 @@ export function AtlasHomeEricV3({
   )
 }
 
-/* One figure in the Course progress panel (Figma 217:3832): an 11px brand
-   eyebrow over a 13px line — the value Bold, a Light dash, the note Regular. */
-function Figure({ label, value, note }: { label: string; value: string; note: string }) {
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
-      <p style={{ ...PANEL_EYEBROW, letterSpacing: '0.1em' }}>{label}</p>
-      <p style={{ ...BODY_TEXT, margin: 0, fontSize: 13, lineHeight: '20px', color: 'var(--color-text-primary)', whiteSpace: 'nowrap' }}>
-        <span style={{ fontWeight: 700 }}>{value}</span>
-        <span style={{ fontWeight: 300 }}> - </span>
-        <span style={{ fontWeight: 400 }}>{note}</span>
-      </p>
-    </div>
-  )
-}
 
-/* The progress dial (Figma "Complete Dial"): a 149px ring in the rule colour,
-   the done share drawn over it in the brand's button colour from 12 o'clock,
-   the figure in the middle. */
-function ProgressDial({ percent }: { percent: number }) {
-  const pct = Math.max(0, Math.min(100, Math.round(percent)))
-  const size = 149
-  const r = 70
-  const c = 2 * Math.PI * r
-  return (
-    <div role="img" aria-label={`Course progress ${pct}% complete`} style={{ position: 'relative', width: size, height: size }}>
-      <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} aria-hidden style={{ display: 'block' }}>
-        {/* The track: each brand's Primary 100 (2026-10-06, the designer's
-            request; it was the nav rule). XCEL keeps its own through
-            --color-atlas-dial-track (tokens.css). */}
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          fill="none"
-          style={{ stroke: 'var(--color-atlas-dial-track, var(--color-primary-100))' }}
-          strokeWidth={3}
-        />
-        <circle
-          cx={size / 2}
-          cy={size / 2}
-          r={r}
-          fill="none"
-          // The brand button colour over the nav rule; the XCEL skin re-points
-          // both through --color-atlas-dial-ring / -track (tokens.css).
-          style={{ stroke: 'var(--color-atlas-dial-ring, var(--color-compass-page-button))' }}
-          // 8, was 6 (2026-10-06, the designer's request). Same radius as the
-          // track, so it stays centred on it; 70 + 4 fits the 149 box's 74.5.
-          strokeWidth={8}
-          strokeLinecap="round"
-          strokeDasharray={`${(c * pct) / 100} ${c}`}
-          transform={`rotate(-90 ${size / 2} ${size / 2})`}
-        />
-      </svg>
-      {/* The figure and "Complete" only — the panel's eyebrow now says
-          "Course progress" (Figma 217:3799). */}
-      <div aria-hidden style={DIAL_TEXT}>
-        <span style={DIAL_FIGURE}>{pct}%</span>
-        <span style={DIAL_CAPTION}>Complete</span>
-      </div>
-    </div>
-  )
-}
 
 function JourneyRow({
   stop,
@@ -505,7 +460,8 @@ const CARD: CSSProperties = {
    the L&H photo's 1312 × 980). */
 const COVER_FRAME: CSSProperties = {
   position: 'relative',
-  width: 200,
+  // 235, the left column's width (2026-10-08) — was 200.
+  width: V3_LEFT_W,
   flex: 'none',
   alignSelf: 'stretch',
   borderRadius: 8,
@@ -539,63 +495,6 @@ const TITLE: CSSProperties = {
   color: 'var(--color-compass-page-heading)',
 }
 const RULE: CSSProperties = { display: 'block', height: 1, background: 'var(--color-atlas-nav-rule)' }
-/* The Course progress panel (Figma 217:3793): the Study Pace panel's tint,
-   24 in, 8 radius, no shadow (tried on the old pace panel 2026-10-02 and
-   removed the same day — the tint carries it). */
-const PROGRESS_PANEL: CSSProperties = {
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'flex-start',
-  gap: 16,
-  padding: 24,
-  boxSizing: 'border-box',
-  borderRadius: 8,
-  background: 'var(--color-atlas-outlined-card, var(--color-compass-page-card))',
-}
-/* The panel's eyebrows — 11px SemiBold caps in the guide's Secondary 500 on
-   XCEL (--color-atlas-home-eyebrow, tokens.css), the page eyebrow elsewhere. */
-const PANEL_EYEBROW: CSSProperties = {
-  margin: 0,
-  fontFamily: 'var(--font-body)',
-  fontWeight: 600,
-  fontSize: 11,
-  lineHeight: '14px',
-  letterSpacing: '0.16em',
-  textTransform: 'uppercase',
-  color: 'var(--color-atlas-home-eyebrow, var(--color-compass-page-eyebrow))',
-}
-/* The panel's rules take the dial track's colour — Secondary 200 on XCEL. */
-const PANEL_RULE: CSSProperties = {
-  display: 'block',
-  height: 1,
-  background: 'var(--color-atlas-dial-track, var(--color-atlas-nav-rule))',
-}
-const DIAL_TEXT: CSSProperties = {
-  position: 'absolute',
-  inset: 0,
-  display: 'flex',
-  flexDirection: 'column',
-  alignItems: 'center',
-  justifyContent: 'center',
-  gap: 3,
-  textAlign: 'center',
-}
-const DIAL_CAPTION: CSSProperties = {
-  fontFamily: 'var(--font-body)',
-  fontWeight: 600,
-  fontSize: 10,
-  lineHeight: '15px',
-  letterSpacing: '0.18em',
-  textTransform: 'uppercase',
-  color: 'var(--color-compass-page-eyebrow)',
-}
-const DIAL_FIGURE: CSSProperties = {
-  fontFamily: 'var(--font-heading-serif)',
-  fontSize: 38,
-  lineHeight: '30px',
-  letterSpacing: '-0.06em',
-  color: 'var(--color-text-primary)',
-}
 /* The design's text links: Open Sans Bold 13, the brand's button colour. */
 const LINK: CSSProperties = {
   alignSelf: 'flex-start',
@@ -683,4 +582,67 @@ const REQUIREMENTS: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontWeight: 700,
   fontSize: 14,
+}
+
+/* ── V3's left column (Figma 254:7973) ──────────────────────────────────── */
+
+
+/* A link tile: a thin FA icon, a count over its noun, and "View ›". */
+function LinkTile({
+  icon,
+  count,
+  noun,
+  onView,
+  grow = false,
+}: {
+  icon: ReactNode
+  count: number
+  noun: string
+  onView: () => void
+  grow?: boolean
+}) {
+  return (
+    <div style={{ ...V3_TILE, ...(grow ? { flex: '1 1 0', minWidth: 0 } : { flex: 'none' }) }}>
+      <span aria-hidden style={{ display: 'inline-flex', color: 'var(--color-primary-400)' }}>
+        {icon}
+      </span>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 4, paddingTop: 2, fontFamily: 'var(--font-body)', fontSize: 11, lineHeight: '12px' }}>
+        <span style={{ color: 'var(--color-text-primary)', whiteSpace: 'nowrap' }}>
+          <strong style={{ fontWeight: 700 }}>{count}</strong> {noun}
+        </span>
+        <button type="button" className="cre-compass-v2-link" onClick={onView} aria-label={`View ${noun.toLowerCase()}`} style={V3_VIEW}>
+          View
+          <AngleRightSolid size={9} aria-hidden />
+        </button>
+      </div>
+    </div>
+  )
+}
+
+
+
+const V3_TILE: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 8,
+  padding: '12px 8px',
+  boxSizing: 'border-box',
+  borderRadius: 8,
+  border: '1px solid var(--color-tertiary-200)',
+  background: 'var(--color-tertiary-100)',
+}
+const V3_VIEW: CSSProperties = {
+  display: 'inline-flex',
+  alignItems: 'center',
+  gap: 4,
+  padding: 0,
+  border: 'none',
+  background: 'none',
+  cursor: 'pointer',
+  fontFamily: 'var(--font-body)',
+  fontWeight: 700,
+  fontSize: 11,
+  lineHeight: '12px',
+  color: 'var(--color-compass-page-button)',
 }

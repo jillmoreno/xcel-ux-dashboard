@@ -65,10 +65,13 @@ import ClipboardListCheckRegularSvg from './clipboard-list-check-regular.svg?rea
 import AngleRightRegularSvg from './angle-right-regular.svg?react'
 import AngleRightSolidSvg from './angle-right-solid.svg?react'
 import CalendarThinSvg from './calendar-thin.svg?react'
+import FileCertificateThinSvg from './file-certificate-thin.svg?react'
+import FileCertificateLightSvg from './file-certificate-light.svg?react'
 import HourglassClockThinSvg from './hourglass-clock-thin.svg?react'
 import PenToSquareSolidSvg from './pen-to-square-solid.svg?react'
 import AngleLeftRegularSvg from './angle-left-regular.svg?react'
 import GaugeThinSvg from './gauge-thin.svg?react'
+import GaugeLightSvg from './gauge-light.svg?react'
 // The REAL Font Awesome Light `circle-user`, fetched 2026-10-01 at 7.3.1, for
 // the Atlas header. `circle-user.svg` (CircleUser) is a hand-drawn stand-in
 // from the original port — no FA licence header, simplified paths — and still
@@ -285,10 +288,13 @@ export const ClipboardListCheckRegular = makeIcon(ClipboardListCheckRegularSvg) 
 export const AngleRightRegular = makeIcon(AngleRightRegularSvg) // FA: angle-right (regular)
 export const AngleRightSolid = makeIcon(AngleRightSolidSvg) // FA: angle-right (solid)
 export const CalendarThin = makeIcon(CalendarThinSvg) // FA: calendar (thin)
+export const FileCertificateThin = makeIcon(FileCertificateThinSvg) // FA: file-certificate (thin)
+export const FileCertificateLight = makeIcon(FileCertificateLightSvg) // FA: file-certificate (light)
 export const HourglassClockThin = makeIcon(HourglassClockThinSvg) // FA: hourglass-clock (thin)
 export const PenToSquareSolid = makeIcon(PenToSquareSolidSvg) // FA: pen-to-square (solid)
 export const AngleLeftRegular = makeIcon(AngleLeftRegularSvg) // FA: angle-left (regular)
 export const GaugeThin = makeIcon(GaugeThinSvg) // FA: gauge (thin)
+export const GaugeLight = makeIcon(GaugeLightSvg) // FA: gauge (light)
 export const CircleUserLight = makeIcon(CircleUserLightSvg) // FA: circle-user (light, genuine)
 export const SlashForwardSolid = makeIcon(SlashForwardSolidSvg) // FA: slash-forward (solid)
 export const ArrowRotateLeft = makeIcon(ArrowRotateLeftSvg) // FA: arrow-rotate-left

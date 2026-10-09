@@ -452,7 +452,9 @@ const PAGE: CSSProperties = {
 }
 /* The Home course card's surface — 48 in, 14 radius (Figma). */
 const CARD: CSSProperties = {
-  flex: '0 1 711px',
+  // 750, was the design's 711 (2026-10-08, Eric's request) — as V2 and V3.
+  // The left columns stay 200 (cover, progress panel); the 39 goes right.
+  flex: '0 1 750px',
   minWidth: 0,
   display: 'flex',
   flexDirection: 'column',

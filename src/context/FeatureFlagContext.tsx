@@ -1334,12 +1334,13 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     description:
       'Which Colibri brand the Atlas/Compass pages are dressed as — the LOGO and the BRAND COLOURS only. ⚠ IT IS A SKIN, NOT A BRAND: `Brand` in AccountContext stays XCEL, so the courses, personas and fixtures are XCEL’s whichever skin is showing; neutrals, type scale, spacing and layout are platform and do not move. XCEL is the default (again since 2026-10-06; Global was from 2026-10-01). Global is no brand at all — the Compass Design System v5’s own colours, for an instance that is not any Colibri brand. ⚠ REQUIRES the Atlas palette (`atlas-xcel-palette`, on by default): with it off, tokens.css never re-points the ramps and this control changes nothing.',
     defaultEnabled: true,
-    // XCEL loads first and leads the list (2026-10-06, Eric's request); Global
-    // keeps its colours and sits second.
+    // XCEL loads first (2026-10-06, Eric's request). Global leads the list
+    // since 2026-10-08 (Eric: "move the global brand to the first item"),
+    // with XCEL second — the order moved, the default did not.
     defaultVariant: 'xcel',
     variants: [
-      { value: 'xcel', label: 'XCEL (Insurance)' },
       { value: 'global', label: 'Global' },
+      { value: 'xcel', label: 'XCEL (Insurance)' },
       { value: 'cre', label: 'Colibri Real Estate' },
       { value: 'mckissock', label: 'McKissock Learning' },
       { value: 'elite', label: 'Elite Learning' },
