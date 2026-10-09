@@ -6776,6 +6776,8 @@ a.cre-library-card-title::after {
 
 /* The five-state Course progress module (AtlasCourseProgressStates) is a
    click-to-flip review device for now — a keyboard focus ring for it. */
+/* …and the Readiness card's five levels (AtlasReadinessCard), the same way. */
+.cre-atlas-readiness-states:focus-visible,
 .cre-atlas-progress-states:focus-visible {
   outline: 2px solid var(--color-primary-500);
   outline-offset: 2px;
