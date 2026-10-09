@@ -6256,52 +6256,65 @@ a.cre-library-card-title::after {
   outline-color: #9a1b1e;
 }
 
+/* THE DIALS' FILL = EACH BRAND'S BUTTON COLOUR (2026-10-09, Eric: "on all
+   brand versions, use the color that is being used for their buttons as the
+   color for the Progress and Readiness percentage complete top dial color").
+   Read by the Course progress module's ring and the Readiness half-dial
+   (`--color-atlas-dial-fill`); the track underneath is unchanged. */
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='global'] { --color-atlas-dial-fill: #3d5a73; }
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel-blue-cta'] { --color-atlas-dial-fill: #2d5872; }
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel'] { --color-atlas-dial-fill: #9a1b1e; }
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='cre'] { --color-atlas-dial-fill: #027267; }
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='mckissock'] { --color-atlas-dial-fill: #6e8005; }
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='elite'] { --color-atlas-dial-fill: #813878; }
+
 /* BRAND SKINS = ATLAS + THEIR BUTTONS (2026-10-09, Eric: "now do the same for
    the McKissock, CRE and Elite brands using their CTA color for the buttons")
    — as XCEL above: every Atlas selector names these skins too, and only the
    buttons take the brand's CTA. Each keeps its own logo (Logo.tsx).
-     CRE        teal #028F81, hover #027267 (its Primary; see below)
+     CRE        teal 600 #027267, hover 700 #01564D (its Primary; see below)
      McKissock  #6E8005, hover #526004 — the olive its buttons already used
                 (2026-09-30), not the orange; white on it is ~4.4:1
-     Elite      #A24796, hover #813878 */
-/* CRE's buttons in its PRIMARY, teal 500 #028F81 (hover 600 #027267) —
+     Elite      600 #813878, hover 700 #612A5A (500 #A24796 until
+                2026-10-09, Eric's request) */
+/* CRE's buttons in its PRIMARY, teal 500 #028F81 (hover 600 #01564d) —
    2026-10-09, Eric's request; they were its CTA blue #02568F. */
 [data-brand='xcel'][data-atlas-palette][data-atlas-brand='cre'] {
-  --color-atlas-home-secondary-ink: #028f81;
-  --color-atlas-home-secondary-border: #028f81;
+  --color-atlas-home-secondary-ink: #027267;
+  --color-atlas-home-secondary-border: #027267;
   /* …and the header's Top Nav buttons (same day, Eric: "change it in the
      header as well"): the current button's fill and the idle button's label
      and icon in the teal. The idle button's hairline stays Atlas's. */
-  --color-atlas-topnav-current: #028f81;
-  --color-atlas-topnav-idle-ink: #028f81;
+  --color-atlas-topnav-current: #027267;
+  --color-atlas-topnav-idle-ink: #027267;
 }
 /* …and the bell's notification count (same day). Its fill is inline
    `--color-cta-500`, which the text links also read, so this overrides the
    count itself rather than the token. */
 [data-atlas-palette][data-atlas-brand='cre'] header .cre-icon-pill > span {
-  background: #028f81 !important;
+  background: #027267 !important;
 }
 [data-atlas-brand='cre'] .cre-compass-primary,
 [data-atlas-brand='cre'] .cre-compass-btn-primary {
-  background: #028f81;
-  border-color: #028f81;
+  background: #027267;
+  border-color: #027267;
   color: #fff;
 }
 [data-atlas-brand='cre'] .cre-compass-primary:hover,
 [data-atlas-brand='cre'] .cre-compass-btn-primary:hover {
-  background: #027267;
-  border-color: #027267;
+  background: #01564d;
+  border-color: #01564d;
   filter: none;
 }
 [data-atlas-brand='cre'] .cre-compass-secondary:not(.cre-atlas-home-secondary) {
-  color: #028f81;
-  border-color: #028f81 !important;
+  color: #027267;
+  border-color: #027267 !important;
 }
 [data-atlas-brand='cre'] .cre-compass-secondary:hover {
-  background: color-mix(in srgb, #028f81 8%, transparent);
+  background: color-mix(in srgb, #027267 8%, transparent);
 }
 [data-atlas-brand='cre'] :is(.cre-compass-primary, .cre-compass-secondary):focus-visible {
-  outline-color: #028f81;
+  outline-color: #027267;
 }
 [data-brand='xcel'][data-atlas-palette][data-atlas-brand='mckissock'] {
   --color-atlas-home-secondary-ink: #6e8005;
@@ -6338,38 +6351,38 @@ a.cre-library-card-title::after {
   outline-color: #6e8005;
 }
 [data-brand='xcel'][data-atlas-palette][data-atlas-brand='elite'] {
-  --color-atlas-home-secondary-ink: #a24796;
-  --color-atlas-home-secondary-border: #a24796;
-  /* The header's Top Nav buttons in its button plum, #A24796, too (same day,
+  --color-atlas-home-secondary-ink: #813878;
+  --color-atlas-home-secondary-border: #813878;
+  /* The header's Top Nav buttons in its button plum, #813878, too (same day,
      Eric's request): current fill, idle label and icon. */
-  --color-atlas-topnav-current: #a24796;
-  --color-atlas-topnav-idle-ink: #a24796;
+  --color-atlas-topnav-current: #813878;
+  --color-atlas-topnav-idle-ink: #813878;
 }
 /* …and the bell's notification count (see XCEL's note on why directly). */
 [data-atlas-palette][data-atlas-brand='elite'] header .cre-icon-pill > span {
-  background: #a24796 !important;
+  background: #813878 !important;
 }
 [data-atlas-brand='elite'] .cre-compass-primary,
 [data-atlas-brand='elite'] .cre-compass-btn-primary {
-  background: #a24796;
-  border-color: #a24796;
+  background: #813878;
+  border-color: #813878;
   color: #fff;
 }
 [data-atlas-brand='elite'] .cre-compass-primary:hover,
 [data-atlas-brand='elite'] .cre-compass-btn-primary:hover {
-  background: #813878;
-  border-color: #813878;
+  background: #612a5a;
+  border-color: #612a5a;
   filter: none;
 }
 [data-atlas-brand='elite'] .cre-compass-secondary:not(.cre-atlas-home-secondary) {
-  color: #a24796;
-  border-color: #a24796 !important;
+  color: #813878;
+  border-color: #813878 !important;
 }
 [data-atlas-brand='elite'] .cre-compass-secondary:hover {
-  background: color-mix(in srgb, #a24796 8%, transparent);
+  background: color-mix(in srgb, #813878 8%, transparent);
 }
 [data-atlas-brand='elite'] :is(.cre-compass-primary, .cre-compass-secondary):focus-visible {
-  outline-color: #a24796;
+  outline-color: #813878;
 }
 
 

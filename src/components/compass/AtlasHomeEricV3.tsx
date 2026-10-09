@@ -8,7 +8,7 @@ import {
 } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
 import { AtlasExamDateCard } from './AtlasExamDateCard'
-import { AtlasCourseProgressStates } from './AtlasCourseProgressStates'
+import { AtlasCourseProgressStates, type ProgressStage } from './AtlasCourseProgressStates'
 import { AtlasReadinessCard } from './AtlasReadinessCard'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { AtlasCourseTabs, type AtlasCourseTab } from './AtlasCourseTabs'
@@ -165,6 +165,9 @@ export function AtlasHomeEricV3({
   const apply = GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 1]
   const state = jurisdictionName(path.state)
   const longTitle = useFeatureFlag('atlas-home-long-title').enabled
+  // The Design bar's Progress (V3 only, 2026-10-09) — which module state and figure.
+  const progressPick = useFeatureFlag('atlas-v3-progress').variant ?? 'not-started'
+  const progress = V3_PROGRESS[progressPick] ?? V3_PROGRESS['not-started']
   const currentTitle = longTitle ? V2_LONG_TITLE : courseTitle
   const tabs = courses ?? [{ id: path.id, title: currentTitle, coverUrl }, ...DEMO_OTHER_COURSES]
   const [activeTabId, setActiveTabId] = useState(path.id)
@@ -259,7 +262,10 @@ export function AtlasHomeEricV3({
                 place of the Course progress panel (2026-10-08, Eric's
                 request). Click it to flip the states. */}
             <AtlasCourseProgressStates
-              percent={percent}
+              key={progressPick}
+              initialStage={progress.stage}
+              percent={progress.percent ?? percent}
+              milestonePercent={75}
               expected={{
                 // "Nov. 5" where the pace model has no finish date — a DEMO date.
                 value: preset.state === 'no' ? 'Nov. 5' : formatPaceDate(preset.finishIso),
@@ -586,6 +592,16 @@ const REQUIREMENTS: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontWeight: 700,
   fontSize: 14,
+}
+
+/* The Design bar's Progress control → the module's opening state and figure. */
+const V3_PROGRESS: Record<string, { stage: ProgressStage; percent?: number }> = {
+  // Opens on Study pace (0% IS that screen); clicking on reaches the 14% ring.
+  'not-started': { stage: 'zero', percent: 14 },
+  'on-track': { stage: 'current', percent: 14 },
+  milestone: { stage: 'milestone' },
+  completed: { stage: 'complete' },
+  expired: { stage: 'expired' },
 }
 
 /* ── V3's left column (Figma 254:7973) ──────────────────────────────────── */

@@ -119,6 +119,8 @@ describe('the owner axis', () => {
       'atlas-heading-font',
       // Joined 2026-10-07 — V2's long-title reference toggle, beside Headings.
       'atlas-home-long-title',
+      // Joined 2026-10-09 — V3's own Progress control.
+      'atlas-v3-progress',
       'atlas-home-layout',
       'atlas-xcel-palette',
       'atlas-right-rail-layout',

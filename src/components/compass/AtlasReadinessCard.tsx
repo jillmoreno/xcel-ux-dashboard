@@ -39,7 +39,7 @@ function HalfDial({ percent }: { percent: number }) {
         <path
           d={d}
           fill="none"
-          style={{ stroke: 'var(--color-primary-500)' }}
+          style={{ stroke: 'var(--color-atlas-dial-fill, var(--color-primary-500))' }}
           strokeWidth={8}
           strokeLinecap="round"
           strokeDasharray={`${(half * pct) / 100} ${half}`}

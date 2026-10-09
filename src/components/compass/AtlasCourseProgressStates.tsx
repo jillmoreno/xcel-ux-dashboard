@@ -24,7 +24,8 @@ import { COMPASS_BUTTON } from './compassButton'
  */
 export type ProgressFigure = { value: string; note: string }
 
-type Stage = 'zero' | 'current' | 'milestone' | 'complete' | 'expired'
+export type ProgressStage = 'zero' | 'current' | 'milestone' | 'complete' | 'expired'
+type Stage = ProgressStage
 const ORDER: Stage[] = ['zero', 'current', 'milestone', 'complete', 'expired']
 const STAGE_NAME: Record<Stage, string> = {
   zero: 'Study pace',
@@ -38,14 +39,30 @@ export function AtlasCourseProgressStates({
   percent,
   expected,
   access,
+  initialStage = 'zero',
+  milestonePercent = 68,
 }: {
   percent: number
   expected: ProgressFigure
   access?: ProgressFigure | null
+  /** The state it opens on — V3's Design-bar Progress control sets it
+   *  (2026-10-09); remount (a `key`) to apply a new one. */
+  initialStage?: Stage
+  /** The milestone state's figure (the design's 68 by default). */
+  milestonePercent?: number
 }) {
   // Opens on the FIRST state, so clicks walk the design's order 1 → 5 → 1.
-  const [stage, setStage] = useState<Stage>('zero')
-  const next = () => setStage((s) => ORDER[(ORDER.indexOf(s) + 1) % ORDER.length])
+  const [picked, setStage] = useState<Stage>(initialStage)
+  const stage: Stage = picked === 'current' && percent <= 0 ? 'zero' : picked
+  // A 0% course is NOT STARTED, which is the Study pace screen — the default
+  // pace we set — never a ring at 0% (2026-10-09, Eric's request). So at 0%
+  // the "current" state is skipped when stepping through.
+  const order = percent <= 0 ? ORDER.filter((x) => x !== 'current') : ORDER
+  const next = () =>
+    setStage((s) => {
+      const i = order.indexOf(s)
+      return order[(i < 0 ? 0 : i + 1) % order.length]
+    })
   const onKey = (e: KeyboardEvent<HTMLElement>) => {
     if (e.key === 'Enter' || e.key === ' ') {
       e.preventDefault()
@@ -104,7 +121,7 @@ export function AtlasCourseProgressStates({
       {stage === 'current' || stage === 'milestone' || stage === 'complete' ? (
         <div style={{ paddingTop: 4, alignSelf: 'center' }}>
           <Dial
-            percent={stage === 'current' ? percent : stage === 'milestone' ? 68 : 100}
+            percent={stage === 'current' ? percent : stage === 'milestone' ? milestonePercent : 100}
             tracking={stage === 'complete' ? '-0.08em' : stage === 'milestone' ? '-0.05em' : undefined}
           />
         </div>
@@ -133,7 +150,7 @@ export function AtlasCourseProgressStates({
                   flashcards and Exam Simulator to get prepared for your state exam. <strong style={{ fontWeight: 700 }}>Good Luck!</strong>
                 </>
               ) : (
-                'You’ve completed 68% of you course work ahead of your plan. Keep this pace up and you’ll be ready for your course exam in 1 week'
+                `You’ve completed ${milestonePercent}% of you course work ahead of your plan. Keep this pace up and you’ll be ready for your course exam in 1 week`
               )}
             </p>
           </div>
@@ -198,7 +215,7 @@ function Dial({ percent, tracking }: { percent: number; tracking?: string }) {
           cy={size / 2}
           r={r}
           fill="none"
-          style={{ stroke: 'var(--color-primary-500)' }}
+          style={{ stroke: 'var(--color-atlas-dial-fill, var(--color-primary-500))' }}
           strokeWidth={8}
           strokeLinecap="round"
           strokeDasharray={`${(c * pct) / 100} ${c}`}

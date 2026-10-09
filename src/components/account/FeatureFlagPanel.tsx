@@ -124,6 +124,7 @@ const REBRAND_FLAGS = [
      the page, the panel is where every flag is findable. */
   'atlas-heading-font',
   'atlas-home-long-title',
+  'atlas-v3-progress',
   'atlas-brand-skin',
   'atlas-brand-skin-v3',
   /* ⚠ RE-FILED TO THIS PAGE 2026-10-05 when the `learning-path` flag page was

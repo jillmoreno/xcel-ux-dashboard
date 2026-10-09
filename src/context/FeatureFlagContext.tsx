@@ -1440,6 +1440,33 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-v3-progress',
+    /* ERIC/ATLAS V3'S PROGRESS, ON THE DESIGN BAR (2026-10-09, Eric's request:
+       "a Progress dropdown … that overrides the Demo Progress dropdown", just
+       for V3). It picks which of the Course progress module's five states V3's
+       Home opens on, and the figure the dial shows, overriding the Demo bar's
+       Progress for that module. Scoped to V3 by `versions`; the Demo bar's
+       Progress still drives everything else on the page. Clicking the module
+       still steps through the states from wherever this put it. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-v3'],
+    group: 'Widgets',
+    label: 'Progress',
+    description:
+      'Which Course progress state Eric/Atlas V3’s Home shows: Not Started (0%, the Study pace screen), On Track (14%), Milestone (75%, Great Work), Completed (100%) or Course Expired. Overrides the Demo bar’s Progress for that module only.',
+    defaultEnabled: true,
+    defaultVariant: 'not-started',
+    variants: [
+      { value: 'not-started', label: 'Not Started 0%' },
+      { value: 'on-track', label: 'On Track 14%' },
+      { value: 'milestone', label: 'Milestone 75%' },
+      { value: 'completed', label: 'Completed 100%' },
+      { value: 'expired', label: 'Course Expired' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'dashboard-heading-font',
     /* ON THE DESIGN BAR — 2026-10-05.
        The heading typeface — a TYPOGRAPHY decision, which is the first thing the
