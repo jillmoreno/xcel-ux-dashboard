@@ -125,6 +125,7 @@ const REBRAND_FLAGS = [
   'atlas-heading-font',
   'atlas-home-long-title',
   'atlas-brand-skin',
+  'atlas-brand-skin-v3',
   /* ⚠ RE-FILED TO THIS PAGE 2026-10-05 when the `learning-path` flag page was
      retired. They draw inside the rebrand shell (`InlineStudyCalendar`, twice),
      so this is where they belong — the old page was a standalone LMS surface

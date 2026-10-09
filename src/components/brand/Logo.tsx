@@ -101,7 +101,7 @@ const IMAGE_SOURCES: Partial<
  * rules. They are NOT `Brand` entries — the product is still XCEL's; only the
  * Atlas pages change clothes.
  */
-const SKIN_LOGOS: Record<Exclude<AtlasSkin, 'xcel' | 'global'>, ImageSource> = {
+const SKIN_LOGOS: Record<Exclude<AtlasSkin, 'xcel' | 'xcel-blue-cta' | 'global'>, ImageSource> = {
   cre: {
     src: '/brand/colibri-real-estate.svg',
     alt: 'Colibri Real Estate',
@@ -210,7 +210,7 @@ export function Logo({ variant = 'default', height = 40, className, brand: brand
   }
   const imageSet = IMAGE_SOURCES[brand]
   const entry =
-    !brandProp && variant === 'default' && skin && skin !== 'xcel' && skin !== 'global'
+    !brandProp && variant === 'default' && skin && skin !== 'xcel' && skin !== 'xcel-blue-cta' && skin !== 'global'
       ? SKIN_LOGOS[skin]
       : imageSet?.[variant]
   // A brand may ship the lockup and not the square mark (XCEL does). Falling

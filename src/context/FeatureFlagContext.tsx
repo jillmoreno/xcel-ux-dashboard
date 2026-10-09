@@ -1328,7 +1328,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        ⚠ `?skin=` STILL WINS WHEN PRESENT, as an alias. */
     surface: 'design',
     owner: 'eric',
-    versions: ['eric-atlas-v1', 'eric-atlas-v2', 'eric-atlas-v3', 'discoverability-atlas-compass-nav'],
+    // V3 left on 2026-10-09 for its own copy, `atlas-brand-skin-v3`, below.
+    versions: ['eric-atlas-v1', 'eric-atlas-v2', 'discoverability-atlas-compass-nav'],
     group: 'Widgets',
     label: 'Brand',
     description:
@@ -1339,8 +1340,37 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     // with XCEL second — the order moved, the default did not.
     defaultVariant: 'xcel',
     variants: [
-      { value: 'global', label: 'Global' },
+      { value: 'global', label: 'Atlas' },
       { value: 'xcel', label: 'XCEL (Insurance)' },
+      { value: 'xcel-blue-cta', label: 'XCEL Blue CTA' },
+      { value: 'cre', label: 'Colibri Real Estate' },
+      { value: 'mckissock', label: 'McKissock Learning' },
+      { value: 'elite', label: 'Elite Learning' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-brand-skin-v3',
+    /* ERIC/ATLAS V3'S OWN BRAND CONTROL — 2026-10-09, Eric: "make the Global
+       brand the default view on V3". A flag has ONE default for every version,
+       so V3 gets its own copy of `atlas-brand-skin` (same variants, same
+       order) defaulting to Global; the other versions keep XCEL. PlatformShell
+       reads this one when `?version=eric-atlas-v3`. Everything said on
+       `atlas-brand-skin` above — skin not brand, needs the Atlas palette,
+       `?skin=` wins — holds here too. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-v3'],
+    group: 'Widgets',
+    label: 'Brand',
+    description:
+      'Eric/Atlas V3’s Brand control — the same skins as `atlas-brand-skin`, but Global by default (2026-10-09). A SKIN, NOT A BRAND: the logo and brand colours only. ⚠ REQUIRES the Atlas palette (`atlas-xcel-palette`, on by default).',
+    defaultEnabled: true,
+    defaultVariant: 'global',
+    variants: [
+      { value: 'global', label: 'Atlas' },
+      { value: 'xcel', label: 'XCEL (Insurance)' },
+      { value: 'xcel-blue-cta', label: 'XCEL Blue CTA' },
       { value: 'cre', label: 'Colibri Real Estate' },
       { value: 'mckissock', label: 'McKissock Learning' },
       { value: 'elite', label: 'Elite Learning' },

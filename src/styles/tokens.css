@@ -936,9 +936,6 @@
      state background colors to the Compass primary 100") — the Global skin's
      primary-100, pinned so it holds under every brand skin. */
   --color-atlas-progress-fill: #eceef0;
-  /* …and its 1px border, the Global skin's primary-200 (same day: "a single
-     pix border", first Compass tertiary 200, then "change that to primary 200"). */
-  --color-atlas-progress-border: #d8dee4;
   /* Not-started text, sections and lessons alike: #818181 (Figma 13:22 /
      13:38), 3.95:1 on white — under AA for text this size. Kept because the
      muting is the design's "not reached yet", and every entry states its
@@ -5600,7 +5597,8 @@ a.cre-library-card-title::after {
    briefly). The hover takes the same fill (same day), which the course
    page's left nav follows through --color-compass-rail-hover. Scoped to the
    XCEL skin so CRE, which inherits the base nav tokens, keeps its own. */
-[data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel'] {
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel'],
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel-blue-cta'] {
   --color-atlas-nav-active-fill: #f3f0ea;
   --color-atlas-nav-hover: #f3f0ea;
   /* Home V2's progress dial (2026-10-05, the designer's request): the ring in
@@ -5631,6 +5629,23 @@ a.cre-library-card-title::after {
      500 (Figma 217:3793) is 3.23:1 there and fails; swapped 2026-10-06 after a
      contrast check, at the designer's request. */
   --color-atlas-home-eyebrow: var(--color-tertiary-600);
+}
+
+/* XCEL BLUE CTA (2026-10-09, Eric: "change its buttons and text links to the
+   XCEL tertiary 500 color") — the XCEL skin with its CTA ramp re-pointed at
+   the guide's TERTIARY, the steel blue #2D5872 (this file's --color-primary-*,
+   see the naming note above). Every other XCEL rule is shared with it by
+   selector list. Ramp for ramp, so hovers and tints follow. */
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel-blue-cta'] {
+  --color-cta-100: var(--color-primary-100);
+  --color-cta-200: var(--color-primary-200);
+  --color-cta-300: var(--color-primary-300);
+  --color-cta-400: var(--color-primary-400);
+  --color-cta-500: var(--color-primary-500);
+  --color-cta-600: var(--color-primary-600);
+  --color-cta-700: var(--color-primary-700);
+  --color-cta-800: var(--color-primary-800);
+  --color-cta-900: var(--color-primary-900);
 }
 
 [data-brand='xcel'][data-atlas-palette][data-atlas-brand='cre'] {
@@ -5821,6 +5836,52 @@ a.cre-library-card-title::after {
 [data-atlas-palette][data-atlas-font='playfair-2'] .cre-dash-serif-headings [style*='--font-heading)'] {
   font-weight: 700 !important;
 }
+/* THE ATLAS SKIN'S SERIF HEADINGS — the Atlas Style Guide's "Desktop Serif -
+   Playfair 2" (Figma Q9hUhVNzoqIQwV6J5c7xR1, node 3:1032; 2026-10-09, Eric's
+   request, when "Global" was renamed "Atlas" in the Brand dropdown). Four
+   levels, all Bold 700 at -3%:
+
+     Heading 1  40 / 42      Heading 3  27 / 29
+     Heading 2  32 / 34      Heading 4  22 / 24
+
+   The Atlas scale has EIGHT steps, so they are folded onto the guide's four
+   by role: H1–H4 (page and course titles — the Home title reads H4) take
+   Heading 1; H5–H6 Heading 2; H7 Heading 3; H8 (section heads — "Complete
+   Coursework", the exam-date card) Heading 4. The Playfair trial's 1.265 /
+   0.81 factors and its one-step-up are off here: the guide's px ARE the sizes.
+   Only under the Atlas skin with Playfair 2; every other skin is untouched. */
+[data-atlas-palette][data-atlas-brand='global'][data-atlas-font='playfair-2'] {
+  --atlas-font-size-scale: 1;
+  --atlas-font-line-scale: 1;
+  --type-atlas-h1-base-size: 40px;
+  --type-atlas-h1-base-line: 42px;
+  --type-atlas-h2-base-size: 40px;
+  --type-atlas-h2-base-line: 42px;
+  --type-atlas-h3-base-size: 40px;
+  --type-atlas-h3-base-line: 42px;
+  --type-atlas-h4-base-size: 40px;
+  --type-atlas-h4-base-line: 42px;
+  --type-atlas-h5-base-size: 32px;
+  --type-atlas-h5-base-line: 34px;
+  --type-atlas-h6-base-size: 32px;
+  --type-atlas-h6-base-line: 34px;
+  --type-atlas-h7-base-size: 27px;
+  --type-atlas-h7-base-line: 29px;
+  --type-atlas-h8-base-size: 22px;
+  --type-atlas-h8-base-line: 24px;
+}
+/* The guide's -3% on every heading in the serif face — h1–h6 and the <p>
+   section heads ("Complete Coursework", the exam-date card), but not the
+   dials' big <span> figures, which keep their own tracking — and the Home
+   title's 42 / 44 and 40 / 42 overrides give way to Heading 1. */
+[data-atlas-palette][data-atlas-brand='global'][data-atlas-font='playfair-2'] :is(h1, h2, h3, h4, h5, h6, p)[style*='--font-heading-serif'] {
+  letter-spacing: -0.03em !important;
+}
+[data-atlas-palette][data-atlas-brand='global'][data-atlas-font='playfair-2'] .cre-atlas-home-course-title[style] {
+  font-size: 40px !important;
+  line-height: 42px !important;
+  letter-spacing: -0.03em !important;
+}
 [data-atlas-palette][data-atlas-font='source-serif-4'] {
   --font-heading-serif: 'Source Serif 4', Georgia, serif;
 }
@@ -5901,34 +5962,51 @@ a.cre-library-card-title::after {
    6.9:1, slate 10.7:1, muted 6.8:1, faint 5.0:1 (all the file's own ratios).
    DARK MODE NOT DESIGNED. */
 [data-brand='xcel'][data-atlas-palette][data-atlas-brand='global'] {
-  --color-cta-100: #eceef0;
-  --color-cta-200: #d8dee4;
-  --color-cta-300: #c0cdd5;
-  --color-cta-400: #67727d;
+  /* THE ATLAS STYLE GUIDE'S RAMPS (Figma Q9hUhVNzoqIQwV6J5c7xR1, node 168:2312,
+     "Atlas/Compass colors"; 2026-10-09, Eric's request) — replacing the ramps
+     interpolated from the Compass v5 file. The guide's names map straight onto
+     this file's slots here (unlike XCEL's guide): Primary → --color-primary-*
+     and the CTA ramp, Secondary → --color-secondary-*, Tertiary →
+     --color-tertiary-*. Its accents — #E0DBCD, #D8DEE4, #ECEEF0 — are the
+     hairline, emphasis-hairline and emphasis-fill values already named below.
+     The role tokens further down keep their literal hex, which are the same
+     colours. */
+  --color-cta-100: #eceff1;
+  --color-cta-200: #cfd6dc;
+  --color-cta-300: #9eadb9;
+  --color-cta-400: #8194a4;
   --color-cta-500: #3d5a73;
-  --color-cta-600: #31495d;
-  --color-cta-700: #263d50;
-  --color-cta-800: #1b2c3a;
-  --color-cta-900: #111c25;
-  --color-primary-100: #eceef0;
-  --color-primary-200: #d8dee4;
-  --color-primary-300: #c0cdd5;
-  --color-primary-400: #67727d;
+  --color-cta-600: #31485c;
+  --color-cta-700: #253645;
+  --color-cta-800: #18242e;
+  --color-cta-900: #0c1217;
+  --color-primary-100: #eceff1;
+  --color-primary-200: #cfd6dc;
+  --color-primary-300: #9eadb9;
+  --color-primary-400: #8194a4;
   --color-primary-500: #3d5a73;
-  --color-primary-600: #31495d;
-  --color-primary-700: #263d50;
-  --color-primary-800: #1b2c3a;
-  --color-primary-900: #111c25;
-  /* The warm neutrals, the file's hairline → ink. */
-  --color-tertiary-100: #f8f6f3;
-  --color-tertiary-200: #e0dbcd;
-  --color-tertiary-300: #c3bba5;
-  --color-tertiary-400: #baa78b;
-  --color-tertiary-500: #948a76;
-  --color-tertiary-600: #706b63;
-  --color-tertiary-700: #5b5560;
-  --color-tertiary-800: #3a3631;
-  --color-tertiary-900: #1f1d18;
+  --color-primary-600: #31485c;
+  --color-primary-700: #253645;
+  --color-primary-800: #18242e;
+  --color-primary-900: #0c1217;
+  --color-secondary-100: #e9ecee;
+  --color-secondary-200: #c9cfd3;
+  --color-secondary-300: #939ea8;
+  --color-secondary-400: #72818d;
+  --color-secondary-500: #263d50;
+  --color-secondary-600: #1e3140;
+  --color-secondary-700: #172530;
+  --color-secondary-800: #0f1820;
+  --color-secondary-900: #080c10;
+  --color-tertiary-100: #f9f8f6;
+  --color-tertiary-200: #f0eee9;
+  --color-tertiary-300: #e1ddd2;
+  --color-tertiary-400: #d8d3c5;
+  --color-tertiary-500: #c3bba5;
+  --color-tertiary-600: #9c9684;
+  --color-tertiary-700: #757063;
+  --color-tertiary-800: #4e4b42;
+  --color-tertiary-900: #272521;
 
   --color-atlas-cta: #3d5a73;
   --color-atlas-cta-ink: #3d5a73;
@@ -6328,7 +6406,8 @@ a.cre-library-card-title::after {
    keeps its own. Values copied from the Global block above; ramps included
    because the rail's rows, progress track and toggle read them directly (the
    column's own `--color-rail-row-active` alias resolves here, so it follows). */
-[data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel'] [data-atlas-rail] {
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel'] [data-atlas-rail],
+[data-brand='xcel'][data-atlas-palette][data-atlas-brand='xcel-blue-cta'] [data-atlas-rail] {
   --color-cta-100: #eceef0;
   --color-cta-200: #d8dee4;
   --color-cta-300: #c0cdd5;

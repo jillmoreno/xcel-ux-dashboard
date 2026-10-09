@@ -114,6 +114,8 @@ describe('the owner axis', () => {
       /* ⚠ THE TWO CONVERTED CONTROLS LEAD, in catalog order — they sit beside
          `dashboard-heading-font` where a reader looks for them. */
       'atlas-brand-skin',
+      // Joined 2026-10-09 — V3's own Brand control, Global by default.
+      'atlas-brand-skin-v3',
       'atlas-heading-font',
       // Joined 2026-10-07 — V2's long-title reference toggle, beside Headings.
       'atlas-home-long-title',

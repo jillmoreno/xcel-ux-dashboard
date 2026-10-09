@@ -1,5 +1,5 @@
 import { useState, type CSSProperties, type KeyboardEvent } from 'react'
-import { GaugeLight, HourglassClockThin, PenToSquareSolid } from '@/icons'
+import { GaugeThin, HourglassClockThin, PenToSquareSolid } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
 
 /**
@@ -62,7 +62,9 @@ export function AtlasCourseProgressStates({
       onClick={next}
       onKeyDown={onKey}
       className="cre-atlas-progress-states"
-      style={CARD}
+      // paddingBottom always present: React clears a dropped longhand, which
+      // wiped the shorthand's bottom on the other states.
+      style={{ ...CARD, paddingBottom: stage === 'zero' ? 32 : 24 }}
     >
       <p style={EYEBROW}>
         {stage === 'zero'
@@ -76,23 +78,23 @@ export function AtlasCourseProgressStates({
 
       {stage === 'zero' ? (
         <>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 16, alignSelf: 'stretch' }}>
-            <span aria-hidden style={RULE} />
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 8, paddingBottom: 2 }}>
-              {/* The pace pill — the gauge in a light disc, the pace on the brand primary. */}
-              <span style={PILL}>
-                <span aria-hidden style={PILL_DISC}>
-                  <GaugeLight size={22} aria-hidden />
-                </span>
-                <span style={PILL_TEXT}>Moderate Study Pace</span>
+          {/* Figma 267:8266 (reworked 2026-10-09): no rule; a white pace card —
+              the thin gauge at 48 beside MODERATE / Study Pace — then the copy,
+              then the link, left-aligned. */}
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 12, paddingBottom: 2, alignSelf: 'stretch' }}>
+            <span style={PACE_CARD}>
+              <GaugeThin size={48} aria-hidden />
+              <span style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={PACE_LEVEL}>Moderate</span>
+                <span style={PACE_NOUN}>Study Pace</span>
               </span>
-              <p style={BODY}>
-                <strong style={{ fontWeight: 700, display: 'block', marginBottom: 4 }}>We’ve set up a moderate study plan for you.</strong>
-                This study pace will have you prepared to pass your course exam in 3 weeks time.
-              </p>
+            </span>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <p style={{ ...BODY, fontWeight: 700 }}>We’ve set up a moderate study plan for you.</p>
+              <p style={BODY}>This study pace will have you prepared to pass your course exam in 3 weeks time.</p>
             </div>
           </div>
-          <span style={{ ...LINK, alignSelf: 'flex-end' }}>
+          <span style={LINK}>
             Set a different study pace
             <PenToSquareSolid size={11} aria-hidden />
           </span>
@@ -224,7 +226,6 @@ const CARD: CSSProperties = {
   padding: 24,
   boxSizing: 'border-box',
   borderRadius: 20,
-  border: '1px solid var(--color-atlas-progress-border)',
   background: 'var(--color-atlas-progress-fill)',
   cursor: 'pointer',
   userSelect: 'none',
@@ -273,31 +274,30 @@ const CAPTION: CSSProperties = {
   textTransform: 'uppercase',
   color: 'var(--color-text-secondary)',
 }
-const PILL: CSSProperties = {
-  display: 'inline-flex',
+/* The zero state's pace card (Figma 286:10260): white, 16 radius, 8 / 16. */
+const PACE_CARD: CSSProperties = {
+  display: 'flex',
   alignItems: 'center',
-  height: 22,
-  borderRadius: 20,
-  background: 'var(--color-primary-500)',
-}
-const PILL_DISC: CSSProperties = {
-  width: 22,
-  height: 22,
-  display: 'inline-flex',
-  alignItems: 'center',
-  justifyContent: 'center',
-  borderRadius: 20,
-  background: 'var(--color-tertiary-200)',
+  gap: 8,
+  alignSelf: 'stretch',
+  padding: '8px 16px',
+  borderRadius: 16,
+  background: 'var(--color-fixed-light)',
   color: 'var(--color-primary-500)',
+  whiteSpace: 'nowrap',
 }
-const PILL_TEXT: CSSProperties = {
-  padding: '0 8px 1px 4px',
+const PACE_LEVEL: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontWeight: 600,
-  fontSize: 11,
-  lineHeight: '18px',
-  color: 'var(--color-text-inverse)',
-  whiteSpace: 'nowrap',
+  fontSize: 12,
+  lineHeight: '14px',
+  letterSpacing: '2px',
+  textTransform: 'uppercase',
+}
+const PACE_NOUN: CSSProperties = {
+  fontFamily: 'var(--font-body)',
+  fontSize: 12,
+  lineHeight: '14px',
 }
 const LINK: CSSProperties = {
   display: 'inline-flex',

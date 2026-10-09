@@ -21,16 +21,22 @@ import { useSyncExternalStore } from 'react'
  *
  * The palettes and logos are the brands' own from before 431ec3e.
  */
-export type AtlasSkin = 'global' | 'xcel' | 'cre' | 'mckissock' | 'elite'
+export type AtlasSkin = 'global' | 'xcel' | 'xcel-blue-cta' | 'cre' | 'mckissock' | 'elite'
 
 export const ATLAS_SKINS: readonly { skin: AtlasSkin; label: string }[] = [
   // XCEL first, and the default (2026-10-06, Eric's request); Global second.
   { skin: 'xcel', label: 'XCEL (Insurance)' },
+  // XCEL BLUE CTA (2026-10-09, Eric) — XCEL in every respect but one: its
+  // buttons and text links in the guide's TERTIARY 500, the steel blue
+  // (code --color-primary-*), instead of the red. See tokens.css.
+  { skin: 'xcel-blue-cta', label: 'XCEL Blue CTA' },
   // GLOBAL (2026-09-30) — no brand: the Atlas experience in the Compass Design
   // System v5's own colours (steel, slate, terracotta, one white surface), for
   // an instance that is not any Colibri brand. Colours only — the file's fonts
   // and component styles are deliberately not taken. See tokens.css.
-  { skin: 'global', label: 'Global' },
+  // Shown as "Atlas" since 2026-10-09 (Eric); the value stays `global` so
+  // every `?skin=global` link keeps working.
+  { skin: 'global', label: 'Atlas' },
   { skin: 'cre', label: 'Colibri Real Estate' },
   { skin: 'mckissock', label: 'McKissock Learning' },
   { skin: 'elite', label: 'Elite Learning' },

@@ -275,7 +275,7 @@ export function AtlasHomeEricV3({
             <AtlasReadinessCard />
           </div>
 
-          <span aria-hidden style={{ width: 1, flex: 'none', background: 'var(--color-atlas-nav-rule)' }} />
+          <span aria-hidden style={{ width: 1, flex: 'none', background: 'var(--color-primary-100)' }} />
 
           {/* Right: the journey. */}
           <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 24 }}>
@@ -494,7 +494,8 @@ const TITLE: CSSProperties = {
   letterSpacing: '-0.01em',
   color: 'var(--color-compass-page-heading)',
 }
-const RULE: CSSProperties = { display: 'block', height: 1, background: 'var(--color-atlas-nav-rule)' }
+// Page and step dividers in primary-100 (2026-10-09, Eric; briefly 200) — were the warm nav rule.
+const RULE: CSSProperties = { display: 'block', height: 1, background: 'var(--color-primary-100)' }
 /* The design's text links: Open Sans Bold 13, the brand's button colour. */
 const LINK: CSSProperties = {
   alignSelf: 'flex-start',
@@ -574,7 +575,10 @@ const CHEVRON: CSSProperties = {
   cursor: 'pointer',
   color: 'var(--color-compass-page-button)',
 }
+/* Hugs its label with 24 a side (2026-10-09, Eric) — it filled the column. */
 const REQUIREMENTS: CSSProperties = {
+  alignSelf: 'flex-start',
+  padding: '0 24px',
   height: 40,
   borderRadius: 8,
   border: '1px solid',
@@ -629,8 +633,7 @@ const V3_TILE: CSSProperties = {
   padding: '12px 8px',
   boxSizing: 'border-box',
   borderRadius: 8,
-  border: '1px solid var(--color-tertiary-200)',
-  background: 'var(--color-tertiary-100)',
+  background: 'var(--color-tertiary-200)',
 }
 const V3_VIEW: CSSProperties = {
   display: 'inline-flex',

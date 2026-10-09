@@ -410,7 +410,10 @@ function PlatformShellBody() {
      so every Atlas link shared before today keeps working. `atlasSkinFor`
      validates, so an unknown spelling falls through to the flag. */
   const atlasSkinParam = params.get(ATLAS_SKIN_PARAM)
-  const atlasSkinFlag = useFeatureFlag('atlas-brand-skin')
+  // V3 has its own Brand control, Global by default (2026-10-09).
+  const atlasSkinFlagAll = useFeatureFlag('atlas-brand-skin')
+  const atlasSkinFlagV3 = useFeatureFlag('atlas-brand-skin-v3')
+  const atlasSkinFlag = params.get('version') === 'eric-atlas-v3' ? atlasSkinFlagV3 : atlasSkinFlagAll
   const atlasSkin = atlasSkinFor(
     atlasSkinParam && ATLAS_SKINS.some((s) => s.skin === atlasSkinParam)
       ? atlasSkinParam

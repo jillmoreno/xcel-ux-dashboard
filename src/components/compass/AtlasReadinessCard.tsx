@@ -53,7 +53,7 @@ function HalfDial({ percent }: { percent: number }) {
   )
 }
 
-/* Warm fill, a Secondary 200 hairline (code tertiary-200, Eric 2026-10-08), 20 radius, 24 / 24 / 32 (Figma). */
+/* Tertiary 200 fill and no stroke (Eric 2026-10-09), 20 radius, 24 / 24 / 32 (Figma). */
 const CARD: CSSProperties = {
   display: 'flex',
   flexDirection: 'column',
@@ -61,8 +61,7 @@ const CARD: CSSProperties = {
   padding: '24px 24px 32px',
   boxSizing: 'border-box',
   borderRadius: 20,
-  border: '1px solid var(--color-tertiary-200)',
-  background: 'var(--color-tertiary-100)',
+  background: 'var(--color-tertiary-200)',
 }
 const EYEBROW: CSSProperties = {
   margin: 0,
