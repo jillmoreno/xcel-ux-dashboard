@@ -1,4 +1,4 @@
-import { useMemo, useState, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   AngleRightRegular,
@@ -8,6 +8,7 @@ import {
 } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
 import { AtlasExamDateCard } from './AtlasExamDateCard'
+import { ATLAS_HOME_REFRESH } from '@/components/layout/atlasHomeRefresh'
 import { AtlasCourseProgressStates, type ProgressStage } from './AtlasCourseProgressStates'
 import { AtlasReadinessCard } from './AtlasReadinessCard'
 import { useFeatureFlag, useFeatureFlags } from '@/context/FeatureFlagContext'
@@ -180,6 +181,17 @@ export function AtlasHomeEricV3({
   // progress dropdown tool does"), so Step 1, Readiness and the Completed view
   // all follow. NB the card is hidden on Completed — the dropdown leaves it.
   const { setVariant } = useFeatureFlags()
+  // The Top Nav's Home button starts the demo cards over (2026-10-12): Progress
+  // back to Not Started (Readiness follows), and every card remounts.
+  const [refreshKey, setRefreshKey] = useState(0)
+  useEffect(() => {
+    const onRefresh = () => {
+      setVariant('atlas-v3-progress', 'not-started')
+      setRefreshKey((k) => k + 1)
+    }
+    window.addEventListener(ATLAS_HOME_REFRESH, onRefresh)
+    return () => window.removeEventListener(ATLAS_HOME_REFRESH, onRefresh)
+  }, [setVariant])
   const advanceProgress = () =>
     setVariant('atlas-v3-progress', V3_PROGRESS_ORDER[(V3_PROGRESS_ORDER.indexOf(progressPick) + 1) % V3_PROGRESS_ORDER.length])
   const currentTitle = longTitle ? V2_LONG_TITLE : courseTitle
@@ -262,7 +274,7 @@ export function AtlasHomeEricV3({
                 view (2026-10-09). */}
             {completedView ? null : (
             <AtlasCourseProgressStates
-              key={`progress-${progressPick}`}
+              key={`progress-${progressPick}-${refreshKey}`}
               initialStage={progress.stage}
               onAdvance={advanceProgress}
               percent={progress.percent ?? percent}
@@ -288,7 +300,7 @@ export function AtlasHomeEricV3({
             {/* Its own key prefix: the two cards are siblings, and a SHARED key
                 left orphaned copies of the progress card on screen. */}
             <AtlasReadinessCard
-              key={`readiness-${progressPick}`}
+              key={`readiness-${progressPick}-${refreshKey}`}
               initialLevel={V3_READINESS_FOR[progressPick] ?? 0}
               onPastLast={() => setVariant('atlas-v3-progress', 'not-started')}
             />
@@ -437,7 +449,7 @@ export function AtlasHomeEricV3({
             My Courses; to put it back here, render it above this card again. */}
         {/* THE EXAM-DATE CARD — Figma component 224:4118, all four states and
             a working calendar (2026-10-07, Eric's request). */}
-        <AtlasExamDateCard stateName={state} />
+        <AtlasExamDateCard key={refreshKey} stateName={state} />
 
       </div>
     </div>

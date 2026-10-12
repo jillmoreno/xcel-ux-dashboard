@@ -9,6 +9,7 @@ import {
 import { COMPASS_BUTTON } from './compassButton'
 import { AtlasCourseProgressStates, type ProgressStage } from './AtlasCourseProgressStates'
 import { AtlasExamDateCard } from './AtlasExamDateCard'
+import { ATLAS_HOME_REFRESH } from '@/components/layout/atlasHomeRefresh'
 import { AtlasReadinessCard } from './AtlasReadinessCard'
 import { useFeatureFlag, useFeatureFlags } from '@/context/FeatureFlagContext'
 import { type AtlasCourseTab } from './AtlasCourseTabs'
@@ -183,6 +184,17 @@ export function AtlasHomeEricWhite({
   // progress dropdown tool does"), so Step 1, Readiness and the Completed view
   // all follow. NB the card is hidden on Completed — the dropdown leaves it.
   const { setVariant } = useFeatureFlags()
+  // The Top Nav's Home button starts the demo cards over (2026-10-12): Progress
+  // back to Not Started (Readiness follows), and every card remounts.
+  const [refreshKey, setRefreshKey] = useState(0)
+  useEffect(() => {
+    const onRefresh = () => {
+      setVariant('atlas-v3-progress', 'not-started')
+      setRefreshKey((k) => k + 1)
+    }
+    window.addEventListener(ATLAS_HOME_REFRESH, onRefresh)
+    return () => window.removeEventListener(ATLAS_HOME_REFRESH, onRefresh)
+  }, [setVariant])
   const advanceProgress = () =>
     setVariant('atlas-v3-progress', V3_PROGRESS_ORDER[(V3_PROGRESS_ORDER.indexOf(progressPick) + 1) % V3_PROGRESS_ORDER.length])
   const currentTitle = longTitle ? V2_LONG_TITLE : courseTitle
@@ -280,7 +292,7 @@ export function AtlasHomeEricWhite({
                 view (2026-10-09). */}
             {completedView ? null : (
             <AtlasCourseProgressStates
-              key={`progress-${progressPick}`}
+              key={`progress-${progressPick}-${refreshKey}`}
               initialStage={progress.stage}
               onAdvance={advanceProgress}
               percent={progress.percent ?? percent}
@@ -306,13 +318,33 @@ export function AtlasHomeEricWhite({
             {/* Its own key prefix: the two cards are siblings, and a SHARED key
                 left orphaned copies of the progress card on screen. */}
             <AtlasReadinessCard
-              key={`readiness-${progressPick}`}
+              key={`readiness-${progressPick}-${refreshKey}`}
               initialLevel={V3_READINESS_FOR[progressPick] ?? 0}
               onPastLast={() => setVariant('atlas-v3-progress', 'not-started')}
             />
             {/* The link tiles at the BOTTOM of the column (2026-10-09, Eric's
                 request; they led it). */}
-            {stackedTiles ? (
+            {/* The link tiles only with the Dropdown Top Nav (2026-10-12, Eric's
+                request): on Static and Home Only the left rail already carries
+                the courses and certificates. */}
+            {/* …and on the Dropdown, ONE tile (2026-10-12, Eric's request): the
+                courses tile went (the dropdown lists them); the certificates
+                tile fills the column, icon beside a one-line label. */}
+            {!dropdownNav ? null : (
+              <button type="button" className="cre-atlas-link-tile" onClick={() => go('certificates')} aria-label="View certificates" style={WHITE_CERT_TILE}>
+                <span aria-hidden style={{ display: 'inline-flex', alignItems: 'center', color: 'var(--color-primary-500)' }}>
+                  {/* 20% under the stacked tile's 30 → 24 (2026-10-12, Eric). */}
+                  <FileCertificateLight size={24} style={{ width: 27 }} aria-hidden />
+                </span>
+                {/* DEMO COUNT, the design's figure. */}
+                <span style={{ fontFamily: 'var(--font-body)', fontSize: 11, lineHeight: '14px', color: 'var(--color-text-primary)', whiteSpace: 'nowrap' }}>
+                  <strong style={{ fontWeight: 700 }}>3</strong> Certificates available
+                </span>
+              </button>
+            )}
+            {/* The two-tile versions, unwired on White 2026-10-12 — kept; set
+                SHOW_TWO_LINK_TILES to bring them back (on the Dropdown only). */}
+            {!(SHOW_TWO_LINK_TILES && dropdownNav) ? null : stackedTiles ? (
               /* STACKED (Figma 269:8778, the default since 2026-10-09). DEMO
                  COUNTS as below. */
               <div style={{ display: 'flex', gap: 8 }}>
@@ -450,7 +482,7 @@ export function AtlasHomeEricWhite({
         states — Default, No, Yes (the calendar), Set — as WIP has it. */}
     {/* 32 from the page (the row's 48, less 16), as WIP's side column sits. */}
     <aside aria-label="State exam" style={{ width: 260, flex: 'none', marginLeft: -16 }}>
-      <AtlasExamDateCard stateName={state} style={{ minHeight: headH }} />
+      <AtlasExamDateCard key={refreshKey} stateName={state} style={{ minHeight: headH }} />
     </aside>
     </div>
   )
@@ -934,6 +966,27 @@ const NEXT_PILL: CSSProperties = {
   lineHeight: '14px',
   color: 'var(--color-primary-500)',
   whiteSpace: 'nowrap',
+}
+
+/** White's two link tiles (Stacked / Inline) — off since 2026-10-12. */
+const SHOW_TWO_LINK_TILES: boolean = false
+
+/* White's single certificates tile: the stacked tile's surface, laid out as a
+   row — icon and label side by side, centred vertically, from the left. */
+const WHITE_CERT_TILE: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  // Left-aligned, 24 in (2026-10-12, Eric's request; it was centred).
+  justifyContent: 'flex-start',
+  gap: 12,
+  width: '100%',
+  padding: '12px 16px 12px 24px',
+  boxSizing: 'border-box',
+  borderRadius: 20,
+  border: 'none',
+  background: 'var(--color-primary-100)',
+  transition: 'filter 150ms',
+  cursor: 'pointer',
 }
 
 const V3_STACKED_TILE: CSSProperties = {

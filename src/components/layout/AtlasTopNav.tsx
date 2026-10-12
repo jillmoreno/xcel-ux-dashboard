@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom'
 import { BookOpenRegular, HouseRegular } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { AtlasTopNavCoursesDropdown } from './AtlasTopNavCoursesDropdown'
+import { ATLAS_HOME_REFRESH } from './atlasHomeRefresh'
 
 /**
  * ATLAS TOP NAV (Figma "Atlas-Compass-Global-Navigation" 160:616, 2026-09-30)
@@ -100,7 +101,13 @@ export function AtlasTopNav({ expanding = false }: { expanding?: boolean }) {
         // 1px up, the house's optical centre (2026-10-01, the designer's request).
         icon={<HouseRegular size={12} aria-hidden style={{ position: 'relative', top: -1 }} />}
         current={current === 'home'}
-        onClick={() => navigate(null, null)}
+        // …and the Home cards start over (2026-10-12, Eric's request): WIP's
+        // and White's Homes listen for this and reset Progress, Readiness and
+        // the State Exam card.
+        onClick={() => {
+          navigate(null, null)
+          window.dispatchEvent(new Event(ATLAS_HOME_REFRESH))
+        }}
         links={expanding ? HOME_LINKS : null}
         isCurrentLink={isCurrentLink}
         onLink={(l) => navigate(l.section, l.coursePage ?? null)}
