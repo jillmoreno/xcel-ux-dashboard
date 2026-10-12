@@ -240,7 +240,9 @@ export function AtlasHomeEricV3({
                 disabled={!onBegin}
                 style={HEADER_BUTTON}
               >
-                Begin Course
+                {/* "Resume Course" once the Design bar's Progress is past 0% (2026-10-12,
+                    Eric's request). */}
+                {progressPick === 'not-started' ? 'Begin Course' : 'Resume Course'}
               </button>
             </div>
           </div>
