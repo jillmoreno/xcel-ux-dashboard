@@ -413,7 +413,8 @@ function PlatformShellBody() {
   // V3 has its own Brand control, Global by default (2026-10-09).
   const atlasSkinFlagAll = useFeatureFlag('atlas-brand-skin')
   const atlasSkinFlagV3 = useFeatureFlag('atlas-brand-skin-v3')
-  const atlasSkinFlag = params.get('version') === 'eric-atlas-v3' ? atlasSkinFlagV3 : atlasSkinFlagAll
+  // …and Eric/Atlas White, WIP's duplicate (2026-10-12), shares it.
+  const atlasSkinFlag = ['eric-atlas-v3', 'eric-atlas-white'].includes(params.get('version') ?? '') ? atlasSkinFlagV3 : atlasSkinFlagAll
   const atlasSkin = atlasSkinFor(
     atlasSkinParam && ATLAS_SKINS.some((s) => s.skin === atlasSkinParam)
       ? atlasSkinParam
@@ -988,9 +989,13 @@ function PlatformShellBody() {
         // edge, the same offset the rails pin at. Read by the Atlas home's
         // sticky left column (`LearnerFocusedBand`).
         ['--cre-shell-top' as string]: `${headerBottom}px`,
-        ...(atlasNav && (active === 'dashboard' || active === 'course' || active === 'resources')
-          ? { background: 'var(--color-compass-page)' }
-          : null),
+        // Eric/Atlas White's Home is on WHITE (2026-10-12, Eric's request;
+        // Figma 312:1649) — the course header keeps its own panel.
+        ...(atlasNav && active === 'dashboard' && params.get('version') === 'eric-atlas-white'
+          ? { background: 'var(--color-fixed-light)' }
+          : atlasNav && (active === 'dashboard' || active === 'course' || active === 'resources')
+            ? { background: 'var(--color-compass-page)' }
+            : null),
         display: 'grid',
         /* Rail is a fixed column anchored flush to the viewport's LEFT edge at
            every width (no left filler), so the nav never floats inward on wide
@@ -2127,7 +2132,7 @@ function SectionShell({
            56px off the top of a page nothing was sitting above. */
         /* Eric/Atlas V3's Home sits 24px closer to the header — 32 on top, 56
            on the other sides (2026-10-09, Eric's request). */
-        padding: atlasHome && shellParams.get('version') === 'eric-atlas-v3'
+        padding: atlasHome && ['eric-atlas-v3', 'eric-atlas-white'].includes(shellParams.get('version') ?? '')
           ? '32px 56px 56px'
           : atlasHome || atlasResources
           ? 56

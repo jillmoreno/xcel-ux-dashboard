@@ -265,7 +265,6 @@ export function Header() {
   // `?section=…`, which is a shell address. On the classic routes those links
   // would leave the layout the learner is standing in.
   const showBell = useFeatureFlag('header-notifications').enabled && platformNav
-  const ericAtlasV1 = useFeatureFlag('dashboard-version-eric-atlas-v1').enabled
   // A shell address for one section, keeping every other param (the demo's).
   const atlasSectionHref = (section: string) => {
     const next = new URLSearchParams(search)
@@ -565,23 +564,9 @@ export function Header() {
           open={versionsOpen}
           onClose={closeVersionsPanel}
           versions={
-            /* ⚠ TWO FILTERS, BOTH KEPT (merged 2026-10-05). The AUDIENCE one
-               lists `ready` versions only on the demo site — the picker became
-               reachable by stakeholders when it moved to the demo bar. Eric's
-               V1 gate is narrower and older: that version is hidden from
-               everyone until its own flag is on. They stack; neither replaces
-               the other.
-
-               ⚠ A PLAIN COMMENT INSIDE THE BRACES. A JSX comment in an
-               ATTRIBUTE position is a syntax error, which is how this landed
-               broken the first time — and writing the JSX comment delimiters
-               out here to explain that closed this comment early, which is how
-               it landed broken the second. */
-            ericAtlasV1
-              ? dashboardVersionsForAudience(isPublicGateway())
-              : dashboardVersionsForAudience(isPublicGateway()).filter(
-                  (v) => v.id !== 'eric-atlas-v1',
-                )
+            /* The AUDIENCE filter: `ready` versions only on the demo site.
+               (Eric's V1 gate went with V1, 2026-10-12.) */
+            dashboardVersionsForAudience(isPublicGateway())
           }
           designerTabs
           activeVersionId={

@@ -119,6 +119,8 @@ describe('the owner axis', () => {
       'atlas-heading-font',
       // Joined 2026-10-07 — V2's long-title reference toggle, beside Headings.
       'atlas-home-long-title',
+      // Joined 2026-10-12 — Eric/Atlas White's Static / Dropdown Top Nav.
+      'atlas-white-top-nav',
       // Joined 2026-10-09 — V3's Stacked / Inline link tiles.
       'atlas-v3-link-tiles',
       // Joined 2026-10-09 — V3's own Progress control.
@@ -126,7 +128,6 @@ describe('the owner axis', () => {
       'atlas-home-layout',
       'atlas-xcel-palette',
       'atlas-right-rail-layout',
-      'dashboard-version-eric-atlas-v1',
     ])
     /* ⚠ `prototype-bar-branch-home` IS NOT HIS, deliberately — it arrived on
        the same branch and is prototype-bar chrome rather than Atlas work, so it
@@ -139,7 +140,7 @@ describe('the owner axis', () => {
       DISCOVERABILITY_DASHBOARD_VERSIONS.filter((v) => flagOwner(v) === 'eric').map((v) => v.id),
       // Eric/Atlas V2 joined 2026-10-07 — V1 with its own copy of the Home page.
       // Eric/Atlas WIP (eric-atlas-v3) leads them since 2026-10-12.
-    ).toEqual(['eric-atlas-v3', 'discoverability-atlas-compass-nav', 'eric-atlas-v1', 'eric-atlas-v2'])
+    ).toEqual(['eric-atlas-v3', 'eric-atlas-white', 'discoverability-atlas-compass-nav', 'eric-atlas-v2'])
   })
 
   it('puts Jill first, which is what makes her the default tab', () => {

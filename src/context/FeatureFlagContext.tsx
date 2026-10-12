@@ -1360,7 +1360,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        `?skin=` wins — holds here too. */
     surface: 'design',
     owner: 'eric',
-    versions: ['eric-atlas-v3'],
+    versions: ['eric-atlas-v3', 'eric-atlas-white'],
     group: 'Widgets',
     label: 'Brand',
     description:
@@ -1398,7 +1398,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        Atlas font link shared before today keeps working. */
     surface: 'design',
     owner: 'eric',
-    versions: ['eric-atlas-v1', 'eric-atlas-v2', 'eric-atlas-v3', 'discoverability-atlas-compass-nav'],
+    versions: ['eric-atlas-v1', 'eric-atlas-v2', 'eric-atlas-v3', 'eric-atlas-white', 'discoverability-atlas-compass-nav'],
     group: 'Widgets',
     label: 'Headings',
     description:
@@ -1431,12 +1431,35 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        `AtlasHomeEricV2`, so on any other version this would change nothing. */
     surface: 'design',
     owner: 'eric',
-    versions: ['eric-atlas-v2', 'eric-atlas-v3'],
+    versions: ['eric-atlas-v2', 'eric-atlas-v3', 'eric-atlas-white'],
     group: 'Widgets',
     label: 'Long title',
     description:
       'Shows a deliberately long course title on Eric/Atlas V2\u2019s Home (\u201cNew York Property and Casualty Conversion Course Pre-licensing and Live Review Class\u201d) so a heading face can be judged at its worst wrap. Off: the course\u2019s real title. Display only \u2014 the course behind it is unchanged.',
     defaultEnabled: false,
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-white-top-nav',
+    /* ERIC/ATLAS WHITE's TOP NAV, ON THE DESIGN BAR (2026-10-12, Eric's
+       request). Static — the Top Nav as it is (Home, Course Overview).
+       Dropdown — Figma 323:2001: the second button reads "My Courses" and
+       opens a dropdown (All Courses, then each active course) that picks the
+       course White's Home shows instead of opening the course Overview. Home
+       has no dropdown. White only. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-white'],
+    group: 'Navigation',
+    label: 'Top Nav',
+    description:
+      'Eric/Atlas White\u2019s header buttons. Static (default): Home and Course Overview, as on the other versions. Dropdown (Figma 323:2001): the second button becomes \u201cMy Courses\u201d with a dropdown \u2014 All Courses opens My Courses; each course makes itself the one White\u2019s Home shows.',
+    defaultEnabled: true,
+    defaultVariant: 'static',
+    variants: [
+      { value: 'static', label: 'Static' },
+      { value: 'dropdown', label: 'Dropdown' },
+    ],
     page: 'dashboard-rebrand',
   },
   {
@@ -1449,7 +1472,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        a View link), kept as the alternative. V3 only. */
     surface: 'design',
     owner: 'eric',
-    versions: ['eric-atlas-v3'],
+    versions: ['eric-atlas-v3', 'eric-atlas-white'],
     group: 'Widgets',
     label: 'Link tiles',
     description:
@@ -1473,7 +1496,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        still steps through the states from wherever this put it. */
     surface: 'design',
     owner: 'eric',
-    versions: ['eric-atlas-v3'],
+    versions: ['eric-atlas-v3', 'eric-atlas-white'],
     group: 'Widgets',
     label: 'Progress',
     description:
@@ -2306,19 +2329,6 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
       { value: 'v1', label: 'V1 · Separate cards', description: 'Step 1 and Step 2 as their own cards, Steps 3 and 4 with left rules, the requirements button below.' },
       { value: 'v2', label: 'V2 · One frame', description: 'All four steps and the requirements button inside one frame styled like the Step 2 card.' },
     ],
-    page: 'dashboard-rebrand',
-  },
-  {
-    // "Eric/Atlas V1" as a Dashboard Version (2026-10-02, the designer's
-    // request). ON by default on this branch, so the branch build lists it;
-    // whether it ships is decided at merge (promote-to-prototype).
-    key: 'dashboard-version-eric-atlas-v1',
-    owner: 'eric',
-    group: 'Navigation',
-    label: 'Eric/Atlas V1 dashboard version',
-    description:
-      'Lists "Eric/Atlas V1" in the Dashboard Version picker \u2014 the Atlas/Compass pages under their own name (`?version=eric-atlas-v1`). Off, the entry is hidden from the picker; a link that names it still opens it.',
-    defaultEnabled: true,
     page: 'dashboard-rebrand',
   },
 ]

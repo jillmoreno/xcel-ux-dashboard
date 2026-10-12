@@ -6780,6 +6780,37 @@ a.cre-library-card-title::after {
   outline: 2px solid var(--color-primary-500);
   outline-offset: 2px;
 }
+/* Eric/Atlas White's Top Nav "My Courses" dropdown (AtlasTopNavCoursesDropdown):
+   the frame widens and its list drops in one quick ease, and the drop shadow
+   comes in with it (Figma 323:2002, 0 4 3 at 15%). */
+.cre-atlas-dd {
+  --cre-dd-ms: 180ms;
+  --cre-dd-ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  transition:
+    width var(--cre-dd-ms) var(--cre-dd-ease),
+    box-shadow var(--cre-dd-ms) var(--cre-dd-ease);
+}
+.cre-atlas-dd.is-open {
+  box-shadow: 0 4px 3px rgb(0 0 0 / 0.15);
+}
+.cre-atlas-dd-item:hover > span:first-child {
+  text-decoration: underline;
+}
+@media (prefers-reduced-motion: reduce) {
+  .cre-atlas-dd {
+    --cre-dd-ms: 0ms;
+  }
+}
+/* Eric/Atlas White's left rail: an inactive course goes SemiBold on hover
+   (2026-10-12, Eric's request). The active course is not a button, so it
+   has no hover at all. */
+.cre-white-rail-course {
+  font-weight: 400;
+}
+.cre-white-rail-course:hover,
+.cre-white-rail-course:focus-visible {
+  font-weight: 600;
+}
 /* V3's stacked link tiles: no shadow at rest, the design's 2px drop shadow on
    hover (2026-10-09, Eric's request), 5% darker than the design's 10%. */
 .cre-atlas-link-tile:hover {

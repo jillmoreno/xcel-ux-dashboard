@@ -18,6 +18,7 @@ export type DashboardVersionId =
   | 'eric-atlas-v1'
   | 'eric-atlas-v2'
   | 'eric-atlas-v3'
+  | 'eric-atlas-white'
   | 'discoverability-testing-3'
 /**
  * The rebrand overview's LAYOUT, resolved from `?version=` by `PlatformShell`
@@ -381,7 +382,8 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1: DashboardVersion =
 export const DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V2: DashboardVersion = {
   id: 'eric-atlas-v2',
   owner: 'eric',
-  label: 'Eric/Atlas V2',
+  // Renamed 2026-10-12 (Eric); the id stays `eric-atlas-v2`.
+  label: 'Eric/Atlas Right SB Quick Links',
   createdAt: '2026-10-07',
   modifiedAt: '2026-10-07',
   description:
@@ -404,6 +406,19 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V3: DashboardVersion =
     'Eric\u2019s Atlas/Compass work from 2026-10-07 on: the same pages as Eric/Atlas V2, with its own copy of the Home page (AtlasHomeEricV3), so Home can change here without changing V2 or V1.',
 }
 
+// "Eric/Atlas White" — 2026-10-12, Eric's request: a duplicate of Eric/Atlas
+// WIP, with its own copy of the Home page (`AtlasHomeEricWhite`). Design site
+// only.
+export const DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_WHITE: DashboardVersion = {
+  id: 'eric-atlas-white',
+  owner: 'eric',
+  label: 'Eric/Atlas White',
+  createdAt: '2026-10-12',
+  modifiedAt: '2026-10-12',
+  description:
+    'A duplicate of Eric/Atlas WIP from 2026-10-12, with its own copy of the Home page (AtlasHomeEricWhite) so Home can change here without changing WIP. Shares WIP’s Design-bar controls.',
+}
+
 /** True for the Atlas/Compass Global Navigation version — and for Eric/Atlas
  *  V1, V2 and V3, which are the same pages under their own names (V2's and
  *  V3's Home are their own copies). One helper so the shell and
@@ -413,7 +428,8 @@ export function isAtlasCompassNavVersion(versionId: string | null | undefined): 
     versionId === DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV.id ||
     versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1.id ||
     versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V2.id ||
-    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V3.id
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V3.id ||
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_WHITE.id
   )
 }
 
@@ -504,8 +520,16 @@ export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
   // feat/atlas-compass-global-nav.
   // Eric/Atlas WIP (V3) LEADS Eric's versions (2026-10-12, his request).
   DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V3,
+  // Eric/Atlas White (2026-10-12) — WIP's duplicate, listed right after it.
+  DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_WHITE,
   DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV,
-  DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1,
+  /* ⚠ ERIC/ATLAS V1 TAKEN OFF THE PICKER 2026-10-12 (Eric: "delete Eric/Atlas
+     V1"). The definition above is kept and `?version=eric-atlas-v1` still
+     renders (isAtlasCompassNavVersion). Its picker flag
+     `dashboard-version-eric-atlas-v1` was removed with it. To restore: re-add
+     DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1 here, after Atlas/Compass.
+     It was the Atlas row the DEMO site offered (`maturity: 'ready'`), so the
+     demo picker has no Atlas version until another is marked ready. */
   DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V2,
   DISCOVERABILITY_DASHBOARD_VERSION_LEARNER_FOCUSED,
 ]

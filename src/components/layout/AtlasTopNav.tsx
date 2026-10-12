@@ -1,6 +1,8 @@
 import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { BookOpenRegular, HouseRegular } from '@/icons'
+import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { AtlasTopNavCoursesDropdown } from './AtlasTopNavCoursesDropdown'
 
 /**
  * ATLAS TOP NAV (Figma "Atlas-Compass-Global-Navigation" 160:616, 2026-09-30)
@@ -82,6 +84,11 @@ export function AtlasTopNav({ expanding = false }: { expanding?: boolean }) {
   }
   const isCurrentLink = (l: TopNavLink) =>
     l.section === section && (l.coursePage ? l.coursePage === (coursePage ?? 'overview') : true)
+  // ERIC/ATLAS WHITE's Top Nav = Dropdown (2026-10-12, Eric's request): the
+  // second button is the "My Courses" dropdown instead of Course Overview.
+  // Plain Top Nav only; Home keeps no dropdown.
+  const topNavPick = useFeatureFlag('atlas-white-top-nav').variant
+  const coursesDropdown = !expanding && params.get('version') === 'eric-atlas-white' && topNavPick === 'dropdown'
 
   return (
     <nav aria-label="Global" style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
@@ -95,6 +102,9 @@ export function AtlasTopNav({ expanding = false }: { expanding?: boolean }) {
         isCurrentLink={isCurrentLink}
         onLink={(l) => navigate(l.section, l.coursePage ?? null)}
       />
+      {coursesDropdown ? (
+        <AtlasTopNavCoursesDropdown />
+      ) : (
       <TopNavItem
         // "My Learning" with FA's `book-open` (Regular, the weight of Home's
         // house) — 2026-10-01, the designer's request; it was "Compass
@@ -110,6 +120,7 @@ export function AtlasTopNav({ expanding = false }: { expanding?: boolean }) {
         isCurrentLink={isCurrentLink}
         onLink={(l) => navigate(l.section, l.coursePage ?? null)}
       />
+      )}
     </nav>
   )
 }

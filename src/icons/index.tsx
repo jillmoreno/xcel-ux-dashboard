@@ -157,6 +157,7 @@ import PizzaSliceSvg from './pizza-slice.svg?react'
 import AwardThinSvg from './award-thin.svg?react'
 import BookOpenThinSvg from './book-open-thin.svg?react'
 import BooksThinSvg from './books-thin.svg?react'
+import BooksRegularSvg from './books-regular.svg?react'
 import GemThinSvg from './gem-thin.svg?react'
 import GraduationCapThinSvg from './graduation-cap-thin.svg?react'
 import BadgeCheckThinSvg from './badge-check-thin.svg?react'
@@ -372,6 +373,7 @@ export const PizzaSlice = makeIcon(PizzaSliceSvg)
 export const AwardThin = makeIcon(AwardThinSvg)
 export const BookOpenThin = makeIcon(BookOpenThinSvg)
 export const LibraryThin = makeIcon(BooksThinSvg)
+export const BooksRegular = makeIcon(BooksRegularSvg) // FA: books (regular)
 export const GemThin = makeIcon(GemThinSvg)
 export const GraduationCapThin = makeIcon(GraduationCapThinSvg)
 export const BadgeCheckThin = makeIcon(BadgeCheckThinSvg)

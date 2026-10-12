@@ -99,13 +99,15 @@ describe('the designer tabs over the LIVE catalog', () => {
       />,
     )
     fireEvent.click(screen.getByRole('tab', { name: 'Eric' }))
-    expect(screen.getByText('Eric/Atlas V1')).toBeTruthy()
-    expect(screen.getByText('Eric/Atlas V2')).toBeTruthy()
+    // V1 came off the picker and V2 was renamed on 2026-10-12.
+    expect(screen.queryByText('Eric/Atlas V1')).toBeNull()
+    expect(screen.getByText('Eric/Atlas Right SB Quick Links')).toBeTruthy()
     expect(screen.getByText('Eric/Atlas WIP')).toBeTruthy()
+    expect(screen.getByText('Eric/Atlas White')).toBeTruthy()
     expect(screen.getByText('Atlas/Compass Global Navigation')).toBeTruthy()
     /* The count beside the strip is read off the FILTERED list, so "0 versions"
-       on a populated tab is the exact symptom this pins. Four since
-       2026-10-07, when Eric/Atlas V2 and V3 joined. */
+       on a populated tab is the exact symptom this pins. Four: V1 came off
+       and Eric/Atlas White joined, both 2026-10-12. */
     expect(screen.getByText(/4 versions/)).toBeTruthy()
   })
 
@@ -193,7 +195,7 @@ describe('the shipped versions', () => {
     /* ⚠ AND ERIC/ATLAS V2 since 2026-10-07 — new, so not decided yet; it is
        design-site only until a promotion says otherwise. */
     // (List order: Eric/Atlas WIP leads Eric's versions since 2026-10-12.)
-    expect(unmarked.map((v) => v.id)).toEqual(['eric-atlas-v3', 'discoverability-atlas-compass-nav', 'eric-atlas-v2'])
+    expect(unmarked.map((v) => v.id)).toEqual(['eric-atlas-v3', 'eric-atlas-white', 'discoverability-atlas-compass-nav', 'eric-atlas-v2'])
     /* The gate is now FILTERING, not merely armed — the demo site is short by
        exactly those two, and nothing else moved. */
     expect(dashboardVersionsForAudience(true)).toHaveLength(
@@ -203,7 +205,9 @@ describe('the shipped versions', () => {
        the stakeholder picker; V1 is now the Atlas row stakeholders get, and the
        PARENT is the one held back. Both directions are pinned so neither can
        drift without a failure. */
-    expect(dashboardVersionsForAudience(true).map((v) => v.id)).toContain('eric-atlas-v1')
+    /* ⚠ 2026-10-12: Eric/Atlas V1 came OFF the picker (Eric's request), so the
+       demo site has no Atlas row until another version is marked ready. */
+    expect(dashboardVersionsForAudience(true).map((v) => v.id)).not.toContain('eric-atlas-v1')
     expect(dashboardVersionsForAudience(true).map((v) => v.id)).not.toContain(
       'discoverability-atlas-compass-nav',
     )

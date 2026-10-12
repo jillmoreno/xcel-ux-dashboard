@@ -21,6 +21,7 @@ import { ScheduleExamBanner, StudyJourneyWidget } from '@/components/learning/St
 import { AtlasHomeV2 } from '@/components/compass/AtlasHomeV2'
 import { AtlasHomeEricV2 } from '@/components/compass/AtlasHomeEricV2'
 import { AtlasHomeEricV3 } from '@/components/compass/AtlasHomeEricV3'
+import { AtlasHomeEricWhite } from '@/components/compass/AtlasHomeEricWhite'
 import { HomeNavTileColumn } from '@/components/layout/HomeNavTiles'
 import { HomeTileGrid } from '@/components/layout/HomeTileGrid'
 import { HomeReadinessStub } from '@/components/layout/HomeReadinessStub'
@@ -704,6 +705,8 @@ export function LearnerFocusedBand({
   const ericAtlasV2 = bandParams.get('version') === 'eric-atlas-v2'
   // …and Eric/Atlas V3 its own, a copy of V2's (2026-10-07).
   const ericAtlasV3 = bandParams.get('version') === 'eric-atlas-v3'
+  // …and Eric/Atlas White its own, a copy of V3's (2026-10-12).
+  const ericAtlasWhite = bandParams.get('version') === 'eric-atlas-white'
   /* NOT ON THE ATLAS HOME (merged 2026-10-02): its Study Pace card is part of
      the Atlas design (the brand's hover fill, the Primary 200 stroke), so the
      baseline's hiding flag does not reach it. */
@@ -1247,7 +1250,7 @@ export function LearnerFocusedBand({
      of this band's Atlas arrangement, when `atlas-home-layout` is V2. Fed the
      band's own figures and handlers, so it moves with the same demo controls. */
   if (framedPace && atlasHomeV2 && resume) {
-    const Home = ericAtlasV3 ? AtlasHomeEricV3 : ericAtlasV2 ? AtlasHomeEricV2 : AtlasHomeV2
+    const Home = ericAtlasWhite ? AtlasHomeEricWhite : ericAtlasV3 ? AtlasHomeEricV3 : ericAtlasV2 ? AtlasHomeEricV2 : AtlasHomeV2
     return (
       <Home
         path={path}
