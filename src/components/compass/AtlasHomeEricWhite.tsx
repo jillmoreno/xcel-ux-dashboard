@@ -280,7 +280,10 @@ export function AtlasHomeEricWhite({
 
       {/* ── BELOW IT, Figma 312:1663's layout: a 260 left column of the cards,
           48 to the steps. The cards and how they drive the steps are WIP's. ── */}
-        <div style={{ display: 'flex', gap: 48, alignItems: 'stretch', paddingTop: 24 }}>
+        {/* 32 either side of a vertical rule now (2026-10-12, Eric's request;
+            48 with no rule before). The row stretches, so the rule runs the
+            height of whichever column is taller. */}
+        <div style={{ display: 'flex', gap: 32, alignItems: 'stretch', paddingTop: 24 }}>
           {/* Left: V3's COLUMN, 235 wide — Figma 254:7973 (2026-10-08, Eric's
               request; it was the 200-wide Course progress panel alone). Two
               link tiles (certificates, courses), the Course progress panel
@@ -387,6 +390,8 @@ export function AtlasHomeEricWhite({
             </div>
             )}
           </div>
+
+          <span aria-hidden style={{ width: 1, flex: 'none', alignSelf: 'stretch', background: 'var(--color-primary-100)' }} />
 
           {/* Right: the journey. */}
           <div style={{ flex: '1 1 0', minWidth: 0, maxWidth: 335, paddingTop: 16, display: 'flex', flexDirection: 'column', gap: 24 }}>

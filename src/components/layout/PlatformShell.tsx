@@ -2136,9 +2136,9 @@ function SectionShell({
            56px off the top of a page nothing was sitting above. */
         /* Eric/Atlas V3's Home sits 24px closer to the header — 32 on top, 56
            on the other sides (2026-10-09, Eric's request). */
-        // …and White's 24 a side, for its two rails (2026-10-12).
+        // …and White's 32 a side, for its two rails (2026-10-12; 24 briefly).
         padding: atlasHome && shellParams.get('version') === 'eric-atlas-white'
-          ? '32px 24px 56px'
+          ? '32px 32px 56px'
           : atlasHome && shellParams.get('version') === 'eric-atlas-v3'
           ? '32px 56px 56px'
           : atlasHome || atlasResources
