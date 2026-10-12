@@ -1,4 +1,4 @@
-import { useMemo, type CSSProperties, type ReactNode } from 'react'
+import { useEffect, useMemo, useRef, useState, type CSSProperties, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import {
   AngleRightRegular,
@@ -8,6 +8,7 @@ import {
 } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
 import { AtlasCourseProgressStates, type ProgressStage } from './AtlasCourseProgressStates'
+import { AtlasExamDateCard } from './AtlasExamDateCard'
 import { AtlasReadinessCard } from './AtlasReadinessCard'
 import { useFeatureFlag, useFeatureFlags } from '@/context/FeatureFlagContext'
 import { type AtlasCourseTab } from './AtlasCourseTabs'
@@ -166,6 +167,17 @@ export function AtlasHomeEricWhite({
   // Course progress card, and Step 1 becomes the Congratulations block.
   const completedView = progressPick === 'completed'
   const dropdownNav = useFeatureFlag('atlas-white-top-nav').variant === 'dropdown'
+  // The exam-date card is at least as tall as the course header beside it
+  // (2026-10-12, Eric's request) — measured, so a two-line title still matches.
+  const headRef = useRef<HTMLElement>(null)
+  const [headH, setHeadH] = useState<number | undefined>(undefined)
+  useEffect(() => {
+    const el = headRef.current
+    if (!el || typeof ResizeObserver === 'undefined') return
+    const ro = new ResizeObserver(() => setHeadH(el.offsetHeight))
+    ro.observe(el)
+    return () => ro.disconnect()
+  }, [])
   // Clicking the Course progress card steps the Design bar's Progress itself
   // (2026-10-09, Eric: "trigger the same corresponding screens that the
   // progress dropdown tool does"), so Step 1, Readiness and the Completed view
@@ -213,7 +225,7 @@ export function AtlasHomeEricWhite({
           outer card: the image (130 wide, 8 radius) beside the eyebrow and
           title, then Course Overview under the image and Begin Course at the
           right. The tabs' data still feeds the title and cover. ── */}
-      <section aria-label="Current course" style={WHITE_HEAD}>
+      <section ref={headRef} aria-label="Current course" style={WHITE_HEAD}>
         <div style={{ display: 'flex', gap: 24, alignItems: 'stretch' }}>
           {shownCover ? (
             <span aria-hidden style={WHITE_COVER_FRAME}>
@@ -431,6 +443,13 @@ export function AtlasHomeEricWhite({
           </div>
         </div>
     </div>
+    {/* THE EXAM-DATE CARD in a RIGHT RAIL beside the page (2026-10-12, Eric's
+        request; both Top Nav versions): Figma 224:4118's card with all its
+        states — Default, No, Yes (the calendar), Set — as WIP has it. */}
+    {/* 32 from the page (the row's 48, less 16), as WIP's side column sits. */}
+    <aside aria-label="State exam" style={{ width: 260, flex: 'none', marginLeft: -16 }}>
+      <AtlasExamDateCard stateName={state} style={{ minHeight: headH }} />
+    </aside>
     </div>
   )
 }

@@ -6793,8 +6793,13 @@ a.cre-library-card-title::after {
 .cre-atlas-dd.is-open {
   box-shadow: 0 4px 3px rgb(0 0 0 / 0.15);
 }
-.cre-atlas-dd-item:hover > span:first-child {
-  text-decoration: underline;
+.cre-atlas-dd-item > span:first-child {
+  font-weight: 400;
+}
+/* SemiBold on hover (2026-10-12, Eric's request; it was an underline). */
+.cre-atlas-dd-item:hover > span:first-child,
+.cre-atlas-dd-item:focus-visible > span:first-child {
+  font-weight: 600;
 }
 @media (prefers-reduced-motion: reduce) {
   .cre-atlas-dd {

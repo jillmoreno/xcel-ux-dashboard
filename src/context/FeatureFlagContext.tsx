@@ -1459,6 +1459,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     variants: [
       { value: 'static', label: 'Static' },
       { value: 'dropdown', label: 'Dropdown' },
+      // Home Only (2026-10-12, Eric's request): no second button at all.
+      { value: 'home-only', label: 'Home Only' },
     ],
     page: 'dashboard-rebrand',
   },

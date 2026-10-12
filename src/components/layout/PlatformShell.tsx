@@ -1320,7 +1320,11 @@ function PlatformShellBody() {
              content, player bar and footer fill whatever the rails leave, at
              every rail state — the 1172 cap (arriving with the 2026-10-05
              merge) boxed them into the middle with gaps either side. */
-          ...(topNav && !compassCourseRail ? { maxWidth: 1172, width: '100%', margin: '0 auto' } : null),
+          /* Eric/Atlas White's Home takes the grid's full 1278 (2026-10-12):
+             its left rail, page and exam-date rail need it. */
+          ...(topNav && !compassCourseRail
+            ? { maxWidth: active === 'dashboard' && params.get('version') === 'eric-atlas-white' ? 1278 : 1172, width: '100%', margin: '0 auto' }
+            : null),
         }}
       >
         {homeHeader && !launcher.courseId ? <HomePageHeader /> : null}
@@ -2132,7 +2136,10 @@ function SectionShell({
            56px off the top of a page nothing was sitting above. */
         /* Eric/Atlas V3's Home sits 24px closer to the header — 32 on top, 56
            on the other sides (2026-10-09, Eric's request). */
-        padding: atlasHome && ['eric-atlas-v3', 'eric-atlas-white'].includes(shellParams.get('version') ?? '')
+        // …and White's 24 a side, for its two rails (2026-10-12).
+        padding: atlasHome && shellParams.get('version') === 'eric-atlas-white'
+          ? '32px 24px 56px'
+          : atlasHome && shellParams.get('version') === 'eric-atlas-v3'
           ? '32px 56px 56px'
           : atlasHome || atlasResources
           ? 56

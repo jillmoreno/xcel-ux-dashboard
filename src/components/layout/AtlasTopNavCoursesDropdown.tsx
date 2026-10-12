@@ -17,7 +17,8 @@ import { WHITE_COURSES, WHITE_COURSE_PARAM, WHITE_FIRST_COURSE_ID, whiteCourseFo
  *   each active course → makes itself the course White's Home shows
  *                        (`?whiteCourse=`) and goes to Home
  *
- * The current course reads Medium in Primary 500, as the design marks it.
+ * The course already on the page reads SemiBold in Primary 500 and is not a
+ * link (it was Medium, as the design marks it, until 2026-10-12).
  * Closes on a pick, Escape, or a click outside.
  */
 const OPEN_W = 220
@@ -106,24 +107,43 @@ export function AtlasTopNavCoursesDropdown() {
 }
 
 function Item({ label, current = false, onClick }: { label: string; current?: boolean; onClick: () => void }) {
+  if (current) {
+    /* The course already on the page: Bold in Primary 500 with the chevron,
+       not a link (no hover) — on a Primary 100 band (2026-10-12, Eric's
+       request). The band runs edge to edge inside the frame's stroke (the
+       -16s undo the frame's padding) and from the rule above to the rule
+       below: this row draws no rule of its own, and it reaches 9px past its
+       bottom (the list's 8 gap + the next row's 1px rule) on top, so the next
+       rule is hidden under it. The 9s of padding keep the text where it sat. */
+    return (
+      <li style={CURRENT_BAND}>
+        {/* The chevron marks the CURRENT course now (2026-10-12, Eric's
+            request) — the other items lost theirs. */}
+        <span aria-current="true" style={{ ...ITEM, cursor: 'default', fontWeight: 700, color: 'var(--color-primary-500)' }}>
+          <span style={{ flex: '1 1 0', minWidth: 0 }}>{label}</span>
+          <AngleRightRegular size={13} aria-hidden style={{ flex: 'none', color: 'var(--color-primary-500)' }} />
+        </span>
+      </li>
+    )
+  }
   return (
     <li style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
       <span aria-hidden style={RULE} />
-      <button type="button" aria-current={current ? 'true' : undefined} className="cre-atlas-dd-item" onClick={onClick} style={ITEM}>
-        <span
-          style={{
-            flex: '1 1 0',
-            minWidth: 0,
-            fontWeight: current ? 500 : 400,
-            color: current ? 'var(--color-primary-500)' : 'var(--color-primary-600)',
-          }}
-        >
-          {label}
-        </span>
-        <AngleRightRegular size={13} aria-hidden style={{ flex: 'none', color: 'var(--color-primary-600)' }} />
+      <button type="button" className="cre-atlas-dd-item" onClick={onClick} style={ITEM}>
+        {/* Regular; SemiBold on hover (tokens.css `.cre-atlas-dd-item`). */}
+        <span style={{ flex: '1 1 0', minWidth: 0, color: 'var(--color-primary-600)' }}>{label}</span>
       </button>
     </li>
   )
+}
+const CURRENT_BAND: CSSProperties = {
+  position: 'relative',
+  zIndex: 1,
+  display: 'flex',
+  flexDirection: 'column',
+  margin: '0 -16px -9px',
+  padding: '9px 16px',
+  background: 'var(--color-primary-100)',
 }
 
 /* One white frame, closed or open (Figma 323:2002 / 325:2185): Primary 200
@@ -135,7 +155,10 @@ const FRAME: CSSProperties = {
   left: 0,
   zIndex: 40,
   boxSizing: 'border-box',
-  padding: '0 16px',
+  // No padding of its own: the 16 a side lives on the label and the list, so
+  // the current course's band can reach the frame's edges (2026-10-12) — the
+  // list's wrapper clips to its own box for the open/close animation.
+  padding: 0,
   borderRadius: 8,
   border: '1px solid var(--color-primary-200)',
   background: 'var(--color-fixed-light)',
@@ -145,7 +168,7 @@ const HEAD_BUTTON: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
   height: 26,
-  padding: 0,
+  padding: '0 16px',
   border: 'none',
   background: 'none',
   cursor: 'pointer',
@@ -157,12 +180,13 @@ const HEAD_BUTTON: CSSProperties = {
 }
 const LIST: CSSProperties = {
   margin: 0,
-  padding: '0 0 16px',
+  padding: '0 16px 16px',
+  boxSizing: 'border-box',
   listStyle: 'none',
   display: 'flex',
   flexDirection: 'column',
   gap: 8,
-  width: OPEN_W - 34,
+  width: OPEN_W - 2,
 }
 const RULE: CSSProperties = { display: 'block', height: 1, background: 'var(--color-primary-100)' }
 const ITEM: CSSProperties = {

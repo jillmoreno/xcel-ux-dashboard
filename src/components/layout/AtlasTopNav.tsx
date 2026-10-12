@@ -88,7 +88,10 @@ export function AtlasTopNav({ expanding = false }: { expanding?: boolean }) {
   // second button is the "My Courses" dropdown instead of Course Overview.
   // Plain Top Nav only; Home keeps no dropdown.
   const topNavPick = useFeatureFlag('atlas-white-top-nav').variant
-  const coursesDropdown = !expanding && params.get('version') === 'eric-atlas-white' && topNavPick === 'dropdown'
+  const whiteNav = !expanding && params.get('version') === 'eric-atlas-white'
+  const coursesDropdown = whiteNav && topNavPick === 'dropdown'
+  // …and Home Only (2026-10-12): the Course Overview button is not drawn.
+  const homeOnly = whiteNav && topNavPick === 'home-only'
 
   return (
     <nav aria-label="Global" style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
@@ -102,7 +105,7 @@ export function AtlasTopNav({ expanding = false }: { expanding?: boolean }) {
         isCurrentLink={isCurrentLink}
         onLink={(l) => navigate(l.section, l.coursePage ?? null)}
       />
-      {coursesDropdown ? (
+      {homeOnly ? null : coursesDropdown ? (
         <AtlasTopNavCoursesDropdown />
       ) : (
       <TopNavItem
