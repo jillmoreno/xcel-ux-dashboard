@@ -395,7 +395,9 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V2: DashboardVersion =
 export const DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V3: DashboardVersion = {
   id: 'eric-atlas-v3',
   owner: 'eric',
-  label: 'Eric/Atlas V3',
+  // Shown as "Eric/Atlas WIP" since 2026-10-12 (Eric); the id stays
+  // `eric-atlas-v3` so every ?version= link keeps working.
+  label: 'Eric/Atlas WIP',
   createdAt: '2026-10-07',
   modifiedAt: '2026-10-07',
   description:
@@ -500,10 +502,11 @@ export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
   // Atlas/Compass (and Eric/Atlas V1, behind `dashboard-version-eric-atlas-v1`
   // — the Header filters it out of the picker when the flag is off) come from
   // feat/atlas-compass-global-nav.
+  // Eric/Atlas WIP (V3) LEADS Eric's versions (2026-10-12, his request).
+  DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V3,
   DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV,
   DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1,
   DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V2,
-  DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V3,
   DISCOVERABILITY_DASHBOARD_VERSION_LEARNER_FOCUSED,
 ]
 

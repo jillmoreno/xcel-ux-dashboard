@@ -255,13 +255,14 @@ describe('the QE Focused version is ARCHIVED but still reachable', () => {
          at all, so the two Atlas versions queue BEHIND it rather than being
          appended next to Testing where the branch had them. */
       'discoverability-testing-3',
+      // Eric/Atlas WIP (eric-atlas-v3) leads Eric's versions since 2026-10-12.
+      'eric-atlas-v3',
       // From feat/atlas-compass-global-nav: Atlas/Compass, and Eric/Atlas V1
       // behind its flag (the Header filters it).
       'discoverability-atlas-compass-nav',
       'eric-atlas-v1',
       // Eric/Atlas V2 (2026-10-07) — V1 with its own copy of the Home page.
       'eric-atlas-v2',
-      'eric-atlas-v3',
       'discoverability-learner-focused',
     ])
     expect(DISCOVERABILITY_DASHBOARD_VERSIONS.map((v) => v.id)).not.toContain(
@@ -423,8 +424,11 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
        the lineage rule that says a version lists directly after its parent.
        Anchored to Testing 3 rather than to a number so the next version added
        between them moves this assertion rather than silently satisfying it. */
+    /* ⚠ 2026-10-12: Eric/Atlas WIP (eric-atlas-v3) now leads Eric's
+       versions, so it sits between Testing 3 and this one. */
+    expect(ids.indexOf('eric-atlas-v3')).toBe(ids.indexOf('discoverability-testing-3') + 1)
     expect(ids.indexOf('discoverability-atlas-compass-nav')).toBe(
-      ids.indexOf('discoverability-testing-3') + 1,
+      ids.indexOf('discoverability-testing-3') + 2,
     )
     expect(DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV.label).toBe(
       'Atlas/Compass Global Navigation',

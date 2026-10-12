@@ -138,7 +138,8 @@ describe('the owner axis', () => {
     expect(
       DISCOVERABILITY_DASHBOARD_VERSIONS.filter((v) => flagOwner(v) === 'eric').map((v) => v.id),
       // Eric/Atlas V2 joined 2026-10-07 — V1 with its own copy of the Home page.
-    ).toEqual(['discoverability-atlas-compass-nav', 'eric-atlas-v1', 'eric-atlas-v2', 'eric-atlas-v3'])
+      // Eric/Atlas WIP (eric-atlas-v3) leads them since 2026-10-12.
+    ).toEqual(['eric-atlas-v3', 'discoverability-atlas-compass-nav', 'eric-atlas-v1', 'eric-atlas-v2'])
   })
 
   it('puts Jill first, which is what makes her the default tab', () => {

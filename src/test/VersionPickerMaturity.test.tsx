@@ -101,7 +101,7 @@ describe('the designer tabs over the LIVE catalog', () => {
     fireEvent.click(screen.getByRole('tab', { name: 'Eric' }))
     expect(screen.getByText('Eric/Atlas V1')).toBeTruthy()
     expect(screen.getByText('Eric/Atlas V2')).toBeTruthy()
-    expect(screen.getByText('Eric/Atlas V3')).toBeTruthy()
+    expect(screen.getByText('Eric/Atlas WIP')).toBeTruthy()
     expect(screen.getByText('Atlas/Compass Global Navigation')).toBeTruthy()
     /* The count beside the strip is read off the FILTERED list, so "0 versions"
        on a populated tab is the exact symptom this pins. Four since
@@ -192,7 +192,8 @@ describe('the shipped versions', () => {
        should have to come through here and say why. */
     /* ⚠ AND ERIC/ATLAS V2 since 2026-10-07 — new, so not decided yet; it is
        design-site only until a promotion says otherwise. */
-    expect(unmarked.map((v) => v.id)).toEqual(['discoverability-atlas-compass-nav', 'eric-atlas-v2', 'eric-atlas-v3'])
+    // (List order: Eric/Atlas WIP leads Eric's versions since 2026-10-12.)
+    expect(unmarked.map((v) => v.id)).toEqual(['eric-atlas-v3', 'discoverability-atlas-compass-nav', 'eric-atlas-v2'])
     /* The gate is now FILTERING, not merely armed — the demo site is short by
        exactly those two, and nothing else moved. */
     expect(dashboardVersionsForAudience(true)).toHaveLength(
