@@ -113,6 +113,7 @@ import { CompassSessionPage } from '@/components/learning/CompassSessionPage'
 import { HomePageHeader } from './HomePageHeader'
 import { AtlasSectionPageHeader } from './AtlasSectionPageHeader'
 import { SectionPageHeader } from './SectionPageHeader'
+import { ATLAS_HEADER_V2_HEIGHT, useAtlasHeaderV2 } from './atlasHeaderV2'
 import { useCompassCourseFigures } from '@/components/learning/compassCourseFigures'
 
 /**
@@ -350,6 +351,10 @@ function PlatformShellBody() {
   const atlasNav = isAtlasCompassNavVersion(
     params.get('version') ?? defaultDiscoverabilityVersionFor(brand),
   )
+  // The two-row Atlas header (2026-10-13): read here, above the mobile
+  // return, for the header height further down. The RAW `?version=`, as
+  // `Header` reads it, so the two cannot disagree.
+  const atlasHeaderV2 = useAtlasHeaderV2(params.get('version'))
   // Nav Version → Expanding Top Nav (2026-10-01, the designer's request): NO
   // left rail on any page — the header's slide-out links carry the navigation.
   // The rail's grid column stays (at 0 / a centring 1fr) so the grid's
@@ -840,7 +845,9 @@ function PlatformShellBody() {
   // The header is 60px on Atlas/Compass (2026-09-24), 72 everywhere else —
   // the same rule `Header` applies. Everything pinned under it (the rails, the
   // Compass player bar, the Rubi rail) reads this, so they move up together.
-  const headerHeight = atlasNav ? 60 : 72
+  // …96 when the two-row Atlas header is up (2026-10-13) — the same
+  // `useAtlasHeaderV2` question `Header` asks, desktop only like it.
+  const headerHeight = atlasHeaderV2 ? ATLAS_HEADER_V2_HEIGHT : atlasNav ? 60 : 72
   const railTop = (chromeOff ? 0 : 40) + headerHeight
   // The header's REAL bottom edge: in the Demo frame the header also sits under
   // the 38px browser-chrome strip (`Header`'s BROWSER_CHROME_H), which

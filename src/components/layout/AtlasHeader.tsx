@@ -1,3 +1,4 @@
+import type { MouseEvent } from 'react'
 import { Bell, ChevronDown, CircleUserLight, FileText, LogOut, Receipt, User } from '@/icons'
 import { AtlasHeaderMenu, AtlasHeaderMenuDivider, AtlasHeaderMenuItem } from './AtlasHeaderMenu'
 import './atlasHeader.css'
@@ -43,6 +44,7 @@ export function AtlasHeader({
   courses,
   links = {},
   onLogout,
+  onNavigate,
 }: {
   /** Which nav pill is filled. */
   current?: 'home' | 'courses' | null
@@ -51,8 +53,22 @@ export function AtlasHeader({
   courses: readonly AtlasHeaderCourse[]
   links?: AtlasHeaderLinks
   onLogout?: () => void
+  /** In an app with a router: called with a link's href instead of a page
+   *  load. Absent, links are plain anchors. */
+  onNavigate?: (href: string) => void
 }) {
   const to = (k: keyof AtlasHeaderLinks) => links[k] ?? '#'
+  // A link's href, routed through `onNavigate` when there is one.
+  const go = (k: keyof AtlasHeaderLinks) => ({
+    href: to(k),
+    onClick: onNavigate
+      ? (e: MouseEvent) => {
+          e.preventDefault()
+          onNavigate(to(k))
+        }
+      : undefined,
+  })
+  const pick = (k: keyof AtlasHeaderLinks) => (onNavigate ? () => onNavigate(to(k)) : undefined)
   return (
     <div className="cre-atlas-hdr">
       {/* EYEBROW */}
@@ -65,29 +81,29 @@ export function AtlasHeader({
         <span aria-hidden style={{ color: 'var(--atlas-hdr-divider-char)' }}>
           |
         </span>
-        <a href={to('help')} className="cre-atlas-hdr-eyebrow-link">
+        <a {...go('help')} className="cre-atlas-hdr-eyebrow-link">
           Help
         </a>
       </div>
 
       {/* MAIN ROW */}
       <header style={MAIN}>
-        <a href={to('home')} className="cre-atlas-hdr-logo" aria-label="XCEL Insurance Training by Colibri — home" style={{ display: 'flex', flex: 'none' }}>
+        <a {...go('home')} className="cre-atlas-hdr-logo" aria-label="XCEL Insurance Training by Colibri — home" style={{ display: 'flex', flex: 'none' }}>
           <img src="/brand/xcel-logo.webp" alt="" width={110} height={40} style={{ display: 'block' }} />
         </a>
 
         <nav aria-label="Primary" style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 32 }}>
-          <a href={to('home')} className="cre-atlas-hdr-pill" aria-current={current === 'home' ? 'page' : undefined}>
+          <a {...go('home')} className="cre-atlas-hdr-pill" aria-current={current === 'home' ? 'page' : undefined}>
             Home
           </a>
-          <AtlasHeaderMenu align="left" trigger="My Courses" panelStyle={COURSES_PANEL}>
+          <AtlasHeaderMenu align="left" trigger="My Courses" selected={current === 'courses'} panelStyle={COURSES_PANEL}>
             {courses.map((c) => (
               <AtlasHeaderMenuItem key={c.id} href={c.href} onSelect={c.onSelect}>
                 {c.title}
               </AtlasHeaderMenuItem>
             ))}
             {courses.length ? <AtlasHeaderMenuDivider /> : null}
-            <AtlasHeaderMenuItem href={to('allCourses')}>View all courses</AtlasHeaderMenuItem>
+            <AtlasHeaderMenuItem href={to('allCourses')} onSelect={pick('allCourses')}>View all courses</AtlasHeaderMenuItem>
           </AtlasHeaderMenu>
         </nav>
 
@@ -125,16 +141,16 @@ export function AtlasHeader({
               <span style={{ fontSize: 12, lineHeight: '16px', fontWeight: 400, color: 'var(--atlas-hdr-email)', whiteSpace: 'nowrap' }}>{user.email}</span>
             </div>
             <AtlasHeaderMenuDivider />
-            <AtlasHeaderMenuItem href={to('profile')} icon={<User size={18} />}>
+            <AtlasHeaderMenuItem href={to('profile')} onSelect={pick('profile')} icon={<User size={18} />}>
               Profile
             </AtlasHeaderMenuItem>
-            <AtlasHeaderMenuItem href={to('notifications')} icon={<Bell size={18} />}>
+            <AtlasHeaderMenuItem href={to('notifications')} onSelect={pick('notifications')} icon={<Bell size={18} />}>
               Notifications
             </AtlasHeaderMenuItem>
-            <AtlasHeaderMenuItem href={to('transcripts')} icon={<FileText size={18} />}>
+            <AtlasHeaderMenuItem href={to('transcripts')} onSelect={pick('transcripts')} icon={<FileText size={18} />}>
               Transcripts
             </AtlasHeaderMenuItem>
-            <AtlasHeaderMenuItem href={to('purchases')} icon={<Receipt size={18} />}>
+            <AtlasHeaderMenuItem href={to('purchases')} onSelect={pick('purchases')} icon={<Receipt size={18} />}>
               My Purchases
             </AtlasHeaderMenuItem>
             <AtlasHeaderMenuDivider />

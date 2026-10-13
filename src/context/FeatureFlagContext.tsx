@@ -1440,6 +1440,25 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-header-v2',
+    /* THE ATLAS HEADER, ON THE DESIGN BAR (2026-10-13, Eric's request:
+       "replace the nav … with the new nav"). On (default), Eric's Atlas
+       versions draw `AtlasHeader` — Figma "Atlas UX Design" 333:594, the
+       two-row header with the eyebrow bar and the My Courses / profile
+       dropdowns — in place of the 60px slim header and its Top Nav. Off, the
+       slim header exactly as it was. Desktop only; Eric's versions only (the
+       list is `ATLAS_HEADER_V2_VERSIONS`, atlasHeaderV2.ts). */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-v2', 'eric-atlas-v3', 'eric-atlas-white'],
+    group: 'Navigation',
+    label: 'Header',
+    description:
+      'The two-row Atlas header (Figma 333:594): an eyebrow bar with English and Help, then the logo, Home, a My Courses dropdown, notifications and a profile dropdown. Off: the 60px slim header with its Top Nav, as before.',
+    defaultEnabled: true,
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-white-top-nav',
     /* ERIC/ATLAS WHITE's TOP NAV, ON THE DESIGN BAR (2026-10-12, Eric's
        request). Static — the Top Nav as it is (Home, Course Overview).

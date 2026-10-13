@@ -39,6 +39,8 @@ import { activePathIdFor, learningPathsFor } from '@/data/learningFixtures'
 import { useDeviceFrame } from './DeviceFrameContext'
 import { useMobileNav } from './MobileNavContext'
 import { AtlasTopNav } from './AtlasTopNav'
+import { AtlasHeaderConnected } from './AtlasHeaderConnected'
+import { useAtlasHeaderV2 } from './atlasHeaderV2'
 
 /** Height of the Demo-frame browser-chrome strip (traffic lights). Shared by
  *  the strip itself + the header's sticky offset so they stay in sync. */
@@ -148,6 +150,12 @@ export function Header() {
      honours a pinned `?nav=` URL), so this asks the same question every other
      navigation reader asks instead of a second one that could disagree. */
   const atlasTopNav = atlasSlimHeader && showsTopNav(navPlacement)
+  /* THE TWO-ROW ATLAS HEADER (2026-10-13, Eric's request) — `atlas-header-v2`,
+     on Eric's Atlas versions, desktop only (it rides `atlasSlimHeader`). It
+     replaces the whole bar below — logo, Top Nav, Resources / Get Help, bell,
+     account menu — and draws its own bottom rule. Off, the bar is untouched.
+     `PlatformShell` asks the same question to pin its rails under it. */
+  const atlasHeaderV2 = useAtlasHeaderV2(rebrandVersion) && atlasSlimHeader
   const headerHeight = atlasSlimHeader ? ATLAS_HEADER_HEIGHT : 72
   const desktopLogoHeight = atlasSlimHeader ? ATLAS_LOGO_HEIGHT : 52
   // Demo frame: the shell renders inside a browser-style window (see
@@ -378,8 +386,9 @@ export function Header() {
            an accent marking a place rather than as a hairline someone
            darkened. Weight and colour move together — either alone is weaker
            than the pair. */
-        borderBottom:
-          courseChrome === 'course'
+        borderBottom: atlasHeaderV2
+          ? 'none'
+          : courseChrome === 'course'
             ? '2px solid var(--color-primary-500)'
             : '1px solid var(--color-border-subtle)',
         // On the rebrand shell the white bar is capped at the 1440 rail+content
@@ -403,6 +412,11 @@ export function Header() {
           logo flush-left over the rail and the utility icons aligned to the
           content's right edge (instead of drifting to the far viewport edge on
           wide screens). */}
+      {atlasHeaderV2 ? (
+        <div inert={noHeaderNav || undefined}>
+          <AtlasHeaderConnected />
+        </div>
+      ) : (
       <div
         // `justify-content` is an inline style, NOT the Tailwind `justify-between`
         // class: that class is used nowhere else, and inside a template literal
@@ -527,6 +541,7 @@ export function Header() {
           {utilities}
         </div>
       </div>
+      )}
       <LearningPathsPanel
         open={pathsOpen}
         // The context selection (set from the rebrand dashboard) takes precedence

@@ -119,6 +119,8 @@ describe('the owner axis', () => {
       'atlas-heading-font',
       // Joined 2026-10-07 — V2's long-title reference toggle, beside Headings.
       'atlas-home-long-title',
+      // Joined 2026-10-13 — the two-row Atlas header, on or off.
+      'atlas-header-v2',
       // Joined 2026-10-12 — Eric/Atlas White's Static / Dropdown Top Nav.
       'atlas-white-top-nav',
       // Joined 2026-10-09 — V3's Stacked / Inline link tiles.

@@ -19,6 +19,7 @@ export function AtlasHeaderMenu({
   trigger,
   triggerLabel,
   align,
+  selected = false,
   panelStyle,
   children,
 }: {
@@ -28,6 +29,8 @@ export function AtlasHeaderMenu({
   triggerLabel?: string
   /** Which trigger edge the panel lines up with. */
   align: 'left' | 'right'
+  /** The trigger names the current page: filled, like a current nav pill. */
+  selected?: boolean
   panelStyle: CSSProperties
   children: ReactNode
 }) {
@@ -81,7 +84,7 @@ export function AtlasHeaderMenu({
       <button
         ref={triggerRef}
         type="button"
-        className="cre-atlas-hdr-pill"
+        className={selected ? 'cre-atlas-hdr-pill is-selected' : 'cre-atlas-hdr-pill'}
         aria-haspopup="menu"
         aria-expanded={open}
         aria-controls={id}
