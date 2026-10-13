@@ -359,6 +359,10 @@ export function AtlasHomeEricV3({
               }
             />
             )}
+            {/* THE EXAM-DATE CARD, between Study Pace and Readiness (2026-10-13,
+                Eric's request; it was in the side column). */}
+            {/* No sub-line on its first screen (2026-10-13, Eric's request). */}
+            <AtlasExamDateCard key={refreshKey} stateName={state} style={RAIL_CARD_BORDER} hideIntroCopy />
             {/* The READINESS card, under the module (Figma 254:8012, 2026-10-08). */}
             {/* On the Completed view it opens on Proficient (2026-10-09, Eric). */}
             {/* Clicking it at Exam Ready takes the page back to Not Started 0%
@@ -511,12 +515,18 @@ export function AtlasHomeEricV3({
         </div>
       </section>
 
-      {/* ── The side column ── */}
-      <div style={{ width: 260, flex: 'none', display: 'flex', flexDirection: 'column', gap: 24 }}>
+      {/* ── The side column — on the LEFT of the course card since 2026-10-13
+          (Eric's request; it was the right). `order` moves it without moving
+          the markup. ── */}
+      {/* 230 (2026-10-13, Eric's request) — 260 before; fitted to Quick Links'
+          content and unbordered for a while that day, then back to the
+          bordered card. */}
+      <div style={{ width: 230, flex: 'none', display: 'flex', flexDirection: 'column', gap: 24, order: -1 }}>
         {/* THE EXAM-DATE CARD — Figma component 224:4118, all four states and
             a working calendar (2026-10-07, Eric's request). FIRST in the rail,
             above Quick Links, since 2026-10-13 (Eric's request). */}
-        <AtlasExamDateCard key={refreshKey} stateName={state} style={RAIL_CARD_BORDER} />
+        {/* The exam-date card left this column for the course card's, between
+            Study Pace and Readiness (2026-10-13, Eric's request). */}
         {/* QUICK LINKS — removed on V3 2026-10-07, BACK 2026-10-13 (Eric's
             request): first with only My Courses and My Certificates, then the
             same day with the three sheet links too (Exam Information, Applying
@@ -526,7 +536,9 @@ export function AtlasHomeEricV3({
           withoutCoursePages
           onOpenStep={onOpenStep}
           onOpenRequirements={onOpenRequirements}
-          style={RAIL_CARD_BORDER}
+          // Outlined in Secondary 100 darkened 5% (2026-10-13, Eric's request;
+          // 15% was tried and reverted); the exam-date card keeps Primary 200.
+          style={{ ...RAIL_CARD_BORDER, border: '1px solid color-mix(in srgb, var(--color-secondary-100) 95%, black)' }}
         />
 
       </div>

@@ -11,14 +11,14 @@ import { ReportingStatus } from './CertificateCard'
  * (`ReportingStatus`) and formats dates the same way, so the two always say
  * the same thing.
  *
- *   status    a full-width Tertiary 100 bar (Tertiary 200 hairline, 20
- *             radius): a Primary 100 "Certificate" pill with the regular
+ *   status    a Tertiary 200 bar (20 radius, no outline — Figma 379:1374,
+ *             the fourth pass): a Primary 100 "Certificate" pill with the regular
  *             file-certificate glyph on the left, the status word on the
  *             right — Figma 375:1311, the design's third pass that day
  *   heading   the title alone, in the serif heading face (Heading 4, 22 / 24)
  *   details   state | hours | requirement, then "Certificate Issued: date"
  *             and "Reporting Status: **value**", all Open Sans 12 / 17
- *   options   the ⋮ circle, 14 in from the bottom right
+ *   options   a 28 Tertiary 200 circle with the ⋮, 4 right of the bar
  *
  * White, 24 padding, 16 radius, no outline. The Figma frame takes its colours
  * from the XCEL skin; they are tokens here, so the card follows the Brand
@@ -73,16 +73,33 @@ export function AtlasCertificateCard({
     >
       {/* The status bar across the top (Figma 379:1368): the Certificate pill
           left, the status word right. */}
-      <div style={STATUS_BAR}>
-        {inProgress ? null : (
-          <span style={PILL}>
-            <span aria-hidden style={{ display: 'inline-flex', justifyContent: 'center', width: 14 }}>
-              <FileCertificateRegular size={13} aria-hidden />
+      <div style={TOP_ROW}>
+        <div style={STATUS_BAR}>
+          {inProgress ? null : (
+            <span style={PILL}>
+              <span aria-hidden style={{ display: 'inline-flex', justifyContent: 'center', width: 14 }}>
+                <FileCertificateRegular size={13} aria-hidden />
+              </span>
+              Certificate
             </span>
-            Certificate
-          </span>
-        )}
-        <span style={STATUS}>{status}</span>
+          )}
+          <span style={STATUS}>{status}</span>
+        </div>
+        {/* The ⋮, beside the bar (Figma 379:1369; it sat in the bottom-right
+            corner until the design's fourth pass). Stops propagation so it
+            never also opens a clickable card. */}
+        <button
+          type="button"
+          aria-label={`Options for ${data.title}`}
+          style={KEBAB}
+          onClick={(e) => {
+            e.stopPropagation()
+            if (onOptions) onOptions(data.id)
+            else console.info('certificate:options', data.id)
+          }}
+        >
+          <MoreVertical size={14} aria-hidden />
+        </button>
       </div>
       <h3 style={TITLE}>{data.title}</h3>
 
@@ -112,19 +129,6 @@ export function AtlasCertificateCard({
         ) : null}
       </div>
 
-      {/* Stops propagation so it never also opens a clickable card. */}
-      <button
-        type="button"
-        aria-label={`Options for ${data.title}`}
-        style={KEBAB}
-        onClick={(e) => {
-          e.stopPropagation()
-          if (onOptions) onOptions(data.id)
-          else console.info('certificate:options', data.id)
-        }}
-      >
-        <MoreVertical size={16} aria-hidden />
-      </button>
     </div>
   )
 }
@@ -147,17 +151,20 @@ const CARD: CSSProperties = {
   background: 'var(--color-surface-card)',
   overflow: 'hidden',
 }
+/* Figma 379:1374 — the bar and the ⋮ beside it, 4 apart. */
+const TOP_ROW: CSSProperties = { display: 'flex', alignItems: 'flex-start', gap: 4 }
 /* Figma 379:1368 — the bar, its pill and the status word. */
 const STATUS_BAR: CSSProperties = {
+  flex: '1 1 0',
+  minWidth: 0,
   display: 'flex',
   alignItems: 'center',
   gap: 8,
-  // The pill's 28 plus the hairline, held without it (an in-progress card).
-  minHeight: 30,
+  // The pill's 28, held without it (an in-progress card).
+  minHeight: 28,
   boxSizing: 'border-box',
   borderRadius: 20,
-  border: '1px solid var(--color-tertiary-200)',
-  background: 'var(--color-tertiary-100)',
+  background: 'var(--color-tertiary-200)',
 }
 const PILL: CSSProperties = {
   flex: 'none',
@@ -183,7 +190,7 @@ const STATUS: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 11,
   lineHeight: '14px',
-  letterSpacing: '-0.065px',
+  letterSpacing: '0.94px',
   textTransform: 'uppercase',
   color: 'var(--color-compass-page-heading)',
   whiteSpace: 'nowrap',
@@ -198,7 +205,7 @@ const TITLE: CSSProperties = {
   letterSpacing: '-0.2px',
   color: 'var(--color-text-primary)',
 }
-const DETAILS: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 7, paddingRight: 32 }
+const DETAILS: CSSProperties = { display: 'flex', flexDirection: 'column', gap: 7 }
 const TEXT: CSSProperties = {
   fontFamily: 'var(--font-body)',
   fontSize: 12,
@@ -210,19 +217,17 @@ const REQUIREMENTS: CSSProperties = { ...TEXT, display: 'flex', alignItems: 'cen
 const DETAIL: CSSProperties = { ...TEXT, display: 'flex', alignItems: 'center', gap: 2 }
 /* Figma's #D1D1D1 hairline — the shared card's separator token. */
 const SEPARATOR: CSSProperties = { width: 1, height: 12, flex: 'none', background: 'var(--color-border-subtle)' }
-/* The shared card's ⋮ circle, 14 in from the bottom right (the design's). */
+/* Figma 379:1369 — a 28 circle in Tertiary 200, the ⋮ in the text colour. */
 const KEBAB: CSSProperties = {
-  position: 'absolute',
-  bottom: 14,
-  right: 14,
-  width: 32,
-  height: 32,
-  borderRadius: '50%',
+  flex: 'none',
+  width: 28,
+  height: 28,
+  borderRadius: 20,
   display: 'inline-flex',
   alignItems: 'center',
   justifyContent: 'center',
-  background: 'var(--color-tertiary-100)',
-  color: 'var(--color-text-secondary)',
+  background: 'var(--color-tertiary-200)',
+  color: 'var(--color-text-primary)',
   border: 'none',
   cursor: 'pointer',
   padding: 0,

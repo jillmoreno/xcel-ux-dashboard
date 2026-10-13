@@ -71,7 +71,17 @@ function monthGrid(year: number, month: number): { date: Date; inMonth: boolean 
   })
 }
 
-export function AtlasExamDateCard({ stateName = 'New York', style }: { stateName?: string; style?: CSSProperties }) {
+export function AtlasExamDateCard({
+  stateName = 'New York',
+  style,
+  hideIntroCopy = false,
+}: {
+  stateName?: string
+  style?: CSSProperties
+  /** The first screen without its sub-line ("Adding your state exam date …")
+   *  — Eric/Atlas WIP, 2026-10-13. The other screens keep theirs. */
+  hideIntroCopy?: boolean
+}) {
   const today = useMemo(() => startOfDay(new Date()), [])
   const [stage, setStage] = useState<Stage>('default')
   const [cameFrom, setCameFrom] = useState<Stage>('default')
@@ -104,7 +114,9 @@ export function AtlasExamDateCard({ stateName = 'New York', style }: { stateName
         <>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <p style={TITLE}>Do you know your state exam date?</p>
-            <p style={COPY}>Adding your state exam date we can help you plan and pass your course easier.</p>
+            {hideIntroCopy ? null : (
+              <p style={COPY}>Adding your state exam date we can help you plan and pass your course easier.</p>
+            )}
           </div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 16 }}>
             <button type="button" className="cre-compass-v2-link" style={TEXT_LINK} onClick={() => setStage('no')}>

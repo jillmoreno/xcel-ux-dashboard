@@ -39,9 +39,12 @@ export type AtlasJourneyLinksCardProps = {
    *  Certificates earlier that day). Off by default: every other host keeps
    *  the full list. */
   withoutCoursePages?: boolean
+  /** A 1px rule under the title, 16 either side as the Readiness card's
+   *  (Eric/Atlas WIP's Home, 2026-10-13). */
+  titleRule?: boolean
 }
 
-export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, withoutCoursePages = false }: AtlasJourneyLinksCardProps) {
+export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, withoutCoursePages = false, titleRule = false }: AtlasJourneyLinksCardProps) {
   const [params, setParams] = useSearchParams()
   /* Which link is the page you are on — the four that are pages; the three
      sheet links never are. */
@@ -67,6 +70,9 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, w
       {/* "Quick Links" since 2026-10-07 (Eric's request); it was "More
           Information for Your Journey" ("Other …" before 2026-10-06). */}
       <p style={TITLE}>Quick Links</p>
+      {/* The card's 16 gap below it; 8 above — the gap less 8 (2026-10-13,
+          Eric's request). */}
+      {titleRule ? <span aria-hidden style={{ ...TITLE_RULE, marginTop: -8 }} /> : null}
       <ul style={{ listStyle: 'none', margin: 0, padding: 0, display: 'flex', flexDirection: 'column', gap: 16 }}>
         {/* Home, first (2026-10-07, Eric's request) — FA house-blank (regular);
             current on the Home page, which has no `section`. HIDDEN "for now"
@@ -129,7 +135,12 @@ function SideLink({
         <span aria-hidden style={{ width: 18, flex: 'none', display: 'inline-flex', justifyContent: 'center', color: 'var(--color-atlas-home-icon, var(--color-compass-page-button))' }}>
           {icon}
         </span>
-        <span style={{ flex: '1 1 0', minWidth: 0, textAlign: 'left' }}>{label}</span>
+        {/* `data-label` feeds a hidden Medium copy (`.cre-quick-link-label`,
+            tokens.css) that holds the hover weight's width, so a card sized to
+            its content does not grow on hover (2026-10-13). */}
+        <span className="cre-quick-link-label" data-label={label} style={{ flex: '1 1 0', minWidth: 0, textAlign: 'left' }}>
+          {label}
+        </span>
         {/* Shown on hover / focus only (2026-10-13, Eric's request) —
             `.cre-quick-link-chevron`, tokens.css. It keeps its space, so the
             row does not shift when it appears. */}
@@ -150,6 +161,8 @@ const SIDE_CARD: CSSProperties = {
   borderRadius: 12,
   border: '1px solid var(--color-atlas-nav-rule)',
 }
+/* The Readiness card's Tertiary 300 hairline. */
+const TITLE_RULE: CSSProperties = { display: 'block', height: 1, background: 'var(--color-tertiary-300)' }
 /* Serif H8 — Home V2's STEP_TITLE. */
 const TITLE: CSSProperties = {
   margin: 0,

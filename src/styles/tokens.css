@@ -1501,6 +1501,23 @@
 .cre-compass-v2-row:focus-visible .cre-quick-link-chevron {
   opacity: 1;
 }
+/* The label RESERVES ITS HOVER WIDTH (2026-10-13, Eric's request): a hidden,
+   zero-height copy at the hover's Medium 500, so a Quick Links card sized to
+   its content keeps one width when a row goes Medium. The `/ ""` keeps the copy
+   out of the accessible name. */
+.cre-quick-link-label {
+  display: inline-flex;
+  flex-direction: column;
+}
+.cre-quick-link-label::after {
+  content: attr(data-label) / '';
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  font-weight: 500;
+  pointer-events: none;
+  user-select: none;
+}
 /* The Atlas left rail's collapse button (AtlasRailToggle, Figma 174:1562).
    Open: the design's outlined frame. Closed: see `.is-closed`. Its slide and
    these changes share the rail's easing (the transition list is inline). */

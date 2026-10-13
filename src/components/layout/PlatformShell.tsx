@@ -2495,14 +2495,16 @@ function MyCoursesSection() {
   return (
     <MyCoursesPage
       embedded
-      aside={atlas ? <AtlasJourneyLinksCard withoutCoursePages={wip} /> : undefined}
-      asideRight={wip}
+      aside={atlas ? <AtlasJourneyLinksCard withoutCoursePages={wip} style={wip ? WIP_QUICK_LINKS : undefined} /> : undefined}
+      // On the LEFT again on WIP (2026-10-13, Eric's request — its Home's
+      // Quick Links moved left the same day); `asideRight` stays available.
+      // …at the Home card's 230 (same day).
       titleStyle={atlas ? ATLAS_PAGE_TITLE : undefined}
       // Atlas: search, the status filter bar and View Archived are hidden — kept
       // for later, not removed (2026-10-06, Eric's request).
       hideListControls={atlas}
       contentWidth={atlas ? ATLAS_MY_COURSES_WIDTH : undefined}
-      asideWidth={ATLAS_MY_COURSES_ASIDE_W}
+      asideWidth={wip ? WIP_QUICK_LINKS_W : ATLAS_MY_COURSES_ASIDE_W}
       // Atlas: the Figma course cards (213:3619) in place of the shared grid.
       cards={
         atlas ? (
@@ -2516,6 +2518,12 @@ function MyCoursesSection() {
     />
   )
 }
+/* Eric/Atlas WIP's Quick Links on My Courses and Certificates — its Home
+   card's (AtlasHomeEricV3): 230 wide, 24 in, outlined in Secondary 100
+   darkened 5%. */
+const WIP_QUICK_LINKS_W = 230
+const WIP_QUICK_LINKS: CSSProperties = { border: '1px solid color-mix(in srgb, var(--color-secondary-100) 95%, black)', padding: 24 }
+
 /* Certificates in the shell. Eric/Atlas WIP drops the page's search, result
    count and filter rail, and status tabs (2026-10-13, Eric's request), and
    takes Quick Links as a right rail at My Courses' width — the shell drops
@@ -2528,9 +2536,10 @@ function CertificatesSection() {
       embedded
       hideSearch
       hideListControls={wip}
-      // 24 all round, as Quick Links on WIP's Home (2026-10-13, Eric's request).
-      aside={wip ? <AtlasJourneyLinksCard withoutCoursePages style={{ padding: 24 }} /> : undefined}
-      asideWidth={ATLAS_MY_COURSES_ASIDE_W}
+      // The Home card's dimensions — 230 wide, 24 in, its Primary 200 outline
+      // (2026-10-13, Eric's request).
+      aside={wip ? <AtlasJourneyLinksCard withoutCoursePages style={WIP_QUICK_LINKS} /> : undefined}
+      asideWidth={WIP_QUICK_LINKS_W}
       contentWidth={wip ? ATLAS_MY_COURSES_WIDTH : undefined}
       // Figma 375:1311's cards (2026-10-13, Eric's request) — and the Life &
       // Health certificate as IN-PROGRESS: WIP's Home has that course under

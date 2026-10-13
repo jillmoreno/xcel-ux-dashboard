@@ -45,8 +45,8 @@ export function CertificatesPage({
    *  2026-10-13, as My Courses' own `hideListControls`). The page shows the
    *  Completed certificates, the default tab, one column wide. */
   hideListControls?: boolean
-  /** A RIGHT rail beside the cards, in place of the filter column (Eric/Atlas
-   *  WIP's Quick Links, 2026-10-13 — as My Courses' `asideRight`). */
+  /** A column LEFT of the cards, in place of the filter column (Eric/Atlas
+   *  WIP's Quick Links, 2026-10-13 — on the right earlier that day). */
   aside?: ReactNode
   asideWidth?: number
   /** Caps the page at this width and centres it (as My Courses). */
@@ -166,7 +166,7 @@ export function CertificatesPage({
         style={{
           display: 'grid',
           gridTemplateColumns: aside
-            ? `minmax(0, 1fr) ${asideWidth}px`
+            ? `${asideWidth}px minmax(0, 1fr)`
             : hideListControls
               ? 'minmax(0, 1fr)'
               : '200px minmax(0, 1fr)',
@@ -175,6 +175,7 @@ export function CertificatesPage({
           marginTop: 24,
         }}
       >
+        {aside ?? null}
         {hideListControls || aside ? null : (
         <aside aria-label="Certificate filters" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--color-text-secondary)' }}>
@@ -277,7 +278,6 @@ export function CertificatesPage({
             </div>
           )}
         </div>
-        {aside ?? null}
       </div>
 
       <CertificateActionPanel open={detailId != null} onClose={() => setDetailId(null)} data={detailRecord} />
