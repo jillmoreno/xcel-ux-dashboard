@@ -8,6 +8,7 @@ import {
 } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
 import { AtlasExamDateCard } from './AtlasExamDateCard'
+import { AtlasJourneyLinksCard } from './AtlasJourneyLinksCard'
 import { ATLAS_HOME_REFRESH } from '@/components/layout/atlasHomeRefresh'
 import { AtlasCourseProgressStates, type ProgressStage } from './AtlasCourseProgressStates'
 import { AtlasReadinessCard } from './AtlasReadinessCard'
@@ -80,6 +81,12 @@ const V3_LEFT_W = 260
  *  request: "add the course tabs back to the top"). */
 const SHOW_COURSE_TABS: boolean = true
 
+/** The two link tiles under the Readiness card (Certificates, Active
+ *  courses) — off on WIP 2026-10-13 (Eric's request: "remove"); the right
+ *  rail's Quick Links carry both. Built, both layouts (the Design bar's Link
+ *  tiles control, which White still uses): set true to bring them back. */
+const SHOW_LINK_TILES: boolean = false
+
 export type AtlasHomeEricV3Props = {
   path: LearningPathSummary
   courseTitle: string
@@ -107,13 +114,6 @@ export type AtlasHomeEricV3Props = {
   onAllCourses?: () => void
 }
 
-/* THE DEMO'S OTHER ACTIVE COURSE (Figma 188:1006). INVENTED — no fixture has a
-   New York P&C course. Choosing its tab swaps the title and cover image only;
-   everything below them (figures, pace, journey) is a DUPLICATE of the Life &
-   Health course's content (2026-10-05, the designer's request). */
-const DEMO_OTHER_COURSES: AtlasCourseTab[] = [
-  { id: 'demo-ny-pc', title: 'New York Property & Casualty', coverUrl: '/courses/ny-property-casualty.webp' },
-]
 
 export function AtlasHomeEricV3({
   path,
@@ -174,10 +174,6 @@ export function AtlasHomeEricV3({
   const progressPick = useFeatureFlag('atlas-v3-progress').variant ?? 'not-started'
   // The Design bar's Link tiles (V3 only, 2026-10-09) — Stacked (default) or Inline.
   const stackedTiles = (useFeatureFlag('atlas-v3-link-tiles').variant ?? 'stacked') !== 'inline'
-  // NO COURSE TABS WHEN THE TOP NAV IS THE DROPDOWN (2026-10-13, Eric's
-  // request): the courses are listed in the header's My Courses dropdown, so
-  // the card's tab bar would be a second list of them.
-  const topNavDropdown = useFeatureFlag('atlas-white-top-nav').variant === 'dropdown'
   const progress = V3_PROGRESS[progressPick] ?? V3_PROGRESS['not-started']
   // COMPLETED (Design bar's Progress = Completed 100%, 2026-10-09, Eric): no
   // Course progress card, and Step 1 becomes the Congratulations block.
@@ -201,23 +197,28 @@ export function AtlasHomeEricV3({
   const advanceProgress = () =>
     setVariant('atlas-v3-progress', V3_PROGRESS_ORDER[(V3_PROGRESS_ORDER.indexOf(progressPick) + 1) % V3_PROGRESS_ORDER.length])
   const currentTitle = longTitle ? V2_LONG_TITLE : courseTitle
-  /* WITH THE TOP NAV'S DROPDOWN, THE DROPDOWN PICKS THE COURSE (2026-10-13,
-     Eric's request: "make the dropdown items change the course content on
-     this page"). White's way: its three courses, the pick riding the URL as
-     `?whiteCourse=`, the title and cover swapping. Otherwise the tab bar
-     picks, as before, from its own two. */
-  const tabs = topNavDropdown
-    ? WHITE_COURSES.map((c, i) => (i === 0 ? { id: c.id, title: currentTitle, coverUrl } : c))
-    : (courses ?? [{ id: path.id, title: currentTitle, coverUrl }, ...DEMO_OTHER_COURSES])
-  const [tabPickId, setActiveTabId] = useState(path.id)
+  /* THE COURSE TABS ARE WHITE'S THREE COURSES (2026-10-13, Eric's request:
+     "Update the course tabs to the 3 used elsewhere") — the list the Top
+     Nav's My Courses dropdown and White's own Home use. The pick rides the
+     URL as `?whiteCourse=`, so the tabs, the dropdown and White agree; a pick
+     swaps the title and cover, and everything below stays the first
+     course's. Until that day the tabs had their own two: Life & Health and
+     an invented "New York Property & Casualty" (Figma 188:1006), picked in
+     page state. */
+  const tabs = courses ?? WHITE_COURSES.map((c, i) => (i === 0 ? { id: c.id, title: currentTitle, coverUrl } : c))
   // Which course-header layout is up — flipped by clicking the cover.
   const [whiteHead, setWhiteHead] = useState(false)
-  const activeTabId = topNavDropdown ? whiteCourseFor(searchParams.get(WHITE_COURSE_PARAM)) : tabPickId
+  const activeTabId = whiteCourseFor(searchParams.get(WHITE_COURSE_PARAM))
   const activeTab = tabs.find((t) => t.id === activeTabId) ?? tabs[0]
   const shownTitle = activeTab?.title ?? currentTitle
   const shownCover = activeTab?.coverUrl ?? coverUrl
   const selectCourse = (id: string) => {
-    setActiveTabId(id)
+    setParams((prev) => {
+      const next = new URLSearchParams(prev)
+      if (id === WHITE_COURSES[0].id) next.delete(WHITE_COURSE_PARAM)
+      else next.set(WHITE_COURSE_PARAM, id)
+      return next
+    })
     onSelectCourse?.(id)
   }
 
@@ -228,8 +229,8 @@ export function AtlasHomeEricV3({
           so the card takes its full 48 on top. The tabs' data stays — the
           title and cover still read the first course — so to bring the strip
           back, set SHOW_COURSE_TABS. */}
-      <section aria-label="Current course" style={SHOW_COURSE_TABS && !topNavDropdown && tabs.length > 1 ? CARD : { ...CARD, paddingTop: 40 }}>
-        {SHOW_COURSE_TABS && !topNavDropdown && tabs.length > 1 ? (
+      <section aria-label="Current course" style={SHOW_COURSE_TABS && tabs.length > 1 ? CARD : { ...CARD, paddingTop: 40 }}>
+        {SHOW_COURSE_TABS && tabs.length > 1 ? (
           <AtlasCourseTabs courses={tabs} activeId={activeTab?.id ?? path.id} onSelect={selectCourse} onAllCourses={onAllCourses ?? (() => go('courses'))} />
         ) : null}
         {/* 32, the row below's gap (2026-10-13, Eric's request), so the title
@@ -347,7 +348,7 @@ export function AtlasHomeEricV3({
             />
             {/* The link tiles at the BOTTOM of the column (2026-10-09, Eric's
                 request; they led it). */}
-            {stackedTiles ? (
+            {!SHOW_LINK_TILES ? null : stackedTiles ? (
               /* STACKED (Figma 269:8778, the default since 2026-10-09). DEMO
                  COUNTS as below. */
               <div style={{ display: 'flex', gap: 8 }}>
@@ -486,12 +487,13 @@ export function AtlasHomeEricV3({
 
       {/* ── The side column ── */}
       <div style={{ width: 260, flex: 'none', display: 'flex', flexDirection: 'column', gap: 24 }}>
-        {/* QUICK LINKS REMOVED on V3 (2026-10-07, Eric's request) — the card
-            (`AtlasJourneyLinksCard`) is unchanged and still drawn by V1, V2 and
-            My Courses; to put it back here, render it above this card again. */}
+        {/* QUICK LINKS — removed on V3 2026-10-07, BACK 2026-10-13 (Eric's
+            request) with only My Courses and My Certificates. Above the
+            exam-date card, where it stood. */}
+        <AtlasJourneyLinksCard coursesAndCertificatesOnly style={RAIL_CARD_BORDER} />
         {/* THE EXAM-DATE CARD — Figma component 224:4118, all four states and
             a working calendar (2026-10-07, Eric's request). */}
-        <AtlasExamDateCard key={refreshKey} stateName={state} />
+        <AtlasExamDateCard key={refreshKey} stateName={state} style={RAIL_CARD_BORDER} />
 
       </div>
     </div>
@@ -636,7 +638,13 @@ const CARD: CSSProperties = {
   gap: 24,
   // 24 on top, not 48 — the course tabs sit above the title (Figma 188:1006).
   // 40 a side and below, 48 until 2026-10-13 (Eric's request).
-  padding: '24px 40px 40px',
+  // 16 above the course tabs (2026-10-13, Eric's request; it was 24). Written
+  // as longhands: the no-tabs case overrides `paddingTop`, and React, moving
+  // between a `padding` shorthand and that longhand, cleared the top to 0.
+  paddingTop: 16,
+  paddingRight: 40,
+  paddingBottom: 40,
+  paddingLeft: 40,
   boxSizing: 'border-box',
   borderRadius: 20, // the inner cards' 20 (2026-10-13, Eric's request); it was 14
   background: 'var(--color-compass-course-card)',
@@ -740,6 +748,10 @@ const WHITE_HEAD_COVER: CSSProperties = {
 }
 /* The cover as the layout toggle: a bare button, the frame's own shape. */
 const COVER_TOGGLE: CSSProperties = { display: 'block', padding: 0, border: 'none', background: 'none', cursor: 'pointer' }
+
+/* The right rail's cards outlined in Primary 200 (2026-10-13, Eric's request)
+   — WIP's own; both cards default to the nav rule elsewhere. */
+const RAIL_CARD_BORDER: CSSProperties = { border: '1px solid var(--color-primary-200)' }
 
 const COVER: CSSProperties = {
   position: 'absolute',

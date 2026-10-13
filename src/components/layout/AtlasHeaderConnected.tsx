@@ -4,6 +4,7 @@ import { useNotifications } from '@/context/NotificationsContext'
 import { useProfileAvatar } from '@/context/ProfileAvatarContext'
 import { WHITE_COURSES, WHITE_COURSE_PARAM, WHITE_FIRST_COURSE_ID } from '@/data/atlasWhiteCourses'
 import { AtlasHeader } from './AtlasHeader'
+import { ATLAS_HOME_REFRESH } from './atlasHomeRefresh'
 
 /**
  * `AtlasHeader` IN THE REBRAND SHELL (2026-10-13) — the standalone header fed
@@ -51,6 +52,7 @@ export function AtlasHeaderConnected() {
     return `/dashboard-rebrand${qs ? `?${qs}` : ''}`
   }
 
+  const home = shell(() => {})
   return (
     <AtlasHeader
       current={current}
@@ -72,7 +74,7 @@ export function AtlasHeaderConnected() {
           ),
       }))}
       links={{
-        home: shell(() => {}),
+        home,
         help: shell((n) => n.set('section', 'support')),
         allCourses: shell((n) => n.set('section', 'courses')),
         profile: shell((n) => n.set('section', 'profile')),
@@ -80,7 +82,17 @@ export function AtlasHeaderConnected() {
         transcripts: shell((n) => n.set('section', 'transcripts')),
         purchases: shell((n) => n.set('section', 'purchases')),
       }}
-      onNavigate={(href) => navigate(href)}
+      onNavigate={(href) => {
+        navigate(href)
+        // HOME ALSO STARTS THE DEMO CARDS OVER (2026-10-13, Eric's request),
+        // as the slim header's Home does: WIP's and White's Homes reset
+        // Progress, Readiness and the State Exam card on this event. The
+        // logo links Home too, so it resets them as well.
+        if (href === home) window.dispatchEvent(new Event(ATLAS_HOME_REFRESH))
+      }}
+      // No My Courses in the shell (2026-10-13, Eric's request): the course
+      // card's tabs pick the course. The standalone preview keeps it.
+      showCourses={false}
     />
   )
 }

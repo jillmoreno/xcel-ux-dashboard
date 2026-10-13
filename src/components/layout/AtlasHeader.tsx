@@ -45,6 +45,7 @@ export function AtlasHeader({
   links = {},
   onLogout,
   onNavigate,
+  showCourses = true,
 }: {
   /** Which nav pill is filled. */
   current?: 'home' | 'courses' | null
@@ -56,6 +57,8 @@ export function AtlasHeader({
   /** In an app with a router: called with a link's href instead of a page
    *  load. Absent, links are plain anchors. */
   onNavigate?: (href: string) => void
+  /** The My Courses dropdown. Off, the nav is Home alone. */
+  showCourses?: boolean
 }) {
   const to = (k: keyof AtlasHeaderLinks) => links[k] ?? '#'
   // A link's href, routed through `onNavigate` when there is one.
@@ -96,6 +99,7 @@ export function AtlasHeader({
           <a {...go('home')} className="cre-atlas-hdr-pill" aria-current={current === 'home' ? 'page' : undefined}>
             Home
           </a>
+          {showCourses ? (
           <AtlasHeaderMenu align="left" trigger="My Courses" selected={current === 'courses'} panelStyle={COURSES_PANEL}>
             {courses.map((c) => (
               <AtlasHeaderMenuItem key={c.id} href={c.href} onSelect={c.onSelect}>
@@ -105,6 +109,7 @@ export function AtlasHeader({
             {courses.length ? <AtlasHeaderMenuDivider /> : null}
             <AtlasHeaderMenuItem href={to('allCourses')} onSelect={pick('allCourses')}>View all courses</AtlasHeaderMenuItem>
           </AtlasHeaderMenu>
+          ) : null}
         </nav>
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginLeft: 'auto' }}>
