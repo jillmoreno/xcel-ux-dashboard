@@ -374,10 +374,13 @@ function PlatformShellBody() {
      difference between his two top-nav arms, so it survives the unification
      rather than being flattened into "top means no rail". (My Courses is
      exempt from the asymmetry: no rail under `top` either.) */
+  // …and Eric/Atlas WIP's CERTIFICATES (2026-10-13, Eric's request): no rail,
+  // Quick Links at the right of the cards, as its My Courses.
+  const wipCertificates = active === 'certificates' && params.get('version') === 'eric-atlas-v3'
   const atlasNoRail =
     atlasNav &&
     (navPlacement === 'expanding-top' ||
-      (navPlacement === 'top' && (active === 'dashboard' || active === 'courses')))
+      (navPlacement === 'top' && (active === 'dashboard' || active === 'courses' || wipCertificates)))
   // Wherever an Atlas rail is drawn it can collapse; collapsed, its column is
   // the toggle's own width, so only that frame stays at the left edge.
   const atlasRailToggle = atlasNav && !atlasNoRail
@@ -1354,7 +1357,7 @@ function PlatformShellBody() {
               title={SECTION_TITLES[active]}
               onBack={() => handleSelect('dashboard')}
               // My Courses centres its content; the header follows it.
-              contentWidth={active === 'courses' ? ATLAS_MY_COURSES_WIDTH : undefined}
+              contentWidth={active === 'courses' || wipCertificates ? ATLAS_MY_COURSES_WIDTH : undefined}
             />
           ) : (
           <SectionPageHeader
@@ -2513,6 +2516,31 @@ function MyCoursesSection() {
     />
   )
 }
+/* Certificates in the shell. Eric/Atlas WIP drops the page's search, result
+   count and filter rail, and status tabs (2026-10-13, Eric's request), and
+   takes Quick Links as a right rail at My Courses' width — the shell drops
+   its left rail there (`wipCertificates`). The other versions keep all. */
+function CertificatesSection() {
+  const [params] = useSearchParams()
+  const wip = params.get('version') === 'eric-atlas-v3'
+  return (
+    <CertificatesPage
+      embedded
+      hideSearch
+      hideListControls={wip}
+      // 24 all round, as Quick Links on WIP's Home (2026-10-13, Eric's request).
+      aside={wip ? <AtlasJourneyLinksCard withoutCoursePages style={{ padding: 24 }} /> : undefined}
+      asideWidth={ATLAS_MY_COURSES_ASIDE_W}
+      contentWidth={wip ? ATLAS_MY_COURSES_WIDTH : undefined}
+      // Figma 375:1311's cards (2026-10-13, Eric's request) — and the Life &
+      // Health certificate as IN-PROGRESS: WIP's Home has that course under
+      // way, so its certificate is not earned yet.
+      atlasCards={wip}
+      inProgressIds={wip ? ['cert-xcel-lh-prelicense'] : undefined}
+    />
+  )
+}
+
 /* The Compass serif page title — Serif H4, as the Resources page's heading. */
 const ATLAS_PAGE_TITLE: CSSProperties = {
   fontFamily: 'var(--font-heading-serif)',
@@ -2616,7 +2644,7 @@ function renderBody(
   // Atlas: the journey-links card from Home V2 in place of the filter column
   // (2026-10-05, the designer's request).
   if (active === 'courses') return <MyCoursesSection />
-  if (active === 'certificates') return <CertificatesPage embedded hideSearch />
+  if (active === 'certificates') return <CertificatesSection />
   // Recommended for You — the Netflix-style personalized recommendation shelves
   // (reused from the V1 Membership "Recommended for you" tab — For your license
   // / Required CE / Fresh in the catalog / Quick wins, each a horizontal-scroll

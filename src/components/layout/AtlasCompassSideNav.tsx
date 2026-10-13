@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import type { PlatformSection } from './PlatformSideNav'
 import { ATLAS_RAIL_GROUPS } from './dashboardRail'
 
@@ -47,6 +48,12 @@ export function AtlasCompassSideNav({
   active: PlatformSection
   onSelect: (id: PlatformSection) => void
 }) {
+  /* Eric/Atlas WIP reads plain "Certificates" (2026-10-13, Eric's request:
+     remove "& Transcripts"); every other version keeps the design's label. */
+  const [params] = useSearchParams()
+  const wip = params.get('version') === 'eric-atlas-v3'
+  const labelFor = (item: { id: PlatformSection; label: string }) =>
+    wip && item.id === 'certificates' ? 'Certificates' : item.label
   return (
     <nav aria-label="Primary" style={NAV}>
       {ATLAS_RAIL_GROUPS.map((group, gi) => {
@@ -70,7 +77,7 @@ export function AtlasCompassSideNav({
                       onClick={() => onSelect(item.id)}
                       style={ROW}
                     >
-                      {item.label}
+                      {labelFor(item)}
                     </button>
                   </li>
                 )

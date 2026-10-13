@@ -196,8 +196,9 @@ export function CertificateCard({
   )
 }
 
-/** The "Reporting Status" line value — one of three variants. */
-function ReportingStatus({ reporting }: { reporting: CertReporting }) {
+/** The "Reporting Status" line value — one of three variants. Exported for
+ *  `AtlasCertificateCard`, so the two cards always read the same. */
+export function ReportingStatus({ reporting }: { reporting: CertReporting }) {
   if (reporting.status === 'reported') {
     return <>Reported {formatDate(reporting.date)}</>
   }
