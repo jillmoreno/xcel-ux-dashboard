@@ -34,12 +34,14 @@ export type AtlasJourneyLinksCardProps = {
   onOpenStep?: (id: string) => void
   onOpenRequirements?: () => void
   style?: CSSProperties
-  /** Only My Courses and My Certificates (Eric/Atlas WIP's right rail,
-   *  2026-10-13). Off by default: every other host keeps the full list. */
-  coursesAndCertificatesOnly?: boolean
+  /** Without Flashcards and Exam Simulator — the course's own pages (Eric/Atlas
+   *  WIP's right rail, 2026-10-13; it showed only My Courses and My
+   *  Certificates earlier that day). Off by default: every other host keeps
+   *  the full list. */
+  withoutCoursePages?: boolean
 }
 
-export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, coursesAndCertificatesOnly = false }: AtlasJourneyLinksCardProps) {
+export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, withoutCoursePages = false }: AtlasJourneyLinksCardProps) {
   const [params, setParams] = useSearchParams()
   /* Which link is the page you are on — the four that are pages; the three
      sheet links never are. */
@@ -73,13 +75,15 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, c
           <SideLink icon={<HouseBlankRegular size={13} aria-hidden />} label="Home" active={section == null} onClick={() => go(null)} />
         ) : null}
         <SideLink icon={<BookRegular size={13} aria-hidden />} label="My Courses" active={here('courses')} onClick={() => go('courses')} />
-        {/* 15% larger in WIP's two-link card (2026-10-13, Eric's request): 15,
-            not 13 — the wide certificate glyph read small beside the book. */}
-        <SideLink icon={<FileCertificateRegular size={coursesAndCertificatesOnly ? 15 : 13} aria-hidden />} label="My Certificates" active={here('certificates')} onClick={() => go('certificates')} />
-        {coursesAndCertificatesOnly ? null : (
+        {/* 15% larger in WIP's card (2026-10-13, Eric's request): 15, not 13 —
+            the wide certificate glyph read small beside the book. */}
+        <SideLink icon={<FileCertificateRegular size={withoutCoursePages ? 15 : 13} aria-hidden />} label="My Certificates" active={here('certificates')} onClick={() => go('certificates')} />
+        {withoutCoursePages ? null : (
         <>
         <SideLink icon={<NotebookRegular size={13} aria-hidden />} label="Flashcards" active={here('course', 'flashcards')} onClick={() => go('course', { coursePage: 'flashcards' })} />
         <SideLink icon={<BallotCheckRegular size={13} aria-hidden />} label="Exam Simulator" active={here('course', 'exam-simulator')} onClick={() => go('course', { coursePage: 'exam-simulator' })} />
+        </>
+        )}
         <SideLink
           icon={<CircleInfoRegular size={13} aria-hidden />}
           label="Exam Information"
@@ -95,8 +99,6 @@ export function AtlasJourneyLinksCard({ onOpenStep, onOpenRequirements, style, c
           label="State Requirements"
           onClick={onOpenRequirements ?? homeAndOpen('requirements')}
         />
-        </>
-        )}
       </ul>
     </nav>
   )

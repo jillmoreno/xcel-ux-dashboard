@@ -487,13 +487,21 @@ export function AtlasHomeEricV3({
 
       {/* ── The side column ── */}
       <div style={{ width: 260, flex: 'none', display: 'flex', flexDirection: 'column', gap: 24 }}>
-        {/* QUICK LINKS — removed on V3 2026-10-07, BACK 2026-10-13 (Eric's
-            request) with only My Courses and My Certificates. Above the
-            exam-date card, where it stood. */}
-        <AtlasJourneyLinksCard coursesAndCertificatesOnly style={RAIL_CARD_BORDER} />
         {/* THE EXAM-DATE CARD — Figma component 224:4118, all four states and
-            a working calendar (2026-10-07, Eric's request). */}
+            a working calendar (2026-10-07, Eric's request). FIRST in the rail,
+            above Quick Links, since 2026-10-13 (Eric's request). */}
         <AtlasExamDateCard key={refreshKey} stateName={state} style={RAIL_CARD_BORDER} />
+        {/* QUICK LINKS — removed on V3 2026-10-07, BACK 2026-10-13 (Eric's
+            request): first with only My Courses and My Certificates, then the
+            same day with the three sheet links too (Exam Information, Applying
+            for a License, State Requirements) — everything but the course's
+            own Flashcards and Exam Simulator. The sheets open here, in place. */}
+        <AtlasJourneyLinksCard
+          withoutCoursePages
+          onOpenStep={onOpenStep}
+          onOpenRequirements={onOpenRequirements}
+          style={RAIL_CARD_BORDER}
+        />
 
       </div>
     </div>
