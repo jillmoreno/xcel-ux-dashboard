@@ -210,6 +210,8 @@ export function AtlasHomeEricV3({
     ? WHITE_COURSES.map((c, i) => (i === 0 ? { id: c.id, title: currentTitle, coverUrl } : c))
     : (courses ?? [{ id: path.id, title: currentTitle, coverUrl }, ...DEMO_OTHER_COURSES])
   const [tabPickId, setActiveTabId] = useState(path.id)
+  // Which course-header layout is up — flipped by clicking the cover.
+  const [whiteHead, setWhiteHead] = useState(false)
   const activeTabId = topNavDropdown ? whiteCourseFor(searchParams.get(WHITE_COURSE_PARAM)) : tabPickId
   const activeTab = tabs.find((t) => t.id === activeTabId) ?? tabs[0]
   const shownTitle = activeTab?.title ?? currentTitle
@@ -232,11 +234,31 @@ export function AtlasHomeEricV3({
         ) : null}
         {/* 32, the row below's gap (2026-10-13, Eric's request), so the title
             block starts on the vertical rule under it; it was 40. */}
+        {/* TWO HEADER LAYOUTS, FLIPPED BY CLICKING THE IMAGE (2026-10-13,
+            Eric's request): this one — the 260 cover beside the title and both
+            buttons — and Eric/Atlas White's (`WhiteStyleHead`, below), which
+            gives the title the card's width over a 130 cover. A live demo
+            toggle, like the Study Pace and Readiness cards' own. */}
+        {whiteHead ? (
+          <WhiteStyleHead
+            cover={shownCover ?? undefined}
+            title={shownTitle}
+            onCover={() => setWhiteHead(false)}
+            onOverview={onOverview}
+            onBegin={onBegin}
+            beginLabel={progressPick === 'not-started' ? 'Begin Course' : 'Resume Course'}
+          />
+        ) : (
         <div style={{ display: 'flex', gap: 32, alignItems: 'stretch' }}>
           {shownCover ? (
-            <span aria-hidden style={COVER_FRAME}>
+            <button
+              type="button"
+              aria-label="Course header — layout 1 of 2. Press to show the next layout."
+              onClick={() => setWhiteHead(true)}
+              style={{ ...COVER_FRAME, ...COVER_TOGGLE }}
+            >
               <img src={shownCover} alt="" style={COVER} />
-            </span>
+            </button>
           ) : null}
           <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 15, justifyContent: 'center' }}>
             <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -275,6 +297,7 @@ export function AtlasHomeEricV3({
             </div>
           </div>
         </div>
+        )}
 
         <span aria-hidden style={RULE} />
 
@@ -636,6 +659,88 @@ const COVER_FRAME: CSSProperties = {
   borderRadius: 20, // the cards' 20 (2026-10-09, Eric; it was 8)
   overflow: 'hidden',
 }
+/**
+ * ERIC/ATLAS WHITE'S COURSE HEADER, INSIDE WIP'S CARD (2026-10-13) — Figma
+ * 312:1650's arrangement as White draws it (`AtlasHomeEricWhite`), without
+ * White's Primary 100 panel, since it sits in this card: a 130 cover beside
+ * the eyebrow and title (bottom-aligned), then Course Overview under the cover
+ * at its width and Begin Course at the right. The title has the card's width
+ * less the cover, so a long one wraps less. Clicking the cover flips back.
+ */
+function WhiteStyleHead({
+  cover,
+  title,
+  onCover,
+  onOverview,
+  onBegin,
+  beginLabel,
+}: {
+  cover?: string
+  title: string
+  onCover: () => void
+  onOverview?: () => void
+  onBegin?: () => void
+  beginLabel: string
+}) {
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+      <div style={{ display: 'flex', gap: 24, alignItems: 'stretch' }}>
+        {cover ? (
+          <button
+            type="button"
+            aria-label="Course header — layout 2 of 2. Press to show the next layout."
+            onClick={onCover}
+            style={{ ...WHITE_HEAD_COVER, ...COVER_TOGGLE }}
+          >
+            <img src={cover} alt="" style={COVER} />
+          </button>
+        ) : null}
+        <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 8, justifyContent: 'flex-end' }}>
+          <p style={EYEBROW}>Current course:</p>
+          <h2 className="cre-compass-course-title cre-atlas-home-course-title cre-atlas-home-v2-course-title" style={TITLE}>
+            {title}
+          </h2>
+        </div>
+      </div>
+      <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
+        {onOverview ? (
+          <button
+            type="button"
+            className="cre-compass-secondary cre-atlas-home-secondary"
+            onClick={onOverview}
+            style={{ ...HEADER_BUTTON, fontWeight: 500, width: 130, flex: 'none' }}
+          >
+            Course Overview
+          </button>
+        ) : null}
+        <div style={{ flex: '1 1 0', display: 'flex', justifyContent: 'flex-end' }}>
+          <button
+            type="button"
+            className="cre-compass-primary cre-compass-btn-primary"
+            onClick={onBegin}
+            disabled={!onBegin}
+            style={HEADER_BUTTON}
+          >
+            {beginLabel}
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+}
+/* White's cover (130 wide, at least 105 tall, 8 radius). */
+const WHITE_HEAD_COVER: CSSProperties = {
+  position: 'relative',
+  width: 130,
+  minHeight: 105,
+  flex: 'none',
+  alignSelf: 'stretch',
+  borderRadius: 8,
+  overflow: 'hidden',
+}
+/* The cover as the layout toggle: a bare button, the frame's own shape. */
+const COVER_TOGGLE: CSSProperties = { display: 'block', padding: 0, border: 'none', background: 'none', cursor: 'pointer' }
+
 const COVER: CSSProperties = {
   position: 'absolute',
   inset: 0,
