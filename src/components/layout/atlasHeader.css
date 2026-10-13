@@ -1,0 +1,110 @@
+/*
+ * ATLAS HEADER — scoped styles (2026-10-13). Imported by `AtlasHeader.tsx`
+ * only; every rule is under `.cre-atlas-hdr`, so nothing here reaches the
+ * rest of the app.
+ *
+ * The header's colours are its own variables, declared on the root element
+ * rather than in tokens.css, so adding the header changes no existing token.
+ * The one exact match in tokens.css — the maroon badge, `--color-cta-500` —
+ * is reused rather than repeated.
+ *
+ * Fixed values, not themed: the design has no dark treatment yet.
+ */
+.cre-atlas-hdr {
+  --atlas-hdr-navy: #31485c; /* nav text, icons, eyebrow links */
+  --atlas-hdr-tint: #eceff1; /* selected / hover pill, eyebrow bar, avatar placeholder */
+  --atlas-hdr-badge: var(--color-cta-500); /* #9a1b1e — notification count */
+  --atlas-hdr-surface: #ffffff; /* main row, dropdowns */
+  --atlas-hdr-rule: #dcdcdc; /* main row bottom border, profile dropdown border */
+  --atlas-hdr-divider-char: #8c8c8c; /* the eyebrow "|" */
+  --atlas-hdr-item-ink: #282828; /* dropdown item text */
+  --atlas-hdr-item-icon: #505050; /* dropdown item icons */
+  --atlas-hdr-menu-rule: #c8c8c8; /* dropdown dividers, My Courses border */
+  --atlas-hdr-item-hover: #ebebeb; /* dropdown row hover */
+  --atlas-hdr-name: #191919; /* profile name in the dropdown */
+  --atlas-hdr-email: #2980b9; /* profile email in the dropdown */
+  --atlas-hdr-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  --atlas-hdr-ms: 150ms;
+
+  font-family: var(--font-body);
+  color: var(--atlas-hdr-navy);
+}
+
+/* The pill every interactive item in the main row shares. */
+.cre-atlas-hdr .cre-atlas-hdr-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-sizing: border-box;
+  height: 30px;
+  padding: 0 12px;
+  /* Transparent, as the reference draws it: it adds 1px a side to the
+     pill's width and offsets the badge by the same. */
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background-color: transparent;
+  color: var(--atlas-hdr-navy);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 500;
+  white-space: nowrap;
+  text-decoration: none;
+  cursor: pointer;
+  transition: background-color var(--atlas-hdr-ms) ease;
+}
+.cre-atlas-hdr .cre-atlas-hdr-pill--icon {
+  padding: 0 8px;
+}
+.cre-atlas-hdr .cre-atlas-hdr-pill:hover,
+.cre-atlas-hdr .cre-atlas-hdr-pill[aria-current='page'],
+.cre-atlas-hdr .cre-atlas-hdr-pill[aria-expanded='true'] {
+  background-color: var(--atlas-hdr-tint);
+}
+
+.cre-atlas-hdr .cre-atlas-hdr-eyebrow-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 0;
+  border: none;
+  background: none;
+  color: var(--atlas-hdr-navy);
+  font-family: var(--font-body);
+  font-size: 12px;
+  line-height: 16px;
+  font-weight: 400;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+/* Dropdown rows. */
+.cre-atlas-hdr .cre-atlas-hdr-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 8px 12px;
+  border-radius: 2px;
+  color: var(--atlas-hdr-item-ink);
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 20px;
+  font-weight: 400;
+  white-space: nowrap;
+  text-decoration: none;
+  transition: background-color var(--atlas-hdr-ms) ease;
+}
+.cre-atlas-hdr .cre-atlas-hdr-item:hover,
+.cre-atlas-hdr .cre-atlas-hdr-item:focus-visible {
+  background-color: var(--atlas-hdr-item-hover);
+  outline: none;
+}
+
+.cre-atlas-hdr .cre-atlas-hdr-pill:focus-visible,
+.cre-atlas-hdr .cre-atlas-hdr-eyebrow-link:focus-visible,
+.cre-atlas-hdr .cre-atlas-hdr-logo:focus-visible {
+  outline: 2px solid var(--atlas-hdr-navy);
+  outline-offset: 2px;
+}

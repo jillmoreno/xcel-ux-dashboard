@@ -8,6 +8,7 @@ import { ResearchRationalePage } from '@/pages/ResearchRationalePage'
 import { QaNotesPage } from '@/pages/QaNotesPage'
 import { LinksPage } from '@/pages/LinksPage'
 import { ComponentReviewPage } from '@/pages/ComponentReviewPage'
+import { AtlasHeaderPreviewPage } from '@/pages/AtlasHeaderPreviewPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { DashboardRebrandPage } from '@/pages/DashboardRebrandPage'
 import { RecommendedCardABComparePage } from '@/pages/RecommendedCardABComparePage'
@@ -190,6 +191,8 @@ export default function App() {
           than their whole branch. Takes its entire definition from the URL, so
           it needs no per-component code. See `ComponentReviewPage`. */}
       <Route path="/review" element={<TestingGate><ComponentReviewPage /></TestingGate>} />
+      {/* The Atlas header on its own, not wired into the shell. See `AtlasHeader`. */}
+      <Route path="/atlas-header-preview" element={<TestingGate><AtlasHeaderPreviewPage /></TestingGate>} />
       <Route
         path="/prototype/:featureId/handoff/:componentId"
         element={
