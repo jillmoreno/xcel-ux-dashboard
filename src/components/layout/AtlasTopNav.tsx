@@ -4,6 +4,7 @@ import { BookOpenRegular, HouseRegular } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
 import { AtlasTopNavCoursesDropdown } from './AtlasTopNavCoursesDropdown'
 import { ATLAS_HOME_REFRESH } from './atlasHomeRefresh'
+import './atlasHeader.css'
 
 /**
  * ATLAS TOP NAV (Figma "Atlas-Compass-Global-Navigation" 160:616, 2026-09-30)
@@ -89,13 +90,26 @@ export function AtlasTopNav({ expanding = false }: { expanding?: boolean }) {
   // second button is the "My Courses" dropdown instead of Course Overview.
   // Plain Top Nav only; Home keeps no dropdown.
   const topNavPick = useFeatureFlag('atlas-white-top-nav').variant
-  const whiteNav = !expanding && params.get('version') === 'eric-atlas-white'
+  // …and Eric/Atlas WIP's too, since 2026-10-13 (Eric's request: WIP's nav
+  // should be White's). On WIP a course pick changes `?whiteCourse=`, which
+  // only White's Home reads.
+  const whiteNav =
+    !expanding && (params.get('version') === 'eric-atlas-white' || params.get('version') === 'eric-atlas-v3')
   const coursesDropdown = whiteNav && topNavPick === 'dropdown'
   // …and Home Only (2026-10-12): the Course Overview button is not drawn.
   const homeOnly = whiteNav && topNavPick === 'home-only'
 
   return (
-    <nav aria-label="Global" style={{ display: 'flex', alignItems: 'center', gap: 11 }}>
+    /* WIP's and White's buttons are THE TWO-ROW HEADER'S PILLS (2026-10-13,
+       Eric's request: "style the buttons as in the new nav but retain the
+       dropdown style from this nav") — `cre-atlas-hdr` brings that header's
+       variables and pill class (atlasHeader.css), 8 apart as there. The My
+       Courses dropdown keeps its own open frame. */
+    <nav
+      aria-label="Global"
+      className={whiteNav ? 'cre-atlas-hdr' : undefined}
+      style={{ display: 'flex', alignItems: 'center', gap: whiteNav ? 8 : 11 }}
+    >
       <TopNavItem
         label="Home"
         // 1px up, the house's optical centre (2026-10-01, the designer's request).
@@ -109,11 +123,12 @@ export function AtlasTopNav({ expanding = false }: { expanding?: boolean }) {
           window.dispatchEvent(new Event(ATLAS_HOME_REFRESH))
         }}
         links={expanding ? HOME_LINKS : null}
+        pill={whiteNav}
         isCurrentLink={isCurrentLink}
         onLink={(l) => navigate(l.section, l.coursePage ?? null)}
       />
       {homeOnly ? null : coursesDropdown ? (
-        <AtlasTopNavCoursesDropdown />
+        <AtlasTopNavCoursesDropdown selected={section === 'courses'} />
       ) : (
       <TopNavItem
         // "My Learning" with FA's `book-open` (Regular, the weight of Home's
@@ -127,6 +142,7 @@ export function AtlasTopNav({ expanding = false }: { expanding?: boolean }) {
         current={current === 'compass'}
         onClick={() => navigate('course', 'overview')}
         links={expanding ? COMPASS_LINKS : null}
+        pill={whiteNav}
         isCurrentLink={isCurrentLink}
         onLink={(l) => navigate(l.section, l.coursePage ?? null)}
       />
@@ -143,6 +159,7 @@ function TopNavItem({
   links,
   isCurrentLink,
   onLink,
+  pill = false,
 }: {
   label: string
   icon: ReactNode
@@ -152,6 +169,8 @@ function TopNavItem({
   links: readonly TopNavLink[] | null
   isCurrentLink: (l: TopNavLink) => boolean
   onLink: (l: TopNavLink) => void
+  /** WIP and White: the two-row header's pill — no icon (2026-10-13). */
+  pill?: boolean
 }) {
   // Open once mounted, a frame late, so a page that LOADS on this version
   // slides its tray out too rather than drawing it already open.
@@ -166,11 +185,11 @@ function TopNavItem({
     <button
       type="button"
       aria-current={current ? 'page' : undefined}
-      className={current ? 'cre-atlas-topnav-btn is-current' : 'cre-atlas-topnav-btn'}
+      className={pill ? 'cre-atlas-hdr-pill' : current ? 'cre-atlas-topnav-btn is-current' : 'cre-atlas-topnav-btn'}
       onClick={onClick}
-      style={BUTTON}
+      style={pill ? undefined : BUTTON}
     >
-      {icon}
+      {pill ? null : icon}
       {label}
       {/* The pointer under the current button is GONE from the plain Top Nav
           (2026-10-02, the designer's request; `POINTER` is kept for a

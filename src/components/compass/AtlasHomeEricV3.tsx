@@ -71,8 +71,9 @@ import type { LearningPathSummary } from '@/data/learningFixtures'
    (figures, journey, cover, Begin Course) is still the fixture (`path`). */
 const V2_LONG_TITLE = 'New York Property and Casualty Conversion Course Pre-licensing and Live Review Class'
 
-/** The cover and the column under it share this width (2026-10-08). */
-const V3_LEFT_W = 235
+/** The cover and the column under it share this width (2026-10-08). 260 —
+ *  White's left column — since 2026-10-13 (Eric's request); it was 235. */
+const V3_LEFT_W = 260
 
 /** V3's course tabs — off on 2026-10-08, back on the same day (Eric's
  *  request: "add the course tabs back to the top"). */
@@ -172,6 +173,10 @@ export function AtlasHomeEricV3({
   const progressPick = useFeatureFlag('atlas-v3-progress').variant ?? 'not-started'
   // The Design bar's Link tiles (V3 only, 2026-10-09) — Stacked (default) or Inline.
   const stackedTiles = (useFeatureFlag('atlas-v3-link-tiles').variant ?? 'stacked') !== 'inline'
+  // NO COURSE TABS WHEN THE TOP NAV IS THE DROPDOWN (2026-10-13, Eric's
+  // request): the courses are listed in the header's My Courses dropdown, so
+  // the card's tab bar would be a second list of them.
+  const topNavDropdown = useFeatureFlag('atlas-white-top-nav').variant === 'dropdown'
   const progress = V3_PROGRESS[progressPick] ?? V3_PROGRESS['not-started']
   // COMPLETED (Design bar's Progress = Completed 100%, 2026-10-09, Eric): no
   // Course progress card, and Step 1 becomes the Congratulations block.
@@ -212,11 +217,13 @@ export function AtlasHomeEricV3({
           so the card takes its full 48 on top. The tabs' data stays — the
           title and cover still read the first course — so to bring the strip
           back, set SHOW_COURSE_TABS. */}
-      <section aria-label="Current course" style={SHOW_COURSE_TABS && tabs.length > 1 ? CARD : { ...CARD, paddingTop: 48 }}>
-        {SHOW_COURSE_TABS && tabs.length > 1 ? (
+      <section aria-label="Current course" style={SHOW_COURSE_TABS && !topNavDropdown && tabs.length > 1 ? CARD : { ...CARD, paddingTop: 40 }}>
+        {SHOW_COURSE_TABS && !topNavDropdown && tabs.length > 1 ? (
           <AtlasCourseTabs courses={tabs} activeId={activeTab?.id ?? path.id} onSelect={selectCourse} onAllCourses={onAllCourses ?? (() => go('courses'))} />
         ) : null}
-        <div style={{ display: 'flex', gap: 40, alignItems: 'stretch' }}>
+        {/* 32, the row below's gap (2026-10-13, Eric's request), so the title
+            block starts on the vertical rule under it; it was 40. */}
+        <div style={{ display: 'flex', gap: 32, alignItems: 'stretch' }}>
           {shownCover ? (
             <span aria-hidden style={COVER_FRAME}>
               <img src={shownCover} alt="" style={COVER} />
@@ -262,7 +269,9 @@ export function AtlasHomeEricV3({
 
         <span aria-hidden style={RULE} />
 
-        <div style={{ display: 'flex', gap: 40, alignItems: 'stretch' }}>
+        {/* 32 either side of the rule, White's (2026-10-13, Eric's request);
+            it was 40. */}
+        <div style={{ display: 'flex', gap: 32, alignItems: 'stretch' }}>
           {/* Left: V3's COLUMN, 235 wide — Figma 254:7973 (2026-10-08, Eric's
               request; it was the 200-wide Course progress panel alone). Two
               link tiles (certificates, courses), the Course progress panel
@@ -352,8 +361,9 @@ export function AtlasHomeEricV3({
 
           <span aria-hidden style={{ width: 1, flex: 'none', background: 'var(--color-primary-100)' }} />
 
-          {/* Right: the journey. */}
-          <div style={{ flex: '1 1 0', minWidth: 0, display: 'flex', flexDirection: 'column', gap: 24 }}>
+          {/* Right: the journey — at most 335, White's (2026-10-13, Eric's
+              request). */}
+          <div style={{ flex: '1 1 0', minWidth: 0, maxWidth: 335, display: 'flex', flexDirection: 'column', gap: 24 }}>
             {completedView ? (
               /* STEP 1 ON THE COMPLETED VIEW — Figma 297:247 (2026-10-09,
                  Eric's request): the eyebrow, "Congratulations!" and a line in
@@ -584,17 +594,19 @@ const PAGE: CSSProperties = {
 }
 /* The Home course card's surface — 48 in, 14 radius (Figma). */
 const CARD: CSSProperties = {
-  // 750, was the design's 711 (2026-10-07, Eric's request). The two left
-  // columns stay 200 (cover, progress panel); the 39 goes to the right side.
-  flex: '0 1 750px',
+  // 830 — a 750 CONTENT area inside the 40s (2026-10-13, Eric's request:
+  // 846 inside 48s earlier that day; 750 overall from 2026-10-07, and the
+  // design's 711 before that).
+  flex: '0 1 830px',
   minWidth: 0,
   display: 'flex',
   flexDirection: 'column',
   gap: 24,
   // 24 on top, not 48 — the course tabs sit above the title (Figma 188:1006).
-  padding: '24px 48px 48px',
+  // 40 a side and below, 48 until 2026-10-13 (Eric's request).
+  padding: '24px 40px 40px',
   boxSizing: 'border-box',
-  borderRadius: 14,
+  borderRadius: 20, // the inner cards' 20 (2026-10-13, Eric's request); it was 14
   background: 'var(--color-compass-course-card)',
   // No outer stroke (2026-10-02, the designer's request); the Compass MEDIUM
   // shadow lifts it instead (the small one was tried the same day).

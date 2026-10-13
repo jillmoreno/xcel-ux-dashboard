@@ -1328,9 +1328,17 @@ function PlatformShellBody() {
              every rail state — the 1172 cap (arriving with the 2026-10-05
              merge) boxed them into the middle with gaps either side. */
           /* Eric/Atlas White's Home takes the grid's full 1278 (2026-10-12):
-             its left rail, page and exam-date rail need it. */
+             its left rail, page and exam-date rail need it. …and WIP's
+             (2026-10-13): its course card grew to 846 (a 750 content area). */
           ...(topNav && !compassCourseRail
-            ? { maxWidth: active === 'dashboard' && params.get('version') === 'eric-atlas-white' ? 1278 : 1172, width: '100%', margin: '0 auto' }
+            ? {
+                maxWidth:
+                  active === 'dashboard' && ['eric-atlas-white', 'eric-atlas-v3'].includes(params.get('version') ?? '')
+                    ? 1278
+                    : 1172,
+                width: '100%',
+                margin: '0 auto',
+              }
             : null),
         }}
       >

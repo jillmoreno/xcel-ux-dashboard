@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react'
 import { useSearchParams } from 'react-router-dom'
-import { AngleRightRegular, BooksRegular } from '@/icons'
+import { AngleRightRegular } from '@/icons'
 import { WHITE_COURSES, WHITE_COURSE_PARAM, WHITE_FIRST_COURSE_ID, whiteCourseFor } from '@/data/atlasWhiteCourses'
 
 /**
@@ -13,17 +13,25 @@ import { WHITE_COURSES, WHITE_COURSE_PARAM, WHITE_FIRST_COURSE_ID, whiteCourseFo
  * label, quick and eased (`--cre-dd-ms`). A placeholder keeps the button's
  * closed footprint in the header, so nothing beside it moves.
  *
- *   All Courses        → the My Courses page (`section=courses`)
  *   each active course → makes itself the course White's Home shows
  *                        (`?whiteCourse=`) and goes to Home
+ *   All Courses        → the My Courses page (`section=courses`) — last
+ *                        since 2026-10-13, first before
  *
  * The course already on the page reads SemiBold in Primary 500 and is not a
  * link (it was Medium, as the design marks it, until 2026-10-12).
  * Closes on a pick, Escape, or a click outside.
+ *
+ * CLOSED, IT IS THE TWO-ROW HEADER'S PILL (2026-10-13, Eric's request: "style
+ * the buttons as in the new nav but retain the dropdown style from this nav"):
+ * 30 tall, no frame, no icon, navy 14/20 Medium, the `#eceff1` tint on hover
+ * and on the My Courses page. OPEN, it is this dropdown as it was — the white
+ * frame with its Primary 200 hairline, growing to 220 with the list below.
+ * The variables are `.cre-atlas-hdr`'s, set on the nav around it.
  */
 const OPEN_W = 220
 
-export function AtlasTopNavCoursesDropdown() {
+export function AtlasTopNavCoursesDropdown({ selected = false }: { selected?: boolean }) {
   const [params, setParams] = useSearchParams()
   const activeId = whiteCourseFor(params.get(WHITE_COURSE_PARAM))
   const [open, setOpen] = useState(false)
@@ -31,9 +39,10 @@ export function AtlasTopNavCoursesDropdown() {
   const headRef = useRef<HTMLSpanElement>(null)
   const rootRef = useRef<HTMLDivElement>(null)
 
-  // The closed width is the label's own (icon + "My Courses" + 16 a side).
+  // The closed width is the label's own ("My Courses" + 12 a side + the
+  // frame's 1px a side).
   useLayoutEffect(() => {
-    if (headRef.current) setClosedW(Math.ceil(headRef.current.offsetWidth) + 32 + 2)
+    if (headRef.current) setClosedW(Math.ceil(headRef.current.offsetWidth) + 24 + 2)
   }, [])
 
   useEffect(() => {
@@ -62,10 +71,18 @@ export function AtlasTopNavCoursesDropdown() {
   }
 
   return (
-    <div ref={rootRef} style={{ position: 'relative', width: closedW ?? undefined, height: 28, flex: 'none' }}>
+    <div ref={rootRef} style={{ position: 'relative', width: closedW ?? undefined, height: 30, flex: 'none' }}>
       <div
         className={open ? 'cre-atlas-dd is-open' : 'cre-atlas-dd'}
-        style={{ ...FRAME, width: open ? OPEN_W : (closedW ?? undefined) }}
+        style={{
+          ...FRAME,
+          width: open ? OPEN_W : (closedW ?? undefined),
+          // Closed: the pill — no frame; the tint on hover (atlasHeader.css)
+          // and on the My Courses page. Open: the frame as it was.
+          ...(open
+            ? null
+            : { border: '1px solid transparent', background: selected ? 'var(--atlas-hdr-tint)' : undefined }),
+        }}
       >
         <button
           type="button"
@@ -75,7 +92,6 @@ export function AtlasTopNavCoursesDropdown() {
           style={HEAD_BUTTON}
         >
           <span ref={headRef} style={{ display: 'inline-flex', alignItems: 'center', gap: 8 }}>
-            <BooksRegular size={13} aria-hidden />
             My Courses
           </span>
         </button>
@@ -84,7 +100,6 @@ export function AtlasTopNavCoursesDropdown() {
         <div style={{ display: 'grid', gridTemplateRows: open ? '1fr' : '0fr', transition: 'grid-template-rows var(--cre-dd-ms) var(--cre-dd-ease)' }}>
           <div style={{ minHeight: 0, overflow: 'hidden' }} inert={!open || undefined}>
             <ul id="cre-atlas-dd-list" style={LIST}>
-              <Item label="All Courses" onClick={() => go((n) => n.set('section', 'courses'))} />
               {WHITE_COURSES.map((c) => (
                 <Item
                   key={c.id}
@@ -98,6 +113,9 @@ export function AtlasTopNavCoursesDropdown() {
                   }
                 />
               ))}
+              {/* Last, below the courses (2026-10-13, Eric's request); it led
+                  the list until then. */}
+              <Item label="All Courses" onClick={() => go((n) => n.set('section', 'courses'))} />
             </ul>
           </div>
         </div>
@@ -164,18 +182,21 @@ const FRAME: CSSProperties = {
   background: 'var(--color-fixed-light)',
   overflow: 'hidden',
 }
+// Label: the two-row header's nav text (2026-10-13) — navy 14/20 Medium, 12
+// across, 28 inside the frame's 1px a side for its 30.
 const HEAD_BUTTON: CSSProperties = {
   display: 'flex',
   alignItems: 'center',
-  height: 26,
-  padding: '0 16px',
+  height: 28,
+  padding: '0 12px',
   border: 'none',
   background: 'none',
   cursor: 'pointer',
   fontFamily: 'var(--font-body)',
-  fontSize: 13,
-  lineHeight: '15px',
-  color: 'var(--color-primary-600)',
+  fontSize: 14,
+  lineHeight: '20px',
+  fontWeight: 500,
+  color: 'var(--atlas-hdr-navy)',
   whiteSpace: 'nowrap',
 }
 const LIST: CSSProperties = {

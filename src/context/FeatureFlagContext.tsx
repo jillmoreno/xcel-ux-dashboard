@@ -1465,10 +1465,12 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        Dropdown — Figma 323:2001: the second button reads "My Courses" and
        opens a dropdown (All Courses, then each active course) that picks the
        course White's Home shows instead of opening the course Overview. Home
-       has no dropdown. White only. */
+       has no dropdown. White only until 2026-10-13, when Eric/Atlas WIP took
+       the same control (Eric's request: "update this nav to the nav that is in
+       the White version"). One flag, so the pick is shared by both. */
     surface: 'design',
     owner: 'eric',
-    versions: ['eric-atlas-white'],
+    versions: ['eric-atlas-v3', 'eric-atlas-white'],
     group: 'Navigation',
     label: 'Top Nav',
     description:

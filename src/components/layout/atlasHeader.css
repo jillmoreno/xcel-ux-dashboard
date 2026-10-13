@@ -109,3 +109,17 @@
   outline: 2px solid var(--atlas-hdr-navy);
   outline-offset: 2px;
 }
+
+/* THE OLD HEADER'S MY COURSES DROPDOWN, CLOSED (2026-10-13) — on WIP and
+   White it is this header's pill until it opens (AtlasTopNavCoursesDropdown).
+   The width and shadow keep their `.cre-atlas-dd` easing; the tint fades in
+   at the pill's 150ms. */
+.cre-atlas-hdr .cre-atlas-dd {
+  transition:
+    width var(--cre-dd-ms) var(--cre-dd-ease),
+    box-shadow var(--cre-dd-ms) var(--cre-dd-ease),
+    background-color var(--atlas-hdr-ms) ease;
+}
+.cre-atlas-hdr .cre-atlas-dd:not(.is-open):hover {
+  background-color: var(--atlas-hdr-tint);
+}
