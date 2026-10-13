@@ -130,7 +130,10 @@ function SideLink({
           {icon}
         </span>
         <span style={{ flex: '1 1 0', minWidth: 0, textAlign: 'left' }}>{label}</span>
-        <span aria-hidden style={{ display: 'inline-flex', color: 'var(--color-atlas-home-icon, var(--color-compass-page-button))' }}>
+        {/* Shown on hover / focus only (2026-10-13, Eric's request) —
+            `.cre-quick-link-chevron`, tokens.css. It keeps its space, so the
+            row does not shift when it appears. */}
+        <span aria-hidden className="cre-quick-link-chevron" style={{ display: 'inline-flex', color: 'var(--color-atlas-home-icon, var(--color-compass-page-button))' }}>
           <AngleRightRegular size={13} aria-hidden />
         </span>
       </button>

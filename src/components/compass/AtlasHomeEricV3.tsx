@@ -17,7 +17,7 @@ import { AtlasCourseTabs, type AtlasCourseTab } from './AtlasCourseTabs'
 import { WHITE_COURSES, WHITE_COURSE_PARAM, whiteCourseFor } from '@/data/atlasWhiteCourses'
 import { journeyStopsFor, type JourneyStop } from '@/components/learning/studyJourneyUtil'
 import { GET_LICENSED_STEPS, jurisdictionName } from '@/data/nyProducerRequirements'
-import { defaultPreset, formatPaceDate, studyPace, daysUntil, NOT_STARTED_NIGHTS } from '@/lib/studyPace'
+import { defaultPreset, formatPaceDate, studyPace, daysUntil, dateFromIso, NOT_STARTED_NIGHTS } from '@/lib/studyPace'
 import type { LearningPathSummary } from '@/data/learningFixtures'
 
 /**
@@ -158,6 +158,30 @@ export function AtlasHomeEricV3({
   )
   const preset = defaultPreset(model)
   const accessDays = accessExpiresAt ? Math.max(0, daysUntil(accessExpiresAt, today) ?? 0) : null
+  /* EXPIRES · DAYS TO COMPLETE, under the course title (Figma 368:519,
+     2026-10-13, Eric's request). The course's own access end and the days
+     left to it — the figures the Access tile reads — not the frame's sample
+     11/04/2026 and 27 days. Like the rest of the card, it is the first
+     course's whichever tab is picked. */
+  const expiresOn = dateFromIso(accessExpiresAt)
+  const courseMeta =
+    expiresOn && accessDays != null ? (
+      <div style={META_ROW}>
+        <span style={META_PAIR}>
+          <span style={META_LABEL}>Expires:</span>
+          <span style={META_VALUE}>
+            {expiresOn.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}
+          </span>
+        </span>
+        <span aria-hidden style={META_DIVIDER} />
+        <span style={META_PAIR}>
+          <span style={META_LABEL}>Days to complete:</span>
+          <span style={META_VALUE}>
+            {accessDays} {accessDays === 1 ? 'day' : 'days'}
+          </span>
+        </span>
+      </div>
+    ) : null
 
   // V3 drops the Attestation & Affidavit stop on every progress stage
   // (2026-10-09, Eric's request). The stop still exists in the shared journey.
@@ -248,6 +272,7 @@ export function AtlasHomeEricV3({
             onOverview={onOverview}
             onBegin={onBegin}
             beginLabel={progressPick === 'not-started' ? 'Begin Course' : 'Resume Course'}
+            meta={courseMeta}
           />
         ) : (
         <div style={{ display: 'flex', gap: 32, alignItems: 'stretch' }}>
@@ -267,6 +292,7 @@ export function AtlasHomeEricV3({
               <h2 className="cre-compass-course-title cre-atlas-home-course-title cre-atlas-home-v2-course-title" style={TITLE}>
                 {shownTitle}
               </h2>
+              {courseMeta}
             </div>
             {/* The card's two actions, at the main buttons' size (2026-10-06,
                 the designer's request): Course Overview — was a 10px chip —
@@ -690,6 +716,7 @@ function WhiteStyleHead({
   onOverview,
   onBegin,
   beginLabel,
+  meta,
 }: {
   cover?: string
   title: string
@@ -697,6 +724,8 @@ function WhiteStyleHead({
   onOverview?: () => void
   onBegin?: () => void
   beginLabel: string
+  /** The Expires · Days to complete row, under the title. */
+  meta?: ReactNode
 }) {
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
@@ -716,6 +745,7 @@ function WhiteStyleHead({
           <h2 className="cre-compass-course-title cre-atlas-home-course-title cre-atlas-home-v2-course-title" style={TITLE}>
             {title}
           </h2>
+          {meta}
         </div>
       </div>
       <div style={{ display: 'flex', gap: 24, alignItems: 'center' }}>
@@ -758,8 +788,32 @@ const WHITE_HEAD_COVER: CSSProperties = {
 const COVER_TOGGLE: CSSProperties = { display: 'block', padding: 0, border: 'none', background: 'none', cursor: 'pointer' }
 
 /* The right rail's cards outlined in Primary 200 (2026-10-13, Eric's request)
-   — WIP's own; both cards default to the nav rule elsewhere. */
-const RAIL_CARD_BORDER: CSSProperties = { border: '1px solid var(--color-primary-200)' }
+   — WIP's own; both cards default to the nav rule elsewhere. …and padded 24
+   all round, the exam-date card's own, so Quick Links matches it (same day;
+   it was 24 / 32 / 32). */
+const RAIL_CARD_BORDER: CSSProperties = { border: '1px solid var(--color-primary-200)', padding: 24 }
+
+/* Figma 368:519: a rule above and below (Primary 100), 6 in, the two pairs 8
+   either side of a 1px Primary 100 divider the row's height (2026-10-13; 24
+   apart with no divider before), 4 inside each; Open Sans 11/14 — the label
+   Medium in Neutral 700, the value SemiBold in the text colour. */
+const META_ROW: CSSProperties = {
+  display: 'flex',
+  alignItems: 'center',
+  gap: 8,
+  padding: '6px 0',
+  borderTop: '1px solid var(--color-primary-100)',
+  borderBottom: '1px solid var(--color-primary-100)',
+  fontFamily: 'var(--font-body)',
+  fontSize: 11,
+  lineHeight: '14px',
+  whiteSpace: 'nowrap',
+}
+const META_PAIR: CSSProperties = { display: 'inline-flex', alignItems: 'center', gap: 4 }
+// Primary 200, a step darker than the rules above and below (2026-10-13, Eric's request).
+const META_DIVIDER: CSSProperties = { width: 1, alignSelf: 'stretch', flex: 'none', background: 'var(--color-primary-200)' }
+const META_LABEL: CSSProperties = { fontWeight: 500, color: 'var(--color-neutral-700)' }
+const META_VALUE: CSSProperties = { fontWeight: 600, color: 'var(--color-text-primary)' }
 
 const COVER: CSSProperties = {
   position: 'absolute',

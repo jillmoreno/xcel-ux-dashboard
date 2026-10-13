@@ -2476,6 +2476,10 @@ function MyCoursesSection() {
   const [params, setParams] = useSearchParams()
   const { brand } = useAccount()
   const atlas = isAtlasCompassNavVersion(params.get('version') ?? defaultDiscoverabilityVersionFor(brand))
+  /* Eric/Atlas WIP (2026-10-13, Eric's request): Quick Links as a RIGHT rail,
+     with its Home's links — everything but the course's own Flashcards and
+     Exam Simulator. The other Atlas versions keep the left column and all. */
+  const wip = params.get('version') === 'eric-atlas-v3'
   /* The Home course's card opens the Compass course page; the P&C card is the
      demo's invented course, so it is not wired. */
   const openCourse = () =>
@@ -2488,7 +2492,8 @@ function MyCoursesSection() {
   return (
     <MyCoursesPage
       embedded
-      aside={atlas ? <AtlasJourneyLinksCard /> : undefined}
+      aside={atlas ? <AtlasJourneyLinksCard withoutCoursePages={wip} /> : undefined}
+      asideRight={wip}
       titleStyle={atlas ? ATLAS_PAGE_TITLE : undefined}
       // Atlas: search, the status filter bar and View Archived are hidden — kept
       // for later, not removed (2026-10-06, Eric's request).

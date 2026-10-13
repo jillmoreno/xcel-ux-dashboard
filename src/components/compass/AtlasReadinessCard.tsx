@@ -132,7 +132,8 @@ const EYEBROW: CSSProperties = {
   lineHeight: '14px',
   letterSpacing: '1.3px',
   textTransform: 'uppercase',
-  textAlign: 'center',
+  // Left, as the Study Pace card's eyebrow above it (2026-10-13, Eric's request; it was centred).
+  textAlign: 'left',
   whiteSpace: 'nowrap',
   color: 'var(--color-primary-500)',
 }

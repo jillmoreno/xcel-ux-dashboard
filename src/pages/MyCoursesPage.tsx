@@ -70,6 +70,7 @@ export function MyCoursesPage({
   hideListControls = false,
   contentWidth,
   asideWidth = 280,
+  asideRight = false,
 }: {
   embedded?: boolean
   hideSearch?: boolean
@@ -89,6 +90,9 @@ export function MyCoursesPage({
   contentWidth?: number
   /** The aside column's width (Atlas passes the Home side column's 260). */
   asideWidth?: number
+  /** The aside as a RIGHT rail, after the cards (Eric/Atlas WIP, 2026-10-13 —
+   *  as its Home's right rail). Off: the left column, as before. */
+  asideRight?: boolean
 } = {}) {
   const [params, setParams] = useSearchParams()
   const { brand } = useAccount()
@@ -268,7 +272,13 @@ export function MyCoursesPage({
           // Narrower filter rail + tighter gap so the card grid keeps room in
           // the rebrand shell's constrained content column (was 240px / 32px,
           // which pushed cards off the right edge in the embedded/demo view).
-          gridTemplateColumns: aside ? `${asideWidth}px minmax(0, 1fr)` : hideFilters ? '1fr' : '200px minmax(0, 1fr)',
+          gridTemplateColumns: aside
+            ? asideRight
+              ? `minmax(0, 1fr) ${asideWidth}px`
+              : `${asideWidth}px minmax(0, 1fr)`
+            : hideFilters
+              ? '1fr'
+              : '200px minmax(0, 1fr)',
           alignItems: aside ? 'start' : undefined,
           gap: 24,
           marginTop: 24,
@@ -280,7 +290,9 @@ export function MyCoursesPage({
                starts level with the first row of cards. Both rows are held at
                ASIDE_ROW_H (the pills' 36; the search box is sized to it) and both
                columns use the same 24 gap, which is what keeps them level. */
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 24, minWidth: 0 }}>
+            // `order` carries a right rail past the cards without moving it in
+            // the markup.
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 24, minWidth: 0, order: asideRight ? 1 : undefined }}>
               {!hideSearch && !hideListControls && (
                 <div style={{ minHeight: ASIDE_ROW_H, display: 'flex', alignItems: 'center' }}>
                   <SearchInput
