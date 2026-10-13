@@ -13,6 +13,7 @@ import { AtlasCourseProgressStates, type ProgressStage } from './AtlasCourseProg
 import { AtlasReadinessCard } from './AtlasReadinessCard'
 import { useFeatureFlag, useFeatureFlags } from '@/context/FeatureFlagContext'
 import { AtlasCourseTabs, type AtlasCourseTab } from './AtlasCourseTabs'
+import { WHITE_COURSES, WHITE_COURSE_PARAM, whiteCourseFor } from '@/data/atlasWhiteCourses'
 import { journeyStopsFor, type JourneyStop } from '@/components/learning/studyJourneyUtil'
 import { GET_LICENSED_STEPS, jurisdictionName } from '@/data/nyProducerRequirements'
 import { defaultPreset, formatPaceDate, studyPace, daysUntil, NOT_STARTED_NIGHTS } from '@/lib/studyPace'
@@ -133,7 +134,7 @@ export function AtlasHomeEricV3({
   onSelectCourse,
   onAllCourses,
 }: AtlasHomeEricV3Props) {
-  const [, setParams] = useSearchParams()
+  const [searchParams, setParams] = useSearchParams()
   const go = (section: string, coursePage?: string) =>
     setParams((prev) => {
       const next = new URLSearchParams(prev)
@@ -200,8 +201,16 @@ export function AtlasHomeEricV3({
   const advanceProgress = () =>
     setVariant('atlas-v3-progress', V3_PROGRESS_ORDER[(V3_PROGRESS_ORDER.indexOf(progressPick) + 1) % V3_PROGRESS_ORDER.length])
   const currentTitle = longTitle ? V2_LONG_TITLE : courseTitle
-  const tabs = courses ?? [{ id: path.id, title: currentTitle, coverUrl }, ...DEMO_OTHER_COURSES]
-  const [activeTabId, setActiveTabId] = useState(path.id)
+  /* WITH THE TOP NAV'S DROPDOWN, THE DROPDOWN PICKS THE COURSE (2026-10-13,
+     Eric's request: "make the dropdown items change the course content on
+     this page"). White's way: its three courses, the pick riding the URL as
+     `?whiteCourse=`, the title and cover swapping. Otherwise the tab bar
+     picks, as before, from its own two. */
+  const tabs = topNavDropdown
+    ? WHITE_COURSES.map((c, i) => (i === 0 ? { id: c.id, title: currentTitle, coverUrl } : c))
+    : (courses ?? [{ id: path.id, title: currentTitle, coverUrl }, ...DEMO_OTHER_COURSES])
+  const [tabPickId, setActiveTabId] = useState(path.id)
+  const activeTabId = topNavDropdown ? whiteCourseFor(searchParams.get(WHITE_COURSE_PARAM)) : tabPickId
   const activeTab = tabs.find((t) => t.id === activeTabId) ?? tabs[0]
   const shownTitle = activeTab?.title ?? currentTitle
   const shownCover = activeTab?.coverUrl ?? coverUrl
