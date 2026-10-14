@@ -47,6 +47,10 @@ export type AtlasJourneyLinksCardProps = {
    *  the card's label stops competing with the step titles beside it. Absent,
    *  the Serif H8 every other host has. */
   titleStyle?: CSSProperties
+  /** Rendered after the list, as further children of the card's column (its
+   *  16px gap applies) — End-to-End Demo's divider, "Quick Question" eyebrow
+   *  and exam-date question (2026-10-14, Jillienne's request). */
+  footer?: ReactNode
 }
 
 export function AtlasJourneyLinksCard({
@@ -56,6 +60,7 @@ export function AtlasJourneyLinksCard({
   withoutCoursePages = false,
   titleRule = false,
   titleStyle,
+  footer,
 }: AtlasJourneyLinksCardProps) {
   const [params, setParams] = useSearchParams()
   /* Which link is the page you are on — the four that are pages; the three
@@ -118,6 +123,7 @@ export function AtlasJourneyLinksCard({
           onClick={onOpenRequirements ?? homeAndOpen('requirements')}
         />
       </ul>
+      {footer}
     </nav>
   )
 }

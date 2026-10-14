@@ -18,7 +18,7 @@ import {
 import { COMPASS_BUTTON } from './compassButton'
 import { AtlasExamDateCard } from './AtlasExamDateCard'
 import { ExamScheduleWidget } from '@/components/learning/ExamScheduleWidget'
-import { clearExamDate, readExamDate } from '@/data/examDateStore'
+import { clearExamDate, readExamDate, useExamDate } from '@/data/examDateStore'
 import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 import { AtlasJourneyLinksCard } from './AtlasJourneyLinksCard'
 import { ATLAS_HOME_REFRESH } from '@/components/layout/atlasHomeRefresh'
@@ -156,17 +156,11 @@ export function AtlasHomeEricE2E({
      renders equal. */
   const { brand: e2eBrand } = useAccount()
   const onWhite = isEricAtlasWhiteLike(resolveDashboardVersion(searchParams.get('version'), e2eBrand))
-  // White's course-head panel, measured so Quick Links can take its height
-  // (2026-10-14, Eric's request).
-  const [headEl, setHeadEl] = useState<HTMLDivElement | null>(null)
-  const [headH, setHeadH] = useState<number | undefined>(undefined)
-  useEffect(() => {
-    // No reset when it goes: the height is only read on White, where it exists.
-    if (!headEl) return
-    const ro = new ResizeObserver(() => setHeadH(headEl.getBoundingClientRect().height))
-    ro.observe(headEl)
-    return () => ro.disconnect()
-  }, [headEl])
+  /* White's course-head panel used to be measured here so Quick Links could
+     take its height. Gone 2026-10-14: the card carries the exam-date question
+     now and grows with it — and in this copy the measuring ref was never
+     attached, so the height was always undefined. `AtlasHomeEricWhite` keeps
+     the real one. */
   const go = (section: string, coursePage?: string) =>
     setParams((prev) => {
       const next = new URLSearchParams(prev)
@@ -275,6 +269,8 @@ export function AtlasHomeEricE2E({
      another version is gone once this one is opened at 0% — acceptable because
      it is reviewer input, not product data; the card offers the date again. */
   const atNotStarted = notStarted || progressPick === 'not-started'
+  // The stored date, for the Quick Links card's "Quick Question" eyebrow.
+  const storedExamDate = useExamDate()
   useEffect(() => {
     if (!atNotStarted) return
     if (readExamDate()) clearExamDate()
@@ -638,6 +634,13 @@ export function AtlasHomeEricE2E({
                  underline. this will trigger sheet view = Exam information").
                  The same sheet Quick Links' "Exam Information" row opens. */
               onTitle={onOpenStep ? () => onOpenStep(EXAM_DETAILS_STEP_ID) : undefined}
+              /* THE EXAM-DATE QUESTION LIVED IN THIS STEP for a few hours on
+                 2026-10-14 and MOVED TO THE QUICK LINKS CARD the same day
+                 (Jillienne's request: "add a divider line and then the 'Quick
+                 Question' eyebrow, have you scheduled your NY state exam logic
+                 below it"). The `after` slot and the widget's `step` treatment
+                 stay for the day it comes back here. The note that follows is
+                 the original placement's. */
               /* THE EXAM-DATE QUESTION LIVES IN THIS STEP — 2026-10-14, Jillienne's
                  request, the day this version became the baseline: "the logic of
                  'Do you know your state exam date?' needs to be added in this Pass
@@ -652,19 +655,6 @@ export function AtlasHomeEricE2E({
                  step. ⚠ ERIC'S `AtlasExamDateCard` IS UNTOUCHED — it still renders on
                  WIP's course panel; this version (White-like) had dropped it, which
                  is why the question had no home here. */
-              after={
-                <ExamScheduleWidget
-                  key={refreshKey}
-                  shell={E2E_EXAM_SHELL}
-                  onOpenStep={onOpenStep}
-                  stateName={state || undefined}
-                  compact
-                  countdown="flip"
-                  // `step`: pacing's flow, the question as a journey row
-                  // (2026-10-14, Jillienne's request: "make this a bullet step").
-                  treatment="step"
-                />
-              }
             />
             <span aria-hidden style={RULE} />
             <Step
@@ -721,6 +711,29 @@ export function AtlasHomeEricE2E({
           // The title as the steps' eyebrow — "QUICK LINKS" at 10px, bold
           // (2026-10-14, Jillienne's request: "Change to Eyebrow text").
           titleStyle={{ ...STEP_EYEBROW, fontWeight: 700 }}
+          /* THE EXAM-DATE QUESTION, UNDER THE LINKS — 2026-10-14, Jillienne's
+             request: a divider, the "Quick Question" eyebrow (the Figma card's
+             own, see `ExamScheduleWidget`), then Hybrid's logic: the question
+             in the heading face, "Yes, I know the date" first, the date to the
+             shared store, the compact readout with the flip countdown. The
+             eyebrow shows only while no date is stored — the saved readout
+             carries its own "Exam Date" eyebrow, and two stacked would be the
+             heading-under-a-heading the widget's notes warn about. */
+          footer={
+            <>
+              <span aria-hidden style={RULE} />
+              {storedExamDate ? null : <p style={{ ...STEP_EYEBROW, fontWeight: 700 }}>Quick Question</p>}
+              <ExamScheduleWidget
+                key={refreshKey}
+                shell={E2E_EXAM_SHELL}
+                onOpenStep={onOpenStep}
+                stateName={state || undefined}
+                compact
+                countdown="flip"
+                treatment="pacing"
+              />
+            </>
+          }
           // Outlined in Secondary 100 darkened 5% (2026-10-13, Eric's request;
           // 15% was tried and reverted); the exam-date card keeps Primary 200.
           // On White, as tall as the course-head panel beside it (2026-10-14,
@@ -731,7 +744,10 @@ export function AtlasHomeEricE2E({
             // "remove the outline"). WIP's and White's cards keep the Secondary
             // 100 darkened 5% stroke this replaced; the padding stays.
             border: 'none',
-            ...(onWhite && headH ? { height: headH } : null),
+            // ⚠ NOT PINNED TO THE COURSE PANEL'S HEIGHT any more (2026-10-14):
+            // the card carries the exam-date question now and grows with it.
+            // White's own Home still matches its card to the panel; this Home
+            // is End-to-End Demo's only.
             // …and its 20 corners (same day).
             ...(onWhite ? { borderRadius: 20 } : null),
           }}
