@@ -364,7 +364,9 @@ export function AtlasHomeEricV3({
             {/* THE EXAM-DATE CARD, between Study Pace and Readiness (2026-10-13,
                 Eric's request; it was in the side column). */}
             {/* No sub-line on its first screen (2026-10-13, Eric's request). */}
-            <AtlasExamDateCard key={refreshKey} stateName={state} style={RAIL_CARD_BORDER} hideIntroCopy />
+            {/* 20 corners, the Readiness card's under it (2026-10-13, Eric's
+                request; the card's own are 12). */}
+            <AtlasExamDateCard key={refreshKey} stateName={state} style={{ ...RAIL_CARD_BORDER, borderRadius: 20 }} hideIntroCopy />
             {/* The READINESS card, under the module (Figma 254:8012, 2026-10-08). */}
             {/* On the Completed view it opens on Proficient (2026-10-09, Eric). */}
             {/* Clicking it at Exam Ready takes the page back to Not Started 0%
