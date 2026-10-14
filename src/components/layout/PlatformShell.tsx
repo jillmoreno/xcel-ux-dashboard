@@ -2166,7 +2166,10 @@ function SectionShell({
         // …and White's 32 a side, for its two rails (2026-10-12; 24 briefly).
         // White takes WIP's padding with WIP's Home (2026-10-14); its own was
         // 32px 32px 56px, for its left rail and exam-date rail.
-        padding: atlasHome && ['eric-atlas-v3', 'eric-atlas-white'].includes(shellParams.get('version') ?? '')
+        // …and White's top 8 more, 40 (2026-10-14, Eric's request).
+        padding: atlasHome && shellParams.get('version') === 'eric-atlas-white'
+          ? '40px 56px 56px'
+          : atlasHome && shellParams.get('version') === 'eric-atlas-v3'
           ? '32px 56px 56px'
           : atlasHome || atlasResources
           ? 56
@@ -2582,6 +2585,18 @@ function CertificatesSection() {
       atlasCardStyle={
         params.get('version') === 'eric-atlas-white'
           ? { background: 'var(--color-atlas-tan-100)', border: '1px solid var(--color-atlas-tan-200)' }
+          : undefined
+      }
+      // White's in-progress card keeps its Certificate pill, in Secondary 200
+      // with a Secondary 300 stroke, its text and glyph Secondary 700
+      // (2026-10-14, Eric's requests).
+      atlasInProgressPill={
+        params.get('version') === 'eric-atlas-white'
+          ? {
+              background: 'var(--color-atlas-tan-200)',
+              border: '1px solid var(--color-atlas-tan-300)',
+              color: 'var(--color-atlas-tan-700)',
+            }
           : undefined
       }
     />

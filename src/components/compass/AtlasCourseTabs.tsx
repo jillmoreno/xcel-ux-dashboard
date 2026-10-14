@@ -263,7 +263,9 @@ const TAB_BASE: CSSProperties = {
 const TAB: CSSProperties = {
   ...TAB_BASE,
   fontWeight: 400,
-  borderRadius: 8,
+  // Square at the foot like the active tab (2026-10-14, Eric's request), so
+  // its hover fill sits on the strip's rule too; it was 8 all round.
+  borderRadius: '8px 8px 0 0',
   background: 'transparent',
 }
 /* Folder tab: square at the foot so it joins the strip's rule. */

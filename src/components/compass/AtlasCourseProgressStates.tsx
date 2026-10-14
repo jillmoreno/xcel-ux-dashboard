@@ -42,6 +42,7 @@ export function AtlasCourseProgressStates({
   initialStage = 'zero',
   milestonePercent = 68,
   onAdvance,
+  bare = false,
 }: {
   percent: number
   expected: ProgressFigure
@@ -55,6 +56,11 @@ export function AtlasCourseProgressStates({
    *  the module's own state — V3 uses it to step the Design bar's Progress,
    *  so the whole page follows (2026-10-09). */
   onAdvance?: () => void
+  /** No card of its own — no fill, 24 above and below, nothing at the sides —
+   *  with its eyebrow and figures centred, for a combined Progress + Readiness
+   *  panel (Figma 286:9455; Eric/Atlas White, 2026-10-14). Same states, same
+   *  clicks. */
+  bare?: boolean
 }) {
   // Opens on the FIRST state, so clicks walk the design's order 1 → 5 → 1.
   const [picked, setStage] = useState<Stage>(initialStage)
@@ -86,16 +92,22 @@ export function AtlasCourseProgressStates({
       className="cre-atlas-progress-states"
       // paddingBottom always present: React clears a dropped longhand, which
       // wiped the shorthand's bottom on the other states.
-      style={{ ...CARD, paddingBottom: stage === 'zero' ? 32 : 24 }}
+      style={
+        bare
+          ? { ...CARD, ...BARE_CARD, paddingBottom: 24 }
+          : { ...CARD, paddingBottom: stage === 'zero' ? 32 : 24 }
+      }
     >
-      <p style={EYEBROW}>
+      <p style={bare ? BARE_EYEBROW : EYEBROW}>
         {stage === 'zero'
           ? 'Study pace'
           : stage === 'complete'
             ? 'Course completed'
             : stage === 'expired'
               ? 'Course expired'
-              : 'Course progress'}
+              : bare
+                ? 'Pre-Licensing Progress' // bare (White): 178 of its 194 (2026-10-14, Eric's request)
+                : 'Course progress'}
       </p>
 
       {stage === 'zero' ? (
@@ -116,8 +128,10 @@ export function AtlasCourseProgressStates({
               <p style={BODY}>This study pace will have you prepared to pass your course exam in 3 weeks time.</p>
             </div>
           </div>
-          <span aria-hidden style={RULE} />
-          <span style={EDIT_LINK}>
+          {/* No rule above the link when bare (2026-10-14, Eric's request). */}
+          {bare ? null : <span aria-hidden style={RULE} />}
+          {/* …and 8 less above it, 16 not the card's 24 (same day). */}
+          <span style={bare ? { ...EDIT_LINK, marginTop: -8 } : EDIT_LINK}>
             Edit My Study Pace
             <PenToSquareSolid size={11} aria-hidden />
           </span>
@@ -136,7 +150,8 @@ export function AtlasCourseProgressStates({
       {stage === 'current' ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignSelf: 'stretch' }}>
           <Figure label="Expected completion" {...expected} />
-          {access ? (
+          {/* Not in Figma 286:9455 (2026-10-14, Eric): bare drops it. */}
+          {access && !bare ? (
             <>
               <span aria-hidden style={RULE} />
               <Figure label="Course access" {...access} />
@@ -161,14 +176,19 @@ export function AtlasCourseProgressStates({
             </p>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 12, alignSelf: 'stretch' }}>
-            <span aria-hidden style={RULE} />
+            {/* No rule under the copy when bare (2026-10-14, Eric's request). */}
+            {bare ? null : <span aria-hidden style={RULE} />}
             {stage === 'complete' ? (
               <Figure label="Course completed" value="June 1" note="Congratulations!!" />
             ) : (
               <Figure label="Expected completion" value="June 3" note="At current pace" />
             )}
-            <span aria-hidden style={RULE} />
-            <Figure label="Course access" value={stage === 'complete' ? '9 Days' : '28 Days'} note="Ends June 10" />
+            {bare ? null : (
+              <>
+                <span aria-hidden style={RULE} />
+                <Figure label="Course access" value={stage === 'complete' ? '9 Days' : '28 Days'} note="Ends June 10" />
+              </>
+            )}
           </div>
         </>
       ) : null}
@@ -176,7 +196,8 @@ export function AtlasCourseProgressStates({
       {/* States 2–3 end on the Study pace screen's link, reading "Edit My
           Study Pace" (2026-10-09, Eric's request). Left-aligned like the original. */}
       {/* …but not on Completed — nothing left to pace (2026-10-09, Eric). */}
-      {stage === 'current' || stage === 'milestone' ? (
+      {/* …nor bare: Figma 286:9455 shows no link (2026-10-14, Eric). */}
+      {!bare && (stage === 'current' || stage === 'milestone') ? (
         <>
           <span aria-hidden style={RULE} />
           <span style={EDIT_LINK}>
@@ -280,7 +301,25 @@ const EYEBROW: CSSProperties = {
   textTransform: 'uppercase',
   color: 'var(--color-primary-500)',
 }
-const LABEL: CSSProperties = { ...EYEBROW, letterSpacing: '0.1em' }
+/* The figure labels ("Expected completion"…) take the page's override when it
+   sets one — Eric/Atlas White's Neutral 800 (2026-10-14, Eric's request). */
+const LABEL: CSSProperties = { ...EYEBROW, letterSpacing: '0.1em', color: `var(--atlas-progress-label, ${EYEBROW.color})` }
+/* `bare` (Figma 286:9455): the panel around it draws the outline. Longhands,
+   since the paddingBottom above is a longhand too. */
+const BARE_CARD: CSSProperties = {
+  background: 'transparent',
+  borderRadius: 16,
+  gap: 24,
+  paddingTop: 24,
+  paddingRight: 0,
+  paddingLeft: 0,
+}
+const BARE_EYEBROW: CSSProperties = {
+  ...EYEBROW,
+  textAlign: 'left',
+  letterSpacing: '1.76px',
+  color: 'var(--color-neutral-800)',
+}
 const RULE: CSSProperties = { display: 'block', height: 1, alignSelf: 'stretch', background: 'var(--color-primary-200)' }
 // 11 / 16 (2026-10-09, Eric's request; it was 13 / 18).
 const BODY: CSSProperties = {

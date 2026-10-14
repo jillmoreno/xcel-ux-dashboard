@@ -32,11 +32,15 @@ const LEVELS: Level[] = [
 export function AtlasReadinessCard({
   initialLevel = 0,
   onPastLast,
+  bare = false,
 }: {
   initialLevel?: number
   /** Called INSTEAD of wrapping to Novice when Exam Ready is clicked — V3
    *  resets the page to Not Started with it (2026-10-09). */
   onPastLast?: () => void
+  /** No card of its own and a centred eyebrow, for a combined Progress +
+   *  Readiness panel (Figma 286:9455; Eric/Atlas White, 2026-10-14). */
+  bare?: boolean
 }) {
   const [i, setI] = useState(initialLevel)
   const level = LEVELS[i]
@@ -58,20 +62,28 @@ export function AtlasReadinessCard({
       onClick={next}
       onKeyDown={onKey}
       className="cre-atlas-readiness-states"
-      style={CARD}
+      style={bare ? BARE_CARD : CARD}
     >
-      <p style={EYEBROW}>Readiness for state exam</p>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
-        <span aria-hidden style={RULE} />
-        <p style={QUESTION}>How Ready are you for your State Exam?</p>
-      </div>
+      <p style={bare ? BARE_EYEBROW : EYEBROW}>Readiness for state exam</p>
+      {/* Bare drops the question and the link: Figma 286:9455 shows
+          neither (2026-10-14, Eric). */}
+      {bare ? null : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+          <span aria-hidden style={RULE} />
+          <p style={QUESTION}>How Ready are you for your State Exam?</p>
+        </div>
+      )}
       <HalfDial level={level} />
       {/* A link on every level, styled as the Study pace tile's (2026-10-09,
           Eric's request). A span, not a button: the card is
           itself the button for now, and buttons cannot nest. Not wired. */}
       {/* A divider above it, the card's own Tertiary 300 rule (2026-10-09, Eric). */}
-      <span aria-hidden style={{ ...RULE, alignSelf: 'stretch' }} />
-      <span style={LINK}>Help me get ready →</span>
+      {bare ? null : (
+        <>
+          <span aria-hidden style={{ ...RULE, alignSelf: 'stretch' }} />
+          <span style={LINK}>Help me get ready →</span>
+        </>
+      )}
     </section>
   )
 }
@@ -137,6 +149,10 @@ const EYEBROW: CSSProperties = {
   whiteSpace: 'nowrap',
   color: 'var(--color-primary-500)',
 }
+/* `bare` (Figma 286:9455): no fill, 24 above and below, nothing at the sides;
+   the eyebrow left-aligned in Neutral 800 (2026-10-14, Eric). */
+const BARE_CARD: CSSProperties = { ...CARD, background: 'transparent', padding: '24px 0', borderRadius: 16, gap: 24 }
+const BARE_EYEBROW: CSSProperties = { ...EYEBROW, textAlign: 'left', color: 'var(--color-neutral-800)' }
 // The design's Tertiary 300 hairline (it was Primary 200 on the single card).
 const RULE: CSSProperties = { display: 'block', height: 1, background: 'var(--color-atlas-tan-300)' }
 const QUESTION: CSSProperties = {

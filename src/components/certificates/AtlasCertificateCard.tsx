@@ -33,6 +33,7 @@ export function AtlasCertificateCard({
   inProgress = false,
   style,
   barColor,
+  inProgressPill,
 }: {
   data: Certificate
   /** A certificate not yet earned — the course is still under way (Eric/Atlas
@@ -44,6 +45,9 @@ export function AtlasCertificateCard({
   /** The status bar's fill, in place of tan 300 (Eric/Atlas WIP's Secondary
    *  200, 2026-10-14). */
   barColor?: string
+  /** Shows the Certificate pill on an in-progress card too, with this merged
+   *  over its style (Eric/Atlas White's Secondary 200 / 300, 2026-10-14). */
+  inProgressPill?: CSSProperties
   /** Open the action-required detail slide-over. */
   onOpen?: (id: string) => void
   /** Kebab (⋮) menu click — falls back to a console stub. */
@@ -82,8 +86,8 @@ export function AtlasCertificateCard({
           left, the status word right. */}
       <div style={TOP_ROW}>
         <div style={barColor ? { ...STATUS_BAR, background: barColor } : STATUS_BAR}>
-          {inProgress ? null : (
-            <span style={PILL}>
+          {inProgress && !inProgressPill ? null : (
+            <span style={inProgress ? { ...PILL, ...inProgressPill } : PILL}>
               <span aria-hidden style={{ display: 'inline-flex', justifyContent: 'center', width: 14 }}>
                 <FileCertificateRegular size={13} aria-hidden />
               </span>

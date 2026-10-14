@@ -135,6 +135,19 @@ export function AtlasHomeEricV3({
   onAllCourses,
 }: AtlasHomeEricV3Props) {
   const [searchParams, setParams] = useSearchParams()
+  // Eric/Atlas White renders this Home too, on its white page (2026-10-14).
+  const onWhite = searchParams.get('version') === 'eric-atlas-white'
+  // White's course-head panel, measured so Quick Links can take its height
+  // (2026-10-14, Eric's request).
+  const [headEl, setHeadEl] = useState<HTMLDivElement | null>(null)
+  const [headH, setHeadH] = useState<number | undefined>(undefined)
+  useEffect(() => {
+    // No reset when it goes: the height is only read on White, where it exists.
+    if (!headEl) return
+    const ro = new ResizeObserver(() => setHeadH(headEl.getBoundingClientRect().height))
+    ro.observe(headEl)
+    return () => ro.disconnect()
+  }, [headEl])
   const go = (section: string, coursePage?: string) =>
     setParams((prev) => {
       const next = new URLSearchParams(prev)
@@ -166,20 +179,44 @@ export function AtlasHomeEricV3({
   const expiresOn = dateFromIso(accessExpiresAt)
   const courseMeta =
     expiresOn && accessDays != null ? (
-      <div style={META_ROW}>
+      <div
+        style={
+          onWhite
+            ? // Primary 200 rules on White's Primary 100 panel (2026-10-14),
+              // where the card's own 100 would not show.
+              { ...META_ROW, borderTop: '1px solid var(--color-primary-200)', borderBottom: '1px solid var(--color-primary-200)' }
+            : META_ROW
+        }
+      >
         <span style={META_PAIR}>
-          <span style={META_LABEL}>Expires:</span>
+          {/* "Course Access Ends:" on White (2026-10-14, Eric's request). */}
+          <span style={META_LABEL}>{onWhite ? 'Course Access Ends:' : 'Expires:'}</span>
           <span style={META_VALUE}>
             {expiresOn.toLocaleDateString('en-US', { month: '2-digit', day: '2-digit', year: 'numeric' })}
+            {/* Inside the value, so no gap before it; in the label's weight. */}
+            {onWhite ? <span style={META_LABEL}>,</span> : null}
           </span>
         </span>
-        <span aria-hidden style={META_DIVIDER} />
-        <span style={META_PAIR}>
-          <span style={META_LABEL}>Days to complete:</span>
-          <span style={META_VALUE}>
-            {accessDays} {accessDays === 1 ? 'day' : 'days'}
+        {/* White reads as one line — "…05/29/2026, 18 days to complete" — with
+            no divider (2026-10-14, Eric's request). */}
+        {onWhite ? (
+          <span style={{ ...META_PAIR, marginLeft: -4 }}>
+            <span style={META_VALUE}>
+              {accessDays} {accessDays === 1 ? 'day' : 'days'}
+            </span>
+            <span style={META_LABEL}>to complete</span>
           </span>
-        </span>
+        ) : (
+          <>
+            <span aria-hidden style={META_DIVIDER} />
+            <span style={META_PAIR}>
+              <span style={META_LABEL}>Days to complete:</span>
+              <span style={META_VALUE}>
+                {accessDays} {accessDays === 1 ? 'day' : 'days'}
+              </span>
+            </span>
+          </>
+        )}
       </div>
     ) : null
 
@@ -190,6 +227,17 @@ export function AtlasHomeEricV3({
     0,
     stops.findIndex((s) => s.status === 'in-progress'),
   )
+  // White's journey reads as Figma 265:8144 (2026-10-14, Eric's request: the
+  // text only, the rows keep their styling) — seven stops, the first current.
+  const shownStops: JourneyStop[] = onWhite && stops.length
+    ? WHITE_JOURNEY_TITLES.map((title, i) => ({
+        ...stops[0],
+        id: `white-${i}`,
+        title,
+        status: i === 0 ? 'in-progress' : 'not-started',
+      }))
+    : stops
+  const shownCurrentIdx = onWhite ? 0 : currentIdx
   const pass = GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 2]
   const apply = GET_LICENSED_STEPS[GET_LICENSED_STEPS.length - 1]
   const state = jurisdictionName(path.state)
@@ -235,8 +283,6 @@ export function AtlasHomeEricV3({
   // Which course-header layout is up — flipped by clicking the cover.
   const [whiteHead, setWhiteHead] = useState(false)
   const activeTabId = whiteCourseFor(searchParams.get(WHITE_COURSE_PARAM))
-  // Eric/Atlas White renders this Home too, on its white page (2026-10-14).
-  const onWhite = searchParams.get('version') === 'eric-atlas-white'
   const activeTab = tabs.find((t) => t.id === activeTabId) ?? tabs[0]
   const shownTitle = activeTab?.title ?? currentTitle
   const shownCover = activeTab?.coverUrl ?? coverUrl
@@ -253,7 +299,7 @@ export function AtlasHomeEricV3({
   return (
     // 40 between Quick Links and the course card on White, 8 more than WIP's
     // 32 (2026-10-14, Eric's request) — White's card has no padding of its own.
-    <div style={onWhite ? { ...PAGE, gap: 40 } : PAGE}>
+    <div style={onWhite ? WHITE_PAGE : PAGE}>
       {/* ── The course card ── */}
       {/* NO COURSE TABS on V3 (2026-10-08, Eric's request: "remove from v3"),
           so the card takes its full 48 on top. The tabs' data stays — the
@@ -266,13 +312,13 @@ export function AtlasHomeEricV3({
         aria-label="Current course"
         style={{
           ...(SHOW_COURSE_TABS && tabs.length > 1 ? CARD : { ...CARD, paddingTop: 40 }),
-          // …and a white fill, the page's own, and no padding — 750 wide, so
-          // the contents keep their 750 (same day).
+          // …and a white fill, the page's own, and no padding — 800 wide
+          // (2026-10-14, Eric's request; 750 earlier that day).
           ...(onWhite
             ? {
                 boxShadow: 'none',
                 background: 'var(--color-fixed-light)',
-                flex: '0 1 750px',
+                flex: '0 1 800px',
                 paddingTop: 0,
                 paddingRight: 0,
                 paddingBottom: 0,
@@ -281,7 +327,14 @@ export function AtlasHomeEricV3({
             : null),
         }}
       >
-        {SHOW_COURSE_TABS && tabs.length > 1 ? (
+        {/* THE COURSE HEAD — tabs, cover, title, Expires row and buttons. On
+            Eric/Atlas White it sits on a Primary 100 panel (40 all round, the
+            tabs hidden), with no
+            rule under it (2026-10-14, Eric's request). On WIP the wrapper is
+            `display: contents`, so nothing about WIP's layout moves. */}
+        <div ref={onWhite ? setHeadEl : undefined} style={onWhite ? WHITE_COURSE_HEAD : { display: 'contents' }}>
+        {/* No tabs on White (2026-10-14, Eric's request). */}
+        {SHOW_COURSE_TABS && !onWhite && tabs.length > 1 ? (
           <AtlasCourseTabs courses={tabs} activeId={activeTab?.id ?? path.id} onSelect={selectCourse} onAllCourses={onAllCourses ?? (() => go('courses'))} />
         ) : null}
         {/* 32, the row below's gap (2026-10-13, Eric's request), so the title
@@ -308,7 +361,10 @@ export function AtlasHomeEricV3({
               type="button"
               aria-label="Course header — layout 1 of 2. Press to show the next layout."
               onClick={() => setWhiteHead(true)}
-              style={{ ...COVER_FRAME, ...COVER_TOGGLE }}
+              // 12 corners on Eric/Atlas White, 8 under the card’s 20 (2026-10-14)
+              // — and the 260 column's width less the panel's padding there, so
+              // its right edge lines up with that column below.
+              style={{ ...COVER_FRAME, ...COVER_TOGGLE, ...(onWhite ? { borderRadius: 12, width: V3_LEFT_W - WHITE_HEAD_PAD } : null) }}
             >
               <img src={shownCover} alt="" style={COVER} />
             </button>
@@ -353,7 +409,8 @@ export function AtlasHomeEricV3({
         </div>
         )}
 
-        <span aria-hidden style={RULE} />
+        </div>
+        {onWhite ? null : <span aria-hidden style={RULE} />}
 
         {/* 32 either side of the rule, White's (2026-10-13, Eric's request);
             it was 40. */}
@@ -367,8 +424,14 @@ export function AtlasHomeEricV3({
                 place of the Course progress panel (2026-10-08, Eric's
                 request). Click it to flip the states. Hidden on the Completed
                 view (2026-10-09). */}
+            {/* ON WHITE, PROGRESS AND READINESS SHARE ONE OUTLINED PANEL
+                (Figma 286:9455; 2026-10-14, Eric's request), a hairline between
+                them; each keeps its states and clicks (`bare`). On WIP the
+                wrapper is `display: contents` and they stay two cards. */}
+            <div style={onWhite ? WHITE_PROGRESS_PANEL : { display: 'contents' }}>
             {completedView ? null : (
             <AtlasCourseProgressStates
+              bare={onWhite}
               key={`progress-${progressPick}-${refreshKey}`}
               initialStage={progress.stage}
               onAdvance={advanceProgress}
@@ -391,7 +454,11 @@ export function AtlasHomeEricV3({
             {/* No sub-line on its first screen (2026-10-13, Eric's request). */}
             {/* 20 corners, the Readiness card's under it (2026-10-13, Eric's
                 request; the card's own are 12). */}
-            <AtlasExamDateCard key={refreshKey} stateName={state} style={{ ...RAIL_CARD_BORDER, borderRadius: 20 }} hideIntroCopy />
+            {/* Not on Eric/Atlas White (2026-10-14, Eric's request: "remove");
+                WIP keeps it. */}
+            {onWhite ? null : (
+              <AtlasExamDateCard key={refreshKey} stateName={state} style={{ ...RAIL_CARD_BORDER, borderRadius: 20 }} hideIntroCopy />
+            )}
             {/* The READINESS card, under the module (Figma 254:8012, 2026-10-08). */}
             {/* On the Completed view it opens on Proficient (2026-10-09, Eric). */}
             {/* Clicking it at Exam Ready takes the page back to Not Started 0%
@@ -400,11 +467,14 @@ export function AtlasHomeEricV3({
                 readiness module is not changing when the progress changes"). */}
             {/* Its own key prefix: the two cards are siblings, and a SHARED key
                 left orphaned copies of the progress card on screen. */}
+            {onWhite && !completedView ? <span aria-hidden style={WHITE_PROGRESS_RULE} /> : null}
             <AtlasReadinessCard
+              bare={onWhite}
               key={`readiness-${progressPick}-${refreshKey}`}
               initialLevel={V3_READINESS_FOR[progressPick] ?? 0}
               onPastLast={() => setVariant('atlas-v3-progress', 'not-started')}
             />
+            </div>
             {/* The link tiles at the BOTTOM of the column (2026-10-09, Eric's
                 request; they led it). */}
             {!SHOW_LINK_TILES ? null : stackedTiles ? (
@@ -451,7 +521,8 @@ export function AtlasHomeEricV3({
             )}
           </div>
 
-          <span aria-hidden style={{ width: 1, flex: 'none', background: 'var(--color-primary-100)' }} />
+          {/* 8 more on each side of it on White (2026-10-14, Eric's request). */}
+          <span aria-hidden style={{ width: 1, flex: 'none', background: 'var(--color-primary-100)', ...(onWhite ? { marginLeft: 8, marginRight: 8 } : null) }} />
 
           {/* Right: the journey — at most 335, White's (2026-10-13, Eric's
               request). */}
@@ -463,7 +534,8 @@ export function AtlasHomeEricV3({
               <section aria-label="Study journey" style={{ display: 'flex', flexDirection: 'column', gap: 15 }}>
                 <p style={STEP_EYEBROW}>
                   <span style={{ fontWeight: 700 }}>Step 1</span>
-                  <span style={{ fontWeight: 600 }}> · Study Journey</span>
+                  {/* Not on White (2026-10-14, Eric's request). */}
+                  {onWhite ? null : <span style={{ fontWeight: 600 }}> · Study Journey</span>}
                 </p>
                 <p style={STEP_TITLE}>Congratulations!</p>
                 <p style={{ ...BODY_TEXT, margin: 0, fontSize: 13, lineHeight: '18px', color: 'var(--color-text-secondary)' }}>
@@ -479,17 +551,18 @@ export function AtlasHomeEricV3({
               <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
                 <p style={STEP_EYEBROW}>
                   <span style={{ fontWeight: 700 }}>Step 1</span>
-                  <span style={{ fontWeight: 600 }}> · Study Journey</span>
+                  {/* Not on White (2026-10-14, Eric's request). */}
+                  {onWhite ? null : <span style={{ fontWeight: 600 }}> · Study Journey</span>}
                 </p>
                 <p style={STEP_TITLE}>Complete Coursework</p>
               </div>
               <ol style={{ listStyle: 'none', margin: 0, padding: '3px 0', display: 'flex', flexDirection: 'column', gap: 2 }}>
-                {stops.map((stop, i) => (
+                {shownStops.map((stop, i) => (
                   <JourneyRow
                     key={stop.id}
                     stop={stop}
-                    current={i === currentIdx}
-                    last={i === stops.length - 1}
+                    current={i === shownCurrentIdx}
+                    last={i === shownStops.length - 1}
                     onOpen={onOpenStop ? () => onOpenStop(stop.id) : undefined}
                     // On Track 14% only (2026-10-09, Eric): the current stop
                     // shows how far through it is and what is next (Figma
@@ -497,7 +570,7 @@ export function AtlasHomeEricV3({
                     // Not Started and Milestone get the Next line alone (same
                     // day); the chapters are Eric's, per stage.
                     progressDetail={
-                      i !== currentIdx
+                      onWhite || i !== currentIdx
                         ? undefined
                         : progressPick === 'on-track'
                           ? { done: 4, total: 13, nextLabel: 'Chapter 4', nextName: 'Legal Concepts of Insurance' }
@@ -514,12 +587,14 @@ export function AtlasHomeEricV3({
             )}
 
             <span aria-hidden style={RULE} />
+            {/* Steps 2 and 3 drop their links on White (2026-10-14, Eric's
+                request); WIP keeps them. */}
             <Step
               number={2}
               title={pass.title}
               detail={pass.detail}
               link={pass.detailLabel ?? 'What to expect'}
-              onLink={onOpenStep ? () => onOpenStep(pass.id) : undefined}
+              onLink={onOpenStep && !onWhite ? () => onOpenStep(pass.id) : undefined}
             />
             <span aria-hidden style={RULE} />
             <Step
@@ -527,7 +602,7 @@ export function AtlasHomeEricV3({
               title={state ? `Get Licensed in ${state}` : 'Get Licensed'}
               detail={apply.detail}
               link={apply.detailLabel ?? 'How to apply'}
-              onLink={onOpenStep ? () => onOpenStep(apply.id) : undefined}
+              onLink={onOpenStep && !onWhite ? () => onOpenStep(apply.id) : undefined}
             />
             {onOpenRequirements ? (
               <button
@@ -572,7 +647,13 @@ export function AtlasHomeEricV3({
           onOpenRequirements={onOpenRequirements}
           // Outlined in Secondary 100 darkened 5% (2026-10-13, Eric's request;
           // 15% was tried and reverted); the exam-date card keeps Primary 200.
-          style={{ ...RAIL_CARD_BORDER, border: '1px solid color-mix(in srgb, var(--color-atlas-slate-100) 95%, black)' }}
+          // On White, as tall as the course-head panel beside it (2026-10-14,
+          // Eric's request).
+          style={{
+            ...RAIL_CARD_BORDER,
+            border: '1px solid color-mix(in srgb, var(--color-atlas-slate-100) 95%, black)',
+            ...(onWhite && headH ? { height: headH } : null),
+          }}
         />
 
       </div>
@@ -694,6 +775,17 @@ function Step({
   )
 }
 
+/* Eric/Atlas White's journey stops, verbatim from Figma 265:8144. */
+const WHITE_JOURNEY_TITLES = [
+  'Pre-course Affidavit',
+  'Pre-Licensing Lessons (13 of 42 completed)',
+  'Prep Review (23)',
+  'Simulated Exams (3)',
+  'Study-manual Notice Affidavit',
+  'Final Course Exam',
+  'Survey & Certificate',
+]
+
 /* ── Styles ─────────────────────────────────────────────────────────────── */
 
 const BODY_TEXT: CSSProperties = { fontFamily: 'var(--font-body)' }
@@ -705,6 +797,15 @@ const PAGE: CSSProperties = {
   gap: 32,
   alignItems: 'flex-start',
   justifyContent: 'center',
+}
+/* Eric/Atlas White: 40 between the columns, and every eyebrow on the page in
+   Neutral 800, #404040 (2026-10-14, Eric's request) — the page's eyebrow token
+   and the progress figures' labels, re-pointed here so WIP is untouched. */
+const WHITE_PAGE: CSSProperties = {
+  ...PAGE,
+  gap: 40,
+  ['--color-compass-page-eyebrow' as string]: 'var(--color-neutral-800)',
+  ['--atlas-progress-label' as string]: 'var(--color-neutral-800)',
 }
 /* The Home course card's surface — 48 in, 14 radius (Figma). */
 const CARD: CSSProperties = {
@@ -860,6 +961,46 @@ const META_PAIR: CSSProperties = { display: 'inline-flex', alignItems: 'center',
 const META_DIVIDER: CSSProperties = { width: 1, alignSelf: 'stretch', flex: 'none', background: 'var(--color-primary-200)' }
 const META_LABEL: CSSProperties = { fontWeight: 500, color: 'var(--color-neutral-700)' }
 const META_VALUE: CSSProperties = { fontWeight: 600, color: 'var(--color-text-primary)' }
+
+/* Eric/Atlas White's Progress + Readiness panel (Figma 286:9455, 2026-10-14):
+   a Primary 200 outline, 20 corners, 24 / 32 in, 16 between. The hairline
+   between them is the design's #E7E0D6 — tan 300 is the nearest token. */
+const WHITE_PROGRESS_PANEL: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 16,
+  padding: '24px 32px',
+  boxSizing: 'border-box',
+  borderRadius: 20,
+  // Quick Links' border (2026-10-14, Eric's request; Primary 200 before).
+  border: '1px solid color-mix(in srgb, var(--color-atlas-slate-100) 95%, black)',
+}
+const WHITE_PROGRESS_RULE: CSSProperties = { display: 'block', height: 1, background: 'var(--color-atlas-tan-300)' }
+
+/* Eric/Atlas White's course head (2026-10-14): a Primary 100 panel, 24 in
+   (32 at first, the same day),
+   the card's 20 corners; 24 between the tabs and the header, the card's own
+   gap. */
+/* White's course-head padding. The cover is the left rail's width less this,
+   so its right edge stays on the rail's below. */
+const WHITE_HEAD_PAD = 40
+const WHITE_COURSE_HEAD: CSSProperties = {
+  display: 'flex',
+  flexDirection: 'column',
+  // 24 under the tabs (2026-10-14: 24, then 16, then 24 again).
+  gap: 24,
+  // The tab bar's rule — and the active tab, which shares it — in Primary 200,
+  // so they show on the panel's Primary 100 (same day).
+  ['--color-atlas-outlined-card' as string]: 'var(--color-primary-200)',
+  // 40 all round (2026-10-14, Eric's requests: 32, then 24, then 32 with the
+  // top trimmed to 24, then 16, back to 32 once the tabs were hidden, 48, 40).
+  padding: WHITE_HEAD_PAD,
+  // 16 more below it, before the Progress row (2026-10-14, Eric's requests:
+  // 8, then 8 more).
+  marginBottom: 16,
+  borderRadius: 20,
+  background: 'var(--color-primary-100)',
+}
 
 const COVER: CSSProperties = {
   position: 'absolute',
