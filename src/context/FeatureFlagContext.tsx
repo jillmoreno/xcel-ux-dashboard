@@ -1700,7 +1700,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     surface: 'design',
     owner: 'eric',
     // …and White, which shows WIP's Home (2026-10-14, Eric's request).
-    versions: ['eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e'],
+    // Not on End-to-End Demo's bar (2026-10-14, Eric's request).
+    versions: ['eric-atlas-v3', 'eric-atlas-white'],
     group: 'Navigation',
     label: 'Quick Links',
     description:
@@ -1732,6 +1733,29 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     variants: [
       { value: 'toned', label: 'Toned' },
       { value: 'white', label: 'White' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-e2e-page',
+    /* THE END-TO-END DEMO'S PAGE, ON THE DESIGN BAR (2026-10-14, Eric's
+       request): its three pages in the order a learner meets them. Picking
+       one OPENS it, and arriving on one sets it to match —
+       `EndToEndPageSync` (pages/EndToEndPageSync.tsx), mounted by AppLayout, the
+       same version-is-the-truth shape as `atlas-background`. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-e2e'],
+    group: 'Navigation',
+    label: 'Page',
+    description:
+      'Which End-to-End Demo page is open: Invited Product Detail, Checkout or the Home dashboard. Picking one opens it.',
+    defaultEnabled: true,
+    defaultVariant: 'product-detail',
+    variants: [
+      { value: 'product-detail', label: 'Invited Product Detail' },
+      { value: 'checkout', label: 'Checkout' },
+      { value: 'home', label: 'Home' },
     ],
     page: 'dashboard-rebrand',
   },

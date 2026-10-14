@@ -7210,8 +7210,8 @@ a.cre-library-card-title::after {
    420:2029). The design's own faces and greys, kept apart from the brand
    tokens on purpose — these pages are a partner's, not XCEL's product chrome.
    The design's serif, Amasis MT (licensed, not bundled), is set in Rockwell.
-   Avenir ships with macOS. Inter is
-   loaded from Google Fonts by the page itself (`InvitedProductDetailPage`). */
+   Avenir ships with macOS. Inter is no longer used (the partner header moved
+   to Avenir, 2026-10-14); its token is kept for the design's reference. */
 :root {
   --font-e2e-inter: 'Inter', system-ui, -apple-system, sans-serif;
   /* The design's Amasis MT, set in Rockwell (2026-10-14, Eric's request:
@@ -7230,6 +7230,16 @@ a.cre-library-card-title::after {
      blue). */
   --color-e2e-footer-rule: #666666;
   --color-e2e-footer-bar: var(--color-e2e-link);
+  /* Checkout (Figma 420:2392): the field fill, the order summary's and the
+     other payment methods' warm fill, the summary's detail rows (#DDD at
+     30%), the header's shadow, and the reCAPTCHA badge's own colours. */
+  --color-e2e-field: #f2f5f7;
+  --color-e2e-summary: #f5f2ee;
+  --color-e2e-detail-row: rgb(221 221 221 / 0.3);
+  --color-e2e-header-shadow: rgb(0 0 0 / 0.1);
+  --color-e2e-recaptcha: #1a73e8;
+  --color-e2e-recaptcha-ground: #f9f9f9;
+  --color-e2e-recaptcha-shadow: #808080;
 }
 
 /* ── Help & Support entry cards ─────────────────────────────────────────
