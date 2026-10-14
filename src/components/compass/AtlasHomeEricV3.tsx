@@ -235,6 +235,8 @@ export function AtlasHomeEricV3({
   // Which course-header layout is up — flipped by clicking the cover.
   const [whiteHead, setWhiteHead] = useState(false)
   const activeTabId = whiteCourseFor(searchParams.get(WHITE_COURSE_PARAM))
+  // Eric/Atlas White renders this Home too, on its white page (2026-10-14).
+  const onWhite = searchParams.get('version') === 'eric-atlas-white'
   const activeTab = tabs.find((t) => t.id === activeTabId) ?? tabs[0]
   const shownTitle = activeTab?.title ?? currentTitle
   const shownCover = activeTab?.coverUrl ?? coverUrl
@@ -249,13 +251,36 @@ export function AtlasHomeEricV3({
   }
 
   return (
-    <div style={PAGE}>
+    // 40 between Quick Links and the course card on White, 8 more than WIP's
+    // 32 (2026-10-14, Eric's request) — White's card has no padding of its own.
+    <div style={onWhite ? { ...PAGE, gap: 40 } : PAGE}>
       {/* ── The course card ── */}
       {/* NO COURSE TABS on V3 (2026-10-08, Eric's request: "remove from v3"),
           so the card takes its full 48 on top. The tabs' data stays — the
           title and cover still read the first course — so to bring the strip
           back, set SHOW_COURSE_TABS. */}
-      <section aria-label="Current course" style={SHOW_COURSE_TABS && tabs.length > 1 ? CARD : { ...CARD, paddingTop: 40 }}>
+      {/* No drop shadow, a white fill and no padding on Eric/Atlas White, which
+          shows this Home on its white page (2026-10-14, Eric's request); WIP
+          keeps all three. */}
+      <section
+        aria-label="Current course"
+        style={{
+          ...(SHOW_COURSE_TABS && tabs.length > 1 ? CARD : { ...CARD, paddingTop: 40 }),
+          // …and a white fill, the page's own, and no padding — 750 wide, so
+          // the contents keep their 750 (same day).
+          ...(onWhite
+            ? {
+                boxShadow: 'none',
+                background: 'var(--color-fixed-light)',
+                flex: '0 1 750px',
+                paddingTop: 0,
+                paddingRight: 0,
+                paddingBottom: 0,
+                paddingLeft: 0,
+              }
+            : null),
+        }}
+      >
         {SHOW_COURSE_TABS && tabs.length > 1 ? (
           <AtlasCourseTabs courses={tabs} activeId={activeTab?.id ?? path.id} onSelect={selectCourse} onAllCourses={onAllCourses ?? (() => go('courses'))} />
         ) : null}

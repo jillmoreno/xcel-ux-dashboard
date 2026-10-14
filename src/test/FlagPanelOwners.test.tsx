@@ -121,6 +121,8 @@ describe('the owner axis', () => {
       'atlas-home-long-title',
       // Joined 2026-10-13 — WIP's Quick Links, left or right.
       'atlas-wip-quick-links-side',
+      // Joined 2026-10-14 — Background: Toned (WIP) or White (White).
+      'atlas-background',
       // Joined 2026-10-13 — the two-row Atlas header, on or off.
       'atlas-header-v2',
       // Joined 2026-10-12 — Eric/Atlas White's Static / Dropdown Top Nav.

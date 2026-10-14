@@ -1398,7 +1398,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        Atlas font link shared before today keeps working. */
     surface: 'design',
     owner: 'eric',
-    versions: ['eric-atlas-v1', 'eric-atlas-v2', 'eric-atlas-v3', 'eric-atlas-white', 'discoverability-atlas-compass-nav'],
+    // Off WIP's and White's bars (2026-10-14, Eric's request): they keep the
+    // default, Playfair 2.
+    versions: ['eric-atlas-v1', 'eric-atlas-v2', 'discoverability-atlas-compass-nav'],
     group: 'Widgets',
     label: 'Headings',
     description:
@@ -1447,7 +1449,8 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        now. Right — after them on all three. One pick for the three pages. */
     surface: 'design',
     owner: 'eric',
-    versions: ['eric-atlas-v3'],
+    // …and White, which shows WIP's Home (2026-10-14, Eric's request).
+    versions: ['eric-atlas-v3', 'eric-atlas-white'],
     group: 'Navigation',
     label: 'Quick Links',
     description:
@@ -1457,6 +1460,28 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     variants: [
       { value: 'left', label: 'Quick Links Left' },
       { value: 'right', label: 'Quick Links Right' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
+    key: 'atlas-background',
+    /* WIP OR WHITE, ON THE DESIGN BAR (2026-10-14, Eric's request): the two
+       versions show the same Home, Toned on WIP's warm page and White on a
+       white one. Picking an option SWITCHES THE VERSION, and each version sets
+       it to match on arrival — `useAtlasBackgroundSwitch` (atlasBackground.ts),
+       called by PlatformShell. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-v3', 'eric-atlas-white'],
+    group: 'Navigation',
+    label: 'Background',
+    description:
+      'The page behind the Home: Toned (Eric/Atlas WIP) or White (Eric/Atlas White). Picking one opens that version.',
+    defaultEnabled: true,
+    defaultVariant: 'toned',
+    variants: [
+      { value: 'toned', label: 'Toned' },
+      { value: 'white', label: 'White' },
     ],
     page: 'dashboard-rebrand',
   },
@@ -1471,7 +1496,9 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        list is `ATLAS_HEADER_V2_VERSIONS`, atlasHeaderV2.ts). */
     surface: 'design',
     owner: 'eric',
-    versions: ['eric-atlas-v2', 'eric-atlas-v3', 'eric-atlas-white'],
+    // Off WIP's and White's bars (2026-10-14, Eric's request): they keep the
+    // default, the two-row header.
+    versions: ['eric-atlas-v2'],
     group: 'Navigation',
     label: 'Header',
     description:
@@ -1489,7 +1516,11 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        has no dropdown. White only until 2026-10-13, when Eric/Atlas WIP took
        the same control (Eric's request: "update this nav to the nav that is in
        the White version"). One flag, so the pick is shared by both. */
-    surface: 'design',
+    /* OFF THE DESIGN BAR (2026-10-14, Eric's request: hide it on WIP and
+       White, its only versions). Not `surface: 'design'` any more — an empty
+       `versions` would follow Eric to every version — so it keeps its default,
+       Static, with no control. Restore the line below to bring it back. */
+    // surface: 'design',
     owner: 'eric',
     versions: ['eric-atlas-v3', 'eric-atlas-white'],
     group: 'Navigation',
@@ -1514,7 +1545,11 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        icon over "3 Certificates available" / "2 Active courses", the whole
        tile the link. Inline — the 2026-10-08 tiles (icon beside the count and
        a View link), kept as the alternative. V3 only. */
-    surface: 'design',
+    /* OFF THE DESIGN BAR (2026-10-14, Eric's request: hide it on WIP and
+       White, its only versions). Not `surface: 'design'` any more — an empty
+       `versions` would follow Eric to every version — so it keeps its default,
+       Stacked, with no control. Restore the line below to bring it back. */
+    // surface: 'design',
     owner: 'eric',
     versions: ['eric-atlas-v3', 'eric-atlas-white'],
     group: 'Widgets',

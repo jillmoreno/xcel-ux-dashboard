@@ -114,6 +114,7 @@ import { HomePageHeader } from './HomePageHeader'
 import { AtlasSectionPageHeader } from './AtlasSectionPageHeader'
 import { SectionPageHeader } from './SectionPageHeader'
 import { ATLAS_HEADER_V2_HEIGHT, useAtlasHeaderV2 } from './atlasHeaderV2'
+import { useAtlasBackgroundSwitch } from './atlasBackground'
 import { useCompassCourseFigures } from '@/components/learning/compassCourseFigures'
 
 /**
@@ -355,6 +356,8 @@ function PlatformShellBody() {
   // return, for the header height further down. The RAW `?version=`, as
   // `Header` reads it, so the two cannot disagree.
   const atlasHeaderV2 = useAtlasHeaderV2(params.get('version'))
+  // The Design bar's Background control ↔ WIP / White (2026-10-14).
+  useAtlasBackgroundSwitch()
   // Nav Version → Expanding Top Nav (2026-10-01, the designer's request): NO
   // left rail on any page — the header's slide-out links carry the navigation.
   // The rail's grid column stays (at 0 / a centring 1fr) so the grid's
@@ -2155,9 +2158,9 @@ function SectionShell({
         /* Eric/Atlas V3's Home sits 24px closer to the header — 32 on top, 56
            on the other sides (2026-10-09, Eric's request). */
         // …and White's 32 a side, for its two rails (2026-10-12; 24 briefly).
-        padding: atlasHome && shellParams.get('version') === 'eric-atlas-white'
-          ? '32px 32px 56px'
-          : atlasHome && shellParams.get('version') === 'eric-atlas-v3'
+        // White takes WIP's padding with WIP's Home (2026-10-14); its own was
+        // 32px 32px 56px, for its left rail and exam-date rail.
+        padding: atlasHome && ['eric-atlas-v3', 'eric-atlas-white'].includes(shellParams.get('version') ?? '')
           ? '32px 56px 56px'
           : atlasHome || atlasResources
           ? 56

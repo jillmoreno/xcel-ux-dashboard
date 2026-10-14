@@ -56,6 +56,10 @@ import {
 import { useCeStudyPlanEnabled, useFeatureFlag } from '@/context/FeatureFlagContext'
 import { useSearchParams } from 'react-router-dom'
 
+/** Eric/Atlas White renders WIP's Home (`AtlasHomeEricV3`) on its white page
+ *  (2026-10-14). False brings White's own Home (`AtlasHomeEricWhite`) back. */
+const WHITE_SHOWS_WIP_HOME: boolean = true
+
 /**
  * How many of today's tasks the card shows before deferring to the Study Plan.
  *
@@ -1250,7 +1254,19 @@ export function LearnerFocusedBand({
      of this band's Atlas arrangement, when `atlas-home-layout` is V2. Fed the
      band's own figures and handlers, so it moves with the same demo controls. */
   if (framedPace && atlasHomeV2 && resume) {
-    const Home = ericAtlasWhite ? AtlasHomeEricWhite : ericAtlasV3 ? AtlasHomeEricV3 : ericAtlasV2 ? AtlasHomeEricV2 : AtlasHomeV2
+    /* ERIC/ATLAS WHITE SHOWS WIP'S HOME (2026-10-14, Eric's request: "replace
+       the contents below the header with the WIP version but on a white
+       page") — the page stays White's white (PlatformShell). White's own Home,
+       `AtlasHomeEricWhite`, is unchanged and kept: set WHITE_SHOWS_WIP_HOME
+       false to bring it back. */
+    const Home =
+      ericAtlasWhite && !WHITE_SHOWS_WIP_HOME
+        ? AtlasHomeEricWhite
+        : ericAtlasV3 || ericAtlasWhite
+          ? AtlasHomeEricV3
+          : ericAtlasV2
+            ? AtlasHomeEricV2
+            : AtlasHomeV2
     return (
       <Home
         path={path}
