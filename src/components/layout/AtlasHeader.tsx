@@ -46,6 +46,7 @@ export function AtlasHeader({
   onLogout,
   onNavigate,
   showCourses = true,
+  onHelp,
 }: {
   /** Which nav pill is filled. */
   current?: 'home' | 'courses' | null
@@ -59,6 +60,12 @@ export function AtlasHeader({
   onNavigate?: (href: string) => void
   /** The My Courses dropdown. Off, the nav is Home alone. */
   showCourses?: boolean
+  /** HELP OPENS A SHEET, NOT A PAGE — 2026-10-14, Jillienne's request ("have
+   *  the help trigger the sheet view that i use in the hybrid version"). Set,
+   *  the eyebrow's Help is a button calling this; absent, it stays the link to
+   *  `links.help`, as the standalone preview still has it. The sheet itself is
+   *  the shared `Header`'s (`HelpSheet`), the same one Hybrid's Help opens. */
+  onHelp?: () => void
 }) {
   const to = (k: keyof AtlasHeaderLinks) => links[k] ?? '#'
   // A link's href, routed through `onNavigate` when there is one.
@@ -84,9 +91,15 @@ export function AtlasHeader({
         <span aria-hidden style={{ color: 'var(--atlas-hdr-divider-char)' }}>
           |
         </span>
-        <a {...go('help')} className="cre-atlas-hdr-eyebrow-link">
-          Help
-        </a>
+        {onHelp ? (
+          <button type="button" className="cre-atlas-hdr-eyebrow-link" onClick={onHelp}>
+            Help
+          </button>
+        ) : (
+          <a {...go('help')} className="cre-atlas-hdr-eyebrow-link">
+            Help
+          </a>
+        )}
       </div>
 
       {/* MAIN ROW */}

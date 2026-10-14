@@ -507,7 +507,12 @@ export function Header() {
           wide screens). */}
       {atlasHeaderV2 ? (
         <div inert={noHeaderNav || undefined}>
-          <AtlasHeaderConnected />
+          {/* HELP OPENS THE SHEET HERE TOO — 2026-10-14, Jillienne's request,
+              the day End-to-End Demo became the baseline: the two-row
+              header's eyebrow Help behaves as Hybrid's does (`hybridHelpSheet`)
+              rather than navigating to Support. Same `setHelpOpen`, same
+              sheet; the gate below includes `atlasHeaderV2`. */}
+          <AtlasHeaderConnected onHelp={() => setHelpOpen(true)} />
         </div>
       ) : (
       <div
@@ -751,7 +756,9 @@ export function Header() {
           rather than `showHelpControl` alone: on an arm where that is false,
           Hybrid's button would otherwise press and open nothing, which is the
           kind of dead control nothing fails on. */}
-      {(showHelpControl || hybridHelpSheet) && (
+      {/* …and a FOURTH since 2026-10-14: the two-row Atlas header's eyebrow
+          Help (`atlasHeaderV2`), wired the same way as Hybrid's. */}
+      {(showHelpControl || hybridHelpSheet || atlasHeaderV2) && (
         <HelpSheet open={helpOpen} onClose={() => setHelpOpen(false)} />
       )}
       <MembershipVersionsPanel

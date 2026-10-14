@@ -27,7 +27,12 @@ import { ATLAS_HOME_REFRESH } from './atlasHomeRefresh'
  *                  the version they were on.
  *   Logout         nowhere, as in `AccountMenu`.
  */
-export function AtlasHeaderConnected() {
+export function AtlasHeaderConnected({
+  onHelp,
+}: {
+  /** Help opens the shared Header's sheet (2026-10-14) — see `AtlasHeader`. */
+  onHelp?: () => void
+} = {}) {
   const { user } = useAccount()
   const { avatarOverride } = useProfileAvatar()
   const { unread } = useNotifications()
@@ -56,6 +61,7 @@ export function AtlasHeaderConnected() {
   return (
     <AtlasHeader
       current={current}
+      onHelp={onHelp}
       user={{
         name: `${user.firstName} ${user.lastName}`,
         email: 'alicia.navarro@gmail.com',
