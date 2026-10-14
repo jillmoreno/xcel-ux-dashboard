@@ -1360,7 +1360,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        `?skin=` wins — holds here too. */
     surface: 'design',
     owner: 'eric',
-    versions: ['eric-atlas-v3', 'eric-atlas-white'],
+    versions: ['eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Brand',
     description:
@@ -1433,7 +1433,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        `AtlasHomeEricV2`, so on any other version this would change nothing. */
     surface: 'design',
     owner: 'eric',
-    versions: ['eric-atlas-v2', 'eric-atlas-v3', 'eric-atlas-white'],
+    versions: ['eric-atlas-v2', 'eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Long title',
     description:
@@ -1450,7 +1450,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     surface: 'design',
     owner: 'eric',
     // …and White, which shows WIP's Home (2026-10-14, Eric's request).
-    versions: ['eric-atlas-v3', 'eric-atlas-white'],
+    versions: ['eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e'],
     group: 'Navigation',
     label: 'Quick Links',
     description:
@@ -1522,7 +1522,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        Static, with no control. Restore the line below to bring it back. */
     // surface: 'design',
     owner: 'eric',
-    versions: ['eric-atlas-v3', 'eric-atlas-white'],
+    versions: ['eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e'],
     group: 'Navigation',
     label: 'Top Nav',
     description:
@@ -1551,7 +1551,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        Stacked, with no control. Restore the line below to bring it back. */
     // surface: 'design',
     owner: 'eric',
-    versions: ['eric-atlas-v3', 'eric-atlas-white'],
+    versions: ['eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Link tiles',
     description:
@@ -1575,7 +1575,7 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
        still steps through the states from wherever this put it. */
     surface: 'design',
     owner: 'eric',
-    versions: ['eric-atlas-v3', 'eric-atlas-white'],
+    versions: ['eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e'],
     group: 'Widgets',
     label: 'Progress',
     description:

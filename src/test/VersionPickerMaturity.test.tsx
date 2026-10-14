@@ -104,11 +104,13 @@ describe('the designer tabs over the LIVE catalog', () => {
     expect(screen.getByText('Eric/Atlas Right SB Quick Links')).toBeTruthy()
     expect(screen.getByText('Eric/Atlas WIP')).toBeTruthy()
     expect(screen.getByText('Eric/Atlas White')).toBeTruthy()
+    expect(screen.getByText('End-to-End Demo')).toBeTruthy()
     expect(screen.getByText('Atlas/Compass Global Navigation')).toBeTruthy()
     /* The count beside the strip is read off the FILTERED list, so "0 versions"
        on a populated tab is the exact symptom this pins. Four: V1 came off
-       and Eric/Atlas White joined, both 2026-10-12. */
-    expect(screen.getByText(/4 versions/)).toBeTruthy()
+       and Eric/Atlas White joined, both 2026-10-12; five with End-to-End
+       Demo, 2026-10-14. */
+    expect(screen.getByText(/5 versions/)).toBeTruthy()
   })
 
   it('still shows Jill hers, so the filter is filtering and not emptying', () => {
@@ -195,7 +197,7 @@ describe('the shipped versions', () => {
     /* ⚠ AND ERIC/ATLAS V2 since 2026-10-07 — new, so not decided yet; it is
        design-site only until a promotion says otherwise. */
     // (List order: Eric/Atlas WIP leads Eric's versions since 2026-10-12.)
-    expect(unmarked.map((v) => v.id)).toEqual(['eric-atlas-v3', 'eric-atlas-white', 'discoverability-atlas-compass-nav', 'eric-atlas-v2'])
+    expect(unmarked.map((v) => v.id)).toEqual(['eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e', 'discoverability-atlas-compass-nav', 'eric-atlas-v2'])
     /* The gate is now FILTERING, not merely armed — the demo site is short by
        exactly those two, and nothing else moved. */
     expect(dashboardVersionsForAudience(true)).toHaveLength(

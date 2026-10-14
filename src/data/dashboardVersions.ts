@@ -19,6 +19,7 @@ export type DashboardVersionId =
   | 'eric-atlas-v2'
   | 'eric-atlas-v3'
   | 'eric-atlas-white'
+  | 'eric-atlas-e2e'
   | 'discoverability-testing-3'
 /**
  * The rebrand overview's LAYOUT, resolved from `?version=` by `PlatformShell`
@@ -419,6 +420,29 @@ export const DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_WHITE: DashboardVersio
     'A duplicate of Eric/Atlas WIP from 2026-10-12, with its own copy of the Home page (AtlasHomeEricWhite) so Home can change here without changing WIP. Shares WIP’s Design-bar controls.',
 }
 
+// "End-to-End Demo" — 2026-10-14, Eric's request: a duplicate of Eric/Atlas
+// White. The shell treats it as White (`isEricAtlasWhiteLike`); its Home is its
+// own copy (`AtlasHomeEricE2E`, of WIP/White's that day), so the demo can move
+// on without moving White. Design site only.
+export const DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E: DashboardVersion = {
+  id: 'eric-atlas-e2e',
+  owner: 'eric',
+  label: 'End-to-End Demo',
+  createdAt: '2026-10-14',
+  modifiedAt: '2026-10-14',
+  description:
+    'A duplicate of Eric/Atlas White from 2026-10-14, with its own copy of the Home page (AtlasHomeEricE2E) so Home can change here without changing White. Shares White’s pages and Design-bar controls, except Background, which switches between WIP and White.',
+}
+
+/** Eric/Atlas White — and End-to-End Demo, its duplicate. Every place White
+ *  differs from WIP asks this, so the duplicate follows without a second edit. */
+export function isEricAtlasWhiteLike(versionId: string | null | undefined): boolean {
+  return (
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_WHITE.id ||
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E.id
+  )
+}
+
 /** True for the Atlas/Compass Global Navigation version — and for Eric/Atlas
  *  V1, V2 and V3, which are the same pages under their own names (V2's and
  *  V3's Home are their own copies). One helper so the shell and
@@ -429,7 +453,8 @@ export function isAtlasCompassNavVersion(versionId: string | null | undefined): 
     versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V1.id ||
     versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V2.id ||
     versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V3.id ||
-    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_WHITE.id
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_WHITE.id ||
+    versionId === DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E.id
   )
 }
 
@@ -522,6 +547,8 @@ export const DISCOVERABILITY_DASHBOARD_VERSIONS: DashboardVersion[] = [
   DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_V3,
   // Eric/Atlas White (2026-10-12) — WIP's duplicate, listed right after it.
   DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_WHITE,
+  // End-to-End Demo (2026-10-14) — White's duplicate, right after it.
+  DISCOVERABILITY_DASHBOARD_VERSION_ERIC_ATLAS_E2E,
   DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV,
   /* ⚠ ERIC/ATLAS V1 TAKEN OFF THE PICKER 2026-10-12 (Eric: "delete Eric/Atlas
      V1"). The definition above is kept and `?version=eric-atlas-v1` still

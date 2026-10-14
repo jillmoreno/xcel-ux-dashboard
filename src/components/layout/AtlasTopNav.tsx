@@ -2,6 +2,7 @@ import { useEffect, useState, type CSSProperties, type ReactNode } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { BookOpenRegular, HouseRegular } from '@/icons'
 import { useFeatureFlag } from '@/context/FeatureFlagContext'
+import { isEricAtlasWhiteLike } from '@/data/dashboardVersions'
 import { AtlasTopNavCoursesDropdown } from './AtlasTopNavCoursesDropdown'
 import { ATLAS_HOME_REFRESH } from './atlasHomeRefresh'
 import './atlasHeader.css'
@@ -94,7 +95,7 @@ export function AtlasTopNav({ expanding = false }: { expanding?: boolean }) {
   // should be White's). On WIP a course pick changes `?whiteCourse=`, which
   // only White's Home reads.
   const whiteNav =
-    !expanding && (params.get('version') === 'eric-atlas-white' || params.get('version') === 'eric-atlas-v3')
+    !expanding && (isEricAtlasWhiteLike(params.get('version')) || params.get('version') === 'eric-atlas-v3')
   const coursesDropdown = whiteNav && topNavPick === 'dropdown'
   // …and Home Only (2026-10-12): the Course Overview button is not drawn.
   const homeOnly = whiteNav && topNavPick === 'home-only'

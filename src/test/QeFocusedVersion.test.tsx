@@ -259,6 +259,8 @@ describe('the QE Focused version is ARCHIVED but still reachable', () => {
       'eric-atlas-v3',
       // Eric/Atlas White (2026-10-12) — WIP's duplicate, right after it.
       'eric-atlas-white',
+      // End-to-End Demo (2026-10-14) — White's duplicate, right after it.
+      'eric-atlas-e2e',
       // From feat/atlas-compass-global-nav: Atlas/Compass, and Eric/Atlas V1
       // behind its flag (the Header filters it).
       'discoverability-atlas-compass-nav',
@@ -429,9 +431,10 @@ describe('Atlas/Compass Global Navigation — the Testing home under the Figma r
     /* ⚠ 2026-10-12: Eric/Atlas WIP (eric-atlas-v3) now leads Eric's
        versions, so it sits between Testing 3 and this one. */
     expect(ids.indexOf('eric-atlas-v3')).toBe(ids.indexOf('discoverability-testing-3') + 1)
-    // …and Eric/Atlas White after it (2026-10-12).
+    // …and Eric/Atlas White after it (2026-10-12), then End-to-End Demo
+    // (2026-10-14).
     expect(ids.indexOf('discoverability-atlas-compass-nav')).toBe(
-      ids.indexOf('discoverability-testing-3') + 3,
+      ids.indexOf('discoverability-testing-3') + 4,
     )
     expect(DISCOVERABILITY_DASHBOARD_VERSION_ATLAS_COMPASS_NAV.label).toBe(
       'Atlas/Compass Global Navigation',

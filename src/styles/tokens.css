@@ -694,6 +694,11 @@
   --color-cta-600: #7f1619;
   --color-cta-700: #5f1113;
   --color-cta-800: #420c0d;
+  /* XCEL's brick AS A BRAND MARK, not an action (2026-10-14): the cta ramp
+     above is re-pointed to navy by the Atlas guide skins, so a surface that
+     must stay brick under them (the End-to-End Demo's welcome rule, Figma
+     420:2029) reads this. Nothing re-points it. */
+  --color-xcel-brick: #9a1b1e;
   --color-cta-900: #2a0708;
 
   /* Body ink — the guide's own two type colours. Charcoal is the body ink;
@@ -6929,4 +6934,31 @@ a.cre-library-card-title::after {
    hover (2026-10-09, Eric's request), 5% darker than the design's 10%. */
 .cre-atlas-link-tile:hover {
   filter: drop-shadow(0 2px 1px rgb(0 0 0 / 0.15));
+}
+
+/* THE END-TO-END DEMO'S PARTNER PAGES (2026-10-14, Eric's request: "maintain
+   the fonts and colors referenced in the Figma", Atlas UX Design 420:2023 and
+   420:2029). The design's own faces and greys, kept apart from the brand
+   tokens on purpose — these pages are a partner's, not XCEL's product chrome.
+   The design's serif, Amasis MT (licensed, not bundled), is set in Rockwell.
+   Avenir ships with macOS. Inter is
+   loaded from Google Fonts by the page itself (`InvitedProductDetailPage`). */
+:root {
+  --font-e2e-inter: 'Inter', system-ui, -apple-system, sans-serif;
+  /* The design's Amasis MT, set in Rockwell (2026-10-14, Eric's request:
+     "use rockwell as the serif"). Rockwell ships with macOS; elsewhere the
+     nearest slab the viewer has, then Georgia. */
+  --font-e2e-serif: Rockwell, 'Rockwell Std', 'Roboto Slab', 'Courier New', Georgia, serif;
+  --font-e2e-avenir: 'Avenir', 'Avenir Next', 'Nunito Sans', system-ui, sans-serif;
+  --color-e2e-partner-outline: #e6e6e6;
+  --color-e2e-partner-divider: #d1d1d1;
+  /* The course header's band and its price card's outline (Figma 420:2080). */
+  --color-e2e-course-band: #3a3a3a;
+  --color-e2e-card-outline: #dddddd;
+  /* The course details' links and Flashcards heading (Figma 420:2099). */
+  --color-e2e-link: #2d5872;
+  /* The footer (Figma 420:2176): its top rule, and the legal bar (the link
+     blue). */
+  --color-e2e-footer-rule: #666666;
+  --color-e2e-footer-bar: var(--color-e2e-link);
 }

@@ -10,7 +10,7 @@ import { useFeatureFlag } from '@/context/FeatureFlagContext'
  * Read by `Header` (which header to draw) and `PlatformShell` (how tall it is,
  * so the rails pin under it). Both must ask the same question.
  */
-export const ATLAS_HEADER_V2_VERSIONS: readonly string[] = ['eric-atlas-v2', 'eric-atlas-v3', 'eric-atlas-white']
+export const ATLAS_HEADER_V2_VERSIONS: readonly string[] = ['eric-atlas-v2', 'eric-atlas-v3', 'eric-atlas-white', 'eric-atlas-e2e']
 
 /** The two-row header's height: the 24px eyebrow + the 72px main row. */
 export const ATLAS_HEADER_V2_HEIGHT = 96

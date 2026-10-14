@@ -22,6 +22,7 @@ import { AtlasHomeV2 } from '@/components/compass/AtlasHomeV2'
 import { AtlasHomeEricV2 } from '@/components/compass/AtlasHomeEricV2'
 import { AtlasHomeEricV3 } from '@/components/compass/AtlasHomeEricV3'
 import { AtlasHomeEricWhite } from '@/components/compass/AtlasHomeEricWhite'
+import { AtlasHomeEricE2E } from '@/components/compass/AtlasHomeEricE2E'
 import { HomeNavTileColumn } from '@/components/layout/HomeNavTiles'
 import { HomeTileGrid } from '@/components/layout/HomeTileGrid'
 import { HomeReadinessStub } from '@/components/layout/HomeReadinessStub'
@@ -711,6 +712,8 @@ export function LearnerFocusedBand({
   const ericAtlasV3 = bandParams.get('version') === 'eric-atlas-v3'
   // …and Eric/Atlas White its own, a copy of V3's (2026-10-12).
   const ericAtlasWhite = bandParams.get('version') === 'eric-atlas-white'
+  // …and End-to-End Demo its own, a copy of the Home White shows (2026-10-14).
+  const ericAtlasE2E = bandParams.get('version') === 'eric-atlas-e2e'
   /* NOT ON THE ATLAS HOME (merged 2026-10-02): its Study Pace card is part of
      the Atlas design (the brand's hover fill, the Primary 200 stroke), so the
      baseline's hiding flag does not reach it. */
@@ -1260,7 +1263,9 @@ export function LearnerFocusedBand({
        `AtlasHomeEricWhite`, is unchanged and kept: set WHITE_SHOWS_WIP_HOME
        false to bring it back. */
     const Home =
-      ericAtlasWhite && !WHITE_SHOWS_WIP_HOME
+      ericAtlasE2E
+        ? AtlasHomeEricE2E
+        : ericAtlasWhite && !WHITE_SHOWS_WIP_HOME
         ? AtlasHomeEricWhite
         : ericAtlasV3 || ericAtlasWhite
           ? AtlasHomeEricV3

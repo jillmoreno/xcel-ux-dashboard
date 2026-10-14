@@ -6,6 +6,7 @@ import { useAccount, supportsMembership, type Brand } from '@/context/AccountCon
 import {
   defaultDiscoverabilityVersionFor,
   isAtlasCompassNavVersion,
+  isEricAtlasWhiteLike,
   type DashboardLayout,
 } from '@/data/dashboardVersions'
 import { SectionContent } from '@/components/membership/v7/MembershipV7'
@@ -381,7 +382,7 @@ function PlatformShellBody() {
   // Quick Links at the right of the cards, as its My Courses.
   // …and Eric/Atlas White's, which shows WIP's Certificates page (2026-10-14).
   const wipCertificates =
-    active === 'certificates' && ['eric-atlas-v3', 'eric-atlas-white'].includes(params.get('version') ?? '')
+    active === 'certificates' && (params.get('version') === 'eric-atlas-v3' || isEricAtlasWhiteLike(params.get('version')))
   const atlasNoRail =
     atlasNav &&
     (navPlacement === 'expanding-top' ||
@@ -427,7 +428,7 @@ function PlatformShellBody() {
   const atlasSkinFlagAll = useFeatureFlag('atlas-brand-skin')
   const atlasSkinFlagV3 = useFeatureFlag('atlas-brand-skin-v3')
   // …and Eric/Atlas White, WIP's duplicate (2026-10-12), shares it.
-  const atlasSkinFlag = ['eric-atlas-v3', 'eric-atlas-white'].includes(params.get('version') ?? '') ? atlasSkinFlagV3 : atlasSkinFlagAll
+  const atlasSkinFlag = (params.get('version') === 'eric-atlas-v3' || isEricAtlasWhiteLike(params.get('version'))) ? atlasSkinFlagV3 : atlasSkinFlagAll
   const atlasSkin = atlasSkinFor(
     atlasSkinParam && ATLAS_SKINS.some((s) => s.skin === atlasSkinParam)
       ? atlasSkinParam
@@ -1010,7 +1011,7 @@ function PlatformShellBody() {
         // (2026-10-14, Eric's request).
         ...(atlasNav &&
         (active === 'dashboard' || active === 'courses' || active === 'certificates') &&
-        params.get('version') === 'eric-atlas-white'
+        isEricAtlasWhiteLike(params.get('version'))
           ? { background: 'var(--color-fixed-light)' }
           : atlasNav && (active === 'dashboard' || active === 'course' || active === 'resources')
             ? { background: 'var(--color-compass-page)' }
@@ -1345,7 +1346,7 @@ function PlatformShellBody() {
           ...(topNav && !compassCourseRail
             ? {
                 maxWidth:
-                  active === 'dashboard' && ['eric-atlas-white', 'eric-atlas-v3'].includes(params.get('version') ?? '')
+                  active === 'dashboard' && (params.get('version') === 'eric-atlas-v3' || isEricAtlasWhiteLike(params.get('version')))
                     ? 1278
                     : 1172,
                 width: '100%',
@@ -2167,7 +2168,7 @@ function SectionShell({
         // White takes WIP's padding with WIP's Home (2026-10-14); its own was
         // 32px 32px 56px, for its left rail and exam-date rail.
         // …and White's top 8 more, 40 (2026-10-14, Eric's request).
-        padding: atlasHome && shellParams.get('version') === 'eric-atlas-white'
+        padding: atlasHome && isEricAtlasWhiteLike(shellParams.get('version'))
           ? '40px 56px 56px'
           : atlasHome && shellParams.get('version') === 'eric-atlas-v3'
           ? '32px 56px 56px'
@@ -2496,8 +2497,8 @@ function MyCoursesSection() {
      Exam Simulator. The other Atlas versions keep the left column and all. */
   // WIP's page — and Eric/Atlas White's, a duplicate of it on a white page
   // (2026-10-14, Eric's request).
-  const wip = ['eric-atlas-v3', 'eric-atlas-white'].includes(params.get('version') ?? '')
-  const white = params.get('version') === 'eric-atlas-white'
+  const wip = (params.get('version') === 'eric-atlas-v3' || isEricAtlasWhiteLike(params.get('version')))
+  const white = isEricAtlasWhiteLike(params.get('version'))
   const quickLinksRight = useFeatureFlag('atlas-wip-quick-links-side').variant === 'right'
   /* The Home course's card opens the Compass course page; the P&C card is the
      demo's invented course, so it is not wired. */
@@ -2558,7 +2559,7 @@ function CertificatesSection() {
   const [params] = useSearchParams()
   // WIP's page — and Eric/Atlas White's, a duplicate of it on a white page
   // (2026-10-14, Eric's request).
-  const wip = ['eric-atlas-v3', 'eric-atlas-white'].includes(params.get('version') ?? '')
+  const wip = (params.get('version') === 'eric-atlas-v3' || isEricAtlasWhiteLike(params.get('version')))
   const quickLinksRight = useFeatureFlag('atlas-wip-quick-links-side').variant === 'right'
   return (
     <CertificatesPage
@@ -2583,7 +2584,7 @@ function CertificatesSection() {
       // White keeps Secondary 300.
       atlasBarColor={params.get('version') === 'eric-atlas-v3' ? 'var(--color-atlas-tan-200)' : undefined}
       atlasCardStyle={
-        params.get('version') === 'eric-atlas-white'
+        isEricAtlasWhiteLike(params.get('version'))
           ? { background: 'var(--color-atlas-tan-100)', border: '1px solid var(--color-atlas-tan-200)' }
           : undefined
       }
@@ -2591,7 +2592,7 @@ function CertificatesSection() {
       // with a Secondary 300 stroke, its text and glyph Secondary 700
       // (2026-10-14, Eric's requests).
       atlasInProgressPill={
-        params.get('version') === 'eric-atlas-white'
+        isEricAtlasWhiteLike(params.get('version'))
           ? {
               background: 'var(--color-atlas-tan-200)',
               border: '1px solid var(--color-atlas-tan-300)',

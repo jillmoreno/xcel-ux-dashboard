@@ -9,6 +9,7 @@ import { QaNotesPage } from '@/pages/QaNotesPage'
 import { LinksPage } from '@/pages/LinksPage'
 import { ComponentReviewPage } from '@/pages/ComponentReviewPage'
 import { AtlasHeaderPreviewPage } from '@/pages/AtlasHeaderPreviewPage'
+import { InvitedProductDetailPage } from '@/pages/InvitedProductDetailPage'
 import { DashboardPage } from '@/pages/DashboardPage'
 import { DashboardRebrandPage } from '@/pages/DashboardRebrandPage'
 import { RecommendedCardABComparePage } from '@/pages/RecommendedCardABComparePage'
@@ -193,6 +194,9 @@ export default function App() {
       <Route path="/review" element={<TestingGate><ComponentReviewPage /></TestingGate>} />
       {/* The Atlas header on its own, not wired into the shell. See `AtlasHeader`. */}
       <Route path="/atlas-header-preview" element={<TestingGate><AtlasHeaderPreviewPage /></TestingGate>} />
+      {/* The End-to-End Demo's first page, before its dashboard: blank under the
+          partner header. "Invited Product Detail" — see `InvitedProductDetailPage`. */}
+      <Route path="/end-to-end-demo" element={<TestingGate><InvitedProductDetailPage /></TestingGate>} />
       <Route
         path="/prototype/:featureId/handoff/:componentId"
         element={
