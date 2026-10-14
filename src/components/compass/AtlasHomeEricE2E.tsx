@@ -363,7 +363,7 @@ export function AtlasHomeEricE2E({
             tabs hidden), with no
             rule under it (2026-10-14, Eric's request). On WIP the wrapper is
             `display: contents`, so nothing about WIP's layout moves. */}
-        <div ref={onWhite ? setHeadEl : undefined} style={onWhite ? WHITE_COURSE_HEAD : { display: 'contents' }}>
+        <div style={onWhite ? WHITE_COURSE_HEAD : { display: 'contents' }}>
         {/* No tabs on White (2026-10-14, Eric's request). */}
         {SHOW_COURSE_TABS && !onWhite && tabs.length > 1 ? (
           <AtlasCourseTabs courses={tabs} activeId={activeTab?.id ?? path.id} onSelect={selectCourse} onAllCourses={onAllCourses ?? (() => go('courses'))} />
