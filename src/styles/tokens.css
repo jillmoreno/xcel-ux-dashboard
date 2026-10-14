@@ -7299,3 +7299,14 @@ a.cre-library-card-title::after {
 .cre-support-card--compact:active {
   box-shadow: none;
 }
+
+/* ── Atlas step titles as triggers (End-to-End Demo, 2026-10-14) ──────────
+   Step 2 "Pass State Exam" opens the Exam Information sheet and Step 3 "Get
+   Licensed in …" the State Requirements sheet (Jillienne's request). The
+   colour is inline (`STEP_TITLE_LINK` in AtlasHomeEricE2E.tsx); this carries
+   the hover, and the same cue for keyboard focus. */
+.cre-atlas-step-title-link:hover,
+.cre-atlas-step-title-link:focus-visible {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}

@@ -19,6 +19,7 @@ import { COMPASS_BUTTON } from './compassButton'
 import { AtlasExamDateCard } from './AtlasExamDateCard'
 import { ExamScheduleWidget } from '@/components/learning/ExamScheduleWidget'
 import { clearExamDate, readExamDate } from '@/data/examDateStore'
+import { EXAM_DETAILS_STEP_ID } from '@/data/examDetails'
 import { AtlasJourneyLinksCard } from './AtlasJourneyLinksCard'
 import { ATLAS_HOME_REFRESH } from '@/components/layout/atlasHomeRefresh'
 import { AtlasCourseProgressStates, type ProgressStage } from './AtlasCourseProgressStates'
@@ -631,6 +632,11 @@ export function AtlasHomeEricE2E({
               detail={pass.detail}
               link={pass.detailLabel ?? 'What to expect'}
               onLink={onOpenStep && !onWhite ? () => onOpenStep(pass.id) : undefined}
+              /* THE TITLE IS THE WAY INTO THE EXAM INFORMATION SHEET — 2026-10-14,
+                 Jillienne's request ("make this blue, and on hover will be an
+                 underline. this will trigger sheet view = Exam information").
+                 The same sheet Quick Links' "Exam Information" row opens. */
+              onTitle={onOpenStep ? () => onOpenStep(EXAM_DETAILS_STEP_ID) : undefined}
               /* THE EXAM-DATE QUESTION LIVES IN THIS STEP — 2026-10-14, Jillienne's
                  request, the day this version became the baseline: "the logic of
                  'Do you know your state exam date?' needs to be added in this Pass
@@ -664,6 +670,9 @@ export function AtlasHomeEricE2E({
               detail={apply.detail}
               link={apply.detailLabel ?? 'How to apply'}
               onLink={onOpenStep && !onWhite ? () => onOpenStep(apply.id) : undefined}
+              // …and this title opens the State Requirements sheet (same day,
+              // Jillienne's request: "add same logic to the Get Licensed line").
+              onTitle={onOpenRequirements}
             />
             {onOpenRequirements ? (
               <button
@@ -819,12 +828,17 @@ function Step({
   link,
   onLink,
   after,
+  onTitle,
 }: {
   number: number
   title: string
   detail?: string
   link: string
   onLink?: () => void
+  /** Set, the TITLE is a link-styled button (brand blue, underline on hover)
+   *  calling this — Step 2 opens Exam Information, Step 3 State Requirements
+   *  (2026-10-14). Absent, the title is plain text, as before. */
+  onTitle?: () => void
   /** Rendered after the detail and the link — Step 2's exam-date question
    *  (2026-10-14). */
   after?: ReactNode
@@ -833,7 +847,13 @@ function Step({
     <section aria-label={title} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 7 }}>
         <p style={{ ...STEP_EYEBROW, fontWeight: 700 }}>Step {number}</p>
-        <p style={STEP_TITLE}>{title}</p>
+        {onTitle ? (
+          <button type="button" className="cre-atlas-step-title-link" onClick={onTitle} style={{ ...STEP_TITLE, ...STEP_TITLE_LINK }}>
+            {title}
+          </button>
+        ) : (
+          <p style={STEP_TITLE}>{title}</p>
+        )}
       </div>
       {detail ? <p style={{ ...BODY_TEXT, margin: 0, fontSize: 13, lineHeight: '18px', color: 'var(--color-text-secondary)' }}>{detail}</p> : null}
       {onLink ? (
@@ -1139,6 +1159,18 @@ const STEP_EYEBROW: CSSProperties = {
   color: 'var(--color-compass-page-eyebrow)',
 }
 /* Serif H8 (20 / 24). */
+/* The step title as a trigger (2026-10-14): the title's own type in the brand
+   blue, a bare button; `.cre-atlas-step-title-link` (tokens.css) underlines it
+   on hover and focus. */
+const STEP_TITLE_LINK: CSSProperties = {
+  padding: 0,
+  border: 'none',
+  background: 'none',
+  cursor: 'pointer',
+  textAlign: 'left',
+  alignSelf: 'flex-start',
+  color: 'var(--color-compass-page-button)',
+}
 const STEP_TITLE: CSSProperties = {
   margin: 0,
   fontFamily: 'var(--font-heading-serif)',
