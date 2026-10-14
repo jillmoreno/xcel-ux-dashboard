@@ -17,6 +17,8 @@ import {
 } from '@/icons'
 import { COMPASS_BUTTON } from './compassButton'
 import { AtlasExamDateCard } from './AtlasExamDateCard'
+import { ExamScheduleWidget } from '@/components/learning/ExamScheduleWidget'
+import { clearExamDate, readExamDate } from '@/data/examDateStore'
 import { AtlasJourneyLinksCard } from './AtlasJourneyLinksCard'
 import { ATLAS_HOME_REFRESH } from '@/components/layout/atlasHomeRefresh'
 import { AtlasCourseProgressStates, type ProgressStage } from './AtlasCourseProgressStates'
@@ -260,6 +262,22 @@ export function AtlasHomeEricE2E({
   const longTitle = useFeatureFlag('atlas-home-long-title').enabled
   // The Design bar's Progress (V3 only, 2026-10-09) — which module state and figure.
   const progressPick = useFeatureFlag('atlas-v3-progress').variant ?? 'not-started'
+  /* ⚠ 0% CLEARS THE BOOKED EXAM DATE — ported from Hybrid - Pacing Exploration
+     (2026-10-14, Jillienne's request: "follow the logic from the latest hybrid
+     version"). The date is per-browser reviewer input (`cgp.examDate`) and
+     survives the Progress control, so arriving at Not Started otherwise shows
+     a learner who has not begun the course already holding a booking.
+     ⚠ ON ENTERING 0%, NOT CONTINUOUSLY — the dependency is the stage alone, so
+     a date entered WHILE at 0% stays. Here 0% is the band's `notStarted` OR
+     this version's own Progress control at Not Started (its default, so a
+     fresh load clears a stale date too). ⚠ THE STORE IS GLOBAL: a date set on
+     another version is gone once this one is opened at 0% — acceptable because
+     it is reviewer input, not product data; the card offers the date again. */
+  const atNotStarted = notStarted || progressPick === 'not-started'
+  useEffect(() => {
+    if (!atNotStarted) return
+    if (readExamDate()) clearExamDate()
+  }, [atNotStarted])
   // The Design bar's Link tiles (V3 only, 2026-10-09) — Stacked (default) or Inline.
   const stackedTiles = (useFeatureFlag('atlas-v3-link-tiles').variant ?? 'stacked') !== 'inline'
   // The Design bar's Quick Links side (2026-10-13) — Left (default) or Right.
@@ -613,6 +631,31 @@ export function AtlasHomeEricE2E({
               detail={pass.detail}
               link={pass.detailLabel ?? 'What to expect'}
               onLink={onOpenStep && !onWhite ? () => onOpenStep(pass.id) : undefined}
+              /* THE EXAM-DATE QUESTION LIVES IN THIS STEP — 2026-10-14, Jillienne's
+                 request, the day this version became the baseline: "the logic of
+                 'Do you know your state exam date?' needs to be added in this Pass
+                 State Exam section. Follow the logic from the latest hybrid version."
+                 That logic is `ExamScheduleWidget` as Hybrid - Pacing Exploration
+                 draws it: the question in the heading face with no eyebrow, "Yes, I
+                 know the date" first, the date written to `examDateStore` (which
+                 this Home's pace model already reads through `examDate`), then the
+                 saved readout with Edit and the split-flap countdown.
+                 ⚠ BARE, NOT A CARD: `shell` is empty so the widget sits in the step's
+                 column like the detail copy, rather than drawing a card inside the
+                 step. ⚠ ERIC'S `AtlasExamDateCard` IS UNTOUCHED — it still renders on
+                 WIP's course panel; this version (White-like) had dropped it, which
+                 is why the question had no home here. */
+              after={
+                <ExamScheduleWidget
+                  key={refreshKey}
+                  shell={E2E_EXAM_SHELL}
+                  onOpenStep={onOpenStep}
+                  stateName={state || undefined}
+                  compact
+                  countdown="flip"
+                  treatment="pacing"
+                />
+              }
             />
             <span aria-hidden style={RULE} />
             <Step
@@ -772,12 +815,16 @@ function Step({
   detail,
   link,
   onLink,
+  after,
 }: {
   number: number
   title: string
   detail?: string
   link: string
   onLink?: () => void
+  /** Rendered after the detail and the link — Step 2's exam-date question
+   *  (2026-10-14). */
+  after?: ReactNode
 }) {
   return (
     <section aria-label={title} style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
@@ -791,6 +838,7 @@ function Step({
           {link} →
         </button>
       ) : null}
+      {after}
     </section>
   )
 }
@@ -1054,6 +1102,10 @@ const TITLE: CSSProperties = {
 }
 // Page and step dividers in primary-100 (2026-10-09, Eric; briefly 200) — were the warm nav rule.
 const RULE: CSSProperties = { display: 'block', height: 1, background: 'var(--color-primary-100)' }
+/* The exam-date widget's `shell` inside Step 2: no card at all (2026-10-14). The
+   `exam-card-background` flag still spreads over this, so `tint` / `outline`
+   would frame it — the baseline is `white`, which is this. */
+const E2E_EXAM_SHELL: CSSProperties = {}
 /* The design's text links: Open Sans Bold 13, the brand's button colour. */
 const LINK: CSSProperties = {
   alignSelf: 'flex-start',
