@@ -8,7 +8,7 @@ import { ThemeProvider } from '@/context/ThemeContext'
 import { existsSync, readFileSync, statSync } from 'node:fs'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { PROTOTYPE_FEATURES, componentPreviewUrl } from '@/data/prototypeFeatures'
+import { PROTOTYPE_FEATURES, PROTOTYPE_SCOPES, componentPreviewUrl } from '@/data/prototypeFeatures'
 import { ARCHIVED_ITEMS } from '@/data/archivedItems'
 
 /**
@@ -125,8 +125,10 @@ describe('section routing (sectionOf)', () => {
    * Sandbox, which is that category's documented behaviour rather than a bug.
    */
   const EXPECTED_PLACEMENT: Record<string, string> = {
-    // The one in-app row, and the only feature row on the ungated front door.
+    // The in-app rows — the only feature rows on the ungated front door. One
+    // per `prototypeScope`; see "Prototypes holds exactly the rows" below.
     'xcel-dashboard': 'prototypes',
+    'xcel-compass': 'prototypes',
     'xcel-lms': 'exploration',
     'xcel-walkthrough': 'exploration',
     'xcel-wireframes': 'exploration',
@@ -202,7 +204,13 @@ describe('section routing (sectionOf)', () => {
     const rows = screen
       .getAllByRole('button', { name: /^Actions for / })
       .map((b) => b.getAttribute('aria-label')?.replace(/^Actions for /, ''))
-    expect(rows).toEqual(['XCEL Dashboard — Live Product Build'])
+    // ⚠ ONE ROW PER SCOPE since 2026-10-14 — it was exactly one row from
+    // 2026-09-28. The list is still written out, in section order, so adding
+    // a row is a deliberate edit here and not something a category typo does.
+    expect(rows).toEqual([
+      'XCEL Dashboard — Live Product Build',
+      'Compass Learning — Live Product Build',
+    ])
 
     // …and a gated row is still not among them.
     expect(screen.queryByText('XCEL LMS — Desktop Platform')).not.toBeInTheDocument()
@@ -445,9 +453,74 @@ describe('the Prototypes row opens the committed configuration', () => {
     // The assertion stays the whole SET in both directions, which is what
     // catches an accidental conversion; loosening it to a count would give up
     // the guard entirely.
+    //
+    // ⚠ TWO SINCE 2026-10-14, both Prototypes rows. The guided-row trap above
+    // is unchanged; a `to` is still only ever a Prototypes row's.
     expect(PROTOTYPE_FEATURES.filter((f) => f.to).map((f) => f.id).sort()).toEqual([
+      'xcel-compass',
       'xcel-dashboard',
     ])
+  })
+})
+
+/* ── Prototypes — one row per scope, every row the same build ────────────────
+ *
+ * 2026-10-14. Prototypes held ONE row from 2026-09-28, because two rows
+ * pointing at two builds of the same thing make everyone ask which one is
+ * real. The section now holds one row PER SCOPE (`PROTOTYPE_SCOPES`), and this
+ * block is the stricter mechanical form of what the one-row rule guaranteed:
+ * every row is `main`'s build at the committed baseline, so there is nothing
+ * to ask "which one is real?" about. The thing to notice is what is NOT
+ * allowed — a branch URL, an `?ff=` pin, a pinned `version=`, an external
+ * document — because each of those is a row that would stop tracking the
+ * product the moment `main` moved under it. */
+describe('Prototypes — one row per scope, every row the same build', () => {
+  const prototypeRows = PROTOTYPE_FEATURES.filter((f) => f.category === 'prototype')
+
+  it('every Prototypes row carries a scope, and no scope has two rows', () => {
+    const seen = new Map<string, string>()
+    for (const f of prototypeRows) {
+      expect(f.prototypeScope, `${f.id} is a Prototypes row and needs a prototypeScope`).toBeTruthy()
+      expect(
+        PROTOTYPE_SCOPES.some((s) => s.id === f.prototypeScope),
+        `${f.id} names a scope that is not in PROTOTYPE_SCOPES`,
+      ).toBe(true)
+      const prior = seen.get(f.prototypeScope!)
+      expect(
+        prior,
+        `${f.id} and ${prior} are both ${f.prototypeScope} — a second row for a scope is a Refinement job`,
+      ).toBeUndefined()
+      seen.set(f.prototypeScope!, f.id)
+    }
+  })
+
+  it('no row outside Prototypes carries a scope', () => {
+    // The field means "which door of the product is this the source of truth
+    // for". On an Exploration or handoff row it would be a claim the section
+    // does not make.
+    for (const f of PROTOTYPE_FEATURES) {
+      if (f.category === 'prototype') continue
+      expect(f.prototypeScope, `${f.id} is not a Prototypes row and must not carry a scope`).toBeUndefined()
+    }
+  })
+
+  it('every Prototypes row opens the product on main at the committed baseline', () => {
+    for (const f of prototypeRows) {
+      expect(f.externalUrl, `${f.id}: a Prototypes row is a route, never a document`).toBeUndefined()
+      expect(f.to, `${f.id} needs a \`to\``).toBeTruthy()
+      const url = new URL(f.to!, 'https://same.origin')
+      expect(url.origin, `${f.id} must be same-origin — a branch URL is a second build`).toBe('https://same.origin')
+      expect(url.pathname, `${f.id} must enter the product app`).toBe('/dashboard-rebrand')
+      expect(url.searchParams.get('demo'), `${f.id} must open the committed baseline`).toBe('1')
+      expect(url.searchParams.has('ff'), `${f.id} must not pin flags — it would stop tracking main`).toBe(false)
+      expect(url.searchParams.has('version'), `${f.id} must not pin a version — the baseline chooses it`).toBe(false)
+    }
+  })
+
+  it('the rows read in journey order — the order PROTOTYPE_SCOPES declares', () => {
+    const order = PROTOTYPE_SCOPES.map((s) => s.id)
+    const got = prototypeRows.map((f) => order.indexOf(f.prototypeScope!))
+    expect(got, 'reorder the rows in prototypeFeatures.ts to match PROTOTYPE_SCOPES').toEqual([...got].sort((a, b) => a - b))
   })
 })
 

@@ -72,11 +72,15 @@ export type FeatureAccent = 'teal' | 'gold' | 'blue' | 'neutral'
 export type FeatureCategory =
   | 'demo'
   | 'dashboard'
-  /** The live product build — the ONE row on the ungated Prototypes section
-   *  (2026-09-18). Not in the LMS type block; added here when Demo became the
-   *  authored-on-the-page review inbox and the product app needed a section
-   *  of its own. `demo` / `dashboard` still route to Prototypes too, so LMS
-   *  rows ported with those categories land in the right place. */
+  /** A live product build on the ungated Prototypes section (2026-09-18). Not
+   *  in the LMS type block; added here when Demo became the authored-on-the-
+   *  page review inbox and the product app needed a section of its own.
+   *  `demo` / `dashboard` still route to Prototypes too, so LMS rows ported
+   *  with those categories land in the right place.
+   *
+   *  ⚠ ONE ROW PER `prototypeScope`, and every row carries one (2026-10-14).
+   *  Until then the section held exactly one row; see `PROTOTYPE_SCOPES` for
+   *  what changed and what did not. */
   | 'prototype'
   | 'dev-handoff'
   | 'testing'
@@ -92,6 +96,66 @@ export type FeatureCategory =
    *  `UxDashboardPage.tsx` states the redirect explicitly rather than letting it
    *  fall through; see the `sandbox-section` row in `archivedItems.ts`. */
   | 'sandbox'
+
+/* ─────────────────────────────────────────────────────────────────────────
+ *  PROTOTYPE SCOPES — one row per product surface (2026-10-14)
+ *
+ *  Prototypes held ONE row from 2026-09-28 to 2026-10-14, and the reason was
+ *  sound: it answers "what is the product right now?", and two rows pointing
+ *  at two BUILDS of the same thing make everyone ask which one is real.
+ *
+ *  What changed is the shape of the product, not the rule. A learner's journey
+ *  now has three doors — how they get IN (invite and purchase), what they land
+ *  in (the dashboard, end to end), and where they study (Compass) — and each
+ *  one is its own source of truth for a different question. So the section
+ *  holds ONE ROW PER SCOPE, and what the old rule actually guaranteed is kept
+ *  by a stricter mechanical form, pinned in `UxDashboard.smoke.test.tsx`:
+ *
+ *    • every row's `to` is a same-origin PRODUCT route on `main` at `?demo=1`
+ *      — never a branch URL, never an `?ff=` pin, never an `externalUrl`.
+ *      Three rows, one build, one committed baseline.
+ *    • no scope has two rows. "I want two of the same thing visible" is still
+ *      a REFINEMENT job, exactly as before.
+ *
+ *  The order here is the order the section reads in: the journey, left to
+ *  right. A scope with NO row is a surface that has not been built yet — it is
+ *  listed so the plan is in the type, but a Prototypes row is `ready` by
+ *  definition, so nothing is added until the build exists on `main`.
+ *
+ *  `label` is what the tile's kind tag shows in place of "Full platform", so
+ *  three rows in one section each say which door they are. `question` is the
+ *  one the row answers, and it is the test of whether a candidate row is a
+ *  new scope or a second copy of an existing one.
+ * ───────────────────────────────────────────────────────────────────────── */
+export type PrototypeScope = 'invite' | 'end-to-end' | 'compass'
+
+export const PROTOTYPE_SCOPES: ReadonlyArray<{
+  id: PrototypeScope
+  label: string
+  question: string
+}> = [
+  {
+    id: 'invite',
+    label: 'Invite & purchase',
+    // No row yet (2026-10-14). The React flow does not exist; the lo-fi
+    // argument for it is the walk-through and wireframes rows in Exploration.
+    question: 'How does a learner get into the product?',
+  },
+  {
+    id: 'end-to-end',
+    label: 'End to end',
+    question: 'What is the XCEL product right now?',
+  },
+  {
+    id: 'compass',
+    label: 'Compass',
+    question: 'What is the study experience inside a course?',
+  },
+]
+
+export function prototypeScopeLabel(scope: PrototypeScope | undefined): string | undefined {
+  return PROTOTYPE_SCOPES.find((s) => s.id === scope)?.label
+}
 
 /** A feature flag (from the Admin tools → Feature Flag panel) that drives one
  *  of this feature's variants. Listed on the gateway so reviewers know which
@@ -419,6 +483,13 @@ export type PrototypeFeature = {
    * Done tab regardless of this value.
    */
   category: FeatureCategory
+  /**
+   * Which product surface a PROTOTYPES row is the source of truth for. Required
+   * on every `category: 'prototype'` row and meaningless on any other — see
+   * `PROTOTYPE_SCOPES` above for the rule (one row per scope, every row on
+   * `main`'s build at `?demo=1`) and `UxDashboard.smoke.test.tsx` for the pin.
+   */
+  prototypeScope?: PrototypeScope
   /**
    * When true, the tile is password-gated: it shows a "Locked" badge and the
    * first click per session opens the prototype password modal before
@@ -1007,6 +1078,10 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     kind: 'explore',
     status: 'ready',
     category: 'prototype',
+    // The middle door of the three — see `PROTOTYPE_SCOPES`. This row is the
+    // whole product; the Compass row below is one surface INSIDE it, reached
+    // from here by clicking into a course, and the two render the same build.
+    prototypeScope: 'end-to-end',
     pinned: true,
     // An in-app route, not a document. `to` is what makes the tile navigate
     // rather than open a new tab, and it is also what the row's live preview
@@ -1022,6 +1097,50 @@ export const PROTOTYPE_FEATURES: PrototypeFeature[] = [
     // a stakeholder can still switch persona / progress / readiness — those
     // edits are just ephemeral, which is the point of a demo.
     to: '/dashboard-rebrand?demo=1',
+    brands: ['xcel'],
+  },
+  {
+    /*
+     * THE COMPASS ROW — 2026-10-14, the first second row on Prototypes, and
+     * the one that restated the rule as one-row-per-scope (`PROTOTYPE_SCOPES`).
+     *
+     * It is the SAME BUILD as the row above, entered at Compass Learning
+     * (`?section=compass`, the top nav's second destination) rather than the
+     * dashboard. That is deliberate and it is what keeps "which one is real?"
+     * unaskable: a stakeholder who clicks into a course from the end-to-end
+     * row lands on exactly what this row opens. The row exists because the
+     * study experience is a surface with its own owner and its own stream of
+     * Refinement work — Anjani's, tagged `product: 'compass'` there — and
+     * "what is Compass right now?" deserves a door that does not route through
+     * the dashboard to answer it.
+     *
+     * `?demo=1` for the same reason as the row above: the committed baseline,
+     * not the last reviewer's toggles. Under that baseline the version is the
+     * one `defaultDiscoverabilityVersionFor` returns, which is what draws the
+     * Compass rail — this row never pins a `version=`, because pinning one
+     * would make it stop tracking the product the moment the baseline moved.
+     *
+     * NO `thumbnail`, so the row preview boots the app in a scaled frame —
+     * the cost `FeaturePreviewThumb` documents. Two frames was judged fine;
+     * add captures if the section grows past three.
+     */
+    id: 'xcel-compass',
+    title: 'Compass Learning — Live Product Build',
+    accent: 'teal',
+    icon: 'monitor',
+    blurb:
+      'The study experience inside a course, in the same React build as the dashboard: Compass Learning as the top nav’s second destination, the course player with its own rail and player bar, and the lesson session. The content and the rail are ported from Anjani’s standalone prototype, and this is where the work she puts up in Refinement lands once it is promoted. Entered directly rather than through the dashboard, so “what is Compass right now?” has an answer that does not route through “what is the dashboard right now?”.',
+    tileBlurb:
+      'The study experience inside a course — Compass Learning, the course player and the lesson session — in the same build as the dashboard, entered directly.',
+    kind: 'explore',
+    status: 'ready',
+    category: 'prototype',
+    prototypeScope: 'compass',
+    pinned: true,
+    // Same-origin product route at the committed baseline — the smoke test
+    // asserts every Prototypes row has this shape. `section=compass` is the
+    // deep link `PlatformShell` honours under either navigation.
+    to: '/dashboard-rebrand?demo=1&section=compass',
     brands: ['xcel'],
   },
   {

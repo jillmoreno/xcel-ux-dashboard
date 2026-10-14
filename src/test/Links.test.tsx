@@ -26,6 +26,7 @@ import userEvent from '@testing-library/user-event'
 import { MemoryRouter } from 'react-router-dom'
 import { LinksPanel } from '@/components/prototype/LinksPanel'
 import { UxDashboardPage } from '@/pages/UxDashboardPage'
+import { PROTOTYPE_FEATURES } from '@/data/prototypeFeatures'
 import { AccountProvider } from '@/context/AccountContext'
 import { ThemeProvider } from '@/context/ThemeContext'
 import {
@@ -653,6 +654,10 @@ describe('the Links section on the gateway', () => {
     const rows = screen
       .getAllByRole('button', { name: /^Actions for / })
       .map((b) => b.getAttribute('aria-label')?.replace(/^Actions for /, ''))
-    expect(rows).toEqual(['XCEL Dashboard — Live Product Build'])
+    // Read from the data rather than written out: this test's claim is that
+    // Links added nothing, not what Prototypes holds — the smoke test owns that.
+    expect(rows).toEqual(
+      PROTOTYPE_FEATURES.filter((f) => f.category === 'prototype').map((f) => f.title),
+    )
   })
 })

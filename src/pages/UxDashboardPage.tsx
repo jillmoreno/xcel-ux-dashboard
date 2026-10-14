@@ -12,6 +12,7 @@ import { Link, useSearchParams } from 'react-router-dom'
 import {
   PROTOTYPE_FEATURES,
   prototypeFeatureById,
+  prototypeScopeLabel,
   type PrototypeFeature,
 } from '@/data/prototypeFeatures'
 import { ARCHIVED_ITEMS } from '@/data/archivedItems'
@@ -180,23 +181,29 @@ type SectionDef = {
 const SECTIONS: SectionDef[] = [
   {
     // FIRST, and the landing section: the product as it stands — the live
-    // React build at its committed flag baseline. ONE row (`xcel-dashboard`),
-    // and promoting a feature here means flipping its flag default on `main` —
-    // `.claude/skills/promote-to-prototype` — never adding a row. Ungated,
-    // because this is the thing stakeholders are sent to see.
-    // `UxDashboard.smoke.test.tsx` compares the whole section against an
-    // expected set, in both directions.
+    // React build at its committed flag baseline. ONE ROW PER SCOPE
+    // (`PROTOTYPE_SCOPES` in prototypeFeatures.ts), and promoting a feature
+    // here means flipping its flag default on `main` —
+    // `.claude/skills/promote-to-prototype` — never adding a row for a scope
+    // that already has one. Ungated, because this is the thing stakeholders
+    // are sent to see. `UxDashboard.smoke.test.tsx` compares the whole section
+    // against an expected set, in both directions.
     id: 'prototypes',
     label: 'Prototypes',
-    /* ⚠ ONE ROW, AND THAT IS THE FEATURE (2026-09-28). Prototypes is the SOURCE
-       OF TRUTH for developers and stakeholders: what the product currently is.
-       A second row destroys the only question this section answers, because
-       everyone then has to ask which one is real. Several things to look at at
-       once belong in REFINEMENT, which takes any number of rows, is authored in
-       the browser, and is visible to stakeholders too (it carries no `gate`).
-       `UxDashboard.smoke.test.tsx` compares this section in both directions. */
+    /* ⚠ ONE ROW PER SCOPE, AND THAT IS THE FEATURE (2026-09-28, restated
+       2026-10-14). Prototypes is the SOURCE OF TRUTH for developers and
+       stakeholders: what the product currently is. It held exactly one row
+       until 2026-10-14, when the product grew three doors on one journey —
+       how a learner gets in, what they land in, where they study — and each
+       became a row. What the one-row rule actually guaranteed is kept in a
+       stricter form: every row is the SAME build (`main`, at `?demo=1`), so
+       there is still nothing to ask "which one is real?" about. Two things to
+       look at for the SAME scope belong in REFINEMENT, which takes any number
+       of rows, is authored in the browser, and is visible to stakeholders too
+       (it carries no `gate`). `UxDashboard.smoke.test.tsx` compares this
+       section in both directions and pins the shape of every row's route. */
     blurb:
-      'The live product build — where we have landed, at the committed baseline. One row, on purpose: this is the current source of truth.',
+      'The live product build — where we have landed, at the committed baseline. One row per surface, all the same build: each is the current source of truth for the door it names.',
   },
   {
     // The REVIEW INBOX, authored on the page (2026-09-18) — labelled
@@ -1829,8 +1836,13 @@ function ProjectRow({
   //   Feature         — one feature. Every `guided` tile is one, and so are the
   //     `explore` tiles that open a single page rather than the platform, which
   //     say so via `kindLabel`.
+  //   A PROTOTYPES row says which DOOR it is instead (2026-10-14): three rows
+  //     in that section all open the same build, so "Full platform" three
+  //     times would say nothing, and the scope label is the one thing that
+  //     tells them apart at a glance.
   const meta = [
-    feature.kindLabel ??
+    prototypeScopeLabel(feature.prototypeScope) ??
+      feature.kindLabel ??
       (external ? 'Standalone HTML' : feature.kind === 'explore' ? 'Full platform' : 'Feature'),
   ]
   // The row's status chip and the pill that filters it are the same resolver,

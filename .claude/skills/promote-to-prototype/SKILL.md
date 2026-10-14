@@ -20,27 +20,45 @@ The XCEL UX Dashboard has two ungated sections and they are different acts:
 | Section | What it is | How things get in |
 |---|---|---|
 | **Refinement** (section id `demo`) | The review inbox. A designer's branch, built by Netlify at its own URL, put up for the team (and, once flipped public, stakeholders) to discuss. | Added on the page — Refinement → Add link. No commit. |
-| **Prototypes** | The product as it stands: `xcel-dashboard` → `/dashboard-rebrand?demo=1`, rendering the committed defaults in `FEATURE_FLAGS`. | **This skill.** A flag-baseline change on `main`. Never a new row. |
+| **Prototypes** | The product as it stands, one row per surface — `xcel-dashboard` → `/dashboard-rebrand?demo=1`, `xcel-compass` → the same build at `?section=compass` — rendering the committed defaults in `FEATURE_FLAGS`. | **This skill.** A flag-baseline change on `main`. Never a new row for a surface that has one. |
 
 Until 2026-09-18 the product build sat in a section called Demo and this skill
 was `promote-to-demo`. The logic is unchanged; the words are not. If you see
 "Demo" in older commit messages or CLAUDE.md notes about the baseline, read
 "Prototypes".
 
-## ⚠ There is only ever ONE prototype, and that is the point
+## ⚠ ONE row per SCOPE, every row the same build — and that is the point
 
-Prototypes answers one question — *what is the product right now?* — for
-developers and stakeholders. A second row destroys the answer, because everyone
-then has to ask which one is real.
+Prototypes answers *what is the product right now?* for developers and
+stakeholders. Until 2026-10-14 it held exactly one row, because two rows
+pointing at two BUILDS of the same thing destroy the answer — everyone then
+has to ask which one is real.
 
-So **"I need more than one prototype" is always a Refinement job.** Refinement
-takes any number of rows, is authored in the browser with no code or deploy, and
-is visible to stakeholders too (it carries no `gate`). A row there can pin a
-configuration of `main` (`?demo=1&ff=…`), point at a branch build, or open a
-`/review` page of one component's variants.
+Since 2026-10-14 it holds one row per product SURFACE, declared in
+`PROTOTYPE_SCOPES` in `prototypeFeatures.ts`: how a learner gets in (`invite`,
+no row until the flow exists), what they land in (`end-to-end`,
+`xcel-dashboard`), where they study (`compass`, `xcel-compass`). Every row is
+`main`'s build at `?demo=1` — the smoke test pins that none is a branch URL, an
+`?ff=` pin, or a pinned `version=` — so there is still nothing to ask "which one
+is real?" about. **This skill still never adds a row.** A row arrives when a
+scope's build first exists on `main`, by Jillienne's hand, and this skill's
+job on every branch after that is unchanged: decide which flag defaults ship.
 
-There is deliberately no "create a second prototype" skill. If someone asks for
-one, this is the answer. See CLAUDE.md, "Prototypes is the source of truth".
+So **"I need more than one of the SAME surface visible" is always a Refinement
+job.** Refinement takes any number of rows, is authored in the browser with no
+code or deploy, and is visible to stakeholders too (it carries no `gate`). A
+row there can pin a configuration of `main` (`?demo=1&ff=…`), point at a branch
+build, or open a `/review` page of one component's variants.
+
+There is deliberately no "create a second prototype" skill. A new SCOPE is a
+`PROTOTYPE_SCOPES` decision, not a skill; a second row for an existing scope is
+Refinement. See CLAUDE.md, "Prototypes is the source of truth".
+
+⚠ **NOT YET DONE HERE (2026-10-14):** this skill still reads the baseline as
+ONE list. The next step is to group candidates by the scope they belong to —
+a Compass flag is a Compass-row decision — and to check ownership per row
+rather than against Jillienne alone. Until then, say which row each candidate
+reaches when you present it.
 
 ## ⚠ The baseline has TWO levers, and only one of them is a flag
 
@@ -165,8 +183,10 @@ it back to the `main` value so the feature lands in the sandbox (Development
 section, full site only) without reaching Prototypes.
 
 **Do NOT change a feature or dev-handoff tile's `category` to `'prototype'`.**
-Prototypes holds exactly one row and `UxDashboard.smoke.test.tsx` compares the
-whole section in both directions, so a second row fails a test. Feature tiles
+Prototypes holds one row per scope and `UxDashboard.smoke.test.tsx` compares the
+whole section in both directions, so a row it does not expect fails a test —
+and a row without a `prototypeScope`, or a second row for a scope, fails
+another. Feature tiles
 (`kind: 'guided' | 'explore'`) and dev-handoff tiles live in the sandbox
 sections permanently — that is where reviewers explore individual features and
 read handoffs.
@@ -377,7 +397,7 @@ surface instead. Retiring it is for when the conversation is over.
 ## Guardrails
 
 - **Never move tiles.** Promotion is a flag-baseline change, not a `category`
-  edit. Prototypes has one row and a two-directional test.
+  edit. Prototypes has one row per scope and a two-directional test.
 - **Diff `dashboardVersions.ts` too.** The default version is the biggest lever
   on the baseline and is not in the flag catalog.
 - **The default version is Jillienne's alone.** Anyone may ADD a version;

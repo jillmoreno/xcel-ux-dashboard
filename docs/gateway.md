@@ -154,13 +154,49 @@ site is. `PublicGateway.test.tsx`, "the two guides". The PDFs are asserted to
 exist and to be PDFs; nothing can assert they are CURRENT, so regenerate them
 whenever the HTML changes.
 
-**Prototypes holds the live product build** (`xcel-dashboard` →
-`/dashboard-rebrand?demo=1`), the one feature row on the ungated front door.
-What sits there is a decision about what a stakeholder may see unaccompanied —
-`UxDashboard.smoke.test.tsx` compares the whole section against an expected
-set, in both directions, so promoting or demoting a row fails a test first. It
-is also the one row in the file that is an in-app ROUTE rather than a
-standalone HTML document; see "The one in-app row" below. **It was called Demo
+**Prototypes holds the live product build, one row per product surface**
+(`xcel-dashboard` → `/dashboard-rebrand?demo=1` and, since 2026-10-14,
+`xcel-compass` → `/dashboard-rebrand?demo=1&section=compass`), the only
+feature rows on the ungated front door. What sits there is a decision about
+what a stakeholder may see unaccompanied — `UxDashboard.smoke.test.tsx`
+compares the whole section against an expected set, in both directions, so
+promoting or demoting a row fails a test first. They are also the only rows in
+the file that are in-app ROUTES rather than standalone HTML documents; see
+"The in-app rows" below.
+
+### One row per scope, every row the same build (2026-10-14)
+
+From 2026-09-28 the section held exactly one row, and the reason is still the
+reason: two rows pointing at two BUILDS of the same thing make everyone ask
+which one is real. What changed is that the product now has three doors on one
+learner journey — how they get in (invite and purchase), what they land in
+(the dashboard, end to end), where they study (Compass) — and each is its own
+source of truth for a different question. `PROTOTYPE_SCOPES` in
+`prototypeFeatures.ts` declares them in journey order; every
+`category: 'prototype'` row carries a `prototypeScope`; the tile's kind tag
+shows the scope label instead of "Full platform", because three rows that all
+open the same build need the one word that tells them apart.
+
+The guarantee is kept in a stricter mechanical form, pinned by the new
+`describe` block in `UxDashboard.smoke.test.tsx`: every row's `to` is
+same-origin, enters `/dashboard-rebrand`, carries `demo=1`, and pins neither
+`ff=` nor `version=`. Each of those is a row that would stop tracking the
+product the moment `main` moved under it. No scope has two rows, and no row
+outside Prototypes carries a scope.
+
+**The Compass row is the same build entered at a different door.** A
+stakeholder who clicks into a course from the end-to-end row lands on exactly
+what the Compass row opens, which is what keeps the two from competing. It
+exists because the study experience has its own owner and its own stream of
+Refinement work (Anjani's, tagged `product: 'compass'` there), and "what is
+Compass right now?" deserved an answer that does not route through the
+dashboard. The `invite` scope has no row: the purchase flow does not exist as
+a React route yet, and a Prototypes row is `ready` by definition.
+
+What this did NOT change: how work gets in. A branch is still reviewed in
+Refinement and promoted by `promote-to-prototype` flipping flag defaults on
+`main`; the skill's per-scope grouping and the Refinement form's product
+prefill are the next step, not this one. **It was called Demo
 until 2026-09-18**, and the product build was promoted into it on 2026-09-08;
 older notes that say "the Demo row" or "the Demo baseline" mean this section.
 
@@ -439,7 +475,8 @@ runs ON THE PR BEFORE MERGE (merging publishes to two sites now), that a
 DECLINED flag must be set back to `main`'s value (the designer turned it on to
 see their work), and a final step to retire the branch's Demo row.
 
-**`FeatureCategory` gained `'prototype'`** for the one row, and `sectionOf`
+**`FeatureCategory` gained `'prototype'`** for the one row (two since
+2026-10-14), and `sectionOf`
 routes `demo` / `dashboard` there too so an LMS-ported row lands in the right
 place. `isPublicFeature` accepts all three. The `dashboard` legacy alias in
 `LEGACY_SECTIONS` points at `prototypes` now. **Prototypes is the landing
@@ -963,11 +1000,13 @@ files look the way they do rather than what they currently contain.
   them are `PlaceholderPage` stubs.
 
 
-### The one in-app row
+### The in-app rows
 
 Every row in `prototypeFeatures.ts` opens a standalone HTML document under
-`public/prototypes/` except **`xcel-dashboard`**, which is a react-router route
-(`to: '/dashboard-rebrand'`) into the product app that now lives in this repo.
+`public/prototypes/` except the Prototypes rows — **`xcel-dashboard`** and,
+since 2026-10-14, **`xcel-compass`** — which are react-router routes
+(`to: '/dashboard-rebrand…'`) into the product app that now lives in this repo.
+The notes below were written about the first and hold for both.
 
 **Do not confuse it with `xcel-lms`**, the Exploration row titled "XCEL LMS —
 Desktop Platform". That one is a hand-authored HTML mock-up of these same
@@ -1003,7 +1042,8 @@ Three consequences worth knowing:
   because Demo holds ONE row and a live frame cannot go stale — the same
   trade-off the thumbnails README describes, landing the other way than it does
   for `xcel-admin-tool`, which is one of several rows in a section. Add a
-  capture if Demo grows.
+  capture if Demo grows. (It grew to two on 2026-10-14; two frames was judged
+  fine, and the Compass row's note says to add captures past three.)
 - **No `devStatus`**, same trap as the Exploration rows: `sectionOf` checks it
   before `category`, so authoring one silently moves this row off the front
   door.

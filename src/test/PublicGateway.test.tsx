@@ -73,9 +73,13 @@ describe('gatewayMode — parsing', () => {
     expect(parseGatewayMode('full')).toBe('full')
   })
 
-  it('treats exactly the Prototypes row as public — every other authored row is not', () => {
+  it('treats exactly the Prototypes rows as public — every other authored row is not', () => {
+    // ⚠ TWO SINCE 2026-10-14 — one row per `prototypeScope`, both the same
+    // build on `main`. Written out rather than derived, because what a
+    // passwordless viewer can reach is the concern and a derived list would
+    // pass whatever the data said.
     const pub = PROTOTYPE_FEATURES.filter(isPublicFeature).map((f) => f.id)
-    expect(pub).toEqual(['xcel-dashboard'])
+    expect(pub).toEqual(['xcel-dashboard', 'xcel-compass'])
   })
 })
 
