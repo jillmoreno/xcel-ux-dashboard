@@ -163,7 +163,15 @@ export function ExamScheduleWidget({
    * it costs less than threading it — the same call CLAUDE.md makes about
    * components generally, and the one already made for the home itself.
    */
-  treatment?: 'default' | 'pacing'
+  /* `step` — 2026-10-14, End-to-End Demo's Step 2 (Jillienne's request: "make
+     this a bullet step - like in step 1"): everything `pacing` is, except the
+     QUESTION is drawn as a journey row — a ring marker and 13px body text —
+     instead of a serif heading, because it sits inside a step beside the
+     coursework stops and read as a second step title. ⚠ THIS IS THE FIFTH
+     DIFFERENCE the note above warned about, taken as a one-line variant of
+     `pacing` rather than a fork because the only thing that differs is one
+     paragraph's wrapper; the moment a second phase needs its own look, fork. */
+  treatment?: 'default' | 'pacing' | 'step'
   /** Opens a sheet by id. This card only ever sends `EXAM_DETAILS_STEP_ID` —
    *  the menu it opens is what sends the real step ids back. */
   onOpenStep?: (id: string) => void
@@ -210,7 +218,7 @@ export function ExamScheduleWidget({
      this condition exists to prevent. */
   /* ⚠ `unsetEyebrow` GATES ONLY THIS ARM — the unset phases. The saved arm
      below keeps its own rule; see the prop's note. */
-  const pacing = treatment === 'pacing'
+  const pacing = treatment === 'pacing' || treatment === 'step'
   const eyebrow = activePhase !== 'scheduled'
     ? pacing
       ? null
@@ -327,6 +335,7 @@ export function ExamScheduleWidget({
       {activePhase === 'prompt' && (
         <PromptState
           heading={pacing}
+          row={treatment === 'step'}
           affirmativeFirst={pacing}
           stateName={stateName}
           onNotYet={() => setPhase('not-yet')}
@@ -414,12 +423,17 @@ function PromptState({
   onNotYet,
   onYes,
   heading = false,
+  row = false,
   affirmativeFirst = false,
 }: {
   stateName: string
   onNotYet: () => void
   onYes: () => void
   heading?: boolean
+  /** The question as a JOURNEY ROW (`treatment: 'step'`): a ring marker in a
+   *  14px column and 13/18 body text, the shape of the coursework stops it
+   *  sits under. Wins over `heading`. */
+  row?: boolean
   affirmativeFirst?: boolean
 }) {
   return (
@@ -436,9 +450,18 @@ function PromptState({
           `learning/`; the tokens are the shared thing (`--type-atlas-h8-*`),
           and depending on a home's private style object would couple a widget
           four callers share to one of them. The fallbacks match that object. */}
-      <p style={heading ? questionHeadingStyle : questionStyle}>
-        Have you scheduled your {stateName} state exam?
-      </p>
+      {row ? (
+        <p style={questionRowStyle}>
+          <span aria-hidden style={questionRowMarkerColumnStyle}>
+            <span style={questionRowMarkerStyle} />
+          </span>
+          <span style={questionRowTextStyle}>Have you scheduled your {stateName} state exam?</span>
+        </p>
+      ) : (
+        <p style={heading ? questionHeadingStyle : questionStyle}>
+          Have you scheduled your {stateName} state exam?
+        </p>
+      )}
       {/* ⚠ ORDER HERE IS TAB ORDER, which is why both arrangements are DOM
           order and neither uses CSS `order`. A visual swap would leave a
           keyboard user reaching the two right-to-left while a mouse user reads
@@ -986,6 +1009,20 @@ const compactSepStyle: CSSProperties = {
    — this project has no Georgia anywhere — so it renders on `--font-heading`,
    which every other heading in this app uses. */
 
+/* The ROW arm (`treatment: 'step'`, 2026-10-14) — the Atlas journey row, restated
+   here for the reason the heading arm restates the h8: the stops' styles are a
+   home's private objects. 14px marker column, a 12px ring in the subtle border
+   (the unreached stop's mark), 8 between, 13/18 body text in the primary ink. */
+const questionRowStyle: CSSProperties = { margin: 0, display: 'flex', gap: 8, alignItems: 'flex-start' }
+const questionRowMarkerColumnStyle: CSSProperties = {
+  width: 14, flex: '0 0 auto', display: 'flex', justifyContent: 'center', paddingTop: 3,
+}
+const questionRowMarkerStyle: CSSProperties = {
+  width: 12, height: 12, boxSizing: 'border-box', borderRadius: '50%', border: '2px solid var(--color-border-subtle)', display: 'block',
+}
+const questionRowTextStyle: CSSProperties = {
+  flex: '1 1 0', minWidth: 0, fontFamily: 'var(--font-body)', fontSize: 13, lineHeight: '18px', fontWeight: 400, color: 'var(--color-text-primary)',
+}
 const questionHeadingStyle: CSSProperties = {
   margin: '6px 0 0',
   fontFamily: 'var(--font-heading-serif)',

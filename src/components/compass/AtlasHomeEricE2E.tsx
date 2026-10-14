@@ -660,7 +660,9 @@ export function AtlasHomeEricE2E({
                   stateName={state || undefined}
                   compact
                   countdown="flip"
-                  treatment="pacing"
+                  // `step`: pacing's flow, the question as a journey row
+                  // (2026-10-14, Jillienne's request: "make this a bullet step").
+                  treatment="step"
                 />
               }
             />
