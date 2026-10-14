@@ -2483,6 +2483,7 @@ function MyCoursesSection() {
      with its Home's links — everything but the course's own Flashcards and
      Exam Simulator. The other Atlas versions keep the left column and all. */
   const wip = params.get('version') === 'eric-atlas-v3'
+  const quickLinksRight = useFeatureFlag('atlas-wip-quick-links-side').variant === 'right'
   /* The Home course's card opens the Compass course page; the P&C card is the
      demo's invented course, so it is not wired. */
   const openCourse = () =>
@@ -2498,7 +2499,9 @@ function MyCoursesSection() {
       aside={atlas ? <AtlasJourneyLinksCard withoutCoursePages={wip} style={wip ? WIP_QUICK_LINKS : undefined} /> : undefined}
       // On the LEFT again on WIP (2026-10-13, Eric's request — its Home's
       // Quick Links moved left the same day); `asideRight` stays available.
-      // …at the Home card's 230 (same day).
+      // …at the Home card's 230 (same day). The Design bar's Quick Links
+      // control can put it on the right.
+      asideRight={wip && quickLinksRight}
       titleStyle={atlas ? ATLAS_PAGE_TITLE : undefined}
       // Atlas: search, the status filter bar and View Archived are hidden — kept
       // for later, not removed (2026-10-06, Eric's request).
@@ -2531,6 +2534,7 @@ const WIP_QUICK_LINKS: CSSProperties = { border: '1px solid color-mix(in srgb, v
 function CertificatesSection() {
   const [params] = useSearchParams()
   const wip = params.get('version') === 'eric-atlas-v3'
+  const quickLinksRight = useFeatureFlag('atlas-wip-quick-links-side').variant === 'right'
   return (
     <CertificatesPage
       embedded
@@ -2540,6 +2544,7 @@ function CertificatesSection() {
       // (2026-10-13, Eric's request).
       aside={wip ? <AtlasJourneyLinksCard withoutCoursePages style={WIP_QUICK_LINKS} /> : undefined}
       asideWidth={WIP_QUICK_LINKS_W}
+      asideRight={quickLinksRight}
       contentWidth={wip ? ATLAS_MY_COURSES_WIDTH : undefined}
       // Figma 375:1311's cards (2026-10-13, Eric's request) — and the Life &
       // Health certificate as IN-PROGRESS: WIP's Home has that course under

@@ -1440,6 +1440,27 @@ export const FEATURE_FLAGS: FeatureFlagDefinition[] = [
     page: 'dashboard-rebrand',
   },
   {
+    key: 'atlas-wip-quick-links-side',
+    /* WHICH SIDE ERIC/ATLAS WIP'S QUICK LINKS SITS, ON THE DESIGN BAR
+       (2026-10-13, Eric's request). Left (default) — beside the course card
+       on Home and before the cards on My Courses and Certificates, as it is
+       now. Right — after them on all three. One pick for the three pages. */
+    surface: 'design',
+    owner: 'eric',
+    versions: ['eric-atlas-v3'],
+    group: 'Navigation',
+    label: 'Quick Links',
+    description:
+      'Which side of the page Eric/Atlas WIP\u2019s Quick Links card sits on \u2014 Home, My Courses and Certificates together. Left (default) or Right.',
+    defaultEnabled: true,
+    defaultVariant: 'left',
+    variants: [
+      { value: 'left', label: 'Quick Links Left' },
+      { value: 'right', label: 'Quick Links Right' },
+    ],
+    page: 'dashboard-rebrand',
+  },
+  {
     key: 'atlas-header-v2',
     /* THE ATLAS HEADER, ON THE DESIGN BAR (2026-10-13, Eric's request:
        "replace the nav … with the new nav"). On (default), Eric's Atlas

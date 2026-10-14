@@ -35,6 +35,7 @@ export function CertificatesPage({
   aside,
   asideWidth = 260,
   contentWidth,
+  asideRight = false,
   atlasCards = false,
   inProgressIds,
 }: {
@@ -51,6 +52,8 @@ export function CertificatesPage({
   asideWidth?: number
   /** Caps the page at this width and centres it (as My Courses). */
   contentWidth?: number
+  /** The aside after the cards, on the right (as My Courses' own). */
+  asideRight?: boolean
   /** The Atlas certificate cards (Figma 375:1250, Eric/Atlas WIP 2026-10-13)
    *  in place of the shared `CertificateCard`. */
   atlasCards?: boolean
@@ -166,7 +169,9 @@ export function CertificatesPage({
         style={{
           display: 'grid',
           gridTemplateColumns: aside
-            ? `${asideWidth}px minmax(0, 1fr)`
+            ? asideRight
+              ? `minmax(0, 1fr) ${asideWidth}px`
+              : `${asideWidth}px minmax(0, 1fr)`
             : hideListControls
               ? 'minmax(0, 1fr)'
               : '200px minmax(0, 1fr)',
@@ -175,7 +180,7 @@ export function CertificatesPage({
           marginTop: 24,
         }}
       >
-        {aside ?? null}
+        {aside && !asideRight ? aside : null}
         {hideListControls || aside ? null : (
         <aside aria-label="Certificate filters" style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
           <p style={{ margin: 0, fontSize: 14, fontWeight: 600, color: 'var(--color-text-secondary)' }}>
@@ -278,6 +283,7 @@ export function CertificatesPage({
             </div>
           )}
         </div>
+        {aside && asideRight ? aside : null}
       </div>
 
       <CertificateActionPanel open={detailId != null} onClose={() => setDetailId(null)} data={detailRecord} />

@@ -198,6 +198,8 @@ export function AtlasHomeEricV3({
   const progressPick = useFeatureFlag('atlas-v3-progress').variant ?? 'not-started'
   // The Design bar's Link tiles (V3 only, 2026-10-09) — Stacked (default) or Inline.
   const stackedTiles = (useFeatureFlag('atlas-v3-link-tiles').variant ?? 'stacked') !== 'inline'
+  // The Design bar's Quick Links side (2026-10-13) — Left (default) or Right.
+  const quickLinksRight = useFeatureFlag('atlas-wip-quick-links-side').variant === 'right'
   const progress = V3_PROGRESS[progressPick] ?? V3_PROGRESS['not-started']
   // COMPLETED (Design bar's Progress = Completed 100%, 2026-10-09, Eric): no
   // Course progress card, and Step 1 becomes the Congratulations block.
@@ -521,7 +523,9 @@ export function AtlasHomeEricV3({
       {/* 230 (2026-10-13, Eric's request) — 260 before; fitted to Quick Links'
           content and unbordered for a while that day, then back to the
           bordered card. */}
-      <div style={{ width: 230, flex: 'none', display: 'flex', flexDirection: 'column', gap: 24, order: -1 }}>
+      {/* LEFT by default; the Design bar's Quick Links control puts it back on
+          the right (2026-10-13). */}
+      <div style={{ width: 230, flex: 'none', display: 'flex', flexDirection: 'column', gap: 24, order: quickLinksRight ? undefined : -1 }}>
         {/* THE EXAM-DATE CARD — Figma component 224:4118, all four states and
             a working calendar (2026-10-07, Eric's request). FIRST in the rail,
             above Quick Links, since 2026-10-13 (Eric's request). */}
