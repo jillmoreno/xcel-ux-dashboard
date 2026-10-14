@@ -527,7 +527,10 @@ export function AtlasHomeEricV3({
           bordered card. */}
       {/* LEFT by default; the Design bar's Quick Links control puts it back on
           the right (2026-10-13). */}
-      <div style={{ width: 230, flex: 'none', display: 'flex', flexDirection: 'column', gap: 24, order: quickLinksRight ? undefined : -1 }}>
+      {/* 234, not 230 (2026-10-14, Eric's request): at 230 "Applying for a
+          License" wrapped when hover took it to Medium — it needs 134.6 of the
+          row, and 230 left 133. */}
+      <div style={{ width: 234, flex: 'none', display: 'flex', flexDirection: 'column', gap: 24, order: quickLinksRight ? undefined : -1 }}>
         {/* THE EXAM-DATE CARD — Figma component 224:4118, all four states and
             a working calendar (2026-10-07, Eric's request). FIRST in the rail,
             above Quick Links, since 2026-10-13 (Eric's request). */}

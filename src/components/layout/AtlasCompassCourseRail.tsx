@@ -1,5 +1,6 @@
 import { CompassCourseRail } from '@/components/compass/CompassCourseRail'
 import { COMPASS_SAMPLE_TOC_FROM_DESIGN, currentSectionProgress } from '@/data/compassCourseFixtures'
+import { useSearchParams } from 'react-router-dom'
 import { useAtlasCourse } from './useAtlasCourse'
 
 /**
@@ -39,6 +40,8 @@ export function AtlasCompassCourseRail({
   void _onHome
   void _onOverview
   const { title } = useAtlasCourse()
+  // No course name on Eric/Atlas WIP — as its Overview rail (2026-10-14).
+  const hideTitle = useSearchParams()[0].get('version') === 'eric-atlas-v3'
   const { pct } = currentSectionProgress(COMPASS_SAMPLE_TOC_FROM_DESIGN)
   return (
     <CompassCourseRail
@@ -47,7 +50,7 @@ export function AtlasCompassCourseRail({
          breadcrumb={[{ label: 'Home', onSelect: onHome },
            { label: 'Course Overview', onSelect: onOverview }, { label: 'Course' }]}.
          `onHome` and `onOverview` are kept as props for exactly that. */
-      courseTitle={title}
+      courseTitle={hideTitle ? '' : title}
       progressPct={pct}
       toc={COMPASS_SAMPLE_TOC_FROM_DESIGN}
       resources={[{ id: 'get-help', label: 'Get Help', onSelect: onGetHelp }]}

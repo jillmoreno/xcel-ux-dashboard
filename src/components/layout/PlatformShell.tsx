@@ -2524,7 +2524,8 @@ function MyCoursesSection() {
 /* Eric/Atlas WIP's Quick Links on My Courses and Certificates — its Home
    card's (AtlasHomeEricV3): 230 wide, 24 in, outlined in Secondary 100
    darkened 5%. */
-const WIP_QUICK_LINKS_W = 230
+// 234, so the longest label's hover weight fits on one line (2026-10-14).
+const WIP_QUICK_LINKS_W = 234
 const WIP_QUICK_LINKS: CSSProperties = { border: '1px solid color-mix(in srgb, var(--color-secondary-100) 95%, black)', padding: 24 }
 
 /* Certificates in the shell. Eric/Atlas WIP drops the page's search, result

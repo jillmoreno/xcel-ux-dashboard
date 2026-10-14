@@ -1508,6 +1508,9 @@
 .cre-quick-link-label {
   display: inline-flex;
   flex-direction: column;
+  /* One line always: a card a little too narrow clips the gap before the
+     chevron rather than dropping a word to a second line (2026-10-14). */
+  white-space: nowrap;
 }
 .cre-quick-link-label::after {
   content: attr(data-label) / '';

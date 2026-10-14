@@ -89,7 +89,8 @@ export function CompassCourseRail({
 
       <div style={BODY}>
         <div style={TITLE_BLOCK}>
-          <p style={COURSE_TITLE}>{courseTitle}</p>
+          {/* An empty title draws nothing (Eric/Atlas WIP hides it, 2026-10-14). */}
+          {courseTitle ? <p style={COURSE_TITLE}>{courseTitle}</p> : null}
           {/* THE PLAYER BAR'S PROGRESS TRACK in place of the "N% Complete"
               pill (2026-10-01, the designer's request): the same 4px track,
               fill to the knob and 13px knob as the bar's Section pill, with
