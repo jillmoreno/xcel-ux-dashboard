@@ -336,7 +336,9 @@ export function ExamScheduleWidget({
         <PromptState
           heading={pacing}
           row={treatment === 'step'}
-          affirmativeFirst={pacing}
+          // `step` leads with "Not yet" (2026-10-14, Jillienne: "swap these 2
+          // buttons"); `pacing` keeps the affirmative first.
+          affirmativeFirst={treatment === 'pacing'}
           stateName={stateName}
           onNotYet={() => setPhase('not-yet')}
           onYes={() => openPicker('prompt')}
